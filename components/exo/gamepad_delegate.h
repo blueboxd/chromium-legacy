@@ -12,6 +12,7 @@ namespace exo {
 // Handles events for a specific gamepad.
 class GamepadDelegate {
  public:
+  virtual ~GamepadDelegate() {}
   // Called when the gamepad has been removed.
   virtual void OnRemoved() = 0;
 
@@ -26,9 +27,6 @@ class GamepadDelegate {
   // Called after all gamepad information of this frame has been set and the
   // client should evaluate the updated state.
   virtual void OnFrame(base::TimeTicks timestamp) = 0;
-
- protected:
-  virtual ~GamepadDelegate() {}
 };
 
 }  // namespace exo

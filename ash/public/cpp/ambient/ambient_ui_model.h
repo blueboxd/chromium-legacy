@@ -65,6 +65,9 @@ class ASH_PUBLIC_EXPORT AmbientUiModel {
   base::ObserverList<AmbientUiModelObserver> observers_;
 };
 
+ASH_PUBLIC_EXPORT std::ostream& operator<<(std::ostream& out,
+                                           AmbientUiMode mode);
+
 }  // namespace ash
 
 #endif  // ASH_PUBLIC_CPP_AMBIENT_AMBIENT_UI_MODEL_H_

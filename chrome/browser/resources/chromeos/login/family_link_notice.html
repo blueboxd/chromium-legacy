@@ -8,20 +8,22 @@ found in the LICENSE file. -->
 
 <dom-module id="family-link-notice">
   <template>
-    <style include="oobe-dialog-host"></style>
+    <style include="oobe-dialog-host">
+      oobe-dialog {
+        --oobe-dialog-content-padding-top: 0;
+      }
+    </style>
     <oobe-dialog id="familyLinkDialog" role="dialog" has-buttons>
-      <!-- TODO(crbug.com/1101318): replace with correct icon -->
       <hd-iron-icon slot="oobe-icon"
-          icon1x="oobe-32:enterprise" icon2x="oobe-64:enterprise">
+          icon1x="oobe-32:family" icon2x="oobe-64:family">
       </hd-iron-icon>
       <h1 slot="title">[[getDialogTitle_(locale, email_, domain_)]]</h1>
       <div slot="subtitle">
         [[getDialogSubtitle_(locale, isNewGaiaAccount_, email_, domain_)]]
       </div>
       <div slot="footer" class="flex layout vertical center center-justified">
-        <!-- TODO(crbug.com/1101318): replace with correct image -->
-        <img srcset="images/illustration_complete_1x.png 1x,
-            images/illustration_complete_2x.png 2x" class="oobe-illustration"
+        <img srcset="images/1x/parental_control.svg 1x,
+            images/2x/parental_control.svg 2x" class="oobe-illustration"
             alt$="[[i18nDynamic(locale, 'familyLinkDialogTitle')]]">
       </div>
       <div slot="bottom-buttons" class="layout horizontal end-justified">

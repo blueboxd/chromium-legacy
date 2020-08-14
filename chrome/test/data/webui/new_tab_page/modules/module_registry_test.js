@@ -2,35 +2,42 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {ModuleRegistry} from 'chrome://new-tab-page/new_tab_page.js';
+import {ModuleDescriptor, ModuleRegistry} from 'chrome://new-tab-page/new_tab_page.js';
+import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
 
 suite('NewTabPageModulesModuleRegistryTest', () => {
   test('instantiates modules', async () => {
     // Arrange.
     const fooModule = document.createElement('div');
     const bazModule = document.createElement('div');
-    const registry = new ModuleRegistry([
-      {
-        id: 'foo',
-        create: () => Promise.resolve(fooModule),
-      },
-      {
-        id: 'bar',
-        create: () => null,
-      },
-      {
-        id: 'baz',
-        create: () => Promise.resolve(bazModule),
-      }
+    const bazModuleResolver = new PromiseResolver();
+    ModuleRegistry.getInstance().registerModules([
+      new ModuleDescriptor('foo', 'Foo', () => Promise.resolve({
+        element: fooModule,
+        title: 'Foo Title',
+      })),
+      new ModuleDescriptor('bar', 'Bar', () => null),
+      new ModuleDescriptor('baz', 'Baz', () => bazModuleResolver.promise),
     ]);
-    const container = document.createElement('div');
 
     // Act.
-    await registry.instantiateModules(container);
+    const modulesPromise = ModuleRegistry.getInstance().initializeModules();
+    // Delayed promise resolution to test async module instantiation.
+    bazModuleResolver.resolve({
+      element: bazModule,
+      title: 'Baz Title',
+    });
+    const modules = await modulesPromise;
 
     // Assert.
-    assertEquals(2, container.children.length);
-    assertDeepEquals(fooModule, container.children[0]);
-    assertDeepEquals(bazModule, container.children[1]);
+    assertEquals(2, modules.length);
+    assertEquals('foo', modules[0].id);
+    assertEquals('Foo', modules[0].name);
+    assertEquals('Foo Title', modules[0].title);
+    assertDeepEquals(fooModule, modules[0].element);
+    assertEquals('baz', modules[1].id);
+    assertEquals('Baz', modules[1].name);
+    assertEquals('Baz Title', modules[1].title);
+    assertDeepEquals(bazModule, modules[1].element);
   });
 });

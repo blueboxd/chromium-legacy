@@ -759,14 +759,6 @@ const char* LifecycleStateToString(RenderFrameHostImpl::LifecycleState state) {
   }
 }
 
-// Returns the crash key string used for logging BeginNavigation calls'
-// initiators.
-base::debug::CrashKeyString* GetBeginNavigationInitiatorCrashKeyString() {
-  static auto* initiator_key_string = base::debug::AllocateCrashKeyString(
-      "begin_navigation_initiator", base::debug::CrashKeySize::Size256);
-  return initiator_key_string;
-}
-
 }  // namespace
 
 bool ShouldCreateNewHostForCrashedFrame() {
@@ -2161,7 +2153,7 @@ bool RenderFrameHostImpl::CreateRenderFrame(
   NavigationRequest* navigation_request =
       frame_tree_node()->navigation_request();
   if (navigation_request &&
-      navigation_request->coop_status().require_browsing_instance_swap) {
+      navigation_request->coop_status().require_browsing_instance_swap()) {
     params->replication_state.name = "";
     // "COOP swaps" only affect main frames, that have an empty unique name.
     DCHECK(params->replication_state.unique_name.empty());
@@ -4472,6 +4464,21 @@ bool RenderFrameHostImpl::GetSuddenTerminationDisablerState(
   }
 }
 
+bool RenderFrameHostImpl::UnloadHandlerExistsInSameSiteInstance() {
+  DCHECK(!GetParent());
+  auto* main_frame_site_instance = GetSiteInstance();
+  if (has_unload_handler_)
+    return true;
+  for (auto* subframe : GetFramesInSubtree()) {
+    auto* rfhi = static_cast<RenderFrameHostImpl*>(subframe);
+    if (rfhi->GetSiteInstance() == main_frame_site_instance &&
+        rfhi->has_unload_handler_) {
+      return true;
+    }
+  }
+  return false;
+}
+
 bool RenderFrameHostImpl::InsidePortal() {
   return GetRenderViewHost()->GetDelegate()->IsPortal();
 }
@@ -5234,14 +5241,6 @@ void RenderFrameHostImpl::BeginNavigation(
                "frame_tree_node", frame_tree_node_->frame_tree_node_id(), "url",
                common_params->url.possibly_invalid_spec());
 
-  // TODO(crbug.com/1111735): Temporary debugging aids; remove after
-  // investigating the crash described in this bug.
-  ScopedActiveURL scoped_active_url(common_params->url,
-                                    frame_tree()->root()->current_origin());
-  url::debug::ScopedOriginCrashKey begin_navigation_initiator_key(
-      GetBeginNavigationInitiatorCrashKeyString(),
-      base::OptionalOrNullptr(common_params->initiator_origin));
-
   DCHECK(navigation_client.is_valid());
 
   mojom::CommonNavigationParamsPtr validated_params = common_params.Clone();
@@ -5261,24 +5260,6 @@ void RenderFrameHostImpl::BeginNavigation(
     RenderFrameHostImpl* parent = GetParent();
     if (!parent->IsFeatureEnabled(
             blink::mojom::FeaturePolicyFeature::kTrustTokenRedemption)) {
-      // Temporary debugging aid for crbug.com/1111735, where it seems the
-      // renderer containing the iframe prompting the navigation sometimes does
-      // have a feature policy but |parent| does not have the feature policy:
-      static auto* parent_and_initiator_are_same_crash_key_string =
-          base::debug::AllocateCrashKeyString(
-              "parent_and_initiator_are_same",
-              base::debug::CrashKeySize::Size32);
-
-      // (This frame should have the same process ID as the source of the
-      // BeginNavigation.)
-      bool parent_and_initiator_are_same =
-          (parent->GetRoutingID() == begin_params->initiator_routing_id) &&
-          (parent->GetProcess()->GetID() == GetProcess()->GetID());
-
-      base::debug::ScopedCrashKeyString parent_and_initiator_are_same_key(
-          parent_and_initiator_are_same_crash_key_string,
-          parent_and_initiator_are_same ? "true" : "false");
-
       mojo::ReportBadMessage(
           "RFHI: Mandatory Trust Tokens Feature Policy feature is absent");
       return;
@@ -8336,7 +8317,7 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
       navigation_request->SandboxFlagsToCommit();
 
   int virtual_browsing_context_group =
-      navigation_request->coop_status().virtual_browsing_context_group;
+      navigation_request->coop_status().virtual_browsing_context_group();
 
   // If we still have a PeakGpuMemoryTracker, then the loading it was observing
   // never completed. Cancel it's callback so that we don't report partial
@@ -8346,6 +8327,11 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
   // Main Frames will create the tracker, which will be triggered after we
   // receive DidStopLoading.
   loading_mem_tracker_ = navigation_request->TakePeakGpuMemoryTracker();
+
+  if (created_new_document) {
+    cross_origin_opener_policy_ =
+        navigation_request->coop_status().current_coop();
+  }
 
   network::mojom::ClientSecurityStatePtr client_security_state =
       navigation_request->TakeClientSecurityState();
@@ -8358,8 +8344,8 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
   // and we have a reporter on the page we're going to, report it here.
   const CrossOriginOpenerPolicyStatus& coop_status =
       navigation_request->coop_status();
-  if (coop_status.had_opener_before_browsing_instance_swap && coop_reporter) {
-    if (coop_status.require_browsing_instance_swap) {
+  if (coop_status.had_opener() && coop_reporter) {
+    if (coop_status.require_browsing_instance_swap()) {
       coop_reporter->QueueOpenerBreakageReport(
           coop_reporter->GetPreviousDocumentUrlForReporting(
               navigation_request->GetRedirectChain(),
@@ -8367,7 +8353,7 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
           false /* is_reported_from_document */, false /* is_report_only */);
     }
 
-    if (coop_status.virtual_browsing_instance_swap) {
+    if (coop_status.virtual_browsing_instance_swap()) {
       coop_reporter->QueueOpenerBreakageReport(
           coop_reporter->GetPreviousDocumentUrlForReporting(
               navigation_request->GetRedirectChain(),

@@ -93,7 +93,8 @@ struct DowncastTraits<ImageEventListener> {
 class ImageDocumentParser : public RawDataDocumentParser {
  public:
   ImageDocumentParser(ImageDocument* document)
-      : RawDataDocumentParser(document) {}
+      : RawDataDocumentParser(document),
+        world_(document->GetExecutionContext()->GetCurrentWorld()) {}
 
   ImageDocument* GetDocument() const {
     return To<ImageDocument>(RawDataDocumentParser::GetDocument());
@@ -109,6 +110,7 @@ class ImageDocumentParser : public RawDataDocumentParser {
   void Finish() override;
 
   Member<ImageResource> image_resource_;
+  const scoped_refptr<const DOMWrapperWorld> world_;
 };
 
 // --------
@@ -144,7 +146,7 @@ void ImageDocumentParser::AppendBytes(const char* data, size_t length) {
   if (!image_resource_) {
     ResourceRequest request(GetDocument()->Url());
     request.SetCredentialsMode(network::mojom::CredentialsMode::kOmit);
-    image_resource_ = ImageResource::Create(request);
+    image_resource_ = ImageResource::Create(request, world_);
     image_resource_->NotifyStartLoad();
 
     GetDocument()->CreateDocumentStructure(image_resource_->GetContent());

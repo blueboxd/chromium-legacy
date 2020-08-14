@@ -2723,6 +2723,9 @@ enum WebFeature {
   kDOMWindowSetWindowRectCrossScreen = 3393,
   kFullscreenCrossScreen = 3394,
   kBatterySavingsMeta = 3395,
+  kDigitalGoodsGetDigitalGoodsService = 3396,
+  kDigitalGoodsGetDetails = 3397,
+  kDigitalGoodsAcknowledge = 3398,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

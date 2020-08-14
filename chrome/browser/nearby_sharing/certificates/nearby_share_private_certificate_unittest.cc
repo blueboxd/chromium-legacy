@@ -63,10 +63,10 @@ TEST(NearbySharePrivateCertificateTest, EncryptMetadataKey) {
   base::Optional<NearbyShareEncryptedMetadataKey> encrypted_metadata_key =
       private_certificate.EncryptMetadataKey();
   ASSERT_TRUE(encrypted_metadata_key);
-  EXPECT_EQ(kNearbyShareNumBytesMetadataEncryptionKey,
-            encrypted_metadata_key->encrypted_key().size());
   EXPECT_EQ(kNearbyShareNumBytesMetadataEncryptionKeySalt,
             encrypted_metadata_key->salt().size());
+  EXPECT_EQ(kNearbyShareNumBytesMetadataEncryptionKey,
+            encrypted_metadata_key->encrypted_key().size());
 }
 
 TEST(NearbySharePrivateCertificateTest, EncryptMetadataKey_FixedData) {
@@ -104,12 +104,15 @@ TEST(NearbySharePrivateCertificateTest,
 
 TEST(NearbySharePrivateCertificateTest, PublicCertificateConversion) {
   NearbySharePrivateCertificate private_certificate =
-      GetNearbyShareTestPrivateCertificate(NearbyShareVisibility::kAllContacts);
+      GetNearbyShareTestPrivateCertificate(
+          NearbyShareVisibility::kSelectedContacts);
   private_certificate.offset_for_testing() = GetNearbyShareTestValidityOffset();
   base::Optional<nearbyshare::proto::PublicCertificate> public_certificate =
       private_certificate.ToPublicCertificate();
   ASSERT_TRUE(public_certificate);
-  EXPECT_EQ(GetNearbyShareTestPublicCertificate().SerializeAsString(),
+  EXPECT_EQ(GetNearbyShareTestPublicCertificate(
+                NearbyShareVisibility::kSelectedContacts)
+                .SerializeAsString(),
             public_certificate->SerializeAsString());
 }
 

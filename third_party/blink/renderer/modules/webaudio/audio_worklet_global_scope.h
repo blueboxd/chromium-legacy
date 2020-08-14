@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_WORKLET_GLOBAL_SCOPE_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBAUDIO_AUDIO_WORKLET_GLOBAL_SCOPE_H_
 
+#include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_audio_param_descriptor.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/workers/worklet_global_scope.h"
@@ -97,6 +98,13 @@ class MODULES_EXPORT AudioWorkletGlobalScope final : public WorkletGlobalScope {
 
   void Trace(Visitor*) const override;
 
+  // Returns the token that uniquely identifies this worklet.
+  const AudioWorkletToken& GetAudioWorkletToken() const { return token_; }
+  WorkletToken GetWorkletToken() const final { return token_; }
+  ExecutionContextToken GetExecutionContextToken() const final {
+    return token_;
+  }
+
  private:
   bool is_closing_ = false;
 
@@ -114,6 +122,9 @@ class MODULES_EXPORT AudioWorkletGlobalScope final : public WorkletGlobalScope {
 
   size_t current_frame_ = 0;
   float sample_rate_ = 0.0;
+
+  // Default initialized to generate a distinct token for this worklet.
+  const AudioWorkletToken token_;
 };
 
 template <>

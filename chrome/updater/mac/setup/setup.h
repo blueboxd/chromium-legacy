@@ -18,6 +18,9 @@ constexpr int kFailedToCopyBundle = 10;
 // Failed to delete the updater's install folder.
 constexpr int kFailedToDeleteFolder = 11;
 
+// Failed to delete the updater's data folder.
+constexpr int kFailedToDeleteDataFolder = 12;
+
 // Failed to remove the active(unversioned) update service job from Launchd.
 constexpr int kFailedToRemoveActiveUpdateServiceJobFromLaunchd = 20;
 

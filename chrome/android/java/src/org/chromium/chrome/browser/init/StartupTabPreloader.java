@@ -42,6 +42,9 @@ import org.chromium.url.GURL;
  * is created. This is done to improve startup latency.
  */
 public class StartupTabPreloader implements ProfileManager.Observer, Destroyable {
+    private static final String EXTRA_DISABLE_STARTUP_TAB_PRELOADER =
+            "org.chromium.chrome.browser.init.DISABLE_STARTUP_TAB_PRELOADER";
+
     private final Supplier<Intent> mIntentSupplier;
     private final ActivityLifecycleDispatcher mActivityLifecycleDispatcher;
     private final WindowAndroid mWindowAndroid;
@@ -154,6 +157,9 @@ public class StartupTabPreloader implements ProfileManager.Observer, Destroyable
         if (mTab != null) return false;
 
         Intent intent = mIntentSupplier.get();
+        if (IntentUtils.safeGetBooleanExtra(intent, EXTRA_DISABLE_STARTUP_TAB_PRELOADER, false)) {
+            return false;
+        }
         if (mIntentHandler.shouldIgnoreIntent(intent)) return false;
         if (getUrlFromIntent(intent) == null) return false;
 

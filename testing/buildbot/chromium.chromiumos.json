@@ -4182,6 +4182,28 @@
       }
     ]
   },
+  "linux-lacros-rel": {
+    "additional_compile_targets": [
+      "chrome",
+      "chrome_sandbox",
+      "linux_symbols",
+      "symupload"
+    ],
+    "gtest_tests": [
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "unit_tests",
+        "test_id_prefix": "ninja://chrome/test:unit_tests/"
+      }
+    ]
+  },
   "linux-lacros-tester-rel": {
     "additional_compile_targets": [
       "chrome",

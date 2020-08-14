@@ -6,18 +6,27 @@
 
 #include <utility>
 
-#include "base/strings/string_number_conversions.h"
+#include "base/check.h"
 #include "chrome/browser/nearby_sharing/certificates/constants.h"
 
 NearbyShareEncryptedMetadataKey::NearbyShareEncryptedMetadataKey(
-    std::vector<uint8_t> encrypted_key,
-    std::vector<uint8_t> salt)
-    : encrypted_key_(std::move(encrypted_key)), salt_(std::move(salt)) {
-  DCHECK_EQ(kNearbyShareNumBytesMetadataEncryptionKey, encrypted_key_.size());
+    std::vector<uint8_t> salt,
+    std::vector<uint8_t> encrypted_key)
+    : salt_(std::move(salt)), encrypted_key_(std::move(encrypted_key)) {
   DCHECK_EQ(kNearbyShareNumBytesMetadataEncryptionKeySalt, salt_.size());
+  DCHECK_EQ(kNearbyShareNumBytesMetadataEncryptionKey, encrypted_key_.size());
 }
 
 NearbyShareEncryptedMetadataKey::NearbyShareEncryptedMetadataKey(
+    const NearbyShareEncryptedMetadataKey&) = default;
+
+NearbyShareEncryptedMetadataKey& NearbyShareEncryptedMetadataKey::operator=(
+    const NearbyShareEncryptedMetadataKey&) = default;
+
+NearbyShareEncryptedMetadataKey::NearbyShareEncryptedMetadataKey(
+    NearbyShareEncryptedMetadataKey&&) = default;
+
+NearbyShareEncryptedMetadataKey& NearbyShareEncryptedMetadataKey::operator=(
     NearbyShareEncryptedMetadataKey&&) = default;
 
 NearbyShareEncryptedMetadataKey::~NearbyShareEncryptedMetadataKey() = default;

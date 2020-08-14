@@ -101,6 +101,12 @@ Polymer({
     this.isBackButtonVisible_ = isVisible;
   },
 
+  cancel() {
+    if (this.isBackButtonVisible_) {
+      this.onBackClicked_();
+    }
+  },
+
   onBackClicked_() {
     if (this.uiStep === UIState.CHILD) {
       chrome.send('updateOobeUIState', [OOBE_UI_STATE.USER_CREATION]);

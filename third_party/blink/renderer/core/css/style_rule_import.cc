@@ -145,14 +145,15 @@ void StyleRuleImport::RequestStyleSheet() {
     root_sheet = sheet;
   }
 
-  Referrer referrer = parent_style_sheet_->ParserContext()->GetReferrer();
-  ResourceLoaderOptions options;
+  const CSSParserContext* parser_context = parent_style_sheet_->ParserContext();
+  Referrer referrer = parser_context->GetReferrer();
+  ResourceLoaderOptions options(parser_context->JavascriptWorld());
   options.initiator_info.name = fetch_initiator_type_names::kCSS;
   options.initiator_info.referrer = referrer.referrer;
   ResourceRequest resource_request(abs_url);
   resource_request.SetReferrerString(referrer.referrer);
   resource_request.SetReferrerPolicy(referrer.referrer_policy);
-  if (parent_style_sheet_->ParserContext()->IsAdRelated())
+  if (parser_context->IsAdRelated())
     resource_request.SetIsAdResource();
   FetchParameters params(std::move(resource_request), options);
   params.SetCharset(parent_style_sheet_->Charset());

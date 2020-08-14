@@ -47,7 +47,6 @@ int GetChipResourceIdForIconType(IconType icon);
 
 gfx::ImageSkia GetIconForPath(const base::FilePath& filepath);
 gfx::ImageSkia GetChipIconForPath(const base::FilePath& filepath);
-gfx::ImageSkia GetIconFromType(const std::string& icon_type);
 
 }  // namespace app_list
 

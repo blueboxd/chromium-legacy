@@ -9,6 +9,7 @@
 
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
+#include "content/browser/bad_message.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/frame_host/navigation_request.h"
@@ -530,7 +531,15 @@ void Portal::PortalWebContentsCreated(WebContents* portal_web_contents) {
 
 void Portal::CloseContents(WebContents* web_contents) {
   DCHECK_EQ(web_contents, portal_contents_.get());
-  DestroySelf();  // Deletes |this|.
+  if (portal_contents_->GetOuterWebContents()) {
+    // This portal was still attached, we shouldn't have received a request to
+    // close it.
+    bad_message::ReceivedBadMessage(web_contents->GetMainFrame()->GetProcess(),
+                                    bad_message::RWH_CLOSE_PORTAL);
+  } else {
+    // Orphaned portal was closed.
+    DestroySelf();  // Deletes |this|.
+  }
 }
 
 WebContents* Portal::GetResponsibleWebContents(WebContents* web_contents) {

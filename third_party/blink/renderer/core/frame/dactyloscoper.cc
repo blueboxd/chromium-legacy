@@ -73,4 +73,17 @@ void Dactyloscoper::RecordDirectSurface(ExecutionContext* context,
   Dactyloscoper::RecordDirectSurface(context, feature, builder.GetToken());
 }
 
+void Dactyloscoper::RecordDirectSurface(ExecutionContext* context,
+                                        WebFeature feature,
+                                        NotShared<DOMFloat32Array> buffer) {
+  if (!IdentifiabilityStudySettings::Get()->IsActive() || !context)
+    return;
+  if (buffer.IsNull() || buffer->lengthAsSizeT() == 0)
+    return;
+  IdentifiableTokenBuilder builder(
+      base::make_span(static_cast<uint8_t*>(buffer->BaseAddress()),
+                      buffer->byteLengthAsSizeT()));
+  Dactyloscoper::RecordDirectSurface(context, feature, builder.GetToken());
+}
+
 }  // namespace blink

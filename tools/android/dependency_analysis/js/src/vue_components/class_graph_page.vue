@@ -271,6 +271,17 @@ const ClassGraphPage = {
 export default ClassGraphPage;
 </script>
 
+<style lang="scss">
+@import "~vue-material/dist/theme/engine";
+
+@include md-register-theme("default", (
+  primary: #ff5252,
+  accent: #ff5252,
+));
+
+@import "~vue-material/dist/theme/all";
+</style>
+
 <style scoped>
 #title {
   padding: 10px;

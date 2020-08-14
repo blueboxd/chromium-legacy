@@ -1384,53 +1384,55 @@ class BBJSONGenerator(object):
     # are defined only to be mirrored into trybots, and don't actually
     # exist on any of the waterfalls or consoles.
     return [
-      'GPU FYI Fuchsia Builder',
-      'ANGLE GPU Android Release (Nexus 5X)',
-      'ANGLE GPU Linux Release (Intel HD 630)',
-      'ANGLE GPU Linux Release (NVIDIA)',
-      'ANGLE GPU Mac Release (Intel)',
-      'ANGLE GPU Mac Retina Release (AMD)',
-      'ANGLE GPU Mac Retina Release (NVIDIA)',
-      'ANGLE GPU Win10 x64 Release (Intel HD 630)',
-      'ANGLE GPU Win10 x64 Release (NVIDIA)',
-      'Optional Android Release (Nexus 5X)',
-      'Optional Linux Release (Intel HD 630)',
-      'Optional Linux Release (NVIDIA)',
-      'Optional Mac Release (Intel)',
-      'Optional Mac Retina Release (AMD)',
-      'Optional Mac Retina Release (NVIDIA)',
-      'Optional Win10 x64 Release (Intel HD 630)',
-      'Optional Win10 x64 Release (NVIDIA)',
-      'Win7 ANGLE Tryserver (AMD)',
-      # chromium.fyi
-      'linux-blink-rel-dummy',
-      'linux-blink-optional-highdpi-rel-dummy',
-      'mac10.12-blink-rel-dummy',
-      'mac10.13-blink-rel-dummy',
-      'mac10.14-blink-rel-dummy',
-      'mac10.15-blink-rel-dummy',
-      'win7-blink-rel-dummy',
-      'win10-blink-rel-dummy',
-      'WebKit Linux composite_after_paint Dummy Builder',
-      'WebKit Linux layout_ng_disabled Builder',
-      # chromium, due to https://crbug.com/878915
-      'win-dbg',
-      'win32-dbg',
-      'win-archive-dbg',
-      'win32-archive-dbg',
-      # TODO(crbug.com/1033753) Delete these when coverage is enabled by default
-      # on Windows tryjobs.
-      'GPU Win x64 Builder Code Coverage',
-      'Win x64 Builder Code Coverage',
-      'Win10 Tests x64 Code Coverage',
-      'Win10 x64 Release (NVIDIA) Code Coverage',
-      # TODO(crbug.com/1024915) Delete these when coverage is enabled by default
-      # on Mac OS tryjobs.
-      'Mac Builder Code Coverage',
-      'Mac10.13 Tests Code Coverage',
-      'GPU Mac Builder Code Coverage',
-      'Mac Release (Intel) Code Coverage',
-      'Mac Retina Release (AMD) Code Coverage',
+        'GPU FYI Fuchsia Builder',
+        'ANGLE GPU Android Release (Nexus 5X)',
+        'ANGLE GPU Linux Release (Intel HD 630)',
+        'ANGLE GPU Linux Release (NVIDIA)',
+        'ANGLE GPU Mac Release (Intel)',
+        'ANGLE GPU Mac Retina Release (AMD)',
+        'ANGLE GPU Mac Retina Release (NVIDIA)',
+        'ANGLE GPU Win10 x64 Release (Intel HD 630)',
+        'ANGLE GPU Win10 x64 Release (NVIDIA)',
+        'Optional Android Release (Nexus 5X)',
+        'Optional Linux Release (Intel HD 630)',
+        'Optional Linux Release (NVIDIA)',
+        'Optional Mac Release (Intel)',
+        'Optional Mac Retina Release (AMD)',
+        'Optional Mac Retina Release (NVIDIA)',
+        'Optional Win10 x64 Release (Intel HD 630)',
+        'Optional Win10 x64 Release (NVIDIA)',
+        'Win7 ANGLE Tryserver (AMD)',
+        # chromium.chromiumos
+        'linux-lacros-rel',
+        # chromium.fyi
+        'linux-blink-rel-dummy',
+        'linux-blink-optional-highdpi-rel-dummy',
+        'mac10.12-blink-rel-dummy',
+        'mac10.13-blink-rel-dummy',
+        'mac10.14-blink-rel-dummy',
+        'mac10.15-blink-rel-dummy',
+        'win7-blink-rel-dummy',
+        'win10-blink-rel-dummy',
+        'WebKit Linux composite_after_paint Dummy Builder',
+        'WebKit Linux layout_ng_disabled Builder',
+        # chromium, due to https://crbug.com/878915
+        'win-dbg',
+        'win32-dbg',
+        'win-archive-dbg',
+        'win32-archive-dbg',
+        # TODO(crbug.com/1033753) Delete these when coverage is enabled by
+        # default on Windows tryjobs.
+        'GPU Win x64 Builder Code Coverage',
+        'Win x64 Builder Code Coverage',
+        'Win10 Tests x64 Code Coverage',
+        'Win10 x64 Release (NVIDIA) Code Coverage',
+        # TODO(crbug.com/1024915) Delete these when coverage is enabled by
+        # default on Mac OS tryjobs.
+        'Mac Builder Code Coverage',
+        'Mac10.13 Tests Code Coverage',
+        'GPU Mac Builder Code Coverage',
+        'Mac Release (Intel) Code Coverage',
+        'Mac Retina Release (AMD) Code Coverage',
     ]
 
   def get_internal_waterfalls(self):

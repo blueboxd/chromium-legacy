@@ -83,9 +83,8 @@ TEST_F(WriteBarrierPerfTest, MemberWritePerformance) {
   reporter.AddResult(
       kMetricWritesOutsideGcRunsPerS,
       static_cast<double>(kNumElements) / outside_gc_duration.InSecondsF());
-  reporter.AddResult(
-      kMetricRelativeSpeedDifferenceUnitless,
-      during_gc_duration.InSecondsF() / outside_gc_duration.InSecondsF());
+  reporter.AddResult(kMetricRelativeSpeedDifferenceUnitless,
+                     during_gc_duration / outside_gc_duration);
 }
 
 }  // namespace blink

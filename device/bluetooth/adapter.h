@@ -37,6 +37,8 @@ class Adapter : public mojom::Adapter,
   void GetInfo(GetInfoCallback callback) override;
   void SetClient(mojo::PendingRemote<mojom::AdapterClient> client,
                  SetClientCallback callback) override;
+  void SetDiscoverable(bool discoverable,
+                       SetDiscoverableCallback callback) override;
   void StartDiscoverySession(StartDiscoverySessionCallback callback) override;
   void ConnectToServiceInsecurely(
       const std::string& address,
@@ -63,19 +65,19 @@ class Adapter : public mojom::Adapter,
   void OnGattConnected(
       ConnectToDeviceCallback callback,
       std::unique_ptr<device::BluetoothGattConnection> connection);
-
   void OnConnectError(ConnectToDeviceCallback callback,
                       device::BluetoothDevice::ConnectErrorCode error_code);
+
+  void OnSetDiscoverable(SetDiscoverableCallback callback);
+  void OnSetDiscoverableError(SetDiscoverableCallback callback);
 
   void OnStartDiscoverySession(
       StartDiscoverySessionCallback callback,
       std::unique_ptr<device::BluetoothDiscoverySession> session);
-
   void OnDiscoverySessionError(StartDiscoverySessionCallback callback);
 
   void OnConnectToService(ConnectToServiceInsecurelyCallback callback,
                           scoped_refptr<device::BluetoothSocket> socket);
-
   void OnConnectToServiceError(ConnectToServiceInsecurelyCallback callback,
                                const std::string& message);
 

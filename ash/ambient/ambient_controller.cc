@@ -300,6 +300,9 @@ void AmbientController::OnPowerStatusChanged() {
 
 void AmbientController::ScreenBrightnessChanged(
     const power_manager::BacklightBrightnessChange& change) {
+  DVLOG(1) << "ScreenBrightnessChanged: "
+           << (change.has_percent() ? change.percent() : -1);
+
   if (!change.has_percent())
     return;
 
@@ -307,6 +310,8 @@ void AmbientController::ScreenBrightnessChanged(
   if (change.percent() < kMinBrightness) {
     if (is_screen_off_)
       return;
+
+    DVLOG(1) << "Screen is off, close ambient mode.";
     is_screen_off_ = true;
     // If screen is off, turn everything off. This covers:
     //   1. Manually turn screen off.
@@ -332,7 +337,14 @@ void AmbientController::ScreenBrightnessChanged(
 
 void AmbientController::ScreenIdleStateChanged(
     const power_manager::ScreenIdleState& idle_state) {
+  DVLOG(1) << "ScreenIdleStateChanged: dimmed(" << idle_state.dimmed()
+           << ") off(" << idle_state.off() << ")";
+
   if (!IsAmbientModeEnabled())
+    return;
+
+  // "off" state should already be handled by the screen brightness handler.
+  if (idle_state.off())
     return;
 
   if (!idle_state.dimmed())
@@ -361,6 +373,8 @@ void AmbientController::RemoveAmbientViewDelegateObserver(
 }
 
 void AmbientController::ShowUi(AmbientUiMode mode) {
+  DVLOG(1) << "ShowUi: " << mode;
+
   // TODO(meilinw): move the eligibility check to the idle entry point once
   // implemented: b/149246117.
   if (!IsAmbientModeEnabled()) {

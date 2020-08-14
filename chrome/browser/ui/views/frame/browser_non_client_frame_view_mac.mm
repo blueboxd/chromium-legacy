@@ -214,8 +214,13 @@ void BrowserNonClientFrameViewMac::UpdateFullscreenTopUI() {
   browser_view()->browser()->FullscreenTopUIStateChanged();
 
   // Re-layout if toolbar style changes in fullscreen mode.
-  if (frame()->IsFullscreen())
+  if (frame()->IsFullscreen()) {
     browser_view()->Layout();
+    // The web frame toolbar is visible in fullscreen mode on Mac and thus
+    // requires a re-layout when in fullscreen.
+    if (web_app_frame_toolbar())
+      InvalidateLayout();
+  }
 }
 
 bool BrowserNonClientFrameViewMac::ShouldHideTopUIForFullscreen() const {

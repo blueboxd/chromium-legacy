@@ -41,15 +41,15 @@ GEN('#endif');
   ['NetworkConfigElementBehavior', 'network_config_element_behavior_test.js',
     []
   ],
-].forEach(test => registerTest(...test));
+].forEach(test => registerTest('Network', 'internet-config-dialog', ...test));
 // clang-format on
 
-function registerTest(testName, module, deps) {
-  const className = `CrComponents${testName}Test`;
+function registerTest(componentName, webuiHost, testName, module, deps) {
+  const className = `${componentName}${testName}Test`;
   this[className] = class extends PolymerTest {
     /** @override */
     get browsePreload() {
-      return `chrome://internet-config-dialog/test_loader.html?module=cr_components/chromeos/${module}`;
+      return `chrome://${webuiHost}/test_loader.html?module=cr_components/chromeos/${module}`;
     }
 
     /** @override */

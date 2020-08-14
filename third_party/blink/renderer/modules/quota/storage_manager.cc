@@ -189,6 +189,10 @@ void StorageManager::OnQuotaChange() {
 void StorageManager::AddedEventListener(
     const AtomicString& event_type,
     RegisteredEventListener& registered_listener) {
+  if (!quota_host_.is_bound()) {
+    // This method will bind quota_host_.
+    GetQuotaHost(GetExecutionContext());
+  }
   EventTargetWithInlineData::AddedEventListener(event_type,
                                                 registered_listener);
   StartObserving();
@@ -230,7 +234,7 @@ void StorageManager::PermissionRequestComplete(ScriptPromiseResolver* resolver,
 }
 
 void StorageManager::StartObserving() {
-  if (change_listener_receiver_.is_bound() || quota_host_.is_bound())
+  if (change_listener_receiver_.is_bound())
     return;
 
   // Using kMiscPlatformAPI because the Storage specification does not

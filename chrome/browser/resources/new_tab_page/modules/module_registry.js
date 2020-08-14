@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {addSingletonGetter} from 'chrome://resources/js/cr.m.js';
+
 import {ModuleDescriptor} from './module_descriptor.js';
 
 /**
@@ -10,22 +12,29 @@ import {ModuleDescriptor} from './module_descriptor.js';
  */
 
 export class ModuleRegistry {
-  /** @param {!Array<!ModuleDescriptor>} moduleDescriptors */
-  constructor(moduleDescriptors) {
+  constructor() {
     /** @private {!Array<!ModuleDescriptor>} */
-    this.moduleDescriptors_ = moduleDescriptors;
+    this.descriptors_ = [];
   }
 
   /**
-   * Instantiates modules and appends them to |container|.
-   * @param {!Element} container
+   * Registers modules via their descriptors.
+   * @param {!Array<!ModuleDescriptor>} descriptors
    */
-  async instantiateModules(container) {
-    (await Promise.all(
-         this.moduleDescriptors_.map(descriptor => descriptor.create())))
-        .filter(module => !!module)
-        .forEach(element => {
-          container.appendChild(element);
-        });
+  registerModules(descriptors) {
+    /** @type {!Array<!ModuleDescriptor>} */
+    this.descriptors_ = descriptors;
+  }
+
+  /**
+   * Initializes the modules previously set via |registerModules| and returns
+   * the initialized descriptors.
+   * @return {!Promise<!Array<!ModuleDescriptor>>}
+   */
+  async initializeModules() {
+    await Promise.all(this.descriptors_.map(d => d.initialize()));
+    return this.descriptors_.filter(descriptor => !!descriptor.element);
   }
 }
+
+addSingletonGetter(ModuleRegistry);

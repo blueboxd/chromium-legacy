@@ -457,6 +457,7 @@ installer::InstallStatus RenameChromeExecutables(
   // TODO(grt): Clean this up; https://crbug.com/577816.
   HKEY reg_root = installer_state->root_key();
   const base::string16 clients_key = install_static::GetClientsKeyPath();
+
   install_list->AddDeleteRegValueWorkItem(reg_root, clients_key,
                                           KEY_WOW64_32KEY,
                                           google_update::kRegOldVersionField);
@@ -466,6 +467,22 @@ installer::InstallStatus RenameChromeExecutables(
   install_list->AddDeleteRegValueWorkItem(reg_root, clients_key,
                                           KEY_WOW64_32KEY,
                                           google_update::kRegRenameCmdField);
+
+  // If a channel was specified by policy, update the "channel" registry value
+  // with it so that the browser knows which channel to use, otherwise delete
+  // whatever value that key holds.
+  const auto& install_details = install_static::InstallDetails::Get();
+  if (install_details.channel_origin() ==
+      install_static::ChannelOrigin::kPolicy) {
+    install_list->AddSetRegValueWorkItem(reg_root, clients_key, KEY_WOW64_32KEY,
+                                         google_update::kRegChannelField,
+                                         install_details.channel(), true);
+  } else {
+    install_list->AddDeleteRegValueWorkItem(reg_root, clients_key,
+                                            KEY_WOW64_32KEY,
+                                            google_update::kRegChannelField);
+  }
+
   // old_chrome.exe is still in use in most cases, so ignore failures here.
   install_list->AddDeleteTreeWorkItem(chrome_old_exe, temp_path.path())
       ->set_best_effort(true);

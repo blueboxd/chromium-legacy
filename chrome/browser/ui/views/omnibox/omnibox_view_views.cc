@@ -2465,7 +2465,7 @@ gfx::Range OmniboxViewViews::GetSimplifiedDomainBounds(
   // TODO(estark): push this inside ParseForEmphasizeComponents()?
   base::string16 simplified_domain = url_formatter::IDNToUnicode(
       net::registry_controlled_domains::GetDomainAndRegistry(
-          url, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES));
+          url, net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES));
 
   if (simplified_domain.empty()) {
     ranges_surrounding_simplified_domain->emplace_back(0, host.begin);

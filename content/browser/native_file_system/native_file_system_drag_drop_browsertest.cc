@@ -38,10 +38,6 @@ class NativeFileSystemDragDropBrowserTest : public ContentBrowserTest {
     // Enable experimental web platform features to enable write access.
     command_line->AppendSwitch(
         switches::kEnableExperimentalWebPlatformFeatures);
-    // TODO(hazimmohamed): Remove this switch when NativeFileSystemDragAndDrop
-    // becomes part of kEnableExperimentalWebPlatformFeatures.
-    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
-                                    "NativeFileSystemDragAndDrop");
   }
 
   void TearDown() override {

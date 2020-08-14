@@ -72,7 +72,7 @@ void ThreadedWorkletMessagingProxy::Initialize(
           kV8CacheOptionsDefault, module_responses_map,
           mojo::NullRemote() /* browser_interface_broker */,
           BeginFrameProviderParams(), nullptr /* parent_feature_policy */,
-          window->GetAgentClusterID());
+          window->GetAgentClusterID(), window->GetExecutionContextToken());
 
   // Worklets share the pre-initialized backing thread so that we don't have to
   // specify the backing thread startup data.

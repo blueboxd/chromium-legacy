@@ -270,7 +270,13 @@ class StartStopThread : public SimpleThread {
   WaitableEvent* event_;
 };
 
-TEST_F(SamplingHeapProfilerTest, StartStop) {
+// Flaky on Mac. crbug.com/1116543
+#if defined(OS_MAC)
+#define MAYBE_StartStop DISABLED_StartStop
+#else
+#define MAYBE_StartStop StartStop
+#endif
+TEST_F(SamplingHeapProfilerTest, MAYBE_StartStop) {
   auto* profiler = SamplingHeapProfiler::Get();
   EXPECT_EQ(0, GetRunningSessionsCount());
   profiler->Start();

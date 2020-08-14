@@ -113,13 +113,6 @@ WorkerFetchContext::GetContentSecurityPolicyForWorld(
   return GetContentSecurityPolicy();
 }
 
-bool WorkerFetchContext::ShouldBypassMainWorldCSP() const {
-  // This method was introduced to bypass the page's CSP while running the
-  // script from an isolated world (ex: Chrome extensions). But worker threads
-  // doesn't have any isolated world. So we can just return false.
-  return false;
-}
-
 bool WorkerFetchContext::IsSVGImageChromeClient() const {
   return false;
 }

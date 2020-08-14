@@ -52,6 +52,7 @@ constexpr uint32_t kMaxXdgShellVersion = 1;
 constexpr uint32_t kMaxDeviceManagerVersion = 3;
 constexpr uint32_t kMaxWpPresentationVersion = 1;
 constexpr uint32_t kMaxTextInputManagerVersion = 1;
+constexpr uint32_t kMinAuraShellVersion = 10;
 constexpr uint32_t kMinWlDrmVersion = 2;
 constexpr uint32_t kMinWlOutputVersion = 2;
 }  // namespace
@@ -365,6 +366,15 @@ void WaylandConnection::Global(void* data,
     auto wayland_drm = wl::Bind<struct wl_drm>(registry, name, version);
     connection->drm_ =
         std::make_unique<WaylandDrm>(wayland_drm.release(), connection);
+  } else if (!connection->aura_shell_ &&
+             (strcmp(interface, "zaura_shell") == 0) &&
+             version >= kMinAuraShellVersion) {
+    connection->aura_shell_ =
+        wl::Bind<struct zaura_shell>(registry, name, version);
+    if (!connection->aura_shell_) {
+      LOG(ERROR) << "Failed to bind zaura_shell";
+      return;
+    }
   }
 
   connection->ScheduleFlush();

@@ -6,11 +6,13 @@
 #define CHROME_BROWSER_NEARBY_SHARING_CERTIFICATES_NEARBY_SHARE_CERTIFICATE_MANAGER_IMPL_H_
 
 #include <memory>
+#include <vector>
 
-#include "base/containers/span.h"
 #include "chrome/browser/nearby_sharing/certificates/nearby_share_certificate_manager.h"
+#include "chrome/browser/nearby_sharing/certificates/nearby_share_encrypted_metadata_key.h"
 #include "chrome/browser/nearby_sharing/certificates/nearby_share_private_certificate.h"
 #include "chrome/browser/nearby_sharing/certificates/nearby_share_visibility.h"
+#include "chrome/browser/nearby_sharing/proto/rpc_resources.pb.h"
 
 // TODO(nohle): Add description after class is fully implemented.
 class NearbyShareCertificateManagerImpl : public NearbyShareCertificateManager {
@@ -36,9 +38,11 @@ class NearbyShareCertificateManagerImpl : public NearbyShareCertificateManager {
   // NearbyShareCertificateManager:
   NearbySharePrivateCertificate GetValidPrivateCertificate(
       NearbyShareVisibility visibility) override;
+  std::vector<nearbyshare::proto::PublicCertificate>
+  GetPrivateCertificatesAsPublicCertificates(
+      NearbyShareVisibility visibility) override;
   void GetDecryptedPublicCertificate(
-      base::span<const uint8_t> encrypted_metadata_key,
-      base::span<const uint8_t> salt,
+      NearbyShareEncryptedMetadataKey encrypted_metadata_key,
       CertDecryptedCallback callback) override;
   void DownloadPublicCertificates() override;
   void OnStart() override;

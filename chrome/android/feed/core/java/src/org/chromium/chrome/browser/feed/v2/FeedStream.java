@@ -45,16 +45,12 @@ public class FeedStream implements Stream {
     final FeedStreamSurface mFeedStreamSurface;
     private final ObserverList<ScrollListener> mScrollListeners =
             new ObserverList<ScrollListener>();
-    private boolean mShown;
     private RecyclerView mRecyclerView;
-    // setStreamContentVisibility() is always called once after onCreate(). So we can assume the
-    // stream content is hidden initially and it can be made visible later when
-    // setStreamContentVisibility() is called.
-    private boolean mIsStreamContentVisible;
     // For loading more content.
     private int mAccumulatedDySinceLastLoadMore;
 
-    private String mSavedScrollStateOnHide;
+    private String mScrollStateToRestore;
+    private RestoreScrollObserver mRestoreScrollObserver = new RestoreScrollObserver();
 
     public FeedStream(Activity activity, boolean isBackgroundDark, SnackbarManager snackbarManager,
             NativePageNavigationDelegate nativePageNavigationDelegate,
@@ -67,35 +63,27 @@ public class FeedStream implements Stream {
 
     @Override
     public void onCreate(@Nullable String savedInstanceState) {
+        mScrollStateToRestore = savedInstanceState;
         setupRecyclerView();
-        if (savedInstanceState != null && !savedInstanceState.isEmpty()) {
-            restoreScrollState(savedInstanceState);
-        }
     }
 
     @Override
     public void onShow() {
-        mShown = true;
-        if (mIsStreamContentVisible && !mFeedStreamSurface.isOpened()) {
-            mFeedStreamSurface.surfaceOpened();
-            if (mSavedScrollStateOnHide != null) {
-                restoreScrollState(mSavedScrollStateOnHide);
-                mSavedScrollStateOnHide = null;
-            }
-        }
+        mFeedStreamSurface.setStreamVisibility(true);
     }
 
     @Override
     public void onHide() {
+        mScrollStateToRestore = null;
         if (mFeedStreamSurface.isOpened()) {
-            mSavedScrollStateOnHide = getSavedInstanceStateString();
-            mFeedStreamSurface.surfaceClosed();
+            mScrollStateToRestore = getSavedInstanceStateString();
         }
-        mShown = false;
+        mFeedStreamSurface.setStreamVisibility(false);
     }
 
     @Override
     public void onDestroy() {
+        mScrollStateToRestore = null;
         mFeedStreamSurface.destroy();
     }
 
@@ -141,18 +129,7 @@ public class FeedStream implements Stream {
 
     @Override
     public void setStreamContentVisibility(boolean visible) {
-        if (visible == mIsStreamContentVisible) {
-            return;
-        }
-        mIsStreamContentVisible = visible;
-
-        if (visible) {
-            if (mShown) mFeedStreamSurface.surfaceOpened();
-        } else {
-            if (mFeedStreamSurface.isOpened()) {
-                mFeedStreamSurface.surfaceClosed();
-            }
-        }
+        mFeedStreamSurface.setStreamContentVisibility(visible);
     }
 
     @Override
@@ -225,8 +202,6 @@ public class FeedStream implements Stream {
     public void triggerRefresh() {}
 
     private void setupRecyclerView() {
-        assert (!mIsStreamContentVisible);
-
         mRecyclerView = (RecyclerView) mFeedStreamSurface.getView();
         mRecyclerView.setId(R.id.feed_stream_recycler_view);
         mRecyclerView.setClipToPadding(false);
@@ -247,13 +222,12 @@ public class FeedStream implements Stream {
                 }
             }
         });
+        mRecyclerView.getAdapter().registerAdapterDataObserver(mRestoreScrollObserver);
     }
 
     @VisibleForTesting
     void checkScrollingForLoadMore(int dy) {
-        if (!mIsStreamContentVisible) {
-            return;
-        }
+        if (!mFeedStreamSurface.isOpened()) return;
 
         mAccumulatedDySinceLastLoadMore += dy;
         if (mAccumulatedDySinceLastLoadMore < TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
@@ -268,17 +242,45 @@ public class FeedStream implements Stream {
         }
     }
 
-    private void restoreScrollState(String savedInstanceState) {
+    /**
+     * Restores the scroll state serialized to |savedInstanceState|.
+     * @return true if the scroll state was restored, or if the state could never be restored.
+     * false if we need to wait until more items are added to the recycler view to make it
+     * scrollable.
+     */
+    private boolean restoreScrollState(String savedInstanceState) {
+        assert (mRecyclerView != null);
+        int scrollPosition;
+        int scrollOffset;
         try {
             JSONObject jsonSavedState = new JSONObject(savedInstanceState);
-            LinearLayoutManager layoutManager =
-                    (LinearLayoutManager) mRecyclerView.getLayoutManager();
-            if (layoutManager != null) {
-                layoutManager.scrollToPositionWithOffset(jsonSavedState.getInt(SCROLL_POSITION),
-                        jsonSavedState.getInt(SCROLL_OFFSET));
-            }
+            scrollPosition = jsonSavedState.getInt(SCROLL_POSITION);
+            scrollOffset = jsonSavedState.getInt(SCROLL_OFFSET);
         } catch (JSONException e) {
             Log.d(TAG, "Unable to parse a JSONObject from a string.");
+            return true;
         }
+
+        // If too few items exist, defer scrolling until later.
+        if (mRecyclerView.getAdapter().getItemCount() <= scrollPosition) return false;
+
+        LinearLayoutManager layoutManager = (LinearLayoutManager) mRecyclerView.getLayoutManager();
+        if (layoutManager != null) {
+            layoutManager.scrollToPositionWithOffset(scrollPosition, scrollOffset);
+        }
+        return true;
     }
+
+    // Scroll state can't be restored until enough items are added to the recycler view adapter.
+    // Attempts to restore scroll state every time new items are added to the adapter.
+    class RestoreScrollObserver extends RecyclerView.AdapterDataObserver {
+        @Override
+        public void onItemRangeInserted(int positionStart, int itemCount) {
+            if (mScrollStateToRestore != null) {
+                if (restoreScrollState(mScrollStateToRestore)) {
+                    mScrollStateToRestore = null;
+                }
+            }
+        }
+    };
 }

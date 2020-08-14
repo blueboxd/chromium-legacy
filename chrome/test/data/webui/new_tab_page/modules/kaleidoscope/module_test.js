@@ -8,7 +8,8 @@ import {isVisible} from 'chrome://test/test_util.m.js';
 suite('NewTabPageModulesKaleidoscopeModuleTest', () => {
   test('creates module', async () => {
     // Act.
-    const module = await kaleidoscopeDescriptor.create();
+    await kaleidoscopeDescriptor.initialize();
+    const module = kaleidoscopeDescriptor.element;
     document.body.append(module);
     module.$.tileList.render();
 

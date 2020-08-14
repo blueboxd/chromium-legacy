@@ -37,6 +37,12 @@ class AndroidAppCommunication : public base::SupportsUserData::Data {
       base::OnceCallback<void(const base::Optional<std::string>& error_message,
                               bool is_ready_to_pay)>;
 
+  using InvokePaymentAppCallback =
+      base::OnceCallback<void(const base::Optional<std::string>& error_message,
+                              bool is_activity_result_ok,
+                              const std::string& payment_method_identifier,
+                              const std::string& stringified_details)>;
+
   // Returns a weak pointer to the instance of AndroidAppCommunication that is
   // owned by the given |context|, which should not be null.
   static base::WeakPtr<AndroidAppCommunication> GetForBrowserContext(
@@ -65,6 +71,17 @@ class AndroidAppCommunication : public base::SupportsUserData::Data {
                             const GURL& payment_request_origin,
                             const std::string& payment_request_id,
                             IsReadyToPayCallback callback) = 0;
+
+  // Invokes the PAY activity to initiate the payment flow.
+  virtual void InvokePaymentApp(
+      const std::string& package_name,
+      const std::string& activity_name,
+      const std::map<std::string, std::set<std::string>>&
+          stringified_method_data,
+      const GURL& top_level_origin,
+      const GURL& payment_request_origin,
+      const std::string& payment_request_id,
+      InvokePaymentAppCallback callback) = 0;
 
   // Enables the testing mode.
   virtual void SetForTesting() = 0;

@@ -5708,6 +5708,7 @@ Unknown properties are collapsed to zero. -->
   <int value="17" label="Reload"/>
   <int value="18" label="Guest"/>
   <int value="19" label="The frame has not comitted any navigations yet"/>
+  <int value="20" label="Same-site navigation on page that has unload handler"/>
 </enum>
 
 <enum name="BackForwardCacheDisabledForRenderFrameHostReason">
@@ -6248,6 +6249,7 @@ Called by update_bad_message_reasons.py.-->
   <int value="230" label="RFH_SUBFRAME_CAPTURE_ON_MAIN_FRAME"/>
   <int value="231" label="RFH_CSP_ATTRIBUTE"/>
   <int value="232" label="RFH_RECEIVED_ASSOCIATED_MESSAGE_WHILE_BFCACHED"/>
+  <int value="233" label="RWH_CLOSE_PORTAL"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions">
@@ -28734,6 +28736,9 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3393" label="DOMWindowSetWindowRectCrossScreen"/>
   <int value="3394" label="FullscreenCrossScreen"/>
   <int value="3395" label="BatterySavingsMeta"/>
+  <int value="3396" label="DigitalGoodsGetDigitalGoodsService"/>
+  <int value="3397" label="DigitalGoodsGetDetails"/>
+  <int value="3398" label="DigitalGoodsAcknowledge"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">

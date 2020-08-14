@@ -135,6 +135,8 @@ TEST_P(ValidationMessageOverlayDelegateTest,
   EXPECT_EQ(external_clock.CurrentTime(), internal_clock.CurrentTime());
 
   GetPage().SetValidationMessageClientForTesting(original_client);
+
+  static_cast<ValidationMessageClient*>(client)->WillBeDestroyed();
 }
 
 }  // namespace blink

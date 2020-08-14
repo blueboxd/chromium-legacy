@@ -163,9 +163,9 @@ class InstallUtil {
                                  const base::string16& arguments,
                                  base::CommandLine* command_line);
 
-  // Appends the installer switch that selects the current install mode (see
-  // install_static::InstallDetails).
-  static void AppendModeSwitch(base::CommandLine* command_line);
+  // Appends the installer switch that selects the current install mode and
+  // policy-specified channel (see install_static::InstallDetails).
+  static void AppendModeAndChannelSwitches(base::CommandLine* command_line);
 
   // Returns a string in the form YYYYMMDD of the current date.
   static base::string16 GetCurrentDate();

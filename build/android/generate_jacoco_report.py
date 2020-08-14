@@ -61,18 +61,19 @@ def _CreateClassfileArgs(class_files, exclude_suffix=None):
   return result_class_files
 
 
-def _GenerateReportOutputArgs(args, class_files):
+def _GenerateReportOutputArgs(args, class_files, report_type):
   class_jar_exclude = None
-  if args.device_or_host == 'device':
+  if report_type == 'device':
     class_jar_exclude = _DEVICE_CLASS_EXCLUDE_SUFFIX
-  elif args.device_or_host == 'host':
+  elif report_type == 'host':
     class_jar_exclude = _HOST_CLASS_EXCLUDE_SUFFIX
 
   cmd = _CreateClassfileArgs(class_files, class_jar_exclude)
   if args.format == 'html':
-    if not os.path.exists(args.output_dir):
-      os.makedirs(args.output_dir)
-    cmd += ['--html', args.output_dir]
+    report_dir = os.path.join(args.output_dir, report_type)
+    if not os.path.exists(report_dir):
+      os.makedirs(report_dir)
+    cmd += ['--html', report_dir]
   elif args.format == 'xml':
     cmd += ['--xml', args.output_file]
   elif args.format == 'csv':
@@ -118,7 +119,8 @@ def _ParseArguments(parser):
       choices=['device', 'host'],
       help='Selection on whether to use the device classpath files or the '
       'host classpath files. Host would typically be used for junit tests '
-      ' and device for tests that run on the device.')
+      ' and device for tests that run on the device. Only used for xml and csv'
+      ' reports.')
   parser.add_argument('--output-dir', help='html report output directory.')
   parser.add_argument('--output-file',
                       help='xml file to write device coverage results.')
@@ -152,17 +154,16 @@ def _ParseArguments(parser):
       'runtime.')
   args = parser.parse_args()
 
-  if args.format in ('csv', 'html'):
-    if not args.output_dir:
-      parser.error('--output-dir needed for report.')
-  if args.format == 'xml' and not args.output_file:
-    parser.error(('--output-junit-coverage-file/--output-device-coverage-file '
-                  'needed for xml/csv reports.'))
+  if args.format == 'html' and not args.output_dir:
+    parser.error('--output-dir needed for report.')
+  if args.format in ('csv', 'xml'):
+    if not args.output_file:
+      parser.error('--output-file needed for xml/csv reports.')
+    if not args.device_or_host and args.sources_json_dir:
+      parser.error('--device-or-host selection needed with --sources-json-dir')
 
   if not (args.sources_json_dir or args.class_files):
     parser.error('At least either --sources-json-dir or --class-files needed.')
-  if not args.device_or_host and args.sources_json_dir:
-    parser.error('--device-or-host selection needed with --sources-json-dir')
 
   return args
 
@@ -213,8 +214,18 @@ def main():
   for source in fixed_source_dirs:
     cmd += ['--sourcefiles', source]
 
-  cmd = cmd + _GenerateReportOutputArgs(args, class_files)
-  exit_code = cmd_helper.RunCmd(cmd)
+  if args.format == 'html':
+    # Both reports are generated for html as the cq bot generates an html
+    # report and we wouldn't know which one a developer needed.
+    device_cmd = cmd + _GenerateReportOutputArgs(args, class_files, 'device')
+    host_cmd = cmd + _GenerateReportOutputArgs(args, class_files, 'host')
+    device_exit_code = cmd_helper.RunCmd(device_cmd)
+    host_exit_code = cmd_helper.RunCmd(host_cmd)
+    exit_code = device_exit_code or host_exit_code
+  else:
+    cmd = cmd + _GenerateReportOutputArgs(args, class_files,
+                                          args.device_or_host)
+    exit_code = cmd_helper.RunCmd(cmd)
 
   if args.cleanup:
     for f in coverage_files:

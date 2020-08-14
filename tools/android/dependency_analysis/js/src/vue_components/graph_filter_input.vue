@@ -3,7 +3,7 @@
      found in the LICENSE file. -->
 
 <template>
-  <div class="user-input-group">
+  <div>
     <label
         class="md-subheading"
         for="filter-input">

@@ -54,6 +54,7 @@ class WaylandConnection {
   wl_subcompositor* subcompositor() const { return subcompositor_.get(); }
   xdg_wm_base* shell() const { return shell_.get(); }
   zxdg_shell_v6* shell_v6() const { return shell_v6_.get(); }
+  zaura_shell* aura_shell() const { return aura_shell_.get(); }
   wl_seat* seat() const { return seat_.get(); }
   wp_presentation* presentation() const { return presentation_.get(); }
   zwp_text_input_manager_v1* text_input_manager_v1() const {
@@ -165,6 +166,7 @@ class WaylandConnection {
   wl::Object<wp_presentation> presentation_;
   wl::Object<zcr_keyboard_extension_v1> keyboard_extension_v1_;
   wl::Object<zwp_text_input_manager_v1> text_input_manager_v1_;
+  wl::Object<zaura_shell> aura_shell_;
 
   // Event source instance. Must be declared before input objects so it
   // outlives them so thus being able to properly handle their destruction.

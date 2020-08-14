@@ -6,9 +6,14 @@ import {$$, dummyDescriptor} from 'chrome://new-tab-page/new_tab_page.js';
 import {isVisible} from 'chrome://test/test_util.m.js';
 
 suite('NewTabPageModulesDummyModuleTest', () => {
+  setup(() => {
+    PolymerTest.clearBody();
+  });
+
   test('creates module', async () => {
     // Act.
-    const module = await dummyDescriptor.create();
+    await dummyDescriptor.initialize();
+    const module = dummyDescriptor.element;
     document.body.append(module);
     module.$.tileList.render();
 

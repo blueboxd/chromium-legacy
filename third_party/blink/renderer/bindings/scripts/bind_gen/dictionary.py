@@ -373,7 +373,7 @@ def make_dict_member_get(cg_context):
     member = cg_context.dict_member
     blink_member_name = _blink_member_name(member)
     name = blink_member_name.get_api
-    idl_type = member.idl_type
+    idl_type = member.idl_type.unwrap(typedef=True)
     blink_type = blink_type_info(idl_type)
     const_ref_t = blink_type.const_ref_t
     ref_t = blink_type.ref_t
@@ -411,10 +411,33 @@ def make_dict_member_get(cg_context):
             TextNode(_format("return {};", blink_member_name.value_var)),
         ])
 
-    if not _is_member_always_present(member):
-        name = blink_member_name.get_or_api
-        arg_decls = [_format("{} fallback_value", blink_type.value_t)]
+    if idl_type.is_numeric or idl_type.unwrap().is_string:
+        arg_type = blink_type.const_ref_t
         return_type = blink_type.value_t
+    elif idl_type.unwrap().is_enumeration:
+        arg_type = ("base::nullopt_t"
+                    if idl_type.is_nullable else blink_type.value_t)
+        return_type = blink_type.value_t
+    elif idl_type.unwrap().is_dictionary:
+        arg_type = "nullptr_t"
+        return_type = blink_type.const_ref_t
+    elif idl_type.unwrap().type_definition_object:
+        arg_type = "nullptr_t"
+        return_type = blink_type.ref_t
+    elif idl_type.is_nullable and (idl_type.unwrap().is_sequence
+                                   or idl_type.unwrap().is_frozen_array
+                                   or idl_type.unwrap().is_record):
+        arg_type = "base::nullopt_t"
+        return_type = blink_type.value_t
+    else:
+        arg_type = None
+        return_type = None
+
+    if arg_type is not None or return_type is not None:
+        assert arg_type is not None and return_type is not None
+
+        name = blink_member_name.get_or_api
+        arg_decls = [_format("{} fallback_value", arg_type)]
 
         def should_be_defined_in_source(member):
             # sequence<Dictionary> and record<String, Dictionary> are

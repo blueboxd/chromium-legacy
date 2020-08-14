@@ -78,7 +78,7 @@ void LinkImport::Process() {
   network::mojom::ReferrerPolicy referrer_policy = owner_->GetReferrerPolicy();
   resource_request.SetReferrerPolicy(referrer_policy);
 
-  ResourceLoaderOptions options;
+  ResourceLoaderOptions options(GetExecutionContext()->GetCurrentWorld());
   options.initiator_info.name = owner_->localName();
 
   FetchParameters params(std::move(resource_request), options);

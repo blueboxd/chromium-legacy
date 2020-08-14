@@ -77,7 +77,7 @@ void ElevateIfNeededToReenableUpdates() {
 
   base::CommandLine cmd(exe_path);
   cmd.AppendSwitch(installer::switches::kReenableAutoupdates);
-  InstallUtil::AppendModeSwitch(&cmd);
+  InstallUtil::AppendModeAndChannelSwitches(&cmd);
   if (system_install)
     cmd.AppendSwitch(installer::switches::kSystemLevel);
   if (product_state.uninstall_command().HasSwitch(

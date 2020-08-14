@@ -1360,7 +1360,8 @@ Polymer({
     if (this.screenMode_ == AuthMode.AD_AUTH)
       chrome.send('cancelAdAuthentication');
 
-    if (this.isClosable_())
+    // Only close oobe dialog when it is the first screen in add user flow.
+    if (this.isClosable_() && !this.childSpecificSigninFeatureEnabled_)
       Oobe.showUserPods();
     else
       Oobe.resetSigninUI(true);

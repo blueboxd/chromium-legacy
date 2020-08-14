@@ -1440,8 +1440,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   network::CrossOriginOpenerPolicy cross_origin_opener_policy() const {
     return cross_origin_opener_policy_;
   }
-  void set_cross_origin_opener_policy(network::CrossOriginOpenerPolicy policy) {
-    cross_origin_opener_policy_ = policy;
+  void set_cross_origin_opener_policy_for_testing(
+      const network::CrossOriginOpenerPolicy& cross_origin_opener_policy) {
+    cross_origin_opener_policy_ = cross_origin_opener_policy;
   }
   CrossOriginOpenerPolicyReporter* coop_reporter() {
     return coop_reporter_.get();
@@ -1464,6 +1465,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void DidCommitBackForwardCacheNavigation(
       NavigationRequest* committing_navigation_request,
       std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params> params);
+
+  // Whether there's any "unload" event handlers registered on this frame or
+  // subframes that share the same SiteInstance as this frame.
+  bool UnloadHandlerExistsInSameSiteInstance();
 
   bool has_committed_any_navigation() const {
     return has_committed_any_navigation_;

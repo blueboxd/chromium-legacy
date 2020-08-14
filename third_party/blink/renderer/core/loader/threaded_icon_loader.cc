@@ -38,7 +38,8 @@ void ThreadedIconLoader::Start(
   icon_callback_ = std::move(callback);
   resize_dimensions_ = resize_dimensions;
 
-  ResourceLoaderOptions resource_loader_options;
+  ResourceLoaderOptions resource_loader_options(
+      execution_context->GetCurrentWorld());
   if (execution_context->IsWorkerGlobalScope())
     resource_loader_options.request_initiator_context = kWorkerContext;
 

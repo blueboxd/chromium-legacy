@@ -320,11 +320,16 @@ class LauncherSearch {
   createSearchResult_(entry) {
     // TODO(yawano): Use filetype_folder_shared.png for a shared
     //     folder.
+    // TODO(yawano): Add archive launcher filetype icon.
     let icon = FileType.getIcon(entry);
-
-    if (icon === 'UNKNOWN') {
+    if (icon === 'UNKNOWN' || icon === 'archive') {
       icon = 'generic';
     }
+
+    const useHighDpiIcon = window.devicePixelRatio > 1.0;
+    const iconUrl = chrome.runtime.getURL(
+        'foreground/images/launcher_filetypes/' +
+        (useHighDpiIcon ? '2x/' : '') + 'launcher_filetype_' + icon + '.png');
 
     // Hide extensions for hosted files.
     const title = FileType.isHosted(entry) ?
@@ -335,7 +340,7 @@ class LauncherSearch {
     return {
       itemId: entry.toURL(),
       title: title,
-      iconType: icon,
+      iconUrl: iconUrl,
       // Relevance is set as 2 for all results as a temporary
       // implementation. 2 is the middle value.
       // TODO(yawano): Implement practical relevance calculation.

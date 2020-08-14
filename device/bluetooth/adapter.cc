@@ -84,6 +84,17 @@ void Adapter::SetClient(mojo::PendingRemote<mojom::AdapterClient> client,
   std::move(callback).Run();
 }
 
+void Adapter::SetDiscoverable(bool discoverable,
+                              SetDiscoverableCallback callback) {
+  auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
+  adapter_->SetDiscoverable(
+      discoverable,
+      base::BindOnce(&Adapter::OnSetDiscoverable,
+                     weak_ptr_factory_.GetWeakPtr(), copyable_callback),
+      base::BindOnce(&Adapter::OnSetDiscoverableError,
+                     weak_ptr_factory_.GetWeakPtr(), copyable_callback));
+}
+
 void Adapter::StartDiscoverySession(StartDiscoverySessionCallback callback) {
   auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
   adapter_->StartDiscoverySession(
@@ -168,6 +179,14 @@ void Adapter::OnConnectError(
     device::BluetoothDevice::ConnectErrorCode error_code) {
   std::move(callback).Run(mojo::ConvertTo<mojom::ConnectResult>(error_code),
                           /*device=*/mojo::NullRemote());
+}
+
+void Adapter::OnSetDiscoverable(SetDiscoverableCallback callback) {
+  std::move(callback).Run(/*success=*/true);
+}
+
+void Adapter::OnSetDiscoverableError(SetDiscoverableCallback callback) {
+  std::move(callback).Run(/*success=*/false);
 }
 
 void Adapter::OnStartDiscoverySession(

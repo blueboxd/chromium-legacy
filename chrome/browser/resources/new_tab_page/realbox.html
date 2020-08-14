@@ -4,23 +4,10 @@
     border-radius: calc(0.5 * var(--ntp-realbox-height));
     box-shadow: 0 1px 6px 0 rgba(32, 33, 36, .28);
     height: var(--ntp-realbox-height);
-    width: 337px;
   }
 
   :host([matches-are-visible]) {
     box-shadow: none;
-  }
-
-  @media (min-width: 560px) {
-    :host {
-      width: 449px;
-    }
-  }
-
-  @media (min-width: 672px) {
-    :host {
-      width: 561px;
-    }
   }
 
   #inputWrapper {
@@ -30,8 +17,8 @@
 
   input {
     background-color: var(--search-box-bg, white);
-    border-radius: calc(0.5 * var(--ntp-realbox-height));
     border: none;
+    border-radius: calc(0.5 * var(--ntp-realbox-height));
     color: var(--search-box-text);
     font-size: 16px;
     height: 100%;

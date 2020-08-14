@@ -14,6 +14,12 @@ namespace switches {
 // permissible.
 const char kAllowDowngrade[] = "allow-downgrade";
 
+// A channel name specified via administrative policy. This switch sets the
+// channel both of the installer and of the version of Chrome being installed.
+// This switch has no effect for secondary install modes (i.e., installs that
+// use --chrome-sxs or another mode switch).
+const char kChannel[] = "channel";
+
 // Create shortcuts for this user to point to a system-level install (which
 // must already be installed on the machine). The shortcuts created will
 // match the preferences of the already present system-level install as such

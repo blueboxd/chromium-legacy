@@ -119,7 +119,8 @@ void WebFramesManagerImpl::AddFrame(std::unique_ptr<WebFrame> frame) {
   DCHECK(frame);
   DCHECK(!frame->GetFrameId().empty());
   if (frame->IsMainFrame()) {
-    DCHECK(!main_web_frame_);
+    DCHECK(!main_web_frame_ ||
+           (main_web_frame_->GetFrameId() == frame->GetFrameId()));
     main_web_frame_ = frame.get();
   }
   DCHECK(web_frames_.count(frame->GetFrameId()) == 0);

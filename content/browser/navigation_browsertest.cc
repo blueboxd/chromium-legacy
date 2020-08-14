@@ -3367,7 +3367,7 @@ IN_PROC_BROWSER_TEST_F(DocumentPolicyBrowserTest,
 }
 
 // Test that scroll restoration works as expected with
-// Document-Policy: no-force-load-at-top
+// Document-Policy: force-load-at-top=?0
 IN_PROC_BROWSER_TEST_F(DocumentPolicyBrowserTest,
                        ScrollRestorationEnabledByDocumentPolicy) {
   net::test_server::ControllableHttpResponse response(embedded_test_server(),
@@ -3378,7 +3378,7 @@ IN_PROC_BROWSER_TEST_F(DocumentPolicyBrowserTest,
   RenderFrameSubmissionObserver frame_observer(main_contents);
   TestNavigationManager navigation_manager(main_contents, url);
 
-  // Load the document with document policy no-force-load-at-top
+  // Load the document with document policy force-load-at-top set to false.
   shell()->LoadURL(url);
   EXPECT_TRUE(navigation_manager.WaitForRequestStart());
   navigation_manager.ResumeNavigation();
@@ -3386,7 +3386,7 @@ IN_PROC_BROWSER_TEST_F(DocumentPolicyBrowserTest,
   response.Send(
       "HTTP/1.1 200 OK\r\n"
       "Content-Type: text/html; charset=utf-8\r\n"
-      "Document-Policy: no-force-load-at-top\r\n"
+      "Document-Policy: force-load-at-top=?0\r\n"
       "\r\n"
       "<p style='position: absolute; top: 10000px;'>Some text</p>");
   response.Done();
@@ -3462,7 +3462,7 @@ IN_PROC_BROWSER_TEST_F(DocumentPolicyBrowserTest,
 }
 
 // Test that element fragment anchor scrolling works as expected with
-// Document-Policy: no-force-load-at-top
+// Document-Policy: force-load-at-top=?0
 IN_PROC_BROWSER_TEST_F(DocumentPolicyBrowserTest,
                        FragmentAnchorEnabledByDocumentPolicy) {
   net::test_server::ControllableHttpResponse response(embedded_test_server(),
@@ -3486,7 +3486,7 @@ IN_PROC_BROWSER_TEST_F(DocumentPolicyBrowserTest,
   response.Send(
       "HTTP/1.1 200 OK\r\n"
       "Content-Type: text/html; charset=utf-8\r\n"
-      "Document-Policy: no-force-load-at-top\r\n"
+      "Document-Policy: force-load-at-top=?0\r\n"
       "\r\n"
       "<p id='text' style='position: absolute; top: 10000px;'>Some text</p>");
   response.Done();

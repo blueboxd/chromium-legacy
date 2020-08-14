@@ -62,7 +62,9 @@ NetworkChangeNotifier::ConnectionType ConvertConnectionType(
     const fuchsia::netstack::NetInterface& iface) {
   auto wlan = static_cast<decltype(iface.features)>(
       fuchsia::hardware::ethernet::INFO_FEATURE_WLAN);
-  if (!(iface.flags & fuchsia::netstack::NetInterfaceFlagUp)) {
+  auto up =
+      static_cast<decltype(iface.flags)>(fuchsia::netstack::NetInterfaceFlagUp);
+  if ((iface.flags & up) != up) {
     return NetworkChangeNotifier::CONNECTION_NONE;
   } else if ((iface.features & wlan) == wlan) {
     return NetworkChangeNotifier::CONNECTION_WIFI;

@@ -706,9 +706,6 @@ below:
         <message name="IDS_AX_ROLE_MENU_BAR" desc="Accessibility role description for a menu bar">
           menu bar
         </message>
-        <message name="IDS_AX_ROLE_MENU_BUTTON" desc="Accessibility role description for a menu button, a button that opens a menu">
-          menu button
-        </message>
         <message name="IDS_AX_ROLE_MENU_ITEM" desc="Accessibility role description for a menu item">
           menu item
         </message>

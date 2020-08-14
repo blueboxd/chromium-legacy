@@ -87,7 +87,7 @@ Resource* PreloadRequest::Start(Document* document) {
                                       PreviewsTypes::kSubresourceRedirectOn);
   }
 
-  ResourceLoaderOptions options;
+  ResourceLoaderOptions options(document->domWindow()->GetCurrentWorld());
   options.initiator_info = initiator_info;
   FetchParameters params(std::move(resource_request), options);
 

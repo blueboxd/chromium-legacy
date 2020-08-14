@@ -311,7 +311,23 @@ std::wstring ChannelFromAdditionalParameters(const InstallConstants& mode,
   // rules in the update configs.
   return std::wstring();
 }
-#endif
+
+bool GetChromeChannelNameFromString(const wchar_t* channel_test,
+                                    std::wstring& channel) {
+  if (!channel_test)
+    return false;
+  if (!*channel_test || !lstrcmpiW(channel_test, kChromeChannelStableExplicit))
+    channel = std::wstring();
+  else if (!lstrcmpiW(channel_test, kChromeChannelBeta))
+    channel = kChromeChannelBeta;
+  else if (!lstrcmpiW(channel_test, kChromeChannelDev))
+    channel = kChromeChannelDev;
+  else
+    return false;
+  return true;
+}
+
+#endif  // BUILDFLAG(USE_GOOGLE_UPDATE_INTEGRATION)
 
 // Converts a process type specified as a string to the ProcessType enum.
 ProcessType GetProcessType(const std::wstring& process_type) {
@@ -918,12 +934,13 @@ bool RecursiveDirectoryCreate(const std::wstring& full_path) {
 
 // This function takes these inputs rather than accessing the module's
 // InstallDetails instance since it is used to bootstrap InstallDetails.
-std::wstring DetermineChannel(const InstallConstants& mode,
-                              bool system_level,
-                              std::wstring* update_ap,
-                              std::wstring* update_cohort_name) {
+DetermineChannelResult DetermineChannel(const InstallConstants& mode,
+                                        bool system_level,
+                                        const wchar_t* channel_override,
+                                        std::wstring* update_ap,
+                                        std::wstring* update_cohort_name) {
 #if !BUILDFLAG(USE_GOOGLE_UPDATE_INTEGRATION)
-  return std::wstring();
+  return {std::wstring(), ChannelOrigin::kInstallMode};
 #else
   // Read the "ap" value and cache it if requested.
   std::wstring client_state(GetClientStateKeyPath(mode.app_guid));
@@ -945,13 +962,19 @@ std::wstring DetermineChannel(const InstallConstants& mode,
     case ChannelStrategy::UNSUPPORTED:
       assert(false);
       break;
-    case ChannelStrategy::ADDITIONAL_PARAMETERS:
-      return ChannelFromAdditionalParameters(mode, ap_value);
+    case ChannelStrategy::ADDITIONAL_PARAMETERS: {
+      std::wstring channel_override_value;
+      if (channel_override && GetChromeChannelNameFromString(
+                                  channel_override, channel_override_value)) {
+        return {std::move(channel_override_value), ChannelOrigin::kPolicy};
+      }
+      return {ChannelFromAdditionalParameters(mode, ap_value),
+              ChannelOrigin::kAdditionalParameters};
+    }
     case ChannelStrategy::FIXED:
-      return mode.default_channel_name;
+      return {mode.default_channel_name, ChannelOrigin::kInstallMode};
   }
-
-  return std::wstring();
+  return {std::wstring(), ChannelOrigin::kInstallMode};
 #endif
 }
 

@@ -1854,6 +1854,47 @@ TEST_P(OmniboxViewViewsRevealOnHoverTest, HoverAndExitIDN) {
       kSimplifiedDomainDisplayIDNUrlPath, ShouldElideToRegistrableDomain()));
 }
 
+// Tests the field trial variation that shows a simplified domain by default
+// using a private registry (https://publicsuffix.org/list/). Private registries
+// should be ignored when computing the simplified domain, to avoid creating
+// incentives for malicious sites to add themselves to the Public Suffix List.
+TEST_P(OmniboxViewViewsRevealOnHoverTest, PrivateRegistry) {
+  // This test is only applicable when we elide to the registrable domain;
+  // otherwise private vs public registries are irrelevant.
+  if (!ShouldElideToRegistrableDomain())
+    return;
+
+  const base::string16 kSimplifiedDomainDisplayPrivateRegistryUrl =
+      base::UTF8ToUTF16("https://foo.blogspot.com/bar");
+  const base::string16
+      kSimplifiedDomainDisplayPrivateRegistryUrlHostnameAndScheme =
+          base::UTF8ToUTF16("https://foo.blogspot.com");
+  const base::string16
+      kSimplifiedDomainDisplayPrivateRegistryUrlSubdomainAndScheme =
+          base::UTF8ToUTF16("https://foo.");
+  const base::string16 kSimplifiedDomainDisplayPrivateRegistryUrlSubdomain =
+      base::UTF8ToUTF16("foo.");
+  const base::string16 kSimplifiedDomainDisplayPrivateRegistryUrlPath =
+      base::UTF8ToUTF16("/bar");
+  const base::string16 kSimplifiedDomainDisplayPrivateRegistryUrlScheme =
+      base::UTF8ToUTF16("https://");
+  location_bar_model()->set_url(
+      GURL(kSimplifiedDomainDisplayPrivateRegistryUrl));
+  location_bar_model()->set_url_for_display(
+      kSimplifiedDomainDisplayPrivateRegistryUrl);
+  omnibox_view()->model()->ResetDisplayTexts();
+  omnibox_view()->RevertAll();
+  // Call OnThemeChanged() to create the animations.
+  omnibox_view()->OnThemeChanged();
+
+  ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
+      omnibox_view(), kSimplifiedDomainDisplayPrivateRegistryUrlScheme,
+      kSimplifiedDomainDisplayPrivateRegistryUrlSubdomain,
+      kSimplifiedDomainDisplayPrivateRegistryUrlHostnameAndScheme,
+      kSimplifiedDomainDisplayPrivateRegistryUrlPath,
+      ShouldElideToRegistrableDomain()));
+}
+
 class OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest
     : public OmniboxViewViewsTest,
       public ::testing::WithParamInterface<std::pair<bool, bool>> {

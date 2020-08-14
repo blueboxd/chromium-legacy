@@ -241,11 +241,15 @@ const PackageGraphPage = {
 export default PackageGraphPage;
 </script>
 
-<style>
-.user-input-group {
-  display: flex;
-  flex-direction: column;
-}
+<style lang="scss">
+@import "~vue-material/dist/theme/engine";
+
+@include md-register-theme("default", (
+  primary: #448aff,
+  accent: #448aff,
+));
+
+@import "~vue-material/dist/theme/all";
 </style>
 
 <style scoped>

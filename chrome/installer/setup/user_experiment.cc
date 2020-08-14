@@ -269,7 +269,7 @@ void BeginUserExperiment(const InstallerState& installer_state,
   // Prepare a command line to relaunch the installed setup.exe for the
   // experiment.
   base::CommandLine setup_command(setup_path);
-  InstallUtil::AppendModeSwitch(&setup_command);
+  InstallUtil::AppendModeAndChannelSwitches(&setup_command);
   if (installer_state.system_install())
     setup_command.AppendSwitch(switches::kSystemLevel);
   if (installer_state.verbose_logging())

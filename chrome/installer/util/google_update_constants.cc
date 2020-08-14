@@ -30,6 +30,7 @@ const wchar_t kRegCFEndTempOptOutCmdField[] = L"CFEndTempOptOutCmd";
 const wchar_t kRegCFOptInCmdField[] = L"CFOptInCmd";
 const wchar_t kRegCFOptOutCmdField[] = L"CFOptOutCmd";
 const wchar_t kRegCFTempOptOutCmdField[] = L"CFTempOptOutCmd";
+const wchar_t kRegChannelField[] = L"channel";
 const wchar_t kRegClientField[] = L"client";
 const wchar_t kRegCommandLineField[] = L"CommandLine";
 const wchar_t kRegCriticalVersionField[] = L"cpv";

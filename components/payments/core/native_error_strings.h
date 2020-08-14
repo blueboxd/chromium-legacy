@@ -230,6 +230,10 @@ extern const char kNoContentInPaymentManifest[];
 // disabled on Chrome OS.
 extern const char kUnableToInvokeAndroidPaymentApps[];
 
+// Used when the user has closed the payment app. For example, An Android app
+// indicates this by returning Activity.RESULT_CANCELED.
+extern const char kUserClosedPaymentApp[];
+
 }  // namespace errors
 }  // namespace payments
 

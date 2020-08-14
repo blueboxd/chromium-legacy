@@ -5,14 +5,17 @@
 #include "chrome/browser/chromeos/net/network_health/network_health_service.h"
 
 #include "base/no_destructor.h"
+#include "chrome/browser/chromeos/net/network_diagnostics/network_diagnostics.h"
+#include "chrome/browser/chromeos/net/network_health/network_health.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 
 namespace chromeos {
 namespace network_health {
 
 NetworkHealthService::NetworkHealthService() {
+  network_health_ = std::make_unique<NetworkHealth>();
   network_diagnostics_ =
-      std::make_unique<network_diagnostics::NetworkDiagnosticsImpl>(
+      std::make_unique<network_diagnostics::NetworkDiagnostics>(
           chromeos::DBusThreadManager::Get()->GetDebugDaemonClient());
 }
 
@@ -33,7 +36,7 @@ NetworkHealthService::GetDiagnosticsRemoteAndBindReceiver() {
 
 void NetworkHealthService::BindHealthReceiver(
     mojo::PendingReceiver<mojom::NetworkHealthService> receiver) {
-  network_health_.BindReceiver(std::move(receiver));
+  network_health_->BindReceiver(std::move(receiver));
 }
 
 void NetworkHealthService::BindDiagnosticsReceiver(

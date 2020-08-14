@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/passwords/well_known_change_password_navigation_throttle.h"
 
 #include "base/logging.h"
-#include "chrome/common/url_constants.h"
+#include "components/password_manager/core/browser/well_known_change_password_util.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_handle.h"
@@ -21,11 +21,13 @@
 
 namespace {
 
-using chrome::kWellKnownChangePasswordPath;
-using chrome::kWellKnownNotExistingResourcePath;
 using content::NavigationHandle;
 using content::NavigationThrottle;
 using content::WebContents;
+using password_manager::CreateWellKnownNonExistingResourceURL;
+using password_manager::IsWellKnownChangePasswordUrl;
+using password_manager::kWellKnownChangePasswordPath;
+using password_manager::kWellKnownNotExistingResourcePath;
 
 // Used to scope the posted navigation task to the lifetime of |web_contents|.
 class WebContentsLifetimeHelper
@@ -52,22 +54,6 @@ class WebContentsLifetimeHelper
 };
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(WebContentsLifetimeHelper)
-
-bool IsWellKnownChangePasswordUrl(const GURL& url) {
-  if (!url.is_valid() || !url.has_path())
-    return false;
-  base::StringPiece path = url.PathForRequestPiece();
-  // remove trailing slash if there
-  if (path.ends_with("/"))
-    path = path.substr(0, path.size() - 1);
-  return path == kWellKnownChangePasswordPath;
-}
-
-GURL CreateNonExistingResourceURL(const GURL& url) {
-  GURL::Replacements replacement;
-  replacement.SetPathStr(kWellKnownNotExistingResourcePath);
-  return url.GetOrigin().ReplaceComponents(replacement);
-}
 
 }  // namespace
 
@@ -123,7 +109,8 @@ const char* WellKnownChangePasswordNavigationThrottle::GetNameForLogging() {
 void WellKnownChangePasswordNavigationThrottle::FetchNonExistingResource(
     NavigationHandle* handle) {
   auto resource_request = std::make_unique<network::ResourceRequest>();
-  resource_request->url = CreateNonExistingResourceURL(handle->GetURL());
+  resource_request->url =
+      CreateWellKnownNonExistingResourceURL(handle->GetURL());
   resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   resource_request->load_flags = net::LOAD_DISABLE_CACHE;
   net::NetworkTrafficAnnotationTag traffic_annotation =

@@ -39,6 +39,8 @@ struct xdg_surface;
 struct xdg_toplevel;
 struct xdg_popup;
 struct xdg_positioner;
+struct zaura_shell;
+struct zaura_surface;
 struct zcr_keyboard_extension_v1;
 struct zcr_extended_keyboard_v1;
 struct zwp_linux_dmabuf_v1;
@@ -245,6 +247,18 @@ template <>
 struct ObjectTraits<xdg_positioner> {
   static const wl_interface* interface;
   static void (*deleter)(xdg_positioner*);
+};
+
+template <>
+struct ObjectTraits<zaura_shell> {
+  static const wl_interface* interface;
+  static void (*deleter)(zaura_shell*);
+};
+
+template <>
+struct ObjectTraits<zaura_surface> {
+  static const wl_interface* interface;
+  static void (*deleter)(zaura_surface*);
 };
 
 template <>

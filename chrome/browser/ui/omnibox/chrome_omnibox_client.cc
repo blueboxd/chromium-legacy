@@ -401,15 +401,10 @@ void ChromeOmniboxClient::PromptPageTranslation() {
         ChromeTranslateClient::FromWebContents(contents);
     if (translate_client) {
       translate::LanguageState& state = translate_client->GetLanguageState();
-      const std::string original_language = state.original_language();
-      // Since the user is explicitly requesting the translation prompt, here
-      // we invalidate state that prevents prompt in some other circumstances.
-      state.SetTranslateEnabled(true);
-      state.LanguageDetermined("", true);
       // Here we pass triggered_from_menu as true because that is meant to
       // capture whether the user explicitly requested the translation.
       translate_client->ShowTranslateUI(
-          translate::TRANSLATE_STEP_BEFORE_TRANSLATE, original_language,
+          translate::TRANSLATE_STEP_TRANSLATING, state.original_language(),
           state.AutoTranslateTo(), translate::TranslateErrors::NONE,
           /*triggered_from_menu=*/true);
     }

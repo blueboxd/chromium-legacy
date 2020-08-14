@@ -322,9 +322,8 @@ double MessageQuotaChecker::DecayingRateAverage::GetDecayedRateAverage(
   // - |when| is beyond the end of the current sampling interval.
   const int64_t sampling_interval = ToSamplingInterval(when);
   double age_in_sampling_intervals =
-      (when - FromSamplingInterval(events_sampling_interval_))
-          .InMicrosecondsF() /
-      kSamplingInterval.InMicrosecondsF();
+      (when - FromSamplingInterval(events_sampling_interval_)) /
+      kSamplingInterval;
   DCHECK_LE(0.0, age_in_sampling_intervals);
   if (when == FromSamplingInterval(events_sampling_interval_)) {
     DCHECK_EQ(0.0, age_in_sampling_intervals);

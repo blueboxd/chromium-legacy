@@ -93,7 +93,7 @@ GURL NearbyShareApiCallFlowImpl::CreateApiCallUrl() {
           request_url_, key_value_pair.first, key_value_pair.second);
     }
   }
-
+  NS_LOG(VERBOSE) << "Creating Nearby Share HTTP URL: " << request_url_;
   return request_url_;
 }
 

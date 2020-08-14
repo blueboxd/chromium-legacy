@@ -4,6 +4,7 @@
 
 #include "ui/ozone/platform/wayland/common/wayland_object.h"
 
+#include <aura-shell-client-protocol.h>
 #include <gtk-primary-selection-client-protocol.h>
 #include <keyboard-extension-unstable-v1-client-protocol.h>
 #include <linux-dmabuf-unstable-v1-client-protocol.h>
@@ -189,6 +190,15 @@ const wl_interface* ObjectTraits<xdg_positioner>::interface =
     &xdg_positioner_interface;
 void (*ObjectTraits<xdg_positioner>::deleter)(xdg_positioner*) =
     &xdg_positioner_destroy;
+
+const wl_interface* ObjectTraits<zaura_shell>::interface =
+    &zaura_shell_interface;
+void (*ObjectTraits<zaura_shell>::deleter)(zaura_shell*) = &zaura_shell_destroy;
+
+const wl_interface* ObjectTraits<zaura_surface>::interface =
+    &zaura_surface_interface;
+void (*ObjectTraits<zaura_surface>::deleter)(zaura_surface*) =
+    &zaura_surface_destroy;
 
 const wl_interface* ObjectTraits<zcr_keyboard_extension_v1>::interface =
     &zcr_keyboard_extension_v1_interface;

@@ -214,4 +214,14 @@ TEST_F(SerialPortImplTest, Drain) {
   loop.Run();
 }
 
+TEST_F(SerialPortImplTest, Close) {
+  mojo::Remote<mojom::SerialPort> serial_port;
+  mojo::SelfOwnedReceiverRef<mojom::SerialPortConnectionWatcher> watcher;
+  CreatePort(&serial_port, &watcher);
+
+  base::RunLoop loop;
+  serial_port->Close(loop.QuitClosure());
+  loop.Run();
+}
+
 }  // namespace device

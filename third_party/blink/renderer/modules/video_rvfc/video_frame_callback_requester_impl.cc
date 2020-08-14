@@ -32,8 +32,7 @@ static bool IsFrameRateRelativelyHigh(base::TimeDelta rendering_interval,
 
   constexpr double kThreshold = 0.05;
   return kThreshold >
-         std::abs(1.0 - (rendering_interval.InMillisecondsF() /
-                         average_frame_duration.InMillisecondsF()));
+         std::abs(1.0 - (rendering_interval / average_frame_duration));
 }
 
 }  // namespace

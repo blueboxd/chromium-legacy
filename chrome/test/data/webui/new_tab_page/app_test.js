@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {$$, BackgroundManager, BackgroundSelectionType, BrowserProxy, PromoBrowserCommandProxy} from 'chrome://new-tab-page/new_tab_page.js';
+import {$$, BackgroundManager, BackgroundSelectionType, BrowserProxy, ModuleRegistry, PromoBrowserCommandProxy} from 'chrome://new-tab-page/new_tab_page.js';
 import {isMac} from 'chrome://resources/js/cr.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
 import {assertNotStyle, assertStyle, createTestProxy, createTheme} from 'chrome://test/new_tab_page/test_support.js';
 import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
 import {eventToPromise, flushTasks} from 'chrome://test/test_util.m.js';
@@ -24,6 +25,9 @@ suite('NewTabPageAppTest', () => {
    * @extends {TestBrowserProxy}
    */
   let backgroundManager;
+
+  /** @type {PromiseResolver} */
+  let moduleResolver;
 
   suiteSetup(() => {
     loadTimeData.overrideValues({
@@ -57,6 +61,10 @@ suite('NewTabPageAppTest', () => {
     backgroundManager.setResultFor(
         'getBackgroundImageLoadTime', Promise.resolve(0));
     BackgroundManager.instance_ = backgroundManager;
+    const moduleRegistry = TestBrowserProxy.fromClass(ModuleRegistry);
+    moduleResolver = new PromiseResolver();
+    moduleRegistry.setResultFor('initializeModules', moduleResolver.promise);
+    ModuleRegistry.instance_ = moduleRegistry;
 
     app = document.createElement('ntp-app');
     document.body.appendChild(app);
@@ -422,5 +430,37 @@ suite('NewTabPageAppTest', () => {
     // Make sure the promo frame gets notified whether the command was executed.
     const {data: commandExecuted} = await eventToPromise('message', window);
     assertTrue(commandExecuted);
+  });
+
+  suite('modules', () => {
+    suiteSetup(() => {
+      loadTimeData.overrideValues({
+        modulesEnabled: true,
+      });
+    });
+
+    test('modules appended to page', async () => {
+      // Act.
+      moduleResolver.resolve([
+        {
+          id: 'foo',
+          name: 'Foo',
+          element: document.createElement('div'),
+          title: 'Foo Title',
+        },
+        {
+          id: 'bar',
+          name: 'Bar',
+          element: document.createElement('div'),
+          title: 'Bar Title',
+        }
+      ]);
+      await flushTasks();  // Wait for module descriptor resolution.
+      $$(app, '#modules').render();
+
+      // Assert.
+      const modules = app.shadowRoot.querySelectorAll('ntp-module-wrapper');
+      assertEquals(2, modules.length);
+    });
   });
 });

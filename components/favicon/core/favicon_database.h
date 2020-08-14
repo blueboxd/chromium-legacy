@@ -222,6 +222,12 @@ class FaviconDatabase {
   // Checks whether a favicon is used by any URLs in the database.
   bool HasMappingFor(favicon_base::FaviconID id);
 
+  // Returns the ids of favicons which were last updated before |time|. This
+  // returns at most |max_count| ids.
+  std::vector<favicon_base::FaviconID> GetFaviconsLastUpdatedBefore(
+      base::Time time,
+      int max_count);
+
   // The class to enumerate icon mappings. Use InitIconMappingEnumerator to
   // initialize.
   class IconMappingEnumerator {

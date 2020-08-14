@@ -548,7 +548,7 @@ InstallStatus InstallOrUpdateProduct(const InstallParams& install_params,
 void LaunchDeleteOldVersionsProcess(const base::FilePath& setup_path,
                                     const InstallerState& installer_state) {
   base::CommandLine command_line(setup_path);
-  InstallUtil::AppendModeSwitch(&command_line);
+  InstallUtil::AppendModeAndChannelSwitches(&command_line);
   command_line.AppendSwitch(switches::kDeleteOldVersions);
 
   if (installer_state.system_install())

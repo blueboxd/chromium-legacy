@@ -4,6 +4,7 @@
 
 import '../../grid.js';
 
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {ModuleDescriptor} from '../module_descriptor.js';
@@ -39,7 +40,16 @@ class DummyModuleElement extends PolymerElement {
 customElements.define(DummyModuleElement.is, DummyModuleElement);
 
 /** @type {!ModuleDescriptor} */
-export const dummyDescriptor = {
-  id: 'dummy',
-  create: () => Promise.resolve(new DummyModuleElement()),
-};
+export const dummyDescriptor = new ModuleDescriptor(
+    'dummy', loadTimeData.getString('modulesDummyName'), () => Promise.resolve({
+      element: new DummyModuleElement(),
+      title: loadTimeData.getString('modulesDummyTitle'),
+    }));
+
+/** @type {!ModuleDescriptor} */
+export const dummyDescriptor2 = new ModuleDescriptor(
+    'dummy2', loadTimeData.getString('modulesDummy2Name'),
+    () => Promise.resolve({
+      element: new DummyModuleElement(),
+      title: loadTimeData.getString('modulesDummy2Title'),
+    }));

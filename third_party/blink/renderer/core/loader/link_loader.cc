@@ -228,7 +228,7 @@ void LinkLoader::LoadStylesheet(const LinkLoadParameters& params,
          RuntimeEnabledFeatures::PriorityHintsEnabled(context));
   resource_request.SetFetchImportanceMode(importance_mode);
 
-  ResourceLoaderOptions options;
+  ResourceLoaderOptions options(context->GetCurrentWorld());
   options.initiator_info.name = local_name;
   FetchParameters link_fetch_params(std::move(resource_request), options);
   link_fetch_params.SetCharset(charset);

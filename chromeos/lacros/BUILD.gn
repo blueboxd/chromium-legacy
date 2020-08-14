@@ -4,6 +4,7 @@
 
 import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/linux/gtk/gtk.gni")
+import("//build/lacros/lacros_resource_sizes.gni")
 
 # Code lives in the lacros-chrome browser only, not ash-chrome.
 assert(chromeos_is_browser_only)
@@ -27,4 +28,8 @@ component("lacros") {
     "lacros_chrome_service_impl.cc",
     "lacros_chrome_service_impl.h",
   ]
+}
+
+lacros_resource_sizes_test("resource_sizes_lacros_chrome") {
+  data_deps = [ "//chrome:chrome" ]
 }

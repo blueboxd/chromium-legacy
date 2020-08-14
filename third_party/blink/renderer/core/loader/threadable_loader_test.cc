@@ -163,7 +163,7 @@ class ThreadableLoaderTestHelper final {
   }
 
   void CreateLoader(ThreadableLoaderClient* client) {
-    ResourceLoaderOptions resource_loader_options;
+    ResourceLoaderOptions resource_loader_options(nullptr /* world */);
     loader_ = MakeGarbageCollected<ThreadableLoader>(
         *dummy_page_holder_->GetFrame().DomWindow(), client,
         resource_loader_options);

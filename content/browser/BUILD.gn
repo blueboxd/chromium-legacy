@@ -908,6 +908,8 @@ source_set("browser") {
     "frame_host/clipboard_host_impl_mac.mm",
     "frame_host/cookie_utils.cc",
     "frame_host/cookie_utils.h",
+    "frame_host/cross_origin_opener_policy_status.cc",
+    "frame_host/cross_origin_opener_policy_status.h",
     "frame_host/cross_process_frame_connector.cc",
     "frame_host/cross_process_frame_connector.h",
     "frame_host/debug_urls.cc",

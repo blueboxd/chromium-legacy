@@ -56,4 +56,16 @@ void AmbientUiModel::NotifyAmbientUiVisibilityChanged() {
     observer.OnAmbientUiVisibilityChanged(ui_visibility_);
 }
 
+std::ostream& operator<<(std::ostream& out, AmbientUiMode mode) {
+  switch (mode) {
+    case AmbientUiMode::kLockScreenUi:
+      out << "kLockScreenUi";
+      break;
+    case AmbientUiMode::kInSessionUi:
+      out << "kInSessionUi";
+      break;
+  }
+  return out;
+}
+
 }  // namespace ash

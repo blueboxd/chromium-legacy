@@ -66,10 +66,23 @@ class AndroidAppCommunicationTest : public testing::Test {
     is_ready_to_pay_ = is_ready_to_pay;
   }
 
+  void OnPaymentAppResponse(const base::Optional<std::string>& error,
+                            bool is_activity_result_ok,
+                            const std::string& payment_method_identifier,
+                            const std::string& stringified_details) {
+    error_ = error;
+    is_activity_result_ok_ = is_activity_result_ok;
+    payment_method_identifier_ = payment_method_identifier;
+    stringified_details_ = stringified_details;
+  }
+
   std::unique_ptr<AndroidAppCommunicationTestSupport> support_;
   base::Optional<std::string> error_;
   std::vector<std::unique_ptr<AndroidAppDescription>> apps_;
   bool is_ready_to_pay_ = false;
+  bool is_activity_result_ok_ = false;
+  std::string payment_method_identifier_;
+  std::string stringified_details_;
 };
 
 TEST_F(AndroidAppCommunicationTest, OneInstancePerBrowserContext) {
@@ -424,6 +437,190 @@ TEST_F(AndroidAppCommunicationTest, ReadyToPay) {
     ASSERT_TRUE(error_.has_value());
     EXPECT_EQ("Unable to invoke Android apps.", error_.value());
     EXPECT_FALSE(is_ready_to_pay_);
+  }
+}
+
+TEST_F(AndroidAppCommunicationTest, NoArcForInvokePaymentApp) {
+  // Intentionally do not set an instance.
+
+  support_->ExpectNoPaymentAppInvoke();
+
+  auto communication =
+      AndroidAppCommunication::GetForBrowserContext(support_->context());
+  communication->SetForTesting();
+
+  std::map<std::string, std::set<std::string>> stringified_method_data;
+  stringified_method_data["https://play.google.com/billing"].insert("{}");
+  communication->InvokePaymentApp(
+      "com.example.app", "com.example.app.Activity", stringified_method_data,
+      GURL("https://top-level-origin.com"),
+      GURL("https://payment-request-origin.com"), "payment-request-id",
+      base::BindOnce(&AndroidAppCommunicationTest::OnPaymentAppResponse,
+                     base::Unretained(this)));
+
+  EXPECT_EQ("Unable to invoke Android apps.", error_.value());
+  EXPECT_FALSE(is_activity_result_ok_);
+  EXPECT_TRUE(payment_method_identifier_.empty());
+  EXPECT_EQ("{}", stringified_details_);
+}
+
+TEST_F(AndroidAppCommunicationTest, TwaPaymentOnlyWithPlayBilling) {
+  auto scoped_initialization = support_->CreateScopedInitialization();
+
+  support_->ExpectNoPaymentAppInvoke();
+
+  auto communication =
+      AndroidAppCommunication::GetForBrowserContext(support_->context());
+  communication->SetForTesting();
+
+  std::map<std::string, std::set<std::string>> stringified_method_data;
+  stringified_method_data["https://example.com"].insert("{}");
+  communication->InvokePaymentApp(
+      "com.example.app", "com.example.app.Activity", stringified_method_data,
+      GURL("https://top-level-origin.com"),
+      GURL("https://payment-request-origin.com"), "payment-request-id",
+      base::BindOnce(&AndroidAppCommunicationTest::OnPaymentAppResponse,
+                     base::Unretained(this)));
+
+  if (support_->AreAndroidAppsSupportedOnThisPlatform()) {
+    EXPECT_FALSE(error_.has_value());
+    EXPECT_FALSE(is_activity_result_ok_);
+    EXPECT_TRUE(payment_method_identifier_.empty());
+    EXPECT_EQ("{}", stringified_details_);
+  } else {
+    ASSERT_TRUE(error_.has_value());
+    EXPECT_EQ("Unable to invoke Android apps.", error_.value());
+  }
+}
+
+TEST_F(AndroidAppCommunicationTest, NoPaymentWithMoreThanOnePaymentMethodData) {
+  auto scoped_initialization = support_->CreateScopedInitialization();
+
+  support_->ExpectNoPaymentAppInvoke();
+
+  auto communication =
+      AndroidAppCommunication::GetForBrowserContext(support_->context());
+  communication->SetForTesting();
+
+  std::map<std::string, std::set<std::string>> stringified_method_data;
+  stringified_method_data["https://play.google.com/billing"].insert(
+      "{\"product_id\": \"1\"}");
+  stringified_method_data["https://play.google.com/billing"].insert(
+      "{\"product_id\": \"2\"}");
+  communication->InvokePaymentApp(
+      "com.example.app", "com.example.app.Activity", stringified_method_data,
+      GURL("https://top-level-origin.com"),
+      GURL("https://payment-request-origin.com"), "payment-request-id",
+      base::BindOnce(&AndroidAppCommunicationTest::OnPaymentAppResponse,
+                     base::Unretained(this)));
+
+  EXPECT_FALSE(is_activity_result_ok_);
+  EXPECT_EQ("{}", stringified_details_);
+  EXPECT_TRUE(payment_method_identifier_.empty());
+  ASSERT_TRUE(error_.has_value());
+
+  if (support_->AreAndroidAppsSupportedOnThisPlatform()) {
+    EXPECT_EQ("At most one payment method specific data is supported.",
+              error_.value());
+  } else {
+    EXPECT_EQ("Unable to invoke Android apps.", error_.value());
+  }
+}
+
+TEST_F(AndroidAppCommunicationTest, PaymentWithEmptyMethodData) {
+  auto scoped_initialization = support_->CreateScopedInitialization();
+
+  support_->ExpectInvokePaymentAppAndRespond(
+      /*is_activity_result_ok=*/true,
+      /*payment_method_identifier=*/"https://play.google.com/billing",
+      /*stringified_details*/ "{\"status\": \"ok\"}");
+
+  auto communication =
+      AndroidAppCommunication::GetForBrowserContext(support_->context());
+  communication->SetForTesting();
+
+  std::map<std::string, std::set<std::string>> stringified_method_data;
+  stringified_method_data.insert(std::make_pair(
+      "https://play.google.com/billing", std::set<std::string>()));
+  communication->InvokePaymentApp(
+      "com.example.app", "com.example.app.Activity", stringified_method_data,
+      GURL("https://top-level-origin.com"),
+      GURL("https://payment-request-origin.com"), "payment-request-id",
+      base::BindOnce(&AndroidAppCommunicationTest::OnPaymentAppResponse,
+                     base::Unretained(this)));
+
+  if (support_->AreAndroidAppsSupportedOnThisPlatform()) {
+    EXPECT_FALSE(error_.has_value());
+    EXPECT_TRUE(is_activity_result_ok_);
+    EXPECT_EQ("https://play.google.com/billing", payment_method_identifier_);
+    EXPECT_EQ("{\"status\": \"ok\"}", stringified_details_);
+  } else {
+    ASSERT_TRUE(error_.has_value());
+    EXPECT_EQ("Unable to invoke Android apps.", error_.value());
+  }
+}
+
+TEST_F(AndroidAppCommunicationTest, UserCancelInvokePaymentApp) {
+  auto scoped_initialization = support_->CreateScopedInitialization();
+
+  support_->ExpectInvokePaymentAppAndRespond(
+      /*is_activity_result_ok=*/false,
+      /*payment_method_identifier=*/"https://play.google.com/billing",
+      /*stringified_details*/ "{}");
+
+  auto communication =
+      AndroidAppCommunication::GetForBrowserContext(support_->context());
+  communication->SetForTesting();
+
+  std::map<std::string, std::set<std::string>> stringified_method_data;
+  stringified_method_data["https://play.google.com/billing"].insert("{}");
+  communication->InvokePaymentApp(
+      "com.example.app", "com.example.app.Activity", stringified_method_data,
+      GURL("https://top-level-origin.com"),
+      GURL("https://payment-request-origin.com"), "payment-request-id",
+      base::BindOnce(&AndroidAppCommunicationTest::OnPaymentAppResponse,
+                     base::Unretained(this)));
+
+  if (support_->AreAndroidAppsSupportedOnThisPlatform()) {
+    EXPECT_FALSE(error_.has_value());
+    EXPECT_FALSE(is_activity_result_ok_);
+    EXPECT_EQ("https://play.google.com/billing", payment_method_identifier_);
+    EXPECT_EQ("{}", stringified_details_);
+  } else {
+    ASSERT_TRUE(error_.has_value());
+    EXPECT_EQ("Unable to invoke Android apps.", error_.value());
+  }
+}
+
+TEST_F(AndroidAppCommunicationTest, UserConfirmInvokePaymentApp) {
+  auto scoped_initialization = support_->CreateScopedInitialization();
+
+  support_->ExpectInvokePaymentAppAndRespond(
+      /*is_activity_result_ok=*/true,
+      /*payment_method_identifier=*/"https://play.google.com/billing",
+      /*stringified_details*/ "{\"status\": \"ok\"}");
+
+  auto communication =
+      AndroidAppCommunication::GetForBrowserContext(support_->context());
+  communication->SetForTesting();
+
+  std::map<std::string, std::set<std::string>> stringified_method_data;
+  stringified_method_data["https://play.google.com/billing"].insert("{}");
+  communication->InvokePaymentApp(
+      "com.example.app", "com.example.app.Activity", stringified_method_data,
+      GURL("https://top-level-origin.com"),
+      GURL("https://payment-request-origin.com"), "payment-request-id",
+      base::BindOnce(&AndroidAppCommunicationTest::OnPaymentAppResponse,
+                     base::Unretained(this)));
+
+  if (support_->AreAndroidAppsSupportedOnThisPlatform()) {
+    EXPECT_FALSE(error_.has_value());
+    EXPECT_TRUE(is_activity_result_ok_);
+    EXPECT_EQ("https://play.google.com/billing", payment_method_identifier_);
+    EXPECT_EQ("{\"status\": \"ok\"}", stringified_details_);
+  } else {
+    ASSERT_TRUE(error_.has_value());
+    EXPECT_EQ("Unable to invoke Android apps.", error_.value());
   }
 }
 

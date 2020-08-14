@@ -454,13 +454,13 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
 #if defined(OS_WIN)
   if (process_startup) {
     // Update this number when users should go through a taskbar shortcut
-    // migration again. The last reason to do this was crrev.com/719141 @
-    // 80.0.3978.0.
+    // migration again. The last reason to do this was crrev.com/2285399 @
+    // 86.0.4231.0.
     //
     // Note: If shortcut updates need to be done once after a future OS upgrade,
     // that should be done by re-versioning Active Setup (see //chrome/installer
     // and http://crbug.com/577697 for details).
-    const base::Version kLastVersionNeedingMigration({80U, 0U, 3978U, 0U});
+    const base::Version kLastVersionNeedingMigration({86U, 0U, 4231U, 0U});
 
     PrefService* local_state = g_browser_process->local_state();
     if (local_state) {

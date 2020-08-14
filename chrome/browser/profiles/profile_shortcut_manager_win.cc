@@ -480,8 +480,8 @@ void CreateOrUpdateDesktopShortcutsAndIconForProfile(
   if (!params.single_profile)
     properties.set_icon(shortcut_icon, 0);
 
-  properties.set_app_id(shell_integration::win::GetChromiumModelIdForProfile(
-      params.profile_path));
+  properties.set_app_id(
+      shell_integration::win::GetAppUserModelIdForBrowser(params.profile_path));
 
   ShellUtil::ShortcutOperation operation =
       ShellUtil::SHELL_SHORTCUT_REPLACE_EXISTING;

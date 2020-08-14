@@ -215,30 +215,62 @@ class DeepScanningRequestTest : public testing::TestWithParam<bool> {
     scoped_feature_list_.InitWithFeatures(enabled, disabled);
   }
 
-  const std::vector<base::Feature> AllFeatures() {
+  void EnableAllFeatures() {
     if (use_legacy_policies()) {
-      return {kMalwareScanEnabled, kContentComplianceEnabled};
+      SetFeatures({kMalwareScanEnabled, kContentComplianceEnabled,
+                   extensions::SafeBrowsingPrivateEventRouter::
+                       kRealtimeReportingFeature},
+                  {enterprise_connectors::kEnterpriseConnectorsEnabled});
     } else {
-      return {kMalwareScanEnabled, kContentComplianceEnabled,
-              enterprise_connectors::kEnterpriseConnectorsEnabled};
+      SetFeatures({enterprise_connectors::kEnterpriseConnectorsEnabled},
+                  {kMalwareScanEnabled, kContentComplianceEnabled,
+                   extensions::SafeBrowsingPrivateEventRouter::
+                       kRealtimeReportingFeature});
     }
+  }
+
+  void DisableAllFeatures() {
+    SetFeatures(
+        {},
+        {kMalwareScanEnabled, kContentComplianceEnabled,
+         extensions::SafeBrowsingPrivateEventRouter::kRealtimeReportingFeature,
+         enterprise_connectors::kEnterpriseConnectorsEnabled});
   }
 
   const std::vector<base::Feature> DlpFeatures() {
     if (use_legacy_policies()) {
-      return {kContentComplianceEnabled};
-    } else {
       return {kContentComplianceEnabled,
-              enterprise_connectors::kEnterpriseConnectorsEnabled};
+              extensions::SafeBrowsingPrivateEventRouter::
+                  kRealtimeReportingFeature};
+    } else {
+      return {enterprise_connectors::kEnterpriseConnectorsEnabled};
     }
   }
 
   const std::vector<base::Feature> MalwareFeatures() {
     if (use_legacy_policies()) {
-      return {kMalwareScanEnabled};
+      return {kMalwareScanEnabled, extensions::SafeBrowsingPrivateEventRouter::
+                                       kRealtimeReportingFeature};
     } else {
+      return {enterprise_connectors::kEnterpriseConnectorsEnabled};
+    }
+  }
+
+  const std::vector<base::Feature> DisabledMalwareFeatures() {
+    if (use_legacy_policies()) {
       return {kMalwareScanEnabled,
               enterprise_connectors::kEnterpriseConnectorsEnabled};
+    } else {
+      return {kMalwareScanEnabled};
+    }
+  }
+
+  const std::vector<base::Feature> DisabledDlpFeatures() {
+    if (use_legacy_policies()) {
+      return {kContentComplianceEnabled,
+              enterprise_connectors::kEnterpriseConnectorsEnabled};
+    } else {
+      return {kContentComplianceEnabled};
     }
   }
 
@@ -328,8 +360,7 @@ TEST_P(DeepScanningRequestTest, ChecksFeatureFlags) {
   };
 
   {
-    SetFeatures(/*enabled*/ AllFeatures(),
-                /*disabled*/ {});
+    EnableAllFeatures();
     DeepScanningRequest request(
         &item_, DeepScanningRequest::DeepScanTrigger::TRIGGER_POLICY,
         base::DoNothing(), &download_protection_service_,
@@ -347,8 +378,7 @@ TEST_P(DeepScanningRequestTest, ChecksFeatureFlags) {
     }
   }
   {
-    SetFeatures(/*enabled*/ {},
-                /*disabled*/ AllFeatures());
+    DisableAllFeatures();
     DeepScanningRequest request(
         &item_, DeepScanningRequest::DeepScanTrigger::TRIGGER_POLICY,
         base::DoNothing(), &download_protection_service_,
@@ -367,7 +397,7 @@ TEST_P(DeepScanningRequestTest, ChecksFeatureFlags) {
   }
   {
     SetFeatures(/*enabled*/ DlpFeatures(),
-                /*disabled*/ {kMalwareScanEnabled});
+                /*disabled*/ DisabledMalwareFeatures());
     DeepScanningRequest request(
         &item_, DeepScanningRequest::DeepScanTrigger::TRIGGER_POLICY,
         base::DoNothing(), &download_protection_service_,
@@ -386,7 +416,7 @@ TEST_P(DeepScanningRequestTest, ChecksFeatureFlags) {
   }
   {
     SetFeatures(/*enabled*/ MalwareFeatures(),
-                /*disabled*/ {kContentComplianceEnabled});
+                /*disabled*/ DisabledDlpFeatures());
     DeepScanningRequest request(
         &item_, DeepScanningRequest::DeepScanTrigger::TRIGGER_POLICY,
         base::DoNothing(), &download_protection_service_,
@@ -419,8 +449,7 @@ TEST_P(DeepScanningRequestTest, ChecksFeatureFlags) {
 }
 
 TEST_P(DeepScanningRequestTest, GeneratesCorrectRequestFromPolicy) {
-  SetFeatures(/*enabled*/ AllFeatures(),
-              /*disabled*/ {});
+  EnableAllFeatures();
 
   {
     SetDlpPolicy(CHECK_UPLOADS_AND_DOWNLOADS);
@@ -552,24 +581,43 @@ TEST_P(DeepScanningRequestTest, GeneratesCorrectRequestFromPolicy) {
 }
 
 TEST_P(DeepScanningRequestTest, GeneratesCorrectRequestForAPP) {
+  // Connectors are enabled by default, so turn them off for the legacy test
+  // case.
+  if (use_legacy_policies())
+    DisableAllFeatures();
+
   enterprise_connectors::AnalysisSettings settings;
-  settings.tags = {"dlp"};
+  settings.tags = {"malware"};
   DeepScanningRequest request(
       &item_, DeepScanningRequest::DeepScanTrigger::TRIGGER_APP_PROMPT,
       base::DoNothing(), &download_protection_service_, std::move(settings));
   request.Start();
 
-  EXPECT_TRUE(download_protection_service_.GetFakeBinaryUploadService()
+  if (use_legacy_policies()) {
+    EXPECT_TRUE(download_protection_service_.GetFakeBinaryUploadService()
+                    ->last_request()
+                    .has_malware_scan_request());
+    EXPECT_FALSE(download_protection_service_.GetFakeBinaryUploadService()
+                     ->last_request()
+                     .has_dlp_scan_request());
+    EXPECT_EQ(download_protection_service_.GetFakeBinaryUploadService()
                   ->last_request()
-                  .has_malware_scan_request());
-  EXPECT_FALSE(download_protection_service_.GetFakeBinaryUploadService()
-                   ->last_request()
-                   .has_dlp_scan_request());
-  EXPECT_EQ(download_protection_service_.GetFakeBinaryUploadService()
-                ->last_request()
-                .malware_scan_request()
-                .population(),
-            MalwareDeepScanningClientRequest::POPULATION_TITANIUM);
+                  .malware_scan_request()
+                  .population(),
+              MalwareDeepScanningClientRequest::POPULATION_TITANIUM);
+  } else {
+    EXPECT_EQ(1, download_protection_service_.GetFakeBinaryUploadService()
+                     ->last_content_analysis_request()
+                     .tags()
+                     .size());
+    EXPECT_EQ("malware",
+              download_protection_service_.GetFakeBinaryUploadService()
+                  ->last_content_analysis_request()
+                  .tags()[0]);
+    EXPECT_FALSE(download_protection_service_.GetFakeBinaryUploadService()
+                     ->last_content_analysis_request()
+                     .has_device_token());
+  }
 }
 
 class DeepScanningReportingTest : public DeepScanningRequestTest {
@@ -593,13 +641,13 @@ class DeepScanningReportingTest : public DeepScanningRequestTest {
 
     TestingBrowserProcess::GetGlobal()->local_state()->SetBoolean(
         prefs::kUnsafeEventsReportingEnabled, true);
-    SetFeatures(/*enabled*/ AllFeatures(),
-                /*disabled*/ {});
+    EnableAllFeatures();
   }
 
   void TearDown() override {
     extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile_)
         ->SetCloudPolicyClientForTesting(nullptr);
+    DeepScanningRequestTest::TearDown();
   }
 
  protected:
@@ -1036,8 +1084,7 @@ TEST_P(DeepScanningRequestTest, PopulatesRequest) {
   SetDlpPolicy(CHECK_UPLOADS_AND_DOWNLOADS);
   SetMalwarePolicy(SEND_UPLOADS_AND_DOWNLOADS);
 
-  SetFeatures(/*enabled*/ AllFeatures(),
-              /*disabled*/ {});
+  EnableAllFeatures();
   DeepScanningRequest request(
       &item_, DeepScanningRequest::DeepScanTrigger::TRIGGER_POLICY,
       base::DoNothing(), &download_protection_service_, settings().value());

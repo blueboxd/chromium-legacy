@@ -88,6 +88,54 @@ NetworkHealth::NetworkHealth() {
 
 NetworkHealth::~NetworkHealth() = default;
 
+void NetworkHealth::BindReceiver(
+    mojo::PendingReceiver<mojom::NetworkHealthService> receiver) {
+  receivers_.Add(this, std::move(receiver));
+}
+
+const mojom::NetworkHealthStatePtr NetworkHealth::GetNetworkHealthState() {
+  NET_LOG(EVENT) << "Network Health State Requested";
+  return network_health_state_.Clone();
+}
+
+void NetworkHealth::GetNetworkList(GetNetworkListCallback callback) {
+  std::move(callback).Run(mojo::Clone(network_health_state_.networks));
+}
+
+void NetworkHealth::GetHealthSnapshot(GetHealthSnapshotCallback callback) {
+  std::move(callback).Run(network_health_state_.Clone());
+}
+
+void NetworkHealth::OnNetworkStateListChanged() {
+  RequestNetworkStateList();
+}
+
+void NetworkHealth::OnDeviceStateListChanged() {
+  RequestDeviceStateList();
+}
+
+void NetworkHealth::OnActiveNetworksChanged(
+    std::vector<network_config::mojom::NetworkStatePropertiesPtr>) {}
+
+void NetworkHealth::OnNetworkStateChanged(
+    network_config::mojom::NetworkStatePropertiesPtr) {}
+
+void NetworkHealth::OnVpnProvidersChanged() {}
+
+void NetworkHealth::OnNetworkCertificatesChanged() {}
+
+void NetworkHealth::OnNetworkStateListReceived(
+    std::vector<network_config::mojom::NetworkStatePropertiesPtr> props) {
+  network_properties_.swap(props);
+  CreateNetworkHealthState();
+}
+
+void NetworkHealth::OnDeviceStateListReceived(
+    std::vector<network_config::mojom::DeviceStatePropertiesPtr> props) {
+  device_properties_.swap(props);
+  CreateNetworkHealthState();
+}
+
 void NetworkHealth::CreateNetworkHealthState() {
   // If the device information has not been collected, the NetworkHealthState
   // cannot be created.
@@ -135,46 +183,8 @@ void NetworkHealth::CreateNetworkHealthState() {
   }
 }
 
-void NetworkHealth::BindReceiver(
-    mojo::PendingReceiver<mojom::NetworkHealthService> receiver) {
-  receivers_.Add(this, std::move(receiver));
-}
-
-const mojom::NetworkHealthStatePtr NetworkHealth::GetNetworkHealthState() {
-  NET_LOG(EVENT) << "Network Health State Requested";
-  return network_health_state_.Clone();
-}
-
 void NetworkHealth::RefreshNetworkHealthState() {
   RequestNetworkStateList();
-  RequestDeviceStateList();
-}
-
-void NetworkHealth::GetNetworkList(GetNetworkListCallback callback) {
-  std::move(callback).Run(mojo::Clone(network_health_state_.networks));
-}
-
-void NetworkHealth::GetHealthSnapshot(GetHealthSnapshotCallback callback) {
-  std::move(callback).Run(network_health_state_.Clone());
-}
-
-void NetworkHealth::OnNetworkStateListReceived(
-    std::vector<network_config::mojom::NetworkStatePropertiesPtr> props) {
-  network_properties_.swap(props);
-  CreateNetworkHealthState();
-}
-
-void NetworkHealth::OnDeviceStateListReceived(
-    std::vector<network_config::mojom::DeviceStatePropertiesPtr> props) {
-  device_properties_.swap(props);
-  CreateNetworkHealthState();
-}
-
-void NetworkHealth::OnNetworkStateListChanged() {
-  RequestNetworkStateList();
-}
-
-void NetworkHealth::OnDeviceStateListChanged() {
   RequestDeviceStateList();
 }
 

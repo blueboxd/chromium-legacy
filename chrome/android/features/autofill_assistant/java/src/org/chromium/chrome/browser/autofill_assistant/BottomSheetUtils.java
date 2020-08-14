@@ -4,9 +4,11 @@
 
 package org.chromium.chrome.browser.autofill_assistant;
 
+import org.chromium.base.task.PostTask;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.bottomsheet.EmptyBottomSheetObserver;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 class BottomSheetUtils {
     /** Request {@code controller} to show {@code content} and expand the sheet when it is shown. */
@@ -23,7 +25,8 @@ class BottomSheetUtils {
                 public void onSheetContentChanged(BottomSheetContent newContent) {
                     if (newContent == content) {
                         controller.removeObserver(this);
-                        controller.expandSheet();
+                        PostTask.postTask(
+                                UiThreadTaskTraits.DEFAULT, () -> controller.expandSheet());
                     }
                 }
             });

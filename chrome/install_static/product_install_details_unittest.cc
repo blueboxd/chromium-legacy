@@ -224,6 +224,13 @@ class MakeProductDetailsTest : public testing::TestWithParam<TestData> {
 
   const TestData& test_data() const { return test_data_; }
 
+  void SetChannelOverride(const wchar_t* value) {
+    ASSERT_THAT(base::win::RegKey(root_key_, GetClientsKeyPath().c_str(),
+                                  KEY_WOW64_32KEY | KEY_SET_VALUE)
+                    .WriteValue(L"channel", value),
+                Eq(ERROR_SUCCESS));
+  }
+
   void SetAp(const wchar_t* value) {
     ASSERT_THAT(base::win::RegKey(root_key_, GetClientStateKeyPath().c_str(),
                                   KEY_WOW64_32KEY | KEY_SET_VALUE)
@@ -241,6 +248,18 @@ class MakeProductDetailsTest : public testing::TestWithParam<TestData> {
   }
 
  private:
+  // Returns the registry path for the product's Clients key.
+  std::wstring GetClientsKeyPath() {
+    std::wstring result(L"Software\\");
+#if BUILDFLAG(USE_GOOGLE_UPDATE_INTEGRATION)
+    result.append(L"Google\\Update\\Clients\\");
+    result.append(kInstallModes[test_data().index].app_guid);
+#else
+    result.append(kProductPathName);
+#endif
+    return result;
+  }
+
   // Returns the registry path for the product's ClientState key.
   std::wstring GetClientStateKeyPath() {
     std::wstring result(L"Software\\");
@@ -280,6 +299,40 @@ TEST_P(MakeProductDetailsTest, DefaultChannel) {
   std::unique_ptr<PrimaryInstallDetails> details(
       MakeProductDetails(test_data().path));
   EXPECT_THAT(details->channel(), StrEq(test_data().channel));
+}
+
+// Test that the default channel is sniffed properly based on the channel
+// override.
+TEST_P(MakeProductDetailsTest, PolicyOverrideChannel) {
+  static constexpr std::tuple<const wchar_t*, const wchar_t*, const wchar_t*>
+      kChannelOverrides[] = {
+          {nullptr, L"", L""},     {nullptr, L"1.1-beta", L"beta"},
+          {L"", L"", L""},         {L"", L"1.1-beta", L""},
+          {L"stable", L"", L""},   {L"stable", L"1.1-beta", L""},
+          {L"dev", L"", L"dev"},   {L"dev", L"1.1-beta", L"dev"},
+          {L"beta", L"", L"beta"}, {L"beta", L"2.0-dev", L"beta"},
+      };
+  for (const auto& override_ap_channel : kChannelOverrides) {
+    const wchar_t* channel_override;
+    const wchar_t* ap;
+    const wchar_t* expected_channel;
+
+    std::tie(channel_override, ap, expected_channel) = override_ap_channel;
+    if (ap)
+      SetAp(ap);
+    if (channel_override)
+      SetChannelOverride(channel_override);
+
+    std::unique_ptr<PrimaryInstallDetails> details(
+        MakeProductDetails(test_data().path));
+    if (kInstallModes[test_data().index].channel_strategy ==
+        ChannelStrategy::ADDITIONAL_PARAMETERS) {
+      EXPECT_THAT(details->channel(), StrEq(expected_channel));
+    } else {
+      // "ap" and override are ignored for this mode.
+      EXPECT_THAT(details->channel(), StrEq(test_data().channel));
+    }
+  }
 }
 
 // Test that the channel name is properly parsed out of additional parameters.

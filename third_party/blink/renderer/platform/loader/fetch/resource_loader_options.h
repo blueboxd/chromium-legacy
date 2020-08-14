@@ -88,10 +88,7 @@ struct PLATFORM_EXPORT ResourceLoaderOptions {
   // resource_loader_options.cc because they require the full definition of
   // URLLoaderFactory for |url_loader_factory| data member, and we'd like
   // to avoid to include huge url_loader_factory.mojom-blink.h.
-  // TODO(crbug.com/896041): Make |world| non-optional by plumbing it for all
-  // requests.
-  explicit ResourceLoaderOptions(
-      scoped_refptr<const DOMWrapperWorld> world = nullptr);
+  explicit ResourceLoaderOptions(scoped_refptr<const DOMWrapperWorld> world);
   ResourceLoaderOptions(const ResourceLoaderOptions& other);
   ResourceLoaderOptions& operator=(const ResourceLoaderOptions& other);
   ~ResourceLoaderOptions();

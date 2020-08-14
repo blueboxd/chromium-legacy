@@ -367,8 +367,7 @@ void HungRendererDialogView::ShowForWebContents(
     Profile* profile =
         Profile::FromBrowserContext(contents->GetBrowserContext());
     ui::win::SetAppIdForWindow(
-        shell_integration::win::GetChromiumModelIdForProfile(
-            profile->GetPath()),
+        shell_integration::win::GetAppUserModelIdForBrowser(profile->GetPath()),
         views::HWNDForWidget(GetWidget()));
 #endif
 

@@ -23,7 +23,7 @@ import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bun
 
 import {loadTimeData} from '../i18n_setup.js';
 
-import {PasswordManagerImpl, PasswordManagerProxy} from './password_manager_proxy.js';
+import {PasswordManagerImpl} from './password_manager_proxy.js';
 import {ShowPasswordBehavior} from './show_password_behavior.js';
 
 Polymer({
@@ -55,18 +55,23 @@ Polymer({
     },
 
     /**
+     * Whether the password is visible or obfuscated.
+     * @private
+     */
+    isPasswordVisible_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
      * Whether the input is invalid.
      * @private
      */
     inputInvalid_: Boolean,
   },
 
-  /** @private {?PasswordManagerProxy} */
-  passwordManager_: null,
-
   /** @override */
   attached() {
-    this.passwordManager_ = PasswordManagerImpl.getInstance();
     this.$.dialog.showModal();
   },
 
@@ -94,9 +99,81 @@ Polymer({
   },
 
   /**
+   * Gets the password input's type. Should be 'text' when password is visible
+   * or when there's federated text otherwise 'password'.
+   * @return {string}
+   * @private
+   */
+  getPasswordInputType_() {
+    if (this.isEditDialog_) {
+      return this.isPasswordVisible_ || this.entry.federationText ? 'text' :
+                                                                    'password';
+    } else {
+      return this.getPasswordInputType();
+    }
+  },
+
+  /**
+   * Gets the title text for the show/hide icon.
+   * @param {string} password
+   * @param {boolean} isPasswordVisible
+   * @param {string} hide The i18n text to use for 'Hide'
+   * @param {string} show The i18n text to use for 'Show'
+   * @private
+   */
+  showPasswordTitle_(password, isPasswordVisible, hide, show) {
+    if (this.isEditDialog_) {
+      return isPasswordVisible ? hide : show;
+    } else {
+      return this.showPasswordTitle(password, hide, show);
+    }
+  },
+
+  /**
+   * Get the right icon to display when hiding/showing a password.
+   * @return {string}
+   * @private
+   */
+  getIconClass_() {
+    if (this.isEditDialog_) {
+      return this.isPasswordVisible_ ? 'icon-visibility-off' :
+                                       'icon-visibility';
+    } else {
+      return this.getIconClass();
+    }
+  },
+
+  /**
+   * Gets the text of the password. Will use the value of |entry.password|
+   * unless it cannot be shown, in which case it will be a fixed number of
+   * spaces. It can also be the federated text.
+   * @return {string}
+   * @private
+   */
+  getPassword_() {
+    if (this.isEditDialog_) {
+      return this.entry.password;
+    } else {
+      return this.getPassword();
+    }
+  },
+
+  /**
+   * Handler for tapping the show/hide button.
+   * @private
+   */
+  onShowPasswordButtonTap_() {
+    if (this.isEditDialog_) {
+      this.isPasswordVisible_ = !this.isPasswordVisible_;
+    } else {
+      this.onShowPasswordButtonTap();
+    }
+  },
+
+  /**
    * Handler for tapping the 'done' or 'save' button depending on isEditDialog_.
    * For 'save' button it should save new password. After pressing action button
-   * button the edit dialog should be closed.
+   * the edit dialog should be closed.
    * @private
    */
   onActionButtonTap_() {
@@ -111,7 +188,7 @@ Polymer({
         idsToChange.push(deviceId);
       }
 
-      this.passwordManager_
+      PasswordManagerImpl.getInstance()
           .changeSavedPassword(idsToChange, this.$.passwordInput.value)
           .finally(() => {
             this.close();

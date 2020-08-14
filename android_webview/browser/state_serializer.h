@@ -18,7 +18,6 @@ class PickleIterator;
 
 namespace content {
 
-class BrowserContext;
 class NavigationEntry;
 class WebContents;
 
@@ -55,12 +54,10 @@ void WriteNavigationEntryToPickle(uint32_t state_version,
                                   content::NavigationEntry& entry,
                                   base::Pickle* pickle);
 bool RestoreNavigationEntryFromPickle(base::PickleIterator* iterator,
-                                      content::BrowserContext* browser_context,
                                       content::NavigationEntry* entry)
     WARN_UNUSED_RESULT;
 bool RestoreNavigationEntryFromPickle(uint32_t state_version,
                                       base::PickleIterator* iterator,
-                                      content::BrowserContext* browser_context,
                                       content::NavigationEntry* entry)
     WARN_UNUSED_RESULT;
 

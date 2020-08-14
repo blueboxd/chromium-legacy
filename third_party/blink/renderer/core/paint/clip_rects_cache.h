@@ -24,10 +24,6 @@ enum ClipRectsCacheSlot {
   // crbug.com/783532.
   kAbsoluteClipRectsIgnoringViewportClip,
 
-  // Relative to painting ancestor. Used for pre-CompositeAfterPaint
-  // compositing.
-  kPaintingClipRects,
-
   kNumberOfClipRectsCacheSlots,
   kUncachedClipRects,
 };

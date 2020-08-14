@@ -104,6 +104,10 @@ void WebLayerRenderFrameObserver::CapturePageText() {
   if (document_loader && document_loader->HasUnreachableURL())
     return;
 
+  // Don't index/capture pages that are being prerendered.
+  if (prerender::PrerenderHelper::IsPrerendering(render_frame()))
+    return;
+
   // Don't capture contents unless there is a translate agent to consume them.
   if (!translate_agent_)
     return;

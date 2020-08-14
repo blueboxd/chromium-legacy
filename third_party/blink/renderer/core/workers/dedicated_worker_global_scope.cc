@@ -101,6 +101,22 @@ DedicatedWorkerGlobalScope* DedicatedWorkerGlobalScope::Create(
   }
 }
 
+struct ProcessedCreationParams {
+  std::unique_ptr<GlobalScopeCreationParams> creation_params;
+  ExecutionContextToken parent_context_token;
+};
+
+// static
+DedicatedWorkerGlobalScope::ParsedCreationParams
+DedicatedWorkerGlobalScope::ParseCreationParams(
+    std::unique_ptr<GlobalScopeCreationParams> creation_params) {
+  ParsedCreationParams parsed_creation_params;
+  parsed_creation_params.parent_context_token =
+      creation_params->parent_context_token.value();
+  parsed_creation_params.creation_params = std::move(creation_params);
+  return parsed_creation_params;
+}
+
 DedicatedWorkerGlobalScope::DedicatedWorkerGlobalScope(
     std::unique_ptr<GlobalScopeCreationParams> creation_params,
     DedicatedWorkerThread* thread,
@@ -108,11 +124,27 @@ DedicatedWorkerGlobalScope::DedicatedWorkerGlobalScope(
     std::unique_ptr<Vector<String>> outside_origin_trial_tokens,
     const BeginFrameProviderParams& begin_frame_provider_params,
     ukm::SourceId ukm_source_id)
-    : WorkerGlobalScope(std::move(creation_params),
+    : DedicatedWorkerGlobalScope(
+          ParseCreationParams(std::move(creation_params)),
+          thread,
+          time_origin,
+          std::move(outside_origin_trial_tokens),
+          begin_frame_provider_params,
+          ukm_source_id) {}
+
+DedicatedWorkerGlobalScope::DedicatedWorkerGlobalScope(
+    ParsedCreationParams parsed_creation_params,
+    DedicatedWorkerThread* thread,
+    base::TimeTicks time_origin,
+    std::unique_ptr<Vector<String>> outside_origin_trial_tokens,
+    const BeginFrameProviderParams& begin_frame_provider_params,
+    ukm::SourceId ukm_source_id)
+    : WorkerGlobalScope(std::move(parsed_creation_params.creation_params),
                         thread,
                         time_origin,
                         ukm_source_id),
       token_(thread->WorkerObjectProxy().token()),
+      parent_token_(parsed_creation_params.parent_context_token),
       animation_frame_provider_(
           MakeGarbageCollected<WorkerAnimationFrameProvider>(
               this,

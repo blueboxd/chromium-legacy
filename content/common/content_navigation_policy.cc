@@ -62,6 +62,14 @@ bool IsSameSiteBackForwardCacheEnabled() {
   return enable_same_site_back_forward_cache.Get();
 }
 
+bool ShouldSkipSameSiteBackForwardCacheForPageWithUnload() {
+  if (!IsSameSiteBackForwardCacheEnabled())
+    return true;
+  static constexpr base::FeatureParam<bool> skip_same_site_if_unload_exists(
+      &features::kBackForwardCache, "skip_same_site_if_unload_exists", false);
+  return skip_same_site_if_unload_exists.Get();
+}
+
 bool CanCrossSiteNavigationsProactivelySwapBrowsingInstances() {
   return IsProactivelySwapBrowsingInstanceEnabled() ||
          IsBackForwardCacheEnabled();

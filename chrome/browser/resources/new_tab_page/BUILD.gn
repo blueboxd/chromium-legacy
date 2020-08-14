@@ -49,6 +49,7 @@ js_library("app") {
   deps = [
     ":background_manager",
     ":browser_proxy",
+    ":module_wrapper",
     ":modules",
     ":most_visited",
     ":one_google_bar_api",
@@ -240,9 +241,18 @@ js_library("modules") {
   ]
 }
 
+js_library("module_wrapper") {
+  deps = [
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+  ]
+}
+
 js_library("module_registry") {
   sources = [ "modules/module_registry.js" ]
-  deps = [ ":module_descriptor" ]
+  deps = [
+    ":module_descriptor",
+    "//ui/webui/resources/js:cr.m",
+  ]
 }
 
 html_to_js("web_components_local") {
@@ -266,6 +276,7 @@ html_to_js("web_components_local") {
     "theme_icon.js",
     "iframe.js",
     "voice_search_overlay.js",
+    "module_wrapper.js",
   ]
 }
 

@@ -125,7 +125,8 @@ StyleImage* CSSImageSetValue::CacheImage(
     resource_request.SetReferrerString(image.referrer.referrer);
     if (is_ad_related_)
       resource_request.SetIsAdResource();
-    ResourceLoaderOptions options;
+    ResourceLoaderOptions options(
+        document.GetExecutionContext()->GetCurrentWorld());
     options.initiator_info.name = parser_mode_ == kUASheetMode
                                       ? fetch_initiator_type_names::kUacss
                                       : fetch_initiator_type_names::kCSS;

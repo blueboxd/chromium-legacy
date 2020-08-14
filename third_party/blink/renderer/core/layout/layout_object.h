@@ -135,6 +135,18 @@ struct AnnotatedRegionValue {
 const int kShowTreeCharacterOffset = 39;
 #endif
 
+// Usually calling LayooutObject::Destroy() is banned. This scope can be used to
+// exclude certain functions like ~SVGImage() from this rule. This is allowed
+// when a Persistent is guaranteeing to keep the LayoutObject alive for that GC
+// cycle.
+class AllowDestroyingLayoutObjectInFinalizerScope {
+  STACK_ALLOCATED();
+
+ public:
+  AllowDestroyingLayoutObjectInFinalizerScope();
+  ~AllowDestroyingLayoutObjectInFinalizerScope();
+};
+
 // LayoutObject is the base class for all layout tree objects.
 //
 // LayoutObjects form a tree structure that is a close mapping of the DOM tree.

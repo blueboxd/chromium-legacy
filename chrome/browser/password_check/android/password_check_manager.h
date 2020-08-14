@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_PASSWORD_CHECK_ANDROID_PASSWORD_CHECK_MANAGER_H_
 
 #include "base/memory/scoped_refptr.h"
+#include "base/strings/string_piece_forward.h"
 #include "chrome/browser/password_check/android/password_check_ui_status.h"
 #include "chrome/browser/password_manager/bulk_leak_check_service_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
@@ -70,7 +71,12 @@ class PasswordCheckManager
   // Called by java to retrieve the compromised credentials.
   std::vector<CompromisedCredentialForUI> GetCompromisedCredentials() const;
 
-  // Called by java to remove the given compromised |credential| and trigger a
+  // Called by java to update the given compromised `credential` and set its
+  // password to `new_password`.
+  void UpdateCredential(const password_manager::CredentialView& credential,
+                        base::StringPiece new_password);
+
+  // Called by java to remove the given compromised `credential` and trigger a
   // UI update on completion.
   void RemoveCredential(const password_manager::CredentialView& credential);
 

@@ -130,7 +130,7 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), starting_page));
 
   RenderFrameHostImpl* main_frame = current_frame_host();
-  main_frame->set_cross_origin_opener_policy(CoopSameOrigin());
+  main_frame->set_cross_origin_opener_policy_for_testing(CoopSameOrigin());
 
   ShellAddedObserver shell_observer;
   RenderFrameHostImpl* iframe = main_frame->child_at(0)->current_frame_host();
@@ -153,7 +153,8 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), starting_page));
 
   RenderFrameHostImpl* main_frame = current_frame_host();
-  main_frame->set_cross_origin_opener_policy(CoopSameOriginAllowPopups());
+  main_frame->set_cross_origin_opener_policy_for_testing(
+      CoopSameOriginAllowPopups());
 
   ShellAddedObserver shell_observer;
   RenderFrameHostImpl* iframe = main_frame->child_at(0)->current_frame_host();
@@ -178,7 +179,7 @@ IN_PROC_BROWSER_TEST_P(CrossOriginOpenerPolicyBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), starting_page));
 
   RenderFrameHostImpl* main_frame = current_frame_host();
-  main_frame->set_cross_origin_opener_policy(CoopSameOrigin());
+  main_frame->set_cross_origin_opener_policy_for_testing(CoopSameOrigin());
 
   ShellAddedObserver shell_observer;
   RenderFrameHostImpl* iframe = main_frame->child_at(0)->current_frame_host();
@@ -202,7 +203,7 @@ IN_PROC_BROWSER_TEST_P(
   EXPECT_TRUE(NavigateToURL(shell(), starting_page));
 
   RenderFrameHostImpl* main_frame = current_frame_host();
-  main_frame->set_cross_origin_opener_policy(CoopSameOrigin());
+  main_frame->set_cross_origin_opener_policy_for_testing(CoopSameOrigin());
 
   ShellAddedObserver new_shell_observer;
   RenderFrameHostImpl* iframe = main_frame->child_at(0)->current_frame_host();

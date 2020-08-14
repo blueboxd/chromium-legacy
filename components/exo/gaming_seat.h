@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/lock.h"
+#include "components/exo/gamepad.h"
 #include "components/exo/wm_helper.h"
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/events/ozone/gamepad/gamepad_observer.h"
@@ -26,8 +27,7 @@ class GamepadDelegate;
 class GamingSeat : public aura::client::FocusChangeObserver,
                    public ui::GamepadObserver {
  public:
-  // This class will monitor gamepad connection changes and manage gamepad
-  // returned by gaming_seat_delegate.
+  // This class will monitor gamepad connection changes and manage gamepads.
   GamingSeat(GamingSeatDelegate* gaming_seat_delegate);
 
   ~GamingSeat() override;
@@ -45,7 +45,7 @@ class GamingSeat : public aura::client::FocusChangeObserver,
   GamingSeatDelegate* const delegate_;
 
   // Contains the delegate for each gamepad device.
-  base::flat_map<int, GamepadDelegate*> gamepads_;
+  base::flat_map<int, std::unique_ptr<Gamepad>> gamepads_;
 
   // The flag if a valid target for gaming seat is focused. In other words, if
   // it's true, this class is observing gamepad events.

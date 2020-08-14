@@ -70,12 +70,14 @@ BubbleDialogModelHost::BubbleDialogModelHost(
       SetButtonLabel(ui::DIALOG_BUTTON_CANCEL, cancel_button->label());
   }
 
+  // TODO(pbos): Consider refactoring ::SetExtraView() so it can be called after
+  // the Widget is created and still be picked up. Moving this to
+  // OnDialogInitialized() will not work until then.
   auto* extra_button = model_->extra_button(GetPassKey());
   if (extra_button) {
-    auto extra_view =
-        std::make_unique<views::MdTextButton>(this, extra_button->label());
-    view_to_field_[extra_view.get()] = extra_button;
-    SetExtraView(std::move(extra_view));
+    OnViewCreatedForField(SetExtraView(std::make_unique<views::MdTextButton>(
+                              this, extra_button->label())),
+                          extra_button);
   }
 
   SetButtons(button_mask);
@@ -103,15 +105,13 @@ View* BubbleDialogModelHost::GetInitiallyFocusedView() {
 
 void BubbleDialogModelHost::OnDialogInitialized() {
   // Dialog buttons are added on dialog initialization.
-  auto* ok_button = model_->ok_button(GetPassKey());
-  if (ok_button)
-    view_to_field_[GetOkButton()] = ok_button;
+  if (GetOkButton())
+    OnViewCreatedForField(GetOkButton(), model_->ok_button(GetPassKey()));
 
-  auto* cancel_button = model_->cancel_button(GetPassKey());
-  if (cancel_button)
-    view_to_field_[GetCancelButton()] = cancel_button;
-
-  UpdateAccelerators();
+  if (GetCancelButton()) {
+    OnViewCreatedForField(GetCancelButton(),
+                          model_->cancel_button(GetPassKey()));
+  }
 }
 
 void BubbleDialogModelHost::Close() {
@@ -166,7 +166,7 @@ void BubbleDialogModelHost::AddInitialFields() {
         break;
     }
     DCHECK(last_view);
-    view_to_field_[last_view] = field.get();
+    OnViewCreatedForField(last_view, field.get());
     last_field_content_type = FieldTypeToContentType(field->type(GetPassKey()));
 
     // TODO(pbos): Update logic here when mixing types.
@@ -278,18 +278,18 @@ void BubbleDialogModelHost::OnPerformAction(Combobox* combobox) {
                                   FieldAsCombobox(view_to_field_[combobox]));
 }
 
-void BubbleDialogModelHost::UpdateAccelerators() {
-  // Dialog buttons can't be accessed before the widget is created. Delay until
-  // ::OnDialogInitialized().
-  if (!GetWidget())
-    return;
-
-  for (auto& kv : view_to_field_) {
-    View* const view = kv.first;
-    view->ResetAccelerators();
-    for (const auto& accelerator : kv.second->accelerators(GetPassKey()))
-      view->AddAccelerator(accelerator);
+void BubbleDialogModelHost::OnViewCreatedForField(View* view,
+                                                  ui::DialogModelField* field) {
+#if DCHECK_IS_ON()
+  // Make sure neither view nor field has been previously used.
+  for (const auto& kv : view_to_field_) {
+    DCHECK_NE(kv.first, view);
+    DCHECK_NE(kv.second, field);
   }
+#endif  // DCHECK_IS_ON()
+  view_to_field_[view] = field;
+  for (const auto& accelerator : field->accelerators(GetPassKey()))
+    view->AddAccelerator(accelerator);
 }
 
 View* BubbleDialogModelHost::FieldToView(ui::DialogModelField* field) {

@@ -4,6 +4,7 @@
 
 #include "ui/ozone/platform/wayland/host/xdg_surface_wrapper_impl.h"
 
+#include <aura-shell-client-protocol.h>
 #include <xdg-shell-client-protocol.h>
 #include <xdg-shell-unstable-v6-client-protocol.h>
 
@@ -327,6 +328,14 @@ bool XDGSurfaceWrapperImpl::InitializeV6(bool with_toplevel) {
   }
   zxdg_toplevel_v6_add_listener(zxdg_toplevel_v6_.get(),
                                 &zxdg_toplevel_v6_listener, this);
+
+  if (connection_->aura_shell()) {
+    aura_surface_.reset(zaura_shell_get_aura_surface(
+        connection_->aura_shell(), wayland_window_->root_surface()->surface()));
+    zaura_surface_set_fullscreen_mode(aura_surface_.get(),
+                                      ZAURA_SURFACE_FULLSCREEN_MODE_IMMERSIVE);
+  }
+
   wayland_window_->root_surface()->Commit();
   connection_->ScheduleFlush();
   return true;

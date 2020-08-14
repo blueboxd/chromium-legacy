@@ -32,9 +32,8 @@ export const ShowPasswordBehavior = {
    * Gets the password input's type. Should be 'text' when password is visible
    * or when there's federated text otherwise 'password'.
    * @return {string}
-   * @private
    */
-  getPasswordInputType_() {
+  getPasswordInputType() {
     return this.entry.password || this.entry.federationText ? 'text' :
                                                               'password';
   },
@@ -44,18 +43,16 @@ export const ShowPasswordBehavior = {
    * @param {string} password
    * @param {string} hide The i18n text to use for 'Hide'
    * @param {string} show The i18n text to use for 'Show'
-   * @private
    */
-  showPasswordTitle_(password, hide, show) {
+  showPasswordTitle(password, hide, show) {
     return password ? hide : show;
   },
 
   /**
    * Get the right icon to display when hiding/showing a password.
    * @return {string}
-   * @private
    */
-  getIconClass_() {
+  getIconClass() {
     return this.entry.password ? 'icon-visibility-off' : 'icon-visibility';
   },
 
@@ -64,9 +61,8 @@ export const ShowPasswordBehavior = {
    * cannot be shown, in which case it will be a fixed number of spaces. It can
    * also be the federated text.
    * @return {string}
-   * @private
    */
-  getPassword_() {
+  getPassword() {
     const NUM_PLACEHOLDERS = 10;
     return this.entry.federationText || this.entry.password ||
         ' '.repeat(NUM_PLACEHOLDERS);
@@ -74,9 +70,8 @@ export const ShowPasswordBehavior = {
 
   /**
    * Handler for tapping the show/hide button.
-   * @private
    */
-  onShowPasswordButtonTap_() {
+  onShowPasswordButtonTap() {
     if (this.entry.password) {
       this.hide();
       return;
@@ -92,7 +87,7 @@ export const ShowPasswordBehavior = {
               // <if expr="chromeos">
               // If no password was found, refresh auth token and retry.
               this.tokenRequestManager.request(
-                  this.onShowPasswordButtonTap_.bind(this));
+                  this.onShowPasswordButtonTap.bind(this));
               // </if>
             });
   },

@@ -30,6 +30,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.protobuf.ByteString;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -145,12 +146,18 @@ public class FeedStreamSurfaceTest {
         mRecyclerView = mFeedStreamSurface.mRootView;
         mLayoutManager = new FakeLinearLayoutManager(mActivity);
         mRecyclerView.setLayoutManager(mLayoutManager);
+
+        // Since we use a mockito spy, we need to replace the entry in sSurfaces.
+        FeedStreamSurface.sSurfaces.clear();
+        FeedStreamSurface.sSurfaces.add(mFeedStreamSurface);
+
         // Print logs to stdout.
         ShadowLog.stream = System.out;
     }
 
     @After
     public void tearDown() {
+        mFeedStreamSurface.destroy();
         FeedStreamSurface.shutdownForTesting();
         AppHooks.setInstanceForTesting(null);
     }
@@ -158,6 +165,7 @@ public class FeedStreamSurfaceTest {
     @Test
     @SmallTest
     public void testAddSlicesOnStreamUpdated() {
+        startupAndSetVisible();
         // Add 3 new slices at first.
         StreamUpdate update = StreamUpdate.newBuilder()
                                       .addUpdatedSlices(createSliceUpdateForNewXSurfaceSlice("a"))
@@ -190,6 +198,7 @@ public class FeedStreamSurfaceTest {
     @Test
     @SmallTest
     public void testAddNewSlicesWithSameIds() {
+        startupAndSetVisible();
         // Add 2 new slices at first.
         StreamUpdate update = StreamUpdate.newBuilder()
                                       .addUpdatedSlices(createSliceUpdateForNewXSurfaceSlice("a"))
@@ -214,6 +223,7 @@ public class FeedStreamSurfaceTest {
     @Test
     @SmallTest
     public void testRemoveSlicesOnStreamUpdated() {
+        startupAndSetVisible();
         // Add 3 new slices at first.
         StreamUpdate update = StreamUpdate.newBuilder()
                                       .addUpdatedSlices(createSliceUpdateForNewXSurfaceSlice("a"))
@@ -245,6 +255,7 @@ public class FeedStreamSurfaceTest {
     @Test
     @SmallTest
     public void testReorderSlicesOnStreamUpdated() {
+        startupAndSetVisible();
         // Add 3 new slices at first.
         StreamUpdate update = StreamUpdate.newBuilder()
                                       .addUpdatedSlices(createSliceUpdateForNewXSurfaceSlice("a"))
@@ -285,6 +296,7 @@ public class FeedStreamSurfaceTest {
     @Test
     @SmallTest
     public void testComplexOperationsOnStreamUpdated() {
+        startupAndSetVisible();
         // Add 3 new slices at first.
         StreamUpdate update = StreamUpdate.newBuilder()
                                       .addUpdatedSlices(createSliceUpdateForNewXSurfaceSlice("a"))
@@ -325,6 +337,7 @@ public class FeedStreamSurfaceTest {
     @Test
     @SmallTest
     public void testAddHeaderViews() {
+        startupAndSetVisible();
         View v0 = new View(mActivity);
         View v1 = new View(mActivity);
 
@@ -337,6 +350,7 @@ public class FeedStreamSurfaceTest {
     @Test
     @SmallTest
     public void testUpdateHeaderViews() {
+        startupAndSetVisible();
         View v0 = new View(mActivity);
         View v1 = new View(mActivity);
 
@@ -358,6 +372,7 @@ public class FeedStreamSurfaceTest {
     @Test
     @SmallTest
     public void testComplexOperationsOnStreamUpdatedAfterSetHeaderViews() {
+        startupAndSetVisible();
         // Set 2 header views first. These should always be there throughout stream update.
         View v0 = new View(mActivity);
         View v1 = new View(mActivity);
@@ -493,6 +508,8 @@ public class FeedStreamSurfaceTest {
     @Test
     @SmallTest
     public void testRemoveContentsOnSurfaceClosed() {
+        startupAndSetVisible();
+
         // Set 2 header views first.
         View v0 = new View(mActivity);
         View v1 = new View(mActivity);
@@ -512,7 +529,7 @@ public class FeedStreamSurfaceTest {
         assertEquals(headers + 3, mContentManager.getItemCount());
 
         // Closing the surface should remove all non-header contents.
-        mFeedStreamSurface.surfaceClosed();
+        mFeedStreamSurface.setStreamVisibility(false);
         assertEquals(headers, mContentManager.getItemCount());
         assertEquals(v0, getNativeView(0));
         assertEquals(v1, getNativeView(1));
@@ -521,6 +538,7 @@ public class FeedStreamSurfaceTest {
     @Test
     @SmallTest
     public void testLoadMoreOnDismissal() {
+        startupAndSetVisible();
         final int itemCount = 10;
 
         // loadMore not triggered due to last visible item not falling into lookahead range.
@@ -541,6 +559,7 @@ public class FeedStreamSurfaceTest {
     @Test
     @SmallTest
     public void testLoadMoreOnNavigateNewTab() {
+        startupAndSetVisible();
         final int itemCount = 10;
 
         // loadMore not triggered due to last visible item not falling into lookahead range.
@@ -561,6 +580,7 @@ public class FeedStreamSurfaceTest {
     @Test
     @SmallTest
     public void testLoadMoreOnNavigateIncognitoTab() {
+        startupAndSetVisible();
         final int itemCount = 10;
 
         // loadMore not triggered due to last visible item not falling into lookahead range.
@@ -581,33 +601,38 @@ public class FeedStreamSurfaceTest {
     @Test
     @SmallTest
     public void testSurfaceOpenedAndClosed() {
-        // Calling surfaceOpened() before startup() should not trigger native open call.
-        mFeedStreamSurface.surfaceOpened();
-        verify(mFeedStreamSurfaceJniMock, never())
-                .surfaceOpened(anyLong(), any(FeedStreamSurface.class));
+        // The surface won't open until after startup().
+        mFeedStreamSurface.setStreamVisibility(true);
+        mFeedStreamSurface.setStreamContentVisibility(true);
+        Assert.assertFalse(mFeedStreamSurface.isOpened());
 
-        // Calling surfaceClosed() before startup() should not trigger native open call.
-        mFeedStreamSurface.surfaceClosed();
-        verify(mFeedStreamSurfaceJniMock, never())
-                .surfaceClosed(anyLong(), any(FeedStreamSurface.class));
+        // Exercise turning off stream visibility while hidden.
+        mFeedStreamSurface.setStreamVisibility(false);
+        Assert.assertFalse(mFeedStreamSurface.isOpened());
 
+        // Trigger open.
+        mFeedStreamSurface.setStreamVisibility(true);
         FeedStreamSurface.startup();
+        Assert.assertTrue(mFeedStreamSurface.isOpened());
 
-        // Calling surfaceOpened() after startup() should trigger native open call.
-        mFeedStreamSurface.surfaceOpened();
-        verify(mFeedStreamSurfaceJniMock).surfaceOpened(anyLong(), any(FeedStreamSurface.class));
+        mFeedStreamSurface.setStreamVisibility(false);
+        Assert.assertFalse(mFeedStreamSurface.isOpened());
 
-        // Calling surfaceClosed() after startup() should trigger native open call.
-        mFeedStreamSurface.surfaceClosed();
-        verify(mFeedStreamSurfaceJniMock).surfaceClosed(anyLong(), any(FeedStreamSurface.class));
+        mFeedStreamSurface.setStreamVisibility(true);
+        Assert.assertTrue(mFeedStreamSurface.isOpened());
+
+        mFeedStreamSurface.setStreamContentVisibility(false);
+        Assert.assertFalse(mFeedStreamSurface.isOpened());
+
+        mFeedStreamSurface.setStreamContentVisibility(true);
+        Assert.assertTrue(mFeedStreamSurface.isOpened());
     }
 
     @Test
     @SmallTest
     public void testClearAll() {
-        FeedStreamSurface.startup();
         InOrder order = Mockito.inOrder(mFeedStreamSurfaceJniMock, mProcessScope);
-        mFeedStreamSurface.surfaceOpened();
+        startupAndSetVisible();
         order.verify(mFeedStreamSurfaceJniMock)
                 .surfaceOpened(anyLong(), any(FeedStreamSurface.class));
 
@@ -622,6 +647,7 @@ public class FeedStreamSurfaceTest {
     @Test
     @SmallTest
     public void testFindChildViewContainingDescendentNullParameters() {
+        startupAndSetVisible();
         View v = new View(mActivity);
         assertEquals(null, mFeedStreamSurface.findChildViewContainingDescendent(null, v));
         assertEquals(null, mFeedStreamSurface.findChildViewContainingDescendent(v, null));
@@ -630,6 +656,7 @@ public class FeedStreamSurfaceTest {
     @Test
     @SmallTest
     public void testFindChildViewContainingDescendentNotADescendent() {
+        startupAndSetVisible();
         View v1 = new View(mActivity);
         LinearLayout v2 = new LinearLayout(mActivity);
         View v2Child = new View(mActivity);
@@ -642,6 +669,7 @@ public class FeedStreamSurfaceTest {
     @Test
     @SmallTest
     public void testFindChildViewContainingDescendentDirectDescendent() {
+        startupAndSetVisible();
         LinearLayout parent = new LinearLayout(mActivity);
         View child = new View(mActivity);
         parent.addView(child);
@@ -652,6 +680,7 @@ public class FeedStreamSurfaceTest {
     @Test
     @SmallTest
     public void testFindChildViewContainingDescendentIndirectDescendent() {
+        startupAndSetVisible();
         LinearLayout parent = new LinearLayout(mActivity);
         LinearLayout child = new LinearLayout(mActivity);
         View grandChild = new View(mActivity);
@@ -664,7 +693,21 @@ public class FeedStreamSurfaceTest {
 
     @Test
     @SmallTest
+    public void testOnStreamUpdatedIgnoredWhenNotOpen() {
+        // Surface not opened initially.
+        StreamUpdate update = StreamUpdate.newBuilder()
+                                      .addUpdatedSlices(createSliceUpdateForNewXSurfaceSlice("a"))
+                                      .addUpdatedSlices(createSliceUpdateForNewXSurfaceSlice("b"))
+                                      .build();
+        mFeedStreamSurface.onStreamUpdated(update.toByteArray());
+
+        assertEquals(0, mContentManager.getItemCount());
+    }
+
+    @Test
+    @SmallTest
     public void testNavigateReportsCorrectSlice() {
+        startupAndSetVisible();
         StreamUpdate update = StreamUpdate.newBuilder()
                                       .addUpdatedSlices(createSliceUpdateForNewXSurfaceSlice("a"))
                                       .addUpdatedSlices(createSliceUpdateForNewXSurfaceSlice("b"))
@@ -699,6 +742,8 @@ public class FeedStreamSurfaceTest {
     @Test
     @SmallTest
     public void testNavigateFromBottomSheetReportsCorrectSlice() {
+        startupAndSetVisible();
+
         StreamUpdate update = StreamUpdate.newBuilder()
                                       .addUpdatedSlices(createSliceUpdateForNewXSurfaceSlice("a"))
                                       .addUpdatedSlices(createSliceUpdateForNewXSurfaceSlice("b"))
@@ -739,6 +784,8 @@ public class FeedStreamSurfaceTest {
     @Test
     @SmallTest
     public void testNavigateNoSliceFound() {
+        startupAndSetVisible();
+
         StreamUpdate update = StreamUpdate.newBuilder()
                                       .addUpdatedSlices(createSliceUpdateForNewXSurfaceSlice("a"))
                                       .addUpdatedSlices(createSliceUpdateForNewXSurfaceSlice("b"))
@@ -762,6 +809,8 @@ public class FeedStreamSurfaceTest {
     @Test
     @SmallTest
     public void testScrollIsReportedOnIdle() {
+        startupAndSetVisible();
+
         mFeedStreamSurface.streamScrolled(0, 100);
         Robolectric.getForegroundThreadScheduler().advanceBy(1000, TimeUnit.MILLISECONDS);
 
@@ -774,8 +823,10 @@ public class FeedStreamSurfaceTest {
     @Test
     @SmallTest
     public void testScrollIsReportedOnClose() {
+        startupAndSetVisible();
+
         mFeedStreamSurface.streamScrolled(0, 100);
-        mFeedStreamSurface.surfaceClosed();
+        mFeedStreamSurface.setStreamContentVisibility(false);
 
         verify(mFeedStreamSurfaceJniMock)
                 .reportStreamScrollStart(anyLong(), any(FeedStreamSurface.class));
@@ -806,5 +857,11 @@ public class FeedStreamSurfaceTest {
         assertNotNull(view);
         assertTrue(view instanceof FrameLayout);
         return ((FrameLayout) view).getChildAt(0);
+    }
+
+    void startupAndSetVisible() {
+        FeedStreamSurface.startup();
+        mFeedStreamSurface.setStreamContentVisibility(true);
+        mFeedStreamSurface.setStreamVisibility(true);
     }
 }

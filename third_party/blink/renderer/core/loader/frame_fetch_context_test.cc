@@ -237,7 +237,7 @@ class FrameFetchContextSubresourceFilterTest : public FrameFetchContextTest {
                                             ->GetProperties()
                                             .GetFetchClientSettingsObject()
                                             .GetSecurityOrigin());
-    ResourceLoaderOptions options;
+    ResourceLoaderOptions options(nullptr /* world */);
     // DJKim
     return GetFetchContext()->CanRequest(ResourceType::kImage, resource_request,
                                          input_url, options,
@@ -1325,7 +1325,7 @@ TEST_F(FrameFetchContextTest, PopulateResourceRequestWhenDetached) {
       network::mojom::WebClientHintsType::kViewportWidth);
 
   FetchParameters::ResourceWidth resource_width;
-  ResourceLoaderOptions options;
+  ResourceLoaderOptions options(nullptr /* world */);
 
   document->GetFrame()->GetClientHintsPreferences().SetShouldSend(
       network::mojom::WebClientHintsType::kDeviceMemory);

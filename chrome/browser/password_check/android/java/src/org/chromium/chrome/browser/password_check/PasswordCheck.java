@@ -92,6 +92,13 @@ public interface PasswordCheck extends PasswordCheckComponentUi.Delegate {
     CompromisedCredential[] getCompromisedCredentials();
 
     /**
+     * Update the given credential in the password store.
+     * @param credential A {@link CompromisedCredential}.
+     * @param newPassword The new password for the credential.
+     */
+    void updateCredential(CompromisedCredential credential, String newPassword);
+
+    /**
      * @return The latest available number of all saved passwords. If this is invoked before
      * {@link Observer#onSavedPasswordsFetchCompleted}, the returned value is likely invalid.
      */

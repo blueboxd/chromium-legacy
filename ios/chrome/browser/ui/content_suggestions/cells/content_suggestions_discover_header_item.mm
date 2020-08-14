@@ -27,7 +27,7 @@ const CGFloat kHeaderBorderMargin = 16;
 // Font size for label text in header.
 const CGFloat kDiscoverFeedTitleFontSize = 16;
 // Insets for header menu button.
-const CGFloat kHeaderMenuButtonInsetTopAndBottom = 11;
+const CGFloat kHeaderMenuButtonInsetTopAndBottom = 2;
 const CGFloat kHeaderMenuButtonInsetSides = 2;
 // Duration for the header animation when Discover feed visibility changes.
 const CGFloat kHeaderChangeAnimationDuration = 0.5;

@@ -67,7 +67,7 @@ PrinterList LocalPrinterHandlerDefault::EnumeratePrintersAsync(
 #endif
 
   scoped_refptr<PrintBackend> print_backend(
-      PrintBackend::CreateInstance(nullptr, locale));
+      PrintBackend::CreateInstance(locale));
 
   PrinterList printer_list;
   print_backend->EnumeratePrinters(&printer_list);
@@ -91,7 +91,7 @@ base::Value LocalPrinterHandlerDefault::FetchCapabilitiesAsync(
 #endif
 
   scoped_refptr<PrintBackend> print_backend(
-      PrintBackend::CreateInstance(nullptr, locale));
+      PrintBackend::CreateInstance(locale));
 
   VLOG(1) << "Get printer capabilities start for " << device_name;
 
@@ -116,7 +116,7 @@ std::string LocalPrinterHandlerDefault::GetDefaultPrinterAsync(
 #endif
 
   scoped_refptr<PrintBackend> print_backend(
-      PrintBackend::CreateInstance(nullptr, locale));
+      PrintBackend::CreateInstance(locale));
 
   std::string default_printer = print_backend->GetDefaultPrinterName();
   VLOG(1) << "Default Printer: " << default_printer;

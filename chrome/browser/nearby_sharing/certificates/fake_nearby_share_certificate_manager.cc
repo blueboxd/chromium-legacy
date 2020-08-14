@@ -21,12 +21,9 @@ FakeNearbyShareCertificateManager::Factory::CreateInstance() {
 
 FakeNearbyShareCertificateManager::GetDecryptedPublicCertificateCall::
     GetDecryptedPublicCertificateCall(
-        base::span<const uint8_t> encrypted_metadata_key,
-        base::span<const uint8_t> salt,
+        NearbyShareEncryptedMetadataKey encrypted_metadata_key,
         CertDecryptedCallback callback)
-    : encrypted_metadata_key(encrypted_metadata_key.begin(),
-                             encrypted_metadata_key.end()),
-      salt(salt.begin(), salt.end()),
+    : encrypted_metadata_key(std::move(encrypted_metadata_key)),
       callback(std::move(callback)) {}
 
 FakeNearbyShareCertificateManager::GetDecryptedPublicCertificateCall::
@@ -53,12 +50,18 @@ FakeNearbyShareCertificateManager::GetValidPrivateCertificate(
   return GetNearbyShareTestPrivateCertificate(visibility);
 }
 
+std::vector<nearbyshare::proto::PublicCertificate>
+FakeNearbyShareCertificateManager::GetPrivateCertificatesAsPublicCertificates(
+    NearbyShareVisibility visibility) {
+  ++num_get_private_certificates_as_public_certificates_calls_;
+  return GetNearbyShareTestPublicCertificateList(visibility);
+}
+
 void FakeNearbyShareCertificateManager::GetDecryptedPublicCertificate(
-    base::span<const uint8_t> encrypted_metadata_key,
-    base::span<const uint8_t> salt,
+    NearbyShareEncryptedMetadataKey encrypted_metadata_key,
     CertDecryptedCallback callback) {
-  get_decrypted_public_certificate_calls_.emplace_back(
-      encrypted_metadata_key, salt, std::move(callback));
+  get_decrypted_public_certificate_calls_.emplace_back(encrypted_metadata_key,
+                                                       std::move(callback));
 }
 
 void FakeNearbyShareCertificateManager::DownloadPublicCertificates() {

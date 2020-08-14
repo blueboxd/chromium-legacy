@@ -30,6 +30,7 @@
 #include "chrome/browser/nearby_sharing/mock_nearby_process_manager.h"
 #include "chrome/browser/nearby_sharing/mock_nearby_sharing_decoder.h"
 #include "chrome/browser/nearby_sharing/nearby_connections_manager.h"
+#include "chrome/browser/nearby_sharing/proto/rpc_resources.pb.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/services/sharing/public/cpp/advertisement.h"
@@ -245,10 +246,7 @@ class NearbySharingServiceImplTest : public testing::Test {
         .WillRepeatedly(testing::Return(&mock_decoder_));
   }
 
-  void TearDown() override {
-    profile_manager_.DeleteAllTestingProfiles();
-    NearbyProcessManager::GetInstance().ClearActiveProfile();
-  }
+  void TearDown() override { profile_manager_.DeleteAllTestingProfiles(); }
 
   std::unique_ptr<NearbySharingServiceImpl> CreateService(
       const std::string& profile_name) {
@@ -262,8 +260,8 @@ class NearbySharingServiceImplTest : public testing::Test {
         &prefs_, notification_display_service, profile,
         base::WrapUnique(fake_nearby_connections_manager_),
         &mock_nearby_process_manager_);
-    NearbyProcessManager& process_manager = NearbyProcessManager::GetInstance();
-    process_manager.SetActiveProfile(profile);
+    ON_CALL(mock_nearby_process_manager_, IsActiveProfile(profile))
+        .WillByDefault(Return(true));
 
     // Allow the posted task to fetch the BluetoothAdapter to finish.
     base::RunLoop().RunUntilIdle();
@@ -312,15 +310,16 @@ class NearbySharingServiceImplTest : public testing::Test {
 
     ASSERT_FALSE(calls.empty());
     EXPECT_EQ(expected_num_calls, calls.size());
-    EXPECT_EQ(GetNearbyShareTestEncryptedMetadataKey().encrypted_key(),
-              calls.back().encrypted_metadata_key);
     EXPECT_EQ(GetNearbyShareTestEncryptedMetadataKey().salt(),
-              calls.back().salt);
+              calls.back().encrypted_metadata_key.salt());
+    EXPECT_EQ(GetNearbyShareTestEncryptedMetadataKey().encrypted_key(),
+              calls.back().encrypted_metadata_key.encrypted_key());
 
     if (success) {
       std::move(calls.back().callback)
           .Run(NearbyShareDecryptedPublicCertificate::DecryptPublicCertificate(
-              GetNearbyShareTestPublicCertificate(),
+              GetNearbyShareTestPublicCertificate(
+                  NearbyShareVisibility::kAllContacts),
               GetNearbyShareTestEncryptedMetadataKey()));
     } else {
       std::move(calls.back().callback).Run(base::nullopt);
@@ -618,8 +617,8 @@ TEST_F(NearbySharingServiceImplTest,
        RegisterSendSurfaceNoActiveProfilesNotDiscovering) {
   ui::ScopedSetIdleState unlocked(ui::IDLE_STATE_IDLE);
   SetConnectionType(net::NetworkChangeNotifier::CONNECTION_WIFI);
-  NearbyProcessManager& process_manager = NearbyProcessManager::GetInstance();
-  process_manager.ClearActiveProfile();
+  ON_CALL(mock_nearby_process_manager_, IsActiveProfile(_))
+      .WillByDefault(Return(false));
   MockTransferUpdateCallback transfer_callback;
   MockShareTargetDiscoveredCallback discovery_callback;
   EXPECT_EQ(

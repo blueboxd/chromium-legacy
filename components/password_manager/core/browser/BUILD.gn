@@ -243,6 +243,8 @@ static_library("browser") {
     "ui/saved_passwords_presenter.h",
     "votes_uploader.cc",
     "votes_uploader.h",
+    "well_known_change_password_util.cc",
+    "well_known_change_password_util.h",
   ]
 
   all_dependent_configs = [ ":password_reuse_detection_config" ]
@@ -629,6 +631,7 @@ source_set("unit_tests") {
     "ui/saved_passwords_presenter_unittest.cc",
     "vote_uploads_test_matchers.h",
     "votes_uploader_unittest.cc",
+    "well_known_change_password_util_unittest.cc",
   ]
   if (is_android) {
     sources += [ "password_scripts_fetcher_impl_unittests.cc" ]

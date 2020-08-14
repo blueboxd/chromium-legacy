@@ -843,6 +843,23 @@ bool FaviconDatabase::HasMappingFor(favicon_base::FaviconID id) {
   return statement.Step();
 }
 
+std::vector<favicon_base::FaviconID>
+FaviconDatabase::GetFaviconsLastUpdatedBefore(base::Time time, int max_count) {
+  sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
+                                                  "SELECT icon_id "
+                                                  "FROM favicon_bitmaps "
+                                                  "WHERE last_updated < ? "
+                                                  "ORDER BY last_updated ASC "
+                                                  "LIMIT ?"));
+  statement.BindInt64(0, time.ToDeltaSinceWindowsEpoch().InMicroseconds());
+  statement.BindInt64(
+      1, max_count == 0 ? std::numeric_limits<int64_t>::max() : max_count);
+  std::vector<favicon_base::FaviconID> ids;
+  while (statement.Step())
+    ids.push_back(statement.ColumnInt64(0));
+  return ids;
+}
+
 bool FaviconDatabase::InitIconMappingEnumerator(
     favicon_base::IconType type,
     IconMappingEnumerator* enumerator) {

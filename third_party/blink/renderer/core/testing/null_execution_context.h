@@ -7,6 +7,7 @@
 
 #include <memory>
 #include "base/single_thread_task_runner.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -53,6 +54,10 @@ class NullExecutionContext : public GarbageCollected<NullExecutionContext>,
 
   BrowserInterfaceBrokerProxy& GetBrowserInterfaceBroker() override;
 
+  ExecutionContextToken GetExecutionContextToken() const final {
+    return token_;
+  }
+
  private:
   KURL url_;
 
@@ -60,6 +65,9 @@ class NullExecutionContext : public GarbageCollected<NullExecutionContext>,
   // ExecutionContext::GetScheduler don't have to check for whether it's null or
   // not.
   std::unique_ptr<FrameOrWorkerScheduler> scheduler_;
+
+  // A fake token identifying this execution context.
+  const LocalFrameToken token_;
 };
 
 }  // namespace blink

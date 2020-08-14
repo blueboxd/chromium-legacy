@@ -125,11 +125,11 @@ size_t ExpectLogContainsSomewhereAfter(const std::vector<NetLogEntry>& entries,
 
 base::Optional<std::string> GetOptionalStringValueFromParams(
     const NetLogEntry& entry,
-    base::StringPiece name) {
+    base::StringPiece path) {
   if (!entry.params.is_dict())
     return base::nullopt;
 
-  const std::string* result = entry.params.FindStringKey(name);
+  const std::string* result = entry.params.FindStringPath(path);
   if (!result)
     return base::nullopt;
 
@@ -137,17 +137,17 @@ base::Optional<std::string> GetOptionalStringValueFromParams(
 }
 
 base::Optional<bool> GetOptionalBooleanValueFromParams(const NetLogEntry& entry,
-                                                       base::StringPiece name) {
+                                                       base::StringPiece path) {
   if (!entry.params.is_dict())
     return base::nullopt;
-  return entry.params.FindBoolKey(name);
+  return entry.params.FindBoolPath(path);
 }
 
 base::Optional<int> GetOptionalIntegerValueFromParams(const NetLogEntry& entry,
-                                                      base::StringPiece name) {
+                                                      base::StringPiece path) {
   if (!entry.params.is_dict())
     return base::nullopt;
-  return entry.params.FindIntKey(name);
+  return entry.params.FindIntPath(path);
 }
 
 base::Optional<int> GetOptionalNetErrorCodeFromParams(
@@ -156,30 +156,30 @@ base::Optional<int> GetOptionalNetErrorCodeFromParams(
 }
 
 std::string GetStringValueFromParams(const NetLogEntry& entry,
-                                     base::StringPiece name) {
-  auto result = GetOptionalStringValueFromParams(entry, name);
+                                     base::StringPiece path) {
+  auto result = GetOptionalStringValueFromParams(entry, path);
   if (!result) {
-    ADD_FAILURE() << "No string parameter " << name;
+    ADD_FAILURE() << "No string parameter " << path;
     return "";
   }
   return *result;
 }
 
 int GetIntegerValueFromParams(const NetLogEntry& entry,
-                              base::StringPiece name) {
-  auto result = GetOptionalIntegerValueFromParams(entry, name);
+                              base::StringPiece path) {
+  auto result = GetOptionalIntegerValueFromParams(entry, path);
   if (!result) {
-    ADD_FAILURE() << "No int parameter " << name;
+    ADD_FAILURE() << "No int parameter " << path;
     return -1;
   }
   return *result;
 }
 
 bool GetBooleanValueFromParams(const NetLogEntry& entry,
-                               base::StringPiece name) {
-  auto result = GetOptionalBooleanValueFromParams(entry, name);
+                               base::StringPiece path) {
+  auto result = GetOptionalBooleanValueFromParams(entry, path);
   if (!result) {
-    ADD_FAILURE() << "No bool parameter " << name;
+    ADD_FAILURE() << "No bool parameter " << path;
     return -1;
   }
   return *result;
@@ -195,12 +195,12 @@ int GetNetErrorCodeFromParams(const NetLogEntry& entry) {
 }
 
 bool GetListValueFromParams(const NetLogEntry& entry,
-                            base::StringPiece name,
+                            base::StringPiece path,
                             const base::ListValue** value) {
   if (!entry.params.is_dict())
     return false;
 
-  const base::Value* list = entry.params.FindListKey(name);
+  const base::Value* list = entry.params.FindListPath(path);
   if (!list)
     return false;
 

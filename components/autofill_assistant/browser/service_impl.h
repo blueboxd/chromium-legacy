@@ -35,19 +35,19 @@ class Client;
 class ServiceImpl : public Service {
  public:
   // Convenience method for creating a service. |context| and |client| must
-  // remain valid for the lifetime of the service instance.
+  // remain valid for the lifetime of the service instance. Will enable
+  // authentication unless disabled via the autofill-assistant-auth command line
+  // flag.
   static std::unique_ptr<ServiceImpl> Create(content::BrowserContext* context,
                                              Client* client);
 
-  // |context| and |token_fetcher| must remain valid for the lifetime of the
-  // service instance. Will enable authentication unless disabled via the
-  // autofill-assistant-auth command line flag.
-  ServiceImpl(const std::string& api_key,
-              const GURL& server_url,
-              content::BrowserContext* context,
+  // |context| and |access_token_fetcher| must remain valid for the lifetime of
+  // the service instance.
+  ServiceImpl(content::BrowserContext* context,
+              version_info::Channel channel,
               std::unique_ptr<ClientContext> client_context,
-              AccessTokenFetcher* access_token_fetcher);
-  // Same as above, but allows overriding authentication settings.
+              AccessTokenFetcher* access_token_fetcher,
+              bool auth_enabled);
   ServiceImpl(const std::string& api_key,
               const GURL& server_url,
               content::BrowserContext* context,

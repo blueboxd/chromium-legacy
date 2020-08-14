@@ -113,6 +113,12 @@ class ShelfViewTestAPI {
   // Set callback which will run after showing shelf context menu.
   void SetShelfContextMenuCallback(base::RepeatingClosure closure);
 
+  // Returns |separator_index_|.
+  int GetSeparatorIndex() const;
+
+  // Checks whether the separator is visible or not.
+  bool IsSeparatorVisible() const;
+
  private:
   ShelfView* shelf_view_;
   int id_ = 0;

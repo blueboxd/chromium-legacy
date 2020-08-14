@@ -137,15 +137,18 @@ void WebIDBTransactionImpl::PutAll(int64_t object_store_id,
 void WebIDBTransactionImpl::PutAllCallback(
     std::unique_ptr<WebIDBCallbacks> callbacks,
     mojom::blink::IDBTransactionPutAllResultPtr result) {
-  DCHECK(result->is_error_result());
-  if (result->get_error_result()->error_code ==
-      blink::mojom::IDBException::kNoError) {
-    callbacks->Success();
-  } else {
+  if (result->is_error_result()) {
     callbacks->Error(result->get_error_result()->error_code,
                      std::move(result->get_error_result()->error_message));
+    callbacks.reset();
+    return;
   }
-  callbacks.reset();
+
+  if (result->is_keys()) {
+    callbacks->SuccessKey(IDBKey::CreateArray(std::move(result->get_keys())));
+    callbacks.reset();
+    return;
+  }
 }
 
 void WebIDBTransactionImpl::Commit(int64_t num_errors_handled) {

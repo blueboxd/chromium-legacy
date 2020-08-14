@@ -32,9 +32,11 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/mojom/ip_address_space.mojom-blink-forward.h"
 #include "services/network/public/mojom/referrer_policy.mojom-blink-forward.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-blink-forward.h"
@@ -376,6 +378,20 @@ class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
 
   virtual ukm::UkmRecorder* UkmRecorder() { return nullptr; }
   virtual ukm::SourceId UkmSourceID() const { return ukm::kInvalidSourceId; }
+
+  // Returns the token that uniquely identifies this ExecutionContext.
+  virtual ExecutionContextToken GetExecutionContextToken() const = 0;
+
+  // Returns the token that uniquely identifies the parent ExecutionContext of
+  // this context. If an ExecutionContext has a parent context, it means that it
+  // was created from that context, and the lifetime of this context is tied to
+  // the lifetime of its parent. This is used for resource usage attribution,
+  // where the resource usage of a child context will be charged to its parent
+  // (and so on up the tree).
+  virtual base::Optional<ExecutionContextToken> GetParentExecutionContextToken()
+      const {
+    return base::nullopt;
+  }
 
  protected:
   explicit ExecutionContext(v8::Isolate* isolate, Agent*);

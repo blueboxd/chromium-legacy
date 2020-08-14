@@ -68,7 +68,8 @@ TEST(NearbyShareCertificatesCommonTest, ValidityPeriod_PrivateCertificate) {
 TEST(NearbyShareCertificatesCommonTest, ValidityPeriod_PublicCertificate) {
   NearbyShareDecryptedPublicCertificate cert =
       *NearbyShareDecryptedPublicCertificate::DecryptPublicCertificate(
-          GetNearbyShareTestPublicCertificate(),
+          GetNearbyShareTestPublicCertificate(
+              NearbyShareVisibility::kAllContacts),
           GetNearbyShareTestEncryptedMetadataKey());
   const bool use_public_certificate_tolerance = true;
 

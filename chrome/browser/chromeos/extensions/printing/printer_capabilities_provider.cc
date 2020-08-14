@@ -27,7 +27,7 @@ base::Optional<printing::PrinterSemanticCapsAndDefaults>
 FetchCapabilitiesOnBlockingTaskRunner(const std::string& printer_id) {
   scoped_refptr<printing::PrintBackend> backend(
       printing::PrintBackend::CreateInstance(
-          nullptr, g_browser_process->GetApplicationLocale()));
+          g_browser_process->GetApplicationLocale()));
   printing::PrinterSemanticCapsAndDefaults capabilities;
   if (!backend->GetPrinterSemanticCapsAndDefaults(printer_id, &capabilities)) {
     LOG(WARNING) << "Failed to get capabilities for " << printer_id;

@@ -53,6 +53,8 @@ const CGFloat kCardBorderRadius = 11;
 const CGFloat kDiscoverFeedContentWith = 430;
 // Value representing offset from bottom of the page to trigger pagination.
 const CGFloat kPaginationOffset = 100;
+// Height for the Discover Feed section header.
+const CGFloat kDiscoverFeedFeaderHeight = 30;
 }
 
 NSString* const kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix =
@@ -604,6 +606,9 @@ NSString* const kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix =
     referenceSizeForHeaderInSection:(NSInteger)section {
   if ([self.collectionUpdater isHeaderSection:section]) {
     return CGSizeMake(0, [self.headerSynchronizer headerHeight]);
+  }
+  if ([self.collectionUpdater isDiscoverSection:section]) {
+    return CGSizeMake(0, kDiscoverFeedFeaderHeight);
   }
   CGSize defaultSize = [super collectionView:collectionView
                                       layout:collectionViewLayout

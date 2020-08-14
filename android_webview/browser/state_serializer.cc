@@ -92,9 +92,8 @@ bool RestoreFromPickle(base::PickleIterator* iterator,
   entries.reserve(entry_count);
   for (int i = 0; i < entry_count; ++i) {
     entries.push_back(content::NavigationEntry::Create());
-    if (!internal::RestoreNavigationEntryFromPickle(
-            state_version, iterator, web_contents->GetBrowserContext(),
-            entries[i].get()))
+    if (!internal::RestoreNavigationEntryFromPickle(state_version, iterator,
+                                                    entries[i].get()))
       return false;
   }
 
@@ -183,19 +182,15 @@ void WriteNavigationEntryToPickle(uint32_t state_version,
 }
 
 bool RestoreNavigationEntryFromPickle(base::PickleIterator* iterator,
-                                      content::BrowserContext* browser_context,
                                       content::NavigationEntry* entry) {
-  return RestoreNavigationEntryFromPickle(AW_STATE_VERSION, iterator,
-                                          browser_context, entry);
+  return RestoreNavigationEntryFromPickle(AW_STATE_VERSION, iterator, entry);
 }
 
 bool RestoreNavigationEntryFromPickle(uint32_t state_version,
                                       base::PickleIterator* iterator,
-                                      content::BrowserContext* browser_context,
                                       content::NavigationEntry* entry) {
   DCHECK(IsSupportedVersion(state_version));
   DCHECK(iterator);
-  DCHECK(browser_context);
   DCHECK(entry);
 
   GURL deserialized_url;
@@ -337,7 +332,6 @@ bool RestoreNavigationEntryFromPickle(uint32_t state_version,
     entry->SetHttpStatusCode(http_status_code);
   }
 
-  entry->InitRestoredEntry(browser_context);
   return true;
 }
 

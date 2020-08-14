@@ -126,7 +126,7 @@ class ProfileShortcutManagerTest : public testing::Test {
     ShellUtil::AddDefaultShortcutProperties(chrome_exe, &properties);
 
     properties.set_app_id(
-        shell_integration::win::GetChromiumModelIdForProfile(profile_1_path_));
+        shell_integration::win::GetAppUserModelIdForBrowser(profile_1_path_));
 
     const base::FilePath shortcut_path(
         profiles::internal::GetShortcutFilenameForProfile(L""));
@@ -192,7 +192,7 @@ class ProfileShortcutManagerTest : public testing::Test {
 
     base::win::ShortcutProperties expected_properties;
     expected_properties.set_app_id(
-        shell_integration::win::GetChromiumModelIdForProfile(profile_path));
+        shell_integration::win::GetAppUserModelIdForBrowser(profile_path));
     expected_properties.set_target(GetExePath());
     expected_properties.set_description(InstallUtil::GetAppDescription());
     expected_properties.set_dual_mode(false);

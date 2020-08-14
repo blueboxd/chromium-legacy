@@ -159,6 +159,7 @@ public class SyncTest {
     @LargeTest
     @Features.DisableFeatures(ChromeFeatureList.DECOUPLE_SYNC_FROM_ANDROID_MASTER_SYNC)
     @Feature({"Sync"})
+    @DisabledTest(message = "crbug.com/1103515")
     public void testStopAndStartSyncThroughAndroidMasterSync() {
         mSyncTestRule.setUpAccountAndSignInForTesting();
 

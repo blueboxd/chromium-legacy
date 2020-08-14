@@ -163,6 +163,9 @@ ASH_PUBLIC_EXPORT extern const base::Feature
 // later.
 ASH_PUBLIC_EXPORT extern const base::Feature kTemporaryHoldingSpace;
 
+// Enables dragging an unpinned open app to pinned app side to pin.
+ASH_PUBLIC_EXPORT extern const base::Feature kDragUnpinnedAppToPin;
+
 ASH_PUBLIC_EXPORT bool IsAllowAmbientEQEnabled();
 
 ASH_PUBLIC_EXPORT bool IsAltTabLimitedToActiveDesk();
@@ -226,6 +229,8 @@ ASH_PUBLIC_EXPORT bool IsNotificationsInContextMenuEnabled();
 ASH_PUBLIC_EXPORT bool IsMaintainShelfStateWhenEnteringOverviewEnabled();
 
 ASH_PUBLIC_EXPORT bool IsTemporaryHoldingSpaceEnabled();
+
+ASH_PUBLIC_EXPORT bool IsDragUnpinnedAppToPinEnabled();
 
 // These two functions are supposed to be temporary functions to set or get
 // whether "WebUITabStrip" feature is enabled from Chrome.

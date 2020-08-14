@@ -1160,7 +1160,9 @@ TEST_F(KerberosCredentialsManagerTest, UpdateAccountsFromPrefRetry) {
 
 // UpdateAccountsFromPref retries multiple times to add account if addition
 // fails multiple times for network related errors.
-TEST_F(KerberosCredentialsManagerTest, UpdateAccountsFromPrefMultipleRetries) {
+// Disable for being flaky. crbug.com/1116500
+TEST_F(KerberosCredentialsManagerTest,
+       DISABLED_UpdateAccountsFromPrefMultipleRetries) {
   // Starting with Kerberos enabled.
   SetPref(prefs::kKerberosEnabled, base::Value(true));
 
@@ -1200,8 +1202,9 @@ TEST_F(KerberosCredentialsManagerTest, UpdateAccountsFromPrefMultipleRetries) {
 
 // UpdateAccountsFromPref retries to add multiple accounts if addition fails for
 // network related errors.
+// Disable for being flaky. crbug.com/1116500
 TEST_F(KerberosCredentialsManagerTest,
-       UpdateAccountsFromPrefRetryMultipleAccounts) {
+       DISABLED_UpdateAccountsFromPrefRetryMultipleAccounts) {
   // Starting with Kerberos enabled.
   SetPref(prefs::kKerberosEnabled, base::Value(true));
 
@@ -1246,7 +1249,9 @@ TEST_F(KerberosCredentialsManagerTest,
 
 // UpdateAccountsFromPref stops retrying after a certain number of network
 // related errors.
-TEST_F(KerberosCredentialsManagerTest, UpdateAccountsFromPrefStopsRetrying) {
+// Disable for being flaky. crbug.com/1116500
+TEST_F(KerberosCredentialsManagerTest,
+       DISABLED_UpdateAccountsFromPrefStopsRetrying) {
   // Starting with Kerberos enabled.
   SetPref(prefs::kKerberosEnabled, base::Value(true));
 

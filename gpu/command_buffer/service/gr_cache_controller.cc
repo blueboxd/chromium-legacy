@@ -7,7 +7,6 @@
 #include <chrono>
 
 #include "base/bind.h"
-#include "base/metrics/histogram_macros.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
@@ -32,9 +31,6 @@ void GrCacheController::ScheduleGrContextCleanup() {
   current_idle_id_++;
   if (!purge_gr_cache_cb_.IsCancelled())
     return;
-
-  // Record memory usage periodically.
-  RecordGrContextMemory();
 
   constexpr int kOldResourceCleanupDelaySeconds = 5;
   // Here we ask GrContext to free any resources that haven't been used in
@@ -81,14 +77,6 @@ void GrCacheController::PurgeGrCache(uint64_t idle_id) {
     auto* api = gl::g_current_gl_context;
     api->glFlushFn();
   }
-}
-
-void GrCacheController::RecordGrContextMemory() const {
-  int resource_count = 0;
-  size_t resource_bytes = 0;
-  context_state_->gr_context()->getResourceCacheUsage(&resource_count,
-                                                      &resource_bytes);
-  UMA_HISTOGRAM_MEMORY_KB("GPU.GrContextMemoryKb", resource_bytes / 1000);
 }
 
 }  // namespace raster

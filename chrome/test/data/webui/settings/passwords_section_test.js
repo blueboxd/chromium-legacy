@@ -219,6 +219,83 @@ async function changeSavedPasswordTestHelper(
 }
 
 /**
+ * Helper function to check password visibility when open password-edit-dialog.
+ * @param {Boolean} isEditDialog
+ * @param {TestPasswordManagerProxy} passwordManager
+ * @param {PasswordSectionElementFactory} elementFactory
+ */
+async function openPasswordEditDialogHelper(
+    isEditDialog, passwordManager, elementFactory) {
+  const PASSWORD = 'p4ssw0rd';
+  const passwordList = [
+    createPasswordEntry({username: 'user0', id: 0}),
+  ];
+  passwordManager.setPlaintextPassword(PASSWORD);
+
+  const passwordsSection =
+      elementFactory.createPasswordsSection(passwordManager, passwordList, []);
+
+  const passwordListItem = getFirstPasswordListItem(passwordsSection);
+  passwordListItem.$$('#showPasswordButton').click();
+  flush();
+  await passwordManager.whenCalled('requestPlaintextPassword');
+  flush();
+
+  assertEquals('text', passwordListItem.$$('#password').type);
+  assertFalse(passwordListItem.$$('#password').disabled);
+  assertTrue(passwordListItem.$$('#showPasswordButton')
+                 .classList.contains('icon-visibility-off'));
+
+  // Open Edit Dialog.
+  passwordListItem.$.moreActionsButton.click();
+  passwordsSection.$.passwordsListHandler.$.menuEditPassword.click();
+  flush();
+  if (isEditDialog) {
+    await passwordManager.whenCalled('requestPlaintextPassword');
+    flush();
+  }
+
+  // Verify that list item password is hidden.
+  if (!isEditDialog) {
+    assertEquals('', passwordListItem.entry.password);
+  }
+  assertEquals('password', passwordListItem.$$('#password').type);
+  assertTrue(passwordListItem.$$('#password').disabled);
+  assertTrue(passwordListItem.$$('#showPasswordButton')
+                 .classList.contains('icon-visibility'));
+
+  // Verify that edit dialog password is hidden.
+  const passwordEditDialog =
+      passwordsSection.$.passwordsListHandler.$$('#passwordEditDialog');
+  assertEquals('password', passwordEditDialog.$.passwordInput.type);
+  assertTrue(passwordEditDialog.$.showPasswordButton.classList.contains(
+      'icon-visibility'));
+
+  passwordEditDialog.$$('#showPasswordButton').click();
+  flush();
+  if (!isEditDialog) {
+    await passwordManager.whenCalled('requestPlaintextPassword');
+    flush();
+  }
+
+  assertEquals('text', passwordEditDialog.$.passwordInput.type);
+  assertTrue(passwordEditDialog.$.showPasswordButton.classList.contains(
+      'icon-visibility-off'));
+
+  // Close the dialog, verify that the list item password remains hidden.
+  // Note that the password only gets hidden in the on-close handler, thus we
+  // need to await this event first.
+  passwordEditDialog.$.actionButton.click();
+  await eventToPromise('close', passwordEditDialog);
+
+  assertEquals('', passwordListItem.entry.password);
+  assertEquals('password', passwordListItem.$$('#password').type);
+  assertTrue(passwordListItem.$$('#password').disabled);
+  assertTrue(passwordListItem.$$('#showPasswordButton')
+                 .classList.contains('icon-visibility'));
+}
+
+/**
  * Simulates user who is eligible and opted-in for account storage. Should be
  * called after the PasswordsSection element is created. The load time value for
  * enableAccountStorage must be overridden separately.
@@ -376,20 +453,30 @@ suite('PasswordsSection', function() {
   // Regression test for crbug.com/1110290.
   // Test verifies that if the password list is updated, all the plaintext
   // passwords are hidden.
-  test('updatingPasswordListHidesPlaintextPasswords', function() {
+  test('updatingPasswordListHidesPlaintextPasswords', async function() {
+    const PASSWORD = 'pwd';
     const passwordList = [
-      createPasswordEntry({username: 'user0', id: 0}),
-      createPasswordEntry({username: 'user1', id: 1}),
+      createPasswordEntry({url: 'goo.gl', username: 'user0', id: 0}),
+      createPasswordEntry({url: 'goo.gl', username: 'user1', id: 1}),
     ];
+    passwordManager.setPlaintextPassword(PASSWORD);
+
     const passwordsSection = elementFactory.createPasswordsSection(
         passwordManager, passwordList, []);
 
-    // Make passwords visible.
     const passwordListItems =
         passwordsSection.root.querySelectorAll('password-list-item');
     assertEquals(2, passwordListItems.length);
-    passwordListItems[0].set('entry.password', 'pwd0');
-    passwordListItems[1].set('entry.password', 'pwd1');
+
+    passwordListItems[0].$$('#showPasswordButton').click();
+    flush();
+    await passwordManager.whenCalled('requestPlaintextPassword');
+    flush();
+
+    passwordListItems[1].$$('#showPasswordButton').click();
+    await passwordManager.whenCalled('requestPlaintextPassword');
+    flush();
+
     assertEquals('text', passwordListItems[0].$$('#password').type);
     assertEquals('text', passwordListItems[1].$$('#password').type);
 
@@ -407,58 +494,13 @@ suite('PasswordsSection', function() {
   });
 
   test('listItemEditDialogShowAndHideInterplay', async function() {
-    const PASSWORD = 'p4ssw0rd';
-    const passwordList = [
-      createPasswordEntry({username: 'user0', id: 0}),
-    ];
-    const passwordsSection = elementFactory.createPasswordsSection(
-        passwordManager, passwordList, []);
+    loadTimeData.overrideValues({editPasswordsInSettings: false});
+    openPasswordEditDialogHelper(false, passwordManager, elementFactory);
+  });
 
-    // Make passwords visible.
-    const passwordListItem = getFirstPasswordListItem(passwordsSection);
-    passwordListItem.set('entry.password', PASSWORD);
-
-    assertEquals('text', passwordListItem.$$('#password').type);
-    assertFalse(passwordListItem.$$('#password').disabled);
-    assertTrue(passwordListItem.$$('#showPasswordButton')
-                   .classList.contains('icon-visibility-off'));
-
-    // Open Edit Dialog.
-    passwordListItem.$.moreActionsButton.click();
-    passwordsSection.$.passwordsListHandler.$.menuEditPassword.click();
-    flush();
-
-    // Verify that list item password is hidden.
-    assertEquals('', passwordListItem.entry.password);
-    assertEquals('password', passwordListItem.$$('#password').type);
-    assertTrue(passwordListItem.$$('#password').disabled);
-    assertTrue(passwordListItem.$$('#showPasswordButton')
-                   .classList.contains('icon-visibility'));
-
-    // Verify that edit dialog password is hidden.
-    const passwordEditDialog =
-        passwordsSection.$.passwordsListHandler.$$('#passwordEditDialog');
-    assertEquals('password', passwordEditDialog.$.passwordInput.type);
-    assertTrue(passwordEditDialog.$.showPasswordButton.classList.contains(
-        'icon-visibility'));
-
-    // Set password in edit dialog, verify it is visible.
-    passwordEditDialog.set('entry.password', PASSWORD);
-    assertEquals('text', passwordEditDialog.$.passwordInput.type);
-    assertTrue(passwordEditDialog.$.showPasswordButton.classList.contains(
-        'icon-visibility-off'));
-
-    // Close the dialog, verify that the list item password remains hidden.
-    // Note that the password only gets hidden in the on-close handler, thus we
-    // need to await this event first.
-    passwordEditDialog.$.actionButton.click();
-    await eventToPromise('close', passwordEditDialog);
-
-    assertEquals('', passwordListItem.entry.password);
-    assertEquals('password', passwordListItem.$$('#password').type);
-    assertTrue(passwordListItem.$$('#password').disabled);
-    assertTrue(passwordListItem.$$('#showPasswordButton')
-                   .classList.contains('icon-visibility'));
+  test('listItemEditDialogShowAndHideInterplay', async function() {
+    loadTimeData.overrideValues({editPasswordsInSettings: true});
+    openPasswordEditDialogHelper(true, passwordManager, elementFactory);
   });
 
   // Test verifies that removing the account copy of a duplicated password will
@@ -1184,30 +1226,22 @@ suite('PasswordsSection', function() {
             accountAndDevicePasswordDialog.$.storageDetails.innerText);
       });
 
-  test('showSavedPasswordEditDialog', function() {
+  test('showSavedPasswordListItem', async function() {
     const PASSWORD = 'bAn@n@5';
-    const item = createMultiStorePasswordEntry(
-        {url: 'goo.gl', username: 'bart', deviceId: 42});
-    const passwordDialog = elementFactory.createPasswordEditDialog(item);
+    const item = createPasswordEntry({url: 'goo.gl', username: 'bart', id: 1});
+    passwordManager.setPlaintextPassword(PASSWORD);
 
-    assertFalse(passwordDialog.$.showPasswordButton.hidden);
-
-    passwordDialog.set('entry.password', PASSWORD);
-
-    assertEquals(PASSWORD, passwordDialog.$.passwordInput.value);
-    // Password should be visible.
-    assertEquals('text', passwordDialog.$.passwordInput.type);
-    assertFalse(passwordDialog.$.showPasswordButton.hidden);
-  });
-
-  test('showSavedPasswordListItem', function() {
-    const PASSWORD = 'bAn@n@5';
-    const item = createPasswordEntry({url: 'goo.gl', username: 'bart'});
     const passwordListItem = elementFactory.createPasswordListItem(item);
+
     // Hidden passwords should be disabled.
     assertTrue(passwordListItem.$$('#password').disabled);
 
-    passwordListItem.set('entry.password', PASSWORD);
+    passwordListItem.$$('#showPasswordButton').click();
+    const {id, reason} =
+        await passwordManager.whenCalled('requestPlaintextPassword');
+    flush();
+    assertEquals(1, id);
+    assertEquals('VIEW', reason);
 
     assertEquals(PASSWORD, passwordListItem.$$('#password').value);
     // Password should be visible.
@@ -1220,30 +1254,82 @@ suite('PasswordsSection', function() {
                    .classList.contains('icon-visibility-off'));
 
     // Hide the Password again.
-    passwordListItem.set('entry.password', '');
+    passwordListItem.$$('#showPasswordButton').click();
+    flush();
+
     assertEquals('password', passwordListItem.$$('#password').type);
     assertTrue(passwordListItem.$$('#password').disabled);
     assertTrue(passwordListItem.$$('#showPasswordButton')
                    .classList.contains('icon-visibility'));
   });
 
-  // Tests that invoking the plaintext password sets the corresponding
-  // password.
-  test('onShowSavedPasswordEditDialog', function() {
-    const expectedItem = createMultiStorePasswordEntry(
-        {url: 'goo.gl', username: 'bart', deviceId: 1});
-    const passwordDialog =
-        elementFactory.createPasswordEditDialog(expectedItem);
-    assertEquals('', passwordDialog.entry.password);
+  // Tests that pressing 'Show password' inside 'Details' dialog sets the
+  // corresponding password.
+  test('requestPlaintextPasswordInDetailsDialog', async function() {
+    loadTimeData.overrideValues({editPasswordsInSettings: false});
 
-    passwordManager.setPlaintextPassword('password');
-    passwordDialog.$.showPasswordButton.click();
-    return passwordManager.whenCalled('requestPlaintextPassword')
-        .then(({id, reason}) => {
-          assertEquals(1, id);
-          assertEquals('VIEW', reason);
-          assertEquals('password', passwordDialog.entry.password);
-        });
+    const PASSWORD = 'password';
+    const entry = createPasswordEntry({url: 'goo.gl', username: 'bart', id: 1});
+    passwordManager.setPlaintextPassword(PASSWORD);
+
+    const passwordSection =
+        elementFactory.createPasswordsSection(passwordManager, [entry], []);
+
+    getFirstPasswordListItem(passwordSection).$.moreActionsButton.click();
+    passwordSection.$.passwordsListHandler.$.menuEditPassword.click();
+    flush();
+
+    const passwordEditDialog =
+        passwordSection.$.passwordsListHandler.$$('#passwordEditDialog');
+
+    assertEquals('password', passwordEditDialog.$.passwordInput.type);
+    const NUM_PLACEHOLDERS = 10;
+    assertEquals(
+        ' '.repeat(NUM_PLACEHOLDERS), passwordEditDialog.$.passwordInput.value);
+    assertTrue(passwordEditDialog.$.showPasswordButton.classList.contains(
+        'icon-visibility'));
+
+    passwordEditDialog.$.showPasswordButton.click();
+
+    const {id, reason} =
+        await passwordManager.whenCalled('requestPlaintextPassword');
+    flush();
+    assertEquals(1, id);
+    assertEquals('VIEW', reason);
+
+    assertEquals('text', passwordEditDialog.$.passwordInput.type);
+    assertEquals(PASSWORD, passwordEditDialog.$.passwordInput.value);
+    assertTrue(passwordEditDialog.$.showPasswordButton.classList.contains(
+        'icon-visibility-off'));
+  });
+
+  // Tests that pressing 'Edit password' sets the corresponding password.
+  test('requestPlaintextPasswordInPasswordEditDialog', async function() {
+    loadTimeData.overrideValues({editPasswordsInSettings: true});
+
+    const PASSWORD = 'password';
+    const entry = createPasswordEntry({url: 'goo.gl', username: 'bart', id: 1});
+    passwordManager.setPlaintextPassword(PASSWORD);
+
+    const passwordSection =
+        elementFactory.createPasswordsSection(passwordManager, [entry], []);
+
+    getFirstPasswordListItem(passwordSection).$.moreActionsButton.click();
+    passwordSection.$.passwordsListHandler.$.menuEditPassword.click();
+    flush();
+
+    const {id, reason} =
+        await passwordManager.whenCalled('requestPlaintextPassword');
+    flush();
+    assertEquals(1, id);
+    assertEquals('EDIT', reason);
+
+    const passwordEditDialog =
+        passwordSection.$.passwordsListHandler.$$('#passwordEditDialog');
+    assertEquals('password', passwordEditDialog.$.passwordInput.type);
+    assertEquals(PASSWORD, passwordEditDialog.$.passwordInput.value);
+    assertTrue(passwordEditDialog.$.showPasswordButton.classList.contains(
+        'icon-visibility'));
   });
 
   test('onShowSavedPasswordListItem', function() {
@@ -1280,6 +1366,7 @@ suite('PasswordsSection', function() {
   });
 
   test('onEditPasswordListItem', function() {
+    loadTimeData.overrideValues({editPasswordsInSettings: true});
     const expectedItem =
         createPasswordEntry({url: 'goo.gl', username: 'bart', id: 1});
     const passwordsSection = elementFactory.createPasswordsSection(

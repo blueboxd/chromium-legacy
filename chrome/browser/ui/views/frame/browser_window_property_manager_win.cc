@@ -52,9 +52,9 @@ void BrowserWindowPropertyManager::UpdateWindowProperties() {
   // name. See http://crbug.com/7028.
   base::string16 app_id =
       browser->deprecated_is_app()
-          ? shell_integration::win::GetAppModelIdForProfile(
+          ? shell_integration::win::GetAppUserModelIdForApp(
                 base::UTF8ToWide(browser->app_name()), profile->GetPath())
-          : shell_integration::win::GetChromiumModelIdForProfile(
+          : shell_integration::win::GetAppUserModelIdForBrowser(
                 profile->GetPath());
   // Apps set their relaunch details based on app's details.
   if (browser->deprecated_is_app()) {

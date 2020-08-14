@@ -219,17 +219,19 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // WindowOcclusionTracker::ScopedPause.
   OcclusionState occlusion_state() const { return occlusion_state_; }
 
-  // Returns the currently occluded region. This will be empty unless
-  // the window is tracked and has a VISIBLE occlusion state. That is,
-  // this is only maintained when the window is partially occluded. Further,
-  // this region may extend outside the window bounds. For performance reasons,
-  // the actual intersection with the window is not computed. The occluded
-  // region is the set of window rectangles that may occlude this window.
-  // Note that this means that the occluded region may be updated if one of
-  // those windows moves, even if the actual intersection of the occluded
-  // region with this window does not change. Clients may compute the actual
-  // intersection region if necessary.
-  const SkRegion& occluded_region() const { return occluded_region_; }
+  // Returns the currently occluded region in the root Window coordinates. This
+  // will be empty unless the window is tracked and has a VISIBLE occlusion
+  // state. That is, this is only maintained when the window is partially
+  // occluded. Further, this region may extend outside the window bounds. For
+  // performance reasons, the actual intersection with the window is not
+  // computed. The occluded region is the set of window rectangles that may
+  // occlude this window. Note that this means that the occluded region may be
+  // updated if one of those windows moves, even if the actual intersection of
+  // the occluded region with this window does not change. Clients may compute
+  // the actual intersection region if necessary.
+  const SkRegion& occluded_region_in_root() const {
+    return occluded_region_in_root_;
+  }
 
   // Returns the window's bounds in root window's coordinates.
   gfx::Rect GetBoundsInRootWindow() const;
@@ -662,8 +664,8 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // Occlusion state of the window.
   OcclusionState occlusion_state_ = OcclusionState::UNKNOWN;
 
-  // Occluded region of the window.
-  SkRegion occluded_region_;
+  // Occluded region of the window in the root window coordiantes.
+  SkRegion occluded_region_in_root_;
 
   int id_ = kInitialId;
 

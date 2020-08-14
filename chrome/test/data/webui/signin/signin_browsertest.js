@@ -11,6 +11,7 @@ GEN('#include "base/command_line.h"');
 GEN('#include "build/branding_buildflags.h"');
 GEN('#include "content/public/test/browser_test.h"');
 GEN('#include "services/network/public/cpp/features.h"');
+GEN('#include "chrome/browser/ui/ui_features.h"');
 
 class SigninBrowserTest extends PolymerTest {
   /** @override */
@@ -98,5 +99,32 @@ var ProfileCreationFlowTest = class extends SigninBrowserTest {
 };
 
 TEST_F('ProfileCreationFlowTest', 'Buttons', function() {
+  mocha.run();
+});
+
+/**
+ * Test fixture for
+ * chrome/browser/resources/signin/profile_picker/profile_picker_app.html.
+ * This has to be declared as a variable for TEST_F to find it correctly.
+ */
+// eslint-disable-next-line no-var
+var ProfilePickerAppTest = class extends SigninBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://profile-picker/test_loader.html?module=signin/profile_picker_app_test.js';
+  }
+
+  /** @override */
+  get featureList() {
+    return {
+      enabled: [
+        'network::features::kOutOfBlinkCors',
+        'features::kSignInProfileCreationFlow',
+      ]
+    };
+  }
+};
+
+TEST_F('ProfilePickerAppTest', 'SignInButtonImplementation', function() {
   mocha.run();
 });

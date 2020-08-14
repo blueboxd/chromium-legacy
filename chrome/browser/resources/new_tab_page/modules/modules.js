@@ -7,15 +7,17 @@
  */
 
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {dummyDescriptor} from './dummy/module.js';
+
+import {dummyDescriptor, dummyDescriptor2} from './dummy/module.js';
 import {kaleidoscopeDescriptor} from './kaleidoscope/module.js';
+import {ModuleDescriptor} from './module_descriptor.js';
 import {ModuleRegistry} from './module_registry.js';
 
-const descriptors = [dummyDescriptor];
+/** @type {!Array<!ModuleDescriptor>} */
+const descriptors = [dummyDescriptor, dummyDescriptor2];
 
 if (loadTimeData.getBoolean('kaleidoscopeModuleEnabled')) {
   descriptors.push(kaleidoscopeDescriptor);
 }
 
-/** @type {!ModuleRegistry} */
-export const registry = new ModuleRegistry(descriptors);
+ModuleRegistry.getInstance().registerModules(descriptors);

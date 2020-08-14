@@ -88,25 +88,13 @@ std::unique_ptr<ServiceImpl> ServiceImpl::Create(
   DCHECK(server_url.is_valid());
 
   return std::make_unique<ServiceImpl>(
-      GetAPIKey(client->GetChannel()), server_url, context,
+      GetAPIKey(client->GetChannel()), GURL(GetServerUrl()), context,
       std::make_unique<ClientContextImpl>(client),
-      client->GetAccessTokenFetcher());
+      client->GetAccessTokenFetcher(),
+      /* auth_enabled = */ "false" !=
+          base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+              switches::kAutofillAssistantAuth));
 }
-
-ServiceImpl::ServiceImpl(const std::string& api_key,
-                         const GURL& server_url,
-                         content::BrowserContext* context,
-                         std::unique_ptr<ClientContext> client_context,
-                         AccessTokenFetcher* access_token_fetcher)
-    : ServiceImpl(
-          api_key,
-          server_url,
-          context,
-          std::move(client_context),
-          access_token_fetcher,
-          /* auth_enabled = */ "false" !=
-              base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-                  switches::kAutofillAssistantAuth)) {}
 
 ServiceImpl::ServiceImpl(const std::string& api_key,
                          const GURL& server_url,
@@ -132,6 +120,18 @@ ServiceImpl::ServiceImpl(const std::string& api_key,
   script_action_server_url_ = server_url.ReplaceComponents(action_replacements);
   VLOG(1) << "Using script domain " << script_action_server_url_.host();
 }
+
+ServiceImpl::ServiceImpl(content::BrowserContext* context,
+                         version_info::Channel channel,
+                         std::unique_ptr<ClientContext> client_context,
+                         AccessTokenFetcher* access_token_fetcher,
+                         bool auth_enabled)
+    : ServiceImpl(GetAPIKey(channel),
+                  GURL(GetServerUrl()),
+                  context,
+                  std::move(client_context),
+                  access_token_fetcher,
+                  auth_enabled) {}
 
 ServiceImpl::~ServiceImpl() {}
 

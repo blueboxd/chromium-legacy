@@ -58,7 +58,7 @@ CSSStyleSheetResource* CSSStyleSheetResource::CreateForTest(
     const WTF::TextEncoding& encoding) {
   ResourceRequest request(url);
   request.SetCredentialsMode(network::mojom::CredentialsMode::kOmit);
-  ResourceLoaderOptions options;
+  ResourceLoaderOptions options(nullptr /* world */);
   TextResourceDecoderOptions decoder_options(
       TextResourceDecoderOptions::kCSSContent, encoding);
   return MakeGarbageCollected<CSSStyleSheetResource>(request, options,

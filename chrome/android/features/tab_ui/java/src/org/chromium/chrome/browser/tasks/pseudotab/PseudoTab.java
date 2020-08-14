@@ -86,8 +86,13 @@ public class PseudoTab {
         synchronized (sLock) {
             PseudoTab cached = sAllTabs.get(tab.getId());
             if (cached != null && cached.hasRealTab()) {
-                assert cached.getTab() == tab;
-                return cached;
+                if (cached.getTab() == tab) {
+                    return cached;
+                } else {
+                    assert cached.getTab().getWebContents() == null
+                            || cached.getTab().getWebContents().getTopLevelNativeWindow() == null;
+                    return new PseudoTab(tab);
+                }
             }
             // We need to upgrade a pre-native Tab to a post-native Tab.
             return new PseudoTab(tab);

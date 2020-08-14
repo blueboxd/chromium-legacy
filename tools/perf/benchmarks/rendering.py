@@ -127,10 +127,6 @@ class RenderingMobile(_RenderingBenchmark):
     # allows controls to unlock after page load, rather than in the middle of a
     # story.
     options.AppendExtraBrowserArgs('--disable-minimum-show-duration')
-    # Force online state for the offline indicator so it doesn't show and affect
-    # the benchmarks on bots, which are offline by default.
-    options.AppendExtraBrowserArgs(
-        '--force-online-connection-state-for-indicator')
 
   def CreateCoreTimelineBasedMeasurementOptions(self):
     options = super(

@@ -509,8 +509,7 @@ void ImageLoader::DoUpdateFromElement(
   if (!url.IsNull() && !url.IsEmpty()) {
     // Unlike raw <img>, we block mixed content inside of <picture> or
     // <img srcset>.
-    ResourceLoaderOptions resource_loader_options;
-    resource_loader_options.world = std::move(world);
+    ResourceLoaderOptions resource_loader_options(std::move(world));
     resource_loader_options.initiator_info.name = GetElement()->localName();
     ResourceRequest resource_request(url);
     if (update_behavior == kUpdateForcedReload) {

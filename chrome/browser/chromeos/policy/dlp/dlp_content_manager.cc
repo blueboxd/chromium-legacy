@@ -89,7 +89,7 @@ bool DlpContentManager::IsScreenshotRestricted(
     aura::Window::ConvertRectToTarget(area.window, root_window, &intersection);
     intersection.Intersect(web_contents_window->GetBoundsInRootWindow());
     if (!intersection.IsEmpty() &&
-        !web_contents_window->occluded_region().contains(
+        !web_contents_window->occluded_region_in_root().contains(
             gfx::RectToSkIRect(intersection))) {
       return true;
     }

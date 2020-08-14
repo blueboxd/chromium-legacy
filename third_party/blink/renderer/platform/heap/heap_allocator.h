@@ -774,8 +774,6 @@ struct VectorTraits<blink::UntracedMember<T>>
   static const bool kCanInitializeWithMemset = true;
   static const bool kCanClearUnusedSlotsWithMemset = true;
   static const bool kCanMoveWithMemcpy = true;
-
-  static constexpr bool kCanTraceConcurrently = true;
 };
 
 template <typename T>
@@ -908,8 +906,6 @@ struct HashTraits<blink::UntracedMember<T>>
   static PeekOutType Peek(const blink::UntracedMember<T>& value) {
     return value;
   }
-
-  static constexpr bool kCanTraceConcurrently = true;
 };
 
 template <typename T, wtf_size_t inlineCapacity>

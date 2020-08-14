@@ -114,6 +114,7 @@ const char* const kKnownSettings[] = {
     kRebootOnShutdown,
     kReleaseChannel,
     kReleaseChannelDelegated,
+    kReleaseLtsTag,
     kDeviceChannelDowngradeBehavior,
     kReportDeviceActivityTimes,
     kReportDeviceBluetoothInfo,

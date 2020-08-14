@@ -149,6 +149,18 @@ LayoutObject* FindAncestorByPredicate(const LayoutObject* descendant,
 
 }  // namespace
 
+static int g_allow_destroying_layout_object_in_finalizer = 0;
+
+AllowDestroyingLayoutObjectInFinalizerScope::
+    AllowDestroyingLayoutObjectInFinalizerScope() {
+  ++g_allow_destroying_layout_object_in_finalizer;
+}
+AllowDestroyingLayoutObjectInFinalizerScope::
+    ~AllowDestroyingLayoutObjectInFinalizerScope() {
+  CHECK_GT(g_allow_destroying_layout_object_in_finalizer, 0);
+  --g_allow_destroying_layout_object_in_finalizer;
+}
+
 #if DCHECK_IS_ON()
 
 LayoutObject::SetLayoutNeededForbiddenScope::SetLayoutNeededForbiddenScope(
@@ -3560,6 +3572,9 @@ void LayoutObject::DestroyAndCleanupAnonymousWrappers() {
 }
 
 void LayoutObject::Destroy() {
+  CHECK(g_allow_destroying_layout_object_in_finalizer ||
+        !ThreadState::Current()->InAtomicSweepingPause());
+
   // Mark as being destroyed to avoid trouble with merges in |RemoveChild()| and
   // other house keepings.
   bitfields_.SetBeingDestroyed(true);

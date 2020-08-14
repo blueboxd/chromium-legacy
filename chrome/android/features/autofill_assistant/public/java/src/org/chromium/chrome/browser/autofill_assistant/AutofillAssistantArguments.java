@@ -93,6 +93,12 @@ public class AutofillAssistantArguments {
     /** Special parameter for user email. */
     private static final String PARAMETER_USER_EMAIL = "USER_EMAIL";
 
+    /** Special parameter for first time user script path. */
+    static final String PARAMETER_TRIGGER_FIRST_TIME_USER = "TRIGGER_FIRST_TIME_USER";
+
+    /** Special parameter for returning user script path. */
+    static final String PARAMETER_TRIGGER_RETURNING_TIME_USER = "TRIGGER_RETURNING_USER";
+
     /**
      * Identifier used by parameters/or special intent that indicates experiments passed from
      * the caller.
@@ -215,5 +221,10 @@ public class AutofillAssistantArguments {
 
     public String getInitialUrl() {
         return mInitialUrl;
+    }
+
+    public boolean containsTriggerScript() {
+        return !TextUtils.isEmpty(getStringParameter(PARAMETER_TRIGGER_FIRST_TIME_USER))
+                && !TextUtils.isEmpty(getStringParameter(PARAMETER_TRIGGER_RETURNING_TIME_USER));
     }
 }

@@ -1195,7 +1195,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
   // Set the version back as far as kLastVersionNeedingMigration and ensure it's
   // not migrated again.
   g_browser_process->local_state()->SetString(prefs::kShortcutMigrationVersion,
-                                              "80.0.3978.0");
+                                              "86.0.4231.0");
 }
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, ShortcutsAreMigratedOnce) {
   content::RunAllTasksUntilIdle();
@@ -1205,7 +1205,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, ShortcutsAreMigratedOnce) {
   const std::string last_version_migrated =
       g_browser_process->local_state()->GetString(
           prefs::kShortcutMigrationVersion);
-  EXPECT_EQ(last_version_migrated, "80.0.3978.0");
+  EXPECT_EQ(last_version_migrated, "86.0.4231.0");
 }
 #endif  // defined(OS_WIN)
 

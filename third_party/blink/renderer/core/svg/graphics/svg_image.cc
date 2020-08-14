@@ -168,6 +168,8 @@ SVGImage::SVGImage(ImageObserver* observer, bool is_multipart)
       has_pending_timeline_rewind_(false) {}
 
 SVGImage::~SVGImage() {
+  AllowDestroyingLayoutObjectInFinalizerScope scope;
+
   if (frame_client_)
     frame_client_->ClearImage();
 

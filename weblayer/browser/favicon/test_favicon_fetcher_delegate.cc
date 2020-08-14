@@ -15,7 +15,18 @@ TestFaviconFetcherDelegate::~TestFaviconFetcherDelegate() = default;
 
 void TestFaviconFetcherDelegate::WaitForFavicon() {
   ASSERT_EQ(nullptr, run_loop_.get());
+  waiting_for_nonempty_image_ = false;
   run_loop_ = std::make_unique<base::RunLoop>();
+  run_loop_->Run();
+  run_loop_.reset();
+}
+
+void TestFaviconFetcherDelegate::WaitForNonemptyFavicon() {
+  if (!last_image_.IsEmpty())
+    return;
+
+  run_loop_ = std::make_unique<base::RunLoop>();
+  waiting_for_nonempty_image_ = true;
   run_loop_->Run();
   run_loop_.reset();
 }
@@ -28,7 +39,7 @@ void TestFaviconFetcherDelegate::ClearLastImage() {
 void TestFaviconFetcherDelegate::OnFaviconChanged(const gfx::Image& image) {
   last_image_ = image;
   ++on_favicon_changed_call_count_;
-  if (run_loop_)
+  if (run_loop_ && (!waiting_for_nonempty_image_ || !image.IsEmpty()))
     run_loop_->Quit();
 }
 

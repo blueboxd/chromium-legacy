@@ -352,11 +352,13 @@ TEST_F(AmbientControllerTest, ShouldHideAmbientScreenWhenDisplayIsOff) {
   // Should dismiss ambient mode screen.
   SetScreenBrightnessAndWait(/*percent=*/0);
   SetScreenIdleStateAndWait(/*dimmed=*/true, /*off=*/true);
+  FastForwardToNextImage();
   EXPECT_FALSE(ambient_controller()->IsShown());
 
   // Screen back on again, should not have ambient screen.
   SetScreenBrightnessAndWait(/*percent=*/50);
   SetScreenIdleStateAndWait(/*dimmed=*/false, /*off=*/false);
+  FastForwardToNextImage();
   EXPECT_FALSE(ambient_controller()->IsShown());
 }
 
@@ -378,6 +380,8 @@ TEST_F(AmbientControllerTest,
   // Should dismiss ambient mode screen.
   SetScreenBrightnessAndWait(/*percent=*/0);
   SetScreenIdleStateAndWait(/*dimmed=*/true, /*off=*/true);
+  FastForwardToInactivity();
+  FastForwardToNextImage();
   EXPECT_FALSE(ambient_controller()->IsShown());
 
   // Screen back on again, should not have ambient screen, but still has lock

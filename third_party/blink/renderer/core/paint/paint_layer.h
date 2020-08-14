@@ -461,7 +461,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // |ancestorLayer| may be applied to the bounding box, in particular if
   // paintsWithTransform() is true.
   enum CalculateBoundsOptions {
-    kMaybeIncludeTransformForAncestorLayer,
+    kIncludeClipsAndMaybeIncludeTransformForAncestorLayer,
     kIncludeTransformsAndCompositedChildLayers,
   };
 

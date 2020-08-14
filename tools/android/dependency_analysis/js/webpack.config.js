@@ -59,7 +59,11 @@ module.exports = {
       },
       {
         test: /\.css$/,
-        use: ['vue-style-loader', 'style-loader', 'css-loader'],
+        use: ['vue-style-loader', 'css-loader'],
+      },
+      {
+        test: /\.scss$/,
+        use: ['vue-style-loader', 'css-loader', 'sass-loader'],
       },
       {
         test: /\.(png|svg|jpg|gif)$/,
@@ -72,11 +76,13 @@ module.exports = {
     new HtmlWebpackPlugin({
       filename: 'package_view.html',
       template: './src/package_view.html',
+      favicon: './src/assets/package_graph_icon.png',
       chunks: ['packageView'],
     }),
     new HtmlWebpackPlugin({
       filename: 'class_view.html',
       template: './src/class_view.html',
+      favicon: './src/assets/class_graph_icon.png',
       chunks: ['classView'],
     }),
     // For development purposes: Copies `json_graph.txt` in `src` to `src/dist`

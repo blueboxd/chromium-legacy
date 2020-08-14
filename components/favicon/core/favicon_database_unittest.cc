@@ -1376,4 +1376,54 @@ TEST(FaviconDatabaseIconTypeTest, ShouldBeBackwardCompatible) {
             FaviconDatabase::FromPersistedIconType(16));
 }
 
+TEST_F(FaviconDatabaseTest, GetFaviconsLastUpdatedBefore) {
+  FaviconDatabase db;
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_name_));
+  db.BeginTransaction();
+
+  std::vector<unsigned char> data(kBlob1, kBlob1 + sizeof(kBlob1));
+  scoped_refptr<base::RefCountedBytes> favicon(new base::RefCountedBytes(data));
+
+  // Add two favicons, 10 seconds apart. |time1| is after |time2|.
+  GURL url("http://google.com");
+  const base::Time time1 = base::Time::Now();
+  favicon_base::FaviconID id1 =
+      db.AddFavicon(url, favicon_base::IconType::kTouchIcon, favicon,
+                    FaviconBitmapType::ON_VISIT, time1, gfx::Size());
+  EXPECT_NE(0u, id1);
+
+  const base::Time time2 = time1 - base::TimeDelta::FromSeconds(10);
+  favicon_base::FaviconID id2 =
+      db.AddFavicon(url, favicon_base::IconType::kTouchIcon, favicon,
+                    FaviconBitmapType::ON_VISIT, time2, gfx::Size());
+  EXPECT_NE(0u, id2);
+  EXPECT_NE(id1, id2);
+
+  // There should be no favicons before |time2|.
+  EXPECT_TRUE(db.GetFaviconsLastUpdatedBefore(
+                    time2 - base::TimeDelta::FromSeconds(1), 10)
+                  .empty());
+
+  // Requesting a time after |time2| should return |id2|.
+  auto ids = db.GetFaviconsLastUpdatedBefore(
+      time2 + base::TimeDelta::FromSeconds(1), 10);
+  ASSERT_EQ(1u, ids.size());
+  EXPECT_EQ(id2, ids[0]);
+
+  // There should two favicons when using a time after |time1|.
+  ids = db.GetFaviconsLastUpdatedBefore(time1 + base::TimeDelta::FromSeconds(1),
+                                        10);
+  ASSERT_EQ(2u, ids.size());
+  // |id2| is before |id1|, so it should be returned first.
+  EXPECT_EQ(id2, ids[0]);
+  EXPECT_EQ(id1, ids[1]);
+
+  // Repeat previous, but cap the max at 1.
+  ids = db.GetFaviconsLastUpdatedBefore(time1 + base::TimeDelta::FromSeconds(1),
+                                        1);
+  ASSERT_EQ(1u, ids.size());
+  // |id2| is before |id1|, so it should be returned first.
+  EXPECT_EQ(id2, ids[0]);
+}
+
 }  // namespace favicon

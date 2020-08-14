@@ -8,6 +8,8 @@
 #include "third_party/blink/public/common/privacy_budget/identifiable_token.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
+#include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
+#include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -33,6 +35,9 @@ class CORE_EXPORT Dactyloscoper {
   static void RecordDirectSurface(ExecutionContext*,
                                   WebFeature,
                                   Vector<String>);
+  static void RecordDirectSurface(ExecutionContext*,
+                                  WebFeature,
+                                  NotShared<DOMFloat32Array>);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Dactyloscoper);

@@ -75,11 +75,12 @@ IN_PROC_BROWSER_TEST_F(FaviconFetcherBrowserTest, Basic) {
   test_observer.Wait();
   EXPECT_TRUE(fetcher_delegate.last_image().IsEmpty());
 
-  // Wait for new favicon.
-  fetcher_delegate.WaitForFavicon();
+  fetcher_delegate.WaitForNonemptyFavicon();
   EXPECT_FALSE(fetcher_delegate.last_image().IsEmpty());
   EXPECT_EQ(fetcher_delegate.last_image(), fetcher->GetFavicon());
-  EXPECT_EQ(1, fetcher_delegate.on_favicon_changed_call_count());
+  // OnFaviconChanged() is called twice, once with an empty image (because of
+  // the navigation), the second with the real image.
+  EXPECT_EQ(2, fetcher_delegate.on_favicon_changed_call_count());
 }
 
 IN_PROC_BROWSER_TEST_F(FaviconFetcherBrowserTest, NavigateToPageWithNoFavicon) {
@@ -100,10 +101,10 @@ IN_PROC_BROWSER_TEST_F(FaviconFetcherBrowserTest, NavigateToPageWithNoFavicon) {
   const GURL url2 = embedded_test_server()->GetURL("/simple_page.html");
   shell()->tab()->GetNavigationController()->Navigate(url2);
   EXPECT_TRUE(fetcher_delegate.last_image().IsEmpty());
-  // Wait for the image load to fail.
+  // The delegate should be notified of the empty image once.
   test_observer.Wait();
   EXPECT_TRUE(fetcher_delegate.last_image().IsEmpty());
-  EXPECT_EQ(0, fetcher_delegate.on_favicon_changed_call_count());
+  EXPECT_EQ(1, fetcher_delegate.on_favicon_changed_call_count());
 }
 
 IN_PROC_BROWSER_TEST_F(FaviconFetcherBrowserTest,

@@ -62,7 +62,7 @@ class NearbyProcessManager : public ProfileManagerObserver {
   // Returns whether the |profile| is the active profile to use the Nearby
   // process. Convenience method to calling GetActiveProfile() and manually
   // comparing if they match.
-  bool IsActiveProfile(Profile* profile) const;
+  virtual bool IsActiveProfile(Profile* profile) const;
 
   // Returns if any profile is currently set as the active profile. Note that
   // the active profile might not be loaded yet.

@@ -337,9 +337,8 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   // not available for app icons.
   int GetAvailableSpaceForAppIcons() const;
 
-  // Returns the index of the item after which the separator should be shown,
-  // or -1 if no separator is required.
-  int GetSeparatorIndex() const;
+  // Updates the index of the separator and save it to |separator_index_|.
+  void UpdateSeparatorIndex();
 
   // Sets the bounds of each view to its ideal bounds.
   void LayoutToIdealBounds();
@@ -405,6 +404,15 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   // Returns the range (in the model) the item at the specified index can be
   // dragged to.
   std::pair<int, int> GetDragRange(int index);
+
+  // Checks if the item at |dragged_item_index| should be pinned or unpinned on
+  // pointer release.
+  bool ShouldUpdateDraggedViewPinStatus(int dragged_item_index);
+
+  // Checks if |dragged_view| is allowed to be dragged across the separator to
+  // perform pinning and unpinning. Note that this function doesn't check if the
+  // separator exists.
+  bool CanDragAcrossSeparator(views::View* dragged_view) const;
 
   // If there is a drag operation in progress it's canceled. If |modified_index|
   // is valid, the new position of the corresponding item is returned.
@@ -552,6 +560,25 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   // A reference to the view used as a separator between pinned and unpinned
   // items.
   views::Separator* separator_ = nullptr;
+
+  // Index of |separator_|. It is set to -1 if it is invisible.
+  int separator_index_ = -1;
+
+  // Used in |drag_view_relative_to_ideal_bounds_| to represent the relative
+  // position between |drag_view_| and its ideal bounds in shelf.
+  enum class RelativePosition {
+    // Set if |drag_view_| is not available or the relative position is not
+    // calculated yet.
+    kNotAvailable,
+    // Set if |drag_view_| is to the left of its ideal bounds.
+    kLeft,
+    // Set if |drag_view_| is to the right of its ideal bounds.
+    kRight
+  };
+
+  // The |drag_view_|'s current position relative to its ideal bounds.
+  RelativePosition drag_view_relative_to_ideal_bounds_ =
+      RelativePosition::kNotAvailable;
 
   // Position of the mouse down event in |drag_view_|'s coordinates.
   gfx::Point drag_origin_;

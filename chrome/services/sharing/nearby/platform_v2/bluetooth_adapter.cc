@@ -40,10 +40,16 @@ BluetoothAdapter::ScanMode BluetoothAdapter::GetScanMode() const {
 }
 
 bool BluetoothAdapter::SetScanMode(BluetoothAdapter::ScanMode scan_mode) {
-  // TODO(b/154848416): Add SetDiscoverable call to bluetooth::mojom::Adapter
-  // and invoke it.
-  NOTIMPLEMENTED();
-  return false;
+  // This method is only used to trigger discoverability -- so there is no
+  // difference between passing ScanMode::kUnknown, ScanMode::kNone, or
+  // ScanMode::kConnectable -- they will all turn off discoverability.
+
+  bool set_discoverable_success = false;
+  bool call_success =
+      adapter_->SetDiscoverable(scan_mode == ScanMode::kConnectableDiscoverable,
+                                &set_discoverable_success);
+
+  return call_success && set_discoverable_success;
 }
 
 std::string BluetoothAdapter::GetName() const {

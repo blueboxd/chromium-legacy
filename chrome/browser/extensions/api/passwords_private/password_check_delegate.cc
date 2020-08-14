@@ -28,7 +28,6 @@
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/passwords_private.h"
-#include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/keyed_service/core/service_access_type.h"
@@ -40,6 +39,7 @@
 #include "components/password_manager/core/browser/ui/compromised_credentials_manager.h"
 #include "components/password_manager/core/browser/ui/credential_utils.h"
 #include "components/password_manager/core/browser/ui/saved_passwords_presenter.h"
+#include "components/password_manager/core/browser/well_known_change_password_util.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -77,7 +77,7 @@ std::unique_ptr<std::string> GetChangePasswordUrl(const std::string& url) {
   }
   GURL origin = GURL(url).GetOrigin();
   GURL::Replacements replacements;
-  replacements.SetPathStr(chrome::kWellKnownChangePasswordPath);
+  replacements.SetPathStr(password_manager::kWellKnownChangePasswordPath);
   return std::make_unique<std::string>(
       origin.ReplaceComponents(replacements).spec());
 }

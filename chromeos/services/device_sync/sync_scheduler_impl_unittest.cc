@@ -37,8 +37,7 @@ bool IsTimeDeltaWithinJitter(const base::TimeDelta& base_time_delta,
 
   base::TimeDelta difference =
       (jittered_time_delta - base_time_delta).magnitude();
-  double percentage_of_base =
-      difference.InMillisecondsF() / base_time_delta.InMillisecondsF();
+  double percentage_of_base = difference / base_time_delta;
   return percentage_of_base < max_jitter_ratio;
 }
 

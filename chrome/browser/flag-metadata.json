@@ -2794,7 +2794,7 @@
   {
     "name": "installable-ink-drop",
     "owners": [ "collinbaker", "pbos" ],
-    "expiry_milestone": 82
+    "expiry_milestone": 90
   },
   {
     "name": "installed-apps-in-cbd",
@@ -4116,7 +4116,9 @@
   {
     "name": "smooth-scrolling",
     "owners": [ "bokan", "input-dev" ],
-    "expiry_milestone": 85
+    // This needs to continue to be extended until the UI contains a proper
+    // option for it, see crbug.com/817814.
+    "expiry_milestone": 95
   },
   {
     "name": "sms-receiver-cross-device",

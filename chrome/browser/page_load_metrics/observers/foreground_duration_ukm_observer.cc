@@ -88,6 +88,10 @@ void ForegroundDurationUKMObserver::RecordUkmIfInForeground(
 
 void ForegroundDurationUKMObserver::RecordInputTimingMetrics(
     ukm::builders::PageForegroundSession* ukm_builder) {
+  // TODO(hbsong): crbug.com/1105665
+  if (GetDelegate().GetPageInputTiming().total_input_delay.InMilliseconds() < 0)
+    return;
+
   ukm_builder
       ->SetForegroundNumInputEvents(
           GetDelegate().GetPageInputTiming().num_input_events -

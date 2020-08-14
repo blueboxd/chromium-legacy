@@ -223,7 +223,7 @@ NearbySharePrivateCertificate::EncryptMetadataKey() {
     return base::nullopt;
   }
 
-  return NearbyShareEncryptedMetadataKey(encrypted_metadata_key, *salt);
+  return NearbyShareEncryptedMetadataKey(*salt, encrypted_metadata_key);
 }
 
 base::Optional<std::vector<uint8_t>> NearbySharePrivateCertificate::Sign(

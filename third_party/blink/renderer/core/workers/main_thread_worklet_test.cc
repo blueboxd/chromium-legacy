@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 #include "third_party/blink/renderer/core/workers/main_thread_worklet_reporting_proxy.h"
 #include "third_party/blink/renderer/core/workers/worklet_global_scope.h"
+#include "third_party/blink/renderer/core/workers/worklet_global_scope_test_helper.h"
 #include "third_party/blink/renderer/core/workers/worklet_module_responses_map.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
@@ -72,8 +73,8 @@ class MainThreadWorkletTest : public PageTestBase {
         MakeGarbageCollected<WorkletModuleResponsesMap>(),
         mojo::NullRemote() /* browser_interface_broker */,
         BeginFrameProviderParams(), nullptr /* parent_feature_policy */,
-        window->GetAgentClusterID());
-    global_scope_ = MakeGarbageCollected<WorkletGlobalScope>(
+        window->GetAgentClusterID(), window->GetExecutionContextToken());
+    global_scope_ = MakeGarbageCollected<FakeWorkletGlobalScope>(
         std::move(creation_params), *reporting_proxy_, &GetFrame(),
         false /* create_microtask_queue */);
     EXPECT_TRUE(global_scope_->IsMainThreadWorkletGlobalScope());

@@ -27,7 +27,6 @@
 #include "chrome/browser/password_manager/bulk_leak_check_service_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/common/extensions/api/passwords_private.h"
-#include "chrome/common/url_constants.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/password_manager/core/browser/bulk_leak_check_service.h"
@@ -36,6 +35,7 @@
 #include "components/password_manager/core/browser/leak_detection/leak_detection_delegate_interface.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/test_password_store.h"
+#include "components/password_manager/core/browser/well_known_change_password_util.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -1060,7 +1060,8 @@ TEST_F(PasswordCheckDelegateTest,
   RunUntilIdle();
   GURL change_password_url(
       *delegate().GetCompromisedCredentials().at(0).change_password_url);
-  EXPECT_EQ(change_password_url.path(), chrome::kWellKnownChangePasswordPath);
+  EXPECT_EQ(change_password_url.path(),
+            password_manager::kWellKnownChangePasswordPath);
 }
 
 TEST_F(PasswordCheckDelegateTest,
@@ -1085,7 +1086,7 @@ TEST_F(PasswordCheckDelegateTest,
   EXPECT_EQ(
       GURL(*delegate().GetCompromisedCredentials().at(1).change_password_url)
           .path(),
-      chrome::kWellKnownChangePasswordPath);
+      password_manager::kWellKnownChangePasswordPath);
 }
 
 TEST_F(PasswordCheckDelegateTest,
@@ -1110,7 +1111,8 @@ TEST_F(PasswordCheckDelegateTest,
   RunUntilIdle();
   GURL change_password_url(
       *delegate().GetCompromisedCredentials().at(0).change_password_url);
-  EXPECT_NE(change_password_url.path(), chrome::kWellKnownChangePasswordPath);
+  EXPECT_NE(change_password_url.path(),
+            password_manager::kWellKnownChangePasswordPath);
 }
 
 }  // namespace extensions

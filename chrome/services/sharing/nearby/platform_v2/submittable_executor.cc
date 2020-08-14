@@ -32,7 +32,7 @@ SubmittableExecutor::~SubmittableExecutor() {
   base::AutoLock al(lock_);
   DCHECK_EQ(num_incomplete_tasks_, 0);
 #endif  // DCHECK_IS_ON()
-}  // namespace chrome
+}
 
 // Once called, this method will prevent any future calls to Submit() or
 // Execute() from posting additional tasks. Previously posted asks will be
@@ -84,7 +84,7 @@ void SubmittableExecutor::RunTask(Runnable&& runnable) {
 
   base::AutoLock al(lock_);
   DCHECK_GE(num_incomplete_tasks_, 1);
-  if (--num_incomplete_tasks_ == 0)
+  if (--num_incomplete_tasks_ == 0 && is_shut_down_)
     last_task_completed_.Signal();
 }
 

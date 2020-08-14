@@ -87,7 +87,6 @@ class CORE_EXPORT SharedWorkerGlobalScope final : public WorkerGlobalScope {
       WorkerResourceTimingNotifier& outside_resource_timing_notifier,
       network::mojom::CredentialsMode,
       RejectCoepUnsafeNone reject_coep_unsafe_none) override;
-  WorkerToken GetWorkerToken() const override { return token_; }
 
   // shared_worker_global_scope.idl
   const String name() const;
@@ -99,7 +98,12 @@ class CORE_EXPORT SharedWorkerGlobalScope final : public WorkerGlobalScope {
 
   void Trace(Visitor*) const override;
 
-  const SharedWorkerToken& token() const { return token_; }
+  // Returns the token that uniquely identifies this worker.
+  const SharedWorkerToken& GetSharedWorkerToken() const { return token_; }
+  WorkerToken GetWorkerToken() const final { return token_; }
+  ExecutionContextToken GetExecutionContextToken() const final {
+    return token_;
+  }
 
  private:
   void DidReceiveResponseForClassicScript(

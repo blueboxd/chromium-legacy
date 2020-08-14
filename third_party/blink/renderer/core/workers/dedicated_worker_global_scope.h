@@ -110,7 +110,6 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
       network::mojom::CredentialsMode,
       RejectCoepUnsafeNone reject_coep_unsafe_none) override;
   bool IsOffMainThreadScriptFetchDisabled() override;
-  WorkerToken GetWorkerToken() const override { return token_; }
 
   // Called by the bindings (dedicated_worker_global_scope.idl).
   const String name() const;
@@ -133,9 +132,42 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
   // Called by the Oilpan.
   void Trace(Visitor*) const override;
 
-  const DedicatedWorkerToken& token() const { return token_; }
+  // Returns the token that uniquely identifies this worker.
+  const DedicatedWorkerToken& GetDedicatedWorkerToken() const { return token_; }
+  WorkerToken GetWorkerToken() const final { return token_; }
+  ExecutionContextToken GetExecutionContextToken() const final {
+    return token_;
+  }
+
+  // Returns the ExecutionContextToken that uniquely identifies the parent
+  // context that created this dedicated worker.
+  base::Optional<ExecutionContextToken> GetParentExecutionContextToken()
+      const final {
+    return parent_token_;
+  }
 
  private:
+  struct ParsedCreationParams {
+    std::unique_ptr<GlobalScopeCreationParams> creation_params;
+    ExecutionContextToken parent_context_token;
+  };
+
+  static ParsedCreationParams ParseCreationParams(
+      std::unique_ptr<GlobalScopeCreationParams> creation_params);
+
+  // The public constructor extracts the |parent_context_token| from
+  // |creation_params| and redirects here, otherwise the token is lost when we
+  // move the |creation_params| to WorkerGlobalScope, and other worker types
+  // don't care about that particular parameter. The helper function is required
+  // because there's no guarantee about the order of evaluation of arguments.
+  DedicatedWorkerGlobalScope(
+      ParsedCreationParams parsed_creation_params,
+      DedicatedWorkerThread* thread,
+      base::TimeTicks time_origin,
+      std::unique_ptr<Vector<String>> outside_origin_trial_tokens,
+      const BeginFrameProviderParams& begin_frame_provider_params,
+      ukm::SourceId ukm_source_id);
+
   void DidReceiveResponseForClassicScript(
       WorkerClassicScriptLoader* classic_script_loader);
   void DidFetchClassicScript(WorkerClassicScriptLoader* classic_script_loader,
@@ -143,7 +175,10 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
 
   DedicatedWorkerObjectProxy& WorkerObjectProxy() const;
 
+  // A unique ID for this context.
   const DedicatedWorkerToken token_;
+  // The ID of the parent context that owns this worker.
+  const ExecutionContextToken parent_token_;
   Member<WorkerAnimationFrameProvider> animation_frame_provider_;
   RejectCoepUnsafeNone reject_coep_unsafe_none_ = RejectCoepUnsafeNone(false);
 };

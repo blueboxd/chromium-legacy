@@ -300,18 +300,23 @@ void LocalFrameUkmAggregator::RecordEndOfFrameMetrics(
     base::TimeTicks start,
     base::TimeTicks end,
     cc::ActiveFrameSequenceTrackers trackers) {
-  // Any of the early out's in LocalFrameView::UpdateLifecyclePhases
-  // will mean we are not in a main frame update. Recording is triggered
-  // higher in the stack, so we cannot know to avoid calling this method.
-  if (!in_main_frame_update_) {
+  const base::TimeDelta duration = end - start;
+  const bool have_valid_metrics =
+      // Any of the early outs in LocalFrameView::UpdateLifecyclePhases() will
+      // mean we are not in a main frame update. Recording is triggered higher
+      // in the stack, so we cannot know to avoid calling this method.
+      in_main_frame_update_ &&
+      // In tests it's possible to reach here with zero duration.
+      (duration > base::TimeDelta());
+
+  in_main_frame_update_ = false;
+  if (!have_valid_metrics) {
     // Reset for the next frame to start the next recording period with
     // clear counters, even when we did not record anything this frame.
     ResetAllMetrics();
     return;
   }
-  in_main_frame_update_ = false;
 
-  base::TimeDelta duration = end - start;
   bool report_as_pre_fcp = (fcp_state_ != kHavePassedFCP);
   bool report_fcp_metrics = (fcp_state_ == kThisFrameReachedFCP);
 
@@ -338,8 +343,7 @@ void LocalFrameUkmAggregator::RecordEndOfFrameMetrics(
 
   for (auto& record : main_frame_percentage_records_) {
     auto percentage = base::ClampRound<base::HistogramBase::Sample>(
-        record.interval_duration.InMicrosecondsF() * 100.0 /
-        duration.InMicrosecondsF());
+        100 * record.interval_duration / duration);
     record.uma_counters_per_bucket[bucket_index]->Count(percentage);
   }
 
@@ -386,14 +390,12 @@ void LocalFrameUkmAggregator::UpdateEventTimeAndUpdateSampleIfNeeded(
 void LocalFrameUkmAggregator::UpdateSample(
     cc::ActiveFrameSequenceTrackers trackers) {
   current_sample_.primary_metric_duration = primary_metric_.interval_duration;
-  float primary_metric_in_microseconds =
-      primary_metric_.interval_duration.InMicrosecondsF();
   for (unsigned i = 0; i < static_cast<unsigned>(kCount); ++i) {
     current_sample_.sub_metrics_durations[i] =
         absolute_metric_records_[i].interval_duration;
     current_sample_.sub_metric_percentages[i] = base::ClampRound<unsigned>(
-        main_frame_percentage_records_[i].interval_duration.InMicrosecondsF() *
-        100.0 / primary_metric_in_microseconds);
+        100 * main_frame_percentage_records_[i].interval_duration /
+        primary_metric_.interval_duration);
   }
   current_sample_.trackers = trackers;
 }

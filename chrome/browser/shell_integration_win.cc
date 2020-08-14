@@ -99,6 +99,19 @@ base::string16 GetProfileIdFromPath(const base::FilePath& profile_path) {
   return profile_id;
 }
 
+base::string16 GetAppUserModelIdImpl(const base::string16& prefix,
+                                     const base::string16& app_name,
+                                     const base::FilePath& profile_path) {
+  std::vector<base::string16> components;
+  if (!prefix.empty())
+    components.push_back(prefix);
+  components.push_back(app_name);
+  const base::string16 profile_id(GetProfileIdFromPath(profile_path));
+  if (!profile_id.empty())
+    components.push_back(profile_id);
+  return ShellUtil::BuildAppUserModelId(components);
+}
+
 // Gets expected app id for given Chrome (based on |command_line| and
 // |is_per_user_install|).
 base::string16 GetExpectedAppId(const base::CommandLine& command_line,
@@ -123,19 +136,22 @@ base::string16 GetExpectedAppId(const base::CommandLine& command_line,
   DCHECK(!profile_subdir.empty());
 
   base::FilePath profile_path = user_data_dir.Append(profile_subdir);
+  base::string16 prefix;
   base::string16 app_name;
   if (command_line.HasSwitch(switches::kApp)) {
     app_name = base::UTF8ToUTF16(web_app::GenerateApplicationNameFromURL(
         GURL(command_line.GetSwitchValueASCII(switches::kApp))));
+    prefix = install_static::GetBaseAppId();
   } else if (command_line.HasSwitch(switches::kAppId)) {
     app_name = base::UTF8ToUTF16(web_app::GenerateApplicationNameFromAppId(
         command_line.GetSwitchValueASCII(switches::kAppId)));
+    prefix = install_static::GetBaseAppId();
   } else {
     app_name = ShellUtil::GetBrowserModelId(is_per_user_install);
   }
   DCHECK(!app_name.empty());
 
-  return win::GetAppModelIdForProfile(app_name, profile_path);
+  return GetAppUserModelIdImpl(prefix, app_name, profile_path);
 }
 
 // Windows treats a given scheme as an Internet scheme only if its registry
@@ -709,19 +725,15 @@ void SetAsDefaultProtocolClientUsingSystemSettings(
   ShellUtil::ShowMakeChromeDefaultProtocolClientSystemUI(chrome_exe, wprotocol);
 }
 
-base::string16 GetAppModelIdForProfile(const base::string16& app_name,
+base::string16 GetAppUserModelIdForApp(const base::string16& app_name,
                                        const base::FilePath& profile_path) {
-  std::vector<base::string16> components;
-  components.push_back(app_name);
-  const base::string16 profile_id(GetProfileIdFromPath(profile_path));
-  if (!profile_id.empty())
-    components.push_back(profile_id);
-  return ShellUtil::BuildAppModelId(components);
+  return GetAppUserModelIdImpl(install_static::GetBaseAppId(), app_name,
+                               profile_path);
 }
 
-base::string16 GetChromiumModelIdForProfile(
-    const base::FilePath& profile_path) {
-  return GetAppModelIdForProfile(
+base::string16 GetAppUserModelIdForBrowser(const base::FilePath& profile_path) {
+  return GetAppUserModelIdImpl(
+      base::string16(),
       ShellUtil::GetBrowserModelId(InstallUtil::IsPerUserInstall()),
       profile_path);
 }

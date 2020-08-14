@@ -334,9 +334,11 @@ try_.chromium_linux_builder(
 # monitoring stability and capacity.  crbug.com/1042511
 try_.chromium_linux_builder(
     name = "fuchsia_arm64",
-    tryjob = try_.job(
-        experiment_percentage = 50,
-    ),
+    # TODO(crbug.com/1116532): Move back to experimental once CQ has settled
+    # down.
+    #tryjob = try_.job(
+    #    experiment_percentage = 50,
+    #),
 )
 
 try_.chromium_linux_builder(

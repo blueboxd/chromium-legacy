@@ -83,7 +83,7 @@ function finish()
     // once the new worker is activated, check that the old worker is gc'd.
     gc();
     shouldBeFalse('registrationObservation.wasCollected');
-    shouldBeFalse('swObservation.wasCollected');
+    shouldBeTrue('swObservation.wasCollected');
     finishJSTest();
 }
 </script>

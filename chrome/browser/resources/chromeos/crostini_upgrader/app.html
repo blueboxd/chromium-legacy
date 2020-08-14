@@ -13,6 +13,13 @@
   #img-square-illustration {
     align-self: center;
     height: 180px;
+    margin-bottom: 80px;
+    width: 180px;
+  }
+
+  #img-square-error-illustration {
+    align-self: center;
+    height: 180px;
     margin-bottom: 40px;
     width: 180px;
   }
@@ -96,7 +103,7 @@
       <a href="$i18n{learnMoreUrl}" target="_blank">$i18n{learnMore}</a>
     </div>
     <!-- Progress message. -->
-    <div id="progress-message" hidden="[[isState_(state_, State.PROMPT)]]">
+    <div id="progress-message" hidden="[[isProgressMessageHidden_(state_)]]">
       <span>[[getProgressMessage_(state_)]]</span>
       <!-- Progress submessage. -->
       <div id = "progress-submessage"
@@ -125,7 +132,7 @@
       <paper-progress class="progress-bar" indeterminate></paper-progress>
     </div>
     <div id="error-message" hidden="[[!isState_(state_, State.ERROR)]]">
-      <textarea id="error-log" rows="6" cols="80" readonly>[[getErrorMessage_(state_)]]</textarea>
+      <textarea id="error-log" rows="10" cols="80" readonly>[[getErrorMessage_(state_)]]</textarea>
     </div>
   </div>
 

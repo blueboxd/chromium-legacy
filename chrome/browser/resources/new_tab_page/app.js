@@ -10,6 +10,8 @@ import './iframe.js';
 import './fakebox.js';
 import './realbox.js';
 import './logo.js';
+import './module_wrapper.js';
+import './modules/modules.js'; // Registers module descriptors.
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/shared_style_css.m.js';
 
@@ -22,7 +24,8 @@ import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/poly
 import {BackgroundManager} from './background_manager.js';
 import {BrowserProxy} from './browser_proxy.js';
 import {BackgroundSelection, BackgroundSelectionType} from './customize_dialog.js';
-import {registry} from './modules/modules.js';
+import {ModuleDescriptor} from './modules/module_descriptor.js';
+import {ModuleRegistry} from './modules/module_registry.js';
 import {oneGoogleBarApi} from './one_google_bar_api.js';
 import {PromoBrowserCommandProxy} from './promo_browser_command_proxy.js';
 import {$$, hexColorToSkColor, skColorToRgba} from './utils.js';
@@ -198,6 +201,9 @@ class AppElement extends PolymerElement {
        * @private
        */
       lazyRender_: Boolean,
+
+      /** @private {!Array<!ModuleDescriptor>} */
+      moduleDescriptors_: Object,
     };
   }
 
@@ -448,15 +454,12 @@ class AppElement extends PolymerElement {
   }
 
   /** @private */
-  onLazyRendered_() {
+  async onLazyRendered_() {
     if (!loadTimeData.getBoolean('modulesEnabled')) {
       return;
     }
-    const container = $$(this, '#modules');
-    if (!container) {
-      return;
-    }
-    registry.instantiateModules(container);
+    this.moduleDescriptors_ =
+        await ModuleRegistry.getInstance().initializeModules();
   }
 
   /** @private */

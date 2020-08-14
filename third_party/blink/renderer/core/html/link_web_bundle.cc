@@ -37,7 +37,8 @@ class WebBundleLoader : public GarbageCollected<WebBundleLoader>,
     request.SetMode(network::mojom::blink::RequestMode::kCors);
     request.SetCredentialsMode(network::mojom::blink::CredentialsMode::kOmit);
 
-    ResourceLoaderOptions resource_loader_options;
+    ResourceLoaderOptions resource_loader_options(
+        execution_context.GetCurrentWorld());
     resource_loader_options.data_buffering_policy = kDoNotBufferData;
 
     loader_ = MakeGarbageCollected<ThreadableLoader>(execution_context, this,

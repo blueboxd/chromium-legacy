@@ -206,3 +206,23 @@ grit("print_management_resources") {
 
   output_dir = "$root_gen_dir/chromeos"
 }
+
+grit("scanning_app_resources") {
+  source = "../components/scanning/resources/scanning_app_resources.grd"
+
+  deps = [ "../components/scanning/resources:web_components" ]
+
+  outputs = [
+    "chromeos_scanning_app_resources.pak",
+    "grit/chromeos_scanning_app_resources.h",
+    "grit/chromeos_scanning_app_resources_map.cc",
+    "grit/chromeos_scanning_app_resources_map.h",
+  ]
+
+  grit_flags = [
+    "-E",
+    "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
+  ]
+
+  output_dir = "$root_gen_dir/chromeos"
+}

@@ -95,7 +95,10 @@ WorkletGlobalScope::WorkletGlobalScope(
       https_state_(creation_params->starter_https_state),
       thread_type_(thread_type),
       frame_(frame),
-      worker_thread_(worker_thread) {
+      worker_thread_(worker_thread),
+      // Worklets should always have a parent LocalFrameToken.
+      frame_token_(
+          creation_params->parent_context_token->GetAs<LocalFrameToken>()) {
   DCHECK((thread_type_ == ThreadType::kMainThread && frame_) ||
          (thread_type_ == ThreadType::kOffMainThread && worker_thread_));
 

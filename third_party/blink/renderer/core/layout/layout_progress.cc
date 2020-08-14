@@ -63,8 +63,7 @@ double LayoutProgress::AnimationProgress() const {
   if (!animating_)
     return 0;
   base::TimeDelta elapsed = base::TimeTicks::Now() - animation_start_time_;
-  return (elapsed % animation_duration_).InSecondsF() /
-         animation_duration_.InSecondsF();
+  return (elapsed % animation_duration_) / animation_duration_;
 }
 
 bool LayoutProgress::IsDeterminate() const {

@@ -28,7 +28,7 @@ import {loadTimeData} from '../i18n_setup.js';
 import {BlockingRequestManager} from './blocking_request_manager.js';
 // </if>
 import {PasswordMoreActionsClickedEvent} from './password_list_item.js';
-import {PasswordManagerImpl} from './password_manager_proxy.js';
+import {PasswordManagerImpl, PasswordManagerProxy} from './password_manager_proxy.js';
 import {PasswordRemoveDialogPasswordsRemovedEvent} from './password_remove_dialog.js';
 
 Polymer({
@@ -132,6 +132,14 @@ Polymer({
         'onPasswordRemoveDialogPasswordsRemoved_',
   },
 
+  /** @private {?PasswordManagerProxy} */
+  passwordManager_: null,
+
+  /** @override */
+  attached() {
+    this.passwordManager_ = PasswordManagerImpl.getInstance();
+  },
+
   /** @override */
   detached() {
     if (this.$.toast.open) {
@@ -179,7 +187,7 @@ Polymer({
    * @private
    */
   requestActivePlaintextPassword_(reason, callback) {
-    PasswordManagerImpl.getInstance()
+    this.passwordManager_
         .requestPlaintextPassword(this.activePassword.entry.getAnyId(), reason)
         .then(callback, error => {
           // <if expr="chromeos">
@@ -194,10 +202,9 @@ Polymer({
   /** @private */
   onMenuEditPasswordTap_() {
     if (this.isEditDialog_) {
-      // TODO(crbug.com/377410): Set plaintext password after we stop using
-      // ShowPasswordBehavior in password_list_item and password_edit_dialog.
       this.requestActivePlaintextPassword_(
-          chrome.passwordsPrivate.PlaintextReason.EDIT, _ => {
+          chrome.passwordsPrivate.PlaintextReason.EDIT, password => {
+            this.set('activePassword.entry.password', password);
             this.showPasswordEditDialog_ = true;
           });
     } else {
@@ -266,7 +273,7 @@ Polymer({
     const idToRemove = this.activePassword.entry.isPresentInAccount() ?
         this.activePassword.entry.accountId :
         this.activePassword.entry.deviceId;
-    PasswordManagerImpl.getInstance().removeSavedPassword(idToRemove);
+    this.passwordManager_.removeSavedPassword(idToRemove);
     this.displayRemovalNotification_(
         this.activePassword.entry.isPresentInAccount(),
         this.activePassword.entry.isPresentOnDevice());
@@ -309,7 +316,7 @@ Polymer({
    * @private
    */
   onUndoButtonClick_() {
-    PasswordManagerImpl.getInstance().undoRemoveSavedPasswordOrException();
+    this.passwordManager_.undoRemoveSavedPasswordOrException();
     this.onSavedPasswordOrExceptionRemoved();
   },
 

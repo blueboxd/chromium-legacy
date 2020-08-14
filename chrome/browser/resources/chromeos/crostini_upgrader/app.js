@@ -322,6 +322,16 @@ Polymer({
    * @return {boolean}
    * @private
    */
+  isProgressMessageHidden_(state) {
+    return this.isState_(this.state_, State.PROMPT) ||
+        this.isState_(this.state_, State.ERROR);
+  },
+
+  /**
+   * @param {State} state
+   * @return {boolean}
+   * @private
+   */
   canDoAction_(state) {
     switch (state) {
       case State.PROMPT:
@@ -503,8 +513,9 @@ Polymer({
       case State.BACKUP_SUCCEEDED:
       case State.RESTORE_SUCCEEDED:
       case State.PRECHECKS_FAILED:
-      case State.ERROR:
         return 'img-square-illustration';
+      case State.ERROR:
+        return 'img-square-error-illustration';
     }
     return 'img-rect-illustration';
   },

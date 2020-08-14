@@ -8,7 +8,7 @@
       :href="url">
     <img
         class="link-to-graph-icon"
-        :src="GraphIcon">
+        :src="graphIcon">
     <div class="link-to-graph-text">
       {{ text }}
     </div>
@@ -16,9 +16,15 @@
 </template>
 
 <script>
-import {UrlProcessor, URL_PARAM_KEYS} from '../url_processor.js';
+import {PagePathName, UrlProcessor, URL_PARAM_KEYS} from '../url_processor.js';
 
-import GraphIcon from '../assets/graph_icon.png';
+import PackageGraphIcon from '../assets/package_graph_icon.png';
+import ClassGraphIcon from '../assets/class_graph_icon.png';
+
+const GRAPH_NAME_TO_ICON = {
+  [PagePathName.PACKAGE]: PackageGraphIcon,
+  [PagePathName.CLASS]: ClassGraphIcon,
+};
 
 // @vue/component
 const LinkToGraph = {
@@ -28,7 +34,9 @@ const LinkToGraph = {
     text: String,
   },
   computed: {
-    GraphIcon: () => GraphIcon,
+    graphIcon: function() {
+      return GRAPH_NAME_TO_ICON[this.graphType] || '';
+    },
     url: function() {
       const urlProcessor = UrlProcessor.createForOutput();
       urlProcessor.appendArray(URL_PARAM_KEYS.FILTER_NAMES, this.filter);
@@ -43,8 +51,19 @@ export default LinkToGraph;
 <style scoped>
 .link-to-graph-container {
   align-items: center;
+  /**
+   * !important because the vue-material theme specifically styles
+   * `.md-theme-default a` elements (md-theme-default is a class on the root
+   * <html/>) and is imported later by webpack, giving it precedence over any
+   * class selectors.
+   */
+  color: #448aff !important;
   display: flex;
   flex-direction: row;
+}
+
+.link-to-graph-container:hover {
+  color: #448aff !important;
 }
 
 .link-to-graph-icon {
@@ -54,6 +73,7 @@ export default LinkToGraph;
 }
 
 .link-to-graph-text {
+  color: #448aff;
   min-width: 0;
   white-space: normal;
   word-wrap: break-word;

@@ -125,7 +125,7 @@ base::string16 GenerateAppUserModelId(const base::FilePath& profile_path,
                                       const web_app::AppId& app_id) {
   base::string16 app_name =
       base::UTF8ToUTF16(web_app::GenerateApplicationNameFromAppId(app_id));
-  return shell_integration::win::GetAppModelIdForProfile(app_name,
+  return shell_integration::win::GetAppUserModelIdForApp(app_name,
                                                          profile_path);
 }
 

@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 1412 tests; 1327 PASS, 85 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 1412 tests; 1328 PASS, 84 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS idl_test validation
 PASS Partial interface Document: original interface defined
@@ -889,7 +889,7 @@ PASS Location interface: existence and properties of interface prototype object'
 FAIL Location interface: stringifier assert_own_property: interface prototype object missing non-static operation expected property "toString" missing
 PASS Location must be primary interface of window.location
 PASS Stringification of window.location
-FAIL Location interface: window.location must have own property "href" assert_false: property descriptor should not have a "value" field expected false got true
+PASS Location interface: window.location must have own property "href"
 PASS Location interface: window.location must have own property "origin"
 PASS Location interface: window.location must have own property "protocol"
 PASS Location interface: window.location must have own property "host"

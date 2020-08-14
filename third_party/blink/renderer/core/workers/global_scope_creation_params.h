@@ -13,6 +13,7 @@
 #include "services/network/public/mojom/ip_address_space.mojom-blink-forward.h"
 #include "services/network/public/mojom/referrer_policy.mojom-blink-forward.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/browser_interface_broker.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/script/script_type.mojom-blink-forward.h"
@@ -63,7 +64,9 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
           browser_interface_broker = mojo::NullRemote(),
       BeginFrameProviderParams begin_frame_provider_params = {},
       const FeaturePolicy* parent_feature_policy = nullptr,
-      base::UnguessableToken agent_cluster_id = {});
+      base::UnguessableToken agent_cluster_id = {},
+      const base::Optional<ExecutionContextToken>& parent_context_token =
+          base::nullopt);
 
   ~GlobalScopeCreationParams() = default;
 
@@ -159,6 +162,11 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
   // context that created it (e.g. for a dedicated worker).
   // See https://tc39.github.io/ecma262/#sec-agent-clusters
   base::UnguessableToken agent_cluster_id;
+
+  // The identity of the parent ExecutionContext that is the sole owner of this
+  // worker or worklet, which caused it to be created, and to whose lifetime
+  // this worker/worklet is bound. This is used for resource usage attribution.
+  base::Optional<ExecutionContextToken> parent_context_token;
 
   DISALLOW_COPY_AND_ASSIGN(GlobalScopeCreationParams);
 };

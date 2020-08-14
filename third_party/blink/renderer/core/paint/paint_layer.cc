@@ -2703,7 +2703,7 @@ void PaintLayer::ExpandRectForStackingChildren(
 
 PhysicalRect PaintLayer::BoundingBoxForCompositing() const {
   return BoundingBoxForCompositingInternal(
-      *this, nullptr, kMaybeIncludeTransformForAncestorLayer);
+      *this, nullptr, kIncludeClipsAndMaybeIncludeTransformForAncestorLayer);
 }
 
 bool PaintLayer::ShouldApplyTransformToBoundingBox(
@@ -2716,7 +2716,7 @@ bool PaintLayer::ShouldApplyTransformToBoundingBox(
   if (PaintsWithTransform(kGlobalPaintNormalPhase)) {
     if (this != &composited_layer)
       return true;
-    if (options == kMaybeIncludeTransformForAncestorLayer)
+    if (options == kIncludeClipsAndMaybeIncludeTransformForAncestorLayer)
       return true;
   }
   return false;
@@ -2754,21 +2754,21 @@ PhysicalRect PaintLayer::BoundingBoxForCompositingInternal(
   if (GetLayoutObject().IsLayoutFlowThread())
     return PhysicalRect();
 
-  // If there is a clip applied by an ancestor to this PaintLayer but below or
-  // equal to |ancestorLayer|, apply that clip.
-  //
-  // There are two callsites to BoundingBoxForCompositingInternal: one in
-  // pre-paint for filter bouonding boxes, and one in compositing. The former
-  // can't use GeometryMapper yet because of circularity between
-  // LocalBorderBoxProperties and filters being set on the property trees.
-  PhysicalRect result =
-      Clipper((GetLayoutObject().GetDocument().Lifecycle().GetState() ==
-               DocumentLifecycle::kInCompositingAssignmentsUpdate)
-                  ? GeometryMapperOption::kUseGeometryMapper
-                  : GeometryMapperOption::kDoNotUseGeometryMapper)
-          .LocalClipRect(composited_layer);
+  PhysicalRect result;
+  if (options == kIncludeClipsAndMaybeIncludeTransformForAncestorLayer) {
+    // If there is a clip applied by an ancestor to this PaintLayer but below or
+    // equal to |ancestorLayer|, apply that clip. This optimizes the size
+    // of the composited layer to exclude clipped-out regions of descendants.
+    result = Clipper((GetLayoutObject().GetDocument().Lifecycle().GetState() ==
+                      DocumentLifecycle::kInCompositingAssignmentsUpdate)
+                         ? GeometryMapperOption::kUseGeometryMapper
+                         : GeometryMapperOption::kUseGeometryMapper)
+                 .LocalClipRect(composited_layer);
 
-  result.Intersect(LocalBoundingBox());
+    result.Intersect(LocalBoundingBox());
+  } else {
+    result = LocalBoundingBox();
+  }
 
   ExpandRectForStackingChildren(composited_layer, result, options);
 

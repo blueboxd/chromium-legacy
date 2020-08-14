@@ -12,11 +12,11 @@ GEN('#include "content/public/test/browser_test.h"');
 [['CrPolicyNetworkBehaviorMojo', 'cr_policy_network_behavior_mojo_tests.m.js'],
  ['CrPolicyNetworkIndicatorMojo', 'cr_policy_network_indicator_mojo_tests.m.js'],
  ['NetworkConfigElementBehavior', 'network_config_element_behavior_test.m.js'],
-].forEach(test => registerTest(...test));
+].forEach(test => registerTest('Network', ...test));
 // clang-format on
 
-function registerTest(testName, module, caseName) {
-  const className = `CrComponents${testName}TestV3`;
+function registerTest(componentName, testName, module, caseName) {
+  const className = `${componentName}${testName}TestV3`;
   this[className] = class extends PolymerTest {
     /** @override */
     get browsePreload() {

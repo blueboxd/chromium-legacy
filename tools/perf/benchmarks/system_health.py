@@ -121,13 +121,6 @@ class MobileCommonSystemHealth(_CommonSystemHealthBenchmark):
   def Name(cls):
     return 'system_health.common_mobile'
 
-  def SetExtraBrowserOptions(self, options):
-    super(MobileCommonSystemHealth, self).SetExtraBrowserOptions(options)
-    # Force online state for the offline indicator so it doesn't show and affect
-    # the benchmarks on bots, which are offline by default.
-    options.AppendExtraBrowserArgs(
-        '--force-online-connection-state-for-indicator')
-
 
 class _MemorySystemHealthBenchmark(perf_benchmark.PerfBenchmark):
   """Chrome Memory System Health Benchmark.
@@ -203,10 +196,6 @@ class MobileMemorySystemHealth(_MemorySystemHealthBenchmark):
     # each time before Chrome starts so we effect even the first story
     # - avoiding the bug.
     options.flush_os_page_caches_on_start = True
-    # Force online state for the offline indicator so it doesn't show and affect
-    # the benchmarks on bots, which are offline by default.
-    options.AppendExtraBrowserArgs(
-        '--force-online-connection-state-for-indicator')
 
   @classmethod
   def Name(cls):

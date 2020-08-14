@@ -4,12 +4,10 @@
 
 #include "chromeos/components/print_management/print_management_ui.h"
 
-#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "chromeos/components/print_management/mojom/printing_manager.mojom.h"
 #include "chromeos/components/print_management/url_constants.h"
 #include "chromeos/components/web_applications/manifest_request_filter.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/grit/chromeos_print_management_resources.h"
 #include "chromeos/grit/chromeos_print_management_resources_map.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
@@ -134,10 +132,6 @@ PrintManagementUI::PrintManagementUI(
   web_app::SetManifestRequestFilter(html_source.get(),
                                     IDR_PRINT_MANAGEMENT_MANIFEST,
                                     IDS_PRINT_MANAGEMENT_APP_NAME);
-
-  if (base::FeatureList::IsEnabled(chromeos::features::kScanningUI)) {
-    html_source->AddResourcePath("scanning_page.js", IDR_SCANNING_PAGE_JS);
-  }
 
   content::WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),
                                 html_source.release());

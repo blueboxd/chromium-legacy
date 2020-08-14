@@ -309,7 +309,7 @@ double Time::GetHighResolutionTimerUsage() {
     // activation.
     used_time += now - g_high_res_timer_last_activation;
   }
-  return used_time.InMillisecondsF() / elapsed_time.InMillisecondsF() * 100;
+  return used_time / elapsed_time * 100;
 }
 
 // static

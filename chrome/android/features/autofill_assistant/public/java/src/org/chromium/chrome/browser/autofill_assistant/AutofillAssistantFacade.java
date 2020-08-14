@@ -96,6 +96,18 @@ public class AutofillAssistantFacade {
         // Have an "attempted starts" baseline for the drop out histogram.
         AutofillAssistantMetrics.recordDropOut(DropOutReason.AA_START);
         waitForTabWithWebContents(activity, tab -> {
+            if (arguments.containsTriggerScript()) {
+                if (!AutofillAssistantPreferencesUtil.isAutofillAssistantSwitchOn()) {
+                    // Opt-out users who have seen and rejected the onboarding.
+                    return;
+                }
+                if (AutofillAssistantModuleEntryProvider.INSTANCE.getModuleEntryIfInstalled()
+                        == null) {
+                    // Opt-out users who don't have DFM installed.
+                    return;
+                }
+            }
+
             AutofillAssistantModuleEntryProvider.INSTANCE.getModuleEntry(
                     tab, (moduleEntry) -> {
                         if (moduleEntry == null || activity.isActivityFinishingOrDestroyed()) {

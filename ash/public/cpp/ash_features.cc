@@ -148,6 +148,9 @@ const base::Feature kMaintainShelfStateWhenEnteringOverview{
 const base::Feature kTemporaryHoldingSpace{"TemporaryHoldingSpace",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kDragUnpinnedAppToPin{"DragUnpinnedAppToPin",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool IsAllowAmbientEQEnabled() {
   return base::FeatureList::IsEnabled(kAllowAmbientEQ);
 }
@@ -301,6 +304,10 @@ bool IsMaintainShelfStateWhenEnteringOverviewEnabled() {
 
 bool IsTemporaryHoldingSpaceEnabled() {
   return base::FeatureList::IsEnabled(kTemporaryHoldingSpace);
+}
+
+bool IsDragUnpinnedAppToPinEnabled() {
+  return base::FeatureList::IsEnabled(kDragUnpinnedAppToPin);
 }
 
 namespace {

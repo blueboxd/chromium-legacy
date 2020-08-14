@@ -8,7 +8,7 @@ of their two days working on bug triage/investigation.
 ## 1. Review untriaged bugs
 
 Look through [this list of untriaged
-bugs](https://bugs.chromium.org/p/chromium/issues/list?sort=pri%20-stars%20-opened&q=component%3AInternals%3ENetwork%20status%3Aunconfirmed%2Cuntriaged%20-component%3AInternals%3ENetwork%3ECookies%20-component%3AInternals%3ENetwork%3EDNS%20-component%3AInternals%3ENetwork%3ECookies%20-component%3AInternals%3ENetwork%3ECertificate%20-component%3AInternals%3ENetwork%3EReportingAndNEL%20-component%3AInternals%3ENetwork%3EDataUse%20-component%3AInternals%3ENetwork%3EEV%20-component%3AInternals%3ENetwork%3EDataProxy%20-component%3AInternals%3ENetwork%3ECertTrans%20-component%3AInternals%3ENetwork%3ENetworkQuality%20-component%3AInternals%3ENetwork%3EDoH%20-component%3AInternals%3ENetwork%3ENetInfo%20-component%3AInternals%3ENetwork%3EVPN%20-Needs%3DFeedback).
+bugs](https://bugs.chromium.org/p/chromium/issues/list?sort=pri%20-stars%20-opened&q=component%3AInternals%3ENetwork%20status%3Aunconfirmed%2Cuntriaged%20-component%3AInternals%3ENetwork%3ECookies%20-component%3AInternals%3ENetwork%3EDNS%20-component%3AInternals%3ENetwork%3ECookies%20-component%3AInternals%3ENetwork%3ECertificate%20-component%3AInternals%3ENetwork%3EReportingAndNEL%20-component%3AInternals%3ENetwork%3EDataUse%20-component%3AInternals%3ENetwork%3EEV%20-component%3AInternals%3ENetwork%3EDataProxy%20-component%3AInternals%3ENetwork%3ECertTrans%20-component%3AInternals%3ENetwork%3ENetworkQuality%20-component%3AInternals%3ENetwork%3EDoH%20-component%3AInternals%3ENetwork%3ENetInfo%20-component%3AInternals%3ENetwork%3EVPN%20-Needs%3DFeedback%20-Label%3ANetwork-Triaged).
 
 * Go through them in the given order (top to bottom).
   The link sorts them by priority and then recency.
@@ -31,6 +31,12 @@ For each bug try to:
   form on [OmahaProxy](https://omahaproxy.appspot.com/)
 * CC others who may be able to help
 * Mark it as `Needs-Feedback` and request more information if needed.
+* In cases where the bug has multiple components, but primary ownership falls
+  outside of networking, further network triage may not be possible. In those
+  cases, if possible remove the networking component. Otherwise, add the
+  `Network-Triaged` label to the bug, and add a comment explaining which team
+  should triage further. Adding the `Network-Triaged` serves to filter the
+  bug from our untriaged bug list.
 * Request a NetLog that captures the problem. You can paste this on the bug:
   ```
   Please collect and attach a chrome://net-export log.

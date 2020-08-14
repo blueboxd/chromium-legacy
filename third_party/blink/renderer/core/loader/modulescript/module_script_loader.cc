@@ -120,7 +120,7 @@ void ModuleScriptLoader::FetchInternal(
   resource_request.SetRequestContext(module_request.ContextType());
   resource_request.SetRequestDestination(module_request.Destination());
 
-  ResourceLoaderOptions options;
+  ResourceLoaderOptions options(&modulator_->GetScriptState()->World());
 
   // <spec step="6">If destination is "worker" or "sharedworker" and the
   // top-level module fetch flag is set, then set request's mode to

@@ -11,10 +11,12 @@ found in the LICENSE file. -->
     <style include="oobe-dialog-host">
       cr-card-radio-button {
         border-radius: 16px;
+        height: 210px;
         --cr-button-edge-spacing: 0;
         --cr-card-radio-button-height: 100%;
         --cr-card-radio-button-padding: 0;
         --cr-card-radio-button-margin: 0;
+        --cr-radio-button-ink-size: 0;
         --cr-radio-group-item-padding: 8px;
       }
 
@@ -43,8 +45,8 @@ found in the LICENSE file. -->
         padding-top: 16px;
       }
 
-      .footer-container {
-        padding-bottom: 20px;
+      oobe-dialog {
+        --oobe-dialog-content-padding-top: 0;
       }
 
       .next-button {
@@ -57,14 +59,13 @@ found in the LICENSE file. -->
       <hd-iron-icon icon1x="oobe-32:googleg" icon2x="oobe-64:googleg"
         slot="oobe-icon">
       </hd-iron-icon>
-      <div slot="footer" class="footer-container flex layout vertical
-          center-justified">
+      <div slot="footer" class="flex layout vertical center-justified">
         <cr-radio-group id="userType" class="layout horizontal"
             selected="{{selectedUserType}}">
           <cr-card-radio-button id="selfButton" class="flex" name="self">
             <div class="card-container layout vertical center">
-              <hd-iron-icon class="card-icon" icon1x="oobe-48:self"
-                  icon2x="oobe-96:self">
+              <hd-iron-icon class="card-icon" icon1x="oobe-48:avatar"
+                  icon2x="oobe-96:avatar">
               </hd-iron-icon>
               <div class="card-label">
                 [[i18nDynamic(locale, 'createForSelfLabel')]]
@@ -76,8 +77,8 @@ found in the LICENSE file. -->
           </cr-card-radio-button>
           <cr-card-radio-button id="childButton" class="flex" name="child">
             <div class="card-container layout vertical center">
-              <hd-iron-icon class="card-icon" icon1x="oobe-32:avatar"
-                icon2x="oobe-64:avatar">
+              <hd-iron-icon class="card-icon" icon1x="oobe-48:child-user"
+                icon2x="oobe-96:child-user">
               </hd-iron-icon>
               <div class="card-label">
                 [[i18nDynamic(locale, 'createForChildLabel')]]
@@ -102,7 +103,7 @@ found in the LICENSE file. -->
     <oobe-dialog id="childSignInDialog" role="dialog" has-buttons
         title-key="childSignInTitle" subtitle-key="childSignInSubtitle"
         for-step="child">
-      <hd-iron-icon icon1x="oobe-32:googleg" icon2x="oobe-64:googleg"
+      <hd-iron-icon icon1x="oobe-32:family" icon2x="oobe-64:family"
         slot="oobe-icon">
       </hd-iron-icon>
       <div slot="footer" class="footer-container flex layout vertical
@@ -123,8 +124,8 @@ found in the LICENSE file. -->
           <cr-card-radio-button id="childSignInButton" name="signin"
               class="flex">
             <div class="card-container layout vertical center">
-              <hd-iron-icon class="card-icon" icon1x="oobe-48:child-account"
-                  icon2x="oobe-96:child-account">
+              <hd-iron-icon class="card-icon" icon1x="oobe-48:supervised-user"
+                  icon2x="oobe-96:supervised-user">
               </hd-iron-icon>
               <div class="card-label">
                 [[i18nDynamic(locale, 'signInForChildLabel')]]

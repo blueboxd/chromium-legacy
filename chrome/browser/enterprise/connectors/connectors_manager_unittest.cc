@@ -557,8 +557,11 @@ class ConnectorsManagerAnalysisConnectorsTest
       public testing::WithParamInterface<AnalysisConnector> {
  public:
   explicit ConnectorsManagerAnalysisConnectorsTest(bool enable = true) {
-    if (enable)
+    if (enable) {
       scoped_feature_list_.InitWithFeatures({kEnterpriseConnectorsEnabled}, {});
+    } else {
+      scoped_feature_list_.InitWithFeatures({}, {kEnterpriseConnectorsEnabled});
+    }
   }
 
   AnalysisConnector connector() const { return GetParam(); }
@@ -691,8 +694,11 @@ class ConnectorsManagerReportingFeatureTest
           std::tuple<ReportingConnector, bool, int, int>> {
  public:
   ConnectorsManagerReportingFeatureTest() {
-    if (enable_feature_flag())
+    if (enable_feature_flag()) {
       scoped_feature_list_.InitWithFeatures({kEnterpriseConnectorsEnabled}, {});
+    } else {
+      scoped_feature_list_.InitWithFeatures({}, {kEnterpriseConnectorsEnabled});
+    }
   }
 
   ReportingConnector connector() const { return std::get<0>(GetParam()); }

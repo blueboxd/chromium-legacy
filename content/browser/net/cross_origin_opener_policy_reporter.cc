@@ -20,34 +20,33 @@ namespace content {
 
 namespace {
 
-constexpr char kColumnNumber[] = "colno";
+// Report attribute names (camelCase):
+constexpr char kColumnNumber[] = "columnNumber";
+constexpr char kDisposition[] = "disposition";
+constexpr char kDocumentURI[] = "documentURI";
+constexpr char kEffectivePolicy[] = "effectivePolicy";
+constexpr char kLineNumber[] = "lineNumber";
+constexpr char kNavigationURI[] = "navigationURI";
+constexpr char kProperty[] = "property";
+constexpr char kSourceFile[] = "sourceFile";
+constexpr char kViolationType[] = "type";
+
+// Report attribute values:
 constexpr char kDispositionEnforce[] = "enforce";
 constexpr char kDispositionReporting[] = "reporting";
-constexpr char kDisposition[] = "disposition";
-constexpr char kDocumentURI[] = "document-uri";
-constexpr char kEffectivePolicy[] = "effective-policy";
-constexpr char kLineNumber[] = "lineno";
-constexpr char kNavigationURI[] = "navigation-uri";
-constexpr char kProperty[] = "property";
-constexpr char kSameOriginAllowPopups[] = "same-origin-allow-popups";
-constexpr char kSameOriginPlusCoep[] = "same-origin-plus-coep";
-constexpr char kSameOrigin[] = "same-origin";
-constexpr char kSourceFile[] = "source-file";
-constexpr char kUnsafeNone[] = "unsafe-none";
-constexpr char kViolationTypeFromDocument[] = "navigation-from-document";
-constexpr char kViolationTypeToDocument[] = "navigation-to-document";
-constexpr char kViolationType[] = "violation-type";
+constexpr char kTypeNavigationFromDocument[] = "navigation-from-document";
+constexpr char kTypeNavigationToDocument[] = "navigation-to-document";
 
 std::string ToString(network::mojom::CrossOriginOpenerPolicyValue coop_value) {
   switch (coop_value) {
     case network::mojom::CrossOriginOpenerPolicyValue::kUnsafeNone:
-      return kUnsafeNone;
+      return "unsafe-none";
     case network::mojom::CrossOriginOpenerPolicyValue::kSameOrigin:
-      return kSameOrigin;
+      return "same-origin";
     case network::mojom::CrossOriginOpenerPolicyValue::kSameOriginAllowPopups:
-      return kSameOriginAllowPopups;
+      return "same-origin-allow-popups";
     case network::mojom::CrossOriginOpenerPolicyValue::kSameOriginPlusCoep:
-      return kSameOriginPlusCoep;
+      return "same-origin-plus-coep";
   }
 }
 
@@ -173,8 +172,8 @@ void CrossOriginOpenerPolicyReporter::QueueOpenerBreakageReport(
   body.SetString(kDocumentURI, sanitized_context_url);
   body.SetString(kNavigationURI, sanitized_other_url);
   body.SetString(kViolationType, is_reported_from_document
-                                     ? kViolationTypeFromDocument
-                                     : kViolationTypeToDocument);
+                                     ? kTypeNavigationFromDocument
+                                     : kTypeNavigationToDocument);
   body.SetString(
       kEffectivePolicy,
       ToString(is_report_only ? coop_.report_only_value : coop_.value));

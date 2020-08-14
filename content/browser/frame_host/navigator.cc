@@ -267,7 +267,7 @@ void Navigator::DidNavigate(
       render_frame_host, params.gesture == NavigationGestureUser,
       is_same_document_navigation,
       navigation_request->coop_status()
-          .require_browsing_instance_swap /* clear_proxies_on_commit */,
+          .require_browsing_instance_swap() /* clear_proxies_on_commit */,
       pending_frame_policy);
 
   // Save the new page's origin and other properties, and replicate them to

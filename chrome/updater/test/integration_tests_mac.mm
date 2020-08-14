@@ -38,6 +38,13 @@ base::FilePath GetProductPath() {
       .AppendASCII(PRODUCT_FULLNAME_STRING);
 }
 
+base::FilePath GetDataDirPath() {
+  return base::mac::GetUserLibraryPath()
+      .AppendASCII("Application Support")
+      .AppendASCII(COMPANY_SHORTNAME_STRING)
+      .AppendASCII(PRODUCT_FULLNAME_STRING);
+}
+
 bool Run(base::CommandLine command_line, int* exit_code) {
   auto process = base::LaunchProcess(command_line, {});
   if (!process.IsValid())
@@ -58,6 +65,7 @@ void Clean() {
       Launchd::User, Launchd::Agent, updater::CopyControlLaunchdName()));
   EXPECT_TRUE(Launchd::GetInstance()->DeletePlist(
       Launchd::User, Launchd::Agent, updater::CopyServiceLaunchdName()));
+  EXPECT_TRUE(base::DeletePathRecursively(GetDataDirPath()));
 }
 
 void ExpectClean() {
@@ -69,6 +77,7 @@ void ExpectClean() {
       Launchd::User, Launchd::Agent, updater::CopyControlLaunchdName()));
   EXPECT_FALSE(Launchd::GetInstance()->PlistExists(
       Launchd::User, Launchd::Agent, updater::CopyServiceLaunchdName()));
+  EXPECT_FALSE(base::PathExists(GetDataDirPath()));
 }
 
 void ExpectInstalled() {

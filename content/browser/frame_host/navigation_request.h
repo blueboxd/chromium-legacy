@@ -17,6 +17,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
+#include "content/browser/frame_host/cross_origin_opener_policy_status.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/frame_host/navigation_throttle_runner.h"
@@ -82,50 +83,6 @@ class NavigatorDelegate;
 class PrefetchedSignedExchangeCache;
 class ServiceWorkerMainResourceHandle;
 struct SubresourceLoaderParams;
-
-// A structure that groups information about how COOP has interacted with the
-// navigation. These are used to trigger a number of mechanisms such as name
-// clearing or reporting.
-struct CrossOriginOpenerPolicyStatus {
-  CrossOriginOpenerPolicyStatus(int virtual_browsing_context_group,
-                                const network::CrossOriginOpenerPolicy& coop,
-                                const url::Origin& origin);
-
-  // Set to true whenever the Cross-Origin-Opener-Policy spec requires a
-  // "BrowsingContext group" swap:
-  // https://gist.github.com/annevk/6f2dd8c79c77123f39797f6bdac43f3e
-  // This forces the new RenderFrameHost to use a different BrowsingInstance
-  // than the current one. If other pages had JavaScript references to the
-  // Window object for the frame (via window.opener, window.open(), et cetera),
-  // those references will be broken; window.name will also be reset to an empty
-  // string.
-  bool require_browsing_instance_swap = false;
-
-  // As detailed in
-  // https://github.com/camillelamy/explainers/blob/master/coop_reporting.md#browsing-context-changes:
-  // Set to true when the Cross-Origin-Opener-Policy-Report-Only value of the
-  // involved documents would cause a browsing context group swap.
-  bool virtual_browsing_instance_swap = false;
-
-  // The virtual browsing context group of the document to commit.
-  int virtual_browsing_context_group;
-
-  // When a page has a reachable opener and COOP triggers a browsing instance
-  // swap we potentially break the page. This is one of the case that can be
-  // reported using the COOP reporting API.
-  bool had_opener_before_browsing_instance_swap = false;
-
-  // This is used to warn developer the COOP header has been ignored, because
-  // the origin was not trustworthy.
-  bool header_ignored_due_to_insecure_context = false;
-
-  // The COOP and origin used when comparing to the COOP and origin of a
-  // response. At the beginning of the navigation, it is the COOP and origin of
-  // the current document. After redirects, it is the COOP and origin of the
-  // last redirect response.
-  network::CrossOriginOpenerPolicy current_coop;
-  url::Origin current_origin;
-};
 
 // A UI thread object that owns a navigation request until it commits. It
 // ensures the UI thread can start a navigation request in the
@@ -703,7 +660,7 @@ class CONTENT_EXPORT NavigationRequest
   base::Optional<network::mojom::WebSandboxFlags> SandboxFlagsToCommit();
 
   // Returns the coop status information relevant to the current navigation.
-  const CrossOriginOpenerPolicyStatus& coop_status() const;
+  CrossOriginOpenerPolicyStatus& coop_status() { return coop_status_; }
 
   // Whether the navigation was sent to be committed in a renderer by the
   // RenderFrameHost. This can either be for the commit of a successful
@@ -1063,7 +1020,7 @@ class CONTENT_EXPORT NavigationRequest
   void CreateCoepReporter(StoragePartition* storage_partition);
   void CreateCoopReporter(StoragePartition* storage_partition);
 
-  base::Optional<network::mojom::BlockedByResponseReason> IsBlockedByResponse();
+  base::Optional<network::mojom::BlockedByResponseReason> EnforceCOEP();
 
   bool IsOverridingUserAgent() const {
     return commit_params_->is_overriding_user_agent || entry_overrides_ua_;
@@ -1096,13 +1053,6 @@ class CONTENT_EXPORT NavigationRequest
   // Set |state_| to |state| and also DCHECK that this state transition is
   // valid.
   void SetState(NavigationState state);
-
-  // Make sure COOP is relevant or clear the COOP headers.
-  void SanitizeCoopHeaders();
-
-  // Updates the internal coop_status after receiving a response with.
-  void UpdateCoopStatus(const network::CrossOriginOpenerPolicy& response_coop,
-                        const url::Origin& response_origin);
 
   FrameTreeNode* const frame_tree_node_;
 

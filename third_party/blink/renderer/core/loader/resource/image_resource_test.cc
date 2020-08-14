@@ -313,7 +313,8 @@ TEST_F(ImageResourceTest, BitmapMultipartImage) {
   resource_request.SetReferrerPolicy(
       ReferrerPolicyResolveDefault(resource_request.GetReferrerPolicy()));
   resource_request.SetPriority(WebURLRequest::Priority::kLow);
-  ImageResource* image_resource = ImageResource::Create(resource_request);
+  ImageResource* image_resource =
+      ImageResource::Create(resource_request, nullptr /* world */);
   fetcher->StartLoad(image_resource);
 
   ResourceResponse multipart_response(NullURL());

@@ -7,10 +7,10 @@
   SecureContext,
   RuntimeEnabled=DigitalGoods
 ] interface DigitalGoodsService {
-  [CallWith=ScriptState]
+  [CallWith=ScriptState, MeasureAs=DigitalGoodsGetDetails]
   Promise<sequence<ItemDetails>> getDetails(sequence<DOMString> itemIds);
 
-  [CallWith=ScriptState]
+  [CallWith=ScriptState, MeasureAs=DigitalGoodsAcknowledge]
   Promise<void> acknowledge(DOMString purchaseToken, PurchaseType purchaseType);
 };
 

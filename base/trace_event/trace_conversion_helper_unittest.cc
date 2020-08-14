@@ -109,5 +109,35 @@ TEST(TraceEventConversionHelperTest, HasBoth) {
   EXPECT_EQ("HasBoth::ToString", answer);
 }
 
+class HasData {
+ public:
+  const char* data() const { return "HasData"; }
+};
+
+TEST(TraceEventConversionHelperTest, HasData) {
+  std::string answer = ValueToString(HasData());
+  EXPECT_EQ("HasData", answer);
+}
+
+class HasNonConstData {
+ public:
+  const char* data() { return "HasNonConstData"; }
+};
+
+TEST(TraceEventConversionHelperTest, HasNonConstData) {
+  std::string answer = ValueToString(HasNonConstData(), "fallback");
+  EXPECT_EQ("fallback", answer);
+}
+
+class HasDataOfWrongType {
+ public:
+  void data() {}
+};
+
+TEST(TraceEventConversionHelperTest, HasDataOfWrongType) {
+  std::string answer = ValueToString(HasDataOfWrongType(), "fallback");
+  EXPECT_EQ("fallback", answer);
+}
+
 }  // namespace trace_event
 }  // namespace base

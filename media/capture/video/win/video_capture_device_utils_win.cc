@@ -13,8 +13,20 @@
 namespace media {
 
 namespace {
+
 const int kDegreesToArcSeconds = 3600;
 const int kSecondsTo100MicroSeconds = 10000;
+
+// Determines if camera is mounted on a device with naturally portrait display.
+bool IsPortraitDevice(DWORD display_height,
+                      DWORD display_width,
+                      int device_angle) {
+  if (device_angle == 0 || device_angle == 180)
+    return display_height >= display_width;
+  else
+    return display_height < display_width;
+}
+
 }  // namespace
 
 // Windows platform stores pan and tilt (min, max, step and current) in
@@ -97,6 +109,7 @@ int GetCameraRotation(VideoFacingMode facing) {
   if (::EnumDisplaySettings(internal_display_device.DeviceName,
                             ENUM_CURRENT_SETTINGS, &mode)) {
     int device_orientation = 0;
+    int portrait_correction = 0;
     switch (mode.dmDisplayOrientation) {
       case DMDO_DEFAULT:
         device_orientation = 0;
@@ -111,7 +124,13 @@ int GetCameraRotation(VideoFacingMode facing) {
         device_orientation = 270;
         break;
     }
-    rotation = (360 - device_orientation) % 360;
+    // Correct the 90 degree offset between the camera mounted in landscape and
+    // the default orientation on a naturally portrait device.
+    if (IsPortraitDevice(mode.dmPelsHeight, mode.dmPelsWidth,
+                         device_orientation)) {
+      portrait_correction = 90;
+    }
+    rotation = (360 - device_orientation - portrait_correction) % 360;
   }
 
   return rotation;

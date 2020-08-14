@@ -480,11 +480,17 @@ void InstallUtil::ComposeCommandLine(const base::string16& program,
       base::CommandLine::FromString(L"\"" + program + L"\" " + arguments);
 }
 
-void InstallUtil::AppendModeSwitch(base::CommandLine* command_line) {
+void InstallUtil::AppendModeAndChannelSwitches(
+    base::CommandLine* command_line) {
   const install_static::InstallDetails& install_details =
       install_static::InstallDetails::Get();
   if (*install_details.install_switch())
     command_line->AppendSwitch(install_details.install_switch());
+  if (install_details.channel_origin() ==
+      install_static::ChannelOrigin::kPolicy) {
+    command_line->AppendSwitchNative(installer::switches::kChannel,
+                                     install_details.channel());
+  }
 }
 
 // static

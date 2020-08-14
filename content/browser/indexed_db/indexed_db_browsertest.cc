@@ -1086,9 +1086,9 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest,
                           "pass - part3 - rolled back");
 }
 
-// crbug.com/427529
-// Disable this test for ASAN on Android because it takes too long to run.
-#if defined(ANDROID) && defined(ADDRESS_SANITIZER)
+// Disable this test on Android due to failures. See crbug.com/427529 and
+// crbug.com/1116464 for details.
+#if defined(ANDROID)
 #define MAYBE_ConnectionsClosedOnTabClose DISABLED_ConnectionsClosedOnTabClose
 #else
 #define MAYBE_ConnectionsClosedOnTabClose ConnectionsClosedOnTabClose

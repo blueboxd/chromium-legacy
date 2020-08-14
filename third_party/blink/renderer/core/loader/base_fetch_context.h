@@ -101,10 +101,6 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
   virtual const ContentSecurityPolicy* GetContentSecurityPolicyForWorld(
       const DOMWrapperWorld* world) const = 0;
 
-  // TODO(crbug.com/1099975) Remove this method once a DOMWrapperWorld is set
-  // for all requests.
-  virtual bool ShouldBypassMainWorldCSP() const = 0;
-
   virtual bool IsSVGImageChromeClient() const = 0;
   virtual bool ShouldBlockFetchByMixedContentCheck(
       mojom::blink::RequestContextType request_context,

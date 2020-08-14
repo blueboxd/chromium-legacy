@@ -764,13 +764,6 @@ FrameFetchContext::GetContentSecurityPolicyForWorld(
       world);
 }
 
-bool FrameFetchContext::ShouldBypassMainWorldCSP() const {
-  if (GetResourceFetcherProperties().IsDetached())
-    return false;
-
-  return ContentSecurityPolicy::ShouldBypassMainWorld(GetFrame()->DomWindow());
-}
-
 bool FrameFetchContext::IsSVGImageChromeClient() const {
   if (GetResourceFetcherProperties().IsDetached())
     return frozen_state_->is_svg_image_chrome_client;

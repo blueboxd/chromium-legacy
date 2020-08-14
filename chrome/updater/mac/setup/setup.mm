@@ -276,6 +276,13 @@ bool DeleteInstallFolder() {
   return DeleteInstallFolder(GetUpdaterFolderPath());
 }
 
+bool DeleteDataFolder() {
+  base::FilePath data_path;
+  if (!GetBaseDirectory(&data_path))
+    return false;
+  return DeleteInstallFolder(data_path);
+}
+
 }  // namespace
 
 int InstallCandidate() {
@@ -334,6 +341,9 @@ int Uninstall(bool is_machine) {
 
   if (!RemoveUpdateServiceJobFromLaunchd())
     return setup_exit_codes::kFailedToRemoveActiveUpdateServiceJobFromLaunchd;
+
+  if (!DeleteDataFolder())
+    return setup_exit_codes::kFailedToDeleteDataFolder;
 
   if (!DeleteInstallFolder())
     return setup_exit_codes::kFailedToDeleteFolder;

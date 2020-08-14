@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/common/url_constants.h"
+#include "components/password_manager/core/browser/well_known_change_password_util.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/mock_navigation_handle.h"
@@ -27,8 +28,6 @@
 #include "url/gurl.h"
 
 namespace {
-using chrome::kWellKnownChangePasswordPath;
-using chrome::kWellKnownNotExistingResourcePath;
 using content::NavigationThrottle;
 using content::TestNavigationObserver;
 using net::test_server::BasicHttpResponse;
@@ -37,6 +36,8 @@ using net::test_server::EmbeddedTestServer;
 using net::test_server::EmbeddedTestServerHandle;
 using net::test_server::HttpRequest;
 using net::test_server::HttpResponse;
+using password_manager::kWellKnownChangePasswordPath;
+using password_manager::kWellKnownNotExistingResourcePath;
 
 // ServerResponse describes how a server should respond to a given path.
 struct ServerResponse {

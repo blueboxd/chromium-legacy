@@ -51,6 +51,7 @@ import java.util.concurrent.TimeoutException;
 @RunWith(BaseJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
         "enable-features=" + ChromeFeatureList.TRUSTED_WEB_ACTIVITY_LOCATION_DELEGATION})
+@DisabledTest(message = "crbug.com/1116518")
 public class TrustedWebActivityLocationDelegationTest {
     public final CustomTabActivityTestRule mCustomTabActivityTestRule =
             new CustomTabActivityTestRule();

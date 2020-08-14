@@ -132,6 +132,7 @@ if (include_js_tests) {
         "../../../browser/ui/webui/chromeos/bluetooth_pairing_dialog_browsertest.js",
         "../../../browser/ui/webui/chromeos/certificate_manager_dialog_browsertest.js",
         "../chromeos/oobe_webui_browsertest.js",
+        "chromeos/account_manager/account_manager_browsertest.js",
         "chromeos/edu_login/edu_login_browsertest.js",
         "chromeos/gaia_action_buttons/gaia_action_buttons_browsertest.js",
         "cr_components/chromeos/cr_components_chromeos_browsertest.js",
@@ -315,7 +316,7 @@ if (include_js_tests) {
         "chromeos/crostini_upgrader_browsertest.js",
         "chromeos/machine_learning_internals_browsertest.js",
         "chromeos/print_management/print_management_browsertest.js",
-        "chromeos/print_management/scanning_page_browsertest.js",
+        "chromeos/scanning/scanning_app_browsertest.js",
         "multidevice_setup/multidevice_setup_browsertest.js",
       ]
       deps += [ "//chromeos/services/machine_learning/public/cpp:test_support" ]

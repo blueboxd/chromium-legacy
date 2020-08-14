@@ -28,4 +28,9 @@ backgroundFetchTest(async (t, bgFetch) => {
 
 }, 'Registration rejected after limit exceeded');
 
+backgroundFetchTest(async (t, bgFetch) => {
+  const registration = await bgFetch.fetch(
+      'my-fetch', '/', {icons: [{src: '/'}]});
+}, 'Registration with icons works.');
+
 </script>

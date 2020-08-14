@@ -448,7 +448,8 @@ DedicatedWorker::CreateGlobalScopeCreationParams(
       nullptr /* worklet_module_responses_map */,
       std::move(browser_interface_broker_), CreateBeginFrameProviderParams(),
       GetExecutionContext()->GetSecurityContext().GetFeaturePolicy(),
-      GetExecutionContext()->GetAgentClusterID());
+      GetExecutionContext()->GetAgentClusterID(),
+      GetExecutionContext()->GetExecutionContextToken());
 }
 
 scoped_refptr<WebWorkerFetchContext>

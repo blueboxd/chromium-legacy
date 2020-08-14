@@ -142,6 +142,51 @@ class Metrics {
     kMaxValue = DFM_ALREADY_INSTALLED
   };
 
+  // The different ways in which a lite script may finish.
+  //
+  // GENERATED_JAVA_ENUM_PACKAGE: (
+  // org.chromium.chrome.browser.autofill_assistant.metrics)
+  // GENERATED_JAVA_CLASS_NAME_OVERRIDE: LiteScriptFinishedState
+  enum class LiteScriptFinishedState {
+    // The lite script failed for an unknown reason.
+    LITE_SCRIPT_UNKNOWN_FAILURE = 0,
+    // Can happen when users close the tab or similar.
+    LITE_SCRIPT_SERVICE_DELETED = 1,
+    // |GetActions| was asked to retrieve a wrong script path.
+    LITE_SCRIPT_PATH_MISMATCH = 2,
+    // Communication with backend failed.
+    LITE_SCRIPT_GET_ACTIONS_FAILED = 3,
+    // Failed to parse the proto response to |GetActions|.
+    LITE_SCRIPT_GET_ACTIONS_PARSE_ERROR = 4,
+    // One or multiple unsafe actions were contained in script.
+    LITE_SCRIPT_UNSAFE_ACTIONS = 5,
+    // The mini script is invalid. A valid script must contain a prompt
+    // (browse=true) action and end in a prompt(browse=false) action.
+    LITE_SCRIPT_INVALID_SCRIPT = 6,
+
+    // The prompt(browse) action failed due to a navigation event to a
+    // non-whitelisted domain.
+    LITE_SCRIPT_BROWSE_FAILED_NAVIGATE = 7,
+    // The prompt(browse) action failed for an unknown reason.
+    LITE_SCRIPT_BROWSE_FAILED_OTHER = 8,
+
+    // The prompt(regular) action failed due to a navigation event to a
+    // non-whitelisted domain.
+    LITE_SCRIPT_PROMPT_FAILED_NAVIGATE = 9,
+    // The prompt(regular) action failed because the condition to show it was no
+    // longer true.
+    LITE_SCRIPT_PROMPT_FAILED_CONDITION_NO_LONGER_TRUE = 10,
+    // The prompt(regular) action failed because the user tapped the close chip.
+    LITE_SCRIPT_PROMPT_FAILED_CLOSE = 11,
+    // The prompt(regular) action failed for an unknown reason.
+    LITE_SCRIPT_PROMPT_FAILED_OTHER = 12,
+    // The prompt(regular) action succeeded because the user tapped the continue
+    // chip.
+    LITE_SCRIPT_PROMPT_SUCCEEDED = 13,
+
+    kMaxValue = LITE_SCRIPT_PROMPT_SUCCEEDED
+  };
+
   static void RecordDropOut(DropOutReason reason);
   static void RecordPaymentRequestPrefilledSuccess(bool initially_complete,
                                                    bool success);

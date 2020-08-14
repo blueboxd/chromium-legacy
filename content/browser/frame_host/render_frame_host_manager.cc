@@ -820,7 +820,7 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
         navigation_rfh->SwapIn();
       navigation_rfh->OnCommittedSpeculativeBeforeNavigationCommit();
       CommitPending(std::move(speculative_render_frame_host_), nullptr,
-                    request->coop_status().require_browsing_instance_swap);
+                    request->coop_status().require_browsing_instance_swap());
     }
   }
   DCHECK(navigation_rfh &&
@@ -1386,6 +1386,19 @@ RenderFrameHostManager::ShouldProactivelySwapBrowsingInstance(
     }
     if (!IsSameSiteBackForwardCacheEnabled())
       return ShouldSwapBrowsingInstance::kNo_SameSiteNavigation;
+    // We should not do a proactive BrowsingInstance swap on pages with unload
+    // handlers if we explicitly specified to do so to avoid exposing a
+    // web-observable behavior change (unload handlers running after a same-site
+    // navigation). Note that we're only checking for unload handlers in frames
+    // that share the same SiteInstance as the main frame, because unload
+    // handlers that exist in cross-SiteInstance subframes will be dispatched
+    // after we committed the navigation, regardless of our decision to swap
+    // BrowsingInstances or not.
+    if (ShouldSkipSameSiteBackForwardCacheForPageWithUnload() &&
+        render_frame_host_->UnloadHandlerExistsInSameSiteInstance()) {
+      return ShouldSwapBrowsingInstance::
+          kNo_UnloadHandlerExistsOnSameSiteNavigation;
+    }
   }
 
   if (IsProactivelySwapBrowsingInstanceEnabled())
@@ -2433,7 +2446,7 @@ RenderFrameHostManager::GetSiteInstanceForNavigationRequest(
       request->state() >= NavigationRequest::CANCELING, is_reload,
       request->IsSameDocument(), request->GetRestoreType() != RestoreType::NONE,
       request->is_view_source(), request->WasServerRedirect(),
-      request->coop_status().require_browsing_instance_swap,
+      request->coop_status().require_browsing_instance_swap(),
       request->common_params().should_replace_current_entry);
 
   // If the NavigationRequest's dest_site_instance was present but incorrect,

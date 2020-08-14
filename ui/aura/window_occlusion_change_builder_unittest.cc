@@ -21,6 +21,8 @@ class OcclusionTrackWindowDelegate : public test::TestWindowDelegate {
   OcclusionTrackWindowDelegate() = default;
   ~OcclusionTrackWindowDelegate() override = default;
 
+  void set_window(Window* window) { window_ = window; }
+
   bool occlusion_change_count() const { return occlusion_change_count_; }
   Window::OcclusionState last_occlusion_state() const {
     return last_occlusion_state_;
@@ -29,13 +31,14 @@ class OcclusionTrackWindowDelegate : public test::TestWindowDelegate {
 
  private:
   // test::TestWindowDelegate:
-  void OnWindowOcclusionChanged(Window::OcclusionState occlusion_state,
-                                const SkRegion& occluded_region) override {
+  void OnWindowOcclusionChanged(
+      Window::OcclusionState occlusion_state) override {
     ++occlusion_change_count_;
     last_occlusion_state_ = occlusion_state;
-    last_occluded_region_ = occluded_region;
+    last_occluded_region_ = window_->occluded_region_in_root();
   }
 
+  Window* window_ = nullptr;
   int occlusion_change_count_ = 0;
   Window::OcclusionState last_occlusion_state_ =
       Window::OcclusionState::UNKNOWN;
@@ -54,6 +57,7 @@ class WindowOcclusionChangeBuilderTest : public test::AuraTestBase {
   std::unique_ptr<Window> CreateTestWindow(
       OcclusionTrackWindowDelegate* delegate) {
     auto window = std::make_unique<Window>(delegate);
+    delegate->set_window(window.get());
     window->set_owned_by_parent(false);
     window->SetType(client::WINDOW_TYPE_NORMAL);
     window->Init(ui::LAYER_TEXTURED);

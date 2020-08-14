@@ -7,8 +7,12 @@ package org.chromium.ui.base;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
 
 import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Intent;
 import android.net.Uri;
 import android.text.SpannableString;
@@ -16,6 +20,8 @@ import android.text.style.RelativeSizeSpan;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.ContentUriUtils;
@@ -97,5 +103,36 @@ public class ClipboardTest {
         clipboard.setImageUri(imageUri);
 
         assertEquals(imageUri, clipboard.getImageUri());
+    }
+
+    @Test
+    public void testClipboardCopyUrlToClipboard() {
+        Clipboard clipboard = Clipboard.getInstance();
+        ClipboardManager clipboardManager = Mockito.mock(ClipboardManager.class);
+        clipboard.overrideClipboardManagerForTesting(clipboardManager);
+
+        String url = "https://google.com";
+        clipboard.copyUrlToClipboard(url);
+
+        ArgumentCaptor<ClipData> clipCaptor = ArgumentCaptor.forClass(ClipData.class);
+        verify(clipboardManager).setPrimaryClip(clipCaptor.capture());
+        assertEquals("url", clipCaptor.getValue().getDescription().getLabel());
+        assertEquals(url, clipCaptor.getValue().getItemAt(0).getText());
+    }
+
+    @Test
+    public void testClipboardCopyUrlToClipboardNoException() {
+        Clipboard clipboard = Clipboard.getInstance();
+        ClipboardManager clipboardManager = Mockito.mock(ClipboardManager.class);
+        clipboard.overrideClipboardManagerForTesting(clipboardManager);
+
+        doThrow(SecurityException.class).when(clipboardManager).setPrimaryClip(any(ClipData.class));
+        String url = "https://google.com";
+        clipboard.copyUrlToClipboard(url);
+
+        ArgumentCaptor<ClipData> clipCaptor = ArgumentCaptor.forClass(ClipData.class);
+        verify(clipboardManager).setPrimaryClip(clipCaptor.capture());
+        assertEquals("url", clipCaptor.getValue().getDescription().getLabel());
+        assertEquals(url, clipCaptor.getValue().getItemAt(0).getText());
     }
 }

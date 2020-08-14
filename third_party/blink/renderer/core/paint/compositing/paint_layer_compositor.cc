@@ -440,8 +440,6 @@ bool PaintLayerCompositor::AllocateOrClearCompositedLayerMapping(
   if (!composited_layer_mapping_changed)
     return false;
 
-  layer->ClearClipRects(kPaintingClipRects);
-
   return true;
 }
 

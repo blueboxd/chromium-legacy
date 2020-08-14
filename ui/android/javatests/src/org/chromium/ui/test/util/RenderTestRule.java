@@ -206,42 +206,6 @@ public class RenderTestRule extends TestWatcher {
             Assert.fail("Failed to create Skia Gold JSON keys: " + e.toString());
         }
         saveString(goldKeys.toString(), createOutputPath(SKIA_GOLD_FOLDER_RELATIVE, jsonName));
-
-        // TODO(crbug.com/1077274): Make this the default behavior instead of calling in addition to
-        // the above once we're ready to switch.
-        compareForResultNoDeviceInfo(testBitmap, id);
-    }
-
-    /**
-     * A temporary version of compareForResult that does not include OS/device model information in
-     * the test name. This is in preparation for the switch to doing this be default. In the
-     * interim period, results both with and without the extra information will be uploaded, but the
-     * latter will be ignored on Gold's end for a period of time.
-     */
-    private void compareForResultNoDeviceInfo(Bitmap testBitmap, String id) throws IOException {
-        Assert.assertTrue("Render Tests must have the RenderTest feature.", mHasRenderTestFeature);
-
-        // Save the image and its metadata to a location where it can be pulled by the test runner
-        // for comparison after the test finishes.
-        String imageName = getImageNameNoDeviceInfo(mTestClassName, mVariantPrefix, id);
-        String jsonName = getJsonNameNoDeviceInfo(mTestClassName, mVariantPrefix, id);
-
-        saveBitmap(testBitmap, createOutputPath(SKIA_GOLD_FOLDER_RELATIVE, imageName));
-        JSONObject goldKeys = new JSONObject();
-        try {
-            goldKeys.put("source_type", mSkiaGoldCorpus);
-            goldKeys.put("model", Build.MODEL);
-            goldKeys.put("sdk_version", String.valueOf(Build.VERSION.SDK_INT));
-            if (!TextUtils.isEmpty(mSkiaGoldRevisionDescription)) {
-                goldKeys.put("revision_description", mSkiaGoldRevisionDescription);
-            }
-            goldKeys.put("fail_on_unsupported_configs", String.valueOf(mFailOnUnsupportedConfigs));
-            // TODO(crbug.com/1077274): Remove this ignore key once this is the default behavior.
-            goldKeys.put("ignore", "1");
-        } catch (JSONException e) {
-            Assert.fail("Failed to create Skia Gold JSON keys: " + e.toString());
-        }
-        saveString(goldKeys.toString(), createOutputPath(SKIA_GOLD_FOLDER_RELATIVE, jsonName));
     }
 
     /**
@@ -283,58 +247,25 @@ public class RenderTestRule extends TestWatcher {
 
     /**
      * Creates an image name combining the image description with details about the device
-     * (eg model, current orientation).
+     * (e.g. current orientation).
      */
     private String getImageName(String testClass, String variantPrefix, String desc) {
         return String.format("%s.png", getFileName(testClass, variantPrefix, desc));
     }
 
     /**
-     * Version of getImageName that does not include OS/device model in the name.
-     */
-    private String getImageNameNoDeviceInfo(String testClass, String variantPrefix, String desc) {
-        return String.format("%s.png", getFileNameNoDeviceInfo(testClass, variantPrefix, desc));
-    }
-
-    /**
-     * Creates a JSON name combining the description with details about the device (e.g. model,
-     * current orientation).
+     * Creates a JSON name combining the description with details about the device (e.g. current
+     * orientation).
      */
     private String getJsonName(String testClass, String variantPrefix, String desc) {
         return String.format("%s.json", getFileName(testClass, variantPrefix, desc));
     }
 
     /**
-     * Version of getJsonName that does not include OS/device model in the name.
-     */
-    private String getJsonNameNoDeviceInfo(String testClass, String variantPrefix, String desc) {
-        return String.format("%s.json", getFileNameNoDeviceInfo(testClass, variantPrefix, desc));
-    }
-
-    /**
      * Creates a generic filename (without a file extension) combining the description with details
-     * about the device (e.g. model, current orientation).
-     *
-     * This function must be kept in sync with |RE_RENDER_IMAGE_NAME| from
-     * src/build/android/pylib/local/device/local_device_instrumentation_test_run.py.
+     * about the device (e.g. current orientation).
      */
     private String getFileName(String testClass, String variantPrefix, String desc) {
-        if (!TextUtils.isEmpty(mNightModePrefix)) {
-            desc = mNightModePrefix + "-" + desc;
-        }
-
-        if (!TextUtils.isEmpty(variantPrefix)) {
-            desc = variantPrefix + "-" + desc;
-        }
-
-        return String.format(
-                "%s.%s.%s.rev_%s", testClass, desc, modelSdkIdentifier(), mSkiaGoldRevision);
-    }
-
-    /**
-     * Version of getFileName that does not include OS/device model in the name.
-     */
-    private String getFileNameNoDeviceInfo(String testClass, String variantPrefix, String desc) {
         if (!TextUtils.isEmpty(mNightModePrefix)) {
             desc = mNightModePrefix + "-" + desc;
         }

@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "ui/views/animation/bounds_animator.h"
 #include "ui/views/controls/menu/menu_runner.h"
+#include "ui/views/controls/separator.h"
 #include "ui/views/view_model.h"
 
 namespace {
@@ -151,6 +152,14 @@ void ShelfViewTestAPI::SetShelfContextMenuCallback(
     base::RepeatingClosure closure) {
   DCHECK(shelf_view_->context_menu_shown_callback_.is_null());
   shelf_view_->context_menu_shown_callback_ = std::move(closure);
+}
+
+int ShelfViewTestAPI::GetSeparatorIndex() const {
+  return shelf_view_->separator_index_;
+}
+
+bool ShelfViewTestAPI::IsSeparatorVisible() const {
+  return shelf_view_->separator_->GetVisible();
 }
 
 }  // namespace ash

@@ -844,7 +844,7 @@ void WizardController::OnUserCreationScreenExit(
       AdvanceToScreen(GaiaView::kScreenId);
       break;
     case UserCreationScreen::Result::ENTERPRISE_ENROLL:
-      ShowEnrollmentScreen();
+      AdvanceToScreen(EnrollmentScreenView::kScreenId);
       break;
     case UserCreationScreen::Result::CANCEL:
       LoginDisplayHost::default_host()->HideOobeDialog();
@@ -1348,7 +1348,10 @@ void WizardController::OnDeviceModificationCanceled() {
   current_screen_->Hide();
   current_screen_ = nullptr;
   if (previous_screen_) {
-    if (previous_screen_ == GetScreen(GaiaView::kScreenId)) {
+    const OobeScreenId start_screen = features::IsChildSpecificSigninEnabled()
+                                          ? UserCreationView::kScreenId
+                                          : GaiaView::kScreenId;
+    if (previous_screen_ == GetScreen(start_screen)) {
       ShowLoginScreen();
     } else {
       SetCurrentScreen(previous_screen_);

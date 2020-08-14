@@ -204,5 +204,7 @@ const char kNoContentInPaymentManifest[] =
 const char kUnableToInvokeAndroidPaymentApps[] =
     "Unable to invoke Android apps.";
 
+const char kUserClosedPaymentApp[] = "User closed the payment app.";
+
 }  // namespace errors
 }  // namespace payments

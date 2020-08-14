@@ -73,7 +73,7 @@ base::Value FetchCapabilitiesAsync(const std::string& device_name,
                                    const PrinterBasicInfo& basic_info,
                                    bool has_secure_protocol,
                                    const std::string& locale) {
-  auto print_backend = PrintBackend::CreateInstance(nullptr, locale);
+  auto print_backend = PrintBackend::CreateInstance(locale);
   return GetSettingsOnBlockingTaskRunner(
       device_name, basic_info, PrinterSemanticCapsAndDefaults::Papers(),
       has_secure_protocol, print_backend);

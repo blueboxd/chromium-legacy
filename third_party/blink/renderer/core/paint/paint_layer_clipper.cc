@@ -218,56 +218,40 @@ void PaintLayerClipper::ClearClipRectsIncludingDescendants(
 
 PhysicalRect PaintLayerClipper::LocalClipRect(
     const PaintLayer& clipping_root_layer) const {
+  DCHECK(use_geometry_mapper_);
   ClipRectsContext context(
       &clipping_root_layer,
       &clipping_root_layer.GetLayoutObject().FirstFragment(),
-      kPaintingClipRects);
-  if (use_geometry_mapper_) {
-    ClipRect clip_rect;
-    CalculateBackgroundClipRectWithGeometryMapper(
-        context, layer_.GetLayoutObject().FirstFragment(), kRespectOverflowClip,
-        clip_rect);
+      kUncachedClipRects);
 
-    if (clip_rect.IsInfinite())
-      return clip_rect.Rect();
+  ClipRect clip_rect;
+  CalculateBackgroundClipRectWithGeometryMapper(
+      context, layer_.GetLayoutObject().FirstFragment(), kRespectOverflowClip,
+      clip_rect);
 
-    PhysicalRect premapped_rect = clip_rect.Rect();
-    // The rect now needs to be transformed to the local space of this
-    // PaintLayer.
-    // TODO(chrishtr): not correct for fragmentation.
-    premapped_rect.Move(context.root_fragment->PaintOffset());
+  if (clip_rect.IsInfinite())
+    return clip_rect.Rect();
 
-    const auto& clip_root_layer_transform =
-        context.root_fragment->LocalBorderBoxProperties().Transform();
-    const auto& layer_transform = layer_.GetLayoutObject()
-                                      .FirstFragment()
-                                      .LocalBorderBoxProperties()
-                                      .Transform();
-    FloatRect clipped_rect_in_local_space(premapped_rect);
-    GeometryMapper::SourceToDestinationRect(clip_root_layer_transform,
-                                            layer_transform,
-                                            clipped_rect_in_local_space);
-    // TODO(chrishtr): not correct for fragmentation.
-    clipped_rect_in_local_space.MoveBy(
-        -FloatPoint(layer_.GetLayoutObject().FirstFragment().PaintOffset()));
+  PhysicalRect premapped_rect = clip_rect.Rect();
+  // The rect now needs to be transformed to the local space of this
+  // PaintLayer.
+  // TODO(chrishtr): not correct for fragmentation.
+  premapped_rect.Move(context.root_fragment->PaintOffset());
 
-    return PhysicalRect::FastAndLossyFromFloatRect(clipped_rect_in_local_space);
-  }
+  const auto& clip_root_layer_transform =
+      context.root_fragment->LocalBorderBoxProperties().Transform();
+  const auto& layer_transform = layer_.GetLayoutObject()
+                                    .FirstFragment()
+                                    .LocalBorderBoxProperties()
+                                    .Transform();
+  FloatRect clipped_rect_in_local_space(premapped_rect);
+  GeometryMapper::SourceToDestinationRect(
+      clip_root_layer_transform, layer_transform, clipped_rect_in_local_space);
+  // TODO(chrishtr): not correct for fragmentation.
+  clipped_rect_in_local_space.MoveBy(
+      -FloatPoint(layer_.GetLayoutObject().FirstFragment().PaintOffset()));
 
-  PhysicalRect layer_bounds;
-  ClipRect background_rect, foreground_rect;
-  CalculateRects(context, nullptr, nullptr, layer_bounds, background_rect,
-                 foreground_rect);
-
-  if (background_rect.IsInfinite())
-    return background_rect.Rect();
-
-  PhysicalRect clip_rect = background_rect.Rect();
-  PhysicalOffset clipping_root_offset;
-  layer_.ConvertToLayerCoords(&clipping_root_layer, clipping_root_offset);
-  clip_rect.Move(-clipping_root_offset);
-
-  return clip_rect;
+  return PhysicalRect::FastAndLossyFromFloatRect(clipped_rect_in_local_space);
 }
 
 void PaintLayerClipper::CalculateRectsWithGeometryMapper(

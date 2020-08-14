@@ -31,11 +31,10 @@ namespace {
 // -------------------- Nearby Share Service v1 Endpoints --------------------
 
 const char kDefaultNearbyShareV1HTTPHost[] =
-    "https://www.nearbysharing-pa.googleapis.com";
+    "https://nearbysharing-pa.googleapis.com";
 
 const char kNearbyShareV1Path[] = "v1/";
 
-const char kUpdateDevicePath[] = "users/me/devices/";
 const char kCheckContactsReachabilityPath[] = "contactsReachability:check";
 const char kListContactPeoplePathSeg1[] = "users/me/devices/";
 const char kListContactPeoplePathSeg2[] = "/contactRecords";
@@ -46,8 +45,8 @@ const char kPageSize[] = "page_size";
 const char kPageToken[] = "page_token";
 const char kSecretIds[] = "secret_ids";
 
-// TODO(cclem) figure out scope
-const char kNearbyShareOAuth2Scope[] = "";
+const char kNearbyShareOAuth2Scope[] =
+    "https://www.googleapis.com/auth/nearbysharing-pa";
 
 // Creates the full Nearby Share v1 URL for endpoint to the API with
 // |request_path|.
@@ -236,9 +235,8 @@ void NearbyShareClientImpl::UpdateDevice(
     UpdateDeviceCallback&& callback,
     ErrorCallback&& error_callback) {
   notifier_->NotifyOfRequest(request);
-  // TODO(cclem): Use correct device identifier
-  MakeApiCall(CreateV1RequestUrl(kUpdateDevicePath + request.device().name()),
-              RequestType::kPatch, request.SerializeAsString(),
+  MakeApiCall(CreateV1RequestUrl(request.device().name()), RequestType::kPatch,
+              request.SerializeAsString(),
               /*request_as_query_parameters=*/base::nullopt,
               std::move(callback), std::move(error_callback),
               GetUpdateDeviceAnnotation());

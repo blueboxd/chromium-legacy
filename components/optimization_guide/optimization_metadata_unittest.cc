@@ -83,4 +83,19 @@ TEST(OptimizationMetadataTest, ParsedMetadataTest) {
             proto::DELAY_TYPE_FINISHED_PARSING);
 }
 
+TEST(OptimizationMetadataTest, SetAnyMetadataForTestingTest) {
+  proto::DelayAsyncScriptExecutionMetadata dase_metadata;
+  dase_metadata.set_delay_type(proto::DELAY_TYPE_FINISHED_PARSING);
+  OptimizationMetadata optimization_metadata;
+  optimization_metadata.SetAnyMetadataForTesting(dase_metadata);
+
+  base::Optional<proto::DelayAsyncScriptExecutionMetadata>
+      parsed_dase_metadata =
+          optimization_metadata
+              .ParsedMetadata<proto::DelayAsyncScriptExecutionMetadata>();
+  EXPECT_TRUE(parsed_dase_metadata.has_value());
+  EXPECT_EQ(parsed_dase_metadata->delay_type(),
+            proto::DELAY_TYPE_FINISHED_PARSING);
+}
+
 }  // namespace optimization_guide

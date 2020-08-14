@@ -94,22 +94,20 @@ TEST_F(CrossOriginOpenerPolicyReporterTest, Basic) {
 
   EXPECT_EQ(r1.type, "coop");
   EXPECT_EQ(r1.body.FindKey("disposition")->GetString(), "enforce");
-  EXPECT_EQ(r1.body.FindKey("document-uri")->GetString(), context_url());
-  EXPECT_EQ(r1.body.FindKey("navigation-uri")->GetString(),
+  EXPECT_EQ(r1.body.FindKey("documentURI")->GetString(), context_url());
+  EXPECT_EQ(r1.body.FindKey("navigationURI")->GetString(),
             "https://www1.example.com/y#foo?bar=baz");
-  EXPECT_EQ(r1.body.FindKey("violation-type")->GetString(),
-            "navigation-to-document");
-  EXPECT_EQ(r1.body.FindKey("effective-policy")->GetString(),
+  EXPECT_EQ(r1.body.FindKey("type")->GetString(), "navigation-to-document");
+  EXPECT_EQ(r1.body.FindKey("effectivePolicy")->GetString(),
             "same-origin-plus-coep");
 
   EXPECT_EQ(r2.type, "coop");
   EXPECT_EQ(r2.body.FindKey("disposition")->GetString(), "enforce");
-  EXPECT_EQ(r2.body.FindKey("document-uri")->GetString(), context_url());
-  EXPECT_EQ(r2.body.FindKey("navigation-uri")->GetString(),
+  EXPECT_EQ(r2.body.FindKey("documentURI")->GetString(), context_url());
+  EXPECT_EQ(r2.body.FindKey("navigationURI")->GetString(),
             "http://www2.example.com:41/z");
-  EXPECT_EQ(r2.body.FindKey("violation-type")->GetString(),
-            "navigation-from-document");
-  EXPECT_EQ(r2.body.FindKey("effective-policy")->GetString(),
+  EXPECT_EQ(r2.body.FindKey("type")->GetString(), "navigation-from-document");
+  EXPECT_EQ(r2.body.FindKey("effectivePolicy")->GetString(),
             "same-origin-plus-coep");
 }
 
@@ -123,9 +121,9 @@ TEST_F(CrossOriginOpenerPolicyReporterTest, UserAndPassSanitization) {
   const Report& r1 = network_context().reports()[0];
 
   EXPECT_EQ(r1.type, "coop");
-  EXPECT_EQ(r1.body.FindKey("document-uri")->GetString(),
+  EXPECT_EQ(r1.body.FindKey("documentURI")->GetString(),
             "https://www1.example.com/x");
-  EXPECT_EQ(r1.body.FindKey("navigation-uri")->GetString(),
+  EXPECT_EQ(r1.body.FindKey("navigationURI")->GetString(),
             "https://www2.example.com/x");
 }
 
@@ -145,12 +143,11 @@ TEST_F(CrossOriginOpenerPolicyReporterTest, Clone) {
 
   EXPECT_EQ(r1.type, "coop");
   EXPECT_EQ(r1.body.FindKey("disposition")->GetString(), "enforce");
-  EXPECT_EQ(r1.body.FindKey("document-uri")->GetString(), context_url());
-  EXPECT_EQ(r1.body.FindKey("navigation-uri")->GetString(),
+  EXPECT_EQ(r1.body.FindKey("documentURI")->GetString(), context_url());
+  EXPECT_EQ(r1.body.FindKey("navigationURI")->GetString(),
             "https://www1.example.com/y");
-  EXPECT_EQ(r1.body.FindKey("violation-type")->GetString(),
-            "navigation-to-document");
-  EXPECT_EQ(r1.body.FindKey("effective-policy")->GetString(),
+  EXPECT_EQ(r1.body.FindKey("type")->GetString(), "navigation-to-document");
+  EXPECT_EQ(r1.body.FindKey("effectivePolicy")->GetString(),
             "same-origin-plus-coep");
 }
 

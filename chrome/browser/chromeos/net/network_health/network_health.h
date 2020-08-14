@@ -24,13 +24,28 @@ class NetworkHealth : public mojom::NetworkHealthService,
 
   ~NetworkHealth() override;
 
-  // Function to bind a NetworkHealthService |receiver|.
+  // Binds this instance to |receiver|.
   void BindReceiver(
       mojo::PendingReceiver<mojom::NetworkHealthService> receiver);
 
   // Returns the current NetworkHealthState.
   const mojom::NetworkHealthStatePtr GetNetworkHealthState();
 
+  // NetworkHealthService
+  void GetNetworkList(GetNetworkListCallback) override;
+  void GetHealthSnapshot(GetHealthSnapshotCallback) override;
+
+  // CrosNetworkConfigObserver
+  void OnNetworkStateListChanged() override;
+  void OnDeviceStateListChanged() override;
+  void OnActiveNetworksChanged(
+      std::vector<network_config::mojom::NetworkStatePropertiesPtr>) override;
+  void OnNetworkStateChanged(
+      network_config::mojom::NetworkStatePropertiesPtr) override;
+  void OnVpnProvidersChanged() override;
+  void OnNetworkCertificatesChanged() override;
+
+ private:
   // Handler for receiving the network state list.
   void OnNetworkStateListReceived(
       std::vector<network_config::mojom::NetworkStatePropertiesPtr>);
@@ -39,23 +54,6 @@ class NetworkHealth : public mojom::NetworkHealthService,
   void OnDeviceStateListReceived(
       std::vector<network_config::mojom::DeviceStatePropertiesPtr>);
 
-  // NetworkHealthService implementation
-  void GetNetworkList(GetNetworkListCallback) override;
-  void GetHealthSnapshot(GetHealthSnapshotCallback) override;
-
-  // CrosNetworkConfigObserver implementation
-  void OnNetworkStateListChanged() override;
-  void OnDeviceStateListChanged() override;
-
-  // CrosNetworkConfigObserver unimplemented callbacks
-  void OnActiveNetworksChanged(
-      std::vector<network_config::mojom::NetworkStatePropertiesPtr>) override {}
-  void OnNetworkStateChanged(
-      network_config::mojom::NetworkStatePropertiesPtr) override {}
-  void OnVpnProvidersChanged() override {}
-  void OnNetworkCertificatesChanged() override {}
-
- private:
   // Creates the NetworkHealthState structure from cached network information.
   void CreateNetworkHealthState();
 
@@ -64,17 +62,16 @@ class NetworkHealth : public mojom::NetworkHealthService,
   void RequestNetworkStateList();
   void RequestDeviceStateList();
 
+  // Remote for sending requests to the CrosNetworkConfig service.
   mojo::Remote<network_config::mojom::CrosNetworkConfig>
       remote_cros_network_config_;
+  // Receiver for the CrosNetworkConfigObserver events.
   mojo::Receiver<network_config::mojom::CrosNetworkConfigObserver>
       cros_network_config_observer_receiver_{this};
-  mojo::Receiver<network_health::mojom::NetworkHealthService>
-      network_health_receiver_{this};
-
+  // Receivers for external requests (WebUI, Feedback, CrosHealthdClient).
   mojo::ReceiverSet<mojom::NetworkHealthService> receivers_;
 
   mojom::NetworkHealthState network_health_state_;
-
   std::vector<network_config::mojom::DeviceStatePropertiesPtr>
       device_properties_;
   std::vector<network_config::mojom::NetworkStatePropertiesPtr>

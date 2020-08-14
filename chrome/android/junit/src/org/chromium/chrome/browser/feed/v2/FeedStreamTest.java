@@ -71,7 +71,8 @@ public class FeedStreamTest {
 
         when(mFeedServiceBridgeJniMock.getLoadMoreTriggerLookahead())
                 .thenReturn(LOAD_MORE_TRIGGER_LOOKAHEAD);
-
+        // Surfaces won't open until after startup.
+        FeedStreamSurface.startup();
         mFeedStream = new FeedStream(mActivity, false, mSnackbarManager, mPageNavigationDelegate,
                 mBottomSheetController);
         mFeedStream.onCreate(null);
@@ -196,6 +197,7 @@ public class FeedStreamTest {
 
     @Test
     public void testCheckScrollingForLoadMore_StreamContentVisible() {
+        mFeedStream.onShow();
         mFeedStream.setStreamContentVisibility(true);
         final int triggerDistance = getLoadMoreTriggerScrollDistance();
         final int itemCount = 10;

@@ -67,7 +67,7 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, ClearBrowsingDataDeletesFavicons) {
   const GURL url =
       embedded_test_server()->GetURL("/simple_page_with_favicon.html");
   NavigateAndWaitForCompletion(url, shell());
-  fetcher_delegate.WaitForFavicon();
+  fetcher_delegate.WaitForNonemptyFavicon();
   EXPECT_FALSE(fetcher_delegate.last_image().IsEmpty());
   EXPECT_EQ(1, fetcher_delegate.on_favicon_changed_call_count());
 
@@ -94,9 +94,9 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, ClearBrowsingDataDeletesFavicons) {
   const GURL url2 =
       embedded_test_server()->GetURL("/simple_page_with_favicon2.html");
   NavigateAndWaitForCompletion(url2, shell());
-  fetcher_delegate.WaitForFavicon();
+  fetcher_delegate.WaitForNonemptyFavicon();
   EXPECT_FALSE(fetcher_delegate.last_image().IsEmpty());
-  EXPECT_EQ(1, fetcher_delegate.on_favicon_changed_call_count());
+  EXPECT_EQ(2, fetcher_delegate.on_favicon_changed_call_count());
 
   // And fetch the favicon one more time.
   base::RunLoop run_loop3;

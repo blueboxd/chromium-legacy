@@ -797,6 +797,8 @@ WebAppFrameToolbarView::WebAppFrameToolbarView(views::Widget* widget,
   SetID(VIEW_ID_WEB_APP_FRAME_TOOLBAR);
 
   {
+    // TODO(tluk) fix the need for both LayoutInContainer() and a layout
+    // manager for frame layout.
     views::FlexLayout* layout =
         SetLayoutManager(std::make_unique<views::FlexLayout>());
     layout->SetOrientation(views::LayoutOrientation::kHorizontal);
@@ -876,6 +878,8 @@ std::pair<int, int> WebAppFrameToolbarView::LayoutInContainer(
     int trailing_x,
     int y,
     int available_height) {
+  SetVisible(available_height > 0);
+
   if (available_height == 0) {
     SetSize(gfx::Size());
     return std::pair<int, int>(0, 0);

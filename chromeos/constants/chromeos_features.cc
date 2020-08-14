@@ -222,6 +222,10 @@ const base::Feature kFilesZipPack{"FilesZipPack",
 const base::Feature kFilesZipUnpack{"FilesZipUnpack",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls gamepad vibration in Exo.
+const base::Feature kGamepadVibration{"ExoGamepadVibration",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables the use of Mojo by Chrome-process code to communicate with Power
 // Manager. In order to use mojo, this feature must be turned on and a callsite
 // must use PowerManagerMojoClient::Get().

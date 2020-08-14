@@ -58,6 +58,7 @@ ci.builder(
         "avd_configs": [
             "tools/android/avd/proto/creation/generic_android23.textpb",
             "tools/android/avd/proto/creation/generic_android28.textpb",
+            "tools/android/avd/proto/creation/generic_android29.textpb",
             "tools/android/avd/proto/creation/generic_playstore_android28.textpb",
         ],
     },
@@ -1421,6 +1422,8 @@ ci.fyi_builder(
         # The format of these properties is defined at archive/properties.proto
         "$build/archive": {
             "archive_datas": [
+                # The list of files and dirs should be synched with
+                # _TRACKED_ITEMS in //build/lacros/lacros_resource_sizes.py.
                 {
                     "files": [
                         "chrome",

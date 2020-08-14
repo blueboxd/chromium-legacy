@@ -108,6 +108,11 @@ interface Adapter {
   [Sync]
   SetClient(pending_remote<AdapterClient> client) => ();
 
+  // Requests the local device to make itself discoverable to nearby remote
+  // devices.
+  [Sync]
+  SetDiscoverable(bool discoverable) => (bool success);
+
   // Requests the adapter to start a new discovery session. Returns null if
   // session not created successfully.
   [Sync]

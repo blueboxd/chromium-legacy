@@ -25,7 +25,13 @@ class TestFaviconFetcherDelegate : public FaviconFetcherDelegate {
       delete;
   ~TestFaviconFetcherDelegate() override;
 
+  // Waits for OnFaviconChanged() to be called.
   void WaitForFavicon();
+
+  // Waits for a non-empty favicon. This returns immediately if a non-empty
+  // image was supplied to OnFaviconChanged() and ClearLastImage() hasn't been
+  // called.
+  void WaitForNonemptyFavicon();
 
   void ClearLastImage();
 
@@ -40,6 +46,7 @@ class TestFaviconFetcherDelegate : public FaviconFetcherDelegate {
  private:
   std::unique_ptr<base::RunLoop> run_loop_;
   gfx::Image last_image_;
+  bool waiting_for_nonempty_image_ = false;
   int on_favicon_changed_call_count_ = 0;
 };
 

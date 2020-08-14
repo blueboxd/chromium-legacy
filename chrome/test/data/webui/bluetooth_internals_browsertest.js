@@ -126,6 +126,11 @@ BluetoothInternalsTest.prototype = {
         this.methodCalled('setClient', client);
       }
 
+      async setDiscoverable() {
+        this.methodCalled('setDiscoverable');
+        return {success: true};
+      }
+
       async startDiscoverySession() {
         return {session: null};
       }

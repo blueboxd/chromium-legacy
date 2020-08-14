@@ -12,6 +12,7 @@
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/nearby_sharing/certificates/nearby_share_certificate_manager_impl.h"
+#include "chrome/browser/nearby_sharing/certificates/nearby_share_encrypted_metadata_key.h"
 #include "chrome/browser/nearby_sharing/client/nearby_share_client_impl.h"
 #include "chrome/browser/nearby_sharing/common/nearby_share_prefs.h"
 #include "chrome/browser/nearby_sharing/contacts/nearby_share_contact_manager_impl.h"
@@ -564,14 +565,12 @@ void NearbySharingServiceImpl::OnOutgoingAdvertisementDecoded(
     return;
   }
 
-  // Once get the advertisement, the first thing to do is decrypt the
+  // Once we get the advertisement, the first thing to do is decrypt the
   // certificate.
-  std::vector<uint8_t> encrypted_metadata_key =
-      advertisement->encrypted_metadata_key;
-  std::vector<uint8_t> salt = advertisement->salt;
-
+  NearbyShareEncryptedMetadataKey encrypted_metadata_key(
+      advertisement->salt, advertisement->encrypted_metadata_key);
   GetCertificateManager()->GetDecryptedPublicCertificate(
-      std::move(encrypted_metadata_key), std::move(salt),
+      std::move(encrypted_metadata_key),
       base::BindOnce(&NearbySharingServiceImpl::OnOutgoingDecryptedCertificate,
                      weak_ptr_factory_.GetWeakPtr(), endpoint_id,
                      std::move(advertisement)));
@@ -1334,12 +1333,10 @@ void NearbySharingServiceImpl::OnIncomingAdvertisementDecoded(
     return;
   }
 
-  std::vector<uint8_t> encrypted_metadata_key =
-      advertisement->encrypted_metadata_key;
-  std::vector<uint8_t> salt = advertisement->salt;
-
+  NearbyShareEncryptedMetadataKey encrypted_metadata_key(
+      advertisement->salt, advertisement->encrypted_metadata_key);
   GetCertificateManager()->GetDecryptedPublicCertificate(
-      std::move(encrypted_metadata_key), std::move(salt),
+      std::move(encrypted_metadata_key),
       base::BindOnce(&NearbySharingServiceImpl::OnIncomingDecryptedCertificate,
                      weak_ptr_factory_.GetWeakPtr(), endpoint_id, connection,
                      std::move(advertisement)));

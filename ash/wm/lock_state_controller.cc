@@ -368,15 +368,15 @@ void LockStateController::StartPostLockAnimation() {
 void LockStateController::StartUnlockAnimationBeforeUIDestroyed(
     base::OnceClosure callback) {
   VLOG(1) << "StartUnlockAnimationBeforeUIDestroyed";
-  animator_->StartAnimationWithCallback(
-      SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
-      SessionStateAnimator::ANIMATION_LIFT,
-      SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS, std::move(callback));
   // Hide the lock screen shelf. This is a no-op if views-based shelf is
   // disabled, since shelf is in NonLockScreenContainersContainer.
   animator_->StartAnimation(SessionStateAnimator::SHELF,
                             SessionStateAnimator::ANIMATION_FADE_OUT,
                             SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS);
+  animator_->StartAnimationWithCallback(
+      SessionStateAnimator::LOCK_SCREEN_CONTAINERS,
+      SessionStateAnimator::ANIMATION_LIFT,
+      SessionStateAnimator::ANIMATION_SPEED_MOVE_WINDOWS, std::move(callback));
 }
 
 void LockStateController::StartUnlockAnimationAfterUIDestroyed() {

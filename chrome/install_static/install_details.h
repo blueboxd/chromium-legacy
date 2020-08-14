@@ -12,11 +12,19 @@
 
 #include "chrome/install_static/install_constants.h"
 #include "chrome/install_static/install_modes.h"
+#include "chrome/install_static/install_util.h"
 
 namespace install_static {
 
 class PrimaryInstallDetails;
 class ScopedInstallDetails;
+
+// The origin of the active channel.
+enum class ChannelOrigin {
+  kInstallMode,           // The channel dictated by the install mode.
+  kAdditionalParameters,  // The legacy "ap" value.
+  kPolicy,                // The updater's "TargetChannel" policy.
+};
 
 // Details relating to how Chrome is installed. This class and
 // PrimaryInstallDetails (below) are used in tandem so that one instance of the
@@ -50,6 +58,13 @@ class InstallDetails {
 
     // The string length of |channel| (not including the string terminator).
     size_t channel_length;
+
+    // The origin of the |channel| value. Install modes that use the
+    // ADDITIONAL_PARAMETERS channel strategy may determine the channel by
+    // either the "ap" value (kAdditionalParameters) or by an administrative
+    // policy override (kPolicy). For all other install modes, the channel is
+    // dictated by the mode itself (kInstallMode).
+    ChannelOrigin channel_origin;
 
     // The "ap" (additional parameters) value read from Chrome's ClientState key
     // during process startup.
@@ -143,6 +158,10 @@ class InstallDetails {
     return std::wstring(payload_->channel, payload_->channel_length);
   }
 
+  // The origin of a ChannelStrategy::ADDITIONAL_PARAMETERS install mode's
+  // channel, or kInstallMode.
+  ChannelOrigin channel_origin() const { return payload_->channel_origin; }
+
   // Returns the "ap" (additional parameters) value read from Chrome's
   // ClientState key during process startup.
   std::wstring update_ap() const {
@@ -220,6 +239,9 @@ class PrimaryInstallDetails : public InstallDetails {
     channel_ = channel;
     payload_.channel = channel_.c_str();
     payload_.channel_length = channel_.size();
+  }
+  void set_channel_origin(ChannelOrigin origin) {
+    payload_.channel_origin = origin;
   }
   void set_update_ap(const std::wstring& update_ap) {
     update_ap_ = update_ap;

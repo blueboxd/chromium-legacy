@@ -11,7 +11,12 @@
 namespace autofill_assistant {
 
 MockService::MockService()
-    : ServiceImpl("api_key", GURL("http://fake"), nullptr, nullptr, nullptr) {}
+    : ServiceImpl(std::string("api_key"),
+                  GURL("http://fake"),
+                  nullptr,
+                  nullptr,
+                  nullptr,
+                  true) {}
 MockService::~MockService() {}
 
 }  // namespace autofill_assistant

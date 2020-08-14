@@ -7,6 +7,7 @@
 #import <Foundation/Foundation.h>
 
 #include "base/logging.h"
+#include "components/password_manager/core/browser/well_known_change_password_util.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/web/public/navigation/navigation_context.h"
@@ -17,18 +18,8 @@
 #endif
 
 namespace {
-
-// .well-known/change-password is a defined standard that points to the sites
-// change password form. https://wicg.github.io/change-password-url/
-bool IsWellKnownChangePasswordUrl(const GURL& url) {
-  return url.SchemeIsHTTPOrHTTPS() &&
-         (url.path() == "/.well-known/change-password" ||
-          url.path() == "/.well-known/change-password/");
+using password_manager::WellKnownChangePasswordTabHelper;
 }
-
-}
-
-namespace password_manager {
 
 WellKnownChangePasswordTabHelper::WellKnownChangePasswordTabHelper(
     web::WebState* web_state)
@@ -90,5 +81,3 @@ void WellKnownChangePasswordTabHelper::WebStateDestroyed(
 }
 
 WEB_STATE_USER_DATA_KEY_IMPL(WellKnownChangePasswordTabHelper)
-
-}

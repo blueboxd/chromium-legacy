@@ -1,0 +1,3 @@
+AXWebArea
+++AXGroup
+++++AXMenuButton AXTitle='Menu button'

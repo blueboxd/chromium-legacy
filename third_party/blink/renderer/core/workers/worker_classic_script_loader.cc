@@ -122,7 +122,8 @@ void WorkerClassicScriptLoader::LoadSynchronously(
 
   SECURITY_DCHECK(execution_context.IsWorkerGlobalScope());
 
-  ResourceLoaderOptions resource_loader_options;
+  ResourceLoaderOptions resource_loader_options(
+      execution_context.GetCurrentWorld());
   resource_loader_options.parser_disposition =
       ParserDisposition::kNotParserInserted;
   resource_loader_options.synchronous_policy = kRequestSynchronously;
@@ -174,7 +175,9 @@ void WorkerClassicScriptLoader::LoadTopLevelScriptAsynchronously(
     request.SetInspectorId(CreateUniqueIdentifier());
     request.SetReferrerString(Referrer::NoReferrer());
     request.SetPriority(ResourceLoadPriority::kHigh);
-    FetchParameters fetch_params(std::move(request), ResourceLoaderOptions());
+    FetchParameters fetch_params(
+        std::move(request),
+        ResourceLoaderOptions(execution_context.GetCurrentWorld()));
     worker_main_script_loader_ = MakeGarbageCollected<WorkerMainScriptLoader>();
     worker_main_script_loader_->Start(
         fetch_params, std::move(worker_main_script_load_params),
@@ -184,7 +187,8 @@ void WorkerClassicScriptLoader::LoadTopLevelScriptAsynchronously(
     return;
   }
 
-  ResourceLoaderOptions resource_loader_options;
+  ResourceLoaderOptions resource_loader_options(
+      execution_context.GetCurrentWorld());
   need_to_cancel_ = true;
   resource_loader_options.reject_coep_unsafe_none = reject_coep_unsafe_none;
   if (blob_url_loader_factory) {

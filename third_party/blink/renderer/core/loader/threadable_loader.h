@@ -241,7 +241,7 @@ class CORE_EXPORT ThreadableLoader final
   // Holds the original request and options for it during preflight request
   // handling phase.
   ResourceRequest actual_request_;
-  ResourceLoaderOptions actual_options_;
+  ResourceLoaderOptions actual_options_{nullptr /* world */};
   network::mojom::FetchResponseType response_tainting_ =
       network::mojom::FetchResponseType::kBasic;
 

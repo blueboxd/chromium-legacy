@@ -37,7 +37,7 @@ class ValueToStringPriority : public ValueToStringPriority<N + 1> {};
 template <>
 // The number must be the same as in the fallback version of
 // |ValueToStringHelper|.
-class ValueToStringPriority<4> {};
+class ValueToStringPriority<5> {};
 
 // Use SFINAE to decide how to extract a string from the given parameter.
 
@@ -87,10 +87,20 @@ ValueToStringHelper(ValueToStringPriority<3>,
   return OstreamValueToString(value);
 }
 
+// If there is |ValueType::data| whose return value can be used to construct
+// |std::string|, use it.
+template <typename ValueType>
+decltype(std::string(std::declval<const ValueType>().data()))
+ValueToStringHelper(ValueToStringPriority<4>,
+                    const ValueType& value,
+                    std::string /* unused */) {
+  return value.data();
+}
+
 // Fallback returns the |fallback_value|. Needs to have |ValueToStringPriority|
 // with the highest number (to be called last).
 template <typename ValueType>
-std::string ValueToStringHelper(ValueToStringPriority<4>,
+std::string ValueToStringHelper(ValueToStringPriority<5>,
                                 const ValueType& /* unused */,
                                 std::string fallback_value) {
   return fallback_value;

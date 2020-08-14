@@ -180,8 +180,6 @@ ContentSerializedNavigationBuilder::ToNavigationEntry(
                                                entry.get());
   }
 
-  entry->InitRestoredEntry(browser_context);
-
   // These fields should have default values.
   DCHECK_EQ(SerializedNavigationEntry::STATE_INVALID,
             navigation->blocked_state_);

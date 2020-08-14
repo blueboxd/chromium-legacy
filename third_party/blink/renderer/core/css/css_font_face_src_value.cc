@@ -90,8 +90,7 @@ FontResource& CSSFontFaceSrcValue::Fetch(ExecutionContext* context,
     resource_request.SetReferrerString(referrer_.referrer);
     if (is_ad_related_)
       resource_request.SetIsAdResource();
-    ResourceLoaderOptions options;
-    options.world = world_;
+    ResourceLoaderOptions options(world_);
     options.initiator_info.name = fetch_initiator_type_names::kCSS;
     options.initiator_info.referrer = referrer_.referrer;
     FetchParameters params(std::move(resource_request), options);

@@ -32,8 +32,9 @@ enum class ShouldSwapBrowsingInstance {
   kNo_Reload = 17,
   kNo_Guest = 18,
   kNo_HasNotComittedAnyNavigation = 19,
+  kNo_UnloadHandlerExistsOnSameSiteNavigation = 20,
 
-  kMaxValue = kNo_HasNotComittedAnyNavigation
+  kMaxValue = kNo_UnloadHandlerExistsOnSameSiteNavigation
 };
 
 }  // namespace content

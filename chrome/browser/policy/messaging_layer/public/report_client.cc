@@ -9,9 +9,12 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/containers/queue.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/singleton.h"
 #include "base/no_destructor.h"
 #include "base/path_service.h"
+#include "base/strings/strcat.h"
 #include "chrome/browser/policy/messaging_layer/encryption/encryption_module.h"
 #include "chrome/browser/policy/messaging_layer/public/report_queue.h"
 #include "chrome/browser/policy/messaging_layer/public/report_queue_configuration.h"
@@ -205,62 +208,340 @@ void Uploader::RunUpload() {
   }
 }
 
-ReportingClient::ReportingClient(scoped_refptr<StorageModule> storage)
-    : storage_(std::move(storage)),
-      encryption_(base::MakeRefCounted<EncryptionModule>()) {}
+ReportingClient::Configuration::Configuration() = default;
+ReportingClient::Configuration::~Configuration() = default;
+
+ReportingClient::InitializationStateTracker::InitializationStateTracker()
+    : sequenced_task_runner_(base::ThreadPool::CreateSequencedTaskRunner({})) {}
+
+ReportingClient::InitializationStateTracker::~InitializationStateTracker() =
+    default;
+
+// static
+scoped_refptr<ReportingClient::InitializationStateTracker>
+ReportingClient::InitializationStateTracker::Create() {
+  return base::WrapRefCounted(
+      new ReportingClient::InitializationStateTracker());
+}
+
+void ReportingClient::InitializationStateTracker::GetInitState(
+    GetInitStateCallback get_init_state_cb) {
+  sequenced_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &ReportingClient::InitializationStateTracker::OnIsInitializedRequest,
+          this, std::move(get_init_state_cb)));
+}
+
+void ReportingClient::InitializationStateTracker::RequestLeaderPromotion(
+    LeaderPromotionRequestCallback promo_request_cb) {
+  sequenced_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&ReportingClient::InitializationStateTracker::
+                                    OnLeaderPromotionRequest,
+                                this, std::move(promo_request_cb)));
+}
+
+void ReportingClient::InitializationStateTracker::OnIsInitializedRequest(
+    GetInitStateCallback get_init_state_cb) {
+  base::ThreadPool::PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](GetInitStateCallback get_init_state_cb, bool is_initialized) {
+            std::move(get_init_state_cb).Run(is_initialized);
+          },
+          std::move(get_init_state_cb), is_initialized_));
+}
+
+void ReportingClient::InitializationStateTracker::OnLeaderPromotionRequest(
+    LeaderPromotionRequestCallback promo_request_cb) {
+  StatusOr<ReleaseLeaderCallback> result;
+  if (is_initialized_) {
+    result = Status(error::FAILED_PRECONDITION,
+                    "ReportClient is already configured");
+  } else if (has_promoted_initializing_context_) {
+    result = Status(error::RESOURCE_EXHAUSTED,
+                    "ReportClient already has a lead initializing context.");
+  } else {
+    result = base::BindOnce(
+        &ReportingClient::InitializationStateTracker::ReleaseLeader, this);
+  }
+
+  base::ThreadPool::PostTask(
+      FROM_HERE, base::BindOnce(
+                     [](LeaderPromotionRequestCallback promo_request_cb,
+                        StatusOr<ReleaseLeaderCallback> result) {
+                       std::move(promo_request_cb).Run(std::move(result));
+                     },
+                     std::move(promo_request_cb), std::move(result)));
+}
+
+void ReportingClient::InitializationStateTracker::ReleaseLeader(
+    bool initialization_successful) {
+  sequenced_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &ReportingClient::InitializationStateTracker::OnLeaderRelease, this,
+          initialization_successful));
+}
+
+void ReportingClient::InitializationStateTracker::OnLeaderRelease(
+    bool initialization_successful) {
+  if (initialization_successful) {
+    is_initialized_ = true;
+  }
+  has_promoted_initializing_context_ = false;
+}
+
+ReportingClient::CreateReportQueueRequest::CreateReportQueueRequest(
+    std::unique_ptr<ReportQueueConfiguration> config,
+    CreateReportQueueCallback create_cb)
+    : config_(std::move(config)), create_cb_(std::move(create_cb)) {}
+
+ReportingClient::CreateReportQueueRequest::~CreateReportQueueRequest() =
+    default;
+
+ReportingClient::CreateReportQueueRequest::CreateReportQueueRequest(
+    ReportingClient::CreateReportQueueRequest&& other)
+    : config_(other.config()), create_cb_(other.create_cb()) {}
+
+std::unique_ptr<ReportQueueConfiguration>
+ReportingClient::CreateReportQueueRequest::config() {
+  return std::move(config_);
+}
+
+ReportingClient::CreateReportQueueCallback
+ReportingClient::CreateReportQueueRequest::create_cb() {
+  return std::move(create_cb_);
+}
+
+ReportingClient::InitializingContext::InitializingContext(
+    Storage::StartUploadCb start_upload_cb,
+    UpdateConfigurationCallback update_config_cb,
+    InitCompleteCallback init_complete_cb,
+    scoped_refptr<ReportingClient::InitializationStateTracker>
+        init_state_tracker,
+    scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner)
+    : TaskRunnerContext<Status>(std::move(init_complete_cb),
+                                sequenced_task_runner),
+      start_upload_cb_(std::move(start_upload_cb)),
+      update_config_cb_(std::move(update_config_cb)),
+      init_state_tracker_(init_state_tracker) {}
+
+ReportingClient::InitializingContext::~InitializingContext() = default;
+
+void ReportingClient::InitializingContext::OnStart() {
+  init_state_tracker_->RequestLeaderPromotion(base::BindOnce(
+      &ReportingClient::InitializingContext::OnLeaderPromotionResult,
+      base::Unretained(this)));
+}
+
+void ReportingClient::InitializingContext::OnLeaderPromotionResult(
+    StatusOr<ReportingClient::InitializationStateTracker::ReleaseLeaderCallback>
+        promo_result) {
+  if (promo_result.status().error_code() == error::FAILED_PRECONDITION) {
+    // Between building this InitializationContext and attempting to promote to
+    // leader, the ReportingClient was configured. Ok response.
+    Complete(Status::StatusOK());
+    return;
+  }
+
+  if (!promo_result.ok()) {
+    Complete(promo_result.status());
+    return;
+  }
+
+  release_leader_cb_ = std::move(promo_result.ValueOrDie());
+  Schedule(&ReportingClient::InitializingContext::ConfigureStorageModule,
+           base::Unretained(this));
+}
+
+void ReportingClient::InitializingContext::ConfigureStorageModule() {
+  base::FilePath user_data_dir;
+  if (!base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir)) {
+    Complete(
+        Status(error::FAILED_PRECONDITION, "Could not retrieve base path"));
+    return;
+  }
+
+  base::FilePath reporting_path = user_data_dir.Append(kReportingDirectory);
+  StorageModule::Create(
+      Storage::Options().set_directory(reporting_path),
+      std::move(start_upload_cb_),
+      base::BindOnce(
+          &ReportingClient::InitializingContext::OnStorageModuleConfigured,
+          base::Unretained(this)));
+}
+
+void ReportingClient::InitializingContext::OnStorageModuleConfigured(
+    StatusOr<scoped_refptr<StorageModule>> storage_result) {
+  if (!storage_result.ok()) {
+    Complete(Status(error::FAILED_PRECONDITION,
+                    base::StrCat({"Unable to build StorageModule: ",
+                                  storage_result.status().message()})));
+    return;
+  }
+
+  client_config_.storage_ = storage_result.ValueOrDie();
+  Schedule(&ReportingClient::InitializingContext::ConfigureEncryptionModule,
+           base::Unretained(this));
+}
+
+// TODO(chromium:1078512) Currently we use a stub encryption module. In the
+// future it needs to be replaced with a real one.
+void ReportingClient::InitializingContext::ConfigureEncryptionModule() {
+  OnEncryptionModuleConfigured(base::MakeRefCounted<EncryptionModule>());
+}
+
+void ReportingClient::InitializingContext::OnEncryptionModuleConfigured(
+    StatusOr<scoped_refptr<EncryptionModule>> encryption_result) {
+  if (!encryption_result.ok()) {
+    Complete(Status(error::FAILED_PRECONDITION,
+                    base::StrCat({"Unable to build EncryptionModule: ",
+                                  encryption_result.status().message()})));
+    return;
+  }
+
+  client_config_.encryption_ = encryption_result.ValueOrDie();
+  Schedule(&ReportingClient::InitializingContext::UpdateConfiguration,
+           base::Unretained(this));
+}
+
+void ReportingClient::InitializingContext::UpdateConfiguration() {
+  std::move(update_config_cb_)
+      .Run(std::move(client_config_),
+           base::BindOnce(&ReportingClient::InitializingContext::Complete,
+                          base::Unretained(this)));
+}
+
+void ReportingClient::InitializingContext::Complete(Status status) {
+  Schedule(&ReportingClient::InitializingContext::Response,
+           base::Unretained(this), status);
+}
+
+ReportingClient::ReportingClient()
+    : create_request_queue_(SharedQueue<CreateReportQueueRequest>::Create()),
+      init_state_tracker_(
+          ReportingClient::InitializationStateTracker::Create()) {}
 
 ReportingClient::~ReportingClient() = default;
 
-StatusOr<std::unique_ptr<ReportQueue>> ReportingClient::CreateReportQueue(
-    std::unique_ptr<ReportQueueConfiguration> config) {
-  ASSIGN_OR_RETURN(ReportingClient* instance, GetInstance());
-  return ReportQueue::Create(std::move(config), instance->storage_,
-                             instance->encryption_);
+ReportingClient* ReportingClient::GetInstance() {
+  return base::Singleton<ReportingClient>::get();
 }
 
-StatusOr<ReportingClient*> ReportingClient::GetInstance() {
-  static base::NoDestructor<StatusOr<std::unique_ptr<ReportingClient>>>
-      instance(Create());
-  if (!instance->ok()) {
-    return instance->status();
-  }
-  return instance->ValueOrDie().get();
+void ReportingClient::CreateReportQueue(
+    std::unique_ptr<ReportQueueConfiguration> config,
+    CreateReportQueueCallback create_cb) {
+  auto* instance = GetInstance();
+  instance->create_request_queue_->Push(
+      CreateReportQueueRequest(std::move(config), std::move(create_cb)),
+      base::BindOnce(&ReportingClient::OnPushComplete,
+                     base::Unretained(instance)));
 }
 
-// TODO(chromium:1078512) As part of completing the EncryptionModule,
-// this create function will need to be updated to check for
-// successful creation of the EncryptionModule too.
-StatusOr<std::unique_ptr<ReportingClient>> ReportingClient::Create() {
-  base::FilePath user_data_dir;
-  if (!base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir)) {
-    return Status(error::FAILED_PRECONDITION, "Could not retrieve base path");
+void ReportingClient::Reset_test() {
+  base::Singleton<ReportingClient>::OnExit(nullptr);
+}
+
+void ReportingClient::OnPushComplete() {
+  init_state_tracker_->GetInitState(
+      base::BindOnce(&ReportingClient::OnInitState, base::Unretained(this)));
+}
+
+void ReportingClient::OnInitState(bool reporting_client_configured) {
+  if (!reporting_client_configured) {
+    // Schedule an InitializingContext to take care of initialization.
+    Start<ReportingClient::InitializingContext>(
+        base::BindRepeating(&ReportingClient::BuildUploader),
+        base::BindOnce(&ReportingClient::OnConfigResult,
+                       base::Unretained(this)),
+        base::BindOnce(&ReportingClient::OnInitializationComplete,
+                       base::Unretained(this)),
+        init_state_tracker_, base::ThreadPool::CreateSequencedTaskRunner({}));
+    return;
   }
-  base::FilePath reporting_path = user_data_dir.Append(kReportingDirectory);
-  base::WaitableEvent done(base::WaitableEvent::ResetPolicy::MANUAL,
-                           base::WaitableEvent::InitialState::NOT_SIGNALED);
-  StatusOr<scoped_refptr<StorageModule>> storage_result;
-  StorageModule::Create(
-      Storage::Options().set_directory(reporting_path),
-      base::BindRepeating(&ReportingClient::BuildUploader),
+
+  // Client was configured, build the queue!
+  create_request_queue_->Pop(base::BindOnce(&ReportingClient::BuildRequestQueue,
+                                            base::Unretained(this)));
+}
+
+void ReportingClient::OnConfigResult(
+    const ReportingClient::Configuration& config,
+    base::OnceCallback<void(Status)> continue_init_cb) {
+  config_ = std::move(config);
+  std::move(continue_init_cb).Run(Status::StatusOK());
+}
+
+void ReportingClient::OnInitializationComplete(Status init_status) {
+  if (init_status.error_code() == error::RESOURCE_EXHAUSTED) {
+    // This happens when a new request comes in while the ReportingClient is
+    // undergoing initialization. The leader will either clear or build the
+    // queue when it completes.
+    return;
+  }
+
+  // Configuration failed. Clear out all the requests that came in while we were
+  // attempting to configure.
+  if (!init_status.ok()) {
+    create_request_queue_->Swap(
+        base::queue<CreateReportQueueRequest>(),
+        base::BindOnce(&ReportingClient::ClearRequestQueue,
+                       base::Unretained(this)));
+    return;
+  }
+  create_request_queue_->Pop(base::BindOnce(&ReportingClient::BuildRequestQueue,
+                                            base::Unretained(this)));
+}
+
+void ReportingClient::ClearRequestQueue(
+    base::queue<CreateReportQueueRequest> failed_requests) {
+  while (!failed_requests.empty()) {
+    // Post to general thread.
+    base::ThreadPool::PostTask(
+        FROM_HERE, base::BindOnce(
+                       [](CreateReportQueueRequest queue_request) {
+                         std::move(queue_request.create_cb())
+                             .Run(Status(error::UNAVAILABLE,
+                                         "Unable to build a ReportQueue"));
+                       },
+                       std::move(failed_requests.front())));
+    failed_requests.pop();
+  }
+}
+
+void ReportingClient::BuildRequestQueue(
+    StatusOr<CreateReportQueueRequest> pop_result) {
+  // Queue is clear - nothing more to do.
+  if (!pop_result.ok()) {
+    return;
+  }
+
+  // We don't want to block either the ReportingClient sequenced_task_runner_ or
+  // the create_request_queue_.sequenced_task_runner_, so we post the task to a
+  // general thread.
+  base::ThreadPool::PostTask(
+      FROM_HERE,
       base::BindOnce(
-          [](StatusOr<scoped_refptr<StorageModule>>* result,
-             base::WaitableEvent* done,
-             StatusOr<scoped_refptr<StorageModule>> storage) {
-            *result = std::move(storage);
-            done->Signal();
+          [](scoped_refptr<StorageModule> storage_module,
+             scoped_refptr<EncryptionModule> encryption_module,
+             CreateReportQueueRequest report_queue_request) {
+            std::move(report_queue_request.create_cb())
+                .Run(ReportQueue::Create(report_queue_request.config(),
+                                         storage_module, encryption_module));
           },
-          base::Unretained(&storage_result), base::Unretained(&done)));
-  done.Wait();
-  RETURN_IF_ERROR(storage_result.status());
-  auto client = base::WrapUnique<ReportingClient>(
-      new ReportingClient(std::move(storage_result.ValueOrDie())));
-  return client;
+          config_.storage_, config_.encryption_,
+          std::move(pop_result.ValueOrDie())));
+
+  // Build the next item asynchronously
+  create_request_queue_->Pop(base::BindOnce(&ReportingClient::BuildRequestQueue,
+                                            base::Unretained(this)));
 }
 
 // static
 StatusOr<std::unique_ptr<Storage::UploaderInterface>>
 ReportingClient::BuildUploader(Priority priority) {
-  ASSIGN_OR_RETURN(ReportingClient * instance, GetInstance());
+  ReportingClient* const instance = GetInstance();
   if (instance->upload_client_ == nullptr) {
     ASSIGN_OR_RETURN(
         instance->upload_client_,

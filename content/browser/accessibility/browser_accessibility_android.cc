@@ -964,8 +964,6 @@ base::string16 BrowserAccessibilityAndroid::GetRoleDescription() const {
       message_id = IDS_AX_ROLE_MENU_BAR;
       break;
     case ax::mojom::Role::kMenuButton:
-      message_id = IDS_AX_ROLE_MENU_BUTTON;
-      break;
     case ax::mojom::Role::kMenuItem:
       message_id = IDS_AX_ROLE_MENU_ITEM;
       break;

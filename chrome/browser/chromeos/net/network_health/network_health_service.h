@@ -5,12 +5,19 @@
 #ifndef CHROME_BROWSER_CHROMEOS_NET_NETWORK_HEALTH_NETWORK_HEALTH_SERVICE_H_
 #define CHROME_BROWSER_CHROMEOS_NET_NETWORK_HEALTH_NETWORK_HEALTH_SERVICE_H_
 
-#include "chrome/browser/chromeos/net/network_diagnostics/network_diagnostics_impl.h"
-#include "chrome/browser/chromeos/net/network_health/network_health.h"
+#include "chromeos/services/network_health/public/mojom/network_diagnostics.mojom.h"
+#include "chromeos/services/network_health/public/mojom/network_health.mojom.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace chromeos {
+
+namespace network_diagnostics {
+class NetworkDiagnostics;
+}
+
 namespace network_health {
+
+class NetworkHealth;
 
 class NetworkHealthService {
  public:
@@ -31,9 +38,8 @@ class NetworkHealthService {
           network_diagnostics::mojom::NetworkDiagnosticsRoutines> receiver);
 
  private:
-  NetworkHealth network_health_;
-  std::unique_ptr<network_diagnostics::NetworkDiagnosticsImpl>
-      network_diagnostics_;
+  std::unique_ptr<NetworkHealth> network_health_;
+  std::unique_ptr<network_diagnostics::NetworkDiagnostics> network_diagnostics_;
 };
 
 }  // namespace network_health

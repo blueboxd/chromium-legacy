@@ -22,6 +22,8 @@
 #include "chrome/browser/sync/user_event_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "chrome/test/base/scoped_testing_local_state.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/password_manager/core/browser/compromised_credentials_table.h"
@@ -212,7 +214,8 @@ class MockChromePasswordProtectionService
 class ChromePasswordProtectionServiceTest
     : public ChromeRenderViewHostTestHarness {
  public:
-  ChromePasswordProtectionServiceTest() = default;
+  ChromePasswordProtectionServiceTest()
+      : local_state_(TestingBrowserProcess::GetGlobal()) {}
 
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
@@ -405,6 +408,7 @@ class ChromePasswordProtectionServiceTest
   extensions::TestEventRouter* test_event_router_;
 #endif
   std::unique_ptr<VerdictCacheManager> cache_manager_;
+  ScopedTestingLocalState local_state_;
 };
 
 TEST_F(ChromePasswordProtectionServiceTest,

@@ -236,7 +236,6 @@ bool AccessibilityButtonPredicate(BrowserAccessibility* start,
                                   BrowserAccessibility* node) {
   switch (node->GetRole()) {
     case ax::mojom::Role::kButton:
-    case ax::mojom::Role::kMenuButton:
     case ax::mojom::Role::kPopUpButton:
     case ax::mojom::Role::kSwitch:
     case ax::mojom::Role::kToggleButton:

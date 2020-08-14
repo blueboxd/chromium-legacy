@@ -113,7 +113,10 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   // after the frame has been destroyed and the ExecutionContext is detached.
   // This is used as a stable and persistent identifier for attributing detached
   // context memory usage.
-  const LocalFrameToken& token() const { return token_; }
+  const LocalFrameToken& GetLocalFrameToken() const { return token_; }
+  ExecutionContextToken GetExecutionContextToken() const final {
+    return token_;
+  }
 
   LocalFrame* GetFrame() const { return To<LocalFrame>(DOMWindow::GetFrame()); }
 

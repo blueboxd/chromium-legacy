@@ -90,6 +90,30 @@ TEST_F(BluetoothAdapterTest, TestGetScanMode) {
             bluetooth_adapter_->GetScanMode());
 }
 
+TEST_F(BluetoothAdapterTest, TestSetScanMode) {
+  fake_adapter_->discoverable_ = false;
+
+  EXPECT_TRUE(
+      bluetooth_adapter_->SetScanMode(BluetoothAdapter::ScanMode::kUnknown));
+  EXPECT_FALSE(fake_adapter_->discoverable_);
+
+  EXPECT_TRUE(
+      bluetooth_adapter_->SetScanMode(BluetoothAdapter::ScanMode::kNone));
+  EXPECT_FALSE(fake_adapter_->discoverable_);
+
+  EXPECT_TRUE(bluetooth_adapter_->SetScanMode(
+      BluetoothAdapter::ScanMode::kConnectable));
+  EXPECT_FALSE(fake_adapter_->discoverable_);
+
+  EXPECT_TRUE(bluetooth_adapter_->SetScanMode(
+      BluetoothAdapter::ScanMode::kConnectableDiscoverable));
+  EXPECT_TRUE(fake_adapter_->discoverable_);
+
+  EXPECT_TRUE(bluetooth_adapter_->SetScanMode(
+      BluetoothAdapter::ScanMode::kConnectable));
+  EXPECT_FALSE(fake_adapter_->discoverable_);
+}
+
 TEST_F(BluetoothAdapterTest, TestGetName) {
   EXPECT_EQ(fake_adapter_->name_, bluetooth_adapter_->GetName());
 }

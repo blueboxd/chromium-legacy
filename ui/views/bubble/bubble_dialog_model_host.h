@@ -68,7 +68,7 @@ class VIEWS_EXPORT BubbleDialogModelHost : public BubbleDialogDelegateView,
                         std::unique_ptr<views::View> field,
                         const gfx::FontList& field_font);
 
-  void UpdateAccelerators();
+  void OnViewCreatedForField(View* view, ui::DialogModelField* field);
 
   void NotifyTextfieldTextChanged(views::Textfield* textfield);
   void NotifyComboboxSelectedIndexChanged(views::Combobox* combobox);

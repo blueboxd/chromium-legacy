@@ -86,7 +86,7 @@ task_manager::TaskManagerTableModel* TaskManagerView::Show(Browser* browser) {
   // process.
   if (browser) {
     ui::win::SetAppIdForWindow(
-        shell_integration::win::GetChromiumModelIdForProfile(
+        shell_integration::win::GetAppUserModelIdForBrowser(
             browser->profile()->GetPath()),
         views::HWNDForWidget(g_task_manager_view->GetWidget()));
   }

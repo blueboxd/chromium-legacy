@@ -73,6 +73,5 @@ html_to_js("web_components") {
     "print_management_fonts_css.js",
     "print_management.js",
     "print_management_shared_css.js",
-    "scanning_page.js",
   ]
 }

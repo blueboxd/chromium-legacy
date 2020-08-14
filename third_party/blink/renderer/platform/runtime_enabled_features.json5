@@ -1211,7 +1211,7 @@
     },
     {
       name: "NativeFileSystemDragAndDrop",
-      status: "test"
+      status: "experimental"
     },
     {
       name: "NativeIO",

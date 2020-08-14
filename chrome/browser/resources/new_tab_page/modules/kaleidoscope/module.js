@@ -4,6 +4,7 @@
 
 import '../../grid.js';
 
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {ModuleDescriptor} from '../module_descriptor.js';
@@ -40,7 +41,9 @@ class KaleidoscopeModuleElement extends PolymerElement {
 customElements.define(KaleidoscopeModuleElement.is, KaleidoscopeModuleElement);
 
 /** @type {!ModuleDescriptor} */
-export const kaleidoscopeDescriptor = {
-  id: 'kaleidoscope',
-  create: () => Promise.resolve(new KaleidoscopeModuleElement()),
-};
+export const kaleidoscopeDescriptor = new ModuleDescriptor(
+    'kaleidoscope', loadTimeData.getString('modulesKaleidoscopeName'),
+    () => Promise.resolve({
+      element: new KaleidoscopeModuleElement(),
+      title: loadTimeData.getString('modulesKaleidoscopeTitle'),
+    }));

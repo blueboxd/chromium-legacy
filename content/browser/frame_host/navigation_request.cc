@@ -679,63 +679,6 @@ network::mojom::RequestDestination GetDestinationFromFrameTreeNode(
   }
 }
 
-// This function implements the COOP matching algorithm as detailed in [1].
-// Note that COEP is also provided since the COOP enum does not have a
-// "same-origin + COEP" value.
-// [1] https://gist.github.com/annevk/6f2dd8c79c77123f39797f6bdac43f3e
-bool CrossOriginOpenerPolicyMatch(
-    network::mojom::CrossOriginOpenerPolicyValue initiator_coop,
-    const url::Origin& initiator_origin,
-    network::mojom::CrossOriginOpenerPolicyValue destination_coop,
-    const url::Origin& destination_origin) {
-  if (initiator_coop != destination_coop)
-    return false;
-  if (initiator_coop ==
-      network::mojom::CrossOriginOpenerPolicyValue::kUnsafeNone) {
-    return true;
-  }
-  if (!initiator_origin.IsSameOriginWith(destination_origin))
-    return false;
-  return true;
-}
-
-// This function returns whether the BrowsingInstance should change following
-// COOP rules defined in:
-// https://gist.github.com/annevk/6f2dd8c79c77123f39797f6bdac43f3e#changes-to-navigation
-bool ShouldSwapBrowsingInstanceForCrossOriginOpenerPolicy(
-    network::mojom::CrossOriginOpenerPolicyValue initiator_coop,
-    const url::Origin& initiator_origin,
-    bool is_initial_navigation,
-    network::mojom::CrossOriginOpenerPolicyValue destination_coop,
-    const url::Origin& destination_origin) {
-  using network::mojom::CrossOriginOpenerPolicyValue;
-
-  // If policies match there is no reason to switch BrowsingInstances.
-  if (CrossOriginOpenerPolicyMatch(initiator_coop, initiator_origin,
-                                   destination_coop, destination_origin)) {
-    return false;
-  }
-
-  // "same-origin-allow-popups" is used to stay in the same BrowsingInstance
-  // despite COOP mismatch. This case is defined in the spec [1] as follow.
-  // ```
-  // If the result of matching currentCOOP, currentOrigin, potentialCOOP, and
-  // potentialOrigin is false and one of the following is false:
-  //  - doc is the initial about:blank document
-  //  - currentCOOP is "same-origin-allow-popups"
-  //  - potentialCOOP is "unsafe-none"
-  // Then create a new browsing context group.
-  // ```
-  // [1]
-  // https://gist.github.com/annevk/6f2dd8c79c77123f39797f6bdac43f3e#changes-to-navigation
-  if (is_initial_navigation &&
-      initiator_coop == CrossOriginOpenerPolicyValue::kSameOriginAllowPopups &&
-      destination_coop == CrossOriginOpenerPolicyValue::kUnsafeNone) {
-    return false;
-  }
-  return true;
-}
-
 url::Origin GetOriginForURLLoaderFactoryUnchecked(
     NavigationRequest* navigation_request) {
   DCHECK(navigation_request);
@@ -786,14 +729,6 @@ url::Origin GetOriginForURLLoaderFactoryUnchecked(
 }
 
 }  // namespace
-
-CrossOriginOpenerPolicyStatus::CrossOriginOpenerPolicyStatus(
-    int virtual_browsing_context_group,
-    const network::CrossOriginOpenerPolicy& coop,
-    const url::Origin& origin)
-    : virtual_browsing_context_group(virtual_browsing_context_group),
-      current_coop(coop),
-      current_origin(origin) {}
 
 // static
 std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
@@ -1120,11 +1055,7 @@ NavigationRequest::NavigationRequest(
           frame_tree_node->current_frame_host()->GetRoutingID())),
       initiator_routing_id_(initiator_routing_id),
       client_security_state_(network::mojom::ClientSecurityState::New()),
-      coop_status_(
-          frame_tree_node->current_frame_host()
-              ->virtual_browsing_context_group(),
-          frame_tree_node->current_frame_host()->cross_origin_opener_policy(),
-          frame_tree_node->current_frame_host()->GetLastCommittedOrigin()),
+      coop_status_(frame_tree_node),
       previous_page_load_ukm_source_id_(
           frame_tree_node_->current_frame_host()->GetPageUkmSourceId()) {
   DCHECK(browser_initiated_ || common_params_->initiator_origin.has_value());
@@ -1736,16 +1667,15 @@ void NavigationRequest::CreateCoopReporter(
   //
   // TODO(arthursonzogni): Reconsider this decision later, developers might be
   // interested in (2) and (3), despite not being interested in (1).
-  if (!render_frame_host_->cross_origin_opener_policy().reporting_endpoint &&
-      !render_frame_host_->cross_origin_opener_policy()
-           .report_only_reporting_endpoint) {
+  if (!coop_status_.current_coop().reporting_endpoint &&
+      !coop_status_.current_coop().report_only_reporting_endpoint) {
     return;
   }
 
   DCHECK(IsInMainFrame());
   coop_reporter_ = std::make_unique<CrossOriginOpenerPolicyReporter>(
       storage_partition, frame_tree_node_->current_frame_host(),
-      common_params_->url, render_frame_host_->cross_origin_opener_policy());
+      common_params_->url, coop_status_.current_coop());
 }
 
 std::unique_ptr<CrossOriginOpenerPolicyReporter>
@@ -1860,13 +1790,30 @@ void NavigationRequest::OnRequestRedirected(
     return;
   }
 
-  SanitizeCoopHeaders();
+  // TODO(clamy): When we are able to compute the origin of a response in the
+  // browser process, we should use the computed origin instead of extracting it
+  // from the response URL.
+  const base::Optional<network::mojom::BlockedByResponseReason>
+      coop_requires_blocking = coop_status_.EnforceCOOP(
+          response_head_->parsed_headers.get(),
+          url::Origin::Create(common_params_->url), common_params_->url);
+  if (coop_requires_blocking) {
+    OnRequestFailedInternal(
+        network::URLLoaderCompletionStatus(*coop_requires_blocking),
+        false /* skip_throttles */, base::nullopt /* error_page_content */,
+        false /* collapse_frame */);
+    // DO NOT ADD CODE after this. The previous call to
+    // OnRequestFailedInternal has destroyed the NavigationRequest.
+    return;
+  }
 
-  if (const auto blocked_reason = IsBlockedByResponse()) {
-    OnRequestFailedInternal(network::URLLoaderCompletionStatus(*blocked_reason),
-                            false /* skip_throttles */,
-                            base::nullopt /* error_page_content */,
-                            false /* collapse_frame */);
+  const base::Optional<network::mojom::BlockedByResponseReason>
+      coep_requires_blocking = EnforceCOEP();
+  if (coep_requires_blocking) {
+    OnRequestFailedInternal(
+        network::URLLoaderCompletionStatus(*coep_requires_blocking),
+        false /* skip_throttles */, base::nullopt /* error_page_content */,
+        false /* collapse_frame */);
     // DO NOT ADD CODE after this. The previous call to
     // OnRequestFailedInternal has destroyed the NavigationRequest.
     return;
@@ -1939,12 +1886,6 @@ void NavigationRequest::OnRequestRedirected(
     // has destroyed the NavigationRequest.
     return;
   }
-
-  // TODO(clamy): When we are able to compute the origin of a response in the
-  // browser process, we should use the computed origin instead of extracting it
-  // from the response URL.
-  UpdateCoopStatus(response_head_->parsed_headers->cross_origin_opener_policy,
-                   url::Origin::Create(common_params_->url));
 
   // Compute the SiteInstance to use for the redirect and pass its
   // RenderProcessHost if it has a process. Keep a reference if it has a
@@ -2267,13 +2208,30 @@ void NavigationRequest::OnResponseStarted(
     }
   }
 
-  SanitizeCoopHeaders();
+  // TODO(clamy): When we are able to compute the origin of a response in the
+  // browser process, we should use the computed origin instead of extracting it
+  // from the response URL.
+  const base::Optional<network::mojom::BlockedByResponseReason>
+      coop_requires_blocking = coop_status_.EnforceCOOP(
+          response_head_->parsed_headers.get(),
+          url::Origin::Create(common_params_->url), common_params_->url);
+  if (coop_requires_blocking) {
+    OnRequestFailedInternal(
+        network::URLLoaderCompletionStatus(*coop_requires_blocking),
+        false /* skip_throttles */, base::nullopt /* error_page_content */,
+        false /* collapse_frame */);
+    // DO NOT ADD CODE after this. The previous call to
+    // OnRequestFailedInternal has destroyed the NavigationRequest.
+    return;
+  }
 
-  if (const auto blocked_reason = IsBlockedByResponse()) {
-    OnRequestFailedInternal(network::URLLoaderCompletionStatus(*blocked_reason),
-                            false /* skip_throttles */,
-                            base::nullopt /* error_page_content */,
-                            false /* collapse_frame */);
+  const base::Optional<network::mojom::BlockedByResponseReason>
+      coep_requires_blocking = EnforceCOEP();
+  if (coep_requires_blocking) {
+    OnRequestFailedInternal(
+        network::URLLoaderCompletionStatus(*coep_requires_blocking),
+        false /* skip_throttles */, base::nullopt /* error_page_content */,
+        false /* collapse_frame */);
     // DO NOT ADD CODE after this. The previous call to
     // OnRequestFailedInternal has destroyed the NavigationRequest.
     return;
@@ -2338,23 +2296,16 @@ void NavigationRequest::OnResponseStarted(
     }
   }
 
-  // TODO(clamy): When we are able to compute the origin of a response in the
-  // browser process, we should use the computed origin instead of extracting it
-  // from the response URL.
-  UpdateCoopStatus(response_head_->parsed_headers->cross_origin_opener_policy,
-                   url::Origin::Create(common_params_->url));
-
   RenderFrameHostImpl* current_rfh = frame_tree_node_->current_frame_host();
-  if (coop_status_.had_opener_before_browsing_instance_swap &&
-      current_rfh->coop_reporter()) {
-    if (coop_status_.require_browsing_instance_swap) {
+  if (coop_status_.had_opener() && current_rfh->coop_reporter()) {
+    if (coop_status_.require_browsing_instance_swap()) {
       current_rfh->coop_reporter()->QueueOpenerBreakageReport(
           current_rfh->coop_reporter()->GetNextDocumentUrlForReporting(
               GetRedirectChain(), GetInitiatorRoutingId()),
           true /* is_reported_from_document */, false /* is_report_only */);
     }
 
-    if (coop_status_.virtual_browsing_instance_swap) {
+    if (coop_status_.virtual_browsing_instance_swap()) {
       current_rfh->coop_reporter()->QueueOpenerBreakageReport(
           current_rfh->coop_reporter()->GetNextDocumentUrlForReporting(
               GetRedirectChain(), GetInitiatorRoutingId()),
@@ -2394,13 +2345,10 @@ void NavigationRequest::OnResponseStarted(
   if (render_frame_host_) {
     DetermineOriginIsolationEndResult(opt_in_isolation);
 
-    // TODO(pmeuleman, ahemery): Only set COOP and COEP values on
-    // RenderFrameHost when the navigation commits. In the meantime, keep them
-    // in NavigationRequest.
+    // TODO(pmeuleman, ahemery): Only set COEP values on RenderFrameHost when
+    // the navigation commits. In the meantime, keep them in NavigationRequest.
     render_frame_host_->set_cross_origin_embedder_policy(
         cross_origin_embedder_policy);
-    render_frame_host_->set_cross_origin_opener_policy(
-        response_head_->parsed_headers->cross_origin_opener_policy);
   }
   client_security_state_->cross_origin_embedder_policy =
       cross_origin_embedder_policy;
@@ -3288,7 +3236,7 @@ void NavigationRequest::CommitNavigation() {
   RenderProcessHostImpl::NotifySpareManagerAboutRecentlyUsedBrowserContext(
       render_frame_host_->GetSiteInstance()->GetBrowserContext());
 
-  if (coop_status().header_ignored_due_to_insecure_context) {
+  if (coop_status().header_ignored_due_to_insecure_context()) {
     render_frame_host_->AddMessageToConsole(
         blink::mojom::ConsoleMessageLevel::kError,
         "The Cross-Origin-Opener-Policy header has been ignored, because the "
@@ -4102,7 +4050,7 @@ void NavigationRequest::DidCommitNavigation(
   // The renderer already knows locally about it because we sent an empty name
   // at frame creation time. The renderer has now committed the page and we can
   // safely enforce the empty name on the browser side.
-  if (coop_status().require_browsing_instance_swap) {
+  if (coop_status().require_browsing_instance_swap()) {
     std::string name, unique_name;
     // "COOP swaps" only affect main frames, that have an empty unique name.
     DCHECK(frame_tree_node_->unique_name().empty());
@@ -4879,43 +4827,27 @@ void NavigationRequest::ForceEnableOriginTrials(
 }
 
 base::Optional<network::mojom::BlockedByResponseReason>
-NavigationRequest::IsBlockedByResponse() {
-  // Popups with a sandboxing flag, inherited from their opener, are not
-  // allowed to navigate to a document with a Cross-Origin-Opener-Policy that
-  // is not "unsafe-none". This ensures a COOP document does not inherit any
-  // property from an opener.
-  // https://gist.github.com/annevk/6f2dd8c79c77123f39797f6bdac43f3e
-  if (response_head_->parsed_headers->cross_origin_opener_policy.value !=
-          network::mojom::CrossOriginOpenerPolicyValue::kUnsafeNone &&
-      (frame_tree_node_->pending_frame_policy().sandbox_flags !=
-       network::mojom::WebSandboxFlags::kNone)) {
-    DCHECK(base::FeatureList::IsEnabled(
-        network::features::kCrossOriginOpenerPolicy));
-    return network::mojom::BlockedByResponseReason::
-        kCoopSandboxedIFrameCannotNavigateToCoopPage;
-  }
-
-  if (base::FeatureList::IsEnabled(
+NavigationRequest::EnforceCOEP() {
+  if (!base::FeatureList::IsEnabled(
           network::features::kCrossOriginEmbedderPolicy)) {
-    // https://mikewest.github.io/corpp/#integration-html
-    auto* parent_frame = GetParentFrame();
-    if (!parent_frame) {
-      return base::nullopt;
-    }
-    const auto& url = common_params_->url;
-    // Some special URLs not loaded using the network are inheriting the
-    // Cross-Origin-Embedder-Policy header from their parent.
-    if (url.SchemeIsBlob() || url.SchemeIs(url::kDataScheme)) {
-      return base::nullopt;
-    }
-    return network::CrossOriginResourcePolicy::IsNavigationBlocked(
-        url, redirect_chain_[0], parent_frame->GetLastCommittedOrigin(),
-        *response_head_, parent_frame->GetLastCommittedOrigin(),
-        parent_frame->cross_origin_embedder_policy(),
-        parent_frame->coep_reporter());
+    return base::nullopt;
   }
-
-  return base::nullopt;
+  // https://html.spec.whatwg.org/#check-a-navigation-response's-adherence-to-its-embedder-policy
+  auto* parent_frame = GetParentFrame();
+  if (!parent_frame) {
+    return base::nullopt;
+  }
+  const auto& url = common_params_->url;
+  // Some special URLs not loaded using the network are inheriting the
+  // Cross-Origin-Embedder-Policy header from their parent.
+  if (url.SchemeIsBlob() || url.SchemeIs(url::kDataScheme)) {
+    return base::nullopt;
+  }
+  return network::CrossOriginResourcePolicy::IsNavigationBlocked(
+      url, redirect_chain_[0], parent_frame->GetLastCommittedOrigin(),
+      *response_head_, parent_frame->GetLastCommittedOrigin(),
+      parent_frame->cross_origin_embedder_policy(),
+      parent_frame->coep_reporter());
 }
 
 std::unique_ptr<PeakGpuMemoryTracker>
@@ -5006,10 +4938,6 @@ NavigationRequest::ComputeSandboxFlagsToCommit() {
   return out;
 }
 
-const CrossOriginOpenerPolicyStatus& NavigationRequest::coop_status() const {
-  return coop_status_;
-}
-
 void NavigationRequest::CheckStateTransition(NavigationState state) const {
 #if DCHECK_IS_ON()
   // See
@@ -5074,85 +5002,6 @@ void NavigationRequest::CheckStateTransition(NavigationState state) const {
 void NavigationRequest::SetState(NavigationState state) {
   CheckStateTransition(state);
   state_ = state;
-}
-
-// We blank out the COOP headers in a number of situations.
-// - When the headers were not sent over HTTPS.
-// - For subframes.
-void NavigationRequest::SanitizeCoopHeaders() {
-  network::CrossOriginOpenerPolicy& coop =
-      response_head_->parsed_headers->cross_origin_opener_policy;
-  if (IsOriginSecure(common_params_->url) && IsInMainFrame())
-    return;
-
-  if (coop == network::CrossOriginOpenerPolicy())
-    return;
-  coop = network::CrossOriginOpenerPolicy();
-
-  if (!IsOriginSecure(common_params_->url))
-    coop_status_.header_ignored_due_to_insecure_context = true;
-}
-
-void NavigationRequest::UpdateCoopStatus(
-    const network::CrossOriginOpenerPolicy& response_coop,
-    const url::Origin& response_origin) {
-  // Return early if the situation prevents COOP from operating.
-  if (!IsInMainFrame() || common_params_->url.IsAboutBlank()) {
-    return;
-  }
-
-  bool is_initial_navigation = !frame_tree_node_->has_committed_real_load();
-
-  bool cross_origin_policy_swap =
-      ShouldSwapBrowsingInstanceForCrossOriginOpenerPolicy(
-          coop_status_.current_coop.value, coop_status_.current_origin,
-          is_initial_navigation, response_coop.value, response_origin);
-
-  // Both report only cases (navigation from and to document) use the following
-  // result, computing the need of a browsing context group swap based on both
-  // documents' report-only values.
-  bool report_only_coop_swap =
-      ShouldSwapBrowsingInstanceForCrossOriginOpenerPolicy(
-          coop_status_.current_coop.report_only_value,
-          coop_status_.current_origin, is_initial_navigation,
-          response_coop.report_only_value, response_origin);
-
-  bool navigating_to_report_only_coop_swap =
-      ShouldSwapBrowsingInstanceForCrossOriginOpenerPolicy(
-          coop_status_.current_coop.value, coop_status_.current_origin,
-          is_initial_navigation, response_coop.report_only_value,
-          response_origin);
-
-  bool navigating_from_report_only_coop_swap =
-      ShouldSwapBrowsingInstanceForCrossOriginOpenerPolicy(
-          coop_status_.current_coop.report_only_value,
-          coop_status_.current_origin, is_initial_navigation,
-          response_coop.value, response_origin);
-
-  if (cross_origin_policy_swap) {
-    DCHECK(base::FeatureList::IsEnabled(
-        network::features::kCrossOriginOpenerPolicy));
-    coop_status_.require_browsing_instance_swap = true;
-  }
-
-  if (report_only_coop_swap && (navigating_to_report_only_coop_swap ||
-                                navigating_from_report_only_coop_swap)) {
-    coop_status_.virtual_browsing_instance_swap = true;
-  }
-  if (frame_tree_node_->opener()) {
-    coop_status_.had_opener_before_browsing_instance_swap = true;
-  }
-
-  if (coop_status_.require_browsing_instance_swap ||
-      coop_status_.virtual_browsing_instance_swap) {
-    coop_status_.virtual_browsing_context_group =
-        CrossOriginOpenerPolicyReporter::NextVirtualBrowsingContextGroup();
-  }
-
-  // Finally, update the current COOP and origins to those of the response, now
-  // that it has been taken into account.
-  coop_status_.current_coop = response_coop;
-  coop_status_.current_origin = response_origin;
 }
 
 }  // namespace content

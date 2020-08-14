@@ -80,7 +80,7 @@ class AudioWorkletGlobalScopeTest : public PageTestBase {
             MakeGarbageCollected<WorkletModuleResponsesMap>(),
             mojo::NullRemote() /* browser_interface_broker */,
             BeginFrameProviderParams(), nullptr /* parent_feature_policy */,
-            window->GetAgentClusterID()),
+            window->GetAgentClusterID(), window->GetExecutionContextToken()),
         base::nullopt, std::make_unique<WorkerDevToolsParams>());
     return thread;
   }

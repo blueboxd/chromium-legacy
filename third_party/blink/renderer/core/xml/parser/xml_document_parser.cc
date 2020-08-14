@@ -621,7 +621,8 @@ static void* OpenFunc(const char* uri) {
     Document* document = XMLDocumentParserScope::current_document_;
     XMLDocumentParserScope scope(nullptr);
     // FIXME: We should restore the original global error handler as well.
-    ResourceLoaderOptions options;
+    ResourceLoaderOptions options(
+        document->GetExecutionContext()->GetCurrentWorld());
     options.initiator_info.name = fetch_initiator_type_names::kXml;
     FetchParameters params(ResourceRequest(url), options);
     params.MutableResourceRequest().SetMode(

@@ -1325,6 +1325,7 @@ Status IndexedDBDatabase::PutAllOperation(
     DCHECK(put_param->key->IsValid());
   }
 
+  std::vector<blink::IndexedDBKey> keys;
   for (auto& put_param : params) {
     std::vector<std::unique_ptr<IndexWriter>> index_writers;
     base::string16 error_message;
@@ -1375,15 +1376,14 @@ Status IndexedDBDatabase::PutAllOperation(
       if (!s.ok())
         return s;
     }
+    keys.push_back(*put_param->key);
   }
 
   {
     IDB_TRACE1("IndexedDBDatabase::PutAllOperation.Callbacks", "txn.id",
                transaction->id());
     std::move(callback).Run(
-        blink::mojom::IDBTransactionPutAllResult::NewErrorResult(
-            blink::mojom::IDBError::New(blink::mojom::IDBException::kNoError,
-                                        base::string16())));
+        blink::mojom::IDBTransactionPutAllResult::NewKeys(std::move(keys)));
   }
   for (auto& put_param : params) {
     FilterObservation(transaction, object_store_id,

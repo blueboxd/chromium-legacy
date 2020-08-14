@@ -68,7 +68,8 @@ fuchsia::netstack::NetInterface DefaultNetInterface() {
   // is sufficient.
   fuchsia::netstack::NetInterface interface;
   interface.id = kDefaultInterfaceId;
-  interface.flags = fuchsia::netstack::NetInterfaceFlagUp;
+  interface.flags = static_cast<decltype(interface.flags)>(
+      fuchsia::netstack::NetInterfaceFlagUp);
   interface.features = {};
   interface.addr = IpAddressFrom(kDefaultIPv4Address);
   interface.netmask = IpAddressFrom(kDefaultIPv4Netmask);
@@ -81,7 +82,8 @@ fuchsia::netstack::NetInterface SecondaryNetInterface() {
   // is sufficient.
   fuchsia::netstack::NetInterface interface;
   interface.id = kSecondaryInterfaceId;
-  interface.flags = fuchsia::netstack::NetInterfaceFlagUp;
+  interface.flags = static_cast<decltype(interface.flags)>(
+      fuchsia::netstack::NetInterfaceFlagUp);
   interface.features = {};
   interface.addr = IpAddressFrom(kSecondaryIPv4Address);
   interface.netmask = IpAddressFrom(kSecondaryIPv4Netmask);
@@ -507,7 +509,7 @@ TEST_F(NetworkChangeNotifierFuchsiaTest, InterfaceDown) {
   EXPECT_EQ(NetworkChangeNotifier::ConnectionType::CONNECTION_UNKNOWN,
             notifier_->GetCurrentConnectionType());
 
-  interfaces[0].flags = 0;
+  interfaces[0].flags = {};
   netstack_.SetInterfaces(interfaces);
 
   EXPECT_TRUE(type_observer_->RunAndExpectConnectionTypes(
@@ -518,14 +520,15 @@ TEST_F(NetworkChangeNotifierFuchsiaTest, InterfaceDown) {
 TEST_F(NetworkChangeNotifierFuchsiaTest, InterfaceUp) {
   std::vector<fuchsia::netstack::NetInterface> interfaces(1);
   interfaces[0] = DefaultNetInterface();
-  interfaces[0].flags = 0;
+  interfaces[0].flags = {};
 
   netstack_.SetInterfaces(interfaces);
   CreateNotifier();
   EXPECT_EQ(NetworkChangeNotifier::ConnectionType::CONNECTION_NONE,
             notifier_->GetCurrentConnectionType());
 
-  interfaces[0].flags = fuchsia::netstack::NetInterfaceFlagUp;
+  interfaces[0].flags = static_cast<decltype(interfaces[0].flags)>(
+      fuchsia::netstack::NetInterfaceFlagUp);
   netstack_.SetInterfaces(interfaces);
 
   EXPECT_TRUE(type_observer_->RunAndExpectConnectionTypes(

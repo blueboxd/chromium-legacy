@@ -109,7 +109,9 @@ class LocalNTPTest : public InProcessBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(LocalNTPTest, EmbeddedSearchAPIOnlyAvailableOnNTP) {
+// Disabled for being flaky. crbug.com/1096976
+IN_PROC_BROWSER_TEST_F(LocalNTPTest,
+                       DISABLED_EmbeddedSearchAPIOnlyAvailableOnNTP) {
   // Set up a test server, so we have some arbitrary non-NTP URL to navigate to.
   net::EmbeddedTestServer test_server(net::EmbeddedTestServer::TYPE_HTTPS);
   test_server.ServeFilesFromSourceDirectory(GetChromeTestDataDir());

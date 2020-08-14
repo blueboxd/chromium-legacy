@@ -1720,13 +1720,9 @@
       'id': 187,
       'caption': '''Enable deleting browser and download history''',
       'tags': ['local-data-access', 'admin-sharing'],
-      'desc': '''Enables deleting browser history and download history in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing this setting.
+      'desc': '''Setting the policy to Enabled or leaving it unset means browser history and download history can be deleted in Chrome, and users can't change this setting.
 
-      Note that even with this policy disabled, the browsing and download history are not guaranteed to be retained: users may be able to edit or delete the history database files directly, and the browser itself may expire or archive any or all history items at any time.
-
-      If this setting is enabled or not set, browsing and download history can be deleted.
-
-      If this setting is disabled, browsing and download history cannot be deleted.''',
+      Setting the policy to Disabled means browser history and download history can't be deleted. Even with this policy off, the browsing and download history are not guaranteed to be retained. Users may be able to edit or delete the history database files directly, and the browser itself may expire or archive any or all history items at any time.''',
     },
     {
       'name': 'AllowDinosaurEasterEgg',
@@ -2009,7 +2005,7 @@
       'owners': ['jamiewalch@chromium.org', 'rkjnsn@chromium.org'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:36-', 'chrome_os:41-'],
+      'supported_on': ['chrome.*:36-', 'chrome_os:86-'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': False,
@@ -2846,11 +2842,9 @@
       'id': 282,
       'caption': '''Force Google SafeSearch''',
       'tags': ['filtering'],
-      'desc': '''Forces queries in Google Web Search to be done with SafeSearch set to active and prevents users from changing this setting.
+      'desc': '''Setting the policy to Enabled means SafeSearch in Google Search is always active, and users can't change this setting.
 
-      If you enable this setting, SafeSearch in Google Search is always active.
-
-      If you disable this setting or do not set a value, SafeSearch in Google Search is not enforced.''',
+      Setting the policy to Disabled or leaving it unset means SafeSearch in Google Search is not enforced.''',
     },
     {
       'name': 'ForceYouTubeSafetyMode',
@@ -2912,15 +2906,13 @@
       'id': 348,
       'caption': '''Force minimum YouTube Restricted Mode''',
       'tags': ['filtering'],
-      'desc': '''Enforces a minimum Restricted Mode on YouTube and prevents users from
-      picking a less restricted mode.
+      'desc': '''Setting the policy enforces a minimum Restricted mode on YouTube and prevents users from picking a less restricted mode. If you set it to:
 
-      If this setting is set to Strict, Strict Restricted Mode on YouTube is always active.
+      * Strict, Strict Restricted mode on YouTube is always active.
 
-      If this setting is set to Moderate, the user may only pick Moderate Restricted Mode
-      and Strict Restricted Mode on YouTube, but cannot disable Restricted Mode.
+      * Moderate, the user may only pick Moderate Restricted mode and Strict Restricted mode on YouTube, but can't turn off Restricted mode.
 
-      If this setting is set to Off or no value is set, Restricted Mode on YouTube is not enforced by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. External policies such as YouTube policies might still enforce Restricted Mode, though.''',
+      * Off or if no value is set, Restricted mode on YouTube isn't enforced by Chrome. External policies such as YouTube policies might still enforce Restricted mode.''',
       'arc_support': 'This policy has no effect on the Android YouTube app. If Safety Mode on YouTube should be enforced, installation of the Android YouTube app should be disallowed.',
     },
     {
@@ -7269,11 +7261,9 @@
       'id': 81,
       'caption': '''Allow running plugins that are outdated''',
       'tags': ['system-security'],
-      'desc': '''If you enable this setting, outdated plugins are used as normal plugins.
+      'desc': '''Setting the policy to Enabled means outdated plugins are used as normal plugins. Setting the policy to Disabled means outdated plugins aren't used.
 
-      If you disable this setting, outdated plugins will not be used and users will not be asked for permission to run them.
-
-      If this setting is not set, users will be asked for permission to run outdated plugins.''',
+      Leaving the policy unset means users will be asked for permission to run outdated plugins.''',
     },
     {
       'name': 'AlwaysAuthorizePlugins',
@@ -7388,13 +7378,9 @@
       'id': 84,
       'caption': '''Allow invocation of file selection dialogs''',
       'tags': [],
-      'desc': '''Allows access to local files on the machine by allowing <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> to display file selection dialogs.
+      'desc': '''Setting the policy or leaving it unset means Chrome can display, and users can open, file selection dialogs.
 
-      If you enable this setting, users can open file selection dialogs as normal.
-
-      If you disable this setting, whenever the user performs an action which would provoke a file selection dialog (like importing bookmarks, uploading files, saving links, etc.) a message is displayed instead and the user is assumed to have clicked Cancel on the file selection dialog.
-
-      If this setting is not set, users can open file selection dialogs as normal.''',
+      Turning off the policy means that whenever users perform actions provoking a file selection dialog, such as importing bookmarks, uploading files, and saving links, a message appears instead. The user is assumed to have clicked Cancel on the file selection dialog.''',
     },
     {
       'name': 'SecurityKeyPermitAttestation',
@@ -9877,11 +9863,9 @@
       'id': 266,
       'caption': '''Block developer mode''',
       'tags': [],
-      'desc': '''Block developer mode.
+      'desc': '''Setting the policy to Enabled means <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> stops the device from going into Developer mode.
 
-      If this policy is set to True, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will prevent the device from booting into developer mode. The system will refuse to boot and show an error screen when the developer switch is turned on.
-
-      If this policy is unset or set to False, developer mode will remain available for the device.''',
+       Setting the policy to Disabled or leaving it unset keeps Developer mode available for the device.''',
       'arc_support': 'This policy controls <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> developer mode only. If you want to prevent access to Android Developer Options, you need to set the <ph name="DEVELOPER_TOOLS_DISABLED_POLICY_NAME">DeveloperToolsDisabled</ph> policy.',
     }, {
       'name': 'ManagedGuestSessionAutoLaunchNotificationReduced',
@@ -10053,13 +10037,11 @@
       'id': 150,
       'caption': '''Disable proceeding from the Safe Browsing warning page''',
       'tags': [],
-      'desc': '''The Safe Browsing service shows a warning page when users navigate to sites that are flagged as potentially malicious. Enabling this setting prevents users from proceeding anyway from the warning page to the malicious site.
+      'desc': '''Setting the policy to Enabled prevents users from proceeding past the warning page the Safe Browsing service shows to the malicious site. This policy only prevents users from proceeding on Safe Browsing warnings such as malware and phishing, not for SSL certificate-related issues such as invalid or expired certificates.
 
-      This policy only prevents users from proceeding on Safe Browsing warnings (e.g. malware and phishing) not for SSL certificate related issues like invalid or expired certificates.
+      Setting the policy to Disabled or leaving it unset means users can choose to proceed to the flagged site after the warning appears.
 
-      If this setting is disabled or not configured then users can choose to proceed to the flagged site after being shown the warning.
-
-      See https://developers.google.com/safe-browsing for more info on Safe Browsing.''',
+      See more about Safe Browsing ( https://developers.google.com/safe-browsing ).''',
     },
     {
       'name': 'SafeBrowsingExtendedReportingOptInAllowed',
@@ -13931,15 +13913,9 @@
       'id': 302,
       'caption': 'Key Permissions',
       'tags': [],
-      'desc': '''Grants access to corporate keys to extensions.
+      'desc': '''Setting the policy grants access to corporate keys to extensions. Keys are designated for corporate usage only if they're generated using the chrome.enterprise.platformKeys API on a managed account. Users can't grant or withdraw access to corporate keys to or from extensions.
 
-      Keys are designated for corporate usage if they're generated using the chrome.enterprise.platformKeys API on a managed account. Keys imported or generated in another way are not designated for corporate usage.
-
-      Access to keys designated for corporate usage is solely controlled by this policy. The user can neither grant nor withdraw access to corporate keys to or from extensions.
-
-      By default an extension cannot use a key designated for corporate usage, which is equivalent to setting allowCorporateKeyUsage to false for that extension.
-
-      Only if allowCorporateKeyUsage is set to true for an extension, it can use any platform key marked for corporate usage to sign arbitrary data. This permission should only be granted if the extension is trusted to secure access to the key against attackers.''',
+      By default, an extension can't use a key designated for corporate usage, which is equivalent to setting allowCorporateKeyUsage to False for that extension. Only if allowCorporateKeyUsage is set to True for an extension can it use any platform key marked for corporate usage to sign arbitrary data. Only grant this permission if the extension is trusted to secure access to the key against attackers.''',
       'arc_support': 'Android apps cannot get access to corporate keys. This policy has no effect on them.',
     },
     {
@@ -14659,25 +14635,13 @@
       'id': 331,
       'caption': '''Define domains allowed to access G Suite''',
       'tags': ['filtering'],
-      'desc': '''Enables <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s restricted log in feature in G Suite and prevents users from changing this setting.
+      'desc': '''Setting the policy turns on Chrome's restricted sign-in feature in G Suite and prevents users from changing this setting. Users can only access Google tools using accounts from the specified domains (to allow gmail or googlemail accounts, add consumer_accounts to the list of domains). This setting prevents users from signing in and adding a Secondary Account on a managed device that requires Google authentication, if that account doesn't belong to one of the explicitly allowed domains.
 
-      If you define this setting, the user will only be able to access Google
-      Apps using accounts from the specified domains (note that to allow
-      gmail.com/googlemail.com accounts, you should add "consumer_accounts"
-      (without quotes) to the list of domains).
+      Leaving this setting empty or unset means users can access G Suite with any account.
 
-      This setting will prevent the user from logging in, and adding a Secondary
-      Account, on a managed device that requires Google authentication, if that
-      account does not belong to the aforementioned list of allowed domains.
+      Users cannot change or override this setting.
 
-      If you leave this setting empty/not-configured, the user will be able to
-      access G Suite with any account.
-
-      This policy causes the X-GoogApps-Allowed-Domains header to be appended to
-      all HTTP and HTTPS requests to all google.com domains, as described in
-      https://support.google.com/a/answer/1668854.
-
-      Users cannot change or override this setting.''',
+      Note: This policy causes the X-GoogApps-Allowed-Domains header to be appended to all HTTP and HTTPS requests to all google.com domains, as described in https://support.google.com/a/answer/1668854.''',
     },
     {
       'name': 'PacHttpsUrlStrippingEnabled',
@@ -16555,16 +16519,11 @@
       'id': 398,
       'caption': '''Enable Site Isolation for specified origins''',
       'tags': ['system-security'],
-      'desc': '''
-      If the policy is enabled, each of the named origins in a
-      comma-separated list will run in its own process. This will also isolate
-      origins named by subdomains; e.g. specifying https://example.com/ will
-      also cause https://foo.example.com/ to be isolated as part of the
-      https://example.com/ site.
-      If the policy is not configured or disabled, the user will be able to change this setting.
+      'desc': '''Setting the policy means each of the named origins in a comma-separated list runs in its own process, and it isolates origins named by subdomains. For example, specifying https://example.com/ isolates https://foo.example.com/ as part of the https://example.com/ site.
 
-      NOTE: This policy does not apply on Android. To enable IsolateOrigins on Android, use the IsolateOriginsAndroid policy setting.
-      ''',
+      Setting it to off or leaving it unset lets users change this setting.
+
+      Note: For Android, use the <ph name="ISOLATE_ORIGINS_ANDROID_POLICY_NAME">IsolateOriginsAndroid</ph> policy instead.''',
     },
     {
       'name': 'SitePerProcess',
@@ -16650,19 +16609,13 @@
       'id': 445,
       'caption': '''Enable Site Isolation for specified origins on Android devices''',
       'tags': ['system-security'],
-      'desc': '''
-      If the policy is enabled, each of the named origins in a
-      comma-separated list will run in its own process. This will also isolate
-      origins named by subdomains; e.g. specifying https://example.com/ will
-      also cause https://foo.example.com/ to be isolated as part of the
-      https://example.com/ site.
-      If the policy is disabled, no explicit Site Isolation will happen and field trials of IsolateOriginsAndroid and SitePerProcessAndroid will be disabled. Users will still be able to enable IsolateOrigins manually, via command line flag.
-      If the policy is not configured, the user will be able to change this setting.
+      'desc': '''Setting the policy means each of the named origins in a comma-separated list runs in its own process, and it isolates origins named by subdomains. For example, specifying https://example.com/ isolates https://foo.example.com/ as part of the https://example.com/ site.
 
-      NOTE: On Android, Site Isolation is experimental. Support will improve over time, but currently it may cause performance problems.
+      Turning the policy off prevents explicit site isolation and turns off field trials of IsolateOriginsAndroid and SitePerProcessAndroid. Users can still turn on IsolateOrigins manually, through the command line flag.
 
-      NOTE: This policy applies only to Chrome on Android running on devices with strictly more than 1GB of RAM. To apply the policy on non-Android platforms, use IsolateOrigins.
-      ''',
+      Leaving the policy unset lets users change this setting.
+
+      Note: Site isolation support for Android will improve, but currently it may cause performance problems. This policy applies only to Chrome on Android running on devices with strictly more than 1 GB of RAM. To apply the policy on non-Android platforms, use <ph name="ISOLATE_ORIGINS_POLICY_NAME">IsolateOrigins</ph>.''',
     },
     {
       'name': 'SitePerProcessAndroid',
@@ -16826,12 +16779,9 @@
       'id': 404,
       'caption': '''Abusive Experience Intervention Enforce''',
       'tags': [],
-      'desc': '''Allows you to set whether sites with abusive experiences should be prevented from opening new windows or tabs.
+      'desc': '''If <ph name="SAFE_BROWSING_ENABLED_POLICY_NAME">SafeBrowsingEnabled</ph> is not Disabled, then setting <ph name="ABUSIVE_EXPERIENCE_INTERVENTION_ENFORCE_POLICY_NAME">AbusiveExperienceInterventionEnforce</ph> to Enabled or leaving it unset prevents sites with abusive experiences from opening new windows or tabs.
 
-      If this policy is set to True, sites with abusive experiences will be prevented from opening new windows or tabs.
-      However this behavior will not trigger if SafeBrowsingEnabled policy is set to False.
-      If this policy is set to False, sites with abusive experiences will be allowed to open new windows or tabs.
-      If this policy is left not set, True will be used.''',
+       Setting <ph name="SAFE_BROWSING_ENABLED_POLICY_NAME">SafeBrowsingEnabled</ph> to Disabled or <ph name="ABUSIVE_EXPERIENCE_INTERVENTION_ENFORCE_POLICY_NAME">AbusiveExperienceInterventionEnforce</ph> to Disabled lets sites with abusive experiences open new windows or tabs.''',
     },
     {
       'name': 'SpellcheckLanguage',
@@ -17760,9 +17710,9 @@
       'id': 441,
       'caption': '''Enable Chrome Cleanup on Windows''',
       'tags': ['system-security'],
-      'desc': '''If disabled, prevents Chrome Cleanup from scanning the system for unwanted software and performing cleanups. Manually triggering Chrome Cleanup from chrome://settings/cleanup is disabled.
+      'desc': '''Setting the policy to Enabled or leaving it unset means Chrome Cleanup periodically scans the system for unwanted software and should any be found, will ask the user if they wish to remove it. Manually triggering Chrome Cleanup from chrome://settings is allowed.
 
-      If enabled or unset, Chrome Cleanup periodically scans the system for unwanted software and should any be found, will ask the user if they wish to remove it. Manually triggering Chrome Cleanup from chrome://settings is enabled.
+      Setting the policy to Disabled means Chrome Cleanup won't periodically scan and manual triggering is disabled.
 
       On <ph name="MS_WIN_NAME">Microsoft® Windows®</ph>, this functionality is only available on instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain, running on Windows 10 Pro, or enrolled in Chrome Browser Cloud Management.''',
     },
@@ -20475,11 +20425,11 @@
       'id': 566,
       'caption': '''Enable security warnings for command-line flags''',
       'tags': ['system-security'],
-      'desc': '''If disabled, prevents security warnings from appearing when Chrome is launched with some potentially dangerous command-line flags.
+      'desc': '''Setting the policy to Enabled or leaving it unset means security warnings appear when potentially dangerous command-line flags are used to launch Chrome.
 
-          If enabled or unset, security warnings are displayed when some command-line flags are used to launch Chrome.
+      Setting the policy to Disabled prevents security warnings from appearing when Chrome is launched with potentially dangerous command-line flags.
 
-          This policy is available only on Windows instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain. or Windows 10 Pro or Enterprise instances that enrolled for device management and macOS instances that are that are managed via MDM or joined to a domain via MCX.''',
+      On <ph name="MS_WIN_NAME">Microsoft® Windows®</ph>, this functionality is only available on instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain, running on Windows 10 Pro, or enrolled in Chrome Browser Cloud Management. On <ph name="MAC_OS_NAME">macOS</ph>, this functionality is only available on instances that are managed via MDM, or joined to a domain via MCX.''',
     },
     {
       'name': 'StartupBrowserWindowLaunchSuppressed',

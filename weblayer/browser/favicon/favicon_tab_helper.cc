@@ -115,9 +115,12 @@ void FaviconTabHelper::DidFinishNavigation(
       navigation_handle->IsSameDocument()) {
     return;
   }
+  if (favicon_.IsEmpty())
+    return;
+
   favicon_ = gfx::Image();
-  // Don't send notification in this case as it's assumed a new navigation
-  // triggers resetting the favicon.
+  for (FaviconFetcherDelegate& delegate : delegates_)
+    delegate.OnFaviconChanged(favicon_);
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(FaviconTabHelper)

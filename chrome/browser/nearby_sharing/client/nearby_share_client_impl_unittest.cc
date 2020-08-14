@@ -37,7 +37,7 @@ const char kAccessToken[] = "access_token";
 const char kAccountName1[] = "accountname1";
 const char kContactId1[] = "contactid1";
 const char kContactId2[] = "contactid2";
-const char kDeviceName1[] = "devicename1";
+const char kDeviceName1[] = "users/me/devices/devicename1";
 const char kDeviceParent1[] = "kdeviceparent1";
 const char kEmail[] = "test@gmail.com";
 const char kEncryptedMetadataBytes1[] = "encryptedmetadatabytes1";
@@ -381,10 +381,8 @@ TEST_F(NearbyShareClientImplTest, UpdateDeviceSuccess) {
   VerifyRequestNotification(request_proto);
 
   EXPECT_EQ(kPatch, http_method());
-  EXPECT_EQ(request_url(),
-            GURL("https://www.nearbysharing-pa.testgoogleapis.com/v1/users/me/"
-                 "devices/" +
-                 std::string(kDeviceName1)));
+  EXPECT_EQ(request_url(), GURL(std::string(kTestGoogleApisUrl) + "/v1/" +
+                                std::string(kDeviceName1)));
 
   nearbyshare::proto::UpdateDeviceRequest expected_request;
   EXPECT_TRUE(expected_request.ParseFromString(serialized_request()));
@@ -441,10 +439,8 @@ TEST_F(NearbyShareClientImplTest, UpdateDeviceFailure) {
           kAccessToken, base::Time::Max());
 
   EXPECT_EQ(kPatch, http_method());
-  EXPECT_EQ(
-      request_url(),
-      "https://www.nearbysharing-pa.testgoogleapis.com/v1/users/me/devices/" +
-          std::string(kDeviceName1));
+  EXPECT_EQ(request_url(), GURL(std::string(kTestGoogleApisUrl) + "/v1/" +
+                                std::string(kDeviceName1)));
 
   FailApiCallFlow(NearbyShareHttpError::kInternalServerError);
   EXPECT_EQ(NearbyShareHttpError::kInternalServerError, error);
@@ -470,8 +466,7 @@ TEST_F(NearbyShareClientImplTest, CheckContactsReachabilitySuccess) {
 
   EXPECT_EQ(kPost, http_method());
   EXPECT_EQ(request_url(),
-            "https://www.nearbysharing-pa.testgoogleapis.com/v1/"
-            "contactsReachability:check");
+            std::string(kTestGoogleApisUrl) + "/v1/contactsReachability:check");
 
   nearbyshare::proto::CheckContactsReachabilityRequest expected_request;
   EXPECT_TRUE(expected_request.ParseFromString(serialized_request()));
@@ -515,8 +510,7 @@ TEST_F(NearbyShareClientImplTest, CheckContactsReachabilityFailure) {
 
   EXPECT_EQ(kPost, http_method());
   EXPECT_EQ(request_url(),
-            "https://www.nearbysharing-pa.testgoogleapis.com/v1/"
-            "contactsReachability:check");
+            std::string(kTestGoogleApisUrl) + "/v1/contactsReachability:check");
 
   FailApiCallFlow(NearbyShareHttpError::kAuthenticationError);
   EXPECT_EQ(NearbyShareHttpError::kAuthenticationError, error);
@@ -542,10 +536,9 @@ TEST_F(NearbyShareClientImplTest, ListContactPeopleSuccess) {
   VerifyRequestNotification(request_proto);
 
   EXPECT_EQ(kGet, http_method());
-  EXPECT_EQ(
-      request_url(),
-      "https://www.nearbysharing-pa.testgoogleapis.com/v1/users/me/devices/" +
-          std::string(kDeviceParent1) + "/contactRecords");
+  EXPECT_EQ(request_url(), std::string(kTestGoogleApisUrl) +
+                               "/v1/users/me/devices/" +
+                               std::string(kDeviceParent1) + "/contactRecords");
 
   EXPECT_EQ(
       std::vector<std::string>{base::NumberToString(kPageSize1)},
@@ -603,10 +596,9 @@ TEST_F(NearbyShareClientImplTest, ListPublicCertificatesSuccess) {
   VerifyRequestNotification(request_proto);
 
   EXPECT_EQ(kGet, http_method());
-  EXPECT_EQ(
-      request_url(),
-      "https://www.nearbysharing-pa.testgoogleapis.com/v1/users/me/devices/" +
-          std::string(kDeviceParent1) + "/publicCertificates");
+  EXPECT_EQ(request_url(),
+            std::string(kTestGoogleApisUrl) + "/v1/users/me/devices/" +
+                std::string(kDeviceParent1) + "/publicCertificates");
 
   EXPECT_EQ(
       std::vector<std::string>{base::NumberToString(kPageSize1)},
@@ -694,10 +686,8 @@ TEST_F(NearbyShareClientImplTest, ParseResponseProtoFailure) {
           kAccessToken, base::Time::Max());
 
   EXPECT_EQ(kPatch, http_method());
-  EXPECT_EQ(
-      request_url(),
-      "https://www.nearbysharing-pa.testgoogleapis.com/v1/users/me/devices/" +
-          std::string(kDeviceName1));
+  EXPECT_EQ(request_url(), std::string(kTestGoogleApisUrl) + "/v1/" +
+                               std::string(kDeviceName1));
 
   FinishApiCallFlowRaw("Not a valid serialized response message.");
   EXPECT_EQ(NearbyShareHttpError::kResponseMalformed, error);
@@ -720,10 +710,8 @@ TEST_F(NearbyShareClientImplTest, MakeSecondRequestBeforeFirstRequestSucceeds) {
           kAccessToken, base::Time::Max());
 
   EXPECT_EQ(kPatch, http_method());
-  EXPECT_EQ(
-      request_url(),
-      "https://www.nearbysharing-pa.testgoogleapis.com/v1/users/me/devices/" +
-          std::string(kDeviceName1));
+  EXPECT_EQ(request_url(), std::string(kTestGoogleApisUrl) + "/v1/" +
+                               std::string(kDeviceName1));
 
   // With request pending, make second request.
   {
@@ -763,10 +751,8 @@ TEST_F(NearbyShareClientImplTest, MakeSecondRequestAfterFirstRequestSucceeds) {
             kAccessToken, base::Time::Max());
 
     EXPECT_EQ(kPatch, http_method());
-    EXPECT_EQ(
-        request_url(),
-        "https://www.nearbysharing-pa.testgoogleapis.com/v1/users/me/devices/" +
-            std::string(kDeviceName1));
+    EXPECT_EQ(request_url(), std::string(kTestGoogleApisUrl) + "/v1/" +
+                                 std::string(kDeviceName1));
 
     nearbyshare::proto::UpdateDeviceResponse response_proto;
     response_proto.mutable_device()->set_name(kDeviceName1);
@@ -803,10 +789,8 @@ TEST_F(NearbyShareClientImplTest, GetAccessTokenUsed) {
           kAccessToken, base::Time::Max());
 
   EXPECT_EQ(kPatch, http_method());
-  EXPECT_EQ(
-      request_url(),
-      "https://www.nearbysharing-pa.testgoogleapis.com/v1/users/me/devices/" +
-          std::string(kDeviceName1));
+  EXPECT_EQ(request_url(), std::string(kTestGoogleApisUrl) + "/v1/" +
+                               std::string(kDeviceName1));
 
   EXPECT_EQ(kAccessToken, client_->GetAccessTokenUsed());
 }

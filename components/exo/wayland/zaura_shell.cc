@@ -256,7 +256,7 @@ void AuraSurface::OnWindowOcclusionChanged(Surface* surface) {
     return;
   auto* window = surface_->window();
   ComputeAndSendOcclusionFraction(window->occlusion_state(),
-                                  window->occluded_region());
+                                  window->occluded_region_in_root());
 }
 
 void AuraSurface::OnWindowActivating(ActivationReason reason,

@@ -172,9 +172,9 @@ const NearbyShareEncryptedMetadataKey&
 GetNearbyShareTestEncryptedMetadataKey() {
   static const base::NoDestructor<NearbyShareEncryptedMetadataKey>
       encrypted_metadata_key(
+          GetNearbyShareTestSalt(),
           std::vector<uint8_t>(std::begin(kTestEncryptedMetadataKey),
-                               std::end(kTestEncryptedMetadataKey)),
-          GetNearbyShareTestSalt());
+                               std::end(kTestEncryptedMetadataKey)));
   return *encrypted_metadata_key;
 }
 
@@ -229,10 +229,11 @@ const std::vector<uint8_t>& GetNearbyShareTestPayloadHashUsingSecretKey() {
 }
 
 NearbySharePrivateCertificate GetNearbyShareTestPrivateCertificate(
-    NearbyShareVisibility visibility) {
+    NearbyShareVisibility visibility,
+    base::Time not_before) {
   NearbySharePrivateCertificate cert(
-      visibility, GetNearbyShareTestNotBefore(),
-      GetNearbyShareTestNotBefore() + kNearbyShareCertificateValidityPeriod,
+      visibility, not_before,
+      not_before + kNearbyShareCertificateValidityPeriod,
       GetNearbyShareTestP256KeyPair(), GetNearbyShareTestSecretKey(),
       GetNearbyShareTestMetadataEncryptionKey(),
       GetNearbyShareTestCertificateId(), GetNearbyShareTestMetadata(),
@@ -241,49 +242,64 @@ NearbySharePrivateCertificate GetNearbyShareTestPrivateCertificate(
   return cert;
 }
 
-const nearbyshare::proto::PublicCertificate&
-GetNearbyShareTestPublicCertificate() {
-  static const base::NoDestructor<nearbyshare::proto::PublicCertificate> cert(
-      [] {
-        nearbyshare::proto::PublicCertificate cert;
-        cert.set_secret_id(
-            std::string(GetNearbyShareTestCertificateId().begin(),
-                        GetNearbyShareTestCertificateId().end()));
-        cert.set_secret_key(GetNearbyShareTestSecretKey()->key());
-        cert.set_public_key(
-            std::string(GetNearbyShareTestP256PublicKey().begin(),
-                        GetNearbyShareTestP256PublicKey().end()));
-        cert.mutable_start_time()->set_seconds(
-            (GetNearbyShareTestNotBefore() - GetNearbyShareTestValidityOffset())
-                .ToJavaTime() /
-            1000);
-        cert.mutable_end_time()->set_seconds(
-            (GetNearbyShareTestNotBefore() +
-             kNearbyShareCertificateValidityPeriod +
-             GetNearbyShareTestValidityOffset())
-                .ToJavaTime() /
-            1000);
-        cert.set_for_selected_contacts(false);
-        cert.set_metadata_encryption_key(
-            std::string(GetNearbyShareTestMetadataEncryptionKey().begin(),
-                        GetNearbyShareTestMetadataEncryptionKey().end()));
-        cert.set_encrypted_metadata_bytes(
-            std::string(GetNearbyShareTestEncryptedMetadata().begin(),
-                        GetNearbyShareTestEncryptedMetadata().end()));
-        cert.set_metadata_encryption_key_tag(
-            std::string(GetNearbyShareTestMetadataEncryptionKeyTag().begin(),
-                        GetNearbyShareTestMetadataEncryptionKeyTag().end()));
+nearbyshare::proto::PublicCertificate GetNearbyShareTestPublicCertificate(
+    NearbyShareVisibility visibility,
+    base::Time not_before) {
+  nearbyshare::proto::PublicCertificate cert;
+  cert.set_secret_id(std::string(GetNearbyShareTestCertificateId().begin(),
+                                 GetNearbyShareTestCertificateId().end()));
+  cert.set_secret_key(GetNearbyShareTestSecretKey()->key());
+  cert.set_public_key(std::string(GetNearbyShareTestP256PublicKey().begin(),
+                                  GetNearbyShareTestP256PublicKey().end()));
+  cert.mutable_start_time()->set_seconds(
+      (not_before - GetNearbyShareTestValidityOffset()).ToJavaTime() / 1000);
+  cert.mutable_end_time()->set_seconds((not_before +
+                                        kNearbyShareCertificateValidityPeriod +
+                                        GetNearbyShareTestValidityOffset())
+                                           .ToJavaTime() /
+                                       1000);
+  cert.set_for_selected_contacts(visibility ==
+                                 NearbyShareVisibility::kSelectedContacts);
+  cert.set_metadata_encryption_key(
+      std::string(GetNearbyShareTestMetadataEncryptionKey().begin(),
+                  GetNearbyShareTestMetadataEncryptionKey().end()));
+  cert.set_encrypted_metadata_bytes(
+      std::string(GetNearbyShareTestEncryptedMetadata().begin(),
+                  GetNearbyShareTestEncryptedMetadata().end()));
+  cert.set_metadata_encryption_key_tag(
+      std::string(GetNearbyShareTestMetadataEncryptionKeyTag().begin(),
+                  GetNearbyShareTestMetadataEncryptionKeyTag().end()));
+  return cert;
+}
 
-        return cert;
-      }());
-  return *cert;
+std::vector<NearbySharePrivateCertificate>
+GetNearbyShareTestPrivateCertificateList(NearbyShareVisibility visibility) {
+  std::vector<NearbySharePrivateCertificate> list;
+  for (size_t i = 0; i < kNearbyShareNumPrivateCertificates; ++i) {
+    list.push_back(GetNearbyShareTestPrivateCertificate(
+        visibility, GetNearbyShareTestNotBefore() +
+                        i * kNearbyShareCertificateValidityPeriod));
+  }
+  return list;
+}
+
+std::vector<nearbyshare::proto::PublicCertificate>
+GetNearbyShareTestPublicCertificateList(NearbyShareVisibility visibility) {
+  std::vector<nearbyshare::proto::PublicCertificate> list;
+  for (size_t i = 0; i < kNearbyShareNumPrivateCertificates; ++i) {
+    list.push_back(GetNearbyShareTestPublicCertificate(
+        visibility, GetNearbyShareTestNotBefore() +
+                        i * kNearbyShareCertificateValidityPeriod));
+  }
+  return list;
 }
 
 const NearbyShareDecryptedPublicCertificate&
 GetNearbyShareTestDecryptedPublicCertificate() {
   static const base::NoDestructor<NearbyShareDecryptedPublicCertificate> cert(
       *NearbyShareDecryptedPublicCertificate::DecryptPublicCertificate(
-          GetNearbyShareTestPublicCertificate(),
+          GetNearbyShareTestPublicCertificate(
+              NearbyShareVisibility::kAllContacts),
           GetNearbyShareTestEncryptedMetadataKey()));
   return *cert;
 }

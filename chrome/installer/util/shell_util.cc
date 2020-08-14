@@ -713,7 +713,7 @@ bool ElevateAndRegisterChrome(const base::FilePath& chrome_exe,
 
   if (base::PathExists(exe_path)) {
     base::CommandLine cmd(exe_path);
-    InstallUtil::AppendModeSwitch(&cmd);
+    InstallUtil::AppendModeAndChannelSwitches(&cmd);
     if (!is_per_user)
       cmd.AppendSwitch(installer::switches::kSystemLevel);
     cmd.AppendSwitchPath(installer::switches::kRegisterChromeBrowser,
@@ -1870,7 +1870,7 @@ base::string16 ShellUtil::GetBrowserModelId(bool is_per_user_install) {
   return ShortenAppModelIdComponent(app_id, installer::kMaxAppModelIdLength);
 }
 
-base::string16 ShellUtil::BuildAppModelId(
+base::string16 ShellUtil::BuildAppUserModelId(
     const std::vector<base::string16>& components) {
   DCHECK_GT(components.size(), 0U);
 

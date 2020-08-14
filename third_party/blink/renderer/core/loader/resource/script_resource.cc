@@ -90,7 +90,7 @@ ScriptResource* ScriptResource::CreateForTest(
     const WTF::TextEncoding& encoding) {
   ResourceRequest request(url);
   request.SetCredentialsMode(network::mojom::CredentialsMode::kOmit);
-  ResourceLoaderOptions options;
+  ResourceLoaderOptions options(nullptr /* world */);
   TextResourceDecoderOptions decoder_options(
       TextResourceDecoderOptions::kPlainTextContent, encoding);
   return MakeGarbageCollected<ScriptResource>(request, options, decoder_options,

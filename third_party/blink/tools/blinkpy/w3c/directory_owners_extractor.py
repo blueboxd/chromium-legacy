@@ -240,7 +240,7 @@ class WPTDirMetadata(object):
         if self._is_empty():
             return None
 
-        notify = self._get_content()['wpt']['notify']
+        notify = self._get_content().get('wpt', {}).get('notify')
         # The value of `notify` is one of ['TRINARY_UNSPECIFIED', 'YES', 'NO'].
         # Assume that users opt out by default; return True only when notify is 'YES'.
         return notify == 'YES'

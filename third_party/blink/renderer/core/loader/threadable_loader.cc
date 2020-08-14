@@ -960,7 +960,7 @@ void ThreadableLoader::LoadActualRequest() {
   actual_request.CopyFrom(actual_request_);
   ResourceLoaderOptions actual_options = actual_options_;
   actual_request_.CopyFrom(ResourceRequest());
-  actual_options_ = ResourceLoaderOptions();
+  actual_options_ = ResourceLoaderOptions(nullptr /* world */);
 
   if (GetResource())
     checker_.WillRemoveClient();

@@ -2422,10 +2422,6 @@
           '${buildername}',
           '--extra-browser-args=--disable-features=UseSkiaRenderer',
         ],
-        'android_args': [
-          # TODO(crbug.com/1093085): Remove this once we fix the tests.
-          '--extra-browser-args=--force-online-connection-state-for-indicator',
-        ],
         'mixins': [
           'chrome-gpu-gold-service-account',
           'skia_gold_test',
@@ -2438,10 +2434,6 @@
           '--test-machine-name',
           '${buildername}',
           '--extra-browser-args=--disable-features=UseSkiaRenderer',
-        ],
-        'android_args': [
-          # TODO(crbug.com/1093085): Remove this once we fix the tests.
-          '--extra-browser-args=--force-online-connection-state-for-indicator',
         ],
         'mixins': [
           'chrome-gpu-gold-service-account',
@@ -2550,10 +2542,6 @@
           '${buildername}',
           '--extra-browser-args=--use-cmd-decoder=passthrough --use-gl=angle',
         ],
-        'android_args': [
-          # TODO(crbug.com/1093085): Remove this once we fix the tests.
-          '--extra-browser-args=--force-online-connection-state-for-indicator',
-        ],
         'chromeos_args': [
           '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
         ],
@@ -2569,10 +2557,6 @@
           '--test-machine-name',
           '${buildername}',
           '--extra-browser-args=--use-cmd-decoder=passthrough --use-gl=angle',
-        ],
-        'android_args': [
-          # TODO(crbug.com/1093085): Remove this once we fix the tests.
-          '--extra-browser-args=--force-online-connection-state-for-indicator',
         ],
         'chromeos_args': [
           '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
@@ -2618,10 +2602,6 @@
           '--dont-restore-color-profile-after-test',
           '--test-machine-name',
           '${buildername}',
-        ],
-        'android_args': [
-          # TODO(crbug.com/1093085): Remove this once we fix the tests.
-          '--extra-browser-args=--force-online-connection-state-for-indicator',
         ],
         'win_args': [
           '--extra-browser-args=--enable-features=UseSkiaRenderer,SkiaDawn',
@@ -2703,10 +2683,6 @@
           '${buildername}',
           '--extra-browser-args=--enable-features=UseSkiaRenderer',
         ],
-        'android_args': [
-          # TODO(crbug.com/1093085): Remove this once we fix the tests.
-          '--extra-browser-args=--force-online-connection-state-for-indicator',
-        ],
         'mixins': [
           'chrome-gpu-gold-service-account',
           'skia_gold_test',
@@ -2725,10 +2701,6 @@
           '--test-machine-name',
           '${buildername}',
           '--extra-browser-args=--enable-features=UseSkiaRenderer',
-        ],
-        'android_args': [
-          # TODO(crbug.com/1093085): Remove this once we fix the tests.
-          '--extra-browser-args=--force-online-connection-state-for-indicator',
         ],
         'mixins': [
           'chrome-gpu-gold-service-account',
@@ -2764,10 +2736,6 @@
           '--test-machine-name',
           '${buildername}',
           '--extra-browser-args=--use-vulkan=native --disable-vulkan-fallback-to-gl-for-testing --enable-features=UseSkiaRenderer,Vulkan --use-cmd-decoder=validating',
-        ],
-        'android_args': [
-          # TODO(crbug.com/1093085): Remove this once we fix the tests.
-          '--extra-browser-args=--force-online-connection-state-for-indicator',
         ],
         'mixins': [
           'chrome-gpu-gold-service-account',
@@ -2831,10 +2799,6 @@
           '${buildername}',
           '--extra-browser-args=--use-cmd-decoder=validating',
         ],
-        'android_args': [
-          # TODO(crbug.com/1093085): Remove this once we fix the tests.
-          '--extra-browser-args=--force-online-connection-state-for-indicator',
-        ],
         'chromeos_args': [
           '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
         ],
@@ -2850,10 +2814,6 @@
           '--test-machine-name',
           '${buildername}',
           '--extra-browser-args=--use-cmd-decoder=validating',
-        ],
-        'android_args': [
-          # TODO(crbug.com/1093085): Remove this once we fix the tests.
-          '--extra-browser-args=--force-online-connection-state-for-indicator',
         ],
         'chromeos_args': [
           '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
@@ -3399,6 +3359,10 @@
     'linux_flavor_specific_chromium_gtests': {
       # Android, Chrome OS and Linux
       'sandbox_linux_unittests': {},
+    },
+
+    'linux_lacros_cq_gtests': {
+      'unit_tests': {},
     },
 
     'linux_ozone_common_gtests': {
@@ -4426,6 +4390,7 @@
           ],
         },
       },
+      'updater_tests': {},
       'zucchini_unittests': {},
     },
 

@@ -327,12 +327,14 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
         setPrimaryClipNoException(ClipData.newPlainText(null, null));
     }
 
-    public void setPrimaryClipNoException(ClipData clip) {
+    private boolean setPrimaryClipNoException(ClipData clip) {
         try {
             mClipboardManager.setPrimaryClip(clip);
+            return true;
         } catch (Exception ex) {
             // Ignore any exceptions here as certain devices have bugs and will fail.
             showCopyToClipboardFailureMessage();
+            return false;
         }
     }
 
@@ -374,8 +376,9 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
      */
     public void copyUrlToClipboard(String url) {
         ClipData clip = ClipData.newPlainText("url", url);
-        mClipboardManager.setPrimaryClip(clip);
-        Toast.makeText(mContext, R.string.link_copied, Toast.LENGTH_SHORT).show();
+        if (setPrimaryClipNoException(clip)) {
+            Toast.makeText(mContext, R.string.link_copied, Toast.LENGTH_SHORT).show();
+        }
     }
 
     /**

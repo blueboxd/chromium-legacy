@@ -42,7 +42,7 @@ declare_args() {
 # These variables depend on other variables and can't be set externally.
 
 # Indicates if the UI toolkit depends on X11.
-use_x11 = (is_linux || is_chromeos) && !use_ozone
+use_x11 = is_linux && !use_ozone
 
 # Make sure glib is not used if building for ChromeOS/Chromecast
 assert(!use_glib || (is_linux && !is_chromeos && !is_chromecast))

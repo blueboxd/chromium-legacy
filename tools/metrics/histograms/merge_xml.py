@@ -131,7 +131,12 @@ def MergeTrees(trees):
           # Sort the histograms by name and return a single <histograms> node.
           CombineHistogramsSorted(doc, trees) +
           GetElementsByTagName(trees, 'histogram_suffixes_list')))
-  return doc
+  # After using the unsafe version of appendChild, we see a regression when
+  # pretty-printing the merged |doc|. This might because the unsafe appendChild
+  # doesn't build indexes for later lookup. And thus, we need to convert the
+  # merged |doc| to a xml string and convert it back to force it to build
+  # indexes for the merged |doc|.
+  return xml.dom.minidom.parseString(doc.toxml())
 
 
 def MergeFiles(filenames=[], files=[]):

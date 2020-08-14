@@ -87,6 +87,7 @@ class XDGSurfaceWrapperImpl : public ShellSurfaceWrapper {
   wl::Object<zxdg_toplevel_v6> zxdg_toplevel_v6_;
   wl::Object<struct xdg_surface> xdg_surface_;
   wl::Object<xdg_toplevel> xdg_toplevel_;
+  wl::Object<zaura_surface> aura_surface_;
 
   bool surface_for_popup_ = false;
 

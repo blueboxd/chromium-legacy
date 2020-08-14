@@ -4,6 +4,19 @@
     --ntp-theme-text-color: var(--google-grey-800);
     --ntp-theme-text-shadow: none;
     --ntp-one-google-bar-height: 56px;
+    --ntp-search-box-width: 337px;
+  }
+
+  @media (min-width: 560px) {
+    :host {
+      --ntp-search-box-width: 449px;
+    }
+  }
+
+  @media (min-width: 672px) {
+    :host {
+      --ntp-search-box-width: 561px;
+    }
   }
 
   @media (prefers-color-scheme: dark) {
@@ -61,6 +74,12 @@
     margin-bottom: 32px;
   }
 
+  ntp-fakebox,
+  ntp-realbox,
+  ntp-module-wrapper {
+    width: var(--ntp-search-box-width);
+  }
+
   ntp-realbox {
     visibility: hidden;
   }
@@ -82,6 +101,10 @@
     position: fixed;
     right: 0;
     width: 100%;
+  }
+
+  ntp-module-wrapper + ntp-module-wrapper {
+    margin-top: 24px;
   }
 
   #customizeButtonSpacer {
@@ -260,7 +283,9 @@
       <ntp-iframe id="promo" hidden$="[[!promoLoaded_]]"
           src="chrome-untrusted://new-tab-page/promo">
       </ntp-iframe>
-      <div id="modules"></div>
+      <template is="dom-repeat" items="[[moduleDescriptors_]]" id="modules">
+        <ntp-module-wrapper descriptor="[[item]]"></ntp-module-wrapper>
+      </template>
       <a id="backgroundImageAttribution"
           href="[[backgroundImageAttributionUrl_]]"
           hidden="[[!backgroundImageAttribution1_]]">

@@ -85,6 +85,15 @@ void PasswordCheckBridge::GetCompromisedCredentials(
   }
 }
 
+void PasswordCheckBridge::UpdateCredential(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& credential,
+    const base::android::JavaParamRef<jstring>& new_password) {
+  check_manager_.UpdateCredential(
+      ConvertJavaObjectToCredentialView(env, credential),
+      base::android::ConvertJavaStringToUTF8(new_password));
+}
+
 void PasswordCheckBridge::RemoveCredential(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& credential) {

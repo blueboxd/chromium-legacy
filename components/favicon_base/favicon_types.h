@@ -19,7 +19,7 @@ namespace favicon_base {
 
 struct FallbackIconStyle;
 
-typedef int64_t FaviconID;
+using FaviconID = int64_t;
 
 // Defines the icon types.
 //
@@ -95,7 +95,7 @@ struct FaviconRawBitmapResult {
 
 // Define type with same structure as FaviconRawBitmapResult for passing data to
 // HistoryBackend::SetFavicons().
-typedef FaviconRawBitmapResult FaviconRawBitmapData;
+using FaviconRawBitmapData = FaviconRawBitmapResult;
 
 // Result returned by LargeIconService::GetLargeIconOrFallbackStyle(). Contains
 // either the bitmap data if the favicon database has a sufficiently large

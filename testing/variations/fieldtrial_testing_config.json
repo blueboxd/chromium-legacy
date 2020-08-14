@@ -3503,6 +3503,21 @@
             ]
         }
     ],
+    "IOSDiscoverFeed": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "DiscoverFeedInNtp"
+                    ]
+                }
+            ]
+        }
+    ],
     "IOSDragAndDrop": [
         {
             "platforms": [
@@ -4786,21 +4801,6 @@
                     },
                     "enable_features": [
                         "OfflineIndicator"
-                    ]
-                }
-            ]
-        }
-    ],
-    "OfflineIndicatorV2": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "OfflineIndicatorV2"
                     ]
                 }
             ]

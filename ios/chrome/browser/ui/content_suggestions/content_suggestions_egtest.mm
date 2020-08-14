@@ -98,6 +98,12 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
 
 #pragma mark - Setup/Teardown
 
+- (AppLaunchConfiguration)appConfigurationForTestCase {
+  AppLaunchConfiguration config;
+  config.features_disabled.push_back(kDiscoverFeedInNtp);
+  return config;
+}
+
 #if defined(CHROME_EARL_GREY_2)
 + (void)setUpForTestCase {
   [super setUpForTestCase];

@@ -77,7 +77,7 @@ PrintingContext::Result PrintingContextWin::UseDefaultSettings() {
   DCHECK(!in_print_job_);
 
   scoped_refptr<PrintBackend> backend =
-      PrintBackend::CreateInstance(nullptr, delegate_->GetAppLocale());
+      PrintBackend::CreateInstance(delegate_->GetAppLocale());
   base::string16 default_printer =
       base::UTF8ToWide(backend->GetDefaultPrinterName());
   if (!default_printer.empty()) {

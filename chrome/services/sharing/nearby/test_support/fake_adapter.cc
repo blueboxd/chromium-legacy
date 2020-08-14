@@ -56,6 +56,12 @@ void FakeAdapter::SetClient(::mojo::PendingRemote<mojom::AdapterClient> client,
   std::move(callback).Run();
 }
 
+void FakeAdapter::SetDiscoverable(bool discoverable,
+                                  SetDiscoverableCallback callback) {
+  discoverable_ = discoverable;
+  std::move(callback).Run(/*success=*/true);
+}
+
 void FakeAdapter::StartDiscoverySession(
     StartDiscoverySessionCallback callback) {
   DCHECK(!discovery_session_);

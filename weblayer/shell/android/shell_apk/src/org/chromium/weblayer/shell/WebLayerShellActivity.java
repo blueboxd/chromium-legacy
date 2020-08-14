@@ -513,20 +513,7 @@ public class WebLayerShellActivity extends FragmentActivity {
     }
 
     public void loadUrl(String input) {
-        String sanitized = sanitizeUrl(input);
-
-        Uri uri;
-        if (WEB_URL.matcher(sanitized).matches()) {
-            uri = Uri.parse(sanitized);
-        } else if (TextUtils.isEmpty(input)) {
-            uri = Uri.parse("https://google.com");
-        } else {
-            uri = Uri.parse("https://google.com/search")
-                          .buildUpon()
-                          .appendQueryParameter("q", input)
-                          .build();
-        }
-        mBrowser.getActiveTab().getNavigationController().navigate(uri);
+        mBrowser.getActiveTab().getNavigationController().navigate(getUriFromInput(input));
     }
 
     private static String getUrlFromIntent(Intent intent) {
@@ -534,14 +521,27 @@ public class WebLayerShellActivity extends FragmentActivity {
     }
 
     /**
-     * Given an URL, this performs minimal sanitizing to ensure it will be valid.
-     * @param url The url to be sanitized.
-     * @return The sanitized URL.
+     * Given input which may be empty, null, a URL, or search terms, this forms a URI suitable for
+     * loading in a tab.
+     * @param input The text.
+     * @return A valid URL.
      */
-    public static String sanitizeUrl(String url) {
-        if (url == null) return null;
-        if (url.startsWith("www.") || url.indexOf(":") == -1) url = "http://" + url;
-        return url;
+    public static Uri getUriFromInput(String input) {
+        if (TextUtils.isEmpty(input)) {
+            return Uri.parse("https://google.com");
+        }
+
+        if (input.startsWith("www.") || input.indexOf(":") == -1) {
+            String url = "http://" + input;
+            if (WEB_URL.matcher(url).matches()) {
+                return Uri.parse(url);
+            }
+        }
+
+        return Uri.parse("https://google.com/search")
+                .buildUpon()
+                .appendQueryParameter("q", input)
+                .build();
     }
 
     @Override

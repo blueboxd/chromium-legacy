@@ -14,6 +14,7 @@
 #include "pdf/pdfium/pdfium_page.h"
 #include "pdf/pdfium/pdfium_test_base.h"
 #include "pdf/test/test_client.h"
+#include "pdf/test/test_document_loader.h"
 #include "pdf/test/test_utils.h"
 #include "ppapi/c/ppb_input_event.h"
 #include "ppapi/cpp/size.h"
@@ -22,6 +23,7 @@
 #include "ui/gfx/geometry/size.h"
 
 namespace chrome_pdf {
+
 namespace {
 
 using ::testing::InSequence;
@@ -55,6 +57,8 @@ class MockTestClient : public TestClient {
   MOCK_METHOD(void, ScrollToPage, (int page), (override));
 };
 
+}  // namespace
+
 class PDFiumEngineTest : public PDFiumTestBase {
  protected:
   void ExpectPageRect(PDFiumEngine* engine,
@@ -63,6 +67,27 @@ class PDFiumEngineTest : public PDFiumTestBase {
     PDFiumPage* page = GetPDFiumPageForTest(engine, page_index);
     ASSERT_TRUE(page);
     CompareRect(expected_rect, page->rect());
+  }
+
+  // Tries to load a PDF incrementally, returning `true` on success.
+  bool TryLoadIncrementally() {
+    NiceMock<MockTestClient> client;
+    InitializeEngineResult initialize_result = InitializeEngineWithoutLoading(
+        &client, FILE_PATH_LITERAL("linearized.pdf"));
+    if (!initialize_result.engine) {
+      ADD_FAILURE();
+      return false;
+    }
+    PDFiumEngine* engine = initialize_result.engine.get();
+
+    // Note: Plugin size chosen so all pages of the document are visible. The
+    // engine only updates availability incrementally for visible pages.
+    engine->PluginSizeUpdated({1024, 4096});
+    initialize_result.document_loader->SimulateLoadData(8192);
+
+    PDFiumPage* page0 = GetPDFiumPageForTest(engine, 0);
+    PDFiumPage* page1 = GetPDFiumPageForTest(engine, 1);
+    return page0 && page0->available() && page1 && !page1->available();
   }
 };
 
@@ -302,7 +327,21 @@ TEST_F(PDFiumEngineTest, GetBadPdfVersion) {
   EXPECT_EQ(PdfVersion::kUnknown, doc_metadata.version);
 }
 
-}  // namespace
+TEST_F(PDFiumEngineTest, IncrementalLoadingFeatureDefault) {
+  EXPECT_TRUE(TryLoadIncrementally());
+}
+
+TEST_F(PDFiumEngineTest, IncrementalLoadingFeatureEnabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kPdfIncrementalLoading);
+  EXPECT_TRUE(TryLoadIncrementally());
+}
+
+TEST_F(PDFiumEngineTest, IncrementalLoadingFeatureDisabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(features::kPdfIncrementalLoading);
+  EXPECT_FALSE(TryLoadIncrementally());
+}
 
 class TabbingTestClient : public TestClient {
  public:

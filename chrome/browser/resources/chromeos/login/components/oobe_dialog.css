@@ -82,7 +82,7 @@
   padding-inline-start: var(--oobe-dialog-content-padding);
 
   /* TODO(https://crbug.com/1017173) Make it adaptive. */
-  padding-top: 20px;
+  padding-top: var(--oobe-dialog-content-padding-top);
 }
 
 #footerContainer[noFooterPadding] {

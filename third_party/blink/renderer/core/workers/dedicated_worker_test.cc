@@ -129,19 +129,22 @@ class DedicatedWorkerMessagingProxyForTest
          network::mojom::ContentSecurityPolicyType::kReport}};
     auto worker_settings = std::make_unique<WorkerSettings>(
         To<LocalDOMWindow>(GetExecutionContext())->GetFrame()->GetSettings());
+    auto params = std::make_unique<GlobalScopeCreationParams>(
+        script_url, mojom::ScriptType::kClassic, "fake global scope name",
+        "fake user agent", UserAgentMetadata(),
+        nullptr /* web_worker_fetch_context */, headers,
+        network::mojom::ReferrerPolicy::kDefault, security_origin_.get(),
+        false /* starter_secure_context */,
+        CalculateHttpsState(security_origin_.get()),
+        nullptr /* worker_clients */, nullptr /* content_settings_client */,
+        network::mojom::IPAddressSpace::kLocal,
+        nullptr /* origin_trial_tokens */, base::UnguessableToken::Create(),
+        std::move(worker_settings), kV8CacheOptionsDefault,
+        nullptr /* worklet_module_responses_map */);
+    params->parent_context_token =
+        GetExecutionContext()->GetExecutionContextToken();
     InitializeWorkerThread(
-        std::make_unique<GlobalScopeCreationParams>(
-            script_url, mojom::ScriptType::kClassic, "fake global scope name",
-            "fake user agent", UserAgentMetadata(),
-            nullptr /* web_worker_fetch_context */, headers,
-            network::mojom::ReferrerPolicy::kDefault, security_origin_.get(),
-            false /* starter_secure_context */,
-            CalculateHttpsState(security_origin_.get()),
-            nullptr /* worker_clients */, nullptr /* content_settings_client */,
-            network::mojom::IPAddressSpace::kLocal,
-            nullptr /* origin_trial_tokens */, base::UnguessableToken::Create(),
-            std::move(worker_settings), kV8CacheOptionsDefault,
-            nullptr /* worklet_module_responses_map */),
+        std::move(params),
         WorkerBackingThreadStartupData(
             WorkerBackingThreadStartupData::HeapLimitMode::kDefault,
             WorkerBackingThreadStartupData::AtomicsWaitMode::kAllow));

@@ -5,6 +5,7 @@
 #include "chrome/browser/password_check/android/password_check_manager.h"
 
 #include "base/feature_list.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/password_check/android/password_check_bridge.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -116,6 +117,13 @@ PasswordCheckManager::GetCompromisedCredentials() const {
     ui_credentials.push_back(MakeUICredential(credential));
   }
   return ui_credentials;
+}
+
+void PasswordCheckManager::UpdateCredential(
+    const password_manager::CredentialView& credential,
+    base::StringPiece new_password) {
+  compromised_credentials_manager_.UpdateCompromisedCredentials(credential,
+                                                                new_password);
 }
 
 void PasswordCheckManager::RemoveCredential(

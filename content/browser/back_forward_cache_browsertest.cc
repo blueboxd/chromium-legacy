@@ -136,6 +136,9 @@ class BackForwardCacheBrowserTest : public ContentBrowserTest,
     EnableFeatureAndSetParams(
         features::kBackForwardCache, "enable_same_site",
         same_site_back_forward_cache_enabled_ ? "true" : "false");
+    EnableFeatureAndSetParams(
+        features::kBackForwardCache, "skip_same_site_if_unload_exists",
+        skip_same_site_if_unload_exists_ ? "true" : "false");
 #if defined(OS_ANDROID)
     EnableFeatureAndSetParams(features::kBackForwardCache,
                               "process_binding_strength", "NORMAL");
@@ -424,6 +427,7 @@ class BackForwardCacheBrowserTest : public ContentBrowserTest,
 
  protected:
   bool same_site_back_forward_cache_enabled_ = true;
+  bool skip_same_site_if_unload_exists_ = false;
 
  private:
   void AddSampleToBuckets(std::vector<base::Bucket>* buckets,
@@ -4024,6 +4028,148 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   EXPECT_TRUE(rfh_b4->IsInBackForwardCache());
   EXPECT_TRUE(rfh_a3->IsInBackForwardCache());
   EXPECT_EQ(rfh_a1, current_frame_host());
+}
+
+class BackForwardCacheBrowserTestSkipSameSiteUnload
+    : public BackForwardCacheBrowserTest {
+ public:
+  BackForwardCacheBrowserTestSkipSameSiteUnload() = default;
+  ~BackForwardCacheBrowserTestSkipSameSiteUnload() override = default;
+
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    skip_same_site_if_unload_exists_ = true;
+    BackForwardCacheBrowserTest::SetUpCommandLine(command_line);
+  }
+};
+
+// We won't cache pages with unload handler on same-site navigations when
+// skip_same_site_if_unload_exists is set to true.
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestSkipSameSiteUnload,
+                       SameSiteNavigationFromPageWithUnload) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a1(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_a2(embedded_test_server()->GetURL("a.com", "/title2.html"));
+
+  // 1) Navigate to A1 and add an unload handler.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a1));
+  RenderFrameHostImpl* rfh_a1 = current_frame_host();
+  EXPECT_TRUE(ExecJs(rfh_a1, "window.onunload = () => {} "));
+
+  // 2) Navigate to A2.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a2));
+  RenderFrameHostImpl* rfh_a2 = current_frame_host();
+  // We should not swap RFHs and A1 should not be in the back-forward cache.
+  EXPECT_EQ(rfh_a1, rfh_a2);
+  EXPECT_FALSE(rfh_a1->IsInBackForwardCache());
+}
+
+// We won't cache pages with an unload handler in a same-SiteInstance subframe
+// on same-site navigations when skip_same_site_if_unload_exists is set to true.
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestSkipSameSiteUnload,
+                       SameSiteNavigationFromPageWithUnloadInSameSiteSubframe) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a1(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b(a))"));
+  GURL url_a2(embedded_test_server()->GetURL("a.com", "/title2.html"));
+
+  // 1) Navigate to A1 and add an unload handler to a.com subframe.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a1));
+  RenderFrameHostImpl* rfh_a_main = current_frame_host();
+  RenderFrameHostImpl* rfh_b = rfh_a_main->child_at(0)->current_frame_host();
+  RenderFrameHostImpl* rfh_a_subframe =
+      rfh_b->child_at(0)->current_frame_host();
+  EXPECT_TRUE(ExecJs(rfh_a_subframe, "window.onunload = () => {} "));
+
+  // 2) Navigate to A2.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a2));
+  RenderFrameHostImpl* rfh_a2 = current_frame_host();
+  // We should not swap RFHs and A1 should not be in the back-forward cache.
+  EXPECT_EQ(rfh_a_main, rfh_a2);
+  EXPECT_FALSE(rfh_a_main->IsInBackForwardCache());
+}
+
+// We won't cache pages with an unload handler in a cross-site subframe on
+// same-site navigations when skip_same_site_if_unload_exists is set to true
+// iff the cross-site subframe is in the same SiteInstance as the mainframe.
+IN_PROC_BROWSER_TEST_F(
+    BackForwardCacheBrowserTestSkipSameSiteUnload,
+    SameSiteNavigationFromPageWithUnloadInCrossSiteSubframe) {
+  if (AreAllSitesIsolatedForTesting()) {
+    // Currently this test will crash because of a bug that happens when we
+    // bfcache pages with subframes that have unload handlers.
+    // TODO(crbug.com/1109742): Enable this test once the bug is fixed.
+    return;
+  }
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a1(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  GURL url_a2(embedded_test_server()->GetURL("a.com", "/title2.html"));
+
+  // 1) Navigate to A1 and add an unload handler to b.com subframe.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a1));
+  RenderFrameHostImpl* rfh_a1 = current_frame_host();
+  RenderFrameHostImpl* rfh_b = rfh_a1->child_at(0)->current_frame_host();
+  EXPECT_TRUE(ExecJs(rfh_b, "window.onunload = () => {} "));
+  EXPECT_EQ(AreAllSitesIsolatedForTesting(),
+            rfh_a1->GetSiteInstance() != rfh_b->GetSiteInstance());
+
+  // 2) Navigate to A2.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a2));
+  RenderFrameHostImpl* rfh_a2 = current_frame_host();
+  if (AreAllSitesIsolatedForTesting()) {
+    // We should swap RFH & BIs and A1 should be in the back-forward cache.
+    EXPECT_NE(rfh_a1, rfh_a2);
+    EXPECT_FALSE(rfh_a1->GetSiteInstance()->IsRelatedSiteInstance(
+        rfh_a2->GetSiteInstance()));
+    EXPECT_TRUE(rfh_a1->IsInBackForwardCache());
+  } else {
+    // We should not swap RFHs and A1 should not be in the back-forward cache.
+    EXPECT_EQ(rfh_a1, rfh_a2);
+    EXPECT_FALSE(rfh_a1->IsInBackForwardCache());
+  }
+}
+
+// We will cache pages with unload handler on cross-site navigations even when
+// skip_same_site_if_unload_exists is set to true.
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestSkipSameSiteUnload,
+                       CrossSiteNavigationFromPageWithUnload) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a1(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_a2(embedded_test_server()->GetURL("b.com", "/title2.html"));
+
+  // 1) Navigate to A and add an unload handler.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a1));
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  EXPECT_TRUE(ExecJs(rfh_a, "window.onunload = () => {} "));
+
+  // 2) Navigate to B.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a2));
+  RenderFrameHostImpl* rfh_b = current_frame_host();
+  // We should swap RFHs and A should be in the back-forward cache.
+  EXPECT_NE(rfh_a, rfh_b);
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
+}
+
+// We will cache pages with unload handler on same-site navigations when
+// skip_same_site_if_unload_exists is set to false.
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+                       SameSiteNavigationFromPageWithUnload) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a1(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_a2(embedded_test_server()->GetURL("a.com", "/title2.html"));
+
+  // 1) Navigate to A1 and add an unload handler.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a1));
+  RenderFrameHostImpl* rfh_a1 = current_frame_host();
+  EXPECT_TRUE(ExecJs(rfh_a1, "window.onunload = () => {} "));
+
+  // 2) Navigate to A2.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a2));
+  RenderFrameHostImpl* rfh_a2 = current_frame_host();
+  // We should swap RFHs and A1 should be in the back-forward cache.
+  EXPECT_NE(rfh_a1, rfh_a2);
+  EXPECT_TRUE(rfh_a1->IsInBackForwardCache());
 }
 
 class GeolocationBackForwardCacheBrowserTest

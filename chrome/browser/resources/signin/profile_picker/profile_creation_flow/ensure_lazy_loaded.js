@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/** @type {?Promise<void>} */
+/** @type {?Promise<!Array<void>>} */
 let lazyLoadPromise = null;
 
-/** @return {!Promise<void>} Resolves when the lazy load module is imported. */
+/**
+ * @return {!Promise<!Array<void>>} Resolves when the lazy load module is
+ *     imported.
+ */
 export function ensureLazyLoaded() {
   if (!lazyLoadPromise) {
     const script = document.createElement('script');

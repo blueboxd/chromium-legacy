@@ -413,7 +413,7 @@ class ShellUtil {
   // The returned appid is guaranteed to be no longer than
   // chrome::kMaxAppModelIdLength (some of the components might have been
   // shortened to enforce this).
-  static base::string16 BuildAppModelId(
+  static base::string16 BuildAppUserModelId(
       const std::vector<base::string16>& components);
 
   // Returns true if Chrome can make itself the default browser without relying

@@ -174,6 +174,8 @@ void SerialIoHandler::Close(base::OnceClosure callback) {
         {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
         base::BindOnce(&SerialIoHandler::DoClose, std::move(file_)),
         std::move(callback));
+  } else {
+    std::move(callback).Run();
   }
 }
 

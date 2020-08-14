@@ -112,9 +112,8 @@ BaseFetchContext::CheckCSPForRequestInternal(
     const KURL& url_before_redirects,
     ResourceRequest::RedirectStatus redirect_status,
     ContentSecurityPolicy::CheckHeaderType check_header_type) const {
-  if (ShouldBypassMainWorldCSP() ||
-      options.content_security_policy_option ==
-          network::mojom::CSPDisposition::DO_NOT_CHECK) {
+  if (options.content_security_policy_option ==
+      network::mojom::CSPDisposition::DO_NOT_CHECK) {
     return base::nullopt;
   }
 

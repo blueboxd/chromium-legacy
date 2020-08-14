@@ -284,18 +284,26 @@ class DirectoryOwnersExtractorTest(unittest.TestCase):
 
 
 class WPTDirMetadataTest(unittest.TestCase):
-    def test_WPTDirMetadata_empty(self):
+    def test_WPTDirMetadata_empty_content(self):
         empty_data = '{"dirs":{"a/b":{}}}'
         wpt_dir_metadata = WPTDirMetadata(json.loads(empty_data), 'a/b')
         self.assertEqual(wpt_dir_metadata.team_email, None)
         self.assertEqual(wpt_dir_metadata.should_notify, None)
         self.assertEqual(wpt_dir_metadata.component, None)
 
-    def test_WPTDirMetadata_non_empty(self):
+    def test_WPTDirMetadata_all_fields(self):
         data = (
             '{"dirs":{"a/b":{"monorail":'
             '{"component":"foo"},"teamEmail":"bar","wpt":{"notify":"YES"}}}}')
         wpt_dir_metadata = WPTDirMetadata(json.loads(data), 'a/b')
         self.assertEqual(wpt_dir_metadata.team_email, 'bar')
         self.assertEqual(wpt_dir_metadata.should_notify, True)
+        self.assertEqual(wpt_dir_metadata.component, 'foo')
+
+    def test_WPTDirMetadata_empty_wpt(self):
+        data = ('{"dirs":{"a/b":{"monorail":'
+                '{"component":"foo"},"teamEmail":"bar"}}}')
+        wpt_dir_metadata = WPTDirMetadata(json.loads(data), 'a/b')
+        self.assertEqual(wpt_dir_metadata.team_email, 'bar')
+        self.assertEqual(wpt_dir_metadata.should_notify, False)
         self.assertEqual(wpt_dir_metadata.component, 'foo')

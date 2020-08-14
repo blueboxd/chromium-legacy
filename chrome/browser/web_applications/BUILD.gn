@@ -48,6 +48,7 @@ source_set("common") {
       "//chromeos/components/help_app_ui",
       "//chromeos/components/media_app_ui",
       "//chromeos/components/print_management",
+      "//chromeos/components/scanning",
       "//chromeos/constants",
       "//chromeos/strings",
     ]

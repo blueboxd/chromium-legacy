@@ -1,0 +1,5 @@
+rootWebArea
+++genericContainer ignored
+++++genericContainer ignored
+++++++group
+++++++++menuButton name='Menu button'

@@ -158,14 +158,15 @@ bool CreateShortcutsInPaths(const base::FilePath& web_app_path,
   // fact.
   base::string16 wide_switches(cmd_line.GetCommandLineString());
 
-  // Sanitize description
+  // Sanitize description.
   base::string16 description = shortcut_info.description;
   if (description.length() >= MAX_PATH)
     description.resize(MAX_PATH - 1);
 
-  // Generates app id from web app url and profile path.
+  // Generates app id from the browser's appid, and the app's extension_id or
+  // web app url, and the profile path.
   std::string app_name(web_app::GenerateApplicationNameFromInfo(shortcut_info));
-  base::string16 app_id(shell_integration::win::GetAppModelIdForProfile(
+  base::string16 app_id(shell_integration::win::GetAppUserModelIdForApp(
       base::UTF8ToUTF16(app_name), shortcut_info.profile_path));
 
   bool success = true;

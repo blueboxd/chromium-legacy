@@ -106,8 +106,12 @@ blink::mojom::blink::ManifestImageResourcePtr TypeConverter<
     image_resource_ptr->sizes = ParseSizes(image_resource->sizes());
   if (image_resource->hasPurpose())
     image_resource_ptr->purpose = ParsePurpose(image_resource->purpose());
+
   if (image_resource->hasType())
     image_resource_ptr->type = ParseType(image_resource->type());
+  else
+    image_resource_ptr->type = "";
+
   return image_resource_ptr;
 }
 

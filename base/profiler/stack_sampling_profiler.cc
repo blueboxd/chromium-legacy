@@ -81,8 +81,7 @@ TimeTicks GetNextSampleTimeImpl(TimeTicks scheduled_current_sample_time,
   // The minimum number of sampling intervals required to get from the scheduled
   // current sample time to the earliest next sample time.
   const int64_t required_sampling_intervals = static_cast<int64_t>(
-      std::ceil(minimum_time_delta_to_next_sample.InMicrosecondsF() /
-                sampling_interval.InMicroseconds()));
+      std::ceil(minimum_time_delta_to_next_sample / sampling_interval));
   return scheduled_current_sample_time +
          required_sampling_intervals * sampling_interval;
 }

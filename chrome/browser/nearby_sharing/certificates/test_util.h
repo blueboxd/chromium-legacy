@@ -42,10 +42,18 @@ const std::vector<uint8_t>& GetNearbyShareTestSampleSignature();
 const std::vector<uint8_t>& GetNearbyShareTestPayloadHashUsingSecretKey();
 
 NearbySharePrivateCertificate GetNearbyShareTestPrivateCertificate(
-    NearbyShareVisibility visibility);
+    NearbyShareVisibility visibility,
+    base::Time not_before = GetNearbyShareTestNotBefore());
+nearbyshare::proto::PublicCertificate GetNearbyShareTestPublicCertificate(
+    NearbyShareVisibility visibility,
+    base::Time not_before = GetNearbyShareTestNotBefore());
 
-const nearbyshare::proto::PublicCertificate&
-GetNearbyShareTestPublicCertificate();
+// Returns a list of |kNearbyShareNumPrivateCertificates| private/public
+// certificates, spanning contiguous validity periods.
+std::vector<NearbySharePrivateCertificate>
+GetNearbyShareTestPrivateCertificateList(NearbyShareVisibility visibility);
+std::vector<nearbyshare::proto::PublicCertificate>
+GetNearbyShareTestPublicCertificateList(NearbyShareVisibility visibility);
 
 const NearbyShareDecryptedPublicCertificate&
 GetNearbyShareTestDecryptedPublicCertificate();

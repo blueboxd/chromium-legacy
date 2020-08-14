@@ -105,7 +105,7 @@ void ProfilePickerView::Init(Profile* system_profile) {
 #if defined(OS_WIN)
   // Set the app id for the user manager to the app id of its parent.
   ui::win::SetAppIdForWindow(
-      shell_integration::win::GetChromiumModelIdForProfile(
+      shell_integration::win::GetAppUserModelIdForBrowser(
           system_profile->GetPath()),
       views::HWNDForWidget(GetWidget()));
 #endif

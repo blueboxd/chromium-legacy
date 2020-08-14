@@ -6,6 +6,7 @@
 
 #include "base/feature_list.h"
 #import "base/ios/ns_error_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/timer/timer.h"
@@ -1023,6 +1024,14 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
 - (void)webView:(WKWebView*)webView
     didFinishNavigation:(WKNavigation*)navigation {
   [self didReceiveWKNavigationDelegateCallback];
+
+  NSUInteger forwardItemCount = webView.backForwardList.forwardList.count;
+  base::UmaHistogramBoolean("Session.WebStates.HasForwardItemsAfterNavigation",
+                            forwardItemCount > 0);
+  if (forwardItemCount > 0) {
+    base::UmaHistogramCounts100(
+        "Session.WebStates.ForwardItemsCountAfterNavigation", forwardItemCount);
+  }
 
   // Sometimes |webView:didFinishNavigation| arrives before
   // |webView:didCommitNavigation|. Explicitly trigger post-commit processing.

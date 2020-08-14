@@ -6,6 +6,8 @@ static_library("content") {
   sources = [
     "android_app_communication.cc",
     "android_app_communication.h",
+    "android_payment_app.cc",
+    "android_payment_app.h",
     "autofill_payment_app.cc",
     "autofill_payment_app.h",
     "autofill_payment_app_factory.cc",
@@ -153,6 +155,7 @@ source_set("unit_tests") {
   sources = [
     "android_app_communication_test_support.h",
     "android_app_communication_unittest.cc",
+    "android_payment_app_unittest.cc",
     "payment_method_manifest_table_unittest.cc",
     "service_worker_payment_app_finder_unittest.cc",
     "test_content_payment_request_delegate.cc",

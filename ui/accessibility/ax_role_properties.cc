@@ -443,7 +443,6 @@ bool IsReadOnlySupported(const ax::mojom::Role role) {
     case ax::mojom::Role::kGrid:
     case ax::mojom::Role::kInputTime:
     case ax::mojom::Role::kListBox:
-    case ax::mojom::Role::kMenuButton:
     case ax::mojom::Role::kMenuItemCheckBox:
     case ax::mojom::Role::kMenuItemRadio:
     case ax::mojom::Role::kMenuListPopup:

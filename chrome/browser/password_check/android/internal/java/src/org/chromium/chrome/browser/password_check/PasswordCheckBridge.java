@@ -137,6 +137,11 @@ class PasswordCheckBridge {
                 mNativePasswordCheckBridge, credentials);
     }
 
+    void updateCredential(CompromisedCredential credential, String newPassword) {
+        PasswordCheckBridgeJni.get().updateCredential(
+                mNativePasswordCheckBridge, credential, newPassword);
+    }
+
     void removeCredential(CompromisedCredential credential) {
         PasswordCheckBridgeJni.get().removeCredential(mNativePasswordCheckBridge, credential);
     }
@@ -163,6 +168,8 @@ class PasswordCheckBridge {
         int getSavedPasswordsCount(long nativePasswordCheckBridge);
         void getCompromisedCredentials(
                 long nativePasswordCheckBridge, CompromisedCredential[] credentials);
+        void updateCredential(long nativePasswordCheckBridge, CompromisedCredential credential,
+                String newPassword);
         void removeCredential(long nativePasswordCheckBridge, CompromisedCredential credentials);
         void destroy(long nativePasswordCheckBridge);
     }

@@ -54,8 +54,8 @@
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_network_configuration_updater.h"
 #include "chrome/browser/chromeos/policy/external_data_handlers/crostini_ansible_playbook_external_data_handler.h"
-#include "chrome/browser/chromeos/policy/external_data_handlers/native_printers_external_data_handler.h"
 #include "chrome/browser/chromeos/policy/external_data_handlers/print_servers_external_data_handler.h"
+#include "chrome/browser/chromeos/policy/external_data_handlers/printers_external_data_handler.h"
 #include "chrome/browser/chromeos/policy/external_data_handlers/user_avatar_image_external_data_handler.h"
 #include "chrome/browser/chromeos/policy/external_data_handlers/wallpaper_image_external_data_handler.h"
 #include "chrome/browser/chromeos/policy/user_network_configuration_updater.h"
@@ -375,7 +375,7 @@ ChromeUserManagerImpl::ChromeUserManagerImpl()
       std::make_unique<policy::WallpaperImageExternalDataHandler>(
           cros_settings_, device_local_account_policy_service));
   cloud_external_data_policy_handlers_.push_back(
-      std::make_unique<policy::NativePrintersExternalDataHandler>(
+      std::make_unique<policy::PrintersExternalDataHandler>(
           cros_settings_, device_local_account_policy_service));
   cloud_external_data_policy_handlers_.push_back(
       std::make_unique<policy::PrintServersExternalDataHandler>(

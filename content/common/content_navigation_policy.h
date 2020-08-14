@@ -14,6 +14,7 @@ namespace content {
 
 CONTENT_EXPORT bool IsBackForwardCacheEnabled();
 CONTENT_EXPORT bool IsSameSiteBackForwardCacheEnabled();
+CONTENT_EXPORT bool ShouldSkipSameSiteBackForwardCacheForPageWithUnload();
 CONTENT_EXPORT bool IsBackForwardCacheDisabledByCommandLine();
 CONTENT_EXPORT bool DeviceHasEnoughMemoryForBackForwardCache();
 

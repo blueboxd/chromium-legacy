@@ -70,6 +70,7 @@ public class PseudoTabUnitTest {
     private TabImpl mTab1;
     private TabImpl mTab2;
     private TabImpl mTab3;
+    private TabImpl mTab1Copy;
 
     @Before
     public void setUp() {
@@ -78,6 +79,7 @@ public class PseudoTabUnitTest {
         mTab1 = TabUiUnitTestUtils.prepareTab(TAB1_ID, mCriticalPersistedTabData);
         mTab2 = TabUiUnitTestUtils.prepareTab(TAB2_ID, mCriticalPersistedTabData);
         mTab3 = TabUiUnitTestUtils.prepareTab(TAB3_ID, mCriticalPersistedTabData);
+        mTab1Copy = TabUiUnitTestUtils.prepareTab(TAB1_ID, mCriticalPersistedTabData);
 
         doReturn(mTabModelFilterProvider).when(mTabModelSelector).getTabModelFilterProvider();
     }
@@ -137,6 +139,14 @@ public class PseudoTabUnitTest {
         PseudoTab tab1prime = PseudoTab.fromTab(mTab1);
         Assert.assertNotEquals(tab1, tab2);
         Assert.assertEquals(tab1, tab1prime);
+    }
+
+    @Test
+    public void fromTab_obsoleteCache() {
+        PseudoTab tab1 = PseudoTab.fromTab(mTab1);
+        PseudoTab tab1copy = PseudoTab.fromTab(mTab1Copy);
+        Assert.assertNotEquals(tab1, tab1copy);
+        Assert.assertEquals(tab1.getId(), tab1copy.getId());
     }
 
     @Test

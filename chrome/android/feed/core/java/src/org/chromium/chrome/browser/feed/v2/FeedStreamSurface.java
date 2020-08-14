@@ -102,8 +102,10 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
     private final NativePageNavigationDelegate mPageNavigationDelegate;
     private final HelpAndFeedback mHelpAndFeedback;
     private final ScrollReporter mScrollReporter = new ScrollReporter();
-
+    // True after onSurfaceOpened(), and before onSurfaceClosed().
     private boolean mOpened;
+    private boolean mStreamContentVisible;
+    private boolean mStreamVisible;
     private int mHeaderCount;
     private BottomSheetContent mBottomSheetContent;
     // If the bottom sheet was opened in response to an action on a slice, this is the slice ID.
@@ -130,13 +132,10 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
 
     // We avoid attaching surfaces until after |startup()| is called. This ensures that
     // the correct sign-in state is used if attaching the surface triggers a fetch.
-
     private static boolean sStartupCalled;
-    // Tracks all the surfaces that are waiting to be attached or already attached. When
-    // |sStartupCalled| is false, |startup()| has not been called and thus all the surfaces
-    // in this set are waiting to be attached. Otherwise, all the surfaces in this set are
-    // already attached.
-    private static HashSet<FeedStreamSurface> sSurfaces;
+    // Tracks all the instances of FeedStreamSurface.
+    @VisibleForTesting
+    static HashSet<FeedStreamSurface> sSurfaces;
 
     public static void startup() {
         if (sStartupCalled) return;
@@ -145,7 +144,7 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
         xSurfaceProcessScope();
         if (sSurfaces != null) {
             for (FeedStreamSurface surface : sSurfaces) {
-                surface.surfaceOpened();
+                surface.updateSurfaceOpenState();
             }
         }
     }
@@ -175,13 +174,12 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
      *  Clear all the data related to all surfaces.
      */
     public static void clearAll() {
-        FeedStreamSurface[] surfaces = null;
-        if (sSurfaces != null) {
-            surfaces = sSurfaces.toArray(new FeedStreamSurface[sSurfaces.size()]);
-            for (FeedStreamSurface surface : surfaces) {
-                surface.surfaceClosed();
-            }
-            sSurfaces = null;
+        ArrayList<FeedStreamSurface> openSurfaces = new ArrayList<FeedStreamSurface>();
+        for (FeedStreamSurface surface : sSurfaces) {
+            if (surface.isOpened()) openSurfaces.add(surface);
+        }
+        for (FeedStreamSurface surface : openSurfaces) {
+            surface.onSurfaceClosed();
         }
 
         ProcessScope processScope = xSurfaceProcessScope();
@@ -189,10 +187,8 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
             processScope.resetAccount();
         }
 
-        if (surfaces != null) {
-            for (FeedStreamSurface surface : surfaces) {
-                surface.surfaceOpened();
-            }
+        for (FeedStreamSurface surface : openSurfaces) {
+            surface.updateSurfaceOpenState();
         }
     }
 
@@ -337,15 +333,16 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
         } else {
             mRootView = null;
         }
+
+        trackSurface(this);
     }
 
     /**
      * Performs all necessary cleanups.
      */
     public void destroy() {
-        if (mOpened) {
-            surfaceClosed();
-        }
+        if (mOpened) onSurfaceClosed();
+        untrackSurface(this);
         if (mSliceViewTracker != null) {
             mSliceViewTracker.destroy();
             mSliceViewTracker = null;
@@ -429,6 +426,9 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
      */
     @CalledByNative
     void onStreamUpdated(byte[] data) {
+        // There should be no updates while the surface is closed. If the surface was recently
+        // closed, just ignore these.
+        if (!mOpened) return;
         StreamUpdate streamUpdate;
         try {
             streamUpdate = StreamUpdate.parseFrom(data);
@@ -781,41 +781,68 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
     }
 
     /**
-     * Informs that the surface is opened. We can request the initial set of content now. Once
-     * the content is available, onStreamUpdated will be called.
+     * Informs whether or not feed content should be shown.
      */
-    public void surfaceOpened() {
-        mOpened = true;
-        trackSurface(this);
-        if (sStartupCalled) {
-            FeedStreamSurfaceJni.get().surfaceOpened(
-                    mNativeFeedStreamSurface, FeedStreamSurface.this);
-            mHybridListRenderer.onSurfaceOpened();
+    public void setStreamContentVisibility(boolean visible) {
+        if (mStreamContentVisible == visible) return;
+        mStreamContentVisible = visible;
+        updateSurfaceOpenState();
+    }
+
+    /**
+     * Informs FeedStreamSurface of the visibility of its parent stream.
+     */
+    public void setStreamVisibility(boolean visible) {
+        if (mStreamVisible == visible) return;
+        mStreamVisible = visible;
+        updateSurfaceOpenState();
+    }
+
+    private void updateSurfaceOpenState() {
+        boolean shouldOpen = sStartupCalled && mStreamContentVisible && mStreamVisible;
+        if (shouldOpen == mOpened) return;
+        if (shouldOpen) {
+            onSurfaceOpened();
+        } else {
+            onSurfaceClosed();
         }
+    }
+
+    /**
+     * Called when the surface is considered opened. This happens when the feed should be visible
+     * and enabled on the screen.
+     */
+    private void onSurfaceOpened() {
+        assert (!mOpened);
+        assert (sStartupCalled);
+        assert (mStreamContentVisible);
+        // No feed content should exist.
+        assert (mContentManager.getItemCount() == mHeaderCount);
+        mOpened = true;
+        FeedStreamSurfaceJni.get().surfaceOpened(mNativeFeedStreamSurface, FeedStreamSurface.this);
+        mHybridListRenderer.onSurfaceOpened();
     }
 
     /**
      * Informs that the surface is closed.
      */
-    public void surfaceClosed() {
+    private void onSurfaceClosed() {
+        assert (mOpened);
+        assert (sStartupCalled);
         // Let the hybrid list renderer know that the surface has closed, so it doesn't
         // interpret the removal of contents as related to actions otherwise initiated by
         // the user.
-        if (sStartupCalled) {
-            mHybridListRenderer.onSurfaceClosed();
-        }
+        mHybridListRenderer.onSurfaceClosed();
 
+        // Remove Feed content from the content manager.
         int feedCount = mContentManager.getItemCount() - mHeaderCount;
         if (feedCount > 0) {
             mContentManager.removeContents(mHeaderCount, feedCount);
         }
+
         mScrollReporter.onUnbind();
 
-        untrackSurface(this);
-        if (sStartupCalled) {
-            FeedStreamSurfaceJni.get().surfaceClosed(
-                    mNativeFeedStreamSurface, FeedStreamSurface.this);
-        }
+        FeedStreamSurfaceJni.get().surfaceClosed(mNativeFeedStreamSurface, FeedStreamSurface.this);
         mOpened = false;
     }
 

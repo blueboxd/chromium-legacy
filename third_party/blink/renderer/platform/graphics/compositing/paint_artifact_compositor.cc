@@ -146,10 +146,18 @@ std::unique_ptr<JSONObject> PaintArtifactCompositor::GetLayersAsJSON(
   return layers_as_json.Finalize();
 }
 
+static void UpdateLayerProperties(const GraphicsLayer& graphics_layer) {
+  cc::PictureLayer& cc_layer = graphics_layer.CcLayer();
+  const PaintArtifact& paint_artifact =
+      graphics_layer.GetPaintController().GetPaintArtifact();
+  paint_artifact.UpdateBackgroundColor(&cc_layer, paint_artifact.PaintChunks());
+}
+
 static scoped_refptr<cc::Layer> CcLayerForPaintChunk(
     const PaintArtifact& paint_artifact,
     const PaintChunk& paint_chunk,
-    const FloatPoint& pending_layer_offset) {
+    const FloatPoint& pending_layer_offset,
+    const HashSet<const GraphicsLayer*>& repainted_layers) {
   if (paint_chunk.size() != 1)
     return nullptr;
 
@@ -169,16 +177,17 @@ static scoped_refptr<cc::Layer> CcLayerForPaintChunk(
   cc::Layer* layer = nullptr;
   FloatPoint layer_offset;
   if (display_item.IsGraphicsLayerWrapper()) {
-    const auto& graphics_layer_display_item =
-        static_cast<const GraphicsLayerDisplayItem&>(display_item);
-    const auto& graphics_layer = graphics_layer_display_item.GetGraphicsLayer();
+    const GraphicsLayer& graphics_layer =
+        static_cast<const GraphicsLayerDisplayItem&>(display_item)
+            .GetGraphicsLayer();
     if (graphics_layer.ShouldCreateLayersAfterPaint()) {
       DCHECK(RuntimeEnabledFeatures::CompositeSVGEnabled());
       return nullptr;
     }
     layer = &graphics_layer.CcLayer();
-    layer_offset = FloatPoint(graphics_layer_display_item.GetGraphicsLayer()
-                                  .GetOffsetFromTransformNode());
+    layer_offset = FloatPoint(graphics_layer.GetOffsetFromTransformNode());
+    if (repainted_layers.Contains(&graphics_layer))
+      UpdateLayerProperties(graphics_layer);
   } else {
     const auto& foreign_layer_display_item =
         static_cast<const ForeignLayerDisplayItem&>(display_item);
@@ -313,7 +322,8 @@ PaintArtifactCompositor::CompositedLayerForPendingLayer(
     const PendingLayer& pending_layer,
     Vector<std::unique_ptr<ContentLayerClientImpl>>& new_content_layer_clients,
     Vector<scoped_refptr<cc::Layer>>& new_scroll_hit_test_layers,
-    Vector<scoped_refptr<cc::ScrollbarLayerBase>>& new_scrollbar_layers) {
+    Vector<scoped_refptr<cc::ScrollbarLayerBase>>& new_scrollbar_layers,
+    const HashSet<const GraphicsLayer*>& repainted_layers) {
   auto paint_chunks = pending_layer.paint_artifact->GetPaintChunkSubset(
       pending_layer.paint_chunk_indices);
   DCHECK(paint_chunks.size());
@@ -324,7 +334,8 @@ PaintArtifactCompositor::CompositedLayerForPendingLayer(
   // just return its cc::Layer.
   if ((cc_layer = CcLayerForPaintChunk(
            *pending_layer.paint_artifact, first_paint_chunk,
-           pending_layer.offset_of_decomposited_transforms))) {
+           pending_layer.offset_of_decomposited_transforms,
+           repainted_layers))) {
     DCHECK_EQ(paint_chunks.size(), 1u);
     return cc_layer;
   }
@@ -1237,11 +1248,22 @@ void PaintArtifactCompositor::DecompositeTransforms(
 void PaintArtifactCompositor::Update(
     scoped_refptr<const PaintArtifact> paint_artifact,
     const ViewportProperties& viewport_properties,
-    const Vector<const TransformPaintPropertyNode*>& scroll_translation_nodes) {
+    const Vector<const TransformPaintPropertyNode*>& scroll_translation_nodes,
+    const HashSet<const GraphicsLayer*>& repainted_layers) {
+  DCHECK(NeedsUpdate() || repainted_layers.size());
   DCHECK(scroll_translation_nodes.IsEmpty() ||
          RuntimeEnabledFeatures::ScrollUnificationEnabled());
-  DCHECK(NeedsUpdate());
   DCHECK(root_layer_);
+
+  if (!NeedsUpdate()) {
+    // It's possible to get here when there are no paint property updates that
+    // necessitate a compositing update (e.g., a background color changes). In
+    // that case, we just update non-compositing-related cc::Layer properties
+    // for layers that have been repainted, and do nothing else.
+    UpdateRepaintedLayerProperties(paint_artifact, repainted_layers);
+    return;
+  }
+
   // The tree will be null after detaching and this update can be ignored.
   // See: WebViewImpl::detachPaintArtifactCompositor().
   cc::LayerTreeHost* host = root_layer_->layer_tree_host();
@@ -1303,7 +1325,7 @@ void PaintArtifactCompositor::Update(
 
     scoped_refptr<cc::Layer> layer = CompositedLayerForPendingLayer(
         pending_layer, new_content_layer_clients, new_scroll_hit_test_layers,
-        new_scrollbar_layers);
+        new_scrollbar_layers, repainted_layers);
 
     // In Pre-CompositeAfterPaint, touch action rects and non-fast scrollable
     // regions are updated through ScrollingCoordinator.
@@ -1426,6 +1448,29 @@ void PaintArtifactCompositor::Update(
     }
   }
 #endif
+}
+
+void PaintArtifactCompositor::UpdateRepaintedLayerProperties(
+    scoped_refptr<const PaintArtifact> paint_artifact,
+    const HashSet<const GraphicsLayer*>& repainted_layers) const {
+  for (const auto& pending_layer : pending_layers_) {
+    auto paint_chunks =
+        paint_artifact->GetPaintChunkSubset(pending_layer.paint_chunk_indices);
+    DCHECK(paint_chunks.size());
+    const PaintChunk& paint_chunk = paint_chunks[0];
+    if (paint_chunk.size() != 1)
+      continue;
+    const auto& display_item =
+        paint_artifact->GetDisplayItemList()[paint_chunk.begin_index];
+    if (!display_item.IsGraphicsLayerWrapper())
+      continue;
+    const GraphicsLayer& graphics_layer =
+        static_cast<const GraphicsLayerDisplayItem&>(display_item)
+            .GetGraphicsLayer();
+    if (repainted_layers.Contains(&graphics_layer)) {
+      UpdateLayerProperties(graphics_layer);
+    }
+  }
 }
 
 bool PaintArtifactCompositor::CanDirectlyUpdateProperties() const {

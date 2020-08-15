@@ -17,7 +17,6 @@
       "name": "LayoutNGBlockFlow (positioned) DIV class='box middle'",
       "position": [180, 180],
       "bounds": [262, 200],
-      "backgroundColor": "#00FF00",
       "invalidations": [
         [80, 80, 182, 29]
       ]

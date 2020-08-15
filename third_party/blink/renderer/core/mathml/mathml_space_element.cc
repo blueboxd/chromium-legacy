@@ -15,7 +15,7 @@ void MathMLSpaceElement::AddMathBaselineIfNeeded(
     ComputedStyle& style,
     const CSSToLengthConversionData& conversion_data) {
   if (auto length_or_percentage_value = AddMathLengthToComputedStyle(
-          style, conversion_data, mathml_names::kHeightAttr))
+          conversion_data, mathml_names::kHeightAttr))
     style.SetMathBaseline(std::move(*length_or_percentage_value));
 }
 

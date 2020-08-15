@@ -39,6 +39,7 @@
       "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (positioned) DIV id='positioned-absolute-grandchildren-not-contained' class='positionAbsolute positioned')",
       "position": [25, 65],
       "bounds": [80, 40],
+      "backgroundColor": "#800080",
       "transform": 1
     },
     {
@@ -53,6 +54,7 @@
       "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (relative positioned) DIV id='scrolled-absolute-grandchildren-not-contained' class='scrolled')",
       "position": [6, 90],
       "bounds": [75, 24],
+      "backgroundColor": "#0000FF",
       "transform": 2
     },
     {
@@ -111,6 +113,7 @@
       "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (positioned) DIV id='positioned-absolute-not-contained' class='positionAbsolute positioned')",
       "position": [25, 65],
       "bounds": [80, 40],
+      "backgroundColor": "#800080",
       "transform": 5
     },
     {
@@ -125,6 +128,7 @@
       "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (relative positioned) DIV id='scrolled-absolute-not-contained' class='scrolled')",
       "position": [6, 90],
       "bounds": [75, 24],
+      "backgroundColor": "#0000FF",
       "transform": 6
     },
     {
@@ -160,6 +164,7 @@
       "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (positioned) DIV id='positioned-absolute-sibling-grandchildren-not-contained' class='positionAbsolute positioned')",
       "position": [25, 65],
       "bounds": [80, 40],
+      "backgroundColor": "#800080",
       "transform": 7
     },
     {
@@ -174,6 +179,7 @@
       "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (relative positioned) DIV id='scrolled-absolute-sibling-grandchildren-not-contained' class='scrolled')",
       "position": [6, 90],
       "bounds": [75, 24],
+      "backgroundColor": "#0000FF",
       "transform": 8
     },
     {
@@ -232,6 +238,7 @@
       "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (positioned) DIV id='positioned-absolute-sibling-not-contained' class='positionAbsolute positioned')",
       "position": [25, 65],
       "bounds": [80, 40],
+      "backgroundColor": "#800080",
       "transform": 11
     },
     {
@@ -246,6 +253,7 @@
       "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (relative positioned) DIV id='scrolled-absolute-sibling-not-contained' class='scrolled')",
       "position": [6, 90],
       "bounds": [75, 24],
+      "backgroundColor": "#0000FF",
       "transform": 12
     },
     {
@@ -354,6 +362,7 @@
       "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (relative positioned) DIV id='scrolled-fixed-sibling-grandchildren' class='scrolled')",
       "position": [6, 90],
       "bounds": [75, 24],
+      "backgroundColor": "#0000FF",
       "transform": 18
     },
     {
@@ -398,6 +407,7 @@
       "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (relative positioned) DIV id='scrolled-fixed-sibling' class='scrolled')",
       "position": [6, 90],
       "bounds": [75, 24],
+      "backgroundColor": "#0000FF",
       "transform": 22
     },
     {
@@ -448,6 +458,7 @@
       "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (relative positioned) DIV id='scrolled-fixed-grandchildren' class='scrolled')",
       "position": [6, 90],
       "bounds": [75, 24],
+      "backgroundColor": "#0000FF",
       "transform": 24
     },
     {
@@ -492,6 +503,7 @@
       "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (relative positioned) DIV id='scrolled-fixed' class='scrolled')",
       "position": [6, 90],
       "bounds": [75, 24],
+      "backgroundColor": "#0000FF",
       "transform": 28
     },
     {

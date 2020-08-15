@@ -2732,6 +2732,9 @@ enum WebFeature {
   kBluetoothRemoteGATTCharacteristic_Uuid = 3402,
   kBluetoothRemoteGATTDescriptor_Uuid = 3403,
   kBluetoothRemoteGATTService_Uuid = 3404,
+  kGPUAdapter_Name = 3405,
+  kWindowScreenInternal = 3406,
+  kWindowScreenPrimary = 3407,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

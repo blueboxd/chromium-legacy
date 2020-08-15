@@ -694,7 +694,7 @@
   },
   "cronet_unittests_ios": {
     "label": "//components/cronet/ios:cronet_unittests_ios",
-    "type": "raw",
+    "type": "console_test_launcher",
   },
   "cros_browser_sanity_test": {
     "args": [
@@ -729,7 +729,7 @@
   },
   "delayloads_unittests": {
     "label": "//chrome/test:delayloads_unittests",
-    "type": "raw",
+    "type": "console_test_launcher",
   },
   "device_junit_tests": {
     "label": "//device:device_junit_tests",
@@ -1463,7 +1463,7 @@
   },
   "profile_provider_unittest": {
     "label": "//chrome/browser/metrics/perf:profile_provider_unittest",
-    "type": "raw",
+    "type": "console_test_launcher",
   },
   "remoting/client:client": {
     "label": "//remoting/client:client",

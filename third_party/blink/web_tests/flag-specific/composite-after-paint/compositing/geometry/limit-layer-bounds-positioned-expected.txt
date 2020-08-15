@@ -16,8 +16,7 @@ Text here
     {
       "name": "LayoutNGBlockFlow (positioned) DIV class='indicator'",
       "position": [0, 8],
-      "bounds": [150, 142],
-      "backgroundColor": "#FF0000"
+      "bounds": [150, 142]
     }
   ],
   "transforms": [

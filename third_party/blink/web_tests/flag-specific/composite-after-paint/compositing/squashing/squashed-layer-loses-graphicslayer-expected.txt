@@ -19,8 +19,7 @@ CASE 1, original layer tree:
     {
       "name": "LayoutNGBlockFlow (positioned) DIV id='A' class='overlap1'",
       "position": [140, 140],
-      "bounds": [260, 260],
-      "backgroundColor": "#0000FF"
+      "bounds": [260, 260]
     }
   ],
   "transforms": [

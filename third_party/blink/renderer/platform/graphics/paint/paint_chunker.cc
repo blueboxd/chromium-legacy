@@ -18,7 +18,8 @@ PaintChunker::~PaintChunker() = default;
 bool PaintChunker::IsInInitialState() const {
   if (current_properties_ != PropertyTreeState::Uninitialized())
     return false;
-
+  DCHECK_EQ(candidate_background_color_.Rgb(), Color::kTransparent);
+  DCHECK_EQ(candidate_background_area_, 0u);
   DCHECK(chunks_.IsEmpty());
   return true;
 }
@@ -40,7 +41,7 @@ void PaintChunker::UpdateCurrentPaintChunkProperties(
 }
 
 void PaintChunker::AppendByMoving(PaintChunk&& chunk) {
-  UpdateLastChunkKnownToBeOpaque();
+  FinalizeLastChunkProperties();
   wtf_size_t next_chunk_begin_index =
       chunks_.IsEmpty() ? 0 : LastChunk().end_index;
   chunks_.emplace_back(next_chunk_begin_index, std::move(chunk));
@@ -58,7 +59,7 @@ PaintChunk& PaintChunker::EnsureCurrentChunk(const PaintChunk::Id& id) {
   if (WillForceNewChunk() || current_properties_ != LastChunk().properties) {
     if (!next_chunk_id_)
       next_chunk_id_.emplace(id);
-    UpdateLastChunkKnownToBeOpaque();
+    FinalizeLastChunkProperties();
     wtf_size_t begin = chunks_.IsEmpty() ? 0 : LastChunk().end_index;
     chunks_.emplace_back(begin, begin, *next_chunk_id_, current_properties_);
     next_chunk_id_ = base::nullopt;
@@ -81,6 +82,15 @@ bool PaintChunker::IncrementDisplayItemIndex(const DisplayItem& item) {
   chunk.bounds.Unite(item.VisualRect());
   if (item.DrawsContent())
     chunk.drawable_bounds.Unite(item.VisualRect());
+
+  // If this paints the background and it's larger than our current candidate,
+  // set the candidate to be this item.
+  if (item.IsDrawing() && item.DrawsContent()) {
+    uint64_t item_area;
+    Color item_color =
+        static_cast<const DrawingDisplayItem&>(item).BackgroundColor(item_area);
+    ProcessBackgroundColorCandidate(chunk.id, item_color, item_area);
+  }
 
   constexpr wtf_size_t kMaxRegionComplexity = 10;
   if (item.IsDrawing() &&
@@ -153,17 +163,36 @@ void PaintChunker::CreateScrollHitTestChunk(
   SetForceNewChunk(true);
 }
 
-void PaintChunker::UpdateLastChunkKnownToBeOpaque() {
+void PaintChunker::ProcessBackgroundColorCandidate(const PaintChunk::Id& id,
+                                                   Color color,
+                                                   uint64_t area) {
+  EnsureCurrentChunk(id);
+  if (color != Color::kTransparent &&
+      (candidate_background_color_ == Color::kTransparent ||
+       (area >= candidate_background_area_))) {
+    candidate_background_color_ = color;
+    candidate_background_area_ = area;
+  }
+}
+
+void PaintChunker::FinalizeLastChunkProperties() {
   if (chunks_.IsEmpty() || LastChunk().is_moved_from_cached_subsequence)
     return;
 
   LastChunk().known_to_be_opaque =
       last_chunk_known_to_be_opaque_region_.Contains(LastChunk().bounds);
   last_chunk_known_to_be_opaque_region_ = Region();
+
+  if (candidate_background_color_ != Color::kTransparent) {
+    LastChunk().background_color = candidate_background_color_;
+    LastChunk().background_color_area = candidate_background_area_;
+  }
+  candidate_background_color_ = Color::kTransparent;
+  candidate_background_area_ = 0u;
 }
 
 Vector<PaintChunk> PaintChunker::ReleasePaintChunks() {
-  UpdateLastChunkKnownToBeOpaque();
+  FinalizeLastChunkProperties();
   next_chunk_id_ = base::nullopt;
   current_properties_ = PropertyTreeState::Uninitialized();
   chunks_.ShrinkToFit();

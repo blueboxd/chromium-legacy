@@ -10,7 +10,8 @@
       "name": "LayoutNGBlockFlow (positioned) DIV class='composited'",
       "position": [10, 10],
       "bounds": [50, 50],
-      "contentsOpaque": true
+      "contentsOpaque": true,
+      "backgroundColor": "#000000"
     },
     {
       "name": "ContentsLayer for Horizontal Scrollbar Layer",

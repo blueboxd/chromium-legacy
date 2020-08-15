@@ -120,14 +120,8 @@ scoped_refptr<cc::PictureLayer> ContentLayerClientImpl::UpdateCcPictureLayer(
       layer_state.Effect().HasBackdropEffect() ||
       !layer_state.Effect().Filter().IsEmpty());
 
-  auto safe_opaque_background_color =
-      paint_artifact->SafeOpaqueBackgroundColor(paint_chunks);
-  cc_picture_layer_->SetSafeOpaqueBackgroundColor(safe_opaque_background_color);
-  // TODO(masonfreed): We don't need to set the background color here; only the
-  // safe opaque background color matters. But making that change would require
-  // rebaselining 787 tests to remove the "background_color" property from the
-  // layer dumps.
-  cc_picture_layer_->SetBackgroundColor(safe_opaque_background_color);
+  paint_artifact->UpdateBackgroundColor(cc_picture_layer_.get(), paint_chunks);
+
   return cc_picture_layer_;
 }
 

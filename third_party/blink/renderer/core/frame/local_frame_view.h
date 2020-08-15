@@ -74,6 +74,7 @@ class FloatSize;
 class FragmentAnchor;
 class Frame;
 class FrameViewAutoSizeInfo;
+class GraphicsLayer;
 class HTMLVideoElement;
 class JSONObject;
 class KURL;
@@ -786,10 +787,11 @@ class CORE_EXPORT LocalFrameView final
       DocumentLifecycle::LifecycleState target_state);
   void RunPaintLifecyclePhase();
 
-  void PaintTree();
+  void PaintTree(HashSet<const GraphicsLayer*>& repainted_layers);
   void UpdateStyleAndLayoutIfNeededRecursive();
 
-  void PushPaintArtifactToCompositor();
+  void PushPaintArtifactToCompositor(
+      const HashSet<const GraphicsLayer*>& repainted_layers);
 
   void ClearLayoutSubtreeRootsAndMarkContainingBlocks();
 

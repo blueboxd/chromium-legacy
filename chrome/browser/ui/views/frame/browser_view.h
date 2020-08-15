@@ -81,6 +81,12 @@ class Command;
 class Extension;
 }
 
+#if defined(OS_CHROMEOS)
+namespace ui {
+class ThroughputTracker;
+}
+#endif
+
 namespace version_info {
 enum class Channel;
 }
@@ -904,6 +910,12 @@ class BrowserView : public BrowserWindow,
 
   std::unique_ptr<TabGroupsIPHController> tab_groups_iph_controller_;
   std::unique_ptr<FeaturePromoControllerViews> feature_promo_controller_;
+
+#if defined(OS_CHROMEOS)
+  // |loading_animation_tracker_| is used to measure animation smoothness for
+  // tab loading animation.
+  base::Optional<ui::ThroughputTracker> loading_animation_tracker_;
+#endif
 
   mutable base::WeakPtrFactory<BrowserView> weak_ptr_factory_{this};
 

@@ -23,6 +23,7 @@
     {
       "name": "Scrolling Contents Layer",
       "bounds": [285, 1000],
+      "backgroundColor": "#ADD8E6",
       "transform": 2
     },
     {

@@ -197,11 +197,13 @@
 #include "ui/views/window/dialog_delegate.h"
 
 #if defined(OS_CHROMEOS)
+#include "ash/public/cpp/metrics_util.h"
 #include "ash/public/cpp/accelerators.h"
 #include "ash/public/cpp/desks_helper.h"
 #include "chrome/browser/ui/ash/window_properties.h"
 #include "chrome/browser/ui/views/frame/top_controls_slide_controller_chromeos.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
+#include "ui/compositor/throughput_tracker.h"
 #else
 #include "chrome/browser/ui/signin_view_controller.h"
 #endif  // !defined(OS_CHROMEOS)
@@ -252,6 +254,16 @@ namespace {
 // The name of a key to store on the window handle so that other code can
 // locate this object using just the handle.
 const char* const kBrowserViewKey = "__BROWSER_VIEW__";
+
+#if defined(OS_CHROMEOS)
+// UMA histograms that record animation smoothness for tab loading animation.
+constexpr char kTabLoadingSmoothnessHistogramName[] =
+    "Chrome.Tabs.AnimationSmoothness.TabLoading";
+
+void RecordTabLoadingSmoothness(int smoothness) {
+  UMA_HISTOGRAM_PERCENTAGE(kTabLoadingSmoothnessHistogramName, smoothness);
+}
+#endif
 
 // See SetDisableRevealerDelayForTesting().
 bool g_disable_revealer_delay_for_testing = false;
@@ -1004,6 +1016,12 @@ void BrowserView::UpdateDevTools() {
 void BrowserView::UpdateLoadingAnimations(bool should_animate) {
   if (should_animate) {
     if (!loading_animation_timer_.IsRunning()) {
+#if defined(OS_CHROMEOS)
+      loading_animation_tracker_.emplace(
+        GetWidget()->GetCompositor()->RequestNewThroughputTracker());
+      loading_animation_tracker_->Start(ash::metrics_util::ForSmoothness(
+        base::BindRepeating(&RecordTabLoadingSmoothness)));
+#endif
       // Loads are happening, and the timer isn't running, so start it.
       loading_animation_start_ = base::TimeTicks::Now();
       loading_animation_timer_.Start(FROM_HERE, TimeDelta::FromMilliseconds(30),
@@ -1013,6 +1031,9 @@ void BrowserView::UpdateLoadingAnimations(bool should_animate) {
   } else {
     if (loading_animation_timer_.IsRunning()) {
       loading_animation_timer_.Stop();
+#if defined(OS_CHROMEOS)
+      loading_animation_tracker_->Stop();
+#endif
       // Loads are now complete, update the state if a task was scheduled.
       LoadingAnimationCallback();
     }

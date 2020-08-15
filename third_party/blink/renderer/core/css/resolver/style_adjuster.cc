@@ -55,6 +55,7 @@
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/layout/list_marker.h"
 #include "third_party/blink/renderer/core/mathml/mathml_fraction_element.h"
+#include "third_party/blink/renderer/core/mathml/mathml_padded_element.h"
 #include "third_party/blink/renderer/core/mathml/mathml_space_element.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
@@ -748,6 +749,14 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
     }
     if (auto* space = DynamicTo<MathMLSpaceElement>(*element)) {
       space->AddMathBaselineIfNeeded(style, state.CssToLengthConversionData());
+    } else if (auto* padded = DynamicTo<MathMLPaddedElement>(*element)) {
+      padded->AddMathBaselineIfNeeded(style, state.CssToLengthConversionData());
+      padded->AddMathPaddedDepthIfNeeded(style,
+                                         state.CssToLengthConversionData());
+      padded->AddMathPaddedLSpaceIfNeeded(style,
+                                          state.CssToLengthConversionData());
+      padded->AddMathPaddedVOffsetIfNeeded(style,
+                                           state.CssToLengthConversionData());
     } else if (auto* fraction = DynamicTo<MathMLFractionElement>(*element)) {
       fraction->AddMathFractionBarThicknessIfNeeded(
           style, state.CssToLengthConversionData());

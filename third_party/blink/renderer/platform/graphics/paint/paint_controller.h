@@ -116,6 +116,14 @@ class PLATFORM_EXPORT PaintController {
     new_paint_chunks_.CreateScrollHitTestChunk(id, scroll_translation, rect);
   }
 
+  void SetPossibleBackgroundColor(const DisplayItemClient& client,
+                                  Color color,
+                                  uint64_t area) {
+    PaintChunk::Id id = {client, DisplayItem::kBoxDecorationBackground,
+                         current_fragment_};
+    new_paint_chunks_.ProcessBackgroundColorCandidate(id, color, area);
+  }
+
   template <typename DisplayItemClass, typename... Args>
   void CreateAndAppend(Args&&... args) {
     static_assert(WTF::IsSubclass<DisplayItemClass, DisplayItem>::value,

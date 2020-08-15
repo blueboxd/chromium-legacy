@@ -307,6 +307,11 @@ void TableSectionPainter::PaintBoxDecorationBackground(
         }
       }
     }
+    paint_info.context.GetPaintController().SetPossibleBackgroundColor(
+        layout_table_section_,
+        layout_table_section_.ResolveColor(GetCSSPropertyBackgroundColor())
+            .Rgb(),
+        paint_rect.Width().ToUnsigned() * paint_rect.Height().ToUnsigned());
   }
 
   if (has_box_shadow) {

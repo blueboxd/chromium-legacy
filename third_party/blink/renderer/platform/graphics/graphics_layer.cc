@@ -260,11 +260,13 @@ IntRect GraphicsLayer::InterestRect() {
   return previous_interest_rect_;
 }
 
-bool GraphicsLayer::PaintRecursively() {
-  bool painted = false;
-  ForAllPaintingGraphicsLayers(
-      *this, [&painted](GraphicsLayer& layer) { painted |= layer.Paint(); });
-  return painted;
+void GraphicsLayer::PaintRecursively(
+    HashSet<const GraphicsLayer*>& repainted_layers) {
+  ForAllPaintingGraphicsLayers(*this,
+                               [&repainted_layers](GraphicsLayer& layer) {
+                                 if (layer.Paint())
+                                   repainted_layers.insert(&layer);
+                               });
 }
 
 bool GraphicsLayer::Paint() {
@@ -282,7 +284,6 @@ bool GraphicsLayer::Paint() {
   if (PaintWithoutCommit()) {
     GetPaintController().CommitNewDisplayItems();
     UpdateShouldCreateLayersAfterPaint();
-    UpdateSafeOpaqueBackgroundColor();
   } else if (!needs_check_raster_invalidation_) {
     return false;
   }
@@ -320,14 +321,6 @@ bool GraphicsLayer::Paint() {
 
   needs_check_raster_invalidation_ = false;
   return true;
-}
-
-void GraphicsLayer::UpdateSafeOpaqueBackgroundColor() {
-  if (!DrawsContent())
-    return;
-  CcLayer().SetSafeOpaqueBackgroundColor(
-      GetPaintController().GetPaintArtifact().SafeOpaqueBackgroundColor(
-          GetPaintController().GetPaintArtifact().PaintChunks()));
 }
 
 void GraphicsLayer::UpdateShouldCreateLayersAfterPaint() {
@@ -546,12 +539,9 @@ void GraphicsLayer::SetContentsVisible(bool contents_visible) {
   UpdateLayerIsDrawable();
 }
 
-RGBA32 GraphicsLayer::BackgroundColor() const {
-  return CcLayer().background_color();
-}
-
-void GraphicsLayer::SetBackgroundColor(RGBA32 color) {
-  CcLayer().SetBackgroundColor(color);
+void GraphicsLayer::SetContentsLayerBackgroundColor(Color color) {
+  if (contents_layer_)
+    contents_layer_->SetBackgroundColor(color.Rgb());
 }
 
 bool GraphicsLayer::ContentsOpaque() const {

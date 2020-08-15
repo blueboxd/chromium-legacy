@@ -23,8 +23,7 @@
     {
       "name": "LayoutNGBlockFlow (positioned) DIV id='B' class='overlap2'",
       "position": [220, 220],
-      "bounds": [25, 90],
-      "backgroundColor": "#00FF00"
+      "bounds": [25, 90]
     }
   ],
   "transforms": [

@@ -113,8 +113,7 @@ After:
     {
       "name": "LayoutNGBlockFlow (relative positioned) DIV id='first-green-box' class='box green rotate-45deg'",
       "position": [18, 328],
-      "bounds": [174, 464],
-      "backgroundColor": "#008000"
+      "bounds": [174, 464]
     }
   ],
   "transforms": [

@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
 #include "third_party/blink/renderer/core/layout/ng/mathml/ng_math_fraction_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/mathml/ng_math_layout_utils.h"
+#include "third_party/blink/renderer/core/layout/ng/mathml/ng_math_padded_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/mathml/ng_math_radical_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/mathml/ng_math_row_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/mathml/ng_math_scripts_layout_algorithm.h"
@@ -59,6 +60,7 @@
 #include "third_party/blink/renderer/core/layout/text_autosizer.h"
 #include "third_party/blink/renderer/core/mathml/mathml_element.h"
 #include "third_party/blink/renderer/core/mathml/mathml_fraction_element.h"
+#include "third_party/blink/renderer/core/mathml/mathml_padded_element.h"
 #include "third_party/blink/renderer/core/mathml/mathml_radical_element.h"
 #include "third_party/blink/renderer/core/mathml/mathml_scripts_element.h"
 #include "third_party/blink/renderer/core/mathml/mathml_space_element.h"
@@ -123,6 +125,9 @@ NOINLINE void DetermineMathMLAlgorithmAndRun(
     } else if (IsA<MathMLRadicalElement>(element) &&
                IsValidMathMLRadical(params.node)) {
       CreateAlgorithmAndRun<NGMathRadicalLayoutAlgorithm>(params, callback);
+      return;
+    } else if (IsA<MathMLPaddedElement>(element)) {
+      CreateAlgorithmAndRun<NGMathPaddedLayoutAlgorithm>(params, callback);
       return;
     } else if (IsA<MathMLScriptsElement>(element) &&
                IsValidMathMLScript(params.node)) {

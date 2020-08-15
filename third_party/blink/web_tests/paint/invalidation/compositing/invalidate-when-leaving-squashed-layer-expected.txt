@@ -17,6 +17,7 @@
       "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (positioned) DIV)",
       "position": [42, 42],
       "bounds": [200, 200],
+      "backgroundColor": "#ADD8E6",
       "invalidations": [
         [0, 0, 200, 200]
       ],

@@ -404,8 +404,6 @@ bool CompositedLayerMapping::UpdateGraphicsLayerConfiguration(
   if (layer_config_changed)
     UpdateInternalHierarchy();
 
-  UpdateBackgroundColor();
-
   if (layout_object.IsLayoutEmbeddedContent()) {
     if (WebPluginContainerImpl* plugin = GetPluginContainer(layout_object)) {
       graphics_layer_->SetContentsToCcLayer(
@@ -701,7 +699,6 @@ void CompositedLayerMapping::UpdateGraphicsLayerGeometry(
     owning_layer_.GetScrollableArea()->PositionOverflowControls();
 
   UpdateContentsRect();
-  UpdateBackgroundColor();
   UpdateDrawsContentAndPaintsHitTest();
   UpdateElementId();
   UpdateContentsOpaque();
@@ -974,19 +971,19 @@ void CompositedLayerMapping::UpdateDrawsContentAndPaintsHitTest() {
   }
 
   draws_background_onto_content_layer_ = false;
-
   if (has_painted_content && IsTextureLayerCanvas(GetLayoutObject())) {
     CanvasRenderingContext* context =
         To<HTMLCanvasElement>(GetLayoutObject().GetNode())->RenderingContext();
     // Content layer may be null if context is lost.
     if (cc::Layer* content_layer = context->CcLayer()) {
-      Color bg_color(Color::kTransparent);
       if (ContentLayerSupportsDirectBackgroundComposition(GetLayoutObject())) {
-        bg_color = LayoutObjectBackgroundColor();
         has_painted_content = false;
         draws_background_onto_content_layer_ = true;
+        Color contents_layer_background_color =
+            GetLayoutObject().ResolveColor(GetCSSPropertyBackgroundColor());
+        graphics_layer_->SetContentsLayerBackgroundColor(
+            contents_layer_background_color);
       }
-      content_layer->SetBackgroundColor(bg_color.Rgb());
     }
   }
 
@@ -1313,28 +1310,6 @@ CompositedLayerMapping::PaintingPhaseForPrimaryLayer() const {
   }
 
   return static_cast<GraphicsLayerPaintingPhase>(phase);
-}
-
-Color CompositedLayerMapping::LayoutObjectBackgroundColor() const {
-  const auto& object = GetLayoutObject();
-  auto background_color = object.ResolveColor(GetCSSPropertyBackgroundColor());
-  auto* layout_view = DynamicTo<LayoutView>(object);
-  if (layout_view && object.GetDocument().IsInMainFrame()) {
-    return layout_view->GetFrameView()->BaseBackgroundColor().Blend(
-        background_color);
-  }
-  return background_color;
-}
-
-void CompositedLayerMapping::UpdateBackgroundColor() {
-  auto color = LayoutObjectBackgroundColor().Rgb();
-  graphics_layer_->SetBackgroundColor(
-      BackgroundPaintsOntoGraphicsLayer() ? color : SK_ColorTRANSPARENT);
-  if (scrolling_contents_layer_) {
-    scrolling_contents_layer_->SetBackgroundColor(
-        BackgroundPaintsOntoScrollingContentsLayer() ? color
-                                                     : SK_ColorTRANSPARENT);
-  }
 }
 
 bool CompositedLayerMapping::PaintsChildren() const {

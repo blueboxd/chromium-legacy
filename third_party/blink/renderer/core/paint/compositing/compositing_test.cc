@@ -385,11 +385,13 @@ TEST_P(CompositingTest, BackgroundColorInGraphicsLayer) {
   ASSERT_TRUE(scroller_box->GetBackgroundPaintLocation() ==
               kBackgroundPaintInGraphicsLayer);
 
-  // The root layer and root scrolling contents layer get background_color by
-  // blending the CSS background-color of the <html> element with
-  // LocalFrameView::BaseBackgroundColor(), which is white by default. In this
-  // case, because the background is a gradient, it will blend transparent with
-  // white, resulting in white.
+  // The root layer gets background_color by blending the CSS background-color
+  // of the <html> element with LocalFrameView::BaseBackgroundColor(), which is
+  // white by default. In this case, because the background is a gradient, it
+  // will blend transparent with white, resulting in white. Because the
+  // background is painted into the root graphics layer, the root scrolling
+  // contents layer should not checkerboard, so its background color should be
+  // transparent.
   auto* layer = CcLayersByName(RootCcLayer(), "LayoutView #document")[0];
   EXPECT_EQ(layer->background_color(), SK_ColorWHITE);
   auto* scrollable_area = GetLocalFrameView()->LayoutViewport();

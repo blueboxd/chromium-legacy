@@ -25,6 +25,7 @@
 #include "cc/trees/transform_node.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/graphics/paint/effect_paint_property_node.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_artifact.h"
@@ -148,9 +149,11 @@ class PaintArtifactCompositorTest : public testing::Test,
       const ViewportProperties& viewport_properties = ViewportProperties(),
       const WTF::Vector<const TransformPaintPropertyNode*>&
           scroll_translation_nodes = {}) {
+    HashSet<const GraphicsLayer*> repainted_layers;
     paint_artifact_compositor_->SetNeedsUpdate();
     paint_artifact_compositor_->Update(artifact, viewport_properties,
-                                       scroll_translation_nodes);
+                                       scroll_translation_nodes,
+                                       repainted_layers);
     layer_tree_->layer_tree_host()->LayoutAndUpdateLayers();
   }
 

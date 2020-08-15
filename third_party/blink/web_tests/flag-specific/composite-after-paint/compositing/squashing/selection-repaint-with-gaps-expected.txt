@@ -16,7 +16,6 @@
       "name": "LayoutNGBlockFlow (positioned) DIV class='item'",
       "position": [15, 35],
       "bounds": [100, 210],
-      "backgroundColor": "#D3D3D3",
       "invalidations": [
         [0, 80, 40, 40]
       ]
@@ -52,7 +51,6 @@
       "name": "LayoutNGBlockFlow (positioned) DIV class='item'",
       "position": [15, 35],
       "bounds": [100, 210],
-      "backgroundColor": "#D3D3D3",
       "invalidations": [
         [0, 160, 40, 40],
         [0, 80, 40, 40]

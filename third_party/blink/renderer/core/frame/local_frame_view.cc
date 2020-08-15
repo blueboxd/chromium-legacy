@@ -2669,8 +2669,9 @@ void LocalFrameView::RunPaintLifecyclePhase() {
   // is done into a special canvas. There is no point doing a normal paint step
   // (or animations update) when in this mode.
   bool is_capturing_layout = frame_->GetDocument()->IsCapturingLayout();
+  HashSet<const GraphicsLayer*> repainted_layers;
   if (!is_capturing_layout)
-    PaintTree();
+    PaintTree(repainted_layers);
 
   if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     if (GetLayoutView()->Compositor()->InCompositingMode()) {
@@ -2681,7 +2682,7 @@ void LocalFrameView::RunPaintLifecyclePhase() {
   if (!is_capturing_layout) {
     bool needed_update = !paint_artifact_compositor_ ||
                          paint_artifact_compositor_->NeedsUpdate();
-    PushPaintArtifactToCompositor();
+    PushPaintArtifactToCompositor(repainted_layers);
     ForAllNonThrottledLocalFrameViews([this](LocalFrameView& frame_view) {
       frame_view.GetScrollableArea()->UpdateCompositorScrollAnimations();
       if (const auto* animating_scrollable_areas =
@@ -2822,15 +2823,17 @@ static void UpdateLayerDebugInfoRecursively(const GraphicsLayer& root) {
       });
 }
 
-static bool PaintGraphicsLayerRecursively(GraphicsLayer* layer) {
-  bool painted = layer->PaintRecursively();
+static void PaintGraphicsLayerRecursively(
+    GraphicsLayer* layer,
+    HashSet<const GraphicsLayer*>& repainted_layers) {
+  layer->PaintRecursively(repainted_layers);
 #if DCHECK_IS_ON()
   VerboseLogGraphicsLayerTree(layer);
 #endif
-  return painted;
 }
 
-void LocalFrameView::PaintTree() {
+void LocalFrameView::PaintTree(
+    HashSet<const GraphicsLayer*>& repainted_layers) {
   SCOPED_UMA_AND_UKM_TIMER(EnsureUkmAggregator(),
                            LocalFrameUkmAggregator::kPaint);
 
@@ -2915,8 +2918,8 @@ void LocalFrameView::PaintTree() {
     // the host page and will be painted during painting of the host page.
     if (GraphicsLayer* root_graphics_layer =
             layout_view->Compositor()->PaintRootGraphicsLayer()) {
-      bool painted = PaintGraphicsLayerRecursively(root_graphics_layer);
-      if (painted) {
+      PaintGraphicsLayerRecursively(root_graphics_layer, repainted_layers);
+      if (!repainted_layers.IsEmpty()) {
         // If the painted result changed, the recorded hit test data may have
         // changed which will affect the mapped hit test geometry.
         if (GetScrollingCoordinator())
@@ -2946,7 +2949,8 @@ const cc::Layer* LocalFrameView::RootCcLayer() const {
                                     : nullptr;
 }
 
-void LocalFrameView::PushPaintArtifactToCompositor() {
+void LocalFrameView::PushPaintArtifactToCompositor(
+    const HashSet<const GraphicsLayer*>& repainted_layers) {
   TRACE_EVENT0("blink", "LocalFrameView::pushPaintArtifactToCompositor");
   if (!frame_->GetSettings()->GetAcceleratedCompositingEnabled())
     return;
@@ -2973,7 +2977,11 @@ void LocalFrameView::PushPaintArtifactToCompositor() {
 
   // Skip updating property trees, pushing cc::Layers, and issuing raster
   // invalidations if possible.
-  if (!paint_artifact_compositor_->NeedsUpdate()) {
+  // TODO(paint-team): In CompositeAfterPaint mode, repainted_layers will always
+  // be empty, even if painted output has changed. We need an equivalent signal
+  // to indicate that PAC doesn't need to run the layerization algorithm, but it
+  // does need to update properties on layers that depend on painted output.
+  if (!paint_artifact_compositor_->NeedsUpdate() && !repainted_layers.size()) {
     DCHECK(paint_controller_);
     return;
   }
@@ -3012,6 +3020,7 @@ void LocalFrameView::PushPaintArtifactToCompositor() {
     // affect caching status of DisplayItemClients because FinishCycle() is
     // not synchronized with other PaintControllers. This may live across frame
     // updates until SetForeignLayerListNeedsUpdate() is called.
+    paint_artifact_compositor_->SetNeedsUpdate();
     paint_controller_ =
         std::make_unique<PaintController>(PaintController::kTransient);
 
@@ -3045,7 +3054,7 @@ void LocalFrameView::PushPaintArtifactToCompositor() {
 
   paint_artifact_compositor_->Update(
       paint_controller_->GetPaintArtifactShared(), viewport_properties,
-      scroll_translation_nodes);
+      scroll_translation_nodes, repainted_layers);
 
   probe::LayerTreePainted(&GetFrame());
 }

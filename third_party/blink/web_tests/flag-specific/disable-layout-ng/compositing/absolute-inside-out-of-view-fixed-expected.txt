@@ -10,7 +10,8 @@
     {
       "name": "LayoutBlockFlow (positioned) DIV class='fixed'",
       "bounds": [100, 100],
-      "contentsOpaque": true
+      "contentsOpaque": true,
+      "backgroundColor": "#008000"
     },
     {
       "name": "ContentsLayer for Vertical Scrollbar Layer",

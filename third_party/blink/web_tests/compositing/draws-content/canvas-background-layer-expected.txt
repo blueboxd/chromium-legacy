@@ -10,7 +10,6 @@
       "name": "LayoutHTMLCanvas CANVAS id='canvas-simple'",
       "bounds": [50, 50],
       "contentsOpaque": true,
-      "backgroundColor": "#008000",
       "transform": 1
     },
     {
@@ -23,7 +22,6 @@
     {
       "name": "LayoutHTMLCanvas CANVAS id='canvas-transparent-background'",
       "bounds": [50, 50],
-      "backgroundColor": "#00FF0080",
       "transform": 2
     },
     {
@@ -71,7 +69,6 @@
       "name": "LayoutHTMLCanvas CANVAS id='canvas-opaque'",
       "bounds": [50, 50],
       "contentsOpaque": true,
-      "backgroundColor": "#008000",
       "transform": 6
     },
     {

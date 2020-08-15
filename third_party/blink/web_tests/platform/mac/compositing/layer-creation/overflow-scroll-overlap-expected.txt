@@ -14,21 +14,25 @@
       "transform": 1
     },
     {
-      "name": "LayoutNGBlockFlow (positioned) DIV id='scroller' class='overflow'",
+      "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (positioned) DIV id='scroller' class='overflow')",
+      "position": [12, 12],
       "bounds": [306, 206],
-      "transform": 2
+      "transform": 1
     },
     {
-      "name": "Scrolling Contents Layer",
-      "position": [3, 3],
-      "bounds": [285, 365],
+      "name": "LayoutNGBlockFlow (relative positioned) DIV class='box'",
+      "position": [23, 58],
+      "bounds": [200, 100],
+      "contentsOpaque": true,
+      "backgroundColor": "#0000FF",
       "transform": 3
     },
     {
-      "name": "ContentsLayer for Vertical Scrollbar Layer",
-      "position": [288, 3],
-      "bounds": [15, 200],
-      "transform": 2
+      "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (relative positioned) DIV class='box')",
+      "position": [23, 213],
+      "bounds": [210, 100],
+      "backgroundColor": "#0000FF",
+      "transform": 3
     }
   ],
   "transforms": [

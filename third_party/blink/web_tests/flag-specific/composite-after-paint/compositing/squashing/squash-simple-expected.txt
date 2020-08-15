@@ -16,8 +16,7 @@
     {
       "name": "LayoutNGBlockFlow (positioned) DIV class='box middle'",
       "position": [20, 20],
-      "bounds": [260, 260],
-      "backgroundColor": "#00FF00"
+      "bounds": [260, 260]
     }
   ],
   "transforms": [

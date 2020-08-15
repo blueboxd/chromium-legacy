@@ -28752,6 +28752,9 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3402" label="BluetoothRemoteGATTCharacteristic_Uuid"/>
   <int value="3403" label="BluetoothRemoteGATTDescriptor_Uuid"/>
   <int value="3404" label="BluetoothRemoteGATTService_Uuid"/>
+  <int value="3405" label="GPUAdapter_Name"/>
+  <int value="3406" label="WindowScreenInternal"/>
+  <int value="3407" label="WindowScreenPrimary"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">

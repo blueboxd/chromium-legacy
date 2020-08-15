@@ -32,7 +32,6 @@
       "name": "LayoutNGBlockFlow (relative positioned) DIV class='mv-tile'",
       "position": [8, 8],
       "bounds": [1000, 105],
-      "backgroundColor": "#ADD8E6",
       "invalidations": [
         [0, 0, 1000, 105]
       ]

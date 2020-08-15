@@ -15,7 +15,7 @@ void MathMLFractionElement::AddMathFractionBarThicknessIfNeeded(
     ComputedStyle& style,
     const CSSToLengthConversionData& conversion_data) {
   if (auto length_or_percentage_value = AddMathLengthToComputedStyle(
-          style, conversion_data, mathml_names::kLinethicknessAttr))
+          conversion_data, mathml_names::kLinethicknessAttr))
     style.SetMathFractionBarThickness(std::move(*length_or_percentage_value));
 }
 

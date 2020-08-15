@@ -14,11 +14,13 @@
     "encoding",
     "height",
     "linethickness",
+    "lspace",
     "mathbackground",
     "mathcolor",
     "mathsize",
     "mathvariant",
     "scriptlevel",
+    "voffset",
     "width",
   ],
 }

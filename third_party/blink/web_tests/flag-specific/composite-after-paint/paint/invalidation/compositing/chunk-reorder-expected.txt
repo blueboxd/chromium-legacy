@@ -9,7 +9,6 @@
     {
       "name": "LayoutNGBlockFlow DIV",
       "bounds": [784, 1],
-      "backgroundColor": "#FF0000",
       "invalidations": [
         [0, 0, 1, 1]
       ],
@@ -19,7 +18,6 @@
       "name": "LayoutNGBlockFlow (positioned) DIV id='chunk5'",
       "position": [400, 400],
       "bounds": [150, 150],
-      "backgroundColor": "#0000FF",
       "invalidations": [
         [0, 0, 150, 150]
       ],

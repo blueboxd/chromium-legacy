@@ -34,7 +34,6 @@
       "position": [5, 5],
       "bounds": [60, 172],
       "backfaceVisibility": "hidden",
-      "backgroundColor": "#0000FF",
       "transform": 1
     },
     {

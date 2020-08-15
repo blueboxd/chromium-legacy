@@ -78,7 +78,7 @@ bool DrawingDisplayItem::Equals(const DisplayItem& other) const {
   return BitmapsEqual(std::move(record), std::move(other_record), bounds);
 }
 
-SkColor DrawingDisplayItem::BackgroundColor() const {
+SkColor DrawingDisplayItem::BackgroundColor(uint64_t& area) const {
   if (GetType() != DisplayItem::kBoxDecorationBackground &&
       GetType() != DisplayItem::kDocumentBackground &&
       GetType() != DisplayItem::kDocumentRootBackdrop)
@@ -89,14 +89,30 @@ SkColor DrawingDisplayItem::BackgroundColor() const {
 
   for (cc::PaintOpBuffer::Iterator it(record_.get()); it; ++it) {
     const auto* op = *it;
-    if (op->GetType() == cc::PaintOpType::DrawRect ||
-        op->GetType() == cc::PaintOpType::DrawRRect) {
-      const auto& flags = static_cast<const cc::PaintOpWithFlags*>(op)->flags;
-      // Skip op with looper or shader which may modify the color.
-      if (!flags.getLooper() && !flags.getShader() &&
-          flags.getStyle() == cc::PaintFlags::kFill_Style)
-        return flags.getColor();
+    if (!op->IsPaintOpWithFlags())
+      continue;
+    const auto& flags = static_cast<const cc::PaintOpWithFlags*>(op)->flags;
+    // Skip op with looper or shader which may modify the color.
+    if (flags.getLooper() || flags.getShader() ||
+        flags.getStyle() != cc::PaintFlags::kFill_Style) {
+      continue;
     }
+    SkRect item_rect;
+    switch (op->GetType()) {
+      case cc::PaintOpType::DrawRect:
+        item_rect = static_cast<const cc::DrawRectOp*>(op)->rect;
+        break;
+      case cc::PaintOpType::DrawIRect:
+        item_rect = SkRect::Make(static_cast<const cc::DrawIRectOp*>(op)->rect);
+        break;
+      case cc::PaintOpType::DrawRRect:
+        item_rect = static_cast<const cc::DrawRRectOp*>(op)->rrect.rect();
+        break;
+      default:
+        continue;
+    }
+    area = static_cast<uint64_t>(item_rect.width() * item_rect.height());
+    return flags.getColor();
   }
   return SK_ColorTRANSPARENT;
 }

@@ -10,13 +10,11 @@
       "name": "LayoutNGBlockFlow (positioned) DIV id='composited-parent'",
       "position": [-100, -100],
       "bounds": [200, 200],
-      "backgroundColor": "#000000",
       "transform": 1
     },
     {
       "name": "LayoutNGBlockFlow (positioned) DIV id='software-parent'",
-      "bounds": [225, 225],
-      "backgroundColor": "#008000"
+      "bounds": [225, 225]
     }
   ],
   "transforms": [

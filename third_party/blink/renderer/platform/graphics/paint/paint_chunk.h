@@ -34,6 +34,8 @@ struct PLATFORM_EXPORT PaintChunk {
              const PropertyTreeStateOrAlias& props)
       : begin_index(begin),
         end_index(end),
+        background_color(Color::kTransparent),
+        background_color_area(0u),
         id(id),
         properties(props),
         known_to_be_opaque(false),
@@ -45,6 +47,8 @@ struct PLATFORM_EXPORT PaintChunk {
   PaintChunk(wtf_size_t begin, PaintChunk&& other)
       : begin_index(begin),
         end_index(begin + other.size()),
+        background_color(other.background_color),
+        background_color_area(other.background_color_area),
         id(other.id),
         properties(other.properties),
         hit_test_data(std::move(other.hit_test_data)),
@@ -103,6 +107,13 @@ struct PLATFORM_EXPORT PaintChunk {
   // Index of the first drawing not in this chunk, so that there are
   // |endIndex - beginIndex| drawings in the chunk.
   wtf_size_t end_index;
+
+  // Color to use for checkerboarding, derived from display item's in this
+  // chunk; or Color::kTransparent if no such display item exists.
+  Color background_color;
+
+  // The area that is painted by the paint op that defines background_color.
+  uint64_t background_color_area;
 
   // Identifier of this chunk. It should be unique if |is_cacheable| is true.
   // This is used to match a new chunk to a cached old chunk to track changes

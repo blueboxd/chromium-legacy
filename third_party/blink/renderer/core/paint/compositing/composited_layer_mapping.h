@@ -369,8 +369,6 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   // painting into the backing store.
   bool ContainsPaintedContent() const;
 
-  Color LayoutObjectBackgroundColor() const;
-  void UpdateBackgroundColor();
   void UpdateContentsRect();
   void UpdateCompositingReasons();
 

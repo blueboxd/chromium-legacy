@@ -9,7 +9,6 @@
     {
       "name": "LayoutIFrame IFRAME class='container'",
       "bounds": [304, 154],
-      "backgroundColor": "#9A9A9A",
       "transform": 1
     },
     {

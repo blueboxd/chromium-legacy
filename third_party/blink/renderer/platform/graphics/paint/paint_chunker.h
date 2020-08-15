@@ -72,13 +72,17 @@ class PLATFORM_EXPORT PaintChunker final {
       const TransformPaintPropertyNode* scroll_translation,
       const IntRect&);
 
+  void ProcessBackgroundColorCandidate(const PaintChunk::Id& id,
+                                       Color color,
+                                       uint64_t area);
+
   // Releases the generated paint chunk list and raster invalidations and
   // resets the state of this object.
   Vector<PaintChunk> ReleasePaintChunks();
 
  private:
   PaintChunk& EnsureCurrentChunk(const PaintChunk::Id&);
-  void UpdateLastChunkKnownToBeOpaque();
+  void FinalizeLastChunkProperties();
 
   Vector<PaintChunk> chunks_;
 
@@ -98,6 +102,9 @@ class PLATFORM_EXPORT PaintChunker final {
   // the item following a forced chunk. PaintController also forces new chunks
   // before and after subsequences by calling ForceNewChunk().
   bool force_new_chunk_;
+
+  Color candidate_background_color_ = Color::kTransparent;
+  uint64_t candidate_background_area_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(PaintChunker);
 };

@@ -13,6 +13,7 @@
       "name": "LayoutTextControl TEXTAREA id='editor'",
       "position": [-2, -2],
       "bounds": [185, 40],
+      "backgroundColor": "#FFFFFF",
       "invalidations": [
         [0, 0, 185, 40]
       ],

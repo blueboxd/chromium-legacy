@@ -80,6 +80,10 @@
       interfaceName: "MathMLElement",
     },
     {
+      name: "mpadded",
+      interfaceName: "MathMLPaddedElement",
+    },
+    {
       name: "mphantom",
       interfaceName: "MathMLRowElement",
     },

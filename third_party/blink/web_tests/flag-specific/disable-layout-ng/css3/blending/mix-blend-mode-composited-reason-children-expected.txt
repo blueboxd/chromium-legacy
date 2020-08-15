@@ -8,8 +8,7 @@
       "name": "LayoutBlockFlow (positioned) DIV class='stacking-context'",
       "position": [8, 8],
       "contentsOpaque": true,
-      "drawsContent": false,
-      "backgroundColor": "#FF0000"
+      "drawsContent": false
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV class='stacking-context'",

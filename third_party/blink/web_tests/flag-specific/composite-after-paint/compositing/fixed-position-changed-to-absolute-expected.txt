@@ -16,8 +16,7 @@
     {
       "name": "LayoutNGBlockFlow (positioned) DIV id='layer-A'",
       "position": [20, 20],
-      "bounds": [226, 180],
-      "backgroundColor": "#6AA6A6"
+      "bounds": [226, 180]
     }
   ],
   "transforms": [

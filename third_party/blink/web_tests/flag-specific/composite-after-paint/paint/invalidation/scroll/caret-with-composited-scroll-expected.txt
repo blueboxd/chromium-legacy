@@ -21,7 +21,6 @@
     {
       "name": "LayoutNGBlockFlow DIV id='scroller'",
       "bounds": [205, 1022],
-      "backgroundColor": "#D3D3D3",
       "invalidations": [
         [0, 998, 205, 24]
       ],

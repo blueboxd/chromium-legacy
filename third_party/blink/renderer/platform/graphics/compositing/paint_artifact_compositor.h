@@ -142,10 +142,11 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
   // noncomposited nodes, and is used for Scroll Unification to generate scroll
   // nodes for noncomposited scrollers to complete the compositor's scroll
   // property tree.
-  void Update(scoped_refptr<const PaintArtifact>,
-              const ViewportProperties& viewport_properties,
-              const Vector<const TransformPaintPropertyNode*>&
-                  scroll_translation_nodes);
+  void Update(
+      scoped_refptr<const PaintArtifact>,
+      const ViewportProperties& viewport_properties,
+      const Vector<const TransformPaintPropertyNode*>& scroll_translation_nodes,
+      const HashSet<const GraphicsLayer*>& repainted_layers);
 
   bool DirectlyUpdateCompositedOpacityValue(const EffectPaintPropertyNode&);
   bool DirectlyUpdateScrollOffsetTransform(const TransformPaintPropertyNode&);
@@ -278,6 +279,10 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
     } compositing_type;
   };
 
+  void UpdateRepaintedLayerProperties(
+      scoped_refptr<const PaintArtifact> paint_artifact,
+      const HashSet<const GraphicsLayer*>& repainted_layers) const;
+
   void DecompositeTransforms(const PaintArtifact&);
 
   // Collects the PaintChunks into groups which will end up in the same
@@ -316,7 +321,8 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
       Vector<std::unique_ptr<ContentLayerClientImpl>>&
           new_content_layer_clients,
       Vector<scoped_refptr<cc::Layer>>& new_scroll_hit_test_layers,
-      Vector<scoped_refptr<cc::ScrollbarLayerBase>>& new_scrollbar_layers);
+      Vector<scoped_refptr<cc::ScrollbarLayerBase>>& new_scrollbar_layers,
+      const HashSet<const GraphicsLayer*>& repainted_layers);
 
   bool PropertyTreeStateChanged(const PropertyTreeState&) const;
 

@@ -37,13 +37,13 @@ class CORE_EXPORT MathMLElement : public Element {
       const AtomicString&,
       MutableCSSPropertyValueSet*) override;
 
+  enum class AllowPercentages { kYes, kNo };
   base::Optional<Length> AddMathLengthToComputedStyle(
-      ComputedStyle&,
       const CSSToLengthConversionData&,
-      const QualifiedName&);
+      const QualifiedName&,
+      AllowPercentages allow_percentages = AllowPercentages::kYes);
 
- private:
-  void ParseAttribute(const AttributeModificationParams&) final;
+  void ParseAttribute(const AttributeModificationParams&) override;
 
   bool IsMathMLElement() const =
       delete;  // This will catch anyone doing an unnecessary check.

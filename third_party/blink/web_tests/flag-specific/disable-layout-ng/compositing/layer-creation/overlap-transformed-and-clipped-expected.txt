@@ -16,6 +16,7 @@
     {
       "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV class='over')",
       "bounds": [100, 100],
+      "backgroundColor": "#008000",
       "transform": 1
     }
   ],

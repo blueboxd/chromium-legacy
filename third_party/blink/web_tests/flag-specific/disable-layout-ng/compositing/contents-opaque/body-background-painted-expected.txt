@@ -8,8 +8,7 @@
     },
     {
       "name": "LayoutBlockFlow HTML",
-      "bounds": [800, 600],
-      "backgroundColor": "#D3D3D3"
+      "bounds": [800, 600]
     },
     {
       "name": "LayoutBlockFlow (positioned) DIV id='underbody'",

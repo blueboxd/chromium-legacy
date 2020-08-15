@@ -1,8 +1,0 @@
-This is a testharness.js-based test.
-PASS lspace/voffset shifts don't affect mpadded preferred width
-PASS lspace/voffset shifts don't affect mpadded size
-FAIL content is shifted by the specified lspace/voffset assert_approx_equals: positive lspace expected 5 +/- 1 but got 0
-FAIL content is shifted by the specified lspace/voffset (RTL) assert_approx_equals: positive lspace expected -5 +/- 1 but got 0
-FAIL dynamic changes of lspace/voffset assert_approx_equals: attach lspace expected 5 +/- 1 but got 0
-Harness: the test ran to completion.
-

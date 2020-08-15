@@ -2,17 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/layout/ng/mathml/layout_ng_mathml_square_root.h"
+#include "third_party/blink/renderer/core/layout/ng/mathml/layout_ng_mathml_block_with_anonymous_mrow.h"
 
 namespace blink {
 
-LayoutNGMathMLSquareRoot::LayoutNGMathMLSquareRoot(Element* element)
+LayoutNGMathMLBlockWithAnonymousMrow::LayoutNGMathMLBlockWithAnonymousMrow(
+    Element* element)
     : LayoutNGMathMLBlock(element) {
   DCHECK(element);
 }
 
-void LayoutNGMathMLSquareRoot::AddChild(LayoutObject* new_child,
-                                        LayoutObject* before_child) {
+void LayoutNGMathMLBlockWithAnonymousMrow::AddChild(
+    LayoutObject* new_child,
+    LayoutObject* before_child) {
   LayoutBlock* anonymous_mrow = To<LayoutBlock>(FirstChild());
   if (!anonymous_mrow) {
     scoped_refptr<ComputedStyle> new_style =

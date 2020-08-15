@@ -15,7 +15,6 @@
     {
       "name": "LayoutBlockFlow BODY",
       "bounds": [284, 84],
-      "backgroundColor": "#FFFF00",
       "transform": 1
     },
     {

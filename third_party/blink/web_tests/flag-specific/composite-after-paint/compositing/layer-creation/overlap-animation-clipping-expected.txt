@@ -42,8 +42,7 @@
     {
       "name": "LayoutNGBlockFlow (relative positioned) DIV class='box yellow'",
       "position": [18, 571],
-      "bounds": [151, 231],
-      "backgroundColor": "#FFFF00"
+      "bounds": [151, 231]
     }
   ],
   "transforms": [

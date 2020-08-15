@@ -1,0 +1,17 @@
+CONSOLE MESSAGE: line 12: group with object [object Object]
+CONSOLE MESSAGE: line 13: Message inside group
+CONSOLE MESSAGE: line 14: console.groupEnd
+Tests that clicks on console.group target the appropriate element.
+
+
+Before
+console-group-click.js:12 group with object {x: 1}
+
+Click on the group
+console-group-click.js:12 group with object {x: 1}
+console-group-click.js:13 Message inside group
+
+Click on the object
+console-group-click.js:12 group with object {x: 1}x: 1__proto__: Object
+console-group-click.js:13 Message inside group
+

@@ -19,7 +19,9 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
+#include "third_party/blink/renderer/platform/graphics/compositing/paint_artifact_compositor.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
+#include "third_party/blink/renderer/platform/testing/find_cc_layer.h"
 
 #include "third_party/blink/renderer/core/paint/compositing/graphics_layer_tree_as_text.h"
 
@@ -1380,9 +1382,10 @@ TEST_F(CompositedLayerMappingTest, ScrollingContainerBoundsChange) {
 TEST_F(CompositedLayerMappingTest, MainFrameLayerBackgroundColor) {
   UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(Color::kWhite, GetDocument().View()->BaseBackgroundColor());
-  auto* view_layer =
-      GetDocument().GetLayoutView()->Layer()->GraphicsLayerBacking();
-  EXPECT_EQ(Color::kWhite, view_layer->BackgroundColor());
+  auto* view_cc_layer = ScrollingContentsCcLayerByScrollElementId(
+      GetFrame().View()->RootCcLayer(),
+      GetFrame().View()->LayoutViewport()->GetScrollElementId());
+  EXPECT_EQ(SK_ColorWHITE, view_cc_layer->background_color());
 
   Color base_background(255, 0, 0);
   GetDocument().View()->SetBaseBackgroundColor(base_background);
@@ -1390,33 +1393,8 @@ TEST_F(CompositedLayerMappingTest, MainFrameLayerBackgroundColor) {
                                      "background: rgba(0, 255, 0, 0.5)");
   UpdateAllLifecyclePhasesForTest();
   EXPECT_EQ(base_background, GetDocument().View()->BaseBackgroundColor());
-  EXPECT_EQ(Color(127, 128, 0, 255), view_layer->BackgroundColor());
-}
-
-TEST_F(CompositedLayerMappingTest, ScrollingLayerBackgroundColor) {
-  SetBodyInnerHTML(R"HTML(
-    <style>.color {background-color: blue}</style>
-    <div id='target' style='width: 100px; height: 100px;
-         overflow: scroll; will-change: transform'>
-      <div style='height: 200px'></div>
-    </div>
-  )HTML");
-
-  auto* target = GetDocument().getElementById("target");
-  auto* mapping = ToLayoutBoxModelObject(target->GetLayoutObject())
-                      ->Layer()
-                      ->GetCompositedLayerMapping();
-  auto* graphics_layer = mapping->MainGraphicsLayer();
-  auto* scrolling_contents_layer = mapping->ScrollingContentsLayer();
-  ASSERT_TRUE(graphics_layer);
-  ASSERT_TRUE(scrolling_contents_layer);
-  EXPECT_EQ(Color::kTransparent, graphics_layer->BackgroundColor());
-  EXPECT_EQ(Color::kTransparent, scrolling_contents_layer->BackgroundColor());
-
-  target->setAttribute(html_names::kClassAttr, "color");
-  UpdateAllLifecyclePhasesForTest();
-  EXPECT_EQ(Color::kTransparent, graphics_layer->BackgroundColor());
-  EXPECT_EQ(Color(0, 0, 255), scrolling_contents_layer->BackgroundColor());
+  EXPECT_EQ(SkColorSetARGB(255, 127, 128, 0),
+            view_cc_layer->background_color());
 }
 
 TEST_F(CompositedLayerMappingTest, ScrollLayerSizingSubpixelAccumulation) {

@@ -29,7 +29,6 @@
       "name": "LayoutNGBlockFlow (positioned) DIV id='inner'",
       "position": [2, 2],
       "bounds": [5000, 9000],
-      "backgroundColor": "#808080",
       "transform": 3
     },
     {

@@ -131,7 +131,8 @@ TEST_P(GraphicsLayerTest, PaintRecursively) {
   EXPECT_TRUE(transform2->Changed(PaintPropertyChangeType::kChangedOnlyValues,
                                   transform_root));
   layers_.graphics_layer_client().SetNeedsRepaint(true);
-  layers_.graphics_layer().PaintRecursively();
+  HashSet<const GraphicsLayer*> repainted_layers;
+  layers_.graphics_layer().PaintRecursively(repainted_layers);
   layers_.graphics_layer().GetPaintController().FinishCycle();
 }
 

@@ -4,7 +4,7 @@
       "name": "Scrolling Contents Layer",
       "bounds": [600, 250],
       "contentsOpaque": true,
-      "backgroundColor": "#FFFFFF",
+      "backgroundColor": "#D3D3D3",
       "invalidations": [
         [0, 0, 600, 250]
       ]
@@ -17,7 +17,7 @@
       "name": "Scrolling Contents Layer",
       "bounds": [400, 250],
       "contentsOpaque": true,
-      "backgroundColor": "#FFFFFF",
+      "backgroundColor": "#D3D3D3",
       "invalidations": [
         [0, 0, 400, 250]
       ]
@@ -30,7 +30,7 @@
       "name": "Scrolling Contents Layer",
       "bounds": [400, 600],
       "contentsOpaque": true,
-      "backgroundColor": "#FFFFFF",
+      "backgroundColor": "#D3D3D3",
       "invalidations": [
         [0, 0, 400, 600]
       ]
@@ -43,7 +43,7 @@
       "name": "Scrolling Contents Layer",
       "bounds": [800, 600],
       "contentsOpaque": true,
-      "backgroundColor": "#FFFFFF",
+      "backgroundColor": "#D3D3D3",
       "invalidations": [
         [0, 0, 800, 600]
       ]

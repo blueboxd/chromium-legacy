@@ -47,8 +47,8 @@
     // https://github.com/webscreens/screen-enumeration
     [HighEntropy=Direct, MeasureAs=WindowScreenLeft, RuntimeEnabled=WindowPlacement] readonly attribute long left;
     [HighEntropy=Direct, MeasureAs=WindowScreenTop, RuntimeEnabled=WindowPlacement] readonly attribute long top;
-    [RuntimeEnabled=WindowPlacement] readonly attribute boolean internal;
-    [RuntimeEnabled=WindowPlacement] readonly attribute boolean primary;
+    [HighEntropy=Direct, MeasureAs=WindowScreenInternal, RuntimeEnabled=WindowPlacement] readonly attribute boolean internal;
+    [HighEntropy=Direct, MeasureAs=WindowScreenPrimary, RuntimeEnabled=WindowPlacement] readonly attribute boolean primary;
     [RuntimeEnabled=WindowPlacement] readonly attribute float scaleFactor;
     [RuntimeEnabled=WindowPlacement] readonly attribute DOMString id;
     [RuntimeEnabled=WindowPlacement] readonly attribute boolean touchSupport;

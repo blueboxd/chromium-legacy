@@ -8,19 +8,16 @@
     },
     {
       "name": "LayoutNGBlockFlow (positioned) DIV class='composited'",
-      "bounds": [500, 250],
-      "backgroundColor": "#000000"
+      "bounds": [500, 250]
     },
     {
       "name": "LayoutNGBlockFlow (positioned) DIV class='composited'",
       "bounds": [150, 150],
-      "backgroundColor": "#000000",
       "transform": 1
     },
     {
       "name": "LayoutNGBlockFlow (positioned) DIV class='indicator box'",
-      "bounds": [100, 350],
-      "backgroundColor": "#008000"
+      "bounds": [100, 350]
     }
   ],
   "transforms": [

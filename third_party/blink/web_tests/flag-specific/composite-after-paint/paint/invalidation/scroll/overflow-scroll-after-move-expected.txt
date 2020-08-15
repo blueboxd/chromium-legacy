@@ -33,7 +33,6 @@
     {
       "name": "LayoutNGBlockFlow (positioned) DIV id='scroller'",
       "bounds": [285, 900],
-      "backgroundColor": "#CCEEFF",
       "invalidations": [
         [50, 310, 200, 50],
         [50, 200, 200, 50]

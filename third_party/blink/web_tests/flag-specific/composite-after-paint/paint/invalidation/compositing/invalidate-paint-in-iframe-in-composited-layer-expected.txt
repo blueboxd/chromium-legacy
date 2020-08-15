@@ -14,7 +14,6 @@
     {
       "name": "LayoutNGBlockFlow DIV",
       "bounds": [304, 200],
-      "backgroundColor": "#9A9A9A",
       "invalidations": [
         [10, 10, 50, 50]
       ],

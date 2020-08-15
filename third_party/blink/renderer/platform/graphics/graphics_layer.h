@@ -137,11 +137,7 @@ class PLATFORM_EXPORT GraphicsLayer : public DisplayItemClient,
   bool ContentsAreVisible() const { return contents_visible_; }
   void SetContentsVisible(bool);
 
-  // For special cases, e.g. drawing missing tiles on Android.
-  // The compositor should never paint this color in normal cases because the
-  // Layer will paint the background by itself.
-  RGBA32 BackgroundColor() const;
-  void SetBackgroundColor(RGBA32);
+  void SetContentsLayerBackgroundColor(Color color);
 
   // Opaque means that we know the layer contents have no alpha.
   bool ContentsOpaque() const;
@@ -184,8 +180,7 @@ class PLATFORM_EXPORT GraphicsLayer : public DisplayItemClient,
                                PaintInvalidationReason);
 
   IntRect InterestRect();
-  // Returns true if this or any descendant is repainted.
-  bool PaintRecursively();
+  void PaintRecursively(HashSet<const GraphicsLayer*>& repainted_layers);
   // Returns true if this layer is repainted.
   bool Paint();
 
@@ -251,7 +246,6 @@ class PLATFORM_EXPORT GraphicsLayer : public DisplayItemClient,
   size_t GetApproximateUnsharedMemoryUsage() const final;
 
   void UpdateShouldCreateLayersAfterPaint();
-  void UpdateSafeOpaqueBackgroundColor();
 
   // Returns true if PaintController::PaintArtifact() changed and needs commit.
   bool PaintWithoutCommit(const IntRect* interest_rect = nullptr);

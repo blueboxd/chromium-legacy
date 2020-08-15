@@ -11,6 +11,7 @@
       "name": "LayoutBlockFlow DIV id='transform'",
       "position": [100, 100],
       "bounds": [256, 256],
+      "backgroundColor": "#FF0000",
       "transform": 3
     },
     {

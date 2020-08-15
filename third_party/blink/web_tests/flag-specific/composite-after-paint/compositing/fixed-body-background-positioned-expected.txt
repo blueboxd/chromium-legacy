@@ -14,7 +14,6 @@
     {
       "name": "LayoutNGBlockFlow HTML",
       "bounds": [785, 3700],
-      "backgroundColor": "#00000080",
       "transform": 1
     }
   ],

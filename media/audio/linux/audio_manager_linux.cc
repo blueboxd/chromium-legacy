@@ -13,9 +13,13 @@
 #if defined(USE_ALSA)
 #include "media/audio/alsa/audio_manager_alsa.h"
 #endif
-#if defined(USE_CRAS)
+
+#if defined(USE_CRAS) && defined(OS_CHROMEOS)
+#include "media/audio/cras/audio_manager_chromeos.h"
+#elif defined(USE_CRAS)
 #include "media/audio/cras/audio_manager_cras.h"
 #endif
+
 #if defined(USE_PULSEAUDIO)
 #include "media/audio/pulse/audio_manager_pulse.h"
 #include "media/audio/pulse/pulse_util.h"
@@ -43,10 +47,15 @@ std::unique_ptr<media::AudioManager> CreateAudioManager(
 #if defined(USE_CRAS)
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseCras)) {
     UMA_HISTOGRAM_ENUMERATION("Media.LinuxAudioIO", kCras, kAudioIOMax + 1);
+#if defined(OS_CHROMEOS)
+    return std::make_unique<AudioManagerChromeOS>(std::move(audio_thread),
+                                                  audio_log_factory);
+#else
     return std::make_unique<AudioManagerCras>(std::move(audio_thread),
-                                              audio_log_factory);
-  }
+                                                   audio_log_factory);
 #endif
+  }
+#endif // defined(USE_CRAS)
 
 #if defined(USE_PULSEAUDIO)
   pa_threaded_mainloop* pa_mainloop = nullptr;

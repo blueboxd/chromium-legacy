@@ -4142,27 +4142,296 @@ constexpr auto set_symmetric_difference(Range1&& range1,
 // [push.heap] push_heap
 // Reference: https://wg21.link/push.heap
 
-// TODO(crbug.com/1071094): Implement.
+// Preconditions: The range `[first, last - 1)` is a valid heap with respect to
+// `comp` and `proj`.
+//
+// Effects: Places the value in the location `last - 1` into the resulting heap
+// `[first, last)`.
+//
+// Returns: `last`.
+//
+// Complexity: At most `log(last - first)` comparisons and twice as many
+// projections.
+//
+// Reference: https://wg21.link/push.heap#:~:text=ranges::push_heap(I
+template <typename RandomAccessIterator,
+          typename Comp = ranges::less,
+          typename Proj = identity,
+          typename = internal::iterator_category_t<RandomAccessIterator>,
+          typename = indirect_result_t<Comp&,
+                                       projected<RandomAccessIterator, Proj>,
+                                       projected<RandomAccessIterator, Proj>>>
+constexpr auto push_heap(RandomAccessIterator first,
+                         RandomAccessIterator last,
+                         Comp comp = {},
+                         Proj proj = {}) {
+  std::push_heap(first, last,
+                 internal::ProjectedBinaryPredicate(comp, proj, proj));
+  return last;
+}
+
+// Preconditions: The range `[begin(range), end(range) - 1)` is a valid heap
+// with respect to `comp` and `proj`.
+//
+// Effects: Places the value in the location `end(range) - 1` into the resulting
+// heap `range`.
+//
+// Returns: `end(range)`.
+//
+// Complexity: At most `log(size(range))` comparisons and twice as many
+// projections.
+//
+// Reference: https://wg21.link/push.heap#:~:text=ranges::push_heap(R
+template <typename Range,
+          typename Comp = ranges::less,
+          typename Proj = identity,
+          typename = internal::range_category_t<Range>,
+          typename = indirect_result_t<Comp&,
+                                       projected<iterator_t<Range>, Proj>,
+                                       projected<iterator_t<Range>, Proj>>>
+constexpr auto push_heap(Range&& range, Comp comp = {}, Proj proj = {}) {
+  return ranges::push_heap(ranges::begin(range), ranges::end(range),
+                           std::move(comp), std::move(proj));
+}
 
 // [pop.heap] pop_heap
 // Reference: https://wg21.link/pop.heap
 
-// TODO(crbug.com/1071094): Implement.
+// Preconditions: The range `[first, last)` is a valid non-empty heap with
+// respect to `comp` and `proj`.
+//
+// Effects: Swaps the value in the location `first` with the value in the
+// location `last - 1` and makes `[first, last - 1)` into a heap with respect to
+// `comp` and `proj`.
+//
+// Returns: `last`.
+//
+// Complexity: At most `2 log(last - first)` comparisons and twice as many
+// projections.
+//
+// Reference: https://wg21.link/pop.heap#:~:text=ranges::pop_heap(I
+template <typename RandomAccessIterator,
+          typename Comp = ranges::less,
+          typename Proj = identity,
+          typename = internal::iterator_category_t<RandomAccessIterator>,
+          typename = indirect_result_t<Comp&,
+                                       projected<RandomAccessIterator, Proj>,
+                                       projected<RandomAccessIterator, Proj>>>
+constexpr auto pop_heap(RandomAccessIterator first,
+                        RandomAccessIterator last,
+                        Comp comp = {},
+                        Proj proj = {}) {
+  std::pop_heap(first, last,
+                internal::ProjectedBinaryPredicate(comp, proj, proj));
+  return last;
+}
+
+// Preconditions: `range` is a valid non-empty heap with respect to `comp` and
+// `proj`.
+//
+// Effects: Swaps the value in the location `begin(range)` with the value in the
+// location `end(range) - 1` and makes `[begin(range), end(range) - 1)` into a
+// heap with respect to `comp` and `proj`.
+//
+// Returns: `end(range)`.
+//
+// Complexity: At most `2 log(size(range))` comparisons and twice as many
+// projections.
+//
+// Reference: https://wg21.link/pop.heap#:~:text=ranges::pop_heap(R
+template <typename Range,
+          typename Comp = ranges::less,
+          typename Proj = identity,
+          typename = internal::range_category_t<Range>,
+          typename = indirect_result_t<Comp&,
+                                       projected<iterator_t<Range>, Proj>,
+                                       projected<iterator_t<Range>, Proj>>>
+constexpr auto pop_heap(Range&& range, Comp comp = {}, Proj proj = {}) {
+  return ranges::pop_heap(ranges::begin(range), ranges::end(range),
+                          std::move(comp), std::move(proj));
+}
 
 // [make.heap] make_heap
 // Reference: https://wg21.link/make.heap
 
-// TODO(crbug.com/1071094): Implement.
+// Effects: Constructs a heap with respect to `comp` and `proj` out of the range
+// `[first, last)`.
+//
+// Returns: `last`.
+//
+// Complexity: At most `3 log(last - first)` comparisons and twice as many
+// projections.
+//
+// Reference: https://wg21.link/make.heap#:~:text=ranges::make_heap(I
+template <typename RandomAccessIterator,
+          typename Comp = ranges::less,
+          typename Proj = identity,
+          typename = internal::iterator_category_t<RandomAccessIterator>,
+          typename = indirect_result_t<Comp&,
+                                       projected<RandomAccessIterator, Proj>,
+                                       projected<RandomAccessIterator, Proj>>>
+constexpr auto make_heap(RandomAccessIterator first,
+                         RandomAccessIterator last,
+                         Comp comp = {},
+                         Proj proj = {}) {
+  std::make_heap(first, last,
+                 internal::ProjectedBinaryPredicate(comp, proj, proj));
+  return last;
+}
+
+// Effects: Constructs a heap with respect to `comp` and `proj` out of `range`.
+//
+// Returns: `end(range)`.
+//
+// Complexity: At most `3 log(size(range))` comparisons and twice as many
+// projections.
+//
+// Reference: https://wg21.link/make.heap#:~:text=ranges::make_heap(R
+template <typename Range,
+          typename Comp = ranges::less,
+          typename Proj = identity,
+          typename = internal::range_category_t<Range>,
+          typename = indirect_result_t<Comp&,
+                                       projected<iterator_t<Range>, Proj>,
+                                       projected<iterator_t<Range>, Proj>>>
+constexpr auto make_heap(Range&& range, Comp comp = {}, Proj proj = {}) {
+  return ranges::make_heap(ranges::begin(range), ranges::end(range),
+                           std::move(comp), std::move(proj));
+}
 
 // [sort.heap] sort_heap
 // Reference: https://wg21.link/sort.heap
 
-// TODO(crbug.com/1071094): Implement.
+// Preconditions: The range `[first, last)` is a valid heap with respect to
+// `comp` and `proj`.
+//
+// Effects: Sorts elements in the heap `[first, last)` with respect to `comp`
+// and `proj`.
+//
+// Returns: `last`.
+//
+// Complexity: At most `2 N log N` comparisons, where `N = last - first`, and
+// twice as many projections.
+//
+// Reference: https://wg21.link/sort.heap#:~:text=ranges::sort_heap(I
+template <typename RandomAccessIterator,
+          typename Comp = ranges::less,
+          typename Proj = identity,
+          typename = internal::iterator_category_t<RandomAccessIterator>,
+          typename = indirect_result_t<Comp&,
+                                       projected<RandomAccessIterator, Proj>,
+                                       projected<RandomAccessIterator, Proj>>>
+constexpr auto sort_heap(RandomAccessIterator first,
+                         RandomAccessIterator last,
+                         Comp comp = {},
+                         Proj proj = {}) {
+  std::sort_heap(first, last,
+                 internal::ProjectedBinaryPredicate(comp, proj, proj));
+  return last;
+}
+
+// Preconditions: `range` is a valid heap with respect to `comp` and `proj`.
+//
+// Effects: Sorts elements in the heap `range` with respect to `comp` and
+// `proj`.
+//
+// Returns: `end(range)`.
+//
+// Complexity: At most `2 N log N` comparisons, where `N = size(range)`, and
+// twice as many projections.
+//
+// Reference: https://wg21.link/sort.heap#:~:text=ranges::sort_heap(R
+template <typename Range,
+          typename Comp = ranges::less,
+          typename Proj = identity,
+          typename = internal::range_category_t<Range>,
+          typename = indirect_result_t<Comp&,
+                                       projected<iterator_t<Range>, Proj>,
+                                       projected<iterator_t<Range>, Proj>>>
+constexpr auto sort_heap(Range&& range, Comp comp = {}, Proj proj = {}) {
+  return ranges::sort_heap(ranges::begin(range), ranges::end(range),
+                           std::move(comp), std::move(proj));
+}
 
 // [is.heap] is_heap
 // Reference: https://wg21.link/is.heap
 
-// TODO(crbug.com/1071094): Implement.
+// Returns: Whether the range `[first, last)` is a heap with respect to `comp`
+// and `proj`.
+//
+// Complexity: Linear.
+//
+// Reference: https://wg21.link/is.heap#:~:text=ranges::is_heap(I
+template <typename RandomAccessIterator,
+          typename Comp = ranges::less,
+          typename Proj = identity,
+          typename = internal::iterator_category_t<RandomAccessIterator>,
+          typename = indirect_result_t<Comp&,
+                                       projected<RandomAccessIterator, Proj>,
+                                       projected<RandomAccessIterator, Proj>>>
+constexpr auto is_heap(RandomAccessIterator first,
+                       RandomAccessIterator last,
+                       Comp comp = {},
+                       Proj proj = {}) {
+  return std::is_heap(first, last,
+                      internal::ProjectedBinaryPredicate(comp, proj, proj));
+}
+
+// Returns: Whether `range` is a heap with respect to `comp` and `proj`.
+//
+// Complexity: Linear.
+//
+// Reference: https://wg21.link/is.heap#:~:text=ranges::is_heap(R
+template <typename Range,
+          typename Comp = ranges::less,
+          typename Proj = identity,
+          typename = internal::range_category_t<Range>,
+          typename = indirect_result_t<Comp&,
+                                       projected<iterator_t<Range>, Proj>,
+                                       projected<iterator_t<Range>, Proj>>>
+constexpr auto is_heap(Range&& range, Comp comp = {}, Proj proj = {}) {
+  return ranges::is_heap(ranges::begin(range), ranges::end(range),
+                         std::move(comp), std::move(proj));
+}
+
+// Returns: The last iterator `i` in `[first, last]` for which the range
+// `[first, i)` is a heap with respect to `comp` and `proj`.
+//
+// Complexity: Linear.
+//
+// Reference: https://wg21.link/is.heap#:~:text=ranges::is_heap_until(I
+template <typename RandomAccessIterator,
+          typename Comp = ranges::less,
+          typename Proj = identity,
+          typename = internal::iterator_category_t<RandomAccessIterator>,
+          typename = indirect_result_t<Comp&,
+                                       projected<RandomAccessIterator, Proj>,
+                                       projected<RandomAccessIterator, Proj>>>
+constexpr auto is_heap_until(RandomAccessIterator first,
+                             RandomAccessIterator last,
+                             Comp comp = {},
+                             Proj proj = {}) {
+  return std::is_heap_until(
+      first, last, internal::ProjectedBinaryPredicate(comp, proj, proj));
+}
+
+// Returns: The last iterator `i` in `[begin(range), end(range)]` for which the
+// range `[begin(range), i)` is a heap with respect to `comp` and `proj`.
+//
+// Complexity: Linear.
+//
+// Reference: https://wg21.link/is.heap#:~:text=ranges::is_heap_until(R
+template <typename Range,
+          typename Comp = ranges::less,
+          typename Proj = identity,
+          typename = internal::range_category_t<Range>,
+          typename = indirect_result_t<Comp&,
+                                       projected<iterator_t<Range>, Proj>,
+                                       projected<iterator_t<Range>, Proj>>>
+constexpr auto is_heap_until(Range&& range, Comp comp = {}, Proj proj = {}) {
+  return ranges::is_heap_until(ranges::begin(range), ranges::end(range),
+                               std::move(comp), std::move(proj));
+}
 
 // [alg.min.max] Minimum and maximum
 // Reference: https://wg21.link/alg.min.max

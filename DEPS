@@ -266,7 +266,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '274121f498145a905f59bd9deedafa86212f7bbb',
+  'devtools_frontend_revision': '9bf882434e9999137944bd9e6b9e090bb4ae4366',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -1518,7 +1518,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/windows-amd64',
-          'version': 'AJ3gzpNiFIZohkcHKfxOAXUjhROtipQtPmnH7iw0bRsC',
+          'version': 'FGY81gj5rN-lYgus1n59hFCTvkzS0qX1MBoh45KlK9kC',
         },
       ],
       'dep_type': 'cipd',

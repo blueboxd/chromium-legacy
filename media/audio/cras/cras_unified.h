@@ -24,7 +24,7 @@
 
 namespace media {
 
-class AudioManagerCras;
+class AudioManagerCrasBase;
 
 // Implementation of AudioOuputStream for Chrome OS using the Chrome OS audio
 // server.
@@ -36,7 +36,7 @@ class MEDIA_EXPORT CrasUnifiedStream : public AudioOutputStream {
   // The ctor takes all the usual parameters, plus |manager| which is the
   // audio manager who is creating this object.
   CrasUnifiedStream(const AudioParameters& params,
-                    AudioManagerCras* manager,
+                    AudioManagerCrasBase* manager,
                     const std::string& device_id);
 
   // The dtor is typically called by the AudioManager only and it is usually
@@ -103,7 +103,7 @@ class MEDIA_EXPORT CrasUnifiedStream : public AudioOutputStream {
   float volume_;
 
   // Audio manager that created us.  Used to report that we've been closed.
-  AudioManagerCras* manager_;
+  AudioManagerCrasBase* manager_;
 
   // Callback to get audio samples.
   AudioSourceCallback* source_callback_;

@@ -57,6 +57,10 @@ class PaymentAppFactory {
     virtual bool IsOffTheRecord() const = 0;
     virtual PaymentRequestSpec* GetSpec() const = 0;
 
+    // Returns the Android package name of the Trusted Web Activity that invoked
+    // this browser, if any. Otherwise, an empty string.
+    virtual std::string GetTwaPackageName() const = 0;
+
     // Tells the UI to show the processing spinner. Only desktop UI needs this
     // notification.
     virtual void ShowProcessingSpinner() = 0;

@@ -17,7 +17,7 @@
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/audio/cras_audio_client.h"
 #include "media/audio/audio_device_description.h"
-#include "media/audio/cras/audio_manager_cras.h"
+#include "media/audio/cras/audio_manager_chromeos.h"
 #include "media/audio/fake_audio_log_factory.h"
 #include "media/audio/mock_audio_source_callback.h"
 #include "media/audio/test_audio_thread.h"
@@ -39,11 +39,11 @@ using testing::StrictMock;
 
 namespace media {
 
-class MockAudioManagerCras : public AudioManagerCras {
+class MockAudioManagerCras : public AudioManagerChromeOS {
  public:
   MockAudioManagerCras()
-      : AudioManagerCras(std::make_unique<TestAudioThread>(),
-                         &fake_audio_log_factory_) {}
+      : AudioManagerChromeOS(std::make_unique<TestAudioThread>(),
+                             &fake_audio_log_factory_) {}
 
   // We need to override this function in order to skip the checking the number
   // of active output streams. It is because the number of active streams

@@ -13,9 +13,6 @@
 #include "base/stl_util.h"
 #include "media/audio/audio_device_description.h"
 #include "media/audio/audio_output_dispatcher.h"
-#if defined(USE_CRAS)
-#include "media/audio/cras/audio_manager_cras.h"
-#endif
 #include "media/audio/alsa/alsa_input.h"
 #include "media/audio/alsa/alsa_output.h"
 #include "media/audio/alsa/alsa_wrapper.h"

@@ -111,6 +111,10 @@ PaymentRequestSpec* PaymentRequestState::GetSpec() const {
   return spec_;
 }
 
+std::string PaymentRequestState::GetTwaPackageName() const {
+  return GetPaymentRequestDelegate()->GetTwaPackageName();
+}
+
 const GURL& PaymentRequestState::GetTopOrigin() {
   return top_origin_;
 }

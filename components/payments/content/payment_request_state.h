@@ -132,6 +132,7 @@ class PaymentRequestState : public PaymentAppFactory::Delegate,
   ContentPaymentRequestDelegate* GetPaymentRequestDelegate() const override;
   void ShowProcessingSpinner() override;
   PaymentRequestSpec* GetSpec() const override;
+  std::string GetTwaPackageName() const override;
   const GURL& GetTopOrigin() override;
   const GURL& GetFrameOrigin() override;
   const url::Origin& GetFrameSecurityOrigin() override;

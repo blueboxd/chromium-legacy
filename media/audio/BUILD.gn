@@ -254,15 +254,26 @@ source_set("audio") {
 
   if (use_cras) {
     sources += [
-      "cras/audio_manager_cras.cc",
-      "cras/audio_manager_cras.h",
+      "cras/audio_manager_cras_base.cc",
+      "cras/audio_manager_cras_base.h",
       "cras/cras_input.cc",
       "cras/cras_input.h",
       "cras/cras_unified.cc",
       "cras/cras_unified.h",
     ]
     configs += [ ":libcras" ]
-    deps += [ "//chromeos/audio" ]
+    if (is_chromeos) {
+      sources += [
+        "cras/audio_manager_chromeos.cc",
+        "cras/audio_manager_chromeos.h",
+      ]
+      deps += [ "//chromeos/audio" ]
+    } else if (is_linux) {
+        sources += [
+          "cras/audio_manager_cras.cc",
+          "cras/audio_manager_cras.h",
+        ]
+    }
   }
 
   if (use_pulseaudio) {

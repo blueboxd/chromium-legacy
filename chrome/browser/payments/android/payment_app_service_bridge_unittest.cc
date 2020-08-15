@@ -62,7 +62,8 @@ class MockApp : public PaymentApp {
   MOCK_CONST_METHOD0(HandlesPayerPhone, bool());
 };
 
-class PaymentAppServiceBridgeUnitTest : public ::testing::Test {
+class PaymentAppServiceBridgeUnitTest
+    : public ::testing::TestWithParam<std::string> {
  public:
   PaymentAppServiceBridgeUnitTest()
       : top_origin_("https://shop.example"),
@@ -90,7 +91,7 @@ class PaymentAppServiceBridgeUnitTest : public ::testing::Test {
   scoped_refptr<PaymentManifestWebDataService> web_data_service_;
 };
 
-TEST_F(PaymentAppServiceBridgeUnitTest, Smoke) {
+TEST_P(PaymentAppServiceBridgeUnitTest, Smoke) {
   std::vector<mojom::PaymentMethodDataPtr> method_data;
   method_data.push_back(MakePaymentMethodData("basic-card"));
   method_data.push_back(MakePaymentMethodData("https://ph.example"));
@@ -102,7 +103,7 @@ TEST_F(PaymentAppServiceBridgeUnitTest, Smoke) {
   base::WeakPtr<PaymentAppServiceBridge> bridge =
       PaymentAppServiceBridge::Create(
           /*number_of_factories=*/3, web_contents_->GetMainFrame(), top_origin_,
-          &spec, web_data_service_,
+          &spec, /*twa_package_name=*/GetParam(), web_data_service_,
           /*may_crawl_for_installable_payment_apps=*/true,
           base::BindRepeating(&MockCallback::NotifyCanMakePaymentCalculated,
                               base::Unretained(&mock_callback)),
@@ -146,5 +147,11 @@ TEST_F(PaymentAppServiceBridgeUnitTest, Smoke) {
   // |bridge| cleans itself up after NotifyDoneCreatingPaymentApps().
   CHECK_EQ(nullptr, bridge.get());
 }
+
+// An empty string indicates running outside of a TWA. A non-empty string is the
+// package name of the TWA when running in a TWA mode.
+INSTANTIATE_TEST_SUITE_P(WithAndWithoutTwaPackageName,
+                         PaymentAppServiceBridgeUnitTest,
+                         ::testing::Values("", "com.example.twa.app"));
 
 }  // namespace payments

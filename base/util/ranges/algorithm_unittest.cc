@@ -16,7 +16,9 @@
 
 using ::testing::ElementsAre;
 using ::testing::Field;
+using ::testing::Ge;
 using ::testing::Gt;
+using ::testing::Le;
 using ::testing::Lt;
 using ::testing::Pair;
 
@@ -41,6 +43,14 @@ bool operator<(Int lhs, Int rhs) {
 
 bool operator>(Int lhs, Int rhs) {
   return lhs.value > rhs.value;
+}
+
+bool operator<=(Int lhs, Int rhs) {
+  return lhs.value <= rhs.value;
+}
+
+bool operator>=(Int lhs, Int rhs) {
+  return lhs.value >= rhs.value;
 }
 
 // Move-only int that clears `value` when moving out.
@@ -1291,6 +1301,74 @@ TEST(RangesTest, SetSymmetricDifference) {
                                              {}, &Int::value));
   EXPECT_THAT(make_vector(result_ints, result_ints + 8),
               ElementsAre(0, 1, 3, 4, 5, 7, 8, 9));
+}
+
+TEST(RangesTest, PushHeap) {
+  int heap[] = {6, 4, 3, 2, 1, 0, 5};
+  EXPECT_EQ(heap + 7, ranges::push_heap(heap, heap + 7));
+  EXPECT_THAT(heap, ElementsAre(6, Ge(4), Ge(4), Le(3), Le(3), Le(3), Le(3)));
+
+  Int heap_int[] = {1, 2, 3, 4, 5, 6, 0};
+  EXPECT_EQ(heap_int + 7,
+            ranges::push_heap(heap_int, ranges::greater(), &Int::value));
+  EXPECT_THAT(heap_int, ElementsAre(0, 2, 1, 4, 5, 6, 3));
+  EXPECT_THAT(heap_int,
+              ElementsAre(0, Le(2), Le(2), Ge(3), Ge(3), Ge(3), Ge(3)));
+}
+
+TEST(RangesTest, PopHeap) {
+  int heap[] = {6, 5, 4, 3, 2, 1, 0};
+  EXPECT_EQ(heap + 7, ranges::pop_heap(heap, heap + 7));
+  EXPECT_THAT(heap, ElementsAre(5, Ge(3), Ge(3), Le(2), Le(2), Le(2), 6));
+
+  Int heap_int[] = {0, 1, 2, 3, 4, 5, 6};
+  EXPECT_EQ(heap_int + 7,
+            ranges::pop_heap(heap_int, ranges::greater(), &Int::value));
+  EXPECT_THAT(heap_int, ElementsAre(1, Le(3), Le(3), Ge(4), Ge(4), Ge(4), 0));
+}
+
+TEST(RangesTest, MakeHeap) {
+  int heap[] = {0, 1, 2, 3, 4, 5, 6};
+  EXPECT_EQ(heap + 7, ranges::make_heap(heap, heap + 7));
+  EXPECT_THAT(heap, ElementsAre(6, Ge(4), Ge(4), Le(3), Le(3), Le(3), Le(3)));
+
+  Int heap_int[] = {6, 5, 4, 3, 2, 1, 0};
+  EXPECT_EQ(heap_int + 7,
+            ranges::make_heap(heap_int, ranges::greater(), &Int::value));
+  EXPECT_THAT(heap_int,
+              ElementsAre(0, Le(2), Le(2), Ge(3), Ge(3), Ge(3), Ge(3)));
+}
+
+TEST(RangesTest, SortHeap) {
+  int heap[] = {6, 4, 5, 0, 1, 2, 3};
+  EXPECT_EQ(heap + 7, ranges::sort_heap(heap, heap + 7));
+  EXPECT_THAT(heap, ElementsAre(0, 1, 2, 3, 4, 5, 6));
+
+  Int heap_int[] = {0, 2, 1, 4, 3, 6, 5};
+  EXPECT_EQ(heap_int + 7,
+            ranges::sort_heap(heap_int, ranges::greater(), &Int::value));
+  EXPECT_THAT(heap_int, ElementsAre(6, 5, 4, 3, 2, 1, 0));
+}
+
+TEST(RangesTest, IsHeap) {
+  int heap[] = {6, 4, 5, 0, 1, 2, 3};
+  EXPECT_TRUE(ranges::is_heap(heap, heap + 7));
+  EXPECT_FALSE(ranges::is_heap(heap, heap + 7, ranges::greater()));
+
+  Int heap_int[] = {0, 2, 1, 4, 3, 6, 5};
+  EXPECT_TRUE(ranges::is_heap(heap_int, ranges::greater(), &Int::value));
+  EXPECT_FALSE(ranges::is_heap(heap_int, {}, &Int::value));
+}
+
+TEST(RangesTest, IsHeapUntil) {
+  int heap[] = {6, 4, 5, 0, 1, 2, 3};
+  EXPECT_EQ(heap + 7, ranges::is_heap_until(heap, heap + 7));
+  EXPECT_EQ(heap + 1, ranges::is_heap_until(heap, heap + 7, ranges::greater()));
+
+  Int heap_int[] = {0, 2, 1, 4, 3, 6, 5};
+  EXPECT_EQ(heap_int + 7,
+            ranges::is_heap_until(heap_int, ranges::greater(), &Int::value));
+  EXPECT_EQ(heap_int + 1, ranges::is_heap_until(heap_int, {}, &Int::value));
 }
 
 }  // namespace util

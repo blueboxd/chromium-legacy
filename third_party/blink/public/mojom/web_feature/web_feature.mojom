@@ -2729,6 +2729,9 @@ enum WebFeature {
   kMediaRecorder_MimeType = 3399,
   kMediaRecorder_VideoBitsPerSecond = 3400,
   kMediaRecorder_AudioBitsPerSecond = 3401,
+  kBluetoothRemoteGATTCharacteristic_Uuid = 3402,
+  kBluetoothRemoteGATTDescriptor_Uuid = 3403,
+  kBluetoothRemoteGATTService_Uuid = 3404,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

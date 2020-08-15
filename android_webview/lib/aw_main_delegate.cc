@@ -220,7 +220,8 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
 
     features.DisableIfNotSet(::features::kBackgroundFetch);
 
-    features.EnableIfNotSet(::features::kDisableSurfaceControlForWebview);
+    // SurfaceControl is not supported on webview.
+    features.DisableIfNotSet(::features::kAndroidSurfaceControl);
 
     // TODO(https://crbug.com/963653): SmsReceiver is not yet supported on
     // WebView.

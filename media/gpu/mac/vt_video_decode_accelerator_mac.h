@@ -30,6 +30,7 @@
 
 namespace media {
 class VP9ConfigChangeDetector;
+class VP9SuperFrameBitstreamFilter;
 
 // Preload VideoToolbox libraries, needed for sandbox warmup.
 MEDIA_GPU_EXPORT bool InitializeVideoToolbox();
@@ -221,6 +222,7 @@ class VTVideoDecodeAccelerator : public VideoDecodeAccelerator,
   std::deque<std::unique_ptr<Frame>> output_queue_;
 
   std::unique_ptr<VP9ConfigChangeDetector> cc_detector_;
+  std::unique_ptr<VP9SuperFrameBitstreamFilter> vp9_bsf_;
 
   // Size of assigned picture buffers.
   gfx::Size picture_size_;

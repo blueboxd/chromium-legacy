@@ -929,8 +929,6 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
 
   size_t num_pings_sent_;
 
-  base::TimeTicks handshake_completion_timestamp_;
-
   std::unique_ptr<quic::QuicClientPushPromiseIndex> push_promise_index_;
 
   base::WeakPtrFactory<QuicChromiumClientSession> weak_factory_{this};

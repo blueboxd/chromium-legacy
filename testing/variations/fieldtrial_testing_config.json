@@ -4889,6 +4889,7 @@
                 {
                     "name": "DesktopExperiments",
                     "params": {
+                        "MaxZeroSuggestMatches": "10",
                         "OmniboxMaxURLMatches": "7",
                         "UIMaxAutocompleteMatches": "8"
                     },
@@ -4896,6 +4897,7 @@
                         "OmniboxDisplayTitleForCurrentUrl",
                         "OmniboxDocumentProvider",
                         "OmniboxMaxURLMatches",
+                        "OmniboxMaxZeroSuggestMatches",
                         "OmniboxRemoveSuggestionsFromClipboard",
                         "OmniboxRichEntitySuggestions",
                         "OmniboxUIExperimentMaxAutocompleteMatches",

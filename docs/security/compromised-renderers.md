@@ -214,9 +214,6 @@ Protection techniques:
   information in `RenderFrameHost::GetLastCommittedOrigin()`
   (e.g. see `RenderFrameHostImpl::CreateIDBFactory`).
 
-**Known gaps in protection**:
-- https://crbug.com/917457: FileSystem API (deprecated, Chrome-only).
-
 
 ## Messaging
 

@@ -1486,6 +1486,9 @@ extern const char kAndroidMultipleDisplayDescription[];
 extern const char kAndroidPartnerCustomizationPhenotypeName[];
 extern const char kAndroidPartnerCustomizationPhenotypeDescription[];
 
+extern const char kAndroidSurfaceControlName[];
+extern const char kAndroidSurfaceControlDescription[];
+
 extern const char kAppNotificationStatusMessagingName[];
 extern const char kAppNotificationStatusMessagingDescription[];
 

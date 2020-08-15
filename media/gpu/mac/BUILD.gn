@@ -5,6 +5,7 @@
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//media/gpu/args.gni")
+import("//media/media_options.gni")
 import("//tools/generate_stubs/rules.gni")
 import("//ui/gl/features.gni")
 import("//ui/ozone/ozone.gni")
@@ -24,6 +25,8 @@ source_set("mac") {
   visibility = [ "//media/gpu" ]
 
   sources = [
+    "vp9_super_frame_bitstream_filter.cc",
+    "vp9_super_frame_bitstream_filter.h",
     "vt_config_util.h",
     "vt_config_util.mm",
     "vt_video_decode_accelerator_mac.cc",
@@ -61,8 +64,17 @@ source_set("unit_tests") {
     "CoreMedia.framework",
   ]
   deps = [
+    "//media:test_support",
     "//media/gpu:test_support",
     "//testing/gtest",
   ]
-  sources = [ "vt_config_util_unittest.cc" ]
+
+  if (media_use_ffmpeg) {
+    deps += [ "//third_party/ffmpeg" ]
+  }
+
+  sources = [
+    "vp9_super_frame_bitstream_filter_unittest.cc",
+    "vt_config_util_unittest.cc",
+  ]
 }

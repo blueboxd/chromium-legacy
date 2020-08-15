@@ -37,6 +37,7 @@
 #include "media/base/limits.h"
 #include "media/base/media_switches.h"
 #include "media/filters/vp9_parser.h"
+#include "media/gpu/mac/vp9_super_frame_bitstream_filter.h"
 #include "media/gpu/mac/vt_beta_stubs.h"
 #include "media/gpu/mac/vt_config_util.h"
 #include "ui/gfx/geometry/rect.h"
@@ -381,13 +382,6 @@ void OutputThunk(void* decompression_output_refcon,
   vda->Output(source_frame_refcon, status, image_buffer);
 }
 
-void ReleaseDecoderBuffer(void* refcon,
-                          void* doomed_memory_block,
-                          size_t size_in_bytes) {
-  if (refcon)
-    static_cast<DecoderBuffer*>(refcon)->Release();
-}
-
 }  // namespace
 
 // Detects coded size and color space changes. Also indicates when a frame won't
@@ -407,7 +401,6 @@ class VP9ConfigChangeDetector {
     while (parser_.ParseNextFrame(&fhdr, &allocate_size, &null_config) ==
            Vp9Parser::kOk) {
       color_space_ = fhdr.GetColorSpace();
-      show_frame_ = fhdr.show_frame;
 
       gfx::Size new_size(fhdr.frame_width, fhdr.frame_height);
       if (!size_.IsEmpty() && !pending_config_changed_ && !config_changed_ &&
@@ -437,14 +430,12 @@ class VP9ConfigChangeDetector {
     return container_cs.IsSpecified() ? container_cs : color_space_;
   }
 
-  bool show_frame() const { return show_frame_; }
   bool config_changed() const { return config_changed_; }
 
  private:
   gfx::Size size_;
   bool config_changed_ = false;
   bool pending_config_changed_ = false;
-  bool show_frame_ = false;
   VideoColorSpace color_space_;
   Vp9Parser parser_;
 };
@@ -720,6 +711,9 @@ bool VTVideoDecodeAccelerator::ConfigureDecoder() {
   }
   UMA_HISTOGRAM_BOOLEAN("Media.VTVDA.HardwareAccelerated", using_hardware);
 
+  if (codec_ == kCodecVP9 && !vp9_bsf_)
+    vp9_bsf_ = std::make_unique<VP9SuperFrameBitstreamFilter>();
+
   // Record that the configuration change is complete.
   configured_sps_ = active_sps_;
   configured_spsext_ = active_spsext_;
@@ -747,45 +741,33 @@ void VTVideoDecodeAccelerator::DecodeTaskVp9(
   // Now that the configuration is up to date, copy it into the frame.
   frame->image_size = configured_size_;
 
-  // The created CMBlockBuffer owns a ref on DecoderBuffer to avoid a copy.
-  CMBlockBufferCustomBlockSource source = {0};
-  source.refCon = buffer.get();
-  source.FreeBlock = &ReleaseDecoderBuffer;
-
-  // Create a memory-backed CMBlockBuffer for the translated data.
-  base::ScopedCFTypeRef<CMBlockBufferRef> data;
-  OSStatus status = CMBlockBufferCreateWithMemoryBlock(
-      kCFAllocatorDefault,
-      static_cast<void*>(buffer->writable_data()),  // &memory_block
-      buffer->data_size(),                          // block_length
-      kCFAllocatorDefault,                          // block_allocator
-      &source,                                      // &custom_block_source
-      0,                                            // offset_to_data
-      buffer->data_size(),                          // data_length
-      0,                                            // flags
-      data.InitializeInto());
-  if (status) {
-    NOTIFY_STATUS("CMBlockBufferCreateWithMemoryBlock()", status,
-                  SFT_PLATFORM_ERROR);
+  if (!vp9_bsf_->EnqueueBuffer(std::move(buffer))) {
+    WriteToMediaLog(MediaLogMessageLevel::kERROR, "Unsupported VP9 stream");
+    NotifyError(UNREADABLE_INPUT, SFT_INVALID_STREAM);
     return;
   }
 
-  // Buffer creation was successful so add ref to |buffer| for CMBlockBuffer.
-  buffer->AddRef();
-
-  const size_t buffer_size = buffer->data_size();
+  // If we have no buffer this bitstream buffer is part of a super frame that we
+  // need to assemble before giving to VideoToolbox.
+  auto data = vp9_bsf_->take_buffer();
+  if (!data) {
+    gpu_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&VTVideoDecodeAccelerator::DecodeDone,
+                                  weak_this_, frame));
+    return;
+  }
 
   // Package the data in a CMSampleBuffer.
   base::ScopedCFTypeRef<CMSampleBufferRef> sample;
-  status = CMSampleBufferCreateReady(kCFAllocatorDefault,
-                                     data,          // data_buffer
-                                     format_,       // format_description
-                                     1,             // num_samples
-                                     0,             // num_sample_timing_entries
-                                     nullptr,       // &sample_timing_array
-                                     1,             // num_sample_size_entries
-                                     &buffer_size,  // &sample_size_array
-                                     sample.InitializeInto());
+  OSStatus status = CMSampleBufferCreateReady(kCFAllocatorDefault,
+                                              data,     // data_buffer
+                                              format_,  // format_description
+                                              1,        // num_samples
+                                              0,  // num_sample_timing_entries
+                                              nullptr,  // &sample_timing_array
+                                              0,  // num_sample_size_entries
+                                              nullptr,  // &sample_size_array
+                                              sample.InitializeInto());
   if (status) {
     NOTIFY_STATUS("CMSampleBufferCreate()", status, SFT_PLATFORM_ERROR);
     return;
@@ -808,13 +790,6 @@ void VTVideoDecodeAccelerator::DecodeTaskVp9(
     NOTIFY_STATUS("VTDecompressionSessionDecodeFrame()", status,
                   SFT_DECODE_ERROR);
     return;
-  }
-
-  // No image will be produced for this frame, so mark it as done.
-  if (!cc_detector_->show_frame()) {
-    gpu_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&VTVideoDecodeAccelerator::DecodeDone,
-                                  weak_this_, frame));
   }
 }
 
@@ -1185,6 +1160,11 @@ void VTVideoDecodeAccelerator::FlushTask(TaskType type) {
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
 
   FinishDelayedFrames();
+
+  // All the frames that are going to be sent must have been sent by now. So
+  // clear any state in the bitstream filter.
+  if (vp9_bsf_)
+    vp9_bsf_->Flush();
 
   if (type == TASK_DESTROY && session_) {
     // Destroy the decoding session before returning from the decoder thread.

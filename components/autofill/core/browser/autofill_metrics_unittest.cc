@@ -296,6 +296,21 @@ void TestAddressProfileImportCountrySpecificFieldRequirements(
   histogram_tester->ExpectBucketCount(histogram, metric, 1);
 }
 
+void CreateSimpleForm(const GURL& origin, FormData& form) {
+  form.unique_renderer_id = MakeFormRendererId();
+  form.name = ASCIIToUTF16("TestForm");
+  form.url = GURL("http://example.com/form.html");
+  form.action = GURL("http://example.com/submit.html");
+  form.main_frame_origin = url::Origin::Create(origin);
+}
+
+void AddAutoCompleteFieldToForm(const std::string& type, FormData& form) {
+  FormFieldData field;
+  test::CreateTestFormField("", "", "", "", &field);
+  field.autocomplete_attribute = type;
+  form.fields.push_back(field);
+}
+
 class MockAutofillClient : public TestAutofillClient {
  public:
   MockAutofillClient() {}
@@ -10538,19 +10553,9 @@ TEST_F(AutofillMetricsTest, FrameHasSinglePhoneNumberFieldWithoutAutocomplete) {
 // autocomplete attribute.
 TEST_F(AutofillMetricsTest, FrameHasPhoneNumberFieldWithAutocomplete) {
   FormData form;
-  form.unique_renderer_id = MakeFormRendererId();
-  form.name = ASCIIToUTF16("TestForm");
-  form.url = GURL("http://example.com/form.html");
-  form.action = GURL("http://example.com/submit.html");
-  form.main_frame_origin = url::Origin::Create(autofill_client_.form_origin());
-
-  FormFieldData field;
-
+  CreateSimpleForm(autofill_client_.form_origin(), form);
+  AddAutoCompleteFieldToForm("phone", form);
   std::vector<FormData> forms_with_phone_number(1, form);
-
-  test::CreateTestFormField("Phone", "phone", "", "tel", &field);
-  field.autocomplete_attribute = "phone";
-  forms_with_phone_number.back().fields.push_back(field);
 
   base::HistogramTester histogram_tester;
   autofill_manager_->OnFormsSeen(forms_with_phone_number, TimeTicks());
@@ -10589,6 +10594,158 @@ TEST_F(AutofillMetricsTest, FrameDoesNotHavePhoneNumberField) {
   histogram_tester.ExpectTotalCount(
       "Autofill.WebOTP.PhoneNumberCollection.ParseResult", 1);
 }
+
+// ContentAutofillDriver is not visible to TestAutofillDriver on iOS.
+// In addition, WebOTP will not ship on iOS.
+#if !defined(OS_IOS)
+// Verify that we correctly log PhoneCollectionMetricState::kNone.
+TEST_F(AutofillMetricsTest, WebOTPPhoneCollectionMetricsStateNone) {
+  FormData form;
+  CreateSimpleForm(autofill_client_.form_origin(), form);
+  AddAutoCompleteFieldToForm("password", form);
+
+  std::vector<FormData> forms(1, form);
+  base::HistogramTester histogram_tester;
+  autofill_manager_->OnFormsSeen(forms, TimeTicks());
+  autofill_driver_->SetAutofillManager(std::move(autofill_manager_));
+  static_cast<ContentAutofillDriver*>(autofill_driver_.get())
+      ->ReportAutofillWebOTPMetrics(false);
+  histogram_tester.ExpectBucketCount("Autofill.WebOTP.PhonePlusWebOTPPlusOTC",
+                                     PhoneCollectionMetricState::kNone, 1);
+  histogram_tester.ExpectTotalCount("Autofill.WebOTP.PhonePlusWebOTPPlusOTC",
+                                    1);
+}
+
+// Verify that we correctly log PhoneCollectionMetricState::kOTC.
+TEST_F(AutofillMetricsTest, WebOTPPhoneCollectionMetricsStateOTC) {
+  FormData form;
+  CreateSimpleForm(autofill_client_.form_origin(), form);
+  AddAutoCompleteFieldToForm("one-time-code", form);
+
+  std::vector<FormData> forms(1, form);
+  base::HistogramTester histogram_tester;
+  autofill_manager_->OnFormsSeen(forms, TimeTicks());
+  autofill_driver_->SetAutofillManager(std::move(autofill_manager_));
+  static_cast<ContentAutofillDriver*>(autofill_driver_.get())
+      ->ReportAutofillWebOTPMetrics(false);
+  histogram_tester.ExpectBucketCount("Autofill.WebOTP.PhonePlusWebOTPPlusOTC",
+                                     PhoneCollectionMetricState::kOTC, 1);
+  histogram_tester.ExpectTotalCount("Autofill.WebOTP.PhonePlusWebOTPPlusOTC",
+                                    1);
+}
+
+// Verify that we correctly log PhoneCollectionMetricState::kWebOTP.
+TEST_F(AutofillMetricsTest, WebOTPPhoneCollectionMetricsStateWebOTP) {
+  // If WebOTP is used, even if there is no form on the page we still need to
+  // report it.
+  base::HistogramTester histogram_tester;
+  autofill_driver_->SetAutofillManager(std::move(autofill_manager_));
+  static_cast<ContentAutofillDriver*>(autofill_driver_.get())
+      ->ReportAutofillWebOTPMetrics(true);
+  histogram_tester.ExpectBucketCount("Autofill.WebOTP.PhonePlusWebOTPPlusOTC",
+                                     PhoneCollectionMetricState::kWebOTP, 1);
+  histogram_tester.ExpectTotalCount("Autofill.WebOTP.PhonePlusWebOTPPlusOTC",
+                                    1);
+}
+
+// Verify that we correctly log PhoneCollectionMetricState::kWebOTPPlusOTC.
+TEST_F(AutofillMetricsTest, WebOTPPhoneCollectionMetricsStateWebOTPPlusOTC) {
+  FormData form;
+  CreateSimpleForm(autofill_client_.form_origin(), form);
+  AddAutoCompleteFieldToForm("one-time-code", form);
+
+  std::vector<FormData> forms(1, form);
+  base::HistogramTester histogram_tester;
+  autofill_manager_->OnFormsSeen(forms, TimeTicks());
+  autofill_driver_->SetAutofillManager(std::move(autofill_manager_));
+  static_cast<ContentAutofillDriver*>(autofill_driver_.get())
+      ->ReportAutofillWebOTPMetrics(true);
+  histogram_tester.ExpectBucketCount("Autofill.WebOTP.PhonePlusWebOTPPlusOTC",
+                                     PhoneCollectionMetricState::kWebOTPPlusOTC,
+                                     1);
+  histogram_tester.ExpectTotalCount("Autofill.WebOTP.PhonePlusWebOTPPlusOTC",
+                                    1);
+}
+
+// Verify that we correctly log PhoneCollectionMetricState::kPhone.
+TEST_F(AutofillMetricsTest, WebOTPPhoneCollectionMetricsStatePhone) {
+  FormData form;
+  CreateSimpleForm(autofill_client_.form_origin(), form);
+  AddAutoCompleteFieldToForm("tel", form);
+
+  std::vector<FormData> forms(1, form);
+  base::HistogramTester histogram_tester;
+  autofill_manager_->OnFormsSeen(forms, TimeTicks());
+  autofill_driver_->SetAutofillManager(std::move(autofill_manager_));
+  static_cast<ContentAutofillDriver*>(autofill_driver_.get())
+      ->ReportAutofillWebOTPMetrics(false);
+  histogram_tester.ExpectBucketCount("Autofill.WebOTP.PhonePlusWebOTPPlusOTC",
+                                     PhoneCollectionMetricState::kPhone, 1);
+  histogram_tester.ExpectTotalCount("Autofill.WebOTP.PhonePlusWebOTPPlusOTC",
+                                    1);
+}
+
+// Verify that we correctly log PhoneCollectionMetricState::kPhonePlusOTC.
+TEST_F(AutofillMetricsTest, WebOTPPhoneCollectionMetricsStatePhonePlusOTC) {
+  FormData form;
+  CreateSimpleForm(autofill_client_.form_origin(), form);
+  AddAutoCompleteFieldToForm("tel", form);
+  AddAutoCompleteFieldToForm("one-time-code", form);
+
+  std::vector<FormData> forms(1, form);
+  base::HistogramTester histogram_tester;
+  autofill_manager_->OnFormsSeen(forms, TimeTicks());
+  autofill_driver_->SetAutofillManager(std::move(autofill_manager_));
+  static_cast<ContentAutofillDriver*>(autofill_driver_.get())
+      ->ReportAutofillWebOTPMetrics(false);
+  histogram_tester.ExpectBucketCount("Autofill.WebOTP.PhonePlusWebOTPPlusOTC",
+                                     PhoneCollectionMetricState::kPhonePlusOTC,
+                                     1);
+  histogram_tester.ExpectTotalCount("Autofill.WebOTP.PhonePlusWebOTPPlusOTC",
+                                    1);
+}
+
+// Verify that we correctly log PhoneCollectionMetricState::kPhonePlusWebOTP.
+TEST_F(AutofillMetricsTest, WebOTPPhoneCollectionMetricsStatePhonePlusWebOTP) {
+  FormData form;
+  CreateSimpleForm(autofill_client_.form_origin(), form);
+  AddAutoCompleteFieldToForm("tel", form);
+
+  std::vector<FormData> forms(1, form);
+  base::HistogramTester histogram_tester;
+  autofill_manager_->OnFormsSeen(forms, TimeTicks());
+  autofill_driver_->SetAutofillManager(std::move(autofill_manager_));
+  static_cast<ContentAutofillDriver*>(autofill_driver_.get())
+      ->ReportAutofillWebOTPMetrics(true);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.WebOTP.PhonePlusWebOTPPlusOTC",
+      PhoneCollectionMetricState::kPhonePlusWebOTP, 1);
+  histogram_tester.ExpectTotalCount("Autofill.WebOTP.PhonePlusWebOTPPlusOTC",
+                                    1);
+}
+
+// Verify that we correctly log
+// PhoneCollectionMetricState::kPhonePlusWebOTPPlusOTC.
+TEST_F(AutofillMetricsTest,
+       WebOTPPhoneCollectionMetricsStatePhonePlusWebOTPPlusOTC) {
+  FormData form;
+  CreateSimpleForm(autofill_client_.form_origin(), form);
+  AddAutoCompleteFieldToForm("tel", form);
+  AddAutoCompleteFieldToForm("one-time-code", form);
+
+  std::vector<FormData> forms(1, form);
+  base::HistogramTester histogram_tester;
+  autofill_manager_->OnFormsSeen(forms, TimeTicks());
+  autofill_driver_->SetAutofillManager(std::move(autofill_manager_));
+  static_cast<ContentAutofillDriver*>(autofill_driver_.get())
+      ->ReportAutofillWebOTPMetrics(true);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.WebOTP.PhonePlusWebOTPPlusOTC",
+      PhoneCollectionMetricState::kPhonePlusWebOTPPlusOTC, 1);
+  histogram_tester.ExpectTotalCount("Autofill.WebOTP.PhonePlusWebOTPPlusOTC",
+                                    1);
+}
+#endif  // !defined(OS_IOS)
 
 TEST_F(AutofillMetricsTest, LogAutocompleteSuggestionAcceptedIndex_WithIndex) {
   base::HistogramTester histogram_tester;

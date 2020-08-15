@@ -14,6 +14,7 @@
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 
 namespace autofill {
@@ -127,6 +128,11 @@ ContentAutofillDriver* ContentAutofillDriverFactory::DriverForFrame(
 
 void ContentAutofillDriverFactory::RenderFrameDeleted(
     content::RenderFrameHost* render_frame_host) {
+  AutofillDriver* driver = DriverForKey(render_frame_host);
+  if (driver) {
+    static_cast<ContentAutofillDriver*>(driver)
+        ->MaybeReportAutofillWebOTPMetrics();
+  }
   DeleteForKey(render_frame_host);
 }
 
@@ -145,6 +151,28 @@ void ContentAutofillDriverFactory::OnVisibilityChanged(
     content::Visibility visibility) {
   if (visibility == content::Visibility::HIDDEN)
     TabHidden();
+}
+
+void ContentAutofillDriverFactory::ReadyToCommitNavigation(
+    content::NavigationHandle* navigation_handle) {
+  content::RenderFrameHost* render_frame_host =
+      navigation_handle->GetRenderFrameHost();
+  content::GlobalFrameRoutingId render_frame_host_id(
+      render_frame_host->GetProcess()->GetID(),
+      render_frame_host->GetRoutingID());
+  // No need to report the metrics here if navigating to a different
+  // RenderFrameHost. It will be reported in |RenderFrameDeleted|.
+  // TODO(crbug.com/936696): Remove this logic when RenderDocument is enabled
+  // everywhere.
+  if (render_frame_host_id !=
+      navigation_handle->GetPreviousRenderFrameHostId()) {
+    return;
+  }
+  AutofillDriver* driver = DriverForFrame(render_frame_host);
+  if (!driver)
+    return;
+  static_cast<ContentAutofillDriver*>(driver)
+      ->MaybeReportAutofillWebOTPMetrics();
 }
 
 }  // namespace autofill

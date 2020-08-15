@@ -15,6 +15,7 @@
       <!-- Privileged app host contents. -->
       <include name="IDR_SCANNING_APP_INDEX_HTML" file="index.html" type="BINDATA" compress="gzip" />
       <include name="IDR_SCANNING_APP_JS" file="${root_gen_dir}/chromeos/components/scanning/resources/scanning_app.js" use_base_dir="false" compress="gzip" type="BINDATA"/>
+      <include name="IDR_SCANNING_APP_ICON" file="app_icon_192.png" type="BINDATA" />
     </includes>
   </release>
 </grit>

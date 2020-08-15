@@ -199,6 +199,9 @@ class RenderFrameHostImplBrowserTest : public ContentBrowserTest {
     // is integrated into WebView.
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kJavaScriptFlags, "--expose_gc");
+
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kEnableBlinkFeatures, "SmsReceiver");
   }
   net::EmbeddedTestServer* https_server() { return &https_server_; }
 
@@ -3787,6 +3790,25 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   manager.WaitForNavigationFinished();
   EXPECT_EQ(url_b, web_contents()->GetMainFrame()->GetLastCommittedURL());
   EXPECT_EQ(LifecycleState::kActive, current_rfh->lifecycle_state());
+}
+
+// Check that same site navigation correctly resets document_used_web_otp_.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       SameSiteNavigationResetsDocumentUsedWebOTP) {
+  const GURL first_url(
+      embedded_test_server()->GetURL("/page_with_webotp.html"));
+  const GURL second_url(embedded_test_server()->GetURL("/empty.html"));
+
+  // Load a URL that maps to the same SiteInstance as the second URL, to make
+  // sure the second navigation will not be cross-process.
+  ASSERT_TRUE(NavigateToURL(shell(), first_url));
+
+  RenderFrameHostImpl* main_rfh =
+      static_cast<RenderFrameHostImpl*>(web_contents()->GetMainFrame());
+  EXPECT_TRUE(main_rfh->DocumentUsedWebOTP());
+
+  ASSERT_TRUE(NavigateToURL(shell(), second_url));
+  EXPECT_FALSE(main_rfh->DocumentUsedWebOTP());
 }
 
 // It is hard to test this feature fully at the integration test level. Indeed,

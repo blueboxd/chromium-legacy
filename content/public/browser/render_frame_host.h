@@ -607,6 +607,10 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
       blink::mojom::HeavyAdResolutionStatus resolution,
       blink::mojom::HeavyAdReason reason) = 0;
 
+  // Returns whether a document uses WebOTP. Returns true if an SmsService is
+  // created on the document.
+  virtual bool DocumentUsedWebOTP() = 0;
+
   // Write a description of this RenderFrameHost into provided |traced_value|.
   // The caller is responsible for ensuring that key-value pairs can be written
   // into |traced_value| — either by creating a new TracedValue or calling

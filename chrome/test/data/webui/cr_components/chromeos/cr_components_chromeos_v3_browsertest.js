@@ -9,7 +9,8 @@ GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 GEN('#include "content/public/test/browser_test.h"');
 
 // clang-format off
-[['CrPolicyNetworkBehaviorMojo', 'cr_policy_network_behavior_mojo_tests.m.js'],
+[['BasePage', 'base_page_test.m.js'],
+ ['CrPolicyNetworkBehaviorMojo', 'cr_policy_network_behavior_mojo_tests.m.js'],
  ['CrPolicyNetworkIndicatorMojo', 'cr_policy_network_indicator_mojo_tests.m.js'],
  ['NetworkConfigElementBehavior', 'network_config_element_behavior_test.m.js'],
 ].forEach(test => registerTest('Network', ...test));

@@ -1396,10 +1396,7 @@ crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-ma
 crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-sans-serif-bold-italic-001.tentative.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/text-transform/math/text-transform-math-sans-serif-001.tentative.html [ Failure ]
 crbug.com/1043295 [ Fuchsia ] virtual/font-access/http/tests/font-access/font-access-window-enumeration.html [ Skip ]
-crbug.com/1043295 [ Fuchsia ] virtual/font-access/http/tests/font-access/font-access-window-getTables.html [ Skip ]
-crbug.com/1043295 [ Fuchsia ] virtual/font-access/http/tests/font-access/font-access-window-getTables-large-fonts.html [ Skip ]
 crbug.com/1043295 [ Fuchsia ] virtual/font-access/http/tests/font-access/font-access-window-blob.html [ Skip ]
-crbug.com/1087671 [ Mac ] virtual/font-access/http/tests/font-access/font-access-window-getTables-large-fonts.html [ Skip ]
 
 # ====== Style team owned tests from here ======
 
@@ -6756,3 +6753,6 @@ crbug.com/1113791 [ Win ] media/video-zoom.html [ Pass Failure ]
 crbug.com/1095540 virtual/threaded-prefer-compositing/fast/scrolling/resize-corner-tracking-touch.html [ Pass Failure ]
 crbug.com/1113521 [ Mac ] fast/events/mouse-cursor-image-set.html [ Pass Crash ]
 crbug.com/1046784 http/tests/devtools/network/network-content-replacement-xhr.js [ Pass Failure ]
+
+# Sheriff 2020-08-14
+crbug.com/1116681 [ Mac ] fast/frames/iframe-scaling-with-scroll.html [ Pass Failure ]

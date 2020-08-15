@@ -6,7 +6,7 @@
 
 #include <limits.h>
 
-#include <algorithm>  // NOLINT
+#include <algorithm>
 
 #include "base/macros.h"
 #include "base/strings/string_util.h"
@@ -40,6 +40,7 @@
 #include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/highlight_path_generator.h"
+
 #if defined(OS_WIN)
 #include "base/win/atl.h"
 #endif
@@ -214,7 +215,10 @@ void OmniboxResultView::ApplyThemeAndRefreshIcons(bool force_reapply_styles) {
     suggestion_view_->description()->ReapplyStyling();
   }
 
-  if (keyword_view_->GetVisible()) {
+  if (force_reapply_styles) {
+    keyword_view_->content()->ReapplyStyling();
+    keyword_view_->description()->ReapplyStyling();
+  } else if (keyword_view_->GetVisible()) {
     keyword_view_->description()->ApplyTextColor(
         OmniboxPart::RESULTS_TEXT_DIMMED);
   }

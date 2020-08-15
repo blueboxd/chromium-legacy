@@ -13,13 +13,15 @@
 namespace features {
 
 #if defined(OS_ANDROID)
-// Used only by webview to disable SurfaceControl.
-const base::Feature kDisableSurfaceControlForWebview{
-    "DisableSurfaceControlForWebview", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Used to limit GL version to 2.0 for skia raster on Android.
 const base::Feature kUseGles2ForOopR{"UseGles2ForOopR",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Use android SurfaceControl API for managing display compositor's buffer queue
+// and using overlays on Android. Also used by webview to disable surface
+// SurfaceControl.
+const base::Feature kAndroidSurfaceControl{"AndroidSurfaceControl",
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 // Enable GPU Rasterization by default. This can still be overridden by
@@ -118,10 +120,8 @@ const base::Feature kEnableSharedImageForWebview{
 
 #if defined(OS_ANDROID)
 bool IsAndroidSurfaceControlEnabled() {
-  if (base::FeatureList::IsEnabled(kDisableSurfaceControlForWebview))
-    return false;
-
-  return gl::SurfaceControl::IsSupported();
+  return base::FeatureList::IsEnabled(kAndroidSurfaceControl) &&
+         gl::SurfaceControl::IsSupported();
 }
 #endif
 

@@ -17,9 +17,8 @@ namespace features {
 // All features in alphabetical order. The features should be documented
 // alongside the definition of their values in the .cc file.
 #if defined(OS_ANDROID)
-GPU_EXPORT extern const base::Feature kDisableSurfaceControlForWebview;
-
 GPU_EXPORT extern const base::Feature kUseGles2ForOopR;
+GPU_EXPORT extern const base::Feature kAndroidSurfaceControl;
 #endif  // defined(OS_ANDROID)
 
 GPU_EXPORT extern const base::Feature kDefaultEnableGpuRasterization;

@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/autofill_client.h"
@@ -365,9 +366,43 @@ void ContentAutofillDriver::SetAutofillProvider(AutofillProvider* provider) {
   GetAutofillAgent()->SetQueryPasswordSuggestion(true);
 }
 
+bool ContentAutofillDriver::DocumentUsedWebOTP() const {
+  return render_frame_host_->DocumentUsedWebOTP();
+}
+
+void ContentAutofillDriver::MaybeReportAutofillWebOTPMetrics() {
+  // In tests, the autofill_manager_ may be unset or destroyed before |this|.
+  if (!autofill_manager_)
+    return;
+  // It's possible that a frame without any form uses WebOTP. e.g. a server may
+  // send the verification code to a phone number that was collected beforehand
+  // and uses the WebOTP API for authentication purpose without user manually
+  // entering the code.
+  if (!autofill_manager_->has_parsed_forms() && !DocumentUsedWebOTP())
+    return;
+
+  ReportAutofillWebOTPMetrics(DocumentUsedWebOTP());
+}
+
+void ContentAutofillDriver::ReportAutofillWebOTPMetrics(
+    bool document_used_webotp) {
+  if (autofill_manager_->has_observed_phone_number_field())
+    phone_collection_metric_state_ |= phone_collection_metric::kPhoneCollected;
+  if (autofill_manager_->has_observed_one_time_code_field())
+    phone_collection_metric_state_ |= phone_collection_metric::kOTCUsed;
+  if (document_used_webotp)
+    phone_collection_metric_state_ |= phone_collection_metric::kWebOTPUsed;
+
+  UMA_HISTOGRAM_ENUMERATION(
+      "Autofill.WebOTP.PhonePlusWebOTPPlusOTC",
+      static_cast<PhoneCollectionMetricState>(phone_collection_metric_state_));
+}
+
 void ContentAutofillDriver::SetAutofillProviderForTesting(
     AutofillProvider* provider) {
   SetAutofillProvider(provider);
+  // AutofillManager isn't used if provider is valid.
+  autofill_manager_ = nullptr;
 }
 
 }  // namespace autofill

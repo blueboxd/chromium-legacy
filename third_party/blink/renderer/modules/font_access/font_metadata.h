@@ -44,8 +44,6 @@ class BLINK_EXPORT FontMetadata final : public ScriptWrappable {
   String fullName() const { return fullName_; }
   String family() const { return family_; }
 
-  ScriptPromise getTables(ScriptState*);
-  ScriptPromise getTables(ScriptState*, const Vector<String>& tables);
   ScriptPromise blob(ScriptState*);
 
   void Trace(Visitor*) const override;

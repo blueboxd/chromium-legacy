@@ -42,6 +42,7 @@ FocusAutomationHandler = class extends BaseAutomationHandler {
         EventType.ACTIVEDESCENDANTCHANGED, this.onActiveDescendantChanged);
     this.addListener_(
         EventType.MENU_LIST_ITEM_SELECTED, this.onEventIfSelected);
+    this.addListener_(EventType.TEXT_CHANGED, this.onTextChanged_);
   }
 
   /**
@@ -49,7 +50,18 @@ FocusAutomationHandler = class extends BaseAutomationHandler {
    * @param {!AutomationEvent} evt
    */
   onActiveDescendantChanged(evt) {
-    if (!evt.target.activeDescendant || !evt.target.state.focused) {
+    if (!evt.target.activeDescendant) {
+      return;
+    }
+
+    let skipFocusCheck = false;
+    chrome.automation.getFocus(focus => {
+      if (focus.role == RoleType.POP_UP_BUTTON) {
+        skipFocusCheck = true;
+      }
+    });
+
+    if (!skipFocusCheck && !evt.target.state.focused) {
       return;
     }
 
@@ -74,6 +86,27 @@ FocusAutomationHandler = class extends BaseAutomationHandler {
   onEventIfSelected(evt) {
     if (evt.target.selected) {
       this.onEventDefault(evt);
+    }
+  }
+
+  /**
+   * @param {!ChromeVoxEvent} evt
+   */
+  onTextChanged_(evt) {
+    // TODO: listen to value changes instead when they are generated.
+    // Here only to handle popup buttons.
+    if (evt.target.role != RoleType.POP_UP_BUTTON ||
+        evt.target.state.editable) {
+      return;
+    }
+
+    // If it has children, that means a menu is showing.
+    if (evt.target.firstChild) {
+      return;
+    }
+
+    if (evt.target.value) {
+      new Output().withString(evt.target.value).go();
     }
   }
 };

@@ -1,0 +1,20 @@
+<style>
+  .tile-item {
+    background-color: var(--ntp-active-background-color);
+    border-color: var(--ntp-border-color);
+    border-radius: 8px;
+    border-style: solid;
+    border-width: thin;
+    color: var(--cr-primary-text-color);
+    height: 85px;
+    line-height: 85px;
+    margin: 10px;
+    text-align: center;
+    width: 170px;
+  }
+</style>
+<ntp-grid id="tiles" columns="4">
+  <template id="tileList" is="dom-repeat" items="[[tiles]]">
+    <div class="tile-item" title="[[item.label]]">[[item.value]]</div>
+  </template>
+</ntp-grid>

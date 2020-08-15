@@ -42,6 +42,13 @@ GEN('#endif');
     []
   ],
 ].forEach(test => registerTest('Network', 'internet-config-dialog', ...test));
+
+[
+  ['BasePage', 'base_page_test.js',
+    []
+  ],
+].forEach(test => registerTest('CellularSetup', 'cellular-setup', ...test));
+
 // clang-format on
 
 function registerTest(componentName, webuiHost, testName, module, deps) {

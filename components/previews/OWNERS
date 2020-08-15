@@ -1,3 +1,7 @@
-file://components/data_reduction_proxy/OWNERS
+mcrouse@chromium.org
+robertogden@chromium.org
+ryansturm@chromium.org
+sophiechang@chromium.org
+tbansal@chromium.org
 
 # COMPONENT: Blink>Previews

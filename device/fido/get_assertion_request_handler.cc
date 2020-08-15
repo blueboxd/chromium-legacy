@@ -33,6 +33,10 @@
 #include "device/fido/win/type_conversions.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "device/fido/cros/authenticator.h"
+#endif
+
 namespace device {
 
 namespace {
@@ -373,6 +377,16 @@ void GetAssertionRequestHandler::AuthenticatorAdded(
             ->HasCredentialForGetAssertionRequest(request_);
   }
 #endif  // defined(OS_MAC)
+
+#if defined(OS_CHROMEOS)
+  // TODO(martinkr): Put this boolean in a ChromeOS equivalent of
+  // "has_recognized_mac_touch_id_credential".
+  if (authenticator->IsChromeOSAuthenticator()) {
+    transport_availability_info().has_recognized_mac_touch_id_credential =
+        static_cast<ChromeOSAuthenticator*>(authenticator)
+            ->HasCredentialForGetAssertionRequest(request_);
+  }
+#endif  // defined(OS_CHROMEOS)
 
   FidoRequestHandlerBase::AuthenticatorAdded(discovery, authenticator);
 }

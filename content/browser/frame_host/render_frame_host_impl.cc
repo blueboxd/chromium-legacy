@@ -7586,6 +7586,7 @@ void RenderFrameHostImpl::BindSmsReceiverReceiver(
   }
   auto* fetcher = SmsFetcher::Get(GetProcess()->GetBrowserContext());
   SmsService::Create(fetcher, this, std::move(receiver));
+  document_used_web_otp_ = true;
 }
 
 void RenderFrameHostImpl::BindRestrictedCookieManager(
@@ -8308,6 +8309,10 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
     for (auto& receiver : navigation_request->TakeCookieObservers()) {
       cookie_observers_.Add(this, std::move(receiver));
     }
+
+    // Resets when navigating to a new document. This is needed because
+    // RenderFrameHost might be reused for a new document
+    document_used_web_otp_ = false;
   }
 
   // Keep track of the sandbox policy of the document that has just committed.
@@ -9380,6 +9385,10 @@ void RenderFrameHostImpl::SetEmbeddingToken(
     target_render_frame_proxy->GetAssociatedRemoteFrame()->SetEmbeddingToken(
         embedding_token_.value());
   }
+}
+
+bool RenderFrameHostImpl::DocumentUsedWebOTP() {
+  return document_used_web_otp_;
 }
 
 std::ostream& operator<<(std::ostream& o,

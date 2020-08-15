@@ -27,6 +27,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) ChromeOSAuthenticator
   ChromeOSAuthenticator();
   ~ChromeOSAuthenticator() override;
 
+  bool HasCredentialForGetAssertionRequest(
+      const CtapGetAssertionRequest& request);
+
   // FidoAuthenticator
   void InitializeAuthenticator(base::OnceClosure callback) override;
   void MakeCredential(CtapMakeCredentialRequest request,

@@ -6298,6 +6298,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCpuAffinityRestrictToLittleCoresDescription,
      kOsAndroid,
      FEATURE_VALUE_TYPE(features::kCpuAffinityRestrictToLittleCores)},
+
+    {"enable-surface-control", flag_descriptions::kAndroidSurfaceControlName,
+     flag_descriptions::kAndroidSurfaceControlDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(features::kAndroidSurfaceControl)},
 #endif  // OS_ANDROID
 
 #if defined(OS_ANDROID)

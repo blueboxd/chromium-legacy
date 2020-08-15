@@ -862,7 +862,6 @@ QuicChromiumClientSession::QuicChromiumClientSession(
       max_allowed_push_id_(max_allowed_push_id),
       attempted_zero_rtt_(false),
       num_pings_sent_(0),
-      handshake_completion_timestamp_(base::TimeTicks()),
       push_promise_index_(std::move(push_promise_index)) {
   // Make sure connection migration and goaway on path degrading are not turned
   // on at the same time.
@@ -1611,7 +1610,6 @@ void QuicChromiumClientSession::OnOneRttKeysAvailable() {
 
   OnCryptoHandshakeComplete();
   LogZeroRttStats();
-  handshake_completion_timestamp_ = tick_clock_->NowTicks();
   quic::QuicSpdySession::OnOneRttKeysAvailable();
 }
 
@@ -1800,7 +1798,7 @@ void QuicChromiumClientSession::OnConnectionClosed(
     UMA_HISTOGRAM_COUNTS_1000("Net.QuicSession.NumPingsSent", num_pings_sent_);
     UMA_HISTOGRAM_LONG_TIMES_100(
         "Net.QuicSession.ConnectionDuration",
-        tick_clock_->NowTicks() - handshake_completion_timestamp_);
+        tick_clock_->NowTicks() - connect_timing_.connect_end);
   } else {
     if (error == quic::QUIC_PUBLIC_RESET) {
       RecordHandshakeFailureReason(HANDSHAKE_FAILURE_PUBLIC_RESET);

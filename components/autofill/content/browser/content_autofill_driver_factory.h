@@ -67,6 +67,8 @@ class ContentAutofillDriverFactory : public AutofillDriverFactory,
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
   void OnVisibilityChanged(content::Visibility visibility) override;
+  void ReadyToCommitNavigation(
+      content::NavigationHandle* navigation_handle) override;
 
   static const char kContentAutofillDriverFactoryWebContentsUserDataKey[];
 

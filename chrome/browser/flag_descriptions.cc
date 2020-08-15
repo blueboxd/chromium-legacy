@@ -2566,6 +2566,11 @@ const char kAndroidMultipleDisplayName[] = "Multiple Display";
 const char kAndroidMultipleDisplayDescription[] =
     "When enabled, tabs can be moved to the secondary display.";
 
+const char kAndroidSurfaceControlName[] = "Android SurfaceControl";
+const char kAndroidSurfaceControlDescription[] =
+    " Enables SurfaceControl to "
+    " manage the buffer queue for the DisplayCompositor on Android.";
+
 const char kAppNotificationStatusMessagingName[] =
     "App notification status messaging";
 const char kAppNotificationStatusMessagingDescription[] =

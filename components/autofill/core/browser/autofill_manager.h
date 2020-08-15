@@ -262,6 +262,15 @@ class AutofillManager : public AutofillHandler,
   // Returns the last form the autofill manager considered in this frame.
   virtual const FormData& last_query_form() const;
 
+  // Exposed to ContentAutofillDriver to help with recording WebOTP metrics.
+  bool has_parsed_forms() const { return has_parsed_forms_; }
+  bool has_observed_phone_number_field() const {
+    return has_observed_phone_number_field_;
+  }
+  bool has_observed_one_time_code_field() const {
+    return has_observed_one_time_code_field_;
+  }
+
 #if defined(UNIT_TEST)
   // A public wrapper that calls |DeterminePossibleFieldTypesForUpload| for
   // testing purposes only.
@@ -657,8 +666,8 @@ class AutofillManager : public AutofillHandler,
   // Has the user edited a field that was previously autofilled?
   bool user_did_edit_autofilled_field_ = false;
 
-  // Does the frame has any parsed forms?
-  bool frame_has_parsed_forms_ = false;
+  // Does |this| have any parsed forms?
+  bool has_parsed_forms_ = false;
   // Is there a field with autocomplete="one-time-code" observed?
   bool has_observed_one_time_code_field_ = false;
   // Is there a field with phone number collection observed?

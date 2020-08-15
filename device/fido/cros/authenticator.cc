@@ -36,6 +36,8 @@ base::string16 ChromeOSAuthenticator::GetDisplayName() const {
 
 namespace {
 
+constexpr int kHasCredentialsTimeoutMs = 3000;
+
 AuthenticatorSupportedOptions ChromeOSAuthenticatorOptions() {
   AuthenticatorSupportedOptions options;
   options.is_platform_device = true;
@@ -258,6 +260,50 @@ void ChromeOSAuthenticator::OnGetAssertionResp(CtapGetAssertionRequest request,
       std::vector<uint8_t>(credential_id.begin(), credential_id.end())));
   std::move(callback).Run(CtapDeviceResponseCode::kSuccess,
                           std::move(response));
+}
+
+bool ChromeOSAuthenticator::HasCredentialForGetAssertionRequest(
+    const CtapGetAssertionRequest& request) {
+  dbus::Bus::Options dbus_options;
+  dbus_options.bus_type = dbus::Bus::SYSTEM;
+  scoped_refptr<dbus::Bus> bus = new dbus::Bus(dbus_options);
+  dbus::ObjectProxy* u2f_proxy = bus->GetObjectProxy(
+      u2f::kU2FServiceName, dbus::ObjectPath(u2f::kU2FServicePath));
+
+  if (!u2f_proxy) {
+    FIDO_LOG(ERROR) << "Couldn't get u2f proxy";
+    return false;
+  }
+
+  u2f::HasCredentialsRequest req;
+  req.set_rp_id(request.rp_id);
+  for (const PublicKeyCredentialDescriptor& descriptor : request.allow_list) {
+    const std::vector<uint8_t>& id = descriptor.id();
+    req.add_credential_id(std::string(id.begin(), id.end()));
+  }
+
+  dbus::MethodCall method_call(u2f::kU2FInterface, u2f::kU2FHasCredentials);
+  dbus::MessageWriter writer(&method_call);
+  writer.AppendProtoAsArrayOfBytes(req);
+
+  std::unique_ptr<dbus::Response> dbus_response =
+      u2f_proxy->CallMethodAndBlock(&method_call, kHasCredentialsTimeoutMs);
+
+  if (!dbus_response) {
+    FIDO_LOG(ERROR) << "HasCredentials dbus call had no response or timed out";
+    return false;
+  }
+
+  dbus::MessageReader reader(dbus_response.get());
+  u2f::HasCredentialsResponse resp;
+  if (!reader.PopArrayOfBytesAsProto(&resp)) {
+    FIDO_LOG(ERROR) << "Failed to parse reply for call to HasCredentials";
+    return false;
+  }
+
+  return resp.status() ==
+             u2f::HasCredentialsResponse_HasCredentialsStatus_SUCCESS &&
+         resp.credential_id().size() > 0;
 }
 
 bool ChromeOSAuthenticator::IsInPairingMode() const {

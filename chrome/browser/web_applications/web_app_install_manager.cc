@@ -4,6 +4,7 @@
 
 #include <utility>
 
+#include "base/optional.h"
 #include "chrome/browser/web_applications/web_app_install_manager.h"
 
 #include "base/bind.h"
@@ -145,11 +146,24 @@ void WebAppInstallManager::InstallWebAppFromInfo(
     ForInstallableSite for_installable_site,
     WebappInstallSource install_source,
     OnceInstallCallback callback) {
+  InstallWebAppFromInfo(std::move(web_application_info), for_installable_site,
+                        base::nullopt, install_source, std::move(callback));
+}
+
+void WebAppInstallManager::InstallWebAppFromInfo(
+    std::unique_ptr<WebApplicationInfo> web_application_info,
+    ForInstallableSite for_installable_site,
+    const base::Optional<InstallParams>& install_params,
+    WebappInstallSource install_source,
+    OnceInstallCallback callback) {
   DCHECK(started_);
 
   auto task = std::make_unique<WebAppInstallTask>(
       profile(), os_integration_manager(), finalizer(),
       data_retriever_factory_.Run());
+  if (install_params) {
+    task->SetInstallParams(install_params.value());
+  }
   task->InstallWebAppFromInfo(
       std::move(web_application_info), for_installable_site, install_source,
       base::BindOnce(&WebAppInstallManager::OnInstallTaskCompleted,

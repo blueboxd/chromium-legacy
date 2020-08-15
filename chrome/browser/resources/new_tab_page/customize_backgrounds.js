@@ -153,14 +153,14 @@ class CustomizeBackgroundsElement extends PolymerElement {
   onCollectionClick_(e) {
     this.selectedCollection = this.$.collectionsRepeat.itemForElement(e.target);
     this.pageHandler_.onCustomizeDialogAction(
-        newTabPage.mojom.CustomizeDialogAction.BACKGROUNDS_COLLECTION_OPENED);
+        newTabPage.mojom.CustomizeDialogAction.kBackgroundsCollectionOpened);
   }
 
   /** @private */
   async onUploadFromDeviceClick_() {
     this.pageHandler_.onCustomizeDialogAction(
         newTabPage.mojom.CustomizeDialogAction
-            .BACKGROUNDS_UPLOAD_FROM_DEVICE_CLICKED);
+            .kBackgroundsUploadFromDeviceClicked);
     const {success} = await this.pageHandler_.chooseLocalCustomBackground();
     if (success) {
       // The theme update is asynchronous. Close the dialog and allow ntp-app
@@ -175,7 +175,7 @@ class CustomizeBackgroundsElement extends PolymerElement {
         BackgroundSelectionType.NO_BACKGROUND) {
       this.pageHandler_.onCustomizeDialogAction(
           newTabPage.mojom.CustomizeDialogAction
-              .BACKGROUNDS_NO_BACKGROUND_SELECTED);
+              .kBackgroundsNoBackgroundSelected);
     }
     this.backgroundSelection = {type: BackgroundSelectionType.NO_BACKGROUND};
   }
@@ -189,7 +189,7 @@ class CustomizeBackgroundsElement extends PolymerElement {
     if (this.backgroundSelection.type !== BackgroundSelectionType.IMAGE ||
         this.backgroundSelection.image !== image) {
       this.pageHandler_.onCustomizeDialogAction(
-          newTabPage.mojom.CustomizeDialogAction.BACKGROUNDS_IMAGE_SELECTED);
+          newTabPage.mojom.CustomizeDialogAction.kBackgroundsImageSelected);
     }
     this.backgroundSelection = {
       type: BackgroundSelectionType.IMAGE,

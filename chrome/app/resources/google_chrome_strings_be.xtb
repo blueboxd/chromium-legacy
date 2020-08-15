@@ -48,6 +48,7 @@
 <translation id="2123055963409958220">Дапамажыце палепшыць Chrome, паведаміўшы <ph name="BEGIN_LINK" />бягучыя налады<ph name="END_LINK" /></translation>
 <translation id="2151406531797534936">Перазапусціце Chrome</translation>
 <translation id="2246246234298806438">Google Chrome не можа паказаць перадпрагляд друку: убудаваны сродак прагляду PDF адсутнічае.</translation>
+<translation id="226038281051944330">Вы ўвайшлі ў профіль карыстальніка <ph name="EXISTING_USER" />, выкарыстаўшы новы ўліковы запіс. Ці не хочаце стварыць новы профіль Chrome Space для карыстальніка <ph name="NEW_USER" />, каб трымаць свае даныя асобна?</translation>
 <translation id="2290014774651636340">Адсутнічаюць ключы Google API. Некаторыя функцыі Google Chrome будуць выключаны.</translation>
 <translation id="2290095356545025170">Сапраўды выдаліць Google Chrome?</translation>
 <translation id="2309047409763057870">Гэта другасны ўсталяваны экзэмпляр Google Chrome – яго нельга зрабіць стандартным браўзерам.</translation>
@@ -146,12 +147,14 @@
 <translation id="4895437082222824641">Адкрыць спасылку ў новай &amp;укладцы Chrome</translation>
 <translation id="4953650215774548573">Зрабіць Google Chrome стандартным браўзерам</translation>
 <translation id="495931528404527476">У браўзеры Chrome</translation>
+<translation id="4960472897514318257">Вы ўвайшлі ў працоўны ўліковы запіс. Ці не хочаце стварыць новы профіль Chrome Space для карыстальніка <ph name="NEW_USER" />, каб трымаць свае асабістыя даныя асобна?</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5062123544085870375">Перазапусціце Chrome OS</translation>
 <translation id="5132929315877954718">Адкрывайце для сябе выдатныя праграмы, гульні, пашырэнні і тэмы для Google Chrome.</translation>
 <translation id="5170938038195470297">Ваш профіль нельга выкарыстоўваць, бо ён з навейшай версіі Google Chrome.
 
 Некаторыя функцыі могуць быць недаступныя. Укажыце іншы каталог профілю або выкарыстайце навейшую версію Chrome.</translation>
+<translation id="5171117065011130146">Сварыць новы працоўны профіль Chrome Space?</translation>
 <translation id="5193136243808726294">Google Chrome OS не можа адкрыць гэту старонку.</translation>
 <translation id="5251420635869119124">Госці могуць выкарыстоўваць Chrome, не пакідаючы нічога пасля сябе.</translation>
 <translation id="532046782124376502">Увага! Google Chrome не можа забараніць пашырэнням весці запіс вашай гісторыі праглядаў сайтаў. Скасуйце выбар гэтай налады, каб выключыць гэта пашырэнне ў рэжыме інкогніта.</translation>
@@ -266,7 +269,9 @@
 <translation id="8823341990149967727">Ваша версія Chrome састарэла</translation>
 <translation id="8834965163890861871">Google Chrome спрабуе змяніць паролі. Каб дазволіць гэта, увядзіце пароль Windows.</translation>
 <translation id="884296878221830158">Таксама вызначае, якая старонка паказваецца пры запуску браўзера Chrome або націсканні кнопкі галоўнай старонкі.</translation>
+<translation id="8859948767482842016">Вы ўвайшлі ў профіль карыстальніка <ph name="EXISTING_USER" />, выкарыстаўшы працоўны ўліковы запіс. Ці не хочаце стварыць новы профіль Chrome Space для дамена <ph name="WORK_DOMAIN" />, каб трымаць свае даныя асобна?</translation>
 <translation id="8862326446509486874">Для ўсталявання на сістэмным узроўні ў вас няма неабходных правоў. Паспрабуйце запусціць усталёўшчык ад імені адміністратара.</translation>
+<translation id="8877586659207810298">Сварыць новы профіль Chrome Space для карыстальніка <ph name="NEW_USER" />?</translation>
 <translation id="8914504000324227558">Перазапусціць Chrome</translation>
 <translation id="8999208279178790196">{0,plural, =0{Ёсць абнаўленне Chrome}=1{Ёсць абнаўленне Chrome}one{Абнаўленне Chrome выйшла ўжо # дзень таму}few{Абнаўленне Chrome выйшла # дні таму}many{Абнаўленне Chrome выйшла # дзён таму}other{Абнаўленне Chrome выйшла # дня таму}}</translation>
 <translation id="9026991721384951619">Сінхранізаваць даныя ў сістэме Chrome OS не ўдалося: даныя ўліковага запісу для ўваходу састарэлі.</translation>

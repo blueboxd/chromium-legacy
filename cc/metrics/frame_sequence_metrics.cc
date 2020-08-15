@@ -14,6 +14,7 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
 #include "cc/metrics/frame_sequence_tracker.h"
+#include "cc/metrics/jank_metrics.h"
 #include "cc/metrics/throughput_ukm_reporter.h"
 
 namespace cc {
@@ -97,6 +98,16 @@ bool IsInteractionType(FrameSequenceTrackerType sequence_type) {
 FrameSequenceMetrics::FrameSequenceMetrics(FrameSequenceTrackerType type,
                                            ThroughputUkmReporter* ukm_reporter)
     : type_(type), throughput_ukm_reporter_(ukm_reporter) {
+  ThreadType thread_type = GetEffectiveThread();
+
+  // Only construct |jank_reporter_| if it has a valid tracker and thread type.
+  // For scrolling tracker types, |jank_reporter_| may be constructed later in
+  // SetScrollingThread().
+  if ((thread_type == ThreadType::kCompositor ||
+       thread_type == ThreadType::kMain) &&
+      type != FrameSequenceTrackerType::kUniversal &&
+      type != FrameSequenceTrackerType::kCustom)
+    jank_reporter_ = std::make_unique<JankMetrics>(type, thread_type);
 }
 
 FrameSequenceMetrics::~FrameSequenceMetrics() = default;
@@ -121,6 +132,11 @@ void FrameSequenceMetrics::SetScrollingThread(ThreadType scrolling_thread) {
          type_ == FrameSequenceTrackerType::kScrollbarScroll);
   DCHECK_EQ(scrolling_thread_, ThreadType::kUnknown);
   scrolling_thread_ = scrolling_thread;
+
+  DCHECK(!jank_reporter_);
+  DCHECK_NE(scrolling_thread, ThreadType::kSlower);
+  DCHECK_NE(scrolling_thread, ThreadType::kUnknown);
+  jank_reporter_ = std::make_unique<JankMetrics>(type_, scrolling_thread);
 }
 
 void FrameSequenceMetrics::SetCustomReporter(CustomReporter custom_reporter) {
@@ -167,6 +183,9 @@ void FrameSequenceMetrics::Merge(
   main_throughput_.Merge(metrics->main_throughput_);
   aggregated_throughput_.Merge(metrics->aggregated_throughput_);
   frames_checkerboarded_ += metrics->frames_checkerboarded_;
+
+  if (jank_reporter_)
+    jank_reporter_->Merge(std::move(metrics->jank_reporter_));
 
   // Reset the state of |metrics| before destroying it, so that it doesn't end
   // up reporting the metrics.
@@ -296,6 +315,18 @@ void FrameSequenceMetrics::ReportMetrics() {
     frames_checkerboarded_ = 0;
   }
 
+  // Report the jank metrics
+  if (jank_reporter_) {
+    if (jank_reporter_->thread_type() ==
+            FrameSequenceMetrics::ThreadType::kCompositor &&
+        impl_throughput_.frames_expected >= kMinFramesForThroughputMetric)
+      jank_reporter_->ReportJankMetrics(impl_throughput_.frames_expected);
+    else if (jank_reporter_->thread_type() ==
+                 FrameSequenceMetrics::ThreadType::kMain &&
+             main_throughput_.frames_expected >= kMinFramesForThroughputMetric)
+      jank_reporter_->ReportJankMetrics(main_throughput_.frames_expected);
+  }
+
   // Reset the metrics that reach reporting threshold.
   if (impl_throughput_.frames_expected >= kMinFramesForThroughputMetric) {
     impl_throughput_ = {};
@@ -303,6 +334,17 @@ void FrameSequenceMetrics::ReportMetrics() {
   }
   if (main_throughput_.frames_expected >= kMinFramesForThroughputMetric)
     main_throughput_ = {};
+}
+
+void FrameSequenceMetrics::ComputeJank(
+    FrameSequenceMetrics::ThreadType thread_type,
+    base::TimeTicks presentation_time,
+    base::TimeDelta frame_interval) {
+  if (!jank_reporter_)
+    return;
+
+  if (thread_type == jank_reporter_->thread_type())
+    jank_reporter_->AddPresentedFrame(presentation_time, frame_interval);
 }
 
 base::Optional<int> FrameSequenceMetrics::ThroughputData::ReportHistogram(

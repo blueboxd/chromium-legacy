@@ -302,6 +302,7 @@
 <translation id="4481711095103932593">已与 Windows 共享此文件夹</translation>
 <translation id="4487088045714738411">比利时键盘</translation>
 <translation id="4522570452068850558">详细信息</translation>
+<translation id="4542387084127299777">无法打开“<ph name="PATH" />”</translation>
 <translation id="4552678318981539154">购买更多存储空间</translation>
 <translation id="4559767610552730302">焦外成像</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> 文件</translation>
@@ -509,6 +510,7 @@
 <translation id="6629841649550503054">所有文件都已备份到 <ph name="BEGIN_LINK" />Google 云端硬盘<ph name="END_LINK" />！</translation>
 <translation id="6643016212128521049">清除</translation>
 <translation id="6650726141019353908">粉蝴蝶</translation>
+<translation id="6657585470893396449">密码</translation>
 <translation id="6710213216561001401">上一个</translation>
 <translation id="6718273304615422081">正在压缩…</translation>
 <translation id="6751256176799620176">已选择 1 个文件夹</translation>
@@ -721,6 +723,7 @@
 <translation id="9065203028668620118">编辑</translation>
 <translation id="9099674669267916096">页数</translation>
 <translation id="9110990317705400362">我们在不断寻找各种方式来提高上网安全。之前，任何网站都可以提示您在浏览器中添加扩展程序；而在最新版本的Google Chrome中，您必须明确告诉Chrome您想要安装这些扩展程序（即：在“扩展程序”页添加它们）后才可以。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
+<translation id="9111102763498581341">解锁</translation>
 <translation id="912419004897138677">编解码器</translation>
 <translation id="9129931661813833980">固定文件夹</translation>
 <translation id="9130775360844693113">“<ph name="DESTINATION_NAME" />”的成员将会有权访问这些内容。</translation>

@@ -2062,13 +2062,7 @@
     "DefaultEnableOopRasterization": [
         {
             "platforms": [
-                "android",
-                "android_weblayer",
-                "android_webview",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
+                "linux"
             ],
             "experiments": [
                 {
@@ -2348,6 +2342,24 @@
                     "name": "DisableOffSequenceTaskCancelation",
                     "disable_features": [
                         "AllowOffSequenceTaskCancelation"
+                    ]
+                }
+            ]
+        }
+    ],
+    "DiscardCodeCacheAfterFirstUse": [
+        {
+            "platforms": [
+                "android",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "EnableDiscardCodeCacheAfterFirstUse",
+                    "enable_features": [
+                        "DiscardCodeCacheAfterFirstUse"
                     ]
                 }
             ]
@@ -4881,7 +4893,6 @@
                         "UIMaxAutocompleteMatches": "8"
                     },
                     "enable_features": [
-                        "NtpRealbox",
                         "OmniboxDisplayTitleForCurrentUrl",
                         "OmniboxDocumentProvider",
                         "OmniboxMaxURLMatches",
@@ -8414,7 +8425,7 @@
             ]
         }
     ],
-    "WindowsHybridSpellCheck": [
+    "WindowsNativeSpellChecker": [
         {
             "platforms": [
                 "windows"

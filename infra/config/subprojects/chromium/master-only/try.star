@@ -318,11 +318,9 @@ try_.chromium_linux_builder(
 
 try_.chromium_linux_builder(
     name = "fuchsia-compile-x64-dbg",
-    # TODO(crbug.com/1116532): Move back to experimental once CQ has settled
-    # down.
-    #tryjob = try_.job(
-    #    experiment_percentage = 50,
-    #),
+    tryjob = try_.job(
+        experiment_percentage = 50,
+    ),
 )
 
 try_.chromium_linux_builder(
@@ -388,18 +386,16 @@ try_.chromium_linux_builder(
 
 try_.chromium_linux_builder(
     name = "linux-perfetto-rel",
-    # TODO(crbug.com/1116532): Move back to experimental once CQ has settled
-    # down.
-    #tryjob = try_.job(
-    #    experiment_percentage = 100,
-    #    location_regexp = [
-    #        ".+/[+]/base/trace_event/.+",
-    #        ".+/[+]/base/tracing/.+",
-    #        ".+/[+]/components/tracing/.+",
-    #        ".+/[+]/content/browser/tracing/.+",
-    #        ".+/[+]/services/tracing/.+",
-    #    ],
-    #),
+    tryjob = try_.job(
+        experiment_percentage = 100,
+        location_regexp = [
+            ".+/[+]/base/trace_event/.+",
+            ".+/[+]/base/tracing/.+",
+            ".+/[+]/components/tracing/.+",
+            ".+/[+]/content/browser/tracing/.+",
+            ".+/[+]/services/tracing/.+",
+        ],
+    ),
 )
 
 try_.chromium_linux_builder(
@@ -512,9 +508,7 @@ try_.chromium_mac_builder(
     name = "mac-coverage-rel",
     use_clang_coverage = True,
     goma_jobs = goma.jobs.J150,
-    # TODO(crbug.com/1116532): Move back to experimental once CQ has settled
-    # down.
-    #tryjob = try_.job(experiment_percentage = 3),
+    tryjob = try_.job(experiment_percentage = 3),
 )
 
 try_.chromium_mac_builder(
@@ -596,9 +590,7 @@ try_.chromium_mac_ios_builder(
     properties = {
         "xcode_build_version": "11e146",
     },
-    # TODO(crbug.com/1116532): Move back to experimental once CQ has settled
-    # down.
-    #tryjob = try_.job(experiment_percentage = 3),
+    tryjob = try_.job(experiment_percentage = 3),
 )
 
 try_.chromium_mac_ios_builder(

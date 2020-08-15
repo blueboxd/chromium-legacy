@@ -15,6 +15,7 @@
 #include "chrome/browser/favicon/favicon_utils.h"
 #include "chrome/browser/installable/installable_manager.h"
 #include "chrome/browser/installable/installable_metrics.h"
+#include "chrome/browser/installable/installable_params.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/web_applications/components/install_finalizer.h"
@@ -125,9 +126,13 @@ void PendingAppInstallTask::Install(content::WebContents* web_contents,
 void PendingAppInstallTask::InstallFromInfo(ResultCallback result_callback) {
   auto internal_install_source = ConvertExternalInstallSourceToInstallSource(
       install_options().install_source);
-
+  auto install_params = ConvertExternalInstallOptionsToParams(install_options_);
+  auto web_app_info = install_options_.app_info_factory.Run();
+  for (std::string& search_term : install_params.additional_search_terms) {
+    web_app_info->additional_search_terms.push_back(std::move(search_term));
+  }
   install_manager_->InstallWebAppFromInfo(
-      install_options_.app_info_factory.Run(), ForInstallableSite::kYes,
+      std::move(web_app_info), ForInstallableSite::kYes, install_params,
       internal_install_source,
       base::BindOnce(&PendingAppInstallTask::OnWebAppInstalled,
                      weak_ptr_factory_.GetWeakPtr(), /* is_placeholder=*/false,

@@ -170,10 +170,10 @@ SystemWebAppManagerBrowserTest::SystemWebAppManagerBrowserTest(
     scoped_feature_list_.InitAndDisableFeature(
         features::kDesktopPWAsWithoutExtensions);
   }
-
   if (install_mock) {
     maybe_installation_ =
-        TestSystemWebAppInstallation::SetUpStandaloneSingleWindowApp();
+        TestSystemWebAppInstallation::SetUpStandaloneSingleWindowApp(
+            install_from_web_app_info());
   }
 }
 
@@ -189,13 +189,9 @@ SystemWebAppManagerWebAppInfoBrowserTest::
   }
 
   if (install_mock) {
-    if (install_from_web_app_info()) {
-      maybe_installation_ = TestSystemWebAppInstallation::
-          SetUpStandaloneSingleWindowAppFromWebApplicationInfo();
-    } else {
-      maybe_installation_ =
-          TestSystemWebAppInstallation::SetUpStandaloneSingleWindowApp();
-    }
+    maybe_installation_ =
+        TestSystemWebAppInstallation::SetUpStandaloneSingleWindowApp(
+            install_from_web_app_info());
   }
 }
 
@@ -236,24 +232,35 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerWebAppInfoBrowserTest, Install) {
 #if defined(OS_CHROMEOS)
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(browser()->profile());
-  bool should_show_in_management =
-      install_from_web_app_info() && provider_type() == ProviderType::kWebApps;
   proxy->AppRegistryCache().ForOneApp(
-      app_id, [should_show_in_management](const apps::AppUpdate& update) {
+      app_id, [](const apps::AppUpdate& update) {
         EXPECT_EQ(apps::mojom::OptionalBool::kTrue, update.ShowInLauncher());
         EXPECT_EQ(apps::mojom::OptionalBool::kTrue, update.ShowInSearch());
-        // TODO(https://crbug.com/1085274): We should never show SWAs in
-        // management.
-        if (should_show_in_management) {
-          EXPECT_EQ(apps::mojom::OptionalBool::kTrue,
-                    update.ShowInManagement());
-        } else {
-          EXPECT_EQ(apps::mojom::OptionalBool::kFalse,
-                    update.ShowInManagement());
-        }
+        EXPECT_EQ(apps::mojom::OptionalBool::kFalse, update.ShowInManagement());
         EXPECT_EQ(apps::mojom::Readiness::kReady, update.Readiness());
       });
 #endif  // defined(OS_CHROMEOS)
+}
+
+// We test with and without enabling kDesktopPWAsWithoutExtensions.
+std::string ProviderAndInstallationTypeToString(
+    const ::testing::TestParamInfo<ProviderTypeAndInstallationType>&
+        provider_type) {
+  std::string output;
+  switch (std::get<0>(provider_type.param)) {
+    case ProviderType::kBookmarkApps:
+      output.append("BookmarkApps");
+      break;
+    case ProviderType::kWebApps:
+      output.append("WebApps");
+      break;
+  }
+  if (std::get<1>(provider_type.param) ==
+      InstallationType::kWebAppInfoInstall) {
+    output.append("_WebAppInfoInstall");
+  }
+
+  return output;
 }
 
 // Check the toolbar is not shown for system web apps for pages on the chrome://
@@ -292,7 +299,7 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerWebAppInfoBrowserTest,
 
 class SystemWebAppManagerFileHandlingBrowserTestBase
     : public SystemWebAppManagerBrowserTestBase,
-      public ::testing::WithParamInterface<web_app::ProviderType> {
+      public ::testing::WithParamInterface<ProviderTypeAndInstallationType> {
  public:
   using IncludeLaunchDirectory =
       TestSystemWebAppInstallation::IncludeLaunchDirectory;
@@ -300,7 +307,7 @@ class SystemWebAppManagerFileHandlingBrowserTestBase
   explicit SystemWebAppManagerFileHandlingBrowserTestBase(
       IncludeLaunchDirectory include_launch_directory)
       : SystemWebAppManagerBrowserTestBase(/*install_mock=*/false) {
-    web_app::ProviderType provider_type = GetParam();
+    web_app::ProviderType provider_type = std::get<0>(GetParam());
     if (provider_type == ProviderType::kWebApps) {
       scoped_feature_web_app_provider_type_.InitAndEnableFeature(
           features::kDesktopPWAsWithoutExtensions);
@@ -316,7 +323,8 @@ class SystemWebAppManagerFileHandlingBrowserTestBase
 
     maybe_installation_ =
         TestSystemWebAppInstallation::SetUpAppThatReceivesLaunchFiles(
-            include_launch_directory);
+            include_launch_directory,
+            std::get<1>(GetParam()) == InstallationType::kWebAppInfoInstall);
   }
 
   content::WebContents* LaunchApp(
@@ -854,7 +862,8 @@ class SystemWebAppManagerFileHandlingOriginTrialsBrowserTest
     maybe_installation_ =
         TestSystemWebAppInstallation::SetUpAppWithEnabledOriginTrials(
             OriginTrialsMap({{GetOrigin(GURL("chrome://test-system-app/")),
-                              {"NativeFileSystem2", "FileHandling"}}}));
+                              {"NativeFileSystem2", "FileHandling"}}}),
+            install_from_web_app_info());
   }
 
   ~SystemWebAppManagerFileHandlingOriginTrialsBrowserTest() override = default;
@@ -915,7 +924,8 @@ class SystemWebAppManagerNotShownInLauncherTest
   SystemWebAppManagerNotShownInLauncherTest()
       : SystemWebAppManagerBrowserTest(/*install_mock=*/false) {
     maybe_installation_ =
-        TestSystemWebAppInstallation::SetUpAppNotShownInLauncher();
+        TestSystemWebAppInstallation::SetUpAppNotShownInLauncher(
+            install_from_web_app_info());
   }
 };
 
@@ -951,7 +961,8 @@ class SystemWebAppManagerNotShownInSearchTest
   SystemWebAppManagerNotShownInSearchTest()
       : SystemWebAppManagerBrowserTest(/*install_mock=*/false) {
     maybe_installation_ =
-        TestSystemWebAppInstallation::SetUpAppNotShownInSearch();
+        TestSystemWebAppInstallation::SetUpAppNotShownInSearch(
+            install_from_web_app_info());
   }
 };
 
@@ -977,7 +988,8 @@ class SystemWebAppManagerAdditionalSearchTermsTest
   SystemWebAppManagerAdditionalSearchTermsTest()
       : SystemWebAppManagerBrowserTest(/*install_mock=*/false) {
     maybe_installation_ =
-        TestSystemWebAppInstallation::SetUpAppWithAdditionalSearchTerms();
+        TestSystemWebAppInstallation::SetUpAppWithAdditionalSearchTerms(
+            install_from_web_app_info());
   }
 };
 
@@ -1008,7 +1020,8 @@ class SystemWebAppManagerUninstallBrowserTest
           TestSystemWebAppInstallation::SetUpAppWithEnabledOriginTrials(
               OriginTrialsMap(
                   {{url::Origin::Create(GURL("chrome://test-system-app/")),
-                    {"NativeFileSystem2", "FileHandling"}}}));
+                    {"NativeFileSystem2", "FileHandling"}}}),
+              install_from_web_app_info());
     } else {
       maybe_installation_ = TestSystemWebAppInstallation::SetUpWithoutApps();
     }
@@ -1074,7 +1087,7 @@ class SystemWebAppManagerMigrationTest
   SystemWebAppManagerMigrationTest()
       : SystemWebAppManagerBrowserTestBase(/*install_mock=*/false) {
     maybe_installation_ =
-        TestSystemWebAppInstallation::SetUpAppWithAdditionalSearchTerms();
+        TestSystemWebAppInstallation::SetUpAppWithAdditionalSearchTerms(false);
     maybe_installation_->set_update_policy(
         SystemWebAppManager::UpdatePolicy::kOnVersionChange);
 
@@ -1141,8 +1154,8 @@ class SystemWebAppManagerChromeUntrustedTest
  public:
   SystemWebAppManagerChromeUntrustedTest()
       : SystemWebAppManagerBrowserTest(/*install_mock=*/false) {
-    maybe_installation_ =
-        TestSystemWebAppInstallation::SetUpChromeUntrustedApp();
+    maybe_installation_ = TestSystemWebAppInstallation::SetUpChromeUntrustedApp(
+        install_from_web_app_info());
   }
 };
 
@@ -1179,7 +1192,8 @@ class SystemWebAppManagerOriginTrialsBrowserTest
     maybe_installation_ =
         TestSystemWebAppInstallation::SetUpAppWithEnabledOriginTrials(
             OriginTrialsMap({{GetOrigin(main_url_), main_url_trials_},
-                             {GetOrigin(trial_url_), trial_url_trials_}}));
+                             {GetOrigin(trial_url_), trial_url_trials_}}),
+            install_from_web_app_info());
   }
 
   ~SystemWebAppManagerOriginTrialsBrowserTest() override = default;
@@ -1439,110 +1453,127 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerAppSuspensionBrowserTest,
                GetAppIconKey(*settings_id)->icon_effects);
 }
 // This feature will only work when DesktopPWAsWithoutExtensions launches.
-INSTANTIATE_TEST_SUITE_P(All,
-                         SystemWebAppManagerAppSuspensionBrowserTest,
-                         ::testing::Values(ProviderType::kBookmarkApps,
-                                           ProviderType::kWebApps),
-                         ProviderTypeParamToString);
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    SystemWebAppManagerAppSuspensionBrowserTest,
+    ::testing::Combine(::testing::Values(ProviderType::kBookmarkApps,
+                                         ProviderType::kWebApps),
+                       ::testing::Values(InstallationType::kManifestInstall,
+                                         InstallationType::kWebAppInfoInstall)),
+    ProviderAndInstallationTypeToString);
 
 #endif  // defined(OS_CHROMEOS)
-
-// We test with and without enabling kDesktopPWAsWithoutExtensions.
-std::string ProviderAndInstallationTypeToString(
-    const ::testing::TestParamInfo<ProviderTypeAndInstallationType>&
-        provider_type) {
-  std::string output;
-  switch (std::get<0>(provider_type.param)) {
-    case ProviderType::kBookmarkApps:
-      output.append("BookmarkApps");
-      break;
-    case ProviderType::kWebApps:
-      output.append("WebApps");
-      break;
-  }
-  if (std::get<1>(provider_type.param)) {
-    output.append("_WebAppInfoInstall");
-  }
-
-  return output;
-}
 
 INSTANTIATE_TEST_SUITE_P(
     All,
     SystemWebAppManagerWebAppInfoBrowserTest,
     ::testing::Combine(::testing::Values(ProviderType::kBookmarkApps,
                                          ProviderType::kWebApps),
-                       ::testing::Bool()),
+                       ::testing::Values(InstallationType::kManifestInstall,
+                                         InstallationType::kWebAppInfoInstall)),
     ProviderAndInstallationTypeToString);
 
-INSTANTIATE_TEST_SUITE_P(All,
-                         SystemWebAppManagerLaunchFilesBrowserTest,
-                         ::testing::Values(ProviderType::kBookmarkApps,
-                                           ProviderType::kWebApps),
-                         ProviderTypeParamToString);
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    SystemWebAppManagerLaunchFilesBrowserTest,
+    ::testing::Combine(::testing::Values(ProviderType::kBookmarkApps,
+                                         ProviderType::kWebApps),
+                       ::testing::Values(InstallationType::kManifestInstall,
+                                         InstallationType::kWebAppInfoInstall)),
+    ProviderAndInstallationTypeToString);
 
-INSTANTIATE_TEST_SUITE_P(All,
-                         SystemWebAppManagerLaunchDirectoryBrowserTest,
-                         ::testing::Values(ProviderType::kBookmarkApps,
-                                           ProviderType::kWebApps),
-                         ProviderTypeParamToString);
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    SystemWebAppManagerLaunchDirectoryBrowserTest,
+    ::testing::Combine(::testing::Values(ProviderType::kBookmarkApps,
+                                         ProviderType::kWebApps),
+                       ::testing::Values(InstallationType::kManifestInstall,
+                                         InstallationType::kWebAppInfoInstall)),
+    ProviderAndInstallationTypeToString);
 
 #if defined(OS_CHROMEOS)
 INSTANTIATE_TEST_SUITE_P(
     All,
     SystemWebAppManagerLaunchDirectoryFileSystemProviderBrowserTest,
-    ::testing::Values(ProviderType::kBookmarkApps, ProviderType::kWebApps),
-    ProviderTypeParamToString);
+    ::testing::Combine(::testing::Values(ProviderType::kBookmarkApps,
+                                         ProviderType::kWebApps),
+                       ::testing::Values(InstallationType::kManifestInstall,
+                                         InstallationType::kWebAppInfoInstall)),
+    ProviderAndInstallationTypeToString);
 #endif
 
-INSTANTIATE_TEST_SUITE_P(All,
-                         SystemWebAppManagerNotShownInLauncherTest,
-                         ::testing::Values(ProviderType::kBookmarkApps,
-                                           ProviderType::kWebApps),
-                         ProviderTypeParamToString);
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    SystemWebAppManagerNotShownInLauncherTest,
+    ::testing::Combine(::testing::Values(ProviderType::kBookmarkApps,
+                                         ProviderType::kWebApps),
+                       ::testing::Values(InstallationType::kManifestInstall,
+                                         InstallationType::kWebAppInfoInstall)),
+    ProviderAndInstallationTypeToString);
 
-INSTANTIATE_TEST_SUITE_P(All,
-                         SystemWebAppManagerNotShownInSearchTest,
-                         ::testing::Values(ProviderType::kBookmarkApps,
-                                           ProviderType::kWebApps),
-                         ProviderTypeParamToString);
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    SystemWebAppManagerNotShownInSearchTest,
+    ::testing::Combine(::testing::Values(ProviderType::kBookmarkApps,
+                                         ProviderType::kWebApps),
+                       ::testing::Values(InstallationType::kManifestInstall,
+                                         InstallationType::kWebAppInfoInstall)),
+    ProviderAndInstallationTypeToString);
 
-INSTANTIATE_TEST_SUITE_P(All,
-                         SystemWebAppManagerAdditionalSearchTermsTest,
-                         ::testing::Values(ProviderType::kBookmarkApps,
-                                           ProviderType::kWebApps),
-                         ProviderTypeParamToString);
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    SystemWebAppManagerAdditionalSearchTermsTest,
+    ::testing::Combine(::testing::Values(ProviderType::kBookmarkApps,
+                                         ProviderType::kWebApps),
+                       ::testing::Values(InstallationType::kManifestInstall,
+                                         InstallationType::kWebAppInfoInstall)),
+    ProviderAndInstallationTypeToString);
 
-INSTANTIATE_TEST_SUITE_P(All,
-                         SystemWebAppManagerChromeUntrustedTest,
-                         ::testing::Values(ProviderType::kBookmarkApps,
-                                           ProviderType::kWebApps),
-                         ProviderTypeParamToString);
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    SystemWebAppManagerChromeUntrustedTest,
+    ::testing::Combine(::testing::Values(ProviderType::kBookmarkApps,
+                                         ProviderType::kWebApps),
+                       ::testing::Values(InstallationType::kManifestInstall,
+                                         InstallationType::kWebAppInfoInstall)),
+    ProviderAndInstallationTypeToString);
 
-INSTANTIATE_TEST_SUITE_P(All,
-                         SystemWebAppManagerOriginTrialsBrowserTest,
-                         ::testing::Values(ProviderType::kBookmarkApps,
-                                           ProviderType::kWebApps),
-                         ProviderTypeParamToString);
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    SystemWebAppManagerOriginTrialsBrowserTest,
+    ::testing::Combine(::testing::Values(ProviderType::kBookmarkApps,
+                                         ProviderType::kWebApps),
+                       ::testing::Values(InstallationType::kManifestInstall,
+                                         InstallationType::kWebAppInfoInstall)),
+    ProviderAndInstallationTypeToString);
 
-INSTANTIATE_TEST_SUITE_P(All,
-                         SystemWebAppManagerFileHandlingOriginTrialsBrowserTest,
-                         ::testing::Values(ProviderType::kBookmarkApps,
-                                           ProviderType::kWebApps),
-                         ProviderTypeParamToString);
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    SystemWebAppManagerFileHandlingOriginTrialsBrowserTest,
+    ::testing::Combine(::testing::Values(ProviderType::kBookmarkApps,
+                                         ProviderType::kWebApps),
+                       ::testing::Values(InstallationType::kManifestInstall,
+                                         InstallationType::kWebAppInfoInstall)),
+    ProviderAndInstallationTypeToString);
 
-INSTANTIATE_TEST_SUITE_P(All,
-                         SystemWebAppManagerUninstallBrowserTest,
-                         ::testing::Values(ProviderType::kBookmarkApps,
-                                           ProviderType::kWebApps),
-                         ProviderTypeParamToString);
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    SystemWebAppManagerUninstallBrowserTest,
+    ::testing::Combine(::testing::Values(ProviderType::kBookmarkApps,
+                                         ProviderType::kWebApps),
+                       ::testing::Values(InstallationType::kManifestInstall,
+                                         InstallationType::kWebAppInfoInstall)),
+    ProviderAndInstallationTypeToString);
 
 #if defined(OS_CHROMEOS)
-INSTANTIATE_TEST_SUITE_P(All,
-                         SystemWebAppManagerUpgradeBrowserTest,
-                         ::testing::Values(ProviderType::kBookmarkApps,
-                                           ProviderType::kWebApps),
-                         ProviderTypeParamToString);
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    SystemWebAppManagerUpgradeBrowserTest,
+    ::testing::Combine(::testing::Values(ProviderType::kBookmarkApps,
+                                         ProviderType::kWebApps),
+                       ::testing::Values(InstallationType::kManifestInstall,
+                                         InstallationType::kWebAppInfoInstall)),
+    ProviderAndInstallationTypeToString);
 #endif
 
 }  // namespace web_app

@@ -733,6 +733,12 @@ enum BoolAttribute {
   // overflow: hidden or clip children by default.
   kClipsChildren,
 
+  // Indicates that this node is not selectable because the style has
+  // user-select: none. Note that there may be other reasons why a node is
+  // not selectable - for example, bullets in a list. However, this attribute
+  // is only set on user-select: none.
+  kNotUserSelectableStyle,
+
   // Indicates whether this node is selected or unselected.
   kSelected,
 

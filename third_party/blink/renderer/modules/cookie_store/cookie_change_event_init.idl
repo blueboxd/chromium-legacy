@@ -5,6 +5,6 @@
 // https://github.com/WICG/async-cookies-api/blob/gh-pages/explainer.md
 
 dictionary CookieChangeEventInit : EventInit {
-  [Measure] CookieList changed;
-  [Measure] CookieList deleted;
+  CookieList changed;
+  CookieList deleted;
 };

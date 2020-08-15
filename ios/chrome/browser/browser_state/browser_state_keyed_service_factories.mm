@@ -18,6 +18,7 @@
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_persistent_storage_keyed_service_factory.h"
 #include "ios/chrome/browser/credential_provider/credential_provider_service_factory.h"
 #import "ios/chrome/browser/device_sharing/device_sharing_manager_factory.h"
+#include "ios/chrome/browser/discover_feed/discover_feed_service_factory.h"
 #include "ios/chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "ios/chrome/browser/download/browser_download_service_factory.h"
 #include "ios/chrome/browser/favicon/favicon_service_factory.h"
@@ -108,6 +109,7 @@ void EnsureBrowserStateKeyedServiceFactoriesBuilt() {
   ConsentAuditorFactory::GetInstance();
   CredentialProviderServiceFactory::GetInstance();
   DeviceSharingManagerFactory::GetInstance();
+  DiscoverFeedServiceFactory::GetInstance();
   GoogleLogoServiceFactory::GetInstance();
   IdentityManagerFactory::GetInstance();
   IOSCookieBlockerFactory::GetInstance();

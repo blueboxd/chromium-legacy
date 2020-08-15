@@ -82,6 +82,7 @@
 <translation id="1294154142200295408">指令的變化</translation>
 <translation id="129553762522093515">最近關閉的分頁</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />嘗試清除 Cookie<ph name="END_LINK" /></translation>
+<translation id="1299917195319242089">開啟無痕式視窗按鈕，㩒一下 Enter 鍵就可以開新嘅 Chrome 無痕式視窗</translation>
 <translation id="1301324364792935241">請檢查您的安全 DNS 設定</translation>
 <translation id="1307966114820526988">這些功能已被淘汰</translation>
 <translation id="131405271941274527"><ph name="URL" /> 想在您以手機觸踫 NFC 裝置時傳送和接收資料</translation>
@@ -221,6 +222,7 @@
 <translation id="1783075131180517613">請更新您的同步複雜密碼。</translation>
 <translation id="1787142507584202372">您最近開啟的分頁會在這裡顯示</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
+<translation id="1798447301915465742"><ph name="MULTIPLE_ACTIONS_FOCUSED_FRIENDLY_MATCH_TEXT" />，可以進行幾種動作，㩒 Tab 鍵就可以跟次序轉換唔同嘅動作</translation>
 <translation id="1800473098294731951">B9</translation>
 <translation id="1803264062614276815">持卡人姓名</translation>
 <translation id="1807528111851433570">起始工作表</translation>
@@ -249,6 +251,7 @@
 <translation id="1919345977826869612">廣告</translation>
 <translation id="1919367280705858090">瞭解如何修正特定錯誤訊息指出的錯誤</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{無}=1{1 個網站}other{# 個網站}}</translation>
+<translation id="1926148189358507356">重新啟動就可以更新按鈕，㩒一下 Enter 鍵就可以更新 Chrome</translation>
 <translation id="1945968466830820669">您有可能會失去機構帳戶存取權，或會遭身份盜用。Chromium 建議您立即變更密碼。</translation>
 <translation id="1947454675006758438">釘裝 (右上方)</translation>
 <translation id="1959001866257244765"><ph name="BEGIN_WHITEPAPER_LINK" />將您瀏覽的部分網頁網址、有限的系統資料以及部分網頁內容<ph name="END_WHITEPAPER_LINK" />傳送給 Google，以協助改善其他使用者的網絡安全性。<ph name="BEGIN_PRIVACY_PAGE_LINK" />私隱權政策<ph name="END_PRIVACY_PAGE_LINK" /></translation>
@@ -352,6 +355,7 @@
 <translation id="2367567093518048410">級別</translation>
 <translation id="2380886658946992094">Legal</translation>
 <translation id="2384307209577226199">企業預設</translation>
+<translation id="238547550913364157"><ph name="LAUNCH_INCOGNITO_FOCUSED_FRIENDLY_MATCH_TEXT" />，㩒一下 Tab 鍵，然後㩒一下 Enter 鍵就可以開新嘅 Chrome 無痕式視窗</translation>
 <translation id="2385809941344967209">從 Chrome 設定更新 Chrome</translation>
 <translation id="2386255080630008482">伺服器憑證已被撤銷。</translation>
 <translation id="2392959068659972793">顯示尚未設定任何值的政策</translation>
@@ -394,6 +398,7 @@
 <translation id="2586657967955657006">剪貼簿</translation>
 <translation id="2587730715158995865">來自「<ph name="ARTICLE_PUBLISHER" />」。閱讀這篇和另外 <ph name="OTHER_ARTICLE_COUNT" /> 篇報導。</translation>
 <translation id="2587841377698384444">目錄 API 識別碼：</translation>
+<translation id="2592698726824597401"><ph name="UPDATE_CREDIT_CARD_FOCUSED_FRIENDLY_MATCH_TEXT" />，㩒一下 Tab 鍵，然後㩒一下 Enter 鍵就可以喺 Chrome 設定度更新信用卡自動填入資料</translation>
 <translation id="2595719060046994702">此裝置和帳戶未受任何公司或其他機構管理。</translation>
 <translation id="2597378329261239068">此文件受到密碼保護，請輸入密碼。</translation>
 <translation id="2609632851001447353">變化</translation>
@@ -415,6 +420,7 @@
 <translation id="2677748264148917807">離開</translation>
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">最適合</translation>
+<translation id="2688738823074468716">管理密碼按鈕，㩒一下 Enter 鍵就可以喺 Chrome 設定度管理密碼</translation>
 <translation id="2688969097326701645">是，請繼續</translation>
 <translation id="2691924980723297736">安全警告</translation>
 <translation id="2699302886720511147">接受的付款卡</translation>
@@ -733,6 +739,7 @@
 <translation id="4088981014127559358">側邊 1 圖片 Y 軸移動</translation>
 <translation id="4098354747657067197">前往的是欺詐網站</translation>
 <translation id="4101413244023615925">文字和圖片</translation>
+<translation id="4103147722950692857"><ph name="MANAGE_PASSWORDS_FOCUSED_FRIENDLY_MATCH_TEXT" />，㩒一下 Tab 鍵，然後㩒一下 Enter 鍵就可以喺 Chrome 設定度管理密碼</translation>
 <translation id="4103249731201008433">裝置序號無效</translation>
 <translation id="4103763322291513355">請前往 &lt;strong&gt;chrome://policy&lt;/strong&gt; 查看列入黑名單的網址清單，以及其他系統管理員強制執行的政策。</translation>
 <translation id="4110652170750985508">查看您的付款</translation>
@@ -899,6 +906,7 @@
 <translation id="4738601419177586157">「<ph name="TEXT" />」搜尋建議</translation>
 <translation id="4742407542027196863">管理密碼…</translation>
 <translation id="4744603770635761495">可執行檔的路徑</translation>
+<translation id="4750085040310563588"><ph name="UPDATE_CHROME_FOCUSED_FRIENDLY_MATCH_TEXT" />，㩒一下 Tab 鍵，然後㩒一下 Enter 鍵就可以更新 Chrome</translation>
 <translation id="4750917950439032686">傳送資料至此網站時 (例如密碼或信用卡號碼)，您的資料將會保密。</translation>
 <translation id="4756388243121344051">記錄(&amp;H)</translation>
 <translation id="4758311279753947758">新增聯絡人資訊</translation>
@@ -940,6 +948,7 @@
 <translation id="4926049483395192435">必須指定。</translation>
 <translation id="4926159001844873046"><ph name="SITE" /> 顯示</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
+<translation id="4929871932072157101"><ph name="KEYWORD_FOCUSED_FRIENDLY_MATCH_TEXT" />，㩒一下 Tab 鍵，然後㩒一下 Enter 鍵就可以搵</translation>
 <translation id="4930153903256238152">大容量</translation>
 <translation id="4943872375798546930">沒有結果</translation>
 <translation id="4950898438188848926">分頁切換按鈕，㩒一下 Enter 鍵就可以轉去開以下嘅分頁：<ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
@@ -1016,6 +1025,7 @@
 <translation id="5215116848420601511">使用 Google Pay 儲存的付款方法和地址</translation>
 <translation id="5215363486134917902">Folio-Sp</translation>
 <translation id="5222812217790122047">需要提供電郵</translation>
+<translation id="5222994811833658317">清除資料按鈕，㩒一下 Enter 鍵就可以清除 Chrome 嘅瀏覽記錄資料</translation>
 <translation id="5230733896359313003">付運地址</translation>
 <translation id="5230815978613972521">B8</translation>
 <translation id="5233045608889518621">12x19</translation>
@@ -1056,6 +1066,7 @@
 <translation id="534295439873310000">NFC 裝置</translation>
 <translation id="5344579389779391559">此網頁可能會向您收取費用</translation>
 <translation id="5355557959165512791">您目前無法瀏覽 <ph name="SITE" />，因為此網站的憑證已被撤銷。網絡錯誤和攻擊行為通常是暫時性問題，所以此網頁可能稍後就能正常使用。</translation>
+<translation id="5361930801096459163">搜尋按鈕，㩒一下 Enter 鍵就可以搵「<ph name="KEYWORD_SUFFIX" />」</translation>
 <translation id="536296301121032821">無法儲存政策設定</translation>
 <translation id="5371425731340848620">更新信用卡</translation>
 <translation id="5377026284221673050">「您的時鐘慢了」、「您的時鐘快了」或「&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;」</translation>
@@ -1281,6 +1292,7 @@
 <translation id="6302269476990306341">正在停止 Chrome 的「Google 助理」</translation>
 <translation id="6305205051461490394">無法存取 <ph name="URL" />。</translation>
 <translation id="6312113039770857350">網頁無法使用</translation>
+<translation id="6315224405718249523">翻譯網頁按鈕，㩒一下 Enter 鍵就可以翻譯呢個網頁</translation>
 <translation id="6321917430147971392">檢查 DNS 設定</translation>
 <translation id="6322182122604171028">無法使用 Windows Hello</translation>
 <translation id="6328639280570009161">建議停用網絡預測功能</translation>
@@ -1335,6 +1347,7 @@
 <translation id="6547208576736763147">雙孔 (左側)</translation>
 <translation id="6554795675067793129">您的帳戶由 <ph name="ENROLLMENT_DOMAIN" /> 管理。</translation>
 <translation id="6556866813142980365">重做</translation>
+<translation id="6566840325635607048">更新信用卡按鈕，㩒一下 Enter 鍵就可以喺 Chrome 設定度更新信用卡自動填入資料</translation>
 <translation id="6569060085658103619">您正在查看擴充程式頁面</translation>
 <translation id="6573200754375280815">雙孔 (右側)</translation>
 <translation id="6578796323535178455">C2 (信封)</translation>
@@ -1575,6 +1588,7 @@
 <translation id="7549584377607005141">這個網頁需要使用您先前輸入的數據才能正確顯示。您可以重新傳送這些數據，但這樣做會重複這個網頁先前已執行的動作。</translation>
 <translation id="7550637293666041147">您的裝置使用者名稱和 Chrome 使用者名稱</translation>
 <translation id="7552846755917812628">請嘗試按照以下提示操作：</translation>
+<translation id="7553823544414963579"><ph name="CLEAR_BROWSING_DATA_FOCUSED_FRIENDLY_MATCH_TEXT" />，㩒一下 Tab 鍵，然後㩒一下 Enter 鍵就可以清除 Chrome 嘅瀏覽記錄資料</translation>
 <translation id="7554791636758816595">新分頁</translation>
 <translation id="7564049878696755256">您有可能會失去 <ph name="ORG_NAME" /> 帳戶存取權，或會遭身份盜用。Chrome 建議您立即變更密碼。</translation>
 <translation id="7567204685887185387">伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證或許曾以欺詐方式發行。這可能是因為設定錯誤，或有攻擊者攔截您的連線。</translation>
@@ -1741,6 +1755,7 @@
 <translation id="8225771182978767009">設定此電腦的用戶已封鎖此網站。</translation>
 <translation id="8228419419708659934">雙頁檢視</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />、<ph name="TYPE_2" /></translation>
+<translation id="8230646577665563479"><ph name="TRANSLATE_FOCUSED_FRIENDLY_MATCH_TEXT" />，㩒一下 Tab 鍵，然後㩒一下 Enter 鍵就可以翻譯呢個網頁</translation>
 <translation id="8232343881378637145">平台溫度</translation>
 <translation id="8238581221633243064">在新無痕式分頁中開啟網頁</translation>
 <translation id="8241707690549784388">您尋找的網頁使用了您輸入的資料。返回該頁會重複您剛才的動作。您確定要繼續嗎？</translation>

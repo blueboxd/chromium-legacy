@@ -6,7 +6,10 @@
 
 #include <cstring.h>
 
+#include "base/json/json_writer.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "ios/web/common/features.h"
 #import "ios/web/public/navigation/navigation_context.h"
 #import "ios/web/public/web_state.h"
@@ -38,26 +41,35 @@ bool AreTextFragmentsAllowed(NavigationContext* context) {
   return context->HasUserGesture() && !context->IsSameDocument();
 }
 
-void HandleTextFragments(NavigationContext* context) {
-  // TODO(crbug.com/1099268): Parse URL fragment, execute JS using passed
-  // params.
+void HandleTextFragments(WebState* state) {
+  std::string fragment_param;
+  base::JSONWriter::Write(
+      internal::ParseTextFragments(state->GetLastCommittedURL()),
+      &fragment_param);
+
+  std::string script = base::ReplaceStringPlaceholders(
+      "__gCrWeb.textFragments.handleTextFragments($1, $2)",
+      {fragment_param, /* scroll = */ "true"},
+      /* offsets= */ nullptr);
+
+  state->ExecuteJavaScript(base::UTF8ToUTF16(script));
 }
 
 namespace internal {
 
-std::vector<base::Value> ParseTextFragments(const GURL& url) {
+base::Value ParseTextFragments(const GURL& url) {
   if (!url.has_ref())
     return {};
   std::vector<std::string> fragments = ExtractTextFragments(url.ref());
   if (fragments.empty())
     return {};
 
-  std::vector<base::Value> parsed;
+  base::Value parsed(base::Value::Type::LIST);
   for (const std::string& fragment : fragments) {
     base::Value parsed_fragment = TextFragmentToValue(fragment);
     if (parsed_fragment.type() == base::Value::Type::NONE)
       continue;
-    parsed.push_back(std::move(parsed_fragment));
+    parsed.Append(std::move(parsed_fragment));
   }
 
   return parsed;

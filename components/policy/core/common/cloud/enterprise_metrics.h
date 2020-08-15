@@ -256,6 +256,7 @@ POLICY_EXPORT extern const char kMetricPolicyInvalidationRegistrationFcm[];
 
 POLICY_EXPORT extern const char kMetricUserRemoteCommandInvalidations[];
 POLICY_EXPORT extern const char kMetricDeviceRemoteCommandInvalidations[];
+POLICY_EXPORT extern const char kMetricCBCMRemoteCommandInvalidations[];
 
 POLICY_EXPORT extern const char
     kMetricRemoteCommandInvalidationsRegistrationResult[];
@@ -271,6 +272,12 @@ POLICY_EXPORT extern const char kMetricDeviceUnsignedRemoteCommandReceived[];
 POLICY_EXPORT extern const char kMetricDeviceRemoteCommandExecutedTemplate[];
 POLICY_EXPORT extern const char
     kMetricDeviceUnsignedRemoteCommandExecutedTemplate[];
+
+POLICY_EXPORT extern const char kMetricCBCMRemoteCommandReceived[];
+POLICY_EXPORT extern const char kMetricCBCMUnsignedRemoteCommandReceived[];
+POLICY_EXPORT extern const char kMetricCBCMRemoteCommandExecutedTemplate[];
+POLICY_EXPORT extern const char
+    kMetricCBCMUnsignedRemoteCommandExecutedTemplate[];
 
 }  // namespace policy
 

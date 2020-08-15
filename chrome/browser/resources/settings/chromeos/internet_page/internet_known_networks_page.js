@@ -11,8 +11,10 @@ Polymer({
   is: 'settings-internet-known-networks-page',
 
   behaviors: [
+    DeepLinkingBehavior,
     NetworkListenerBehavior,
     CrPolicyNetworkBehaviorMojo,
+    settings.RouteObserverBehavior,
   ],
 
   properties: {
@@ -49,6 +51,28 @@ Polymer({
      * @private
      */
     enableForget_: Boolean,
+
+    /**
+     * Contains the settingId of any deep link that wasn't able to be shown,
+     * null otherwise.
+     * @private {?chromeos.settings.mojom.Setting}
+     */
+    pendingSettingId_: {
+      type: chromeos.settings.mojom.Setting,
+      value: null,
+    },
+
+    /**
+     * Used by DeepLinkingBehavior to focus this page's deep links.
+     * @type {!Set<!chromeos.settings.mojom.Setting>}
+     */
+    supportedSettingIds: {
+      type: Object,
+      value: () => new Set([
+        chromeos.settings.mojom.Setting.kPreferWifiNetwork,
+        chromeos.settings.mojom.Setting.kForgetWifiNetwork,
+      ]),
+    },
   },
 
   /** @private {string} */
@@ -61,6 +85,27 @@ Polymer({
   created() {
     this.networkConfig_ = network_config.MojoInterfaceProviderImpl.getInstance()
                               .getMojoServiceRemote();
+  },
+
+  /**
+   * settings.RouteObserverBehavior
+   * @param {!settings.Route} route
+   * @param {!settings.Route} oldRoute
+   * @protected
+   */
+  currentRouteChanged(route, oldRoute) {
+    // Does not apply to this page.
+    if (route != settings.routes.KNOWN_NETWORKS) {
+      return;
+    }
+
+    this.attemptDeepLink().then(result => {
+      if (!result.deepLinkShown && result.pendingSettingId) {
+        // Store any deep link settingId that wasn't shown so we can try again
+        // in refreshNetworks.
+        this.pendingSettingId_ = result.pendingSettingId;
+      }
+    });
   },
 
   /** CrosNetworkConfigObserver impl */
@@ -89,6 +134,17 @@ Polymer({
     };
     this.networkConfig_.getNetworkStateList(filter).then(response => {
       this.networkStateList_ = response.result;
+
+      // Check if we have yet to focus a deep-linked element.
+      if (!this.pendingSettingId_) {
+        return;
+      }
+
+      this.showDeepLink(this.pendingSettingId_).then(result => {
+        if (result.deepLinkShown) {
+          this.pendingSettingId_ = null;
+        }
+      });
     });
   },
 

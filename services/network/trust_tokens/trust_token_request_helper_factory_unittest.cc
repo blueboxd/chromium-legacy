@@ -146,7 +146,7 @@ TEST_F(TrustTokenRequestHelperFactoryTest, ForbiddenHeaders) {
 }
 
 TEST_F(TrustTokenRequestHelperFactoryTest,
-       CreatingSigningHelperRequiresSuitableIssuer) {
+       CreatingSigningHelperRequiresSuitableIssuers) {
   auto request = CreateSuitableRequest();
 
   auto params = suitable_params().Clone();

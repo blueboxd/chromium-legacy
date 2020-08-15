@@ -54,6 +54,7 @@
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/focused_node_details.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/constants.h"
@@ -1960,11 +1961,6 @@ void OmniboxViewViews::DidFinishNavigation(
 
 void OmniboxViewViews::DidGetUserInteraction(
     const blink::WebInputEvent& event) {
-  if (!OmniboxFieldTrial::ShouldHidePathQueryRefOnInteraction() ||
-      model()->ShouldPreventElision()) {
-    return;
-  }
-
   // Exclude mouse clicks from triggering the simplified domain elision. Mouse
   // clicks can be done idly and aren't a good signal of real intent to interact
   // with the page. Plus, it can be jarring when the URL elides when the user
@@ -1980,35 +1976,13 @@ void OmniboxViewViews::DidGetUserInteraction(
     return;
   }
 
-  // If there's already a hover animation running, just let it run as we will
-  // end up at the same place.
-  if (hover_elide_or_unelide_animation_->IsAnimating())
-    return;
+  MaybeElideURLWithAnimationFromInteraction();
+}
 
-  // This method runs when the user interacts with the page, such as scrolling
-  // or typing. In the hide-on-interaction field trial, the URL is shown until
-  // user interaction, at which point it's animated to a simplified version of
-  // the domain (hiding the path and, optionally, subdomains). The animation is
-  // designed to draw the user's attention and suggest that they can return to
-  // the omnibox to uncover the full URL.
-
-  // Only create and run the animation if we haven't already done so on an
-  // earlier call to this method.
-  if (IsURLEligibleForSimplifiedDomainEliding() &&
-      !elide_after_web_contents_interaction_animation_) {
-    GetRenderText()->SetElideBehavior(gfx::NO_ELIDE);
-    elide_after_web_contents_interaction_animation_ =
-        std::make_unique<ElideAnimation>(this, GetRenderText());
-    std::vector<gfx::Range> ranges_surrounding_simplified_domain;
-    gfx::Range simplified_domain =
-        GetSimplifiedDomainBounds(&ranges_surrounding_simplified_domain);
-    elide_after_web_contents_interaction_animation_->Start(
-        simplified_domain, 0 /* delay_ms */,
-        ranges_surrounding_simplified_domain,
-        GetOmniboxColor(GetThemeProvider(),
-                        OmniboxPart::LOCATION_BAR_TEXT_DIMMED),
-        SK_ColorTRANSPARENT);
-  }
+void OmniboxViewViews::OnFocusChangedInPage(
+    content::FocusedNodeDetails* details) {
+  if (details->is_editable_node)
+    MaybeElideURLWithAnimationFromInteraction();
 }
 
 base::string16 OmniboxViewViews::GetSelectionClipboardText() const {
@@ -2558,6 +2532,43 @@ void OmniboxViewViews::OnShouldPreventElisionChanged() {
     hover_elide_or_unelide_animation_ =
         std::make_unique<ElideAnimation>(this, GetRenderText());
   }
+}
+
+void OmniboxViewViews::MaybeElideURLWithAnimationFromInteraction() {
+  if (!OmniboxFieldTrial::ShouldHidePathQueryRefOnInteraction() ||
+      model()->ShouldPreventElision()) {
+    return;
+  }
+
+  // If there's already a hover animation running, just let it run as we will
+  // end up at the same place.
+  if (hover_elide_or_unelide_animation_->IsAnimating())
+    return;
+
+  // This method runs when the user interacts with the page, such as scrolling
+  // or typing. In the hide-on-interaction field trial, the URL is shown until
+  // user interaction, at which point it's animated to a simplified version of
+  // the domain (hiding the path and, optionally, subdomains). The animation is
+  // designed to draw the user's attention and suggest that they can return to
+  // the omnibox to uncover the full URL.
+
+  // If we've already created and run the animation in an earlier call to this
+  // method, we don't need to do so again.
+  if (!IsURLEligibleForSimplifiedDomainEliding() ||
+      elide_after_web_contents_interaction_animation_) {
+    return;
+  }
+  GetRenderText()->SetElideBehavior(gfx::NO_ELIDE);
+  elide_after_web_contents_interaction_animation_ =
+      std::make_unique<ElideAnimation>(this, GetRenderText());
+  std::vector<gfx::Range> ranges_surrounding_simplified_domain;
+  gfx::Range simplified_domain =
+      GetSimplifiedDomainBounds(&ranges_surrounding_simplified_domain);
+  elide_after_web_contents_interaction_animation_->Start(
+      simplified_domain, 0 /* delay_ms */, ranges_surrounding_simplified_domain,
+      GetOmniboxColor(GetThemeProvider(),
+                      OmniboxPart::LOCATION_BAR_TEXT_DIMMED),
+      SK_ColorTRANSPARENT);
 }
 
 void OmniboxViewViews::ElideURL() {

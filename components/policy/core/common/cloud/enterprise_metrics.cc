@@ -54,6 +54,8 @@ const char kMetricUserRemoteCommandInvalidations[] =
     "Enterprise.UserRemoteCommandInvalidations";
 const char kMetricDeviceRemoteCommandInvalidations[] =
     "Enterprise.DeviceRemoteCommandInvalidations";
+const char kMetricCBCMRemoteCommandInvalidations[] =
+    "Enterprise.CBCMRemoteCommandInvalidations";
 
 const char kMetricRemoteCommandInvalidationsRegistrationResult[] =
     "Enterprise.RemoteCommandInvalidationsRegistrationResult";
@@ -78,6 +80,7 @@ const char kMetricUserUnsignedRemoteCommandReceived[] =
 // Enterprise.UserRemoteCommand.Executed.DeviceGetAvailableDiagnosticRoutines
 // Enterprise.UserRemoteCommand.Executed.DeviceRunDiagnosticRoutine
 // Enterprise.UserRemoteCommand.Executed.DeviceGetDiagnosticRoutineUpdate
+// Enterprise.UserRemoteCommand.Executed.BrowserClearBrowsingData
 const char kMetricUserRemoteCommandExecutedTemplate[] =
     "Enterprise.UserRemoteCommand.Executed.%s";
 
@@ -95,6 +98,7 @@ const char kMetricUserRemoteCommandExecutedTemplate[] =
 // Enterprise.UserRemoteCommand.Executed.Unsigned.DeviceGetAvailableDiagnosticRoutines
 // Enterprise.UserRemoteCommand.Executed.Unsigned.DeviceRunDiagnosticRoutine
 // Enterprise.UserRemoteCommand.Executed.Unsigned.DeviceGetDiagnosticRoutineUpdate
+// Enterprise.UserRemoteCommand.Executed.Unsigned.BrowserClearBrowsingData
 const char kMetricUserUnsignedRemoteCommandExecutedTemplate[] =
     "Enterprise.UserRemoteCommand.Executed.Unsigned.%s";
 
@@ -118,6 +122,7 @@ const char kMetricDeviceUnsignedRemoteCommandReceived[] =
 // Enterprise.DeviceRemoteCommand.Executed.DeviceGetAvailableDiagnosticRoutines
 // Enterprise.DeviceRemoteCommand.Executed.DeviceRunDiagnosticRoutine
 // Enterprise.DeviceRemoteCommand.Executed.DeviceGetDiagnosticRoutineUpdate
+// Enterprise.DeviceRemoteCommand.Executed.BrowserClearBrowsingData
 const char kMetricDeviceRemoteCommandExecutedTemplate[] =
     "Enterprise.DeviceRemoteCommand.Executed.%s";
 
@@ -135,7 +140,50 @@ const char kMetricDeviceRemoteCommandExecutedTemplate[] =
 // Enterprise.DeviceRemoteCommand.Executed.Unsigned.DeviceGetAvailableDiagnosticRoutines
 // Enterprise.DeviceRemoteCommand.Executed.Unsigned.DeviceRunDiagnosticRoutine
 // Enterprise.DeviceRemoteCommand.Executed.Unsigned.DeviceGetDiagnosticRoutineUpdate
+// Enterprise.DeviceRemoteCommand.Executed.Unsigned.BrowserClearBrowsingData
 const char kMetricDeviceUnsignedRemoteCommandExecutedTemplate[] =
     "Enterprise.DeviceRemoteCommand.Executed.Unsigned.%s";
+
+const char kMetricCBCMRemoteCommandReceived[] =
+    "Enterprise.CBCMRemoteCommand.Received";
+
+const char kMetricCBCMUnsignedRemoteCommandReceived[] =
+    "Enterprise.CBCMRemoteCommand.Received.Unsigned";
+
+// Expands to:
+// Enterprise.CBCMRemoteCommand.Executed.CommandEchoTest
+// Enterprise.CBCMRemoteCommand.Executed.DeviceReboot
+// Enterprise.CBCMRemoteCommand.Executed.DeviceScreenshot
+// Enterprise.CBCMRemoteCommand.Executed.DeviceSetVolume
+// Enterprise.CBCMRemoteCommand.Executed.DeviceStartCrdSession
+// Enterprise.CBCMRemoteCommand.Executed.DeviceFetchStatus
+// Enterprise.CBCMRemoteCommand.Executed.UserArcCommand
+// Enterprise.CBCMRemoteCommand.Executed.DeviceWipeUsers
+// Enterprise.CBCMRemoteCommand.Executed.DeviceRefreshEnterpriseMachineCertificate
+// Enterprise.CBCMRemoteCommand.Executed.DeviceRemotePowerwash
+// Enterprise.CBCMRemoteCommand.Executed.DeviceGetAvailableDiagnosticRoutines
+// Enterprise.CBCMRemoteCommand.Executed.DeviceRunDiagnosticRoutine
+// Enterprise.CBCMRemoteCommand.Executed.DeviceGetDiagnosticRoutineUpdate
+// Enterprise.CBCMRemoteCommand.Executed.BrowserClearBrowsingData
+const char kMetricCBCMRemoteCommandExecutedTemplate[] =
+    "Enterprise.CBCMRemoteCommand.Executed.%s";
+
+// Expands to:
+// Enterprise.CBCMRemoteCommand.Executed.Unsigned.CommandEchoTest
+// Enterprise.CBCMRemoteCommand.Executed.Unsigned.DeviceReboot
+// Enterprise.CBCMRemoteCommand.Executed.Unsigned.DeviceScreenshot
+// Enterprise.CBCMRemoteCommand.Executed.Unsigned.DeviceSetVolume
+// Enterprise.CBCMRemoteCommand.Executed.Unsigned.DeviceStartCrdSession
+// Enterprise.CBCMRemoteCommand.Executed.Unsigned.DeviceFetchStatus
+// Enterprise.CBCMRemoteCommand.Executed.Unsigned.UserArcCommand
+// Enterprise.CBCMRemoteCommand.Executed.Unsigned.DeviceWipeUsers
+// Enterprise.CBCMRemoteCommand.Executed.Unsigned.DeviceRefreshEnterpriseMachineCertificate
+// Enterprise.CBCMRemoteCommand.Executed.Unsigned.DeviceRemotePowerwash
+// Enterprise.CBCMRemoteCommand.Executed.Unsigned.DeviceGetAvailableDiagnosticRoutines
+// Enterprise.CBCMRemoteCommand.Executed.Unsigned.DeviceRunDiagnosticRoutine
+// Enterprise.CBCMRemoteCommand.Executed.Unsigned.DeviceGetDiagnosticRoutineUpdate
+// Enterprise.CBCMRemoteCommand.Executed.Unsigned.BrowserClearBrowsingData
+const char kMetricCBCMUnsignedRemoteCommandExecutedTemplate[] =
+    "Enterprise.CBCMRemoteCommand.Executed.Unsigned.%s";
 
 }  // namespace policy

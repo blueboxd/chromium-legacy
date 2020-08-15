@@ -7,9 +7,8 @@
 
 #import <UIKit/UIKit.h>
 
-#include "base/ios/block_types.h"
-
 @protocol ApplicationCommands;
+class AuthenticationService;
 class Browser;
 
 // DiscoverFeedProvider allows embedders to provide functionality for a Discover
@@ -35,6 +34,8 @@ class DiscoverFeedProvider {
   DiscoverFeedProvider(const DiscoverFeedProvider&) = delete;
   DiscoverFeedProvider& operator=(const DiscoverFeedProvider&) = delete;
 
+  // Starts the Feed using |auth_service| to check if user is Signed In/Out.
+  virtual void StartFeed(AuthenticationService* auth_service);
   // Returns true if the Discover Feed is enabled.
   virtual bool IsDiscoverFeedEnabled();
   // Returns the Discover Feed ViewController.
@@ -45,9 +46,8 @@ class DiscoverFeedProvider {
   // Refreshes the Discover Feed. Once the Feed model is refreshed it will
   // update all ViewControllers returned by NewFeedViewController.
   virtual void RefreshFeed();
-  // DEPRECATED. Delete once https://crrev.com/i/3205705 lands, along
-  // base/ios/block_types.h
-  virtual void RefreshFeedWithCompletion(ProceduralBlock completion);
+  // Updates the Feed for an account change e.g. Signing In/Out.
+  virtual void UpdateFeedForAccountChange();
   // Methods to register or remove observers.
   virtual void AddObserver(Observer* observer);
   virtual void RemoveObserver(Observer* observer);

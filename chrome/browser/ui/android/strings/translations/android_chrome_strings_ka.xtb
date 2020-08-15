@@ -417,6 +417,7 @@
 <translation id="4314815835985389558">სინქრონიზაციის მართვა</translation>
 <translation id="4320177379694898372">ინტერნეტთან კავშირი არ არის</translation>
 <translation id="4321739720395210191">კამერის გახსნა ვერ მოხერხდა. გადატვირთეთ მოწყობილობა და ცადეთ ხელახლა.</translation>
+<translation id="4335835283689002019">Safe Browsing გამორთულია</translation>
 <translation id="4351244548802238354">დიალოგის დახურვა</translation>
 <translation id="4378154925671717803">ტელეფონი</translation>
 <translation id="4382908510000698092">Chrome-ის ენად გამოყენება</translation>
@@ -457,6 +458,7 @@
 <translation id="4662373422909645029">მეტსახელი არ უნდა შეიცავდეს ციფრებს</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> სანიშნე წაიშალა</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> დაემატა მთავარ ეკრანს</translation>
+<translation id="4668347365065281350">საიტების მიერ შენახული ყველა მონაცემი, მათ შორის, ქუქი-ჩანაწერები და ადგილობრივად შენახული სხვა მონაცემები</translation>
 <translation id="4684427112815847243">ყველაფრის სინქრონიზაცია</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 და <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> სხვა}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 და <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> სხვა}}</translation>
 <translation id="4696983787092045100">ტექსტის თქვენს მოწყობილობებზე გაგზავნა</translation>
@@ -613,6 +615,7 @@
 <translation id="5763382633136178763">ინკოგნიტო ჩანართები</translation>
 <translation id="5763514718066511291">შეეხეთ ამ აპის URL-ის კოპირებისთვის</translation>
 <translation id="5765780083710877561">აღწერა:</translation>
+<translation id="5776970333778123608">უმნიშვნელო მონაცემები</translation>
 <translation id="5793665092639000975">გამოყენებულია <ph name="SPACE_USED" /> / <ph name="SPACE_AVAILABLE" />დან</translation>
 <translation id="5795872532621730126">ძიება და დათვალიერება</translation>
 <translation id="5797070761912323120">Google-მა შეიძლება გამოიყენოს თქვენი ისტორია Search-ის, რეკლამისა და Google-ის სხვა სერვისების თქვენზე მოსარგებად</translation>
@@ -1047,6 +1050,7 @@
 <translation id="9050666287014529139">საიდუმლო ფრაზა</translation>
 <translation id="9063523880881406963">საიტის დესკტოპის ვერსიის მოთხოვნის გამორთვა</translation>
 <translation id="9065203028668620118">რედაქტირება</translation>
+<translation id="9065383040763568503">შენახული მონაცემები, რომლებსაც Chrome უმნიშვნელოდ თვლის (მაგ., საიტები შენახული პარამეტრების გარეშე ან რომლებსაც ხშირად არ სტუმრობთ)</translation>
 <translation id="9069543557624799859">ჩამოტვირთვის დაწყების დროა <ph name="TIME" />.</translation>
 <translation id="9070377983101773829">ხმოვანი ძიების დაწყება</translation>
 <translation id="9074336505530349563">Google-ის მიერ შემოთავაზებულ, პერსონალიზებულ კონტენტზე წვდომისთვის შედით სისტემაში და ჩართეთ სინქრონიზაცია</translation>

@@ -207,9 +207,7 @@ TEST_F(SearchSuggestServiceTest, IsEnabled) {
     // Note: ZPS variant 15 is NTP Realbox as starting focus.
     feature_params["ZeroSuggestVariant:15:*"] = kRemoteNoUrlLocal;
     feature_list.InitWithFeaturesAndParameters(
-        {{omnibox::kZeroSuggestionsOnNTP, {}},
-         {omnibox::kZeroSuggestionsOnNTPRealbox, {}},
-         {omnibox::kOnFocusSuggestions, feature_params},
+        {{omnibox::kOnFocusSuggestions, feature_params},
          {ntp_features::kSearchSuggestChips, {}}},
         {});
     EXPECT_TRUE(SearchSuggestService::IsEnabled());
@@ -236,9 +234,7 @@ TEST_F(SearchSuggestServiceTest, IsEnabled) {
     // Note: ZPS variant 15 is NTP Realbox as starting focus.
     feature_params["ZeroSuggestVariant:15:*"] = kRemoteNoUrlLocal;
     feature_list.InitWithFeaturesAndParameters(
-        {{omnibox::kZeroSuggestionsOnNTP, {}},
-         {omnibox::kZeroSuggestionsOnNTPRealbox, {}},
-         {omnibox::kOnFocusSuggestions, feature_params},
+        {{omnibox::kOnFocusSuggestions, feature_params},
          {ntp_features::kSearchSuggestChips, {}},
          {ntp_features::kDisableSearchSuggestChips, {}}},
         {});

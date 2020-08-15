@@ -1,5 +1,5 @@
-# Copyright 2014 The Chromium Authors. All rights reserved.
-# Use of this source code is governed by a BSD-style license that can be
+# Copyright 2014 The Chromium Authors.All rights reserved.
+# Use of this source code is governed by a BSD - style license that can be
 # found in the LICENSE file.
 import("//build/config/sanitizers/sanitizers.gni")
 import("//gpu/vulkan/features.gni")
@@ -175,6 +175,8 @@ cc_component("cc") {
     "metrics/frame_sequence_tracker.h",
     "metrics/frame_sequence_tracker_collection.cc",
     "metrics/frame_sequence_tracker_collection.h",
+    "metrics/jank_metrics.cc",
+    "metrics/jank_metrics.h",
     "metrics/latency_ukm_reporter.cc",
     "metrics/latency_ukm_reporter.h",
     "metrics/lcd_text_metrics_reporter.cc",
@@ -675,6 +677,7 @@ cc_test("cc_unittests") {
     "metrics/events_metrics_manager_unittest.cc",
     "metrics/frame_sequence_metrics_unittest.cc",
     "metrics/frame_sequence_tracker_unittest.cc",
+    "metrics/jank_metrics_unittest.cc",
     "metrics/video_playback_roughness_reporter_unittest.cc",
     "mojo_embedder/async_layer_tree_frame_sink_unittest.cc",
     "paint/clear_for_opaque_raster_unittest.cc",

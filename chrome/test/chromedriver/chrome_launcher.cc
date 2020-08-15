@@ -447,9 +447,9 @@ Status LaunchDesktopChrome(network::mojom::URLLoaderFactory* factory,
     options.new_process_group = true;
 #endif
 
+  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
 #if defined(OS_POSIX)
   base::ScopedFD devnull;
-  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   if (!cmd_line->HasSwitch("verbose") &&
       !cmd_line->HasSwitch("enable-chrome-logs") &&
       cmd_line->GetSwitchValueASCII("log-level") != "ALL") {
@@ -462,6 +462,17 @@ Status LaunchDesktopChrome(network::mojom::URLLoaderFactory* factory,
         std::make_pair(devnull.get(), STDERR_FILENO));
   }
 #elif defined(OS_WIN)
+  if (cmd_line->HasSwitch("enable-chrome-logs")) {
+    // On Windows, we must inherit the stdout/stderr handles, or the output from
+    // the browser will not be part of our output and thus not capturable by
+    // processes that call us.
+    options.stdin_handle = INVALID_HANDLE_VALUE;
+    options.stdout_handle = GetStdHandle(STD_OUTPUT_HANDLE);
+    options.stderr_handle = GetStdHandle(STD_ERROR_HANDLE);
+    options.handles_to_inherit.push_back(options.stdout_handle);
+    options.handles_to_inherit.push_back(options.stderr_handle);
+  }
+
   if (!SwitchToUSKeyboardLayout())
     VLOG(0) << "Cannot switch to US keyboard layout - some keys may be "
         "interpreted incorrectly";

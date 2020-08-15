@@ -11,3 +11,4 @@ goog.require('__crWeb.error');
 goog.require('__crWeb.mainFrameContextMenu');
 goog.require('__crWeb.navigation');
 goog.require('__crWeb.scrollWorkaround');
+goog.require('__crWeb.textFragments');

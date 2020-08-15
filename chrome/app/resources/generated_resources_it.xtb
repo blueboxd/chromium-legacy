@@ -17,7 +17,7 @@
 <translation id="1012876632442809908">Dispositivo USB-C (porta anteriore)</translation>
 <translation id="1013707859758800957">È stata consentita l'esecuzione di un plug-in senza sandbox in questa pagina.</translation>
 <translation id="1015318665228971643">Modifica nome cartella</translation>
-<translation id="1015578595646638936">{NUM_DAYS,plural, =1{Ultimo giorno per aggiornare <ph name="DEVICE_TYPE" />}other{Aggiorna <ph name="DEVICE_TYPE" /> entro {NUM_DAYS} giorni}}</translation>
+<translation id="1015578595646638936">{NUM_DAYS,plural, =1{Ultimo giorno per aggiornare questo <ph name="DEVICE_TYPE" />}other{Aggiorna questo <ph name="DEVICE_TYPE" /> entro {NUM_DAYS} giorni}}</translation>
 <translation id="1016437870506746108">{COUNT,plural, =0{Apri tutti in &amp;un'altra finestra}=1{Apri in &amp;un'altra finestra}other{Apri tutti (#) in &amp;un'altra finestra}}</translation>
 <translation id="1016566241875885511">Informazioni aggiuntive (facoltativo)</translation>
 <translation id="1017280919048282932">&amp;Aggiungi al dizionario</translation>
@@ -52,7 +52,7 @@
 <translation id="1049743911850919806">In incognito</translation>
 <translation id="1049795001945932310">&amp;Impostazioni lingua</translation>
 <translation id="1054153489933238809">Apri &amp;originale in nuova scheda</translation>
-<translation id="1055274863771110134">{NUM_WEEKS,plural, =1{Aggiorna <ph name="DEVICE_TYPE" /> entro 1 settimana}other{Aggiorna <ph name="DEVICE_TYPE" /> entro {NUM_WEEKS} settimane}}</translation>
+<translation id="1055274863771110134">{NUM_WEEKS,plural, =1{Aggiorna questo <ph name="DEVICE_TYPE" /> entro 1 settimana}other{Aggiorna questo <ph name="DEVICE_TYPE" /> entro {NUM_WEEKS} settimane}}</translation>
 <translation id="1055806300943943258">Ricerca di dispositivi Bluetooth e USB...</translation>
 <translation id="1056466516655540509">Ultimo aggiornamento: <ph name="MINUTES" /> min fa</translation>
 <translation id="1056775291175587022">Nessuna rete</translation>
@@ -444,7 +444,7 @@
 <translation id="1521442365706402292">Gestisci certificati</translation>
 <translation id="1521774566618522728">Attivo oggi</translation>
 <translation id="152234381334907219">Mai salvate</translation>
-<translation id="1523170391134722817">Non supportata a partire dal mese di dicembre</translation>
+<translation id="1523170391134722817">Non supportata a partire da fine dicembre</translation>
 <translation id="1523978563989812243">Motori di sintesi vocale</translation>
 <translation id="1524430321211440688">Tastiera</translation>
 <translation id="1524563461097350801">No, grazie</translation>
@@ -1577,7 +1577,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="2876336351874743617">Dito 2</translation>
 <translation id="2876369937070532032">Invia a Google gli URL di alcune pagine che visiti quando la tua sicurezza è a rischio</translation>
 <translation id="2878782256107578644">Analisi in corso, aprire ora?</translation>
-<translation id="2878889940310164513">Aggiungi cellulare…</translation>
+<translation id="2878889940310164513">Aggiungi rete cellulare…</translation>
 <translation id="288042212351694283">Accesso ai tuoi dispositivi Universal 2nd Factor</translation>
 <translation id="2880660355386638022">Posizionamento delle finestre</translation>
 <translation id="2881076733170862447">Quando fai clic sull'estensione</translation>
@@ -1702,7 +1702,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="3029466929721441205">Mostrare strumenti stilo nello shelf</translation>
 <translation id="3031417829280473749">Agente X</translation>
 <translation id="3031557471081358569">Seleziona elementi da importare:</translation>
-<translation id="3036327949511794916">Il termine ultimo per la restituzione di questo <ph name="DEVICE_TYPE" /> è scaduto.</translation>
+<translation id="3036327949511794916">Il termine per la restituzione di questo <ph name="DEVICE_TYPE" /> è scaduto.</translation>
 <translation id="3036546437875325427">Abilita Flash</translation>
 <translation id="3037754279345160234">Impossibile analizzare la configurazione per l'aggiunta al dominio. Contatta l'amministratore.</translation>
 <translation id="3038612606416062604">Aggiungi manualmente una stampante</translation>
@@ -2179,7 +2179,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="3640214691812501263">Aggiungere "<ph name="EXTENSION_NAME" />" per <ph name="USER_NAME" />?</translation>
 <translation id="3640613767643722554">Insegna all'assistente a riconoscere la tua voce</translation>
 <translation id="3645372836428131288">Muovi leggermente il dito per acquisire una parte diversa dell'impronta digitale.</translation>
-<translation id="3647998456578545569">{COUNT,plural, =1{<ph name="ATTACHMENTS" /> ricevuti dal dispositivo <ph name="DEVICE_NAME" />}other{<ph name="ATTACHMENTS" /> ricevuti dal dispositivo <ph name="DEVICE_NAME" />}}</translation>
+<translation id="3647998456578545569">{COUNT,plural, =1{Ricezione di <ph name="ATTACHMENTS" /> dal dispositivo <ph name="DEVICE_NAME" /> completata}other{Ricezione di <ph name="ATTACHMENTS" /> dal dispositivo <ph name="DEVICE_NAME" /> completata}}</translation>
 <translation id="3648348069317717750">Rilevato dispositivo <ph name="USB_DEVICE_NAME" /></translation>
 <translation id="3649138363871392317">La foto è stata scattata</translation>
 <translation id="3649505501900178324">Aggiornamento scaduto</translation>
@@ -2919,7 +2919,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="4563210852471260509">La lingua di input iniziale è il cinese</translation>
 <translation id="4563880231729913339">Dito 3</translation>
 <translation id="4565377596337484307">Nascondi password</translation>
-<translation id="4565577809484439917">{NUM_DAYS,plural, =1{<ph name="DOMAIN" /> richiede il backup dei dati e la restituzione di questo <ph name="DEVICE_TYPE" /> oggi stesso.}other{<ph name="DOMAIN" /> richiede il backup dei dati e la restituzione di questo <ph name="DEVICE_TYPE" /> prima della scadenza.}}</translation>
+<translation id="4565577809484439917">{NUM_DAYS,plural, =1{<ph name="DOMAIN" /> richiede di effettuare il backup dei dati e di restituire questo <ph name="DEVICE_TYPE" /> oggi stesso.}other{<ph name="DOMAIN" /> richiede di effettuare il backup dei dati e di restituire questo <ph name="DEVICE_TYPE" /> prima della scadenza.}}</translation>
 <translation id="4565917129334815774">Archivia log di sistema</translation>
 <translation id="456717285308019641">Lingua della pagina da tradurre</translation>
 <translation id="4567533462991917415">Puoi aggiungere altre persone in qualsiasi momento dopo la configurazione. Ogni persona potrà personalizzare il proprio account e tenere privati i dati.</translation>
@@ -2983,7 +2983,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="4638930039313743000">Attiva debug ADB</translation>
 <translation id="4641539339823703554">Impossibile impostare l'ora di sistema in Chrome. Controlla l'ora indicata sotto e correggila se necessario.</translation>
 <translation id="4643612240819915418">&amp;Apri video in un'altra scheda</translation>
-<translation id="4645551927492192497">{NUM_DAYS,plural, =1{<ph name="DOMAIN" /> richiede la connessione a una rete Wi-Fi oggi stesso per scaricare un aggiornamento. In alternativa, puoi eseguire il download tramite una connessione a consumo (potrebbero essere applicati costi).}other{<ph name="DOMAIN" /> richiede la connessione a una rete Wi-Fi per scaricare un aggiornamento prima della scadenza. In alternativa, puoi eseguire il download tramite una connessione a consumo (potrebbero essere applicati costi).}}</translation>
+<translation id="4645551927492192497">{NUM_DAYS,plural, =1{<ph name="DOMAIN" /> richiede la connessione a una rete Wi-Fi per scaricare un aggiornamento oggi stesso. In alternativa, puoi eseguire il download tramite una connessione a consumo (potrebbero essere applicati costi).}other{<ph name="DOMAIN" /> richiede la connessione a una rete Wi-Fi per scaricare un aggiornamento prima della scadenza. In alternativa, puoi eseguire il download tramite una connessione a consumo (potrebbero essere applicati costi).}}</translation>
 <translation id="4645676300727003670">&amp;Conserva</translation>
 <translation id="4646675363240786305">Porte</translation>
 <translation id="4646949265910132906">Connessione Wi-Fi protetta</translation>
@@ -2996,7 +2996,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="4651484272688821107">Impossibile caricare il componente online con le risorse della modalità demo.</translation>
 <translation id="4652935475563630866">La modifica dell'impostazione della videocamera richiede il riavvio di Parallels Desktop. Riavvia Parallels Desktop per continuare.</translation>
 <translation id="4653405415038586100">Errore durante la configurazione di Linux</translation>
-<translation id="4657810666108475055">Cerca scheda</translation>
+<translation id="4657810666108475055">Tab Search</translation>
 <translation id="465878909996028221">Per i reindirizzamenti del browser sono supportati solo http, https e i protocolli di file.</translation>
 <translation id="4659077111144409915">Account principale</translation>
 <translation id="4660476621274971848">Versione prevista: "<ph name="EXPECTED_VERSION" />", versione rilevata: "<ph name="NEW_ID" />"</translation>
@@ -3545,7 +3545,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="5372579129492968947">Sblocca estensione</translation>
 <translation id="5376169624176189338">Fai clic per tornare indietro, tieni premuto per vedere la cronologia</translation>
 <translation id="5376931455988532197">File troppo grande</translation>
-<translation id="5377721922656071359">{COUNT,plural, =1{<ph name="ATTACHMENTS" /> inviati correttamente al dispositivo <ph name="DEVICE_NAME" />}other{<ph name="ATTACHMENTS" /> inviati correttamente al dispositivo <ph name="DEVICE_NAME" />}}</translation>
+<translation id="5377721922656071359">{COUNT,plural, =1{Invio di <ph name="ATTACHMENTS" /> al dispositivo <ph name="DEVICE_NAME" /> completato}other{Invio di <ph name="ATTACHMENTS" /> al dispositivo <ph name="DEVICE_NAME" /> completato}}</translation>
 <translation id="537813040452600081">Le pagine visualizzate in questa finestra non verranno memorizzate nella cronologia del browser e non lasceranno altre tracce, ad esempio cookie, sul computer dopo l'uscita dall'account. I file scaricati e i Preferiti creati non verranno conservati.</translation>
 <translation id="5379140238605961210">Continua a impedire l'accesso al microfono</translation>
 <translation id="5382591305415226340">Gestisci i link supportati</translation>
@@ -4043,7 +4043,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="5979156418378918004">{NUM_EXTENSIONS,plural, =1{Hai riattivato 1 estensione potenzialmente dannosa}other{Hai riattivato {NUM_EXTENSIONS} estensioni potenzialmente dannose}}</translation>
 <translation id="5979421442488174909">&amp;Traduci in <ph name="LANGUAGE" /></translation>
 <translation id="5979469435153841984">Per aggiungere una pagina ai preferiti, fai clic sulla stella nella barra degli indirizzi</translation>
-<translation id="5983642582671533177">Questa stampante non sarà più supportata a partire dal mese di dicembre. Contatta il tuo amministratore.</translation>
+<translation id="5983642582671533177">Questa stampante non sarà più supportata a partire da fine dicembre. Contatta il tuo amministratore.</translation>
 <translation id="5984222099446776634">Visitati di recente</translation>
 <translation id="598472838394900788">{0,plural, =1{In incognito}other{In incognito (#)}}</translation>
 <translation id="5985458664595100876">Formato dell'URL non valido. I formati supportati sono \\server\share e smb://server/share.</translation>
@@ -4183,7 +4183,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="6150961653851236686">Questa lingua è utilizzata per la traduzione delle pagine</translation>
 <translation id="6151323131516309312">Premi <ph name="SEARCH_KEY" /> per cercare su <ph name="SITE_NAME" /></translation>
 <translation id="6151771661215463137">File già esistente nella cartella dei download.</translation>
-<translation id="6153808139779428578">Questa stampante non sarà più supportata a partire dal mese di dicembre. <ph name="BEGIN_LINK_LEARN_MORE" />Ulteriori informazioni<ph name="END_LINK_LEARN_MORE" /></translation>
+<translation id="6153808139779428578">Questa stampante non sarà più supportata a partire da fine dicembre. <ph name="BEGIN_LINK_LEARN_MORE" />Ulteriori informazioni<ph name="END_LINK_LEARN_MORE" /></translation>
 <translation id="6154240335466762404">Rimuovi tutte le porte</translation>
 <translation id="615436196126345398">Protocollo</translation>
 <translation id="6154697846084421647">Accesso eseguito</translation>
@@ -4627,7 +4627,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="672609503628871915">Scopri le novità</translation>
 <translation id="67269783048918309">Invia dati diagnostici e sull'utilizzo. Questo dispositivo attualmente invia a Google dati diagnostici e sull'utilizzo delle app e del dispositivo. Non verranno utilizzati per identificare tuo figlio e contribuiranno alla stabilità di app e sistema, nonché ad altri miglioramenti. Alcuni dati aggregati saranno utili anche alle app e ai partner di Google, ad esempio agli sviluppatori Android. Questa <ph name="BEGIN_LINK1" />impostazione<ph name="END_LINK1" /> è applicata dal proprietario. Se l'impostazione Attività web e app aggiuntiva è attiva per tuo figlio, questi dati potrebbero essere salvati nel suo Account Google. <ph name="BEGIN_LINK2" />Ulteriori informazioni<ph name="END_LINK2" /></translation>
 <translation id="6727969043791803658">Dispositivo connesso. Livello batteria: <ph name="BATTERY_PERCENTAGE" />%</translation>
-<translation id="6731877319426971768">File riconoscimento vocale scaricati</translation>
+<translation id="6731877319426971768">File di riconoscimento vocale scaricati</translation>
 <translation id="6732801395666424405">Certificati non caricati</translation>
 <translation id="6732900235521116609">Impossibile rimuovere la scorciatoia</translation>
 <translation id="6734468588183300211">Con la modalità di navigazione in incognito, i siti non possono utilizzare i cookie per conoscere la tua attività di navigazione su siti diversi, ad esempio per personalizzare gli annunci. Le funzionalità su alcuni siti potrebbero non essere disponibili.</translation>
@@ -5210,7 +5210,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="7456847797759667638">Apri percorso...</translation>
 <translation id="7458168200501453431">Consente di utilizzare lo stesso controllo ortografico utilizzato nella Ricerca Google. Il testo che digiti nel browser viene inviato a Google.</translation>
 <translation id="7460045493116006516">Tema installato attualmente</translation>
-<translation id="7461729991508684543">{NUM_DAYS,plural, =1{<ph name="DOMAIN" /> richiede di effettuare il backup dei dati e di restituire questo <ph name="DEVICE_TYPE" /> oggi stesso. <ph name="LINK_BEGIN" />Visualizza dettagli<ph name="LINK_END" />}other{<ph name="DOMAIN" /> richiede di effettuare il backup dei dati e di restituire questo<ph name="DEVICE_TYPE" /> entro {NUM_DAYS} giorni. <ph name="LINK_BEGIN" />Visualizza dettagli<ph name="LINK_END" />}}</translation>
+<translation id="7461729991508684543">{NUM_DAYS,plural, =1{<ph name="DOMAIN" /> richiede di effettuare il backup dei dati e di restituire questo <ph name="DEVICE_TYPE" /> oggi stesso. <ph name="LINK_BEGIN" />Visualizza dettagli<ph name="LINK_END" />}other{<ph name="DOMAIN" /> richiede di effettuare il backup dei dati e di restituire questo <ph name="DEVICE_TYPE" /> entro {NUM_DAYS} giorni. <ph name="LINK_BEGIN" />Visualizza dettagli<ph name="LINK_END" />}}</translation>
 <translation id="7461924472993315131">Blocca</translation>
 <translation id="746216226901520237">La prossima volta potrai usare il tuo telefono per sbloccare il dispositivo <ph name="DEVICE_TYPE" />. Puoi disattivare Smart Lock nelle Impostazioni.</translation>
 <translation id="7463006580194749499">Aggiungi persona</translation>
@@ -5221,7 +5221,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="747114903913869239">Errore: impossibile decodificare l'estensione</translation>
 <translation id="7473891865547856676">No grazie</translation>
 <translation id="747459581954555080">Ripristina tutto</translation>
-<translation id="747507174130726364">{NUM_DAYS,plural, =1{È richiesta la restituzione immediata}other{Restituisci <ph name="DEVICE_TYPE" /> entro {NUM_DAYS} giorni}}</translation>
+<translation id="747507174130726364">{NUM_DAYS,plural, =1{È richiesta la restituzione immediata}other{Restituisci questo <ph name="DEVICE_TYPE" /> entro {NUM_DAYS} giorni}}</translation>
 <translation id="7475671414023905704">URL password persa Netscape</translation>
 <translation id="7476454130948140105">Livello della batteria troppo basso per eseguire l'aggiornamento (<ph name="BATTERY_PERCENT" />%)</translation>
 <translation id="7477793887173910789">Gestisci la tua musica, i tuoi video e altro ancora</translation>
@@ -5352,7 +5352,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="7643932971554933646">Vuoi consentire al sito di visualizzare i file?</translation>
 <translation id="7644543211198159466">Colore e tema</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (proprietario)</translation>
-<translation id="7645300866575922143">Aggiungi cellulare</translation>
+<translation id="7645300866575922143">Aggiungi rete cellulare</translation>
 <translation id="7645681574855902035">Annullamento del backup di Linux</translation>
 <translation id="7646772052135772216">La sincronizzazione delle password non funziona</translation>
 <translation id="7647403192093989392">Nessuna attività recente</translation>
@@ -5373,7 +5373,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="7664620655576155379">Dispositivo Bluetooth non supportato: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="7665082356120621510">Riserva dimensioni</translation>
 <translation id="7665369617277396874">Aggiungi account</translation>
-<translation id="7668002322287525834">{NUM_WEEKS,plural, =1{Restituisci <ph name="DEVICE_TYPE" /> entro {NUM_WEEKS} settimana}other{Restituisci <ph name="DEVICE_TYPE" /> entro {NUM_WEEKS} settimane}}</translation>
+<translation id="7668002322287525834">{NUM_WEEKS,plural, =1{Restituisci questo <ph name="DEVICE_TYPE" /> entro {NUM_WEEKS} settimana}other{Restituisci questo <ph name="DEVICE_TYPE" /> entro {NUM_WEEKS} settimane}}</translation>
 <translation id="7669825497510425694">{NUM_ATTEMPTS,plural, =1{PIN errato. Hai ancora a disposizione un tentativo.}other{PIN errato. Hai ancora a disposizione # tentativi.}}</translation>
 <translation id="7671130400130574146">Usa barra del titolo di sistema e bordi</translation>
 <translation id="767127784612208024">Tocca per confermare la reimpostazione</translation>
@@ -5556,7 +5556,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="7855678561139483478">Sposta scheda in una nuova finestra</translation>
 <translation id="7857117644404132472">Aggiungi eccezione</translation>
 <translation id="7857949311770343000">È la pagina Nuova scheda prevista?</translation>
-<translation id="785948723952233770">Questa opzione non sarà più supportata a partire dal mese di dicembre. Contatta il tuo amministratore.</translation>
+<translation id="785948723952233770">Questa opzione non sarà più supportata a partire da fine dicembre. Contatta il tuo amministratore.</translation>
 <translation id="786073089922909430">Servizio: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="7861215335140947162">&amp;Download</translation>
 <translation id="7864539943188674973">Disattiva Bluetooth</translation>
@@ -6303,7 +6303,7 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8783834180813871000">Digita il codice di accoppiamento Bluetooth e premi Invio</translation>
 <translation id="8784626084144195648">Media raccolta</translation>
 <translation id="8785622406424941542">Stilo</translation>
-<translation id="8786697630358316925">Questa opzione non sarà più supportata a partire dal mese di dicembre. <ph name="BEGIN_LINK_LEARN_MORE" />Ulteriori informazioni<ph name="END_LINK_LEARN_MORE" /></translation>
+<translation id="8786697630358316925">Questa opzione non sarà più supportata a partire da fine dicembre. <ph name="BEGIN_LINK_LEARN_MORE" />Ulteriori informazioni<ph name="END_LINK_LEARN_MORE" /></translation>
 <translation id="8787254343425541995">Consenti proxy per reti condivise</translation>
 <translation id="8791534160414513928">Invia una richiesta "Non tenere traccia" con il tuo traffico di navigazione</translation>
 <translation id="8794025342371547160">IP limitato</translation>

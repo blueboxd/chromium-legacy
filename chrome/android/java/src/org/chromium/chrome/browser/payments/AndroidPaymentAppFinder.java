@@ -190,11 +190,9 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
         mIsIncognito = activity != null && activity.getCurrentTabModel().isIncognito();
     }
 
-    private void findAppStoreBillingApp(
-            ChromeActivity activity, List<ResolveInfo> allInstalledPaymentApps) {
-        assert activity != null;
-        String twaPackageName = mTwaPackageManagerDelegate.getTwaPackageName(activity);
-        if (twaPackageName == null) return;
+    private void findAppStoreBillingApp(List<ResolveInfo> allInstalledPaymentApps) {
+        String twaPackageName = mFactoryDelegate.getParams().getTwaPackageName();
+        if (TextUtils.isEmpty(twaPackageName)) return;
         ResolveInfo twaApp = findAppWithPackageName(allInstalledPaymentApps, twaPackageName);
         if (twaApp == null) return;
 
@@ -298,20 +296,11 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
             }
         }
 
-        // WebContents is possible to attach to different activities on {@link PaymentRequest}
-        // created and shown. Ideally {@link #findAppStoreBillingApp} should have based on the
-        // activity that is used when PaymentRequest is shown. But we intentionally not do that for
-        // the sake of simple design and better performance. Plus, for app store billing case in
-        // particular, it's unusual for a TWA to switch to CCT without destroying JavaScript context
-        // and, consequently, the {@link PaymentRequest} object.
-        ChromeActivity activity =
-                ChromeActivity.fromWebContents(mFactoryDelegate.getParams().getWebContents());
         if (!PaymentOptionsUtils.requestAnyInformation(
                     mFactoryDelegate.getParams().getPaymentOptions())
-                && activity != null
                 && PaymentFeatureList.isEnabled(
                         PaymentFeatureList.WEB_PAYMENTS_APP_STORE_BILLING)) {
-            findAppStoreBillingApp(activity, allInstalledPaymentApps);
+            findAppStoreBillingApp(allInstalledPaymentApps);
         }
 
         // All URL methods for which manifests should be downloaded. For example, if merchant

@@ -4,6 +4,8 @@
 
 #include "ui/base/models/dialog_model.h"
 
+#include "base/bind_helpers.h"
+
 namespace ui {
 
 DialogModel::Builder::Builder(std::unique_ptr<DialogModelDelegate> delegate)
@@ -45,10 +47,15 @@ DialogModel::Builder& DialogModel::Builder::AddOkButton(
     base::OnceClosure callback,
     base::string16 label,
     const DialogModelButton::Params& params) {
-  DCHECK(!params.has_callback()) << "Use |callback| only.";
   DCHECK(!model_->accept_callback_);
   model_->accept_callback_ = std::move(callback);
-  model_->AddDialogButton(ui::DIALOG_BUTTON_OK, std::move(label), params);
+  // NOTREACHED() is used below to make sure this callback isn't used.
+  // DialogModelHost should be using OnDialogAccepted() instead.
+  model_->ok_button_.emplace(
+      model_->GetPassKey(), model_.get(),
+      base::BindRepeating([](const Event&) { NOTREACHED(); }), std::move(label),
+      params);
+
   return *this;
 }
 
@@ -56,17 +63,24 @@ DialogModel::Builder& DialogModel::Builder::AddCancelButton(
     base::OnceClosure callback,
     base::string16 label,
     const DialogModelButton::Params& params) {
-  DCHECK(!params.has_callback()) << "Use |callback| only.";
   DCHECK(!model_->cancel_callback_);
   model_->cancel_callback_ = std::move(callback);
-  model_->AddDialogButton(ui::DIALOG_BUTTON_CANCEL, std::move(label), params);
+  // NOTREACHED() is used below to make sure this callback isn't used.
+  // DialogModelHost should be using OnDialogCanceled() instead.
+  model_->cancel_button_.emplace(
+      model_->GetPassKey(), model_.get(),
+      base::BindRepeating([](const Event&) { NOTREACHED(); }), std::move(label),
+      params);
+
   return *this;
 }
 
 DialogModel::Builder& DialogModel::Builder::AddDialogExtraButton(
+    base::RepeatingCallback<void(const Event&)> callback,
     base::string16 label,
     const DialogModelButton::Params& params) {
-  model_->AddDialogButton(kExtraButtonId, std::move(label), params);
+  model_->extra_button_.emplace(model_->GetPassKey(), model_.get(),
+                                std::move(callback), std::move(label), params);
   return *this;
 }
 
@@ -150,14 +164,6 @@ DialogModelTextfield* DialogModel::GetTextfieldByUniqueId(int unique_id) {
   return static_cast<DialogModelTextfield*>(field);
 }
 
-void DialogModel::OnButtonPressed(util::PassKey<DialogModelHost>,
-                                  DialogModelButton* button,
-                                  const Event& event) {
-  DCHECK_EQ(button->model_, this);
-  if (button->callback_)
-    button->callback_.Run(event);
-}
-
 void DialogModel::OnDialogAccepted(util::PassKey<DialogModelHost>) {
   if (accept_callback_)
     std::move(accept_callback_).Run();
@@ -173,52 +179,9 @@ void DialogModel::OnDialogClosed(util::PassKey<DialogModelHost>) {
     std::move(close_callback_).Run();
 }
 
-void DialogModel::OnComboboxSelectedIndexChanged(util::PassKey<DialogModelHost>,
-                                                 DialogModelCombobox* combobox,
-                                                 int index) {
-  DCHECK_EQ(combobox->model_, this);
-  combobox->selected_index_ = index;
-}
-
-void DialogModel::OnComboboxPerformAction(util::PassKey<DialogModelHost>,
-                                          DialogModelCombobox* combobox) {
-  DCHECK_EQ(combobox->model_, this);
-  if (combobox->callback_)
-    combobox->callback_.Run();
-}
-
-void DialogModel::OnTextfieldTextChanged(util::PassKey<DialogModelHost>,
-                                         DialogModelTextfield* textfield,
-                                         base::string16 text) {
-  DCHECK_EQ(textfield->model_, this);
-  textfield->text_ = std::move(text);
-}
-
 void DialogModel::OnWindowClosing(util::PassKey<DialogModelHost>) {
   if (window_closing_callback_)
     std::move(window_closing_callback_).Run();
-}
-
-void DialogModel::AddDialogButton(int button_id,
-                                  base::string16 label,
-                                  const DialogModelButton::Params& params) {
-  DCHECK(!host_);  // Dialog buttons should be added before adding to host.
-  base::Optional<DialogModelButton>* button = nullptr;
-  switch (button_id) {
-    case ui::DIALOG_BUTTON_OK:
-      button = &ok_button_;
-      break;
-    case ui::DIALOG_BUTTON_CANCEL:
-      button = &cancel_button_;
-      break;
-    case kExtraButtonId:
-      button = &extra_button_;
-      break;
-    default:
-      NOTREACHED();
-  }
-  DCHECK(!button->has_value());
-  button->emplace(GetPassKey(), this, std::move(label), params);
 }
 
 }  // namespace ui

@@ -11,10 +11,12 @@
 #include "chrome/browser/media/history/media_history_keyed_service.h"
 #include "chrome/browser/media/history/media_history_keyed_service_factory.h"
 #include "chrome/browser/media/kaleidoscope/constants.h"
+#include "chrome/browser/media/kaleidoscope/kaleidoscope_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/common/channel_info.h"
+#include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/primary_account_access_token_fetcher.h"
@@ -120,6 +122,46 @@ void KaleidoscopeDataProviderImpl::GetCredentials(GetCredentialsCallback cb) {
                      base::Unretained(this)),
       signin::PrimaryAccountAccessTokenFetcher::Mode::kImmediate,
       signin::ConsentLevel::kNotRequired);
+}
+
+void KaleidoscopeDataProviderImpl::GetShouldShowFirstRunExperience(
+    GetShouldShowFirstRunExperienceCallback cb) {
+  // If the flag for forcing the first run experience to show is set, then just
+  // show it.
+  if (base::FeatureList::IsEnabled(
+          media::kKaleidoscopeForceShowFirstRunExperience)) {
+    std::move(cb).Run(true);
+    return;
+  }
+
+  // Otherwise, check to see if the user has already completed the latest first
+  // run experience.
+  auto* prefs = profile_->GetPrefs();
+  if (!prefs) {
+    std::move(cb).Run(true);
+    return;
+  }
+
+  // If the pref is unset or lower than the current version, then we haven't
+  // shown the current first run experience before and we should show it now.
+  const base::Value* pref = prefs->GetUserPrefValue(
+      kaleidoscope::prefs::kKaleidoscopeFirstRunCompleted);
+  if (!pref || pref->GetInt() < kKaleidoscopeFirstRunLatestVersion) {
+    std::move(cb).Run(true);
+    return;
+  }
+
+  // Otherwise, we have shown it and don't need to.
+  std::move(cb).Run(false);
+}
+
+void KaleidoscopeDataProviderImpl::SetFirstRunExperienceCompleted() {
+  auto* prefs = profile_->GetPrefs();
+  if (!prefs)
+    return;
+
+  prefs->SetInteger(kaleidoscope::prefs::kKaleidoscopeFirstRunCompleted,
+                    kKaleidoscopeFirstRunLatestVersion);
 }
 
 void KaleidoscopeDataProviderImpl::GetHighWatchTimeOrigins(

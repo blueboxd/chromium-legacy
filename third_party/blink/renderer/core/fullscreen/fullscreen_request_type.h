@@ -33,6 +33,10 @@ enum class FullscreenRequestType {
   // has requested and is about to enter fullscreen.
   kForCrossProcessDescendant = 2,
 
+  // For WebXR DOM Overlay, in this mode the element and parent iframes use a
+  // transparent background.
+  kForXrOverlay = 4,
+
   // Explicit name for "no options" for backwards compatibility and convenience
   kUnprefixed = kNull,
 };

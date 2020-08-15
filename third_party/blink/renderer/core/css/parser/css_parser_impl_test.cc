@@ -7,6 +7,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #include "third_party/blink/renderer/core/css/parser/css_parser_observer.h"
+#include "third_party/blink/renderer/core/css/parser/css_parser_token_stream.h"
+#include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
@@ -189,6 +191,38 @@ TEST(CSSParserImplTest, AtScrollTimelineOffsets) {
   EXPECT_EQ(test_css_parser_observer.rule_header_end_, 22u);
   EXPECT_EQ(test_css_parser_observer.rule_body_start_, 23u);
   EXPECT_EQ(test_css_parser_observer.rule_body_end_, 24u);
+}
+
+TEST(CSSParserImplTest, RemoveImportantAnnotationIfPresent) {
+  struct TestCase {
+    String input;
+    String expected_text;
+    bool expected_is_important;
+  };
+  static const TestCase test_cases[] = {
+      {"", "", false},
+      {"!important", "", true},
+      {" !important", " ", true},
+      {"!", "!", false},
+      {"1px", "1px", false},
+      {"2px!important", "2px", true},
+      {"3px !important", "3px ", true},
+      {"4px ! important", "4px ", true},
+      {"5px !important ", "5px ", true},
+      {"6px !!important", "6px !", true},
+      {"7px !important !important", "7px !important ", true},
+      {"8px important", "8px important", false},
+  };
+  for (auto current_case : test_cases) {
+    CSSTokenizer tokenizer(current_case.input);
+    CSSParserTokenStream stream(tokenizer);
+    CSSTokenizedValue tokenized_value = CSSParserImpl::ConsumeValue(stream);
+    SCOPED_TRACE(current_case.input);
+    bool is_important =
+        CSSParserImpl::RemoveImportantAnnotationIfPresent(tokenized_value);
+    EXPECT_EQ(is_important, current_case.expected_is_important);
+    EXPECT_EQ(tokenized_value.text.ToString(), current_case.expected_text);
+  }
 }
 
 }  // namespace blink

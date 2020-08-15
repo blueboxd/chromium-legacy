@@ -12,6 +12,7 @@
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "net/http/http_request_headers.h"
+#include "services/network/trust_tokens/suitable_trust_token_origin.h"
 #include "url/gurl.h"
 
 namespace network {
@@ -34,33 +35,44 @@ SrrVerificationStatus VerifyTrustTokenSignedRedemptionRecord(
     base::StringPiece verification_key,
     std::string* srr_body_out = nullptr);
 
-// Reconstructs a request's canonical request data, extracts the signature from
+// Reconstructs a request's canonical request data, extracts the signatures from
 // its Sec-Signature header, checks that the Sec-Signature header's contained
-// signature verifies.
+// signatures verify.
 //
 // Optionally:
-// - if |verification_key_out| is non-null, on success, returns the verification
-// key so that the caller can verify further state concerning the key (like
-// confirming that the key was bound to a previous redemption).
-// - if |error_out| is non-null, on failure, sets it to a human-readable
+// - If |verification_keys_out| is non-null, on success, returns the
+// verification key for each issuer, so that the caller can verify further state
+// concerning the key (like confirming that the key was bound to a previous
+// redemption).
+// - If |error_out| is non-null, on failure, sets it to a human-readable
 // description of the reason the verification failed.
-// - if |verifier| is non-null, uses the given verifier to verify the
-// signature instead of Ed25519
-bool ReconstructSigningDataAndVerifySignature(
+// - If |verifier| is non-null, uses the given verifier to verify the
+// signatures instead of Ed25519.
+bool ReconstructSigningDataAndVerifySignatures(
     const GURL& destination,
     const net::HttpRequestHeaders& headers,
-    base::OnceCallback<bool(base::span<const uint8_t> data,
-                            base::span<const uint8_t> signature,
-                            base::span<const uint8_t> verification_key)>
+    base::RepeatingCallback<bool(base::span<const uint8_t> data,
+                                 base::span<const uint8_t> signature,
+                                 base::span<const uint8_t> verification_key)>
         verifier = {},  // defaults to Ed25519
     std::string* error_out = nullptr,
-    std::string* verification_key_out = nullptr);
+    std::map<std::string, std::string>* verification_keys_out = nullptr);
 
 // Returns true if |srr_body| a valid CBOR encoding of an "SRR body" struct, as
 // defined in the design doc. Otherwise, returns false and, if |error_out| is
 // non-null, sets |error_out| to a helpful error message.
 bool ConfirmSrrBodyIntegrity(base::StringPiece srr_body,
                              std::string* error_out = nullptr);
+
+// Parses a Sec-Signed-Redemption-Record header and extracts the (issuer,
+// redemption record) pairs the header contains. On success, returns true. On
+// failure, returns false and, if |error_out| is not null, stores a
+// helpful error message in |error_out| for debugging.
+bool ExtractRedemptionRecordsFromHeader(
+    base::StringPiece sec_signed_redemption_record_header,
+    std::map<SuitableTrustTokenOrigin, std::string>*
+        redemption_records_per_issuer_out,
+    std::string* error_out);
 
 }  // namespace test
 }  // namespace network

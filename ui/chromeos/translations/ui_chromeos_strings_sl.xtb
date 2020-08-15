@@ -302,6 +302,7 @@
 <translation id="4481711095103932593">Ta mapa je deljena s sistemom Windows</translation>
 <translation id="4487088045714738411">Belgijska tipkovnica</translation>
 <translation id="4522570452068850558">Podrobnosti</translation>
+<translation id="4542387084127299777">Ni mogoče odpreti poti »<ph name="PATH" />«</translation>
 <translation id="4552678318981539154">Nakup dodatnega prostora za shranjevanje ...</translation>
 <translation id="4559767610552730302">Boke</translation>
 <translation id="4572815280350369984">Datoteka <ph name="FILE_TYPE" /></translation>
@@ -514,6 +515,7 @@
 <translation id="6629841649550503054">Vse varnostno kopirano v <ph name="BEGIN_LINK" />Google Drive!<ph name="END_LINK" /></translation>
 <translation id="6643016212128521049">Izbriši</translation>
 <translation id="6650726141019353908">Rožnat metulj</translation>
+<translation id="6657585470893396449">Geslo</translation>
 <translation id="6710213216561001401">Nazaj</translation>
 <translation id="6718273304615422081">Stiskanje ...</translation>
 <translation id="6751256176799620176">Izbrana je 1 mapa</translation>
@@ -726,6 +728,7 @@
 <translation id="9065203028668620118">Uredi</translation>
 <translation id="9099674669267916096">Število strani</translation>
 <translation id="9110990317705400362">Stalno si prizadevamo zagotoviti, da bi bilo brskanje varnejše. Prej vas je lahko vsako spletno mesto pozvalo, da dodate razširitev v brskalnik. V zadnjih različicah Google Chroma pa morate Chromu izrecno povedati, da želite te razširitve namestiti, tako da jih dodate na strani »Razširitve«. <ph name="BEGIN_LINK" />Več o tem<ph name="END_LINK" /></translation>
+<translation id="9111102763498581341">Odkleni</translation>
 <translation id="912419004897138677">Kodek</translation>
 <translation id="9129931661813833980">Pripni mapo</translation>
 <translation id="9130775360844693113">Člani skupine »<ph name="DESTINATION_NAME" />« bodo imeli dostop do teh elementov.</translation>

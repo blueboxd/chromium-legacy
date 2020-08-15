@@ -122,9 +122,7 @@ std::unique_ptr<net::test_server::HttpResponse> GetResponse(
 
 // Tests that Chrome PassKit dialog is shown for sucessfully downloaded pkpass
 // file.
-//
-// Flaky https://crbug.com/1109131.
-- (void)DISABLED_testPassKitDownload {
+- (void)testPassKitDownload {
   if ([ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_SKIPPED(@"Wallet app is not supported on iPads.");
   }

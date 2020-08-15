@@ -181,6 +181,21 @@
 <translation id="1291880496936992484">警告：从 52 版开始，<ph name="PRODUCT_NAME" /> 中将彻底移除 RC4（2016 年 9 月左右）。届时，此政策将不再有效。
 
       如果此政策未设置或设为 false，系统将不会在 TLS 中启用 RC4 加密套件。您也可以将此政策设为 true，以便与过时的服务器保持兼容。但这只是一种权宜之计，对服务器进行重新配置才是正确之道。</translation>
+<translation id="1294120942989031743">通过设置此政策，您能以列表形式指定哪些应用和扩展程序无需用户互动即可静默安装且无法由用户卸载或停用。权限由系统默认授予，其中包括对 enterprise.deviceAttributes 和 enterprise.platformKeys 扩展程序 API 的权限（这 2 个 API 不适用于非强制安装的应用和扩展程序）。
+
+      如果您不设置此政策，系统将不会自动安装任何应用或扩展程序，而且用户可在 <ph name="PRODUCT_NAME" /> 中卸载任何应用或扩展程序。
+
+      此政策会取代 <ph name="EXTENSION_INSTALL_BLOCKLIST_POLICY_NAME" /> 政策。如果以前强制安装的某个应用或扩展程序被从此列表中移除了，<ph name="PRODUCT_NAME" /> 便会自动卸载该应用或扩展程序。
+
+      在 <ph name="MS_WIN_NAME" /> 实例上，只有当相应实例已加入 <ph name="MS_AD_NAME" /> 网域、在 Windows 10 专业版上运行，或已注册 Chrome 浏览器云管理时，才能强制安装 Chrome 网上应用店之外的应用和扩展程序。
+
+      在 <ph name="MAC_OS_NAME" /> 实例上，只有当相应实例是通过 MDM 进行管理或通过 MCX 加入网域时，才能强制安装 Chrome 网上应用店之外的应用和扩展程序。
+
+      用户可通过开发者工具更改任何扩展程序的源代码，这可能会导致扩展程序无法正常运行。如果您不希望用户进行此类更改，请设置 <ph name="DEVELOPER_TOOLS_DISABLED_POLICY_NAME" /> 政策。
+
+      此政策的每个列表项都是一个字符串，其中包含一个扩展程序 ID 和一个可选的“更新”网址（这两者之间以英文分号 [;] 分隔）。扩展程序 ID 是一个由 32 个字母构成的字符串；若想查看该字符串，一种方法是在开发者模式下访问 chrome://extensions。“更新”网址（若指定）应指向一个更新清单 XML 文档 (https://developer.chrome.com/extensions/autoupdate)。默认情况下，系统会使用 Chrome 网上应用店的更新网址。此政策中设置的“更新”网址仅用于初次安装；扩展程序的后续更新将会使用该扩展程序的清单中的更新网址。
+
+       注意：此政策不适用于无痕模式。了解如何托管扩展程序 (https://developer.chrome.com/extensions/hosting)。</translation>
 <translation id="1294263471858445589">为无痕会话和常规会话启用静默身份验证。</translation>
 <translation id="1295737447968372331">在登录屏幕上启用“语音输入”</translation>
 <translation id="1297182715641689552">使用 .pac 代理脚本</translation>
@@ -938,6 +953,13 @@
 
       如果将此政策设为“False”，用户将无法使用网络文件共享功能。</translation>
 <translation id="2435052056904485763">Kerberos 委派服务器许可名单</translation>
+<translation id="2439793457499023062">如果此政策未设置，当 Chrome 清理功能检测到垃圾软件时，它可能会按照 SafeBrowsingExtendedReportingEnabled 设置的政策向 Google 报告与此项扫描相关的元数据。然后，Chrome 清理功能会询问用户是否要清理垃圾软件。用户可以选择与 Google 分享清理结果，以协助 Google 日后更好地检测垃圾软件。这些结果包括文件元数据、自动安装的扩展程序以及注册表项（如《Chrome 隐私权白皮书》中所述）。
+
+      如果此政策处于停用状态，当 Chrome 清理功能检测到垃圾软件时，它不会向 Google 报告与此项扫描相关的元数据，而是会覆盖 SafeBrowsingExtendedReportingEnabled 设置的任何政策。Chrome 清理功能会询问用户是否要清理垃圾软件。它不会向 Google 报告清理结果，也不会为用户提供用于向 Google 报告清理结果的选项。
+
+      如果此政策处于启用状态，当 Chrome 清理功能检测到垃圾软件时，它可能会按照 SafeBrowsingExtendedReportingEnabled 设置的政策向 Google 报告与此项扫描相关的元数据。Chrome 清理功能会询问用户是否要清理垃圾软件。它会向 Google 报告清理结果，但不会为用户提供用于禁止向 Google 报告清理结果的选项。
+
+      在 <ph name="MS_WIN_NAME" /> 上，此功能仅适用于已加入 <ph name="MS_AD_NAME" /> 网域的实例、在 Windows 10 专业版上运行的实例，或已注册 Chrome 浏览器云管理的实例。</translation>
 <translation id="2440773021691931148">报告与电源相关的硬件统计信息和标识符。
 
       如果此政策设为 false 或未设置，系统将不会报告这些统计信息。
@@ -1270,12 +1292,6 @@
 <translation id="2901725272378498025">针对命令行标记启用安全警告功能</translation>
 <translation id="2905984450136807296">身份验证数据缓存期限</translation>
 <translation id="2906874737073861391">AppPack 扩展程序列表</translation>
-<translation id="2907992746861405243">控制用户可以使用 <ph name="BULK_PRINTERS_POLICY" /> 中的哪些打印机。
-
-      指定对批量打印机配置使用哪项访问政策。如果选择 <ph name="PRINTERS_ALLOW_ALL" />，系统即会显示所有打印机。如果选择 <ph name="PRINTERS_BLACKLIST" />，系统便会使用 <ph name="BULK_PRINTERS_BLACKLIST" /> 来限制用户对指定打印机的访问权。如果选择 <ph name="PRINTERS_WHITELIST" />，<ph name="BULK_PRINTERS_WHITELIST" /> 则仅会指定可供用户选择的打印机。
-
-      如果未设置此政策，系统将会默认使用 <ph name="PRINTERS_ALLOW_ALL" />。
-      </translation>
 <translation id="2908277604670530363">可同时连接到代理服务器的连接数上限</translation>
 <translation id="2921222258441684334">如果此政策设为 1，系统会默认允许网站跟踪用户的实际位置。如果此政策设为 2，系统会默认禁止此类跟踪。您可通过设置此政策，让网站在每次想要跟踪用户的实际位置时都先询问用户的意见。
 
@@ -1542,6 +1558,11 @@
 如果此政策设为 True 或未设置，<ph name="PRODUCT_NAME" /> 将可以使用原生通知。
 
 如果此政策设为 False，<ph name="PRODUCT_NAME" /> 将不会使用原生通知。<ph name="PRODUCT_NAME" /> 的消息中心将被用作后备方案。</translation>
+<translation id="3359446912268498764">如果此政策处于停用状态，Chrome 清理功能将无法扫描系统以检测是否存在垃圾软件，也无法执行清理操作。此外，还会禁止通过 chrome://settings/cleanup 手动触发 Chrome 清理功能。
+
+      如果此政策处于启用状态或未设置，Chrome 清理功能将会定期扫描系统以检测是否存在垃圾软件，并会在发现任何垃圾软件时询问用户是否要将其移除。此外，还会允许通过 chrome://settings 手动触发 Chrome 清理功能。
+
+      在 <ph name="MS_WIN_NAME" /> 上，此功能仅适用于已加入 <ph name="MS_AD_NAME" /> 网域的实例、在 Windows 10 专业版上运行的实例，或已注册 Chrome 浏览器云管理的实例。</translation>
 <translation id="3360093276083825336">请注意，此政策已被弃用，并将在 <ph name="PRODUCT_OS_NAME" />版本 85 中移除。请改用 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />。
 
           指定当使用电池供电时系统应在设备闲置多久后显示警告对话框。
@@ -1725,6 +1746,13 @@
 <translation id="355118380775352753">要在替代浏览器中打开的网站</translation>
 <translation id="3554498762428140109">启用原生窗口遮挡</translation>
 <translation id="3554984410014457319">允许 Google 助理听取语音启动词组</translation>
+<translation id="3562741878192828370">此政策用于指定一系列应在下载完毕后自动打开的文件类型。罗列文件类型时不应添加前导分隔符，因此请罗列“txt”而非“.txt”。
+
+      应自动打开的文件类型所对应的文件仍须接受安全浏览检查（若已启用）；如果未通过检查，便不会打开。
+
+      如果您不设置此政策，只有那些已被用户指定为自动打开的文件类型才会在下载完毕后自动打开。
+
+      在 <ph name="MS_WIN_NAME" /> 上，此功能仅适用于已加入 <ph name="MS_AD_NAME" /> 网域的实例、在 Windows 10 专业版上运行的实例，或已注册 Chrome 浏览器云管理的实例。在 <ph name="MAC_OS_NAME" /> 上，此功能仅适用于通过 MDM 进行管理或通过 MCX 加入网域的实例。</translation>
 <translation id="356579196325389849">用户可以配置 Chrome 操作系统发布版本</translation>
 <translation id="3575011234198230041">HTTP 身份验证</translation>
 <translation id="3577251398714997599">针对含侵扰性广告的网站的广告设置</translation>
@@ -2235,6 +2263,15 @@
 <translation id="4341199399451274159">如果 <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> 已开启，您便可通过设置 <ph name="DEFAULT_SEARCH_PROVIDER_ENCODINGS_POLICY_NAME" /> 来指定搜索服务提供商支持的字符编码。编码是 UTF-8、GB2312 和 ISO-8859-1 之类的代码页名称。系统会按照您指定的顺序尝试这些编码。
 
       如果您不设置 <ph name="DEFAULT_SEARCH_PROVIDER_ENCODINGS_POLICY_NAME" />，系统将使用 UTF-8。</translation>
+<translation id="4343304913975482972">配置“安全浏览”功能将会信任的网域列表。这意味着：
+      如果某个网页的网址与所指定的任一网域匹配，“安全浏览”功能将不会检查该网页是否含有危险资源（例如网上诱骗、恶意软件或垃圾软件）。
+      “安全浏览”功能的下载保护服务将不会检查托管在此类网域上的下载内容。
+      如果某个网页的网址与所指定的任一网域匹配，“安全浏览”功能的密码保护服务将不会检查该网页中的密码重用情况。
+
+      如果您启用了此设置，“安全浏览”功能将会信任这些网域。
+      如果您停用了或不配置此设置，系统便会将默认开启的安全浏览保护功能应用于所有资源。
+
+      在 <ph name="MS_WIN_NAME" /> 上，此功能仅适用于已加入 <ph name="MS_AD_NAME" /> 网域的实例、在 Windows 10 专业版上运行的实例，或已注册 Chrome 浏览器云管理的实例。在 <ph name="MAC_OS_NAME" /> 上，此功能仅适用于通过 MDM 进行管理或通过 MCX 加入网域的实例。</translation>
 <translation id="4343382787226139147">指定应使用设备管理协议注册的客户端证书。</translation>
 <translation id="4347908978527632940">如果设为 true 且该用户是受监管用户，则其他 Android 应用可以通过内容提供方查询该用户的网络限制。
 
@@ -4559,6 +4596,11 @@
 <translation id="7648907905084499629">让所有网站上的 Cookie 都采用 <ph name="FEATURE_NAME_SAMESITE_BY_DEFAULT_COOKIES" /> 行为</translation>
 <translation id="7651739109954974365">确定是否应为设备启用数据漫游。如果将此政策设置为 true，数据漫游就可以使用。如果未配置此政策或将其设置为 false，数据漫游就无法使用。</translation>
 <translation id="7657261947024629645">针对性能进行优化。</translation>
+<translation id="7668830462800981702">如果此政策已启用，当用户在地址栏中输入非网址的文字时，系统将会执行默认搜索。若要指定默认搜索服务提供商，请设置其余的默认搜索政策。如果您将这些政策留空，用户可自行选择默认提供商。如果此政策已停用，当用户在地址栏中输入非网址的文字时，系统将不会执行任何搜索。
+
+      如果您设置了此政策，用户便无法在 <ph name="PRODUCT_NAME" /> 中更改它。如果您不设置此政策，系统将启用默认的搜索服务提供商，而且用户可以设置搜索服务提供商列表。
+
+      在 <ph name="MS_WIN_NAME" /> 上，此功能仅适用于已加入 <ph name="MS_AD_NAME" /> 网域的实例、在 Windows 10 专业版上运行的实例，或已注册 Chrome 浏览器云管理的实例。在 <ph name="MAC_OS_NAME" /> 上，此功能仅适用于通过 MDM 进行管理或通过 MCX 加入网域的实例。</translation>
 <translation id="7673194325208122247">时间段（毫秒）</translation>
 <translation id="7677220829878081413">
       如果此政策设为 ArcSession，且 Android 已启动，那么每当用户退出后，系统都会强制相应设备重新启动。

@@ -9,6 +9,7 @@
 <translation id="150962533380566081">PUK tidak sah.</translation>
 <translation id="1510238584712386396">Pelancar</translation>
 <translation id="1644574205037202324">Sejarah</translation>
+<translation id="1662989795263954667">Dihentikan - Kehabisan dakwat</translation>
 <translation id="1734367976349034509">Peranti ini diurus perusahaan</translation>
 <translation id="1905710495812624430">Melebihi had maksimum percubaan yang dibenarkan.</translation>
 <translation id="1930797645656624981">Perkhidmatan Kaedah Input OS Chrome</translation>
@@ -39,18 +40,22 @@
 <translation id="4227825898293920515">Kata laluan tamat tempoh dalam <ph name="TIME" /></translation>
 <translation id="4238516577297848345">Tiada tugas cetak yang sedang dijalankan</translation>
 <translation id="428217921675623177">Tugas cetak yang melebihi 90 hari akan dialih keluar</translation>
+<translation id="4297501883039923494">Dihentikan - Ralat tidak diketahui</translation>
 <translation id="4429881212383817840">Tiket Kerberos akan tamat tempoh tidak lama lagi</translation>
 <translation id="445059817448385655">Kata laluan lama</translation>
 <translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> daripada <ph name="TOTAL_PAGE_NUMBER" />. Tekan enter untuk membatalkan tugas cetak.</translation>
 <translation id="467510802200863975">Kata laluan tidak sepadan</translation>
+<translation id="4691278870498629773">Dihentikan - Dulang tiada</translation>
 <translation id="4731797938093519117">Akses ibu bapa</translation>
 <translation id="4773299976671772492">Dihentikan</translation>
 <translation id="4808449224298348341">Tugas cetak <ph name="DOCUMENT_TITLE" /> dibatalkan</translation>
 <translation id="4890353053343094602">Pilih kata laluan baharu secepat mungkin</translation>
+<translation id="4917889632206600977">Dihentikan - Kehabisan kertas</translation>
 <translation id="4932733599132424254">Tarikh</translation>
 <translation id="5212543919916444558">Saya tidak menemui apa-apa pada skrin anda yang boleh saya bantu.
 Cuba ketik mikrofon untuk bertanyakan sebarang perkara kepada saya.</translation>
 <translation id="5222676887888702881">Log keluar</translation>
+<translation id="5267975978099728568"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="ERROR_STATUS" /></translation>
 <translation id="5317780077021120954">Simpan</translation>
 <translation id="5326394068492324457"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="COMPLETION_STATUS" /></translation>
 <translation id="5332948983412042822">Pilih kata laluan baharu sekarang</translation>
@@ -63,9 +68,11 @@ Cuba ketik mikrofon untuk bertanyakan sebarang perkara kepada saya.</translation
 <translation id="6106186594183574873">Untuk menyelesaikan proses ini, masukkan kata laluan lama anda</translation>
 <translation id="6146993107019042706">Untuk menyelesaikan proses ini, masukkan kata laluan baharu anda</translation>
 <translation id="636850387210749493">Pendaftaran perusahaan</translation>
+<translation id="649050271426829538">Dihentikan - Kertas tersangkut</translation>
 <translation id="6517239166834772319">Teroka</translation>
 <translation id="6564646048574748301">Gagal - Pencetak tidak dapat dicapai</translation>
 <translation id="6643016212128521049">Kosongkan</translation>
+<translation id="6747215703636344499">Dihentikan - Output penuh</translation>
 <translation id="7162487448488904999">Galeri</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7561454561030345039">Tindakan ini diurus oleh pentadbir anda</translation>
@@ -77,6 +84,7 @@ Cuba ketik mikrofon untuk bertanyakan sebarang perkara kepada saya.</translation
 <translation id="8347227221149377169">Tugas cetak</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> mengurus pengguna ini. Domain ini mungkin mengurus tetapan dan memantau aktiviti pengguna dari jauh.</translation>
 <translation id="871560550817059752">Gagal - Kehabisan dakwat</translation>
+<translation id="8726019395068607495">Dihentikan - Pintu terbuka</translation>
 <translation id="8747900814994928677">Sahkan penukaran</translation>
 <translation id="8919837981463578619">Gagal - Dulang tiada</translation>
 <translation id="8928727111548978589">Gagal - Kehabisan kertas</translation>

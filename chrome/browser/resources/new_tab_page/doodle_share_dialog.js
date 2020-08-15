@@ -49,7 +49,7 @@ class DoodleShareDialogElement extends PolymerElement {
         `&href=${encodeURIComponent(this.url.url)}` +
         `&hashtag=${encodeURIComponent('#GoogleDoodle')}`;
     BrowserProxy.getInstance().open(url);
-    this.notifyShare_(newTabPage.mojom.DoodleShareChannel.FACEBOOK);
+    this.notifyShare_(newTabPage.mojom.DoodleShareChannel.kFacebook);
   }
 
   /** @private */
@@ -57,7 +57,7 @@ class DoodleShareDialogElement extends PolymerElement {
     const url = 'https://twitter.com/intent/tweet' +
         `?text=${encodeURIComponent(`${this.title}\n${this.url.url}`)}`;
     BrowserProxy.getInstance().open(url);
-    this.notifyShare_(newTabPage.mojom.DoodleShareChannel.TWITTER);
+    this.notifyShare_(newTabPage.mojom.DoodleShareChannel.kTwitter);
   }
 
   /** @private */
@@ -65,14 +65,14 @@ class DoodleShareDialogElement extends PolymerElement {
     const url = `mailto:?subject=${encodeURIComponent(this.title)}` +
         `&body=${encodeURIComponent(this.url.url)}`;
     BrowserProxy.getInstance().navigate(url);
-    this.notifyShare_(newTabPage.mojom.DoodleShareChannel.EMAIL);
+    this.notifyShare_(newTabPage.mojom.DoodleShareChannel.kEmail);
   }
 
   /** @private */
   onCopyClick_() {
     this.$.url.select();
     navigator.clipboard.writeText(this.url.url);
-    this.notifyShare_(newTabPage.mojom.DoodleShareChannel.LINK_COPY);
+    this.notifyShare_(newTabPage.mojom.DoodleShareChannel.kLinkCopy);
   }
 
   /** @private */

@@ -528,6 +528,7 @@
 <translation id="6629841649550503054">Δημιουργήθηκαν αντίγραφα ασφαλείας για όλα τα αρχεία στο <ph name="BEGIN_LINK" />Google Drive!<ph name="END_LINK" /></translation>
 <translation id="6643016212128521049">Διαγραφή</translation>
 <translation id="6650726141019353908">Ροζ πεταλούδα</translation>
+<translation id="6657585470893396449">Κωδικός πρόσβασης</translation>
 <translation id="6710213216561001401">Προηγούμενο</translation>
 <translation id="6718273304615422081">Συμπίεση…</translation>
 <translation id="6751256176799620176">Επιλέχθηκε 1 φάκελος</translation>
@@ -750,6 +751,7 @@
 <translation id="9065203028668620118">Επεξεργασία</translation>
 <translation id="9099674669267916096">Πλήθος σελίδων</translation>
 <translation id="9110990317705400362">Αναζητούμε συνεχώς νέους τρόπους για να κάνουμε πιο ασφαλή την περιήγησή σας. Παλιότερα, ένας ιστότοπος μπορούσε να σας ζητήσει να προσθέσετε μια επέκταση στο πρόγραμμα περιήγησής σας. Στις πιο πρόσφατες εκδόσεις του Google Chrome, πρέπει να πείτε ρητά στο Chrome ότι επιθυμείτε την εγκατάσταση αυτών των επεκτάσεων, προσθέτοντάς τες μέσω της σελίδας "Επεκτάσεις". <ph name="BEGIN_LINK" />Μάθετε περισσότερα<ph name="END_LINK" /></translation>
+<translation id="9111102763498581341">Ξεκλείδωμα</translation>
 <translation id="912419004897138677">Κωδικοποιητής</translation>
 <translation id="9129931661813833980">Καρφίτσωμα φακέλου</translation>
 <translation id="9130775360844693113">Τα μέλη του "<ph name="DESTINATION_NAME" />" θα αποκτήσουν πρόσβαση σε αυτά τα στοιχεία.</translation>

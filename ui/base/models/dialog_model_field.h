@@ -34,7 +34,7 @@ class COMPONENT_EXPORT(UI_BASE) DialogModelField {
   DialogModelField& operator=(const DialogModelField&) = delete;
   virtual ~DialogModelField();
 
-  // Accessors with util::PassKey<DialogModelHost> are only intended to be read
+  // Methods with util::PassKey<DialogModelHost> are only intended to be called
   // by the DialogModelHost implementation.
   Type type(util::PassKey<DialogModelHost>) const { return type_; }
   const base::flat_set<Accelerator>& accelerators(
@@ -73,21 +73,13 @@ class COMPONENT_EXPORT(UI_BASE) DialogModelButton : public DialogModelField {
 
     Params& SetUniqueId(int unique_id);
 
-    // The button callback gets called when the button is activated. Whether
-    // that happens on key-press, release, etc. is implementation (and platform)
-    // dependent.
-    Params& SetCallback(base::RepeatingCallback<void(const Event&)> callback);
-
     Params& AddAccelerator(Accelerator accelerator);
     Params& SetAccessibleName(base::string16 accessible_name);
-
-    bool has_callback() const { return !!callback_; }
 
    private:
     friend class DialogModelButton;
 
     int unique_id_ = -1;
-    base::RepeatingCallback<void(const Event&)> callback_;
     base::flat_set<Accelerator> accelerators_;
   };
 
@@ -95,18 +87,27 @@ class COMPONENT_EXPORT(UI_BASE) DialogModelButton : public DialogModelField {
   // fields.
   DialogModelButton(util::PassKey<DialogModel> pass_key,
                     DialogModel* model,
+                    base::RepeatingCallback<void(const Event&)> callback,
                     base::string16 label,
                     const Params& params);
   DialogModelButton(const DialogModelButton&) = delete;
   DialogModelButton& operator=(const DialogModelButton&) = delete;
   ~DialogModelButton() override;
 
-  const base::string16& label() const { return label_; }
+  // Methods with util::PassKey<DialogModelHost> are only intended to be called
+  // by the DialogModelHost implementation.
+  const base::string16& label(util::PassKey<DialogModelHost>) const {
+    return label_;
+  }
+  void OnPressed(util::PassKey<DialogModelHost>, const Event& event);
 
  private:
   friend class DialogModel;
 
   const base::string16 label_;
+  // The button callback gets called when the button is activated. Whether
+  // that happens on key-press, release, etc. is implementation (and platform)
+  // dependent.
   base::RepeatingCallback<void(const Event&)> callback_;
 };
 
@@ -157,10 +158,20 @@ class COMPONENT_EXPORT(UI_BASE) DialogModelCombobox : public DialogModelField {
   DialogModelCombobox& operator=(const DialogModelCombobox&) = delete;
   ~DialogModelCombobox() override;
 
-  const base::string16& label() const { return label_; }
-  const base::string16& accessible_name() const { return accessible_name_; }
   int selected_index() const { return selected_index_; }
   ui::ComboboxModel* combobox_model() { return combobox_model_.get(); }
+
+  // Methods with util::PassKey<DialogModelHost> are only intended to be called
+  // by the DialogModelHost implementation.
+  const base::string16& label(util::PassKey<DialogModelHost>) const {
+    return label_;
+  }
+  const base::string16& accessible_name(util::PassKey<DialogModelHost>) const {
+    return accessible_name_;
+  }
+  void OnSelectedIndexChanged(util::PassKey<DialogModelHost>,
+                              int selected_index);
+  void OnPerformAction(util::PassKey<DialogModelHost>);
 
  private:
   friend class DialogModel;
@@ -210,9 +221,17 @@ class COMPONENT_EXPORT(UI_BASE) DialogModelTextfield : public DialogModelField {
   DialogModelTextfield& operator=(const DialogModelTextfield&) = delete;
   ~DialogModelTextfield() override;
 
-  const base::string16& label() const { return label_; }
-  const base::string16& accessible_name() const { return accessible_name_; }
   const base::string16& text() const { return text_; }
+
+  // Methods with util::PassKey<DialogModelHost> are only intended to be called
+  // by the DialogModelHost implementation.
+  const base::string16& label(util::PassKey<DialogModelHost>) const {
+    return label_;
+  }
+  const base::string16& accessible_name(util::PassKey<DialogModelHost>) const {
+    return accessible_name_;
+  }
+  void OnTextChanged(util::PassKey<DialogModelHost>, base::string16 text);
 
  private:
   friend class DialogModel;

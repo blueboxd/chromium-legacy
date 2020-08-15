@@ -307,6 +307,7 @@
 <translation id="1361164813881551742">Ajouter manuellement</translation>
 <translation id="1361655923249334273">Non utilisé</translation>
 <translation id="1361872463926621533">Jouer un son au démarrage</translation>
+<translation id="1362865166188278099">Problème mécanique. Vérifiez l'imprimante</translation>
 <translation id="1363585519747660921">L'imprimante USB n'est pas configurée</translation>
 <translation id="1365180424462182382">Votre <ph name="BEGIN_LINK" />navigateur est géré<ph name="END_LINK" /> par <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="1366177842110999534">Exécutez des outils, des éditeurs et des IDE Linux sur votre <ph name="DEVICE_TYPE" />. &lt;a target="_blank" href="<ph name="URL" />"&gt;En savoir plus&lt;/a&gt;</translation>
@@ -1373,6 +1374,7 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="2636625531157955190">Impossible d'accéder à l'image avec Google Chrome.</translation>
 <translation id="2637400434494156704">Code incorrect. Il vous reste une tentative.</translation>
 <translation id="2638662041295312666">Image de connexion</translation>
+<translation id="2640549051766135490">Album "<ph name="TITLE" />" (<ph name="DESC" />) sélectionné</translation>
 <translation id="264083724974021997">Connexion à votre téléphone – Boîte de dialogue</translation>
 <translation id="2641065435954454414">Préparation du téléchargement en cours</translation>
 <translation id="2642111877055905627">Ballon de football</translation>
@@ -1479,7 +1481,7 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="2757338480560142065">Assurez-vous que le mot de passe que vous enregistrez correspond bien à votre mot de passe <ph name="WEBSITE" /></translation>
 <translation id="2762441749940182211">Caméra bloquée</translation>
 <translation id="2764786626780673772">Informations sur le VPN</translation>
-<translation id="2765217105034171413">Petite</translation>
+<translation id="2765217105034171413">Léger</translation>
 <translation id="2766006623206032690">Coller l'URL et y a&amp;ccéder</translation>
 <translation id="2766161002040448006">Demander à l'un des parents</translation>
 <translation id="2767127727915954024"><ph name="ORIGIN" /> pourra modifier le fichier <ph name="FILENAME" /> jusqu'à ce que vous fermiez tous les onglets de ce site</translation>
@@ -1958,6 +1960,7 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="338583716107319301">Séparateur</translation>
 <translation id="338691029516748599">Réseau <ph name="NETWORK_INDEX" /> sur <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, force du signal : <ph name="SIGNAL_STRENGTH" /> %, géré par votre administrateur, connexion</translation>
 <translation id="3387614642886316601">Utiliser le correcteur orthographique amélioré</translation>
+<translation id="3388094447051599208">Bac de sortie presque plein</translation>
 <translation id="3388788256054548012">Ce fichier étant chiffré, demandez à son propriétaire de le déchiffrer.</translation>
 <translation id="3390013585654699824">Informations sur l'application</translation>
 <translation id="3390741581549395454">Les applications et fichiers Linux ont bien été sauvegardés. La mise à niveau va bientôt commencer.</translation>
@@ -2035,6 +2038,7 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="3471876058939596279">Les ports HDMI et USB Type-C ne peuvent pas être utilisés simultanément pour de la vidéo. Utilisez un autre port vidéo.</translation>
 <translation id="3473241910002674503">Utilisez les boutons pour accéder à la page d'accueil, revenir en arrière et changer d'application en mode tablette.</translation>
 <translation id="3473479545200714844">Loupe</translation>
+<translation id="347394413229268704">Lire plus tard</translation>
 <translation id="3475843873335999118">Désolé, votre empreinte digitale n'est toujours pas reconnue. Veuillez saisir votre mot de passe.</translation>
 <translation id="3476303763173086583">Envoyer des données d'utilisation et de diagnostic. Contribuez à l'amélioration de l'expérience de votre enfant sur Android en envoyant automatiquement à Google des données relatives aux diagnostics et à l'utilisation de l'appareil et des applications. Ces informations ne seront pas utilisées pour identifier votre enfant, mais elles nous aideront à améliorer, entre autres, la stabilité du système et des applications. Certaines données globales seront également utiles aux développeurs des applications Google et à nos partenaires, tels que les développeurs Android. Ce <ph name="BEGIN_LINK1" />paramètre<ph name="END_LINK1" /> est appliqué par le propriétaire. Le propriétaire de cet appareil peut choisir d'envoyer à Google des données de diagnostic et d'utilisation. Si vous activez le paramètre relatif à l'activité supplémentaire sur le Web et les applications pour votre enfant, ces données peuvent être enregistrées dans son compte Google. <ph name="BEGIN_LINK2" />En savoir plus<ph name="END_LINK2" /></translation>
 <translation id="347670947055184738">Petit problème… Le système n'a pas réussi à récupérer les règles pour votre appareil.</translation>
@@ -2341,7 +2345,7 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="3816118180265633665">Couleurs de Chrome</translation>
 <translation id="3817524650114746564">Accéder aux paramètres de proxy de votre ordinateur</translation>
 <translation id="3817579325494460411">Non indiqué</translation>
-<translation id="3819257035322786455">Sauvegardez</translation>
+<translation id="3819257035322786455">Sauvegarder</translation>
 <translation id="3819261658055281761">Échec de l'enregistrement du jeton d'accès aux API à long terme pour cet appareil.</translation>
 <translation id="3819800052061700452">&amp;Plein écran</translation>
 <translation id="3820749202859700794">Courbe elliptique SECG secp521r1 (également appelée "NIST P-521")</translation>
@@ -2381,7 +2385,7 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="3855676282923585394">Importer les favoris et les paramètres...</translation>
 <translation id="3856096718352044181">Veuillez vérifier qu'il s'agit d'un fournisseur valide ou réessayer plus tard</translation>
 <translation id="3856800405688283469">Sélectionner un fuseau horaire</translation>
-<translation id="3857807444929313943">Lever le doigt, puis appuyer de nouveau</translation>
+<translation id="3857807444929313943">Levez le doigt, puis appuyez de nouveau</translation>
 <translation id="3860104611854310167"><ph name="PROFILE_NAME" /> : synchronisation en pause</translation>
 <translation id="3861638017150647085">Nom d'utilisateur "<ph name="USERNAME" />" non disponible</translation>
 <translation id="3862693525629180217">Valider via le capteur intégré</translation>
@@ -2595,6 +2599,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4107048419833779140">Identifier et exclure des périphériques de stockage</translation>
 <translation id="4109135793348361820">Déplacer la fenêtre vers <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110490973560452005">Téléchargement terminé : <ph name="FILE_NAME" />. Appuyez sur Maj+F6 pour accéder à la zone de la barre de téléchargements.</translation>
+<translation id="4110686435123617899">Sélectionner l'album "<ph name="TITLE" />" (<ph name="DESC" />)</translation>
 <translation id="4110895898888439383">Parcourir le Web en mode Contraste élevé</translation>
 <translation id="4112194537011183136"><ph name="DEVICE_NAME" /> (hors connexion)</translation>
 <translation id="4115002065223188701">Réseau hors de portée</translation>
@@ -2653,7 +2658,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4206144641569145248">Extraterrestre</translation>
 <translation id="4206323443866416204">Rapport de commentaires</translation>
 <translation id="4208390505124702064">Rechercher sur <ph name="SITE_NAME" /></translation>
-<translation id="4209092469652827314">Grand</translation>
+<translation id="4209092469652827314">Grande</translation>
 <translation id="4209251085232852247">Désactivé</translation>
 <translation id="4209464433672152343">Les documents sont <ph name="BEGIN_LINK_HELP" />envoyés à Google<ph name="END_LINK_HELP" /> afin d'être préparés pour l'impression. Consultez, modifiez et gérez vos imprimantes et leur historique dans le <ph name="BEGIN_LINK_DASHBOARD" />tableau de bord de Google Cloud Print<ph name="END_LINK_DASHBOARD" />.</translation>
 <translation id="4210048056321123003">Téléchargement de la machine virtuelle…</translation>
@@ -3081,6 +3086,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4780321648949301421">Enregistrer la page sous...</translation>
 <translation id="4785719467058219317">La clé de sécurité n'est pas enregistrée auprès de ce site Web</translation>
 <translation id="4788092183367008521">Veuillez vérifier votre connexion réseau, puis réessayer.</translation>
+<translation id="4791000909649665275"><ph name="NUMBER" /> photo</translation>
 <translation id="4791037424585594169">(UDP)</translation>
 <translation id="4792711294155034829">&amp;Signaler un problème...</translation>
 <translation id="4794810983896241342">Les mises à jour sont gérées par <ph name="BEGIN_LINK" />votre administrateur<ph name="END_LINK" /></translation>
@@ -4246,7 +4252,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6234474535228214774">Installation en attente</translation>
 <translation id="6237474966939441970">Application de prise de notes avec le stylet</translation>
 <translation id="6237816943013845465">Permet d'ajuster la résolution de l'écran</translation>
-<translation id="6238624845858322552">Connecter à un appareil Bluetooth</translation>
+<translation id="6238624845858322552">Connexion à un appareil Bluetooth</translation>
 <translation id="6238767809035845642">Texte partagé depuis un autre appareil</translation>
 <translation id="6238923052227198598">Conserver la dernière note sur l'écran de verrouillage</translation>
 <translation id="6239558157302047471">Actualiser le &amp;cadre</translation>
@@ -4669,7 +4675,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6781978626986383437">Sauvegarde Linux annulée</translation>
 <translation id="6782067259631821405">Code incorrect</translation>
 <translation id="6785518634832172390">Le code contient 12 chiffres au maximum</translation>
-<translation id="6785915470941880363">Inverser le défilement (<ph name="LINK_BEGIN" />en savoir plus<ph name="LINK_END" />)</translation>
+<translation id="6785915470941880363">Inverser le défilement <ph name="LINK_BEGIN" />En savoir plus<ph name="LINK_END" /></translation>
 <translation id="6786747875388722282">Extensions</translation>
 <translation id="6787839852456839824">Raccourcis clavier</translation>
 <translation id="6788210894632713004">Extension non empaquetée</translation>
@@ -4794,7 +4800,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6935286146439255109">Bac à papier manquant</translation>
 <translation id="693807610556624488">L'opération d'écriture dépasse la longueur maximale de l'attribut sur l'appareil <ph name="DEVICE_NAME" />.</translation>
 <translation id="6938386202199793006">Vous avez 1 imprimante enregistrée.</translation>
-<translation id="6938789263968032501">Contacts</translation>
+<translation id="6938789263968032501">Personnes</translation>
 <translation id="6939815295902433669">Examiner les logiciels de l'appareil</translation>
 <translation id="6941937518557314510">Connectez-vous à <ph name="TOKEN_NAME" /> pour vous authentifier auprès de <ph name="HOST_NAME" /> avec votre certificat.</translation>
 <translation id="6943060957016121200">Activer le partage de connexion instantané</translation>
@@ -5414,7 +5420,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7705276765467986571">Impossible de charger le modèle du favori.</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7707108266051544351">L'utilisation des capteurs de mouvement a été bloquée pour ce site.</translation>
-<translation id="7707922173985738739">Utiliser les données mobiles</translation>
+<translation id="7707922173985738739">Utilisera les données mobiles</translation>
 <translation id="7709152031285164251">Échec – <ph name="INTERRUPT_REASON" /></translation>
 <translation id="7710568461918838723">&amp;Caster…</translation>
 <translation id="7712836429117959503">Extension inconnue avec l'ID <ph name="EXTENSION_ID" /></translation>
@@ -5428,7 +5434,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7721179060400456005">Autoriser les fenêtres à occuper plusieurs écrans</translation>
 <translation id="7722040605881499779">Espace nécessaire pour la mise à jour : <ph name="NECESSARY_SPACE" /></translation>
 <translation id="7724603315864178912">Couper</translation>
-<translation id="7728570244950051353">Verrouiller l'écran depuis le mode veille</translation>
+<translation id="7728570244950051353">Écran de verrouillage depuis le mode veille</translation>
 <translation id="7728668285692163452">Le changement de version sera appliqué ultérieurement</translation>
 <translation id="7730449930968088409">Effectuer une capture d'écran</translation>
 <translation id="7730683939467795481">Cette page a été modifiée par l'extension "<ph name="EXTENSION_NAME" />"</translation>
@@ -6235,7 +6241,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8713570323158206935">Envoyer des <ph name="BEGIN_LINK1" />informations système<ph name="END_LINK1" /></translation>
 <translation id="8714838604780058252">Graphiques d'arrière-plan</translation>
 <translation id="8715480913140015283">Votre appareil photo est utilisé par un onglet d'arrière-plan</translation>
-<translation id="8716931980467311658">Supprimer toutes les applications et les données Linux de votre dossier "Fichiers Linux" sur ce type d'appareil : <ph name="DEVICE_TYPE" /> ?</translation>
+<translation id="8716931980467311658">Supprimer toutes les applications et les données Linux de votre dossier "Fichiers Linux" sur cet appareil <ph name="DEVICE_TYPE" /> ?</translation>
 <translation id="8717864919010420084">Copier le lien</translation>
 <translation id="8719472795285728850">Analyse des activités des extensions…</translation>
 <translation id="8719653885894320876">Échec du téléchargement de <ph name="PLUGIN_NAME" /></translation>
@@ -6605,7 +6611,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="9148126808321036104">Nouvelle connexion</translation>
 <translation id="9149866541089851383">Modifier...</translation>
 <translation id="9150045010208374699">Utiliser votre caméra</translation>
-<translation id="9153934054460603056">Enregistrer l'authentification et le mot de passe</translation>
+<translation id="9153934054460603056">Enregistrer le nom d'utilisateur et le mot de passe</translation>
 <translation id="9154194610265714752">Mis à jour</translation>
 <translation id="91568222606626347">Créer un raccourci…</translation>
 <translation id="9157096865782046368">0,8 seconde</translation>

@@ -617,6 +617,10 @@ Shell::~Shell() {
   if (window_modality_controller_)
     window_modality_controller_.reset();
 
+  // We may shutdown while a capture session is active, which is an event
+  // handler that depends on this shell and some of its members. Destroy early.
+  capture_mode_controller_.reset();
+
   RemovePreTargetHandler(magnifier_key_scroll_handler_.get());
   magnifier_key_scroll_handler_.reset();
 

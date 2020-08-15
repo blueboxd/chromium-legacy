@@ -85,6 +85,7 @@
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/browser/ui/webui/signin/inline_login_dialog_chromeos.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/printing/printer_configuration.h"
 #include "components/signin/public/identity_manager/scope_set.h"
 #endif
@@ -107,6 +108,10 @@ PrinterType GetPrinterTypeForUserAction(UserActionBuckets user_action) {
       return PrinterType::kPrivet;
     case UserActionBuckets::kPrintWithExtension:
       return PrinterType::kExtension;
+    // On Chrome OS, printing to Google Drive needs to open the local file
+    // picker so |kPrintToGoogleDriveCros| action should be handled by the
+    // PDFPrinterHandler.
+    case UserActionBuckets::kPrintToGoogleDriveCros:
     case UserActionBuckets::kPrintToPdf:
       return PrinterType::kPdf;
     case UserActionBuckets::kPrintToPrinter:
@@ -214,6 +219,14 @@ UserActionBuckets DetermineUserAction(const base::Value& settings) {
   if (settings.FindKey(kSettingOpenPDFInPreview))
     return UserActionBuckets::kOpenInMacPreview;
 #endif
+
+#if defined(OS_CHROMEOS)
+  if (base::FeatureList::IsEnabled(chromeos::features::kPrintSaveToDrive) &&
+      settings.FindBoolKey(kSettingPrintToGoogleDrive).value_or(false)) {
+    return UserActionBuckets::kPrintToGoogleDriveCros;
+  }
+#endif
+
   // This needs to be checked before checking for a cloud print ID, since a
   // print ticket for printing to Drive will also contain a cloud print ID.
   if (settings.FindBoolKey(kSettingPrintToGoogleDrive).value_or(false))

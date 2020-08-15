@@ -15,6 +15,7 @@
 #include "components/ntp_tiles/most_visited_sites.h"
 #include "components/prefs/pref_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/discover_feed/discover_feed_service_factory.h"
 #include "ios/chrome/browser/drag_and_drop/drag_and_drop_flag.h"
 #import "ios/chrome/browser/drag_and_drop/url_drag_drop_handler.h"
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_cache_factory.h"
@@ -197,6 +198,11 @@
       ReadingListModelFactory::GetForBrowserState(
           self.browser->GetBrowserState());
 
+  if (IsDiscoverFeedEnabled()) {
+    // Creating the DiscoverFeedService will start the DiscoverFeed.
+    DiscoverFeedServiceFactory::GetForBrowserState(
+        self.browser->GetBrowserState());
+  }
   self.discoverFeedViewController = [self discoverFeed];
 
   self.contentSuggestionsMediator = [[ContentSuggestionsMediator alloc]

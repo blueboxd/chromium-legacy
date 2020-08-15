@@ -284,7 +284,6 @@ group("web_components") {
   public_deps = [
     ":web_components_local",
     "modules/dummy:web_components",
-    "modules/kaleidoscope:web_components",
   ]
 }
 
@@ -342,7 +341,9 @@ if (optimize_webui) {
       "chrome://resources/mojo/mojo/public/mojom/base/string16.mojom-lite.js",
       "chrome://resources/mojo/mojo/public/mojom/base/text_direction.mojom-lite.js",
       "chrome://resources/mojo/mojo/public/mojom/base/time.mojom-lite.js",
+      "chrome://resources/mojo/mojo/public/mojom/base/unguessable_token.mojom-lite.js",
       "chrome://resources/mojo/skia/public/mojom/skcolor.mojom-lite.js",
+      "chrome://resources/mojo/url/mojom/origin.mojom-lite.js",
       "chrome://resources/mojo/url/mojom/url.mojom-lite.js",
       "new_tab_page.mojom-lite.js",
       "omnibox.mojom-lite.js",

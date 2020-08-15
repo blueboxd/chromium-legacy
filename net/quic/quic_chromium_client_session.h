@@ -549,6 +549,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   bool ValidateStatelessReset(
       const quic::QuicSocketAddress& self_address,
       const quic::QuicSocketAddress& peer_address) override;
+  void SendPing() override;
 
   // QuicSpdyClientSessionBase methods:
   void OnConfigNegotiated() override;
@@ -925,6 +926,10 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   quic::QuicStreamId max_allowed_push_id_;
 
   bool attempted_zero_rtt_;
+
+  size_t num_pings_sent_;
+
+  base::TimeTicks handshake_completion_timestamp_;
 
   std::unique_ptr<quic::QuicClientPushPromiseIndex> push_promise_index_;
 

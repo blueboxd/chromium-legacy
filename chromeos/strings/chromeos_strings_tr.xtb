@@ -9,6 +9,7 @@
 <translation id="150962533380566081">Geçersiz PUK.</translation>
 <translation id="1510238584712386396">Başlatıcı</translation>
 <translation id="1644574205037202324">Geçmiş</translation>
+<translation id="1662989795263954667">Durduruldu - Mürekkep bitti</translation>
 <translation id="1734367976349034509">Bu cihaz kuruluş tarafından yönetiliyor</translation>
 <translation id="1905710495812624430">İzin verilen maksimum deneme sayısı aşıldı.</translation>
 <translation id="1930797645656624981">Chrome OS Giriş Yöntemi Hizmeti</translation>
@@ -39,18 +40,22 @@
 <translation id="4227825898293920515">Şifrenin süresi <ph name="TIME" /> içinde doluyor</translation>
 <translation id="4238516577297848345">Devam eden bir yazdırma işi yok</translation>
 <translation id="428217921675623177">90 günden eski yazdırma işleri silinir</translation>
+<translation id="4297501883039923494">Durduruldu - Bilinmeyen hata</translation>
 <translation id="4429881212383817840">Kerberos biletinin süresi yakında doluyor</translation>
 <translation id="445059817448385655">Eski şifre</translation>
 <translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" />/<ph name="TOTAL_PAGE_NUMBER" /> Yazdırma işini iptal etmek için enter tuşuna basın.</translation>
 <translation id="467510802200863975">Şifreler eşleşmiyor</translation>
+<translation id="4691278870498629773">Durduruldu - Tepsi yok</translation>
 <translation id="4731797938093519117">Ebeveyn erişimi</translation>
 <translation id="4773299976671772492">Durduruldu</translation>
 <translation id="4808449224298348341"><ph name="DOCUMENT_TITLE" /> yazdırma işi iptal edildi</translation>
 <translation id="4890353053343094602">Hemen yeni bir tane seçin</translation>
+<translation id="4917889632206600977">Durduruldu - Kağıt bitti</translation>
 <translation id="4932733599132424254">Tarih</translation>
 <translation id="5212543919916444558">Ekranınızda size yardımcı olabileceğim bir şey bulamıyorum.
 Bana bir şey sormak için mikrofona dokunmayı deneyin.</translation>
 <translation id="5222676887888702881">Çıkış</translation>
+<translation id="5267975978099728568"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="ERROR_STATUS" /></translation>
 <translation id="5317780077021120954">Kaydet</translation>
 <translation id="5326394068492324457"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="COMPLETION_STATUS" /></translation>
 <translation id="5332948983412042822">Yeni bir tane seçin</translation>
@@ -63,9 +68,11 @@ Bana bir şey sormak için mikrofona dokunmayı deneyin.</translation>
 <translation id="6106186594183574873">Bitirmek için eski şifrenizi girin</translation>
 <translation id="6146993107019042706">Bitirmek için yeni şifrenizi girin</translation>
 <translation id="636850387210749493">Kurumsal kayıt</translation>
+<translation id="649050271426829538">Durduruldu - Kağıt sıkışması</translation>
 <translation id="6517239166834772319">Keşfet</translation>
 <translation id="6564646048574748301">İşlem başarısız - Yazıcıya ulaşılamıyor</translation>
 <translation id="6643016212128521049">Temizle</translation>
+<translation id="6747215703636344499">Durduruldu - Çıkış tepsisi dolu</translation>
 <translation id="7162487448488904999">Galeri</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7561454561030345039">Bu işlem, yöneticiniz tarafından yönetilir.</translation>
@@ -77,6 +84,7 @@ Bana bir şey sormak için mikrofona dokunmayı deneyin.</translation>
 <translation id="8347227221149377169">Yazdırma işleri</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" />, bu kullanıcıyı yönetiyor. Ayarları uzaktan yönetebilir ve kullanıcı etkinliğini izleyebilir.</translation>
 <translation id="871560550817059752">İşlem başarısız - Mürekkep yok</translation>
+<translation id="8726019395068607495">Durduruldu - Kapak açık</translation>
 <translation id="8747900814994928677">Değişikliği onaylayın</translation>
 <translation id="8919837981463578619">İşlem başarısız - Tepsi yok</translation>
 <translation id="8928727111548978589">İşlem başarısız - Kağıt yok</translation>

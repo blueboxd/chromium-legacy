@@ -188,16 +188,27 @@ class SiteInstanceTest : public testing::Test {
 };
 
 // Tests that SiteInfo works correct as a key for std::map and std::set.
+// Test SiteInfos with identical site URLs but various lock URLs, including
+// variations of each that are origin keyed ("ok").
 TEST_F(SiteInstanceTest, SiteInfoAsContainerKey) {
-  std::map<SiteInfo, int> test_map;
-  std::set<SiteInfo> test_set;
-
-  SiteInfo site_info_1(GURL("https://www.foo.com"), GURL("https://foo.com"));
-  SiteInfo site_info_2(GURL("https://www.foo.com"),
-                       GURL("https://www.foo.com"));
-  SiteInfo site_info_3(GURL("https://www.foo.com"),
-                       GURL("https://sub.foo.com"));
-  SiteInfo site_info_4(GURL("https://www.foo.com"), GURL());
+  SiteInfo site_info_1(GURL("https://www.foo.com"), GURL("https://foo.com"),
+                       false /* is_origin_keyed */);
+  SiteInfo site_info_1ok(GURL("https://www.foo.com"), GURL("https://foo.com"),
+                         true /* is_origin_keyed */);
+  SiteInfo site_info_2(GURL("https://www.foo.com"), GURL("https://www.foo.com"),
+                       false /* is_origin_keyed */);
+  SiteInfo site_info_2ok(GURL("https://www.foo.com"),
+                         GURL("https://www.foo.com"),
+                         true /* is_origin_keyed */);
+  SiteInfo site_info_3(GURL("https://www.foo.com"), GURL("https://sub.foo.com"),
+                       false /* is_origin_keyed */);
+  SiteInfo site_info_3ok(GURL("https://www.foo.com"),
+                         GURL("https://sub.foo.com"),
+                         true /* is_origin_keyed */);
+  SiteInfo site_info_4(GURL("https://www.foo.com"), GURL(),
+                       false /* is_origin_keyed */);
+  SiteInfo site_info_4ok(GURL("https://www.foo.com"), GURL(),
+                         true /* is_origin_keyed */);
 
   // Test SiteInfoOperators.
   // Use EXPECT_TRUE and == below to avoid need to define SiteInfo::operator<<.
@@ -216,50 +227,119 @@ TEST_F(SiteInstanceTest, SiteInfoAsContainerKey) {
   EXPECT_TRUE(site_info_3 < site_info_2);  // 's' before 'w'/
   EXPECT_TRUE(site_info_4 < site_info_1);  // Empty string first.
 
-  // Map tests.
-  test_map[site_info_1] = 1;
-  test_map[site_info_2] = 2;
-  test_map[site_info_4] = 4;
+  {
+    std::map<SiteInfo, int> test_map;
+    // Map tests: different lock URLs.
+    test_map[site_info_1] = 1;
+    test_map[site_info_2] = 2;
+    test_map[site_info_4] = 4;
 
-  // Make sure std::map treated the different SiteInfo's as distinct.
-  EXPECT_EQ(3u, test_map.size());
+    // Make sure std::map treated the different SiteInfo's as distinct.
+    EXPECT_EQ(3u, test_map.size());
 
-  // Test that std::map::find() looks up the correct key.
-  auto it1 = test_map.find(site_info_1);
-  EXPECT_NE(it1, test_map.end());
-  EXPECT_EQ(1, it1->second);
+    // Test that std::map::find() looks up the correct key.
+    auto it1 = test_map.find(site_info_1);
+    EXPECT_NE(it1, test_map.end());
+    EXPECT_EQ(1, it1->second);
 
-  auto it2 = test_map.find(site_info_2);
-  EXPECT_NE(it2, test_map.end());
-  EXPECT_EQ(2, it2->second);
+    auto it2 = test_map.find(site_info_2);
+    EXPECT_NE(it2, test_map.end());
+    EXPECT_EQ(2, it2->second);
 
-  EXPECT_EQ(test_map.end(), test_map.find(site_info_3));
+    EXPECT_EQ(test_map.end(), test_map.find(site_info_3));
 
-  auto it4 = test_map.find(site_info_4);
-  EXPECT_NE(it4, test_map.end());
-  EXPECT_EQ(4, it4->second);
+    auto it4 = test_map.find(site_info_4);
+    EXPECT_NE(it4, test_map.end());
+    EXPECT_EQ(4, it4->second);
+  }
 
-  // Set tests.
-  test_set.insert(site_info_1);
-  test_set.insert(site_info_2);
-  test_set.insert(site_info_4);
+  {
+    std::map<SiteInfo, int> test_map;
+    // Map tests: different lock URLs and origin keys.
 
-  EXPECT_EQ(3u, test_set.size());
+    test_map[site_info_1] = 1;
+    test_map[site_info_2] = 2;
+    test_map[site_info_4] = 4;
+    test_map[site_info_1ok] = 11;
+    test_map[site_info_2ok] = 12;
+    test_map[site_info_4ok] = 14;
 
-  auto itS1 = test_set.find(site_info_1);
-  auto itS2 = test_set.find(site_info_2);
-  auto itS3 = test_set.find(site_info_3);
-  auto itS4 = test_set.find(site_info_4);
+    // Make sure std::map treated the different SiteInfo's as distinct.
+    EXPECT_EQ(6u, test_map.size());
 
-  EXPECT_NE(test_set.end(), itS1);
-  EXPECT_NE(test_set.end(), itS2);
-  EXPECT_EQ(test_set.end(), itS3);
-  EXPECT_NE(test_set.end(), itS4);
+    // Test that std::map::find() looks up the correct key with is_origin_keyed
+    // == true.
+    auto it1 = test_map.find(site_info_1ok);
+    EXPECT_NE(it1, test_map.end());
+    EXPECT_EQ(11, it1->second);
 
-  // Use EXPECT_TRUE and == below to avoid need to define SiteInfo::operator<<.
-  EXPECT_TRUE(site_info_1 == *itS1);
-  EXPECT_TRUE(site_info_2 == *itS2);
-  EXPECT_TRUE(site_info_4 == *itS4);
+    auto it2 = test_map.find(site_info_2ok);
+    EXPECT_NE(it2, test_map.end());
+    EXPECT_EQ(12, it2->second);
+
+    EXPECT_EQ(test_map.end(), test_map.find(site_info_3));
+    EXPECT_EQ(test_map.end(), test_map.find(site_info_3ok));
+
+    auto it4 = test_map.find(site_info_4ok);
+    EXPECT_NE(it4, test_map.end());
+    EXPECT_EQ(14, it4->second);
+  }
+
+  {
+    std::set<SiteInfo> test_set;
+
+    // Set tests.
+    test_set.insert(site_info_1);
+    test_set.insert(site_info_2);
+    test_set.insert(site_info_4);
+
+    EXPECT_EQ(3u, test_set.size());
+
+    auto itS1 = test_set.find(site_info_1);
+    auto itS2 = test_set.find(site_info_2);
+    auto itS3 = test_set.find(site_info_3);
+    auto itS4 = test_set.find(site_info_4);
+
+    EXPECT_NE(test_set.end(), itS1);
+    EXPECT_NE(test_set.end(), itS2);
+    EXPECT_EQ(test_set.end(), itS3);
+    EXPECT_NE(test_set.end(), itS4);
+
+    // Use EXPECT_TRUE and == below to avoid need to define
+    // SiteInfo::operator<<.
+    EXPECT_TRUE(site_info_1 == *itS1);
+    EXPECT_TRUE(site_info_2 == *itS2);
+    EXPECT_TRUE(site_info_4 == *itS4);
+  }
+  {
+    std::set<SiteInfo> test_set;
+
+    // Set tests, testing is_origin_keyed.
+    test_set.insert(site_info_1);
+    test_set.insert(site_info_2);
+    test_set.insert(site_info_4);
+    test_set.insert(site_info_1ok);
+    test_set.insert(site_info_2ok);
+    test_set.insert(site_info_4ok);
+
+    EXPECT_EQ(6u, test_set.size());
+
+    auto itS1 = test_set.find(site_info_1ok);
+    auto itS2 = test_set.find(site_info_2ok);
+    auto itS3 = test_set.find(site_info_3ok);
+    auto itS4 = test_set.find(site_info_4ok);
+
+    EXPECT_NE(test_set.end(), itS1);
+    EXPECT_NE(test_set.end(), itS2);
+    EXPECT_EQ(test_set.end(), itS3);
+    EXPECT_NE(test_set.end(), itS4);
+
+    // Use EXPECT_TRUE and == below to avoid need to define
+    // SiteInfo::operator<<.
+    EXPECT_TRUE(site_info_1ok == *itS1);
+    EXPECT_TRUE(site_info_2ok == *itS2);
+    EXPECT_TRUE(site_info_4ok == *itS4);
+  }
 }
 
 // Test to ensure no memory leaks for SiteInstance objects.
@@ -1420,7 +1500,8 @@ TEST_F(SiteInstanceTest, OriginalURL) {
 namespace {
 
 ProcessLock ProcessLockFromString(const std::string& url) {
-  return ProcessLock(SiteInfo(GURL(url), GURL(url)));
+  return ProcessLock(
+      SiteInfo(GURL(url), GURL(url), false /* is_origin_keyed */));
 }
 
 }  // namespace

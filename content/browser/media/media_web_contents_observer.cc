@@ -43,6 +43,21 @@ static void SuspendAllMediaPlayersInRenderFrame(
 }
 #endif  // defined(OS_ANDROID)
 
+static void OnAudioOutputDeviceIdTranslated(
+    base::WeakPtr<MediaWebContentsObserver> observer,
+    RenderFrameHost* render_frame_host,
+    int delegate_id,
+    const base::Optional<std::string>& raw_device_id) {
+  if (!raw_device_id)
+    return;
+
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
+      base::BindOnce(&MediaWebContentsObserver::OnReceivedTranslatedDeviceId,
+                     std::move(observer), render_frame_host, delegate_id,
+                     raw_device_id.value()));
+}
+
 }  // anonymous namespace
 
 // Maintains state for a single player.  Issues WebContents and power-related
@@ -402,7 +417,7 @@ void MediaWebContentsObserver::OnAudioOutputSinkChanged(
       },
       salt_and_origin.device_id_salt, std::move(salt_and_origin.origin),
       hashed_device_id,
-      base::BindOnce(&MediaWebContentsObserver::OnAudioOutputDeviceIdTranslated,
+      base::BindOnce(&OnAudioOutputDeviceIdTranslated,
                      weak_ptr_factory_.GetWeakPtr(), render_frame_host,
                      delegate_id));
 
@@ -410,25 +425,12 @@ void MediaWebContentsObserver::OnAudioOutputSinkChanged(
       FROM_HERE, std::move(callback_on_io_thread));
 }
 
-void MediaWebContentsObserver::OnAudioOutputDeviceIdTranslated(
+void MediaWebContentsObserver::OnReceivedTranslatedDeviceId(
     RenderFrameHost* render_frame_host,
     int delegate_id,
-    const base::Optional<std::string>& raw_device_id) {
-  if (!raw_device_id.has_value())
-    return;
-
-  auto callback_on_ui_thread = base::BindOnce(
-      [](MediaSessionControllersManager* controllers_manager,
-         RenderFrameHost* render_frame_host, int delegate_id,
-         const std::string& raw_device_id) {
-        controllers_manager->OnAudioOutputSinkChanged(
-            MediaPlayerId(render_frame_host, delegate_id), raw_device_id);
-      },
-      session_controllers_manager(), render_frame_host, delegate_id,
-      raw_device_id.value());
-
-  content::GetUIThreadTaskRunner({})->PostTask(
-      FROM_HERE, std::move(callback_on_ui_thread));
+    const std::string& raw_device_id) {
+  session_controllers_manager_.OnAudioOutputSinkChanged(
+      MediaPlayerId(render_frame_host, delegate_id), raw_device_id);
 }
 
 void MediaWebContentsObserver::OnBufferUnderflow(

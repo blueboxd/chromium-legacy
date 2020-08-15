@@ -238,14 +238,18 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   void UpdateSearchBoxVisibility(AppListState current_state);
 
   // Adds |view| as a new page to the end of the list of launcher pages. The
-  // view is inserted as a child of the ContentsView. There is no name
-  // associated with the page. Returns the index of the new page.
-  int AddLauncherPage(AppListPage* view);
-
-  // Adds |view| as a new page to the end of the list of launcher pages. The
   // view is inserted as a child of the ContentsView. The page is associated
-  // with the name |state|. Returns the index of the new page.
-  int AddLauncherPage(AppListPage* view, AppListState state);
+  // with the name |state|. Returns a pointer to the instance of the new page.
+  template <typename T>
+  T* AddLauncherPage(std::unique_ptr<T> view, AppListState state) {
+    auto* result = view.get();
+    AddLauncherPageInternal(std::move(view), state);
+    return result;
+  }
+
+  // Internal version of the above that does the actual work.
+  void AddLauncherPageInternal(std::unique_ptr<AppListPage> view,
+                               AppListState state);
 
   // Gets the PaginationModel owned by the AppsGridView.
   // Note: This is different to |pagination_model_|, which manages top-level

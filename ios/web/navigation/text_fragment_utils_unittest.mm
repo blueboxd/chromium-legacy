@@ -70,16 +70,16 @@ TEST_F(TextFragmentUtilsTest, AreTextFragmentsAllowed) {
 TEST_F(TextFragmentUtilsTest, ParseTextFragments) {
   GURL url_with_fragment(
       "https://www.example.com/#idFrag:~:text=text%201&text=text%202");
-  std::vector<base::Value> result =
-      internal::ParseTextFragments(url_with_fragment);
-  ASSERT_EQ(2u, result.size());
-  EXPECT_EQ("text%201", result[0].FindKey(kTextStartKey)->GetString());
-  EXPECT_EQ("text%202", result[1].FindKey(kTextStartKey)->GetString());
+  base::Value result = internal::ParseTextFragments(url_with_fragment);
+  ASSERT_EQ(2u, result.GetList().size());
+  EXPECT_EQ("text%201",
+            result.GetList()[0].FindKey(kTextStartKey)->GetString());
+  EXPECT_EQ("text%202",
+            result.GetList()[1].FindKey(kTextStartKey)->GetString());
 
   GURL url_no_fragment("www.example.com");
-  std::vector<base::Value> empty_result =
-      internal::ParseTextFragments(url_no_fragment);
-  EXPECT_TRUE(empty_result.empty());
+  base::Value empty_result = internal::ParseTextFragments(url_no_fragment);
+  EXPECT_TRUE(empty_result.is_none());
 }
 
 TEST_F(TextFragmentUtilsTest, ExtractTextFragments) {

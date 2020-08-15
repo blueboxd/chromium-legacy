@@ -66,9 +66,9 @@ enum AXTextEditType {
   AXTextEditTypeAttributesChange
 };
 
+// Native mac notifications fired.
 NSString* const NSAccessibilityAutocorrectionOccurredNotification =
     @"AXAutocorrectionOccurred";
-NSString* const NSAccessibilityLayoutCompleteNotification = @"AXLayoutComplete";
 NSString* const NSAccessibilityNewDocumentLoadCompleteNotification =
     @"AXNewDocumentLoadComplete";
 NSString* const NSAccessibilityInvalidStatusChangedNotification =
@@ -80,6 +80,9 @@ NSString* const NSAccessibilityLiveRegionChangedNotification =
 NSString* const NSAccessibilityExpandedChanged = @"AXExpandedChanged";
 NSString* const NSAccessibilityMenuItemSelectedNotification =
     @"AXMenuItemSelected";
+
+// The following native mac notifications are not fired:
+// AXLayoutComplete: Voiceover does not use this, it is considered too spammy.
 
 // Attributes used for NSAccessibilitySelectedTextChangedNotification and
 // NSAccessibilityValueChangedNotification.
@@ -163,9 +166,6 @@ void BrowserAccessibilityManagerMac::FireBlinkEvent(
     case ax::mojom::Event::kAutocorrectionOccured:
       mac_notification = NSAccessibilityAutocorrectionOccurredNotification;
       break;
-    case ax::mojom::Event::kLayoutComplete:
-      mac_notification = NSAccessibilityLayoutCompleteNotification;
-      break;
     default:
       return;
   }
@@ -223,22 +223,17 @@ void BrowserAccessibilityManagerMac::FireGeneratedEvent(
       break;
     case ui::AXEventGenerator::Event::LOAD_COMPLETE:
       // |NSAccessibilityNewDocumentLoadCompleteNotification| should only be
-      // fired on the top document. Iframes should use
-      // |ax::mojom::Event::kLayoutComplete| to signify that they have finished
-      // loading. |NSAccessibilityNewDocumentLoadCompleteNotification| is the
-      // event that Webkit notifies VoiceOver that a page load has completed.
+      // fired on the top document.
+      // |NSAccessibilityNewDocumentLoadCompleteNotification| is the event that
+      // Webkit notifies VoiceOver that a page load has completed.
       // TODO(crbug.com/1049320): Verify in MacOS 10.16 that the "Automatically
       // speak the webpage" option in the VoiceOver utility is triggered upon
       // observing this event.
       if (IsRootTree()) {
         mac_notification = NSAccessibilityNewDocumentLoadCompleteNotification;
       } else {
-        mac_notification = NSAccessibilityLayoutCompleteNotification;
+        return;
       }
-      break;
-    case ui::AXEventGenerator::Event::PORTAL_ACTIVATED:
-      DCHECK(IsRootTree());
-      mac_notification = NSAccessibilityLayoutCompleteNotification;
       break;
     case ui::AXEventGenerator::Event::INVALID_STATUS_CHANGED:
       mac_notification = NSAccessibilityInvalidStatusChangedNotification;
@@ -429,6 +424,7 @@ void BrowserAccessibilityManagerMac::FireGeneratedEvent(
     case ui::AXEventGenerator::Event::OBJECT_ATTRIBUTE_CHANGED:
     case ui::AXEventGenerator::Event::OTHER_ATTRIBUTE_CHANGED:
     case ui::AXEventGenerator::Event::PLACEHOLDER_CHANGED:
+    case ui::AXEventGenerator::Event::PORTAL_ACTIVATED:
     case ui::AXEventGenerator::Event::POSITION_IN_SET_CHANGED:
     case ui::AXEventGenerator::Event::READONLY_CHANGED:
     case ui::AXEventGenerator::Event::RELATED_NODE_CHANGED:

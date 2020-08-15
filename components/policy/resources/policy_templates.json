@@ -499,6 +499,8 @@
       'desc': '''Content settings allow you to specify how contents of a specific type (for example Cookies, Images or JavaScript) is handled.''',
       'policies': [
         'DefaultCookiesSetting',
+        'DefaultFileSystemReadGuardSetting',
+        'DefaultFileSystemWriteGuardSetting',
         'DefaultImagesSetting',
         'DefaultInsecureContentSetting',
         'DefaultJavaScriptSetting',
@@ -516,6 +518,10 @@
         'CookiesAllowedForUrls',
         'CookiesBlockedForUrls',
         'CookiesSessionOnlyForUrls',
+        'FileSystemReadAskForUrls',
+        'FileSystemReadBlockedForUrls',
+        'FileSystemWriteAskForUrls',
+        'FileSystemWriteBlockedForUrls',
         'ImagesAllowedForUrls',
         'ImagesBlockedForUrls',
         'InsecureContentAllowedForUrls',
@@ -5992,7 +5998,174 @@
       URL patterns can't conflict with <ph name="SERIAL_ASK_FOR_URLS_POLICY_NAME">SerialAskForUrls</ph>. Neither policy takes precedence if a URL matches with both.
 
       For detailed information on valid <ph name="URL_LABEL">url</ph> patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
-    },{
+    },
+    {
+      'name': 'DefaultFileSystemReadGuardSetting',
+      'owners': ['mek@chromium.org', 'file://content/browser/native_file_system/OWNERS'],
+      'type': 'int-enum',
+      'schema': {
+        'type': 'integer',
+        'enum': [ 2, 3 ],
+      },
+      'items': [
+        {
+          'name': 'BlockFileSystemRead',
+          'value': 2,
+          'caption': '''Do not allow any site to request read access to files and directories via the File System API''',
+        },
+        {
+          'name': 'AskFileSystemRead',
+          'value': 3,
+          'caption': '''Allow sites to ask the user to grant read access to files and directories via the File System API''',
+        },
+      ],
+      'supported_on': ['chrome_os:86-', 'chrome.*:86-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': 2,
+      'id': 773,
+      'caption': '''Control use of the File System API for reading''',
+      'tags': ['website-sharing'],
+      'desc': '''Setting the policy to 3 lets websites ask for read access to files and directories in the host operating system's file system via the File System API. Setting the policy to 2 denies access.
+
+      Leaving it unset lets websites ask for access, but users can change this setting.''',
+    },
+    {
+      'name': 'DefaultFileSystemWriteGuardSetting',
+      'owners': ['mek@chromium.org', 'file://content/browser/native_file_system/OWNERS'],
+      'type': 'int-enum',
+      'schema': {
+        'type': 'integer',
+        'enum': [ 2, 3 ],
+      },
+      'items': [
+        {
+          'name': 'BlockFileSystemWrite',
+          'value': 2,
+          'caption': '''Do not allow any site to request write access to files and directories''',
+        },
+        {
+          'name': 'AskFileSystemWrite',
+          'value': 3,
+          'caption': '''Allow sites to ask the user to grant write access to files and directories''',
+        },
+      ],
+      'supported_on': ['chrome_os:86-', 'chrome.*:86-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': 2,
+      'id': 774,
+      'caption': '''Control use of the File System API for writing''',
+      'tags': ['website-sharing'],
+      'desc': '''Setting the policy to 3 lets websites ask for write access to files and directories in the host operating system's file system. Setting the policy to 2 denies access.
+
+      Leaving it unset lets websites ask for access, but users can change this setting.''',
+    },
+    {
+      'name': 'FileSystemReadAskForUrls',
+      'owners': ['mek@chromium.org', 'file://content/browser/native_file_system/OWNERS'],
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'supported_on': ['chrome_os:86-', 'chrome.*:86-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': ['https://www.example.com', '[*.]example.edu'],
+      'id': 775,
+      'caption': '''Allow read access via the File System API on these sites''',
+      'tags': ['website-sharing'],
+      'desc': '''Setting the policy lets you list the URL patterns that specify which sites can ask users to grant them read access to files or directories in the host operating system's file system via the File System API.
+
+      Leaving the policy unset means <ph name="DEFAULT_FILE_SYSTEM_READ_GUARD_SETTING_POLICY_NAME">DefaultFileSystemReadGuardSetting</ph> applies for all sites, if it's set. If not, users' personal settings apply.
+
+      URL patterns must not conflict with <ph name="FILE_SYSTEM_READ_BLOCKED_FOR_URLS_POLICY_NAME">FileSystemReadBlockedForUrls</ph>. Neither policy takes precedence if a URL matches with both.
+
+      For detailed information on valid <ph name="URL_LABEL">url</ph> patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
+    },
+    {
+      'name': 'FileSystemReadBlockedForUrls',
+      'owners': ['mek@chromium.org', 'file://content/browser/native_file_system/OWNERS'],
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'supported_on': ['chrome_os:86-', 'chrome.*:86-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': ['https://www.example.com', '[*.]example.edu'],
+      'id': 776,
+      'caption': '''Block read access via the File System API on these sites''',
+      'tags': [],
+      'desc': '''Setting the policy lets you list the URL patterns that specify which sites can't ask users to grant them read access to files or directories in the host operating system's file system via the File System API.
+
+      Leaving the policy unset means <ph name="DEFAULT_FILE_SYSTEM_READ_GUARD_SETTING_POLICY_NAME">DefaultFileSystemReadGuardSetting</ph> applies for all sites, if it's set. If not, users' personal settings apply.
+
+      URL patterns can't conflict with <ph name="FILE_SYSTEM_READ_ASK_FOR_URLS_POLICY_NAME">FileSystemReadAskForUrls</ph>. Neither policy takes precedence if a URL matches with both.
+
+      For detailed information on valid <ph name="URL_LABEL">url</ph> patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
+    },
+    {
+      'name': 'FileSystemWriteAskForUrls',
+      'owners': ['mek@chromium.org', 'file://content/browser/native_file_system/OWNERS'],
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'supported_on': ['chrome_os:86-', 'chrome.*:86-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': ['https://www.example.com', '[*.]example.edu'],
+      'id': 777,
+      'caption': '''Allow write access to files and directories on these sites''',
+      'tags': ['website-sharing'],
+      'desc': '''Setting the policy lets you list the URL patterns that specify which sites can ask users to grant them write access to files or directories in the host operating system's file system.
+
+      Leaving the policy unset means <ph name="DEFAULT_FILE_SYSTEM_WRITE_GUARD_SETTING_POLICY_NAME">DefaultFileSystemWriteGuardSetting</ph> applies for all sites, if it's set. If not, users' personal settings apply.
+
+      URL patterns must not conflict with <ph name="FILE_SYSTEM_WRITE_BLOCKED_FOR_URLS_POLICY_NAME">FileSystemWriteBlockedForUrls</ph>. Neither policy takes precedence if a URL matches with both.
+
+      For detailed information on valid <ph name="URL_LABEL">url</ph> patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
+    },
+    {
+      'name': 'FileSystemWriteBlockedForUrls',
+      'owners': ['mek@chromium.org', 'file://content/browser/native_file_system/OWNERS'],
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'supported_on': ['chrome_os:86-', 'chrome.*:86-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': ['https://www.example.com', '[*.]example.edu'],
+      'id': 778,
+      'caption': '''Block write access to files and directories on these sites''',
+      'tags': [],
+      'desc': '''Setting the policy lets you list the URL patterns that specify which sites can't ask users to grant them write access to files or directories in the host operating system's file system.
+
+      Leaving the policy unset means <ph name="DEFAULT_FILE_SYSTEM_WRITE_GUARD_SETTING_POLICY_NAME">DefaultFileSystemWriteGuardSetting</ph> applies for all sites, if it's set. If not, users' personal settings apply.
+
+      URL patterns can't conflict with <ph name="FILE_SYSTEM_WRITE_ASK_FOR_URLS_POLICY_NAME">FileSystemWriteAskForUrls</ph>. Neither policy takes precedence if a URL matches with both.
+
+      For detailed information on valid <ph name="URL_LABEL">url</ph> patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
+    },
+    {
       'name': 'AutoSelectCertificateForUrls',
       'owners': ['file://components/policy/resources/OWNERS'],
       'type': 'list',
@@ -23952,6 +24125,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 476, 546, 562, 569, 578],
-  'highest_id_currently_used': 772,
+  'highest_id_currently_used': 778,
   'highest_atomic_group_id_currently_used': 40
 }

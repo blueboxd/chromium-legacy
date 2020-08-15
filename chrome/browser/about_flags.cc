@@ -3692,10 +3692,12 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(omnibox::kOmniboxTabSwitchSuggestions)},
 #endif  // defined(OS_ANDROID)
 
-    {"omnibox-clobber-is-zero-suggest-entrypoint",
-     flag_descriptions::kOmniboxClobberIsZeroSuggestEntrypointName,
-     flag_descriptions::kOmniboxClobberIsZeroSuggestEntrypointDescription,
-     kOsAll, FEATURE_VALUE_TYPE(omnibox::kClobberIsZeroSuggestEntrypoint)},
+    {"omnibox-clobber-triggers-contextual-web-zero-suggest",
+     flag_descriptions::kOmniboxClobberTriggersContextualWebZeroSuggestName,
+     flag_descriptions::
+         kOmniboxClobberTriggersContextualWebZeroSuggestDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(omnibox::kClobberTriggersContextualWebZeroSuggest)},
 
     {"omnibox-focus-gesture-triggers-contextual-web-zero-suggest",
      flag_descriptions::
@@ -6297,6 +6299,15 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAndroid,
      FEATURE_VALUE_TYPE(features::kCpuAffinityRestrictToLittleCores)},
 #endif  // OS_ANDROID
+
+#if defined(OS_ANDROID)
+    {"enable-autofill-credit-card-cvc-prompt-google-logo",
+     flag_descriptions::kEnableAutofillCreditCardCvcPromptGoogleLogoName,
+     flag_descriptions::kEnableAutofillCreditCardCvcPromptGoogleLogoDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillDownstreamCvcPromptUseGooglePayLogo)},
+#endif
 
 #if defined(OS_CHROMEOS)
     {"enable-auto-select", flag_descriptions::kEnableAutoSelectName,

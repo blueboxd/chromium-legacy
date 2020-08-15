@@ -187,13 +187,13 @@ bool ProcessLock::MatchesOrigin(const url::Origin& origin) const {
 }
 
 bool ProcessLock::operator==(const ProcessLock& rhs) const {
-  // As we add additional features, like site-/origin-keying, we'll expand this
-  // comparison.
+  // As we add additional features to SiteInfo, we'll expand this comparison.
   // Note that this should *not* compare site_url() values from the SiteInfo,
   // since those include effective URLs which may differ even if the actual
   // document origins match. We use process_lock_url() comparisons to account
   // for this.
-  return site_info_.process_lock_url() == rhs.site_info_.process_lock_url();
+  return site_info_.process_lock_url() == rhs.site_info_.process_lock_url() &&
+         site_info_.is_origin_keyed() == rhs.site_info_.is_origin_keyed();
 }
 
 bool ProcessLock::operator!=(const ProcessLock& rhs) const {
@@ -1398,14 +1398,10 @@ CanCommitStatus ChildProcessSecurityPolicyImpl::CanCommitOriginAndUrl(
     // Check for special cases, like blob:null/ and data: URLs, where the
     // origin does not contain information to match against the process lock,
     // but using the whole URL can result in a process lock match.
-    // TODO(wjmaclean): at present, DetermineProcessLockURL() just returns the
-    // lock url, and not an entire ProcessLock (including the related SiteInfo),
-    // so below we have to just compare URLs. It would be nice to directly
-    // compare ProcessLock objects instead.
-    const GURL expected_process_lock_url =
-        SiteInstanceImpl::DetermineProcessLockURL(isolation_context, url);
+    const ProcessLock expected_process_lock =
+        SiteInstanceImpl::DetermineProcessLock(isolation_context, url);
     const ProcessLock& actual_process_lock = GetProcessLock(child_id);
-    if (actual_process_lock.lock_url() == expected_process_lock_url)
+    if (actual_process_lock == expected_process_lock)
       return CanCommitStatus::CAN_COMMIT_ORIGIN_AND_URL;
 
     return CanCommitStatus::CANNOT_COMMIT_URL;
@@ -1502,12 +1498,15 @@ bool ChildProcessSecurityPolicyImpl::CanAccessDataForOrigin(
   DCHECK(IsRunningOnExpectedThread());
   base::AutoLock lock(lock_);
 
+  // TODO(wjmaclean): The following call to GetSecurityState can retrieve the
+  // wrong one if there are multiple browsing instances in one renderer process.
+  // https://crbug.com/1099718
   SecurityState* security_state = GetSecurityState(child_id);
   BrowserOrResourceContext browser_or_resource_context;
   if (security_state)
     browser_or_resource_context = security_state->GetBrowserOrResourceContext();
 
-  GURL expected_process_lock_url;
+  ProcessLock expected_process_lock;
   std::string failure_reason;
 
   if (!security_state) {
@@ -1515,24 +1514,25 @@ bool ChildProcessSecurityPolicyImpl::CanAccessDataForOrigin(
   } else if (!browser_or_resource_context) {
     failure_reason = "no_browser_or_resource_context";
   } else {
+    // Note: The following choice for |isolation_context| can cause calls to
+    // functions like DetermineProcessLock()/ComputeSiteInfo() to return the
+    // wrong value for |is_origin_keyed| (internally) if there are multiple
+    // browsing instances in one renderer process. https://crbug.com/1099718
     IsolationContext isolation_context(
         security_state->lowest_browsing_instance_id(),
         browser_or_resource_context);
-    // TODO(wjmaclean): at present, DetermineProcessLockURL() just returns the
-    // lock url, and not an entire ProcessLock (including the related SiteInfo),
-    // so below we have to just compare URLs. It would be nice to directly
-    // compare ProcessLock objects instead.
-    // NOTE: we can't use ComputeSiteInfo to get the lock from here, because we
-    // could be on the IO thread, where we aren't able to determine a SiteInfo's
-    // site URL.
-    expected_process_lock_url =
-        SiteInstanceImpl::DetermineProcessLockURL(isolation_context, url);
+    // NOTE: If we're on the IO thread, the call to DetermineProcessLock() below
+    // will return a ProcessLock with an (internally) identical site_url, one
+    // that does not use effective URLs. That's ok in this instance since we
+    // only ever look at the lock url.
+    expected_process_lock =
+        SiteInstanceImpl::DetermineProcessLock(isolation_context, url);
 
     ProcessLock actual_process_lock = security_state->process_lock();
     if (!actual_process_lock.is_empty()) {
       // Jail-style enforcement - a process with a lock can only access data
       // from origins that require exactly the same lock.
-      if (actual_process_lock.lock_url() == expected_process_lock_url)
+      if (actual_process_lock == expected_process_lock)
         return true;
 
       // TODO(acolwell, nasko): https://crbug.com/1029092: Ensure the precursor
@@ -1550,7 +1550,12 @@ bool ChildProcessSecurityPolicyImpl::CanAccessDataForOrigin(
           return true;
       }
 
-      failure_reason = "lock_mismatch";
+      // TODO(wjmaclean): We should update the ProcessLock comparison API to
+      // return a reason why two locks differ.
+      if (actual_process_lock.lock_url() != expected_process_lock.lock_url())
+        failure_reason = "lock_mismatch:url";
+      else
+        failure_reason = "lock_mismatch:is_origin_keyed";
     } else {
       // Citadel-style enforcement - an unlocked process should not be able to
       // access data from origins that require a lock.
@@ -1583,7 +1588,7 @@ bool ChildProcessSecurityPolicyImpl::CanAccessDataForOrigin(
       }
 
       // TODO(alexmos, lukasza): https://crbug.com/764958: Consider making
-      // ShouldLockProcess work with |expected_process_lock_url| instead of
+      // ShouldLockProcess work with |expected_process_lock| instead of
       // |site_url|.
       GURL site_url =
           SiteInstanceImpl::ComputeSiteInfo(isolation_context, url).site_url();
@@ -1603,7 +1608,7 @@ bool ChildProcessSecurityPolicyImpl::CanAccessDataForOrigin(
   // Returning false here will result in a renderer kill.  Set some crash
   // keys that will help understand the circumstances of that kill.
   LogCanAccessDataForOriginCrashKeys(
-      expected_process_lock_url.possibly_invalid_spec(),
+      expected_process_lock.lock_url().possibly_invalid_spec(),
       GetKilledProcessOriginLock(security_state), url.GetOrigin().spec(),
       failure_reason);
   return false;

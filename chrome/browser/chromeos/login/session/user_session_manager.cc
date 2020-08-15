@@ -1434,7 +1434,10 @@ void UserSessionManager::InitProfilePreferences(
 void UserSessionManager::UserProfileInitialized(Profile* profile,
                                                 bool is_incognito_profile,
                                                 const AccountId& account_id) {
-  os_sync_util::MigrateOsSyncPreferences(profile->GetPrefs());
+  // Only migrate sync prefs for existing users. New users are given the choice
+  // to turn on OS sync in OOBE, so they get the default sync pref values.
+  if (!IsNewProfile(profile))
+    os_sync_util::MigrateOsSyncPreferences(profile->GetPrefs());
 
   // http://crbug/866790: After Supervised Users are deprecated, remove this.
   bool is_supervised_user =

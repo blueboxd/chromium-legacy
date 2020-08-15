@@ -9,6 +9,7 @@
 <translation id="150962533380566081">Clé PUK non valide.</translation>
 <translation id="1510238584712386396">Lanceur</translation>
 <translation id="1644574205037202324">Historique</translation>
+<translation id="1662989795263954667">Tâchez arrêtée : à court d'encre</translation>
 <translation id="1734367976349034509">Cet appareil est géré par une entreprise</translation>
 <translation id="1905710495812624430">Nombre maximal autorisé de tentatives atteint.</translation>
 <translation id="1930797645656624981">Service de méthode d'entrée Chrome OS</translation>
@@ -39,18 +40,22 @@
 <translation id="4227825898293920515">Le mot de passe expire dans <ph name="TIME" /></translation>
 <translation id="4238516577297848345">Aucune tâche d'impression en cours</translation>
 <translation id="428217921675623177">Les tâches d'impression datant de plus de 90 jours seront supprimées</translation>
+<translation id="4297501883039923494">Tâche arrêtée : erreur inconnue</translation>
 <translation id="4429881212383817840">Le ticket Kerberos expire bientôt</translation>
 <translation id="445059817448385655">Ancien mot de passe</translation>
 <translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> sur <ph name="TOTAL_PAGE_NUMBER" />. Appuyez sur Entrée pour annuler la tâche d'impression.</translation>
 <translation id="467510802200863975">Les mots de passe ne correspondent pas</translation>
+<translation id="4691278870498629773">Tâche arrêtée : bac manquant</translation>
 <translation id="4731797938093519117">Accès parental</translation>
 <translation id="4773299976671772492">Arrêté</translation>
 <translation id="4808449224298348341">Tâche d'impression annulée : <ph name="DOCUMENT_TITLE" /></translation>
 <translation id="4890353053343094602">Choisissez-en un immédiatement</translation>
+<translation id="4917889632206600977">Tâche arrêtée : à court de papier</translation>
 <translation id="4932733599132424254">Date</translation>
 <translation id="5212543919916444558">Je ne trouve aucun élément sur votre écran pour lequel je peux vous aider.
 Essayez de toucher le micro pour me demander ce que vous souhaitez.</translation>
 <translation id="5222676887888702881">Déconnexion</translation>
+<translation id="5267975978099728568"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="ERROR_STATUS" /></translation>
 <translation id="5317780077021120954">Enregistrer</translation>
 <translation id="5326394068492324457"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="COMPLETION_STATUS" /></translation>
 <translation id="5332948983412042822">Choisissez-en un nouveau maintenant</translation>
@@ -63,9 +68,11 @@ Essayez de toucher le micro pour me demander ce que vous souhaitez.</translation
 <translation id="6106186594183574873">Pour terminer cette opération, entrez votre ancien mot de passe</translation>
 <translation id="6146993107019042706">Pour terminer cette opération, entrez votre nouveau mot de passe</translation>
 <translation id="636850387210749493">Inscription d'entreprise</translation>
+<translation id="649050271426829538">Tâche arrêtée : bourrage de papier</translation>
 <translation id="6517239166834772319">Explorer</translation>
 <translation id="6564646048574748301">Échec : imprimante inaccessible</translation>
 <translation id="6643016212128521049">Effacer</translation>
+<translation id="6747215703636344499">Tâche arrêtée : le plateau de sortie est plein</translation>
 <translation id="7162487448488904999">Galerie</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" /> sur <ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7561454561030345039">C'est votre administrateur qui gère cette action</translation>
@@ -77,6 +84,7 @@ Essayez de toucher le micro pour me demander ce que vous souhaitez.</translation
 <translation id="8347227221149377169">Tâches d'impression</translation>
 <translation id="8701136875688985581">Le domaine <ph name="ENROLLMENT_DOMAIN" /> gère cet utilisateur. Il peut gérer les paramètres et faire le suivi de l'activité de l'utilisateur à distance.</translation>
 <translation id="871560550817059752">Échec : à court d'encre</translation>
+<translation id="8726019395068607495">Tâchez arrêtée : porte de l'imprimante ouverte</translation>
 <translation id="8747900814994928677">Confirmer la modification</translation>
 <translation id="8919837981463578619">Échec : bac manquant</translation>
 <translation id="8928727111548978589">Échec : à court de papier</translation>

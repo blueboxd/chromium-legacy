@@ -852,8 +852,14 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityAriaMenuItem) {
   RunAriaTest(FILE_PATH_LITERAL("aria-menuitem.html"));
 }
 
+#if defined(OS_ANDROID)
+#define MAYBE_AccessibilityAriaMenuItemInGroup \
+  DISABLED_AccessibilityAriaMenuItemInGroup
+#else
+#define MAYBE_AccessibilityAriaMenuItemInGroup AccessibilityAriaMenuItemInGroup
+#endif
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
-                       AccessibilityAriaMenuItemInGroup) {
+                       MAYBE_AccessibilityAriaMenuItemInGroup) {
   RunAriaTest(FILE_PATH_LITERAL("aria-menuitem-in-group.html"));
 }
 // crbug.com/442278 will stop creating new text elements representing title.
@@ -2227,6 +2233,10 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilitySvg) {
   RunHtmlTest(FILE_PATH_LITERAL("svg.html"));
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilitySvgG) {
+  RunHtmlTest(FILE_PATH_LITERAL("svg-g.html"));
+}
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityTableSimple) {
   RunHtmlTest(FILE_PATH_LITERAL("table-simple.html"));
 }
@@ -2331,6 +2341,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityTruncateLabel) {
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityUl) {
   RunHtmlTest(FILE_PATH_LITERAL("ul.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityNotUserSelectable) {
+  RunCSSTest(FILE_PATH_LITERAL("user-select.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityVar) {

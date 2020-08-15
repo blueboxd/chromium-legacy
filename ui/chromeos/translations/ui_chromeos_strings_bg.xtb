@@ -515,6 +515,7 @@
 <translation id="6629841649550503054">На всичко бе създадено резервно копие в <ph name="BEGIN_LINK" />Google Диск<ph name="END_LINK" />!</translation>
 <translation id="6643016212128521049">Изчистване</translation>
 <translation id="6650726141019353908">Розова пеперуда</translation>
+<translation id="6657585470893396449">Парола</translation>
 <translation id="6710213216561001401">Предишна</translation>
 <translation id="6718273304615422081">Компресира се...</translation>
 <translation id="6751256176799620176">Избрахте 1 папка</translation>
@@ -727,6 +728,7 @@
 <translation id="9065203028668620118">Редактиране</translation>
 <translation id="9099674669267916096">Брой страници</translation>
 <translation id="9110990317705400362">Непрекъснато търсим начини да правим сърфирането ви по-безопасно. По-рано всеки уебсайт можеше да ви подкани да добавите разширение в браузъра си. В най-новите версии на Google Chrome трябва изрично да укажете на браузъра, че искате да инсталирате съответния софтуер, като го добавите чрез страницата „Разширения“. <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" /></translation>
+<translation id="9111102763498581341">Отключване</translation>
 <translation id="912419004897138677">Кодек</translation>
 <translation id="9129931661813833980">Фиксиране на папката</translation>
 <translation id="9130775360844693113">Членовете на „<ph name="DESTINATION_NAME" />“ ще получат достъп до тези елементи.</translation>

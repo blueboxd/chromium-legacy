@@ -52,7 +52,7 @@ class BrowserNonClientFrameViewPopupTest
 };
 
 // TODO(crbug.com/998369): Flaky on Linux TSAN and ASAN.
-#if defined(OS_LINUX) && \
+#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && \
     (defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER))
 #define MAYBE_HitTestPopupTopChrome DISABLED_HitTestPopupTopChrome
 #else
@@ -75,7 +75,7 @@ class BrowserNonClientFrameViewTabbedTest
 };
 
 // TODO(crbug.com/1011339): Flaky on Linux TSAN.
-#if defined(OS_LINUX) && defined(THREAD_SANITIZER)
+#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(THREAD_SANITIZER)
 #define MAYBE_HitTestTabstrip DISABLED_HitTestTabstrip
 #else
 #define MAYBE_HitTestTabstrip HitTestTabstrip

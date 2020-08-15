@@ -5,6 +5,7 @@
 #include "chrome/browser/media/router/providers/cast/cast_app_discovery_service.h"
 
 #include "base/bind.h"
+#include "base/strings/strcat.h"
 #include "base/time/tick_clock.h"
 #include "chrome/browser/media/router/providers/cast/cast_media_route_provider_metrics.h"
 #include "components/cast_channel/cast_message_handler.h"
@@ -14,6 +15,8 @@
 namespace media_router {
 
 namespace {
+
+constexpr char kLoggerComponent[] = "CastAppDiscoveryService";
 
 // The minimum time that must elapse before an app availability result can be
 // force refreshed.
@@ -79,7 +82,15 @@ CastAppDiscoveryServiceImpl::StartObservingMediaSinks(
         cast_channel::CastSocket* socket =
             socket_service_->GetSocket(channel_id);
         if (!socket) {
-          DVLOG(1) << "Socket not found for id " << channel_id;
+          if (logger_.is_bound()) {
+            logger_->LogError(
+                mojom::LogCategory::kDiscovery, kLoggerComponent,
+                base::StringPrintf(
+                    "Socket not found for channel id: %d when starting "
+                    "discovery for source.",
+                    channel_id),
+                sink.first, source.source_id(), "");
+          }
           continue;
         }
 
@@ -98,16 +109,34 @@ void CastAppDiscoveryServiceImpl::Refresh() {
   // being iterated.
   for (const auto& sink : sinks) {
     for (const auto& app_id : app_ids) {
-        int channel_id = sink.second.cast_data().cast_channel_id;
-        cast_channel::CastSocket* socket =
-            socket_service_->GetSocket(channel_id);
-        if (!socket) {
-          DVLOG(1) << "Socket not found for id " << channel_id;
-          continue;
+      int channel_id = sink.second.cast_data().cast_channel_id;
+      cast_channel::CastSocket* socket = socket_service_->GetSocket(channel_id);
+      if (!socket) {
+        if (logger_.is_bound()) {
+          logger_->LogError(
+              mojom::LogCategory::kDiscovery, kLoggerComponent,
+              base::StringPrintf(
+                  "Socket not found for channel id: %d when refreshing "
+                  "the discovery state.",
+                  channel_id),
+              sink.first, "", "");
         }
-        RequestAppAvailability(socket, app_id, sink.first);
+        continue;
       }
+      RequestAppAvailability(socket, app_id, sink.first);
+    }
   }
+}
+
+void CastAppDiscoveryServiceImpl::BindLogger(
+    mojo::PendingRemote<mojom::Logger> pending_remote) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  logger_.Bind(std::move(pending_remote));
+}
+
+scoped_refptr<base::SequencedTaskRunner>
+CastAppDiscoveryServiceImpl::task_runner() {
+  return socket_service_->task_runner();
 }
 
 void CastAppDiscoveryServiceImpl::MaybeRemoveSinkQueryEntry(
@@ -174,8 +203,13 @@ void CastAppDiscoveryServiceImpl::UpdateAppAvailability(
   if (!media_sink_service_->GetSinkById(sink_id))
     return;
 
-  DVLOG(1) << "App " << app_id << " on sink " << sink_id << " is "
-           << ToString(availability);
+  if (availability != cast_channel::GetAppAvailabilityResult::kAvailable &&
+      logger_.is_bound()) {
+    logger_->LogInfo(
+        mojom::LogCategory::kDiscovery, kLoggerComponent,
+        base::StrCat({"App ", app_id, " on sink is ", ToString(availability)}),
+        sink_id, "", "");
+  }
 
   UpdateSinkQueries(availability_tracker_.UpdateAppAvailability(
       sink_id, app_id, {availability, clock_->NowTicks()}));

@@ -1568,6 +1568,12 @@ void NetworkStateHandler::CheckPortalListChanged(
   check_portal_list_ = check_portal_list;
 }
 
+void NetworkStateHandler::HostnameChanged(const std::string& hostname) {
+  hostname_ = hostname;
+  for (auto& observer : observers_)
+    observer.HostnameChanged(hostname);
+}
+
 void NetworkStateHandler::TechnologyListChanged() {
   // Eventually we would like to replace Technology state with Device state.
   // For now, treat technology state changes as device list changes.

@@ -342,6 +342,9 @@ extern const char kEnableAutofillCreditCardAblationExperimentDescription[];
 extern const char kEnableAutofillCreditCardAuthenticationName[];
 extern const char kEnableAutofillCreditCardAuthenticationDescription[];
 
+extern const char kEnableAutofillCreditCardCvcPromptGoogleLogoName[];
+extern const char kEnableAutofillCreditCardCvcPromptGoogleLogoDescription[];
+
 extern const char kEnableAutofillCreditCardUploadFeedbackName[];
 extern const char kEnableAutofillCreditCardUploadFeedbackDescription[];
 
@@ -868,8 +871,8 @@ extern const char kOmniboxAssistantVoiceSearchDescription[];
 extern const char kOmniboxAutocompleteTitlesName[];
 extern const char kOmniboxAutocompleteTitlesDescription[];
 
-extern const char kOmniboxClobberIsZeroSuggestEntrypointName[];
-extern const char kOmniboxClobberIsZeroSuggestEntrypointDescription[];
+extern const char kOmniboxClobberTriggersContextualWebZeroSuggestName[];
+extern const char kOmniboxClobberTriggersContextualWebZeroSuggestDescription[];
 
 extern const char kOmniboxFocusGestureTriggersContextualWebZeroSuggestName[];
 extern const char

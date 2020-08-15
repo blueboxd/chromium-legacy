@@ -69,7 +69,8 @@ class NET_EXPORT_PRIVATE QuicEventLogger
                            const quic::QuicTime& receive_time) override;
   void OnBlockedFrame(const quic::QuicBlockedFrame& frame) override;
   void OnGoAwayFrame(const quic::QuicGoAwayFrame& frame) override;
-  void OnPingFrame(const quic::QuicPingFrame& frame) override;
+  void OnPingFrame(const quic::QuicPingFrame& frame,
+                   quic::QuicTime::Delta ping_received_delay) override;
   void OnPaddingFrame(const quic::QuicPaddingFrame& frame) override;
   void OnNewConnectionIdFrame(
       const quic::QuicNewConnectionIdFrame& frame) override;
@@ -90,6 +91,8 @@ class NET_EXPORT_PRIVATE QuicEventLogger
   void OnTransportParametersSent(
       const quic::TransportParameters& transport_parameters) override;
   void OnTransportParametersReceived(
+      const quic::TransportParameters& transport_parameters) override;
+  void OnTransportParametersResumed(
       const quic::TransportParameters& transport_parameters) override;
 
   // Events that are not received via the visitor and have to be called manually

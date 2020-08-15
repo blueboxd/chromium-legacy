@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.payments;
 
 import android.support.test.InstrumentationRegistry;
 
+import androidx.annotation.Nullable;
 import androidx.test.filters.MediumTest;
 
 import org.junit.After;
@@ -190,6 +191,13 @@ public class AndroidPaymentAppFinderTest
 
     public void setRequestShipping(boolean requestShipping) {
         mPaymentOptions.requestShipping = requestShipping;
+    }
+
+    // PaymentAppFactoryParams implementation.
+    @Override
+    @Nullable
+    public String getTwaPackageName() {
+        return mTwaPackageManager.getTwaPackageName(mRule.getActivity());
     }
 
     @Before

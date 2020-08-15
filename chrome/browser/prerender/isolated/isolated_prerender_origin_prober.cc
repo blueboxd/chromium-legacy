@@ -26,8 +26,10 @@ namespace {
 
 class DNSProber : public network::mojom::ResolveHostClient {
  public:
-  explicit DNSProber(
-      IsolatedPrerenderOriginProber::OnProbeResultCallback callback)
+  using OnDNSResultsCallback = base::OnceCallback<
+      void(int, const base::Optional<net::AddressList>& resolved_addresses)>;
+
+  explicit DNSProber(OnDNSResultsCallback callback)
       : callback_(std::move(callback)) {
     DCHECK(callback_);
   }
@@ -35,7 +37,7 @@ class DNSProber : public network::mojom::ResolveHostClient {
   ~DNSProber() override {
     if (callback_) {
       // Indicates some kind of mojo error. Play it safe and return no success.
-      std::move(callback_).Run(false);
+      std::move(callback_).Run(net::ERR_FAILED, base::nullopt);
     }
   }
 
@@ -47,12 +49,12 @@ class DNSProber : public network::mojom::ResolveHostClient {
       const net::ResolveErrorInfo& resolve_error_info,
       const base::Optional<net::AddressList>& resolved_addresses) override {
     if (callback_) {
-      std::move(callback_).Run(error == net::OK);
+      std::move(callback_).Run(error, resolved_addresses);
     }
   }
 
  private:
-  IsolatedPrerenderOriginProber::OnProbeResultCallback callback_;
+  OnDNSResultsCallback callback_;
 };
 
 void HTTPProbeHelper(
@@ -223,6 +225,13 @@ void IsolatedPrerenderOriginProber::Probe(const GURL& url,
 
 void IsolatedPrerenderOriginProber::DNSProbe(const GURL& url,
                                              OnProbeResultCallback callback) {
+  StartDNSResolution(url, std::move(callback), /*also_do_tls_connect=*/false);
+}
+
+void IsolatedPrerenderOriginProber::StartDNSResolution(
+    const GURL& url,
+    OnProbeResultCallback callback,
+    bool also_do_tls_connect) {
   net::NetworkIsolationKey nik =
       net::IsolationInfo::CreateForInternalRequest(url::Origin::Create(url))
           .network_isolation_key();
@@ -233,7 +242,10 @@ void IsolatedPrerenderOriginProber::DNSProbe(const GURL& url,
   resolve_host_parameters->initial_priority = net::RequestPriority::HIGHEST;
 
   mojo::PendingRemote<network::mojom::ResolveHostClient> client_remote;
-  mojo::MakeSelfOwnedReceiver(std::make_unique<DNSProber>(std::move(callback)),
+  mojo::MakeSelfOwnedReceiver(std::make_unique<DNSProber>(base::BindOnce(
+                                  &IsolatedPrerenderOriginProber::OnDNSResolved,
+                                  weak_factory_.GetWeakPtr(), url,
+                                  std::move(callback), also_do_tls_connect)),
                               client_remote.InitWithNewPipeAndPassReceiver());
 
   content::BrowserContext::GetDefaultStoragePartition(profile_)
@@ -298,4 +310,28 @@ void IsolatedPrerenderOriginProber::HTTPProbe(const GURL& url,
   prober_ptr->SetOnCompleteCallback(base::BindOnce(std::move(owning_callback)));
 
   prober_ptr->SendNowIfInactive(false /* send_only_in_foreground */);
+}
+
+void IsolatedPrerenderOriginProber::OnDNSResolved(
+    const GURL& url,
+    OnProbeResultCallback callback,
+    bool also_do_tls_connect,
+    int net_error,
+    const base::Optional<net::AddressList>& resolved_addresses) {
+  bool successful = net_error == net::OK && resolved_addresses &&
+                    !resolved_addresses->empty();
+
+  // A TLS connection needs the resolved addresses, so it also fails here.
+  if (!successful) {
+    std::move(callback).Run(false);
+    return;
+  }
+
+  if (!also_do_tls_connect) {
+    std::move(callback).Run(true);
+    return;
+  }
+
+  // TODO(robertogden): Handle also_do_tls_connect.
+  NOTREACHED();
 }

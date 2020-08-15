@@ -165,17 +165,25 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
       bool in_subtree_of_page_scale : 1;
       bool animation_is_axis_aligned : 1;
       bool delegates_to_parent_for_backface : 1;
-    } flags = {false, false, true, false, false};
+      // Set if a frame is rooted at this node.
+      bool is_frame_paint_offset_translation : 1;
+    } flags = {false, false, true, false, false, false};
     BackfaceVisibility backface_visibility = BackfaceVisibility::kInherited;
     unsigned rendering_context_id = 0;
     CompositingReasons direct_compositing_reasons = CompositingReason::kNone;
     CompositorElementId compositor_element_id;
     std::unique_ptr<CompositorStickyConstraint> sticky_constraint;
+    // If a frame is rooted at this node, this represents the element ID of the
+    // containing document.
     CompositorElementId frame_element_id;
 
     PaintPropertyChangeType ComputeChange(
         const State& other,
         const AnimationState& animation_state) const {
+      // Whether or not a node is considered a frame root should be invariant.
+      DCHECK_EQ(flags.is_frame_paint_offset_translation,
+                other.flags.is_frame_paint_offset_translation);
+
       if (flags.flattens_inherited_transform !=
               other.flags.flattens_inherited_transform ||
           flags.affected_by_outer_viewport_bounds_delta !=
@@ -421,6 +429,10 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
 
   const CompositorElementId& GetFrameElementId() const {
     return state_.frame_element_id;
+  }
+
+  bool IsFramePaintOffsetTranslation() const {
+    return state_.flags.is_frame_paint_offset_translation;
   }
 
   bool DelegatesToParentForBackface() const {

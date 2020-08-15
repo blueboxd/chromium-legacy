@@ -6,6 +6,9 @@
 #define CHROME_BROWSER_PRERENDER_ISOLATED_ISOLATED_PRERENDER_ORIGIN_PROBER_H_
 
 #include "base/callback.h"
+#include "base/memory/weak_ptr.h"
+#include "base/optional.h"
+#include "net/base/address_list.h"
 #include "url/gurl.h"
 
 class AvailabilityProber;
@@ -46,6 +49,23 @@ class IsolatedPrerenderOriginProber {
   void DNSProbe(const GURL& url, OnProbeResultCallback callback);
   void HTTPProbe(const GURL& url, OnProbeResultCallback callback);
 
+  // Does a DNS resolution for a DNS or TLS probe, passing all the arguments to
+  // |OnDNSResolved|.
+  void StartDNSResolution(const GURL& url,
+                          OnProbeResultCallback callback,
+                          bool also_do_tls_connect);
+
+  // If the DNS resolution was successful, this will either run |callback| for a
+  // DNS probe, or start the TLS socket for a TLS probe. This is determined by
+  // |also_do_tls_connect|. If the DNS resolution failed, |callback| is run with
+  // failure.
+  void OnDNSResolved(
+      const GURL& url,
+      OnProbeResultCallback callback,
+      bool also_do_tls_connect,
+      int net_error,
+      const base::Optional<net::AddressList>& resolved_addresses);
+
   // The current profile, not owned.
   Profile* profile_;
 
@@ -54,6 +74,8 @@ class IsolatedPrerenderOriginProber {
 
   // The canary url checker.
   std::unique_ptr<AvailabilityProber> canary_check_;
+
+  base::WeakPtrFactory<IsolatedPrerenderOriginProber> weak_factory_{this};
 };
 
 #endif  // CHROME_BROWSER_PRERENDER_ISOLATED_ISOLATED_PRERENDER_ORIGIN_PROBER_H_

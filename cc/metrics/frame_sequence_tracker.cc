@@ -450,6 +450,9 @@ void FrameSequenceTracker::ReportFramePresented(
     if (metrics()->GetEffectiveThread() == ThreadType::kCompositor) {
       metrics()->AdvanceTrace(feedback.timestamp);
     }
+
+    metrics()->ComputeJank(FrameSequenceMetrics::ThreadType::kCompositor,
+                           feedback.timestamp, feedback.interval);
   }
 
   if (was_presented) {
@@ -469,6 +472,9 @@ void FrameSequenceTracker::ReportFramePresented(
       if (metrics()->GetEffectiveThread() == ThreadType::kMain) {
         metrics()->AdvanceTrace(feedback.timestamp);
       }
+
+      metrics()->ComputeJank(FrameSequenceMetrics::ThreadType::kMain,
+                             feedback.timestamp, feedback.interval);
     }
 
     if (impl_frames_produced > 0) {

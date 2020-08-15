@@ -52,7 +52,13 @@ class CONTENT_EXPORT SiteInfo {
  public:
   static SiteInfo CreateForErrorPage();
 
-  SiteInfo(const GURL& site_url, const GURL& process_lock_url);
+  // The SiteInfo constructor should take in all values needed for comparing two
+  // SiteInfos, to help ensure all creation sites are updated accordingly when
+  // new values are added. The private function MakeTie() should be updated
+  // accordingly.
+  SiteInfo(const GURL& site_url,
+           const GURL& process_lock_url,
+           bool is_origin_keyed);
   SiteInfo() = default;
 
   // Returns the site URL associated with all of the documents and workers in
@@ -88,6 +94,17 @@ class CONTENT_EXPORT SiteInfo {
   //                if the SiteInstance's process isn't going to be locked.
   const GURL& process_lock_url() const { return process_lock_url_; }
 
+  // Returns whether this SiteInfo is specific to an origin rather than a site,
+  // such as due to opt-in origin isolation. This resolves an ambiguity of
+  // whether a process with a lock_url() like "https://foo.example" is allowed
+  // to include "https://sub.foo.example" or not. In opt-in isolation, it is
+  // possible for example.com to be isolated, and sub.example.com not be
+  // isolated. In contrast, if command-line isolation is used to isolate
+  // example.com, then sub.example.com is also (automatically) isolated.
+  // Also note that opt-in isolated origins will include ports (if non-default)
+  // in their site urls.
+  bool is_origin_keyed() const { return is_origin_keyed_; }
+
   // Returns false if the site_url() is empty.
   bool is_empty() const { return site_url().possibly_invalid_spec().empty(); }
 
@@ -109,10 +126,15 @@ class CONTENT_EXPORT SiteInfo {
   // involving effective URLs, such as hosted apps.  In those cases, this URL is
   // a site URL that is computed without the use of effective URLs.
   GURL process_lock_url_;
-  // TODO(crbug.com/1067389): Add site vs origin granularity.
+  // Indicates whether this SiteInfo is specific to a single origin, rather than
+  // including all subdomains of that origin. Only used for opt-in origin
+  // isolation. In contrast, the site-level URLs that are typically used in
+  // SiteInfo include subdomains, as do command-line isolated origins.
+  bool is_origin_keyed_ = false;
 };
 
-std::ostream& operator<<(std::ostream& out, const SiteInfo& site_info);
+CONTENT_EXPORT std::ostream& operator<<(std::ostream& out,
+                                        const SiteInfo& site_info);
 
 class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
                                               public RenderProcessHostObserver {
@@ -283,7 +305,8 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   std::string GetPartitionDomain(StoragePartitionImpl* storage_partition);
 
   // This function returns a SiteInfo with the appropriate site_url and
-  // process_lock_url computed.
+  // process_lock_url computed. This function can only be called on the UI
+  // thread since it expects an effective URL.
   // Note: eventually this function will replace GetSiteForURL().
   static SiteInfo ComputeSiteInfo(const IsolationContext& isolation_context,
                                   const GURL& url);
@@ -304,11 +327,12 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   // GetSiteForURL() should be used instead.
   static GURL GetSiteForOrigin(const url::Origin& origin);
 
-  // Returns the URL to which a process should be locked for the given URL.
-  // This is computed similarly to the site URL (see GetSiteForURL), but
-  // without resolving effective URLs.
-  static GURL DetermineProcessLockURL(const IsolationContext& isolation_context,
-                                      const GURL& url);
+  // Similar to above, but also computes a full SiteInfo (including a
+  // process_lock_url) and returns a ProcessLock. If called from the IO thread,
+  // this will return a ProcessLock that doesn't consider effective URLs.
+  static ProcessLock DetermineProcessLock(
+      const IsolationContext& isolation_context,
+      const GURL& url);
 
   // Set the web site that this SiteInstance is rendering pages for.
   // This includes the scheme and registered domain, but not the port.  If the
@@ -472,6 +496,12 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   // Used to restrict a process' origin access rights.
   void LockProcessIfNeeded();
 
+  // Returns the URL to which a process should be locked for the given URL.
+  // This is computed similarly to the site URL (see GetSiteForURL), but
+  // without resolving effective URLs.
+  static GURL DetermineProcessLockURL(const IsolationContext& isolation_context,
+                                      const GURL& url);
+
   // If kProcessSharingWithStrictSiteInstances is enabled, this will check
   // whether both a site and a process have been assigned to this SiteInstance,
   // and if this doesn't require a dedicated process, will offer process_ to
@@ -521,7 +551,7 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   // where the caller only has |url| it can use
   // SiteInstanceImpl::GetSiteForURL() to generate |site_url|. This call is
   // intentionally not set as a default value to encourage the caller to reuse
-  // a site URL computation if they already have one.
+  // a site url computation if they already have one.
   static bool CanBePlacedInDefaultSiteInstance(
       const IsolationContext& isolation_context,
       const GURL& url,

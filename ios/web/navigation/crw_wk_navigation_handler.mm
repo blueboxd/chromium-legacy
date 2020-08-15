@@ -24,6 +24,7 @@
 #import "ios/web/navigation/navigation_context_impl.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
 #include "ios/web/navigation/navigation_manager_util.h"
+#import "ios/web/navigation/text_fragment_utils.h"
 #import "ios/web/navigation/web_kit_constants.h"
 #import "ios/web/navigation/wk_back_forward_list_item_holder.h"
 #import "ios/web/navigation/wk_navigation_action_policy_util.h"
@@ -1148,6 +1149,10 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
                          navigationContext:navigation
                                    webView:webView];
     }
+  }
+
+  if (context && web::AreTextFragmentsAllowed(context)) {
+    web::HandleTextFragments(self.webStateImpl);
   }
 
   [self.navigationStates setState:web::WKNavigationState::FINISHED

@@ -209,6 +209,10 @@ bool CardUnmaskPromptControllerImpl::GetStoreLocallyStartState() const {
 }
 
 #if defined(OS_ANDROID)
+int CardUnmaskPromptControllerImpl::GetGooglePayImageRid() const {
+  return IDR_AUTOFILL_GOOGLE_PAY_WITH_DIVIDER;
+}
+
 bool CardUnmaskPromptControllerImpl::ShouldOfferWebauthn() const {
   return delegate_ && delegate_->ShouldOfferFidoAuth();
 }
@@ -217,6 +221,11 @@ bool CardUnmaskPromptControllerImpl::GetWebauthnOfferStartState() const {
   return pref_service_->GetBoolean(
       prefs::kAutofillCreditCardFidoAuthOfferCheckboxState);
 }
+
+bool CardUnmaskPromptControllerImpl::IsCardLocal() const {
+  return card_.record_type() == CreditCard::LOCAL_CARD;
+}
+
 #endif
 
 bool CardUnmaskPromptControllerImpl::InputCvcIsValid(

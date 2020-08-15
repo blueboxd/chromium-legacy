@@ -48,6 +48,7 @@ class AppCacheUpdateJobTest;
 class AppCacheResponseInfo;
 class HostNotifier;
 
+CONTENT_EXPORT extern const base::Feature kAppCacheCorruptionRecoveryFeature;
 CONTENT_EXPORT extern const base::Feature kAppCacheUpdateResourceOn304Feature;
 
 // Application cache Update algorithm and state.

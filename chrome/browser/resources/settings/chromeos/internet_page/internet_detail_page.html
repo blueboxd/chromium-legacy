@@ -27,6 +27,7 @@
 <link rel="import" href="../../i18n_setup.html">
 <link rel="import" href="../../people_page/sync_browser_proxy.html">
 <link rel="import" href="../../prefs/prefs.html">
+<link rel="import" href="../deep_linking_behavior.html">
 <link rel="import" href="../os_people_page/os_sync_browser_proxy.html">
 <link rel="import" href="../os_route.html">
 <link rel="import" href="../../router.html">
@@ -99,7 +100,7 @@
           </cr-policy-indicator>
         </template>
       </div>
-      <cr-button on-click="onForgetTap_"
+      <cr-button id="forgetButton" on-click="onForgetTap_"
           hidden$="[[!showForget_(managedProperties_)]]"
           disabled="[[disableForget_(managedProperties_,
               prefs.vpn_config_allowed)]]">
@@ -113,11 +114,12 @@
           hidden$="[[!showActivate_(managedProperties_)]]">
         $i18n{networkButtonActivate}
       </cr-button>
-      <cr-button on-click="onConfigureTap_"
+      <cr-button id="configureButton" on-click="onConfigureTap_"
           hidden$="[[!showConfigure_(managedProperties_, globalPolicy,
               managedNetworkAvailable)]]"
           disabled="[[disableConfigure_(managedProperties_,
-              prefs.vpn_config_allowed)]]">
+              prefs.vpn_config_allowed)]]"
+          deep-link-focus-id$="[[Setting.kConfigureEthernet]]">
         $i18n{networkButtonConfigure}
       </cr-button>
       <!-- Use policy properties from vpn_config_allowed to indicate when that
@@ -133,7 +135,10 @@
           label="[[getConnectDisconnectButtonLabel_(managedProperties_,
               globalPolicy,managedNetworkAvailable, deviceState_)]]"
           pref="[[getFakeVpnConfigPrefForEnforcement_(managedProperties_,
-              prefs.vpn_config_allowed)]]">
+              prefs.vpn_config_allowed)]]"
+          deep-link-focus-id$="[[Setting.kDisconnectWifiNetwork]]
+              [[Setting.kDisconnectCellularNetwork]]
+              [[Setting.kDisconnectTetherNetwork]]">
       </controlled-button>
     </div>
 
@@ -210,7 +215,8 @@
           <cr-toggle id="preferNetworkToggle" checked="{{preferNetwork_}}"
               disabled="[[isNetworkPolicyEnforced(
                   managedProperties_.priority)]]"
-              aria-labelledby="preferNetworkToggleLabel">
+              aria-labelledby="preferNetworkToggleLabel"
+              deep-link-focus-id$="[[Setting.kPreferWifiNetwork]]">
           </cr-toggle>
         </div>
       </template>
@@ -220,7 +226,9 @@
               managedNetworkAvailable)]]">
         <settings-toggle-button id="autoConnectToggle" class="hr"
             pref="{{autoConnectPref_}}"
-            label="[[getAutoConnectToggleLabel_(managedProperties_)]]">
+            label="[[getAutoConnectToggleLabel_(managedProperties_)]]"
+            deep-link-focus-id$="[[Setting.kWifiAutoConnectToNetwork]]
+                [[Setting.kCellularAutoConnectToNetwork]]">
         </settings-toggle-button>
         <!-- Hidden Network Warning -->
         <template is="dom-if"
@@ -246,7 +254,8 @@
         <settings-toggle-button id="allowDataRoaming" class="hr"
             pref="{{prefs.cros.signed.data_roaming_enabled}}"
             label="$i18n{networkAllowDataRoaming}"
-            sub-label="[[getRoamingDetails_(managedProperties_)]]">
+            sub-label="[[getRoamingDetails_(managedProperties_)]]"
+            deep-link-focus-id$="[[Setting.kCellularRoaming]]">
         </settings-toggle-button>
       </template>
       <!-- SIM Info (Cellular only). -->
@@ -296,7 +305,9 @@
                   label="$i18n{networkMetered}"
                   sub-label="$i18n{networkMeteredDesc}"
                   checked="{{meteredOverride_}}"
-                  on-checked-changed="meteredChanged_">
+                  on-checked-changed="meteredChanged_"
+                  deep-link-focus-id$="[[Setting.kWifiMetered]]
+                      [[Setting.kCellularMetered]]">
               </network-config-toggle>
             </template>
             <!-- Advanced properties -->

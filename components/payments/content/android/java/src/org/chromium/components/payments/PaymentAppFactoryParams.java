@@ -75,4 +75,13 @@ public interface PaymentAppFactoryParams extends PaymentRequestParams {
     default PaymentRequestSpec getSpec() {
         return null;
     }
+
+    /**
+     * @return The Android package name of the Trusted Web Activity that invoked Chrome, if any.
+     * Otherwise null or empty string.
+     */
+    @Nullable
+    default String getTwaPackageName() {
+        return null;
+    }
 }

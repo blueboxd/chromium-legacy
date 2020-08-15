@@ -2379,15 +2379,13 @@ bool LayerTreeImpl::PointHitsNonFastScrollableRegion(
 }
 
 static ElementId GetFrameElementIdForLayer(const LayerImpl* layer) {
-  ElementId frame_element_id;
   auto& transform_tree =
       layer->layer_tree_impl()->property_trees()->transform_tree;
   auto* node = transform_tree.Node(layer->transform_tree_index());
-  while (node && !frame_element_id) {
-    frame_element_id = node->frame_element_id;
-    node = transform_tree.parent(node);
+  while (node && !node->frame_element_id) {
+    node = transform_tree.Node(node->parent_frame_id);
   }
-  return frame_element_id;
+  return node ? node->frame_element_id : ElementId();
 }
 
 static void FindClosestMatchingLayerForAttribution(
@@ -2429,9 +2427,8 @@ static void FindClosestMatchingLayerForAttribution(
   }
 
   // Iterate through the transform tree of the hit layer in order to derive the
-  // frame path (which is a subset of the transform path). If we hit any frame
-  // layer in our hit testing that belonged to a frame outside of this
-  // hierarchy, bail out.
+  // frame path. If we hit any frame layer in our hit testing that belonged to
+  // a frame outside of this hierarchy, bail out.
   //
   // We explicitly allow occluding layers whose frames are parents of the
   // targeted frame so that we can properly attribute the (common) parent ->
@@ -2441,7 +2438,7 @@ static void FindClosestMatchingLayerForAttribution(
     auto& transform_tree =
         layer->layer_tree_impl()->property_trees()->transform_tree;
     for (auto* node = transform_tree.Node(layer->transform_tree_index()); node;
-         node = transform_tree.parent(node)) {
+         node = transform_tree.Node(node->parent_frame_id)) {
       hit_frame_element_ids.erase(node->frame_element_id);
       if (hit_frame_element_ids.size() == 0)
         break;

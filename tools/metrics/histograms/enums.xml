@@ -5790,6 +5790,7 @@ Unknown properties are collapsed to zero. -->
       label="BackForwardCache is disabled through command line (may include
              cases where the embedder disabled it due to, e.g., enterprise
              policy)"/>
+  <int value="36" label="Navigation entry was replaced"/>
 </enum>
 
 <enum name="BackForwardCacheReloadsAfterHistoryNavigation">
@@ -21424,6 +21425,12 @@ Called by update_document_policy_enum.py.-->
   <int value="770" label="PrintersBulkConfiguration"/>
   <int value="771" label="DeviceReleaseLtsTag"/>
   <int value="772" label="PrintersBulkAccessMode"/>
+  <int value="773" label="DefaultFileSystemReadGuardSetting"/>
+  <int value="774" label="DefaultFileSystemWriteGuardSetting"/>
+  <int value="775" label="FileSystemReadAskForUrls"/>
+  <int value="776" label="FileSystemReadBlockedForUrls"/>
+  <int value="777" label="FileSystemWriteAskForUrls"/>
+  <int value="778" label="FileSystemWriteBlockedForUrls"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -28739,6 +28746,9 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3396" label="DigitalGoodsGetDigitalGoodsService"/>
   <int value="3397" label="DigitalGoodsGetDetails"/>
   <int value="3398" label="DigitalGoodsAcknowledge"/>
+  <int value="3399" label="MediaRecorder_MimeType"/>
+  <int value="3400" label="MediaRecorder_VideoBitsPerSecond"/>
+  <int value="3401" label="MediaRecorder_AudioBitsPerSecond"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -39134,6 +39144,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="6" label="Non-integral y offset"/>
   <int value="7" label="Will-change: transform"/>
   <int value="8" label="Pixel or color effect"/>
+  <int value="9" label="Transform animation"/>
 </enum>
 
 <enum name="LevelDBCorruptionRestoreValue">
@@ -40803,6 +40814,8 @@ from previous Chrome versions.
   <int value="-1324634193" label="EnablePalmOnMaxTouchMajor:disabled"/>
   <int value="-1324029365" label="EnableTLS13EarlyData:enabled"/>
   <int value="-1322882747" label="disable-datasaver-prompt"/>
+  <int value="-1321640296"
+      label="AutofillDownstreamCvcPromptUseGooglePayLogo:enabled"/>
   <int value="-1320181781" label="ChromeOSDirectVideoDecoder:disabled"/>
   <int value="-1319688939" label="ignore-gpu-blacklist"/>
   <int value="-1318914924" label="OverflowIconsForMediaControls:enabled"/>
@@ -41538,6 +41551,8 @@ from previous Chrome versions.
   <int value="-538141684" label="SafetyTip:enabled"/>
   <int value="-536289234" label="ssl-interstitial-v2-colorful"/>
   <int value="-536230323" label="SingleClickAutofill:disabled"/>
+  <int value="-536003711"
+      label="OmniboxClobberTriggersContextualWebZeroSuggest:enabled"/>
   <int value="-535662704" label="BundledConnectionHelp:enabled"/>
   <int value="-535208779" label="enable-native-cups"/>
   <int value="-534470003" label="OmniboxOnDeviceHeadProviderIncognito:enabled"/>
@@ -41803,6 +41818,8 @@ from previous Chrome versions.
   <int value="-271084069" label="ClickToCallUI:enabled"/>
   <int value="-270626757" label="log-net-log"/>
   <int value="-270261701" label="WebRtcEnableCaptureMultiChannelApm:disabled"/>
+  <int value="-269440655"
+      label="AutofillDownstreamCvcPromptUseGooglePayLogo:disabled"/>
   <int value="-268897347" label="DisableCameraFrameRotationAtSource:disabled"/>
   <int value="-268549184"
       label="AutofillSaveCreditCardUsesStrikeSystemV2:enabled"/>
@@ -43018,6 +43035,8 @@ from previous Chrome versions.
   <int value="1057014709" label="EnforceTLS13Downgrade:enabled"/>
   <int value="1057887829" label="AutofillScanThemeDialog:disabled"/>
   <int value="1059007599" label="enable-gpu-appcontainer"/>
+  <int value="1059283439"
+      label="OmniboxClobberTriggersContextualWebZeroSuggest:disabled"/>
   <int value="1059698271" label="EnableZeroStateSuggestions:disabled"/>
   <int value="1060319397" label="enable-data-reduction-proxy-carrier-test"/>
   <int value="1060780557" label="DynamicColorGamut:disabled"/>
@@ -57517,6 +57536,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="10" label="PRINT_WITH_EXTENSION"/>
   <int value="11" label="OPEN_IN_MAC_PREVIEW"/>
   <int value="12" label="PRINT_TO_GOOGLE_DRIVE"/>
+  <int value="13" label="PRINT_TO_GOOGLE_DRIVE_CROS"/>
 </enum>
 
 <enum name="PrintSettings">

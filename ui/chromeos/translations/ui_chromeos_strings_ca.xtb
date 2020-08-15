@@ -515,6 +515,7 @@
 <translation id="6629841649550503054">Tots els elements tenen una còpia de seguretat a <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" />.</translation>
 <translation id="6643016212128521049">Esborra</translation>
 <translation id="6650726141019353908">Papallona rosa</translation>
+<translation id="6657585470893396449">Contrasenya</translation>
 <translation id="6710213216561001401">Anterior</translation>
 <translation id="6718273304615422081">S'està comprimint...</translation>
 <translation id="6751256176799620176">1 carpeta seleccionada</translation>
@@ -727,6 +728,7 @@
 <translation id="9065203028668620118">Edita</translation>
 <translation id="9099674669267916096">Nombre de pàgines</translation>
 <translation id="9110990317705400362">Mai no deixem de cercar maneres de millorar la seguretat de la navegació. Anteriorment, des de qualsevol lloc web se us podia demanar que afegíssiu una extensió al navegador. A les versions més recents de Google Chrome, heu d'afegir aquestes extensions mitjançant la pàgina Extensions per fer saber explícitament a Chrome que voleu instal·lar-les. <ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /></translation>
+<translation id="9111102763498581341">Desbloqueja</translation>
 <translation id="912419004897138677">Còdec</translation>
 <translation id="9129931661813833980">Fixa la carpeta</translation>
 <translation id="9130775360844693113">Els membres de la unitat <ph name="DESTINATION_NAME" />, obtindran accés a aquets elements.</translation>

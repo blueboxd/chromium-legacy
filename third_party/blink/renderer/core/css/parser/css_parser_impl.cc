@@ -343,14 +343,15 @@ std::unique_ptr<Vector<double>> CSSParserImpl::ParseKeyframeKeyList(
   return ConsumeKeyframeKeyList(CSSParserTokenRange(tokenizer.TokenizeToEOF()));
 }
 
-bool CSSParserImpl::SupportsDeclaration(CSSParserTokenRange& range) {
+bool CSSParserImpl::ConsumeSupportsDeclaration(CSSParserTokenStream& stream) {
   DCHECK(parsed_properties_.IsEmpty());
   // Even though we might use an observer here, this is just to test if we
-  // successfully parse the range, so we can pass RangeOffset::Ignore() here
-  // and temporarily remove the observer.
+  // successfully parse the range, so we can temporarily remove the observer.
   CSSParserObserver* observer_copy = observer_;
   observer_ = nullptr;
-  ConsumeDeclaration(range, RangeOffset::Ignore(), StyleRule::kStyle);
+  CSSParserTokenStream::RangeBoundary range_boundary(
+      stream, CSSParserTokenType::kRightParenthesisToken);
+  ConsumeDeclaration(stream, StyleRule::kStyle);
   observer_ = observer_copy;
 
   bool result = !parsed_properties_.IsEmpty();
@@ -1054,16 +1055,9 @@ void CSSParserImpl::ConsumeDeclarationList(CSSParserTokenStream& stream,
         stream.UncheckedConsume();
         break;
       case kIdentToken: {
-        // TODO(crbug.com/661854): Use streams instead of ranges
-        const wtf_size_t decl_offset_start = stream.Offset();
-        const CSSParserTokenRange decl =
-            stream.ConsumeUntilPeekedTypeIs<kSemicolonToken>();
-        // We want the offset of the kSemicolonToken, which is peeked but not
-        // consumed.
-        const RangeOffset decl_offset(decl_offset_start,
-                                      stream.LookAheadOffset());
-
-        ConsumeDeclaration(decl, decl_offset, rule_type);
+        CSSParserTokenStream::RangeBoundary range_boundary(stream,
+                                                           kSemicolonToken);
+        ConsumeDeclaration(stream, rule_type);
 
         if (!stream.AtEnd())
           stream.UncheckedConsume();  // kSemicolonToken
@@ -1087,29 +1081,23 @@ void CSSParserImpl::ConsumeDeclarationList(CSSParserTokenStream& stream,
     observer_->EndRuleBody(stream.LookAheadOffset());
 }
 
-void CSSParserImpl::ConsumeDeclaration(CSSParserTokenRange range,
-                                       const RangeOffset& decl_offset,
+void CSSParserImpl::ConsumeDeclaration(CSSParserTokenStream& stream,
                                        StyleRule::RuleType rule_type) {
-  DCHECK_EQ(range.Peek().GetType(), kIdentToken);
-  const CSSParserToken& lhs = range.ConsumeIncludingWhitespace();
-  if (range.Consume().GetType() != kColonToken)
-    return;  // Parse error
+  const wtf_size_t decl_offset_start = stream.Offset();
 
-  bool important = false;
-  const CSSParserToken* declaration_value_end = range.end();
-  const CSSParserToken* last = range.end() - 1;
-  while (last->GetType() == kWhitespaceToken)
-    --last;
-  if (last->GetType() == kIdentToken &&
-      EqualIgnoringASCIICase(last->Value(), "important")) {
-    --last;
-    while (last->GetType() == kWhitespaceToken)
-      --last;
-    if (last->GetType() == kDelimiterToken && last->Delimiter() == '!') {
-      important = true;
-      declaration_value_end = last;
-    }
+  DCHECK_EQ(stream.Peek().GetType(), kIdentToken);
+  const CSSParserToken& lhs = stream.ConsumeIncludingWhitespace();
+  if (stream.Peek().GetType() != kColonToken) {
+    // Parse error.
+    // Consume the remainder of the declaration for recovery before returning.
+    stream.ConsumeUntilPeekedBoundary();
+    return;
   }
+  stream.UncheckedConsume();  // kColonToken
+
+  CSSTokenizedValue tokenized_value = ConsumeValue(stream);
+
+  bool important = RemoveImportantAnnotationIfPresent(tokenized_value);
 
   size_t properties_count = parsed_properties_.size();
 
@@ -1120,7 +1108,8 @@ void CSSParserImpl::ConsumeDeclaration(CSSParserTokenRange range,
     if (important)  // Invalid
       return;
     atrule_id = lhs.ParseAsAtRuleDescriptorID();
-    AtRuleDescriptorParser::ParseAtRule(rule_type, atrule_id, range, *context_,
+    AtRuleDescriptorParser::ParseAtRule(rule_type, atrule_id,
+                                        tokenized_value.range, *context_,
                                         parsed_properties_);
   } else {
     unresolved_property = lhs.ParseAsUnresolvedCSSPropertyID(
@@ -1136,21 +1125,22 @@ void CSSParserImpl::ConsumeDeclaration(CSSParserTokenRange range,
       return;
     AtomicString variable_name = lhs.Value().ToAtomicString();
     bool is_animation_tainted = rule_type == StyleRule::kKeyframe;
-    ConsumeVariableValue(
-        range.MakeSubRange(&range.Peek(), declaration_value_end), variable_name,
-        important, is_animation_tainted);
+    ConsumeVariableValue(tokenized_value.range, variable_name, important,
+                         is_animation_tainted);
   } else if (unresolved_property != CSSPropertyID::kInvalid) {
     if (style_sheet_ && style_sheet_->SingleOwnerDocument())
       Deprecation::WarnOnDeprecatedProperties(
           style_sheet_->SingleOwnerDocument()->GetFrame(), unresolved_property);
-    ConsumeDeclarationValue(
-        range.MakeSubRange(&range.Peek(), declaration_value_end),
-        unresolved_property, important, rule_type);
+    ConsumeDeclarationValue(tokenized_value.range, unresolved_property,
+                            important, rule_type);
   }
 
   if (observer_ &&
       (rule_type == StyleRule::kStyle || rule_type == StyleRule::kKeyframe)) {
-    observer_->ObserveProperty(decl_offset.start, decl_offset.end, important,
+    // The end offset is the offset of the terminating token, which is peeked
+    // but not yet consumed.
+    observer_->ObserveProperty(decl_offset_start, stream.LookAheadOffset(),
+                               important,
                                parsed_properties_.size() != properties_count);
   }
 }
@@ -1174,6 +1164,46 @@ void CSSParserImpl::ConsumeDeclarationValue(CSSParserTokenRange range,
                                             StyleRule::RuleType rule_type) {
   CSSPropertyParser::ParseValue(unresolved_property, important, range, context_,
                                 parsed_properties_, rule_type);
+}
+
+CSSTokenizedValue CSSParserImpl::ConsumeValue(CSSParserTokenStream& stream) {
+  stream.EnsureLookAhead();
+  wtf_size_t value_start_offset = stream.LookAheadOffset();
+  CSSParserTokenRange range = stream.ConsumeUntilPeekedBoundary();
+  wtf_size_t value_end_offset = stream.LookAheadOffset();
+
+  return {range, stream.StringRangeAt(value_start_offset,
+                                      value_end_offset - value_start_offset)};
+}
+
+bool CSSParserImpl::RemoveImportantAnnotationIfPresent(
+    CSSTokenizedValue& tokenized_value) {
+  const CSSParserToken* first = tokenized_value.range.begin();
+  const CSSParserToken* last = tokenized_value.range.end() - 1;
+  while (last >= first && last->GetType() == kWhitespaceToken)
+    --last;
+  if (last >= first && last->GetType() == kIdentToken &&
+      EqualIgnoringASCIICase(last->Value(), "important")) {
+    --last;
+    while (last >= first && last->GetType() == kWhitespaceToken)
+      --last;
+    if (last >= first && last->GetType() == kDelimiterToken &&
+        last->Delimiter() == '!') {
+      tokenized_value.range = tokenized_value.range.MakeSubRange(first, last);
+
+      // Truncate the text to remove the delimiter and everything after it.
+      DCHECK_NE(tokenized_value.text.ToString().find('!'), kNotFound);
+      unsigned truncated_length = tokenized_value.text.length() - 1;
+      while (tokenized_value.text[truncated_length] != '!')
+        --truncated_length;
+      tokenized_value.text =
+          StringView(tokenized_value.text, 0, truncated_length);
+
+      return true;
+    }
+  }
+
+  return false;
 }
 
 std::unique_ptr<Vector<double>> CSSParserImpl::ConsumeKeyframeKeyList(

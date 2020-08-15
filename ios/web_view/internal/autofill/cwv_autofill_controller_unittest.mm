@@ -23,6 +23,7 @@
 #include "components/autofill/ios/form_util/form_activity_params.h"
 #import "components/autofill/ios/form_util/form_activity_tab_helper.h"
 #import "components/autofill/ios/form_util/test_form_activity_tab_helper.h"
+#include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #import "components/password_manager/ios/shared_password_controller.h"
@@ -42,6 +43,7 @@
 #import "ios/web_view/internal/passwords/web_view_password_manager_driver.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
 #import "ios/web_view/public/cwv_autofill_controller_delegate.h"
+#import "net/base/mac/url_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -99,12 +101,14 @@ class CWVAutofillControllerTest : public PlatformTest {
         std::make_unique<WebViewPasswordManagerClient>(
             &web_state_, /*sync_service=*/nullptr, &pref_service_,
             /*identity_manager=*/nullptr, /*log_manager=*/nullptr,
-            /*profile_store=*/nullptr, /*account_store=*/nullptr);
+            /*profile_store=*/nullptr, /*account_store=*/nullptr,
+            /*requirements_service=*/nullptr);
     auto password_manager = std::make_unique<password_manager::PasswordManager>(
         password_manager_client.get());
     auto password_manager_driver =
         std::make_unique<WebViewPasswordManagerDriver>(password_manager.get());
     password_controller_ = OCMClassMock([SharedPasswordController class]);
+    password_manager_client_ = password_manager_client.get();
 
     auto autofill_client = std::make_unique<autofill::WebViewAutofillClientIOS>(
         kApplicationLocale, &pref_service_, &personal_data_manager_,
@@ -148,6 +152,7 @@ class CWVAutofillControllerTest : public PlatformTest {
   std::unique_ptr<autofill::TestFormActivityTabHelper>
       form_activity_tab_helper_;
   id js_suggestion_manager_;
+  WebViewPasswordManagerClient* password_manager_client_;
 };
 
 // Tests CWVAutofillController fetch suggestions for profiles.
@@ -428,6 +433,29 @@ TEST_F(CWVAutofillControllerTest, SubmitCallback) {
       /*form_data=*/"",
       /*user_initiated=*/false,
       /*is_main_frame=*/true);
+
+  [delegate verify];
+}
+
+TEST_F(CWVAutofillControllerTest, NotifyUserOfLeak) {
+  id delegate = OCMProtocolMock(@protocol(CWVAutofillControllerDelegate));
+  autofill_controller_.delegate = delegate;
+
+  GURL leak_url("https://www.chromium.org");
+  password_manager::CredentialLeakType leak_type =
+      password_manager::CreateLeakType(password_manager::IsSaved(true),
+                                       password_manager::IsReused(true),
+                                       password_manager::IsSyncing(true));
+  CWVPasswordLeakType expected_leak_type = CWVPasswordLeakTypeSaved |
+                                           CWVPasswordLeakTypeUsedOnOtherSites |
+                                           CWVPasswordLeakTypeSyncingNormally;
+  OCMExpect([delegate autofillController:autofill_controller_
+           notifyUserOfPasswordLeakOnURL:net::NSURLWithGURL(leak_url)
+                                leakType:expected_leak_type]);
+
+  password_manager_client_->NotifyUserCredentialsWereLeaked(
+      leak_type, password_manager::CompromisedSitesCount(1), leak_url,
+      base::SysNSStringToUTF16(@"fake-username"));
 
   [delegate verify];
 }

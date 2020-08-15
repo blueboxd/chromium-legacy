@@ -1,8 +1,14 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="input_method_util.html">
 <link rel="import" href="languages_metrics_proxy.html">
+<link rel="import" href="../os_route.html">
 <link rel="import" href="../../controls/settings_toggle_button.html">
 <link rel="import" href="../../prefs/prefs_behavior.html">
+<link rel="import" href="../../i18n_setup.html">
+<link rel="import" href="../../router.html">
 <link rel="import" href="../../settings_shared_css.html">
 
 <dom-module id="os-settings-input-page">
@@ -10,6 +16,28 @@
     <style include="settings-shared">
       h2 {
         padding-inline-start: var(--cr-section-padding);
+      }
+
+      .icon-external {
+        margin-inline-end: 0;
+      }
+
+      /* The default implementation of the actionable list item makes the
+       * entire list item row a button such that clicking anywhere will
+       * activate the action of the list item. The input method list behaves
+       * differently in that clicking the list item sets that item as the input
+       * method, and the selected list item should not react to selection after
+       * being selected. Sets the cursor to auto to override the default
+       * implementation which would otherwise make the entire row appear
+       * clickable when it is not.
+       */
+      .selected[actionable] {
+        cursor: auto;
+      }
+
+      .internal-wrapper,
+      .external-wrapper {
+        display: flex;
       }
     </style>
 
@@ -20,6 +48,48 @@
           label="$i18n{showImeMenu}"
           on-settings-boolean-control-change="onShowImeMenuChange_">
       </settings-toggle-button>
+
+      <div class="hr">
+        <h2>$i18n{inputMethodListTitle}</h2>
+        <div class="list-frame vertical-list" id="inputMethodsList">
+          <template is="dom-repeat"
+              items="[[languages.inputMethods.enabled]]">
+            <div class$="list-item [[getInputMethodItemClass_(
+                item.id, languages.inputMethods.currentId)]]"
+                actionable on-click="onInputMethodClick_"
+                on-keypress="onInputMethodKeyPress_" 
+                tabindex$="[[getInputMethodTabIndex_(
+                    item.id, languages.inputMethods.currentId)]]"
+                aria-labelledby$="language-[[index]]" role="button">
+              <div class="start" id="language-[[index]]" aria-hidden="true">
+                <div class="display-name">[[item.displayName]]</div>
+              </div>
+              <template is="dom-if"
+                  if="[[hasOptionsPageInSettings_(item.id)]]">
+                <div class="internal-wrapper"
+                    hidden="[[!item.hasOptionsPage]]">
+                  <cr-icon-button class="subpage-arrow"
+                      aria-label$="[[getOpenOptionsPageLabel_(
+                      item.displayName)]]"
+                      on-click="navigateToOptionsPageInSettings_">
+                  </cr-icon-button>
+                </div>
+              </template>
+              <template is="dom-if"
+                  if="[[!hasOptionsPageInSettings_(item.id)]]">
+                <div class="external-wrapper"
+                    hidden="[[!item.hasOptionsPage]]">
+                  <cr-icon-button class="icon-external"
+                      aria-label$="[[getOpenOptionsPageLabel_(
+                      item.displayName)]]"
+                      on-click="openExtensionOptionsPage_">
+                  </cr-icon-button>
+                </div>
+              </template>
+            </div>
+          </template>
+        </div>
+      </div>
     </div>
   </template>
   <script src="input_page.js"></script>

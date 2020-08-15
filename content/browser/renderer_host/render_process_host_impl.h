@@ -959,12 +959,12 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // if the request isn't handled on the IO thread.
   void OnBindHostReceiver(mojo::GenericPendingReceiver receiver);
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   // Provides /proc/{renderer pid}/status and statm files for the renderer,
   // because the files are required to calculate the renderer's private
   // footprint on Chromium Linux. Regarding MacOS X and Windows, we have
   // the different way to calculate renderer's private memory footprint.
-  // So this method is implemented only when OS_LINUX is defined.
+  // So this method is implemented only when OS_LINUX or OS_CHROMEOS is defined.
   void ProvideStatusFileForRenderer();
 #endif
 

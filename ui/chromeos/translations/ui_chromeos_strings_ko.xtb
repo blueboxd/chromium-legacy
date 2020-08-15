@@ -302,6 +302,7 @@
 <translation id="4481711095103932593">Windows와 공유된 폴더입니다.</translation>
 <translation id="4487088045714738411">벨기에어 키보드</translation>
 <translation id="4522570452068850558">세부정보</translation>
+<translation id="4542387084127299777">'<ph name="PATH" />' 파일을 열 수 없습니다.</translation>
 <translation id="4552678318981539154">추가 저장용량 구입</translation>
 <translation id="4559767610552730302">흐리게 처리</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> 파일</translation>
@@ -514,6 +515,7 @@
 <translation id="6629841649550503054">모두 <ph name="BEGIN_LINK" />Google 드라이브<ph name="END_LINK" />에 백업했습니다.</translation>
 <translation id="6643016212128521049">삭제</translation>
 <translation id="6650726141019353908">분홍 나비</translation>
+<translation id="6657585470893396449">비밀번호</translation>
 <translation id="6710213216561001401">이전</translation>
 <translation id="6718273304615422081">압축 중...</translation>
 <translation id="6751256176799620176">폴더 1개 선택됨</translation>
@@ -726,6 +728,7 @@
 <translation id="9065203028668620118">수정</translation>
 <translation id="9099674669267916096">페이지 수</translation>
 <translation id="9110990317705400362">Google은 더 안전한 인터넷 사용 방법을 끊임없이 모색하고 있습니다. 이전에는 브라우저에 확장 프로그램을 추가하라는 메시지가 어느 웹사이트에서나 표시되었습니다. 하지만 Chrome의 최신 버전에서는 확장 프로그램 페이지를 통해 확장 프로그램을 추가함으로써 설치를 원한다는 사실을 Chrome에 명시적으로 알려야 합니다. <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
+<translation id="9111102763498581341">잠금 해제</translation>
 <translation id="912419004897138677">코덱</translation>
 <translation id="9129931661813833980">폴더 고정</translation>
 <translation id="9130775360844693113">'<ph name="DESTINATION_NAME" />' 멤버에게 이 항목에 액세스할 수 있는 권한이 부여됩니다.</translation>

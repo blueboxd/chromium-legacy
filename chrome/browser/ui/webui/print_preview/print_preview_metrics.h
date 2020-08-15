@@ -69,7 +69,8 @@ enum class UserActionBuckets {
   kPrintWithExtension = 10,
   kOpenInMacPreview = 11,
   kPrintToGoogleDrive = 12,
-  kMaxValue = kPrintToGoogleDrive
+  kPrintToGoogleDriveCros = 13,
+  kMaxValue = kPrintToGoogleDriveCros
 };
 
 // Record the number of local printers.

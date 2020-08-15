@@ -26,6 +26,20 @@ class FakeCameraStream : public fuchsia::camera3::testing::Stream_TestBase,
   static const gfx::Size kMaxFrameSize;
   static const gfx::Size kDefaultFrameSize;
 
+  // Enum used to specify how sysmem collection allocation is expected to fail.
+  enum class SysmemFailMode {
+    // Don't simulate sysmem failure.
+    kNone,
+
+    // Force Sync() failure. Implemented by dropping one of sysmem collection
+    // tokens.
+    kFailSync,
+
+    // Force buffer allocation failure. Implemented by setting incompatible
+    // constraints.
+    kFailAllocation,
+  };
+
   // Verifies that the I420 image stored at |data| matches the frame produced
   // by ProduceFrame().
   static void ValidateFrameData(const uint8_t* data,
@@ -39,6 +53,10 @@ class FakeCameraStream : public fuchsia::camera3::testing::Stream_TestBase,
   FakeCameraStream& operator=(const FakeCameraStream&) = delete;
 
   void Bind(fidl::InterfaceRequest<fuchsia::camera3::Stream> request);
+
+  // Forces the stream to simulate sysmem buffer collection failure for the
+  // first buffer collection.
+  void SetFirstBufferCollectionFailMode(SysmemFailMode fail_mode);
 
   void SetFakeResolution(gfx::Size resolution);
   void SetFakeOrientation(fuchsia::camera3::Orientation orientation);
@@ -115,6 +133,7 @@ class FakeCameraStream : public fuchsia::camera3::testing::Stream_TestBase,
   base::Optional<fuchsia::camera3::FrameInfo> next_frame_;
   GetNextFrameCallback get_next_frame_callback_;
 
+  fuchsia::sysmem::AllocatorPtr sysmem_allocator_;
   fuchsia::sysmem::BufferCollectionPtr buffer_collection_;
 
   base::Optional<base::RunLoop> wait_buffers_allocated_run_loop_;
@@ -124,6 +143,8 @@ class FakeCameraStream : public fuchsia::camera3::testing::Stream_TestBase,
   size_t num_used_buffers_ = 0;
 
   size_t frame_counter_ = 0;
+
+  SysmemFailMode first_buffer_collection_fail_mode_ = SysmemFailMode::kNone;
 };
 
 class FakeCameraDevice : public fuchsia::camera3::testing::Device_TestBase {

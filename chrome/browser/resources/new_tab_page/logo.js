@@ -306,7 +306,7 @@ class LogoElement extends PolymerElement {
     if (this.isCtaImageShown_()) {
       this.showAnimation_ = true;
       this.pageHandler_.onDoodleImageClicked(
-          newTabPage.mojom.DoodleImageType.CTA, this.interactionLogUrl_);
+          newTabPage.mojom.DoodleImageType.kCta, this.interactionLogUrl_);
 
       // TODO(tiborg): This is technically not correct since we don't know if
       // the animation has loaded yet. However, since the animation is loaded
@@ -314,15 +314,15 @@ class LogoElement extends PolymerElement {
       // practice this should be good enough but we could improve that in the
       // future.
       this.logImageRendered_(
-          newTabPage.mojom.DoodleImageType.ANIMATION,
+          newTabPage.mojom.DoodleImageType.kAnimation,
           /** @type {!url.mojom.Url} */
           (this.imageDoodle_.animationImpressionLogUrl));
 
       return;
     }
     this.pageHandler_.onDoodleImageClicked(
-        this.showAnimation_ ? newTabPage.mojom.DoodleImageType.ANIMATION :
-                              newTabPage.mojom.DoodleImageType.STATIC,
+        this.showAnimation_ ? newTabPage.mojom.DoodleImageType.kAnimation :
+                              newTabPage.mojom.DoodleImageType.kStatic,
         null);
     const onClickUrl = new URL(this.doodle_.image.onClickUrl.url);
     if (this.imageClickParams_) {
@@ -336,8 +336,8 @@ class LogoElement extends PolymerElement {
   /** @private */
   onImageLoad_() {
     this.logImageRendered_(
-        this.isCtaImageShown_() ? newTabPage.mojom.DoodleImageType.CTA :
-                                  newTabPage.mojom.DoodleImageType.STATIC,
+        this.isCtaImageShown_() ? newTabPage.mojom.DoodleImageType.kCta :
+                                  newTabPage.mojom.DoodleImageType.kStatic,
         this.imageDoodle_.imageImpressionLogUrl);
   }
 

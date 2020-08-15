@@ -523,6 +523,18 @@ bool AXLayoutObject::IsSelectedFromFocus() const {
                                         is_selected);
 }
 
+// Returns true if the object is marked user-select:none
+bool AXLayoutObject::IsNotUserSelectable() const {
+  if (!GetLayoutObject())
+    return false;
+
+  const ComputedStyle* style = GetLayoutObject()->Style();
+  if (!style)
+    return false;
+
+  return (style->UserSelect() == EUserSelect::kNone);
+}
+
 // Returns true if the node's aria-selected attribute should be set to true
 // when the node is focused. This is true for only a subset of roles.
 bool AXLayoutObject::SelectionShouldFollowFocus() const {

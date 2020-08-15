@@ -95,6 +95,14 @@ Polymer({
     },
   },
 
+  /*
+   * Returns the select APN SelectElement.
+   * @return {?HTMLSelectElement}
+   */
+  getApnSelect() {
+    return /** @type {?HTMLSelectElement} */ (this.$$('#selectApn'));
+  },
+
   /**
    * @param {!chromeos.networkConfig.mojom.ManagedApnProperties} apn
    * @return {!chromeos.networkConfig.mojom.ApnProperties}

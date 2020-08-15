@@ -49,6 +49,14 @@ constexpr char kHistogramSessionLaunch[] =
     "MediaRouter.CastStreaming.Session.Launch";
 constexpr char kHistogramSessionLength[] =
     "MediaRouter.CastStreaming.Session.Length";
+constexpr char kHistogramSessionLengthScreen[] =
+    "MediaRouter.CastStreaming.Session.Length.Screen";
+constexpr char kHistogramSessionLengthFile[] =
+    "MediaRouter.CastStreaming.Session.Length.File";
+constexpr char kHistogramSessionLengthOffscreenTab[] =
+    "MediaRouter.CastStreaming.Session.Length.OffscreenTab";
+constexpr char kHistogramSessionLengthTab[] =
+    "MediaRouter.CastStreaming.Session.Length.Tab";
 constexpr char kHistogramStartFailureNative[] =
     "MediaRouter.CastStreaming.Start.Failure.Native";
 constexpr char kHistogramStartSuccess[] =
@@ -133,10 +141,34 @@ MirroringActivity::MirroringActivity(
 }
 
 MirroringActivity::~MirroringActivity() {
-  if (did_start_mirroring_timestamp_) {
-    base::UmaHistogramLongTimes(
-        kHistogramSessionLength,
-        base::Time::Now() - *did_start_mirroring_timestamp_);
+  if (!did_start_mirroring_timestamp_) {
+    return;
+  }
+
+  auto cast_duration = base::Time::Now() - *did_start_mirroring_timestamp_;
+  base::UmaHistogramLongTimes(kHistogramSessionLength, cast_duration);
+
+  if (route().media_source().IsLocalFileSource()) {
+    base::UmaHistogramLongTimes(kHistogramSessionLengthFile, cast_duration);
+    return;
+  }
+
+  if (!mirroring_type_) {
+    // The mirroring activity should always be set by now, but check anyway
+    // to avoid risk of a segfault.
+    return;
+  }
+  switch (*mirroring_type_) {
+    case MirroringType::kTab:
+      base::UmaHistogramLongTimes(kHistogramSessionLengthTab, cast_duration);
+      break;
+    case MirroringType::kDesktop:
+      base::UmaHistogramLongTimes(kHistogramSessionLengthScreen, cast_duration);
+      break;
+    case MirroringType::kOffscreenTab:
+      base::UmaHistogramLongTimes(kHistogramSessionLengthOffscreenTab,
+                                  cast_duration);
+      break;
   }
 }
 

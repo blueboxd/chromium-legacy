@@ -302,6 +302,7 @@
 <translation id="4481711095103932593">हे फोल्डर Windows सोबत शेअर केलेले आहे</translation>
 <translation id="4487088045714738411">बेल्जिअन कीबोर्ड</translation>
 <translation id="4522570452068850558">तपशील</translation>
+<translation id="4542387084127299777">"<ph name="PATH" />" उघडता आले नाही</translation>
 <translation id="4552678318981539154">अधिक स्टोरेज खरेदी करा</translation>
 <translation id="4559767610552730302">Bokeh</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> फाइल</translation>
@@ -514,6 +515,7 @@ Google ड्राइव्ह मधील फाइल अपडेट के
 <translation id="6629841649550503054"><ph name="BEGIN_LINK" />Google ड्राइव्ह!<ph name="END_LINK" /> वर सर्व बॅकअप घेतला</translation>
 <translation id="6643016212128521049">साफ करा</translation>
 <translation id="6650726141019353908">गुलाबी फुलपाखरू</translation>
+<translation id="6657585470893396449">पासवर्ड</translation>
 <translation id="6710213216561001401">मागील</translation>
 <translation id="6718273304615422081">झिप करत आहे...</translation>
 <translation id="6751256176799620176">1 फोल्डर निवडले</translation>
@@ -726,6 +728,7 @@ Google ड्राइव्ह मधील फाइल अपडेट के
 <translation id="9065203028668620118">संपादन</translation>
 <translation id="9099674669267916096">पेज गणना</translation>
 <translation id="9110990317705400362">आम्ही तुमचे ब्राउझिंग सुरक्षित करण्यासाठी सातत्याने मार्ग शोधत आहोत. मागे, तुमच्या ब्राउझरमध्ये एक्स्टेंशन जोडण्यासाठी कोणतीही वेबसाइट तुम्हाला सूचित करू शकत होती. Google Chrome च्या नवीनतम आवृत्तीमध्ये, एक्स्टेंशन पेजद्वारे ते जोडून हे एक्स्टेंशन तुम्ही इंस्टॉल करू इच्छित आहात हे तुम्ही Chrome ला स्पष्टपणे सांगणे आवश्यक आहे. <ph name="BEGIN_LINK" />अधिक जाणून घ्या<ph name="END_LINK" /></translation>
+<translation id="9111102763498581341">अनलॉक करा</translation>
 <translation id="912419004897138677">कोडेक</translation>
 <translation id="9129931661813833980">फोल्डर पिन करा</translation>
 <translation id="9130775360844693113">'<ph name="DESTINATION_NAME" />' चे सदस्य या आयटमचा ॲक्सेस मिळवतील.</translation>

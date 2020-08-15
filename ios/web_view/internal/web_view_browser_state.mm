@@ -39,6 +39,7 @@
 #include "ios/web_view/internal/language/web_view_url_language_histogram_factory.h"
 #include "ios/web_view/internal/passwords/web_view_account_password_store_factory.h"
 #import "ios/web_view/internal/passwords/web_view_password_manager_log_router_factory.h"
+#import "ios/web_view/internal/passwords/web_view_password_requirements_service_factory.h"
 #include "ios/web_view/internal/passwords/web_view_password_store_factory.h"
 #include "ios/web_view/internal/signin/web_view_identity_manager_factory.h"
 #include "ios/web_view/internal/signin/web_view_signin_client_factory.h"
@@ -184,6 +185,7 @@ void WebViewBrowserState::RegisterPrefs(
   WebViewPasswordManagerLogRouterFactory::GetInstance();
   WebViewAccountPasswordStoreFactory::GetInstance();
   WebViewPasswordStoreFactory::GetInstance();
+  WebViewPasswordRequirementsServiceFactory::GetInstance();
   WebViewSigninClientFactory::GetInstance();
   WebViewIdentityManagerFactory::GetInstance();
   WebViewGCMProfileServiceFactory::GetInstance();

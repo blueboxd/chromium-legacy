@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 
 namespace blink {
@@ -115,6 +116,44 @@ TEST_F(CSSComputedStyleDeclarationTest,
       computed->GetPropertyCSSValue(CSSPropertyID::kVariable);
   EXPECT_FALSE(result);
   // Don't crash.
+}
+
+// https://crbug.com/1115877
+TEST_F(CSSComputedStyleDeclarationTest, SVGBlockSizeLayoutDependent) {
+  GetDocument().body()->setInnerHTML(R"HTML(
+    <svg viewBox="0 0 400 400">
+      <rect width="400" height="400"></rect>
+    </svg>
+  )HTML");
+
+  Element* rect = GetDocument().QuerySelector("rect");
+  auto* computed = MakeGarbageCollected<CSSComputedStyleDeclaration>(rect);
+
+  EXPECT_EQ("400px", computed->GetPropertyValue(CSSPropertyID::kBlockSize));
+
+  EXPECT_FALSE(GetDocument().NeedsLayoutTreeUpdate());
+  EXPECT_FALSE(GetDocument().NeedsLayoutTreeUpdateForNode(*rect));
+  EXPECT_FALSE(rect->NeedsStyleRecalc());
+  EXPECT_FALSE(rect->GetLayoutObject()->NeedsLayout());
+}
+
+// https://crbug.com/1115877
+TEST_F(CSSComputedStyleDeclarationTest, SVGInlineSizeLayoutDependent) {
+  GetDocument().body()->setInnerHTML(R"HTML(
+    <svg viewBox="0 0 400 400">
+      <rect width="400" height="400"></rect>
+    </svg>
+  )HTML");
+
+  Element* rect = GetDocument().QuerySelector("rect");
+  auto* computed = MakeGarbageCollected<CSSComputedStyleDeclaration>(rect);
+
+  EXPECT_EQ("400px", computed->GetPropertyValue(CSSPropertyID::kInlineSize));
+
+  EXPECT_FALSE(GetDocument().NeedsLayoutTreeUpdate());
+  EXPECT_FALSE(GetDocument().NeedsLayoutTreeUpdateForNode(*rect));
+  EXPECT_FALSE(rect->NeedsStyleRecalc());
+  EXPECT_FALSE(rect->GetLayoutObject()->NeedsLayout());
 }
 
 }  // namespace blink

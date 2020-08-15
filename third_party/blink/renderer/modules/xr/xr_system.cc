@@ -602,7 +602,6 @@ void XRSystem::OverlayFullscreenEventManager::Invoke(
   if (event->type() == event_type_names::kFullscreenchange) {
     // Succeeded, proceed with session creation.
     element->GetDocument().GetViewportData().SetExpandIntoDisplayCutout(true);
-    element->GetDocument().SetIsXrOverlay(true, element);
     xr_->OnRequestSessionReturned(query_, std::move(result_));
   }
 
@@ -618,25 +617,29 @@ void XRSystem::OverlayFullscreenEventManager::RequestFullscreen() {
   Element* element = query_->DOMOverlayElement();
   DCHECK(element);
 
+  bool wait_for_fullscreen_change = true;
+
   if (element == Fullscreen::FullscreenElementFrom(element->GetDocument())) {
     // It's possible that the requested element is already fullscreen, in which
     // case we must not wait for a fullscreenchange event since it won't arrive.
-    // Detect that and proceed directly with session creation in this case. This
-    // can happen if the site used Fullscreen API to place the element into
+    // This can happen if the site used Fullscreen API to place the element into
     // fullscreen mode before requesting the session, and if the session can
-    // proceed without needing a consent prompt. (Showing a dialog exits
+    // proceed without needing a permission prompt. (Showing a dialog exits
     // fullscreen mode.)
+    //
+    // We still need to do the RequestFullscreen call to apply the kForXrOverlay
+    // property which sets the background transparent.
     DVLOG(2) << __func__ << ": requested element already fullscreen";
-    element->GetDocument().SetIsXrOverlay(true, element);
-    xr_->OnRequestSessionReturned(query_, std::move(result_));
-    return;
+    wait_for_fullscreen_change = false;
   }
 
-  // Set up event listeners for success and failure.
-  element->GetDocument().addEventListener(event_type_names::kFullscreenchange,
-                                          this, true);
-  element->GetDocument().addEventListener(event_type_names::kFullscreenerror,
-                                          this, true);
+  if (wait_for_fullscreen_change) {
+    // Set up event listeners for success and failure.
+    element->GetDocument().addEventListener(event_type_names::kFullscreenchange,
+                                            this, true);
+    element->GetDocument().addEventListener(event_type_names::kFullscreenerror,
+                                            this, true);
+  }
 
   // Use the event-generating unprefixed version of RequestFullscreen to ensure
   // that the fullscreen event listener is informed once this completes.
@@ -650,7 +653,13 @@ void XRSystem::OverlayFullscreenEventManager::RequestFullscreen() {
   ScopedAllowFullscreen scope(ScopedAllowFullscreen::kXrOverlay);
 
   Fullscreen::RequestFullscreen(*element, options,
-                                FullscreenRequestType::kUnprefixed);
+                                FullscreenRequestType::kUnprefixed |
+                                    FullscreenRequestType::kForXrOverlay);
+
+  if (!wait_for_fullscreen_change) {
+    // Element was already fullscreen, proceed with session creation.
+    xr_->OnRequestSessionReturned(query_, std::move(result_));
+  }
 }
 
 void XRSystem::OverlayFullscreenEventManager::Trace(Visitor* visitor) const {
@@ -801,7 +810,6 @@ void XRSystem::ExitPresent(base::OnceClosure on_exited) {
     if (doc->IsXrOverlay()) {
       Element* fullscreen_element = Fullscreen::FullscreenElementFrom(*doc);
       DVLOG(3) << __func__ << ": fullscreen_element=" << fullscreen_element;
-      doc->SetIsXrOverlay(false, fullscreen_element);
 
       // Restore the FrameView background color that was changed in
       // OnRequestSessionReturned. The layout view can be null on navigation.

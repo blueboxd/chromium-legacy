@@ -302,6 +302,7 @@
 <translation id="4481711095103932593">Deze map is gedeeld met Windows</translation>
 <translation id="4487088045714738411">Belgisch toetsenbord</translation>
 <translation id="4522570452068850558">Details</translation>
+<translation id="4542387084127299777">Kan '<ph name="PATH" />' niet openen</translation>
 <translation id="4552678318981539154">Meer opslagruimte kopen</translation>
 <translation id="4559767610552730302">Bokeh</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" />-bestand</translation>
@@ -515,6 +516,7 @@
 <translation id="6629841649550503054">Er is een back-up van alles gemaakt in <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
 <translation id="6643016212128521049">Wissen</translation>
 <translation id="6650726141019353908">Roze vlinder</translation>
+<translation id="6657585470893396449">Wachtwoord</translation>
 <translation id="6710213216561001401">Vorige</translation>
 <translation id="6718273304615422081">Inpakken...</translation>
 <translation id="6751256176799620176">1 map geselecteerd</translation>
@@ -727,6 +729,7 @@
 <translation id="9065203028668620118">Bewerken</translation>
 <translation id="9099674669267916096">Aantal pagina's</translation>
 <translation id="9110990317705400362">We zijn altijd op zoek naar manieren om het surfen veiliger te maken. Vroeger kon elke website je vragen een extensie toe te voegen aan je browser. In de nieuwste versies van Google Chrome moet je Chrome expliciet toestemming geven om deze extensies te installeren door ze toe te voegen via de pagina 'Extensies'. <ph name="BEGIN_LINK" />Meer informatie<ph name="END_LINK" /></translation>
+<translation id="9111102763498581341">Ontgrendelen</translation>
 <translation id="912419004897138677">Codec</translation>
 <translation id="9129931661813833980">Map vastzetten</translation>
 <translation id="9130775360844693113">Leden van '<ph name="DESTINATION_NAME" />' krijgen toegang tot deze items.</translation>

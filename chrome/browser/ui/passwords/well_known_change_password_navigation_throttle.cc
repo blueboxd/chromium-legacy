@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/passwords/well_known_change_password_navigation_throttle.h"
 
 #include "base/logging.h"
+#include "chrome/browser/password_manager/change_password_url_service_factory.h"
+#include "components/password_manager/core/browser/change_password_url_service.h"
 #include "components/password_manager/core/browser/well_known_change_password_util.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "content/public/browser/browser_context.h"
@@ -18,6 +20,7 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace {
 
@@ -77,7 +80,12 @@ WellKnownChangePasswordNavigationThrottle::MaybeCreateThrottleFor(
 
 WellKnownChangePasswordNavigationThrottle::
     WellKnownChangePasswordNavigationThrottle(NavigationHandle* handle)
-    : NavigationThrottle(handle) {}
+    : NavigationThrottle(handle),
+      change_password_url_service_(
+          ChangePasswordUrlServiceFactory::GetForBrowserContext(
+              handle->GetWebContents()->GetBrowserContext())) {
+  change_password_url_service_->PrefetchURLs();
+}
 
 WellKnownChangePasswordNavigationThrottle::
     ~WellKnownChangePasswordNavigationThrottle() = default;
@@ -168,6 +176,8 @@ void WellKnownChangePasswordNavigationThrottle::
     ThrottleAction action = ContinueProcessing();
     if (action == NavigationThrottle::PROCEED) {
       Resume();
+    } else if (action == NavigationThrottle::CANCEL) {
+      CancelDeferredNavigation(NavigationThrottle::CANCEL);
     }
   }
 }
@@ -178,8 +188,10 @@ WellKnownChangePasswordNavigationThrottle::ContinueProcessing() {
   if (SupportsChangePasswordUrl()) {
     return NavigationThrottle::PROCEED;
   } else {
-    // TODO(crbug.com/1086141): Integrate Service that provides URL overrides
-    Redirect(navigation_handle()->GetURL().GetOrigin());
+    // Redirect call creates PostTask
+    GURL url = navigation_handle()->GetURL();
+    GURL redirect_url = change_password_url_service_->GetChangePasswordUrl(url);
+    Redirect(redirect_url.is_valid() ? redirect_url : url.GetOrigin());
     return NavigationThrottle::CANCEL;
   }
 }

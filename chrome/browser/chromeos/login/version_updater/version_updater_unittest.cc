@@ -9,8 +9,11 @@
 #include "base/command_line.h"
 #include "base/optional.h"
 #include "base/test/scoped_mock_time_message_loop_task_runner.h"
+#include "base/test/task_environment.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/version_updater/mock_version_updater_delegate.h"
+#include "chrome/browser/chromeos/login/version_updater/update_time_estimator.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
@@ -28,12 +31,27 @@
 
 using testing::_;
 using testing::AnyNumber;
+using testing::Mock;
 using testing::Return;
 
 namespace chromeos {
 
 namespace {
+
+constexpr int kDownloadTimeInSeconds = 50 * 60;
+constexpr int kVerifyingTimeInSeconds = 5 * 60;
+constexpr int kFinalizingTimeInSeconds = 5 * 60;
+
 constexpr const char kNetworkGuid[] = "test_network";
+
+MATCHER_P(TimeLeftEq, time_in_seconds, "") {
+  return arg.total_time_left == base::TimeDelta::FromSeconds(time_in_seconds);
+}
+
+MATCHER_P2(DowloadingTimeLeftEq, can_be_used, time, "") {
+  return arg.show_estimated_time_left == can_be_used &&
+         arg.estimated_time_left_in_secs == time;
+}
 }  // anonymous namespace
 
 class VersionUpdaterUnitTest : public testing::Test {
@@ -120,9 +138,10 @@ class VersionUpdaterUnitTest : public testing::Test {
   std::unique_ptr<NetworkPortalDetectorTestImpl> fake_network_portal_detector_;
   FakeUpdateEngineClient* fake_update_engine_client_;
 
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
+
  private:
-  // Test versions of core browser infrastructure.
-  content::BrowserTaskEnvironment task_environment_;
   ScopedTestingLocalState local_state_;
 
   int checks_count_ = 0;
@@ -172,6 +191,113 @@ TEST_F(VersionUpdaterUnitTest, HandlesAvailableUpdate) {
   EXPECT_EQ(fake_update_engine_client_->reboot_after_update_call_count(), 0);
   version_updater_->RebootAfterUpdate();
   EXPECT_EQ(fake_update_engine_client_->reboot_after_update_call_count(), 1);
+}
+
+// Simple time left test case expectation which does not cover using download
+// speed estimation.
+TEST_F(VersionUpdaterUnitTest, TimeLeftExpectation) {
+  SetUpMockNetworkPortalDetector();
+
+  EXPECT_CALL(*mock_delegate_, PrepareForUpdateCheck()).Times(1);
+  version_updater_->StartNetworkCheck();
+  // Verify that the DUT checks for an update.
+  EXPECT_EQ(fake_update_engine_client_->request_update_check_call_count(), 1);
+
+  EXPECT_CALL(*mock_delegate_, UpdateInfoChanged(TimeLeftEq(0)));
+  SetUpdateEngineStatus(update_engine::Operation::CHECKING_FOR_UPDATE);
+  Mock::VerifyAndClearExpectations(&mock_delegate_);
+
+  // All time variables here and below in seconds.
+  int time_left = kDownloadTimeInSeconds + kVerifyingTimeInSeconds +
+                  kFinalizingTimeInSeconds;
+
+  EXPECT_CALL(*mock_delegate_, UpdateInfoChanged(TimeLeftEq(0.0)));
+  SetUpdateEngineStatus(update_engine::Operation::UPDATE_AVAILABLE);
+  Mock::VerifyAndClearExpectations(&mock_delegate_);
+
+  // DOWNLOADING starts.
+  EXPECT_CALL(*mock_delegate_, UpdateInfoChanged(TimeLeftEq(time_left)));
+  SetUpdateEngineStatus(update_engine::Operation::DOWNLOADING);
+  Mock::VerifyAndClearExpectations(&mock_delegate_);
+
+  const int time_spent_on_downloading = 50;
+  for (int seconds = 0; seconds < time_spent_on_downloading; seconds++) {
+    EXPECT_CALL(*mock_delegate_,
+                UpdateInfoChanged(TimeLeftEq(time_left - seconds - 1)));
+  }
+  task_environment_.FastForwardBy(
+      base::TimeDelta::FromSeconds(time_spent_on_downloading));
+  Mock::VerifyAndClearExpectations(&mock_delegate_);
+
+  // VERIFYING starts.
+  time_left -= kDownloadTimeInSeconds;
+  EXPECT_CALL(*mock_delegate_, UpdateInfoChanged(TimeLeftEq(time_left)));
+  SetUpdateEngineStatus(update_engine::Operation::VERIFYING);
+  Mock::VerifyAndClearExpectations(&mock_delegate_);
+
+  // Spent more than expected:
+  const int over_time = 20;
+  const int time_spent_on_verifying = kVerifyingTimeInSeconds + over_time;
+  for (int seconds = 0; seconds < kVerifyingTimeInSeconds - 1; seconds++) {
+    EXPECT_CALL(*mock_delegate_,
+                UpdateInfoChanged(TimeLeftEq(time_left - seconds - 1)));
+  }
+  EXPECT_CALL(
+      *mock_delegate_,
+      UpdateInfoChanged(TimeLeftEq(time_left - kVerifyingTimeInSeconds)))
+      .Times(over_time + 1);
+  task_environment_.FastForwardBy(
+      base::TimeDelta::FromSeconds(time_spent_on_verifying));
+  Mock::VerifyAndClearExpectations(&mock_delegate_);
+
+  // FINALIZING starts.
+  time_left -= kVerifyingTimeInSeconds;
+  EXPECT_CALL(*mock_delegate_, UpdateInfoChanged(TimeLeftEq(time_left)));
+  SetUpdateEngineStatus(update_engine::Operation::FINALIZING);
+  Mock::VerifyAndClearExpectations(&mock_delegate_);
+
+  SetStatusWithChecks(update_engine::Operation::UPDATED_NEED_REBOOT);
+
+  EXPECT_EQ(fake_update_engine_client_->reboot_after_update_call_count(), 0);
+  version_updater_->RebootAfterUpdate();
+  EXPECT_EQ(fake_update_engine_client_->reboot_after_update_call_count(), 1);
+}
+
+TEST_F(VersionUpdaterUnitTest, SimpleTimeLeftExpectationDownloadinStage) {
+  SetUpMockNetworkPortalDetector();
+
+  EXPECT_CALL(*mock_delegate_, PrepareForUpdateCheck()).Times(1);
+  version_updater_->StartNetworkCheck();
+  // Verify that the DUT checks for an update.
+  EXPECT_EQ(fake_update_engine_client_->request_update_check_call_count(), 1);
+
+  EXPECT_CALL(*mock_delegate_,
+              UpdateInfoChanged(DowloadingTimeLeftEq(false, 0)));
+  SetUpdateEngineStatus(update_engine::Operation::CHECKING_FOR_UPDATE);
+  Mock::VerifyAndClearExpectations(&mock_delegate_);
+
+  EXPECT_CALL(*mock_delegate_,
+              UpdateInfoChanged(DowloadingTimeLeftEq(false, 0)));
+  SetUpdateEngineStatus(update_engine::Operation::UPDATE_AVAILABLE);
+  Mock::VerifyAndClearExpectations(&mock_delegate_);
+
+  // DOWNLOADING starts.
+  update_engine::StatusResult status;
+  status.set_current_operation(update_engine::Operation::DOWNLOADING);
+  status.set_progress(0.0);
+  status.set_new_size(1.0);
+  EXPECT_CALL(*mock_delegate_,
+              UpdateInfoChanged(DowloadingTimeLeftEq(false, 0)));
+  fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
+  EXPECT_CALL(*mock_delegate_,
+              UpdateInfoChanged(DowloadingTimeLeftEq(false, 0)));
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+
+  status.set_progress(0.01);
+  EXPECT_CALL(*mock_delegate_,
+              UpdateInfoChanged(DowloadingTimeLeftEq(true, 99)));
+  fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
+  Mock::VerifyAndClearExpectations(&mock_delegate_);
 }
 
 TEST_F(VersionUpdaterUnitTest, HandlesCancelUpdateOnUpdateAvailable) {

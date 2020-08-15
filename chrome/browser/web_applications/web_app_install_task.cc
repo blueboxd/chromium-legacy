@@ -205,7 +205,15 @@ void WebAppInstallTask::InstallWebAppFromInfo(
   InstallFinalizer::FinalizeOptions options;
   options.install_source = install_source;
   options.locally_installed = true;
-
+  if (IsChromeOs() && install_params_) {
+    options.chromeos_data.emplace();
+    options.chromeos_data->show_in_launcher =
+        install_params_->add_to_applications_menu;
+    options.chromeos_data->show_in_search = install_params_->add_to_search;
+    options.chromeos_data->show_in_management =
+        install_params_->add_to_management;
+    options.chromeos_data->is_disabled = install_params_->is_disabled;
+  }
   install_finalizer_->FinalizeInstall(*web_application_info, options,
                                       std::move(callback));
 }

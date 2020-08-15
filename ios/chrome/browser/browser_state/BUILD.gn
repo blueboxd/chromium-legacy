@@ -96,6 +96,7 @@ source_set("browser_state_impl") {
     "//ios/chrome/browser/crash_report/breadcrumbs",
     "//ios/chrome/browser/credential_provider",
     "//ios/chrome/browser/device_sharing",
+    "//ios/chrome/browser/discover_feed",
     "//ios/chrome/browser/dom_distiller",
     "//ios/chrome/browser/download",
     "//ios/chrome/browser/favicon",

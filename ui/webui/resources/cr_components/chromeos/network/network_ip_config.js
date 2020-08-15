@@ -137,6 +137,14 @@ Polymer({
   },
 
   /**
+   * Returns the automatically configure IP CrToggleElement.
+   * @return {?CrToggleElement}
+   */
+  getAutoConfigIpToggle() {
+    return /** @type {?CrToggleElement} */ (this.$$('#autoConfigIpToggle'));
+  },
+
+  /**
    * Saved static IP configuration properties when switching to 'automatic'.
    * @private {!OncMojo.IPConfigUIProperties|undefined}
    */

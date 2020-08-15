@@ -3128,8 +3128,11 @@
         'args': [
           '--driver-logging',
           # Disable parallel jobs to work around consistent test timeout flakes.
+          # Also, the first test is always flaky due to startup time, so force
+          # the order so we can suppress it.
           # TODO(crbug.com/953991): Solve this and remove the workaround.
           '--jobs=1',
+          '--order=natural',
           '--additional-driver-flag=--enable-dawn-backend-validation',
           # We need this flag to initialize ANGLE so that we can explicitly tell
           # Dawn which ANGLE adapter Chromium is using. This will help match the test
@@ -3162,8 +3165,11 @@
         'args': [
           '--driver-logging',
           # Disable parallel jobs to work around consistent test timeout flakes.
+          # Also, the first test is always flaky due to startup time, so force
+          # the order so we can suppress it.
           # TODO(crbug.com/953991): Solve this and remove the workaround.
           '--jobs=1',
+          '--order=natural',
           # We need this flag to initialize ANGLE so that we can explicitly tell
           # Dawn which ANGLE adapter Chromium is using. This will help match the test
           # usage to be the same as the browser.
@@ -5485,8 +5491,10 @@
         'variants': [
           'WEBLAYER_IMPL_SKEW_TESTS_NTH_MILESTONE',
           'WEBLAYER_IMPL_SKEW_TESTS_NTH_MINUS_ONE_MILESTONE',
+          'WEBLAYER_IMPL_SKEW_TESTS_NTH_MINUS_TWO_MILESTONE',
           'WEBLAYER_CLIENT_SKEW_TESTS_NTH_MILESTONE',
           'WEBLAYER_CLIENT_SKEW_TESTS_NTH_MINUS_ONE_MILESTONE',
+          'WEBLAYER_CLIENT_SKEW_TESTS_NTH_MINUS_TWO_MILESTONE',
         ]
       }
     },

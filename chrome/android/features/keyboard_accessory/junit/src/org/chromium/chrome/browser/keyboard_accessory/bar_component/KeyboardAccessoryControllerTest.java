@@ -246,10 +246,10 @@ public class KeyboardAccessoryControllerTest {
         mCoordinator.registerActionProvider(generationProvider);
         mCoordinator.registerAutofillProvider(autofillSuggestionProvider, mMockAutofillDelegate);
 
-        AutofillSuggestion suggestion1 =
-                new AutofillSuggestion("FirstSuggestion", "", 0, false, 0, false, false, false);
-        AutofillSuggestion suggestion2 =
-                new AutofillSuggestion("SecondSuggestion", "", 0, false, 0, false, false, false);
+        AutofillSuggestion suggestion1 = new AutofillSuggestion(
+                "FirstSuggestion", "", /* itemTag= */ "", 0, false, 0, false, false, false);
+        AutofillSuggestion suggestion2 = new AutofillSuggestion(
+                "SecondSuggestion", "", /* itemTag= */ "", 0, false, 0, false, false, false);
         Action generationAction = new Action("Generate", GENERATE_PASSWORD_AUTOMATIC, (a) -> {});
         autofillSuggestionProvider.notifyObservers(
                 new AutofillSuggestion[] {suggestion1, suggestion2});
@@ -301,8 +301,8 @@ public class KeyboardAccessoryControllerTest {
         mCoordinator.registerActionProvider(generationProvider);
         mCoordinator.registerAutofillProvider(autofillSuggestionProvider, mMockAutofillDelegate);
 
-        AutofillSuggestion suggestion =
-                new AutofillSuggestion("Suggestion", "", 0, false, 0, false, false, false);
+        AutofillSuggestion suggestion = new AutofillSuggestion(
+                "Suggestion", "", /* itemTag= */ "", 0, false, 0, false, false, false);
         Action generationAction = new Action("Generate", GENERATE_PASSWORD_AUTOMATIC, (a) -> {});
         autofillSuggestionProvider.notifyObservers(
                 new AutofillSuggestion[] {suggestion, suggestion});
@@ -355,7 +355,7 @@ public class KeyboardAccessoryControllerTest {
                 new PropertyProvider<>(AUTOFILL_SUGGESTION);
         int suggestionId = 0x1; // The address ID is located in the least 16 bit.
         AutofillSuggestion addressSuggestion = new AutofillSuggestion(
-                "John", "Main Str", 0, false, suggestionId, false, false, false);
+                "John", "Main Str", /* itemTag= */ "", 0, false, suggestionId, false, false, false);
         mCoordinator.registerAutofillProvider(autofillSuggestionProvider, mMockAutofillDelegate);
         autofillSuggestionProvider.notifyObservers(
                 new AutofillSuggestion[] {addressSuggestion, addressSuggestion, addressSuggestion});
@@ -373,8 +373,8 @@ public class KeyboardAccessoryControllerTest {
         PropertyProvider<AutofillSuggestion[]> autofillSuggestionProvider =
                 new PropertyProvider<>(AUTOFILL_SUGGESTION);
         int suggestionId = 0x10000; // The payment ID is located in the higher 16 bit.
-        AutofillSuggestion paymentSuggestion = new AutofillSuggestion(
-                "John", "4828 ****", 0, false, suggestionId, false, false, false);
+        AutofillSuggestion paymentSuggestion = new AutofillSuggestion("John", "4828 ****",
+                /* itemTag= */ "", 0, false, suggestionId, false, false, false);
         mCoordinator.registerAutofillProvider(autofillSuggestionProvider, mMockAutofillDelegate);
         autofillSuggestionProvider.notifyObservers(
                 new AutofillSuggestion[] {paymentSuggestion, paymentSuggestion, paymentSuggestion});
@@ -391,10 +391,12 @@ public class KeyboardAccessoryControllerTest {
     public void testCreatesIPHForSecondPasswordItem() {
         PropertyProvider<AutofillSuggestion[]> autofillSuggestionProvider =
                 new PropertyProvider<>(AUTOFILL_SUGGESTION);
-        AutofillSuggestion passwordSuggestion1 = new AutofillSuggestion(
-                "John", "****", 0, false, PopupItemId.ITEM_ID_USERNAME_ENTRY, false, false, false);
-        AutofillSuggestion passwordSuggestion2 = new AutofillSuggestion("Eva", "*******", 0, false,
-                PopupItemId.ITEM_ID_PASSWORD_ENTRY, false, false, false);
+        AutofillSuggestion passwordSuggestion1 =
+                new AutofillSuggestion("John", "****", /* itemTg= */ "", 0, false,
+                        PopupItemId.ITEM_ID_USERNAME_ENTRY, false, false, false);
+        AutofillSuggestion passwordSuggestion2 =
+                new AutofillSuggestion("Eva", "*******", /* itemTag= */ "", 0, false,
+                        PopupItemId.ITEM_ID_PASSWORD_ENTRY, false, false, false);
         mCoordinator.registerAutofillProvider(autofillSuggestionProvider, mMockAutofillDelegate);
         autofillSuggestionProvider.notifyObservers(new AutofillSuggestion[] {
                 passwordSuggestion1, passwordSuggestion2, passwordSuggestion2});
@@ -443,8 +445,8 @@ public class KeyboardAccessoryControllerTest {
         mCoordinator.dismiss(); // Hide, so it's brought up again.
         PropertyProvider<AutofillSuggestion[]> autofillSuggestionProvider =
                 new PropertyProvider<>(AUTOFILL_SUGGESTION);
-        AutofillSuggestion suggestion =
-                new AutofillSuggestion("Label", "sublabel", 0, false, 0, false, false, false);
+        AutofillSuggestion suggestion = new AutofillSuggestion(
+                "Label", "sublabel", /* itemTag= */ "", 0, false, 0, false, false, false);
         mCoordinator.registerAutofillProvider(autofillSuggestionProvider, mMockAutofillDelegate);
         autofillSuggestionProvider.notifyObservers(new AutofillSuggestion[] {suggestion});
         mCoordinator.show();
@@ -487,8 +489,8 @@ public class KeyboardAccessoryControllerTest {
 
         PropertyProvider<AutofillSuggestion[]> autofillSuggestionProvider =
                 new PropertyProvider<>(AUTOFILL_SUGGESTION);
-        AutofillSuggestion suggestion =
-                new AutofillSuggestion("Label", "sublabel", 0, false, 0, false, false, false);
+        AutofillSuggestion suggestion = new AutofillSuggestion(
+                "Label", "sublabel", /* itemTag= */ "", 0, false, 0, false, false, false);
         mCoordinator.registerAutofillProvider(autofillSuggestionProvider, mMockAutofillDelegate);
         autofillSuggestionProvider.notifyObservers(new AutofillSuggestion[] {suggestion});
         assertThat(getShownMetricsCount(AccessoryBarContents.WITH_AUTOFILL_SUGGESTIONS), is(1));

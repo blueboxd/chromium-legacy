@@ -302,6 +302,7 @@
 <translation id="4481711095103932593">Karpeta hau Windows-ekin partekatuta dago</translation>
 <translation id="4487088045714738411">Teklatu belgikarra</translation>
 <translation id="4522570452068850558">Xehetasunak</translation>
+<translation id="4542387084127299777">Ezin da ireki "<ph name="PATH" />"</translation>
 <translation id="4552678318981539154">Erosi memoria gehiago</translation>
 <translation id="4559767610552730302">Bokeh efektua</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> fitxategia</translation>
@@ -513,6 +514,7 @@
 <translation id="6629841649550503054">Fitxategi guztien babeskopia egin da <ph name="BEGIN_LINK" />Google Drive-n!<ph name="END_LINK" /></translation>
 <translation id="6643016212128521049">Garbitu</translation>
 <translation id="6650726141019353908">Tximeleta arrosa</translation>
+<translation id="6657585470893396449">Pasahitza</translation>
 <translation id="6710213216561001401">Aurrekoa</translation>
 <translation id="6718273304615422081">Konprimatzen…</translation>
 <translation id="6751256176799620176">Karpeta bat hautatu da</translation>
@@ -725,6 +727,7 @@
 <translation id="9065203028668620118">Editatu</translation>
 <translation id="9099674669267916096">Orri kopurua</translation>
 <translation id="9110990317705400362">Arakatzea geroz eta seguruagoa izan dadin saiatzen gara etengabe. Lehen, edozein webgunek eskain ziezazukeen arakatzailean gehitzeko luzapen bat. Google Chrome-ren azken bertsioetan, ordea, luzapen horiek Luzapenak orrian gehituta instalatu nahi dituzula berariaz esan behar diozu Chrome-ri. <ph name="BEGIN_LINK" />Lortu informazio gehiago<ph name="END_LINK" /></translation>
+<translation id="9111102763498581341">Desblokeatu</translation>
 <translation id="912419004897138677">Kodeka</translation>
 <translation id="9129931661813833980">Ainguratu karpeta</translation>
 <translation id="9130775360844693113">Elementu hauetarako sarbidea izango dute "<ph name="DESTINATION_NAME" />" unitateko kideek.</translation>

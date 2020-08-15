@@ -8,13 +8,11 @@ import android.content.res.Resources;
 import android.os.Handler;
 import android.view.View;
 
-import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.UserData;
-import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.paint_preview.TabbedPaintPreviewMetricsHelper.ExitCause;
 import org.chromium.chrome.browser.paint_preview.services.PaintPreviewTabService;
 import org.chromium.chrome.browser.paint_preview.services.PaintPreviewTabServiceFactory;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -35,21 +33,6 @@ import org.chromium.url.GURL;
  * {@link Tab} by overlaying the content view.
  */
 public class TabbedPaintPreviewPlayer implements TabViewProvider, UserData {
-    /** Used for recording the cause for exiting the Paint Preview player. */
-    @IntDef({ExitCause.PULL_TO_REFRESH, ExitCause.ACTION_BAR_ACTION, ExitCause.COMPOSITOR_FAILURE,
-            ExitCause.TAB_FINISHED_LOADING, ExitCause.LINK_CLICKED, ExitCause.NAVIGATION_STARTED,
-            ExitCause.TAB_DESTROYED})
-    private @interface ExitCause {
-        int PULL_TO_REFRESH = 0;
-        int ACTION_BAR_ACTION = 1;
-        int COMPOSITOR_FAILURE = 2;
-        int TAB_FINISHED_LOADING = 3;
-        int LINK_CLICKED = 4;
-        int NAVIGATION_STARTED = 5;
-        int TAB_DESTROYED = 6;
-        int COUNT = 7;
-    }
-
     public static final Class<TabbedPaintPreviewPlayer> USER_DATA_KEY =
             TabbedPaintPreviewPlayer.class;
 
@@ -66,8 +49,8 @@ public class TabbedPaintPreviewPlayer implements TabViewProvider, UserData {
     private TabbedPaintPreviewObserver mObserver;
     private long mLastShownSnackBarTime;
     private boolean mDidStartRestore;
-    private long mShownTime;
     private int mSnackbarShownCount;
+    private TabbedPaintPreviewMetricsHelper mMetricsHelper;
 
     public static TabbedPaintPreviewPlayer get(Tab tab) {
         if (tab.getUserDataHost().getUserData(USER_DATA_KEY) == null) {
@@ -123,7 +106,7 @@ public class TabbedPaintPreviewPlayer implements TabViewProvider, UserData {
     private TabbedPaintPreviewPlayer(Tab tab) {
         mTab = tab;
         mPaintPreviewTabService = PaintPreviewTabServiceFactory.getServiceInstance();
-
+        mMetricsHelper = new TabbedPaintPreviewMetricsHelper();
         mObserver = new TabbedPaintPreviewObserver();
         mTab.addObserver(mObserver);
     }
@@ -165,7 +148,7 @@ public class TabbedPaintPreviewPlayer implements TabViewProvider, UserData {
                 () -> {
                     mInitializing = false;
                     onShown.run();
-                    mShownTime = System.currentTimeMillis();
+                    mMetricsHelper.onShown();
                 },
                 () -> mHasUserInteraction = true,
                 ChromeColors.getPrimaryBackgroundColor(mTab.getContext().getResources(), false),
@@ -189,14 +172,7 @@ public class TabbedPaintPreviewPlayer implements TabViewProvider, UserData {
         mTab.getTabViewManager().removeTabViewProvider(this);
         mPlayerManager.destroy();
         mPlayerManager = null;
-        long upTime = System.currentTimeMillis() - mShownTime;
-        RecordUserAction.record("PaintPreview.TabbedPlayer.Removed");
-        RecordHistogram.recordLongTimesHistogram(
-                "Browser.PaintPreview.TabbedPlayer.UpTime", upTime);
-        RecordHistogram.recordCountHistogram(
-                "Browser.PaintPreview.TabbedPlayer.SnackbarCount", mSnackbarShownCount);
-        RecordHistogram.recordEnumeratedHistogram(
-                "Browser.PaintPreview.TabbedPlayer.ExitCause", exitCause, ExitCause.COUNT);
+        mMetricsHelper.recordExitMetrics(exitCause, mSnackbarShownCount);
     }
 
     private void showSnackbar() {
@@ -211,8 +187,7 @@ public class TabbedPaintPreviewPlayer implements TabViewProvider, UserData {
                 new SnackbarManager.SnackbarController() {
                     @Override
                     public void onAction(Object actionData) {
-                        RecordUserAction.record("PaintPreview.TabbedPlayer.Actionbar.Action");
-                        removePaintPreview(ExitCause.ACTION_BAR_ACTION);
+                        removePaintPreview(ExitCause.SNACK_BAR_ACTION);
                     }
 
                     @Override

@@ -29,22 +29,22 @@ import org.chromium.components.browser_ui.widget.displaystyle.ViewResizer;
  * A {@link LinearLayout} that shows loading placeholder for Feed cards with thumbnail on the right.
  */
 public class FeedLoadingLayout extends LinearLayout {
-    private static final int CARD_NUM = 4;
-    private static final int CARD_HEIGHT_DP = 180;
-    private static final int CARD_HEIGHT_DENSE_DP = 156;
     private static final int CARD_MARGIN_DP = 12;
-    private static final int PLACEHOLDER_CARD_PADDING_DP = 15;
-    private static final int IMAGE_PLACEHOLDER_BOTTOM_PADDING_DP = 48;
-    private static final int IMAGE_PLACEHOLDER_BOTTOM_PADDING_DENSE_DP = 72;
-    private static final int IMAGE_PLACEHOLDER_WIDTH_DP = 107;
-    private static final int TEXT_PLACEHOLDER_HEIGHT_DP = 25;
+    private static final int CARD_PADDING_DP = 15;
+    private static final int IMAGE_PLACEHOLDER_BOTTOM_PADDING_DP = 72;
+    private static final int IMAGE_PLACEHOLDER_BOTTOM_PADDING_DENSE_DP = 48;
+    private static final int IMAGE_PLACEHOLDER_SIZE_DP = 92;
+    private static final int TEXT_CONTENT_HEIGHT_DP = 80;
+    private static final int TEXT_PLACEHOLDER_HEIGHT_DP = 20;
     private static final int TEXT_PLACEHOLDER_RADIUS_DP = 12;
+    private static final int LARGE_IMAGE_HEIGHT_DP = 207;
 
     private final Context mContext;
     private final Resources mResources;
     private long mLayoutInflationCompleteMs;
     private int mScreenWidthDp;
     private int mPaddingPx;
+    private boolean mIsFirstCardDense;
 
     public FeedLoadingLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -55,7 +55,6 @@ public class FeedLoadingLayout extends LinearLayout {
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
-        setHeader();
         setPlaceholders();
         mLayoutInflationCompleteMs = SystemClock.elapsedRealtime();
     }
@@ -91,83 +90,143 @@ public class FeedLoadingLayout extends LinearLayout {
     }
 
     private void setPlaceholders() {
+        setHeader();
         setPadding();
-        boolean isLandscape = getResources().getConfiguration().orientation
-                == Configuration.ORIENTATION_LANDSCAPE;
+        LinearLayout cardsParentView = findViewById(R.id.placeholders_layout);
+        cardsParentView.removeAllViews();
+
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        lp.setMargins(0, 0, 0, dpToPx(CARD_MARGIN_DP));
+
+        // Set the First placeholder container - an image-right card.
         // If it's in landscape mode, the placeholder should always show in dense mode. Otherwise,
         // whether the placeholder is dense depends on whether the first article card of Feed is
         // dense.
-        setPlaceholders(isLandscape || StartSurfaceConfiguration.isFeedPlaceholderDense());
+        boolean isLandscape = getResources().getConfiguration().orientation
+                == Configuration.ORIENTATION_LANDSCAPE;
+        mIsFirstCardDense = isLandscape || StartSurfaceConfiguration.isFeedPlaceholderDense();
+        setPlaceholders(cardsParentView, true, lp);
+
+        // Set the second and the third placeholder containers - the large image on the top.
+        setPlaceholders(cardsParentView, false, lp);
+        setPlaceholders(cardsParentView, false, lp);
     }
 
-    private void setPlaceholders(boolean isDense) {
-        LinearLayout cardsParentView = findViewById(R.id.placeholders_layout);
-        cardsParentView.removeAllViews();
-        int cardHeight = isDense ? dpToPx(CARD_HEIGHT_DENSE_DP) : dpToPx(CARD_HEIGHT_DP);
-        LinearLayout.LayoutParams cardLp =
-                new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, cardHeight);
-        cardLp.setMargins(0, 0, 0, dpToPx(CARD_MARGIN_DP));
-        LinearLayout.LayoutParams textPlaceholderLp =
-                new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1);
+    private void setPlaceholders(
+            LinearLayout parent, boolean isSmallCard, ViewGroup.LayoutParams lp) {
+        LinearLayout container = new LinearLayout(mContext);
+        container.setLayoutParams(lp);
+        container.setBackgroundResource(R.drawable.hairline_border_card_background_light);
+        container.setOrientation(isSmallCard ? HORIZONTAL : VERTICAL);
+        ImageView imagePlaceholder = getImagePlaceholder(isSmallCard);
+        ImageView textPlaceholder = getTextPlaceholder(isSmallCard);
+        container.addView(isSmallCard ? textPlaceholder : imagePlaceholder);
+        container.addView(isSmallCard ? imagePlaceholder : textPlaceholder);
+        parent.addView(container);
+    }
+
+    private ImageView getImagePlaceholder(boolean isSmallCard) {
         LinearLayout.LayoutParams imagePlaceholderLp = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        for (int i = 0; i < CARD_NUM; i++) {
-            // The card container.
-            LinearLayout container = new LinearLayout(mContext);
-            container.setLayoutParams(cardLp);
-            container.setBackgroundResource(R.drawable.hairline_border_card_background_light);
-            container.setOrientation(HORIZONTAL);
-
-            // The placeholder of suggestion titles, context and publisher.
-            ImageView textPlaceholder = new ImageView(mContext);
-            textPlaceholder.setImageDrawable(setTextPlaceholder(cardHeight));
-            textPlaceholder.setLayoutParams(textPlaceholderLp);
-            textPlaceholder.setScaleType(ImageView.ScaleType.FIT_XY);
-            container.addView(textPlaceholder);
-
-            // The placeholder of image and menu icon.
-            ImageView imagePlaceholder = new ImageView(mContext);
-            imagePlaceholder.setImageDrawable(setImagePlaceholder(isDense));
-            imagePlaceholder.setLayoutParams(imagePlaceholderLp);
-            container.addView(imagePlaceholder);
-
-            cardsParentView.addView(container);
-        }
+        ImageView imagePlaceholder = new ImageView(mContext);
+        int imageRadius = mResources.getDimensionPixelSize(R.dimen.default_rounded_corner_radius);
+        imagePlaceholder.setImageDrawable(isSmallCard ? getSmallImageDrawable(imageRadius)
+                                                      : getLargeImageDrawable(imageRadius));
+        imagePlaceholder.setLayoutParams(imagePlaceholderLp);
+        imagePlaceholder.setScaleType(ImageView.ScaleType.FIT_XY);
+        return imagePlaceholder;
     }
 
-    private LayerDrawable setImagePlaceholder(boolean isDense) {
-        LayerDrawable layerDrawable = (LayerDrawable) getResources().getDrawable(
-                R.drawable.feed_loading_image_placeholder);
-        int padding = dpToPx(PLACEHOLDER_CARD_PADDING_DP);
+    private LayerDrawable getSmallImageDrawable(int imageRadius) {
+        int imageSize = dpToPx(IMAGE_PLACEHOLDER_SIZE_DP);
+        int padding = dpToPx(CARD_PADDING_DP);
+        GradientDrawable[] placeholder = getRectangles(1, imageSize, imageSize, imageRadius, false);
+        LayerDrawable layerDrawable = new LayerDrawable(placeholder);
         layerDrawable.setLayerInset(0, 0, padding, padding,
-                isDense ? dpToPx(IMAGE_PLACEHOLDER_BOTTOM_PADDING_DP)
-                        : dpToPx(IMAGE_PLACEHOLDER_BOTTOM_PADDING_DENSE_DP));
+                mIsFirstCardDense ? dpToPx(IMAGE_PLACEHOLDER_BOTTOM_PADDING_DENSE_DP)
+                                  : dpToPx(IMAGE_PLACEHOLDER_BOTTOM_PADDING_DP));
         return layerDrawable;
     }
 
-    private LayerDrawable setTextPlaceholder(int cardHeight) {
-        int top = dpToPx(PLACEHOLDER_CARD_PADDING_DP);
+    private LayerDrawable getLargeImageDrawable(int imageRadius) {
+        GradientDrawable[] placeholder = getRectangles(1, dpToPx(mScreenWidthDp) - mPaddingPx * 2,
+                dpToPx(LARGE_IMAGE_HEIGHT_DP), imageRadius, true);
+        return new LayerDrawable(placeholder);
+    }
+
+    private ImageView getTextPlaceholder(boolean isSmallCard) {
+        int top = dpToPx(CARD_PADDING_DP);
         int left = top / 2;
-        int right = top;
         int height = dpToPx(TEXT_PLACEHOLDER_HEIGHT_DP);
-        int width = dpToPx(mScreenWidthDp) - mPaddingPx * 2 - dpToPx(IMAGE_PLACEHOLDER_WIDTH_DP);
-        GradientDrawable[] placeholders = new GradientDrawable[3];
-        for (int i = 0; i < placeholders.length; i++) {
+        int width = dpToPx(mScreenWidthDp) - mPaddingPx * 2;
+        int radius = dpToPx(TEXT_PLACEHOLDER_RADIUS_DP);
+        int contentHeight = dpToPx(TEXT_CONTENT_HEIGHT_DP);
+
+        LinearLayout.LayoutParams textPlaceholderLp = isSmallCard
+                ? new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1)
+                : new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+
+        LayerDrawable layerDrawable = isSmallCard
+                ? getSmallTextDrawable(top, left,
+                        width - dpToPx(IMAGE_PLACEHOLDER_SIZE_DP) - dpToPx(CARD_PADDING_DP), height,
+                        radius, contentHeight)
+                : getLargeTextDrawable(top, left, width, height, radius, contentHeight + 2 * top);
+
+        ImageView textPlaceholder = new ImageView(mContext);
+        textPlaceholder.setImageDrawable(layerDrawable);
+        textPlaceholder.setLayoutParams(textPlaceholderLp);
+        textPlaceholder.setScaleType(ImageView.ScaleType.FIT_XY);
+        return textPlaceholder;
+    }
+
+    private LayerDrawable getSmallTextDrawable(
+            int top, int left, int width, int height, int radius, int contentHeight) {
+        GradientDrawable[] placeholders = getRectangles(4, width, height, radius, false);
+        int cardHeight = dpToPx(IMAGE_PLACEHOLDER_SIZE_DP) + dpToPx(CARD_PADDING_DP)
+                + (mIsFirstCardDense ? dpToPx(IMAGE_PLACEHOLDER_BOTTOM_PADDING_DENSE_DP)
+                                     : dpToPx(IMAGE_PLACEHOLDER_BOTTOM_PADDING_DP));
+        LayerDrawable layerDrawable = new LayerDrawable(placeholders);
+        // Title Placeholder
+        layerDrawable.setLayerInset(0, left, top, top, cardHeight - top - height);
+        // Content Placeholder
+        layerDrawable.setLayerInset(1, left, (contentHeight - height) / 2 + top, top,
+                cardHeight - top - (height + contentHeight) / 2);
+        layerDrawable.setLayerInset(
+                2, left, top + contentHeight - height, top, cardHeight - top - contentHeight);
+        // Publisher Placeholder
+        layerDrawable.setLayerInset(3, left, cardHeight - top - height, top * 7, top);
+        return layerDrawable;
+    }
+
+    private LayerDrawable getLargeTextDrawable(
+            int top, int left, int width, int height, int radius, int contentHeight) {
+        GradientDrawable[] placeholders = getRectangles(3, width, height, radius, false);
+        LayerDrawable layerDrawable = new LayerDrawable(placeholders);
+        layerDrawable.setLayerInset(0, left, top, top, contentHeight - top - height);
+        layerDrawable.setLayerInset(
+                1, left, (contentHeight - height) / 2, top, (contentHeight - height) / 2);
+        layerDrawable.setLayerInset(2, left, contentHeight - top - height, top, top);
+        return layerDrawable;
+    }
+
+    private GradientDrawable[] getRectangles(
+            int num, int width, int height, int radius, boolean setBottomRadius) {
+        GradientDrawable[] placeholders = new GradientDrawable[num];
+        for (int i = 0; i < num; i++) {
             placeholders[i] = new GradientDrawable();
             placeholders[i].setShape(GradientDrawable.RECTANGLE);
             placeholders[i].setSize(width, height);
-            placeholders[i].setCornerRadius(dpToPx(TEXT_PLACEHOLDER_RADIUS_DP));
+            if (setBottomRadius) {
+                placeholders[i].setCornerRadii(
+                        new float[] {radius, radius, radius, radius, 0, 0, 0, 0});
+            } else {
+                placeholders[i].setCornerRadius(radius);
+            }
             placeholders[i].setColor(mResources.getColor(R.color.feed_placeholder_color));
         }
-        LayerDrawable layerDrawable = new LayerDrawable(placeholders);
-        // Title Placeholder
-        layerDrawable.setLayerInset(0, left, top, right, cardHeight - top - height);
-        // Content Placeholder
-        layerDrawable.setLayerInset(
-                1, left, (cardHeight - height) / 2, right, (cardHeight - height) / 2);
-        // Publisher Placeholder
-        layerDrawable.setLayerInset(2, left, cardHeight - top - height, right * 7, top);
-        return layerDrawable;
+        return placeholders;
     }
 
     private int dpToPx(int dp) {

@@ -112,8 +112,7 @@ class CustomizeShortcutsElement extends PolymerElement {
   onCustomLinksClick_() {
     if (!this.customLinksEnabled_) {
       this.pageHandler_.onCustomizeDialogAction(
-          newTabPage.mojom.CustomizeDialogAction
-              .SHORTCUTS_CUSTOM_LINKS_CLICKED);
+          newTabPage.mojom.CustomizeDialogAction.kShortcutsCustomLinksClicked);
     }
     this.customLinksEnabled_ = true;
     this.hide_ = false;
@@ -126,7 +125,7 @@ class CustomizeShortcutsElement extends PolymerElement {
   onHideChange_(e) {
     this.pageHandler_.onCustomizeDialogAction(
         newTabPage.mojom.CustomizeDialogAction
-            .SHORTCUTS_VISIBILITY_TOGGLE_CLICKED);
+            .kShortcutsVisibilityToggleClicked);
     this.hide_ = e.detail;
   }
 
@@ -135,8 +134,7 @@ class CustomizeShortcutsElement extends PolymerElement {
   onMostVisitedClick_() {
     if (this.customLinksEnabled_) {
       this.pageHandler_.onCustomizeDialogAction(
-          newTabPage.mojom.CustomizeDialogAction
-              .SHORTCUTS_MOST_VISITED_CLICKED);
+          newTabPage.mojom.CustomizeDialogAction.kShortcutsMostVisitedClicked);
     }
     this.customLinksEnabled_ = false;
     this.hide_ = false;

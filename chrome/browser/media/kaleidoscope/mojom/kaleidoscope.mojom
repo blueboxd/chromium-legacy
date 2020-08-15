@@ -52,6 +52,12 @@ interface KaleidoscopeDataProvider {
   // Retrieves the current credentials.
   GetCredentials() => (Credentials? credentials, CredentialsResult result);
 
+  // Returns true if the first run experience should be shown.
+  GetShouldShowFirstRunExperience() => (bool should_show_first_run);
+
+  // Called when the user successfully completes the first run experience.
+  SetFirstRunExperienceCompleted();
+
   // Returns all the watch time origins from media history store that have
   // watch time above a threshold.
   GetHighWatchTimeOrigins() => (array<url.mojom.Origin> origins);

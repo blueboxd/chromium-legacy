@@ -30,9 +30,11 @@
   // The minimum height for the collection view content should be the height of
   // the header plus the height of the collection view minus the height of the
   // NTP bottom bar. This allows the Most Visited cells to be scrolled up to the
-  // top of the screen.
-  CGFloat minimumHeight = collectionViewHeight + headerHeight -
-                          ntp_header::kScrolledToTopOmniboxBottomMargin;
+  // top of the screen. Also computes the total NTP scrolling height for
+  // Discover infinite feed.
+  self.ntpHeight = collectionViewHeight + headerHeight;
+  CGFloat minimumHeight =
+      self.ntpHeight - ntp_header::kScrolledToTopOmniboxBottomMargin;
   CGFloat topSafeArea = self.collectionView.safeAreaInsets.top;
   if (!IsRegularXRegularSizeClass(self.collectionView)) {
     CGFloat toolbarHeight =
@@ -40,8 +42,10 @@
             ? ToolbarExpandedHeight([UIApplication sharedApplication]
                                         .preferredContentSizeCategory)
             : 0;
-    minimumHeight -=
+    CGFloat additionalHeight =
         toolbarHeight + topSafeArea + self.collectionView.contentInset.bottom;
+    minimumHeight -= additionalHeight;
+    self.ntpHeight += additionalHeight;
   }
 
   CGSize contentSize = [super collectionViewContentSize];

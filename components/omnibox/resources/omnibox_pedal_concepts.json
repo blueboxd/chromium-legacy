@@ -1,9 +1,233 @@
 {
   "schema": "pedals_translation_model",
   "schema_version": 1,
-  "time_generated": "2020-08-04T19:48:33.665131874+00:00",
+  "time_generated": "2020-08-10T23:46:42.165601123+00:00",
   "primary_language_code": "en",
   "locales": [
+    {
+      "language_code": "am",
+      "tokenize_characters": " -",
+      "ignore_group": {
+        "required": false,
+        "single": false,
+        "synonyms": [
+          "በዚህ ውስጥ",
+          "እንዴት",
+          "ውስጥ",
+          "ለ"
+        ]
+      },
+      "pedals": [
+        {
+          "name": "CLEAR_BROWSING_DATA",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "አሳሽ",
+                "ማሰስ",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "አስወግድ",
+                "ደምስስ",
+                "ሰርዝ",
+                "አጥፋ",
+                "አጽዳ"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "መሸጎጫ",
+                "ኩኪዎች",
+                "ታሪክ",
+                "ውሂብ",
+                "መረጃ",
+                "መረጃ"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "MANAGE_PASSWORDS",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "አሳሽ",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "አቀናባሪ",
+                "አቀናብር",
+                "አስቀምጥ",
+                "ይመልከቱ",
+                "አርትዕ",
+                "አዘምን",
+                "ለውጥ",
+                "አሳይ"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "የይለፍ ቃላት",
+                "ምስክርነቶች",
+                "የይለፍ ቃል"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "UPDATE_CREDIT_CARD",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "አሳሽ",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "አቀናብር",
+                "አስቀምጥ",
+                "አዘምን",
+                "አርትዕ",
+                "ለውጥ"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "የክሬዲት ካርድ መረጃ",
+                "የክሬዲት ካርድ መረጃ",
+                "የመክፈያ ዘዴዎች",
+                "ክሬዲት ካርዶች",
+                "ክሬዲት ካርድ",
+                "የካርድ መረጃ",
+                "የካርድ መረጃ",
+                "ክፍያዎች",
+                "ካርዶች",
+                "ክፍያ"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "LAUNCH_INCOGNITO",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "አሳሽ",
+                "chrome"
+              ]
+            },
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "አስጀምር",
+                "አስገባ",
+                "ጀምር",
+                "ክፈት",
+                "ፍጠር"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "ማንነት የማያሳውቅ መስኮት",
+                "ማንነት የማያሳውቅ ሁነታ",
+                "ማንነት የማያሳውቅ ትር",
+                "ማንነት የማያሳውቅ",
+                "የግል መስኮት",
+                "የግል ሁነታ",
+                "የግል ትር"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "TRANSLATE",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "አሳሽ",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "ቋንቋ ቀይር",
+                "ተርጉም"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "ይህ ገጽ",
+                "ገጽ",
+                "ይህ"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "UPDATE_CHROME",
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "አሳሽ",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "አዘምን",
+                "አልቅ",
+                "ጫን"
+              ]
+            }
+          ]
+        }
+      ]
+    },
     {
       "language_code": "de",
       "tokenize_characters": " -",

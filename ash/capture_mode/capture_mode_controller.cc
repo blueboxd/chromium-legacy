@@ -63,11 +63,17 @@ void CaptureModeController::Start() {
   // TODO(afakhry): Use root window of the mouse cursor or the one for new
   // windows.
   capture_mode_session_ =
-      std::make_unique<CaptureModeSession>(Shell::GetPrimaryRootWindow());
+      std::make_unique<CaptureModeSession>(this, Shell::GetPrimaryRootWindow());
 }
 
 void CaptureModeController::Stop() {
   capture_mode_session_.reset();
+}
+
+void CaptureModeController::PerformCapture() {
+  DCHECK(IsActive());
+  // TODO(afakhry): Fill in here.
+  Stop();
 }
 
 void CaptureModeController::EndVideoRecording() {

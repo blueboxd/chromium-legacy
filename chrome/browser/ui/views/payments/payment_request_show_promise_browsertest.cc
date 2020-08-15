@@ -284,8 +284,9 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShowPromiseTest, Timeout) {
   ExpectBodyContains({R"(AbortError)"});
 }
 
+// Disabled for being flaky. crbug.com/1116607
 IN_PROC_BROWSER_TEST_F(PaymentRequestShowPromiseTest,
-                       UnsupportedPaymentMethod) {
+                       DISABLED_UnsupportedPaymentMethod) {
   NavigateTo("/show_promise/unsupported.html");
   ResetEventWaiterForSequence(
       {DialogEvent::PROCESSING_SPINNER_SHOWN,

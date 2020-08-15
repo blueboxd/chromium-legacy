@@ -8084,5 +8084,63 @@
         "prefs": { "policy.cct_tos_dialog_enabled": { "local_state": true } }
       }
     ]
+  },
+  "DefaultFileSystemReadGuardSetting": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "DefaultFileSystemReadGuardSetting": 2 },
+        "prefs": { "profile.managed_default_content_settings.file_system_read_guard": {} }
+      }
+    ]
+  },
+  "DefaultFileSystemWriteGuardSetting": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "DefaultFileSystemWriteGuardSetting": 2 },
+        "prefs": { "profile.managed_default_content_settings.file_system_write_guard": {} }
+      }
+    ]
+  },
+  "FileSystemReadAskForUrls": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {"FileSystemReadAskForUrls": ["[*.].com"]},
+        "prefs": { "profile.managed_file_system_read_ask_for_urls": {}},
+        "note": "TODO(mek): Add indicator tests. TODO(bartfab): Flag this with can_be_recommended when http://crbug.com/106682 is fixed."
+      }
+    ]
+  },
+  "FileSystemReadBlockedForUrls": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {"FileSystemReadBlockedForUrls": ["[*.]google.com"]},
+        "prefs": { "profile.managed_file_system_read_blocked_for_urls": {} },
+        "note": "TODO(mek): Add indicator tests. TODO(bartfab): Flag this with can_be_recommended when http://crbug.com/106682 is fixed."
+      }
+    ]
+  },
+  "FileSystemWriteAskForUrls": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {"FileSystemWriteAskForUrls": ["[*.].com"]},
+        "prefs": { "profile.managed_file_system_write_ask_for_urls": {}},
+        "note": "TODO(mek): Add indicator tests. TODO(bartfab): Flag this with can_be_recommended when http://crbug.com/106682 is fixed."
+      }
+    ]
+  },
+  "FileSystemWriteBlockedForUrls": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {"FileSystemWriteBlockedForUrls": ["[*.]google.com"]},
+        "prefs": { "profile.managed_file_system_write_blocked_for_urls": {} },
+        "note": "TODO(mek): Add indicator tests. TODO(bartfab): Flag this with can_be_recommended when http://crbug.com/106682 is fixed."
+      }
+    ]
   }
 }

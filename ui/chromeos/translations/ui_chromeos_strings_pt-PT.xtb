@@ -515,6 +515,7 @@
 <translation id="6629841649550503054">Foi feita uma cópia de segurança de todos os ficheiros no <ph name="BEGIN_LINK" />Google Drive!<ph name="END_LINK" /></translation>
 <translation id="6643016212128521049">Limpar</translation>
 <translation id="6650726141019353908">Borboleta cor-de-rosa</translation>
+<translation id="6657585470893396449">Palavra-passe</translation>
 <translation id="6710213216561001401">Anterior</translation>
 <translation id="6718273304615422081">A comprimir...</translation>
 <translation id="6751256176799620176">1 pasta selecionada</translation>
@@ -727,6 +728,7 @@
 <translation id="9065203028668620118">Editar</translation>
 <translation id="9099674669267916096">Contagem de páginas</translation>
 <translation id="9110990317705400362">Estamos constantemente a procurar formas de tornar a navegação mais segura. Anteriormente, qualquer Website poderia pedir-lhe para adicionar uma extensão ao navegador. Nas versões mais recentes do Google Chrome, tem de definir explicitamente no Chrome que pretende instalar estas extensões adicionando-as através da página Extensões. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
+<translation id="9111102763498581341">Desbloquear</translation>
 <translation id="912419004897138677">Codec</translation>
 <translation id="9129931661813833980">Fixar pasta</translation>
 <translation id="9130775360844693113">Os membros de "<ph name="DESTINATION_NAME" />" irão obter acesso a estes itens.</translation>

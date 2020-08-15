@@ -1575,6 +1575,9 @@ std::string AXNodeData::ToString() const {
       case ax::mojom::BoolAttribute::kClipsChildren:
         result += " clips_children=" + value;
         break;
+      case ax::mojom::BoolAttribute::kNotUserSelectableStyle:
+        result += " not_user_selectable=" + value;
+        break;
       case ax::mojom::BoolAttribute::kSelected:
         result += " selected=" + value;
         break;

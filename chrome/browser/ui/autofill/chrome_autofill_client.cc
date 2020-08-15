@@ -15,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autofill/address_normalizer_factory.h"
 #include "chrome/browser/autofill/autocomplete_history_manager_factory.h"
+#include "chrome/browser/autofill/autofill_offer_manager_factory.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/autofill/risk_util.h"
 #include "chrome/browser/autofill/strike_database_factory.h"
@@ -176,6 +177,13 @@ AddressNormalizer* ChromeAutofillClient::GetAddressNormalizer() {
   if (base::FeatureList::IsEnabled(features::kAutofillAddressNormalizer))
     return AddressNormalizerFactory::GetInstance();
   return nullptr;
+}
+
+payments::AutofillOfferManager*
+ChromeAutofillClient::GetAutofillOfferManager() {
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+  return payments::AutofillOfferManagerFactory::GetForProfile(profile);
 }
 
 const GURL& ChromeAutofillClient::GetLastCommittedURL() {

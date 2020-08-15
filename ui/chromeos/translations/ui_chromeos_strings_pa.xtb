@@ -302,6 +302,7 @@
 <translation id="4481711095103932593">ਇਹ ਫੋਲਡਰ Windows ਨਾਲ ਸਾਂਝਾ ਕੀਤਾ ਗਿਆ ਹੈ</translation>
 <translation id="4487088045714738411">ਬੈਲਜ਼ੀਅਨ ਕੀ-ਬੋਰਡ</translation>
 <translation id="4522570452068850558">ਵੇਰਵੇ</translation>
+<translation id="4542387084127299777">"<ph name="PATH" />" ਨੂੰ ਖੋਲ੍ਹਿਆ ਨਹੀਂ ਜਾ ਸਕਿਆ</translation>
 <translation id="4552678318981539154">ਹੋਰ ਸਟੋਰੇਜ ਖਰੀਦੋ</translation>
 <translation id="4559767610552730302">ਬੋਕੇਹ</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> ਫਾਈਲ</translation>
@@ -513,6 +514,7 @@
 <translation id="6629841649550503054">ਸਾਰੇ <ph name="BEGIN_LINK" />Google Drive ਵਿੱਚ ਬੈਕ ਅਪ ਕੀਤੇ ਗਏ!<ph name="END_LINK" /></translation>
 <translation id="6643016212128521049">ਹਟਾਓ</translation>
 <translation id="6650726141019353908">ਗੁਲਾਬੀ ਤਿਤਲੀ</translation>
+<translation id="6657585470893396449">ਪਾਸਵਰਡ</translation>
 <translation id="6710213216561001401">ਪਿਛਲਾ</translation>
 <translation id="6718273304615422081">ਜ਼ਿਪ ਕਰ ਰਿਹਾ ਹੈ...</translation>
 <translation id="6751256176799620176">1 ਫੋਲਡਰ ਚੁਣਿਆ ਗਿਆ</translation>
@@ -725,6 +727,7 @@
 <translation id="9065203028668620118">ਸੰਪਾਦਿਤ ਕਰੋ</translation>
 <translation id="9099674669267916096">ਪੰਨਾ ਗਿਣਤੀ</translation>
 <translation id="9110990317705400362">ਅਸੀਂ ਲਗਾਤਾਰ ਤੁਹਾਡੀ ਬ੍ਰਾਊਜ਼ਿੰਗ ਨੂੰ ਵੱਧ ਸੁਰੱਖਿਅਤ ਬਣਾਉਣ ਦੇ ਤਰੀਕੇ ਖੋਜਦੇ ਰਹਿੰਦੇ ਹਾਂ। ਪਹਿਲਾਂ, ਕੋਈ ਵੀ ਵੈੱਬਸਾਈਟ ਤੁਹਾਡੇ ਬ੍ਰਾਊਜ਼ਰ ਵਿੱਚ ਇੱਕ ਐਕਸਟੈਂਸ਼ਨ ਸ਼ਾਮਲ ਕਰਨ ਲਈ ਤੁਹਾਨੂੰ ਕਹਿ ਸਕਦੀ ਸੀ। Google Chrome ਦੇ ਨਵੇਂ ਵਰਜਨਾਂ ਵਿੱਚ, ਤੁਹਾਨੂੰ Chrome ਨੂੰ ਸਪਸ਼ਟ ਰੂਪ ਨਾਲ ਦੱਸਣਾ ਪਵੇਗਾ ਕਿ ਤੁਸੀਂ ਇਹਨਾਂ ਐਕਸਟੈਂਸ਼ਨਾਂ ਨੂੰ ਐਕਸਟੈਂਸ਼ਨਾਂ ਪੰਨੇ ਰਾਹੀਂ ਸ਼ਾਮਲ ਕਰਕੇ ਇਹਨਾਂ ਨੂੰ ਸਥਾਪਤ ਕਰਨਾ ਚਾਹੁੰਦੇ ਹੋ। <ph name="BEGIN_LINK" />ਹੋਰ ਜਾਣੋ<ph name="END_LINK" /></translation>
+<translation id="9111102763498581341">ਅਣਲਾਕ ਕਰੋ</translation>
 <translation id="912419004897138677">ਕੋਡੈਕ</translation>
 <translation id="9129931661813833980">ਫੋਲਡਰ ਨੂੰ ਪਿੰਨ ਕਰੋ</translation>
 <translation id="9130775360844693113">'<ph name="DESTINATION_NAME" />' ਦੇ ਮੈਂਬਰ ਇਹਨਾਂ ਆਈਟਮਾਂ ਤੱਕ ਪਹੁੰਚ ਪ੍ਰਾਪਤ ਕਰਨਗੇ।</translation>

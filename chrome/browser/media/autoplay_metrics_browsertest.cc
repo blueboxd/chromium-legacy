@@ -64,8 +64,8 @@ class AutoplayMetricsBrowserTest : public InProcessBrowserTest {
   }
 };
 
-// Flaky on Windows. https://crbug.com/1101841
-#if defined(OS_WIN)
+// Flaky on various platforms. https://crbug.com/1101841
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
 #define MAYBE_RecordAutoplayAttemptUkm DISABLED_RecordAutoplayAttemptUkm
 #else
 #define MAYBE_RecordAutoplayAttemptUkm RecordAutoplayAttemptUkm

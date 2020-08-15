@@ -105,23 +105,23 @@ const Error = newTabPage.mojom.VoiceSearchError;
 function toError(webkitError) {
   switch (webkitError) {
     case 'aborted':
-      return Error.ABORTED;
+      return Error.kAborted;
     case 'audio-capture':
-      return Error.AUDIO_CAPTURE;
+      return Error.kAudioCapture;
     case 'language-not-supported':
-      return Error.LANGUAGE_NOT_SUPPORTED;
+      return Error.kLanguageNotSupported;
     case 'network':
-      return Error.NETWORK;
+      return Error.kNetwork;
     case 'no-speech':
-      return Error.NO_SPEECH;
+      return Error.kNoSpeech;
     case 'not-allowed':
-      return Error.NOT_ALLOWED;
+      return Error.kNotAllowed;
     case 'service-not-allowed':
-      return Error.SERVICE_NOT_ALLOWED;
+      return Error.kServiceNotAllowed;
     case 'bad-grammar':
-      return Error.BAD_GRAMMAR;
+      return Error.kBadGrammar;
     default:
-      return Error.OTHER;
+      return Error.kOther;
   }
 }
 
@@ -133,10 +133,10 @@ function toError(webkitError) {
  */
 function getErrorTimeout(error) {
   switch (error) {
-    case Error.AUDIO_CAPTURE:
-    case Error.NO_SPEECH:
-    case Error.NOT_ALLOWED:
-    case Error.NO_MATCH:
+    case Error.kAudioCapture:
+    case Error.kNoSpeech:
+    case Error.kNotAllowed:
+    case Error.kNoMatch:
       return ERROR_TIMEOUT_LONG_MS;
     default:
       return ERROR_TIMEOUT_SHORT_MS;
@@ -209,7 +209,7 @@ class VoiceSearchOverlayElement extends PolymerElement {
       this.onError_(toError(e.error));
     };
     this.voiceRecognition_.onnomatch = () => {
-      this.onError_(Error.NO_MATCH);
+      this.onError_(Error.kNoMatch);
     };
     /** @private {number|undefined} */
     this.timerId_ = undefined;
@@ -239,7 +239,7 @@ class VoiceSearchOverlayElement extends PolymerElement {
   onOverlayClick_() {
     this.$.dialog.close();
     this.pageHandler_.onVoiceSearchAction(
-        newTabPage.mojom.VoiceSearchAction.CLOSE_OVERLAY);
+        newTabPage.mojom.VoiceSearchAction.kCloseOverlay);
   }
 
   /**
@@ -274,7 +274,7 @@ class VoiceSearchOverlayElement extends PolymerElement {
   /** @private */
   onLearnMoreClick_() {
     this.pageHandler_.onVoiceSearchAction(
-        newTabPage.mojom.VoiceSearchAction.SUPPORT_LINK_CLICKED);
+        newTabPage.mojom.VoiceSearchAction.kSupportLinkClicked);
   }
 
   /**
@@ -286,7 +286,7 @@ class VoiceSearchOverlayElement extends PolymerElement {
     e.stopPropagation();
     this.start();
     this.pageHandler_.onVoiceSearchAction(
-        newTabPage.mojom.VoiceSearchAction.TRY_AGAIN_LINK);
+        newTabPage.mojom.VoiceSearchAction.kTryAgainLink);
   }
 
   /**
@@ -295,14 +295,14 @@ class VoiceSearchOverlayElement extends PolymerElement {
    */
   onMicClick_(e) {
     if (this.state_ !== State.ERROR_RECEIVED ||
-        this.error_ !== Error.NO_MATCH) {
+        this.error_ !== Error.kNoMatch) {
       return;
     }
     // Otherwise, we close the overlay.
     e.stopPropagation();
     this.start();
     this.pageHandler_.onVoiceSearchAction(
-        newTabPage.mojom.VoiceSearchAction.TRY_AGAIN_MIC_BUTTON);
+        newTabPage.mojom.VoiceSearchAction.kTryAgainMicButton);
   }
 
   /** @private */
@@ -324,7 +324,7 @@ class VoiceSearchOverlayElement extends PolymerElement {
       return;
     }
     this.voiceRecognition_.abort();
-    this.onError_(Error.NO_MATCH);
+    this.onError_(Error.kNoMatch);
   }
 
   /**
@@ -412,7 +412,7 @@ class VoiceSearchOverlayElement extends PolymerElement {
   /** @private */
   onFinalResult_() {
     if (!this.finalResult_) {
-      this.onError_(Error.NO_MATCH);
+      this.onError_(Error.kNoMatch);
       return;
     }
     this.state_ = State.RESULT_FINAL;
@@ -425,7 +425,7 @@ class VoiceSearchOverlayElement extends PolymerElement {
         new URL('/search', loadTimeData.getString('googleBaseUrl'));
     queryUrl.search = searchParams.toString();
     this.pageHandler_.onVoiceSearchAction(
-        newTabPage.mojom.VoiceSearchAction.QUERY_SUBMITTED);
+        newTabPage.mojom.VoiceSearchAction.kQuerySubmitted);
     BrowserProxy.getInstance().navigate(queryUrl.href);
   }
 
@@ -433,20 +433,20 @@ class VoiceSearchOverlayElement extends PolymerElement {
   onEnd_() {
     switch (this.state_) {
       case State.STARTED:
-        this.onError_(Error.AUDIO_CAPTURE);
+        this.onError_(Error.kAudioCapture);
         return;
       case State.AUDIO_RECEIVED:
-        this.onError_(Error.NO_SPEECH);
+        this.onError_(Error.kNoSpeech);
         return;
       case State.SPEECH_RECEIVED:
       case State.RESULT_RECEIVED:
-        this.onError_(Error.NO_MATCH);
+        this.onError_(Error.kNoMatch);
         return;
       case State.ERROR_RECEIVED:
       case State.RESULT_FINAL:
         return;
       default:
-        this.onError_(Error.OTHER);
+        this.onError_(Error.kOther);
         return;
     }
   }
@@ -457,7 +457,7 @@ class VoiceSearchOverlayElement extends PolymerElement {
    */
   onError_(error) {
     this.pageHandler_.onVoiceSearchError(error);
-    if (error === Error.ABORTED) {
+    if (error === Error.kAborted) {
       // We are in the process of closing voice search.
       return;
     }
@@ -510,21 +510,21 @@ class VoiceSearchOverlayElement extends PolymerElement {
    */
   getErrorText_() {
     switch (this.error_) {
-      case Error.NO_SPEECH:
+      case Error.kNoSpeech:
         return 'no-speech';
-      case Error.AUDIO_CAPTURE:
+      case Error.kAudioCapture:
         return 'audio-capture';
-      case Error.NETWORK:
+      case Error.kNetwork:
         return 'network';
-      case Error.NOT_ALLOWED:
-      case Error.SERVICE_NOT_ALLOWED:
+      case Error.kNotAllowed:
+      case Error.kServiceNotAllowed:
         return 'not-allowed';
-      case Error.LANGUAGE_NOT_SUPPORTED:
+      case Error.kLanguageNotSupported:
         return 'language-not-supported';
-      case Error.NO_MATCH:
+      case Error.kNoMatch:
         return 'no-match';
-      case Error.ABORTED:
-      case Error.OTHER:
+      case Error.kAborted:
+      case Error.kOther:
       default:
         return 'other';
     }
@@ -536,13 +536,13 @@ class VoiceSearchOverlayElement extends PolymerElement {
    */
   getErrorLink_() {
     switch (this.error_) {
-      case Error.NO_SPEECH:
-      case Error.AUDIO_CAPTURE:
+      case Error.kNoSpeech:
+      case Error.kAudioCapture:
         return 'learn-more';
-      case Error.NOT_ALLOWED:
-      case Error.SERVICE_NOT_ALLOWED:
+      case Error.kNotAllowed:
+      case Error.kServiceNotAllowed:
         return 'details';
-      case Error.NO_MATCH:
+      case Error.kNoMatch:
         return 'try-again';
       default:
         return 'none';

@@ -338,6 +338,7 @@ SkColor DebugColors::NonLCDTextHighlightColor(LCDTextDisallowedReason reason) {
     case LCDTextDisallowedReason::kNonIntegralYOffset:
       return SkColorSetARGB(96, 255, 0, 128);
     case LCDTextDisallowedReason::kWillChangeTransform:
+    case LCDTextDisallowedReason::kTransformAnimation:
       return SkColorSetARGB(96, 128, 0, 255);
     case LCDTextDisallowedReason::kPixelOrColorEffect:
       return SkColorSetARGB(96, 0, 128, 0);

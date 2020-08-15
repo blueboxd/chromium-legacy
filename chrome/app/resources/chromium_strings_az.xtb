@@ -30,6 +30,7 @@ Bəzi funksiyalar əlçatmaz ola bilər ki, nəticədə tərcihlərə edilən d�
 <translation id="2294245788148774212">İstəyə görə: Diaqnostika və istifadəçi datasını avtomatik Google'a göndərməklə Chromium ƏS funksiyalarını təkmilləşdirməyə yardım edin.</translation>
 <translation id="2347108572062610441">Bu artırma Chromium'u başlatdığınız zaman hansı səhifənin göstərildiyini dəyişdi.</translation>
 <translation id="2396765026452590966">"<ph name="EXTENSION_NAME" />" artırması Chromium'u başlatdığınız zaman hansı səhifənin göstərildiyini dəyişdi.</translation>
+<translation id="2442081746662839303"><ph name="NEW_USER" /> üçün yeni Chromium sahəsi yaradılsın?</translation>
 <translation id="2483889755041906834">Chromium'da</translation>
 <translation id="2485422356828889247">Sistemdən silin</translation>
 <translation id="2527042973354814951"><ph name="PLUGIN_NAME" /> plaqinini aktiv etmək üçün Chromium'u yenidən başladın</translation>
@@ -105,6 +106,7 @@ Bəzi funksiyalar əlçatmaz ola bilər ki, nəticədə tərcihlərə edilən d�
 <translation id="4943838377383847465">Chromium arxa fon rejimindədir.</translation>
 <translation id="4987820182225656817">Qonaqlar geridə heç nə buraxmadan Chromium istifadə edə bilər.</translation>
 <translation id="4994636714258228724">Özünüzü Chromium'a əlavə edin</translation>
+<translation id="5053724573690775822">Yeni Chromium İş sahəsi yaradılsın?</translation>
 <translation id="5224391634244552924">Yadda saxlanmış parol yoxdur. Parollarınızı yadda saxladıqda Chromium onları yoxlaya bilər.</translation>
 <translation id="5277894862589591112">Dəyişiklikləri tətbiq etmək üçün Chromium'u yenidən başladın</translation>
 <translation id="5358375970380395591">İdarə olunan hesabla daxil olursnuz və onun inzibati idarəetməsini Chromium profilinizə verirsiniz. Tətbiqləriniz, əlfəcinləriniz, tarixçəniz və digər ayarlarınız Chromimum datanızla birlikdə <ph name="USER_NAME" /> üzərinə həmişəlik bənd olacaq. Bu datanı Google Hesabları Paneli vasitəsilə silə bilərsiniz, lakin bu datanı digər hesabla əlaqəli edə bilməzsiniz. Mövcud Chrome datanızı ayrı saxlamaq üçün yeni profil yarada bilərsiniz. <ph name="LEARN_MORE" /></translation>
@@ -114,6 +116,7 @@ Bəzi funksiyalar əlçatmaz ola bilər ki, nəticədə tərcihlərə edilən d�
 <translation id="5416696090975899932">Daxili PDF görüntüləyən əskik olduqda Chromium çap önizləməsini göstərə bilməz.</translation>
 <translation id="5427571867875391349">Chromium'u defolt brauzer təyin edin</translation>
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> - Chromium Beta</translation>
+<translation id="544968170749360982"><ph name="EXISTING_USER" /> sahəsində yeni hesab ilə daxil olmusunuz. Datanızı ayrı saxlamaq üçün <ph name="NEW_USER" /> üçün yeni Chromium sahəsi yaratmaq istərdinizmi?</translation>
 <translation id="5479196819031988440">Chromium OS bu səhifəni aça bilməz.</translation>
 <translation id="5480860683791598150">Chromium məkanı bu saytla paylaşmaq üçün ona giriş tələb edir</translation>
 <translation id="549669000822060376">Chromium'um ən son sistem güncəlləşmələrini quraşdırmasını gözləyin.</translation>
@@ -136,6 +139,7 @@ Bəzi funksiyalar əlçatmaz ola bilər ki, nəticədə tərcihlərə edilən d�
 <translation id="608189560609172163">Giriş xətası səbəbindən Chromium datanızı sinxronizasiya edə bilmədi.</translation>
 <translation id="6096348254544841612">Chromium'u fərdiləşdirin və idarə edin. Güncəlləmə əlçatandır.</translation>
 <translation id="6120345080069858279">Chromium bu parolu Google Hesabında yadda saxlayacaq. Onu yadda saxlamalı olmayacaqsınız.</translation>
+<translation id="6128834065531097268"><ph name="EXISTING_USER" /> sahəsində İş hesabı ilə daxil olmusunuz. Datanızı ayrı saxlamaq üçün <ph name="WORK_DOMAIN" /> üçün yeni Chromium sahəsi yaratmaq istərdinizmi?</translation>
 <translation id="6129621093834146363"><ph name="FILE_NAME" /> təklükəli olduğu üçün Chromium onu blok etdi.</translation>
 <translation id="6134968993075716475">Təhlükəsiz Baxış deaktivdir. Chromium onu aktiv etməyi tövsiyə edir.</translation>
 <translation id="6212496753309875659">Bu kompüterdə Chromium'um daha son versiyası var. Proqram təminatı işləmirsə, Chroimum'u sistemdən silin və yenidən cəhd edin.</translation>
@@ -195,6 +199,7 @@ Bəzi funksiyalar əlçatmaz ola bilər. Xüsusi profil direktoriyası göstəri
 <translation id="7561906087460245826">Chromium'dan datanı silin (<ph name="URL" />)</translation>
 <translation id="7585853947355360626">Ayar bu səhifədə göstərilməsə, <ph name="LINK_BEGIN" />
       Chromium OS ayarlarına<ph name="LINK_END" /> baxın</translation>
+<translation id="7607142834923530546">İş hesabı ilə daxil olmusunuz. Şəxsi datanızı ayrı saxlamaq üçün <ph name="NEW_USER" /> üçün yeni Chromium sahəsi yaratmaq istərdinizmi?</translation>
 <translation id="761356813943268536">Chromium kameranızı və mikrofonunuzu işlədir.</translation>
 <translation id="7617377681829253106">Chromium daha da keyfiyyətli oldu</translation>
 <translation id="7628001322379820951">Chromium kompüterdə zərərli proqram tapıb</translation>

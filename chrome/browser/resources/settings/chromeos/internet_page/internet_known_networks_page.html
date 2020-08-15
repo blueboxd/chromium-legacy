@@ -7,6 +7,9 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="../../settings_shared_css.html">
+<link rel="import" href="../deep_linking_behavior.html">
+<link rel="import" href="../os_route.html">
+<link rel="import" href="../../router.html">
 <link rel="import" href="../metrics_recorder.html">
 
 <dom-module id="settings-internet-known-networks-page">
@@ -30,14 +33,15 @@
         $i18n{internetNoNetworks}
       </div>
     </div>
-    <div class="list-frame vertical-list"
+    <div id="preferredNetworkList" class="list-frame vertical-list"
         hidden$="[[!havePreferred_(networkStateList_)]]">
       <template is="dom-repeat" items="[[networkStateList_]]"
           filter="networkIsPreferred_">
         <div class="list-item">
           <cr-link-row embedded label="[[getNetworkDisplayName_(item)]]"
               on-click="fireShowDetails_"
-              role-description="$i18n{subpageArrowRoleDescription}">
+              role-description="$i18n{subpageArrowRoleDescription}"
+              deep-link-focus-id$="[[Setting.kForgetWifiNetwork]]">
             <template is="dom-if" if="[[isPolicySource(item.source))]]">
               <cr-policy-indicator on-click="doNothing_"
                   indicator-type="[[getIndicatorTypeForSource(item.source)]]">
@@ -55,14 +59,16 @@
     <div class="settings-box settings-box-text">
       <div class="secondary">$i18n{knownNetworksAll}</div>
     </div>
-    <div class="list-frame vertical-list"
+    <div id="notPreferredNetworkList" class="list-frame vertical-list"
         hidden$="[[!haveNotPreferred_(networkStateList_)]]">
       <template is="dom-repeat" items="[[networkStateList_]]"
           filter="networkIsNotPreferred_">
         <div class="list-item">
           <cr-link-row embedded label="[[getNetworkDisplayName_(item)]]"
               on-click="fireShowDetails_"
-              role-description="$i18n{subpageArrowRoleDescription}">
+              role-description="$i18n{subpageArrowRoleDescription}"
+              deep-link-focus-id$="[[Setting.kPreferWifiNetwork]]
+                  [[Setting.kForgetWifiNetwork]]">
             <template is="dom-if" if="[[isPolicySource(item.source))]]">
               <cr-policy-indicator on-click="doNothing_"
                   indicator-type="[[getIndicatorTypeForSource(item.source)]]">

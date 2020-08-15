@@ -1626,16 +1626,27 @@ ci.fyi_builder(
 ci.fyi_builder(
     name = "win-omaha-builder-rel",
     console_view_entry = ci.console_view_entry(
-        category = "win10",
+        category = "omaha|win",
+        short_name = "bld",
     ),
     os = os.WINDOWS_DEFAULT,
     cpu = cpu.X86_64,
 )
 
 ci.fyi_builder(
+    name = "win7-omaha-tester-rel",
+    console_view_entry = ci.console_view_entry(
+        category = "omaha|win",
+        short_name = "7",
+    ),
+    triggered_by = ["win-omaha-builder-rel"],
+)
+
+ci.fyi_builder(
     name = "win10-omaha-tester-rel",
     console_view_entry = ci.console_view_entry(
-        category = "win10",
+        category = "omaha|win",
+        short_name = "10",
     ),
     os = os.WINDOWS_10,
     triggered_by = ["win-omaha-builder-rel"],

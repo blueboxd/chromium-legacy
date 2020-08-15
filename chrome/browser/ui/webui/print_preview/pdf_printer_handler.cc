@@ -49,6 +49,10 @@
 #include "printing/printing_features.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/drive/drive_integration_service.h"
+#endif
+
 namespace printing {
 
 namespace {
@@ -252,6 +256,10 @@ void PdfPrinterHandler::StartPrint(
 
   base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
   bool prompt_user = !cmdline->HasSwitch(switches::kKioskModePrinting);
+#if defined(OS_CHROMEOS)
+  use_drive_mount_ =
+      settings.FindBoolKey(kSettingPrintToGoogleDrive).value_or(false);
+#endif
 
   SelectFile(path, initiator, prompt_user);
 }
@@ -342,6 +350,8 @@ base::FilePath PdfPrinterHandler::GetFileName(const GURL& url,
 void PdfPrinterHandler::SelectFile(const base::FilePath& default_filename,
                                    content::WebContents* initiator,
                                    bool prompt_user) {
+  // Handle case where user expects to be prompted but policy disallows file
+  // selection. Call CanOpenSelectFileDialog() to notify user and early return.
   if (prompt_user) {
     ChromeSelectFilePolicy policy(initiator);
     if (!policy.CanOpenSelectFileDialog()) {
@@ -351,13 +361,11 @@ void PdfPrinterHandler::SelectFile(const base::FilePath& default_filename,
     }
   }
 
-  // Get save location from Download Preferences.
-  DownloadPrefs* download_prefs = DownloadPrefs::FromBrowserContext(profile_);
-  base::FilePath path = download_prefs->SaveFilePath();
   sticky_settings_->SaveInPrefs(profile_->GetPrefs());
 
   // Handle the no prompting case. Like the dialog prompt, this function
   // returns and eventually FileSelected() gets called.
+  base::FilePath path = GetSaveLocation();
   if (!prompt_user) {
     base::ThreadPool::PostTaskAndReplyWithResult(
         FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
@@ -376,6 +384,7 @@ void PdfPrinterHandler::SelectFile(const base::FilePath& default_filename,
 
   // Get default download directory. This will be used as a fallback if the
   // save directory does not exist.
+  DownloadPrefs* download_prefs = DownloadPrefs::FromBrowserContext(profile_);
   base::FilePath default_path = download_prefs->DownloadPath();
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
@@ -420,6 +429,19 @@ void PdfPrinterHandler::OnDirectorySelected(const base::FilePath& filename,
       ui::SelectFileDialog::SELECT_SAVEAS_FILE, base::string16(), path,
       &file_type_info, 0, base::FilePath::StringType(),
       platform_util::GetTopLevel(preview_web_contents_->GetNativeView()), NULL);
+}
+
+base::FilePath PdfPrinterHandler::GetSaveLocation() const {
+#if defined(OS_CHROMEOS)
+  drive::DriveIntegrationService* drive_service =
+      drive::DriveIntegrationServiceFactory::GetForProfile(profile_);
+  if (use_drive_mount_ && drive_service && drive_service->IsMounted()) {
+    return drive_service->GetMountPointPath().Append(
+        drive::util::kDriveMyDriveRootDirName);
+  }
+#endif
+  DownloadPrefs* download_prefs = DownloadPrefs::FromBrowserContext(profile_);
+  return download_prefs->SaveFilePath();
 }
 
 }  // namespace printing

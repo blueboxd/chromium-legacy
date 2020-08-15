@@ -302,6 +302,7 @@
 <translation id="4481711095103932593">โฟลเดอร์นี้แชร์กับ Windows อยู่</translation>
 <translation id="4487088045714738411">แป้นพิมพ์ภาษาเบลเยียม</translation>
 <translation id="4522570452068850558">รายละเอียด</translation>
+<translation id="4542387084127299777">เปิด "<ph name="PATH" />" ไม่ได้</translation>
 <translation id="4552678318981539154">ซื้อพื้นที่เก็บข้อมูลเพิ่ม</translation>
 <translation id="4559767610552730302">ชัดตื้น</translation>
 <translation id="4572815280350369984">ไฟล์ <ph name="FILE_TYPE" /></translation>
@@ -514,6 +515,7 @@
 <translation id="6629841649550503054">สำรองข้อมูลทั้งหมดไปยัง <ph name="BEGIN_LINK" />Google ไดรฟ์<ph name="END_LINK" />แล้ว!</translation>
 <translation id="6643016212128521049">ล้าง</translation>
 <translation id="6650726141019353908">ผีเสื้อสีชมพู</translation>
+<translation id="6657585470893396449">รหัสผ่าน</translation>
 <translation id="6710213216561001401">ก่อนหน้า</translation>
 <translation id="6718273304615422081">กำลังซิป...</translation>
 <translation id="6751256176799620176">เลือกไว้ 1 โฟลเดอร์</translation>
@@ -726,6 +728,7 @@
 <translation id="9065203028668620118">แก้ไข</translation>
 <translation id="9099674669267916096">จำนวนหน้า</translation>
 <translation id="9110990317705400362">เรายังคงค้นหาวิธีที่จะทำให้การท่องเว็บของคุณปลอดภัยยิ่งขึ้นอย่างสม่ำเสมอ ก่อนหน้านี้ทุกเว็บไซต์สามารถแสดงข้อความแจ้งให้คุณเพิ่มส่วนขยายในเบราว์เซอร์ แต่ใน Google Chrome เวอร์ชันล่าสุด คุณจะต้องแจ้งให้ Chrome ทราบอย่างชัดเจนว่าคุณต้องการติดตั้งส่วนขยายเหล่านี้โดยการเพิ่มส่วนขยายผ่านหน้า "ส่วนขยาย" <ph name="BEGIN_LINK" />ดูข้อมูลเพิ่มเติม<ph name="END_LINK" /></translation>
+<translation id="9111102763498581341">ปลดล็อก</translation>
 <translation id="912419004897138677">ตัวแปลงรหัส</translation>
 <translation id="9129931661813833980">ตรึงโฟลเดอร์</translation>
 <translation id="9130775360844693113">สมาชิกของ "<ph name="DESTINATION_NAME" />" จะได้รับสิทธิ์เข้าถึงรายการเหล่านี้</translation>

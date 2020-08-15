@@ -48,6 +48,7 @@
 <translation id="2123055963409958220">只要報告<ph name="BEGIN_LINK" />目前的設定<ph name="END_LINK" />，就能助我們一臂之力，讓 Chrome 更臻完美</translation>
 <translation id="2151406531797534936">請立即重新啟動 Chrome</translation>
 <translation id="2246246234298806438">缺乏內置的 PDF 檢視器時，Google Chrome 無法顯示列印預覽。</translation>
+<translation id="226038281051944330">您已使用新帳戶登入<ph name="EXISTING_USER" />的空間。要為<ph name="NEW_USER" />建立新的 Chrome 空間以分開保留資料嗎？</translation>
 <translation id="2290014774651636340">缺少 Google API 金鑰，系統將停用 Google Chrome 的部分功能。</translation>
 <translation id="2290095356545025170">確定要解除安裝 Google Chrome 嗎？</translation>
 <translation id="2309047409763057870">這是以並行形式安裝的第二個 Google Chrome，因此無法設定為您的預設瀏覽器。</translation>
@@ -146,12 +147,14 @@
 <translation id="4895437082222824641">在 Chrome 新分頁中開啟連結(&amp;T)</translation>
 <translation id="4953650215774548573">將 Google Chrome 設為預設瀏覽器</translation>
 <translation id="495931528404527476">在 Chrome 中</translation>
+<translation id="4960472897514318257">您已使用公司帳戶登入。要為<ph name="NEW_USER" />建立新的 Chrome 空間以分開保留個人資料嗎？</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5062123544085870375">重新啟動 Chrome 作業系統</translation>
 <translation id="5132929315877954718">為您的 Google Chrome 探索各種實用有趣的應用程式、遊戲、擴充功能和主題。</translation>
 <translation id="5170938038195470297">由於您的設定檔是來自較新版本的 Google Chrome，所以系統無法使用該檔案。
 
 這表示您可能無法使用部分功能。請指定另一個設定檔目錄，或使用較新版本的 Chrome。</translation>
+<translation id="5171117065011130146">要建立新的 Chrome 工作空間嗎？</translation>
 <translation id="5193136243808726294">Google Chrome 作業系統無法開啟此網頁。</translation>
 <translation id="5251420635869119124">以訪客身分使用 Chrome 不會留下任何記錄。</translation>
 <translation id="532046782124376502">警告：Google Chrome 無法阻止擴充程式記錄您的瀏覽活動。如要在無痕模式中停用這個擴充程式，請取消選取這個選項。</translation>
@@ -265,7 +268,9 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="8823341990149967727">Chrome 版本過舊</translation>
 <translation id="8834965163890861871">Google Chrome 正在嘗試編輯密碼。如果您同意，請輸入 Windows 密碼。</translation>
 <translation id="884296878221830158">這個擴充功能也會管制 Chrome 啟動時或您按一下 [主頁] 按鈕時所顯示的網頁。</translation>
+<translation id="8859948767482842016">您已使用公司帳戶登入<ph name="EXISTING_USER" />的空間。要為<ph name="WORK_DOMAIN" />建立新的 Chrome 空間以分開保留資料嗎？</translation>
 <translation id="8862326446509486874">您沒有在系統層級進行安裝的權限，請以管理員的身分執行安裝程式。</translation>
+<translation id="8877586659207810298">要為<ph name="NEW_USER" />建立新的 Chrome 空間嗎？</translation>
 <translation id="8914504000324227558">重新啟動 Chrome</translation>
 <translation id="8999208279178790196">{0,plural, =0{有可用的 Chrome 更新}=1{有可用的 Chrome 更新}other{Chrome 更新已發佈 # 天}}</translation>
 <translation id="9026991721384951619">您的帳戶登入詳情尚未更新，因此 Chrome 作業系統無法同步處理您的數據。</translation>

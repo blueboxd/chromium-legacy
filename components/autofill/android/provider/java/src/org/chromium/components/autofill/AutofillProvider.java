@@ -603,8 +603,8 @@ public class AutofillProvider {
         final AutofillSuggestion[] suggestions = new AutofillSuggestion[datalistValues.length];
         for (int i = 0; i < suggestions.length; i++) {
             suggestions[i] = new AutofillSuggestion(datalistValues[i], datalistLabels[i],
-                    DropdownItem.NO_ICON, false /* isIconAtLeft */, i, false /* isDeletable */,
-                    false /* isMultilineLabel */, false /* isBoldLabel */);
+                    /* itemTag= */ "", DropdownItem.NO_ICON, false /* isIconAtLeft */, i,
+                    false /* isDeletable */, false /* isMultilineLabel */, false /* isBoldLabel */);
         }
         if (mWebContentsAccessibility == null) {
             mWebContentsAccessibility = WebContentsAccessibility.fromWebContents(mWebContents);

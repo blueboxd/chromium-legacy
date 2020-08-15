@@ -60,7 +60,7 @@ const char kClientStr[] = "mac";
 #elif defined(OS_CHROMEOS)
 const Client kClient = Client::CHROME_CHROMEOS;
 const char kClientStr[] = "chromeos";
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || defined(OS_CHROMEOS)
 const Client kClient = Client::CHROME_LINUX;
 const char kClientStr[] = "linux";
 #elif defined(OS_WIN)

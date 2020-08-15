@@ -182,6 +182,17 @@ void Unfullscreen(Element& element) {
   UnsetFullscreenFlag(element);
   document.RemoveFromTopLayer(&element);
 
+  // WebXR DOM Overlay mode doesn't allow changing the fullscreen element, this
+  // is enforced in AllowedToRequestFullscreen. In this mode, unfullscreening
+  // should only be happening via ExitFullscreen. This may involve previous
+  // nested fullscreen elements being unfullscreened first, ignore those. This
+  // matches kPseudoXrOverlay rules in SelectorChecker::CheckPseudoClass().
+  if (document.IsXrOverlay() && element == old_element) {
+    // If this was the active fullscreen element, we're exiting fullscreen mode,
+    // and this also ends WebXR DOM Overlay mode.
+    document.SetIsXrOverlay(false, &element);
+  }
+
   Element* new_element = Fullscreen::FullscreenElementFrom(document);
   if (old_element != new_element) {
     FullscreenRequestType new_request_type =
@@ -739,6 +750,18 @@ void Fullscreen::ContinueRequestFullscreen(Document& document,
   for (Element* element : fullscreen_elements) {
     // 13.1. Let |doc| be |element|'s node document.
     Document& doc = element->GetDocument();
+
+    // If this fullscreen request is for WebXR DOM Overlay mode, apply that
+    // property to the document. This updates styling (setting the background
+    // transparent) and adds the :xr-overlay pseudoclass.
+    if (request_type & FullscreenRequestType::kForXrOverlay) {
+      // There's never more than one overlay element per document. (It's either
+      // the actual overlay element, or a containing iframe element if the
+      // actual element is in a different document.) It can't be changed during
+      // the session, that's enforced by AllowedToRequestFullscreen().
+      DCHECK(!doc.IsXrOverlay());
+      doc.SetIsXrOverlay(true, element);
+    }
 
     // 13.2. If |element| is |doc|'s fullscreen element, continue.
     if (element == FullscreenElementFrom(doc))

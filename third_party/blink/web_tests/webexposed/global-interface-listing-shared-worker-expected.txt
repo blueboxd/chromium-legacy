@@ -1466,6 +1466,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter format
 [Worker]     getter planes
 [Worker]     getter timestamp
+[Worker]     method clone
 [Worker]     method constructor
 [Worker]     method createImageBitmap
 [Worker]     method destroy

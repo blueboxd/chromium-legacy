@@ -5,25 +5,21 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_CHANGE_PASSWORD_URL_SERVICE_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_CHANGE_PASSWORD_URL_SERVICE_H_
 
-#include "base/callback_forward.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 class GURL;
-
-namespace url {
-class Origin;
-}
 
 namespace password_manager {
 
 class ChangePasswordUrlService : public KeyedService {
  public:
-  using UrlCallback = base::OnceCallback<void(GURL)>;
-  // Initializes the service.
-  virtual void Initialize() = 0;
-  // Returns the change password URL for `origin` via `callback`.
-  virtual void GetChangePasswordUrl(const url::Origin& origin,
-                                    UrlCallback callback) = 0;
+  // Prefetch the change password URLs that point to the password change form
+  // from gstatic.
+  virtual void PrefetchURLs() = 0;
+  // Returns a change password url for a given |origin| using eTLD+1. If no
+  // override is available or the fetch is not completed yet an empty GURL is
+  // returned.
+  virtual GURL GetChangePasswordUrl(const GURL& url) = 0;
 };
 
 }  // namespace password_manager

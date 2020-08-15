@@ -383,6 +383,10 @@ void ShillPropertyHandler::ManagerPropertyChanged(const std::string& key,
     std::string check_portal_list;
     if (value.GetAsString(&check_portal_list))
       listener_->CheckPortalListChanged(check_portal_list);
+  } else if (key == shill::kDhcpPropertyHostnameProperty) {
+    std::string hostname;
+    if (value.GetAsString(&hostname))
+      listener_->HostnameChanged(hostname);
   } else {
     VLOG(2) << "Ignored Manager Property: " << key;
   }

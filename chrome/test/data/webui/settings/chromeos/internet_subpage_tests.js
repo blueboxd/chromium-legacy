@@ -77,6 +77,28 @@ suite('InternetSubpage', function() {
       });
     });
 
+    test('Deep link to WiFi on/off toggle', async () => {
+      const mojom = chromeos.networkConfig.mojom;
+      setNetworksForTest(mojom.NetworkType.kWiFi, [
+        OncMojo.getDefaultNetworkState(mojom.NetworkType.kWiFi, 'wifi1'),
+        OncMojo.getDefaultNetworkState(mojom.NetworkType.kWiFi, 'wifi2'),
+      ]);
+
+      const params = new URLSearchParams;
+      params.append('settingId', '4');
+      settings.Router.getInstance().navigateTo(
+          settings.routes.INTERNET_NETWORKS, params);
+
+      await flushAsync();
+
+      const deepLinkElement = internetSubpage.$$('#deviceEnabledButton');
+      assert(!!deepLinkElement);
+      await test_util.waitAfterNextRender(deepLinkElement);
+      assertEquals(
+          deepLinkElement, getDeepActiveElement(),
+          'Toggle WiFi should be focused for settingId=4.');
+    });
+
     test('Tether', function() {
       const mojom = chromeos.networkConfig.mojom;
       setNetworksForTest(mojom.NetworkType.kTether, [
@@ -96,6 +118,32 @@ suite('InternetSubpage', function() {
         // primary toggle enables or disables Tether in that case.
         assertFalse(!!tetherToggle);
       });
+    });
+
+    test('Deep link to tether on/off toggle w/o cellular', async () => {
+      const mojom = chromeos.networkConfig.mojom;
+      setNetworksForTest(mojom.NetworkType.kTether, [
+        OncMojo.getDefaultNetworkState(mojom.NetworkType.kTether, 'tether1'),
+        OncMojo.getDefaultNetworkState(mojom.NetworkType.kTether, 'tether2'),
+      ]);
+      internetSubpage.tetherDeviceState = {
+        type: mojom.NetworkType.kTether,
+        deviceState: mojom.DeviceStateType.kEnabled
+      };
+
+      const params = new URLSearchParams;
+      params.append('settingId', '22');
+      settings.Router.getInstance().navigateTo(
+          settings.routes.INTERNET_NETWORKS, params);
+
+      await flushAsync();
+
+      const deepLinkElement = internetSubpage.$$('#deviceEnabledButton');
+      assert(!!deepLinkElement);
+      await test_util.waitAfterNextRender(deepLinkElement);
+      assertEquals(
+          deepLinkElement, getDeepActiveElement(),
+          'Device enabled should be focused for settingId=22.');
     });
 
     test('Fire show cellular setup event on add cellular clicked', () => {
@@ -149,6 +197,35 @@ suite('InternetSubpage', function() {
         assertTrue(!!tetherToggle);
         assertFalse(tetherToggle.disabled);
       });
+    });
+
+    test('Deep link to tether on/off toggle w/ cellular', async () => {
+      const mojom = chromeos.networkConfig.mojom;
+      mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kTether);
+      setNetworksForTest(mojom.NetworkType.kCellular, [
+        OncMojo.getDefaultNetworkState(
+            mojom.NetworkType.kCellular, 'cellular1'),
+        OncMojo.getDefaultNetworkState(mojom.NetworkType.kTether, 'tether1'),
+        OncMojo.getDefaultNetworkState(mojom.NetworkType.kTether, 'tether2'),
+      ]);
+      internetSubpage.tetherDeviceState = {
+        type: mojom.NetworkType.kTether,
+        deviceState: mojom.DeviceStateType.kEnabled
+      };
+
+      const params = new URLSearchParams;
+      params.append('settingId', '22');
+      settings.Router.getInstance().navigateTo(
+          settings.routes.INTERNET_NETWORKS, params);
+
+      await flushAsync();
+
+      const deepLinkElement = internetSubpage.$$('#tetherEnabledButton');
+      assert(!!deepLinkElement);
+      await test_util.waitAfterNextRender(deepLinkElement);
+      assertEquals(
+          deepLinkElement, getDeepActiveElement(),
+          'Tether enabled should be focused for settingId=22.');
     });
 
     suite('VPN', function() {

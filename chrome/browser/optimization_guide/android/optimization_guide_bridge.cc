@@ -124,6 +124,7 @@ void OptimizationGuideBridge::CanApplyOptimization(
   optimization_guide_keyed_service_->GetHintsManager()
       ->CanApplyOptimizationAsync(
           GURL(ConvertJavaStringToUTF8(env, url)),
+          /*navigation_id=*/base::nullopt,
           static_cast<optimization_guide::proto::OptimizationType>(
               optimization_type),
           base::BindOnce(&OnOptimizationGuideDecision,

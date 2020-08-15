@@ -14,7 +14,10 @@ enum FeatureType {
   DEBUG = 1;
   DOWNLOAD = 2;
   SEARCH = 3;
+  // For test only.
+  TEST = 9999999;
 }
+
 // All groups of video tutorials with different languages.
 message VideoTutorialGroups {
   // A list of video tutorial groups.

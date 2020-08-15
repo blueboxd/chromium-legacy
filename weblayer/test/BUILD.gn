@@ -244,12 +244,14 @@ source_set("run_all_unittests") {
 test("weblayer_unittests") {
   deps = [
     ":run_all_unittests",
+    "//components/favicon/core:database",
     "//components/site_isolation",
   ]
   if (is_android) {
     deps += [ ":weblayer_test_assets" ]
   }
   sources = [
+    "../browser/favicon/favicon_backend_wrapper_unittest.cc",
     "../browser/profile_disk_operations_unittests.cc",
     "../browser/site_isolation_policy_unittest.cc",
   ]

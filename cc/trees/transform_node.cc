@@ -15,6 +15,7 @@ namespace cc {
 TransformNode::TransformNode()
     : id(TransformTree::kInvalidNodeId),
       parent_id(TransformTree::kInvalidNodeId),
+      parent_frame_id(TransformTree::kInvalidNodeId),
       sticky_position_constraint_id(-1),
       sorting_context_id(0),
       needs_local_transform_update(true),
@@ -26,7 +27,6 @@ TransformNode::TransformNode()
       to_screen_is_potentially_animated(false),
       flattens_inherited_transform(true),
       node_and_ancestors_are_flat(true),
-      node_and_ancestors_have_only_integer_translation(true),
       scrolls(false),
       should_be_snapped(false),
       moved_by_outer_viewport_bounds_delta_y(false),
@@ -40,6 +40,7 @@ TransformNode::TransformNode(const TransformNode&) = default;
 
 bool TransformNode::operator==(const TransformNode& other) const {
   return id == other.id && parent_id == other.parent_id &&
+         parent_frame_id == other.parent_frame_id &&
          element_id == other.element_id && local == other.local &&
          origin == other.origin && post_translation == other.post_translation &&
          to_parent == other.to_parent &&
@@ -55,8 +56,6 @@ bool TransformNode::operator==(const TransformNode& other) const {
              other.to_screen_is_potentially_animated &&
          flattens_inherited_transform == other.flattens_inherited_transform &&
          node_and_ancestors_are_flat == other.node_and_ancestors_are_flat &&
-         node_and_ancestors_have_only_integer_translation ==
-             other.node_and_ancestors_have_only_integer_translation &&
          scrolls == other.scrolls &&
          should_be_snapped == other.should_be_snapped &&
          moved_by_outer_viewport_bounds_delta_y ==
@@ -69,7 +68,8 @@ bool TransformNode::operator==(const TransformNode& other) const {
          scroll_offset == other.scroll_offset &&
          snap_amount == other.snap_amount &&
          maximum_animation_scale == other.maximum_animation_scale &&
-         starting_animation_scale == other.starting_animation_scale;
+         starting_animation_scale == other.starting_animation_scale &&
+         frame_element_id == other.frame_element_id;
 }
 
 void TransformNode::AsValueInto(base::trace_event::TracedValue* value) const {

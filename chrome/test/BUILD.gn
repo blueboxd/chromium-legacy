@@ -1013,6 +1013,7 @@ if (!is_android) {
       "../browser/metrics/variations/force_field_trials_browsertest.cc",
       "../browser/navigation_predictor/navigation_predictor_browsertest.cc",
       "../browser/navigation_predictor/navigation_predictor_preconnect_client_browsertest.cc",
+      "../browser/navigation_predictor/navigation_predictor_renderer_warmup_client_browsertest.cc",
       "../browser/navigation_predictor/search_engine_preconnector_browsertest.cc",
       "../browser/net/cert_verify_proc_browsertest.cc",
       "../browser/net/chrome_accept_header_browsertest.cc",
@@ -3301,6 +3302,7 @@ test("unit_tests") {
     "../browser/metrics/thread_watcher_unittest.cc",
     "../browser/native_file_system/chrome_native_file_system_permission_context_unittest.cc",
     "../browser/native_file_system/origin_scoped_native_file_system_permission_context_unittest.cc",
+    "../browser/navigation_predictor/navigation_predictor_renderer_warmup_client_unittest.cc",
     "../browser/navigation_predictor/navigation_predictor_unittest.cc",
     "../browser/net/chrome_network_delegate_unittest.cc",
     "../browser/net/dns_probe_runner_unittest.cc",
@@ -3859,6 +3861,7 @@ test("unit_tests") {
     "//chrome/browser/payments:unittests",
     "//chrome/browser/privacy_budget:unit_tests",
     "//chrome/browser/updates/announcement_notification:unit_tests",
+    "//chrome/browser/video_tutorials:unit_tests",
     "//chrome/common:test_support",
     "//chrome/common/media_router:test_support",
     "//chrome/common/privacy_budget:unit_tests",
@@ -5521,6 +5524,7 @@ test("unit_tests") {
   if (!is_android && !is_chromeos) {
     sources += [
       "../browser/device_identity/device_oauth2_token_store_desktop_unittest.cc",
+      "../browser/enterprise/remote_commands/clear_browsing_data_job_unittest.cc",
       "../browser/media/webrtc/native_desktop_media_list_unittest.cc",
       "../browser/metrics/upgrade_metrics_provider_unittest.cc",
       "../browser/policy/chrome_browser_cloud_management_register_watcher_unittest.cc",

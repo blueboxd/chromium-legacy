@@ -358,8 +358,8 @@ XrResult OpenXrTestHelper::BeginSession() {
 }
 
 XrResult OpenXrTestHelper::EndSession() {
-  RETURN_IF_FALSE(IsSessionRunning(), XR_ERROR_SESSION_NOT_RUNNING,
-                  "EndSession session is not running");
+  // Per OpenXR 1.0 spec: "An application can only call xrEndSession when the
+  // session is in the XR_SESSION_STATE_STOPPING state"
   RETURN_IF(session_state_ != XR_SESSION_STATE_STOPPING,
             XR_ERROR_SESSION_NOT_STOPPING,
             "Session state is not XR_ERROR_SESSION_NOT_STOPPING");

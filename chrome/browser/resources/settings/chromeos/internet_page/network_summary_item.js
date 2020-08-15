@@ -76,6 +76,14 @@ Polymer({
     },
   },
 
+  /*
+   * Returns the device enabled toggle element.
+   * @return {?CrToggleElement}
+   */
+  getDeviceEnabledToggle() {
+    return this.$$('#deviceEnabledButton');
+  },
+
   /**
    * @return {string}
    * @private

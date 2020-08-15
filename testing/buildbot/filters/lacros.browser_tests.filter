@@ -11,7 +11,7 @@
 -All/CustomTabBarViewBrowserTest.IsNotCreatedInPopup/WebApps
 -All/CustomTabBarViewBrowserTest.RightClickMenuShowsCopyUrl/BookmarkApps
 -All/CustomTabBarViewBrowserTest.RightClickMenuShowsCopyUrl/WebApps
--All/DownloadReferrerPolicyTest.SaveLinkAsReferrerPolicy/8
+-All/DownloadReferrerPolicyTest.SaveLinkAsReferrerPolicy*
 -All/HostedAppProcessModelTest.BackgroundPageWithAppCoveringDifferentSites/0
 -All/HostedOrWebAppTest.CtrlClickLink/BookmarkApp
 -All/HostedOrWebAppTest.CtrlClickLink/HostedApp
@@ -183,6 +183,7 @@
 -PPAPINaClPNaClNonSfiTest.TrueTypeFont
 -PresentationReceiverWindowControllerBrowserTest.CreatesWindow
 -PreservedWindowPlacement.Test
+-PrintPreviewDestinationSelectTest.ChangeIconDeprecationWarnings
 -PrintPreviewDestinationStoreTest.LoadAndSelectDestination
 -PrintPreviewModelSettingsAvailabilityTest.All
 -PrintPreviewModelTest.GetPrintTicket

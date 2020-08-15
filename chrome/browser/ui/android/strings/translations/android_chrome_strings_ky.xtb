@@ -417,6 +417,7 @@
 <translation id="4314815835985389558">Шайкештирүүнү башкаруу</translation>
 <translation id="4320177379694898372">Интернет жок</translation>
 <translation id="4321739720395210191">Камераңыз ачылбай жатат. Түзмөктү өчүрүп күйгүзүп, кайталап көрүңүз.</translation>
+<translation id="4335835283689002019">Коопсуз серептөө өчүк.</translation>
 <translation id="4351244548802238354">Диалогду жабуу</translation>
 <translation id="4378154925671717803">Телефон</translation>
 <translation id="4382908510000698092">Chrome’дун тили катары колдонуу</translation>
@@ -457,6 +458,7 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="4662373422909645029">Ылакап атта сан болбошу керек</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> кыстарма өчүрүлдү</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> Башкы экраныңызга кошулду</translation>
+<translation id="4668347365065281350">Бардык сайттардын дайын-даректери, анын ичинде cookie файлдары жана башка жергиликтүү сакталган маалымат</translation>
 <translation id="4684427112815847243">Баарын шайкештештирүү</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 жана дагы <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 жана дагы <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
 <translation id="4696983787092045100">Түзмөктөрүңүзгө билдирүү жөнөтүңүз</translation>
@@ -613,6 +615,7 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="5763382633136178763">Жашыруун кыстырмалар</translation>
 <translation id="5763514718066511291">Бул колдонмонун URL'ин көчүрүү үчүн таптап коюңуз</translation>
 <translation id="5765780083710877561">Сүрөттөлүшү:</translation>
+<translation id="5776970333778123608">Маанилүү эмес маалымат</translation>
 <translation id="5793665092639000975"><ph name="SPACE_AVAILABLE" /> ичинен <ph name="SPACE_USED" /> колдонулууда</translation>
 <translation id="5795872532621730126">Издөө жана серептөө</translation>
 <translation id="5797070761912323120">Издөө, жарнама жана башка Google кызматтарын жекечелештирүү үчүн, Google таржымалыңызды колдонушу мүмкүн</translation>
@@ -1047,6 +1050,7 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="9050666287014529139">Купуя сөз айкашы</translation>
 <translation id="9063523880881406963">Иш тактасынын сайтындагы суроо-талапты өчүрүү</translation>
 <translation id="9065203028668620118">Түзөтүү</translation>
+<translation id="9065383040763568503">Chrome анча маанилүү деп эсептебеген сайттардын дайын-даректери (мис., жөндөөлөрү сакталбаган же сиз көп кирбеген сайттар)</translation>
 <translation id="9069543557624799859">Саат <ph name="TIME" /> жүктөлүп алынат.</translation>
 <translation id="9070377983101773829">Айтып издеп баштаңыз</translation>
 <translation id="9074336505530349563">Google тарабынан сунушталган мазмунду алуу үчүн аккаунтуңузга кирип, шайкештирүүнү күйгүзүңүз.</translation>

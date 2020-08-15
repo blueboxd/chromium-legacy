@@ -22,6 +22,10 @@ namespace network {
 class SimpleURLLoader;
 }  // namespace network
 
+namespace password_manager {
+class ChangePasswordUrlService;
+}  // namespace password_manager
+
 // This NavigationThrottle checks whether a site supports the
 // .well-known/change-password url. To check whether a site supports the
 // change-password url, we also request a .well-known path that is defined to
@@ -66,6 +70,7 @@ class WellKnownChangePasswordNavigationThrottle
   int non_existing_resource_response_code_ = 0;
   int change_password_response_code_ = 0;
   std::unique_ptr<network::SimpleURLLoader> url_loader_;
+  password_manager::ChangePasswordUrlService* change_password_url_service_;
 };
 
 #endif  // CHROME_BROWSER_UI_PASSWORDS_WELL_KNOWN_CHANGE_PASSWORD_NAVIGATION_THROTTLE_H_

@@ -28,6 +28,7 @@
 #include "chrome/browser/media/router/providers/dial/dial_activity_manager.h"
 #include "chrome/browser/media/router/providers/dial/dial_internal_message_util.h"
 #include "chrome/common/media_router/discovery/media_sink_internal.h"
+#include "chrome/common/media_router/mojom/logger.mojom.h"
 #include "net/base/ip_endpoint.h"
 #include "services/network/test/test_url_loader_factory.h"
 #endif  // !defined(OS_ANDROID)
@@ -117,8 +118,10 @@ class MockCastAppDiscoveryService : public CastAppDiscoveryService {
   Subscription StartObservingMediaSinks(
       const CastMediaSource& source,
       const SinkQueryCallback& callback) override;
+  scoped_refptr<base::SequencedTaskRunner> task_runner() override;
   MOCK_METHOD1(DoStartObservingMediaSinks, void(const CastMediaSource&));
   MOCK_METHOD0(Refresh, void());
+  MOCK_METHOD1(BindLogger, void(mojo::PendingRemote<mojom::Logger>));
 
   SinkQueryCallbackList& callbacks() { return callbacks_; }
 

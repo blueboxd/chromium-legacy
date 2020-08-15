@@ -113,6 +113,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
 #if defined(OS_MAC)
   bool IsTouchIdAuthenticator() const override;
 #endif  // defined(OS_MAC)
+#if defined(OS_CHROMEOS)
+  bool IsChromeOSAuthenticator() const override;
+#endif  // defined(OS_CHROMEOS)
   base::WeakPtr<FidoAuthenticator> GetWeakPtr() override;
 
   FidoDevice* device() { return device_.get(); }

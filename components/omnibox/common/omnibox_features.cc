@@ -213,12 +213,11 @@ const base::Feature kDynamicMaxAutocomplete{"OmniboxDynamicMaxAutocomplete",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 // If enabled, when the user clears the whole omnibox text (i.e. via Backspace),
-// Chrome will request ZeroSuggest suggestions. Note, this flag merely adds a
-// new ZeroSuggest entrypoint. ZeroSuggest still must be enabled on the proper
-// page classification (either by default or via a separate flag), or else this
-// flag will do nothing.
-const base::Feature kClobberIsZeroSuggestEntrypoint{
-    "OmniboxClobberIsZeroSuggestEntrypoint", base::FEATURE_DISABLED_BY_DEFAULT};
+// Chrome will request remote ZeroSuggest suggestions for the OTHER page
+// classification (contextual web).
+const base::Feature kClobberTriggersContextualWebZeroSuggest{
+    "OmniboxClobberTriggersContextualWebZeroSuggest",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Disable this flag to prevent focus gestures (e.g. clicks, taps, Ctrl+L) from
 // triggering ZeroSuggest for the OTHER page classification (contextual web).
@@ -284,12 +283,12 @@ const base::Feature kReactiveZeroSuggestionsOnNTPRealbox{
 // Allow suggestions to be shown to the user on the New Tab Page upon focusing
 // URL bar (the omnibox).
 const base::Feature kZeroSuggestionsOnNTP{"OmniboxZeroSuggestionsOnNTP",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Allow suggestions to be shown to the user on the New Tab Page upon focusing
 // the real search box.
 const base::Feature kZeroSuggestionsOnNTPRealbox{
-    "OmniboxZeroSuggestionsOnNTPRealbox", base::FEATURE_DISABLED_BY_DEFAULT};
+    "OmniboxZeroSuggestionsOnNTPRealbox", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Allow on-focus query refinements to be shown on the default SERP.
 const base::Feature kZeroSuggestionsOnSERP{"OmniboxZeroSuggestionsOnSERP",

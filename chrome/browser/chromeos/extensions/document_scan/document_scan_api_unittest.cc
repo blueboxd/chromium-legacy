@@ -2,18 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/extensions/document_scan/document_scan_api.h"
+#include "chrome/browser/chromeos/scanning/fake_lorgnette_scanner_manager.h"
+#include "chrome/browser/chromeos/scanning/lorgnette_scanner_manager_factory.h"
 #include "chrome/browser/extensions/extension_api_unittest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_lorgnette_manager_client.h"
-#include "chromeos/dbus/lorgnette/lorgnette_service.pb.h"
+#include "components/keyed_service/core/keyed_service.h"
+#include "content/public/browser/browser_context.h"
 #include "extensions/browser/api_test_utils.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -25,15 +28,13 @@ namespace api {
 
 namespace {
 
-lorgnette::ListScannersResponse CreateListScannersResponse() {
-  lorgnette::ScannerInfo scanner;
-  scanner.set_name("Dank Scanner");
-  scanner.set_manufacturer("Scanners, Inc.");
-  scanner.set_model("TX1000");
-  scanner.set_type("Flatbed");
-  lorgnette::ListScannersResponse response;
-  *response.add_scanners() = std::move(scanner);
-  return response;
+// Scanner name used for tests.
+constexpr char kTestScannerName[] = "Test Scanner";
+
+// Creates a new FakeLorgnetteScannerManager for the given |context|.
+std::unique_ptr<KeyedService> BuildLorgnetteScannerManager(
+    content::BrowserContext* context) {
+  return std::make_unique<chromeos::FakeLorgnetteScannerManager>();
 }
 
 }  // namespace
@@ -46,18 +47,16 @@ class DocumentScanScanFunctionTest : public ExtensionApiUnittest {
 
   void SetUp() override {
     ExtensionApiUnittest::SetUp();
-    chromeos::DBusThreadManager::Initialize();
     function_->set_user_gesture(true);
+    chromeos::LorgnetteScannerManagerFactory::GetInstance()->SetTestingFactory(
+        browser()->profile(),
+        base::BindRepeating(&BuildLorgnetteScannerManager));
   }
 
-  void TearDown() override {
-    chromeos::DBusThreadManager::Shutdown();
-    ExtensionApiUnittest::TearDown();
-  }
-
-  chromeos::FakeLorgnetteManagerClient* GetLorgnetteManagerClient() {
-    return static_cast<chromeos::FakeLorgnetteManagerClient*>(
-        chromeos::DBusThreadManager::Get()->GetLorgnetteManagerClient());
+  chromeos::FakeLorgnetteScannerManager* GetLorgnetteScannerManager() {
+    return static_cast<chromeos::FakeLorgnetteScannerManager*>(
+        chromeos::LorgnetteScannerManagerFactory::GetForBrowserContext(
+            browser()->profile()));
   }
 
  protected:
@@ -78,37 +77,27 @@ TEST_F(DocumentScanScanFunctionTest, UserGestureRequiredError) {
             RunFunctionAndReturnError("[{}]"));
 }
 
-TEST_F(DocumentScanScanFunctionTest, ListScannersError) {
-  GetLorgnetteManagerClient()->SetListScannersResponse(base::nullopt);
-  EXPECT_EQ("Failed to obtain list of scanners",
-            RunFunctionAndReturnError("[{}]"));
-}
-
 TEST_F(DocumentScanScanFunctionTest, NoScannersAvailableError) {
-  lorgnette::ListScannersResponse response;
-  GetLorgnetteManagerClient()->SetListScannersResponse(response);
+  GetLorgnetteScannerManager()->SetGetScannerNamesResponse({});
   EXPECT_EQ("No scanners available", RunFunctionAndReturnError("[{}]"));
 }
 
 TEST_F(DocumentScanScanFunctionTest, UnsupportedMimeTypesError) {
-  GetLorgnetteManagerClient()->SetListScannersResponse(
-      CreateListScannersResponse());
+  GetLorgnetteScannerManager()->SetGetScannerNamesResponse({kTestScannerName});
   EXPECT_EQ("Unsupported MIME types",
             RunFunctionAndReturnError("[{\"mimeTypes\": [\"image/tiff\"]}]"));
 }
 
 TEST_F(DocumentScanScanFunctionTest, ScanImageError) {
-  GetLorgnetteManagerClient()->SetListScannersResponse(
-      CreateListScannersResponse());
-  GetLorgnetteManagerClient()->SetScanResponse(base::nullopt);
+  GetLorgnetteScannerManager()->SetGetScannerNamesResponse({kTestScannerName});
+  GetLorgnetteScannerManager()->SetScanResponse(base::nullopt);
   EXPECT_EQ("Failed to scan image",
             RunFunctionAndReturnError("[{\"mimeTypes\": [\"image/png\"]}]"));
 }
 
 TEST_F(DocumentScanScanFunctionTest, Success) {
-  GetLorgnetteManagerClient()->SetListScannersResponse(
-      CreateListScannersResponse());
-  GetLorgnetteManagerClient()->SetScanResponse("PrettyPicture");
+  GetLorgnetteScannerManager()->SetGetScannerNamesResponse({kTestScannerName});
+  GetLorgnetteScannerManager()->SetScanResponse("PrettyPicture");
   std::unique_ptr<base::DictionaryValue> result(RunFunctionAndReturnDictionary(
       function_.get(), "[{\"mimeTypes\": [\"image/png\"]}]"));
   ASSERT_NE(nullptr, result.get());

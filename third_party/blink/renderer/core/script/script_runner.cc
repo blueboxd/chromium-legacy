@@ -32,6 +32,7 @@
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/script/script_loader.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -147,6 +148,10 @@ bool ScriptRunner::CanDelayAsyncScripts() {
           DelayAsyncScriptExecutionUntilFinishedParsingEnabled() ||
       RuntimeEnabledFeatures::
           DelayAsyncScriptExecutionUntilFirstPaintOrFinishedParsingEnabled();
+  if (!document_->Parsing()) {
+    document_->Loader()->DidObserveLoadingBehavior(
+        kLoadingBehaviorAsyncScriptReadyBeforeDocumentFinishedParsing);
+  }
   return !delay_async_script_milestone_reached_ && flags_enabled;
 }
 

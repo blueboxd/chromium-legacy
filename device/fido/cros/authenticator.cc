@@ -272,6 +272,10 @@ bool ChromeOSAuthenticator::RequiresBlePairingPin() const {
   return false;
 }
 
+bool ChromeOSAuthenticator::IsChromeOSAuthenticator() const {
+  return true;
+}
+
 base::WeakPtr<FidoAuthenticator> ChromeOSAuthenticator::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }

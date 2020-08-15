@@ -19,6 +19,7 @@ android_library("java") {
   sources = [
     "java/src/org/chromium/chrome/browser/paint_preview/PaintPreviewDemoManager.java",
     "java/src/org/chromium/chrome/browser/paint_preview/PaintPreviewTabHelper.java",
+    "java/src/org/chromium/chrome/browser/paint_preview/TabbedPaintPreviewMetricsHelper.java",
     "java/src/org/chromium/chrome/browser/paint_preview/TabbedPaintPreviewPlayer.java",
     "java/src/org/chromium/chrome/browser/paint_preview/services/PaintPreviewDemoService.java",
     "java/src/org/chromium/chrome/browser/paint_preview/services/PaintPreviewDemoServiceFactory.java",

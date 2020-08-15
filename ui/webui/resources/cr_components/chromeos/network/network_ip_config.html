@@ -21,7 +21,7 @@
       <cr-policy-indicator indicator-type="[[getPolicyIndicatorType(
           managedProperties.ipAddressConfigType)]]">
       </cr-policy-indicator>
-      <cr-toggle checked="{{automatic_}}"
+      <cr-toggle id="autoConfigIpToggle" checked="{{automatic_}}"
           disabled="[[!canChangeIPConfigType_(managedProperties)]]"
           on-change="onAutomaticChange_"
           aria-labelledby="autoIPConfigLabel">

@@ -17596,6 +17596,39 @@ TEST_F(LayerTreeHostImplTest, FrameElementIdHitTestSimple) {
             ElementId(0x10));
 }
 
+TEST_F(LayerTreeHostImplTest, FrameElementIdHitTestInheritance) {
+  SetupDefaultRootLayer(gfx::Size(100, 100));
+
+  LayerImpl* frame_layer = AddLayer();
+  frame_layer->SetBounds(gfx::Size(50, 50));
+  frame_layer->SetHitTestable(true);
+  CopyProperties(root_layer(), frame_layer);
+  CreateTransformNode(frame_layer, root_layer()->transform_tree_index())
+      .frame_element_id = ElementId(0x20);
+
+  // Create a child layer with no associated frame, but with the above frame
+  // layer as a parent.
+  LayerImpl* child_layer = AddLayer();
+  child_layer->SetBounds(gfx::Size(50, 50));
+  child_layer->SetHitTestable(true);
+  CopyProperties(root_layer(), child_layer);
+  auto& child_node =
+      CreateTransformNode(child_layer, frame_layer->transform_tree_index());
+  child_node.parent_frame_id = frame_layer->transform_tree_index();
+  child_layer->SetOffsetToTransformParent(gfx::Vector2dF(25, 25));
+
+  UpdateDrawProperties(host_impl_->active_tree());
+
+  // Hit tests on the parent should return the parent's frame element ID.
+  EXPECT_EQ(host_impl_->FindFrameElementIdAtPoint(gfx::PointF(15, 15)),
+            ElementId(0x20));
+
+  // Ensure that hit tests on the child (non-frame) layer returns the frame
+  // element id of its parent.
+  EXPECT_EQ(host_impl_->FindFrameElementIdAtPoint(gfx::PointF(60, 60)),
+            ElementId(0x20));
+}
+
 TEST_F(LayerTreeHostImplTest, FrameElementIdHitTestOverlap) {
   SetupDefaultRootLayer(gfx::Size(100, 100));
 
@@ -17609,13 +17642,16 @@ TEST_F(LayerTreeHostImplTest, FrameElementIdHitTestOverlap) {
   occluding_frame_layer->SetBounds(gfx::Size(50, 50));
   occluding_frame_layer->SetHitTestable(true);
   CopyProperties(root_layer(), occluding_frame_layer);
-  CreateTransformNode(occluding_frame_layer,
-                      frame_layer->transform_tree_index())
-      .frame_element_id = ElementId(0x20);
+  auto& occluding_frame_node = CreateTransformNode(
+      occluding_frame_layer, frame_layer->transform_tree_index());
+  occluding_frame_node.frame_element_id = ElementId(0x20);
+  occluding_frame_node.parent_frame_id = frame_layer->transform_tree_index();
   occluding_frame_layer->SetOffsetToTransformParent(gfx::Vector2dF(25, 25));
 
   UpdateDrawProperties(host_impl_->active_tree());
 
+  // Both frame layers should return their own frame element IDs, despite
+  // overlapping.
   EXPECT_EQ(host_impl_->FindFrameElementIdAtPoint(gfx::PointF(15, 15)),
             ElementId(0x10));
   EXPECT_EQ(host_impl_->FindFrameElementIdAtPoint(gfx::PointF(30, 30)),

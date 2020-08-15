@@ -34,6 +34,9 @@ void NetworkStateHandlerObserver::ScanRequested(
 
 void NetworkStateHandlerObserver::ScanCompleted(const DeviceState* device) {}
 
+void NetworkStateHandlerObserver::HostnameChanged(const std::string& hostname) {
+}
+
 void NetworkStateHandlerObserver::OnShuttingDown() {}
 
 }  // namespace chromeos

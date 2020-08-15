@@ -433,7 +433,7 @@ QUIC_FLAG(bool,
 QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_get_stream_information_from_stream_map,
-    false)
+    true)
 
 // If true, QuicSession does not keep a separate zombie_streams. Instead, all
 // streams are stored in stream_map_.

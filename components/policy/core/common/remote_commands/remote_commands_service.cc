@@ -58,6 +58,8 @@ RemoteCommandsService::MetricReceivedRemoteCommand RemoteCommandMetricFromType(
       return Metric::kDeviceRunDiagnosticRoutine;
     case em::RemoteCommand_Type_DEVICE_GET_DIAGNOSTIC_ROUTINE_UPDATE:
       return Metric::kDeviceGetDiagnosticRoutineUpdate;
+    case em::RemoteCommand_Type_BROWSER_CLEAR_BROWSING_DATA:
+      return Metric::kBrowserClearBrowsingData;
   }
 
   // None of possible types matched. May indicate that there is new unhandled
@@ -94,6 +96,8 @@ const char* RemoteCommandTypeToString(em::RemoteCommand_Type type) {
       return "DeviceRunDiagnosticRoutine";
     case em::RemoteCommand_Type_DEVICE_GET_DIAGNOSTIC_ROUTINE_UPDATE:
       return "DeviceGetDiagnosticRoutineUpdate";
+    case em::RemoteCommand_Type_BROWSER_CLEAR_BROWSING_DATA:
+      return "BrowserClearBrowsingData";
   }
 
   NOTREACHED() << "Unknown command type: " << type;
@@ -113,8 +117,10 @@ const char* RemoteCommandsService::GetMetricNameReceivedRemoteCommand(
     case PolicyInvalidationScope::kDevice:
       return is_command_signed ? kMetricDeviceRemoteCommandReceived
                                : kMetricDeviceUnsignedRemoteCommandReceived;
-    case PolicyInvalidationScope::kDeviceLocalAccount:
     case PolicyInvalidationScope::kCBCM:
+      return is_command_signed ? kMetricCBCMRemoteCommandReceived
+                               : kMetricCBCMUnsignedRemoteCommandReceived;
+    case PolicyInvalidationScope::kDeviceLocalAccount:
       NOTREACHED() << "Unexpected instance of remote commands service with "
                       "device local account scope.";
       return "";
@@ -139,8 +145,12 @@ std::string RemoteCommandsService::GetMetricNameExecutedRemoteCommand(
               ? kMetricDeviceRemoteCommandExecutedTemplate
               : kMetricDeviceUnsignedRemoteCommandExecutedTemplate;
       break;
-    case PolicyInvalidationScope::kDeviceLocalAccount:
     case PolicyInvalidationScope::kCBCM:
+      base_metric_name = is_command_signed
+                             ? kMetricCBCMRemoteCommandExecutedTemplate
+                             : kMetricCBCMUnsignedRemoteCommandExecutedTemplate;
+      break;
+    case PolicyInvalidationScope::kDeviceLocalAccount:
       NOTREACHED() << "Unexpected instance of remote commands service with "
                       "device local account scope.";
       return "";

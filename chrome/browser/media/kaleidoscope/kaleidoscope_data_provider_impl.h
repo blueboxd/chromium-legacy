@@ -47,6 +47,9 @@ class KaleidoscopeDataProviderImpl
       media::mojom::KaleidoscopeTab tab,
       GetContinueWatchingMediaFeedItemsCallback callback) override;
   void GetCredentials(GetCredentialsCallback cb) override;
+  void GetShouldShowFirstRunExperience(
+      GetShouldShowFirstRunExperienceCallback cb) override;
+  void SetFirstRunExperienceCompleted() override;
   void GetHighWatchTimeOrigins(GetHighWatchTimeOriginsCallback cb) override;
   void SendFeedback() override;
 

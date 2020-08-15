@@ -9,6 +9,7 @@
 <translation id="150962533380566081">PUK tidak valid.</translation>
 <translation id="1510238584712386396">Peluncur</translation>
 <translation id="1644574205037202324">Histori</translation>
+<translation id="1662989795263954667">Dihentikan - Tinta habis</translation>
 <translation id="1734367976349034509">Perangkat ini dikelola perusahaan</translation>
 <translation id="1905710495812624430">Melebihi batas percobaan maksimum yang diizinkan.</translation>
 <translation id="1930797645656624981">Layanan Metode Masukan Chrome OS</translation>
@@ -39,18 +40,22 @@
 <translation id="4227825898293920515">Sandi kedaluwarsa dalam <ph name="TIME" /></translation>
 <translation id="4238516577297848345">Tidak ada tugas pencetakan yang sedang berlangsung</translation>
 <translation id="428217921675623177">Tugas pencetakan yang sudah lebih dari 90 hari akan dihapus</translation>
+<translation id="4297501883039923494">Dihentikan - Error tidak diketahui</translation>
 <translation id="4429881212383817840">Masa berlaku tiket Kerberos segera berakhir</translation>
 <translation id="445059817448385655">Sandi lama</translation>
 <translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> dari <ph name="TOTAL_PAGE_NUMBER" />. Tekan enter untuk membatalkan tugas pencetakan.</translation>
 <translation id="467510802200863975">Sandi tidak cocok</translation>
+<translation id="4691278870498629773">Dihentikan - Tidak ada baki</translation>
 <translation id="4731797938093519117">Akses orang tua</translation>
 <translation id="4773299976671772492">Dihentikan</translation>
 <translation id="4808449224298348341">Tugas pencetakan <ph name="DOCUMENT_TITLE" /> dibatalkan</translation>
 <translation id="4890353053343094602">Segera pilih satu sandi baru</translation>
+<translation id="4917889632206600977">Dihentikan - Kertas habis</translation>
 <translation id="4932733599132424254">Tanggal</translation>
 <translation id="5212543919916444558">Di layar tidak ada apa pun yang membutuhkan bantuan saya.
 Ketuk mikrofon untuk bertanya apa saja.</translation>
 <translation id="5222676887888702881">Logout</translation>
+<translation id="5267975978099728568"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="ERROR_STATUS" /></translation>
 <translation id="5317780077021120954">Simpan</translation>
 <translation id="5326394068492324457"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="COMPLETION_STATUS" /></translation>
 <translation id="5332948983412042822">Pilih satu sandi baru sekarang</translation>
@@ -63,9 +68,11 @@ Ketuk mikrofon untuk bertanya apa saja.</translation>
 <translation id="6106186594183574873">Untuk menyelesaikan, masukkan sandi yang lama</translation>
 <translation id="6146993107019042706">Untuk menyelesaikan, masukkan sandi yang baru</translation>
 <translation id="636850387210749493">Pendaftaran perusahaan</translation>
+<translation id="649050271426829538">Dihentikan - Kertas macet</translation>
 <translation id="6517239166834772319">Jelajahi</translation>
 <translation id="6564646048574748301">Gagal - Printer tidak dapat dijangkau</translation>
 <translation id="6643016212128521049">Hapus</translation>
+<translation id="6747215703636344499">Dihentikan - Baki hasil cetak penuh</translation>
 <translation id="7162487448488904999">Galeri</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7561454561030345039">Tindakan ini dikelola oleh administrator Anda</translation>
@@ -77,6 +84,7 @@ Ketuk mikrofon untuk bertanya apa saja.</translation>
 <translation id="8347227221149377169">Pekerjaan cetak</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> mengelola pengguna ini. Domain dapat mengelola setelan dan memantau aktivitas pengguna dari jarak jauh.</translation>
 <translation id="871560550817059752">Gagal - Tinta habis</translation>
+<translation id="8726019395068607495">Dihentikan - Tutup terbuka</translation>
 <translation id="8747900814994928677">Konfirmasi perubahan</translation>
 <translation id="8919837981463578619">Gagal - Tidak ada baki</translation>
 <translation id="8928727111548978589">Gagal - Kertas habis</translation>

@@ -12,7 +12,7 @@ enum RecordingState { "inactive", "recording", "paused" };
 ] interface MediaRecorder : EventTarget {
     [CallWith=ExecutionContext, RaisesException] constructor(MediaStream stream, optional MediaRecorderOptions options = {});
     readonly attribute MediaStream stream;
-    readonly attribute DOMString mimeType;
+    [HighEntropy=Direct, MeasureAs=MediaRecorder_MimeType] readonly attribute DOMString mimeType;
     readonly attribute RecordingState state;
 
     attribute EventHandler onstart;
@@ -21,8 +21,8 @@ enum RecordingState { "inactive", "recording", "paused" };
     attribute EventHandler onpause;
     attribute EventHandler onresume;
     attribute EventHandler onerror;
-    readonly attribute unsigned long videoBitsPerSecond;
-    readonly attribute unsigned long audioBitsPerSecond;
+    [HighEntropy=Direct, MeasureAs=MediaRecorder_VideoBitsPerSecond] readonly attribute unsigned long videoBitsPerSecond;
+    [HighEntropy=Direct, MeasureAs=MediaRecorder_AudioBitsPerSecond] readonly attribute unsigned long audioBitsPerSecond;
 
     [RaisesException, Measure] void start(optional long timeslice);
     [RaisesException] void stop();

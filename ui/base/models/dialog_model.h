@@ -121,8 +121,10 @@ class COMPONENT_EXPORT(UI_BASE) DialogModel final {
     // Use of the extra button in new dialogs are discouraged. If this is deemed
     // necessary please double-check with UX before adding any new dialogs with
     // them.
-    Builder& AddDialogExtraButton(base::string16 label,
-                                  const DialogModelButton::Params& params);
+    Builder& AddDialogExtraButton(
+        base::RepeatingCallback<void(const Event&)> callback,
+        base::string16 label,
+        const DialogModelButton::Params& params);
 
     // Adds a textfield. See DialogModel::AddTextfield().
     Builder& AddTextfield(base::string16 label,
@@ -167,22 +169,11 @@ class COMPONENT_EXPORT(UI_BASE) DialogModel final {
   DialogModelCombobox* GetComboboxByUniqueId(int unique_id);
   DialogModelTextfield* GetTextfieldByUniqueId(int unique_id);
 
-  // Methods with util::PassKey<DialogModelHost> are for host implementations
-  // only.
-  void OnButtonPressed(util::PassKey<DialogModelHost>,
-                       DialogModelButton* field,
-                       const Event& event);
+  // Methods with util::PassKey<DialogModelHost> are only intended to be called
+  // by the DialogModelHost implementation.
   void OnDialogAccepted(util::PassKey<DialogModelHost>);
   void OnDialogCancelled(util::PassKey<DialogModelHost>);
   void OnDialogClosed(util::PassKey<DialogModelHost>);
-  void OnComboboxPerformAction(util::PassKey<DialogModelHost>,
-                               DialogModelCombobox* combobox);
-  void OnComboboxSelectedIndexChanged(util::PassKey<DialogModelHost>,
-                                      DialogModelCombobox* combobox,
-                                      int index);
-  void OnTextfieldTextChanged(util::PassKey<DialogModelHost>,
-                              DialogModelTextfield* textfield,
-                              base::string16 text);
   void OnWindowClosing(util::PassKey<DialogModelHost>);
 
   // Called when added to a DialogModelHost.
@@ -227,10 +218,6 @@ class COMPONENT_EXPORT(UI_BASE) DialogModel final {
   util::PassKey<DialogModel> GetPassKey() {
     return util::PassKey<DialogModel>();
   }
-
-  void AddDialogButton(int button,
-                       base::string16 label,
-                       const DialogModelButton::Params& params);
 
   std::unique_ptr<DialogModelDelegate> delegate_;
   DialogModelHost* host_ = nullptr;

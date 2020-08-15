@@ -18,6 +18,7 @@ Polymer({
   behaviors: [
     NetworkListenerBehavior,
     CrPolicyNetworkBehaviorMojo,
+    DeepLinkingBehavior,
     settings.RouteObserverBehavior,
     I18nBehavior,
     WebUIListenerBehavior,
@@ -201,6 +202,37 @@ Polymer({
 
     /** @private */
     proxyExpanded_: Boolean,
+
+    /**
+     * Used by DeepLinkingBehavior to focus this page's deep links.
+     * @type {!Set<!chromeos.settings.mojom.Setting>}
+     */
+    supportedSettingIds: {
+      type: Object,
+      value: () => new Set([
+        chromeos.settings.mojom.Setting.kConfigureEthernet,
+        chromeos.settings.mojom.Setting.kEthernetAutoConfigureIp,
+        chromeos.settings.mojom.Setting.kEthernetDns,
+        chromeos.settings.mojom.Setting.kEthernetProxy,
+        chromeos.settings.mojom.Setting.kDisconnectWifiNetwork,
+        chromeos.settings.mojom.Setting.kPreferWifiNetwork,
+        chromeos.settings.mojom.Setting.kForgetWifiNetwork,
+        chromeos.settings.mojom.Setting.kWifiAutoConfigureIp,
+        chromeos.settings.mojom.Setting.kWifiDns,
+        chromeos.settings.mojom.Setting.kWifiProxy,
+        chromeos.settings.mojom.Setting.kWifiAutoConnectToNetwork,
+        chromeos.settings.mojom.Setting.kCellularRoaming,
+        chromeos.settings.mojom.Setting.kCellularApn,
+        chromeos.settings.mojom.Setting.kDisconnectCellularNetwork,
+        chromeos.settings.mojom.Setting.kCellularAutoConfigureIp,
+        chromeos.settings.mojom.Setting.kCellularDns,
+        chromeos.settings.mojom.Setting.kCellularProxy,
+        chromeos.settings.mojom.Setting.kCellularAutoConnectToNetwork,
+        chromeos.settings.mojom.Setting.kDisconnectTetherNetwork,
+        chromeos.settings.mojom.Setting.kWifiMetered,
+        chromeos.settings.mojom.Setting.kCellularMetered,
+      ]),
+    },
   },
 
   observers: [
@@ -275,6 +307,94 @@ Polymer({
   },
 
   /**
+   * Helper function for manually showing deep links on this page.
+   * @param {!chromeos.settings.mojom.Setting} settingId
+   * @param {!function():?Element} elementCallback
+   * @private
+   */
+  afterRenderShowDeepLink(settingId, elementCallback) {
+    // Wait for element to load.
+    Polymer.RenderStatus.afterNextRender(this, () => {
+      const deepLinkElement = elementCallback();
+      if (!deepLinkElement || deepLinkElement.hidden) {
+        console.warn(`Element with deep link id ${settingId} not focusable.`);
+        return;
+      }
+      this.showDeepLinkElement(deepLinkElement);
+    });
+  },
+
+  /**
+   * Overridden from DeepLinkingBehavior.
+   * @param {!chromeos.settings.mojom.Setting} settingId
+   * @return {boolean}
+   */
+  beforeDeepLinkAttempt(settingId) {
+    // Manually show the deep links for settings in shared elements.
+    if (settingId === chromeos.settings.mojom.Setting.kCellularApn) {
+      this.networkExpanded_ = true;
+      this.afterRenderShowDeepLink(
+          settingId, () => this.$$('network-apnlist').getApnSelect());
+      // Stop deep link attempt since we completed it manually.
+      return false;
+    }
+
+    if (settingId ===
+            chromeos.settings.mojom.Setting.kEthernetAutoConfigureIp ||
+        settingId === chromeos.settings.mojom.Setting.kWifiAutoConfigureIp ||
+        settingId ===
+            chromeos.settings.mojom.Setting.kCellularAutoConfigureIp) {
+      this.networkExpanded_ = true;
+      this.afterRenderShowDeepLink(
+          settingId,
+          () => this.$$('network-ip-config').getAutoConfigIpToggle());
+      return false;
+    }
+
+    if (settingId === chromeos.settings.mojom.Setting.kEthernetDns ||
+        settingId === chromeos.settings.mojom.Setting.kWifiDns ||
+        settingId === chromeos.settings.mojom.Setting.kCellularDns) {
+      this.networkExpanded_ = true;
+      this.afterRenderShowDeepLink(
+          settingId,
+          () => this.$$('network-nameservers').getNameserverRadioButtons());
+      return false;
+    }
+
+    if (settingId === chromeos.settings.mojom.Setting.kEthernetProxy ||
+        settingId === chromeos.settings.mojom.Setting.kWifiProxy ||
+        settingId === chromeos.settings.mojom.Setting.kCellularProxy) {
+      this.proxyExpanded_ = true;
+      this.afterRenderShowDeepLink(
+          settingId,
+          () => this.$$('network-proxy-section').getAllowSharedToggle());
+      return false;
+    }
+
+    if (settingId === chromeos.settings.mojom.Setting.kWifiMetered ||
+        settingId === chromeos.settings.mojom.Setting.kCellularMetered) {
+      this.advancedExpanded_ = true;
+      // Continue with automatically showing these deep links.
+      return true;
+    }
+
+    if (settingId === chromeos.settings.mojom.Setting.kForgetWifiNetwork) {
+      this.afterRenderShowDeepLink(settingId, () => {
+        const forgetButton = this.$$('#forgetButton');
+        if (forgetButton && !forgetButton.hidden) {
+          return forgetButton;
+        }
+        // If forget button is hidden, show disconnect button instead.
+        return this.$$('#connectDisconnect');
+      });
+      return false;
+    }
+
+    // Otherwise, should continue with deep link attempt.
+    return true;
+  },
+
+  /**
    * settings.RouteObserverBehavior
    * @param {!settings.Route} route
    * @param {!settings.Route} oldRoute
@@ -297,6 +417,8 @@ Polymer({
     const type = queryParams.get('type') || 'WiFi';
     const name = queryParams.get('name') || type;
     this.init(guid, type, name);
+
+    this.attemptDeepLink();
   },
 
   /**
@@ -428,9 +550,10 @@ Polymer({
     Polymer.dom.flush();
 
     if (!this.didSetFocus_ &&
-        !settings.Router.getInstance().getQueryParameters().has('search')) {
-      // Unless the page was navigated to via search, focus a button once the
-      // initial state is set.
+        !settings.Router.getInstance().getQueryParameters().has('search') &&
+        !this.getDeepLinkSettingId()) {
+      // Unless the page was navigated to via search or has a deep linked
+      // setting, focus a button once the initial state is set.
       this.didSetFocus_ = true;
       const button = this.$$('#titleDiv .action-button:not([hidden])');
       if (button) {

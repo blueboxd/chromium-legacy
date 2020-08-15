@@ -49,7 +49,7 @@ const base::Feature kRealboxUseGoogleGIcon{"NtpRealboxUseGoogleGIcon",
 // If enabled, the search box in the middle of the NTP will accept input
 // directly (i.e. not be a "fake" box) and search results will show directly
 // below the non-fake input ("realbox").
-const base::Feature kRealbox{"NtpRealbox", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kRealbox{"NtpRealbox", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If enabled, shows Vasco suggestion chips in the NTP below fakebox/realbox
 // despite other config except DisableSearchSuggestChips below.

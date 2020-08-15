@@ -24,10 +24,11 @@ public class CardUnmaskBridge implements CardUnmaskPromptDelegate {
     private final CardUnmaskPrompt mCardUnmaskPrompt;
 
     public CardUnmaskBridge(long nativeCardUnmaskPromptViewAndroid, String title,
-            String instructions, String confirmButtonLabel, int iconId,
-            boolean shouldRequestExpirationDate, boolean defaultToStoringLocally,
-            boolean shouldOfferWebauthn, boolean defaultUseScreenlockChecked,
-            long successMessageDurationMilliseconds, WindowAndroid windowAndroid) {
+            String instructions, String confirmButtonLabel, int cvcIconId, int googlePayIconId,
+            boolean isCardLocal, boolean shouldRequestExpirationDate,
+            boolean defaultToStoringLocally, boolean shouldOfferWebauthn,
+            boolean defaultUseScreenlockChecked, long successMessageDurationMilliseconds,
+            WindowAndroid windowAndroid) {
         mNativeCardUnmaskPromptViewAndroid = nativeCardUnmaskPromptViewAndroid;
         Activity activity = windowAndroid.getActivity().get();
         if (activity == null) {
@@ -37,21 +38,23 @@ public class CardUnmaskBridge implements CardUnmaskPromptDelegate {
             new Handler().post(() -> dismissed());
         } else {
             mCardUnmaskPrompt = new CardUnmaskPrompt(activity, this, title, instructions,
-                    confirmButtonLabel, iconId, shouldRequestExpirationDate,
-                    defaultToStoringLocally, shouldOfferWebauthn, defaultUseScreenlockChecked,
-                    successMessageDurationMilliseconds);
+                    confirmButtonLabel, cvcIconId, googlePayIconId, isCardLocal,
+                    shouldRequestExpirationDate, defaultToStoringLocally, shouldOfferWebauthn,
+                    defaultUseScreenlockChecked, successMessageDurationMilliseconds);
         }
     }
 
     @CalledByNative
     private static CardUnmaskBridge create(long nativeUnmaskPrompt, String title,
-            String instructions, String confirmButtonLabel, int iconId,
-            boolean shouldRequestExpirationDate, boolean defaultToStoringLocally,
-            boolean shouldOfferWebauthn, boolean defaultUseScreenlockChecked,
-            long successMessageDurationMilliseconds, WindowAndroid windowAndroid) {
+            String instructions, String confirmButtonLabel, int cvcIconId, int googlePayIconId,
+            boolean isCardLocal, boolean shouldRequestExpirationDate,
+            boolean defaultToStoringLocally, boolean shouldOfferWebauthn,
+            boolean defaultUseScreenlockChecked, long successMessageDurationMilliseconds,
+            WindowAndroid windowAndroid) {
         return new CardUnmaskBridge(nativeUnmaskPrompt, title, instructions, confirmButtonLabel,
-                iconId, shouldRequestExpirationDate, defaultToStoringLocally, shouldOfferWebauthn,
-                defaultUseScreenlockChecked, successMessageDurationMilliseconds, windowAndroid);
+                cvcIconId, googlePayIconId, isCardLocal, shouldRequestExpirationDate,
+                defaultToStoringLocally, shouldOfferWebauthn, defaultUseScreenlockChecked,
+                successMessageDurationMilliseconds, windowAndroid);
     }
 
     @Override

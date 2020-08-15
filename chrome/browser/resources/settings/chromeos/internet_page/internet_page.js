@@ -16,6 +16,7 @@ Polymer({
 
   behaviors: [
     NetworkListenerBehavior,
+    DeepLinkingBehavior,
     I18nBehavior,
     settings.RouteObserverBehavior,
     WebUIListenerBehavior,
@@ -131,6 +132,18 @@ Polymer({
         return new Map();
       },
     },
+
+    /**
+     * Used by DeepLinkingBehavior to focus this page's deep links.
+     * @type {!Set<!chromeos.settings.mojom.Setting>}
+     */
+    supportedSettingIds: {
+      type: Object,
+      value: () => new Set([
+        chromeos.settings.mojom.Setting.kWifiOnOff,
+        chromeos.settings.mojom.Setting.kMobileOnOff,
+      ]),
+    },
   },
 
   /**
@@ -172,6 +185,32 @@ Polymer({
   },
 
   /**
+   * Overridden from DeepLinkingBehavior.
+   * @param {!chromeos.settings.mojom.Setting} settingId
+   * @return {boolean}
+   */
+  beforeDeepLinkAttempt(settingId) {
+    // Manually show the deep links for settings nested within elements.
+    let networkType = null;
+    if (settingId === chromeos.settings.mojom.Setting.kWifiOnOff) {
+      networkType = mojom.NetworkType.kWiFi;
+    } else if (settingId === chromeos.settings.mojom.Setting.kMobileOnOff) {
+      networkType = mojom.NetworkType.kCellular;
+    }
+
+    Polymer.RenderStatus.afterNextRender(this, () => {
+      const networkRow = this.$$('network-summary').getNetworkRow(networkType);
+      if (networkRow && networkRow.getDeviceEnabledToggle()) {
+        this.showDeepLinkElement(networkRow.getDeviceEnabledToggle());
+        return;
+      }
+      console.warn(`Element with deep link id ${settingId} not focusable.`);
+    });
+    // Stop deep link attempt since we completed it manually.
+    return false;
+  },
+
+  /**
    * settings.RouteObserverBehavior
    * @param {!settings.Route} route
    * @param {!settings.Route} oldRoute
@@ -194,8 +233,10 @@ Polymer({
       if (type) {
         this.knownNetworksType_ = OncMojo.getNetworkTypeFromString(type);
       }
-    } else if (
-        route != settings.routes.INTERNET && route != settings.routes.BASIC) {
+    } else if (route == settings.routes.INTERNET) {
+      // Show deep links for the internet page.
+      this.attemptDeepLink();
+    } else if (route != settings.routes.BASIC) {
       // If we are navigating to a non internet section, do not set focus.
       return;
     }

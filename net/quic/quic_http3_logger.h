@@ -35,6 +35,7 @@ class NET_EXPORT_PRIVATE QuicHttp3Logger : public quic::Http3DebugVisitor {
 
   void OnCancelPushFrameReceived(const quic::CancelPushFrame& frame) override;
   void OnSettingsFrameReceived(const quic::SettingsFrame& frame) override;
+  void OnSettingsFrameResumed(const quic::SettingsFrame& frame) override;
   void OnGoAwayFrameReceived(const quic::GoAwayFrame& frame) override;
   void OnMaxPushIdFrameReceived(const quic::MaxPushIdFrame& frame) override;
   void OnPriorityUpdateFrameReceived(

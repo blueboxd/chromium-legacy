@@ -723,11 +723,17 @@ var OSSettingsInternetDetailPageTest = class extends OSSettingsBrowserTest {
   }
 
   /** @override */
+  get featureList() {
+    return {enabled: ['chromeos::features::kOsSettingsDeepLinking']};
+  }
+
+  /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
       '//ui/webui/resources/js/promise_resolver.js',
       '//ui/webui/resources/js/assert.js',
       '//ui/webui/resources/js/util.js',
+      BROWSER_SETTINGS_PATH + '../test_util.js',
       BROWSER_SETTINGS_PATH + '../fake_chrome_event.js',
       BROWSER_SETTINGS_PATH + '../chromeos/fake_network_config_mojom.js',
       'internet_detail_page_tests.js',
@@ -748,11 +754,17 @@ var OSSettingsInternetPageTest = class extends OSSettingsBrowserTest {
   }
 
   /** @override */
+  get featureList() {
+    return {enabled: ['chromeos::features::kOsSettingsDeepLinking']};
+  }
+
+  /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
       '//ui/webui/resources/js/promise_resolver.js',
       '//ui/webui/resources/js/assert.js',
       '//ui/webui/resources/js/util.js',
+      BROWSER_SETTINGS_PATH + '../test_util.js',
       BROWSER_SETTINGS_PATH + '../fake_chrome_event.js',
       BROWSER_SETTINGS_PATH + '../chromeos/fake_network_config_mojom.js',
       'internet_page_tests.js',
@@ -774,7 +786,12 @@ var OSSettingsInternetSubpageTest = class extends OSSettingsBrowserTest {
 
   /** @override */
   get featureList() {
-    return {enabled: ['chromeos::features::kUpdatedCellularActivationUi']};
+    return {
+      enabled: [
+        'chromeos::features::kUpdatedCellularActivationUi',
+        'chromeos::features::kOsSettingsDeepLinking'
+      ]
+    };
   }
 
   /** @override */
@@ -794,6 +811,41 @@ var OSSettingsInternetSubpageTest = class extends OSSettingsBrowserTest {
 TEST_F('OSSettingsInternetSubpageTest', 'InternetSubpage', () => {
   mocha.run();
 });
+
+// Test fixture for settings-internet-known-networks-page.
+// eslint-disable-next-line no-var
+var OSSettingsInternetKnownNetworksPageTest =
+    class extends OSSettingsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return super.browsePreload +
+        'chromeos/internet_page/internet_known_networks_page.html';
+  }
+
+  /** @override */
+  get featureList() {
+    return {enabled: ['chromeos::features::kOsSettingsDeepLinking']};
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      '//ui/webui/resources/js/promise_resolver.js',
+      '//ui/webui/resources/js/assert.js',
+      '//ui/webui/resources/js/util.js',
+      BROWSER_SETTINGS_PATH + '../test_util.js',
+      BROWSER_SETTINGS_PATH + '../fake_chrome_event.js',
+      BROWSER_SETTINGS_PATH + '../chromeos/fake_network_config_mojom.js',
+      'internet_known_networks_page_tests.js',
+    ]);
+  }
+};
+
+TEST_F(
+    'OSSettingsInternetKnownNetworksPageTest', 'InternetKnownNetworksPage',
+    () => {
+      mocha.run();
+    });
 
 // Test fixture for the main settings page.
 // eslint-disable-next-line no-var
@@ -1503,8 +1555,14 @@ var OSSettingsInputPageTest = class extends OSSettingsBrowserTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
+      BROWSER_SETTINGS_PATH + '../fake_chrome_event.js',
       BROWSER_SETTINGS_PATH + '../test_browser_proxy.js',
+      BROWSER_SETTINGS_PATH + '../test_util.js',
+      BROWSER_SETTINGS_PATH + 'fake_input_method_private.js',
+      BROWSER_SETTINGS_PATH + 'fake_language_settings_private.js',
+      BROWSER_SETTINGS_PATH + 'fake_settings_private.js',
       'input_page_test.js',
+      'test_os_languages_browser_proxy.js',
       'test_os_languages_metrics_proxy.js',
     ]);
   }

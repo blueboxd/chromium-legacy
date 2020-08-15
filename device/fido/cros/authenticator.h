@@ -46,6 +46,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) ChromeOSAuthenticator
   bool IsPaired() const override;
   bool RequiresBlePairingPin() const override;
 
+  bool IsChromeOSAuthenticator() const override;
+
   void GetTouch(base::OnceClosure callback) override {}
   base::WeakPtr<FidoAuthenticator> GetWeakPtr() override;
 

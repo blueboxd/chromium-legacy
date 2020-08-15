@@ -501,6 +501,7 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   // Is the object selected because selection is following focus?
   virtual bool IsSelectedFromFocus() const { return false; }
   virtual bool IsSelectedOptionActive() const { return false; }
+  virtual bool IsNotUserSelectable() const { return false; }
   virtual bool IsVisible() const;
   virtual bool IsVisited() const { return false; }
 

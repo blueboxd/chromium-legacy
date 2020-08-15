@@ -37,6 +37,14 @@ Polymer({
     'useSharedProxiesChanged_(prefs.settings.use_shared_proxies.value)',
   ],
 
+  /**
+   * Returns the allow shared CrToggleElement.
+   * @return {?CrToggleElement}
+   */
+  getAllowSharedToggle() {
+    return /** @type {?CrToggleElement} */ (this.$$('#allowShared'));
+  },
+
   /** @protected settings.RouteObserverBehavior */
   currentRouteChanged(newRoute) {
     if (newRoute == settings.routes.NETWORK_DETAIL) {

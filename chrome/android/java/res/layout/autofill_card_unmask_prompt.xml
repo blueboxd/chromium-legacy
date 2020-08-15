@@ -12,8 +12,16 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content">
 
+    <androidx.appcompat.widget.DialogTitle
+        android:id="@+id/title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="@style/TextAppearance.AlertDialogTitleStyle"
+        style="@style/AlertDialogContent"/>
+
     <TextView
         android:id="@+id/no_retry_error_message"
+        android:layout_below="@+id/title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="23dp"

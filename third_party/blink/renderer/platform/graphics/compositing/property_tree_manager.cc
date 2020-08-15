@@ -502,6 +502,19 @@ int PropertyTreeManager::EnsureCompositorTransformNode(
 
   compositor_node.frame_element_id = transform_node.GetFrameElementId();
 
+  // Attach the index of the nearest parent node associated with a frame.
+  int parent_frame_id = kInvalidNodeId;
+  if (const auto* parent = transform_node.UnaliasedParent()) {
+    if (parent->IsFramePaintOffsetTranslation()) {
+      parent_frame_id = parent_id;
+    } else {
+      const auto* parent_compositor_node = GetTransformTree().Node(parent_id);
+      DCHECK(parent_compositor_node);
+      parent_frame_id = parent_compositor_node->parent_frame_id;
+    }
+  }
+  compositor_node.parent_frame_id = parent_frame_id;
+
   transform_node.SetCcNodeId(new_sequence_number_, id);
   GetTransformTree().set_needs_update(true);
 

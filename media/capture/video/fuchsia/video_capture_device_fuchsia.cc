@@ -268,6 +268,11 @@ void VideoCaptureDeviceFuchsia::OnBufferCollectionCreated(
     std::unique_ptr<SysmemBufferPool> collection) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
+  // Buffer collection allocation has failed. This case is not treated as an
+  // error because the camera may create a new collection.
+  if (!collection)
+    return;
+
   buffer_collection_ = std::move(collection);
   buffer_collection_->CreateReader(
       base::BindOnce(&VideoCaptureDeviceFuchsia::OnBufferReaderCreated,
@@ -277,6 +282,13 @@ void VideoCaptureDeviceFuchsia::OnBufferCollectionCreated(
 void VideoCaptureDeviceFuchsia::OnBufferReaderCreated(
     std::unique_ptr<SysmemBufferReader> reader) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  // Buffer collection allocation has failed. This case is not treated as an
+  // error because the camera may create a new collection.
+  if (!reader) {
+    buffer_collection_.reset();
+    return;
+  }
 
   buffer_reader_ = std::move(reader);
   if (!buffer_reader_->buffer_settings().has_image_format_constraints) {

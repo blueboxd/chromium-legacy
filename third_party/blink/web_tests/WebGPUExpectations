@@ -38,10 +38,8 @@ wpt_internal/webgpu/cts.html?q=webgpu:idl,constants,flags:* [ Failure ]
 # Platform-independent failures
 #
 
-# There's nothing wrong with this test; it just gets unlucky and runs first -
-# and the first test is always slow to start up as it waits on too much browser
-# startup. Which test flakes will change when the CTS is rolled.
-crbug.com/953991 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,createBindGroup:buffer_offset_and_size_for_bind_groups_match:offset=0;size=1280;* [ Failure ]
+# This test runs first, and is often slow due to some browser startup not being complete.
+crbug.com/953991 wpt_internal/webgpu/000_run_me_first.html [ Slow ]
 
 # Many bugs are contained here.
 # - One of them is crbug.com/dawn/424

@@ -173,6 +173,7 @@ chrome_java_resources = [
   "java/res/drawable-ldrtl-xxxhdpi-v17/btn_toolbar_reload.png",
   "java/res/drawable-ldrtl-xxxhdpi-v17/ic_share_white_24dp.png",
   "java/res/drawable-ldrtl-xxxhdpi-v17/ic_suggestion_magnifier.png",
+  "java/res/drawable-ldrtl/google_pay_with_divider.xml",
   "java/res/drawable-mdpi-v21/navigation_bubble_shadow.9.png",
   "java/res/drawable-mdpi/amex_card.png",
   "java/res/drawable-mdpi/badge_update_dark.png",

@@ -79,6 +79,11 @@ class CastStreamingSession::Internal
     DVLOG(1) << __func__;
     DCHECK_EQ(session, &receiver_session_);
 
+    if (initialized_called_) {
+      // TODO(crbug.com/1116185): Handle multiple offer messages properly.
+      return;
+    }
+
     base::Optional<AudioStreamInfo> audio_stream_info;
     if (receivers.audio) {
       // Creare the audio data pipe.

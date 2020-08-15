@@ -595,7 +595,7 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="568275469169136466">Per accedere temporaneamente</translation>
 <translation id="5683547024293500885">Chrome non può controllare la disponibilità di aggiornamenti</translation>
 <translation id="5686790454216892815">Nome file troppo lungo</translation>
-<translation id="5687809546194252819"><ph name="APP_NAME" /> utilizzerà la lingua <ph name="LANGUAGE" /> al riavvio.</translation>
+<translation id="5687809546194252819">Al riavvio, <ph name="APP_NAME" /> utilizzerà questa lingua: <ph name="LANGUAGE" />.</translation>
 <translation id="5694049548840660018">Torna alla home page facilmente</translation>
 <translation id="569536719314091526">Traduci questa pagina in una lingua qualsiasi usando il pulsante Altre opzioni</translation>
 <translation id="5696597120588531049">Chrome può contribuire a proteggerti da violazioni dei dati, siti web non sicuri e non solo</translation>

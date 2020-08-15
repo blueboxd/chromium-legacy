@@ -6828,8 +6828,8 @@ TEST_F(RenderTextTest, DISABLED_TextDoesntClip) {
       // "TEST_______",
       "TEST some stuff", "WWWWWWWWWW", "gAXAXAXAXAXAXA",
       "g\u00C5X\u00C5X\u00C5X\u00C5X\u00C5X\u00C5X\u00C5",
-      "\u0647\u0654\u0647\u0654\u0647\u0654\u0647\u0654\u0645\u0631\u062D"
-      "\u0628\u0627"};
+      ("\u0647\u0654\u0647\u0654\u0647\u0654\u0647\u0654\u0645\u0631\u062D"
+       "\u0628\u0627")};
   const Size kCanvasSize(300, 50);
   const int kTestSize = 10;
 

@@ -765,6 +765,10 @@ const base::Feature kInternalMediaSession {
 const base::Feature kKaleidoscope{"Kaleidoscope",
                                   base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kKaleidoscopeForceShowFirstRunExperience{
+    "KaleidoscopeForceShowFirstRunExperience",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kKaleidoscopeModule{"KaleidoscopeModule",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 

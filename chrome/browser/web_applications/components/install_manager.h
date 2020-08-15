@@ -91,16 +91,6 @@ class InstallManager {
       WebAppInstallDialogCallback dialog_callback,
       OnceInstallCallback callback) = 0;
 
-  // Starts a web app installation process using prefilled
-  // |web_application_info| which holds all the data needed for installation.
-  // This doesn't fetch a manifest and doesn't perform all required steps for
-  // External installed apps: use |PendingAppManager::Install| instead.
-  virtual void InstallWebAppFromInfo(
-      std::unique_ptr<WebApplicationInfo> web_application_info,
-      ForInstallableSite for_installable_site,
-      WebappInstallSource install_source,
-      OnceInstallCallback callback) = 0;
-
   // See related ExternalInstallOptions struct and
   // ConvertExternalInstallOptionsToParams function.
   struct InstallParams {
@@ -139,6 +129,23 @@ class InstallManager {
                                        const InstallParams& install_params,
                                        WebappInstallSource install_source,
                                        OnceInstallCallback callback) = 0;
+
+  // Starts a web app installation process using prefilled
+  // |web_application_info| which holds all the data needed for installation.
+  // This doesn't fetch a manifest and doesn't perform all required steps for
+  // External installed apps: use |PendingAppManager::Install| instead.
+  virtual void InstallWebAppFromInfo(
+      std::unique_ptr<WebApplicationInfo> web_application_info,
+      ForInstallableSite for_installable_site,
+      WebappInstallSource install_source,
+      OnceInstallCallback callback) = 0;
+
+  virtual void InstallWebAppFromInfo(
+      std::unique_ptr<WebApplicationInfo> web_application_info,
+      ForInstallableSite for_installable_site,
+      const base::Optional<InstallParams>& install_params,
+      WebappInstallSource install_source,
+      OnceInstallCallback callback) = 0;
 
   // For backward compatibility with ExtensionSyncService-based system:
   // Starts background installation or an update of a bookmark app from the sync

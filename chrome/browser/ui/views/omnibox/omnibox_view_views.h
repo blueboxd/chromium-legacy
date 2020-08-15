@@ -40,6 +40,7 @@ class OmniboxClient;
 class OmniboxPopupContentsView;
 
 namespace content {
+struct FocusedNodeDetails;
 class WebContents;
 }  // namespace content
 
@@ -161,6 +162,7 @@ class OmniboxViewViews : public OmniboxView,
   // content::WebContentsObserver:
   void DidFinishNavigation(content::NavigationHandle* navigation) override;
   void DidGetUserInteraction(const blink::WebInputEvent& event) override;
+  void OnFocusChangedInPage(content::FocusedNodeDetails* details) override;
 
   // For testing only.
   OmniboxPopupContentsView* GetPopupContentsViewForTesting() const {
@@ -186,6 +188,9 @@ class OmniboxViewViews : public OmniboxView,
   FRIEND_TEST_ALL_PREFIXES(
       OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
       MouseClick);
+  FRIEND_TEST_ALL_PREFIXES(
+      OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
+      FocusingEditableNode);
   FRIEND_TEST_ALL_PREFIXES(
       OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
       BoundsChanged);
@@ -511,6 +516,12 @@ class OmniboxViewViews : public OmniboxView,
   // relatively rare event so it's simpler to just immediately update the
   // display.
   void OnShouldPreventElisionChanged();
+
+  // Elides the URL to a simplified version of the domain with an animation.
+  // This should be called when a user interaction with the web contents
+  // triggers elision. Does nothing if the relevant field trial is disabled or
+  // the URL is not eligible for eliding.
+  void MaybeElideURLWithAnimationFromInteraction();
 
   // The methods below elide to or unelide from a simplified version of the URL.
   // Callers should ensure that the URL is valid before calling.

@@ -49,7 +49,7 @@
 #include "ui/views/window/vector_icons/vector_icons.h"
 #include "ui/views/window/window_shape.h"
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #include "ui/views/controls/menu/menu_runner.h"
 #endif
 
@@ -346,7 +346,7 @@ void OpaqueBrowserFrameView::ButtonPressed(views::Button* sender,
   } else if (sender == close_button_) {
     frame()->CloseWithReason(views::Widget::ClosedReason::kCloseButtonClicked);
   } else if (sender == window_icon_) {
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
     // TODO(pbos): Figure out / document why this is Linux only. This needs a
     // comment.
     views::MenuRunner menu_runner(frame()->GetSystemMenuModel(),

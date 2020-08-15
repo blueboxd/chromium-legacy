@@ -156,7 +156,7 @@ void TraceCrashServiceUploader::DoCompressOnBackgroundThread(
   // On ChromeOS, defined(OS_LINUX) also evalutes to true, so the
   // defined(OS_CHROMEOS) block must come first.
   const char product[] = "Chrome_ChromeOS";
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || defined(OS_CHROMEOS)
   const char product[] = "Chrome_Linux";
 #elif defined(OS_ANDROID)
   const char product[] = "Chrome_Android";

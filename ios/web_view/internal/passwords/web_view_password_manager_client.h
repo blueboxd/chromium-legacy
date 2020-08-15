@@ -17,6 +17,7 @@
 #include "components/password_manager/core/browser/password_manager_client_helper.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/core/browser/password_manager_metrics_recorder.h"
+#include "components/password_manager/core/browser/password_requirements_service.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/sync_credentials_filter.h"
 #include "components/password_manager/ios/password_manager_client_bridge.h"
@@ -45,7 +46,8 @@ class WebViewPasswordManagerClient
       signin::IdentityManager* identity_manager,
       std::unique_ptr<autofill::LogManager> log_manager,
       password_manager::PasswordStore* profile_store,
-      password_manager::PasswordStore* account_store);
+      password_manager::PasswordStore* account_store,
+      password_manager::PasswordRequirementsService* requirements_service);
 
   ~WebViewPasswordManagerClient() override;
 
@@ -92,6 +94,11 @@ class WebViewPasswordManagerClient
       std::unique_ptr<password_manager::PasswordFormManagerForUI>
           submitted_manager) override;
   void NotifyStorePasswordCalled() override;
+  void NotifyUserCredentialsWereLeaked(
+      password_manager::CredentialLeakType leak_type,
+      password_manager::CompromisedSitesCount saved_sites,
+      const GURL& origin,
+      const base::string16& username) override;
   bool IsSavingAndFillingEnabled(const GURL& url) const override;
   bool IsCommittedMainFrameSecure() const override;
   const GURL& GetLastCommittedURL() const override;
@@ -104,6 +111,8 @@ class WebViewPasswordManagerClient
       override;
   signin::IdentityManager* GetIdentityManager() override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
+  password_manager::PasswordRequirementsService*
+  GetPasswordRequirementsService() override;
   void UpdateFormManagers() override;
   bool IsIsolationForPasswordSitesEnabled() const override;
   bool IsNewTabPage() const override;
@@ -124,6 +133,7 @@ class WebViewPasswordManagerClient
   password_manager::PasswordStore* account_store_;
   WebViewPasswordFeatureManager password_feature_manager_;
   const password_manager::SyncCredentialsFilter credentials_filter_;
+  password_manager::PasswordRequirementsService* requirements_service_;
 
   // The preference associated with
   // password_manager::prefs::kCredentialsEnableService.

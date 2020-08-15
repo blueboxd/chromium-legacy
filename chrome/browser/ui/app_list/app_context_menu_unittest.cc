@@ -600,7 +600,8 @@ TEST_P(AppContextMenuTest, ArcMenuStickyItem) {
 }
 
 // In suspended state app does not have launch item.
-TEST_P(AppContextMenuTest, ArcMenuSuspendedItem) {
+// Disabled for being flaky. crbug.com/1115762
+TEST_P(AppContextMenuTest, DISABLED_ArcMenuSuspendedItem) {
   apps::AppServiceTest app_service_test;
   app_service_test.SetUp(profile());
   ArcAppTest arc_test;

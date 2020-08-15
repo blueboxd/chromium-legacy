@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/page_animator.h"
+#include "third_party/blink/renderer/platform/bindings/microtask.h"
 
 namespace blink {
 
@@ -73,6 +74,14 @@ void DocumentAnimations::AddTimeline(AnimationTimeline& timeline) {
 
 void DocumentAnimations::UpdateAnimationTimingForAnimationFrame() {
   UpdateAnimationTiming(*document_, timelines_, kTimingUpdateForAnimationFrame);
+
+  // Perform a microtask checkpoint per step 3 of
+  // https://drafts.csswg.org/web-animations-1/#timelines. This is to
+  // ensure that any microtasks queued up as a result of resolving or
+  // rejecting Promise objects as part of updating timelines run their
+  // callbacks prior to dispatching animation events and generating
+  // the next main frame.
+  Microtask::PerformCheckpoint(V8PerIsolateData::MainThreadIsolate());
 }
 
 bool DocumentAnimations::NeedsAnimationTimingUpdate() {

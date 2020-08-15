@@ -61,10 +61,8 @@ cc::ImageType FileExtensionToImageType(String image_extension) {
   if (image_extension == "bmp")
     return cc::ImageType::kBMP;
 #if BUILDFLAG(ENABLE_AV1_DECODER)
-  if (base::FeatureList::IsEnabled(features::kAVIF) &&
-      image_extension == "avif") {
+  if (image_extension == "avif")
     return cc::ImageType::kAVIF;
-  }
 #endif
   return cc::ImageType::kInvalid;
 }

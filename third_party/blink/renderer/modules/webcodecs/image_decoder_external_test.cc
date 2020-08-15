@@ -4,8 +4,10 @@
 
 #include "third_party/blink/renderer/modules/webcodecs/image_decoder_external.h"
 
+#include "base/feature_list.h"
 #include "media/media_buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_tester.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_image_decoder_init.h"
@@ -71,7 +73,8 @@ TEST_F(ImageDecoderTest, CanDecodeType) {
   EXPECT_TRUE(ImageDecoderExternal::canDecodeType("image/x-xbitmap"));
 
 #if BUILDFLAG(ENABLE_AV1_DECODER)
-  EXPECT_TRUE(ImageDecoderExternal::canDecodeType("image/avif"));
+  EXPECT_EQ(ImageDecoderExternal::canDecodeType("image/avif"),
+            base::FeatureList::IsEnabled(features::kAVIF));
 #else
   EXPECT_FALSE(ImageDecoderExternal::canDecodeType("image/avif"));
 #endif

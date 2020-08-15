@@ -302,6 +302,7 @@
 <translation id="4481711095103932593">Ce dossier est partagé avec Windows</translation>
 <translation id="4487088045714738411">Clavier belge</translation>
 <translation id="4522570452068850558">Détails</translation>
+<translation id="4542387084127299777">Impossible d'ouvrir "<ph name="PATH" />"</translation>
 <translation id="4552678318981539154">Acheter de l'espace de stockage supplémentaire</translation>
 <translation id="4559767610552730302">Bokeh</translation>
 <translation id="4572815280350369984">Fichier <ph name="FILE_TYPE" /></translation>
@@ -514,6 +515,7 @@
 <translation id="6629841649550503054">Tous les contenus sont sauvegardés sur <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" />.</translation>
 <translation id="6643016212128521049">Effacer</translation>
 <translation id="6650726141019353908">Papillon rose</translation>
+<translation id="6657585470893396449">Mot de passe</translation>
 <translation id="6710213216561001401">Précédent</translation>
 <translation id="6718273304615422081">Compression en cours…</translation>
 <translation id="6751256176799620176">1 dossier sélectionné</translation>
@@ -726,6 +728,7 @@
 <translation id="9065203028668620118">Modifier</translation>
 <translation id="9099674669267916096">Nombre de pages</translation>
 <translation id="9110990317705400362">Nous recherchons constamment à rendre votre navigation plus sûre. Auparavant, vous pouviez être invité à ajouter une extension dans votre navigateur par n'importe quel site Web. Dans les dernières versions de Google Chrome, vous devez explicitement indiquer que vous souhaitez installer une extension en l'ajoutant via la page "Extensions". <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
+<translation id="9111102763498581341">Déverrouiller</translation>
 <translation id="912419004897138677">Codec</translation>
 <translation id="9129931661813833980">Épingler le dossier</translation>
 <translation id="9130775360844693113">Les membres de "<ph name="DESTINATION_NAME" />" auront accès à ces éléments.</translation>

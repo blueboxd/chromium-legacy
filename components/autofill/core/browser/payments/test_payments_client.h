@@ -63,6 +63,12 @@ class TestPaymentsClient : public payments::PaymentsClient {
       const std::vector<MigratableCreditCard>& migratable_credit_cards,
       MigrateCardsCallback callback) override;
 
+  void GetOfferData(
+      const std::string& app_locale,
+      base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
+                              const std::vector<AutofillOfferData>&)> callback)
+      override;
+
   // Some metrics are affected by the latency of GetUnmaskDetails, so it is
   // useful to control whether or not GetUnmaskDetails() is responded to.
   void ShouldReturnUnmaskDetailsImmediately(bool should_return_unmask_details);
@@ -83,6 +89,8 @@ class TestPaymentsClient : public payments::PaymentsClient {
 
   void SetUseInvalidLegalMessageInGetUploadDetails(
       bool use_invalid_legal_message);
+
+  void SetShouldReturnOfferData(bool should_return_offer_data);
 
   payments::PaymentsClient::UnmaskDetails* unmask_details() {
     return &unmask_details_;
@@ -106,6 +114,7 @@ class TestPaymentsClient : public payments::PaymentsClient {
   PaymentsClient::UploadCardSource upload_card_source_in_request() const {
     return upload_card_source_;
   }
+  int get_offer_data_calls() const { return get_offer_data_calls_; }
 
  private:
   std::string server_id_;
@@ -126,6 +135,9 @@ class TestPaymentsClient : public payments::PaymentsClient {
   std::unique_ptr<std::unordered_map<std::string, std::string>> save_result_;
   bool use_invalid_legal_message_ = false;
   std::unique_ptr<base::Value> LegalMessage();
+  std::vector<AutofillOfferData> offers_;
+  int get_offer_data_calls_ = 0;
+  bool should_return_offer_data_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(TestPaymentsClient);
 };

@@ -84,10 +84,21 @@ const kDeepLinkFocusId = 'deep-link-focus-id';
           return;
         }
 
-        elToFocus.focus();
+        this.showDeepLinkElement(elToFocus);
         resolve({deepLinkShown: true, pendingSettingId: settingId});
       });
     });
+  },
+
+  /**
+   * Focuses the deep linked element |elem|. Returns whether the deep link was
+   * shown or not.
+   * @param {!Element} elToFocus
+   */
+  showDeepLinkElement(elToFocus) {
+    assert(loadTimeData.getBoolean('isDeepLinkingEnabled'));
+
+    elToFocus.focus();
   },
 
   /**

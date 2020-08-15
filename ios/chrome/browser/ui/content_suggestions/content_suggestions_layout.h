@@ -16,6 +16,9 @@
 // The cached scroll position of the NTP.
 @property(nonatomic, assign) CGFloat offset;
 
+// The total scroll height of the NTP.
+@property(nonatomic, assign) CGFloat ntpHeight;
+
 // Creates layout with |offset| as additional height. Allows the view's height
 // to be increased enough to maintain the scroll position. Only needed if
 // Discover feed is enabled.

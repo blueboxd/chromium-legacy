@@ -1882,6 +1882,8 @@ const char* ToString(ax::mojom::BoolAttribute bool_attribute) {
       return "clickable";
     case ax::mojom::BoolAttribute::kClipsChildren:
       return "clipsChildren";
+    case ax::mojom::BoolAttribute::kNotUserSelectableStyle:
+      return "notUserSelectableStyle";
     case ax::mojom::BoolAttribute::kSelected:
       return "selected";
     case ax::mojom::BoolAttribute::kSelectedFromFocus:
@@ -1926,6 +1928,8 @@ ax::mojom::BoolAttribute ParseBoolAttribute(const char* bool_attribute) {
     return ax::mojom::BoolAttribute::kClickable;
   if (0 == strcmp(bool_attribute, "clipsChildren"))
     return ax::mojom::BoolAttribute::kClipsChildren;
+  if (0 == strcmp(bool_attribute, "notUserSelectableStyle"))
+    return ax::mojom::BoolAttribute::kNotUserSelectableStyle;
   if (0 == strcmp(bool_attribute, "selected"))
     return ax::mojom::BoolAttribute::kSelected;
   if (0 == strcmp(bool_attribute, "selectedFromFocus"))

@@ -302,6 +302,7 @@
 <translation id="4481711095103932593">Šis aplankas bendrinamas su „Windows“</translation>
 <translation id="4487088045714738411">Belgiška klaviatūra</translation>
 <translation id="4522570452068850558">Išsami informacija</translation>
+<translation id="4542387084127299777">Nepavyko atidaryti „<ph name="PATH" />“</translation>
 <translation id="4552678318981539154">Įsigyti daugiau atminties</translation>
 <translation id="4559767610552730302">„Bokeh“ efektas</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> failas</translation>
@@ -514,6 +515,7 @@
 <translation id="6629841649550503054">Visų failų atsarginės kopijos sukurtos <ph name="BEGIN_LINK" />„Google“ diske!<ph name="END_LINK" /></translation>
 <translation id="6643016212128521049">Išvalyti</translation>
 <translation id="6650726141019353908">Rožinis drugelis</translation>
+<translation id="6657585470893396449">Slaptažodis</translation>
 <translation id="6710213216561001401">Ankstesnis</translation>
 <translation id="6718273304615422081">Glaudinama...</translation>
 <translation id="6751256176799620176">Pasirinktas 1 aplankas</translation>
@@ -726,6 +728,7 @@
 <translation id="9065203028668620118">Redaguoti</translation>
 <translation id="9099674669267916096">Puslapių skaičius</translation>
 <translation id="9110990317705400362">Nuolat stengiamės padaryti naršymą saugesnį. Anksčiau bet kurioje svetainėje buvo leidžiama raginti jus pridėti plėtinį prie naršyklės. Naudodami naujausių versijų „Google Chrome“, privalote aiškiai nurodyti „Chrome“, kad norite įdiegti šiuos plėtinius, pridėję juos „Plėtinių“ puslapyje. <ph name="BEGIN_LINK" />Sužinokite daugiau<ph name="END_LINK" /></translation>
+<translation id="9111102763498581341">Atrakinti</translation>
 <translation id="912419004897138677">Kodekas</translation>
 <translation id="9129931661813833980">Prisegti aplanką</translation>
 <translation id="9130775360844693113">„<ph name="DESTINATION_NAME" />“ nariai galės pasiekti šiuos elementus.</translation>

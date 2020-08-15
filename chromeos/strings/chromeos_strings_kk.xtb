@@ -9,6 +9,7 @@
 <translation id="150962533380566081">PUK коды жарамсыз.</translation>
 <translation id="1510238584712386396">Іске қосу құрылғысы</translation>
 <translation id="1644574205037202324">Тарих</translation>
+<translation id="1662989795263954667">Тоқтатылды: сия бітіп қалды</translation>
 <translation id="1734367976349034509">Бұл құрылғыны ұйым басқарады</translation>
 <translation id="1905710495812624430">Максималды рұқсат етілетін әрекеттер шегінен асып кетті.</translation>
 <translation id="1930797645656624981">Chrome OS енгізу әдісі қызметі</translation>
@@ -39,17 +40,21 @@
 <translation id="4227825898293920515">Құпия сөздің мерзімі <ph name="TIME" /> өткен соң аяқталады.</translation>
 <translation id="4238516577297848345">Ешқандай баспа жұмысы орындалып жатқан жоқ.</translation>
 <translation id="428217921675623177">90 күннен аса уақыт бұрын орындалған баспа жұмыстары өшіріледі.</translation>
+<translation id="4297501883039923494">Тоқтатылды: белгісіз қате</translation>
 <translation id="4429881212383817840">Kerberos билетінің жарамдылық мерзімі жақында аяқталады</translation>
 <translation id="445059817448385655">Ескі құпия сөз</translation>
 <translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" />/<ph name="TOTAL_PAGE_NUMBER" />. Басып шығарудан бас тарту үшін "Enter" пернесін басыңыз.</translation>
 <translation id="467510802200863975">Құпия сөздер сәйкес келмейді.</translation>
+<translation id="4691278870498629773">Тоқтатылды: науа жоқ.</translation>
 <translation id="4731797938093519117">Ата-ананың кіру рұқсаты</translation>
 <translation id="4773299976671772492">Тоқтатылды</translation>
 <translation id="4808449224298348341"><ph name="DOCUMENT_TITLE" /> құжатын басып шығарудан бас тартылды.</translation>
 <translation id="4890353053343094602">Дереу жаңа құпия сөз таңдаңыз.</translation>
+<translation id="4917889632206600977">Тоқтатылды: қағаз бітіп қалды.</translation>
 <translation id="4932733599132424254">Күні</translation>
 <translation id="5212543919916444558">Экранда мен көмектесе алатын ештеңе жоқ. Микрофон белгішесін түртіп, маған сұрақ қойыңыз.</translation>
 <translation id="5222676887888702881">Шығу</translation>
+<translation id="5267975978099728568"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="ERROR_STATUS" /></translation>
 <translation id="5317780077021120954">Сақтау</translation>
 <translation id="5326394068492324457"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="COMPLETION_STATUS" /></translation>
 <translation id="5332948983412042822">Жаңа құпия сөз енгізіңіз.</translation>
@@ -62,9 +67,11 @@
 <translation id="6106186594183574873">Аяқтау үшін ескі құпия сөзді енгізіңіз.</translation>
 <translation id="6146993107019042706">Аяқтау үшін жаңа құпия сөзді енгізіңіз.</translation>
 <translation id="636850387210749493">Кәсіпорынды тіркеу</translation>
+<translation id="649050271426829538">Тоқтатылды: қағаз кептелісі</translation>
 <translation id="6517239166834772319">Шолу</translation>
 <translation id="6564646048574748301">Сәтсіз: принтер қолжетімді емес</translation>
 <translation id="6643016212128521049">Тазалау</translation>
+<translation id="6747215703636344499">Тоқтатылды: шығыс науа толып кетті.</translation>
 <translation id="7162487448488904999">Галерея</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7561454561030345039">Бұл әрекетті әкімшіңіз басқарады.</translation>
@@ -76,6 +83,7 @@
 <translation id="8347227221149377169">Баспа жұмыстары</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> пайдаланушыны басқарады. Сонымен қатар қашықтан параметрлерді басқарады және пайдаланушының әрекетін қадағалайды.</translation>
 <translation id="871560550817059752">Сәтсіз: сия бітіп қалды</translation>
+<translation id="8726019395068607495">Тоқтатылды: есігі ашық</translation>
 <translation id="8747900814994928677">Өзгерісті растау</translation>
 <translation id="8919837981463578619">Сәтсіз: науа жоқ</translation>
 <translation id="8928727111548978589">Сәтсіз: қағаз бітіп қалды</translation>

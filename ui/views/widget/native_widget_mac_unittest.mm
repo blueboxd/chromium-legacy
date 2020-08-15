@@ -870,8 +870,12 @@ TEST_F(NativeWidgetMacTest, NonWidgetParentLastReference) {
     // to the child window is released inside WidgetOwnerNSWindowAdapter::
     // OnWindowWillClose().
     [native_parent close];
-    EXPECT_TRUE(child_dealloced);
   }
+
+  // Check this only once the autorelease pool has been drained: AppKit likes to
+  // autorelease NSWindows when tearing them down, presumably to make UAF bugs
+  // with NSWindows less likely.
+  EXPECT_TRUE(child_dealloced);
   EXPECT_TRUE(native_parent_dealloced);
 }
 
@@ -1308,6 +1312,19 @@ TEST_F(NativeWidgetMacTest, ShowAnimationControl) {
   EXPECT_FALSE([retained_animation isAnimating]);
 }
 
+// Expect that |children|, the list of child windows of a window that has a
+// sheet open, is logically empty. "Logically empty" accounts for the
+// AppKit-created visual effect window that shows atop windows with open sheets
+// on macOS 11.
+void AssertNoChildrenForWindowWithSheet(NSArray<NSWindow*>* children) {
+  if (base::mac::IsAtLeastOS11()) {
+    ASSERT_EQ(1u, children.count);
+    EXPECT_NSEQ(@"NSSheetEffectDimmingWindow", children[0].className);
+  } else {
+    ASSERT_EQ(0u, children.count);
+  }
+}
+
 // Tests behavior of window-modal dialogs, displayed as sheets.
 TEST_F(NativeWidgetMacTest, WindowModalSheet) {
   NSWindow* native_parent = MakeClosableTitledNativeParent();
@@ -1365,8 +1382,7 @@ TEST_F(NativeWidgetMacTest, WindowModalSheet) {
   ASSERT_EQ(2u, children.size());
   EXPECT_TRUE(children.count(sheet_widget));
 
-  // Sheets are not child windows of their parent NSWindow, though.
-  ASSERT_EQ(0u, [native_parent childWindows].count);
+  AssertNoChildrenForWindowWithSheet(native_parent.childWindows);
 
   // Modal, so the close button in the parent window should get disabled.
   EXPECT_FALSE([parent_close_button isEnabled]);
@@ -1389,7 +1405,7 @@ TEST_F(NativeWidgetMacTest, WindowModalSheet) {
   widget_observer.WaitForVisibleCounts(1, 1);
   EXPECT_FALSE(sheet_widget->IsVisible());
   [native_parent makeKeyAndOrderFront:nil];
-  ASSERT_EQ(0u, [native_parent childWindows].count);
+  AssertNoChildrenForWindowWithSheet(native_parent.childWindows);
   widget_observer.WaitForVisibleCounts(2, 1);
   EXPECT_TRUE(sheet_widget->IsVisible());
 

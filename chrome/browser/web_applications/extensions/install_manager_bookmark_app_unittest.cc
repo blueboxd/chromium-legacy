@@ -573,6 +573,8 @@ TEST_F(InstallManagerBookmarkAppTest, CreateBookmarkAppWithoutManifest) {
 TEST_F(InstallManagerBookmarkAppTest, CreateWebAppFromInfo) {
   AddEmptyDataRetriever();
 
+  web_app::InstallManager::InstallParams params;
+
   auto web_app_info = std::make_unique<WebApplicationInfo>();
   web_app_info->app_url = AppUrl();
   web_app_info->title = base::UTF8ToUTF16(kAppTitle);
@@ -586,7 +588,7 @@ TEST_F(InstallManagerBookmarkAppTest, CreateWebAppFromInfo) {
   auto* provider = web_app::WebAppProviderBase::GetProviderBase(profile());
 
   provider->install_manager().InstallWebAppFromInfo(
-      std::move(web_app_info), web_app::ForInstallableSite::kYes,
+      std::move(web_app_info), web_app::ForInstallableSite::kYes, params,
       WebappInstallSource::ARC,
       base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
                                      web_app::InstallResultCode code) {

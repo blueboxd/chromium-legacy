@@ -1232,9 +1232,10 @@ IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
   VerifyImageCompressionPageInfoState(false);
 }
 
-IN_PROC_BROWSER_TEST_F(
-    SubresourceRedirectBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMEOS(TestBypassOn503LoadShedFailure)) {
+// This used to be DISABLE_ON_WIN_MAC_CHROMEOS(), but now it is disabled on all
+// platforms, since the test is also flaky on Linux. crbug.com/1114038
+IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
+                       DISABLED_TestBypassOn503LoadShedFailure) {
   g_browser_process->network_quality_tracker()
       ->ReportEffectiveConnectionTypeForTesting(
           net::EFFECTIVE_CONNECTION_TYPE_2G);

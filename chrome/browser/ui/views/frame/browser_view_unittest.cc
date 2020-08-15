@@ -166,7 +166,7 @@ TEST_F(BrowserViewTest, DISABLED_BrowserViewLayout) {
 }
 
 // TODO(https://crbug.com/1020758): Flaky on Linux.
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #define MAYBE_FindBarBoundingBoxLocationBar \
   DISABLED_FindBarBoundingBoxLocationBar
 #else
@@ -236,7 +236,7 @@ TEST_F(BrowserViewTest, DISABLED_RepeatedAccelerators) {
 
 // Test that bookmark bar view becomes invisible when closing the browser.
 // TODO(https://crbug.com/1000251): Flaky on Linux.
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #define MAYBE_BookmarkBarInvisibleOnShutdown \
   DISABLED_BookmarkBarInvisibleOnShutdown
 #else

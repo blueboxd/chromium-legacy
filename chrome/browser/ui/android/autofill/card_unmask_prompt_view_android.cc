@@ -8,6 +8,7 @@
 #include "chrome/browser/android/resource_mapper.h"
 #include "chrome/browser/ui/autofill/payments/create_card_unmask_prompt_view.h"
 #include "components/autofill/core/browser/ui/payments/card_unmask_prompt_controller.h"
+#include "components/autofill/core/common/autofill_payments_features.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
@@ -153,6 +154,12 @@ CardUnmaskPromptViewAndroid::GetOrCreateJavaObject() {
              env, reinterpret_cast<intptr_t>(this), dialog_title, instructions,
              confirm,
              ResourceMapper::MapToJavaDrawableId(controller_->GetCvcImageRid()),
+             base::FeatureList::IsEnabled(
+                 features::kAutofillDownstreamCvcPromptUseGooglePayLogo)
+                 ? ResourceMapper::MapToJavaDrawableId(
+                       controller_->GetGooglePayImageRid())
+                 : -1,
+             controller_->IsCardLocal(),
              controller_->ShouldRequestExpirationDate(),
              controller_->GetStoreLocallyStartState(),
              controller_->ShouldOfferWebauthn(),

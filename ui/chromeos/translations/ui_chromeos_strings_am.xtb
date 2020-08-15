@@ -514,6 +514,7 @@
 <translation id="6629841649550503054">ሁሉም ወደ <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /> በምትኬ ተቀምጠዋል!</translation>
 <translation id="6643016212128521049">አጽዳ</translation>
 <translation id="6650726141019353908">ሮዝ ቢራቢሮ</translation>
+<translation id="6657585470893396449">የይለፍ ቃል፦</translation>
 <translation id="6710213216561001401">ቀዳሚ</translation>
 <translation id="6718273304615422081">በማጨቅ ላይ...</translation>
 <translation id="6751256176799620176">1 አቃፊ ተመርጧል</translation>
@@ -726,6 +727,7 @@
 <translation id="9065203028668620118">አርትዕ</translation>
 <translation id="9099674669267916096">የገጽ ብዛት</translation>
 <translation id="9110990317705400362">የእርስዎን አሰሳ ይበልጥ ደህንነቱ የተጠበቀ የሚሆንባቸው መንገዶችን በቋሚነት እየፈለግን ነው። ከዚህ ቀደም ማንኛውም ድር ጣቢያ ቅጥያ በአሳሽዎ ላይ እንዲያክሉ ሊጠይቅዎ ይችል ነበር። በቅርቦቹ የGoogle Chrome ስሪቶች ላይ እነዚህን ቅጥያዎች በቅጥያዎች ገጹ በኩል በማከል እንደሚፈልጓቸው በግልጽ ለChrome መንገር አለብዎት። <ph name="BEGIN_LINK" />ተጨማሪ ለመረዳት<ph name="END_LINK" /></translation>
+<translation id="9111102763498581341">ክፈት</translation>
 <translation id="912419004897138677">ኮዴክ</translation>
 <translation id="9129931661813833980">አቃፊን አያይዝ</translation>
 <translation id="9130775360844693113">የ«<ph name="DESTINATION_NAME" />» አባላት የእነዚህ ንጥሎች መዳረሻ ያገኛሉ።</translation>

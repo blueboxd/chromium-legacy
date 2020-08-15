@@ -323,6 +323,13 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) CiceroneClient : public DBusClient {
       DBusMethodCallback<vm_tools::cicerone::RemoveFileWatchResponse>
           callback) = 0;
 
+  // Looks up vsh session data such as container shell pid.
+  // |callback| is called when the method completes.
+  virtual void GetVshSession(
+      const vm_tools::cicerone::GetVshSessionRequest& request,
+      DBusMethodCallback<vm_tools::cicerone::GetVshSessionResponse>
+          callback) = 0;
+
   // Registers |callback| to run when the Cicerone service becomes available.
   // If the service is already available, or if connecting to the name-owner-
   // changed signal fails, |callback| will be run once asynchronously.

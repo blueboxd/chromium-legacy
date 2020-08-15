@@ -116,6 +116,8 @@ class MetricsReporter {
   static void OnUploadActionsBatch(UploadActionsBatchStatus status);
   static void OnUploadActions(UploadActionsStatus status);
 
+  static void NoticeCardFulfilled(bool response_has_notice_card);
+
  private:
   base::WeakPtr<MetricsReporter> GetWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();

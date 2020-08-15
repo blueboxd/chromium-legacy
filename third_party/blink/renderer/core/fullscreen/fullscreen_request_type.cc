@@ -17,6 +17,8 @@ std::string FullscreenRequestTypeToDebugString(FullscreenRequestType req) {
                                                     : "Unprefixed");
   if (req & FullscreenRequestType::kForCrossProcessDescendant)
     result << "|ForCrossProcessDescendant";
+  if (req & FullscreenRequestType::kForXrOverlay)
+    result << "|ForXrOverlay";
   return result.str();
 }
 #endif

@@ -71,6 +71,14 @@ Polymer({
    */
   savedNameservers_: [],
 
+  /*
+   * Returns the nameserver type CrRadioGroupElement.
+   * @return {?CrRadioGroupElement}
+   */
+  getNameserverRadioButtons() {
+    return /** @type {?CrRadioGroupElement} */ (this.$$('#nameserverType'));
+  },
+
   /**
    * Returns true if |nameservers| contains any all google nameserver entries
    * and only google nameserver entries or empty entries.

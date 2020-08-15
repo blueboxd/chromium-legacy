@@ -305,6 +305,20 @@ const ParseTestCase DocumentPolicyParserTest::kCases[] = {
           "Boolean."}},
     },
     {
+        "ParsePolicyWithWrongTypeOfParamExpectedBooleanTypeButGet"
+        "DoubleType",
+        "f-bool=1.0",
+        /* parsed_policy */
+        {
+            /* feature_state */ {},
+            /* endpoint_map */ {},
+        },
+        /* messages */
+        {{mojom::blink::ConsoleMessageLevel::kWarning,
+          "Parameter for feature f-bool should be Boolean, not "
+          "Decimal."}},
+    },
+    {
         "FeatureValueItemShouldNotBeEmpty",
         "f-double=()",
         /* parsed_policy */

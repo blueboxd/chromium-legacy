@@ -1317,12 +1317,6 @@ Se esta política não for definida, a tela de privacidade ficará desativada in
 <translation id="2901725272378498025">Ativar avisos de segurança para sinalizações de linha de comando</translation>
 <translation id="2905984450136807296">Ciclo de vida do cache de dados de autenticação</translation>
 <translation id="2906874737073861391">Lista de extensões AppPack</translation>
-<translation id="2907992746861405243">Controla quais impressoras da <ph name="BULK_PRINTERS_POLICY" /> estão disponíveis para o usuário.
-
-      Determina qual política de acesso é usada na configuração de impressoras em massa. Se a opção <ph name="PRINTERS_ALLOW_ALL" /> for selecionada, todas as impressoras serão exibidas. Se a opção <ph name="PRINTERS_BLACKLIST" /> for selecionada, <ph name="BULK_PRINTERS_BLACKLIST" /> será utilizada para restringir o acesso às impressoras especificadas. Se a opção <ph name="PRINTERS_WHITELIST" /> for selecionada, <ph name="BULK_PRINTERS_WHITELIST" /> designará apenas as impressoras que puderem ser selecionadas.
-
-      Se esta política não for definida, a opção <ph name="PRINTERS_ALLOW_ALL" /> será adotada.
-      </translation>
 <translation id="2908277604670530363">Número máximo de conexões simultâneas ao servidor proxy</translation>
 <translation id="2921222258441684334">Se a política for definida como 1, os sites poderão rastrear a localização física dos usuários como o estado padrão. Se a política for definida como 2, será negado o rastreamento como padrão. É possível definir a política para perguntar sempre que um site quiser rastrear a localização física dos usuários.
 

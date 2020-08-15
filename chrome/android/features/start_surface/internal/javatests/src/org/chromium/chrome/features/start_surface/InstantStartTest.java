@@ -665,7 +665,7 @@ public class InstantStartTest {
         ViewUtils.onViewWaiting(AllOf.allOf(withId(R.id.single_tab_view), isDisplayed()));
         ChromeRenderTestRule.sanitize(surface);
         // TODO(crbug.com/1065314): fix favicon.
-        mRenderTestRule.render(surface, "singlePane_singleTab_noMV");
+        mRenderTestRule.render(surface, "singlePane_singleTab_noMV2");
 
         // Initializes native.
         startAndWaitNativeInitialization();

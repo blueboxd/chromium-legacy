@@ -7,7 +7,6 @@
 #include <stddef.h>
 
 #include <algorithm>
-#include <utility>
 
 #include "ash/app_list/app_list_util.h"
 #include "ash/app_list/app_list_view_delegate.h"
@@ -44,6 +43,8 @@
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/metadata/metadata_header_macros.h"
+#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/window/dialog_delegate.h"
 
 namespace ash {
@@ -83,20 +84,27 @@ constexpr base::TimeDelta kNotifyA11yDelay =
 // in the correct order.
 class SearchCardView : public views::View {
  public:
-  explicit SearchCardView(views::View* content_view) {
+  METADATA_HEADER(SearchCardView);
+  explicit SearchCardView(std::unique_ptr<views::View> content_view) {
     SetLayoutManager(std::make_unique<views::FillLayout>());
-    AddChildView(content_view);
+    AddChildView(std::move(content_view));
   }
-
-  // views::View overrides:
-  const char* GetClassName() const override { return "SearchCardView"; }
-
+  SearchCardView(const SearchCardView&) = delete;
+  SearchCardView& operator=(const SearchCardView&) = delete;
   ~SearchCardView() override {}
 };
+
+BEGIN_METADATA(SearchCardView)
+METADATA_PARENT_CLASS(views::View)
+END_METADATA()
 
 class ZeroWidthVerticalScrollBar : public views::OverlayScrollBar {
  public:
   ZeroWidthVerticalScrollBar() : OverlayScrollBar(false) {}
+  ZeroWidthVerticalScrollBar(const ZeroWidthVerticalScrollBar&) = delete;
+  ZeroWidthVerticalScrollBar& operator=(const ZeroWidthVerticalScrollBar&) =
+      delete;
+  ~ZeroWidthVerticalScrollBar() override = default;
 
   // OverlayScrollBar overrides:
   int GetThickness() const override { return 0; }
@@ -106,9 +114,6 @@ class ZeroWidthVerticalScrollBar : public views::OverlayScrollBar {
     // result is focused, it will be set visible in scroll view.
     return false;
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ZeroWidthVerticalScrollBar);
 };
 
 class SearchResultPageBackground : public views::Background {
@@ -116,6 +121,9 @@ class SearchResultPageBackground : public views::Background {
   explicit SearchResultPageBackground(SkColor color) {
     SetNativeControlColor(color);
   }
+  SearchResultPageBackground(const SearchResultPageBackground&) = delete;
+  SearchResultPageBackground& operator=(const SearchResultPageBackground&) =
+      delete;
   ~SearchResultPageBackground() override = default;
 
  private:
@@ -130,8 +138,6 @@ class SearchResultPageBackground : public views::Background {
     bounds.set_height(kSeparatorThickness);
     canvas->FillRect(bounds, kSeparatorColor);
   }
-
-  DISALLOW_COPY_AND_ASSIGN(SearchResultPageBackground);
 };
 
 }  // namespace
@@ -222,17 +228,18 @@ SearchResultPageView::SearchResultPageView(AppListViewDelegate* view_delegate,
 
 SearchResultPageView::~SearchResultPageView() = default;
 
-void SearchResultPageView::AddSearchResultContainerView(
-    SearchResultContainerView* result_container) {
+void SearchResultPageView::AddSearchResultContainerViewInternal(
+    std::unique_ptr<SearchResultContainerView> result_container) {
   if (!result_container_views_.empty()) {
-    HorizontalSeparator* separator = new HorizontalSeparator(bounds().width());
-    contents_view_->AddChildView(separator);
-    separators_.push_back(separator);
+    separators_.push_back(contents_view_->AddChildView(
+        std::make_unique<HorizontalSeparator>(bounds().width())));
   }
-  contents_view_->AddChildView(new SearchCardView(result_container));
-  result_container_views_.push_back(result_container);
-  result_container->SetResults(search_model_->results());
-  result_container->set_delegate(this);
+  auto* result_container_ptr = result_container.get();
+  contents_view_->AddChildView(
+      std::make_unique<SearchCardView>(std::move(result_container)));
+  result_container_views_.push_back(result_container_ptr);
+  result_container_ptr->SetResults(search_model_->results());
+  result_container_ptr->set_delegate(this);
 }
 
 bool SearchResultPageView::IsFirstResultTile() const {

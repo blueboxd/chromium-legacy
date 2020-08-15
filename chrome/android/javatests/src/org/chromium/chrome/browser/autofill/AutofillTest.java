@@ -103,24 +103,24 @@ public class AutofillTest {
 
     private AutofillSuggestion[] createTwoAutofillSuggestionArray() {
         return new AutofillSuggestion[] {
-                new AutofillSuggestion("Sherlock Holmes", "221B Baker Street", DropdownItem.NO_ICON,
-                        false, 42, false, false, false),
-                new AutofillSuggestion("Arthur Dent", "West Country", DropdownItem.NO_ICON,
-                        false, 43, false, false, false),
+                new AutofillSuggestion("Sherlock Holmes", "221B Baker Street", /*itemTag=*/"",
+                        DropdownItem.NO_ICON, false, 42, false, false, false),
+                new AutofillSuggestion("Arthur Dent", "West Country", /*itemTag=*/"",
+                        DropdownItem.NO_ICON, false, 43, false, false, false),
         };
     }
 
     private AutofillSuggestion[] createFiveAutofillSuggestionArray() {
         return new AutofillSuggestion[] {
-                new AutofillSuggestion("Sherlock Holmes", "221B Baker Street", DropdownItem.NO_ICON,
-                        false, 42, false, false, false),
-                new AutofillSuggestion("Arthur Dent", "West Country", DropdownItem.NO_ICON,
-                        false, 43, false, false, false),
-                new AutofillSuggestion("Arthos", "France", DropdownItem.NO_ICON,
+                new AutofillSuggestion("Sherlock Holmes", "221B Baker Street", /*itemTag=*/"",
+                        DropdownItem.NO_ICON, false, 42, false, false, false),
+                new AutofillSuggestion("Arthur Dent", "West Country", /*itemTag=*/"",
+                        DropdownItem.NO_ICON, false, 43, false, false, false),
+                new AutofillSuggestion("Arthos", "France", /*itemTag=*/"", DropdownItem.NO_ICON,
                         false, 44, false, false, false),
-                new AutofillSuggestion("Porthos", "France", DropdownItem.NO_ICON,
+                new AutofillSuggestion("Porthos", "France", /*itemTag=*/"", DropdownItem.NO_ICON,
                         false, 45, false, false, false),
-                new AutofillSuggestion("Aramis", "France", DropdownItem.NO_ICON,
+                new AutofillSuggestion("Aramis", "France", /*itemTag=*/"", DropdownItem.NO_ICON,
                         false, 46, false, false, false),
         };
     }

@@ -9,6 +9,7 @@
 <translation id="150962533380566081">‏PUK غير صالح.</translation>
 <translation id="1510238584712386396">مشغِّل التطبيقات</translation>
 <translation id="1644574205037202324">السجل</translation>
+<translation id="1662989795263954667">توقّفت الطابعة - نفد الحبر</translation>
 <translation id="1734367976349034509">يخضع هذا الجهاز لإدارة المؤسسة</translation>
 <translation id="1905710495812624430">تم تجاوز الحد الأقصى لعدد المحاولات المسموح بها.</translation>
 <translation id="1930797645656624981">‏خدمة أسلوب الإدخال لنظام التشغيل Chrome</translation>
@@ -39,18 +40,22 @@
 <translation id="4227825898293920515">تنتهي صلاحية كلمة المرور في <ph name="TIME" /></translation>
 <translation id="4238516577297848345">ما من مهام قيد الطباعة.</translation>
 <translation id="428217921675623177">ستتم إزالة طلبات الطباعة التي مرَّ عليها أكثر من 90 يومًا.</translation>
+<translation id="4297501883039923494">توقّفت الطابعة - خطأ غير معروف</translation>
 <translation id="4429881212383817840">‏ستنتهي صلاحية تذكرة Kerberos قريبًا</translation>
 <translation id="445059817448385655">كلمة المرور القديمة</translation>
 <translation id="4627232916386272576">‏<ph name="DOCUMENT_TITLE" />، <ph name="PRINTER_NAME" />، <ph name="CREATION_TIME" />، <ph name="PRINTED_PAGE_NUMBER" /> من أصل <ph name="TOTAL_PAGE_NUMBER" />. يمكنك الضغط على enter لإلغاء مهمة الطباعة.</translation>
 <translation id="467510802200863975">كلمتا المرور غير متطابقتين.</translation>
+<translation id="4691278870498629773">توقّفت الطابعة - دُرج الورق غير متوفّر</translation>
 <translation id="4731797938093519117">وصول أحد الوالدين</translation>
 <translation id="4773299976671772492">متوقفة</translation>
 <translation id="4808449224298348341">تم إلغاء مهمة الطباعة للمستند <ph name="DOCUMENT_TITLE" />.</translation>
 <translation id="4890353053343094602">اختيار كلمة مرور جديدة فورًا</translation>
+<translation id="4917889632206600977">توقّفت الطابعة - نفد الورق</translation>
 <translation id="4932733599132424254">التاريخ</translation>
 <translation id="5212543919916444558">يتعذَّر عليَّ العثور على شيء مفيد في هذه الشاشة.
 يُرجى تجربة النقر على الميكروفون لمطالبتي بأي شيء.</translation>
 <translation id="5222676887888702881">تسجيل الخروج</translation>
+<translation id="5267975978099728568"><ph name="DOCUMENT_TITLE" />، <ph name="PRINTER_NAME" />، <ph name="CREATION_TIME" />، <ph name="ERROR_STATUS" /></translation>
 <translation id="5317780077021120954">حفظ</translation>
 <translation id="5326394068492324457"><ph name="DOCUMENT_TITLE" />، <ph name="PRINTER_NAME" />، <ph name="CREATION_TIME" />، <ph name="COMPLETION_STATUS" /></translation>
 <translation id="5332948983412042822">اختيار كلمة مرور جديدة الآن</translation>
@@ -63,9 +68,11 @@
 <translation id="6106186594183574873">يُرجى إدخال كلمة المرور القديمة لإنهاء الإجراء.</translation>
 <translation id="6146993107019042706">يُرجى إدخال كلمة مرور جديدة لإنهاء الإجراء.</translation>
 <translation id="636850387210749493">التسجيل في المؤسسة</translation>
+<translation id="649050271426829538">توقّفت الطابعة - الورق مكدّس</translation>
 <translation id="6517239166834772319">استكشاف</translation>
 <translation id="6564646048574748301">تعذَّرت الطباعة - لا يمكن الوصول إلى الطابعة</translation>
 <translation id="6643016212128521049">محو</translation>
+<translation id="6747215703636344499">توقّفت الطابعة - دُرج الإخراج ممتلئ</translation>
 <translation id="7162487448488904999">معرض الصور</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7561454561030345039">يتولّى مشرفك إدارة هذا الإجراء.</translation>
@@ -77,6 +84,7 @@
 <translation id="8347227221149377169">مهام الطباعة</translation>
 <translation id="8701136875688985581">يُدير <ph name="ENROLLMENT_DOMAIN" /> هذا المستخدِم. وقد يعمل على إدارة الإعدادات ورصد نشاط المستخدِم.</translation>
 <translation id="871560550817059752">تعذَّرت الطباعة - نفد الحبر</translation>
+<translation id="8726019395068607495">توقّفت الطابعة - باب الطابعة مفتوح</translation>
 <translation id="8747900814994928677">تأكيد التغيير</translation>
 <translation id="8919837981463578619">تعذَّرت الطباعة - دُرج الورق غير متوفّر</translation>
 <translation id="8928727111548978589">تعذَّرت الطباعة - نفد الورق</translation>

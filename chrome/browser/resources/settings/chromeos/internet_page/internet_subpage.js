@@ -17,6 +17,7 @@ Polymer({
   behaviors: [
     NetworkListenerBehavior,
     CrPolicyNetworkBehaviorMojo,
+    DeepLinkingBehavior,
     settings.RouteObserverBehavior,
     settings.RouteOriginBehavior,
     I18nBehavior,
@@ -126,6 +127,31 @@ Polymer({
       type: Boolean,
       value: false,
     },
+
+    /**
+     * Contains the settingId of any deep link that wasn't able to be shown,
+     * null otherwise.
+     * @private {?chromeos.settings.mojom.Setting}
+     */
+    pendingSettingId_: {
+      type: chromeos.settings.mojom.Setting,
+      value: null,
+    },
+
+    /**
+     * Used by DeepLinkingBehavior to focus this page's deep links.
+     * @type {!Set<!chromeos.settings.mojom.Setting>}
+     */
+    supportedSettingIds: {
+      type: Object,
+      value: () => new Set([
+        chromeos.settings.mojom.Setting.kWifiOnOff,
+        chromeos.settings.mojom.Setting.kWifiAddNetwork,
+        chromeos.settings.mojom.Setting.kMobileOnOff,
+        chromeos.settings.mojom.Setting.kInstantTetheringOnOff,
+        chromeos.settings.mojom.Setting.kCellularAddNetwork,
+      ]),
+    },
   },
 
   /** settings.RouteOriginBehavior override */
@@ -165,6 +191,39 @@ Polymer({
   },
 
   /**
+   * Overridden from DeepLinkingBehavior.
+   * @param {!chromeos.settings.mojom.Setting} settingId
+   * @return {boolean}
+   */
+  beforeDeepLinkAttempt(settingId) {
+    if (settingId !== chromeos.settings.mojom.Setting.kInstantTetheringOnOff) {
+      // Continue with deep linking attempt.
+      return true;
+    }
+
+    // Wait for element to load.
+    Polymer.RenderStatus.afterNextRender(this, () => {
+      // If both Cellular and Instant Tethering are enabled, we show a special
+      // toggle for Instant Tethering. If it exists, deep link to it.
+      const tetherEnabled = this.$$('#tetherEnabledButton');
+      if (tetherEnabled) {
+        this.showDeepLinkElement(tetherEnabled);
+        return;
+      }
+      // Otherwise, the device does not support Cellular and Instant Tethering
+      // on/off is controlled by the top-level "Mobile data" toggle instead.
+      const deviceEnabled = this.$$('#deviceEnabledButton');
+      if (deviceEnabled) {
+        this.showDeepLinkElement(deviceEnabled);
+        return;
+      }
+      console.warn(`Element with deep link id ${settingId} not focusable.`);
+    });
+    // Stop deep link attempt since we completed it manually.
+    return false;
+  },
+
+  /**
    * settings.RouteObserverBehavior
    * @param {!settings.Route} newRoute
    * @param {!settings.Route} oldRoute
@@ -178,6 +237,14 @@ Polymer({
     this.init();
     settings.RouteOriginBehaviorImpl.currentRouteChanged.call(
         this, newRoute, oldRoute);
+
+    this.attemptDeepLink().then(result => {
+      if (!result.deepLinkShown && result.pendingSettingId) {
+        // Store any deep link settingId that wasn't shown so we can try again
+        // in getNetworkStateList_.
+        this.pendingSettingId_ = result.pendingSettingId;
+      }
+    });
   },
 
   init() {
@@ -313,6 +380,17 @@ Polymer({
     };
     this.networkConfig_.getNetworkStateList(filter).then(response => {
       this.onGetNetworks_(response.result);
+
+      // Check if we have yet to focus a deep-linked element.
+      if (!this.pendingSettingId_) {
+        return;
+      }
+
+      this.showDeepLink(this.pendingSettingId_).then(result => {
+        if (result.deepLinkShown) {
+          this.pendingSettingId_ = null;
+        }
+      });
     });
   },
 

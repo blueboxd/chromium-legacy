@@ -302,6 +302,7 @@
 <translation id="4481711095103932593">Folder ini dibagikan ke Windows</translation>
 <translation id="4487088045714738411">Keyboard untuk bahasa Belgia</translation>
 <translation id="4522570452068850558">Detail</translation>
+<translation id="4542387084127299777">Tidak dapat membuka "<ph name="PATH" />"</translation>
 <translation id="4552678318981539154">Beli penyimpanan lagi</translation>
 <translation id="4559767610552730302">Efek Bokeh</translation>
 <translation id="4572815280350369984">File <ph name="FILE_TYPE" /></translation>
@@ -514,6 +515,7 @@
 <translation id="6629841649550503054">Semua dicadangkan ke <ph name="BEGIN_LINK" />Google Drive!<ph name="END_LINK" /></translation>
 <translation id="6643016212128521049">Hapus</translation>
 <translation id="6650726141019353908">Kupu-kupu merah muda</translation>
+<translation id="6657585470893396449">Sandi</translation>
 <translation id="6710213216561001401">Sebelumnya</translation>
 <translation id="6718273304615422081">Membuat file zip...</translation>
 <translation id="6751256176799620176">1 folder dipilih</translation>
@@ -726,6 +728,7 @@
 <translation id="9065203028668620118">Edit</translation>
 <translation id="9099674669267916096">Hitungan halaman</translation>
 <translation id="9110990317705400362">Kami terus mencari cara agar penjelajahan Anda lebih aman. Sebelumnya, situs web apa pun dapat meminta Anda untuk menambahkan ekstensi ke browser. Pada versi terbaru Google Chrome, Anda harus memberitahukan dengan jelas kepada Chrome bahwa Anda ingin memasang ekstensi ini dengan menambahkannya melalui halaman Ekstensi. <ph name="BEGIN_LINK" />Pelajari lebih lanjut<ph name="END_LINK" /></translation>
+<translation id="9111102763498581341">Buka kunci</translation>
 <translation id="912419004897138677">Codec</translation>
 <translation id="9129931661813833980">Pasang pin pada folder</translation>
 <translation id="9130775360844693113">Anggota '<ph name="DESTINATION_NAME" />' akan mendapatkan akses ke item berikut.</translation>

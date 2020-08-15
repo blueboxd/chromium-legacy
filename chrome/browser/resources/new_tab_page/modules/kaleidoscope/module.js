@@ -2,48 +2,51 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import '../../grid.js';
+import 'chrome://resources/mojo/mojo/public/mojom/base/unguessable_token.mojom-lite.js';
+import 'chrome://resources/mojo/url/mojom/origin.mojom-lite.js';
 
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-
 import {ModuleDescriptor} from '../module_descriptor.js';
 
+// TODO(beccahughes): Use import for these.
+const KALEIDOSCOPE_RESOURCES = [
+  'chrome://kaleidoscope/geometry.mojom-lite.js',
+  'chrome://kaleidoscope/chrome/browser/media/feeds/media_feeds_store.mojom-lite.js',
+  'chrome://kaleidoscope/kaleidoscope.mojom-lite.js',
+  'chrome://kaleidoscope/messages.js',
+  'chrome://kaleidoscope/kaleidoscope.js',
+  'chrome://kaleidoscope/module.js',
+];
+
 /**
- * @fileoverview The Kaleidoscope module which will serve Kaleidoscope
- * recommendations to the user through the NTP.
+ * Loads a script resource and returns a promise that will resolve when the
+ * loading is complete.
+ * @param {string} resource
+ * @returns {Promise}
  */
-
-class KaleidoscopeModuleElement extends PolymerElement {
-  static get is() {
-    return 'ntp-kaleidoscope-module';
-  }
-
-  static get template() {
-    return html`{__html_template__}`;
-  }
-
-  static get properties() {
-    return {
-      tiles: {
-        type: Array,
-        value: () => ([
-          {label: 'item1', value: 'foo'},
-          {label: 'item2', value: 'bar'},
-          {label: 'item3', value: 'baz'},
-          {label: 'item4', value: 'boo'},
-        ]),
-      }
-    };
-  }
+function loadResource(resource) {
+  return new Promise((resolve) => {
+    const script = document.createElement('script');
+    script.type = 'module';
+    script.src = resource;
+    script.addEventListener('load', resolve, {once: true});
+    document.body.appendChild(script);
+  });
 }
-
-customElements.define(KaleidoscopeModuleElement.is, KaleidoscopeModuleElement);
 
 /** @type {!ModuleDescriptor} */
 export const kaleidoscopeDescriptor = new ModuleDescriptor(
-    'kaleidoscope', loadTimeData.getString('modulesKaleidoscopeName'),
-    () => Promise.resolve({
-      element: new KaleidoscopeModuleElement(),
-      title: loadTimeData.getString('modulesKaleidoscopeTitle'),
-    }));
+    'kaleidoscope',
+    loadTimeData.getString('modulesKaleidoscopeName'),
+    () => {
+      // Load all the Kaleidoscope resources into the NTP and return the module
+      // once the loading is complete.
+      return Promise.all(KALEIDOSCOPE_RESOURCES.map((r) => loadResource(r)))
+          .then(() => {
+            return {
+              element: document.createElement('ntp-kaleidoscope-module'),
+              title: loadTimeData.getString('modulesKaleidoscopeTitle'),
+            };
+          });
+    },
+);

@@ -480,11 +480,19 @@ void OmniboxEditModel::UpdateInput(bool has_selected_text,
     return;
   }
 
-  if (changed_to_user_input_in_progress && user_text_.empty() &&
-      base::FeatureList::IsEnabled(omnibox::kClobberIsZeroSuggestEntrypoint)) {
+  if (!is_keyword_selected() && changed_to_user_input_in_progress &&
+      user_text_.empty()) {
     // In the case the user enters user-input-in-progress mode by clearing
-    // everything (i.e. via Backspace), and the special flag is on, ask for
-    // ZeroSuggestions instead of the normal prefix (as-you-type) autocomplete.
+    // everything (i.e. via Backspace), ask for ZeroSuggestions instead of the
+    // normal prefix (as-you-type) autocomplete.
+    //
+    // We also check that no keyword is selected, as otherwise that breaks
+    // entering keyword mode via Ctrl+K.
+    //
+    // TODO(tommycli): The difference between a ZeroSuggest request and a normal
+    // prefix autocomplete request is getting fuzzier, and should be fully
+    // encapsulated by the AutocompleteInput::focus_type() member. We should
+    // merge these two calls soon, lest we confuse future developers.
     StartZeroSuggestRequest(/*user_clobbered_permanent_text=*/true);
   } else {
     // Otherwise run the normal prefix (as-you-type) autocomplete.

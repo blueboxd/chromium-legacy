@@ -28,6 +28,7 @@
 <translation id="2294245788148774212">ఆప్షనల్: విశ్లేషణ మరియు వినియోగ డేటాను ఆటోమేటిక్‌గా Googleకు పంపడం ద్వారా Chromium OS ఫీచర్‌లు మరియు పనితీరును మెరుగుపరచడంలో సహాయపడండి.</translation>
 <translation id="2347108572062610441">ఈ పొడిగింపు మీరు Chromiumని ప్రారంభించినప్పుడు చూపబడే పేజీని మార్చింది.</translation>
 <translation id="2396765026452590966"><ph name="EXTENSION_NAME" /> పొడిగింపు మీరు Chromiumని ప్రారంభించినప్పుడు చూపబడే పేజీని మార్చింది.</translation>
+<translation id="2442081746662839303"><ph name="NEW_USER" /> కోసం కొత్త Chromium ప్రదేశాన్ని క్రియేట్ చేయాలా?</translation>
 <translation id="2483889755041906834">Chromiumలో</translation>
 <translation id="2485422356828889247">అన్ఇన్‌స్టాల్ చేయి</translation>
 <translation id="2527042973354814951"><ph name="PLUGIN_NAME" />ని ప్రారంభించడానికి Chromiumని పునఃప్రారంభించండి</translation>
@@ -103,6 +104,7 @@
 <translation id="4943838377383847465">Chromium నేపథ్య మోడ్‌లో ఉంది.</translation>
 <translation id="4987820182225656817">అతిథులు ఎటువంటి చరిత్రను వదలకుండానే Chromiumను ఉపయోగించవచ్చు.</translation>
 <translation id="4994636714258228724">Chromiumకు మిమ్మల్ని జోడించుకోండి</translation>
+<translation id="5053724573690775822">కొత్త Chromium వర్క్ స్పేస్‌ను క్రియేట్ చేయాలా?</translation>
 <translation id="5224391634244552924">సేవ్ చేసిన పాస్‌వర్డ్‌లు లేవు. మీరు మీ పాస్‌వర్డ్‌లను సేవ్ చేసినప్పుడు Chromium వాటిని చెక్ చేయగలదు.</translation>
 <translation id="5277894862589591112">మీ మార్పులను వర్తింపజేయడానికి, Chromiumని పునఃప్రారంభించండి</translation>
 <translation id="5358375970380395591">మీరు నిర్వహించబడే ఖాతాతో సైన్ ఇన్ చేస్తున్నారు. దీని నిర్వాహకునికి మీ Chromium ప్రొఫైల్‌పై నియంత్రణను అందిస్తున్నారు. మీ యాప్‌లు, బుక్‌మార్క్‌లు, చరిత్ర, పాస్‌వర్డ్‌లు, ఇతర సెట్టింగ్‌ల వంటి మీ Chromium డేటా శాశ్వతంగా <ph name="USER_NAME" />కు అనుబంధించబడుతుంది. మీరు Google ఖాతాల డాష్‌బోర్డ్ ద్వారా ఈ డేటాను తొలగించవచ్చు. కానీ ఈ డేటాను మరో ఖాతాతో అనుబంధించలేరు. <ph name="LEARN_MORE" /></translation>
@@ -112,6 +114,7 @@
 <translation id="5416696090975899932">అంతర్నిర్మిత PDF వ్యూయర్ లేనప్పుడు Chromium ముద్రణ ప్రివ్యూని చూపించదు.</translation>
 <translation id="5427571867875391349">Chromiumను మీ డిఫాల్ట్ బ్రౌజర్‌గా సెట్ చేయండి</translation>
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> - Chromium బీటా</translation>
+<translation id="544968170749360982"><ph name="EXISTING_USER" /> ప్రదేశంలో కొత్త ఖాతాతో మీరు సైన్ ఇన్ చేశారు. మీ డేటాను వేరుగా సేవ్ చేయడానికి <ph name="NEW_USER" /> కోసం కొత్త Chromium ప్రదేశాన్ని క్రియేట్ చేయాలనుకుంటున్నారా?</translation>
 <translation id="5479196819031988440">Chromium OS ఈ పేజీని తెరవలేదు.</translation>
 <translation id="5480860683791598150">ఈ సైట్‌తో మీ స్థానాన్ని షేర్ చేయడానికి Chromiumకు మీ స్థాన యాక్సెస్ అవసరం</translation>
 <translation id="549669000822060376">దయచేసి Chromium తాజా సిస్టమ్ నవీకరణలను ఇన్‌స్టాల్ చేస్తున్నప్పుడు వేచి ఉండండి.</translation>
@@ -134,6 +137,7 @@
 <translation id="608189560609172163">సైన్ ఇన్ చేయడంలో ఎర్రర్ కారణంగా Chromium మీ డేటాను సింక్ చేయలేకపోయింది.</translation>
 <translation id="6096348254544841612">Chromiumను అనుకూలీకరించండి మరియు నియంత్రించండి. అప్‌డేట్ అందుబాటులో ఉంది.</translation>
 <translation id="6120345080069858279">Chromium ఈ పాస్‌వర్డ్‌ను మీ Google ఖాతాలో సేవ్ చేస్తుంది. మీరు దీనిని గుర్తుంచుకోవాల్సిన అవసరం లేదు.</translation>
+<translation id="6128834065531097268"><ph name="EXISTING_USER" /> ప్రదేశంలో కార్యాలయ ఖాతాతో మీరు సైన్ ఇన్ చేశారు. మీ డేటాను వేరుగా సేవ్ చేయడానికి <ph name="WORK_DOMAIN" /> కోసం కొత్త Chromium ప్రదేశాన్ని క్రియేట్ చేయాలనుకుంటున్నారా?</translation>
 <translation id="6129621093834146363"><ph name="FILE_NAME" /> హానికరం, కావున Chromium దాన్ని బ్లాక్ చేసింది.</translation>
 <translation id="6134968993075716475">సురక్షిత బ్రౌజింగ్ ఆఫ్ చేయబడింది. దాన్ని ఆన్ చేయమని Chromium సిఫార్సు చేస్తోంది.</translation>
 <translation id="6212496753309875659">ఈ కంప్యూటర్‌లో ఇప్పటికే మరింత తాజాదైన Chromium వెర్షన్ ఉంది. సాఫ్ట్‌వేర్ పని చేయకపోతే, దయచేసి Chromiumను అన్ఇన్‌స్టాల్ చేసి, మళ్లీ ప్రయత్నించండి.</translation>
@@ -193,6 +197,7 @@
 <translation id="7561906087460245826">అలాగే (<ph name="URL" />)లో ఉన్న Chromiumకి సంబంధించిన డేటాని తీసివేయి</translation>
 <translation id="7585853947355360626">ఏదైనా సెట్టింగ్ ఈ పేజీలో కనపడకపోతే, మీ <ph name="LINK_BEGIN" />
       Chromium OS సెట్టింగ్‌లు<ph name="LINK_END" />లో చూడండి</translation>
+<translation id="7607142834923530546">మీరు కార్యాలయ ఖాతాతో సైన్ ఇన్ చేశారు. మీ వ్యక్తిగత డేటాను వేరుగా సేవ్ చేయడానికి <ph name="NEW_USER" /> కోసం కొత్త Chromium ప్రదేశాన్ని క్రియేట్ చేయాలనుకుంటున్నారా?</translation>
 <translation id="761356813943268536">Chromium మీ కెమెరా మరియు మైక్రోఫోన్‌ని ఉపయోగిస్తోంది.</translation>
 <translation id="7617377681829253106">Chromium ఇప్పుడు మెరుగైంది</translation>
 <translation id="7628001322379820951">మీ కంప్యూటర్‌లో హానికరమైన సాప్ఠ్‌వేర్‌ను Chromium కనుగొన్నది</translation>

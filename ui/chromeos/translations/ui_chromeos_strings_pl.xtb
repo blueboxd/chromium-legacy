@@ -515,6 +515,7 @@
 <translation id="6629841649550503054">Kopie zapasowe wszystkich materiałów zostały utworzone na <ph name="BEGIN_LINK" />Dysku Google<ph name="END_LINK" />.</translation>
 <translation id="6643016212128521049">Wyczyść</translation>
 <translation id="6650726141019353908">Różowy motyl</translation>
+<translation id="6657585470893396449">Hasło</translation>
 <translation id="6710213216561001401">Wstecz</translation>
 <translation id="6718273304615422081">Pakuję...</translation>
 <translation id="6751256176799620176">Wybrano jeden folder</translation>
@@ -727,6 +728,7 @@
 <translation id="9065203028668620118">Edytuj</translation>
 <translation id="9099674669267916096">Liczba stron</translation>
 <translation id="9110990317705400362">Stale szukamy rozwiązań, dzięki którym przeglądanie internetu będzie bezpieczniejsze. Wcześniej każda strona mogła poprosić o dodanie rozszerzenia do przeglądarki. W nowszych wersjach Google Chrome musisz dodać rozszerzenie na stronie Rozszerzenia, by wyraźnie poinformować przeglądarkę, że chcesz je zainstalować. <ph name="BEGIN_LINK" />Więcej informacji<ph name="END_LINK" /></translation>
+<translation id="9111102763498581341">Odblokuj</translation>
 <translation id="912419004897138677">Kodek</translation>
 <translation id="9129931661813833980">Przypnij folder</translation>
 <translation id="9130775360844693113">Osoby z uprawnieniami do: „<ph name="DESTINATION_NAME" />” uzyskają dostęp do tych elementów.</translation>

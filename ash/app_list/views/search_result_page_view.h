@@ -6,6 +6,7 @@
 #define ASH_APP_LIST_VIEWS_SEARCH_RESULT_PAGE_VIEW_H_
 
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "ash/app_list/app_list_export.h"
@@ -40,8 +41,12 @@ class APP_LIST_EXPORT SearchResultPageView
                        SearchModel* search_model);
   ~SearchResultPageView() override;
 
-  void AddSearchResultContainerView(
-      SearchResultContainerView* result_container);
+  template <typename T>
+  T* AddSearchResultContainerView(std::unique_ptr<T> result_container) {
+    auto* result = result_container.get();
+    AddSearchResultContainerViewInternal(std::move(result_container));
+    return result;
+  }
 
   const std::vector<SearchResultContainerView*>& result_container_views() {
     return result_container_views_;
@@ -154,6 +159,9 @@ class APP_LIST_EXPORT SearchResultPageView
 
   // Called when the widget anchored in the search results page gets closed.
   void OnAnchoredDialogClosed();
+
+  void AddSearchResultContainerViewInternal(
+      std::unique_ptr<SearchResultContainerView> result_container);
 
   AppListViewDelegate* view_delegate_;
 

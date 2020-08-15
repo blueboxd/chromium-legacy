@@ -135,6 +135,10 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCiceroneClient
       const vm_tools::cicerone::RemoveFileWatchRequest& request,
       DBusMethodCallback<vm_tools::cicerone::RemoveFileWatchResponse> callback)
       override;
+  void GetVshSession(
+      const vm_tools::cicerone::GetVshSessionRequest& request,
+      DBusMethodCallback<vm_tools::cicerone::GetVshSessionResponse> callback)
+      override;
   void WaitForServiceToBeAvailable(
       dbus::ObjectProxy::WaitForServiceToBeAvailableCallback callback) override;
 
@@ -313,6 +317,10 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCiceroneClient
       vm_tools::cicerone::RemoveFileWatchResponse remove_file_watch_response) {
     remove_file_watch_response_ = std::move(remove_file_watch_response);
   }
+  void set_get_vsh_session_response(
+      vm_tools::cicerone::GetVshSessionResponse get_vsh_session_response) {
+    get_vsh_session_response_ = std::move(get_vsh_session_response);
+  }
 
   // Returns true if the method has been invoked at least once, false otherwise.
   bool configure_for_arc_sideload_called() {
@@ -422,6 +430,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCiceroneClient
   vm_tools::cicerone::StartLxdResponse start_lxd_response_;
   vm_tools::cicerone::AddFileWatchResponse add_file_watch_response_;
   vm_tools::cicerone::RemoveFileWatchResponse remove_file_watch_response_;
+  vm_tools::cicerone::GetVshSessionResponse get_vsh_session_response_;
 
   vm_tools::cicerone::OsRelease lxd_container_os_release_;
 

@@ -290,6 +290,7 @@ class TabStripModelObserver {
   // Called when the tab at |index| is added to the group with id |group|.
   virtual void TabGroupedStateChanged(
       base::Optional<tab_groups::TabGroupId> group,
+      content::WebContents* contents,
       int index);
 
   // The TabStripModel now no longer has any tabs. The implementer may

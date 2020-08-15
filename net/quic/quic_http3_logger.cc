@@ -313,6 +313,13 @@ void QuicHttp3Logger::OnSettingsFrameSent(const quic::SettingsFrame& frame) {
                     [&frame] { return NetLogSettingsParams(frame); });
 }
 
+void QuicHttp3Logger::OnSettingsFrameResumed(const quic::SettingsFrame& frame) {
+  if (!net_log_.IsCapturing())
+    return;
+  net_log_.AddEvent(NetLogEventType::HTTP3_SETTINGS_RESUMED,
+                    [&frame] { return NetLogSettingsParams(frame); });
+}
+
 void QuicHttp3Logger::OnGoAwayFrameSent(quic::QuicStreamId stream_id) {
   if (!net_log_.IsCapturing()) {
     return;

@@ -44,6 +44,9 @@ enum LoadingBehaviorFlag {
   // Indicates that the page uses the Next.js JavaScript framework (via a
   // window variable)
   kLoadingBehaviorNextJSFrameworkUsed = 1 << 9,
+  // Indicates that an async script was ready to execute before the script
+  // element's node document has finished parsing.
+  kLoadingBehaviorAsyncScriptReadyBeforeDocumentFinishedParsing = 1 << 10,
 };
 
 }  // namespace blink

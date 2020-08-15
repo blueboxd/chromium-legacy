@@ -9,6 +9,7 @@
 <translation id="150962533380566081">El PUK no es válido.</translation>
 <translation id="1510238584712386396">Menú de aplicaciones</translation>
 <translation id="1644574205037202324">Historial</translation>
+<translation id="1662989795263954667">Detenido: sin tinta</translation>
 <translation id="1734367976349034509">Este es un dispositivo administrado por la empresa</translation>
 <translation id="1905710495812624430">Se ha superado el máximo de intentos permitidos.</translation>
 <translation id="1930797645656624981">Servicio de método de introducción de Chrome OS</translation>
@@ -39,17 +40,21 @@
 <translation id="4227825898293920515">La contraseña caducará dentro de <ph name="TIME" /></translation>
 <translation id="4238516577297848345">No hay ningún trabajo de impresión en curso</translation>
 <translation id="428217921675623177">Los trabajos de impresión con más 90 días de antigüedad se eliminarán</translation>
+<translation id="4297501883039923494">Detenido: error desconocido</translation>
 <translation id="4429881212383817840">El ticket de Kerberos caducará pronto</translation>
 <translation id="445059817448385655">Contraseña antigua</translation>
 <translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> de <ph name="TOTAL_PAGE_NUMBER" />. Pulsa Intro para cancelar el trabajo de impresión.</translation>
 <translation id="467510802200863975">Las contraseñas no coinciden</translation>
+<translation id="4691278870498629773">Detenido: falta la bandeja</translation>
 <translation id="4731797938093519117">Acceso parental</translation>
 <translation id="4773299976671772492">Detenido</translation>
 <translation id="4808449224298348341">Trabajo de impresión <ph name="DOCUMENT_TITLE" /> cancelado</translation>
 <translation id="4890353053343094602">Selecciona otra inmediatamente</translation>
+<translation id="4917889632206600977">Detenido: sin papel</translation>
 <translation id="4932733599132424254">Fecha</translation>
 <translation id="5212543919916444558">No encuentro nada en la pantalla con lo que pueda ayudarte. Toca el micrófono para pedirme algo.</translation>
 <translation id="5222676887888702881">Cerrar sesión</translation>
+<translation id="5267975978099728568"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="ERROR_STATUS" /></translation>
 <translation id="5317780077021120954">Guardar</translation>
 <translation id="5326394068492324457"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="COMPLETION_STATUS" /></translation>
 <translation id="5332948983412042822">Selecciona otra ahora</translation>
@@ -62,9 +67,11 @@
 <translation id="6106186594183574873">Para finalizar, introduce tu contraseña anterior</translation>
 <translation id="6146993107019042706">Para finalizar, introduce tu contraseña nueva</translation>
 <translation id="636850387210749493">Registro de empresa</translation>
+<translation id="649050271426829538">Detenido: atasco de papel</translation>
 <translation id="6517239166834772319">Explorar</translation>
 <translation id="6564646048574748301">No se ha podido imprimir - Impresora inaccesible</translation>
 <translation id="6643016212128521049">Eliminar</translation>
+<translation id="6747215703636344499">Detenido: bandeja de salida llena</translation>
 <translation id="7162487448488904999">Galería</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7561454561030345039">Esta acción la gestiona tu administrador</translation>
@@ -76,6 +83,7 @@
 <translation id="8347227221149377169">Trabajos de impresión</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> gestiona este usuario. Puede gestionar ajustes y supervisar la actividad del usuario de forma remota.</translation>
 <translation id="871560550817059752">No se ha podido imprimir - Sin tinta</translation>
+<translation id="8726019395068607495">Detenido: cubierta abierta</translation>
 <translation id="8747900814994928677">Confirmar cambio</translation>
 <translation id="8919837981463578619">No se ha podido imprimir - Falta una bandeja</translation>
 <translation id="8928727111548978589">No se ha podido imprimir - Sin papel</translation>

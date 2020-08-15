@@ -63,8 +63,8 @@ class CommandlineStartupTracingTest : public ContentBrowserTest {
 
 // Failing on Android/Win ASAN, Linux TSAN. crbug.com/1041392
 #if (defined(OS_ANDROID) && defined(ADDRESS_SANITIZER)) || \
-    (defined(OS_WIN) && defined(ADDRESS_SANITIZER)) || \
-    (defined(OS_LINUX) && defined(THREAD_SANITIZER))
+    (defined(OS_WIN) && defined(ADDRESS_SANITIZER)) ||     \
+    ((defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(THREAD_SANITIZER))
 #define MAYBE_TestStartupTracing DISABLED_TestStartupTracing
 #else
 #define MAYBE_TestStartupTracing TestStartupTracing

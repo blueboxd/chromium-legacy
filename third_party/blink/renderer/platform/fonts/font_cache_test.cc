@@ -47,7 +47,7 @@ TEST(FontCache, NoFallbackForPrivateUseArea) {
   }
 }
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 TEST(FontCache, FallbackForEmojis) {
   FontCache* font_cache = FontCache::GetFontCache();
   ASSERT_TRUE(font_cache);
@@ -96,7 +96,7 @@ TEST(FontCache, FallbackForEmojis) {
     }
   }
 }
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
 TEST(FontCache, firstAvailableOrFirst) {
   EXPECT_TRUE(FontCache::FirstAvailableOrFirst("").IsEmpty());

@@ -315,8 +315,8 @@ void MediaHistoryStore::Initialize(const bool should_reset) {
   // In some edge cases the DB might be corrupted and unrecoverable so we should
   // delete the database and recreate it.
   if (result != InitResult::kSuccess) {
-    if (db_->is_open())
-      db_->Close();
+    db_ = std::make_unique<sql::Database>();
+    meta_table_ = std::make_unique<sql::MetaTable>();
 
     sql::Database::Delete(db_path_);
 

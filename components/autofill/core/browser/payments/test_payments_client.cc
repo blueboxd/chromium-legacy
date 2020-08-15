@@ -91,6 +91,15 @@ void TestPaymentsClient::MigrateCards(
                           "this is display text");
 }
 
+void TestPaymentsClient::GetOfferData(
+    const std::string& app_locale,
+    base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
+                            const std::vector<AutofillOfferData>&)> callback) {
+  get_offer_data_calls_++;
+  if (should_return_offer_data_)
+    std::move(callback).Run(AutofillClient::SUCCESS, offers_);
+}
+
 void TestPaymentsClient::ShouldReturnUnmaskDetailsImmediately(
     bool should_return_unmask_details) {
   should_return_unmask_details_ = should_return_unmask_details;
@@ -188,6 +197,11 @@ std::unique_ptr<base::Value> TestPaymentsClient::LegalMessage() {
         "  } ]"
         "}"));
   }
+}
+
+void TestPaymentsClient::SetShouldReturnOfferData(
+    bool should_return_offer_data) {
+  should_return_offer_data_ = should_return_offer_data;
 }
 
 }  // namespace payments

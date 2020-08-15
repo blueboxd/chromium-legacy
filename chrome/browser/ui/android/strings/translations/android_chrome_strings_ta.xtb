@@ -55,7 +55,7 @@
 <translation id="1360432990279830238">வெளியேறி, ஒத்திசைவை முடக்கவா?</translation>
 <translation id="1373696734384179344">தேர்ந்தெடுத்ததைப் பதிவிறக்க, போதுமான நினைவகம் இல்லை.</translation>
 <translation id="1376578503827013741">கணக்கிடுகிறது…</translation>
-<translation id="1383876407941801731">தேடல்</translation>
+<translation id="1383876407941801731">தேடு</translation>
 <translation id="1386674309198842382"><ph name="LAST_UPDATED" /> நாட்களுக்கு முன் பயன்படுத்தியுள்ளார்</translation>
 <translation id="1397811292916898096"><ph name="PRODUCT_NAME" /> மூலம் தேடுக</translation>
 <translation id="1406000523432664303">'கண்காணிக்க வேண்டாம்'</translation>
@@ -417,6 +417,7 @@
 <translation id="4314815835985389558">ஒத்திசைவை நிர்வகிக்கும் பக்கம்</translation>
 <translation id="4320177379694898372">இணைய இணைப்பு இல்லை</translation>
 <translation id="4321739720395210191">கேமராவைத் திறக்க முடியவில்லை. சாதனத்தை மீண்டும் தொடங்கி மறுபடியும் முயலவும்.</translation>
+<translation id="4335835283689002019">பாதுகாப்பு உலாவல் முடக்கப்பட்டுள்ளது</translation>
 <translation id="4351244548802238354">அறிவிப்பை மூடு</translation>
 <translation id="4378154925671717803">மொபைல்</translation>
 <translation id="4382908510000698092">Chromeமின் மொழியாகப் பயன்படுத்து</translation>
@@ -457,6 +458,7 @@
 <translation id="4662373422909645029">புனைப்பெயரில் எண்கள் இருக்கக்கூடாது</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> புக்மார்க்குகள் நீக்கப்பட்டன</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> உங்கள் முகப்புத் திரையில் சேர்க்கப்பட்டது</translation>
+<translation id="4668347365065281350">குக்கீகள், சாதனத்தில் சேமிக்கப்பட்ட பிற தரவுகள் உட்பட தளங்கள் மூலம் சேமிக்கப்பட்ட தரவுகள் அனைத்தும்</translation>
 <translation id="4684427112815847243">அனைத்தையும் ஒத்திசை</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 மற்றும் <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> விருப்பம்}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 மற்றும் <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> விருப்பங்கள்}}</translation>
 <translation id="4696983787092045100">எனது சாதனங்களுக்கு உரைச் செய்தியை அனுப்பு</translation>
@@ -613,6 +615,7 @@
 <translation id="5763382633136178763">மறைநிலைத் தாவல்கள்</translation>
 <translation id="5763514718066511291">இந்த ஆப்ஸின் URLஐ நகலெடுக்க, தட்டவும்</translation>
 <translation id="5765780083710877561">விவரம்:</translation>
+<translation id="5776970333778123608">முக்கியமில்லாத தரவு</translation>
 <translation id="5793665092639000975"><ph name="SPACE_AVAILABLE" /> இல் <ph name="SPACE_USED" /> பயன்படுத்தப்படுகிறது</translation>
 <translation id="5795872532621730126">தேடல் &amp; உலாவல்</translation>
 <translation id="5797070761912323120">தேடல், விளம்பரங்கள் மற்றும் பிற Google சேவைகளைத் தனிப்பயனாக்க, உங்கள் வரலாற்றை Google பயன்படுத்தக்கூடும்</translation>
@@ -1047,6 +1050,7 @@
 <translation id="9050666287014529139">கடவுச்சொற்றொடர்</translation>
 <translation id="9063523880881406963">டெஸ்க்டாப் தளத்திற்கான கோரிக்கையை முடக்கு</translation>
 <translation id="9065203028668620118">திருத்து</translation>
+<translation id="9065383040763568503">முக்கியமில்லை என்று Chrome கருதும் சேமிக்கப்பட்ட தரவுகள் (எ.கா. சேமித்த அமைப்புகள் இல்லாத/அடிக்கடி நீங்கள் பார்க்காத தளங்கள்)</translation>
 <translation id="9069543557624799859"><ph name="TIME" />க்குப் பதிவிறக்கம் தொடங்கும்.</translation>
 <translation id="9070377983101773829">குரல் தேடலைத் தொடங்கு</translation>
 <translation id="9074336505530349563">Google பரிந்துரைக்கும் பிரத்யேக உள்ளடக்கத்தைப் பெற, உள்நுழைந்து, ஒத்திசைவை இயக்கவும்</translation>

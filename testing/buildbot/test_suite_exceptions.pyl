@@ -2648,7 +2648,6 @@
       },
       # https://crbug.com/1111979,
       'linux-lacros-tester-rel': {
-        'experiment_percentage': 100,
         'args': [
           '--gtest_filter=-NativeDesktopMediaListTest*:PermissionMessageCombinationsUnittest.USBSerialBluetoothCoalescing:'
           'RelaunchNotificationControllerPlatformImplTest.SynchronousNotification:WindowSizerTest*:'
@@ -2685,8 +2684,8 @@
         'experiment_percentage': 100,
         'args': [
           '--gtest_filter=-DesktopWidgetFocusManagerTest.AnchoredDialogInDesktopNativeWidgetAura:'
-          'DesktopWidgetTest.GetWindowPlacement:'
-          'DesktopWidgetTest.MinimumSizeConstraints:'
+          'DesktopWidgetTest*:'
+          'DesktopWindowTreeHostPlatformTest*:'
           'EditableComboboxTest*:'
           'MenuRunnerTest*:'
           'TextfieldTest*:'

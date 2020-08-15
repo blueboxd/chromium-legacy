@@ -85,7 +85,7 @@ namespace identity {
   };
 
   callback GetAuthTokenCallback = void (optional DOMString token,
-                                        optional DOMString[] scopes);
+                                        optional DOMString[] grantedScopes);
   callback GetAccountsCallback = void (AccountInfo[] accounts);
   callback GetProfileUserInfoCallback = void (ProfileUserInfo userInfo);
   callback InvalidateAuthTokenCallback = void ();
@@ -116,9 +116,11 @@ namespace identity {
     //
     // |details| : Token options.
     // |callback| : Called with an OAuth2 access token as specified by the
-    // manifest, or undefined if there was an error. The <code>scopes</code>
-    // parameter is not yet available. It will be populated in future versions
-    // of Chrome.
+    // manifest, or undefined if there was an error. The
+    // <code>grantedScopes</code> parameter is not yet available and will be
+    // populated in future versions of Chrome. When available, this parameter
+    // will contain the list of granted scopes corresponding with the returned
+    // token.
     static void getAuthToken(optional TokenDetails details,
                              optional GetAuthTokenCallback callback);
 

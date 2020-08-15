@@ -691,7 +691,9 @@ void QuicEventLogger::OnGoAwayFrame(const quic::QuicGoAwayFrame& frame) {
                     [&] { return NetLogQuicGoAwayFrameParams(&frame); });
 }
 
-void QuicEventLogger::OnPingFrame(const quic::QuicPingFrame& frame) {
+void QuicEventLogger::OnPingFrame(
+    const quic::QuicPingFrame& frame,
+    quic::QuicTime::Delta /*ping_received_delay*/) {
   // PingFrame has no contents to log, so just record that it was received.
   if (!net_log_.IsCapturing())
     return;
@@ -854,6 +856,16 @@ void QuicEventLogger::OnTransportParametersReceived(
     return;
   net_log_.AddEvent(
       NetLogEventType::QUIC_SESSION_TRANSPORT_PARAMETERS_RECEIVED, [&] {
+        return NetLogQuicTransportParametersParams(transport_parameters);
+      });
+}
+
+void QuicEventLogger::OnTransportParametersResumed(
+    const quic::TransportParameters& transport_parameters) {
+  if (!net_log_.IsCapturing())
+    return;
+  net_log_.AddEvent(
+      NetLogEventType::QUIC_SESSION_TRANSPORT_PARAMETERS_RESUMED, [&] {
         return NetLogQuicTransportParametersParams(transport_parameters);
       });
 }

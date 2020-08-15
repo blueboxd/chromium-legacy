@@ -209,8 +209,7 @@ CSSSupportsParser::Result CSSSupportsParser::ConsumeSupportsDecl(
     CSSParserTokenStream& stream) {
   if (!IsSupportsDecl(first_token, stream.Peek()))
     return Result::kParseFailure;
-  auto block = stream.ConsumeUntilPeekedTypeIs<kRightParenthesisToken>();
-  if (parser_.SupportsDeclaration(block))
+  if (parser_.ConsumeSupportsDeclaration(stream))
     return Result::kSupported;
   return Result::kUnsupported;
 }

@@ -465,7 +465,7 @@ TEST_F(TracingProfileBuilderTest, InvalidModule) {
                                     base::TimeTicks());
 }
 
-#if defined(OS_ANDROID) || defined(OS_LINUX)
+#if defined(OS_ANDROID) || defined(OS_LINUX) || defined(OS_CHROMEOS)
 TEST_F(TracingProfileBuilderTest, MangleELFModuleID) {
   TestModule module;
   // See explanation for the module_id mangling in

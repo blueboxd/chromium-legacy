@@ -1794,6 +1794,13 @@ public class PaymentRequestImpl
         return mSpec;
     }
 
+    // PaymentAppFactoryParams implementation.
+    @Override
+    @Nullable
+    public String getTwaPackageName() {
+        return mDelegate.getTwaPackageName(ChromeActivity.fromWebContents(mWebContents));
+    }
+
     // PaymentAppFactoryDelegate implementation.
     @Override
     public PaymentAppFactoryParams getParams() {
@@ -2022,8 +2029,7 @@ public class PaymentRequestImpl
     }
 
     private boolean isInTwa() {
-        return !TextUtils.isEmpty(
-                mDelegate.getTwaPackageName(ChromeActivity.fromWebContents(mWebContents)));
+        return !TextUtils.isEmpty(getTwaPackageName());
     }
 
     /**

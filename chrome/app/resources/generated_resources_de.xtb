@@ -4596,7 +4596,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6691936601825168937">&amp;Vorwärts</translation>
 <translation id="6693745645188488741">{COUNT,plural, =1{1 Seite}other{{COUNT} Seiten}}</translation>
 <translation id="6697492270171225480">Vorschläge für ähnliche Seiten anzeigen, wenn eine Seite nicht gefunden werden kann</translation>
-<translation id="6697690052557311665">Wenn Sie Ordner freigeben möchten, rechtsklicken Sie in der App "Dateien" auf einen Ordner und wählen sie "Mit Linux teilen" aus.</translation>
+<translation id="6697690052557311665">Zur Freigabe eines Ordners rechtsklicken Sie ihn in der App "Dateien" und wählen "Mit Linux teilen" aus.</translation>
 <translation id="6698810901424468597">Eigene Daten auf <ph name="WEBSITE_1" /> und <ph name="WEBSITE_2" /> lesen und ändern</translation>
 <translation id="6699883973579689168">Sie können jetzt alle Ihre Google-Konten an einem Ort verwalten. Der Zugriff und die Berechtigungen, die Sie Apps, Websites und Erweiterungen in Chrome und Google Play gegeben haben, sind jetzt möglicherweise für alle Ihre angemeldeten Konten gültig. <ph name="LINK_BEGIN" />Weitere Informationen<ph name="LINK_END" /></translation>
 <translation id="6700093763382332031">Sperre für SIM-Karte</translation>
@@ -4832,7 +4832,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6981982820502123353">Bedienungshilfen</translation>
 <translation id="6983507711977005608">Verbindung mit Instant Tethering-Netzwerk trennen</translation>
 <translation id="6983783921975806247">Registrierte OID</translation>
-<translation id="6984299437918708277">Wählen Sie ein Bild aus, das auf der Anmeldeseite für Ihr Konto zu sehen sein soll</translation>
+<translation id="6984299437918708277">Wählen Sie ein Bild für Ihr Konto aus, das auf der Anmeldeseite zu sehen sein soll</translation>
 <translation id="6985235333261347343">Microsoft Key Recovery Agent</translation>
 <translation id="698524779381350301">Automatisch Zugriff auf die folgenden Websites gewähren</translation>
 <translation id="6985607387932385770">Drucker</translation>
@@ -5153,7 +5153,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7392118418926456391">Fehler beim Virenscan</translation>
 <translation id="7392915005464253525">Geschlossenes Fenster wieder öffn&amp;en</translation>
 <translation id="7393472013449507620">Einstellungen mit dem Platzhalter "*" werden nicht mehr unterstützt. Kontaktieren Sie den Entwickler der Erweiterung oder Ihren Administrator, um <ph name="BEGIN_LINK" />diese Einstellungen zu ändern<ph name="END_LINK" />.</translation>
-<translation id="7396017167185131589">Geteilte Ordner werden hier angezeigt</translation>
+<translation id="7396017167185131589">Freigegebene Ordner erscheinen hier</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> wird beim Systemstart gestartet und auch dann weiter im Hintergrund ausgeführt, wenn Sie alle anderen <ph name="PRODUCT_NAME" />-Fenster geschlossen haben.</translation>
 <translation id="7399045143794278225">Synchronisierung anpassen</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -6385,7 +6385,7 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8875520811099717934">Linux-Upgrade</translation>
 <translation id="8876307312329369159">Diese Einstellung kann nicht in einer Demositzung geändert werden.</translation>
 <translation id="8877448029301136595">[übergeordnetes Verzeichnis]</translation>
-<translation id="8879284080359814990">Tab "Anzeigen al&amp;s"</translation>
+<translation id="8879284080359814990">&amp;Als Tab anzeigen</translation>
 <translation id="8879921471468674457">Anmeldedaten speichern</translation>
 <translation id="8881020143150461183">Versuchen Sie es noch einmal. Für technischen Support wenden Sie sich bitte an <ph name="CARRIER_NAME" />.</translation>
 <translation id="8883273463630735858">Touchpadbeschleunigung aktivieren</translation>

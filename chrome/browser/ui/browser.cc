@@ -1231,17 +1231,17 @@ void Browser::TabPinnedStateChanged(TabStripModel* tab_strip_model,
 
 void Browser::TabGroupedStateChanged(
     base::Optional<tab_groups::TabGroupId> group,
+    content::WebContents* contents,
     int index) {
   SessionService* const session_service =
       SessionServiceFactory::GetForProfile(profile_);
-  if (session_service) {
-    content::WebContents* const web_contents =
-        tab_strip_model_->GetWebContentsAt(index);
-    sessions::SessionTabHelper* const session_tab_helper =
-        sessions::SessionTabHelper::FromWebContents(web_contents);
-    session_service->SetTabGroup(session_id(), session_tab_helper->session_id(),
-                                 std::move(group));
-  }
+  if (!session_service)
+    return;
+
+  sessions::SessionTabHelper* const session_tab_helper =
+      sessions::SessionTabHelper::FromWebContents(contents);
+  session_service->SetTabGroup(session_id(), session_tab_helper->session_id(),
+                               std::move(group));
 }
 
 void Browser::TabStripEmpty() {

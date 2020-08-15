@@ -111,41 +111,42 @@ void ContentsView::Init(AppListModel* model) {
 
   AppListViewDelegate* view_delegate = GetAppListMainView()->view_delegate();
 
-  apps_container_view_ = new AppsContainerView(this, model);
-
-  AddLauncherPage(apps_container_view_, AppListState::kStateApps);
+  apps_container_view_ =
+      AddLauncherPage(std::make_unique<AppsContainerView>(this, model),
+                      AppListState::kStateApps);
 
   // Search results UI.
-  search_results_page_view_ =
-      new SearchResultPageView(view_delegate, view_delegate->GetSearchModel());
+  auto search_results_page_view = std::make_unique<SearchResultPageView>(
+      view_delegate, view_delegate->GetSearchModel());
 
   // Search result containers:
   if (app_list_features::IsAnswerCardEnabled()) {
     search_result_answer_card_view_ =
-        new SearchResultAnswerCardView(view_delegate);
-    search_results_page_view_->AddSearchResultContainerView(
-        search_result_answer_card_view_);
+        search_results_page_view->AddSearchResultContainerView(
+            std::make_unique<SearchResultAnswerCardView>(view_delegate));
   }
 
   expand_arrow_view_ =
       AddChildView(std::make_unique<ExpandArrowView>(this, app_list_view_));
 
-  search_result_tile_item_list_view_ = new SearchResultTileItemListView(
-      GetSearchBoxView()->search_box(), view_delegate);
-  search_results_page_view_->AddSearchResultContainerView(
-      search_result_tile_item_list_view_);
+  search_result_tile_item_list_view_ =
+      search_results_page_view->AddSearchResultContainerView(
+          std::make_unique<SearchResultTileItemListView>(
+              GetSearchBoxView()->search_box(), view_delegate));
 
   search_result_list_view_ =
-      new SearchResultListView(GetAppListMainView(), view_delegate);
-  search_results_page_view_->AddSearchResultContainerView(
-      search_result_list_view_);
+      search_results_page_view->AddSearchResultContainerView(
+          std::make_unique<SearchResultListView>(GetAppListMainView(),
+                                                 view_delegate));
 
-  AddLauncherPage(search_results_page_view_, AppListState::kStateSearchResults);
+  search_results_page_view_ = AddLauncherPage(
+      std::move(search_results_page_view), AppListState::kStateSearchResults);
 
-  assistant_page_view_ =
-      new AssistantPageView(view_delegate->GetAssistantViewDelegate());
-  assistant_page_view_->SetVisible(false);
-  AddLauncherPage(assistant_page_view_, AppListState::kStateEmbeddedAssistant);
+  auto assistant_page_view = std::make_unique<AssistantPageView>(
+      view_delegate->GetAssistantViewDelegate());
+  assistant_page_view->SetVisible(false);
+  assistant_page_view_ = AddLauncherPage(std::move(assistant_page_view),
+                                         AppListState::kStateEmbeddedAssistant);
 
   int initial_page_index = GetPageIndexForState(AppListState::kStateApps);
   DCHECK_GE(initial_page_index, 0);
@@ -490,15 +491,11 @@ AppListMainView* ContentsView::GetAppListMainView() const {
   return app_list_view_->app_list_main_view();
 }
 
-int ContentsView::AddLauncherPage(AppListPage* view) {
+void ContentsView::AddLauncherPageInternal(std::unique_ptr<AppListPage> view,
+                                           AppListState state) {
   view->set_contents_view(this);
-  AddChildView(view);
-  app_list_pages_.push_back(view);
-  return app_list_pages_.size() - 1;
-}
-
-int ContentsView::AddLauncherPage(AppListPage* view, AppListState state) {
-  int page_index = AddLauncherPage(view);
+  app_list_pages_.push_back(AddChildView(std::move(view)));
+  int page_index = app_list_pages_.size() - 1;
   bool success =
       state_to_view_.insert(std::make_pair(state, page_index)).second;
   success = success &&
@@ -506,7 +503,6 @@ int ContentsView::AddLauncherPage(AppListPage* view, AppListState state) {
 
   // There shouldn't be duplicates in either map.
   DCHECK(success);
-  return page_index;
 }
 
 gfx::Rect ContentsView::GetSearchBoxBounds(AppListState state) const {

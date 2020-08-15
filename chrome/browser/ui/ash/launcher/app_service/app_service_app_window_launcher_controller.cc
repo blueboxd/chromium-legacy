@@ -79,8 +79,21 @@ AppServiceAppWindowLauncherController::AppServiceAppWindowLauncherController(
   profile_list_.push_back(owner->profile());
 
   for (auto* browser : *BrowserList::GetInstance()) {
-    if (browser && browser->window() && browser->window()->GetNativeWindow())
+    if (browser && browser->window() && browser->window()->GetNativeWindow()) {
       observed_windows_.Add(browser->window()->GetNativeWindow());
+
+      // Observe the browser tabs
+      TabStripModel* tab_strip = browser->tab_strip_model();
+      for (int i = 0; i < tab_strip->count(); ++i) {
+        auto* tab = tab_strip->GetWebContentsAt(i);
+        if (!tab)
+          continue;
+        aura::Window* window = tab->GetNativeView();
+        if (window) {
+          observed_windows_.Add(window);
+        }
+      }
+    }
   }
 }
 
@@ -94,6 +107,9 @@ AppServiceAppWindowLauncherController::
         apps::AppServiceProxyFactory::GetForProfile(profile);
     proxy->InstanceRegistry().RemoveObserver(this);
   }
+
+  app_service_instance_helper_.reset();
+  observed_windows_.RemoveAll();
 }
 
 AppWindowLauncherItemController*
@@ -425,6 +441,12 @@ void AppServiceAppWindowLauncherController::ObserveWindow(
   if (!window || observed_windows_.IsObserving(window))
     return;
   observed_windows_.Add(window);
+}
+
+bool AppServiceAppWindowLauncherController::IsObservingWindow(
+    aura::Window* window) {
+  DCHECK(window);
+  return observed_windows_.IsObserving(window);
 }
 
 std::vector<aura::Window*>

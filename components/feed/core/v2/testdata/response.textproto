@@ -466,11 +466,17 @@ feed_response {
           seconds: 86308
           nanos: 822963644
         }
+        refresh_time_from_response_time {
+          seconds: 120000
+        }
       }
     }
   }
   feed_response_metadata {
-    response_time_ms: 1587056924
+    #response_time_ms: 1587056924
+    chrome_feed_response_metadata {
+      privacy_notice_fulfilled: true
+    }
   }
 }
 

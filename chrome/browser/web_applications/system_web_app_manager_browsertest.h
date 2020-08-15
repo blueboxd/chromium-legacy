@@ -100,20 +100,27 @@ class SystemWebAppManagerBrowserTestBase : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(SystemWebAppManagerBrowserTestBase);
 };
 
+enum class InstallationType { kManifestInstall, kWebAppInfoInstall };
+
+using ProviderTypeAndInstallationType =
+    std::tuple<web_app::ProviderType, InstallationType>;
+
 class SystemWebAppManagerBrowserTest
     : public SystemWebAppManagerBrowserTestBase,
-      public ::testing::WithParamInterface<web_app::ProviderType> {
+      public ::testing::WithParamInterface<ProviderTypeAndInstallationType> {
  public:
   explicit SystemWebAppManagerBrowserTest(bool install_mock = true);
   ~SystemWebAppManagerBrowserTest() override = default;
-
-  web_app::ProviderType provider_type() const { return GetParam(); }
+  web_app::ProviderType provider_type() const {
+    return std::get<0>(GetParam());
+  }
+  bool install_from_web_app_info() const {
+    return std::get<1>(GetParam()) == InstallationType::kWebAppInfoInstall;
+  }
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 };
-
-using ProviderTypeAndInstallationType = std::tuple<web_app::ProviderType, bool>;
 
 // A class for testing installation directly from a WebApplicationInfo. We can't
 // inherit from BrowserTestBase because we're templating on a different type.
@@ -126,12 +133,17 @@ class SystemWebAppManagerWebAppInfoBrowserTest
   web_app::ProviderType provider_type() const {
     return std::get<0>(GetParam());
   }
-  bool install_from_web_app_info() const { return std::get<1>(GetParam()); }
+  bool install_from_web_app_info() const {
+    return std::get<1>(GetParam()) == InstallationType::kWebAppInfoInstall;
+  }
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
+std::string ProviderAndInstallationTypeToString(
+    const ::testing::TestParamInfo<ProviderTypeAndInstallationType>&
+        provider_type);
 }  // namespace web_app
 
 #endif  // CHROME_BROWSER_WEB_APPLICATIONS_SYSTEM_WEB_APP_MANAGER_BROWSERTEST_H_

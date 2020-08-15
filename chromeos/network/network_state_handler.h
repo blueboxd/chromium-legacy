@@ -350,9 +350,15 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkStateHandler
   // only set it.
   void SetWakeOnLanEnabled(bool enabled);
 
-  // Sets the HostName property. Note: we do not track this property, we
-  // only set it.
+  // Sets the DHCP HostName property. Note: This does not directly set
+  // |hostname_|, it sets the Shill property and relies on Shill emitting the
+  // change which updates the cached |hostname_|. This ensures that Chrome and
+  // Shill are in sync.
   void SetHostname(const std::string& hostname);
+
+  // Returns the cached DHCP HostName property provided by Shill. Initialized
+  // to an empty string and set once the Manager properties are received.
+  const std::string& hostname() const { return hostname_; }
 
   // Enable or disable network bandwidth throttling, on all interfaces on the
   // system. If |enabled| is true, |upload_rate_kbits| and |download_rate_kbits|
@@ -452,11 +458,8 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkStateHandler
                                 const std::string& ip_config_path,
                                 const base::Value& properties) override;
 
-  // Called by ShillPropertyHandler when the portal check list manager property
-  // changes.
   void CheckPortalListChanged(const std::string& check_portal_list) override;
-
-  // Called by ShillPropertyHandler when a technology list changes.
+  void HostnameChanged(const std::string& hostname) override;
   void TechnologyListChanged() override;
 
   // Called by |shill_property_handler_| when the service or device list has
@@ -667,6 +670,9 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkStateHandler
 
   // List of interfaces on which portal check is enabled.
   std::string check_portal_list_;
+
+  // DHCP Hostname.
+  std::string hostname_;
 
   // Map of network specifiers to guids. Contains an entry for each
   // NetworkState that is not saved in a profile.

@@ -12,6 +12,7 @@ import org.chromium.ui.DropdownItemBase;
 public class AutofillSuggestion extends DropdownItemBase {
     private final String mLabel;
     private final String mSublabel;
+    private final String mItemTag;
     private final int mIconId;
     private final boolean mIsIconAtStart;
     private final int mSuggestionId;
@@ -24,6 +25,7 @@ public class AutofillSuggestion extends DropdownItemBase {
      *
      * @param label The main label of the Autofill suggestion.
      * @param sublabel The describing sublabel of the Autofill suggestion.
+     * @param itemTag The tag for the autofill suggestion.
      * @param iconId The resource ID for the icon associated with the suggestion, or
      *               {@code DropdownItem.NO_ICON} for no icon.
      * @param isIconAtStart {@code true} if {@code iconId} is displayed before {@code label}.
@@ -32,10 +34,12 @@ public class AutofillSuggestion extends DropdownItemBase {
      * @param isMultilineLabel Whether the label is displayed over multiple lines.
      * @param isBoldLabel Whether the label is displayed in {@code Typeface.BOLD}.
      */
-    public AutofillSuggestion(String label, String sublabel, int iconId, boolean isIconAtStart,
-            int suggestionId, boolean isDeletable, boolean isMultilineLabel, boolean isBoldLabel) {
+    public AutofillSuggestion(String label, String sublabel, String itemTag, int iconId,
+            boolean isIconAtStart, int suggestionId, boolean isDeletable, boolean isMultilineLabel,
+            boolean isBoldLabel) {
         mLabel = label;
         mSublabel = sublabel;
+        mItemTag = itemTag;
         mIconId = iconId;
         mIsIconAtStart = isIconAtStart;
         mSuggestionId = suggestionId;
@@ -52,6 +56,11 @@ public class AutofillSuggestion extends DropdownItemBase {
     @Override
     public String getSublabel() {
         return mSublabel;
+    }
+
+    @Override
+    public String getItemTag() {
+        return mItemTag;
     }
 
     @Override

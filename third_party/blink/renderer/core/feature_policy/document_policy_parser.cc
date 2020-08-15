@@ -47,8 +47,13 @@ base::Optional<PolicyValue> ItemToPolicyValue(
     const net::structured_headers::Item& item,
     mojom::blink::PolicyValueType type) {
   switch (type) {
-    case mojom::blink::PolicyValueType::kBool:
-      return PolicyValue(item.GetBoolean());
+    case mojom::blink::PolicyValueType::kBool: {
+      if (item.is_boolean()) {
+        return PolicyValue(item.GetBoolean());
+      } else {
+        return base::nullopt;
+      }
+    }
     case mojom::blink::PolicyValueType::kDecDouble:
       switch (item.Type()) {
         case net::structured_headers::Item::ItemType::kIntegerType:

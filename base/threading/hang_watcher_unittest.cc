@@ -567,7 +567,8 @@ TEST_F(HangWatcherSnapshotTest, NonActionableReport) {
   }
 }
 
-TEST_F(HangWatcherSnapshotTest, HungThreadIDs) {
+// Disabled for being flaky. crbug.com/1078828
+TEST_F(HangWatcherSnapshotTest, DISABLED_HungThreadIDs) {
   // During hang capture the list of hung threads should be populated.
   hang_watcher_.SetOnHangClosureForTesting(base::BindLambdaForTesting([this]() {
     EXPECT_EQ(hang_watcher_.GrabWatchStateSnapshotForTesting()

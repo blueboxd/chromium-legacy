@@ -302,6 +302,7 @@
 <translation id="4481711095103932593">Гэта папка абагулена з Windows</translation>
 <translation id="4487088045714738411">Бельгійская клавіятура</translation>
 <translation id="4522570452068850558">Падрабязнасці</translation>
+<translation id="4542387084127299777">Не ўдалося адкрыць "<ph name="PATH" />"</translation>
 <translation id="4552678318981539154">Купіце больш месца ў сховішчы</translation>
 <translation id="4559767610552730302">Эфект баке</translation>
 <translation id="4572815280350369984">Файл <ph name="FILE_TYPE" /></translation>
@@ -513,6 +514,7 @@
 <translation id="6629841649550503054">Усе даныя скапіраваны на <ph name="BEGIN_LINK" />Google Дыск!<ph name="END_LINK" /></translation>
 <translation id="6643016212128521049">Ачысціць</translation>
 <translation id="6650726141019353908">Ружовы матылёк</translation>
+<translation id="6657585470893396449">Пароль</translation>
 <translation id="6710213216561001401">Назад</translation>
 <translation id="6718273304615422081">Ідзе архіваванне...</translation>
 <translation id="6751256176799620176">Выбрана 1 папка</translation>
@@ -725,6 +727,7 @@
 <translation id="9065203028668620118">Змяніць</translation>
 <translation id="9099674669267916096">Колькасць старонак</translation>
 <translation id="9110990317705400362">Мы пастаянна працуем над новымі спосабамі зрабіць працу ў інтэрнэце больш бяспечнай. Раней любы сайт мог прапанаваць вам дадаць пашырэнні ў браўзер. У апошніх версіях Google Chrome пашырэнні трэба дадаваць праз старонку "Пашырэнні", даючы браўзеру яўнае ўказанне, што вы хочаце іх усталяваць. <ph name="BEGIN_LINK" />Даведацца больш<ph name="END_LINK" /></translation>
+<translation id="9111102763498581341">Разблакіраваць</translation>
 <translation id="912419004897138677">Кодэк</translation>
 <translation id="9129931661813833980">Замацаваць папку</translation>
 <translation id="9130775360844693113">Да гэтых элементаў атрымаюць доступ удзельнікі дыска "<ph name="DESTINATION_NAME" />".</translation>

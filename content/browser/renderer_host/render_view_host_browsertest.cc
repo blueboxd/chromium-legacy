@@ -112,7 +112,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostTest, IsFocusedElementEditable) {
 }
 
 // Flaky on Linux (https://crbug.com/559192).
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #define MAYBE_ReleaseSessionOnCloseACK DISABLED_ReleaseSessionOnCloseACK
 #else
 #define MAYBE_ReleaseSessionOnCloseACK ReleaseSessionOnCloseACK

@@ -1,0 +1,482 @@
+{
+  "schema": "pedal_concepts_runtime",
+  "schema_version": 1,
+  "data_version": 15462706,
+  "tokenize_characters": " -",
+  "dictionary": [
+    "chrome",
+    "google",
+    "ሁነታ",
+    "ለ",
+    "ለውጥ",
+    "መረጃ",
+    "መስኮት",
+    "መሸጎጫ",
+    "ማሰስ",
+    "ማንነት",
+    "ምስክርነቶች",
+    "ሰርዝ",
+    "ቀይር",
+    "ቃላት",
+    "ቃል",
+    "ቋንቋ",
+    "በዚህ",
+    "ተርጉም",
+    "ታሪክ",
+    "ትር",
+    "አልቅ",
+    "አርትዕ",
+    "አሳሽ",
+    "አሳይ",
+    "አስቀምጥ",
+    "አስወግድ",
+    "አስጀምር",
+    "አስገባ",
+    "አቀናባሪ",
+    "አቀናብር",
+    "አዘምን",
+    "አጥፋ",
+    "አጽዳ",
+    "እንዴት",
+    "ኩኪዎች",
+    "ካርድ",
+    "ካርዶች",
+    "ክሬዲት",
+    "ክፈት",
+    "ክፍያ",
+    "ክፍያዎች",
+    "ውሂብ",
+    "ውስጥ",
+    "ዘዴዎች",
+    "የመክፈያ",
+    "የማያሳውቅ",
+    "የካርድ",
+    "የክሬዲት",
+    "የይለፍ",
+    "የግል",
+    "ይህ",
+    "ይመልከቱ",
+    "ደምስስ",
+    "ጀምር",
+    "ገጽ",
+    "ጫን",
+    "ፍጠር"
+  ],
+  "pedals": [
+    {
+      "name": "CLEAR_BROWSING_DATA",
+      "id": 1,
+      "groups": [
+        {
+          "required": false,
+          "single": true,
+          "synonyms": [
+            [
+              1,
+              0
+            ],
+            [
+              22
+            ],
+            [
+              8
+            ],
+            [
+              0
+            ]
+          ]
+        },
+        {
+          "required": true,
+          "single": true,
+          "synonyms": [
+            [
+              25
+            ],
+            [
+              52
+            ],
+            [
+              11
+            ],
+            [
+              31
+            ],
+            [
+              32
+            ]
+          ]
+        },
+        {
+          "required": true,
+          "single": true,
+          "synonyms": [
+            [
+              7
+            ],
+            [
+              34
+            ],
+            [
+              18
+            ],
+            [
+              41
+            ],
+            [
+              5
+            ],
+            [
+              5
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "MANAGE_PASSWORDS",
+      "id": 2,
+      "groups": [
+        {
+          "required": false,
+          "single": true,
+          "synonyms": [
+            [
+              1,
+              0
+            ],
+            [
+              22
+            ],
+            [
+              0
+            ]
+          ]
+        },
+        {
+          "required": true,
+          "single": true,
+          "synonyms": [
+            [
+              28
+            ],
+            [
+              29
+            ],
+            [
+              24
+            ],
+            [
+              51
+            ],
+            [
+              21
+            ],
+            [
+              30
+            ],
+            [
+              4
+            ],
+            [
+              23
+            ]
+          ]
+        },
+        {
+          "required": true,
+          "single": true,
+          "synonyms": [
+            [
+              48,
+              13
+            ],
+            [
+              48,
+              14
+            ],
+            [
+              10
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "UPDATE_CREDIT_CARD",
+      "id": 3,
+      "groups": [
+        {
+          "required": false,
+          "single": true,
+          "synonyms": [
+            [
+              1,
+              0
+            ],
+            [
+              22
+            ],
+            [
+              0
+            ]
+          ]
+        },
+        {
+          "required": true,
+          "single": true,
+          "synonyms": [
+            [
+              29
+            ],
+            [
+              24
+            ],
+            [
+              30
+            ],
+            [
+              21
+            ],
+            [
+              4
+            ]
+          ]
+        },
+        {
+          "required": true,
+          "single": true,
+          "synonyms": [
+            [
+              47,
+              35,
+              5
+            ],
+            [
+              47,
+              35,
+              5
+            ],
+            [
+              44,
+              43
+            ],
+            [
+              37,
+              36
+            ],
+            [
+              37,
+              35
+            ],
+            [
+              46,
+              5
+            ],
+            [
+              46,
+              5
+            ],
+            [
+              40
+            ],
+            [
+              36
+            ],
+            [
+              39
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "LAUNCH_INCOGNITO",
+      "id": 4,
+      "groups": [
+        {
+          "required": false,
+          "single": true,
+          "synonyms": [
+            [
+              1,
+              0
+            ],
+            [
+              22
+            ],
+            [
+              0
+            ]
+          ]
+        },
+        {
+          "required": false,
+          "single": true,
+          "synonyms": [
+            [
+              26
+            ],
+            [
+              27
+            ],
+            [
+              53
+            ],
+            [
+              38
+            ],
+            [
+              56
+            ]
+          ]
+        },
+        {
+          "required": true,
+          "single": true,
+          "synonyms": [
+            [
+              9,
+              45,
+              6
+            ],
+            [
+              9,
+              45,
+              2
+            ],
+            [
+              9,
+              45,
+              19
+            ],
+            [
+              9,
+              45
+            ],
+            [
+              49,
+              6
+            ],
+            [
+              49,
+              2
+            ],
+            [
+              49,
+              19
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "TRANSLATE",
+      "id": 5,
+      "groups": [
+        {
+          "required": false,
+          "single": true,
+          "synonyms": [
+            [
+              1,
+              0
+            ],
+            [
+              22
+            ],
+            [
+              0
+            ]
+          ]
+        },
+        {
+          "required": true,
+          "single": true,
+          "synonyms": [
+            [
+              15,
+              12
+            ],
+            [
+              17
+            ]
+          ]
+        },
+        {
+          "required": true,
+          "single": true,
+          "synonyms": [
+            [
+              50,
+              54
+            ],
+            [
+              54
+            ],
+            [
+              50
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "UPDATE_CHROME",
+      "id": 6,
+      "groups": [
+        {
+          "required": true,
+          "single": true,
+          "synonyms": [
+            [
+              1,
+              0
+            ],
+            [
+              22
+            ],
+            [
+              0
+            ]
+          ]
+        },
+        {
+          "required": true,
+          "single": true,
+          "synonyms": [
+            [
+              30
+            ],
+            [
+              20
+            ],
+            [
+              55
+            ]
+          ]
+        }
+      ]
+    }
+  ],
+  "ignore_group": {
+    "required": false,
+    "single": false,
+    "synonyms": [
+      [
+        16,
+        42
+      ],
+      [
+        33
+      ],
+      [
+        42
+      ],
+      [
+        3
+      ]
+    ]
+  },
+  "max_tokens": 32
+}

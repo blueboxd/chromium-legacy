@@ -307,6 +307,7 @@
 <translation id="1361164813881551742">手動新增</translation>
 <translation id="1361655923249334273">未使用</translation>
 <translation id="1361872463926621533">啟動時播放音效</translation>
+<translation id="1362865166188278099">發生機件故障。請檢查打印機</translation>
 <translation id="1363585519747660921">USB 列印機需要設定</translation>
 <translation id="1365180424462182382">您的<ph name="BEGIN_LINK" />瀏覽器由 <ph name="END_LINK" /><ph name="ENROLLMENT_DOMAIN" /> 管理</translation>
 <translation id="1366177842110999534">在您的 <ph name="DEVICE_TYPE" /> 執行 Linux 工具、編輯器和整合開發環境 (IDE)。&lt;a target="_blank" href="<ph name="URL" />"&gt;瞭解詳情&lt;/a&gt;</translation>
@@ -1372,6 +1373,7 @@
 <translation id="2636625531157955190">Chrome 無法存取這張圖片。</translation>
 <translation id="2637400434494156704">PIN 不正確。您還可再試 1 次。</translation>
 <translation id="2638662041295312666">登入圖片</translation>
+<translation id="2640549051766135490">揀咗相簿 <ph name="TITLE" /> <ph name="DESC" /></translation>
 <translation id="264083724974021997">連接去你部手機 - 對話框</translation>
 <translation id="2641065435954454414">正在準備下載</translation>
 <translation id="2642111877055905627">足球</translation>
@@ -1957,6 +1959,7 @@
 <translation id="338583716107319301">分隔符號</translation>
 <translation id="338691029516748599">第 <ph name="NETWORK_INDEX" /> 個網絡，一共有 <ph name="NETWORK_COUNT" /> 個網絡，<ph name="NETWORK_NAME" />，<ph name="SECURITY_STATUS" />，訊號強度係 <ph name="SIGNAL_STRENGTH" />%，由管理員管理，連接</translation>
 <translation id="3387614642886316601">使用進階拼字檢查功能</translation>
+<translation id="3388094447051599208">輸出紙匣將滿</translation>
 <translation id="3388788256054548012">此檔案已加密。請要求擁有者解密。</translation>
 <translation id="3390013585654699824">應用程式詳情</translation>
 <translation id="3390741581549395454">已成功備份 Linux 應用程式和檔案。升級即將開始。</translation>
@@ -2034,6 +2037,7 @@
 <translation id="3471876058939596279">HDMI 和 USB Type-C 連接埠無法同時用於影片。請使用其他影片連接埠。</translation>
 <translation id="3473241910002674503">在平板電腦模式中，使用按鈕前往主畫面、返回及切換應用程式。</translation>
 <translation id="3473479545200714844">放大鏡</translation>
+<translation id="347394413229268704">稍後閱讀</translation>
 <translation id="3475843873335999118">很抱歉，系統仍然無法識別您的指紋，請輸入您的密碼。</translation>
 <translation id="3476303763173086583">傳送使用情況和診斷資料。自動將診斷、裝置及應用程式的使用情況資料傳送至 Google，協助改善您子女的 Android 使用體驗。這些資料不會用來識別您子女的身分，而是用於改善系統和應用程式的穩定性和其他效能。部分彙整資料也會用於協助 Google 應用程式與合作夥伴 (例如 Android 開發人員)。擁有者可強制執行此<ph name="BEGIN_LINK1" />設定<ph name="END_LINK1" />。擁有者可選擇是否將此裝置的診斷和使用情況資料傳送給 Google。如果已為子女開啟其他「網絡及應用程式活動記錄」設定，系統可能會將此資料儲存至其 Google 帳戶。<ph name="BEGIN_LINK2" />瞭解詳情<ph name="END_LINK2" /></translation>
 <translation id="347670947055184738">抱歉！系統無法擷取裝置政策。</translation>
@@ -2594,6 +2598,7 @@
 <translation id="4107048419833779140">識別並退出儲存裝置</translation>
 <translation id="4109135793348361820">將視窗傳送給 <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110490973560452005">下載完成 ：<ph name="FILE_NAME" />。按住 Shift+F6 鍵即可切換至下載內容列的位置。</translation>
+<translation id="4110686435123617899">揀相簿 <ph name="TITLE" /> <ph name="DESC" /></translation>
 <translation id="4110895898888439383">以高對比模式瀏覽網頁</translation>
 <translation id="4112194537011183136"><ph name="DEVICE_NAME" /> (離線)</translation>
 <translation id="4115002065223188701">網絡超出範圍</translation>
@@ -3080,6 +3085,7 @@
 <translation id="4780321648949301421">另存網頁…</translation>
 <translation id="4785719467058219317">您目前使用的安全密鑰並未在此網站註冊</translation>
 <translation id="4788092183367008521">請檢查你的網絡連線，然後再試一次。</translation>
+<translation id="4791000909649665275"><ph name="NUMBER" /> 張相片</translation>
 <translation id="4791037424585594169">(UDP)</translation>
 <translation id="4792711294155034829">報告問題(&amp;R)…</translation>
 <translation id="4794810983896241342">更新由<ph name="BEGIN_LINK" />您的管理員<ph name="END_LINK" />管理</translation>

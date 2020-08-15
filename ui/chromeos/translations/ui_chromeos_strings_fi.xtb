@@ -302,6 +302,7 @@
 <translation id="4481711095103932593">Tämä kansio on jaettu Windowsille</translation>
 <translation id="4487088045714738411">Näppäimistö: Belgia</translation>
 <translation id="4522570452068850558">Tiedot</translation>
+<translation id="4542387084127299777">Avaaminen ei onnistu: <ph name="PATH" /></translation>
 <translation id="4552678318981539154">Osta lisää tallennustilaa</translation>
 <translation id="4559767610552730302">Bokeh</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" />-tiedosto</translation>
@@ -514,6 +515,7 @@
 <translation id="6629841649550503054">Kaikki on varmuuskopioitu <ph name="BEGIN_LINK" />Google Driveen!<ph name="END_LINK" /></translation>
 <translation id="6643016212128521049">Tyhjennä</translation>
 <translation id="6650726141019353908">Vaaleanpunainen perhonen</translation>
+<translation id="6657585470893396449">Salasana</translation>
 <translation id="6710213216561001401">Edellinen</translation>
 <translation id="6718273304615422081">Pakataan…</translation>
 <translation id="6751256176799620176">1 kansio valittu</translation>
@@ -726,6 +728,7 @@
 <translation id="9065203028668620118">Muokkaa</translation>
 <translation id="9099674669267916096">Sivumäärä</translation>
 <translation id="9110990317705400362">Pyrimme jatkuvasti tekemään selaamisesta turvallisempaa. Aiemmin mikä tahansa sivusto pystyi pyytämään laajennuksen lisäämistä selaimeen. Uusimmissa Google Chrome -versioissa sinun on erikseen ilmoitettava Chromelle, että haluat asentaa nämä laajennukset, lisäämällä ne Laajennukset-sivulla. <ph name="BEGIN_LINK" />Lisätietoja<ph name="END_LINK" /></translation>
+<translation id="9111102763498581341">Poista lukitus</translation>
 <translation id="912419004897138677">Pakkaus</translation>
 <translation id="9129931661813833980">Kiinnitä kansio</translation>
 <translation id="9130775360844693113">Paikan <ph name="DESTINATION_NAME" /> jäsenet saavat käyttöoikeuden näihin kohteisiin.</translation>

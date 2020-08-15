@@ -9,7 +9,6 @@ histograms.
 
 from __future__ import print_function
 
-import errno
 import os
 import sys
 from xml.etree import ElementTree as ET
@@ -17,6 +16,9 @@ from xml.etree import ElementTree as ET
 import extract_histograms
 import histogram_paths
 import merge_xml
+
+sys.path.append(os.path.join(os.path.dirname(__file__), 'common'))
+import path_util
 
 
 def PrintOwners(root):
@@ -67,13 +69,14 @@ def main():
     python histogram_ownership.py
   """
   if len(sys.argv) == 1:
-    merged_xml_string = merge_xml.PrettyPrintMergedFiles(
-        histogram_paths.ALL_XMLS)
+    merged_xml_string = merge_xml.MergeFiles(
+        histogram_paths.ALL_XMLS).toxml()
     root = ET.fromstring(merged_xml_string)
   else:
-    rel_path = sys.argv[1]
+    rel_path = path_util.GetInputFile(
+        os.path.join('tools', 'metrics', 'histograms', sys.argv[1]))
     if not os.path.exists(rel_path):
-      raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT))
+      raise ValueError("A histograms.xml file does not exist in %s" % rel_path)
 
     tree = ET.parse(rel_path)
     root = tree.getroot()

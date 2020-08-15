@@ -34,7 +34,8 @@ class SystemWebAppLinkCaptureBrowserTest
   SystemWebAppLinkCaptureBrowserTest()
       : SystemWebAppManagerBrowserTest(/*install_mock*/ false) {
     maybe_installation_ =
-        TestSystemWebAppInstallation::SetUpAppThatCapturesNavigation();
+        TestSystemWebAppInstallation::SetUpAppThatCapturesNavigation(
+            install_from_web_app_info());
   }
   ~SystemWebAppLinkCaptureBrowserTest() override = default;
 
@@ -418,10 +419,13 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppLinkCaptureBrowserTest,
   EXPECT_FALSE(app_browser->app_controller()->ShouldShowCustomTabBar());
 }
 
-INSTANTIATE_TEST_SUITE_P(All,
-                         SystemWebAppLinkCaptureBrowserTest,
-                         ::testing::Values(ProviderType::kBookmarkApps,
-                                           ProviderType::kWebApps),
-                         ProviderTypeParamToString);
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    SystemWebAppLinkCaptureBrowserTest,
+    ::testing::Combine(::testing::Values(ProviderType::kBookmarkApps,
+                                         ProviderType::kWebApps),
+                       ::testing::Values(InstallationType::kManifestInstall,
+                                         InstallationType::kWebAppInfoInstall)),
+    ProviderAndInstallationTypeToString);
 
 }  // namespace web_app

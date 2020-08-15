@@ -34,7 +34,7 @@
 namespace {
 const char* test_app_name1 = "TestApp1";
 const char* test_app_name2 = "TestApp2";
-}
+}  // namespace
 
 class SessionRestoreTestChromeOS : public InProcessBrowserTest {
  public:
@@ -159,7 +159,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTestChromeOS, RestoreAppsPopup) {
       ++app2_count;
   }
   EXPECT_EQ(1u, app1_count);
-  EXPECT_EQ(2u, app2_count);  // Only the trusted app windows are restored.
+  EXPECT_EQ(2u, app2_count);   // Only the trusted app windows are restored.
   EXPECT_EQ(4u, total_count);  // Default browser() + 3 app windows
 }
 
@@ -294,7 +294,8 @@ class SystemWebAppSessionRestoreTestChromeOS
   SystemWebAppSessionRestoreTestChromeOS()
       : SystemWebAppManagerBrowserTest(/*install_mock=*/false) {
     maybe_installation_ =
-        web_app::TestSystemWebAppInstallation::SetUpStandaloneSingleWindowApp();
+        web_app::TestSystemWebAppInstallation::SetUpStandaloneSingleWindowApp(
+            install_from_web_app_info());
     maybe_installation_->set_update_policy(
         web_app::SystemWebAppManager::UpdatePolicy::kOnVersionChange);
   }
@@ -339,8 +340,11 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppSessionRestoreTestChromeOS,
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(All,
-                         SystemWebAppSessionRestoreTestChromeOS,
-                         ::testing::Values(web_app::ProviderType::kBookmarkApps,
-                                           web_app::ProviderType::kWebApps),
-                         web_app::ProviderTypeParamToString);
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    SystemWebAppSessionRestoreTestChromeOS,
+    ::testing::Combine(
+        ::testing::Values(web_app::ProviderType::kBookmarkApps,
+                          web_app::ProviderType::kWebApps),
+        ::testing::Values(web_app::InstallationType::kManifestInstall)),
+    web_app::ProviderAndInstallationTypeToString);

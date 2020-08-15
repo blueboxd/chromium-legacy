@@ -259,6 +259,15 @@ void AddLanguagesPageStringsV2(content::WebUIDataSource* html_source) {
           base::ASCIIToUTF16(chrome::kLanguageSettingsLearnMoreUrl)));
 }
 
+void AddInputPageStringsV2(content::WebUIDataSource* html_source) {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
+      {"inputMethodListTitle",
+       IDS_OS_SETTINGS_LANGUAGES_INPUT_METHOD_LIST_TITLE},
+      {"openOptionsPage", IDS_OS_SETTINGS_LANGUAGES_OPEN_OPTIONS_PAGE_LABEL},
+  };
+  AddLocalizedStringsBulk(html_source, kLocalizedStrings);
+}
+
 }  // namespace
 
 LanguagesSection::LanguagesSection(Profile* profile,
@@ -322,6 +331,7 @@ void LanguagesSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   AddSmartInputsStrings(html_source, IsEmojiSuggestionAllowed());
   AddInputMethodOptionsStrings(html_source);
   AddLanguagesPageStringsV2(html_source);
+  AddInputPageStringsV2(html_source);
 
   html_source->AddString(
       "languagesLearnMoreURL",

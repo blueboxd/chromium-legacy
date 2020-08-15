@@ -248,7 +248,7 @@ public class KeyboardAccessoryModernViewTest {
     @MediumTest
     public void testDismissesPasswordEducationBubbleOnFilling() {
         AutofillBarItem itemWithIPH =
-                new AutofillBarItem(new AutofillSuggestion("Johnathan", "Smith",
+                new AutofillBarItem(new AutofillSuggestion("Johnathan", "Smith", /*itemTag=*/"",
                                             DropdownItem.NO_ICON, false, -2, false, false, false),
                         new KeyboardAccessoryData.Action("", AUTOFILL_SUGGESTION, unused -> {}));
         itemWithIPH.setFeatureForIPH(FeatureConstants.KEYBOARD_ACCESSORY_PASSWORD_FILLING_FEATURE);
@@ -276,7 +276,7 @@ public class KeyboardAccessoryModernViewTest {
     @MediumTest
     public void testDismissesAddressEducationBubbleOnFilling() {
         AutofillBarItem itemWithIPH =
-                new AutofillBarItem(new AutofillSuggestion("Johnathan", "Smith",
+                new AutofillBarItem(new AutofillSuggestion("Johnathan", "Smith", /*itemTag=*/"",
                                             DropdownItem.NO_ICON, false, 1, false, false, false),
                         new KeyboardAccessoryData.Action("", AUTOFILL_SUGGESTION, unused -> {}));
         itemWithIPH.setFeatureForIPH(FeatureConstants.KEYBOARD_ACCESSORY_ADDRESS_FILL_FEATURE);
@@ -302,8 +302,8 @@ public class KeyboardAccessoryModernViewTest {
     @MediumTest
     public void testDismissesPaymentEducationBubbleOnFilling() {
         AutofillBarItem itemWithIPH = new AutofillBarItem(
-                new AutofillSuggestion("Johnathan", "Smith", DropdownItem.NO_ICON, false, 70000,
-                        false, false, false),
+                new AutofillSuggestion("Johnathan", "Smith", /*itemTag=*/"", DropdownItem.NO_ICON,
+                        false, 70000, false, false, false),
                 new KeyboardAccessoryData.Action("", AUTOFILL_SUGGESTION, unused -> {}));
         itemWithIPH.setFeatureForIPH(FeatureConstants.KEYBOARD_ACCESSORY_PAYMENT_FILLING_FEATURE);
 
@@ -358,8 +358,8 @@ public class KeyboardAccessoryModernViewTest {
 
     private BarItem[] createAutofillChipAndTab(String label, Callback<Action> chipCallback) {
         return new BarItem[] {
-                new AutofillBarItem(new AutofillSuggestion(label, "Smith", DropdownItem.NO_ICON,
-                                            false, 1, false, false, false),
+                new AutofillBarItem(new AutofillSuggestion(label, "Smith", /*itemTag=*/"",
+                                            DropdownItem.NO_ICON, false, 1, false, false, false),
                         new KeyboardAccessoryData.Action(
                                 "Unused", AUTOFILL_SUGGESTION, chipCallback)),
                 createTabs()};

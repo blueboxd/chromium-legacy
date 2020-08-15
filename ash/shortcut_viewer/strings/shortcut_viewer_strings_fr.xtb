@@ -35,7 +35,7 @@
 <translation id="2181097965834437145">Afficher ou masquer la barre de favoris</translation>
 <translation id="2185166372312820725">Accéder à l'onglet précédent</translation>
 <translation id="2194790690264064655">Appuyez sur <ph name="CTRL" /> et cliquez sur un lien</translation>
-<translation id="2246352309084894470">Ouvrir/Fermer le Lanceur d'applications en plein écran</translation>
+<translation id="2246352309084894470">Ouvrir/Fermer le lanceur d'applications en plein écran</translation>
 <translation id="2354531887393764880">point</translation>
 <translation id="2382644247745281995">Non compatible avec la disposition de clavier actuelle</translation>
 <translation id="2397416548179033562">Afficher le menu Chrome</translation>
@@ -128,7 +128,7 @@
 <translation id="5757111373163288447">Ouvrir le lien dans l'onglet</translation>
 <translation id="5757474750054631686">Réduire la luminosité du clavier (claviers rétroéclairés uniquement)</translation>
 <translation id="587531134027443617">Supprimer le mot précédent</translation>
-<translation id="5899919361772749550">Afficher ou masquer la console des Outils pour les développeurs</translation>
+<translation id="5899919361772749550">Afficher ou masquer la console des outils pour les développeurs</translation>
 <translation id="5919628958418675842">Activer/Désactiver l'écran de confidentialité</translation>
 <translation id="5921745308587794300">Faire pivoter la fenêtre</translation>
 <translation id="6022924867608035986">Effacer le texte de la zone de recherche</translation>
@@ -173,7 +173,7 @@
 <translation id="7500368597227394048">trait d'union</translation>
 <translation id="7611271430932669992">Passer aux fenêtres pop-up et aux boîtes de dialogue</translation>
 <translation id="7635348532214572995">Déplacer une icône d'application sur la grille d'applications</translation>
-<translation id="766326951329901120">Coller le contenu du Presse-papiers en texte brut</translation>
+<translation id="766326951329901120">Coller le contenu du presse-papiers en texte brut</translation>
 <translation id="7703010453515335249">crochet gauche</translation>
 <translation id="7724603315864178912">Couper</translation>
 <translation id="7730490981846175479"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, puis <ph name="SPACE" /> ou <ph name="ENTER" /></translation>
@@ -185,7 +185,7 @@
 <translation id="8232835244134740473">Alterner entre la zone d'état (là où se trouve la photo de votre compte), le lanceur d'applications, la barre d'adresse, la barre de favoris (si elle est visible), la page Web ouverte ou la barre de téléchargements (si elle est visible).</translation>
 <translation id="8234414138295101081">Faire pivoter l'écran de 90 degrés</translation>
 <translation id="8241665785394195545">crochet droit</translation>
-<translation id="8264941229485248811">Afficher ou masquer l'inspecteur des Outils pour les développeurs</translation>
+<translation id="8264941229485248811">Afficher ou masquer l'inspecteur des outils pour les développeurs</translation>
 <translation id="836869401750819675">Ouvrir la page "Téléchargements"</translation>
 <translation id="8388247778047144397">Faites glisser le lien vers une zone vierge de la barre d'onglets</translation>
 <translation id="8389638407792712197">Ouvrir une nouvelle fenêtre</translation>
@@ -204,7 +204,7 @@
 <translation id="8982190978301344584">Afficher le menu des IME disponibles</translation>
 <translation id="8990356943438003669"><ph name="SEPARATOR" /><ph name="ALT" /> 1 à 8</translation>
 <translation id="9005984960510803406">Ouvrir une fenêtre Crosh</translation>
-<translation id="9041599225465145264">Coller le contenu du Presse-papiers</translation>
+<translation id="9041599225465145264">Coller le contenu du presse-papiers</translation>
 <translation id="9052808072970550123">Passer à l'utilisateur suivant</translation>
 <translation id="906458777597946297">Agrandir la fenêtre</translation>
 <translation id="9072882242928138086"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="SHIFT" />, puis <ph name="LEFT" />, <ph name="RIGHT" />, <ph name="UP" /> ou <ph name="DOWN" /></translation>

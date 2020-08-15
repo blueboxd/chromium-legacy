@@ -9,6 +9,10 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "ui/webui/mojo_web_ui_controller.h"
 
+namespace content {
+class WebUIDataSource;
+}  // namespace content
+
 class KaleidoscopeUI : public ui::MojoWebUIController {
  public:
   explicit KaleidoscopeUI(content::WebUI* web_ui);
@@ -18,6 +22,8 @@ class KaleidoscopeUI : public ui::MojoWebUIController {
 
   void BindInterface(
       mojo::PendingReceiver<media::mojom::KaleidoscopeDataProvider> provider);
+
+  static content::WebUIDataSource* CreateWebUIDataSource();
 
  private:
   std::unique_ptr<media::mojom::KaleidoscopeDataProvider> provider_;

@@ -129,6 +129,27 @@ suite('InternetPage', function() {
       });
     });
 
+    test('Deep link to WiFiToggle', async () => {
+      const mojom = chromeos.networkConfig.mojom;
+      // Make WiFi an available but disabled technology.
+      mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kWiFi, false);
+
+      const params = new URLSearchParams;
+      params.append('settingId', '4');
+      settings.Router.getInstance().navigateTo(
+          settings.routes.INTERNET, params);
+
+      await flushAsync();
+
+      const deepLinkElement =
+          networkSummary_.$$('#WiFi').$$('#deviceEnabledButton');
+      assert(!!deepLinkElement);
+      await test_util.waitAfterNextRender(deepLinkElement);
+      assertEquals(
+          deepLinkElement, getDeepActiveElement(),
+          'Toggle WiFi should be focused for settingId=4.');
+    });
+
     test('VpnProviders', function() {
       const mojom = chromeos.networkConfig.mojom;
       mojoApi_.setVpnProvidersForTest([
@@ -163,6 +184,27 @@ suite('InternetPage', function() {
         assertEquals(
             'vpn.app.package1', internetPage.vpnProviders_[2].providerId);
       });
+    });
+
+    test('Deep link to mobile on/off toggle', async () => {
+      const mojom = chromeos.networkConfig.mojom;
+      // Make WiFi an available but disabled technology.
+      mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kCellular, false);
+
+      const params = new URLSearchParams;
+      params.append('settingId', '13');
+      settings.Router.getInstance().navigateTo(
+          settings.routes.INTERNET, params);
+
+      await flushAsync();
+
+      const deepLinkElement =
+          networkSummary_.$$('#Cellular').$$('#deviceEnabledButton');
+      assert(!!deepLinkElement);
+      await test_util.waitAfterNextRender(deepLinkElement);
+      assertEquals(
+          deepLinkElement, getDeepActiveElement(),
+          'Toggle mobile on/off should be focused for settingId=13.');
     });
   });
 

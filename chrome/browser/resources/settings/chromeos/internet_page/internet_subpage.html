@@ -17,6 +17,7 @@
 <link rel="import" href="../localized_link/localized_link.html">
 <link rel="import" href="../../chromeos/os_settings_icons_css.html">
 <link rel="import" href="../../i18n_setup.html">
+<link rel="import" href="../deep_linking_behavior.html">
 <link rel="import" href="../os_route.html">
 <link rel="import" href="../../router.html">
 <link rel="import" href="../route_origin_behavior.html">
@@ -101,20 +102,24 @@
           <!-- The add button in this row is only shown for Mobile networks. -->
           <cr-icon-button class="icon-add-cellular add-button"
               aria-label="$i18n{internetAddCellular}" id="addCellularButton"
-              tabindex$="[[tabindex]]" on-click="onAddCellularButtonTap_">
+              tabindex$="[[tabindex]]" on-click="onAddCellularButtonTap_"
+              deep-link-focus-id$="[[Setting.kCellularAddNetwork]]">
           </cr-icon-button>
         </template>
         <!-- The add button in this row is only shown for WiFi networks. -->
-        <cr-icon-button class="icon-add-wifi add-button"
+        <cr-icon-button class="icon-add-wifi add-button" id="addWifiButton"
             hidden$="[[!showAddWifiButton_(deviceState, globalPolicy)]]"
             aria-label="$i18n{internetAddWiFi}" on-click="onAddWifiButtonTap_"
-            tabindex$="[[tabindex]]">
+            tabindex$="[[tabindex]]" 
+            deep-link-focus-id$="[[Setting.kWifiAddNetwork]]">
         </cr-icon-button>
         <cr-toggle id="deviceEnabledButton"
             aria-label$="[[getToggleA11yString_(deviceState)]]"
             checked="[[deviceIsEnabled_(deviceState)]]"
             disabled="[[!enableToggleIsEnabled_(deviceState)]]"
-            on-change="onDeviceEnabledChange_">
+            on-change="onDeviceEnabledChange_"
+            deep-link-focus-id$="[[Setting.kWifiOnOff]]
+                [[Setting.kMobileOnOff]]">
         </cr-toggle>
       </div>
     </template>

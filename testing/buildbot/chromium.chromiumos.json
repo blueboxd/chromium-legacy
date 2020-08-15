@@ -5118,7 +5118,6 @@
         "args": [
           "--gtest_filter=-NativeDesktopMediaListTest*:PermissionMessageCombinationsUnittest.USBSerialBluetoothCoalescing:RelaunchNotificationControllerPlatformImplTest.SynchronousNotification:WindowSizerTest*:ChromeContentBrowserClientTest.UserAgentStringOrdering:ChromeMetricsServiceClientTest.TestRegisterMetricsServiceProviders"
         ],
-        "experiment_percentage": 100,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -5144,7 +5143,7 @@
       },
       {
         "args": [
-          "--gtest_filter=-DesktopWidgetFocusManagerTest.AnchoredDialogInDesktopNativeWidgetAura:DesktopWidgetTest.GetWindowPlacement:DesktopWidgetTest.MinimumSizeConstraints:EditableComboboxTest*:MenuRunnerTest*:TextfieldTest*:TooltipControllerTest*"
+          "--gtest_filter=-DesktopWidgetFocusManagerTest.AnchoredDialogInDesktopNativeWidgetAura:DesktopWidgetTest*:DesktopWindowTreeHostPlatformTest*:EditableComboboxTest*:MenuRunnerTest*:TextfieldTest*:TooltipControllerTest*"
         ],
         "experiment_percentage": 100,
         "merge": {

@@ -278,11 +278,14 @@ TEST_P(LayerTreeHostMaskPixelTest_MaskWithEffectNoContentToMask, Test) {
 class LayerTreeHostMaskPixelTest_ScaledMaskWithEffect
     : public LayerTreeHostMaskPixelTestWithLayerList {
  protected:
-  // Scale the mask with a non-integral transform. This will trigger the
-  // AA path in the renderer.
+  // Scale the mask with a non-integral transform. This will trigger raster
+  // translation and may or may not trigger the AA path in the renderer.
   void SetupTree() override {
     LayerTreeHostMaskPixelTestWithLayerList::SetupTree();
 
+    // Use this offset to ensure the same rounding direction in different code
+    // paths for non-AA drawing (25.1 * 1.5 = 37.65).
+    mask_layer_->SetOffsetToTransformParent(gfx::Vector2dF(25.1, 25.1));
     auto& transform = CreateTransformNode(mask_layer_.get());
     transform.local.Scale(1.5, 1.5);
   }

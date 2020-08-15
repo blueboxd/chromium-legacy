@@ -86,6 +86,11 @@ class MODULES_EXPORT VideoFrame final : public ScriptWrappable,
   // This effectively "destroys" all frames sharing the same Handle.
   void destroy();
 
+  // Creates a copy of |this|, with a new Handle, referencing the same
+  // media::VideoFrame. The cloned frame will not be destroyed when |this| is,
+  // and its lifetime should be independently managed.
+  VideoFrame* clone(ExceptionState&);
+
   ScriptPromise createImageBitmap(ScriptState*,
                                   const ImageBitmapOptions*,
                                   ExceptionState&);

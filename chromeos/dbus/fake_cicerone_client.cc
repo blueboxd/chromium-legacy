@@ -388,6 +388,14 @@ void FakeCiceroneClient::RemoveFileWatch(
       base::BindOnce(std::move(callback), remove_file_watch_response_));
 }
 
+void FakeCiceroneClient::GetVshSession(
+    const vm_tools::cicerone::GetVshSessionRequest& request,
+    DBusMethodCallback<vm_tools::cicerone::GetVshSessionResponse> callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(callback), get_vsh_session_response_));
+}
+
 void FakeCiceroneClient::NotifyLxdContainerCreated(
     const vm_tools::cicerone::LxdContainerCreatedSignal& proto) {
   for (auto& observer : observer_list_) {

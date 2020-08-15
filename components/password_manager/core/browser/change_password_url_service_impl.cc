@@ -8,20 +8,19 @@
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
 #include "base/json/json_reader.h"
+#include "base/timer/elapsed_timer.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "net/base/url_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
-#include "url/origin.h"
 
 namespace {
 
 using network::SimpleURLLoader;
 
 constexpr size_t kMaxDownloadSize = 50 * 1024;
-constexpr int kMaxRetries = 3;
-constexpr base::TimeDelta kFetchTimeout = base::TimeDelta::FromSeconds(3);
 }  // namespace
 
 namespace password_manager {
@@ -36,7 +35,7 @@ ChangePasswordUrlServiceImpl::ChangePasswordUrlServiceImpl(
 
 ChangePasswordUrlServiceImpl::~ChangePasswordUrlServiceImpl() = default;
 
-void ChangePasswordUrlServiceImpl::Initialize() {
+void ChangePasswordUrlServiceImpl::PrefetchURLs() {
   if (started_fetching_) {
     return;
   }
@@ -92,11 +91,7 @@ void ChangePasswordUrlServiceImpl::Initialize() {
         })");
   url_loader_ =
       SimpleURLLoader::Create(std::move(resource_request), traffic_annotation);
-  url_loader_->SetRetryOptions(kMaxRetries,
-                               SimpleURLLoader::RETRY_ON_5XX |
-                                   SimpleURLLoader::RETRY_ON_NETWORK_CHANGE |
-                                   SimpleURLLoader::RETRY_ON_NAME_NOT_RESOLVED);
-  url_loader_->SetTimeoutDuration(kFetchTimeout);
+
   // Binding the callback to |this| is safe, because the navigationthrottle
   // defers if the request is not received yet. Thereby the throttle still exist
   // when the response arrives.
@@ -107,15 +102,17 @@ void ChangePasswordUrlServiceImpl::Initialize() {
       kMaxDownloadSize);
 }
 
-void ChangePasswordUrlServiceImpl::GetChangePasswordUrl(
-    const url::Origin& origin,
-    UrlCallback callback) {
-  DCHECK(started_fetching_) << "Call Initialize() before.";
-  if (fetch_complete_) {
-    std::move(callback).Run(ChangePasswordUrlFor(origin));
-  } else {
-    url_callbacks_.emplace_back(origin, std::move(callback));
+GURL ChangePasswordUrlServiceImpl::GetChangePasswordUrl(const GURL& url) {
+  DCHECK(started_fetching_) << "Call PrefetchURLs() before.";
+  std::string domain_and_registry =
+      net::registry_controlled_domains::GetDomainAndRegistry(
+          url, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+  auto it = change_password_url_map_.find(domain_and_registry);
+  if (it != change_password_url_map_.end()) {
+    return it->second;
   }
+  // Fallback if no valid change-password url available no response available.
+  return GURL();
 }
 
 void ChangePasswordUrlServiceImpl::OnFetchComplete(
@@ -136,24 +133,6 @@ void ChangePasswordUrlServiceImpl::OnFetchComplete(
       }
     }
   }
-
-  for (auto& url_callback : std::exchange(url_callbacks_, {})) {
-    GURL url = ChangePasswordUrlFor(url_callback.first);
-    std::move(url_callback.second).Run(std::move(url));
-  }
-}
-
-GURL ChangePasswordUrlServiceImpl::ChangePasswordUrlFor(
-    const url::Origin& origin) {
-  std::string domain_and_registry =
-      net::registry_controlled_domains::GetDomainAndRegistry(
-          origin, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
-  auto it = change_password_url_map_.find(domain_and_registry);
-  if (it != change_password_url_map_.end()) {
-    return it->second;
-  }
-  // Fallback if no valid change-password url available or request failed.
-  return origin.GetURL();
 }
 
 }  // namespace password_manager

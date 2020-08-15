@@ -289,7 +289,7 @@ data_reduction_proxy::Client DataReductionProxyChromeSettings::GetClient() {
   return data_reduction_proxy::Client::CHROME_MAC;
 #elif defined(OS_CHROMEOS)
   return data_reduction_proxy::Client::CHROME_CHROMEOS;
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || defined(OS_CHROMEOS)
   return data_reduction_proxy::Client::CHROME_LINUX;
 #elif defined(OS_WIN)
   return data_reduction_proxy::Client::CHROME_WINDOWS;

@@ -80,6 +80,9 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ShillPropertyHandler
     virtual void CheckPortalListChanged(
          const std::string& check_portal_list) = 0;
 
+    // Called when the DHCP Hostname property changes.
+    virtual void HostnameChanged(const std::string& hostname) = 0;
+
     // Called when a technology list changes.
     virtual void TechnologyListChanged() = 0;
 

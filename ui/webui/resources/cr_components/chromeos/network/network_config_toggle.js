@@ -39,6 +39,11 @@ Polymer({
     'click': 'onHostTap_',
   },
 
+  /** @override */
+  focus() {
+    this.$$('cr-toggle').focus();
+  },
+
   /**
    * Handles non cr-toggle button clicks (cr-toggle handles its own click events
    * which don't bubble).

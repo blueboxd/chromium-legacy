@@ -12,6 +12,7 @@ class GURL;
 namespace web {
 
 class NavigationContext;
+class WebState;
 
 // This file contains helper functions relating to Text Fragments, which are
 // appended to the reference fragment in the URL and instruct the user agent
@@ -25,7 +26,7 @@ bool AreTextFragmentsAllowed(NavigationContext* context);
 
 // Checks the destination URL for Text Fragments. If found, searches the DOM for
 // matching text, highlights the text, and scrolls the first into view.
-void HandleTextFragments(NavigationContext* context);
+void HandleTextFragments(WebState* state);
 
 // Exposed for testing only.
 namespace internal {
@@ -33,7 +34,7 @@ namespace internal {
 // Checks the fragment portion of the URL for Text Fragments. Returns zero or
 // more dictionaries containing the parsed parameters used by the fragment-
 // finding algorithm, as defined in the spec.
-std::vector<base::Value> ParseTextFragments(const GURL& url);
+base::Value ParseTextFragments(const GURL& url);
 
 // Extracts the text fragments, if any, from a ref string.
 std::vector<std::string> ExtractTextFragments(std::string ref_string);

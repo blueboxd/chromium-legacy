@@ -302,6 +302,7 @@
 <translation id="4481711095103932593">ОС Windows має доступ до цієї папки</translation>
 <translation id="4487088045714738411">Бельгійська розкладка</translation>
 <translation id="4522570452068850558">Деталі</translation>
+<translation id="4542387084127299777">Не вдається відкрити файл "<ph name="PATH" />"</translation>
 <translation id="4552678318981539154">Придбати більше об’єму пам’яті</translation>
 <translation id="4559767610552730302">Боке</translation>
 <translation id="4572815280350369984">Файл <ph name="FILE_TYPE" /></translation>
@@ -514,6 +515,7 @@
 <translation id="6629841649550503054">Усі файли імпортовано на <ph name="BEGIN_LINK" />Google Диск.<ph name="END_LINK" /></translation>
 <translation id="6643016212128521049">Очистити</translation>
 <translation id="6650726141019353908">Рожевий метелик</translation>
+<translation id="6657585470893396449">Пароль</translation>
 <translation id="6710213216561001401">Попереднє</translation>
 <translation id="6718273304615422081">Архівування…</translation>
 <translation id="6751256176799620176">Вибрано 1 папку</translation>
@@ -726,6 +728,7 @@
 <translation id="9065203028668620118">Редагувати</translation>
 <translation id="9099674669267916096">Кількість сторінок</translation>
 <translation id="9110990317705400362">Ми постійно шукаємо способи зробити перегляд веб-сторінок безпечнішим. Раніше будь-який веб-сайт міг пропонувати вам додати розширення у веб-переглядач. В останніх версіях Google Chrome ви маєте чітко вказати, що хочете встановити ці розширення, додавши їх на сторінці "Розширення". <ph name="BEGIN_LINK" />Докладніше<ph name="END_LINK" /></translation>
+<translation id="9111102763498581341">Розблокувати</translation>
 <translation id="912419004897138677">Кодек</translation>
 <translation id="9129931661813833980">Закріпити папку</translation>
 <translation id="9130775360844693113">Учасники, які мають доступ до розташування "<ph name="DESTINATION_NAME" />", отримають доступ до цих елементів.</translation>

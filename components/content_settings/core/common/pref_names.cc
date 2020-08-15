@@ -51,6 +51,10 @@ const char kManagedDefaultWebBluetoothGuardSetting[] =
     "profile.managed_default_content_settings.web_bluetooth_guard";
 const char kManagedDefaultWebUsbGuardSetting[] =
     "profile.managed_default_content_settings.web_usb_guard";
+const char kManagedDefaultFileSystemReadGuardSetting[] =
+    "profile.managed_default_content_settings.file_system_read_guard";
+const char kManagedDefaultFileSystemWriteGuardSetting[] =
+    "profile.managed_default_content_settings.file_system_write_guard";
 const char kManagedDefaultLegacyCookieAccessSetting[] =
     "profile.managed_default_content_settings.legacy_cookie_access";
 const char kManagedDefaultSerialGuardSetting[] =
@@ -101,6 +105,14 @@ const char kManagedWebUsbAllowDevicesForUrls[] =
 const char kManagedWebUsbAskForUrls[] = "profile.managed_web_usb_ask_for_urls";
 const char kManagedWebUsbBlockedForUrls[] =
     "profile.managed_web_usb_blocked_for_urls";
+const char kManagedFileSystemReadAskForUrls[] =
+    "profile.managed_file_system_read_ask_for_urls";
+const char kManagedFileSystemReadBlockedForUrls[] =
+    "profile.managed_file_system_read_blocked_for_urls";
+const char kManagedFileSystemWriteAskForUrls[] =
+    "profile.managed_file_system_write_ask_for_urls";
+const char kManagedFileSystemWriteBlockedForUrls[] =
+    "profile.managed_file_system_write_blocked_for_urls";
 const char kManagedLegacyCookieAccessAllowedForDomains[] =
     "profile.managed_legacy_cookie_access_allowed_for_domains";
 const char kManagedSerialAskForUrls[] = "profile.managed_serial_ask_for_urls";

@@ -302,6 +302,7 @@
 <translation id="4481711095103932593">Nakabahagi ang folder na ito sa Windows</translation>
 <translation id="4487088045714738411">Belgian na keyboard</translation>
 <translation id="4522570452068850558">Mga Detalye</translation>
+<translation id="4542387084127299777">Hindi mabuksan ang "<ph name="PATH" />"</translation>
 <translation id="4552678318981539154">Bumili ng higit pang storage</translation>
 <translation id="4559767610552730302">Bokeh</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> na file</translation>
@@ -514,6 +515,7 @@
 <translation id="6629841649550503054">Naka-back up na ang lahat sa <ph name="BEGIN_LINK" />Google Drive!<ph name="END_LINK" /></translation>
 <translation id="6643016212128521049">I-clear</translation>
 <translation id="6650726141019353908">Pink na paru-paro</translation>
+<translation id="6657585470893396449">Password</translation>
 <translation id="6710213216561001401">Nakaraan</translation>
 <translation id="6718273304615422081">Nagzi-zip...</translation>
 <translation id="6751256176799620176">1 folder ang napili</translation>
@@ -726,6 +728,7 @@
 <translation id="9065203028668620118">I-edit</translation>
 <translation id="9099674669267916096">Bilang ng page</translation>
 <translation id="9110990317705400362">Patuloy kaming naghahanap ng mga paraan upang gawing mas ligtas ang iyong pagba-browse. Noong nakaraan, maaari kang i-prompt ng anumang website na magdagdag ng extension sa iyong browser. Sa mga pinakabagong bersyon ng Google Chrome, dapat na tahasan mong sabihin sa Chrome na gusto mong i-install ang mga extension na ito sa pamamagitan ng pagdaragdag sa mga ito sa page ng Mga Extension. <ph name="BEGIN_LINK" />Matuto pa<ph name="END_LINK" /></translation>
+<translation id="9111102763498581341">I-unlock</translation>
 <translation id="912419004897138677">Codec</translation>
 <translation id="9129931661813833980">I-pin ang folder</translation>
 <translation id="9130775360844693113">Magkakaroon ng access ang mga miyembro ng '<ph name="DESTINATION_NAME" />' sa mga item na ito.</translation>

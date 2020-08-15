@@ -233,6 +233,19 @@ class VideoCaptureDeviceFuchsiaTest : public testing::Test {
     EXPECT_TRUE(fake_device_watcher_.stream()->WaitBuffersAllocated());
   }
 
+  void ProduceAndCaptureFrame() {
+    const uint8_t kFrameSalt = 1;
+
+    auto frame_timestamp = base::TimeTicks::Now();
+    fake_device_watcher_.stream()->ProduceFrame(frame_timestamp, kFrameSalt);
+    client_->WaitFrame();
+
+    ASSERT_EQ(client_->received_frames().size(), 1U);
+    EXPECT_EQ(client_->received_frames()[0].reference_time, frame_timestamp);
+    ValidateReceivedFrame(client_->received_frames()[0],
+                          FakeCameraStream::kDefaultFrameSize, kFrameSalt);
+  }
+
  protected:
   base::test::SingleThreadTaskEnvironment task_environment_{
       base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
@@ -252,15 +265,27 @@ TEST_F(VideoCaptureDeviceFuchsiaTest, Initialize) {
 
 TEST_F(VideoCaptureDeviceFuchsiaTest, SendFrame) {
   StartCapturer();
+  ProduceAndCaptureFrame();
+}
 
-  auto frame_timestamp = base::TimeTicks::Now();
-  fake_device_watcher_.stream()->ProduceFrame(frame_timestamp, 1);
-  client_->WaitFrame();
+// Verifies that VideoCaptureDevice can recover from failed Sync() on the sysmem
+// buffer collection.
+TEST_F(VideoCaptureDeviceFuchsiaTest, FailBufferCollectionSync) {
+  fake_device_watcher_.stream()->SetFirstBufferCollectionFailMode(
+      FakeCameraStream::SysmemFailMode::kFailSync);
 
-  ASSERT_EQ(client_->received_frames().size(), 1U);
-  EXPECT_EQ(client_->received_frames()[0].reference_time, frame_timestamp);
-  ValidateReceivedFrame(client_->received_frames()[0],
-                        FakeCameraStream::kDefaultFrameSize, 1);
+  StartCapturer();
+  ProduceAndCaptureFrame();
+}
+
+// Verifies that VideoCaptureDevice can recover from sysmem buffer allocation
+// failures..
+TEST_F(VideoCaptureDeviceFuchsiaTest, FailBufferCollectionAllocation) {
+  fake_device_watcher_.stream()->SetFirstBufferCollectionFailMode(
+      FakeCameraStream::SysmemFailMode::kFailAllocation);
+
+  StartCapturer();
+  ProduceAndCaptureFrame();
 }
 
 TEST_F(VideoCaptureDeviceFuchsiaTest, MultipleFrames) {

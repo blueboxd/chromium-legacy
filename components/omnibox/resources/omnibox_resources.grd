@@ -110,6 +110,9 @@
   <release seq="1" allow_pseudo="false">
     <includes>
       <!-- These resources do not require translation or further processing because they are already handled by a separate localization process. -->
+      <if expr="lang == 'am'">
+        <include name="IDR_OMNIBOX_PEDAL_CONCEPTS" file="omnibox_pedal_concepts_am.json" type="BINDATA" compress="gzip" />
+      </if>
       <if expr="lang == 'de'">
         <include name="IDR_OMNIBOX_PEDAL_CONCEPTS" file="omnibox_pedal_concepts_de.json" type="BINDATA" compress="gzip" />
       </if>
@@ -125,7 +128,7 @@
       <if expr="lang == 'zh-CN'">
         <include name="IDR_OMNIBOX_PEDAL_CONCEPTS" file="omnibox_pedal_concepts_zh-CN.json" type="BINDATA" compress="gzip" />
       </if>
-      <if expr="lang not in ['de', 'en', 'fr', 'ja', 'zh-CN']">
+      <if expr="lang not in ['am', 'de', 'en', 'fr', 'ja', 'zh-CN']">
         <!-- Fall back to English for unsupported languages. -->
         <include name="IDR_OMNIBOX_PEDAL_CONCEPTS" file="omnibox_pedal_concepts_en.json" type="BINDATA" compress="gzip" />
       </if>

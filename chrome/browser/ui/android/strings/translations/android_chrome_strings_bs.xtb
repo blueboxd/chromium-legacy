@@ -240,7 +240,7 @@ Dodirnite i zadržite bilo koju riječ da je pretražite. Za fino podešavanje p
 <translation id="2888126860611144412">O Chromeu</translation>
 <translation id="2891154217021530873">Zaustavljanje učitavanja stranice</translation>
 <translation id="2892647708214602204">Vidjet ćete obavještenje kada fajl bude spreman</translation>
-<translation id="2893180576842394309">Google može koristiti vašu historiju za personaliziranje Pretraživanja i drugih Googleovih usluga</translation>
+<translation id="2893180576842394309">Google može koristiti vašu historiju za personalizaciju Pretraživanja i drugih Googleovih usluga</translation>
 <translation id="2898264748040935573">Uredite pohranjenu lozinku</translation>
 <translation id="2900528713135656174">Kreiraj događaj</translation>
 <translation id="2903493209154104877">Adrese</translation>
@@ -618,7 +618,7 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="5776970333778123608">Nevažni podaci</translation>
 <translation id="5793665092639000975">Koristi se <ph name="SPACE_USED" /> od <ph name="SPACE_AVAILABLE" /></translation>
 <translation id="5795872532621730126">Pretraživanje i pregledanje</translation>
-<translation id="5797070761912323120">Google može koristiti vašu historiju za personaliziranje Pretraživanja, oglasa i drugih Googleovih usluga</translation>
+<translation id="5797070761912323120">Google može koristiti vašu historiju za personalizaciju Pretraživanja, oglasa i drugih Googleovih usluga</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{Prije # sat}one{Prije # sat}few{Prije # sata}other{Prije # sati}}</translation>
 <translation id="5810288467834065221">Autorska prava <ph name="YEAR" />. Google LLC. Sva prava zadržana.</translation>
 <translation id="5817918615728894473">Upari</translation>

@@ -1266,12 +1266,6 @@
 <translation id="2901725272378498025">啟用指令列標記的安全性警告</translation>
 <translation id="2905984450136807296">驗證資料快取生命週期</translation>
 <translation id="2906874737073861391">AppPack 擴充功能清單</translation>
-<translation id="2907992746861405243">根據 <ph name="BULK_PRINTERS_POLICY" /> 設定哪些印表機是可供使用的。
-
-      指派用於大量印表機設定的存取權政策。如果選取 <ph name="PRINTERS_ALLOW_ALL" />，系統會顯示所有印表機。如果選取 <ph name="PRINTERS_BLACKLIST" />，系統會使用 <ph name="BULK_PRINTERS_BLACKLIST" /> 限制對特定印表機的存取權。如果選取 <ph name="PRINTERS_WHITELIST" />，<ph name="BULK_PRINTERS_WHITELIST" /> 只會指派可選取的印表機。
-
-      如果未設定這項政策，系統會自動採用 <ph name="PRINTERS_ALLOW_ALL" />。
-      </translation>
 <translation id="2908277604670530363">Proxy 伺服器的並行連線數量上限</translation>
 <translation id="2921222258441684334">如果將這項政策設為 1，網站在預設狀態下會追蹤使用者所在的實際位置。如果將這項政策設為 2，網站在預設狀態下無法進行追蹤。你可以透過這項政策，規定網站必須先詢問使用者，才能追蹤其所在的實際位置。
 

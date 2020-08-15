@@ -2197,9 +2197,10 @@ class LoadingPredictorPrefetchBrowserTestWithBlockedLocalRequest
 };
 
 // Test that prefetches to local resources are blocked.
+// Disabled for being flaky. crbug.com/1116599
 IN_PROC_BROWSER_TEST_P(
     LoadingPredictorPrefetchBrowserTestWithBlockedLocalRequest,
-    PrepareForPageLoadWithPredictionForPrefetch) {
+    DISABLED_PrepareForPageLoadWithPredictionForPrefetch) {
   GURL url = embedded_test_server()->GetURL(
       "test.com", GetPathWithPortReplacement(kHtmlSubresourcesPath,
                                              embedded_test_server()->port()));

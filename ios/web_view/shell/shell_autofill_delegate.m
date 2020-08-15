@@ -277,6 +277,12 @@
                  completion:nil];
 }
 
+- (void)autofillController:(CWVAutofillController*)autofillController
+    notifyUserOfPasswordLeakOnURL:(NSURL*)URL
+                         leakType:(CWVPasswordLeakType)leakType {
+  NSLog(@"Password on %@ is leaked!", URL);
+}
+
 #pragma mark - Private Methods
 
 - (UIAlertAction*)actionForSuggestion:(CWVAutofillSuggestion*)suggestion {

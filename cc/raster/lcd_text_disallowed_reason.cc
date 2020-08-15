@@ -29,6 +29,8 @@ const char* LCDTextDisallowedReasonToString(LCDTextDisallowedReason reason) {
       return "will-change-transform";
     case LCDTextDisallowedReason::kPixelOrColorEffect:
       return "pixel-or-color-effect";
+    case LCDTextDisallowedReason::kTransformAnimation:
+      return "transform-animation";
   }
   NOTREACHED();
   return "";

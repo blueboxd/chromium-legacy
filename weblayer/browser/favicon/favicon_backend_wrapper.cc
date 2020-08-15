@@ -12,6 +12,16 @@
 
 namespace weblayer {
 
+// Removing out of date entries can be costly. To avoid blocking the thread
+// this code runs on, the work is potentially throttled. Specifically at
+// most |kMaxNumberOfEntriesToRemoveAtATime| are removed during a single call.
+// If |kMaxNumberOfEntriesToRemoveAtATime| are removed, then there may be more
+// entries that can be removed, so the timer is restarted with a shorter time
+// out (|kTimeDeltaForRunningExpireWithRemainingWork|).
+constexpr base::TimeDelta kTimeDeltaForRunningExpireNoRemainingWork =
+    base::TimeDelta::FromHours(1);
+constexpr int kMaxNumberOfEntriesToRemoveAtATime = 100;
+
 FaviconBackendWrapper::FaviconBackendWrapper(
     scoped_refptr<base::SequencedTaskRunner> task_runner)
     : base::RefCountedDeleteOnSequence<FaviconBackendWrapper>(task_runner),
@@ -34,12 +44,16 @@ void FaviconBackendWrapper::Init(const base::FilePath& db_path) {
       return;
     }
   }
+
+  expire_timer_.Start(FROM_HERE, kTimeDeltaForRunningExpireWithRemainingWork,
+                      this, &FaviconBackendWrapper::OnExpireTimerFired);
 }
 
 void FaviconBackendWrapper::Shutdown() {
   // Ensures there isn't a reference to this in the task runner (by way of the
   // task the timer posts).
   commit_timer_.Stop();
+  expire_timer_.Stop();
 }
 
 void FaviconBackendWrapper::DeleteAndRecreateDatabase() {
@@ -143,6 +157,30 @@ FaviconBackendWrapper::~FaviconBackendWrapper() = default;
 void FaviconBackendWrapper::Commit() {
   if (favicon_backend_)
     favicon_backend_->Commit();
+}
+
+void FaviconBackendWrapper::OnExpireTimerFired() {
+  if (!favicon_backend_)
+    return;
+
+  // See comments above |kTimeDeltaForRunningExpireNoRemainingWork| for a
+  // description of this logic.
+  favicon::FaviconDatabase* db = favicon_backend_->db();
+  auto icon_ids = db->GetFaviconsLastUpdatedBefore(
+      base::Time::Now() - kTimeDeltaWhenEntriesAreRemoved,
+      kMaxNumberOfEntriesToRemoveAtATime);
+  for (favicon_base::FaviconID icon_id : icon_ids) {
+    db->DeleteFavicon(icon_id);
+    db->DeleteIconMappingsForFaviconId(icon_id);
+  }
+  if (!icon_ids.empty())
+    Commit();
+  const base::TimeDelta delta =
+      icon_ids.size() == kMaxNumberOfEntriesToRemoveAtATime
+          ? kTimeDeltaForRunningExpireWithRemainingWork
+          : kTimeDeltaForRunningExpireNoRemainingWork;
+  expire_timer_.Start(FROM_HERE, delta, this,
+                      &FaviconBackendWrapper::OnExpireTimerFired);
 }
 
 }  // namespace weblayer

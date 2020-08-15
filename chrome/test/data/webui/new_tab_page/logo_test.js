@@ -642,7 +642,7 @@ function createSuite(themeModeDoodlesEnabled) {
       // Assert (load).
       const [type, _, logUrl] =
           await testProxy.handler.whenCalled('onDoodleImageRendered');
-      assertEquals(newTabPage.mojom.DoodleImageType.STATIC, type);
+      assertEquals(newTabPage.mojom.DoodleImageType.kStatic, type);
       assertEquals(imageDoodle.imageImpressionLogUrl.url, logUrl.url);
 
       // Act (click).
@@ -652,7 +652,7 @@ function createSuite(themeModeDoodlesEnabled) {
       const [type2] =
           await testProxy.handler.whenCalled('onDoodleImageClicked');
       const onClickUrl = await testProxy.whenCalled('open');
-      assertEquals(newTabPage.mojom.DoodleImageType.STATIC, type2);
+      assertEquals(newTabPage.mojom.DoodleImageType.kStatic, type2);
       assertEquals(
           'https://click.com/?ct=supi&foo=bar&hello=world', onClickUrl);
 
@@ -661,12 +661,13 @@ function createSuite(themeModeDoodlesEnabled) {
       await flushTasks();
       $$(logo, 'ntp-doodle-share-dialog')
           .dispatchEvent(new CustomEvent(
-              'share', {detail: newTabPage.mojom.DoodleShareChannel.FACEBOOK}));
+              'share',
+              {detail: newTabPage.mojom.DoodleShareChannel.kFacebook}));
 
       // Assert (share).
       const [channel, doodleId, shareId] =
           await testProxy.handler.whenCalled('onDoodleShared');
-      assertEquals(newTabPage.mojom.DoodleShareChannel.FACEBOOK, channel);
+      assertEquals(newTabPage.mojom.DoodleShareChannel.kFacebook, channel);
       assertEquals('supi', doodleId);
       assertEquals('123', shareId);
     });
@@ -702,7 +703,7 @@ function createSuite(themeModeDoodlesEnabled) {
       // Assert (CTA load).
       const [type, _, logUrl] =
           await testProxy.handler.whenCalled('onDoodleImageRendered');
-      assertEquals(newTabPage.mojom.DoodleImageType.CTA, type);
+      assertEquals(newTabPage.mojom.DoodleImageType.kCta, type);
       assertEquals(imageDoodle.imageImpressionLogUrl.url, logUrl.url);
 
       // Act (CTA click).
@@ -717,13 +718,13 @@ function createSuite(themeModeDoodlesEnabled) {
       // Assert (CTA click).
       const [type2, interactionLogUrl] =
           await testProxy.handler.whenCalled('onDoodleImageClicked');
-      assertEquals(newTabPage.mojom.DoodleImageType.CTA, type2);
+      assertEquals(newTabPage.mojom.DoodleImageType.kCta, type2);
       assertEquals('https://interaction.com', interactionLogUrl.url);
 
       // Assert (animation load). Also triggered by clicking #image.
       const [type3, __, logUrl2] =
           await testProxy.handler.whenCalled('onDoodleImageRendered');
-      assertEquals(newTabPage.mojom.DoodleImageType.ANIMATION, type3);
+      assertEquals(newTabPage.mojom.DoodleImageType.kAnimation, type3);
       assertEquals(imageDoodle.animationImpressionLogUrl.url, logUrl2.url);
 
       // Act (animation click).
@@ -734,7 +735,7 @@ function createSuite(themeModeDoodlesEnabled) {
       const [type4, ___] =
           await testProxy.handler.whenCalled('onDoodleImageClicked');
       const onClickUrl = await testProxy.whenCalled('open');
-      assertEquals(newTabPage.mojom.DoodleImageType.ANIMATION, type4);
+      assertEquals(newTabPage.mojom.DoodleImageType.kAnimation, type4);
       assertEquals(
           'https://click.com/?ct=supi&foo=bar&hello=world', onClickUrl);
 
@@ -743,12 +744,12 @@ function createSuite(themeModeDoodlesEnabled) {
       await flushTasks();
       $$(logo, 'ntp-doodle-share-dialog')
           .dispatchEvent(new CustomEvent(
-              'share', {detail: newTabPage.mojom.DoodleShareChannel.TWITTER}));
+              'share', {detail: newTabPage.mojom.DoodleShareChannel.kTwitter}));
 
       // Assert (share).
       const [channel, doodleId, shareId] =
           await testProxy.handler.whenCalled('onDoodleShared');
-      assertEquals(newTabPage.mojom.DoodleShareChannel.TWITTER, channel);
+      assertEquals(newTabPage.mojom.DoodleShareChannel.kTwitter, channel);
       assertEquals('supi', doodleId);
       assertEquals('123', shareId);
     });

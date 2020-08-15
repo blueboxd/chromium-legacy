@@ -19,6 +19,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_run_loop_timeout.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -35,6 +36,7 @@
 #include "components/feed/core/v2/feed_network.h"
 #include "components/feed/core/v2/image_fetcher.h"
 #include "components/feed/core/v2/metrics_reporter.h"
+#include "components/feed/core/v2/prefs.h"
 #include "components/feed/core/v2/protocol_translator.h"
 #include "components/feed/core/v2/refresh_task_scheduler.h"
 #include "components/feed/core/v2/scheduling.h"
@@ -1396,11 +1398,22 @@ TEST_F(FeedStreamTest, LoadMoreBeforeLoad) {
 }
 
 TEST_F(FeedStreamTest, ReadNetworkResponse) {
+  base::HistogramTester histograms;
   network_.InjectRealResponse();
   TestSurface surface(stream_.get());
   WaitForIdleTaskQueue();
 
   ASSERT_EQ("loading -> 10 slices", surface.DescribeUpdates());
+
+  // Verify we're processing some of the data on the request.
+
+  // The response has a privacy_notice_fulfilled=true.
+  histograms.ExpectUniqueSample("ContentSuggestions.Feed.NoticeCardFulfilled",
+                                1, 1);
+
+  // A request schedule with two entries was in the response.
+  RequestSchedule schedule = prefs::GetRequestSchedule(profile_prefs_);
+  EXPECT_EQ(std::vector<base::TimeDelta>({}), schedule.refresh_offsets);
 }
 
 TEST_F(FeedStreamTest, ClearAllAfterLoadResultsInRefresh) {

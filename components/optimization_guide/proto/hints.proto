@@ -192,6 +192,10 @@ message Optimization {
   // same name, the optimization will be disabled and skipped for that client.
   // An empty name is not experimental.
   optional string excluded_experiment_name = 5;
+  // The version of the tuning group for the optimization type.
+  //
+  // This will only be populated if this optimization is being autotuned.
+  optional uint64 tuning_version = 6;
   // The metadata associated with the optimization type.
   //
   // It is expected that the client and server have agreed upon the appropriate

@@ -16,5 +16,10 @@ struct FullscreenOptions {
   // True if this should be treated as a "webkit"-prefixed fullscreen request.
   // These don't return promises, and fire "webkit"-prefixed events.
   bool is_prefixed = false;
+
+  // True if this fullscreen request is for WebXR DOM Overlay mode. In that case,
+  // if a subframe is requesting fullscreen mode, the parent frames need to use
+  // a transparent backdrop to keep content visible.
+  bool is_xr_overlay = false;
 };
 

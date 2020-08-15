@@ -109,7 +109,7 @@ DownloadProtectionService::DownloadProtectionService(
       binary_feature_extractor_(new BinaryFeatureExtractor()),
       download_request_timeout_ms_(kDownloadRequestTimeoutMs),
       feedback_service_(new DownloadFeedbackService(
-          sb_service_ ? sb_service_->GetURLLoaderFactory() : nullptr,
+          this,
           base::ThreadPool::CreateSequencedTaskRunner(
               {base::MayBlock(), base::TaskPriority::BEST_EFFORT})
               .get())),
@@ -569,7 +569,8 @@ bool DownloadProtectionService::MaybeBeginFeedbackForDownload(
   bool is_extended_reporting =
       ExtendedReportingPrefExists(*prefs) && IsExtendedReportingEnabled(*prefs);
   if (!profile->IsOffTheRecord() && is_extended_reporting) {
-    feedback_service_->BeginFeedbackForDownload(download, download_command);
+    feedback_service_->BeginFeedbackForDownload(profile, download,
+                                                download_command);
     return true;
   }
   return false;

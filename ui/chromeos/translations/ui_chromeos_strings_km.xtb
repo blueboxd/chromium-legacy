@@ -302,6 +302,7 @@
 <translation id="4481711095103932593">ថតនេះ​ត្រូវបានចែករំលែក​ជាមួយ Windows</translation>
 <translation id="4487088045714738411">ក្តារចុចបែលហ្សិុក</translation>
 <translation id="4522570452068850558">ព័ត៌មានលំអិត</translation>
+<translation id="4542387084127299777">មិនអាច​បើក "<ph name="PATH" />" បានទេ</translation>
 <translation id="4552678318981539154">ទិន្នន័យចន្លោះផ្ទុ</translation>
 <translation id="4559767610552730302">Bokeh</translation>
 <translation id="4572815280350369984">ឯកសារ <ph name="FILE_TYPE" /></translation>
@@ -513,6 +514,7 @@
 <translation id="6629841649550503054">បានបម្រុងទុកទៅក្នុង <ph name="BEGIN_LINK" />Google Drive!<ph name="END_LINK" />អស់ហើយ</translation>
 <translation id="6643016212128521049">ជម្រះ</translation>
 <translation id="6650726141019353908">មេអំបៅ​ពណ៌​ផ្កាឈូក</translation>
+<translation id="6657585470893396449">ពាក្យសម្ងាត់</translation>
 <translation id="6710213216561001401">មុន</translation>
 <translation id="6718273304615422081">កំពុងបង្រួម...</translation>
 <translation id="6751256176799620176">បានជ្រើសថតឯកសារ 1</translation>
@@ -725,6 +727,7 @@
 <translation id="9065203028668620118">កែប្រែ</translation>
 <translation id="9099674669267916096">ចំនួន​ទំព័រ</translation>
 <translation id="9110990317705400362">យើងតែងតែស្វែងរកមធ្យោបាយដើម្បីធ្វើឲ្យការរុករករបស់អ្នកមានសុវត្ថិភាពជាងមុនជានិច្ច។ កាលពីមុន គេហទំព័រទាំងឡាយអាចជម្រុញអ្នកឲ្យបន្ថែមកម្មវិធីបន្ថែមទៅក្នុងកម្មវិធីរុករករបស់អ្នក។ នៅក្នុងកំណែចុងក្រោយនៃ Google Chrome អ្នកត្រូវប្រាប់ Chrome ឲ្យច្បាស់ថាអ្នកចង់តំឡើងកម្មវិធីទាំងនេះ ដោយការបន្ថែមពួកវាតាមរយៈទំព័រកម្មវិធីបន្ថែម។ <ph name="BEGIN_LINK" />ស្វែងយល់បន្ថែម<ph name="END_LINK" /></translation>
+<translation id="9111102763498581341">ដោះសោរ</translation>
 <translation id="912419004897138677">កូឌិក</translation>
 <translation id="9129931661813833980">ខ្ទាស់ថត</translation>
 <translation id="9130775360844693113">សមាជិក​របស់ '<ph name="DESTINATION_NAME" />' នឹងទទួល​បានសិទិ្ធ​ចូលប្រើ​ធាតុទាំង​នេះ។</translation>

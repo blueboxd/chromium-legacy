@@ -827,6 +827,12 @@ bool FidoDeviceAuthenticator::IsTouchIdAuthenticator() const {
 }
 #endif  // defined(OS_MAC)
 
+#if defined(OS_CHROMEOS)
+bool FidoDeviceAuthenticator::IsChromeOSAuthenticator() const {
+  return false;
+}
+#endif  // defined(OS_CHROMEOS)
+
 void FidoDeviceAuthenticator::SetTaskForTesting(
     std::unique_ptr<FidoTask> task) {
   task_ = std::move(task);

@@ -30,6 +30,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles et les modificat
 <translation id="2294245788148774212">Facultatif : aidez-nous à améliorer les fonctionnalités et les performances de Chromium OS en envoyant automatiquement les données de diagnostic et d'utilisation à Google.</translation>
 <translation id="2347108572062610441">Cette extension a modifié la page qui s'affiche au démarrage de Chromium.</translation>
 <translation id="2396765026452590966">L'extension « <ph name="EXTENSION_NAME" /> » a modifié la page qui s'affiche au démarrage de Chromium.</translation>
+<translation id="2442081746662839303">Créer un espace Chromium pour <ph name="NEW_USER" />?</translation>
 <translation id="2483889755041906834">Dans Chromium</translation>
 <translation id="2485422356828889247">Désinstaller</translation>
 <translation id="2527042973354814951">Redémarrer Chromium pour activer le plugiciel <ph name="PLUGIN_NAME" /></translation>
@@ -107,6 +108,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles et les modificat
 <translation id="4943838377383847465">Chromium fonctionne en mode arrière-plan.</translation>
 <translation id="4987820182225656817">Les invités peuvent utiliser Chromium sans rien laisser derrière eux.</translation>
 <translation id="4994636714258228724">Ajouter un utilisateur à Chromium</translation>
+<translation id="5053724573690775822">Créer un espace professionnel Chromium?</translation>
 <translation id="5224391634244552924">Aucun mot de passe enregistré. Chromium ne peut vérifier vos mots de passe que si vous les enregistrez.</translation>
 <translation id="5277894862589591112">Pour appliquer vos modifications, relancez Chromium</translation>
 <translation id="5358375970380395591">Vous vous connectez avec un compte géré et rendez son administrateur maître de votre profil Chromium. Vos données de Chromium, comme vos applications, vos favoris, votre historique, vos mots de passe et vos autres paramètres, vont être associées de manière permanente à <ph name="USER_NAME" />. Vous pourrez supprimer ces données à l'aide du tableau de bord des comptes Google, mais vous ne pourrez pas les associer à un autre compte. <ph name="LEARN_MORE" /></translation>
@@ -116,6 +118,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles et les modificat
 <translation id="5416696090975899932">Chromium ne peut pas afficher l'aperçu avant impression lorsque le visualiseur de documents PDF intégré n'est pas installé.</translation>
 <translation id="5427571867875391349">Faire de Chromium le navigateur par défaut</translation>
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> - Chromium bêta</translation>
+<translation id="544968170749360982">Vous vous êtes connecté à l'aide d'un nouveau compte dans l'espace de <ph name="EXISTING_USER" />. Voulez-vous créer un espace Chromium pour <ph name="NEW_USER" /> afin de garder vos données distinctes?</translation>
 <translation id="5479196819031988440">Chromium OS ne peut pas ouvrir cette page.</translation>
 <translation id="5480860683791598150">Chromium a besoin d'accéder à votre position afin de la partager avec ce site</translation>
 <translation id="549669000822060376">Veuillez patienter pendant que Chromium installe les dernières mises à jour système.</translation>
@@ -138,6 +141,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles et les modificat
 <translation id="608189560609172163">Chromium n'a pas pu synchroniser vos données, car une erreur s'est produite lors de la connexion.</translation>
 <translation id="6096348254544841612">Personnalisez et contrôlez Chromium. Une mise à jour est disponible.</translation>
 <translation id="6120345080069858279">Chromium enregistrera ce mot de passe dans votre compte Google. Vous n'aurez pas à le retenir.</translation>
+<translation id="6128834065531097268">Vous vous êtes connecté à l'aide d'un compte professionnel dans l'espace de <ph name="EXISTING_USER" />. Voulez-vous créer un espace Chromium pour <ph name="WORK_DOMAIN" /> afin de garder vos données distinctes?</translation>
 <translation id="6129621093834146363">Chromium a bloqué le fichier <ph name="FILE_NAME" />, car il est dangereux.</translation>
 <translation id="6134968993075716475">La navigation sécurisée est désactivée. Chromium vous recommande de l'activer.</translation>
 <translation id="6212496753309875659">Cet ordinateur dispose déjà d'une version plus récente de Chromium. Si le logiciel ne fonctionne pas, veuillez le désinstaller, puis réessayer.</translation>
@@ -198,6 +202,7 @@ Chromium est incapable de récupérer vos paramètres.</translation>
 <translation id="7549178288319965365">À propos de Chromium OS</translation>
 <translation id="7561906087460245826">Effacer les données également dans Chromium (<ph name="URL" />)</translation>
 <translation id="7585853947355360626">Si un paramètre ne s'affiche pas sur cette page, consultez les <ph name="LINK_BEGIN" />paramètres de Chromium OS<ph name="LINK_END" /></translation>
+<translation id="7607142834923530546">Vous vous êtes connecté à l'aide d'un compte professionnel. Voulez-vous créer un espace Chromium pour <ph name="NEW_USER" /> afin de garder vos données personnelles distinctes?</translation>
 <translation id="761356813943268536">Chromium utilise votre caméra et votre microphone</translation>
 <translation id="7617377681829253106">Chrome vient de s'améliorer</translation>
 <translation id="7628001322379820951">Chromium a trouvé des logiciels nuisibles sur votre ordinateur</translation>

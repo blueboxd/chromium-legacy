@@ -723,7 +723,7 @@ const CSSValue* BlockSize::ParseSingleValue(
 
 bool BlockSize::IsLayoutDependent(const ComputedStyle* style,
                                   LayoutObject* layout_object) const {
-  return layout_object && layout_object->IsBox();
+  return layout_object && (layout_object->IsBox() || layout_object->IsSVG());
 }
 
 const CSSValue* BorderBlockEndColor::ParseSingleValue(
@@ -3277,7 +3277,7 @@ const CSSValue* InlineSize::ParseSingleValue(
 
 bool InlineSize::IsLayoutDependent(const ComputedStyle* style,
                                    LayoutObject* layout_object) const {
-  return layout_object && layout_object->IsBox();
+  return layout_object && (layout_object->IsBox() || layout_object->IsSVG());
 }
 
 const CSSValue* InsetBlockEnd::ParseSingleValue(

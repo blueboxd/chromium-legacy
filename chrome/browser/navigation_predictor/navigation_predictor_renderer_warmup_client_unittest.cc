@@ -1,0 +1,228 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/navigation_predictor/navigation_predictor_renderer_warmup_client.h"
+
+#include <memory>
+#include <vector>
+
+#include "base/optional.h"
+#include "base/test/scoped_feature_list.h"
+#include "base/test/simple_test_tick_clock.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
+
+namespace {
+
+constexpr char kGoogleSearchURL[] = "https://www.google.com/search?q=test";
+
+const base::Feature kNavigationPredictorRendererWarmup{
+    "NavigationPredictorRendererWarmup", base::FEATURE_DISABLED_BY_DEFAULT};
+
+NavigationPredictorKeyedService::Prediction CreateValidPrediction(
+    const GURL& src_url,
+    const std::vector<GURL>& predicted_urls) {
+  return NavigationPredictorKeyedService::Prediction(
+      nullptr, src_url, base::nullopt,
+      NavigationPredictorKeyedService::PredictionSource::
+          kAnchorElementsParsedFromWebPage,
+      predicted_urls);
+}
+
+class TestNavigationPredictorRendererWarmupClient
+    : public NavigationPredictorRendererWarmupClient {
+ public:
+  TestNavigationPredictorRendererWarmupClient(Profile* profile,
+                                              const base::TickClock* clock)
+      : NavigationPredictorRendererWarmupClient(profile, clock) {}
+  ~TestNavigationPredictorRendererWarmupClient() override = default;
+
+  bool DidDoRendererWarmup() const { return did_renderer_warmup_; }
+
+  void Reset() { did_renderer_warmup_ = false; }
+
+  void SetBrowserHasSpareRenderer(bool has_spare) { has_spare_ = has_spare; }
+
+ protected:
+  void DoRendererWarmpup() override { did_renderer_warmup_ = true; }
+  bool BrowserHasSpareRenderer() const override { return has_spare_; }
+
+ private:
+  bool did_renderer_warmup_ = false;
+  bool has_spare_ = false;
+};
+
+class NavigationPredictorRendererWarmupClientTest
+    : public ChromeRenderViewHostTestHarness {
+ public:
+  NavigationPredictorRendererWarmupClientTest() = default;
+  ~NavigationPredictorRendererWarmupClientTest() override = default;
+
+  void SetUp() override {
+    ChromeRenderViewHostTestHarness::SetUp();
+
+    TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+        profile(),
+        base::BindRepeating(&TemplateURLServiceFactory::BuildInstanceFor));
+
+    // Set the clock to a non-zero value.
+    clock_.SetNowTicks(base::TimeTicks::Now());
+  }
+
+  TestNavigationPredictorRendererWarmupClient* client() {
+    if (!client_) {
+      client_ = std::make_unique<TestNavigationPredictorRendererWarmupClient>(
+          profile(), &clock_);
+    }
+    return client_.get();
+  }
+
+  base::SimpleTestTickClock* clock() { return &clock_; }
+
+ private:
+  base::SimpleTestTickClock clock_;
+  std::unique_ptr<TestNavigationPredictorRendererWarmupClient> client_;
+};
+
+TEST_F(NavigationPredictorRendererWarmupClientTest, SuccessCase) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      kNavigationPredictorRendererWarmup, {
+                                              {"counterfactual", "false"},
+                                              {"mem_threshold_mb", "0"},
+                                              {"cooldown_duration_ms", "60000"},
+                                          });
+
+  client()->OnPredictionUpdated(
+      CreateValidPrediction(GURL(kGoogleSearchURL), {}));
+  EXPECT_TRUE(client()->DidDoRendererWarmup());
+}
+
+TEST_F(NavigationPredictorRendererWarmupClientTest, SuccessCase_AfterCooldown) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      kNavigationPredictorRendererWarmup, {
+                                              {"counterfactual", "false"},
+                                              {"mem_threshold_mb", "0"},
+                                              {"cooldown_duration_ms", "100"},
+                                          });
+
+  client()->OnPredictionUpdated(
+      CreateValidPrediction(GURL(kGoogleSearchURL), {}));
+  EXPECT_TRUE(client()->DidDoRendererWarmup());
+
+  client()->Reset();
+
+  clock()->Advance(base::TimeDelta::FromMilliseconds(101));
+
+  client()->OnPredictionUpdated(
+      CreateValidPrediction(GURL(kGoogleSearchURL), {}));
+  EXPECT_TRUE(client()->DidDoRendererWarmup());
+}
+
+TEST_F(NavigationPredictorRendererWarmupClientTest, NullPrediction) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      kNavigationPredictorRendererWarmup, {
+                                              {"counterfactual", "false"},
+                                              {"mem_threshold_mb", "0"},
+                                              {"cooldown_duration_ms", "60000"},
+                                          });
+
+  client()->OnPredictionUpdated(base::nullopt);
+  EXPECT_FALSE(client()->DidDoRendererWarmup());
+}
+
+TEST_F(NavigationPredictorRendererWarmupClientTest, BadPredictionSrc) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      kNavigationPredictorRendererWarmup, {
+                                              {"counterfactual", "false"},
+                                              {"mem_threshold_mb", "0"},
+                                              {"cooldown_duration_ms", "60000"},
+                                          });
+
+  client()->OnPredictionUpdated(NavigationPredictorKeyedService::Prediction(
+      nullptr, base::nullopt, std::vector<std::string>{""},
+      NavigationPredictorKeyedService::PredictionSource::kExternalAndroidApp,
+      {}));
+  EXPECT_FALSE(client()->DidDoRendererWarmup());
+}
+
+TEST_F(NavigationPredictorRendererWarmupClientTest, CoolDown) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      kNavigationPredictorRendererWarmup, {
+                                              {"counterfactual", "false"},
+                                              {"mem_threshold_mb", "0"},
+                                              {"cooldown_duration_ms", "60000"},
+                                          });
+
+  client()->OnPredictionUpdated(
+      CreateValidPrediction(GURL(kGoogleSearchURL), {}));
+  EXPECT_TRUE(client()->DidDoRendererWarmup());
+
+  client()->Reset();
+
+  client()->OnPredictionUpdated(
+      CreateValidPrediction(GURL(kGoogleSearchURL), {}));
+  EXPECT_FALSE(client()->DidDoRendererWarmup());
+}
+
+TEST_F(NavigationPredictorRendererWarmupClientTest, HasSpareRenderer) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      kNavigationPredictorRendererWarmup, {
+                                              {"counterfactual", "false"},
+                                              {"mem_threshold_mb", "0"},
+                                              {"cooldown_duration_ms", "60000"},
+                                          });
+
+  client()->SetBrowserHasSpareRenderer(true);
+  client()->OnPredictionUpdated(
+      CreateValidPrediction(GURL(kGoogleSearchURL), {}));
+  EXPECT_FALSE(client()->DidDoRendererWarmup());
+}
+
+TEST_F(NavigationPredictorRendererWarmupClientTest, FeatureOff) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(kNavigationPredictorRendererWarmup);
+
+  client()->OnPredictionUpdated(
+      CreateValidPrediction(GURL(kGoogleSearchURL), {}));
+  EXPECT_FALSE(client()->DidDoRendererWarmup());
+}
+
+TEST_F(NavigationPredictorRendererWarmupClientTest, Counterfactual) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      kNavigationPredictorRendererWarmup, {
+                                              {"counterfactual", "true"},
+                                              {"mem_threshold_mb", "0"},
+                                              {"cooldown_duration_ms", "60000"},
+                                          });
+
+  client()->OnPredictionUpdated(
+      CreateValidPrediction(GURL(kGoogleSearchURL), {}));
+  EXPECT_FALSE(client()->DidDoRendererWarmup());
+}
+
+TEST_F(NavigationPredictorRendererWarmupClientTest, MemThreshold) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      kNavigationPredictorRendererWarmup,
+      {
+          {"counterfactual", "true"},
+          {"mem_threshold_mb", "99999999999"},
+          {"cooldown_duration_ms", "60000"},
+      });
+
+  client()->OnPredictionUpdated(
+      CreateValidPrediction(GURL(kGoogleSearchURL), {}));
+  EXPECT_FALSE(client()->DidDoRendererWarmup());
+}
+
+}  // namespace

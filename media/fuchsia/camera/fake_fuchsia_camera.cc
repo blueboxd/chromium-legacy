@@ -149,12 +149,22 @@ struct FakeCameraStream::Buffer {
       release_fence_watch_controller;
 };
 
-FakeCameraStream::FakeCameraStream() : binding_(this) {}
+FakeCameraStream::FakeCameraStream()
+    : binding_(this),
+      sysmem_allocator_(base::ComponentContextForProcess()
+                            ->svc()
+                            ->Connect<fuchsia::sysmem::Allocator>()) {}
+
 FakeCameraStream::~FakeCameraStream() = default;
 
 void FakeCameraStream::Bind(
     fidl::InterfaceRequest<fuchsia::camera3::Stream> request) {
   binding_.Bind(std::move(request));
+}
+
+void FakeCameraStream::SetFirstBufferCollectionFailMode(
+    SysmemFailMode fail_mode) {
+  first_buffer_collection_fail_mode_ = fail_mode;
 }
 
 void FakeCameraStream::SetFakeResolution(gfx::Size resolution) {
@@ -282,6 +292,16 @@ void FakeCameraStream::SetBufferCollection(
       token->Duplicate(/*rights_attenuation_mask=*/0, local_token.NewRequest());
   EXPECT_EQ(status, ZX_OK);
 
+  fidl::InterfaceHandle<fuchsia::sysmem::BufferCollectionToken> failed_token;
+  if (first_buffer_collection_fail_mode_ == SysmemFailMode::kFailSync) {
+    // Create an additional token that's dropped before this method returns.
+    // This will cause sysmem to fail the collection, so the future attempt to
+    // Sync() the collection from the production code will fail as well.
+    zx_status_t status = token->Duplicate(/*rights_attenuation_mask=*/0,
+                                          failed_token.NewRequest());
+    EXPECT_EQ(status, ZX_OK);
+  }
+
   status = token->Sync();
   EXPECT_EQ(status, ZX_OK);
 
@@ -290,12 +310,8 @@ void FakeCameraStream::SetBufferCollection(
   SendBufferCollection();
 
   // Initialize the new collection using |local_token|.
-  auto allocator = base::ComponentContextForProcess()
-                       ->svc()
-                       ->Connect<fuchsia::sysmem::Allocator>();
-
-  allocator->BindSharedCollection(std::move(local_token),
-                                  buffer_collection_.NewRequest());
+  sysmem_allocator_->BindSharedCollection(std::move(local_token),
+                                          buffer_collection_.NewRequest());
   EXPECT_EQ(status, ZX_OK);
 
   buffer_collection_.set_error_handler(
@@ -321,6 +337,13 @@ void FakeCameraStream::SetBufferCollection(
   constraints.image_format_constraints[0].required_max_coded_height =
       kMaxFrameSize.height();
 
+  if (first_buffer_collection_fail_mode_ == SysmemFailMode::kFailAllocation) {
+    // Set color space to SRGB to trigger sysmem collection failure (SRGB is not
+    // compatible with NV12 pixel type).
+    constraints.image_format_constraints[0].color_space[0].type =
+        fuchsia::sysmem::ColorSpaceType::SRGB;
+  }
+
   buffer_collection_->SetConstraints(/*has_constraints=*/true,
                                      std::move(constraints));
   buffer_collection_->WaitForBuffersAllocated(
@@ -345,6 +368,16 @@ void FakeCameraStream::NotImplemented_(const std::string& name) {
 }
 
 void FakeCameraStream::OnBufferCollectionError(zx_status_t status) {
+  if (first_buffer_collection_fail_mode_ != SysmemFailMode::kNone) {
+    first_buffer_collection_fail_mode_ = SysmemFailMode::kNone;
+
+    // Create a new buffer collection to retry buffer allocation.
+    fuchsia::sysmem::BufferCollectionTokenPtr token;
+    sysmem_allocator_->AllocateSharedCollection(token.NewRequest());
+    SetBufferCollection(std::move(token));
+    return;
+  }
+
   ADD_FAILURE() << "BufferCollection failed.";
   if (wait_buffers_allocated_run_loop_)
     wait_buffers_allocated_run_loop_->Quit();

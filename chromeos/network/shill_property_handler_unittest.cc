@@ -76,12 +76,16 @@ class TestListener : public internal::ShillPropertyHandler::Listener {
     AddPropertyUpdate(shill::kIPConfigsProperty, ip_config_path);
   }
 
+  void CheckPortalListChanged(const std::string& check_portal_list) override {}
+
+  void HostnameChanged(const std::string& hostname) override {
+    hostname_ = hostname;
+  }
+
   void TechnologyListChanged() override {
     VLOG(1) << "TechnologyListChanged.";
     ++technology_list_updates_;
   }
-
-  void CheckPortalListChanged(const std::string& check_portal_list) override {}
 
   void ManagedStateListChanged(ManagedState::ManagedType type) override {
     VLOG(1) << "ManagedStateListChanged: " << GetTypeString(type);
@@ -107,6 +111,7 @@ class TestListener : public internal::ShillPropertyHandler::Listener {
     list_updates_.clear();
     technology_list_updates_ = 0;
   }
+  std::string hostname() { return hostname_; }
   int errors() { return errors_; }
 
  private:
@@ -152,6 +157,7 @@ class TestListener : public internal::ShillPropertyHandler::Listener {
   // Map of list-type -> list update counts
   std::map<std::string, int> list_updates_;
   int technology_list_updates_;
+  std::string hostname_;
   int errors_;
 };
 
@@ -284,6 +290,14 @@ TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerStub) {
             listener_->entries(shill::kServiceCompleteListProperty).size());
 
   EXPECT_EQ(0, listener_->errors());
+}
+
+TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerHostnameChanged) {
+  EXPECT_TRUE(listener_->hostname().empty());
+  const char kTestHostname[] = "Test Hostname";
+  shill_property_handler_->SetHostname(kTestHostname);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(listener_->hostname(), kTestHostname);
 }
 
 TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerTechnologyChanged) {

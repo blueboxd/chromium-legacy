@@ -26,6 +26,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::ByRef;
+using ::testing::Eq;
 using ::testing::Return;
 using ::testing::UnorderedElementsAre;
 
@@ -49,8 +50,9 @@ class MockOptimizationGuideHintsManager : public OptimizationGuideHintsManager {
                                       /*top_host_provider=*/nullptr,
                                       /*url_loader_factory=*/nullptr) {}
   ~MockOptimizationGuideHintsManager() override = default;
-  MOCK_METHOD3(CanApplyOptimizationAsync,
+  MOCK_METHOD4(CanApplyOptimizationAsync,
                void(const GURL&,
+                    const base::Optional<int64_t>&,
                     optimization_guide::proto::OptimizationType,
                     optimization_guide::OptimizationGuideDecisionCallback));
 };
@@ -168,10 +170,10 @@ TEST_F(OptimizationGuideBridgeTest, CanApplyOptimizationHasHint) {
   metadata.set_performance_hints_metadata(hints_metadata);
   EXPECT_CALL(
       *optimization_guide_hints_manager_,
-      CanApplyOptimizationAsync(GURL("https://example.com/"),
+      CanApplyOptimizationAsync(GURL("https://example.com/"), Eq(base::nullopt),
                                 optimization_guide::proto::PERFORMANCE_HINTS,
                                 base::test::IsNotNullCallback()))
-      .WillOnce(base::test::RunOnceCallback<2>(
+      .WillOnce(base::test::RunOnceCallback<3>(
           optimization_guide::OptimizationGuideDecision::kTrue,
           ByRef(metadata)));
 

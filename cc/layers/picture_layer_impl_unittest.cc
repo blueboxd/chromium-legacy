@@ -162,6 +162,7 @@ class PictureLayerImplTest : public TestLayerTreeHostBase {
     gfx::Transform scale_transform;
     scale_transform.Scale(ideal_contents_scale, ideal_contents_scale);
     layer->draw_properties().screen_space_transform = scale_transform;
+    layer->draw_properties().target_space_transform = scale_transform;
     layer->set_contributes_to_drawn_render_surface(true);
     DCHECK_EQ(layer->GetIdealContentsScale(), ideal_contents_scale);
     layer->layer_tree_impl()->property_trees()->SetAnimationScalesForTesting(
@@ -4259,36 +4260,38 @@ void OcclusionTrackingPictureLayerImplTest::TestOcclusionForScale(
   host_impl()->active_tree()->SetDeviceViewportRect(gfx::Rect(viewport_size));
 
   SetupPendingTreeWithFixedTileSize(pending_raster_source, tile_size, Region());
-  ASSERT_TRUE(pending_layer()->CanHaveTilings());
 
-  LayerImpl* layer1 = AddLayer<LayerImpl>(host_impl()->pending_tree());
+  ActivateTree();
+
+  LayerImpl* layer1 = AddLayer<LayerImpl>(host_impl()->active_tree());
   layer1->SetBounds(layer_bounds);
   layer1->SetDrawsContent(true);
   layer1->SetContentsOpaque(true);
-  CopyProperties(pending_layer(), layer1);
+  CopyProperties(active_layer(), layer1);
   layer1->SetOffsetToTransformParent(occluding_layer_position);
 
-  pending_layer()->SetContentsScaleForTesting(scale);
-  pending_layer()->tilings()->RemoveAllTilings();
+  ASSERT_TRUE(active_layer()->CanHaveTilings());
+  active_layer()->SetContentsScaleForTesting(scale);
+  active_layer()->tilings()->RemoveAllTilings();
   float low_res_factor = host_impl()->settings().low_res_contents_scale_factor;
-  pending_layer()
+  active_layer()
       ->AddTiling(gfx::AxisTransform2d(low_res_factor, gfx::Vector2dF()))
       ->set_resolution(LOW_RESOLUTION);
-  pending_layer()
+  active_layer()
       ->AddTiling(gfx::AxisTransform2d(scale, gfx::Vector2dF()))
       ->set_resolution(HIGH_RESOLUTION);
 
-  ASSERT_EQ(2u, pending_layer()->num_tilings());
+  ASSERT_EQ(2u, active_layer()->num_tilings());
 
   host_impl()->AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(1));
   // UpdateDrawProperties with the occluding layer.
-  UpdateDrawProperties(host_impl()->pending_tree());
+  UpdateDrawProperties(host_impl()->active_tree());
 
-  ASSERT_EQ(2u, pending_layer()->num_tilings());
+  ASSERT_EQ(2u, active_layer()->num_tilings());
 
   int occluded_tile_count = 0;
-  for (size_t i = 0; i < pending_layer()->num_tilings(); ++i) {
-    PictureLayerTiling* tiling = pending_layer()->tilings()->tiling_at(i);
+  for (size_t i = 0; i < active_layer()->num_tilings(); ++i) {
+    PictureLayerTiling* tiling = active_layer()->tilings()->tiling_at(i);
     auto prioritized_tiles =
         tiling->UpdateAndGetAllPrioritizedTilesForTesting();
     std::vector<Tile*> tiles = tiling->AllTilesForTesting();
@@ -5756,7 +5759,6 @@ TEST_F(LegacySWPictureLayerImplTest,
   gfx::Size layer_bounds(200, 200);
   gfx::Size tile_size(256, 256);
   SetupDefaultTreesWithFixedTileSize(layer_bounds, tile_size, Region());
-  pending_layer()->SetUseTransformedRasterization(true);
 
   // Start with scale & translation of * 2.25 + (0.25, 0.5).
   SetupDrawProperties(pending_layer(), 2.25f, 1.5f, 1.f, 2.25f, 2.25f, false);
@@ -5821,8 +5823,6 @@ TEST_F(LegacySWPictureLayerImplTest,
   gfx::Size layer_bounds(200, 200);
   gfx::Size tile_size(256, 256);
   SetupDefaultTreesWithFixedTileSize(layer_bounds, tile_size, Region());
-  active_layer()->SetUseTransformedRasterization(true);
-  pending_layer()->SetUseTransformedRasterization(true);
 
   // Start with scale & translation of * 2.25 + (0.25, 0.5) on the active layer.
   SetupDrawProperties(active_layer(), 2.25f, 1.5f, 1.f, 2.25f, 2.25f, false);
@@ -6023,24 +6023,52 @@ TEST_F(LegacySWPictureLayerImplTest,
   pending_layer()->SetBackgroundColor(SK_ColorWHITE);
   pending_layer()->SetContentsOpaque(true);
   pending_layer()->SetOffsetToTransformParent(gfx::Vector2dF(0.2, 0.3));
-  EXPECT_TRUE(pending_layer()->contents_opaque());
-  EXPECT_TRUE(pending_layer()->contents_opaque_for_text());
-  EXPECT_EQ(LCDTextDisallowedReason::kNonIntegralXOffset,
-            pending_layer()->ComputeLCDTextDisallowedReasonForTesting());
-
-  pending_layer()->SetUseTransformedRasterization(true);
+  host_impl()->pending_tree()->set_needs_update_draw_properties();
+  UpdateDrawProperties(host_impl()->pending_tree());
   EXPECT_TRUE(pending_layer()->contents_opaque());
   EXPECT_TRUE(pending_layer()->contents_opaque_for_text());
   EXPECT_EQ(LCDTextDisallowedReason::kNone,
             pending_layer()->ComputeLCDTextDisallowedReasonForTesting());
+  ASSERT_TRUE(pending_layer()->HighResTiling());
+  EXPECT_EQ(gfx::Vector2dF(0.2, 0.3),
+            pending_layer()->HighResTiling()->raster_transform().translation());
 
-  // Simulate another push from main-thread with the same values.
-  pending_layer()->SetContentsOpaque(true);
-  pending_layer()->SetUseTransformedRasterization(true);
+  // Adding will-change:transform will keep the current raster translation.
+  pending_layer()->SetHasWillChangeTransformHint(true);
+  host_impl()->pending_tree()->set_needs_update_draw_properties();
+  UpdateDrawProperties(host_impl()->pending_tree());
+  EXPECT_TRUE(pending_layer()->contents_opaque());
+  EXPECT_TRUE(pending_layer()->contents_opaque_for_text());
+  EXPECT_EQ(LCDTextDisallowedReason::kWillChangeTransform,
+            pending_layer()->ComputeLCDTextDisallowedReasonForTesting());
+  ASSERT_TRUE(pending_layer()->HighResTiling());
+  EXPECT_EQ(gfx::Vector2dF(0.2, 0.3),
+            pending_layer()->HighResTiling()->raster_transform().translation());
+
+  // We should not update raster translation when there is
+  // will-change:transform.
+  pending_layer()->SetOffsetToTransformParent(gfx::Vector2dF(0.4, 0.5));
+  host_impl()->pending_tree()->set_needs_update_draw_properties();
+  UpdateDrawProperties(host_impl()->pending_tree());
+  EXPECT_TRUE(pending_layer()->contents_opaque());
+  EXPECT_TRUE(pending_layer()->contents_opaque_for_text());
+  EXPECT_EQ(LCDTextDisallowedReason::kWillChangeTransform,
+            pending_layer()->ComputeLCDTextDisallowedReasonForTesting());
+  ASSERT_TRUE(pending_layer()->HighResTiling());
+  EXPECT_EQ(gfx::Vector2dF(0.2, 0.3),
+            pending_layer()->HighResTiling()->raster_transform().translation());
+
+  // Removing will-change:transform will update raster translation.
+  pending_layer()->SetHasWillChangeTransformHint(false);
+  host_impl()->pending_tree()->set_needs_update_draw_properties();
+  UpdateDrawProperties(host_impl()->pending_tree());
   EXPECT_TRUE(pending_layer()->contents_opaque());
   EXPECT_TRUE(pending_layer()->contents_opaque_for_text());
   EXPECT_EQ(LCDTextDisallowedReason::kNone,
             pending_layer()->ComputeLCDTextDisallowedReasonForTesting());
+  ASSERT_TRUE(pending_layer()->HighResTiling());
+  EXPECT_EQ(gfx::Vector2dF(0.4, 0.5),
+            pending_layer()->HighResTiling()->raster_transform().translation());
 }
 
 enum {
@@ -6062,34 +6090,35 @@ class LCDTextTest : public PictureLayerImplTest,
   void SetUp() override {
     PictureLayerImplTest::SetUp();
 
-    SetupDefaultTreesWithInvalidation(gfx::Size(200, 200), Region());
+    SetupPendingTree(FakeRasterSource::CreateFilled(gfx::Size(200, 200)));
+
     tree_ = host_impl()->pending_tree();
-    root_ = tree_->root_layer();
-    child_ = AddLayer<PictureLayerImpl>(tree_);
-    grand_child_ = AddLayer<PictureLayerImpl>(tree_);
-    tree_->SetElementIdsForTesting();
+    layer_ = pending_layer();
+    descendant_ = AddLayer<PictureLayerImpl>(tree_);
 
-    root_->SetContentsOpaque(true);
-    child_->SetContentsOpaque(true);
-    grand_child_->SetContentsOpaque(true);
+    layer_->SetContentsOpaque(true);
+    layer_->SetDrawsContent(true);
+    layer_->SetBounds(gfx::Size(200, 200));
+    ASSERT_TRUE(layer_->CanHaveTilings());
 
-    root_->SetDrawsContent(true);
-    child_->SetDrawsContent(true);
-    grand_child_->SetDrawsContent(true);
+    descendant_->SetContentsOpaque(true);
+    descendant_->SetDrawsContent(true);
+    descendant_->SetBounds(gfx::Size(200, 200));
+    Region invalidation;
+    descendant_->UpdateRasterSource(
+        FakeRasterSource::CreateFilled(gfx::Size(200, 200)), &invalidation,
+        nullptr, nullptr);
+    ASSERT_TRUE(layer_->CanHaveTilings());
 
-    root_->SetBounds(gfx::Size(1, 1));
-    child_->SetBounds(gfx::Size(1, 1));
-    grand_child_->SetBounds(gfx::Size(1, 1));
-
-    CopyProperties(root_, child_);
-    CreateTransformNode(child_);
-    CreateEffectNode(child_).render_surface_reason = RenderSurfaceReason::kTest;
-    CopyProperties(child_, grand_child_);
-    CreateTransformNode(grand_child_);
-    CreateEffectNode(grand_child_);
+    CreateTransformNode(layer_);
+    CreateEffectNode(layer_);
+    CopyProperties(layer_, descendant_);
+    CreateTransformNode(descendant_);
+    CreateEffectNode(descendant_);
   }
 
   void CheckCanUseLCDText(LCDTextDisallowedReason expected_disallowed_reason,
+                          const char* description,
                           PictureLayerImpl* layer = nullptr) {
     UpdateDrawProperties(tree_);
 
@@ -6098,21 +6127,21 @@ class LCDTextTest : public PictureLayerImplTest,
     else if (!(GetParam() & kCanUseLCDText))
       expected_disallowed_reason = LCDTextDisallowedReason::kSetting;
 
+    SCOPED_TRACE(description);
     if (layer) {
       EXPECT_EQ(expected_disallowed_reason,
                 layer->ComputeLCDTextDisallowedReasonForTesting());
     } else {
       EXPECT_EQ(expected_disallowed_reason,
-                child_->ComputeLCDTextDisallowedReasonForTesting());
+                layer_->ComputeLCDTextDisallowedReasonForTesting());
       EXPECT_EQ(expected_disallowed_reason,
-                grand_child_->ComputeLCDTextDisallowedReasonForTesting());
+                descendant_->ComputeLCDTextDisallowedReasonForTesting());
     }
   }
 
   LayerTreeImpl* tree_ = nullptr;
-  LayerImpl* root_ = nullptr;
-  PictureLayerImpl* child_ = nullptr;
-  PictureLayerImpl* grand_child_ = nullptr;
+  PictureLayerImpl* layer_ = nullptr;
+  PictureLayerImpl* descendant_ = nullptr;
 };
 
 INSTANTIATE_TEST_SUITE_P(All,
@@ -6124,104 +6153,173 @@ INSTANTIATE_TEST_SUITE_P(All,
                                              kLayersAlwaysAllowedLCDText));
 
 TEST_P(LCDTextTest, IdentityTransform) {
-  CheckCanUseLCDText(LCDTextDisallowedReason::kNone);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNone, "identity transform");
 }
 
 TEST_P(LCDTextTest, IntegralTransform) {
   gfx::Transform integral_translation;
   integral_translation.Translate(1.0, 2.0);
-  SetTransform(child_, integral_translation);
+  SetTransform(layer_, integral_translation);
 
-  CheckCanUseLCDText(LCDTextDisallowedReason::kNone);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNone, "integral transform");
 }
 
 TEST_P(LCDTextTest, NonIntegralTranslation) {
   // Non-integral translation.
   gfx::Transform non_integral_translation;
   non_integral_translation.Translate(1.5, 2.5);
-  SetTransform(child_, non_integral_translation);
-  CheckCanUseLCDText(LCDTextDisallowedReason::kNonIntegralTranslation);
+  SetTransform(layer_, non_integral_translation);
+  // We can use LCD-text as raster translation can align the text to physical
+  // pixels for fragtional transform in the render target.
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNone,
+                     "non-integeral translation");
 
-  SetTransform(child_, gfx::Transform());
-  CheckCanUseLCDText(LCDTextDisallowedReason::kNone);
+  SetTransform(layer_, gfx::Transform());
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNone, "identity transform");
+}
+
+TEST_P(LCDTextTest, NonIntegralTranslationAboveRenderTarget) {
+  // Non-integral translation above render target.
+  gfx::Transform non_integral_translation;
+  non_integral_translation.Translate(1.5, 2.5);
+  SetTransform(layer_, non_integral_translation);
+  SetRenderSurfaceReason(layer_, RenderSurfaceReason::kTest);
+  // Raster translation can't handle fractional transform above the render
+  // target, so LCD text is not allowed.
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNonIntegralTranslation,
+                     "non-integeral translation above render target");
+  SetTransform(layer_, gfx::Transform());
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNone, "identity transform");
 }
 
 TEST_P(LCDTextTest, NonTranslation) {
   // Rotation.
   gfx::Transform rotation;
   rotation.Rotate(10.0);
-  SetTransform(child_, rotation);
-  CheckCanUseLCDText(LCDTextDisallowedReason::kNonIntegralTranslation);
+  SetTransform(layer_, rotation);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNonIntegralTranslation,
+                     "Rotation transform");
 
-  // Scale.
+  // Scale. LCD text is allowed.
   gfx::Transform scale;
   scale.Scale(2.0, 2.0);
-  SetTransform(child_, scale);
-  CheckCanUseLCDText(LCDTextDisallowedReason::kNonIntegralTranslation);
+  SetTransform(layer_, scale);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNone, "Scale transform");
 
   // Skew.
   gfx::Transform skew;
   skew.Skew(10.0, 0.0);
-  SetTransform(child_, skew);
-  CheckCanUseLCDText(LCDTextDisallowedReason::kNonIntegralTranslation);
+  SetTransform(layer_, skew);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNonIntegralTranslation,
+                     "Skew transform");
 
-  SetTransform(child_, gfx::Transform());
-  CheckCanUseLCDText(LCDTextDisallowedReason::kNone);
+  SetTransform(layer_, gfx::Transform());
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNone, "identity transform");
+}
+
+TEST_P(LCDTextTest, NonTranslationAboveRenderTarget) {
+  SetRenderSurfaceReason(layer_, RenderSurfaceReason::kTest);
+
+  // Rotation.
+  gfx::Transform rotation;
+  rotation.Rotate(10.0);
+  SetTransform(layer_, rotation);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNonIntegralTranslation,
+                     "rotation transform above render target");
+
+  // Scale. LCD-text is allowed.
+  gfx::Transform scale;
+  scale.Scale(2.0, 2.0);
+  // Apply perspective to prevent the scale from applying to the layers below
+  // the render target.
+  scale.ApplyPerspectiveDepth(10);
+  SetTransform(layer_, scale);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNonIntegralTranslation,
+                     "scale transform above render target");
+
+  // Skew.
+  gfx::Transform skew;
+  skew.Skew(10.0, 0.0);
+  SetTransform(layer_, skew);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNonIntegralTranslation,
+                     "skew transform above render target");
+
+  SetTransform(layer_, gfx::Transform());
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNone, "identity transform");
 }
 
 TEST_P(LCDTextTest, Opacity) {
   // LCD-text is allowed with opacity paint property.
-  SetOpacity(child_, 0.5f);
-  CheckCanUseLCDText(LCDTextDisallowedReason::kNone);
-  SetOpacity(child_, 1.f);
-  CheckCanUseLCDText(LCDTextDisallowedReason::kNone);
+  SetOpacity(layer_, 0.5f);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNone, "opacity: 0.5");
+  SetOpacity(layer_, 1.f);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNone, "opacity: 1.0");
 }
 
 TEST_P(LCDTextTest, ContentsNotOpaque) {
   // Non-opaque content and opaque background.
-  child_->SetContentsOpaque(false);
-  child_->SetBackgroundColor(SK_ColorGREEN);
-  CheckCanUseLCDText(LCDTextDisallowedReason::kContentsNotOpaque, child_);
-  CheckCanUseLCDText(LCDTextDisallowedReason::kNone, grand_child_);
+  layer_->SetContentsOpaque(false);
+  layer_->SetBackgroundColor(SK_ColorGREEN);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kContentsNotOpaque,
+                     "contents not opaque", layer_);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNone,
+                     "descedant of contents not opaque", descendant_);
 
   // Non-opaque content and non-opaque background.
-  child_->SetBackgroundColor(SkColorSetARGB(128, 255, 255, 255));
+  layer_->SetBackgroundColor(SkColorSetARGB(128, 255, 255, 255));
   CheckCanUseLCDText(LCDTextDisallowedReason::kBackgroundColorNotOpaque,
-                     child_);
-  CheckCanUseLCDText(LCDTextDisallowedReason::kNone, grand_child_);
+                     "background not opaque", layer_);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNone,
+                     "descendant of contents not opaque", descendant_);
 
-  child_->SetContentsOpaque(true);
-  CheckCanUseLCDText(LCDTextDisallowedReason::kNone);
+  layer_->SetContentsOpaque(true);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNone, "contents opaque");
 }
 
 TEST_P(LCDTextTest, WillChangeTransform) {
-  child_->SetHasWillChangeTransformHint(true);
-  CheckCanUseLCDText(LCDTextDisallowedReason::kWillChangeTransform, child_);
+  layer_->SetHasWillChangeTransformHint(true);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kWillChangeTransform,
+                     "will-change:transform", layer_);
   // TODO(crbug.com/1114504): will-change:transform should apply to descendants.
-  CheckCanUseLCDText(LCDTextDisallowedReason::kNone, grand_child_);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNone,
+                     "descendant of will-change: transform", descendant_);
 
-  child_->SetHasWillChangeTransformHint(false);
-  CheckCanUseLCDText(LCDTextDisallowedReason::kNone);
+  layer_->SetHasWillChangeTransformHint(false);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNone,
+                     "no will-change: transform");
 }
 
 TEST_P(LCDTextTest, Filter) {
   FilterOperations blur_filter;
   blur_filter.Append(FilterOperation::CreateBlurFilter(4.0f));
-  SetFilter(child_, blur_filter);
-  CheckCanUseLCDText(LCDTextDisallowedReason::kPixelOrColorEffect);
+  SetFilter(layer_, blur_filter);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kPixelOrColorEffect, "filter");
 
-  SetFilter(child_, FilterOperations());
-  CheckCanUseLCDText(LCDTextDisallowedReason::kNone);
+  SetFilter(layer_, FilterOperations());
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNone, "no filter");
 }
 
 TEST_P(LCDTextTest, ContentsOpaqueForText) {
-  child_->SetContentsOpaque(false);
-  child_->SetBackgroundColor(SK_ColorGREEN);
-  child_->SetContentsOpaqueForText(true);
-  CheckCanUseLCDText(LCDTextDisallowedReason::kNone, child_);
+  layer_->SetContentsOpaque(false);
+  layer_->SetBackgroundColor(SK_ColorGREEN);
+  layer_->SetContentsOpaqueForText(true);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNone, "contents opaque for text",
+                     layer_);
 
-  child_->SetContentsOpaqueForText(false);
-  CheckCanUseLCDText(LCDTextDisallowedReason::kContentsNotOpaque, child_);
+  layer_->SetContentsOpaqueForText(false);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kContentsNotOpaque,
+                     "contents not opaque for text", layer_);
+}
+
+TEST_P(LCDTextTest, TransformAnimation) {
+  GetTransformNode(layer_)->has_potential_animation = true;
+  SetLocalTransformChanged(layer_);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kTransformAnimation,
+                     "transform animation");
+
+  GetTransformNode(layer_)->has_potential_animation = false;
+  SetLocalTransformChanged(layer_);
+  CheckCanUseLCDText(LCDTextDisallowedReason::kNone, "no transform animation");
 }
 
 }  // namespace

@@ -29,8 +29,7 @@ class FaviconBackend;
 namespace weblayer {
 
 // FaviconBackendWrapper runs on a background task-runner and owns the database
-// side of favicons. This class largely delegates to favicon::FaviconBackend
-// and has very little logic.
+// side of favicons. This class largely delegates to favicon::FaviconBackend.
 class FaviconBackendWrapper
     : public base::RefCountedDeleteOnSequence<FaviconBackendWrapper>,
       public favicon::FaviconBackendDelegate {
@@ -82,9 +81,14 @@ class FaviconBackendWrapper
  private:
   friend class base::RefCountedDeleteOnSequence<FaviconBackendWrapper>;
   friend class base::DeleteHelper<FaviconBackendWrapper>;
+  friend class FaviconBackendWrapperTest;
+
   ~FaviconBackendWrapper() override;
 
   void Commit();
+
+  // Called to expire (remove) out of date icons and restart the timer.
+  void OnExpireTimerFired();
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
@@ -96,8 +100,23 @@ class FaviconBackendWrapper
   // the database this will be null.
   std::unique_ptr<favicon::FaviconBackend> favicon_backend_;
 
+  // Timer used to remove items from the database that are likely no longer
+  // needed.
+  base::OneShotTimer expire_timer_;
+
   base::FilePath db_path_;
 };
+
+// These values are here only for tests.
+
+// Amount of time before favicons are removed. That is, any favicons downloaded
+// before this amount of time are removed.
+constexpr base::TimeDelta kTimeDeltaWhenEntriesAreRemoved =
+    base::TimeDelta::FromDays(30);
+
+// See comment near kMaxNumberOfEntriesToRemoveAtATime for details on this.
+constexpr base::TimeDelta kTimeDeltaForRunningExpireWithRemainingWork =
+    base::TimeDelta::FromMinutes(2);
 
 }  // namespace weblayer
 

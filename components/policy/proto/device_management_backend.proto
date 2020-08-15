@@ -2441,6 +2441,9 @@ message RemoteCommand {
     // Send a command or get an update from an existing diagnostics routine.
     DEVICE_GET_DIAGNOSTIC_ROUTINE_UPDATE = 11;
 
+    // Clear the cache and cookies associated with a given profile.
+    BROWSER_CLEAR_BROWSING_DATA = 12;
+
     // Please update metrics after adding a new item - see the comment above.
   }
 

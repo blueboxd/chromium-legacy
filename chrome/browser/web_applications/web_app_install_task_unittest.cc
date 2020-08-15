@@ -876,17 +876,17 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfo_Success) {
   install_task_->InstallWebAppFromInfo(
       std::move(web_app_info), ForInstallableSite::kYes,
       WebappInstallSource::MENU_BROWSER_TAB,
-      base::BindLambdaForTesting([&](const AppId& installed_app_id,
-                                     InstallResultCode code) {
-        EXPECT_EQ(InstallResultCode::kSuccessNewInstall, code);
-        EXPECT_EQ(app_id, installed_app_id);
+      base::BindLambdaForTesting(
+          [&](const AppId& installed_app_id, InstallResultCode code) {
+            EXPECT_EQ(InstallResultCode::kSuccessNewInstall, code);
+            EXPECT_EQ(app_id, installed_app_id);
 
-        std::unique_ptr<WebApplicationInfo> final_web_app_info =
-            test_install_finalizer().web_app_info();
-        EXPECT_TRUE(final_web_app_info->open_as_window);
+            std::unique_ptr<WebApplicationInfo> final_web_app_info =
+                test_install_finalizer().web_app_info();
+            EXPECT_TRUE(final_web_app_info->open_as_window);
 
-        run_loop.Quit();
-      }));
+            run_loop.Quit();
+          }));
 
   run_loop.Run();
 }
@@ -908,26 +908,26 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfo_GenerateIcons) {
   install_task_->InstallWebAppFromInfo(
       std::move(web_app_info), ForInstallableSite::kYes,
       WebappInstallSource::ARC,
-      base::BindLambdaForTesting(
-          [&](const AppId& installed_app_id, InstallResultCode code) {
-            std::unique_ptr<WebApplicationInfo> final_web_app_info =
-                test_install_finalizer().web_app_info();
+      base::BindLambdaForTesting([&](const AppId& installed_app_id,
+                                     InstallResultCode code) {
+        std::unique_ptr<WebApplicationInfo> final_web_app_info =
+            test_install_finalizer().web_app_info();
 
-            // Make sure that icons have been generated for all sub sizes.
-            EXPECT_TRUE(ContainsOneIconOfEachSize(
-                final_web_app_info->icon_bitmaps_any));
+        // Make sure that icons have been generated for all sub sizes.
+        EXPECT_TRUE(
+            ContainsOneIconOfEachSize(final_web_app_info->icon_bitmaps_any));
 
-            // Make sure they're all derived from the yellow icon.
-            for (const std::pair<const SquareSizePx, SkBitmap>& icon :
-                 final_web_app_info->icon_bitmaps_any) {
-              EXPECT_FALSE(icon.second.drawsNothing());
-              EXPECT_EQ(SK_ColorYELLOW, icon.second.getColor(0, 0));
-            }
+        // Make sure they're all derived from the yellow icon.
+        for (const std::pair<const SquareSizePx, SkBitmap>& icon :
+             final_web_app_info->icon_bitmaps_any) {
+          EXPECT_FALSE(icon.second.drawsNothing());
+          EXPECT_EQ(SK_ColorYELLOW, icon.second.getColor(0, 0));
+        }
 
-            EXPECT_FALSE(final_web_app_info->open_as_window);
+        EXPECT_FALSE(final_web_app_info->open_as_window);
 
-            run_loop.Quit();
-          }));
+        run_loop.Quit();
+      }));
 
   run_loop.Run();
 }
@@ -944,24 +944,24 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromManifestWithFallback_NoIcons) {
       web_contents(), /*force_shortcut_app=*/true,
       WebappInstallSource::MENU_BROWSER_TAB,
       base::BindOnce(TestAcceptDialogCallback),
-      base::BindLambdaForTesting(
-          [&](const AppId& installed_app_id, InstallResultCode code) {
-            EXPECT_EQ(InstallResultCode::kSuccessNewInstall, code);
+      base::BindLambdaForTesting([&](const AppId& installed_app_id,
+                                     InstallResultCode code) {
+        EXPECT_EQ(InstallResultCode::kSuccessNewInstall, code);
 
-            std::unique_ptr<WebApplicationInfo> final_web_app_info =
-                test_install_finalizer().web_app_info();
-            // Make sure that icons have been generated for all sub sizes.
-            EXPECT_TRUE(ContainsOneIconOfEachSize(
-                final_web_app_info->icon_bitmaps_any));
-            for (const std::pair<const SquareSizePx, SkBitmap>& icon :
-                 final_web_app_info->icon_bitmaps_any) {
-              EXPECT_FALSE(icon.second.drawsNothing());
-            }
+        std::unique_ptr<WebApplicationInfo> final_web_app_info =
+            test_install_finalizer().web_app_info();
+        // Make sure that icons have been generated for all sub sizes.
+        EXPECT_TRUE(
+            ContainsOneIconOfEachSize(final_web_app_info->icon_bitmaps_any));
+        for (const std::pair<const SquareSizePx, SkBitmap>& icon :
+             final_web_app_info->icon_bitmaps_any) {
+          EXPECT_FALSE(icon.second.drawsNothing());
+        }
 
-            EXPECT_TRUE(final_web_app_info->icon_infos.empty());
+        EXPECT_TRUE(final_web_app_info->icon_infos.empty());
 
-            run_loop.Quit();
-          }));
+        run_loop.Quit();
+      }));
 
   run_loop.Run();
 }

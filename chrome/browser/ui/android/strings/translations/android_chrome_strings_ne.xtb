@@ -415,6 +415,7 @@
 <translation id="4314815835985389558">सिंक व्यवस्थापन गर्नुहोस्</translation>
 <translation id="4320177379694898372">कुनै इन्टरनेट जडान छैन</translation>
 <translation id="4321739720395210191">तपाईंको क्यामेरा खोल्न सकिएन। आफ्नो यन्त्र पुनः सुरु गरी फेरि प्रयास गर्नुहोस्।</translation>
+<translation id="4335835283689002019">Safe Browsing अफ छ</translation>
 <translation id="4351244548802238354">सम्बाद बन्द गर्नुहोस्</translation>
 <translation id="4378154925671717803">फोन</translation>
 <translation id="4384468725000734951">खोजीका लागि Sogou प्रयोग गर्दै</translation>
@@ -453,6 +454,7 @@
 <translation id="4662373422909645029">उपनाममा अङ्क प्रयोग गर्न पाइँदैन</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> पुस्तक चिन्हहरू मेटाइयो</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> लाई तपाईँको गृहपृष्ठ स्क्रिनमा थपियो</translation>
+<translation id="4668347365065281350">कुकी तथा यन्त्रमा भण्डारण गरिएका अन्य डेटासहित साइटहरूले भण्डारण गरेका सबै डेटा</translation>
 <translation id="4684427112815847243">सबै सिंक गर्नुहोस्</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 र <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> थप}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 र <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> थप}}</translation>
 <translation id="4696983787092045100">आफ्ना यन्त्रहरूमा पाठ सन्देश पठाउनुहोस्</translation>
@@ -608,6 +610,7 @@
 <translation id="5763382633136178763">इनकग्निटो ट्याबहरू</translation>
 <translation id="5763514718066511291">यस एपको URL प्रतिलिपि गर्न ट्याप गर्नुहोस्</translation>
 <translation id="5765780083710877561">विवरण:</translation>
+<translation id="5776970333778123608">अमहत्त्वपूर्ण डेटा</translation>
 <translation id="5793665092639000975"><ph name="SPACE_AVAILABLE" /> मध्ये <ph name="SPACE_USED" /> प्रयोग गरिँदै</translation>
 <translation id="5795872532621730126">खोज्नुहोस् तथा ब्राउज गर्नुहोस्</translation>
 <translation id="5797070761912323120">Google ले खोज, विज्ञापन र Google का अन्य सेवाहरूलाई वैयक्तीकृत गर्न तपाईंको इतिहाससम्बन्धी जानकारी प्रयोग गर्न सक्छ</translation>
@@ -1038,6 +1041,7 @@
 <translation id="9050666287014529139">पासफ्रेज</translation>
 <translation id="9063523880881406963">अनुरोध डेस्कटप साइट बन्द गर्नुहोस्</translation>
 <translation id="9065203028668620118">सम्पादन गर्नुहोस</translation>
+<translation id="9065383040763568503">Chrome लाई महत्त्वपूर्ण छैन जस्तो लागेको भण्डारण गरिएका डेटा (जस्तै सेटिङ सुरक्षित नगरिएका साइट वा तपाईंले खासै नखोल्ने साइटका भण्डारण गरिएका डेटा)</translation>
 <translation id="9069543557624799859"><ph name="TIME" /> मा डाउनलोड सुरु हुने छ।</translation>
 <translation id="9070377983101773829">आवाज खोजी सुरु गर्नुहोस्</translation>
 <translation id="9074336505530349563">Google ले सिफारिस गरेका वैयक्तीकृत सामग्री प्राप्त गर्न साइन इन गरी सिंक गर्ने सुविधा सक्रिय गर्नुहोस्।</translation>

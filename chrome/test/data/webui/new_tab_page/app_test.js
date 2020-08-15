@@ -162,7 +162,7 @@ suite('NewTabPageAppTest', () => {
     // Assert.
     assertTrue(!!app.shadowRoot.querySelector('ntp-voice-search-overlay'));
     assertEquals(
-        newTabPage.mojom.VoiceSearchAction.ACTIVATE_SEARCH_BOX,
+        newTabPage.mojom.VoiceSearchAction.kActivateSearchBox,
         await testProxy.handler.whenCalled('onVoiceSearchAction'));
   });
 
@@ -179,7 +179,7 @@ suite('NewTabPageAppTest', () => {
     // Assert.
     assertTrue(!!app.shadowRoot.querySelector('ntp-voice-search-overlay'));
     assertEquals(
-        newTabPage.mojom.VoiceSearchAction.ACTIVATE_KEYBOARD,
+        newTabPage.mojom.VoiceSearchAction.kActivateKeyboard,
         await testProxy.handler.whenCalled('onVoiceSearchAction'));
 
     // Test other shortcut doesn't close voice search.
@@ -243,7 +243,7 @@ suite('NewTabPageAppTest', () => {
     test(`setting non-default theme ${allows} doodle`, async function() {
       // Arrange.
       const theme = createTheme();
-      theme.type = newTabPage.mojom.ThemeType.CHROME;
+      theme.type = newTabPage.mojom.ThemeType.kChrome;
 
       // Act.
       testProxy.callbackRouterRemote.setTheme(theme);

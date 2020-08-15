@@ -9,10 +9,9 @@
 
 #include "base/base64.h"
 #include "base/bind.h"
-#include "base/logging.h"
-#include "base/stl_util.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/lorgnette_manager_client.h"
+#include "chrome/browser/chromeos/scanning/lorgnette_scanner_manager.h"
+#include "chrome/browser/chromeos/scanning/lorgnette_scanner_manager_factory.h"
+#include "content/public/browser/browser_context.h"
 #include "third_party/cros_system_api/dbus/lorgnette/dbus-constants.h"
 
 namespace extensions {
@@ -24,7 +23,6 @@ namespace {
 // Error messages that can be included in a response when scanning fails.
 constexpr char kUserGestureRequiredError[] =
     "User gesture required to perform scan";
-constexpr char kListScannersError[] = "Failed to obtain list of scanners";
 constexpr char kNoScannersAvailableError[] = "No scanners available";
 constexpr char kUnsupportedMimeTypesError[] = "Unsupported MIME types";
 constexpr char kScanImageError[] = "Failed to scan image";
@@ -34,11 +32,6 @@ constexpr char kScannerImageMimeTypePng[] = "image/png";
 
 // The PNG image data URL prefix of a scanned image.
 constexpr char kPngImageDataUrlPrefix[] = "data:image/png;base64,";
-
-chromeos::LorgnetteManagerClient* GetLorgnetteManagerClient() {
-  DCHECK(chromeos::DBusThreadManager::IsInitialized());
-  return chromeos::DBusThreadManager::Get()->GetLorgnetteManagerClient();
-}
 
 }  // namespace
 
@@ -53,19 +46,16 @@ ExtensionFunction::ResponseAction DocumentScanScanFunction::Run() {
   if (!user_gesture())
     return RespondNow(Error(kUserGestureRequiredError));
 
-  GetLorgnetteManagerClient()->ListScanners(
-      base::BindOnce(&DocumentScanScanFunction::OnScannerListReceived, this));
+  chromeos::LorgnetteScannerManagerFactory::GetForBrowserContext(
+      browser_context())
+      ->GetScannerNames(
+          base::BindOnce(&DocumentScanScanFunction::OnNamesReceived, this));
   return did_respond() ? AlreadyResponded() : RespondLater();
 }
 
-void DocumentScanScanFunction::OnScannerListReceived(
-    base::Optional<lorgnette::ListScannersResponse> response) {
-  if (!response) {
-    Respond(Error(kListScannersError));
-    return;
-  }
-
-  if (response->scanners_size() == 0) {
+void DocumentScanScanFunction::OnNamesReceived(
+    std::vector<std::string> scanner_names) {
+  if (scanner_names.empty()) {
     Respond(Error(kNoScannersAvailableError));
     return;
   }
@@ -83,13 +73,14 @@ void DocumentScanScanFunction::OnScannerListReceived(
   // The first scanner supporting one of the requested MIME types used to be
   // selected. Since all of the scanners only support PNG, this results in
   // selecting the first scanner in the list.
-  const auto& scanner = response->scanners()[0];
+  const std::string& scanner_name = scanner_names[0];
   chromeos::LorgnetteManagerClient::ScanProperties properties;
   properties.mode = lorgnette::kScanPropertyModeColor;
-  GetLorgnetteManagerClient()->StartScan(
-      scanner.name(), properties,
-      base::BindOnce(&DocumentScanScanFunction::OnResultsReceived, this),
-      base::nullopt);
+  chromeos::LorgnetteScannerManagerFactory::GetForBrowserContext(
+      browser_context())
+      ->Scan(
+          scanner_name, properties,
+          base::BindOnce(&DocumentScanScanFunction::OnResultsReceived, this));
 }
 
 void DocumentScanScanFunction::OnResultsReceived(

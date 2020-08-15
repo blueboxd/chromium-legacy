@@ -97,16 +97,17 @@ VideoFrame* VideoFrame::Create(ImageBitmap* source,
                                       "No source was provided");
     return nullptr;
   }
-  gfx::Size size(source->width(), source->height());
-  gfx::Rect rect(size);
-  base::TimeDelta timestamp =
-      base::TimeDelta::FromMicroseconds(init->timestamp());
 
-  if (!source) {
+  if (!source->BitmapImage()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "Invalid source state");
     return nullptr;
   }
+
+  gfx::Size size(source->width(), source->height());
+  gfx::Rect rect(size);
+  base::TimeDelta timestamp =
+      base::TimeDelta::FromMicroseconds(init->timestamp());
 
   auto sk_image =
       source->BitmapImage()->PaintImageForCurrentFrame().GetSkImage();
@@ -265,7 +266,20 @@ base::Optional<uint64_t> VideoFrame::duration() const {
 }
 
 void VideoFrame::destroy() {
+  // TODO(tguilbert): Add a warning when destroying already destroyed frames?
   handle_->Invalidate();
+}
+
+VideoFrame* VideoFrame::clone(ExceptionState& exception_state) {
+  auto frame = handle_->frame();
+
+  if (!frame) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "Cannot clone destroyed VideoFrame.");
+    return nullptr;
+  }
+
+  return MakeGarbageCollected<VideoFrame>(std::move(frame));
 }
 
 scoped_refptr<VideoFrame::Handle> VideoFrame::handle() {

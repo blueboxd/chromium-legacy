@@ -1398,6 +1398,9 @@ std::string QuicTestPacketMaker::GenerateHttp3SettingsData() {
 }
 
 std::string QuicTestPacketMaker::GenerateHttp3MaxPushIdData() {
+  if (max_allowed_push_id_ == 0) {
+    return "";
+  }
   quic::MaxPushIdFrame max_push_id;
   max_push_id.push_id = max_allowed_push_id_;
   std::unique_ptr<char[]> buffer;

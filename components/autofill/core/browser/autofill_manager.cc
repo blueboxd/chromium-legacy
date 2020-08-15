@@ -60,6 +60,7 @@
 #include "components/autofill/core/browser/geo/phone_number_i18n.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/browser/metrics/form_events.h"
+#include "components/autofill/core/browser/payments/autofill_offer_manager.h"
 #include "components/autofill/core/browser/payments/credit_card_access_manager.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
@@ -1657,6 +1658,12 @@ AutofillManager::AutofillManager(
         driver, this, GetAPIKeyForUrl(channel), client_->GetLogManager()));
   }
   CountryNames::SetLocaleString(app_locale_);
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillEnableOffersInDownstream)) {
+    offer_manager_ = client_->GetAutofillOfferManager();
+    if (offer_manager_)
+      offer_manager_->Init(client_, app_locale_);
+  }
 }
 
 bool AutofillManager::RefreshDataModels() {

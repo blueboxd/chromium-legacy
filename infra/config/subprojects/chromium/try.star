@@ -127,17 +127,17 @@ try_.chromium_android_builder(
 try_.chromium_android_builder(
     name = "android-marshmallow-x86-rel",
     goma_jobs = goma.jobs.J150,
-    # TODO(crbug.com/1116532): Move back to experimental once CQ has settled
-    # down.
-    #tryjob = try_.job(
-    #    experiment_percentage = 5,
-    #),
+    tryjob = try_.job(
+        experiment_percentage = 5,
+    ),
 )
 
-try_.chromium_android_builder(
-    name = "android-nougat-arm64-rel",
-    goma_jobs = goma.jobs.J150,
-)
+# TODO(crbug.com/1111436) Added it back once all Pixel 1s are flashed
+# back to NJH47F
+#try_.chromium_android_builder(
+#    name = "android-nougat-arm64-rel",
+#    goma_jobs = goma.jobs.J150,
+#)
 
 try_.chromium_android_builder(
     name = "android-pie-arm64-dbg",

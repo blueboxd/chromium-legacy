@@ -82,7 +82,7 @@ export function createTheme() {
     text: {value: 0xff00000d},
   };
   return {
-    type: newTabPage.mojom.ThemeType.DEFAULT,
+    type: newTabPage.mojom.ThemeType.kDefault,
     info: {chromeThemeId: 0},
     backgroundColor: {value: 0xffff0000},
     shortcutBackgroundColor: {value: 0xff00ff00},

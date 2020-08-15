@@ -25,6 +25,7 @@
 #import "components/autofill/ios/form_util/form_activity_observer_bridge.h"
 #include "components/autofill/ios/form_util/form_activity_params.h"
 #include "components/keyed_service/core/service_access_type.h"
+#include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
 #import "components/password_manager/ios/shared_password_controller.h"
 #include "components/password_manager/ios/unique_id_tab_helper.h"
 #include "components/sync/driver/sync_service.h"
@@ -57,6 +58,7 @@
 #import "ios/web_view/internal/sync/web_view_profile_sync_service_factory.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
 #import "ios/web_view/public/cwv_autofill_controller_delegate.h"
+#import "net/base/mac/url_conversions.h"
 
 using autofill::FormRendererId;
 using autofill::FieldRendererId;
@@ -654,7 +656,23 @@ showUnmaskPromptForCard:(const autofill::CreditCard&)creditCard
 
 - (void)showPasswordBreachForLeakType:(CredentialLeakType)leakType
                                   URL:(const GURL&)URL {
-  // No op.
+  if ([self.delegate
+          respondsToSelector:@selector(autofillController:
+                                 notifyUserOfPasswordLeakOnURL:leakType:)]) {
+    CWVPasswordLeakType cwvLeakType = 0;
+    if (password_manager::IsPasswordSaved(leakType)) {
+      cwvLeakType |= CWVPasswordLeakTypeSaved;
+    }
+    if (password_manager::IsPasswordUsedOnOtherSites(leakType)) {
+      cwvLeakType |= CWVPasswordLeakTypeUsedOnOtherSites;
+    }
+    if (password_manager::IsSyncingPasswordsNormally(leakType)) {
+      cwvLeakType |= CWVPasswordLeakTypeSyncingNormally;
+    }
+    [self.delegate autofillController:self
+        notifyUserOfPasswordLeakOnURL:net::NSURLWithGURL(URL)
+                             leakType:cwvLeakType];
+  }
 }
 
 #pragma mark - SharedPasswordControllerDelegate

@@ -302,6 +302,7 @@
 <translation id="4481711095103932593">Se comparte esta carpeta con Windows</translation>
 <translation id="4487088045714738411">Teclado belga</translation>
 <translation id="4522570452068850558">Detalles</translation>
+<translation id="4542387084127299777">No se puede abrir "<ph name="PATH" />"</translation>
 <translation id="4552678318981539154">Comprar más almacenamiento</translation>
 <translation id="4559767610552730302">Bokeh</translation>
 <translation id="4572815280350369984">Archivo <ph name="FILE_TYPE" /></translation>
@@ -514,6 +515,7 @@
 <translation id="6629841649550503054">Todos los archivos están guardados en una copia de seguridad en <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" />.</translation>
 <translation id="6643016212128521049">Borrar</translation>
 <translation id="6650726141019353908">Mariposa rosa</translation>
+<translation id="6657585470893396449">Contraseña</translation>
 <translation id="6710213216561001401">Anterior</translation>
 <translation id="6718273304615422081">Comprimiendo…</translation>
 <translation id="6751256176799620176">1 carpeta seleccionada</translation>
@@ -726,6 +728,7 @@
 <translation id="9065203028668620118">Editar</translation>
 <translation id="9099674669267916096">Cantidad de páginas</translation>
 <translation id="9110990317705400362">Constantemente buscamos la forma de ofrecerte una navegación más segura. Antes, cualquier sitio web podía pedirte agregar una extensión al navegador. En las últimas versiones de Google Chrome, debes indicar a Chrome explícitamente que deseas instalar estas extensiones al agregarlas en la página Extensiones. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
+<translation id="9111102763498581341">Desbloquear</translation>
 <translation id="912419004897138677">Códec</translation>
 <translation id="9129931661813833980">Fijar carpeta</translation>
 <translation id="9130775360844693113">Los miembros de "<ph name="DESTINATION_NAME" />" tendrán acceso a estos elementos.</translation>

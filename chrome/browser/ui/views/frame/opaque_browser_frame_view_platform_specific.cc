@@ -6,7 +6,7 @@
 
 #include "build/build_config.h"
 
-#if !defined(OS_LINUX)
+#if !defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
 // static
 std::unique_ptr<OpaqueBrowserFrameViewPlatformSpecific>

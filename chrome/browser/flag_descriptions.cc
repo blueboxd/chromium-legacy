@@ -566,6 +566,11 @@ const char kEnableAutofillCreditCardAuthenticationDescription[] =
     "authenticator (if available) to verify card ownership when retrieving "
     "credit cards from Google Payments.";
 
+const char kEnableAutofillCreditCardCvcPromptGoogleLogoName[] =
+    "Enable Google Pay branding on CVC prompt on Android";
+const char kEnableAutofillCreditCardCvcPromptGoogleLogoDescription[] =
+    "If enabled, show the Google Pay logo on CVC prompt on Android.";
+
 const char kEnableAutofillCreditCardUploadFeedbackName[] =
     "Enable feedback for credit card upload flow";
 const char kEnableAutofillCreditCardUploadFeedbackDescription[] =
@@ -1480,14 +1485,12 @@ const char kOmniboxAutocompleteTitlesDescription[] =
     "Allows autocompleting bookmark, history, and document suggestions when the"
     " user input is a prefix of their titles, as opposed to their URLs.";
 
-const char kOmniboxClobberIsZeroSuggestEntrypointName[] =
-    "Omnibox Clobber is ZeroSuggest Entrypoint";
-const char kOmniboxClobberIsZeroSuggestEntrypointDescription[] =
+const char kOmniboxClobberTriggersContextualWebZeroSuggestName[] =
+    "Omnibox Clobber Triggers Contextual Web ZeroSuggest";
+const char kOmniboxClobberTriggersContextualWebZeroSuggestDescription[] =
     "If enabled, when the user clears the whole omnibox text (i.e. via "
-    "Backspace), Chrome will request ZeroSuggest suggestions. Note, this flag "
-    "merely adds a new ZeroSuggest entrypoint. ZeroSuggest still must be "
-    "enabled on the proper page classification (either by default or via a "
-    "separate flag), or else this flag will do nothing.";
+    "Backspace), Chrome will request ZeroSuggest suggestions for the OTHER "
+    "page classification (contextual web).";
 
 const char kOmniboxFocusGestureTriggersContextualWebZeroSuggestName[] =
     "Omnibox Focus Gesture Triggers Contextual Web ZeroSuggest";

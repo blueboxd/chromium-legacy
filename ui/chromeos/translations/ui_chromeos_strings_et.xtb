@@ -515,6 +515,7 @@
 <translation id="6629841649550503054">Kõik failid varundati teenuses <ph name="BEGIN_LINK" />Google Drive.<ph name="END_LINK" /></translation>
 <translation id="6643016212128521049">Tühjenda</translation>
 <translation id="6650726141019353908">Roosa liblikas</translation>
+<translation id="6657585470893396449">Parool</translation>
 <translation id="6710213216561001401">Eelmine</translation>
 <translation id="6718273304615422081">Pakkimine ...</translation>
 <translation id="6751256176799620176">Valitud on üks kaust</translation>
@@ -727,6 +728,7 @@
 <translation id="9065203028668620118">Muuda</translation>
 <translation id="9099674669267916096">Lehtede arv</translation>
 <translation id="9110990317705400362">Otsime alati võimalusi, kuidas muuta sirvimine veelgi turvalisemaks. Varem võis iga veebisait paluda teil lisada brauserisse laiendusi. Google Chrome'i uusimas versioonis peate Chrome'ile selgelt ütlema, et soovite neid laiendusi installida, lisades need lehe Laiendused kaudu. <ph name="BEGIN_LINK" />Lisateave<ph name="END_LINK" /></translation>
+<translation id="9111102763498581341">Ava lukk</translation>
 <translation id="912419004897138677">Kodek</translation>
 <translation id="9129931661813833980">Kinnita kaust</translation>
 <translation id="9130775360844693113">Sihtkoha „<ph name="DESTINATION_NAME" />” liikmed saavad juurdepääsu nendele üksustele.</translation>

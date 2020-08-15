@@ -4,6 +4,7 @@
 
 #include "media/base/video_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/modules/webcodecs/video_frame.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -102,6 +103,42 @@ TEST_F(VideoFrameTest, FramesNotSharingHandleDestruction) {
   // one frame's destruction should not affect the other.
   blink_frame->destroy();
   EXPECT_EQ(media_frame, frame_with_new_handle->frame());
+}
+
+TEST_F(VideoFrameTest, ClonedFrame) {
+  V8TestingScope scope;
+
+  scoped_refptr<media::VideoFrame> media_frame =
+      CreateDefaultBlackMediaVideoFrame();
+  VideoFrame* blink_frame = CreateBlinkVideoFrame(media_frame);
+
+  VideoFrame* cloned_frame = blink_frame->clone(scope.GetExceptionState());
+
+  // The cloned frame should be referencing the same media::VideoFrame.
+  EXPECT_EQ(blink_frame->frame(), cloned_frame->frame());
+  EXPECT_EQ(media_frame, cloned_frame->frame());
+  EXPECT_FALSE(scope.GetExceptionState().HadException());
+
+  blink_frame->destroy();
+
+  // Destroying the original frame should not affect the cloned frame.
+  EXPECT_EQ(media_frame, cloned_frame->frame());
+}
+
+TEST_F(VideoFrameTest, CloningDestroyedFrame) {
+  V8TestingScope scope;
+
+  scoped_refptr<media::VideoFrame> media_frame =
+      CreateDefaultBlackMediaVideoFrame();
+  VideoFrame* blink_frame = CreateBlinkVideoFrame(media_frame);
+
+  blink_frame->destroy();
+
+  VideoFrame* cloned_frame = blink_frame->clone(scope.GetExceptionState());
+
+  // No frame should have been created, and there should be an exception.
+  EXPECT_EQ(nullptr, cloned_frame);
+  EXPECT_TRUE(scope.GetExceptionState().HadException());
 }
 
 }  // namespace

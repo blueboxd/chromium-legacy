@@ -18,6 +18,7 @@
 #include "components/feed/core/proto/v2/wire/request.pb.h"
 #include "components/feed/core/v2/feed_network.h"
 #include "components/feed/core/v2/feed_stream.h"
+#include "components/feed/core/v2/metrics_reporter.h"
 #include "components/feed/core/v2/proto_util.h"
 #include "components/feed/core/v2/protocol_translator.h"
 #include "components/feed/core/v2/stream_model.h"
@@ -151,6 +152,11 @@ void LoadStreamTask::QueryRequestComplete(
           stream_->GetClock()->Now());
   if (!response_data.model_update_request)
     return Done(LoadStreamStatus::kProtoTranslationFailed);
+
+  MetricsReporter::NoticeCardFulfilled(result.response_body->feed_response()
+                                           .feed_response_metadata()
+                                           .chrome_feed_response_metadata()
+                                           .privacy_notice_fulfilled());
 
   loaded_new_content_from_network_ = true;
   stream_->GetStore()->OverwriteStream(

@@ -134,7 +134,7 @@ void MemoryUsageMonitorPosix::SetProcFiles(base::File statm_file,
   status_fd_.reset(status_file.TakePlatformFile());
 }
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 // static
 void MemoryUsageMonitorPosix::Bind(
     mojo::PendingReceiver<mojom::blink::MemoryUsageMonitorLinux> receiver) {

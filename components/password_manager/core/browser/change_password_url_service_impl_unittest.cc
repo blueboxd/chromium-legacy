@@ -36,13 +36,16 @@ class ChangePasswordUrlServiceTest : public testing::Test {
         password_manager::prefs::kCredentialsEnableService, true);
   }
 
-  // Test the bevahiour for a given |url| and compares the result to the given
-  // |expected_url| in the callback.
-  void TestOverride(GURL url, GURL expected_url);
+  // Fetches the url overrides and waits until the response arrived.
+  void PrefetchAndWaitUntilDone();
 
   void DisablePasswordManagerEnabledPolicy() {
     test_pref_service_.SetBoolean(
         password_manager::prefs::kCredentialsEnableService, false);
+  }
+
+  GURL GetChangePasswordUrl(const GURL& url) {
+    return change_password_url_service_.GetChangePasswordUrl(url);
   }
 
   void ClearMockResponses() { test_url_loader_factory_.ClearResponses(); }
@@ -59,50 +62,45 @@ class ChangePasswordUrlServiceTest : public testing::Test {
       test_shared_loader_factory_, &test_pref_service_};
 };
 
-void ChangePasswordUrlServiceTest::TestOverride(GURL url, GURL expected_url) {
-  change_password_url_service_.Initialize();
-
-  base::MockCallback<password_manager::ChangePasswordUrlService::UrlCallback>
-      callback;
-  EXPECT_CALL(callback, Run(expected_url));
-  change_password_url_service_.GetChangePasswordUrl(url::Origin::Create(url),
-                                                    callback.Get());
-  // Retry option is set to 3 times with timeout of 3s -> 9s. One added second
-  // is no problem because the |task_environment_| is still executing in the
-  // correct order and does not skip tasks.
-  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(10));
+void ChangePasswordUrlServiceTest::PrefetchAndWaitUntilDone() {
+  change_password_url_service_.PrefetchURLs();
   task_environment_.RunUntilIdle();
 }
 
 TEST_F(ChangePasswordUrlServiceTest, eTLDLookup) {
   // TODO(crbug.com/1086141): If possible mock eTLD registry to ensure sites are
   // listed.
-  TestOverride(GURL("https://google.com/foo"),
-               GURL("https://google.com/change-password"));
-  TestOverride(GURL("https://a.google.com/foo"),
-               GURL("https://google.com/change-password"));
+  PrefetchAndWaitUntilDone();
 
-  TestOverride(GURL("https://web.app"), GURL("https://web.app"));
+  EXPECT_EQ(GetChangePasswordUrl(GURL("https://google.com/foo")),
+            GURL("https://google.com/change-password"));
+  EXPECT_EQ(GetChangePasswordUrl(GURL("https://a.google.com/foo")),
+            GURL("https://google.com/change-password"));
 
-  TestOverride(GURL("https://netlify.com"), GURL("https://netlify.com"));
-  TestOverride(GURL("https://a.netlify.com"),
-               GURL("https://a.netlify.com/change-password"));
-  TestOverride(GURL("https://b.netlify.com"), GURL("https://b.netlify.com"));
+  EXPECT_EQ(GetChangePasswordUrl(GURL("https://web.app")), GURL());
 
-  TestOverride(GURL("https://notlisted.com/foo"),
-               GURL("https://notlisted.com"));
+  EXPECT_EQ(GetChangePasswordUrl(GURL("https://netlify.com")), GURL());
+  EXPECT_EQ(GetChangePasswordUrl(GURL("https://a.netlify.com")),
+            GURL("https://a.netlify.com/change-password"));
+  EXPECT_EQ(GetChangePasswordUrl(GURL("https://b.netlify.com")), GURL());
+
+  EXPECT_EQ(GetChangePasswordUrl(GURL("https://notlisted.com/foo")), GURL());
 }
 
 TEST_F(ChangePasswordUrlServiceTest, PassworManagerPolicyDisabled) {
   DisablePasswordManagerEnabledPolicy();
 
-  TestOverride(GURL("https://google.com/foo"), GURL("https://google.com/"));
+  PrefetchAndWaitUntilDone();
+
+  EXPECT_EQ(GetChangePasswordUrl(GURL("https://google.com/foo")), GURL());
 }
 
 TEST_F(ChangePasswordUrlServiceTest, NetworkRequestFails) {
   ClearMockResponses();
 
-  TestOverride(GURL("https://google.com/foo"), GURL("https://google.com/"));
+  PrefetchAndWaitUntilDone();
+
+  EXPECT_EQ(GetChangePasswordUrl(GURL("https://google.com/foo")), GURL());
 }
 
 }  // namespace password_manager

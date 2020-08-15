@@ -59,6 +59,11 @@ const base::Feature kAutofillCreditCardUploadFeedback{
 const base::Feature kAutofillEnableCardNicknameManagement{
     "AutofillEnableCardNicknameManagement", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// When enabled, shows the Google Pay logo on CVC prompt on Android.
+const base::Feature kAutofillDownstreamCvcPromptUseGooglePayLogo{
+    "AutofillDownstreamCvcPromptUseGooglePayLogo",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // When enabled, the credit card nicknames will be manageable. They can be
 // uploaded to Payments.
 const base::Feature kAutofillEnableCardNicknameUpstream{

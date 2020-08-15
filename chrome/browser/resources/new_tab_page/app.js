@@ -466,7 +466,7 @@ class AppElement extends PolymerElement {
   onOpenVoiceSearch_() {
     this.showVoiceSearchOverlay_ = true;
     this.pageHandler_.onVoiceSearchAction(
-        newTabPage.mojom.VoiceSearchAction.ACTIVATE_SEARCH_BOX);
+        newTabPage.mojom.VoiceSearchAction.kActivateSearchBox);
   }
 
   /** @private */
@@ -498,7 +498,7 @@ class AppElement extends PolymerElement {
     if (ctrlKeyPressed && e.code === 'Period' && e.shiftKey) {
       this.showVoiceSearchOverlay_ = true;
       this.pageHandler_.onVoiceSearchAction(
-          newTabPage.mojom.VoiceSearchAction.ACTIVATE_KEYBOARD);
+          newTabPage.mojom.VoiceSearchAction.kActivateKeyboard);
     }
   }
 
@@ -604,7 +604,7 @@ class AppElement extends PolymerElement {
   computeDoodleAllowed_() {
     return loadTimeData.getBoolean('themeModeDoodlesEnabled') ||
         !this.showBackgroundImage_ && this.theme_ &&
-        this.theme_.type === newTabPage.mojom.ThemeType.DEFAULT &&
+        this.theme_.type === newTabPage.mojom.ThemeType.kDefault &&
         !this.theme_.isDark;
   }
 

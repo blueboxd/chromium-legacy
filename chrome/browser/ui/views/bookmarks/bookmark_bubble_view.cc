@@ -193,12 +193,11 @@ void BookmarkBubbleView::ShowBubble(
               ui::DialogModelButton::Params().AddAccelerator(
                   ui::Accelerator(ui::VKEY_R, ui::EF_ALT_DOWN)))
           .AddDialogExtraButton(
+              base::BindRepeating(&BookmarkBubbleDelegate::OnEditButton,
+                                  base::Unretained(bubble_delegate)),
               l10n_util::GetStringUTF16(IDS_BOOKMARK_BUBBLE_OPTIONS),
-              ui::DialogModelButton::Params()
-                  .SetCallback(
-                      base::BindRepeating(&BookmarkBubbleDelegate::OnEditButton,
-                                          base::Unretained(bubble_delegate)))
-                  .AddAccelerator(ui::Accelerator(ui::VKEY_E, ui::EF_ALT_DOWN)))
+              ui::DialogModelButton::Params().AddAccelerator(
+                  ui::Accelerator(ui::VKEY_E, ui::EF_ALT_DOWN)))
           .AddTextfield(
               l10n_util::GetStringUTF16(IDS_BOOKMARK_BUBBLE_NAME_LABEL),
               bookmark_node->GetTitle(),

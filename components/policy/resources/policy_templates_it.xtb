@@ -375,11 +375,11 @@ Se disattivi questo criterio, lo scorrimento della pagina web ai frammenti di te
 
       Se il criterio viene impostato su false o se non viene configurato, i file PDF vengono aperti, a meno che gli utenti disattivino il plug-in di PDF.</translation>
 <translation id="1608755754295374538">URL a cui verrà concesso l'accesso ai dispositivi di acquisizione audio senza richieste</translation>
-<translation id="1611394564825535541">Consente di controllare se gli utenti possono accedere alle stampanti non aziendali
+<translation id="1611394564825535541">Consente di controllare se gli utenti possono accedere alle stampanti non aziendali.
 
-      Se il criterio viene impostato su Vero o se non viene configurato, gli utenti possono aggiungere, configurare e stampare utilizzando le proprie stampanti.
+      Se il criterio viene impostato su Vero o se non viene configurato, gli utenti possono aggiungere, configurare e utilizzare le proprie stampanti.
 
-      Se il criterio viene impostato su Falso, gli utenti non possono aggiungere né configurare le proprie stampanti. Inoltre, non possono stampare utilizzando nessuna delle stampanti precedentemente configurate.
+      Se il criterio viene impostato su Falso, gli utenti non possono aggiungere né configurare le proprie stampanti. Inoltre, non possono utilizzare nessuna delle stampanti precedentemente configurate.
       </translation>
 <translation id="1615221548356595305">Consenti la coalescenza di connessioni HTTP/2 per questi host anche quando sono in uso i certificati client</translation>
 <translation id="1615855314789673708">Consente di specificare la configurazione del controller DTC (Diagnostics and Telemetry Controller) wilco.
@@ -1279,12 +1279,6 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
 <translation id="2901725272378498025">Attiva gli avvisi sulla sicurezza per i flag della riga di comando</translation>
 <translation id="2905984450136807296">Durata dei dati di autenticazione nella cache</translation>
 <translation id="2906874737073861391">Elenco di estensioni AppPack</translation>
-<translation id="2907992746861405243">Consente di stabilire quali stampanti della norma <ph name="BULK_PRINTERS_POLICY" /> mettere a disposizione degli utenti.
-
-      Determina quale norma di accesso usare per la configurazione collettiva delle stampanti. Se viene selezionata l'opzione <ph name="PRINTERS_ALLOW_ALL" />, vengono mostrate tutte le stampanti. Se viene selezionata l'opzione <ph name="PRINTERS_BLACKLIST" />, viene usata la norma <ph name="BULK_PRINTERS_BLACKLIST" /> per limitare l'accesso a stampanti specifiche. Se viene selezionata l'opzione <ph name="PRINTERS_WHITELIST" />, la norma <ph name="BULK_PRINTERS_WHITELIST" /> stabilisce soltanto le stampanti selezionabili.
-
-      Se questa norma non viene impostata, viene usata l'opzione <ph name="PRINTERS_ALLOW_ALL" />.
-      </translation>
 <translation id="2908277604670530363">Numero massimo di connessioni simultanee al server proxy</translation>
 <translation id="2921222258441684334">Se il criterio è impostato su 1, i siti possono tracciare la posizione fisica dell'utente come stato predefinito. Se il criterio è impostato su 2, il tracciamento viene negato per impostazione predefinita. Puoi impostare il criterio per chiedere ogni volta che un sito desidera tracciare la posizione fisica degli utenti.
 
@@ -2247,7 +2241,7 @@ Il valore della norma dovrebbe essere specificato in secondi. Il valore minimo d
 <translation id="4313767483634435271">Indirizzo MAC designato del dock del dispositivo</translation>
 <translation id="4322842393287974810">Consenti all'app kiosk avviata automaticamente senza ritardo di controllare la versione di <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Aggiungi un pulsante di uscita all'area di notifica</translation>
-<translation id="4330372709562934569">Consenti ai siti elencati di effettuare richieste agli endpoint di rete privata da parte di contesti non sicuri.</translation>
+<translation id="4330372709562934569">Consente ai siti elencati di effettuare richieste agli endpoint di rete privata da parte di contesti non sicuri.</translation>
 <translation id="4332177773549877617">Registra eventi per le installazioni di app Android</translation>
 <translation id="4341199399451274159">Se il criterio <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> è attivo, l'assegnazione di un valore al criterio <ph name="DEFAULT_SEARCH_PROVIDER_ENCODINGS_POLICY_NAME" /> consente di specificare le codifiche dei caratteri supportate dal provider di ricerca. Le codifiche sono nomi di pagine codificati come UTF-8, GB2312 e ISO-8859-1. Vengono provate nell'ordine indicato.
 
@@ -3155,11 +3149,11 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
 
         Se il criterio non viene impostato o viene impostato su true, gli utenti possono inviare feedback a Google dal percorso Menu -&gt; Guida -&gt; Segnala un problema o tramite una combinazione di tasti.</translation>
 <translation id="5579179012798142131">Se ArcEnabled è impostato su True, ARC viene attivato per l'utente, a meno che la modalità temporanea o l'accesso simultaneo siano attivi durante la sessione utente. Se il criterio è impostato su False o non è configurato, gli utenti aziendali non possono utilizzare ARC.</translation>
-<translation id="5582429816116769246">Consente di controllare se gli utenti possono accedere alle stampanti non aziendali
+<translation id="5582429816116769246">Consente di controllare se gli utenti possono accedere alle stampanti non aziendali.
 
-      Se il criterio viene impostato su Vero o se non viene configurato, gli utenti possono aggiungere, configurare e stampare utilizzando le proprie stampanti native.
+      Se il criterio viene impostato su Vero o se non viene configurato, gli utenti possono aggiungere, configurare e utilizzare le proprie stampanti native.
 
-      Se il criterio viene impostato su Falso, gli utenti non possono aggiungere né configurare le proprie stampanti native. Inoltre, non possono stampare utilizzando nessuna delle stampanti native precedentemente configurate.
+      Se il criterio viene impostato su Falso, gli utenti non possono aggiungere né configurare le proprie stampanti native. Inoltre, non possono utilizzare nessuna delle stampanti native precedentemente configurate.
 
       Questo criterio è deprecato. Usa il criterio <ph name="USER_PRINTERS_ALLOWED" />.
       </translation>
@@ -3984,11 +3978,11 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 
       Se il criterio viene impostato su Disattivato, viene visualizzato invece un messaggio di errore.</translation>
 <translation id="6821268164692776674">Destinazioni <ph name="CLOUD_PRINT_NAME" /> e "Salva su Google Drive"</translation>
-<translation id="6823297401452148231">Consente di controllare se i siti web non sicuri possono effettuare richieste agli endpoint delle reti private. Ad esempio, consente di controllare se http://evil.com può effettuare richieste sia a "localhost" sia agli endpoint sulla rete privata, nessuno dei quali è accessibile dalla rete pubblica. Per maggiori dettagli, consulta il sito https://wicg.github.io/cors-rfc1918/#goals.
+<translation id="6823297401452148231">Consente di controllare se i siti web non sicuri possono effettuare richieste agli endpoint di rete privata. Ad esempio, consente di controllare se http://evil.com può effettuare richieste sia a "localhost" sia agli endpoint sulla rete privata, nessuno dei quali è accessibile dalla rete pubblica. Per maggiori dettagli, consulta il sito https://wicg.github.io/cors-rfc1918/#goals.
 
-          Se il criterio non viene configurato, il comportamento predefinito per le richieste da contesti non sicuri agli endpoint di rete privata dipende dalla configurazione personale dell'utente per la funzionalità <ph name="BLOCK_INSECURE_PRIVATE_NETWORK_REQUESTS_FEATURE_NAME" />, che può essere configurata in base a una prova pubblica o alla riga di comando.
+          Se il criterio non viene configurato, il comportamento predefinito per le richieste da contesti non sicuri agli endpoint di rete privata dipende dalla configurazione personale dell'utente per la funzionalità <ph name="BLOCK_INSECURE_PRIVATE_NETWORK_REQUESTS_FEATURE_NAME" />, che può essere configurata in base a una prova sul campo o alla riga di comando.
 
-          Se il criterio viene impostato su False, i siti web non sicuri non possono effettuare richieste agli endpoint di rete privata. Vale a dire che i siti web non sicuri pubblicati da indirizzi IP pubblici non possono effettuare richieste a localhost e indirizzi IP privati. I siti web non sicuri pubblicati da indirizzi IP privati non possono effettuare richieste a localhost.
+          Se il criterio viene impostato su Falso, i siti web non sicuri non possono effettuare richieste agli endpoint di rete privata. Vale a dire che i siti web non sicuri pubblicati da indirizzi IP pubblici non possono effettuare richieste a localhost e indirizzi IP privati. I siti web non sicuri pubblicati da indirizzi IP privati non possono effettuare richieste a localhost.
 
           Se il criterio viene impostato su Vero, i siti web non sicuri possono effettuare richieste a qualsiasi endpoint di rete, soggetti ad altri controlli multiorigine.</translation>
 <translation id="6833064854262015312">Se il criterio è impostato su True, la modalità ad alto contrasto viene attivata nella schermata di accesso. Se il criterio è impostato su False, la modalità ad alto contrasto viene disattivata nella schermata di accesso.
@@ -5630,7 +5624,7 @@ https://www.w3.org/TR/secure-contexts/
 <translation id="9112727953998243860">File di configurazione delle stampanti aziendali</translation>
 <translation id="9116740039944096995">Elenco di pattern URL. Le richieste di rete privata inoltrate da siti web non sicuri pubblicati dalle origini corrispondenti sono consentite.
 
-          Se non configurato, questo criterio si comporta come se fosse impostato sull'elenco vuoto.
+          Se non configurato, questo criterio considera l'elenco come vuoto.
 
           Per le origini non coperte dai pattern specificati qui, il valore predefinito globale viene utilizzato dal criterio <ph name="INSECURE_PRIVATE_NETWORK_REQUESTS_ALLOWED_POLICY_NAME" />, se configurato, o altrimenti dalla configurazione personale dell'utente.
 

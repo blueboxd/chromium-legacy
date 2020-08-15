@@ -26,12 +26,15 @@ source_set("public") {
   sources = [
     "switches.cc",
     "switches.h",
+    "tutorial.cc",
+    "tutorial.h",
     "video_tutorial_service.h",
   ]
 
   public_deps = [
     "//base",
     "//components/keyed_service/core",
+    "//url:url",
   ]
 }
 
@@ -75,7 +78,7 @@ group("unit_tests") {
 
 source_set("video_tutorials_unit_tests") {
   testonly = true
-  sources = []
+  sources = [ "tutorial_unittest.cc" ]
   deps = [
     ":public",
     "//base/test:test_support",

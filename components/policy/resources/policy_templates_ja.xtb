@@ -1293,12 +1293,6 @@
 <translation id="2901725272378498025">コマンドライン フラグに関するセキュリティ警告を有効にする</translation>
 <translation id="2905984450136807296">認証データのキャッシュ期間</translation>
 <translation id="2906874737073861391">AppPack 拡張機能リスト</translation>
-<translation id="2907992746861405243">ユーザーが <ph name="BULK_PRINTERS_POLICY" /> のどのプリンタを使用できるかを制御します。
-
-      このポリシーは、プリンタの一括設定で使用するアクセス ポリシーを指定するものです。<ph name="PRINTERS_ALLOW_ALL" /> が選択されている場合は、すべてのプリンタが表示されます。<ph name="PRINTERS_BLACKLIST" /> が選択されている場合は、<ph name="BULK_PRINTERS_BLACKLIST" /> で指定されたプリンタへのアクセスが制限されます。<ph name="PRINTERS_WHITELIST" /> が選択されている場合は、<ph name="BULK_PRINTERS_WHITELIST" /> で指定されたプリンタのみが選択可能になります。
-
-      このポリシーが未設定の場合は、<ph name="PRINTERS_ALLOW_ALL" /> が選択された場合と同じ動作になります。
-      </translation>
 <translation id="2908277604670530363">プロキシ サーバーへの最大同時接続数</translation>
 <translation id="2921222258441684334">このポリシーを 1 に設定した場合、サイトはデフォルトの状態としてユーザーの物理的な現在地を追跡できます。このポリシーを 2 に設定した場合、この追跡はデフォルトで拒否されます。サイトがユーザーの物理的な現在地を追跡しようとしたときに毎回確認するよう、このポリシーを設定することもできます。
 

@@ -6,6 +6,8 @@
 
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/ui/webui/settings/chromeos/os_settings_ui.h"
+#include "chrome/browser/ui/webui/settings/chromeos/pref_names.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "components/sync/base/pref_names.h"
 #include "components/sync/base/sync_prefs.h"
@@ -13,12 +15,14 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace sp = syncer::prefs;
+namespace csp = chromeos::settings::prefs;
 
 class OsSyncUtilTest : public testing::Test {
  public:
   OsSyncUtilTest() {
     feature_list_.InitAndEnableFeature(chromeos::features::kSplitSettingsSync);
     syncer::SyncPrefs::RegisterProfilePrefs(prefs_.registry());
+    chromeos::settings::OSSettingsUI::RegisterProfilePrefs(prefs_.registry());
   }
 
   base::test::ScopedFeatureList feature_list_;
@@ -28,6 +32,7 @@ class OsSyncUtilTest : public testing::Test {
 TEST_F(OsSyncUtilTest, SimpleMigration) {
   os_sync_util::MigrateOsSyncPreferences(&prefs_);
   EXPECT_TRUE(prefs_.GetBoolean(sp::kOsSyncPrefsMigrated));
+  EXPECT_TRUE(prefs_.GetBoolean(sp::kOsSyncFeatureEnabled));
   EXPECT_TRUE(prefs_.GetBoolean(sp::kSyncAllOsTypes));
 }
 
@@ -36,6 +41,7 @@ TEST_F(OsSyncUtilTest, MigrationWithIndividualBrowserTypes) {
   prefs_.SetBoolean(sp::kSyncKeepEverythingSynced, false);
   prefs_.SetBoolean(sp::kSyncApps, true);
   prefs_.SetBoolean(sp::kSyncPreferences, true);
+  prefs_.SetBoolean(sp::kSyncThemes, true);
 
   os_sync_util::MigrateOsSyncPreferences(&prefs_);
 
@@ -43,6 +49,45 @@ TEST_F(OsSyncUtilTest, MigrationWithIndividualBrowserTypes) {
   EXPECT_FALSE(prefs_.GetBoolean(sp::kSyncAllOsTypes));
   EXPECT_TRUE(prefs_.GetBoolean(sp::kSyncOsApps));
   EXPECT_TRUE(prefs_.GetBoolean(sp::kSyncOsPreferences));
+  EXPECT_TRUE(prefs_.GetBoolean(csp::kSyncOsWallpaper));
+}
+
+TEST_F(OsSyncUtilTest, MigrationForWallpaperRequiresApps) {
+  prefs_.SetBoolean(sp::kSyncKeepEverythingSynced, false);
+  ASSERT_FALSE(prefs_.GetBoolean(sp::kSyncApps));
+  prefs_.SetBoolean(sp::kSyncThemes, true);
+  os_sync_util::MigrateOsSyncPreferences(&prefs_);
+  EXPECT_FALSE(prefs_.GetBoolean(csp::kSyncOsWallpaper));
+}
+
+TEST_F(OsSyncUtilTest, SyncAppsEnablesOsSyncFeature) {
+  prefs_.SetBoolean(sp::kSyncKeepEverythingSynced, false);
+  prefs_.SetBoolean(sp::kSyncApps, true);
+  os_sync_util::MigrateOsSyncPreferences(&prefs_);
+  EXPECT_TRUE(prefs_.GetBoolean(sp::kOsSyncFeatureEnabled));
+}
+
+TEST_F(OsSyncUtilTest, SyncPreferencesEnablesOsSyncFeature) {
+  prefs_.SetBoolean(sp::kSyncKeepEverythingSynced, false);
+  prefs_.SetBoolean(sp::kSyncPreferences, true);
+  os_sync_util::MigrateOsSyncPreferences(&prefs_);
+  EXPECT_TRUE(prefs_.GetBoolean(sp::kOsSyncFeatureEnabled));
+}
+
+TEST_F(OsSyncUtilTest, SyncWallpaperEnablesOsSyncFeature) {
+  prefs_.SetBoolean(sp::kSyncKeepEverythingSynced, false);
+  prefs_.SetBoolean(sp::kSyncApps, true);
+  prefs_.SetBoolean(sp::kSyncThemes, true);
+  os_sync_util::MigrateOsSyncPreferences(&prefs_);
+  ASSERT_TRUE(prefs_.GetBoolean(csp::kSyncOsWallpaper));
+  EXPECT_TRUE(prefs_.GetBoolean(sp::kOsSyncFeatureEnabled));
+}
+
+TEST_F(OsSyncUtilTest, SyncWifiEnablesOsSyncFeature) {
+  prefs_.SetBoolean(sp::kSyncKeepEverythingSynced, false);
+  prefs_.SetBoolean(sp::kSyncWifiConfigurations, true);
+  os_sync_util::MigrateOsSyncPreferences(&prefs_);
+  EXPECT_TRUE(prefs_.GetBoolean(sp::kOsSyncFeatureEnabled));
 }
 
 TEST_F(OsSyncUtilTest, MigrationOnlyHappensOnce) {
@@ -72,6 +117,7 @@ TEST_F(OsSyncUtilTest, Rollback) {
   // Do initial migration.
   os_sync_util::MigrateOsSyncPreferences(&prefs_);
   EXPECT_TRUE(prefs_.GetBoolean(sp::kOsSyncPrefsMigrated));
+  EXPECT_TRUE(prefs_.GetBoolean(sp::kOsSyncFeatureEnabled));
 
   {
     // Simulate disabling the feature (e.g. disabling via Finch).
@@ -81,6 +127,7 @@ TEST_F(OsSyncUtilTest, Rollback) {
 
     // OS sync is marked as not migrated.
     EXPECT_FALSE(prefs_.GetBoolean(sp::kOsSyncPrefsMigrated));
+    EXPECT_FALSE(prefs_.GetBoolean(sp::kOsSyncFeatureEnabled));
   }
 
   // Simulate re-enabling the feature.
@@ -91,6 +138,7 @@ TEST_F(OsSyncUtilTest, Rollback) {
 
     // OS sync is marked as migrated.
     EXPECT_TRUE(prefs_.GetBoolean(sp::kOsSyncPrefsMigrated));
+    EXPECT_TRUE(prefs_.GetBoolean(sp::kOsSyncFeatureEnabled));
   }
 }
 

@@ -2508,6 +2508,22 @@
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
       },
+      'win7-omaha-tester-rel': {
+        'mixins': [
+          'win7',
+          'x86-64'
+        ],
+        'test_suites': {
+          'gtest_tests': 'omaha_gtests',
+        },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'integrity': 'high',
+            }
+          ]
+        },
+      },
     },
   },
   {

@@ -1588,6 +1588,7 @@ interface VideoFrame
     getter format
     getter planes
     getter timestamp
+    method clone
     method constructor
     method createImageBitmap
     method destroy

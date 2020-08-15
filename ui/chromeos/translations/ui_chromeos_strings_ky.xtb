@@ -302,6 +302,7 @@
 <translation id="4481711095103932593">Бул папка Windows менен бөлүшүлдү</translation>
 <translation id="4487088045714738411">Белгийче баскычтоп</translation>
 <translation id="4522570452068850558">Чоо-жайлары</translation>
+<translation id="4542387084127299777">"<ph name="PATH" />" ачылган жок</translation>
 <translation id="4552678318981539154">Көбүрөөк сактоо мейкиндигин сатып алыңыз…</translation>
 <translation id="4559767610552730302">Боке</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> файл</translation>
@@ -513,6 +514,7 @@
 <translation id="6629841649550503054">Бардык нерселердин камдык көчүрмөсү <ph name="BEGIN_LINK" />Google Drive'га<ph name="END_LINK" /> сакталды!</translation>
 <translation id="6643016212128521049">Тазалоо</translation>
 <translation id="6650726141019353908">Кызгылтым көпөлөк</translation>
+<translation id="6657585470893396449">Сырсөз</translation>
 <translation id="6710213216561001401">Мурунку</translation>
 <translation id="6718273304615422081">Кысылууда…</translation>
 <translation id="6751256176799620176">1 куржун тандалды</translation>
@@ -725,6 +727,7 @@
 <translation id="9065203028668620118">Түзөтүү</translation>
 <translation id="9099674669267916096">Барактардын саны</translation>
 <translation id="9110990317705400362">Серептөө аракетиңиздин коопсуздугун чыңдоо үчүн болгон аракетибизди жумшап жатабыз. Буга чейин серепчиңизге кеңейтүү кошууну вебсайттар сунуштап турушчу. Ал эми Google Chrome'дун эң акыркы версияларында керектүү кеңейтүүлөрдү Кеңейтүүлөр бетинен кошуп, орното турганыңызды Chrome'го өзүңүз ачык билдиресиз. <ph name="BEGIN_LINK" />Көбүрөөк билүү<ph name="END_LINK" /></translation>
+<translation id="9111102763498581341">Кулпуну ачуу</translation>
 <translation id="912419004897138677">Кодек</translation>
 <translation id="9129931661813833980">Папканы кадап коюу</translation>
 <translation id="9130775360844693113">"<ph name="DESTINATION_NAME" />" жалпы дискинин колдонуучулары бул файлдарды колдоно алышат.</translation>

@@ -60,16 +60,22 @@ const GURL& SiteInstanceImpl::GetDefaultSiteURL() {
 // static
 SiteInfo SiteInfo::CreateForErrorPage() {
   return SiteInfo(GURL(content::kUnreachableWebDataURL),
-                  GURL(content::kUnreachableWebDataURL));
+                  GURL(content::kUnreachableWebDataURL),
+                  false /* is_origin_keyed */);
 }
 
-SiteInfo::SiteInfo(const GURL& site_url, const GURL& process_lock_url)
-    : site_url_(site_url), process_lock_url_(process_lock_url) {}
+SiteInfo::SiteInfo(const GURL& site_url,
+                   const GURL& process_lock_url,
+                   bool is_origin_keyed)
+    : site_url_(site_url),
+      process_lock_url_(process_lock_url),
+      is_origin_keyed_(is_origin_keyed) {}
 
 // static
 auto SiteInfo::MakeTie(const SiteInfo& site_info) {
   return std::tie(site_info.site_url_.possibly_invalid_spec(),
-                  site_info.process_lock_url_.possibly_invalid_spec());
+                  site_info.process_lock_url_.possibly_invalid_spec(),
+                  site_info.is_origin_keyed_);
 }
 
 bool SiteInfo::operator==(const SiteInfo& other) const {
@@ -85,6 +91,8 @@ bool SiteInfo::operator<(const SiteInfo& other) const {
 }
 
 std::string SiteInfo::GetDebugString() const {
+  // TODO(wjmaclean): At some point we should consider adding output about
+  // origin- vs. site-keying.
   return site_url_.possibly_invalid_spec();
 }
 
@@ -197,7 +205,8 @@ scoped_refptr<SiteInstanceImpl> SiteInstanceImpl::CreateForGuest(
   // Setting site and lock directly without the site URL conversions we
   // do for user provided URLs. Callers expect GetSiteURL() to return the
   // value they provide in |guest_site_url|.
-  site_instance->SetSiteInfoInternal(SiteInfo(guest_site_url, guest_site_url));
+  site_instance->SetSiteInfoInternal(
+      SiteInfo(guest_site_url, guest_site_url, false /* is_origin_keyed */));
 
   return site_instance;
 }
@@ -434,18 +443,13 @@ void SiteInstanceImpl::SetSiteInfoInternal(const SiteInfo& site_info) {
   has_site_ = true;
   site_info_ = site_info;
 
-  // Check if |site_info| corresponds to an opt-in isolated origin, and if so,
-  // track this origin in the current BrowsingInstance.  This is needed to
-  // consistently isolate future navigations to this origin in this
-  // BrowsingInstance, even if its opt-in status changes later.
-  ChildProcessSecurityPolicyImpl* policy =
-      ChildProcessSecurityPolicyImpl::GetInstance();
-  url::Origin site_origin(url::Origin::Create(site_info_.site_url()));
-  // At this point, this should be a simple lookup on the master list, since
-  // this SiteInstance is new to the BrowsingInstance.
-  bool isolated = policy->ShouldOriginGetOptInIsolation(
-      browsing_instance_->isolation_context(), site_origin);
-  if (isolated) {
+  if (site_info_.is_origin_keyed()) {
+    // Track this origin's isolation in the current BrowsingInstance.  This is
+    // needed to consistently isolate future navigations to this origin in this
+    // BrowsingInstance, even if its opt-in status changes later.
+    ChildProcessSecurityPolicyImpl* policy =
+        ChildProcessSecurityPolicyImpl::GetInstance();
+    url::Origin site_origin(url::Origin::Create(site_info_.site_url()));
     policy->AddOptInIsolatedOriginForBrowsingInstance(
         browsing_instance_->isolation_context(), site_origin);
   }
@@ -868,13 +872,36 @@ SiteInfo SiteInstanceImpl::ComputeSiteInfo(
   // The call to GetSiteForURL() below is only allowed on the UI thread, due to
   // its possible use of effective urls.
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // This function will expand as more information, such as site-/origin-keying,
-  // are included in SiteInfo.
+  // This function will expand as more information is included in SiteInfo.
+  bool is_origin_keyed = ChildProcessSecurityPolicyImpl::GetInstance()
+                             ->ShouldOriginGetOptInIsolation(
+                                 isolation_context, url::Origin::Create(url));
+
   return SiteInfo(GetSiteForURL(isolation_context, url),
-                  DetermineProcessLockURL(isolation_context, url));
+                  DetermineProcessLockURL(isolation_context, url),
+                  is_origin_keyed);
 }
 
 // static
+ProcessLock SiteInstanceImpl::DetermineProcessLock(
+    const IsolationContext& isolation_context,
+    const GURL& url) {
+  if (BrowserThread::CurrentlyOn(BrowserThread::UI))
+    return ProcessLock(ComputeSiteInfo(isolation_context, url));
+
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  GURL lock_url = DetermineProcessLockURL(isolation_context, url);
+  bool is_origin_keyed = ChildProcessSecurityPolicyImpl::GetInstance()
+                             ->ShouldOriginGetOptInIsolation(
+                                 isolation_context, url::Origin::Create(url));
+  // In the SiteInfo constructor below we pass the lock url as the site URL
+  // also, assuming the IO-thread caller won't be looking at the site url.
+  return ProcessLock(SiteInfo(lock_url, lock_url, is_origin_keyed));
+}
+
+// static
+// TODO(wjmaclean): remove this if the sole call from the IO thread can be
+// removed.
 GURL SiteInstanceImpl::DetermineProcessLockURL(
     const IsolationContext& isolation_context,
     const GURL& url) {
@@ -941,21 +968,8 @@ GURL SiteInstanceImpl::GetSiteForURLInternal(
     auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
     url::Origin isolated_origin;
     if (policy->GetMatchingIsolatedOrigin(isolation_context, origin, site_url,
-                                          &isolated_origin))
+                                          &isolated_origin)) {
       return isolated_origin.GetURL();
-
-    // The following check will determine if we have a sub-origin that does
-    // not request isolation, but the base-origin does. In that case, we need
-    // to place the sub-origin into a different SiteInstance, effectively
-    // isolating it as well.
-    // TODO(wjmaclean): Remove this when we implement site-keyed and
-    // origin-keyed SiteInstances, since the call to GetMatchingIsolatedOrigin
-    // above should correctly cause non-isolated sub origins to go to the
-    // site-keyed SiteInstance, regardless of what the base origin does.
-    url::Origin base_origin = url::Origin::Create(site_url);
-    if (IsolatedOriginUtil::IsStrictSubdomain(origin, base_origin) &&
-        policy->ShouldOriginGetOptInIsolation(isolation_context, base_origin)) {
-      return origin.GetURL();
     }
 
     // If an effective URL was used, augment the effective site URL with the
@@ -1016,6 +1030,8 @@ GURL SiteInstanceImpl::GetSiteForURLInternal(
     }
   }
 
+  // We should never get here if we're origin_keyed, otherwise we would have
+  // returned after the GetMatchingIsolatedOrigin() call above.
   if (allow_default_site_url &&
       CanBePlacedInDefaultSiteInstance(isolation_context, real_url, site_url)) {
     return GetDefaultSiteURL();

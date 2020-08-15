@@ -604,7 +604,8 @@ GURL GetEffectiveAuthorityURL(const GURL& source_url,
 
 }  // namespace
 
-#if defined(OS_WIN) || defined(OS_APPLE) || defined(OS_LINUX)
+#if defined(OS_WIN) || defined(OS_APPLE) || defined(OS_LINUX) || \
+    defined(OS_CHROMEOS)
 
 DownloadInterruptReason BaseFile::AnnotateWithSourceInformationSync(
     const std::string& client_guid,
@@ -622,7 +623,7 @@ DownloadInterruptReason BaseFile::AnnotateWithSourceInformationSync(
 
   return QuarantineFileResultToReason(result);
 }
-#else  // !OS_WIN && !OS_APPLE && !OS_LINUX
+#else  // !OS_WIN && !OS_APPLE && !OS_LINUX && !OS_CHROMEOS
 DownloadInterruptReason BaseFile::AnnotateWithSourceInformationSync(
     const std::string& client_guid,
     const GURL& source_url,

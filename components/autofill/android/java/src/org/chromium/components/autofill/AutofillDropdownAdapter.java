@@ -86,6 +86,9 @@ public class AutofillDropdownAdapter extends ArrayAdapter<DropdownItem> {
         if (mIsRefresh) {
             TextView labelView = populateLabelView(item, layout);
             populateSublabelView(item, layout);
+            // For refreshed layout, ignore the return value as we don't need to adjust the height
+            // of the view.
+            populateItemTagView(item, layout);
             ImageView iconView =
                     populateIconView((ImageView) layout.findViewById(R.id.end_dropdown_icon), item);
             if (iconView != null) {
@@ -131,6 +134,16 @@ public class AutofillDropdownAdapter extends ArrayAdapter<DropdownItem> {
                         mContext.getResources(), R.color.dropdown_divider_color);
             }
             divider.setDividerColor(dividerColor);
+        }
+
+        // Layout of the item tag view, which has a smaller font and sits below the sub
+        // label.
+        TextView itemTagView = populateItemTagView(item, layout);
+        if (itemTagView != null) {
+            itemTagView.setTextSize(TypedValue.COMPLEX_UNIT_PX,
+                    mContext.getResources().getDimension(item.getSublabelFontSizeResId()));
+            height += mContext.getResources().getDimensionPixelSize(
+                    R.dimen.autofill_dropdown_item_tag_height);
         }
 
         // Note: trying to set the height of the root LinearLayout breaks accessibility,
@@ -232,6 +245,26 @@ public class AutofillDropdownAdapter extends ArrayAdapter<DropdownItem> {
         sublabelView.setText(sublabel);
         sublabelView.setVisibility(View.VISIBLE);
         return sublabelView;
+    }
+
+    /**
+     * Sets the text of the itemTag's View if such text exists; otherwise, sets the View's
+     * visibility to GONE.
+     * @param item the DropdownItem for this row.
+     * @param layout the View in which the label can be found.
+     * @return the View if it has been set to be visible; null otherwise. This view is already part
+     *         of the view hierarchy, thus no need to explicitly add it.
+     */
+    private TextView populateItemTagView(DropdownItem item, View layout) {
+        TextView itemTagView = (TextView) layout.findViewById(R.id.dropdown_item_tag);
+        CharSequence itemTag = item.getItemTag();
+        if (TextUtils.isEmpty(itemTag)) {
+            itemTagView.setVisibility(View.GONE);
+            return null;
+        }
+        itemTagView.setText(itemTag);
+        itemTagView.setVisibility(View.VISIBLE);
+        return itemTagView;
     }
 
     /**

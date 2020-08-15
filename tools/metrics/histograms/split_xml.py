@@ -7,7 +7,6 @@ Splits nodes according to the first camelcase part of their name attribute.
 Intended to be used to split up the large histograms.xml or enums.xml file.
 """
 
-import errno
 import logging
 import os
 import sys
@@ -40,8 +39,7 @@ def _ParseHistogramsXMLFile(base_dir):
     FileNotFoundError if histograms.xml not found in |base_dir|.
   """
   if HISTOGRAMS_XML not in os.listdir(base_dir):
-    raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT),
-                            HISTOGRAMS_XML)
+    raise ValueError(HISTOGRAMS_XML + 'is not in %s' % base_dir)
 
   dom = minidom.parse(os.path.join(base_dir, HISTOGRAMS_XML))
   comments = []

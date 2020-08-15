@@ -9,6 +9,7 @@
 <translation id="150962533380566081">Neplatný kód PUK.</translation>
 <translation id="1510238584712386396">Spouštěč</translation>
 <translation id="1644574205037202324">Historie</translation>
+<translation id="1662989795263954667">Zastaveno – došel inkoust</translation>
 <translation id="1734367976349034509">Toto zařízení je spravováno organizací</translation>
 <translation id="1905710495812624430">Byl překročen maximální povolený počet pokusů.</translation>
 <translation id="1930797645656624981">Služba metod zadávání systému Chrome OS</translation>
@@ -39,18 +40,22 @@
 <translation id="4227825898293920515">Platnost hesla vyprší za <ph name="TIME" /></translation>
 <translation id="4238516577297848345">Nemáte žádné probíhající tiskové úlohy</translation>
 <translation id="428217921675623177">Tiskové úlohy starší než 90 dní budou odstraněny</translation>
+<translation id="4297501883039923494">Zastaveno – neznámá chyba</translation>
 <translation id="4429881212383817840">Platnost lístku Kerberos brzy vyprší</translation>
 <translation id="445059817448385655">Staré heslo</translation>
 <translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> z <ph name="TOTAL_PAGE_NUMBER" />. Tiskovou úlohu zrušíte stisknutím klávesy Enter.</translation>
 <translation id="467510802200863975">Hesla se neshodují</translation>
+<translation id="4691278870498629773">Zastaveno – chybí zásobník</translation>
 <translation id="4731797938093519117">Rodičovský přístup</translation>
 <translation id="4773299976671772492">Zastaveno</translation>
 <translation id="4808449224298348341">Byla zrušena tisková úloha <ph name="DOCUMENT_TITLE" /></translation>
 <translation id="4890353053343094602">Ihned si zvolte nové</translation>
+<translation id="4917889632206600977">Zastaveno – došel papír</translation>
 <translation id="4932733599132424254">Datum</translation>
 <translation id="5212543919916444558">Na obrazovce nevidím nic, s čím vám můžu pomoct.
 Zkuste klepnout na mikrofon a zeptat se.</translation>
 <translation id="5222676887888702881">Odhlásit se</translation>
+<translation id="5267975978099728568"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="ERROR_STATUS" /></translation>
 <translation id="5317780077021120954">Uložit</translation>
 <translation id="5326394068492324457"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="COMPLETION_STATUS" /></translation>
 <translation id="5332948983412042822">Zvolte si nové</translation>
@@ -63,9 +68,11 @@ Zkuste klepnout na mikrofon a zeptat se.</translation>
 <translation id="6106186594183574873">Chcete-li akci dokončit, zadejte své staré heslo</translation>
 <translation id="6146993107019042706">Chcete-li akci dokončit, zadejte své nové heslo</translation>
 <translation id="636850387210749493">Registrace podniku</translation>
+<translation id="649050271426829538">Zastaveno – zasekl se papír</translation>
 <translation id="6517239166834772319">Explore</translation>
 <translation id="6564646048574748301">Tisk selhal – tiskárna není dostupná</translation>
 <translation id="6643016212128521049">Vymazat</translation>
+<translation id="6747215703636344499">Zastaveno – výstupní zásobník je plný</translation>
 <translation id="7162487448488904999">Galerie</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7561454561030345039">Tuto akci spravuje administrátor</translation>
@@ -77,6 +84,7 @@ Zkuste klepnout na mikrofon a zeptat se.</translation>
 <translation id="8347227221149377169">Tiskové úlohy</translation>
 <translation id="8701136875688985581">Tohoto uživatele spravuje doména <ph name="ENROLLMENT_DOMAIN" />. Může vzdáleně spravovat nastavení a sledovat aktivitu uživatele.</translation>
 <translation id="871560550817059752">Tisk selhal – došel inkoust</translation>
+<translation id="8726019395068607495">Zastaveno – jsou otevřená dvířka</translation>
 <translation id="8747900814994928677">Potvrdit změnu</translation>
 <translation id="8919837981463578619">Tisk selhal – chybí zásobník</translation>
 <translation id="8928727111548978589">Tisk selhal – došel papír</translation>

@@ -55,8 +55,10 @@ class CardUnmaskPromptControllerImpl : public CardUnmaskPromptController {
   bool ShouldRequestExpirationDate() const override;
   bool GetStoreLocallyStartState() const override;
 #if defined(OS_ANDROID)
+  int GetGooglePayImageRid() const override;
   bool ShouldOfferWebauthn() const override;
   bool GetWebauthnOfferStartState() const override;
+  bool IsCardLocal() const override;
 #endif
   bool InputCvcIsValid(const base::string16& input_text) const override;
   bool InputExpirationIsValid(const base::string16& month,

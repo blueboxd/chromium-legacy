@@ -8,7 +8,7 @@
 #include "base/notreached.h"
 #include "base/time/time.h"
 
-#if defined(OS_LINUX) || defined(OS_ANDROID)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
 #include <sync/sync.h>
 #endif
 
@@ -62,7 +62,7 @@ void GpuFence::Wait() {
     case GpuFenceHandleType::kEmpty:
       break;
     case GpuFenceHandleType::kAndroidNativeFenceSync:
-#if defined(OS_LINUX) || defined(OS_ANDROID)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
       static const int kInfiniteSyncWaitTimeout = -1;
       DCHECK_GE(owned_fd_.get(), 0);
       if (sync_wait(owned_fd_.get(), kInfiniteSyncWaitTimeout) < 0) {
@@ -79,7 +79,7 @@ void GpuFence::Wait() {
 GpuFence::FenceStatus GpuFence::GetStatusChangeTime(int fd,
                                                     base::TimeTicks* time) {
   DCHECK_NE(fd, -1);
-#if defined(OS_LINUX) || defined(OS_ANDROID)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
   auto info =
       std::unique_ptr<sync_fence_info_data, void (*)(sync_fence_info_data*)>{
           sync_fence_info(fd), sync_fence_info_free};
@@ -111,7 +111,7 @@ GpuFence::FenceStatus GpuFence::GetStatusChangeTime(int fd,
 
 base::TimeTicks GpuFence::GetMaxTimestamp() const {
   base::TimeTicks timestamp;
-#if defined(OS_LINUX) || defined(OS_ANDROID)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
   FenceStatus status = GetStatusChangeTime(owned_fd_.get(), &timestamp);
   DCHECK_EQ(status, FenceStatus::kSignaled);
   return timestamp;

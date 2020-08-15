@@ -7906,6 +7906,25 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="OptimizationGuideAutotuning">
+  <owner>sophiechang@chromium.org</owner>
+  <owner>mcrouse@chromium.org</owner>
+  <summary>
+    Metrics associated with an autotuning event initiated by the Optimization
+    Guide.
+  </summary>
+  <metric name="OptimizationType">
+    <summary>
+      The |optimization_guide::proto::OptimizationType| that is being tuned.
+    </summary>
+  </metric>
+  <metric name="TuningVersion">
+    <summary>
+      The version of the tuning group for the optimization type that was served.
+    </summary>
+  </metric>
+</event>
+
 <event name="PageDomainInfo">
   <owner>uthakore@chromium.org</owner>
   <owner>invernizzi@chromium.org</owner>
@@ -9585,6 +9604,21 @@ be describing additional metrics about the same event.
     Event recorded when a flash instance connects to the broker, resulting in a
     channel being opened to the broker process.
   </summary>
+</event>
+
+<event name="PerfectHeuristics" singular="True">
+  <owner>dom@chromium.org</owner>
+  <owner>chrome-loading@google.com</owner>
+  <summary>
+    Metrics recorded for the various Perfect Heuristics experiments being run.
+  </summary>
+  <metric name="delay_async_script_execution_before_finished_parsing"
+      enum="Boolean">
+    <summary>
+      Set to 1 when blink::ScriptRunner sees an async script before the
+      associated document has finished parsing.
+    </summary>
+  </metric>
 </event>
 
 <event name="PeriodicBackgroundSyncEventCompleted">

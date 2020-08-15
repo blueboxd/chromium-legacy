@@ -11,7 +11,7 @@ namespace app_list {
 
 namespace {
 
-constexpr float kCircleOutlineStrokeWidth = 8.0f;
+constexpr float kCircleOutlineStrokeWidthRatio = 0.1f;
 
 constexpr int kMinimumVisibleAlpha = 40;
 
@@ -212,13 +212,17 @@ bool IsIconCircleShaped(const gfx::ImageSkia& image) {
     SkPaint paint_outline;
     paint_outline.setColor(SK_ColorGREEN);
     paint_outline.setStyle(SkPaint::kStroke_Style);
-    paint_outline.setStrokeWidth(kCircleOutlineStrokeWidth * rep.scale());
+
+    const float outline_stroke_width = width * kCircleOutlineStrokeWidthRatio;
+    const float radius_offset = outline_stroke_width / 8.0f;
+
+    paint_outline.setStrokeWidth(outline_stroke_width);
     paint_outline.setAntiAlias(true);
 
     // DST_OUT operation to remove an extra circle outline.
     paint_outline.setBlendMode(SkBlendMode::kDstOut);
-    canvas.drawCircle(SkPoint::Make(width / 2.0f, height / 2.0f), width / 2.0f,
-                      paint_outline);
+    canvas.drawCircle(SkPoint::Make(width / 2.0f, height / 2.0f),
+                      width / 2.0f + radius_offset, paint_outline);
 
     // Compute the total pixel difference between the circle mask and the
     // original icon.
@@ -236,7 +240,7 @@ bool IsIconCircleShaped(const gfx::ImageSkia& image) {
 
     // If the pixel difference between a circle and the original icon is small
     // enough, then the icon can be considered circle shaped.
-    if (!(percentage_diff_pixels >= kCircleShapePixelDifferenceThreshold))
+    if (percentage_diff_pixels < kCircleShapePixelDifferenceThreshold)
       is_icon_already_circle_shaped = true;
   }
 

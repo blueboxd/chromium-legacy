@@ -237,10 +237,21 @@ TEST_F(ZeroSuggestProviderTest, AllowZeroSuggestSuggestionsContextualWeb) {
   // Enable on-clobber in addition to on-focus.
   {
     base::test::ScopedFeatureList features;
-    features.InitAndEnableFeature(omnibox::kClobberIsZeroSuggestEntrypoint);
+    features.InitAndEnableFeature(
+        omnibox::kClobberTriggersContextualWebZeroSuggest);
     EXPECT_FALSE(provider_->AllowZeroSuggestSuggestions(prefix_input));
     EXPECT_TRUE(provider_->AllowZeroSuggestSuggestions(on_focus_input));
     EXPECT_TRUE(provider_->AllowZeroSuggestSuggestions(on_clobber_input));
+
+    // Sanity check that we only affect the OTHER page classification.
+    AutocompleteInput on_clobber_serp(
+        base::string16(),
+        metrics::OmniboxEventProto::
+            SEARCH_RESULT_PAGE_DOING_SEARCH_TERM_REPLACEMENT,
+        TestSchemeClassifier());
+    on_clobber_serp.set_current_url(GURL(input_url));
+    on_clobber_serp.set_focus_type(OmniboxFocusType::DELETED_PERMANENT_TEXT);
+    EXPECT_FALSE(provider_->AllowZeroSuggestSuggestions(on_clobber_serp));
   }
 
   // Disable on-focus.
@@ -266,7 +277,7 @@ TEST_F(ZeroSuggestProviderTest, AllowZeroSuggestSuggestionsContextualWeb) {
   {
     base::test::ScopedFeatureList features;
     features.InitWithFeatures(
-        {omnibox::kClobberIsZeroSuggestEntrypoint},
+        {omnibox::kClobberTriggersContextualWebZeroSuggest},
         {omnibox::kFocusGestureTriggersContextualWebZeroSuggest});
     EXPECT_FALSE(provider_->AllowZeroSuggestSuggestions(prefix_input));
     EXPECT_FALSE(provider_->AllowZeroSuggestSuggestions(on_focus_input));

@@ -31,25 +31,28 @@ DialogModelButton::Params& DialogModelButton::Params::AddAccelerator(
   return *this;
 }
 
-DialogModelButton::Params& DialogModelButton::Params::SetCallback(
-    base::RepeatingCallback<void(const Event&)> callback) {
-  callback_ = std::move(callback);
-  return *this;
-}
-
-DialogModelButton::DialogModelButton(util::PassKey<DialogModel> pass_key,
-                                     DialogModel* model,
-                                     base::string16 label,
-                                     const DialogModelButton::Params& params)
+DialogModelButton::DialogModelButton(
+    util::PassKey<DialogModel> pass_key,
+    DialogModel* model,
+    base::RepeatingCallback<void(const Event&)> callback,
+    base::string16 label,
+    const DialogModelButton::Params& params)
     : DialogModelField(pass_key,
                        model,
                        kButton,
                        params.unique_id_,
                        params.accelerators_),
       label_(std::move(label)),
-      callback_(params.callback_) {}
+      callback_(std::move(callback)) {
+  DCHECK(callback_);
+}
 
 DialogModelButton::~DialogModelButton() = default;
+
+void DialogModelButton::OnPressed(util::PassKey<DialogModelHost>,
+                                  const Event& event) {
+  callback_.Run(event);
+}
 
 DialogModelCombobox::Params::Params() = default;
 DialogModelCombobox::Params::~Params() = default;
@@ -98,6 +101,16 @@ DialogModelCombobox::DialogModelCombobox(
 
 DialogModelCombobox::~DialogModelCombobox() = default;
 
+void DialogModelCombobox::OnSelectedIndexChanged(util::PassKey<DialogModelHost>,
+                                                 int selected_index) {
+  selected_index_ = selected_index;
+}
+
+void DialogModelCombobox::OnPerformAction(util::PassKey<DialogModelHost>) {
+  if (callback_)
+    callback_.Run();
+}
+
 DialogModelTextfield::Params::Params() = default;
 DialogModelTextfield::Params::~Params() = default;
 
@@ -136,5 +149,10 @@ DialogModelTextfield::DialogModelTextfield(
       text_(std::move(text)) {}
 
 DialogModelTextfield::~DialogModelTextfield() = default;
+
+void DialogModelTextfield::OnTextChanged(util::PassKey<DialogModelHost>,
+                                         base::string16 text) {
+  text_ = std::move(text);
+}
 
 }  // namespace ui

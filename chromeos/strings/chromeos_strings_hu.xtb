@@ -9,6 +9,7 @@
 <translation id="150962533380566081">Érvénytelen PUK-kód.</translation>
 <translation id="1510238584712386396">Indító</translation>
 <translation id="1644574205037202324">Előzmények</translation>
+<translation id="1662989795263954667">Leállt – Kifogyott a tinta</translation>
 <translation id="1734367976349034509">Az eszközt a vállalat felügyeli</translation>
 <translation id="1905710495812624430">Elérte az engedélyezett kísérletek maximális számát.</translation>
 <translation id="1930797645656624981">Chrome OS beviteli módszere szolgáltatás</translation>
@@ -39,18 +40,22 @@
 <translation id="4227825898293920515">A jelszó <ph name="TIME" /> múlva lejár</translation>
 <translation id="4238516577297848345">Nincsenek folyamatban lévő nyomtatási feladatok</translation>
 <translation id="428217921675623177">A 90 napnál régebbi nyomtatási feladatokat eltávolítja a rendszer</translation>
+<translation id="4297501883039923494">Leállt – Ismeretlen hiba</translation>
 <translation id="4429881212383817840">A Kerberos-jegy hamarosan lejár</translation>
 <translation id="445059817448385655">Régi jelszó</translation>
 <translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" />. oldal az összesen <ph name="TOTAL_PAGE_NUMBER" /> oldalból A nyomtatási feladat törléséhez nyomja meg az Enter billentyűt.</translation>
 <translation id="467510802200863975">A jelszavak nem egyeznek</translation>
+<translation id="4691278870498629773">Leállt – Hiányzó tálca</translation>
 <translation id="4731797938093519117">Szülői hozzáférés</translation>
 <translation id="4773299976671772492">Leállítva</translation>
 <translation id="4808449224298348341">Nyomtatási feladat (<ph name="DOCUMENT_TITLE" />) megszakítva</translation>
 <translation id="4890353053343094602">Azonnal válasszon új jelszót</translation>
+<translation id="4917889632206600977">Leállt – Kifogyott a papír</translation>
 <translation id="4932733599132424254">Dátum</translation>
 <translation id="5212543919916444558">Nem találok semmi olyat a képernyőn, amellyel kapcsolatban segíthetnék.
 Koppintson a mikrofonra, és kérdezzen tőlem.</translation>
 <translation id="5222676887888702881">Kijelentkezés</translation>
+<translation id="5267975978099728568"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="ERROR_STATUS" /></translation>
 <translation id="5317780077021120954">Mentés</translation>
 <translation id="5326394068492324457"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="COMPLETION_STATUS" /></translation>
 <translation id="5332948983412042822">Válasszon most új jelszót</translation>
@@ -63,9 +68,11 @@ Koppintson a mikrofonra, és kérdezzen tőlem.</translation>
 <translation id="6106186594183574873">A befejezéshez adja meg régi jelszavát</translation>
 <translation id="6146993107019042706">A befejezéshez adja meg új jelszavát</translation>
 <translation id="636850387210749493">Vállalat rögzítése</translation>
+<translation id="649050271426829538">Leállt – Papírelakadás</translation>
 <translation id="6517239166834772319">Felfedezés</translation>
 <translation id="6564646048574748301">Sikertelen – Nem lehet hozzáférni a nyomtatóhoz</translation>
 <translation id="6643016212128521049">Törlés</translation>
+<translation id="6747215703636344499">Leállt – Megtelt a kimenet</translation>
 <translation id="7162487448488904999">Galéria</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7561454561030345039">Ezt a műveletet a rendszergazdája kezeli.</translation>
@@ -77,6 +84,7 @@ Koppintson a mikrofonra, és kérdezzen tőlem.</translation>
 <translation id="8347227221149377169">Nyomtatási feladatok</translation>
 <translation id="8701136875688985581">A(z) <ph name="ENROLLMENT_DOMAIN" /> kezeli ezt a felhasználót. A domain távolról módosíthatja a beállításokat, és figyelheti a felhasználó tevékenységeit.</translation>
 <translation id="871560550817059752">Sikertelen – Kifogyott a tinta</translation>
+<translation id="8726019395068607495">Leállt – Nyitva van a nyomtató fedele</translation>
 <translation id="8747900814994928677">Módosítás megerősítése</translation>
 <translation id="8919837981463578619">Sikertelen – Hiányzó tálca</translation>
 <translation id="8928727111548978589">Sikertelen – Kifogyott a papír</translation>

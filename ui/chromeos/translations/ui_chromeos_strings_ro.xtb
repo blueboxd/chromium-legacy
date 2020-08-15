@@ -302,6 +302,7 @@
 <translation id="4481711095103932593">Windows are acces la acest dosar</translation>
 <translation id="4487088045714738411">Tastatură bulgară</translation>
 <translation id="4522570452068850558">Detalii</translation>
+<translation id="4542387084127299777">Nu se poate deschide „<ph name="PATH" />”</translation>
 <translation id="4552678318981539154">Cumpărați mai mult spațiu de stocare</translation>
 <translation id="4559767610552730302">Bokeh</translation>
 <translation id="4572815280350369984">Fișier <ph name="FILE_TYPE" /></translation>
@@ -514,6 +515,7 @@
 <translation id="6629841649550503054">Toate fișierele cu backup pe <ph name="BEGIN_LINK" />Google Drive!<ph name="END_LINK" /></translation>
 <translation id="6643016212128521049">Șterge</translation>
 <translation id="6650726141019353908">Fluture roz</translation>
+<translation id="6657585470893396449">Parolă</translation>
 <translation id="6710213216561001401">Înapoi</translation>
 <translation id="6718273304615422081">Se arhivează...</translation>
 <translation id="6751256176799620176">Un dosar selectat</translation>
@@ -726,6 +728,7 @@
 <translation id="9065203028668620118">Editează</translation>
 <translation id="9099674669267916096">Numărul de pagini</translation>
 <translation id="9110990317705400362">Google caută mereu modalități de a face navigarea mai sigură. Înainte, orice site îți putea solicita să adaugi o extensie în browser. În ultimele versiuni Google Chrome, trebuie să indici explicit că dorești să instalezi aceste extensii, adăugându-le în pagina Extensii. <ph name="BEGIN_LINK" />Află mai multe<ph name="END_LINK" /></translation>
+<translation id="9111102763498581341">Deblochează</translation>
 <translation id="912419004897138677">Codec</translation>
 <translation id="9129931661813833980">Fixează dosarul</translation>
 <translation id="9130775360844693113">Membrii „<ph name="DESTINATION_NAME" />” vor obține acces la aceste articole.</translation>

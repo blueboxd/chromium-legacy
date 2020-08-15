@@ -515,6 +515,7 @@
 <translation id="6629841649550503054">Napravljene su sigurnosne kopije na <ph name="BEGIN_LINK" />Google Disku!<ph name="END_LINK" /></translation>
 <translation id="6643016212128521049">Obriši</translation>
 <translation id="6650726141019353908">Ružičasti leptir</translation>
+<translation id="6657585470893396449">Lozinka</translation>
 <translation id="6710213216561001401">Nazad</translation>
 <translation id="6718273304615422081">Kreiranje zip fajla...</translation>
 <translation id="6751256176799620176">Odabran je 1 folder</translation>
@@ -727,6 +728,7 @@
 <translation id="9065203028668620118">Uredi</translation>
 <translation id="9099674669267916096">Broj stranica</translation>
 <translation id="9110990317705400362">Stalno tražimo načine da učinimo pregledanje sigurnijim. Prethodno je svaka web lokacija od vas mogla zatražiti da dodate ekstenziju u preglednik. U najnovijoj verziji Google Chromea, izričito morate reći Chromeu da želite instalirati ove ekstenzije tako što ćete ih dodati putem stranice Ekstenzije. <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /></translation>
+<translation id="9111102763498581341">Otključaj</translation>
 <translation id="912419004897138677">Kodek</translation>
 <translation id="9129931661813833980">Zakači folder</translation>
 <translation id="9130775360844693113">Članovi tima "<ph name="DESTINATION_NAME" />" dobit će pristup ovim stavkama.</translation>

@@ -268,7 +268,7 @@ void Navigator::DidNavigate(
       is_same_document_navigation,
       navigation_request->coop_status()
           .require_browsing_instance_swap() /* clear_proxies_on_commit */,
-      pending_frame_policy);
+      pending_frame_policy, params.should_replace_current_entry);
 
   // Save the new page's origin and other properties, and replicate them to
   // proxies, including the proxy created in DidNavigateFrame() to replace the

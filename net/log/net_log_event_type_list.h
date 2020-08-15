@@ -2030,6 +2030,13 @@ EVENT_TYPE(QUIC_SESSION_TRANSPORT_PARAMETERS_RECEIVED)
 //   }
 EVENT_TYPE(QUIC_SESSION_TRANSPORT_PARAMETERS_SENT)
 
+// A QUIC connection resumed transport parameters for 0-RTT.
+//   {
+//     "quic_transport_parameters": <Human readable view of the transport
+//                                   parameters>
+//   }
+EVENT_TYPE(QUIC_SESSION_TRANSPORT_PARAMETERS_RESUMED)
+
 // A QUIC connection received a PUSH_PROMISE frame.  The following
 // parameters are attached:
 //   {
@@ -3762,6 +3769,11 @@ EVENT_TYPE(HTTP3_UNKNOWN_FRAME_RECEIVED)
 // A list of settings will be logged by
 // <setting identifier>: <setting value>
 EVENT_TYPE(HTTP3_SETTINGS_SENT)
+
+// Event emitted when an HTTP/3 SETTINGS frame is resumed for 0-RTT.
+// A list of settings will be logged by
+// <setting identifier>: <setting value>
+EVENT_TYPE(HTTP3_SETTINGS_RESUMED)
 
 // Event emitted when an HTTP/3 GOAWAY frame is sent.
 //  {

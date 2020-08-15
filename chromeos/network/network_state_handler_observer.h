@@ -63,6 +63,9 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkStateHandlerObserver {
   // A scan for |device| completed.
   virtual void ScanCompleted(const DeviceState* device);
 
+  // The DHCP Hostname changed.
+  virtual void HostnameChanged(const std::string& hostname);
+
   // Called just before NetworkStateHandler is destroyed so that observers
   // can safely stop observing.
   virtual void OnShuttingDown();

@@ -203,7 +203,7 @@ class DownloadProtectionService {
       DeepScanningRequest::DeepScanTrigger trigger,
       enterprise_connectors::AnalysisSettings analysis_settings);
 
-  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory(
+  virtual scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory(
       content::BrowserContext* browser_context);
 
  private:

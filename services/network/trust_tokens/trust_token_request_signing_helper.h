@@ -73,7 +73,7 @@ class TrustTokenRequestSigningHelper : public TrustTokenRequestHelper {
 
   struct Params {
     // Refer to fields' comments for their semantics.
-    Params(SuitableTrustTokenOrigin issuer,
+    Params(std::vector<SuitableTrustTokenOrigin> issuers,
            SuitableTrustTokenOrigin toplevel,
            std::vector<std::string> additional_headers_to_sign,
            bool should_add_timestamp,
@@ -91,14 +91,14 @@ class TrustTokenRequestSigningHelper : public TrustTokenRequestHelper {
     Params(Params&&);
     Params& operator=(Params&&);
 
-    // |issuer| is the Trust Tokens issuer origin for which to retrieve a Signed
-    // Redemption Record and matching signing key. This must be both (1) HTTP or
-    // HTTPS and (2) "potentially trustworthy". This precondition is slightly
-    // involved because there are two needs:
+    // |issuers| contains the Trust Tokens issuer origins for which to retrieve
+    // Signed Redemption Records and matching signing keys. These must be both
+    // (1) HTTP or HTTPS and (2) "potentially trustworthy". This precondition is
+    // slightly involved because there are two needs:
     //   1. HTTP or HTTPS so that the scheme serializes in a sensible manner in
-    //   order to serve as a key for persisting state.
-    //   2. potentially trustworthy origin to satisfy Web security requirements.
-    SuitableTrustTokenOrigin issuer;
+    //   order to serve as a key for persisting state,
+    //   2. potentially trustworthy to satisfy Web security requirements.
+    std::vector<SuitableTrustTokenOrigin> issuers;
 
     // |toplevel| is the top-level origin of the initiating request. This must
     // satisfy the same preconditions as |issuer|.
@@ -173,13 +173,13 @@ class TrustTokenRequestSigningHelper : public TrustTokenRequestHelper {
   TrustTokenRequestSigningHelper& operator=(
       const TrustTokenRequestSigningHelper&) = delete;
 
-  // Attempts to attach a Signed Redemption Record (SRR) corresponding
-  // to |request|'s initiating top-level origin and the provided issuer origin.
+  // Attempts to attach Signed Redemption Records (SRRs) corresponding
+  // to |request|'s initiating top-level origin and the provided issuer origins.
   //
   // ATTACHING THE REDEMPTION RECORD:
-  // In the case that an SRR is found and the requested headers to sign are
-  // well-formed, attaches a Sec-Signed-Redemption-Record header
-  // bearing the SRR and:
+  // In the case that an SRR is found for at least one provided issuer and the
+  // requested headers to sign are well-formed, attaches a
+  // Sec-Signed-Redemption-Record header bearing the SRRs and:
   // 1. if the request is configured for adding a Trust Tokens timestamp,
   // adds a timestamp header;
   // 2. if the request is configured for signing, computes the request's
@@ -190,11 +190,12 @@ class TrustTokenRequestSigningHelper : public TrustTokenRequestHelper {
   // 1. The caller specified headers for signing other than those in
   // kSignableRequestHeaders (or if the request has a malformed or otherwise
   // invalid signed issuers list in its Signed-Headers header); or
-  // 2. |token_store_| contains no SRR for this issuer-toplevel pair; or
+  // 2. none of the provided issuers has an SRR corresponding to this top-level
+  // origin in |token_store_|; or
   // 3. an internal error occurs during signing or header serialization.
   //
   // POSTCONDITIONS:
-  // - Always returns kOk. This is to avoid aborting a request entirely to a
+  // - Always returns kOk. This is to avoid aborting a request entirely due to a
   // failure during signing; see the Trust Tokens design doc for more
   // discussion.
   // - On failure, the request will contain an empty
@@ -211,16 +212,28 @@ class TrustTokenRequestSigningHelper : public TrustTokenRequestHelper {
       base::OnceCallback<void(mojom::TrustTokenOperationStatus)> done) override;
 
  private:
-  // Given (unencoded) bytestrings |public_key| and |signature|, returns the
+  // Given issuer-to-redemption-record and issuer-to-signature maps, returns a
   // Trust Tokens signature header, a serialized Structured Headers Draft 15
-  // dictionary looking roughly like (order not guaranteed):
-  //   public-key=:<base64(pk)>:,
-  //   sig=:<base64(signature)>:,
-  //   sign-request-data=include | headers-only
+  // dictionary with logical structure roughly
+  // "signatures": [
+  //   (<issuer 1>, { "public-key": <public key>, "sig": <signature> }),
+  //   …..
+  //   (<issuer N>, { "public-key": <public key>, "sig": <signature> })
+  // ],
+  // "sign-request-data": include | headers-only
   //
-  // Returns nullopt on serialization error.
-  base::Optional<std::string> BuildSignatureHeader(base::StringPiece public_key,
-                                                   base::StringPiece signature);
+  // Returns nullopt on serialization error, or if |signatures_per_issuer| is
+  // empty.
+  //
+  // REQUIRES: Every issuer in |signatures_per_issuer| must have a corresponding
+  // signed redemption record in |records_per_issuer|.
+  base::Optional<std::string>
+  BuildSignatureHeaderIfAtLeastOneSignatureIsPresent(
+      const base::flat_map<SuitableTrustTokenOrigin,
+                           SignedTrustTokenRedemptionRecord>&
+          records_per_issuer,
+      const base::flat_map<SuitableTrustTokenOrigin, std::vector<uint8_t>>&
+          signatures_per_issuer);
 
   // Returns a signature over |request|'s pertinent data (public key,
   // user-specified headers and, possibly, destination URL), or nullopt in case

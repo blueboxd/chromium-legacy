@@ -8,10 +8,6 @@ ryansturm@chromium.org
 sclittle@chromium.org
 sophiechang@chromium.org
 
-# Secondary
-bengr@chromium.org
-dougarnett@chromium.org
-
 per-file *_messages.cc=set noparent
 per-file *_messages.cc=file://ipc/SECURITY_OWNERS
 

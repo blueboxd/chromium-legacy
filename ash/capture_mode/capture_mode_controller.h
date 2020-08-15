@@ -10,6 +10,7 @@
 #include "ash/ash_export.h"
 #include "ash/capture_mode/capture_mode_types.h"
 #include "ash/public/cpp/capture_mode_delegate.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace ash {
 
@@ -32,6 +33,10 @@ class ASH_EXPORT CaptureModeController {
   CaptureModeSession* capture_mode_session() const {
     return capture_mode_session_.get();
   }
+  gfx::Rect user_capture_region() const { return user_capture_region_; }
+  void set_user_capture_region(const gfx::Rect& region) {
+    user_capture_region_ = region;
+  }
 
   // Returns true if a capture mode session is currently active.
   bool IsActive() const { return !!capture_mode_session_; }
@@ -48,6 +53,11 @@ class ASH_EXPORT CaptureModeController {
   // Stops an existing capture session.
   void Stop();
 
+  // Called only while a capture session is in progress to perform the actual
+  // capture depending on the current selected |source_| and |type_|, and ends
+  // the capture session.
+  void PerformCapture();
+
   void EndVideoRecording();
 
  private:
@@ -55,6 +65,11 @@ class ASH_EXPORT CaptureModeController {
 
   CaptureModeType type_ = CaptureModeType::kImage;
   CaptureModeSource source_ = CaptureModeSource::kRegion;
+
+  // We remember the user selected capture region when the source is |kRegion|
+  // between sessions. Initially, this value is empty at which point we display
+  // a message to the user instructing them to start selecting a region.
+  gfx::Rect user_capture_region_;
 
   std::unique_ptr<CaptureModeSession> capture_mode_session_;
 };

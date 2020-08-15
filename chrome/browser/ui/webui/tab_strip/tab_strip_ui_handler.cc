@@ -219,9 +219,9 @@ void TabStripUIHandler::OnTabGroupChanged(const TabGroupChange& change) {
 
 void TabStripUIHandler::TabGroupedStateChanged(
     base::Optional<tab_groups::TabGroupId> group,
+    content::WebContents* contents,
     int index) {
-  int tab_id = extensions::ExtensionTabUtil::GetTabId(
-      browser_->tab_strip_model()->GetWebContentsAt(index));
+  int tab_id = extensions::ExtensionTabUtil::GetTabId(contents);
   if (group.has_value()) {
     FireWebUIListener("tab-group-state-changed", base::Value(tab_id),
                       base::Value(index),

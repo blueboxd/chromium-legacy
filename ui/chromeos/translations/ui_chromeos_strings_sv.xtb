@@ -302,6 +302,7 @@
 <translation id="4481711095103932593">Den här mappen delas med Windows</translation>
 <translation id="4487088045714738411">Belgiskt tangentbord</translation>
 <translation id="4522570452068850558">Info</translation>
+<translation id="4542387084127299777">Det går inte att öppna <ph name="PATH" /></translation>
 <translation id="4552678318981539154">Köp mer lagringsutrymme</translation>
 <translation id="4559767610552730302">Bokeh</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" />-fil</translation>
@@ -514,6 +515,7 @@
 <translation id="6629841649550503054">Allt har säkerhetskopierats på <ph name="BEGIN_LINK" />Google Drive!<ph name="END_LINK" /></translation>
 <translation id="6643016212128521049">Rensa</translation>
 <translation id="6650726141019353908">Rosa fjäril</translation>
+<translation id="6657585470893396449">Lösenord</translation>
 <translation id="6710213216561001401">Föregående</translation>
 <translation id="6718273304615422081">Komprimerar ...</translation>
 <translation id="6751256176799620176">1 mapp har valts</translation>
@@ -726,6 +728,7 @@
 <translation id="9065203028668620118">Redigera</translation>
 <translation id="9099674669267916096">Sidantal</translation>
 <translation id="9110990317705400362">Vi strävar hela tiden efter att göra det säkrare för dig att surfa. Tidigare kunde du uppmanas att lägga till ett tillägg i webbläsaren på vilken webbplats som helst. I de senaste versionerna av Google Chrome måste du uttryckligen tala om för Chrome att du vill installera dessa tillägg genom att lägga till dem via sidan Tillägg. <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
+<translation id="9111102763498581341">Lås upp</translation>
 <translation id="912419004897138677">Kodek</translation>
 <translation id="9129931661813833980">Fäst mapp</translation>
 <translation id="9130775360844693113">De som använder <ph name="DESTINATION_NAME" /> får åtkomst till dessa objekt.</translation>

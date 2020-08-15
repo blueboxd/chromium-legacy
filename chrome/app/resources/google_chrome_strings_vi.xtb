@@ -46,6 +46,7 @@
 <translation id="2123055963409958220">Giúp cải thiện Chrome bằng cách báo cáo <ph name="BEGIN_LINK" />cài đặt hiện tại<ph name="END_LINK" /></translation>
 <translation id="2151406531797534936">Vui lòng khởi động lại Chrome ngay bây giờ</translation>
 <translation id="2246246234298806438">Google Chrome không thể hiển thị xem trước bản in khi thiếu trình xem PDF được cài sẵn.</translation>
+<translation id="226038281051944330">Bạn đã đăng nhập bằng tài khoản mới trong không gian của <ph name="EXISTING_USER" />. Bạn có muốn tạo một không gian mới trên Chrome cho <ph name="NEW_USER" /> để lưu giữ dữ liệu riêng biệt không?</translation>
 <translation id="2290014774651636340">Khóa API của Google bị thiếu. Một số chức năng của Google Chrome sẽ bị tắt.</translation>
 <translation id="2290095356545025170">Bạn có chắc chắn muốn gỡ cài đặt Google Chrome không?</translation>
 <translation id="2309047409763057870">Đây là cài đặt thứ cấp của Google Chrome và không thể trở thành trình duyệt mặc định của bạn.</translation>
@@ -144,12 +145,14 @@
 <translation id="4895437082222824641">Mở liên kết trong thẻ mới của Chrome</translation>
 <translation id="4953650215774548573">Đặt Google Chrome làm trình duyệt mặc định của bạn</translation>
 <translation id="495931528404527476">Trong Chrome</translation>
+<translation id="4960472897514318257">Bạn đã đăng nhập bằng tài khoản công việc. Bạn có muốn tạo một không gian mới trên Chrome cho <ph name="NEW_USER" /> để lưu giữ dữ liệu cá nhân riêng biệt không?</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5062123544085870375">Khởi động lại Chrome OS</translation>
 <translation id="5132929315877954718">Khám phá các ứng dụng, trò chơi, tiện ích và chủ đề tuyệt vời cho Google Chrome.</translation>
 <translation id="5170938038195470297">Không thể sử dụng hồ sơ của bạn vì hồ sơ được tạo từ phiên bản Google Chrome mới hơn.
 
 Một số tính năng có thể không khả dụng. Vui lòng chỉ định thư mục hồ sơ khác hoặc sử dụng phiên bản Chrome mới hơn.</translation>
+<translation id="5171117065011130146">Tạo không gian làm việc mới trên Chrome?</translation>
 <translation id="5193136243808726294">Google Chrome OS không thể mở trang này.</translation>
 <translation id="5251420635869119124">Khách có thể sử dụng Chrome mà không phải thoát khỏi bất cứ nội dung nào.</translation>
 <translation id="532046782124376502">Cảnh báo: Google Chrome không thể ngăn các tiện ích ghi lại lịch sử duyệt web của bạn. Để tắt tiện ích này trong chế độ ẩn danh, hãy bỏ chọn tùy chọn này.</translation>
@@ -262,7 +265,9 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="8823341990149967727">Chrome đã lỗi thời</translation>
 <translation id="8834965163890861871">Google Chrome đang cố gắng chỉnh sửa mật khẩu. Hãy nhập mật khẩu Windows của bạn để cho phép việc này.</translation>
 <translation id="884296878221830158">Tiện ích này cũng điều khiển trang nào được hiển thị khi bạn khởi động Chrome hoặc nhấp vào nút Trang chủ.</translation>
+<translation id="8859948767482842016">Bạn đã đăng nhập bằng tài khoản công việc trong không gian của <ph name="EXISTING_USER" />. Bạn có muốn tạo một không gian mới trên Chrome cho <ph name="WORK_DOMAIN" /> để lưu giữ dữ liệu riêng biệt không?</translation>
 <translation id="8862326446509486874">Bạn không có quyền thích hợp để cài đặt cấp hệ thống. Thử chạy lại trình cài đặt với vai trò Quản trị viên.</translation>
+<translation id="8877586659207810298">Tạo không gian mới trên Chrome cho <ph name="NEW_USER" />?</translation>
 <translation id="8914504000324227558">Chạy lại Chrome</translation>
 <translation id="8999208279178790196">{0,plural, =0{Đã có bản cập nhật Chrome}=1{Đã có bản cập nhật Chrome}other{Đã có bản cập nhật Chrome từ # ngày trước}}</translation>
 <translation id="9026991721384951619">Chrome OS không thể đồng bộ hóa dữ liệu của bạn do chi tiết đăng nhập tài khoản của bạn đã lỗi thời.</translation>

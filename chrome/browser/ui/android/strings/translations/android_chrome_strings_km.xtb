@@ -417,6 +417,7 @@
 <translation id="4314815835985389558">គ្រប់គ្រង​សមកាលកម្ម</translation>
 <translation id="4320177379694898372">គ្មានការភ្ជាប់អ៊ីនធឺណិតទេ</translation>
 <translation id="4321739720395210191">មិនអាចបើក​កាមេរ៉ា​របស់អ្នក​បានទេ។ សូម​ចាប់ផ្ដើម​ឧបករណ៍​របស់អ្នក​ឡើងវិញ រួច​ព្យាយាម​ម្ដងទៀត។</translation>
+<translation id="4335835283689002019">ការរុករក​ដោយសុវត្ថិភាព​ត្រូវបានបិទ</translation>
 <translation id="4351244548802238354">បិទប្រអប់</translation>
 <translation id="4378154925671717803">ទូរស័ព្ទ</translation>
 <translation id="4382908510000698092">ប្រើជាភាសារបស់ Chrome</translation>
@@ -457,6 +458,7 @@
 <translation id="4662373422909645029">ឈ្មោះហៅក្រៅមិនអាចមានលេខបានទេ</translation>
 <translation id="4663756553811254707">បានលុបចំណាំ <ph name="NUMBER_OF_BOOKMARKS" /></translation>
 <translation id="4665282149850138822"><ph name="NAME" /> ត្រូវបានបន្ថែមទៅអេក្រង់ដើមរបស់អ្នក</translation>
+<translation id="4668347365065281350">ទិន្នន័យ​ទាំងអស់​ដែលគេហទំព័រ​រក្សាទុក រួមទាំង​ខូគី និង​ទិន្នន័យ​ផ្សេងទៀត​ក្នុងឧបករណ៍</translation>
 <translation id="4684427112815847243">ធ្វើសមកម្មគ្រប់យ៉ាង</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 និង <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ទៀត}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 និង <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ទៀត}}</translation>
 <translation id="4696983787092045100">ផ្ញើសារ​ជាអក្សរ​ទៅ​ឧបករណ៍​របស់អ្នក</translation>
@@ -613,6 +615,7 @@
 <translation id="5763382633136178763">ផ្ទាំងអនាមិក</translation>
 <translation id="5763514718066511291">ចុច​ដើម្បី​ចម្លង URL សម្រាប់​កម្មវិធី​នេះ</translation>
 <translation id="5765780083710877561">ការពិពណ៌នា៖</translation>
+<translation id="5776970333778123608">ទិន្នន័យ​មិនសំខាន់</translation>
 <translation id="5793665092639000975">ប្រើ​អស់ <ph name="SPACE_USED" /> នៃ <ph name="SPACE_AVAILABLE" /></translation>
 <translation id="5795872532621730126">ស្វែងរក និង​រុករក</translation>
 <translation id="5797070761912323120">Google អាចនឹង​ប្រើ​ប្រវត្តិ​របស់អ្នក ដើម្បី​ធ្វើឱ្យ​ការស្វែងរក ការផ្សាយ​ពាណិជ្ជកម្ម និងសេវាកម្ម Google ផ្សេងទៀតស្របនឹងអ្នក</translation>
@@ -1047,6 +1050,7 @@
 <translation id="9050666287014529139">ឃ្លាសម្ងាត់</translation>
 <translation id="9063523880881406963">បិទសំណើគេហទំព័រសម្រាប់កុំព្យូទ័រ</translation>
 <translation id="9065203028668620118">កែប្រែ</translation>
+<translation id="9065383040763568503">ទិន្នន័យ​ដែលបានរក្សាទុក​ដែល Chrome គិតថា​មិនសំខាន់ (ឧ. គេហទំព័រ​ដែលមិនមាន​ការកំណត់​ដែលបានរក្សាទុក ឬ​គេហទំព័រ​ដែលអ្នក​មិនសូវ​ចូលមើល​ញឹកញាប់)</translation>
 <translation id="9069543557624799859">ការទាញយកនឹងចាប់ផ្ដើមនៅម៉ោង <ph name="TIME" />។</translation>
 <translation id="9070377983101773829">ចាប់ផ្តើមស្វែងរកដោយសម្លេង</translation>
 <translation id="9074336505530349563">ដើម្បីទទួលបានខ្លឹមសារស្របតាមបុគ្គលដែលណែនាំដោយ Google សូមបើកសមកាលកម្ម</translation>

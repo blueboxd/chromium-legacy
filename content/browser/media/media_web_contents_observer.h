@@ -99,6 +99,10 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
     audible_metrics_ = audible_metrics;
   }
 
+  void OnReceivedTranslatedDeviceId(RenderFrameHost* render_frame_host,
+                                    int delegate_id,
+                                    const std::string& raw_device_id);
+
 #if defined(OS_ANDROID)
   // Called by the WebContents when a tab has been closed but may still be
   // available for "undo" -- indicates that all media players (even audio only
@@ -152,10 +156,6 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
   void OnAudioOutputSinkChanged(RenderFrameHost* render_frame_host,
                                 int delegate_id,
                                 std::string hashed_device_id);
-  void OnAudioOutputDeviceIdTranslated(
-      RenderFrameHost* render_frame_host,
-      int delegate_id,
-      const base::Optional<std::string>& raw_device_id);
   void OnBufferUnderflow(RenderFrameHost* render_frame_host, int delegate_id);
 
   device::mojom::WakeLock* GetAudioWakeLock();

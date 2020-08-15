@@ -113,6 +113,16 @@ const char kManifest1WithNotModifiedContents[] =
     "CACHE:\n"
     "notmodified\n";
 
+const char kManifest1WithMaybeModifiedContents[] =
+    "CACHE MANIFEST\n"
+    "explicit1\n"
+    "FALLBACK:\n"
+    "fallback1 fallback1a\n"
+    "NETWORK:\n"
+    "*\n"
+    "CACHE:\n"
+    "maybemodified\n";
+
 const char kExplicit1Contents[] = "explicit1";
 
 // By default, kManifest2Contents is served from a path in /files/, so any
@@ -273,6 +283,9 @@ class MockHttpServer {
     } else if (path == "/files/manifest1-with-notmodified") {
       (*headers) = std::string(manifest_headers, base::size(manifest_headers));
       (*body) = kManifest1WithNotModifiedContents;
+    } else if (path == "/files/manifest1-with-maybemodified") {
+      (*headers) = std::string(manifest_headers, base::size(manifest_headers));
+      (*body) = kManifest1WithMaybeModifiedContents;
     } else if (path == "/files/manifest-fb-404") {
       (*headers) = std::string(manifest_headers, base::size(manifest_headers));
       (*body) =
@@ -313,6 +326,13 @@ class MockHttpServer {
           "CACHE MANIFEST\n"
           "CHROMIUM-INTERCEPT:\n"
           "intercept1 return intercept1a\n";
+    } else if (path == "/files/maybemodified") {
+      (*headers) =
+          std::string(not_modified_headers, base::size(not_modified_headers));
+      (*body) = "maybemodified";
+    } else if (path == "/files/modified") {
+      (*headers) = std::string(ok_headers, base::size(ok_headers));
+      (*body) = "modified";
     } else if (path == "/files/notmodified") {
       (*headers) =
           std::string(not_modified_headers, base::size(not_modified_headers));
@@ -709,12 +729,24 @@ class AppCacheUpdateJobTest : public testing::Test,
     if (it != http_headers_request_test_jobs_.end())
       it->second->ValidateExtraHeaders(url_request.headers);
 
+    // Copy the URL so we can optionally override it under certain conditions.
+    GURL requested_url = url_request.url;
+
+    // If "files/maybemodified" is requested without a conditional header,
+    // treat the request as if it's a request for "files/modified".  The
+    // result will be a 200 OK response (rather than maybemodified's normal
+    // 304 response).
+    if (requested_url.path() == "/files/maybemodified" &&
+        !url_request.headers.HasHeader("If-Modified-Since")) {
+      requested_url = GURL("http://mockhost/files/modified");
+    }
+
     std::string headers;
     std::string body;
-    if (RetryRequestTestJob::IsRetryUrl(url_request.url)) {
-      RetryRequestTestJob::GetResponseForURL(url_request.url, &headers, &body);
+    if (RetryRequestTestJob::IsRetryUrl(requested_url)) {
+      RetryRequestTestJob::GetResponseForURL(requested_url, &headers, &body);
     } else {
-      MockHttpServer::GetMockResponse(url_request.url.path(), &headers, &body);
+      MockHttpServer::GetMockResponse(requested_url.path(), &headers, &body);
     }
 
     net::HttpResponseInfo info;
@@ -3978,6 +4010,173 @@ class AppCacheUpdateJobTest : public testing::Test,
     // Continues async in |TestComplete|.
   }
 
+  void RequestResponseTimesCorruptionFixedTest() {
+    RequestResponseTimesCorruption(/*expect_modified=*/true);
+  }
+
+  void RequestResponseTimesCorruptionNotFixedTest() {
+    RequestResponseTimesCorruption(/*expect_modified=*/false);
+  }
+
+  void RequestResponseTimesCorruption(bool expect_modified) {
+    MakeService();
+    group_ = base::MakeRefCounted<AppCacheGroup>(
+        service_->storage(),
+        MockHttpServer::GetMockUrl("files/manifest1-with-maybemodified"), 111);
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
+    group_->update_job_ = update;
+
+    // Create a cache without a manifest entry.  The manifest entry will be
+    // added later.
+    AppCache* cache = MakeCacheForGroup(service_->storage()->NewCacheId(), -1);
+    MockFrontend* frontend = MakeMockFrontend();
+    AppCacheHost* host = MakeHost(frontend);
+    host->AssociateCompleteCache(cache);
+
+    // Set up checks for when update job finishes.
+    do_checks_after_update_finished_ = true;
+    expect_group_obsolete_ = false;
+    expect_group_has_cache_ = true;
+    tested_manifest_ = MANIFEST1_WITH_MAYBEMODIFIED;
+    if (!expect_modified) {
+      expect_old_cache_ = cache;
+    }
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_DOWNLOADING_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_PROGRESS_EVENT);  // final
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_UPDATE_READY_EVENT);
+
+    AppCacheCacheTestHelper::CacheEntries cache_entries;
+
+    // Add cache entry for manifest.
+    // Seed storage with expected manifest response info that will cause
+    // an If-Modified-Since header to be put in the manifest fetch request.
+    {
+      const char data[] =
+          "HTTP/1.1 200 OK\0"
+          "Last-Modified: Sat, 29 Oct 2019 19:43:31 GMT\0";
+      scoped_refptr<net::HttpResponseHeaders> headers =
+          base::MakeRefCounted<net::HttpResponseHeaders>(
+              std::string(data, base::size(data)));
+      std::unique_ptr<net::HttpResponseInfo> response_info =
+          std::make_unique<net::HttpResponseInfo>();
+      response_info->headers = std::move(headers);
+      response_info->request_time = base::Time::Now() - kOneYear;
+      response_info->response_time = base::Time::Now() - kOneYear;
+      AppCacheCacheTestHelper::AddCacheEntry(
+          &cache_entries, group_->manifest_url(), AppCacheEntry::EXPLICIT,
+          /*expect_if_modified_since=*/std::string(),
+          /*expect_if_none_match=*/std::string(), /*headers_allowed=*/true,
+          std::move(response_info), kManifest1WithMaybeModifiedContents);
+    }
+
+    // Add cache entry for maybemodified.
+    // Seed storage with expected cache response info that will cause
+    // an If-Modified-Since header to be put in the fetch request.
+    {
+      const char data[] =
+          "HTTP/1.1 200 OK\0"
+          "Last-Modified: Sat, 29 Oct 2019 19:43:31 GMT\0";
+      scoped_refptr<net::HttpResponseHeaders> headers =
+          base::MakeRefCounted<net::HttpResponseHeaders>(
+              std::string(data, base::size(data)));
+      std::unique_ptr<net::HttpResponseInfo> response_info =
+          std::make_unique<net::HttpResponseInfo>();
+      response_info->headers = std::move(headers);
+      CHECK_EQ(response_info->request_time, base::Time());
+      CHECK_EQ(response_info->response_time, base::Time());
+      std::string expect_if_modified_since;
+      if (!expect_modified) {
+        expect_if_modified_since = "Sat, 29 Oct 2019 19:43:31 GMT";
+      }
+      AppCacheCacheTestHelper::AddCacheEntry(
+          &cache_entries, MockHttpServer::GetMockUrl("files/maybemodified"),
+          AppCacheEntry::EXPLICIT,
+          /*expect_if_modified_since=*/expect_if_modified_since,
+          /*expect_if_none_match=*/std::string(), /*headers_allowed=*/true,
+          std::move(response_info), /*body=*/"cached-maybemodified");
+    }
+
+    // Add all header checks from |cache_entries|.
+    for (auto& it : cache_entries) {
+      http_headers_request_test_jobs_.emplace(
+          it.first,
+          std::make_unique<HttpHeadersRequestTestJob>(
+              it.second->expect_if_modified_since,
+              it.second->expect_if_none_match, it.second->headers_allowed));
+    }
+
+    cache_helper_ = std::make_unique<AppCacheCacheTestHelper>(
+        service_.get(), group_->manifest_url(), cache, std::move(cache_entries),
+        base::BindOnce(
+            &AppCacheUpdateJobTest::StartUpdateAfterSeedingStorageData,
+            base::Unretained(this)));
+    cache_helper_->Write();
+
+    post_update_finished_cb_ = base::BindOnce(
+        &AppCacheUpdateJobTest::RequestResponseTimesCorruptionUpdateFinished,
+        base::Unretained(this), expect_modified);
+
+    // Start update after data write completes asynchronously.
+    // After update is finished, continues async in
+    // |RequestResponseTimesCorruptionUpdateFinished|.
+  }
+
+  void RequestResponseTimesCorruptionUpdateFinished(bool expect_modified) {
+    // After cache write was complete, we note that we expect an item to be
+    // copied for the not modified case.
+    if (!expect_modified) {
+      expect_response_ids_.insert(std::map<GURL, int64_t>::value_type(
+          MockHttpServer::GetMockUrl("files/maybemodified"),
+          expect_old_cache_
+              ->GetEntry(MockHttpServer::GetMockUrl("files/maybemodified"))
+              ->response_id()));  // copied
+    }
+    ASSERT_NE(group_->newest_complete_cache(), cache_helper_->write_cache());
+    ASSERT_NE(group_->newest_complete_cache(), nullptr);
+    cache_helper_->PrepareForRead(
+        group_->newest_complete_cache(),
+        base::BindOnce(
+            &AppCacheUpdateJobTest::RequestResponseTimesCorruptionReadFinished,
+            base::Unretained(this), expect_modified));
+    cache_helper_->Read();
+    // Continues async in |RequestResponseTimesCorruptionReadFinished|.
+  }
+
+  void RequestResponseTimesCorruptionReadFinished(bool expect_modified) {
+    std::string resource_name;
+    resource_name = "files/maybemodified";
+    auto it = cache_helper_->read_cache_entries().find(
+        MockHttpServer::GetMockUrl(resource_name));
+    ASSERT_NE(it, cache_helper_->read_cache_entries().end());
+    if (expect_modified) {
+      // Verify that the cache body on the entry matches the expected mock
+      // return body.
+      CHECK_EQ(it->second->body, "modified");
+      CHECK_GT(it->second->response_info->request_time,
+               base::Time::Now() - kOneHour);
+      CHECK_GT(it->second->response_info->response_time,
+               base::Time::Now() - kOneHour);
+    } else {
+      CHECK_EQ(it->second->body, "cached-maybemodified");
+      CHECK_EQ(it->second->response_info->request_time, base::Time());
+      CHECK_EQ(it->second->response_info->response_time, base::Time());
+    }
+    TriggerTestComplete();
+    // Continues async in |TestComplete|.
+  }
+
   void IfNoneMatchRefetchTest() {
     MakeService();
     group_ = base::MakeRefCounted<AppCacheGroup>(
@@ -4426,7 +4625,10 @@ class AppCacheUpdateJobTest : public testing::Test,
           VerifyManifest1(cache);
           break;
         case MANIFEST1_WITH_NOTMODIFIED:
-          VerifyManifest1WithNotmodified(cache);
+          VerifyManifest1WithNotModified(cache);
+          break;
+        case MANIFEST1_WITH_MAYBEMODIFIED:
+          VerifyManifest1WithMaybeModified(cache);
           break;
         case MANIFEST2_WITH_ROOT_SCOPE:
           VerifyManifest2WithRootScope(cache);
@@ -4502,7 +4704,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     EXPECT_TRUE(cache->update_time_ > base::Time());
   }
 
-  void VerifyManifest1WithNotmodified(AppCache* cache) {
+  void VerifyManifest1WithNotModified(AppCache* cache) {
     size_t expected = 4 + expect_extra_entries_.size();
     EXPECT_EQ(expected, cache->entries().size());
     const char* kManifestPath = tested_manifest_path_override_
@@ -4512,6 +4714,49 @@ class AppCacheUpdateJobTest : public testing::Test,
         cache->GetEntry(MockHttpServer::GetMockUrl(kManifestPath));
     ASSERT_TRUE(entry);
     EXPECT_EQ(AppCacheEntry::MANIFEST, entry->types());
+    entry = cache->GetEntry(MockHttpServer::GetMockUrl("files/notmodified"));
+    ASSERT_TRUE(entry);
+    EXPECT_TRUE(entry->IsExplicit());
+    entry = cache->GetEntry(MockHttpServer::GetMockUrl("files/explicit1"));
+    ASSERT_TRUE(entry);
+    EXPECT_TRUE(entry->IsExplicit());
+    entry = cache->GetEntry(MockHttpServer::GetMockUrl("files/fallback1a"));
+    ASSERT_TRUE(entry);
+    EXPECT_EQ(AppCacheEntry::FALLBACK, entry->types());
+
+    for (const auto& pair : expect_extra_entries_) {
+      entry = cache->GetEntry(pair.first);
+      ASSERT_TRUE(entry);
+      EXPECT_EQ(pair.second.types(), entry->types());
+    }
+
+    expected = 1;
+    ASSERT_EQ(expected, cache->fallback_namespaces_.size());
+    EXPECT_TRUE(
+        cache->fallback_namespaces_[0] ==
+        AppCacheNamespace(APPCACHE_FALLBACK_NAMESPACE,
+                          MockHttpServer::GetMockUrl("files/fallback1"),
+                          MockHttpServer::GetMockUrl("files/fallback1a")));
+
+    EXPECT_TRUE(cache->online_safelist_namespaces_.empty());
+    EXPECT_TRUE(cache->online_safelist_all_);
+
+    EXPECT_TRUE(cache->update_time_ > base::Time());
+  }
+
+  void VerifyManifest1WithMaybeModified(AppCache* cache) {
+    size_t expected = 4 + expect_extra_entries_.size();
+    EXPECT_EQ(expected, cache->entries().size());
+    const char* kManifestPath = tested_manifest_path_override_
+                                    ? tested_manifest_path_override_
+                                    : "files/manifest1-with-maybemodified";
+    AppCacheEntry* entry =
+        cache->GetEntry(MockHttpServer::GetMockUrl(kManifestPath));
+    ASSERT_TRUE(entry);
+    EXPECT_EQ(AppCacheEntry::MANIFEST, entry->types());
+    entry = cache->GetEntry(MockHttpServer::GetMockUrl("files/maybemodified"));
+    ASSERT_TRUE(entry);
+    EXPECT_TRUE(entry->IsExplicit());
     entry = cache->GetEntry(MockHttpServer::GetMockUrl("files/explicit1"));
     ASSERT_TRUE(entry);
     EXPECT_TRUE(entry->IsExplicit());
@@ -4894,6 +5139,7 @@ class AppCacheUpdateJobTest : public testing::Test,
   enum TestedManifest {
     NONE,
     MANIFEST1,
+    MANIFEST1_WITH_MAYBEMODIFIED,
     MANIFEST1_WITH_NOTMODIFIED,
     MANIFEST2_WITH_ROOT_SCOPE,
     MANIFEST2_WITH_FILES_SCOPE,
@@ -5139,6 +5385,30 @@ class AppCacheUpdateJobNoUpdateOn304Test : public AppCacheUpdateJobTest {
   AppCacheUpdateJobNoUpdateOn304Test() {
     scoped_feature_list_.InitAndDisableFeature(
         kAppCacheUpdateResourceOn304Feature);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+class AppCacheUpdateJobWithCorruptionRecoveryTest
+    : public AppCacheUpdateJobTest {
+ public:
+  AppCacheUpdateJobWithCorruptionRecoveryTest() {
+    scoped_feature_list_.InitAndEnableFeature(
+        kAppCacheCorruptionRecoveryFeature);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+class AppCacheUpdateJobWithoutCorruptionRecoveryTest
+    : public AppCacheUpdateJobTest {
+ public:
+  AppCacheUpdateJobWithoutCorruptionRecoveryTest() {
+    scoped_feature_list_.InitAndDisableFeature(
+        kAppCacheCorruptionRecoveryFeature);
   }
 
  private:
@@ -5548,6 +5818,18 @@ TEST_F(AppCacheUpdateJobUpdateOn304Test, RequestResponseTimesAreModified) {
 TEST_F(AppCacheUpdateJobNoUpdateOn304Test, RequestResponseTimesAreNotModified) {
   RunTestOnUIThread(
       &AppCacheUpdateJobTest::RequestResponseTimesAreNotModifiedTest);
+}
+
+TEST_F(AppCacheUpdateJobWithCorruptionRecoveryTest,
+       RequestResponseTimesCorruptionFixed) {
+  RunTestOnUIThread(
+      &AppCacheUpdateJobTest::RequestResponseTimesCorruptionFixedTest);
+}
+
+TEST_F(AppCacheUpdateJobWithoutCorruptionRecoveryTest,
+       RequestResponseTimesCorruptionNotFixed) {
+  RunTestOnUIThread(
+      &AppCacheUpdateJobTest::RequestResponseTimesCorruptionNotFixedTest);
 }
 
 TEST_F(AppCacheUpdateJobTest, IfNoneMatchRefetch) {

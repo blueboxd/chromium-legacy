@@ -6,7 +6,7 @@
 // program_invocation_short_name. Keep this at the top of the file since some
 // system headers might include <errno.h> and the header could be skipped on
 // subsequent includes.
-#if defined(OS_LINUX) && !defined(_GNU_SOURCE)
+#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && !defined(_GNU_SOURCE)
 #define _GNU_SOURCE
 #endif
 
@@ -26,7 +26,7 @@
 #include "base/command_line.h"
 #endif  // defined(OS_POSIX) && !defined(OS_MAC) && !defined(OS_SOLARIS)
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #include <errno.h>  // Get program_invocation_short_name declaration.
 #include <sys/prctl.h>
 
@@ -37,7 +37,7 @@
 #include "base/threading/platform_thread.h"
 // Linux/glibc doesn't natively have setproctitle().
 #include "services/service_manager/embedder/set_process_title_linux.h"
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
 namespace service_manager {
 
@@ -52,7 +52,7 @@ void SetProcessTitleFromCommandLine(const char** main_argv) {
   std::string title;
   bool have_argv0 = false;
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   DCHECK_EQ(base::PlatformThread::CurrentId(), getpid());
 
   if (main_argv)
@@ -85,7 +85,7 @@ void SetProcessTitleFromCommandLine(const char** main_argv) {
     // setproctitle().
     program_invocation_short_name = strdup(base_name.c_str());
   }
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();

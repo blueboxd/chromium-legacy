@@ -131,7 +131,7 @@ class CastBrowserMainParts : public content::BrowserMainParts {
   std::unique_ptr<PrefService> user_pref_service_;
 #endif
 
-#if defined(OS_LINUX) && defined(USE_OZONE)
+#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(USE_OZONE)
   std::unique_ptr<WaylandServerController> wayland_server_controller_;
 #endif
 

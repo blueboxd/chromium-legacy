@@ -94,7 +94,7 @@ class AppBrowserControllerBrowserTest : public InProcessBrowserTest {
  public:
   AppBrowserControllerBrowserTest()
       : test_system_web_app_installation_(
-            TestSystemWebAppInstallation::SetUpTabbedMultiWindowApp()) {}
+            TestSystemWebAppInstallation::SetUpTabbedMultiWindowApp(false)) {}
 
  protected:
   void InstallAndLaunchMockApp() {
@@ -284,7 +284,7 @@ class AppBrowserControllerChromeUntrustedBrowserTest
  public:
   AppBrowserControllerChromeUntrustedBrowserTest()
       : test_system_web_app_installation_(
-            TestSystemWebAppInstallation::SetUpChromeUntrustedApp()) {}
+            TestSystemWebAppInstallation::SetUpChromeUntrustedApp(false)) {}
 
  protected:
   Browser* InstallAndLaunchMockApp() {

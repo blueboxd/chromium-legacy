@@ -56,7 +56,7 @@
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/image_loader_client.h"
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || defined(OS_CHROMEOS)
 #include "chrome/common/component_flash_hint_file_linux.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -155,7 +155,8 @@ bool SkipFlashRegistration(ComponentUpdateService* cus) {
 #endif  // defined(OS_CHROMEOS)
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
-#if !defined(OS_LINUX) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#if (!defined(OS_LINUX) && !defined(OS_CHROMEOS)) && \
+    BUILDFLAG(GOOGLE_CHROME_BRANDING)
 bool MakePepperFlashPluginInfo(const base::FilePath& flash_path,
                                const base::Version& flash_version,
                                bool out_of_process,
@@ -240,7 +241,8 @@ void RegisterPepperFlashWithChrome(const base::FilePath& path,
 void UpdatePathService(const base::FilePath& path) {
   base::PathService::Override(chrome::DIR_PEPPER_FLASH_PLUGIN, path);
 }
-#endif  // !defined(OS_LINUX) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#endif  // (!defined(OS_LINUX) && !defined(OS_CHROMEOS)) &&
+        // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 class FlashComponentInstallerPolicy : public ComponentInstallerPolicy {
@@ -295,7 +297,7 @@ FlashComponentInstallerPolicy::OnCustomInstall(
   content::GetUIThreadTaskRunner({})->PostTask(
       FROM_HERE,
       base::BindOnce(&ImageLoaderRegistration, version, install_dir));
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || defined(OS_CHROMEOS)
   const base::FilePath flash_path =
       install_dir.Append(chrome::kPepperFlashPluginFilename);
   // Populate the component updated flash hint file so that the zygote can
@@ -304,7 +306,7 @@ FlashComponentInstallerPolicy::OnCustomInstall(
                                                     version)) {
     return update_client::ToInstallerResult(FlashError::HINT_FILE_RECORD_ERROR);
   }
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
   return update_client::CrxInstaller::Result(update_client::InstallError::NONE);
 }
 
@@ -314,7 +316,7 @@ void FlashComponentInstallerPolicy::ComponentReady(
     const base::Version& version,
     const base::FilePath& path,
     std::unique_ptr<base::DictionaryValue> manifest) {
-#if !defined(OS_LINUX)
+#if !defined(OS_LINUX) && !defined(OS_CHROMEOS)
   // Installation is done. Now tell the rest of chrome. Both the path service
   // and to the plugin service. On Linux, a restart is required to use the new
   // Flash version, so we do not do this.
@@ -323,7 +325,7 @@ void FlashComponentInstallerPolicy::ComponentReady(
   base::ThreadPool::PostTask(
       FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
       base::BindOnce(&UpdatePathService, path));
-#endif  // !defined(OS_LINUX)
+#endif  // !defined(OS_LINUX) && !defined(OS_CHROMEOS)
 }
 
 bool FlashComponentInstallerPolicy::VerifyInstallation(

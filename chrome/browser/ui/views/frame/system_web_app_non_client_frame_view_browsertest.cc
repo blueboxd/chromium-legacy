@@ -43,8 +43,11 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppNonClientFrameViewBrowserTest,
       PageActionIconType::kNativeFileSystemAccess));
 }
 
-INSTANTIATE_TEST_SUITE_P(All,
-                         SystemWebAppNonClientFrameViewBrowserTest,
-                         ::testing::Values(web_app::ProviderType::kBookmarkApps,
-                                           web_app::ProviderType::kWebApps),
-                         web_app::ProviderTypeParamToString);
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    SystemWebAppNonClientFrameViewBrowserTest,
+    ::testing::Combine(
+        ::testing::Values(web_app::ProviderType::kBookmarkApps,
+                          web_app::ProviderType::kWebApps),
+        ::testing::Values(web_app::InstallationType::kManifestInstall)),
+    web_app::ProviderAndInstallationTypeToString);

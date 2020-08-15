@@ -15,6 +15,7 @@
 #include "components/password_manager/ios/credential_manager_util.h"
 #import "ios/web_view/internal/passwords/web_view_account_password_store_factory.h"
 #import "ios/web_view/internal/passwords/web_view_password_manager_log_router_factory.h"
+#import "ios/web_view/internal/passwords/web_view_password_requirements_service_factory.h"
 #include "ios/web_view/internal/passwords/web_view_password_store_factory.h"
 #include "ios/web_view/internal/signin/web_view_identity_manager_factory.h"
 #import "ios/web_view/internal/sync/web_view_profile_sync_service_factory.h"
@@ -53,9 +54,13 @@ WebViewPasswordManagerClient::Create(web::WebState* web_state,
   scoped_refptr<password_manager::PasswordStore> account_store =
       ios_web_view::WebViewAccountPasswordStoreFactory::GetForBrowserState(
           browser_state, ServiceAccessType::EXPLICIT_ACCESS);
+  password_manager::PasswordRequirementsService* requirements_service =
+      WebViewPasswordRequirementsServiceFactory::GetForBrowserState(
+          browser_state, ServiceAccessType::EXPLICIT_ACCESS);
   return std::make_unique<ios_web_view::WebViewPasswordManagerClient>(
       web_state, sync_service, browser_state->GetPrefs(), identity_manager,
-      std::move(log_manager), profile_store.get(), account_store.get());
+      std::move(log_manager), profile_store.get(), account_store.get(),
+      requirements_service);
 }
 
 WebViewPasswordManagerClient::WebViewPasswordManagerClient(
@@ -65,7 +70,8 @@ WebViewPasswordManagerClient::WebViewPasswordManagerClient(
     signin::IdentityManager* identity_manager,
     std::unique_ptr<autofill::LogManager> log_manager,
     PasswordStore* profile_store,
-    PasswordStore* account_store)
+    PasswordStore* account_store,
+    password_manager::PasswordRequirementsService* requirements_service)
     : web_state_(web_state),
       sync_service_(sync_service),
       pref_service_(pref_service),
@@ -78,6 +84,7 @@ WebViewPasswordManagerClient::WebViewPasswordManagerClient(
           this,
           base::BindRepeating(&WebViewPasswordManagerClient::GetSyncService,
                               base::Unretained(this))),
+      requirements_service_(requirements_service),
       helper_(this) {
   saving_passwords_enabled_.Init(
       password_manager::prefs::kCredentialsEnableService, GetPrefs());
@@ -203,6 +210,14 @@ void WebViewPasswordManagerClient::NotifyStorePasswordCalled() {
   helper_.NotifyStorePasswordCalled();
 }
 
+void WebViewPasswordManagerClient::NotifyUserCredentialsWereLeaked(
+    password_manager::CredentialLeakType leak_type,
+    password_manager::CompromisedSitesCount saved_sites,
+    const GURL& origin,
+    const base::string16& username) {
+  [bridge_ showPasswordBreachForLeakType:leak_type URL:origin];
+}
+
 bool WebViewPasswordManagerClient::IsSavingAndFillingEnabled(
     const GURL& url) const {
   return *saving_passwords_enabled_ && !IsIncognito() &&
@@ -250,6 +265,11 @@ signin::IdentityManager* WebViewPasswordManagerClient::GetIdentityManager() {
 scoped_refptr<network::SharedURLLoaderFactory>
 WebViewPasswordManagerClient::GetURLLoaderFactory() {
   return web_state_->GetBrowserState()->GetSharedURLLoaderFactory();
+}
+
+password_manager::PasswordRequirementsService*
+WebViewPasswordManagerClient::GetPasswordRequirementsService() {
+  return requirements_service_;
 }
 
 void WebViewPasswordManagerClient::UpdateFormManagers() {

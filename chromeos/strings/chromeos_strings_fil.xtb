@@ -9,6 +9,7 @@
 <translation id="150962533380566081">Di-wasto ang PUK.</translation>
 <translation id="1510238584712386396">Launcher</translation>
 <translation id="1644574205037202324">History</translation>
+<translation id="1662989795263954667">Huminto - Wala nang ink</translation>
 <translation id="1734367976349034509">Ang device na ito ay pinamamahalaan ng enterprise</translation>
 <translation id="1905710495812624430">Nalampasan na ang maximum na pinapahintulutang bilang ng pagsubok</translation>
 <translation id="1930797645656624981">Serbisyo ng Pamamaraan ng Pag-input ng Chrome OS</translation>
@@ -39,18 +40,22 @@
 <translation id="4227825898293920515">Mag-e-expire ang password sa loob ng <ph name="TIME" /></translation>
 <translation id="4238516577297848345">Walang kasalukuyang pag-print</translation>
 <translation id="428217921675623177">Aalisin ang mga pag-print na lampas na sa 90 araw</translation>
+<translation id="4297501883039923494">Huminto - Hindi kilalang error</translation>
 <translation id="4429881212383817840">Mag-e-expire na ang ticket ng Kerberos</translation>
 <translation id="445059817448385655">Lumang password</translation>
 <translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> sa <ph name="TOTAL_PAGE_NUMBER" />. Pindutin ang enter para kanselahin ang pag-print.</translation>
 <translation id="467510802200863975">Hindi nagtutugma ang mga password</translation>
+<translation id="4691278870498629773">Huminto - Walang tray</translation>
 <translation id="4731797938093519117">Pangunahing access</translation>
 <translation id="4773299976671772492">Inihinto</translation>
 <translation id="4808449224298348341">Kinansela ang pag-print ng <ph name="DOCUMENT_TITLE" /></translation>
 <translation id="4890353053343094602">Pumili agad ng bago</translation>
+<translation id="4917889632206600977">Huminto - Wala nang papel</translation>
 <translation id="4932733599132424254">Petsa</translation>
 <translation id="5212543919916444558">Wala akong makitang kahit ano sa iyong screen kung saan ako makakatulong.
 Subukang i-tap ang mikropono para humiling sa akin ng kahit ano.</translation>
 <translation id="5222676887888702881">Mag-sign out</translation>
+<translation id="5267975978099728568"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="ERROR_STATUS" /></translation>
 <translation id="5317780077021120954">I-save</translation>
 <translation id="5326394068492324457"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="COMPLETION_STATUS" /></translation>
 <translation id="5332948983412042822">Pumili ng bago ngayon</translation>
@@ -63,9 +68,11 @@ Subukang i-tap ang mikropono para humiling sa akin ng kahit ano.</translation>
 <translation id="6106186594183574873">Para tapusin, ilagay ang iyong lumang password</translation>
 <translation id="6146993107019042706">Para tapusin, ilagay ang bago mong password</translation>
 <translation id="636850387210749493">Pagpapatala ng negosyo</translation>
+<translation id="649050271426829538">Huminto - Nagka-paper jam</translation>
 <translation id="6517239166834772319">Explore</translation>
 <translation id="6564646048574748301">Hindi na-print - Hindi makakonekta sa printer</translation>
 <translation id="6643016212128521049">I-clear</translation>
+<translation id="6747215703636344499">Huminto - Puno na ang output</translation>
 <translation id="7162487448488904999">Gallery</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7561454561030345039">Pinapamahalaan ng iyong administrator ang pagkilos na ito.</translation>
@@ -77,6 +84,7 @@ Subukang i-tap ang mikropono para humiling sa akin ng kahit ano.</translation>
 <translation id="8347227221149377169">Mga pag-print</translation>
 <translation id="8701136875688985581">Pinapamahalaan ng <ph name="ENROLLMENT_DOMAIN" /> ang user na ito. Posible nitong pamahalaan ang mga setting at subaybayan ang aktibidad ng user sa remote na paraan.</translation>
 <translation id="871560550817059752">Hindi na-print - Wala nang ink</translation>
+<translation id="8726019395068607495">Huminto - Nakabukas ang door</translation>
 <translation id="8747900814994928677">Kumpirmahin ang pagbabago</translation>
 <translation id="8919837981463578619">Hindi na-print - Walang tray</translation>
 <translation id="8928727111548978589">Hindi na-print - Wala nang papel</translation>

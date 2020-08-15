@@ -100,6 +100,7 @@ class AppServiceAppWindowLauncherController
   AppWindowBase* GetAppWindow(aura::Window* window);
 
   void ObserveWindow(aura::Window* window);
+  bool IsObservingWindow(aura::Window* window);
 
   std::vector<aura::Window*> GetArcWindows();
 

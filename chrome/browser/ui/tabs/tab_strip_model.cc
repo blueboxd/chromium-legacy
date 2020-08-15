@@ -2063,8 +2063,10 @@ base::Optional<tab_groups::TabGroupId> TabStripModel::UngroupTab(int index) {
 
   // Update the tab.
   contents_data_[index]->set_group(base::nullopt);
-  for (auto& observer : observers_)
-    observer.TabGroupedStateChanged(base::nullopt, index);
+  for (auto& observer : observers_) {
+    observer.TabGroupedStateChanged(
+        base::nullopt, contents_data_[index]->web_contents(), index);
+  }
 
   // Update the group model.
   TabGroup* tab_group = group_model_->GetTabGroup(group.value());
@@ -2086,8 +2088,10 @@ void TabStripModel::GroupTab(int index, const tab_groups::TabGroupId& group) {
       UngroupTab(index);
   }
   contents_data_[index]->set_group(group);
-  for (auto& observer : observers_)
-    observer.TabGroupedStateChanged(group, index);
+  for (auto& observer : observers_) {
+    observer.TabGroupedStateChanged(
+        group, contents_data_[index]->web_contents(), index);
+  }
 
   group_model_->GetTabGroup(group)->AddTab();
 }

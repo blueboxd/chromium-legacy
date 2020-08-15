@@ -32,6 +32,7 @@
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/test_location_bar_model.h"
 #include "components/omnibox/common/omnibox_features.h"
+#include "content/public/browser/focused_node_details.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/mock_navigation_handle.h"
 #include "content/public/test/test_renderer_host.h"
@@ -2006,7 +2007,8 @@ TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
                 0, kSimplifiedDomainDisplayUrlSubdomainAndScheme.size())));
 }
 
-// Tests that mouse clicks do not count as user interactions and elide the URL.
+// Tests that mouse clicks do not count as user interactions and do not elide
+// the URL.
 TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest, MouseClick) {
   SetUpSimplifiedDomainTest();
 
@@ -2025,6 +2027,37 @@ TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest, MouseClick) {
   OmniboxViewViews::ElideAnimation* elide_animation =
       omnibox_view()->GetElideAfterInteractionAnimationForTesting();
   EXPECT_FALSE(elide_animation);
+}
+
+// Tests that focusing an editable node does count as a user interaction and
+// elides the URL.
+TEST_P(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
+       FocusingEditableNode) {
+  SetUpSimplifiedDomainTest();
+
+  content::MockNavigationHandle navigation;
+  navigation.set_is_same_document(false);
+  omnibox_view()->DidFinishNavigation(&navigation);
+  ASSERT_NO_FATAL_FAILURE(ExpectUnelidedFromSimplifiedDomain(
+      omnibox_view()->GetRenderText(),
+      gfx::Range(kSimplifiedDomainDisplayUrlScheme.size(),
+                 kSimplifiedDomainDisplayUrl.size())));
+
+  // Focusing a non-editable node should not run the fade-out animation.
+  content::FocusedNodeDetails details;
+  details.is_editable_node = false;
+  omnibox_view()->OnFocusChangedInPage(&details);
+  OmniboxViewViews::ElideAnimation* elide_animation =
+      omnibox_view()->GetElideAfterInteractionAnimationForTesting();
+  EXPECT_FALSE(elide_animation);
+
+  // Focusing an editable node should run the fade-out animation.
+  details.is_editable_node = true;
+  omnibox_view()->OnFocusChangedInPage(&details);
+  elide_animation =
+      omnibox_view()->GetElideAfterInteractionAnimationForTesting();
+  ASSERT_TRUE(elide_animation);
+  EXPECT_TRUE(elide_animation->IsAnimating());
 }
 
 // Tests that simplified domain elisions are re-applied when the omnibox's

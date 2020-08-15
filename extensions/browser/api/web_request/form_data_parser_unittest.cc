@@ -187,8 +187,8 @@ TEST(WebRequestFormDataParserTest, Parsing) {
                           "select",
                           "one",
                           "binary",
-                          "\u0420\u043e\u0434\u0436\u0435\u0440 "
-                          "\u0416\u0435\u043b\u044f\u0437\u043d\u044b"};
+                          ("\u0420\u043e\u0434\u0436\u0435\u0440 "
+                           "\u0416\u0435\u043b\u044f\u0437\u043d\u044b")};
   const std::vector<std::string> kExpected(kPairs, kPairs + base::size(kPairs));
 
   std::vector<const base::StringPiece*> input;

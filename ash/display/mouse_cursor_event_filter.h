@@ -32,6 +32,7 @@ class ASH_EXPORT MouseCursorEventFilter
   MouseCursorEventFilter();
   ~MouseCursorEventFilter() override;
 
+  bool mouse_warp_enabled() const { return mouse_warp_enabled_; }
   void set_mouse_warp_enabled(bool enabled) { mouse_warp_enabled_ = enabled; }
 
   // Shows/Hide the indicator for window dragging. The |from|

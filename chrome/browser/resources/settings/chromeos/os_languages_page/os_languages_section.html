@@ -98,7 +98,8 @@
         <settings-subpage
             associated-control="[[$$('#inputPageTrigger')]]"
             page-title="$i18n{inputPageTitle}">
-          <os-settings-input-page prefs="{{prefs}}">
+          <os-settings-input-page language-helper="[[languageHelper]]"
+              languages="[[languages]]" prefs="{{prefs}}">
           </os-settings-input-page>
         </settings-subpage>
       </template>

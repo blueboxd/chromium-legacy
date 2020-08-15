@@ -82,6 +82,13 @@ class CONTENT_EXPORT ProcessLock {
   // safely just compare ProcessLocks directly.
   const GURL lock_url() const { return site_info_.process_lock_url(); }
 
+  // Returns whether this ProcessLock is specific to an origin rather than
+  // including subdomains, such as due to opt-in origin isolation. This resolves
+  // an ambiguity of whether a process with a lock_url() like
+  // "https://foo.example" is allowed to include "https://sub.foo.example" or
+  // not.
+  bool is_origin_keyed() const { return site_info_.is_origin_keyed(); }
+
   // Returns whether lock_url() is at least at the granularity of a site (i.e.,
   // a scheme plus eTLD+1, like https://google.com).  Also returns true if the
   // lock is to a more specific origin (e.g., https://accounts.google.com), but

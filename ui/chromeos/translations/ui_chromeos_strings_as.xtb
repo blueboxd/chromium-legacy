@@ -43,7 +43,7 @@
 <translation id="1358735829858566124">ফাইলটো বা ডাইৰেক্ট’ৰীটো ব্যৱহাৰযোগ্য নহয়।</translation>
 <translation id="1363028406613469049">ট্ৰেক</translation>
 <translation id="1378727793141957596">Google Driveলৈ স্বাগতম!</translation>
-<translation id="1383876407941801731">সন্ধান</translation>
+<translation id="1383876407941801731">Chowa</translation>
 <translation id="1395262318152388157">ছীক স্লাইডাৰ</translation>
 <translation id="1399648040768741453">তেলেগু কীব’ৰ্ড (উচ্চাৰণগত)</translation>
 <translation id="1430915738399379752">প্ৰিণ্ট কৰক</translation>
@@ -300,6 +300,7 @@
 <translation id="4481711095103932593">এই ফ’ল্ডাৰটো Windowsৰ সৈতে শ্বেয়াৰ কৰা হৈছে</translation>
 <translation id="4487088045714738411">বেলজিয়ান কীব’ৰ্ড</translation>
 <translation id="4522570452068850558">সবিশেষ</translation>
+<translation id="4542387084127299777">"<ph name="PATH" />" খুলিব পৰা নাই</translation>
 <translation id="4552678318981539154">অধিক ষ্ট’ৰেজ কিনক</translation>
 <translation id="4559767610552730302">ব’কে’</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> ফাইল</translation>
@@ -510,6 +511,7 @@
 <translation id="6629841649550503054">সকলো ফাইল <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" />ত বেক আপ কৰা হ’ল!</translation>
 <translation id="6643016212128521049">মচক</translation>
 <translation id="6650726141019353908">গুলপীয়া পখিলা</translation>
+<translation id="6657585470893396449">পাছৱৰ্ড</translation>
 <translation id="6710213216561001401">পূৰ্বৱৰ্তী</translation>
 <translation id="6718273304615422081">জিপ কৰি থকা হৈছে...</translation>
 <translation id="6751256176799620176">১টা ফ’ল্ডাৰ বাছনি কৰা হ’ল</translation>
@@ -717,6 +719,7 @@
 <translation id="9065203028668620118">সম্পাদনা কৰক</translation>
 <translation id="9099674669267916096">পৃষ্ঠাৰ সংখ্যা</translation>
 <translation id="9110990317705400362">আমি আপোনাৰ ব্ৰাউজিং সুৰক্ষিত কৰিবলৈ সদায়েই উপায় বিচাৰি আছোঁ। পূৰ্বতে, যিকোনো ৱেবছাইটে আপোনাৰ ব্ৰাউজাৰত এক্সটেনশ্বন যোগ কৰিবলৈ আপোনাক প্ৰ’ম্প্‌ট কৰিব পাৰিছিল। Google Chromeৰ শেহতীয়া সংস্কৰণত আপুনি Chromeক স্পষ্টভাৱে ক’ব লাগিব যে আপুনি এক্সটেনশ্বন পৃষ্ঠাটোৰ জৰিয়তে এই এক্সটেনশ্বনসমূহ ইনষ্টল কৰিবলৈ বিচাৰে। <ph name="BEGIN_LINK" />অধিক জানক<ph name="END_LINK" /></translation>
+<translation id="9111102763498581341">আনলক</translation>
 <translation id="912419004897138677">ক’ডেক</translation>
 <translation id="9129931661813833980">ফ’ল্ডাৰ পিন কৰক</translation>
 <translation id="9130775360844693113">‘<ph name="DESTINATION_NAME" />’ৰ সদস্যসকলে এই বস্তুবোৰলৈ এক্সেছ পাব।</translation>

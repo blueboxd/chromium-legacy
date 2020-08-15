@@ -127,6 +127,7 @@ js_library("network_config_toggle") {
 js_library("network_ip_config") {
   deps = [
     ":onc_mojo",
+    "../../../cr_elements/cr_toggle:cr_toggle",
     "//ui/webui/resources/js:i18n_behavior",
   ]
 }
@@ -135,6 +136,7 @@ js_library("network_nameservers") {
   deps = [
     ":cr_policy_network_behavior_mojo",
     ":onc_mojo",
+    "../../../cr_elements/cr_radio_group:cr_radio_group",
     "//ui/webui/resources/js:i18n_behavior",
   ]
 }
@@ -245,10 +247,10 @@ js_library("onc_mojo") {
 js_type_check("closure_compile_module") {
   is_polymer3 = true
   deps = [
-    ":mojo_interface_provider.m",
-
     ":cr_policy_network_behavior_mojo.m",
     ":cr_policy_network_indicator_mojo.m",
+    ":mojo_interface_provider.m",
+
     #  ":network_apnlist.m",
     #  ":network_choose_mobile.m",
     #  ":network_config.m",
@@ -528,9 +530,9 @@ polymer_modulizer("cr_policy_network_indicator_mojo") {
   html_file = "cr_policy_network_indicator_mojo.html"
   html_type = "dom-module"
   auto_imports = cr_components_chromeos_auto_imports + [
-    "ui/webui/resources/cr_elements/policy/cr_policy_indicator_behavior.html|CrPolicyIndicatorBehavior,CrPolicyIndicatorType",
-    "ui/webui/resources/cr_components/chromeos/network/cr_policy_network_behavior_mojo.html|CrPolicyNetworkBehaviorMojo",
-  ]
+                   "ui/webui/resources/cr_elements/policy/cr_policy_indicator_behavior.html|CrPolicyIndicatorBehavior,CrPolicyIndicatorType",
+                   "ui/webui/resources/cr_components/chromeos/network/cr_policy_network_behavior_mojo.html|CrPolicyNetworkBehaviorMojo",
+                 ]
 }
 
 polymer_modulizer("network_apnlist") {

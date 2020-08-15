@@ -302,6 +302,7 @@
 <translation id="4481711095103932593">Ez a mappa meg van osztva a Windows rendszerrel</translation>
 <translation id="4487088045714738411">Belga billentyűzet</translation>
 <translation id="4522570452068850558">Részletek</translation>
+<translation id="4542387084127299777">A(z) „<ph name="PATH" />” megnyitása nem sikerült</translation>
 <translation id="4552678318981539154">További tárhely vásárlása</translation>
 <translation id="4559767610552730302">Elmosódott</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> fájl</translation>
@@ -514,6 +515,7 @@
 <translation id="6629841649550503054">Mindenről van biztonsági másolat a <ph name="BEGIN_LINK" />Google Drive-on<ph name="END_LINK" />!</translation>
 <translation id="6643016212128521049">Törlés</translation>
 <translation id="6650726141019353908">Rózsaszín pillangó</translation>
+<translation id="6657585470893396449">Jelszó</translation>
 <translation id="6710213216561001401">Előző</translation>
 <translation id="6718273304615422081">Tömörítés...</translation>
 <translation id="6751256176799620176">1 mappa kiválasztva</translation>
@@ -726,6 +728,7 @@
 <translation id="9065203028668620118">Szerkesztés</translation>
 <translation id="9099674669267916096">Oldalak száma</translation>
 <translation id="9110990317705400362">Folyamatosan keressük az új módszereket, hogy a böngészést biztonságosabbá tegyük. Korábban bármelyik webhely megkérhette Önt, hogy adjon hozzá egy bővítményt a böngészőjéhez. A Google Chrome legújabb verzióiban kifejezetten meg kell mondania a Chrome-nak, hogy telepíteni szeretné ezeket a bővítményeket. Ehhez a Bővítmények oldalon kell hozzáadnia őket. <ph name="BEGIN_LINK" />További információ<ph name="END_LINK" /></translation>
+<translation id="9111102763498581341">Feloldás</translation>
 <translation id="912419004897138677">Kodek</translation>
 <translation id="9129931661813833980">Mappa rögzítése</translation>
 <translation id="9130775360844693113">A(z) „<ph name="DESTINATION_NAME" />” tagjai hozzá fognak férni ezekhez az elemekhez.</translation>

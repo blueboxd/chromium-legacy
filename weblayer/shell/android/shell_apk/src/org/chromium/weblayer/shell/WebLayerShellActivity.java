@@ -62,6 +62,8 @@ import java.util.List;
 /**
  * Activity for managing the Demo Shell.
  */
+// This isn't part of Chrome, so using explicit colors/sizes is ok.
+@SuppressWarnings("checkstyle:SetTextColorAndSetTextSizeCheck")
 public class WebLayerShellActivity extends FragmentActivity {
     private static final String NON_INCOGNITO_PROFILE_NAME = "DefaultProfile";
     private static final String EXTRA_WEBVIEW_COMPAT = "EXTRA_WEBVIEW_COMPAT";

@@ -4,5 +4,5 @@
      found in the LICENSE file. -->
 
 <resources>
-    <color name="feed_placeholder_color">@color/hairline_stroke_color_light</color>
+    <color name="feed_placeholder_color">@color/default_bg_color_secondary_light</color>
 </resources>

@@ -160,13 +160,16 @@ void FullscreenController::EnterFullscreen(LocalFrame& frame,
   // fullscreen events.
   fullscreen_options->is_prefixed =
       request_type & FullscreenRequestType::kPrefixed;
+  fullscreen_options->is_xr_overlay =
+      request_type & FullscreenRequestType::kForXrOverlay;
 
 #if DCHECK_IS_ON()
   DVLOG(2) << __func__ << ": request_type="
            << FullscreenRequestTypeToDebugString(request_type)
            << " fullscreen_options={display_id="
            << fullscreen_options->display_id
-           << ", is_prefixed=" << fullscreen_options->is_prefixed << "}";
+           << ", is_prefixed=" << fullscreen_options->is_prefixed
+           << ", is_xr_overlay=" << fullscreen_options->is_xr_overlay << "}";
 #endif
 
   // Don't send redundant EnterFullscreen message to the browser for the

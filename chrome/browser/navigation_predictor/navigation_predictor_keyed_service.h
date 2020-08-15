@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_NAVIGATION_PREDICTOR_NAVIGATION_PREDICTOR_KEYED_SERVICE_H_
 #define CHROME_BROWSER_NAVIGATION_PREDICTOR_NAVIGATION_PREDICTOR_KEYED_SERVICE_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
@@ -19,6 +20,8 @@ namespace content {
 class BrowserContext;
 class WebContents;
 }  // namespace content
+
+class NavigationPredictorRendererWarmupClient;
 
 // Keyed service that can be used to receive notifications about the URLs for
 // the next predicted navigation.
@@ -143,6 +146,10 @@ class NavigationPredictorKeyedService : public KeyedService {
 
   // Manages preconnecting to the user's default search engine.
   SearchEnginePreconnector search_engine_preconnector_;
+
+  // Manages warming up a spare renderer based on predictions.
+  std::unique_ptr<NavigationPredictorRendererWarmupClient>
+      renderer_warmup_client_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationPredictorKeyedService);
 };

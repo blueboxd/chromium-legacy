@@ -515,6 +515,7 @@
 <translation id="6629841649550503054">All backed up to <ph name="BEGIN_LINK" />Google Drive!<ph name="END_LINK" /></translation>
 <translation id="6643016212128521049">Clear</translation>
 <translation id="6650726141019353908">Pink butterfly</translation>
+<translation id="6657585470893396449">Password</translation>
 <translation id="6710213216561001401">Previous</translation>
 <translation id="6718273304615422081">Zipping...</translation>
 <translation id="6751256176799620176">1 folder selected</translation>
@@ -727,6 +728,7 @@
 <translation id="9065203028668620118">Edit</translation>
 <translation id="9099674669267916096">Page count</translation>
 <translation id="9110990317705400362">We're constantly looking for ways to make your browsing safer. Previously, any website could prompt you to add an extension into your browser. In the latest versions of Google Chrome, you must explicitly tell Chrome that you want to install these extensions by adding them through the Extensions page. <ph name="BEGIN_LINK" />Learn more<ph name="END_LINK" /></translation>
+<translation id="9111102763498581341">Unlock</translation>
 <translation id="912419004897138677">Codec</translation>
 <translation id="9129931661813833980">Pin folder</translation>
 <translation id="9130775360844693113">Members of '<ph name="DESTINATION_NAME" />' will gain access to these items.</translation>

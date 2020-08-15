@@ -72,6 +72,7 @@ enum class WebauthnDialogState;
 struct Suggestion;
 
 namespace payments {
+class AutofillOfferManager;
 class PaymentsClient;
 }
 
@@ -273,6 +274,9 @@ class AutofillClient : public RiskDataLoader {
 
   // Gets an AddressNormalizer instance (can be null).
   virtual AddressNormalizer* GetAddressNormalizer() = 0;
+
+  // Gets an AutofillOfferManager instance.
+  virtual payments::AutofillOfferManager* GetAutofillOfferManager();
 
   // Gets the virtual URL of the last committed page of this client's
   // associated WebContents.

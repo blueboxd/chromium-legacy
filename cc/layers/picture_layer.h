@@ -5,6 +5,7 @@
 #ifndef CC_LAYERS_PICTURE_LAYER_H_
 #define CC_LAYERS_PICTURE_LAYER_H_
 
+#include <memory>
 #include <vector>
 
 #include "cc/base/devtools_instrumentation.h"
@@ -30,11 +31,6 @@ class CC_EXPORT PictureLayer : public Layer {
   void SetNearestNeighbor(bool nearest_neighbor);
   bool nearest_neighbor() const {
     return picture_layer_inputs_.nearest_neighbor;
-  }
-
-  void SetTransformedRasterizationAllowed(bool allowed);
-  bool transformed_rasterization_allowed() const {
-    return picture_layer_inputs_.transformed_rasterization_allowed;
   }
 
   void SetIsBackdropFilterMask(bool is_backdrop_filter_mask);
@@ -69,7 +65,6 @@ class CC_EXPORT PictureLayer : public Layer {
 
     ContentLayerClient* client = nullptr;
     bool nearest_neighbor = false;
-    bool transformed_rasterization_allowed = false;
     bool is_backdrop_filter_mask = false;
     scoped_refptr<DisplayItemList> display_list;
     base::Optional<gfx::Size> directly_composited_image_size = base::nullopt;
@@ -90,8 +85,6 @@ class CC_EXPORT PictureLayer : public Layer {
   friend class TestSerializationPictureLayer;
 
   void DropRecordingSourceContentIfInvalid();
-
-  bool ShouldUseTransformedRasterization() const;
 
   std::unique_ptr<RecordingSource> recording_source_;
   devtools_instrumentation::

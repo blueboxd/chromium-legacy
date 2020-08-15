@@ -54,7 +54,7 @@ else:
 
 _log = logging.getLogger(__name__)
 
-_trailing_spaces_re = re.compile('(.*[^ ])?( +)$')
+_trailing_spaces_re = re.compile('(.*?)( +)$')
 
 
 def quote_data(data):

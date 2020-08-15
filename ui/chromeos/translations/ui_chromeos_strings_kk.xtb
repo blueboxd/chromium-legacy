@@ -302,6 +302,7 @@
 <translation id="4481711095103932593">Бұл қалта Windows арқылы бөлісілді.</translation>
 <translation id="4487088045714738411">Бельгиялық пернетақта</translation>
 <translation id="4522570452068850558">Мәліметтер</translation>
+<translation id="4542387084127299777">"<ph name="PATH" />" ашылмайды.</translation>
 <translation id="4552678318981539154">Көбірек сақтау орнын сатып алу</translation>
 <translation id="4559767610552730302">Боке</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> файлы</translation>
@@ -513,6 +514,7 @@
 <translation id="6629841649550503054"><ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /> ішінде сақтық көшірмесі жасалды!</translation>
 <translation id="6643016212128521049">Тазалау</translation>
 <translation id="6650726141019353908">Қызғылт көбелек</translation>
+<translation id="6657585470893396449">Құпия сөз</translation>
 <translation id="6710213216561001401">Алдыңғы</translation>
 <translation id="6718273304615422081">Қысылуда…</translation>
 <translation id="6751256176799620176">1 қалта таңдалды</translation>
@@ -725,6 +727,7 @@
 <translation id="9065203028668620118">Өзгерту</translation>
 <translation id="9099674669267916096">Бет саны</translation>
 <translation id="9110990317705400362">Біз интернет шолуды барынша қауіпсіз ету жолдарын іздеуден жалықпаймыз. Бұрын кез келген сайт браузеріңізге кеңейтім қосу ұсынысын жасай алатын болса, Google Chrome соңғы нұсқасында енді кеңейтімдерді "Кеңейтімдер" бетіне кіріп қана орната аласыз. <ph name="BEGIN_LINK" />Толығырақ<ph name="END_LINK" /></translation>
+<translation id="9111102763498581341">Құлпын ашу</translation>
 <translation id="912419004897138677">Кодек</translation>
 <translation id="9129931661813833980">Қалтаны бекіту</translation>
 <translation id="9130775360844693113">"<ph name="DESTINATION_NAME" />" мүшелері бұл файлдарға кіру рұқсатын алады.</translation>

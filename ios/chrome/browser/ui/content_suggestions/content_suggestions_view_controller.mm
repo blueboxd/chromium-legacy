@@ -52,7 +52,7 @@ const CGFloat kMostVisitedBottomMargin = 13;
 const CGFloat kCardBorderRadius = 11;
 const CGFloat kDiscoverFeedContentWith = 430;
 // Value representing offset from bottom of the page to trigger pagination.
-const CGFloat kPaginationOffset = 100;
+const CGFloat kPaginationOffset = 400;
 // Height for the Discover Feed section header.
 const CGFloat kDiscoverFeedFeaderHeight = 30;
 }
@@ -697,7 +697,15 @@ NSString* const kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix =
   if (IsDiscoverFeedEnabled() && self.contentSuggestionsEnabled) {
     float scrollPosition =
         scrollView.contentOffset.y + scrollView.frame.size.height;
-    if (scrollPosition >= scrollView.contentSize.height - kPaginationOffset) {
+    // Check if view is bouncing to ignore overscoll positions for infinite feed
+    // triggering.
+    BOOL isBouncing =
+        (scrollView.contentOffset.y >=
+         (scrollView.contentSize.height - scrollView.bounds.size.height));
+    ContentSuggestionsLayout* layout = static_cast<ContentSuggestionsLayout*>(
+        self.collectionView.collectionViewLayout);
+    if (scrollPosition > scrollView.contentSize.height - kPaginationOffset &&
+        scrollPosition > layout.ntpHeight && !isBouncing) {
       [self.handler loadMoreFeedArticles];
     }
   }

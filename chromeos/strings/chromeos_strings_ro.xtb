@@ -9,6 +9,7 @@
 <translation id="150962533380566081">PUK nevalid.</translation>
 <translation id="1510238584712386396">Lansator</translation>
 <translation id="1644574205037202324">Istoric</translation>
+<translation id="1662989795263954667">Oprită – Cerneală epuizată</translation>
 <translation id="1734367976349034509">Acest dispozitiv este gestionat de companie</translation>
 <translation id="1905710495812624430">Ai depășit numărul maxim de încercări permise.</translation>
 <translation id="1930797645656624981">Serviciul metodei de introducere a textului din sistemul de operare Chrome</translation>
@@ -39,18 +40,22 @@
 <translation id="4227825898293920515">Parola expiră în <ph name="TIME" /></translation>
 <translation id="4238516577297848345">Nicio sarcină de printare în desfășurare</translation>
 <translation id="428217921675623177">Sarcinile de printare mai vechi de 90 de zile vor fi eliminate</translation>
+<translation id="4297501883039923494">Oprită – Eroare necunoscută</translation>
 <translation id="4429881212383817840">Tichetul Kerberos expiră în curând</translation>
 <translation id="445059817448385655">Parolă veche</translation>
 <translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> din <ph name="TOTAL_PAGE_NUMBER" />. Apasă pe Enter pentru a anula sarcina de printare.</translation>
 <translation id="467510802200863975">Parolele nu se potrivesc</translation>
+<translation id="4691278870498629773">Oprită – Tavă lipsă</translation>
 <translation id="4731797938093519117">Acces pentru părinți</translation>
 <translation id="4773299976671772492">Oprit</translation>
 <translation id="4808449224298348341">S-a anulat sarcina de printare <ph name="DOCUMENT_TITLE" /></translation>
 <translation id="4890353053343094602">Alege imediat una nouă</translation>
+<translation id="4917889632206600977">Oprită – Hârtie epuizată</translation>
 <translation id="4932733599132424254">Data</translation>
 <translation id="5212543919916444558">Nu găsesc conținut pe ecran în privința căruia te-aș putea ajuta.
 Atinge microfonul și întreabă orice dorești.</translation>
 <translation id="5222676887888702881">Deconectează-te</translation>
+<translation id="5267975978099728568"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="ERROR_STATUS" /></translation>
 <translation id="5317780077021120954">Salvează</translation>
 <translation id="5326394068492324457"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="COMPLETION_STATUS" /></translation>
 <translation id="5332948983412042822">Alege una nouă acum</translation>
@@ -63,9 +68,11 @@ Atinge microfonul și întreabă orice dorești.</translation>
 <translation id="6106186594183574873">Pentru a finaliza, introdu vechea parolă</translation>
 <translation id="6146993107019042706">Pentru a finaliza, introdu noua parolă</translation>
 <translation id="636850387210749493">Înscriere pentru întreprindere</translation>
+<translation id="649050271426829538">Oprită – Blocaj de hârtie</translation>
 <translation id="6517239166834772319">Explorare</translation>
 <translation id="6564646048574748301">Nereușită – Imprimanta nu poate fi accesată</translation>
 <translation id="6643016212128521049">Șterge</translation>
+<translation id="6747215703636344499">Oprită – Tavă de ieșire plină</translation>
 <translation id="7162487448488904999">Galerie</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7561454561030345039">Această setare este gestionată de administrator</translation>
@@ -77,6 +84,7 @@ Atinge microfonul și întreabă orice dorești.</translation>
 <translation id="8347227221149377169">Sarcini de printare</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> gestionează acest utilizator. Poate să gestioneze de la distanță setările și să monitorizeze activitatea utilizatorului.</translation>
 <translation id="871560550817059752">Nereușită – Cerneală epuizată</translation>
+<translation id="8726019395068607495">Oprită – Ușă deschisă</translation>
 <translation id="8747900814994928677">Confirmă schimbarea</translation>
 <translation id="8919837981463578619">Nereușită – Tavă lipsă</translation>
 <translation id="8928727111548978589">Nereușită – Hârtie epuizată</translation>

@@ -393,7 +393,7 @@ TEST_F(BookmarkUtilsTest, DISABLED_CopyPasteMetaInfo) {
   EXPECT_EQ("someothervalue", value);
 }
 
-#if defined(OS_LINUX) || defined(OS_APPLE)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_APPLE)
 // http://crbug.com/396472
 #define MAYBE_CutToClipboard DISABLED_CutToClipboard
 #else

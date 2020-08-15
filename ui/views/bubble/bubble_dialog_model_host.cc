@@ -59,15 +59,16 @@ BubbleDialogModelHost::BubbleDialogModelHost(
   auto* ok_button = model_->ok_button(GetPassKey());
   if (ok_button) {
     button_mask |= ui::DIALOG_BUTTON_OK;
-    if (!ok_button->label().empty())
-      SetButtonLabel(ui::DIALOG_BUTTON_OK, ok_button->label());
+    if (!ok_button->label(GetPassKey()).empty())
+      SetButtonLabel(ui::DIALOG_BUTTON_OK, ok_button->label(GetPassKey()));
   }
 
   auto* cancel_button = model_->cancel_button(GetPassKey());
   if (cancel_button) {
     button_mask |= ui::DIALOG_BUTTON_CANCEL;
-    if (!cancel_button->label().empty())
-      SetButtonLabel(ui::DIALOG_BUTTON_CANCEL, cancel_button->label());
+    if (!cancel_button->label(GetPassKey()).empty())
+      SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
+                     cancel_button->label(GetPassKey()));
   }
 
   // TODO(pbos): Consider refactoring ::SetExtraView() so it can be called after
@@ -75,8 +76,8 @@ BubbleDialogModelHost::BubbleDialogModelHost(
   // OnDialogInitialized() will not work until then.
   auto* extra_button = model_->extra_button(GetPassKey());
   if (extra_button) {
-    OnViewCreatedForField(SetExtraView(std::make_unique<views::MdTextButton>(
-                              this, extra_button->label())),
+    OnViewCreatedForField(SetExtraView(std::make_unique<MdTextButton>(
+                              this, extra_button->label(GetPassKey()))),
                           extra_button);
   }
 
@@ -202,9 +203,9 @@ Textfield* BubbleDialogModelHost::AddOrUpdateTextfield(
   // TODO(pbos): Support updates to the existing model.
 
   auto textfield = std::make_unique<Textfield>();
-  textfield->SetAccessibleName(model->accessible_name().empty()
-                                   ? model->text()
-                                   : model->accessible_name());
+  textfield->SetAccessibleName(model->accessible_name(GetPassKey()).empty()
+                                   ? model->label(GetPassKey())
+                                   : model->accessible_name(GetPassKey()));
   textfield->SetText(model->text());
 
   property_changed_subscriptions_.push_back(textfield->AddTextChangedCallback(
@@ -212,7 +213,7 @@ Textfield* BubbleDialogModelHost::AddOrUpdateTextfield(
                           base::Unretained(this), textfield.get())));
 
   auto* textfield_ptr = textfield.get();
-  AddLabelAndField(model->label(), std::move(textfield),
+  AddLabelAndField(model->label(GetPassKey()), std::move(textfield),
                    textfield_ptr->GetFontList());
 
   return textfield_ptr;
@@ -223,14 +224,14 @@ Combobox* BubbleDialogModelHost::AddOrUpdateCombobox(
   // TODO(pbos): Handle updating existing field.
 
   auto combobox = std::make_unique<Combobox>(model->combobox_model());
-  combobox->SetAccessibleName(model->accessible_name().empty()
-                                  ? model->label()
-                                  : model->accessible_name());
+  combobox->SetAccessibleName(model->accessible_name(GetPassKey()).empty()
+                                  ? model->label(GetPassKey())
+                                  : model->accessible_name(GetPassKey()));
   combobox->set_listener(this);
   // TODO(pbos): Add subscription to combobox selected-index changes.
   combobox->SetSelectedIndex(model->selected_index());
   auto* combobox_ptr = combobox.get();
-  AddLabelAndField(model->label(), std::move(combobox),
+  AddLabelAndField(model->label(GetPassKey()), std::move(combobox),
                    combobox_ptr->GetFontList());
   return combobox_ptr;
 }
@@ -251,22 +252,19 @@ void BubbleDialogModelHost::AddLabelAndField(const base::string16& label_text,
 }
 
 void BubbleDialogModelHost::NotifyTextfieldTextChanged(Textfield* textfield) {
-  model_->OnTextfieldTextChanged(GetPassKey(),
-                                 FieldAsTextfield(view_to_field_[textfield]),
-                                 textfield->GetText());
+  FieldAsTextfield(view_to_field_[textfield])
+      ->OnTextChanged(GetPassKey(), textfield->GetText());
 }
 
 void BubbleDialogModelHost::NotifyComboboxSelectedIndexChanged(
     Combobox* combobox) {
-  model_->OnComboboxSelectedIndexChanged(
-      GetPassKey(), FieldAsCombobox(view_to_field_[combobox]),
-      combobox->GetSelectedIndex());
+  FieldAsCombobox(view_to_field_[combobox])
+      ->OnSelectedIndexChanged(GetPassKey(), combobox->GetSelectedIndex());
 }
 
 void BubbleDialogModelHost::ButtonPressed(Button* sender,
                                           const ui::Event& event) {
-  model_->OnButtonPressed(GetPassKey(), FieldAsButton(view_to_field_[sender]),
-                          event);
+  FieldAsButton(view_to_field_[sender])->OnPressed(GetPassKey(), event);
 }
 
 void BubbleDialogModelHost::OnPerformAction(Combobox* combobox) {
@@ -274,8 +272,7 @@ void BubbleDialogModelHost::OnPerformAction(Combobox* combobox) {
   // but Combobox right now doesn't support listening to selected-index changes.
   NotifyComboboxSelectedIndexChanged(combobox);
 
-  model_->OnComboboxPerformAction(GetPassKey(),
-                                  FieldAsCombobox(view_to_field_[combobox]));
+  FieldAsCombobox(view_to_field_[combobox])->OnPerformAction(GetPassKey());
 }
 
 void BubbleDialogModelHost::OnViewCreatedForField(View* view,

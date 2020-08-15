@@ -9,6 +9,7 @@
 <translation id="150962533380566081">PUK კოდი არასწორია.</translation>
 <translation id="1510238584712386396">გამშვები</translation>
 <translation id="1644574205037202324">ისტორია</translation>
+<translation id="1662989795263954667">გაჩერდა — მელანი გათავდა</translation>
 <translation id="1734367976349034509">ამ მოწყობილობას მართავს ორგანიზაცია</translation>
 <translation id="1905710495812624430">გადაჭარბებულია მცდელობათა მაქსიმალური რაოდენობა.</translation>
 <translation id="1930797645656624981">Chrome OS-ის შეყვანის მეთოდის სერვისი</translation>
@@ -39,18 +40,22 @@
 <translation id="4227825898293920515">პაროლი ძალაშია <ph name="TIME" /></translation>
 <translation id="4238516577297848345">ბეჭდვის მიმდინარე დავალებები არ არის</translation>
 <translation id="428217921675623177">90 დღეზე ძველი ამობეჭდვის დავალებები წაიშლება</translation>
+<translation id="4297501883039923494">გაჩერდა — უცნობი შეცდომა</translation>
 <translation id="4429881212383817840">Kerberos ბილეთის მოქმედების ვადა მალე იწურება</translation>
 <translation id="445059817448385655">ძველი პაროლი</translation>
 <translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> / <ph name="TOTAL_PAGE_NUMBER" />. გთხოვთ დააჭიროთ შეყვანის ღილაკს ამ ბეჭდვის დავალების გასაუქმებლად.</translation>
 <translation id="467510802200863975">პაროლები არ ემთხვევა</translation>
+<translation id="4691278870498629773">გაჩერდა — ლანგარი აკლია</translation>
 <translation id="4731797938093519117">მშობლის წვდომა</translation>
 <translation id="4773299976671772492">შეწყვეტილია</translation>
 <translation id="4808449224298348341">ბეჭდვის დავალება გაუქმდა <ph name="DOCUMENT_TITLE" />-ისთვის</translation>
 <translation id="4890353053343094602">დაუყოვნებლივ აირჩიეთ ახალი</translation>
+<translation id="4917889632206600977">გაჩერდა — ქაღალდი გათავდა</translation>
 <translation id="4932733599132424254">თარიღი</translation>
 <translation id="5212543919916444558">თქვენს ეკრანზე ვერაფერი მოიძებნა, რითაც თქვენს დახმარებას შევძლებდი.
 გთხოვთ, შეეხოთ მიკროფონს და მკითხოთ, რაც გსურთ.</translation>
 <translation id="5222676887888702881">გამოსვლა</translation>
+<translation id="5267975978099728568"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="ERROR_STATUS" /></translation>
 <translation id="5317780077021120954">შენახვა</translation>
 <translation id="5326394068492324457"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="COMPLETION_STATUS" /></translation>
 <translation id="5332948983412042822">ახლავე აირჩიეთ ახალი</translation>
@@ -63,9 +68,11 @@
 <translation id="6106186594183574873">დასასრულებლად შეიყვანეთ თქვენი ძველი პაროლი</translation>
 <translation id="6146993107019042706">დასასრულებლად შეიყვანეთ თქვენი ახალი პაროლი</translation>
 <translation id="636850387210749493">ორგანიზაციის რეგისტრაცია</translation>
+<translation id="649050271426829538">გაჩერდა — ქაღალდი გაიჭედა</translation>
 <translation id="6517239166834772319">გაცნობა</translation>
 <translation id="6564646048574748301">ვერ მოხერხდა — პრინტერთან დაკავშირება ვერ ხერხდება</translation>
 <translation id="6643016212128521049">გასუფთავება</translation>
+<translation id="6747215703636344499">გაჩერდა — გამომტანი სავსეა</translation>
 <translation id="7162487448488904999">გალერეა</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7561454561030345039">ამ მოქმედებას მართავს თქვენი ადმინისტრატორი</translation>
@@ -77,6 +84,7 @@
 <translation id="8347227221149377169">ბეჭდვის დავალებები</translation>
 <translation id="8701136875688985581">ამ მომხმარებელს მართავს <ph name="ENROLLMENT_DOMAIN" />. მას შეუძლია პარამეტრების დისტანციურად მართვა და მომხმარებლის აქტივობის მონიტორინგი.</translation>
 <translation id="871560550817059752">ვერ მოხერხდა — მელანი გაუთავდა</translation>
+<translation id="8726019395068607495">გაჩერდა — პრინტერის კარი ღიაა</translation>
 <translation id="8747900814994928677">დაადასტურეთ ცვლილება</translation>
 <translation id="8919837981463578619">ვერ მოხერხდა — პრინტერს კალათა აკლია</translation>
 <translation id="8928727111548978589">ვერ მოხერხდა — ქაღალდი გაუთავდა</translation>

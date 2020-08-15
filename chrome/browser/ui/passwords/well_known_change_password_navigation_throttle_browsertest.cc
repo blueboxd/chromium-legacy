@@ -9,10 +9,14 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
+#include "chrome/browser/password_manager/change_password_url_service_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/cert_verifier_browser_test.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/common/url_constants.h"
+#include "components/password_manager/core/browser/change_password_url_service_impl.h"
 #include "components/password_manager/core/browser/well_known_change_password_util.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "content/public/test/browser_test.h"
@@ -39,6 +43,8 @@ using net::test_server::HttpResponse;
 using password_manager::kWellKnownChangePasswordPath;
 using password_manager::kWellKnownNotExistingResourcePath;
 
+constexpr char kMockChangePasswordPath[] = "/change-password-override";
+
 // ServerResponse describes how a server should respond to a given path.
 struct ServerResponse {
   net::HttpStatusCode status_code;
@@ -56,6 +62,26 @@ struct ResponseDelayParams {
 
 }  // namespace
 
+class TestChangePasswordUrlService
+    : public password_manager::ChangePasswordUrlService {
+ public:
+  void PrefetchURLs() override {}
+
+  GURL GetChangePasswordUrl(const GURL& url) override {
+    if (override_available_) {
+      GURL::Replacements replacement;
+      replacement.SetPathStr(kMockChangePasswordPath);
+      return url.ReplaceComponents(replacement);
+    }
+    return GURL();
+  }
+
+  void SetOverrideAvailable(bool available) { override_available_ = available; }
+
+ private:
+  bool override_available_ = false;
+};
+
 class WellKnownChangePasswordNavigationThrottleBrowserTest
     : public CertVerifierBrowserTest,
       public testing::WithParamInterface<ResponseDelayParams> {
@@ -71,6 +97,13 @@ class WellKnownChangePasswordNavigationThrottleBrowserTest
   void SetUpOnMainThread() override {
     ASSERT_TRUE(test_server_->InitializeAndListen());
     test_server_->StartAcceptingConnections();
+    url_service_ =
+        ChangePasswordUrlServiceFactory::GetInstance()
+            ->SetTestingSubclassFactoryAndUse(
+                browser()->profile(),
+                base::BindRepeating([](content::BrowserContext* context) {
+                  return std::make_unique<TestChangePasswordUrlService>();
+                }));
   }
 
  protected:
@@ -91,6 +124,7 @@ class WellKnownChangePasswordNavigationThrottleBrowserTest
   base::flat_map<std::string, ServerResponse> path_response_map_;
   std::unique_ptr<EmbeddedTestServer> test_server_ =
       std::make_unique<EmbeddedTestServer>(EmbeddedTestServer::TYPE_HTTPS);
+  TestChangePasswordUrlService* url_service_ = nullptr;
 
  private:
   // Returns a response for the given request. Uses |path_response_map_| to
@@ -196,9 +230,20 @@ IN_PROC_BROWSER_TEST_P(WellKnownChangePasswordNavigationThrottleBrowserTest,
       net::HTTP_NOT_FOUND, {}, response_delays.change_password_delay};
   path_response_map_[kWellKnownNotExistingResourcePath] = {
       net::HTTP_NOT_FOUND, {}, response_delays.not_exist_delay};
-  path_response_map_["/"] = {net::HTTP_OK, {}, 0};
 
   TestNavigationThrottle(/*expected_path=*/"/");
+}
+
+IN_PROC_BROWSER_TEST_P(WellKnownChangePasswordNavigationThrottleBrowserTest,
+                       NoSupportForChangePassword_WithUrlOverride) {
+  url_service_->SetOverrideAvailable(true);
+  auto response_delays = GetParam();
+  path_response_map_[kWellKnownChangePasswordPath] = {
+      net::HTTP_NOT_FOUND, {}, response_delays.change_password_delay};
+  path_response_map_[kWellKnownNotExistingResourcePath] = {
+      net::HTTP_NOT_FOUND, {}, response_delays.not_exist_delay};
+
+  TestNavigationThrottle(/*expected_path=*/kMockChangePasswordPath);
 }
 
 // Single page applications often return 200 for all paths
@@ -209,7 +254,6 @@ IN_PROC_BROWSER_TEST_P(WellKnownChangePasswordNavigationThrottleBrowserTest,
       net::HTTP_OK, {}, response_delays.change_password_delay};
   path_response_map_[kWellKnownNotExistingResourcePath] = {
       net::HTTP_OK, {}, response_delays.not_exist_delay};
-  path_response_map_["/"] = {net::HTTP_OK, {}, 0};
 
   TestNavigationThrottle(/*expected_path=*/"/");
 }
@@ -225,7 +269,6 @@ IN_PROC_BROWSER_TEST_P(WellKnownChangePasswordNavigationThrottleBrowserTest,
       net::HTTP_PERMANENT_REDIRECT,
       {std::make_pair("Location", "/not-found")},
       response_delays.not_exist_delay};
-  path_response_map_["/"] = {net::HTTP_OK, {}, 0};
   path_response_map_["/not-found"] = {net::HTTP_NOT_FOUND, {}, 0};
 
   TestNavigationThrottle(/*expected_path=*/"/");

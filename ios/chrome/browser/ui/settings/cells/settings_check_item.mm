@@ -29,7 +29,6 @@
   [super configureCell:cell withStyler:styler];
   cell.textLabel.text = self.text;
   cell.detailTextLabel.text = self.detailText;
-  cell.selectionStyle = UITableViewCellSelectionStyleNone;
   if (self.enabled) {
     [cell setInfoButtonHidden:self.infoButtonHidden];
     [cell setLeadingImage:self.leadingImage

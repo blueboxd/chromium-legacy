@@ -5197,6 +5197,88 @@ TEST_F(FormStructureTest, PossibleValues) {
   EXPECT_EQ(0U, form_structure2.PossibleValues(ADDRESS_BILLING_COUNTRY).size());
 }
 
+// Test the heuristic predictions the NAME_LAST_SECOND override server
+// predictions.
+TEST_F(FormStructureTest,
+       ParseQueryResponse_HeuristicsOverrideSpanishLastNameTypes) {
+  base::test::ScopedFeatureList scoped_feature;
+  scoped_feature.InitAndEnableFeature(
+      features::kAutofillEnableSupportForMoreStructureInNames);
+
+  FormData form_data;
+  FormFieldData field;
+  form_data.url = GURL("http://foo.com");
+  field.form_control_type = "text";
+
+  // First name field.
+  field.label = ASCIIToUTF16("Nombre");
+  field.name = ASCIIToUTF16("Nombre");
+  form_data.fields.push_back(field);
+
+  // First last name field.
+  // Should be identified by local heuristics.
+  field.label = ASCIIToUTF16("Apellido Paterno");
+  field.name = ASCIIToUTF16("apellido_paterno");
+  form_data.fields.push_back(field);
+
+  // Second last name field.
+  // Should be identified by local heuristics.
+  field.label = ASCIIToUTF16("Apellido Materno");
+  field.name = ASCIIToUTF16("apellido materno");
+  form_data.fields.push_back(field);
+
+  FormStructure form(form_data);
+  form.DetermineHeuristicTypes();
+
+  // Setup the query response.
+  AutofillQueryResponseContents response;
+  std::string response_string;
+  response.add_field()->set_overall_type_prediction(NAME_FIRST);
+  // Simulate a NAME_LAST classification for the two last name fields.
+  response.add_field()->set_overall_type_prediction(NAME_LAST);
+  response.add_field()->set_overall_type_prediction(NAME_LAST);
+  ASSERT_TRUE(response.SerializeToString(&response_string));
+
+  // Parse the response and update the field type predictions.
+  std::vector<FormStructure*> forms{&form};
+  FormStructure::ParseQueryResponse(response_string, forms,
+                                    test::GetEncodedSignatures(forms), nullptr);
+  ASSERT_EQ(form.field_count(), 3U);
+
+  // Validate the heuristic and server predictions.
+  EXPECT_EQ(NAME_LAST_FIRST, form.field(1)->heuristic_type());
+  EXPECT_EQ(NAME_LAST_SECOND, form.field(2)->heuristic_type());
+  EXPECT_EQ(NAME_LAST, form.field(1)->server_type());
+  EXPECT_EQ(NAME_LAST, form.field(2)->server_type());
+
+  // Validate that the heuristic prediction wins for the two last name fields.
+  EXPECT_EQ(form.field(0)->Type().GetStorableType(), NAME_FIRST);
+  EXPECT_EQ(form.field(1)->Type().GetStorableType(), NAME_LAST_FIRST);
+  EXPECT_EQ(form.field(2)->Type().GetStorableType(), NAME_LAST_SECOND);
+
+  // Now disable the feature and process the query again.
+  scoped_feature.Reset();
+  scoped_feature.InitAndDisableFeature(
+      features::kAutofillEnableSupportForMoreStructureInNames);
+
+  std::vector<FormStructure*> forms2{&form};
+  FormStructure::ParseQueryResponse(
+      response_string, forms2, test::GetEncodedSignatures(forms2), nullptr);
+  ASSERT_EQ(form.field_count(), 3U);
+
+  // Validate the heuristic and server predictions.
+  EXPECT_EQ(NAME_LAST_FIRST, form.field(1)->heuristic_type());
+  EXPECT_EQ(NAME_LAST_SECOND, form.field(2)->heuristic_type());
+  EXPECT_EQ(NAME_LAST, form.field(1)->server_type());
+  EXPECT_EQ(NAME_LAST, form.field(2)->server_type());
+
+  // Validate that the heuristic prediction does not win for the two last name
+  // fields.
+  EXPECT_EQ(form.field(0)->Type().GetStorableType(), NAME_FIRST);
+  EXPECT_EQ(form.field(1)->Type().GetStorableType(), NAME_LAST);
+  EXPECT_EQ(form.field(2)->Type().GetStorableType(), NAME_LAST);
+}
+
 // Tests proper resolution heuristic, server and html field types when the
 // server returns NO_SERVER_DATA, UNKNOWN_TYPE, and a valid type.
 TEST_F(FormStructureTest, ParseQueryResponse_TooManyTypes) {

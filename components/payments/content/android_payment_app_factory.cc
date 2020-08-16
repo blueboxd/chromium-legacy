@@ -4,12 +4,28 @@
 
 #include "components/payments/content/android_payment_app_factory.h"
 
+#include <map>
+#include <memory>
+#include <set>
+#include <string>
 #include <utility>
+#include <vector>
 
+#include "base/bind.h"
 #include "base/memory/weak_ptr.h"
+#include "base/stl_util.h"
 #include "base/supports_user_data.h"
+#include "components/payments/content/android_app_communication.h"
+#include "components/payments/content/android_payment_app.h"
+#include "components/payments/content/payment_request_spec.h"
+#include "components/payments/core/android_app_description.h"
+#include "components/payments/core/android_app_description_tools.h"
+#include "components/payments/core/method_strings.h"
+#include "components/payments/core/native_error_strings.h"
+#include "components/payments/core/payment_request_data_util.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_document_host_user_data.h"
 #include "content/public/browser/web_contents.h"
 
 namespace payments {
@@ -34,17 +50,69 @@ class AppFinder : public base::SupportsUserData::Data {
   AppFinder(const AppFinder& other) = delete;
   AppFinder& operator=(const AppFinder& other) = delete;
 
-  void FindApps(base::WeakPtr<PaymentAppFactory::Delegate> delegate) {
+  void FindApps(base::WeakPtr<AndroidAppCommunication> communication,
+                base::WeakPtr<PaymentAppFactory::Delegate> delegate) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     DCHECK_EQ(nullptr, delegate_.get());
     DCHECK_NE(nullptr, delegate.get());
+    DCHECK_EQ(nullptr, communication_.get());
+    DCHECK_NE(nullptr, communication.get());
+    DCHECK(delegate->GetSpec()->details().id.has_value());
 
     delegate_ = delegate;
+    communication_ = communication;
+
+    communication_->GetAppDescriptions(
+        delegate_->GetTwaPackageName(),
+        base::BindOnce(&AppFinder::OnGetAppDescriptions,
+                       weak_ptr_factory_.GetWeakPtr()));
+  }
+
+ private:
+  void OnGetAppDescriptions(
+      const base::Optional<std::string>& error_message,
+      std::vector<std::unique_ptr<AndroidAppDescription>> app_descriptions) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    // The browser could be shutting down.
+    if (!communication_ || !delegate_)
+      return;
+
+    if (error_message.has_value()) {
+      delegate_->OnPaymentAppCreationError(error_message.value());
+      OnDoneCreatingPaymentApps();
+      return;
+    }
+
+    std::vector<std::unique_ptr<AndroidAppDescription>> single_activity_apps;
+    for (size_t i = 0; i < app_descriptions.size(); ++i) {
+      auto app = std::move(app_descriptions[i]);
+      SplitPotentiallyMultipleActivities(std::move(app), &single_activity_apps);
+    }
+
+    for (size_t i = 0; i < single_activity_apps.size(); ++i) {
+      auto app = std::move(single_activity_apps[i]);
+
+      const std::string& default_method =
+          app->activities.front()->default_payment_method;
+      DCHECK_EQ(methods::kGooglePlayBilling, default_method);
+
+      std::set<std::string> supported_payment_methods = {default_method};
+
+      delegate_->OnPaymentAppCreated(std::make_unique<AndroidPaymentApp>(
+          base::STLSetIntersection<std::set<std::string>>(
+              delegate_->GetSpec()->payment_method_identifiers_set(),
+              supported_payment_methods),
+          data_util::FilterStringifiedMethodData(
+              delegate_->GetSpec()->stringified_method_data(),
+              supported_payment_methods),
+          delegate_->GetTopOrigin(), delegate_->GetFrameOrigin(),
+          delegate_->GetSpec()->details().id.value(), std::move(app),
+          communication_));
+    }
 
     OnDoneCreatingPaymentApps();
   }
 
- private:
   void OnDoneCreatingPaymentApps() {
     if (delegate_)
       delegate_->OnDoneCreatingPaymentApps();
@@ -54,20 +122,25 @@ class AppFinder : public base::SupportsUserData::Data {
 
   base::SupportsUserData* owner_;
   base::WeakPtr<PaymentAppFactory::Delegate> delegate_;
+  base::WeakPtr<AndroidAppCommunication> communication_;
 
   base::WeakPtrFactory<AppFinder> weak_ptr_factory_{this};
 };
 
 }  // namespace
 
-AndroidPaymentAppFactory::AndroidPaymentAppFactory()
-    : PaymentAppFactory(PaymentApp::Type::NATIVE_MOBILE_APP) {}
+AndroidPaymentAppFactory::AndroidPaymentAppFactory(
+    base::WeakPtr<AndroidAppCommunication> communication)
+    : PaymentAppFactory(PaymentApp::Type::NATIVE_MOBILE_APP),
+      communication_(communication) {
+  DCHECK(communication_);
+}
 
 AndroidPaymentAppFactory::~AndroidPaymentAppFactory() = default;
 
 void AndroidPaymentAppFactory::Create(base::WeakPtr<Delegate> delegate) {
   auto app_finder = AppFinder::CreateAndSetOwnedBy(delegate->GetWebContents());
-  app_finder->FindApps(delegate);
+  app_finder->FindApps(communication_, delegate);
 }
 
 }  // namespace payments

@@ -266,8 +266,6 @@ typedef NS_ENUM(NSInteger, ReauthenticationReason) {
 
   cell.selectionStyle = UITableViewCellSelectionStyleNone;
 
-  // TODO:(crbug.com/1075494) - Add action to Show/Hide password when user tap
-  // eye icon.
   NSInteger itemType = [self.tableViewModel itemTypeForIndexPath:indexPath];
   switch (itemType) {
     case ItemTypePassword: {
@@ -280,9 +278,11 @@ typedef NS_ENUM(NSInteger, ReauthenticationReason) {
           forControlEvents:UIControlEventTouchUpInside];
       return textFieldCell;
     }
+    case ItemTypeChangePasswordButton:
+      cell.selectionStyle = UITableViewCellSelectionStyleDefault;
+      break;
     case ItemTypeWebsite:
     case ItemTypeUsername:
-    case ItemTypeChangePasswordButton:
     case ItemTypeChangePasswordRecommendation:
       break;
   }

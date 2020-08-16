@@ -8622,6 +8622,72 @@ TEST_F(AutofillManagerTest, DontImportUpiIdWhenIncognito) {
   EXPECT_EQ(0, personal_data_.num_times_save_upi_id_called());
 }
 
+// Tests the vote generation for the address enhancement types.
+TEST_F(AutofillManagerTest, PossibleFieldTypesForEnhancementVotes) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kAutofillAddressEnhancementVotes);
+
+  std::vector<AutofillProfile> profiles = {AutofillProfile()};
+  profiles[0].SetRawInfo(ADDRESS_HOME_STREET_NAME,
+                         base::ASCIIToUTF16("StreetName"));
+  profiles[0].SetRawInfo(ADDRESS_HOME_HOUSE_NUMBER,
+                         base::ASCIIToUTF16("HouseNumber"));
+  profiles[0].SetRawInfo(ADDRESS_HOME_PREMISE_NAME,
+                         base::ASCIIToUTF16("Premise"));
+  profiles[0].SetRawInfo(ADDRESS_HOME_SUBPREMISE,
+                         base::ASCIIToUTF16("Subpremise"));
+
+  FormData form;
+  FormFieldData field1;
+  test::CreateTestFormField("somelabel", "someid", "StreetName", "text",
+                            &field1);
+  form.fields.push_back(field1);
+  test::CreateTestFormField("somelabel", "someid", "HouseNumber", "text",
+                            &field1);
+  form.fields.push_back(field1);
+  test::CreateTestFormField("somelabel", "someid", "Premise", "text", &field1);
+  form.fields.push_back(field1);
+  test::CreateTestFormField("somelabel", "someid", "Subpremise", "text",
+                            &field1);
+  form.fields.push_back(field1);
+
+  FormStructure form_structure(form);
+
+  AutofillManager::DeterminePossibleFieldTypesForUploadForTest(
+      profiles, {}, base::string16(), "en-us", &form_structure);
+
+  ASSERT_EQ(4U, form_structure.field_count());
+
+  EXPECT_EQ(form_structure.field(0)->possible_types(),
+            ServerFieldTypeSet({ADDRESS_HOME_STREET_NAME}));
+  EXPECT_EQ(form_structure.field(1)->possible_types(),
+            ServerFieldTypeSet({ADDRESS_HOME_HOUSE_NUMBER}));
+  EXPECT_EQ(form_structure.field(2)->possible_types(),
+            ServerFieldTypeSet({ADDRESS_HOME_PREMISE_NAME}));
+  EXPECT_EQ(form_structure.field(3)->possible_types(),
+            ServerFieldTypeSet({ADDRESS_HOME_SUBPREMISE}));
+
+  // Disable the feature and verify that no possible types are detected.
+  scoped_feature_list.Reset();
+  scoped_feature_list.InitAndDisableFeature(
+      features::kAutofillAddressEnhancementVotes);
+
+  AutofillManager::DeterminePossibleFieldTypesForUploadForTest(
+      profiles, {}, base::string16(), "en-us", &form_structure);
+
+  ASSERT_EQ(4U, form_structure.field_count());
+
+  EXPECT_EQ(form_structure.field(0)->possible_types(),
+            ServerFieldTypeSet({UNKNOWN_TYPE}));
+  EXPECT_EQ(form_structure.field(1)->possible_types(),
+            ServerFieldTypeSet({UNKNOWN_TYPE}));
+  EXPECT_EQ(form_structure.field(2)->possible_types(),
+            ServerFieldTypeSet({UNKNOWN_TYPE}));
+  EXPECT_EQ(form_structure.field(3)->possible_types(),
+            ServerFieldTypeSet({UNKNOWN_TYPE}));
+}
+
 // AutofillManagerTest with kAutofillDisabledMixedForms feature enabled.
 class AutofillManagerTestWithMixedForms : public AutofillManagerTest {
  protected:

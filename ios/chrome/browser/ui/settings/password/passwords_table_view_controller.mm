@@ -1382,8 +1382,17 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
 
 - (BOOL)tableView:(UITableView*)tableView
     shouldHighlightRowAtIndexPath:(NSIndexPath*)indexPath {
-  return [self.tableViewModel sectionIdentifierForSection:indexPath.section] !=
-         SectionIdentifierSavePasswordsSwitch;
+  NSInteger itemType = [self.tableViewModel itemTypeForIndexPath:indexPath];
+  switch (itemType) {
+    case ItemTypeSavePasswordsSwitch:
+      return NO;
+    case ItemTypePasswordCheckStatus:
+      return self.passwordCheckState == PasswordCheckStateUnSafe;
+    case ItemTypeCheckForProblemsButton:
+      return self.passwordCheckState != PasswordCheckStateRunning &&
+             self.passwordCheckState != PasswordCheckStateDisabled;
+  }
+  return YES;
 }
 
 - (UIView*)tableView:(UITableView*)tableView

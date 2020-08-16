@@ -70,6 +70,21 @@ function createPaymentRequest() { // eslint-disable-line no-unused-vars
 }
 
 /**
+ * Check whether payments can be made.
+ * @return {string} - "true", "false", or an error message.
+ */
+async function canMakePayment() { // eslint-disable-line no-unused-vars
+  info('canMakePayment');
+  try {
+    const result = await request.canMakePayment();
+    return (result ? 'true' : 'false');
+  } catch (e) {
+    info('canMakePayment error: ' + e.toString());
+    return e.toString();
+  }
+}
+
+/**
  * Show the payment sheet.
  * @return {string} - a message indicating whether the operation is successful.
  */

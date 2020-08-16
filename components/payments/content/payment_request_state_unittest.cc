@@ -78,7 +78,7 @@ class PaymentRequestStateTest : public testing::Test,
         std::move(options), std::move(details), std::move(method_data),
         /*observer=*/nullptr, "en-US");
     PaymentAppServiceFactory::SetForTesting(
-        std::make_unique<PaymentAppService>());
+        std::make_unique<PaymentAppService>(/*context=*/nullptr));
     state_ = std::make_unique<PaymentRequestState>(
         /*web_contents=*/nullptr,
         /*render_frame_host=*/nullptr, GURL("https://example.com"),

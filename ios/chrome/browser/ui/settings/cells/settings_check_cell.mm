@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/settings/cells/settings_check_cell.h"
 
 #include "base/check.h"
+#include "base/ios/ios_util.h"
 #include "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
@@ -101,7 +102,15 @@ const CGFloat kIconImageSize = 28;
     _trailingImageView.hidden = YES;
     [contentView addSubview:_trailingImageView];
     // |activityIndictor| attributes.
-    _activityIndicator = [[UIActivityIndicatorView alloc] init];
+    if (base::ios::IsRunningOnIOS13OrLater()) {
+      // Creates default activity indicator. Color depends on appearance.
+      _activityIndicator = [[UIActivityIndicatorView alloc] init];
+    } else {
+      // For iOS 12 and lower the color should be always gray otherwise
+      // indicator is not visible.
+      _activityIndicator = [[UIActivityIndicatorView alloc]
+          initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
+    }
     _activityIndicator.translatesAutoresizingMaskIntoConstraints = NO;
     _activityIndicator.hidden = YES;
     [contentView addSubview:_activityIndicator];

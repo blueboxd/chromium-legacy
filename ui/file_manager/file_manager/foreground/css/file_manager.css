@@ -3697,6 +3697,37 @@ files-toast {
   z-index: 520;
 }
 
+/* File type filter buttons in Recents view.
+   TODO(fukino): The style is temporary. Revisit it before the feature is
+   shipped. */
+#file-type-filter-container {
+  display: flex;
+  font-size: 13px;
+  height: 30x;
+  margin-top: 5px;
+}
+
+.file-type-filter-button {
+  align-items: center;
+  border: 1px solid rgba(0, 0, 0, 15%);
+  border-radius: 20px;
+  box-sizing: border-box;
+  color: var(--google-grey-700);
+  cursor: pointer;
+  display: flex;
+  font-weight: 500;
+  height: 32px;
+  margin-inline-end: 3px;
+  margin-inline-start: 3px;
+  padding: 0 10px;
+}
+
+.file-type-filter-button.active {
+  background-color: var(--google-blue-50);
+  border: 1px solid transparent;
+  color: var(--google-blue-600);
+}
+
 /*
  * Preventing FOUC
  */

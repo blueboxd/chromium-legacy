@@ -5,6 +5,7 @@
 #include "components/payments/content/payment_app_service.h"
 
 #include "base/feature_list.h"
+#include "components/payments/content/android_app_communication.h"
 #include "components/payments/content/android_payment_app_factory.h"
 #include "components/payments/content/autofill_payment_app_factory.h"
 #include "components/payments/content/payment_app.h"
@@ -15,7 +16,7 @@
 
 namespace payments {
 
-PaymentAppService::PaymentAppService() {
+PaymentAppService::PaymentAppService(content::BrowserContext* context) {
   factories_.emplace_back(std::make_unique<AutofillPaymentAppFactory>());
 
   if (base::FeatureList::IsEnabled(::features::kServiceWorkerPaymentApps)) {
@@ -27,7 +28,8 @@ PaymentAppService::PaymentAppService() {
   // apps. (Currently it works only on Chrome OS with app store billing payment
   // methods.)
   if (PaymentsExperimentalFeatures::IsEnabled(features::kAppStoreBilling)) {
-    factories_.emplace_back(std::make_unique<AndroidPaymentAppFactory>());
+    factories_.emplace_back(std::make_unique<AndroidPaymentAppFactory>(
+        AndroidAppCommunication::GetForBrowserContext(context)));
   }
 }
 

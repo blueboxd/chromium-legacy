@@ -903,6 +903,7 @@ void FormStructure::ProcessQueryResponse(
     form->UpdateAutofillCount();
     form->RationalizeRepeatedFields(form_interactions_ukm_logger);
     form->RationalizeFieldTypePredictions();
+    form->OverrideServerPredictionsWithHeuristics();
     form->IdentifySections(false);
   }
 
@@ -1856,6 +1857,25 @@ void FormStructure::RationalizeAddressStateCountry(
       ApplyRationalizationsToFields(upper_index, lower_index,
                                     ADDRESS_HOME_STATE, ADDRESS_HOME_COUNTRY,
                                     form_interactions_ukm_logger);
+    }
+  }
+}
+
+void FormStructure::OverrideServerPredictionsWithHeuristics() {
+  if (!base::FeatureList::IsEnabled(
+          features::kAutofillEnableSupportForMoreStructureInNames)) {
+    return;
+  }
+  for (const auto& field : fields_) {
+    // If the heuristic type is |LAST_NAME_SECOND| or |LAST_NAME_FIRST|
+    // unconditionally use this prediction.
+    switch (field->heuristic_type()) {
+      case NAME_LAST_SECOND:
+      case NAME_LAST_FIRST:
+        field->SetTypeTo(AutofillType(field->heuristic_type()));
+        break;
+      default: {
+      };
     }
   }
 }

@@ -211,6 +211,10 @@ class FormStructure {
   // the fields that are considered composing a first complete phone number.
   void RationalizePhoneNumbersInSection(std::string section);
 
+  // Overrides server predictions with specific heuristic predictions:
+  // * NAME_LAST_SECOND heuristic predictions are unconditionally used.
+  void OverrideServerPredictionsWithHeuristics();
+
   const AutofillField* field(size_t index) const;
   AutofillField* field(size_t index);
   size_t field_count() const;

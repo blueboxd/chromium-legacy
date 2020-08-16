@@ -1315,7 +1315,8 @@ class CONTENT_EXPORT NavigationRequest
 
   // The subscription to the notification of the changing of the render
   // process's blocked state.
-  std::unique_ptr<base::CallbackList<void(bool)>::Subscription>
+  std::unique_ptr<
+      RenderProcessHost::BlockStateChangedCallbackList::Subscription>
       render_process_blocked_state_changed_subscription_;
 
   // The headers used for the request. The value of this comes from

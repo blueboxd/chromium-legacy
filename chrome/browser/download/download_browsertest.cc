@@ -3663,15 +3663,15 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_DownloadTest_CrazyFilenames) {
   static constexpr const wchar_t* kCrazyFilenames[] = {
       L"a_file_name.zip",
       L"\u89c6\u9891\u76f4\u64ad\u56fe\u7247.zip",  // chinese chars
-      L"\u0412\u043e "
-      L"\u0424\u043b\u043e\u0440\u0438\u0434\u0435\u043e\u0431\u044a"
-      L"\u044f\u0432\u043b\u0435\u043d\u0440\u0435\u0436\u0438\u043c \u0427"
-      L"\u041f \u0438\u0437-\u0437\u0430 \u0443\u0442\u0435\u0447\u043a\u0438 "
-      L"\u043d\u0435\u0444\u0442\u0438.zip",  // russian
+      (L"\u0412\u043e "
+       L"\u0424\u043b\u043e\u0440\u0438\u0434\u0435\u043e\u0431\u044a"
+       L"\u044f\u0432\u043b\u0435\u043d\u0440\u0435\u0436\u0438\u043c \u0427"
+       L"\u041f \u0438\u0437-\u0437\u0430 \u0443\u0442\u0435\u0447\u043a\u0438 "
+       L"\u043d\u0435\u0444\u0442\u0438.zip"),  // russian
       L"Desocupa\xe7\xe3o est\xe1vel.zip",
       // arabic:
-      L"\u0638\u2026\u0638\u02c6\u0637\xa7\u0638\u201a\u0637\xb9 \u0638\u201e"
-      L"\u0638\u201e\u0637\xb2\u0638\u0679\u0637\xa7\u0637\xb1\u0637\xa9.zip",
+      (L"\u0638\u2026\u0638\u02c6\u0637\xa7\u0638\u201a\u0637\xb9 \u0638\u201e"
+       L"\u0638\u201e\u0637\xb2\u0638\u0679\u0637\xa7\u0637\xb1\u0637\xa9.zip"),
       L"\u05d4\u05e2\u05d3\u05e4\u05d5\u05ea.zip",  // hebrew
       L"\u092d\u093e\u0930\u0924.zip",              // hindi
       L"d\xe9stabilis\xe9.zip",                     // french
@@ -3679,7 +3679,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_DownloadTest_CrazyFilenames) {
       L"\u97d3-\u4e2d \uc815\uc0c1, \ucc9c\uc548\ud568 \uc758\uacac.zip",
       L"jiho....tiho...miho.zip",
       L"jiho!@#$tiho$%^&-()_+=miho copy.zip",  // special chars
-      L"Wohoo-to hoo+I.zip", L"Picture 1.zip",
+      L"Wohoo-to hoo+I.zip",
+      L"Picture 1.zip",
       L"This is a very very long english sentence with spaces and , and +.zip",
   };
 

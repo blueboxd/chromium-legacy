@@ -35,20 +35,24 @@ class MockPaymentAppFactoryDelegate : public PaymentAppFactory::Delegate {
       : web_contents_(web_contents_factory_.CreateWebContents(context)),
         top_origin_("https://top-origin.test"),
         frame_origin_("https://frame-origin.test") {
+    SetRequestedPaymentMethod("https://play.google.com/billing");
+  }
+
+  ~MockPaymentAppFactoryDelegate() override = default;
+
+  void SetRequestedPaymentMethod(const std::string& method) {
     auto details = mojom::PaymentDetails::New();
     details->id = "id";
 
     std::vector<mojom::PaymentMethodDataPtr> methods;
     methods.emplace_back(mojom::PaymentMethodData::New());
-    methods.back()->supported_method = "https://play.google.com/billing";
+    methods.back()->supported_method = method;
     methods.back()->stringified_data = "{}";
 
     spec_ = std::make_unique<PaymentRequestSpec>(
         mojom::PaymentOptions::New(), std::move(details), std::move(methods),
         /*observer=*/nullptr, /*app_locale=*/"en-US");
   }
-
-  ~MockPaymentAppFactoryDelegate() override = default;
 
   // PaymentAppFactory::Delegate implementation:
   content::WebContents* GetWebContents() override { return web_contents_; }
@@ -115,7 +119,7 @@ class AndroidPaymentAppFactoryTest : public testing::Test {
 // The payment app factory should return an error if it's unable to invoke
 // Aneroid payment apps on a platform that supports such apps, e.g, when ARC is
 // disabled on Chrome OS.
-TEST_F(AndroidPaymentAppFactoryTest, NoArc) {
+TEST_F(AndroidPaymentAppFactoryTest, FactoryReturnsErrorWithoutArc) {
   EXPECT_CALL(delegate_, GetTwaPackageName())
       .WillRepeatedly(testing::Return("com.example.app"));
   EXPECT_CALL(delegate_, OnDoneCreatingPaymentApps());
@@ -131,7 +135,7 @@ TEST_F(AndroidPaymentAppFactoryTest, NoArc) {
 
 // The payment app factory should not return any errors when there're no Android
 // payment apps available.
-TEST_F(AndroidPaymentAppFactoryTest, NoApps) {
+TEST_F(AndroidPaymentAppFactoryTest, NoErrorsWhenNoApps) {
   // Enable invoking Android payment apps on those platforms that support it.
   auto scoped_initialization_ = support_->CreateScopedInitialization();
 
@@ -154,7 +158,7 @@ MATCHER_P3(PaymentAppMatches, type, package, method, "") {
 
 // The payment app factory should return the TWA payment app when running in TWA
 // mode.
-TEST_F(AndroidPaymentAppFactoryTest, TheOnlyTwaPaymentAppWhenRunningInTwaMode) {
+TEST_F(AndroidPaymentAppFactoryTest, FindTheTwaPaymentAppInTwaMode) {
   // Enable invoking Android payment apps on those platforms that support it.
   auto scoped_initialization_ = support_->CreateScopedInitialization();
 
@@ -184,8 +188,8 @@ TEST_F(AndroidPaymentAppFactoryTest, TheOnlyTwaPaymentAppWhenRunningInTwaMode) {
 }
 
 // The payment app factory should return the correct TWA payment app out of two
-// installed TWA payment apps, when running in TWA mode.
-TEST_F(AndroidPaymentAppFactoryTest, CorrectTwaPaymentAppWhenRunningInTwaMode) {
+// installed payment apps, when running in TWA mode.
+TEST_F(AndroidPaymentAppFactoryTest, FindTheCorrectTwaAppInTwaMode) {
   // Enable invoking Android payment apps on those platforms that support it.
   auto scoped_initialization_ = support_->CreateScopedInitialization();
 
@@ -202,7 +206,7 @@ TEST_F(AndroidPaymentAppFactoryTest, CorrectTwaPaymentAppWhenRunningInTwaMode) {
       .Times(support_->AreAndroidAppsSupportedOnThisPlatform() ? 1 : 0);
   EXPECT_CALL(delegate_,
               OnPaymentAppCreated(PaymentAppMatches(
-                  PaymentApp::Type::NATIVE_MOBILE_APP, "com.different-twa.app",
+                  PaymentApp::Type::NATIVE_MOBILE_APP, "com.different.app",
                   "https://play.google.com/billing")))
       .Times(0);
 
@@ -217,11 +221,11 @@ TEST_F(AndroidPaymentAppFactoryTest, CorrectTwaPaymentAppWhenRunningInTwaMode) {
       "https://play.google.com/billing";
 
   apps.emplace_back(std::make_unique<AndroidAppDescription>());
-  apps.back()->package = "com.different-twa.app";
-  apps.back()->service_names.push_back("com.different-twa.app.Service");
+  apps.back()->package = "com.different.app";
+  apps.back()->service_names.push_back("com.different.app.Service");
   apps.back()->activities.emplace_back(
       std::make_unique<AndroidActivityDescription>());
-  apps.back()->activities.back()->name = "com.different-twa.app.Activity";
+  apps.back()->activities.back()->name = "com.different.app.Activity";
   apps.back()->activities.back()->default_payment_method =
       "https://play.google.com/billing";
 
@@ -232,7 +236,7 @@ TEST_F(AndroidPaymentAppFactoryTest, CorrectTwaPaymentAppWhenRunningInTwaMode) {
 
 // The payment app factory does not return non-TWA payment apps when running in
 // TWA mode.
-TEST_F(AndroidPaymentAppFactoryTest, NonTwaPaymentAppWhenRunningInTwaMode) {
+TEST_F(AndroidPaymentAppFactoryTest, IgnoreNonTwaAppsInTwaMode) {
   // Enable invoking Android payment apps on those platforms that support it.
   auto scoped_initialization_ = support_->CreateScopedInitialization();
 
@@ -258,7 +262,7 @@ TEST_F(AndroidPaymentAppFactoryTest, NonTwaPaymentAppWhenRunningInTwaMode) {
 
 // The payment app factory does not return any payment apps when not running
 // inside of TWA.
-TEST_F(AndroidPaymentAppFactoryTest, NonTwaPaymentAppWhenNotRunningInTwaMode) {
+TEST_F(AndroidPaymentAppFactoryTest, DoNotLookForAppsWhenOutsideOfTwaMode) {
   // Enable invoking Android payment apps on those platforms that support it.
   auto scoped_initialization_ = support_->CreateScopedInitialization();
 
@@ -268,6 +272,93 @@ TEST_F(AndroidPaymentAppFactoryTest, NonTwaPaymentAppWhenNotRunningInTwaMode) {
   EXPECT_CALL(delegate_, OnPaymentAppCreationError(testing::_)).Times(0);
   EXPECT_CALL(delegate_, OnPaymentAppCreated(testing::_)).Times(0);
   support_->ExpectNoListOfPaymentAppsQuery();
+
+  factory_.Create(delegate_.GetWeakPtr());
+}
+
+// The Android payment app factory works only with TWA specific payment methods.
+TEST_F(AndroidPaymentAppFactoryTest, DoNotLookForAppsForNonTwaMethod) {
+  // Enable invoking Android payment apps on those platforms that support it.
+  auto scoped_initialization_ = support_->CreateScopedInitialization();
+
+  // "https://example.test" is not a TWA specific payment method.
+  delegate_.SetRequestedPaymentMethod("https://example.test");
+
+  EXPECT_CALL(delegate_, GetTwaPackageName())
+      .WillRepeatedly(testing::Return("com.example.app"));
+  EXPECT_CALL(delegate_, OnDoneCreatingPaymentApps());
+  EXPECT_CALL(delegate_, OnPaymentAppCreationError(testing::_)).Times(0);
+  EXPECT_CALL(delegate_, OnPaymentAppCreated(testing::_)).Times(0);
+  support_->ExpectNoListOfPaymentAppsQuery();
+
+  factory_.Create(delegate_.GetWeakPtr());
+}
+
+// If the TWA supports a non-TWA-specific payment method, then it should be
+// ignored.
+TEST_F(AndroidPaymentAppFactoryTest, IgnoreNonTwaMethodInTheTwa) {
+  // Enable invoking Android payment apps on those platforms that support it.
+  auto scoped_initialization_ = support_->CreateScopedInitialization();
+
+  EXPECT_CALL(delegate_, GetTwaPackageName())
+      .WillRepeatedly(testing::Return("com.twa.app"));
+  EXPECT_CALL(delegate_, OnDoneCreatingPaymentApps());
+  EXPECT_CALL(delegate_, OnPaymentAppCreationError(testing::_)).Times(0);
+  EXPECT_CALL(delegate_, OnPaymentAppCreated(testing::_)).Times(0);
+
+  std::vector<std::unique_ptr<AndroidAppDescription>> apps;
+  apps.emplace_back(std::make_unique<AndroidAppDescription>());
+  apps.back()->package = "com.twa.app";
+  apps.back()->service_names.push_back("com.twa.app.Service");
+  apps.back()->activities.emplace_back(
+      std::make_unique<AndroidActivityDescription>());
+  apps.back()->activities.back()->name = "com.twa.app.Activity";
+  apps.back()->activities.back()->default_payment_method =
+      "https://example.test";
+  support_->ExpectQueryListOfPaymentAppsAndRespond(std::move(apps));
+
+  factory_.Create(delegate_.GetWeakPtr());
+}
+
+// If the TWA supports both a TWA-specific and a non-TWA-specific payment
+// method, then only the TWA-specific payment method activity should be
+// returned.
+TEST_F(AndroidPaymentAppFactoryTest,
+       FindOnlyActivitiesWithTwaSpecificMethodName) {
+  // Enable invoking Android payment apps on those platforms that support it.
+  auto scoped_initialization_ = support_->CreateScopedInitialization();
+
+  EXPECT_CALL(delegate_, GetTwaPackageName())
+      .WillRepeatedly(testing::Return("com.twa.app"));
+  EXPECT_CALL(delegate_, OnDoneCreatingPaymentApps());
+  EXPECT_CALL(delegate_, OnPaymentAppCreationError(testing::_)).Times(0);
+  EXPECT_CALL(delegate_, OnPaymentAppCreated(PaymentAppMatches(
+                             PaymentApp::Type::NATIVE_MOBILE_APP, "com.twa.app",
+                             "https://play.google.com/billing")))
+      .Times(support_->AreAndroidAppsSupportedOnThisPlatform() ? 1 : 0);
+  EXPECT_CALL(delegate_, OnPaymentAppCreated(PaymentAppMatches(
+                             PaymentApp::Type::NATIVE_MOBILE_APP, "com.twa.app",
+                             "https://example.test")))
+      .Times(0);
+
+  std::vector<std::unique_ptr<AndroidAppDescription>> apps;
+  apps.emplace_back(std::make_unique<AndroidAppDescription>());
+  apps.back()->package = "com.twa.app";
+  apps.back()->service_names.push_back("com.twa.app.Service");
+
+  apps.back()->activities.emplace_back(
+      std::make_unique<AndroidActivityDescription>());
+  apps.back()->activities.back()->name = "com.twa.app.ActivityOne";
+  apps.back()->activities.back()->default_payment_method =
+      "https://play.google.com/billing";
+
+  apps.back()->activities.emplace_back(
+      std::make_unique<AndroidActivityDescription>());
+  apps.back()->activities.back()->name = "com.twa.app.ActivityTwo";
+  apps.back()->activities.back()->default_payment_method =
+      "https://example.test";
+
+  support_->ExpectQueryListOfPaymentAppsAndRespond(std::move(apps));
 
   factory_.Create(delegate_.GetWeakPtr());
 }

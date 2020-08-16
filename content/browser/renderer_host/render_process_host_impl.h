@@ -213,7 +213,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   bool IsBlocked() override;
   std::unique_ptr<base::CallbackList<void(bool)>::Subscription>
   RegisterBlockStateChangedCallback(
-      const base::RepeatingCallback<void(bool)>& cb) override;
+      const BlockStateChangedCallback& cb) override;
   void Cleanup() override;
   void AddPendingView() override;
   void RemovePendingView() override;
@@ -1107,7 +1107,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   bool is_blocked_;
 
   // The clients who want to know when the blocked state has changed.
-  base::CallbackList<void(bool)> blocked_state_changed_callback_list_;
+  BlockStateChangedCallbackList blocked_state_changed_callback_list_;
 
   // Records the last time we regarded the child process active.
   base::TimeTicks child_process_activity_time_;

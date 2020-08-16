@@ -165,8 +165,8 @@ IN_PROC_BROWSER_TEST_P(PopupBrowserTest, MoveClampedToCurrentDisplay) {
       "moveTo(screen.availLeft - 50, screen.availTop);",
       "moveTo(screen.availLeft, screen.availTop + screen.availHeight + 50);",
       "moveTo(screen.availLeft, screen.availTop - 50);",
-      "moveTo(screen.availLeft + screen.availWidth + 50, "
-      "screen.availTop + screen.availHeight + 50);",
+      ("moveTo(screen.availLeft + screen.availWidth + 50, "
+       "screen.availTop + screen.availHeight + 50);"),
       "moveTo(screen.availLeft - 50, screen.availTop - 50);",
   };
   for (auto* const script : kMoveScripts) {

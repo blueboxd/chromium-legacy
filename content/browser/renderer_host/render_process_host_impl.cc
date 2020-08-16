@@ -3763,9 +3763,9 @@ bool RenderProcessHostImpl::IsBlocked() {
   return is_blocked_;
 }
 
-std::unique_ptr<base::CallbackList<void(bool)>::Subscription>
+std::unique_ptr<RenderProcessHost::BlockStateChangedCallbackList::Subscription>
 RenderProcessHostImpl::RegisterBlockStateChangedCallback(
-    const base::RepeatingCallback<void(bool)>& cb) {
+    const BlockStateChangedCallback& cb) {
   return blocked_state_changed_callback_list_.Add(cb);
 }
 

@@ -261,9 +261,9 @@ bool MockRenderProcessHost::IsBlocked() {
   return false;
 }
 
-std::unique_ptr<base::CallbackList<void(bool)>::Subscription>
+std::unique_ptr<RenderProcessHost::BlockStateChangedCallbackList::Subscription>
 MockRenderProcessHost::RegisterBlockStateChangedCallback(
-    const base::RepeatingCallback<void(bool)>& cb) {
+    const BlockStateChangedCallback& cb) {
   return nullptr;
 }
 

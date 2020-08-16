@@ -21,6 +21,7 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/login/auth/user_context.h"
 #include "components/prefs/pref_service.h"
+#include "components/user_manager/known_user.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -409,6 +410,9 @@ void InSessionPasswordChangeManager::OnAuthSuccess(
   DismissExpiryNotification();
   PasswordChangeDialog::Dismiss();
   ConfirmPasswordChangeDialog::Dismiss();
+  // We request a new sync token. It will be updated locally and signal the fact
+  // of password change to other devices owned by the user.
+  CreateTokenAsync();
   RecordEvent(InSessionPasswordChangeEvent::kFinishPasswordChange);
 }
 
@@ -420,6 +424,34 @@ void InSessionPasswordChangeManager::OnLockStateChanged(bool locked) {
   if (!locked) {
     OnScreenUnlocked();
   }
+}
+
+void InSessionPasswordChangeManager::OnTokenCreated(
+    const std::string& sync_token) {
+  user_manager::known_user::SetPasswordSyncToken(primary_user_->GetAccountId(),
+                                                 sync_token);
+}
+
+void InSessionPasswordChangeManager::OnTokenFetched(
+    const std::string& sync_token) {
+  // Ignored.
+}
+
+void InSessionPasswordChangeManager::OnTokenVerified(bool is_valid) {
+  // Ignored.
+}
+
+void InSessionPasswordChangeManager::OnApiCallFailed(
+    PasswordSyncTokenFetcher::ErrorType error_type) {
+  // TODO(crbug.com/1112896): Error types will be tracked by UMA histograms.
+  // Going forward we should also consider re-trying token creation depending on
+  // the error_type.
+}
+
+void InSessionPasswordChangeManager::CreateTokenAsync() {
+  password_sync_token_fetcher_ = std::make_unique<PasswordSyncTokenFetcher>(
+      primary_profile_->GetURLLoaderFactory(), primary_profile_, this);
+  password_sync_token_fetcher_->StartTokenCreate();
 }
 
 // static

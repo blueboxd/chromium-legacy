@@ -58,8 +58,8 @@ TEST_F(FlashDownloadInterceptionTest, DownloadUrlVariations) {
       "http://adobe.com/go/CA-H-GET-FLASH",
       "http://adobe.com/go/DE_CH-H-M-A2",
       "http://adobe.com/go/gntray_dl_getflashplayer_jp",
-      "http://www.adobe.com/shockwave/download/download.cgi?"
-      "P1_Prod_Version=ShockwaveFlash",
+      ("http://www.adobe.com/shockwave/download/download.cgi?"
+       "P1_Prod_Version=ShockwaveFlash"),
   };
 
   for (auto* url : flash_intercept_urls) {
@@ -81,8 +81,8 @@ TEST_F(FlashDownloadInterceptionTest, DownloadUrlVariations) {
       // Don't match text within the query or fragment.
       "http://www.adobe.com/go/non-matching?foo=flashplayer",
       "http://www.adobe.com/go/non-matching#!foo=flashplayer",
-      "http://www.adobe.com/shockwave/download/download.cgi?"
-      "P1_Prod_Version=SomethingElse",
+      ("http://www.adobe.com/shockwave/download/download.cgi?"
+       "P1_Prod_Version=SomethingElse"),
   };
 
   for (auto* url : flash_no_intercept_urls) {

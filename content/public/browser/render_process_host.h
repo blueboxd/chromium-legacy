@@ -284,9 +284,10 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   virtual void SetBlocked(bool blocked) = 0;
   virtual bool IsBlocked() = 0;
 
-  virtual std::unique_ptr<base::CallbackList<void(bool)>::Subscription>
-  RegisterBlockStateChangedCallback(
-      const base::RepeatingCallback<void(bool)>& cb) = 0;
+  using BlockStateChangedCallbackList = base::RepeatingCallbackList<void(bool)>;
+  using BlockStateChangedCallback = BlockStateChangedCallbackList::CallbackType;
+  virtual std::unique_ptr<BlockStateChangedCallbackList::Subscription>
+  RegisterBlockStateChangedCallback(const BlockStateChangedCallback& cb) = 0;
 
   // Schedules the host for deletion and removes it from the all_hosts list.
   virtual void Cleanup() = 0;

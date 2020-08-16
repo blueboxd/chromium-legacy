@@ -1246,7 +1246,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   base::OneShotTimer input_event_ack_timeout_;
   base::TimeTicks input_event_ack_start_time_;
 
-  std::unique_ptr<base::CallbackList<void(bool)>::Subscription>
+  std::unique_ptr<
+      RenderProcessHost::BlockStateChangedCallbackList::Subscription>
       render_process_blocked_state_changed_subscription_;
 
   std::unique_ptr<TimeoutMonitor> new_content_rendering_timeout_;

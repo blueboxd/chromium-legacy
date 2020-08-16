@@ -5,9 +5,12 @@
 #include "components/payments/content/payment_app_service.h"
 
 #include "base/feature_list.h"
+#include "components/payments/content/android_payment_app_factory.h"
 #include "components/payments/content/autofill_payment_app_factory.h"
 #include "components/payments/content/payment_app.h"
 #include "components/payments/content/service_worker_payment_app_factory.h"
+#include "components/payments/core/features.h"
+#include "components/payments/core/payments_experimental_features.h"
 #include "content/public/common/content_features.h"
 
 namespace payments {
@@ -15,8 +18,17 @@ namespace payments {
 PaymentAppService::PaymentAppService() {
   factories_.emplace_back(std::make_unique<AutofillPaymentAppFactory>());
 
-  if (base::FeatureList::IsEnabled(::features::kServiceWorkerPaymentApps))
+  if (base::FeatureList::IsEnabled(::features::kServiceWorkerPaymentApps)) {
     factories_.emplace_back(std::make_unique<ServiceWorkerPaymentAppFactory>());
+  }
+
+  // TODO(https://crbug.com/1022512): Review the feature flag name when
+  // AndroidPaymentAppFactory works on Android OS with generic 3rd party payment
+  // apps. (Currently it works only on Chrome OS with app store billing payment
+  // methods.)
+  if (PaymentsExperimentalFeatures::IsEnabled(features::kAppStoreBilling)) {
+    factories_.emplace_back(std::make_unique<AndroidPaymentAppFactory>());
+  }
 }
 
 PaymentAppService::~PaymentAppService() = default;

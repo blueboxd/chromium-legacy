@@ -43,21 +43,23 @@ PropertyNode PropertyNode::FromPropertyFilter(
   // Property invocation: property_str expected format is
   // prop_name or prop_name(arg1, ... argN).
   PropertyNode root;
-  Parse(&root, filter.property_str.begin(), filter.property_str.end());
+  std::string property_str = base::UTF16ToUTF8(filter.property_str);
+  Parse(&root, property_str.begin(), property_str.end());
 
   PropertyNode* node = &root.parameters[0];
 
   // Expel a trailing wildcard if any.
   node->original_property =
-      filter.property_str.substr(0, filter.property_str.find_last_of('*'));
+      property_str.substr(0, property_str.find_last_of('*'));
 
   // Line indexes filter: filter_str expected format is
   // :line_num_1, ... :line_num_N, a comma separated list of line indexes
   // the property should be queried for. For example, ":1,:5,:7" indicates that
   // the property should called for objects placed on 1, 5 and 7 lines only.
-  if (!filter.filter_str.empty()) {
+  std::string filter_str = base::UTF16ToUTF8(filter.filter_str);
+  if (!filter_str.empty()) {
     node->line_indexes =
-        base::SplitString(filter.filter_str, base::string16(1, ','),
+        base::SplitString(filter_str, std::string(1, ','),
                           base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   }
 
@@ -86,7 +88,7 @@ PropertyNode::operator bool() const {
   return !name_or_value.empty();
 }
 
-bool PropertyNode::IsMatching(const base::string16& pattern) const {
+bool PropertyNode::IsMatching(const std::string& pattern) const {
   // Looking for exact property match. Expel a trailing whildcard from
   // the property filter to handle filters like AXRole*.
   return name_or_value.compare(0, name_or_value.find_last_of('*'), pattern) ==
@@ -94,11 +96,11 @@ bool PropertyNode::IsMatching(const base::string16& pattern) const {
 }
 
 bool PropertyNode::IsArray() const {
-  return name_or_value == base::ASCIIToUTF16("[]");
+  return name_or_value == "[]";
 }
 
 bool PropertyNode::IsDict() const {
-  return name_or_value == base::ASCIIToUTF16("{}");
+  return name_or_value == "{}";
 }
 
 base::Optional<int> PropertyNode::AsInt() const {
@@ -111,17 +113,17 @@ base::Optional<int> PropertyNode::AsInt() const {
 
 const PropertyNode* PropertyNode::FindKey(const char* refkey) const {
   for (const auto& param : parameters) {
-    if (param.key == base::ASCIIToUTF16(refkey)) {
+    if (param.key == refkey) {
       return &param;
     }
   }
   return nullptr;
 }
 
-base::Optional<base::string16> PropertyNode::FindStringKey(
+base::Optional<std::string> PropertyNode::FindStringKey(
     const char* refkey) const {
   for (const auto& param : parameters) {
-    if (param.key == base::ASCIIToUTF16(refkey)) {
+    if (param.key == refkey) {
       return param.name_or_value;
     }
   }
@@ -130,7 +132,7 @@ base::Optional<base::string16> PropertyNode::FindStringKey(
 
 base::Optional<int> PropertyNode::FindIntKey(const char* refkey) const {
   for (const auto& param : parameters) {
-    if (param.key == base::ASCIIToUTF16(refkey)) {
+    if (param.key == refkey) {
       return param.AsInt();
     }
   }
@@ -143,16 +145,16 @@ std::string PropertyNode::ToString() const {
     if (!out.empty()) {
       out += ',';
     }
-    out += base::UTF16ToUTF8(index);
+    out += index;
   }
   if (!out.empty()) {
     out += ';';
   }
 
   if (!key.empty()) {
-    out += base::UTF16ToUTF8(key) + ": ";
+    out += key + ": ";
   }
-  out += base::UTF16ToUTF8(name_or_value);
+  out += name_or_value;
   if (parameters.size()) {
     out += '(';
     for (size_t i = 0; i < parameters.size(); i++) {
@@ -169,7 +171,7 @@ std::string PropertyNode::ToString() const {
 // private
 PropertyNode::PropertyNode(PropertyNode::iterator key_begin,
                            PropertyNode::iterator key_end,
-                           const base::string16& name_or_value)
+                           const std::string& name_or_value)
     : key(key_begin, key_end), name_or_value(name_or_value) {}
 PropertyNode::PropertyNode(PropertyNode::iterator begin,
                            PropertyNode::iterator end)
@@ -199,8 +201,7 @@ PropertyNode::iterator PropertyNode::Parse(PropertyNode* node,
     // Subnode begins: a special case for arrays, which have [arg1, ..., argN]
     // form.
     if (*iter == '[') {
-      node->parameters.push_back(
-          PropertyNode(key_begin, key_end, base::UTF8ToUTF16("[]")));
+      node->parameters.push_back(PropertyNode(key_begin, key_end, "[]"));
       key_begin = key_end = end;
       begin = iter = Parse(&node->parameters.back(), ++iter, end);
       continue;
@@ -209,8 +210,7 @@ PropertyNode::iterator PropertyNode::Parse(PropertyNode* node,
     // Subnode begins: a special case for dictionaries of {key1: value1, ...,
     // key2: value2} form.
     if (*iter == '{') {
-      node->parameters.push_back(
-          PropertyNode(key_begin, key_end, base::UTF8ToUTF16("{}")));
+      node->parameters.push_back(PropertyNode(key_begin, key_end, "{}"));
       key_begin = key_end = end;
       begin = iter = Parse(&node->parameters.back(), ++iter, end);
       continue;
@@ -451,7 +451,7 @@ AccessibilityTreeFormatterBase::GetVersionSpecificExpectedFileSuffix() {
 
 std::vector<PropertyNode>
 AccessibilityTreeFormatterBase::PropertyFilterNodesFor(
-    const base::string16& line_index) const {
+    const std::string& line_index) const {
   std::vector<PropertyNode> list;
   for (const auto& filter : property_filters_) {
     PropertyNode property_node = PropertyNode::FromPropertyFilter(filter);

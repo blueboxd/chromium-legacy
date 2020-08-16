@@ -48,10 +48,10 @@ class CONTENT_EXPORT PropertyNode final {
   explicit operator bool() const;
 
   // Key name in case of { key: value } dictionary.
-  base::string16 key;
+  std::string key;
 
   // Value or a property name, for example 3 or AXLineForIndex
-  base::string16 name_or_value;
+  std::string name_or_value;
 
   // Parameters if it's a property, for example, it is a vector of a single
   // value 3 in case of AXLineForIndex(3)
@@ -59,30 +59,30 @@ class CONTENT_EXPORT PropertyNode final {
 
   // Used to store the origianl unparsed property including invocation
   // parameters if any.
-  base::string16 original_property;
+  std::string original_property;
 
   // The list of line indexes of accessible objects the property is allowed to
   // be called for.
-  std::vector<base::string16> line_indexes;
+  std::vector<std::string> line_indexes;
 
-  bool IsMatching(const base::string16& pattern) const;
+  bool IsMatching(const std::string& pattern) const;
 
   // Argument conversion methods.
   bool IsArray() const;
   bool IsDict() const;
   base::Optional<int> AsInt() const;
   const PropertyNode* FindKey(const char* refkey) const;
-  base::Optional<base::string16> FindStringKey(const char* refkey) const;
+  base::Optional<std::string> FindStringKey(const char* refkey) const;
   base::Optional<int> FindIntKey(const char* key) const;
 
   std::string ToString() const;
 
  private:
-  using iterator = base::string16::const_iterator;
+  using iterator = std::string::const_iterator;
 
   explicit PropertyNode(iterator key_begin,
                         iterator key_end,
-                        const base::string16&);
+                        const std::string&);
   PropertyNode(iterator begin, iterator end);
   PropertyNode(iterator key_begin,
                iterator key_end,
@@ -156,7 +156,7 @@ class CONTENT_EXPORT AccessibilityTreeFormatterBase
   // Returns property nodes complying to the line index filter for all
   // allow/allow_empty property filters.
   std::vector<PropertyNode> PropertyFilterNodesFor(
-      const base::string16& line_index) const;
+      const std::string& line_index) const;
 
   // Return true if match-all filter is present.
   bool HasMatchAllPropertyFilter() const;

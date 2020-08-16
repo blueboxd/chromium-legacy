@@ -41,6 +41,9 @@ GEN('#endif');
   ['NetworkConfigElementBehavior', 'network_config_element_behavior_test.js',
     []
   ],
+  ['NetworkPasswordInput', 'network_password_input_test.js',
+    []
+  ],
 ].forEach(test => registerTest('Network', 'internet-config-dialog', ...test));
 
 [

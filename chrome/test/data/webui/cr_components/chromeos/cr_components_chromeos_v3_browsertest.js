@@ -7,12 +7,14 @@
 // Polymer BrowserTest fixture.
 GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 GEN('#include "content/public/test/browser_test.h"');
+GEN('#include "chromeos/constants/chromeos_features.h"');
 
 // clang-format off
 [['BasePage', 'base_page_test.m.js'],
  ['CrPolicyNetworkBehaviorMojo', 'cr_policy_network_behavior_mojo_tests.m.js'],
  ['CrPolicyNetworkIndicatorMojo', 'cr_policy_network_indicator_mojo_tests.m.js'],
  ['NetworkConfigElementBehavior', 'network_config_element_behavior_test.m.js'],
+ ['NetworkPasswordInput', 'network_password_input_test.m.js'],
 ].forEach(test => registerTest('Network', ...test));
 // clang-format on
 
@@ -21,7 +23,9 @@ function registerTest(componentName, testName, module, caseName) {
   this[className] = class extends PolymerTest {
     /** @override */
     get browsePreload() {
-      return `chrome://test?module=cr_components/chromeos/${module}`;
+      // TODO(jhawkins): Set up test_loader.html for internet-config-dialog
+      // and use it here instead of os-settings.
+      return `chrome://os-settings/test_loader.html?module=cr_components/chromeos/${module}`;
     }
 
     /** @override */
@@ -33,8 +37,12 @@ function registerTest(componentName, testName, module, caseName) {
     }
 
     /** @override */
-    get webuiHost() {
-      return 'dummyurl';
+    get featureList() {
+      return {
+        enabled: [
+          'chromeos::features::kOsSettingsPolymer3',
+        ],
+      };
     }
   };
 

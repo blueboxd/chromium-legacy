@@ -92,10 +92,10 @@ TEST_F(AccessibilityTreeFormatterBaseTest, ParseProperty) {
   // Dict: FindStringKey
   EXPECT_EQ(
       GetArgumentNode("Text({start: :1, dir: forward})").FindStringKey("start"),
-      base::ASCIIToUTF16(":1"));
+      ":1");
   EXPECT_EQ(
       GetArgumentNode("Text({start: :1, dir: forward})").FindStringKey("dir"),
-      base::ASCIIToUTF16("forward"));
+      "forward");
   EXPECT_EQ(GetArgumentNode("Text({start: :1, dir: forward})")
                 .FindStringKey("notexists"),
             base::nullopt);

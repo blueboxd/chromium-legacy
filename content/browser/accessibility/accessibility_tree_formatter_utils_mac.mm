@@ -12,7 +12,7 @@
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 
-using base::SysNSStringToUTF16;
+using base::SysNSStringToUTF8;
 
 namespace content {
 namespace a11y {
@@ -99,7 +99,7 @@ OptionalNSObject AttributeInvoker::Invoke(
     const PropertyNode& property_node) const {
   // Attributes
   for (NSString* attribute : attributes) {
-    if (property_node.IsMatching(SysNSStringToUTF16(attribute))) {
+    if (property_node.IsMatching(SysNSStringToUTF8(attribute))) {
       return OptionalNSObject::NotNullOrNotApplicable(
           [cocoa_node accessibilityAttributeValue:attribute]);
     }
@@ -107,7 +107,7 @@ OptionalNSObject AttributeInvoker::Invoke(
 
   // Parameterized attributes
   for (NSString* attribute : parameterized_attributes) {
-    if (property_node.IsMatching(SysNSStringToUTF16(attribute))) {
+    if (property_node.IsMatching(SysNSStringToUTF8(attribute))) {
       OptionalNSObject param = ParamByPropertyNode(property_node);
       if (param.IsNotNil()) {
         return OptionalNSObject([cocoa_node
@@ -138,8 +138,7 @@ OptionalNSObject AttributeInvoker::ParamByPropertyNode(
   }
 
   // Otherwise parse argument node value.
-  std::string property_name = base::UTF16ToASCII(property_node.name_or_value);
-
+  const std::string& property_name = property_node.name_or_value;
   if (property_name == "AXLineForIndex" ||
       property_name == "AXTextMarkerForIndex") {  // Int
     return OptionalNSObject::NotNilOrError(PropertyNodeToInt(arg_node));
@@ -177,7 +176,7 @@ NSNumber* AttributeInvoker::PropertyNodeToInt(
 // NSArray of two NSNumber. Format: [integer, integer].
 NSArray* AttributeInvoker::PropertyNodeToIntArray(
     const PropertyNode& arraynode) const {
-  if (arraynode.name_or_value != base::ASCIIToUTF16("[]")) {
+  if (arraynode.name_or_value != "[]") {
     INTARRAY_FAIL(arraynode, "not array")
   }
 
@@ -186,8 +185,7 @@ NSArray* AttributeInvoker::PropertyNodeToIntArray(
   for (const auto& paramnode : arraynode.parameters) {
     base::Optional<int> param = paramnode.AsInt();
     if (!param) {
-      INTARRAY_FAIL(arraynode, paramnode.name_or_value +
-                                   base::UTF8ToUTF16(" is not a number"))
+      INTARRAY_FAIL(arraynode, paramnode.name_or_value + " is not a number")
     }
     [array addObject:@(*param)];
   }
@@ -218,7 +216,7 @@ NSValue* AttributeInvoker::PropertyNodeToRange(
 gfx::NativeViewAccessible AttributeInvoker::PropertyNodeToUIElement(
     const PropertyNode& uielement_node) const {
   gfx::NativeViewAccessible uielement =
-      line_indexes_map.NodeBy(base::UTF16ToUTF8(uielement_node.name_or_value));
+      line_indexes_map.NodeBy(uielement_node.name_or_value);
   if (!uielement) {
     UIELEMENT_FAIL(uielement_node,
                    "no corresponding UIElement was found in the tree")
@@ -234,8 +232,8 @@ id AttributeInvoker::DictNodeToTextMarker(const PropertyNode& dictnode) const {
     TEXTMARKER_FAIL(dictnode, "wrong number of dictionary elements")
   }
 
-  BrowserAccessibilityCocoa* anchor_cocoa = line_indexes_map.NodeBy(
-      base::UTF16ToUTF8(dictnode.parameters[0].name_or_value));
+  BrowserAccessibilityCocoa* anchor_cocoa =
+      line_indexes_map.NodeBy(dictnode.parameters[0].name_or_value);
   if (!anchor_cocoa) {
     TEXTMARKER_FAIL(dictnode, "1st argument: wrong anchor")
   }
@@ -246,12 +244,12 @@ id AttributeInvoker::DictNodeToTextMarker(const PropertyNode& dictnode) const {
   }
 
   ax::mojom::TextAffinity affinity;
-  const base::string16& affinity_str = dictnode.parameters[2].name_or_value;
-  if (affinity_str == base::UTF8ToUTF16("none")) {
+  const std::string& affinity_str = dictnode.parameters[2].name_or_value;
+  if (affinity_str == "none") {
     affinity = ax::mojom::TextAffinity::kNone;
-  } else if (affinity_str == base::UTF8ToUTF16("down")) {
+  } else if (affinity_str == "down") {
     affinity = ax::mojom::TextAffinity::kDownstream;
-  } else if (affinity_str == base::UTF8ToUTF16("up")) {
+  } else if (affinity_str == "up") {
     affinity = ax::mojom::TextAffinity::kUpstream;
   } else {
     TEXTMARKER_FAIL(dictnode, "3rd argument: wrong affinity")

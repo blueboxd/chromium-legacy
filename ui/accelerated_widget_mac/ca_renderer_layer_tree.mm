@@ -385,7 +385,7 @@ CARendererLayerTree::ContentLayer::ContentLayer(
     const gfx::RectF& contents_rect,
     const gfx::Rect& rect_in,
     unsigned background_color,
-    bool has_hdr_color_space,
+    const gfx::ColorSpace& io_surface_color_space,
     unsigned edge_aa_mask,
     float opacity,
     unsigned filter)
@@ -394,6 +394,7 @@ CARendererLayerTree::ContentLayer::ContentLayer(
       contents_rect(contents_rect),
       rect(rect_in),
       background_color(background_color),
+      io_surface_color_space(io_surface_color_space),
       ca_edge_aa_mask(0),
       opacity(opacity),
       ca_filter(filter == GL_LINEAR ? kCAFilterLinear : kCAFilterNearest) {
@@ -439,14 +440,10 @@ CARendererLayerTree::ContentLayer::ContentLayer(
   }
 
   // Determine which type of CALayer subclass we should use.
-  if (io_surface) {
+  if (metal::ShouldUseHDRCopier(io_surface, io_surface_color_space)) {
+    type = CALayerType::kHDRCopier;
+  } else if (io_surface) {
     switch (IOSurfaceGetPixelFormat(io_surface)) {
-      case kCVPixelFormatType_64RGBAHalf:
-      case kCVPixelFormatType_ARGB2101010LEPacked:
-        // HDR content can come in either as half-float or as 10-10-10-2.
-        if (has_hdr_color_space)
-          type = CALayerType::kHDRCopier;
-        break;
       case kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange:
       case kCVPixelFormatType_420YpCbCr10BiPlanarVideoRange:
         // Only allow 4:2:0 frames which fill the layer's contents to be
@@ -496,6 +493,7 @@ CARendererLayerTree::ContentLayer::ContentLayer(ContentLayer&& layer)
       contents_rect(layer.contents_rect),
       rect(layer.rect),
       background_color(layer.background_color),
+      io_surface_color_space(layer.io_surface_color_space),
       ca_edge_aa_mask(layer.ca_edge_aa_mask),
       opacity(layer.opacity),
       ca_filter(layer.ca_filter),
@@ -571,7 +569,7 @@ void CARendererLayerTree::TransformLayer::AddContentLayer(
     const CARendererLayerParams& params) {
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface;
   base::ScopedCFTypeRef<CVPixelBufferRef> cv_pixel_buffer;
-  bool has_hdr_color_space = false;
+  gfx::ColorSpace io_surface_color_space;
   if (params.image) {
     gl::GLImageIOSurface* io_surface_image =
         gl::GLImageIOSurface::FromGLImage(params.image);
@@ -585,11 +583,11 @@ void CARendererLayerTree::TransformLayer::AddContentLayer(
     // TODO(ccameron): If this indeed causes the bug to disappear, then
     // extirpate the CVPixelBufferRef path.
     // cv_pixel_buffer = io_surface_image->cv_pixel_buffer();
-    has_hdr_color_space = params.image->color_space().IsHDR();
+    io_surface_color_space = params.image->color_space();
   }
   content_layers.push_back(
       ContentLayer(tree, io_surface, cv_pixel_buffer, params.contents_rect,
-                   params.rect, params.background_color, has_hdr_color_space,
+                   params.rect, params.background_color, io_surface_color_space,
                    params.edge_aa_mask, params.opacity, params.filter));
 }
 
@@ -809,7 +807,10 @@ void CARendererLayerTree::ContentLayer::CommitToCA(CALayer* superlayer,
 
   switch (type) {
     case CALayerType::kHDRCopier:
-      [ca_layer setContents:static_cast<id>(io_surface.get())];
+      if (update_contents) {
+        metal::UpdateHDRCopierLayer(ca_layer.get(), io_surface.get(),
+                                    io_surface_color_space);
+      }
       break;
     case CALayerType::kVideo:
       if (update_contents) {

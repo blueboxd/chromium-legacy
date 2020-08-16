@@ -169,7 +169,7 @@ class ACCELERATED_WIDGET_MAC_EXPORT CARendererLayerTree {
                  const gfx::RectF& contents_rect,
                  const gfx::Rect& rect,
                  unsigned background_color,
-                 bool has_hdr_color_space,
+                 const gfx::ColorSpace& color_space,
                  unsigned edge_aa_mask,
                  float opacity,
                  unsigned filter);
@@ -191,6 +191,8 @@ class ACCELERATED_WIDGET_MAC_EXPORT CARendererLayerTree {
     gfx::RectF contents_rect;
     gfx::RectF rect;
     unsigned background_color = 0;
+    // The color space of |io_surface|. Used for HDR tonemapping.
+    gfx::ColorSpace io_surface_color_space;
     // Note that the CoreAnimation edge antialiasing mask is not the same as
     // the edge antialiasing mask passed to the constructor.
     CAEdgeAntialiasingMask ca_edge_aa_mask = 0;

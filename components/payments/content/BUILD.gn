@@ -8,6 +8,8 @@ static_library("content") {
     "android_app_communication.h",
     "android_payment_app.cc",
     "android_payment_app.h",
+    "android_payment_app_factory.cc",
+    "android_payment_app_factory.h",
     "autofill_payment_app.cc",
     "autofill_payment_app.h",
     "autofill_payment_app_factory.cc",

@@ -4,7 +4,10 @@
 
 #include "components/payments/core/payment_request_data_util.h"
 
+#include <map>
 #include <memory>
+#include <set>
+#include <string>
 
 #include "base/json/json_writer.h"
 #include "base/macros.h"
@@ -272,6 +275,26 @@ TEST(PaymentRequestDataUtil, ParseSupportedMethods_MultipleEntries) {
   EXPECT_THAT(url_payment_method_identifiers, ElementsAre(kBobPayMethod));
   EXPECT_THAT(payment_method_identifiers,
               UnorderedElementsAre(kBasicCardMethodName, kBobPayMethod));
+}
+
+TEST(PaymentRequestDataUtil, FilterStringifiedMethodData) {
+  std::map<std::string, std::set<std::string>> requested;
+  std::set<std::string> supported;
+  EXPECT_TRUE(FilterStringifiedMethodData(requested, supported).empty());
+
+  requested["a"].insert("{\"b\": \"c\"}");
+  EXPECT_TRUE(FilterStringifiedMethodData(requested, supported).empty());
+
+  requested["x"].insert("{\"y\": \"z\"}");
+  EXPECT_TRUE(FilterStringifiedMethodData(requested, supported).empty());
+
+  supported.insert("x");
+  std::map<std::string, std::set<std::string>> expected;
+  expected["x"].insert("{\"y\": \"z\"}");
+  EXPECT_EQ(expected, FilterStringifiedMethodData(requested, supported));
+
+  supported.insert("g");
+  EXPECT_EQ(expected, FilterStringifiedMethodData(requested, supported));
 }
 
 }  // namespace data_util

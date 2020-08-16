@@ -7,18 +7,28 @@
 
 #include "components/metal_util/metal_util_export.h"
 
+#include <IOSurface/IOSurface.h>
+
+namespace gfx {
+class ColorSpace;
+}  // namespace gfx
+
 @class CALayer;
 
 namespace metal {
 
+// Return true if we should use the HDRCopier for the specified content.
+bool METAL_UTIL_EXPORT ShouldUseHDRCopier(IOSurfaceRef buffer,
+                                          const gfx::ColorSpace& color_space);
+
 // Create a layer which may have its contents set an HDR IOSurface via
-// the -[CALayer setContents:] method.
-// - The IOSurface specified to setContents must have pixel format
-//   kCVPixelFormatType_64RGBAHalf or kCVPixelFormatType_ARGB2101010LEPacked,
-//   any other pixel formats will be NOTREACHED.
-// - This layer will, in setContents, blit the contents of the specified
-//   IOSurface to an HDR-capable CAMetalLayer.
+// UpdateHDRCopierLayer.
 CALayer* METAL_UTIL_EXPORT CreateHDRCopierLayer();
+
+// Update the contents of |layer| to the specified IOSurface and color space.
+void METAL_UTIL_EXPORT UpdateHDRCopierLayer(CALayer* layer,
+                                            IOSurfaceRef buffer,
+                                            const gfx::ColorSpace& color_space);
 
 }  // namespace metal
 

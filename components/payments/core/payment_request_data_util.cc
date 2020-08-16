@@ -166,5 +166,17 @@ base::string16 FormatCardNumberForDisplay(const base::string16& card_number) {
   return number;
 }
 
+std::map<std::string, std::set<std::string>> FilterStringifiedMethodData(
+    const std::map<std::string, std::set<std::string>>& stringified_method_data,
+    const std::set<std::string>& supported_payment_method_names) {
+  std::map<std::string, std::set<std::string>> result;
+  for (const auto& pair : stringified_method_data) {
+    if (base::Contains(supported_payment_method_names, pair.first)) {
+      result[pair.first] = pair.second;
+    }
+  }
+  return result;
+}
+
 }  // namespace data_util
 }  // namespace payments

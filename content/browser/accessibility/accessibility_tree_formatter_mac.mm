@@ -216,9 +216,7 @@ void AccessibilityTreeFormatterMac::AddProperties(
   }
 
   // Otherwise dump attributes matching allow filters only.
-  base::string16 line_index =
-      base::UTF8ToUTF16(line_indexes_map.IndexBy(cocoa_node));
-
+  std::string line_index = line_indexes_map.IndexBy(cocoa_node);
   for (const PropertyNode& property_node : PropertyFilterNodesFor(line_index)) {
     AttributeInvoker invoker(cocoa_node, line_indexes_map);
     OptionalNSObject value = invoker.Invoke(property_node);
@@ -226,11 +224,11 @@ void AccessibilityTreeFormatterMac::AddProperties(
       continue;
     }
     if (value.IsError()) {
-      dict->SetPath(base::UTF16ToUTF8(property_node.original_property),
+      dict->SetPath(property_node.original_property,
                     base::Value(kFailedToParseArgsError));
       continue;
     }
-    dict->SetPath(base::UTF16ToUTF8(property_node.original_property),
+    dict->SetPath(property_node.original_property,
                   PopulateObject(*value, line_indexes_map));
   }
 

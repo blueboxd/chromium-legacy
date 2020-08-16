@@ -27,6 +27,7 @@ component("metal_util") {
   deps = [
     "//base",
     "//components/crash/core/common:crash_key",
+    "//ui/gfx",
   ]
 
   frameworks = [

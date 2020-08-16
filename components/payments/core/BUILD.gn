@@ -6,6 +6,8 @@ static_library("core") {
   sources = [
     "android_app_description.cc",
     "android_app_description.h",
+    "android_app_description_tools.cc",
+    "android_app_description_tools.h",
     "autofill_card_validation.cc",
     "autofill_card_validation.h",
     "basic_card_response.cc",
@@ -151,6 +153,7 @@ static_library("test_support") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "android_app_description_tools_unittest.cc",
     "can_make_payment_query_unittest.cc",
     "currency_formatter_unittest.cc",
     "journey_logger_unittest.cc",

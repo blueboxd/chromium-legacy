@@ -119,6 +119,11 @@
 #include "ui/views/widget/widget.h"
 #endif
 
+#if BUILDFLAG(IS_LACROS)
+#include "ui/aura/test/ui_controls_factory_aura.h"
+#include "ui/base/test/ui_controls.h"
+#endif
+
 namespace {
 
 #if defined(OS_CHROMEOS)
@@ -539,6 +544,19 @@ void InProcessBrowserTest::PreRunTestOnMainThread() {
     auto* tab = browser_->tab_strip_model()->GetActiveWebContents();
     content::WaitForLoadStop(tab);
     SetInitialWebContents(tab);
+
+    // For other platforms, they install ui controls in
+    // interactive_ui_tests_main.cc. We can't add it there because we have no
+    // WindowTreeHost initialized at the test runner level.
+    // The ozone implementation of CreateUIControlsAura differs from other
+    // implementation in that it requires a WindowTreeHost. Thus, it must be
+    // initialized here rather than earlier.
+#if BUILDFLAG(IS_LACROS)
+    BrowserWindow* window = browser_->window();
+    CHECK(window);
+    ui_controls::InstallUIControlsAura(
+        aura::test::CreateUIControlsAura(window->GetNativeWindow()->GetHost()));
+#endif
   }
 
 #if !defined(OS_ANDROID)

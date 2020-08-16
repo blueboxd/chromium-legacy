@@ -41,6 +41,8 @@ class MODULES_EXPORT VideoEncoder final : public ScriptWrappable {
   ~VideoEncoder() override;
 
   // video_encoder.idl implementation.
+  int32_t encodeQueueSize();
+
   void encode(VideoFrame* frame,
               const VideoEncoderEncodeOptions*,
               ExceptionState&);
@@ -76,8 +78,8 @@ class MODULES_EXPORT VideoEncoder final : public ScriptWrappable {
   enum class AccelerationPreference { kAllow, kDeny, kRequire };
 
   void CallOutputCallback(EncodedVideoChunk* chunk);
-  void CallErrorCallback(DOMException* ex);
-  void CallErrorCallback(DOMExceptionCode code, const String& message);
+  void HandleError(DOMException* ex);
+  void HandleError(DOMExceptionCode code, const String& message);
   void EnqueueRequest(Request* request);
   void ProcessRequests();
   void ProcessEncode(Request* request);
@@ -93,6 +95,7 @@ class MODULES_EXPORT VideoEncoder final : public ScriptWrappable {
   Member<V8VideoEncoderOutputCallback> output_callback_;
   Member<V8WebCodecsErrorCallback> error_callback_;
   HeapDeque<Member<Request>> requests_;
+  int32_t requested_encodes_ = 0;
 
   // Some kConfigure and kFlush requests can't be executed in parallel with
   // kEncode. This flag stops processing of new requests in the requests_ queue

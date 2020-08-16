@@ -14,11 +14,11 @@ enum VideoEncoderAccelerationPreference {
 dictionary VideoEncoderConfig {
   required DOMString codec;
   DOMString profile;
-  VideoEncoderAccelerationPreference acceleration;
+  VideoEncoderAccelerationPreference acceleration = "allow";
 
   unsigned long long bitrate;
 
-  double framerate;
+  required double framerate;
 
   required unsigned long width;
   required unsigned long height;

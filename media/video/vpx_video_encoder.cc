@@ -65,8 +65,9 @@ void VpxVideoEncoder::Initialize(VideoCodecProfile profile,
   vpx_codec_iface_t* iface = nullptr;
   if (profile == media::VP8PROFILE_ANY) {
     iface = vpx_codec_vp8_cx();
-  } else if (profile >= media::VP9PROFILE_PROFILE0 &&
-             profile <= media::VP9PROFILE_PROFILE3) {
+  } else if (profile == media::VP9PROFILE_PROFILE0 ||
+             profile == media::VP9PROFILE_PROFILE2) {
+    // TODO(https://crbug.com/1116617): Consider support for profiles 1 and 3.
     iface = vpx_codec_vp9_cx();
   } else {
     auto status = Status(StatusCode::kEncoderUnsupportedProfile)
@@ -123,8 +124,9 @@ void VpxVideoEncoder::Initialize(VideoCodecProfile profile,
       codec_, iface, &codec_config_,
       codec_config_.g_bit_depth == VPX_BITS_8 ? 0 : VPX_CODEC_USE_HIGHBITDEPTH);
   if (vpx_error != VPX_CODEC_OK) {
-    std::string msg = base::StringPrintf("VPX encoder initialization error: %s",
-                                         vpx_codec_err_to_string(vpx_error));
+    std::string msg = base::StringPrintf(
+        "VPX encoder initialization error: %s %s",
+        vpx_codec_err_to_string(vpx_error), codec_->err_detail);
 
     status = Status(StatusCode::kEncoderInitializationError, msg);
     std::move(done_cb).Run(status);

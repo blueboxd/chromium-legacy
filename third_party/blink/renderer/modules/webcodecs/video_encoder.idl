@@ -11,6 +11,13 @@
     [CallWith=ScriptState, RaisesException]
     constructor(VideoEncoderInit init);
 
+    // The number of pending decode requests. This does not include requests that
+    // have been sent to the underlying codec.
+    //
+    // Applications can minimize underflow by enqueueing encode requests until
+    // |encodeQueueSize| is greater than a constant.
+    readonly attribute long encodeQueueSize;
+
     // Performs original configuration of the encoder.
     // Resolved after configuration is done. It should be called only
     // once per encoder instance, before calling any other methods.

@@ -48,6 +48,16 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
                                   bool alt,
                                   bool command,
                                   base::OnceClosure closure) override {
+    WindowTreeHost* optional_host = nullptr;
+    // Send the key event to the window's host, which may not match |host_|.
+    // This logic should probably exist for the non-aura path as well.
+    // TODO(https://crbug.com/1116649) Support non-aura path.
+#if defined(USE_AURA)
+    if (window != nullptr && window->GetHost() != nullptr &&
+        window->GetHost() != host_)
+      optional_host = window->GetHost();
+#endif
+
     int flags = button_down_mask_;
     int64_t display_id =
         display::Screen::GetScreen()->GetDisplayNearestWindow(window).id();
@@ -55,58 +65,62 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
     if (control) {
       flags |= ui::EF_CONTROL_DOWN;
       PostKeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_CONTROL, flags, display_id,
-                   base::OnceClosure());
+                   base::OnceClosure(), optional_host);
     }
 
     if (shift) {
       flags |= ui::EF_SHIFT_DOWN;
       PostKeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_SHIFT, flags, display_id,
-                   base::OnceClosure());
+                   base::OnceClosure(), optional_host);
     }
 
     if (alt) {
       flags |= ui::EF_ALT_DOWN;
       PostKeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_MENU, flags, display_id,
-                   base::OnceClosure());
+                   base::OnceClosure(), optional_host);
     }
 
     if (command) {
       flags |= ui::EF_COMMAND_DOWN;
       PostKeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_LWIN, flags, display_id,
-                   base::OnceClosure());
+                   base::OnceClosure(), optional_host);
     }
 
     PostKeyEvent(ui::ET_KEY_PRESSED, key, flags, display_id,
-                 base::OnceClosure());
+                 base::OnceClosure(), optional_host);
     const bool has_modifier = control || shift || alt || command;
     // Pass the real closure to the last generated KeyEvent.
     PostKeyEvent(ui::ET_KEY_RELEASED, key, flags, display_id,
-                 has_modifier ? base::OnceClosure() : std::move(closure));
+                 has_modifier ? base::OnceClosure() : std::move(closure),
+                 optional_host);
 
     if (alt) {
       flags &= ~ui::EF_ALT_DOWN;
       PostKeyEvent(ui::ET_KEY_RELEASED, ui::VKEY_MENU, flags, display_id,
                    (shift || control || command) ? base::OnceClosure()
-                                                 : std::move(closure));
+                                                 : std::move(closure),
+                   optional_host);
     }
 
     if (shift) {
       flags &= ~ui::EF_SHIFT_DOWN;
       PostKeyEvent(
           ui::ET_KEY_RELEASED, ui::VKEY_SHIFT, flags, display_id,
-          (control || command) ? base::OnceClosure() : std::move(closure));
+          (control || command) ? base::OnceClosure() : std::move(closure),
+          optional_host);
     }
 
     if (control) {
       flags &= ~ui::EF_CONTROL_DOWN;
       PostKeyEvent(ui::ET_KEY_RELEASED, ui::VKEY_CONTROL, flags, display_id,
-                   command ? base::OnceClosure() : std::move(closure));
+                   command ? base::OnceClosure() : std::move(closure),
+                   optional_host);
     }
 
     if (command) {
       flags &= ~ui::EF_COMMAND_DOWN;
       PostKeyEvent(ui::ET_KEY_RELEASED, ui::VKEY_LWIN, flags, display_id,
-                   std::move(closure));
+                   std::move(closure), optional_host);
     }
 
     return true;
@@ -231,17 +245,21 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
   }
 #endif
 
+  // Use |optional_host| to specify the host.
+  // When |optional_host| is not null, event will be sent to |optional_host|.
+  // When |optional_host| is null, event will be sent to the default host.
   void SendEventToSink(ui::Event* event,
                        int64_t display_id,
-                       base::OnceClosure closure) {
+                       base::OnceClosure closure,
+                       WindowTreeHost* optional_host = nullptr) {
     // Post the task before processing the event. This is necessary in case
     // processing the event results in a nested message loop.
     if (closure) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                     std::move(closure));
     }
-
-    ui::EventSourceTestApi event_source_test(host_->GetEventSource());
+    WindowTreeHost* host = optional_host ? optional_host : host_;
+    ui::EventSourceTestApi event_source_test(host->GetEventSource());
     ignore_result(event_source_test.SendEventToSink(event));
   }
 
@@ -249,23 +267,26 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
                     ui::KeyboardCode key_code,
                     int flags,
                     int64_t display_id,
-                    base::OnceClosure closure) {
+                    base::OnceClosure closure,
+                    WindowTreeHost* optional_host = nullptr) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&UIControlsOzone::PostKeyEventTask,
-                                  base::Unretained(this), type, key_code, flags,
-                                  display_id, std::move(closure)));
+        FROM_HERE,
+        base::BindOnce(&UIControlsOzone::PostKeyEventTask,
+                       base::Unretained(this), type, key_code, flags,
+                       display_id, std::move(closure), optional_host));
   }
 
   void PostKeyEventTask(ui::EventType type,
                         ui::KeyboardCode key_code,
                         int flags,
                         int64_t display_id,
-                        base::OnceClosure closure) {
+                        base::OnceClosure closure,
+                        WindowTreeHost* optional_host) {
     // Do not rewrite injected events. See crbug.com/136465.
     flags |= ui::EF_FINAL;
 
     ui::KeyEvent key_event(type, key_code, flags);
-    SendEventToSink(&key_event, display_id, std::move(closure));
+    SendEventToSink(&key_event, display_id, std::move(closure), optional_host);
   }
 
   void PostMouseEvent(ui::EventType type,
@@ -335,6 +356,8 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
     return true;
   }
 
+  // This is the default host used for events that are not scoped to a window.
+  // Events scoped to a window always use the window's host.
   WindowTreeHost* host_;
 
   // Mask of the mouse buttons currently down. This is static as it needs to

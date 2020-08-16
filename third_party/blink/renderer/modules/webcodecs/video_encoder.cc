@@ -83,6 +83,10 @@ VideoEncoder::~VideoEncoder() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
+int32_t VideoEncoder::encodeQueueSize() {
+  return requested_encodes_;
+}
+
 void VideoEncoder::configure(const VideoEncoderConfig* config,
                              ExceptionState& exception_state) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -126,6 +130,7 @@ void VideoEncoder::encode(VideoFrame* frame,
   request->type = Request::Type::kEncode;
   request->frame = frame;
   request->encodeOpts = opts;
+  ++requested_encodes_;
   return EnqueueRequest(request);
 }
 
@@ -178,17 +183,25 @@ void VideoEncoder::CallOutputCallback(EncodedVideoChunk* chunk) {
   output_callback_->InvokeAndReportException(nullptr, chunk);
 }
 
-void VideoEncoder::CallErrorCallback(DOMException* ex) {
-  if (!script_state_->ContextIsValid() || !error_callback_)
+void VideoEncoder::HandleError(DOMException* ex) {
+  // Save a temp before we clear the callback.
+  V8WebCodecsErrorCallback* error_callback = error_callback_.Get();
+
+  // Errors are permanent. Shut everything down.
+  error_callback_.Clear();
+  media_encoder_.reset();
+  output_callback_.Clear();
+
+  if (!script_state_->ContextIsValid() || !error_callback)
     return;
+
   ScriptState::Scope scope(script_state_);
-  error_callback_->InvokeAndReportException(nullptr, ex);
+  error_callback->InvokeAndReportException(nullptr, ex);
 }
 
-void VideoEncoder::CallErrorCallback(DOMExceptionCode code,
-                                     const String& message) {
+void VideoEncoder::HandleError(DOMExceptionCode code, const String& message) {
   auto* ex = MakeGarbageCollected<DOMException>(code, message);
-  CallErrorCallback(ex);
+  HandleError(ex);
 }
 
 void VideoEncoder::EnqueueRequest(Request* request) {
@@ -219,6 +232,7 @@ void VideoEncoder::ProcessRequests() {
 void VideoEncoder::ProcessEncode(Request* request) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(request->type, Request::Type::kEncode);
+  DCHECK_GT(requested_encodes_, 0);
 
   auto done_callback = [](VideoEncoder* self, Request* req,
                           media::Status status) {
@@ -227,19 +241,19 @@ void VideoEncoder::ProcessEncode(Request* request) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(self->sequence_checker_);
     if (!status.is_ok()) {
       std::string msg = "Encoding error: " + status.message();
-      self->CallErrorCallback(DOMExceptionCode::kOperationError, msg.c_str());
+      self->HandleError(DOMExceptionCode::kOperationError, msg.c_str());
     }
     self->ProcessRequests();
   };
 
   if (!media_encoder_) {
-    CallErrorCallback(DOMExceptionCode::kOperationError,
-                      "Encoder is not configured");
+    HandleError(DOMExceptionCode::kOperationError, "Encoder is not configured");
     return;
   }
 
   bool keyframe = request->encodeOpts->hasKeyFrameNonNull() &&
                   request->encodeOpts->keyFrameNonNull();
+  --requested_encodes_;
   media_encoder_->Encode(request->frame->frame(), keyframe,
                          WTF::Bind(done_callback, WrapWeakPersistent(this),
                                    WrapPersistentIfNeeded(request)));
@@ -252,9 +266,10 @@ void VideoEncoder::ProcessConfigure(Request* request) {
   auto* config = request->config.Get();
   AccelerationPreference acc_pref = AccelerationPreference::kAllow;
 
+  // TODO(https://crbug.com/1116783): Delete this, allow reconfiguration.
   if (media_encoder_) {
-    CallErrorCallback(DOMExceptionCode::kOperationError,
-                      "Encoder has already been congfigured");
+    HandleError(DOMExceptionCode::kOperationError,
+                "Encoder has already been congfigured");
     return;
   }
 
@@ -267,8 +282,8 @@ void VideoEncoder::ProcessConfigure(Request* request) {
     } else if (preference == "allow") {
       acc_pref = AccelerationPreference::kAllow;
     } else {
-      CallErrorCallback(DOMExceptionCode::kNotFoundError,
-                        "Unknown acceleration type");
+      HandleError(DOMExceptionCode::kNotFoundError,
+                  "Unknown acceleration type");
       return;
     }
   }
@@ -277,7 +292,7 @@ void VideoEncoder::ProcessConfigure(Request* request) {
   std::string profile_str = config->profile().Utf8();
   auto codec_type = media::StringToVideoCodec(codec_str);
   if (codec_type == media::kUnknownVideoCodec) {
-    CallErrorCallback(DOMExceptionCode::kNotFoundError, "Unknown codec type");
+    HandleError(DOMExceptionCode::kNotFoundError, "Unknown codec type");
     return;
   }
 
@@ -286,8 +301,8 @@ void VideoEncoder::ProcessConfigure(Request* request) {
   media::VideoCodecProfile profile = media::VIDEO_CODEC_PROFILE_UNKNOWN;
   if (codec_type == media::kCodecVP8) {
     if (acc_pref == AccelerationPreference::kRequire) {
-      CallErrorCallback(DOMExceptionCode::kNotFoundError,
-                        "Accelerated vp8 is not supported");
+      HandleError(DOMExceptionCode::kNotFoundError,
+                  "Accelerated vp8 is not supported");
       return;
     }
     media_encoder_ = CreateVpxVideoEncoder();
@@ -296,13 +311,12 @@ void VideoEncoder::ProcessConfigure(Request* request) {
     uint8_t level = 0;
     media::VideoColorSpace color_space;
     if (!ParseNewStyleVp9CodecID(profile_str, &profile, &level, &color_space)) {
-      CallErrorCallback(DOMExceptionCode::kNotFoundError,
-                        "Invalid vp9 profile");
+      HandleError(DOMExceptionCode::kNotFoundError, "Invalid vp9 codec string");
       return;
     }
     if (acc_pref == AccelerationPreference::kRequire) {
-      CallErrorCallback(DOMExceptionCode::kNotFoundError,
-                        "Accelerated vp9 is not supported");
+      HandleError(DOMExceptionCode::kNotFoundError,
+                  "Accelerated vp9 is not supported");
       return;
     }
     media_encoder_ = CreateVpxVideoEncoder();
@@ -310,21 +324,19 @@ void VideoEncoder::ProcessConfigure(Request* request) {
     codec_type = media::kCodecH264;
     uint8_t level = 0;
     if (!ParseAVCCodecId(profile_str, &profile, &level)) {
-      CallErrorCallback(DOMExceptionCode::kNotFoundError,
-                        "Invalid AVC profile");
+      HandleError(DOMExceptionCode::kNotFoundError, "Invalid AVC profile");
       return;
     }
     if (acc_pref == AccelerationPreference::kDeny) {
-      CallErrorCallback(DOMExceptionCode::kNotFoundError,
-                        "Software h264 is not supported yet");
+      HandleError(DOMExceptionCode::kNotFoundError,
+                  "Software h264 is not supported yet");
       return;
     }
     media_encoder_ = CreateAcceleratedVideoEncoder();
   }
 
   if (!media_encoder_) {
-    CallErrorCallback(DOMExceptionCode::kNotFoundError,
-                      "Unsupported codec type");
+    HandleError(DOMExceptionCode::kNotFoundError, "Unsupported codec type");
     return;
   }
 
@@ -339,22 +351,28 @@ void VideoEncoder::ProcessConfigure(Request* request) {
       return;
     DCHECK_CALLED_ON_VALID_SEQUENCE(self->sequence_checker_);
     if (!status.is_ok()) {
-      self->media_encoder_.reset();
-      self->output_callback_.Clear();
-      self->error_callback_.Clear();
       std::string msg = "Encoder initialization error: " + status.message();
-      self->CallErrorCallback(DOMExceptionCode::kOperationError, msg.c_str());
+      self->HandleError(DOMExceptionCode::kOperationError, msg.c_str());
     }
     self->stall_request_processing_ = false;
     self->ProcessRequests();
   };
 
   media::VideoEncoder::Options options;
-  options.bitrate = config->bitrate();
+
+  // Required configuration.
   options.height = frame_size_.height();
   options.width = frame_size_.width();
   options.framerate = config->framerate();
+
+  // Optional configuration.
+  if (config->hasBitrate())
+    options.bitrate = config->bitrate();
+
+  // TODO(https://crbug.com/1116771): Let the encoder figure out its thread
+  // count (it knows better).
   options.threads = 1;
+
   stall_request_processing_ = true;
   media_encoder_->Initialize(profile, options, output_cb,
                              WTF::Bind(done_callback, WrapWeakPersistent(this),
@@ -377,7 +395,7 @@ void VideoEncoder::ProcessFlush(Request* request) {
       std::string msg = "Flushing error: " + status.message();
       auto* ex = MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kOperationError, msg.c_str());
-      self->CallErrorCallback(ex);
+      self->HandleError(ex);
       req->resolver.Release()->Reject(ex);
     }
     self->stall_request_processing_ = false;
@@ -387,7 +405,7 @@ void VideoEncoder::ProcessFlush(Request* request) {
   if (!media_encoder_) {
     auto* ex = MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kOperationError, "Encoder is not configured");
-    CallErrorCallback(ex);
+    HandleError(ex);
     request->resolver.Release()->Reject(ex);
     return;
   }

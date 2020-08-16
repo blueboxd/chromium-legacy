@@ -294,7 +294,7 @@ void CastMetricsHelper::LogMediumTimeHistogramEvent(const std::string& name,
 base::Value CastMetricsHelper::CreateEventBase(const std::string& name) {
   base::Value cast_event(base::Value::Type::DICTIONARY);
   cast_event.SetKey("name", base::Value(name));
-  const double time = (Now() - base::TimeTicks()).InMicroseconds();
+  const double time = (Now() - base::TimeTicks()).InMicrosecondsF();
   cast_event.SetKey("time", base::Value(time));
   return cast_event;
 }

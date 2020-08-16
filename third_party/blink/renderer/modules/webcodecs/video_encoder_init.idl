@@ -9,5 +9,5 @@ dictionary VideoEncoderInit {
   required VideoEncoderOutputCallback output;
 
   // Called when there is a decoding error.
-  WebCodecsErrorCallback error;
+  required WebCodecsErrorCallback error;
 };

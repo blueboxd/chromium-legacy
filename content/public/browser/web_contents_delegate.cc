@@ -341,6 +341,13 @@ std::unique_ptr<WebContents> WebContentsDelegate::ActivatePortalWebContents(
   return portal_contents;
 }
 
+void WebContentsDelegate::UpdateInspectedWebContentsIfNecessary(
+    WebContents* old_contents,
+    WebContents* new_contents,
+    base::OnceCallback<void()> callback) {
+  std::move(callback).Run();
+}
+
 bool WebContentsDelegate::ShouldShowStaleContentOnEviction(
     WebContents* source) {
   return false;

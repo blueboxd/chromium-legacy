@@ -13,15 +13,32 @@ message LocalTrustedVaultKey {
   optional bytes key_material = 1;
 }
 
+message LocalDeviceRegistrationInfo {
+  // Private SecureBox key.
+  optional bytes private_key_material = 1;
+
+  // Indicates whether device is registered, i.e. whether its public key is
+  // successfully submitted to the server.
+  optional bool device_registered = 2;
+}
+
 message LocalTrustedVaultPerUser {
   // User identifier.
   optional bytes gaia_id = 1;
 
   // All keys known for a user.
-  repeated LocalTrustedVaultKey key = 2;
+  repeated LocalTrustedVaultKey vault_key = 2;
 
-  // The version corresponding to the last element in |key|.
-  optional int32 last_key_version = 3;
+  // The version corresponding to the last element in |vault_key|.
+  optional int32 last_vault_key_version = 3;
+
+  // Indicates whether |vault_key| is stale, i.e. that the latest locally
+  // available key isn't the latest key in the vault. New keys need to be
+  // fetched through key retrieval procedure or by following key rotation.
+  optional bool keys_are_stale = 4;
+
+  // Device key and corresponding registration metadata.
+  optional LocalDeviceRegistrationInfo local_device_registration_info = 5;
 }
 
 message LocalTrustedVault {

@@ -11,6 +11,7 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/common/web_application_info.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -47,11 +48,21 @@ class AppIconManager {
       const AppId& app_id,
       IconPurpose purpose,
       const std::vector<SquareSizePx>& icon_sizes_in_px) const = 0;
-  // Returns whether there is a downloaded icon matching |icon_size_in_px| for
-  // any of the given |purposes|.
+  struct IconSizeAndPurpose {
+    SquareSizePx size_px = 0;
+    IconPurpose purpose = IconPurpose::ANY;
+  };
+  // For each of |purposes|, in the given order, looks for an icon with size at
+  // least |min_icon_size|. Returns information on the first icon found.
+  virtual base::Optional<IconSizeAndPurpose> FindIconMatchBigger(
+      const AppId& app_id,
+      const std::vector<IconPurpose>& purposes,
+      SquareSizePx min_size) const = 0;
+  // Returns whether there is a downloaded icon of at least |min_size| for any
+  // of the given |purposes|.
   virtual bool HasSmallestIcon(const AppId& app_id,
                                const std::vector<IconPurpose>& purposes,
-                               SquareSizePx min_icon_size) const = 0;
+                               SquareSizePx min_size) const = 0;
 
   using ReadIconsCallback =
       base::OnceCallback<void(std::map<SquareSizePx, SkBitmap> icon_bitmaps)>;
@@ -83,9 +94,9 @@ class AppIconManager {
 
   using ReadIconWithPurposeCallback =
       base::OnceCallback<void(IconPurpose, const SkBitmap&)>;
-  // For each of |purposes|, in the given order, finds the smallest icon with
-  // size at least |icon_size_in_px|. Returns the first icon found, as a bitmap.
-  // Returns empty SkBitmap in |callback| if IO error.
+  // For each of |purposes|, in the given order, looks for an icon with size at
+  // least |min_icon_size|. Returns the first icon found, as a bitmap. Returns
+  // an empty SkBitmap in |callback| if IO error.
   virtual void ReadSmallestIcon(const AppId& app_id,
                                 const std::vector<IconPurpose>& purposes,
                                 SquareSizePx min_icon_size,
@@ -99,9 +110,9 @@ class AppIconManager {
 
   using ReadCompressedIconWithPurposeCallback =
       base::OnceCallback<void(IconPurpose, std::vector<uint8_t> data)>;
-  // For each of |purposes|, in the given order, finds the smallest icon with
-  // size at least |icon_size_in_px|. Returns the first icon found, compressed
-  // as PNG. Returns empty |data| in |callback| if IO error.
+  // For each of |purposes|, in the given order, looks for an icon with size at
+  // least |min_icon_size|. Returns the first icon found, compressed as PNG.
+  // Returns empty |data| in |callback| if IO error.
   virtual void ReadSmallestCompressedIcon(
       const AppId& app_id,
       const std::vector<IconPurpose>& purposes,

@@ -647,12 +647,6 @@ const int kRecentlyClosedTabsSectionIndex = 0;
 
 #pragma mark - Public
 
-- (BOOL)isSessionSectionIdentifier:(NSInteger)sectionIdentifier {
-  NSArray* sessionSectionIdentifiers = [self allSessionSectionIdentifiers];
-  NSNumber* sectionIdentifierObject = @(sectionIdentifier);
-  return [sessionSectionIdentifiers containsObject:sectionIdentifierObject];
-}
-
 - (synced_sessions::DistantSession const*)sessionForSectionIdentifier:
     (NSInteger)sectionIdentifer {
   NSInteger section =
@@ -688,6 +682,15 @@ const int kRecentlyClosedTabsSectionIndex = 0;
                                      ->GetOpenTabsUIDelegate();
                              openTabs->DeleteForeignSession(sessionTagCopy);
                            }];
+}
+
+#pragma mark - Private
+
+// Returns YES if |sectionIdentifier| is a Sessions sectionIdentifier.
+- (BOOL)isSessionSectionIdentifier:(NSInteger)sectionIdentifier {
+  NSArray* sessionSectionIdentifiers = [self allSessionSectionIdentifiers];
+  NSNumber* sectionIdentifierObject = @(sectionIdentifier);
+  return [sessionSectionIdentifiers containsObject:sectionIdentifierObject];
 }
 
 #pragma mark - Consumer Protocol
@@ -943,6 +946,9 @@ const int kRecentlyClosedTabsSectionIndex = 0;
     API_AVAILABLE(ios(13.0)) {
   UIView* header = [interaction view];
   NSInteger tappedHeaderSectionIdentifier = header.tag;
+
+  if (![self isSessionSectionIdentifier:tappedHeaderSectionIdentifier])
+    return [[UIContextMenuConfiguration alloc] init];
 
   return
       [self.menuProvider contextMenuConfigurationForHeaderWithSectionIdentifier:

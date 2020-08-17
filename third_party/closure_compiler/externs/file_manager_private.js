@@ -622,23 +622,23 @@ chrome.fileManagerPrivate.setDefaultTask = function(taskId, entries, mimeTypes,
 chrome.fileManagerPrivate.getFileTasks = function(entries, callback) {};
 
 /**
- * Gets the MIME type of a file.
- * @param {!Entry} entry The file Entry.
+ * Gets the MIME type of an entry.
+ * @param {!Entry} entry The Entry.
  * @param {function((string|undefined))} callback The MIME type callback.
  */
 chrome.fileManagerPrivate.getMimeType = function(entry, callback) {};
 
 /**
  * Gets the content sniffed MIME type of a file.
- * @param {!Blob} fileBlob Blob created from the file Entry.
+ * @param {!FileEntry} fileEntry The file entry.
  * @param {function((string|undefined))} callback The MIME type callback.
  * $(ref:runtime.lastError) will be set if there was an error.
  */
-chrome.fileManagerPrivate.getContentMimeType = function(fileBlob, callback) {};
+chrome.fileManagerPrivate.getContentMimeType = function(fileEntry, callback) {};
 
 /**
  * Gets the content metadata from an Audio or Video file.
- * @param {!Blob} fileBlob Blob created from the file Entry.
+ * @param {!FileEntry} fileEntry The file entry.
  * @param {string} mimeType The content sniffed mimeType of the file.
  * @param {boolean} includeImages If true, return metadata tags and thumbnail
  *     images. If false, return metadata tags only.
@@ -646,7 +646,7 @@ chrome.fileManagerPrivate.getContentMimeType = function(fileBlob, callback) {};
  *     callback The content MediaMetadata callback.
  * $(ref:runtime.lastError) will be set if there was an error.
  */
-chrome.fileManagerPrivate.getContentMetadata = function(fileBlob, mimeType,
+chrome.fileManagerPrivate.getContentMetadata = function(fileEntry, mimeType,
     includeImages, callback) {};
 
 /**

@@ -57,9 +57,13 @@ class WebAppIconManager : public AppIconManager, public AppRegistrarObserver {
       const AppId& app_id,
       IconPurpose purpose,
       const std::vector<SquareSizePx>& icon_sizes_in_px) const override;
+  base::Optional<IconSizeAndPurpose> FindIconMatchBigger(
+      const AppId& app_id,
+      const std::vector<IconPurpose>& purposes,
+      SquareSizePx min_size) const override;
   bool HasSmallestIcon(const AppId& app_id,
                        const std::vector<IconPurpose>& purposes,
-                       SquareSizePx min_size_in_px) const override;
+                       SquareSizePx min_size) const override;
   void ReadIcons(const AppId& app_id,
                  IconPurpose purpose,
                  const std::vector<SquareSizePx>& icon_sizes,
@@ -96,18 +100,10 @@ class WebAppIconManager : public AppIconManager, public AppRegistrarObserver {
   void SetFaviconReadCallbackForTesting(FaviconReadCallback callback);
 
  private:
-  struct SizeAndPurpose {
-    SquareSizePx size_px = 0;
-    IconPurpose purpose = IconPurpose::ANY;
-  };
-  base::Optional<WebAppIconManager::SizeAndPurpose>
-  FindDownloadedIconMatchBigger(const AppId& app_id,
-                                const std::vector<IconPurpose>& purposes,
-                                SquareSizePx desired_size) const;
-  base::Optional<SizeAndPurpose> FindDownloadedIconMatchSmaller(
+  base::Optional<IconSizeAndPurpose> FindIconMatchSmaller(
       const AppId& app_id,
       const std::vector<IconPurpose>& purposes,
-      SquareSizePx desired_size) const;
+      SquareSizePx max_size) const;
 
   void ReadFavicon(const AppId& app_id);
   void OnReadFavicon(const AppId& app_id, const SkBitmap&);

@@ -4,41 +4,23 @@
 
 package org.chromium.chrome.browser.password_check;
 
-import android.app.Activity;
-import android.content.Intent;
-import android.net.Uri;
-import android.provider.Browser;
 import android.view.MenuItem;
 
 import androidx.annotation.VisibleForTesting;
-import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.lifecycle.LifecycleObserver;
 
-import org.chromium.base.IntentUtils;
-import org.chromium.chrome.browser.IntentHandler;
-import org.chromium.chrome.browser.LaunchIntentDispatcher;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
+import org.chromium.chrome.browser.password_check.helper.PasswordCheckChangePasswordHelper;
 import org.chromium.chrome.browser.password_check.helper.PasswordCheckReauthenticationHelper;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
-import java.util.Objects;
-
 /**
  * Creates the PasswordCheckComponentUi. This class is responsible for managing the UI for the check
  * of the leaked password.
  */
-class PasswordCheckCoordinator implements PasswordCheckComponentUi, LifecycleObserver,
-                                          PasswordCheckComponentUi.ChangePasswordDelegate {
-    private static final String AUTOFILL_ASSISTANT_PACKAGE =
-            "org.chromium.chrome.browser.autofill_assistant.";
-    private static final String AUTOFILL_ASSISTANT_ENABLED_KEY =
-            AUTOFILL_ASSISTANT_PACKAGE + "ENABLED";
-    private static final String PASSWORD_CHANGE_USERNAME_PARAMETER = "PASSWORD_CHANGE_USERNAME";
-    private static final String INTENT_PARAMETER = "INTENT";
-    private static final String INTENT = "PASSWORD_CHANGE";
-
+class PasswordCheckCoordinator implements PasswordCheckComponentUi, LifecycleObserver {
     private final PasswordCheckFragmentView mFragmentView;
     private final PasswordCheckReauthenticationHelper mReauthenticationHelper;
     private final PasswordCheckMediator mMediator;
@@ -86,7 +68,9 @@ class PasswordCheckCoordinator implements PasswordCheckComponentUi, LifecycleObs
         mReauthenticationHelper = new PasswordCheckReauthenticationHelper(
                 mFragmentView.getActivity(), mFragmentView.getParentFragmentManager());
 
-        mMediator = new PasswordCheckMediator(this, mReauthenticationHelper);
+        mMediator = new PasswordCheckMediator(
+                new PasswordCheckChangePasswordHelper(mFragmentView.getActivity()),
+                mReauthenticationHelper);
     }
 
     @Override
@@ -142,73 +126,5 @@ class PasswordCheckCoordinator implements PasswordCheckComponentUi, LifecycleObs
     static void setUpModelChangeProcessors(PropertyModel model, PasswordCheckFragmentView view) {
         PropertyModelChangeProcessor.create(
                 model, view, PasswordCheckViewBinder::bindPasswordCheckView);
-    }
-
-    /**
-     * Launches a CCT that points to the change password form or home page of |origin|.
-     * @param credential A {@link CompromisedCredential} to be changed in an App or in a CCT.
-     */
-    @Override
-    public void launchAppOrCctWithChangePasswordUrl(CompromisedCredential credential) {
-        // TODO(crbug.com/1092444): Always launch the URL if possible and let Android handle the
-        //  match to open it.
-        IntentUtils.safeStartActivity(mFragmentView.getActivity(),
-                credential.getAssociatedApp().isEmpty()
-                        ? buildIntent(credential.getPasswordChangeUrl())
-                        : getPackageLaunchIntent(credential.getAssociatedApp()));
-    }
-
-    @Override
-    public boolean canManuallyChangeCredential(CompromisedCredential credential) {
-        return !credential.getPasswordChangeUrl().isEmpty()
-                || getPackageLaunchIntent(credential.getAssociatedApp()) != null;
-    }
-
-    /**
-     * Launches a CCT that starts a password change script for a {@link CompromisedCredential}.
-     * @param credential A {@link CompromisedCredential} to be changed with a script.
-     */
-    @Override
-    public void launchCctWithScript(CompromisedCredential credential) {
-        Intent intent = buildIntent(credential.getOrigin().getSpec());
-        populateAutofillAssistantExtras(intent, credential.getUsername());
-        IntentUtils.safeStartActivity(mFragmentView.getActivity(), intent);
-    }
-
-    private Intent getPackageLaunchIntent(String packageName) {
-        return Objects.requireNonNull(mFragmentView.getActivity())
-                .getPackageManager()
-                .getLaunchIntentForPackage(packageName);
-    }
-
-    /**
-     * Builds an intent to launch a CCT.
-     * @param initialUrl Initial URL to launch a CCT.
-     * @return {@link Intent} for CCT.
-     */
-    private Intent buildIntent(String initialUrl) {
-        final Activity activity = mFragmentView.getActivity();
-        CustomTabsIntent customTabIntent =
-                new CustomTabsIntent.Builder().setShowTitle(true).build();
-        customTabIntent.intent.setData(Uri.parse(initialUrl));
-        Intent intent = LaunchIntentDispatcher.createCustomTabActivityIntent(
-                activity, customTabIntent.intent);
-        intent.setPackage(activity.getPackageName());
-        intent.putExtra(Browser.EXTRA_APPLICATION_ID, activity.getPackageName());
-        IntentHandler.addTrustedIntentExtras(intent);
-        return intent;
-    }
-
-    /**
-     * Populates intent extras for an Autofill Assistant script.
-     * @param intent An {@link Intent} to be populated.
-     * @param username A username for a password change script. One of extras to put.
-     */
-    private void populateAutofillAssistantExtras(Intent intent, String username) {
-        intent.putExtra(AUTOFILL_ASSISTANT_ENABLED_KEY, /* value= */ true);
-        intent.putExtra(AUTOFILL_ASSISTANT_PACKAGE + PASSWORD_CHANGE_USERNAME_PARAMETER, username);
-        intent.putExtra(AUTOFILL_ASSISTANT_PACKAGE + INTENT_PARAMETER, INTENT);
-        // TODO(crbug.com/1086114): Also add the following parameters when server side changes is
-        // ready: CALLER, SOURCE. That would be useful for metrics.
     }
 }

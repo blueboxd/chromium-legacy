@@ -21,7 +21,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SVG_SVG_TEXT_LAYOUT_ENGINE_H_
 
 #include <memory>
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_svg_inline_text.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_inline_text.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_text_fragment.h"
@@ -51,6 +50,8 @@ class SVGTextLayoutEngine {
 
  public:
   SVGTextLayoutEngine(const Vector<LayoutSVGInlineText*>&);
+  SVGTextLayoutEngine(const SVGTextLayoutEngine&) = delete;
+  SVGTextLayoutEngine& operator=(const SVGTextLayoutEngine&) = delete;
   ~SVGTextLayoutEngine();
 
   void LayoutCharactersInTextBoxes(InlineFlowBox* start);
@@ -98,7 +99,6 @@ class SVGTextLayoutEngine {
   float text_path_displacement_;
   float text_path_spacing_;
   float text_path_scaling_;
-  DISALLOW_COPY_AND_ASSIGN(SVGTextLayoutEngine);
 };
 
 }  // namespace blink

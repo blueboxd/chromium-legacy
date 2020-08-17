@@ -285,20 +285,6 @@ public class WebsitePermissionsFetcher {
     }
 
     private void setException(int contentSettingsType) {
-        @ContentSettingException.Type
-        int exceptionType;
-        for (exceptionType = 0; exceptionType < ContentSettingException.Type.NUM_ENTRIES;
-                exceptionType++) {
-            if (contentSettingsType
-                    == ContentSettingException.getContentSettingsType(exceptionType)) {
-                break;
-            }
-        }
-        assert contentSettingsType
-                == ContentSettingException.getContentSettingsType(exceptionType)
-            : "Unexpected content setting type received: "
-                        + contentSettingsType;
-
         for (ContentSettingException exception :
                 mWebsitePreferenceBridge.getContentSettingsExceptions(
                         mBrowserContextHandle, contentSettingsType)) {
@@ -309,7 +295,7 @@ public class WebsitePermissionsFetcher {
                 continue;
             }
             Website site = findOrCreateSite(address, embedder);
-            site.setContentSettingException(exceptionType, exception);
+            site.setContentSettingException(contentSettingsType, exception);
         }
     }
 

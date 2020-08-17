@@ -243,6 +243,8 @@ static_library("browser") {
     "ui/saved_passwords_presenter.h",
     "votes_uploader.cc",
     "votes_uploader.h",
+    "well_known_change_password_state.cc",
+    "well_known_change_password_state.h",
     "well_known_change_password_util.cc",
     "well_known_change_password_util.h",
   ]
@@ -631,6 +633,7 @@ source_set("unit_tests") {
     "ui/saved_passwords_presenter_unittest.cc",
     "vote_uploads_test_matchers.h",
     "votes_uploader_unittest.cc",
+    "well_known_change_password_state_unittest.cc",
     "well_known_change_password_util_unittest.cc",
   ]
   if (is_android) {

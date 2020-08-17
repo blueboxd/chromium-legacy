@@ -864,8 +864,18 @@ class CORE_EXPORT LocalFrameView final
 
   bool NotifyResizeObservers(DocumentLifecycle::LifecycleState target_state);
   bool RunResizeObserverSteps(DocumentLifecycle::LifecycleState target_state);
+  void ClearResizeObserverLimit();
 
   bool CheckLayoutInvalidationIsAllowed() const;
+
+  // This runs the intersection observer steps for observations that need to
+  // happen in post-layout. These results are also delivered (if needed) in the
+  // same call. Returns true if the lifecycle should process style and layout
+  // again before proceeding.
+  bool RunPostLayoutIntersectionObserverSteps();
+  // This is a recursive helper for determining intersection observations which
+  // need to happen in post-layout.
+  void ComputePostLayoutIntersections(unsigned parent_flags);
 
   PaintController* GetPaintController() { return paint_controller_.get(); }
 

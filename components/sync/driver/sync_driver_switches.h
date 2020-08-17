@@ -31,6 +31,7 @@ extern const base::Feature
 extern const base::Feature kSyncWifiConfigurations;
 extern const base::Feature kSyncDeviceInfoInTransportMode;
 extern const base::Feature kDecoupleSyncFromAndroidMasterSync;
+extern const base::Feature kFollowTrustedVaultKeyRotation;
 
 }  // namespace switches
 

@@ -88,6 +88,7 @@ android_library("internal_java") {
     "java/src/org/chromium/chrome/browser/password_check/PasswordCheckProperties.java",
     "java/src/org/chromium/chrome/browser/password_check/PasswordCheckViewBinder.java",
     "java/src/org/chromium/chrome/browser/password_check/PasswordCheckViewHolder.java",
+    "java/src/org/chromium/chrome/browser/password_check/helper/PasswordCheckChangePasswordHelper.java",
     "java/src/org/chromium/chrome/browser/password_check/helper/PasswordCheckReauthenticationHelper.java",
   ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]

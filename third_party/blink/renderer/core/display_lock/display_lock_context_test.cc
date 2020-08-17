@@ -24,6 +24,7 @@
 #include "third_party/blink/renderer/core/frame/find_in_page.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/core/geometry/dom_rect.h"
 #include "third_party/blink/renderer/core/html/html_template_element.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -2099,7 +2100,7 @@ TEST_F(DisplayLockContextRenderingTest, ObjectsNeedingLayoutConsidersLocks) {
   EXPECT_EQ(total_count, 10u);
 
   GetDocument().getElementById("e")->setAttribute(html_names::kStyleAttr,
-                                                  "content-visibility: auto");
+                                                  "content-visibility: hidden");
   UpdateAllLifecyclePhasesForTest();
 
   // Note that the dirty_all call propagate the dirty bit from the unlocked
@@ -2115,7 +2116,7 @@ TEST_F(DisplayLockContextRenderingTest, ObjectsNeedingLayoutConsidersLocks) {
   EXPECT_EQ(total_count, 8u);
 
   GetDocument().getElementById("a")->setAttribute(html_names::kStyleAttr,
-                                                  "content-visibility: auto");
+                                                  "content-visibility: hidden");
   UpdateAllLifecyclePhasesForTest();
 
   // Note that this dirty_all call is now not propagating the dirty bits at all,
@@ -2283,19 +2284,8 @@ TEST_F(DisplayLockContextRenderingTest,
   auto* unrelated_element = GetDocument().getElementById("unrelated");
   auto* outer_element = GetDocument().getElementById("outer");
 
-  // Ensure that the visibility switch happens.
-  RunStartOfLifecycleTasks();
-
-  // Now that the intersection observer notifications switch the visibility of
-  // the context, we expect to see dirty layout bits to be propagated.
-  EXPECT_TRUE(outer_element->GetLayoutObject()->NeedsLayout());
-  EXPECT_FALSE(outer_element->GetLayoutObject()->SelfNeedsLayout());
-  EXPECT_TRUE(unrelated_element->GetLayoutObject()->NeedsLayout());
-  EXPECT_FALSE(unrelated_element->GetLayoutObject()->SelfNeedsLayout());
-  EXPECT_TRUE(inner_element->GetLayoutObject()->NeedsLayout());
-  EXPECT_FALSE(inner_element->GetLayoutObject()->SelfNeedsLayout());
-
-  // Clear the layout.
+  // Ensure that the visibility switch happens. This would also clear the
+  // layout.
   UpdateAllLifecyclePhasesForTest();
   EXPECT_FALSE(outer_element->GetLayoutObject()->NeedsLayout());
   EXPECT_FALSE(outer_element->GetLayoutObject()->SelfNeedsLayout());
@@ -2414,19 +2404,8 @@ TEST_F(DisplayLockContextRenderingTest, NestedLockDoesHideWhenItIsOffscreen) {
   auto* unrelated_element = GetDocument().getElementById("unrelated");
   auto* outer_element = GetDocument().getElementById("outer");
 
-  // Ensure that the visibility switch happens.
-  RunStartOfLifecycleTasks();
-
-  // Now that the intersection observer notifications switch the visibility of
-  // the context, we expect to see dirty layout bits to be propagated.
-  EXPECT_TRUE(outer_element->GetLayoutObject()->NeedsLayout());
-  EXPECT_FALSE(outer_element->GetLayoutObject()->SelfNeedsLayout());
-  EXPECT_TRUE(unrelated_element->GetLayoutObject()->NeedsLayout());
-  EXPECT_FALSE(unrelated_element->GetLayoutObject()->SelfNeedsLayout());
-  EXPECT_TRUE(inner_element->GetLayoutObject()->NeedsLayout());
-  EXPECT_FALSE(inner_element->GetLayoutObject()->SelfNeedsLayout());
-
-  // Clear the layout.
+  // Ensure that the visibility switch happens. This would also clear the
+  // layout.
   UpdateAllLifecyclePhasesForTest();
   EXPECT_FALSE(outer_element->GetLayoutObject()->NeedsLayout());
   EXPECT_FALSE(outer_element->GetLayoutObject()->SelfNeedsLayout());
@@ -2988,6 +2967,43 @@ TEST_F(DisplayLockContextRenderingTest,
     EXPECT_TRUE(element->GetDisplayLockContext()->IsLocked());
     EXPECT_GT(GetDocument().scrollingElement()->scrollTop(), 19000.);
   }
+}
+
+TEST_F(DisplayLockContextRenderingTest, FirstAutoFramePaintsInViewport) {
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+      .spacer { height: 10000px }
+      .auto {
+        content-visibility: auto;
+        contain-intrinsic-size: 1px 200px;
+      }
+      .auto > div { height: 100px }
+    </style>
+
+    <div id=visible><div>content</div></div>
+    <div class=spacer></div>
+    <div id=hidden><div>content</div></div>
+  )HTML");
+
+  auto* visible = GetDocument().getElementById("visible");
+  auto* hidden = GetDocument().getElementById("hidden");
+
+  visible->classList().Add("auto");
+  hidden->classList().Add("auto");
+
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_FALSE(visible->GetDisplayLockContext()->IsLocked());
+  EXPECT_TRUE(hidden->GetDisplayLockContext()->IsLocked());
+
+  EXPECT_FALSE(visible->GetLayoutObject()->SelfNeedsLayout());
+  EXPECT_FALSE(hidden->GetLayoutObject()->SelfNeedsLayout());
+
+  auto* visible_rect = visible->getBoundingClientRect();
+  auto* hidden_rect = hidden->getBoundingClientRect();
+
+  EXPECT_FLOAT_EQ(visible_rect->height(), 100);
+  EXPECT_FLOAT_EQ(hidden_rect->height(), 200);
 }
 
 class DisplayLockContextLegacyRenderingTest

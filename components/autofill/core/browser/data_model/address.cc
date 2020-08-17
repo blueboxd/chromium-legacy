@@ -30,36 +30,29 @@ namespace autofill {
 
 using structured_address::VerificationStatus;
 
-Address::Address() {}
+Address::Address() = default;
 
-Address::Address(const Address& address) {
-  *this = address;
-}
+Address::Address(const Address& address) = default;
 
-Address::~Address() {}
+Address::~Address() = default;
 
-Address& Address::operator=(const Address& address) {
-  if (this == &address)
-    return *this;
-
-  street_address_ = address.street_address_;
-  dependent_locality_ = address.dependent_locality_;
-  city_ = address.city_;
-  state_ = address.state_;
-  country_code_ = address.country_code_;
-  zip_code_ = address.zip_code_;
-  sorting_code_ = address.sorting_code_;
-  return *this;
-}
+Address& Address::operator=(const Address& address) = default;
 
 bool Address::operator==(const Address& other) const {
   if (this == &other)
     return true;
+  // Note that the structured address tokens are not evaluated for profile
+  // comparison.
   return street_address_ == other.street_address_ &&
          dependent_locality_ == other.dependent_locality_ &&
          city_ == other.city_ && state_ == other.state_ &&
          zip_code_ == other.zip_code_ && sorting_code_ == other.sorting_code_ &&
-         country_code_ == other.country_code_;
+         country_code_ == other.country_code_ &&
+         street_name_ == other.street_name_ &&
+         dependent_street_name_ == other.dependent_street_name_ &&
+         house_number_ == other.house_number_ &&
+         premise_name_ == other.premise_name_ &&
+         subpremise_ == other.subpremise_;
 }
 
 base::string16 Address::GetRawInfo(ServerFieldType type) const {

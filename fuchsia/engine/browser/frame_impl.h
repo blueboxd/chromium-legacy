@@ -79,9 +79,8 @@ class FrameImpl : public fuchsia::web::Frame,
     return accessibility_bridge_.get();
   }
   void set_semantics_manager_for_test(
-      fuchsia::accessibility::semantics::SemanticsManagerPtr
-          semantics_manager) {
-    semantics_manager_for_test_ = std::move(semantics_manager);
+      fuchsia::accessibility::semantics::SemanticsManager* semantics_manager) {
+    semantics_manager_for_test_ = semantics_manager;
   }
   CastStreamingSessionClient* cast_streaming_session_client_for_test() {
     return cast_streaming_session_client_.get();
@@ -246,7 +245,7 @@ class FrameImpl : public fuchsia::web::Frame,
   FrameLayoutManager* layout_manager_ = nullptr;
 
   std::unique_ptr<AccessibilityBridge> accessibility_bridge_;
-  fuchsia::accessibility::semantics::SemanticsManagerPtr
+  fuchsia::accessibility::semantics::SemanticsManager*
       semantics_manager_for_test_;
 
   EventFilter event_filter_;

@@ -105,6 +105,8 @@ Polymer({
             /** @type {!CustomEvent<!AuthCompletedCredentials>} */ (e)));
     this.authExtHost_.addEventListener(
         'showIncognito', () => this.onShowIncognito_());
+    this.authExtHost_.addEventListener(
+        'getAccounts', () => this.onGetAccounts_());
   },
 
   /**
@@ -154,6 +156,13 @@ Polymer({
   /** @private */
   onShowIncognito_() {
     this.browserProxy_.showIncognito();
+  },
+
+  /** @private */
+  onGetAccounts_() {
+    this.browserProxy_.getAccounts().then(result => {
+      this.authExtHost_.getAccountsResponse(result);
+    });
   },
 
   /**

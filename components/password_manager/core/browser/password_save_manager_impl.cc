@@ -41,7 +41,7 @@ ValueElementPair PasswordToSave(const PasswordForm& form) {
 
 PasswordForm PendingCredentialsForNewCredentials(
     const PasswordForm& parsed_submitted_form,
-    const FormData& observed_form,
+    const FormData* observed_form,
     const base::string16& password_element,
     bool is_http_auth,
     bool is_credential_api_save) {
@@ -49,7 +49,8 @@ PasswordForm PendingCredentialsForNewCredentials(
     return parsed_submitted_form;
 
   PasswordForm pending_credentials = parsed_submitted_form;
-  pending_credentials.form_data = observed_form;
+  if (observed_form)
+    pending_credentials.form_data = *observed_form;
   // The password value will be filled in later, remove any garbage for now.
   pending_credentials.password_value.clear();
   // The password element should be determined earlier in |PasswordToSave|.
@@ -156,7 +157,7 @@ void PasswordSaveManagerImpl::Init(
 
 void PasswordSaveManagerImpl::CreatePendingCredentials(
     const PasswordForm& parsed_submitted_form,
-    const FormData& observed_form,
+    const FormData* observed_form,
     const FormData& submitted_form,
     bool is_http_auth,
     bool is_credential_api_save) {
@@ -214,7 +215,7 @@ void PasswordSaveManagerImpl::ResetPendingCredentials() {
   pending_credentials_state_ = PendingCredentialsState::NONE;
 }
 
-void PasswordSaveManagerImpl::Save(const FormData& observed_form,
+void PasswordSaveManagerImpl::Save(const FormData* observed_form,
                                    const PasswordForm& parsed_submitted_form) {
   if (IsPasswordUpdate() &&
       pending_credentials_.type == PasswordForm::Type::kGenerated &&
@@ -241,7 +242,7 @@ void PasswordSaveManagerImpl::Save(const FormData& observed_form,
 
 void PasswordSaveManagerImpl::Update(
     const PasswordForm& credentials_to_update,
-    const FormData& observed_form,
+    const FormData* observed_form,
     const PasswordForm& parsed_submitted_form) {
   base::string16 password_to_save = pending_credentials_.password_value;
   bool skip_zero_click = pending_credentials_.skip_zero_click;
@@ -375,7 +376,7 @@ PendingCredentialsState PasswordSaveManagerImpl::ComputePendingCredentialsState(
 PasswordForm PasswordSaveManagerImpl::BuildPendingCredentials(
     PendingCredentialsState pending_credentials_state,
     const PasswordForm& parsed_submitted_form,
-    const FormData& observed_form,
+    const FormData* observed_form,
     const FormData& submitted_form,
     const base::Optional<base::string16>& generated_password,
     bool is_http_auth,
@@ -458,7 +459,7 @@ PasswordSaveManagerImpl::FindSimilarSavedFormAndComputeState(
 }
 
 void PasswordSaveManagerImpl::SavePendingToStore(
-    const FormData& observed_form,
+    const FormData* observed_form,
     const PasswordForm& parsed_submitted_form) {
   UploadVotesAndMetrics(observed_form, parsed_submitted_form);
 
@@ -494,16 +495,19 @@ base::string16 PasswordSaveManagerImpl::GetOldPassword(
 }
 
 void PasswordSaveManagerImpl::UploadVotesAndMetrics(
-    const FormData& observed_form,
+    const FormData* observed_form,
     const PasswordForm& parsed_submitted_form) {
   if (IsNewLogin()) {
     metrics_util::LogNewlySavedPasswordIsGenerated(
         pending_credentials_.type == PasswordForm::Type::kGenerated,
         client_->GetPasswordFeatureManager()
             ->ComputePasswordAccountStorageUsageLevel());
-    votes_uploader_->SendVotesOnSave(observed_form, parsed_submitted_form,
-                                     form_fetcher_->GetBestMatches(),
-                                     &pending_credentials_);
+    // Don't send votes if there was no observed form.
+    if (observed_form) {
+      votes_uploader_->SendVotesOnSave(*observed_form, parsed_submitted_form,
+                                       form_fetcher_->GetBestMatches(),
+                                       &pending_credentials_);
+    }
     return;
   }
 
@@ -521,11 +525,12 @@ void PasswordSaveManagerImpl::UploadVotesAndMetrics(
       base::UserMetricsAction("PasswordManager_LoginFollowingAutofill"));
 
   // Check to see if this form is a candidate for password generation.
-  // Do not send votes on change password forms, since they were already sent
-  // in Update() method.
-  if (!parsed_submitted_form.IsPossibleChangePasswordForm()) {
+  // Do not send votes if there was no observed form. Furthermore, don't send
+  // votes on change password forms, since they were already sent in Update()
+  // method.
+  if (observed_form && !parsed_submitted_form.IsPossibleChangePasswordForm()) {
     votes_uploader_->SendVoteOnCredentialsReuse(
-        observed_form, parsed_submitted_form, &pending_credentials_);
+        *observed_form, parsed_submitted_form, &pending_credentials_);
   }
   if (IsPasswordUpdate()) {
     votes_uploader_->UploadPasswordVote(

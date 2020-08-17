@@ -361,7 +361,7 @@ double UserClassifier::GetHoursSinceLastTime(Metric metric) const {
   base::TimeDelta since_last_time =
       clock_->Now() - DeserializeTime(pref_service_->GetInt64(
                           kLastTimeKeys[static_cast<int>(metric)]));
-  return since_last_time.InSecondsF() / 3600;
+  return since_last_time / base::TimeDelta::FromHours(1);
 }
 
 bool UserClassifier::HasLastTime(Metric metric) const {

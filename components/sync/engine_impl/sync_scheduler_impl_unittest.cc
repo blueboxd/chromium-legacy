@@ -1996,7 +1996,7 @@ TEST_F(SyncSchedulerImplTest, PollOnStartUpWithinBoundsAfterLongPause) {
   for (int i = 0; i < 10000; ++i) {
     base::Time result = ComputeLastPollOnStart(last_poll, poll_interval, now);
     base::TimeDelta delay = result + poll_interval - now;
-    double fraction = delay.InSeconds() * 1.0 / poll_interval.InSeconds();
+    double fraction = delay / poll_interval;
     if (fraction > 0.005) {
       found_delay_greater_than_5_permille = true;
     } else {

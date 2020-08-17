@@ -43,18 +43,18 @@ class PasswordSaveManagerImpl : public PasswordSaveManager {
   // and |submitted_form|.
   void CreatePendingCredentials(
       const autofill::PasswordForm& parsed_submitted_form,
-      const autofill::FormData& observed_form,
+      const autofill::FormData* observed_form,
       const autofill::FormData& submitted_form,
       bool is_http_auth,
       bool is_credential_api_save) override;
 
   void ResetPendingCredentials() override;
 
-  void Save(const autofill::FormData& observed_form,
+  void Save(const autofill::FormData* observed_form,
             const autofill::PasswordForm& parsed_submitted_form) override;
 
   void Update(const autofill::PasswordForm& credentials_to_update,
-              const autofill::FormData& observed_form,
+              const autofill::FormData* observed_form,
               const autofill::PasswordForm& parsed_submitted_form) override;
 
   void PermanentlyBlacklist(
@@ -95,7 +95,7 @@ class PasswordSaveManagerImpl : public PasswordSaveManager {
   static autofill::PasswordForm BuildPendingCredentials(
       PendingCredentialsState pending_credentials_state,
       const autofill::PasswordForm& parsed_submitted_form,
-      const autofill::FormData& observed_form,
+      const autofill::FormData* observed_form,
       const autofill::FormData& submitted_form,
       const base::Optional<base::string16>& generated_password,
       bool is_http_auth,
@@ -149,13 +149,13 @@ class PasswordSaveManagerImpl : public PasswordSaveManager {
       const autofill::PasswordForm& parsed_submitted_form);
 
   // Save/update |pending_credentials_| to the password store.
-  void SavePendingToStore(const autofill::FormData& observed_form,
+  void SavePendingToStore(const autofill::FormData* observed_form,
                           const autofill::PasswordForm& parsed_submitted_form);
 
   // This sends needed signals to the autofill server, and also triggers some
   // UMA reporting.
   void UploadVotesAndMetrics(
-      const autofill::FormData& observed_form,
+      const autofill::FormData* observed_form,
       const autofill::PasswordForm& parsed_submitted_form);
 
   // Handles the user flows related to the generation.

@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/autofill/form_suggestion_view.h"
 
+#include "base/check.h"
 #include "base/i18n/rtl.h"
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
 #import "components/autofill/ios/browser/form_suggestion.h"
@@ -29,7 +30,8 @@ const CGFloat kSuggestionHorizontalMargin = 6;
 
 }  // namespace
 
-@interface FormSuggestionView () <UIScrollViewDelegate>
+@interface FormSuggestionView () <FormSuggestionLabelDelegate,
+                                  UIScrollViewDelegate>
 
 // The FormSuggestions that are displayed by this view.
 @property(nonatomic) NSArray<FormSuggestion*>* suggestions;
@@ -37,22 +39,16 @@ const CGFloat kSuggestionHorizontalMargin = 6;
 // The stack view with the suggestions.
 @property(nonatomic) UIStackView* stackView;
 
-// Handles user interactions.
-@property(nonatomic, weak) id<FormSuggestionClient> client;
-
 @end
 
 @implementation FormSuggestionView
 
 #pragma mark - Public
 
-- (void)updateClient:(id<FormSuggestionClient>)client
-         suggestions:(NSArray<FormSuggestion*>*)suggestions {
-  if ([self.suggestions isEqualToArray:suggestions] &&
-      (self.client == client || !suggestions.count)) {
+- (void)updateSuggestions:(NSArray<FormSuggestion*>*)suggestions {
+  if ([self.suggestions isEqualToArray:suggestions] && !suggestions.count) {
     return;
   }
-  self.client = client;
   self.suggestions = [suggestions copy];
 
   if (self.stackView) {
@@ -102,6 +98,17 @@ const CGFloat kSuggestionHorizontalMargin = 6;
   [super willMoveToSuperview:newSuperview];
 }
 
+#pragma mark - FormSuggestionLabelDelegate
+
+- (void)didTapFormSuggestionLabel:(FormSuggestionLabel*)formSuggestionLabel {
+  NSUInteger index =
+      [self.stackView.arrangedSubviews indexOfObject:formSuggestionLabel];
+  DCHECK(index != NSNotFound);
+  FormSuggestion* suggestion = [self.suggestions objectAtIndex:index];
+  [self.formSuggestionViewDelegate formSuggestionView:self
+                                  didAcceptSuggestion:suggestion];
+}
+
 #pragma mark - Helper methods
 
 // Creates and adds subviews.
@@ -142,7 +149,7 @@ const CGFloat kSuggestionHorizontalMargin = 6;
         [[FormSuggestionLabel alloc] initWithSuggestion:suggestion
                                                   index:idx
                                          numSuggestions:[self.suggestions count]
-                                                 client:self.client];
+                                               delegate:self];
     [self.stackView addArrangedSubview:label];
   };
   [self.suggestions enumerateObjectsUsingBlock:setupBlock];

@@ -362,14 +362,6 @@ ci.android_fyi_builder(
 )
 
 ci.android_fyi_builder(
-    name = "Android WebView P Blink-CORS FYI (rel)",
-    console_view_entry = ci.console_view_entry(
-        category = "webview",
-        short_name = "cors",
-    ),
-)
-
-ci.android_fyi_builder(
     name = "Android WebView P FYI (rel)",
     console_view_entry = ci.console_view_entry(
         category = "webview",
@@ -2918,16 +2910,6 @@ ci.linux_builder(
         category = "bfcache",
         short_name = "bfc",
     ),
-    main_console_view = "main",
-)
-
-ci.linux_builder(
-    name = "linux-blink-cors-rel",
-    console_view_entry = ci.console_view_entry(
-        category = "release",
-        short_name = "crs",
-    ),
-    goma_jobs = None,
     main_console_view = "main",
 )
 

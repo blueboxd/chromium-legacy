@@ -18,7 +18,6 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/paint_preview/browser/compositor_utils.h"
 #include "components/paint_preview/browser/paint_preview_client.h"
-#include "components/paint_preview/browser/paint_preview_compositor_service_impl.h"
 #include "components/paint_preview/common/mojom/paint_preview_recorder.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
@@ -113,32 +112,6 @@ void PaintPreviewBaseService::CapturePaintPreview(
                      weak_ptr_factory_.GetWeakPtr(),
                      web_contents->GetMainFrame()->GetFrameTreeNodeId(),
                      start_time, std::move(callback)));
-}
-
-std::unique_ptr<PaintPreviewCompositorService>
-PaintPreviewBaseService::StartCompositorService(
-    base::OnceClosure disconnect_handler) {
-  // Create a dedicated sequence for communicating with the compositor. This
-  // sequence will handle message serialization/deserialization of bitmaps so it
-  // affects user visible elements. This is an implementation detail and the
-  // caller should continue to communicate with the compositor via the sequence
-  // that called this.
-  auto compositor_task_runner = base::ThreadPool::CreateSequencedTaskRunner(
-      {base::TaskPriority::USER_VISIBLE,
-       base::ThreadPolicy::MUST_USE_FOREGROUND});
-
-  // The discardable memory manager isn't initialized here. This is handled in
-  // the constructor of PaintPreviewCompositorServiceImpl once the pending
-  // remote becomes bound.
-  mojo::PendingRemote<mojom::PaintPreviewCompositorCollection> pending_remote;
-  compositor_task_runner->PostTask(
-      FROM_HERE,
-      base::BindOnce(&CreateCompositorCollectionPending,
-                     pending_remote.InitWithNewPipeAndPassReceiver()));
-
-  return std::make_unique<PaintPreviewCompositorServiceImpl>(
-      std::move(pending_remote), compositor_task_runner,
-      std::move(disconnect_handler));
 }
 
 void PaintPreviewBaseService::OnCaptured(

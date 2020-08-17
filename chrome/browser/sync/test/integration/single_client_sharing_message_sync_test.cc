@@ -5,17 +5,36 @@
 #include <vector>
 
 #include "base/test/mock_callback.h"
+#include "base/test/scoped_feature_list.h"
+#include "chrome/browser/sharing/features.h"
 #include "chrome/browser/sharing/sharing_message_bridge.h"
 #include "chrome/browser/sharing/sharing_message_bridge_factory.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
+#include "components/sync/driver/sync_token_status.h"
 #include "components/sync/test/fake_server/fake_server_http_post_provider.h"
 #include "content/public/test/browser_test.h"
 
 namespace {
 
 using sync_pb::SharingMessageSpecifics;
+using testing::_;
+
+constexpr char kEmptyOAuth2Token[] = "";
+
+constexpr char kInvalidGrantOAuth2Token[] = R"(
+    {
+      "error": "invalid_grant"
+    })";
+
+constexpr char kValidOAuth2Token[] = R"(
+    {
+      "refresh_token": "new_refresh_token",
+      "access_token": "new_access_token",
+      "expires_in": 3600,  // 1 hour.
+      "token_type": "Bearer"
+    })";
 
 MATCHER_P(HasErrorCode, expected_error_code, "") {
   return arg.error_code() == expected_error_code;
@@ -43,13 +62,26 @@ class NextCycleIterationChecker : public SingleClientStatusChangeChecker {
   base::Time last_synced_time_;
 };
 
-class BackedOffSharingMessageChecker : public SingleClientStatusChangeChecker {
+class DisabledSharingMessageChecker : public SingleClientStatusChangeChecker {
  public:
-  explicit BackedOffSharingMessageChecker(syncer::ProfileSyncService* service)
+  explicit DisabledSharingMessageChecker(syncer::ProfileSyncService* service)
       : SingleClientStatusChangeChecker(service) {}
 
   bool IsExitConditionSatisfied(std::ostream* os) override {
-    return service()->GetBackedOffDataTypes().Has(syncer::SHARING_MESSAGE);
+    *os << "Waiting for disabled SHARING_MESSAGE data type";
+    return !service()->GetActiveDataTypes().Has(syncer::SHARING_MESSAGE);
+  }
+};
+
+class RetryingAccessTokenFetchChecker : public SingleClientStatusChangeChecker {
+ public:
+  explicit RetryingAccessTokenFetchChecker(syncer::ProfileSyncService* service)
+      : SingleClientStatusChangeChecker(service) {}
+
+  // StatusChangeChecker implementation.
+  bool IsExitConditionSatisfied(std::ostream* os) override {
+    *os << "Waiting for auth error";
+    return service()->IsRetryingAccessTokenFetchForTest();
   }
 };
 
@@ -106,6 +138,11 @@ class SingleClientSharingMessageSyncTest : public SyncTest {
  public:
   SingleClientSharingMessageSyncTest() : SyncTest(SINGLE_CLIENT) {
     DisableVerifier();
+    // Replace the default value (5 seconds) with 1 minute to reduce possibility
+    // of test flakiness.
+    feature_list_.InitAndEnableFeatureWithParameters(
+        kSharingMessageBridgeTimeout,
+        {{"SharingMessageBridgeTimeoutSeconds", "60"}});
   }
 
   bool WaitForSharingMessage(
@@ -193,66 +230,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSharingMessageSyncTest,
 }
 
 IN_PROC_BROWSER_TEST_F(SingleClientSharingMessageSyncTest,
-                       ShouldStopDataTypeWhenBackedOff) {
-  base::MockRepeatingCallback<void(const sync_pb::SharingMessageCommitError&)>
-      callback;
-
-  ASSERT_TRUE(SetupSync());
-  SharingMessageBridge* sharing_message_bridge =
-      SharingMessageBridgeFactory::GetForBrowserContext(GetProfile(0));
-  SharingMessageSpecifics specifics;
-  specifics.set_payload("payload");
-  sharing_message_bridge->SendSharingMessage(
-      std::make_unique<SharingMessageSpecifics>(specifics), callback.Get());
-
-  EXPECT_CALL(
-      callback,
-      Run(HasErrorCode(sync_pb::SharingMessageCommitError::SYNC_TURNED_OFF)));
-  ASSERT_FALSE(
-      GetSyncService(0)->GetBackedOffDataTypes().Has(syncer::SHARING_MESSAGE));
-
-  // Run the data type into backed off state before the message gets sent.
-  fake_server::FakeServerHttpPostProvider::DisableNetwork();
-
-  ASSERT_TRUE(BackedOffSharingMessageChecker(GetSyncService(0)).Wait());
-
-  EXPECT_TRUE(
-      GetSyncService(0)->GetBackedOffDataTypes().Has(syncer::SHARING_MESSAGE));
-  EXPECT_CALL(
-      callback,
-      Run(HasErrorCode(sync_pb::SharingMessageCommitError::SYNC_TURNED_OFF)));
-  sharing_message_bridge->SendSharingMessage(
-      std::make_unique<SharingMessageSpecifics>(specifics), callback.Get());
-}
-
-IN_PROC_BROWSER_TEST_F(SingleClientSharingMessageSyncTest,
                        ShouldCleanPendingMessagesAfterSyncPaused) {
-  base::MockOnceCallback<void(const sync_pb::SharingMessageCommitError&)>
-      callback;
-  EXPECT_CALL(
-      callback,
-      Run(HasErrorCode(sync_pb::SharingMessageCommitError::SYNC_TURNED_OFF)));
-
-  ASSERT_TRUE(SetupSync());
-
-  SharingMessageBridge* sharing_message_bridge =
-      SharingMessageBridgeFactory::GetForBrowserContext(GetProfile(0));
-  SharingMessageSpecifics specifics;
-  specifics.set_payload("payload");
-  sharing_message_bridge->SendSharingMessage(
-      std::make_unique<SharingMessageSpecifics>(specifics), callback.Get());
-
-  GetClient(0)->StopSyncServiceWithoutClearingData();
-  GetClient(0)->StartSyncService();
-  ASSERT_TRUE(NextCycleIterationChecker(GetSyncService(0)).Wait());
-
-  EXPECT_TRUE(GetFakeServer()
-                  ->GetSyncEntitiesByModelType(syncer::SHARING_MESSAGE)
-                  .empty());
-}
-
-IN_PROC_BROWSER_TEST_F(SingleClientSharingMessageSyncTest,
-                       ShouldCleanPendingMessagesAfterSyncTurnedOff) {
   base::MockOnceCallback<void(const sync_pb::SharingMessageCommitError&)>
       callback;
   EXPECT_CALL(
@@ -275,6 +253,57 @@ IN_PROC_BROWSER_TEST_F(SingleClientSharingMessageSyncTest,
   EXPECT_TRUE(GetFakeServer()
                   ->GetSyncEntitiesByModelType(syncer::SHARING_MESSAGE)
                   .empty());
+}
+
+IN_PROC_BROWSER_TEST_F(
+    SingleClientSharingMessageSyncTest,
+    ShouldTurnOffSharingMessageDataTypeOnPersistentAuthError) {
+  ASSERT_TRUE(SetupSync());
+  GetFakeServer()->SetHttpError(net::HTTP_UNAUTHORIZED);
+  SetOAuth2TokenResponse(kInvalidGrantOAuth2Token, net::HTTP_BAD_REQUEST,
+                         net::OK);
+
+  base::MockOnceCallback<void(const sync_pb::SharingMessageCommitError&)>
+      callback;
+  EXPECT_CALL(
+      callback,
+      Run(HasErrorCode(sync_pb::SharingMessageCommitError::SYNC_TURNED_OFF)));
+
+  SharingMessageBridge* sharing_message_bridge =
+      SharingMessageBridgeFactory::GetForBrowserContext(GetProfile(0));
+  SharingMessageSpecifics specifics;
+  specifics.set_payload("payload");
+  sharing_message_bridge->SendSharingMessage(
+      std::make_unique<SharingMessageSpecifics>(specifics), callback.Get());
+
+  EXPECT_TRUE(DisabledSharingMessageChecker(GetSyncService(0)).Wait());
+}
+
+IN_PROC_BROWSER_TEST_F(
+    SingleClientSharingMessageSyncTest,
+    ShouldRetrySendingSharingMessageDataTypeOnTransientAuthError) {
+  ASSERT_TRUE(SetupSync());
+  GetFakeServer()->SetHttpError(net::HTTP_UNAUTHORIZED);
+  SetOAuth2TokenResponse(kEmptyOAuth2Token, net::HTTP_INTERNAL_SERVER_ERROR,
+                         net::OK);
+
+  base::MockOnceCallback<void(const sync_pb::SharingMessageCommitError&)>
+      callback;
+  EXPECT_CALL(callback,
+              Run(HasErrorCode(sync_pb::SharingMessageCommitError::NONE)));
+
+  SharingMessageBridge* sharing_message_bridge =
+      SharingMessageBridgeFactory::GetForBrowserContext(GetProfile(0));
+  SharingMessageSpecifics specifics;
+  specifics.set_payload("payload");
+  sharing_message_bridge->SendSharingMessage(
+      std::make_unique<SharingMessageSpecifics>(specifics), callback.Get());
+
+  ASSERT_TRUE(RetryingAccessTokenFetchChecker(GetSyncService(0)).Wait());
+  GetFakeServer()->ClearHttpError();
+  SetOAuth2TokenResponse(kValidOAuth2Token, net::HTTP_OK, net::OK);
+
+  EXPECT_TRUE(WaitForSharingMessage({specifics}));
 }
 
 }  // namespace

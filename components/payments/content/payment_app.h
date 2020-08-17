@@ -187,7 +187,7 @@ class PaymentApp {
 
   // Whether this app should be chosen over other available payment apps. For
   // example, when the Play Billing payment app is available in a TWA.
-  bool IsPreferred() const;
+  virtual bool IsPreferred() const;
 
  protected:
   PaymentApp(int icon_resource_id, Type type);

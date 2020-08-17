@@ -265,7 +265,12 @@ class AssistantBottomBarCoordinator implements AssistantPeekHeightCoordinator.De
         model.getHeaderModel().addObserver((source, propertyKey) -> {
             if (propertyKey == AssistantHeaderModel.CHIPS_VISIBLE
                     || propertyKey == AssistantHeaderModel.CHIPS) {
-                animateChildren(rootView);
+                // The PostTask is necessary as a workaround for the sticky button occasionally not
+                // showing, since the chip changes are now issued in the following UI iteration, the
+                // same needs to be done for the corresponding animations.
+                // TODO(b/164389932): Figure out a better fix that doesn't require issuing the
+                // change in the following UI iteration.
+                PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> animateChildren(rootView));
             }
         });
 

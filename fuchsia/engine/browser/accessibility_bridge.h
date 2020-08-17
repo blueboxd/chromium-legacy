@@ -38,9 +38,10 @@ class WEB_ENGINE_EXPORT AccessibilityBridge
       public fuchsia::accessibility::semantics::SemanticListener,
       public ui::AXTreeObserver {
  public:
+  // |semantics_manager| is used during construction to register the instance.
   // |web_contents| is required to exist for the duration of |this|.
   AccessibilityBridge(
-      fuchsia::accessibility::semantics::SemanticsManagerPtr semantics_manager,
+      fuchsia::accessibility::semantics::SemanticsManager* semantics_manager,
       fuchsia::ui::views::ViewRef view_ref,
       content::WebContents* web_contents,
       base::OnceCallback<void(zx_status_t)> on_error_callback);

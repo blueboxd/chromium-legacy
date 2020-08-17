@@ -210,13 +210,11 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
                 getSiteSettingsClient().getBrowserContextHandle();
         for (@SiteSettingsCategory.Type int i = 0; i < SiteSettingsCategory.Type.NUM_ENTRIES; i++) {
             if (!mCategory.showSites(i)) continue;
-            for (@ContentSettingException.Type int j = 0;
-                    j < ContentSettingException.Type.NUM_ENTRIES; j++) {
-                if (ContentSettingException.getContentSettingsType(j)
-                        == SiteSettingsCategory.contentSettingsType(i)) {
-                    return ContentSettingValues.BLOCK
-                            == website.site().getContentSettingPermission(j);
-                }
+            @ContentSettingValues
+            Integer contentSettingPermission = website.site().getContentSettingPermission(
+                    SiteSettingsCategory.contentSettingsType(i));
+            if (contentSettingPermission != null) {
+                return ContentSettingValues.BLOCK == contentSettingPermission;
             }
             for (@PermissionInfo.Type int j = 0; j < PermissionInfo.Type.NUM_ENTRIES; j++) {
                 if (PermissionInfo.getContentSettingsType(j)

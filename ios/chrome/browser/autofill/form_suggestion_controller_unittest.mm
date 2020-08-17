@@ -74,11 +74,13 @@ using autofill::FieldRendererId;
     [FormSuggestion suggestionWithValue:@"foo"
                      displayDescription:nil
                                    icon:@""
-                             identifier:0],
+                             identifier:0
+                         requiresReauth:NO],
     [FormSuggestion suggestionWithValue:@"bar"
                      displayDescription:nil
                                    icon:@""
-                             identifier:1]
+                             identifier:1
+                         requiresReauth:NO]
   ];
   return [[TestSuggestionProvider alloc] initWithSuggestions:suggestions];
 }
@@ -185,8 +187,7 @@ class FormSuggestionControllerTest : public PlatformTest {
       received_suggestions_ = suggestions;
     };
     [[[mock_consumer stub] andDo:mockShow]
-        showAccessorySuggestions:[OCMArg any]
-                suggestionClient:[OCMArg any]];
+        showAccessorySuggestions:[OCMArg any]];
 
     // Mock restore keyboard to verify cleanup.
     void (^mockRestore)(NSInvocation*) = ^(NSInvocation* invocation) {
@@ -210,7 +211,9 @@ class FormSuggestionControllerTest : public PlatformTest {
                                                 webStateList:NULL
                                          personalDataManager:NULL
                                                passwordStore:nullptr
-                                                    appState:mock_app_state];
+                                                    appState:mock_app_state
+                                        securityAlertHandler:nil
+                                      reauthenticationModule:nil];
 
     [accessory_mediator_ injectWebState:&test_web_state_];
     [accessory_mediator_ injectProvider:suggestion_controller_];
@@ -377,11 +380,13 @@ TEST_F(FormSuggestionControllerTest,
     [FormSuggestion suggestionWithValue:@"foo"
                      displayDescription:nil
                                    icon:@""
-                             identifier:0],
+                             identifier:0
+                         requiresReauth:NO],
     [FormSuggestion suggestionWithValue:@"bar"
                      displayDescription:nil
                                    icon:@""
-                             identifier:1]
+                             identifier:1
+                         requiresReauth:NO]
   ];
   TestSuggestionProvider* provider1 =
       [[TestSuggestionProvider alloc] initWithSuggestions:suggestions];
@@ -424,7 +429,8 @@ TEST_F(FormSuggestionControllerTest, SelectingSuggestionShouldNotifyDelegate) {
     [FormSuggestion suggestionWithValue:@"foo"
                      displayDescription:nil
                                    icon:@""
-                             identifier:0],
+                             identifier:0
+                         requiresReauth:NO],
   ];
   TestSuggestionProvider* provider =
       [[TestSuggestionProvider alloc] initWithSuggestions:suggestions];

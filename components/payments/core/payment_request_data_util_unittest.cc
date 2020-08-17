@@ -280,21 +280,21 @@ TEST(PaymentRequestDataUtil, ParseSupportedMethods_MultipleEntries) {
 TEST(PaymentRequestDataUtil, FilterStringifiedMethodData) {
   std::map<std::string, std::set<std::string>> requested;
   std::set<std::string> supported;
-  EXPECT_TRUE(FilterStringifiedMethodData(requested, supported).empty());
+  EXPECT_TRUE(FilterStringifiedMethodData(requested, supported)->empty());
 
   requested["a"].insert("{\"b\": \"c\"}");
-  EXPECT_TRUE(FilterStringifiedMethodData(requested, supported).empty());
+  EXPECT_TRUE(FilterStringifiedMethodData(requested, supported)->empty());
 
   requested["x"].insert("{\"y\": \"z\"}");
-  EXPECT_TRUE(FilterStringifiedMethodData(requested, supported).empty());
+  EXPECT_TRUE(FilterStringifiedMethodData(requested, supported)->empty());
 
   supported.insert("x");
   std::map<std::string, std::set<std::string>> expected;
   expected["x"].insert("{\"y\": \"z\"}");
-  EXPECT_EQ(expected, FilterStringifiedMethodData(requested, supported));
+  EXPECT_EQ(expected, *FilterStringifiedMethodData(requested, supported));
 
   supported.insert("g");
-  EXPECT_EQ(expected, FilterStringifiedMethodData(requested, supported));
+  EXPECT_EQ(expected, *FilterStringifiedMethodData(requested, supported));
 }
 
 }  // namespace data_util

@@ -564,9 +564,6 @@ extern const char kEnableResourceLoadingHintsDescription[];
 extern const char kEnableSubresourceRedirectName[];
 extern const char kEnableSubresourceRedirectDescription[];
 
-extern const char kEnableSyncTrustedVaultName[];
-extern const char kEnableSyncTrustedVaultDescription[];
-
 #if BUILDFLAG(ENABLE_TAB_SEARCH)
 extern const char kEnableTabSearchName[];
 extern const char kEnableTabSearchDescription[];

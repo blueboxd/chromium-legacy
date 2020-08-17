@@ -403,7 +403,7 @@ TEST_P(PasswordSaveManagerImplTest, CreatePendingCredentialsEmptyStore) {
 
   const base::Time kNow = base::Time::Now();
   password_save_manager_impl()->CreatePendingCredentials(
-      Parse(submitted_form_), observed_form_, submitted_form_,
+      Parse(submitted_form_), &observed_form_, submitted_form_,
       /*is_http_auth=*/false,
       /*is_credential_api_save=*/false);
 
@@ -418,7 +418,7 @@ TEST_P(PasswordSaveManagerImplTest, CreatePendingCredentialsEmptyStore) {
 TEST_P(PasswordSaveManagerImplTest, CreatePendingCredentialsNewCredentials) {
   SetNonFederatedAndNotifyFetchCompleted({&saved_match_});
   password_save_manager_impl()->CreatePendingCredentials(
-      Parse(submitted_form_), observed_form_, submitted_form_,
+      Parse(submitted_form_), &observed_form_, submitted_form_,
       /*is_http_auth=*/false,
       /*is_credential_api_save=*/false);
 
@@ -438,7 +438,7 @@ TEST_P(PasswordSaveManagerImplTest, CreatePendingCredentialsAlreadySaved) {
       saved_match_.password_value;
 
   password_save_manager_impl()->CreatePendingCredentials(
-      Parse(submitted_form_), observed_form_, submitted_form_,
+      Parse(submitted_form_), &observed_form_, submitted_form_,
       /*is_http_auth=*/false,
       /*is_credential_api_save=*/false);
 
@@ -463,7 +463,7 @@ TEST_P(PasswordSaveManagerImplTest, CreatePendingCredentialsPSLMatchSaved) {
       saved_match_.password_value;
 
   password_save_manager_impl()->CreatePendingCredentials(
-      Parse(submitted_form_), observed_form_, submitted_form_,
+      Parse(submitted_form_), &observed_form_, submitted_form_,
       /*is_http_auth=*/false,
       /*is_credential_api_save=*/false);
 
@@ -484,7 +484,7 @@ TEST_P(PasswordSaveManagerImplTest, CreatePendingCredentialsPasswordOverriden) {
   submitted_form_.fields[kPasswordFieldIndex].value = expected.password_value;
 
   password_save_manager_impl()->CreatePendingCredentials(
-      Parse(submitted_form_), observed_form_, submitted_form_,
+      Parse(submitted_form_), &observed_form_, submitted_form_,
       /*is_http_auth=*/false,
       /*is_credential_api_save=*/false);
 
@@ -505,7 +505,7 @@ TEST_P(PasswordSaveManagerImplTest, CreatePendingCredentialsUpdate) {
   expected.password_value = ASCIIToUTF16("verystrongpassword");
 
   password_save_manager_impl()->CreatePendingCredentials(
-      Parse(submitted_form), observed_form_, submitted_form,
+      Parse(submitted_form), &observed_form_, submitted_form,
       /*is_http_auth=*/false,
       /*is_credential_api_save=*/false);
 
@@ -528,7 +528,7 @@ TEST_P(PasswordSaveManagerImplTest,
   PasswordForm expected = saved_match_;
   expected.password_value = ASCIIToUTF16("verystrongpassword");
   password_save_manager_impl()->CreatePendingCredentials(
-      Parse(submitted_form), observed_form_, submitted_form,
+      Parse(submitted_form), &observed_form_, submitted_form,
       /*is_http_auth=*/false,
       /*is_credential_api_save=*/false);
 
@@ -547,7 +547,7 @@ TEST_P(PasswordSaveManagerImplTest, CreatePendingCredentialsEmptyName) {
   anonymous_signup.fields[2].autocomplete_attribute = "new-password";
 
   password_save_manager_impl()->CreatePendingCredentials(
-      Parse(anonymous_signup), observed_form_, anonymous_signup,
+      Parse(anonymous_signup), &observed_form_, anonymous_signup,
       /*is_http_auth=*/false,
       /*is_credential_api_save=*/false);
 
@@ -561,7 +561,7 @@ TEST_P(PasswordSaveManagerImplTest, ResetPendingCredentials) {
   fetcher()->NotifyFetchCompleted();
 
   password_save_manager_impl()->CreatePendingCredentials(
-      Parse(submitted_form_), observed_form_, submitted_form_,
+      Parse(submitted_form_), &observed_form_, submitted_form_,
       /*is_http_auth=*/false,
       /*is_credential_api_save=*/false);
 
@@ -587,7 +587,7 @@ TEST_P(PasswordSaveManagerImplTest, SaveNewCredentials) {
   submitted_form.fields[kPasswordFieldIndex].value = new_password;
 
   password_save_manager_impl()->CreatePendingCredentials(
-      Parse(submitted_form), observed_form_, submitted_form,
+      Parse(submitted_form), &observed_form_, submitted_form,
       /*is_http_auth=*/false,
       /*is_credential_api_save=*/false);
 
@@ -598,7 +598,7 @@ TEST_P(PasswordSaveManagerImplTest, SaveNewCredentials) {
   EXPECT_CALL(*mock_form_saver(), Save(_, _, _))
       .WillOnce(DoAll(SaveArg<0>(&saved_form), SaveArg<1>(&best_matches)));
 
-  password_save_manager_impl()->Save(observed_form_, Parse(submitted_form));
+  password_save_manager_impl()->Save(&observed_form_, Parse(submitted_form));
 
   std::string expected_signon_realm = submitted_form.url.GetOrigin().spec();
   EXPECT_EQ(submitted_form.url, saved_form.url);
@@ -635,7 +635,7 @@ TEST_P(PasswordSaveManagerImplTest, SavePSLToAlreadySaved) {
       psl_saved_match_.password_value;
 
   password_save_manager_impl()->CreatePendingCredentials(
-      Parse(submitted_form), observed_form_, submitted_form,
+      Parse(submitted_form), &observed_form_, submitted_form,
       /*is_http_auth=*/false,
       /*is_credential_api_save=*/false);
 
@@ -649,7 +649,7 @@ TEST_P(PasswordSaveManagerImplTest, SavePSLToAlreadySaved) {
   EXPECT_CALL(*mock_form_saver(), Save(_, _, _))
       .WillOnce(DoAll(SaveArg<0>(&saved_form), SaveArg<1>(&best_matches)));
 
-  password_save_manager_impl()->Save(observed_form_, Parse(submitted_form));
+  password_save_manager_impl()->Save(&observed_form_, Parse(submitted_form));
 
   EXPECT_EQ(submitted_form.url, saved_form.url);
   EXPECT_EQ(GetSignonRealm(submitted_form.url), saved_form.signon_realm);
@@ -673,7 +673,7 @@ TEST_P(PasswordSaveManagerImplTest, OverridePassword) {
   submitted_form.fields[kPasswordFieldIndex].value = new_password;
 
   password_save_manager_impl()->CreatePendingCredentials(
-      Parse(submitted_form), observed_form_, submitted_form,
+      Parse(submitted_form), &observed_form_, submitted_form,
       /*is_http_auth=*/false,
       /*is_credential_api_save=*/false);
 
@@ -685,7 +685,7 @@ TEST_P(PasswordSaveManagerImplTest, OverridePassword) {
                                          saved_match_.password_value))
       .WillOnce(SaveArg<0>(&updated_form));
 
-  password_save_manager_impl()->Save(observed_form_, Parse(submitted_form));
+  password_save_manager_impl()->Save(&observed_form_, Parse(submitted_form));
 
   EXPECT_TRUE(ArePasswordFormUniqueKeysEqual(saved_match_, updated_form));
   EXPECT_EQ(new_password, updated_form.password_value);
@@ -707,7 +707,7 @@ TEST_P(PasswordSaveManagerImplTest, UpdatePasswordOnChangePasswordForm) {
   submitted_form.fields[1].value = new_password;
 
   password_save_manager_impl()->CreatePendingCredentials(
-      Parse(submitted_form), observed_form_only_password_fields_,
+      Parse(submitted_form), &observed_form_only_password_fields_,
       submitted_form,
       /*is_http_auth=*/false,
       /*is_credential_api_save=*/false);
@@ -724,7 +724,7 @@ TEST_P(PasswordSaveManagerImplTest, UpdatePasswordOnChangePasswordForm) {
                      saved_match_.password_value))
       .WillOnce(SaveArg<0>(&updated_form));
 
-  password_save_manager_impl()->Save(observed_form_only_password_fields_,
+  password_save_manager_impl()->Save(&observed_form_only_password_fields_,
                                      Parse(submitted_form));
 
   EXPECT_TRUE(ArePasswordFormUniqueKeysEqual(saved_match_, updated_form));
@@ -742,7 +742,7 @@ TEST_P(PasswordSaveManagerImplTest, UpdateUsernameToAnotherFieldValue) {
   submitted_form_.fields[1].value = automatically_chosen_username;
   PasswordForm parsed_submitted_form = Parse(submitted_form_);
   password_save_manager_impl()->CreatePendingCredentials(
-      parsed_submitted_form, observed_form_only_password_fields_,
+      parsed_submitted_form, &observed_form_only_password_fields_,
       submitted_form_,
       /*is_http_auth=*/false,
       /*is_credential_api_save=*/false);
@@ -754,7 +754,7 @@ TEST_P(PasswordSaveManagerImplTest, UpdateUsernameToAnotherFieldValue) {
   parsed_submitted_form.username_value = user_chosen_username;
   parsed_submitted_form.username_element.clear();
   password_save_manager_impl()->CreatePendingCredentials(
-      parsed_submitted_form, observed_form_only_password_fields_,
+      parsed_submitted_form, &observed_form_only_password_fields_,
       submitted_form_,
       /*is_http_auth=*/false,
       /*is_credential_api_save=*/false);
@@ -768,7 +768,7 @@ TEST_P(PasswordSaveManagerImplTest, UpdateUsernameToAlreadyExisting) {
   SetNonFederatedAndNotifyFetchCompleted({&saved_match_});
   PasswordForm parsed_submitted_form = Parse(submitted_form_);
   password_save_manager_impl()->CreatePendingCredentials(
-      parsed_submitted_form, observed_form_, submitted_form_,
+      parsed_submitted_form, &observed_form_, submitted_form_,
       /*is_http_auth=*/false,
       /*is_credential_api_save=*/false);
 
@@ -781,7 +781,7 @@ TEST_P(PasswordSaveManagerImplTest, UpdateUsernameToAlreadyExisting) {
   parsed_submitted_form.username_value = new_username;
   parsed_submitted_form.username_element.clear();
   password_save_manager_impl()->CreatePendingCredentials(
-      parsed_submitted_form, observed_form_, submitted_form_,
+      parsed_submitted_form, &observed_form_, submitted_form_,
       /*is_http_auth=*/false,
       /*is_credential_api_save=*/false);
 
@@ -796,7 +796,7 @@ TEST_P(PasswordSaveManagerImplTest, UpdatePasswordValueEmptyStore) {
 
   PasswordForm parsed_submitted_form = Parse(submitted_form_);
   password_save_manager_impl()->CreatePendingCredentials(
-      parsed_submitted_form, observed_form_, submitted_form_,
+      parsed_submitted_form, &observed_form_, submitted_form_,
       /*is_http_auth=*/false,
       /*is_credential_api_save=*/false);
 
@@ -813,7 +813,7 @@ TEST_P(PasswordSaveManagerImplTest, UpdatePasswordValueEmptyStore) {
   parsed_submitted_form.new_password_element.clear();
 
   password_save_manager_impl()->CreatePendingCredentials(
-      parsed_submitted_form, observed_form_, submitted_form_,
+      parsed_submitted_form, &observed_form_, submitted_form_,
       /*is_http_auth=*/false,
       /*is_credential_api_save=*/false);
 
@@ -826,7 +826,7 @@ TEST_P(PasswordSaveManagerImplTest, UpdatePasswordValueEmptyStore) {
   EXPECT_CALL(*mock_autofill_download_manager(),
               StartUploadRequest(_, _, _, _, _, _))
       .Times(1);
-  password_save_manager_impl()->Save(observed_form_, parsed_submitted_form);
+  password_save_manager_impl()->Save(&observed_form_, parsed_submitted_form);
 }
 
 TEST_P(PasswordSaveManagerImplTest, UpdatePasswordValueToAlreadyExisting) {
@@ -838,7 +838,7 @@ TEST_P(PasswordSaveManagerImplTest, UpdatePasswordValueToAlreadyExisting) {
 
   PasswordForm parsed_submitted_form = Parse(submitted_form_);
   password_save_manager_impl()->CreatePendingCredentials(
-      parsed_submitted_form, observed_form_, submitted_form_,
+      parsed_submitted_form, &observed_form_, submitted_form_,
       /*is_http_auth=*/false,
       /*is_credential_api_save=*/false);
 
@@ -849,7 +849,7 @@ TEST_P(PasswordSaveManagerImplTest, UpdatePasswordValueToAlreadyExisting) {
   parsed_submitted_form.new_password_element.clear();
 
   password_save_manager_impl()->CreatePendingCredentials(
-      parsed_submitted_form, observed_form_, submitted_form_,
+      parsed_submitted_form, &observed_form_, submitted_form_,
       /*is_http_auth=*/false,
       /*is_credential_api_save=*/false);
 
@@ -871,7 +871,7 @@ TEST_P(PasswordSaveManagerImplTest, UpdatePasswordValueMultiplePasswordFields) {
   PasswordForm parsed_submitted_form = Parse(submitted_form);
 
   password_save_manager_impl()->CreatePendingCredentials(
-      parsed_submitted_form, observed_form_, submitted_form,
+      parsed_submitted_form, &observed_form_, submitted_form,
       /*is_http_auth=*/false,
       /*is_credential_api_save=*/false);
 
@@ -892,7 +892,7 @@ TEST_P(PasswordSaveManagerImplTest, UpdatePasswordValueMultiplePasswordFields) {
   parsed_submitted_form.new_password_element.clear();
 
   password_save_manager_impl()->CreatePendingCredentials(
-      parsed_submitted_form, observed_form_, submitted_form,
+      parsed_submitted_form, &observed_form_, submitted_form,
       /*is_http_auth=*/false,
       /*is_credential_api_save=*/false);
 
@@ -915,7 +915,7 @@ TEST_P(PasswordSaveManagerImplTest, UpdatePasswordValueMultiplePasswordFields) {
   EXPECT_CALL(*mock_form_saver(), Save(_, _, _))
       .WillOnce(SaveArg<0>(&saved_form));
 
-  password_save_manager_impl()->Save(observed_form_, parsed_submitted_form);
+  password_save_manager_impl()->Save(&observed_form_, parsed_submitted_form);
   CheckPendingCredentials(expected, saved_form);
 }
 
@@ -1096,7 +1096,7 @@ TEST_P(PasswordSaveManagerImplTest, Update) {
   submitted_form.fields[kPasswordFieldIndex].value = new_password;
 
   password_save_manager_impl()->CreatePendingCredentials(
-      Parse(submitted_form), observed_form_, submitted_form,
+      Parse(submitted_form), &observed_form_, submitted_form,
       /*is_http_auth=*/false,
       /*is_credential_api_save=*/false);
 
@@ -1111,7 +1111,7 @@ TEST_P(PasswordSaveManagerImplTest, Update) {
 
   const base::Time kNow = base::Time::Now();
 
-  password_save_manager_impl()->Update(saved_match_, observed_form_,
+  password_save_manager_impl()->Update(saved_match_, &observed_form_,
                                        Parse(submitted_form));
 
   EXPECT_TRUE(ArePasswordFormUniqueKeysEqual(saved_match_, updated_form));
@@ -1139,7 +1139,7 @@ TEST_P(PasswordSaveManagerImplTest, HTTPAuthPasswordOverridden) {
   submitted_http_auth_form.password_value = new_password;
 
   password_save_manager_impl()->CreatePendingCredentials(
-      submitted_http_auth_form, observed_form_, submitted_form_,
+      submitted_http_auth_form, &observed_form_, submitted_form_,
       /*is_http_auth=*/true,
       /*is_credential_api_save=*/false);
 
@@ -1152,7 +1152,7 @@ TEST_P(PasswordSaveManagerImplTest, HTTPAuthPasswordOverridden) {
               Update(_, ElementsAre(Pointee(saved_http_auth_form)), password))
       .WillOnce(SaveArg<0>(&updated_form));
 
-  password_save_manager_impl()->Save(observed_form_, submitted_http_auth_form);
+  password_save_manager_impl()->Save(&observed_form_, submitted_http_auth_form);
 
   EXPECT_TRUE(
       ArePasswordFormUniqueKeysEqual(saved_http_auth_form, updated_form));

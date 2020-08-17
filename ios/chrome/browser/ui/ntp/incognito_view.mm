@@ -11,7 +11,6 @@
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/drag_and_drop/drag_and_drop_flag.h"
 #import "ios/chrome/browser/drag_and_drop/url_drag_drop_handler.h"
-#import "ios/chrome/browser/ui/ntp/incognito_cookies_view.h"
 #import "ios/chrome/browser/ui/page_info/features.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_utils.h"
@@ -125,8 +124,6 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
 
 @interface IncognitoView () <URLDropDelegate>
 
-@property(nonatomic, strong) IncognitoCookiesView* cookiesView;
-
 @end
 
 @implementation IncognitoView {
@@ -200,9 +197,6 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
                        afterView:incognitoImageView];
 
     [self addTextSections];
-
-    if (base::FeatureList::IsEnabled(content_settings::kImprovedCookieControls))
-      [self addCookiesViewController];
 
     // |topGuide| and |bottomGuide| exist to vertically position the stackview
     // inside the container scrollview.
@@ -295,12 +289,6 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
     ApplyVisualConstraints(constraints, viewsDictionary);
   }
   return self;
-}
-
-#pragma mark - Properties
-
-- (UISwitch*)cookiesBlockedSwitch {
-  return self.cookiesView.cookiesBlockedSwitch;
 }
 
 #pragma mark - UIView overrides
@@ -494,11 +482,6 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
          selector:@selector(contentSizeCategoryDidChange)
              name:UIContentSizeCategoryDidChangeNotification
            object:nil];
-}
-
-- (void)addCookiesViewController {
-  self.cookiesView = [[IncognitoCookiesView alloc] init];
-  [_stackView addArrangedSubview:self.cookiesView];
 }
 
 @end

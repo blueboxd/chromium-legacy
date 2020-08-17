@@ -7,9 +7,11 @@
 #include "base/ios/block_types.h"
 #include "base/ios/ios_util.h"
 #include "base/mac/foundation_util.h"
+#include "base/metrics/histogram_functions.h"
 #import "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/autofill_features.h"
+#import "components/autofill/ios/browser/form_suggestion.h"
 #import "components/autofill/ios/browser/js_suggestion_manager.h"
 #import "components/autofill/ios/browser/personal_data_manager_observer_bridge.h"
 #import "components/autofill/ios/form_util/form_activity_observer_bridge.h"
@@ -23,20 +25,28 @@
 #import "ios/chrome/browser/passwords/password_generation_utils.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_consumer.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_view.h"
+#import "ios/chrome/browser/ui/commands/security_alert_commands.h"
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
+#import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/keyboard_observer_helper.h"
 #import "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
+#include "ios/chrome/common/ui/reauthentication/reauthentication_event.h"
+#import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
+#include "ios/chrome/grit/ios_strings.h"
 #import "ios/web/common/url_scheme_util.h"
 #import "ios/web/public/deprecated/crw_js_injection_receiver.h"
 #include "ios/web/public/js_messaging/web_frame.h"
 #include "ios/web/public/js_messaging/web_frames_manager.h"
 #import "ios/web/public/web_state.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+using base::UmaHistogramEnumeration;
 
 @interface FormInputAccessoryMediator () <AppStateObserver,
                                           FormActivityObserver,
@@ -90,6 +100,12 @@
 // that was tapped.
 @property(nonatomic, weak) AppState* appState;
 
+// Reauthentication Module used for re-authentication.
+@property(nonatomic, strong) ReauthenticationModule* reauthenticationModule;
+
+// Used to present alerts.
+@property(nonatomic, weak) id<SecurityAlertCommands> securityAlertHandler;
+
 @end
 
 @implementation FormInputAccessoryMediator {
@@ -126,13 +142,15 @@
 }
 
 - (instancetype)
-       initWithConsumer:(id<FormInputAccessoryConsumer>)consumer
-               delegate:(id<FormInputAccessoryMediatorDelegate>)delegate
-           webStateList:(WebStateList*)webStateList
-    personalDataManager:(autofill::PersonalDataManager*)personalDataManager
-          passwordStore:
-              (scoped_refptr<password_manager::PasswordStore>)passwordStore
-               appState:(AppState*)appState {
+          initWithConsumer:(id<FormInputAccessoryConsumer>)consumer
+                  delegate:(id<FormInputAccessoryMediatorDelegate>)delegate
+              webStateList:(WebStateList*)webStateList
+       personalDataManager:(autofill::PersonalDataManager*)personalDataManager
+             passwordStore:
+                 (scoped_refptr<password_manager::PasswordStore>)passwordStore
+                  appState:(AppState*)appState
+      securityAlertHandler:(id<SecurityAlertCommands>)securityAlertHandler
+    reauthenticationModule:(ReauthenticationModule*)reauthenticationModule {
   self = [super init];
   if (self) {
     _consumer = consumer;
@@ -220,6 +238,8 @@
     if (!base::ios::IsRunningOnIOS14OrLater()) {
       [_appState addObserver:self];
     }
+    _reauthenticationModule = reauthenticationModule;
+    _securityAlertHandler = securityAlertHandler;
   }
   return self;
 }
@@ -530,8 +550,7 @@
     // If suggestions are enabled update |currentProvider|.
     self.currentProvider = provider;
     // Post it to the consumer.
-    [self.consumer showAccessorySuggestions:suggestions
-                           suggestionClient:provider];
+    [self.consumer showAccessorySuggestions:suggestions];
   }
 }
 
@@ -606,6 +625,44 @@
 // ends editing, continue presenting.
 - (void)handleTextInputDidEndEditing:(NSNotification*)notification {
   [self verifyFirstResponderAndUpdateCustomKeyboardView];
+}
+
+#pragma mark - FormSuggestionClient
+
+- (void)didSelectSuggestion:(FormSuggestion*)formSuggestion {
+  UmaHistogramEnumeration("IOS.Reauth.Password.Autofill",
+                          ReauthenticationEvent::kAttempt);
+
+  if (!base::FeatureList::IsEnabled(kEnableAutofillPasswordReauthIOS) ||
+      !formSuggestion.requiresReauth) {
+    UmaHistogramEnumeration("IOS.Reauth.Password.Autofill",
+                            ReauthenticationEvent::kSuccess);
+    [self.currentProvider didSelectSuggestion:formSuggestion];
+    return;
+  }
+  if ([self.reauthenticationModule canAttemptReauth]) {
+    NSString* reason = l10n_util::GetNSString(IDS_IOS_AUTOFILL_REAUTH_REASON);
+    __weak __typeof(self) weakSelf = self;
+    auto completionHandler = ^(ReauthenticationResult result) {
+      if (result != ReauthenticationResult::kFailure) {
+        UmaHistogramEnumeration("IOS.Reauth.Password.Autofill",
+                                ReauthenticationEvent::kSuccess);
+        [weakSelf.currentProvider didSelectSuggestion:formSuggestion];
+      } else {
+        UmaHistogramEnumeration("IOS.Reauth.Password.Autofill",
+                                ReauthenticationEvent::kFailure);
+      }
+    };
+
+    [self.reauthenticationModule
+        attemptReauthWithLocalizedReason:reason
+                    canReusePreviousAuth:YES
+                                 handler:completionHandler];
+  } else {
+    UmaHistogramEnumeration("IOS.Reauth.Password.Autofill",
+                            ReauthenticationEvent::kMissingPasscode);
+    [self.securityAlertHandler showSetPasscodeDialog];
+  }
 }
 
 #pragma mark - PasswordFetcherDelegate

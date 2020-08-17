@@ -5,16 +5,19 @@
 /**
  * Test files should be created before running the tests.
  */
-let audioBlob = null;
-let videoBlob = null;
+let audioEntry = null;
+let brokeEntry = null;
+let emptyEntry = null;
+let imageEntry = null;
+let videoEntry = null;
 
 /*
- * getContentMineType of an empty blob is undefined.
+ * getContentMineType of an empty entry is undefined.
  */
 function testGetContentMimeTypeEmpty() {
-  const blob = new Blob([]);
+  const entry = emptyEntry;
 
-  chrome.fileManagerPrivate.getContentMimeType(blob, (mimeType) => {
+  chrome.fileManagerPrivate.getContentMimeType(entry, (mimeType) => {
     chrome.test.assertEq(undefined, mimeType);
     chrome.test.assertNoLastError();
     chrome.test.succeed();
@@ -25,16 +28,10 @@ function testGetContentMimeTypeEmpty() {
  * getContentMineType detects content mime types: image.
  */
 function testGetContentMimeTypeImage() {
-  const image = new Uint8Array([
-    71, 73, 70,  56,  57,  97, 1,   0, 1, 0, 128, 0,  0, 0,
-    0,  0,  255, 255, 255, 33, 249, 4, 1, 0, 0,   0,  0, 44,
-    0,  0,  0,   0,   1,   0,  1,   0, 0, 2, 1,   68, 0, 59
-  ]);
+  const entry = imageEntry;
 
-  const blob = new Blob([image]);
-
-  chrome.fileManagerPrivate.getContentMimeType(blob, (mimeType) => {
-    chrome.test.assertEq('image/gif', mimeType);
+  chrome.fileManagerPrivate.getContentMimeType(entry, (mimeType) => {
+    chrome.test.assertEq('image/jpeg', mimeType);
     chrome.test.assertNoLastError();
     chrome.test.succeed();
   });
@@ -44,9 +41,9 @@ function testGetContentMimeTypeImage() {
  * getContentMineType detects content mime types: audio.
  */
 function testGetContentMimeTypeAudio() {
-  const blob = audioBlob;
+  const entry = audioEntry;
 
-  chrome.fileManagerPrivate.getContentMimeType(blob, (mimeType) => {
+  chrome.fileManagerPrivate.getContentMimeType(entry, (mimeType) => {
     chrome.test.assertEq('audio/mpeg', mimeType);
     chrome.test.assertNoLastError();
     chrome.test.succeed();
@@ -57,9 +54,9 @@ function testGetContentMimeTypeAudio() {
  * getContentMineType detects content mime types: video.
  */
 function testGetContentMimeTypeVideo() {
-  const blob = videoBlob;
+  const entry = videoEntry;
 
-  chrome.fileManagerPrivate.getContentMimeType(blob, (mimeType) => {
+  chrome.fileManagerPrivate.getContentMimeType(entry, (mimeType) => {
     chrome.test.assertEq('video/mp4', mimeType);
     chrome.test.assertNoLastError();
     chrome.test.succeed();
@@ -71,9 +68,9 @@ function testGetContentMimeTypeVideo() {
  * chrome.runtime.lastError in that case.
  */
 function testGetContentMimeTypeUnknownMimeTypeError() {
-  const blob = new Blob([42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42, 42]);
+  const entry = brokeEntry;
 
-  chrome.fileManagerPrivate.getContentMimeType(blob, (mimeType) => {
+  chrome.fileManagerPrivate.getContentMimeType(entry, (mimeType) => {
     chrome.test.assertEq(undefined, mimeType);
 
     if (!chrome.runtime.lastError) {
@@ -118,13 +115,13 @@ function verifyExpectedAudioMetadata(metadata) {
 }
 
 /*
- * getContentMetadata of an empty blob is undefined.
+ * getContentMetadata of an empty entry is undefined.
  */
 function testGetContentMetadataEmpty() {
-  const blob = new Blob([]);
+  const entry = emptyEntry;
 
   chrome.fileManagerPrivate.getContentMetadata(
-      blob, 'audio/mpeg', 'metadataTags', (metadata) => {
+      entry, 'audio/mpeg', 'metadataTags', (metadata) => {
     chrome.test.assertEq(undefined, metadata);
     chrome.test.assertNoLastError();
     chrome.test.succeed();
@@ -135,10 +132,10 @@ function testGetContentMetadataEmpty() {
  * getContentMetadata 'metadataTags' returns tags only.
  */
 function testGetContentMetadataAudioTags() {
-  const blob = audioBlob;
+  const entry = audioEntry;
 
   chrome.fileManagerPrivate.getContentMetadata(
-      blob, 'audio/mpeg', 'metadataTags', (metadata) => {
+      entry, 'audio/mpeg', 'metadataTags', (metadata) => {
     chrome.test.assertEq('audio/mpeg', metadata.mimeType);
     chrome.test.assertNoLastError();
 
@@ -153,10 +150,10 @@ function testGetContentMetadataAudioTags() {
  * getContentMetadata 'metadataTagsImages' returns tags and images.
  */
 function testGetContentMetadataAudioTagsImages() {
-  const blob = audioBlob;
+  const entry = audioEntry;
 
   chrome.fileManagerPrivate.getContentMetadata(
-      blob, 'audio/mpeg', 'metadataTagsImages', (metadata) => {
+      entry, 'audio/mpeg', 'metadataTagsImages', (metadata) => {
     chrome.test.assertEq('audio/mpeg', metadata.mimeType);
     chrome.test.assertNoLastError();
 
@@ -217,10 +214,10 @@ function verifyExpectedVideoMetadata(metadata) {
  * video file has no attached images.
  */
 function testGetContentMetadataVideoTagsImages() {
-  const blob = videoBlob;
+  const entry = videoEntry;
 
   chrome.fileManagerPrivate.getContentMetadata(
-      blob, 'video/mp4', 'metadataTagsImages', (metadata) => {
+      entry, 'video/mp4', 'metadataTagsImages', (metadata) => {
     chrome.test.assertEq('video/mp4', metadata.mimeType);
     chrome.test.assertNoLastError();
 
@@ -235,10 +232,10 @@ function testGetContentMetadataVideoTagsImages() {
  * getContentMetadata returns the input mime type in the metadata mime type.
  */
 function testGetContentMetadataRetainsInputMimeType() {
-  const blob = audioBlob;
+  const entry = audioEntry;
 
   chrome.fileManagerPrivate.getContentMetadata(
-      blob, 'audio/input-type', 'metadataTags', (metadata) => {
+      entry, 'audio/input-type', 'metadataTags', (metadata) => {
     chrome.test.assertEq('audio/input-type', metadata.mimeType);
     chrome.test.assertNoLastError();
     chrome.test.succeed();
@@ -250,10 +247,10 @@ function testGetContentMetadataRetainsInputMimeType() {
  * the video has width and height.
  */
 function testGetContentMetadataVideoResetsAudioMime() {
-  const blob = videoBlob;
+  const entry = videoEntry;
 
   chrome.fileManagerPrivate.getContentMetadata(
-      blob, 'audio/input-type', 'metadataTagsImages', (metadata) => {
+      entry, 'audio/input-type', 'metadataTagsImages', (metadata) => {
     chrome.test.assertEq('video/input-type', metadata.mimeType);
     chrome.test.assertNoLastError();
 
@@ -269,10 +266,10 @@ function testGetContentMetadataVideoResetsAudioMime() {
  * chrome.runtime.lastError given other mime types.
  */
 function testGetContentMetadataUnsupportedMimetypeError() {
-  const blob = new Blob([71, 73, 70, 56, 57, 97, 1, 0, 1, 0, 128, 0]);
+  const entry = imageEntry;
 
   chrome.fileManagerPrivate.getContentMetadata(
-      blob, 'image/gif', 'metadataTags', (metadata) => {
+      entry, 'image/jpeg', 'metadataTags', (metadata) => {
     chrome.test.assertEq(undefined, metadata);
 
     if (!chrome.runtime.lastError) {
@@ -308,30 +305,24 @@ function resolveTestFileSystem() {
 }
 
 /*
- * Resolves the content of |fileName| as a Blob.
+ * Resolves the fileEntry for |fileName|.
  */
-function resolveFileBlob(fileSystem, fileName) {
+function resolveFileEntry(fileSystem, fileName) {
   return new Promise((resolve) => {
     const failure = (error) => {
-      chrome.test.fail('While reading file system: ' + error);
+      chrome.test.fail('While resolving ' + fileName + ': ' + error);
     };
 
-    const readEntry = (fileEntry) => {
-      fileEntry.file((file) => {
-        const reader = new FileReader();
-        reader.onerror = failure;
-        reader.onload = () => resolve(new Blob([reader.result]));
-        reader.readAsArrayBuffer(file);
-      }, failure);
-    };
-
-    fileSystem.root.getFile(fileName, {}, readEntry, failure);
+    fileSystem.root.getFile(fileName, {}, resolve, failure);
   });
 }
 
 resolveTestFileSystem().then(async (fileSystem) => {
-  audioBlob = await resolveFileBlob(fileSystem, 'id3_png_test.mp3');
-  videoBlob = await resolveFileBlob(fileSystem, '90rotation.mp4');
+  audioEntry = await resolveFileEntry(fileSystem, 'id3_png_test.mp3');
+  brokeEntry = await resolveFileEntry(fileSystem, 'broken.jpg');
+  emptyEntry = await resolveFileEntry(fileSystem, 'empty.txt');
+  imageEntry = await resolveFileEntry(fileSystem, 'image3.jpg');
+  videoEntry = await resolveFileEntry(fileSystem, '90rotation.mp4');
 
   chrome.test.runTests([
     // fileManagerPrivate.getContentMimeType tests.

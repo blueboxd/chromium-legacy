@@ -16,9 +16,6 @@ class UrlLoadingBrowserAgent;
 - (instancetype)initWithFrame:(CGRect)frame
                     URLLoader:(UrlLoadingBrowserAgent*)URLLoader;
 
-// Switch to manage cookies blocking.
-@property(nonatomic, readonly) UISwitch* cookiesBlockedSwitch;
-
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_NTP_INCOGNITO_VIEW_H_

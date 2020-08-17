@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/payments/chrome_payment_request_delegate.h"
 #include "chrome/browser/payments/payment_request_factory.h"
+#include "components/payments/content/android_app_communication.h"
 #include "components/payments/content/payment_request.h"
 #include "components/payments/content/payment_request_web_contents_manager.h"
 #include "components/payments/core/payment_prefs.h"
@@ -158,11 +159,21 @@ void PaymentRequestTestController::SetTwaPackageName(
   UpdateDelegateFactory();
 }
 
+void PaymentRequestTestController::SetTwaPaymentApp(
+    const std::string& method_name,
+    const std::string& response) {
+  twa_payment_app_method_name_ = method_name;
+  twa_payment_app_response_ = response;
+  UpdateDelegateFactory();
+}
+
 void PaymentRequestTestController::UpdateDelegateFactory() {
   SetPaymentRequestFactoryForTesting(base::BindRepeating(
       [](PaymentRequest::ObserverForTest* observer_for_test,
          bool is_off_the_record, bool valid_ssl, PrefService* prefs,
          const std::string& twa_package_name,
+         const std::string& twa_payment_app_method_name,
+         const std::string& twa_payment_app_response,
          mojo::PendingReceiver<payments::mojom::PaymentRequest> receiver,
          content::RenderFrameHost* render_frame_host) {
         content::WebContents* web_contents =
@@ -174,12 +185,19 @@ void PaymentRequestTestController::UpdateDelegateFactory() {
         PaymentRequestWebContentsManager* manager =
             PaymentRequestWebContentsManager::GetOrCreateForWebContents(
                 web_contents);
+        if (!twa_payment_app_method_name.empty()) {
+          AndroidAppCommunication::GetForBrowserContext(
+              web_contents->GetBrowserContext())
+              ->SetAppForTesting(twa_package_name, twa_payment_app_method_name,
+                                 twa_payment_app_response);
+        }
         manager->CreatePaymentRequest(render_frame_host, web_contents,
                                       std::move(delegate), std::move(receiver),
                                       observer_for_test);
       },
       observer_converter_.get(), is_off_the_record_, valid_ssl_, prefs_.get(),
-      twa_package_name_));
+      twa_package_name_, twa_payment_app_method_name_,
+      twa_payment_app_response_));
 }
 
 void PaymentRequestTestController::OnCanMakePaymentCalled() {

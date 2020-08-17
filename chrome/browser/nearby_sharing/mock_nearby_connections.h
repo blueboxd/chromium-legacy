@@ -78,6 +78,10 @@ class MockNearbyConnections : public NearbyConnectionsMojom {
               CancelPayload,
               (int64_t payload_id, CancelPayloadCallback callback),
               (override));
+  MOCK_METHOD(void,
+              StopAllEndpoints,
+              (DisconnectFromEndpointCallback callback),
+              (override));
 };
 
 #endif  // CHROME_BROWSER_NEARBY_SHARING_MOCK_NEARBY_CONNECTIONS_H_

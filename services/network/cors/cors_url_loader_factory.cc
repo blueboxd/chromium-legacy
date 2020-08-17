@@ -13,6 +13,7 @@
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/load_flags.h"
+#include "net/http/http_util.h"
 #include "services/network/cors/cors_url_loader.h"
 #include "services/network/cors/preflight_controller.h"
 #include "services/network/crash_keys.h"
@@ -458,6 +459,13 @@ bool CorsURLLoaderFactory::IsValidRequest(const ResourceRequest& request,
           request, context_, trust_token_redemption_policy_)) {
     // VerifyTrustTokenParamsIntegrityIfPresent will report an appropriate bad
     // message.
+    return false;
+  }
+
+  if (!net::HttpUtil::IsToken(request.method)) {
+    // Callers are expected to ensure that |method| follows RFC 7230.
+    mojo::ReportBadMessage(
+        "CorsURLLoaderFactory: invalid characters in method");
     return false;
   }
 

@@ -73,8 +73,9 @@ public class SingleWebsiteSettingsTest {
     @Test
     @SmallTest
     public void testCorrectMapOfPreferenceKeyToContentSettingsType() {
+        SingleWebsiteSettings settings = new SingleWebsiteSettings();
         for (String key : SingleWebsiteSettings.PERMISSION_PREFERENCE_KEYS) {
-            Assert.assertEquals(SingleWebsiteSettings.getContentSettingsTypeFromPreferenceKey(key),
+            Assert.assertEquals(settings.getContentSettingsTypeFromPreferenceKey(key),
                     getCorrectContentSettingsTypeForPreferenceKey(key));
         }
     }

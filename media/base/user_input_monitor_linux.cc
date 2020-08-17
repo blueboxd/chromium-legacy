@@ -21,6 +21,7 @@
 #include "base/task/current_thread.h"
 #include "media/base/keyboard_event_counter.h"
 #include "third_party/skia/include/core/SkPoint.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/events/devices/x11/xinput_util.h"
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"
 #include "ui/gfx/x/x11.h"
@@ -138,6 +139,14 @@ uint32_t UserInputMonitorLinuxCore::GetKeyPressCount() const {
 
 void UserInputMonitorLinuxCore::StartMonitor() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
+
+  // TODO(https://crbug.com/1116414): support UserInputMonitorLinux on
+  // Ozone/Linux.
+  if (features::IsUsingOzonePlatform()) {
+    NOTIMPLEMENTED_LOG_ONCE();
+    StopMonitor();
+    return;
+  }
 
   if (!connection_) {
     // TODO(jamiewalch): We should pass the connection in.

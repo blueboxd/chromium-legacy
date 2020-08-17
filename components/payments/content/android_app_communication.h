@@ -83,8 +83,13 @@ class AndroidAppCommunication : public base::SupportsUserData::Data {
       const std::string& payment_request_id,
       InvokePaymentAppCallback callback) = 0;
 
-  // Enables the testing mode.
+  // Allows usage of a test browser context.
   virtual void SetForTesting() = 0;
+
+  // Simulates having this payment app.
+  virtual void SetAppForTesting(const std::string& package_name,
+                                const std::string& method,
+                                const std::string& response) = 0;
 
  protected:
   explicit AndroidAppCommunication(content::BrowserContext* context);

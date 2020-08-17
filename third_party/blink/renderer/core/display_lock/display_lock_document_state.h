@@ -134,6 +134,8 @@ class CORE_EXPORT DisplayLockDocumentState final
 
   void ForceLockIfNeededForInfo(Element*, ForcedNodeInfo*);
 
+  void ScheduleAnimation();
+
   Member<Document> document_;
 
   Member<IntersectionObserver> intersection_observer_ = nullptr;

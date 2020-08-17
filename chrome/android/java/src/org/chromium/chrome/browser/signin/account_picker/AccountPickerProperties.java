@@ -49,9 +49,9 @@ class AccountPickerProperties {
 
         private IncognitoAccountRowProperties() {}
 
-        static PropertyModel createModel(Runnable runnableIncognitoAccount) {
+        static PropertyModel createModel(Runnable runnableIncognitoMode) {
             return new PropertyModel.Builder(ALL_KEYS)
-                    .with(ON_CLICK_LISTENER, runnableIncognitoAccount)
+                    .with(ON_CLICK_LISTENER, runnableIncognitoMode)
                     .build();
         }
     }

@@ -218,9 +218,6 @@ extern const char kEnableNativeContextMenusDescription[];
 extern const char kEnablePersistentDownloadsName[];
 extern const char kEnablePersistentDownloadsDescription[];
 
-extern const char kEnableSyncTrustedVaultName[];
-extern const char kEnableSyncTrustedVaultDescription[];
-
 // Title and description for the flag to enable an expanded tab strip.
 extern const char kExpandedTabStripName[];
 extern const char kExpandedTabStripDescription[];
@@ -323,11 +320,6 @@ extern const char kOmniboxOnFocusSuggestionsDescription[];
 // Title and description for the flag to open Downloaded files in Files.app.
 extern const char kOpenDownloadsInFilesAppName[];
 extern const char kOpenDownloadsInFilesAppDescription[];
-
-// Title and description for the flag to provide user with improved settings
-// relating to cookies.
-extern const char kImprovedCookieControlsName[];
-extern const char kImprovedCookieControlsDescription[];
 
 // Title and description for the flag to provide user with Password Check
 // feature in Settings.

@@ -468,7 +468,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, MediaMetadata) {
   const base::FilePath test_dir = temp_dir_.GetPath();
   AddLocalFileSystem(browser()->profile(), test_dir);
 
-  // Get the source tree media/test/data directory path.
+  // Get source media/test/data directory path.
   base::FilePath root_dir;
   CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &root_dir));
   const base::FilePath media_test_data_dir =
@@ -479,7 +479,7 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, MediaMetadata) {
     return media_test_data_dir.Append(base::FilePath::FromUTF8Unsafe(file));
   };
 
-  // Create test files.
+  // Create media test files.
   {
     base::ScopedAllowBlockingForTesting allow_io;
 
@@ -488,6 +488,32 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, MediaMetadata) {
 
     const base::FilePath audio = get_media_test_data_file("id3_png_test.mp3");
     ASSERT_TRUE(base::CopyFile(audio, test_dir.Append(audio.BaseName())));
+  }
+
+  // Get source chrome/test/data/chromeos/file_manager directory path.
+  const base::FilePath files_test_data_dir = root_dir.AppendASCII("chrome")
+                                                 .AppendASCII("test")
+                                                 .AppendASCII("data")
+                                                 .AppendASCII("chromeos")
+                                                 .AppendASCII("file_manager");
+
+  // Returns a path to a chrome/test/data/chromeos/file_manager test file.
+  auto get_files_test_data_dir = [&](const std::string& file) {
+    return files_test_data_dir.Append(base::FilePath::FromUTF8Unsafe(file));
+  };
+
+  // Create files test files.
+  {
+    base::ScopedAllowBlockingForTesting allow_io;
+
+    const base::FilePath broke = get_files_test_data_dir("broken.jpg");
+    ASSERT_TRUE(base::CopyFile(broke, test_dir.Append(broke.BaseName())));
+
+    const base::FilePath empty = get_files_test_data_dir("empty.txt");
+    ASSERT_TRUE(base::CopyFile(empty, test_dir.Append(empty.BaseName())));
+
+    const base::FilePath image = get_files_test_data_dir("image3.jpg");
+    ASSERT_TRUE(base::CopyFile(image, test_dir.Append(image.BaseName())));
   }
 
   ASSERT_TRUE(RunComponentExtensionTest("file_browser/media_metadata"));

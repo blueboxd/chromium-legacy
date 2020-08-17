@@ -63,9 +63,11 @@ class CORE_EXPORT IntersectionObserver final
 
   // Used to specify when callbacks should be invoked with new notifications.
   // Blink-internal users of IntersectionObserver will have their callbacks
-  // invoked synchronously at the end of a lifecycle update. Javascript
-  // observers will PostTask to invoke their callbacks.
+  // invoked synchronously either at the end of a lifecycle update or in the
+  // middle of the lifecycle post layout. Javascript observers will PostTask to
+  // invoke their callbacks.
   enum DeliveryBehavior {
+    kDeliverDuringPostLayoutSteps,
     kDeliverDuringPostLifecycleSteps,
     kPostTaskToDeliver
   };

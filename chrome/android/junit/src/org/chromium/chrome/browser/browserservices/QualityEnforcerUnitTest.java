@@ -39,6 +39,7 @@ import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar;
 import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar.CustomTabTabObserver;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
@@ -62,6 +63,8 @@ public class QualityEnforcerUnitTest {
     public TestRule mFeaturesProcessor = new Features.JUnitProcessor();
     @Mock
     private ChromeActivity mActivity;
+    @Mock
+    ActivityLifecycleDispatcher mLifecycleDispatcher;
     @Mock
     private CustomTabIntentDataProvider mIntentDataProvider;
     @Mock
@@ -93,9 +96,9 @@ public class QualityEnforcerUnitTest {
         when(mVerifier.verify(TRUSTED_ORIGIN_PAGE)).thenReturn(Promise.fulfilled(true));
         when(mVerifier.verify(UNTRUSTED_PAGE)).thenReturn(Promise.fulfilled(false));
 
-        mQualityEnforcer =
-                new QualityEnforcer(mActivity, mTabObserverRegistrar, mIntentDataProvider,
-                        mCustomTabsConnection, mVerifier, mClientPackageNameProvider, mUmaRecorder);
+        mQualityEnforcer = new QualityEnforcer(mActivity, mLifecycleDispatcher,
+                mTabObserverRegistrar, mIntentDataProvider, mCustomTabsConnection, mVerifier,
+                mClientPackageNameProvider, mUmaRecorder);
     }
 
     @Test
@@ -160,7 +163,30 @@ public class QualityEnforcerUnitTest {
     @Test
     public void trigger_offline() {
         navigateToUrlInternet(TRUSTED_ORIGIN_PAGE);
-        verifyTriggeredOffline();
+        Assert.assertEquals(
+                ContextUtils.getApplicationContext().getString(
+                        R.string.twa_quality_enforcement_violation_offline, TRUSTED_ORIGIN_PAGE),
+                ShadowToast.getTextOfLatestToast());
+        verifyNotifyClientApp();
+    }
+
+    @Test
+    public void notTrigger_digitalAssertLinkPass() {
+        when(mIntentDataProvider.getUrlToLoad()).thenReturn(TRUSTED_ORIGIN_PAGE);
+        mQualityEnforcer.onFinishNativeInitialization();
+        verifyNotTriggered();
+    }
+
+    @Test
+    public void trigger_digitalAssertLinkFailed() {
+        when(mIntentDataProvider.getUrlToLoad()).thenReturn(UNTRUSTED_PAGE);
+        mQualityEnforcer.onFinishNativeInitialization();
+
+        Assert.assertEquals(
+                ContextUtils.getApplicationContext().getString(
+                        R.string.twa_quality_enforcement_violation_assert_link, UNTRUSTED_PAGE),
+                ShadowToast.getTextOfLatestToast());
+        verifyNotifyClientApp();
     }
 
     private void verifyTriggered404() {
@@ -168,15 +194,10 @@ public class QualityEnforcerUnitTest {
                                     R.string.twa_quality_enforcement_violation_error,
                                     HTTP_ERROR_NOT_FOUND, TRUSTED_ORIGIN_PAGE),
                 ShadowToast.getTextOfLatestToast());
-        verify(mCustomTabsConnection)
-                .sendExtraCallbackWithResult(any(), eq(QualityEnforcer.NOTIFY), any());
+        verifyNotifyClientApp();
     }
 
-    private void verifyTriggeredOffline() {
-        Assert.assertEquals(
-                ContextUtils.getApplicationContext().getString(
-                        R.string.twa_quality_enforcement_violation_offline, TRUSTED_ORIGIN_PAGE),
-                ShadowToast.getTextOfLatestToast());
+    private void verifyNotifyClientApp() {
         verify(mCustomTabsConnection)
                 .sendExtraCallbackWithResult(any(), eq(QualityEnforcer.NOTIFY), any());
     }

@@ -109,6 +109,7 @@ void DisplayLockContext::SetRequestedState(EContentVisibility state) {
       break;
     case EContentVisibility::kAuto:
       UseCounter::Count(document_, WebFeature::kContentVisibilityAuto);
+      had_any_viewport_intersection_notifications_ = false;
       RequestLock(static_cast<uint16_t>(DisplayLockActivationReason::kAny));
       break;
     case EContentVisibility::kHidden:
@@ -439,6 +440,7 @@ void DisplayLockContext::SetKeepUnlockedUntilLifecycleCount(int count) {
 }
 
 void DisplayLockContext::NotifyIsIntersectingViewport() {
+  had_any_viewport_intersection_notifications_ = true;
   // If we are now intersecting, then we are definitely not nested in a locked
   // subtree and we don't need to lock as a result.
   needs_deferred_not_intersecting_signal_ = false;
@@ -451,6 +453,8 @@ void DisplayLockContext::NotifyIsIntersectingViewport() {
 }
 
 void DisplayLockContext::NotifyIsNotIntersectingViewport() {
+  had_any_viewport_intersection_notifications_ = true;
+
   if (IsLocked()) {
     DCHECK(!needs_deferred_not_intersecting_signal_);
     return;

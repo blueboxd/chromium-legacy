@@ -5,13 +5,6 @@
 source_set("privacy_ui") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "cookies_commands.h",
-    "cookies_consumer.h",
-    "cookies_status_consumer.h",
-    "cookies_status_description.h",
-    "cookies_status_description.mm",
-    "cookies_view_controller.h",
-    "cookies_view_controller.mm",
     "handoff_table_view_controller.h",
     "handoff_table_view_controller.mm",
     "privacy_navigation_commands.h",
@@ -55,12 +48,6 @@ source_set("privacy_ui") {
 source_set("privacy") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "cookies_coordinator.h",
-    "cookies_coordinator.mm",
-    "cookies_mediator.h",
-    "cookies_mediator.mm",
-    "cookies_status_mediator.h",
-    "cookies_status_mediator.mm",
     "privacy_coordinator.h",
     "privacy_coordinator.mm",
   ]
@@ -73,7 +60,6 @@ source_set("privacy") {
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/content_settings",
     "//ios/chrome/browser/main:public",
-    "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/settings:settings_root",

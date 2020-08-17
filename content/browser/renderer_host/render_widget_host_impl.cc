@@ -1897,7 +1897,8 @@ void RenderWidgetHostImpl::SetCursor(const ui::Cursor& cursor) {
 void RenderWidgetHostImpl::ShowContextMenuAtPoint(
     const gfx::Point& point,
     const ui::MenuSourceType source_type) {
-  GetAssociatedFrameWidget()->ShowContextMenu(source_type, point);
+  if (blink_frame_widget_)
+    blink_frame_widget_->ShowContextMenu(source_type, point);
 }
 
 RenderProcessHost::Priority RenderWidgetHostImpl::GetPriority() {

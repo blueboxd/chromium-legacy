@@ -430,6 +430,14 @@ bool IntersectionObserver::ComputeIntersections(unsigned flags) {
   DCHECK(!RootIsImplicit());
   if (!RootIsValid() || !GetExecutionContext() || observations_.IsEmpty())
     return false;
+
+  // If we're processing post-layout deliveries only and we're not a post-layout
+  // delivery observer, then return early.
+  if (flags & IntersectionObservation::kPostLayoutDeliveryOnly) {
+    if (GetDeliveryBehavior() != kDeliverDuringPostLayoutSteps)
+      return false;
+  }
+
   IntersectionGeometry::RootGeometry root_geometry(
       IntersectionGeometry::GetRootLayoutObjectForTarget(root(), nullptr,
                                                          false),

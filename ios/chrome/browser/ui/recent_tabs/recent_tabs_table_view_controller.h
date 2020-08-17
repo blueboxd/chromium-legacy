@@ -55,9 +55,6 @@ class DistantSession;
 - (instancetype)init NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithStyle:(UITableViewStyle)style NS_UNAVAILABLE;
 
-// Returns YES if |sectionIdentifier| is a Sessions sectionIdentifier.
-- (BOOL)isSessionSectionIdentifier:(NSInteger)sectionIdentifier;
-
 // Returns Sessions corresponding to the given |sectionIdentifier|.
 - (synced_sessions::DistantSession const*)sessionForSectionIdentifier:
     (NSInteger)sectionIdentifer;

@@ -312,7 +312,9 @@ class PasswordControllerTest : public ChromeWebTest {
                                                   webStateList:nullptr
                                            personalDataManager:nullptr
                                                  passwordStore:nullptr
-                                                      appState:nil];
+                                                      appState:nil
+                                          securityAlertHandler:nil
+                                        reauthenticationModule:nil];
       [accessoryMediator_ injectWebState:web_state()];
       [accessoryMediator_ injectProvider:suggestionController_];
     }
@@ -1163,7 +1165,8 @@ TEST_F(PasswordControllerTest, SelectingSuggestionShouldFillPasswordForm) {
         [FormSuggestion suggestionWithValue:@"abc ••••••••"
                          displayDescription:nil
                                        icon:nil
-                                 identifier:0];
+                                 identifier:0
+                             requiresReauth:NO];
 
     block_was_called = NO;
     SuggestionHandledCompletion completion = ^{

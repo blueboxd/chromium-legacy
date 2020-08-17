@@ -344,6 +344,7 @@ TEST_F(NearbyConnectionsManagerImplTest, DiscoveryProcessStopped) {
   testing::NiceMock<MockDiscoveryListener> discovery_listener;
   StartDiscovery(listener_remote, discovery_listener);
 
+  EXPECT_CALL(nearby_connections_, StopAllEndpoints).Times(0);
   nearby_connections_manager_.OnNearbyProcessStopped();
 
   // Invoking OnEndpointFound will do nothing.
@@ -867,4 +868,44 @@ TEST_F(NearbyConnectionsManagerImplTest, StopAdvertising) {
 
   EXPECT_CALL(nearby_connections_, StopAdvertising);
   nearby_connections_manager_.StopAdvertising();
+}
+
+TEST_F(NearbyConnectionsManagerImplTest, ShutdownAdvertising) {
+  mojo::Remote<ConnectionLifecycleListener> listener_remote;
+  testing::NiceMock<MockIncomingConnectionListener>
+      incoming_connection_listener;
+  StartAdvertising(listener_remote, incoming_connection_listener);
+
+  EXPECT_CALL(nearby_connections_, StopAllEndpoints);
+  nearby_connections_manager_.Shutdown();
+}
+
+TEST_F(NearbyConnectionsManagerImplTest, ShutdownDiscoveryConnectionFails) {
+  mojo::Remote<EndpointDiscoveryListener> discovery_listener_remote;
+  testing::NiceMock<MockDiscoveryListener> discovery_listener;
+  StartDiscovery(discovery_listener_remote, discovery_listener);
+
+  EXPECT_CALL(nearby_connections_, StopAllEndpoints);
+  nearby_connections_manager_.Shutdown();
+
+  // RequestConnection will fail.
+  const std::vector<uint8_t> local_endpoint_info(std::begin(kEndpointInfo),
+                                                 std::end(kEndpointInfo));
+  base::RunLoop run_loop;
+  NearbyConnection* nearby_connection;
+  nearby_connections_manager_.Connect(
+      local_endpoint_info, kRemoteEndpointId,
+      /*bluetooth_mac_address=*/base::nullopt, DataUsage::kOffline,
+      base::BindLambdaForTesting([&](NearbyConnection* connection) {
+        nearby_connection = connection;
+        run_loop.Quit();
+      }));
+
+  EXPECT_FALSE(nearby_connection);
+}
+
+TEST_F(NearbyConnectionsManagerImplTest,
+       ShutdownBeforeStartDiscoveryOrAdvertising) {
+  EXPECT_CALL(nearby_connections_, StopAllEndpoints).Times(0);
+  nearby_connections_manager_.Shutdown();
 }

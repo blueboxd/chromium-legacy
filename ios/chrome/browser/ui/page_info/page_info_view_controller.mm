@@ -5,12 +5,10 @@
 #import "ios/chrome/browser/ui/page_info/page_info_view_controller.h"
 
 #include "base/mac/foundation_util.h"
-#include "components/content_settings/core/common/features.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/page_info/features.h"
 #import "ios/chrome/browser/ui/page_info/page_info_constants.h"
-#import "ios/chrome/browser/ui/page_info/page_info_cookies_commands.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_cell.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_detail_icon_item.h"
@@ -18,7 +16,6 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_link_item.h"
-#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -32,20 +29,15 @@ namespace {
 
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierSecurityContent = kSectionIdentifierEnumZero,
-  SectionIdentifierCookiesContent
 };
 
 typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeSecurityHeader = kItemTypeEnumZero,
   ItemTypeSecurityDescription,
-  ItemTypeCookiesHeader,
-  ITemTypeCookiesFooter,
 };
 
 // The vertical padding between the navigation bar and the Security header.
 float kPaddingSecurityHeader = 28.0f;
-// The vertical padding between the Security section and the Cookies section.
-float kPaddingCookiesHeader = 0.0f;
 
 }  // namespace
 
@@ -53,7 +45,6 @@ float kPaddingCookiesHeader = 0.0f;
 
 @property(nonatomic, strong)
     PageInfoSiteSecurityDescription* pageInfoSecurityDescription;
-@property(nonatomic, strong) CookiesStatusDescription* cookiesDescription;
 
 @end
 
@@ -62,13 +53,10 @@ float kPaddingCookiesHeader = 0.0f;
 #pragma mark - UIViewController
 
 - (instancetype)initWithSiteSecurityDescription:
-                    (PageInfoSiteSecurityDescription*)siteSecurityDescription
-                             cookiesDescription:
-                                 (CookiesStatusDescription*)cookiesDescription {
+    (PageInfoSiteSecurityDescription*)siteSecurityDescription {
   self = [super initWithStyle:UITableViewStylePlain];
   if (self) {
     _pageInfoSecurityDescription = siteSecurityDescription;
-    _cookiesDescription = cookiesDescription;
   }
   return self;
 }
@@ -106,8 +94,6 @@ float kPaddingCookiesHeader = 0.0f;
 
   [self.tableViewModel
       addSectionWithIdentifier:SectionIdentifierSecurityContent];
-  [self.tableViewModel
-      addSectionWithIdentifier:SectionIdentifierCookiesContent];
 
   TableViewDetailIconItem* securityHeader =
       [[TableViewDetailIconItem alloc] initWithType:ItemTypeSecurityHeader];
@@ -123,39 +109,13 @@ float kPaddingCookiesHeader = 0.0f;
   securityDescription.linkURL = GURL(kPageInfoHelpCenterURL);
   [self.tableViewModel addItem:securityDescription
        toSectionWithIdentifier:SectionIdentifierSecurityContent];
-
-  if (base::FeatureList::IsEnabled(content_settings::kImprovedCookieControls))
-    [self loadCookiesModel];
-}
-
-#pragma mark - Private
-
-// Adds Items to the tableView related to Cookies Settings.
-- (void)loadCookiesModel {
-  TableViewDetailIconItem* cookiesHeader =
-      [[TableViewDetailIconItem alloc] initWithType:ItemTypeCookiesHeader];
-  cookiesHeader.text = l10n_util::GetNSString(IDS_IOS_PAGE_INFO_COOKIES_HEADER);
-  cookiesHeader.detailText = self.cookiesDescription.headerDescription;
-  cookiesHeader.iconImageName = @"cookies_icon";
-  [self.tableViewModel addItem:cookiesHeader
-       toSectionWithIdentifier:SectionIdentifierCookiesContent];
-
-  TableViewTextLinkItem* cookiesFooter =
-      [[TableViewTextLinkItem alloc] initWithType:ITemTypeCookiesFooter];
-  cookiesFooter.text = self.cookiesDescription.footerDescription;
-  cookiesFooter.linkURL = GURL(kChromeUICookiesSettingsURL);
-  [self.tableViewModel addItem:cookiesFooter
-       toSectionWithIdentifier:SectionIdentifierCookiesContent];
 }
 
 #pragma mark - UITableViewDelegate
 
 - (CGFloat)tableView:(UITableView*)tableView
     heightForHeaderInSection:(NSInteger)section {
-  if ([self.tableViewModel sectionIdentifierForSection:section] ==
-      SectionIdentifierSecurityContent)
-    return kPaddingSecurityHeader;
-  return kPaddingCookiesHeader;
+  return kPaddingSecurityHeader;
 }
 
 #pragma mark - UITableViewDataSource
@@ -166,8 +126,7 @@ float kPaddingCookiesHeader = 0.0f;
                              cellForRowAtIndexPath:indexPath];
   TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
 
-  if (item.type == ItemTypeSecurityDescription ||
-      item.type == ITemTypeCookiesFooter) {
+  if (item.type == ItemTypeSecurityDescription) {
     TableViewTextLinkCell* tableViewTextLinkCell =
         base::mac::ObjCCastStrict<TableViewTextLinkCell>(cellToReturn);
     tableViewTextLinkCell.delegate = self;
@@ -180,35 +139,8 @@ float kPaddingCookiesHeader = 0.0f;
 
 - (void)tableViewTextLinkCell:(TableViewTextLinkCell*)cell
             didRequestOpenURL:(const GURL&)URL {
-  if (URL == GURL(kPageInfoHelpCenterURL))
-    [self.handler showSecurityHelpPage];
-  if (URL == GURL(kChromeUICookiesSettingsURL))
-    [self.handler showCookiesSettingsPage];
-}
-
-#pragma mark - PageInfoCookiesConsumer
-
-- (void)cookiesOptionChangedToDescription:
-    (CookiesStatusDescription*)description {
-  // Update the Cookies Header.
-  NSIndexPath* headerPath = [self.tableViewModel
-      indexPathForItemType:ItemTypeCookiesHeader
-         sectionIdentifier:SectionIdentifierCookiesContent];
-  TableViewDetailIconItem* cookiesHeader =
-      base::mac::ObjCCastStrict<TableViewDetailIconItem>(
-          [self.tableViewModel itemAtIndexPath:headerPath]);
-  cookiesHeader.detailText = description.headerDescription;
-
-  // Update the Cookies footer.
-  NSIndexPath* footerPath = [self.tableViewModel
-      indexPathForItemType:ITemTypeCookiesFooter
-         sectionIdentifier:SectionIdentifierCookiesContent];
-  TableViewTextLinkItem* cookiesFooter =
-      base::mac::ObjCCastStrict<TableViewTextLinkItem>(
-          [self.tableViewModel itemAtIndexPath:footerPath]);
-  cookiesFooter.text = description.footerDescription;
-
-  [self reconfigureCellsForItems:@[ cookiesHeader, cookiesFooter ]];
+  DCHECK(URL == GURL(kPageInfoHelpCenterURL));
+  [self.handler showSecurityHelpPage];
 }
 
 @end

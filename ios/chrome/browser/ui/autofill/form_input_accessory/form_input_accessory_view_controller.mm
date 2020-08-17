@@ -8,6 +8,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "components/autofill/core/common/autofill_features.h"
+#import "ios/chrome/browser/autofill/form_suggestion_client.h"
 #import "ios/chrome/browser/autofill/form_suggestion_view.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_view.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_accessory_view_controller.h"
@@ -189,11 +190,9 @@ CGFloat const kInputAccessoryHeight = 44.0f;
   }
 }
 
-- (void)showAccessorySuggestions:(NSArray<FormSuggestion*>*)suggestions
-                suggestionClient:(id<FormSuggestionClient>)suggestionClient {
+- (void)showAccessorySuggestions:(NSArray<FormSuggestion*>*)suggestions {
   [self createFormSuggestionViewIfNeeded];
-  [self.formSuggestionView updateClient:suggestionClient
-                            suggestions:suggestions];
+  [self.formSuggestionView updateSuggestions:suggestions];
   [self addInputAccessoryViewIfNeeded];
 }
 
@@ -361,6 +360,11 @@ CGFloat const kInputAccessoryHeight = 44.0f;
 }
 
 #pragma mark - FormSuggestionViewDelegate
+
+- (void)formSuggestionView:(FormSuggestionView*)formSuggestionView
+       didAcceptSuggestion:(FormSuggestion*)suggestion {
+  [self.formSuggestionClient didSelectSuggestion:suggestion];
+}
 
 - (void)formSuggestionViewShouldResetFromPull:
     (FormSuggestionView*)formSuggestionView {

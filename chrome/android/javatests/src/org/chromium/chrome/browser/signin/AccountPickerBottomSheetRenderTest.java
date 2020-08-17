@@ -10,6 +10,8 @@ import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.mockito.MockitoAnnotations.initMocks;
 
+import android.view.View;
+
 import androidx.test.filters.MediumTest;
 
 import org.junit.AfterClass;
@@ -121,6 +123,32 @@ public class AccountPickerBottomSheetRenderTest {
         buildAndShowCollapsedBottomSheet();
         onView(withText(PROFILE_DATA1.getFullName())).perform(click());
         mRenderTestRule.render(mCoordinator.getBottomSheetViewForTesting(), "expanded_sheet");
+    }
+
+    @Test
+    @MediumTest
+    @Feature("RenderTest")
+    @ParameterAnnotations.UseMethodParameter(NightModeTestUtils.NightModeParams.class)
+    public void testSignInInProgressView(boolean nightModeEnabled) throws IOException {
+        mAccountManagerTestRule.addAccount(PROFILE_DATA1);
+        buildAndShowCollapsedBottomSheet();
+        View bottomSheetView = mCoordinator.getBottomSheetViewForTesting();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            bottomSheetView.findViewById(R.id.account_picker_continue_as_button).performClick();
+        });
+        CriteriaHelper.pollUiThread(
+                bottomSheetView.findViewById(R.id.account_picker_signin_spinner_view)::isShown);
+        // Currently the ProgressBar animation cannot be disabled on android-marshmallow-arm64-rel
+        // bot with DisableAnimationsTestRule, we hide the ProgressBar manually here to enable
+        // checks of other elements on the screen.
+        // TODO(https://crbug.com/1115067): Delete this line and use DisableAnimationsTestRule
+        //  once DisableAnimationsTestRule is fixed.
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            bottomSheetView.findViewById(R.id.account_picker_signin_spinner_view)
+                    .setVisibility(View.INVISIBLE);
+        });
+        mRenderTestRule.render(
+                mCoordinator.getBottomSheetViewForTesting(), "signin_in_progress_sheet");
     }
 
     private void buildAndShowCollapsedBottomSheet() {

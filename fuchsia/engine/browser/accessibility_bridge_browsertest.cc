@@ -45,7 +45,7 @@ fuchsia::math::PointF GetCenterOfBox(fuchsia::ui::gfx::BoundingBox box) {
 
 class AccessibilityBridgeTest : public cr_fuchsia::WebEngineBrowserTest {
  public:
-  AccessibilityBridgeTest() : semantics_manager_binding_(&semantics_manager_) {
+  AccessibilityBridgeTest() {
     cr_fuchsia::WebEngineBrowserTest::set_test_server_root(
         base::FilePath(cr_fuchsia::kTestServerRoot));
   }
@@ -64,15 +64,10 @@ class AccessibilityBridgeTest : public cr_fuchsia::WebEngineBrowserTest {
   }
 
   void SetUpOnMainThread() override {
-    fuchsia::accessibility::semantics::SemanticsManagerPtr
-        semantics_manager_ptr;
-    semantics_manager_binding_.Bind(semantics_manager_ptr.NewRequest());
-
     frame_ptr_ =
         cr_fuchsia::WebEngineBrowserTest::CreateFrame(&navigation_listener_);
     frame_impl_ = context_impl()->GetFrameImplForTest(&frame_ptr_);
-    frame_impl_->set_semantics_manager_for_test(
-        std::move(semantics_manager_ptr));
+    frame_impl_->set_semantics_manager_for_test(&semantics_manager_);
     frame_ptr_->EnableHeadlessRendering();
 
     semantics_manager_.WaitUntilViewRegistered();
@@ -88,8 +83,6 @@ class AccessibilityBridgeTest : public cr_fuchsia::WebEngineBrowserTest {
   fuchsia::web::FramePtr frame_ptr_;
   FrameImpl* frame_impl_;
   FakeSemanticsManager semantics_manager_;
-  fidl::Binding<fuchsia::accessibility::semantics::SemanticsManager>
-      semantics_manager_binding_;
   cr_fuchsia::TestNavigationListener navigation_listener_;
   fuchsia::web::NavigationControllerPtr navigation_controller_;
 };

@@ -346,12 +346,6 @@
           '--debug',
         ],
       },
-      'linux-blink-cors-rel': {
-        'args': [
-          '--additional-driver-flag=--disable-features=OutOfBlinkCors',
-          '--additional-expectations=../../third_party/blink/web_tests/FlagExpectations/disable-features=OutOfBlinkCors',
-        ],
-      },
       'linux-blink-heap-concurrent-marking-tsan-rel': {
         'args': [
           '--release',

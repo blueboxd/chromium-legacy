@@ -274,7 +274,8 @@ TEST_F(SharedPasswordControllerTest, ReturnsSuggestionsIfAvailable) {
       [FormSuggestion suggestionWithValue:@"value"
                        displayDescription:@"display-description"
                                      icon:@"icon"
-                               identifier:0];
+                               identifier:0
+                           requiresReauth:NO];
   [[[suggestion_helper_ expect] andReturn:@[ suggestion ]]
       retrieveSuggestionsWithFormID:form_query.uniqueFormID
                     fieldIdentifier:form_query.uniqueFieldID
@@ -347,7 +348,8 @@ TEST_F(SharedPasswordControllerTest, SuggestsGeneratedPassword) {
       suggestionWithValue:@"test-value"
        displayDescription:@"test-description"
                      icon:nil
-               identifier:autofill::POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY];
+               identifier:autofill::POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY
+           requiresReauth:NO];
 
   [[delegate_ expect] sharedPasswordController:controller_
                 showGeneratedPotentialPassword:[OCMArg isNotNil]
@@ -376,7 +378,8 @@ TEST_F(SharedPasswordControllerTest, PresavesGeneratedPassword) {
       suggestionWithValue:@"test-value"
        displayDescription:@"test-description"
                      icon:nil
-               identifier:autofill::POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY];
+               identifier:autofill::POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY
+           requiresReauth:NO];
 
   id decision_handler_arg =
       [OCMArg checkWithBlock:^(void (^decision_handler)(BOOL)) {

@@ -1356,6 +1356,13 @@ Portal* RenderFrameHostImpl::FindPortalByToken(
   return it == portals_.end() ? nullptr : it->get();
 }
 
+std::vector<Portal*> RenderFrameHostImpl::GetPortals() const {
+  std::vector<Portal*> result;
+  for (const auto& portal : portals_)
+    result.push_back(portal.get());
+  return result;
+}
+
 void RenderFrameHostImpl::DestroyPortal(Portal* portal) {
   auto it = portals_.find(portal);
   CHECK(it != portals_.end());

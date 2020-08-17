@@ -708,12 +708,12 @@ TEST(MockUnitTests, DISABLED_FailTest) {
 TEST(MockUnitTests, DISABLED_CrashTest) {
   IMMEDIATE_CRASH();
 }
-// Basic test will not be reached with default batch size.
+// Basic test will not be reached, due to the preceding crash in the same batch.
 TEST(MockUnitTests, DISABLED_NoRunTest) {
   ASSERT_TRUE(true);
 }
 
-// Using TestLauncher to launch 3 simple unitests
+// Using TestLauncher to launch 3 basic unitests
 // and validate the resulting json file.
 TEST_F(UnitTestLauncherDelegateTester, RunMockTests) {
   CommandLine command_line(CommandLine::ForCurrentProcess()->GetProgram());

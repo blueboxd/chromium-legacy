@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/nearby_sharing/local_device_data/nearby_share_local_device_data_manager_impl.h"
 #include "chrome/browser/nearby_sharing/logging/logging.h"
 #include "chrome/browser/nearby_sharing/nearby_connections_manager.h"
+#include "chrome/browser/nearby_sharing/paired_key_verification_runner.h"
 #include "chrome/browser/nearby_sharing/transfer_metadata_builder.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -42,6 +44,10 @@ constexpr base::TimeDelta kIncomingRejectionDelay =
 constexpr base::TimeDelta kInvalidateDelay =
     base::TimeDelta::FromMilliseconds(500);
 
+// Used to hash a token into a 4 digit string.
+constexpr int kHashModulo = 9973;
+constexpr int kHashBaseMultiplier = 31;
+
 std::string ReceiveSurfaceStateToString(
     NearbySharingService::ReceiveSurfaceState state) {
   switch (state) {
@@ -50,19 +56,6 @@ std::string ReceiveSurfaceStateToString(
     case NearbySharingService::ReceiveSurfaceState::kBackground:
       return "BACKGROUND";
     case NearbySharingService::ReceiveSurfaceState::kUnknown:
-      return "UNKNOWN";
-  }
-}
-
-std::string DataUsageToString(DataUsage usage) {
-  switch (usage) {
-    case DataUsage::kOffline:
-      return "OFFLINE";
-    case DataUsage::kOnline:
-      return "ONLINE";
-    case DataUsage::kWifiOnly:
-      return "WIFI_ONLY";
-    case DataUsage::kUnknown:
       return "UNKNOWN";
   }
 }
@@ -77,55 +70,6 @@ std::string PowerLevelToString(PowerLevel level) {
       return "HIGH_POWER";
     case PowerLevel::kUnknown:
       return "UNKNOWN";
-  }
-}
-
-std::string VisibilityToString(Visibility visibility) {
-  switch (visibility) {
-    case Visibility::kNoOne:
-      return "NO_ONE";
-    case Visibility::kAllContacts:
-      return "ALL_CONTACTS";
-    case Visibility::kSelectedContacts:
-      return "SELECTED_CONTACTS";
-    case Visibility::kUnknown:
-      return "UNKNOWN";
-  }
-}
-
-std::string ConnectionsStatusToString(
-    NearbyConnectionsManager::ConnectionsStatus status) {
-  switch (status) {
-    case NearbyConnectionsManager::ConnectionsStatus::kSuccess:
-      return "SUCCESS";
-    case NearbyConnectionsManager::ConnectionsStatus::kError:
-      return "ERROR";
-    case NearbyConnectionsManager::ConnectionsStatus::kOutOfOrderApiCall:
-      return "OUT_OF_ORDER_API_CALL";
-    case NearbyConnectionsManager::ConnectionsStatus::
-        kAlreadyHaveActiveStrategy:
-      return "ALREADY_HAVE_ACTIVE_STRATEGY";
-    case NearbyConnectionsManager::ConnectionsStatus::kAlreadyAdvertising:
-      return "ALREADY_ADVERTISING";
-    case NearbyConnectionsManager::ConnectionsStatus::kAlreadyDiscovering:
-      return "ALREADY_DISCOVERING";
-    case NearbyConnectionsManager::ConnectionsStatus::kEndpointIOError:
-      return "ENDPOINT_IO_ERROR";
-    case NearbyConnectionsManager::ConnectionsStatus::kEndpointUnknown:
-      return "ENDPOINT_UNKNOWN";
-    case NearbyConnectionsManager::ConnectionsStatus::kConnectionRejected:
-      return "CONNECTION_REJECTED";
-    case NearbyConnectionsManager::ConnectionsStatus::
-        kAlreadyConnectedToEndpoint:
-      return "ALREADY_CONNECTED_TO_ENDPOINT";
-    case NearbyConnectionsManager::ConnectionsStatus::kNotConnectedToEndpoint:
-      return "NOT_CONNECTED_TO_ENDPOINT";
-    case NearbyConnectionsManager::ConnectionsStatus::kBluetoothError:
-      return "BLUETOOTH_ERROR";
-    case NearbyConnectionsManager::ConnectionsStatus::kWifiLanError:
-      return "WIFI_LAN_ERROR";
-    case NearbyConnectionsManager::ConnectionsStatus::kPayloadUnknown:
-      return "PAYLOAD_UNKNOWN";
   }
 }
 
@@ -153,6 +97,17 @@ std::string GetDeviceId(
     return endpoint_id;
 
   return std::string(certificate->id().begin(), certificate->id().end());
+}
+
+std::string ToFourDigitString(const std::vector<uint8_t>& bytes) {
+  int hash = 0;
+  int multiplier = 1;
+  for (auto byte : bytes) {
+    hash = (hash + byte * multiplier) % kHashModulo;
+    multiplier = (multiplier * kHashBaseMultiplier) % kHashModulo;
+  }
+
+  return base::StringPrintf("%04d", std::abs(hash));
 }
 
 }  // namespace
@@ -518,12 +473,23 @@ void NearbySharingServiceImpl::OnIncomingConnection(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(connection);
 
+  ShareTarget placeholder_share_target;
+  auto& share_target_info =
+      GetIncomingShareTargetInfo(placeholder_share_target);
+  share_target_info.set_connection(connection);
+  share_target_info.set_endpoint_id(endpoint_id);
+
+  connection->SetDisconnectionListener(
+      base::BindOnce(&NearbySharingServiceImpl::RefreshUIOnDisconnection,
+                     weak_ptr_factory_.GetWeakPtr(), placeholder_share_target));
+
   process_manager_->GetOrStartNearbySharingDecoder(profile_)
       ->DecodeAdvertisement(
           endpoint_info,
           base::BindOnce(
               &NearbySharingServiceImpl::OnIncomingAdvertisementDecoded,
-              weak_ptr_factory_.GetWeakPtr(), endpoint_id, connection));
+              weak_ptr_factory_.GetWeakPtr(), endpoint_id,
+              std::move(placeholder_share_target)));
 }
 
 void NearbySharingServiceImpl::OnEndpointDiscovered(
@@ -700,7 +666,7 @@ bool NearbySharingServiceImpl::IsVisibleInBackground(Visibility visibility) {
 void NearbySharingServiceImpl::OnVisibilityChanged(Visibility new_visibility) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   NS_LOG(VERBOSE) << __func__ << ": Nearby sharing visibility changed to "
-                  << VisibilityToString(new_visibility);
+                  << new_visibility;
   if (advertising_power_level_ != PowerLevel::kUnknown)
     StopAdvertising();
 
@@ -710,7 +676,7 @@ void NearbySharingServiceImpl::OnVisibilityChanged(Visibility new_visibility) {
 void NearbySharingServiceImpl::OnDataUsageChanged(DataUsage data_usage) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   NS_LOG(VERBOSE) << __func__ << ": Nearby sharing data usage changed to "
-                  << DataUsageToString(data_usage);
+                  << data_usage;
 
   if (advertising_power_level_ != PowerLevel::kUnknown)
     StopAdvertising();
@@ -955,15 +921,14 @@ void NearbySharingServiceImpl::InvalidateAdvertisingState() {
           << ": Failed to advertise because we're already advertising with "
              "power level "
           << PowerLevelToString(advertising_power_level_)
-          << " and data usage preference " << DataUsageToString(data_usage);
+          << " and data usage preference " << data_usage;
       return;
     }
 
     StopAdvertising();
     NS_LOG(VERBOSE) << __func__ << ": Restart advertising with power level "
                     << PowerLevelToString(power_level)
-                    << " and data usage preference "
-                    << DataUsageToString(data_usage);
+                    << " and data usage preference " << data_usage;
   }
 
   base::Optional<std::string> device_name;
@@ -988,16 +953,15 @@ void NearbySharingServiceImpl::InvalidateAdvertisingState() {
         NS_LOG(VERBOSE)
             << __func__
             << ": Advertising attempted over Nearby Connections with result "
-            << ConnectionsStatusToString(status);
+            << status;
       }));
 
   advertising_power_level_ = power_level;
   NS_LOG(VERBOSE) << __func__
                   << ": Advertising has started over Nearby Connections: "
                   << " power level " << PowerLevelToString(power_level)
-                  << " visibility "
-                  << VisibilityToString(settings_.GetVisibility())
-                  << " data usage " << DataUsageToString(data_usage);
+                  << " visibility " << settings_.GetVisibility()
+                  << " data usage " << data_usage;
   return;
 }
 
@@ -1113,7 +1077,7 @@ void NearbySharingServiceImpl::StartScanning() {
         NS_LOG(VERBOSE) << __func__
                         << ": Scanning start attempted over Nearby Connections "
                            "with result "
-                        << ConnectionsStatusToString(status);
+                        << status;
       }));
 
   InvalidateSendSurfaceState();
@@ -1323,8 +1287,16 @@ void NearbySharingServiceImpl::CloseConnection(
 
 void NearbySharingServiceImpl::OnIncomingAdvertisementDecoded(
     const std::string& endpoint_id,
-    NearbyConnection* connection,
+    ShareTarget placeholder_share_target,
     sharing::mojom::AdvertisementPtr advertisement) {
+  NearbyConnection* connection =
+      GetIncomingConnection(placeholder_share_target);
+  if (!connection) {
+    NS_LOG(VERBOSE) << __func__ << ": Invalid connection for endoint id - "
+                    << endpoint_id;
+    return;
+  }
+
   if (!advertisement) {
     NS_LOG(VERBOSE) << __func__
                     << "Failed to parse incoming connection from endpoint - "
@@ -1338,15 +1310,28 @@ void NearbySharingServiceImpl::OnIncomingAdvertisementDecoded(
   GetCertificateManager()->GetDecryptedPublicCertificate(
       std::move(encrypted_metadata_key),
       base::BindOnce(&NearbySharingServiceImpl::OnIncomingDecryptedCertificate,
-                     weak_ptr_factory_.GetWeakPtr(), endpoint_id, connection,
-                     std::move(advertisement)));
+                     weak_ptr_factory_.GetWeakPtr(), endpoint_id,
+                     std::move(advertisement),
+                     std::move(placeholder_share_target)));
 }
 
 void NearbySharingServiceImpl::OnIncomingDecryptedCertificate(
     const std::string& endpoint_id,
-    NearbyConnection* connection,
     sharing::mojom::AdvertisementPtr advertisement,
+    ShareTarget placeholder_share_target,
     base::Optional<NearbyShareDecryptedPublicCertificate> certificate) {
+  NearbyConnection* connection =
+      GetIncomingConnection(placeholder_share_target);
+  if (!connection) {
+    NS_LOG(VERBOSE) << __func__ << ": Invalid connection for endpoint id - "
+                    << endpoint_id;
+    return;
+  }
+
+  // Remove placeholder share target since we are creating the actual share
+  // target below.
+  incoming_share_target_info_map_.erase(placeholder_share_target.id);
+
   base::Optional<ShareTarget> share_target = CreateShareTarget(
       endpoint_id, advertisement, std::move(certificate), /*is_incoming=*/true);
 
@@ -1369,10 +1354,98 @@ void NearbySharingServiceImpl::OnIncomingDecryptedCertificate(
   connection->SetDisconnectionListener(
       base::BindOnce(&NearbySharingServiceImpl::UnregisterShareTarget,
                      weak_ptr_factory_.GetWeakPtr(), *share_target));
+  base::Optional<std::vector<uint8_t>> token =
+      nearby_connections_manager_->GetRawAuthenticationToken(endpoint_id);
+  if (!token) {
+    NS_LOG(VERBOSE) << __func__
+                    << ": Failed to read authentication token from endpoint - "
+                    << endpoint_id;
+    OnIncomingConnectionKeyVerificationDone(
+        std::move(*share_target), std::move(token),
+        PairedKeyVerificationRunner::PairedKeyVerificationResult::kFail);
+    return;
+  }
 
-  // TODO(himanshujaju) - Implement RunPairedKeyVerification.
+  share_target_info.set_frames_reader(std::make_unique<IncomingFramesReader>(
+      process_manager_, profile_, connection));
 
-  ReceiveIntroduction(std::move(*share_target), /*token=*/base::nullopt);
+  bool restrict_to_contacts =
+      advertising_power_level_ != PowerLevel::kHighPower;
+  share_target_info.set_key_verification_runner(
+      std::make_unique<PairedKeyVerificationRunner>(
+          *share_target, endpoint_id, *token, connection,
+          share_target_info.certificate(), GetCertificateManager(),
+          settings_.GetVisibility(), restrict_to_contacts,
+          share_target_info.frames_reader(), kReadFramesTimeout));
+  share_target_info.key_verification_runner()->Run(base::BindOnce(
+      &NearbySharingServiceImpl::OnIncomingConnectionKeyVerificationDone,
+      weak_ptr_factory_.GetWeakPtr(), std::move(*share_target),
+      std::move(token)));
+}
+
+void NearbySharingServiceImpl::OnIncomingConnectionKeyVerificationDone(
+    ShareTarget share_target,
+    base::Optional<std::vector<uint8_t>> token,
+    PairedKeyVerificationRunner::PairedKeyVerificationResult result) {
+  NearbyConnection* connection = GetIncomingConnection(share_target);
+  const base::Optional<std::string>& endpoint_id =
+      GetIncomingShareTargetInfo(share_target).endpoint_id();
+  if (!connection || !endpoint_id) {
+    NS_LOG(VERBOSE) << __func__ << ": Invalid connection or endpoint id";
+    return;
+  }
+
+  base::Optional<std::string> token_string;
+  if (token)
+    token_string = ToFourDigitString(*token);
+
+  switch (result) {
+    case PairedKeyVerificationRunner::PairedKeyVerificationResult::kFail:
+      NS_LOG(VERBOSE) << __func__
+                      << ": Paired key handshake failed, disconnecting.";
+      connection->Close();
+      return;
+
+    case PairedKeyVerificationRunner::PairedKeyVerificationResult::kSuccess:
+      NS_LOG(VERBOSE) << __func__
+                      << ": Paired key handshake succeeded for target - "
+                      << share_target.device_name;
+      nearby_connections_manager_->UpgradeBandwidth(*endpoint_id);
+      ReceiveIntroduction(share_target, /*token=*/base::nullopt);
+      break;
+
+    case PairedKeyVerificationRunner::PairedKeyVerificationResult::kUnable:
+      NS_LOG(VERBOSE) << __func__
+                      << ": Unable to verify paired key encryption when "
+                         "receiving connection from target - "
+                      << share_target.device_name;
+      if (advertising_power_level_ == PowerLevel::kHighPower)
+        nearby_connections_manager_->UpgradeBandwidth(*endpoint_id);
+
+      if (token_string)
+        GetIncomingShareTargetInfo(share_target).set_token(*token_string);
+
+      ReceiveIntroduction(share_target, std::move(token_string));
+      break;
+
+    case PairedKeyVerificationRunner::PairedKeyVerificationResult::kUnknown:
+      NS_LOG(VERBOSE)
+          << __func__
+          << ": Unknown PairedKeyVerificationResult, disconnecting.";
+      connection->Close();
+      break;
+  }
+}
+
+void NearbySharingServiceImpl::RefreshUIOnDisconnection(
+    ShareTarget share_target) {
+  OnIncomingTransferUpdate(
+      share_target,
+      TransferMetadataBuilder()
+          .set_status(TransferMetadata::Status::kAwaitingRemoteAcceptanceFailed)
+          .build());
+
+  UnregisterShareTarget(share_target);
 }
 
 void NearbySharingServiceImpl::ReceiveIntroduction(
@@ -1390,8 +1463,6 @@ void NearbySharingServiceImpl::ReceiveIntroduction(
   }
 
   auto& share_target_info = GetIncomingShareTargetInfo(share_target);
-  share_target_info.set_frames_reader(std::make_unique<IncomingFramesReader>(
-      process_manager_, profile_, connection));
   share_target_info.frames_reader()->ReadFrame(
       sharing::mojom::V1Frame::Tag::INTRODUCTION,
       base::BindOnce(&NearbySharingServiceImpl::OnReceivedIntroduction,
@@ -1490,6 +1561,7 @@ void NearbySharingServiceImpl::OnReceivedIntroduction(
       share_target,
       TransferMetadataBuilder()
           .set_status(TransferMetadata::Status::kAwaitingLocalConfirmation)
+          .set_token(std::move(token))
           .build());
 
   if (!incoming_share_target_info_map_.count(share_target.id)) {
@@ -1670,6 +1742,9 @@ void NearbySharingServiceImpl::ClearOutgoingShareTargetInfoMap() {
 
 void NearbySharingServiceImpl::UnregisterShareTarget(
     const ShareTarget& share_target) {
+  NS_LOG(VERBOSE) << __func__ << ": Unregistering share target - "
+                  << share_target.device_name;
+
   if (share_target.is_incoming) {
     incoming_share_target_info_map_.erase(share_target.id);
     // Clear legacy incoming payloads to release resource

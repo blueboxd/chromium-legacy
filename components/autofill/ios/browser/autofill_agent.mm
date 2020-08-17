@@ -540,7 +540,8 @@ autofillManagerFromWebState:(web::WebState*)webState
         suggestionWithValue:value
          displayDescription:displayDescription
                        icon:base::SysUTF8ToNSString(popup_suggestion.icon)
-                 identifier:popup_suggestion.frontend_id];
+                 identifier:popup_suggestion.frontend_id
+             requiresReauth:NO];
 
     // Put "clear form" entry at the front of the suggestions.
     if (popup_suggestion.frontend_id == autofill::POPUP_ITEM_ID_CLEAR_FORM) {

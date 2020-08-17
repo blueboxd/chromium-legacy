@@ -3718,7 +3718,9 @@ files-toast {
 
 .file-type-filter-button {
   align-items: center;
-  border: 1px solid rgba(0, 0, 0, 15%);
+  /* don't use browser's default <button> background-color. */
+  background-color: unset;
+  border: 1px solid rgba(0, 0, 0, 10%);
   border-radius: 20px;
   box-sizing: border-box;
   color: var(--google-grey-700);
@@ -3728,13 +3730,44 @@ files-toast {
   height: 32px;
   margin-inline-end: 3px;
   margin-inline-start: 3px;
+  outline: none;
   padding: 0 10px;
 }
 
 .file-type-filter-button.active {
-  background-color: var(--google-blue-50);
+  background-color: rgba(var(--google-blue-600-rgb), 6%);
   border: 1px solid transparent;
   color: var(--google-blue-600);
+}
+
+.file-type-filter-button:not(:active):hover {
+  background-color: rgba(0, 0, 0, 4%);
+}
+
+.file-type-filter-button.active:not(:active):hover {
+  background-color: rgba(var(--google-blue-600-rgb), 10%);
+}
+
+html.pointer-active .file-type-filter-button:not(:active):hover {
+  background-color: unset;
+  cursor: default;
+}
+
+html.pointer-active .file-type-filter-button.active:not(:active):hover {
+  background-color: rgba(var(--google-blue-600-rgb), 6%);
+  cursor: default;
+}
+
+html.focus-outline-visible .file-type-filter-button:focus {
+  border: 1px solid var(--google-blue-600);
+}
+
+.file-type-filter-button:active {
+  background-color: rgba(0, 0, 0, 12%);
+}
+
+.file-type-filter-button.active:active {
+  background-color: rgba(var(--google-blue-600-rgb), 16%);
 }
 
 /*

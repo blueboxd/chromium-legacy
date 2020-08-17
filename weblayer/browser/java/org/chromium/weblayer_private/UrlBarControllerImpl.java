@@ -81,8 +81,8 @@ public class UrlBarControllerImpl extends IUrlBarController.Stub {
 
     @Override
     public IObjectWrapper /* View */ createUrlBarView(Bundle options,
-            @Nullable IObjectWrapper /* OnLongClickListener */ textClickListener,
-            @Nullable IObjectWrapper /* OnLongClickListener */ textLongClickListener) {
+            @Nullable IObjectWrapper /* OnLongClickListener */ clickListener,
+            @Nullable IObjectWrapper /* OnLongClickListener */ longClickListener) {
         StrictModeWorkaround.apply();
         if (mBrowserImpl == null) {
             throw new IllegalStateException("UrlBarView cannot be created without a valid Browser");
@@ -90,8 +90,7 @@ public class UrlBarControllerImpl extends IUrlBarController.Stub {
         Context context = mBrowserImpl.getContext();
         if (context == null) throw new IllegalStateException("BrowserFragment not attached yet.");
 
-        UrlBarView urlBarView =
-                new UrlBarView(context, options, textClickListener, textLongClickListener);
+        UrlBarView urlBarView = new UrlBarView(context, options, clickListener, longClickListener);
         return ObjectWrapper.wrap(urlBarView);
     }
 
@@ -107,12 +106,12 @@ public class UrlBarControllerImpl extends IUrlBarController.Stub {
         private TextView mUrlTextView;
         private ImageButton mSecurityButton;
         private final SecurityButtonAnimationDelegate mSecurityButtonAnimationDelegate;
-        OnClickListener mTextClickListener;
-        OnLongClickListener mTextLongClickListener;
+        OnClickListener mUrlBarClickListener;
+        OnLongClickListener mUrlBarLongClickListener;
 
         public UrlBarView(@NonNull Context context, @NonNull Bundle options,
-                @Nullable IObjectWrapper /* OnClickListener */ textClickListener,
-                @Nullable IObjectWrapper /* OnLongClickListener */ textLongClickListener) {
+                @Nullable IObjectWrapper /* OnClickListener */ clickListener,
+                @Nullable IObjectWrapper /* OnLongClickListener */ longClickListener) {
             super(context);
             setGravity(Gravity.CENTER_HORIZONTAL);
 
@@ -129,9 +128,9 @@ public class UrlBarControllerImpl extends IUrlBarController.Stub {
             mSecurityButton = (ImageButton) findViewById(R.id.security_button);
             mSecurityButtonAnimationDelegate = new SecurityButtonAnimationDelegate(
                     mSecurityButton, mUrlTextView, R.dimen.security_status_icon_size);
-            mTextClickListener = ObjectWrapper.unwrap(textClickListener, OnClickListener.class);
-            mTextLongClickListener =
-                    ObjectWrapper.unwrap(textLongClickListener, OnLongClickListener.class);
+            mUrlBarClickListener = ObjectWrapper.unwrap(clickListener, OnClickListener.class);
+            mUrlBarLongClickListener =
+                    ObjectWrapper.unwrap(longClickListener, OnLongClickListener.class);
 
             updateView();
         }
@@ -182,19 +181,25 @@ public class UrlBarControllerImpl extends IUrlBarController.Stub {
                                 ContextCompat.getColor(embedderContext, mUrlIconColor)));
             }
 
-            mSecurityButton.setOnClickListener(v -> { showPageInfoUi(v); });
-
-            if (mTextClickListener != null) {
-                mUrlTextView.setOnClickListener(mTextClickListener);
-            }
-
             if (mShowPageInfoWhenUrlTextClicked) {
-                assert (mTextClickListener == null);
-                mUrlTextView.setOnClickListener(v -> { showPageInfoUi(v); });
-            }
+                // Set clicklisteners on the entire UrlBarView.
+                assert (mUrlBarClickListener == null);
+                mSecurityButton.setClickable(false);
+                setOnClickListener(v -> { showPageInfoUi(v); });
 
-            if (mTextLongClickListener != null) {
-                mUrlTextView.setOnLongClickListener(mTextLongClickListener);
+                if (mUrlBarLongClickListener != null) {
+                    setOnLongClickListener(mUrlBarLongClickListener);
+                }
+            } else {
+                // Set a clicklistener on the security status and TextView separately. This mode
+                // can be used to create an editable URL bar using WebLayer.
+                mSecurityButton.setOnClickListener(v -> { showPageInfoUi(v); });
+                if (mUrlBarClickListener != null) {
+                    mUrlTextView.setOnClickListener(mUrlBarClickListener);
+                }
+                if (mUrlBarLongClickListener != null) {
+                    mUrlTextView.setOnLongClickListener(mUrlBarLongClickListener);
+                }
             }
         }
 

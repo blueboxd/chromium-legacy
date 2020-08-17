@@ -20,7 +20,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SVG_SVG_TEXT_LAYOUT_ATTRIBUTES_BUILDER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SVG_SVG_TEXT_LAYOUT_ATTRIBUTES_BUILDER_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_character_data.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
@@ -46,6 +45,10 @@ class SVGTextLayoutAttributesBuilder {
 
  public:
   explicit SVGTextLayoutAttributesBuilder(LayoutSVGText&);
+  SVGTextLayoutAttributesBuilder(const SVGTextLayoutAttributesBuilder&) =
+      delete;
+  SVGTextLayoutAttributesBuilder& operator=(
+      const SVGTextLayoutAttributesBuilder&) = delete;
 
   void BuildLayoutAttributes();
 
@@ -75,8 +78,6 @@ class SVGTextLayoutAttributesBuilder {
   unsigned character_count_;
   HeapVector<TextPosition> text_positions_;
   SVGCharacterDataMap character_data_map_;
-
-  DISALLOW_COPY_AND_ASSIGN(SVGTextLayoutAttributesBuilder);
 };
 
 }  // namespace blink

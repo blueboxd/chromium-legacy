@@ -24,10 +24,9 @@ public class SiteDataCleaner {
         WebsitePreferenceBridgeJni.get().clearMediaLicenses(browserContextHandle, origin);
 
         // Clear the permissions.
-        for (@ContentSettingException.Type int type = 0;
-                type < ContentSettingException.Type.NUM_ENTRIES; type++) {
-            site.setContentSettingPermission(
-                    browserContextHandle, type, ContentSettingValues.DEFAULT);
+        for (ContentSettingException exception : site.getContentSettingExceptions()) {
+            site.setContentSettingPermission(browserContextHandle,
+                    exception.getContentSettingType(), ContentSettingValues.DEFAULT);
         }
         for (@PermissionInfo.Type int type = 0; type < PermissionInfo.Type.NUM_ENTRIES; type++) {
             site.setPermission(browserContextHandle, type, ContentSettingValues.DEFAULT);

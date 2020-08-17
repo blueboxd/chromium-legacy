@@ -8,28 +8,22 @@
 #import <UIKit/UIKit.h>
 
 #import "ios/chrome/browser/ui/page_info/page_info_site_security_description.h"
-#import "ios/chrome/browser/ui/settings/privacy/cookies_status_consumer.h"
-#import "ios/chrome/browser/ui/settings/privacy/cookies_status_description.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller.h"
 
 @protocol BrowserCommands;
-@protocol PageInfoCookiesCommands;
 
 // View Controller for displaying the page info.
-@interface PageInfoViewController
-    : ChromeTableViewController <CookiesStatusConsumer>
+@interface PageInfoViewController : ChromeTableViewController
 
 // Designated initializer.
 - (instancetype)initWithSiteSecurityDescription:
                     (PageInfoSiteSecurityDescription*)siteSecurityDescription
-                             cookiesDescription:
-                                 (CookiesStatusDescription*)cookiesDescription
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithStyle:(UITableViewStyle)style NS_UNAVAILABLE;
 
 // Handler used to navigate outside the page info.
-@property(nonatomic, weak) id<BrowserCommands, PageInfoCookiesCommands> handler;
+@property(nonatomic, weak) id<BrowserCommands> handler;
 
 @end
 

@@ -6,11 +6,14 @@
 
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/main/browser.h"
 #include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
+#import "ios/chrome/browser/ui/activity_services/activity_params.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/browsing_data_commands.h"
@@ -20,8 +23,11 @@
 #import "ios/chrome/browser/ui/history/public/history_presentation_delegate.h"
 #import "ios/chrome/browser/ui/main/bvc_container_view_controller.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_mediator.h"
+#import "ios/chrome/browser/ui/recent_tabs/recent_tabs_menu_helper.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_presentation_delegate.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_table_view_controller.h"
+#include "ios/chrome/browser/ui/recent_tabs/synced_sessions.h"
+#import "ios/chrome/browser/ui/sharing/sharing_coordinator.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_mediator.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_paging.h"
@@ -29,6 +35,7 @@
 #import "ios/chrome/browser/ui/tab_grid/transitions/tab_grid_transition_handler.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 
@@ -38,6 +45,7 @@
 
 @interface TabGridCoordinator () <TabPresentationDelegate,
                                   HistoryPresentationDelegate,
+                                  RecentTabsContextMenuDelegate,
                                   RecentTabsPresentationDelegate> {
   // Use an explicit ivar instead of synthesizing as the setter isn't using the
   // ivar.
@@ -64,6 +72,10 @@
 @property(nonatomic, strong) HistoryCoordinator* historyCoordinator;
 // YES if the TabViewController has never been shown yet.
 @property(nonatomic, assign) BOOL firstPresentation;
+@property(nonatomic, strong) SharingCoordinator* sharingCoordinator;
+@property(nonatomic, strong)
+    RecentTabsContextMenuHelper* recentTabsContextMenuHelper;
+
 @end
 
 @implementation TabGridCoordinator
@@ -268,6 +280,15 @@
   baseViewController.regularTabsImageDataSource = self.regularTabsMediator;
   baseViewController.incognitoTabsImageDataSource = self.incognitoTabsMediator;
 
+  if (@available(iOS 13.0, *)) {
+    self.recentTabsContextMenuHelper =
+        [[RecentTabsContextMenuHelper alloc] initWithBrowser:self.regularBrowser
+                              recentTabsPresentationDelegate:self
+                               recentTabsContextMenuDelegate:self];
+    self.baseViewController.remoteTabsViewController.menuProvider =
+        self.recentTabsContextMenuHelper;
+  }
+
   // TODO(crbug.com/845192) : Remove RecentTabsTableViewController dependency on
   // ChromeBrowserState so that we don't need to expose the view controller.
   baseViewController.remoteTabsViewController.browser = self.regularBrowser;
@@ -314,6 +335,9 @@
   // handler after this coordinator has stopped; make this action a no-op by
   // setting the handler to nil.
   self.baseViewController.handler = nil;
+  self.recentTabsContextMenuHelper = nil;
+  [self.sharingCoordinator stop];
+  self.sharingCoordinator = nil;
   [self.dispatcher stopDispatchingForProtocol:@protocol(ApplicationCommands)];
   [self.dispatcher
       stopDispatchingForProtocol:@protocol(ApplicationSettingsCommands)];
@@ -399,7 +423,53 @@
 
 
 - (void)openAllTabsFromSession:(const synced_sessions::DistantSession*)session {
-  // TODO(crbug.com/1093302) : Implement this.
+  base::RecordAction(base::UserMetricsAction(
+      "MobileRecentTabManagerOpenAllTabsFromOtherDevice"));
+  base::UmaHistogramCounts100(
+      "Mobile.RecentTabsManager.TotalTabsFromOtherDevicesOpenAll",
+      session->tabs.size());
+
+  for (auto const& tab : session->tabs) {
+    UrlLoadParams params = UrlLoadParams::InNewTab(tab->virtual_url);
+    params.SetInBackground(YES);
+    params.web_params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
+    params.load_strategy =
+        self.baseViewController.remoteTabsViewController.loadStrategy;
+    params.in_incognito =
+        self.regularBrowser->GetBrowserState()->IsOffTheRecord();
+    UrlLoadingBrowserAgent::FromBrowser(self.regularBrowser)->Load(params);
+  }
+
+  [self showActiveRegularTabFromRecentTabs];
+}
+
+#pragma mark - RecentTabsContextMenuDelegate
+
+- (void)shareURL:(const GURL&)URL
+           title:(NSString*)title
+        fromView:(UIView*)view {
+  ActivityParams* params =
+      [[ActivityParams alloc] initWithURL:URL
+                                    title:title
+                                 scenario:ActivityScenario::RecentTabsEntry];
+  self.sharingCoordinator = [[SharingCoordinator alloc]
+      initWithBaseViewController:self.baseViewController
+                                     .remoteTabsViewController
+                         browser:self.regularBrowser
+                          params:params
+                      originView:view];
+  [self.sharingCoordinator start];
+}
+
+- (void)removeSessionAtSessionSectionIdentifier:(NSInteger)sectionIdentifier {
+  [self.baseViewController.remoteTabsViewController
+      removeSessionAtSessionSectionIdentifier:sectionIdentifier];
+}
+
+- (synced_sessions::DistantSession const*)sessionForSectionIdentifier:
+    (NSInteger)sectionIdentifier {
+  return [self.baseViewController.remoteTabsViewController
+      sessionForSectionIdentifier:sectionIdentifier];
 }
 
 @end

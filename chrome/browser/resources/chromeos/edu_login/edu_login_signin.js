@@ -85,6 +85,8 @@ Polymer({
     this.authExtHost_.addEventListener(
         'authCompleted', e => this.onAuthCompleted_(
             /** @type {!CustomEvent<!AuthCompletedCredentials>} */(e)));
+    this.authExtHost_.addEventListener(
+        'getAccounts', () => this.onGetAccounts_());
   },
 
   /**
@@ -127,6 +129,13 @@ Polymer({
     assert(this.loginParams);
     this.browserProxy_.completeLogin(e.detail, this.loginParams);
     this.loading_ = true;
+  },
+
+  /** @private */
+  onGetAccounts_() {
+    this.browserProxy_.getAccounts().then(result => {
+      this.authExtHost_.getAccountsResponse(result);
+    });
   },
 
   /**

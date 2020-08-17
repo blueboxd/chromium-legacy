@@ -4,7 +4,7 @@
 
 #include "components/payments/core/payment_request_data_util.h"
 
-#include <memory>
+#include <utility>
 
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
@@ -166,13 +166,15 @@ base::string16 FormatCardNumberForDisplay(const base::string16& card_number) {
   return number;
 }
 
-std::map<std::string, std::set<std::string>> FilterStringifiedMethodData(
+std::unique_ptr<std::map<std::string, std::set<std::string>>>
+FilterStringifiedMethodData(
     const std::map<std::string, std::set<std::string>>& stringified_method_data,
     const std::set<std::string>& supported_payment_method_names) {
-  std::map<std::string, std::set<std::string>> result;
+  auto result =
+      std::make_unique<std::map<std::string, std::set<std::string>>>();
   for (const auto& pair : stringified_method_data) {
     if (base::Contains(supported_payment_method_names, pair.first)) {
-      result[pair.first] = pair.second;
+      result->insert({pair.first, pair.second});
     }
   }
   return result;

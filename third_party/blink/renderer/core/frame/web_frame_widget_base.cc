@@ -829,6 +829,7 @@ void WebFrameWidgetBase::ShowContextMenu(
           nullptr, static_cast<blink::WebMenuSourceType>(source_type));
     }
   }
+  host_context_menu_location_.reset();
 }
 
 base::Optional<gfx::Point>

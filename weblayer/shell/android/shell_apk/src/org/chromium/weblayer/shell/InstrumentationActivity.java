@@ -54,6 +54,10 @@ public class InstrumentationActivity extends FragmentActivity {
     // True by default. If set to false, the test should call loadWebLayerSync.
     public static final String EXTRA_CREATE_WEBLAYER = "EXTRA_CREATE_WEBLAYER";
 
+    // Used in tests to specify whether WebLayer URL bar should set default click listeners
+    // that show Page Info UI on its TextView.
+    public static final String EXTRA_URLBAR_TEXT_CLICKABLE = "EXTRA_URLBAR_TEXT_CLICKABLE";
+
     private Profile mProfile;
     private Fragment mFragment;
     private Browser mBrowser;
@@ -332,12 +336,15 @@ public class InstrumentationActivity extends FragmentActivity {
     }
 
     private void createUrlBarView() {
-        mUrlBarView = mBrowser.getUrlBarController().createUrlBarView(
-                UrlBarOptions.builder()
-                        .setTextSizeSP(DEFAULT_TEXT_SIZE)
-                        .setTextColor(android.R.color.black)
-                        .setIconColor(android.R.color.black)
-                        .build());
+        UrlBarOptions.Builder optionsBuilder = UrlBarOptions.builder()
+                                                       .setTextSizeSP(DEFAULT_TEXT_SIZE)
+                                                       .setTextColor(android.R.color.black)
+                                                       .setIconColor(android.R.color.black);
+        if (getIntent().getBooleanExtra(EXTRA_URLBAR_TEXT_CLICKABLE, true)) {
+            optionsBuilder = optionsBuilder.showPageInfoWhenTextIsClicked();
+        }
+
+        mUrlBarView = mBrowser.getUrlBarController().createUrlBarView(optionsBuilder.build());
 
         // The background of the top-view must be opaque, otherwise it bleeds through to the
         // cc::Layer that mirrors the contents of the top-view.

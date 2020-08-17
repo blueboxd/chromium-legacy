@@ -20,7 +20,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SVG_SVG_RESOURCES_CYCLE_SOLVER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SVG_SVG_RESOURCES_CYCLE_SOLVER_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_container.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
@@ -36,6 +35,8 @@ class SVGResourcesCycleSolver {
 
  public:
   SVGResourcesCycleSolver();
+  SVGResourcesCycleSolver(const SVGResourcesCycleSolver&) = delete;
+  SVGResourcesCycleSolver& operator=(const SVGResourcesCycleSolver&) = delete;
   ~SVGResourcesCycleSolver();
 
   bool IsKnownAcyclic(const LayoutSVGResourceContainer*) const;
@@ -71,7 +72,6 @@ class SVGResourcesCycleSolver {
   using ResourceSet = HashSet<const LayoutSVGResourceContainer*>;
   ResourceSet active_resources_;
   ResourceSet dag_cache_;
-  DISALLOW_COPY_AND_ASSIGN(SVGResourcesCycleSolver);
 };
 
 }  // namespace blink

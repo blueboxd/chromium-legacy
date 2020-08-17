@@ -155,8 +155,9 @@ public class CompromisedCredential implements Parcelable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(mSignonRealm, mOrigin, mUsername, mDisplayOrigin, mDisplayUsername,
-                mPassword, mPasswordChangeUrl, mAssociatedApp, mPhished, mHasScript);
+        return Objects.hash(mSignonRealm, mOrigin.getPossiblyInvalidSpec(), mUsername,
+                mDisplayOrigin, mDisplayUsername, mPassword, mPasswordChangeUrl, mAssociatedApp,
+                mPhished, mHasScript);
     }
 
     @Override

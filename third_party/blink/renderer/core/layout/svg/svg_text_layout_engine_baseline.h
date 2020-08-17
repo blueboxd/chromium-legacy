@@ -20,7 +20,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SVG_SVG_TEXT_LAYOUT_ENGINE_BASELINE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SVG_SVG_TEXT_LAYOUT_ENGINE_BASELINE_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_item.h"
 #include "third_party/blink/renderer/core/style/svg_computed_style_defs.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
@@ -38,6 +37,9 @@ class SVGTextLayoutEngineBaseline {
 
  public:
   SVGTextLayoutEngineBaseline(const Font&, float effective_zoom);
+  SVGTextLayoutEngineBaseline(const SVGTextLayoutEngineBaseline&) = delete;
+  SVGTextLayoutEngineBaseline& operator=(const SVGTextLayoutEngineBaseline&) =
+      delete;
 
   float CalculateBaselineShift(const ComputedStyle&) const;
   float CalculateAlignmentBaselineShift(bool is_vertical_text,
@@ -54,7 +56,6 @@ class SVGTextLayoutEngineBaseline {
   // layout inside SVG takes place in unzoomed coordinates we have to compensate
   // for zoom when reading values from the font descriptor.
   float effective_zoom_;
-  DISALLOW_COPY_AND_ASSIGN(SVGTextLayoutEngineBaseline);
 };
 
 }  // namespace blink

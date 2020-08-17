@@ -55,6 +55,7 @@
 #include "third_party/blink/public/common/mediastream/media_stream_controls.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
+#include "third_party/blink/public/mojom/permissions/permission_status.mojom.h"
 
 namespace media {
 class AudioSystem;
@@ -72,6 +73,7 @@ class FakeMediaStreamUIProxy;
 class MediaStreamUIProxy;
 class VideoCaptureManager;
 class VideoCaptureProvider;
+class PermissionControllerImpl;
 
 // MediaStreamManager is used to generate and close new media devices, not to
 // start the media flow. The classes requesting new media streams are answered
@@ -533,6 +535,48 @@ class CONTENT_EXPORT MediaStreamManager
 
   // Activate the specified tab and bring it to the front.
   void ActivateTabOnUIThread(const DesktopMediaID source);
+
+  // Get the permission controller for a particular RFH. Must be called on the
+  // UI thread.
+  static PermissionControllerImpl* GetPermissionController(
+      int requesting_process_id,
+      int requesting_frame_id);
+
+  // Subscribe to the permission controller in order to monitor camera/mic
+  // permission updates for a particular DeviceRequest. All the additional
+  // information is needed because `FindRequest` can't be called on the UI
+  // thread.
+  void SubscribeToPermissionControllerOnUIThread(const std::string& label,
+                                                 int requesting_process_id,
+                                                 int requesting_frame_id,
+                                                 int requester_id,
+                                                 int page_request_id,
+                                                 bool is_audio_request,
+                                                 bool is_video_request,
+                                                 const GURL& origin);
+
+  // Store the subscription ids on a DeviceRequest in order to allow
+  // unsubscribing when the request is deleted.
+  void SetPermissionSubscriptionIDs(const std::string& label,
+                                    int requesting_process_id,
+                                    int requesting_frame_id,
+                                    int audio_subscription_id,
+                                    int video_subscription_id);
+
+  // Unsubscribe from following permission updates for the two specified
+  // subscription IDs. Called when a request is deleted.
+  static void UnsubscribeFromPermissionControllerOnUIThread(
+      int requesting_process_id,
+      int requesting_frame_id,
+      int audio_subscription_id,
+      int video_subscription_id);
+
+  // Callback that the PermissionController calls when a permission is updated.
+  void PermissionChangedCallback(int requesting_process_id,
+                                 int requesting_frame_id,
+                                 int requester_id,
+                                 int page_request_id,
+                                 blink::mojom::PermissionStatus status);
 
   media::AudioSystem* const audio_system_;  // not owned
   scoped_refptr<AudioInputDeviceManager> audio_input_device_manager_;

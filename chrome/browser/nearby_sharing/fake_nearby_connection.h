@@ -24,6 +24,8 @@ class FakeNearbyConnection : public NearbyConnection {
   void AppendReadableData(std::vector<uint8_t> bytes);
   std::vector<uint8_t> GetWrittenData();
 
+  bool IsClosed();
+
  private:
   void MaybeRunCallback();
 

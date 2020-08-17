@@ -69,7 +69,7 @@ public interface PasswordCheck extends PasswordCheckComponentUi.Delegate {
     /**
      * @return The timestamp of the last completed check.
      */
-    long getCheckTimestamp();
+    long getLastCheckTimestamp();
 
     /**
      * @return The last known status of the check.

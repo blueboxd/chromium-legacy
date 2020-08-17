@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "base/check.h"
+#include "components/payments/core/method_strings.h"
 #include "components/payments/core/native_error_strings.h"
 #include "components/payments/core/payer_data.h"
 
@@ -13,27 +15,26 @@ namespace payments {
 
 AndroidPaymentApp::AndroidPaymentApp(
     const std::set<std::string>& payment_method_names,
-    const std::map<std::string, std::set<std::string>>& stringified_method_data,
+    std::unique_ptr<std::map<std::string, std::set<std::string>>>
+        stringified_method_data,
     const GURL& top_level_origin,
     const GURL& payment_request_origin,
     const std::string& payment_request_id,
     std::unique_ptr<AndroidAppDescription> description,
     base::WeakPtr<AndroidAppCommunication> communication)
     : PaymentApp(/*icon_resource_id=*/0, PaymentApp::Type::NATIVE_MOBILE_APP),
-      stringified_method_data_(stringified_method_data),
+      stringified_method_data_(std::move(stringified_method_data)),
       top_level_origin_(top_level_origin),
       payment_request_origin_(payment_request_origin),
       payment_request_id_(payment_request_id),
       description_(std::move(description)),
       communication_(communication) {
   DCHECK(!payment_method_names.empty());
-  DCHECK_EQ(payment_method_names.size(), stringified_method_data_.size());
+  DCHECK_EQ(payment_method_names.size(), stringified_method_data_->size());
   DCHECK_EQ(*payment_method_names.begin(),
-            stringified_method_data_.begin()->first);
+            stringified_method_data_->begin()->first);
   DCHECK(description_);
   DCHECK(!description_->package.empty());
-  DCHECK_EQ(1U, description_->service_names.size());
-  DCHECK(!description_->service_names.front().empty());
   DCHECK_EQ(1U, description_->activities.size());
   DCHECK(!description_->activities.front()->name.empty());
 
@@ -49,7 +50,7 @@ void AndroidPaymentApp::InvokePaymentApp(Delegate* delegate) {
 
   communication_->InvokePaymentApp(
       description_->package, description_->activities.front()->name,
-      stringified_method_data_, top_level_origin_, payment_request_origin_,
+      *stringified_method_data_, top_level_origin_, payment_request_origin_,
       payment_request_id_,
       base::BindOnce(&AndroidPaymentApp::OnPaymentAppResponse,
                      weak_ptr_factory_.GetWeakPtr(), delegate));
@@ -140,6 +141,19 @@ void AndroidPaymentApp::UpdateWith(
 }
 
 void AndroidPaymentApp::OnPaymentDetailsNotUpdated() {}
+
+bool AndroidPaymentApp::IsPreferred() const {
+  // This class used only on Chrome OS, where the only Android payment app
+  // available is the trusted web application (TWA) that launched this instance
+  // of Chrome with a TWA specific payment method, so this app should be
+  // preferred.
+#if !defined(OS_CHROMEOS)
+  NOTREACHED();
+#endif  // OS_CHROMEOS
+  DCHECK_EQ(1U, GetAppMethodNames().size());
+  DCHECK_EQ(methods::kGooglePlayBilling, *GetAppMethodNames().begin());
+  return true;
+}
 
 void AndroidPaymentApp::OnPaymentAppResponse(
     Delegate* delegate,

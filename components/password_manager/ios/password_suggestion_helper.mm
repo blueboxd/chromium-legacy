@@ -75,7 +75,8 @@ typedef void (^PasswordSuggestionsAvailableCompletion)(
       [results addObject:[FormSuggestion suggestionWithValue:username
                                           displayDescription:realm
                                                         icon:nil
-                                                  identifier:0]];
+                                                  identifier:0
+                                              requiresReauth:YES]];
     }
   }
 

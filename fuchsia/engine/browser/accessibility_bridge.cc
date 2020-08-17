@@ -27,7 +27,7 @@ constexpr float kRectConversionError = 0.5;
 }  // namespace
 
 AccessibilityBridge::AccessibilityBridge(
-    fuchsia::accessibility::semantics::SemanticsManagerPtr semantics_manager,
+    fuchsia::accessibility::semantics::SemanticsManager* semantics_manager,
     fuchsia::ui::views::ViewRef view_ref,
     content::WebContents* web_contents,
     base::OnceCallback<void(zx_status_t)> on_error_callback)

@@ -569,12 +569,34 @@ bool WebAppIconManager::HasIcons(
                            icon_sizes_in_px);
 }
 
+base::Optional<AppIconManager::IconSizeAndPurpose>
+WebAppIconManager::FindIconMatchBigger(const AppId& app_id,
+                                       const std::vector<IconPurpose>& purposes,
+                                       SquareSizePx min_size) const {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  const WebApp* web_app = registrar_.GetAppById(app_id);
+  if (!web_app)
+    return base::nullopt;
+
+  // Must iterate through purposes in order given.
+  for (IconPurpose purpose : purposes) {
+    const std::vector<SquareSizePx>& sizes =
+        web_app->downloaded_icon_sizes(purpose);
+    DCHECK(base::STLIsSorted(sizes));
+    for (SquareSizePx size : sizes) {
+      if (size >= min_size)
+        return IconSizeAndPurpose{size, purpose};
+    }
+  }
+
+  return base::nullopt;
+}
+
 bool WebAppIconManager::HasSmallestIcon(
     const AppId& app_id,
     const std::vector<IconPurpose>& purposes,
-    SquareSizePx min_size_in_px) const {
-  return FindDownloadedIconMatchBigger(app_id, purposes, min_size_in_px)
-      .has_value();
+    SquareSizePx min_size) const {
+  return FindIconMatchBigger(app_id, purposes, min_size).has_value();
 }
 
 void WebAppIconManager::ReadIcons(const AppId& app_id,
@@ -638,8 +660,8 @@ void WebAppIconManager::ReadSmallestIcon(
     ReadIconWithPurposeCallback callback) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  base::Optional<WebAppIconManager::SizeAndPurpose> best_icon =
-      FindDownloadedIconMatchBigger(app_id, purposes, min_size_in_px);
+  base::Optional<IconSizeAndPurpose> best_icon =
+      FindIconMatchBigger(app_id, purposes, min_size_in_px);
   DCHECK(best_icon.has_value());
   IconId icon_id(app_id, best_icon->purpose, best_icon->size_px);
   ReadIconCallback wrapped = base::BindOnce(
@@ -659,8 +681,8 @@ void WebAppIconManager::ReadSmallestCompressedIcon(
     ReadCompressedIconWithPurposeCallback callback) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  base::Optional<WebAppIconManager::SizeAndPurpose> best_icon =
-      FindDownloadedIconMatchBigger(app_id, purposes, min_size_in_px);
+  base::Optional<IconSizeAndPurpose> best_icon =
+      FindIconMatchBigger(app_id, purposes, min_size_in_px);
   DCHECK(best_icon.has_value());
   IconId icon_id(app_id, best_icon->purpose, best_icon->size_px);
   ReadCompressedIconCallback wrapped =
@@ -693,11 +715,10 @@ void WebAppIconManager::ReadIconAndResize(const AppId& app_id,
                                           IconPurpose purpose,
                                           SquareSizePx desired_icon_size,
                                           ReadIconsCallback callback) const {
-  base::Optional<SizeAndPurpose> best_icon =
-      FindDownloadedIconMatchBigger(app_id, {purpose}, desired_icon_size);
+  base::Optional<IconSizeAndPurpose> best_icon =
+      FindIconMatchBigger(app_id, {purpose}, desired_icon_size);
   if (!best_icon) {
-    best_icon =
-        FindDownloadedIconMatchSmaller(app_id, {purpose}, desired_icon_size);
+    best_icon = FindIconMatchSmaller(app_id, {purpose}, desired_icon_size);
   }
 
   if (!best_icon) {
@@ -719,35 +740,11 @@ void WebAppIconManager::SetFaviconReadCallbackForTesting(
   favicon_read_callback_ = std::move(callback);
 }
 
-base::Optional<WebAppIconManager::SizeAndPurpose>
-WebAppIconManager::FindDownloadedIconMatchBigger(
+base::Optional<AppIconManager::IconSizeAndPurpose>
+WebAppIconManager::FindIconMatchSmaller(
     const AppId& app_id,
     const std::vector<IconPurpose>& purposes,
-    SquareSizePx desired_size) const {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  const WebApp* web_app = registrar_.GetAppById(app_id);
-  if (!web_app)
-    return base::nullopt;
-
-  // Must iterate through purposes in order given.
-  for (IconPurpose purpose : purposes) {
-    const std::vector<SquareSizePx>& sizes =
-        web_app->downloaded_icon_sizes(purpose);
-    DCHECK(base::STLIsSorted(sizes));
-    for (SquareSizePx size : sizes) {
-      if (size >= desired_size)
-        return WebAppIconManager::SizeAndPurpose{size, purpose};
-    }
-  }
-
-  return base::nullopt;
-}
-
-base::Optional<WebAppIconManager::SizeAndPurpose>
-WebAppIconManager::FindDownloadedIconMatchSmaller(
-    const AppId& app_id,
-    const std::vector<IconPurpose>& purposes,
-    SquareSizePx desired_size) const {
+    SquareSizePx max_size) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   const WebApp* web_app = registrar_.GetAppById(app_id);
   if (!web_app)
@@ -759,8 +756,8 @@ WebAppIconManager::FindDownloadedIconMatchSmaller(
         web_app->downloaded_icon_sizes(purpose);
     DCHECK(base::STLIsSorted(sizes));
     for (SquareSizePx size : base::Reversed(sizes)) {
-      if (size <= desired_size)
-        return WebAppIconManager::SizeAndPurpose{size, purpose};
+      if (size <= max_size)
+        return IconSizeAndPurpose{size, purpose};
     }
   }
 

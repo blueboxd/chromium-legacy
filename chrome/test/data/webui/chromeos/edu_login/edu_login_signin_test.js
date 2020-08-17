@@ -11,7 +11,7 @@ import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {TestEduAccountLoginBrowserProxy} from './edu_login_test_util.js';
+import {getFakeAccountsList, TestEduAccountLoginBrowserProxy} from './edu_login_test_util.js';
 
 window.edu_login_signin_tests = {};
 edu_login_signin_tests.suiteName = 'EduLoginSigninTest';
@@ -45,6 +45,10 @@ suite(edu_login_signin_tests.suiteName, function() {
       this.loadCalls = 0;
       /** @type {Number} */
       this.resetStatesCalls = 0;
+      /** @type {number} */
+      this.getAccountsResponseCalls = 0;
+      /** @type {Array<string>} */
+      this.getAccountsResponseResult = null;
     }
 
     /**
@@ -59,6 +63,14 @@ suite(edu_login_signin_tests.suiteName, function() {
 
     resetStates() {
       this.resetStatesCalls++;
+    }
+
+    /**
+     * @param {Array<string>} accounts list of emails.
+     */
+    getAccountsResponse(accounts) {
+      this.getAccountsResponseCalls++;
+      this.getAccountsResponseResult = accounts;
     }
   }
 
@@ -118,6 +130,15 @@ suite(edu_login_signin_tests.suiteName, function() {
           assertTrue(signinComponent.$$('.spinner').active);
           assertEquals(fakeCredentials, result[0]);
           assertDeepEquals(fakeLoginParams, result[1]);
+        });
+
+        testAuthenticator.dispatchEvent(new Event('getAccounts'));
+        assertEquals(1, testBrowserProxy.getCallCount('getAccounts'));
+        testBrowserProxy.whenCalled('getAccounts').then(function() {
+          assertEquals(1, testAuthenticator.getAccountsResponseCalls);
+          assertDeepEquals(
+              getFakeAccountsList(),
+              testAuthenticator.getAccountsResponseResult);
         });
       });
 

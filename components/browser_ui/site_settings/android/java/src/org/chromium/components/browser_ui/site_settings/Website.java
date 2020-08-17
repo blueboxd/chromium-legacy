@@ -17,34 +17,30 @@ import org.chromium.components.embedder_support.browser_context.BrowserContextHa
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Website is a class for storing information about a website and its associated permissions.
  */
-public class Website implements Serializable {
-    static final int INVALID_CAMERA_OR_MICROPHONE_ACCESS = 0;
-    static final int CAMERA_ACCESS_ALLOWED = 1;
-    static final int MICROPHONE_AND_CAMERA_ACCESS_ALLOWED = 2;
-    static final int MICROPHONE_ACCESS_ALLOWED = 3;
-    static final int CAMERA_ACCESS_DENIED = 4;
-    static final int MICROPHONE_AND_CAMERA_ACCESS_DENIED = 5;
-    static final int MICROPHONE_ACCESS_DENIED = 6;
-
+public final class Website implements Serializable {
     private final WebsiteAddress mOrigin;
     private final WebsiteAddress mEmbedder;
 
     /**
-     * Indexed by ContentSettingException.Type.
+     * Indexed by ContentSettingsType.
      */
-    private ContentSettingException mContentSettingException[];
+    private Map<Integer, ContentSettingException> mContentSettingExceptions = new HashMap<>();
+
     /**
      * Indexed by PermissionInfo.Type.
      */
     private PermissionInfo[] mPermissionInfo;
 
     private LocalStorageInfo mLocalStorageInfo;
-    private final List<StorageInfo> mStorageInfo = new ArrayList<StorageInfo>();
+    private final List<StorageInfo> mStorageInfo = new ArrayList<>();
     private int mStorageInfoCallbacksLeft;
 
     // The collection of chooser-based permissions (e.g. USB device access) granted to this site.
@@ -56,8 +52,6 @@ public class Website implements Serializable {
         mOrigin = origin;
         mEmbedder = embedder;
         mPermissionInfo = new PermissionInfo[PermissionInfo.Type.NUM_ENTRIES];
-        mContentSettingException =
-                new ContentSettingException[ContentSettingException.Type.NUM_ENTRIES];
     }
 
     public WebsiteAddress getAddress() {
@@ -164,29 +158,34 @@ public class Website implements Serializable {
         }
     }
 
+    public Collection<ContentSettingException> getContentSettingExceptions() {
+        return mContentSettingExceptions.values();
+    }
+
     /**
      * Returns the exception info for this Website for specified type.
      */
-    public ContentSettingException getContentSettingException(
-            @ContentSettingException.Type int type) {
-        return mContentSettingException[type];
+    public ContentSettingException getContentSettingException(@ContentSettingsType int type) {
+        return mContentSettingExceptions.get(type);
     }
 
     /**
      * Sets the exception info for this Website for specified type.
      */
     public void setContentSettingException(
-            @ContentSettingException.Type int type, ContentSettingException exception) {
-        mContentSettingException[type] = exception;
+            @ContentSettingsType int type, ContentSettingException exception) {
+        mContentSettingExceptions.put(type, exception);
     }
 
     /**
      * Returns what ContentSettingException governs the setting of specified type.
      */
     public @ContentSettingValues @Nullable Integer getContentSettingPermission(
-            @ContentSettingException.Type int type) {
-        return mContentSettingException[type] != null
-                ? mContentSettingException[type].getContentSetting()
+            @ContentSettingsType int type) {
+        // TODO(crbug.com/1103597): Merge with getPermission() when both are keyed by
+        // ContentSettingsType.
+        return getContentSettingException(type) != null
+                ? getContentSettingException(type).getContentSetting()
                 : null;
     }
 
@@ -194,24 +193,28 @@ public class Website implements Serializable {
      * Sets the permission.
      */
     public void setContentSettingPermission(BrowserContextHandle browserContextHandle,
-            @ContentSettingException.Type int type, @ContentSettingValues int value) {
-        if (type == ContentSettingException.Type.ADS) {
+            @ContentSettingsType int type, @ContentSettingValues int value) {
+        // TODO(crbug.com/1103597): Merge with setPermission() when both are keyed by
+        // ContentSettingsType.
+        ContentSettingException exception = getContentSettingException(type);
+        if (type == ContentSettingsType.ADS) {
             // It is possible to set the permission without having an existing exception,
             // because we can show the BLOCK state even when this permission is set to the
             // default. In that case, just set an exception now to BLOCK to enable changing the
             // permission.
-            if (mContentSettingException[type] == null) {
-                mContentSettingException[type] =
-                        new ContentSettingException(ContentSettingsType.ADS,
-                                getAddress().getOrigin(), ContentSettingValues.BLOCK, "");
+            if (exception == null) {
+                exception = new ContentSettingException(ContentSettingsType.ADS,
+                        getAddress().getOrigin(), ContentSettingValues.BLOCK, "");
+                setContentSettingException(type, exception);
             }
-        } else if (type == ContentSettingException.Type.JAVASCRIPT) {
+        } else if (type == ContentSettingsType.JAVASCRIPT) {
             // It is possible to set the permission without having an existing exception,
             // because we show the javascript permission in Site Settings if javascript
             // is blocked by default.
-            if (mContentSettingException[type] == null) {
-                mContentSettingException[type] = new ContentSettingException(
+            if (exception == null) {
+                exception = new ContentSettingException(
                         ContentSettingsType.JAVASCRIPT, getAddress().getHost(), value, "");
+                setContentSettingException(type, exception);
             }
             // It's possible for either action to be emitted. This code path is hit
             // regardless of whether there was an existing permission or not.
@@ -220,12 +223,13 @@ public class Website implements Serializable {
             } else {
                 RecordUserAction.record("JavascriptContentSetting.DisableBy.SiteSettings");
             }
-        } else if (type == ContentSettingException.Type.SOUND) {
+        } else if (type == ContentSettingsType.SOUND) {
             // It is possible to set the permission without having an existing exception,
             // because we always show the sound permission in Site Settings.
-            if (mContentSettingException[type] == null) {
-                mContentSettingException[type] = new ContentSettingException(
+            if (exception == null) {
+                exception = new ContentSettingException(
                         ContentSettingsType.SOUND, getAddress().getHost(), value, "");
+                setContentSettingException(type, exception);
             }
             if (value == ContentSettingValues.BLOCK) {
                 RecordUserAction.record("SoundContentSetting.MuteBy.SiteSettings");
@@ -236,8 +240,8 @@ public class Website implements Serializable {
         // We want to call setContentSetting even after explicitly setting
         // mContentSettingException above because this will trigger the actual change
         // on the PrefServiceBridge.
-        if (mContentSettingException[type] != null) {
-            mContentSettingException[type].setContentSetting(browserContextHandle, value);
+        if (exception != null) {
+            exception.setContentSetting(browserContextHandle, value);
         }
     }
 

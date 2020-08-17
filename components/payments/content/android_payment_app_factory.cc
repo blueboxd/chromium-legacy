@@ -55,6 +55,7 @@ class AppFinder : public base::SupportsUserData::Data {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     DCHECK_EQ(nullptr, delegate_.get());
     DCHECK_NE(nullptr, delegate.get());
+    DCHECK_EQ(0U, number_of_pending_is_ready_to_pay_queries_);
     DCHECK_EQ(nullptr, communication_.get());
     DCHECK_NE(nullptr, communication.get());
     DCHECK(delegate->GetSpec()->details().id.has_value());
@@ -98,31 +99,101 @@ class AppFinder : public base::SupportsUserData::Data {
     std::vector<std::unique_ptr<AndroidAppDescription>> single_activity_apps;
     for (size_t i = 0; i < app_descriptions.size(); ++i) {
       auto app = std::move(app_descriptions[i]);
+      if (app->service_names.size() > 1U) {
+        delegate_->OnPaymentAppCreationError(errors::kMoreThanOneService);
+        continue;
+      }
+
+      // Move each activity in the given |app| to its own AndroidAppDescription
+      // in |single_activity_apps|, so the code can treat each PAY intent as its
+      // own payment app. This allows Android apps to implement PAY intent in
+      // multiple activities with different names and icons for different use
+      // cases.
       SplitPotentiallyMultipleActivities(std::move(app), &single_activity_apps);
     }
 
+    number_of_pending_is_ready_to_pay_queries_ = single_activity_apps.size();
+    if (number_of_pending_is_ready_to_pay_queries_ == 0U) {
+      OnDoneCreatingPaymentApps();
+      return;
+    }
+
     for (size_t i = 0; i < single_activity_apps.size(); ++i) {
-      auto app = std::move(single_activity_apps[i]);
+      std::unique_ptr<AndroidAppDescription> single_activity_app =
+          std::move(single_activity_apps[i]);
 
       const std::string& default_method =
-          app->activities.front()->default_payment_method;
+          single_activity_app->activities.front()->default_payment_method;
       DCHECK_EQ(methods::kGooglePlayBilling, default_method);
 
       std::set<std::string> supported_payment_methods = {default_method};
-
-      delegate_->OnPaymentAppCreated(std::make_unique<AndroidPaymentApp>(
+      std::set<std::string> payment_method_names =
           base::STLSetIntersection<std::set<std::string>>(
               delegate_->GetSpec()->payment_method_identifiers_set(),
-              supported_payment_methods),
-          data_util::FilterStringifiedMethodData(
+              supported_payment_methods);
+
+      std::unique_ptr<std::map<std::string, std::set<std::string>>>
+          stringified_method_data = data_util::FilterStringifiedMethodData(
               delegate_->GetSpec()->stringified_method_data(),
-              supported_payment_methods),
-          delegate_->GetTopOrigin(), delegate_->GetFrameOrigin(),
-          delegate_->GetSpec()->details().id.value(), std::move(app),
-          communication_));
+              supported_payment_methods);
+
+      // TODO(crbug.com/1022512): Download the web app manifest for
+      // |default_payment_method_name| to verify Android app signature.
+
+      // Skip querying IS_READY_TO_PAY service when Chrome is off-the-record or
+      // when the app does not implement the IS_READY_TO_PAY service.
+      if (delegate_->IsOffTheRecord() ||
+          single_activity_app->service_names.empty()) {
+        OnIsReadyToPay(std::move(single_activity_app), payment_method_names,
+                       std::move(stringified_method_data),
+                       /*error_message=*/base::nullopt,
+                       /*is_ready_to_pay=*/true);
+        continue;
+      }
+
+      std::map<std::string, std::set<std::string>>
+          stringified_method_data_copy = *stringified_method_data;
+      communication_->IsReadyToPay(
+          single_activity_app->package,
+          single_activity_app->service_names.front(),
+          stringified_method_data_copy, delegate_->GetTopOrigin(),
+          delegate_->GetFrameOrigin(),
+          delegate_->GetSpec()->details().id.value(),
+          base::BindOnce(&AppFinder::OnIsReadyToPay,
+                         weak_ptr_factory_.GetWeakPtr(),
+                         std::move(single_activity_app), payment_method_names,
+                         std::move(stringified_method_data)));
+    }
+  }
+
+  void OnIsReadyToPay(
+      std::unique_ptr<AndroidAppDescription> app_description,
+      const std::set<std::string>& payment_method_names,
+      std::unique_ptr<std::map<std::string, std::set<std::string>>>
+          stringified_method_data,
+      const base::Optional<std::string>& error_message,
+      bool is_ready_to_pay) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    DCHECK_LT(0U, number_of_pending_is_ready_to_pay_queries_);
+
+    // The browser could be shutting down.
+    if (!communication_ || !delegate_) {
+      OnDoneCreatingPaymentApps();
+      return;
     }
 
-    OnDoneCreatingPaymentApps();
+    if (error_message.has_value()) {
+      delegate_->OnPaymentAppCreationError(error_message.value());
+    } else if (is_ready_to_pay) {
+      delegate_->OnPaymentAppCreated(std::make_unique<AndroidPaymentApp>(
+          payment_method_names, std::move(stringified_method_data),
+          delegate_->GetTopOrigin(), delegate_->GetFrameOrigin(),
+          delegate_->GetSpec()->details().id.value(),
+          std::move(app_description), communication_));
+    }
+
+    if (--number_of_pending_is_ready_to_pay_queries_ == 0)
+      OnDoneCreatingPaymentApps();
   }
 
   void OnDoneCreatingPaymentApps() {
@@ -134,6 +205,7 @@ class AppFinder : public base::SupportsUserData::Data {
 
   base::SupportsUserData* owner_;
   base::WeakPtr<PaymentAppFactory::Delegate> delegate_;
+  size_t number_of_pending_is_ready_to_pay_queries_ = 0;
   base::WeakPtr<AndroidAppCommunication> communication_;
 
   base::WeakPtrFactory<AppFinder> weak_ptr_factory_{this};

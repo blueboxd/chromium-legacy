@@ -75,6 +75,7 @@ class PageScaleConstraintsSet;
 class PluginData;
 class PluginsChangedObserver;
 class PointerLockController;
+class TextFragmentSelectorGenerator;
 class ScopedPagePauser;
 class ScrollingCoordinator;
 class ScrollbarTheme;
@@ -356,6 +357,10 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
 
   static void PrepareForLeakDetection();
 
+  TextFragmentSelectorGenerator& GetTextFragmentSelectorGenerator() const {
+    return *text_fragment_selector_generator_;
+  }
+
  private:
   friend class ScopedPagePauser;
 
@@ -476,6 +481,8 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
   mojom::blink::TextAutosizerPageInfo web_text_autosizer_page_info_;
 
   WebScopedVirtualTimePauser history_navigation_virtual_time_pauser_;
+
+  const Member<TextFragmentSelectorGenerator> text_fragment_selector_generator_;
 
   DISALLOW_COPY_AND_ASSIGN(Page);
 };

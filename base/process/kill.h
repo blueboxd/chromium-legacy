@@ -84,12 +84,6 @@ BASE_EXPORT bool KillProcesses(const FilePath::StringType& executable_name,
                                int exit_code,
                                const ProcessFilter* filter);
 
-#if defined(OS_POSIX)
-// Attempts to kill the process group identified by |process_group_id|. Returns
-// true on success.
-BASE_EXPORT bool KillProcessGroup(ProcessHandle process_group_id);
-#endif  // defined(OS_POSIX)
-
 // Get the termination status of the process by interpreting the
 // circumstances of the child process' death. |exit_code| is set to
 // the status returned by waitpid() on POSIX, and from GetExitCodeProcess() on

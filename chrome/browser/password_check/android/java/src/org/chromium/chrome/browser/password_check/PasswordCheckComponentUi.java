@@ -9,7 +9,7 @@ import android.view.MenuItem;
 /**
  * This component is responsible for handling the UI logic for the password check.
  */
-interface PasswordCheckComponentUi {
+public interface PasswordCheckComponentUi {
     /**
      * A delegate that handles native tasks for the UI component.
      */
@@ -19,31 +19,6 @@ interface PasswordCheckComponentUi {
          * @param credential A {@link CompromisedCredential}.
          */
         void removeCredential(CompromisedCredential credential);
-    }
-
-    /**
-     * Implementers of this delegate are expected to launch apps or Chrome Custom tabs that enable
-     * the user to change a compromised password.
-     */
-    interface ChangePasswordDelegate {
-        /**
-         * @param credential A {@link CompromisedCredential}.
-         * @return True iff there is a valid URL to navigate to or an app that can be opened.
-         */
-        boolean canManuallyChangeCredential(CompromisedCredential credential);
-
-        /**
-         * Launches an app (if available) or a CCT with the site the given credential was used on.
-         * @param credential A {@link CompromisedCredential}.
-         */
-        void launchAppOrCctWithChangePasswordUrl(CompromisedCredential credential);
-
-        /**
-         * Launches a CCT with the site the given credential was used on and invokes the script that
-         * fixes the compromised credential automatically.
-         * @param credential A {@link CompromisedCredential}.
-         */
-        void launchCctWithScript(CompromisedCredential credential);
     }
 
     /**

@@ -51,6 +51,10 @@ void PasswordCheckBridge::StopCheck(JNIEnv* env) {
   check_manager_.StopCheck();
 }
 
+int64_t PasswordCheckBridge::GetLastCheckTimestamp(JNIEnv* env) {
+  return check_manager_.GetLastCheckTimestamp().ToJavaTime();
+}
+
 jint PasswordCheckBridge::GetCompromisedCredentialsCount(JNIEnv* env) {
   return check_manager_.GetCompromisedCredentialsCount();
 }

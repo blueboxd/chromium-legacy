@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_scanner_results_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/sw_reporter_invocation_win.h"
 
@@ -97,7 +98,7 @@ class ChromeCleanerController {
     kDismissed,
   };
 
-  class Observer {
+  class Observer : public base::CheckedObserver {
    public:
     virtual void OnIdle(IdleReason idle_reason) {}
     virtual void OnReporterRunning() {}
@@ -110,9 +111,6 @@ class ChromeCleanerController {
         const ChromeCleanerScannerResults& scanner_results) {}
     virtual void OnRebootRequired() {}
     virtual void OnRebootFailed() {}
-
-   protected:
-    virtual ~Observer() = default;
   };
 
   // Returns the global controller object.

@@ -112,6 +112,12 @@ void PaymentRequestTestController::SetTwaPackageName(
       /*skip_ui_for_basic_card=*/false, twa_package_name_);
 }
 
+void PaymentRequestTestController::SetTwaPaymentApp(
+    const std::string& method_name,
+    const std::string& response) {
+  // Intentionally left blank.
+}
+
 void PaymentRequestTestController::OnCanMakePaymentCalled() {
   if (observer_)
     observer_->OnCanMakePaymentCalled();

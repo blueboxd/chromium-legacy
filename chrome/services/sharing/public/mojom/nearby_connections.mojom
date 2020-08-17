@@ -258,6 +258,16 @@ interface NearbyConnections {
   // Possible return values include:
   //   Status::kSuccess if the payload got canceled.
   CancelPayload(int64 payload_id) => (Status status);
+
+   // Disconnects from, and removes all traces of, all connected and/or
+   // discovered endpoints. As a side effect of this call, both
+   // StopAdvertising and StopDiscovery are invoked. After calling
+   // StopAllEndpoints, no further operations with remote endpoints will
+   // be possible until a new call to one of StartAdvertising or
+   // StartDiscovery.
+   // Possible return values include:
+   //   Status::kSuccess disconnected from all endpoints successfully.
+  StopAllEndpoints() => (Status status);
 };
 
 // Provide all the dependencies that NearbyConnections library requires.

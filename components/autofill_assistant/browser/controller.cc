@@ -42,15 +42,6 @@ namespace {
 // message.
 static constexpr int kAutostartInitialProgress = 5;
 
-// Parameter that allows setting the color of the overlay.
-const char kOverlayColorParameterName[] = "OVERLAY_COLORS";
-
-// Parameter that contains the current session username. Should be synced with
-// |SESSION_USERNAME_PARAMETER| from
-// .../password_manager/PasswordChangeLauncher.java
-// TODO(b/151401974): Eliminate duplicate parameter definitions.
-const char kPasswordChangeUsernameParameterName[] = "PASSWORD_CHANGE_USERNAME";
-
 // Experiment for toggling the new progress bar.
 const char kProgressBarExperiment[] = "4400697";
 
@@ -1027,7 +1018,7 @@ void Controller::InitFromParameters() {
     SetDetails(std::move(details));
 
   const base::Optional<std::string> overlay_color =
-      trigger_context_->GetParameter(kOverlayColorParameterName);
+      trigger_context_->GetOverlayColors();
   if (overlay_color) {
     std::unique_ptr<OverlayColors> colors = std::make_unique<OverlayColors>();
     std::vector<std::string> color_strings =
@@ -1045,7 +1036,7 @@ void Controller::InitFromParameters() {
     SetOverlayColors(std::move(colors));
   }
   const base::Optional<std::string> password_change_username =
-      trigger_context_->GetParameter(kPasswordChangeUsernameParameterName);
+      trigger_context_->GetPasswordChangeUsername();
   if (password_change_username) {
     DCHECK(
         GetCurrentURL().is_valid());  // At least |deeplink_url_| must be set.

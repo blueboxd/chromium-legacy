@@ -294,19 +294,15 @@ void ScrollOffsetAnimationCurve::ApplyAdjustment(
 
 gfx::ScrollOffset ScrollOffsetAnimationCurve::GetValue(
     base::TimeDelta t) const {
-  base::TimeDelta duration = total_animation_duration_ - last_retarget_;
+  const base::TimeDelta duration = total_animation_duration_ - last_retarget_;
   t -= last_retarget_;
 
-  if (duration.is_zero())
+  if (duration.is_zero() || (t >= duration))
     return target_value_;
-
   if (t <= base::TimeDelta())
     return initial_value_;
 
-  if (t >= duration)
-    return target_value_;
-
-  double progress = timing_function_->GetValue(t / duration);
+  const double progress = timing_function_->GetValue(t / duration);
   return gfx::ScrollOffset(
       gfx::Tween::FloatValueBetween(progress, initial_value_.x(),
                                     target_value_.x()),

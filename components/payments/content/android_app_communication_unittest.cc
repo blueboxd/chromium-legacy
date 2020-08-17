@@ -175,17 +175,28 @@ TEST_F(AndroidAppCommunicationTest, TwoServicesInPackage) {
       base::BindOnce(&AndroidAppCommunicationTest::OnGetAppDescriptionsResponse,
                      base::Unretained(this)));
 
+  EXPECT_FALSE(error_.has_value());
   if (support_->AreAndroidAppsSupportedOnThisPlatform()) {
-    ASSERT_TRUE(error_.has_value());
-    EXPECT_EQ(
-        "Found more than one IS_READY_TO_PAY service in the Trusted Web "
-        "Activity, but at most one service is supported.",
-        error_.value());
-  } else {
-    EXPECT_FALSE(error_.has_value());
-  }
+    ASSERT_EQ(1u, apps_.size());
+    ASSERT_NE(nullptr, apps_.front().get());
+    EXPECT_EQ("com.example.app", apps_.front()->package);
 
-  EXPECT_TRUE(apps_.empty());
+    // The logic for checking for multiple services is cross-platform in
+    // android_payment_app_factory.cc, so the platform-specific implementations
+    // of android_app_communication.h do not check for this error condition.
+    std::vector<std::string> expected_service_names = {
+        "com.example.app.ServiceOne", "com.example.app.ServiceTwo"};
+    EXPECT_EQ(expected_service_names, apps_.front()->service_names);
+
+    ASSERT_EQ(1u, apps_.front()->activities.size());
+    ASSERT_NE(nullptr, apps_.front()->activities.front().get());
+    EXPECT_EQ("com.example.app.Activity",
+              apps_.front()->activities.front()->name);
+    EXPECT_EQ("https://play.google.com/billing",
+              apps_.front()->activities.front()->default_payment_method);
+  } else {
+    EXPECT_TRUE(apps_.empty());
+  }
 }
 
 TEST_F(AndroidAppCommunicationTest, ActivityAndService) {

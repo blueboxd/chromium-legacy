@@ -81,13 +81,6 @@ class CC_EXPORT VideoPlaybackRoughnessReporter {
   static_assert(kPercentileToSubmit > 0 && kPercentileToSubmit < 100,
                 "invalid percentile value");
 
-  // Desired duration of ConsecutiveFramesWindow in seconds.
-  // This value and the video FPS are being used when calculating actual
-  // number of frames in the ConsecutiveFramesWindow.
-  // kMinWindowSize and kMaxWindowSize put bounds to the window length
-  // and superseed this value.
-  static constexpr double kDesiredWindowDuration = 1.0;
-
  private:
   friend class VideoPlaybackRoughnessReporterTest;
   struct FrameInfo {

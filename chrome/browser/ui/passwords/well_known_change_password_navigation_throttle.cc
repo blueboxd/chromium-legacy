@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "chrome/browser/password_manager/change_password_url_service_factory.h"
 #include "components/password_manager/core/browser/change_password_url_service.h"
+#include "components/password_manager/core/browser/well_known_change_password_state.h"
 #include "components/password_manager/core/browser/well_known_change_password_util.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "content/public/browser/browser_context.h"
@@ -116,44 +117,12 @@ const char* WellKnownChangePasswordNavigationThrottle::GetNameForLogging() {
 
 void WellKnownChangePasswordNavigationThrottle::FetchNonExistingResource(
     NavigationHandle* handle) {
-  auto resource_request = std::make_unique<network::ResourceRequest>();
-  resource_request->url =
-      CreateWellKnownNonExistingResourceURL(handle->GetURL());
-  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
-  resource_request->load_flags = net::LOAD_DISABLE_CACHE;
-  net::NetworkTrafficAnnotationTag traffic_annotation =
-      net::DefineNetworkTrafficAnnotation(
-          "well_known_path_that_should_not_exist",
-          R"(
-        semantics {
-          sender: "Password Manager"
-          description:
-            "Check whether the site supports .well-known 'special' URLs."
-            "If the website does not support the spec we navigate to the "
-            "fallback url. See also "
-"https://wicg.github.io/change-password-url/response-code-reliability.html#iana"
-          trigger:
-            "When the user clicks 'Change password' on "
-            "chrome://settings/passwords, or when they visit the "
-            "[ORIGIN]/.well-known/change-password special URL, Chrome makes "
-            "this additional request. Chrome Password manager shows a button "
-            "with the link in the password checkup for compromised passwords "
-            "view (chrome://settings/passwords/check) and in a dialog when the "
-            "user signs in using compromised credentials."
-          data:
-            "The request body is empty. No user data is included."
-          destination: WEBSITE
-        }
-        policy {
-          cookies_allowed: NO
-          setting: "This feature cannot be disabled."
-          policy_exception_justification: "Essential for navigation."
-        })");
   auto url_loader_factory = content::BrowserContext::GetDefaultStoragePartition(
                                 handle->GetWebContents()->GetBrowserContext())
                                 ->GetURLLoaderFactoryForBrowserProcess();
-  url_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
-                                                 traffic_annotation);
+  url_loader_ =
+      password_manager::CreateResourceRequestToWellKnownNonExistingResourceFor(
+          handle->GetURL());
   // Binding the callback to |this| is safe, because the navigationthrottle
   // defers if the request is not received yet. Thereby the throttle still exist
   // when the response arrives.

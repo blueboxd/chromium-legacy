@@ -16,7 +16,6 @@
 #include "base/task/thread_pool.h"
 #include "chrome/browser/extensions/menu_manager.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/web_applications/extensions/bookmark_app_registrar.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/image_loader.h"
@@ -202,23 +201,34 @@ bool BookmarkAppIconManager::HasIcons(
   return true;
 }
 
+base::Optional<web_app::AppIconManager::IconSizeAndPurpose>
+BookmarkAppIconManager::FindIconMatchBigger(
+    const web_app::AppId& app_id,
+    const std::vector<IconPurpose>& purposes,
+    SquareSizePx min_size) const {
+  const Extension* app = GetBookmarkApp(profile_, app_id);
+  if (!app)
+    return base::nullopt;
+  // Legacy bookmark apps handle IconPurpose::ANY icons only.
+  if (!base::Contains(purposes, IconPurpose::ANY))
+    return base::nullopt;
+
+  const ExtensionIconSet& icons = IconsInfo::GetIcons(app);
+  const std::string& path = icons.Get(min_size, ExtensionIconSet::MATCH_BIGGER);
+  // Returns 0 if path is empty or not found.
+  int found_icon_size = icons.GetIconSizeFromPath(path);
+
+  if (found_icon_size == 0)
+    return base::nullopt;
+
+  return IconSizeAndPurpose{found_icon_size, IconPurpose::ANY};
+}
+
 bool BookmarkAppIconManager::HasSmallestIcon(
     const web_app::AppId& app_id,
     const std::vector<IconPurpose>& purposes,
-    SquareSizePx icon_size_in_px) const {
-  const Extension* app = GetBookmarkApp(profile_, app_id);
-  if (!app)
-    return false;
-  // Legacy bookmark apps handle IconPurpose::ANY icons only.
-  if (!base::Contains(purposes, IconPurpose::ANY))
-    return false;
-
-  const ExtensionIconSet& icons = IconsInfo::GetIcons(app);
-
-  const std::string& path =
-      icons.Get(icon_size_in_px, ExtensionIconSet::MATCH_BIGGER);
-
-  return !path.empty();
+    SquareSizePx min_size) const {
+  return FindIconMatchBigger(app_id, purposes, min_size).has_value();
 }
 
 void BookmarkAppIconManager::ReadIcons(

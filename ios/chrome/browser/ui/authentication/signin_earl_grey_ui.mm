@@ -17,6 +17,7 @@
 #import "ios/chrome/test/earl_grey/chrome_matchers_app_interface.h"
 #import "ios/chrome/test/scoped_eg_synchronization_disabler.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
+#import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -34,23 +35,34 @@ using chrome_test_util::SignOutAccountsButton;
 @implementation SigninEarlGreyUI
 
 + (void)signinWithFakeIdentity:(FakeChromeIdentity*)fakeIdentity {
-  [self signinWithFakeIdentity:fakeIdentity isManagedAccount:NO];
-}
-
-+ (void)signinWithFakeIdentity:(FakeChromeIdentity*)fakeIdentity
-              isManagedAccount:(BOOL)isManagedAccount {
   [SigninEarlGrey addFakeIdentity:fakeIdentity];
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI
       tapSettingsMenuButton:chrome_test_util::SecondarySignInButton()];
   [self selectIdentityWithEmail:fakeIdentity.userEmail];
   [self confirmSigninConfirmationDialog];
-  if (isManagedAccount) {
+  if ([fakeIdentity.userEmail hasSuffix:ios::kManagedIdentityEmailSuffix]) {
     [self confirmSigninWithManagedAccount];
   }
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
   [SigninEarlGrey verifySignedInWithFakeIdentity:fakeIdentity];
+}
+
++ (void)signOut {
+  NSString* primaryAccountEmail =
+      [SigninEarlGreyAppInterface primaryAccountEmail];
+  GREYAssert(![primaryAccountEmail hasSuffix:ios::kManagedIdentityEmailSuffix],
+             @"Managed account must clear data on signout");
+  [self signOutWithButton:SignOutAccountsButton()
+      confirmationLabelID:IDS_IOS_DISCONNECT_DIALOG_CONTINUE_BUTTON_MOBILE];
+}
+
++ (void)signOutAndClearDataFromDevice {
+  [self signOutWithButton:
+            grey_accessibilityID(
+                kSettingsAccountsTableViewSignoutAndClearDataCellId)
+      confirmationLabelID:IDS_IOS_DISCONNECT_DIALOG_CONTINUE_AND_CLEAR_MOBILE];
 }
 
 + (void)selectIdentityWithEmail:(NSString*)userEmail {
@@ -213,19 +225,6 @@ using chrome_test_util::SignOutAccountsButton;
       break;
     }
   }
-
-  [ChromeEarlGreyUI tapAccountsMenuButton:signOutButtonMatcher];
-  id<GREYMatcher> confirmationButtonMatcher = [ChromeMatchersAppInterface
-      buttonWithAccessibilityLabelID:confirmationLabelID];
-  [[EarlGrey
-      selectElementWithMatcher:grey_allOf(confirmationButtonMatcher,
-                                          grey_not(signOutButtonMatcher), nil)]
-      performAction:grey_tap()];
-  // Wait until the user is signed out.
-  [ChromeEarlGreyUI waitForAppToIdle];
-  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
-      performAction:grey_tap()];
-  [SigninEarlGrey verifySignedOut];
 }
 
 + (void)tapRemoveAccountFromDeviceWithFakeIdentity:
@@ -244,6 +243,26 @@ using chrome_test_util::SignOutAccountsButton;
       performAction:grey_tap()];
   // Wait until the account is removed.
   [ChromeEarlGreyUI waitForAppToIdle];
+}
+
+#pragma mark - Private
+
++ (void)signOutWithButton:(id<GREYMatcher>)buttonMatcher
+      confirmationLabelID:(int)confirmationLabelID {
+  [ChromeEarlGreyUI openSettingsMenu];
+  [ChromeEarlGreyUI tapSettingsMenuButton:SettingsAccountButton()];
+
+  [ChromeEarlGreyUI tapAccountsMenuButton:buttonMatcher];
+  id<GREYMatcher> confirmationButtonMatcher = [ChromeMatchersAppInterface
+      buttonWithAccessibilityLabelID:confirmationLabelID];
+  [[EarlGrey selectElementWithMatcher:grey_allOf(confirmationButtonMatcher,
+                                                 grey_not(buttonMatcher), nil)]
+      performAction:grey_tap()];
+  // Wait until the user is signed out.
+  [ChromeEarlGreyUI waitForAppToIdle];
+  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
+      performAction:grey_tap()];
+  [SigninEarlGrey verifySignedOut];
 }
 
 @end

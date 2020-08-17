@@ -16,6 +16,8 @@
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/ui/compromised_credentials_manager.h"
 #include "components/password_manager/core/common/password_manager_features.h"
+#include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/profile_sync_service.h"
 #include "components/url_formatter/url_formatter.h"
@@ -92,11 +94,17 @@ void PasswordCheckManager::StartCheck() {
 
   // The request is being handled, so reset the boolean.
   was_start_requested_ = false;
+  is_check_running_ = true;
   bulk_leak_check_service_adapter_.StartBulkLeakCheck();
 }
 
 void PasswordCheckManager::StopCheck() {
   bulk_leak_check_service_adapter_.StopBulkLeakCheck();
+}
+
+base::Time PasswordCheckManager::GetLastCheckTimestamp() {
+  return base::Time::FromDoubleT(profile_->GetPrefs()->GetDouble(
+      password_manager::prefs::kLastTimePasswordCheckCompleted));
 }
 
 int PasswordCheckManager::GetCompromisedCredentialsCount() const {
@@ -157,6 +165,17 @@ void PasswordCheckManager::OnCompromisedCredentialsChanged(
 }
 
 void PasswordCheckManager::OnStateChanged(State state) {
+  if (state == State::kIdle && is_check_running_) {
+    // Save the time at which the last successful check finished.
+    profile_->GetPrefs()->SetDouble(
+        password_manager::prefs::kLastTimePasswordCheckCompleted,
+        base::Time::Now().ToDoubleT());
+  }
+
+  if (state != State::kRunning) {
+    is_check_running_ = false;
+  }
+
   observer_->OnPasswordCheckStatusChanged(GetUIStatus(state));
 }
 

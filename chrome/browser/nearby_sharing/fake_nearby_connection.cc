@@ -52,6 +52,10 @@ std::vector<uint8_t> FakeNearbyConnection::GetWrittenData() {
   return bytes;
 }
 
+bool FakeNearbyConnection::IsClosed() {
+  return closed_;
+}
+
 void FakeNearbyConnection::MaybeRunCallback() {
   DCHECK(!closed_);
   if (!callback_ || read_data_.empty())

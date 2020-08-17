@@ -775,7 +775,16 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
   DCHECK(_discoverFeed != discoverFeed);
   _discoverFeed = discoverFeed;
   _discoverItem.discoverFeed = _discoverFeed;
-  [self.dataSink reloadAllData];
+  // The UICollectionView -reloadData method is a no-op if it is called at the
+  // same time as other collection updates. This full refresh command can come
+  // at the same time as other collection update commands. To make sure that it
+  // is taken into account, dispatch it with a delay. See
+  // http://crbug.com/945726.
+  dispatch_after(
+      dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)),
+      dispatch_get_main_queue(), ^{
+        [self reloadAllData];
+      });
 }
 
 #pragma mark - PrefObserverDelegate

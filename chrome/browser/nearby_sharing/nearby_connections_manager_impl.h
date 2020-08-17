@@ -63,6 +63,9 @@ class NearbyConnectionsManagerImpl
       const std::string& endpoint_id) override;
   void UpgradeBandwidth(const std::string& endpoint_id) override;
 
+  // Converts the status to a logging-friendly string.
+  static std::string ConnectionsStatusToString(ConnectionsStatus status);
+
  private:
   using AdvertisingOptions =
       location::nearby::connections::mojom::AdvertisingOptions;

@@ -312,7 +312,7 @@ void PasswordFormManager::Save() {
     newly_blacklisted_ = false;
   }
 
-  password_save_manager_->Save(observed_form_, *parsed_submitted_form_);
+  password_save_manager_->Save(&observed_form_, *parsed_submitted_form_);
 
   client_->UpdateFormManagers();
 }
@@ -323,7 +323,7 @@ void PasswordFormManager::Update(const PasswordForm& credentials_to_update) {
   metrics_recorder_->SetSubmissionIndicatorEvent(
       parsed_submitted_form_->submission_event);
 
-  password_save_manager_->Update(credentials_to_update, observed_form_,
+  password_save_manager_->Update(credentials_to_update, &observed_form_,
                                  *parsed_submitted_form_);
 
   client_->UpdateFormManagers();
@@ -685,7 +685,7 @@ void PasswordFormManager::CreatePendingCredentials() {
     return;
 
   password_save_manager_->CreatePendingCredentials(
-      *parsed_submitted_form_, observed_form_, submitted_form_, IsHttpAuth(),
+      *parsed_submitted_form_, &observed_form_, submitted_form_, IsHttpAuth(),
       IsCredentialAPISave());
 }
 

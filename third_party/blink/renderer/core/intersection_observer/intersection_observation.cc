@@ -103,6 +103,16 @@ bool IntersectionObservation::ShouldCompute(unsigned flags) {
   DCHECK(Observer());
   if (!target_ || !observer_->RootIsValid() | !observer_->GetExecutionContext())
     return false;
+
+  // If we're processing post-layout deliveries only and we don't have a
+  // post-layout delivery observer, then return early.
+  if (flags & kPostLayoutDeliveryOnly) {
+    if (Observer()->GetDeliveryBehavior() !=
+        IntersectionObserver::kDeliverDuringPostLayoutSteps) {
+      return false;
+    }
+  }
+
   if (flags &
       (observer_->RootIsImplicit() ? kImplicitRootObserversNeedUpdate
                                    : kExplicitRootObserversNeedUpdate)) {

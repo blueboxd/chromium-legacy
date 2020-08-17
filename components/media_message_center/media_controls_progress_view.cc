@@ -91,7 +91,7 @@ void MediaControlsProgressView::UpdateProgress(
   base::TimeDelta current_position = media_position.GetPosition();
   base::TimeDelta duration = media_position.duration();
 
-  double progress = current_position.InSecondsF() / duration.InSecondsF();
+  double progress = current_position / duration;
   SetBarProgress(progress);
 
   // Time formatting can't yet represent durations greater than 24 hours in

@@ -174,16 +174,21 @@ class NearbySharingServiceImpl
   StatusCodes StopScanning();
   void OnIncomingAdvertisementDecoded(
       const std::string& endpoint_id,
-      NearbyConnection* connection,
+      ShareTarget placeholder_share_target,
       sharing::mojom::AdvertisementPtr advertisement);
   void OnIncomingTransferUpdate(const ShareTarget& share_target,
                                 TransferMetadata metadata);
   void CloseConnection(const ShareTarget& share_target);
   void OnIncomingDecryptedCertificate(
       const std::string& endpoint_id,
-      NearbyConnection* connection,
       sharing::mojom::AdvertisementPtr advertisement,
+      ShareTarget placeholder_share_target,
       base::Optional<NearbyShareDecryptedPublicCertificate> certificate);
+  void OnIncomingConnectionKeyVerificationDone(
+      ShareTarget share_target,
+      base::Optional<std::vector<uint8_t>> token,
+      PairedKeyVerificationRunner::PairedKeyVerificationResult result);
+  void RefreshUIOnDisconnection(ShareTarget share_target);
   void ReceiveIntroduction(ShareTarget share_target,
                            base::Optional<std::string> token);
   void OnReceivedIntroduction(ShareTarget share_target,

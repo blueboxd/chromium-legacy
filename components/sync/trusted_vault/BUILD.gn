@@ -10,6 +10,10 @@ static_library("trusted_vault") {
     "standalone_trusted_vault_backend.h",
     "standalone_trusted_vault_client.cc",
     "standalone_trusted_vault_client.h",
+    "trusted_vault_access_token_fetcher.h",
+    "trusted_vault_connection.h",
+    "trusted_vault_connection_impl.cc",
+    "trusted_vault_connection_impl.h",
   ]
   public_deps = [
     "//base",
@@ -20,6 +24,7 @@ static_library("trusted_vault") {
     "//components/signin/public/identity_manager",
     "//components/sync/protocol",
     "//crypto",
+    "//services/network/public/cpp:cpp",
     "//third_party/boringssl",
   ]
 }

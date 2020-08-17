@@ -1679,6 +1679,52 @@ bool LocalFrameView::CheckLayoutInvalidationIsAllowed() const {
   return true;
 }
 
+bool LocalFrameView::RunPostLayoutIntersectionObserverSteps() {
+  DCHECK(frame_->IsLocalRoot());
+  DCHECK(Lifecycle().GetState() >= DocumentLifecycle::kPrePaintClean);
+
+  ComputePostLayoutIntersections(0);
+
+  bool needs_more_lifecycle_steps = false;
+  ForAllNonThrottledLocalFrameViews(
+      [&needs_more_lifecycle_steps](LocalFrameView& frame_view) {
+        if (auto* controller = frame_view.GetFrame()
+                                   .GetDocument()
+                                   ->GetIntersectionObserverController()) {
+          controller->DeliverNotifications(
+              IntersectionObserver::kDeliverDuringPostLayoutSteps);
+        }
+        // If the lifecycle state changed as a result of the notifications, we
+        // should run the lifecycle again.
+        needs_more_lifecycle_steps |= frame_view.Lifecycle().GetState() <
+                                      DocumentLifecycle::kPrePaintClean;
+      });
+
+  return needs_more_lifecycle_steps;
+}
+
+void LocalFrameView::ComputePostLayoutIntersections(unsigned parent_flags) {
+  if (ShouldThrottleRendering())
+    return;
+
+  unsigned flags = GetIntersectionObservationFlags(parent_flags) |
+                   IntersectionObservation::kPostLayoutDeliveryOnly;
+
+  if (auto* controller =
+          GetFrame().GetDocument()->GetIntersectionObserverController()) {
+    controller->ComputeIntersections(flags);
+  }
+
+  for (Frame* child = frame_->Tree().FirstChild(); child;
+       child = child->Tree().NextSibling()) {
+    auto* child_local_frame = DynamicTo<LocalFrame>(child);
+    if (!child_local_frame)
+      continue;
+    if (LocalFrameView* child_view = child_local_frame->View())
+      child_view->ComputePostLayoutIntersections(flags);
+  }
+}
+
 void LocalFrameView::ScheduleRelayout() {
   DCHECK(frame_->View() == this);
 
@@ -2405,6 +2451,9 @@ void LocalFrameView::UpdateLifecyclePhasesInternal(
   // the potential to dirty layout (until loop limit is reached) and therefore
   // the above lifecycle phases need to be re-run until the limit is reached
   // or no layout is pending.
+  // Note that after ResizeObserver has settled, we also run intersection
+  // observations that need to be delievered in post-layout. This process can
+  // also dirty layout, which will run this loop again.
   while (true) {
     bool run_more_lifecycle_phases =
         RunStyleAndLayoutLifecyclePhases(target_state);
@@ -2456,10 +2505,28 @@ void LocalFrameView::UpdateLifecyclePhasesInternal(
       }
     }
 
-    run_more_lifecycle_phases = RunResizeObserverSteps(target_state);
-    if (!run_more_lifecycle_phases)
+    // ResizeObserver and post-layout IntersectionObserver observation
+    // deliveries may dirty style and layout. RunResizeObserverSteps will return
+    // true if any observer ran that may have dirtied style or layout;
+    // RunPostLayoutIntersectionObserverSteps will return true if any
+    // observations led to content-visibility intersection changing visibility
+    // state synchronously (which happens on the first intersection
+    // observeration of a context).
+    bool needs_to_repeat_lifecycle = RunResizeObserverSteps(target_state);
+    // Only run the rest of the steps here if resize observer is done.
+    if (needs_to_repeat_lifecycle)
+      continue;
+
+    needs_to_repeat_lifecycle = RunPostLayoutIntersectionObserverSteps();
+    if (!needs_to_repeat_lifecycle)
       break;
   }
+
+  // Once we exit the ResizeObserver / IntersectionObserver loop above, we need
+  // to clear the resize observer limits so that next time we run this, we can
+  // deliver more observations.
+  ClearResizeObserverLimit();
+
   // Layout invalidation scope was disabled for resize observer
   // re-enable it for subsequent steps
 #if DCHECK_IS_ON()
@@ -2492,15 +2559,16 @@ bool LocalFrameView::RunResizeObserverSteps(
           re_run_lifecycles = re_run_lifecycles || result;
         });
   }
-  if (!re_run_lifecycles) {
-    ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
-      ResizeObserverController* resize_controller =
-          ResizeObserverController::From(*frame_view.frame_->DomWindow());
-      resize_controller->ClearMinDepth();
-      resize_controller->SetLoopLimitErrorDispatched(false);
-    });
-  }
   return re_run_lifecycles;
+}
+
+void LocalFrameView::ClearResizeObserverLimit() {
+  ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
+    ResizeObserverController* resize_controller =
+        ResizeObserverController::From(*frame_view.frame_->DomWindow());
+    resize_controller->ClearMinDepth();
+    resize_controller->SetLoopLimitErrorDispatched(false);
+  });
 }
 
 bool LocalFrameView::RunStyleAndLayoutLifecyclePhases(

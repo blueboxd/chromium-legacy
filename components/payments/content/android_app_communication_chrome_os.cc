@@ -56,12 +56,6 @@ void OnIsImplemented(
     return;
   }
 
-  if (response->get_valid()->service_names.size() > 1U) {
-    std::move(callback).Run(errors::kMoreThanOneService,
-                            /*app_descriptions=*/{});
-    return;
-  }
-
   auto activity = std::make_unique<AndroidActivityDescription>();
   activity->name = response->get_valid()->activity_names.front();
 
@@ -176,6 +170,20 @@ arc::mojom::PaymentParametersPtr CreatePaymentParameters(
   return parameters;
 }
 
+std::vector<std::unique_ptr<AndroidAppDescription>> CreateAppForTesting(
+    const std::string& package_name,
+    const std::string& method_name) {
+  auto activity = std::make_unique<AndroidActivityDescription>();
+  activity->name = package_name + ".Activity";
+  activity->default_payment_method = method_name;
+  auto app = std::make_unique<AndroidAppDescription>();
+  app->package = package_name;
+  app->activities.emplace_back(std::move(activity));
+  std::vector<std::unique_ptr<AndroidAppDescription>> app_descriptions;
+  app_descriptions.emplace_back(std::move(app));
+  return app_descriptions;
+}
+
 // Invokes the TWA Android app in Android subsystem on Chrome OS.
 class AndroidAppCommunicationChromeOS : public AndroidAppCommunication {
  public:
@@ -202,6 +210,13 @@ class AndroidAppCommunicationChromeOS : public AndroidAppCommunication {
       // so there're no payment apps available.
       std::move(callback).Run(/*error_message=*/base::nullopt,
                               /*app_descriptions=*/{});
+      return;
+    }
+
+    if (!package_name_for_testing_.empty()) {
+      std::move(callback).Run(
+          /*error_message=*/base::nullopt,
+          CreateAppForTesting(package_name_for_testing_, method_for_testing_));
       return;
     }
 
@@ -258,6 +273,15 @@ class AndroidAppCommunicationChromeOS : public AndroidAppCommunication {
                         const std::string& payment_request_id,
                         InvokePaymentAppCallback callback) override {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+    base::Optional<std::string> error_message;
+    if (package_name_for_testing_ == package_name) {
+      std::move(callback).Run(error_message,
+                              /*is_activity_result_ok=*/true,
+                              method_for_testing_, response_for_testing_);
+      return;
+    }
+
     auto* payment_app_service = get_app_service_.Run(context());
     if (!payment_app_service) {
       std::move(callback).Run(errors::kUnableToInvokeAndroidPaymentApps,
@@ -267,7 +291,6 @@ class AndroidAppCommunicationChromeOS : public AndroidAppCommunication {
       return;
     }
 
-    base::Optional<std::string> error_message;
     auto parameters = CreatePaymentParameters(
         package_name, activity_name, stringified_method_data, top_level_origin,
         payment_request_origin, payment_request_id, &error_message);
@@ -284,14 +307,27 @@ class AndroidAppCommunicationChromeOS : public AndroidAppCommunication {
         base::BindOnce(&OnPaymentAppResponse, std::move(callback)));
   }
 
-  // AndroidAppCommunication implementation:
+  // AndroidAppCommunication implementation.
   void SetForTesting() override {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     get_app_service_ = base::BindRepeating(
         &arc::ArcPaymentAppBridge::GetForBrowserContextForTesting);
   }
 
+  // AndroidAppCommunication implementation.
+  void SetAppForTesting(const std::string& package_name,
+                        const std::string& method,
+                        const std::string& response) override {
+    package_name_for_testing_ = package_name;
+    method_for_testing_ = method;
+    response_for_testing_ = response;
+  }
+
  private:
+  std::string package_name_for_testing_;
+  std::string method_for_testing_;
+  std::string response_for_testing_;
+
   base::RepeatingCallback<arc::ArcPaymentAppBridge*(content::BrowserContext*)>
       get_app_service_;
 };

@@ -971,11 +971,6 @@ const char kEnableResourceLoadingHintsDescription[] =
     "Enable using server-provided resource loading hints to provide a preview "
     "over slow network connections.";
 
-const char kEnableSyncTrustedVaultName[] =
-    "Enable trusted vault sync passphrase type";
-const char kEnableSyncTrustedVaultDescription[] =
-    "Enables the new, experimental passphrase type for sync data";
-
 #if BUILDFLAG(ENABLE_TAB_SEARCH)
 const char kEnableTabSearchName[] = "Enable Tab Search";
 const char kEnableTabSearchDescription[] =

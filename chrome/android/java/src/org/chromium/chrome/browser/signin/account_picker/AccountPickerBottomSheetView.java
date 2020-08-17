@@ -32,6 +32,7 @@ class AccountPickerBottomSheetView implements BottomSheetContent {
     private final TextView mAccountPickerTitle;
     private final RecyclerView mAccountListView;
     private final View mSelectedAccountView;
+    private final View mIncognitoInterstitialView;
     private final ButtonCompat mContinueAsButton;
 
     AccountPickerBottomSheetView(Context context) {
@@ -40,6 +41,8 @@ class AccountPickerBottomSheetView implements BottomSheetContent {
                 R.layout.account_picker_bottom_sheet_view, null);
         mAccountPickerTitle = mContentView.findViewById(R.id.account_picker_bottom_sheet_title);
         mAccountListView = mContentView.findViewById(R.id.account_picker_account_list);
+        mIncognitoInterstitialView =
+                mContentView.findViewById(R.id.incognito_interstitial_bottom_sheet_view);
         mAccountListView.setLayoutManager(new LinearLayoutManager(
                 mAccountListView.getContext(), LinearLayoutManager.VERTICAL, false));
         mSelectedAccountView = mContentView.findViewById(R.id.account_picker_selected_account);
@@ -124,6 +127,19 @@ class AccountPickerBottomSheetView implements BottomSheetContent {
         mContinueAsButton.setVisibility(View.GONE);
         mContentView.findViewById(R.id.account_picker_signin_spinner_view)
                 .setVisibility(View.VISIBLE);
+    }
+
+    void setUpIncognitoInterstitialView() {
+        // TODO(crbug.com/1103262): Setup the incognito interstitial strings.
+        ImageView logo = mContentView.findViewById(R.id.account_picker_bottom_sheet_logo);
+        logo.setImageResource(R.drawable.location_bar_incognito_badge);
+
+        mAccountPickerTitle.setVisibility(View.GONE);
+        mContentView.findViewById(R.id.account_picker_bottom_sheet_subtitle)
+                .setVisibility(View.GONE);
+        mContentView.findViewById(R.id.account_picker_horizontal_divider).setVisibility(View.GONE);
+        mAccountListView.setVisibility(View.GONE);
+        mIncognitoInterstitialView.setVisibility(View.VISIBLE);
     }
 
     @Override

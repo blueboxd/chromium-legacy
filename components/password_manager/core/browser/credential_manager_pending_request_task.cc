@@ -56,7 +56,11 @@ auto MakeFlatSet(KeyGetter key_getter) {
 // Remove duplicates in |forms| before displaying them in the account chooser.
 void FilterDuplicates(
     std::vector<std::unique_ptr<autofill::PasswordForm>>* forms) {
-  std::vector<std::unique_ptr<autofill::PasswordForm>> federated_forms;
+  auto federated_forms_with_unique_username =
+      MakeFlatSet(/*key_getter=*/[](const auto& form) {
+        return std::make_pair(form->username_value, form->federation_origin);
+      });
+
   // The key is [username, signon_realm, store]. signon_realm is used only for
   // PSL matches because those entries have it in the UI.
   auto credentials = MakeFlatSet(/*key_getter=*/[](const auto& form) {
@@ -67,7 +71,13 @@ void FilterDuplicates(
   });
   for (auto& form : *forms) {
     if (!form->federation_origin.opaque()) {
-      federated_forms.push_back(std::move(form));
+      // |forms| contains credentials from both the profile and account stores.
+      // Therefore, it could potentially contains duplicate federated
+      // credentials. In case of duplicates, favor the account store version.
+      auto result =
+          federated_forms_with_unique_username.insert(std::move(form));
+      if (!result.second && form->IsUsingAccountStore())
+        *result.first = std::move(form);
     } else {
       auto result = credentials.insert(std::move(form));
       if (!result.second && IsBetterMatch(*form, **result.first))
@@ -93,6 +103,9 @@ void FilterDuplicates(
       *result.first = std::move(form);
   }
   *forms = std::move(credentials_with_unique_passwords).extract();
+
+  std::vector<std::unique_ptr<autofill::PasswordForm>> federated_forms =
+      std::move(federated_forms_with_unique_username).extract();
   std::move(federated_forms.begin(), federated_forms.end(),
             std::back_inserter(*forms));
 }

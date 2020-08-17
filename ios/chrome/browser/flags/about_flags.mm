@@ -51,7 +51,6 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/base/sync_base_switches.h"
 #include "components/sync/driver/sync_driver_switches.h"
-#include "components/sync/engine/sync_engine_switches.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/ukm/ios/features.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_features.h"
@@ -450,10 +449,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutofillPruneSuggestionsName,
      flag_descriptions::kAutofillPruneSuggestionsDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillPruneSuggestions)},
-    {"enable-sync-trusted-vault",
-     flag_descriptions::kEnableSyncTrustedVaultName,
-     flag_descriptions::kEnableSyncTrustedVaultDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(switches::kSyncSupportTrustedVaultPassphrase)},
     {"collections-card-presentation-style",
      flag_descriptions::kCollectionsCardPresentationStyleName,
      flag_descriptions::kCollectionsCardPresentationStyleDescription,
@@ -534,10 +529,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"reload-sad-tab", flag_descriptions::kReloadSadTabName,
      flag_descriptions::kReloadSadTabDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(web::kReloadSadTab)},
-    {"improved-cookie-controls",
-     flag_descriptions::kImprovedCookieControlsDescription,
-     flag_descriptions::kImprovedCookieControlsDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(content_settings::kImprovedCookieControls)},
     {"page-info-refactoring", flag_descriptions::kPageInfoRefactoringName,
      flag_descriptions::kPageInfoRefactoringDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kPageInfoRefactoring)},

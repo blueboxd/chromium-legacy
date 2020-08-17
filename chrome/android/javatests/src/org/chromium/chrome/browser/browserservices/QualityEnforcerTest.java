@@ -119,7 +119,30 @@ public class QualityEnforcerTest {
         assertEquals(mErrorMessage, "Page unavailable offline: https://example.com/");
     }
 
+    @Test
+    @MediumTest
+    public void notifiedDigitalAssertLinkFailed() throws TimeoutException {
+        launchNotVerify(mTestPage);
+        mCallbackHelper.waitForFirst();
+    }
+
     public void launch(String testPage) throws TimeoutException {
+        Intent intent = createTrustedWebActivityIntentWithCallback(testPage);
+        spoofVerification(PACKAGE_NAME, testPage);
+        createSession(intent, PACKAGE_NAME);
+
+        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
+    }
+
+    public void launchNotVerify(String testPage) throws TimeoutException {
+        Intent intent = createTrustedWebActivityIntentWithCallback(testPage);
+        createSession(intent, PACKAGE_NAME);
+
+        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
+    }
+
+    private Intent createTrustedWebActivityIntentWithCallback(String testPage)
+            throws TimeoutException {
         CustomTabsSession session = CustomTabsTestUtils.bindWithCallback(mCallback).session;
         Intent intent = new CustomTabsIntent.Builder(session).build().intent;
         intent.setComponent(new ComponentName(
@@ -128,10 +151,6 @@ public class QualityEnforcerTest {
         intent.setData(Uri.parse(testPage));
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.putExtra(TrustedWebUtils.EXTRA_LAUNCH_AS_TRUSTED_WEB_ACTIVITY, true);
-
-        spoofVerification(PACKAGE_NAME, testPage);
-        createSession(intent, PACKAGE_NAME);
-
-        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
+        return intent;
     }
 }

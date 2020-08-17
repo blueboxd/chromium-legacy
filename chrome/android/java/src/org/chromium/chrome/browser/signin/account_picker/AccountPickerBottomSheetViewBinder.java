@@ -56,6 +56,9 @@ class AccountPickerBottomSheetViewBinder {
             case AccountPickerBottomSheetState.SIGNIN_IN_PROGRESS:
                 view.setUpSignInInProgressView();
                 break;
+            case AccountPickerBottomSheetState.INCOGNITO_INTERSTITIAL:
+                view.setUpIncognitoInterstitialView();
+                break;
             default:
                 throw new IllegalArgumentException(
                         "Cannot bind AccountPickerBottomSheetView for the state:"

@@ -118,10 +118,46 @@ class FrameImplTest : public cr_fuchsia::WebEngineBrowserTest {
     return WebEngineBrowserTest::CreateFrame(&navigation_listener_);
   }
 
+  // Dummy SemanticsManager to satisfy tests that call CreateView().
+  FakeSemanticsManager fake_semantics_manager_;
+
   cr_fuchsia::TestNavigationListener navigation_listener_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameImplTest);
 };
+
+std::string GetDocumentVisibilityState(fuchsia::web::Frame* frame) {
+  auto visibility = base::MakeRefCounted<base::RefCountedData<std::string>>();
+  base::RunLoop loop;
+  frame->ExecuteJavaScript(
+      {"*"},
+      cr_fuchsia::MemBufferFromString("document.visibilityState;", "test"),
+      [visibility, quit_loop = loop.QuitClosure()](
+          fuchsia::web::Frame_ExecuteJavaScript_Result result) {
+        ASSERT_TRUE(result.is_response());
+        visibility->data = StringFromMemBufferOrDie(result.response().result);
+        quit_loop.Run();
+      });
+  loop.Run();
+  return visibility->data;
+}
+
+// Verifies that Frames are initially "hidden".
+IN_PROC_BROWSER_TEST_F(FrameImplTest, VisibilityState) {
+  fuchsia::web::FramePtr frame = CreateFrame();
+
+  fuchsia::web::NavigationControllerPtr controller;
+  frame->GetNavigationController(controller.NewRequest());
+
+  // Navigate to a page and wait for it to finish loading.
+  ASSERT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
+      controller.get(), fuchsia::web::LoadUrlParams(), url::kAboutBlankURL));
+  navigation_listener_.RunUntilUrlAndTitleEquals(GURL(url::kAboutBlankURL),
+                                                 url::kAboutBlankURL);
+
+  // Query the document.visibilityState before creating a View.
+  EXPECT_EQ(GetDocumentVisibilityState(frame.get()), "\"hidden\"");
+}
 
 void VerifyCanGoBackAndForward(fuchsia::web::NavigationController* controller,
                                bool can_go_back_expected,
@@ -240,20 +276,13 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, ContextDeletedBeforeFrameWithView) {
   EXPECT_TRUE(frame);
   FrameImpl* frame_impl = context_impl()->GetFrameImplForTest(&frame);
 
-  // Sets up a FakeSemanticsManager to be used when an AccessibilityBridge is
-  // created. This prevents the remote handle from being dropped, which causes
-  // the Frame to be torn down.
-  FakeSemanticsManager semantics_manager;
-  fidl::Binding<fuchsia::accessibility::semantics::SemanticsManager>
-      semantics_manager_binding(&semantics_manager);
-  fuchsia::accessibility::semantics::SemanticsManagerPtr semantics_manager_ptr;
-  semantics_manager_binding.Bind(semantics_manager_ptr.NewRequest());
-  frame_impl->set_semantics_manager_for_test(std::move(semantics_manager_ptr));
+  // CreateView() will cause the AccessibilityBridge to be created.
+  frame_impl->set_semantics_manager_for_test(&fake_semantics_manager_);
 
   auto view_tokens = scenic::ViewTokenPair::New();
-
   frame->CreateView(std::move(view_tokens.view_token));
   base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(frame_impl->has_view_for_test());
 
   base::RunLoop run_loop;
   frame.set_error_handler([&run_loop](zx_status_t status) {
@@ -1481,18 +1510,11 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, RecreateView) {
   ASSERT_TRUE(frame_impl);
   EXPECT_FALSE(frame_impl->has_view_for_test());
 
+  // CreateView() will cause the AccessibilityBridge to be created.
+  frame_impl->set_semantics_manager_for_test(&fake_semantics_manager_);
+
   fuchsia::web::NavigationControllerPtr controller;
   frame->GetNavigationController(controller.NewRequest());
-
-  // Sets up a FakeSemanticsManager to be used when an AccessibilityBridge is
-  // created. This prevents the remote handle from being dropped, which causes
-  // the Frame to be torn down.
-  FakeSemanticsManager semantics_manager;
-  fidl::Binding<fuchsia::accessibility::semantics::SemanticsManager>
-      semantics_manager_binding(&semantics_manager);
-  fuchsia::accessibility::semantics::SemanticsManagerPtr semantics_manager_ptr;
-  semantics_manager_binding.Bind(semantics_manager_ptr.NewRequest());
-  frame_impl->set_semantics_manager_for_test(std::move(semantics_manager_ptr));
 
   // Verify that the Frame can navigate, prior to the View being created.
   const GURL page1_url(embedded_test_server()->GetURL(kPage1Path));
@@ -1501,11 +1523,8 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, RecreateView) {
   navigation_listener_.RunUntilUrlAndTitleEquals(page1_url, kPage1Title);
 
   // Request a View from the Frame, and pump the loop to process the request.
-  zx::eventpair owner_token, frame_token;
-  ASSERT_EQ(zx::eventpair::create(0, &owner_token, &frame_token), ZX_OK);
-  fuchsia::ui::views::ViewToken view_token;
-  view_token.value = std::move(frame_token);
-  frame->CreateView(std::move(view_token));
+  auto view_tokens = scenic::ViewTokenPair::New();
+  frame->CreateView(std::move(view_tokens.view_token));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(frame_impl->has_view_for_test());
 
@@ -1515,17 +1534,9 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, RecreateView) {
       controller.get(), fuchsia::web::LoadUrlParams(), page2_url.spec()));
   navigation_listener_.RunUntilUrlAndTitleEquals(page2_url, kPage2Title);
 
-  // Create another FakeSemanticsManager for a second call to CreateView.
-  fuchsia::accessibility::semantics::SemanticsManagerPtr semantics_manager_ptr2;
-  semantics_manager_binding.Bind(semantics_manager_ptr2.NewRequest());
-  frame_impl->set_semantics_manager_for_test(std::move(semantics_manager_ptr2));
-
   // Create new View tokens and request a new view.
-  zx::eventpair owner_token2, frame_token2;
-  ASSERT_EQ(zx::eventpair::create(0, &owner_token2, &frame_token2), ZX_OK);
-  fuchsia::ui::views::ViewToken view_token2;
-  view_token2.value = std::move(frame_token2);
-  frame->CreateView(std::move(view_token2));
+  auto view_tokens2 = scenic::ViewTokenPair::New();
+  frame->CreateView(std::move(view_tokens2.view_token));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(frame_impl->has_view_for_test());
 

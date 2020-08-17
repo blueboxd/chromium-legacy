@@ -145,7 +145,7 @@ class ChromeCleanerControllerImpl : public ChromeCleanerController {
   base::Time time_scanning_started_;
   base::Time time_cleanup_started_;
 
-  base::ObserverList<Observer>::Unchecked observer_list_;
+  base::ObserverList<Observer> observer_list_;
 
   // Mutex that guards |pending_invocation_type_|,
   // |on_demand_sw_reporter_fetcher_| and |cached_reporter_invocations_|.

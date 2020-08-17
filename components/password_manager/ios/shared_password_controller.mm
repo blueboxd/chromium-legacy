@@ -327,14 +327,18 @@ NSString* const kSuggestionSuffix = @" ••••••••";
          ![rawSuggestion.value hasPrefix:formQuery.typedValue])) {
       continue;
     }
-    [suggestions
-        addObject:[FormSuggestion
-                      suggestionWithValue:
-                          [rawSuggestion.value
-                              stringByAppendingString:kSuggestionSuffix]
-                       displayDescription:rawSuggestion.displayDescription
-                                     icon:nil
-                               identifier:0]];
+    DCHECK(self.delegate.passwordManagerClient);
+    BOOL requiresReauth =
+        self.delegate.passwordManagerClient->RequiresReauthToFill();
+    NSString* value =
+        [rawSuggestion.value stringByAppendingString:kSuggestionSuffix];
+    FormSuggestion* suggestion =
+        [FormSuggestion suggestionWithValue:value
+                         displayDescription:rawSuggestion.displayDescription
+                                       icon:nil
+                                 identifier:0
+                             requiresReauth:requiresReauth];
+    [suggestions addObject:suggestion];
   }
   base::Optional<PasswordDropdownState> suggestion_state;
   if (suggestions.count) {
@@ -346,14 +350,14 @@ NSString* const kSuggestionSuffix = @" ••••••••";
                              fieldType:formQuery.fieldType]) {
     // Add "Suggest Password...".
     NSString* suggestPassword = GetNSString(IDS_IOS_SUGGEST_PASSWORD);
-    [suggestions
-        addObject:
-            [FormSuggestion
-                suggestionWithValue:suggestPassword
-                 displayDescription:nil
-                               icon:nil
-                         identifier:autofill::
-                                        POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY]];
+    FormSuggestion* suggestion = [FormSuggestion
+        suggestionWithValue:suggestPassword
+         displayDescription:nil
+                       icon:nil
+                 identifier:autofill::POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY
+             requiresReauth:NO];
+
+    [suggestions addObject:suggestion];
     suggestion_state = PasswordDropdownState::kStandardGenerate;
   }
 

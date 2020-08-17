@@ -61,4 +61,9 @@ const base::Feature kSyncDeviceInfoInTransportMode{
 const base::Feature kDecoupleSyncFromAndroidMasterSync{
     "DecoupleSyncFromAndroidMasterSync", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Allows trusted vault implementation to follow key rotation (including device
+// registration).
+const base::Feature kFollowTrustedVaultKeyRotation{
+    "FollowTrustedVaultKeyRotation", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace switches

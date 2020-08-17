@@ -165,8 +165,7 @@ class TabLoadingFrameNavigationPolicyTest
   double GetRelativeTime() {
     base::TimeTicks now = task_environment()->GetMockTickClock()->NowTicks();
     base::TimeDelta elapsed = now - start_;
-    double relative =
-        elapsed.InSecondsF() / policy_->GetMaxTimeoutForTesting().InSecondsF();
+    double relative = elapsed / policy_->GetMaxTimeoutForTesting();
     return relative;
   }
 

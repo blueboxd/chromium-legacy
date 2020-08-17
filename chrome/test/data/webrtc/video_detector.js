@@ -79,6 +79,25 @@ function isVideoPlaying() {
 }
 
 /**
+ * Checks if the video has stopped
+ *
+ * @return {string} video-stopped or video-not-stopped.
+ */
+function isVideoStopped() {
+  // Video is considered to be stopped if the last 5 fingerprints are the same.
+  // We only check for rough equality though to account for rounding errors.
+  if (gFingerprints.length < 5)
+    returnToTest('video-not-stopped');
+
+  if (allElementsRoughlyEqualTo_(gFingerprints.slice(-5),
+                                 gFingerprints[gFingerprints.length - 1])) {
+    returnToTest('video-stopped');
+  }
+
+  returnToTest('video-not-stopped');
+}
+
+/**
  * Queries for the stream size (not necessarily the size at which the video tag
  * is rendered).
  *

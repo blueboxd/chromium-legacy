@@ -188,6 +188,25 @@ int32_t NormalizingIterator::GetNextChar() {
   return iter_.get();
 }
 
+// Copies the address line information and structured tokens from |source| to
+// |target|.
+void CopyAddressLineInformationFromProfile(const AutofillProfile& source,
+                                           Address* target) {
+  ServerFieldTypeSet types_to_copy;
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillAddressEnhancementVotes)) {
+    types_to_copy = {
+        ADDRESS_HOME_STREET_ADDRESS,        ADDRESS_HOME_STREET_NAME,
+        ADDRESS_HOME_DEPENDENT_STREET_NAME, ADDRESS_HOME_HOUSE_NUMBER,
+        ADDRESS_HOME_PREMISE_NAME,          ADDRESS_HOME_SUBPREMISE};
+  } else {
+    types_to_copy = {ADDRESS_HOME_STREET_ADDRESS};
+  }
+
+  for (const auto& type : types_to_copy)
+    target->SetRawInfo(type, source.GetRawInfo(type));
+}
+
 }  // namespace
 
 AutofillProfileComparator::AutofillProfileComparator(
@@ -791,17 +810,17 @@ bool AutofillProfileComparator::MergeAddresses(const AutofillProfile& p1,
   const base::string16& address2 = p2.GetInfo(kStreetAddress, app_locale_);
   // If one of the addresses is empty then use the other.
   if (address1.empty()) {
-    address->SetInfo(kStreetAddress, address2, app_locale_);
+    CopyAddressLineInformationFromProfile(p2, address);
   } else if (address2.empty()) {
-    address->SetInfo(kStreetAddress, address1, app_locale_);
+    CopyAddressLineInformationFromProfile(p1, address);
   } else {
     // Prefer the multi-line address if one is multi-line and the other isn't.
     bool address1_multiline = ContainsNewline(address1);
     bool address2_multiline = ContainsNewline(address2);
     if (address1_multiline && !address2_multiline) {
-      address->SetInfo(kStreetAddress, address1, app_locale_);
+      CopyAddressLineInformationFromProfile(p1, address);
     } else if (address2_multiline && !address1_multiline) {
-      address->SetInfo(kStreetAddress, address2, app_locale_);
+      CopyAddressLineInformationFromProfile(p2, address);
     } else {
       // Prefer the one with more tokens if they're both single-line or both
       // multi-line addresses, making sure to apply address normalization and
@@ -812,19 +831,20 @@ bool AutofillProfileComparator::MergeAddresses(const AutofillProfile& p1,
       switch (result) {
         case SAME_TOKENS:
           // They have the same set of unique tokens. Let's pick the one that's
-          // longer.
-          address->SetInfo(
-              kStreetAddress,
-              (p2.use_date() > p1.use_date() ? address2 : address1),
-              app_locale_);
+          // newer.
+          if (p2.use_date() > p1.use_date()) {
+            CopyAddressLineInformationFromProfile(p2, address);
+          } else {
+            CopyAddressLineInformationFromProfile(p1, address);
+          }
           break;
         case S1_CONTAINS_S2:
           // address1 has more unique tokens than address2.
-          address->SetInfo(kStreetAddress, address1, app_locale_);
+          CopyAddressLineInformationFromProfile(p1, address);
           break;
         case S2_CONTAINS_S1:
           // address2 has more unique tokens than address1.
-          address->SetInfo(kStreetAddress, address2, app_locale_);
+          CopyAddressLineInformationFromProfile(p2, address);
           break;
         case DIFFERENT_TOKENS:
         default:

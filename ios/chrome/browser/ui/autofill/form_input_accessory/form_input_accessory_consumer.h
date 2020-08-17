@@ -11,7 +11,6 @@
 
 @class FormSuggestion;
 @protocol FormInputAccessoryViewDelegate;
-@protocol FormSuggestionClient;
 
 @protocol FormInputAccessoryConsumer <NSObject>
 
@@ -55,8 +54,7 @@
 
 // Replace the keyboard accessory view with one showing the passed suggestions.
 // And form navigation buttons if not an iPad (which already includes those).
-- (void)showAccessorySuggestions:(NSArray<FormSuggestion*>*)suggestions
-                suggestionClient:(id<FormSuggestionClient>)suggestionClient;
+- (void)showAccessorySuggestions:(NSArray<FormSuggestion*>*)suggestions;
 
 // Indicates that the keyboard state changed.
 - (void)keyboardWillChangeToState:(KeyboardState)keyboardState;

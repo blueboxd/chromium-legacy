@@ -40,8 +40,9 @@ enum class IconType {
   WORD,
 };
 
+IconType GetIconTypeFromString(const std::string& icon_type_string);
 IconType GetIconTypeForPath(const base::FilePath& filepath);
-int GetResourceIdForIconType(IconType icon);
+gfx::ImageSkia GetVectorIconFromIconType(IconType icon);
 int GetChipResourceIdForIconType(IconType icon);
 }  // namespace internal
 

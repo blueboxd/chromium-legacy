@@ -74,7 +74,14 @@ class MODULES_EXPORT VibrationController final
 
   // Remote to VibrationManager mojo interface. This is reset in
   // |contextDestroyed| and must not be called or recreated after it is reset.
-  HeapMojoRemote<device::mojom::blink::VibrationManager> vibration_manager_;
+  //
+  // TODO(crbug.com/1116948): Remove kForceWithoutContextObserver parameter
+  // after hooking disconnect handler in js is implemented in
+  // MojoInterfaceInterceptor.
+  // See: third_party/blink/web_tests/vibration/vibration-iframe.html
+  HeapMojoRemote<device::mojom::blink::VibrationManager,
+                 HeapMojoWrapperMode::kForceWithoutContextObserver>
+      vibration_manager_;
 
   // Timer for calling |doVibrate| after a delay. It is safe to call
   // |startOneshot| when the timer is already running: it may affect the time

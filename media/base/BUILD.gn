@@ -383,6 +383,7 @@ source_set("base") {
   if (use_x11) {
     sources += [ "user_input_monitor_linux.cc" ]
     deps += [
+      "//ui/base:features",
       "//ui/events:events_base",
       "//ui/events/devices/x11",
       "//ui/gfx/x",

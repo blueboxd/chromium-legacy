@@ -39,6 +39,8 @@ class UserPolicySigninServiceTest;
 namespace {
 
 const char kTestEmail[] = "enterprise@example.com";
+const char kTestRefreshToken[] =
+    "test_refresh_token_for_enterprise@example.com";
 
 // Dummy delegate forwarding all the calls the test fixture.
 // Owned by the DiceTurnOnSyncHelper.
@@ -210,6 +212,9 @@ class UserPolicySigninServiceTest : public InProcessBrowserTest {
 
     account_info_ = signin::MakeAccountAvailable(
         IdentityManagerFactory::GetForProfile(profile()), kTestEmail);
+    signin::SetRefreshTokenForAccount(
+        IdentityManagerFactory::GetForProfile(profile()),
+        account_info_.account_id, kTestRefreshToken);
     SetupFakeGaiaResponses();
   }
 
@@ -237,9 +242,8 @@ class UserPolicySigninServiceTest : public InProcessBrowserTest {
     access_token_info.audience =
         GaiaUrls::GetInstance()->oauth2_chrome_client_id();
     access_token_info.email = kTestEmail;
-    fake_gaia_.IssueOAuthToken(
-        base::StringPrintf("refresh_token_for_%s", account_info_.gaia.c_str()),
-        access_token_info);
+    fake_gaia_.IssueOAuthToken(base::StringPrintf(kTestRefreshToken),
+                               access_token_info);
   }
 
   std::unique_ptr<net::test_server::HttpResponse> HandleUserInfoRequest(

@@ -75,8 +75,7 @@ class PrivacyTableViewControllerTest : public ChromeTableViewControllerTest {
   }
 
   ChromeTableViewController* InstantiateController() override {
-    return [[PrivacyTableViewController alloc] initWithBrowser:browser_.get()
-                                            cookiesDescription:nil];
+    return [[PrivacyTableViewController alloc] initWithBrowser:browser_.get()];
   }
 
   web::WebTaskEnvironment task_environment_;
@@ -93,16 +92,9 @@ TEST_F(PrivacyTableViewControllerTest, TestModel) {
   EXPECT_EQ(2, NumberOfSections());
 
   // Sections[0].
-  if (base::FeatureList::IsEnabled(content_settings::kImprovedCookieControls)) {
-    EXPECT_EQ(2, NumberOfItemsInSection(0));
-    CheckTextCellTextAndDetailText(
-        l10n_util::GetNSString(IDS_IOS_OPTIONS_PRIVACY_COOKIES), nil, 0, 1);
-
-  } else {
-    EXPECT_EQ(1, NumberOfItemsInSection(0));
-    CheckTextCellTextAndDetailText(
-        l10n_util::GetNSString(IDS_IOS_CLEAR_BROWSING_DATA_TITLE), nil, 0, 0);
-  }
+  EXPECT_EQ(1, NumberOfItemsInSection(0));
+  CheckTextCellTextAndDetailText(
+      l10n_util::GetNSString(IDS_IOS_CLEAR_BROWSING_DATA_TITLE), nil, 0, 0);
 
   // Sections[1].
   EXPECT_EQ(1, NumberOfItemsInSection(1));

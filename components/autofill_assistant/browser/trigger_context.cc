@@ -7,6 +7,15 @@
 
 namespace autofill_assistant {
 
+// Parameter that allows setting the color of the overlay.
+const char kOverlayColorParameterName[] = "OVERLAY_COLORS";
+
+// Parameter that contains the current session username. Should be synced with
+// |SESSION_USERNAME_PARAMETER| from
+// .../password_manager/PasswordChangeLauncher.java
+// TODO(b/151401974): Eliminate duplicate parameter definitions.
+const char kPasswordChangeUsernameParameterName[] = "PASSWORD_CHANGE_USERNAME";
+
 // static
 std::unique_ptr<TriggerContext> TriggerContext::CreateEmpty() {
   return std::make_unique<TriggerContextImpl>();
@@ -27,6 +36,14 @@ std::unique_ptr<TriggerContext> TriggerContext::Merge(
 
 TriggerContext::TriggerContext() {}
 TriggerContext::~TriggerContext() {}
+
+base::Optional<std::string> TriggerContext::GetOverlayColors() const {
+  return GetParameter(kOverlayColorParameterName);
+}
+
+base::Optional<std::string> TriggerContext::GetPasswordChangeUsername() const {
+  return GetParameter(kPasswordChangeUsernameParameterName);
+}
 
 TriggerContextImpl::TriggerContextImpl() {}
 

@@ -9,6 +9,7 @@
 
 #import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_consumer.h"
 
+@protocol FormSuggestionClient;
 @class ManualFillAccessoryViewController;
 @protocol ManualFillAccessoryViewControllerDelegate;
 
@@ -18,6 +19,9 @@
 // calling |continueCustomKeyboardView|.
 @interface FormInputAccessoryViewController
     : NSObject <FormInputAccessoryConsumer>
+
+// Client in charge of handling actions in suggestions.
+@property(nonatomic, weak) id<FormSuggestionClient> formSuggestionClient;
 
 // Presents a view above the keyboard.
 - (void)presentView:(UIView*)view;

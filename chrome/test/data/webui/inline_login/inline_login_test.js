@@ -10,8 +10,9 @@ import {isChromeOS} from 'chrome://resources/js/cr.m.js';
 import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {assertEquals, assertFalse, assertTrue} from '../chai_assert.js';
-import {TestAuthenticator, TestInlineLoginBrowserProxy} from './inline_login_test_util.js';
+import {assertDeepEquals, assertEquals, assertFalse, assertTrue} from '../chai_assert.js';
+
+import {getFakeAccountsList, TestAuthenticator, TestInlineLoginBrowserProxy} from './inline_login_test_util.js';
 
 window.inline_login_test = {};
 inline_login_test.suiteName = 'InlineLoginTest';
@@ -97,6 +98,14 @@ suite(inline_login_test.suiteName, () => {
 
     testAuthenticator.dispatchEvent(new Event('showIncognito'));
     assertEquals(1, testBrowserProxy.getCallCount('showIncognito'));
+
+    testAuthenticator.dispatchEvent(new Event('getAccounts'));
+    assertEquals(1, testBrowserProxy.getCallCount('getAccounts'));
+    testBrowserProxy.whenCalled('getAccounts').then(function() {
+      assertEquals(1, testAuthenticator.getAccountsResponseCalls);
+      assertDeepEquals(
+          getFakeAccountsList(), testAuthenticator.getAccountsResponseResult);
+    });
   });
 
   test(assert(inline_login_test.TestNames.BackButton), () => {

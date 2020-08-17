@@ -99,8 +99,18 @@ base::Optional<std::vector<uint8_t>>
 FakeNearbyConnectionsManager::GetRawAuthenticationToken(
     const std::string& endpoint_id) {
   DCHECK(!IsShutdown());
-  // TODO(alexchau): Implement.
+
+  auto iter = endpoint_auth_tokens_.find(endpoint_id);
+  if (iter != endpoint_auth_tokens_.end())
+    return iter->second;
+
   return base::nullopt;
+}
+
+void FakeNearbyConnectionsManager::SetRawAuthenticationToken(
+    const std::string& endpoint_id,
+    std::vector<uint8_t> token) {
+  endpoint_auth_tokens_[endpoint_id] = std::move(token);
 }
 
 void FakeNearbyConnectionsManager::UpgradeBandwidth(

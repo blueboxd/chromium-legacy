@@ -234,13 +234,17 @@ void ShellDevToolsBindings::Attach() {
 }
 
 void ShellDevToolsBindings::UpdateInspectedWebContents(
-    WebContents* new_contents) {
+    WebContents* new_contents,
+    base::OnceCallback<void()> callback) {
   inspected_contents_ = new_contents;
   if (!agent_host_)
     return;
   AttachInternal();
-  CallClientFunction("DevToolsAPI.reattachMainTarget", nullptr, nullptr,
-                     nullptr);
+  CallClientFunction(
+      "DevToolsAPI.reattachMainTarget", nullptr, nullptr, nullptr,
+      base::BindOnce([](base::OnceCallback<void()> callback,
+                        base::Value) { std::move(callback).Run(); },
+                     std::move(callback)));
 }
 
 void ShellDevToolsBindings::WebContentsDestroyed() {
@@ -405,10 +409,12 @@ void ShellDevToolsBindings::DispatchProtocolMessage(
   }
 }
 
-void ShellDevToolsBindings::CallClientFunction(const std::string& function_name,
-                                               const base::Value* arg1,
-                                               const base::Value* arg2,
-                                               const base::Value* arg3) {
+void ShellDevToolsBindings::CallClientFunction(
+    const std::string& function_name,
+    const base::Value* arg1,
+    const base::Value* arg2,
+    const base::Value* arg3,
+    base::OnceCallback<void(base::Value)> cb) {
   std::string javascript = function_name + "(";
   if (arg1) {
     std::string json;
@@ -425,7 +431,7 @@ void ShellDevToolsBindings::CallClientFunction(const std::string& function_name,
   }
   javascript.append(");");
   web_contents()->GetMainFrame()->ExecuteJavaScriptForTests(
-      base::UTF8ToUTF16(javascript), base::NullCallback());
+      base::UTF8ToUTF16(javascript), std::move(cb));
 }
 
 void ShellDevToolsBindings::SendMessageAck(int request_id,

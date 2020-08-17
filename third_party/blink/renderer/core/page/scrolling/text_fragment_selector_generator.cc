@@ -15,27 +15,31 @@ namespace blink {
 constexpr int kExactTextMaxChars = 300;
 constexpr int kNoContextMinChars = 20;
 
-TextFragmentSelectorGenerator::TextFragmentSelectorGenerator(
-    LocalFrame* frame,
-    base::OnceCallback<void(const TextFragmentSelector&)> callback)
-    : frame_(frame), callback_(std::move(callback)) {}
-
-// TextFragmentSelectorGenerator is responsible for generating text fragment
-// selectors that have a unique match.
-void TextFragmentSelectorGenerator::GenerateSelector(
+void TextFragmentSelectorGenerator::UpdateSelection(
+    LocalFrame* selection_frame,
     const EphemeralRangeInFlatTree& selection_range) {
+  selection_frame_ = selection_frame;
+  selection_range_ = MakeGarbageCollected<Range>(
+      selection_range.GetDocument(),
+      ToPositionInDOMTree(selection_range.StartPosition()),
+      ToPositionInDOMTree(selection_range.EndPosition()));
+}
+
+void TextFragmentSelectorGenerator::GenerateSelector() {
+  EphemeralRangeInFlatTree ephemeral_range(selection_range_);
+
   const TextFragmentSelector kInvalidSelector(
       TextFragmentSelector::SelectorType::kInvalid);
 
   Node& start_first_block_ancestor =
       FindBuffer::GetFirstBlockLevelAncestorInclusive(
-          *selection_range.StartPosition().AnchorNode());
+          *ephemeral_range.StartPosition().AnchorNode());
   Node& end_first_block_ancestor =
       FindBuffer::GetFirstBlockLevelAncestorInclusive(
-          *selection_range.EndPosition().AnchorNode());
+          *ephemeral_range.EndPosition().AnchorNode());
 
   if (!start_first_block_ancestor.isSameNode(&end_first_block_ancestor))
-    std::move(callback_).Run(kInvalidSelector);
+    NotifySelectorReady(kInvalidSelector);
 
   // TODO(gayane): If same node, need to check if start and end are interrupted
   // by a block. Example: <div>start of the selection <div> sub block </div>end
@@ -43,16 +47,16 @@ void TextFragmentSelectorGenerator::GenerateSelector(
 
   // TODO(gayane): Move selection start and end to contain full words.
 
-  String selected_text = PlainText(selection_range);
+  String selected_text = PlainText(ephemeral_range);
 
   if (selected_text.length() < kNoContextMinChars ||
       selected_text.length() > kExactTextMaxChars)
-    std::move(callback_).Run(kInvalidSelector);
+    NotifySelectorReady(kInvalidSelector);
 
   selector_ = std::make_unique<TextFragmentSelector>(
       TextFragmentSelector::SelectorType::kExact, selected_text, "", "", "");
   TextFragmentFinder finder(*this, *selector_);
-  finder.FindMatch(*frame_->GetDocument());
+  finder.FindMatch(*selection_frame_->GetDocument());
 }
 
 void TextFragmentSelectorGenerator::DidFindMatch(
@@ -60,16 +64,36 @@ void TextFragmentSelectorGenerator::DidFindMatch(
     const TextFragmentAnchorMetrics::Match match_metrics,
     bool is_unique) {
   if (is_unique) {
-    std::move(callback_).Run(*selector_);
+    NotifySelectorReady(*selector_);
   } else {
     // TODO(gayane): Should add more range and/or context.
-    std::move(callback_).Run(
+    NotifySelectorReady(
         TextFragmentSelector(TextFragmentSelector::SelectorType::kInvalid));
   }
 }
 
+void TextFragmentSelectorGenerator::SetCallbackForTesting(
+    base::OnceCallback<void(const TextFragmentSelector&)> callback) {
+  callback_for_tests_ = std::move(callback);
+}
+
+void TextFragmentSelectorGenerator::NotifySelectorReady(
+    const TextFragmentSelector& selector) {
+  if (!callback_for_tests_.is_null())
+    std::move(callback_for_tests_).Run(selector);
+}
+
+void TextFragmentSelectorGenerator::DocumentDetached(Document* document) {
+  if (selection_range_ && selection_range_->OwnerDocument() == *document) {
+    selection_range_->Dispose();
+    selection_range_ = nullptr;
+    selection_frame_ = nullptr;
+  }
+}
+
 void TextFragmentSelectorGenerator::Trace(Visitor* visitor) const {
-  visitor->Trace(frame_);
+  visitor->Trace(selection_frame_);
+  visitor->Trace(selection_range_);
 }
 
 }  // namespace blink

@@ -59,6 +59,8 @@ NearbyConnectionsManagerImpl::~NearbyConnectionsManagerImpl() = default;
 
 void NearbyConnectionsManagerImpl::Shutdown() {
   // TOOD(crbug/1076008): Implement.
+  // Disconnects from all endpoints and shut down Nearby Connections.
+  Reset();
 }
 
 void NearbyConnectionsManagerImpl::StartAdvertising(
@@ -95,8 +97,15 @@ void NearbyConnectionsManagerImpl::StartAdvertising(
 }
 
 void NearbyConnectionsManagerImpl::StopAdvertising() {
-  if (nearby_connections_)
-    nearby_connections_->StopAdvertising(base::DoNothing());
+  if (nearby_connections_) {
+    nearby_connections_->StopAdvertising(base::BindOnce([](ConnectionsStatus
+                                                               status) {
+      NS_LOG(VERBOSE)
+          << __func__
+          << ": Stop advertising attempted over Nearby Connections with result "
+          << status;
+    }));
+  }
 
   incoming_connection_listener_ = nullptr;
 }
@@ -120,8 +129,15 @@ void NearbyConnectionsManagerImpl::StartDiscovery(
 }
 
 void NearbyConnectionsManagerImpl::StopDiscovery() {
-  if (nearby_connections_)
-    nearby_connections_->StopDiscovery(base::DoNothing());
+  if (nearby_connections_) {
+    nearby_connections_->StopDiscovery(
+        base::BindOnce([](ConnectionsStatus status) {
+          NS_LOG(VERBOSE) << __func__
+                          << ": Stop discovery attempted over Nearby "
+                             "Connections with result "
+                          << status;
+        }));
+  }
 
   discovered_endpoints_.clear();
   discovery_listener_ = nullptr;
@@ -158,7 +174,16 @@ void NearbyConnectionsManagerImpl::OnConnectionRequested(
     ConnectionsStatus status) {
   if (status != ConnectionsStatus::kSuccess) {
     NS_LOG(ERROR) << "Failed to connect to the remote shareTarget: " << status;
-    nearby_connections_->DisconnectFromEndpoint(endpoint_id, base::DoNothing());
+    nearby_connections_->DisconnectFromEndpoint(
+        endpoint_id,
+        base::BindOnce(
+            [](const std::string& endpoint_id, ConnectionsStatus status) {
+              NS_LOG(VERBOSE)
+                  << __func__ << ": Disconnecting from endpoint " << endpoint_id
+                  << " attempted over Nearby Connections with result "
+                  << status;
+            },
+            endpoint_id));
     std::move(callback).Run(nullptr);
     return;
   }
@@ -174,7 +199,16 @@ void NearbyConnectionsManagerImpl::Disconnect(const std::string& endpoint_id) {
   if (!nearby_connections_)
     return;
 
-  nearby_connections_->DisconnectFromEndpoint(endpoint_id, base::DoNothing());
+  nearby_connections_->DisconnectFromEndpoint(
+      endpoint_id,
+      base::BindOnce(
+          [](const std::string& endpoint_id, ConnectionsStatus status) {
+            NS_LOG(VERBOSE)
+                << __func__ << ": Disconnecting from endpoint " << endpoint_id
+                << " attempted over Nearby Connections with result " << status;
+          },
+          endpoint_id));
+
   OnDisconnected(endpoint_id);
   NS_LOG(INFO) << "Disconnected from " << endpoint_id;
 }
@@ -188,8 +222,15 @@ void NearbyConnectionsManagerImpl::Send(const std::string& endpoint_id,
   if (listener)
     RegisterPayloadStatusListener(payload->id, listener);
 
-  nearby_connections_->SendPayload({endpoint_id}, std::move(payload),
-                                   base::DoNothing());
+  nearby_connections_->SendPayload(
+      {endpoint_id}, std::move(payload),
+      base::BindOnce(
+          [](const std::string& endpoint_id, ConnectionsStatus status) {
+            NS_LOG(VERBOSE)
+                << __func__ << ": Sending payload to endpoint " << endpoint_id
+                << " attempted over Nearby Connections with result " << status;
+          },
+          endpoint_id));
 }
 
 void NearbyConnectionsManagerImpl::RegisterPayloadStatusListener(
@@ -216,7 +257,16 @@ void NearbyConnectionsManagerImpl::Cancel(int64_t payload_id) {
                                    /*bytes_transferred=*/0));
     payload_status_listeners_.erase(it);
   }
-  nearby_connections_->CancelPayload(payload_id, base::DoNothing());
+  nearby_connections_->CancelPayload(
+      payload_id, base::BindOnce(
+                      [](int64_t payload_id, ConnectionsStatus status) {
+                        NS_LOG(VERBOSE)
+                            << __func__ << ": Cancelling payload to id "
+                            << payload_id
+                            << " attempted over Nearby Connections with result "
+                            << status;
+                      },
+                      payload_id));
   NS_LOG(INFO) << "Cancelling payload: " << payload_id;
 }
 
@@ -249,6 +299,9 @@ void NearbyConnectionsManagerImpl::OnNearbyProcessStarted() {
 
 void NearbyConnectionsManagerImpl::OnNearbyProcessStopped() {
   NS_LOG(VERBOSE) << __func__;
+  // Not safe to use nearby_connections after we are notified the process has
+  // been stopped.
+  nearby_connections_ = nullptr;
   Reset();
 }
 
@@ -310,7 +363,15 @@ void NearbyConnectionsManagerImpl::OnConnectionInitiated(
                          payload_listener.InitWithNewPipeAndPassReceiver());
 
   nearby_connections_->AcceptConnection(
-      endpoint_id, std::move(payload_listener), base::DoNothing());
+      endpoint_id, std::move(payload_listener),
+      base::BindOnce(
+          [](const std::string& endpoint_id, ConnectionsStatus status) {
+            NS_LOG(VERBOSE)
+                << __func__ << ": Accept connection attempted to endpoint "
+                << endpoint_id << "over Nearby Connections with result "
+                << status;
+          },
+          endpoint_id));
 }
 
 void NearbyConnectionsManagerImpl::OnConnectionAccepted(
@@ -414,6 +475,15 @@ bool NearbyConnectionsManagerImpl::BindNearbyConnections() {
 }
 
 void NearbyConnectionsManagerImpl::Reset() {
+  if (nearby_connections_) {
+    nearby_connections_->StopAllEndpoints(
+        base::BindOnce([](ConnectionsStatus status) {
+          NS_LOG(VERBOSE) << __func__
+                          << ": Stop all endpoints attempted over Nearby "
+                             "Connections with result "
+                          << status;
+        }));
+  }
   nearby_connections_ = nullptr;
   discovered_endpoints_.clear();
   discovery_listener_ = nullptr;

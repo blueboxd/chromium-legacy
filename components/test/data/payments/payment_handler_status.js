@@ -5,14 +5,39 @@
  */
 
 /**
- * Returns the status field from the payment handler's response.
+ * Returns the status field from the payment handler's response for the given
+ * payment method identifier.
  * @param {string} method - The payment method identifier to use.
  * @return {string} - The status field or error message.
  */
 async function getStatus(method) { // eslint-disable-line no-unused-vars
+  return getStatusInternal([{supportedMethods: method}]);
+}
+
+/**
+ * Returns the status field from the payment handler's response for the given
+ * list of payment method identifiers.
+ * @param {array<string>} methods - The list of payment methods to use.
+ * @return {string} - The status field or error message.
+ */
+async function getStatusList(methods) { // eslint-disable-line no-unused-vars
+  const methodData = [];
+  for (let method of methods) {
+    methodData.push({supportedMethods: method});
+  }
+  return getStatusInternal(methodData);
+}
+
+/**
+ * Returns the status field from the payment handler's response for given
+ * payment method data.
+ * @param {array<PaymentMethodData>} methodData - The method data to use.
+ * @return {string} - The status field or error message.
+ */
+async function getStatusInternal(methodData) {
   try {
     const request = new PaymentRequest(
-        [{supportedMethods: method}],
+        methodData,
         {total: {label: 'TEST', amount: {currency: 'USD', value: '0.01'}}});
     const response = await request.show();
     await response.complete();

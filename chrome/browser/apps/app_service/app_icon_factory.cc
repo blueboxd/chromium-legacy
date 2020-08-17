@@ -29,6 +29,7 @@
 #include "chrome/browser/web_applications/components/app_icon_manager.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/favicon_base/favicon_types.h"
@@ -247,6 +248,26 @@ void LoadCompressedDataFromExtension(
       std::move(compressed_data_callback));
 }
 
+base::Optional<IconPurpose> GetIconPurpose(
+    const std::string& web_app_id,
+    const web_app::AppIconManager& icon_manager,
+    int icon_size_in_px) {
+#if defined(OS_CHROMEOS)
+  if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon) &&
+      icon_manager.HasSmallestIcon(web_app_id, {IconPurpose::MASKABLE},
+                                   icon_size_in_px)) {
+    return base::make_optional(IconPurpose::MASKABLE);
+  }
+#endif
+
+  if (icon_manager.HasSmallestIcon(web_app_id, {IconPurpose::ANY},
+                                   icon_size_in_px)) {
+    return base::make_optional(IconPurpose::ANY);
+  }
+
+  return base::nullopt;
+}  // namespace
+
 // This pipeline is meant to:
 // * Simplify loading icons, as things like effects and type are common
 //   to all loading.
@@ -445,17 +466,25 @@ void IconLoadingPipeline::LoadWebAppIcon(
   // constructor.
   icon_scale_for_compressed_response_ = icon_scale_;
 
-  base::Optional<IconPurpose> icon_purpose_to_read;
-  if (icon_manager.HasSmallestIcon(web_app_id, {IconPurpose::MASKABLE},
-                                   icon_size_in_px_)) {
-    icon_purpose_to_read = IconPurpose::MASKABLE;
-  } else if (icon_manager.HasSmallestIcon(web_app_id, {IconPurpose::ANY},
-                                          icon_size_in_px_)) {
-    icon_purpose_to_read = IconPurpose::ANY;
-  }
+  base::Optional<IconPurpose> icon_purpose_to_read =
+      GetIconPurpose(web_app_id, icon_manager, icon_size_in_px_);
+
   if (!icon_purpose_to_read.has_value()) {
     MaybeLoadFallbackOrCompleteEmpty();
     return;
+  }
+
+  // Per https://www.w3.org/TR/appmanifest/#icon-masks, we apply a white
+  // background in case the maskable icon contains transparent pixels in its
+  // safe zone, and clear the standard icon effect, apply the mask to the icon
+  // without shrinking it.
+  if (icon_purpose_to_read.value() == IconPurpose::MASKABLE) {
+    icon_effects_ = static_cast<apps::IconEffects>(
+        icon_effects_ & ~apps::IconEffects::kCrOsStandardIcon);
+    icon_effects_ = static_cast<apps::IconEffects>(
+        icon_effects_ | apps::IconEffects::kCrOsStandardBackground);
+    icon_effects_ = static_cast<apps::IconEffects>(
+        icon_effects_ | apps::IconEffects::kCrOsStandardMask);
   }
 
   switch (icon_type_) {
@@ -1041,9 +1070,13 @@ void ApplyIconEffects(IconEffects icon_effects,
   }
 
   if (icon_effects & IconEffects::kCrOsStandardMask) {
-    auto mask_image = LoadMaskImage(GetScaleToSize(*image_skia));
-    *image_skia =
-        gfx::ImageSkiaOperations::CreateMaskedImage(*image_skia, mask_image);
+    if (icon_effects & IconEffects::kCrOsStandardBackground) {
+      *image_skia = apps::ApplyBackgroundAndMask(*image_skia);
+    } else {
+      auto mask_image = LoadMaskImage(GetScaleToSize(*image_skia));
+      *image_skia =
+          gfx::ImageSkiaOperations::CreateMaskedImage(*image_skia, mask_image);
+    }
   }
 
   if (icon_effects & IconEffects::kCrOsStandardIcon) {

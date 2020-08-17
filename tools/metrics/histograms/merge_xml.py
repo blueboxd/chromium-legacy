@@ -13,6 +13,7 @@ import xml.dom.minidom
 import expand_owners
 import extract_histograms
 import histogram_configuration_model
+import histogram_paths
 import populate_enums
 
 
@@ -160,11 +161,16 @@ def PrettyPrintMergedFiles(filenames=[], files=[]):
 
 def main():
   parser = argparse.ArgumentParser()
-  parser.add_argument('inputs', nargs="+")
   parser.add_argument('--output', required=True)
   args = parser.parse_args()
   with open(args.output, 'w') as f:
-    f.write(PrettyPrintMergedFiles(args.inputs))
+    # This is run by
+    # https://source.chromium.org/chromium/chromium/src/+/master:tools/metrics/BUILD.gn;drc=573e48309695102dec2da1e8f806c18c3200d414;l=5
+    # to send the merged histograms.xml to the server side. Providing |UKM_XML|
+    # here is not to merge ukm.xml but to populate `UkmEventNameHash` enum
+    # values.
+    f.write(PrettyPrintMergedFiles(
+      histogram_paths.ALL_XMLS + [histogram_paths.UKM_XML]))
 
 
 if __name__ == '__main__':

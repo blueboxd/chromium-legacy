@@ -28,6 +28,7 @@ class StandaloneTrustedVaultBackend;
 // Reading of the file is done lazily.
 class StandaloneTrustedVaultClient : public TrustedVaultClient {
  public:
+  // TODO(crbug.com/1113597): plumb IdentityManager into ctor.
   explicit StandaloneTrustedVaultClient(const base::FilePath& file_path);
   StandaloneTrustedVaultClient(const StandaloneTrustedVaultClient& other) =
       delete;

@@ -36,26 +36,6 @@ TEST(AppListFileIconUtilTest, GetIconTypeForPath) {
   }
 }
 
-TEST(AppListFileIconUtilTest, GetResourceIdForIconType) {
-  const std::vector<std::pair<internal::IconType, int>>
-      icon_type_to_resource_id = {
-          {internal::IconType::PDF,
-           IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_PDF},
-          {internal::IconType::PDF,
-           IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_PDF},
-          {internal::IconType::ARCHIVE,
-           IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_ARCHIVE},
-          {internal::IconType::GSLIDE,
-           IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_GSLIDES},
-          {internal::IconType::GENERIC,
-           IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_GENERIC}};
-
-  for (const auto& pair : icon_type_to_resource_id) {
-    EXPECT_EQ(::app_list::internal::GetResourceIdForIconType(pair.first),
-              pair.second);
-  }
-}
-
 TEST(AppListFileIconUtilTest, GetChipResourceIdForIconType) {
   const std::vector<std::pair<internal::IconType, int>>
       icon_type_to_resource_id = {

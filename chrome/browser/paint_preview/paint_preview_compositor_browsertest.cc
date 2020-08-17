@@ -113,9 +113,8 @@ IN_PROC_BROWSER_TEST_F(PaintPreviewCompositorBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(PaintPreviewCompositorBrowserTest, CompositorCreate) {
   CreateServiceInstance();
-  auto* base_service = GetBaseService();
-  auto compositor_service = ToCompositorServiceImpl(
-      base_service->StartCompositorService(base::DoNothing()));
+  auto compositor_service =
+      ToCompositorServiceImpl(StartCompositorService(base::DoNothing()));
 
   base::RunLoop loop;
   auto compositor = ToCompositorClientImpl(
@@ -133,9 +132,8 @@ IN_PROC_BROWSER_TEST_F(PaintPreviewCompositorBrowserTest, CompositorCreate) {
 IN_PROC_BROWSER_TEST_F(PaintPreviewCompositorBrowserTest,
                        MultipleCompositorCreate) {
   CreateServiceInstance();
-  auto* base_service = GetBaseService();
-  auto compositor_service = ToCompositorServiceImpl(
-      base_service->StartCompositorService(base::DoNothing()));
+  auto compositor_service =
+      ToCompositorServiceImpl(StartCompositorService(base::DoNothing()));
   EXPECT_EQ(0U, compositor_service->ActiveClientsForTesting().size());
   EXPECT_FALSE(compositor_service->HasActiveClients());
 
@@ -174,12 +172,11 @@ IN_PROC_BROWSER_TEST_F(PaintPreviewCompositorBrowserTest,
 IN_PROC_BROWSER_TEST_F(PaintPreviewCompositorBrowserTest,
                        KillWithActiveCompositors) {
   CreateServiceInstance();
-  auto* base_service = GetBaseService();
   // NOTE: the disconnect handler for the service as a whole only triggers if
   // the service is killed unexpectedly. Here the |compositor_service| object
   // is deleted (performing a graceful shutdown) so the handler won't run.
-  auto compositor_service = ToCompositorServiceImpl(
-      base_service->StartCompositorService(base::DoNothing()));
+  auto compositor_service =
+      ToCompositorServiceImpl(StartCompositorService(base::DoNothing()));
 
   base::RunLoop loop;
   auto compositor = ToCompositorClientImpl(

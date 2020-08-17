@@ -304,11 +304,8 @@ void SetRefreshTokenForAccount(IdentityManager* identity_manager,
       identity_manager->GetChromeOSAccountManager(),
 #endif
       identity_manager, account_id,
-      // TODO(crbug.com/1115075): set the same token_value on all platforms.
       token_value.empty() ? "refresh_token_for_" + account_id.ToString()
-#if defined(OS_CHROMEOS)
                                 + "_" + base::GenerateGUID()
-#endif
                           : token_value);
 }
 

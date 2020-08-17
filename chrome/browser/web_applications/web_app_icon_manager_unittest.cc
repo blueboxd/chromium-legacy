@@ -36,6 +36,12 @@
 
 namespace web_app {
 
+namespace {
+
+using IconSizeAndPurpose = AppIconManager::IconSizeAndPurpose;
+
+}  // namespace
+
 class WebAppIconManagerTest : public WebAppTest {
   void SetUp() override {
     WebAppTest::SetUp();
@@ -129,6 +135,41 @@ class WebAppIconManagerTest : public WebAppTest {
       downloaded_shortcuts_menu_icons_sizes.push_back(std::move(icon_sizes));
     }
     return downloaded_shortcuts_menu_icons_sizes;
+  }
+
+  struct PurposeAndBitmap {
+    IconPurpose purpose;
+    SkBitmap bitmap;
+  };
+  PurposeAndBitmap ReadSmallestIcon(const AppId& app_id,
+                                    const std::vector<IconPurpose>& purposes,
+                                    SquareSizePx min_icon_size) {
+    PurposeAndBitmap result;
+    base::RunLoop run_loop;
+    icon_manager().ReadSmallestIcon(
+        app_id, purposes, min_icon_size,
+        base::BindLambdaForTesting(
+            [&](IconPurpose purpose, const SkBitmap& bitmap) {
+              result.purpose = purpose;
+              result.bitmap = bitmap;
+              run_loop.Quit();
+            }));
+    run_loop.Run();
+    return result;
+  }
+
+  SkBitmap ReadSmallestIconAny(const AppId& app_id,
+                               SquareSizePx min_icon_size) {
+    SkBitmap result;
+    base::RunLoop run_loop;
+    icon_manager().ReadSmallestIconAny(
+        app_id, min_icon_size,
+        base::BindLambdaForTesting([&](const SkBitmap& bitmap) {
+          result = bitmap;
+          run_loop.Quit();
+        }));
+    run_loop.Run();
+    return result;
   }
 
   struct PurposeAndData {
@@ -658,6 +699,11 @@ TEST_F(WebAppIconManagerTest, FindExact) {
   }
 }
 
+// Simple struct doesn't have an operator==.
+bool operator==(const IconSizeAndPurpose& a, const IconSizeAndPurpose& b) {
+  return a.size_px == b.size_px && a.purpose == b.purpose;
+}
+
 TEST_F(WebAppIconManagerTest, FindSmallest) {
   auto web_app = CreateWebApp();
   const AppId app_id = web_app->app_id();
@@ -665,49 +711,79 @@ TEST_F(WebAppIconManagerTest, FindSmallest) {
   const std::vector<int> sizes_px{10, 60, 50, 20, 30};
   const std::vector<SkColor> colors{SK_ColorRED, SK_ColorYELLOW, SK_ColorGREEN,
                                     SK_ColorBLUE, SK_ColorMAGENTA};
-  WriteIcons(app_id, {IconPurpose::ANY}, sizes_px, colors);
+  WriteIcons(app_id, {IconPurpose::ANY, IconPurpose::MASKABLE}, sizes_px,
+             colors);
 
   web_app->SetDownloadedIconSizes(IconPurpose::ANY, sizes_px);
+  // Pretend we only have one size of maskable icon.
+  web_app->SetDownloadedIconSizes(IconPurpose::MASKABLE, {20});
 
   controller().RegisterApp(std::move(web_app));
 
   EXPECT_FALSE(icon_manager().HasSmallestIcon(app_id, {IconPurpose::ANY}, 70));
+  EXPECT_EQ(base::nullopt,
+            icon_manager().FindIconMatchBigger(app_id, {IconPurpose::ANY}, 70));
+
   EXPECT_FALSE(icon_manager().HasSmallestIcon(
       app_id, {IconPurpose::ANY, IconPurpose::MASKABLE}, 70));
+  EXPECT_EQ(base::nullopt,
+            icon_manager().FindIconMatchBigger(
+                app_id, {IconPurpose::ANY, IconPurpose::MASKABLE}, 70));
+
   EXPECT_FALSE(
       icon_manager().HasSmallestIcon(app_id, {IconPurpose::MASKABLE}, 40));
+  EXPECT_EQ(base::nullopt, icon_manager().FindIconMatchBigger(
+                               app_id, {IconPurpose::MASKABLE}, 40));
 
   EXPECT_TRUE(icon_manager().HasSmallestIcon(
       app_id, {IconPurpose::MASKABLE, IconPurpose::ANY}, 40));
+  EXPECT_EQ((IconSizeAndPurpose{50, IconPurpose::ANY}),
+            icon_manager()
+                .FindIconMatchBigger(
+                    app_id, {IconPurpose::MASKABLE, IconPurpose::ANY}, 40)
+                .value());
+
   EXPECT_TRUE(icon_manager().HasSmallestIcon(
       app_id, {IconPurpose::ANY, IconPurpose::MASKABLE}, 20));
+  EXPECT_EQ((IconSizeAndPurpose{20, IconPurpose::ANY}),
+            icon_manager()
+                .FindIconMatchBigger(
+                    app_id, {IconPurpose::ANY, IconPurpose::MASKABLE}, 20)
+                .value());
+
+  EXPECT_TRUE(icon_manager().HasSmallestIcon(
+      app_id, {IconPurpose::MASKABLE, IconPurpose::ANY}, 10));
+  EXPECT_EQ((IconSizeAndPurpose{20, IconPurpose::MASKABLE}),
+            icon_manager()
+                .FindIconMatchBigger(
+                    app_id, {IconPurpose::MASKABLE, IconPurpose::ANY}, 10)
+                .value());
 
   {
-    base::RunLoop run_loop;
-
     EXPECT_TRUE(icon_manager().HasSmallestIcon(app_id, {IconPurpose::ANY}, 40));
-    icon_manager().ReadSmallestIconAny(
-        app_id, 40, base::BindLambdaForTesting([&](const SkBitmap& bitmap) {
-          EXPECT_FALSE(bitmap.empty());
-          EXPECT_EQ(SK_ColorGREEN, bitmap.getColor(0, 0));
-          run_loop.Quit();
-        }));
-
-    run_loop.Run();
+    SkBitmap bitmap = ReadSmallestIconAny(app_id, 40);
+    EXPECT_FALSE(bitmap.empty());
+    EXPECT_EQ(SK_ColorGREEN, bitmap.getColor(0, 0));
   }
-
   {
-    base::RunLoop run_loop;
-
     EXPECT_TRUE(icon_manager().HasSmallestIcon(app_id, {IconPurpose::ANY}, 20));
-    icon_manager().ReadSmallestIconAny(
-        app_id, 20, base::BindLambdaForTesting([&](const SkBitmap& bitmap) {
-          EXPECT_FALSE(bitmap.empty());
-          EXPECT_EQ(SK_ColorBLUE, bitmap.getColor(0, 0));
-          run_loop.Quit();
-        }));
-
-    run_loop.Run();
+    SkBitmap bitmap = ReadSmallestIconAny(app_id, 20);
+    EXPECT_FALSE(bitmap.empty());
+    EXPECT_EQ(SK_ColorBLUE, bitmap.getColor(0, 0));
+  }
+  {
+    PurposeAndBitmap result =
+        ReadSmallestIcon(app_id, {IconPurpose::ANY, IconPurpose::MASKABLE}, 20);
+    EXPECT_FALSE(result.bitmap.empty());
+    EXPECT_EQ(IconPurpose::ANY, result.purpose);
+    EXPECT_EQ(SK_ColorBLUE, result.bitmap.getColor(0, 0));
+  }
+  {
+    PurposeAndBitmap result =
+        ReadSmallestIcon(app_id, {IconPurpose::MASKABLE, IconPurpose::ANY}, 20);
+    EXPECT_FALSE(result.bitmap.empty());
+    EXPECT_EQ(IconPurpose::MASKABLE, result.purpose);
+    EXPECT_EQ(SK_ColorBLUE, result.bitmap.getColor(0, 0));
   }
 }
 

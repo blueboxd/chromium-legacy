@@ -5,6 +5,7 @@
 source_set("reauthentication") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "reauthentication_event.h",
     "reauthentication_module.h",
     "reauthentication_module.mm",
     "reauthentication_protocol.h",

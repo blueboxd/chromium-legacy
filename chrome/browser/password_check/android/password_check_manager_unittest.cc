@@ -12,6 +12,7 @@
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
+#include "base/time/time.h"
 #include "chrome/browser/password_check/android/password_check_ui_status.h"
 #include "chrome/browser/password_manager/bulk_leak_check_service_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
@@ -19,8 +20,11 @@
 #include "components/password_manager/core/browser/bulk_leak_check_service.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/test_password_store.h"
+#include "components/password_manager/core/common/password_manager_pref_names.h"
+#include "components/prefs/testing_pref_service.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/test/browser_task_environment.h"
 #include "services/network/test/test_shared_url_loader_factory.h"
@@ -33,6 +37,7 @@ using password_manager::CompromisedCredentials;
 using password_manager::CompromiseType;
 using password_manager::PasswordCheckUIStatus;
 using password_manager::TestPasswordStore;
+using password_manager::prefs::kLastTimePasswordCheckCompleted;
 using testing::_;
 using testing::ElementsAre;
 using testing::Field;
@@ -41,6 +46,7 @@ using testing::NiceMock;
 
 using CompromisedCredentialForUI =
     PasswordCheckManager::CompromisedCredentialForUI;
+using State = password_manager::BulkLeakCheckService::State;
 
 namespace {
 
@@ -169,6 +175,7 @@ class PasswordCheckManagerTest : public testing::Test {
 
   void RunUntilIdle() { task_env_.RunUntilIdle(); }
 
+  BulkLeakCheckService* service() { return service_; }
   TestPasswordStore& store() { return *store_; }
 
  protected:
@@ -176,11 +183,10 @@ class PasswordCheckManagerTest : public testing::Test {
   std::unique_ptr<PasswordCheckManager> manager_;
 
  private:
-  content::BrowserTaskEnvironment task_env_{
-      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
+  content::BrowserTaskEnvironment task_env_;
   signin::IdentityTestEnvironment identity_test_env_;
   TestingProfile profile_;
-  BulkLeakCheckService* bulk_leak_check_service_ =
+  BulkLeakCheckService* service_ =
       CreateAndUseBulkLeakCheckService(identity_test_env_.identity_manager(),
                                        &profile_);
   scoped_refptr<TestPasswordStore> store_ =
@@ -263,4 +269,30 @@ TEST_F(PasswordCheckManagerTest, CorrectlyCreatesUIStructForAppCredentials) {
               base::ASCIIToUTF16(kUsername2), base::ASCIIToUTF16("Example App"),
               "com.example.app", base::nullopt, /*is_android_credential=*/true,
               /*has_script=*/false)));
+}
+
+TEST_F(PasswordCheckManagerTest, SetsTimestampOnSuccessfulCheck) {
+  InitializeManager();
+  store().AddLogin(MakeSavedPassword(kExampleCom, kUsername1));
+  RunUntilIdle();
+
+  // Pretend to start the check so that the manager thinks a check is running.
+  manager_->StartCheck();
+
+  // Change the state to idle to simulate a successful check finish.
+  service()->set_state_and_notify(State::kIdle);
+  EXPECT_NE(0.0, manager_->GetLastCheckTimestamp().ToDoubleT());
+}
+
+TEST_F(PasswordCheckManagerTest, DoesntRecordTimestampOfUnsuccessfulCheck) {
+  InitializeManager();
+  store().AddLogin(MakeSavedPassword(kExampleCom, kUsername1));
+  RunUntilIdle();
+
+  // Pretend to start the check so that the manager thinks a check is running.
+  manager_->StartCheck();
+
+  // Change the state to an error state to simulate a unsuccessful check finish.
+  service()->set_state_and_notify(State::kSignedOut);
+  EXPECT_EQ(0.0, manager_->GetLastCheckTimestamp().ToDoubleT());
 }

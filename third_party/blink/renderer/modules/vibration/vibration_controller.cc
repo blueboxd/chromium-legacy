@@ -181,6 +181,11 @@ void VibrationController::DidCancel() {
 
 void VibrationController::ContextDestroyed() {
   Cancel();
+
+  // If the document context was destroyed, never call the mojo service again.
+  // TODO(crbug.com/1116948): Remove this line once vibration_manager_ switches
+  // to kForceWithContextObserver.
+  vibration_manager_.reset();
 }
 
 void VibrationController::PageVisibilityChanged() {

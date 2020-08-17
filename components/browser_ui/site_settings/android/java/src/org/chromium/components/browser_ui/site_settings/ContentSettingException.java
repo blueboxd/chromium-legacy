@@ -6,42 +6,17 @@ package org.chromium.components.browser_ui.site_settings;
 
 import static org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridge.SITE_WILDCARD;
 
-import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 
 import org.chromium.components.content_settings.ContentSettingValues;
-import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.embedder_support.browser_context.BrowserContextHandle;
 
 import java.io.Serializable;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 
 /**
  * Exception information for a given origin.
  */
 public class ContentSettingException implements Serializable {
-    @IntDef({Type.ADS, Type.AUTOMATIC_DOWNLOADS, Type.BACKGROUND_SYNC, Type.BLUETOOTH_SCANNING,
-            Type.COOKIE, Type.JAVASCRIPT, Type.POPUP, Type.SOUND})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface Type {
-        // Values used to address array index - should be enumerated from 0 and can't have gaps.
-        // All updates here must also be reflected in {@link #getContentSettingsType(int)
-        // getContentSettingsType} and {@link SingleWebsiteSettings.PERMISSION_PREFERENCE_KEYS}.
-        int ADS = 0;
-        int AUTOMATIC_DOWNLOADS = 1;
-        int BACKGROUND_SYNC = 2;
-        int BLUETOOTH_SCANNING = 3;
-        int COOKIE = 4;
-        int JAVASCRIPT = 5;
-        int POPUP = 6;
-        int SOUND = 7;
-        /**
-         * Number of handled exceptions used for calculating array sizes.
-         */
-        int NUM_ENTRIES = 8;
-    }
-
     private final int mContentSettingType;
     private final String mPrimaryPattern;
     private final String mSecondaryPattern;
@@ -97,33 +72,9 @@ public class ContentSettingException implements Serializable {
     /**
      * Sets the content setting value for this exception.
      */
-    public void setContentSetting(BrowserContextHandle browserContextHandle,
-            @ContentSettingValues @Nullable Integer value) {
+    public void setContentSetting(
+            BrowserContextHandle browserContextHandle, @ContentSettingValues int value) {
         WebsitePreferenceBridge.setContentSettingForPattern(browserContextHandle,
                 mContentSettingType, mPrimaryPattern, mSecondaryPattern, value);
-    }
-
-    public static @ContentSettingsType int getContentSettingsType(@Type int type) {
-        switch (type) {
-            case Type.ADS:
-                return ContentSettingsType.ADS;
-            case Type.AUTOMATIC_DOWNLOADS:
-                return ContentSettingsType.AUTOMATIC_DOWNLOADS;
-            case Type.BACKGROUND_SYNC:
-                return ContentSettingsType.BACKGROUND_SYNC;
-            case Type.BLUETOOTH_SCANNING:
-                return ContentSettingsType.BLUETOOTH_SCANNING;
-            case Type.COOKIE:
-                return ContentSettingsType.COOKIES;
-            case Type.JAVASCRIPT:
-                return ContentSettingsType.JAVASCRIPT;
-            case Type.POPUP:
-                return ContentSettingsType.POPUPS;
-            case Type.SOUND:
-                return ContentSettingsType.SOUND;
-            default:
-                assert false;
-                return ContentSettingsType.DEFAULT;
-        }
     }
 }

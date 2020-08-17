@@ -157,6 +157,8 @@ class IOSChromePasswordCheckManagerTest : public PlatformTest {
 
   void RunUntilIdle() { task_env_.RunUntilIdle(); }
 
+  void FastForwardBy(base::TimeDelta time) { task_env_.FastForwardBy(time); }
+
   ChromeBrowserState* browser_state() { return browser_state_.get(); }
   TestPasswordStore& store() { return *store_; }
   MockBulkLeakCheckService* service() { return bulk_leak_check_service_; }
@@ -388,4 +390,29 @@ TEST_F(IOSChromePasswordCheckManagerTest, EditCompromisedPassword) {
 
   EXPECT_EQ(base::UTF8ToUTF16(kPassword2),
             store().stored_passwords().at(kExampleCom).at(0).password_value);
+}
+
+// Tests expected delay is being added.
+TEST_F(IOSChromePasswordCheckManagerTest, CheckFinishedWithDelay) {
+  store().AddLogin(MakeSavedPassword(kExampleCom, kUsername1));
+
+  RunUntilIdle();
+  StrictMock<MockPasswordCheckManagerObserver> observer;
+  manager().AddObserver(&observer);
+  manager().StartPasswordCheck();
+  RunUntilIdle();
+
+  EXPECT_CALL(observer, PasswordCheckStatusChanged(PasswordCheckState::kIdle))
+      .Times(0);
+  static_cast<BulkLeakCheckServiceInterface::Observer*>(&manager())
+      ->OnStateChanged(BulkLeakCheckServiceInterface::State::kIdle);
+  FastForwardBy(base::TimeDelta::FromSeconds(1));
+
+  EXPECT_CALL(observer, PasswordCheckStatusChanged(PasswordCheckState::kIdle))
+      .Times(0);
+  FastForwardBy(base::TimeDelta::FromSeconds(1));
+
+  EXPECT_CALL(observer, PasswordCheckStatusChanged(PasswordCheckState::kIdle))
+      .Times(1);
+  FastForwardBy(base::TimeDelta::FromSeconds(1));
 }

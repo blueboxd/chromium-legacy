@@ -28,9 +28,13 @@ class BookmarkAppIconManager : public web_app::AppIconManager {
       const web_app::AppId& app_id,
       IconPurpose purpose,
       const std::vector<SquareSizePx>& icon_sizes_in_px) const override;
+  base::Optional<IconSizeAndPurpose> FindIconMatchBigger(
+      const web_app::AppId& app_id,
+      const std::vector<IconPurpose>& purposes,
+      SquareSizePx min_size) const override;
   bool HasSmallestIcon(const web_app::AppId& app_id,
                        const std::vector<IconPurpose>& purposes,
-                       SquareSizePx icon_size_in_px) const override;
+                       SquareSizePx min_size) const override;
   void ReadIcons(const web_app::AppId& app_id,
                  IconPurpose purpose,
                  const std::vector<SquareSizePx>& icon_sizes_in_px,

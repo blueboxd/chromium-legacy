@@ -8,6 +8,11 @@ import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_t
 
 import {TestBrowserProxy} from '../test_browser_proxy.m.js';
 
+/** @return {!Array<string>} */
+export function getFakeAccountsList() {
+  return ['test@gmail.com', 'test2@gmail.com', 'test3@gmail.com'];
+}
+
 export class TestAuthenticator extends EventTarget {
   constructor() {
     super();
@@ -17,6 +22,10 @@ export class TestAuthenticator extends EventTarget {
     this.data = null;
     /** @type {number} */
     this.loadCalls = 0;
+    /** @type {number} */
+    this.getAccountsResponseCalls = 0;
+    /** @type {Array<string>} */
+    this.getAccountsResponseResult = null;
   }
 
   /**
@@ -27,6 +36,14 @@ export class TestAuthenticator extends EventTarget {
     this.loadCalls++;
     this.authMode = authMode;
     this.data = data;
+  }
+
+  /**
+   * @param {Array<string>} accounts list of emails.
+   */
+  getAccountsResponse(accounts) {
+    this.getAccountsResponseCalls++;
+    this.getAccountsResponseResult = accounts;
   }
 }
 
@@ -41,6 +58,7 @@ export class TestInlineLoginBrowserProxy extends TestBrowserProxy {
       'lstFetchResults',
       'metricsHandler:recordAction',
       'showIncognito',
+      'getAccounts',
       'dialogClose',
     ]);
   }
@@ -78,6 +96,12 @@ export class TestInlineLoginBrowserProxy extends TestBrowserProxy {
   /** @override */
   showIncognito() {
     this.methodCalled('showIncognito');
+  }
+
+  /** @override */
+  getAccounts() {
+    this.methodCalled('getAccounts');
+    return Promise.resolve(getFakeAccountsList());
   }
 
   /** @override */

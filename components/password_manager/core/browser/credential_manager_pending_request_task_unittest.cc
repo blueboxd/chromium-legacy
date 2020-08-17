@@ -202,4 +202,36 @@ TEST_F(CredentialManagerPendingRequestTaskTest,
   EXPECT_TRUE(client()->forms_passed_to_ui()[0]->IsUsingAccountStore());
 }
 
+TEST_F(CredentialManagerPendingRequestTaskTest,
+       SameFederatedCredentialsInBothStores) {
+  // This is testing that when two federated credentials have the same username
+  // for the same origin, the account store version is passed to the UI.
+  GURL federation_url("https://google.com/");
+  CredentialManagerPendingRequestTask task(
+      &delegate_mock_, /*callback=*/base::DoNothing(),
+      CredentialMediationRequirement::kOptional, /*include_passwords=*/false,
+      {federation_url}, StoresToQuery::kProfileAndAccountStores);
+
+  form_.federation_origin = url::Origin::Create(federation_url);
+  form_.password_value = base::string16();
+  form_.signon_realm = "federation://example.com/google.com";
+
+  autofill::PasswordForm profile_form = form_;
+  profile_form.in_store = autofill::PasswordForm::Store::kProfileStore;
+  std::vector<std::unique_ptr<autofill::PasswordForm>> profile_forms;
+  profile_forms.push_back(
+      std::make_unique<autofill::PasswordForm>(profile_form));
+
+  autofill::PasswordForm account_form = form_;
+  account_form.in_store = autofill::PasswordForm::Store::kAccountStore;
+  std::vector<std::unique_ptr<autofill::PasswordForm>> account_forms;
+  account_forms.push_back(
+      std::make_unique<autofill::PasswordForm>(account_form));
+
+  task.OnGetPasswordStoreResultsFrom(profile_store_, std::move(profile_forms));
+  task.OnGetPasswordStoreResultsFrom(account_store_, std::move(account_forms));
+  ASSERT_EQ(1U, client()->forms_passed_to_ui().size());
+  EXPECT_TRUE(client()->forms_passed_to_ui()[0]->IsUsingAccountStore());
+}
+
 }  // namespace password_manager

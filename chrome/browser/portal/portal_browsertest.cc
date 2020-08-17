@@ -110,6 +110,26 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest,
                 browser()->tab_strip_model()->GetActiveWebContents(), nullptr));
 }
 
+IN_PROC_BROWSER_TEST_F(
+    PortalBrowserTest,
+    DevToolsWindowIsAttachedToOriginalWebContentsWhenActivationFails) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL("/portal/portal-no-src.html"));
+  ui_test_utils::NavigateToURL(browser(), url);
+  WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
+  DevToolsWindow* dev_tools_window =
+      DevToolsWindowTesting::OpenDevToolsWindowSync(browser(), true);
+  WebContents* main_web_contents =
+      DevToolsWindowTesting::Get(dev_tools_window)->main_web_contents();
+  EXPECT_EQ(main_web_contents,
+            DevToolsWindow::GetInTabWebContents(contents, nullptr));
+
+  EXPECT_EQ(true, content::EvalJs(contents, "activate()"));
+  EXPECT_EQ(main_web_contents,
+            DevToolsWindow::GetInTabWebContents(
+                browser()->tab_strip_model()->GetActiveWebContents(), nullptr));
+}
+
 IN_PROC_BROWSER_TEST_F(PortalBrowserTest, HttpBasicAuthenticationInPortal) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL("/title1.html"));

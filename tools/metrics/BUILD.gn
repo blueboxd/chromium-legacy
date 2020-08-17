@@ -4,23 +4,9 @@
 
 action("histograms_xml") {
   script = "histograms/merge_xml.py"
-  sources = [
-    "histograms/enums.xml",
-    "histograms/histograms.xml",
-    "histograms/histograms_xml/Fingerprint/histograms.xml",
-    "histograms/histograms_xml/UMA/histograms.xml",
-    "histograms/histograms_xml/histogram_suffixes.xml",
-    "histograms/histograms_xml/obsolete_histograms.xml",
-    "ukm/ukm.xml",
-  ]
   output = "$root_out_dir/histograms.xml"
   outputs = [ output ]
-  # TODO(crbug/1116096): Automatically list all histograms paths in the
-  # sources.
-  args = rebase_path(sources, root_build_dir) + [
-           "--output",
-           rebase_path(output, root_build_dir),
-         ]
+  args = ["--output", rebase_path(output, root_build_dir)]
 }
 
 copy("actions_xml") {

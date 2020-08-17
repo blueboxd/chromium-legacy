@@ -536,20 +536,19 @@ public class WebsitePermissionsFetcherTest {
 
             // Check content setting exception types.
             Assert.assertEquals(Integer.valueOf(ContentSettingValues.DEFAULT),
-                    site.getContentSettingPermission(ContentSettingException.Type.COOKIE));
+                    site.getContentSettingPermission(ContentSettingsType.COOKIES));
             Assert.assertEquals(Integer.valueOf(ContentSettingValues.DEFAULT),
-                    site.getContentSettingPermission(ContentSettingException.Type.POPUP));
+                    site.getContentSettingPermission(ContentSettingsType.POPUPS));
             Assert.assertEquals(Integer.valueOf(ContentSettingValues.DEFAULT),
-                    site.getContentSettingPermission(ContentSettingException.Type.ADS));
+                    site.getContentSettingPermission(ContentSettingsType.ADS));
             Assert.assertEquals(Integer.valueOf(ContentSettingValues.DEFAULT),
-                    site.getContentSettingPermission(ContentSettingException.Type.JAVASCRIPT));
+                    site.getContentSettingPermission(ContentSettingsType.JAVASCRIPT));
             Assert.assertEquals(Integer.valueOf(ContentSettingValues.DEFAULT),
-                    site.getContentSettingPermission(ContentSettingException.Type.SOUND));
+                    site.getContentSettingPermission(ContentSettingsType.SOUND));
             Assert.assertEquals(Integer.valueOf(ContentSettingValues.DEFAULT),
-                    site.getContentSettingPermission(ContentSettingException.Type.BACKGROUND_SYNC));
+                    site.getContentSettingPermission(ContentSettingsType.BACKGROUND_SYNC));
             Assert.assertEquals(Integer.valueOf(ContentSettingValues.DEFAULT),
-                    site.getContentSettingPermission(
-                            ContentSettingException.Type.AUTOMATIC_DOWNLOADS));
+                    site.getContentSettingPermission(ContentSettingsType.AUTOMATIC_DOWNLOADS));
 
             // Check storage info.
             ArrayList<StorageInfo> storageInfos = new ArrayList<>(site.getStorageInfo());
@@ -705,26 +704,21 @@ public class WebsitePermissionsFetcherTest {
 
         String googleOrigin = "https://google.com";
         String preferenceSource = "preference";
-        ArrayList<Integer> contentSettingExceptionTypes = new ArrayList<>(Arrays.asList(
-                ContentSettingException.Type.ADS, ContentSettingException.Type.AUTOMATIC_DOWNLOADS,
-                ContentSettingException.Type.BACKGROUND_SYNC,
-                ContentSettingException.Type.BLUETOOTH_SCANNING,
-                ContentSettingException.Type.COOKIE, ContentSettingException.Type.JAVASCRIPT,
-                ContentSettingException.Type.POPUP, ContentSettingException.Type.SOUND));
-        Assert.assertEquals(8, ContentSettingException.Type.NUM_ENTRIES);
+        ArrayList<Integer> contentSettingExceptionTypes = new ArrayList<>(
+                Arrays.asList(ContentSettingsType.ADS, ContentSettingsType.AUTOMATIC_DOWNLOADS,
+                        ContentSettingsType.BACKGROUND_SYNC, ContentSettingsType.BLUETOOTH_SCANNING,
+                        ContentSettingsType.COOKIES, ContentSettingsType.JAVASCRIPT,
+                        ContentSettingsType.POPUPS, ContentSettingsType.SOUND));
 
         for (@ContentSettingsType int type : contentSettingExceptionTypes) {
-            @ContentSettingsType
-            int contentSettingsType = ContentSettingException.getContentSettingsType(type);
             {
-                ContentSettingException fakeContentSettingException =
-                        new ContentSettingException(contentSettingsType, googleOrigin,
-                                ContentSettingValues.DEFAULT, preferenceSource);
+                ContentSettingException fakeContentSettingException = new ContentSettingException(
+                        type, googleOrigin, ContentSettingValues.DEFAULT, preferenceSource);
                 websitePreferenceBridge.addContentSettingException(fakeContentSettingException);
 
                 fetcher.fetchPreferencesForCategory(
                         SiteSettingsCategory.createFromContentSettingsType(
-                                UNUSED_BROWSER_CONTEXT_HANDLE, contentSettingsType),
+                                UNUSED_BROWSER_CONTEXT_HANDLE, type),
                         (sites) -> {
                             Assert.assertEquals(1, sites.size());
 
@@ -736,14 +730,13 @@ public class WebsitePermissionsFetcherTest {
 
             // Make sure that the content setting value is updated.
             {
-                ContentSettingException fakeContentSettingException =
-                        new ContentSettingException(contentSettingsType, googleOrigin,
-                                ContentSettingValues.BLOCK, preferenceSource);
+                ContentSettingException fakeContentSettingException = new ContentSettingException(
+                        type, googleOrigin, ContentSettingValues.BLOCK, preferenceSource);
                 websitePreferenceBridge.addContentSettingException(fakeContentSettingException);
 
                 fetcher.fetchPreferencesForCategory(
                         SiteSettingsCategory.createFromContentSettingsType(
-                                UNUSED_BROWSER_CONTEXT_HANDLE, contentSettingsType),
+                                UNUSED_BROWSER_CONTEXT_HANDLE, type),
                         (sites) -> {
                             Assert.assertEquals(1, sites.size());
 
@@ -766,11 +759,8 @@ public class WebsitePermissionsFetcherTest {
         String mainSite = "https://a.com";
         String thirdPartySite = "https://b.com";
         String preferenceSource = "preference";
-        @ContentSettingException.Type
-        int contentSettingExceptionType = ContentSettingException.Type.COOKIE;
         @ContentSettingsType
-        int contentSettingsType =
-                ContentSettingException.getContentSettingsType(contentSettingExceptionType);
+        int contentSettingsType = ContentSettingsType.COOKIES;
 
         // Test the advanced exception combinations of:
         // b.com on a.com
@@ -797,7 +787,7 @@ public class WebsitePermissionsFetcherTest {
 
                             Website site = sites.iterator().next();
                             assertContentSettingExceptionEquals(fakeContentSettingException,
-                                    site.getContentSettingException(contentSettingExceptionType));
+                                    site.getContentSettingException(contentSettingsType));
                         });
             }
 
@@ -816,7 +806,7 @@ public class WebsitePermissionsFetcherTest {
 
                             Website site = sites.iterator().next();
                             assertContentSettingExceptionEquals(fakeContentSettingException,
-                                    site.getContentSettingException(contentSettingExceptionType));
+                                    site.getContentSettingException(contentSettingsType));
                         });
             }
         }

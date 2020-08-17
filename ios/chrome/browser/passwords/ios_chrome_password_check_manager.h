@@ -142,6 +142,10 @@ class IOSChromePasswordCheckManager
   // delegate is initialized.
   bool start_check_on_init_ = false;
 
+  // Time when password check was started. Used to calculate delay in case
+  // when password check run less than 3 seconds.
+  base::Time start_time_;
+
   // A scoped observer for |saved_passwords_presenter_|.
   ScopedObserver<password_manager::SavedPasswordsPresenter,
                  password_manager::SavedPasswordsPresenter::Observer>
@@ -159,6 +163,8 @@ class IOSChromePasswordCheckManager
 
   // Observers to listen to password check changes.
   base::ObserverList<Observer> observers_;
+
+  base::WeakPtrFactory<IOSChromePasswordCheckManager> weak_ptr_factory_{this};
 };
 
 #endif  // IOS_CHROME_BROWSER_PASSWORDS_IOS_CHROME_PASSWORD_CHECK_MANAGER_H_

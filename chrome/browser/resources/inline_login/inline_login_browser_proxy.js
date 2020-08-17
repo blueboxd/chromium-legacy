@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {addSingletonGetter} from 'chrome://resources/js/cr.m.js';
+import {addSingletonGetter, sendWithPromise} from 'chrome://resources/js/cr.m.js';
 
 import {AuthCompletedCredentials} from '../gaia_auth_host/authenticator.m.js';
 
@@ -46,6 +46,13 @@ export class InlineLoginBrowserProxy {
   /** Send 'showIncognito' message to the handler */
   showIncognito() {}
 
+  /**
+   * Send 'getAccounts' message to the handler. The promise will be resolved
+   * with the list of emails of accounts in session.
+   * @return {Promise<Array<string>>}
+   */
+  getAccounts() {}
+
   /** Send 'dialogClose' message to close the login dialog. */
   dialogClose() {}
 }
@@ -85,6 +92,11 @@ export class InlineLoginBrowserProxyImpl {
   /** @override */
   showIncognito() {
     chrome.send('showIncognito');
+  }
+
+  /** @override */
+  getAccounts() {
+    return sendWithPromise('getAccounts');
   }
 
   /** @override */

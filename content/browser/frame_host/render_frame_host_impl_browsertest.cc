@@ -3609,7 +3609,6 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest, WebUiReloadAfterCrash) {
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
                        CheckIsCurrentBeforeAndAfterUnload) {
   IsolateAllSitesForTesting(base::CommandLine::ForCurrentProcess());
-  std::string onunload_script = "window.onunload = function(){ while(1);}";
   GURL url_ab(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   GURL url_c(embedded_test_server()->GetURL("c.com", "/title1.html"));
@@ -3638,11 +3637,6 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   EXPECT_FALSE(rfh_a->IsCurrent());
   EXPECT_FALSE(rfh_b->IsCurrent());
   EXPECT_TRUE(rfh_c->IsCurrent());
-
-  // 6) Resume deletion on rfh_b and run detach on rfh_b to delete its frame.
-  EXPECT_FALSE(delete_rfh_b.deleted());
-  rfh_b->DetachForTesting();
-  EXPECT_TRUE(delete_rfh_b.deleted());
 }
 
 // Test the LifecycleState is updated correctly for the main frame during

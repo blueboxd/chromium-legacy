@@ -62,7 +62,8 @@ class FileTypeFiltersController {
    * @private
    */
   createFilterButton_(label) {
-    const button = util.createChild(this.container_, 'file-type-filter-button');
+    const button =
+        util.createChild(this.container_, 'file-type-filter-button', 'button');
     button.textContent = label;
     button.onclick = this.onFilterButtonClicked_.bind(this);
     return button;

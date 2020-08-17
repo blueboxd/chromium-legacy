@@ -942,27 +942,27 @@ interface Functions {
   static void getFileTasks([instanceof=Entry] object[] entries,
                            GetFileTasksCallback callback);
 
-  // Gets the MIME type of a file.
-  // |entry| Entry to be checked.
+  // Gets the MIME type of an entry.
+  // |entry| The entry to be checked.
   // |callback|
   [nocompile]
   static void getMimeType([instanceof=Entry] object entry,
                           GetMimeTypeCallback callback);
 
   // Gets the content sniffed MIME type of a file.
-  // |fileBlob| Blob created from the file.
+  // |fileEntry| The file entry to be checked.
   // |callback|
   [nocompile]
-  static void getContentMimeType([instanceof=Blob] object fileBlob,
+  static void getContentMimeType([instanceof=FileEntry] object fileEntry,
                                  GetContentMimeTypeCallback callback);
 
   // Gets metadata from an Audio or Video file.
-  // |fileBlob| Blob created from the file.
+  // |fileEntry| The file entry to be checked.
   // |mimeType| Content sniffed mimeType of the file.
   // |type| Content metadata type to extact.
   // |callback|
   [nocompile]
-  static void getContentMetadata([instanceof=Blob] object fileBlob,
+  static void getContentMetadata([instanceof=FileEntry] object fileEntry,
                                  DOMString mimeType,
                                  ContentMetadataType type,
                                  GetContentMetadataCallback callback);

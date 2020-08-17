@@ -20,6 +20,7 @@ include_rules = [
   "+third_party/libyuv",
   "+third_party/opus",
   "+third_party/skia",
+  "+ui/base/ui_base_features.h",
   "+ui/display",
   "+ui/events",
   "+ui/gfx",

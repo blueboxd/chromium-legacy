@@ -3597,6 +3597,7 @@ crbug.com/759665 external/wpt/css/css-grid/animation/grid-template-columns-001.h
 crbug.com/759665 external/wpt/css/css-grid/animation/grid-template-rows-001.html [ Failure ]
 crbug.com/1018439 external/wpt/css/css-grid/grid-child-percent-basis-resize-1.html [ Failure ]
 crbug.com/935102 external/wpt/css/css-grid/layout-algorithm/grid-flex-track-intrinsic-sizes-002.html [ Failure ]
+crbug.com/1116954 external/wpt/css/css-grid/layout-algorithm/grid-intrinsic-track-sizes-001.html [ Failure ]
 crbug.com/707359 [ Mac ] external/wpt/css/css-grid/alignment/self-baseline/grid-self-baseline-003.html [ Failure ]
 crbug.com/707359 [ Mac ] external/wpt/css/css-grid/alignment/self-baseline/grid-self-baseline-004.html [ Failure ]
 crbug.com/707359 [ Mac ] external/wpt/css/css-grid/alignment/self-baseline/grid-self-baseline-horiz-004.html [ Failure ]
@@ -4261,6 +4262,7 @@ crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/layout-algori
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/layout-algorithm/grid-fit-content-percentage.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/layout-algorithm/grid-flex-track-intrinsic-sizes-001.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/layout-algorithm/grid-intrinsic-size-with-orthogonal-items.html [ Failure ]
+crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/layout-algorithm/grid-intrinsic-track-sizes-001.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/layout-algorithm/grid-item-margin-auto-columns-rows-001.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/layout-algorithm/grid-item-margin-auto-columns-rows-vertical-lr-001.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/layout-algorithm/grid-item-margin-auto-columns-rows-vertical-rl-001.html [ Failure ]
@@ -4707,7 +4709,8 @@ crbug.com/678346 [ Win7 Debug ] storage/indexeddb/index-cursor.html [ Pass Timeo
 
 crbug.com/678493 http/tests/permissions/chromium/test-request-window.html [ Timeout Pass ]
 
-crbug.com/747751 http/tests/devtools/application-panel/storage-view-reports-quota.js [ Pass Timeout ]
+# TODO(petermarshall): Re-enable after landing devtools piechart changes.
+crbug.com/747751 http/tests/devtools/application-panel/storage-view-reports-quota.js [ Failure Pass Timeout ]
 
 crbug.com/689781 external/wpt/media-source/mediasource-duration.html [ Failure Pass ]
 crbug.com/689781 [ Win ] http/tests/media/media-source/mediasource-duration.html [ Failure Pass ]
@@ -6636,11 +6639,6 @@ crbug.com/1099689 [ Linux ] external/wpt/html/browsers/windows/nested-browsing-c
 
 #Sheriff 2020-06-25
 crbug.com/1010170 media/video-played-reset.html [ Pass Failure ]
-
-# Temporarily disable tests to allow fixing webrtc error logging
-crbug.com/1101699 external/wpt/webrtc/RTCPeerConnection-setLocalDescription-answer.html [ Pass Failure ]
-crbug.com/1101699 external/wpt/webrtc/RTCPeerConnection-setLocalDescription-pranswer.html [ Pass Failure ]
-crbug.com/1101699 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-setRemoteDescription-rollback.html [ Pass Failure ]
 
 # Sheriff 2020-07-07
 # Additionally disabled on mac due to crbug.com/988248

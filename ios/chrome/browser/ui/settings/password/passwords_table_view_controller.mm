@@ -1369,8 +1369,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
       }
       break;
     case ItemTypeCheckForProblemsButton:
-      if (_passwordCheck->GetPasswordCheckState() !=
-          PasswordCheckState::kNoPasswords) {
+      if (self.passwordCheckState != PasswordCheckStateRunning) {
         _passwordCheck->StartPasswordCheck();
       }
       break;

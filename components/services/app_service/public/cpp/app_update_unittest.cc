@@ -714,17 +714,15 @@ class AppUpdateTest : public testing::Test {
       auto scheme_condition =
           apps_util::MakeCondition(apps::mojom::ConditionType::kScheme,
                                    std::move(scheme_condition_values));
-      intent_filter->conditions.push_back(std::move(scheme_condition));
 
       std::vector<apps::mojom::ConditionValuePtr> host_condition_values;
       host_condition_values.push_back(apps_util::MakeConditionValue(
           "www.google.com", apps::mojom::PatternMatchType::kNone));
       auto host_condition = apps_util::MakeCondition(
           apps::mojom::ConditionType::kHost, std::move(host_condition_values));
-      intent_filter->conditions.push_back(std::move(host_condition));
 
-      intent_filter->conditions.push_back(scheme_condition.Clone());
-      intent_filter->conditions.push_back(host_condition.Clone());
+      intent_filter->conditions.push_back(std::move(scheme_condition));
+      intent_filter->conditions.push_back(std::move(host_condition));
 
       state->intent_filters.push_back(intent_filter.Clone());
       expect_intent_filters_.push_back(intent_filter.Clone());

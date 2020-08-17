@@ -8,6 +8,7 @@
 
 #include "base/bind_helpers.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/ranges.h"
 #include "base/numerics/safe_conversions.h"
 #include "components/viz/common/quads/compositor_frame_metadata.h"
 
@@ -31,7 +32,6 @@ constexpr int VideoPlaybackRoughnessReporter::kMaxWindowSize;
 constexpr int VideoPlaybackRoughnessReporter::kMaxWindowsBeforeSubmit;
 constexpr int VideoPlaybackRoughnessReporter::kMinWindowsBeforeSubmit;
 constexpr int VideoPlaybackRoughnessReporter::kPercentileToSubmit;
-constexpr double VideoPlaybackRoughnessReporter::kDesiredWindowDuration;
 
 VideoPlaybackRoughnessReporter::VideoPlaybackRoughnessReporter(
     PlaybackRoughnessReportingCallback reporting_cb)
@@ -73,10 +73,10 @@ void VideoPlaybackRoughnessReporter::FrameSubmitted(
     }
 
     // Adjust frame window size to fit about 1 second of playback
-    int win_size = base::ClampRound(kDesiredWindowDuration *
-                                    info.intended_duration.value().ToHz());
-    frames_window_size_ = std::max(kMinWindowSize, win_size);
-    frames_window_size_ = std::min(frames_window_size_, kMaxWindowSize);
+    const int win_size =
+        base::ClampRound(info.intended_duration.value().ToHz());
+    frames_window_size_ =
+        base::ClampToRange(win_size, kMinWindowSize, kMaxWindowSize);
   }
 
   frames_.push_back(info);

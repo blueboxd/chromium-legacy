@@ -21,7 +21,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SVG_SVG_RESOURCES_CACHE_H_
 
 #include <memory>
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/style/style_difference.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
@@ -37,6 +36,8 @@ class SVGResourcesCache {
 
  public:
   SVGResourcesCache();
+  SVGResourcesCache(const SVGResourcesCache&) = delete;
+  SVGResourcesCache& operator=(const SVGResourcesCache&) = delete;
   ~SVGResourcesCache();
 
   static SVGResources* CachedResourcesForLayoutObject(const LayoutObject&);
@@ -70,6 +71,8 @@ class SVGResourcesCache {
     TemporaryStyleScope(LayoutObject&,
                         const ComputedStyle& original_style,
                         const ComputedStyle& temporary_style);
+    TemporaryStyleScope(const TemporaryStyleScope&) = delete;
+    TemporaryStyleScope& operator=(const TemporaryStyleScope) = delete;
     ~TemporaryStyleScope();
 
    private:
@@ -79,7 +82,6 @@ class SVGResourcesCache {
     const ComputedStyle& original_style_;
     const ComputedStyle& temporary_style_;
     const bool styles_are_equal_;
-    DISALLOW_COPY_AND_ASSIGN(TemporaryStyleScope);
   };
 
  private:
@@ -97,7 +99,6 @@ class SVGResourcesCache {
 
   typedef HashMap<const LayoutObject*, std::unique_ptr<SVGResources>> CacheMap;
   CacheMap cache_;
-  DISALLOW_COPY_AND_ASSIGN(SVGResourcesCache);
 };
 
 }  // namespace blink

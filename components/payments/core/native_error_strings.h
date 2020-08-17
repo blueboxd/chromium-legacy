@@ -234,6 +234,9 @@ extern const char kUnableToInvokeAndroidPaymentApps[];
 // indicates this by returning Activity.RESULT_CANCELED.
 extern const char kUserClosedPaymentApp[];
 
+// Used when an Android app declares more than one IS_READY_TO_PAY service.
+extern const char kMoreThanOneService[];
+
 }  // namespace errors
 }  // namespace payments
 

@@ -31,8 +31,9 @@ class AndroidPaymentAppTest : public testing::Test,
       base::WeakPtr<AndroidAppCommunication> communication) {
     std::set<std::string> payment_method_names;
     payment_method_names.insert(methods::kGooglePlayBilling);
-    std::map<std::string, std::set<std::string>> stringified_method_data;
-    stringified_method_data[methods::kGooglePlayBilling].insert("{}");
+    auto stringified_method_data =
+        std::make_unique<std::map<std::string, std::set<std::string>>>();
+    stringified_method_data->insert({methods::kGooglePlayBilling, {"{}"}});
     auto description = std::make_unique<AndroidAppDescription>();
     description->package = "com.example.app";
     description->service_names.push_back("com.example.app.Service");
@@ -43,7 +44,7 @@ class AndroidPaymentAppTest : public testing::Test,
         methods::kGooglePlayBilling;
 
     return std::make_unique<AndroidPaymentApp>(
-        payment_method_names, stringified_method_data,
+        payment_method_names, std::move(stringified_method_data),
         GURL("https://top-level-origin.com"),
         GURL("https://payment-request-origin.com"), "payment-request-id",
         std::move(description), communication);

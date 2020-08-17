@@ -1523,11 +1523,13 @@ bool DevToolsUIBindings::IsAttachedTo(content::DevToolsAgentHost* agent_host) {
   return agent_host_.get() == agent_host;
 }
 
-void DevToolsUIBindings::CallClientMethod(const std::string& object_name,
-                                          const std::string& method_name,
-                                          const base::Value& arg1,
-                                          const base::Value& arg2,
-                                          const base::Value& arg3) {
+void DevToolsUIBindings::CallClientMethod(
+    const std::string& object_name,
+    const std::string& method_name,
+    const base::Value& arg1,
+    const base::Value& arg2,
+    const base::Value& arg3,
+    base::OnceCallback<void(base::Value)> completion_callback) {
   // If we're not exposing bindings, we shouldn't call functions either.
   if (!frontend_host_)
     return;
@@ -1547,7 +1549,7 @@ void DevToolsUIBindings::CallClientMethod(const std::string& object_name,
   }
   javascript.append(");");
   web_contents_->GetMainFrame()->ExecuteJavaScript(
-      base::UTF8ToUTF16(javascript), base::NullCallback());
+      base::UTF8ToUTF16(javascript), std::move(completion_callback));
 }
 
 void DevToolsUIBindings::ReadyToCommitNavigation(

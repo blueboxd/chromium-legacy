@@ -12,7 +12,9 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.notNull;
 import static org.mockito.Mockito.clearInvocations;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -50,6 +52,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.password_check.PasswordCheckProperties.ItemType;
+import org.chromium.chrome.browser.password_check.helper.PasswordCheckChangePasswordHelper;
 import org.chromium.chrome.browser.password_check.helper.PasswordCheckReauthenticationHelper;
 import org.chromium.chrome.browser.password_check.helper.PasswordCheckReauthenticationHelper.ReauthReason;
 import org.chromium.chrome.test.util.browser.Features;
@@ -81,7 +84,7 @@ public class PasswordCheckControllerTest {
     @Mock
     private PasswordCheckComponentUi.Delegate mDelegate;
     @Mock
-    private PasswordCheckComponentUi.ChangePasswordDelegate mChangePasswordDelegate;
+    private PasswordCheckChangePasswordHelper mChangePasswordDelegate;
     @Mock
     private PasswordCheck mPasswordCheck;
     @Mock
@@ -276,6 +279,20 @@ public class PasswordCheckControllerTest {
     public void testOnChangePasswordWithScriptButtonClick() {
         mMediator.onChangePasswordWithScriptButtonClick(BOB);
         verify(mChangePasswordDelegate).launchCctWithScript(eq(BOB));
+    }
+
+    @Test
+    public void testOnEditPasswordButtonClick() {
+        when(mReauthenticationHelper.canReauthenticate()).thenReturn(true);
+        doAnswer(invocation -> {
+            Callback<Boolean> cb = invocation.getArgument(1);
+            cb.onResult(true);
+            return true;
+        })
+                .when(mReauthenticationHelper)
+                .reauthenticate(anyInt(), notNull());
+        mMediator.onEdit(ANA);
+        verify(mChangePasswordDelegate).launchEditPage(eq(ANA));
     }
 
     private void assertIdleHeader(MVCListAdapter.ListItem header) {

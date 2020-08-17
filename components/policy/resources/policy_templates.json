@@ -1706,11 +1706,9 @@
       'id': 11,
       'caption': '''Disable saving browser history''',
       'tags': [],
-      'desc': '''Disables saving browser history in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing this setting.
+      'desc': '''Setting the policy to Enabled means browsing history is not saved, tab syncing is off and, and users can't change this setting.
 
-      If this setting is enabled, browsing history is not saved. This setting also disables tab syncing.
-
-      If this setting is disabled or not set, browsing history is saved.''',
+      Setting the policy to Disabled or leaving it unset saves browsing history.''',
     },
     {
       'name': 'AllowDeletingBrowserHistory',
@@ -2942,23 +2940,17 @@
       'id': 14,
       'caption': '''Enable Safe Browsing''',
       'tags': ['system-security'],
-      'desc': '''This policy is deprecated in M83, please use SafeBrowsingProtectionLevel instead.
+      'desc': '''This policy is deprecated in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> 83, please use <ph name="SAFE_BROWSING_PROTECTION_LEVEL_POLICY_NAME">SafeBrowsingProtectionLevel</ph> instead.
 
-      Enables <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s Safe Browsing feature and prevents users from changing this setting.
+      Setting the policy to Enabled keeps Chrome's Safe Browsing feature on. Setting the policy to Disabled keeps Safe Browsing off.
 
-      If you enable this setting, Safe Browsing is always active.
+      If you set this policy, users can't change it or override the "Enable phishing and malware protection" setting in Chrome. If not set, "Enable phishing and malware protection" is set to True, but the user can change it.
 
-      If you disable this setting, Safe Browsing is never active.
+      See more about Safe Browsing ( https://developers.google.com/safe-browsing ).
 
-      If you enable or disable this setting, users cannot change or override the "Enable phishing and malware protection" setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+      If the policy <ph name="SAFE_BROWSING_PROTECTION_LEVEL_POLICY_NAME">SafeBrowsingProtectionLevel</ph> is set, the value of the policy <ph name="SAFE_BROWSING_ENABLED_POLICY_NAME">SafeBrowsingEnabled</ph> is ignored.
 
-      If this policy is left not set, this will be enabled but the user will be able to change it.
-
-      See https://developers.google.com/safe-browsing for more info on Safe Browsing.
-
-      If the policy SafeBrowsingProtectionLevel is set, the value of the policy SafeBrowsingEnabled is ignored.
-
-      This policy is available only on Windows instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain. or Windows 10 Pro or Enterprise instances that enrolled for device management and macOS instances that are that are managed via MDM or joined to a domain via MCX.''',
+      On <ph name="MS_WIN_NAME">Microsoft® Windows®</ph>, this functionality is only available on instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain, running on Windows 10 Pro, or enrolled in <ph name="CHROME_BROWSER_CLOUSE_MANAGEMENT_NAME">Chrome Browser Cloud Management</ph>. On <ph name="MAC_OS_NAME">macOS</ph>, this functionality is only available on instances that are managed via MDM, or joined to a domain via MCX.''',
     },
     {
       'name': 'SafeBrowsingProtectionLevel',
@@ -3741,15 +3733,13 @@
       'id': 375,
       'caption': '''Enable Safe Browsing for trusted sources''',
       'tags': ['local-data-access'],
-      'desc': '''Identify if <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> can allow download without Safe Browsing checks when it's from a trusted source.
+      'desc': '''Setting the policy to Enabled or leaving it unset means downloaded files are sent to be analyzed by Safe Browsing, even when it's from a trusted source.
 
-      When False, downloaded files will not be sent to be analyzed by Safe Browsing when it's from a trusted source.
+      Setting the policy to Disabled means downloaded files won't be sent to be analyzed by Safe Browsing when it's from a trusted source.
 
-      When not set (or set to True), downloaded files are sent to be analyzed by Safe Browsing, even when it's from a trusted source.
+      These restrictions apply to downloads triggered from webpage content, as well as the Download link menu option. These restrictions don't apply to the save or download of the currently displayed page or to saving as PDF from the printing options.
 
-      Note that these restrictions apply to downloads triggered from web page content, as well as the 'download link...' context menu option. These restrictions do not apply to the save / download of the currently displayed page, nor does it apply to saving as PDF from the printing options.
-
-      This policy is available only on Windows instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain. or Windows 10 Pro or Enterprise instances that enrolled for device management and macOS instances that are that are managed via MDM or joined to a domain via MCX.''',
+      On <ph name="MS_WIN_NAME">Microsoft® Windows®</ph>, this functionality is only available on instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain, running on Windows 10 Pro, or enrolled in <ph name="CHROME_BROWSER_CLOUSE_MANAGEMENT_NAME">Chrome Browser Cloud Management</ph>. On <ph name="MAC_OS_NAME">macOS</ph>, this functionality is only available on instances that are managed via MDM, or joined to a domain via MCX.''',
       'label': '''Safe Browsing enable state for trusted sources''',
     },
     {
@@ -4455,7 +4445,7 @@
 
       On <ph name="MS_WIN_NAME">Microsoft® Windows®</ph> instances, apps and extensions from outside the Chrome Web Store can only be forced installed if the instance is joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain, running on Windows 10 Pro, or enrolled in Chrome Browser Cloud Management.
 
-      On <ph name="MAC_OS_NAME">macOS</ph> instances, apps and extensions from outside the Chrome Web Store can only can only be force installed if the instance is managed via MDM, or joined to a domain via MCX.
+      On <ph name="MAC_OS_NAME">macOS</ph> instances, apps and extensions from outside the Chrome Web Store can only be force installed if the instance is managed via MDM, or joined to a domain via MCX.
 
       The source code of any extension may be altered by users through developer tools, potentially rendering the extension dysfunctional. If this is a concern, set the <ph name="DEVELOPER_TOOLS_DISABLED_POLICY_NAME">DeveloperToolsDisabled</ph> policy.
 
@@ -17184,14 +17174,19 @@
       'id': 411,
       'caption': '''Password protection warning trigger''',
       'tags': [],
-      'desc': '''Allows you to control the triggering of password protection warning. Password protection alerts users when they reuse their protected password on potentially suspicious sites.
+      'desc': '''Setting the policy lets you control the triggering of password protection warning. Password protection alerts users when they reuse their protected password on potentially suspicious sites.
 
-      You can use 'PasswordProtectionLoginURLs' and 'PasswordProtectionChangePasswordURL' policies to configure which password to protect.
+      Use <ph name="PASSWORD_PROTECTION_LOGIN_URLS_POLICY_NAME">PasswordProtectionLoginURLs</ph> and <ph name="PASSWORD_PROTECTION_CHANGE_PASSWORD_URL_POLICY_NAME">PasswordProtectionChangePasswordURL</ph> to set which password to protect.
 
-      If this policy is set to 'PasswordProtectionWarningOff', no password protection warning will be shown.
-      If this policy is set to 'PasswordProtectionWarningOnPasswordReuse', password protection warning will be shown when the user reuses their protected password on a non-whitelisted site.
-      If this policy is set to 'PasswordProtectionWarningOnPhishingReuse', password protection warning will be shown when the user reuses their protected password on a phishing site.
-      If this policy is left unset, password protection service will only protect Google passwords but the user will be able to change this setting.''',
+      If this policy is set to:
+
+      * PasswordProtectionWarningOff, no password protection warning will be shown.
+
+      * PasswordProtectionWarningOnPasswordReuse, password protection warning will be shown when the user reuses their protected password on a non-whitelisted site.
+
+      * PasswordProtectionWarningOnPhishingReuse, password protection warning will be shown when the user reuses their protected password on a phishing site.
+
+      Leaving the policy unset has the password protection service only protect Google passwords, but users can change this setting.''',
     },
     {
       'id': 419,
@@ -17529,15 +17524,11 @@
       'tags': [],
       'desc': '''This policy is deprecated, please use <ph name="SAFE_BROWSING_ALLOWLIST_DOMAINS_POLICY_NAME">SafeBrowsingAllowlistDomains</ph> instead.
 
-      Configure the list of domains which Safe Browsing will trust. This means:
-      Safe Browsing will not check for dangerous resources (e.g. phishing, malware, or unwanted software) if their URLs match these domains.
-      Safe Browsing's download protection service will not check downloads hosted on these domains.
-      Safe Browsing's password protection service will not check for password reuse if the page URL matches these domains.
+      Setting the policy to Enabled means Safe Browsing will trust the domains you designate. It won't check them for dangerous resources such as phishing, malware, or unwanted software. Safe Browsing's download protection service won't check downloads hosted on these domains. Its password protection service won't check for password reuse.
 
-      If this setting is enabled, then Safe Browsing will trust these domains.
-      If this setting is disabled or not set, then default Safe Browsing protection is applied to all resources.
+      Setting the policy to Disabled or leaving it unset means default Safe Browsing protection applies to all resources.
 
-      This policy is available only on Windows instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain. or Windows 10 Pro or Enterprise instances that enrolled for device management and macOS instances that are that are managed via MDM or joined to a domain via MCX.''',
+       On <ph name="MS_WIN_NAME">Microsoft® Windows®</ph>, this functionality is only available on instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain, running on Windows 10 Pro, or enrolled in <ph name="CHROME_BROWSER_CLOUSE_MANAGEMENT_NAME">Chrome Browser Cloud Management</ph>. On <ph name="MAC_OS_NAME">macOS</ph>, this functionality is only available on instances that are managed via MDM, or joined to a domain via MCX.''',
     },
     {
       'name': 'SafeBrowsingAllowlistDomains',
@@ -17556,15 +17547,11 @@
       'id': 732,
       'caption': '''Configure the list of domains on which Safe Browsing will not trigger warnings.''',
       'tags': [],
-      'desc': '''Configure the list of domains which Safe Browsing will trust. This means:
-      Safe Browsing will not check for dangerous resources (e.g. phishing, malware, or unwanted software) if their URLs match these domains.
-      Safe Browsing's download protection service will not check downloads hosted on these domains.
-      Safe Browsing's password protection service will not check for password reuse if the page URL matches these domains.
+      'desc': '''Setting the policy to Enabled means Safe Browsing will trust the domains you designate. It won't check them for dangerous resources such as phishing, malware, or unwanted software. Safe Browsing's download protection service won't check downloads hosted on these domains. Its password protection service won't check for password reuse.
 
-      If this setting is enabled, then Safe Browsing will trust these domains.
-      If this setting is disabled or not set, then default Safe Browsing protection is applied to all resources.
+      Setting the policy to Disabled or leaving it unset means default Safe Browsing protection applies to all resources.
 
-      On <ph name="MS_WIN_NAME">Microsoft® Windows®</ph>, this functionality is only available on instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain, running on Windows 10 Pro, or enrolled in Chrome Browser Cloud Management. On <ph name="MAC_OS_NAME">macOS</ph>, this functionality is only available on instances that are managed via MDM, or joined to a domain via MCX.''',
+      On <ph name="MS_WIN_NAME">Microsoft® Windows®</ph>, this functionality is only available on instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain, running on Windows 10 Pro, or enrolled in <ph name="CHROME_BROWSER_CLOUSE_MANAGEMENT_NAME">Chrome Browser Cloud Management</ph>. On <ph name="MAC_OS_NAME">macOS</ph>, this functionality is only available on instances that are managed via MDM, or joined to a domain via MCX.''',
     },
     {
       'name': 'PasswordProtectionLoginURLs',
@@ -17583,13 +17570,11 @@
       'id': 423,
       'caption': '''Configure the list of enterprise login URLs where password protection service should capture salted hashes of passwords.''',
       'tags': [],
-      'desc': '''Configure the list of enterprise login URLs (HTTP and HTTPS schemes only). Password protection service will capture salted hashes of passwords on these URLs and use them for password reuse detection.
-      In order for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> to correctly capture password salted hashes, please make sure your login pages follow the guidelines on https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+      'desc': '''Setting the policy sets the list of enterprise login URLs (HTTP and HTTPS protocols only). Password protection service will capture salted hashes of passwords on these URLs and use them for password reuse detection. For <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> to correctly capture password salted hashes, ensure your sign-in pages follow these guidelines ( https://www.chromium.org/developers/design-documents/create-amazing-password-forms ).
 
-      If this setting is enabled, then password protection service will capture salted hashes of password on these URLs for password reuse detection purpose.
-      If this setting is disabled or not set, then password protection service will only capture password salted hashes on https://accounts.google.com.
+      Turning this setting off or leaving it unset means the password protection service only captures the password salted hashes on https://accounts.google.com.
 
-      This policy is available only on Windows instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain. or Windows 10 Pro or Enterprise instances that enrolled for device management and macOS instances that are that are managed via MDM or joined to a domain via MCX.''',
+      On <ph name="MS_WIN_NAME">Microsoft® Windows®</ph>, this functionality is only available on instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain, running on Windows 10 Pro, or enrolled in <ph name="CHROME_BROWSER_CLOUSE_MANAGEMENT_NAME">Chrome Browser Cloud Management</ph>. On <ph name="MAC_OS_NAME">macOS</ph>, this functionality is only available on instances that are managed via MDM, or joined to a domain via MCX.''',
     },
     {
       'name': 'PasswordProtectionChangePasswordURL',
@@ -17605,13 +17590,11 @@
       'id': 424,
       'caption': '''Configure the change password URL.''',
       'tags': [],
-      'desc': '''Configure the change password URL (HTTP and HTTPS schemes only). Password protection service will send users to this URL to change their password after seeing a warning in the browser.
-      In order for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> to correctly capture the salted hash of the new password on this change password page, please make sure your change password page follows the guidelines on https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+      'desc': '''Setting the policy sets the URL for users to change their password after seeing a warning in the browser. The password protection service sends users to the URL (HTTP and HTTPS protocols only) you designate through this policy. For <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> to correctly capture the salted hash of the new password on this change password page, make sure your change password page follows these guidelines ( https://www.chromium.org/developers/design-documents/create-amazing-password-forms ).
 
-      If this setting is enabled, then password protection service will send users to this URL to change their password after seeing a warning in the browser.
-      If this setting is disabled or not set, then password protection service will send users to https://myaccount.google.com to change their password.
+      Turning the policy off or leaving it unset means the service sends users to https://myaccount.google.com to change their password.
 
-      This policy is available only on Windows instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain. or Windows 10 Pro or Enterprise instances that enrolled for device management and macOS instances that are that are managed via MDM or joined to a domain via MCX.''',
+      On <ph name="MS_WIN_NAME">Microsoft® Windows®</ph>, this functionality is only available on instances that are joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain, running on Windows 10 Pro, or enrolled in <ph name="CHROME_BROWSER_CLOUSE_MANAGEMENT_NAME">Chrome Browser Cloud Management</ph>. On <ph name="MAC_OS_NAME">macOS</ph>, this functionality is only available on instances that are managed via MDM, or joined to a domain via MCX.''',
     },
     {
       'name': 'SafeBrowsingExtendedReportingEnabled',
@@ -17627,19 +17610,13 @@
       'id': 429,
       'tags': ['google-sharing'],
       'caption': '''Enable Safe Browsing Extended Reporting''',
-      'desc': '''Enables <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s Safe Browsing Extended Reporting and prevents users from changing this setting.
+      'desc': '''Setting the policy to Enabled turns on <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s Safe Browsing Extended Reporting, which sends some system information and page content to Google servers to help detect dangerous apps and sites.
 
-      Extended Reporting sends some system information and page content to Google servers to help detect dangerous apps and sites.
+      Setting the policy to Disabled means reports are never sent.
 
-      If the setting is set to true, then reports will be created and sent whenever necessary (such as when a security interstitial is shown).
+      If you set this policy, users can't change it. If not set, users can decide whether to send reports or not.
 
-      If the setting is set to false, reports will never be sent.
-
-      If this policy is set to true or false, the user will not be able to modify the setting.
-
-      If this policy is left unset, the user will be able to change the setting and decide whether to send reports or not.
-
-      See https://developers.google.com/safe-browsing for more info on Safe Browsing.''',
+      See more about Safe Browsing ( https://developers.google.com/safe-browsing ).''',
     },
     {
       'name': 'MachineLevelUserCloudPolicyEnrollmentToken',
@@ -18419,12 +18396,13 @@
       'caption': '''Control SafeSites adult content filtering.''',
       'tags': ['filtering', 'google-sharing'],
       'desc':
-      '''This policy controls the application of the SafeSites URL filter.
-      This filter uses the Google Safe Search API to classify URLs as pornographic or not.
+      '''Setting the policy controls the SafeSites URL filter, which uses the Google Safe Search API to classify URLs as pornographic or not.
 
-      When this policy is not configured or set to "Do not filter sites for adult content", sites will not be filtered.
+      When this policy is set to:
 
-      When this policy is set to "Filter top level sites for adult content", sites classified as pornographic will be filtered.''',
+      * Do not filter sites for adult content, or not set, sites aren't filtered
+
+      * Filter top level sites for adult content, pornographic sites are filtered''',
     },
     {
       'name': 'OverrideSecurityRestrictionsOnInsecureOrigin',
@@ -18444,28 +18422,11 @@
       'caption': '''Origins or hostname patterns for which restrictions on
       insecure origins should not apply''',
       'tags': ['system-security'],
-      'desc': '''
-      The policy specifies a list of origins (URLs) or hostname patterns (such
-      as "*.example.com") for which security restrictions on insecure origins
-      will not apply.
+      'desc': '''Setting the policy specifies a list of origins (URLs) or hostname patterns (such as *.example.com) for which security restrictions on insecure origins won't apply. Organizations can set whitelist origins for legacy applications that can't deploy TLS or set up a staging server for internal web development, so developers can test out features requiring secure contexts without having to deploy TLS on the staging server. This policy also prevents the origin from being labeled "Not Secure" in the address bar.
 
-      The intent is to allow organizations to set whitelist origins for legacy
-      applications that cannot deploy TLS, or to set up a staging server for
-      internal web development so that their developers can test out features
-      requiring secure contexts without having to deploy TLS on the staging
-      server. This policy will also prevent the origin from being labeled
-      "Not Secure" in the omnibox.
+      Setting a list of URLs in this policy amounts to setting the command-line flag --unsafely-treat-insecure-origin-as-secure to a comma-separated list of the same URLs. The policy overrides the command-line flag and UnsafelyTreatInsecureOriginAsSecure, if present.
 
-      Setting a list of URLs in this policy has the same effect as setting the
-      command-line flag '--unsafely-treat-insecure-origin-as-secure' to a
-      comma-separated list of the same URLs. If the policy is set, it will
-      override the command-line flag.
-
-      This policy will override UnsafelyTreatInsecureOriginAsSecure, if present.
-
-      For more information on secure contexts, see
-      https://www.w3.org/TR/secure-contexts/.
-      '''
+      For more information on secure contexts, see Secure Contexts ( https://www.w3.org/TR/secure-contexts ).'''
     },
     {
       'name': 'DeviceUpdateStagingSchedule',

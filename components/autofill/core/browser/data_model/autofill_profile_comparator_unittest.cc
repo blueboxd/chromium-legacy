@@ -59,8 +59,9 @@ namespace {
 
 const char kLocale[] = "en-US";
 
-class AutofillProfileComparatorTest : public testing::Test,
-                                      public testing::WithParamInterface<bool> {
+class AutofillProfileComparatorTest
+    : public testing::Test,
+      public testing::WithParamInterface<std::tuple<bool, bool>> {
  public:
   // Expose the protected methods of autofill::AutofillProfileComparator for
   // testing.
@@ -288,6 +289,29 @@ class AutofillProfileComparatorTest : public testing::Test,
               actual.GetInfo(AutofillType(ADDRESS_HOME_ZIP), kLocale));
     EXPECT_EQ(expected.GetInfo(AutofillType(ADDRESS_HOME_COUNTRY), kLocale),
               actual.GetInfo(AutofillType(ADDRESS_HOME_COUNTRY), kLocale));
+
+    EXPECT_EQ(expected.GetInfo(AutofillType(autofill::ADDRESS_HOME_STREET_NAME),
+                               kLocale),
+              actual.GetInfo(AutofillType(autofill::ADDRESS_HOME_STREET_NAME),
+                             kLocale));
+    EXPECT_EQ(expected.GetInfo(
+                  AutofillType(autofill::ADDRESS_HOME_DEPENDENT_STREET_NAME),
+                  kLocale),
+              actual.GetInfo(
+                  AutofillType(autofill::ADDRESS_HOME_DEPENDENT_STREET_NAME),
+                  kLocale));
+    EXPECT_EQ(expected.GetInfo(
+                  AutofillType(autofill::ADDRESS_HOME_HOUSE_NUMBER), kLocale),
+              actual.GetInfo(AutofillType(autofill::ADDRESS_HOME_HOUSE_NUMBER),
+                             kLocale));
+    EXPECT_EQ(expected.GetInfo(
+                  AutofillType(autofill::ADDRESS_HOME_PREMISE_NAME), kLocale),
+              actual.GetInfo(AutofillType(autofill::ADDRESS_HOME_PREMISE_NAME),
+                             kLocale));
+    EXPECT_EQ(expected.GetInfo(AutofillType(autofill::ADDRESS_HOME_SUBPREMISE),
+                               kLocale),
+              actual.GetInfo(AutofillType(autofill::ADDRESS_HOME_SUBPREMISE),
+                             kLocale));
   }
 
   AutofillProfileComparator comparator_{kLocale};
@@ -296,17 +320,36 @@ class AutofillProfileComparatorTest : public testing::Test,
   void SetUp() override { InitializeFeatures(); }
 
   void InitializeFeatures() {
-    structured_names_enabled_ = GetParam();
+    structured_names_enabled_ = std::get<0>(GetParam());
+    address_enhancement_votes_enabled_ = std::get<1>(GetParam());
+
+    std::vector<base::Feature> enabled_features;
+    std::vector<base::Feature> disabled_features;
+
     if (structured_names_enabled_) {
-      scoped_features_.InitAndEnableFeature(
+      enabled_features.push_back(
           autofill::features::kAutofillEnableSupportForMoreStructureInNames);
     } else {
-      scoped_features_.InitAndDisableFeature(
+      disabled_features.push_back(
           autofill::features::kAutofillEnableSupportForMoreStructureInNames);
     }
+
+    if (address_enhancement_votes_enabled_) {
+      enabled_features.push_back(
+          autofill::features::kAutofillAddressEnhancementVotes);
+    } else {
+      disabled_features.push_back(
+          autofill::features::kAutofillAddressEnhancementVotes);
+    }
+    scoped_features_.InitWithFeatures(enabled_features, disabled_features);
   }
 
   bool StructuredNames() const { return structured_names_enabled_; }
+  bool AddressEnhancementVotes() const {
+    return address_enhancement_votes_enabled_;
+  }
+
+  bool address_enhancement_votes_enabled_;
   bool structured_names_enabled_;
   base::test::ScopedFeatureList scoped_features_;
 
@@ -1167,8 +1210,32 @@ TEST_P(AutofillProfileComparatorTest, MergeAddresses) {
 TEST_P(AutofillProfileComparatorTest, MergeAddressesMostUniqueTokens) {
   AutofillProfile p1 = CreateProfileWithAddress(
       "1 Some Street", "Unit 3", "Carver", "CA - California", "90210", "US");
+
+  p1.SetRawInfo(autofill::ADDRESS_HOME_STREET_NAME,
+                base::UTF8ToUTF16("StreetName"));
+  p1.SetRawInfo(autofill::ADDRESS_HOME_DEPENDENT_STREET_NAME,
+                base::UTF8ToUTF16("DependentStreetName"));
+  p1.SetRawInfo(autofill::ADDRESS_HOME_HOUSE_NUMBER,
+                base::UTF8ToUTF16("HouseNumber"));
+  p1.SetRawInfo(autofill::ADDRESS_HOME_PREMISE_NAME,
+                base::UTF8ToUTF16("PremiseName"));
+  p1.SetRawInfo(autofill::ADDRESS_HOME_SUBPREMISE,
+                base::UTF8ToUTF16("Subpremise"));
+
   AutofillProfile p2 = CreateProfileWithAddress(
       "1 Some Other Street", "Unit 3", "Carver City", "ca", "90210-1234", "us");
+
+  p2.set_use_date(p1.use_date() + base::TimeDelta::FromMinutes(1));
+  p2.SetRawInfo(autofill::ADDRESS_HOME_STREET_NAME,
+                base::UTF8ToUTF16("StreetName2"));
+  p2.SetRawInfo(autofill::ADDRESS_HOME_DEPENDENT_STREET_NAME,
+                base::UTF8ToUTF16("DependentStreetName2"));
+  p2.SetRawInfo(autofill::ADDRESS_HOME_HOUSE_NUMBER,
+                base::UTF8ToUTF16("HouseNumber2"));
+  p2.SetRawInfo(autofill::ADDRESS_HOME_PREMISE_NAME,
+                base::UTF8ToUTF16("PremiseName2"));
+  p2.SetRawInfo(autofill::ADDRESS_HOME_SUBPREMISE,
+                base::UTF8ToUTF16("Subpremise2"));
 
   Address expected;
   expected.SetRawInfo(ADDRESS_HOME_LINE1, UTF8ToUTF16("1 Some Other Street"));
@@ -1178,6 +1245,78 @@ TEST_P(AutofillProfileComparatorTest, MergeAddressesMostUniqueTokens) {
   expected.SetRawInfo(ADDRESS_HOME_ZIP, UTF8ToUTF16("90210-1234"));
   expected.SetRawInfo(ADDRESS_HOME_COUNTRY, UTF8ToUTF16("US"));
 
+  // If address enhancement votes are enabled, it is expecfted that the
+  // substructure from p2 since it is a superset of p1.
+  // Otherwise the fields are expected to be empty after the merge process.
+  if (AddressEnhancementVotes()) {
+    expected.SetRawInfo(autofill::ADDRESS_HOME_STREET_NAME,
+                        base::UTF8ToUTF16("StreetName2"));
+    expected.SetRawInfo(autofill::ADDRESS_HOME_DEPENDENT_STREET_NAME,
+                        base::UTF8ToUTF16("DependentStreetName2"));
+    expected.SetRawInfo(autofill::ADDRESS_HOME_HOUSE_NUMBER,
+                        base::UTF8ToUTF16("HouseNumber2"));
+    expected.SetRawInfo(autofill::ADDRESS_HOME_PREMISE_NAME,
+                        base::UTF8ToUTF16("PremiseName2"));
+    expected.SetRawInfo(autofill::ADDRESS_HOME_SUBPREMISE,
+                        base::UTF8ToUTF16("Subpremise2"));
+  }
+  MergeAddressesAndExpect(p1, p2, expected);
+  MergeAddressesAndExpect(p2, p1, expected);
+}
+
+TEST_P(AutofillProfileComparatorTest, MergeAddressesWithStructure) {
+  AutofillProfile p1 = CreateProfileWithAddress(
+      "6543 CH BACON", "APP 3", "MONTRÉAL", "QUÉBEC", "HHH999", "ca");
+
+  p1.SetRawInfo(autofill::ADDRESS_HOME_STREET_NAME,
+                base::UTF8ToUTF16("StreetName"));
+  p1.SetRawInfo(autofill::ADDRESS_HOME_DEPENDENT_STREET_NAME,
+                base::UTF8ToUTF16("DependentStreetName"));
+  p1.SetRawInfo(autofill::ADDRESS_HOME_HOUSE_NUMBER,
+                base::UTF8ToUTF16("HouseNumber"));
+  p1.SetRawInfo(autofill::ADDRESS_HOME_PREMISE_NAME,
+                base::UTF8ToUTF16("PremiseName"));
+  p1.SetRawInfo(autofill::ADDRESS_HOME_SUBPREMISE,
+                base::UTF8ToUTF16("Subpremise"));
+
+  AutofillProfile p2 = CreateProfileWithAddress(
+      "6543, Bacon Rd", "", "Montreal", "QC", "hhh 999", "CA");
+  p2.set_use_date(p1.use_date() + base::TimeDelta::FromMinutes(1));
+  p2.SetRawInfo(autofill::ADDRESS_HOME_STREET_NAME,
+                base::UTF8ToUTF16("StreetName2"));
+  p2.SetRawInfo(autofill::ADDRESS_HOME_DEPENDENT_STREET_NAME,
+                base::UTF8ToUTF16("DependentStreetName2"));
+  p2.SetRawInfo(autofill::ADDRESS_HOME_HOUSE_NUMBER,
+                base::UTF8ToUTF16("HouseNumber2"));
+  p2.SetRawInfo(autofill::ADDRESS_HOME_PREMISE_NAME,
+                base::UTF8ToUTF16("PremiseName2"));
+  p2.SetRawInfo(autofill::ADDRESS_HOME_SUBPREMISE,
+                base::UTF8ToUTF16("Subpremise2"));
+
+  Address expected;
+  expected.SetRawInfo(ADDRESS_HOME_LINE1, UTF8ToUTF16("6543 CH BACON"));
+  expected.SetRawInfo(ADDRESS_HOME_LINE2, UTF8ToUTF16("APP 3"));
+  expected.SetRawInfo(ADDRESS_HOME_CITY, UTF8ToUTF16("Montreal"));
+  expected.SetRawInfo(ADDRESS_HOME_STATE, UTF8ToUTF16("QC"));
+  expected.SetRawInfo(ADDRESS_HOME_ZIP, UTF8ToUTF16("hhh 999"));
+  expected.SetRawInfo(ADDRESS_HOME_COUNTRY, UTF8ToUTF16("CA"));
+
+  // If address enhancement votes are enabled, it is expecfted that the
+  // substructure from p1 is used since it is most recent.
+  // Otherwise the fields are expected to be empty after the merge process.
+  if (AddressEnhancementVotes()) {
+    expected.SetRawInfo(autofill::ADDRESS_HOME_STREET_NAME,
+                        base::UTF8ToUTF16("StreetName"));
+    expected.SetRawInfo(autofill::ADDRESS_HOME_DEPENDENT_STREET_NAME,
+                        base::UTF8ToUTF16("DependentStreetName"));
+    expected.SetRawInfo(autofill::ADDRESS_HOME_HOUSE_NUMBER,
+                        base::UTF8ToUTF16("HouseNumber"));
+    expected.SetRawInfo(autofill::ADDRESS_HOME_PREMISE_NAME,
+                        base::UTF8ToUTF16("PremiseName"));
+    expected.SetRawInfo(autofill::ADDRESS_HOME_SUBPREMISE,
+                        base::UTF8ToUTF16("Subpremise"));
+  }
+
   MergeAddressesAndExpect(p1, p2, expected);
   MergeAddressesAndExpect(p2, p1, expected);
 }
@@ -1185,8 +1324,31 @@ TEST_P(AutofillProfileComparatorTest, MergeAddressesMostUniqueTokens) {
 TEST_P(AutofillProfileComparatorTest, MergeAddressesWithRewrite) {
   AutofillProfile p1 = CreateProfileWithAddress(
       "6543 CH BACON", "APP 3", "MONTRÉAL", "QUÉBEC", "HHH999", "ca");
+
+  p1.SetRawInfo(autofill::ADDRESS_HOME_STREET_NAME,
+                base::UTF8ToUTF16("StreetName"));
+  p1.SetRawInfo(autofill::ADDRESS_HOME_DEPENDENT_STREET_NAME,
+                base::UTF8ToUTF16("DependentStreetName"));
+  p1.SetRawInfo(autofill::ADDRESS_HOME_HOUSE_NUMBER,
+                base::UTF8ToUTF16("HouseNumber"));
+  p1.SetRawInfo(autofill::ADDRESS_HOME_PREMISE_NAME,
+                base::UTF8ToUTF16("PremiseName"));
+  p1.SetRawInfo(autofill::ADDRESS_HOME_SUBPREMISE,
+                base::UTF8ToUTF16("Subpremise"));
+
   AutofillProfile p2 = CreateProfileWithAddress(
       "6543, Bacon Rd", "", "Montreal", "QC", "hhh 999", "CA");
+  p2.SetRawInfo(autofill::ADDRESS_HOME_STREET_NAME,
+                base::UTF8ToUTF16("StreetName2"));
+  p2.SetRawInfo(autofill::ADDRESS_HOME_DEPENDENT_STREET_NAME,
+                base::UTF8ToUTF16("DependentStreetName2"));
+  p2.SetRawInfo(autofill::ADDRESS_HOME_HOUSE_NUMBER,
+                base::UTF8ToUTF16("HouseNumber2"));
+  p2.SetRawInfo(autofill::ADDRESS_HOME_PREMISE_NAME,
+                base::UTF8ToUTF16("PremiseName2"));
+  p2.SetRawInfo(autofill::ADDRESS_HOME_SUBPREMISE,
+                base::UTF8ToUTF16("Subpremise2"));
+
   p2.set_use_date(p1.use_date() + base::TimeDelta::FromMinutes(1));
 
   Address expected;
@@ -1196,6 +1358,21 @@ TEST_P(AutofillProfileComparatorTest, MergeAddressesWithRewrite) {
   expected.SetRawInfo(ADDRESS_HOME_STATE, UTF8ToUTF16("QC"));
   expected.SetRawInfo(ADDRESS_HOME_ZIP, UTF8ToUTF16("hhh 999"));
   expected.SetRawInfo(ADDRESS_HOME_COUNTRY, UTF8ToUTF16("CA"));
+
+  // If address enhancement votes are enabled, it is expecfted that the
+  // substructure from p1 is used since it has more tokens.
+  if (AddressEnhancementVotes()) {
+    expected.SetRawInfo(autofill::ADDRESS_HOME_STREET_NAME,
+                        base::UTF8ToUTF16("StreetName"));
+    expected.SetRawInfo(autofill::ADDRESS_HOME_DEPENDENT_STREET_NAME,
+                        base::UTF8ToUTF16("DependentStreetName"));
+    expected.SetRawInfo(autofill::ADDRESS_HOME_HOUSE_NUMBER,
+                        base::UTF8ToUTF16("HouseNumber"));
+    expected.SetRawInfo(autofill::ADDRESS_HOME_PREMISE_NAME,
+                        base::UTF8ToUTF16("PremiseName"));
+    expected.SetRawInfo(autofill::ADDRESS_HOME_SUBPREMISE,
+                        base::UTF8ToUTF16("Subpremise"));
+  }
 
   MergeAddressesAndExpect(p1, p2, expected);
   MergeAddressesAndExpect(p2, p1, expected);
@@ -1233,4 +1410,6 @@ TEST_P(AutofillProfileComparatorTest,
 INSTANTIATE_TEST_SUITE_P(
     All,
     AutofillProfileComparatorTest,
-    testing::Bool());  // Test with and without structured names.
+    testing::Combine(testing::Bool(),
+                     testing::Bool()));  // Test with and without structured
+                                         // names and address enhancement votes.

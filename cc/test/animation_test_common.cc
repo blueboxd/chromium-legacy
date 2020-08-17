@@ -4,6 +4,7 @@
 
 #include "cc/test/animation_test_common.h"
 
+#include <algorithm>
 #include <memory>
 #include <utility>
 
@@ -231,9 +232,7 @@ base::TimeDelta FakeFloatTransition::Duration() const {
 }
 
 float FakeFloatTransition::GetValue(base::TimeDelta time) const {
-  double progress = time / duration_;
-  if (progress >= 1.0)
-    progress = 1.0;
+  const double progress = std::min(time / duration_, 1.0);
   return (1.0 - progress) * from_ + progress * to_;
 }
 

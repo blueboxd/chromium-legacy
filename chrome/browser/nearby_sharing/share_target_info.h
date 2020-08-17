@@ -11,6 +11,7 @@
 #include "base/optional.h"
 #include "chrome/browser/nearby_sharing/certificates/nearby_share_decrypted_public_certificate.h"
 #include "chrome/browser/nearby_sharing/incoming_frames_reader.h"
+#include "chrome/browser/nearby_sharing/paired_key_verification_runner.h"
 
 class NearbyConnection;
 
@@ -55,12 +56,22 @@ class ShareTargetInfo {
     frames_reader_ = std::move(frames_reader);
   }
 
+  PairedKeyVerificationRunner* key_verification_runner() {
+    return key_verification_runner_.get();
+  }
+
+  void set_key_verification_runner(
+      std::unique_ptr<PairedKeyVerificationRunner> key_verification_runner) {
+    key_verification_runner_ = std::move(key_verification_runner);
+  }
+
  private:
   base::Optional<std::string> endpoint_id_;
   base::Optional<NearbyShareDecryptedPublicCertificate> certificate_;
   NearbyConnection* connection_ = nullptr;
   base::Optional<std::string> token_;
   std::unique_ptr<IncomingFramesReader> frames_reader_;
+  std::unique_ptr<PairedKeyVerificationRunner> key_verification_runner_;
 };
 
 #endif  // CHROME_BROWSER_NEARBY_SHARING_SHARE_TARGET_INFO_H_

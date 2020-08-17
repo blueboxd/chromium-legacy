@@ -106,9 +106,8 @@ class PasswordCheckBridge {
     /**
      * @return The timestamp of the last completed check.
      */
-    long getCheckTimestamp() {
-        // TODO(crbug.com/1102025): Add method to retrieve the timestamp.
-        return 0L;
+    long getLastCheckTimestamp() {
+        return PasswordCheckBridgeJni.get().getLastCheckTimestamp(mNativePasswordCheckBridge);
     }
 
     /**
@@ -164,6 +163,7 @@ class PasswordCheckBridge {
         long create(PasswordCheckBridge passwordCheckBridge);
         void startCheck(long nativePasswordCheckBridge);
         void stopCheck(long nativePasswordCheckBridge);
+        long getLastCheckTimestamp(long nativePasswordCheckBridge);
         int getCompromisedCredentialsCount(long nativePasswordCheckBridge);
         int getSavedPasswordsCount(long nativePasswordCheckBridge);
         void getCompromisedCredentials(

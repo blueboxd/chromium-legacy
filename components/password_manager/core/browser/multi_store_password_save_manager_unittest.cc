@@ -238,7 +238,7 @@ TEST_F(MultiStorePasswordSaveManagerTest,
   SetDefaultPasswordStore(PasswordForm::Store::kAccountStore);
 
   password_save_manager()->CreatePendingCredentials(
-      parsed_submitted_form_, observed_form_, submitted_form_,
+      parsed_submitted_form_, &observed_form_, submitted_form_,
       /*is_http_auth=*/false,
       /*is_credential_api_save=*/false);
 
@@ -247,7 +247,7 @@ TEST_F(MultiStorePasswordSaveManagerTest,
   EXPECT_CALL(*mock_profile_form_saver(), Save(_, _, _)).Times(0);
   EXPECT_CALL(*mock_account_form_saver(), Save(_, _, _));
 
-  password_save_manager()->Save(observed_form_, parsed_submitted_form_);
+  password_save_manager()->Save(&observed_form_, parsed_submitted_form_);
 }
 
 TEST_F(MultiStorePasswordSaveManagerTest,
@@ -259,7 +259,7 @@ TEST_F(MultiStorePasswordSaveManagerTest,
   SetDefaultPasswordStore(PasswordForm::Store::kAccountStore);
 
   password_save_manager()->CreatePendingCredentials(
-      parsed_submitted_form_, observed_form_, submitted_form_,
+      parsed_submitted_form_, &observed_form_, submitted_form_,
       /*is_http_auth=*/false,
       /*is_credential_api_save=*/false);
 
@@ -268,7 +268,7 @@ TEST_F(MultiStorePasswordSaveManagerTest,
   EXPECT_CALL(*mock_profile_form_saver(), Save(_, _, _)).Times(0);
   EXPECT_CALL(*mock_account_form_saver(), Save(_, _, _)).Times(0);
 
-  password_save_manager()->Save(observed_form_, parsed_submitted_form_);
+  password_save_manager()->Save(&observed_form_, parsed_submitted_form_);
 }
 
 TEST_F(MultiStorePasswordSaveManagerTest, SaveInProfileStore) {
@@ -279,7 +279,7 @@ TEST_F(MultiStorePasswordSaveManagerTest, SaveInProfileStore) {
   SetDefaultPasswordStore(PasswordForm::Store::kProfileStore);
 
   password_save_manager()->CreatePendingCredentials(
-      parsed_submitted_form_, observed_form_, submitted_form_,
+      parsed_submitted_form_, &observed_form_, submitted_form_,
       /*is_http_auth=*/false,
       /*is_credential_api_save=*/false);
 
@@ -288,7 +288,7 @@ TEST_F(MultiStorePasswordSaveManagerTest, SaveInProfileStore) {
   EXPECT_CALL(*mock_profile_form_saver(), Save(_, _, _));
   EXPECT_CALL(*mock_account_form_saver(), Save(_, _, _)).Times(0);
 
-  password_save_manager()->Save(observed_form_, parsed_submitted_form_);
+  password_save_manager()->Save(&observed_form_, parsed_submitted_form_);
 }
 
 TEST_F(MultiStorePasswordSaveManagerTest, UpdateInAccountStoreOnly) {
@@ -301,7 +301,7 @@ TEST_F(MultiStorePasswordSaveManagerTest, UpdateInAccountStoreOnly) {
   SetNonFederatedAndNotifyFetchCompleted({&saved_match_in_account_store});
 
   password_save_manager()->CreatePendingCredentials(
-      parsed_submitted_form_, observed_form_, submitted_form_,
+      parsed_submitted_form_, &observed_form_, submitted_form_,
       /*is_http_auth=*/false,
       /*is_credential_api_save=*/false);
 
@@ -312,7 +312,7 @@ TEST_F(MultiStorePasswordSaveManagerTest, UpdateInAccountStoreOnly) {
   EXPECT_CALL(*mock_profile_form_saver(), Update(_, _, _)).Times(0);
   EXPECT_CALL(*mock_account_form_saver(), Update(_, _, _));
 
-  password_save_manager()->Save(observed_form_, parsed_submitted_form_);
+  password_save_manager()->Save(&observed_form_, parsed_submitted_form_);
 }
 
 TEST_F(MultiStorePasswordSaveManagerTest, UpdateInProfileStoreOnly) {
@@ -325,7 +325,7 @@ TEST_F(MultiStorePasswordSaveManagerTest, UpdateInProfileStoreOnly) {
   SetNonFederatedAndNotifyFetchCompleted({&saved_match_in_profile_store});
 
   password_save_manager()->CreatePendingCredentials(
-      parsed_submitted_form_, observed_form_, submitted_form_,
+      parsed_submitted_form_, &observed_form_, submitted_form_,
       /*is_http_auth=*/false,
       /*is_credential_api_save=*/false);
 
@@ -336,7 +336,7 @@ TEST_F(MultiStorePasswordSaveManagerTest, UpdateInProfileStoreOnly) {
   EXPECT_CALL(*mock_profile_form_saver(), Update(_, _, _));
   EXPECT_CALL(*mock_account_form_saver(), Update(_, _, _)).Times(0);
 
-  password_save_manager()->Save(observed_form_, parsed_submitted_form_);
+  password_save_manager()->Save(&observed_form_, parsed_submitted_form_);
 }
 
 TEST_F(MultiStorePasswordSaveManagerTest, UpdateInBothStores) {
@@ -363,7 +363,7 @@ TEST_F(MultiStorePasswordSaveManagerTest, UpdateInBothStores) {
       {&saved_match_in_profile_store, &saved_match_in_account_store});
 
   password_save_manager()->CreatePendingCredentials(
-      parsed_submitted_form_, observed_form_, submitted_form_,
+      parsed_submitted_form_, &observed_form_, submitted_form_,
       /*is_http_auth=*/false,
       /*is_credential_api_save=*/false);
 
@@ -400,7 +400,7 @@ TEST_F(MultiStorePasswordSaveManagerTest, UpdateInBothStores) {
   EXPECT_CALL(*mock_account_form_saver(),
               Update(expected_account_updated_form, _, _));
 
-  password_save_manager()->Save(observed_form_, parsed_submitted_form_);
+  password_save_manager()->Save(&observed_form_, parsed_submitted_form_);
 }
 
 TEST_F(MultiStorePasswordSaveManagerTest, AutomaticSaveInBothStores) {
@@ -431,7 +431,7 @@ TEST_F(MultiStorePasswordSaveManagerTest, AutomaticSaveInBothStores) {
       {&saved_match_in_profile_store, &saved_match_in_account_store});
 
   password_save_manager()->CreatePendingCredentials(
-      parsed_submitted_form_, observed_form_, submitted_form_,
+      parsed_submitted_form_, &observed_form_, submitted_form_,
       /*is_http_auth=*/false,
       /*is_credential_api_save=*/false);
 
@@ -461,7 +461,7 @@ TEST_F(MultiStorePasswordSaveManagerTest, AutomaticSaveInBothStores) {
   EXPECT_CALL(*mock_account_form_saver(),
               Update(expected_account_update_form, _, _));
 
-  password_save_manager()->Save(observed_form_, parsed_submitted_form_);
+  password_save_manager()->Save(&observed_form_, parsed_submitted_form_);
 }
 
 // Since conflicts in the profile store should not be taken into account during
@@ -619,14 +619,14 @@ TEST_F(MultiStorePasswordSaveManagerTest,
   SetNonFederatedAndNotifyFetchCompleted({&psl_saved_match});
 
   password_save_manager()->CreatePendingCredentials(
-      parsed_submitted_form_, observed_form_, submitted_form_,
+      parsed_submitted_form_, &observed_form_, submitted_form_,
       /*is_http_auth=*/false,
       /*is_credential_api_save=*/false);
 
   EXPECT_CALL(*mock_profile_form_saver(), Save(_, _, _)).Times(0);
   EXPECT_CALL(*mock_account_form_saver(), Save(_, _, _));
 
-  password_save_manager()->Save(observed_form_, parsed_submitted_form_);
+  password_save_manager()->Save(&observed_form_, parsed_submitted_form_);
 }
 
 TEST_F(MultiStorePasswordSaveManagerTest,
@@ -640,14 +640,14 @@ TEST_F(MultiStorePasswordSaveManagerTest,
   SetNonFederatedAndNotifyFetchCompleted({&psl_saved_match});
 
   password_save_manager()->CreatePendingCredentials(
-      parsed_submitted_form_, observed_form_, submitted_form_,
+      parsed_submitted_form_, &observed_form_, submitted_form_,
       /*is_http_auth=*/false,
       /*is_credential_api_save=*/false);
 
   EXPECT_CALL(*mock_profile_form_saver(), Save(_, _, _));
   EXPECT_CALL(*mock_account_form_saver(), Save(_, _, _)).Times(0);
 
-  password_save_manager()->Save(observed_form_, parsed_submitted_form_);
+  password_save_manager()->Save(&observed_form_, parsed_submitted_form_);
 }
 
 TEST_F(MultiStorePasswordSaveManagerTest,
@@ -672,14 +672,14 @@ TEST_F(MultiStorePasswordSaveManagerTest,
       {&profile_psl_saved_match, &account_psl_saved_match});
 
   password_save_manager()->CreatePendingCredentials(
-      parsed_submitted_form_, observed_form_, submitted_form_,
+      parsed_submitted_form_, &observed_form_, submitted_form_,
       /*is_http_auth=*/false,
       /*is_credential_api_save=*/false);
 
   EXPECT_CALL(*mock_profile_form_saver(), Save(_, _, _));
   EXPECT_CALL(*mock_account_form_saver(), Save(_, _, _));
 
-  password_save_manager()->Save(observed_form_, parsed_submitted_form_);
+  password_save_manager()->Save(&observed_form_, parsed_submitted_form_);
 }
 
 TEST_F(MultiStorePasswordSaveManagerTest, UpdateVsPSLMatch) {
@@ -701,7 +701,7 @@ TEST_F(MultiStorePasswordSaveManagerTest, UpdateVsPSLMatch) {
       {&profile_saved_match, &account_psl_saved_match});
 
   password_save_manager()->CreatePendingCredentials(
-      parsed_submitted_form_, observed_form_, submitted_form_,
+      parsed_submitted_form_, &observed_form_, submitted_form_,
       /*is_http_auth=*/false,
       /*is_credential_api_save=*/false);
 
@@ -711,7 +711,7 @@ TEST_F(MultiStorePasswordSaveManagerTest, UpdateVsPSLMatch) {
   EXPECT_CALL(*mock_profile_form_saver(), Update(_, _, _));
   EXPECT_CALL(*mock_account_form_saver(), Save(_, _, _));
 
-  password_save_manager()->Save(observed_form_, parsed_submitted_form_);
+  password_save_manager()->Save(&observed_form_, parsed_submitted_form_);
 }
 
 TEST_F(MultiStorePasswordSaveManagerTest, UnblacklistInBothStores) {
@@ -771,7 +771,7 @@ TEST_F(MultiStorePasswordSaveManagerTest,
   SetNonFederatedAndNotifyFetchCompleted({&saved_match_in_profile_store});
 
   password_save_manager()->CreatePendingCredentials(
-      saved_match_in_profile_store, observed_form_, submitted_form_,
+      saved_match_in_profile_store, &observed_form_, submitted_form_,
       /*is_http_auth=*/false,
       /*is_credential_api_save=*/false);
 
@@ -799,7 +799,7 @@ TEST_F(MultiStorePasswordSaveManagerTest,
   SetNonFederatedAndNotifyFetchCompleted({&saved_match_in_profile_store});
 
   password_save_manager()->CreatePendingCredentials(
-      saved_match_in_profile_store, observed_form_, submitted_form_,
+      saved_match_in_profile_store, &observed_form_, submitted_form_,
       /*is_http_auth=*/false,
       /*is_credential_api_save=*/false);
 
@@ -824,7 +824,7 @@ TEST_F(
   credentials_with_diffrent_username.username_value =
       ASCIIToUTF16("different_username");
   password_save_manager()->CreatePendingCredentials(
-      credentials_with_diffrent_username, observed_form_, submitted_form_,
+      credentials_with_diffrent_username, &observed_form_, submitted_form_,
       /*is_http_auth=*/false,
       /*is_credential_api_save=*/false);
 
@@ -848,7 +848,7 @@ TEST_F(MultiStorePasswordSaveManagerTest,
       {&saved_match_in_profile_store, &psl_saved_match_in_profile_store});
 
   password_save_manager()->CreatePendingCredentials(
-      saved_match_in_profile_store, observed_form_, submitted_form_,
+      saved_match_in_profile_store, &observed_form_, submitted_form_,
       /*is_http_auth=*/false,
       /*is_credential_api_save=*/false);
 
@@ -872,7 +872,7 @@ TEST_F(MultiStorePasswordSaveManagerTest,
   SetFederatedAndNotifyFetchCompleted({&federated_match_in_profile_store});
 
   password_save_manager()->CreatePendingCredentials(
-      federated_match_in_profile_store, observed_form_, submitted_form_,
+      federated_match_in_profile_store, &observed_form_, submitted_form_,
       /*is_http_auth=*/false,
       /*is_credential_api_save=*/false);
 
@@ -895,7 +895,7 @@ TEST_F(MultiStorePasswordSaveManagerTest,
       {&saved_match_in_profile_store, &saved_match_in_account_store});
 
   password_save_manager()->CreatePendingCredentials(
-      saved_match_in_profile_store, observed_form_, submitted_form_,
+      saved_match_in_profile_store, &observed_form_, submitted_form_,
       /*is_http_auth=*/false,
       /*is_credential_api_save=*/false);
 
@@ -923,7 +923,7 @@ TEST_F(MultiStorePasswordSaveManagerTest,
                                           &psl_saved_match_in_account_store});
 
   password_save_manager()->CreatePendingCredentials(
-      saved_match_in_profile_store, observed_form_, submitted_form_,
+      saved_match_in_profile_store, &observed_form_, submitted_form_,
       /*is_http_auth=*/false,
       /*is_credential_api_save=*/false);
 
@@ -951,7 +951,7 @@ TEST_F(MultiStorePasswordSaveManagerTest, BlockMovingWhenExistsInProfileStore) {
   SetNonFederatedAndNotifyFetchCompleted({&profile_saved_match});
 
   password_save_manager()->CreatePendingCredentials(
-      parsed_submitted_form_, observed_form_, submitted_form_,
+      parsed_submitted_form_, &observed_form_, submitted_form_,
       /*is_http_auth=*/false,
       /*is_credential_api_save=*/false);
 
@@ -984,7 +984,7 @@ TEST_F(MultiStorePasswordSaveManagerTest, BlockMovingWhenExistsInBothStores) {
   SetNonFederatedAndNotifyFetchCompleted({&profile_saved_match});
 
   password_save_manager()->CreatePendingCredentials(
-      parsed_submitted_form_, observed_form_, submitted_form_,
+      parsed_submitted_form_, &observed_form_, submitted_form_,
       /*is_http_auth=*/false,
       /*is_credential_api_save=*/false);
 

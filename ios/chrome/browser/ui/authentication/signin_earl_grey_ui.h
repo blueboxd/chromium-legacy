@@ -17,18 +17,25 @@ typedef NS_ENUM(NSInteger, SignOutConfirmation) {
   SignOutConfirmationNonManagedUserWithClearedData,
 };
 
-// Methods used for the EarlGrey tests, related to UI.
+// Test methods that perform sign in actions on Chrome UI.
 @interface SigninEarlGreyUI : NSObject
 
-// Calls [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity
-// isManagedAccount:NO].
+// Signs the account for |fakeIdentity| into Chrome through the Settings screen.
+// There will be a GREYAssert if the tools menus is open when calling this
+// method or if the account is not successfully signed in.
 + (void)signinWithFakeIdentity:(FakeChromeIdentity*)fakeIdentity;
 
-// Adds the identity (if not already added), and perform a sign-in. if
-// |isManagedAccount| is true, |fakeIdentity| needs to be a managed account and
-// the managed dialog is expected while signing in.
-+ (void)signinWithFakeIdentity:(FakeChromeIdentity*)fakeIdentity
-              isManagedAccount:(BOOL)isManagedAccount;
+// Signs the primary account out of Chrome through the accounts list screen.
+// Taps the "Sign Out" button to begin flow. Note that managed accounts cannot
+// go through this flow. There will be a GREYAssert if the tools menus is open
+// when calling this method or if the account is not successfully signed out.
++ (void)signOut;
+
+// Signs the primary account out of Chrome through the accounts list screen.
+// Taps the "Sign out and clear data from this device" button to begin flow.
+// There will be a GREYAssert if the tools menus is open when calling this
+// method or if the account is not successfully signed out.
++ (void)signOutAndClearDataFromDevice;
 
 // Taps on the settings link in the sign-in view. The sign-in view has to be
 // opened before calling this method.
@@ -37,9 +44,6 @@ typedef NS_ENUM(NSInteger, SignOutConfirmation) {
 // Selects an identity when the identity chooser dialog is presented. The dialog
 // is confirmed, but it doesn't validated the user consent page.
 + (void)selectIdentityWithEmail:(NSString*)userEmail;
-
-// Confirms the managed account dialog with signing in.
-+ (void)confirmSigninWithManagedAccount;
 
 // Confirms the sign in confirmation page, scrolls first to make the OK button
 // visible on short devices (e.g. iPhone 5s).

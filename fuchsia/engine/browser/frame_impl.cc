@@ -552,19 +552,20 @@ void FrameImpl::CreateViewWithViewRef(
   view_ref_pair.view_ref = std::move(view_ref);
   InitWindowTreeHost(std::move(view_token), std::move(view_ref_pair));
 
-  fuchsia::accessibility::semantics::SemanticsManagerPtr semantics_manager =
-      semantics_manager_for_test_
-          ? std::move(semantics_manager_for_test_)
-          : base::ComponentContextForProcess()
-                ->svc()
-                ->Connect<
-                    fuchsia::accessibility::semantics::SemanticsManager>();
+  fuchsia::accessibility::semantics::SemanticsManagerPtr semantics_manager;
+  if (!semantics_manager_for_test_) {
+    semantics_manager =
+        base::ComponentContextForProcess()
+            ->svc()
+            ->Connect<fuchsia::accessibility::semantics::SemanticsManager>();
+  }
 
   // If the SemanticTree owned by |accessibility_bridge_| is disconnected, it
   // will cause |this| to be closed.
   accessibility_bridge_ = std::make_unique<AccessibilityBridge>(
-      std::move(semantics_manager), window_tree_host_->CreateViewRef(),
-      web_contents_.get(),
+      semantics_manager_for_test_ ? semantics_manager_for_test_
+                                  : semantics_manager.get(),
+      window_tree_host_->CreateViewRef(), web_contents_.get(),
       base::BindOnce(&FrameImpl::CloseAndDestroyFrame, base::Unretained(this)));
 }
 
@@ -768,8 +769,8 @@ void FrameImpl::EnableHeadlessRendering() {
   gfx::Rect bounds(kHeadlessWindowSize);
   if (semantics_manager_for_test_) {
     accessibility_bridge_ = std::make_unique<AccessibilityBridge>(
-        std::move(semantics_manager_for_test_),
-        window_tree_host_->CreateViewRef(), web_contents_.get(),
+        semantics_manager_for_test_, window_tree_host_->CreateViewRef(),
+        web_contents_.get(),
         base::BindOnce(&FrameImpl::CloseAndDestroyFrame,
                        base::Unretained(this)));
 

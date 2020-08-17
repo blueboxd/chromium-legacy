@@ -114,9 +114,9 @@ TEST_F(StandaloneTrustedVaultClientTest, ShouldFetchNonEmptyKeys) {
   sync_pb::LocalTrustedVaultPerUser* user_data2 = initial_data.add_user();
   user_data1->set_gaia_id(kGaiaId1);
   user_data2->set_gaia_id(kGaiaId2);
-  user_data1->add_key()->set_key_material(kKey1.data(), kKey1.size());
-  user_data2->add_key()->set_key_material(kKey2.data(), kKey2.size());
-  user_data2->add_key()->set_key_material(kKey3.data(), kKey3.size());
+  user_data1->add_vault_key()->set_key_material(kKey1.data(), kKey1.size());
+  user_data2->add_vault_key()->set_key_material(kKey2.data(), kKey2.size());
+  user_data2->add_vault_key()->set_key_material(kKey3.data(), kKey3.size());
 
   std::string encrypted_data;
   ASSERT_TRUE(OSCrypt::EncryptString(initial_data.SerializeAsString(),
@@ -154,11 +154,11 @@ TEST_F(StandaloneTrustedVaultClientTest, ShouldStoreKeys) {
   EXPECT_TRUE(OSCrypt::DecryptString(ciphertext, &decrypted_content));
   EXPECT_TRUE(proto.ParseFromString(decrypted_content));
   ASSERT_THAT(proto.user_size(), Eq(2));
-  EXPECT_THAT(proto.user(0).key(), ElementsAre(KeyMaterialEq(kKey1)));
-  EXPECT_THAT(proto.user(0).last_key_version(), Eq(7));
-  EXPECT_THAT(proto.user(1).key(),
+  EXPECT_THAT(proto.user(0).vault_key(), ElementsAre(KeyMaterialEq(kKey1)));
+  EXPECT_THAT(proto.user(0).last_vault_key_version(), Eq(7));
+  EXPECT_THAT(proto.user(1).vault_key(),
               ElementsAre(KeyMaterialEq(kKey3), KeyMaterialEq(kKey4)));
-  EXPECT_THAT(proto.user(1).last_key_version(), Eq(9));
+  EXPECT_THAT(proto.user(1).last_vault_key_version(), Eq(9));
 }
 
 TEST_F(StandaloneTrustedVaultClientTest, ShouldFetchPreviouslyStoredKeys) {

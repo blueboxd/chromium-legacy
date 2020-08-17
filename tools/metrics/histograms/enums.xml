@@ -59542,6 +59542,13 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
              auto-click"/>
 </enum>
 
+<enum name="ReauthenticationEvent">
+  <int value="0" label="Attempt"/>
+  <int value="1" label="Success"/>
+  <int value="2" label="Failure"/>
+  <int value="3" label="Device does't have a passcode set up."/>
+</enum>
+
 <enum name="ReceiverAppTypeSet">
   <int value="0" label="Other"/>
   <int value="1" label="Web"/>

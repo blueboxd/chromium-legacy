@@ -66,6 +66,8 @@ class NearbyConnectionsManager {
   virtual ~NearbyConnectionsManager() = default;
 
   // Disconnects from all endpoints and shut down Nearby Connections.
+  // As a side effect of this call, both StopAdvertising and StopDiscovery may
+  // be invoked if Nearby Connections is advertising or discovering.
   virtual void Shutdown() = 0;
 
   // Starts advertising through Nearby Connections. Caller is expected to ensure

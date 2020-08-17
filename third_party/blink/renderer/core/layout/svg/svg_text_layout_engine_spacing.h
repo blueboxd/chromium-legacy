@@ -20,7 +20,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SVG_SVG_TEXT_LAYOUT_ENGINE_SPACING_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SVG_SVG_TEXT_LAYOUT_ENGINE_SPACING_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/unicode.h"
 
@@ -35,6 +34,9 @@ class SVGTextLayoutEngineSpacing {
 
  public:
   SVGTextLayoutEngineSpacing(const Font&, float effective_zoom);
+  SVGTextLayoutEngineSpacing(const SVGTextLayoutEngineSpacing&) = delete;
+  SVGTextLayoutEngineSpacing& operator=(const SVGTextLayoutEngineSpacing&) =
+      delete;
 
   float CalculateCSSSpacing(UChar current_character);
 
@@ -42,7 +44,6 @@ class SVGTextLayoutEngineSpacing {
   const Font& font_;
   UChar last_character_;
   float effective_zoom_;
-  DISALLOW_COPY_AND_ASSIGN(SVGTextLayoutEngineSpacing);
 };
 
 }  // namespace blink

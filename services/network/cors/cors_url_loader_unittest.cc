@@ -466,6 +466,28 @@ class BadMessageTestHelper {
   DISALLOW_COPY_AND_ASSIGN(BadMessageTestHelper);
 };
 
+TEST_F(CorsURLLoaderTest, NoCorsWithInvalidMethod) {
+  ResourceRequest request;
+  request.mode = mojom::RequestMode::kNoCors;
+  request.credentials_mode = mojom::CredentialsMode::kInclude;
+  request.url = GURL("http://example.com/");
+  request.request_initiator = base::nullopt;
+  request.method = "GET\r\nHost: other.example.com";
+
+  BadMessageTestHelper bad_message_helper;
+  CreateLoaderAndStart(request);
+  RunUntilComplete();
+
+  EXPECT_FALSE(IsNetworkLoaderStarted());
+  EXPECT_FALSE(client().has_received_redirect());
+  EXPECT_FALSE(client().has_received_response());
+  EXPECT_TRUE(client().has_received_completion());
+  EXPECT_EQ(net::ERR_INVALID_ARGUMENT, client().completion_status().error_code);
+  EXPECT_THAT(bad_message_helper.bad_message_reports(),
+              ::testing::ElementsAre(
+                  "CorsURLLoaderFactory: invalid characters in method"));
+}
+
 TEST_F(CorsURLLoaderTest, SameOriginWithoutInitiator) {
   ResourceRequest request;
   request.mode = mojom::RequestMode::kSameOrigin;

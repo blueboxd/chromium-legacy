@@ -14,6 +14,9 @@
 #include "base/task_runner_util.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/sync/trusted_vault/standalone_trusted_vault_backend.h"
+#include "components/sync/trusted_vault/trusted_vault_access_token_fetcher.h"
+#include "components/sync/trusted_vault/trusted_vault_connection_impl.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace syncer {
 
@@ -96,11 +99,22 @@ void StandaloneTrustedVaultClient::TriggerLazyInitializationIfNeeded() {
     return;
   }
 
-  backend_ = base::MakeRefCounted<StandaloneTrustedVaultBackend>(file_path_);
+  // TODO(crbug.com/1113597): populate TrustedVaultAccessTokenFetcher into
+  // TrustedVaultConnectionImpl ctor.
+  // TODO(crbug.com/1113598): populate URLLoaderFactory into
+  // TrustedVaultConnectionImpl ctor.
+  // TODO(crbug.com/1102340): allow setting custom TrustedVaultConnection for
+  // testing.
+  backend_ = base::MakeRefCounted<StandaloneTrustedVaultBackend>(
+      file_path_,
+      std::make_unique<TrustedVaultConnectionImpl>(
+          /*url_loader_factory=*/nullptr, /*access_token_fetcher=*/nullptr));
   backend_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&StandaloneTrustedVaultBackend::ReadDataFromDisk,
                      backend_));
+  // TODO(crbug.com/1113597): populate current syncing account to |backend_|
+  // here and upon syncing account change.
 }
 
 bool StandaloneTrustedVaultClient::IsInitializationTriggeredForTesting() const {

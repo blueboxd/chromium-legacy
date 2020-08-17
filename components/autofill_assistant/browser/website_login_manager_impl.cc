@@ -196,7 +196,7 @@ class WebsiteLoginManagerImpl::UpdatePasswordRequest
   }
 
   void CommitGeneratedPassword() {
-    password_save_manager_->Save(form_data_ /* observed_form */,
+    password_save_manager_->Save(&form_data_ /* observed_form */,
                                  password_form_);
   }
 
@@ -206,7 +206,7 @@ class WebsiteLoginManagerImpl::UpdatePasswordRequest
                                  metrics_recorder_, &votes_uploader_);
     password_save_manager_->PresaveGeneratedPassword(password_form_);
     password_save_manager_->CreatePendingCredentials(
-        password_form_, form_data_ /* observed_form */,
+        password_form_, &form_data_ /* observed_form */,
         form_data_ /* submitted_form */, false /* is_http_auth */,
         false /* is_credential_api_save */);
 

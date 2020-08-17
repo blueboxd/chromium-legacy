@@ -119,36 +119,61 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
   });
 
   apiFunctions.setHandleRequest('getContentMimeType',
-      function(fileBlob, callback) {
-    var uuid = blobNatives.GetBlobUuid(fileBlob);
+      function(fileEntry, callback) {
+    fileEntry.file(blob => {
+      var blobUUID = blobNatives.GetBlobUuid(blob);
 
-    if (!fileBlob || !fileBlob.size) {
-      callback(undefined);
-      return;
-    }
+      if (!blob || !blob.size) {
+        callback(undefined);
+        return;
+      }
 
-    var onGetContentMimeType = function(blob, mimeType) {
-      callback(mimeType ? mimeType : undefined);
-    }.bind(this, fileBlob);  // Bind a blob reference: crbug.com/415792#c12
+      var onGetContentMimeType = function(blob, mimeType) {
+        callback(mimeType ? mimeType : undefined);
+      }.bind(this, blob);  // Bind a blob reference: crbug.com/415792#c12
 
-    fileManagerPrivateInternal.getContentMimeType(uuid, onGetContentMimeType);
+      fileManagerPrivateInternal.getContentMimeType(
+          blobUUID, onGetContentMimeType);
+    }, (error) => {
+      var errorUUID = '';
+
+      var onGetContentMimeType = function() {
+        chrome.runtime.lastError.DOMError = /** @type {!DOMError} */ (error);
+        callback(undefined);
+      }.bind(this);
+
+      fileManagerPrivateInternal.getContentMimeType(
+          errorUUID, onGetContentMimeType);
+    });
   });
 
   apiFunctions.setHandleRequest('getContentMetadata',
-      function(fileBlob, mimeType, type, callback) {
-    var uuid = blobNatives.GetBlobUuid(fileBlob);
+      function(fileEntry, mimeType, type, callback) {
+    fileEntry.file(blob => {
+      var blobUUID = blobNatives.GetBlobUuid(blob);
 
-    if (!fileBlob || !fileBlob.size) {
-      callback(undefined);
-      return;
-    }
+      if (!blob || !blob.size) {
+        callback(undefined);
+        return;
+      }
 
-    var onGetContentMetadata = function(blob, metadata) {
-      callback(metadata ? metadata : undefined);
-    }.bind(this, fileBlob);  // Bind a blob reference: crbug.com/415792#c12
+      var onGetContentMetadata = function(blob, metadata) {
+        callback(metadata ? metadata : undefined);
+      }.bind(this, blob);  // Bind a blob reference: crbug.com/415792#c12
 
-    fileManagerPrivateInternal.getContentMetadata(
-        uuid, mimeType, type, onGetContentMetadata);
+      fileManagerPrivateInternal.getContentMetadata(
+          blobUUID, mimeType, type, onGetContentMetadata);
+    }, (error) => {
+      var errorUUID = '';
+
+      var onGetContentMetadata = function() {
+        chrome.runtime.lastError.DOMError = /** @type {!DOMError} */ (error);
+        callback(undefined);
+      }.bind(this);
+
+      fileManagerPrivateInternal.getContentMetadata(
+          errorUUID, mimeType, type, onGetContentMetadata);
+    });
   });
 
   apiFunctions.setHandleRequest('pinDriveFile', function(entry, pin, callback) {

@@ -206,5 +206,9 @@ const char kUnableToInvokeAndroidPaymentApps[] =
 
 const char kUserClosedPaymentApp[] = "User closed the payment app.";
 
+const char kMoreThanOneService[] =
+    "Found more than one IS_READY_TO_PAY service, but at most one service is "
+    "supported.";
+
 }  // namespace errors
 }  // namespace payments

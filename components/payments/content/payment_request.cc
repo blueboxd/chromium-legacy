@@ -661,15 +661,15 @@ void PaymentRequest::OnPaymentResponseAvailable(
     case PaymentApp::Type::AUTOFILL:
       selected_event = JourneyLogger::Event::EVENT_SELECTED_CREDIT_CARD;
       break;
-    case PaymentApp::Type::SERVICE_WORKER_APP: {
+    case PaymentApp::Type::SERVICE_WORKER_APP:
+      // Intentionally fall through.
+    case PaymentApp::Type::NATIVE_MOBILE_APP: {
       selected_event = IsGooglePaymentMethod(response->method_name)
                            ? JourneyLogger::Event::EVENT_SELECTED_GOOGLE
                            : JourneyLogger::Event::EVENT_SELECTED_OTHER;
       break;
     }
     case PaymentApp::Type::UNDEFINED:
-      // Intentionally fall through.
-    case PaymentApp::Type::NATIVE_MOBILE_APP:
       // Intentionally fall through.
     case PaymentApp::Type::INTERNAL:
       NOTREACHED();

@@ -7,8 +7,6 @@
 #include <memory>
 
 #include "base/scoped_observer.h"
-#include "base/strings/sys_string_conversions.h"
-#include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/app_launcher/app_launcher_abuse_detector.h"
 #import "ios/chrome/browser/app_launcher/app_launcher_tab_helper.h"
 #import "ios/chrome/browser/autofill/autofill_tab_helper.h"
@@ -26,8 +24,6 @@
 #import "ios/chrome/browser/ui/activity_services/requirements/activity_service_positioner.h"
 #import "ios/chrome/browser/ui/alert_coordinator/repost_form_coordinator.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_coordinator.h"
-#import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_all_password_coordinator.h"
-#import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_injection_handler.h"
 #import "ios/chrome/browser/ui/badges/badge_popup_menu_coordinator.h"
 #import "ios/chrome/browser/ui/browser_container/browser_container_coordinator.h"
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller+private.h"
@@ -77,8 +73,6 @@
 #import "ios/chrome/browser/web/repost_form_tab_helper_delegate.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
-#import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
-#include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -86,7 +80,6 @@
 #endif
 
 @interface BrowserCoordinator () <ActivityServiceCommands,
-                                  AutofillSecurityAlertPresenter,
                                   BrowserCoordinatorCommands,
                                   FormInputAccessoryCoordinatorNavigator,
                                   PageInfoCommands,
@@ -108,9 +101,6 @@
 
 // Mediator between OpenIn TabHelper and OpenIn UI.
 @property(nonatomic, strong) OpenInMediator* openInMediator;
-
-// Reauthentication Module used for re-authentication.
-@property(nonatomic, strong) ReauthenticationModule* reauthenticationModule;
 
 // =================================================
 // Child Coordinators, listed in alphabetical order.
@@ -134,14 +124,6 @@
 // keyboard.
 @property(nonatomic, strong)
     FormInputAccessoryCoordinator* formInputAccessoryCoordinator;
-
-// The object in charge of interacting with the web view. Used to fill the data
-// in the forms.
-@property(nonatomic, strong) ManualFillInjectionHandler* injectionHandler;
-
-// Coordinator in charge of the presenting password autofill options as a modal.
-@property(nonatomic, strong)
-    ManualFillAllPasswordCoordinator* allPasswordCoordinator;
 
 // Weak reference for the next coordinator to be displayed over the toolbar.
 @property(nonatomic, weak) ChromeCoordinator* nextToolbarCoordinator;
@@ -346,14 +328,9 @@
                          browser:self.browser];
   [self.ARQuickLookCoordinator start];
 
-  self.injectionHandler = [[ManualFillInjectionHandler alloc]
-        initWithWebStateList:self.browser->GetWebStateList()
-      securityAlertPresenter:self
-      reauthenticationModule:self.reauthenticationModule];
   self.formInputAccessoryCoordinator = [[FormInputAccessoryCoordinator alloc]
       initWithBaseViewController:self.viewController
-                         browser:self.browser
-                injectionHandler:self.injectionHandler];
+                         browser:self.browser];
   self.formInputAccessoryCoordinator.navigator = self;
   [self.formInputAccessoryCoordinator start];
 
@@ -420,9 +397,6 @@
 
 // Stops child coordinators.
 - (void)stopChildCoordinators {
-  [self.allPasswordCoordinator stop];
-  self.allPasswordCoordinator = nil;
-
   [self.ARQuickLookCoordinator stop];
   self.ARQuickLookCoordinator = nil;
 
@@ -431,7 +405,6 @@
 
   [self.formInputAccessoryCoordinator stop];
   self.formInputAccessoryCoordinator = nil;
-  self.injectionHandler = nil;
 
   [self.pageInfoCoordinator stop];
   self.pageInfoCoordinator = nil;
@@ -479,73 +452,6 @@
 
   [self.infobarModalOverlayContainerCoordinator stop];
   self.infobarModalOverlayContainerCoordinator = nil;
-}
-
-#pragma mark - Properties
-
-- (ReauthenticationModule*)reauthenticationModule {
-  if (!_reauthenticationModule) {
-    _reauthenticationModule = [[ReauthenticationModule alloc] init];
-  }
-  return _reauthenticationModule;
-}
-
-#pragma mark - AutofillSecurityAlertPresenter
-
-- (void)presentSecurityWarningAlertWithText:(NSString*)body {
-  NSString* alertTitle =
-      l10n_util::GetNSString(IDS_IOS_MANUAL_FALLBACK_NOT_SECURE_TITLE);
-  NSString* defaultActionTitle =
-      l10n_util::GetNSString(IDS_IOS_MANUAL_FALLBACK_NOT_SECURE_OK_BUTTON);
-
-  UIAlertController* alert =
-      [UIAlertController alertControllerWithTitle:alertTitle
-                                          message:body
-                                   preferredStyle:UIAlertControllerStyleAlert];
-  UIAlertAction* defaultAction =
-      [UIAlertAction actionWithTitle:defaultActionTitle
-                               style:UIAlertActionStyleDefault
-                             handler:^(UIAlertAction* action){
-                             }];
-  [alert addAction:defaultAction];
-  UIViewController* presenter = self.viewController;
-  while (presenter.presentedViewController) {
-    presenter = presenter.presentedViewController;
-  }
-  [presenter presentViewController:alert animated:YES completion:nil];
-}
-
-- (void)showSetPasscodeDialog {
-  UIAlertController* alertController = [UIAlertController
-      alertControllerWithTitle:l10n_util::GetNSString(
-                                   IDS_IOS_SETTINGS_SET_UP_SCREENLOCK_TITLE)
-                       message:l10n_util::GetNSString(
-                                   IDS_IOS_AUTOFILL_SET_UP_SCREENLOCK_CONTENT)
-                preferredStyle:UIAlertControllerStyleAlert];
-
-  __weak id<ApplicationCommands> applicationCommandsHandler =
-      HandlerForProtocol(self.dispatcher, ApplicationCommands);
-  OpenNewTabCommand* command =
-      [OpenNewTabCommand commandWithURLFromChrome:GURL(kPasscodeArticleURL)];
-
-  UIAlertAction* learnAction = [UIAlertAction
-      actionWithTitle:l10n_util::GetNSString(
-                          IDS_IOS_SETTINGS_SET_UP_SCREENLOCK_LEARN_HOW)
-                style:UIAlertActionStyleDefault
-              handler:^(UIAlertAction*) {
-                [applicationCommandsHandler openURLInNewTab:command];
-              }];
-  [alertController addAction:learnAction];
-  UIAlertAction* okAction =
-      [UIAlertAction actionWithTitle:l10n_util::GetNSString(IDS_OK)
-                               style:UIAlertActionStyleDefault
-                             handler:nil];
-  [alertController addAction:okAction];
-  alertController.preferredAction = okAction;
-
-  [self.viewController presentViewController:alertController
-                                    animated:YES
-                                  completion:nil];
 }
 
 #pragma mark - ActivityServiceCommands
@@ -783,14 +689,6 @@
 - (void)openCreditCardSettings {
   [HandlerForProtocol(self.dispatcher, ApplicationCommands)
       showCreditCardSettingsFromViewController:self.viewController];
-}
-
-- (void)openAllPasswordsPicker {
-  self.allPasswordCoordinator = [[ManualFillAllPasswordCoordinator alloc]
-      initWithBaseViewController:self.viewController
-                         browser:self.browser
-                injectionHandler:self.injectionHandler];
-  [self.allPasswordCoordinator start];
 }
 
 #pragma mark - RepostFormTabHelperDelegate

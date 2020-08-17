@@ -146,47 +146,124 @@ IconType GetIconTypeForPath(const base::FilePath& filepath) {
   }
 }
 
-int GetResourceIdForIconType(IconType icon) {
+IconType GetIconTypeFromString(const std::string& icon_type_string) {
+  static const base::NoDestructor<std::map<std::string, IconType>>
+      type_string_to_icon_type({{"archive", IconType::ARCHIVE},
+                                {"audio", IconType::AUDIO},
+                                {"chart", IconType::CHART},
+                                {"excel", IconType::EXCEL},
+                                {"drive", IconType::DRIVE},
+                                {"folder", IconType::FOLDER},
+                                {"gdoc", IconType::GDOC},
+                                {"gdraw", IconType::GDRAW},
+                                {"generic", IconType::GENERIC},
+                                {"gform", IconType::GFORM},
+                                {"gmap", IconType::GMAP},
+                                {"gsheet", IconType::GSHEET},
+                                {"gsite", IconType::GSITE},
+                                {"gslides", IconType::GSLIDE},
+                                {"gtable", IconType::GTABLE},
+                                {"image", IconType::IMAGE},
+                                {"linux", IconType::LINUX},
+                                {"pdf", IconType::PDF},
+                                {"ppt", IconType::PPT},
+                                {"script", IconType::SCRIPT},
+                                {"shared", IconType::FOLDER_SHARED},
+                                {"sites", IconType::SITES},
+                                {"tini", IconType::TINI},
+                                {"video", IconType::VIDEO},
+                                {"word", IconType::WORD}});
+
+  const auto& icon_it = type_string_to_icon_type->find(icon_type_string);
+  if (icon_it != type_string_to_icon_type->end())
+    return icon_it->second;
+  return IconType::GENERIC;
+}
+
+gfx::ImageSkia GetVectorIconFromIconType(IconType icon) {
   // Changes to this map should be reflected in
   // ui/file_manager/file_manager/common/js/file_type.js.
-  static const base::NoDestructor<base::flat_map<IconType, int>>
-      icon_to_2x_resource_id({
-          {IconType::ARCHIVE,
-           IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_ARCHIVE},
-          {IconType::AUDIO, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_AUDIO},
-          {IconType::CHART, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_CHART},
-          // TODO(crbug.com/1088395):  we're missing a generic square drive
-          // file icon.
-          {IconType::DRIVE, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_GENERIC},
-          {IconType::EXCEL, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_EXCEL},
-          {IconType::FOLDER, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_FOLDER},
-          // TODO(crbug.com/1088395): we're missing a square shared folder icon.
-          {IconType::FOLDER_SHARED,
-           IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_FOLDER},
-          {IconType::GDOC, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_GDOC},
-          {IconType::GDRAW, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_GDRAW},
-          {IconType::GENERIC,
-           IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_GENERIC},
-          {IconType::GFORM, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_GFORM},
-          {IconType::GMAP, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_GMAP},
-          {IconType::GSHEET, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_GSHEET},
-          {IconType::GSITE, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_GSITE},
-          {IconType::GSLIDE, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_GSLIDES},
-          {IconType::GTABLE, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_GTABLE},
-          {IconType::IMAGE, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_IMAGE},
-          {IconType::LINUX, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_GENERIC},
-          {IconType::PDF, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_PDF},
-          {IconType::PPT, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_PPT},
-          {IconType::SCRIPT, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_SCRIPT},
-          {IconType::SITES, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_SITES},
-          {IconType::TINI, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_TINI},
-          {IconType::VIDEO, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_VIDEO},
-          {IconType::WORD, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_WORD},
-      });
+  static const base::NoDestructor<std::map<IconType, gfx::IconDescription>>
+      icon_type_to_icon_description(
+          {{IconType::ARCHIVE,
+            gfx::IconDescription(ash::kFiletypeArchiveIcon, kIconDipSize,
+                                 gfx::kGoogleGrey700)},
+           {IconType::AUDIO,
+            gfx::IconDescription(ash::kFiletypeAudioIcon, kIconDipSize,
+                                 gfx::kGoogleRed500)},
+           {IconType::CHART,
+            gfx::IconDescription(ash::kFiletypeChartIcon, kIconDipSize,
+                                 gfx::kGoogleGreen500)},
+           {IconType::DRIVE,
+            gfx::IconDescription(ash::kFiletypeTeamDriveIcon, kIconDipSize,
+                                 gfx::kGoogleGrey700)},
+           {IconType::EXCEL,
+            gfx::IconDescription(ash::kFiletypeExcelIcon, kIconDipSize,
+                                 gfx::kGoogleGreen500)},
+           {IconType::FOLDER,
+            gfx::IconDescription(ash::kFiletypeFolderIcon, kIconDipSize,
+                                 gfx::kGoogleGrey700)},
+           {IconType::FOLDER_SHARED,
+            gfx::IconDescription(ash::kFiletypeSharedIcon, kIconDipSize,
+                                 gfx::kGoogleGrey700)},
+           {IconType::GDOC,
+            gfx::IconDescription(ash::kFiletypeGdocIcon, kIconDipSize,
+                                 gfx::kGoogleBlue500)},
+           {IconType::GDRAW,
+            gfx::IconDescription(ash::kFiletypeGdrawIcon, kIconDipSize,
+                                 gfx::kGoogleRed500)},
+           {IconType::GENERIC,
+            gfx::IconDescription(ash::kFiletypeGenericIcon, kIconDipSize,
+                                 gfx::kGoogleGrey700)},
+           {IconType::GFORM,
+            gfx::IconDescription(ash::kFiletypeGformIcon, kIconDipSize,
+                                 gfx::kGoogleGreen500)},
+           {IconType::GMAP,
+            gfx::IconDescription(ash::kFiletypeGmapIcon, kIconDipSize,
+                                 gfx::kGoogleRed500)},
+           {IconType::GSHEET,
+            gfx::IconDescription(ash::kFiletypeGsheetIcon, kIconDipSize,
+                                 gfx::kGoogleGreen500)},
+           {IconType::GSITE,
+            gfx::IconDescription(ash::kFiletypeGsiteIcon, kIconDipSize,
+                                 kFiletypeGsiteColor)},
+           {IconType::GSLIDE,
+            gfx::IconDescription(ash::kFiletypeGslidesIcon, kIconDipSize,
+                                 gfx::kGoogleYellow500)},
+           {IconType::GTABLE,
+            gfx::IconDescription(ash::kFiletypeGtableIcon, kIconDipSize,
+                                 gfx::kGoogleGreen500)},
+           {IconType::IMAGE,
+            gfx::IconDescription(ash::kFiletypeImageIcon, kIconDipSize,
+                                 gfx::kGoogleRed500)},
+           {IconType::LINUX,
+            gfx::IconDescription(ash::kFiletypeLinuxIcon, kIconDipSize,
+                                 gfx::kGoogleGrey700)},
+           {IconType::PDF,
+            gfx::IconDescription(ash::kFiletypePdfIcon, kIconDipSize,
+                                 gfx::kGoogleRed500)},
+           {IconType::PPT,
+            gfx::IconDescription(ash::kFiletypePptIcon, kIconDipSize,
+                                 kFiletypePptColor)},
+           {IconType::SCRIPT,
+            gfx::IconDescription(ash::kFiletypeScriptIcon, kIconDipSize,
+                                 gfx::kGoogleBlue500)},
+           {IconType::SITES,
+            gfx::IconDescription(ash::kFiletypeSitesIcon, kIconDipSize,
+                                 kFiletypeSitesColor)},
+           {IconType::TINI,
+            gfx::IconDescription(ash::kFiletypeTiniIcon, kIconDipSize,
+                                 gfx::kGoogleBlue500)},
+           {IconType::VIDEO,
+            gfx::IconDescription(ash::kFiletypeVideoIcon, kIconDipSize,
+                                 gfx::kGoogleRed500)},
+           {IconType::WORD,
+            gfx::IconDescription(ash::kFiletypeWordIcon, kIconDipSize,
+                                 gfx::kGoogleBlue500)}});
 
-  const auto& id_it = icon_to_2x_resource_id->find(icon);
-  DCHECK(id_it != icon_to_2x_resource_id->end());
-  return id_it->second;
+  const auto& id_it = icon_type_to_icon_description->find(icon);
+  DCHECK(id_it != icon_type_to_icon_description->end());
+  return gfx::CreateVectorIcon(id_it->second);
 }
 
 int GetChipResourceIdForIconType(IconType icon) {
@@ -227,9 +304,8 @@ int GetChipResourceIdForIconType(IconType icon) {
 }  // namespace internal
 
 gfx::ImageSkia GetIconForPath(const base::FilePath& filepath) {
-  return *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-      internal::GetResourceIdForIconType(
-          internal::GetIconTypeForPath(filepath)));
+  return internal::GetVectorIconFromIconType(
+      internal::GetIconTypeForPath(filepath));
 }
 
 gfx::ImageSkia GetChipIconForPath(const base::FilePath& filepath) {
@@ -239,63 +315,7 @@ gfx::ImageSkia GetChipIconForPath(const base::FilePath& filepath) {
 }
 
 gfx::ImageSkia GetIconFromType(const std::string& icon_type) {
-  static const base::NoDestructor<std::map<std::string, gfx::IconDescription>>
-      type_to_icon_description(
-          {{"archive", gfx::IconDescription(ash::kFiletypeArchiveIcon,
-                                            kIconDipSize, gfx::kGoogleGrey700)},
-           {"audio", gfx::IconDescription(ash::kFiletypeAudioIcon, kIconDipSize,
-                                          gfx::kGoogleRed500)},
-           {"chart", gfx::IconDescription(ash::kFiletypeChartIcon, kIconDipSize,
-                                          gfx::kGoogleGreen500)},
-           {"excel", gfx::IconDescription(ash::kFiletypeExcelIcon, kIconDipSize,
-                                          gfx::kGoogleGreen500)},
-           {"folder", gfx::IconDescription(ash::kFiletypeFolderIcon,
-                                           kIconDipSize, gfx::kGoogleGrey700)},
-           {"gdoc", gfx::IconDescription(ash::kFiletypeGdocIcon, kIconDipSize,
-                                         gfx::kGoogleBlue500)},
-           {"gdraw", gfx::IconDescription(ash::kFiletypeGdrawIcon, kIconDipSize,
-                                          gfx::kGoogleRed500)},
-           {"generic", gfx::IconDescription(ash::kFiletypeGenericIcon,
-                                            kIconDipSize, gfx::kGoogleGrey700)},
-           {"gform", gfx::IconDescription(ash::kFiletypeGformIcon, kIconDipSize,
-                                          gfx::kGoogleGreen500)},
-           {"gmap", gfx::IconDescription(ash::kFiletypeGmapIcon, kIconDipSize,
-                                         gfx::kGoogleRed500)},
-           {"gsheet", gfx::IconDescription(ash::kFiletypeGsheetIcon,
-                                           kIconDipSize, gfx::kGoogleGreen500)},
-           {"gsite", gfx::IconDescription(ash::kFiletypeGsiteIcon, kIconDipSize,
-                                          kFiletypeGsiteColor)},
-           {"gslides",
-            gfx::IconDescription(ash::kFiletypeGslidesIcon, kIconDipSize,
-                                 gfx::kGoogleYellow500)},
-           {"gtable", gfx::IconDescription(ash::kFiletypeGtableIcon,
-                                           kIconDipSize, gfx::kGoogleGreen500)},
-           {"image", gfx::IconDescription(ash::kFiletypeImageIcon, kIconDipSize,
-                                          gfx::kGoogleRed500)},
-           {"linux", gfx::IconDescription(ash::kFiletypeLinuxIcon, kIconDipSize,
-                                          gfx::kGoogleGrey700)},
-           {"pdf", gfx::IconDescription(ash::kFiletypePdfIcon, kIconDipSize,
-                                        gfx::kGoogleRed500)},
-           {"ppt", gfx::IconDescription(ash::kFiletypePptIcon, kIconDipSize,
-                                        kFiletypePptColor)},
-           {"script", gfx::IconDescription(ash::kFiletypeScriptIcon,
-                                           kIconDipSize, gfx::kGoogleBlue500)},
-           {"shared", gfx::IconDescription(ash::kFiletypeSharedIcon,
-                                           kIconDipSize, gfx::kGoogleGrey700)},
-           {"sites", gfx::IconDescription(ash::kFiletypeSitesIcon, kIconDipSize,
-                                          kFiletypeSitesColor)},
-           {"tini", gfx::IconDescription(ash::kFiletypeTiniIcon, kIconDipSize,
-                                         gfx::kGoogleBlue500)},
-           {"video", gfx::IconDescription(ash::kFiletypeVideoIcon, kIconDipSize,
-                                          gfx::kGoogleRed500)},
-           {"word", gfx::IconDescription(ash::kFiletypeWordIcon, kIconDipSize,
-                                         gfx::kGoogleBlue500)}});
-
-  const auto& it = type_to_icon_description->find(icon_type);
-  if (it == type_to_icon_description->end())
-    return gfx::CreateVectorIcon(ash::kFiletypeGenericIcon, kIconDipSize,
-                                 gfx::kGoogleGrey700);
-  return gfx::CreateVectorIcon(it->second);
+  return GetVectorIconFromIconType(internal::GetIconTypeFromString(icon_type));
 }
 
 }  // namespace app_list

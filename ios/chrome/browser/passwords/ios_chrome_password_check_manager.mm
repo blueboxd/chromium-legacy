@@ -26,6 +26,8 @@ using State = password_manager::BulkLeakCheckServiceInterface::State;
 
 // Key used to attach UserData to a LeakCheckCredential.
 constexpr char kPasswordCheckDataKey[] = "password-check-manager-data-key";
+// Minimum time the check should be running.
+constexpr base::TimeDelta kDelay = base::TimeDelta::FromSeconds(3);
 
 // Class which ensures that IOSChromePasswordCheckManager will stay alive
 // until password check is completed even if class what initially created
@@ -120,6 +122,7 @@ void IOSChromePasswordCheckManager::StartPasswordCheck() {
     bulk_leak_check_service_adapter_.StartBulkLeakCheck(kPasswordCheckDataKey,
                                                         &data);
     is_check_running_ = true;
+    start_time_ = base::Time::Now();
   } else {
     start_check_on_init_ = true;
   }
@@ -207,6 +210,20 @@ void IOSChromePasswordCheckManager::OnStateChanged(State state) {
         base::Time::Now().ToDoubleT());
   }
   if (state != State::kRunning) {
+    // If check was running
+    if (is_check_running_) {
+      const base::TimeDelta elapsed = base::Time::Now() - start_time_;
+      if (elapsed < kDelay) {
+        base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+            FROM_HERE,
+            base::BindOnce(&IOSChromePasswordCheckManager::
+                               NotifyPasswordCheckStatusChanged,
+                           weak_ptr_factory_.GetWeakPtr()),
+            kDelay - elapsed);
+        is_check_running_ = false;
+        return;
+      }
+    }
     is_check_running_ = false;
   }
   NotifyPasswordCheckStatusChanged();

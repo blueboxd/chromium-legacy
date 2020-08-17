@@ -60,6 +60,9 @@ class PasswordCheckManager
   // Stops a running check.
   void StopCheck();
 
+  // Called by java to retireve the timestamp of the last password check.
+  base::Time GetLastCheckTimestamp();
+
   // Called by java to retrieve the number of compromised credentials. If the
   // credentials haven't been fetched yet, this will return 0.
   int GetCompromisedCredentialsCount() const;
@@ -155,6 +158,9 @@ class PasswordCheckManager
 
   // Whether the check start was requested.
   bool was_start_requested_ = false;
+
+  // Whether a check is currently running.
+  bool is_check_running_ = false;
 
   // A scoped observer for `saved_passwords_presenter_`.
   ScopedObserver<password_manager::SavedPasswordsPresenter,

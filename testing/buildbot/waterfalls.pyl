@@ -804,21 +804,6 @@
         'use_swarming': True,
         'os_type': 'android',
       },
-      'Android WebView P Blink-CORS FYI (rel)': {
-        'mixins': [
-          'pie_fleet',
-          'walleye',
-        ],
-        'test_suites': {
-          'gtest_tests': 'webview_bot_blink_cors_gtests',
-          'isolated_scripts': 'android_wpt_scripts',
-        },
-        'args': [
-          '--disable-features=OutOfBlinkCors',
-        ],
-        'use_swarming': True,
-        'os_type': 'android',
-      },
       'Android WebView P FYI (rel)': {
         'mixins': [
           'pie_fleet',
@@ -4240,15 +4225,6 @@
         ],
         'test_suites': {
           'gtest_tests': 'bfcache_linux_gtests',
-          'isolated_scripts': 'chromium_webkit_isolated_scripts',
-        },
-      },
-      'linux-blink-cors-rel': {
-        'mixins': [
-          'linux-xenial',
-        ],
-        'test_suites': {
-          'gtest_tests': 'blink_cors_gtests',
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
       },

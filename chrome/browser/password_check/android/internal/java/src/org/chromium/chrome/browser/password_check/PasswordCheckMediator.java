@@ -22,7 +22,7 @@ import android.util.Pair;
 
 import androidx.appcompat.app.AlertDialog;
 
-import org.chromium.chrome.browser.password_check.PasswordCheckComponentUi.ChangePasswordDelegate;
+import org.chromium.chrome.browser.password_check.helper.PasswordCheckChangePasswordHelper;
 import org.chromium.chrome.browser.password_check.helper.PasswordCheckReauthenticationHelper;
 import org.chromium.chrome.browser.password_check.helper.PasswordCheckReauthenticationHelper.ReauthReason;
 import org.chromium.ui.modelutil.ListModel;
@@ -35,12 +35,12 @@ import org.chromium.ui.modelutil.PropertyModel;
  */
 class PasswordCheckMediator
         implements PasswordCheckCoordinator.CredentialEventHandler, PasswordCheck.Observer {
-    private final PasswordCheckComponentUi.ChangePasswordDelegate mChangePasswordDelegate;
     private final PasswordCheckReauthenticationHelper mReauthenticationHelper;
+    private final PasswordCheckChangePasswordHelper mChangePasswordDelegate;
     private PropertyModel mModel;
     private PasswordCheckComponentUi.Delegate mDelegate;
 
-    PasswordCheckMediator(ChangePasswordDelegate changePasswordDelegate,
+    PasswordCheckMediator(PasswordCheckChangePasswordHelper changePasswordDelegate,
             PasswordCheckReauthenticationHelper reauthenticationHelper) {
         mChangePasswordDelegate = changePasswordDelegate;
         mReauthenticationHelper = reauthenticationHelper;
@@ -108,7 +108,7 @@ class PasswordCheckMediator
         Integer compromisedCredentialCount = null;
         if (status == PasswordCheckUIStatus.IDLE) {
             compromisedCredentialCount = getPasswordCheck().getCompromisedCredentialsCount();
-            checkTimestamp = getPasswordCheck().getCheckTimestamp();
+            checkTimestamp = getPasswordCheck().getLastCheckTimestamp();
         }
         header.set(CHECK_TIMESTAMP, checkTimestamp);
         header.set(COMPROMISED_CREDENTIALS_COUNT, compromisedCredentialCount);
@@ -146,11 +146,9 @@ class PasswordCheckMediator
             return;
         }
 
-        mReauthenticationHelper.reauthenticate(ReauthReason.EDIT_PASSWORD,
-                reauthSucceeded
-                -> {
-                        // TODO(crbug.com/1114720): Show edit fragment if reauth succeeded.
-                });
+        mReauthenticationHelper.reauthenticate(ReauthReason.EDIT_PASSWORD, reauthSucceeded -> {
+            if (reauthSucceeded) mChangePasswordDelegate.launchEditPage(credential);
+        });
     }
 
     @Override

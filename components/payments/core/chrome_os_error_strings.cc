@@ -15,10 +15,6 @@ const char kMoreThanOneActivity[] =
     "Found more than one PAY activity in the Trusted Web Activity, but at most "
     "one activity is supported.";
 
-const char kMoreThanOneService[] =
-    "Found more than one IS_READY_TO_PAY service in the Trusted Web Activity, "
-    "but at most one service is supported.";
-
 const char kMoreThanOneMethodData[] =
     "At most one payment method specific data is supported.";
 

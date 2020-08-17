@@ -30,6 +30,7 @@ source_set("commands") {
     "qr_scanner_commands.h",
     "reading_list_add_command.h",
     "reading_list_add_command.mm",
+    "security_alert_commands.h",
     "show_signin_command.h",
     "show_signin_command.mm",
     "snackbar_commands.h",

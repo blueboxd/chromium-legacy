@@ -24,7 +24,6 @@
 #include "components/paint_preview/common/file_utils.h"
 #include "components/paint_preview/common/mojom/paint_preview_recorder.mojom.h"
 #include "components/paint_preview/common/proto/paint_preview.pb.h"
-#include "components/paint_preview/public/paint_preview_compositor_service.h"
 #include "content/public/browser/web_contents.h"
 
 namespace paint_preview {
@@ -127,10 +126,6 @@ class PaintPreviewBaseService : public KeyedService {
                            bool capture_links,
                            size_t max_per_capture_size,
                            OnCapturedCallback callback);
-
-  // Starts the compositor service in a utility process.
-  std::unique_ptr<PaintPreviewCompositorService> StartCompositorService(
-      base::OnceClosure disconnect_handler);
 
  private:
   void OnCaptured(int frame_tree_node_id,

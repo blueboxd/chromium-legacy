@@ -7,14 +7,12 @@ source_set("page_info") {
   sources = [
     "legacy_page_info_view_controller.h",
     "legacy_page_info_view_controller.mm",
-    "page_info_cookies_commands.h",
     "page_info_site_security_description.h",
     "page_info_site_security_description.mm",
     "page_info_view_controller.h",
     "page_info_view_controller.mm",
   ]
   deps = [
-    "resources:cookies_icon",
     "resources:security_icon_dangerous",
     "resources:security_icon_not_secure",
     "resources:security_icon_secure",

@@ -259,11 +259,6 @@ const char kEnablePersistentDownloadsName[] = "Enable persistent downloads";
 const char kEnablePersistentDownloadsDescription[] =
     "Enables the new, experimental implementation of persistent downloads";
 
-const char kEnableSyncTrustedVaultName[] =
-    "Enable trusted vault sync passphrase type";
-const char kEnableSyncTrustedVaultDescription[] =
-    "Enables the new, experimental passphrase type for sync data";
-
 const char kExpandedTabStripName[] = "Enable expanded tabstrip";
 const char kExpandedTabStripDescription[] =
     "Enables the new expanded tabstrip. Activated by swiping down the tabstrip"
@@ -381,10 +376,6 @@ const char kOpenDownloadsInFilesAppDescription[] =
     "Allows user to open Files.app after pressing the 'Downloads' button from "
     "the tools menu or after pressing the 'Open in downloads' button invoked "
     "by pressing 'Open In...' after download completes.";
-
-const char kImprovedCookieControlsName[] = "Third-party cookie blocking UI";
-const char kImprovedCookieControlsDescription[] =
-    "Allows user to manage third-party cookie blocking.";
 
 const char kPasswordCheckName[] = "Bulk Password Check";
 const char kPasswordCheckDescription[] =

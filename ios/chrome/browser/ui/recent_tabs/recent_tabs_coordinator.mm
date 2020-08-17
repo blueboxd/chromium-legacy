@@ -6,7 +6,6 @@
 
 #include "base/ios/block_types.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -17,6 +16,7 @@
 #import "ios/chrome/browser/ui/menu/action_factory.h"
 #import "ios/chrome/browser/ui/menu/menu_histograms.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_mediator.h"
+#import "ios/chrome/browser/ui/recent_tabs/recent_tabs_menu_helper.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_menu_provider.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_presentation_delegate.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_table_view_controller.h"
@@ -27,18 +27,14 @@
 #import "ios/chrome/browser/ui/table_view/feature_flags.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
-#import "ios/chrome/browser/ui/util/multi_window_support.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
-#include "ios/chrome/grit/ios_strings.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-@interface RecentTabsCoordinator () <RecentTabsMenuProvider,
+@interface RecentTabsCoordinator () <RecentTabsContextMenuDelegate,
                                      RecentTabsPresentationDelegate>
 // Completion block called once the recentTabsViewController is dismissed.
 @property(nonatomic, copy) ProceduralBlock completion;
@@ -51,9 +47,9 @@
     RecentTabsTransitioningDelegate* recentTabsTransitioningDelegate;
 @property(nonatomic, strong)
     RecentTabsTableViewController* recentTabsTableViewController;
-
 @property(nonatomic, strong) SharingCoordinator* sharingCoordinator;
-
+@property(nonatomic, strong)
+    RecentTabsContextMenuHelper* recentTabsContextMenuHelper;
 @end
 
 @implementation RecentTabsCoordinator
@@ -75,7 +71,12 @@
   self.recentTabsTableViewController.presentationDelegate = self;
 
   if (@available(iOS 13.0, *)) {
-    self.recentTabsTableViewController.menuProvider = self;
+    self.recentTabsContextMenuHelper =
+        [[RecentTabsContextMenuHelper alloc] initWithBrowser:self.browser
+                              recentTabsPresentationDelegate:self
+                               recentTabsContextMenuDelegate:self];
+    self.recentTabsTableViewController.menuProvider =
+        self.recentTabsContextMenuHelper;
   }
 
   // Adds the "Done" button and hooks it up to |stop|.
@@ -145,6 +146,9 @@
       dismissViewControllerAnimated:YES
                          completion:self.completion];
   self.recentTabsNavigationController = nil;
+  self.recentTabsContextMenuHelper = nil;
+  [self.sharingCoordinator stop];
+  self.sharingCoordinator = nil;
   self.recentTabsTransitioningDelegate = nil;
   [self.mediator disconnect];
 }
@@ -152,33 +156,6 @@
 - (void)dismissButtonTapped {
   base::RecordAction(base::UserMetricsAction("MobileRecentTabsClose"));
   [self stop];
-}
-
-#pragma mark - Private
-
-// Opens all tabs from the given |sectionIdentifier|.
-- (void)openAllTabsFromSessionSectionIdentitifer:(NSInteger)sectionIdentifier {
-  synced_sessions::DistantSession const* session =
-      [self.recentTabsTableViewController
-          sessionForSectionIdentifier:sectionIdentifier];
-  [self openAllTabsFromSession:session];
-}
-
-// Triggers the URL sharing flow for the given |URL| and |title|, with the
-// origin |view| representing the UI component for that URL.
-- (void)shareURL:(const GURL&)URL
-           title:(NSString*)title
-        fromView:(UIView*)view {
-  ActivityParams* params =
-      [[ActivityParams alloc] initWithURL:URL
-                                    title:title
-                                 scenario:ActivityScenario::RecentTabsEntry];
-  self.sharingCoordinator = [[SharingCoordinator alloc]
-      initWithBaseViewController:self.recentTabsTableViewController
-                         browser:self.browser
-                          params:params
-                      originView:view];
-  [self.sharingCoordinator start];
 }
 
 #pragma mark - RecentTabsPresentationDelegate
@@ -226,120 +203,32 @@
   [self stop];
 }
 
-#pragma mark - RecentTabsMenuProvider
+#pragma mark - RecentTabsContextMenuDelegate
 
-- (UIContextMenuConfiguration*)contextMenuConfigurationForItem:
-                                   (TableViewURLItem*)item
-                                                      fromView:(UIView*)view
-    API_AVAILABLE(ios(13.0)) {
-  __weak __typeof(self) weakSelf = self;
-
-  UIContextMenuActionProvider actionProvider = ^(
-      NSArray<UIMenuElement*>* suggestedActions) {
-    if (!weakSelf) {
-      // Return an empty menu.
-      return [UIMenu menuWithTitle:@"" children:@[]];
-    }
-
-    RecentTabsCoordinator* strongSelf = weakSelf;
-
-    // Record that this context menu was shown to the user.
-    RecordMenuShown(MenuScenario::kRecentTabsEntry);
-
-    ActionFactory* actionFactory =
-        [[ActionFactory alloc] initWithBrowser:strongSelf.browser
-                                      scenario:MenuScenario::kRecentTabsEntry];
-
-    NSMutableArray<UIMenuElement*>* menuElements =
-        [[NSMutableArray alloc] init];
-
-    [menuElements addObject:[actionFactory actionToOpenInNewTabWithURL:item.URL
-                                                            completion:^{
-                                                              [strongSelf stop];
-                                                            }]];
-
-    [menuElements
-        addObject:[actionFactory actionToOpenInNewIncognitoTabWithURL:item.URL
-                                                           completion:^{
-                                                             [strongSelf stop];
-                                                           }]];
-
-    if (IsMultipleScenesSupported()) {
-      [menuElements
-          addObject:
-              [actionFactory
-                  actionToOpenInNewWindowWithURL:item.URL
-                                  activityOrigin:WindowActivityRecentTabsOrigin
-                                      completion:^{
-                                        [strongSelf stop];
-                                      }]];
-    }
-
-    [menuElements addObject:[actionFactory actionToCopyURL:item.URL]];
-
-    [menuElements addObject:[actionFactory actionToShareWithBlock:^{
-                    [strongSelf shareURL:item.URL
-                                   title:item.title
-                                fromView:view];
-                  }]];
-
-    return [UIMenu menuWithTitle:@"" children:menuElements];
-  };
-
-  return
-      [UIContextMenuConfiguration configurationWithIdentifier:nil
-                                              previewProvider:nil
-                                               actionProvider:actionProvider];
+- (void)shareURL:(const GURL&)URL
+           title:(NSString*)title
+        fromView:(UIView*)view {
+  ActivityParams* params =
+      [[ActivityParams alloc] initWithURL:URL
+                                    title:title
+                                 scenario:ActivityScenario::RecentTabsEntry];
+  self.sharingCoordinator = [[SharingCoordinator alloc]
+      initWithBaseViewController:self.recentTabsTableViewController
+                         browser:self.browser
+                          params:params
+                      originView:view];
+  [self.sharingCoordinator start];
 }
 
-- (UIContextMenuConfiguration*)
-    contextMenuConfigurationForHeaderWithSectionIdentifier:
-        (NSInteger)sectionIdentifier API_AVAILABLE(ios(13.0)) {
-  __weak __typeof(self) weakSelf = self;
+- (void)removeSessionAtSessionSectionIdentifier:(NSInteger)sectionIdentifier {
+  [self.recentTabsTableViewController
+      removeSessionAtSessionSectionIdentifier:sectionIdentifier];
+}
 
-  UIContextMenuActionProvider actionProvider =
-      ^(NSArray<UIMenuElement*>* suggestedActions) {
-        if (!weakSelf || ![weakSelf.recentTabsTableViewController
-                             isSessionSectionIdentifier:sectionIdentifier]) {
-          // Return an empty menu.
-          return [UIMenu menuWithTitle:@"" children:@[]];
-        }
-
-        // Record that this context menu was shown to the user.
-        RecordMenuShown(MenuScenario::kRecentTabsHeader);
-
-        ActionFactory* actionFactory = [[ActionFactory alloc]
-            initWithBrowser:weakSelf.browser
-                   scenario:MenuScenario::kRecentTabsHeader];
-
-        NSMutableArray<UIMenuElement*>* menuElements =
-            [[NSMutableArray alloc] init];
-
-        synced_sessions::DistantSession const* session =
-            [weakSelf.recentTabsTableViewController
-                sessionForSectionIdentifier:sectionIdentifier];
-
-        if (!session->tabs.empty()) {
-          [menuElements
-              addObject:[actionFactory actionToOpenAllTabsWithBlock:^{
-                [weakSelf
-                    openAllTabsFromSessionSectionIdentitifer:sectionIdentifier];
-              }]];
-        }
-
-        [menuElements
-            addObject:[actionFactory actionToHideWithBlock:^{
-              [weakSelf.recentTabsTableViewController
-                  removeSessionAtSessionSectionIdentifier:sectionIdentifier];
-            }]];
-
-        return [UIMenu menuWithTitle:@"" children:menuElements];
-      };
-
-  return
-      [UIContextMenuConfiguration configurationWithIdentifier:nil
-                                              previewProvider:nil
-                                               actionProvider:actionProvider];
+- (synced_sessions::DistantSession const*)sessionForSectionIdentifier:
+    (NSInteger)sectionIdentifier {
+  return [self.recentTabsTableViewController
+      sessionForSectionIdentifier:sectionIdentifier];
 }
 
 @end

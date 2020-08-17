@@ -285,7 +285,7 @@ double UserClassifier::GetHoursSinceLastTime(Event event) const {
 
   base::TimeDelta since_last_time =
       clock_->Now() - pref_service_->GetTime(GetLastTimeKey(event));
-  return since_last_time.InSecondsF() / 3600;
+  return since_last_time / base::TimeDelta::FromHours(1);
 }
 
 bool UserClassifier::HasLastTime(Event event) const {

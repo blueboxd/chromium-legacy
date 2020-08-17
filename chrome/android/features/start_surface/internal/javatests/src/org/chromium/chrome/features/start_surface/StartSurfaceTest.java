@@ -406,6 +406,14 @@ public class StartSurfaceTest {
         pressBack();
         onViewWaiting(withId(R.id.primary_tasks_surface_view));
 
+        if (isInstantReturn()
+                && (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
+                        && Build.VERSION.SDK_INT < Build.VERSION_CODES.O)) {
+            // TODO(crbug.com/1092642): Fix androidx.test.espresso.PerformException issue when
+            // performing a single click on position: 0. See code below.
+            return;
+        }
+
         OverviewModeBehaviorWatcher hideWatcher =
                 TabUiTestHelper.createOverviewHideWatcher(mActivityTestRule.getActivity());
         onView(allOf(withParent(withId(
@@ -467,6 +475,14 @@ public class StartSurfaceTest {
 
         pressBack();
         onViewWaiting(withId(R.id.primary_tasks_surface_view));
+
+        if (isInstantReturn()
+                && (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
+                        && Build.VERSION.SDK_INT < Build.VERSION_CODES.O)) {
+            // TODO(crbug.com/1092642): Fix androidx.test.espresso.PerformException issue when
+            // performing a single click on position: 0. See code below.
+            return;
+        }
 
         OverviewModeBehaviorWatcher hideWatcher =
                 TabUiTestHelper.createOverviewHideWatcher(mActivityTestRule.getActivity());

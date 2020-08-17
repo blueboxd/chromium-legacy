@@ -393,10 +393,6 @@ IconEffects WebAppsChromeOs::GetIconEffects(const web_app::WebApp* web_app,
                              icon_effects | IconEffects::kCrOsStandardMask)
                        : static_cast<IconEffects>(
                              icon_effects | IconEffects::kCrOsStandardIcon);
-
-    // TODO(crbug.com/1083331): If the icon is maskable, modify the icon effect,
-    // don't apply the kResizeAndPad effect to shrink the icon, add the
-    // kCrOsStandardBackground and kCrOsStandardMask icon effects.
   } else {
     icon_effects =
         static_cast<IconEffects>(icon_effects | IconEffects::kResizeAndPad);

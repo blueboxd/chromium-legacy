@@ -2114,11 +2114,6 @@
     "expiry_milestone": 86
   },
   {
-    "name": "enable-sync-trusted-vault",
-    "owners": [ "mastiz@chromium.org", "//components/sync/OWNERS" ],
-    "expiry_milestone": 85
-  },
-  {
     "name": "enable-system-webapps",
     "owners": [ "calamity" ],
     "expiry_milestone": 78

@@ -197,8 +197,7 @@ id<GREYMatcher> NoBookmarksLabel() {
   [BookmarkEarlGrey setupStandardBookmarks];
 
   // Sign out.
-  [SigninEarlGreyUI
-      signOutWithSignOutConfirmation:SignOutConfirmationNonManagedUser];
+  [SigninEarlGreyUI signOut];
 
   // Open the Bookmarks screen on the Tools menu.
   [BookmarkEarlGreyUI openBookmarks];
@@ -223,8 +222,7 @@ id<GREYMatcher> NoBookmarksLabel() {
   [BookmarkEarlGrey setupStandardBookmarks];
 
   // Sign out.
-  [SigninEarlGreyUI signOutWithSignOutConfirmation:
-                        SignOutConfirmationNonManagedUserWithClearedData];
+  [SigninEarlGreyUI signOutAndClearDataFromDevice];
 
   // Open the Bookmarks screen on the Tools menu.
   [BookmarkEarlGreyUI openBookmarks];
@@ -237,10 +235,9 @@ id<GREYMatcher> NoBookmarksLabel() {
 
 // Tests that signing out from a managed user account clears the user's data.
 - (void)testsSignOutFromManagedAccount {
-  FakeChromeIdentity* fakeIdentity = [SigninEarlGrey fakeManagedIdentity];
-
-  // Sign In |fakeIdentity|.
-  [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity isManagedAccount:YES];
+  // Sign In |fakeManagedIdentity|.
+  [SigninEarlGreyUI
+      signinWithFakeIdentity:[SigninEarlGrey fakeManagedIdentity]];
 
   // Add a bookmark after sync is initialized.
   [ChromeEarlGrey waitForSyncInitialized:YES syncTimeout:kSyncOperationTimeout];
@@ -248,8 +245,7 @@ id<GREYMatcher> NoBookmarksLabel() {
   [BookmarkEarlGrey setupStandardBookmarks];
 
   // Sign out.
-  [SigninEarlGreyUI
-      signOutWithSignOutConfirmation:SignOutConfirmationManagedUser];
+  [SigninEarlGreyUI signOutAndClearDataFromDevice];
 
   // Open the Bookmarks screen on the Tools menu.
   [BookmarkEarlGreyUI openBookmarks];

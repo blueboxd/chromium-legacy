@@ -50,22 +50,28 @@ class PasswordSaveManager {
 
   virtual FormSaver* GetFormSaver() const = 0;
 
-  // Create pending credentials from |parsed_submitted_form| and
-  // |parsed_observed_form| and |submitted_form|.
+  // Create pending credentials from |parsed_submitted_form| and |observed_form|
+  // and |submitted_form|. In the case of HTTP or proxy auth no |observed_form|
+  // exists, so this parameter is optional.
   virtual void CreatePendingCredentials(
       const autofill::PasswordForm& parsed_submitted_form,
-      const autofill::FormData& observed_form,
+      const autofill::FormData* observed_form,
       const autofill::FormData& submitted_form,
       bool is_http_auth,
       bool is_credential_api_save) = 0;
 
   virtual void ResetPendingCredentials() = 0;
 
-  virtual void Save(const autofill::FormData& observed_form,
+  // Saves `parsed_submitted_form` to the store. An optional `observed_form` is
+  // passed along to be able to send votes. This is null for HTTP or proxy auth.
+  virtual void Save(const autofill::FormData* observed_form,
                     const autofill::PasswordForm& parsed_submitted_form) = 0;
 
+  // Replaces `credentials_to_update` with `parsed_submitted_form` in the store.
+  // An optional `observed_form` is passed along to be able to send votes. This
+  // is null for HTTP or proxy auth.
   virtual void Update(const autofill::PasswordForm& credentials_to_update,
-                      const autofill::FormData& observed_form,
+                      const autofill::FormData* observed_form,
                       const autofill::PasswordForm& parsed_submitted_form) = 0;
 
   virtual void PermanentlyBlacklist(

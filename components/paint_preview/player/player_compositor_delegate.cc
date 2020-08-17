@@ -113,10 +113,9 @@ PlayerCompositorDelegate::PlayerCompositorDelegate(
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("paint_preview",
                                     "PlayerCompositorDelegate CreateCompositor",
                                     TRACE_ID_LOCAL(this));
-  paint_preview_compositor_service_ =
-      paint_preview_service_->StartCompositorService(base::BindOnce(
-          &PlayerCompositorDelegate::OnCompositorServiceDisconnected,
-          weak_factory_.GetWeakPtr()));
+  paint_preview_compositor_service_ = StartCompositorService(
+      base::BindOnce(&PlayerCompositorDelegate::OnCompositorServiceDisconnected,
+                     weak_factory_.GetWeakPtr()));
 
   paint_preview_compositor_client_ =
       paint_preview_compositor_service_->CreateCompositor(

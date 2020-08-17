@@ -57,6 +57,11 @@ class AndroidAppCommunicationStub : public AndroidAppCommunication {
 
   // AndroidAppCommunication implementation.
   void SetForTesting() override {}
+
+  // AndroidAppCommunication implementation.
+  void SetAppForTesting(const std::string& package_name,
+                        const std::string& method,
+                        const std::string& response) override {}
 };
 
 }  // namespace

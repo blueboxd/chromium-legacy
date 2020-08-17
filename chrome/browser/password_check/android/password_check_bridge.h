@@ -28,6 +28,9 @@ class PasswordCheckBridge : public PasswordCheckManager::Observer {
   // Called by Java to stop the password check.
   void StopCheck(JNIEnv* env);
 
+  // Called by Java to retrieve the time when the last check finished.
+  int64_t GetLastCheckTimestamp(JNIEnv* env);
+
   // Called by Java to get the number of compromised credentials.
   jint GetCompromisedCredentialsCount(JNIEnv* env);
 

@@ -28,7 +28,8 @@ class AccountPickerBottomSheetProperties {
     @IntDef({AccountPickerBottomSheetState.NO_ACCOUNTS,
             AccountPickerBottomSheetState.COLLAPSED_ACCOUNT_LIST,
             AccountPickerBottomSheetState.EXPANDED_ACCOUNT_LIST,
-            AccountPickerBottomSheetState.SIGNIN_IN_PROGRESS})
+            AccountPickerBottomSheetState.SIGNIN_IN_PROGRESS,
+            AccountPickerBottomSheetState.INCOGNITO_INTERSTITIAL})
     @Retention(RetentionPolicy.SOURCE)
     @interface AccountPickerBottomSheetState {
         /**
@@ -67,6 +68,15 @@ class AccountPickerBottomSheetProperties {
          * |Continue as| is clicked. This state does not lead to any other state.
          */
         int SIGNIN_IN_PROGRESS = 3;
+
+        /**
+         * When the account list is expanded, the user sees the account list of all the accounts
+         * on device and some additional rows like |Add account to device| and |Go incognito mode|.
+         *
+         * This state can only be reached from EXPANDED_ACCOUNT_LIST and would represent that the
+         * user has clicked the "Go incognito mode" option.
+         */
+        int INCOGNITO_INTERSTITIAL = 4;
     }
 
     // PropertyKeys for the selected account view when the account list is collapsed.

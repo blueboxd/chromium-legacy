@@ -24,6 +24,8 @@ import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar;
 import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar.CustomTabTabObserver;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
+import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.net.NetError;
@@ -44,7 +46,7 @@ import javax.inject.Inject;
  * will crash. We should hold web apps to the same standard.
  */
 @ActivityScope
-public class QualityEnforcer {
+public class QualityEnforcer implements NativeInitObserver {
     @VisibleForTesting
     static final String NOTIFY = "quality_enforcement.notify";
     @VisibleForTesting
@@ -58,6 +60,7 @@ public class QualityEnforcer {
     private final CustomTabsConnection mConnection;
     private final CustomTabsSessionToken mSessionToken;
     private final ClientPackageNameProvider mClientPackageNameProvider;
+    private final BrowserServicesIntentDataProvider mIntentDataProvider;
     private final TrustedWebActivityUmaRecorder mUmaRecorder;
 
     private boolean mOriginVerified;
@@ -104,19 +107,33 @@ public class QualityEnforcer {
     };
 
     @Inject
-    public QualityEnforcer(ChromeActivity<?> activity, TabObserverRegistrar tabObserverRegistrar,
+    public QualityEnforcer(ChromeActivity<?> activity,
+            ActivityLifecycleDispatcher lifecycleDispatcher,
+            TabObserverRegistrar tabObserverRegistrar,
             BrowserServicesIntentDataProvider intentDataProvider, CustomTabsConnection connection,
             Verifier verifier, ClientPackageNameProvider clientPackageNameProvider,
             TrustedWebActivityUmaRecorder umaRecorder) {
         mActivity = activity;
         mVerifier = verifier;
-        mConnection = connection;
         mSessionToken = intentDataProvider.getSession();
+        mIntentDataProvider = intentDataProvider;
+        mConnection = connection;
         mClientPackageNameProvider = clientPackageNameProvider;
         mUmaRecorder = umaRecorder;
         // Initialize the value to true before the first navigation.
         mOriginVerified = true;
         tabObserverRegistrar.registerActivityTabObserver(mTabObserver);
+        lifecycleDispatcher.register(this);
+    }
+
+    @Override
+    public void onFinishNativeInitialization() {
+        String url = mIntentDataProvider.getUrlToLoad();
+        mVerifier.verify(url).then((verified) -> {
+            if (!verified) {
+                trigger(ViolationType.DIGITAL_ASSERTLINKS, mIntentDataProvider.getUrlToLoad(), 0);
+            }
+        });
     }
 
     private void trigger(@ViolationType int type, String url, int httpStatusCode) {
@@ -160,14 +177,20 @@ public class QualityEnforcer {
 
     /* Get the localized string for toast message. */
     private String getToastMessage(@ViolationType int type, String url, int httpStatusCode) {
-        if (type == ViolationType.ERROR_404 || type == ViolationType.ERROR_5XX) {
-            return ContextUtils.getApplicationContext().getString(
-                    R.string.twa_quality_enforcement_violation_error, httpStatusCode, url);
-        } else if (type == ViolationType.UNAVAILABLE_OFFLINE) {
-            return ContextUtils.getApplicationContext().getString(
-                    R.string.twa_quality_enforcement_violation_offline, url);
+        switch (type) {
+            case ViolationType.ERROR_404:
+            case ViolationType.ERROR_5XX:
+                return ContextUtils.getApplicationContext().getString(
+                        R.string.twa_quality_enforcement_violation_error, httpStatusCode, url);
+            case ViolationType.UNAVAILABLE_OFFLINE:
+                return ContextUtils.getApplicationContext().getString(
+                        R.string.twa_quality_enforcement_violation_offline, url);
+            case ViolationType.DIGITAL_ASSERTLINKS:
+                return ContextUtils.getApplicationContext().getString(
+                        R.string.twa_quality_enforcement_violation_assert_link, url);
+            default:
+                return "";
         }
-        return "";
     }
 
     /*
@@ -175,11 +198,16 @@ public class QualityEnforcer {
      * the toast because this is used in TWA's crash message.
      */
     private String toTwaCrashMessage(@ViolationType int type, String url, int httpStatusCode) {
-        if (type == ViolationType.ERROR_404 || type == ViolationType.ERROR_5XX) {
-            return httpStatusCode + " on " + url;
-        } else if (type == ViolationType.UNAVAILABLE_OFFLINE) {
-            return "Page unavailable offline: " + url;
+        switch (type) {
+            case ViolationType.ERROR_404:
+            case ViolationType.ERROR_5XX:
+                return httpStatusCode + " on " + url;
+            case ViolationType.UNAVAILABLE_OFFLINE:
+                return "Page unavailable offline: " + url;
+            case ViolationType.DIGITAL_ASSERTLINKS:
+                return "Digital assert links verification failed on " + url;
+            default:
+                return "";
         }
-        return "";
     }
 }

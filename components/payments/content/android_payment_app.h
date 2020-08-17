@@ -32,14 +32,15 @@ class AndroidPaymentApp : public PaymentApp {
   // merchant. The set of keys should match exactly the |payment_method_names|.
   // It is the responsibility of the creator of AndroidPaymentApp to filter out
   // the data from merchant that is not in |payment_method_names|.
-  AndroidPaymentApp(const std::set<std::string>& payment_method_names,
-                    const std::map<std::string, std::set<std::string>>&
-                        stringified_method_data,
-                    const GURL& top_level_origin,
-                    const GURL& payment_request_origin,
-                    const std::string& payment_request_id,
-                    std::unique_ptr<AndroidAppDescription> description,
-                    base::WeakPtr<AndroidAppCommunication> communication);
+  AndroidPaymentApp(
+      const std::set<std::string>& payment_method_names,
+      std::unique_ptr<std::map<std::string, std::set<std::string>>>
+          stringified_method_data,
+      const GURL& top_level_origin,
+      const GURL& payment_request_origin,
+      const std::string& payment_request_id,
+      std::unique_ptr<AndroidAppDescription> description,
+      base::WeakPtr<AndroidAppCommunication> communication);
   ~AndroidPaymentApp() override;
 
   AndroidPaymentApp(const AndroidPaymentApp& other) = delete;
@@ -71,6 +72,7 @@ class AndroidPaymentApp : public PaymentApp {
   void UpdateWith(
       mojom::PaymentRequestDetailsUpdatePtr details_update) override;
   void OnPaymentDetailsNotUpdated() override;
+  bool IsPreferred() const override;
 
  private:
   void OnPaymentAppResponse(Delegate* delegate,
@@ -79,7 +81,8 @@ class AndroidPaymentApp : public PaymentApp {
                             const std::string& payment_method_identifier,
                             const std::string& stringified_details);
 
-  const std::map<std::string, std::set<std::string>> stringified_method_data_;
+  const std::unique_ptr<std::map<std::string, std::set<std::string>>>
+      stringified_method_data_;
   const GURL top_level_origin_;
   const GURL payment_request_origin_;
   const std::string payment_request_id_;

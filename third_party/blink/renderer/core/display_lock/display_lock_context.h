@@ -200,6 +200,10 @@ class CORE_EXPORT DisplayLockContext final
     }
   }
 
+  bool HadAnyViewportIntersectionNotifications() const {
+    return had_any_viewport_intersection_notifications_;
+  }
+
   // GC functions.
   void Trace(Visitor*) const override;
 
@@ -369,6 +373,11 @@ class CORE_EXPORT DisplayLockContext final
   bool keep_unlocked_until_lifecycle_ = false;
 
   bool needs_graphics_layer_rebuild_ = false;
+
+  // This is set to true if we're in the 'auto' mode and had our first
+  // intersection / non-intersection notification. This is reset to false if the
+  // 'auto' mode is added again (after being removed).
+  bool had_any_viewport_intersection_notifications_ = false;
 
   enum class RenderAffectingState : int {
     kLockRequested,

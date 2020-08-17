@@ -207,6 +207,9 @@ cr.define('cr.login', function() {
     'backButton'(msg) {
       this.dispatchEvent(new CustomEvent('backButton', {detail: msg.show}));
     },
+    'getAccounts'(msg) {
+      this.dispatchEvent(new Event('getAccounts'));
+    },
     'showView'(msg) {
       this.dispatchEvent(new Event('showView'));
     },
@@ -595,6 +598,14 @@ cr.define('cr.login', function() {
       this.isLoaded_ = true;
     }
 
+    /**
+     * Called in response to 'getAccounts' event.
+     * @param {Array<string>} accounts list of emails
+     */
+    getAccountsResponse(accounts) {
+      this.sendMessageToWebview('accountsListed', accounts);
+    }
+
     constructInitialFrameUrl_(data) {
       if (data.doSamlRedirect) {
         let url = this.idpOrigin_ + SAML_REDIRECTION_PATH;
@@ -860,11 +871,22 @@ cr.define('cr.login', function() {
     }
 
     /**
-     * Invoked to send a HTML5 message to the webview element.
-     * @param {*} payload Payload of the HTML5 message.
+     * Invoked to send a HTML5 message with attached data to the webview
+     * element.
+     * @param {string} messageType Type of the HTML5 message.
+     * @param {Object=} messageData Data to be attached to the message.
      */
-    sendMessageToWebview(payload) {
+    sendMessageToWebview(messageType, messageData = null) {
       const currentUrl = this.webview_.src;
+      let payload = undefined;
+      if (messageData) {
+        payload = {type: messageType, data: messageData};
+      } else {
+        // TODO(crbug.com/1116343): Use new message format when it will be
+        // available in production.
+        payload = messageType;
+      }
+
       this.webview_.contentWindow.postMessage(payload, currentUrl);
     }
 

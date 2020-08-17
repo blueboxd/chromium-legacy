@@ -339,6 +339,18 @@ public class AccountPickerBottomSheetTest {
         onView(withText(R.string.signin_incognito_mode_secondary)).check(matches(isDisplayed()));
         onView(withText(R.string.signin_incognito_mode_primary)).perform(click());
         verify(mAccountPickerDelegateMock).goIncognitoMode();
+        checkIncognitoInterstitialSheet();
+    }
+
+    private void checkIncognitoInterstitialSheet() {
+        onView(withId(R.id.account_picker_bottom_sheet_logo)).check(matches(isDisplayed()));
+        onView(withId(R.id.account_picker_bottom_sheet_title)).check(matches(not(isDisplayed())));
+        onView(withId(R.id.account_picker_bottom_sheet_subtitle))
+                .check(matches(not(isDisplayed())));
+        onView(withId(R.id.account_picker_horizontal_divider)).check(matches(not(isDisplayed())));
+        onView(withId(R.id.account_picker_account_list)).check(matches(not(isDisplayed())));
+
+        onView(withId(R.id.incognito_interstitial_bottom_sheet_view)).check(matches(isDisplayed()));
     }
 
     private void checkZeroAccountBottomSheet() {

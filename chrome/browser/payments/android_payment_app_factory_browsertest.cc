@@ -25,16 +25,58 @@ class AndroidPaymentAppFactoryTest
   base::test::ScopedFeatureList feature_list_;
 };
 
-IN_PROC_BROWSER_TEST_F(AndroidPaymentAppFactoryTest, SmokeTest) {
-  NavigateTo("a.com", "/app_store_billing_tests/index.html");
-  ASSERT_EQ("success", content::EvalJs(GetActiveWebContents(),
-                                       content::JsReplace(
-                                           "addSupportedMethod($1)",
-                                           "https://play.google.com/billing")));
+// Even if a service worker app for app store payment method is installed, it
+// should be ignored.
+IN_PROC_BROWSER_TEST_F(AndroidPaymentAppFactoryTest,
+                       IgnoreInstalledPlayBillingServiceWorker) {
+  NavigateTo("a.com", "/payment_handler_installer.html");
   ASSERT_EQ("success",
-            content::EvalJs(GetActiveWebContents(), "createPaymentRequest()"));
-  ASSERT_EQ("false",
-            content::EvalJs(GetActiveWebContents(), "canMakePayment()"));
+            content::EvalJs(GetActiveWebContents(),
+                            "install('alicepay.com/app1/app.js', "
+                            "['https://play.google.com/billing'], false)"));
+  NavigateTo("b.com", "/can_make_payment_checker.html");
+  ASSERT_EQ("false", content::EvalJs(
+                         GetActiveWebContents(),
+                         "canMakePayment('https://play.google.com/billing')"));
+}
+
+// When an app store payment method app is available in a trusted web activity,
+// then ignore other payment apps, since this is considered to be a digital
+// goods purchase.
+IN_PROC_BROWSER_TEST_F(AndroidPaymentAppFactoryTest,
+                       IgnoreOtherPaymentAppsInTwaWhenHaveAppStoreBilling) {
+  std::string method_name = https_server()->GetURL("a.com", "/").spec();
+  method_name = method_name.substr(0, method_name.length() - 1);
+  ASSERT_NE('/', method_name[method_name.length() - 1]);
+  NavigateTo("a.com", "/payment_handler_installer.html");
+  ASSERT_EQ(
+      "success",
+      content::EvalJs(
+          GetActiveWebContents(),
+          content::JsReplace(
+              "install('payment_request_success_responder.js', [$1], false)",
+              method_name)));
+
+  // The "payment_request_success_responder.js" always replies with "{status:
+  // success}", so the |response| here has to be distinct.
+  std::string response = "App store payment method app response for test.";
+  test_controller()->SetTwaPackageName("com.example.app");
+  test_controller()->SetTwaPaymentApp("https://play.google.com/billing",
+                                      "{\"status\": \"" + response + "\"}");
+
+#if defined(OS_CHROMEOS)
+  std::string expected_response = response;
+#else
+  std::string expected_response = "success";
+#endif  // OS_CHROMEOS
+
+  NavigateTo("b.com", "/payment_handler_status.html");
+  ASSERT_EQ(expected_response,
+            content::EvalJs(
+                GetActiveWebContents(),
+                content::JsReplace(
+                    "getStatusList(['https://play.google.com/billing', $1])",
+                    method_name)));
 }
 
 }  // namespace

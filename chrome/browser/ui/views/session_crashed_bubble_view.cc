@@ -254,8 +254,8 @@ std::unique_ptr<views::View> SessionCrashedBubbleView::CreateUmaOptInView() {
   gfx::Range after_link_range(offset + link_text.length(), uma_text.length());
   if (!after_link_range.is_empty())
     uma_label->AddStyleRange(after_link_range, uma_style);
-  // Shift the text down by 1px to align with the checkbox.
-  uma_label->SetBorder(views::CreateEmptyBorder(1, 0, 0, 0));
+  // Shift the text down by 3px to align with the checkbox.
+  uma_label->SetBorder(views::CreateEmptyBorder(3, 0, 0, 0));
 
   // Checkbox for metric reporting setting.
   auto uma_option = std::make_unique<views::Checkbox>(base::string16());
@@ -276,7 +276,7 @@ std::unique_ptr<views::View> SessionCrashedBubbleView::CreateUmaOptInView() {
                        ChromeLayoutProvider::Get()->GetDistanceMetric(
                            views::DISTANCE_RELATED_LABEL_HORIZONTAL));
   cs->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1.0,
-                views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
+                views::GridLayout::ColumnSize::kFixed, 0, 0);
 
   uma_layout->StartRow(views::GridLayout::kFixedSize, kReportColumnSetId);
   uma_option_ = uma_layout->AddView(std::move(uma_option));

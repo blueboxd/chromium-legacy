@@ -105,8 +105,8 @@ MATCHER_P(FormHasPassword, password_value, "") {
   return arg.new_password_value == password_value;
 }
 
-MATCHER_P(FormDataEqualTo, form_data, "") {
-  return autofill::FormDataEqualForTesting(arg, form_data);
+MATCHER_P(FormDataPointeeEqualTo, form_data, "") {
+  return autofill::FormDataEqualForTesting(*arg, form_data);
 }
 
 class MockPasswordManagerDriver : public StubPasswordManagerDriver {
@@ -2380,16 +2380,16 @@ class MockPasswordSaveManager : public PasswordSaveManager {
   MOCK_CONST_METHOD0(GetFormSaver, FormSaver*());
   MOCK_METHOD5(CreatePendingCredentials,
                void(const autofill::PasswordForm&,
-                    const autofill::FormData&,
+                    const autofill::FormData*,
                     const autofill::FormData&,
                     bool,
                     bool));
   MOCK_METHOD0(ResetPendingCredentials, void());
   MOCK_METHOD2(Save,
-               void(const autofill::FormData&, const autofill::PasswordForm&));
+               void(const autofill::FormData*, const autofill::PasswordForm&));
   MOCK_METHOD3(Update,
                void(const autofill::PasswordForm&,
-                    const autofill::FormData&,
+                    const autofill::FormData*,
                     const autofill::PasswordForm&));
   MOCK_METHOD1(PermanentlyBlacklist, void(const PasswordStore::FormDigest&));
   MOCK_METHOD1(Unblacklist, void(const PasswordStore::FormDigest&));
@@ -2475,7 +2475,7 @@ TEST_F(PasswordFormManagerTestWithMockedSaver, SaveCredentials) {
       form_manager_->ProvisionallySave(submitted_form, &driver_, nullptr));
   PasswordForm updated_form;
   EXPECT_CALL(*mock_password_save_manager(),
-              Save(FormDataEqualTo(observed_form_), _))
+              Save(FormDataPointeeEqualTo(observed_form_), _))
       .WillOnce(SaveArg<1>(&updated_form));
   EXPECT_CALL(client_, UpdateFormManagers());
   form_manager_->Save();
@@ -2692,7 +2692,7 @@ TEST_F(PasswordFormManagerTestWithMockedSaver,
   EXPECT_TRUE(
       form_manager_->ProvisionallySave(submitted_form_, &driver_, nullptr));
   EXPECT_CALL(*mock_password_save_manager(),
-              Save(FormDataEqualTo(submitted_form_), _))
+              Save(FormDataPointeeEqualTo(submitted_form_), _))
       .WillOnce(SaveArg<1>(&updated_form));
   form_manager_->Save();
   EXPECT_EQ(submitted_form_.fields[kUsernameFieldIndex].value,

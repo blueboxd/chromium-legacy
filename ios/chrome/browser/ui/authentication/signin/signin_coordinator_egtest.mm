@@ -82,8 +82,7 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
 
   // Sign in to |fakeIdentity1|.
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity1];
-  [SigninEarlGreyUI
-      signOutWithSignOutConfirmation:SignOutConfirmationNonManagedUser];
+  [SigninEarlGreyUI signOut];
 
   // Sign in with |fakeIdentity2|.
   [ChromeEarlGreyUI openSettingsMenu];
@@ -128,8 +127,6 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
 - (void)testSignInOneUser {
   // Set up a fake identity.
   FakeChromeIdentity* fakeIdentity = [SigninEarlGrey fakeIdentity1];
-  [SigninEarlGrey addFakeIdentity:fakeIdentity];
-
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
 
   // Check |fakeIdentity| is signed-in.
@@ -151,30 +148,21 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
 // Tests that signing out from the Settings works correctly.
 - (void)testSignInDisconnectFromChrome {
   FakeChromeIdentity* fakeIdentity = [SigninEarlGrey fakeIdentity1];
-  [SigninEarlGrey addFakeIdentity:fakeIdentity];
-
-  // Sign in to |fakeIdentity|.
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
 
   // Sign out.
-  [SigninEarlGreyUI
-      signOutWithSignOutConfirmation:SignOutConfirmationNonManagedUser];
+  [SigninEarlGreyUI signOut];
 }
 
 // Tests that signing out of a managed account from the Settings works
 // correctly.
 - (void)testSignInDisconnectFromChromeManaged {
-  FakeChromeIdentity* fakeIdentity = [SigninEarlGrey fakeManagedIdentity];
-
   // Sign-in with a managed account.
-  [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity isManagedAccount:YES];
+  FakeChromeIdentity* fakeIdentity = [SigninEarlGrey fakeManagedIdentity];
+  [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
 
   // Sign out.
-  [SigninEarlGreyUI
-      signOutWithSignOutConfirmation:SignOutConfirmationManagedUser];
-
-  // Check that there is no signed in user.
-  [SigninEarlGrey verifySignedOut];
+  [SigninEarlGreyUI signOutAndClearDataFromDevice];
 }
 
 // Tests that signing in, tapping the Settings link on the confirmation screen
@@ -253,8 +241,7 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity2];
 
   // Sign out.
-  [SigninEarlGreyUI
-      signOutWithSignOutConfirmation:SignOutConfirmationNonManagedUser];
+  [SigninEarlGreyUI signOut];
   // Sign in with |fakeIdentity1|.
   [ChromeEarlGreyUI openSettingsMenu];
   [[EarlGrey selectElementWithMatcher:SecondarySignInButton()]

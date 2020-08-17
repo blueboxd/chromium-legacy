@@ -711,19 +711,9 @@ luci.console_view(
             short_name = "bfc",
         ),
         luci.console_view_entry(
-            builder = "ci/linux-blink-cors-rel",
-            category = "week15a|linux",
-            short_name = "oorcors",
-        ),
-        luci.console_view_entry(
             builder = "ci/linux-fieldtrial-rel",
             category = "week15a|linux",
             short_name = "field",
-        ),
-        luci.console_view_entry(
-            builder = "ci/Android WebView P Blink-CORS FYI (rel)",
-            category = "week15b|android|webview p",
-            short_name = "oorcors",
         ),
         luci.console_view_entry(
             builder = "ci/android-archive-rel",

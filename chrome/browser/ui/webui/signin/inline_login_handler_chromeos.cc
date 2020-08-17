@@ -22,7 +22,6 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/webui/signin/inline_login_dialog_chromeos.h"
 #include "chrome/browser/ui/webui/signin/inline_login_handler.h"
-#include "chromeos/components/account_manager/account_manager.h"
 #include "chromeos/components/account_manager/account_manager_factory.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "components/signin/public/identity_manager/account_info.h"
@@ -37,6 +36,12 @@ namespace {
 
 constexpr char kCrosAddAccountFlow[] = "crosAddAccount";
 constexpr char kCrosAddAccountEduFlow[] = "crosAddAccountEdu";
+
+std::string AnonymizeAccountEmail(const std::string& email) {
+  std::string result;
+  base::Base64Encode(crypto::SHA256HashString(email), &result);
+  return result + "@example.com";
+}
 
 bool GaiaActionButtonsEnabled() {
   return base::FeatureList::IsEnabled(chromeos::features::kGaiaActionButtons);
@@ -252,6 +257,10 @@ void InlineLoginHandlerChromeOS::RegisterMessages() {
       base::BindRepeating(
           &InlineLoginHandlerChromeOS::ShowIncognitoAndCloseDialog,
           base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getAccounts",
+      base::BindRepeating(&InlineLoginHandlerChromeOS::GetAccountsInSession,
+                          base::Unretained(this)));
 }
 
 void InlineLoginHandlerChromeOS::SetExtraInitParams(
@@ -345,6 +354,38 @@ void InlineLoginHandlerChromeOS::ShowIncognitoAndCloseDialog(
     const base::ListValue* args) {
   chrome::NewIncognitoWindow(Profile::FromWebUI(web_ui()));
   close_dialog_closure_.Run();
+}
+
+void InlineLoginHandlerChromeOS::GetAccountsInSession(
+    const base::ListValue* args) {
+  const std::string& callback_id = args->GetList()[0].GetString();
+  const Profile* profile = Profile::FromWebUI(web_ui());
+  chromeos::AccountManager* account_manager =
+      g_browser_process->platform_part()
+          ->GetAccountManagerFactory()
+          ->GetAccountManager(profile->GetPath().value());
+
+  account_manager->GetAccounts(
+      base::BindOnce(&InlineLoginHandlerChromeOS::OnGetAccounts,
+                     weak_factory_.GetWeakPtr(), callback_id));
+}
+
+void InlineLoginHandlerChromeOS::OnGetAccounts(
+    const std::string& callback_id,
+    const std::vector<AccountManager::Account>& accounts) {
+  base::ListValue account_emails;
+  for (const auto& account : accounts) {
+    if (account.key.account_type ==
+        account_manager::AccountType::ACCOUNT_TYPE_ACTIVE_DIRECTORY) {
+      // Don't send Active Directory account email to Gaia.
+      account_emails.Append(AnonymizeAccountEmail(account.raw_email));
+    } else {
+      account_emails.Append(account.raw_email);
+    }
+  }
+
+  ResolveJavascriptCallback(base::Value(callback_id),
+                            std::move(account_emails));
 }
 
 }  // namespace chromeos

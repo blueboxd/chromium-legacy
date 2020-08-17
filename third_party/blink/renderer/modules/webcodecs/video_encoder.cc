@@ -289,7 +289,9 @@ void VideoEncoder::ProcessConfigure(Request* request) {
   }
 
   std::string codec_str = config->codec().Utf8();
-  std::string profile_str = config->profile().Utf8();
+  std::string profile_str;
+  if (config->hasProfile())
+    profile_str = config->profile().Utf8();
   auto codec_type = media::StringToVideoCodec(codec_str);
   if (codec_type == media::kUnknownVideoCodec) {
     HandleError(DOMExceptionCode::kNotFoundError, "Unknown codec type");

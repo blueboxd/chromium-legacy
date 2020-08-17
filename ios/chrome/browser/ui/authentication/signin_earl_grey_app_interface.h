@@ -32,7 +32,12 @@
 + (void)forgetFakeIdentity:(FakeChromeIdentity*)fakeIdentity;
 
 // Returns the gaia ID of the signed-in account.
+// If there is no signed-in account returns an empty string.
 + (NSString*)primaryAccountGaiaID;
+
+// Returns the email of the signed-in account.
+// If there is no signed-in account returns an empty string.
++ (NSString*)primaryAccountEmail;
 
 // Checks that no identity is signed in.
 + (BOOL)isSignedOut;

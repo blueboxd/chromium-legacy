@@ -61,6 +61,13 @@ export class EduAccountLoginBrowserProxy {
    */
   completeLogin(credentials, eduLoginParams) {}
 
+  /**
+   * Send 'getAccounts' message to the handler. The promise will be resolved
+   * with the list of emails of accounts in session.
+   * @return {Promise<Array<string>>}
+   */
+  getAccounts() {}
+
   /** Send 'dialogClose' message to close the login dialog. */
   dialogClose() {}
 }
@@ -107,6 +114,11 @@ export class EduAccountLoginBrowserProxyImpl {
   /** @override */
   completeLogin(credentials, eduLoginParams) {
     chrome.send('completeLogin', [credentials, eduLoginParams]);
+  }
+
+  /** @override */
+  getAccounts() {
+    return sendWithPromise('getAccounts');
   }
 
   /** @override */

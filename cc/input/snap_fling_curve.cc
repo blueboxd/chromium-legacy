@@ -81,7 +81,7 @@ double SnapFlingCurve::GetCurrentCurveDistance(base::TimeDelta current_time) {
   const double current_frame = current_time / kFrameTime + 1;
   const double sum =
       first_delta_ * (1 - std::pow(kRatio, current_frame)) / (1 - kRatio);
-  return sum <= total_distance_ ? sum : total_distance_;
+  return std::min(sum, total_distance_);
 }
 
 gfx::Vector2dF SnapFlingCurve::GetScrollDelta(base::TimeTicks time_stamp) {

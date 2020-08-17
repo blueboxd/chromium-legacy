@@ -29,6 +29,11 @@ export function getFakeParentsList() {
   ];
 }
 
+/** @return {!Array<string>} */
+export function getFakeAccountsList() {
+  return ['test@gmail.com', 'test2@gmail.com', 'test3@gmail.com'];
+}
+
 /** @implements {EduAccountLoginBrowserProxy} */
 export class TestEduAccountLoginBrowserProxy extends TestBrowserProxy {
   constructor() {
@@ -40,6 +45,7 @@ export class TestEduAccountLoginBrowserProxy extends TestBrowserProxy {
       'authExtensionReady',
       'switchToFullTab',
       'completeLogin',
+      'getAccounts',
       'dialogClose',
     ]);
 
@@ -104,6 +110,12 @@ export class TestEduAccountLoginBrowserProxy extends TestBrowserProxy {
   /** @override */
   completeLogin(credentials, eduLoginParams) {
     this.methodCalled('completeLogin', [credentials, eduLoginParams]);
+  }
+
+  /** @override */
+  getAccounts() {
+    this.methodCalled('getAccounts');
+    return Promise.resolve(getFakeAccountsList());
   }
 
   /** @override */

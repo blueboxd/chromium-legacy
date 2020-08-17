@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_PAYMENTS_CORE_PAYMENT_REQUEST_DATA_UTIL_H_
 #define COMPONENTS_PAYMENTS_CORE_PAYMENT_REQUEST_DATA_UTIL_H_
 
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -77,7 +78,8 @@ base::string16 FormatCardNumberForDisplay(const base::string16& card_number);
 // Value: The set of all payment method specific parameters for the given
 //        payment method identifier, each one serialized into a JSON string,
 //        e.g., '{"key": "value"}'.
-std::map<std::string, std::set<std::string>> FilterStringifiedMethodData(
+std::unique_ptr<std::map<std::string, std::set<std::string>>>
+FilterStringifiedMethodData(
     const std::map<std::string, std::set<std::string>>& stringified_method_data,
     const std::set<std::string>& supported_payment_method_names);
 

@@ -41,7 +41,7 @@
 }
 
 + (FakeChromeIdentity*)fakeManagedIdentity {
-  return [FakeChromeIdentity identityWithEmail:@"foo@managed.com"
+  return [FakeChromeIdentity identityWithEmail:@"foo@google.com"
                                         gaiaID:@"fooManagedID"
                                           name:@"Fake Managed"];
 }
@@ -57,20 +57,30 @@
 }
 
 + (NSString*)primaryAccountGaiaID {
-  ChromeBrowserState* browser_state =
+  ChromeBrowserState* browserState =
       chrome_test_util::GetOriginalBrowserState();
   CoreAccountInfo info =
-      IdentityManagerFactory::GetForBrowserState(browser_state)
+      IdentityManagerFactory::GetForBrowserState(browserState)
           ->GetPrimaryAccountInfo();
 
   return base::SysUTF8ToNSString(info.gaia);
 }
 
++ (NSString*)primaryAccountEmail {
+  ChromeBrowserState* browserState =
+      chrome_test_util::GetOriginalBrowserState();
+  CoreAccountInfo info =
+      IdentityManagerFactory::GetForBrowserState(browserState)
+          ->GetPrimaryAccountInfo();
+
+  return base::SysUTF8ToNSString(info.email);
+}
+
 + (BOOL)isSignedOut {
-  ChromeBrowserState* browser_state =
+  ChromeBrowserState* browserState =
       chrome_test_util::GetOriginalBrowserState();
 
-  return !IdentityManagerFactory::GetForBrowserState(browser_state)
+  return !IdentityManagerFactory::GetForBrowserState(browserState)
               ->HasPrimaryAccount();
 }
 
@@ -81,18 +91,18 @@
 }
 
 + (BOOL)isAuthenticated {
-  ChromeBrowserState* browser_state =
+  ChromeBrowserState* browserState =
       chrome_test_util::GetOriginalBrowserState();
   AuthenticationService* authentication_service =
-      AuthenticationServiceFactory::GetForBrowserState(browser_state);
+      AuthenticationServiceFactory::GetForBrowserState(browserState);
   return authentication_service->IsAuthenticated();
 }
 
 + (void)signOut {
-  ChromeBrowserState* browser_state =
+  ChromeBrowserState* browserState =
       chrome_test_util::GetOriginalBrowserState();
   AuthenticationService* authentication_service =
-      AuthenticationServiceFactory::GetForBrowserState(browser_state);
+      AuthenticationServiceFactory::GetForBrowserState(browserState);
   authentication_service->SignOut(signin_metrics::SIGNOUT_TEST,
                                   /*force_clear_browsing_data=*/false, nil);
 }

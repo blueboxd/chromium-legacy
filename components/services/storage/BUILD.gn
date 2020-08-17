@@ -67,6 +67,8 @@ source_set("storage") {
     "origin_context_impl.h",
     "partition_impl.cc",
     "partition_impl.h",
+    "sandboxed_vfs_delegate.cc",
+    "sandboxed_vfs_delegate.h",
     "storage_service_impl.cc",
     "storage_service_impl.h",
   ]

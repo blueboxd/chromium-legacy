@@ -5,6 +5,7 @@
 #ifndef ASH_LOGIN_UI_ACCESS_CODE_INPUT_H_
 #define ASH_LOGIN_UI_ACCESS_CODE_INPUT_H_
 
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
@@ -207,19 +208,32 @@ class FixedLengthCodeInput : public AccessCodeInput {
   // this with fixed length PINs.
   void SetInputEnabled(bool input_enabled) override;
 
-  // Clears the PIN fields. Currently, there is no use-case the uses this with
-  // fixed length PINs.
+  // Clears the PIN fields.
   void ClearInput() override;
 
+  // Whether all fields are empty.
+  bool IsEmpty() const;
+
+ protected:
+  // Allow subclasses to control whether the fields can be navigated with
+  // arrows.
+  void SetAllowArrowNavigation(bool allowed);
+
  private:
+  // Moves focus to the current input field.
+  void FocusActiveField();
+
   // Moves focus to the previous input field if it exists.
   void FocusPreviousField();
 
   // Moves focus to the next input field if it exists.
   void FocusNextField();
 
-  // Returns whether last input field is currently active.
+  // Returns whether first/last input field is currently active.
+  bool IsFirstFieldActive() const;
   bool IsLastFieldActive() const;
+
+  bool HasEmptyFieldToTheLeft() const;
 
   // Returns pointer to the active input field.
   AccessibleInputField* ActiveField() const;
@@ -247,6 +261,9 @@ class FixedLengthCodeInput : public AccessCodeInput {
   // concat string of input fields. i.e. [1][2][3][|][][], text_value_for_a11y_
   // = "123   ".
   std::string text_value_for_a11y_;
+
+  // Whether the user can navigate the input fields with the arrow keys.
+  bool arrow_navigation_allowed_ = true;
 
   base::WeakPtrFactory<FixedLengthCodeInput> weak_ptr_factory_{this};
 };

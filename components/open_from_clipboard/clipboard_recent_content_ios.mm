@@ -14,6 +14,7 @@
 #include "base/stl_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/system/sys_info.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #import "components/open_from_clipboard/clipboard_recent_content_impl_ios.h"
 #import "net/base/mac/url_conversions.h"
 #include "url/gurl.h"
@@ -116,19 +117,6 @@ ClipboardRecentContentIOS::GetRecentTextFromClipboard() {
   return base::SysNSStringToUTF16(text_from_pasteboard);
 }
 
-void ClipboardRecentContentIOS::GetRecentImageFromClipboard(
-    GetRecentImageCallback callback) {
-  __block GetRecentImageCallback callback_for_block = std::move(callback);
-  [implementation_ recentImageFromClipboardAsync:^(UIImage* image) {
-    if (!image) {
-      std::move(callback_for_block).Run(base::nullopt);
-      return;
-    }
-
-    std::move(callback_for_block).Run(gfx::Image(image));
-  }];
-}
-
 bool ClipboardRecentContentIOS::HasRecentImageFromClipboard() {
   return GetRecentImageFromClipboardInternal().has_value();
 }
@@ -141,39 +129,93 @@ void ClipboardRecentContentIOS::HasRecentContentFromClipboard(
   for (ClipboardContentType type : types) {
     [ios_types addObject:ContentTypeFromClipboardContentType(type)];
   }
-  [implementation_ hasContentMatchingTypes:ios_types
-                         completionHandler:^(NSSet<ContentType>* results) {
-                           std::set<ClipboardContentType> matching_types;
-                           for (ContentType type in results) {
-                             matching_types.insert(
-                                 ClipboardContentTypeFromContentType(type));
-                           }
-                           std::move(callback_for_block).Run(matching_types);
-                         }];
+  // The iOS methods for checking clipboard content call their callbacks on an
+  // arbitrary thread. As Objective-C doesn't have very good thread-management
+  // techniques, make sure this method calls its callback on the same thread
+  // that it was called on.
+  scoped_refptr<base::SequencedTaskRunner> task_runner =
+      base::SequencedTaskRunnerHandle::Get();
+  [implementation_
+      hasContentMatchingTypes:ios_types
+            completionHandler:^(NSSet<ContentType>* results) {
+              std::set<ClipboardContentType> matching_types;
+              for (ContentType type in results) {
+                matching_types.insert(
+                    ClipboardContentTypeFromContentType(type));
+              }
+              task_runner->PostTask(
+                  FROM_HERE, base::BindOnce(^{
+                    std::move(callback_for_block).Run(matching_types);
+                  }));
+            }];
 }
 
 void ClipboardRecentContentIOS::GetRecentURLFromClipboard(
     GetRecentURLCallback callback) {
   __block GetRecentURLCallback callback_for_block = std::move(callback);
+  // The iOS methods for checking clipboard content call their callbacks on an
+  // arbitrary thread. As Objective-C doesn't have very good thread-management
+  // techniques, make sure this method calls its callback on the same thread
+  // that it was called on.
+  scoped_refptr<base::SequencedTaskRunner> task_runner =
+      base::SequencedTaskRunnerHandle::Get();
   [implementation_ recentURLFromClipboardAsync:^(NSURL* url) {
     GURL converted_url = net::GURLWithNSURL(url);
     if (!converted_url.is_valid()) {
-      std::move(callback_for_block).Run(base::nullopt);
+      task_runner->PostTask(FROM_HERE, base::BindOnce(^{
+                              std::move(callback_for_block).Run(base::nullopt);
+                            }));
       return;
     }
-    std::move(callback_for_block).Run(converted_url);
+    task_runner->PostTask(FROM_HERE, base::BindOnce(^{
+                            std::move(callback_for_block).Run(converted_url);
+                          }));
   }];
 }
 
 void ClipboardRecentContentIOS::GetRecentTextFromClipboard(
     GetRecentTextCallback callback) {
   __block GetRecentTextCallback callback_for_block = std::move(callback);
+  // The iOS methods for checking clipboard content call their callbacks on an
+  // arbitrary thread. As Objective-C doesn't have very good thread-management
+  // techniques, make sure this method calls its callback on the same thread
+  // that it was called on.
+  scoped_refptr<base::SequencedTaskRunner> task_runner =
+      base::SequencedTaskRunnerHandle::Get();
   [implementation_ recentTextFromClipboardAsync:^(NSString* text) {
     if (!text) {
-      std::move(callback_for_block).Run(base::nullopt);
+      task_runner->PostTask(FROM_HERE, base::BindOnce(^{
+                              std::move(callback_for_block).Run(base::nullopt);
+                            }));
       return;
     }
-    std::move(callback_for_block).Run(base::SysNSStringToUTF16(text));
+    task_runner->PostTask(
+        FROM_HERE, base::BindOnce(^{
+          std::move(callback_for_block).Run(base::SysNSStringToUTF16(text));
+        }));
+  }];
+}
+
+void ClipboardRecentContentIOS::GetRecentImageFromClipboard(
+    GetRecentImageCallback callback) {
+  __block GetRecentImageCallback callback_for_block = std::move(callback);
+  // The iOS methods for checking clipboard content call their callbacks on an
+  // arbitrary thread. As Objective-C doesn't have very good thread-management
+  // techniques, make sure this method calls its callback on the same thread
+  // that it was called on.
+  scoped_refptr<base::SequencedTaskRunner> task_runner =
+      base::SequencedTaskRunnerHandle::Get();
+  [implementation_ recentImageFromClipboardAsync:^(UIImage* image) {
+    if (!image) {
+      task_runner->PostTask(FROM_HERE, base::BindOnce(^{
+                              std::move(callback_for_block).Run(base::nullopt);
+                            }));
+      return;
+    }
+    task_runner->PostTask(
+        FROM_HERE, base::BindOnce(^{
+          std::move(callback_for_block).Run(gfx::Image(image));
+        }));
   }];
 }
 

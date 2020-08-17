@@ -6,6 +6,7 @@
 
 #include "base/files/file_path.h"
 #include "chrome/browser/download/download_prefs.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chromeos/login/login_state/login_state.h"
 
@@ -18,4 +19,10 @@ base::FilePath ChromeCaptureModeDelegate::GetActiveUserDownloadsDir() const {
   DownloadPrefs* download_prefs =
       DownloadPrefs::FromBrowserContext(ProfileManager::GetActiveUserProfile());
   return download_prefs->DownloadPath();
+}
+
+void ChromeCaptureModeDelegate::ShowScreenCaptureItemInFolder(
+    const base::FilePath& file_path) {
+  platform_util::ShowItemInFolder(ProfileManager::GetActiveUserProfile(),
+                                  file_path);
 }

@@ -40,4 +40,17 @@ FaviconBitmapIDSize::FaviconBitmapIDSize() = default;
 
 FaviconBitmapIDSize::~FaviconBitmapIDSize() = default;
 
+// UpdateFaviconMappingsResult -------------------------------------------------
+
+UpdateFaviconMappingsResult::UpdateFaviconMappingsResult() = default;
+UpdateFaviconMappingsResult::UpdateFaviconMappingsResult(
+    const UpdateFaviconMappingsResult& other) = default;
+UpdateFaviconMappingsResult::~UpdateFaviconMappingsResult() = default;
+
+// SetFaviconsResult -----------------------------------------------------------
+
+SetFaviconsResult::SetFaviconsResult() = default;
+SetFaviconsResult::SetFaviconsResult(const SetFaviconsResult& other) = default;
+SetFaviconsResult::~SetFaviconsResult() = default;
+
 }  // namespace favicon

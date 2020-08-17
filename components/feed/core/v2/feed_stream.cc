@@ -601,7 +601,7 @@ void FeedStream::FinishClearAll() {
 
 void FeedStream::FetchImage(
     const GURL& url,
-    base::OnceCallback<void(std::unique_ptr<std::string>)> callback) {
+    base::OnceCallback<void(NetworkResponse)> callback) {
   image_fetcher_->Fetch(url, std::move(callback));
 }
 

@@ -359,8 +359,8 @@ SkColor AshColorProvider::GetContentLayerColorImpl(
       break;
     case ContentLayerType::kButtonLabelColorPrimary:
     case ContentLayerType::kButtonIconColorPrimary:
-      light_color = gfx::kGoogleRed900;
-      dark_color = gfx::kGoogleRed200;
+      light_color = gfx::kGoogleGrey900;
+      dark_color = gfx::kGoogleGrey200;
       break;
     case ContentLayerType::kSliderThumbColorDisabled:
       light_color = gfx::kGoogleGrey600;

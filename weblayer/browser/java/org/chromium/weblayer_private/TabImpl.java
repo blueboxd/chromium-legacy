@@ -54,6 +54,8 @@ import org.chromium.url.GURL;
 import org.chromium.weblayer_private.interfaces.APICallException;
 import org.chromium.weblayer_private.interfaces.IDownloadCallbackClient;
 import org.chromium.weblayer_private.interfaces.IErrorPageCallbackClient;
+import org.chromium.weblayer_private.interfaces.IFaviconFetcher;
+import org.chromium.weblayer_private.interfaces.IFaviconFetcherClient;
 import org.chromium.weblayer_private.interfaces.IFindInPageCallbackClient;
 import org.chromium.weblayer_private.interfaces.IFullscreenCallbackClient;
 import org.chromium.weblayer_private.interfaces.IGoogleAccountsCallbackClient;
@@ -69,8 +71,10 @@ import org.chromium.weblayer_private.interfaces.StrictModeWorkaround;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Implementation of ITab.
@@ -125,6 +129,8 @@ public final class TabImpl extends ITab.Stub implements LoginPrompt.Observer {
     private boolean mPostContainerViewInitDone;
 
     private WebLayerAccessibilityUtil.Observer mAccessibilityObserver;
+
+    private Set<FaviconCallbackProxy> mFaviconCallbackProxies = new HashSet<>();
 
     private static class InternalAccessDelegateImpl
             implements ViewEventSink.InternalAccessDelegate {
@@ -544,6 +550,18 @@ public final class TabImpl extends ITab.Stub implements LoginPrompt.Observer {
     }
 
     @Override
+    public IFaviconFetcher createFaviconFetcher(IFaviconFetcherClient client) {
+        StrictModeWorkaround.apply();
+        FaviconCallbackProxy proxy = new FaviconCallbackProxy(this, mNativeTab, client);
+        mFaviconCallbackProxies.add(proxy);
+        return proxy;
+    }
+
+    public void removeFaviconCallbackProxy(FaviconCallbackProxy proxy) {
+        mFaviconCallbackProxies.remove(proxy);
+    }
+
+    @Override
     public void executeScript(String script, boolean useSeparateIsolate, IObjectWrapper callback) {
         StrictModeWorkaround.apply();
         Callback<String> nativeCallback = new Callback<String>() {
@@ -869,6 +887,15 @@ public final class TabImpl extends ITab.Stub implements LoginPrompt.Observer {
 
         mMediaStreamManager.destroy();
         mMediaStreamManager = null;
+
+        // Destroying FaviconCallbackProxy removes from mFaviconCallbackProxies. Copy to avoid
+        // problems.
+        Set<FaviconCallbackProxy> faviconCallbackProxies = mFaviconCallbackProxies;
+        mFaviconCallbackProxies = new HashSet<>();
+        for (FaviconCallbackProxy proxy : faviconCallbackProxies) {
+            proxy.destroy();
+        }
+        assert mFaviconCallbackProxies.isEmpty();
 
         sTabMap.remove(mId);
 

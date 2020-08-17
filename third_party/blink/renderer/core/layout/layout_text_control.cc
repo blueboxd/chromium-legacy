@@ -78,9 +78,9 @@ void LayoutTextControl::StyleDidChange(StyleDifference diff,
 }
 
 int LayoutTextControl::ScrollbarThickness() const {
-  // FIXME: We should get the size of the scrollbar from the LayoutTheme
-  // instead.
-  return GetDocument().GetPage()->GetScrollbarTheme().ScrollbarThickness();
+  return GetDocument().GetPage()->GetScrollbarTheme().ScrollbarThickness(
+      GetDocument().GetPage()->GetChromeClient().WindowToViewportScalar(
+          GetFrame(), 1.0f));
 }
 
 void LayoutTextControl::ComputeLogicalHeight(

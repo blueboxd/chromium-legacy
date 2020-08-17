@@ -187,9 +187,7 @@ const ClassGraphPage = {
     if (this.displaySettingsData.nodeFilterData.filterList.length === 0) {
       // TODO(yjlong): This is test data. Remove this when no longer needed.
       [
-        'org.chromium.chrome.browser.tabmodel.AsyncTabParams',
-        'org.chromium.chrome.browser.ActivityTabProvider',
-        'org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver',
+        'org.chromium.chrome.browser.tab.TabImpl',
       ].forEach(nodeName => this.filterAddOrCheckNode(nodeName));
     }
   },

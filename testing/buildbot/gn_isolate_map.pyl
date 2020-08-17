@@ -427,7 +427,7 @@
   },
   "chrome_elf_unittests": {
     "label": "//chrome/chrome_elf:chrome_elf_unittests",
-    "type": "raw",
+    "type": "console_test_launcher",
   },
   "chrome_java_test_pagecontroller_junit_tests": {
     "label": "//chrome/test/android:chrome_java_test_pagecontroller_junit_tests",

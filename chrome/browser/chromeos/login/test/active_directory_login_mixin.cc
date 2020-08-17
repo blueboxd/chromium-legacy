@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/user_creation_screen_handler.h"
 #include "chromeos/dbus/authpolicy/fake_authpolicy_client.h"
 #include "content/public/test/browser_test_utils.h"
 
@@ -54,6 +55,8 @@ const test::UIPath kAdNewPassword1InputPath = {kPasswordChangeId,
 const test::UIPath kAdNewPassword2InputPath = {kPasswordChangeId,
                                                kAdNewPassword2Input};
 
+const test::UIPath kUserCreationNextButton = {"user-creation", "nextButton"};
+
 }  // namespace
 
 ActiveDirectoryLoginMixin::ActiveDirectoryLoginMixin(
@@ -89,6 +92,11 @@ void ActiveDirectoryLoginMixin::TriggerPasswordChangeScreen() {
 
 void ActiveDirectoryLoginMixin::ClosePasswordChangeScreen() {
   test::OobeJS().TapOnPath(kCloseButtonId);
+}
+
+void ActiveDirectoryLoginMixin::NavigateToGaiaScreen() {
+  OobeScreenWaiter(UserCreationView::kScreenId).Wait();
+  test::OobeJS().TapOnPath(kUserCreationNextButton);
 }
 
 // Checks if Active Directory login is visible.

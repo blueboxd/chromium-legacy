@@ -114,7 +114,7 @@ bool IsValidLookingOwner(base::StringPiece owner) {
     // file. Instead, just assume any file path ending in 'OWNERS' is valid.
     // This doesn't check that the entire filename part of the path is 'OWNERS'
     // because sometimes it is instead 'IPC_OWNERS' or similar.
-    return owner.ends_with("OWNERS");
+    return base::EndsWith(owner, "OWNERS");
   }
 
   // Otherwise, look for something that seems like the username part of an

@@ -103,6 +103,8 @@ const CGFloat kHeaderBorderRadius = 8;
     _menuButton.translatesAutoresizingMaskIntoConstraints = NO;
     _menuButton.accessibilityIdentifier =
         kContentSuggestionsDiscoverHeaderButtonIdentifier;
+    _menuButton.accessibilityLabel =
+        l10n_util::GetNSString(IDS_IOS_DISCOVER_FEED_MENU_ACCESSIBILITY_LABEL);
     [_menuButton
         setImage:[[UIImage imageNamed:@"infobar_settings_icon"]
                      imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]

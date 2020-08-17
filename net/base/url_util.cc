@@ -35,7 +35,7 @@ bool IsHostCharAlphanumeric(char c) {
 }
 
 bool IsNormalizedLocalhostTLD(const std::string& host) {
-  return base::EndsWith(host, ".localhost", base::CompareCase::SENSITIVE);
+  return base::EndsWith(host, ".localhost");
 }
 
 // Helper function used by GetIdentityFromURL. If |escaped_text| can be "safely
@@ -274,7 +274,7 @@ bool IsSubdomainOf(base::StringPiece subdomain, base::StringPiece superdomain) {
 
   // Superdomain must be suffix of subdomain, and the last character not
   // included in the matching substring must be a dot.
-  if (!subdomain.ends_with(superdomain))
+  if (!base::EndsWith(subdomain, superdomain))
     return false;
   subdomain.remove_suffix(superdomain.length());
   return subdomain.back() == '.';
@@ -433,7 +433,7 @@ bool IsGoogleHost(base::StringPiece host) {
     // Here it's possible to get away with faster case-sensitive comparisons
     // because the list above is all lowercase, and a GURL's host name will
     // always be canonicalized to lowercase as well.
-    if (base::EndsWith(host, suffix, base::CompareCase::SENSITIVE))
+    if (base::EndsWith(host, suffix))
       return true;
   }
   return false;

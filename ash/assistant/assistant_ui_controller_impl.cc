@@ -5,11 +5,13 @@
 #include "ash/assistant/assistant_ui_controller_impl.h"
 
 #include "ash/ambient/ambient_controller.h"
+#include "ash/assistant/assistant_controller_impl.h"
 #include "ash/assistant/model/assistant_interaction_model.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/util/assistant_util.h"
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/assistant/util/histogram_util.h"
+#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/assistant/assistant_setup.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/cpp/assistant/controller/assistant_interaction_controller.h"
@@ -22,6 +24,8 @@
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "chromeos/services/assistant/public/cpp/features.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace ash {
@@ -29,6 +33,15 @@ namespace ash {
 namespace {
 
 using chromeos::assistant::features::IsAmbientAssistantEnabled;
+
+// Helpers ---------------------------------------------------------------------
+
+PrefService* pref_service() {
+  auto* result =
+      Shell::Get()->session_controller()->GetPrimaryUserPrefService();
+  DCHECK(result);
+  return result;
+}
 
 // Toast -----------------------------------------------------------------------
 
@@ -48,7 +61,9 @@ void ShowToast(const std::string& id, int message_id) {
 
 // AssistantUiControllerImpl ---------------------------------------------------
 
-AssistantUiControllerImpl::AssistantUiControllerImpl() {
+AssistantUiControllerImpl::AssistantUiControllerImpl(
+    AssistantControllerImpl* assistant_controller)
+    : assistant_controller_(assistant_controller) {
   model_.AddObserver(this);
   assistant_controller_observer_.Add(AssistantController::Get());
   highlighter_controller_observer_.Add(Shell::Get()->highlighter_controller());
@@ -59,6 +74,13 @@ AssistantUiControllerImpl::~AssistantUiControllerImpl() {
   model_.RemoveObserver(this);
 }
 
+// static
+void AssistantUiControllerImpl::RegisterProfilePrefs(
+    PrefRegistrySimple* registry) {
+  registry->RegisterIntegerPref(
+      prefs::kAssistantNumSessionsWhereOnboardingShown, 0);
+}
+
 void AssistantUiControllerImpl::SetAssistant(
     chromeos::assistant::Assistant* assistant) {
   assistant_ = assistant;
@@ -66,6 +88,15 @@ void AssistantUiControllerImpl::SetAssistant(
 
 const AssistantUiModel* AssistantUiControllerImpl::GetModel() const {
   return &model_;
+}
+
+int AssistantUiControllerImpl::GetNumberOfSessionsWhereOnboardingShown() const {
+  return pref_service()->GetInteger(
+      prefs::kAssistantNumSessionsWhereOnboardingShown);
+}
+
+bool AssistantUiControllerImpl::HasShownOnboarding() const {
+  return has_shown_onboarding_;
 }
 
 void AssistantUiControllerImpl::ShowUi(AssistantEntryPoint entry_point) {
@@ -157,20 +188,13 @@ void AssistantUiControllerImpl::OnMicStateChanged(MicState mic_state) {
     UpdateUiMode();
 }
 
-void AssistantUiControllerImpl::OnHighlighterEnabledChanged(
-    HighlighterEnabledState state) {
-  if (state != HighlighterEnabledState::kEnabled)
-    return;
-
-  ShowToast(kStylusPromptToastId, IDS_ASH_ASSISTANT_PROMPT_STYLUS);
-  CloseUi(AssistantExitPoint::kStylus);
-}
-
 void AssistantUiControllerImpl::OnAssistantControllerConstructed() {
   AssistantInteractionController::Get()->GetModel()->AddObserver(this);
+  assistant_controller_->view_delegate()->AddObserver(this);
 }
 
 void AssistantUiControllerImpl::OnAssistantControllerDestroying() {
+  assistant_controller_->view_delegate()->RemoveObserver(this);
   AssistantInteractionController::Get()->GetModel()->RemoveObserver(this);
 }
 
@@ -208,6 +232,26 @@ void AssistantUiControllerImpl::OnUiVisibilityChanged(
     // avoid recording duplicate events (e.g. pressing ESC key).
     assistant::util::RecordAssistantExitPoint(exit_point.value());
   }
+}
+
+void AssistantUiControllerImpl::OnOnboardingShown() {
+  if (has_shown_onboarding_)
+    return;
+
+  has_shown_onboarding_ = true;
+
+  // Update the number of user sessions in which Assistant onboarding was shown.
+  pref_service()->SetInteger(prefs::kAssistantNumSessionsWhereOnboardingShown,
+                             GetNumberOfSessionsWhereOnboardingShown() + 1);
+}
+
+void AssistantUiControllerImpl::OnHighlighterEnabledChanged(
+    HighlighterEnabledState state) {
+  if (state != HighlighterEnabledState::kEnabled)
+    return;
+
+  ShowToast(kStylusPromptToastId, IDS_ASH_ASSISTANT_PROMPT_STYLUS);
+  CloseUi(AssistantExitPoint::kStylus);
 }
 
 void AssistantUiControllerImpl::OnOverviewModeWillStart() {

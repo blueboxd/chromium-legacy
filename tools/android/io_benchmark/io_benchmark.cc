@@ -51,12 +51,10 @@ std::string DurationLogMessage(const char* prefix,
                                const base::TimeTicks& tick,
                                const base::TimeTicks& tock,
                                int size) {
-  base::TimeDelta delta = tock - tick;
-  double mb_per_second = size * delta.ToHz() / 1e6;
-  std::string message =
-      base::StringPrintf("%s %d = %.0fus (%.02fMB/s)", prefix, size,
-                         delta.InMicrosecondsF(), mb_per_second);
-  return message;
+  const base::TimeDelta delta = tock - tick;
+  const double mb_per_second = size * delta.ToHz() / 1'000'000;
+  return base::StringPrintf("%s %d = %.0fus (%.02fMB/s)", prefix, size,
+                            delta.InMicrosecondsF(), mb_per_second);
 }
 
 // Returns {write_us, read_us}.

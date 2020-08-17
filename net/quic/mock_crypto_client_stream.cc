@@ -187,17 +187,17 @@ bool MockCryptoClientStream::CryptoConnect() {
               std::make_unique<NullDecrypter>(Perspective::IS_CLIENT));
         }
         session()->connection()->SetEncrypter(ENCRYPTION_INITIAL, nullptr);
-        session()->OnNewEncryptionKeyAvailable(
-            ENCRYPTION_FORWARD_SECURE,
-            std::make_unique<NullEncrypter>(Perspective::IS_CLIENT));
       }
+      session()->OnNewEncryptionKeyAvailable(
+          ENCRYPTION_FORWARD_SECURE,
+          std::make_unique<NullEncrypter>(Perspective::IS_CLIENT));
       if (session()->version().UsesTls()) {
         session()->OnOneRttKeysAvailable();
       } else {
         session()->SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
       }
-        session()->DiscardOldEncryptionKey(ENCRYPTION_INITIAL);
-        session()->NeuterHandshakeData();
+      session()->DiscardOldEncryptionKey(ENCRYPTION_INITIAL);
+      session()->NeuterHandshakeData();
       break;
     }
 

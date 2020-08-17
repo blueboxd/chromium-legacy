@@ -33,7 +33,6 @@
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/media/capture/desktop_capture_device_uma_types.h"
 #include "content/browser/media/media_devices_permission_checker.h"
-#include "content/browser/permissions/permission_controller_impl.h"
 #include "content/browser/renderer_host/media/audio_input_device_manager.h"
 #include "content/browser/renderer_host/media/audio_service_listener.h"
 #include "content/browser/renderer_host/media/in_process_video_capture_provider.h"
@@ -667,10 +666,6 @@ class MediaStreamManager::DeviceRequest {
   std::unique_ptr<MediaStreamUIProxy> ui_proxy;
 
   std::string tab_capture_device_id;
-
-  int audio_subscription_id = PermissionControllerImpl::kNoPendingOperation;
-
-  int video_subscription_id = PermissionControllerImpl::kNoPendingOperation;
 
  private:
   std::vector<MediaRequestState> state_;
@@ -1324,18 +1319,7 @@ void MediaStreamManager::DeleteRequest(const std::string& label) {
   for (auto request_it = requests_.begin(); request_it != requests_.end();
        ++request_it) {
     if (request_it->first == label) {
-      // Clean up permission controller subscription.
-      GetUIThreadTaskRunner({})->PostTask(
-          FROM_HERE,
-          base::BindOnce(&MediaStreamManager::
-                             UnsubscribeFromPermissionControllerOnUIThread,
-                         request_it->second->requesting_process_id,
-                         request_it->second->requesting_frame_id,
-                         request_it->second->audio_subscription_id,
-                         request_it->second->video_subscription_id));
-
       requests_.erase(request_it);
-
       return;
     }
   }
@@ -1777,19 +1761,6 @@ void MediaStreamManager::FinalizeGenerateStream(const std::string& label,
     else
       NOTREACHED();
   }
-
-  // Subscribe to follow permission changes in order to close streams when the
-  // user denies mic/camera.
-  // It is safe to bind base::Unretained(this) because MediaStreamManager is
-  // owned by BrowserMainLoop.
-  GetUIThreadTaskRunner({})->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &MediaStreamManager::SubscribeToPermissionControllerOnUIThread,
-          base::Unretained(this), label, request->requesting_process_id,
-          request->requesting_frame_id, request->requester_id,
-          request->page_request_id, audio_devices.size() > 0,
-          video_devices.size() > 0, request->salt_and_origin.origin.GetURL()));
 
   // It is safe to bind base::Unretained(this) because MediaStreamManager is
   // owned by BrowserMainLoop and so outlives the IO thread.
@@ -2641,146 +2612,6 @@ void MediaStreamManager::OnStreamStarted(const std::string& label) {
                        base::Unretained(this), request->video_type(),
                        request->devices));
   }
-}
-
-// static
-PermissionControllerImpl* MediaStreamManager::GetPermissionController(
-    int requesting_process_id,
-    int requesting_frame_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  RenderFrameHost* rfh =
-      RenderFrameHost::FromID(requesting_process_id, requesting_frame_id);
-  if (!rfh)
-    return nullptr;
-
-  return PermissionControllerImpl::FromBrowserContext(rfh->GetBrowserContext());
-}
-
-void MediaStreamManager::SubscribeToPermissionControllerOnUIThread(
-    const std::string& label,
-    int requesting_process_id,
-    int requesting_frame_id,
-    int requester_id,
-    int page_request_id,
-    bool is_audio_request,
-    bool is_video_request,
-    const GURL& origin) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  PermissionControllerImpl* controller =
-      GetPermissionController(requesting_process_id, requesting_frame_id);
-  if (!controller)
-    return;
-
-  int audio_subscription_id = PermissionControllerImpl::kNoPendingOperation;
-  int video_subscription_id = PermissionControllerImpl::kNoPendingOperation;
-
-  if (is_audio_request) {
-    // It is safe to bind base::Unretained(this) because MediaStreamManager is
-    // owned by BrowserMainLoop.
-    audio_subscription_id = controller->SubscribePermissionStatusChange(
-        PermissionType::AUDIO_CAPTURE,
-        RenderFrameHost::FromID(requesting_process_id, requesting_frame_id),
-        origin,
-        base::BindRepeating(&MediaStreamManager::PermissionChangedCallback,
-                            base::Unretained(this), requesting_process_id,
-                            requesting_frame_id, requester_id,
-                            page_request_id));
-  }
-
-  if (is_video_request) {
-    // It is safe to bind base::Unretained(this) because MediaStreamManager is
-    // owned by BrowserMainLoop.
-    video_subscription_id = controller->SubscribePermissionStatusChange(
-        PermissionType::VIDEO_CAPTURE,
-        RenderFrameHost::FromID(requesting_process_id, requesting_frame_id),
-        origin,
-        base::BindRepeating(&MediaStreamManager::PermissionChangedCallback,
-                            base::Unretained(this), requesting_process_id,
-                            requesting_frame_id, requester_id,
-                            page_request_id));
-  }
-
-  // It is safe to bind base::Unretained(this) because MediaStreamManager is
-  // owned by BrowserMainLoop.
-  GetIOThreadTaskRunner({})->PostTask(
-      FROM_HERE,
-      base::BindOnce(&MediaStreamManager::SetPermissionSubscriptionIDs,
-                     base::Unretained(this), label, requesting_process_id,
-                     requesting_frame_id, audio_subscription_id,
-                     video_subscription_id));
-}
-
-void MediaStreamManager::SetPermissionSubscriptionIDs(
-    const std::string& label,
-    int requesting_process_id,
-    int requesting_frame_id,
-    int audio_subscription_id,
-    int video_subscription_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  DeviceRequest* const request = FindRequest(label);
-  if (!request) {
-    // Something happened with the request while the permission subscription was
-    // created, unsubscribe to clean up.
-    // It is safe to bind base::Unretained(this) because MediaStreamManager is
-    // owned by BrowserMainLoop.
-    GetUIThreadTaskRunner({})->PostTask(
-        FROM_HERE,
-        base::BindOnce(
-            &MediaStreamManager::UnsubscribeFromPermissionControllerOnUIThread,
-            requesting_process_id, requesting_frame_id, audio_subscription_id,
-            video_subscription_id));
-
-    return;
-  }
-
-  request->audio_subscription_id = audio_subscription_id;
-  request->video_subscription_id = video_subscription_id;
-}
-
-// static
-void MediaStreamManager::UnsubscribeFromPermissionControllerOnUIThread(
-    int requesting_process_id,
-    int requesting_frame_id,
-    int audio_subscription_id,
-    int video_subscription_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  PermissionControllerImpl* controller =
-      GetPermissionController(requesting_process_id, requesting_frame_id);
-  if (!controller)
-    return;
-
-  controller->UnsubscribePermissionStatusChange(audio_subscription_id);
-  controller->UnsubscribePermissionStatusChange(video_subscription_id);
-}
-
-void MediaStreamManager::PermissionChangedCallback(
-    int requesting_process_id,
-    int requesting_frame_id,
-    int requester_id,
-    int page_request_id,
-    blink::mojom::PermissionStatus status) {
-  if (status == blink::mojom::PermissionStatus::GRANTED)
-    return;
-
-  if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    // It is safe to bind base::Unretained(this) because MediaStreamManager is
-    // owned by BrowserMainLoop.
-    GetIOThreadTaskRunner({})->PostTask(
-        FROM_HERE,
-        base::BindOnce(&MediaStreamManager::PermissionChangedCallback,
-                       base::Unretained(this), requesting_process_id,
-                       requesting_frame_id, requester_id, page_request_id,
-                       status));
-
-    return;
-  }
-
-  CancelRequest(requesting_process_id, requesting_frame_id, requester_id,
-                page_request_id);
 }
 
 }  // namespace content

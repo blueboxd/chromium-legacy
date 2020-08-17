@@ -89,5 +89,9 @@ std::unique_ptr<FidoDiscoveryBase> VirtualFidoDeviceFactory::Create(
       transport_, state_, supported_protocol_, ctap2_config_);
 }
 
+bool VirtualFidoDeviceFactory::IsTestOverride() {
+  return true;
+}
+
 }  // namespace test
 }  // namespace device

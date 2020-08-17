@@ -62,17 +62,19 @@ class CORE_EXPORT NGOffsetMappingBuilder {
 
    public:
     SourceNodeScope(NGOffsetMappingBuilder* builder, const LayoutObject* node);
+    SourceNodeScope(const SourceNodeScope&) = delete;
+    SourceNodeScope& operator=(const SourceNodeScope&) = delete;
     ~SourceNodeScope();
 
    private:
     NGOffsetMappingBuilder* const builder_ = nullptr;
     base::AutoReset<const LayoutObject*> layout_object_auto_reset_;
     base::AutoReset<unsigned> appended_length_auto_reset_;
-
-    DISALLOW_COPY_AND_ASSIGN(SourceNodeScope);
   };
 
   NGOffsetMappingBuilder();
+  NGOffsetMappingBuilder(const NGOffsetMappingBuilder&) = delete;
+  NGOffsetMappingBuilder& operator=(const NGOffsetMappingBuilder&) = delete;
 
   void ReserveCapacity(unsigned capacity);
 
@@ -140,8 +142,6 @@ class CORE_EXPORT NGOffsetMappingBuilder {
   String destination_string_;
 
   friend class SourceNodeScope;
-
-  DISALLOW_COPY_AND_ASSIGN(NGOffsetMappingBuilder);
 };
 
 }  // namespace blink

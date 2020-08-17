@@ -19,6 +19,10 @@ class IOSAppConfigWriter(xml_formatted_writer.XMLFormattedWriter):
   '''Simple writer that writes app_config.xml files.
   '''
 
+  def IsFuturePolicySupported(self, policy):
+    # For now, include all future policies in appconfig.xml.
+    return True
+
   def CreateDocument(self):
     dom_impl = minidom.getDOMImplementation('')
     return dom_impl.createDocument('http://www.w3.org/2001/XMLSchema-instance',
@@ -41,7 +45,13 @@ class IOSAppConfigWriter(xml_formatted_writer.XMLFormattedWriter):
   def WritePolicy(self, policy):
     element_type = self.policy_type_to_xml_tag[policy['type']]
     if element_type:
-      self.AddElement(self._policies, element_type, {'keyName': policy['name']})
+      attributes = {'keyName': policy['name']}
+      # Add a "future=true" attribute for future policies.
+      if 'future_on' in policy:
+        for config in policy['future_on']:
+          if config['platform'] == 'ios':
+            attributes['future'] = 'true'
+      self.AddElement(self._policies, element_type, attributes)
 
   def Init(self):
     self._doc = self.CreateDocument()

@@ -65,6 +65,7 @@ class AssistantInteractionControllerImpl
   // AssistantInteractionController:
   const AssistantInteractionModel* GetModel() const override;
   base::TimeDelta GetTimeDeltaSinceLastInteraction() const override;
+  bool HasHadInteraction() const override;
   void StartTextInteraction(const std::string& text,
                             bool allow_tts,
                             AssistantQuerySource query_source) override;
@@ -135,8 +136,6 @@ class AssistantInteractionControllerImpl
   void OnPendingResponseProcessed(bool is_completed);
 
   void OnUiVisible(AssistantEntryPoint entry_point);
-  bool ShouldAttemptWarmerWelcome(AssistantEntryPoint entry_point) const;
-  void AttemptWarmerWelcome();
 
   void StartScreenContextInteraction(bool include_assistant_structure,
                                      const gfx::Rect& region,
@@ -150,16 +149,11 @@ class AssistantInteractionControllerImpl
   bool IsVisible() const;
 
   AssistantControllerImpl* const assistant_controller_;  // Owned by Shell.
+  AssistantInteractionModel model_;
+  bool has_had_interaction_ = false;
 
   // Owned by AssistantService.
   chromeos::assistant::Assistant* assistant_ = nullptr;
-
-  AssistantInteractionModel model_;
-
-  // The number of times the Assistant UI has been shown (since the device
-  // booted).
-  // Might overflow so do not use for super critical things.
-  int number_of_times_shown_ = 0;
 
   ScopedObserver<AssistantController, AssistantControllerObserver>
       assistant_controller_observer_{this};

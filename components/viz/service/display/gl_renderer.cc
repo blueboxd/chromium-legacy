@@ -12,8 +12,6 @@
 #include <memory>
 #include <numeric>
 #include <set>
-#include <string>
-#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -192,9 +190,43 @@ BlendMode BlendModeFromSkXfermode(SkBlendMode mode) {
   }
 }
 
+// Adds a timer query that spans all GL calls in its scope. |viz.composite_time|
+// trace category must be enabled for this to work.
+// Note:: Multiple timer queries cannot be nested.
+class ScopedTimerQuery {
+ public:
+  ScopedTimerQuery(bool tracing_enabled,
+                   gpu::gles2::GLES2Interface* gl,
+                   base::queue<std::pair<unsigned, std::string>>* timer_queries,
+                   const std::string& quad_type_str)
+      : gl_(gl) {
+    if (!tracing_enabled) {
+      gl_ = nullptr;
+      return;
+    }
+    unsigned timer_query;
+    gl_->GenQueriesEXT(1, &timer_query);
+    gl_->BeginQueryEXT(GL_TIME_ELAPSED_EXT, timer_query);
+    timer_queries->emplace(timer_query, quad_type_str);
+  }
+
+  ~ScopedTimerQuery() {
+    if (gl_)
+      gl_->EndQueryEXT(GL_TIME_ELAPSED_EXT);
+  }
+
+ private:
+  gpu::gles2::GLES2Interface* gl_;
+};
+
 // Smallest unit that impact anti-aliasing output. We use this to
 // determine when anti-aliasing is unnecessary.
 const float kAntiAliasingEpsilon = 1.0f / 1024.0f;
+
+// A dummy timer query ID used to identify the beginning of a frame in the queue
+// of timer queries.
+const unsigned kTimerQueryDummy = 0;
+
 }  // anonymous namespace
 
 static GLint GetActiveTextureUnit(GLES2Interface* gl) {
@@ -384,6 +416,7 @@ GLRenderer::GLRenderer(
   use_blend_equation_advanced_coherent_ =
       context_caps.blend_equation_advanced_coherent;
   use_occlusion_query_ = context_caps.occlusion_query;
+  use_timer_query_ = context_caps.timer_queries;
   use_swap_with_bounds_ = context_caps.swap_buffers_with_bounds;
   prefer_draw_to_copy_ = output_surface_->context_provider()
                              ->GetGpuFeatureInfo()
@@ -534,6 +567,11 @@ void GLRenderer::BeginDrawingFrame() {
 
   // TODO(enne): Do we need to reinitialize all of this state per frame?
   ReinitializeGLState();
+
+  // Add a dummy timer query as a fence to identify the beginning of a frame in
+  // the circular queue.
+  if (CompositeTimeTracingEnabled())
+    timer_queries_.emplace(kTimerQueryDummy, "");
 
   num_triangles_drawn_ = 0;
 }
@@ -1189,6 +1227,8 @@ void GLRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad,
   params.window_matrix = current_frame()->window_matrix;
   params.projection_matrix = current_frame()->projection_matrix;
   params.tex_coord_rect = quad->tex_coord_rect;
+  ScopedTimerQuery scoped_timer_query(CompositeTimeTracingEnabled(), gl_,
+                                      &timer_queries_, "kRenderPassDrawQuad");
   if (bypass != render_pass_bypass_quads_.end()) {
     DCHECK(bypass->second->material == DrawQuad::Material::kTiledContent);
     const TileDrawQuad* tile_quad = TileDrawQuad::MaterialCast(bypass->second);
@@ -2036,6 +2076,10 @@ void GLRenderer::DrawSolidColorQuad(const SolidColorDrawQuad* quad,
     use_aa = ShouldAntialiasQuad(device_layer_quad, clipped, force_aa);
   }
 
+  ScopedTimerQuery scoped_timer_query(CompositeTimeTracingEnabled(), gl_,
+                                      &timer_queries_,
+                                      use_aa ? "kSolidColorAA" : "kSolidColor");
+
   float edge[24];
   const gfx::QuadF* aa_quad = use_aa ? &device_layer_quad : nullptr;
   SetupQuadForClippingAndAntialiasing(device_transform, quad, aa_quad,
@@ -2128,6 +2172,9 @@ void GLRenderer::DrawContentQuadAA(const ContentDrawQuadBase* quad,
                                    const gfx::QuadF* clip_region) {
   if (!device_transform.IsInvertible())
     return;
+
+  ScopedTimerQuery scoped_timer_query(CompositeTimeTracingEnabled(), gl_,
+                                      &timer_queries_, "kTiledContentAA");
 
   gfx::Rect tile_rect = quad->visible_rect;
 
@@ -2242,6 +2289,9 @@ void GLRenderer::DrawContentQuadNoAA(const ContentDrawQuadBase* quad,
   float tex_to_geom_scale_x = quad->rect.width() / quad->tex_coord_rect.width();
   float tex_to_geom_scale_y =
       quad->rect.height() / quad->tex_coord_rect.height();
+
+  ScopedTimerQuery scoped_timer_query(CompositeTimeTracingEnabled(), gl_,
+                                      &timer_queries_, "kTiledContent");
 
   bool scaled = (tex_to_geom_scale_x != 1.f || tex_to_geom_scale_y != 1.f);
   GLenum filter = (scaled || !quad->shared_quad_state->quad_to_target_transform
@@ -2366,6 +2416,15 @@ void GLRenderer::DrawContentQuadNoAA(const ContentDrawQuadBase* quad,
 
 void GLRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
                                   const gfx::QuadF* clip_region) {
+  std::string gpu_composite_time_string;
+  if (!clip_region && quad->rect == quad->visible_rect)
+    gpu_composite_time_string = "kYuvVideoContent";
+  else
+    gpu_composite_time_string = "kYuvVideoContentClipped";
+  ScopedTimerQuery scoped_timer_query(CompositeTimeTracingEnabled(), gl_,
+                                      &timer_queries_,
+                                      gpu_composite_time_string);
+
   SetBlendEnabled(quad->ShouldDrawWithBlending());
 
   TexCoordPrecision tex_coord_precision = TexCoordPrecisionRequired(
@@ -2548,6 +2607,15 @@ void GLRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
 
 void GLRenderer::DrawStreamVideoQuad(const StreamVideoDrawQuad* quad,
                                      const gfx::QuadF* clip_region) {
+  std::string gpu_composite_time_string;
+  if (!clip_region && quad->rect == quad->visible_rect) {
+    gpu_composite_time_string = "kStreamVideoContent";
+  } else {
+    gpu_composite_time_string = "kStreamVideoContentClipped";
+  }
+  ScopedTimerQuery scoped_timer_query(CompositeTimeTracingEnabled(), gl_,
+                                      &timer_queries_,
+                                      gpu_composite_time_string);
   SetBlendEnabled(quad->ShouldDrawWithBlending());
 
   DCHECK(output_surface_->context_provider()
@@ -2616,6 +2684,8 @@ void GLRenderer::FlushTextureQuadCache(BoundGeometry flush_binding) {
   // Check to see if we have anything to draw.
   if (draw_cache_.is_empty)
     return;
+  ScopedTimerQuery scoped_timer_query(CompositeTimeTracingEnabled(), gl_,
+                                      &timer_queries_, "kTextureContentFlush");
 
   PrepareGeometry(flush_binding);
 
@@ -2685,6 +2755,7 @@ void GLRenderer::FlushTextureQuadCache(BoundGeometry flush_binding) {
 
   DCHECK_LE(draw_cache_.matrix_data.size(),
             static_cast<size_t>(std::numeric_limits<int>::max()) / 6u);
+
   // Draw the quads!
   gl_->DrawElements(GL_TRIANGLES,
                     6 * static_cast<int>(draw_cache_.matrix_data.size()),
@@ -2880,6 +2951,74 @@ bool GLRenderer::OverdrawTracingEnabled() {
   return tracing_enabled && use_occlusion_query_ &&
          current_frame()->current_render_pass ==
              current_frame()->root_render_pass;
+}
+
+bool GLRenderer::CompositeTimeTracingEnabled() {
+  bool tracing_enabled;
+  TRACE_EVENT_CATEGORY_GROUP_ENABLED(
+      TRACE_DISABLED_BY_DEFAULT("viz.gpu_composite_time"), &tracing_enabled);
+
+  return tracing_enabled && use_timer_query_;
+}
+
+void GLRenderer::AddCompositeTimeTraces(base::TimeTicks ready_timestamp) {
+  DCHECK(CompositeTimeTracingEnabled());
+  DCHECK_EQ(timer_queries_.front().first, kTimerQueryDummy);
+
+  std::size_t count = 0;
+  uint64_t duration = 0;
+
+  // List of queries to delete after their results are retrieved.
+  std::vector<unsigned> queries_to_delete;
+
+  // Queue of durations per draw call. The |second| in the pair represents the
+  // draw call type as string.
+  base::queue<std::pair<uint64_t, std::string>> durations;
+
+  // Pop the fence query as it does not represent a timer query.
+  timer_queries_.pop();
+
+  // Initialize |start_time_ticks| as the end timestamp and walk backwards to
+  // find the actual timestamp.
+  base::TimeTicks start_time_ticks = ready_timestamp;
+
+  while (timer_queries_.size() &&
+         timer_queries_.front().first != kTimerQueryDummy) {
+    count++;
+    gl_->GetQueryObjectui64vEXT(timer_queries_.front().first,
+                                GL_QUERY_RESULT_EXT, &duration);
+    durations.emplace(duration, timer_queries_.front().second);
+    queries_to_delete.push_back(timer_queries_.front().first);
+    timer_queries_.pop();
+    start_time_ticks -= base::TimeDelta::FromNanoseconds(duration);
+  }
+
+  // Delete all timer queries for which results have been retrieved.
+  gl_->DeleteQueriesEXT(count, queries_to_delete.data());
+
+  TRACE_EVENT_ASYNC_BEGIN_WITH_TIMESTAMP0(
+      TRACE_DISABLED_BY_DEFAULT("viz.gpu_composite_time"), "Composite Time",
+      this, start_time_ticks);
+
+  while (!durations.empty()) {
+    duration = durations.front().first;
+
+    // |duration| may be set to 0 if the timer query result was unavailable in
+    // |GetQueryObjectui64vEXT| function call.
+    if (!duration) {
+      durations.pop();
+      continue;
+    }
+    TRACE_EVENT_ASYNC_STEP_INTO_WITH_TIMESTAMP0(
+        TRACE_DISABLED_BY_DEFAULT("viz.gpu_composite_time"), "Composite Time",
+        this, durations.front().second.c_str(), start_time_ticks);
+    start_time_ticks += base::TimeDelta::FromNanoseconds(duration);
+    durations.pop();
+  }
+
+  TRACE_EVENT_ASYNC_END_WITH_TIMESTAMP0(
+      TRACE_DISABLED_BY_DEFAULT("viz.gpu_composite_time"), "Composite Time",
+      this, ready_timestamp);
 }
 
 void GLRenderer::FinishDrawingQuadList() {

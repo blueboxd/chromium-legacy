@@ -34,6 +34,7 @@ class PrefRegistrySyncable;
 
 namespace device {
 class FidoAuthenticator;
+class FidoDiscoveryFactory;
 }
 
 class ChromeAuthenticatorRequestDelegate
@@ -79,9 +80,10 @@ class ChromeAuthenticatorRequestDelegate
       bool is_enterprise_attestation,
       base::OnceCallback<void(bool)> callback) override;
   bool SupportsResidentKeys() override;
-  void ConfigureCable(const url::Origin& origin,
-                      base::span<const device::CableDiscoveryData>
-                          pairings_from_extension) override;
+  void ConfigureCable(
+      const url::Origin& origin,
+      base::span<const device::CableDiscoveryData> pairings_from_extension,
+      device::FidoDiscoveryFactory* discovery_factory) override;
   void SelectAccount(
       std::vector<device::AuthenticatorGetAssertionResponse> responses,
       base::OnceCallback<void(device::AuthenticatorGetAssertionResponse)>
@@ -116,10 +118,6 @@ class ChromeAuthenticatorRequestDelegate
   void OnStartOver() override;
   void OnModelDestroyed() override;
   void OnCancelRequest() override;
-
- protected:
-  void CustomizeDiscoveryFactory(
-      device::FidoDiscoveryFactory* discovery_factory) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ChromeAuthenticatorRequestDelegateTest,

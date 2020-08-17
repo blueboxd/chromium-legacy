@@ -48,6 +48,7 @@ class KeyboardInputEvent;
 class MouseInputEvent;
 class PDFiumDocument;
 class PDFiumPermissions;
+class TouchInputEvent;
 
 namespace draw_utils {
 class ShadowMatrix;
@@ -124,6 +125,7 @@ class PDFiumEngine : public PDFEngine,
   void SelectAll() override;
   const std::vector<DocumentAttachmentInfo>& GetDocumentAttachmentInfoList()
       const override;
+  std::vector<uint8_t> GetAttachmentData(size_t index) override;
   const DocumentMetadata& GetDocumentMetadata() const override;
   int GetNumberOfPages() override;
   pp::VarArray GetBookmarks() override;
@@ -172,6 +174,7 @@ class PDFiumEngine : public PDFEngine,
   void OnDocumentCanceled() override;
   void KillFormFocus() override;
   void UpdateFocus(bool has_focus) override;
+  PP_PrivateAccessibilityFocusInfo GetFocusInfo() override;
   uint32_t GetLoadedByteSize() override;
   bool ReadLoadedBytes(uint32_t length, void* buffer) override;
 #if defined(PDF_ENABLE_XFA)
@@ -553,9 +556,9 @@ class PDFiumEngine : public PDFEngine,
   // independent of whether it is hidden or not at the moment.
   float GetToolbarHeightInScreenCoords();
 
-  void ScheduleTouchTimer(const pp::TouchInputEvent& event);
+  void ScheduleTouchTimer(const TouchInputEvent& event);
   void KillTouchTimer();
-  void HandleLongPress(const pp::TouchInputEvent& event);
+  void HandleLongPress(const TouchInputEvent& event);
 
   // Returns a VarDictionary (representing a bookmark), which in turn contains
   // child VarDictionaries (representing the child bookmarks).

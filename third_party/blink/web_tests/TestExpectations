@@ -1339,7 +1339,6 @@ crbug.com/6606 external/wpt/mathml/relations/css-styling/displaystyle-015.html [
 crbug.com/6606 external/wpt/mathml/relations/css-styling/displaystyle-1.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/relations/css-styling/displaystyle-2.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/relations/css-styling/ignored-properties-001.html [ Failure Timeout ]
-crbug.com/6606 external/wpt/mathml/relations/css-styling/lengths-2.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/relations/css-styling/mathvariant-bold-fraktur.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/relations/css-styling/mathvariant-bold-italic.html [ Failure ]
 crbug.com/6606 external/wpt/mathml/relations/css-styling/mathvariant-bold-sans-serif.html [ Failure ]
@@ -2707,12 +2706,6 @@ crbug.com/626703 [ Win ] external/wpt/streams/transform-streams/patched-global.a
 crbug.com/626703 [ Linux ] external/wpt/streams/transform-streams/patched-global.any.sharedworker.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/streams/transform-streams/patched-global.any.sharedworker.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/streams/transform-streams/patched-global.any.sharedworker.html [ Timeout ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-ui/appearance-button-002.tentative.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-ui/appearance-button-002.tentative.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-ui/appearance-button-002.tentative.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-ui/webkit-appearance-button-002.tentative.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-ui/webkit-appearance-button-002.tentative.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-ui/webkit-appearance-button-002.tentative.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-color/t422-rgba-a0.6-a.xht [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-color/t32-opacity-basic-0.6-a.xht [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-color/t32-opacity-basic-0.6-a.xht [ Failure ]
@@ -5103,6 +5096,10 @@ crbug.com/919639 [ Fuchsia ] fast/speech/scripted/speechrecognition-re-restart.h
 crbug.com/919639 [ Fuchsia ] presentation/presentationconnectionavailableevent-ctor-mock.html [ Failure ]
 crbug.com/919639 [ Fuchsia ] webmidi/permission.html [ Failure ]
 
+# These tests enforce that <select> with appearance:button should look like a button.
+crbug.com/1108797 external/wpt/css/css-ui/appearance-button-002.tentative.html [ Failure ]
+crbug.com/1108797 external/wpt/css/css-ui/webkit-appearance-button-002.tentative.html [ Failure ]
+
 # These tests timeout when using Scenic ozone platform.
 crbug.com/1067477 [ Fuchsia ] compositing/sibling-positioning.html [ Skip ]
 crbug.com/1067477 [ Fuchsia ] css3/selectors3/html/css3-modsel-18.html [ Skip ]
@@ -6731,7 +6728,6 @@ crbug.com/1113791 [ Win ] media/video-zoom.html [ Pass Failure ]
 
 # Sheriff 2020-08-11
 crbug.com/1095540 virtual/threaded-prefer-compositing/fast/scrolling/resize-corner-tracking-touch.html [ Pass Failure ]
-crbug.com/1113521 [ Mac ] fast/events/mouse-cursor-image-set.html [ Pass Crash ]
 crbug.com/1046784 http/tests/devtools/network/network-content-replacement-xhr.js [ Pass Failure ]
 
 # Sheriff 2020-08-14

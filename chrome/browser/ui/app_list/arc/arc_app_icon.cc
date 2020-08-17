@@ -146,6 +146,7 @@ class ArcAppIcon::DecodeRequest : public ImageDecoder::ImageRequest {
       ArcAppIcon& host,
       const ArcAppIconDescriptor& descriptor,
       bool resize_allowed,
+      bool retain_padding,
       gfx::ImageSkia& image_skia,
       std::map<ui::ScaleFactor, base::Time>& incomplete_scale_factors);
   ~DecodeRequest() override;
@@ -158,6 +159,7 @@ class ArcAppIcon::DecodeRequest : public ImageDecoder::ImageRequest {
   ArcAppIcon& host_;
   const ArcAppIconDescriptor descriptor_;
   const bool resize_allowed_;
+  const bool retain_padding_;
   gfx::ImageSkia& image_skia_;
   std::map<ui::ScaleFactor, base::Time>& incomplete_scale_factors_;
   DISALLOW_COPY_AND_ASSIGN(DecodeRequest);
@@ -170,11 +172,13 @@ ArcAppIcon::DecodeRequest::DecodeRequest(
     ArcAppIcon& host,
     const ArcAppIconDescriptor& descriptor,
     bool resize_allowed,
+    bool retain_padding,
     gfx::ImageSkia& image_skia,
     std::map<ui::ScaleFactor, base::Time>& incomplete_scale_factors)
     : host_(host),
       descriptor_(descriptor),
       resize_allowed_(resize_allowed),
+      retain_padding_(retain_padding),
       image_skia_(image_skia),
       incomplete_scale_factors_(incomplete_scale_factors) {}
 
@@ -186,7 +190,12 @@ void ArcAppIcon::DecodeRequest::OnImageDecoded(const SkBitmap& bitmap) {
   DCHECK(!bitmap.isNull() && !bitmap.empty());
 
   const int expected_dim = descriptor_.GetSizeInPixels();
-  if (bitmap.width() != expected_dim || bitmap.height() != expected_dim) {
+
+  // If retain_padding is true, that means the foreground or the
+  // background image has paddings which should be chopped by AppService, so the
+  // raw image is forwarded without resize.
+  if (!retain_padding_ &&
+      (bitmap.width() != expected_dim || bitmap.height() != expected_dim)) {
     if (!resize_allowed_) {
       VLOG(2) << "Decoded ARC icon has unexpected dimension " << bitmap.width()
               << "x" << bitmap.height() << ". Expected " << expected_dim << ".";
@@ -612,8 +621,8 @@ void ArcAppIcon::OnIconRead(
       DecodeImage(read_result->unsafe_icon_data[0],
                   ArcAppIconDescriptor(resource_size_in_dip_,
                                        read_result->scale_factor),
-                  read_result->resize_allowed, image_skia_,
-                  incomplete_scale_factors_);
+                  read_result->resize_allowed, false /* retain_padding */,
+                  image_skia_, incomplete_scale_factors_);
       return;
     }
     case IconType::kCompressed: {
@@ -631,7 +640,8 @@ void ArcAppIcon::OnIconRead(
         DecodeImage(read_result->unsafe_icon_data[0],
                     ArcAppIconDescriptor(resource_size_in_dip_,
                                          read_result->scale_factor),
-                    read_result->resize_allowed, foreground_image_skia_,
+                    read_result->resize_allowed, false /* retain_padding */,
+                    foreground_image_skia_,
                     foreground_incomplete_scale_factors_);
         background_incomplete_scale_factors_.clear();
         return;
@@ -642,13 +652,13 @@ void ArcAppIcon::OnIconRead(
       DecodeImage(read_result->unsafe_icon_data[0],
                   ArcAppIconDescriptor(resource_size_in_dip_,
                                        read_result->scale_factor),
-                  read_result->resize_allowed, foreground_image_skia_,
-                  foreground_incomplete_scale_factors_);
+                  read_result->resize_allowed, true /* retain_padding */,
+                  foreground_image_skia_, foreground_incomplete_scale_factors_);
       DecodeImage(read_result->unsafe_icon_data[1],
                   ArcAppIconDescriptor(resource_size_in_dip_,
                                        read_result->scale_factor),
-                  read_result->resize_allowed, background_image_skia_,
-                  background_incomplete_scale_factors_);
+                  read_result->resize_allowed, true /* retain_padding */,
+                  background_image_skia_, background_incomplete_scale_factors_);
       return;
     }
   }
@@ -658,10 +668,12 @@ void ArcAppIcon::DecodeImage(
     const std::string& unsafe_icon_data,
     const ArcAppIconDescriptor& descriptor,
     bool resize_allowed,
+    bool retain_padding,
     gfx::ImageSkia& image_skia,
     std::map<ui::ScaleFactor, base::Time>& incomplete_scale_factors) {
   decode_requests_.emplace_back(std::make_unique<DecodeRequest>(
-      *this, descriptor, resize_allowed, image_skia, incomplete_scale_factors));
+      *this, descriptor, resize_allowed, retain_padding, image_skia,
+      incomplete_scale_factors));
   if (disable_safe_decoding_for_testing) {
     SkBitmap bitmap;
     if (!unsafe_icon_data.empty() &&

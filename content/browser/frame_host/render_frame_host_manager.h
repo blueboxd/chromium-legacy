@@ -261,8 +261,7 @@ class CONTENT_EXPORT RenderFrameHostManager
                         bool was_caused_by_user_gesture,
                         bool is_same_document_navigation,
                         bool clear_proxies_on_commit,
-                        const blink::FramePolicy& frame_policy,
-                        bool should_replace_current_entry);
+                        const blink::FramePolicy& frame_policy);
 
   // Called when this frame's opener is changed to the frame specified by
   // |opener_frame_token| in |source_site_instance|'s process.  This change
@@ -797,20 +796,16 @@ class CONTENT_EXPORT RenderFrameHostManager
   // |clear_proxies_on_commit| Indicates if the proxies and opener must be
   // removed during the commit. This can happen following some BrowsingInstance
   // swaps, such as those for COOP.
-  // |should_replace_current_entry| indicates whether the committing navigation
-  // should replace the current history entry.
   void CommitPending(
       std::unique_ptr<RenderFrameHostImpl> pending_rfh,
       std::unique_ptr<BackForwardCacheImpl::Entry> pending_bfcache_entry,
-      bool clear_proxies_on_commit,
-      bool should_replace_current_entry);
+      bool clear_proxies_on_commit);
 
   // Helper to call CommitPending() in all necessary cases.
   void CommitPendingIfNecessary(RenderFrameHostImpl* render_frame_host,
                                 bool was_caused_by_user_gesture,
                                 bool is_same_document_navigation,
-                                bool clear_proxies_on_commit,
-                                bool should_replace_current_entry);
+                                bool clear_proxies_on_commit);
 
   // Commits given frame policy when the renderer's frame navigates.
   void CommitFramePolicy(const blink::FramePolicy& frame_policy);
@@ -819,8 +814,7 @@ class CONTENT_EXPORT RenderFrameHostManager
   // RenderFrameHost has committed.  |old_render_frame_host| will either be
   // deleted or put on the pending delete list during this call.
   void UnloadOldFrame(
-      std::unique_ptr<RenderFrameHostImpl> old_render_frame_host,
-      bool should_replace_current_entry);
+      std::unique_ptr<RenderFrameHostImpl> old_render_frame_host);
 
   // Discards a RenderFrameHost that was never made active (for active ones
   // UnloadOldFrame is used instead).

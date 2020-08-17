@@ -38,6 +38,7 @@
 #include "components/services/storage/dom_storage/legacy_dom_storage_database.h"
 #include "components/services/storage/dom_storage/local_storage_database.pb.h"
 #include "components/services/storage/dom_storage/storage_area_impl.h"
+#include "components/services/storage/filesystem_proxy_factory.h"
 #include "components/services/storage/public/cpp/constants.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "sql/database.h"
@@ -121,7 +122,7 @@ void MigrateStorageHelper(
     const scoped_refptr<base::SingleThreadTaskRunner> reply_task_runner,
     base::OnceCallback<void(std::unique_ptr<StorageAreaImpl::ValueMap>)>
         callback) {
-  LegacyDomStorageDatabase db(db_path);
+  LegacyDomStorageDatabase db(db_path, CreateFilesystemProxy());
   LegacyDomStorageValuesMap map;
   db.ReadAllValues(&map);
   auto values = std::make_unique<StorageAreaImpl::ValueMap>();
@@ -214,17 +215,22 @@ const base::FilePath::CharType kLegacyDatabaseFileExtension[] =
 
 std::vector<mojom::LocalStorageUsageInfoPtr> GetLegacyLocalStorageUsage(
     const base::FilePath& directory) {
+  std::unique_ptr<FilesystemProxy> fs = CreateFilesystemProxy();
+  FileErrorOr<std::vector<base::FilePath>> result = fs->GetDirectoryEntries(
+      directory, FilesystemProxy::DirectoryEntryType::kFilesOnly);
+  if (result.is_error())
+    return {};
+
   std::vector<mojom::LocalStorageUsageInfoPtr> infos;
-  base::FileEnumerator enumerator(directory, false,
-                                  base::FileEnumerator::FILES);
-  for (base::FilePath path = enumerator.Next(); !path.empty();
-       path = enumerator.Next()) {
-    if (path.MatchesExtension(kLegacyDatabaseFileExtension)) {
-      base::FileEnumerator::FileInfo find_info = enumerator.GetInfo();
-      infos.push_back(mojom::LocalStorageUsageInfo::New(
-          LocalStorageImpl::OriginFromLegacyDatabaseFileName(path),
-          find_info.GetSize(), find_info.GetLastModifiedTime()));
-    }
+  for (const auto& path : result.value()) {
+    if (!path.MatchesExtension(kLegacyDatabaseFileExtension))
+      continue;
+    base::Optional<base::File::Info> info = fs->GetFileInfo(path);
+    if (!info)
+      continue;
+    infos.push_back(mojom::LocalStorageUsageInfo::New(
+        LocalStorageImpl::OriginFromLegacyDatabaseFileName(path), info->size,
+        info->last_modified));
   }
   return infos;
 }

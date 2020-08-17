@@ -129,7 +129,7 @@ bool IsOptimizationTypeAllowed(
         optimization_guide::proto::Optimization>& optimizations,
     optimization_guide::proto::OptimizationType optimization_type,
     optimization_guide::OptimizationMetadata* optimization_metadata,
-    base::Optional<int64_t>* tuning_version) {
+    base::Optional<uint64_t>* tuning_version) {
   DCHECK(tuning_version);
   *tuning_version = base::nullopt;
 
@@ -142,8 +142,16 @@ bool IsOptimizationTypeAllowed(
       continue;
     }
 
-    if (optimization.has_tuning_version())
+    if (optimization.has_tuning_version()) {
       *tuning_version = optimization.tuning_version();
+
+      if (optimization.tuning_version() == UINT64_MAX) {
+        // UINT64_MAX is the sentinel value indicating that the optimization
+        // should not be served and was only added to the list for metrics
+        // purposes.
+        return false;
+      }
+    }
 
     // We found an optimization that can be applied. Populate optimization
     // metadata if applicable and return.
@@ -164,11 +172,6 @@ bool IsOptimizationTypeAllowed(
         case optimization_guide::proto::Optimization::kLoadingPredictorMetadata:
           optimization_metadata->set_loading_predictor_metadata(
               optimization.loading_predictor_metadata());
-          break;
-        case optimization_guide::proto::Optimization::
-            kDelayAsyncScriptExecutionMetadata:
-          optimization_metadata->set_delay_async_script_execution_metadata(
-              optimization.delay_async_script_execution_metadata());
           break;
         case optimization_guide::proto::Optimization::kAnyMetadata:
           optimization_metadata->set_any_metadata(optimization.any_metadata());
@@ -1103,20 +1106,25 @@ OptimizationGuideHintsManager::CanApplyOptimization(
     }
   }
 
-  base::Optional<int64_t> tuning_version;
+  base::Optional<uint64_t> tuning_version;
 
   // First, check if the optimization type is whitelisted by a URL-keyed hint.
   const optimization_guide::proto::Hint* url_keyed_hint =
       hint_cache_->GetURLKeyedHint(navigation_url);
   if (url_keyed_hint) {
     DCHECK_EQ(url_keyed_hint->page_hints_size(), 1);
-    if (url_keyed_hint->page_hints_size() > 0 &&
-        IsOptimizationTypeAllowed(
-            url_keyed_hint->page_hints(0).whitelisted_optimizations(),
-            optimization_type, optimization_metadata, &tuning_version)) {
-      MaybeLogOptimizationAutotuningUKMForNavigation(
-          navigation_id, optimization_type, tuning_version);
-      return optimization_guide::OptimizationTypeDecision::kAllowedByHint;
+    if (url_keyed_hint->page_hints_size() > 0) {
+      bool is_allowed = IsOptimizationTypeAllowed(
+          url_keyed_hint->page_hints(0).whitelisted_optimizations(),
+          optimization_type, optimization_metadata, &tuning_version);
+      if (is_allowed || tuning_version) {
+        MaybeLogOptimizationAutotuningUKMForNavigation(
+            navigation_id, optimization_type, tuning_version);
+        return is_allowed ? optimization_guide::OptimizationTypeDecision::
+                                kAllowedByHint
+                          : optimization_guide::OptimizationTypeDecision::
+                                kNotAllowedByHint;
+      }
     }
   }
 
@@ -1140,12 +1148,16 @@ OptimizationGuideHintsManager::CanApplyOptimization(
     return optimization_guide::OptimizationTypeDecision::kNoHintAvailable;
   }
 
-  if (IsOptimizationTypeAllowed(loaded_hint->whitelisted_optimizations(),
-                                optimization_type, optimization_metadata,
-                                &tuning_version)) {
+  bool is_allowed = IsOptimizationTypeAllowed(
+      loaded_hint->whitelisted_optimizations(), optimization_type,
+      optimization_metadata, &tuning_version);
+  if (is_allowed || tuning_version) {
     MaybeLogOptimizationAutotuningUKMForNavigation(
         navigation_id, optimization_type, tuning_version);
-    return optimization_guide::OptimizationTypeDecision::kAllowedByHint;
+    return is_allowed
+               ? optimization_guide::OptimizationTypeDecision::kAllowedByHint
+               : optimization_guide::OptimizationTypeDecision::
+                     kNotAllowedByHint;
   }
 
   const optimization_guide::proto::PageHint* matched_page_hint =
@@ -1155,14 +1167,14 @@ OptimizationGuideHintsManager::CanApplyOptimization(
   if (!matched_page_hint)
     return optimization_guide::OptimizationTypeDecision::kNotAllowedByHint;
 
-  if (IsOptimizationTypeAllowed(matched_page_hint->whitelisted_optimizations(),
-                                optimization_type, optimization_metadata,
-                                &tuning_version)) {
-    MaybeLogOptimizationAutotuningUKMForNavigation(
-        navigation_id, optimization_type, tuning_version);
-    return optimization_guide::OptimizationTypeDecision::kAllowedByHint;
-  }
-  return optimization_guide::OptimizationTypeDecision::kNotAllowedByHint;
+  is_allowed = IsOptimizationTypeAllowed(
+      matched_page_hint->whitelisted_optimizations(), optimization_type,
+      optimization_metadata, &tuning_version);
+  MaybeLogOptimizationAutotuningUKMForNavigation(
+      navigation_id, optimization_type, tuning_version);
+  return is_allowed
+             ? optimization_guide::OptimizationTypeDecision::kAllowedByHint
+             : optimization_guide::OptimizationTypeDecision::kNotAllowedByHint;
 }
 
 void OptimizationGuideHintsManager::PrepareToInvokeRegisteredCallbacks(
@@ -1431,9 +1443,6 @@ void OptimizationGuideHintsManager::AddHintForTesting(
   } else if (metadata->public_image_metadata()) {
     *optimization->mutable_public_image_metadata() =
         *metadata->public_image_metadata();
-  } else if (metadata->delay_async_script_execution_metadata()) {
-    *optimization->mutable_delay_async_script_execution_metadata() =
-        *metadata->delay_async_script_execution_metadata();
   } else if (metadata->any_metadata()) {
     *optimization->mutable_any_metadata() = *metadata->any_metadata();
   } else {

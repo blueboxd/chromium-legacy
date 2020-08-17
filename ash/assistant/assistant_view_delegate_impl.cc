@@ -12,14 +12,23 @@
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
 #include "ash/assistant/model/assistant_notification_model.h"
 #include "ash/assistant/model/assistant_notification_model_observer.h"
+#include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/public/cpp/assistant/assistant_state_base.h"
 #include "ash/public/cpp/session/session_types.h"
 #include "ash/public/cpp/session/user_info.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "chromeos/services/assistant/public/cpp/features.h"
 
 namespace ash {
+
+namespace {
+
+using assistant::ui::kOnboardingMaxSessionsShown;
+using chromeos::assistant::features::IsBetterOnboardingEnabled;
+
+}  // namespace
 
 AssistantViewDelegateImpl::AssistantViewDelegateImpl(
     AssistantControllerImpl* assistant_controller)
@@ -96,6 +105,11 @@ void AssistantViewDelegateImpl::OnNotificationButtonPressed(
       notification_id, notification_button_index, /*reply=*/base::nullopt);
 }
 
+void AssistantViewDelegateImpl::OnOnboardingShown() {
+  for (auto& observer : view_delegate_observers_)
+    observer.OnOnboardingShown();
+}
+
 void AssistantViewDelegateImpl::OnOptInButtonPressed() {
   for (auto& observer : view_delegate_observers_)
     observer.OnOptInButtonPressed();
@@ -105,6 +119,39 @@ void AssistantViewDelegateImpl::OnSuggestionPressed(
     const base::UnguessableToken& suggestion_id) {
   for (AssistantViewDelegateObserver& observer : view_delegate_observers_)
     observer.OnSuggestionPressed(suggestion_id);
+}
+
+bool AssistantViewDelegateImpl::ShouldShowOnboarding() const {
+  if (!IsBetterOnboardingEnabled())
+    return false;
+
+  // Once a user has had an interaction with Assistant, we will no longer show
+  // onboarding in that user session.
+  auto* interaction_controller = AssistantInteractionController::Get();
+  const bool has_had_interaction = interaction_controller->HasHadInteraction();
+  if (has_had_interaction)
+    return false;
+
+  // If we do show onboarding to a user in a session, we will keep showing it
+  // for that session until an Assistant interaction takes place.
+  auto* ui_controller = AssistantUiController::Get();
+  const bool has_shown_onboarding = ui_controller->HasShownOnboarding();
+  if (has_shown_onboarding)
+    return true;
+
+  // Once a user has seen onboarding in any session, they will continue to see
+  // onboarding each session until the maximum number of sessions is reached.
+  const int number_of_sessions_where_onboarding_shown =
+      ui_controller->GetNumberOfSessionsWhereOnboardingShown();
+  if (number_of_sessions_where_onboarding_shown > 0) {
+    return number_of_sessions_where_onboarding_shown <
+           kOnboardingMaxSessionsShown;
+  }
+
+  // The feature will start to show only for new users which we define as users
+  // who haven't had an interaction with Assistant in the last 28 days.
+  return interaction_controller->GetTimeDeltaSinceLastInteraction() >=
+         base::TimeDelta::FromDays(28);
 }
 
 }  // namespace ash

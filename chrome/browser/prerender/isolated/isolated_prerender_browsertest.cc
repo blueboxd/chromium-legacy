@@ -519,10 +519,9 @@ class IsolatedPrerenderBrowserTest
         IsolatedPrerenderTabHelper::FromWebContents(GetWebContents());
     DCHECK(tab_helper);
     DCHECK(tab_helper->GetIsolatedContextForTesting());
-    return net::OK == content::LoadBasicRequest(
-                          tab_helper->GetIsolatedContextForTesting(), url,
-                          /*process_id=*/0,
-                          /*render_frame_id=*/0, net::LOAD_ONLY_FROM_CACHE);
+    return net::OK ==
+           content::LoadBasicRequest(tab_helper->GetIsolatedContextForTesting(),
+                                     url, net::LOAD_ONLY_FROM_CACHE);
   }
 
   base::Optional<int64_t> GetUKMMetric(const GURL& url,

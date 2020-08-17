@@ -4519,7 +4519,7 @@
       {
         "args": [
           "--enable-features=StorageServiceOutOfProcess",
-          "--gtest_filter=-OutOfProcessPPAPITest.TrueTypeFont:All/AccessibilityHitTestingBrowserTest.CachingAsyncHitTest_WithPinchZoom/ZoomFactor2_UseZoomForDSFOff:All/AccessibilityHitTestingBrowserTest.CachingAsyncHitTest_WithPinchZoom/ZoomFactor2_UseZoomForDSFOn"
+          "--gtest_filter=-OutOfProcessPPAPITest.TrueTypeFont:All/AccessibilityHitTestingBrowserTest.CachingAsyncHitTest_WithPinchZoom*:All/SitePerProcessInternalsHitTestBrowserTest.ScrollNestedLocalNonFastScrollableDiv*:BackForwardCacheBrowserTest.WindowOpen"
         ],
         "experiment_percentage": 100,
         "merge": {
@@ -4643,7 +4643,6 @@
         "args": [
           "--gtest_filter=-NativeExtensionBindingsSystemUnittest*:BluetoothSocketApiUnittest.CreateThenClose:FeatureProviderTest.PermissionFeatureAvailability"
         ],
-        "experiment_percentage": 100,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -5145,7 +5144,6 @@
         "args": [
           "--gtest_filter=-DesktopWidgetFocusManagerTest.AnchoredDialogInDesktopNativeWidgetAura:DesktopWidgetTest*:DesktopWindowTreeHostPlatformTest*:EditableComboboxTest*:MenuRunnerTest*:TextfieldTest*:TooltipControllerTest*"
         ],
-        "experiment_percentage": 100,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"

@@ -8,6 +8,7 @@
 
 #include "base/optional.h"
 #include "base/test/task_environment.h"
+#include "services/network/public/mojom/network_context.mojom-forward.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace network {
@@ -322,21 +323,33 @@ TEST_F(WebSocketThrottlerTest, TooManyPendingConnections) {
   for (int i = 0; i < limit - 1; ++i) {
     ASSERT_FALSE(throttler.HasTooManyPendingConnections(process1));
     ASSERT_FALSE(throttler.HasTooManyPendingConnections(process2));
-    trackers.push_back(throttler.IssuePendingConnectionTracker(process1));
-    trackers.push_back(throttler.IssuePendingConnectionTracker(process2));
+    trackers.push_back(
+        std::move(throttler.IssuePendingConnectionTracker(process1).value()));
+    trackers.push_back(
+        std::move(throttler.IssuePendingConnectionTracker(process2).value()));
   }
 
   EXPECT_EQ(2u, throttler.GetSizeForTesting());
   ASSERT_FALSE(throttler.HasTooManyPendingConnections(process1));
   ASSERT_FALSE(throttler.HasTooManyPendingConnections(process2));
-  trackers.push_back(throttler.IssuePendingConnectionTracker(process1));
+  trackers.push_back(
+      std::move(throttler.IssuePendingConnectionTracker(process1).value()));
 
   ASSERT_TRUE(throttler.HasTooManyPendingConnections(process1));
   ASSERT_FALSE(throttler.HasTooManyPendingConnections(process2));
-  trackers.push_back(throttler.IssuePendingConnectionTracker(process2));
+  trackers.push_back(
+      std::move(throttler.IssuePendingConnectionTracker(process2).value()));
 
   ASSERT_TRUE(throttler.HasTooManyPendingConnections(process1));
   ASSERT_TRUE(throttler.HasTooManyPendingConnections(process2));
+}
+
+TEST_F(WebSocketThrottlerTest, BrowserProcessNotThrottled) {
+  WebSocketThrottler throttler;
+  ASSERT_FALSE(
+      throttler.HasTooManyPendingConnections(mojom::kBrowserProcessId));
+  ASSERT_FALSE(throttler.IssuePendingConnectionTracker(mojom::kBrowserProcessId)
+                   .has_value());
 }
 
 }  // namespace

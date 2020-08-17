@@ -224,7 +224,7 @@ class SupervisedUserWhitelistInstallerTest : public testing::Test {
         profile_attributes_storage(),
         &local_state_);
 
-    ASSERT_TRUE(base::PathService::Get(DIR_SUPERVISED_USER_WHITELISTS,
+    ASSERT_TRUE(base::PathService::Get(DIR_SUPERVISED_USER_ALLOWLISTS,
                                        &whitelist_base_directory_));
     whitelist_directory_ = whitelist_base_directory_.AppendASCII(kCrxId);
     whitelist_version_directory_ = whitelist_directory_.AppendASCII(kVersion);

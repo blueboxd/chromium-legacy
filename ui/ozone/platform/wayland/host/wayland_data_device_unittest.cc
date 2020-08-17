@@ -15,7 +15,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/events/base_event_utils.h"
-#include "ui/ozone/platform/wayland/test/constants.h"
 #include "ui/ozone/platform/wayland/test/mock_surface.h"
 #include "ui/ozone/platform/wayland/test/test_data_device.h"
 #include "ui/ozone/platform/wayland/test/test_data_device_manager.h"
@@ -31,6 +30,8 @@ using testing::Mock;
 namespace ui {
 
 namespace {
+
+constexpr char kSampleClipboardText[] = "This is a sample text for clipboard.";
 
 template <typename StringType>
 ui::PlatformClipboard::Data ToClipboardData(const StringType& data_string) {
@@ -113,12 +114,12 @@ class WaylandDataDeviceManagerTest : public WaylandTest {
 TEST_P(WaylandDataDeviceManagerTest, WriteToClipboard) {
   // The client writes data to the clipboard ...
   std::vector<uint8_t> data_vector(
-      wl::kSampleClipboardText,
-      wl::kSampleClipboardText + strlen(wl::kSampleClipboardText));
+      kSampleClipboardText,
+      kSampleClipboardText + strlen(kSampleClipboardText));
   clipboard_client_->SetData(
       scoped_refptr<base::RefCountedBytes>(
           base::RefCountedBytes::TakeVector(&data_vector)),
-      {wl::kTextMimeTypeUtf8}, base::BindOnce([]() {}));
+      {kMimeTypeTextUtf8}, base::BindOnce([]() {}));
   Sync();
 
   // ... and the server reads it.
@@ -126,11 +127,11 @@ TEST_P(WaylandDataDeviceManagerTest, WriteToClipboard) {
   auto callback = base::BindOnce(
       [](base::RunLoop* loop, std::vector<uint8_t>&& data) {
         std::string string_data(data.begin(), data.end());
-        EXPECT_EQ(wl::kSampleClipboardText, string_data);
+        EXPECT_EQ(kSampleClipboardText, string_data);
         loop->Quit();
       },
       &run_loop);
-  data_device_manager_->data_source()->ReadData(wl::kTextMimeTypeUtf8,
+  data_device_manager_->data_source()->ReadData(kMimeTypeTextUtf8,
                                                 std::move(callback));
   run_loop.Run();
 }
@@ -139,8 +140,8 @@ TEST_P(WaylandDataDeviceManagerTest, ReadFromClipboard) {
   // TODO(nickdiego): implement this in terms of an actual wl_surface that
   // gets focused and compositor sends data_device data to it.
   auto* data_offer = data_device_manager_->data_device()->OnDataOffer();
-  data_offer->OnOffer(wl::kTextMimeTypeUtf8,
-                      ToClipboardData(std::string(wl::kSampleClipboardText)));
+  data_offer->OnOffer(kMimeTypeTextUtf8,
+                      ToClipboardData(std::string(kSampleClipboardText)));
   data_device_manager_->data_device()->OnSelection(data_offer);
   Sync();
 
@@ -151,9 +152,9 @@ TEST_P(WaylandDataDeviceManagerTest, ReadFromClipboard) {
       base::BindOnce([](const base::Optional<PlatformClipboard::Data>& data) {
         auto& bytes = data->get()->data();
         std::string string_data = std::string(bytes.begin(), bytes.end());
-        EXPECT_EQ(wl::kSampleClipboardText, string_data);
+        EXPECT_EQ(kSampleClipboardText, string_data);
       });
-  clipboard_client_->ReadData(wl::kTextMimeTypeUtf8, std::move(callback));
+  clipboard_client_->ReadData(kMimeTypeTextUtf8, std::move(callback));
   Sync();
 }
 
@@ -167,18 +168,18 @@ TEST_P(WaylandDataDeviceManagerTest, ReadFromClipboardWithoutOffer) {
         std::string string_data = std::string(bytes.begin(), bytes.end());
         EXPECT_EQ("", string_data);
       });
-  clipboard_client_->ReadData(wl::kTextMimeTypeUtf8, std::move(callback));
+  clipboard_client_->ReadData(kMimeTypeTextUtf8, std::move(callback));
 }
 
 TEST_P(WaylandDataDeviceManagerTest, IsSelectionOwner) {
   auto callback = base::BindOnce([]() {});
   std::vector<uint8_t> data_vector(
-      wl::kSampleClipboardText,
-      wl::kSampleClipboardText + strlen(wl::kSampleClipboardText));
+      kSampleClipboardText,
+      kSampleClipboardText + strlen(kSampleClipboardText));
   clipboard_client_->SetData(
       scoped_refptr<base::RefCountedBytes>(
           base::RefCountedBytes::TakeVector(&data_vector)),
-      {wl::kTextMimeTypeUtf8}, std::move(callback));
+      {kMimeTypeTextUtf8}, std::move(callback));
   Sync();
   ASSERT_TRUE(clipboard_client_->IsSelectionOwner());
 

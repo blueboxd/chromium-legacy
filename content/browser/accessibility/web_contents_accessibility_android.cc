@@ -809,8 +809,8 @@ jboolean WebContentsAccessibilityAndroid::PopulateAccessibilityNodeInfo(
   UpdateAccessibilityNodeInfoBoundsRect(env, obj, info, unique_id, node);
 
   Java_WebContentsAccessibilityImpl_setAccessibilityNodeInfoAttributes(
-      env, obj, info, node->CanOpenPopup(), node->IsContentInvalid(),
-      node->IsDismissable(), node->IsMultiLine(), node->AndroidInputType(),
+      env, obj, info, node->CanOpenPopup(), node->IsDismissable(),
+      node->IsMultiLine(), node->AndroidInputType(),
       node->AndroidLiveRegionType(),
       base::android::ConvertUTF16ToJavaString(
           env, node->GetContentInvalidErrorMessage()));

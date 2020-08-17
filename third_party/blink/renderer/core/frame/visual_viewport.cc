@@ -618,11 +618,8 @@ void VisualViewport::InitializeScrollbars() {
 }
 
 int VisualViewport::ScrollbarThickness() const {
-  int thickness =
-      ScrollbarThemeOverlayMobile::GetInstance().ScrollbarThickness();
-  return clampTo<int>(
-      std::floor(GetPage().GetChromeClient().WindowToViewportScalar(
-          MainFrame(), thickness)));
+  return ScrollbarThemeOverlayMobile::GetInstance().ScrollbarThickness(
+      ScaleFromDIP());
 }
 
 void VisualViewport::UpdateScrollbarLayer(ScrollbarOrientation orientation) {
@@ -631,12 +628,9 @@ void VisualViewport::UpdateScrollbarLayer(ScrollbarOrientation orientation) {
       is_horizontal ? scrollbar_layer_horizontal_ : scrollbar_layer_vertical_;
   if (!scrollbar_layer) {
     auto& theme = ScrollbarThemeOverlayMobile::GetInstance();
-    int thumb_thickness = clampTo<int>(
-        std::floor(GetPage().GetChromeClient().WindowToViewportScalar(
-            MainFrame(), theme.ThumbThickness())));
-    int scrollbar_margin = clampTo<int>(
-        std::floor(GetPage().GetChromeClient().WindowToViewportScalar(
-            MainFrame(), theme.ScrollbarMargin())));
+    float scale = ScaleFromDIP();
+    int thumb_thickness = theme.ThumbThickness(scale);
+    int scrollbar_margin = theme.ScrollbarMargin(scale);
     cc::ScrollbarOrientation cc_orientation =
         orientation == kHorizontalScrollbar ? cc::HORIZONTAL : cc::VERTICAL;
     scrollbar_layer = cc::SolidColorScrollbarLayer::Create(

@@ -21,8 +21,8 @@ class Profile;
 
 // This class is used by SupervisedUserNavigationObserver to handle requests
 // from supervised user error page. The error page is shown when a page is
-// blocked because it is on a blacklist (in "allow everything" mode), not on any
-// whitelist (in "allow only specified sites" mode), or doesn't pass safe
+// blocked because it is on a denylist (in "allow everything" mode), not on any
+// allowlist (in "allow only specified sites" mode), or doesn't pass safe
 // search.
 class SupervisedUserInterstitial {
  public:

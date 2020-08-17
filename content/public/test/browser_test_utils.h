@@ -1709,11 +1709,21 @@ class UpdateUserActivationStateInterceptor
 WebContents* GetEmbedderForGuest(content::WebContents* guest);
 
 // Load the given |url| with |network_context| and return the |net::Error| code.
+//
+// This overload simulates loading through a URLLoaderFactory created for a
+// Browser process.
 int LoadBasicRequest(network::mojom::NetworkContext* network_context,
                      const GURL& url,
-                     int process_id = 0,
-                     int render_frame_id = 0,
                      int load_flags = net::LOAD_NORMAL);
+
+// Load the given |url| via URLLoaderFactory created by |frame|.  Return the
+// |net::Error| code.
+//
+// This overload simulates loading through a URLLoaderFactory created for a
+// Renderer process (the factory is driven from the Test/Browser process, but
+// has the same properties as factories vended to the Renderer process that
+// hosts the |frame|).
+int LoadBasicRequest(RenderFrameHost* frame, const GURL& url);
 
 // Ensures that all StoragePartitions for the given BrowserContext have their
 // cookies flushed to disk.

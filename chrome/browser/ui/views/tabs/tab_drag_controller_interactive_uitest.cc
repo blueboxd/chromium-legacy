@@ -254,10 +254,6 @@ void TabDragControllerTest::AddTabsAndResetBrowser(Browser* browser,
   }
   browser->window()->Show();
   StopAnimating(GetTabStripForBrowser(browser));
-  // Perform any pending layouts happen so the tabstrip is in a steady state.
-  BrowserView::GetBrowserViewForBrowser(browser)
-      ->GetWidget()
-      ->LayoutRootViewIfNecessary();
   ResetIDs(browser->tab_strip_model(), 0);
 }
 

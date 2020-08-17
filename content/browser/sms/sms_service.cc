@@ -119,10 +119,8 @@ void SmsService::Receive(ReceiveCallback callback) {
   // a new subscription is unnecessary. Note that it is only safe for us to use
   // the in flight otp with the new request since both requests belong to the
   // same origin.
-  if (consent_handler_->is_active()) {
-    // TODO(crbug.com/1024598): Add UMA histogram.
+  if (consent_handler_->is_active())
     return;
-  }
 
   fetcher_->Subscribe(origin_, this, render_frame_host());
 }

@@ -8,6 +8,7 @@
 #include "third_party/blink/public/common/privacy_budget/identifiable_token.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
+#include "third_party/blink/renderer/core/svg/svg_string_list_tear_off.h"
 #include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
@@ -28,6 +29,8 @@ class CORE_EXPORT Dactyloscoper {
 
   static void Record(ExecutionContext*, WebFeature);
 
+  // These are helpers used by the generated bindings code when invoking IDL
+  // methods with HighEntropy=Direct.
   static void RecordDirectSurface(ExecutionContext*,
                                   WebFeature,
                                   IdentifiableToken);
@@ -38,6 +41,9 @@ class CORE_EXPORT Dactyloscoper {
   static void RecordDirectSurface(ExecutionContext*,
                                   WebFeature,
                                   NotShared<DOMFloat32Array>);
+  static void RecordDirectSurface(ExecutionContext*,
+                                  WebFeature,
+                                  SVGStringListTearOff*);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Dactyloscoper);

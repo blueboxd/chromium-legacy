@@ -17,9 +17,7 @@ namespace weblayer {
 class FaviconFetcherDelegate : public base::CheckedObserver {
  public:
   // Called when the favicon of the current navigation has changed. This may be
-  // called multiple times for the same navigation. This is *not* immediately
-  // called with an empty image when a navigation starts. It is assumed
-  // consuming code asks for the favicon when the navigation changes.
+  // called multiple times for the same navigation.
   virtual void OnFaviconChanged(const gfx::Image& image) = 0;
 
  protected:

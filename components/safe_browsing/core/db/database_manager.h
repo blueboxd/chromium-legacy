@@ -260,7 +260,7 @@ class SafeBrowsingDatabaseManager
   // when it's loaded from disk at startup, and then periodically. These
   // callbacks will be on the UI thread.
   using OnDatabaseUpdated = base::RepeatingClosure;
-  std::unique_ptr<base::CallbackList<void()>::Subscription>
+  std::unique_ptr<base::RepeatingClosureList::Subscription>
   RegisterDatabaseUpdatedCallback(const OnDatabaseUpdated& cb);
 
   // Called to stop or shutdown operations on the io_thread. All subclasses
@@ -338,7 +338,7 @@ class SafeBrowsingDatabaseManager
   std::unique_ptr<V4GetHashProtocolManager> v4_get_hash_protocol_manager_;
 
   // A list of parties to be notified about database updates.
-  base::CallbackList<void()> update_complete_callback_list_;
+  base::RepeatingClosureList update_complete_callback_list_;
 
  private:
   // Returns an iterator to the pending API check with the given |client|.

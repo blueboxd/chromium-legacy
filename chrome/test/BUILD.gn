@@ -970,7 +970,7 @@ if (!is_android) {
       "../browser/media/test_license_server_config.h",
       "../browser/media/unified_autoplay_browsertest.cc",
       "../browser/media/webrtc/media_stream_devices_controller_browsertest.cc",
-      "../browser/media/webrtc/media_stream_permission_browsertest.cc",
+      "../browser/media/webrtc/media_stream_infobar_browsertest.cc",
       "../browser/media/webrtc/test_stats_dictionary.cc",
       "../browser/media/webrtc/test_stats_dictionary.h",
       "../browser/media/webrtc/test_stats_dictionary_unittest.cc",
@@ -5697,12 +5697,12 @@ test("unit_tests") {
       "../browser/supervised_user/child_accounts/family_info_fetcher_unittest.cc",
       "../browser/supervised_user/child_accounts/permission_request_creator_apiary_unittest.cc",
       "../browser/supervised_user/kids_management_url_checker_client_unittest.cc",
+      "../browser/supervised_user/supervised_user_allowlist_service_unittest.cc",
       "../browser/supervised_user/supervised_user_model_type_controller_unittest.cc",
       "../browser/supervised_user/supervised_user_pref_store_unittest.cc",
       "../browser/supervised_user/supervised_user_service_unittest.cc",
       "../browser/supervised_user/supervised_user_settings_service_unittest.cc",
       "../browser/supervised_user/supervised_user_url_filter_unittest.cc",
-      "../browser/supervised_user/supervised_user_whitelist_service_unittest.cc",
     ]
     if (enable_extensions) {
       sources +=

@@ -10,12 +10,14 @@ GEN('#include "content/public/test/browser_test.h"');
 GEN('#include "chromeos/constants/chromeos_features.h"');
 
 // clang-format off
-[['BasePage', 'base_page_test.m.js'],
- ['CrPolicyNetworkBehaviorMojo', 'cr_policy_network_behavior_mojo_tests.m.js'],
- ['CrPolicyNetworkIndicatorMojo', 'cr_policy_network_indicator_mojo_tests.m.js'],
- ['NetworkConfigElementBehavior', 'network_config_element_behavior_test.m.js'],
- ['NetworkPasswordInput', 'network_password_input_test.m.js'],
+[['CrPolicyNetworkBehaviorMojo', 'network/cr_policy_network_behavior_mojo_tests.m.js'],
+ ['CrPolicyNetworkIndicatorMojo', 'network/cr_policy_network_indicator_mojo_tests.m.js'],
+ ['NetworkConfigElementBehavior', 'network/network_config_element_behavior_test.m.js'],
+ ['NetworkPasswordInput', 'network/network_password_input_test.m.js'],
 ].forEach(test => registerTest('Network', ...test));
+
+[['BasePage', 'cellular_setup/base_page_test.m.js']
+].forEach(test => registerTest('CellularSetup', ...test));
 // clang-format on
 
 function registerTest(componentName, testName, module, caseName) {

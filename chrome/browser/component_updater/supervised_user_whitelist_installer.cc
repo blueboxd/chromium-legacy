@@ -32,7 +32,7 @@
 #include "base/util/values/values_util.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
-#include "chrome/browser/supervised_user/supervised_user_whitelist_service.h"
+#include "chrome/browser/supervised_user/supervised_user_allowlist_service.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "components/component_updater/component_installer.h"
@@ -189,7 +189,7 @@ void CheckForSanitizedWhitelistOnTaskRunner(
 void RemoveUnregisteredWhitelistsOnTaskRunner(
     const std::set<std::string>& registered_whitelists) {
   base::FilePath base_dir;
-  base::PathService::Get(DIR_SUPERVISED_USER_WHITELISTS, &base_dir);
+  base::PathService::Get(DIR_SUPERVISED_USER_ALLOWLISTS, &base_dir);
   if (!base_dir.empty()) {
     base::FileEnumerator file_enumerator(base_dir, false,
                                          base::FileEnumerator::DIRECTORIES);
@@ -498,7 +498,7 @@ void SupervisedUserWhitelistInstallerImpl::OnSanitizedWhitelistReady(
 
 void SupervisedUserWhitelistInstallerImpl::RegisterComponents() {
   const std::map<std::string, std::string> command_line_whitelists =
-      SupervisedUserWhitelistService::GetWhitelistsFromCommandLine();
+      SupervisedUserAllowlistService::GetAllowlistsFromCommandLine();
 
   std::set<std::string> registered_whitelists;
   std::set<std::string> stale_whitelists;

@@ -35,8 +35,8 @@ class ChromiumDepGraph {
             licenseUrl: "https://raw.githubusercontent.com/google/desugar_jdk_libs/master/LICENSE",
             generateTarget: false),
         'com_android_tools_desugar_jdk_libs_configuration': new PropertyOverride(
-            licensePath: "licenses/desugar_jdk_libs_configuration.txt",
-            licenseName: "BSD 3-Clause"),
+            // Configuration stored in //third_party/r8.
+            exclude: true),
         'backport_util_concurrent_backport_util_concurrent': new PropertyOverride(
             licensePath: "licenses/CC01.0.txt",
             licenseName: "CC0 1.0"),

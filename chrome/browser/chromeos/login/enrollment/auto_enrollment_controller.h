@@ -32,8 +32,8 @@ namespace chromeos {
 // make a decision.
 class AutoEnrollmentController {
  public:
-  typedef base::CallbackList<void(policy::AutoEnrollmentState)>
-      ProgressCallbackList;
+  using ProgressCallbackList =
+      base::RepeatingCallbackList<void(policy::AutoEnrollmentState)>;
 
   // Parameter values for the kEnterpriseEnableForcedReEnrollment flag.
   static const char kForcedReEnrollmentAlways[];

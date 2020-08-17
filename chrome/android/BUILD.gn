@@ -3192,6 +3192,7 @@ generate_jni("chrome_jni_headers") {
       "feed/core/java/src/org/chromium/chrome/browser/feed/FeedNetworkBridge.java",
       "feed/core/java/src/org/chromium/chrome/browser/feed/FeedOfflineBridge.java",
       "feed/core/java/src/org/chromium/chrome/browser/feed/FeedSchedulerBridge.java",
+      "feed/core/java/src/org/chromium/chrome/browser/feed/v2/FeedImageFetchClient.java",
       "feed/core/java/src/org/chromium/chrome/browser/feed/v2/FeedServiceBridge.java",
       "feed/core/java/src/org/chromium/chrome/browser/feed/v2/FeedStreamSurface.java",
     ]

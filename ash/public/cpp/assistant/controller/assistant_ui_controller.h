@@ -28,6 +28,13 @@ class ASH_PUBLIC_EXPORT AssistantUiController {
   // Returns a pointer to the underlying model.
   virtual const AssistantUiModel* GetModel() const = 0;
 
+  // Returns the number of user sessions where Assistant onboarding was shown.
+  virtual int GetNumberOfSessionsWhereOnboardingShown() const = 0;
+
+  // Returns true if the user has been shown Assistant onboarding in this user
+  // session.
+  virtual bool HasShownOnboarding() const = 0;
+
   // Invoke to show/close/toggle Assistant UI.
   virtual void ShowUi(chromeos::assistant::AssistantEntryPoint) = 0;
   virtual void CloseUi(chromeos::assistant::AssistantExitPoint) = 0;

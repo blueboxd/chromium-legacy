@@ -1746,21 +1746,6 @@
             ]
         }
     ],
-    "ContextMenuCopyImage": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "ContextMenuCopyImage"
-                    ]
-                }
-            ]
-        }
-    ],
     "ContextMenuSearchWithGoogleLensMultiArm": [
         {
             "platforms": [
@@ -2342,24 +2327,6 @@
                     "name": "DisableOffSequenceTaskCancelation",
                     "disable_features": [
                         "AllowOffSequenceTaskCancelation"
-                    ]
-                }
-            ]
-        }
-    ],
-    "DiscardCodeCacheAfterFirstUse": [
-        {
-            "platforms": [
-                "android",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "EnableDiscardCodeCacheAfterFirstUse",
-                    "enable_features": [
-                        "DiscardCodeCacheAfterFirstUse"
                     ]
                 }
             ]
@@ -3826,6 +3793,26 @@
             ]
         }
     ],
+    "InhibitBlobMemoryControllerMemoryPressureResponse": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20200720",
+                    "enable_features": [
+                        "InhibitBlobMemoryControllerMemoryPressureResponse"
+                    ]
+                }
+            ]
+        }
+    ],
     "InspectionResultsCache": [
         {
             "platforms": [
@@ -4915,13 +4902,17 @@
                 {
                     "name": "AndroidExperiments",
                     "params": {
-                        "ZeroSuggestVariant:1:*": "Local",
-                        "ZeroSuggestVariant:7:*": "Local",
-                        "ZeroSuggestVariant:8:*": "Local",
-                        "rounded_edges": "true"
+                        "OmniboxMaxURLMatches": "7",
+                        "OmniboxMaxZeroSuggestMatches": "15",
+                        "UIMaxAutocompleteMatches": "8",
+                        "omnibox_compact_suggestions_variant": "semi-compact"
                     },
                     "enable_features": [
-                        "OmniboxOnFocusSuggestions"
+                        "OmniboxAdaptiveSuggestionsCount",
+                        "OmniboxCompactSuggestions",
+                        "OmniboxMaxURLMatches",
+                        "OmniboxMaxZeroSuggestMatches",
+                        "OmniboxUIExperimentMaxAutocompleteMatches"
                     ]
                 }
             ]

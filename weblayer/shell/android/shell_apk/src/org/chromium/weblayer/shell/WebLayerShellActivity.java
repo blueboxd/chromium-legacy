@@ -11,6 +11,7 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -20,11 +21,14 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup.LayoutParams;
 import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ViewSwitcher;
@@ -40,6 +44,8 @@ import org.chromium.weblayer.Browser;
 import org.chromium.weblayer.BrowsingDataType;
 import org.chromium.weblayer.ContextMenuParams;
 import org.chromium.weblayer.ErrorPageCallback;
+import org.chromium.weblayer.FaviconCallback;
+import org.chromium.weblayer.FaviconFetcher;
 import org.chromium.weblayer.FindInPageCallback;
 import org.chromium.weblayer.FullscreenCallback;
 import org.chromium.weblayer.NavigationCallback;
@@ -57,7 +63,9 @@ import org.chromium.weblayer.UrlBarOptions;
 import org.chromium.weblayer.WebLayer;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Activity for managing the Demo Shell.
@@ -136,6 +144,7 @@ public class WebLayerShellActivity extends FragmentActivity {
     private View mTopContentsContainer;
     private TabListCallback mTabListCallback;
     private List<Tab> mPreviousTabList = new ArrayList<>();
+    private Map<Tab, FaviconFetcher> mTabToFaviconFetcher = new HashMap<>();
     private Runnable mExitFullscreenRunnable;
     private View mBottomView;
     private int mTopViewMinHeight;
@@ -326,6 +335,7 @@ public class WebLayerShellActivity extends FragmentActivity {
             @Override
             public void onActiveTabChanged(Tab activeTab) {
                 mUrlViewContainer.setDisplayedChild(NONEDITABLE_URL_TEXT_VIEW);
+                updateFavicon(activeTab);
             }
             @Override
             public void onTabRemoved(Tab tab) {
@@ -352,8 +362,11 @@ public class WebLayerShellActivity extends FragmentActivity {
                             return true;
                         })
                         .build());
-        mUrlViewContainer.removeViewAt(NONEDITABLE_URL_TEXT_VIEW);
-        mUrlViewContainer.addView(nonEditUrlView, NONEDITABLE_URL_TEXT_VIEW);
+        RelativeLayout nonEditUrlViewContainer =
+                mTopContentsContainer.findViewById(R.id.noneditable_url_view_container);
+        nonEditUrlViewContainer.addView(nonEditUrlView,
+                new RelativeLayout.LayoutParams(
+                        LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
         mUrlViewContainer.setDisplayedChild(NONEDITABLE_URL_TEXT_VIEW);
 
         if (getCurrentDisplayUrl() != null) {
@@ -474,6 +487,12 @@ public class WebLayerShellActivity extends FragmentActivity {
                 return true;
             }
         });
+        mTabToFaviconFetcher.put(tab, tab.createFaviconFetcher(new FaviconCallback() {
+            @Override
+            public void onFaviconChanged(Bitmap favicon) {
+                updateFavicon(tab);
+            }
+        }));
     }
 
     private void closeTab(Tab tab) {
@@ -576,5 +595,13 @@ public class WebLayerShellActivity extends FragmentActivity {
         intent.putExtra(EXTRA_WEBVIEW_COMPAT, enableWebViewCompat);
         startActivity(intent);
         System.exit(0);
+    }
+
+    private void updateFavicon(Tab tab) {
+        if (tab == mBrowser.getActiveTab()) {
+            assert mTabToFaviconFetcher.containsKey(tab);
+            ((ImageView) findViewById(R.id.favicon_image_view))
+                    .setImageBitmap(mTabToFaviconFetcher.get(tab).getFaviconForCurrentNavigation());
+        }
     }
 }

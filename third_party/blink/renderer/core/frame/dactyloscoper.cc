@@ -48,6 +48,7 @@ void Dactyloscoper::RecordDirectSurface(ExecutionContext* context,
       .Record(document->UkmRecorder());
 }
 
+// static
 void Dactyloscoper::RecordDirectSurface(ExecutionContext* context,
                                         WebFeature feature,
                                         String str) {
@@ -59,6 +60,7 @@ void Dactyloscoper::RecordDirectSurface(ExecutionContext* context,
                                      IdentifiabilitySensitiveStringToken(str));
 }
 
+// static
 void Dactyloscoper::RecordDirectSurface(ExecutionContext* context,
                                         WebFeature feature,
                                         Vector<String> strs) {
@@ -73,6 +75,7 @@ void Dactyloscoper::RecordDirectSurface(ExecutionContext* context,
   Dactyloscoper::RecordDirectSurface(context, feature, builder.GetToken());
 }
 
+// static
 void Dactyloscoper::RecordDirectSurface(ExecutionContext* context,
                                         WebFeature feature,
                                         NotShared<DOMFloat32Array> buffer) {
@@ -84,6 +87,13 @@ void Dactyloscoper::RecordDirectSurface(ExecutionContext* context,
       base::make_span(static_cast<uint8_t*>(buffer->BaseAddress()),
                       buffer->byteLengthAsSizeT()));
   Dactyloscoper::RecordDirectSurface(context, feature, builder.GetToken());
+}
+
+// static
+void Dactyloscoper::RecordDirectSurface(ExecutionContext* context,
+                                        WebFeature feature,
+                                        SVGStringListTearOff* strings) {
+  RecordDirectSurface(context, feature, strings->Target()->Values());
 }
 
 }  // namespace blink

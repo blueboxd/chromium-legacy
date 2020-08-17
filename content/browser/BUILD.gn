@@ -2607,6 +2607,8 @@ source_set("browser") {
       "webauth/authenticator_mojom_traits.h",
       "webauth/virtual_authenticator.cc",
       "webauth/virtual_authenticator.h",
+      "webauth/virtual_authenticator_manager_impl.cc",
+      "webauth/virtual_authenticator_manager_impl.h",
       "webauth/virtual_authenticator_mojom_traits.h",
       "webauth/virtual_authenticator_request_delegate.cc",
       "webauth/virtual_authenticator_request_delegate.h",

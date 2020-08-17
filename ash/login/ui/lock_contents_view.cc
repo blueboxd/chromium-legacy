@@ -1049,6 +1049,17 @@ void LockContentsView::OnAuthDisabledForUser(
   }
 }
 
+void LockContentsView::OnSetTpmLockedState(const AccountId& user,
+                                           bool is_locked,
+                                           base::TimeDelta time_left) {
+  LoginBigUserView* big_user =
+      TryToFindBigUser(user, false /*require_auth_active*/);
+  if (big_user && big_user->auth_user()) {
+    LayoutAuth(big_user, nullptr /*opt_to_hide*/, true /*animate*/);
+    big_user->auth_user()->SetTpmLockedState(is_locked, time_left);
+  }
+}
+
 void LockContentsView::OnTapToUnlockEnabledForUserChanged(const AccountId& user,
                                                           bool enabled) {
   LockContentsView::UserState* state = FindStateForUser(user);
@@ -1763,7 +1774,7 @@ void LockContentsView::LayoutAuth(LoginBigUserView* to_update,
   DCHECK(to_update);
 
   auto capture_animation_state_pre_layout = [&](LoginBigUserView* view) {
-    if (!animate || !view)
+    if (!view)
       return;
     if (view->auth_user())
       view->auth_user()->CaptureStateForAnimationPreLayout();
@@ -1818,10 +1829,10 @@ void LockContentsView::LayoutAuth(LoginBigUserView* to_update,
   };
 
   auto apply_animation_post_layout = [&](LoginBigUserView* view) {
-    if (!animate || !view)
+    if (!view)
       return;
     if (view->auth_user())
-      view->auth_user()->ApplyAnimationPostLayout();
+      view->auth_user()->ApplyAnimationPostLayout(animate);
   };
 
   // The high-level layout flow:

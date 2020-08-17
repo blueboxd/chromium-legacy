@@ -15,6 +15,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -1111,8 +1112,8 @@ ChromePasswordProtectionService::GetPlaceholdersForSavedPasswordWarningText()
                        // 2. if "," + the current priority is a suffix of the
                        // matching domain The second case covers eTLD+1.
                        return (domain == *priority_domain_iter) ||
-                              domainStringPiece.ends_with(
-                                  "." + *priority_domain_iter);
+                              base::EndsWith(domainStringPiece,
+                                             "." + *priority_domain_iter);
                      }) != matching_domains.end()) {
       placeholders.push_back(base::UTF8ToUTF16(matching_domain));
     }

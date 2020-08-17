@@ -68,7 +68,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
       mojo::PendingRemote<mojom::WebSocketHandshakeClient> handshake_client,
       mojo::PendingRemote<mojom::AuthenticationHandler> auth_handler,
       mojo::PendingRemote<mojom::TrustedHeaderClient> header_client,
-      WebSocketThrottler::PendingConnection pending_connection_tracker,
+      base::Optional<WebSocketThrottler::PendingConnection>
+          pending_connection_tracker,
       DataPipeUseTracker,
       base::TimeDelta delay);
   ~WebSocket() override;
@@ -181,7 +182,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
   mojo::Remote<mojom::AuthenticationHandler> auth_handler_;
   mojo::Remote<mojom::TrustedHeaderClient> header_client_;
 
-  WebSocketThrottler::PendingConnection pending_connection_tracker_;
+  base::Optional<WebSocketThrottler::PendingConnection>
+      pending_connection_tracker_;
 
   // The channel we use to send events to the network.
   std::unique_ptr<net::WebSocketChannel> channel_;

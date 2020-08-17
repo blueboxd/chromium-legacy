@@ -229,10 +229,6 @@ void TestAssistantService::StartVoiceInteraction() {
     SendInteractionResponse();
 }
 
-void TestAssistantService::StartWarmerWelcomeInteraction(
-    int num_warmer_welcome_triggered,
-    bool allow_tts) {}
-
 void TestAssistantService::StopActiveInteraction(bool cancel_conversation) {
   if (!running_active_interaction_)
     return;

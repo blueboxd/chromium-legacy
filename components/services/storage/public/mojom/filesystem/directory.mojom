@@ -69,6 +69,16 @@ enum FileWriteAccess {
   kAppendOnly,
 };
 
+// A structure used to describe access rights for a specific path in the
+// filesystem.
+struct PathAccessInfo {
+  // Indicates whether the path can be opened for reading.
+  bool can_read;
+
+  // Indicates whether the path can be opened for writing.
+  bool can_write;
+};
+
 // An empty interface used to hold remote ownership of a lock acquired via
 // |Directory.LockFile()| below. Closing the remote endpoint of this interface
 // effectively releases the corresponding lock even if |Release()| is not
@@ -128,6 +138,11 @@ interface Directory {
   [Sync]
   GetFileInfo(StrictRelativePath path) => (mojo_base.mojom.FileInfo? info);
 
+  // Retrieves access information about a specific filesystem entry at |path|.
+  // Returns null on failure or a populated |info| struct on success.
+  [Sync]
+  GetPathAccess(StrictRelativePath path) => (PathAccessInfo? info);
+
   // Renames a file from |old_path| to |new_path|. Note that if |new_path|
   // already exists, it will be overwritten by this call.
   [Sync]
@@ -142,4 +157,19 @@ interface Directory {
   [Sync]
   LockFile(StrictRelativePath path) => (mojo_base.mojom.FileError error,
                                         pending_remote<FileLock>? lock);
+
+  // Asks the backend to set the length of the open file identified by |file|.
+  // |file| is returned back to the caller when done, regardless of success or
+  // failure.
+  //
+  // Note that this is a bit out-of-place on the Directory interface, but it's
+  // here out of an abundance of convenience and simplicity, to work around a
+  // (hopefully temporary) shortcoming of some sandbox configurations where
+  // enabling POSIX ftruncate() is not feasible.
+  //
+  // See https://crbug.com/1084565 for some history on this subject. In short,
+  // it's an issue with sandboxing on Mac OSX < 10.15.
+  [Sync]
+  SetOpenedFileLength(mojo_base.mojom.File file, uint64 size)
+      => (bool success, mojo_base.mojom.File file);
 };

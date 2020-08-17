@@ -1651,12 +1651,16 @@ void DocumentLoader::InitializeWindow(Document* owner_document) {
     // Inheriting cases use their agent's origin-isolated value, which is set by
     // whatever they're inheriting from.
     //
+    // javascript: URLs use the calling page as their Url() value, so we need to
+    // exclude them explicitly.
+    //
     // TODO(https://crbug.com/1111897): This call is likely to happen happen
     // multiple times per agent, since navigations can happen multiple times per
     // agent. This is subpar. Currently a DCHECK guards against it happening
     // multiple times *with different values*, but ideally we would use a better
     // architecture.
-    if (!Document::ShouldInheritSecurityOriginFromOwner(Url())) {
+    if (!Document::ShouldInheritSecurityOriginFromOwner(Url()) &&
+        commit_reason_ != CommitReason::kJavascriptUrl) {
       agent->SetIsOriginIsolated(origin_isolated_);
     }
   } else {

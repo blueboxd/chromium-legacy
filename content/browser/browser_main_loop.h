@@ -293,7 +293,8 @@ class CONTENT_EXPORT BrowserMainLoop {
   base::Optional<base::ThreadPoolInstance::ScopedBestEffortExecutionFence>
       scoped_best_effort_execution_fence_;
 
-  // Members initialized in |MainMessageLoopStart()| ---------------------------
+  // Unregister UI thread from hang watching on destruction.
+  base::ScopedClosureRunner unregister_thread_closure_;
 
   // Members initialized in |PostMainMessageLoopStart()| -----------------------
   std::unique_ptr<BrowserProcessSubThread> io_thread_;

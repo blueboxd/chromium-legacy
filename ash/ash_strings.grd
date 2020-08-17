@@ -2186,6 +2186,12 @@ This file contains the strings for ash.
       <message name="IDS_ASH_LOGIN_SCREEN_UNVERIFIED_CODE_WARNING" desc="Message shown at the bottom of the login screen when the device has ran or is capable to run unverified code.">
         This device may contain apps that haven't been verified by Google.
       </message>
+      <message name="IDS_ASH_LOGIN_POD_TPM_LOCKED_ISSUE_WARNING" desc="Message shown as part of the TPM locked warning bubble when TPM is locked.">
+        Your Chromebook is locked due to a known issue. You will be able to sign in after: <ph name="TIME_LEFT">$1<ex>1 hour, 15 minutes, 10 seconds</ex></ph>.
+      </message>
+      <message name="IDS_ASH_LOGIN_POD_TPM_LOCKED_ISSUE_DESCRIPTION" desc="Message shown as part of the TPM locked warning bubble when TPM is locked.">
+        Your Chromebook needs to stay on and connected to power during this time. Make sure the charger or adapter cables are completely plugged in, both to your Chromebook and the power outlet. Do not turn off your Chromebook.
+      </message>
 
       <!-- Multi-profiles intro dialog -->
       <message name="IDS_ASH_MULTIPROFILES_INTRO_HEADLINE" desc="Describes which feature multi-profiles intro dialog presents.">
@@ -2624,6 +2630,32 @@ Here are some things you can try to get started.
       </message>
       <message name="IDS_ASH_AMBIENT_MODE_WEATHER_TEMPERATURE_IN_CELSIUS" desc="Text of the weather temperature in Celsius.">
         <ph name="TEMPERATURE_C">$1<ex>25</ex></ph>° C
+      </message>
+
+      <!-- Capture Mode -->
+      <message name="IDS_ASH_SCREEN_CAPTURE_DISPLAY_SOURCE" desc="The name that is the display source of the screen capture notification.">
+        Screen capture
+      </message>
+      <message name="IDS_ASH_SCREEN_CAPTURE_SCREENSHOT_TITLE" desc="The title of the notificaton which shows after a screenshot is taken.">
+        Screenshot taken and saved to clipboard
+      </message>
+      <message name="IDS_ASH_SCREEN_CAPTURE_RECORDING_TITLE" desc="The titile of the notification which shows after a screen recording is taken.">
+        Screen recording taken
+      </message>
+      <message name="IDS_ASH_SCREEN_CAPTURE_MESSAGE" desc="The message shows in the screenshot or screen recording notification.">
+        Show in folder
+      </message>
+      <message name="IDS_ASH_SCREEN_CAPTURE_BUTTON_SHARE" desc="The share button label for the screen capture notifiction.">
+        Share
+      </message>
+      <message name="IDS_ASH_SCREEN_CAPTURE_BUTTON_EDIT" desc="The edit button label for the screen catpure notification.">
+        Edit
+      </message>
+      <message name="IDS_ASH_SCREEN_CAPTURE_BUTTON_FLOAT_ON_TOP" desc="The float-on-top button label for the screen capture notification.">
+        Float on top
+      </message>
+      <message name="IDS_ASH_SCREEN_CAPTURE_BUTTON_DELETE" desc="The delete button label for the screen capture notificaiton.">
+        Delete
       </message>
     </messages>
   </release>

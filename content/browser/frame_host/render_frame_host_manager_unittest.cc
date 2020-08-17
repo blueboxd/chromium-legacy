@@ -273,8 +273,7 @@ void DidNavigateFrame(RenderFrameHostManager* rfh_manager,
   rfh_manager->DidNavigateFrame(rfh, true /* was_caused_by_user_gesture */,
                                 false /* is_same_document_navigation */,
                                 false /* clear_proxies_on_commit */,
-                                blink::FramePolicy(),
-                                false /* should_replace_current_entry */);
+                                blink::FramePolicy());
 }
 
 }  // namespace

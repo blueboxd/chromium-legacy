@@ -60,12 +60,8 @@ class CORE_EXPORT ScrollbarTheme {
 
   ScrollbarPart HitTestRootFramePosition(const Scrollbar&, const IntPoint&);
 
-  // This returns a fixed value regardless of device-scale-factor.
-  // This returns thickness when scrollbar is painted.  i.e. It's not 0 even in
-  // overlay scrollbar mode.
-  // See also Scrollbar::scrollbarThickness().
-  virtual int ScrollbarThickness() { return 0; }
-  virtual int ScrollbarMargin() const { return 0; }
+  virtual int ScrollbarThickness(float scale_from_dip) { return 0; }
+  virtual int ScrollbarMargin(float scale_from_dip) const { return 0; }
 
   virtual bool IsSolidColor() const { return false; }
   virtual bool UsesOverlayScrollbars() const { return false; }
@@ -153,7 +149,6 @@ class CORE_EXPORT ScrollbarTheme {
   virtual IntRect ForwardButtonRect(const Scrollbar&) = 0;
   virtual IntRect TrackRect(const Scrollbar&) = 0;
   virtual IntRect ThumbRect(const Scrollbar&);
-  virtual int ThumbThickness(const Scrollbar&);
 
   virtual int MinimumThumbLength(const Scrollbar&) = 0;
 

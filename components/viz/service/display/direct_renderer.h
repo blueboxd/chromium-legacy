@@ -140,6 +140,13 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
   DelegatedInkPointRendererBase* GetDelegatedInkPointRenderer();
   void SetDelegatedInkMetadata(std::unique_ptr<DelegatedInkMetadata> metadata);
 
+  // Returns true if composite time tracing is enabled. This measures a detailed
+  // trace log for draw time spent per quad.
+  virtual bool CompositeTimeTracingEnabled();
+
+  // Puts the draw time wall in trace file relative to the |ready_timestamp|.
+  virtual void AddCompositeTimeTraces(base::TimeTicks ready_timestamp);
+
  protected:
   friend class BspWalkActionDrawPolygon;
   FRIEND_TEST_ALL_PREFIXES(DisplayTest, SkiaDelegatedInkRenderer);

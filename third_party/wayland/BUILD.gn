@@ -19,9 +19,9 @@ if (!use_system_libwayland) {
 
   static_library("wayland_util") {
     sources = [
+      "src/src/wayland-private.h",
       "src/src/wayland-util.c",
       "src/src/wayland-util.h",
-      "src/src/wayland-private.h",
     ]
 
     configs -= [ "//build/config/compiler:chromium_code" ]
@@ -102,6 +102,22 @@ if (!use_system_libwayland) {
     public_configs = [ ":wayland_config" ]
   }
 
+  static_library("wayland_egl") {
+    sources = [
+      "src/egl/wayland-egl-backend.h",
+      "src/egl/wayland-egl-core.h",
+      "src/egl/wayland-egl.c",
+      "src/egl/wayland-egl.h",
+    ]
+
+    deps = [ ":wayland_util" ]
+
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [ "//build/config/compiler:no_chromium_code" ]
+
+    public_configs = [ ":wayland_config" ]
+  }
+
   config("wayland_scanner_config") {
     cflags = [
       "-Wno-int-conversion",
@@ -137,6 +153,10 @@ if (use_system_libwayland) {
     packages = [ "wayland-server" ]
   }
 
+  pkg_config("wayland_egl_config") {
+    packages = [ "wayland-egl" ]
+  }
+
   group("wayland_client") {
     public_configs = [ ":wayland_client_config" ]
   }
@@ -147,5 +167,9 @@ if (use_system_libwayland) {
 
   group("wayland_util") {
     public_configs = [ ":wayland_client_config" ]
+  }
+
+  group("wayland_egl") {
+    public_configs = [ ":wayland_egl_config" ]
   }
 }

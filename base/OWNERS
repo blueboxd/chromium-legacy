@@ -5,6 +5,7 @@ danakj@chromium.org
 dcheng@chromium.org
 fdoray@chromium.org
 gab@chromium.org
+jdoerrie@chromium.org
 kylechar@chromium.org
 mark@chromium.org
 thakis@chromium.org
@@ -33,8 +34,5 @@ per-file safe_numerics_unittest.cc=file://base/numerics/OWNERS
 
 # For TCMalloc tests:
 per-file security_unittest.cc=jln@chromium.org
-
-# For Value:
-per-file value*=jdoerrie@chromium.org
 
 # COMPONENT: Internals>Core

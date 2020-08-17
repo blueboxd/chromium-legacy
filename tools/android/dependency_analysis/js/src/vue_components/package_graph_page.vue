@@ -159,11 +159,7 @@ const PackageGraphPage = {
     if (this.displaySettingsData.nodeFilterData.filterList.length === 0) {
       // TODO(yjlong): This is test data. Remove this when no longer needed.
       [
-        'org.chromium.base',
-        'org.chromium.chrome.browser.gsa',
-        'org.chromium.chrome.browser.omaha',
-        'org.chromium.chrome.browser.media',
-        'org.chromium.ui.base',
+        'org.chromium.chrome.browser.tab',
       ].forEach(nodeName => this.filterAddOrCheckNode(nodeName));
     }
   },

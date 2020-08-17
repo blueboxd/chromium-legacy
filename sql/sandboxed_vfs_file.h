@@ -13,7 +13,7 @@ namespace sql {
 
 class SandboxedVfs;
 
-// SQLite VFS file implementation that works in a typical Chromium sandbox.
+// SQLite VFS file implementation that works in a sandboxed process.
 //
 // An instance is created when SQLite calls into SandboxedVfs::Open(). The
 // instance is deleted by a call to SandboxedVfsFile::Close().

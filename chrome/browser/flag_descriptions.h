@@ -2617,6 +2617,11 @@ extern const char kUserDataSnapshotName[];
 extern const char kUserDataSnapshotDescription[];
 #endif  // !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
+extern const char kWebShareName[];
+extern const char kWebShareDescription[];
+#endif  // defined(OS_WIN) || defined(OS_CHROMEOS)
+
 // Feature flags --------------------------------------------------------------
 
 #if defined(DCHECK_IS_CONFIGURABLE)

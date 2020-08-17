@@ -71,12 +71,16 @@ class COMPONENT_EXPORT(ASSISTANT_UI) MockAssistantViewDelegate
               (const std::string&, int),
               (override));
 
+  MOCK_METHOD(void, OnOnboardingShown, (), (override));
+
   MOCK_METHOD(void, OnOptInButtonPressed, (), (override));
 
   MOCK_METHOD(void,
               OnSuggestionPressed,
               (const base::UnguessableToken& suggestion_id),
               (override));
+
+  MOCK_METHOD(bool, ShouldShowOnboarding, (), (const, override));
 };
 
 }  // namespace ash

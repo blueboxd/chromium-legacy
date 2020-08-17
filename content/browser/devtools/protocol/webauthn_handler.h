@@ -14,7 +14,6 @@
 
 namespace content {
 class VirtualAuthenticator;
-class VirtualFidoDiscoveryFactory;
 namespace protocol {
 
 class WebAuthnHandler : public DevToolsDomainHandler, public WebAuthn::Backend {
@@ -59,7 +58,6 @@ class WebAuthnHandler : public DevToolsDomainHandler, public WebAuthn::Backend {
   Response FindAuthenticator(const String& id,
                              VirtualAuthenticator** out_authenticator);
   RenderFrameHostImpl* frame_host_ = nullptr;
-  VirtualFidoDiscoveryFactory* virtual_discovery_factory_ = nullptr;
   DISALLOW_COPY_AND_ASSIGN(WebAuthnHandler);
 };
 

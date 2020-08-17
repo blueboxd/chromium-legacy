@@ -80,7 +80,8 @@ void PartitionImpl::BindLocalStorageControl(
   local_storage_ = new LocalStorageImpl(
       path_.value_or(base::FilePath()), base::SequencedTaskRunnerHandle::Get(),
       base::ThreadPool::CreateSequencedTaskRunner(
-          {base::MayBlock(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN}),
+          {base::MayBlock(), base::WithBaseSyncPrimitives(),
+           base::TaskShutdownBehavior::BLOCK_SHUTDOWN}),
       std::move(receiver));
 }
 

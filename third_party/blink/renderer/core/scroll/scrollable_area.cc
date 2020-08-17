@@ -768,7 +768,9 @@ void ScrollableArea::ShowNonMacOverlayScrollbars() {
 }
 
 const Document* ScrollableArea::GetDocument() const {
-  return &GetLayoutBox()->GetDocument();
+  if (auto* box = GetLayoutBox())
+    return &box->GetDocument();
+  return nullptr;
 }
 
 IntSize ScrollableArea::ClampScrollOffset(const IntSize& scroll_offset) const {
@@ -1002,6 +1004,14 @@ ScrollableArea* ScrollableArea::GetForScrolling(const LayoutBox* layout_box) {
   // ScrollableArea.
   LocalFrame& root_frame = layout_box->GetFrame()->LocalFrameRoot();
   return root_frame.View()->GetScrollableArea();
+}
+
+float ScrollableArea::ScaleFromDIP() const {
+  auto* client = GetChromeClient();
+  auto* document = GetDocument();
+  if (client && document)
+    return client->WindowToViewportScalar(document->GetFrame(), 1.0f);
+  return 1.0f;
 }
 
 }  // namespace blink

@@ -171,7 +171,7 @@ void Uploader::ProcessBlob(Priority priority,
     }
 
     std::vector<EncryptedRecord>* const records_;
-    const std::vector<const uint8_t> data_;
+    const std::vector<uint8_t> data_;
   };
 
   Start<ProcessBlobContext>(data.ValueOrDie(), encrypted_records_.get(),

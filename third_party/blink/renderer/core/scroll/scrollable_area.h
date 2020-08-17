@@ -96,6 +96,9 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
 
   virtual ChromeClient* GetChromeClient() const { return nullptr; }
 
+  // Used to scale a length in dip units into a length in layout/paint units.
+  float ScaleFromDIP() const;
+
   virtual SmoothScrollSequencer* GetSmoothScrollSequencer() const {
     return nullptr;
   }

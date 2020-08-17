@@ -1073,8 +1073,8 @@ void ComputedStyle::UpdateIsStackingContextWithoutContainment(
 
   if (is_document_element || is_in_top_layer || is_svg_stacking ||
       StyleType() == kPseudoIdBackdrop || HasTransformRelatedProperty() ||
-      HasGroupingProperty(BoxReflect()) || HasViewportConstrainedPosition() ||
-      GetPosition() == EPosition::kSticky ||
+      HasStackingGroupingProperty(BoxReflect()) ||
+      HasViewportConstrainedPosition() || GetPosition() == EPosition::kSticky ||
       HasPropertyThatCreatesStackingContext(WillChangeProperties()) ||
       /* TODO(882625): This becomes unnecessary when will-change correctly takes
       into account active animations. */

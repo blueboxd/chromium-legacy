@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_PERFORMANCE_MANAGER_PUBLIC_V8_MEMORY_V8_PER_FRAME_MEMORY_DECORATOR_H_
 #define COMPONENTS_PERFORMANCE_MANAGER_PUBLIC_V8_MEMORY_V8_PER_FRAME_MEMORY_DECORATOR_H_
 
+#include <vector>
+
 #include "base/containers/flat_map.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
@@ -264,9 +266,12 @@ class V8PerFrameMemoryDecorator
   base::Value DescribeFrameNodeData(const FrameNode* node) const override;
   base::Value DescribeProcessNodeData(const ProcessNode* node) const override;
 
-  // Returns the amount of time to wait between requests for each process.
-  // Returns a zero TimeDelta if no requests should be made.
-  base::TimeDelta GetMinTimeBetweenRequestsPerProcess() const;
+  // Returns the next measurement request that should be scheduled.
+  V8PerFrameMemoryRequest* GetNextRequest() const;
+
+  // Returns the next measurement request with mode kBounded that should be
+  // scheduled.
+  V8PerFrameMemoryRequest* GetNextBoundedRequest() const;
 
   // Implementation details below this point.
 
@@ -288,33 +293,63 @@ class V8PerFrameMemoryDecorator
 
   Graph* graph_ = nullptr;
 
-  // List of requests sorted by sample_frequency (lowest first).
-  std::vector<V8PerFrameMemoryRequest*> measurement_requests_;
+  // Lists of requests sorted by min_time_between_requests (lowest first).
+  std::vector<V8PerFrameMemoryRequest*> bounded_measurement_requests_;
+  std::vector<V8PerFrameMemoryRequest*> lazy_measurement_requests_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 };
 
 class V8PerFrameMemoryRequest {
  public:
+  enum class MeasurementMode {
+    // Measurements will be taken at the next GC after a request is received.
+    // If no GC happens within a bounded time an extra GC will be scheduled.
+    kBounded,
+
+    // Measurements will only be taken at the next scheduled GC after a request
+    // is received.
+    kLazy,
+
+    kDefault = kBounded,
+  };
+
   // Creates a request but does not start the measurements. Call
   // StartMeasurement to add it to the request list.
-  explicit V8PerFrameMemoryRequest(const base::TimeDelta& sample_frequency);
+  //
+  // Measurement requests will be sent repeatedly to each process, with at
+  // least |min_time_between_requests| (which must be greater than 0) between
+  // each repetition. The next GC after each request is received will be
+  // instrumented, which adds some overhead. |mode| determines whether extra
+  // GC's can be scheduled, which would add even more overhead.
+  explicit V8PerFrameMemoryRequest(
+      const base::TimeDelta& min_time_between_requests,
+      MeasurementMode mode = MeasurementMode::kDefault);
 
-  // Creates a request and calls StartMeasurement. This will request
-  // measurements for all ProcessNode's in |graph| with frequency
-  // |sample_frequency|.
-  V8PerFrameMemoryRequest(const base::TimeDelta& sample_frequency,
+  // Creates a request and calls StartMeasurement with the given |graph| and
+  // |min_time_between_requests|, using the default measurement mode.
+  V8PerFrameMemoryRequest(const base::TimeDelta& min_time_between_requests,
                           Graph* graph);
+
+  // Creates a request and calls StartMeasurement with the given |graph|,
+  // |min_time_between_requests|, and |mode|.
+  V8PerFrameMemoryRequest(const base::TimeDelta& min_time_between_requests,
+                          MeasurementMode mode,
+                          Graph* graph);
+
   ~V8PerFrameMemoryRequest();
 
   V8PerFrameMemoryRequest(const V8PerFrameMemoryRequest&) = delete;
   V8PerFrameMemoryRequest& operator=(const V8PerFrameMemoryRequest&) = delete;
 
-  const base::TimeDelta& sample_frequency() const { return sample_frequency_; }
+  const base::TimeDelta& min_time_between_requests() const {
+    return min_time_between_requests_;
+  }
 
-  // Requests measurements for all ProcessNode's in |graph| with this object's
-  // sample frequency. This must only be called once for each
-  // V8PerFrameMemoryRequest.
+  MeasurementMode mode() const { return mode_; }
+
+  // Requests measurements for all ProcessNode's in |graph|. This must only be
+  // called once for each V8PerFrameMemoryRequest.
   void StartMeasurement(Graph* graph);
 
   // Adds/removes an observer.
@@ -326,10 +361,11 @@ class V8PerFrameMemoryRequest {
   // Private constructor for V8PerFrameMemoryRequestAnySeq. Saves
   // |off_sequence_request| as a pointer to the off-sequence object that
   // triggered the request and starts measurements with frequency
-  // |sample_frequency|.
+  // |min_time_between_requests|.
   V8PerFrameMemoryRequest(
       util::PassKey<V8PerFrameMemoryRequestAnySeq>,
-      const base::TimeDelta& sample_frequency,
+      const base::TimeDelta& min_time_between_requests,
+      MeasurementMode mode,
       base::WeakPtr<V8PerFrameMemoryRequestAnySeq> off_sequence_request);
 
   // V8PerFrameMemoryDecorator calls OnDecoratorUnregistered when it is removed
@@ -343,7 +379,8 @@ class V8PerFrameMemoryRequest {
       const ProcessNode* process_node) const;
 
  private:
-  base::TimeDelta sample_frequency_;
+  base::TimeDelta min_time_between_requests_;
+  MeasurementMode mode_;
   V8PerFrameMemoryDecorator* decorator_ = nullptr;
   base::ObserverList<V8PerFrameMemoryObserver, /*check_empty=*/true> observers_;
 
@@ -450,8 +487,11 @@ class V8PerFrameMemoryObserverAnySeq : public base::CheckedObserver {
 // Wrapper that can instantiate a V8PerFrameMemoryRequest from any sequence.
 class V8PerFrameMemoryRequestAnySeq {
  public:
+  using MeasurementMode = V8PerFrameMemoryRequest::MeasurementMode;
+
   explicit V8PerFrameMemoryRequestAnySeq(
-      const base::TimeDelta& sample_frequency);
+      const base::TimeDelta& min_time_between_requests,
+      MeasurementMode mode = MeasurementMode::kDefault);
   ~V8PerFrameMemoryRequestAnySeq();
 
   V8PerFrameMemoryRequestAnySeq(const V8PerFrameMemoryRequestAnySeq&) = delete;

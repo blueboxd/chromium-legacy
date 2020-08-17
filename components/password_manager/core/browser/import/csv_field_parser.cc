@@ -6,6 +6,7 @@
 
 #include "base/check_op.h"
 #include "base/notreached.h"
+#include "base/strings/string_util.h"
 
 namespace password_manager {
 
@@ -34,7 +35,7 @@ bool CSVFieldParser::NextField(base::StringPiece* field_contents) {
         base::StringPiece(row_.data() + start, position_ - start - 1);
 
     if (field_contents->starts_with("\"")) {
-      DCHECK(field_contents->ends_with("\"")) << *field_contents;
+      DCHECK(base::EndsWith(*field_contents, "\"")) << *field_contents;
       DCHECK_GE(field_contents->size(), 2u);
       field_contents->remove_prefix(1);
       field_contents->remove_suffix(1);

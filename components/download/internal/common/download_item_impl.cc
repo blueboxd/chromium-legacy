@@ -1604,9 +1604,8 @@ void DownloadItemImpl::Start(
     }
     RecordDownloadMimeType(mime_type_);
     DownloadContent file_type = DownloadContentFromMimeType(mime_type_, false);
-    bool is_same_host_download =
-        base::StringPiece(new_create_info.url().host())
-            .ends_with(new_create_info.site_url.host());
+    bool is_same_host_download = base::EndsWith(
+        new_create_info.url().host(), new_create_info.site_url.host());
     DownloadConnectionSecurity state = CheckDownloadConnectionSecurity(
         new_create_info.url(), new_create_info.url_chain);
     DownloadUkmHelper::RecordDownloadStarted(

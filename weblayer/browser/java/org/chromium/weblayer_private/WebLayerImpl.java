@@ -38,6 +38,7 @@ import org.chromium.base.StrictModeContext;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.base.compat.ApiHelperForO;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.components.embedder_support.application.ClassLoaderContextWrapperFactory;
@@ -197,7 +198,9 @@ public final class WebLayerImpl extends IWebLayer.Stub {
             notifyWebViewRunningInProcess(remoteContext.getClassLoader());
         }
 
-        Context appContext = minimalInitForContext(appContextWrapper, remoteContextWrapper);
+        remoteContext = processRemoteContext(remoteContext);
+        Context appContext = minimalInitForContext(
+                ObjectWrapper.unwrap(appContextWrapper, Context.class), remoteContext);
         PackageInfo packageInfo = WebViewFactory.getLoadedPackageInfo();
 
         // If a remote context is not provided, the client is an older version that loads the native
@@ -211,7 +214,8 @@ public final class WebLayerImpl extends IWebLayer.Stub {
                 FirebaseConfig.getFirebaseAppIdForPackage(packageInfo.packageName));
         // TODO: The call to onResourcesLoaded() can be slow, we may need to parallelize this with
         // other expensive startup tasks.
-        R.onResourcesLoaded(forceCorrectPackageId(remoteContext));
+        org.chromium.weblayer_private.base.R.onResourcesLoaded(
+                forceCorrectPackageId(remoteContext));
         SelectionPopupController.setMustUseWebContentsContext();
 
         ResourceBundle.setAvailablePakLocales(new String[] {}, ProductConfig.UNCOMPRESSED_LOCALES);
@@ -298,7 +302,8 @@ public final class WebLayerImpl extends IWebLayer.Stub {
             IObjectWrapper appContext, IObjectWrapper remoteContext) {
         StrictModeWorkaround.apply();
         // This is a no-op if init has already happened.
-        WebLayerImpl.minimalInitForContext(appContext, remoteContext);
+        WebLayerImpl.minimalInitForContext(ObjectWrapper.unwrap(appContext, Context.class),
+                processRemoteContext(ObjectWrapper.unwrap(remoteContext, Context.class)));
         return CrashReporterControllerImpl.getInstance();
     }
 
@@ -444,13 +449,10 @@ public final class WebLayerImpl extends IWebLayer.Stub {
      * Performs the minimal initialization needed for a context. This is used for example in
      * CrashReporterControllerImpl, so it can be used before full WebLayer initialization.
      */
-    private static Context minimalInitForContext(
-            IObjectWrapper appContextWrapper, IObjectWrapper remoteContextWrapper) {
+    private static Context minimalInitForContext(Context appContext, Context remoteContext) {
         if (ContextUtils.getApplicationContext() != null) {
             return ContextUtils.getApplicationContext();
         }
-        Context appContext = ObjectWrapper.unwrap(appContextWrapper, Context.class);
-        Context remoteContext = ObjectWrapper.unwrap(remoteContextWrapper, Context.class);
         assert remoteContext != null;
         ClassLoaderContextWrapperFactory.setResourceOverrideContext(remoteContext);
         // Wrap the app context so that it can be used to load WebLayer implementation classes.
@@ -672,6 +674,18 @@ public final class WebLayerImpl extends IWebLayer.Stub {
         } catch (Exception e) {
             Log.w(TAG, "Unable to notify WebView running in process.");
         }
+    }
+
+    private static Context processRemoteContext(Context remoteContext) {
+        // If WebLayer is in a DFM, make sure the correct resources are used.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            try {
+                return ApiHelperForO.createContextForSplit(remoteContext, "weblayer");
+            } catch (PackageManager.NameNotFoundException e) {
+                // WebLayer is not in a split, the original context will have the resources.
+            }
+        }
+        return remoteContext;
     }
 
     @CalledByNative

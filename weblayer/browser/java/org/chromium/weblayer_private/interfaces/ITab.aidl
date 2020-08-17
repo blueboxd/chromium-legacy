@@ -8,6 +8,8 @@ import java.util.List;
 
 import org.chromium.weblayer_private.interfaces.IDownloadCallbackClient;
 import org.chromium.weblayer_private.interfaces.IErrorPageCallbackClient;
+import org.chromium.weblayer_private.interfaces.IFaviconFetcher;
+import org.chromium.weblayer_private.interfaces.IFaviconFetcherClient;
 import org.chromium.weblayer_private.interfaces.IFindInPageCallbackClient;
 import org.chromium.weblayer_private.interfaces.IFullscreenCallbackClient;
 import org.chromium.weblayer_private.interfaces.IGoogleAccountsCallbackClient;
@@ -58,8 +60,6 @@ interface ITab {
 
   // Added in 85
   boolean setData(in Map data) = 17;
-
-  // Added in 85
   Map getData() = 18;
   void registerWebMessageCallback(in String jsObjectName,
                                   in List<String> allowedOrigins,
@@ -70,4 +70,5 @@ interface ITab {
 
   // Added in 86
   void setGoogleAccountsCallbackClient(IGoogleAccountsCallbackClient client) = 23;
+  IFaviconFetcher createFaviconFetcher(IFaviconFetcherClient client) = 24;
 }

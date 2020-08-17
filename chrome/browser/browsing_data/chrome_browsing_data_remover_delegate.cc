@@ -710,7 +710,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
           g_browser_process->safe_browsing_service();
       if (sb_service) {
         mojo::Remote<network::mojom::CookieManager> cookie_manager;
-        sb_service->GetNetworkContext()->GetCookieManager(
+        sb_service->GetNetworkContext(profile_)->GetCookieManager(
             cookie_manager.BindNewPipeAndPassReceiver());
 
         network::mojom::CookieManager* manager_ptr = cookie_manager.get();

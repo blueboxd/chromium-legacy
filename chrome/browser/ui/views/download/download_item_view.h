@@ -126,7 +126,7 @@ class DownloadItemView : public views::View,
   // Updates the file path, and if necessary, begins loading the file icon in
   // various sizes. This may eventually result in a callback to
   // OnFileIconLoaded().
-  void UpdateFilePath();
+  void UpdateFilePathAndIcons();
 
   // Updates the visibility, text, size, etc. of all labels.
   void UpdateLabels();

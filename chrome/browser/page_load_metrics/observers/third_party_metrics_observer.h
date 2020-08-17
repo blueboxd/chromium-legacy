@@ -74,7 +74,7 @@ class ThirdPartyMetricsObserver
       const page_load_metrics::mojom::PageLoadTiming& main_frame_timing);
 
   // Records feature usage for |access_type| with use counters.
-  void RecordStorageUseCounter(AccessType accesse_type);
+  void RecordStorageAccessUseCounter(AccessType access_type);
 
   AccessType StorageTypeToAccessType(
       page_load_metrics::StorageType storage_type);

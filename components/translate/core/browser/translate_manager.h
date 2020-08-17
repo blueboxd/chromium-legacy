@@ -139,16 +139,14 @@ class TranslateManager {
   void ReportLanguageDetectionError();
 
   // Callback types for translate errors.
-  typedef base::RepeatingCallback<void(const TranslateErrorDetails&)>
-      TranslateErrorCallback;
-  typedef base::CallbackList<void(const TranslateErrorDetails&)>
-      TranslateErrorCallbackList;
+  using TranslateErrorCallbackList =
+      base::RepeatingCallbackList<void(const TranslateErrorDetails&)>;
+  using TranslateErrorCallback = TranslateErrorCallbackList::CallbackType;
 
   // Callback types for translate initialization.
-  typedef base::RepeatingCallback<void(const TranslateInitDetails&)>
-      TranslateInitCallback;
-  typedef base::CallbackList<void(const TranslateInitDetails&)>
-      TranslateInitCallbackList;
+  using TranslateInitCallbackList =
+      base::RepeatingCallbackList<void(const TranslateInitDetails&)>;
+  using TranslateInitCallback = TranslateInitCallbackList::CallbackType;
 
   // Registers a callback for translate errors.
   static std::unique_ptr<TranslateErrorCallbackList::Subscription>

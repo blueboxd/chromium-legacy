@@ -413,14 +413,10 @@ class Requester : public DiscreteTimeSimulation::Actor {
   }
 
   void PerformAction() override {
-    TimeDelta effective_delay = time_between_requests_;
-    TimeDelta current_jitter = TimeDelta::FromMilliseconds(
-        request_jitter_.InMilliseconds() * base::RandDouble());
-    if (base::RandInt(0, 1)) {
-      effective_delay -= current_jitter;
-    } else {
-      effective_delay += current_jitter;
-    }
+    const TimeDelta current_jitter = request_jitter_ * base::RandDouble();
+    const TimeDelta effective_delay =
+        time_between_requests_ +
+        (base::RandInt(0, 1) ? -current_jitter : current_jitter);
 
     if (throttler_entry_->ImplGetTimeNow() - time_of_last_attempt_ >
         effective_delay) {
@@ -438,12 +434,10 @@ class Requester : public DiscreteTimeSimulation::Actor {
           }
 
           time_of_last_success_ = throttler_entry_->ImplGetTimeNow();
-          last_attempt_was_failure_ = false;
-        } else {
-          if (results_)
-            results_->AddFailure();
-          last_attempt_was_failure_ = true;
+        } else if (results_) {
+          results_->AddFailure();
         }
+        last_attempt_was_failure_ = status_code != 200;
       } else {
         if (results_)
           results_->AddBlocked();

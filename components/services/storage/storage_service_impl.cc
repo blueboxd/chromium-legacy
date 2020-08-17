@@ -12,8 +12,11 @@
 #include "components/services/storage/filesystem_proxy_factory.h"
 #include "components/services/storage/partition_impl.h"
 #include "components/services/storage/public/cpp/filesystem/filesystem_proxy.h"
+#include "components/services/storage/sandboxed_vfs_delegate.h"
 #include "components/services/storage/test_api_stubs.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "sql/database.h"
+#include "sql/sandboxed_vfs.h"
 #include "third_party/leveldatabase/env_chromium.h"
 
 namespace storage {
@@ -23,6 +26,10 @@ namespace {
 // We don't use out-of-process Storage Service on Android, so we can avoid
 // pulling all the related code (including Directory mojom) into the build.
 #if !defined(OS_ANDROID)
+// The name under which we register our own sandboxed VFS instance when running
+// out-of-process.
+constexpr char kVfsName[] = "storage_service";
+
 using DirectoryBinder =
     base::RepeatingCallback<void(mojo::PendingReceiver<mojom::Directory>)>;
 std::unique_ptr<FilesystemProxy> CreateRestrictedFilesystemProxy(
@@ -71,6 +78,18 @@ void StorageServiceImpl::SetDataDirectory(
       base::BindRepeating(&StorageServiceImpl::BindDataDirectoryReceiver,
                           weak_ptr_factory_.GetWeakPtr()),
       base::SequencedTaskRunnerHandle::Get()));
+
+  // Prevent SQLite from trying to use mmap, as SandboxedVfs does not currently
+  // support this.
+  //
+  // TODO(crbug.com/1117049): Configure this per Database instance.
+  sql::Database::DisableMmapByDefault();
+
+  // SQLite needs our VFS implementation to work over a FilesystemProxy. This
+  // installs it as the default implementation for the service process.
+  sql::SandboxedVfs::Register(
+      kVfsName, std::make_unique<SandboxedVfsDelegate>(CreateFilesystemProxy()),
+      /*make_default=*/true);
 }
 #endif  // !defined(OS_ANDROID)
 

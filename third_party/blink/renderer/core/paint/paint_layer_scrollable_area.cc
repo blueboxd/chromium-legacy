@@ -374,17 +374,10 @@ IntRect PaintLayerScrollableArea::CornerRect() const {
   int horizontal_thickness;
   int vertical_thickness;
   if (!VerticalScrollbar() && !HorizontalScrollbar()) {
-    // FIXME: This isn't right. We need to know the thickness of custom
-    // scrollbars even when they don't exist in order to set the resizer square
-    // size properly.
+    // We need to know the thickness of custom scrollbars even when they don't
+    // exist in order to set the resizer square size properly.
     horizontal_thickness =
-        GetLayoutBox()
-            ->GetDocument()
-            .GetPage()
-            ->GetChromeClient()
-            .WindowToViewportScalar(
-                GetLayoutBox()->GetFrame(),
-                GetPageScrollbarTheme().ScrollbarThickness());
+        GetPageScrollbarTheme().ScrollbarThickness(ScaleFromDIP());
     vertical_thickness = horizontal_thickness;
   } else if (VerticalScrollbar() && !HorizontalScrollbar()) {
     horizontal_thickness = VerticalScrollbar()->ScrollbarThickness();
@@ -1502,12 +1495,7 @@ int PaintLayerScrollableArea::HypotheticalScrollbarThickness(
   ScrollbarTheme& theme = GetPageScrollbarTheme();
   if (theme.UsesOverlayScrollbars())
     return 0;
-  int thickness = theme.ScrollbarThickness();
-  return GetLayoutBox()
-      ->GetDocument()
-      .GetPage()
-      ->GetChromeClient()
-      .WindowToViewportScalar(GetLayoutBox()->GetFrame(), thickness);
+  return theme.ScrollbarThickness(ScaleFromDIP());
 }
 
 bool PaintLayerScrollableArea::NeedsScrollbarReconstruction() const {
@@ -2616,15 +2604,6 @@ bool PaintLayerScrollableArea::ComputeNeedsCompositedScrollingInternal(
     }
   }
 
-  // TODO(crbug.com/1113269): Temporary.
-  if (box->HasClip() || layer_->HasDescendantWithClipPath() ||
-      !!layer_->ClipPathAncestor()) {
-    non_composited_main_thread_scrolling_reasons_ |=
-        // Just a random flag to disable composited scrolling.
-        cc::MainThreadScrollingReason::kCantPaintScrollingBackgroundAndLCDText;
-    needs_composited_scrolling = false;
-  }
-
   DCHECK(!(non_composited_main_thread_scrolling_reasons_ &
            ~cc::MainThreadScrollingReason::kNonCompositedReasons));
   return needs_composited_scrolling;
@@ -2744,12 +2723,7 @@ Scrollbar* PaintLayerScrollableArea::ScrollbarManager::CreateScrollbar(
       style_source_element = DynamicTo<Element>(style_source.GetNode());
     }
     scrollbar = MakeGarbageCollected<Scrollbar>(ScrollableArea(), orientation,
-                                                style_source_element,
-                                                &ScrollableArea()
-                                                     ->GetLayoutBox()
-                                                     ->GetFrame()
-                                                     ->GetPage()
-                                                     ->GetChromeClient());
+                                                style_source_element);
   }
   ScrollableArea()->GetLayoutBox()->GetDocument().View()->AddScrollbar(
       scrollbar);

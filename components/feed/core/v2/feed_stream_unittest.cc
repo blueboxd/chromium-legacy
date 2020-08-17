@@ -265,10 +265,9 @@ class TestImageFetcher : public ImageFetcher {
       scoped_refptr<::network::SharedURLLoaderFactory> url_loader_factory)
       : ImageFetcher(url_loader_factory) {}
   void Fetch(const GURL& url,
-             base::OnceCallback<void(std::unique_ptr<std::string>)> callback)
-      override {
+             base::OnceCallback<void(NetworkResponse)> callback) override {
     // Emulate a response.
-    auto response = std::make_unique<std::string>("dummyresponse");
+    NetworkResponse response = {"dummyresponse", 200};
     std::move(callback).Run(std::move(response));
   }
 };
@@ -876,10 +875,10 @@ TEST_F(FeedStreamTest, DetachSurface) {
 }
 
 TEST_F(FeedStreamTest, FetchImage) {
-  CallbackReceiver<std::unique_ptr<std::string>> receiver;
+  CallbackReceiver<NetworkResponse> receiver;
   stream_->FetchImage(GURL("https://example.com"), receiver.Bind());
 
-  EXPECT_EQ("dummyresponse", **receiver.GetResult());
+  EXPECT_EQ("dummyresponse", receiver.GetResult()->response_bytes);
 }
 
 TEST_F(FeedStreamTest, LoadFromNetwork) {

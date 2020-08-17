@@ -358,7 +358,7 @@ class KeychainTrustSettingsChangedNotifier {
   // Must be called on the network notification thread.  |callback| will be run
   // on the network notification thread. The returned Subscription must be
   // destroyed on the network notification thread.
-  static std::unique_ptr<base::CallbackList<void()>::Subscription> AddCallback(
+  static std::unique_ptr<base::RepeatingClosureList::Subscription> AddCallback(
       base::RepeatingClosure callback) {
     DCHECK(GetNetworkNotificationThreadMac()->RunsTasksInCurrentSequence());
     return Get()->callback_list_.Add(std::move(callback));
@@ -392,7 +392,7 @@ class KeychainTrustSettingsChangedNotifier {
     return notifier.get();
   }
 
-  base::CallbackList<void()> callback_list_;
+  base::RepeatingClosureList callback_list_;
 
   DISALLOW_COPY_AND_ASSIGN(KeychainTrustSettingsChangedNotifier);
 };
@@ -430,7 +430,7 @@ class KeychainTrustObserver {
   void Increment() { base::subtle::Barrier_AtomicIncrement(&iteration_, 1); }
 
   // Only accessed on the notification thread.
-  std::unique_ptr<base::CallbackList<void()>::Subscription> subscription_;
+  std::unique_ptr<base::RepeatingClosureList::Subscription> subscription_;
 
   base::subtle::Atomic64 iteration_ = 0;
 

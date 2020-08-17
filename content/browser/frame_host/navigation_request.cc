@@ -2032,7 +2032,20 @@ void NavigationRequest::DetermineOriginIsolationEndResult(
       break;
   }
 
+  // This needs to be computed separately from origin.opaque() because, per
+  // https://crbug.com/1041376, we don't have a notion of the true origin yet.
+  const bool is_opaque_origin_because_sandbox =
+      (ComputeSandboxFlagsToCommit() &
+       network::mojom::WebSandboxFlags::kOrigin) ==
+      network::mojom::WebSandboxFlags::kOrigin;
+
+  // The origin_isolated navigation commit parameter communicates to the
+  // renderer about origin isolation, so it should be true for opaque origin
+  // cases (e.g., for data: URLs). origin_isolation_end_result_ shouldn't be
+  // modified since it's used for warnings and use counters, i.e. things that
+  // don't apply to this sort of "automatic" origin isolation.
   commit_params_->origin_isolated =
+      is_opaque_origin_because_sandbox || origin.opaque() ||
       origin_isolation_end_result_ ==
           OptInOriginIsolationEndResult::kRequestedViaOriginPolicyAndIsolated ||
       origin_isolation_end_result_ ==

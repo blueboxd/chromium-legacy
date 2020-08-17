@@ -91,7 +91,7 @@ public class SharingServiceProxy {
         DeviceInfo device = new DeviceInfo();
         device.guid = guid;
         device.clientName = clientName;
-        device.deviceType = SyncEnums.DeviceType.valueOf(deviceType);
+        device.deviceType = SyncEnums.DeviceType.forNumber(deviceType);
         device.lastUpdatedTimestampMillis = lastUpdatedTimestampMillis;
         deviceInfo.add(device);
     }

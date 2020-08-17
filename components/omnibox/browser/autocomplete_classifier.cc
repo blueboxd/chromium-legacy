@@ -43,18 +43,8 @@ int AutocompleteClassifier::DefaultOmniboxProviders() {
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
       // Custom search engines cannot be used on mobile.
       AutocompleteProvider::TYPE_KEYWORD |
-#endif
-#if defined(OS_ANDROID)
+#else
       AutocompleteProvider::TYPE_CLIPBOARD |
-#endif
-#if defined(OS_IOS)
-      // On iOS 14, a notification appears whenever the clipboard is accessed.
-      // The clipboard provider accesses the clipboard every time the omnibox is
-      // opened. Until a better solution is found, disable the clipboard
-      // provider temporarily. See crbug.com/1098722.
-      (!base::ios::IsRunningOnIOS14OrLater()
-           ? AutocompleteProvider::TYPE_CLIPBOARD
-           : 0) |
 #endif
       AutocompleteProvider::TYPE_ZERO_SUGGEST |
       AutocompleteProvider::TYPE_ZERO_SUGGEST_LOCAL_HISTORY |

@@ -9,10 +9,12 @@
 #include <string>
 
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/point_f.h"
 
 namespace pp {
 class KeyboardInputEvent;
 class MouseInputEvent;
+class TouchInputEvent;
 }  // namespace pp
 
 namespace chrome_pdf {
@@ -181,9 +183,45 @@ class MouseInputEvent {
   gfx::Point movement_;
 };
 
+class TouchInputEvent {
+ public:
+  TouchInputEvent(InputEventType event_type,
+                  double time_stamp,
+                  uint32_t modifiers,
+                  const gfx::PointF& target_touch_point,
+                  int32_t touch_count);
+  TouchInputEvent(const TouchInputEvent& other);
+  TouchInputEvent& operator=(const TouchInputEvent& other);
+  ~TouchInputEvent();
+
+  const InputEventType& GetEventType() const { return event_type_; }
+
+  double GetTimeStamp() const { return time_stamp_; }
+
+  uint32_t GetModifiers() const { return modifiers_; }
+
+  // `pp::TouchInputEvent` exposes a collection of target touch points. We can
+  // get all the points by passing the index of the point in the collection.
+  // However, with `chrome_pdf::TouchEvent` the number of target touch points
+  // are restricted to the first point. This is because PDFiumeEngine at present
+  // is dependent on only the first target touch point.
+  const gfx::PointF& GetTargetTouchPoint() const { return target_touch_point_; }
+
+  int32_t GetTouchCount() const { return touch_count_; }
+
+ private:
+  InputEventType event_type_ = InputEventType::kNone;
+  double time_stamp_ = 0;
+  uint32_t modifiers_ = kInputEventModifierNone;
+  gfx::PointF target_touch_point_;
+  int32_t touch_count_ = 0;
+};
+
 KeyboardInputEvent GetKeyboardInputEvent(const pp::KeyboardInputEvent& event);
 
 MouseInputEvent GetMouseInputEvent(const pp::MouseInputEvent& event);
+
+TouchInputEvent GetTouchInputEvent(const pp::TouchInputEvent& event);
 
 }  // namespace chrome_pdf
 

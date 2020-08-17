@@ -10,6 +10,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "base/util/ranges/iterator.h"
 #include "base/util/ranges/ranges_internal.h"
 
 namespace util {
@@ -126,6 +127,12 @@ constexpr auto end(Range&& range) noexcept
 // Reference: https://wg21.link/ranges.syn#:~:text=iterator_t
 template <typename Range>
 using iterator_t = decltype(ranges::begin(std::declval<Range&>()));
+
+// Implementation of C++20's std::ranges::range_value_t.
+//
+// Reference: https://wg21.link/ranges.syn#:~:text=range_value_t
+template <typename Range>
+using range_value_t = iter_value_t<iterator_t<Range>>;
 
 }  // namespace ranges
 

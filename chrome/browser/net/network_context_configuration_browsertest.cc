@@ -754,7 +754,7 @@ class NetworkContextConfigurationBrowserTest
     // instead of '/echo' to avoid a disk_cache bug.
     // See https://crbug.com/792255.
     int net_error = content::LoadBasicRequest(
-        network_context(), embedded_test_server()->GetURL("/echoheader"), 0, 0,
+        network_context(), embedded_test_server()->GetURL("/echoheader"),
         net::LOAD_BYPASS_PROXY);
     EXPECT_THAT(net_error, net::test::IsOk());
 

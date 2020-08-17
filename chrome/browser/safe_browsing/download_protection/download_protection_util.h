@@ -107,47 +107,34 @@ typedef base::OnceCallback<void(DownloadCheckResult)> CheckDownloadCallback;
 typedef base::RepeatingCallback<void(DownloadCheckResult)>
     CheckDownloadRepeatingCallback;
 
-// A type of callback run on the main thread when a ClientDownloadRequest has
+// Callbacks run on the main thread when a ClientDownloadRequest has
 // been formed for a download, or when one has not been formed for a supported
 // download.
-typedef base::RepeatingCallback<void(download::DownloadItem*,
-                                     const ClientDownloadRequest*)>
-    ClientDownloadRequestCallback;
+using ClientDownloadRequestCallbackList =
+    base::RepeatingCallbackList<void(download::DownloadItem*,
+                                     const ClientDownloadRequest*)>;
+using ClientDownloadRequestCallback =
+    ClientDownloadRequestCallbackList::CallbackType;
+using ClientDownloadRequestSubscription =
+    std::unique_ptr<ClientDownloadRequestCallbackList::Subscription>;
 
-// A list of ClientDownloadRequest callbacks.
-typedef base::CallbackList<void(download::DownloadItem*,
-                                const ClientDownloadRequest*)>
-    ClientDownloadRequestCallbackList;
+// Callbacks run on the main thread when a NativeFileSystemWriteRequest has been
+// formed for a write operation.
+using NativeFileSystemWriteRequestCallbackList =
+    base::RepeatingCallbackList<void(const ClientDownloadRequest*)>;
+using NativeFileSystemWriteRequestCallback =
+    NativeFileSystemWriteRequestCallbackList::CallbackType;
+using NativeFileSystemWriteRequestSubscription =
+    std::unique_ptr<NativeFileSystemWriteRequestCallbackList::Subscription>;
 
-// A subscription to a registered ClientDownloadRequest callback.
-typedef std::unique_ptr<ClientDownloadRequestCallbackList::Subscription>
-    ClientDownloadRequestSubscription;
-
-// A type of callback run on the main thread when a NativeFileSystemWriteRequest
-// has been formed for a write operation.
-typedef base::Callback<void(const ClientDownloadRequest*)>
-    NativeFileSystemWriteRequestCallback;
-
-// A list of NativeFileSystemWriteRequest callbacks.
-typedef base::CallbackList<void(const ClientDownloadRequest*)>
-    NativeFileSystemWriteRequestCallbackList;
-
-// A subscription to a registered NativeFileSystemWriteRequest callback.
-typedef std::unique_ptr<NativeFileSystemWriteRequestCallbackList::Subscription>
-    NativeFileSystemWriteRequestSubscription;
-
-// A type of callback run on the main thread when a PPAPI
-// ClientDownloadRequest has been formed for a download.
-typedef base::RepeatingCallback<void(const ClientDownloadRequest*)>
-    PPAPIDownloadRequestCallback;
-
-// A list of PPAPI ClientDownloadRequest callbacks.
-typedef base::CallbackList<void(const ClientDownloadRequest*)>
-    PPAPIDownloadRequestCallbackList;
-
-// A subscription to a registered PPAPI ClientDownloadRequest callback.
-typedef std::unique_ptr<PPAPIDownloadRequestCallbackList::Subscription>
-    PPAPIDownloadRequestSubscription;
+// Callbacks run on the main thread when a PPAPI ClientDownloadRequest has been
+// formed for a download.
+using PPAPIDownloadRequestCallbackList =
+    base::RepeatingCallbackList<void(const ClientDownloadRequest*)>;
+using PPAPIDownloadRequestCallback =
+    PPAPIDownloadRequestCallbackList::CallbackType;
+using PPAPIDownloadRequestSubscription =
+    std::unique_ptr<PPAPIDownloadRequestCallbackList::Subscription>;
 
 void RecordCountOfWhitelistedDownload(WhitelistType type);
 

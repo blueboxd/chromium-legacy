@@ -1727,6 +1727,9 @@ TEST_F(NigoriSyncBridgeImplTest,
 // Tests that upon startup bridge migrates the Nigori from backward compatible
 // keystore mode to full keystore mode.
 TEST(NigoriSyncBridgeImplPersistenceTest, ShouldCompleteKeystoreMigration) {
+  base::test::ScopedFeatureList override_features;
+  override_features.InitAndEnableFeature(
+      switches::kSyncTriggerFullKeystoreMigration);
   // Emulate storing on disc.
   auto storage1 = std::make_unique<testing::NiceMock<MockNigoriStorage>>();
   sync_pb::NigoriLocalData nigori_local_data;

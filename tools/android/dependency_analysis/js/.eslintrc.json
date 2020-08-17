@@ -22,6 +22,7 @@
         }
     }],
     "arrow-parens": ["warn", "as-needed"],
+    "generator-star-spacing": ["error", "before"],
     "vue/require-default-prop": "off",
     "vue/html-indent": ["error", 2, {
       "attribute": 2

@@ -10,7 +10,6 @@ option java_outer_classname = "HintsProto";
 package optimization_guide.proto;
 
 import "common_types.proto";
-import "delay_async_script_execution_metadata.proto";
 import "loading_predictor_metadata.proto";
 import "performance_hints_metadata.proto";
 import "previews_metadata.proto";
@@ -169,7 +168,7 @@ enum KeyRepresentation {
 }
 
 message Optimization {
-  reserved 2, 3;
+  reserved 2, 3, 14;
   // The type of optimization the hint applies to.
   optional OptimizationType optimization_type = 1;
   // The experiment name that activates the optimization.
@@ -195,6 +194,9 @@ message Optimization {
   // The version of the tuning group for the optimization type.
   //
   // This will only be populated if this optimization is being autotuned.
+  //
+  // If this is set to UINT64_MAX, this optimization should be considered as
+  // not allowed and was only included for metrics purposes.
   optional uint64 tuning_version = 6;
   // The metadata associated with the optimization type.
   //
@@ -205,8 +207,6 @@ message Optimization {
     PerformanceHintsMetadata performance_hints_metadata = 11;
     PublicImageMetadata public_image_metadata = 12;
     LoadingPredictorMetadata loading_predictor_metadata = 13;
-    DelayAsyncScriptExecutionMetadata delay_async_script_execution_metadata =
-        14;
     Any any_metadata = 15;
   }
 }

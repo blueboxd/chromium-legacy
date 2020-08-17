@@ -215,8 +215,8 @@ int SandboxedVfsFile::Truncate(sqlite3_int64 size) {
   if (file_.SetLength(size))
     return SQLITE_OK;
 
-  // On Mac, the default sandbox blocks ftruncate(), so we have to use a sync
-  // mojo IPC to ask the browser process to call ftruncate() for us.
+  // On macOS < 10.15, the default sandbox blocks ftruncate(), so we have to use
+  // a sync mojo IPC to ask the browser process to call ftruncate() for us.
   //
   // TODO(crbug.com/1084565): Figure out if we can allow ftruncate() in renderer
   // and utility processes. It would be useful for low-level storage APIs, like
@@ -466,7 +466,13 @@ int SandboxedVfsFile::ShmMap(int page_index,
   DCHECK_GE(page_size, 0);
   DCHECK(result);
 
-  // NOTE: This would be needed by SQLite's WAL mode.
+  // https://www.sqlite.org/wal.html#use_of_wal_without_shared_memory states
+  // that SQLite only attempts to use shared memory "-shm" files for databases
+  // in WAL mode that may be accessed by multiple processes (are not EXCLUSIVE).
+  //
+  // Chrome will not only use WAL mode on EXCLUSIVE databases.
+  NOTREACHED() << "SQLite should not attempt to use shared memory";
+
   *result = nullptr;
   return SQLITE_IOERR;
 }
@@ -475,18 +481,37 @@ int SandboxedVfsFile::ShmLock(int offset, int size, int flags) {
   DCHECK_GE(offset, 0);
   DCHECK_GE(size, 0);
 
-  // NOTE: This would be needed by SQLite's WAL mode.
+  // https://www.sqlite.org/wal.html#use_of_wal_without_shared_memory states
+  // that SQLite only attempts to use shared memory "-shm" files for databases
+  // in WAL mode that may be accessed by multiple processes (are not EXCLUSIVE).
+  //
+  // Chrome will not only use WAL mode on EXCLUSIVE databases.
+  NOTREACHED() << "SQLite should not attempt to use shared memory";
+
   return SQLITE_IOERR;
 }
 
 void SandboxedVfsFile::ShmBarrier() {
+  // https://www.sqlite.org/wal.html#use_of_wal_without_shared_memory states
+  // that SQLite only attempts to use shared memory "-shm" files for databases
+  // in WAL mode that may be accessed by multiple processes (are not EXCLUSIVE).
+  //
+  // Chrome will not only use WAL mode on EXCLUSIVE databases.
+  NOTREACHED() << "SQLite should not attempt to use shared memory";
+
   // All writes to shared memory that have already been issued before this
   // function is called must complete before the function returns.
   std::atomic_thread_fence(std::memory_order_acq_rel);
 }
 
 int SandboxedVfsFile::ShmUnmap(int also_delete_file) {
-  // NOTE: This would be needed by SQLite's WAL mode.
+  // https://www.sqlite.org/wal.html#use_of_wal_without_shared_memory states
+  // that SQLite only attempts to use shared memory "-shm" files for databases
+  // in WAL mode that may be accessed by multiple processes (are not EXCLUSIVE).
+  //
+  // Chrome will not only use WAL mode on EXCLUSIVE databases.
+  NOTREACHED() << "SQLite should not attempt to use shared memory";
+
   return SQLITE_IOERR;
 }
 

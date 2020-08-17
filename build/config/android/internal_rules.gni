@@ -554,6 +554,18 @@ template("write_build_config") {
           rebase_path(invoker.module_build_configs, root_build_dir)
       args += [ "--module-build-configs=$_rebased_configs" ]
     }
+    if (defined(invoker.version_name)) {
+      args += [
+        "--version-name",
+        invoker.version_name,
+      ]
+    }
+    if (defined(invoker.version_code)) {
+      args += [
+        "--version-code",
+        invoker.version_code,
+      ]
+    }
     if (current_toolchain != default_toolchain) {
       # This has to be a built-time error rather than a GN assert because many
       # packages have a mix of java and non-java targets. For example, the
@@ -986,18 +998,6 @@ if (enable_java_templates) {
         }
       }
 
-      if (defined(invoker.lint_suppressions_file)) {
-        _suppressions_file = invoker.lint_suppressions_file
-
-        # The custom suppressions file might be a generated file needing a dep.
-        # e.g. generating it by appending to the default suppressions.xml file.
-        if (defined(invoker.lint_suppressions_dep)) {
-          deps += [ invoker.lint_suppressions_dep ]
-        }
-      } else {
-        _suppressions_file = "//build/android/lint/suppressions.xml"
-      }
-
       if (defined(invoker.min_sdk_version)) {
         _min_sdk_version = invoker.min_sdk_version
       } else {
@@ -1012,10 +1012,7 @@ if (enable_java_templates) {
 
       script = "//build/android/gyp/lint.py"
       depfile = "$target_gen_dir/$target_name.d"
-      inputs = [
-        _lint_binary_path,
-        _suppressions_file,
-      ]
+      inputs = [ _lint_binary_path ]
 
       args = [
         "--depfile",
@@ -1024,8 +1021,6 @@ if (enable_java_templates) {
         rebase_path(_lint_binary_path, root_build_dir),
         "--cache-dir",
         rebase_path(_cache_dir, root_build_dir),
-        "--config-path",
-        rebase_path(_suppressions_file, root_build_dir),
         "--lint-gen-dir",
         rebase_path(_lint_gen_dir, root_build_dir),
         "--android-sdk-version=${lint_android_sdk_version}",
@@ -1033,6 +1028,15 @@ if (enable_java_templates) {
         "--android-sdk-root",
         rebase_path(lint_android_sdk_root, root_build_dir),
       ]
+
+      if (defined(invoker.lint_suppressions_file)) {
+        inputs += [ invoker.lint_suppressions_file ]
+
+        args += [
+          "--config-path",
+          rebase_path(invoker.lint_suppressions_file, root_build_dir),
+        ]
+      }
 
       if (defined(testonly) && testonly) {
         # Allows us to ignore unnecessary checks when linting test targets.
@@ -1045,6 +1049,22 @@ if (enable_java_templates) {
 
       if (treat_warnings_as_errors) {
         args += [ "--warnings-as-errors" ]
+      }
+
+      if (defined(invoker.lint_baseline_file)) {
+        if (compute_inputs_for_analyze) {
+          # The baseline file is included in lint.py as a depfile dep. Since
+          # removing it regenerates the file, it is useful to not have this as
+          # a gn input during local development. Add it only for bots' analyze.
+          inputs += [ invoker.lint_baseline_file ]
+        }
+        args += [
+          # Baseline allows us to turn on lint warnings without fixing all the
+          # pre-existing issues. This stops the flood of new issues while the
+          # existing ones are being fixed.
+          "--baseline",
+          rebase_path(invoker.lint_baseline_file, root_build_dir),
+        ]
       }
 
       if (defined(invoker.create_cache) && invoker.create_cache) {
@@ -1075,22 +1095,6 @@ if (enable_java_templates) {
           # The full classpath is required for annotation checks like @IntDef.
           "--classpath=@FileArg($_rebased_build_config:deps_info:javac_full_interface_classpath)",
         ]
-
-        if (defined(invoker.lint_baseline_file)) {
-          if (compute_inputs_for_analyze) {
-            # The baseline file is included in lint.py as a depfile dep. Since
-            # removing it regenerates the file, it is useful to not have this as
-            # a gn input during local development. Add it only for bots' analyze.
-            inputs += [ invoker.lint_baseline_file ]
-          }
-          args += [
-            # Baseline allows us to turn on lint warnings without fixing all the
-            # pre-existing issues. This stops the flood of new issues while the
-            # existing ones are being fixed.
-            "--baseline",
-            rebase_path(invoker.lint_baseline_file, root_build_dir),
-          ]
-        }
       }
 
       outputs = [ _stamp_path ]
@@ -3654,6 +3658,8 @@ if (enable_java_templates) {
                                  "is_base_module",
                                  "module_pathmap_path",
                                  "proto_resources_path",
+                                 "version_name",
+                                 "version_code",
                                ])
       }
       chromium_code = _chromium_code

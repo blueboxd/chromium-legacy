@@ -28,6 +28,7 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/thread_pool.h"
+#include "base/threading/hang_watcher.h"
 #include "base/threading/scoped_thread_priority.h"
 #include "base/time/time.h"
 #include "base/win/win_util.h"
@@ -515,6 +516,10 @@ bool AuthenticateUserNew(gfx::NativeWindow window,
   cui.pszMessageText = password_prompt.c_str();
   cui.pszCaptionText = product_name.c_str();
   cui.hbmBanner = nullptr;
+
+  // Disable hang watching until the end of the function since the user can take
+  // unbounded time to answer the password prompt. (http://crbug.com/806174)
+  base::HangWatchScopeDisabled disabler;
 
   CredentialBufferValidator validator;
 

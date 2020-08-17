@@ -7,6 +7,8 @@
 
 #import <Foundation/Foundation.h>
 
+#include "url/gurl.h"
+
 namespace autofill {
 struct PasswordForm;
 }
@@ -16,19 +18,22 @@ struct PasswordForm;
 @interface PasswordDetails : NSObject
 
 // Short version of website.
-@property(nonatomic, strong, readonly) NSString* origin;
+@property(nonatomic, copy, readonly) NSString* origin;
 
 // Associated website.
-@property(nonatomic, strong, readonly) NSString* website;
+@property(nonatomic, copy, readonly) NSString* website;
 
 // Associated username.
-@property(nonatomic, strong, readonly) NSString* username;
+@property(nonatomic, copy, readonly) NSString* username;
 
 // Associated password.
-@property(nonatomic, strong) NSString* password;
+@property(nonatomic, copy) NSString* password;
 
 // Whether password is compromised or not.
 @property(nonatomic, assign, getter=isCompromised) BOOL compromised;
+
+// URL which allows to change the password of compromised credential.
+@property(nonatomic, readonly) GURL changePasswordURL;
 
 - (instancetype)initWithPasswordForm:(const autofill::PasswordForm&)form
     NS_DESIGNATED_INITIALIZER;

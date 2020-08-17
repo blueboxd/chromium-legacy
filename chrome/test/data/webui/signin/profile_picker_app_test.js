@@ -55,4 +55,23 @@ suite('ProfilePickerAppTest', function() {
           return browserProxy.whenCalled('loadSignInProfileCreationFlow');
         });
   });
+
+  test('notNowButtonImplementation', function() {
+    navigateTo(Routes.NEW_PROFILE);
+    return waitForLoad()
+        .then(() => {
+          return waitBeforeNextRender(app);
+        })
+        .then(() => {
+          const choice = /** @type {!ProfileTypeChoiceElement} */ (
+              app.$$('profile-type-choice'));
+          assertTrue(!!choice);
+          choice.$$('#notNowButton').click();
+          const customization =
+              /** @type {!LocalProfileCustomizationElement} */ (
+                  app.$$('local-profile-customization'));
+          assertTrue(!!customization);
+          assertTrue(customization.classList.contains('active'));
+        });
+  });
 });

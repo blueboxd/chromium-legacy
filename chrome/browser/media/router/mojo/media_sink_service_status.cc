@@ -28,7 +28,7 @@ std::string ToJSONString(const base::Value& value) {
 // Returns UUID if |sink_id| is in the format of "cast:<UUID>" or "dial:<UUID>";
 // otherwise returns |sink_id| as UUID.
 base::StringPiece ExtractUUID(const base::StringPiece& sink_id) {
-  if (!sink_id.ends_with(">"))
+  if (!base::EndsWith(sink_id, ">"))
     return sink_id;
 
   size_t prefix_length = 0;

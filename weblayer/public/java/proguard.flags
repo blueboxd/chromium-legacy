@@ -1,0 +1,14 @@
+# Copyright 2020 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+-keep @interface org.chromium.weblayer.VerifiesOnO
+-if @org.chromium.weblayer.VerifiesOnO class * {
+    *** *(...);
+}
+-keep,allowobfuscation class <1> {
+    *** <2>(...);
+}
+-keepclassmembers,allowobfuscation class ** {
+  @org.chromium.weblayer.VerifiesOnO <methods>;
+}

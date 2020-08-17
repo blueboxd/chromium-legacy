@@ -40,6 +40,9 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantViewDelegateObserver
   // Invoked when the host view's visibility changed.
   virtual void OnHostViewVisibilityChanged(bool visible) {}
 
+  // Invoked when Assistant onboarding is shown.
+  virtual void OnOnboardingShown() {}
+
   // Invoked when the opt in button is pressed.
   virtual void OnOptInButtonPressed() {}
 
@@ -98,12 +101,18 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantViewDelegate {
   virtual void OnNotificationButtonPressed(const std::string& notification_id,
                                            int notification_button_index) = 0;
 
+  // Invoked when Assistant onboarding is shown.
+  virtual void OnOnboardingShown() = 0;
+
   // Invoked when the opt in button is pressed.
-  virtual void OnOptInButtonPressed() {}
+  virtual void OnOptInButtonPressed() = 0;
 
   // Invoked when suggestion UI is pressed.
   virtual void OnSuggestionPressed(
       const base::UnguessableToken& suggestion_id) = 0;
+
+  // Returns true if Assistant onboarding should be shown.
+  virtual bool ShouldShowOnboarding() const = 0;
 };
 
 }  // namespace ash

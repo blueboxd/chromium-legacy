@@ -41,7 +41,8 @@ extern const aura::WindowProperty<bool>* const kOnlyAllowMouseClickEvents;
 COMPONENT_EXPORT(ASSISTANT_UI_CONSTANTS)
 const gfx::FontList& GetDefaultFontList();
 
-constexpr int kWarmerWelcomesMaxTimesTriggered = 3;
+// The maximum number of user sessions in which to show Assistant onboarding.
+constexpr int kOnboardingMaxSessionsShown = 3;
 
 // Histogram names for measuring animation performance.
 constexpr char kAssistantCardElementHistogram[] =

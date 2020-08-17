@@ -1490,11 +1490,14 @@ void ChromeContentRendererClient::
   // embedder only.
   blink::WebRuntimeFeatures::EnablePerformanceManagerInstrumentation(true);
 
-// Web Share is shipped on Android, experimental otherwise. It is enabled here,
-// in chrome/, to avoid it being made available in other clients of content/
-// that do not have a Web Share Mojo implementation.
-#if defined(OS_ANDROID)
-  blink::WebRuntimeFeatures::EnableWebShare(true);
+  // Web Share is conditionally enabled here in chrome/, to avoid it being
+  // made available in other clients of content/ that do not have a Web Share
+  // Mojo implementation (e.g. WebView).  Web Share is shipped on Android.
+#if defined(OS_CHROMEOS) || defined(OS_WIN)
+  if (base::FeatureList::IsEnabled(features::kWebShare))
+#endif
+#if defined(OS_CHROMEOS) || defined(OS_WIN) || defined(OS_ANDROID)
+    blink::WebRuntimeFeatures::EnableWebShare(true);
 #endif
 
   if (base::FeatureList::IsEnabled(subresource_filter::kAdTagging))

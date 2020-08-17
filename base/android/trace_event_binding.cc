@@ -49,12 +49,25 @@ static void JNI_TraceEvent_RegisterEnabledObserver(JNIEnv* env) {
       std::make_unique<TraceEnabledObserver>());
 }
 
-static void JNI_TraceEvent_StartATrace(JNIEnv* env) {
-  base::trace_event::TraceLog::GetInstance()->StartATrace();
+static void JNI_TraceEvent_StartATrace(
+    JNIEnv* env,
+    const JavaParamRef<jstring>& category_filter) {
+  std::string category_filter_utf8 =
+      ConvertJavaStringToUTF8(env, category_filter);
+  base::trace_event::TraceLog::GetInstance()->StartATrace(category_filter_utf8);
 }
 
 static void JNI_TraceEvent_StopATrace(JNIEnv* env) {
   base::trace_event::TraceLog::GetInstance()->StopATrace();
+}
+
+static void JNI_TraceEvent_SetupATraceStartupTrace(
+    JNIEnv* env,
+    const JavaParamRef<jstring>& category_filter) {
+  std::string category_filter_utf8 =
+      ConvertJavaStringToUTF8(env, category_filter);
+  base::trace_event::TraceLog::GetInstance()->SetupATraceStartupTrace(
+      category_filter_utf8);
 }
 
 #else  // BUILDFLAG(ENABLE_BASE_TRACING)
@@ -63,8 +76,12 @@ static void JNI_TraceEvent_StopATrace(JNIEnv* env) {
 static void JNI_TraceEvent_RegisterEnabledObserver(JNIEnv* env) {
   base::android::Java_TraceEvent_setEnabled(env, false);
 }
-static void JNI_TraceEvent_StartATrace(JNIEnv* env) {}
+static void JNI_TraceEvent_StartATrace(JNIEnv* env,
+                                       base::android::JavaParamRef<jstring>&) {}
 static void JNI_TraceEvent_StopATrace(JNIEnv* env) {}
+static void JNI_TraceEvent_SetupATraceStartupTrace(
+    JNIEnv* env,
+    base::android::JavaParamRef<jstring>&) {}
 
 #endif  // BUILDFLAG(ENABLE_BASE_TRACING)
 

@@ -82,6 +82,10 @@ class ClipboardProviderTest : public testing::Test,
     return input;
   }
 
+  void MatchesImageCallback(base::Optional<AutocompleteMatch> match) {
+    matches_image_match_ = match;
+  }
+
  protected:
   // AutocompleteProviderListener:
   void OnProviderUpdate(bool updated_matches) override;
@@ -90,6 +94,8 @@ class ClipboardProviderTest : public testing::Test,
   FakeClipboardRecentContent clipboard_content_;
   std::unique_ptr<MockAutocompleteProviderClient> client_;
   scoped_refptr<ClipboardProvider> provider_;
+
+  base::Optional<AutocompleteMatch> matches_image_match_;
 };
 
 void ClipboardProviderTest::OnProviderUpdate(bool updated_matches) {
@@ -102,12 +108,18 @@ TEST_F(ClipboardProviderTest, NotFromOmniboxFocus) {
 }
 
 TEST_F(ClipboardProviderTest, EmptyClipboard) {
+  auto template_url_service = std::make_unique<TemplateURLService>(
+      /*initializers=*/nullptr, /*count=*/0);
+  client_->set_template_url_service(std::move(template_url_service));
   ClearClipboard();
   provider_->Start(CreateAutocompleteInput(OmniboxFocusType::ON_FOCUS), false);
   EXPECT_TRUE(provider_->matches().empty());
 }
 
 TEST_F(ClipboardProviderTest, ClipboardIsCurrentURL) {
+  auto template_url_service = std::make_unique<TemplateURLService>(
+      /*initializers=*/nullptr, /*count=*/0);
+  client_->set_template_url_service(std::move(template_url_service));
   SetClipboardUrl(GURL(kCurrentURL));
   provider_->Start(CreateAutocompleteInput(OmniboxFocusType::ON_FOCUS), false);
   EXPECT_TRUE(provider_->matches().empty());
@@ -152,20 +164,21 @@ TEST_F(ClipboardProviderTest, MatchesImage) {
   base::Feature imageFeature =
       omnibox::kEnableClipboardProviderImageSuggestions;
   feature_list.InitAndEnableFeature(imageFeature);
-  TemplateURLService template_url_service(/*initializers=*/nullptr,
-                                          /*count=*/0);
-  base::TimeDelta clipboard_age = base::TimeDelta::FromSeconds(5);
+  auto template_url_service =
+      std::make_unique<TemplateURLService>(/*initializers=*/nullptr,
+                                           /*count=*/0);
+  client_->set_template_url_service(std::move(template_url_service));
 
   gfx::Image test_image = gfx::test::CreateImage(/*height=*/10, /*width=*/10);
   scoped_refptr<base::RefCountedMemory> image_bytes =
       provider_->EncodeClipboardImage(*test_image.ToImageSkia());
   ASSERT_TRUE(image_bytes);
   provider_->ConstructImageMatchCallback(
-      CreateAutocompleteInput(OmniboxFocusType::ON_FOCUS),
-      &template_url_service, clipboard_age, image_bytes);
-  ASSERT_GE(provider_->matches().size(), 1U);
-  EXPECT_EQ(AutocompleteMatchType::CLIPBOARD_IMAGE,
-            provider_->matches().back().type);
+      base::BindOnce(&ClipboardProviderTest::MatchesImageCallback,
+                     base::Unretained(this)),
+      image_bytes);
+  ASSERT_TRUE(matches_image_match_);
+  EXPECT_EQ(AutocompleteMatchType::CLIPBOARD_IMAGE, matches_image_match_->type);
 }
 
 TEST_F(ClipboardProviderTest, DeleteMatch) {

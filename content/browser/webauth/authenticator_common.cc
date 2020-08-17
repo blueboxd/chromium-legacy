@@ -65,6 +65,7 @@
 
 #if defined(OS_WIN)
 #include "device/fido/win/authenticator.h"
+#include "device/fido/win/webauthn_api.h"
 #endif
 
 namespace content {
@@ -293,18 +294,17 @@ base::TimeDelta AdjustTimeout(base::Optional<base::TimeDelta> timeout,
   static constexpr base::TimeDelta kAdjustedTimeoutUpper =
       base::TimeDelta::FromMinutes(10);
 
-  if (!timeout)
+  if (!timeout) {
     return kAdjustedTimeoutUpper;
-
-  bool testing_api_enabled =
-      AuthenticatorEnvironmentImpl::GetInstance()->GetDiscoveryFactoryOverride(
-          static_cast<RenderFrameHostImpl*>(render_frame_host)
-              ->frame_tree_node());
-
+  }
+  const bool testing_api_enabled =
+      AuthenticatorEnvironmentImpl::GetInstance()
+          ->IsVirtualAuthenticatorEnabledFor(
+              static_cast<RenderFrameHostImpl*>(render_frame_host)
+                  ->frame_tree_node());
   if (testing_api_enabled) {
     return *timeout;
   }
-
   return std::max(kAdjustedTimeoutLower,
                   std::min(kAdjustedTimeoutUpper, *timeout));
 }
@@ -475,6 +475,7 @@ bool IsUserVerifyingPlatformAuthenticatorAvailableImpl(
 base::flat_set<device::FidoTransportProtocol> GetAvailableTransports(
     RenderFrameHost* render_frame_host,
     AuthenticatorRequestClientDelegate* delegate,
+    device::FidoDiscoveryFactory* discovery_factory,
     const url::Origin& caller_origin) {
   // U2F requests proxied from the cryptotoken extension are limited to USB
   // devices.
@@ -487,11 +488,7 @@ base::flat_set<device::FidoTransportProtocol> GetAvailableTransports(
   base::flat_set<device::FidoTransportProtocol> transports;
   transports.insert(device::FidoTransportProtocol::kUsbHumanInterfaceDevice);
 
-  device::FidoDiscoveryFactory* discovery_factory =
-      AuthenticatorEnvironmentImpl::GetInstance()->GetDiscoveryFactoryOverride(
-          static_cast<RenderFrameHostImpl*>(render_frame_host)
-              ->frame_tree_node());
-  if (discovery_factory) {
+  if (discovery_factory->IsTestOverride()) {
     // The desktop implementation does not support BLE or NFC, but we emulate
     // them if the testing API is enabled.
     transports.insert(device::FidoTransportProtocol::kBluetoothLowEnergy);
@@ -501,8 +498,6 @@ base::flat_set<device::FidoTransportProtocol> GetAvailableTransports(
     // support non-uv, platform authenticators.
     transports.insert(device::FidoTransportProtocol::kInternal);
   } else {
-    discovery_factory = delegate->GetDiscoveryFactory();
-
     // Don't instantiate a platform discovery in contexts where IsUVPAA() would
     // return false. This avoids platform authenticators mistakenly being
     // available when e.g. an embedder provided implementation of
@@ -526,6 +521,37 @@ base::flat_set<device::FidoTransportProtocol> GetAvailableTransports(
   }
 
   return transports;
+}
+
+// Returns a new FidoDiscoveryFactory for the current request. This may be
+// a factory for virtual authenticators if the testing API is enabled for the
+// given frame.
+std::unique_ptr<device::FidoDiscoveryFactory> MakeDiscoveryFactory(
+    RenderFrameHost* render_frame_host,
+    AuthenticatorRequestClientDelegate* request_delegate) {
+  VirtualAuthenticatorManagerImpl* virtual_authenticator_manager =
+      AuthenticatorEnvironmentImpl::GetInstance()
+          ->MaybeGetVirtualAuthenticatorManager(
+              static_cast<RenderFrameHostImpl*>(render_frame_host)
+                  ->frame_tree_node());
+  if (virtual_authenticator_manager) {
+    return virtual_authenticator_manager->MakeDiscoveryFactory();
+  }
+
+  auto discovery_factory = std::make_unique<device::FidoDiscoveryFactory>();
+#if defined(OS_MAC)
+  discovery_factory->set_mac_touch_id_info(
+      request_delegate->GetTouchIdAuthenticatorConfig());
+#endif  // defined(OS_MAC)
+
+#if defined(OS_WIN)
+  if (base::FeatureList::IsEnabled(device::kWebAuthUseNativeWinApi)) {
+    discovery_factory->set_win_webauthn_api(
+        device::WinWebAuthnApi::GetDefault());
+  }
+#endif  // defined(OS_WIN)
+
+  return discovery_factory;
 }
 
 }  // namespace
@@ -552,8 +578,8 @@ std::unique_ptr<AuthenticatorRequestClientDelegate>
 AuthenticatorCommon::CreateRequestDelegate() {
   auto* frame_tree_node =
       static_cast<RenderFrameHostImpl*>(render_frame_host_)->frame_tree_node();
-  if (AuthenticatorEnvironmentImpl::GetInstance()->GetVirtualFactoryFor(
-          frame_tree_node)) {
+  if (AuthenticatorEnvironmentImpl::GetInstance()
+          ->IsVirtualAuthenticatorEnabledFor(frame_tree_node)) {
     return std::make_unique<VirtualAuthenticatorRequestDelegate>(
         frame_tree_node);
   }
@@ -563,22 +589,18 @@ AuthenticatorCommon::CreateRequestDelegate() {
 
 void AuthenticatorCommon::StartMakeCredentialRequest(
     bool allow_skipping_pin_touch) {
-  device::FidoDiscoveryFactory* discovery_factory =
-      AuthenticatorEnvironmentImpl::GetInstance()->GetDiscoveryFactoryOverride(
-          static_cast<RenderFrameHostImpl*>(render_frame_host_)
-              ->frame_tree_node());
-  if (!discovery_factory)
-    discovery_factory = request_delegate_->GetDiscoveryFactory();
+  InitDiscoveryFactory();
 
   request_delegate_->ConfigureCable(
-      caller_origin_, base::span<const device::CableDiscoveryData>());
+      caller_origin_, base::span<const device::CableDiscoveryData>(),
+      discovery_factory());
 
   make_credential_options_->allow_skipping_pin_touch = allow_skipping_pin_touch;
 
   request_ = std::make_unique<device::MakeCredentialRequestHandler>(
-      discovery_factory,
+      discovery_factory(),
       GetAvailableTransports(render_frame_host_, request_delegate_.get(),
-                             caller_origin_),
+                             discovery_factory(), caller_origin_),
       *ctap_make_credential_request_, *authenticator_selection_criteria_,
       *make_credential_options_,
       base::BindOnce(&AuthenticatorCommon::OnRegisterResponse,
@@ -605,24 +627,19 @@ void AuthenticatorCommon::StartMakeCredentialRequest(
 
 void AuthenticatorCommon::StartGetAssertionRequest(
     bool allow_skipping_pin_touch) {
-  device::FidoDiscoveryFactory* discovery_factory =
-      AuthenticatorEnvironmentImpl::GetInstance()->GetDiscoveryFactoryOverride(
-          static_cast<RenderFrameHostImpl*>(render_frame_host_)
-              ->frame_tree_node());
-  if (!discovery_factory)
-    discovery_factory = request_delegate_->GetDiscoveryFactory();
+  InitDiscoveryFactory();
 
   base::span<const device::CableDiscoveryData> cable_pairings;
-  if (ctap_get_assertion_request_->cable_extension &&
-      IsFocused()) {
+  if (ctap_get_assertion_request_->cable_extension && IsFocused()) {
     cable_pairings = *ctap_get_assertion_request_->cable_extension;
   }
-  request_delegate_->ConfigureCable(caller_origin_, cable_pairings);
+  request_delegate_->ConfigureCable(caller_origin_, cable_pairings,
+                                    discovery_factory());
 
   request_ = std::make_unique<device::GetAssertionRequestHandler>(
-      discovery_factory,
+      discovery_factory(),
       GetAvailableTransports(render_frame_host_, request_delegate_.get(),
-                             caller_origin_),
+                             discovery_factory(), caller_origin_),
       *ctap_get_assertion_request_, *ctap_get_assertion_options_,
       allow_skipping_pin_touch,
       base::BindOnce(&AuthenticatorCommon::OnSignResponse,
@@ -1077,16 +1094,18 @@ void AuthenticatorCommon::IsUserVerifyingPlatformAuthenticatorAvailable(
   AuthenticatorRequestClientDelegate* request_delegate_ptr =
       request_delegate_ ? request_delegate_.get()
                         : maybe_request_delegate.get();
-  device::FidoDiscoveryFactory* discovery_factory =
-      AuthenticatorEnvironmentImpl::GetInstance()->GetDiscoveryFactoryOverride(
-          static_cast<RenderFrameHostImpl*>(render_frame_host_)
-              ->frame_tree_node());
-  if (!discovery_factory) {
-    discovery_factory = request_delegate_ptr->GetDiscoveryFactory();
-  }
+
+  std::unique_ptr<device::FidoDiscoveryFactory> discovery_factory =
+      MakeDiscoveryFactory(render_frame_host_, request_delegate_ptr);
+  device::FidoDiscoveryFactory* discovery_factory_testing_override =
+      AuthenticatorEnvironmentImpl::GetInstance()
+          ->MaybeGetDiscoveryFactoryTestOverride();
+  device::FidoDiscoveryFactory* discovery_factory_ptr =
+      discovery_factory_testing_override ? discovery_factory_testing_override
+                                         : discovery_factory.get();
 
   const bool result = IsUserVerifyingPlatformAuthenticatorAvailableImpl(
-      request_delegate_ptr, discovery_factory, browser_context());
+      request_delegate_ptr, discovery_factory_ptr, browser_context());
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), result));
 }
@@ -1552,6 +1571,8 @@ void AuthenticatorCommon::Cleanup() {
 
   timer_->Stop();
   request_.reset();
+  discovery_factory_.reset();
+  discovery_factory_testing_override_ = nullptr;
   ctap_make_credential_request_.reset();
   make_credential_options_.reset();
   ctap_get_assertion_request_.reset();
@@ -1576,6 +1597,28 @@ void AuthenticatorCommon::DisableUI() {
 BrowserContext* AuthenticatorCommon::browser_context() const {
   return content::WebContents::FromRenderFrameHost(render_frame_host_)
       ->GetBrowserContext();
+}
+
+device::FidoDiscoveryFactory* AuthenticatorCommon::discovery_factory() {
+  DCHECK(discovery_factory_);
+  return discovery_factory_testing_override_
+             ? discovery_factory_testing_override_
+             : discovery_factory_.get();
+}
+
+void AuthenticatorCommon::InitDiscoveryFactory() {
+  DCHECK(!discovery_factory_ && !discovery_factory_testing_override_);
+  discovery_factory_ =
+      MakeDiscoveryFactory(render_frame_host_, request_delegate_.get());
+  // TODO(martinkr): |discovery_factory_testing_override_| is a long-lived
+  // VirtualFidoDeviceDiscovery so that tests can maintain and alter virtual
+  // authenticator state in between requests. We should extract a longer-lived
+  // configuration object from VirtualFidoDeviceDiscovery, so we can simply
+  // stick a short-lived instance into |discovery_factory_| and eliminate
+  // |discovery_factory_testing_override_|.
+  discovery_factory_testing_override_ =
+      AuthenticatorEnvironmentImpl::GetInstance()
+          ->MaybeGetDiscoveryFactoryTestOverride();
 }
 
 }  // namespace content

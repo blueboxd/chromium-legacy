@@ -244,12 +244,6 @@ IntRect ScrollbarTheme::ThumbRect(const Scrollbar& scrollbar) {
   return thumb_rect;
 }
 
-int ScrollbarTheme::ThumbThickness(const Scrollbar& scrollbar) {
-  IntRect track = TrackRect(scrollbar);
-  return scrollbar.Orientation() == kHorizontalScrollbar ? track.Height()
-                                                         : track.Width();
-}
-
 void ScrollbarTheme::SplitTrack(const Scrollbar& scrollbar,
                                 const IntRect& unconstrained_track_rect,
                                 IntRect& before_thumb_rect,

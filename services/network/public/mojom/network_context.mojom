@@ -1194,6 +1194,11 @@ interface NetworkContext {
   // performance impact because of the extra process hops, so use should be
   // minimized.
   //
+  // Requests from a system context should set |process_id| to
+  // |kBrowserProcessId|. In that case |render_frame_id| MUST be zero. These
+  // values will still be passed to |OnSSLCertificateError| as needed but no
+  // throttling will be performed for such WebSockets.
+  //
   // Detect mojo connection errors on |handshake_client| until the connection
   // is established.
   // Do *NOT* interpret mojo connection errors on |auth_handler| and

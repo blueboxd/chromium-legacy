@@ -100,14 +100,6 @@
 #include "chrome/browser/browser_process.h"
 #endif
 
-#if defined(OS_WIN) || defined(OS_MAC)
-#include "base/enterprise_util.h"
-#elif defined(OS_CHROMEOS)
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_process_platform_part_chromeos.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#endif
-
 using metrics::OmniboxEventProto;
 
 namespace {
@@ -2455,8 +2447,6 @@ gfx::Range OmniboxViewViews::GetSimplifiedDomainBounds(
 }
 
 bool OmniboxViewViews::IsURLEligibleForSimplifiedDomainEliding() {
-  if (IsEnterpriseManaged())
-    return false;
   if (HasFocus() || model()->user_input_in_progress())
     return false;
   if (!model()->CurrentTextIsURL())
@@ -2473,18 +2463,6 @@ bool OmniboxViewViews::IsURLEligibleForSimplifiedDomainEliding() {
   return (url_scheme == base::UTF8ToUTF16(url::kHttpScheme) ||
           url_scheme == base::UTF8ToUTF16(url::kHttpsScheme)) &&
          host.is_nonempty();
-}
-
-bool OmniboxViewViews::IsEnterpriseManaged() {
-#if defined(OS_WIN) || defined(OS_MAC)
-  return base::IsMachineExternallyManaged();
-#elif defined(OS_CHROMEOS)
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  return connector && connector->IsEnterpriseManaged();
-#endif
-
-  return false;
 }
 
 void OmniboxViewViews::ResetToHideOnInteraction() {

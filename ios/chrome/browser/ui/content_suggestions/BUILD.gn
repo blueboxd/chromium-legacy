@@ -42,6 +42,7 @@ source_set("content_suggestions") {
     "//components/prefs/ios",
     "//components/reading_list/core",
     "//components/reading_list/ios:ios",
+    "//components/search_engines:search_engines",
     "//components/signin/public/identity_manager",
     "//components/signin/public/identity_manager/objc",
     "//components/strings",

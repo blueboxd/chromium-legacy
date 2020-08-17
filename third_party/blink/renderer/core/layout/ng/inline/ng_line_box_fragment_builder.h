@@ -40,6 +40,8 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
             {writing_direction.GetWritingMode(), TextDirection::kLtr}),
         line_box_type_(NGPhysicalLineBoxFragment::kNormalLineBox),
         base_direction_(TextDirection::kLtr) {}
+  NGLineBoxFragmentBuilder(const NGLineBoxFragmentBuilder&) = delete;
+  NGLineBoxFragmentBuilder& operator=(const NGLineBoxFragmentBuilder&) = delete;
 
   void Reset();
 
@@ -97,8 +99,6 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
 
   friend class NGLayoutResult;
   friend class NGPhysicalLineBoxFragment;
-
-  DISALLOW_COPY_AND_ASSIGN(NGLineBoxFragmentBuilder);
 };
 
 }  // namespace blink

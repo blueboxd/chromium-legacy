@@ -204,47 +204,45 @@ FaviconBackend::GetFaviconForId(favicon_base::FaviconID favicon_id,
   return bitmap_results;
 }
 
-std::vector<favicon_base::FaviconRawBitmapResult>
-FaviconBackend::UpdateFaviconMappingsAndFetch(
+UpdateFaviconMappingsResult FaviconBackend::UpdateFaviconMappingsAndFetch(
     const base::flat_set<GURL>& page_urls,
     const GURL& icon_url,
     favicon_base::IconType icon_type,
     const std::vector<int>& desired_sizes) {
+  UpdateFaviconMappingsResult result;
   const favicon_base::FaviconID favicon_id =
       db_->GetFaviconIDForFaviconURL(icon_url, icon_type);
   if (!favicon_id)
-    return {};
+    return result;
 
   for (const GURL& page_url : page_urls) {
     bool mappings_updated =
         SetFaviconMappingsForPageAndRedirects(page_url, icon_type, favicon_id);
-    if (mappings_updated) {
-      delegate_->OnFaviconChangedForPageAndRedirects(page_url);
-      delegate_->ScheduleCommitForFavicons();
-    }
+    if (mappings_updated)
+      result.updated_page_urls.insert(page_url);
   }
 
-  return GetFaviconBitmapResultsForBestMatch({favicon_id}, desired_sizes);
+  result.bitmap_results =
+      GetFaviconBitmapResultsForBestMatch({favicon_id}, desired_sizes);
+  return result;
 }
 
-void FaviconBackend::DeleteFaviconMappings(
+base::flat_set<GURL> FaviconBackend::DeleteFaviconMappings(
     const base::flat_set<GURL>& page_urls,
     favicon_base::IconType icon_type) {
   TRACE_EVENT0("browser", "FaviconBackend::DeleteFaviconMappings");
 
+  base::flat_set<GURL> changed;
   for (const GURL& page_url : page_urls) {
     bool mapping_changed = SetFaviconMappingsForPageAndRedirects(
         page_url, icon_type, /*icon_id=*/0);
-
-    if (mapping_changed) {
-      // Notify the UI that this function changed an icon mapping.
-      delegate_->OnFaviconChangedForPageAndRedirects(page_url);
-      delegate_->ScheduleCommitForFavicons();
-    }
+    if (mapping_changed)
+      changed.insert(page_url);
   }
+  return changed;
 }
 
-bool FaviconBackend::MergeFavicon(
+MergeFaviconResult FaviconBackend::MergeFavicon(
     const GURL& page_url,
     const GURL& icon_url,
     favicon_base::IconType icon_type,
@@ -382,15 +380,15 @@ bool FaviconBackend::MergeFavicon(
     }
   }
 
+  MergeFaviconResult result;
   // Update the favicon mappings such that only |icon_url| is mapped to
   // |page_url|.
   if (icon_mappings.size() != 1 || icon_mappings[0].icon_url != icon_url) {
     SetFaviconMappingsForPageAndRedirects(page_url, icon_type, favicon_id);
-    delegate_->OnFaviconChangedForPageAndRedirects(page_url);
+    result.did_page_to_icon_mapping_change = true;
   }
-
-  delegate_->ScheduleCommitForFavicons();
-  return !bitmap_identical || favicon_bitmaps_copied;
+  result.did_icon_change = !bitmap_identical || favicon_bitmaps_copied;
+  return result;
 }
 
 std::set<GURL> FaviconBackend::CloneFaviconMappingsForPages(
@@ -430,9 +428,6 @@ std::set<GURL> FaviconBackend::CloneFaviconMappingsForPages(
     changed_page_urls.insert(std::make_move_iterator(v.begin()),
                              std::make_move_iterator(v.end()));
   }
-
-  if (!changed_page_urls.empty())
-    delegate_->ScheduleCommitForFavicons();
   return changed_page_urls;
 }
 
@@ -459,40 +454,42 @@ bool FaviconBackend::CanSetOnDemandFavicons(const GURL& page_url,
   return true;
 }
 
-bool FaviconBackend::SetOnDemandFavicons(const GURL& page_url,
-                                         favicon_base::IconType icon_type,
-                                         const GURL& icon_url,
-                                         const std::vector<SkBitmap>& bitmaps) {
-  return CanSetOnDemandFavicons(page_url, icon_type) &&
-         SetFavicons({page_url}, icon_type, icon_url, bitmaps,
+SetFaviconsResult FaviconBackend::SetOnDemandFavicons(
+    const GURL& page_url,
+    favicon_base::IconType icon_type,
+    const GURL& icon_url,
+    const std::vector<SkBitmap>& bitmaps) {
+  if (!CanSetOnDemandFavicons(page_url, icon_type))
+    return {};
+  return SetFavicons({page_url}, icon_type, icon_url, bitmaps,
                      FaviconBitmapType::ON_DEMAND);
 }
 
-void FaviconBackend::SetFaviconsOutOfDateForPage(const GURL& page_url) {
+bool FaviconBackend::SetFaviconsOutOfDateForPage(const GURL& page_url) {
   TRACE_EVENT0("browser", "FaviconBackend::SetFaviconsOutOfDateForPage");
 
   std::vector<IconMapping> icon_mappings;
 
   if (!db_->GetIconMappingsForPageURL(page_url, &icon_mappings))
-    return;
+    return false;
 
   for (auto m = icon_mappings.begin(); m != icon_mappings.end(); ++m)
     db_->SetFaviconOutOfDate(m->icon_id);
-  delegate_->ScheduleCommitForFavicons();
+  return true;
 }
 
 void FaviconBackend::TouchOnDemandFavicon(const GURL& icon_url) {
   TRACE_EVENT0("browser", "FaviconBackend::TouchOnDemandFavicon");
 
   db_->TouchOnDemandFavicon(icon_url, base::Time::Now());
-  delegate_->ScheduleCommitForFavicons();
 }
 
-bool FaviconBackend::SetFavicons(const base::flat_set<GURL>& page_urls,
-                                 favicon_base::IconType icon_type,
-                                 const GURL& icon_url,
-                                 const std::vector<SkBitmap>& bitmaps,
-                                 FaviconBitmapType bitmap_type) {
+SetFaviconsResult FaviconBackend::SetFavicons(
+    const base::flat_set<GURL>& page_urls,
+    favicon_base::IconType icon_type,
+    const GURL& icon_url,
+    const std::vector<SkBitmap>& bitmaps,
+    FaviconBitmapType bitmap_type) {
   TRACE_EVENT0("browser", "FaviconBackend::SetFavicons");
   DCHECK(!page_urls.empty());
 
@@ -512,22 +509,17 @@ bool FaviconBackend::SetFavicons(const base::flat_set<GURL>& page_urls,
     favicon_created = true;
   }
 
-  bool favicon_data_modified = false;
+  SetFaviconsResult result;
   if (favicon_created || bitmap_type == FaviconBitmapType::ON_VISIT)
-    favicon_data_modified = SetFaviconBitmaps(icon_id, bitmaps, bitmap_type);
+    result.did_update_bitmap = SetFaviconBitmaps(icon_id, bitmaps, bitmap_type);
 
   for (const GURL& page_url : page_urls) {
     bool mapping_changed =
         SetFaviconMappingsForPageAndRedirects(page_url, icon_type, icon_id);
-
-    if (mapping_changed) {
-      // Notify the UI that this function changed an icon mapping.
-      delegate_->OnFaviconChangedForPageAndRedirects(page_url);
-    }
+    if (mapping_changed)
+      result.updated_page_urls.insert(page_url);
   }
-
-  delegate_->ScheduleCommitForFavicons();
-  return favicon_data_modified;
+  return result;
 }
 
 FaviconBackend::FaviconBackend(std::unique_ptr<FaviconDatabase> db,

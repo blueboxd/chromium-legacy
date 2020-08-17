@@ -39,13 +39,18 @@ public class ChromeShareExtras {
     /** Indicates if text property is highlighted by user. */
     private final boolean mIsUserHighlightedText;
 
+    /** Whether it is sharing a tab group. */
+    private final boolean mSharingTabGroup;
+
     private ChromeShareExtras(boolean saveLastUsed, boolean shareDirectly,
-            boolean isUrlOfVisiblePage, String imageSrcUrl, boolean isUserHighlightedText) {
+            boolean isUrlOfVisiblePage, String imageSrcUrl, boolean isUserHighlightedText,
+            boolean sharingTabGroup) {
         mSaveLastUsed = saveLastUsed;
         mShareDirectly = shareDirectly;
         mIsUrlOfVisiblePage = isUrlOfVisiblePage;
         mImageSrcUrl = imageSrcUrl;
         mIsUserHighlightedText = isUserHighlightedText;
+        mSharingTabGroup = sharingTabGroup;
     }
 
     /**
@@ -85,6 +90,13 @@ public class ChromeShareExtras {
     }
 
     /**
+     * @return Whether it is sharing a tab group.
+     */
+    public boolean sharingTabGroup() {
+        return mSharingTabGroup;
+    }
+
+    /**
      * The builder for {@link ChromeShareExtras} objects.
      */
     public static class Builder {
@@ -93,6 +105,7 @@ public class ChromeShareExtras {
         private boolean mIsUrlOfVisiblePage;
         private String mImageSrcUrl;
         private boolean mIsUserHighlightedText;
+        private boolean mSharingTabGroup;
 
         /**
          * Sets whether to save the chosen activity for future direct sharing.
@@ -135,9 +148,17 @@ public class ChromeShareExtras {
             return this;
         }
 
+        /**
+         * Sets whether it is sharing a tab group.
+         */
+        public Builder setSharingTabGroup(boolean sharingTabGroup) {
+            mSharingTabGroup = sharingTabGroup;
+            return this;
+        }
+
         public ChromeShareExtras build() {
             return new ChromeShareExtras(mSaveLastUsed, mShareDirectly, mIsUrlOfVisiblePage,
-                    mImageSrcUrl, mIsUserHighlightedText);
+                    mImageSrcUrl, mIsUserHighlightedText, mSharingTabGroup);
         }
     }
 }

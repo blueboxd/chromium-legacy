@@ -170,7 +170,7 @@ ASH_PUBLIC_EXPORT extern const char kDetachableBaseDevices[];
 
 ASH_PUBLIC_EXPORT extern const char kCursorMotionBlurEnabled[];
 
-ASH_PUBLIC_EXPORT extern const char kAssistantNumWarmerWelcomeTriggered[];
+ASH_PUBLIC_EXPORT extern const char kAssistantNumSessionsWhereOnboardingShown[];
 ASH_PUBLIC_EXPORT extern const char kAssistantTimeOfLastInteraction[];
 
 ASH_PUBLIC_EXPORT extern const char kVpnConfigAllowed[];

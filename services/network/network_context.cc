@@ -1271,6 +1271,12 @@ void NetworkContext::CreateWebSocket(
 #if !defined(OS_IOS)
   if (!websocket_factory_)
     websocket_factory_ = std::make_unique<WebSocketFactory>(this);
+
+  DCHECK_GE(process_id, 0);
+  if (process_id == mojom::kBrowserProcessId) {
+    DCHECK_EQ(render_frame_id, 0);
+  }
+
   websocket_factory_->CreateWebSocket(
       url, requested_protocols, site_for_cookies, isolation_info,
       std::move(additional_headers), process_id, render_frame_id, origin,

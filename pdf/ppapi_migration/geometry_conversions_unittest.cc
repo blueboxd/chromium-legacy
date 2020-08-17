@@ -12,6 +12,7 @@
 #include "ppapi/cpp/size.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -33,6 +34,14 @@ TEST(GeometryConversionsTest, PPPointFromPoint) {
   PP_Point pp_c_point = PPPointFromPoint(gfx::Point(2, -1));
   EXPECT_EQ(pp_c_point.x, 2);
   EXPECT_EQ(pp_c_point.y, -1);
+}
+
+TEST(GeometryConversionsTest, PointFFromPPFloatPoint) {
+  gfx::PointF float_point = PointFFromPPFloatPoint(pp::FloatPoint(-1.2f, 2.2f));
+  EXPECT_EQ(float_point, gfx::PointF(-1.2f, 2.2f));
+
+  float_point = PointFFromPPFloatPoint(PP_MakeFloatPoint(-2.2f, 1.2f));
+  EXPECT_EQ(float_point, gfx::PointF(-2.2f, 1.2f));
 }
 
 TEST(GeometryConversionsTest, RectFromPPRect) {

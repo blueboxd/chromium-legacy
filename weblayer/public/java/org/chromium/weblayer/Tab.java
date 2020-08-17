@@ -165,6 +165,31 @@ public class Tab {
     }
 
     /**
+     * Creates a {@link FaviconFetcher} that notifies a {@link FaviconCallback} when the favicon
+     * changes.
+     *
+     * When the fetcher is no longer necessary, call {@link destroy}. Destroying the Tab implicitly
+     * destroys any fetchers that were created.
+     *
+     * A page may provide any number of favicons. This favors a largish favicon. If a previously
+     * cached icon is available, it is used, otherwise the icon is downloaded.
+     *
+     * {@link callback} may be called multiple times for the same navigation. This happens if the
+     * page dynamically updates the favicon.
+     *
+     * @param callback The callback to notify of changes.
+     *
+     * @since 86
+     */
+    public @NonNull FaviconFetcher createFaviconFetcher(@NonNull FaviconCallback callback) {
+        ThreadCheck.ensureOnUiThread();
+        if (WebLayer.getSupportedMajorVersionInternal() < 86) {
+            throw new UnsupportedOperationException();
+        }
+        return new FaviconFetcher(mImpl, callback);
+    }
+
+    /**
      * Executes the script, and returns the result as a JSON object to the callback if provided. The
      * object passed to the callback will have a single key SCRIPT_RESULT_KEY which will hold the
      * result of running the script.

@@ -20,6 +20,9 @@ PolicyValue::PolicyValue(bool bool_value)
 PolicyValue::PolicyValue(double double_value)
     : type_(mojom::PolicyValueType::kDecDouble), double_value_(double_value) {}
 
+PolicyValue::PolicyValue(bool bool_value, mojom::PolicyValueType type)
+    : type_(type), bool_value_(bool_value) {}
+
 PolicyValue::PolicyValue(double double_value, mojom::PolicyValueType type)
     : type_(type), double_value_(double_value) {}
 

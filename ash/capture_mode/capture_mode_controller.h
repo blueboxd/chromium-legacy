@@ -10,6 +10,7 @@
 #include "ash/ash_export.h"
 #include "ash/capture_mode/capture_mode_types.h"
 #include "ash/public/cpp/capture_mode_delegate.h"
+#include "base/memory/weak_ptr.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace ash {
@@ -61,6 +62,11 @@ class ASH_EXPORT CaptureModeController {
   void EndVideoRecording();
 
  private:
+  // Show notification for the newly taken screenshot or screen recording.
+  void ShowNotification(const base::FilePath& screen_capture_path);
+  void HandleNotificationClicked(const base::FilePath& screen_capture_path,
+                                 base::Optional<int> button_index);
+
   std::unique_ptr<CaptureModeDelegate> delegate_;
 
   CaptureModeType type_ = CaptureModeType::kImage;
@@ -72,6 +78,8 @@ class ASH_EXPORT CaptureModeController {
   gfx::Rect user_capture_region_;
 
   std::unique_ptr<CaptureModeSession> capture_mode_session_;
+
+  base::WeakPtrFactory<CaptureModeController> weak_ptr_factory_{this};
 };
 
 }  // namespace ash

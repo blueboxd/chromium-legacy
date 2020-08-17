@@ -695,6 +695,8 @@ void OobeInteractiveUITest::PerformStepsBeforeEnrollmentCheck() {
 void OobeInteractiveUITest::PerformSessionSignInSteps(
     const ScopedQuickUnlockPrivateGetAuthTokenFunctionObserver&
         get_auth_token_observer) {
+  test::WaitForUserCreationScreen();
+  test::TapUserCreationNext();
   WaitForGaiaSignInScreen(test_setup()->arc_state() != ArcState::kNotAvailable);
   LogInAsRegularUser();
 

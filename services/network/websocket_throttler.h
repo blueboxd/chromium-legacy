@@ -11,6 +11,7 @@
 
 #include "base/component_export.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 
@@ -117,8 +118,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocketThrottler final {
   base::TimeDelta CalculateDelay(int process_id) const;
 
   // Returns a pending connection for |process_id|. This function can be called
-  // only when |HasTooManyPendingConnections(process_id)| is false.
-  PendingConnection IssuePendingConnectionTracker(int process_id);
+  // only when |HasTooManyPendingConnections(process_id)| is false. May return
+  // |base::nullopt| if |process_id| is not throttled.
+  base::Optional<PendingConnection> IssuePendingConnectionTracker(
+      int process_id);
 
   size_t GetSizeForTesting() const { return per_process_throttlers_.size(); }
 

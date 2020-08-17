@@ -39,15 +39,18 @@ extern ContentType const ContentTypeImage;
 - (instancetype)init NS_UNAVAILABLE;
 
 // Returns the copied URL if the clipboard contains a recent URL that has not
-// been supressed. Otherwise, returns nil.
+// been suppressed and will not trigger a pasteboard access notification.
+// Otherwise, returns nil.
 - (NSURL*)recentURLFromClipboard;
 
 // Returns the copied string if the clipboard contains a recent string that has
-// not been suppresed. Otherwise, returns nil.
+// not been suppresed and will not trigger a pasteboard access notification.
+// Otherwise, returns nil.
 - (NSString*)recentTextFromClipboard;
 
 // Returns the copied image if the clipboard contains a recent image that has
-// not been suppressed. Otherwise, returns nil.
+// not been suppressed and will not trigger a pasteboard access notification.
+// Otherwise, returns nil.
 - (UIImage*)recentImageFromClipboard;
 
 // Uses the new iOS 14 pasteboard detection pattern API to asynchronously detect

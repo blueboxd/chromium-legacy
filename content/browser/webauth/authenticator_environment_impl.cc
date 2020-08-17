@@ -4,10 +4,12 @@
 
 #include "content/browser/webauth/authenticator_environment_impl.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "base/command_line.h"
 #include "base/stl_util.h"
+#include "content/browser/webauth/virtual_authenticator.h"
 #include "content/browser/webauth/virtual_discovery.h"
 #include "content/browser/webauth/virtual_fido_discovery_factory.h"
 #include "device/fido/fido_discovery_factory.h"
@@ -29,42 +31,40 @@ AuthenticatorEnvironmentImpl::AuthenticatorEnvironmentImpl() = default;
 
 AuthenticatorEnvironmentImpl::~AuthenticatorEnvironmentImpl() = default;
 
-device::FidoDiscoveryFactory*
-AuthenticatorEnvironmentImpl::GetDiscoveryFactoryOverride(FrameTreeNode* node) {
-  auto* factory = GetVirtualFactoryFor(node);
-  if (factory)
-    return factory;
-  return replaced_discovery_factory_.get();
-}
-
 void AuthenticatorEnvironmentImpl::EnableVirtualAuthenticatorFor(
     FrameTreeNode* node) {
   // Do not create a new virtual authenticator if there is one already defined
   // for the |node|.
-  if (base::Contains(virtual_discovery_factories_, node))
+  if (base::Contains(virtual_authenticator_managers_, node))
     return;
 
   node->AddObserver(this);
-  virtual_discovery_factories_[node] =
-      std::make_unique<VirtualFidoDiscoveryFactory>();
+  virtual_authenticator_managers_[node] =
+      std::make_unique<VirtualAuthenticatorManagerImpl>();
 }
 
 void AuthenticatorEnvironmentImpl::DisableVirtualAuthenticatorFor(
     FrameTreeNode* node) {
-  if (!base::Contains(virtual_discovery_factories_, node))
+  if (!base::Contains(virtual_authenticator_managers_, node))
     return;
 
   node->RemoveObserver(this);
-  virtual_discovery_factories_.erase(node);
+  virtual_authenticator_managers_.erase(node);
 }
 
-VirtualFidoDiscoveryFactory* AuthenticatorEnvironmentImpl::GetVirtualFactoryFor(
+bool AuthenticatorEnvironmentImpl::IsVirtualAuthenticatorEnabledFor(
     FrameTreeNode* node) {
-  do {
-    if (base::Contains(virtual_discovery_factories_, node)) {
-      return virtual_discovery_factories_[node].get();
+  return MaybeGetVirtualAuthenticatorManager(node) != nullptr;
+}
+
+VirtualAuthenticatorManagerImpl*
+AuthenticatorEnvironmentImpl::MaybeGetVirtualAuthenticatorManager(
+    FrameTreeNode* node) {
+  for (; node; node = FrameTreeNode::From(node->parent())) {
+    if (base::Contains(virtual_authenticator_managers_, node)) {
+      return virtual_authenticator_managers_[node].get();
     }
-  } while ((node = FrameTreeNode::From(node->parent())));
+  }
   return nullptr;
 }
 
@@ -72,16 +72,29 @@ void AuthenticatorEnvironmentImpl::AddVirtualAuthenticatorReceiver(
     FrameTreeNode* node,
     mojo::PendingReceiver<blink::test::mojom::VirtualAuthenticatorManager>
         receiver) {
-  auto* factory = GetVirtualFactoryFor(node);
-  DCHECK(factory);
-  factory->AddReceiver(std::move(receiver));
+  auto it = virtual_authenticator_managers_.find(node);
+  DCHECK(it != virtual_authenticator_managers_.end());
+  it->second->AddReceiver(std::move(receiver));
 }
 
-void AuthenticatorEnvironmentImpl::OnDiscoveryDestroyed(
-    VirtualFidoDiscovery* discovery) {
-  for (auto& it : virtual_discovery_factories_) {
-    it.second->OnDiscoveryDestroyed(discovery);
+bool AuthenticatorEnvironmentImpl::HasVirtualUserVerifyingPlatformAuthenticator(
+    FrameTreeNode* node) {
+  VirtualAuthenticatorManagerImpl* authenticator_manager =
+      MaybeGetVirtualAuthenticatorManager(node);
+  if (!authenticator_manager) {
+    return false;
   }
+  std::vector<VirtualAuthenticator*> authenticators =
+      authenticator_manager->GetAuthenticators();
+  return std::any_of(authenticators.begin(), authenticators.end(),
+                     [](VirtualAuthenticator* a) {
+                       return a->is_user_verifying_platform_authenticator();
+                     });
+}
+
+device::FidoDiscoveryFactory*
+AuthenticatorEnvironmentImpl::MaybeGetDiscoveryFactoryTestOverride() {
+  return replaced_discovery_factory_.get();
 }
 
 void AuthenticatorEnvironmentImpl::ReplaceDefaultDiscoveryFactoryForTesting(

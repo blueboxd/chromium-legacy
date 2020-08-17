@@ -36,9 +36,11 @@ class AssistantViewDelegateImpl : public AssistantViewDelegate {
   void OnHostViewVisibilityChanged(bool visible) override;
   void OnNotificationButtonPressed(const std::string& notification_id,
                                    int notification_button_index) override;
+  void OnOnboardingShown() override;
   void OnOptInButtonPressed() override;
   void OnSuggestionPressed(
       const base::UnguessableToken& suggestion_id) override;
+  bool ShouldShowOnboarding() const override;
 
  private:
   AssistantControllerImpl* const assistant_controller_;

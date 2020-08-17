@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<issues format="5" by="lint 4.0.1" client="cli" variant="all" version="4.0.1">
+
+    <issue
+        id="AppCompatResource"
+        message="Should use `android:showAsAction` when not using the appcompat library"
+        errorLine1="        app:showAsAction=&quot;ifRoom&quot;/>"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../remoting/android/java/res/menu/chromoting_actionbar.xml"
+            line="15"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="AppCompatResource"
+        message="Should use `android:showAsAction` when not using the appcompat library"
+        errorLine1="            app:showAsAction=&quot;ifRoom&quot;/>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../remoting/android/java/res/menu/desktop_actionbar.xml"
+            line="14"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="AppCompatResource"
+        message="Should use `android:showAsAction` when not using the appcompat library"
+        errorLine1="            app:showAsAction=&quot;ifRoom&quot;/>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../remoting/android/java/res/menu/desktop_actionbar.xml"
+            line="18"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="AppCompatResource"
+        message="Should use `android:showAsAction` when not using the appcompat library"
+        errorLine1="            app:showAsAction=&quot;ifRoom&quot;/>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../remoting/android/java/res/menu/desktop_actionbar.xml"
+            line="22"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="AppCompatResource"
+        message="Should use `android:showAsAction` when not using the appcompat library"
+        errorLine1="            app:showAsAction=&quot;ifRoom&quot;/>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../remoting/android/java/res/menu/desktop_actionbar.xml"
+            line="26"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="AppCompatResource"
+        message="Should use `android:showAsAction` when not using the appcompat library"
+        errorLine1="            app:showAsAction=&quot;withText&quot;/>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../remoting/android/java/res/menu/desktop_actionbar.xml"
+            line="29"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="AppCompatResource"
+        message="Should use `android:showAsAction` when not using the appcompat library"
+        errorLine1="        app:showAsAction=&quot;never|withText&quot;/>"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../remoting/android/java/res/menu/desktop_actionbar.xml"
+            line="33"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="AppCompatResource"
+        message="Should use `android:showAsAction` when not using the appcompat library"
+        errorLine1="            app:showAsAction=&quot;withText&quot;/>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../remoting/android/java/res/menu/desktop_actionbar.xml"
+            line="36"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="AppCompatResource"
+        message="Should use `android:showAsAction` when not using the appcompat library"
+        errorLine1="            app:showAsAction=&quot;never&quot;/>"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../remoting/android/java/res/menu/desktop_actionbar.xml"
+            line="43"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="AppCompatResource"
+        message="Should use `android:showAsAction` when not using the appcompat library"
+        errorLine1="        app:showAsAction=&quot;ifRoom|withText&quot;/>"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../remoting/android/java/res/menu/help_actionbar.xml"
+            line="13"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="AppCompatResource"
+        message="Should use `android:showAsAction` when not using the appcompat library"
+        errorLine1="        app:showAsAction=&quot;never&quot;/>"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../remoting/android/java/res/menu/help_actionbar.xml"
+            line="17"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="AppCompatResource"
+        message="Should use `android:showAsAction` when not using the appcompat library"
+        errorLine1="        app:showAsAction=&quot;never&quot;/>"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../remoting/android/java/res/menu/help_actionbar.xml"
+            line="21"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="InflateParams"
+        message="Avoid passing `null` as the view root (needed to resolve layout parameters on the inflated layout&apos;s root element)"
+        errorLine1="                (ListView) chromoting.getLayoutInflater().inflate(R.layout.navigation_list, null);"
+        errorLine2="                                                                                            ~~~~">
+        <location
+            file="../../remoting/android/java/src/org/chromium/chromoting/NavigationMenuAdapter.java"
+            line="47"
+            column="93"/>
+    </issue>
+
+    <issue
+        id="SetJavaScriptEnabled"
+        message="Using `setJavaScriptEnabled` can introduce XSS vulnerabilities into your application, review carefully."
+        errorLine1="        mWebView.getSettings().setJavaScriptEnabled(true);"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../remoting/android/java/src/org/chromium/chromoting/help/HelpActivity.java"
+            line="91"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="SetJavaScriptEnabled"
+        message="Using `setJavaScriptEnabled` can introduce XSS vulnerabilities into your application, review carefully."
+        errorLine1="        webView.getSettings().setJavaScriptEnabled(true);"
+        errorLine2="        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../remoting/android/java/src/org/chromium/chromoting/WebViewActivity.java"
+            line="46"
+            column="9"/>
+    </issue>
+
+    <issue
+        id="Recycle"
+        message="This `MotionEvent` should be recycled after use with `#recycle()`"
+        errorLine1="        event = MotionEvent.obtain(event);"
+        errorLine2="                            ~~~~~~">
+        <location
+            file="../../remoting/android/java/src/org/chromium/chromoting/TouchInputStrategy.java"
+            line="207"
+            column="29"/>
+    </issue>
+
+    <issue
+        id="ObsoleteSdkInt"
+        message="Unnecessary; SDK_INT is always >= 21"
+        errorLine1="        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../remoting/android/java/src/org/chromium/chromoting/Chromoting.java"
+            line="628"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="ObsoleteSdkInt"
+        message="Unnecessary; SDK_INT is always >= 21"
+        errorLine1="        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../remoting/android/java/src/org/chromium/chromoting/Desktop.java"
+            line="183"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="ObsoleteSdkInt"
+        message="Unnecessary; SDK_INT is always >= 21"
+        errorLine1="        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {"
+        errorLine2="                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../remoting/android/java/src/org/chromium/chromoting/Desktop.java"
+            line="221"
+            column="20"/>
+    </issue>
+
+    <issue
+        id="ObsoleteSdkInt"
+        message="Unnecessary; SDK_INT is always >= 21"
+        errorLine1="        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../remoting/android/java/src/org/chromium/chromoting/Desktop.java"
+            line="280"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="ObsoleteSdkInt"
+        message="Unnecessary; SDK_INT is always >= 21"
+        errorLine1="        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../remoting/android/java/src/org/chromium/chromoting/Desktop.java"
+            line="512"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="ObsoleteSdkInt"
+        message="Unnecessary; SDK_INT is always >= 21"
+        errorLine1="        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../remoting/android/java/src/org/chromium/chromoting/Desktop.java"
+            line="521"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="ObsoleteSdkInt"
+        message="Unnecessary; SDK_INT is always >= 21"
+        errorLine1="        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {"
+        errorLine2="            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="../../remoting/android/java/src/org/chromium/chromoting/Desktop.java"
+            line="605"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="ClickableViewAccessibility"
+        message="Custom view `DesktopView` overrides `onTouchEvent` but not `performClick`"
+        errorLine1="    public final boolean onTouchEvent(MotionEvent event) {"
+        errorLine2="                         ~~~~~~~~~~~~">
+        <location
+            file="../../remoting/android/java/src/org/chromium/chromoting/DesktopView.java"
+            line="85"
+            column="26"/>
+    </issue>
+
+    <issue
+        id="RtlEnabled"
+        message="The project references RTL attributes, but does not explicitly enable or disable RTL support with `android:supportsRtl` in the manifest">
+        <location
+            file="gen/remoting/android/remoting_apk__lint/gen/remoting/android/AndroidManifest.xml"/>
+    </issue>
+
+</issues>

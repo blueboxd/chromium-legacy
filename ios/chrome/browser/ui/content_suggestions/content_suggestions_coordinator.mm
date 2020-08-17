@@ -14,6 +14,8 @@
 #include "components/ntp_snippets/remote/remote_suggestions_scheduler.h"
 #include "components/ntp_tiles/most_visited_sites.h"
 #include "components/prefs/pref_service.h"
+#import "components/search_engines/template_url.h"
+#import "components/search_engines/template_url_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/discover_feed/discover_feed_service_factory.h"
 #include "ios/chrome/browser/drag_and_drop/drag_and_drop_flag.h"
@@ -26,7 +28,7 @@
 #include "ios/chrome/browser/ntp_tiles/ios_most_visited_sites_factory.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
-#include "ios/chrome/browser/search_engines/template_url_service_factory.h"
+#import "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
@@ -158,11 +160,13 @@
   self.authService = AuthenticationServiceFactory::GetForBrowserState(
       self.browser->GetBrowserState());
 
+  TemplateURLService* templateURLService =
+      ios::TemplateURLServiceFactory::GetForBrowserState(
+          self.browser->GetBrowserState());
+
   self.NTPMediator = [[NTPHomeMediator alloc]
              initWithWebState:self.webState
-           templateURLService:ios::TemplateURLServiceFactory::
-                                  GetForBrowserState(
-                                      self.browser->GetBrowserState())
+           templateURLService:templateURLService
                     URLLoader:UrlLoadingBrowserAgent::FromBrowser(self.browser)
                   authService:self.authService
               identityManager:IdentityManagerFactory::GetForBrowserState(
@@ -205,14 +209,19 @@
   }
   self.discoverFeedViewController = [self discoverFeed];
 
+  BOOL isGoogleDefaultSearchProvider =
+      templateURLService->GetDefaultSearchProvider()->GetEngineType(
+          templateURLService->search_terms_data()) == SEARCH_ENGINE_GOOGLE;
+
   self.contentSuggestionsMediator = [[ContentSuggestionsMediator alloc]
-      initWithContentService:contentSuggestionsService
-            largeIconService:largeIconService
-              largeIconCache:cache
-             mostVisitedSite:std::move(mostVisitedFactory)
-            readingListModel:readingListModel
-                 prefService:prefs
-                discoverFeed:self.discoverFeedViewController];
+             initWithContentService:contentSuggestionsService
+                   largeIconService:largeIconService
+                     largeIconCache:cache
+                    mostVisitedSite:std::move(mostVisitedFactory)
+                   readingListModel:readingListModel
+                        prefService:prefs
+                       discoverFeed:self.discoverFeedViewController
+      isGoogleDefaultSearchProvider:isGoogleDefaultSearchProvider];
   self.contentSuggestionsMediator.commandHandler = self.NTPMediator;
   self.contentSuggestionsMediator.headerProvider = self.headerController;
   self.contentSuggestionsMediator.contentArticlesExpanded =

@@ -17,8 +17,9 @@
 
 namespace sql {
 
-// SQLite VFS implementation for use within a typical Chromium sandbox
-// environment. Instances are thread-friendly.
+// SQLite VFS file implementation that works in a sandboxed process.
+//
+// Instances are thread-friendly.
 class COMPONENT_EXPORT(SQL) SandboxedVfs {
  public:
   // Describes access rights for a path, used by Delegate::GetPathAccess below.
@@ -27,26 +28,31 @@ class COMPONENT_EXPORT(SQL) SandboxedVfs {
     bool can_write = false;
   };
 
-  // Interface which must be implemented by the environment using a
-  // SandboxedVfs. This abstracts a handful of operations that don't typically
-  // work in a sandbox environment given a typical naive implementation.
+  // Environment-specific SandboxedVfs implementation details.
   //
-  // Instances must be thread-friendly, as methods may be called from any
-  // thread.
+  // This abstracts a handful of operations that don't typically work in a
+  // sandbox environment given a typical naive implementation. Instances must be
+  // thread-safe.
   class Delegate {
    public:
     virtual ~Delegate() = default;
 
-    // Opens a file at the given `file_path`. `sqlite_requested_flags` is a
-    // bitwise combination SQLite flags used when opening files. Returns the
-    // opened File on success, or an invalid File on failure.
+    // Opens a file.
+    //
+    // `file_path` is the parsed version of a path passed by SQLite to Open().
+    // `sqlite_requested_flags` is a bitwise combination SQLite flags used when
+    // opening files. Returns the opened File on success, or an invalid File on
+    // failure.
     virtual base::File OpenFile(const base::FilePath& file_path,
                                 int sqlite_requested_flags) = 0;
 
-    // Deletes a file at the given `file_path`. If `sync_dir` is true, the
-    // implementation should synchronize the containing directory contents if
-    // possible. Returns an SQLite error code indicating the status of the
-    // operation.
+    // Deletes a file.
+    //
+    // `file_path` is the parsed version of a path passed by SQLite to Delete().
+    // If `sync_dir` is true, the implementation should attempt to flush to disk
+    // the changes to the file's directory, to ensure that the deletion is
+    // reflected after a power failure. Returns an SQLite error code indicating
+    // the status of the operation.
     virtual int DeleteFile(const base::FilePath& file_path, bool sync_dir) = 0;
 
     // Queries path access information for `file_path`. Returns null if the
@@ -54,14 +60,19 @@ class COMPONENT_EXPORT(SQL) SandboxedVfs {
     virtual base::Optional<PathAccessInfo> GetPathAccess(
         const base::FilePath& file_path) = 0;
 
-    // Resizes the file at `file_path` (opened in `file`) to `size` bytes,
-    // returning true if successful and false otherwise. Implementations may
-    // want to operate on the filesystem via `file_path`, or modify `file`
-    // directly if possible.
+    // Resizes a file.
     //
-    // Note that if this is called by the VFS, it's because a direct call to
-    // SetLength on `file` has already failed. The implementation should not
-    // attempt to repeat this.
+    // `file` is the result of a previous call to Delegate::OpenFile() with
+    // `file_path`. `size` is the new desired size in bytes, and may be smaller
+    // or larger than the current file size. Returns true if successful and
+    // false otherwise.
+    //
+    // Implementations can modify `file` directly, or operate on the filesystem
+    // via `file_path`.
+    //
+    // This is only called after the direct approach of base::File::SetLength()
+    // fails. So, the implementation should not bother trying to call
+    // SetLength() on `file`. This currently only happens on macOS < 10.15.
     virtual bool SetFileLength(const base::FilePath& file_path,
                                base::File& file,
                                size_t size) = 0;

@@ -246,7 +246,7 @@ class FrameImpl : public fuchsia::web::Frame,
 
   std::unique_ptr<AccessibilityBridge> accessibility_bridge_;
   fuchsia::accessibility::semantics::SemanticsManager*
-      semantics_manager_for_test_;
+      semantics_manager_for_test_ = nullptr;
 
   EventFilter event_filter_;
   NavigationControllerImpl navigation_controller_;

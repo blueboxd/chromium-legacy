@@ -20,7 +20,7 @@
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "chrome/browser/net/file_downloader.h"
-#include "chrome/browser/supervised_user/supervised_user_blacklist.h"
+#include "chrome/browser/supervised_user/supervised_user_denylist.h"
 #include "chrome/browser/supervised_user/supervised_user_url_filter.h"
 #include "chrome/browser/supervised_user/supervised_users.h"
 #include "chrome/browser/ui/browser_list_observer.h"
@@ -45,7 +45,7 @@ class SupervisedUserServiceObserver;
 class SupervisedUserSettingsService;
 class SupervisedUserSiteList;
 class SupervisedUserURLFilter;
-class SupervisedUserWhitelistService;
+class SupervisedUserAllowlistService;
 
 namespace base {
 class FilePath;
@@ -64,7 +64,7 @@ class PrefRegistrySyncable;
 
 // This class handles all the information related to a given supervised profile
 // (e.g. the installed content packs, the default URL filtering behavior, or
-// manual whitelist/blacklist overrides).
+// manual allowlist/denylist overrides).
 class SupervisedUserService : public KeyedService,
 #if BUILDFLAG(ENABLE_EXTENSIONS)
                               public extensions::ExtensionRegistryObserver,
@@ -112,11 +112,11 @@ class SupervisedUserService : public KeyedService,
   // on the UI thread.
   SupervisedUserURLFilter* GetURLFilter();
 
-  // Returns the whitelist service.
-  SupervisedUserWhitelistService* GetWhitelistService();
+  // Returns the allowlist service.
+  SupervisedUserAllowlistService* GetAllowlistService();
 
-  const std::vector<scoped_refptr<SupervisedUserSiteList>>& whitelists() const {
-    return whitelists_;
+  const std::vector<scoped_refptr<SupervisedUserSiteList>>& allowlists() const {
+    return allowlists_;
   }
 
   // Whether the user can request to get access to blocked URLs or to new
@@ -338,25 +338,25 @@ class SupervisedUserService : public KeyedService,
   void OnSiteListsChanged(
       const std::vector<scoped_refptr<SupervisedUserSiteList>>& site_lists);
 
-  // Asynchronously loads a blacklist from a binary file at |path| and applies
+  // Asynchronously loads a denylist from a binary file at |path| and applies
   // it to the URL filters. If no file exists at |path| yet, downloads a file
   // from |url| and stores it at |path| first.
-  void LoadBlacklist(const base::FilePath& path, const GURL& url);
+  void LoadDenylist(const base::FilePath& path, const GURL& url);
 
-  void OnBlacklistFileChecked(const base::FilePath& path,
-                              const GURL& url,
-                              bool file_exists);
+  void OnDenylistFileChecked(const base::FilePath& path,
+                             const GURL& url,
+                             bool file_exists);
 
-  // Asynchronously loads a blacklist from a binary file at |path| and applies
+  // Asynchronously loads a denylist from a binary file at |path| and applies
   // it to the URL filters.
-  void LoadBlacklistFromFile(const base::FilePath& path);
+  void LoadDenylistFromFile(const base::FilePath& path);
 
-  void OnBlacklistDownloadDone(const base::FilePath& path,
-                               FileDownloader::Result result);
+  void OnDenylistDownloadDone(const base::FilePath& path,
+                              FileDownloader::Result result);
 
-  void OnBlacklistLoaded();
+  void OnDenylistLoaded();
 
-  void UpdateBlacklist();
+  void UpdateDenylist();
 
   // Updates the manual overrides for hosts in the URL filters when the
   // corresponding preference is changed.
@@ -389,18 +389,18 @@ class SupervisedUserService : public KeyedService,
   // It is only relevant for SU-initiated installs.
   std::set<std::string> approved_extensions_set_;
 
-  enum class BlacklistLoadState {
+  enum class DenylistLoadState {
     NOT_LOADED,
     LOAD_STARTED,
     LOADED
-  } blacklist_state_;
+  } denylist_state_;
 
-  SupervisedUserBlacklist blacklist_;
-  std::unique_ptr<FileDownloader> blacklist_downloader_;
+  SupervisedUserDenylist denylist_;
+  std::unique_ptr<FileDownloader> denylist_downloader_;
 
-  std::unique_ptr<SupervisedUserWhitelistService> whitelist_service_;
+  std::unique_ptr<SupervisedUserAllowlistService> allowlist_service_;
 
-  std::vector<scoped_refptr<SupervisedUserSiteList>> whitelists_;
+  std::vector<scoped_refptr<SupervisedUserSiteList>> allowlists_;
 
   // Used to create permission requests.
   std::vector<std::unique_ptr<PermissionRequestCreator>> permissions_creators_;

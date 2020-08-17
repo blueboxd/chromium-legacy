@@ -633,7 +633,7 @@ public class LibraryLoader {
         UmaRecorderHolder.onLibraryLoaded();
 
         // From now on, keep tracing in sync with native.
-        TraceEvent.registerNativeEnabledObserver();
+        TraceEvent.onNativeTracingReady();
 
         // From this point on, native code is ready to use, but non-MainDex JNI may not yet have
         // been registered. Check isInitialized() to be sure that initialization is fully complete.

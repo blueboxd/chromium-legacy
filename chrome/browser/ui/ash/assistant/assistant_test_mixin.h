@@ -144,7 +144,6 @@ class AssistantTestMixin : public InProcessBrowserTestMixin {
   PrefService* GetUserPreferences();
   void SendKeyPress(ui::KeyboardCode key);
   void DisableAssistant();
-  void DisableWarmerWelcome();
 
   FakeS3Server fake_s3_server_;
   FakeS3Mode mode_;

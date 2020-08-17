@@ -13,9 +13,8 @@
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "content/public/browser/web_ui.h"
 
-// This class replaces the ChromeWebUIFactory when the switches::kTestType flag
-// is passed. It provides a registry to override CreateWebUIControllerForURL()
-// by host.
+// A test implementation of ChromeWebUIControllerFactory that provides a
+// registry to override CreateWebUIControllerForURL() by host.
 class TestChromeWebUIControllerFactory : public ChromeWebUIControllerFactory {
  public:
   // Interface to create a new WebUI object.

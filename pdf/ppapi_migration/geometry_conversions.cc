@@ -8,6 +8,7 @@
 #include "ppapi/c/pp_rect.h"
 #include "ppapi/c/pp_size.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -19,6 +20,10 @@ gfx::Point PointFromPPPoint(const PP_Point& pp_point) {
 
 PP_Point PPPointFromPoint(const gfx::Point& point) {
   return PP_MakePoint(point.x(), point.y());
+}
+
+gfx::PointF PointFFromPPFloatPoint(const PP_FloatPoint& pp_point) {
+  return gfx::PointF(pp_point.x, pp_point.y);
 }
 
 gfx::Rect RectFromPPRect(const PP_Rect& pp_rect) {

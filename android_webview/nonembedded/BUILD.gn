@@ -173,17 +173,19 @@ android_resources("monochrome_devui_launcher_icon_resources") {
   custom_package = "org.chromium.android_webview.devui.icon"
 }
 
+_webview_jinja_variables = [ "manifest_package=$system_webview_package_name" ] +
+                           webview_jinja_variables
+
 jinja_template("system_webview_manifest") {
   input = "java/AndroidManifest.xml"
   output = system_webview_android_manifest
-  variables = [ "manifest_package=$system_webview_package_name" ]
+  variables = _webview_jinja_variables
 }
 
 jinja_template("trichrome_webview_manifest") {
   input = "java/AndroidManifest.xml"
   output = trichrome_webview_android_manifest
-  variables = trichrome_jinja_variables +
-              [ "manifest_package=$system_webview_package_name" ]
+  variables = trichrome_jinja_variables + _webview_jinja_variables
   if (android_64bit_target_cpu) {
     variables += [
       "use32bitAbi=",
@@ -202,10 +204,9 @@ if (android_64bit_target_cpu) {
   jinja_template("trichrome_webview_64_32_manifest") {
     input = "java/AndroidManifest.xml"
     output = trichrome_webview_64_32_android_manifest
-    variables = trichrome_jinja_variables + [
+    variables = trichrome_jinja_variables + _webview_jinja_variables + [
                   "use32bitAbi=",
                   "trichrome_version=$trichrome_64_32_version_code",
-                  "manifest_package=$system_webview_package_name",
                   "library=libmonochrome_64.so",
                 ]
   }
@@ -213,9 +214,8 @@ if (android_64bit_target_cpu) {
   jinja_template("trichrome_webview_32_64_manifest") {
     input = "java/AndroidManifest.xml"
     output = trichrome_webview_32_64_android_manifest
-    variables = trichrome_jinja_variables + [
+    variables = trichrome_jinja_variables + _webview_jinja_variables + [
                   "trichrome_version=$trichrome_32_64_version_code",
-                  "manifest_package=$system_webview_package_name",
                   "library=libmonochrome.so",
                 ]
   }
@@ -223,9 +223,8 @@ if (android_64bit_target_cpu) {
   jinja_template("trichrome_webview_32_manifest") {
     input = "java/AndroidManifest.xml"
     output = trichrome_webview_32_android_manifest
-    variables = trichrome_jinja_variables + [
+    variables = trichrome_jinja_variables + _webview_jinja_variables + [
                   "trichrome_version=$trichrome_32_version_code",
-                  "manifest_package=$system_webview_package_name",
                   "library=libmonochrome.so",
                 ]
   }

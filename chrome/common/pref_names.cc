@@ -198,10 +198,10 @@ const char kSupervisedUserSecondCustodianProfileURL[] =
 // the format.
 const char kSupervisedUserSharedSettings[] = "profile.managed.shared_settings";
 
-// A dictionary storing whitelists for a supervised user. The key is the CRX ID
-// of the whitelist, the value a dictionary containing whitelist properties
+// A dictionary storing allowlists for a supervised user. The key is the CRX ID
+// of the allowlist, the value a dictionary containing allowlist properties
 // (currently the name).
-const char kSupervisedUserWhitelists[] = "profile.managed.whitelists";
+const char kSupervisedUserAllowlists[] = "profile.managed.whitelists";
 
 #if BUILDFLAG(ENABLE_RLZ)
 // Integer. RLZ ping delay in seconds.

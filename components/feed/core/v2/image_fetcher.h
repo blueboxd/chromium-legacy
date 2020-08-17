@@ -17,10 +17,12 @@ class SimpleURLLoader;
 
 namespace feed {
 
+struct NetworkResponse;
+
 // Fetcher object to retrieve an image resource from a URL.
 class ImageFetcher {
  public:
-  using ImageCallback = base::OnceCallback<void(std::unique_ptr<std::string>)>;
+  using ImageCallback = base::OnceCallback<void(NetworkResponse)>;
   explicit ImageFetcher(
       scoped_refptr<::network::SharedURLLoaderFactory> url_loader_factory);
   virtual ~ImageFetcher();

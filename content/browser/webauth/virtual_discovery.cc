@@ -20,9 +20,7 @@ VirtualFidoDiscovery::VirtualFidoDiscovery(
     ::device::FidoTransportProtocol transport)
     : FidoDeviceDiscovery(transport) {}
 
-VirtualFidoDiscovery::~VirtualFidoDiscovery() {
-  AuthenticatorEnvironmentImpl::GetInstance()->OnDiscoveryDestroyed(this);
-}
+VirtualFidoDiscovery::~VirtualFidoDiscovery() = default;
 
 void VirtualFidoDiscovery::AddVirtualDevice(
     std::unique_ptr<::device::FidoDevice> device) {

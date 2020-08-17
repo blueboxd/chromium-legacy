@@ -4,6 +4,7 @@
 
 package org.chromium.weblayer;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
@@ -575,7 +576,19 @@ public class WebLayer {
         // Child processes do not need WebView compatibility since there is no chance
         // WebView will run in the same process.
         if (sDisableWebViewCompatibilityMode) {
-            sRemoteClassLoader = getOrCreateRemoteContext(appContext).getClassLoader();
+            Context context = getOrCreateRemoteContext(appContext);
+            // Android versions before O do not support isolated splits, so WebLayer will be loaded
+            // as a normal split which is already available from the base class loader.
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                try {
+                    // If the implementation APK does not support isolated splits, this will just
+                    // return the original context.
+                    context = ApiHelperForO.createContextForSplit(context, "weblayer");
+                } catch (PackageManager.NameNotFoundException e) {
+                    // WebLayer not in split, proceed with the base context.
+                }
+            }
+            sRemoteClassLoader = context.getClassLoader();
         } else {
             sRemoteClassLoader = WebViewCompatibilityHelper.initialize(appContext);
         }
@@ -676,6 +689,16 @@ public class WebLayer {
             StrictModeWorkaround.apply();
             // The id is part of the public library to avoid conflicts.
             return R.id.weblayer_media_session_notification;
+        }
+    }
+
+    @VerifiesOnO
+    @TargetApi(Build.VERSION_CODES.O)
+    private static final class ApiHelperForO {
+        /** See {@link Context.createContextForSplit(String) }. */
+        public static Context createContextForSplit(Context context, String name)
+                throws PackageManager.NameNotFoundException {
+            return context.createContextForSplit(name);
         }
     }
 }

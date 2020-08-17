@@ -73,10 +73,8 @@ class FaviconBackendWrapper
                              favicon_base::IconType icon_type);
 
   // favicon::FaviconBackendDelegate:
-  void ScheduleCommitForFavicons() override;
   std::vector<GURL> GetCachedRecentRedirectsForPage(
       const GURL& page_url) override;
-  void OnFaviconChangedForPageAndRedirects(const GURL& page_url) override;
 
  private:
   friend class base::RefCountedDeleteOnSequence<FaviconBackendWrapper>;
@@ -85,6 +83,7 @@ class FaviconBackendWrapper
 
   ~FaviconBackendWrapper() override;
 
+  void ScheduleCommit();
   void Commit();
 
   // Called to expire (remove) out of date icons and restart the timer.

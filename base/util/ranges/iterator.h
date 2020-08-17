@@ -5,12 +5,23 @@
 #ifndef BASE_UTIL_RANGES_ITERATOR_H_
 #define BASE_UTIL_RANGES_ITERATOR_H_
 
+#include <iterator>
 #include <type_traits>
 #include <utility>
 
 #include "base/util/ranges/functional.h"
 
 namespace util {
+
+// Simplified implementation of C++20's std::iter_value_t.
+// As opposed to std::iter_value_t, this implementation does not restrict
+// the type of `Iter` and does not consider specializations of
+// `indirectly_readable_traits`.
+//
+// Reference: https://wg21.link/readable.traits#2
+template <typename Iter>
+using iter_value_t = typename std::iterator_traits<
+    std::remove_cv_t<std::remove_reference_t<Iter>>>::value_type;
 
 // Simplified implementation of C++20's std::iter_reference_t.
 // As opposed to std::iter_reference_t, this implementation does not restrict

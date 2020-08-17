@@ -39,6 +39,7 @@ class OneShotTimer;
 namespace device {
 
 class FidoRequestHandlerBase;
+class FidoDiscoveryFactory;
 
 enum class FidoReturnCode : uint8_t;
 
@@ -167,8 +168,17 @@ class CONTENT_EXPORT AuthenticatorCommon {
 
   BrowserContext* browser_context() const;
 
+  // Returns the FidoDiscoveryFactory for the current request. This may be a
+  // real instance, or one injected by the Virtual Authenticator environment, or
+  // a unit testing fake. InitDiscoveryFactory() must be called before this
+  // accessor. It gets reset at the end of each request by Cleanup().
+  device::FidoDiscoveryFactory* discovery_factory();
+  void InitDiscoveryFactory();
+
   RenderFrameHost* const render_frame_host_;
   std::unique_ptr<device::FidoRequestHandlerBase> request_;
+  std::unique_ptr<device::FidoDiscoveryFactory> discovery_factory_;
+  device::FidoDiscoveryFactory* discovery_factory_testing_override_ = nullptr;
   blink::mojom::Authenticator::MakeCredentialCallback
       make_credential_response_callback_;
   blink::mojom::Authenticator::GetAssertionCallback

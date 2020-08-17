@@ -16,10 +16,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_user_data.h"
-#include "net/base/load_flags.h"
-#include "net/http/http_status_code.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -28,10 +25,8 @@ namespace {
 using content::NavigationHandle;
 using content::NavigationThrottle;
 using content::WebContents;
-using password_manager::CreateWellKnownNonExistingResourceURL;
 using password_manager::IsWellKnownChangePasswordUrl;
-using password_manager::kWellKnownChangePasswordPath;
-using password_manager::kWellKnownNotExistingResourcePath;
+using password_manager::WellKnownChangePasswordState;
 
 // Used to scope the posted navigation task to the lifetime of |web_contents|.
 class WebContentsLifetimeHelper
@@ -93,75 +88,49 @@ WellKnownChangePasswordNavigationThrottle::
 
 NavigationThrottle::ThrottleCheckResult
 WellKnownChangePasswordNavigationThrottle::WillStartRequest() {
-  FetchNonExistingResource(navigation_handle());
+  auto url_loader_factory =
+      content::BrowserContext::GetDefaultStoragePartition(
+          navigation_handle()->GetWebContents()->GetBrowserContext())
+          ->GetURLLoaderFactoryForBrowserProcess();
+  well_known_change_password_state_.FetchNonExistingResource(
+      url_loader_factory.get(), navigation_handle()->GetURL());
   return NavigationThrottle::PROCEED;
 }
 
 NavigationThrottle::ThrottleCheckResult
 WellKnownChangePasswordNavigationThrottle::WillFailRequest() {
-  url_loader_.reset();
   return NavigationThrottle::PROCEED;
 }
 
 NavigationThrottle::ThrottleCheckResult
 WellKnownChangePasswordNavigationThrottle::WillProcessResponse() {
-  change_password_response_code_ =
-      navigation_handle()->GetResponseHeaders()->response_code();
-  return BothRequestsFinished() ? ContinueProcessing()
-                                : NavigationThrottle::DEFER;
+  // PostTask because the Throttle needs to be deferred before the status code
+  // is set. After setting the status code Resume() can be called synchronous
+  // and thereby before the throttle is deferred. This would result in a crash.
+  // Unretained is safe because the NavigationThrottle is deferred and can only
+  // be continued after the callback finished.
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &WellKnownChangePasswordState::SetChangePasswordResponseCode,
+          base::Unretained(&well_known_change_password_state_),
+          navigation_handle()->GetResponseHeaders()->response_code()));
+  return NavigationThrottle::DEFER;
 }
 
 const char* WellKnownChangePasswordNavigationThrottle::GetNameForLogging() {
   return "WellKnownChangePasswordNavigationThrottle";
 }
 
-void WellKnownChangePasswordNavigationThrottle::FetchNonExistingResource(
-    NavigationHandle* handle) {
-  auto url_loader_factory = content::BrowserContext::GetDefaultStoragePartition(
-                                handle->GetWebContents()->GetBrowserContext())
-                                ->GetURLLoaderFactoryForBrowserProcess();
-  url_loader_ =
-      password_manager::CreateResourceRequestToWellKnownNonExistingResourceFor(
-          handle->GetURL());
-  // Binding the callback to |this| is safe, because the navigationthrottle
-  // defers if the request is not received yet. Thereby the throttle still exist
-  // when the response arrives.
-  url_loader_->DownloadHeadersOnly(
-      url_loader_factory.get(),
-      base::BindOnce(&WellKnownChangePasswordNavigationThrottle::
-                         FetchNonExistingResourceCallback,
-                     base::Unretained(this)));
-}
-
-void WellKnownChangePasswordNavigationThrottle::
-    FetchNonExistingResourceCallback(
-        scoped_refptr<net::HttpResponseHeaders> headers) {
-  if (!headers) {
-    non_existing_resource_response_code_ = -1;
-    return;
-  }
-  non_existing_resource_response_code_ = headers->response_code();
-  if (BothRequestsFinished()) {
-    ThrottleAction action = ContinueProcessing();
-    if (action == NavigationThrottle::PROCEED) {
-      Resume();
-    } else if (action == NavigationThrottle::CANCEL) {
-      CancelDeferredNavigation(NavigationThrottle::CANCEL);
-    }
-  }
-}
-
-NavigationThrottle::ThrottleAction
-WellKnownChangePasswordNavigationThrottle::ContinueProcessing() {
-  DCHECK(BothRequestsFinished());
-  if (SupportsChangePasswordUrl()) {
-    return NavigationThrottle::PROCEED;
+void WellKnownChangePasswordNavigationThrottle::OnProcessingFinished(
+    bool is_supported) {
+  if (is_supported) {
+    Resume();
   } else {
-    // Redirect call creates PostTask
     GURL url = navigation_handle()->GetURL();
     GURL redirect_url = change_password_url_service_->GetChangePasswordUrl(url);
     Redirect(redirect_url.is_valid() ? redirect_url : url.GetOrigin());
-    return NavigationThrottle::CANCEL;
+    CancelDeferredNavigation(NavigationThrottle::CANCEL);
   }
 }
 
@@ -183,15 +152,3 @@ void WellKnownChangePasswordNavigationThrottle::Redirect(const GURL& url) {
                                 helper->GetWeakPtr(), std::move(params)));
 }
 
-bool WellKnownChangePasswordNavigationThrottle::BothRequestsFinished() const {
-  return non_existing_resource_response_code_ != 0 &&
-         change_password_response_code_ != 0;
-}
-
-bool WellKnownChangePasswordNavigationThrottle::SupportsChangePasswordUrl()
-    const {
-  DCHECK(BothRequestsFinished());
-  return 200 <= change_password_response_code_ &&
-         change_password_response_code_ < 300 &&
-         non_existing_resource_response_code_ == net::HTTP_NOT_FOUND;
-}

@@ -670,7 +670,7 @@ ShortcutFilenameMatcher::ShortcutFilenameMatcher(
     : profile_shortcut_filename_(GetShortcutFilenameForProfile(profile_name)),
       lnk_ext_(installer::kLnkExt),
       profile_shortcut_name_(profile_shortcut_filename_) {
-  DCHECK(profile_shortcut_name_.ends_with(lnk_ext_));
+  DCHECK(base::EndsWith(profile_shortcut_name_, lnk_ext_));
   profile_shortcut_name_.remove_suffix(lnk_ext_.size());
 }
 
@@ -684,12 +684,12 @@ bool ShortcutFilenameMatcher::IsCanonical(
     return false;
   shortcut_suffix.remove_prefix(profile_shortcut_name_.size());
 
-  if (!shortcut_suffix.ends_with(lnk_ext_))
+  if (!base::EndsWith(shortcut_suffix, lnk_ext_))
     return false;
   shortcut_suffix.remove_suffix(lnk_ext_.size());
 
   if (shortcut_suffix.size() < 4 || !shortcut_suffix.starts_with(L" (") ||
-      !shortcut_suffix.ends_with(L")")) {
+      !base::EndsWith(shortcut_suffix, L")")) {
     return false;
   }
   return std::all_of(shortcut_suffix.begin() + 2, shortcut_suffix.end() - 1,

@@ -15,9 +15,9 @@ namespace supervised_user_error_page {
 enum FilteringBehaviorReason {
   DEFAULT = 0,
   ASYNC_CHECKER = 1,
-  BLACKLIST = 2,
+  DENYLIST = 2,
   MANUAL = 3,
-  WHITELIST = 4,
+  ALLOWLIST = 4,
   NOT_SIGNED_IN = 5,
 };
 

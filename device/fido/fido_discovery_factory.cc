@@ -83,6 +83,10 @@ std::unique_ptr<FidoDiscoveryBase> FidoDiscoveryFactory::Create(
   return nullptr;
 }
 
+bool FidoDiscoveryFactory::IsTestOverride() {
+  return false;
+}
+
 void FidoDiscoveryFactory::set_cable_data(
     std::vector<CableDiscoveryData> cable_data,
     base::Optional<QRGeneratorKey> qr_generator_key) {

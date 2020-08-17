@@ -55,8 +55,6 @@ enum { ANDROID_VIEW_ACCESSIBILITY_RANGE_TYPE_FLOAT = 1 };
 
 namespace content {
 
-const float kContentInvalidTimeoutMillisecs = 6000.0;
-
 // static
 BrowserAccessibility* BrowserAccessibility::Create() {
   return new BrowserAccessibilityAndroid();
@@ -176,20 +174,6 @@ bool BrowserAccessibilityAndroid::IsCollectionItem() const {
 }
 
 bool BrowserAccessibilityAndroid::IsContentInvalid() const {
-  if (IsFocused()) {
-    // When a node has focus, only report that it's invalid for a short period
-    // of time. Otherwise it's annoying to hear the invalid message every time
-    // a character is entered.
-    if (content_invalid_timer_.Elapsed().InMillisecondsF() <
-        kContentInvalidTimeoutMillisecs) {
-      bool invalid_state =
-          HasIntAttribute(ax::mojom::IntAttribute::kInvalidState) &&
-          GetData().GetInvalidState() != ax::mojom::InvalidState::kFalse;
-      if (invalid_state)
-        return true;
-    }
-    return false;
-  }
   return HasIntAttribute(ax::mojom::IntAttribute::kInvalidState) &&
          GetData().GetInvalidState() != ax::mojom::InvalidState::kFalse;
 }
@@ -1903,10 +1887,6 @@ base::string16 BrowserAccessibilityAndroid::GetContentInvalidErrorMessage()
     return content_client->GetLocalizedString(message_id);
 
   return base::string16();
-}
-
-void BrowserAccessibilityAndroid::ResetContentInvalidTimer() {
-  content_invalid_timer_ = base::ElapsedTimer();
 }
 
 }  // namespace content

@@ -1,0 +1,53 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+package org.chromium.weblayer.test;
+
+import android.graphics.Bitmap;
+
+import androidx.test.filters.SmallTest;
+
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.weblayer.FaviconCallback;
+import org.chromium.weblayer.shell.InstrumentationActivity;
+
+/** Tests for FaviconFetcher. */
+@RunWith(WebLayerJUnit4ClassRunner.class)
+public class FaviconFetcherTest {
+    @Rule
+    public InstrumentationActivityTestRule mActivityTestRule =
+            new InstrumentationActivityTestRule();
+
+    private InstrumentationActivity mActivity;
+
+    @Test
+    @SmallTest
+    @MinWebLayerVersion(86)
+    public void testFaviconFetcher() throws Exception {
+        mActivity = mActivityTestRule.launchShellWithUrl("about:blank");
+
+        final CallbackHelper callbackHelper = new CallbackHelper();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mActivity.getTab().createFaviconFetcher(new FaviconCallback() {
+                @Override
+                public void onFaviconChanged(Bitmap bitmap) {
+                    if (bitmap != null) {
+                        Assert.assertTrue(bitmap.getWidth() > 0);
+                        Assert.assertTrue(bitmap.getHeight() > 0);
+                        callbackHelper.notifyCalled();
+                    }
+                }
+            });
+        });
+        mActivityTestRule.navigateAndWait(
+                mActivityTestRule.getTestDataURL("simple_page_with_favicon.html"));
+        callbackHelper.waitForFirst();
+    }
+}

@@ -31,6 +31,10 @@ class ASH_PUBLIC_EXPORT AssistantInteractionController {
   // last interaction may have been performed in a different user session.
   virtual base::TimeDelta GetTimeDeltaSinceLastInteraction() const = 0;
 
+  // Returns true if the user has had an interaction with the Assistant during
+  // this user session.
+  virtual bool HasHadInteraction() const = 0;
+
   // Start Assistant text interaction.
   virtual void StartTextInteraction(
       const std::string& query,

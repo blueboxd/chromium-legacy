@@ -76,7 +76,7 @@ class FeedStreamApi {
   // with the network response when complete.
   virtual void FetchImage(
       const GURL& url,
-      base::OnceCallback<void(std::unique_ptr<std::string>)> callback) = 0;
+      base::OnceCallback<void(NetworkResponse)> callback) = 0;
 
   // Apply |operations| to the stream model. Does nothing if the model is not
   // yet loaded.

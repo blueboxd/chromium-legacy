@@ -146,9 +146,8 @@ bool FeaturePolicy::GetFeatureValueForOrigin(
 
   // If no "allowlist" is specified, return default feature value.
   const FeaturePolicyFeatureDefault default_policy = feature_list_.at(feature);
-  if (default_policy == FeaturePolicyFeatureDefault::DisableForAll ||
-      (default_policy == FeaturePolicyFeatureDefault::EnableForSelf &&
-       !origin_.IsSameOriginWith(origin)))
+  if (default_policy == FeaturePolicyFeatureDefault::EnableForSelf &&
+      !origin_.IsSameOriginWith(origin))
     return false;
   return inherited_value;
 }

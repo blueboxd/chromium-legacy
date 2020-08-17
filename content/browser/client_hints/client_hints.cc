@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/optional.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -77,24 +78,20 @@ double GetRandomMultiplier(const std::string& host) {
 
 unsigned long RoundRtt(const std::string& host,
                        const base::Optional<base::TimeDelta>& rtt) {
-  // Limit the size of the buckets and the maximum reported value to reduce
-  // fingerprinting.
-  static const base::TimeDelta kGranularity =
-      base::TimeDelta::FromMilliseconds(50);
-  static const base::TimeDelta kMaxRtt = base::TimeDelta::FromSeconds(3);
-
   if (!rtt.has_value()) {
     // RTT is unavailable. So, return the fastest value.
     return 0;
   }
 
-  base::TimeDelta modified_rtt = rtt.value();
-  modified_rtt *= GetRandomMultiplier(host);
-  modified_rtt = std::min(modified_rtt, kMaxRtt);
+  // Limit the maximum reported value and the granularity to reduce
+  // fingerprinting.
+  constexpr base::TimeDelta kMaxRtt = base::TimeDelta::FromSeconds(3);
+  constexpr base::TimeDelta kGranularity =
+      base::TimeDelta::FromMilliseconds(50);
 
-  DCHECK_LE(base::TimeDelta(), modified_rtt);
-  DCHECK_GE(kMaxRtt, modified_rtt);
-
+  const base::TimeDelta modified_rtt =
+      std::min(rtt.value() * GetRandomMultiplier(host), kMaxRtt);
+  DCHECK_GE(modified_rtt, base::TimeDelta());
   return modified_rtt.RoundToMultiple(kGranularity).InMilliseconds();
 }
 

@@ -18,8 +18,8 @@
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/media/router/discovery/dial/dial_service.h"
-#include "chrome/browser/profiles/profile.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
+#include "url/gurl.h"
 
 namespace base {
 class Clock;

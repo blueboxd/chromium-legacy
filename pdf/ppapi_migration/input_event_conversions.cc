@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stdint.h>
+
 #include "pdf/ppapi_migration/input_event_conversions.h"
 
 #include "base/notreached.h"
 #include "pdf/ppapi_migration/geometry_conversions.h"
 #include "ppapi/cpp/input_event.h"
 #include "ppapi/cpp/var.h"
+#include "ui/gfx/geometry/point_conversions.h"
 
 namespace {
 
@@ -116,6 +119,24 @@ MouseInputEvent& MouseInputEvent::operator=(const MouseInputEvent& other) =
 
 MouseInputEvent::~MouseInputEvent() = default;
 
+TouchInputEvent::TouchInputEvent(InputEventType event_type,
+                                 double time_stamp,
+                                 uint32_t modifiers,
+                                 const gfx::PointF& target_touch_point,
+                                 int32_t touch_count)
+    : event_type_(event_type),
+      time_stamp_(time_stamp),
+      modifiers_(modifiers),
+      target_touch_point_(target_touch_point),
+      touch_count_(touch_count) {}
+
+TouchInputEvent::TouchInputEvent(const TouchInputEvent& other) = default;
+
+TouchInputEvent& TouchInputEvent::operator=(const TouchInputEvent& other) =
+    default;
+
+TouchInputEvent::~TouchInputEvent() = default;
+
 KeyboardInputEvent GetKeyboardInputEvent(const pp::KeyboardInputEvent& event) {
   return KeyboardInputEvent(GetEventType(event.GetType()), event.GetTimeStamp(),
                             event.GetModifiers(), event.GetKeyCode(),
@@ -128,6 +149,14 @@ MouseInputEvent GetMouseInputEvent(const pp::MouseInputEvent& event) {
       GetInputEventMouseButtonType(event.GetButton()),
       PointFromPPPoint(event.GetPosition()), event.GetClickCount(),
       PointFromPPPoint(event.GetMovement()));
+}
+
+TouchInputEvent GetTouchInputEvent(const pp::TouchInputEvent& event) {
+  pp::FloatPoint point =
+      event.GetTouchByIndex(PP_TOUCHLIST_TYPE_TARGETTOUCHES, 0).position();
+  return TouchInputEvent(GetEventType(event.GetType()), event.GetTimeStamp(),
+                         event.GetModifiers(), PointFFromPPFloatPoint(point),
+                         event.GetTouchCount(PP_TOUCHLIST_TYPE_TARGETTOUCHES));
 }
 
 }  // namespace chrome_pdf

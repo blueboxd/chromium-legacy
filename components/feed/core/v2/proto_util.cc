@@ -15,6 +15,7 @@
 #include "components/feed/core/proto/v2/wire/capability.pb.h"
 #include "components/feed/core/proto/v2/wire/feed_request.pb.h"
 #include "components/feed/core/proto/v2/wire/request.pb.h"
+#include "components/feed/core/v2/config.h"
 #include "components/feed/core/v2/feed_stream.h"
 
 #if defined(OS_ANDROID)
@@ -116,15 +117,9 @@ feedwire::Request CreateFeedQueryRequest(
 
   feedwire::FeedRequest& feed_request = *request.mutable_feed_request();
   feed_request.add_client_capability(feedwire::Capability::BASE_UI);
-  feed_request.add_client_capability(feedwire::Capability::REQUEST_SCHEDULE);
-  feed_request.add_client_capability(feedwire::Capability::OPEN_IN_TAB);
   feed_request.add_client_capability(feedwire::Capability::CARD_MENU);
-  feed_request.add_client_capability(feedwire::Capability::DOWNLOAD_LINK);
-  feed_request.add_client_capability(feedwire::Capability::INFINITE_FEED);
-  feed_request.add_client_capability(feedwire::Capability::DISMISS_COMMAND);
-  feed_request.add_client_capability(feedwire::Capability::UI_THEME_V2);
-  feed_request.add_client_capability(
-      feedwire::Capability::UNDO_FOR_DISMISS_COMMAND);
+  for (auto capability : GetFeedConfig().experimental_capabilities)
+    feed_request.add_client_capability(capability);
 
   *feed_request.mutable_client_info() = CreateClientInfo(request_metadata);
   feedwire::FeedQuery& query = *feed_request.mutable_feed_query();

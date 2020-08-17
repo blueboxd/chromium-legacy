@@ -1161,7 +1161,6 @@
       },
       # https://crbug.com/1111979,
       'linux-lacros-tester-rel': {
-        'experiment_percentage': 100,
         'args': [
           '--gtest_filter=-NativeExtensionBindingsSystemUnittest*:'
           'BluetoothSocketApiUnittest.CreateThenClose:'
@@ -2349,8 +2348,9 @@
         'experiment_percentage': 100,
         'args': [
           '--gtest_filter=-OutOfProcessPPAPITest.TrueTypeFont:'
-          'All/AccessibilityHitTestingBrowserTest.CachingAsyncHitTest_WithPinchZoom/ZoomFactor2_UseZoomForDSFOff:'
-          'All/AccessibilityHitTestingBrowserTest.CachingAsyncHitTest_WithPinchZoom/ZoomFactor2_UseZoomForDSFOn',
+          'All/AccessibilityHitTestingBrowserTest.CachingAsyncHitTest_WithPinchZoom*:'
+          'All/SitePerProcessInternalsHitTestBrowserTest.ScrollNestedLocalNonFastScrollableDiv*:'
+          'BackForwardCacheBrowserTest.WindowOpen',
         ],
       },
     },
@@ -2675,7 +2675,6 @@
       },
       # https://crbug.com/1111979,
       'linux-lacros-tester-rel': {
-        'experiment_percentage': 100,
         'args': [
           '--gtest_filter=-DesktopWidgetFocusManagerTest.AnchoredDialogInDesktopNativeWidgetAura:'
           'DesktopWidgetTest*:'

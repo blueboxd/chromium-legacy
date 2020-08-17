@@ -41,6 +41,7 @@ import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.xsurface.FeedActionsHandler;
 import org.chromium.chrome.browser.xsurface.HybridListRenderer;
+import org.chromium.chrome.browser.xsurface.ImageFetchClient;
 import org.chromium.chrome.browser.xsurface.ProcessScope;
 import org.chromium.chrome.browser.xsurface.ProcessScopeDependencyProvider;
 import org.chromium.chrome.browser.xsurface.SurfaceActionsHandler;
@@ -174,6 +175,8 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
      *  Clear all the data related to all surfaces.
      */
     public static void clearAll() {
+        if (sSurfaces == null) return;
+
         ArrayList<FeedStreamSurface> openSurfaces = new ArrayList<FeedStreamSurface>();
         for (FeedStreamSurface surface : sSurfaces) {
             if (surface.isOpened()) openSurfaces.add(surface);
@@ -199,7 +202,11 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
      */
     private static class FeedProcessScopeDependencyProvider
             implements ProcessScopeDependencyProvider {
-        FeedProcessScopeDependencyProvider() {}
+        private ImageFetchClient mImageFetchClient;
+
+        FeedProcessScopeDependencyProvider() {
+            mImageFetchClient = new FeedImageFetchClient();
+        }
 
         @Override
         public Context getContext() {
@@ -223,6 +230,21 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
         @Override
         public String getClientInstanceId() {
             return FeedServiceBridge.getClientInstanceId();
+        }
+
+        @Override
+        public ImageFetchClient getImageFetchClient() {
+            return mImageFetchClient;
+        }
+
+        @Override
+        public void logError(String tag, String format, Object... args) {
+            Log.e(tag, format, args);
+        }
+
+        @Override
+        public void logWarning(String tag, String format, Object... args) {
+            Log.w(tag, format, args);
         }
     }
 

@@ -24,6 +24,7 @@
 #include "components/omnibox/browser/autocomplete_provider_listener.h"
 #include "components/omnibox/browser/autocomplete_result.h"
 
+class ClipboardProvider;
 class DocumentProvider;
 class HistoryURLProvider;
 class KeywordProvider;
@@ -160,6 +161,7 @@ class AutocompleteController : public AutocompleteProviderListener,
   }
   KeywordProvider* keyword_provider() const { return keyword_provider_; }
   SearchProvider* search_provider() const { return search_provider_; }
+  ClipboardProvider* clipboard_provider() const { return clipboard_provider_; }
 
   const AutocompleteInput& input() const { return input_; }
   const AutocompleteResult& result() const { return result_; }
@@ -295,6 +297,8 @@ class AutocompleteController : public AutocompleteProviderListener,
   ZeroSuggestProvider* zero_suggest_provider_;
 
   OnDeviceHeadProvider* on_device_head_provider_;
+
+  ClipboardProvider* clipboard_provider_;
 
   // Input passed to Start.
   AutocompleteInput input_;

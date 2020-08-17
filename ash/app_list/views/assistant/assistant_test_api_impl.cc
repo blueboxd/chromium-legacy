@@ -10,6 +10,7 @@
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/app_list/views/contents_view.h"
 #include "ash/assistant/ui/assistant_view_ids.h"
+#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/session/session_controller_impl.h"
@@ -158,6 +159,12 @@ void AssistantTestApiImpl::SetConsentStatus(
          "a waiter here to wait for the new state to take effect.";
 }
 
+void AssistantTestApiImpl::SetNumberOfSessionsWhereOnboardingShown(
+    int number_of_sessions) {
+  Shell::Get()->session_controller()->GetPrimaryUserPrefService()->SetInteger(
+      prefs::kAssistantNumSessionsWhereOnboardingShown, number_of_sessions);
+}
+
 void AssistantTestApiImpl::SetOnboardingMode(
     chromeos::assistant::prefs::AssistantOnboardingMode onboarding_mode) {
   Shell::Get()->session_controller()->GetPrimaryUserPrefService()->SetString(
@@ -180,6 +187,11 @@ void AssistantTestApiImpl::SetPreferVoice(bool value) {
       << "Changing this preference did not take effect immediately, which will "
          "cause timing issues in this test. If this trace is seen we must add "
          "a waiter here to wait for the new state to take effect.";
+}
+
+void AssistantTestApiImpl::SetTimeOfLastInteraction(base::Time time) {
+  Shell::Get()->session_controller()->GetPrimaryUserPrefService()->SetTime(
+      prefs::kAssistantTimeOfLastInteraction, time);
 }
 
 AssistantState* AssistantTestApiImpl::GetAssistantState() {

@@ -953,4 +953,10 @@ void DirectRenderer::SetDelegatedInkMetadata(
   delegated_ink_point_renderer_->SetDelegatedInkMetadata(std::move(metadata));
 }
 
+bool DirectRenderer::CompositeTimeTracingEnabled() {
+  return false;
+}
+
+void DirectRenderer::AddCompositeTimeTraces(base::TimeTicks ready_timestamp) {}
+
 }  // namespace viz

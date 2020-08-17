@@ -4459,6 +4459,13 @@ const char kUserDataSnapshotDescription[] =
     "update and restoring them after a version rollback.";
 #endif  // !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
+const char kWebShareName[] = "Web Share";
+const char kWebShareDescription[] =
+    "Enables the Web Share (navigator.share) APIs on experimentally supported "
+    "platforms.";
+#endif  // defined(OS_WIN) || defined(OS_CHROMEOS)
+
 // Feature flags --------------------------------------------------------------
 
 #if defined(DCHECK_IS_CONFIGURABLE)

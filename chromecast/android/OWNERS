@@ -1,3 +1,5 @@
 sanfin@chromium.org
 
+per-file lint-*.xml=*
+
 # COMPONENT: Chromecast

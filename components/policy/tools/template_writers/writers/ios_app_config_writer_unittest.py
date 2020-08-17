@@ -16,14 +16,20 @@ from writers import writer_unittest_common
 class IOSAppConfigWriterUnitTests(writer_unittest_common.WriterUnittestCommon):
   '''Unit tests for IOSAppConfigWriter.'''
 
-  def _GetTestPolicyTemplate(self, policy_name, policy_type):
+  def _GetTestPolicyTemplate(self, policy_name, policy_type, future=False):
+    supported_or_future = ''
+    if future:
+      supported_or_future = ''''future_on':['ios']'''
+    else:
+      supported_or_future = ''''supported_on':['ios:80-']'''
+
     return '''
 {
   'policy_definitions': [
     {
       'name': '%s',
       'type': '%s',
-      'supported_on':['ios:80-'],
+      %s,
       'caption': '',
       'desc': '',
       'items': [{
@@ -37,7 +43,7 @@ class IOSAppConfigWriterUnitTests(writer_unittest_common.WriterUnittestCommon):
   'placeholders': [],
   'messages': {},
 }
-''' % (policy_name, policy_type)
+''' % (policy_name, policy_type, supported_or_future)
 
   def _GetExpectedOutput(self, version, tag):
     if tag:
@@ -129,6 +135,30 @@ class IOSAppConfigWriterUnitTests(writer_unittest_common.WriterUnittestCommon):
     # they are treated as JSON strings.
     expected = self._GetExpectedOutput('83.0.4089.0',
                                        '<string keyName="DictPolicy"/>')
+    output = self.GetOutput(policy_json, {
+        '_google_chrome': '1',
+        'version': '83.0.4089.0'
+    }, 'ios_app_config')
+    self.assertEquals(output.strip(), expected.strip())
+
+  def testFuturePolicy(self):
+    policy_json = self._GetTestPolicyTemplate('FuturePolicy',
+                                              'string',
+                                              future=True)
+    expected = self._GetExpectedOutput(
+        '83.0.4089.0', '<string future="true" keyName="FuturePolicy"/>')
+    output = self.GetOutput(policy_json, {
+        '_google_chrome': '1',
+        'version': '83.0.4089.0'
+    }, 'ios_app_config')
+    self.assertEquals(output.strip(), expected.strip())
+
+  def testNonFuturePolicy(self):
+    policy_json = self._GetTestPolicyTemplate('NonFuturePolicy',
+                                              'string',
+                                              future=False)
+    expected = self._GetExpectedOutput('83.0.4089.0',
+                                       '<string keyName="NonFuturePolicy"/>')
     output = self.GetOutput(policy_json, {
         '_google_chrome': '1',
         'version': '83.0.4089.0'

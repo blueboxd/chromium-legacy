@@ -20,6 +20,10 @@
 #include "ui/views/input_event_activation_protector.h"
 #include "ui/views/window/non_client_view.h"
 
+namespace gfx {
+class RoundedCornersF;
+}
+
 namespace views {
 
 class FootnoteContainerView;
@@ -178,6 +182,12 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
 
   bool IsCloseButtonVisible() const;
   gfx::Rect GetCloseButtonMirroredBounds() const;
+
+  // Helper function that gives the corner radius values that should be applied
+  // to the BubbleFrameView's client view. These values depend on the amount of
+  // inset present on the client view and the presence of header and footer
+  // views.
+  gfx::RoundedCornersF GetClientCornerRadii() const;
 
   BubbleBorder* bubble_border_for_testing() const { return bubble_border_; }
 

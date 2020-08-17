@@ -4,12 +4,10 @@
 
 import("//ui/webui/resources/tools/js_modulizer.gni")
 
-js_modulizer("modulize") {
-  input_files = [
-    "base_page_test.js",
-    "cr_policy_network_behavior_mojo_tests.js",
-    "cr_policy_network_indicator_mojo_tests.js",
-    "network_config_element_behavior_test.js",
-    "network_password_input_test.js",
+
+group("modulize") {
+  deps = [
+    "./cellular_setup:modulize",
+    "./network:modulize",
   ]
 }

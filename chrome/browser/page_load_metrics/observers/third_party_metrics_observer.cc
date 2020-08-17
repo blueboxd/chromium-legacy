@@ -113,11 +113,19 @@ void ThirdPartyMetricsObserver::OnCookieChange(
                           AccessType::kCookieWrite);
 }
 
-void ThirdPartyMetricsObserver::RecordStorageUseCounter(
+void ThirdPartyMetricsObserver::RecordStorageAccessUseCounter(
     AccessType access_type) {
   page_load_metrics::mojom::PageLoadFeatures third_party_storage_features;
 
   switch (access_type) {
+    case AccessType::kCookieRead:
+      third_party_storage_features.features.push_back(
+          blink::mojom::WebFeature::kThirdPartyCookieRead);
+      break;
+    case AccessType::kCookieWrite:
+      third_party_storage_features.features.push_back(
+          blink::mojom::WebFeature::kThirdPartyCookieWrite);
+      break;
     case AccessType::kLocalStorage:
       third_party_storage_features.features.push_back(
           blink::mojom::WebFeature::kThirdPartyLocalStorage);
@@ -249,7 +257,7 @@ void ThirdPartyMetricsObserver::OnCookieOrStorageAccess(
     }
   }
 
-  RecordStorageUseCounter(access_type);
+  RecordStorageAccessUseCounter(access_type);
 
   GURL representative_url(
       base::StrCat({url.scheme(), "://", registrable_domain, "/"}));

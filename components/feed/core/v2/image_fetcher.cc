@@ -4,6 +4,7 @@
 
 #include "components/feed/core/v2/image_fetcher.h"
 
+#include "components/feed/core/v2/public/types.h"
 #include "net/http/http_request_headers.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
@@ -56,7 +57,15 @@ void ImageFetcher::OnFetchComplete(
     std::unique_ptr<network::SimpleURLLoader> simple_loader,
     ImageCallback callback,
     std::unique_ptr<std::string> response_data) {
-  std::move(callback).Run(std::move(response_data));
+  NetworkResponse response{std::string(), simple_loader->NetError()};
+  if (simple_loader->ResponseInfo() && simple_loader->ResponseInfo()->headers) {
+    response.status_code =
+        simple_loader->ResponseInfo()->headers->response_code();
+  }
+
+  if (response_data)
+    response.response_bytes = std::move(*response_data);
+  std::move(callback).Run(std::move(response));
 }
 
 }  // namespace feed

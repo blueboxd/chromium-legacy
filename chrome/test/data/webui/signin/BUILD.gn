@@ -48,6 +48,7 @@ js_library("profile_picker_app_test") {
     "//chrome/browser/resources/signin/profile_picker:navigation_behavior",
     "//chrome/browser/resources/signin/profile_picker:profile_picker_app",
     "//chrome/browser/resources/signin/profile_picker/profile_creation_flow:ensure_lazy_loaded",
+    "//chrome/browser/resources/signin/profile_picker/profile_creation_flow:local_profile_customization",
   ]
 }
 

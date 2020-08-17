@@ -263,6 +263,18 @@ class HullColorManager {
 }
 
 /**
+ * @typedef {Object} PhantomTextNode A node that isn't displayed in the
+ *     visualization, but affects the simulation. Used to prevent text overlap
+ *     by being fixed to the right of real nodes (where the text is drawn).
+ * @property {boolean} isPhantomTextNode A flag (always true) used to
+ *     differentiate these nodes from real ones when processing the simulation.
+ * @property {!GraphNode} refNode A reference to the node that this phantom node
+ *     is attached to.
+ * @property {number} dist The distance away from `refNode` that this node
+ *     should be fixed.
+ */
+
+/**
  * A callback to be triggered whenever a node is clicked in the visualization.
  * @callback OnNodeClickedCallback
  * @param {!GraphNode} node The node that was clicked.
@@ -350,21 +362,32 @@ class GraphView {
         .classed('graph-labels', true)
         .attr('pointer-events', 'none');
 
+    /** @private {!Array<!PhantomTextNode>} */
+    this.phantomTextNodes_ = [];
+
     // Using .style() instead of .attr() gets px-based measurements of
     // percentage-based widths and heights.
     const width = parseInt(svg.style('width'), 10);
     const height = parseInt(svg.style('height'), 10);
 
-    const centeringStrengthY = 0.1;
+    const centeringStrengthY = 0.07;
     const centeringStrengthX = centeringStrengthY * (height / width);
     /** @private {*} */
     this.simulation_ = d3.forceSimulation()
         .alphaMin(SIMULATION_SPEED_PARAMS.ALPHA_MIN)
-        .force('chargeForce', d3.forceManyBody().strength(-3000))
+        .force('chargeForce', d3.forceManyBody().strength(node => {
+            if (node.isPhantomTextNode) {
+              return -1100;
+            }
+            return -3000;
+        }))
         .force('centerXForce',
             d3.forceX(width / 2).strength(node => {
+              if (node.isPhantomTextNode) {
+                return 0;
+              }
               if (node.visualizationState.selectedByFilter) {
-                return centeringStrengthX * 20;
+                return centeringStrengthX * 15;
               }
               if (node.visualizationState.outboundDepth <= 1) {
                 return centeringStrengthX * 5;
@@ -373,8 +396,11 @@ class GraphView {
             }))
         .force('centerYForce',
             d3.forceY(height / 2).strength(node => {
+              if (node.isPhantomTextNode) {
+                return 0;
+              }
               if (node.visualizationState.selectedByFilter) {
-                return centeringStrengthY * 20;
+                return centeringStrengthY * 15;
               }
               if (node.visualizationState.outboundDepth <= 1) {
                 return centeringStrengthY * 5;
@@ -670,6 +696,12 @@ class GraphView {
       if (shouldEase) {
         this.simulation_.velocityDecay(this.getEasedVelocityDecay(tickNum));
       }
+
+      // Reset phantom nodes to their fixed positions
+      this.phantomTextNodes_.forEach(phantomNode => {
+        phantomNode.x = phantomNode.refNode.x + phantomNode.dist;
+        phantomNode.y = phantomNode.refNode.y;
+      });
     };
 
     // If we don't ease, the default decay is sufficient for the entire reheat.
@@ -705,15 +737,49 @@ class GraphView {
   }
 
   /**
+   * Generates sparse integers subset in [0, n] that's roughly evenly
+   * distributed.
+   * @generator
+   * @param {number} upperBound Exclusive upper bound on generated values.
+   * @param {number} separation Ideal separation between generated values.
+   * @yields {number} Generated integers.
+   */
+   *generateSparseInts(upperBound, separation) {
+    for (let i = separation; i < upperBound; i += separation) {
+      yield i;
+    }
+    // Add an endpoint if the upper bound is far from the last value generated.
+    if (upperBound % separation >= separation / 2) {
+      yield upperBound - 1;
+    }
+  }
+
+  /**
    * Updates the data source used for the visualization.
    *
    * @param {!D3GraphData} inputData The new data to use.
    */
   updateGraphData(inputData) {
+    const DIST_MULTIPLIER = 6.6;
     const {nodes: inputNodes, edges: inputEdges} = inputData;
 
+    this.phantomTextNodes_ = [];
+    // Generate the phantom text nodes, the list of nodes to be included in the
+    // physics simulation at the place where node labels will be rendered.
+    for (const node of inputNodes) {
+      // A heuristic in the absence of exact label width: place phantom nodes
+      // approximately every 10 characters away from the real node.
+      for (const pos of this.generateSparseInts(node.displayName.length, 10)) {
+        this.phantomTextNodes_.push({
+          isPhantomTextNode: true,
+          refNode: node,
+          dist: pos * DIST_MULTIPLIER,
+        });
+      }
+    }
+
     this.simulation_
-        .nodes(inputNodes)
+        .nodes([...inputNodes, ...this.phantomTextNodes_])
         .force('links', d3.forceLink(inputEdges).id(edge => edge.id));
 
     let nodesAddedOrRemoved = false;

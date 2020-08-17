@@ -17,10 +17,12 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
+#include "components/omnibox/browser/clipboard_provider.h"
 #include "components/omnibox/browser/location_bar_model.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "components/omnibox/common/omnibox_focus_state.h"
+#include "components/open_from_clipboard/clipboard_recent_content.h"
 #include "ios/chrome/browser/autocomplete/autocomplete_scheme_classifier_impl.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/ui/commands/omnibox_commands.h"
@@ -95,6 +97,8 @@ OmniboxViewIOS::OmniboxViewIOS(OmniboxTextFieldIOS* field,
                                   !base::ios::IsRunningOnOrLater(11, 2, 0);
 }
 
+OmniboxViewIOS::~OmniboxViewIOS() = default;
+
 void OmniboxViewIOS::OpenMatch(const AutocompleteMatch& match,
                                WindowOpenDisposition disposition,
                                const GURL& alternate_nav_url,
@@ -106,8 +110,123 @@ void OmniboxViewIOS::OpenMatch(const AutocompleteMatch& match,
     return;
   }
 
+  // Fill in clipboard matches if they don't have a destination URL.
+  if (match.destination_url.is_empty()) {
+    if (match.type == AutocompleteMatchType::CLIPBOARD_URL) {
+      ClipboardRecentContent* clipboard_recent_content =
+          ClipboardRecentContent::GetInstance();
+      clipboard_recent_content->GetRecentURLFromClipboard(base::BindOnce(
+          &OmniboxViewIOS::OnReceiveClipboardURLForOpenMatch,
+          weak_ptr_factory_.GetWeakPtr(), match, disposition, alternate_nav_url,
+          pasted_text, selected_line, match_selection_timestamp));
+      return;
+    } else if (match.type == AutocompleteMatchType::CLIPBOARD_TEXT) {
+      ClipboardRecentContent* clipboard_recent_content =
+          ClipboardRecentContent::GetInstance();
+      clipboard_recent_content->GetRecentTextFromClipboard(base::BindOnce(
+          &OmniboxViewIOS::OnReceiveClipboardTextForOpenMatch,
+          weak_ptr_factory_.GetWeakPtr(), match, disposition, alternate_nav_url,
+          pasted_text, selected_line, match_selection_timestamp));
+      return;
+    } else if (match.type == AutocompleteMatchType::CLIPBOARD_IMAGE) {
+      ClipboardRecentContent* clipboard_recent_content =
+          ClipboardRecentContent::GetInstance();
+      clipboard_recent_content->GetRecentImageFromClipboard(base::BindOnce(
+          &OmniboxViewIOS::OnReceiveClipboardImageForOpenMatch,
+          weak_ptr_factory_.GetWeakPtr(), match, disposition, alternate_nav_url,
+          pasted_text, selected_line, match_selection_timestamp));
+      return;
+    }
+  }
+
   OmniboxView::OpenMatch(match, disposition, alternate_nav_url, pasted_text,
                          selected_line, match_selection_timestamp);
+}
+
+void OmniboxViewIOS::OnReceiveClipboardURLForOpenMatch(
+    const AutocompleteMatch& match,
+    WindowOpenDisposition disposition,
+    const GURL& alternate_nav_url,
+    const base::string16& pasted_text,
+    size_t selected_line,
+    base::TimeTicks match_selection_timestamp,
+    base::Optional<GURL> optional_gurl) {
+  if (!optional_gurl) {
+    return;
+  }
+
+  GURL url = std::move(optional_gurl).value();
+
+  ClipboardProvider* clipboard_provider =
+      model()->autocomplete_controller()->clipboard_provider();
+  AutocompleteMatch new_match = clipboard_provider->NewClipboardURLMatch(url);
+
+  OmniboxView::OpenMatch(new_match, disposition, alternate_nav_url, pasted_text,
+                         selected_line, match_selection_timestamp);
+}
+
+void OmniboxViewIOS::OnReceiveClipboardTextForOpenMatch(
+    const AutocompleteMatch& match,
+    WindowOpenDisposition disposition,
+    const GURL& alternate_nav_url,
+    const base::string16& pasted_text,
+    size_t selected_line,
+    base::TimeTicks match_selection_timestamp,
+    base::Optional<base::string16> optional_text) {
+  if (!optional_text) {
+    return;
+  }
+
+  base::string16 text = std::move(optional_text).value();
+
+  ClipboardProvider* clipboard_provider =
+      model()->autocomplete_controller()->clipboard_provider();
+  base::Optional<AutocompleteMatch> new_match =
+      clipboard_provider->NewClipboardTextMatch(text);
+
+  if (!new_match) {
+    return;
+  }
+
+  OmniboxView::OpenMatch(new_match.value(), disposition, alternate_nav_url,
+                         pasted_text, selected_line, match_selection_timestamp);
+}
+
+void OmniboxViewIOS::OnReceiveClipboardImageForOpenMatch(
+    const AutocompleteMatch& match,
+    WindowOpenDisposition disposition,
+    const GURL& alternate_nav_url,
+    const base::string16& pasted_text,
+    size_t selected_line,
+    base::TimeTicks match_selection_timestamp,
+    base::Optional<gfx::Image> optional_image) {
+  if (!optional_image) {
+    return;
+  }
+
+  gfx::Image image = std::move(optional_image).value();
+
+  ClipboardProvider* clipboard_provider =
+      model()->autocomplete_controller()->clipboard_provider();
+  clipboard_provider->NewClipboardImageMatch(
+      image, base::BindOnce(&OmniboxViewIOS::OnReceiveImageMatchForOpenMatch,
+                            weak_ptr_factory_.GetWeakPtr(), disposition,
+                            alternate_nav_url, pasted_text, selected_line,
+                            match_selection_timestamp));
+}
+
+void OmniboxViewIOS::OnReceiveImageMatchForOpenMatch(
+    WindowOpenDisposition disposition,
+    const GURL& alternate_nav_url,
+    const base::string16& pasted_text,
+    size_t selected_line,
+    base::TimeTicks match_selection_timestamp,
+    base::Optional<AutocompleteMatch> optional_match) {
+  if (!optional_match) {
+    return;
+  }
+  OmniboxView::OpenMatch(optional_match.value(), disposition, alternate_nav_url,
+                         pasted_text, selected_line, match_selection_timestamp);
 }
 
 base::string16 OmniboxViewIOS::GetText() const {

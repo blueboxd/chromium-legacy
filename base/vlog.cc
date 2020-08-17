@@ -13,6 +13,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 
 namespace logging {
 
@@ -95,7 +96,7 @@ base::StringPiece GetModule(const base::StringPiece& file) {
   module = module.substr(0, extension_start);
   static const char kInlSuffix[] = "-inl";
   static const int kInlSuffixLen = base::size(kInlSuffix) - 1;
-  if (module.ends_with(kInlSuffix))
+  if (base::EndsWith(module, kInlSuffix))
     module.remove_suffix(kInlSuffixLen);
   return module;
 }

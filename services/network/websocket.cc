@@ -186,7 +186,9 @@ void WebSocket::WebSocketEventHandler::OnAddChannelResponse(
            << " extensions=\"" << extensions << "\"";
 
   impl_->handshake_succeeded_ = true;
-  impl_->pending_connection_tracker_.OnCompleteHandshake();
+  if (impl_->pending_connection_tracker_) {
+    impl_->pending_connection_tracker_->OnCompleteHandshake();
+  }
 
   base::CommandLine* const command_line =
       base::CommandLine::ForCurrentProcess();
@@ -395,7 +397,8 @@ WebSocket::WebSocket(
     mojo::PendingRemote<mojom::WebSocketHandshakeClient> handshake_client,
     mojo::PendingRemote<mojom::AuthenticationHandler> auth_handler,
     mojo::PendingRemote<mojom::TrustedHeaderClient> header_client,
-    WebSocketThrottler::PendingConnection pending_connection_tracker,
+    base::Optional<WebSocketThrottler::PendingConnection>
+        pending_connection_tracker,
     DataPipeUseTracker data_pipe_use_tracker,
     base::TimeDelta delay)
     : factory_(factory),
@@ -424,6 +427,8 @@ WebSocket::WebSocket(
   // |isolation_info| must not be empty.
   DCHECK(!factory_->GetURLRequestContext()->require_network_isolation_key() ||
          !isolation_info.IsEmpty());
+  // |delay| should be zero if this connection is not throttled.
+  DCHECK(pending_connection_tracker.has_value() || delay.is_zero());
   if (auth_handler_) {
     // Make sure the request dies if |auth_handler_| has an error, otherwise
     // requests can hang.

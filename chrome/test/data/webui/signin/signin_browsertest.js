@@ -125,6 +125,6 @@ var ProfilePickerAppTest = class extends SigninBrowserTest {
   }
 };
 
-TEST_F('ProfilePickerAppTest', 'SignInButtonImplementation', function() {
+TEST_F('ProfilePickerAppTest', 'ButtonsImplementation', function() {
   mocha.run();
 });

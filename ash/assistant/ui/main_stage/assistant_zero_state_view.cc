@@ -8,9 +8,9 @@
 
 #include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
+#include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/ui/assistant_view_ids.h"
 #include "ash/assistant/ui/main_stage/assistant_onboarding_view.h"
-#include "ash/assistant/util/assistant_util.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -111,7 +111,7 @@ void AssistantZeroStateView::UpdateLayout() {
   if (!IsBetterOnboardingEnabled())
     return;
 
-  const bool show_onboarding = assistant::util::ShouldShowOnboarding();
+  const bool show_onboarding = delegate_->ShouldShowOnboarding();
   onboarding_view_->SetVisible(show_onboarding);
   greeting_label_->SetVisible(!show_onboarding);
 }

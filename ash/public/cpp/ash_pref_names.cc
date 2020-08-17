@@ -448,9 +448,9 @@ const char kQuickUnlockPinSalt[] = "quick_unlock.pin.salt";
 // bases - for exmaple the last used base per user.
 const char kDetachableBaseDevices[] = "ash.detachable_base.devices";
 
-// Integer pref storing the number of Assistant warmer welcome triggered times.
-const char kAssistantNumWarmerWelcomeTriggered[] =
-    "ash.assistant.num_warmer_welcome_triggered";
+// Pref storing the number of sessions in which Assistant onboarding was shown.
+const char kAssistantNumSessionsWhereOnboardingShown[] =
+    "ash.assistant.num_sessions_where_onboarding_shown";
 
 // Pref storing the time of the last Assistant interaction.
 const char kAssistantTimeOfLastInteraction[] =

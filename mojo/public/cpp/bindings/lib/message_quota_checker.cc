@@ -86,7 +86,7 @@ NOINLINE void MaybeDumpWithoutCrashing(
   user_data.SetBool("had_message_pipe", had_message_pipe);
   user_data.SetUint("seconds_since_construction", seconds_since_construction);
   user_data.SetUint("average_write_rate_per_second",
-                static_cast<uint64_t>(average_write_rate_per_second));
+                    static_cast<uint64_t>(average_write_rate_per_second));
   user_data.SetUint("messages_enqueued", messages_enqueued);
   user_data.SetUint("messages_dequeued", messages_dequeued);
   user_data.SetUint("messages_enqueued", messages_enqueued);

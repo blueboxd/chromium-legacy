@@ -17,10 +17,11 @@
 #include "chrome/browser/media/router/media_router.h"
 #include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/media/router/media_router_feature.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/sessions/content/session_tab_helper.h"
+#include "components/user_prefs/user_prefs.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -140,7 +141,7 @@ CastRemotingConnector* CastRemotingConnector::Get(
     connector = new CastRemotingConnector(
         media_router::MediaRouterFactory::GetApiForBrowserContext(
             contents->GetBrowserContext()),
-        Profile::FromBrowserContext(contents->GetBrowserContext())->GetPrefs(),
+        user_prefs::UserPrefs::Get(contents->GetBrowserContext()),
         sessions::SessionTabHelper::IdForTab(contents),
 #if defined(TOOLKIT_VIEWS)
         base::BindRepeating(

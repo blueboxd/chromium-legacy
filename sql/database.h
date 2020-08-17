@@ -60,6 +60,12 @@ class COMPONENT_EXPORT(SQL) Database {
   Database();
   ~Database();
 
+  // Allows mmapping to be disabled globally by default in the calling process.
+  // Must be called before any threads attempt to create a Database.
+  //
+  // TODO(crbug.com/1117049): Remove this global configuration.
+  static void DisableMmapByDefault();
+
   // Pre-init configuration ----------------------------------------------------
 
   // Sets the page size that will be used when creating a new database. This

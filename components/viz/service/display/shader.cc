@@ -24,7 +24,7 @@
 constexpr base::StringPiece StripLambda(base::StringPiece shader) {
   // Must contain at least "[]() {}".
   DCHECK(shader.starts_with("[]() {"));
-  DCHECK(shader.ends_with("}"));
+  DCHECK_EQ(shader.back(), '}');
   shader.remove_prefix(6);
   shader.remove_suffix(1);
   return shader;

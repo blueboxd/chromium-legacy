@@ -39,7 +39,7 @@ bool IsPathHomePageBase(base::StringPiece path) {
 
 // Removes a single trailing dot if present in |host|.
 void StripTrailingDot(base::StringPiece* host) {
-  if (host->ends_with("."))
+  if (base::EndsWith(*host, "."))
     host->remove_suffix(1);
 }
 

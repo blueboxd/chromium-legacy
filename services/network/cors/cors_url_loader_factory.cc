@@ -387,6 +387,11 @@ bool CorsURLLoaderFactory::IsValidRequest(const ResourceRequest& request,
       // a renderer process.  Once issues blocking https://crbug.com/1114906 are
       // fixed, the case below should return |false| and call
       // mojo::ReportBadMessage.
+      //
+      // TODO(lukasza): https://crbug.com/1114906: Add NOTREACHED below, after
+      // tweaking unit tests to correctly simulate product behavior.  Broken
+      // tests: services_unittests: CorsURLLoader*Test and
+      // *RawRequestAccessControl*.
       break;
 
     case InitiatorLockCompatibility::kNoInitiator:

@@ -12,6 +12,7 @@
 #include "base/strings/string_split.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
+#include "components/feed/core/v2/public/types.h"
 #include "components/feed/core/v2/test/callback_receiver.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
@@ -83,7 +84,7 @@ class ImageFetcherTest : public testing::Test {
 };
 
 TEST_F(ImageFetcherTest, SendRequestSendsValidRequest) {
-  CallbackReceiver<std::unique_ptr<std::string>> receiver;
+  CallbackReceiver<NetworkResponse> receiver;
   image_fetcher()->Fetch(GURL("https://example.com"), receiver.Bind());
   network::ResourceRequest resource_request =
       RespondToRequest("", net::HTTP_OK);
@@ -93,42 +94,48 @@ TEST_F(ImageFetcherTest, SendRequestSendsValidRequest) {
 }
 
 TEST_F(ImageFetcherTest, SendRequestValidResponse) {
-  CallbackReceiver<std::unique_ptr<std::string>> receiver;
+  CallbackReceiver<NetworkResponse> receiver;
   image_fetcher()->Fetch(GURL("https://example.com"), receiver.Bind());
   RespondToRequest("example_response", net::HTTP_OK);
 
   ASSERT_TRUE(receiver.GetResult());
-  EXPECT_THAT(**receiver.GetResult(), HasSubstr("example_response"));
+  EXPECT_THAT(receiver.GetResult()->response_bytes,
+              HasSubstr("example_response"));
+  EXPECT_EQ(net::HTTP_OK, receiver.GetResult()->status_code);
 }
 
 TEST_F(ImageFetcherTest, SendSequentialRequestsValidResponses) {
-  CallbackReceiver<std::unique_ptr<std::string>> receiver1;
+  CallbackReceiver<NetworkResponse> receiver1;
   image_fetcher()->Fetch(GURL("https://example1.com"), receiver1.Bind());
   RespondToRequest("example1_response", net::HTTP_OK);
 
-  CallbackReceiver<std::unique_ptr<std::string>> receiver2;
+  CallbackReceiver<NetworkResponse> receiver2;
   image_fetcher()->Fetch(GURL("https://example2.com"), receiver2.Bind());
   RespondToRequest("example2_response", net::HTTP_OK);
 
   ASSERT_TRUE(receiver1.GetResult());
-  EXPECT_THAT(**receiver1.GetResult(), HasSubstr("example1_response"));
+  EXPECT_THAT(receiver1.GetResult()->response_bytes,
+              HasSubstr("example1_response"));
   ASSERT_TRUE(receiver2.GetResult());
-  EXPECT_THAT(**receiver2.GetResult(), HasSubstr("example2_response"));
+  EXPECT_THAT(receiver2.GetResult()->response_bytes,
+              HasSubstr("example2_response"));
 }
 
 TEST_F(ImageFetcherTest, SendParallelRequestsValidResponses) {
-  CallbackReceiver<std::unique_ptr<std::string>> receiver1;
+  CallbackReceiver<NetworkResponse> receiver1;
   image_fetcher()->Fetch(GURL("https://example1.com"), receiver1.Bind());
-  CallbackReceiver<std::unique_ptr<std::string>> receiver2;
+  CallbackReceiver<NetworkResponse> receiver2;
   image_fetcher()->Fetch(GURL("https://example2.com"), receiver2.Bind());
 
   RespondToRequest("example1_response", net::HTTP_OK);
   RespondToRequest("example2_response", net::HTTP_OK);
 
   ASSERT_TRUE(receiver1.GetResult());
-  EXPECT_THAT(**receiver1.GetResult(), HasSubstr("example1_response"));
+  EXPECT_THAT(receiver1.GetResult()->response_bytes,
+              HasSubstr("example1_response"));
   ASSERT_TRUE(receiver2.GetResult());
-  EXPECT_THAT(**receiver2.GetResult(), HasSubstr("example2_response"));
+  EXPECT_THAT(receiver2.GetResult()->response_bytes,
+              HasSubstr("example2_response"));
 }
 
 }  // namespace

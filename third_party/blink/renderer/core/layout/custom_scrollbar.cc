@@ -42,7 +42,6 @@ CustomScrollbar::CustomScrollbar(ScrollableArea* scrollable_area,
     : Scrollbar(scrollable_area,
                 orientation,
                 style_source,
-                nullptr,
                 CustomScrollbarTheme::GetCustomScrollbarTheme()) {
   DCHECK(style_source);
 }

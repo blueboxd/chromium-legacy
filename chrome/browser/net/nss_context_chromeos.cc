@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback_list.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
@@ -46,12 +47,13 @@ class NSSCertDatabaseChromeOSManager : public base::SupportsUserData::Data {
     if (nss_cert_database_)
       return nss_cert_database_.get();
 
-    ready_callback_list_.push_back(std::move(callback));
+    ready_callback_list_.AddUnsafe(std::move(callback));
     return NULL;
   }
 
  private:
-  typedef std::vector<GetNSSCertDatabaseCallback> ReadyCallbackList;
+  using ReadyCallbackList =
+      base::OnceCallbackList<GetNSSCertDatabaseCallback::RunType>;
 
   void DidGetPrivateSlot(crypto::ScopedPK11Slot private_slot) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
@@ -59,10 +61,7 @@ class NSSCertDatabaseChromeOSManager : public base::SupportsUserData::Data {
         crypto::GetPublicSlotForChromeOSUser(username_hash_),
         std::move(private_slot)));
 
-    ReadyCallbackList callback_list;
-    callback_list.swap(ready_callback_list_);
-    for (auto& callback : callback_list)
-      std::move(callback).Run(nss_cert_database_.get());
+    ready_callback_list_.Notify(nss_cert_database_.get());
   }
 
   std::string username_hash_;

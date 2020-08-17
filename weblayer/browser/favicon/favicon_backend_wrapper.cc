@@ -76,17 +76,22 @@ FaviconBackendWrapper::GetFaviconsForUrl(
 }
 
 void FaviconBackendWrapper::SetFaviconsOutOfDateForPage(const GURL& page_url) {
-  if (favicon_backend_)
-    favicon_backend_->SetFaviconsOutOfDateForPage(page_url);
+  if (favicon_backend_ &&
+      favicon_backend_->SetFaviconsOutOfDateForPage(page_url)) {
+    ScheduleCommit();
+  }
 }
 
 void FaviconBackendWrapper::SetFavicons(const base::flat_set<GURL>& page_urls,
                                         favicon_base::IconType icon_type,
                                         const GURL& icon_url,
                                         const std::vector<SkBitmap>& bitmaps) {
-  if (favicon_backend_) {
-    favicon_backend_->SetFavicons(page_urls, icon_type, icon_url, bitmaps,
-                                  favicon::FaviconBitmapType::ON_VISIT);
+  if (favicon_backend_ &&
+      favicon_backend_
+          ->SetFavicons(page_urls, icon_type, icon_url, bitmaps,
+                        favicon::FaviconBitmapType::ON_VISIT)
+          .did_change_database()) {
+    ScheduleCommit();
   }
 }
 
@@ -100,7 +105,7 @@ void FaviconBackendWrapper::CloneFaviconMappingsForPages(
   std::set<GURL> changed_urls = favicon_backend_->CloneFaviconMappingsForPages(
       {page_url_to_read}, icon_types, page_urls_to_write);
   if (!changed_urls.empty())
-    ScheduleCommitForFavicons();
+    ScheduleCommit();
 }
 
 std::vector<favicon_base::FaviconRawBitmapResult>
@@ -118,23 +123,23 @@ FaviconBackendWrapper::UpdateFaviconMappingsAndFetch(
     const std::vector<int>& desired_sizes) {
   if (!favicon_backend_)
     return {};
-  return favicon_backend_->UpdateFaviconMappingsAndFetch(
+  auto result = favicon_backend_->UpdateFaviconMappingsAndFetch(
       page_urls, icon_url, icon_type, desired_sizes);
+  if (!result.updated_page_urls.empty())
+    ScheduleCommit();
+  return result.bitmap_results;
 }
 
 void FaviconBackendWrapper::DeleteFaviconMappings(
     const base::flat_set<GURL>& page_urls,
     favicon_base::IconType icon_type) {
   if (!favicon_backend_)
-    favicon_backend_->DeleteFaviconMappings(page_urls, icon_type);
-}
+    return;
 
-void FaviconBackendWrapper::ScheduleCommitForFavicons() {
-  if (!commit_timer_.IsRunning()) {
-    // 10 seconds matches that of HistoryBackend.
-    commit_timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(10), this,
-                        &FaviconBackendWrapper::Commit);
-  }
+  auto deleted_page_urls =
+      favicon_backend_->DeleteFaviconMappings(page_urls, icon_type);
+  if (!deleted_page_urls.empty())
+    ScheduleCommit();
 }
 
 std::vector<GURL> FaviconBackendWrapper::GetCachedRecentRedirectsForPage(
@@ -146,13 +151,15 @@ std::vector<GURL> FaviconBackendWrapper::GetCachedRecentRedirectsForPage(
   return {page_url};
 }
 
-void FaviconBackendWrapper::OnFaviconChangedForPageAndRedirects(
-    const GURL& page_url) {
-  // Nothing to do here as WebLayer doesn't notify of favicon changes through
-  // this code path.
-}
-
 FaviconBackendWrapper::~FaviconBackendWrapper() = default;
+
+void FaviconBackendWrapper::ScheduleCommit() {
+  if (!commit_timer_.IsRunning()) {
+    // 10 seconds matches that of HistoryBackend.
+    commit_timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(10), this,
+                        &FaviconBackendWrapper::Commit);
+  }
+}
 
 void FaviconBackendWrapper::Commit() {
   if (favicon_backend_)

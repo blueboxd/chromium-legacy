@@ -95,7 +95,7 @@ SupervisorBridge::GetWhitelists() {
   std::vector<MostVisitedSitesSupervisor::Whitelist> results;
   SupervisedUserService* supervised_user_service =
       SupervisedUserServiceFactory::GetForProfile(profile_);
-  for (const auto& whitelist : supervised_user_service->whitelists()) {
+  for (const auto& whitelist : supervised_user_service->allowlists()) {
     results.emplace_back(Whitelist{
         whitelist->title(), whitelist->entry_point(),
         whitelist->large_icon_path(),

@@ -139,10 +139,11 @@ void SystemTokenCertDBInitializer::GetSystemTokenCertDb(
 
   DCHECK(callback);
 
-  if (system_token_cert_database_)
+  if (system_token_cert_database_) {
     std::move(callback).Run(system_token_cert_database_.get());
-  else
-    get_system_token_cert_db_callback_list_.push_back(std::move(callback));
+  } else {
+    get_system_token_cert_db_callback_list_.AddUnsafe(std::move(callback));
+  }
 }
 
 void SystemTokenCertDBInitializer::AddObserver(
@@ -210,18 +211,6 @@ void SystemTokenCertDBInitializer::MaybeStartInitializingDatabase() {
       FROM_HERE, base::BindOnce(&GetSystemSlotOnIOThread, callback));
 }
 
-void SystemTokenCertDBInitializer::
-    RunAndClearGetSystemTokenCertDbCallbackList() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(system_token_cert_database_);
-
-  std::vector<GetSystemTokenCertDbCallback> callback_list =
-      std::move(get_system_token_cert_db_callback_list_);
-  for (auto& callback : callback_list) {
-    std::move(callback).Run(system_token_cert_database_.get());
-  }
-}
-
 void SystemTokenCertDBInitializer::InitializeDatabase(
     crypto::ScopedPK11Slot system_slot) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -239,7 +228,8 @@ void SystemTokenCertDBInitializer::InitializeDatabase(
   database->SetSystemSlot(std::move(system_slot_copy));
 
   system_token_cert_database_ = std::move(database);
-  RunAndClearGetSystemTokenCertDbCallbackList();
+  get_system_token_cert_db_callback_list_.Notify(
+      system_token_cert_database_.get());
 
   VLOG(1) << "SystemTokenCertDBInitializer: Passing system token NSS "
              "database to NetworkCertLoader.";

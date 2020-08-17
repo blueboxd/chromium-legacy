@@ -492,25 +492,6 @@ TEST_F(AssistantPageViewTest, ShouldShowGreetingLabelAgainAfterReopening) {
   EXPECT_EQ(nullptr, onboarding_view());
 }
 
-TEST_F(AssistantPageViewTest, ShouldShowOnboardingAgainAfterReopening) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      chromeos::assistant::features::kAssistantBetterOnboarding);
-
-  ShowAssistantUi();
-
-  // Cause the label to be hidden.
-  MockTextInteraction().WithTextResponse("The response");
-  ASSERT_FALSE(onboarding_view()->IsDrawn());
-
-  // Close and reopen the Assistant UI.
-  CloseAssistantUi();
-  ShowAssistantUi();
-
-  EXPECT_TRUE(onboarding_view()->IsDrawn());
-  EXPECT_FALSE(greeting_label()->IsDrawn());
-}
-
 TEST_F(AssistantPageViewTest,
        ShouldNotShowGreetingLabelWhenOpeningFromSearchResult) {
   base::test::ScopedFeatureList scoped_feature_list;
@@ -533,6 +514,107 @@ TEST_F(AssistantPageViewTest,
 
   EXPECT_FALSE(onboarding_view()->IsDrawn());
   EXPECT_FALSE(greeting_label()->IsDrawn());
+}
+
+TEST_F(AssistantPageViewTest, ShouldShowOnboardingForNewUsers) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      chromeos::assistant::features::kAssistantBetterOnboarding);
+
+  // A user is considered new if they haven't had an Assistant interaction in
+  // the past 28 days.
+  const base::Time new_user_cutoff =
+      base::Time::Now() - base::TimeDelta::FromDays(28);
+
+  SetTimeOfLastInteraction(new_user_cutoff + base::TimeDelta::FromMinutes(1));
+  ShowAssistantUi();
+
+  // This user *has* interacted with Assistant more recently than 28 days ago so
+  // they are *not* considered new. Therefore, onboarding should *not* be shown.
+  EXPECT_FALSE(onboarding_view()->IsDrawn());
+
+  SetTimeOfLastInteraction(new_user_cutoff);
+
+  CloseAssistantUi();
+  ShowAssistantUi();
+
+  // This user has *not* interacted with Assistant more recently than 28 days
+  // ago so they *are* considered new. Therefore, onboarding *should* be shown.
+  EXPECT_TRUE(onboarding_view()->IsDrawn());
+}
+
+TEST_F(AssistantPageViewTest, ShouldShowOnboardingUntilInteractionOccurs) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      chromeos::assistant::features::kAssistantBetterOnboarding);
+
+  SetTimeOfLastInteraction(base::Time::Now() - base::TimeDelta::FromDays(28));
+  ShowAssistantUi();
+
+  // This user has *not* interacted with Assistant more recently than 28 days
+  // ago so they *are* considered new. Therefore, onboarding *should* be shown.
+  EXPECT_TRUE(onboarding_view()->IsDrawn());
+
+  CloseAssistantUi();
+  ShowAssistantUi();
+
+  // The user has *not* yet interacted with Assistant in this user session, so
+  // we should continue to show onboarding.
+  EXPECT_TRUE(onboarding_view()->IsDrawn());
+
+  MockTextInteraction().WithQuery("Any Query").WithTextResponse("Any Response");
+
+  CloseAssistantUi();
+  ShowAssistantUi();
+
+  // The user *has* had an interaction with Assistant in this user session, so
+  // we should *not* show onboarding anymore.
+  EXPECT_FALSE(onboarding_view()->IsDrawn());
+}
+
+TEST_F(AssistantPageViewTest,
+       ShouldShowOnboardingToExistingUsersIfShownPreviouslyInDifferentSession) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      chromeos::assistant::features::kAssistantBetterOnboarding);
+
+  SetTimeOfLastInteraction(base::Time::Now());
+  SetNumberOfSessionsWhereOnboardingShown(1);
+
+  ShowAssistantUi();
+
+  // This user *has* interacted with Assistant more recently than 28 days ago so
+  // so they are *not* considered new. Onboarding would not normally be shown
+  // but, since it *was* shown in a previous user session, we *do* show it.
+  EXPECT_TRUE(onboarding_view()->IsDrawn());
+
+  MockTextInteraction().WithQuery("Any Query").WithTextResponse("Any Response");
+
+  CloseAssistantUi();
+  ShowAssistantUi();
+
+  // But once the user has had an interaction with Assistant in this user
+  // session, we still expect onboarding to no longer show.
+  EXPECT_FALSE(onboarding_view()->IsDrawn());
+}
+
+TEST_F(AssistantPageViewTest,
+       ShouldNotShowOnboardingToExistingUsersIfShownPreviouslyInMaxSessions) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      chromeos::assistant::features::kAssistantBetterOnboarding);
+
+  SetTimeOfLastInteraction(base::Time::Now());
+  SetNumberOfSessionsWhereOnboardingShown(
+      assistant::ui::kOnboardingMaxSessionsShown);
+
+  ShowAssistantUi();
+
+  // This user has *not* interacted with Assistant more recently than 28 days
+  // ago so they *are* considered new. Onboarding would normally be shown but,
+  // since it was shown already in the max number of previous user sessions, we
+  // do *not* show it.
+  EXPECT_FALSE(onboarding_view()->IsDrawn());
 }
 
 TEST_F(AssistantPageViewTest, ShouldFocusMicViewWhenPressingVoiceInputToggle) {

@@ -11,7 +11,7 @@ namespace supervised_users {
 
 // These functions are wrappers around switches::kSupervisedUserSafeSites that
 // evaluate a field trial if no command line arguments are specified.
-bool IsSafeSitesBlacklistEnabled(const Profile* profile);
+bool IsSafeSitesDenylistEnabled(const Profile* profile);
 bool IsSafeSitesOnlineCheckEnabled(const Profile* profile);
 
 }  // namespace supervised_users

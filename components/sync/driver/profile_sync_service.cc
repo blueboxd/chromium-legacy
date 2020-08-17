@@ -1383,7 +1383,7 @@ ModelTypeSet ProfileSyncService::GetModelTypesForTransportOnlyMode() const {
       SECURITY_EVENTS,
       SHARING_MESSAGE,
       SUPERVISED_USER_SETTINGS,
-      SUPERVISED_USER_WHITELISTS,
+      SUPERVISED_USER_ALLOWLISTS,
       USER_CONSENTS,
   };
 

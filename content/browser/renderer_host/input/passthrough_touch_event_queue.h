@@ -172,7 +172,6 @@ class CONTENT_EXPORT PassthroughTouchEventQueue {
       : public TouchEventWithLatencyInfo {
    public:
     TouchEventWithLatencyInfoAndAckState(const TouchEventWithLatencyInfo&);
-    bool operator<(const TouchEventWithLatencyInfoAndAckState&) const;
     blink::mojom::InputEventResultState ack_state() const { return ack_state_; }
     blink::mojom::InputEventResultSource ack_source() const {
       return ack_source_;
@@ -186,6 +185,22 @@ class CONTENT_EXPORT PassthroughTouchEventQueue {
    private:
     blink::mojom::InputEventResultSource ack_source_;
     blink::mojom::InputEventResultState ack_state_;
+  };
+
+  struct TouchEventWithLatencyInfoAndAckStateComparator {
+    using is_transparent = void;
+    bool operator()(const TouchEventWithLatencyInfoAndAckState& lhs,
+                    const TouchEventWithLatencyInfoAndAckState& rhs) const {
+      return lhs.event.unique_touch_event_id < rhs.event.unique_touch_event_id;
+    }
+    bool operator()(const TouchEventWithLatencyInfoAndAckState& lhs,
+                    const uint32_t rhs) const {
+      return lhs.event.unique_touch_event_id < rhs;
+    }
+    bool operator()(const uint32_t lhs,
+                    const TouchEventWithLatencyInfoAndAckState& rhs) const {
+      return lhs < rhs.event.unique_touch_event_id;
+    }
   };
 
   // These values are logged to UMA. Entries should not be renumbered and
@@ -248,7 +263,9 @@ class CONTENT_EXPORT PassthroughTouchEventQueue {
   // Stores outstanding touches that have been sent to the renderer but have
   // not yet been ack'd by the renderer. The set is explicitly ordered based
   // on the unique touch event id.
-  std::set<TouchEventWithLatencyInfoAndAckState> outstanding_touches_;
+  std::set<TouchEventWithLatencyInfoAndAckState,
+           TouchEventWithLatencyInfoAndAckStateComparator>
+      outstanding_touches_;
 
   // Whether we should allow events to bypass normal queue filter rules.
   const bool skip_touch_filter_;

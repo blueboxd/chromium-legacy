@@ -137,8 +137,8 @@ class SupervisedUserNavigationObserver
                       const std::string& host,
                       bool successfully_created_request);
 
-  // Called when the url filter changes i.e. whitelist or blacklist change to
-  // clear up  entries in |requested_hosts_| which have been whitelisted.
+  // Called when the url filter changes i.e. allowlist or denylist change to
+  // clear up  entries in |requested_hosts_| which have been allowed.
   void MaybeUpdateRequestedHosts();
 
   // Owned by SupervisedUserService.

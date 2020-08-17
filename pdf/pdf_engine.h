@@ -385,6 +385,14 @@ class PDFEngine {
   // Gets the list of DocumentAttachmentInfo from the document.
   virtual const std::vector<DocumentAttachmentInfo>&
   GetDocumentAttachmentInfoList() const = 0;
+  // Gets the content of an attachment by the attachment's |index|. |index|
+  // must be in the range of [0, attachment_count-1), where |attachment_count|
+  // is the number of attachments embedded in the document.
+  // The caller of this method is responsible for checking whether the
+  // attachment is readable, attachment size is not 0 byte, and the return
+  // value's size matches the corresponding DocumentAttachmentInfo's
+  // |size_bytes|.
+  virtual std::vector<uint8_t> GetAttachmentData(size_t index) = 0;
   // Gets metadata about the document.
   virtual const DocumentMetadata& GetDocumentMetadata() const = 0;
   // Gets the number of pages in the document.
@@ -474,6 +482,9 @@ class PDFEngine {
 
   // Notify whether the PDF currently has the focus or not.
   virtual void UpdateFocus(bool has_focus) = 0;
+
+  // Returns the focus info of current focus item.
+  virtual PP_PrivateAccessibilityFocusInfo GetFocusInfo() = 0;
 
   virtual uint32_t GetLoadedByteSize() = 0;
   virtual bool ReadLoadedBytes(uint32_t length, void* buffer) = 0;

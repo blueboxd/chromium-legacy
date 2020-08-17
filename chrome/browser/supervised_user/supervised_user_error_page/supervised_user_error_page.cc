@@ -28,7 +28,7 @@ static const int kAvatarSize1x = 36;
 static const int kAvatarSize2x = 72;
 
 bool ReasonIsAutomatic(FilteringBehaviorReason reason) {
-  return reason == ASYNC_CHECKER || reason == BLACKLIST;
+  return reason == ASYNC_CHECKER || reason == DENYLIST;
 }
 
 std::string BuildAvatarImageUrl(const std::string& url, int size) {
@@ -53,10 +53,10 @@ int GetBlockMessageID(FilteringBehaviorReason reason,
       if (single_parent)
         return IDS_CHILD_BLOCK_MESSAGE_DEFAULT_SINGLE_PARENT;
       return IDS_CHILD_BLOCK_MESSAGE_DEFAULT_MULTI_PARENT;
-    case BLACKLIST:
+    case DENYLIST:
     case ASYNC_CHECKER:
       return IDS_SUPERVISED_USER_BLOCK_MESSAGE_SAFE_SITES;
-    case WHITELIST:
+    case ALLOWLIST:
       NOTREACHED();
       break;
     case MANUAL:

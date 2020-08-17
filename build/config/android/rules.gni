@@ -2777,6 +2777,11 @@ if (enable_java_templates) {
         type = "android_app_bundle_module"
         res_size_info_path = _res_size_info_path
         is_base_module = _is_base_module
+        forward_variables_from(invoker,
+                               [
+                                 "version_code",
+                                 "version_name",
+                               ])
       } else {
         type = "android_apk"
       }
@@ -3331,22 +3336,25 @@ if (enable_java_templates) {
         forward_variables_from(invoker,
                                [
                                  "lint_baseline_file",
-                                 "lint_suppressions_dep",
                                  "lint_suppressions_file",
                                  "min_sdk_version",
                                ])
-        if (defined(invoker.lint_min_sdk_version)) {
-          min_sdk_version = invoker.lint_min_sdk_version
-        }
         build_config = _build_config
         build_config_dep = ":$_build_config_target"
         deps = [ ":$_java_target" ]
+        if (defined(invoker.lint_suppressions_dep)) {
+          deps += [ invoker.lint_suppressions_dep ]
+        }
+        if (defined(invoker.lint_min_sdk_version)) {
+          min_sdk_version = invoker.lint_min_sdk_version
+        }
       }
     } else {
       not_needed(invoker,
                  [
                    "lint_baseline_file",
                    "lint_min_sdk_version",
+                   "lint_suppressions_file",
                  ])
     }
 
@@ -5012,22 +5020,25 @@ if (enable_java_templates) {
         forward_variables_from(invoker,
                                [
                                  "lint_baseline_file",
-                                 "lint_suppressions_dep",
                                  "lint_suppressions_file",
                                  "min_sdk_version",
                                ])
-        if (defined(invoker.lint_min_sdk_version)) {
-          min_sdk_version = invoker.lint_min_sdk_version
-        }
         build_config = _build_config
         build_config_dep = ":$_build_config_target"
         deps = _module_java_targets
+        if (defined(invoker.lint_suppressions_dep)) {
+          deps += [ invoker.lint_suppressions_dep ]
+        }
+        if (defined(invoker.lint_min_sdk_version)) {
+          min_sdk_version = invoker.lint_min_sdk_version
+        }
       }
     } else {
       not_needed(invoker,
                  [
                    "lint_baseline_file",
                    "lint_min_sdk_version",
+                   "lint_suppressions_file",
                  ])
     }
 

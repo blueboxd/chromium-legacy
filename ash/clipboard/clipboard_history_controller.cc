@@ -240,7 +240,7 @@ void ClipboardHistoryController::MenuOptionSelected(int index,
 
   // Replace the original item back on top of the clipboard. Some apps take a
   // long time to receive the paste event, also some apps will read from the
-  // clipboard multiple times per paste. Wait 100ms before replacing the item
+  // clipboard multiple times per paste. Wait a bit before replacing the item
   // back onto the clipboard.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
@@ -259,7 +259,7 @@ void ClipboardHistoryController::MenuOptionSelected(int index,
             GetClipboard()->WriteClipboardData(std::move(original_data));
           },
           weak_ptr_factory_.GetWeakPtr(), std::move(original_data)),
-      base::TimeDelta::FromMilliseconds(100));
+      base::TimeDelta::FromMilliseconds(200));
 }
 
 gfx::Rect ClipboardHistoryController::CalculateAnchorRect() const {

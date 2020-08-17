@@ -33,6 +33,8 @@ constexpr base::Feature kEnableHangWatcher{"EnableHangWatcher",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 constexpr base::FeatureParam<bool> kHangWatchIOThread{
     &kEnableHangWatcher, "hang_watch_io_thread", false};
+constexpr base::FeatureParam<bool> kHangWatchUIThread{
+    &kEnableHangWatcher, "hang_watch_ui_thread", false};
 constexpr base::FeatureParam<bool> kHangWatchThreadPool{
     &kEnableHangWatcher, "hang_watch_threadpool", false};
 
@@ -44,6 +46,7 @@ HangWatcher* g_instance = nullptr;
 std::atomic<bool> g_use_hang_watcher{false};
 std::atomic<bool> g_hang_watch_workers{false};
 std::atomic<bool> g_hang_watch_io_thread{false};
+std::atomic<bool> g_hang_watch_ui_thread{false};
 }
 
 constexpr const char* kThreadName = "HangWatcher";
@@ -192,6 +195,7 @@ void HangWatcher::InitializeOnMainThread() {
   DCHECK(!g_use_hang_watcher);
   DCHECK(!g_hang_watch_workers);
   DCHECK(!g_hang_watch_io_thread);
+  DCHECK(!g_hang_watch_ui_thread);
 
   g_use_hang_watcher.store(base::FeatureList::IsEnabled(kEnableHangWatcher),
                            std::memory_order_relaxed);
@@ -202,6 +206,8 @@ void HangWatcher::InitializeOnMainThread() {
     g_hang_watch_workers.store(kHangWatchThreadPool.Get(),
                                std::memory_order_relaxed);
     g_hang_watch_io_thread.store(kHangWatchIOThread.Get(),
+                                 std::memory_order_relaxed);
+    g_hang_watch_ui_thread.store(kHangWatchUIThread.Get(),
                                  std::memory_order_relaxed);
   }
 }
@@ -217,6 +223,10 @@ bool HangWatcher::IsThreadPoolHangWatchingEnabled() {
 }
 
 bool HangWatcher::IsIOThreadHangWatchingEnabled() {
+  return g_hang_watch_io_thread.load(std::memory_order_relaxed);
+}
+
+bool HangWatcher::IsUIThreadHangWatchingEnabled() {
   return g_hang_watch_io_thread.load(std::memory_order_relaxed);
 }
 

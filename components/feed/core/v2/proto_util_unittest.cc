@@ -4,14 +4,29 @@
 
 #include "components/feed/core/v2/proto_util.h"
 
+#include "base/test/scoped_feature_list.h"
+#include "components/feed/core/proto/v2/wire/capability.pb.h"
 #include "components/feed/core/proto/v2/wire/client_info.pb.h"
+#include "components/feed/core/proto/v2/wire/feed_request.pb.h"
+#include "components/feed/core/proto/v2/wire/request.pb.h"
+#include "components/feed/core/v2/config.h"
 #include "components/feed/core/v2/test/proto_printer.h"
 #include "components/feed/core/v2/types.h"
+#include "components/feed/feed_feature_list.h"
 #include "components/version_info/channel.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace feed {
 namespace {
+
+bool HasCapability(const feedwire::FeedRequest& request,
+                   feedwire::Capability wanted_capability) {
+  for (auto capability : request.client_capability()) {
+    if (wanted_capability == capability)
+      return true;
+  }
+  return false;
+}
 
 TEST(ProtoUtilTest, CreateClientInfo) {
   RequestMetadata request_metadata;
@@ -38,6 +53,57 @@ TEST(ProtoUtilTest, CreateClientInfo) {
 )",
             ToTextProto(result.display_info(0)));
   EXPECT_EQ("en-US", result.locale());
+}
+
+TEST(ProtoUtilTest, DefaultCapabilities) {
+  feedwire::FeedRequest request =
+      CreateFeedQueryRefreshRequest(feedwire::FeedQuery::MANUAL_REFRESH,
+                                    /*request_metadata=*/{},
+                                    /*consistency_token=*/std::string())
+          .feed_request();
+
+  ASSERT_EQ(9, request.client_capability_size());
+  EXPECT_TRUE(HasCapability(request, feedwire::Capability::BASE_UI));
+  EXPECT_TRUE(HasCapability(request, feedwire::Capability::REQUEST_SCHEDULE));
+  EXPECT_TRUE(HasCapability(request, feedwire::Capability::OPEN_IN_TAB));
+  EXPECT_TRUE(HasCapability(request, feedwire::Capability::CARD_MENU));
+  EXPECT_TRUE(HasCapability(request, feedwire::Capability::DOWNLOAD_LINK));
+  EXPECT_TRUE(HasCapability(request, feedwire::Capability::INFINITE_FEED));
+  EXPECT_TRUE(HasCapability(request, feedwire::Capability::DISMISS_COMMAND));
+  EXPECT_TRUE(HasCapability(request, feedwire::Capability::UI_THEME_V2));
+  EXPECT_TRUE(
+      HasCapability(request, feedwire::Capability::UNDO_FOR_DISMISS_COMMAND));
+}
+
+TEST(ProtoUtilTest, DisableCapabilitiesWithFinch) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      kInterestFeedV2,
+      {{"enable_BASE_UI", "false"}, {"enable_INFINITE_FEED", "false"}});
+  OverrideConfigWithFinchForTesting();
+
+  feedwire::FeedRequest request =
+      CreateFeedQueryRefreshRequest(feedwire::FeedQuery::MANUAL_REFRESH,
+                                    /*request_metadata=*/{},
+                                    /*consistency_token=*/std::string())
+          .feed_request();
+
+  ASSERT_EQ(8, request.client_capability_size());
+
+  // Optional capabilities can be disabled.
+  EXPECT_FALSE(HasCapability(request, feedwire::Capability::INFINITE_FEED));
+
+  // Required capabilities can't be disabled.
+  EXPECT_TRUE(HasCapability(request, feedwire::Capability::BASE_UI));
+
+  EXPECT_TRUE(HasCapability(request, feedwire::Capability::REQUEST_SCHEDULE));
+  EXPECT_TRUE(HasCapability(request, feedwire::Capability::OPEN_IN_TAB));
+  EXPECT_TRUE(HasCapability(request, feedwire::Capability::CARD_MENU));
+  EXPECT_TRUE(HasCapability(request, feedwire::Capability::DOWNLOAD_LINK));
+  EXPECT_TRUE(HasCapability(request, feedwire::Capability::DISMISS_COMMAND));
+  EXPECT_TRUE(HasCapability(request, feedwire::Capability::UI_THEME_V2));
+  EXPECT_TRUE(
+      HasCapability(request, feedwire::Capability::UNDO_FOR_DISMISS_COMMAND));
 }
 
 }  // namespace

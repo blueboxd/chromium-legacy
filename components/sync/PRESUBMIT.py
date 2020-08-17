@@ -24,7 +24,7 @@ EXCEPTION_MODEL_TYPES = [
   'NIGORI',  # Model type string is 'encryption keys'.
   'SUPERVISED_USER_SETTINGS',  # Root tag and model type string replace
                                # 'Supervised' with 'Managed'
-  'SUPERVISED_USER_WHITELISTS',  # See previous.
+  'SUPERVISED_USER_ALLOWLISTS',  # See previous.
 
   # Deprecated types:
   'DEPRECATED_FAVICON_IMAGES',

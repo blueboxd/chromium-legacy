@@ -23,7 +23,7 @@ namespace ui {
 // Central controller to handle touch UI modes.
 class COMPONENT_EXPORT(UI_BASE) TouchUiController {
  public:
-  using CallbackList = base::CallbackList<void()>;
+  using CallbackList = base::RepeatingClosureList;
   using Subscription = CallbackList::Subscription;
 
   enum class TouchUiState {

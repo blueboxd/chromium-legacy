@@ -127,7 +127,7 @@ struct VIEWS_EXPORT ViewHierarchyChangedDetails {
 // Used to identify the CallbackList<> within the PropertyChangedVectors map.
 using PropertyKey = const void*;
 
-using PropertyChangedCallbacks = base::CallbackList<void()>;
+using PropertyChangedCallbacks = base::RepeatingClosureList;
 using PropertyChangedCallback = PropertyChangedCallbacks::CallbackType;
 using PropertyChangedSubscription =
     std::unique_ptr<PropertyChangedCallbacks::Subscription>;

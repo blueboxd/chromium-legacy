@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/callback_list.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -86,10 +87,6 @@ class SystemTokenCertDBInitializer final : public CryptohomeClient::Observer {
   // database, unless it was already started before.
   void MaybeStartInitializingDatabase();
 
-  // This is called when the system token certificate database is created to run
-  // all entries in |get_system_token_cert_db_callback_list_| and clear it.
-  void RunAndClearGetSystemTokenCertDbCallbackList();
-
   // Initializes the global system token NSSCertDatabase with |system_slot|.
   // Also starts NetworkCertLoader with the system token database.
   void InitializeDatabase(crypto::ScopedPK11Slot system_slot);
@@ -102,7 +99,7 @@ class SystemTokenCertDBInitializer final : public CryptohomeClient::Observer {
 
   // List of callbacks that should be executed when the system token certificate
   // database is created.
-  std::vector<GetSystemTokenCertDbCallback>
+  base::OnceCallbackList<GetSystemTokenCertDbCallback::RunType>
       get_system_token_cert_db_callback_list_;
 
   // List of observers that will be notified when the global system token

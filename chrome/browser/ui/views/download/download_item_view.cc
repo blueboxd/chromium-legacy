@@ -680,7 +680,7 @@ DownloadItemView::Mode DownloadItemView::GetDesiredMode() const {
 
 void DownloadItemView::UpdateMode(Mode mode) {
   mode_ = mode;
-  UpdateFilePath();
+  UpdateFilePathAndIcons();
   UpdateLabels();
   UpdateButtons();
 
@@ -720,9 +720,13 @@ void DownloadItemView::UpdateMode(Mode mode) {
   shelf_->InvalidateLayout();
 }
 
-void DownloadItemView::UpdateFilePath() {
+void DownloadItemView::UpdateFilePathAndIcons() {
+  // The file icon may change when the download completes, and the path to look
+  // up is |file_path_| and thus changes if that changes.  If neither of those
+  // is the case, there's nothing to do.
   const base::FilePath file_path = model_->GetTargetFilePath();
-  if (file_path_ == file_path)
+  if ((model_->GetState() != download::DownloadItem::COMPLETE) &&
+      (file_path_ == file_path))
     return;
 
   file_path_ = file_path;

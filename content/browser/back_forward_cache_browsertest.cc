@@ -6891,46 +6891,4 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   }
 }
 
-IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, ReplacedNavigationEntry) {
-  // Set the bfcache value to 1 to ensure that the test fails if a page
-  // that replaces the current history entry is stored in back-forward cache.
-  web_contents()
-      ->GetController()
-      .GetBackForwardCache()
-      .set_cache_size_limit_for_testing(1);
-
-  ASSERT_TRUE(embedded_test_server()->Start());
-  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
-  GURL url_c(embedded_test_server()->GetURL("c.com", "/title1.html"));
-
-  // 1) Navigate to A.
-  EXPECT_TRUE(NavigateToURL(shell(), url_a));
-
-  RenderFrameHostImpl* rfh_a = current_frame_host();
-  RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
-
-  // 2) Navigate to B.
-  EXPECT_TRUE(NavigateToURL(shell(), url_b));
-  RenderFrameHostImpl* rfh_b = current_frame_host();
-  RenderFrameDeletedObserver delete_observer_rfh_b(rfh_b);
-
-  EXPECT_FALSE(delete_observer_rfh_a.deleted());
-  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
-  EXPECT_FALSE(rfh_b->IsInBackForwardCache());
-
-  // 3) Navigate to a new page by replacing the location. The old page can't be
-  // navigated back to and we should not store it in the back-forward cache.
-  EXPECT_TRUE(
-      ExecJs(shell(), JsReplace("window.location.replace($1);", url_c.spec())));
-  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
-  delete_observer_rfh_b.WaitUntilDeleted();
-
-  // 4) Confirm A is still in BackForwardCache and it wasn't evicted due to the
-  // cache size limit, which would happen if we tried to store a new page in the
-  // cache in the previous step.
-  ASSERT_FALSE(delete_observer_rfh_a.deleted());
-  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
-}
-
 }  // namespace content

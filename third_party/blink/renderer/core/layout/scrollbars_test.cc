@@ -1738,11 +1738,12 @@ TEST_P(ScrollbarAppearanceTest, HugeScrollingThumbPosition) {
   Scrollbar* scrollbar = scrollable_area->VerticalScrollbar();
   ASSERT_TRUE(scrollbar);
 
-  int maximumThumbPosition = WebView().MainFrameWidget()->Size().height -
-                             StubWebThemeEngine::kMinimumVerticalLength;
-  maximumThumbPosition -= scrollbar->GetTheme().ScrollbarMargin() * 2;
+  int max_thumb_position = WebView().MainFrameWidget()->Size().height -
+                           StubWebThemeEngine::kMinimumVerticalLength;
+  max_thumb_position -=
+      scrollbar->GetTheme().ScrollbarMargin(scrollbar->ScaleFromDIP()) * 2;
 
-  EXPECT_EQ(maximumThumbPosition,
+  EXPECT_EQ(max_thumb_position,
             scrollbar->GetTheme().ThumbPosition(*scrollbar));
 }
 #endif

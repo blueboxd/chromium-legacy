@@ -3242,21 +3242,44 @@ WebContents* GetEmbedderForGuest(content::WebContents* guest) {
   return static_cast<content::WebContentsImpl*>(guest)->GetOuterWebContents();
 }
 
+namespace {
+
+int LoadBasicRequest(
+    network::mojom::URLLoaderFactory* url_loader_factory,
+    const GURL& url,
+    int load_flags,
+    const base::Optional<url::Origin>& request_initiator = base::nullopt,
+    int render_frame_id = MSG_ROUTING_NONE) {
+  auto request = std::make_unique<network::ResourceRequest>();
+  request->url = url;
+  request->load_flags = load_flags;
+  request->request_initiator = request_initiator;
+  request->render_frame_id = render_frame_id;
+  // Allow access to SameSite cookies in tests.
+  request->site_for_cookies = net::SiteForCookies::FromUrl(url);
+
+  content::SimpleURLLoaderTestHelper simple_loader_helper;
+  std::unique_ptr<network::SimpleURLLoader> simple_loader =
+      network::SimpleURLLoader::Create(std::move(request),
+                                       TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      url_loader_factory, simple_loader_helper.GetCallback());
+  simple_loader_helper.WaitForCallback();
+
+  return simple_loader->NetError();
+}
+
+}  // namespace
+
 int LoadBasicRequest(network::mojom::NetworkContext* network_context,
                      const GURL& url,
-                     int process_id,
-                     int render_frame_id,
                      int load_flags) {
   mojo::Remote<network::mojom::URLLoaderFactory> url_loader_factory;
   network::mojom::URLLoaderFactoryParamsPtr url_loader_factory_params =
       network::mojom::URLLoaderFactoryParams::New();
-  url_loader_factory_params->process_id = process_id;
+  url_loader_factory_params->process_id = network::mojom::kBrowserProcessId;
   url_loader_factory_params->is_corb_enabled = false;
-  if (RenderFrameHostImpl* rfh =
-          RenderFrameHostImpl::FromID(process_id, render_frame_id)) {
-    url_loader_factory_params->cookie_observer =
-        rfh->CreateCookieAccessObserver();
-  }
   url::Origin origin = url::Origin::Create(url);
   url_loader_factory_params->isolation_info =
       net::IsolationInfo::CreateForInternalRequest(origin);
@@ -3268,23 +3291,17 @@ int LoadBasicRequest(network::mojom::NetworkContext* network_context,
   // at this point.
   EXPECT_TRUE(url_loader_factory.is_connected());
 
-  auto request = std::make_unique<network::ResourceRequest>();
-  request->url = url;
-  request->render_frame_id = render_frame_id;
-  request->load_flags = load_flags;
-  // Allow access to SameSite cookies in tests.
-  request->site_for_cookies = net::SiteForCookies::FromUrl(url);
+  return LoadBasicRequest(url_loader_factory.get(), url, load_flags);
+}
 
-  content::SimpleURLLoaderTestHelper simple_loader_helper;
-  std::unique_ptr<network::SimpleURLLoader> simple_loader =
-      network::SimpleURLLoader::Create(std::move(request),
-                                       TRAFFIC_ANNOTATION_FOR_TESTS);
-
-  simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
-      url_loader_factory.get(), simple_loader_helper.GetCallback());
-  simple_loader_helper.WaitForCallback();
-
-  return simple_loader->NetError();
+int LoadBasicRequest(RenderFrameHost* frame, const GURL& url) {
+  mojo::Remote<network::mojom::URLLoaderFactory> url_loader_factory;
+  frame->CreateNetworkServiceDefaultFactory(
+      url_loader_factory.BindNewPipeAndPassReceiver());
+  return LoadBasicRequest(
+      url_loader_factory.get(), url, 0 /* load_flags */,
+      frame->GetLastCommittedOrigin() /* request_initiator */,
+      frame->GetRoutingID());
 }
 
 void EnsureCookiesFlushed(BrowserContext* browser_context) {

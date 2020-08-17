@@ -15,17 +15,10 @@ class FaviconBackendDelegate {
  public:
   FaviconBackendDelegate() = default;
 
-  // The delegate should schedule an asynchronous commit.
-  virtual void ScheduleCommitForFavicons() = 0;
-
   // Returns the redirects for |page_url|. This should always return a
   // vector with at least one element (|page_url|).
   virtual std::vector<GURL> GetCachedRecentRedirectsForPage(
       const GURL& page_url) = 0;
-
-  // Called when the favicon for a particular page changes.
-  virtual void OnFaviconChangedForPageAndRedirects(const GURL& page_url) = 0;
-
  protected:
   virtual ~FaviconBackendDelegate() = default;
 };

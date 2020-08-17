@@ -86,7 +86,8 @@ CreateDelayAsyncScriptExecutionHints(
 
   // Give up providing the hints when the metadata is not available.
   base::Optional<proto::DelayAsyncScriptExecutionMetadata> metadata =
-      result->data.metadata.delay_async_script_execution_metadata();
+      result->data.metadata
+          .ParsedMetadata<proto::DelayAsyncScriptExecutionMetadata>();
   if (!metadata || !metadata->delay_type())
     return nullptr;
 

@@ -67,6 +67,14 @@ namespace features {
 const base::Feature kRestrictedNavigationAdTagging{
     "RestrictedNavigationAdTagging", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables or disables per-frame memory monitoring.
+const base::Feature kV8PerAdFrameMemoryMonitoring{
+    "V8PerAdFrameMemoryMonitoring", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Minimum time between memory measurements.
+const base::FeatureParam<int> kMemoryPollInterval = {
+    &kV8PerAdFrameMemoryMonitoring, "kMemoryPollInterval", 40};
+
 }  // namespace features
 
 namespace {
@@ -209,7 +217,10 @@ AdsPageLoadMetricsObserver::AdsPageLoadMetricsObserver(
           std::make_unique<HeavyAdThresholdNoiseProvider>(
               heavy_ad_privacy_mitigations_enabled_ /* use_noise */)) {}
 
-AdsPageLoadMetricsObserver::~AdsPageLoadMetricsObserver() = default;
+AdsPageLoadMetricsObserver::~AdsPageLoadMetricsObserver() {
+  if (memory_request_)
+    memory_request_->RemoveObserver(this);
+}
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 AdsPageLoadMetricsObserver::OnStart(
@@ -391,6 +402,19 @@ void AdsPageLoadMetricsObserver::UpdateAdFrameData(
     if (previous_data) {
       previous_data->UpdateForNavigation(ad_host, frame_navigated);
       return;
+    }
+    if (base::FeatureList::IsEnabled(features::kV8PerAdFrameMemoryMonitoring) &&
+        !memory_request_) {
+      // The first ad subframe has been detected, so instantiate the
+      // memory request and add AdsPLMO as an observer. Without any ads, there
+      // would be no reason to monitor ad-frame memory usage and
+      // |memory_request_| wouldn't be needed.
+      // TODO(cammie): Add parameter to make this request in lazy mode once
+      // the API has been updated.
+      memory_request_ = std::make_unique<
+          performance_manager::v8_memory::V8PerFrameMemoryRequestAnySeq>(
+          base::TimeDelta::FromSeconds(features::kMemoryPollInterval.Get()));
+      memory_request_->AddObserver(this);
     }
     ad_frames_data_storage_.emplace_back(
         ad_id,

@@ -9,8 +9,6 @@
 #include "base/bind.h"
 #include "base/guid.h"
 #include "base/stl_util.h"
-#include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 
 using blink::mojom::PresentationConnectionState;

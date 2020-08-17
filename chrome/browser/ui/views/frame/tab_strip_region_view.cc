@@ -10,28 +10,15 @@
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/view_class_properties.h"
 
-namespace {
-
-// Size calculation used for tabstrip scroll container. Equivalent to using
-// a (kPreferredScaleToMinimum, kPreferred) flex specification on the tabstrip
-// itself, bypassing the ScrollView.
-gfx::Size TabScrollContainerFlexRule(const views::View* tab_strip,
-                                     const views::View* view,
-                                     const views::SizeBounds& size_bounds) {
-  const gfx::Size preferred_size = tab_strip->GetPreferredSize();
-  int width = preferred_size.width();
-  if (size_bounds.width().has_value())
-    width = std::min(width, size_bounds.width().value());
-  return gfx::Size(width, preferred_size.height());
-}
-
-}  // namespace
-
 TabStripRegionView::TabStripRegionView(std::unique_ptr<TabStrip> tab_strip) {
   views::FlexLayout* layout_manager =
       SetLayoutManager(std::make_unique<views::FlexLayout>());
 
-  layout_manager->SetOrientation(views::LayoutOrientation::kHorizontal);
+  layout_manager->SetOrientation(views::LayoutOrientation::kHorizontal)
+      .SetDefault(
+          views::kFlexBehaviorKey,
+          views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
+                                   views::MaximumFlexSizeRule::kUnbounded));
 
   tab_strip_ = tab_strip.get();
   tab_strip->SetAvailableWidthCallback(
@@ -44,16 +31,8 @@ TabStripRegionView::TabStripRegionView(std::unique_ptr<TabStrip> tab_strip) {
     tab_strip_scroll_container->SetHideHorizontalScrollBar(true);
     tab_strip_container_ = tab_strip_scroll_container;
     tab_strip_scroll_container->SetContents(std::move(tab_strip));
-    tab_strip_scroll_container->SetProperty(
-        views::kFlexBehaviorKey,
-        views::FlexSpecification(base::BindRepeating(
-            &TabScrollContainerFlexRule, base::Unretained(tab_strip_))));
   } else {
     tab_strip_container_ = AddChildView(std::move(tab_strip));
-    tab_strip_->SetProperty(
-        views::kFlexBehaviorKey,
-        views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
-                                 views::MaximumFlexSizeRule::kPreferred));
   }
 }
 

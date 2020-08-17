@@ -37,9 +37,9 @@ class DialMediaSinkServiceImpl : public MediaSinkServiceBase,
   // |app_name|: app name, e.g. YouTube.
   // TODO(imcheng): Move sink query logic into DialAppDiscoveryService and
   // have it use MediaSinkServiceBase::Observer to observe sinks.
-  using SinkQueryByAppFunc = void(const std::string& app_name);
-  using SinkQueryByAppCallback = base::RepeatingCallback<SinkQueryByAppFunc>;
-  using SinkQueryByAppCallbackList = base::CallbackList<SinkQueryByAppFunc>;
+  using SinkQueryByAppCallbackList =
+      base::RepeatingCallbackList<void(const std::string&)>;
+  using SinkQueryByAppCallback = SinkQueryByAppCallbackList::CallbackType;
   using SinkQueryByAppSubscription =
       std::unique_ptr<SinkQueryByAppCallbackList::Subscription>;
 

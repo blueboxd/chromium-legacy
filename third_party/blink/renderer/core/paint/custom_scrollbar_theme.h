@@ -38,7 +38,9 @@ class CustomScrollbarTheme final : public ScrollbarTheme {
  public:
   ~CustomScrollbarTheme() override = default;
 
-  int ScrollbarThickness() override { return GetTheme().ScrollbarThickness(); }
+  int ScrollbarThickness(float scale_from_dip) override {
+    return GetTheme().ScrollbarThickness(scale_from_dip);
+  }
 
   bool NativeThemeHasButtons() override {
     return GetTheme().NativeThemeHasButtons();

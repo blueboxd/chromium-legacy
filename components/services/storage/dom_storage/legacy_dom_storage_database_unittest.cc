@@ -9,6 +9,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/services/storage/public/cpp/filesystem/filesystem_proxy.h"
 #include "sql/statement.h"
 #include "sql/test/scoped_error_expecter.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -16,6 +17,15 @@
 using base::ASCIIToUTF16;
 
 namespace storage {
+
+namespace {
+
+std::unique_ptr<FilesystemProxy> MakeFilesystemProxy(
+    const base::FilePath& root = base::FilePath()) {
+  return std::make_unique<FilesystemProxy>(FilesystemProxy::UNRESTRICTED, root);
+}
+
+}  // namespace
 
 void CreateV2Table(sql::Database* db) {
   ASSERT_TRUE(db->is_open());
@@ -65,7 +75,7 @@ void CreateMapWithValues(LegacyDomStorageValuesMap* values) {
 }
 
 TEST(LegacyDomStorageDatabaseTest, SimpleOpenAndClose) {
-  LegacyDomStorageDatabase db;
+  LegacyDomStorageDatabase db(MakeFilesystemProxy());
   EXPECT_FALSE(db.IsOpen());
   ASSERT_TRUE(db.LazyOpen(true));
   EXPECT_TRUE(db.IsOpen());
@@ -85,7 +95,8 @@ TEST(LegacyDomStorageDatabaseTest, CloseEmptyDatabaseDeletesFile) {
   // First test the case that explicitly clearing the database will
   // trigger its deletion from disk.
   {
-    LegacyDomStorageDatabase db(file_name);
+    LegacyDomStorageDatabase db(file_name,
+                                MakeFilesystemProxy(temp_dir.GetPath()));
     EXPECT_EQ(file_name, db.file_path());
     ASSERT_TRUE(db.CommitChanges(false, storage));
   }
@@ -94,7 +105,8 @@ TEST(LegacyDomStorageDatabaseTest, CloseEmptyDatabaseDeletesFile) {
   {
     // Check that reading an existing db with data in it
     // keeps the DB on disk on close.
-    LegacyDomStorageDatabase db(file_name);
+    LegacyDomStorageDatabase db(file_name,
+                                MakeFilesystemProxy(temp_dir.GetPath()));
     LegacyDomStorageValuesMap values;
     db.ReadAllValues(&values);
     EXPECT_EQ(storage.size(), values.size());
@@ -104,7 +116,8 @@ TEST(LegacyDomStorageDatabaseTest, CloseEmptyDatabaseDeletesFile) {
   storage.clear();
 
   {
-    LegacyDomStorageDatabase db(file_name);
+    LegacyDomStorageDatabase db(file_name,
+                                MakeFilesystemProxy(temp_dir.GetPath()));
     ASSERT_TRUE(db.CommitChanges(true, storage));
   }
   EXPECT_FALSE(base::PathExists(file_name));
@@ -113,14 +126,16 @@ TEST(LegacyDomStorageDatabaseTest, CloseEmptyDatabaseDeletesFile) {
   // is an empty database also triggers deletion.
   CreateMapWithValues(&storage);
   {
-    LegacyDomStorageDatabase db(file_name);
+    LegacyDomStorageDatabase db(file_name,
+                                MakeFilesystemProxy(temp_dir.GetPath()));
     ASSERT_TRUE(db.CommitChanges(false, storage));
   }
 
   EXPECT_TRUE(base::PathExists(file_name));
 
   {
-    LegacyDomStorageDatabase db(file_name);
+    LegacyDomStorageDatabase db(file_name,
+                                MakeFilesystemProxy(temp_dir.GetPath()));
     ASSERT_TRUE(db.CommitChanges(false, storage));
     auto it = storage.begin();
     for (; it != storage.end(); ++it)
@@ -138,7 +153,8 @@ TEST(LegacyDomStorageDatabaseTest, TestLazyOpenIsLazy) {
   base::FilePath file_name =
       temp_dir.GetPath().AppendASCII("TestLegacyDomStorageDatabase.db");
 
-  LegacyDomStorageDatabase db(file_name);
+  LegacyDomStorageDatabase db(file_name,
+                              MakeFilesystemProxy(temp_dir.GetPath()));
   EXPECT_FALSE(db.IsOpen());
   LegacyDomStorageValuesMap values;
   db.ReadAllValues(&values);
@@ -160,8 +176,8 @@ TEST(LegacyDomStorageDatabaseTest, TestLazyOpenIsLazy) {
 }
 
 TEST(LegacyDomStorageDatabaseTest, TestDetectSchemaVersion) {
-  LegacyDomStorageDatabase db;
-  db.db_.reset(new sql::Database());
+  LegacyDomStorageDatabase db(MakeFilesystemProxy());
+  db.db_ = std::make_unique<sql::Database>();
   ASSERT_TRUE(db.db_->OpenInMemory());
 
   CreateInvalidTable(db.db_.get());
@@ -172,7 +188,7 @@ TEST(LegacyDomStorageDatabaseTest, TestDetectSchemaVersion) {
 }
 
 TEST(LegacyDomStorageDatabaseTest, SimpleWriteAndReadBack) {
-  LegacyDomStorageDatabase db;
+  LegacyDomStorageDatabase db(MakeFilesystemProxy());
 
   LegacyDomStorageValuesMap storage;
   CreateMapWithValues(&storage);
@@ -182,7 +198,7 @@ TEST(LegacyDomStorageDatabaseTest, SimpleWriteAndReadBack) {
 }
 
 TEST(LegacyDomStorageDatabaseTest, WriteWithClear) {
-  LegacyDomStorageDatabase db;
+  LegacyDomStorageDatabase db(MakeFilesystemProxy());
 
   LegacyDomStorageValuesMap storage;
   CreateMapWithValues(&storage);
@@ -204,7 +220,7 @@ TEST(LegacyDomStorageDatabaseTest, WriteWithClear) {
 }
 
 TEST(LegacyDomStorageDatabaseTest, TestSimpleRemoveOneValue) {
-  LegacyDomStorageDatabase db;
+  LegacyDomStorageDatabase db(MakeFilesystemProxy());
 
   ASSERT_TRUE(db.LazyOpen(true));
   const base::string16 kCannedKey = ASCIIToUTF16("test");
@@ -244,7 +260,8 @@ TEST(LegacyDomStorageDatabaseTest, TestCanOpenAndReadWebCoreDatabase) {
       temp_dir.GetPath().AppendASCII("dom_storage");
   ASSERT_TRUE(base::CopyFile(test_data, webcore_database));
 
-  LegacyDomStorageDatabase db(webcore_database);
+  LegacyDomStorageDatabase db(webcore_database,
+                              MakeFilesystemProxy(temp_dir.GetPath()));
   LegacyDomStorageValuesMap values;
   db.ReadAllValues(&values);
   EXPECT_TRUE(db.IsOpen());
@@ -280,7 +297,8 @@ TEST(LegacyDomStorageDatabaseTest, TestCanOpenFileThatIsNotADatabase) {
     // Try and open the file. As it's not a database, we should end up deleting
     // it and creating a new, valid file, so everything should actually
     // succeed.
-    LegacyDomStorageDatabase db(file_name);
+    LegacyDomStorageDatabase db(file_name,
+                                MakeFilesystemProxy(temp_dir.GetPath()));
     LegacyDomStorageValuesMap values;
     CreateMapWithValues(&values);
     EXPECT_TRUE(db.CommitChanges(true, values));
@@ -298,7 +316,8 @@ TEST(LegacyDomStorageDatabaseTest, TestCanOpenFileThatIsNotADatabase) {
 
     // Try to open a directory, we should fail gracefully and not attempt
     // to delete it.
-    LegacyDomStorageDatabase db(temp_dir.GetPath());
+    LegacyDomStorageDatabase db(temp_dir.GetPath(),
+                                MakeFilesystemProxy(temp_dir.GetPath()));
     LegacyDomStorageValuesMap values;
     CreateMapWithValues(&values);
     EXPECT_FALSE(db.CommitChanges(true, values));

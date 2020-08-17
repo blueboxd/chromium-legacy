@@ -568,7 +568,18 @@ void AutofillProfile::OverwriteDataFrom(const AutofillProfile& profile) {
   // values.
   std::string language_code_value = language_code();
   std::string origin_value = origin();
-  base::string16 name_full_value = GetRawInfo(NAME_FULL);
+
+  // Structured names should not be simply overwritten but it should be
+  // attempted to merge the names.
+  bool use_structured_name = base::FeatureList::IsEnabled(
+      features::kAutofillEnableSupportForMoreStructureInNames);
+  bool is_structured_name_mergeable = false;
+  NameInfo name_info = GetNameInfo();
+  if (use_structured_name) {
+    is_structured_name_mergeable =
+        name_info.IsStructuredNameMergeable(profile.GetNameInfo());
+    name_info.MergeStructuredName(profile.GetNameInfo());
+  }
 
   *this = profile;
 
@@ -576,8 +587,23 @@ void AutofillProfile::OverwriteDataFrom(const AutofillProfile& profile) {
     set_origin(origin_value);
   if (language_code().empty())
     set_language_code(language_code_value);
-  if (!HasRawInfo(NAME_FULL))
-    SetRawInfo(NAME_FULL, name_full_value);
+
+  // For structured names, use the merged name if possible.
+  if (is_structured_name_mergeable) {
+    name_ = name_info;
+    return;
+  }
+  // For structured names, if the full name of |profile| is empty, maintain the
+  // complete name structure. Note, this should only happen if the complete name
+  // is empty.  For the legacy implementation, set the full name if |profile|
+  // does not contain a full name.
+  if (!HasRawInfo(NAME_FULL)) {
+    if (use_structured_name) {
+      name_ = name_info;
+    } else {
+      SetRawInfo(NAME_FULL, name_info.GetRawInfo(NAME_FULL));
+    }
+  }
 }
 
 bool AutofillProfile::MergeDataFrom(const AutofillProfile& profile,
@@ -1209,31 +1235,53 @@ bool AutofillProfile::EqualsSansGuid(const AutofillProfile& profile) const {
 }
 
 std::ostream& operator<<(std::ostream& os, const AutofillProfile& profile) {
-  return os << (profile.record_type() == AutofillProfile::LOCAL_PROFILE
-                    ? profile.guid()
-                    : base::HexEncode(profile.server_id().data(),
-                                      profile.server_id().size()))
-            << " " << profile.origin() << " "
-            << UTF16ToUTF8(profile.GetRawInfo(NAME_FULL)) << " "
-            << UTF16ToUTF8(profile.GetRawInfo(NAME_FIRST)) << " "
-            << UTF16ToUTF8(profile.GetRawInfo(NAME_MIDDLE)) << " "
-            << UTF16ToUTF8(profile.GetRawInfo(NAME_LAST)) << " "
-            << UTF16ToUTF8(profile.GetRawInfo(EMAIL_ADDRESS)) << " "
-            << UTF16ToUTF8(profile.GetRawInfo(COMPANY_NAME)) << " "
-            << UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_LINE1)) << " "
-            << UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_LINE2)) << " "
-            << UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_LINE3)) << " "
-            << UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_DEPENDENT_LOCALITY))
-            << " " << UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_CITY)) << " "
-            << UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_STATE)) << " "
-            << UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_ZIP)) << " "
-            << UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_SORTING_CODE)) << " "
-            << UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_COUNTRY)) << " "
-            << profile.language_code() << " "
-            << UTF16ToUTF8(profile.GetRawInfo(PHONE_HOME_WHOLE_NUMBER)) << " "
-            << profile.GetClientValidityBitfieldValue() << " "
-            << profile.has_converted() << " " << profile.use_count() << " "
-            << profile.use_date();
+  return os
+         << (profile.record_type() == AutofillProfile::LOCAL_PROFILE
+                 ? profile.guid()
+                 : base::HexEncode(profile.server_id().data(),
+                                   profile.server_id().size()))
+         << " " << profile.origin() << " "
+         << UTF16ToUTF8(profile.GetRawInfo(NAME_FULL)) << " "
+         << "("
+         << base::NumberToString(profile.GetVerificationStatusInt(NAME_FULL))
+         << ") " << UTF16ToUTF8(profile.GetRawInfo(NAME_FIRST)) << " "
+         << "("
+         << base::NumberToString(profile.GetVerificationStatusInt(NAME_FIRST))
+         << ") " << UTF16ToUTF8(profile.GetRawInfo(NAME_MIDDLE)) << " "
+         << "("
+         << base::NumberToString(profile.GetVerificationStatusInt(NAME_MIDDLE))
+         << ") " << UTF16ToUTF8(profile.GetRawInfo(NAME_LAST)) << " "
+         << "("
+         << base::NumberToString(profile.GetVerificationStatusInt(NAME_LAST))
+         << ") " << UTF16ToUTF8(profile.GetRawInfo(NAME_LAST_FIRST)) << " "
+         << "("
+         << base::NumberToString(
+                profile.GetVerificationStatusInt(NAME_LAST_FIRST))
+         << ") " << UTF16ToUTF8(profile.GetRawInfo(NAME_LAST_CONJUNCTION))
+         << " "
+         << "("
+         << base::NumberToString(
+                profile.GetVerificationStatusInt(NAME_LAST_CONJUNCTION))
+         << ") " << UTF16ToUTF8(profile.GetRawInfo(NAME_LAST_SECOND)) << " "
+         << "("
+         << base::NumberToString(
+                profile.GetVerificationStatusInt(NAME_LAST_SECOND))
+         << ") " << UTF16ToUTF8(profile.GetRawInfo(EMAIL_ADDRESS)) << " "
+         << UTF16ToUTF8(profile.GetRawInfo(COMPANY_NAME)) << " "
+         << UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_LINE1)) << " "
+         << UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_LINE2)) << " "
+         << UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_LINE3)) << " "
+         << UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_DEPENDENT_LOCALITY))
+         << " " << UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_CITY)) << " "
+         << UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_STATE)) << " "
+         << UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_ZIP)) << " "
+         << UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_SORTING_CODE)) << " "
+         << UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_COUNTRY)) << " "
+         << profile.language_code() << " "
+         << UTF16ToUTF8(profile.GetRawInfo(PHONE_HOME_WHOLE_NUMBER)) << " "
+         << profile.GetClientValidityBitfieldValue() << " "
+         << profile.has_converted() << " " << profile.use_count() << " "
+         << profile.use_date();
 }
 
 bool AutofillProfile::FinalizeAfterImport() {

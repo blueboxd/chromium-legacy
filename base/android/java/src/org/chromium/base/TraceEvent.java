@@ -10,10 +10,16 @@ import android.os.SystemClock;
 import android.util.Log;
 import android.util.Printer;
 
+import androidx.annotation.Nullable;
+import androidx.annotation.UiThread;
+
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
 import org.chromium.base.annotations.NativeMethods;
+
+import java.lang.reflect.Method;
+
 /**
  * Java mirror of Chrome trace event API. See base/trace_event/trace_event.h.
  *
@@ -33,8 +39,318 @@ import org.chromium.base.annotations.NativeMethods;
 @JNINamespace("base::android")
 @MainDex
 public class TraceEvent implements AutoCloseable {
-    private static volatile boolean sEnabled;
-    private static volatile boolean sATraceEnabled; // True when taking an Android systrace.
+    private static volatile boolean sEnabled; // True when tracing into Chrome's tracing service.
+
+    // Trace tags replicated from android.os.Trace.
+    public static final long ATRACE_TAG_WEBVIEW = 1L << 4;
+    public static final long ATRACE_TAG_APP = 1L << 12;
+
+    /**
+     * Watches for active ATrace sessions and accordingly enables or disables
+     * tracing in Chrome/WebView.
+     */
+    private static class ATrace implements MessageQueue.IdleHandler {
+        private static final String TAG = "ATrace";
+
+        private Class<?> mTraceClass;
+        private Method mIsTraceTagEnabledMethod;
+        private Method mTraceBeginMethod;
+        private Method mTraceEndMethod;
+        private Method mAsyncTraceBeginMethod;
+        private Method mAsyncTraceEndMethod;
+        private Class<?> mSystemPropertiesClass;
+        private Method mGetSystemPropertyMethod;
+
+        private boolean mNativeTracingReady;
+        private long mTraceTag;
+        private boolean mTraceTagActive;
+        private boolean mShouldWriteToSystemTrace;
+
+        private static class CategoryConfig {
+            public String filter = "";
+            public boolean shouldWriteToATrace = true;
+        }
+
+        public ATrace(long traceTag) {
+            // Look up hidden ATrace APIs.
+            try {
+                mTraceClass = Class.forName("android.os.Trace");
+                mIsTraceTagEnabledMethod = mTraceClass.getMethod("isTagEnabled", long.class);
+                mTraceBeginMethod = mTraceClass.getMethod("traceBegin", long.class, String.class);
+                mTraceEndMethod = mTraceClass.getMethod("traceEnd", long.class);
+                mAsyncTraceBeginMethod = mTraceClass.getMethod(
+                        "asyncTraceBegin", long.class, String.class, int.class);
+                mAsyncTraceEndMethod =
+                        mTraceClass.getMethod("asyncTraceEnd", long.class, String.class, int.class);
+                mSystemPropertiesClass = Class.forName("android.os.SystemProperties");
+                mGetSystemPropertyMethod = mSystemPropertiesClass.getMethod("get", String.class);
+            } catch (Exception e) {
+                // If we hit reflection errors, just disable atrace support.
+                org.chromium.base.Log.w(TAG, "Reflection error", e);
+                mIsTraceTagEnabledMethod = null;
+            }
+            // If there's an active atrace session, also start collecting early trace events.
+            mTraceTag = traceTag;
+            pollConfig();
+        }
+
+        /**
+         * Reads a system property and returns its string value.
+         *
+         * @param name the name of the system property
+         * @return the result string or null if an exception occurred
+         */
+        @Nullable
+        private String getSystemProperty(String name) {
+            try {
+                return (String) mGetSystemPropertyMethod.invoke(mSystemPropertiesClass, name);
+            } catch (Exception e) {
+                return null;
+            }
+        }
+
+        /**
+         * Reads a system property and returns its value as an integer.
+         *
+         * @param name the name of the system property
+         * @return the result integer or null if an exception occurred
+         */
+        private Integer getIntegerSystemProperty(String name) {
+            String property = getSystemProperty(name);
+            if (property == null) return null;
+            try {
+                return Integer.decode(property);
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        }
+
+        private boolean isTraceTagEnabled(long traceTag) {
+            try {
+                return (boolean) mIsTraceTagEnabledMethod.invoke(mTraceClass, traceTag);
+            } catch (Exception e) {
+                return false;
+            }
+        }
+
+        /**
+         * @return true if Chrome/WebView is part of an active ATrace session.
+         */
+        public boolean hasActiveSession() {
+            return mTraceTagActive;
+        }
+
+        /**
+         *  Checks whether ATrace has started or stopped tracing since the last
+         *  call to this function and parses the changed config if necessary.
+         *
+         *  @return true if a session has started or stopped.
+         */
+        @UiThread
+        private boolean pollConfig() {
+            // ATrace's tracing configuration consists of the following system
+            // properties:
+            // - debug.atrace.tags.enableflags: A hex mask of the enabled system
+            //                                  tracing categories (e.g, "0x10").
+            // - debug.atrace.app_number:       The number of per-app config entries
+            //                                  (e.g., "1").
+            // - debug.atrace.app_0:            Config for app 0 (up to
+            //                                  app_number-1).
+            //
+            // Normally the per-app config entry is just the package name, but we
+            // also support setting the trace config with additional parameters,
+            // e.g., assuming "com.android.chrome" as the package name:
+            //
+            // - Enable default categories:   "com.android.chrome"
+            // - Enable specific categories:  "com.android.chrome/cat1:cat2"
+            // - Disable specific categories: "com.android.chrome/*:-cat1"
+            //
+            // Since each app-specific config is limited to 91 characters, multiple
+            // entries can be used to work around the limit.
+            //
+            // If either the "webview" trace tag (0x10) is enabled (for WebView)
+            // or our package name is found in the list of configs, trace events
+            // will be written into ATrace. However, if "-atrace" appears as a
+            // category in any of the app-specific configs, events will only be
+            // written into Chrome's own startup tracing buffer to avoid
+            // duplicate events.
+            boolean traceTagActive = isTraceTagEnabled(mTraceTag);
+            if (mTraceTagActive == traceTagActive) return false;
+            mTraceTagActive = traceTagActive;
+
+            if (!mTraceTagActive) {
+                // A previously active atrace session ended.
+                EarlyTraceEvent.disable();
+                disableNativeATrace();
+                mShouldWriteToSystemTrace = false;
+                ThreadUtils.getUiThreadLooper().setMessageLogging(null);
+                return true;
+            }
+            CategoryConfig config = getCategoryConfigFromATrace();
+
+            // There is an active atrace session. We can output events into one
+            // of the following sinks:
+            //
+            // - To ATrace:
+            //    ...via TraceLog if native has finished loading.
+            //    ...via android.os.Trace otherwise.
+            // - To Chrome's own tracing service (for startup tracing):
+            //    ...via TraceLog if native has finished loading.
+            //    ...via EarlyTraceEvent otherwise.
+            mShouldWriteToSystemTrace = false;
+            if (mNativeTracingReady) {
+                // Native is loaded; start writing to atrace via TraceLog, or in
+                // the case of a Chrome-only trace, setup a startup tracing
+                // session.
+                if (config.shouldWriteToATrace) {
+                    enableNativeATrace(config.filter);
+                } else {
+                    setupATraceStartupTrace(config.filter);
+                }
+            } else {
+                // Native isn't there yet; fall back to android.os.Trace or
+                // EarlyTraceEvent. We can't use the category filter in this
+                // case because Java events don't have categories.
+                if (config.shouldWriteToATrace) {
+                    mShouldWriteToSystemTrace = true;
+                } else {
+                    EarlyTraceEvent.enable();
+                }
+            }
+
+            // For Chrome-only traces, also capture Looper messages. In other
+            // cases, they are logged by the system.
+            if (!config.shouldWriteToATrace) {
+                ThreadUtils.getUiThreadLooper().setMessageLogging(LooperMonitorHolder.sInstance);
+            }
+            return true;
+        }
+
+        private CategoryConfig getCategoryConfigFromATrace() {
+            CategoryConfig config = new CategoryConfig();
+            boolean shouldWriteToATrace = true;
+            Integer appCount = getIntegerSystemProperty("debug.atrace.app_number");
+            // In the case of WebView, the application context may not have been
+            // attached yet. Ignore per-app category settings in that case; they
+            // will be applied when the native library finishes loading.
+            if (appCount != null && appCount > 0 && ContextUtils.getApplicationContext() != null) {
+                // Look for tracing category settings meant for this activity.
+                // For Chrome this is the package name of the browser, while for
+                // WebView this is the package name of the hosting application
+                // (e.g., GMail).
+                String packageName = ContextUtils.getApplicationContext().getPackageName();
+                for (int i = 0; i < appCount; i++) {
+                    String appConfig = getSystemProperty("debug.atrace.app_" + i);
+                    if (appConfig == null || !appConfig.startsWith(packageName)) continue;
+                    String extra = appConfig.substring(packageName.length());
+                    if (!extra.startsWith("/")) continue;
+                    for (String category : extra.substring(1).split(":")) {
+                        if (category.equals("-atrace")) {
+                            config.shouldWriteToATrace = false;
+                            continue;
+                        }
+                        if (config.filter.length() > 0) config.filter += ",";
+                        config.filter += category;
+                    }
+                }
+            }
+            return config;
+        }
+
+        public void onNativeTracingReady() {
+            if (!ThreadUtils.runningOnUiThread()) {
+                ThreadUtils.postOnUiThread(() -> { onNativeTracingReady(); });
+                return;
+            }
+            mNativeTracingReady = true;
+
+            // Since Android R there's no way for an app to be notified of
+            // atrace activations. To work around this, we poll for the latest
+            // state whenever the main run loop becomes idle. Since the check
+            // amounts to one JNI call, the overhead of doing this is
+            // negligible. See queueIdle().
+            Looper.myQueue().addIdleHandler(this);
+
+            // If there already was an active atrace session, we should transfer
+            // it over to native.
+            mTraceTagActive = false;
+            pollConfig();
+        }
+
+        @Override
+        public final boolean queueIdle() {
+            pollConfig();
+            return true;
+        }
+
+        /**
+         *  Instructs Chrome's tracing service to start tracing.
+         *
+         *  @param categoryFilter Set of trace categories to enable.
+         */
+        private void enableNativeATrace(String categoryFilter) {
+            assert mNativeTracingReady;
+            TraceEventJni.get().startATrace(categoryFilter);
+        }
+
+        /**
+         *  Stop a previously started tracing session and flush remaining events
+         *  to ATrace (if enabled).
+         */
+        private void disableNativeATrace() {
+            assert mNativeTracingReady;
+            TraceEventJni.get().stopATrace();
+        }
+
+        /**
+         *  Begins a startup tracing session which will be later taken over by a
+         *  system tracing session.
+         *
+         *  @param categoryFilter Set of trace categories to enable.
+         */
+        private void setupATraceStartupTrace(String categoryFilter) {
+            assert mNativeTracingReady;
+            TraceEventJni.get().setupATraceStartupTrace(categoryFilter);
+        }
+
+        public void traceBegin(String name) {
+            if (!mShouldWriteToSystemTrace) return;
+            try {
+                mTraceBeginMethod.invoke(mTraceClass, mTraceTag, name);
+            } catch (Exception e) {
+                // No-op.
+            }
+        }
+
+        public void traceEnd() {
+            if (!mShouldWriteToSystemTrace) return;
+            try {
+                mTraceEndMethod.invoke(mTraceClass, mTraceTag);
+            } catch (Exception e) {
+                // No-op.
+            }
+        }
+
+        public void asyncTraceBegin(String name, int cookie) {
+            if (!mShouldWriteToSystemTrace) return;
+            try {
+                mAsyncTraceBeginMethod.invoke(mTraceClass, mTraceTag, name, cookie);
+            } catch (Exception e) {
+                // No-op.
+            }
+        }
+
+        public void asyncTraceEnd(String name, int cookie) {
+            if (!mShouldWriteToSystemTrace) return;
+            try {
+                mAsyncTraceEndMethod.invoke(mTraceClass, mTraceTag, name, cookie);
+            } catch (Exception e) {
+                // No-op.
+            }
+        }
+    }
+
+    private static ATrace sATrace;
 
     private static class BasicLooperMonitor implements Printer {
         private static final String LOOPER_TASK_PREFIX = "Looper.dispatch: ";
@@ -56,6 +372,8 @@ public class TraceEvent implements AutoCloseable {
             // will filter the event in this case.
             boolean earlyTracingActive = EarlyTraceEvent.enabled();
             if (sEnabled || earlyTracingActive) {
+                // Note that we don't need to log ATrace events here because the
+                // framework does that for us (M+).
                 mCurrentTarget = getTraceEventName(line);
                 if (sEnabled) {
                     TraceEventJni.get().beginToplevel(mCurrentTarget);
@@ -268,13 +586,6 @@ public class TraceEvent implements AutoCloseable {
     }
 
     /**
-     * Register an enabled observer, such that java traces are always enabled with native.
-     */
-    public static void registerNativeEnabledObserver() {
-        TraceEventJni.get().registerEnabledObserver();
-    }
-
-    /**
      * Notification from native that tracing is enabled/disabled.
      */
     @CalledByNative
@@ -286,40 +597,41 @@ public class TraceEvent implements AutoCloseable {
             sEnabled = enabled;
             // Android M+ systrace logs this on its own. Only log it if not writing to Android
             // systrace.
-            if (sATraceEnabled) return;
-            ThreadUtils.getUiThreadLooper().setMessageLogging(
-                    enabled ? LooperMonitorHolder.sInstance : null);
+            if (sATrace != null && !sATrace.hasActiveSession()) {
+                ThreadUtils.getUiThreadLooper().setMessageLogging(
+                        enabled ? LooperMonitorHolder.sInstance : null);
+            }
         }
     }
 
     /**
      * May enable early tracing depending on the environment.
      *
-     * Must be called after the command-line has been read.
+     * @param traceTag If non-zero, start watching for ATrace sessions on the given tag.
+     * @param readCommandLine If true, also check command line flags to see
+     *                        whether tracing should be turned on.
      */
-    public static void maybeEnableEarlyTracing() {
-        EarlyTraceEvent.maybeEnable();
-        if (EarlyTraceEvent.enabled()) {
+    public static void maybeEnableEarlyTracing(long traceTag, boolean readCommandLine) {
+        // Enable early trace events based on command line flags. This is only
+        // done for Chrome since WebView tracing isn't controlled with command
+        // line flags.
+        if (readCommandLine) {
+            EarlyTraceEvent.maybeEnable();
+        }
+        if (traceTag != 0) {
+            sATrace = new ATrace(traceTag);
+        }
+        if (EarlyTraceEvent.enabled() && (sATrace == null || !sATrace.hasActiveSession())) {
             ThreadUtils.getUiThreadLooper().setMessageLogging(LooperMonitorHolder.sInstance);
         }
     }
 
-    /**
-     * Enables or disabled Android systrace path of Chrome tracing. If enabled, all Chrome
-     * traces will be also output to Android systrace. Because of the overhead of Android
-     * systrace, this is for WebView only.
-     */
-    public static void setATraceEnabled(boolean enabled) {
-        if (sATraceEnabled == enabled) return;
-        sATraceEnabled = enabled;
-        if (enabled) {
-            // Calls TraceEvent.setEnabled(true) via
-            // TraceLog::EnabledStateObserver::OnTraceLogEnabled
-            TraceEventJni.get().startATrace();
-        } else {
-            // Calls TraceEvent.setEnabled(false) via
-            // TraceLog::EnabledStateObserver::OnTraceLogDisabled
-            TraceEventJni.get().stopATrace();
+    public static void onNativeTracingReady() {
+        // Register an enabled observer, such that java traces are always
+        // enabled with native.
+        TraceEventJni.get().registerEnabledObserver();
+        if (sATrace != null) {
+            sATrace.onNativeTracingReady();
         }
     }
 
@@ -356,7 +668,11 @@ public class TraceEvent implements AutoCloseable {
      */
     public static void startAsync(String name, long id) {
         EarlyTraceEvent.startAsync(name, id);
-        if (sEnabled) TraceEventJni.get().startAsync(name, id);
+        if (sEnabled) {
+            TraceEventJni.get().startAsync(name, id);
+        } else if (sATrace != null) {
+            sATrace.asyncTraceBegin(name, (int) id);
+        }
     }
 
     /**
@@ -366,7 +682,11 @@ public class TraceEvent implements AutoCloseable {
      */
     public static void finishAsync(String name, long id) {
         EarlyTraceEvent.finishAsync(name, id);
-        if (sEnabled) TraceEventJni.get().finishAsync(name, id);
+        if (sEnabled) {
+            TraceEventJni.get().finishAsync(name, id);
+        } else if (sATrace != null) {
+            sATrace.asyncTraceEnd(name, (int) id);
+        }
     }
 
     /**
@@ -384,7 +704,11 @@ public class TraceEvent implements AutoCloseable {
      */
     public static void begin(String name, String arg) {
         EarlyTraceEvent.begin(name, false /*isToplevel*/);
-        if (sEnabled) TraceEventJni.get().begin(name, arg);
+        if (sEnabled) {
+            TraceEventJni.get().begin(name, arg);
+        } else if (sATrace != null) {
+            sATrace.traceBegin(name);
+        }
     }
 
     /**
@@ -402,14 +726,19 @@ public class TraceEvent implements AutoCloseable {
      */
     public static void end(String name, String arg) {
         EarlyTraceEvent.end(name, false /*isToplevel*/);
-        if (sEnabled) TraceEventJni.get().end(name, arg);
+        if (sEnabled) {
+            TraceEventJni.get().end(name, arg);
+        } else if (sATrace != null) {
+            sATrace.traceEnd();
+        }
     }
 
     @NativeMethods
     interface Natives {
         void registerEnabledObserver();
-        void startATrace();
+        void startATrace(String categoryFilter);
         void stopATrace();
+        void setupATraceStartupTrace(String categoryFilter);
         void instant(String name, String arg);
         void begin(String name, String arg);
         void end(String name, String arg);

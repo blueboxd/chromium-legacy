@@ -77,32 +77,34 @@ class FaviconBackend {
   // If there is a favicon stored in the database for |icon_url|, a mapping is
   // added to the database from each element in |page_urls| (and all redirects)
   // to |icon_url|.
-  std::vector<favicon_base::FaviconRawBitmapResult>
-  UpdateFaviconMappingsAndFetch(const base::flat_set<GURL>& page_urls,
-                                const GURL& icon_url,
-                                favicon_base::IconType icon_type,
-                                const std::vector<int>& desired_sizes);
+  UpdateFaviconMappingsResult UpdateFaviconMappingsAndFetch(
+      const base::flat_set<GURL>& page_urls,
+      const GURL& icon_url,
+      favicon_base::IconType icon_type,
+      const std::vector<int>& desired_sizes);
 
-  void DeleteFaviconMappings(const base::flat_set<GURL>& page_urls,
-                             favicon_base::IconType icon_type);
+  // Deletes the mappings for the specified page urls. Returns the set of
+  // page urls that changed.
+  base::flat_set<GURL> DeleteFaviconMappings(
+      const base::flat_set<GURL>& page_urls,
+      favicon_base::IconType icon_type);
 
-  // See function of same name in HistoryService for details. Returns true if
-  // the icon changed.
-  bool MergeFavicon(const GURL& page_url,
-                    const GURL& icon_url,
-                    favicon_base::IconType icon_type,
-                    scoped_refptr<base::RefCountedMemory> bitmap_data,
-                    const gfx::Size& pixel_size);
+  // See function of same name in HistoryService for details.
+  MergeFaviconResult MergeFavicon(
+      const GURL& page_url,
+      const GURL& icon_url,
+      favicon_base::IconType icon_type,
+      scoped_refptr<base::RefCountedMemory> bitmap_data,
+      const gfx::Size& pixel_size);
 
   // If |bitmap_type| is ON_DEMAND, the icon for |icon_url| will be modified
   // only if it's not present in the database. In that case, it will be
-  // initially set as expired. Returns whether the new bitmaps were actually
-  // written. |page_urls| must not be empty.
-  bool SetFavicons(const base::flat_set<GURL>& page_urls,
-                   favicon_base::IconType icon_type,
-                   const GURL& icon_url,
-                   const std::vector<SkBitmap>& bitmaps,
-                   FaviconBitmapType bitmap_type);
+  // initially set as expired. |page_urls| must not be empty.
+  SetFaviconsResult SetFavicons(const base::flat_set<GURL>& page_urls,
+                                favicon_base::IconType icon_type,
+                                const GURL& icon_url,
+                                const std::vector<SkBitmap>& bitmaps,
+                                FaviconBitmapType bitmap_type);
 
   // Causes each page in |page_urls_to_write| to be associated to the same
   // icon as the page |page_url_to_read| for icon types matching |icon_types|.
@@ -114,17 +116,19 @@ class FaviconBackend {
       const base::flat_set<GURL>& page_urls_to_write);
 
   // See function of same name in HistoryService for details.
-  bool SetOnDemandFavicons(const GURL& page_url,
-                           favicon_base::IconType icon_type,
-                           const GURL& icon_url,
-                           const std::vector<SkBitmap>& bitmaps);
+  SetFaviconsResult SetOnDemandFavicons(const GURL& page_url,
+                                        favicon_base::IconType icon_type,
+                                        const GURL& icon_url,
+                                        const std::vector<SkBitmap>& bitmaps);
 
   // See function of same name in HistoryService for details.
   bool CanSetOnDemandFavicons(const GURL& page_url,
                               favicon_base::IconType icon_type);
 
-  // See function of same name in HistoryService for details.
-  void SetFaviconsOutOfDateForPage(const GURL& page_url);
+  // See function of same name in HistoryService for details. Returns true
+  // if the mapping was updated, false if |page_url| has no icons associated
+  // with it.
+  bool SetFaviconsOutOfDateForPage(const GURL& page_url);
 
   // See function of same name in HistoryService for details.
   void TouchOnDemandFavicon(const GURL& icon_url);

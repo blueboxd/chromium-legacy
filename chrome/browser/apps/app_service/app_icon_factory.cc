@@ -60,6 +60,7 @@
 #include "chrome/browser/ui/app_list/md_icon_normalizer.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
+#include "ui/gfx/skia_util.h"
 #endif
 
 namespace {
@@ -67,6 +68,11 @@ namespace {
 static const int kInvalidIconResource = 0;
 
 #if defined(OS_CHROMEOS)
+
+// Copy from Android code, all four sides of the ARC foreground and background
+// images are padded 25% of it's width and height.
+float kAndroidAdaptiveIconPaddingPercentage = 1.0f / 8.0f;
+
 using SizeToImageSkiaRep = std::map<int, gfx::ImageSkiaRep>;
 using ScaleToImageSkiaReps = std::map<float, SizeToImageSkiaRep>;
 using MaskImageSkiaReps = std::pair<SkBitmap, ScaleToImageSkiaReps>;
@@ -135,6 +141,61 @@ gfx::ImageSkia LoadMaskImage(const ScaleToSize& scale_to_size) {
   }
 
   return mask_image;
+}
+
+bool IsConsistentPixelSize(const gfx::ImageSkiaRep& rep,
+                           const gfx::ImageSkia& image_skia) {
+  // The pixel size calculation method must be consistent with
+  // ArcAppIconDescriptor::GetSizeInPixels.
+  return rep.pixel_width() == roundf(image_skia.width() * rep.scale()) &&
+         rep.pixel_height() == roundf(image_skia.height() * rep.scale());
+}
+
+// Return whether the image_reps in |image_skia| should be chopped for
+// paddings. If the image_rep's pixel size is inconsistent with the scaled width
+// and height, that means the image_rep has paddings and should be chopped to
+// remove paddings. Otherwise, the image_rep doesn't have padding, and should
+// not be chopped.
+bool ShouldExtractSubset(const gfx::ImageSkia& image_skia) {
+  DCHECK(!image_skia.image_reps().empty());
+  for (const auto& rep : image_skia.image_reps()) {
+    if (!IsConsistentPixelSize(rep, image_skia)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+// Chop paddings for all four sides of |image_skia|, and resize image_rep to the
+// appropriate size.
+gfx::ImageSkia ExtractSubsetForArcImage(const gfx::ImageSkia& image_skia) {
+  gfx::ImageSkia subset_image;
+  for (const auto& rep : image_skia.image_reps()) {
+    if (IsConsistentPixelSize(rep, image_skia)) {
+      continue;
+    }
+
+    int padding_width =
+        rep.pixel_width() * kAndroidAdaptiveIconPaddingPercentage;
+    int padding_height =
+        rep.pixel_height() * kAndroidAdaptiveIconPaddingPercentage;
+
+    // Chop paddings for all four sides of |image_skia|.
+    SkBitmap dst;
+    bool success = rep.GetBitmap().extractSubset(
+        &dst,
+        RectToSkIRect(gfx::Rect(padding_width, padding_height,
+                                rep.pixel_width() - 2 * padding_width,
+                                rep.pixel_height() - 2 * padding_height)));
+    DCHECK(success);
+
+    // Resize |rep| to size_hint_in_dip * rep.scale().
+    const SkBitmap resized = skia::ImageOperations::Resize(
+        dst, skia::ImageOperations::RESIZE_LANCZOS3,
+        image_skia.width() * rep.scale(), image_skia.height() * rep.scale());
+    subset_image.AddRepresentation(gfx::ImageSkiaRep(resized, rep.scale()));
+  }
+  return subset_image;
 }
 
 #endif
@@ -988,10 +1049,28 @@ gfx::ImageSkia ApplyBackgroundAndMask(const gfx::ImageSkia& image) {
 gfx::ImageSkia CompositeImagesAndApplyMask(
     const gfx::ImageSkia& foreground_image,
     const gfx::ImageSkia& background_image) {
+  bool should_extract_subset_foreground = ShouldExtractSubset(foreground_image);
+  bool should_extract_subset_background = ShouldExtractSubset(background_image);
+
+  if (!should_extract_subset_foreground && !should_extract_subset_background) {
+    return gfx::ImageSkiaOperations::CreateMaskedImage(
+        gfx::ImageSkiaOperations::CreateSuperimposedImage(background_image,
+                                                          foreground_image),
+        LoadMaskImage(GetScaleToSize(foreground_image)));
+  }
+
+  // If the foreground or background image has padding, chop the padding of the
+  // four sides, and resize the image_reps for different scales.
+  gfx::ImageSkia foreground = should_extract_subset_foreground
+                                  ? ExtractSubsetForArcImage(foreground_image)
+                                  : foreground_image;
+  gfx::ImageSkia background = should_extract_subset_background
+                                  ? ExtractSubsetForArcImage(background_image)
+                                  : background_image;
+
   return gfx::ImageSkiaOperations::CreateMaskedImage(
-      gfx::ImageSkiaOperations::CreateSuperimposedImage(background_image,
-                                                        foreground_image),
-      LoadMaskImage(GetScaleToSize(foreground_image)));
+      gfx::ImageSkiaOperations::CreateSuperimposedImage(background, foreground),
+      LoadMaskImage(GetScaleToSize(foreground)));
 }
 
 void ArcRawIconPngDataToImageSkia(

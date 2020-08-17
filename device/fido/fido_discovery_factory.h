@@ -42,6 +42,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDiscoveryFactory {
   virtual std::unique_ptr<FidoDiscoveryBase> Create(
       FidoTransportProtocol transport);
 
+  // Returns whether the current instance is an override injected by the
+  // WebAuthn testing API.
+  virtual bool IsTestOverride();
+
   // set_cable_data configures caBLE obtained via a WebAuthn extension.
   void set_cable_data(std::vector<CableDiscoveryData> cable_data,
                       base::Optional<QRGeneratorKey> qr_generator_key);

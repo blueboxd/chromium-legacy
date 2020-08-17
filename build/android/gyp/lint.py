@@ -23,6 +23,15 @@ from util import manifest_utils
 
 _LINT_MD_URL = 'https://chromium.googlesource.com/chromium/src/+/master/build/android/docs/lint.md'  # pylint: disable=line-too-long
 
+# These checks are not useful for chromium.
+_DISABLED_ALWAYS = [
+    "Assert",  # R8 --force-enable-assertions is used to enable java asserts.
+    "MissingApplicationIcon",  # False positive for non-production targets.
+    "SwitchIntDef",  # Many C++ enums are not used at all in java.
+    "UniqueConstants",  # Chromium enums allow aliases.
+    "UnusedAttribute",  # Chromium apks have various minSdkVersion values.
+]
+
 # These checks are not useful for test targets and adds an unnecessary burden
 # to suppress them.
 _DISABLED_FOR_TESTS = [
@@ -64,13 +73,13 @@ def _GenerateProjectFile(android_manifest,
                          android_sdk_version=None):
   project = ElementTree.Element('project')
   root = ElementTree.SubElement(project, 'root')
-  # An absolute path helps error paths to be shorter.
-  root.set('dir', os.path.abspath(build_utils.DIR_SOURCE_ROOT))
+  # Run lint from output directory: crbug.com/1115594
+  root.set('dir', os.getcwd())
   sdk = ElementTree.SubElement(project, 'sdk')
   # Lint requires that the sdk path be an absolute path.
   sdk.set('dir', os.path.abspath(android_sdk_root))
   cache = ElementTree.SubElement(project, 'cache')
-  cache.set('dir', _SrcRelative(cache_dir))
+  cache.set('dir', cache_dir)
   main_module = ElementTree.SubElement(project, 'module')
   main_module.set('name', 'main')
   main_module.set('android', 'true')
@@ -78,35 +87,45 @@ def _GenerateProjectFile(android_manifest,
   if android_sdk_version:
     main_module.set('compile_sdk_version', android_sdk_version)
   manifest = ElementTree.SubElement(main_module, 'manifest')
-  manifest.set('file', _SrcRelative(android_manifest))
+  manifest.set('file', android_manifest)
   if srcjar_sources:
     for srcjar_file in srcjar_sources:
       src = ElementTree.SubElement(main_module, 'src')
-      src.set('file', _SrcRelative(srcjar_file))
+      src.set('file', srcjar_file)
   if sources:
     for source in sources:
       src = ElementTree.SubElement(main_module, 'src')
-      src.set('file', _SrcRelative(source))
+      src.set('file', source)
   if classpath:
     for file_path in classpath:
       classpath_element = ElementTree.SubElement(main_module, 'classpath')
-      classpath_element.set('file', _SrcRelative(file_path))
+      classpath_element.set('file', file_path)
   if resource_sources:
     for resource_file in resource_sources:
       resource = ElementTree.SubElement(main_module, 'resource')
-      resource.set('file', _SrcRelative(resource_file))
+      resource.set('file', resource_file)
   return project
 
 
-def _GenerateAndroidManifest(original_manifest_path, min_sdk_version):
+def _GenerateAndroidManifest(original_manifest_path, min_sdk_version,
+                             android_sdk_version):
   # Set minSdkVersion in the manifest to the correct value.
-  doc, manifest, _ = manifest_utils.ParseManifest(original_manifest_path)
+  doc, manifest, app_node = manifest_utils.ParseManifest(original_manifest_path)
+
+  if app_node.find(
+      '{%s}allowBackup' % manifest_utils.ANDROID_NAMESPACE) is None:
+    # Assume no backup is intended, appeases AllowBackup lint check and keeping
+    # it working for manifests that do define android:allowBackup.
+    app_node.set('{%s}allowBackup' % manifest_utils.ANDROID_NAMESPACE, 'false')
+
   uses_sdk = manifest.find('./uses-sdk')
   if uses_sdk is None:
     uses_sdk = ElementTree.Element('uses-sdk')
     manifest.insert(0, uses_sdk)
   uses_sdk.set('{%s}minSdkVersion' % manifest_utils.ANDROID_NAMESPACE,
                min_sdk_version)
+  uses_sdk.set('{%s}targetSdkVersion' % manifest_utils.ANDROID_NAMESPACE,
+               android_sdk_version)
   return doc
 
 
@@ -140,18 +159,20 @@ def _RunLint(lint_binary_path,
   logging.info('Lint starting')
 
   cmd = [
-      _SrcRelative(lint_binary_path),
+      lint_binary_path,
       # Consider all lint warnings as errors. Warnings should either always be
       # fixed or completely suppressed in suppressions.xml. They should not
       # bloat build output if they are not important enough to be fixed.
       '-Werror',
       '--exitcode',  # Sets error code if there are errors.
       '--quiet',  # Silences lint's "." progress updates.
+      '--disable',
+      ','.join(_DISABLED_ALWAYS),
   ]
   if baseline:
-    cmd.extend(['--baseline', _SrcRelative(baseline)])
+    cmd.extend(['--baseline', baseline])
   if config_path:
-    cmd.extend(['--config', _SrcRelative(config_path)])
+    cmd.extend(['--config', config_path])
   if testonly_target:
     cmd.extend(['--disable', ','.join(_DISABLED_FOR_TESTS)])
 
@@ -161,11 +182,11 @@ def _RunLint(lint_binary_path,
 
   logging.info('Generating Android manifest file')
   android_manifest_tree = _GenerateAndroidManifest(manifest_path,
-                                                   min_sdk_version)
+                                                   min_sdk_version,
+                                                   android_sdk_version)
   # Include the rebased manifest_path in the lint generated path so that it is
   # clear in error messages where the original AndroidManifest.xml came from.
-  lint_android_manifest_path = os.path.join(lint_gen_dir,
-                                            _SrcRelative(manifest_path))
+  lint_android_manifest_path = os.path.join(lint_gen_dir, manifest_path)
   logging.info('Writing xml file %s', lint_android_manifest_path)
   _WriteXmlFile(android_manifest_tree.getroot(), lint_android_manifest_path)
 
@@ -206,14 +227,15 @@ def _RunLint(lint_binary_path,
   project_xml_path = os.path.join(lint_gen_dir, 'project.xml')
   logging.info('Writing xml file %s', project_xml_path)
   _WriteXmlFile(project_file_root, project_xml_path)
-  cmd += ['--project', _SrcRelative(project_xml_path)]
+  cmd += ['--project', project_xml_path]
 
   logging.info('Preparing environment variables')
   env = os.environ.copy()
   # It is important that lint uses the checked-in JDK11 as it is almost 50%
   # faster than JDK8.
-  env['JAVA_HOME'] = os.path.relpath(build_utils.JAVA_HOME,
-                                     build_utils.DIR_SOURCE_ROOT)
+  env['JAVA_HOME'] = build_utils.JAVA_HOME
+  # This is necessary so that lint errors print stack traces in stdout.
+  env['LINT_PRINT_STACKTRACE'] = 'true'
   # This filter is necessary for JDK11.
   stderr_filter = build_utils.FilterReflectiveAccessJavaWarnings
 
@@ -223,7 +245,6 @@ def _RunLint(lint_binary_path,
     # Lint outputs "No issues found" if it succeeds, and uses stderr when it
     # fails, so we can safely ignore stdout.
     build_utils.CheckOutput(cmd,
-                            cwd=build_utils.DIR_SOURCE_ROOT,
                             env=env,
                             stderr_filter=stderr_filter)
     end = time.time() - start

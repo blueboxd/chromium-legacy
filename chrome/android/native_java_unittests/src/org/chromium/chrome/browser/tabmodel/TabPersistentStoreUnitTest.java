@@ -18,6 +18,7 @@ import static org.mockito.Mockito.when;
 
 import android.text.TextUtils;
 
+import org.junit.Assert;
 import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -31,17 +32,34 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabState;
+import org.chromium.chrome.browser.tabmodel.TabPersistentStore.TabModelSelectorMetadata;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore.TabPersistentStoreObserver;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore.TabRestoreDetails;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.content_public.browser.LoadUrlParams;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Unit tests for the tab persistent store logic.
  */
 public class TabPersistentStoreUnitTest {
+    private static final Integer REGULAR_TAB_ID_1 = 1;
+    private static final Integer INCOGNITO_TAB_ID_1 = 21;
+    private static final Integer INCOGNITO_TAB_ID_2 = 22;
+    private static final Integer RESTORE_TAB_ID_1 = 31;
+    private static final Integer RESTORE_TAB_ID_2 = 32;
+    private static final Integer RESTORE_TAB_ID_3 = 33;
+
+    private static final String REGULAR_TAB_STRING_1 = "https://foo.com";
+    private static final String INCOGNITO_TAB_STRING_1 = "https://bar.com";
+    private static final String INCOGNITO_TAB_STRING_2 = "https://baz.com";
+    private static final String RESTORE_TAB_STRING_1 = "https://qux.com";
+    private static final String RESTORE_TAB_STRING_2 = "https://quux.com";
+    private static final String RESTORE_TAB_STRING_3 = "https://quuz.com";
+
     @Mock
     private TabPersistencePolicy mPersistencePolicy;
     @Mock
@@ -87,8 +105,10 @@ public class TabPersistentStoreUnitTest {
     public void tearDown() throws Exception {
         // Flush pending PersistentStore tasks.
         final AtomicBoolean flushed = new AtomicBoolean(false);
-        mPersistentStore.getTaskRunnerForTests().postTask(() -> { flushed.set(true); });
-        UnitTestUtils.pollUiThread(() -> flushed.get());
+        if (mPersistentStore != null) {
+            mPersistentStore.getTaskRunnerForTests().postTask(() -> { flushed.set(true); });
+            UnitTestUtils.pollUiThread(() -> flushed.get());
+        }
     }
 
     @CalledByNativeJavaTest
@@ -278,6 +298,90 @@ public class TabPersistentStoreUnitTest {
         mPersistentStore.restoreTab(emptyNtpDetails, null, true);
 
         verifyZeroInteractions(mIncognitoTabCreator);
+    }
+
+    @CalledByNativeJavaTest
+    @Feature("TabPersistentStore")
+    public void testSerializeTabModelSelector() throws IOException {
+        setupSerializationTestMocks();
+        TabModelSelectorMetadata metadata =
+                TabPersistentStore.serializeTabModelSelector(mTabModelSelector, null);
+
+        Assert.assertEquals("Incorrect index for regular", 0, metadata.normalModelMetadata.index);
+        Assert.assertEquals(
+                "Incorrect number of tabs in regular", 1, metadata.normalModelMetadata.ids.size());
+        Assert.assertEquals("Incorrect URL for regular tab.", REGULAR_TAB_STRING_1,
+                metadata.normalModelMetadata.urls.get(0));
+
+        Assert.assertEquals(
+                "Incorrect index for incognito", 1, metadata.incognitoModelMetadata.index);
+        Assert.assertEquals("Incorrect number of tabs in incognito", 2,
+                metadata.incognitoModelMetadata.ids.size());
+        Assert.assertEquals("Incorrect URL for first incognito tab.", INCOGNITO_TAB_STRING_1,
+                metadata.incognitoModelMetadata.urls.get(0));
+        Assert.assertEquals("Incorrect URL for second incognito tab.", INCOGNITO_TAB_STRING_2,
+                metadata.incognitoModelMetadata.urls.get(1));
+    }
+
+    @CalledByNativeJavaTest
+    @Feature("TabPersistentStore")
+    public void testSerializeTabModelSelector_tabsBeingRestored() throws IOException {
+        setupSerializationTestMocks();
+        TabRestoreDetails regularTabRestoreDetails =
+                new TabRestoreDetails(RESTORE_TAB_ID_1, 2, false, RESTORE_TAB_STRING_1, false);
+        TabRestoreDetails incognitoTabRestoreDetails =
+                new TabRestoreDetails(RESTORE_TAB_ID_2, 3, true, RESTORE_TAB_STRING_2, false);
+        TabRestoreDetails unknownTabRestoreDetails =
+                new TabRestoreDetails(RESTORE_TAB_ID_3, 4, null, RESTORE_TAB_STRING_3, false);
+        ArrayList<TabRestoreDetails> tabRestoreDetails = new ArrayList<TabRestoreDetails>() {};
+        tabRestoreDetails.add(regularTabRestoreDetails);
+        tabRestoreDetails.add(incognitoTabRestoreDetails);
+        tabRestoreDetails.add(unknownTabRestoreDetails);
+
+        TabModelSelectorMetadata metadata =
+                TabPersistentStore.serializeTabModelSelector(mTabModelSelector, tabRestoreDetails);
+
+        Assert.assertEquals("Incorrect index for regular", 0, metadata.normalModelMetadata.index);
+        Assert.assertEquals(
+                "Incorrect number of tabs in regular", 2, metadata.normalModelMetadata.ids.size());
+        Assert.assertEquals("Incorrect URL for first regular tab.", REGULAR_TAB_STRING_1,
+                metadata.normalModelMetadata.urls.get(0));
+        Assert.assertEquals("Incorrect URL for first second tab.", RESTORE_TAB_STRING_1,
+                metadata.normalModelMetadata.urls.get(1));
+
+        // TabRestoreDetails with unknown isIncognito should be appended to incognito list.
+        Assert.assertEquals(
+                "Incorrect index for incognito", 1, metadata.incognitoModelMetadata.index);
+        Assert.assertEquals("Incorrect number of tabs in incognito", 4,
+                metadata.incognitoModelMetadata.ids.size());
+        Assert.assertEquals("Incorrect URL for first incognito tab.", INCOGNITO_TAB_STRING_1,
+                metadata.incognitoModelMetadata.urls.get(0));
+        Assert.assertEquals("Incorrect URL for second incognito tab.", INCOGNITO_TAB_STRING_2,
+                metadata.incognitoModelMetadata.urls.get(1));
+        Assert.assertEquals("Incorrect URL for third incognito tab.", RESTORE_TAB_STRING_2,
+                metadata.incognitoModelMetadata.urls.get(2));
+        Assert.assertEquals("Incorrect URL for fourth \"incognito\" tab.", RESTORE_TAB_STRING_3,
+                metadata.incognitoModelMetadata.urls.get(3));
+    }
+
+    private void setupSerializationTestMocks() {
+        when(mNormalTabModel.getCount()).thenReturn(1);
+        when(mNormalTabModel.index()).thenReturn(0);
+        TabImpl regularTab1 = mock(TabImpl.class);
+        when(regularTab1.getUrlString()).thenReturn(REGULAR_TAB_STRING_1);
+        when(mNormalTabModel.getTabAt(0)).thenReturn(regularTab1);
+
+        when(mIncognitoTabModel.getCount()).thenReturn(2);
+        when(mIncognitoTabModel.index()).thenReturn(1);
+        TabImpl incognitoTab1 = mock(TabImpl.class);
+        when(incognitoTab1.getUrlString()).thenReturn(INCOGNITO_TAB_STRING_1);
+        when(incognitoTab1.isIncognito()).thenReturn(true);
+        when(mIncognitoTabModel.getTabAt(0)).thenReturn(incognitoTab1);
+
+        TabImpl incognitoTab2 = mock(TabImpl.class);
+        when(incognitoTab2.getUrlString()).thenReturn(INCOGNITO_TAB_STRING_2);
+        when(incognitoTab2.isIncognito()).thenReturn(true);
+        when(mIncognitoTabModel.getTabAt(1)).thenReturn(incognitoTab2);
     }
 
     private static class LoadUrlParamsUrlMatcher implements ArgumentMatcher<LoadUrlParams> {

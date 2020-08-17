@@ -200,7 +200,7 @@ bool IsSensitiveGoogleClientUrl(const extensions::WebRequestInfo& request) {
 
   base::StringPiece host = url.host_piece();
 
-  while (host.ends_with("."))
+  while (base::EndsWith(host, "."))
     host.remove_suffix(1u);
 
   // Check for "clients[0-9]*.google.com" hosts.

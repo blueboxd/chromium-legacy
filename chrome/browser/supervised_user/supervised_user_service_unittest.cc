@@ -23,9 +23,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/browser/supervised_user/permission_request_creator.h"
+#include "chrome/browser/supervised_user/supervised_user_allowlist_service.h"
 #include "chrome/browser/supervised_user/supervised_user_features.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
-#include "chrome/browser/supervised_user/supervised_user_whitelist_service.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
@@ -122,7 +122,7 @@ class SiteListObserver : public AsyncTestHelper {
   SiteListObserver() {}
   ~SiteListObserver() {}
 
-  void Init(SupervisedUserWhitelistService* service) {
+  void Init(SupervisedUserAllowlistService* service) {
     service->AddSiteListsChangedCallback(base::Bind(
         &SiteListObserver::OnSiteListsChanged, base::Unretained(this)));
 
@@ -352,7 +352,7 @@ class SupervisedUserServiceExtensionTestBase
     SupervisedUserService* service =
         SupervisedUserServiceFactory::GetForProfile(profile_.get());
     service->Init();
-    site_list_observer_.Init(service->GetWhitelistService());
+    site_list_observer_.Init(service->GetAllowlistService());
 
     SupervisedUserURLFilter* url_filter = service->GetURLFilter();
     url_filter->SetBlockingTaskRunnerForTesting(
@@ -567,14 +567,14 @@ TEST_F(SupervisedUserServiceExtensionTest, InstallContentPacks) {
   EXPECT_EQ(SupervisedUserURLFilter::WARN,
             url_filter->GetFilteringBehaviorForURL(youtube_url));
 
-  // Load a whitelist.
+  // Load a allowlist.
   base::FilePath test_data_dir;
   ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
-  SupervisedUserWhitelistService* whitelist_service =
-      supervised_user_service->GetWhitelistService();
-  base::FilePath whitelist_path =
+  SupervisedUserAllowlistService* allowlist_service =
+      supervised_user_service->GetAllowlistService();
+  base::FilePath allowlist_path =
       test_data_dir.AppendASCII("whitelists/content_pack/site_list.json");
-  whitelist_service->LoadWhitelistForTesting(id1, title1, whitelist_path);
+  allowlist_service->LoadAllowlistForTesting(id1, title1, allowlist_path);
   site_list_observer_.Wait();
 
   ASSERT_EQ(1u, site_list_observer_.site_lists().size());
@@ -588,10 +588,10 @@ TEST_F(SupervisedUserServiceExtensionTest, InstallContentPacks) {
   EXPECT_EQ(SupervisedUserURLFilter::WARN,
             url_filter->GetFilteringBehaviorForURL(moose_url));
 
-  // Load a second whitelist.
-  whitelist_path =
+  // Load a second allowlist.
+  allowlist_path =
       test_data_dir.AppendASCII("whitelists/content_pack_2/site_list.json");
-  whitelist_service->LoadWhitelistForTesting(id2, title2, whitelist_path);
+  allowlist_service->LoadAllowlistForTesting(id2, title2, allowlist_path);
   site_list_observer_.Wait();
 
   ASSERT_EQ(2u, site_list_observer_.site_lists().size());
@@ -608,8 +608,8 @@ TEST_F(SupervisedUserServiceExtensionTest, InstallContentPacks) {
   EXPECT_EQ(SupervisedUserURLFilter::ALLOW,
             url_filter->GetFilteringBehaviorForURL(moose_url));
 
-  // Unload the first whitelist.
-  whitelist_service->UnloadWhitelist(id1);
+  // Unload the first allowlist.
+  allowlist_service->UnloadAllowlist(id1);
   site_list_observer_.Wait();
 
   ASSERT_EQ(1u, site_list_observer_.site_lists().size());

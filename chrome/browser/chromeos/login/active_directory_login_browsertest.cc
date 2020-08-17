@@ -104,6 +104,7 @@ class ActiveDirectoryLoginAutocompleteTest : public ActiveDirectoryLoginTest {
 // Test successful Active Directory login.
 IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest, LoginSuccess) {
   ASSERT_TRUE(InstallAttributes::Get()->IsActiveDirectoryManaged());
+  ad_login_.NavigateToGaiaScreen();
   ad_login_.TestNoError();
   ad_login_.TestDomainHidden();
   ad_login_.SubmitActiveDirectoryCredentials(test_user_, kPassword);
@@ -114,6 +115,7 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest, LoginSuccess) {
 // Tests that the Kerberos SSO environment variables are set correctly after
 // an Active Directory log in.
 IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest, KerberosVarsCopied) {
+  ad_login_.NavigateToGaiaScreen();
   ad_login_.TestNoError();
   ad_login_.TestDomainHidden();
   ad_login_.SubmitActiveDirectoryCredentials(test_user_, kPassword);
@@ -133,6 +135,7 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest, KerberosVarsCopied) {
 // Test different UI errors for Active Directory login.
 IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest, LoginErrors) {
   ASSERT_TRUE(InstallAttributes::Get()->IsActiveDirectoryManaged());
+  ad_login_.NavigateToGaiaScreen();
   ad_login_.TestNoError();
   ad_login_.TestDomainHidden();
 
@@ -173,6 +176,7 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest, LoginErrors) {
 // Test successful Active Directory login from the password change screen.
 IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest, PasswordChange_LoginSuccess) {
   ASSERT_TRUE(InstallAttributes::Get()->IsActiveDirectoryManaged());
+  ad_login_.NavigateToGaiaScreen();
   ad_login_.TestLoginVisible();
   ad_login_.TestDomainHidden();
 
@@ -189,6 +193,7 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest, PasswordChange_LoginSuccess) {
 // Test different UI errors for Active Directory password change screen.
 IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest, PasswordChange_UIErrors) {
   ASSERT_TRUE(InstallAttributes::Get()->IsActiveDirectoryManaged());
+  ad_login_.NavigateToGaiaScreen();
   ad_login_.TestLoginVisible();
   ad_login_.TestDomainHidden();
 
@@ -223,6 +228,7 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest, PasswordChange_UIErrors) {
 IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest,
                        PasswordChange_ReopenClearErrors) {
   ASSERT_TRUE(InstallAttributes::Get()->IsActiveDirectoryManaged());
+  ad_login_.NavigateToGaiaScreen();
   ad_login_.TestLoginVisible();
   ad_login_.TestDomainHidden();
 
@@ -233,6 +239,7 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest,
   ad_login_.TestPasswordChangeOldPasswordError();
 
   ad_login_.ClosePasswordChangeScreen();
+  ad_login_.NavigateToGaiaScreen();
   ad_login_.TestLoginVisible();
   ad_login_.TriggerPasswordChangeScreen();
   ad_login_.TestPasswordChangeNoErrors();
@@ -241,6 +248,7 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginTest,
 // Tests that autocomplete works. Submits username without domain.
 IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginAutocompleteTest, LoginSuccess) {
   ASSERT_TRUE(InstallAttributes::Get()->IsActiveDirectoryManaged());
+  ad_login_.NavigateToGaiaScreen();
   ad_login_.TestNoError();
   ad_login_.TestDomainVisible();
 
@@ -253,7 +261,7 @@ IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginAutocompleteTest, LoginSuccess) {
 // Tests that user could override autocomplete domain.
 IN_PROC_BROWSER_TEST_F(ActiveDirectoryLoginAutocompleteTest, TestAutocomplete) {
   ASSERT_TRUE(InstallAttributes::Get()->IsActiveDirectoryManaged());
-
+  ad_login_.NavigateToGaiaScreen();
   ad_login_.TestLoginVisible();
   ad_login_.TestDomainVisible();
   fake_authpolicy_client()->set_auth_error(authpolicy::ERROR_BAD_PASSWORD);

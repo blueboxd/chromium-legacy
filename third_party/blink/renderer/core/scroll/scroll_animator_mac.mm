@@ -1001,7 +1001,8 @@ void ScrollAnimatorMac::UpdateScrollerStyle() {
     // frameRect to the new thickness, and the re-layout below will ensure the
     // offset
     // and length are properly updated.
-    int thickness = mac_theme->ScrollbarThickness();
+    int thickness =
+        mac_theme->ScrollbarThickness(vertical_scrollbar->ScaleFromDIP());
     vertical_scrollbar->SetFrameRect(IntRect(0, 0, thickness, thickness));
   }
 
@@ -1029,7 +1030,8 @@ void ScrollAnimatorMac::UpdateScrollerStyle() {
     // frameRect to the new thickness, and the re-layout below will ensure the
     // offset
     // and length are properly updated.
-    int thickness = mac_theme->ScrollbarThickness();
+    int thickness =
+        mac_theme->ScrollbarThickness(horizontal_scrollbar->ScaleFromDIP());
     horizontal_scrollbar->SetFrameRect(IntRect(0, 0, thickness, thickness));
   }
 

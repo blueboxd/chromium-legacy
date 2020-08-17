@@ -16,7 +16,7 @@ namespace {
 enum class SafeSitesState {
   ENABLED,
   DISABLED,
-  BLACKLIST_ONLY,
+  DENYLIST_ONLY,
   ONLINE_CHECK_ONLY
 };
 
@@ -39,7 +39,7 @@ SafeSitesState GetState(const Profile* profile) {
   if (trial_group == "Disabled")
     return SafeSitesState::DISABLED;
   if (trial_group == "BlacklistOnly")
-    return SafeSitesState::BLACKLIST_ONLY;
+    return SafeSitesState::DENYLIST_ONLY;
   if (trial_group == "OnlineCheckOnly")
     return SafeSitesState::ONLINE_CHECK_ONLY;
 
@@ -50,10 +50,10 @@ SafeSitesState GetState(const Profile* profile) {
 
 namespace supervised_users {
 
-bool IsSafeSitesBlacklistEnabled(const Profile* profile) {
+bool IsSafeSitesDenylistEnabled(const Profile* profile) {
   SafeSitesState state = GetState(profile);
   return state == SafeSitesState::ENABLED ||
-         state == SafeSitesState::BLACKLIST_ONLY;
+         state == SafeSitesState::DENYLIST_ONLY;
 }
 
 bool IsSafeSitesOnlineCheckEnabled(const Profile* profile) {

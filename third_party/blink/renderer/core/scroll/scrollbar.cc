@@ -32,8 +32,8 @@
 #include "third_party/blink/public/common/input/web_mouse_event.h"
 #include "third_party/blink/public/platform/web_scrollbar_overlay_color_theme.h"
 #include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
-#include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/scroll/scroll_animator_base.h"
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
@@ -46,12 +46,10 @@ namespace blink {
 Scrollbar::Scrollbar(ScrollableArea* scrollable_area,
                      ScrollbarOrientation orientation,
                      Element* style_source,
-                     ChromeClient* chrome_client,
                      ScrollbarTheme* theme)
     : scrollable_area_(scrollable_area),
       orientation_(orientation),
       theme_(theme ? *theme : scrollable_area->GetPageScrollbarTheme()),
-      chrome_client_(chrome_client),
       visible_size_(0),
       total_size_(0),
       current_pos_(0),
@@ -73,19 +71,8 @@ Scrollbar::Scrollbar(ScrollableArea* scrollable_area,
       scrollbar_manipulation_in_progress_on_cc_thread_(false),
       style_source_(style_source) {
   theme_.RegisterScrollbar(*this);
-
-  // FIXME: This is ugly and would not be necessary if we fix cross-platform
-  // code to actually query for scrollbar thickness and use it when sizing
-  // scrollbars (rather than leaving one dimension of the scrollbar alone when
-  // sizing).
-  int thickness = theme_.ScrollbarThickness();
-  theme_scrollbar_thickness_ = thickness;
-  if (chrome_client_) {
-    thickness = chrome_client_->WindowToViewportScalar(
-        scrollable_area_->GetLayoutBox()->GetFrame(), thickness);
-  }
+  int thickness = theme_.ScrollbarThickness(ScaleFromDIP());
   frame_rect_ = IntRect(0, 0, thickness, thickness);
-
   current_pos_ = ScrollableAreaCurrentPos();
 }
 
@@ -93,7 +80,6 @@ Scrollbar::~Scrollbar() = default;
 
 void Scrollbar::Trace(Visitor* visitor) const {
   visitor->Trace(scrollable_area_);
-  visitor->Trace(chrome_client_);
   visitor->Trace(style_source_);
 }
 
@@ -707,10 +693,9 @@ void Scrollbar::SetEnabled(bool e) {
 
 int Scrollbar::ScrollbarThickness() const {
   int thickness = Orientation() == kHorizontalScrollbar ? Height() : Width();
-  if (!thickness || !chrome_client_)
+  if (!thickness || IsCustomScrollbar())
     return thickness;
-  return chrome_client_->WindowToViewportScalar(
-      scrollable_area_->GetLayoutBox()->GetFrame(), theme_scrollbar_thickness_);
+  return theme_.ScrollbarThickness(ScaleFromDIP());
 }
 
 bool Scrollbar::IsSolidColor() const {
@@ -818,6 +803,10 @@ void Scrollbar::SetNeedsPaintInvalidation(ScrollbarPart invalid_parts) {
 CompositorElementId Scrollbar::GetElementId() const {
   DCHECK(scrollable_area_);
   return scrollable_area_->GetScrollbarElementId(orientation_);
+}
+
+float Scrollbar::ScaleFromDIP() const {
+  return scrollable_area_ ? scrollable_area_->ScaleFromDIP() : 1.0f;
 }
 
 float Scrollbar::EffectiveZoom() const {

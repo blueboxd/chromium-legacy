@@ -49,9 +49,10 @@ ScrollbarThemeOverlay& ScrollbarThemeOverlay::GetInstance() {
   return theme;
 }
 
-ScrollbarThemeOverlay::ScrollbarThemeOverlay(int thumb_thickness,
-                                             int scrollbar_margin)
-    : thumb_thickness_(thumb_thickness), scrollbar_margin_(scrollbar_margin) {}
+ScrollbarThemeOverlay::ScrollbarThemeOverlay(int thumb_thickness_dip,
+                                             int scrollbar_margin_dip)
+    : thumb_thickness_dip_(thumb_thickness_dip),
+      scrollbar_margin_dip_(scrollbar_margin_dip) {}
 
 bool ScrollbarThemeOverlay::ShouldRepaintAllPartsOnInvalidation() const {
   return false;
@@ -64,12 +65,12 @@ ScrollbarPart ScrollbarThemeOverlay::PartsToInvalidateOnThumbPositionChange(
   return kNoPart;
 }
 
-int ScrollbarThemeOverlay::ScrollbarThickness() {
-  return thumb_thickness_ + scrollbar_margin_;
+int ScrollbarThemeOverlay::ScrollbarThickness(float scale_from_dip) {
+  return ThumbThickness(scale_from_dip) + ScrollbarMargin(scale_from_dip);
 }
 
-int ScrollbarThemeOverlay::ScrollbarMargin() const {
-  return scrollbar_margin_;
+int ScrollbarThemeOverlay::ScrollbarMargin(float scale_from_dip) const {
+  return scrollbar_margin_dip_ * scale_from_dip;
 }
 
 bool ScrollbarThemeOverlay::UsesOverlayScrollbars() const {
@@ -119,26 +120,22 @@ IntRect ScrollbarThemeOverlay::ForwardButtonRect(const Scrollbar&) {
 IntRect ScrollbarThemeOverlay::TrackRect(const Scrollbar& scrollbar) {
   IntRect rect = scrollbar.FrameRect();
   if (scrollbar.Orientation() == kHorizontalScrollbar)
-    rect.InflateX(-scrollbar_margin_);
+    rect.InflateX(-ScrollbarMargin(scrollbar.ScaleFromDIP()));
   else
-    rect.InflateY(-scrollbar_margin_);
+    rect.InflateY(-ScrollbarMargin(scrollbar.ScaleFromDIP()));
   return rect;
 }
 
 IntRect ScrollbarThemeOverlay::ThumbRect(const Scrollbar& scrollbar) {
   IntRect rect = ScrollbarTheme::ThumbRect(scrollbar);
   if (scrollbar.Orientation() == kHorizontalScrollbar) {
-    rect.SetHeight(thumb_thickness_);
+    rect.SetHeight(ThumbThickness(scrollbar.ScaleFromDIP()));
   } else {
     if (scrollbar.IsLeftSideVerticalScrollbar())
-      rect.Move(scrollbar_margin_, 0);
-    rect.SetWidth(thumb_thickness_);
+      rect.Move(ScrollbarMargin(scrollbar.ScaleFromDIP()), 0);
+    rect.SetWidth(ThumbThickness(scrollbar.ScaleFromDIP()));
   }
   return rect;
-}
-
-int ScrollbarThemeOverlay::ThumbThickness(const Scrollbar&) {
-  return thumb_thickness_;
 }
 
 void ScrollbarThemeOverlay::PaintThumb(GraphicsContext& context,

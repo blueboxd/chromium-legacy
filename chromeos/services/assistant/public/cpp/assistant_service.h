@@ -180,13 +180,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) Assistant {
   // Starts a new Assistant voice interaction.
   virtual void StartVoiceInteraction() = 0;
 
-  // Starts a warmer welcome interaction for Assistant launch.
-  // |num_warmer_welcome_triggered| is the count of warmer welcomes
-  // already triggered. If |allow_tts| is true, the result may contain TTS.
-  // Otherwise TTS will not be present in the generated server response.
-  virtual void StartWarmerWelcomeInteraction(int num_warmer_welcome_triggered,
-                                             bool allow_tts) = 0;
-
   // Stops the active Assistant interaction and cancel the conversation if
   // |cancel_conversation|. If there is no active interaction, this method
   // is a no-op.

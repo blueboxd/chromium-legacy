@@ -18,6 +18,7 @@ class TestCaptureModeDelegate : public CaptureModeDelegate {
 
   // CaptureModeDelegate:
   base::FilePath GetActiveUserDownloadsDir() const override;
+  void ShowScreenCaptureItemInFolder(const base::FilePath& file_path) override;
 };
 
 }  // namespace ash

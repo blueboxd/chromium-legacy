@@ -552,6 +552,10 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kWebRtcRemoteEventLogGzipped;
 #endif
 
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
+COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kWebShare;
+#endif
+
 #if defined(OS_CHROMEOS)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kWebTimeLimits;

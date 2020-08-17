@@ -54,7 +54,7 @@ bool PathProvider(int key, base::FilePath* result) {
     case DIR_SWIFT_SHADER:
       cur = cur.Append(FILE_PATH_LITERAL("SwiftShader"));
       break;
-    case DIR_SUPERVISED_USER_WHITELISTS:
+    case DIR_SUPERVISED_USER_ALLOWLISTS:
       cur = cur.Append(kSupervisedUserWhitelistDirName);
       break;
     default:

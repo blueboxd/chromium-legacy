@@ -50,7 +50,9 @@ source_set("password_details_ui") {
   deps = [
     "//base",
     "//components/autofill/core/common",
+    "//components/password_manager/core/browser:affiliation",
     "//components/password_manager/core/browser:browser",
+    "//components/password_manager/core/common",
     "//components/strings",
     "//ios/chrome/app/strings:ios_chromium_strings_grit",
     "//ios/chrome/app/strings:ios_strings_grit",

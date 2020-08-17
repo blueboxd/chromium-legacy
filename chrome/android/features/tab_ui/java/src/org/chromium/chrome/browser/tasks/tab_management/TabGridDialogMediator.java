@@ -251,8 +251,13 @@ public class TabGridDialogMediator {
                                     public void onCancel() {}
                                 })
                                 .build();
-                mShareDelegateSupplier.get().share(
-                        shareParams, new ChromeShareExtras.Builder().setSaveLastUsed(true).build());
+                // TODO(crbug.com/1085078): Sharing hub is suppressed for tab group sharing.
+                // Re-enable it when tab group sharing is supported by sharing hub.
+                ChromeShareExtras chromeShareExtras = new ChromeShareExtras.Builder()
+                                                              .setSharingTabGroup(true)
+                                                              .setSaveLastUsed(true)
+                                                              .build();
+                mShareDelegateSupplier.get().share(shareParams, chromeShareExtras);
             }
         };
 

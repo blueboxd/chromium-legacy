@@ -242,6 +242,7 @@
   X(TRACE_DISABLED_BY_DEFAULT("v8.turbofan"))                            \
   X(TRACE_DISABLED_BY_DEFAULT("v8.wasm.detailed"))                       \
   X(TRACE_DISABLED_BY_DEFAULT("video_and_image_capture"))                \
+  X(TRACE_DISABLED_BY_DEFAULT("viz.gpu_composite_time"))                 \
   X(TRACE_DISABLED_BY_DEFAULT("viz.debug.overlay_planes"))               \
   X(TRACE_DISABLED_BY_DEFAULT("viz.hit_testing_flow"))                   \
   X(TRACE_DISABLED_BY_DEFAULT("viz.overdraw"))                           \

@@ -33,21 +33,17 @@ class ClipboardRecentContent {
   static void SetInstance(std::unique_ptr<ClipboardRecentContent> new_instance);
 
   // Returns clipboard content as URL, if it has a compatible type,
-  // is recent enough and has not been suppressed.
+  // is recent enough, has not been suppressed and will not trigger a system
+  // notification that the clipboard has been accessed.
   virtual base::Optional<GURL> GetRecentURLFromClipboard() = 0;
 
   // Returns clipboard content as text, if it has a compatible type,
-  // is recent enough and has not been suppressed.
+  // is recent enough, has not been suppressed and will not trigger a system
+  // notification that the clipboard has been accessed.
   virtual base::Optional<base::string16> GetRecentTextFromClipboard() = 0;
 
-  using GetRecentImageCallback =
-      base::OnceCallback<void(base::Optional<gfx::Image>)>;
-
-  // Returns clipboard content as image to |GetRecentImageCallback|, if it has a
-  // compatible type, is recent enough and has not been suppressed.
-  virtual void GetRecentImageFromClipboard(GetRecentImageCallback callback) = 0;
-
-  // Return if system's clipboard contains an image.
+  // Return if system's clipboard contains an image that will not trigger a
+  // system notification that the clipboard has been accessed.
   virtual bool HasRecentImageFromClipboard() = 0;
 
   /*
@@ -59,18 +55,26 @@ class ClipboardRecentContent {
   using GetRecentURLCallback = base::OnceCallback<void(base::Optional<GURL>)>;
   using GetRecentTextCallback =
       base::OnceCallback<void(base::Optional<base::string16>)>;
+  using GetRecentImageCallback =
+      base::OnceCallback<void(base::Optional<gfx::Image>)>;
 
   // Returns whether the clipboard contains a URL to |HasDataCallback| if it
   // is recent enough and has not been suppressed.
   virtual void HasRecentContentFromClipboard(
       std::set<ClipboardContentType> types,
       HasDataCallback callback) = 0;
+
   // Returns clipboard content as URL to |GetRecentURLCallback|, if it has a
   // compatible type, is recent enough and has not been suppressed.
   virtual void GetRecentURLFromClipboard(GetRecentURLCallback callback) = 0;
+
   // Returns clipboard content as a string to |GetRecentTextCallback|, if it has
   // a compatible type, is recent enough and has not been suppressed.
   virtual void GetRecentTextFromClipboard(GetRecentTextCallback callback) = 0;
+
+  // Returns clipboard content as image to |GetRecentImageCallback|, if it has a
+  // compatible type, is recent enough and has not been suppressed.
+  virtual void GetRecentImageFromClipboard(GetRecentImageCallback callback) = 0;
 
   // Returns how old the content of the clipboard is.
   virtual base::TimeDelta GetClipboardContentAge() const = 0;

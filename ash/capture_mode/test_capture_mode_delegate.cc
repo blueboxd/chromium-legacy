@@ -13,4 +13,7 @@ base::FilePath TestCaptureModeDelegate::GetActiveUserDownloadsDir() const {
   return base::FilePath();
 }
 
+void TestCaptureModeDelegate::ShowScreenCaptureItemInFolder(
+    const base::FilePath& file_path) {}
+
 }  // namespace ash

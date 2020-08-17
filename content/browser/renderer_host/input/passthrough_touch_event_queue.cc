@@ -54,11 +54,6 @@ PassthroughTouchEventQueue::TouchEventWithLatencyInfoAndAckState::
     : TouchEventWithLatencyInfo(event),
       ack_state_(blink::mojom::InputEventResultState::kUnknown) {}
 
-bool PassthroughTouchEventQueue::TouchEventWithLatencyInfoAndAckState::
-operator<(const TouchEventWithLatencyInfoAndAckState& other) const {
-  return event.unique_touch_event_id < other.event.unique_touch_event_id;
-}
-
 PassthroughTouchEventQueue::PassthroughTouchEventQueue(
     PassthroughTouchEventQueueClient* client,
     const Config& config)
@@ -136,13 +131,7 @@ void PassthroughTouchEventQueue::ProcessTouchAck(
                                           should_stop_timeout_monitor))
     return;
 
-  auto touch_event_iter = outstanding_touches_.begin();
-  while (touch_event_iter != outstanding_touches_.end()) {
-    if (unique_touch_event_id == touch_event_iter->event.unique_touch_event_id)
-      break;
-    ++touch_event_iter;
-  }
-
+  auto touch_event_iter = outstanding_touches_.find(unique_touch_event_id);
   if (touch_event_iter == outstanding_touches_.end())
     return;
 

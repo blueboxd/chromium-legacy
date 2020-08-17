@@ -16,14 +16,14 @@
 #include "base/values.h"
 #include "url/gurl.h"
 
-const int kLegacyWhitelistFormatVersion = 2;
-const int kWhitelistFormatVersion = 1;
+const int kLegacyAllowlistFormatVersion = 2;
+const int kAllowlistFormatVersion = 1;
 
 const char kEntryPointUrlKey[] = "entry_point_url";
 const char kHostnameHashesKey[] = "hostname_hashes";
-const char kLegacyWhitelistFormatVersionKey[] = "version";
+const char kLegacyAllowlistFormatVersionKey[] = "version";
 const char kSitelistFormatVersionKey[] = "sitelist_version";
-const char kWhitelistKey[] = "whitelist";
+const char kAllowlistKey[] = "whitelist";
 
 namespace {
 
@@ -47,7 +47,7 @@ std::vector<std::string> ConvertListValues(const base::ListValue* list_values) {
     for (const auto& entry : *list_values) {
       std::string entry_string;
       if (!entry.GetAsString(&entry_string)) {
-        LOG(ERROR) << "Invalid whitelist entry";
+        LOG(ERROR) << "Invalid allowlist entry";
         continue;
       }
 
@@ -152,27 +152,27 @@ void SupervisedUserSiteList::OnJsonLoaded(
 
   base::DictionaryValue* dict = nullptr;
   if (!value->GetAsDictionary(&dict)) {
-    LOG(ERROR) << "Whitelist " << path.value() << " is invalid";
+    LOG(ERROR) << "Allowlist " << path.value() << " is invalid";
     return;
   }
 
   int version = 0;
   if (!dict->GetInteger(kSitelistFormatVersionKey, &version)) {
-    // TODO(bauerb): Remove this code once all whitelists have been updated to
+    // TODO(bauerb): Remove this code once all allowlists have been updated to
     // the new version.
-    if (!dict->GetInteger(kLegacyWhitelistFormatVersionKey, &version)) {
-      LOG(ERROR) << "Whitelist " << path.value() << " has invalid or missing "
+    if (!dict->GetInteger(kLegacyAllowlistFormatVersionKey, &version)) {
+      LOG(ERROR) << "Allowlist " << path.value() << " has invalid or missing "
                  << "version";
       return;
     }
-    if (version != kLegacyWhitelistFormatVersion) {
-      LOG(ERROR) << "Whitelist " << path.value() << " has wrong legacy version "
-                 << version << ", expected " << kLegacyWhitelistFormatVersion;
+    if (version != kLegacyAllowlistFormatVersion) {
+      LOG(ERROR) << "Allowlist " << path.value() << " has wrong legacy version "
+                 << version << ", expected " << kLegacyAllowlistFormatVersion;
       return;
     }
-  } else if (version != kWhitelistFormatVersion) {
-    LOG(ERROR) << "Whitelist " << path.value() << " has wrong version "
-               << version << ", expected " << kWhitelistFormatVersion;
+  } else if (version != kAllowlistFormatVersion) {
+    LOG(ERROR) << "Allowlist " << path.value() << " has wrong version "
+               << version << ", expected " << kAllowlistFormatVersion;
     return;
   }
 
@@ -180,7 +180,7 @@ void SupervisedUserSiteList::OnJsonLoaded(
   dict->GetString(kEntryPointUrlKey, &entry_point_url);
 
   base::ListValue* patterns = nullptr;
-  dict->GetList(kWhitelistKey, &patterns);
+  dict->GetList(kAllowlistKey, &patterns);
 
   base::ListValue* hostname_hashes = nullptr;
   dict->GetList(kHostnameHashesKey, &hostname_hashes);

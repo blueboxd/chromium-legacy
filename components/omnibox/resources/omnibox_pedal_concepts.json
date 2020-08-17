@@ -1,7 +1,7 @@
 {
   "schema": "pedals_translation_model",
   "schema_version": 1,
-  "time_generated": "2020-08-10T23:46:42.165601123+00:00",
+  "time_generated": "2020-08-15T01:08:48.941836349+00:00",
   "primary_language_code": "en",
   "locales": [
     {
@@ -222,6 +222,1604 @@
                 "አዘምን",
                 "አልቅ",
                 "ጫን"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "language_code": "ar",
+      "tokenize_characters": " -",
+      "ignore_group": {
+        "required": false,
+        "single": false,
+        "synonyms": [
+          "لي/الخاصة بي/التابعة/الخاص/التابع",
+          "ضمن/غضون/خلال",
+          "لـ/لمدة",
+          "إتمام",
+          "داخل",
+          "كيف",
+          "على",
+          "إلى",
+          "أنا",
+          "ال",
+          "في",
+          "an",
+          "a"
+        ]
+      },
+      "pedals": [
+        {
+          "name": "CLEAR_BROWSING_DATA",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "متصفّح",
+                "تصفُّح",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "إزالة",
+                "حذف",
+                "مسح",
+                "محو",
+                "حجب"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "ذاكرة التخزين المؤقت",
+                "ملفات تعريف الارتباط",
+                "معلومات",
+                "معلومات",
+                "بيانات",
+                "سجلّ"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "MANAGE_PASSWORDS",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "متصفّح",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "تعديل",
+                "إدارة",
+                "تحديث",
+                "تغيير",
+                "إظهار",
+                "مدير",
+                "حفظ",
+                "عرض"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "بيانات الاعتماد",
+                "كلمات المرور",
+                "كلمة مرور"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "UPDATE_CREDIT_CARD",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "متصفّح",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "إدارة",
+                "تحديث",
+                "تعديل",
+                "تغيير",
+                "حفظ"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "معلومات بطاقة الائتمان",
+                "معلومات بطاقة الائتمان",
+                "بطاقات الائتمان",
+                "معلومات البطاقة",
+                "معلومات البطاقة",
+                "بطاقة ائتمان",
+                "طرق الدفع",
+                "الدفعات",
+                "بطاقات",
+                "الدفع"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "LAUNCH_INCOGNITO",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "متصفّح",
+                "chrome"
+              ]
+            },
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "تشغيل",
+                "إنشاء",
+                "دخول",
+                "بدء",
+                "فتح"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "علامة تبويب في وضع التصفّح المتخفي",
+                "نافذة التصفّح المتخفي",
+                "وضع التصفّح المتخفي",
+                "علامة تبويب خاصة",
+                "التصفح المتخفي",
+                "الوضع الخاص",
+                "نافذة خاصة"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "TRANSLATE",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "متصفّح",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "تغيير اللغة",
+                "ترجمة"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "هذه الصفحة",
+                "صفحة",
+                "هذه"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "UPDATE_CHROME",
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "متصفّح",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "ترقية",
+                "تثبيت",
+                "تحديث"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "language_code": "bg",
+      "tokenize_characters": " -",
+      "ignore_group": {
+        "required": false,
+        "single": false,
+        "synonyms": [
+          "как",
+          "да",
+          "се",
+          "от",
+          "на",
+          "за",
+          "си",
+          "ми",
+          "в"
+        ]
+      },
+      "pedals": [
+        {
+          "name": "CLEAR_BROWSING_DATA",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "сърфиране",
+                "браузване",
+                "браузъра",
+                "браузър",
+                "google chrome",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "премахване",
+                "изчистване",
+                "изтриване",
+                "премахни",
+                "премахна",
+                "премахва",
+                "изчиства",
+                "премахне",
+                "изчисти",
+                "изчистя",
+                "изтрива",
+                "изчисти",
+                "изтрий",
+                "изтрия",
+                "изтрие",
+                "трие"
+              ]
+            },
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "информацията",
+                "бисквитките",
+                "информация",
+                "бисквитки",
+                "историята",
+                "история",
+                "данните",
+                "данни",
+                "кеша",
+                "кеш"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "MANAGE_PASSWORDS",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "браузъра",
+                "браузър",
+                "google chrome",
+                "chrome"
+              ]
+            },
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "актуализиране",
+                "актуализирай",
+                "актуализация",
+                "актуализират",
+                "редактиране",
+                "управляване",
+                "актуализира",
+                "редактирай",
+                "редактират",
+                "редактирам",
+                "управление",
+                "управлявай",
+                "управляват",
+                "редактира",
+                "управлява",
+                "запазване",
+                "записване",
+                "запомняне",
+                "редакция",
+                "мениджър",
+                "променят",
+                "записват",
+                "запомнят",
+                "промяна",
+                "промени",
+                "променя",
+                "запазят",
+                "записва",
+                "запомни",
+                "запомня",
+                "покажат",
+                "сменят",
+                "запази",
+                "запазя",
+                "запиши",
+                "запиша",
+                "виждам",
+                "виждат",
+                "покажа",
+                "покажи",
+                "покаже",
+                "смени",
+                "смяна",
+                "сменя",
+                "запис",
+                "видя",
+                "види"
+              ]
+            },
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "идентификацията",
+                "данните за вход",
+                "идентификация",
+                "данни за вход",
+                "паролите",
+                "паролата",
+                "пароли",
+                "парола"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "UPDATE_CREDIT_CARD",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "браузъра",
+                "браузър",
+                "google chrome",
+                "chrome"
+              ]
+            },
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "актуализиране",
+                "актуализирай",
+                "актуализация",
+                "актуализират",
+                "редактиране",
+                "управляване",
+                "актуализира",
+                "редактирай",
+                "редактират",
+                "редактирам",
+                "управление",
+                "управлявай",
+                "управляват",
+                "редактира",
+                "управлява",
+                "запазване",
+                "записване",
+                "запомняне",
+                "редакция",
+                "променят",
+                "записват",
+                "запомнят",
+                "промяна",
+                "промени",
+                "променя",
+                "запазят",
+                "записва",
+                "запомни",
+                "запомня",
+                "запази",
+                "запазя",
+                "запиши",
+                "запиша",
+                "запис"
+              ]
+            },
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "информацията кредитната карта",
+                "информация кредитната карта",
+                "информацията кредитна карта",
+                "информация кредитна карта",
+                "номер кредитната карта",
+                "данни кредитната карта",
+                "номер кредитна карта",
+                "данни кредитна карта",
+                "информация картата",
+                "кредитната карта",
+                "кредитните карти",
+                "информация карта",
+                "кредитна карта",
+                "кредитни карти",
+                "начини плащане",
+                "данни картата",
+                "данни карта",
+                "плащания",
+                "картите",
+                "плащане",
+                "карти"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "LAUNCH_INCOGNITO",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "браузъра",
+                "браузър",
+                "google chrome",
+                "chrome"
+              ]
+            },
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "стартиране",
+                "създаване",
+                "стартирам",
+                "стартирай",
+                "отваряне",
+                "стартира",
+                "създавам",
+                "пускане",
+                "влизане",
+                "отварям",
+                "пускам",
+                "влизам",
+                "отворя",
+                "отваря",
+                "отвори",
+                "създам",
+                "създай",
+                "пуска",
+                "пусна",
+                "пусни",
+                "влиза",
+                "вляза",
+                "влез"
+              ]
+            },
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "поверително сърфиране",
+                "прозорец инкогнито",
+                "инкогнито прозорец",
+                "поверителен раздел",
+                "поверителен режим",
+                "раздел инкогнито",
+                "инкогнито раздел",
+                "частно сърфиране",
+                "режим инкогнито",
+                "инкогнито режим",
+                "поверителен таб",
+                "таб инкогнито",
+                "инкогнито таб",
+                "частен раздел",
+                "частен режим",
+                "частен таб",
+                "инкогнито",
+                "частен"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "TRANSLATE",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "браузъра",
+                "браузър",
+                "google chrome",
+                "chrome"
+              ]
+            },
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "промяна езика",
+                "промяна език",
+                "смяна езика",
+                "превеждане",
+                "смяна език",
+                "друг език",
+                "превежда",
+                "преведи",
+                "преведа",
+                "превод"
+              ]
+            },
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "тази страница",
+                "страницата",
+                "страница",
+                "това"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "UPDATE_CHROME",
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "браузъра",
+                "браузър",
+                "google chrome",
+                "chrome"
+              ]
+            },
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "актуализиране",
+                "надстройване",
+                "актуализирам",
+                "актуализирай",
+                "инсталиране",
+                "актуализира",
+                "надстройва",
+                "инсталирам",
+                "инсталирай",
+                "обновяване",
+                "инсталира",
+                "ъпгрейдна",
+                "ъпгрейдни",
+                "надстроя",
+                "надстрой",
+                "ъпдейтна",
+                "ъпдейтва",
+                "ъпдейтни",
+                "ъпгрейд",
+                "обновя",
+                "обнови",
+                "ъпдейт"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "language_code": "bn",
+      "tokenize_characters": " -",
+      "ignore_group": {
+        "required": false,
+        "single": false,
+        "synonyms": [
+          "এর মধ্যে",
+          "এর দিকে",
+          "কীভাবে",
+          "ভেতরে",
+          "মধ্যে",
+          "জন্য",
+          "একটি",
+          "আমার",
+          "উপরে",
+          "একটি",
+          "করা",
+          "আমি",
+          "the"
+        ]
+      },
+      "pedals": [
+        {
+          "name": "CLEAR_BROWSING_DATA",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "ব্রাউজ করা হচ্ছে",
+                "ব্রাউজার",
+                "google chrome",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "মিটিয়ে দিন",
+                "সরিয়ে দিন",
+                "মুছে দিন",
+                "মুছে দিন",
+                "মুছে দিন"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "ক্যাশে ফাইল",
+                "ইতিহাস",
+                "ডেটা",
+                "তথ্য",
+                "তথ্য",
+                "কুকি"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "MANAGE_PASSWORDS",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "ব্রাউজার",
+                "google chrome",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "পরিবর্তন করুন",
+                "ম্যানেজ করুন",
+                "আপডেট করুন",
+                "ম্যানেজার",
+                "এডিট করুন",
+                "সেভ করুন",
+                "দেখুন",
+                "দেখান"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "ক্রেডেনশিয়াল",
+                "পাসওয়ার্ড",
+                "পাসওয়ার্ড"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "UPDATE_CREDIT_CARD",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "ব্রাউজার",
+                "google chrome",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "পরিবর্তন করুন",
+                "ম্যানেজ করুন",
+                "আপডেট করুন",
+                "এডিট করুন",
+                "সেভ করুন"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "ক্রেডিট কার্ডের তথ্য",
+                "ক্রেডিট কার্ডের তথ্য",
+                "পেমেন্ট পদ্ধতি",
+                "ক্রেডিট কার্ড",
+                "ক্রেডিট কার্ড",
+                "কার্ডের তথ্য",
+                "কার্ডের তথ্য",
+                "পেমেন্ট",
+                "পেমেন্ট",
+                "কার্ড"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "LAUNCH_INCOGNITO",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "ব্রাউজার",
+                "google chrome",
+                "chrome"
+              ]
+            },
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "এন্টার করুন",
+                "লঞ্চ করুন",
+                "শুরু করুন",
+                "তৈরি করুন",
+                "খুলুন"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "ব্যক্তিগত উইন্ডো",
+                "ছদ্মবেশী উইন্ডো",
+                "ব্যক্তিগত ট্যাব",
+                "ছদ্মবেশী ট্যাব",
+                "ব্যক্তিগত মোড",
+                "ছদ্মবেশী মোড",
+                "ছদ্মবেশী"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "TRANSLATE",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "ব্রাউজার",
+                "google chrome",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "ভাষা পরিবর্তন করুন",
+                "অনুবাদ করুন"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "এই পৃষ্ঠা",
+                "পৃষ্ঠা",
+                "এই"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "UPDATE_CHROME",
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "ব্রাউজার",
+                "google chrome",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "আপগ্রেড করুন",
+                "ইনস্টল করুন",
+                "আপডেট করুন"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "language_code": "ca",
+      "tokenize_characters": " -",
+      "ignore_group": {
+        "required": false,
+        "single": false,
+        "synonyms": [
+          "es pot",
+          "per a",
+          "meves",
+          "dins",
+          "meva",
+          "meus",
+          "com",
+          "puc",
+          "meu",
+          "per",
+          "una",
+          "els",
+          "les",
+          "en",
+          "el",
+          "un",
+          "la",
+          "de",
+          "a"
+        ]
+      },
+      "pedals": [
+        {
+          "name": "CLEAR_BROWSING_DATA",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "navegació",
+                "navegador",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "suprimeix",
+                "suprimir",
+                "eliminar",
+                "esborrar",
+                "netejar",
+                "elimina",
+                "esborra",
+                "treure",
+                "neteja",
+                "treu"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "memòria cau",
+                "informació",
+                "historial",
+                "galetes",
+                "galeta",
+                "dades",
+                "info"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "MANAGE_PASSWORDS",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "navegador",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "administrador",
+                "administrar",
+                "actualitzar",
+                "administra",
+                "actualitza",
+                "gestionar",
+                "modificar",
+                "gestiona",
+                "modifica",
+                "canviar",
+                "guardar",
+                "mostrar",
+                "editar",
+                "gestor",
+                "canvia",
+                "guarda",
+                "mostra",
+                "edita",
+                "desar",
+                "veure",
+                "desa"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "contrasenyes",
+                "contrasenya",
+                "credencials"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "UPDATE_CREDIT_CARD",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "navegador",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "administrar",
+                "actualitzar",
+                "administra",
+                "actualitza",
+                "gestionar",
+                "modificar",
+                "gestiona",
+                "modifica",
+                "canviar",
+                "guardar",
+                "editar",
+                "canvia",
+                "guarda",
+                "edita",
+                "desar",
+                "desa"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "informació targeta crèdit",
+                "info targeta de crèdit",
+                "informació targeta",
+                "mètodes pagament",
+                "targetes crèdit",
+                "mètode pagament",
+                "targeta crèdit",
+                "formes pagament",
+                "forma pagament",
+                "info targeta",
+                "pagaments",
+                "targetes",
+                "pagament"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "LAUNCH_INCOGNITO",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "navegador",
+                "chrome"
+              ]
+            },
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "llançar",
+                "iniciar",
+                "llança",
+                "entrar",
+                "inicia",
+                "obrir",
+                "crear",
+                "entra",
+                "obre",
+                "crea"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "finestra d'incògnit",
+                "pestanya d'incògnit",
+                "finestra incògnit",
+                "pestanya incògnit",
+                "mode d'incògnit",
+                "finestra privada",
+                "pestanya privada",
+                "mode incògnit",
+                "mode privat",
+                "incògnit"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "TRANSLATE",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "navegador",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "canviar l'idioma",
+                "canvia l'idioma",
+                "canviar idioma",
+                "canvia idioma",
+                "tradueix",
+                "traduir"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "aquesta pàgina",
+                "pàgina",
+                "això"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "UPDATE_CHROME",
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "navegador",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "actualitzar versió",
+                "actualitza versió",
+                "instal·lar",
+                "actualitzar",
+                "instal·la",
+                "actualitza"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "language_code": "cs",
+      "tokenize_characters": " -",
+      "ignore_group": {
+        "required": false,
+        "single": false,
+        "synonyms": [
+          "uvnitř",
+          "pro",
+          "jak",
+          "v"
+        ]
+      },
+      "pedals": [
+        {
+          "name": "CLEAR_BROWSING_DATA",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "prohlížení",
+                "prohlížeč",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "odstranit",
+                "vymazat",
+                "smazat"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "soubory cookie",
+                "mezipaměť",
+                "informace",
+                "historie",
+                "data",
+                "info"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "MANAGE_PASSWORDS",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "prohlížeč",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "aktualizovat",
+                "spravovat",
+                "správce",
+                "zobrazit",
+                "upravit",
+                "změnit",
+                "uložit",
+                "ukázat"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "přihlašovací údaje",
+                "hesla",
+                "heslo"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "UPDATE_CREDIT_CARD",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "prohlížeč",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "aktualizovat",
+                "spravovat",
+                "upravovat",
+                "změnit",
+                "uložit"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "informace o platební kartě",
+                "údaje o platební kartě",
+                "informace o kartě",
+                "platební metody",
+                "platební karty",
+                "platební karta",
+                "údaje o kartě",
+                "platba",
+                "platby",
+                "karty"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "LAUNCH_INCOGNITO",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "prohlížeč",
+                "chrome"
+              ]
+            },
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "otevřít",
+                "vytvořit",
+                "zahájit",
+                "vstoupit",
+                "spustit"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "anonymní režim",
+                "soukromý režim",
+                "anonymní karta",
+                "soukromá karta",
+                "anonymní okno",
+                "soukromé okno",
+                "anonymní"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "TRANSLATE",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "prohlížeč",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "změnit jazyk",
+                "přeložit"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "tato stránka",
+                "stránka",
+                "toto"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "UPDATE_CHROME",
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "prohlížeč",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "nainstalovat",
+                "aktualizovat",
+                "upgradovat"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "language_code": "da",
+      "tokenize_characters": " -",
+      "ignore_group": {
+        "required": false,
+        "single": false,
+        "synonyms": [
+          "mine",
+          "for",
+          "til",
+          "min",
+          "mit",
+          "på",
+          "jeg",
+          "en",
+          "et",
+          "i"
+        ]
+      },
+      "pedals": [
+        {
+          "name": "CLEAR_BROWSING_DATA",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "browsing",
+                "browser",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "fjern",
+                "slet",
+                "ryd"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "browseroplysninger",
+                "browserhistorik",
+                "browsercookies",
+                "oplysninger",
+                "browserdata",
+                "historik",
+                "cookies",
+                "cache",
+                "data"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "MANAGE_PASSWORDS",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "browser",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "administrator",
+                "administrer",
+                "rediger",
+                "opdater",
+                "skift",
+                "gem",
+                "vis",
+                "se"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "loginoplysninger",
+                "adgangskoder",
+                "adgangskode"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "UPDATE_CREDIT_CARD",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "browser",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "administrer",
+                "opdater",
+                "rediger",
+                "skift",
+                "gem"
+              ]
+            },
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "betalingskortoplysnigner",
+                "kreditkortoplysninger",
+                "betalingsmetoder",
+                "kortoplysninger",
+                "betalingskort",
+                "kreditkort",
+                "betalinger",
+                "betaling",
+                "kort"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "LAUNCH_INCOGNITO",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "browser",
+                "chrome"
+              ]
+            },
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "anvend",
+                "start",
+                "opret",
+                "åbn",
+                "brug"
+              ]
+            },
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "inkognitotilstand",
+                "inkognitovindue",
+                "privat tilstand",
+                "privat vindue",
+                "inkognitofane",
+                "privat fane",
+                "inkognito"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "TRANSLATE",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "browser",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "skift sprog",
+                "oversæt"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "denne side",
+                "dette",
+                "siden",
+                "side"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "UPDATE_CHROME",
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "google chrome",
+                "browser",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "installer",
+                "opgrader",
+                "opdater"
               ]
             }
           ]
@@ -458,6 +2056,239 @@
                 "upgraden",
                 "upgrade",
                 "update"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "language_code": "el",
+      "tokenize_characters": " -",
+      "ignore_group": {
+        "required": false,
+        "single": false,
+        "synonyms": [
+          "στον/στην/στο",
+          "στον/στην/στο",
+          "ένας/μια/ένα",
+          "τον/την/το",
+          "εντός",
+          "μέσα",
+          "κάνω",
+          "για",
+          "πώς",
+          "μου",
+          "ένα",
+          "εγώ",
+          "σε"
+        ]
+      },
+      "pedals": [
+        {
+          "name": "CLEAR_BROWSING_DATA",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "πρόγραμμα περιήγησης",
+                "περιήγηση",
+                "google chrome",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "εκκαθάριση",
+                "εκκαθάριση",
+                "κατάργηση",
+                "διαγραφή",
+                "διαγραφή"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "πληροφορίες",
+                "πληροφορίες",
+                "κρυφή μνήμη",
+                "ιστορικό",
+                "δεδομένα",
+                "cookie"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "MANAGE_PASSWORDS",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "πρόγραμμα περιήγησης",
+                "google chrome",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "διαχειριστής",
+                "επεξεργασία",
+                "διαχείριση",
+                "αποθήκευση",
+                "ενημέρωση",
+                "εμφάνιση",
+                "προβολή",
+                "αλλαγή"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "κωδικοί πρόσβασης",
+                "κωδικός πρόσβασης",
+                "διαπιστευτήρια"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "UPDATE_CREDIT_CARD",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "πρόγραμμα περιήγησης",
+                "google chrome",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "επεξεργασία",
+                "διαχείριση",
+                "αποθήκευση",
+                "ενημέρωση",
+                "αλλαγή"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "πληροφορίες πιστωτικής κάρτας",
+                "στοιχεία πιστωτικής κάρτας",
+                "πληροφορίες κάρτας",
+                "πιστωτικές κάρτες",
+                "πιστωτική κάρτα",
+                "τρόποι πληρωμής",
+                "στοιχεία κάρτας",
+                "πληρωμές",
+                "πληρωμή",
+                "κάρτες"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "LAUNCH_INCOGNITO",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "πρόγραμμα περιήγησης",
+                "google chrome",
+                "chrome"
+              ]
+            },
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "δημιουργία",
+                "εκκίνηση",
+                "εισαγωγή",
+                "άνοιγμα",
+                "έναρξη"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "παράθυρο για ανώνυμη περιήγηση",
+                "καρτέλα ανώνυμης περιήγησης",
+                "ιδιωτική λειτουργία",
+                "ανώνυμη περιήγηση",
+                "ιδιωτικό παράθυρο",
+                "ιδιωτική καρτέλα",
+                "ανώνυμο"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "TRANSLATE",
+          "groups": [
+            {
+              "required": false,
+              "single": true,
+              "synonyms": [
+                "πρόγραμμα περιήγησης",
+                "google chrome",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "αλλαγή γλώσσας",
+                "μετάφραση"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "αυτή η σελίδα",
+                "σελίδα",
+                "αυτή"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "UPDATE_CHROME",
+          "groups": [
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "πρόγραμμα περιήγησης",
+                "google chrome",
+                "chrome"
+              ]
+            },
+            {
+              "required": true,
+              "single": true,
+              "synonyms": [
+                "εγκατάσταση",
+                "ενημέρωση",
+                "ενημέρωση"
               ]
             }
           ]

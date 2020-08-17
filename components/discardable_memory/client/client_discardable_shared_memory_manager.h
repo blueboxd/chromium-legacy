@@ -8,8 +8,9 @@
 #include <stddef.h>
 
 #include <memory>
-#include <set>
 
+#include "base/callback_helpers.h"
+#include "base/macros.h"
 #include "base/memory/discardable_memory_allocator.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/unsafe_shared_memory_region.h"
@@ -46,16 +47,12 @@ class DISCARDABLE_MEMORY_EXPORT ClientDiscardableSharedMemoryManager
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     base::trace_event::ProcessMemoryDump* pmd) override;
 
-  // Purge any unlocked memory that was allocated by this manager.
-  void PurgeUnlockedMemory();
-
   // Release memory and associated resources that have been purged.
   void ReleaseFreeMemory() override;
 
-  bool LockSpan(DiscardableSharedMemoryHeap::Span* span)
-      EXCLUSIVE_LOCKS_REQUIRED(GetLock());
-  void UnlockSpan(DiscardableSharedMemoryHeap::Span* span)
-      EXCLUSIVE_LOCKS_REQUIRED(GetLock());
+  bool LockSpan(DiscardableSharedMemoryHeap::Span* span);
+  void UnlockSpan(DiscardableSharedMemoryHeap::Span* span);
+  void ReleaseSpan(std::unique_ptr<DiscardableSharedMemoryHeap::Span> span);
 
   base::trace_event::MemoryAllocatorDump* CreateMemoryAllocatorDump(
       DiscardableSharedMemoryHeap::Span* span,
@@ -73,47 +70,8 @@ class DISCARDABLE_MEMORY_EXPORT ClientDiscardableSharedMemoryManager
     bytes_allocated_limit_for_testing_ = limit;
   }
 
-  // We only have protected members for testing, everything else should be
-  // either public or private.
- protected:
-  explicit ClientDiscardableSharedMemoryManager(
-      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
-  std::unique_ptr<DiscardableSharedMemoryHeap> heap_ GUARDED_BY(lock_);
-  mutable base::Lock lock_;
-
  private:
-  class DiscardableMemoryImpl : public base::DiscardableMemory {
-   public:
-    DiscardableMemoryImpl(
-        ClientDiscardableSharedMemoryManager* manager,
-        std::unique_ptr<DiscardableSharedMemoryHeap::Span> span);
-    ~DiscardableMemoryImpl() override;
-
-    DiscardableMemoryImpl(const DiscardableMemoryImpl&) = delete;
-    DiscardableMemoryImpl& operator=(const DiscardableMemoryImpl&) = delete;
-
-    // Overridden from base::DiscardableMemory:
-    bool Lock() override;
-    void Unlock() override;
-    void* data() const override;
-    void DiscardForTesting() override;
-    base::trace_event::MemoryAllocatorDump* CreateMemoryAllocatorDump(
-        const char* name,
-        base::trace_event::ProcessMemoryDump* pmd) const override;
-
-    // Returns |span_| if unlocked, otherwise nullptr.
-    std::unique_ptr<DiscardableSharedMemoryHeap::Span> Purge()
-        EXCLUSIVE_LOCKS_REQUIRED(manager_->GetLock());
-
-   private:
-    friend class ClientDiscardableSharedMemoryManager;
-    ClientDiscardableSharedMemoryManager* const manager_;
-    std::unique_ptr<DiscardableSharedMemoryHeap::Span> span_;
-    bool is_locked_ GUARDED_BY(manager_->GetLock());
-  };
-
-  // This is only virtual for testing.
-  virtual std::unique_ptr<base::DiscardableSharedMemory>
+  std::unique_ptr<base::DiscardableSharedMemory>
   AllocateLockedDiscardableSharedMemory(size_t size, int32_t id);
   void AllocateOnIO(size_t size,
                     int32_t id,
@@ -123,18 +81,9 @@ class DISCARDABLE_MEMORY_EXPORT ClientDiscardableSharedMemoryManager
                              base::ScopedClosureRunner closure_runner,
                              base::UnsafeSharedMemoryRegion ret_region);
 
-  // This is only virtual for testing.
-  virtual void DeletedDiscardableSharedMemory(int32_t id);
+  void DeletedDiscardableSharedMemory(int32_t id);
   void MemoryUsageChanged(size_t new_bytes_allocated,
                           size_t new_bytes_free) const;
-
-  void ReleaseFreeMemoryImpl();
-  void ReleaseMemory(DiscardableMemoryImpl* memory,
-                     std::unique_ptr<DiscardableSharedMemoryHeap::Span> span)
-      EXCLUSIVE_LOCKS_REQUIRED(lock_);
-  void ReleaseSpan(std::unique_ptr<DiscardableSharedMemoryHeap::Span> span)
-      EXCLUSIVE_LOCKS_REQUIRED(lock_);
-  base::Lock& GetLock() { return lock_; }
 
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   // TODO(penghuang): Switch to SharedRemote when it starts supporting
@@ -142,8 +91,8 @@ class DISCARDABLE_MEMORY_EXPORT ClientDiscardableSharedMemoryManager
   std::unique_ptr<mojo::Remote<mojom::DiscardableSharedMemoryManager>>
       manager_mojo_;
 
-  // Holds all locked and unlocked instances which have not yet been purged.
-  std::set<DiscardableMemoryImpl*> allocated_memory_ GUARDED_BY(lock_);
+  mutable base::Lock lock_;
+  std::unique_ptr<DiscardableSharedMemoryHeap> heap_ GUARDED_BY(lock_);
   size_t bytes_allocated_limit_for_testing_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(ClientDiscardableSharedMemoryManager);

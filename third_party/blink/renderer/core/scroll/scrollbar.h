@@ -40,7 +40,6 @@ namespace blink {
 class Element;
 class GraphicsContext;
 class IntRect;
-class ChromeClient;
 class ScrollableArea;
 class ScrollbarTheme;
 class WebGestureEvent;
@@ -55,13 +54,12 @@ class CORE_EXPORT Scrollbar : public GarbageCollected<Scrollbar>,
                                      ScrollbarOrientation orientation,
                                      ScrollbarTheme* theme) {
     return MakeGarbageCollected<Scrollbar>(scrollable_area, orientation,
-                                           nullptr, nullptr, theme);
+                                           nullptr, theme);
   }
 
   Scrollbar(ScrollableArea*,
             ScrollbarOrientation,
             Element* style_source,
-            ChromeClient* = nullptr,
             ScrollbarTheme* = nullptr);
   ~Scrollbar() override;
 
@@ -100,10 +98,6 @@ class CORE_EXPORT Scrollbar : public GarbageCollected<Scrollbar>,
   bool Enabled() const { return enabled_; }
   virtual void SetEnabled(bool);
 
-  // This returns device-scale-factor-aware pixel value.
-  // e.g. 15 in dsf=1.0, 30 in dsf=2.0.
-  // This returns 0 for overlay scrollbars.
-  // See also ScrolbarTheme::scrollbatThickness().
   int ScrollbarThickness() const;
 
   // Called by the ScrollableArea when the scroll offset changes.
@@ -188,6 +182,9 @@ class CORE_EXPORT Scrollbar : public GarbageCollected<Scrollbar>,
 
   CompositorElementId GetElementId() const;
 
+  // Used to scale a length in dip units into a length in layout/paint units.
+  float ScaleFromDIP() const;
+
   float EffectiveZoom() const;
   bool ContainerIsRightToLeft() const;
 
@@ -217,7 +214,6 @@ class CORE_EXPORT Scrollbar : public GarbageCollected<Scrollbar>,
   Member<ScrollableArea> scrollable_area_;
   ScrollbarOrientation orientation_;
   ScrollbarTheme& theme_;
-  Member<ChromeClient> chrome_client_;
 
   int visible_size_;
   int total_size_;
@@ -243,7 +239,6 @@ class CORE_EXPORT Scrollbar : public GarbageCollected<Scrollbar>,
   bool ThumbWillBeUnderMouse() const;
   bool DeltaWillScroll(ScrollOffset delta) const;
 
-  int theme_scrollbar_thickness_;
   bool track_needs_repaint_;
   bool thumb_needs_repaint_;
   bool injected_gesture_scroll_begin_;

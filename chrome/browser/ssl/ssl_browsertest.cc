@@ -7476,15 +7476,10 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, SimpleURLLoaderCertError) {
   ssl_test_util::CheckAuthenticationBrokenState(tab, CertError::NONE,
                                                 AuthState::NONE);
 
-  content::StoragePartition* partition =
-      content::BrowserContext::GetDefaultStoragePartition(browser()->profile());
-
-  auto* frame = tab->GetMainFrame();
   EXPECT_EQ(net::OK,
             content::LoadBasicRequest(
-                partition->GetNetworkContext(),
-                https_server_mismatched_.GetURL("/anchor_download_test.png"),
-                frame->GetProcess()->GetID(), frame->GetRoutingID()));
+                tab->GetMainFrame(),
+                https_server_mismatched_.GetURL("/anchor_download_test.png")));
 }
 
 IN_PROC_BROWSER_TEST_F(SSLUITest, NetworkErrorDoesntRevokeExemptions) {

@@ -61,6 +61,7 @@
 #include "third_party/pdfium/public/fpdf_searchex.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/vector2d.h"
@@ -359,6 +360,20 @@ PDFiumEngine::SetLinkUnderCursorFunction
 void SetLinkUnderCursor(pp::Instance* instance,
                         const std::string& link_under_cursor) {
   pp::PDF::SetLinkUnderCursor(instance, link_under_cursor.c_str());
+}
+
+PP_PrivateFocusObjectType GetAnnotationFocusType(
+    FPDF_ANNOTATION_SUBTYPE annot_type) {
+  switch (annot_type) {
+    case FPDF_ANNOT_LINK:
+      return PP_PrivateFocusObjectType::PP_PRIVATEFOCUSOBJECT_LINK;
+    case FPDF_ANNOT_HIGHLIGHT:
+      return PP_PrivateFocusObjectType::PP_PRIVATEFOCUSOBJECT_HIGHLIGHT;
+    case FPDF_ANNOT_WIDGET:
+      return PP_PrivateFocusObjectType::PP_PRIVATEFOCUSOBJECT_TEXT_FIELD;
+    default:
+      return PP_PrivateFocusObjectType::PP_PRIVATEFOCUSOBJECT_NONE;
+  }
 }
 
 base::string16 GetAttachmentAttribute(FPDF_ATTACHMENT attachment,
@@ -789,7 +804,7 @@ void PDFiumEngine::FinishLoadingDocument() {
   if (doc()) {
     DocumentFeatures document_features;
     document_features.page_count = pages_.size();
-    document_features.has_attachments = (FPDFDoc_GetAttachmentCount(doc()) > 0);
+    document_features.has_attachments = !doc_attachment_info_list_.empty();
     document_features.is_tagged = FPDFCatalog_IsTagged(doc());
     document_features.form_type =
         static_cast<FormType>(FPDF_GetFormType(doc()));
@@ -846,8 +861,9 @@ bool PDFiumEngine::HandleEvent(const pp::InputEvent& event) {
     case PP_INPUTEVENT_TYPE_TOUCHSTART: {
       KillTouchTimer();
 
-      pp::TouchInputEvent touch_event(event);
-      if (touch_event.GetTouchCount(PP_TOUCHLIST_TYPE_TARGETTOUCHES) == 1)
+      TouchInputEvent touch_event(
+          GetTouchInputEvent(pp::TouchInputEvent(event)));
+      if (touch_event.GetTouchCount() == 1)
         ScheduleTouchTimer(touch_event);
       break;
     }
@@ -1004,6 +1020,44 @@ void PDFiumEngine::UpdateFocus(bool has_focus) {
     }
     KillFormFocus();
   }
+}
+
+PP_PrivateAccessibilityFocusInfo PDFiumEngine::GetFocusInfo() {
+  PP_PrivateAccessibilityFocusInfo focus_info = {
+      PP_PrivateFocusObjectType::PP_PRIVATEFOCUSOBJECT_NONE, 0, 0};
+
+  switch (focus_item_type_) {
+    case FocusElementType::kNone: {
+      break;
+    }
+    case FocusElementType::kPage: {
+      int page_index;
+      FPDF_ANNOTATION focused_annot;
+      FPDF_BOOL ret = FORM_GetFocusedAnnot(form(), &page_index, &focused_annot);
+      DCHECK(ret);
+
+      if (PageIndexInBounds(page_index) && focused_annot) {
+        PP_PrivateFocusObjectType type =
+            GetAnnotationFocusType(FPDFAnnot_GetSubtype(focused_annot));
+        int annot_index = FPDFPage_GetAnnotIndex(pages_[page_index]->GetPage(),
+                                                 focused_annot);
+        if (type != PP_PrivateFocusObjectType::PP_PRIVATEFOCUSOBJECT_NONE &&
+            annot_index >= 0) {
+          focus_info.focused_object_type = type;
+          focus_info.focused_object_page_index = page_index;
+          focus_info.focused_annotation_index_in_page = annot_index;
+        }
+      }
+      FPDFPage_CloseAnnot(focused_annot);
+      break;
+    }
+    case FocusElementType::kDocument: {
+      focus_info.focused_object_type =
+          PP_PrivateFocusObjectType::PP_PRIVATEFOCUSOBJECT_DOCUMENT;
+      break;
+    }
+  }
+  return focus_info;
 }
 
 uint32_t PDFiumEngine::GetLoadedByteSize() {
@@ -2191,6 +2245,25 @@ PDFiumEngine::GetDocumentAttachmentInfoList() const {
   return doc_attachment_info_list_;
 }
 
+std::vector<uint8_t> PDFiumEngine::GetAttachmentData(size_t index) {
+  DCHECK_LT(index, doc_attachment_info_list_.size());
+  DCHECK(doc_attachment_info_list_[index].is_readable);
+  unsigned long length_bytes = doc_attachment_info_list_[index].size_bytes;
+  DCHECK_NE(length_bytes, 0u);
+
+  FPDF_ATTACHMENT attachment = FPDFDoc_GetAttachment(doc(), index);
+  std::vector<uint8_t> content_buf(length_bytes);
+  unsigned long data_size_bytes;
+  bool is_attachment_readable = FPDFAttachment_GetFile(
+      attachment, content_buf.data(), length_bytes, &data_size_bytes);
+  if (!is_attachment_readable || length_bytes != data_size_bytes) {
+    NOTREACHED();
+    return std::vector<uint8_t>();
+  }
+
+  return content_buf;
+}
+
 const DocumentMetadata& PDFiumEngine::GetDocumentMetadata() const {
   DCHECK(document_loaded_);
   return doc_metadata_;
@@ -2385,11 +2458,9 @@ void PDFiumEngine::SetGrayscale(bool grayscale) {
   render_grayscale_ = grayscale;
 }
 
-void PDFiumEngine::HandleLongPress(const pp::TouchInputEvent& event) {
+void PDFiumEngine::HandleLongPress(const TouchInputEvent& event) {
   base::AutoReset<bool> handling_long_press_guard(&handling_long_press_, true);
-  pp::FloatPoint fp =
-      event.GetTouchByIndex(PP_TOUCHLIST_TYPE_TARGETTOUCHES, 0).position();
-  gfx::Point point(fp.x(), fp.y());
+  gfx::Point point = gfx::ToRoundedPoint(event.GetTargetTouchPoint());
 
   // Send a fake mouse down to trigger the multi-click selection code.
   MouseInputEvent mouse_event(
@@ -3653,7 +3724,7 @@ bool PDFiumEngine::IsAnnotationAnEditableFormTextArea(FPDF_ANNOTATION annot,
   return CheckIfEditableFormTextArea(flags, form_type);
 }
 
-void PDFiumEngine::ScheduleTouchTimer(const pp::TouchInputEvent& evt) {
+void PDFiumEngine::ScheduleTouchTimer(const TouchInputEvent& evt) {
   touch_timer_.Start(FROM_HERE, kTouchLongPressTimeout,
                      base::BindOnce(&PDFiumEngine::HandleLongPress,
                                     base::Unretained(this), evt));

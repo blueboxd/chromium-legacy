@@ -18,10 +18,6 @@ namespace blink {
 //
 // The default values for each feature are set in GetDefaultFeatureList.
 enum class FeaturePolicyFeatureDefault {
-  // Equivalent to []. If this default policy is in effect for a frame, then
-  // the feature will not be enabled for that frame or any of its children.
-  DisableForAll,
-
   // Equivalent to ["self"]. If this default policy is in effect for a frame,
   // then the feature will be enabled for that frame, and any same-origin
   // child frames, but not for any cross-origin child frames.

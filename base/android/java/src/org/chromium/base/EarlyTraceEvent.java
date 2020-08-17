@@ -148,7 +148,6 @@ public class EarlyTraceEvent {
         if (shouldEnable) enable();
     }
 
-    @VisibleForTesting
     static void enable() {
         synchronized (sLock) {
             if (sState != STATE_DISABLED) return;

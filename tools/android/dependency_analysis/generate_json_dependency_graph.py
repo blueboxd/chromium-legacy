@@ -97,12 +97,13 @@ def _run_jdeps(jdeps_path: str, filepath: pathlib.Path):
     return jdeps_res.stdout
 
 
-def _run_gn_desc_list_dependencies(build_output_dir: str, target: str):
+def _run_gn_desc_list_dependencies(build_output_dir: str, target: str,
+                                   gn_path: str):
     """Runs gn desc to list all jars that a target depends on.
 
     This includes direct and indirect dependencies."""
     gn_desc_res = subprocess.run(
-        ['gn', 'desc', '--all', build_output_dir, target, 'deps'],
+        [gn_path, 'desc', '--all', build_output_dir, target, 'deps'],
         capture_output=True,
         text=True,
         check=True)
@@ -172,11 +173,16 @@ def main():
                             '--jdeps-path',
                             default=JDEPS_PATH,
                             help='Path to the jdeps executable.')
+    arg_parser.add_argument('-g',
+                            '--gn-path',
+                            default='gn',
+                            help='Path to the gn executable.')
     arguments = arg_parser.parse_args()
 
     print('Getting list of dependency jars...')
     gn_desc_output = _run_gn_desc_list_dependencies(arguments.build_output_dir,
-                                                    arguments.target)
+                                                    arguments.target,
+                                                    arguments.gn_path)
     target_jars: JarTargetList = list_original_targets_and_jars(
         gn_desc_output, arguments.build_output_dir)
 

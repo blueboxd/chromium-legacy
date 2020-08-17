@@ -4,6 +4,7 @@
 
 #include "components/optimization_guide/optimization_metadata.h"
 
+#include "components/optimization_guide/proto/delay_async_script_execution_metadata.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace optimization_guide {

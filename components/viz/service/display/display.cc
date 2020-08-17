@@ -977,6 +977,15 @@ void Display::DidReceivePresentationFeedback(
   TRACE_EVENT_INSTANT_WITH_TIMESTAMP0(
       "benchmark,viz", "Display::FrameDisplayed", TRACE_EVENT_SCOPE_THREAD,
       copy_feedback.timestamp);
+
+  if (renderer_->CompositeTimeTracingEnabled()) {
+    if (copy_feedback.ready_timestamp.is_null()) {
+      LOG(WARNING) << "Ready Timestamp unavailable";
+    } else {
+      renderer_->AddCompositeTimeTraces(copy_feedback.ready_timestamp);
+    }
+  }
+
   presentation_group_timing.OnPresent(copy_feedback);
   pending_presentation_group_timings_.pop_front();
 }

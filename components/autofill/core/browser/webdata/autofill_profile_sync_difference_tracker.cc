@@ -48,12 +48,24 @@ AutofillProfileSyncDifferenceTracker::IncorporateRemoteProfile(
       return base::nullopt;
     }
     updated->OverwriteDataFrom(*remote);
-    // TODO(jkrcal): if |updated| deviates from |remote|, we should sync it back
-    // up. The only way |updated| can differ is having some extra fields
-    // compared to |remote|. Thus, this cannot lead to an infinite loop of
-    // commits from two clients as each commit decreases the set of empty
+    // TODO(crbug.com/1117022l): if |updated| deviates from |remote|, we should
+    // sync it back up. The only way |updated| can differ is having some extra
+    // fields compared to |remote|. Thus, this cannot lead to an infinite loop
+    // of commits from two clients as each commit decreases the set of empty
     // fields. This invariant depends on the implementation of
     // OverwriteDataFrom() and thus should be enforced by a DCHECK.
+    //
+    // With structured names the situation changes a bit,
+    // but maintains its character.
+    // If the name stored in |remote| is mergeable with the local |name|, the
+    // merge operation is performed. Otherwise the name structure of |local| is
+    // maintained iff |remote| contains an empty name.
+    // A merge operations manipulates the name towards a better total
+    // verification status of the stored tokens. Consequently, it is not
+    // possible to get into a merging loop of two competing clients.
+    // As in the legacy implementation, |OverwriteDataForm()| can change the
+    // profile in a deterministic way and a direct sync-back would be
+    // reasonable.
 
     if (!updated->EqualsForSyncPurposes(*local_with_same_storage_key)) {
       // We need to write back locally new changes in this entry.

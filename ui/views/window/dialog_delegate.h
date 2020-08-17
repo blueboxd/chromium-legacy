@@ -285,6 +285,8 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
 
   const Params& GetParams() const { return params_; }
 
+  int GetCornerRadius() const;
+
   // Return ownership of the footnote view for this dialog. Only use this in
   // subclass overrides of CreateNonClientFrameView.
   std::unique_ptr<View> DisownFootnoteView();

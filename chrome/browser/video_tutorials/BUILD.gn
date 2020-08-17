@@ -17,6 +17,8 @@ group("video_tutorials") {
   public_deps = [
     ":factory",
     ":public",
+    "//base",
+    "//url:url",
   ]
 
   deps = [ "internal" ]

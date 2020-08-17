@@ -7,6 +7,15 @@ import("//build/config/android/rules.gni")
 import("//build/config/locales.gni")
 import("//weblayer/variables.gni")
 
+_bundle_utils_output =
+    "$target_gen_dir/org/chromium/weblayer_private/WebLayerBundleUtils.java"
+
+jinja_template("weblayer_bundle_utils") {
+  input = "WebLayerBundleUtils.java.jinja2"
+  output = _bundle_utils_output
+  variables = "weblayer_in_split=$weblayer_in_split"
+}
+
 android_resources("weblayer_resources") {
   sources = [
     "res/drawable/weblayer_tab_indicator.xml",
@@ -34,6 +43,13 @@ android_resources("weblayer_resources") {
     "//third_party/android_deps:material_design_java",
     "//weblayer:components_java_strings",
   ]
+}
+
+# This resource target is kept in the base module when WebLayer is in a split,
+# and allows WebLayer to call onResourcesLoaded() on resources shared with
+# WebView.
+android_resources("weblayer_base_module_resources") {
+  custom_package = "org.chromium.weblayer_private.base"
 }
 
 generate_product_config_srcjar("weblayer_product_config") {
@@ -69,6 +85,16 @@ java_cpp_enum("generated_enums") {
   ]
 }
 
+android_library("base_module_java") {
+  sources =
+      [ "org/chromium/weblayer_private/WebViewCompatibilityHelperImpl.java" ]
+  deps = [
+    ":weblayer_base_module_resources",
+    "//base:base_java",
+  ]
+  annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
+}
+
 android_library("java") {
   sources = [
     "org/chromium/weblayer_private/ActionModeCallback.java",
@@ -86,6 +112,7 @@ android_library("java") {
     "org/chromium/weblayer_private/DownloadImpl.java",
     "org/chromium/weblayer_private/ErrorPageCallbackProxy.java",
     "org/chromium/weblayer_private/ExternalNavigationDelegateImpl.java",
+    "org/chromium/weblayer_private/FaviconCallbackProxy.java",
     "org/chromium/weblayer_private/FragmentAndroidPermissionDelegate.java",
     "org/chromium/weblayer_private/FragmentWindowAndroid.java",
     "org/chromium/weblayer_private/FullscreenCallbackProxy.java",
@@ -121,16 +148,18 @@ android_library("java") {
     "org/chromium/weblayer_private/WebLayerTabModalPresenter.java",
     "org/chromium/weblayer_private/WebMessageReplyProxyImpl.java",
     "org/chromium/weblayer_private/WebShareServiceFactory.java",
-    "org/chromium/weblayer_private/WebViewCompatibilityHelperImpl.java",
     "org/chromium/weblayer_private/metrics/MetricsServiceClient.java",
     "org/chromium/weblayer_private/metrics/UmaUtils.java",
     "org/chromium/weblayer_private/permissions/PermissionRequestUtils.java",
     "org/chromium/weblayer_private/resources/ResourceMapper.java",
+    _bundle_utils_output,
   ]
 
   deps = [
+    ":base_module_java",
     ":gms_bridge_java",
     ":interfaces_java",
+    ":weblayer_bundle_utils",
     ":weblayer_resources",
     "//base:base_java",
     "//base:jni_java",
@@ -283,6 +312,7 @@ generate_jni("jni") {
     "org/chromium/weblayer_private/DownloadCallbackProxy.java",
     "org/chromium/weblayer_private/DownloadImpl.java",
     "org/chromium/weblayer_private/ErrorPageCallbackProxy.java",
+    "org/chromium/weblayer_private/FaviconCallbackProxy.java",
     "org/chromium/weblayer_private/FullscreenCallbackProxy.java",
     "org/chromium/weblayer_private/GoogleAccountsCallbackProxy.java",
     "org/chromium/weblayer_private/InfoBarContainer.java",
@@ -378,6 +408,8 @@ android_aidl("aidl") {
     "org/chromium/weblayer_private/interfaces/IDownload.aidl",
     "org/chromium/weblayer_private/interfaces/IDownloadCallbackClient.aidl",
     "org/chromium/weblayer_private/interfaces/IErrorPageCallbackClient.aidl",
+    "org/chromium/weblayer_private/interfaces/IFaviconFetcher.aidl",
+    "org/chromium/weblayer_private/interfaces/IFaviconFetcherClient.aidl",
     "org/chromium/weblayer_private/interfaces/IFindInPageCallbackClient.aidl",
     "org/chromium/weblayer_private/interfaces/IFullscreenCallbackClient.aidl",
     "org/chromium/weblayer_private/interfaces/IGoogleAccountsCallbackClient.aidl",

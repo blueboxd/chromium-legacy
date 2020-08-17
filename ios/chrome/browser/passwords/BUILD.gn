@@ -11,6 +11,8 @@ source_set("passwords") {
     "credential_manager.mm",
     "ios_chrome_bulk_leak_check_service_factory.cc",
     "ios_chrome_bulk_leak_check_service_factory.h",
+    "ios_chrome_change_password_url_service_factory.cc",
+    "ios_chrome_change_password_url_service_factory.h",
     "ios_chrome_password_check_manager.h",
     "ios_chrome_password_check_manager.mm",
     "ios_chrome_password_check_manager_factory.h",

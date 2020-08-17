@@ -178,6 +178,11 @@ void AssistantAshTestBase::SetConsentStatus(ConsentStatus consent_status) {
   test_api_->SetConsentStatus(consent_status);
 }
 
+void AssistantAshTestBase::SetNumberOfSessionsWhereOnboardingShown(
+    int number_of_sessions) {
+  test_api_->SetNumberOfSessionsWhereOnboardingShown(number_of_sessions);
+}
+
 void AssistantAshTestBase::SetOnboardingMode(
     AssistantOnboardingMode onboarding_mode) {
   test_api_->SetOnboardingMode(onboarding_mode);
@@ -185,6 +190,10 @@ void AssistantAshTestBase::SetOnboardingMode(
 
 void AssistantAshTestBase::SetPreferVoice(bool prefer_voice) {
   test_api_->SetPreferVoice(prefer_voice);
+}
+
+void AssistantAshTestBase::SetTimeOfLastInteraction(const base::Time& time) {
+  test_api_->SetTimeOfLastInteraction(time);
 }
 
 void AssistantAshTestBase::StartOverview() {

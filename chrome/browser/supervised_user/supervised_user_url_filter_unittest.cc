@@ -38,27 +38,27 @@ class SupervisedUserURLFilterTest : public ::testing::Test,
   }
 
  protected:
-  bool IsURLWhitelisted(const std::string& url) {
+  bool IsURLAllowlisted(const std::string& url) {
     return filter_.GetFilteringBehaviorForURL(GURL(url)) ==
            SupervisedUserURLFilter::ALLOW;
   }
 
-  void ExpectURLInDefaultWhitelist(const std::string& url) {
+  void ExpectURLInDefaultAllowlist(const std::string& url) {
     ExpectURLCheckMatches(url, SupervisedUserURLFilter::ALLOW,
                           supervised_user_error_page::DEFAULT);
   }
 
-  void ExpectURLInDefaultBlacklist(const std::string& url) {
+  void ExpectURLInDefaultDenylist(const std::string& url) {
     ExpectURLCheckMatches(url, SupervisedUserURLFilter::BLOCK,
                           supervised_user_error_page::DEFAULT);
   }
 
-  void ExpectURLInManualWhitelist(const std::string& url) {
+  void ExpectURLInManualAllowlist(const std::string& url) {
     ExpectURLCheckMatches(url, SupervisedUserURLFilter::ALLOW,
                           supervised_user_error_page::MANUAL);
   }
 
-  void ExpectURLInManualBlacklist(const std::string& url) {
+  void ExpectURLInManualDenylist(const std::string& url) {
     ExpectURLCheckMatches(url, SupervisedUserURLFilter::BLOCK,
                           supervised_user_error_page::MANUAL);
   }
@@ -92,22 +92,22 @@ TEST_F(SupervisedUserURLFilterTest, Basic) {
   filter_.SetFromPatternsForTesting(list);
   run_loop_.Run();
 
-  EXPECT_TRUE(IsURLWhitelisted("http://google.com"));
-  EXPECT_TRUE(IsURLWhitelisted("http://google.com/"));
-  EXPECT_TRUE(IsURLWhitelisted("http://google.com/whatever"));
-  EXPECT_TRUE(IsURLWhitelisted("https://google.com/"));
-  EXPECT_FALSE(IsURLWhitelisted("http://notgoogle.com/"));
-  EXPECT_TRUE(IsURLWhitelisted("http://mail.google.com"));
-  EXPECT_TRUE(IsURLWhitelisted("http://x.mail.google.com"));
-  EXPECT_TRUE(IsURLWhitelisted("https://x.mail.google.com/"));
-  EXPECT_TRUE(IsURLWhitelisted("http://x.y.google.com/a/b"));
-  EXPECT_FALSE(IsURLWhitelisted("http://youtube.com/"));
+  EXPECT_TRUE(IsURLAllowlisted("http://google.com"));
+  EXPECT_TRUE(IsURLAllowlisted("http://google.com/"));
+  EXPECT_TRUE(IsURLAllowlisted("http://google.com/whatever"));
+  EXPECT_TRUE(IsURLAllowlisted("https://google.com/"));
+  EXPECT_FALSE(IsURLAllowlisted("http://notgoogle.com/"));
+  EXPECT_TRUE(IsURLAllowlisted("http://mail.google.com"));
+  EXPECT_TRUE(IsURLAllowlisted("http://x.mail.google.com"));
+  EXPECT_TRUE(IsURLAllowlisted("https://x.mail.google.com/"));
+  EXPECT_TRUE(IsURLAllowlisted("http://x.y.google.com/a/b"));
+  EXPECT_FALSE(IsURLAllowlisted("http://youtube.com/"));
 
-  EXPECT_TRUE(IsURLWhitelisted("bogus://youtube.com/"));
-  EXPECT_TRUE(IsURLWhitelisted("chrome://youtube.com/"));
-  EXPECT_TRUE(IsURLWhitelisted("chrome://extensions/"));
-  EXPECT_TRUE(IsURLWhitelisted("chrome-extension://foo/main.html"));
-  EXPECT_TRUE(IsURLWhitelisted("file:///home/chronos/user/Downloads/img.jpg"));
+  EXPECT_TRUE(IsURLAllowlisted("bogus://youtube.com/"));
+  EXPECT_TRUE(IsURLAllowlisted("chrome://youtube.com/"));
+  EXPECT_TRUE(IsURLAllowlisted("chrome://extensions/"));
+  EXPECT_TRUE(IsURLAllowlisted("chrome-extension://foo/main.html"));
+  EXPECT_TRUE(IsURLAllowlisted("file:///home/chronos/user/Downloads/img.jpg"));
 }
 
 TEST_F(SupervisedUserURLFilterTest, EffectiveURL) {
@@ -117,74 +117,74 @@ TEST_F(SupervisedUserURLFilterTest, EffectiveURL) {
   filter_.SetFromPatternsForTesting(list);
   run_loop_.Run();
 
-  ASSERT_TRUE(IsURLWhitelisted("http://example.com"));
-  ASSERT_TRUE(IsURLWhitelisted("https://example.com"));
+  ASSERT_TRUE(IsURLAllowlisted("http://example.com"));
+  ASSERT_TRUE(IsURLAllowlisted("https://example.com"));
 
   // AMP Cache URLs.
-  EXPECT_FALSE(IsURLWhitelisted("https://cdn.ampproject.org"));
-  EXPECT_TRUE(IsURLWhitelisted("https://cdn.ampproject.org/c/example.com"));
-  EXPECT_TRUE(IsURLWhitelisted("https://cdn.ampproject.org/c/www.example.com"));
+  EXPECT_FALSE(IsURLAllowlisted("https://cdn.ampproject.org"));
+  EXPECT_TRUE(IsURLAllowlisted("https://cdn.ampproject.org/c/example.com"));
+  EXPECT_TRUE(IsURLAllowlisted("https://cdn.ampproject.org/c/www.example.com"));
   EXPECT_TRUE(
-      IsURLWhitelisted("https://cdn.ampproject.org/c/example.com/path"));
-  EXPECT_TRUE(IsURLWhitelisted("https://cdn.ampproject.org/c/s/example.com"));
-  EXPECT_FALSE(IsURLWhitelisted("https://cdn.ampproject.org/c/other.com"));
+      IsURLAllowlisted("https://cdn.ampproject.org/c/example.com/path"));
+  EXPECT_TRUE(IsURLAllowlisted("https://cdn.ampproject.org/c/s/example.com"));
+  EXPECT_FALSE(IsURLAllowlisted("https://cdn.ampproject.org/c/other.com"));
 
-  EXPECT_FALSE(IsURLWhitelisted("https://sub.cdn.ampproject.org"));
-  EXPECT_TRUE(IsURLWhitelisted("https://sub.cdn.ampproject.org/c/example.com"));
+  EXPECT_FALSE(IsURLAllowlisted("https://sub.cdn.ampproject.org"));
+  EXPECT_TRUE(IsURLAllowlisted("https://sub.cdn.ampproject.org/c/example.com"));
   EXPECT_TRUE(
-      IsURLWhitelisted("https://sub.cdn.ampproject.org/c/www.example.com"));
+      IsURLAllowlisted("https://sub.cdn.ampproject.org/c/www.example.com"));
   EXPECT_TRUE(
-      IsURLWhitelisted("https://sub.cdn.ampproject.org/c/example.com/path"));
+      IsURLAllowlisted("https://sub.cdn.ampproject.org/c/example.com/path"));
   EXPECT_TRUE(
-      IsURLWhitelisted("https://sub.cdn.ampproject.org/c/s/example.com"));
-  EXPECT_FALSE(IsURLWhitelisted("https://sub.cdn.ampproject.org/c/other.com"));
+      IsURLAllowlisted("https://sub.cdn.ampproject.org/c/s/example.com"));
+  EXPECT_FALSE(IsURLAllowlisted("https://sub.cdn.ampproject.org/c/other.com"));
 
   // Google AMP viewer URLs.
-  EXPECT_FALSE(IsURLWhitelisted("https://www.google.com"));
-  EXPECT_FALSE(IsURLWhitelisted("https://www.google.com/amp/"));
-  EXPECT_TRUE(IsURLWhitelisted("https://www.google.com/amp/example.com"));
-  EXPECT_TRUE(IsURLWhitelisted("https://www.google.com/amp/www.example.com"));
-  EXPECT_TRUE(IsURLWhitelisted("https://www.google.com/amp/s/example.com"));
+  EXPECT_FALSE(IsURLAllowlisted("https://www.google.com"));
+  EXPECT_FALSE(IsURLAllowlisted("https://www.google.com/amp/"));
+  EXPECT_TRUE(IsURLAllowlisted("https://www.google.com/amp/example.com"));
+  EXPECT_TRUE(IsURLAllowlisted("https://www.google.com/amp/www.example.com"));
+  EXPECT_TRUE(IsURLAllowlisted("https://www.google.com/amp/s/example.com"));
   EXPECT_TRUE(
-      IsURLWhitelisted("https://www.google.com/amp/s/example.com/path"));
-  EXPECT_FALSE(IsURLWhitelisted("https://www.google.com/amp/other.com"));
+      IsURLAllowlisted("https://www.google.com/amp/s/example.com/path"));
+  EXPECT_FALSE(IsURLAllowlisted("https://www.google.com/amp/other.com"));
 
   // Google web cache URLs.
-  EXPECT_FALSE(IsURLWhitelisted("https://webcache.googleusercontent.com"));
+  EXPECT_FALSE(IsURLAllowlisted("https://webcache.googleusercontent.com"));
   EXPECT_FALSE(
-      IsURLWhitelisted("https://webcache.googleusercontent.com/search"));
-  EXPECT_FALSE(IsURLWhitelisted(
+      IsURLAllowlisted("https://webcache.googleusercontent.com/search"));
+  EXPECT_FALSE(IsURLAllowlisted(
       "https://webcache.googleusercontent.com/search?q=example.com"));
-  EXPECT_TRUE(IsURLWhitelisted(
+  EXPECT_TRUE(IsURLAllowlisted(
       "https://webcache.googleusercontent.com/search?q=cache:example.com"));
   EXPECT_TRUE(
-      IsURLWhitelisted("https://webcache.googleusercontent.com/"
+      IsURLAllowlisted("https://webcache.googleusercontent.com/"
                        "search?q=cache:example.com+search_query"));
   EXPECT_TRUE(
-      IsURLWhitelisted("https://webcache.googleusercontent.com/"
+      IsURLAllowlisted("https://webcache.googleusercontent.com/"
                        "search?q=cache:123456789-01:example.com+search_query"));
-  EXPECT_FALSE(IsURLWhitelisted(
+  EXPECT_FALSE(IsURLAllowlisted(
       "https://webcache.googleusercontent.com/search?q=cache:other.com"));
   EXPECT_FALSE(
-      IsURLWhitelisted("https://webcache.googleusercontent.com/"
+      IsURLAllowlisted("https://webcache.googleusercontent.com/"
                        "search?q=cache:other.com+example.com"));
   EXPECT_FALSE(
-      IsURLWhitelisted("https://webcache.googleusercontent.com/"
+      IsURLAllowlisted("https://webcache.googleusercontent.com/"
                        "search?q=cache:123456789-01:other.com+example.com"));
 
   // Google Translate URLs.
-  EXPECT_FALSE(IsURLWhitelisted("https://translate.google.com"));
-  EXPECT_FALSE(IsURLWhitelisted("https://translate.googleusercontent.com"));
+  EXPECT_FALSE(IsURLAllowlisted("https://translate.google.com"));
+  EXPECT_FALSE(IsURLAllowlisted("https://translate.googleusercontent.com"));
   EXPECT_TRUE(
-      IsURLWhitelisted("https://translate.google.com/translate?u=example.com"));
-  EXPECT_TRUE(IsURLWhitelisted(
+      IsURLAllowlisted("https://translate.google.com/translate?u=example.com"));
+  EXPECT_TRUE(IsURLAllowlisted(
       "https://translate.googleusercontent.com/translate?u=example.com"));
-  EXPECT_TRUE(IsURLWhitelisted(
+  EXPECT_TRUE(IsURLAllowlisted(
       "https://translate.google.com/translate?u=www.example.com"));
-  EXPECT_TRUE(IsURLWhitelisted(
+  EXPECT_TRUE(IsURLAllowlisted(
       "https://translate.google.com/translate?u=https://example.com"));
   EXPECT_FALSE(
-      IsURLWhitelisted("https://translate.google.com/translate?u=other.com"));
+      IsURLAllowlisted("https://translate.google.com/translate?u=other.com"));
 }
 
 TEST_F(SupervisedUserURLFilterTest, Inactive) {
@@ -195,9 +195,9 @@ TEST_F(SupervisedUserURLFilterTest, Inactive) {
   filter_.SetFromPatternsForTesting(list);
   run_loop_.Run();
 
-  // If the filter is inactive, every URL should be whitelisted.
-  EXPECT_TRUE(IsURLWhitelisted("http://google.com"));
-  EXPECT_TRUE(IsURLWhitelisted("https://www.example.com"));
+  // If the filter is inactive, every URL should be allowed.
+  EXPECT_TRUE(IsURLAllowlisted("http://google.com"));
+  EXPECT_TRUE(IsURLAllowlisted("https://www.example.com"));
 }
 
 TEST_F(SupervisedUserURLFilterTest, Scheme) {
@@ -209,15 +209,15 @@ TEST_F(SupervisedUserURLFilterTest, Scheme) {
   filter_.SetFromPatternsForTesting(list);
   run_loop_.Run();
 
-  EXPECT_TRUE(IsURLWhitelisted("http://secure.com"));
-  EXPECT_TRUE(IsURLWhitelisted("http://secure.com/whatever"));
-  EXPECT_TRUE(IsURLWhitelisted("ftp://secure.com/"));
-  EXPECT_TRUE(IsURLWhitelisted("ws://secure.com"));
-  EXPECT_FALSE(IsURLWhitelisted("https://secure.com/"));
-  EXPECT_FALSE(IsURLWhitelisted("wss://secure.com"));
-  EXPECT_TRUE(IsURLWhitelisted("http://www.secure.com"));
-  EXPECT_FALSE(IsURLWhitelisted("https://www.secure.com"));
-  EXPECT_FALSE(IsURLWhitelisted("wss://www.secure.com"));
+  EXPECT_TRUE(IsURLAllowlisted("http://secure.com"));
+  EXPECT_TRUE(IsURLAllowlisted("http://secure.com/whatever"));
+  EXPECT_TRUE(IsURLAllowlisted("ftp://secure.com/"));
+  EXPECT_TRUE(IsURLAllowlisted("ws://secure.com"));
+  EXPECT_FALSE(IsURLAllowlisted("https://secure.com/"));
+  EXPECT_FALSE(IsURLAllowlisted("wss://secure.com"));
+  EXPECT_TRUE(IsURLAllowlisted("http://www.secure.com"));
+  EXPECT_FALSE(IsURLAllowlisted("https://www.secure.com"));
+  EXPECT_FALSE(IsURLAllowlisted("wss://www.secure.com"));
 }
 
 TEST_F(SupervisedUserURLFilterTest, Path) {
@@ -227,12 +227,12 @@ TEST_F(SupervisedUserURLFilterTest, Path) {
   filter_.SetFromPatternsForTesting(list);
   run_loop_.Run();
 
-  EXPECT_TRUE(IsURLWhitelisted("http://path.to/ruin"));
-  EXPECT_TRUE(IsURLWhitelisted("https://path.to/ruin"));
-  EXPECT_TRUE(IsURLWhitelisted("http://path.to/ruins"));
-  EXPECT_TRUE(IsURLWhitelisted("http://path.to/ruin/signup"));
-  EXPECT_TRUE(IsURLWhitelisted("http://www.path.to/ruin"));
-  EXPECT_FALSE(IsURLWhitelisted("http://path.to/fortune"));
+  EXPECT_TRUE(IsURLAllowlisted("http://path.to/ruin"));
+  EXPECT_TRUE(IsURLAllowlisted("https://path.to/ruin"));
+  EXPECT_TRUE(IsURLAllowlisted("http://path.to/ruins"));
+  EXPECT_TRUE(IsURLAllowlisted("http://path.to/ruin/signup"));
+  EXPECT_TRUE(IsURLAllowlisted("http://www.path.to/ruin"));
+  EXPECT_FALSE(IsURLAllowlisted("http://path.to/fortune"));
 }
 
 TEST_F(SupervisedUserURLFilterTest, PathAndScheme) {
@@ -242,13 +242,13 @@ TEST_F(SupervisedUserURLFilterTest, PathAndScheme) {
   filter_.SetFromPatternsForTesting(list);
   run_loop_.Run();
 
-  EXPECT_TRUE(IsURLWhitelisted("https://s.aaa.com/path"));
-  EXPECT_TRUE(IsURLWhitelisted("https://s.aaa.com/path/bbb"));
-  EXPECT_FALSE(IsURLWhitelisted("http://s.aaa.com/path"));
-  EXPECT_FALSE(IsURLWhitelisted("https://aaa.com/path"));
-  EXPECT_FALSE(IsURLWhitelisted("https://x.aaa.com/path"));
-  EXPECT_FALSE(IsURLWhitelisted("https://s.aaa.com/bbb"));
-  EXPECT_FALSE(IsURLWhitelisted("https://s.aaa.com/"));
+  EXPECT_TRUE(IsURLAllowlisted("https://s.aaa.com/path"));
+  EXPECT_TRUE(IsURLAllowlisted("https://s.aaa.com/path/bbb"));
+  EXPECT_FALSE(IsURLAllowlisted("http://s.aaa.com/path"));
+  EXPECT_FALSE(IsURLAllowlisted("https://aaa.com/path"));
+  EXPECT_FALSE(IsURLAllowlisted("https://x.aaa.com/path"));
+  EXPECT_FALSE(IsURLAllowlisted("https://s.aaa.com/bbb"));
+  EXPECT_FALSE(IsURLAllowlisted("https://s.aaa.com/"));
 }
 
 TEST_F(SupervisedUserURLFilterTest, Host) {
@@ -258,9 +258,9 @@ TEST_F(SupervisedUserURLFilterTest, Host) {
   filter_.SetFromPatternsForTesting(list);
   run_loop_.Run();
 
-  EXPECT_TRUE(IsURLWhitelisted("http://www.example.com"));
-  EXPECT_FALSE(IsURLWhitelisted("http://example.com"));
-  EXPECT_FALSE(IsURLWhitelisted("http://subdomain.example.com"));
+  EXPECT_TRUE(IsURLAllowlisted("http://www.example.com"));
+  EXPECT_FALSE(IsURLAllowlisted("http://example.com"));
+  EXPECT_FALSE(IsURLAllowlisted("http://subdomain.example.com"));
 }
 
 TEST_F(SupervisedUserURLFilterTest, IPAddress) {
@@ -270,8 +270,8 @@ TEST_F(SupervisedUserURLFilterTest, IPAddress) {
   filter_.SetFromPatternsForTesting(list);
   run_loop_.Run();
 
-  EXPECT_TRUE(IsURLWhitelisted("http://123.123.123.123/"));
-  EXPECT_FALSE(IsURLWhitelisted("http://123.123.123.124/"));
+  EXPECT_TRUE(IsURLAllowlisted("http://123.123.123.123/"));
+  EXPECT_FALSE(IsURLAllowlisted("http://123.123.123.124/"));
 }
 
 TEST_F(SupervisedUserURLFilterTest, Canonicalization) {
@@ -286,29 +286,29 @@ TEST_F(SupervisedUserURLFilterTest, Canonicalization) {
   filter_.SetManualURLs(std::move(urls));
 
   // Base cases.
-  EXPECT_TRUE(IsURLWhitelisted("http://www.example.com/foo/"));
-  EXPECT_TRUE(IsURLWhitelisted(
-      "http://www.example.com/%C3%85t%C3%B8mstr%C3%B6m"));
+  EXPECT_TRUE(IsURLAllowlisted("http://www.example.com/foo/"));
+  EXPECT_TRUE(
+      IsURLAllowlisted("http://www.example.com/%C3%85t%C3%B8mstr%C3%B6m"));
 
   // Verify that non-URI characters are escaped.
-  EXPECT_TRUE(IsURLWhitelisted(
+  EXPECT_TRUE(IsURLAllowlisted(
       "http://www.example.com/\xc3\x85t\xc3\xb8mstr\xc3\xb6m"));
 
   // Verify that unnecessary URI escapes are unescaped.
-  EXPECT_TRUE(IsURLWhitelisted("http://www.example.com/%66%6F%6F/"));
+  EXPECT_TRUE(IsURLAllowlisted("http://www.example.com/%66%6F%6F/"));
 
   // Verify that the default port are removed.
-  EXPECT_TRUE(IsURLWhitelisted("http://www.example.com:80/foo/"));
+  EXPECT_TRUE(IsURLAllowlisted("http://www.example.com:80/foo/"));
 
   // Verify that scheme and hostname are lowercased.
-  EXPECT_TRUE(IsURLWhitelisted("htTp://wWw.eXamPle.com/foo/"));
-  EXPECT_TRUE(IsURLWhitelisted("HttP://WwW.mOOsE.orG/blurp/"));
+  EXPECT_TRUE(IsURLAllowlisted("htTp://wWw.eXamPle.com/foo/"));
+  EXPECT_TRUE(IsURLAllowlisted("HttP://WwW.mOOsE.orG/blurp/"));
 
   // Verify that UTF-8 in hostnames are converted to punycode.
-  EXPECT_TRUE(IsURLWhitelisted("http://www.\xe2\x98\x83\x0a.net/bla/"));
+  EXPECT_TRUE(IsURLAllowlisted("http://www.\xe2\x98\x83\x0a.net/bla/"));
 
   // Verify that query and ref are stripped.
-  EXPECT_TRUE(IsURLWhitelisted("http://www.example.com/foo/?bar=baz#ref"));
+  EXPECT_TRUE(IsURLAllowlisted("http://www.example.com/foo/?bar=baz#ref"));
 }
 
 TEST_F(SupervisedUserURLFilterTest, HasFilteredScheme) {
@@ -457,17 +457,17 @@ TEST_F(SupervisedUserURLFilterTest, PatternsWithoutConflicts) {
   filter_.SetManualHosts(std::move(hosts));
   filter_.SetDefaultFilteringBehavior(SupervisedUserURLFilter::BLOCK);
 
-  EXPECT_TRUE(IsURLWhitelisted("http://www.google.com/foo/"));
-  EXPECT_FALSE(IsURLWhitelisted("http://accounts.google.com/bar/"));
-  EXPECT_TRUE(IsURLWhitelisted("http://mail.google.com/moose/"));
-  EXPECT_FALSE(IsURLWhitelisted("http://www.google.co.uk/blurp/"));
+  EXPECT_TRUE(IsURLAllowlisted("http://www.google.com/foo/"));
+  EXPECT_FALSE(IsURLAllowlisted("http://accounts.google.com/bar/"));
+  EXPECT_TRUE(IsURLAllowlisted("http://mail.google.com/moose/"));
+  EXPECT_FALSE(IsURLAllowlisted("http://www.google.co.uk/blurp/"));
 
   filter_.SetDefaultFilteringBehavior(SupervisedUserURLFilter::ALLOW);
 
-  EXPECT_TRUE(IsURLWhitelisted("http://www.google.com/foo/"));
-  EXPECT_FALSE(IsURLWhitelisted("http://accounts.google.com/bar/"));
-  EXPECT_TRUE(IsURLWhitelisted("http://mail.google.com/moose/"));
-  EXPECT_TRUE(IsURLWhitelisted("http://www.google.co.uk/blurp/"));
+  EXPECT_TRUE(IsURLAllowlisted("http://www.google.com/foo/"));
+  EXPECT_FALSE(IsURLAllowlisted("http://accounts.google.com/bar/"));
+  EXPECT_TRUE(IsURLAllowlisted("http://mail.google.com/moose/"));
+  EXPECT_TRUE(IsURLAllowlisted("http://www.google.co.uk/blurp/"));
 }
 
 TEST_F(SupervisedUserURLFilterTest, PatternsWithConflicts) {
@@ -483,17 +483,17 @@ TEST_F(SupervisedUserURLFilterTest, PatternsWithConflicts) {
   filter_.SetManualHosts(std::move(hosts));
   filter_.SetDefaultFilteringBehavior(SupervisedUserURLFilter::BLOCK);
 
-  EXPECT_FALSE(IsURLWhitelisted("http://www.google.com/foo/"));
-  EXPECT_FALSE(IsURLWhitelisted("http://accounts.google.com/bar/"));
-  EXPECT_TRUE(IsURLWhitelisted("http://mail.google.com/moose/"));
-  EXPECT_FALSE(IsURLWhitelisted("http://www.google.co.uk/blurp/"));
+  EXPECT_FALSE(IsURLAllowlisted("http://www.google.com/foo/"));
+  EXPECT_FALSE(IsURLAllowlisted("http://accounts.google.com/bar/"));
+  EXPECT_TRUE(IsURLAllowlisted("http://mail.google.com/moose/"));
+  EXPECT_FALSE(IsURLAllowlisted("http://www.google.co.uk/blurp/"));
 
   filter_.SetDefaultFilteringBehavior(SupervisedUserURLFilter::ALLOW);
 
-  EXPECT_FALSE(IsURLWhitelisted("http://www.google.com/foo/"));
-  EXPECT_FALSE(IsURLWhitelisted("http://accounts.google.com/bar/"));
-  EXPECT_TRUE(IsURLWhitelisted("http://mail.google.com/moose/"));
-  EXPECT_FALSE(IsURLWhitelisted("http://www.google.co.uk/blurp/"));
+  EXPECT_FALSE(IsURLAllowlisted("http://www.google.com/foo/"));
+  EXPECT_FALSE(IsURLAllowlisted("http://accounts.google.com/bar/"));
+  EXPECT_TRUE(IsURLAllowlisted("http://mail.google.com/moose/"));
+  EXPECT_FALSE(IsURLAllowlisted("http://www.google.co.uk/blurp/"));
 }
 
 TEST_F(SupervisedUserURLFilterTest, Reason) {
@@ -509,24 +509,24 @@ TEST_F(SupervisedUserURLFilterTest, Reason) {
 
   filter_.SetDefaultFilteringBehavior(SupervisedUserURLFilter::BLOCK);
 
-  ExpectURLInDefaultBlacklist("https://m.youtube.com/feed/trending");
-  ExpectURLInDefaultBlacklist("https://com.google");
-  ExpectURLInManualWhitelist("https://youtube.com/feed/trending");
-  ExpectURLInManualWhitelist("https://google.com/humans.txt");
-  ExpectURLInManualBlacklist("https://youtube.com/robots.txt");
-  ExpectURLInManualBlacklist("https://google.co.uk/robots.txt");
+  ExpectURLInDefaultDenylist("https://m.youtube.com/feed/trending");
+  ExpectURLInDefaultDenylist("https://com.google");
+  ExpectURLInManualAllowlist("https://youtube.com/feed/trending");
+  ExpectURLInManualAllowlist("https://google.com/humans.txt");
+  ExpectURLInManualDenylist("https://youtube.com/robots.txt");
+  ExpectURLInManualDenylist("https://google.co.uk/robots.txt");
 
   filter_.SetDefaultFilteringBehavior(SupervisedUserURLFilter::ALLOW);
 
-  ExpectURLInDefaultWhitelist("https://m.youtube.com/feed/trending");
-  ExpectURLInDefaultWhitelist("https://com.google");
-  ExpectURLInManualWhitelist("https://youtube.com/feed/trending");
-  ExpectURLInManualWhitelist("https://google.com/humans.txt");
-  ExpectURLInManualBlacklist("https://youtube.com/robots.txt");
-  ExpectURLInManualBlacklist("https://google.co.uk/robots.txt");
+  ExpectURLInDefaultAllowlist("https://m.youtube.com/feed/trending");
+  ExpectURLInDefaultAllowlist("https://com.google");
+  ExpectURLInManualAllowlist("https://youtube.com/feed/trending");
+  ExpectURLInManualAllowlist("https://google.com/humans.txt");
+  ExpectURLInManualDenylist("https://youtube.com/robots.txt");
+  ExpectURLInManualDenylist("https://google.co.uk/robots.txt");
 }
 
-TEST_F(SupervisedUserURLFilterTest, WhitelistsPatterns) {
+TEST_F(SupervisedUserURLFilterTest, AllowlistsPatterns) {
   std::vector<std::string> patterns1;
   patterns1.push_back("google.com");
   patterns1.push_back("example.com");
@@ -557,22 +557,22 @@ TEST_F(SupervisedUserURLFilterTest, WhitelistsPatterns) {
   filter_.SetDefaultFilteringBehavior(SupervisedUserURLFilter::BLOCK);
   run_loop_.Run();
 
-  std::map<std::string, base::string16> expected_whitelists;
-  expected_whitelists[id1] = title1;
-  expected_whitelists[id2] = title2;
+  std::map<std::string, base::string16> expected_allowlists;
+  expected_allowlists[id1] = title1;
+  expected_allowlists[id2] = title2;
 
-  std::map<std::string, base::string16> actual_whitelists =
-      filter_.GetMatchingWhitelistTitles(GURL("https://example.com"));
-  ASSERT_EQ(expected_whitelists, actual_whitelists);
+  std::map<std::string, base::string16> actual_allowlists =
+      filter_.GetMatchingAllowlistTitles(GURL("https://example.com"));
+  ASSERT_EQ(expected_allowlists, actual_allowlists);
 
-  expected_whitelists.erase(id2);
+  expected_allowlists.erase(id2);
 
-  actual_whitelists =
-      filter_.GetMatchingWhitelistTitles(GURL("https://google.com"));
-  ASSERT_EQ(expected_whitelists, actual_whitelists);
+  actual_allowlists =
+      filter_.GetMatchingAllowlistTitles(GURL("https://google.com"));
+  ASSERT_EQ(expected_allowlists, actual_allowlists);
 }
 
-TEST_F(SupervisedUserURLFilterTest, WhitelistsHostnameHashes) {
+TEST_F(SupervisedUserURLFilterTest, AllowlistsHostnameHashes) {
   std::vector<std::string> patterns1;
   patterns1.push_back("google.com");
   patterns1.push_back("example.com");
@@ -618,20 +618,20 @@ TEST_F(SupervisedUserURLFilterTest, WhitelistsHostnameHashes) {
   filter_.SetDefaultFilteringBehavior(SupervisedUserURLFilter::BLOCK);
   run_loop_.Run();
 
-  std::map<std::string, base::string16> expected_whitelists;
-  expected_whitelists[id1] = title1;
-  expected_whitelists[id2] = title2;
-  expected_whitelists[id3] = title3;
+  std::map<std::string, base::string16> expected_allowlists;
+  expected_allowlists[id1] = title1;
+  expected_allowlists[id2] = title2;
+  expected_allowlists[id3] = title3;
 
-  std::map<std::string, base::string16> actual_whitelists =
-      filter_.GetMatchingWhitelistTitles(GURL("http://example.com"));
-  ASSERT_EQ(expected_whitelists, actual_whitelists);
+  std::map<std::string, base::string16> actual_allowlists =
+      filter_.GetMatchingAllowlistTitles(GURL("http://example.com"));
+  ASSERT_EQ(expected_allowlists, actual_allowlists);
 
-  expected_whitelists.erase(id1);
+  expected_allowlists.erase(id1);
 
-  actual_whitelists =
-      filter_.GetMatchingWhitelistTitles(GURL("https://secure.com"));
-  ASSERT_EQ(expected_whitelists, actual_whitelists);
+  actual_allowlists =
+      filter_.GetMatchingAllowlistTitles(GURL("https://secure.com"));
+  ASSERT_EQ(expected_allowlists, actual_allowlists);
 }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -640,7 +640,7 @@ TEST_F(SupervisedUserURLFilterTest, ChromeWebstoreDownloadsAreAlwaysAllowed) {
   // crx file from "https://clients2.google.com/service/update2/", which
   // redirects to "https://clients2.googleusercontent.com/crx/blobs/"
   // or "https://chrome.google.com/webstore/download/".
-  // All URLs should be whitelisted regardless from the default filtering
+  // All URLs should be allowed regardless from the default filtering
   // behavior.
   GURL crx_download_url1(
       "https://clients2.google.com/service/update2/"
@@ -684,25 +684,25 @@ TEST_F(SupervisedUserURLFilterTest, ChromeWebstoreDownloadsAreAlwaysAllowed) {
 
 TEST_F(SupervisedUserURLFilterTest, GoogleFamiliesAlwaysAllowed) {
   filter_.SetDefaultFilteringBehavior(SupervisedUserURLFilter::BLOCK);
-  EXPECT_TRUE(IsURLWhitelisted("https://families.google.com/"));
-  EXPECT_TRUE(IsURLWhitelisted("https://families.google.com"));
-  EXPECT_TRUE(IsURLWhitelisted("https://families.google.com/something"));
-  EXPECT_TRUE(IsURLWhitelisted("http://families.google.com/"));
-  EXPECT_FALSE(IsURLWhitelisted("https://families.google.com:8080/"));
-  EXPECT_FALSE(IsURLWhitelisted("https://subdomain.families.google.com/"));
+  EXPECT_TRUE(IsURLAllowlisted("https://families.google.com/"));
+  EXPECT_TRUE(IsURLAllowlisted("https://families.google.com"));
+  EXPECT_TRUE(IsURLAllowlisted("https://families.google.com/something"));
+  EXPECT_TRUE(IsURLAllowlisted("http://families.google.com/"));
+  EXPECT_FALSE(IsURLAllowlisted("https://families.google.com:8080/"));
+  EXPECT_FALSE(IsURLAllowlisted("https://subdomain.families.google.com/"));
 }
 
 TEST_F(SupervisedUserURLFilterTest, PlayTermsAlwaysAllowed) {
   filter_.SetDefaultFilteringBehavior(SupervisedUserURLFilter::BLOCK);
-  EXPECT_TRUE(IsURLWhitelisted("https://play.google.com/about/play-terms"));
-  EXPECT_TRUE(IsURLWhitelisted("https://play.google.com/about/play-terms/"));
-  EXPECT_TRUE(IsURLWhitelisted(
+  EXPECT_TRUE(IsURLAllowlisted("https://play.google.com/about/play-terms"));
+  EXPECT_TRUE(IsURLAllowlisted("https://play.google.com/about/play-terms/"));
+  EXPECT_TRUE(IsURLAllowlisted(
       "https://play.google.com/intl/pt-BR_pt/about/play-terms/"));
   EXPECT_TRUE(
-      IsURLWhitelisted("https://play.google.com/about/play-terms/index.html"));
-  EXPECT_FALSE(IsURLWhitelisted("http://play.google.com/about/play-terms/"));
+      IsURLAllowlisted("https://play.google.com/about/play-terms/index.html"));
+  EXPECT_FALSE(IsURLAllowlisted("http://play.google.com/about/play-terms/"));
   EXPECT_FALSE(
-      IsURLWhitelisted("https://subdomain.play.google.com/about/play-terms/"));
-  EXPECT_FALSE(IsURLWhitelisted("https://play.google.com/"));
-  EXPECT_FALSE(IsURLWhitelisted("https://play.google.com/about"));
+      IsURLAllowlisted("https://subdomain.play.google.com/about/play-terms/"));
+  EXPECT_FALSE(IsURLAllowlisted("https://play.google.com/"));
+  EXPECT_FALSE(IsURLAllowlisted("https://play.google.com/about"));
 }

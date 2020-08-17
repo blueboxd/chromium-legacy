@@ -32,6 +32,13 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+constexpr char kExampleCom[] = "http://www.example.com/";
+constexpr char kAndroid[] = "android://hash@com.example.my.app";
+constexpr char kUsername[] = "test@egmail.com";
+constexpr char kPassword[] = "test";
+}
+
 // Test class that conforms to PasswordDetailsHanler in order to test the
 // presenter methods are called correctly.
 @interface FakePasswordDetailsHandler : NSObject <PasswordDetailsHandler>
@@ -100,24 +107,26 @@ class PasswordDetailsTableViewControllerTest
     return controller;
   }
 
-  void SetPassword(bool isCompromised = false) {
+  void SetPassword(std::string website = kExampleCom,
+                   std::string username = kUsername,
+                   std::string password = kPassword,
+                   bool isCompromised = false) {
     auto form = autofill::PasswordForm();
-    form.url = GURL("http://www.example.com/");
-    form.action = GURL("http://www.example.com/accounts/Login");
-    form.username_element = base::ASCIIToUTF16("Email");
-    form.username_value = base::ASCIIToUTF16("test@egmail.com");
-    form.password_element = base::ASCIIToUTF16("Passwd");
-    form.password_value = base::ASCIIToUTF16("test");
-    form.submit_element = base::ASCIIToUTF16("signIn");
-    form.signon_realm = "http://www.example.com/";
+    form.signon_realm = website;
+    form.username_value = base::ASCIIToUTF16(username);
+    form.password_value = base::ASCIIToUTF16(password);
+    form.url = GURL(website);
+    form.action = GURL(website + "/action");
+    form.username_element = base::ASCIIToUTF16("email");
     form.scheme = autofill::PasswordForm::Scheme::kHtml;
-    PasswordDetails* password =
+
+    PasswordDetails* passwordDetails =
         [[PasswordDetails alloc] initWithPasswordForm:form];
-    password.compromised = isCompromised;
+    passwordDetails.compromised = isCompromised;
 
     PasswordDetailsTableViewController* passwords_controller =
         static_cast<PasswordDetailsTableViewController*>(controller());
-    [passwords_controller setPassword:password];
+    [passwords_controller setPassword:passwordDetails];
   }
 
   void CheckEditCellText(NSString* expected_text, int section, int item) {
@@ -169,7 +178,7 @@ TEST_F(PasswordDetailsTableViewControllerTest, TestPassword) {
 
 // Tests that compromised password is displayed properly.
 TEST_F(PasswordDetailsTableViewControllerTest, TestCompromisedPassword) {
-  SetPassword(true);
+  SetPassword(kExampleCom, kUsername, kPassword, true);
   EXPECT_EQ(2, NumberOfSections());
   EXPECT_EQ(3, NumberOfItemsInSection(0));
   EXPECT_EQ(2, NumberOfItemsInSection(1));
@@ -300,7 +309,7 @@ TEST_F(PasswordDetailsTableViewControllerTest, TestEditPasswordConfirmed) {
   EXPECT_FALSE(passwordDetails.tableView.editing);
 }
 
-// Tests  password editing. User cancelled this action.
+// Tests password editing. User cancelled this action.
 TEST_F(PasswordDetailsTableViewControllerTest, TestEditPasswordCancel) {
   SetPassword();
 
@@ -318,4 +327,21 @@ TEST_F(PasswordDetailsTableViewControllerTest, TestEditPasswordCancel) {
   [passwordDetails editButtonPressed];
   EXPECT_FALSE(delegate().password);
   EXPECT_TRUE(passwordDetails.tableView.editing);
+}
+
+// Tests android compromised credential is displayed without change password
+// button.
+TEST_F(PasswordDetailsTableViewControllerTest,
+       TestAndroidCompromisedCredential) {
+  SetPassword(kAndroid, kUsername, kPassword, true);
+  EXPECT_EQ(2, NumberOfSections());
+  EXPECT_EQ(3, NumberOfItemsInSection(0));
+  EXPECT_EQ(1, NumberOfItemsInSection(1));
+
+  CheckEditCellText(@"com.example.my.app", 0, 0);
+  CheckEditCellText(@"test@egmail.com", 0, 1);
+  CheckEditCellText(kMaskedPassword, 0, 2);
+
+  CheckDetailItemTextWithId(IDS_IOS_CHANGE_COMPROMISED_PASSWORD_DESCRIPTION, 1,
+                            0);
 }

@@ -35,10 +35,9 @@ bool IsTimeDeltaWithinJitter(const base::TimeDelta& base_time_delta,
   if (base_time_delta.is_zero())
     return jittered_time_delta.is_zero();
 
-  base::TimeDelta difference =
+  const base::TimeDelta difference =
       (jittered_time_delta - base_time_delta).magnitude();
-  double percentage_of_base = difference / base_time_delta;
-  return percentage_of_base < max_jitter_ratio;
+  return (difference / base_time_delta) < max_jitter_ratio;
 }
 
 // Test harness for the SyncSchedulerImpl to create MockOneShotTimers.

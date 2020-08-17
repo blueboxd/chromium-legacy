@@ -103,11 +103,11 @@ std::string FilteringBehaviorReasonToString(
       return "Default";
     case supervised_user_error_page::ASYNC_CHECKER:
       return "AsyncChecker";
-    case supervised_user_error_page::BLACKLIST:
+    case supervised_user_error_page::DENYLIST:
       return "Blacklist";
     case supervised_user_error_page::MANUAL:
       return "Manual";
-    case supervised_user_error_page::WHITELIST:
+    case supervised_user_error_page::ALLOWLIST:
       return "Whitelist";
     case supervised_user_error_page::NOT_SIGNED_IN:
       // Should never happen, only used for requests from WebView
@@ -192,7 +192,7 @@ void SupervisedUserInternalsMessageHandler::HandleTryURL(
   }
 
   std::map<std::string, base::string16> allowlists =
-      filter->GetMatchingWhitelistTitles(url);
+      filter->GetMatchingAllowlistTitles(url);
   filter->GetFilteringBehaviorForURLWithAsyncChecks(
       url,
       base::BindOnce(&SupervisedUserInternalsMessageHandler::OnTryURLResult,
@@ -218,7 +218,7 @@ void SupervisedUserInternalsMessageHandler::SendBasicInfo() {
   SupervisedUserURLFilter* filter = GetSupervisedUserService()->GetURLFilter();
 
   base::ListValue* section_filter = AddSection(section_list.get(), "Filter");
-  AddSectionEntry(section_filter, "Blacklist active", filter->HasBlacklist());
+  AddSectionEntry(section_filter, "Blacklist active", filter->HasDenylist());
   AddSectionEntry(section_filter, "Online checks active",
                   filter->HasAsyncURLChecker());
   AddSectionEntry(section_filter, "Default behavior",

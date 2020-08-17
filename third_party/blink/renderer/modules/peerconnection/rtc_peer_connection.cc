@@ -530,6 +530,11 @@ bool ContainsLegacySimulcast(String sdp) {
   return sdp.Find("\na=ssrc-group:SIM") != kNotFound;
 }
 
+bool ContainsLegacyRtpDataChannel(String sdp) {
+  // Looks for the non-spec legacy RTP data channel.
+  return sdp.Find("google-data/90000") != kNotFound;
+}
+
 enum class SdpFormat {
   kSimple,
   kComplexPlanB,
@@ -1487,6 +1492,10 @@ ScriptPromise RTCPeerConnection::setRemoteDescription(
 
   NoteCallSetupStateEventPending(SetSdpOperationType::kSetRemoteDescription,
                                  *session_description_init);
+  if (ContainsLegacyRtpDataChannel(session_description_init->sdp())) {
+    ExecutionContext* context = ExecutionContext::From(script_state);
+    UseCounter::Count(context, WebFeature::kRTCLegacyRtpDataChannelNegotiated);
+  }
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
   auto* request = MakeGarbageCollected<RTCVoidRequestPromiseImpl>(
@@ -1517,7 +1526,6 @@ ScriptPromise RTCPeerConnection::setRemoteDescription(
                       session_description_init);
   }
   ExecutionContext* context = ExecutionContext::From(script_state);
-  CHECK(context);
   if (success_callback && error_callback) {
     UseCounter::Count(
         context,
@@ -1533,6 +1541,9 @@ ScriptPromise RTCPeerConnection::setRemoteDescription(
           context,
           WebFeature::
               kRTCPeerConnectionSetRemoteDescriptionLegacyNoFailureCallback);
+  }
+  if (ContainsLegacyRtpDataChannel(session_description_init->sdp())) {
+    UseCounter::Count(context, WebFeature::kRTCLegacyRtpDataChannelNegotiated);
   }
 
   if (CallErrorCallbackIfSignalingStateClosed(signaling_state_, error_callback))

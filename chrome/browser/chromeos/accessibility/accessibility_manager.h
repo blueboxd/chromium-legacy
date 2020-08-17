@@ -36,7 +36,6 @@
 #include "ui/base/ime/chromeos/input_method_manager.h"
 
 class Browser;
-class SwitchAccessEventHandlerDelegate;
 
 namespace ash {
 struct AccessibilityFocusRingInfo;
@@ -80,14 +79,12 @@ struct AccessibilityStatusEventDetails {
   bool enabled;
 };
 
-typedef base::RepeatingCallback<void(const AccessibilityStatusEventDetails&)>
-    AccessibilityStatusCallback;
-
-typedef base::CallbackList<void(const AccessibilityStatusEventDetails&)>
-    AccessibilityStatusCallbackList;
-
-typedef AccessibilityStatusCallbackList::Subscription
-    AccessibilityStatusSubscription;
+using AccessibilityStatusCallbackList =
+    base::RepeatingCallbackList<void(const AccessibilityStatusEventDetails&)>;
+using AccessibilityStatusCallback =
+    AccessibilityStatusCallbackList::CallbackType;
+using AccessibilityStatusSubscription =
+    AccessibilityStatusCallbackList::Subscription;
 
 class AccessibilityPanelWidgetObserver;
 
@@ -286,9 +283,6 @@ class AccessibilityManager
     return keyboard_listener_extension_id_;
   }
 
-  // Set the keys to be captured by Switch Access.
-  void SetSwitchAccessKeys(const std::set<int>& key_codes);
-
   // Unloads Switch Access.
   void OnSwitchAccessDisabled();
 
@@ -479,9 +473,6 @@ class AccessibilityManager
       select_to_speak_event_handler_delegate_;
 
   std::unique_ptr<AccessibilityExtensionLoader> switch_access_loader_;
-
-  std::unique_ptr<SwitchAccessEventHandlerDelegate>
-      switch_access_event_handler_delegate_;
 
   std::map<std::string, std::set<std::string>>
       focus_ring_names_for_extension_id_;

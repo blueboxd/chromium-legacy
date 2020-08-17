@@ -292,11 +292,10 @@ void RenderFrameHostManager::DidNavigateFrame(
     bool was_caused_by_user_gesture,
     bool is_same_document_navigation,
     bool clear_proxies_on_commit,
-    const blink::FramePolicy& frame_policy,
-    bool should_replace_current_entry) {
+    const blink::FramePolicy& frame_policy) {
   CommitPendingIfNecessary(render_frame_host, was_caused_by_user_gesture,
-                           is_same_document_navigation, clear_proxies_on_commit,
-                           should_replace_current_entry);
+                           is_same_document_navigation,
+                           clear_proxies_on_commit);
 
   // Make sure any dynamic changes to this frame's sandbox flags and feature
   // policy that were made prior to navigation take effect.  This should only
@@ -309,8 +308,7 @@ void RenderFrameHostManager::CommitPendingIfNecessary(
     RenderFrameHostImpl* render_frame_host,
     bool was_caused_by_user_gesture,
     bool is_same_document_navigation,
-    bool clear_proxies_on_commit,
-    bool should_replace_current_entry) {
+    bool clear_proxies_on_commit) {
   if (!speculative_render_frame_host_) {
     // There's no speculative RenderFrameHost so it must be that the current
     // renderer process completed a navigation.
@@ -327,8 +325,8 @@ void RenderFrameHostManager::CommitPendingIfNecessary(
     // speculative RenderFrameHost replaces the current one in the commit call
     // below.
     CommitPending(std::move(speculative_render_frame_host_),
-                  std::move(bfcache_entry_to_restore_), clear_proxies_on_commit,
-                  should_replace_current_entry);
+                  std::move(bfcache_entry_to_restore_),
+                  clear_proxies_on_commit);
     frame_tree_node_->ResetNavigationRequest(false);
     return;
   }
@@ -430,8 +428,7 @@ void RenderFrameHostManager::OnDidSetFramePolicyHeaders() {
 }
 
 void RenderFrameHostManager::UnloadOldFrame(
-    std::unique_ptr<RenderFrameHostImpl> old_render_frame_host,
-    bool should_replace_current_entry) {
+    std::unique_ptr<RenderFrameHostImpl> old_render_frame_host) {
   TRACE_EVENT1("navigation", "RenderFrameHostManager::UnloadOldFrame",
                "FrameTreeNode id", frame_tree_node_->frame_tree_node_id());
 
@@ -482,15 +479,6 @@ void RenderFrameHostManager::UnloadOldFrame(
         delegate_->GetControllerForRenderManager().GetBackForwardCache();
     auto can_store =
         back_forward_cache.CanStorePageNow(old_render_frame_host.get());
-
-    // Do not store the page in the back-forward cache if the current navigation
-    // entry is going to be replaced by a pending one, making it impossible to
-    // navigate back to the current page.
-    if (should_replace_current_entry) {
-      can_store.No(BackForwardCacheMetrics::NotRestoredReason::
-                       kNavigationEntryWasReplaced);
-    }
-
     TRACE_EVENT1("navigation", "BackForwardCache_MaybeStorePage", "can_store",
                  can_store.ToString());
     if (can_store) {
@@ -832,8 +820,7 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
         navigation_rfh->SwapIn();
       navigation_rfh->OnCommittedSpeculativeBeforeNavigationCommit();
       CommitPending(std::move(speculative_render_frame_host_), nullptr,
-                    request->coop_status().require_browsing_instance_swap(),
-                    false /* should_replace_current_entry */);
+                    request->coop_status().require_browsing_instance_swap());
     }
   }
   DCHECK(navigation_rfh &&
@@ -2645,8 +2632,7 @@ RenderFrameHostManager::GetFrameTokenForSiteInstance(
 void RenderFrameHostManager::CommitPending(
     std::unique_ptr<RenderFrameHostImpl> pending_rfh,
     std::unique_ptr<BackForwardCacheImpl::Entry> pending_bfcache_entry,
-    bool clear_proxies_on_commit,
-    bool should_replace_current_entry) {
+    bool clear_proxies_on_commit) {
   TRACE_EVENT1("navigation", "RenderFrameHostManager::CommitPending",
                "FrameTreeNode id", frame_tree_node_->frame_tree_node_id());
   CHECK(pending_rfh);
@@ -2839,8 +2825,7 @@ void RenderFrameHostManager::CommitPending(
   // Unload the old frame now that the new one is visible.
   // This will unload it and schedule it for deletion when the unload ack
   // arrives (or immediately if the process isn't live).
-  UnloadOldFrame(std::move(old_render_frame_host),
-                 should_replace_current_entry);
+  UnloadOldFrame(std::move(old_render_frame_host));
 
   // Since the new RenderFrameHost is now committed, there must be no proxies
   // for its SiteInstance. Delete any existing ones.
@@ -3207,8 +3192,7 @@ void RenderFrameHostManager::CreateNewFrameForInnerDelegateAttachIfNecessary() {
   // WebContents::AttachToOuterWebContentsFrame is called.
   speculative_render_frame_host_->SwapIn();
   CommitPending(std::move(speculative_render_frame_host_), nullptr,
-                false /* clear_proxies_on_commit */,
-                false /* should_replace_current_entry */);
+                false /* clear_proxies_on_commit */);
   NotifyPrepareForInnerDelegateAttachComplete(true /* success */);
 }
 

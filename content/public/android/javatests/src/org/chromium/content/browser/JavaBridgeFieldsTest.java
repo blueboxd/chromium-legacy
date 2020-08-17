@@ -12,11 +12,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.test.params.BaseJUnit4RunnerDelegate;
-import org.chromium.base.test.params.ParameterAnnotations.UseMethodParameter;
-import org.chromium.base.test.params.ParameterAnnotations.UseMethodParameterBefore;
-import org.chromium.base.test.params.ParameterAnnotations.UseRunnerDelegate;
-import org.chromium.base.test.params.ParameterizedRunner;
+import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.JavaBridgeActivityTestRule.Controller;
 
@@ -24,8 +20,7 @@ import org.chromium.content.browser.JavaBridgeActivityTestRule.Controller;
  * Part of the test suite for the Java Bridge. This test tests the
  * use of fields.
  */
-@RunWith(ParameterizedRunner.class)
-@UseRunnerDelegate(BaseJUnit4RunnerDelegate.class)
+@RunWith(BaseJUnit4ClassRunner.class)
 public class JavaBridgeFieldsTest {
     @Rule
     public JavaBridgeActivityTestRule mActivityTestRule =
@@ -61,11 +56,6 @@ public class JavaBridgeFieldsTest {
     private static class CustomType {
     }
 
-    @UseMethodParameterBefore(JavaBridgeActivityTestRule.MojoTestParams.class)
-    public void setupMojoTest(boolean useMojo) {
-        mActivityTestRule.setupMojoTest(useMojo);
-    }
-
     TestObject mTestObject;
 
     @Before
@@ -85,8 +75,7 @@ public class JavaBridgeFieldsTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView", "Android-JavaBridge"})
-    @UseMethodParameter(JavaBridgeActivityTestRule.MojoTestParams.class)
-    public void testFieldTypes(boolean useMojo) throws Throwable {
+    public void testFieldTypes() throws Throwable {
         Assert.assertEquals(
                 "undefined", executeJavaScriptAndGetStringResult("typeof testObject.booleanField"));
         Assert.assertEquals(

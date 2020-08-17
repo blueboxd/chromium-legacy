@@ -24,7 +24,8 @@
 
 namespace device {
 class FidoAuthenticator;
-}
+class FidoDiscoveryFactory;
+}  // namespace device
 
 namespace url {
 class Origin;
@@ -148,7 +149,8 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
   // request.
   virtual void ConfigureCable(
       const url::Origin& origin,
-      base::span<const device::CableDiscoveryData> pairings_from_extension);
+      base::span<const device::CableDiscoveryData> pairings_from_extension,
+      device::FidoDiscoveryFactory* fido_discovery_factory);
 
   // SelectAccount is called to allow the embedder to select between one or more
   // accounts. This is triggered when the web page requests an unspecified
@@ -188,10 +190,6 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
   virtual base::Optional<bool>
   IsUserVerifyingPlatformAuthenticatorAvailableOverride();
 
-  // Returns a FidoDiscoveryFactory that has been configured for the current
-  // environment.
-  virtual device::FidoDiscoveryFactory* GetDiscoveryFactory();
-
   // Saves transport type the user used during WebAuthN API so that the
   // WebAuthN UI will default to the same transport type during next API call.
   virtual void UpdateLastTransportUsed(device::FidoTransportProtocol transport);
@@ -230,18 +228,7 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
   void OnRetryUserVerification(int attempts) override;
   void OnInternalUserVerificationLocked() override;
 
- protected:
-  // CustomizeDiscoveryFactory may be overridden in order to configure
-  // |discovery_factory|.
-  virtual void CustomizeDiscoveryFactory(
-      device::FidoDiscoveryFactory* discovery_factory);
-  device::FidoDiscoveryFactory* discovery_factory();
-
  private:
-#if !defined(OS_ANDROID)
-  std::unique_ptr<device::FidoDiscoveryFactory> discovery_factory_;
-#endif  // !defined(OS_ANDROID)
-
   DISALLOW_COPY_AND_ASSIGN(AuthenticatorRequestClientDelegate);
 };
 

@@ -54,14 +54,14 @@ class LazySafeBrowsingDatabaseManager {
     database_changed_callback_list_.Notify();
   }
 
-  std::unique_ptr<base::CallbackList<void()>::Subscription>
+  std::unique_ptr<base::RepeatingClosureList::Subscription>
   RegisterDatabaseChangedCallback(const base::RepeatingClosure& cb) {
     return database_changed_callback_list_.Add(cb);
   }
 
  private:
   scoped_refptr<SafeBrowsingDatabaseManager> instance_;
-  base::CallbackList<void()> database_changed_callback_list_;
+  base::RepeatingClosureList database_changed_callback_list_;
 };
 
 static base::LazyInstance<LazySafeBrowsingDatabaseManager>::DestructorAtExit
@@ -75,14 +75,15 @@ class SafeBrowsingClientImpl
     : public SafeBrowsingDatabaseManager::Client,
       public base::RefCountedThreadSafe<SafeBrowsingClientImpl> {
  public:
-  using OnResultCallback = base::Callback<void(const std::set<std::string>&)>;
+  using OnResultCallback =
+      base::OnceCallback<void(const std::set<std::string>&)>;
 
   // Constructs a client to query the database manager for |extension_ids| and
   // run |callback| with the IDs of those which have been blocklisted.
   static void Start(const std::set<std::string>& extension_ids,
-                    const OnResultCallback& callback) {
+                    OnResultCallback callback) {
     auto safe_browsing_client = base::WrapRefCounted(
-        new SafeBrowsingClientImpl(extension_ids, callback));
+        new SafeBrowsingClientImpl(extension_ids, std::move(callback)));
     content::GetIOThreadTaskRunner({})->PostTask(
         FROM_HERE,
         base::BindOnce(&SafeBrowsingClientImpl::StartCheck,
@@ -94,9 +95,9 @@ class SafeBrowsingClientImpl
   friend class base::RefCountedThreadSafe<SafeBrowsingClientImpl>;
 
   SafeBrowsingClientImpl(const std::set<std::string>& extension_ids,
-                         const OnResultCallback& callback)
+                         OnResultCallback callback)
       : callback_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-        callback_(callback) {}
+        callback_(std::move(callback)) {}
 
   ~SafeBrowsingClientImpl() override {}
 
@@ -108,7 +109,8 @@ class SafeBrowsingClientImpl
     if (database_manager->CheckExtensionIDs(extension_ids, this)) {
       // Definitely not blocklisted. Callback immediately.
       callback_task_runner_->PostTask(
-          FROM_HERE, base::BindOnce(callback_, std::set<std::string>()));
+          FROM_HERE,
+          base::BindOnce(std::move(callback_), std::set<std::string>()));
       return;
     }
     // Something might be blocklisted, response will come in
@@ -118,7 +120,8 @@ class SafeBrowsingClientImpl
 
   void OnCheckExtensionsResult(const std::set<std::string>& hits) override {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    callback_task_runner_->PostTask(FROM_HERE, base::BindOnce(callback_, hits));
+    callback_task_runner_->PostTask(FROM_HERE,
+                                    base::BindOnce(std::move(callback_), hits));
     Release();  // Balanced in StartCheck.
   }
 

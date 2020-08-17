@@ -1798,8 +1798,11 @@ void AcceleratorControllerImpl::Init() {
   RegisterAccelerators(kAcceleratorData, kAcceleratorDataLength);
 
   if (::features::IsNewShortcutMappingEnabled()) {
-    RegisterAccelerators(kNewAdditionalAcceleratorData,
-                         kNewAdditionalAcceleratorDataLength);
+    RegisterAccelerators(kEnableWithNewMappingAcceleratorData,
+                         kEnableWithNewMappingAcceleratorDataLength);
+  } else {
+    RegisterAccelerators(kDisableWithNewMappingAcceleratorData,
+                         kDisableWithNewMappingAcceleratorDataLength);
   }
 
   RegisterDeprecatedAccelerators();

@@ -226,11 +226,7 @@ public class ContentShellActivityTestRule extends ActivityTestRule<ContentShellA
     }
 
     public JavascriptInjector getJavascriptInjector() {
-        return getJavascriptInjector(false);
-    }
-
-    public JavascriptInjector getJavascriptInjector(boolean useMojo) {
-        return JavascriptInjector.fromWebContents(getWebContents(), useMojo);
+        return JavascriptInjector.fromWebContents(getWebContents());
     }
 
     /**

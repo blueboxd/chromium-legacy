@@ -103,6 +103,14 @@ class COMPONENT_EXPORT(STORAGE_SERVICE_FILESYSTEM_SUPPORT) FilesystemProxy {
   // base::File::Info value on success, or null on failure.
   base::Optional<base::File::Info> GetFileInfo(const base::FilePath& path);
 
+  // Retrieves information about access rights for a path in the filesystem.
+  // Returns a valid PathAccessInfo on success, or null on failure.
+  struct PathAccessInfo {
+    bool can_read = false;
+    bool can_write = false;
+  };
+  base::Optional<PathAccessInfo> GetPathAccess(const base::FilePath& path);
+
   // Renames a file from |old_path| to |new_path|. Must be atomic.
   base::File::Error RenameFile(const base::FilePath& old_path,
                                const base::FilePath& new_path);
@@ -121,6 +129,9 @@ class COMPONENT_EXPORT(STORAGE_SERVICE_FILESYSTEM_SUPPORT) FilesystemProxy {
     virtual base::File::Error Release() = 0;
   };
   FileErrorOr<std::unique_ptr<FileLock>> LockFile(const base::FilePath& path);
+
+  // Sets the length of the given file to |length| bytes.
+  bool SetOpenedFileLength(base::File* file, uint64_t length);
 
  private:
   // For restricted FilesystemProxy instances, this returns a FilePath

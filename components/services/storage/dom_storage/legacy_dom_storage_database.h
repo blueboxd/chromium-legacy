@@ -23,6 +23,8 @@ class ProcessMemoryDump;
 
 namespace storage {
 
+class FilesystemProxy;
+
 using LegacyDomStorageValuesMap =
     std::map<base::string16, base::NullableString16>;
 
@@ -30,7 +32,8 @@ using LegacyDomStorageValuesMap =
 // class is designed to be used on a single thread.
 class LegacyDomStorageDatabase {
  public:
-  explicit LegacyDomStorageDatabase(const base::FilePath& file_path);
+  LegacyDomStorageDatabase(const base::FilePath& file_path,
+                           std::unique_ptr<FilesystemProxy> filesystem_proxy);
   virtual ~LegacyDomStorageDatabase();  // virtual for unit testing
 
   // Reads all the key, value pairs stored in the database and returns
@@ -56,7 +59,8 @@ class LegacyDomStorageDatabase {
 
  protected:
   // Constructor that uses an in-memory sqlite database, for testing.
-  LegacyDomStorageDatabase();
+  explicit LegacyDomStorageDatabase(
+      std::unique_ptr<FilesystemProxy> filesystem_proxy);
 
  private:
   friend class LocalStorageDatabaseAdapter;
@@ -123,6 +127,7 @@ class LegacyDomStorageDatabase {
 
   // Path to the database on disk.
   const base::FilePath file_path_;
+  const std::unique_ptr<FilesystemProxy> filesystem_proxy_;
   std::unique_ptr<sql::Database> db_;
   bool failed_to_open_;
   bool tried_to_recreate_;

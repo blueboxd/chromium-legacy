@@ -139,8 +139,13 @@ void AssistantOnboardingView::OnUiVisibilityChanged(
     AssistantVisibility old_visibility,
     base::Optional<AssistantEntryPoint> entry_point,
     base::Optional<AssistantExitPoint> exit_point) {
-  if (new_visibility == AssistantVisibility::kVisible)
-    UpdateGreeting();
+  if (new_visibility != AssistantVisibility::kVisible)
+    return;
+
+  UpdateGreeting();
+
+  if (IsDrawn())
+    delegate_->OnOnboardingShown();
 }
 
 void AssistantOnboardingView::InitLayout() {

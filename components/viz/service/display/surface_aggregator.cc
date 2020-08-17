@@ -1183,15 +1183,12 @@ void SurfaceAggregator::CopyPasses(const CompositorFrame& frame,
         pass_id_remapper_.Remap(source.id, surface->surface_id());
 
     gfx::Rect output_rect = source.output_rect;
-    gfx::Rect damage_rect = source.output_rect;
     gfx::Transform transform_to_root_target = source.transform_to_root_target;
     if (apply_surface_transform_to_root_pass) {
       // If we don't need an additional render pass to apply the surface
       // transform, adjust the root pass's rects to account for it.
       output_rect = cc::MathUtil::MapEnclosedRectWith2dAxisAlignedTransform(
           surface_transform, output_rect);
-      damage_rect = cc::MathUtil::MapEnclosedRectWith2dAxisAlignedTransform(
-          surface_transform, damage_rect);
     } else {
       // For the non-root render passes, the transform to root target needs to
       // be adjusted to include the root surface transform. This is also true if
@@ -1202,7 +1199,7 @@ void SurfaceAggregator::CopyPasses(const CompositorFrame& frame,
     }
 
     copy_pass->SetAll(
-        remapped_pass_id, output_rect, damage_rect, transform_to_root_target,
+        remapped_pass_id, output_rect, output_rect, transform_to_root_target,
         source.filters, source.backdrop_filters, source.backdrop_filter_bounds,
         root_content_color_usage_, source.has_transparent_background,
         source.cache_render_pass, source.has_damage_from_contributing_content,

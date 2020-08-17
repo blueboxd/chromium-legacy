@@ -93,10 +93,6 @@ class TestingOmniboxView : public OmniboxViewViews {
   // OmniboxViewViews:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {}
   void OnThemeChanged() override;
-  // Forces enterprise enrolled status on or off using
-  // |is_enterprise_managed_for_testing|. If not called, enterprise
-  // enrolled status in tests defaults to off.
-  void SetEnterpriseManagedForTesting(bool enterprise_managed);
 
   using OmniboxView::OnInlineAutocompleteTextMaybeChanged;
 
@@ -109,7 +105,6 @@ class TestingOmniboxView : public OmniboxViewViews {
   void SetEmphasis(bool emphasize, const Range& range) override;
   void UpdateSchemeStyle(const Range& range) override;
   void ApplyColor(SkColor color, const gfx::Range& range) override;
-  bool IsEnterpriseManaged() override;
 
   size_t update_popup_call_count_ = 0;
   base::string16 update_popup_text_;
@@ -127,10 +122,6 @@ class TestingOmniboxView : public OmniboxViewViews {
 
   // SetEmphasis() logs whether the base color of the text is emphasized.
   bool base_text_emphasis_;
-
-  // Set to false by default since most tests test the non-enterprise
-  // enrolled behavior.
-  bool is_enterprise_managed_for_testing = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestingOmniboxView);
 };
@@ -209,15 +200,6 @@ void TestingOmniboxView::UpdateSchemeStyle(const Range& range) {
 void TestingOmniboxView::ApplyColor(SkColor color, const gfx::Range& range) {
   range_colors_.emplace_back(std::pair<SkColor, gfx::Range>(color, range));
   OmniboxViewViews::ApplyColor(color, range);
-}
-
-void TestingOmniboxView::SetEnterpriseManagedForTesting(
-    bool enterprise_managed) {
-  is_enterprise_managed_for_testing = enterprise_managed;
-}
-
-bool TestingOmniboxView::IsEnterpriseManaged() {
-  return is_enterprise_managed_for_testing;
 }
 
 // TestingOmniboxEditController -----------------------------------------------
@@ -343,7 +325,6 @@ class OmniboxViewViewsTest : public OmniboxViewViewsTestBase {
     location_bar_model()->set_url_for_display(kSimplifiedDomainDisplayUrl);
     omnibox_view()->model()->ResetDisplayTexts();
     omnibox_view()->RevertAll();
-    omnibox_view()->SetEnterpriseManagedForTesting(false);
     // Call OnThemeChanged() to create the animations.
     omnibox_view()->OnThemeChanged();
   }
@@ -1622,38 +1603,6 @@ class OmniboxViewViewsNoSimplifiedDomainTest : public OmniboxViewViewsTest {
 // are not hidden. Regression test for https://crbug.com/1093748.
 TEST_F(OmniboxViewViewsNoSimplifiedDomainTest, UrlNotSimplifiedByDefault) {
   SetUpSimplifiedDomainTest();
-  omnibox_view()->EmphasizeURLComponents();
-  ASSERT_NO_FATAL_FAILURE(ExpectUnelidedFromSimplifiedDomain(
-      omnibox_view()->GetRenderText(),
-      gfx::Range(0, kSimplifiedDomainDisplayUrl.size())));
-}
-
-class OmniboxViewViewsNoSimplifiedDomainOnEnterpriseManagedDevicesTest
-    : public OmniboxViewViewsTest {
- public:
-  OmniboxViewViewsNoSimplifiedDomainOnEnterpriseManagedDevicesTest()
-      : OmniboxViewViewsTest(
-            std::vector<FeatureAndParams>(
-                {{omnibox::kRevealSteadyStateUrlPathQueryAndRefOnHover, {}},
-                 {omnibox::kMaybeElideToRegistrableDomain,
-                  // Ensure all domains are elidable by policy.
-                  {{"max_unelided_host_length", "0"}}}}),
-            {}) {}
-
-  OmniboxViewViewsNoSimplifiedDomainOnEnterpriseManagedDevicesTest(
-      const OmniboxViewViewsNoSimplifiedDomainOnEnterpriseManagedDevicesTest&) =
-      delete;
-  OmniboxViewViewsNoSimplifiedDomainOnEnterpriseManagedDevicesTest& operator=(
-      const OmniboxViewViewsNoSimplifiedDomainOnEnterpriseManagedDevicesTest&) =
-      delete;
-};
-
-// Tests that when device is enterprise managed, URL components are not hidden
-// even when field trials are enabled
-TEST_F(OmniboxViewViewsNoSimplifiedDomainOnEnterpriseManagedDevicesTest,
-       UrlNotSimplifiedInEnterpriseManagedDevices) {
-  SetUpSimplifiedDomainTest();
-  omnibox_view()->SetEnterpriseManagedForTesting(true);
   omnibox_view()->EmphasizeURLComponents();
   ASSERT_NO_FATAL_FAILURE(ExpectUnelidedFromSimplifiedDomain(
       omnibox_view()->GetRenderText(),

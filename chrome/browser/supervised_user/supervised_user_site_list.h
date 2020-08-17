@@ -27,13 +27,13 @@ class ListValue;
 class Value;
 }
 
-// This class represents the content of a supervised user whitelist. It is
+// This class represents the content of a supervised user allowlist. It is
 // loaded from a JSON file inside the extension bundle, which defines the sites
 // on the list.
-// All whitelists are combined in the SupervisedUserURLFilter, which can tell
-// for a given URL if it is part of any whitelist. Effectively,
-// SupervisedUserURLFilter then acts as a big whitelist which is the union of
-// all the whitelists.
+// All allowlists are combined in the SupervisedUserURLFilter, which can tell
+// for a given URL if it is part of any allowlist. Effectively,
+// SupervisedUserURLFilter then acts as a big allowlist which is the union of
+// all the allowlists.
 class SupervisedUserSiteList
     : public base::RefCountedThreadSafe<SupervisedUserSiteList> {
  public:
@@ -77,9 +77,9 @@ class SupervisedUserSiteList
  private:
   friend class base::RefCountedThreadSafe<SupervisedUserSiteList>;
   friend class SupervisedUserURLFilterTest;
-  FRIEND_TEST_ALL_PREFIXES(SupervisedUserURLFilterTest, WhitelistsPatterns);
+  FRIEND_TEST_ALL_PREFIXES(SupervisedUserURLFilterTest, AllowlistsPatterns);
   FRIEND_TEST_ALL_PREFIXES(SupervisedUserURLFilterTest,
-                           WhitelistsHostnameHashes);
+                           AllowlistsHostnameHashes);
 
   SupervisedUserSiteList(const std::string& id,
                          const base::string16& title,
@@ -110,10 +110,10 @@ class SupervisedUserSiteList
   GURL entry_point_;
   base::FilePath large_icon_path_;
 
-  // A list of URL patterns that should be whitelisted.
+  // A list of URL patterns that should be allowed.
   std::vector<std::string> patterns_;
 
-  // A list of SHA1 hashes of hostnames that should be whitelisted.
+  // A list of SHA1 hashes of hostnames that should be allowed.
   std::vector<HostnameHash> hostname_hashes_;
 
   DISALLOW_COPY_AND_ASSIGN(SupervisedUserSiteList);

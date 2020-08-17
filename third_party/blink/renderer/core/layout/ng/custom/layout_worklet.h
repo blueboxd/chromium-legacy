@@ -34,6 +34,8 @@ class CORE_EXPORT LayoutWorklet : public Worklet,
   static LayoutWorklet* From(LocalDOMWindow&);
 
   explicit LayoutWorklet(LocalDOMWindow&);
+  LayoutWorklet(const LayoutWorklet&) = delete;
+  LayoutWorklet& operator=(const LayoutWorklet&) = delete;
   ~LayoutWorklet() override;
 
   typedef HeapHashMap<String, Member<DocumentLayoutDefinition>>
@@ -60,8 +62,6 @@ class CORE_EXPORT LayoutWorklet : public Worklet,
 
   DocumentDefinitionMap document_definition_map_;
   Member<PendingLayoutRegistry> pending_layout_registry_;
-
-  DISALLOW_COPY_AND_ASSIGN(LayoutWorklet);
 };
 
 }  // namespace blink

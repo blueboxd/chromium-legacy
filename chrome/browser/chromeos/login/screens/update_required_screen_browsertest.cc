@@ -25,9 +25,9 @@
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/update_required_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/user_creation_screen_handler.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/dbus/constants/dbus_switches.h"
@@ -127,7 +127,7 @@ class UpdateRequiredScreenTest : public OobeBaseTest {
     network_state_test_helper_->manager_test()->SetupDefaultEnvironment();
     // Fake networks have been set up. Connect to WiFi network.
     SetConnected(kWifiServicePath);
-    chromeos::OobeScreenWaiter(chromeos::GaiaView::kScreenId).Wait();
+    chromeos::OobeScreenWaiter(chromeos::UserCreationView::kScreenId).Wait();
   }
   void TearDownOnMainThread() override {
     network_state_test_helper_.reset();

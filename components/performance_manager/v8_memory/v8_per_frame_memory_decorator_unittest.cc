@@ -142,8 +142,10 @@ class V8PerFrameMemoryDecoratorTestBase {
       MockV8PerFrameMemoryReporter* mock_reporter,
       base::RepeatingCallback<void(
           MockV8PerFrameMemoryReporter::GetPerFrameV8MemoryUsageDataCallback
-              callback)> responder) {
-    EXPECT_CALL(*mock_reporter, GetPerFrameV8MemoryUsageData(_, _))
+              callback)> responder,
+      MockV8PerFrameMemoryReporter::Mode expected_mode =
+          MockV8PerFrameMemoryReporter::Mode::DEFAULT) {
+    EXPECT_CALL(*mock_reporter, GetPerFrameV8MemoryUsageData(expected_mode, _))
         .WillOnce([this, responder](
                       MockV8PerFrameMemoryReporter::Mode mode,
                       MockV8PerFrameMemoryReporter::
@@ -154,29 +156,37 @@ class V8PerFrameMemoryDecoratorTestBase {
   }
 
   void ExpectQueryAndReply(MockV8PerFrameMemoryReporter* mock_reporter,
-                           blink::mojom::PerProcessV8MemoryUsageDataPtr data) {
+                           blink::mojom::PerProcessV8MemoryUsageDataPtr data,
+                           MockV8PerFrameMemoryReporter::Mode expected_mode =
+                               MockV8PerFrameMemoryReporter::Mode::DEFAULT) {
     ExpectQuery(
         mock_reporter,
         base::BindRepeating(&V8PerFrameMemoryDecoratorTestBase::ReplyWithData,
-                            base::Unretained(this), base::Passed(&data)));
+                            base::Unretained(this), base::Passed(&data)),
+        expected_mode);
   }
 
   void ExpectQueryAndDelayReply(
       MockV8PerFrameMemoryReporter* mock_reporter,
       const base::TimeDelta& delay,
-      blink::mojom::PerProcessV8MemoryUsageDataPtr data) {
+      blink::mojom::PerProcessV8MemoryUsageDataPtr data,
+      MockV8PerFrameMemoryReporter::Mode expected_mode =
+          MockV8PerFrameMemoryReporter::Mode::DEFAULT) {
     ExpectQuery(mock_reporter,
                 base::BindRepeating(
                     &V8PerFrameMemoryDecoratorTestBase::DelayedReplyWithData,
-                    base::Unretained(this), delay, base::Passed(&data)));
+                    base::Unretained(this), delay, base::Passed(&data)),
+                expected_mode);
   }
 
   void ExpectBindAndRespondToQuery(
       MockV8PerFrameMemoryReporter* mock_reporter,
       blink::mojom::PerProcessV8MemoryUsageDataPtr data,
-      RenderProcessHostId expected_process_id = kTestProcessID) {
+      RenderProcessHostId expected_process_id = kTestProcessID,
+      MockV8PerFrameMemoryReporter::Mode expected_mode =
+          MockV8PerFrameMemoryReporter::Mode::DEFAULT) {
     // Wrap the move-only |data| in a callback for the expectation below.
-    ExpectQueryAndReply(mock_reporter, std::move(data));
+    ExpectQueryAndReply(mock_reporter, std::move(data), expected_mode);
 
     EXPECT_CALL(*this, BindReceiverWithProxyHost(_, _))
         .WillOnce(
@@ -560,6 +570,101 @@ TEST_F(V8PerFrameMemoryDecoratorTest, PerFrameDataIsDistributed) {
                        ->unassociated_v8_bytes_used());
 }
 
+TEST_F(V8PerFrameMemoryDecoratorTest, LazyRequests) {
+  constexpr base::TimeDelta kLazyRequestLength =
+      base::TimeDelta::FromSeconds(30);
+  V8PerFrameMemoryRequest lazy_request(
+      kLazyRequestLength, V8PerFrameMemoryRequest::MeasurementMode::kLazy,
+      graph());
+
+  MockV8PerFrameMemoryReporter reporter;
+  {
+    auto data = blink::mojom::PerProcessV8MemoryUsageData::New();
+    ExpectBindAndRespondToQuery(&reporter, std::move(data), kTestProcessID,
+                                MockV8PerFrameMemoryReporter::Mode::LAZY);
+  }
+
+  auto process = CreateNode<ProcessNodeImpl>(
+      content::PROCESS_TYPE_RENDERER,
+      RenderProcessHostProxy::CreateForTesting(kTestProcessID));
+
+  task_env().FastForwardBy(base::TimeDelta::FromSeconds(1));
+  testing::Mock::VerifyAndClearExpectations(&reporter);
+
+  // If a lazy request takes too long to respond it should be upgraded to a
+  // bounded request if one is in the queue.
+  constexpr base::TimeDelta kLongBoundedRequestLength =
+      base::TimeDelta::FromSeconds(45);
+  V8PerFrameMemoryRequest long_bounded_request(kLongBoundedRequestLength,
+                                               graph());
+  auto* decorator = V8PerFrameMemoryDecorator::GetFromGraph(graph());
+  ASSERT_TRUE(decorator);
+  ASSERT_TRUE(decorator->GetNextRequest());
+  EXPECT_EQ(decorator->GetNextRequest()->min_time_between_requests(),
+            kLazyRequestLength);
+  EXPECT_EQ(decorator->GetNextRequest()->mode(),
+            V8PerFrameMemoryRequest::MeasurementMode::kLazy);
+  {
+    // Next lazy request sent after 30 sec + 10 sec delay until reply = 40 sec
+    // until reply arrives. kLongBoundedRequestLength > 40 sec so the reply
+    // should arrive in time to prevent upgrading the request.
+    auto data = blink::mojom::PerProcessV8MemoryUsageData::New();
+    data->unassociated_bytes_used = 1U;
+    ExpectQueryAndDelayReply(&reporter, base::TimeDelta::FromSeconds(10),
+                             std::move(data),
+                             MockV8PerFrameMemoryReporter::Mode::LAZY);
+  }
+
+  // Wait long enough for the upgraded request to be sent, to verify that it
+  // wasn't sent.
+  task_env().FastForwardBy(kLongBoundedRequestLength);
+  testing::Mock::VerifyAndClearExpectations(&reporter);
+
+  constexpr base::TimeDelta kUpgradeRequestLength =
+      base::TimeDelta::FromSeconds(40);
+  V8PerFrameMemoryRequest bounded_request_upgrade(kUpgradeRequestLength,
+                                                  graph());
+  ASSERT_TRUE(decorator->GetNextRequest());
+  EXPECT_EQ(decorator->GetNextRequest()->min_time_between_requests(),
+            kLazyRequestLength);
+  EXPECT_EQ(decorator->GetNextRequest()->mode(),
+            V8PerFrameMemoryRequest::MeasurementMode::kLazy);
+
+  {
+    ::testing::InSequence seq;
+
+    // Again, 40 sec total until reply arrives. kUpgradeRequestLength <= 40 sec
+    // so a second upgraded request should be sent.
+    auto data = blink::mojom::PerProcessV8MemoryUsageData::New();
+    data->unassociated_bytes_used = 2U;
+    ExpectQueryAndDelayReply(&reporter, base::TimeDelta::FromSeconds(10),
+                             std::move(data),
+                             MockV8PerFrameMemoryReporter::Mode::LAZY);
+
+    auto data2 = blink::mojom::PerProcessV8MemoryUsageData::New();
+    data2->unassociated_bytes_used = 3U;
+    ExpectQueryAndReply(&reporter, std::move(data2),
+                        MockV8PerFrameMemoryReporter::Mode::DEFAULT);
+  }
+
+  // Wait long enough for the upgraded request to be sent.
+  task_env().FastForwardBy(kUpgradeRequestLength);
+  testing::Mock::VerifyAndClearExpectations(&reporter);
+
+  EXPECT_TRUE(V8PerFrameMemoryProcessData::ForProcessNode(process.get()));
+  EXPECT_EQ(3u, V8PerFrameMemoryProcessData::ForProcessNode(process.get())
+                    ->unassociated_v8_bytes_used());
+
+  // Bounded requests should be preferred over lazy requests with the same
+  // min_time_between_requests.
+  V8PerFrameMemoryRequest short_bounded_request(kLazyRequestLength, graph());
+  ASSERT_TRUE(decorator->GetNextRequest());
+  EXPECT_EQ(decorator->GetNextRequest()->min_time_between_requests(),
+            kLazyRequestLength);
+  EXPECT_EQ(decorator->GetNextRequest()->mode(),
+            V8PerFrameMemoryRequest::MeasurementMode::kBounded);
+}
+
 TEST_F(V8PerFrameMemoryDecoratorTest, MeasurementRequestsSorted) {
   // Create some queries with different sample frequencies.
   constexpr base::TimeDelta kShortInterval(kMinTimeBetweenRequests);
@@ -602,7 +707,9 @@ TEST_F(V8PerFrameMemoryDecoratorTest, MeasurementRequestsSorted) {
                     ->unassociated_v8_bytes_used());
 
   // Another measurement should be taken after the shortest interval.
-  EXPECT_EQ(kShortInterval, decorator->GetMinTimeBetweenRequestsPerProcess());
+  ASSERT_TRUE(decorator->GetNextRequest());
+  EXPECT_EQ(kShortInterval,
+            decorator->GetNextRequest()->min_time_between_requests());
   {
     auto data = blink::mojom::PerProcessV8MemoryUsageData::New();
     data->unassociated_bytes_used = 2U;
@@ -616,7 +723,9 @@ TEST_F(V8PerFrameMemoryDecoratorTest, MeasurementRequestsSorted) {
   // Remove the shortest request. Now a measurement should be taken after the
   // medium interval, which is twice the short interval.
   short_memory_request.reset();
-  EXPECT_EQ(kMediumInterval, decorator->GetMinTimeBetweenRequestsPerProcess());
+  ASSERT_TRUE(decorator->GetNextRequest());
+  EXPECT_EQ(kMediumInterval,
+            decorator->GetNextRequest()->min_time_between_requests());
   {
     auto data = blink::mojom::PerProcessV8MemoryUsageData::New();
     data->unassociated_bytes_used = 3U;
@@ -633,7 +742,9 @@ TEST_F(V8PerFrameMemoryDecoratorTest, MeasurementRequestsSorted) {
   // Remove the longest request. A measurement should still be taken after the
   // medium interval.
   long_memory_request.reset();
-  EXPECT_EQ(kMediumInterval, decorator->GetMinTimeBetweenRequestsPerProcess());
+  ASSERT_TRUE(decorator->GetNextRequest());
+  EXPECT_EQ(kMediumInterval,
+            decorator->GetNextRequest()->min_time_between_requests());
   {
     auto data = blink::mojom::PerProcessV8MemoryUsageData::New();
     data->unassociated_bytes_used = 4U;
@@ -646,7 +757,7 @@ TEST_F(V8PerFrameMemoryDecoratorTest, MeasurementRequestsSorted) {
 
   // Remove the medium request, making the queue empty.
   medium_memory_request.reset();
-  EXPECT_TRUE(decorator->GetMinTimeBetweenRequestsPerProcess().is_zero());
+  EXPECT_FALSE(decorator->GetNextRequest());
   {
     auto data = blink::mojom::PerProcessV8MemoryUsageData::New();
     data->unassociated_bytes_used = 5U;
@@ -661,7 +772,9 @@ TEST_F(V8PerFrameMemoryDecoratorTest, MeasurementRequestsSorted) {
   // the measurement should be taken immediately.
   long_memory_request =
       std::make_unique<V8PerFrameMemoryRequest>(kLongInterval, graph());
-  EXPECT_EQ(kLongInterval, decorator->GetMinTimeBetweenRequestsPerProcess());
+  ASSERT_TRUE(decorator->GetNextRequest());
+  EXPECT_EQ(kLongInterval,
+            decorator->GetNextRequest()->min_time_between_requests());
 
   task_env().FastForwardBy(base::TimeDelta::FromSeconds(1));
   EXPECT_EQ(5U, V8PerFrameMemoryProcessData::ForProcessNode(process.get())
@@ -682,7 +795,9 @@ TEST_F(V8PerFrameMemoryDecoratorTest, MeasurementRequestsSorted) {
   // measurement and the old interval should not).
   medium_memory_request =
       std::make_unique<V8PerFrameMemoryRequest>(kMediumInterval, graph());
-  EXPECT_EQ(kMediumInterval, decorator->GetMinTimeBetweenRequestsPerProcess());
+  ASSERT_TRUE(decorator->GetNextRequest());
+  EXPECT_EQ(kMediumInterval,
+            decorator->GetNextRequest()->min_time_between_requests());
 
   {
     auto data = blink::mojom::PerProcessV8MemoryUsageData::New();
@@ -713,10 +828,14 @@ TEST_F(V8PerFrameMemoryDecoratorTest, MeasurementRequestsSorted) {
   // Remove the medium request and add it back. The measurement interval should
   // not change.
   medium_memory_request.reset();
-  EXPECT_EQ(kLongInterval, decorator->GetMinTimeBetweenRequestsPerProcess());
+  ASSERT_TRUE(decorator->GetNextRequest());
+  EXPECT_EQ(kLongInterval,
+            decorator->GetNextRequest()->min_time_between_requests());
   medium_memory_request =
       std::make_unique<V8PerFrameMemoryRequest>(kMediumInterval, graph());
-  EXPECT_EQ(kMediumInterval, decorator->GetMinTimeBetweenRequestsPerProcess());
+  ASSERT_TRUE(decorator->GetNextRequest());
+  EXPECT_EQ(kMediumInterval,
+            decorator->GetNextRequest()->min_time_between_requests());
 
   {
     auto data = blink::mojom::PerProcessV8MemoryUsageData::New();
@@ -732,7 +851,9 @@ TEST_F(V8PerFrameMemoryDecoratorTest, MeasurementRequestsSorted) {
   // interval.
   auto long_memory_request2 =
       std::make_unique<V8PerFrameMemoryRequest>(kLongInterval, graph());
-  EXPECT_EQ(kMediumInterval, decorator->GetMinTimeBetweenRequestsPerProcess());
+  ASSERT_TRUE(decorator->GetNextRequest());
+  EXPECT_EQ(kMediumInterval,
+            decorator->GetNextRequest()->min_time_between_requests());
 
   {
     auto data = blink::mojom::PerProcessV8MemoryUsageData::New();
@@ -747,7 +868,9 @@ TEST_F(V8PerFrameMemoryDecoratorTest, MeasurementRequestsSorted) {
   // Remove the medium request. Now there are 2 requests which should cause
   // measurements at the same interval. Make sure only 1 measurement is taken.
   medium_memory_request.reset();
-  EXPECT_EQ(kLongInterval, decorator->GetMinTimeBetweenRequestsPerProcess());
+  ASSERT_TRUE(decorator->GetNextRequest());
+  EXPECT_EQ(kLongInterval,
+            decorator->GetNextRequest()->min_time_between_requests());
 
   {
     auto data = blink::mojom::PerProcessV8MemoryUsageData::New();
@@ -761,7 +884,9 @@ TEST_F(V8PerFrameMemoryDecoratorTest, MeasurementRequestsSorted) {
 
   // Remove 1 of the 2 long requests. Measurements should not change.
   long_memory_request2.reset();
-  EXPECT_EQ(kLongInterval, decorator->GetMinTimeBetweenRequestsPerProcess());
+  ASSERT_TRUE(decorator->GetNextRequest());
+  EXPECT_EQ(kLongInterval,
+            decorator->GetNextRequest()->min_time_between_requests());
 
   {
     auto data = blink::mojom::PerProcessV8MemoryUsageData::New();
@@ -806,8 +931,8 @@ TEST_F(V8PerFrameMemoryDecoratorTest, MeasurementRequestsWithDelay) {
   // measurement is expected.
 
   // Advance to the middle of a measurement and create a new request. Should
-  // update GetMinTimeBetweenRequestsPerProcess but not start a new
-  // measurement until the existing measurement finishes.
+  // update min_time_between_requests but not start a new measurement until the
+  // existing measurement finishes.
   {
     auto data = blink::mojom::PerProcessV8MemoryUsageData::New();
     data->unassociated_bytes_used = 1U;
@@ -824,7 +949,9 @@ TEST_F(V8PerFrameMemoryDecoratorTest, MeasurementRequestsWithDelay) {
 
   auto medium_memory_request =
       std::make_unique<V8PerFrameMemoryRequest>(kMediumInterval, graph());
-  EXPECT_EQ(kMediumInterval, decorator->GetMinTimeBetweenRequestsPerProcess());
+  ASSERT_TRUE(decorator->GetNextRequest());
+  EXPECT_EQ(kMediumInterval,
+            decorator->GetNextRequest()->min_time_between_requests());
   task_env().FastForwardBy(kMeasurementLength);
   ASSERT_EQ(1U, V8PerFrameMemoryProcessData::ForProcessNode(process.get())
                     ->unassociated_v8_bytes_used())
@@ -871,7 +998,9 @@ TEST_F(V8PerFrameMemoryDecoratorTest, MeasurementRequestsWithDelay) {
 
   auto short_memory_request =
       std::make_unique<V8PerFrameMemoryRequest>(kShortInterval, graph());
-  EXPECT_EQ(kShortInterval, decorator->GetMinTimeBetweenRequestsPerProcess());
+  ASSERT_TRUE(decorator->GetNextRequest());
+  EXPECT_EQ(kShortInterval,
+            decorator->GetNextRequest()->min_time_between_requests());
   EXPECT_EQ(last_query_time_, measurement_start_time);
 
   {
@@ -888,11 +1017,12 @@ TEST_F(V8PerFrameMemoryDecoratorTest, MeasurementRequestsWithDelay) {
       << "Measurement ended early";
   measurement_start_time = last_query_time_;
 
-  // Delete the short request. Should update
-  // GetMinTimeBetweenRequestsPerProcess but not start a new measurement
-  // until the existing measurement finishes.
+  // Delete the short request. Should update min_time_between_requests but not
+  // start a new measurement until the existing measurement finishes.
   short_memory_request.reset();
-  EXPECT_EQ(kMediumInterval, decorator->GetMinTimeBetweenRequestsPerProcess());
+  ASSERT_TRUE(decorator->GetNextRequest());
+  EXPECT_EQ(kMediumInterval,
+            decorator->GetNextRequest()->min_time_between_requests());
   task_env().FastForwardBy(kMeasurementLength);
   EXPECT_EQ(4U, V8PerFrameMemoryProcessData::ForProcessNode(process.get())
                     ->unassociated_v8_bytes_used())
@@ -917,7 +1047,7 @@ TEST_F(V8PerFrameMemoryDecoratorTest, MeasurementRequestsWithDelay) {
 
   medium_memory_request.reset();
   long_memory_request.reset();
-  EXPECT_TRUE(decorator->GetMinTimeBetweenRequestsPerProcess().is_zero());
+  EXPECT_FALSE(decorator->GetNextRequest());
   task_env().FastForwardBy(kMeasurementLength);
   EXPECT_EQ(5U, V8PerFrameMemoryProcessData::ForProcessNode(process.get())
                     ->unassociated_v8_bytes_used())
@@ -1180,8 +1310,9 @@ TEST_F(V8PerFrameMemoryRequestAnySeqTest, RequestIsSequenceSafe) {
       FROM_HERE, base::BindOnce([](Graph* graph) {
         auto* decorator = V8PerFrameMemoryDecorator::GetFromGraph(graph);
         ASSERT_TRUE(decorator);
+        ASSERT_TRUE(decorator->GetNextRequest());
         EXPECT_EQ(V8PerFrameMemoryDecoratorTest::kMinTimeBetweenRequests,
-                  decorator->GetMinTimeBetweenRequestsPerProcess());
+                  decorator->GetNextRequest()->min_time_between_requests());
       }));
 
   // The observer should be invoked on the main sequence when a measurement is
@@ -1216,9 +1347,11 @@ TEST_F(V8PerFrameMemoryRequestAnySeqTest, RequestIsSequenceSafe) {
   // scheduled tasks, which resets the request frequency to zero.
   PerformanceManager::CallOnGraph(
       FROM_HERE, base::BindOnce([](Graph* graph) {
+        auto* decorator = V8PerFrameMemoryDecorator::GetFromGraph(graph);
+        ASSERT_TRUE(decorator);
+        ASSERT_TRUE(decorator->GetNextRequest());
         EXPECT_EQ(V8PerFrameMemoryDecoratorTest::kMinTimeBetweenRequests,
-                  V8PerFrameMemoryDecorator::GetFromGraph(graph)
-                      ->GetMinTimeBetweenRequestsPerProcess());
+                  decorator->GetNextRequest()->min_time_between_requests());
       }));
 
   // Must remove the observer before destroying the request to avoid a DCHECK
@@ -1228,9 +1361,9 @@ TEST_F(V8PerFrameMemoryRequestAnySeqTest, RequestIsSequenceSafe) {
 
   PerformanceManager::CallOnGraph(
       FROM_HERE, base::BindOnce([](Graph* graph) {
-        EXPECT_TRUE(V8PerFrameMemoryDecorator::GetFromGraph(graph)
-                        ->GetMinTimeBetweenRequestsPerProcess()
-                        .is_zero());
+        auto* decorator = V8PerFrameMemoryDecorator::GetFromGraph(graph);
+        ASSERT_TRUE(decorator);
+        EXPECT_FALSE(decorator->GetNextRequest());
       }));
 
   // Execute the above tasks and exit.

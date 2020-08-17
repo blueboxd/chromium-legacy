@@ -352,9 +352,8 @@ IN_PROC_BROWSER_TEST_F(ClipboardHistoryWithMultiProfileBrowserTest,
   Release(ui::KeyboardCode::VKEY_COMMAND);
 }
 
-// Disabled for being flaky. crbug.com/1116530
 IN_PROC_BROWSER_TEST_F(ClipboardHistoryWithMultiProfileBrowserTest,
-                       DISABLED_ShouldPasteHistoryAsPlainText) {
+                       ShouldPasteHistoryAsPlainText) {
   LoginUser(account_id1_);
 
   // Create a browser and cache its active web contents.
@@ -382,10 +381,9 @@ IN_PROC_BROWSER_TEST_F(ClipboardHistoryWithMultiProfileBrowserTest,
             e.preventDefault();
 
             const clipboardData = e.clipboardData || window.clipboardData;
-            lastPaste = clipboardData.types.reduce((data, type) => {
-              data.push(`${type}: ${clipboardData.getData(type)}`);
-              return data;
-            }, []);
+            lastPaste = clipboardData.types.map((type) => {
+              return `${type}: ${clipboardData.getData(type)}`;
+            });
 
             document.title = `Paste ${lastPasteId++}`;
           });

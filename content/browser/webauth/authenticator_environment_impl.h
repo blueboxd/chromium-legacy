@@ -22,8 +22,7 @@ class FidoDiscoveryFactory;
 
 namespace content {
 
-class VirtualFidoDiscovery;
-class VirtualFidoDiscoveryFactory;
+class VirtualAuthenticatorManagerImpl;
 
 // Allows enabling and disabling per-frame virtual environments for the Web
 // Authentication API. Disabling the environment resets its state.
@@ -34,10 +33,6 @@ class CONTENT_EXPORT AuthenticatorEnvironmentImpl
       FrameTreeNode::Observer {
  public:
   static AuthenticatorEnvironmentImpl* GetInstance();
-
-  // Returns the FidoDiscoveryFactory acting as replacement for the |node|.
-  device::FidoDiscoveryFactory* GetDiscoveryFactoryOverride(
-      FrameTreeNode* node);
 
   // Enables the scoped virtual authenticator environment for the |node| and its
   // descendants.
@@ -50,9 +45,14 @@ class CONTENT_EXPORT AuthenticatorEnvironmentImpl
   // parents instead, this won't have any effect.
   void DisableVirtualAuthenticatorFor(FrameTreeNode* node);
 
+  // Returns whether the virtual authenticator environment is enabled for
+  // |node|.
+  bool IsVirtualAuthenticatorEnabledFor(FrameTreeNode* node);
+
   // Returns the virtual fido discovery factory for the |node| if the virtual
   // environment is enabled for it, otherwise returns nullptr.
-  VirtualFidoDiscoveryFactory* GetVirtualFactoryFor(FrameTreeNode* node);
+  VirtualAuthenticatorManagerImpl* MaybeGetVirtualAuthenticatorManager(
+      FrameTreeNode* node);
 
   // Adds the receiver to the virtual authenticator enabled for the |node|. The
   // virtual authenticator must be enabled beforehand.
@@ -61,8 +61,13 @@ class CONTENT_EXPORT AuthenticatorEnvironmentImpl
       mojo::PendingReceiver<blink::test::mojom::VirtualAuthenticatorManager>
           receiver);
 
-  // Called by VirtualFidoDiscoveries when they are destructed.
-  void OnDiscoveryDestroyed(VirtualFidoDiscovery* discovery);
+  // Returns whether |node| has the virtual authenticator environment enabled
+  // with a user-verifying platform installed in that environment.
+  bool HasVirtualUserVerifyingPlatformAuthenticator(FrameTreeNode* node);
+
+  // Returns the override installed by
+  // ReplaceDefaultDiscoveryFactoryForTesting().
+  device::FidoDiscoveryFactory* MaybeGetDiscoveryFactoryTestOverride();
 
   // AuthenticatorEnvironment:
   void ReplaceDefaultDiscoveryFactoryForTesting(
@@ -80,8 +85,8 @@ class CONTENT_EXPORT AuthenticatorEnvironmentImpl
 
   std::unique_ptr<device::FidoDiscoveryFactory> replaced_discovery_factory_;
 
-  std::map<FrameTreeNode*, std::unique_ptr<VirtualFidoDiscoveryFactory>>
-      virtual_discovery_factories_;
+  std::map<FrameTreeNode*, std::unique_ptr<VirtualAuthenticatorManagerImpl>>
+      virtual_authenticator_managers_;
 
   DISALLOW_COPY_AND_ASSIGN(AuthenticatorEnvironmentImpl);
 };

@@ -144,14 +144,14 @@ bool ScrollbarThemeAura::SupportsDragSnapBack() const {
 #endif
 }
 
-int ScrollbarThemeAura::ScrollbarThickness() {
+int ScrollbarThemeAura::ScrollbarThickness(float scale_from_dip) {
   if (WebTestSupport::IsRunningWebTest())
-    return kScrollbarThicknessForWebTests;
+    return kScrollbarThicknessForWebTests * scale_from_dip;
 
   // Horiz and Vert scrollbars are the same thickness.
   IntSize scrollbar_size = Platform::Current()->ThemeEngine()->GetSize(
       WebThemeEngine::kPartScrollbarVerticalTrack);
-  return scrollbar_size.Width();
+  return scrollbar_size.Width() * scale_from_dip;
 }
 
 bool ScrollbarThemeAura::HasThumb(const Scrollbar& scrollbar) {
@@ -195,16 +195,18 @@ IntRect ScrollbarThemeAura::TrackRect(const Scrollbar& scrollbar) {
 
 int ScrollbarThemeAura::MinimumThumbLength(const Scrollbar& scrollbar) {
   if (scrollbar.Orientation() == kVerticalScrollbar) {
-    return Platform::Current()
-        ->ThemeEngine()
-        ->GetSize(WebThemeEngine::kPartScrollbarVerticalThumb)
-        .height;
+    return scrollbar.ScaleFromDIP() *
+           Platform::Current()
+               ->ThemeEngine()
+               ->GetSize(WebThemeEngine::kPartScrollbarVerticalThumb)
+               .height;
   }
 
-  return Platform::Current()
-      ->ThemeEngine()
-      ->GetSize(WebThemeEngine::kPartScrollbarHorizontalThumb)
-      .width;
+  return scrollbar.ScaleFromDIP() *
+         Platform::Current()
+             ->ThemeEngine()
+             ->GetSize(WebThemeEngine::kPartScrollbarHorizontalThumb)
+             .width;
 }
 
 void ScrollbarThemeAura::PaintTrack(GraphicsContext& context,

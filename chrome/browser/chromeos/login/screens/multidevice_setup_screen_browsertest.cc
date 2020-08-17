@@ -15,8 +15,8 @@
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
-#include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/multidevice_setup_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/user_creation_screen_handler.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/multidevice_setup/public/cpp/fake_multidevice_setup_client.h"
 #include "content/public/test/browser_test.h"
@@ -58,7 +58,7 @@ class MultiDeviceSetupScreenTest : public OobeBaseTest {
 
   void ShowMultiDeviceSetupScreen() {
     login_manager_mixin_.LoginAsNewRegularUser();
-    OobeScreenExitWaiter(GaiaView::kScreenId).Wait();
+    OobeScreenExitWaiter(UserCreationView::kScreenId).Wait();
     if (!screen_exited_) {
       LoginDisplayHost::default_host()->StartWizard(
           MultiDeviceSetupScreenView::kScreenId);

@@ -157,7 +157,7 @@ class ASH_EXPORT AssistantControllerImpl
       this};
   AssistantSetupController assistant_setup_controller_{this};
   AssistantSuggestionsControllerImpl assistant_suggestions_controller_;
-  AssistantUiControllerImpl assistant_ui_controller_;
+  AssistantUiControllerImpl assistant_ui_controller_{this};
   AssistantWebUiController assistant_web_ui_controller_;
 
   AssistantViewDelegateImpl view_delegate_{this};

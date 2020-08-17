@@ -45,7 +45,6 @@ namespace ash {
 
 namespace {
 
-using assistant::ui::kWarmerWelcomesMaxTimesTriggered;
 using chromeos::assistant::features::IsResponseProcessingV2Enabled;
 using chromeos::assistant::features::IsTimersV2Enabled;
 using chromeos::assistant::features::IsWaitSchedulingEnabled;
@@ -78,18 +77,9 @@ bool IsPreferVoice() {
 
 PrefService* pref_service() {
   auto* result =
-      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+      Shell::Get()->session_controller()->GetPrimaryUserPrefService();
   DCHECK(result);
   return result;
-}
-
-int num_warmer_welcome_triggered() {
-  return pref_service()->GetInteger(prefs::kAssistantNumWarmerWelcomeTriggered);
-}
-
-void IncrementNumWarmerWelcomeTriggered() {
-  pref_service()->SetInteger(prefs::kAssistantNumWarmerWelcomeTriggered,
-                             num_warmer_welcome_triggered() + 1);
 }
 
 }  // namespace
@@ -139,6 +129,10 @@ base::TimeDelta
 AssistantInteractionControllerImpl::GetTimeDeltaSinceLastInteraction() const {
   return base::Time::Now() -
          pref_service()->GetTime(prefs::kAssistantTimeOfLastInteraction);
+}
+
+bool AssistantInteractionControllerImpl::HasHadInteraction() const {
+  return has_had_interaction_;
 }
 
 void AssistantInteractionControllerImpl::StartTextInteraction(
@@ -339,6 +333,10 @@ void AssistantInteractionControllerImpl::OnCommittedQueryChanged(
   // interactions that would still have triggered OnInteractionStarted().
   pref_service()->SetTime(prefs::kAssistantTimeOfLastInteraction,
                           base::Time::Now());
+
+  // Cache the fact that the user has now had an interaction with the Assistant
+  // during this user session.
+  has_had_interaction_ = true;
 
   std::string query;
   switch (assistant_query.type()) {
@@ -885,8 +883,6 @@ void AssistantInteractionControllerImpl::OnUiVisible(
     AssistantEntryPoint entry_point) {
   DCHECK(IsVisible());
 
-  ++number_of_times_shown_;
-
   // We don't explicitly start a new voice interaction if the entry point
   // is hotword since in such cases a voice interaction will already be in
   // progress.
@@ -895,46 +891,6 @@ void AssistantInteractionControllerImpl::OnUiVisible(
     StartVoiceInteraction();
     return;
   }
-
-  if (ShouldAttemptWarmerWelcome(entry_point))
-    AttemptWarmerWelcome();
-}
-
-bool AssistantInteractionControllerImpl::ShouldAttemptWarmerWelcome(
-    AssistantEntryPoint entry_point) const {
-  if (number_of_times_shown_ > 1)
-    return false;
-
-  if (!assistant::util::ShouldAttemptWarmerWelcome(entry_point))
-    return false;
-
-  // Explicitly check the interaction state to ensure warmer welcome will not
-  // interrupt any ongoing active interactions. This happens, for example, when
-  // the first Assistant launch of the current user session is trigger by
-  // Assistant notification, or directly sending query without showing Ui during
-  // integration test.
-  if (HasActiveInteraction())
-    return false;
-
-  if (num_warmer_welcome_triggered() >= kWarmerWelcomesMaxTimesTriggered)
-    return false;
-
-  return true;
-}
-
-void AssistantInteractionControllerImpl::AttemptWarmerWelcome() {
-  // TODO(yileili): Currently WW is only triggered when the first Assistant
-  // launch of the user session does not automatically start an interaction that
-  // would otherwise cause us to interrupt the user.  Need further UX design to
-  // attempt WW after the first interaction.
-
-  // If the user has opted to launch Assistant with the mic open, we
-  // can reasonably assume there is an expectation of TTS.
-  bool allow_tts = launch_with_mic_open();
-
-  assistant_->StartWarmerWelcomeInteraction(num_warmer_welcome_triggered(),
-                                            allow_tts);
-  IncrementNumWarmerWelcomeTriggered();
 }
 
 void AssistantInteractionControllerImpl::StartScreenContextInteraction(

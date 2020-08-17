@@ -7,11 +7,14 @@
 
 #include <map>
 #include <memory>
+#include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include "base/cancelable_callback.h"
 #include "base/containers/circular_deque.h"
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "components/viz/common/gpu/context_cache_controller.h"
@@ -359,6 +362,9 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
                                unsigned query);
   bool OverdrawTracingEnabled();
 
+  bool CompositeTimeTracingEnabled() override;
+  void AddCompositeTimeTraces(base::TimeTicks ready_timestamp) override;
+
   ResourceFormat CurrentRenderPassResourceFormat() const;
 
   // A map from RenderPass id to the texture used to draw the RenderPass from.
@@ -438,6 +444,7 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
   bool use_sync_query_ = false;
   bool use_blend_equation_advanced_ = false;
   bool use_blend_equation_advanced_coherent_ = false;
+  bool use_timer_query_ = false;
   bool use_occlusion_query_ = false;
   bool use_swap_with_bounds_ = false;
 
@@ -458,6 +465,10 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
 
   unsigned num_triangles_drawn_ = 0;
   bool prefer_draw_to_copy_ = false;
+
+  // A circular queue of to keep track of timer queries and their associated
+  // quad type as string.
+  base::queue<std::pair<unsigned, std::string>> timer_queries_;
 
   // This may be null if the compositor is run on a thread without a
   // MessageLoop.

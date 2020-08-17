@@ -124,7 +124,6 @@ Since most algorithms in `util::ranges` dispatch to their C++14 equivalent, some
 `util::ranges`. This list of algorithms includes the following:
 
 - [`std::sample`](https://en.cppreference.com/w/cpp/algorithm/sample) (added in C++17)
-- [`std::clamp`](https://en.cppreference.com/w/cpp/algorithm/clamp) (added in C++17)
 
 ### Return Types
 Some of the algorithms in `std::ranges::` have different return types than their

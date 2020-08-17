@@ -65,7 +65,9 @@ class LoginAuthUserViewUnittest : public LoginTestBase {
     auth_metadata.show_pinpad_for_pw = show_pinpad_for_pw;
     auth_metadata.virtual_keyboard_visible = virtual_keyboard_visible;
     auth_metadata.autosubmit_pin_length = autosubmit_pin_length;
+    view_->CaptureStateForAnimationPreLayout();
     view_->SetAuthMethods(auth_methods, auth_metadata);
+    view_->ApplyAnimationPostLayout(true);
   }
 
   LoginUserInfo user_;
@@ -183,18 +185,14 @@ TEST_F(LoginAuthUserViewUnittest,
   password_test.textfield()->SetText(base::ASCIIToUTF16("Hello"));
 
   // Enable some other auth method (PIN), password is not cleared.
-  view_->CaptureStateForAnimationPreLayout();
+  EXPECT_TRUE(has_password());
   SetAuthMethods(LoginAuthUserView::AUTH_PASSWORD |
                  LoginAuthUserView::AUTH_PIN);
   EXPECT_TRUE(has_password());
-  view_->ApplyAnimationPostLayout();
-  EXPECT_TRUE(has_password());
 
   // Disable password, password is cleared.
-  view_->CaptureStateForAnimationPreLayout();
-  SetAuthMethods(LoginAuthUserView::AUTH_NONE);
   EXPECT_TRUE(has_password());
-  view_->ApplyAnimationPostLayout();
+  SetAuthMethods(LoginAuthUserView::AUTH_NONE);
   EXPECT_FALSE(has_password());
 }
 

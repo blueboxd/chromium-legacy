@@ -131,11 +131,11 @@ class SupervisedUserNavigationThrottleTest
   void SetUpOnMainThread() override;
 
   void BlockHost(const std::string& host) {
-    SetManualFilterForHost(host, /* whitelist */ false);
+    SetManualFilterForHost(host, /* allowlist */ false);
   }
 
-  void WhitelistHost(const std::string& host) {
-    SetManualFilterForHost(host, /* whitelist */ true);
+  void AllowlistHost(const std::string& host) {
+    SetManualFilterForHost(host, /* allowlist */ true);
   }
 
   bool IsInterstitialBeingShownInMainFrame(Browser* browser);
@@ -145,7 +145,7 @@ class SupervisedUserNavigationThrottleTest
   }
 
  private:
-  void SetManualFilterForHost(const std::string& host, bool whitelist) {
+  void SetManualFilterForHost(const std::string& host, bool allowlist) {
     Profile* profile = browser()->profile();
     SupervisedUserSettingsService* settings_service =
         SupervisedUserSettingsServiceFactory::GetForKey(
@@ -170,7 +170,7 @@ class SupervisedUserNavigationThrottleTest
       dict_to_insert = std::make_unique<base::DictionaryValue>();
     }
 
-    dict_to_insert->SetKey(host, base::Value(whitelist));
+    dict_to_insert->SetKey(host, base::Value(allowlist));
     settings_service->SetLocalSetting(
         supervised_users::kContentPackManualBehaviorHosts,
         std::move(dict_to_insert));
@@ -585,8 +585,8 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserIframeFilterTest,
 }
 
 IN_PROC_BROWSER_TEST_F(SupervisedUserIframeFilterTest,
-                       WhitelistedMainFrameBlacklistedIframe) {
-  WhitelistHost(kExampleHost);
+                       AllowlistedMainFrameDenylistedIframe) {
+  AllowlistHost(kExampleHost);
   BlockHost(kIframeHost1);
 
   GURL allowed_url_with_iframes = embedded_test_server()->GetURL(

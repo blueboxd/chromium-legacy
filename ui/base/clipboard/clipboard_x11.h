@@ -65,6 +65,9 @@ class ClipboardX11 : public Clipboard {
   void ReadData(const ClipboardFormatType& format,
                 const ClipboardDataEndpoint* data_dst,
                 std::string* result) const override;
+#if defined(USE_OZONE)
+  bool IsSelectionBufferAvailable() const override;
+#endif  // defined(USE_OZONE)
   void WritePortableRepresentations(
       ClipboardBuffer buffer,
       const ObjectMap& objects,

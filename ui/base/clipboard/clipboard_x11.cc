@@ -709,6 +709,12 @@ void ClipboardX11::ReadData(const ClipboardFormatType& format,
     data.AssignTo(result);
 }
 
+#if defined(USE_OZONE)
+bool ClipboardX11::IsSelectionBufferAvailable() const {
+  return true;
+}
+#endif  // defined(USE_OZONE)
+
 // |data_src| is not used. It's only passed to be consistent with other
 // platforms.
 void ClipboardX11::WritePortableRepresentations(

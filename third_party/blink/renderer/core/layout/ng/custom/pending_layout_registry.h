@@ -19,6 +19,8 @@ class Node;
 class PendingLayoutRegistry : public GarbageCollected<PendingLayoutRegistry> {
  public:
   PendingLayoutRegistry() = default;
+  PendingLayoutRegistry(const PendingLayoutRegistry&) = delete;
+  PendingLayoutRegistry& operator=(const PendingLayoutRegistry&) = delete;
 
   void NotifyLayoutReady(const AtomicString& name);
   void AddPendingLayout(const AtomicString& name, Node*);
@@ -37,8 +39,6 @@ class PendingLayoutRegistry : public GarbageCollected<PendingLayoutRegistry> {
   using PendingSet = HeapHashSet<WeakMember<Node>>;
   using PendingLayoutMap = HeapHashMap<AtomicString, Member<PendingSet>>;
   PendingLayoutMap pending_layouts_;
-
-  DISALLOW_COPY_AND_ASSIGN(PendingLayoutRegistry);
 };
 
 }  // namespace blink

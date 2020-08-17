@@ -1675,8 +1675,14 @@ HistoryBackend::UpdateFaviconMappingsAndFetch(
     const std::vector<int>& desired_sizes) {
   if (!favicon_backend_)
     return {};
-  return favicon_backend_->UpdateFaviconMappingsAndFetch(
+  auto result = favicon_backend_->UpdateFaviconMappingsAndFetch(
       page_urls, icon_url, icon_type, desired_sizes);
+  if (!result.updated_page_urls.empty()) {
+    for (auto& page_url : result.updated_page_urls)
+      SendFaviconChangedNotificationForPageAndRedirects(page_url);
+    ScheduleCommit();
+  }
+  return result.bitmap_results;
 }
 
 void HistoryBackend::DeleteFaviconMappings(
@@ -1685,7 +1691,12 @@ void HistoryBackend::DeleteFaviconMappings(
   if (!favicon_backend_ || !db_)
     return;
 
-  favicon_backend_->DeleteFaviconMappings(page_urls, icon_type);
+  auto deleted_page_urls =
+      favicon_backend_->DeleteFaviconMappings(page_urls, icon_type);
+  for (auto& deleted_page_url : deleted_page_urls)
+    SendFaviconChangedNotificationForPageAndRedirects(deleted_page_url);
+  if (!deleted_page_urls.empty())
+    ScheduleCommit();
 }
 
 void HistoryBackend::MergeFavicon(
@@ -1694,22 +1705,29 @@ void HistoryBackend::MergeFavicon(
     favicon_base::IconType icon_type,
     scoped_refptr<base::RefCountedMemory> bitmap_data,
     const gfx::Size& pixel_size) {
-  if (favicon_backend_ && db_ &&
-      favicon_backend_->MergeFavicon(page_url, icon_url, icon_type, bitmap_data,
-                                     pixel_size)) {
+  if (!favicon_backend_ || !db_)
+    return;
+
+  favicon::MergeFaviconResult result = favicon_backend_->MergeFavicon(
+      page_url, icon_url, icon_type, bitmap_data, pixel_size);
+  if (result.did_page_to_icon_mapping_change)
+    SendFaviconChangedNotificationForPageAndRedirects(page_url);
+  if (result.did_icon_change)
     SendFaviconChangedNotificationForIconURL(icon_url);
-  }
+  ScheduleCommit();
 }
 
 void HistoryBackend::SetFavicons(const base::flat_set<GURL>& page_urls,
                                  favicon_base::IconType icon_type,
                                  const GURL& icon_url,
                                  const std::vector<SkBitmap>& bitmaps) {
-  if (favicon_backend_ &&
+  if (!favicon_backend_)
+    return;
+
+  ProcessSetFaviconsResult(
       favicon_backend_->SetFavicons(page_urls, icon_type, icon_url, bitmaps,
-                                    FaviconBitmapType::ON_VISIT)) {
-    SendFaviconChangedNotificationForIconURL(icon_url);
-  }
+                                    FaviconBitmapType::ON_VISIT),
+      icon_url);
 }
 
 void HistoryBackend::CloneFaviconMappingsForPages(
@@ -1726,6 +1744,7 @@ void HistoryBackend::CloneFaviconMappingsForPages(
   if (changed_urls.empty())
     return;
 
+  ScheduleCommit();
   NotifyFaviconsChanged(changed_urls, GURL());
 }
 
@@ -1739,18 +1758,19 @@ bool HistoryBackend::SetOnDemandFavicons(const GURL& page_url,
                                          favicon_base::IconType icon_type,
                                          const GURL& icon_url,
                                          const std::vector<SkBitmap>& bitmaps) {
-  if (favicon_backend_ && db_ &&
-      favicon_backend_->SetOnDemandFavicons(page_url, icon_type, icon_url,
-                                            bitmaps)) {
-    SendFaviconChangedNotificationForIconURL(icon_url);
-    return true;
-  }
-  return false;
+  if (!favicon_backend_ || !db_)
+    return false;
+
+  return ProcessSetFaviconsResult(favicon_backend_->SetOnDemandFavicons(
+                                      page_url, icon_type, icon_url, bitmaps),
+                                  icon_url);
 }
 
 void HistoryBackend::SetFaviconsOutOfDateForPage(const GURL& page_url) {
-  if (favicon_backend_)
-    favicon_backend_->SetFaviconsOutOfDateForPage(page_url);
+  if (favicon_backend_ &&
+      favicon_backend_->SetFaviconsOutOfDateForPage(page_url)) {
+    ScheduleCommit();
+  }
 }
 
 void HistoryBackend::TouchOnDemandFavicon(const GURL& icon_url) {
@@ -1759,6 +1779,7 @@ void HistoryBackend::TouchOnDemandFavicon(const GURL& icon_url) {
   if (!favicon_backend_)
     return;
   favicon_backend_->TouchOnDemandFavicon(icon_url);
+  ScheduleCommit();
 }
 
 void HistoryBackend::SetImportedFavicons(
@@ -2313,17 +2334,23 @@ bool HistoryBackend::ClearAllMainHistory(const URLRows& kept_urls) {
   return true;
 }
 
-void HistoryBackend::ScheduleCommitForFavicons() {
-  ScheduleCommit();
-}
-
 std::vector<GURL> HistoryBackend::GetCachedRecentRedirectsForPage(
     const GURL& page_url) {
   return GetCachedRecentRedirects(page_url);
 }
 
-void HistoryBackend::OnFaviconChangedForPageAndRedirects(const GURL& page_url) {
-  SendFaviconChangedNotificationForPageAndRedirects(page_url);
+bool HistoryBackend::ProcessSetFaviconsResult(
+    const favicon::SetFaviconsResult& result,
+    const GURL& icon_url) {
+  if (!result.did_change_database())
+    return false;
+
+  ScheduleCommit();
+  if (result.did_update_bitmap)
+    SendFaviconChangedNotificationForIconURL(icon_url);
+  for (const GURL& page_url : result.updated_page_urls)
+    SendFaviconChangedNotificationForPageAndRedirects(page_url);
+  return true;
 }
 
 }  // namespace history

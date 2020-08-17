@@ -73,12 +73,18 @@ class AssistantAshTestBase : public AshTestBase {
   // Change the user preference controlling the status of user consent.
   void SetConsentStatus(ConsentStatus consent_status);
 
+  // Sets the number of user sessions where Assistant onboarding was shown.
+  void SetNumberOfSessionsWhereOnboardingShown(int number_of_sessions);
+
   // Changes the user preference controlling the mode of the onboarding UX.
   void SetOnboardingMode(AssistantOnboardingMode onboarding_mode);
 
   // Change the user setting controlling whether the user prefers voice or
   // keyboard.
   void SetPreferVoice(bool value);
+
+  // Sets the time of the user's last interaction with Assistant.
+  void SetTimeOfLastInteraction(const base::Time& time);
 
   void StartOverview();
 

@@ -414,7 +414,7 @@ void ScrollbarThemeMac::PaintThumbInternal(GraphicsContext& context,
     context.EndLayer();
 }
 
-int ScrollbarThemeMac::ScrollbarThickness() {
+int ScrollbarThemeMac::ScrollbarThickness(float scale_from_dip) {
   ScrollbarPainter scrollbar_painter = [NSClassFromString(@"NSScrollerImp")
       scrollerImpWithStyle:RecommendedScrollerStyle()
                controlSize:NSRegularControlSize
@@ -428,7 +428,7 @@ int ScrollbarThemeMac::ScrollbarThickness() {
   int thickness = [scrollbar_painter trackBoxWidth];
   if (SupportsExpandedScrollbars())
     [scrollbar_painter setExpanded:was_expanded];
-  return thickness;
+  return thickness * scale_from_dip;
 }
 
 bool ScrollbarThemeMac::UsesOverlayScrollbars() const {

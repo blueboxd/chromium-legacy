@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/files/file_path.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -31,6 +32,7 @@ class BookmarkExpandedStateTrackerTest : public testing::Test {
   void SetUp() override;
   void TearDown() override;
 
+  base::ScopedTempDir scoped_temp_dir_;
   base::test::TaskEnvironment task_environment_;
   TestingPrefServiceSimple prefs_;
   std::unique_ptr<BookmarkModel> model_;
@@ -38,15 +40,17 @@ class BookmarkExpandedStateTrackerTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(BookmarkExpandedStateTrackerTest);
 };
 
-BookmarkExpandedStateTrackerTest::BookmarkExpandedStateTrackerTest() {}
+BookmarkExpandedStateTrackerTest::BookmarkExpandedStateTrackerTest() = default;
 
-BookmarkExpandedStateTrackerTest::~BookmarkExpandedStateTrackerTest() {}
+BookmarkExpandedStateTrackerTest::~BookmarkExpandedStateTrackerTest() = default;
 
 void BookmarkExpandedStateTrackerTest::SetUp() {
+  ASSERT_TRUE(scoped_temp_dir_.CreateUniqueTempDir());
   prefs_.registry()->RegisterListPref(prefs::kBookmarkEditorExpandedNodes);
   prefs_.registry()->RegisterListPref(prefs::kManagedBookmarks);
-  model_.reset(new BookmarkModel(std::make_unique<TestBookmarkClient>()));
-  model_->Load(&prefs_, base::FilePath());
+  model_ =
+      std::make_unique<BookmarkModel>(std::make_unique<TestBookmarkClient>());
+  model_->Load(&prefs_, scoped_temp_dir_.GetPath());
   test::WaitForBookmarkModelToLoad(model_.get());
 }
 

@@ -248,6 +248,20 @@ base::Optional<base::File::Info> FilesystemProxy::GetFileInfo(
   return info;
 }
 
+base::Optional<FilesystemProxy::PathAccessInfo> FilesystemProxy::GetPathAccess(
+    const base::FilePath& path) {
+  mojom::PathAccessInfoPtr info;
+  if (!remote_directory_)
+    info = FilesystemImpl::GetPathAccessLocal(MaybeMakeAbsolute(path));
+  else
+    remote_directory_->GetPathAccess(MakeRelative(path), &info);
+
+  if (!info)
+    return base::nullopt;
+
+  return PathAccessInfo{info->can_read, info->can_write};
+}
+
 base::File::Error FilesystemProxy::RenameFile(const base::FilePath& old_path,
                                               const base::FilePath& new_path) {
   base::File::Error error = base::File::FILE_ERROR_IO;
@@ -286,6 +300,16 @@ FilesystemProxy::LockFile(const base::FilePath& path) {
   std::unique_ptr<FileLock> lock =
       std::make_unique<RemoteFileLockImpl>(std::move(remote_lock));
   return lock;
+}
+
+bool FilesystemProxy::SetOpenedFileLength(base::File* file, uint64_t length) {
+  if (!remote_directory_)
+    return file->SetLength(length);
+
+  bool success = false;
+  remote_directory_->SetOpenedFileLength(std::move(*file), length, &success,
+                                         file);
+  return success;
 }
 
 base::FilePath FilesystemProxy::MakeRelative(const base::FilePath& path) const {

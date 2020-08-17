@@ -5,6 +5,7 @@
 #include "extensions/browser/api/web_request/web_request_time_tracker.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/safe_conversions.h"
 
 ExtensionWebRequestTimeTracker::RequestTimeLog::RequestTimeLog() = default;
 ExtensionWebRequestTimeTracker::RequestTimeLog::~RequestTimeLog() = default;
@@ -65,9 +66,9 @@ void ExtensionWebRequestTimeTracker::AnalyzeLogRequest(
   // extra delay the extension adds is likely to be noise.
   constexpr auto kMinRequestTimeToCare = base::TimeDelta::FromMilliseconds(10);
   if (request_duration >= kMinRequestTimeToCare) {
-    double percentage = log.block_duration / request_duration;
-    UMA_HISTOGRAM_PERCENTAGE("Extensions.NetworkDelayPercentage",
-                             static_cast<int>(100 * percentage));
+    const int percentage =
+        base::ClampRound(log.block_duration / request_duration * 100);
+    UMA_HISTOGRAM_PERCENTAGE("Extensions.NetworkDelayPercentage", percentage);
   }
 }
 

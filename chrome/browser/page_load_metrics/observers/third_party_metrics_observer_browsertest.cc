@@ -221,6 +221,12 @@ IN_PROC_BROWSER_TEST_F(ThirdPartyMetricsObserverBrowserTest, NoStorageEvent) {
   histogram_tester.ExpectBucketCount(
       "Blink.UseCounter.Features",
       blink::mojom::WebFeature::kThirdPartyCacheStorage, 0);
+  histogram_tester.ExpectBucketCount(
+      "Blink.UseCounter.Features",
+      blink::mojom::WebFeature::kThirdPartyCookieRead, 0);
+  histogram_tester.ExpectBucketCount(
+      "Blink.UseCounter.Features",
+      blink::mojom::WebFeature::kThirdPartyCookieWrite, 0);
 }
 
 IN_PROC_BROWSER_TEST_F(ThirdPartyMetricsObserverBrowserTest,
@@ -232,6 +238,12 @@ IN_PROC_BROWSER_TEST_F(ThirdPartyMetricsObserverBrowserTest,
 
   histogram_tester.ExpectUniqueSample(kReadCookieHistogram, 0, 1);
   histogram_tester.ExpectUniqueSample(kWriteCookieHistogram, 0, 1);
+  histogram_tester.ExpectBucketCount(
+      "Blink.UseCounter.Features",
+      blink::mojom::WebFeature::kThirdPartyCookieRead, 0);
+  histogram_tester.ExpectBucketCount(
+      "Blink.UseCounter.Features",
+      blink::mojom::WebFeature::kThirdPartyCookieWrite, 0);
 }
 
 IN_PROC_BROWSER_TEST_F(ThirdPartyMetricsObserverBrowserTest,
@@ -246,6 +258,12 @@ IN_PROC_BROWSER_TEST_F(ThirdPartyMetricsObserverBrowserTest,
 
   histogram_tester.ExpectUniqueSample(kReadCookieHistogram, 1, 1);
   histogram_tester.ExpectUniqueSample(kWriteCookieHistogram, 1, 1);
+  histogram_tester.ExpectBucketCount(
+      "Blink.UseCounter.Features",
+      blink::mojom::WebFeature::kThirdPartyCookieRead, 1);
+  histogram_tester.ExpectBucketCount(
+      "Blink.UseCounter.Features",
+      blink::mojom::WebFeature::kThirdPartyCookieWrite, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(ThirdPartyMetricsObserverBrowserTest,
@@ -265,6 +283,12 @@ IN_PROC_BROWSER_TEST_F(ThirdPartyMetricsObserverBrowserTest,
 
   histogram_tester.ExpectUniqueSample(kReadCookieHistogram, 1, 1);
   histogram_tester.ExpectUniqueSample(kWriteCookieHistogram, 1, 1);
+  histogram_tester.ExpectBucketCount(
+      "Blink.UseCounter.Features",
+      blink::mojom::WebFeature::kThirdPartyCookieRead, 1);
+  histogram_tester.ExpectBucketCount(
+      "Blink.UseCounter.Features",
+      blink::mojom::WebFeature::kThirdPartyCookieWrite, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(ThirdPartyMetricsObserverBrowserTest,
@@ -283,6 +307,12 @@ IN_PROC_BROWSER_TEST_F(ThirdPartyMetricsObserverBrowserTest,
 
   histogram_tester.ExpectUniqueSample(kReadCookieHistogram, 2, 1);
   histogram_tester.ExpectUniqueSample(kWriteCookieHistogram, 2, 1);
+  histogram_tester.ExpectBucketCount(
+      "Blink.UseCounter.Features",
+      blink::mojom::WebFeature::kThirdPartyCookieRead, 1);
+  histogram_tester.ExpectBucketCount(
+      "Blink.UseCounter.Features",
+      blink::mojom::WebFeature::kThirdPartyCookieWrite, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(ThirdPartyMetricsObserverBrowserTest,
@@ -302,6 +332,12 @@ IN_PROC_BROWSER_TEST_F(ThirdPartyMetricsObserverBrowserTest,
 
   histogram_tester.ExpectUniqueSample(kReadCookieHistogram, 0, 1);
   histogram_tester.ExpectUniqueSample(kWriteCookieHistogram, 0, 1);
+  histogram_tester.ExpectBucketCount(
+      "Blink.UseCounter.Features",
+      blink::mojom::WebFeature::kThirdPartyCookieRead, 0);
+  histogram_tester.ExpectBucketCount(
+      "Blink.UseCounter.Features",
+      blink::mojom::WebFeature::kThirdPartyCookieWrite, 0);
 }
 
 IN_PROC_BROWSER_TEST_F(ThirdPartyMetricsObserverBrowserTest,
@@ -322,6 +358,12 @@ IN_PROC_BROWSER_TEST_F(ThirdPartyMetricsObserverBrowserTest,
 
   histogram_tester.ExpectUniqueSample(kReadCookieHistogram, 1, 1);
   histogram_tester.ExpectUniqueSample(kWriteCookieHistogram, 1, 1);
+  histogram_tester.ExpectBucketCount(
+      "Blink.UseCounter.Features",
+      blink::mojom::WebFeature::kThirdPartyCookieRead, 1);
+  histogram_tester.ExpectBucketCount(
+      "Blink.UseCounter.Features",
+      blink::mojom::WebFeature::kThirdPartyCookieWrite, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(ThirdPartyMetricsObserverBrowserTest,
@@ -339,6 +381,12 @@ IN_PROC_BROWSER_TEST_F(ThirdPartyMetricsObserverBrowserTest,
   // No read is counted since no cookie has previously been set.
   histogram_tester.ExpectUniqueSample(kReadCookieHistogram, 0, 1);
   histogram_tester.ExpectUniqueSample(kWriteCookieHistogram, 0, 1);
+  histogram_tester.ExpectBucketCount(
+      "Blink.UseCounter.Features",
+      blink::mojom::WebFeature::kThirdPartyCookieRead, 0);
+  histogram_tester.ExpectBucketCount(
+      "Blink.UseCounter.Features",
+      blink::mojom::WebFeature::kThirdPartyCookieWrite, 0);
 }
 
 IN_PROC_BROWSER_TEST_F(ThirdPartyMetricsObserverBrowserTest,
@@ -356,6 +404,12 @@ IN_PROC_BROWSER_TEST_F(ThirdPartyMetricsObserverBrowserTest,
 
   histogram_tester.ExpectUniqueSample(kReadCookieHistogram, 0, 1);
   histogram_tester.ExpectUniqueSample(kWriteCookieHistogram, 1, 1);
+  histogram_tester.ExpectBucketCount(
+      "Blink.UseCounter.Features",
+      blink::mojom::WebFeature::kThirdPartyCookieRead, 0);
+  histogram_tester.ExpectBucketCount(
+      "Blink.UseCounter.Features",
+      blink::mojom::WebFeature::kThirdPartyCookieWrite, 1);
 }
 
 class ThirdPartyDomStorageAccessMetricsObserverBrowserTest

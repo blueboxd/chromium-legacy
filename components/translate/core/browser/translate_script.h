@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/callback_list.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -93,7 +94,7 @@ class TranslateScript {
   base::TimeDelta expiration_delay_;
 
   // The callbacks called when the server sends a response.
-  typedef std::vector<RequestCallback> RequestCallbackList;
+  using RequestCallbackList = base::OnceCallbackList<RequestCallback::RunType>;
   RequestCallbackList callback_list_;
 
   base::WeakPtrFactory<TranslateScript> weak_method_factory_{this};

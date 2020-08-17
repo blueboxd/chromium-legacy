@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_PAYMENTS_CORE_ANDROID_APP_DESCRIPTION_H_
 #define COMPONENTS_PAYMENTS_CORE_ANDROID_APP_DESCRIPTION_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 

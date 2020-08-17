@@ -3098,7 +3098,7 @@
   {
     "name": "new-shortcut-mapping",
     "owners": [ "oshima", "afakhry" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 86
   },
   {
     "name": "new-tabstrip-animation",
@@ -4309,7 +4309,7 @@
   {
     "name": "trim-on-memory-pressure",
     "owners": [ "bgeffon", "sonnyrao" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 90
   },
   {
     "name": "trust-tokens",
@@ -4500,6 +4500,11 @@
     "name": "web-otp-backend",
     "owners": [ "ayui", "goto" ],
     "expiry_milestone": 86
+  },
+  {
+    "name": "web-share",
+    "owners": [ "mhochk@microsoft.com", "ericwilligers@google.com" ],
+    "expiry_milestone": 89
   },
   {
     "name": "webpage-default-zoom-from-dynamic-type",

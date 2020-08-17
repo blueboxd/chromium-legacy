@@ -15,6 +15,10 @@ namespace aura {
 class Window;
 }  // namespace aura
 
+namespace base {
+class Time;
+}  // namespace base
+
 namespace views {
 class Textfield;
 class View;
@@ -56,6 +60,10 @@ class ASH_EXPORT AssistantTestApi {
   // Changes the user preference controlling the status of user consent.
   virtual void SetConsentStatus(chromeos::assistant::prefs::ConsentStatus) = 0;
 
+  // Sets the number of user sessions where Assistant onboarding was shown.
+  virtual void SetNumberOfSessionsWhereOnboardingShown(
+      int number_of_sessions) = 0;
+
   // Changes the user preference controlling the mode of the onboarding UX.
   virtual void SetOnboardingMode(
       chromeos::assistant::prefs::AssistantOnboardingMode onboarding_mode) = 0;
@@ -64,6 +72,9 @@ class ASH_EXPORT AssistantTestApi {
   // keyboard (internally called |kAssistantLaunchWithMicOpen|).
   // This will ensure the new value is propagated to the |AssistantState|.
   virtual void SetPreferVoice(bool value) = 0;
+
+  // Sets the time of the user's last interaction with Assistant.
+  virtual void SetTimeOfLastInteraction(base::Time time) = 0;
 
   virtual void StartOverview() = 0;
 

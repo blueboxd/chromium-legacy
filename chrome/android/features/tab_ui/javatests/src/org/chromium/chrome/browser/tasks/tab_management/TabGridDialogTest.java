@@ -407,6 +407,28 @@ public class TabGridDialogTest {
 
     @Test
     @MediumTest
+    // clang-format off
+    @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID,
+            ChromeFeatureList.CHROME_SHARING_HUB})
+    public void testDialogToolbarMenuShareGroup_WithSharingHub() {
+        // clang-format on
+        final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        createTabs(cta, false, 2);
+        enterTabSwitcher(cta);
+        verifyTabSwitcherCardCount(cta, 2);
+
+        // Create a tab group.
+        mergeAllNormalTabsToAGroup(cta);
+        verifyTabSwitcherCardCount(cta, 1);
+        openDialogFromTabSwitcherAndVerify(cta, 2, null);
+        openDialogToolbarMenuAndVerify(cta);
+
+        // We should still show Android share sheet even with sharing hub enabled.
+        triggerShareGroupAndVerify(cta);
+    }
+
+    @Test
+    @MediumTest
     @Features.EnableFeatures(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID)
     public void testSelectionEditorShowHide() throws ExecutionException {
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();

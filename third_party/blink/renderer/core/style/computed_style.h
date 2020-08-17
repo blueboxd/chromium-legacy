@@ -2304,14 +2304,23 @@ class ComputedStyle : public ComputedStyleBase,
   // because box reflection styles only apply for some objects (see:
   // |LayoutObject::HasReflection()|).
   bool HasGroupingProperty(bool has_box_reflection) const {
-    // TODO(pdr): Spec requires "overflow: any value other than visible or clip"
+    if (HasStackingGroupingProperty(has_box_reflection))
+      return true;
+    // TODO(pdr): Also check for overflow because the spec requires "overflow:
+    // any value other than visible or clip."
+    if (!HasAutoClip() && HasOutOfFlowPosition())
+      return true;
+    return false;
+  }
+
+  // This is the subset of grouping properties (see: |HasGroupingProperty|) that
+  // also create stacking contexts.
+  bool HasStackingGroupingProperty(bool has_box_reflection) const {
     if (HasNonInitialOpacity())
       return true;
     if (HasNonInitialFilter())
       return true;
     if (has_box_reflection)
-      return true;
-    if (!HasAutoClip() && HasOutOfFlowPosition())
       return true;
     if (ClipPath())
       return true;

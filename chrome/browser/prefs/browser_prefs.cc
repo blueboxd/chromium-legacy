@@ -208,8 +208,8 @@
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/supervised_user/child_accounts/child_account_service.h"
+#include "chrome/browser/supervised_user/supervised_user_allowlist_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
-#include "chrome/browser/supervised_user/supervised_user_whitelist_service.h"
 #endif
 
 #if defined(OS_ANDROID)
@@ -991,7 +991,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   ChildAccountService::RegisterProfilePrefs(registry);
   SupervisedUserService::RegisterProfilePrefs(registry);
-  SupervisedUserWhitelistService::RegisterProfilePrefs(registry);
+  SupervisedUserAllowlistService::RegisterProfilePrefs(registry);
 #endif
 
 #if defined(OS_ANDROID)

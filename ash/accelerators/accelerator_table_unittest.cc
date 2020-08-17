@@ -64,6 +64,11 @@ TEST(AcceleratorTableTest, CheckDuplicatedAccelerators) {
     EXPECT_TRUE(accelerators.insert(entry).second)
         << "Duplicated accelerator: " << AcceleratorDataToString(entry);
   }
+  for (size_t i = 0; i < kDisableWithNewMappingAcceleratorDataLength; ++i) {
+    const AcceleratorData& entry = kDisableWithNewMappingAcceleratorData[i];
+    EXPECT_TRUE(accelerators.insert(entry).second)
+        << "Duplicated accelerator: " << AcceleratorDataToString(entry);
+  }
 }
 
 TEST(AcceleratorTableTest, CheckDuplicatedReservedActions) {
@@ -140,6 +145,12 @@ TEST(AcceleratorTableTest, CheckSearchBasedAccelerators) {
   std::vector<AcceleratorData> non_search_accelerators;
   for (size_t i = 0; i < kAcceleratorDataLength; ++i) {
     const AcceleratorData& entry = kAcceleratorData[i];
+    if (entry.modifiers & ui::EF_COMMAND_DOWN)
+      continue;
+    non_search_accelerators.emplace_back(entry);
+  }
+  for (size_t i = 0; i < kDisableWithNewMappingAcceleratorDataLength; ++i) {
+    const AcceleratorData& entry = kDisableWithNewMappingAcceleratorData[i];
     if (entry.modifiers & ui::EF_COMMAND_DOWN)
       continue;
     non_search_accelerators.emplace_back(entry);

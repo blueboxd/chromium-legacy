@@ -17,13 +17,10 @@ namespace device {
 SetPINRequestHandler::SetPINRequestHandler(
     const base::flat_set<FidoTransportProtocol>& supported_transports,
     GetPINCallback get_pin_callback,
-    FinishedCallback finished_callback,
-    std::unique_ptr<FidoDiscoveryFactory> fido_discovery_factory)
-    : FidoRequestHandlerBase(fido_discovery_factory.get(),
-                             supported_transports),
+    FinishedCallback finished_callback)
+    : FidoRequestHandlerBase(&fido_discovery_factory_, supported_transports),
       get_pin_callback_(std::move(get_pin_callback)),
-      finished_callback_(std::move(finished_callback)),
-      fido_discovery_factory_(std::move(fido_discovery_factory)) {
+      finished_callback_(std::move(finished_callback)) {
   Start();
 }
 

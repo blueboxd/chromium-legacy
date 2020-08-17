@@ -38,4 +38,12 @@ public interface ProcessScopeDependencyProvider {
 
     /** @see {Log.w} */
     default void logWarning(String tag, String messageTemplate, Object... args) {}
+
+    /**
+     * Returns an ImageFetchClient. ImageFetchClient should only be used for fetching images.
+     */
+    @Nullable
+    default ImageFetchClient getImageFetchClient() {
+        return null;
+    }
 }

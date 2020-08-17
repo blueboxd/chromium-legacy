@@ -110,6 +110,41 @@ struct FaviconBitmap {
   gfx::Size pixel_size;
 };
 
+struct UpdateFaviconMappingsResult {
+  UpdateFaviconMappingsResult();
+  UpdateFaviconMappingsResult(const UpdateFaviconMappingsResult& other);
+  ~UpdateFaviconMappingsResult();
+
+  std::vector<favicon_base::FaviconRawBitmapResult> bitmap_results;
+
+  // Contains the set of page urls that were updated.
+  base::flat_set<GURL> updated_page_urls;
+};
+
+struct MergeFaviconResult {
+  // If true, the mapping between the page and icon changed.
+  bool did_page_to_icon_mapping_change = false;
+
+  // True if the icon itself changed.
+  bool did_icon_change = false;
+};
+
+struct SetFaviconsResult {
+  SetFaviconsResult();
+  SetFaviconsResult(const SetFaviconsResult& other);
+  ~SetFaviconsResult();
+
+  bool did_change_database() const {
+    return did_update_bitmap || !updated_page_urls.empty();
+  }
+
+  // Set to true if the bitmap in the db was updated.
+  bool did_update_bitmap = false;
+
+  // Set of page_urls whose mapping was updated.
+  base::flat_set<GURL> updated_page_urls;
+};
+
 }  // namespace favicon
 
 #endif  // COMPONENTS_FAVICON_CORE_FAVICON_TYPES_H_

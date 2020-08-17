@@ -61,7 +61,6 @@ class FaviconBackendTest : public testing::Test, public FaviconBackendDelegate {
   void TearDown() override { backend_.reset(); }
 
   // FaviconBackendDelegate:
-  void ScheduleCommitForFavicons() override {}
   std::vector<GURL> GetCachedRecentRedirectsForPage(
       const GURL& page_url) override {
     auto iter = recent_redirects_.Get(page_url);
@@ -69,7 +68,6 @@ class FaviconBackendTest : public testing::Test, public FaviconBackendDelegate {
       return iter->second;
     return {page_url};
   }
-  void OnFaviconChangedForPageAndRedirects(const GURL& page_url) override {}
 
  protected:
   void SetFavicons(const base::flat_set<GURL>& page_urls,
@@ -387,10 +385,8 @@ TEST_F(FaviconBackendTest, SetFaviconsSameFaviconURLForTwoPages) {
 
   SetFavicons({page_url1}, IconType::kFavicon, icon_url, bitmaps);
 
-  std::vector<favicon_base::FaviconRawBitmapResult> bitmap_results =
-      backend_->UpdateFaviconMappingsAndFetch({page_url2}, icon_url,
-                                              IconType::kFavicon,
-                                              GetEdgeSizesSmallAndLarge());
+  backend_->UpdateFaviconMappingsAndFetch(
+      {page_url2}, icon_url, IconType::kFavicon, GetEdgeSizesSmallAndLarge());
 
   // Check that the same FaviconID is mapped to both page URLs.
   std::vector<IconMapping> icon_mappings;
@@ -495,8 +491,10 @@ TEST_F(FaviconBackendTest, SetOnDemandFaviconsForEmptyDB) {
   std::vector<SkBitmap> bitmaps;
   bitmaps.push_back(CreateBitmap(SK_ColorRED, kSmallEdgeSize));
 
-  EXPECT_TRUE(backend_->SetOnDemandFavicons(page_url, IconType::kFavicon,
-                                            icon_url, bitmaps));
+  EXPECT_TRUE(
+      backend_
+          ->SetOnDemandFavicons(page_url, IconType::kFavicon, icon_url, bitmaps)
+          .did_update_bitmap);
 
   favicon_base::FaviconID favicon_id =
       backend_->db()->GetFaviconIDForFaviconURL(icon_url, IconType::kFavicon);
@@ -534,8 +532,10 @@ TEST_F(FaviconBackendTest, SetOnDemandFaviconsForPageInDB) {
 
   // Call SetOnDemandFavicons() with a different icon URL and bitmap data.
   bitmaps[0] = CreateBitmap(SK_ColorWHITE, kSmallEdgeSize);
-  EXPECT_FALSE(backend_->SetOnDemandFavicons(page_url, IconType::kFavicon,
-                                             icon_url2, bitmaps));
+  EXPECT_FALSE(backend_
+                   ->SetOnDemandFavicons(page_url, IconType::kFavicon,
+                                         icon_url2, bitmaps)
+                   .did_update_bitmap);
   EXPECT_EQ(0, backend_->db()->GetFaviconIDForFaviconURL(icon_url2,
                                                          IconType::kFavicon));
 
@@ -571,8 +571,10 @@ TEST_F(FaviconBackendTest, SetOnDemandFaviconsForIconInDB) {
 
   // Call SetOnDemandFavicons() with a different bitmap.
   bitmaps[0] = CreateBitmap(SK_ColorWHITE, kSmallEdgeSize);
-  EXPECT_FALSE(backend_->SetOnDemandFavicons(page_url, IconType::kFavicon,
-                                             icon_url, bitmaps));
+  EXPECT_FALSE(
+      backend_
+          ->SetOnDemandFavicons(page_url, IconType::kFavicon, icon_url, bitmaps)
+          .did_update_bitmap);
 
   EXPECT_EQ(original_favicon_id, backend_->db()->GetFaviconIDForFaviconURL(
                                      icon_url, IconType::kFavicon));

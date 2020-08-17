@@ -38,11 +38,11 @@ COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES) extern const char kMimeTypePNG[];
 // Linux-specific MIME type constants (also used in Fuchsia).
 #if defined(OS_LINUX) || defined(OS_FUCHSIA)
 COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES)
-constexpr char kMimeTypeLinuxUtf8String[] = "UTF8_STRING";
+extern const char kMimeTypeLinuxUtf8String[];
 COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES)
-constexpr char kMimeTypeLinuxString[] = "STRING";
+extern const char kMimeTypeLinuxString[];
 COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES)
-constexpr char kMimeTypeLinuxText[] = "TEXT";
+extern const char kMimeTypeLinuxText[];
 #endif  // defined(OS_LINUX) || defined(OS_FUCHSIA)
 
 #if !defined(OS_APPLE)
@@ -76,7 +76,8 @@ extern NSString* const kUTTypeConfidentialData;
 #endif  // defined(OS_APPLE)
 
 #if defined(OS_ANDROID)
-COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES) extern const char kMimeTypeImageURI[];
+COMPONENT_EXPORT(UI_BASE_CLIPBOARD_TYPES)
+extern const char kMimeTypeImageURI[];
 #endif  // defined(OS_ANDROID)
 
 }  // namespace ui

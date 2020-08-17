@@ -5790,7 +5790,6 @@ Unknown properties are collapsed to zero. -->
       label="BackForwardCache is disabled through command line (may include
              cases where the embedder disabled it due to, e.g., enterprise
              policy)"/>
-  <int value="36" label="Navigation entry was replaced"/>
 </enum>
 
 <enum name="BackForwardCacheReloadsAfterHistoryNavigation">
@@ -28755,6 +28754,9 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3405" label="GPUAdapter_Name"/>
   <int value="3406" label="WindowScreenInternal"/>
   <int value="3407" label="WindowScreenPrimary"/>
+  <int value="3408" label="ThirdPartyCookieRead"/>
+  <int value="3409" label="ThirdPartyCookieWrite"/>
+  <int value="3410" label="RTCLegacyRtpDataChannelNegotiated"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -40205,6 +40207,7 @@ from previous Chrome versions.
   <int value="-1938263248" label="enable-extension-info-dialog"/>
   <int value="-1937077699" label="http-form-warning"/>
   <int value="-1936032607" label="enable-experimental-webassembly-features"/>
+  <int value="-1935055754" label="WebShare:enabled"/>
   <int value="-1934661084" label="ForceUnifiedConsentBump:disabled"/>
   <int value="-1933425042" label="OfflinePreviews:enabled"/>
   <int value="-1932609987" label="CSSBackdropFilter:disabled"/>
@@ -41786,6 +41789,7 @@ from previous Chrome versions.
   <int value="-311148335" label="v8-pac-mojo-out-of-process"/>
   <int value="-310908854" label="new-wallpaper-picker"/>
   <int value="-310615515" label="EnableSuggestedFiles:disabled"/>
+  <int value="-308793293" label="WebShare:disabled"/>
   <int value="-307260007" label="ExtensionsCheckup:disabled"/>
   <int value="-306935714" label="lite-video-force-override-decision"/>
   <int value="-304951461" label="TextSuggestionsTouchBar:enabled"/>

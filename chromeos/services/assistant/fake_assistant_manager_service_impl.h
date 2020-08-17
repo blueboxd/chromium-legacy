@@ -61,8 +61,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) FakeAssistantManagerServiceImpl
                             AssistantQuerySource source,
                             bool allow_tts) override;
   void StartVoiceInteraction() override;
-  void StartWarmerWelcomeInteraction(int num_warmer_welcome_triggered,
-                                     bool allow_tts) override;
   void StopActiveInteraction(bool cancel_conversation) override;
   void AddAssistantInteractionSubscriber(
       AssistantInteractionSubscriber* subscriber) override;

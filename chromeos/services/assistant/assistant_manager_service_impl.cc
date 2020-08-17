@@ -26,7 +26,6 @@
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
 #include "chromeos/assistant/internal/internal_constants.h"
-#include "chromeos/assistant/internal/proto/google3/assistant/api/client_input/warmer_welcome_input.pb.h"
 #include "chromeos/assistant/internal/proto/google3/assistant/api/client_op/device_args.pb.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
@@ -482,31 +481,6 @@ void AssistantManagerServiceImpl::StopActiveInteraction(
   }
   assistant_manager_internal_->StopAssistantInteractionInternal(
       cancel_conversation);
-}
-
-void AssistantManagerServiceImpl::StartWarmerWelcomeInteraction(
-    int num_warmer_welcome_triggered,
-    bool allow_tts) {
-  DCHECK(assistant_manager_internal_);
-
-  const std::string interaction =
-      CreateWarmerWelcomeInteraction(num_warmer_welcome_triggered);
-
-  assistant_client::VoicelessOptions options;
-  options.is_user_initiated = true;
-  options.modality =
-      allow_tts ? assistant_client::VoicelessOptions::Modality::VOICE_MODALITY
-                : assistant_client::VoicelessOptions::Modality::TYPING_MODALITY;
-
-  auto interaction_type = allow_tts ? AssistantInteractionType::kVoice
-                                    : AssistantInteractionType::kText;
-  options.conversation_turn_id = NewPendingInteraction(
-      interaction_type, AssistantQuerySource::kWarmerWelcome,
-      /*query=*/std::string());
-
-  assistant_manager_internal_->SendVoicelessInteraction(
-      interaction, /*description=*/"warmer_welcome_trigger", options,
-      [](auto) {});
 }
 
 void AssistantManagerServiceImpl::StartEditReminderInteraction(

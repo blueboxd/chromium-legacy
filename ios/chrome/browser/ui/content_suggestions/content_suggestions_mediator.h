@@ -47,15 +47,16 @@ class ReadingListModel;
 
 // Initialize the mediator with the |contentService| to mediate.
 - (instancetype)
-    initWithContentService:
-        (ntp_snippets::ContentSuggestionsService*)contentService
-          largeIconService:(favicon::LargeIconService*)largeIconService
-            largeIconCache:(LargeIconCache*)largeIconCache
-           mostVisitedSite:
-               (std::unique_ptr<ntp_tiles::MostVisitedSites>)mostVisitedSites
-          readingListModel:(ReadingListModel*)readingListModel
-               prefService:(PrefService*)prefService
-              discoverFeed:(UIViewController*)discoverFeed
+           initWithContentService:
+               (ntp_snippets::ContentSuggestionsService*)contentService
+                 largeIconService:(favicon::LargeIconService*)largeIconService
+                   largeIconCache:(LargeIconCache*)largeIconCache
+                  mostVisitedSite:(std::unique_ptr<ntp_tiles::MostVisitedSites>)
+                                      mostVisitedSites
+                 readingListModel:(ReadingListModel*)readingListModel
+                      prefService:(PrefService*)prefService
+                     discoverFeed:(UIViewController*)discoverFeed
+    isGoogleDefaultSearchProvider:(BOOL)isGoogleDefaultSearchProvider
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;

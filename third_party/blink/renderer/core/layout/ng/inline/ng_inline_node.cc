@@ -510,6 +510,8 @@ class NGInlineNodeDataEditor final {
         layout_text_(layout_text) {
     DCHECK(layout_text_.HasValidInlineItems());
   }
+  NGInlineNodeDataEditor(const NGInlineNodeDataEditor&) = delete;
+  NGInlineNodeDataEditor& operator=(const NGInlineNodeDataEditor&) = delete;
 
   LayoutBlockFlow* GetLayoutBlockFlow() const { return block_flow_; }
 
@@ -740,8 +742,6 @@ class NGInlineNodeDataEditor final {
   const LayoutText& layout_text_;
   unsigned start_offset_ = 0;
   unsigned end_offset_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(NGInlineNodeDataEditor);
 };
 
 // static

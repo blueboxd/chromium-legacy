@@ -129,8 +129,9 @@ class AdsPageLoadMetricsObserverBrowserTest
   }
 
   void SetUp() override {
-    std::vector<base::Feature> enabled = {subresource_filter::kAdTagging,
-                                          features::kSitePerProcess};
+    std::vector<base::Feature> enabled = {
+        subresource_filter::kAdTagging, features::kSitePerProcess,
+        features::kV8PerAdFrameMemoryMonitoring};
     std::vector<base::Feature> disabled = {};
 
     if (use_process_priority_) {

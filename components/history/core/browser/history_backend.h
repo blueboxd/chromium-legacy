@@ -788,11 +788,11 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   void DeleteFTSIndexDatabases();
 
   // favicon::FaviconBackendDelegate
-  void ScheduleCommitForFavicons() override;
   std::vector<GURL> GetCachedRecentRedirectsForPage(
       const GURL& page_url) override;
-  void OnFaviconChangedForPageAndRedirects(const GURL& page_url) override;
 
+  bool ProcessSetFaviconsResult(const favicon::SetFaviconsResult& result,
+                                const GURL& icon_url);
   // Data ----------------------------------------------------------------------
 
   // Delegate. See the class definition above for more information. This will

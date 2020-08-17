@@ -31,7 +31,7 @@ enum {
   DIR_COMPONENT_CLD2,              // The Compact Language Detector.
   DIR_RECOVERY_BASE,               // The Recovery.
   DIR_SWIFT_SHADER,                // The SwiftShader.
-  DIR_SUPERVISED_USER_WHITELISTS,  // The Supervised user whitelists.
+  DIR_SUPERVISED_USER_ALLOWLISTS,  // The Supervised user allowlists.
   PATH_END
 };
 

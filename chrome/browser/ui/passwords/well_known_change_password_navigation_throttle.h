@@ -9,18 +9,13 @@
 
 #include "content/public/browser/navigation_throttle.h"
 
+#include "components/password_manager/core/browser/well_known_change_password_state.h"
+
 class GURL;
 namespace content {
 class NavigationHandle;
 }  // namespace content
 
-namespace net {
-class HttpResponseHeaders;
-}  // namespace net
-
-namespace network {
-class SimpleURLLoader;
-}  // namespace network
 
 namespace password_manager {
 class ChangePasswordUrlService;
@@ -34,7 +29,8 @@ class ChangePasswordUrlService;
 // support the change password url, the user gets redirected to the base path
 // '/'.
 class WellKnownChangePasswordNavigationThrottle
-    : public content::NavigationThrottle {
+    : public content::NavigationThrottle,
+      public password_manager::WellKnownChangePasswordStateDelegate {
  public:
   ~WellKnownChangePasswordNavigationThrottle() override;
 
@@ -52,24 +48,13 @@ class WellKnownChangePasswordNavigationThrottle
  private:
   explicit WellKnownChangePasswordNavigationThrottle(
       content::NavigationHandle* handle);
-  // Request the status code from a path that is expected to return 404.
-  void FetchNonExistingResource(content::NavigationHandle* handle);
-  // Callback for the request to the "not exist" path.
-  void FetchNonExistingResourceCallback(
-      scoped_refptr<net::HttpResponseHeaders> headers);
-  // Function is called when both requests are finished. Decides to continue or
-  // redirect to homepage.
-  ThrottleAction ContinueProcessing();
+  // password_manager::WellKnownChangePasswordStateDelegate:
+  void OnProcessingFinished(bool is_supported) override;
   // Redirects to a given URL in the same tab.
   void Redirect(const GURL& url);
-  // Checks if both requests are finished.
-  bool BothRequestsFinished() const;
-  // Checks the status codes and returns if change password is supported.
-  bool SupportsChangePasswordUrl() const;
 
-  int non_existing_resource_response_code_ = 0;
-  int change_password_response_code_ = 0;
-  std::unique_ptr<network::SimpleURLLoader> url_loader_;
+  password_manager::WellKnownChangePasswordState
+      well_known_change_password_state_{this};
   password_manager::ChangePasswordUrlService* change_password_url_service_;
 };
 

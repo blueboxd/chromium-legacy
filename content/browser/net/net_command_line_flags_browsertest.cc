@@ -27,7 +27,7 @@ class CommandLineFlagsBrowserTest : public ContentBrowserTest {
 IN_PROC_BROWSER_TEST_F(CommandLineFlagsBrowserTest, Port79DefaultBlocked) {
   EXPECT_EQ(net::ERR_UNSAFE_PORT,
             content::LoadBasicRequest(network_context(),
-                                      GURL("http://127.0.0.1:79"), 0, 0, 0));
+                                      GURL("http://127.0.0.1:79")));
 }
 
 class ExplicitlyAllowPort79BrowserTest : public CommandLineFlagsBrowserTest {
@@ -47,7 +47,7 @@ class ExplicitlyAllowPort79BrowserTest : public CommandLineFlagsBrowserTest {
 IN_PROC_BROWSER_TEST_F(ExplicitlyAllowPort79BrowserTest, Load) {
   EXPECT_NE(net::ERR_UNSAFE_PORT,
             content::LoadBasicRequest(network_context(),
-                                      GURL("http://127.0.0.1:79"), 0, 0, 0));
+                                      GURL("http://127.0.0.1:79")));
 }
 
 }  // namespace content

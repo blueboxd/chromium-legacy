@@ -66,7 +66,8 @@ void AuthenticatorRequestClientDelegate::SetMightCreateResidentCredential(
 
 void AuthenticatorRequestClientDelegate::ConfigureCable(
     const url::Origin& origin,
-    base::span<const device::CableDiscoveryData> pairings_from_extension) {}
+    base::span<const device::CableDiscoveryData> pairings_from_extension,
+    device::FidoDiscoveryFactory* fido_discovery_factory) {}
 
 void AuthenticatorRequestClientDelegate::SelectAccount(
     std::vector<device::AuthenticatorGetAssertionResponse> responses,
@@ -90,32 +91,6 @@ AuthenticatorRequestClientDelegate::GetTouchIdAuthenticatorConfig() {
 base::Optional<bool> AuthenticatorRequestClientDelegate::
     IsUserVerifyingPlatformAuthenticatorAvailableOverride() {
   return base::nullopt;
-}
-
-device::FidoDiscoveryFactory*
-AuthenticatorRequestClientDelegate::GetDiscoveryFactory() {
-#if defined(OS_ANDROID)
-  // Android uses an internal FIDO API to manage device discovery.
-  NOTREACHED();
-  return nullptr;
-#else
-  if (!discovery_factory_) {
-    discovery_factory_ = std::make_unique<device::FidoDiscoveryFactory>();
-#if defined(OS_MAC)
-    discovery_factory_->set_mac_touch_id_info(GetTouchIdAuthenticatorConfig());
-#endif  // defined(OS_MAC)
-
-#if defined(OS_WIN)
-    if (base::FeatureList::IsEnabled(device::kWebAuthUseNativeWinApi)) {
-      discovery_factory_->set_win_webauthn_api(
-          device::WinWebAuthnApi::GetDefault());
-    }
-#endif  // defined(OS_WIN)
-
-    CustomizeDiscoveryFactory(discovery_factory_.get());
-  }
-  return discovery_factory_.get();
-#endif
 }
 
 void AuthenticatorRequestClientDelegate::UpdateLastTransportUsed(
@@ -168,13 +143,5 @@ void AuthenticatorRequestClientDelegate::OnRetryUserVerification(int attempts) {
 }
 
 void AuthenticatorRequestClientDelegate::OnInternalUserVerificationLocked() {}
-
-void AuthenticatorRequestClientDelegate::CustomizeDiscoveryFactory(
-    device::FidoDiscoveryFactory* discovery_factory) {}
-
-device::FidoDiscoveryFactory*
-AuthenticatorRequestClientDelegate::discovery_factory() {
-  return discovery_factory_.get();
-}
 
 }  // namespace content

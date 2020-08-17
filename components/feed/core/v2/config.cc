@@ -4,7 +4,11 @@
 
 #include "components/feed/core/v2/config.h"
 
+#include "base/containers/flat_set.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/stl_util.h"
+#include "base/strings/strcat.h"
+#include "components/feed/core/proto/v2/wire/capability.pb.h"
 #include "components/feed/feed_feature_list.h"
 
 namespace feed {
@@ -16,7 +20,12 @@ namespace {
 // plan is to send configuration down from the server, and store it in prefs.
 // The source of a config value would be the following, in order of preference:
 // finch, server, default-value.
-Config g_config;
+
+bool CapabilityDisabled(feedwire::Capability capability) {
+  return !base::GetFieldTrialParamByFeatureAsBool(
+      kInterestFeedV2,
+      base::StrCat({"enable_", feedwire::Capability_Name(capability)}), true);
+}
 
 // Override any parameters that may be provided by Finch.
 void OverrideWithFinch(Config* config) {
@@ -66,24 +75,32 @@ void OverrideWithFinch(Config* config) {
       base::GetFieldTrialParamByFeatureAsBool(
           kInterestFeedV2, "upload_actions_on_enter_background",
           config->upload_actions_on_enter_background);
+
+  // Erase any capabilities with "enable_CAPABILITY = false" set.
+  base::EraseIf(config->experimental_capabilities, CapabilityDisabled);
 }
 
 }  // namespace
 
 const Config& GetFeedConfig() {
-  static bool initialized = false;
-  if (!initialized) {
-    initialized = true;
-    OverrideWithFinch(&g_config);
+  static Config* s_config = nullptr;
+  if (!s_config) {
+    s_config = new Config;
+    OverrideWithFinch(s_config);
   }
-  return g_config;
+  return *s_config;
 }
 
 void SetFeedConfigForTesting(const Config& config) {
-  g_config = config;
+  const_cast<Config&>(GetFeedConfig()) = config;
+}
+
+void OverrideConfigWithFinchForTesting() {
+  OverrideWithFinch(&const_cast<Config&>(GetFeedConfig()));
 }
 
 Config::Config() = default;
 Config::Config(const Config& other) = default;
+Config::~Config() = default;
 
 }  // namespace feed

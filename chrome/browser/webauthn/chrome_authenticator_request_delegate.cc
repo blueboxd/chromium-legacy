@@ -309,7 +309,8 @@ bool ChromeAuthenticatorRequestDelegate::SupportsResidentKeys() {
 
 void ChromeAuthenticatorRequestDelegate::ConfigureCable(
     const url::Origin& origin,
-    base::span<const device::CableDiscoveryData> pairings_from_extension) {
+    base::span<const device::CableDiscoveryData> pairings_from_extension,
+    device::FidoDiscoveryFactory* discovery_factory) {
   std::vector<device::CableDiscoveryData> pairings;
   if (ShouldPermitCableExtension(origin)) {
     pairings.insert(pairings.end(), pairings_from_extension.begin(),
@@ -328,7 +329,7 @@ void ChromeAuthenticatorRequestDelegate::ConfigureCable(
     mojo::Remote<device::mojom::UsbDeviceManager> usb_device_manager;
     content::GetDeviceService().BindUsbDeviceManager(
         usb_device_manager.BindNewPipeAndPassReceiver());
-    discovery_factory()->set_usb_device_manager(std::move(usb_device_manager));
+    discovery_factory->set_usb_device_manager(std::move(usb_device_manager));
   }
 
   if (pairings.empty() && !qr_generator_key) {
@@ -337,7 +338,11 @@ void ChromeAuthenticatorRequestDelegate::ConfigureCable(
 
   weak_dialog_model_->set_cable_transport_info(
       cable_extension_provided, have_paired_phones, qr_generator_key);
-  discovery_factory()->set_cable_data(std::move(pairings), qr_generator_key);
+  discovery_factory->set_cable_data(std::move(pairings), qr_generator_key);
+
+  discovery_factory->set_cable_pairing_callback(base::BindRepeating(
+      &ChromeAuthenticatorRequestDelegate::StoreNewCablePairingInPrefs,
+      weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ChromeAuthenticatorRequestDelegate::SelectAccount(
@@ -622,13 +627,6 @@ ChromeAuthenticatorRequestDelegate::GetCablePairings() {
   }
 
   return ret;
-}
-
-void ChromeAuthenticatorRequestDelegate::CustomizeDiscoveryFactory(
-    device::FidoDiscoveryFactory* discovery_factory) {
-  discovery_factory->set_cable_pairing_callback(base::BindRepeating(
-      &ChromeAuthenticatorRequestDelegate::StoreNewCablePairingInPrefs,
-      weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ChromeAuthenticatorRequestDelegate::StoreNewCablePairingInPrefs(

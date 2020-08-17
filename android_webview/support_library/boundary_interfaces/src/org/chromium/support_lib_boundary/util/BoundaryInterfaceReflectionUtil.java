@@ -132,6 +132,7 @@ public class BoundaryInterfaceReflectionUtil {
      * @param invocationHandler a {@link Nullable} InvocationHandlerWithDelegateGetter.
      * @return the corresponding delegate.
      */
+    @RequiresApi(Build.VERSION_CODES.KITKAT)
     @Nullable
     public static Object getDelegateFromInvocationHandler(
             @Nullable InvocationHandler invocationHandler) {

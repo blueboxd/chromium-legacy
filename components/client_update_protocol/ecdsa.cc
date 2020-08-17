@@ -51,7 +51,7 @@ bool ParseETagHeader(const base::StringPiece& etag_header_value_in,
   if (etag_header_value.starts_with(kWeakETagPrefix))
     etag_header_value.remove_prefix(base::size(kWeakETagPrefix) - 1);
   if (etag_header_value.size() >= 2 && etag_header_value.starts_with("\"") &&
-      etag_header_value.ends_with("\"")) {
+      base::EndsWith(etag_header_value, "\"")) {
     etag_header_value.remove_prefix(1);
     etag_header_value.remove_suffix(1);
   }

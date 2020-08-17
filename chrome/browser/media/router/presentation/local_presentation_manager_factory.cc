@@ -5,10 +5,8 @@
 #include "chrome/browser/media/router/presentation/local_presentation_manager_factory.h"
 
 #include "base/lazy_instance.h"
-
 #include "chrome/browser/media/router/presentation/local_presentation_manager.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
-#include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/web_contents.h"
 

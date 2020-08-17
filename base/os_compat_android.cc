@@ -10,6 +10,7 @@
 #include <math.h>
 #include <sys/syscall.h>
 #include <unistd.h>
+#include "base/strings/string_util.h"
 
 #if !defined(__LP64__)
 #include <time64.h>
@@ -124,7 +125,7 @@ char* mkdtemp(char* path) {
   // The last six characters of 'path' must be XXXXXX.
   const base::StringPiece kSuffix("XXXXXX");
   const int kSuffixLen = kSuffix.length();
-  if (!base::StringPiece(path, path_len).ends_with(kSuffix)) {
+  if (!base::EndsWith(base::StringPiece(path, path_len), kSuffix)) {
     errno = EINVAL;
     return nullptr;
   }

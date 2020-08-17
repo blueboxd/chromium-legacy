@@ -105,6 +105,8 @@ class CORE_EXPORT NGOffsetMapping {
       HashMap<Persistent<const Node>, std::pair<unsigned, unsigned>>;
 
   NGOffsetMapping(UnitVector&&, RangeMap&&, String);
+  NGOffsetMapping(const NGOffsetMapping&) = delete;
+  NGOffsetMapping& operator=(const NGOffsetMapping&) = delete;
   ~NGOffsetMapping();
 
   const UnitVector& GetUnits() const { return units_; }
@@ -238,8 +240,6 @@ class CORE_EXPORT NGOffsetMapping {
   // The text content string of the inline formatting context. Same string as
   // |NGInlineNodeData::text_content_|.
   String text_;
-
-  DISALLOW_COPY_AND_ASSIGN(NGOffsetMapping);
 };
 
 CORE_EXPORT LayoutBlockFlow* NGInlineFormattingContextOf(const Position&);

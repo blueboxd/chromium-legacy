@@ -25,6 +25,6 @@ const base::Feature kSyncSupportTrustedVaultPassphraseRecovery{
     base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kSyncTriggerFullKeystoreMigration{
-    "SyncTriggerFullKeystoreMigration", base::FEATURE_ENABLED_BY_DEFAULT};
+    "SyncTriggerFullKeystoreMigration", base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace switches

@@ -921,8 +921,14 @@ void IsolatedPrerenderTabHelper::DoNoStatePrefetch() {
 
 void IsolatedPrerenderTabHelper::OnPrerenderDone(const GURL& url) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!page_->urls_to_no_state_prefetch_.empty());
-  DCHECK_EQ(url, page_->urls_to_no_state_prefetch_[0]);
+
+  // It is possible that this is run as a callback after a navigation has
+  // already happened and |page_| is now a different instance than when the
+  // prerender was started. In this case, just return.
+  if (page_->urls_to_no_state_prefetch_.empty() ||
+      url != page_->urls_to_no_state_prefetch_[0]) {
+    return;
+  }
 
   page_->no_state_prefetched_urls_.push_back(
       page_->urls_to_no_state_prefetch_[0]);

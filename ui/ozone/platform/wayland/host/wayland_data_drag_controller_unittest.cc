@@ -26,7 +26,6 @@
 #include "ui/ozone/platform/wayland/host/wayland_data_drag_controller.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_source.h"
 #include "ui/ozone/platform/wayland/host/wayland_toplevel_window.h"
-#include "ui/ozone/platform/wayland/test/constants.h"
 #include "ui/ozone/platform/wayland/test/mock_surface.h"
 #include "ui/ozone/platform/wayland/test/test_data_device.h"
 #include "ui/ozone/platform/wayland/test/test_data_device_manager.h"
@@ -46,6 +45,9 @@ using testing::Mock;
 namespace ui {
 
 namespace {
+
+constexpr char kSampleTextForDragAndDrop[] =
+    "This is a sample text for drag-and-drop.";
 
 constexpr FilenameToURLPolicy kFilenameToURLPolicy =
     FilenameToURLPolicy::CONVERT_FILENAMES;
@@ -133,7 +135,7 @@ class WaylandDataDragControllerTest : public WaylandTest {
   }
 
   base::string16 sample_text_for_dnd() const {
-    static auto text = base::ASCIIToUTF16(wl::kSampleTextForDragAndDrop);
+    static auto text = base::ASCIIToUTF16(kSampleTextForDragAndDrop);
     return text;
   }
 
@@ -157,11 +159,11 @@ class WaylandDataDragControllerTest : public WaylandTest {
     auto callback = base::BindOnce(
         [](base::RunLoop* loop, std::vector<uint8_t>&& data) {
           std::string result(data.begin(), data.end());
-          EXPECT_EQ(wl::kSampleTextForDragAndDrop, result);
+          EXPECT_EQ(kSampleTextForDragAndDrop, result);
           loop->Quit();
         },
         &run_loop);
-    data_device_manager_->data_source()->ReadData(wl::kTextMimeTypeUtf8,
+    data_device_manager_->data_source()->ReadData(kMimeTypeTextUtf8,
                                                   std::move(callback));
     run_loop.Run();
 
@@ -263,7 +265,7 @@ TEST_P(WaylandDataDragControllerTest, StartDragWithText) {
   auto callback = base::BindOnce(
       [](base::RunLoop* loop, std::vector<uint8_t>&& data) {
         std::string result(data.begin(), data.end());
-        EXPECT_EQ(wl::kSampleTextForDragAndDrop, result);
+        EXPECT_EQ(kSampleTextForDragAndDrop, result);
         loop->Quit();
       },
       &run_loop);
@@ -275,9 +277,8 @@ TEST_P(WaylandDataDragControllerTest, StartDragWithText) {
 
 TEST_P(WaylandDataDragControllerTest, ReceiveDrag) {
   auto* data_offer = data_device_manager_->data_device()->OnDataOffer();
-  data_offer->OnOffer(
-      kMimeTypeText,
-      ToClipboardData(std::string(wl::kSampleTextForDragAndDrop)));
+  data_offer->OnOffer(kMimeTypeText,
+                      ToClipboardData(std::string(kSampleTextForDragAndDrop)));
 
   gfx::Point entered_point(10, 10);
   // The server sends an enter event.
@@ -300,7 +301,7 @@ TEST_P(WaylandDataDragControllerTest, ReceiveDrag) {
     std::string result;
     EXPECT_TRUE(contents);
     result.assign(contents->front_as<char>(), contents->size());
-    EXPECT_EQ(wl::kSampleTextForDragAndDrop, result);
+    EXPECT_EQ(kSampleTextForDragAndDrop, result);
   });
 
   // The client requests the data and gets callback with it.
@@ -313,9 +314,8 @@ TEST_P(WaylandDataDragControllerTest, ReceiveDrag) {
 
 TEST_P(WaylandDataDragControllerTest, DropSeveralMimeTypes) {
   auto* data_offer = data_device_manager_->data_device()->OnDataOffer();
-  data_offer->OnOffer(
-      kMimeTypeText,
-      ToClipboardData(std::string(wl::kSampleTextForDragAndDrop)));
+  data_offer->OnOffer(kMimeTypeText,
+                      ToClipboardData(std::string(kSampleTextForDragAndDrop)));
   data_offer->OnOffer(kMimeTypeMozillaURL, ToClipboardData(base::UTF8ToUTF16(
                                                "https://sample.com/\r\n"
                                                "Sample")));

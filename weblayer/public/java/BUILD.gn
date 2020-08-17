@@ -55,6 +55,8 @@ android_library("java") {
     "org/chromium/weblayer/DownloadState.java",
     "org/chromium/weblayer/ErrorPage.java",
     "org/chromium/weblayer/ErrorPageCallback.java",
+    "org/chromium/weblayer/FaviconCallback.java",
+    "org/chromium/weblayer/FaviconFetcher.java",
     "org/chromium/weblayer/FindInPageCallback.java",
     "org/chromium/weblayer/FindInPageController.java",
     "org/chromium/weblayer/FullscreenCallback.java",
@@ -86,6 +88,7 @@ android_library("java") {
     "org/chromium/weblayer/UnsupportedVersionException.java",
     "org/chromium/weblayer/UrlBarController.java",
     "org/chromium/weblayer/UrlBarOptions.java",
+    "org/chromium/weblayer/VerifiesOnO.java",
     "org/chromium/weblayer/WebLayer.java",
     "org/chromium/weblayer/WebLayerFileProvider.java",
     "org/chromium/weblayer/WebMessage.java",
@@ -107,6 +110,8 @@ android_library("java") {
     "//third_party/android_deps:androidx_lifecycle_lifecycle_viewmodel_java",
     "//weblayer/browser/java:interfaces_java",
   ]
+
+  proguard_configs = [ "proguard.flags" ]
 }
 
 dist_aar("client_aar") {

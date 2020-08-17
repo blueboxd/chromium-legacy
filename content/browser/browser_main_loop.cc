@@ -524,6 +524,15 @@ BrowserMainLoop::BrowserMainLoop(
       << "ThreadPool must be halted before kicking off content.";
   g_current_browser_main_loop = this;
 
+  // Register the UI thread for hang watching before it starts running and set
+  // up a closure to automatically unregister when |this| is destroyed. This
+  // works since the UI thread running the message loop is the main thread and
+  // that makes it the same as the current one.
+  if (base::HangWatcher::IsUIThreadHangWatchingEnabled()) {
+    unregister_thread_closure_ =
+        base::HangWatcher::GetInstance()->RegisterThread();
+  }
+
   if (GetContentClient()->browser()->ShouldCreateThreadPool()) {
     DCHECK(base::ThreadPoolInstance::Get());
   }

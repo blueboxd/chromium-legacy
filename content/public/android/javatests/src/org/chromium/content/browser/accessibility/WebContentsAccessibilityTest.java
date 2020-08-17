@@ -876,9 +876,9 @@ public class WebContentsAccessibilityTest {
 
         AccessibilityNodeInfo textNode =
                 provider.createAccessibilityNodeInfo(textNodeVirtualViewId);
-        Assert.assertNotEquals(textNode, null);
-        Assert.assertEquals(textNode.isContentInvalid(), false);
-        Assert.assertEquals(textNode.getError(), "");
+        Assert.assertNotEquals(null, textNode);
+        Assert.assertFalse(textNode.isContentInvalid());
+        Assert.assertNull(textNode.getError());
     }
 
     /**

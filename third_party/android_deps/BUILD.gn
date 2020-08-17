@@ -1129,13 +1129,6 @@ java_prebuilt("com_android_tools_build_jetifier_jetifier_processor_java") {
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
-java_prebuilt("com_android_tools_desugar_jdk_libs_configuration_java") {
-  jar_path = "libs/com_android_tools_desugar_jdk_libs_configuration/desugar_jdk_libs_configuration-0.11.1.jar"
-  output_name = "com_android_tools_desugar_jdk_libs_configuration"
-  supports_android = true
-}
-
-# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("google_play_services_auth_java") {
   aar_path = "libs/com_google_android_gms_play_services_auth/play-services-auth-17.0.0.aar"
   info_path = "libs/com_google_android_gms_play_services_auth/com_google_android_gms_play_services_auth.info"

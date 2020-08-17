@@ -62,7 +62,7 @@ class CORE_EXPORT ScrollbarThemeOverlayMock
   }
 
   int MinimumThumbLength(const Scrollbar& scrollbar) override {
-    return ThumbThickness(scrollbar);
+    return ThumbThickness(scrollbar.ScaleFromDIP());
   }
 
  private:

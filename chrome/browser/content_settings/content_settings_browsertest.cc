@@ -284,14 +284,9 @@ class CookieSettingsTest
   void HttpWriteCookieWithURL(Browser* browser, const GURL& url) {
     auto* frame =
         browser->tab_strip_model()->GetActiveWebContents()->GetMainFrame();
-    auto* network_context =
-        content::BrowserContext::GetDefaultStoragePartition(browser->profile())
-            ->GetNetworkContext();
-    // Need process & frame ID here for the accessed/blocked cookies lists to be
+    // Need to load via |frame| for the accessed/blocked cookies lists to be
     // updated properly.
-    content::LoadBasicRequest(network_context, url,
-                              frame->GetProcess()->GetID(),
-                              frame->GetRoutingID());
+    content::LoadBasicRequest(frame, url);
   }
 
  private:

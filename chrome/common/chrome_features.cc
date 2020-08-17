@@ -812,6 +812,11 @@ const base::Feature kWebRtcRemoteEventLogGzipped{
     "WebRtcRemoteEventLogGzipped", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
+// Enables Web Share (navigator.share)
+const base::Feature kWebShare{"WebShare", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 // Enables setting time limit for Chrome and PWA's on child user device.
 // Requires |kPerAppTimeLimits| to be enabled.
 #if defined(OS_CHROMEOS)

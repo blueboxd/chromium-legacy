@@ -1062,6 +1062,9 @@ def main(argv):
       help='For bundles, the paths of all non-async module .build_configs '
       'for modules that are part of the bundle.')
 
+  parser.add_option('--version-name', help='Version name for this APK.')
+  parser.add_option('--version-code', help='Version code for this APK.')
+
   options, args = parser.parse_args(argv)
 
   if args:
@@ -1265,6 +1268,8 @@ def main(argv):
     if options.apk_proto_resources:
       deps_info['proto_resources_path'] = options.apk_proto_resources
 
+    deps_info['version_name'] = options.version_name
+    deps_info['version_code'] = options.version_code
     if options.module_pathmap_path:
       deps_info['module_pathmap_path'] = options.module_pathmap_path
     else:

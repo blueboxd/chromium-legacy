@@ -232,6 +232,9 @@ TEST_F(KeyboardShortcutViewerMetadataTest,
   std::vector<AcceleratorMapping> chrome_accelerators;
   for (size_t i = 0; i < ash::kAcceleratorDataLength; ++i)
     ash_accelerators.emplace_back(ash::kAcceleratorData[i]);
+  for (size_t i = 0; i < ash::kDisableWithNewMappingAcceleratorDataLength; ++i)
+    ash_accelerators.emplace_back(
+        ash::kDisableWithNewMappingAcceleratorData[i]);
   for (const auto& accel_mapping : GetAcceleratorList())
     chrome_accelerators.emplace_back(accel_mapping);
 

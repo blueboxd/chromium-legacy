@@ -198,6 +198,11 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 // time it is accessed.
 @property(nonatomic, strong) SigninCoordinator* signinCoordinator;
 
+// Additional product specific data used by UserFeedbackDataSource.
+// TODO(crbug.com/1117041): Move this into a UserFeedback config object.
+@property(nonatomic, strong)
+    NSDictionary<NSString*, NSString*>* specificProductData;
+
 @end
 
 @implementation SceneController {
@@ -845,7 +850,16 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 
 - (void)showReportAnIssueFromViewController:
     (UIViewController*)baseViewController {
+  [self showReportAnIssueFromViewController:baseViewController
+                        specificProductData:nil];
+}
+
+- (void)
+    showReportAnIssueFromViewController:(UIViewController*)baseViewController
+                    specificProductData:(NSDictionary<NSString*, NSString*>*)
+                                            specificProductData {
   DCHECK(baseViewController);
+  self.specificProductData = specificProductData;
   // This dispatch is necessary to give enough time for the tools menu to
   // disappear before taking a screenshot.
   dispatch_async(dispatch_get_main_queue(), ^{
@@ -1214,6 +1228,10 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
       IdentityManagerFactory::GetForBrowserState(browserState);
   std::string username = identity_manager->GetPrimaryAccountInfo().email;
   return username.empty() ? nil : base::SysUTF8ToNSString(username);
+}
+
+- (NSDictionary<NSString*, NSString*>*)specificProductData {
+  return _specificProductData;
 }
 
 #pragma mark - SettingsNavigationControllerDelegate

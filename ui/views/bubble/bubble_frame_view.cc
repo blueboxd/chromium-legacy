@@ -19,6 +19,7 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/color_palette.h"
+#include "ui/gfx/geometry/rounded_corners_f.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/native_theme/native_theme.h"
@@ -184,29 +185,19 @@ bool BubbleFrameView::GetClientMask(const gfx::Size& size, SkPath* path) const {
   DCHECK_EQ(GetBoundsForClientView().size(), size);
   DCHECK_EQ(GetWidget()->client_view()->size(), size);
 
-  const int radius = bubble_border_->corner_radius();
-  const gfx::Insets insets =
-      GetClientInsetsForFrameWidth(GetContentsBounds().width());
+  const gfx::RoundedCornersF corner_radii = GetClientCornerRadii();
 
-  // A mask is not needed if the content does not overlap the rounded corners.
-  if ((insets.top() > radius && insets.bottom() > radius) ||
-      (insets.left() > radius && insets.right() > radius)) {
+  // If corner radii are all zero we do not need to apply a mask.
+  if (corner_radii.IsEmpty())
     return false;
-  }
 
-  // We want to clip the client view to a rounded rect that's consistent with
-  // the bubble's rounded border. However, if there is a header, the top of the
-  // client view should be straight and flush with that. Likewise, if there is
-  // a footer, the client view should be straight and flush with that. Therefore
-  // we set the corner radii separately for top and bottom.
-  const SkRect rect = SkRect::MakeIWH(size.width(), size.height());
-  const SkScalar top_radius = header_view_ ? 0.0f : radius;
-  const SkScalar bottom_radius = footnote_container_ ? 0.0f : radius;
   // Format is upper-left x, upper-left y, upper-right x, and so forth,
   // clockwise around the boundary.
-  SkScalar radii[]{top_radius,    top_radius,    top_radius,    top_radius,
-                   bottom_radius, bottom_radius, bottom_radius, bottom_radius};
-  path->addRoundRect(rect, radii);
+  SkScalar radii[]{corner_radii.upper_left(),  corner_radii.upper_left(),
+                   corner_radii.upper_right(), corner_radii.upper_right(),
+                   corner_radii.lower_right(), corner_radii.lower_right(),
+                   corner_radii.lower_left(),  corner_radii.lower_left()};
+  path->addRoundRect(SkRect::MakeIWH(size.width(), size.height()), radii);
   return true;
 }
 
@@ -662,6 +653,34 @@ bool BubbleFrameView::IsCloseButtonVisible() const {
 
 gfx::Rect BubbleFrameView::GetCloseButtonMirroredBounds() const {
   return close_->GetMirroredBounds();
+}
+
+gfx::RoundedCornersF BubbleFrameView::GetClientCornerRadii() const {
+  DCHECK(bubble_border_);
+  const int radius = bubble_border_->corner_radius();
+  const gfx::Insets insets =
+      GetClientInsetsForFrameWidth(GetContentsBounds().width());
+
+  // Rounded corners do not need to be applied to the client view if the client
+  // view is sufficiently inset such that its unclipped bounds will not
+  // intersect with the corners of the containing bubble frame view.
+  if ((insets.top() > radius && insets.bottom() > radius) ||
+      (insets.left() > radius && insets.right() > radius)) {
+    return gfx::RoundedCornersF();
+  }
+
+  // We want to clip the client view to a rounded rect that's consistent with
+  // the bubble's rounded border. However, if there is a header, the top of the
+  // client view should be straight and flush with that. Likewise, if there is
+  // a footer, the client view should be straight and flush with that. Therefore
+  // we set the corner radii separately for top and bottom.
+  gfx::RoundedCornersF corner_radii;
+  corner_radii.set_upper_left(header_view_ ? 0 : radius);
+  corner_radii.set_upper_right(header_view_ ? 0 : radius);
+  corner_radii.set_lower_left(footnote_container_ ? 0 : radius);
+  corner_radii.set_lower_right(footnote_container_ ? 0 : radius);
+
+  return corner_radii;
 }
 
 void BubbleFrameView::MirrorArrowIfOutOfBounds(

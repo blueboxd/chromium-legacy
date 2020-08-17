@@ -20,6 +20,7 @@
 #include "components/services/storage/dom_storage/legacy_dom_storage_database.h"
 #include "components/services/storage/dom_storage/storage_area_test_util.h"
 #include "components/services/storage/public/cpp/constants.h"
+#include "components/services/storage/public/cpp/filesystem/filesystem_proxy.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/env_chromium.h"
@@ -685,7 +686,9 @@ TEST_F(LocalStorageImplTest, Migration) {
   const base::FilePath old_db_path = local_storage_path.Append(
       LocalStorageImpl::LegacyDatabaseFileNameFromOrigin(origin1));
   {
-    LegacyDomStorageDatabase db(old_db_path);
+    LegacyDomStorageDatabase db(
+        old_db_path, std::make_unique<FilesystemProxy>(
+                         FilesystemProxy::UNRESTRICTED, local_storage_path));
     LegacyDomStorageValuesMap data;
     data[key] = base::NullableString16(value, false);
     data[key2] = base::NullableString16(value, false);

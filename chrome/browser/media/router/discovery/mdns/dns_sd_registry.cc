@@ -13,9 +13,6 @@
 #include "chrome/browser/media/router/discovery/mdns/dns_sd_device_lister.h"
 #include "chrome/common/buildflags.h"
 
-using local_discovery::ServiceDiscoveryClient;
-using local_discovery::ServiceDiscoverySharedClient;
-
 namespace media_router {
 
 namespace {
@@ -106,11 +103,13 @@ DnsSdRegistry::ServiceTypeData::GetServiceList() {
 
 DnsSdRegistry::DnsSdRegistry() {
 #if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
-  service_discovery_client_ = ServiceDiscoverySharedClient::GetInstance();
+  service_discovery_client_ =
+      local_discovery::ServiceDiscoverySharedClient::GetInstance();
 #endif
 }
 
-DnsSdRegistry::DnsSdRegistry(ServiceDiscoverySharedClient* client) {
+DnsSdRegistry::DnsSdRegistry(
+    local_discovery::ServiceDiscoverySharedClient* client) {
   service_discovery_client_ = client;
 }
 

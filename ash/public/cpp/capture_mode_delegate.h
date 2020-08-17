@@ -23,6 +23,10 @@ class ASH_PUBLIC_EXPORT CaptureModeDelegate {
   // Returns the path to the active user's downloads directory. This will never
   // be called if the user is not logged in.
   virtual base::FilePath GetActiveUserDownloadsDir() const = 0;
+
+  // Shows the screenshot or screen recording item in the screen capture folder.
+  virtual void ShowScreenCaptureItemInFolder(
+      const base::FilePath& file_path) = 0;
 };
 
 }  // namespace ash

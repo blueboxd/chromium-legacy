@@ -57,6 +57,7 @@ import org.chromium.content_public.browser.WebContentsAccessibility;
 import org.chromium.ui.base.WindowAndroid;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -129,6 +130,10 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
     private static final int ACCESSIBILITY_EVENT_DELAY_DEFAULT = 100;
     private static final int ACCESSIBILITY_EVENT_DELAY_HOVER = 50;
 
+    // Throttle time for content invalid utterances. Content invalid will only be announced at most
+    // once per this time interval in milliseconds for a given focused node.
+    private static final int CONTENT_INVALID_THROTTLE_DELAY = 3000;
+
     private static SparseArray<AccessibilityAction> sAccessibilityActionMap =
             new SparseArray<AccessibilityAction>();
 
@@ -186,6 +191,11 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
     private AccessibilityEventDispatcher mEventDispatcher;
     private String mSystemLanguageTag;
     private BroadcastReceiver mBroadcastReceiver;
+
+    // These track the last focused content invalid view id and the last time we reported content
+    // invalid for that node. Used to ensure we report content invalid on a node once per interval.
+    private int mLastContentInvalidViewId;
+    private long mLastContentInvalidUtteranceTime;
 
     /**
      * Create a WebContentsAccessibilityImpl object.
@@ -1368,7 +1378,6 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
         node.setCheckable(checkable);
         node.setChecked(checked);
         node.setClickable(clickable);
-        node.setContentInvalid(contentInvalid);
         node.setEnabled(enabled);
         node.setFocusable(focusable);
         node.setFocused(focused);
@@ -1376,6 +1385,30 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
         node.setScrollable(scrollable);
         node.setSelected(selected);
         node.setVisibleToUser(visibleToUser);
+
+        // In the special case that we have invalid content on a focused field, we only want to
+        // report that to the user at most once per {@link CONTENT_INVALID_THROTTLE_DELAY} time
+        // interval, to be less jarring to the user.
+        if (contentInvalid && focused) {
+            if (virtualViewId == mLastContentInvalidViewId) {
+                // If we are focused on the same node as before, check if it has been longer than
+                // our delay since our last utterance, and if so, report invalid content and update
+                // our last reported time, otherwise suppress reporting content invalid.
+                if (Calendar.getInstance().getTimeInMillis() - mLastContentInvalidUtteranceTime
+                        >= CONTENT_INVALID_THROTTLE_DELAY) {
+                    mLastContentInvalidUtteranceTime = Calendar.getInstance().getTimeInMillis();
+                    node.setContentInvalid(true);
+                }
+            } else {
+                // When we are focused on a new node, report as normal and track new time.
+                mLastContentInvalidViewId = virtualViewId;
+                mLastContentInvalidUtteranceTime = Calendar.getInstance().getTimeInMillis();
+                node.setContentInvalid(true);
+            }
+        } else {
+            // For non-focused fields we want to set contentInvalid as normal.
+            node.setContentInvalid(contentInvalid);
+        }
 
         if (hasImage) {
             Bundle bundle = node.getExtras();
@@ -1659,15 +1692,19 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
 
     @CalledByNative
     protected void setAccessibilityNodeInfoAttributes(AccessibilityNodeInfo node,
-            boolean canOpenPopup, boolean contentInvalid, boolean dismissable, boolean multiLine,
-            int inputType, int liveRegion, String errorMessage) {
+            boolean canOpenPopup, boolean dismissable, boolean multiLine, int inputType,
+            int liveRegion, String errorMessage) {
         node.setCanOpenPopup(canOpenPopup);
-        node.setContentInvalid(contentInvalid);
-        node.setDismissable(contentInvalid);
+        node.setDismissable(dismissable);
         node.setMultiLine(multiLine);
         node.setInputType(inputType);
         node.setLiveRegion(liveRegion);
-        node.setError(errorMessage);
+
+        // We only apply the |errorMessage| if {@link setAccessibilityNodeInfoBooleanAttributes}
+        // set |contentInvalid| to true based on throttle delay.
+        if (node.isContentInvalid()) {
+            node.setError(errorMessage);
+        }
     }
 
     @CalledByNative

@@ -51,7 +51,14 @@ template("system_webview_apk_or_module_tmpl") {
     if (_exclude_weblayer_java) {
       deps += [ "//android_webview:android_webview_no_weblayer_java" ]
     } else {
-      deps += [ "//android_webview:android_webview_java" ]
+      if (_is_bundle_module && weblayer_in_split) {
+        deps += [
+          "//android_webview:android_webview_no_weblayer_java",
+          "//weblayer/browser/java:base_module_java",
+        ]
+      } else {
+        deps += [ "//android_webview:android_webview_java" ]
+      }
 
       # Resources from this target will be kept in the base bundle module
       # instead of in language splits.

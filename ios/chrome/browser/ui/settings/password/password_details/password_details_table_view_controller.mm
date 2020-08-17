@@ -138,8 +138,10 @@ typedef NS_ENUM(NSInteger, ReauthenticationReason) {
   if (self.password.isCompromised) {
     [model addSectionWithIdentifier:SectionIdentifierCompromisedInfo];
 
-    [model addItem:[self changePasswordItem]
-        toSectionWithIdentifier:SectionIdentifierCompromisedInfo];
+    if (self.password.changePasswordURL.is_valid()) {
+      [model addItem:[self changePasswordItem]
+          toSectionWithIdentifier:SectionIdentifierCompromisedInfo];
+    }
 
     [model addItem:[self changePasswordRecommendationItem]
         toSectionWithIdentifier:SectionIdentifierCompromisedInfo];
@@ -237,10 +239,9 @@ typedef NS_ENUM(NSInteger, ReauthenticationReason) {
     case ItemTypeChangePasswordButton:
       if (!self.tableView.editing) {
         DCHECK(self.commandsDispatcher);
-        GURL URL(base::SysNSStringToUTF8(self.password.website));
-        DCHECK(URL.is_valid());
-        OpenNewTabCommand* command =
-            [OpenNewTabCommand commandWithURLFromChrome:URL];
+        DCHECK(self.password.changePasswordURL.is_valid());
+        OpenNewTabCommand* command = [OpenNewTabCommand
+            commandWithURLFromChrome:self.password.changePasswordURL];
         [self.commandsDispatcher closeSettingsUIAndOpenURL:command];
       }
       break;

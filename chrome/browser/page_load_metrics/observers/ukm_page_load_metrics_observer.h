@@ -142,8 +142,6 @@ class UkmPageLoadMetricsObserver
 
   void ReportLayoutStability();
 
-  void ReportPerfectHeuristicsMetrics();
-
   void ReportAbortMetrics(
       const page_load_metrics::mojom::PageLoadTiming& timing,
       base::TimeTicks page_end_time);
@@ -250,9 +248,7 @@ class UkmPageLoadMetricsObserver
   // Unique across the lifetime of the browser process.
   int main_document_sequence_number_ = -1;
 
-  // These are to capture observed LoadingBehaviorFlags.
   bool font_preload_started_before_rendering_observed_ = false;
-  bool delay_async_script_execution_before_finished_parsing_seen_ = false;
 
   bool currently_in_foreground_ = false;
   // The last time the page became foregrounded, or navigation start if the page

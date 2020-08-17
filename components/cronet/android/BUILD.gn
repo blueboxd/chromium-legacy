@@ -1021,6 +1021,8 @@ if (!is_component_build) {
     # This is the only Cronet APK with lint enabled. This one was chosen because
     # it depends on basically all source files.
     enable_lint = true
+    lint_suppressions_file = "lint-suppressions.xml"
+
     apk_name = "CronetTestInstrumentation"
     android_manifest = "test/javatests/AndroidManifest.xml"
     min_sdk_version = _cronet_min_sdk_version

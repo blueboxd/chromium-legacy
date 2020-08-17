@@ -60,7 +60,7 @@ void TranslateScript::Request(RequestCallback callback, bool is_incognito) {
   script_fetch_start_time_ = base::Time::Now().ToJsTime();
 
   DCHECK(data_.empty()) << "Do not fetch the script if it is already fetched";
-  callback_list_.push_back(std::move(callback));
+  callback_list_.AddUnsafe(std::move(callback));
 
   if (fetcher_) {
     // If there is already a request in progress, do nothing. |callback| will be
@@ -177,9 +177,7 @@ void TranslateScript::OnScriptFetchComplete(bool success,
         expiration_delay_);
   }
 
-  for (auto& callback : callback_list_)
-    std::move(callback).Run(success, data);
-  callback_list_.clear();
+  callback_list_.Notify(success, data);
 }
 
 }  // namespace translate

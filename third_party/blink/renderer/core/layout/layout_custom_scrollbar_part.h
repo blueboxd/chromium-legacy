@@ -100,6 +100,12 @@ class CORE_EXPORT LayoutCustomScrollbarPart final : public LayoutReplaced {
 
   void RecordPercentLengthStats() const;
 
+  int ComputeSize(SizeType size_type,
+                  const Length& length,
+                  int container_size) const;
+  int ComputeWidth(int container_width) const;
+  int ComputeHeight(int container_height) const;
+
   UntracedMember<ScrollableArea> scrollable_area_;
   UntracedMember<CustomScrollbar> scrollbar_;
 

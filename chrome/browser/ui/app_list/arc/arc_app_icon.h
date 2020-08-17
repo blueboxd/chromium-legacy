@@ -204,6 +204,7 @@ class ArcAppIcon {
       const std::string& unsafe_icon_data,
       const ArcAppIconDescriptor& descriptor,
       bool resize_allowed,
+      bool retain_padding,
       gfx::ImageSkia& image_skia,
       std::map<ui::ScaleFactor, base::Time>& incomplete_scale_factors);
   void UpdateImageSkia(

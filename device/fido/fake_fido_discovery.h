@@ -64,7 +64,6 @@ class FakeFidoDiscovery : public FidoDeviceDiscovery,
 
   explicit FakeFidoDiscovery(FidoTransportProtocol transport,
                              StartMode mode = StartMode::kManual);
-  ~FakeFidoDiscovery() override;
 
   // Blocks until start is requested.
   void WaitForCallToStart();

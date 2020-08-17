@@ -85,7 +85,7 @@ class ParsedMetadata {
         pdl = value.as_string();
       } else if (key == "product") {
         // Strip parens; ignore anything not enclosed in parens as malformed.
-        if (value.starts_with("(") && value.ends_with(")")) {
+        if (value.starts_with("(") && base::EndsWith(value, ")")) {
           product = value.substr(1, value.size() - 2).as_string();
         }
       } else if (key == "rp") {

@@ -233,13 +233,8 @@ std::unique_ptr<NonClientFrameView> DialogDelegate::CreateDialogFrameView(
   border->set_use_theme_background_color(true);
   DialogDelegate* delegate = widget->widget_delegate()->AsDialogDelegate();
   if (delegate) {
-    if (delegate->GetParams().round_corners) {
-      border->SetCornerRadius(
-          base::FeatureList::IsEnabled(
-              features::kEnableMDRoundedCornersOnDialogs)
-              ? provider->GetCornerRadiusMetric(views::EMPHASIS_MEDIUM)
-              : 2);
-    }
+    if (delegate->GetParams().round_corners)
+      border->SetCornerRadius(delegate->GetCornerRadius());
     frame->SetFootnoteView(delegate->DisownFootnoteView());
   }
   frame->SetBubbleBorder(std::move(border));
@@ -409,6 +404,14 @@ DialogDelegate::~DialogDelegate() {
 
 ax::mojom::Role DialogDelegate::GetAccessibleWindowRole() {
   return ax::mojom::Role::kDialog;
+}
+
+int DialogDelegate::GetCornerRadius() const {
+  return base::FeatureList::IsEnabled(
+             features::kEnableMDRoundedCornersOnDialogs)
+             ? LayoutProvider::Get()->GetCornerRadiusMetric(
+                   views::EMPHASIS_MEDIUM)
+             : 2;
 }
 
 std::unique_ptr<View> DialogDelegate::DisownFootnoteView() {

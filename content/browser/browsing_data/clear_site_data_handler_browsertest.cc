@@ -202,7 +202,6 @@ class ClearSiteDataHandlerBrowserTest : public ContentBrowserTest {
 
   bool TestCacheEntry(const GURL& url) {
     return LoadBasicRequest(storage_partition()->GetNetworkContext(), url,
-                            0 /* process_id */, 0 /* render_frame_id */,
                             net::LOAD_ONLY_FROM_CACHE) == net::OK;
   }
 

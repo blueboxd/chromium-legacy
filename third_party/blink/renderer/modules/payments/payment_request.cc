@@ -681,14 +681,23 @@ void ValidateAndConvertPaymentMethodData(
 
     if (payment_method_data->supportedMethod() ==
             kSecurePaymentConfirmationMethod &&
-        input.size() > 1 &&
         RuntimeEnabledFeatures::SecurePaymentConfirmationEnabled(
             &execution_context)) {
-      exception_state.ThrowRangeError(
-          String(kSecurePaymentConfirmationMethod) +
-          " must be the only payment method identifier specified in the "
-          "PaymentRequest constructor.");
-      return;
+      if (input.size() > 1) {
+        exception_state.ThrowRangeError(
+            String(kSecurePaymentConfirmationMethod) +
+            " must be the only payment method identifier specified in the "
+            "PaymentRequest constructor.");
+        return;
+      } else if (options->requestShipping() || options->requestPayerName() ||
+                 options->requestPayerEmail() || options->requestPayerPhone()) {
+        exception_state.ThrowRangeError(
+            String(kSecurePaymentConfirmationMethod) +
+            " payment method identifier cannot be used with "
+            "\"requestShipping\", \"requestPayerName\", \"requestPayerEmail\", "
+            "or \"requestPayerPhone\" options.");
+        return;
+      }
     }
 
     method_names.insert(payment_method_data->supportedMethod());

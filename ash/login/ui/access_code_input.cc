@@ -193,7 +193,7 @@ FixedLengthCodeInput::FixedLengthCodeInput(int length,
   DCHECK_LT(0, length);
   DCHECK(on_input_change_);
 
-  SetLayoutManager(std::make_unique<views::BoxLayout>(
+  auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
       kAccessCodeBetweenInputFieldsGapDp));
   SetGroup(kFixedLengthInputGroup);
@@ -225,6 +225,7 @@ FixedLengthCodeInput::FixedLengthCodeInput(int length,
     field->GetViewAccessibility().OverrideIsIgnored(true);
     input_fields_.push_back(field);
     AddChildView(field);
+    layout->SetFlexForView(field, 1);
   }
 
   text_value_for_a11y_ = std::string(length, ' ');
@@ -249,6 +250,10 @@ void FixedLengthCodeInput::InsertDigit(int value) {
 // Clears input from the |active_field_|. If |active_field| is empty moves
 // focus to the previous field (if exists) and clears input there.
 void FixedLengthCodeInput::Backspace() {
+  // Ignore backspace on the first field, if empty.
+  if (IsFirstFieldActive() && ActiveInput().empty())
+    return;
+
   if (ActiveInput().empty()) {
     FocusPreviousField();
   }
@@ -346,10 +351,10 @@ bool FixedLengthCodeInput::HandleKeyEvent(views::Textfield* sender,
     InsertDigit(key_code - ui::VKEY_0);
   } else if (key_code >= ui::VKEY_NUMPAD0 && key_code <= ui::VKEY_NUMPAD9) {
     InsertDigit(key_code - ui::VKEY_NUMPAD0);
-  } else if (key_code == ui::VKEY_LEFT) {
+  } else if (key_code == ui::VKEY_LEFT && arrow_navigation_allowed_) {
     FocusPreviousField();
     NotifyAccessibilityEvent(ax::mojom::Event::kTextSelectionChanged, true);
-  } else if (key_code == ui::VKEY_RIGHT) {
+  } else if (key_code == ui::VKEY_RIGHT && arrow_navigation_allowed_) {
     // Do not allow to leave empty field when moving focus with arrow key.
     if (!ActiveInput().empty()) {
       FocusNextField();
@@ -407,11 +412,30 @@ bool FixedLengthCodeInput::HandleGestureEvent(
 }
 
 void FixedLengthCodeInput::SetInputEnabled(bool input_enabled) {
-  NOTIMPLEMENTED();
+  for (auto* field : input_fields_) {
+    field->SetEnabled(input_enabled);
+  }
 }
 
 void FixedLengthCodeInput::ClearInput() {
-  NOTIMPLEMENTED();
+  for (auto* field : input_fields_) {
+    field->SetText(base::string16());
+  }
+  active_input_index_ = 0;
+  text_value_for_a11y_.clear();
+  ActiveField()->RequestFocus();
+}
+
+bool FixedLengthCodeInput::IsEmpty() const {
+  for (auto* field : input_fields_) {
+    if (field->GetText().length())
+      return false;
+  }
+  return true;
+}
+
+void FixedLengthCodeInput::SetAllowArrowNavigation(bool allowed) {
+  arrow_navigation_allowed_ = allowed;
 }
 
 void FixedLengthCodeInput::FocusPreviousField() {
@@ -432,6 +456,10 @@ void FixedLengthCodeInput::FocusNextField() {
 
 bool FixedLengthCodeInput::IsLastFieldActive() const {
   return active_input_index_ == (static_cast<int>(input_fields_.size()) - 1);
+}
+
+bool FixedLengthCodeInput::IsFirstFieldActive() const {
+  return active_input_index_ == 0;
 }
 
 AccessibleInputField* FixedLengthCodeInput::ActiveField() const {

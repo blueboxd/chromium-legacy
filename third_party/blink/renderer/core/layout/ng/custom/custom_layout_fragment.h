@@ -41,6 +41,8 @@ class CustomLayoutFragment : public ScriptWrappable {
                        const LogicalSize& size,
                        const base::Optional<LayoutUnit> baseline,
                        v8::Isolate*);
+  CustomLayoutFragment(const CustomLayoutFragment&) = delete;
+  CustomLayoutFragment& operator=(const CustomLayoutFragment&) = delete;
   ~CustomLayoutFragment() override = default;
 
   double inlineSize() const { return inline_size_; }
@@ -95,8 +97,6 @@ class CustomLayoutFragment : public ScriptWrappable {
   const base::Optional<double> baseline_;
 
   TraceWrapperV8Reference<v8::Value> layout_worklet_world_v8_data_;
-
-  DISALLOW_COPY_AND_ASSIGN(CustomLayoutFragment);
 };
 
 }  // namespace blink

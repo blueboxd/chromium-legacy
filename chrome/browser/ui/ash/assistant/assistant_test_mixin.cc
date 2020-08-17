@@ -440,13 +440,6 @@ void AssistantTestMixin::StartAssistantAndWaitForReady(
   AssistantStatusWaiter waiter(test_api_->GetAssistantState(),
                                chromeos::assistant::AssistantStatus::READY);
   waiter.RunUntilExpectedStatus();
-
-  // With the warmer welcome enabled the Assistant service will start an
-  // interaction that will never complete (as our tests finish too soon).
-  // This in turn causes the FakeS3Server to not remember this interaction when
-  // running in |kRecord| mode, which then causes interaction failures in
-  // |kReplay| mode, potentially leading to a deadlock (see b/144872676).
-  DisableWarmerWelcome();
 }
 
 void AssistantTestMixin::SetAssistantEnabled(bool enabled) {
@@ -639,14 +632,6 @@ void AssistantTestMixin::DisableAssistant() {
   AssistantStatusWaiter waiter(test_api_->GetAssistantState(),
                                chromeos::assistant::AssistantStatus::NOT_READY);
   waiter.RunUntilExpectedStatus();
-}
-
-void AssistantTestMixin::DisableWarmerWelcome() {
-  // To disable the warmer welcome, we spoof that it has already been
-  // triggered too many times.
-  GetUserPreferences()->SetInteger(
-      ash::prefs::kAssistantNumWarmerWelcomeTriggered,
-      ash::assistant::ui::kWarmerWelcomesMaxTimesTriggered);
 }
 
 }  // namespace assistant

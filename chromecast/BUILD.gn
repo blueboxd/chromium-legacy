@@ -646,6 +646,8 @@ if (is_android) {
 
   android_apk("cast_shell_apk") {
     enable_lint = true
+    lint_baseline_file = "android/lint-baseline.xml"
+    lint_suppressions_file = "android/lint-suppressions.xml"
 
     apk_name = "CastShell"
     android_manifest = "$root_gen_dir/cast_shell_manifest/AndroidManifest.xml"

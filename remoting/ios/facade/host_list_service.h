@@ -46,7 +46,7 @@ class HostListService {
     std::string localized_description;
   };
 
-  using CallbackSubscription = base::CallbackList<void()>::Subscription;
+  using CallbackSubscription = base::RepeatingClosureList::Subscription;
 
   // Returns the singleton instance.
   static HostListService* GetInstance();
@@ -101,8 +101,8 @@ class HostListService {
 
   id user_update_observer_;
 
-  base::CallbackList<void()> host_list_state_callbacks_;
-  base::CallbackList<void()> fetch_failure_callbacks_;
+  base::RepeatingClosureList host_list_state_callbacks_;
+  base::RepeatingClosureList fetch_failure_callbacks_;
 
   base::SequenceBound<DirectoryServiceClient> directory_client_;
 

@@ -4,6 +4,7 @@
 
 #include "pdf/pdfium/pdfium_engine.h"
 
+#include "base/hash/md5.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
@@ -215,7 +216,7 @@ TEST_F(PDFiumEngineTest, ApplyDocumentLayoutAvoidsInfiniteLoop) {
   EXPECT_EQ(gfx::Size(343, 1463), engine->ApplyDocumentLayout(options));
 }
 
-TEST_F(PDFiumEngineTest, GetDocumentAttachmentInfo) {
+TEST_F(PDFiumEngineTest, GetDocumentAttachments) {
   NiceMock<MockTestClient> client;
   std::unique_ptr<PDFiumEngine> engine =
       InitializeEngine(&client, FILE_PATH_LITERAL("embedded_attachments.pdf"));
@@ -233,9 +234,15 @@ TEST_F(PDFiumEngineTest, GetDocumentAttachmentInfo) {
     EXPECT_EQ("D:20170712214438-07'00'",
               base::UTF16ToUTF8(attachment.creation_date));
     EXPECT_EQ("D:20160115091400", base::UTF16ToUTF8(attachment.modified_date));
+
+    std::vector<uint8_t> content = engine->GetAttachmentData(0);
+    ASSERT_EQ(attachment.size_bytes, content.size());
+    std::string content_str(content.begin(), content.end());
+    EXPECT_EQ("test", content_str);
   }
 
   {
+    static constexpr char kCheckSum[] = "72afcddedf554dda63c0c88e06f1ce18";
     const DocumentAttachmentInfo& attachment = attachments[1];
     EXPECT_EQ("attached.pdf", base::UTF16ToUTF8(attachment.name));
     EXPECT_TRUE(attachment.is_readable);
@@ -243,6 +250,14 @@ TEST_F(PDFiumEngineTest, GetDocumentAttachmentInfo) {
     EXPECT_EQ("D:20170712214443-07'00'",
               base::UTF16ToUTF8(attachment.creation_date));
     EXPECT_EQ("D:20170712214410", base::UTF16ToUTF8(attachment.modified_date));
+
+    std::vector<uint8_t> content = engine->GetAttachmentData(1);
+    ASSERT_EQ(attachment.size_bytes, content.size());
+    // The whole attachment content is too long to do string comparison.
+    // Instead, we only verify the checksum value here.
+    base::MD5Digest hash;
+    base::MD5Sum(content.data(), content.size(), &hash);
+    EXPECT_EQ(kCheckSum, base::MD5DigestToBase16(hash));
   }
 
   {
@@ -253,6 +268,11 @@ TEST_F(PDFiumEngineTest, GetDocumentAttachmentInfo) {
     EXPECT_EQ(5u, attachment.size_bytes);
     EXPECT_THAT(attachment.creation_date, IsEmpty());
     EXPECT_THAT(attachment.modified_date, IsEmpty());
+
+    std::vector<uint8_t> content = engine->GetAttachmentData(2);
+    ASSERT_EQ(attachment.size_bytes, content.size());
+    std::string content_str(content.begin(), content.end());
+    EXPECT_EQ("test\n", content_str);
   }
 }
 

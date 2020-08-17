@@ -362,15 +362,6 @@ def _WriteInputParamForTracingImpl(generator, kind, cpp_parameter_name,
     for line in _WrapIfNullable(loop_generator):
       yield line
     return
-  if (mojom.IsAnyHandleOrInterfaceKind(kind)
-      and not mojom.IsAssociatedInterfaceRequestKind(kind)):
-    yield output_context.AddSingleValue('Boolean',
-                                        cpp_parameter_name + '.is_valid()')
-    return
-  if mojom.IsAssociatedInterfaceRequestKind(kind):
-    yield output_context.AddSingleValue('Boolean',
-                                        cpp_parameter_name + '.is_pending()')
-    return
   yield output_context.AddSingleValue('String', _TraceEventToString())
 
 

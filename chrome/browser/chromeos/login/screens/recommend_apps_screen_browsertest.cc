@@ -29,9 +29,9 @@
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/recommend_apps_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/user_creation_screen_handler.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "components/account_id/account_id.h"
 #include "components/arc/arc_prefs.h"
@@ -142,7 +142,7 @@ class RecommendAppsScreenTest : public OobeBaseTest {
 
   void ShowRecommendAppsScreen() {
     login_manager_.LoginAsNewRegularUser();
-    OobeScreenExitWaiter(GaiaView::kScreenId).Wait();
+    OobeScreenExitWaiter(UserCreationView::kScreenId).Wait();
     LoginDisplayHost::default_host()->StartWizard(
         RecommendAppsScreenView::kScreenId);
   }
@@ -562,7 +562,7 @@ IN_PROC_BROWSER_TEST_F(RecommendAppsScreenManagedTest, SkipDueToManagedUser) {
   user_policy_mixin_.RequestPolicyUpdate();
 
   login_manager_.LoginWithDefaultContext(test_user_);
-  OobeScreenExitWaiter(GaiaView::kScreenId).Wait();
+  OobeScreenExitWaiter(UserCreationView::kScreenId).Wait();
   if (!screen_result_.has_value()) {
     // Skip screens to the tested one.
     LoginDisplayHost::default_host()->StartWizard(

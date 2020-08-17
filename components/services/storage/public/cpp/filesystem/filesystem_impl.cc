@@ -225,6 +225,11 @@ void FilesystemImpl::GetFileInfo(const base::FilePath& path,
     std::move(callback).Run(base::nullopt);
 }
 
+void FilesystemImpl::GetPathAccess(const base::FilePath& path,
+                                   GetPathAccessCallback callback) {
+  std::move(callback).Run(GetPathAccessLocal(MakeAbsolute(path)));
+}
+
 void FilesystemImpl::RenameFile(const base::FilePath& old_path,
                                 const base::FilePath& new_path,
                                 RenameFileCallback callback) {
@@ -247,6 +252,13 @@ void FilesystemImpl::LockFile(const base::FilePath& path,
                                      std::move(result.value())),
       lock.InitWithNewPipeAndPassReceiver());
   std::move(callback).Run(base::File::FILE_OK, std::move(lock));
+}
+
+void FilesystemImpl::SetOpenedFileLength(base::File file,
+                                         uint64_t length,
+                                         SetOpenedFileLengthCallback callback) {
+  bool success = file.SetLength(length);
+  std::move(callback).Run(success, std::move(file));
 }
 
 // static
@@ -273,6 +285,29 @@ FileErrorOr<base::File> FilesystemImpl::LockFileLocal(
 // static
 void FilesystemImpl::UnlockFileLocal(const base::FilePath& path) {
   GetLockTable().RemoveLock(path);
+}
+
+// static
+mojom::PathAccessInfoPtr FilesystemImpl::GetPathAccessLocal(
+    const base::FilePath& path) {
+  mojom::PathAccessInfoPtr info;
+#if defined(OS_WIN)
+  uint32_t attributes = ::GetFileAttributes(path.value().c_str());
+  if (attributes != INVALID_FILE_ATTRIBUTES) {
+    info = mojom::PathAccessInfo::New();
+    info->can_read = true;
+    if ((attributes & FILE_ATTRIBUTE_READONLY) == 0)
+      info->can_write = true;
+  }
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+  const char* const c_path = path.value().c_str();
+  if (!access(c_path, F_OK)) {
+    info = mojom::PathAccessInfo::New();
+    info->can_read = !access(c_path, R_OK);
+    info->can_write = !access(c_path, W_OK);
+  }
+#endif
+  return info;
 }
 
 // static

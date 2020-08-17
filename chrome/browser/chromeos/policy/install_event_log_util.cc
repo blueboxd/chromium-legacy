@@ -41,7 +41,7 @@ constexpr char kAndroidAppInstallEvent[] = "androidAppInstallEvent";
 // Chrome Reporting API.
 constexpr char kExtensionId[] = "extensionId";
 constexpr char kExtensionInstallEvent[] = "extensionAppInstallEvent";
-constexpr char kDownloadStage[] = "downloadStage";
+constexpr char kDownloadingStage[] = "downloadingStage";
 constexpr char kFailureReason[] = "failureReason";
 constexpr char kInstallationStage[] = "installationStage";
 constexpr char kExtensionType[] = "extensionType";
@@ -166,7 +166,7 @@ base::Value ConvertExtensionEventToValue(
   }
 
   if (extension_install_report_log_event.has_downloading_stage()) {
-    event.SetIntKey(kDownloadStage,
+    event.SetIntKey(kDownloadingStage,
                     extension_install_report_log_event.downloading_stage());
   }
 

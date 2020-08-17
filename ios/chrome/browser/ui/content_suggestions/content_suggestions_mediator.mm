@@ -145,15 +145,16 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 #pragma mark - Public
 
 - (instancetype)
-    initWithContentService:
-        (ntp_snippets::ContentSuggestionsService*)contentService
-          largeIconService:(favicon::LargeIconService*)largeIconService
-            largeIconCache:(LargeIconCache*)largeIconCache
-           mostVisitedSite:
-               (std::unique_ptr<ntp_tiles::MostVisitedSites>)mostVisitedSites
-          readingListModel:(ReadingListModel*)readingListModel
-               prefService:(PrefService*)prefService
-              discoverFeed:(UIViewController*)discoverFeed {
+           initWithContentService:
+               (ntp_snippets::ContentSuggestionsService*)contentService
+                 largeIconService:(favicon::LargeIconService*)largeIconService
+                   largeIconCache:(LargeIconCache*)largeIconCache
+                  mostVisitedSite:(std::unique_ptr<ntp_tiles::MostVisitedSites>)
+                                      mostVisitedSites
+                 readingListModel:(ReadingListModel*)readingListModel
+                      prefService:(PrefService*)prefService
+                     discoverFeed:(UIViewController*)discoverFeed
+    isGoogleDefaultSearchProvider:(BOOL)isGoogleDefaultSearchProvider {
   self = [super init];
   if (self) {
     _contentSuggestionsEnabled =
@@ -176,7 +177,8 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
     _learnMoreItem = [[ContentSuggestionsLearnMoreItem alloc] init];
 
     _discoverFeed = discoverFeed;
-    _discoverSectionInfo = DiscoverSectionInformation();
+    _discoverSectionInfo =
+        DiscoverSectionInformation(isGoogleDefaultSearchProvider);
     _discoverItem = [[ContentSuggestionsDiscoverItem alloc] init];
     _discoverItem.discoverFeed = _discoverFeed;
 

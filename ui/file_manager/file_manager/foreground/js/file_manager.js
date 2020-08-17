@@ -259,6 +259,9 @@ class FileManager extends cr.EventTarget {
     /** @private {?QuickViewController} */
     this.quickViewController_ = null;
 
+    /** @private {?FileTypeFiltersController} */
+    this.fileTypeFiltersController_ = null;
+
     /**
      * Records histograms of directory-changed event.
      * @private {?NavigationUma}
@@ -327,6 +330,12 @@ class FileManager extends cr.EventTarget {
      * @private {?NavigationModelFakeItem}
      */
     this.fakeDriveItem_ = null;
+
+    /**
+     * A fake entry for Recents.
+     * @private {?FakeEntry}
+     */
+    this.recentEntry_ = null;
   }
 
   /**
@@ -1051,6 +1060,10 @@ class FileManager extends cr.EventTarget {
         this.launchParams_.showAndroidPickerApps,
         this.launchParams_.includeAllFiles, this.launchParams_.typeList);
 
+    this.recentEntry_ = new FakeEntry(
+        str('RECENT_ROOT_LABEL'), VolumeManagerCommon.RootType.RECENT,
+        this.getSourceRestriction_());
+
     assert(this.launchParams_);
     this.selectionHandler_ = new FileSelectionHandler(
         assert(this.directoryModel_), assert(this.fileOperationManager_),
@@ -1121,6 +1134,13 @@ class FileManager extends cr.EventTarget {
         this.metadataModel_, this.volumeManager_, this.fileFilter_,
         this.namingController_, this.selectionHandler_, this.launchParams_);
 
+    // Create file-type filter controller.
+    if (util.isRecentsFilterEnabled()) {
+      this.fileTypeFiltersController_ = new FileTypeFiltersController(
+          this.ui_.fileTypeFilterContainer, this.directoryModel_,
+          this.recentEntry_);
+    }
+
     return directoryTreePromise;
   }
 
@@ -1144,10 +1164,7 @@ class FileManager extends cr.EventTarget {
                 !DialogType.isFolderDialog(this.launchParams_.type) ?
             new NavigationModelFakeItem(
                 str('RECENT_ROOT_LABEL'), NavigationModelItemType.RECENT,
-                new FakeEntry(
-                    str('RECENT_ROOT_LABEL'),
-                    VolumeManagerCommon.RootType.RECENT,
-                    this.getSourceRestriction_())) :
+                assert(this.recentEntry_)) :
             null,
         assert(this.directoryModel_), assert(this.androidAppListModel_));
 

@@ -69,8 +69,6 @@ class SVGImageForContainer final : public Image {
         image, container_size_without_zoom, zoom, url));
   }
 
-  bool IsSVGImageForContainer() const override { return true; }
-
   IntSize Size() const override;
   FloatSize SizeAsFloat(RespectImageOrientationEnum) const override;
 

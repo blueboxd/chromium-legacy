@@ -37,37 +37,6 @@ const int kMaxSampledPixels = 1000;
 const int kMaxBlocks = 10;
 const float kMinOpaquePixelPercentageForForeground = 0.2;
 
-const int kMinImageSizeForClassification1D = 24;
-const int kMaxImageSizeForClassification1D = 100;
-
-class DarkModeBitmapImageClassifier : public DarkModeImageClassifier {
-  DarkModeClassification DoInitialClassification(const SkRect& dst) override {
-    if (dst.width() < kMinImageSizeForClassification1D ||
-        dst.height() < kMinImageSizeForClassification1D)
-      return DarkModeClassification::kApplyFilter;
-
-    if (dst.width() > kMaxImageSizeForClassification1D ||
-        dst.height() > kMaxImageSizeForClassification1D) {
-      return DarkModeClassification::kDoNotApplyFilter;
-    }
-
-    return DarkModeClassification::kNotClassified;
-  }
-};
-
-class DarkModeSVGImageClassifier : public DarkModeImageClassifier {
-  DarkModeClassification DoInitialClassification(const SkRect& dst) override {
-    return DarkModeClassification::kNotClassified;
-  }
-};
-
-class DarkModeGradientGeneratedImageClassifier
-    : public DarkModeImageClassifier {
-  DarkModeClassification DoInitialClassification(const SkRect& dst) override {
-    return DarkModeClassification::kApplyFilter;
-  }
-};
-
 // DarkModeImageClassificationCache - Implements classification caches for
 // different paint image ids. The classification result for the given |src|
 // rect is added to cache identified by |image_id| and result for the same
@@ -137,21 +106,6 @@ DarkModeImageClassifier::DarkModeImageClassifier() = default;
 
 DarkModeImageClassifier::~DarkModeImageClassifier() = default;
 
-std::unique_ptr<DarkModeImageClassifier>
-DarkModeImageClassifier::MakeBitmapImageClassifier() {
-  return std::make_unique<DarkModeBitmapImageClassifier>();
-}
-
-std::unique_ptr<DarkModeImageClassifier>
-DarkModeImageClassifier::MakeSVGImageClassifier() {
-  return std::make_unique<DarkModeSVGImageClassifier>();
-}
-
-std::unique_ptr<DarkModeImageClassifier>
-DarkModeImageClassifier::MakeGradientGeneratedImageClassifier() {
-  return std::make_unique<DarkModeGradientGeneratedImageClassifier>();
-}
-
 DarkModeClassification DarkModeImageClassifier::Classify(
     const PaintImage& paint_image,
     const SkRect& src,
@@ -163,7 +117,6 @@ DarkModeClassification DarkModeImageClassifier::Classify(
   if (result != DarkModeClassification::kNotClassified)
     return result;
 
-  result = DoInitialClassification(dst);
   if (result != DarkModeClassification::kNotClassified) {
     cache->Add(image_id, src, result);
     return result;

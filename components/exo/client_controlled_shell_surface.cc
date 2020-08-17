@@ -1028,6 +1028,9 @@ gfx::Rect ClientControlledShellSurface::GetShadowBounds() const {
 
 void ClientControlledShellSurface::InitializeWindowState(
     ash::WindowState* window_state) {
+  // Set the relevant window properties for Arc apps.
+  SetArcAppType(window_state->window());
+
   // Allow the client to request bounds that do not fill the entire work area
   // when maximized, or the entire display when fullscreen.
   window_state->set_allow_set_bounds_direct(true);

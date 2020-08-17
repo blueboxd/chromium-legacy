@@ -52,6 +52,9 @@ class EVENTS_BASE_EXPORT PhysicsBasedFlingCurve : public GestureCurve {
   // increases the upper bound of the scroll distance for a fling.
   constexpr static int kDefaultBoundsMultiplier = 3;
 
+  // Calculates the curve duration and generates the control points for a bezier
+  // curve. The slope is based on the input initial |velocity|, calculated curve
+  // duration, and |distance_|. Returns the duration.
   base::TimeDelta CalculateDurationAndConfigureControlPoints(
       const gfx::Vector2dF& velocity);
 

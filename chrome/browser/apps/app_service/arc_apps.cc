@@ -24,6 +24,7 @@
 #include "chrome/browser/apps/app_service/file_utils.h"
 #include "chrome/browser/apps/app_service/menu_util.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon.h"
@@ -33,6 +34,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/arc/app_permissions/arc_app_permissions_bridge.h"
 #include "components/arc/arc_service_manager.h"
+#include "components/arc/arc_util.h"
 #include "components/arc/intent_helper/intent_constants.h"
 #include "components/arc/mojom/app_permissions.mojom.h"
 #include "components/arc/mojom/file_system.mojom.h"
@@ -750,46 +752,88 @@ void ArcApps::LaunchAppWithIntent(const std::string& app_id,
     return;
   }
 
-  arc::mojom::ActivityNamePtr activity = arc::mojom::ActivityName::New();
-  activity->package_name = app_info->package_name;
-  activity->activity_name = app_info->activity;
+  if (app_info->ready) {
+    arc::mojom::ActivityNamePtr activity = arc::mojom::ActivityName::New();
+    activity->package_name = app_info->package_name;
+    activity->activity_name = app_info->activity;
 
-  // At the moment, the only case we have mime_type field set is to share
-  // files, in this case, convert the file urls to content urls and use
-  // arc file system instance to launch the app with files.
-  if (intent->mime_type.has_value()) {
-    if (!intent->file_urls.has_value()) {
-      LOG(ERROR) << "Share files failed, share intent is not valid";
+    // At the moment, the only case we have mime_type field set is to share
+    // files, in this case, convert the file urls to content urls and use
+    // arc file system instance to launch the app with files.
+    if (intent->mime_type.has_value()) {
+      if (!intent->file_urls.has_value()) {
+        LOG(ERROR) << "Share files failed, share intent is not valid";
+        return;
+      }
+      file_manager::util::ConvertToContentUrls(
+          apps::GetFileSystemURL(profile_, intent->file_urls.value()),
+          base::BindOnce(&OnContentUrlResolved, std::move(intent),
+                         std::move(activity)));
       return;
     }
-    file_manager::util::ConvertToContentUrls(
-        apps::GetFileSystemURL(profile_, intent->file_urls.value()),
-        base::BindOnce(&OnContentUrlResolved, std::move(intent),
-                       std::move(activity)));
+
+    auto* arc_service_manager = arc::ArcServiceManager::Get();
+    arc::mojom::IntentHelperInstance* instance = nullptr;
+    if (arc_service_manager) {
+      instance = ARC_GET_INSTANCE_FOR_METHOD(
+          arc_service_manager->arc_bridge_service()->intent_helper(),
+          HandleIntent);
+    }
+    if (!instance) {
+      return;
+    }
+
+    auto arc_intent = CreateArcIntent(std::move(intent));
+
+    if (!arc_intent) {
+      LOG(ERROR) << "Launch App failed, launch intent is not valid";
+      return;
+    }
+
+    instance->HandleIntent(std::move(arc_intent), std::move(activity));
+
+    prefs->SetLastLaunchTime(app_id);
     return;
   }
 
-  auto* arc_service_manager = arc::ArcServiceManager::Get();
-  arc::mojom::IntentHelperInstance* instance = nullptr;
-  if (arc_service_manager) {
-    instance = ARC_GET_INSTANCE_FOR_METHOD(
-        arc_service_manager->arc_bridge_service()->intent_helper(),
-        HandleIntent);
+  if (arc::IsArcPlayStoreEnabledForProfile(profile_)) {
+    // Handle the case when default app tries to re-activate OptIn flow.
+    if (arc::IsArcPlayStoreEnabledPreferenceManagedForProfile(profile_) &&
+        !arc::ArcSessionManager::Get()->enable_requested() &&
+        prefs->IsDefault(app_id)) {
+      arc::SetArcPlayStoreEnabledForProfile(profile_, true);
+      // PlayStore item has special handling for shelf controllers. In order
+      // to avoid unwanted initial animation for PlayStore item do not create
+      // deferred launch request when PlayStore item enables Google Play
+      // Store.
+      if (app_id == arc::kPlayStoreAppId) {
+        prefs->SetLastLaunchTime(app_id);
+        return;
+      }
+    }
+  } else {
+    if (prefs->IsDefault(app_id)) {
+      // The setting can fail if the preference is managed.  However, the
+      // caller is responsible to not call this function in such case.  DCHECK
+      // is here to prevent possible mistake.
+      if (!arc::SetArcPlayStoreEnabledForProfile(profile_, true)) {
+        return;
+      }
+      DCHECK(arc::IsArcPlayStoreEnabledForProfile(profile_));
+
+      // PlayStore item has special handling for shelf controllers. In order
+      // to avoid unwanted initial animation for PlayStore item do not create
+      // deferred launch request when PlayStore item enables Google Play
+      // Store.
+      if (app_id == arc::kPlayStoreAppId) {
+        prefs->SetLastLaunchTime(app_id);
+        return;
+      }
+    } else {
+      // Only reachable when ARC always starts.
+      DCHECK(arc::ShouldArcAlwaysStart());
+    }
   }
-  if (!instance) {
-    return;
-  }
-
-  auto arc_intent = CreateArcIntent(std::move(intent));
-
-  if (!arc_intent) {
-    LOG(ERROR) << "Launch App failed, launch intent is not valid";
-    return;
-  }
-
-  instance->HandleIntent(std::move(arc_intent), std::move(activity));
-
-  prefs->SetLastLaunchTime(app_id);
 }
 
 void ArcApps::SetPermission(const std::string& app_id,

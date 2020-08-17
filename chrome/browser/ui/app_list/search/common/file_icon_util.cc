@@ -7,18 +7,35 @@
 #include <string>
 #include <utility>
 
+#include "ash/public/cpp/app_list/vector_icons/vector_icons.h"
 #include "base/files/file_path.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
 #include "ui/file_manager/file_manager_resource_util.h"
 #include "ui/file_manager/grit/file_manager_resources.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/paint_vector_icon.h"
 
-#include "chrome/browser/ui/app_list/search/launcher_search/launcher_search_icon_image_loader.h"
+namespace {
+
+// Hex color: #796EEE
+constexpr SkColor kFiletypeGsiteColor = SkColorSetRGB(121, 110, 238);
+
+// Hex color: #FF7537
+constexpr SkColor kFiletypePptColor = SkColorSetRGB(255, 117, 55);
+
+// Hex color: #796EEE
+constexpr SkColor kFiletypeSitesColor = SkColorSetRGB(121, 110, 238);
+
+constexpr int kIconDipSize = 20;
+
+}  // namespace
 
 namespace app_list {
 namespace internal {
@@ -219,6 +236,66 @@ gfx::ImageSkia GetChipIconForPath(const base::FilePath& filepath) {
   return *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
       internal::GetChipResourceIdForIconType(
           internal::GetIconTypeForPath(filepath)));
+}
+
+gfx::ImageSkia GetIconFromType(const std::string& icon_type) {
+  static const base::NoDestructor<std::map<std::string, gfx::IconDescription>>
+      type_to_icon_description(
+          {{"archive", gfx::IconDescription(ash::kFiletypeArchiveIcon,
+                                            kIconDipSize, gfx::kGoogleGrey700)},
+           {"audio", gfx::IconDescription(ash::kFiletypeAudioIcon, kIconDipSize,
+                                          gfx::kGoogleRed500)},
+           {"chart", gfx::IconDescription(ash::kFiletypeChartIcon, kIconDipSize,
+                                          gfx::kGoogleGreen500)},
+           {"excel", gfx::IconDescription(ash::kFiletypeExcelIcon, kIconDipSize,
+                                          gfx::kGoogleGreen500)},
+           {"folder", gfx::IconDescription(ash::kFiletypeFolderIcon,
+                                           kIconDipSize, gfx::kGoogleGrey700)},
+           {"gdoc", gfx::IconDescription(ash::kFiletypeGdocIcon, kIconDipSize,
+                                         gfx::kGoogleBlue500)},
+           {"gdraw", gfx::IconDescription(ash::kFiletypeGdrawIcon, kIconDipSize,
+                                          gfx::kGoogleRed500)},
+           {"generic", gfx::IconDescription(ash::kFiletypeGenericIcon,
+                                            kIconDipSize, gfx::kGoogleGrey700)},
+           {"gform", gfx::IconDescription(ash::kFiletypeGformIcon, kIconDipSize,
+                                          gfx::kGoogleGreen500)},
+           {"gmap", gfx::IconDescription(ash::kFiletypeGmapIcon, kIconDipSize,
+                                         gfx::kGoogleRed500)},
+           {"gsheet", gfx::IconDescription(ash::kFiletypeGsheetIcon,
+                                           kIconDipSize, gfx::kGoogleGreen500)},
+           {"gsite", gfx::IconDescription(ash::kFiletypeGsiteIcon, kIconDipSize,
+                                          kFiletypeGsiteColor)},
+           {"gslides",
+            gfx::IconDescription(ash::kFiletypeGslidesIcon, kIconDipSize,
+                                 gfx::kGoogleYellow500)},
+           {"gtable", gfx::IconDescription(ash::kFiletypeGtableIcon,
+                                           kIconDipSize, gfx::kGoogleGreen500)},
+           {"image", gfx::IconDescription(ash::kFiletypeImageIcon, kIconDipSize,
+                                          gfx::kGoogleRed500)},
+           {"linux", gfx::IconDescription(ash::kFiletypeLinuxIcon, kIconDipSize,
+                                          gfx::kGoogleGrey700)},
+           {"pdf", gfx::IconDescription(ash::kFiletypePdfIcon, kIconDipSize,
+                                        gfx::kGoogleRed500)},
+           {"ppt", gfx::IconDescription(ash::kFiletypePptIcon, kIconDipSize,
+                                        kFiletypePptColor)},
+           {"script", gfx::IconDescription(ash::kFiletypeScriptIcon,
+                                           kIconDipSize, gfx::kGoogleBlue500)},
+           {"shared", gfx::IconDescription(ash::kFiletypeSharedIcon,
+                                           kIconDipSize, gfx::kGoogleGrey700)},
+           {"sites", gfx::IconDescription(ash::kFiletypeSitesIcon, kIconDipSize,
+                                          kFiletypeSitesColor)},
+           {"tini", gfx::IconDescription(ash::kFiletypeTiniIcon, kIconDipSize,
+                                         gfx::kGoogleBlue500)},
+           {"video", gfx::IconDescription(ash::kFiletypeVideoIcon, kIconDipSize,
+                                          gfx::kGoogleRed500)},
+           {"word", gfx::IconDescription(ash::kFiletypeWordIcon, kIconDipSize,
+                                         gfx::kGoogleBlue500)}});
+
+  const auto& it = type_to_icon_description->find(icon_type);
+  if (it == type_to_icon_description->end())
+    return gfx::CreateVectorIcon(ash::kFiletypeGenericIcon, kIconDipSize,
+                                 gfx::kGoogleGrey700);
+  return gfx::CreateVectorIcon(it->second);
 }
 
 }  // namespace app_list

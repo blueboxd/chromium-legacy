@@ -1332,7 +1332,13 @@ class TabListMediator {
         return TextUtils.join(", ", domainNames);
     }
 
-    private String getDomain(Tab tab) {
+    @VisibleForTesting
+    protected static String getDomain(Tab tab) {
+        // TODO(crbug.com/1116613) Investigate how uninitialized Tabs are appearing
+        // here.
+        if (!tab.isInitialized()) {
+            return "";
+        }
         String domain = UrlUtilities.getDomainAndRegistry(tab.getUrlString(), false);
 
         if (domain.isEmpty()) return tab.getUrlString();

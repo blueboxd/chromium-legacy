@@ -3628,12 +3628,12 @@
   },
   {
     "name": "pluginvm-show-camera-permissions",
-    "owners": [ "danielng" ],
+    "owners": [ "danielng@google.com", "lxj@google.com" ],
     "expiry_milestone": 87
   },
   {
     "name": "pluginvm-show-microphone-permissions",
-    "owners": [ "dtor" ],
+    "owners": [ "dtor", "lxj@google.com" ],
     "expiry_milestone": 87
   },
   {

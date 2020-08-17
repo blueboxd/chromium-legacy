@@ -95,12 +95,12 @@ void PaintThrobberSpinningWithStartAngle(
   // The sweep angle ranges from -270 to 270 over 1333ms. CSS
   // animation timing functions apply in between key frames, so we have to
   // break up the 1333ms into two keyframes (-270 to 0, then 0 to 270).
-  const double arc_progress = (elapsed_time % kArcTime) / kArcTime;
+  const double elapsed_ratio = elapsed_time / kArcTime;
+  const int64_t sweep_frame = base::ClampFloor<int64_t>(elapsed_ratio);
+  const double arc_progress = elapsed_ratio - sweep_frame;
   // This tween is equivalent to cubic-bezier(0.4, 0.0, 0.2, 1).
   double sweep = kMaxArcSize *
                  Tween::CalculateValue(Tween::FAST_OUT_SLOW_IN, arc_progress);
-  const int64_t sweep_frame =
-      base::ClampFloor<int64_t>(elapsed_time / kArcTime);
   if (sweep_frame % 2 == 0)
     sweep -= kMaxArcSize;
 
@@ -160,13 +160,13 @@ void PaintThrobberSpinningAfterWaiting(Canvas* canvas,
   if (waiting_state->arc_time_offset.is_zero()) {
     for (int64_t arc_ms = 0; arc_ms <= kArcTime.InMillisecondsRoundedUp();
          ++arc_ms) {
-      double arc_size_progress =
-          std::min(1.0, arc_ms / kArcTime.InMillisecondsF());
+      const base::TimeDelta arc_time =
+          std::min(base::TimeDelta::FromMilliseconds(arc_ms), kArcTime);
       if (kMaxArcSize * Tween::CalculateValue(Tween::FAST_OUT_SLOW_IN,
-                                              arc_size_progress) >=
+                                              arc_time / kArcTime) >=
           waiting_sweep) {
         // Add kArcTime to sidestep the |sweep_keyframe == 0| offset below.
-        waiting_state->arc_time_offset = kArcTime * (arc_size_progress + 1);
+        waiting_state->arc_time_offset = kArcTime + arc_time;
         break;
       }
     }

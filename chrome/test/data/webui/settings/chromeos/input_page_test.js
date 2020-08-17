@@ -71,7 +71,8 @@ suite('input page', () => {
 
       // The test input methods should appear.
       const items = inputMethodsList.querySelectorAll('.list-item');
-      assertEquals(2, items.length);  // Two items for input methods
+      // Two items for input methods and one item for add input methods.
+      assertEquals(3, items.length);
       assertEquals(
           'US keyboard',
           items[0].querySelector('.display-name').textContent.trim());
@@ -115,6 +116,13 @@ suite('input page', () => {
 
       assertTrue(
           await metricsProxy.whenCalled('recordToggleShowInputOptionsOnShelf'));
+    });
+
+    test('when adding input methods', async () => {
+      inputPage.$$('#addInputMethod').click();
+      Polymer.dom.flush();
+
+      await metricsProxy.whenCalled('recordAddInputMethod');
     });
   });
 });

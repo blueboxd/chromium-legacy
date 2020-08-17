@@ -174,8 +174,7 @@ static inline base::Optional<double> CalculateOverallProgress(
 // through the current iteration that ignores transformations to the time
 // introduced by the playback direction or timing functions applied to the
 // effect.
-// https://drafts.csswg.org/web-animations/#calculating-the-simple-iteration
-// -progress
+// https://drafts.csswg.org/web-animations/#calculating-the-simple-iteration-progress
 static inline base::Optional<double> CalculateSimpleIterationProgress(
     Timing::Phase phase,
     base::Optional<double> overall_progress,

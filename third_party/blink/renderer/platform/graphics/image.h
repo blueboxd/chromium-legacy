@@ -87,11 +87,9 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
       InterpolationQuality = kInterpolationNone);
 
   virtual bool IsSVGImage() const { return false; }
-  virtual bool IsSVGImageForContainer() const { return false; }
   virtual bool IsBitmapImage() const { return false; }
   virtual bool IsStaticBitmapImage() const { return false; }
   virtual bool IsPlaceholderImage() const { return false; }
-  virtual bool IsGradientGeneratedImage() const { return false; }
 
   virtual bool CurrentFrameKnownToBeOpaque() = 0;
 

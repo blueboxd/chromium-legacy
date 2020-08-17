@@ -95,8 +95,9 @@ const base::circular_deque<FastInkPoints::FastInkPoint>& FastInkPoints::points()
 
 float FastInkPoints::GetFadeoutFactor(int index) const {
   DCHECK(!life_duration_.is_zero());
-  DCHECK(0 <= index && index < GetNumberOfPoints());
-  base::TimeDelta age = collection_latest_time_ - points_[index].time;
+  DCHECK_GE(index, 0);
+  DCHECK_LT(index, GetNumberOfPoints());
+  const base::TimeDelta age = collection_latest_time_ - points_[index].time;
   return std::min(age / life_duration_, 1.0);
 }
 

@@ -13,19 +13,16 @@ namespace ui {
 namespace {
 // Minimum time difference between last two consecutive events before attempting
 // to resample.
-constexpr base::TimeDelta kResampleMinDelta =
-    base::TimeDelta::FromMilliseconds(2);
+constexpr auto kResampleMinDelta = base::TimeDelta::FromMilliseconds(2);
 // Maximum time to predict forward from the last event, to avoid predicting too
 // far into the future. This time is further bounded by 50% of the last time
 // delta.
-constexpr base::TimeDelta kResampleMaxPrediction =
-    base::TimeDelta::FromMilliseconds(8);
+constexpr auto kResampleMaxPrediction = base::TimeDelta::FromMilliseconds(8);
 // Align events to a few milliseconds before frame_time. This is to make the
 // resampling either doing interpolation or extrapolating a closer future time
 // so that resampled result is more accurate and has less noise. This adds some
 // latency during resampling but a few ms should be fine.
-constexpr base::TimeDelta kResampleLatency =
-    base::TimeDelta::FromMilliseconds(5);
+constexpr auto kResampleLatency = base::TimeDelta::FromMilliseconds(5);
 
 // Get position at |sample_time| by linear interpolate/extrapolate a and b.
 inline gfx::PointF lerp(const InputPredictor::InputData& a,

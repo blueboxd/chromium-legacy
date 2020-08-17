@@ -151,7 +151,7 @@ class SkiaVectorAnimationTest : public testing::Test {
     return test_clock_.NowTicks() - ticks;
   }
 
-  const base::TimeTicks NowTicks() const { return test_clock_.NowTicks(); }
+  base::TimeTicks NowTicks() const { return test_clock_.NowTicks(); }
 
   double GetTimerStartOffset() const {
     return animation_->timer_control_->GetNormalizedStartOffset();
@@ -276,7 +276,7 @@ TEST_F(SkiaVectorAnimationTest, StopLinearAnimation) {
                   kAdvance / kAnimationDuration);
 
   animation_->Stop();
-  EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(), 0.f);
+  EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(), 0.0f);
   EXPECT_TRUE(IsStopped());
 }
 
@@ -410,7 +410,7 @@ TEST_F(SkiaVectorAnimationTest, PlayLoopAnimation) {
 
   EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(), 0);
   EXPECT_FLOAT_EQ(GetTimerStartOffset(), 0);
-  EXPECT_FLOAT_EQ(GetTimerEndOffset(), 1.f);
+  EXPECT_FLOAT_EQ(GetTimerEndOffset(), 1.0f);
 
   EXPECT_EQ(GetTimerTotalDuration(), kAnimationDuration);
 
@@ -552,7 +552,6 @@ TEST_F(SkiaVectorAnimationTest, PausingLoopAnimation) {
 }
 
 TEST_F(SkiaVectorAnimationTest, PlayThrobbingAnimation) {
-
   TestAnimationObserver observer;
   animation_->SetAnimationObserver(&observer);
 
@@ -570,7 +569,7 @@ TEST_F(SkiaVectorAnimationTest, PlayThrobbingAnimation) {
 
   EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(), 0);
   EXPECT_FLOAT_EQ(GetTimerStartOffset(), 0);
-  EXPECT_FLOAT_EQ(GetTimerEndOffset(), 1.f);
+  EXPECT_FLOAT_EQ(GetTimerEndOffset(), 1.0f);
 
   EXPECT_EQ(GetTimerTotalDuration(), kAnimationDuration);
 
@@ -588,7 +587,7 @@ TEST_F(SkiaVectorAnimationTest, PlayThrobbingAnimation) {
   EXPECT_EQ(TimeDeltaSince(GetTimerPreviousTick()),
             kAnimationDuration - kAdvance);
   animation_->Paint(canvas(), NowTicks(), animation_->GetOriginalSize());
-  EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(), 1.f);
+  EXPECT_FLOAT_EQ(animation_->GetCurrentProgress(), 1.0f);
   EXPECT_TRUE(IsPlaying());
   EXPECT_FALSE(observer.animation_cycle_ended());
 
@@ -777,10 +776,9 @@ TEST_F(SkiaVectorAnimationTest, PausingThrobbingAnimation) {
   EXPECT_TRUE(IsPlaying());
 }
 
+// Test to see if the race condition is handled correctly. It may happen that we
+// pause the video before it even starts playing.
 TEST_F(SkiaVectorAnimationTest, PauseBeforePlay) {
-  // Test to see if the race condition is handled correctly. It may happen that
-  // we pause the video before it even starts playing.
-
   TestAnimationObserver observer;
   animation_->SetAnimationObserver(&observer);
 
@@ -810,38 +808,32 @@ TEST_F(SkiaVectorAnimationTest, PauseBeforePlay) {
 }
 
 TEST_F(SkiaVectorAnimationTest, PaintTest) {
-  std::unique_ptr<gfx::Canvas> canvas(new gfx::Canvas(
-      gfx::Size(kAnimationWidth, kAnimationHeight), 1.f, false));
+  gfx::Canvas canvas(gfx::Size(kAnimationWidth, kAnimationHeight), 1.f, false);
 
   AdvanceClock(base::TimeDelta::FromMilliseconds(300));
 
   animation_->Start(SkiaVectorAnimation::Style::kLinear);
-  animation_->Paint(canvas.get(), NowTicks(), animation_->GetOriginalSize());
+  animation_->Paint(&canvas, NowTicks(), animation_->GetOriginalSize());
 
   AdvanceClock(base::TimeDelta::FromMilliseconds(50));
-  animation_->Paint(canvas.get(), NowTicks(), animation_->GetOriginalSize());
-  SkBitmap bitmap = canvas->GetBitmap();
-  IsAllSameColor(SK_ColorGREEN, bitmap);
+  animation_->Paint(&canvas, NowTicks(), animation_->GetOriginalSize());
+  IsAllSameColor(SK_ColorGREEN, canvas.GetBitmap());
 
   AdvanceClock(base::TimeDelta::FromMilliseconds(2450));
-  animation_->Paint(canvas.get(), NowTicks(), animation_->GetOriginalSize());
-  bitmap = canvas->GetBitmap();
-  IsAllSameColor(SK_ColorGREEN, bitmap);
+  animation_->Paint(&canvas, NowTicks(), animation_->GetOriginalSize());
+  IsAllSameColor(SK_ColorGREEN, canvas.GetBitmap());
 
   AdvanceClock(base::TimeDelta::FromMilliseconds(50));
-  animation_->Paint(canvas.get(), NowTicks(), animation_->GetOriginalSize());
-  bitmap = canvas->GetBitmap();
-  IsAllSameColor(SK_ColorBLUE, bitmap);
+  animation_->Paint(&canvas, NowTicks(), animation_->GetOriginalSize());
+  IsAllSameColor(SK_ColorBLUE, canvas.GetBitmap());
 
   AdvanceClock(base::TimeDelta::FromMilliseconds(1000));
-  animation_->Paint(canvas.get(), NowTicks(), animation_->GetOriginalSize());
-  bitmap = canvas->GetBitmap();
-  IsAllSameColor(SK_ColorBLUE, bitmap);
+  animation_->Paint(&canvas, NowTicks(), animation_->GetOriginalSize());
+  IsAllSameColor(SK_ColorBLUE, canvas.GetBitmap());
 
   AdvanceClock(base::TimeDelta::FromMilliseconds(1400));
-  animation_->Paint(canvas.get(), NowTicks(), animation_->GetOriginalSize());
-  bitmap = canvas->GetBitmap();
-  IsAllSameColor(SK_ColorBLUE, bitmap);
+  animation_->Paint(&canvas, NowTicks(), animation_->GetOriginalSize());
+  IsAllSameColor(SK_ColorBLUE, canvas.GetBitmap());
 }
 
 }  // namespace gfx

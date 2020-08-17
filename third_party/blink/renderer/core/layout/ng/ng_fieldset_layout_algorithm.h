@@ -37,9 +37,7 @@ class CORE_EXPORT NGFieldsetLayoutAlgorithm
 
  private:
   NGBreakStatus LayoutChildren();
-  NGBreakStatus LayoutLegend(
-      NGBlockNode& legend,
-      scoped_refptr<const NGBlockBreakToken> legend_break_token);
+  void LayoutLegend(NGBlockNode& legend);
   NGBreakStatus LayoutFieldsetContent(
       NGBlockNode& fieldset_content,
       scoped_refptr<const NGBlockBreakToken> content_break_token,
@@ -49,13 +47,11 @@ class CORE_EXPORT NGFieldsetLayoutAlgorithm
   const NGConstraintSpace CreateConstraintSpaceForLegend(
       NGBlockNode legend,
       LogicalSize available_size,
-      LogicalSize percentage_size,
-      LayoutUnit block_offset);
+      LogicalSize percentage_size);
   const NGConstraintSpace CreateConstraintSpaceForFieldsetContent(
       NGBlockNode fieldset_content,
       LogicalSize padding_box_size,
       LayoutUnit block_offset);
-
   bool IsFragmentainerOutOfSpace(LayoutUnit block_offset) const;
 
   const WritingMode writing_mode_;
@@ -75,10 +71,6 @@ class CORE_EXPORT NGFieldsetLayoutAlgorithm
   // The amount of the border block-start that was consumed in previous
   // fragments.
   LayoutUnit consumed_border_block_start_;
-
-  // If true, this indicates that the legend broke during the current layout
-  // pass.
-  bool legend_broke_ = false;
 
   // If true, the legend is taller than the block-start border, so that it
   // sticks below it, allowing for a class C breakpoint [1] before any fieldset

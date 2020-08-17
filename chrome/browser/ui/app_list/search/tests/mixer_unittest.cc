@@ -157,10 +157,9 @@ class MixerTest : public testing::Test {
 
     // TODO(warx): when fullscreen app list is default enabled, modify this test
     // to test answer card/apps group having relevance boost.
-    size_t apps_group_id = mixer_->AddGroup(kMaxAppsGroupResults, 1.0, 0.0);
-    size_t omnibox_group_id = mixer_->AddGroup(kMaxOmniboxResults, 1.0, 0.0);
-    size_t playstore_group_id =
-        mixer_->AddGroup(kMaxPlaystoreResults, 0.5, 0.0);
+    size_t apps_group_id = mixer_->AddGroup(kMaxAppsGroupResults, 0.0);
+    size_t omnibox_group_id = mixer_->AddGroup(kMaxOmniboxResults, 0.0);
+    size_t playstore_group_id = mixer_->AddGroup(kMaxPlaystoreResults, 0.0);
 
     mixer_->AddProviderToGroup(apps_group_id, providers_[0].get());
     mixer_->AddProviderToGroup(omnibox_group_id, providers_[1].get());
@@ -210,58 +209,6 @@ class MixerTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(MixerTest);
 };
 
-TEST_F(MixerTest, Basic) {
-  CreateMixer();
-
-  // Note: Some cases in |expected| have vastly more results than others, due to
-  // the "at least 6" mechanism. If it gets at least 6 results from all
-  // providers, it stops at 6. If not, it fetches potentially many more results
-  // from all providers. Not ideal, but currently by design.
-  struct TestCase {
-    const size_t app_results;
-    const size_t omnibox_results;
-    const size_t playstore_results;
-    const char* expected;
-  } kTestCases[] = {
-      {0, 0, 0, ""},
-      {10, 0, 0, "app0,app1,app2,app3,app4,app5,app6,app7,app8,app9"},
-      {0, 0, 10,
-       "playstore0,playstore1,playstore2,playstore3,playstore4,playstore5,"
-       "playstore6,playstore7,playstore8,playstore9"},
-      {4, 6, 0, "app0,omnibox0,app1,omnibox1,app2,omnibox2,app3,omnibox3"},
-      {4, 6, 2,
-       "app0,omnibox0,app1,omnibox1,app2,omnibox2,app3,omnibox3,playstore0,"
-       "playstore1"},
-      {10, 10, 10,
-       "app0,omnibox0,app1,omnibox1,app2,omnibox2,app3,omnibox3,playstore0,"
-       "playstore1"},
-      {0, 10, 0,
-       "omnibox0,omnibox1,omnibox2,omnibox3,omnibox4,omnibox5,omnibox6,"
-       "omnibox7,omnibox8,omnibox9"},
-      {0, 10, 1,
-       "omnibox0,omnibox1,omnibox2,omnibox3,playstore0,omnibox4,omnibox5,"
-       "omnibox6,omnibox7,omnibox8,omnibox9"},
-      {0, 10, 2, "omnibox0,omnibox1,omnibox2,omnibox3,playstore0,playstore1"},
-      {1, 10, 0,
-       "app0,omnibox0,omnibox1,omnibox2,omnibox3,omnibox4,omnibox5,omnibox6,"
-       "omnibox7,omnibox8,omnibox9"},
-      {2, 10, 0, "app0,omnibox0,app1,omnibox1,omnibox2,omnibox3"},
-      {2, 10, 1, "app0,omnibox0,app1,omnibox1,omnibox2,omnibox3,playstore0"},
-      {2, 10, 2,
-       "app0,omnibox0,app1,omnibox1,omnibox2,omnibox3,playstore0,playstore1"},
-      {2, 0, 2, "app0,app1,playstore0,playstore1"},
-      {0, 0, 0, ""}};
-
-  for (size_t i = 0; i < base::size(kTestCases); ++i) {
-    app_provider()->set_count(kTestCases[i].app_results);
-    omnibox_provider()->set_count(kTestCases[i].omnibox_results);
-    playstore_provider()->set_count(kTestCases[i].playstore_results);
-    RunQuery();
-
-    EXPECT_EQ(kTestCases[i].expected, GetResults()) << "Case " << i;
-  }
-}
-
 // Tests that results with display index defined, will be shown in the final
 // results.
 TEST_F(MixerTest, ResultsWithDisplayIndex) {
@@ -275,8 +222,8 @@ TEST_F(MixerTest, ResultsWithDisplayIndex) {
   RunQuery();
 
   EXPECT_EQ(
-      "app0,omnibox0,app1,omnibox1,app2,omnibox2,app3,omnibox3,playstore0,"
-      "playstore1",
+      "app0,omnibox0,playstore0,app1,omnibox1,playstore1,app2,omnibox2,app3,"
+      "omnibox3",
       GetResults());
 
   // If the last result has display index defined, it will be in the final
@@ -285,8 +232,8 @@ TEST_F(MixerTest, ResultsWithDisplayIndex) {
   RunQuery();
 
   EXPECT_EQ(
-      "app5,app0,omnibox0,app1,omnibox1,app2,omnibox2,omnibox3,playstore0,"
-      "playstore1",
+      "app5,app0,omnibox0,playstore0,app1,omnibox1,playstore1,app2,omnibox2,"
+      "omnibox3",
       GetResults());
 }
 

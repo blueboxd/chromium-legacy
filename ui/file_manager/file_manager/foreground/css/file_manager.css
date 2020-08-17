@@ -1403,6 +1403,15 @@ body.files-ng .dialog-footer button {
   color: rgb(168, 168, 168);
 }
 
+body.files-ng .dialog-footer cr-button[disabled],
+body.files-ng .dialog-footer cr-button[disabled]:hover,
+body.files-ng .dialog-footer button[disabled],
+body.files-ng .dialog-footer button[disabled]:hover {
+  background-color:
+      var(--cros-button-background-color-primary-disabled);
+  color: var(--cros-button-label-color-primary-disabled);
+}
+
 body:not(.files-ng) .dialog-footer .primary,
 body:not(.files-ng) .dialog-footer .primary:hover {
   background-color: rgb(51, 103, 214);
@@ -3695,6 +3704,37 @@ files-toggle-ripple {
 files-toast {
   /* Must be above the splitter (500) but below menu-like UI (550). */
   z-index: 520;
+}
+
+/* File type filter buttons in Recents view.
+   TODO(fukino): The style is temporary. Revisit it before the feature is
+   shipped. */
+#file-type-filter-container {
+  display: flex;
+  font-size: 13px;
+  height: 30x;
+  margin-top: 5px;
+}
+
+.file-type-filter-button {
+  align-items: center;
+  border: 1px solid rgba(0, 0, 0, 15%);
+  border-radius: 20px;
+  box-sizing: border-box;
+  color: var(--google-grey-700);
+  cursor: pointer;
+  display: flex;
+  font-weight: 500;
+  height: 32px;
+  margin-inline-end: 3px;
+  margin-inline-start: 3px;
+  padding: 0 10px;
+}
+
+.file-type-filter-button.active {
+  background-color: var(--google-blue-50);
+  border: 1px solid transparent;
+  color: var(--google-blue-600);
 }
 
 /*

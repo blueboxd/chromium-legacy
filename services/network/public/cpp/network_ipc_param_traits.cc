@@ -57,6 +57,7 @@ void ParamTraits<network::DataElement>::Write(base::Pickle* m,
                         .release());
       break;
     }
+    case network::mojom::DataElementType::kReadOnceStream:
     case network::mojom::DataElementType::kUnknown: {
       NOTREACHED();
       break;
@@ -148,6 +149,7 @@ bool ParamTraits<network::DataElement>::Read(const base::Pickle* m,
       r->SetToChunkedDataPipe(std::move(chunked_data_pipe_getter));
       return true;
     }
+    case network::mojom::DataElementType::kReadOnceStream:
     case network::mojom::DataElementType::kUnknown: {
       NOTREACHED();
       return false;

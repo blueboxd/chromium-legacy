@@ -35,9 +35,7 @@ int FpsCounter::ComputeSmoothness() {
 
   base::TimeDelta elapsed = base::TimeTicks::Now() - start_time_;
   float refresh_rate = compositor_->refresh_rate();
-  int expected_frame_number =
-      std::floor(refresh_rate * elapsed.InMillisecondsF() /
-                 base::Time::kMillisecondsPerSecond);
+  const int expected_frame_number = (refresh_rate * elapsed).InSeconds();
   int actual_frame_number = end_frame_number - start_frame_number_;
   int smoothness = actual_frame_number < expected_frame_number
                        ? smoothness =

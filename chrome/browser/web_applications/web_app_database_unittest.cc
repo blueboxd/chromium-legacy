@@ -116,9 +116,8 @@ class WebAppDatabaseTest : public WebAppTest {
     return protocol_handlers;
   }
 
-  static std::vector<WebApplicationShortcutsMenuItemInfo> CreateShortcutInfos(
-      const std::string& base_url,
-      uint32_t suffix) {
+  static std::vector<WebApplicationShortcutsMenuItemInfo>
+  CreateShortcutsMenuItemInfos(const std::string& base_url, uint32_t suffix) {
     std::vector<WebApplicationShortcutsMenuItemInfo> shortcuts_menu_item_infos;
     for (unsigned int i = 0; i < 3; ++i) {
       std::string suffix_str =
@@ -261,7 +260,7 @@ class WebAppDatabaseTest : public WebAppTest {
     app->SetAdditionalSearchTerms(std::move(additional_search_terms));
 
     app->SetShortcutsMenuItemInfos(
-        CreateShortcutInfos(base_url, random.next_uint()));
+        CreateShortcutsMenuItemInfos(base_url, random.next_uint()));
     app->SetDownloadedShortcutsMenuIconsSizes(
         CreateDownloadedShortcutsMenuIconsSizes());
 

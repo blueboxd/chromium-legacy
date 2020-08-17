@@ -155,6 +155,7 @@ def fyi_goma_rbe_canary_builder(
         goma_backend = goma_backend,
         mastername = "chromium.goma.fyi",
         os = os,
+        goma_use_luci_auth = True,
         **kwargs
     )
 
@@ -315,6 +316,7 @@ def fyi_goma_rbe_latest_client_builder(
         goma_backend = goma_backend,
         mastername = "chromium.goma.fyi",
         os = os,
+        goma_use_luci_auth = True,
         **kwargs
     )
 
@@ -383,12 +385,19 @@ fyi_goma_rbe_latest_client_builder(
     os = os.MAC_DEFAULT,
 )
 
-def goma_builder(*, name, builderless = False, os = os.LINUX_DEFAULT, **kwargs):
+def goma_builder(
+        *,
+        name,
+        builderless = False,
+        os = os.LINUX_DEFAULT,
+        goma_use_luci_auth = True,
+        **kwargs):
     return builder(
         name = name,
         builderless = builderless,
         mastername = "chromium.goma",
         os = os,
+        goma_use_luci_auth = goma_use_luci_auth,
         **kwargs
     )
 
@@ -401,14 +410,12 @@ goma_builder(
     name = "Chromium Android ARM 32-bit Goma RBE ToT",
     goma_backend = goma.backend.RBE_TOT,
     goma_enable_ats = False,
-    goma_use_luci_auth = True,
 )
 
 goma_builder(
     name = "Chromium Android ARM 32-bit Goma RBE ToT (ATS)",
     goma_backend = goma.backend.RBE_TOT,
     goma_enable_ats = True,
-    goma_use_luci_auth = True,
 )
 
 goma_builder(
@@ -433,28 +440,33 @@ goma_builder(
 
 goma_builder(
     name = "Chromium Linux Goma Staging",
+    goma_use_luci_auth = False,
 )
 
 goma_builder(
     name = "Chromium Linux Goma RBE ToT",
     goma_backend = goma.backend.RBE_TOT,
     goma_enable_ats = False,
-    goma_use_luci_auth = True,
 )
 
 goma_builder(
     name = "Chromium Linux Goma RBE ToT (ATS)",
     goma_backend = goma.backend.RBE_TOT,
     goma_enable_ats = True,
-    goma_use_luci_auth = True,
 )
 
-def goma_mac_builder(*, name, os = os.MAC_DEFAULT, **kwargs):
+def goma_mac_builder(
+        *,
+        name,
+        os = os.MAC_DEFAULT,
+        goma_use_luci_auth = True,
+        **kwargs):
     return goma_builder(
         name = name,
         cores = 4,
         goma_jobs = goma.jobs.J80,
         os = os,
+        goma_use_luci_auth = goma_use_luci_auth,
         **kwargs
     )
 
@@ -462,7 +474,6 @@ goma_mac_builder(
     name = "Chromium iOS Goma RBE ToT",
     caches = [xcode_cache.x11e146],
     goma_backend = goma.backend.RBE_TOT,
-    goma_use_luci_auth = True,
     os = os.MAC_10_14,
     properties = {
         "xcode_build_version": "11e146",
@@ -487,18 +498,25 @@ goma_mac_builder(
 goma_mac_builder(
     name = "Chromium Mac Goma RBE ToT",
     goma_backend = goma.backend.RBE_TOT,
-    goma_use_luci_auth = True,
 )
 
 goma_mac_builder(
     name = "Chromium Mac Goma Staging",
+    goma_use_luci_auth = False,
 )
 
-def goma_windows_builder(*, name, goma_enable_ats = True, cores = 32, **kwargs):
+def goma_windows_builder(
+        *,
+        name,
+        goma_enable_ats = True,
+        goma_use_luci_auth = True,
+        cores = 32,
+        **kwargs):
     return goma_builder(
         name = name,
         cores = cores,
         goma_enable_ats = goma_enable_ats,
+        goma_use_luci_auth = goma_use_luci_auth,
         os = os.WINDOWS_DEFAULT,
         **kwargs
     )
@@ -516,11 +534,11 @@ goma_windows_builder(
 goma_windows_builder(
     name = "Chromium Win Goma RBE ToT",
     goma_backend = goma.backend.RBE_TOT,
-    goma_use_luci_auth = True,
 )
 
 goma_windows_builder(
     name = "CrWinGomaStaging",
     cores = 8,
     goma_enable_ats = False,
+    goma_use_luci_auth = False,
 )

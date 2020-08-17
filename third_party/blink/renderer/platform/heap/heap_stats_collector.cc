@@ -200,12 +200,6 @@ base::TimeDelta ThreadHeapStatsCollector::Event::marking_time() const {
   return foreground_marking_time() + background_marking_time();
 }
 
-double ThreadHeapStatsCollector::Event::marking_time_in_bytes_per_second()
-    const {
-  return marked_bytes ? marking_time().InMillisecondsF() / 1000 / marked_bytes
-                      : 0.0;
-}
-
 base::TimeDelta ThreadHeapStatsCollector::Event::gc_cycle_time() const {
   // Note that scopes added here also have to have a proper BlinkGCInV8Scope
   // scope if they are nested in a V8 scope.

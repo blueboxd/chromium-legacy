@@ -45,8 +45,7 @@ double LinearAnimation::GetCurrentValue() const {
 
 void LinearAnimation::SetCurrentValue(double new_value) {
   new_value = base::ClampToRange(new_value, 0.0, 1.0);
-  base::TimeDelta time_delta = base::TimeDelta::FromMicroseconds(
-      static_cast<int64_t>(duration_.InMicroseconds() * (new_value - state_)));
+  const base::TimeDelta time_delta = duration_ * (new_value - state_);
   SetStartTime(start_time() - time_delta);
   state_ = new_value;
 }
@@ -72,18 +71,13 @@ void LinearAnimation::SetDuration(base::TimeDelta duration) {
                ? animation_duration_scale
                : 1.0;
   }();
-  duration_ = duration * duration_scale_factor;
-  if (duration_ < timer_interval())
-    duration_ = timer_interval();
+  duration_ = std::max(duration * duration_scale_factor, timer_interval());
   if (is_animating())
     SetStartTime(container()->last_tick_time());
 }
 
 void LinearAnimation::Step(base::TimeTicks time_now) {
-  base::TimeDelta elapsed_time = time_now - start_time();
-  state_ = elapsed_time / duration_;
-  if (state_ >= 1.0)
-    state_ = 1.0;
+  state_ = std::min((time_now - start_time()) / duration_, 1.0);
 
   AnimateToState(state_);
 

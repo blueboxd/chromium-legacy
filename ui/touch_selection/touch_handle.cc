@@ -21,17 +21,17 @@ constexpr auto kFadeDuration = base::TimeDelta::FromMilliseconds(200);
 
 // Maximum amount of travel for a fade sequence. This avoids handle "ghosting"
 // when the handle is moving rapidly while the fade is active.
-const double kFadeDistanceSquared = 20.f * 20.f;
+constexpr double kFadeDistanceSquared = 20.0f * 20.0f;
 
 // Avoid using an empty touch rect, as it may fail the intersection test event
 // if it lies within the other rect's bounds.
-const float kMinTouchMajorForHitTesting = 1.f;
+constexpr float kMinTouchMajorForHitTesting = 1.0f;
 
 // The maximum touch size to use when computing whether a touch point is
 // targetting a touch handle. This is necessary for devices that misreport
 // touch radii, preventing inappropriately largely touch sizes from completely
 // breaking handle dragging behavior.
-const float kMaxTouchMajorForHitTesting = 36.f;
+constexpr float kMaxTouchMajorForHitTesting = 36.0f;
 
 // Note that the intersection region is boundary *exclusive*.
 bool RectIntersectsCircle(const gfx::RectF& rect,
@@ -236,18 +236,17 @@ bool TouchHandle::Animate(base::TimeTicks frame_time) {
 
   DCHECK(enabled_);
 
-  float time_u = 1.f - (fade_end_time_ - frame_time) / kFadeDuration;
-  float position_u = (focus_bottom_ - fade_start_position_).LengthSquared() /
-                     kFadeDistanceSquared;
-  float u = std::max(time_u, position_u);
-  SetAlpha(is_visible_ ? u : 1.f - u);
+  const float time_u = 1.0f - (fade_end_time_ - frame_time) / kFadeDuration;
+  const float position_u =
+      (focus_bottom_ - fade_start_position_).LengthSquared() /
+      kFadeDistanceSquared;
+  const float u = std::max(time_u, position_u);
+  SetAlpha(is_visible_ ? u : 1.0f - u);
 
-  if (u >= 1.f) {
+  if (u >= 1)
     EndFade();
-    return false;
-  }
 
-  return true;
+  return u < 1;
 }
 
 gfx::RectF TouchHandle::GetVisibleBounds() const {

@@ -358,7 +358,7 @@ void PopulateResourceRequest(const ResourceRequestHead& src,
     dest->request_body = base::MakeRefCounted<network::ResourceRequestBody>();
     mojo::PendingRemote<network::mojom::ChunkedDataPipeGetter>
         network_stream_body(stream_body.PassPipe(), 0u);
-    dest->request_body->SetToChunkedDataPipe(std::move(network_stream_body));
+    dest->request_body->SetToReadOnceStream(std::move(network_stream_body));
     dest->request_body->SetAllowHTTP1ForStreamingUpload(
         src.AllowHTTP1ForStreamingUpload());
   }

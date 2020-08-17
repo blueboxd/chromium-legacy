@@ -33,8 +33,7 @@ SpokenFeedbackEnabler::~SpokenFeedbackEnabler() {}
 
 void SpokenFeedbackEnabler::OnTimer() {
   base::TimeTicks now = ui::EventTimeForNow();
-  double tick_count_f = (now - start_time_) / kTimerDelay;
-  int tick_count = base::ClampRound(tick_count_f);
+  int tick_count = base::ClampRound((now - start_time_) / kTimerDelay);
 
   AccessibilityControllerImpl* controller =
       Shell::Get()->accessibility_controller();

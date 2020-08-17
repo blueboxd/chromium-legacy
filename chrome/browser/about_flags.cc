@@ -1541,23 +1541,10 @@ const FeatureEntry::FeatureParam kTabGridLayoutAndroid_NewTabVariation[] = {
 const FeatureEntry::FeatureParam kTabGridLayoutAndroid_NewTabTile[] = {
     {"tab_grid_layout_android_new_tab_tile", "NewTabTile"}};
 
-const FeatureEntry::FeatureParam
-    kTabGridLayoutAndroid_ThumbnailAspectRatio_2[] = {
-        {"thumbnail_aspect_ratio", "2.0"},
-        {"allow_to_refetch", "true"}};
-
-const FeatureEntry::FeatureParam
-    kTabGridLayoutAndroid_ThumbnailAspectRatio_three_quarter[] = {
-        {"thumbnail_aspect_ratio", "0.75"},
-        {"allow_to_refetch", "true"}};
-
-const FeatureEntry::FeatureParam
-    kTabGridLayoutAndroid_ThumbnailAspectRatio_half[] = {
-        {"thumbnail_aspect_ratio", "0.5"},
-        {"allow_to_refetch", "true"}};
-
-const FeatureEntry::FeatureParam kTabGridLayoutAndroid_DisableRefetch[] = {
-    {"allow_to_refetch", "false"}};
+const FeatureEntry::FeatureParam kTabGridLayoutAndroid_TallNTV[] = {
+    {"thumbnail_aspect_ratio", "0.85"},
+    {"allow_to_refetch", "true"},
+    {"tab_grid_layout_android_new_tab", "NewTabVariation"}};
 
 const FeatureEntry::FeatureParam kTabGridLayoutAndroid_SearchChip[] = {
     {"enable_search_term_chip", "true"}};
@@ -1567,18 +1554,8 @@ const FeatureEntry::FeatureVariation kTabGridLayoutAndroidVariations[] = {
      base::size(kTabGridLayoutAndroid_NewTabVariation), nullptr},
     {"New Tab Tile", kTabGridLayoutAndroid_NewTabTile,
      base::size(kTabGridLayoutAndroid_NewTabTile), nullptr},
-    {"thumbnail aspect ratio - 2:1",
-     kTabGridLayoutAndroid_ThumbnailAspectRatio_2,
-     base::size(kTabGridLayoutAndroid_ThumbnailAspectRatio_2), nullptr},
-    {"thumbnail aspect ratio - 1:2",
-     kTabGridLayoutAndroid_ThumbnailAspectRatio_half,
-     base::size(kTabGridLayoutAndroid_ThumbnailAspectRatio_half), nullptr},
-    {"thumbnail aspect ratio - 3:4",
-     kTabGridLayoutAndroid_ThumbnailAspectRatio_three_quarter,
-     base::size(kTabGridLayoutAndroid_ThumbnailAspectRatio_three_quarter),
-     nullptr},
-    {"Disable refetch", kTabGridLayoutAndroid_DisableRefetch,
-     base::size(kTabGridLayoutAndroid_DisableRefetch), nullptr},
+    {"Tall NTV", kTabGridLayoutAndroid_TallNTV,
+     base::size(kTabGridLayoutAndroid_TallNTV), nullptr},
     {"Search term chip", kTabGridLayoutAndroid_SearchChip,
      base::size(kTabGridLayoutAndroid_SearchChip), nullptr},
 };

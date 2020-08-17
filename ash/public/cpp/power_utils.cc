@@ -32,9 +32,9 @@ void SplitTimeIntoHoursAndMinutes(const base::TimeDelta& time,
                                   int* minutes) {
   DCHECK(hours);
   DCHECK(minutes);
-  const int total_minutes = base::ClampRound(time.InSecondsF() / 60);
-  *hours = total_minutes / 60;
-  *minutes = total_minutes % 60;
+  *minutes = base::ClampRound(time / base::TimeDelta::FromMinutes(1));
+  *hours = *minutes / 60;
+  *minutes %= 60;
 }
 
 }  // namespace power_utils

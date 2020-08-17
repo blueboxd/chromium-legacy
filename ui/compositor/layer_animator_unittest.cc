@@ -1210,7 +1210,7 @@ TEST(LayerAnimatorTest, StartTogetherSetsLastStepTime) {
   // should be enormous. Arbitrarily choosing 1 minute as the threshold,
   // though a much smaller value would probably have sufficed.
   delta = base::TimeTicks::Now() - animator->last_step_time();
-  EXPECT_GT(60.0, delta.InSecondsF());
+  EXPECT_LT(delta, base::TimeDelta::FromMinutes(1));
 }
 
 //-------------------------------------------------------
@@ -3503,17 +3503,15 @@ TEST(LayerAnimatorTest,
   Layer root;
   compositor->SetRootLayer(&root);
 
-  constexpr base::TimeDelta kAnimationDuration =
-      base::TimeDelta::FromMilliseconds(50);
+  constexpr auto kAnimationDuration = base::TimeDelta::FromMilliseconds(50);
 
   // Draw enough frames so that missing the start frame number would cause the
   // reporter to always report 100% smoothness. 4 times of the expected
   // animation frames because somehow the refresh rate changes from 60fps to
   // 200fps when reporting.
-  const float frame_interval =
-      base::Time::kMillisecondsPerSecond / compositor->refresh_rate();
   const int kStartFrameNumber =
-      base::ClampFloor(kAnimationDuration.InMillisecondsF() / frame_interval) *
+      base::ClampFloor(kAnimationDuration.InSecondsF() *
+                       compositor->refresh_rate()) *
       4;
   while (compositor->activated_frame_count() < kStartFrameNumber) {
     compositor->ScheduleFullRedraw();

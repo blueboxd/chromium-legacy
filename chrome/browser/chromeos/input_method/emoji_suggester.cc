@@ -18,6 +18,7 @@
 #include "base/task/thread_pool.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
+#include "chrome/grit/generated_resources.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_pref_names.h"
 #include "chromeos/services/ime/constants.h"
@@ -36,11 +37,6 @@ const char kSpaceChar = ' ';
 constexpr char kEmojiMapFilePathTemplateName[] = "/emoji/emoji-map%s.csv";
 const int kMaxSuggestionIndex = 31;
 const int kMaxSuggestionSize = kMaxSuggestionIndex + 1;
-const char kShowEmojiSuggestionMessage[] =
-    "Emoji suggested. Press up or down to choose an emoji. Press enter to "
-    "insert.";
-const char kDismissEmojiSuggestionMessage[] = "Emoji suggestion dismissed.";
-const char kAnnounceCandidateTemplate[] = "%s. %zu of %zu";
 const int kNoneHighlighted = -1;
 
 std::string ReadEmojiDataFromFile() {
@@ -240,7 +236,8 @@ void EmojiSuggester::ShowSuggestion(const std::string& text) {
   candidates_ = emoji_map_.at(text);
   properties_.visible = true;
   properties_.candidates = candidates_;
-  properties_.announce_string = kShowEmojiSuggestionMessage;
+  properties_.announce_string =
+      l10n_util::GetStringUTF8(IDS_SUGGESTION_EMOJI_SUGGESTED);
   properties_.show_setting_link =
       GetPrefValue(kEmojiSuggesterShowSettingCount) <
       kEmojiSuggesterShowSettingMaxCount;
@@ -252,9 +249,9 @@ void EmojiSuggester::ShowSuggestion(const std::string& text) {
   buttons_.clear();
   for (size_t i = 0; i < candidates_.size(); i++) {
     suggestion_button_.index = i;
-    suggestion_button_.announce_string = base::StringPrintf(
-        kAnnounceCandidateTemplate, base::UTF16ToUTF8(candidates_[i]).c_str(),
-        i + 1, candidates_.size());
+    suggestion_button_.announce_string = l10n_util::GetStringFUTF8(
+        IDS_SUGGESTION_EMOJI_CHOSEN, candidates_[i], base::FormatNumber(i + 1),
+        base::FormatNumber(candidates_.size()));
     buttons_.push_back(suggestion_button_);
   }
   if (properties_.show_setting_link) {
@@ -294,7 +291,8 @@ bool EmojiSuggester::AcceptSuggestion(size_t index) {
 void EmojiSuggester::DismissSuggestion() {
   std::string error;
   properties_.visible = false;
-  properties_.announce_string = kDismissEmojiSuggestionMessage;
+  properties_.announce_string =
+      l10n_util::GetStringUTF8(IDS_SUGGESTION_DISMISSED);
   suggestion_handler_->SetAssistiveWindowProperties(context_id_, properties_,
                                                     &error);
   if (!error.empty()) {

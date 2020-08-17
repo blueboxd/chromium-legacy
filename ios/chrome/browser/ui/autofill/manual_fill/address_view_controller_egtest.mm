@@ -238,7 +238,15 @@ BOOL WaitForKeyboardToAppear() {
 
 // Tests that the Address View Controller is dismissed when tapping the outside
 // the popover on iPad.
-- (void)testIPadTappingOutsidePopOverDismissAddressController {
+// TODO(crbug.com/1116887) Flaky on iOS simulator
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_testIPadTappingOutsidePopOverDismissAddressController \
+  DISABLED_testIPadTappingOutsidePopOverDismissAddressController
+#else
+#define MAYBE_testIPadTappingOutsidePopOverDismissAddressController \
+  testIPadTappingOutsidePopOverDismissAddressController
+#endif
+- (void)MAYBE_testIPadTappingOutsidePopOverDismissAddressController {
   if (![ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_SKIPPED(@"Test is not applicable for iPhone");
   }

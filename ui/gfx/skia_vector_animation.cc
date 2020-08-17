@@ -82,8 +82,7 @@ void SkiaVectorAnimation::SetAnimationObserver(
 }
 
 base::TimeDelta SkiaVectorAnimation::GetAnimationDuration() const {
-  return base::TimeDelta::FromMilliseconds(
-      std::floor(SkScalarToFloat(skottie_->duration()) * 1000.f));
+  return base::TimeDelta::FromSecondsD(skottie_->duration());
 }
 
 gfx::Size SkiaVectorAnimation::GetOriginalSize() const {
@@ -148,13 +147,11 @@ float SkiaVectorAnimation::GetCurrentProgress() const {
       DCHECK(timer_control_);
       return timer_control_->GetNormalizedEndOffset();
     case PlayState::kPaused:
-      if (timer_control_) {
-        return timer_control_->GetNormalizedCurrentCycleProgress();
-      } else {
-        // It may be that the timer hasn't been initialized which may happen if
-        // the animation was paused while it was in |kScheculePlay| state.
-        return scheduled_start_offset_ / GetAnimationDuration();
-      }
+      // It may be that the timer hasn't been initialized, which may happen if
+      // the animation was paused while it was in the kSchedulePlay state.
+      return timer_control_
+                 ? timer_control_->GetNormalizedCurrentCycleProgress()
+                 : (scheduled_start_offset_ / GetAnimationDuration());
     case PlayState::kSchedulePlay:
     case PlayState::kPlaying:
     case PlayState::kScheduleResume:

@@ -364,20 +364,6 @@ TEST(ThreadHeapStatsCollectorTest, EventAtomicPause) {
             stats_collector.previous().atomic_pause_time());
 }
 
-TEST(ThreadHeapStatsCollectorTest, EventMarkingTimePerByteInS) {
-  ThreadHeapStatsCollector stats_collector;
-  stats_collector.NotifyMarkingStarted(BlinkGC::CollectionType::kMajor,
-                                       BlinkGC::GCReason::kForcedGCForTesting,
-                                       true /* is_forced_gc */);
-  stats_collector.IncreaseScopeTime(
-      ThreadHeapStatsCollector::kAtomicPauseMarkTransitiveClosure,
-      base::TimeDelta::FromSeconds(1));
-  stats_collector.NotifyMarkingCompleted(1000);
-  stats_collector.NotifySweepingCompleted();
-  EXPECT_DOUBLE_EQ(
-      .001, stats_collector.previous().marking_time_in_bytes_per_second());
-}
-
 TEST(ThreadHeapStatsCollectorTest, EventSweepingTime) {
   ThreadHeapStatsCollector stats_collector;
   stats_collector.NotifyMarkingStarted(BlinkGC::CollectionType::kMajor,

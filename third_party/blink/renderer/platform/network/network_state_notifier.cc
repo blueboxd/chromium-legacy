@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/platform/network/network_state_notifier.h"
 
 #include <memory>
+
 #include "net/nqe/effective_connection_type.h"
 #include "net/nqe/network_quality_estimator_params.h"
 #include "third_party/blink/public/common/client_hints/client_hints.h"
@@ -430,23 +431,19 @@ double NetworkStateNotifier::GetRandomMultiplier(const String& host) const {
 uint32_t NetworkStateNotifier::RoundRtt(
     const String& host,
     const base::Optional<base::TimeDelta>& rtt) const {
-  // Limit the size of the buckets and the maximum reported value to reduce
-  // fingerprinting.
-  static const auto kGranularity = base::TimeDelta::FromMilliseconds(50);
-  static const auto kMaxRtt = base::TimeDelta::FromSeconds(3);
-
   if (!rtt.has_value()) {
     // RTT is unavailable. So, return the fastest value.
     return 0;
   }
 
-  base::TimeDelta modified_rtt = rtt.value();
-  modified_rtt *= GetRandomMultiplier(host);
-  modified_rtt = std::min(modified_rtt, kMaxRtt);
+  // Limit the maximum reported value and the granularity to reduce
+  // fingerprinting.
+  constexpr auto kMaxRtt = base::TimeDelta::FromSeconds(3);
+  constexpr auto kGranularity = base::TimeDelta::FromMilliseconds(50);
 
-  DCHECK_LE(base::TimeDelta(), modified_rtt);
-  DCHECK_GE(kMaxRtt, modified_rtt);
-
+  const base::TimeDelta modified_rtt =
+      std::min(rtt.value() * GetRandomMultiplier(host), kMaxRtt);
+  DCHECK_GE(modified_rtt, base::TimeDelta());
   return static_cast<uint32_t>(
       modified_rtt.RoundToMultiple(kGranularity).InMilliseconds());
 }

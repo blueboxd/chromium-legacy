@@ -46,6 +46,8 @@ void VerifySettingsAreUnchanged(const DarkModeSettings& a,
 #endif  // DCHECK_IS_ON()
 
 const size_t kMaxCacheSize = 1024u;
+const int kMinImageLength = 8;
+const int kMaxImageLength = 100;
 
 // TODO(gilmanmh): If grayscaling images in dark mode proves popular among
 // users, consider experimenting with different grayscale algorithms.
@@ -88,9 +90,7 @@ class DarkModeInvertedColorCache {
 DarkModeFilter::DarkModeFilter()
     : text_classifier_(nullptr),
       background_classifier_(nullptr),
-      bitmap_image_classifier_(nullptr),
-      svg_image_classifier_(nullptr),
-      gradient_generated_image_classifier_(nullptr),
+      image_classifier_(nullptr),
       color_filter_(nullptr),
       image_filter_(nullptr),
       inverted_color_cache_(new DarkModeInvertedColorCache()) {
@@ -131,11 +131,7 @@ void DarkModeFilter::UpdateSettings(const DarkModeSettings& new_settings) {
       DarkModeColorClassifier::MakeTextColorClassifier(settings_);
   background_classifier_ =
       DarkModeColorClassifier::MakeBackgroundColorClassifier(settings_);
-  bitmap_image_classifier_ =
-      DarkModeImageClassifier::MakeBitmapImageClassifier();
-  svg_image_classifier_ = DarkModeImageClassifier::MakeSVGImageClassifier();
-  gradient_generated_image_classifier_ =
-      DarkModeImageClassifier::MakeGradientGeneratedImageClassifier();
+  image_classifier_ = std::make_unique<DarkModeImageClassifier>();
 }
 
 SkColor DarkModeFilter::InvertColorIfNeeded(SkColor color, ElementRole role) {
@@ -152,22 +148,42 @@ SkColor DarkModeFilter::InvertColorIfNeeded(SkColor color, ElementRole role) {
   return color;
 }
 
+bool DarkModeFilter::AnalyzeShouldApplyToImage(const SkRect& src,
+                                               const SkRect& dst) {
+  if (settings().image_policy == DarkModeImagePolicy::kFilterNone)
+    return false;
+
+  if (settings().image_policy == DarkModeImagePolicy::kFilterAll)
+    return true;
+
+  // Images being drawn from very smaller |src| rect, i.e. one of the dimensions
+  // is very small, can be used for the border around the content or showing
+  // separator. Consider these images irrespective of size of the rect being
+  // drawn to. Classifying them will not be too costly.
+  if (src.width() <= kMinImageLength || src.height() <= kMinImageLength)
+    return true;
+
+  // Do not consider images being drawn into bigger rect as these images are not
+  // meant for icons or representing smaller widgets. These images are
+  // considered as photos which should be untouched.
+  return (dst.width() <= kMaxImageLength && dst.height() <= kMaxImageLength);
+}
+
 void DarkModeFilter::ApplyToImageFlagsIfNeeded(const SkRect& src,
                                                const SkRect& dst,
                                                const PaintImage& paint_image,
-                                               cc::PaintFlags* flags,
-                                               ElementRole element_role) {
+                                               cc::PaintFlags* flags) {
   // The construction of |paint_image| is expensive, so ensure
   // IsDarkModeActive() is checked prior to calling this function.
   // See: https://crbug.com/1094781.
   DCHECK(IsDarkModeActive());
 
-  if (!image_filter_ ||
-      !ShouldApplyToImage(settings(), src, dst, paint_image, element_role)) {
+  if (!image_filter_ || !AnalyzeShouldApplyToImage(src, dst))
     return;
-  }
 
-  flags->setColorFilter(image_filter_);
+  if (ClassifyImage(settings(), src, dst, paint_image) ==
+      DarkModeClassification::kApplyFilter)
+    flags->setColorFilter(image_filter_);
 }
 
 base::Optional<cc::PaintFlags> DarkModeFilter::ApplyToFlagsIfNeeded(
@@ -235,38 +251,21 @@ size_t DarkModeFilter::GetInvertedColorCacheSizeForTesting() {
   return inverted_color_cache_->size();
 }
 
-bool DarkModeFilter::ShouldApplyToImage(const DarkModeSettings& settings,
-                                        const SkRect& src,
-                                        const SkRect& dst,
-                                        const PaintImage& paint_image,
-                                        ElementRole role) {
+DarkModeClassification DarkModeFilter::ClassifyImage(
+    const DarkModeSettings& settings,
+    const SkRect& src,
+    const SkRect& dst,
+    const PaintImage& paint_image) {
   switch (settings.image_policy) {
-    case DarkModeImagePolicy::kFilterSmart: {
-      DarkModeImageClassifier* classifier;
-
-      switch (role) {
-        case ElementRole::kBitmapImage:
-          classifier = bitmap_image_classifier_.get();
-          break;
-        case ElementRole::kSVGImage:
-          classifier = svg_image_classifier_.get();
-          break;
-        case ElementRole::kGradientGeneratedImage:
-          classifier = gradient_generated_image_classifier_.get();
-          break;
-        default:
-          return false;
-      }
-
-      DarkModeClassification result =
-          classifier->Classify(paint_image, src, dst);
-      return result == DarkModeClassification::kApplyFilter;
-    }
+    case DarkModeImagePolicy::kFilterSmart:
+      return image_classifier_->Classify(paint_image, src, dst);
     case DarkModeImagePolicy::kFilterNone:
-      return false;
+      return DarkModeClassification::kDoNotApplyFilter;
     case DarkModeImagePolicy::kFilterAll:
-      return true;
+      return DarkModeClassification::kApplyFilter;
   }
+
+  NOTREACHED();
 }
 
 ScopedDarkModeElementRoleOverride::ScopedDarkModeElementRoleOverride(

@@ -210,12 +210,14 @@ std::unique_ptr<net::UploadDataStream> CreateUploadDataStream(
     std::vector<base::File>& opened_files,
     base::SequencedTaskRunner* file_task_runner) {
   // In the case of a chunked upload, there will just be one element.
-  if (body->elements()->size() == 1 &&
-      body->elements()->begin()->type() ==
-          network::mojom::DataElementType::kChunkedDataPipe) {
-    return std::make_unique<ChunkedDataPipeUploadDataStream>(
-        body, const_cast<DataElement&>(body->elements()->front())
-                  .ReleaseChunkedDataPipeGetter());
+  if (body->elements()->size() == 1) {
+    network::mojom::DataElementType type = body->elements()->begin()->type();
+    if (type == network::mojom::DataElementType::kChunkedDataPipe ||
+        type == network::mojom::DataElementType::kReadOnceStream) {
+      return std::make_unique<ChunkedDataPipeUploadDataStream>(
+          body,
+          body->elements_mutable()->begin()->ReleaseChunkedDataPipeGetter());
+    }
   }
 
   auto opened_file = opened_files.begin();
@@ -244,7 +246,8 @@ std::unique_ptr<net::UploadDataStream> CreateUploadDataStream(
             body, element.CloneDataPipeGetter()));
         break;
       }
-      case network::mojom::DataElementType::kChunkedDataPipe: {
+      case network::mojom::DataElementType::kChunkedDataPipe:
+      case network::mojom::DataElementType::kReadOnceStream: {
         // This shouldn't happen, as the traits logic should ensure that if
         // there's a chunked pipe, there's one and only one element.
         NOTREACHED();
@@ -1095,22 +1098,13 @@ void URLLoader::OnReceivedRedirect(net::URLRequest* url_request,
 
 // static
 bool URLLoader::HasFetchStreamingUploadBody(const ResourceRequest* request) {
-  // Follows blink::mojom::ResourceType::kXhr.
-  const int kXhr = 13;
-  if (request->resource_type != kXhr)
-    return false;
   const ResourceRequestBody* request_body = request->request_body.get();
   if (!request_body)
     return false;
   const std::vector<DataElement>* elements = request_body->elements();
-  if (elements->size() == 0u)
+  if (elements->size() != 1u)
     return false;
-  // https://fetch.spec.whatwg.org/#concept-bodyinit-extract
-  // Body's source is null means the body is not extracted from ReadableStream.
-  // See blink::PopulateResourceRequest() for actual construction.
-  if (elements->size() > 1u)
-    return false;
-  return elements->at(0).type() == mojom::DataElementType::kChunkedDataPipe;
+  return elements->front().type() == mojom::DataElementType::kReadOnceStream;
 }
 
 void URLLoader::OnAuthRequired(net::URLRequest* url_request,

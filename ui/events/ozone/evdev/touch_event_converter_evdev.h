@@ -50,6 +50,14 @@ class COMPONENT_EXPORT(EVDEV) TouchEventConverterEvdev
                            DeviceEventDispatcherEvdev* dispatcher);
   ~TouchEventConverterEvdev() override;
 
+  static std::unique_ptr<TouchEventConverterEvdev> Create(
+      base::ScopedFD fd,
+      base::FilePath path,
+      int id,
+      const EventDeviceInfo& devinfo,
+      SharedPalmDetectionFilterState* shared_palm_state,
+      DeviceEventDispatcherEvdev* dispatcher);
+
   // EventConverterEvdev:
   bool HasTouchscreen() const override;
   bool HasPen() const override;

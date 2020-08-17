@@ -57,7 +57,7 @@ TEST_F(TimerPerfTest, PostAndRunTimers) {
 
   test::EnterRunLoop();
 
-  double posting_time = (post_end - post_start).InMicroseconds();
+  double posting_time = (post_end - post_start).InMicrosecondsF();
   double posting_time_us_per_call =
       posting_time / static_cast<double>(kNumIterations);
   LOG(INFO) << "TimerBase::startOneShot cost (us/call) "
@@ -99,13 +99,13 @@ TEST_F(TimerPerfTest, PostThenCancelTenThousandTimers) {
 
   test::EnterRunLoop();
 
-  double posting_time = (post_end - post_start).InMicroseconds();
+  double posting_time = (post_end - post_start).InMicrosecondsF();
   double posting_time_us_per_call =
       posting_time / static_cast<double>(kNumIterations);
   LOG(INFO) << "TimerBase::startOneShot cost (us/call) "
             << posting_time_us_per_call << " (total " << posting_time << " us)";
 
-  double cancel_time = (cancel_end - cancel_start).InMicroseconds();
+  double cancel_time = (cancel_end - cancel_start).InMicrosecondsF();
   double cancel_time_us_per_call =
       cancel_time / static_cast<double>(kNumIterations);
   LOG(INFO) << "TimerBase::stop cost (us/call) " << cancel_time_us_per_call

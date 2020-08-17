@@ -874,6 +874,12 @@
   <message name="IDS_OS_SETTINGS_TAG_LANGUAGES_INPUT_ADD_LANGUAGE" desc="Text for search result item which, when clicked, navigates the user to languages and input settings, with an option to add a new language.">
     Add languages
   </message>
+  <message name="IDS_OS_SETTINGS_TAG_LANGUAGES_ADD_INPUT_METHOD" translateable="false" desc="Text for search result item which, when clicked, navigates the user to input settings, with the option to add input methods (keyboard layouts and input method editors).">
+    Add input methods
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_LANGUAGES_SPELL_CHECK" translateable="false" desc="Text for search result item which, when clicked, navigates the user to input settings, with all the options for spell check settings">
+    Spell check
+  </message>
   <message name="IDS_OS_SETTINGS_TAG_LANGUAGES_INPUT_METHODS" desc="Text for search result item which, when clicked, navigates the user to input settings, with the option to enable/disable input in supported languages.">
     Manage input methods
   </message>

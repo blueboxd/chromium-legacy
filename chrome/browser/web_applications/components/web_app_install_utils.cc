@@ -77,7 +77,7 @@ void AddSquareIconsFromBitmaps(
 // Populate |web_app_info|'s shortcuts_menu_item_infos vector using the
 // blink::Manifest's shortcuts vector.
 std::vector<WebApplicationShortcutsMenuItemInfo>
-UpdateShortcutInfosFromManifest(
+UpdateShortcutsMenuItemInfosFromManifest(
     const std::vector<blink::Manifest::ShortcutItem>& shortcuts) {
   std::vector<WebApplicationShortcutsMenuItemInfo> web_app_shortcut_infos;
   int num_shortcut_icons = 0;
@@ -216,7 +216,7 @@ void UpdateWebAppInfoFromManifest(const blink::Manifest& manifest,
       base::FeatureList::IsEnabled(
           features::kDesktopPWAsAppIconShortcutsMenu)) {
     web_app_info->shortcuts_menu_item_infos =
-        UpdateShortcutInfosFromManifest(manifest.shortcuts);
+        UpdateShortcutsMenuItemInfosFromManifest(manifest.shortcuts);
   }
 }
 

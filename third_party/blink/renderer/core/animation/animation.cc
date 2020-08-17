@@ -1992,15 +1992,13 @@ base::Optional<AnimationTimeDelta> Animation::TimeToEffectChange() {
                                             playback_rate_);
   }
 
-  AnimationTimeDelta result =
-      playback_rate_ > 0
-          ? content_->TimeToForwardsEffectChange() / playback_rate_
-          : content_->TimeToReverseEffectChange() / -playback_rate_;
+  if (!HasActiveAnimationsOnCompositor() &&
+      (content_->GetPhase() == Timing::kPhaseActive))
+    return AnimationTimeDelta();
 
-  return !HasActiveAnimationsOnCompositor() &&
-                 content_->GetPhase() == Timing::kPhaseActive
-             ? AnimationTimeDelta()
-             : result;
+  return (playback_rate_ > 0)
+             ? (content_->TimeToForwardsEffectChange() / playback_rate_)
+             : (content_->TimeToReverseEffectChange() / -playback_rate_);
 }
 
 void Animation::cancel() {

@@ -48,7 +48,8 @@ bool OmniboxPopupModel::Selection::operator<(const Selection& b) const {
 }
 
 bool OmniboxPopupModel::Selection::IsChangeToKeyword(Selection from) const {
-  return state == KEYWORD_MODE && from.state != KEYWORD_MODE;
+  return (state == KEYWORD_MODE || state == FOCUSED_BUTTON_KEYWORD) &&
+         !(from.state == KEYWORD_MODE || from.state == FOCUSED_BUTTON_KEYWORD);
 }
 
 bool OmniboxPopupModel::Selection::IsButtonFocused() const {

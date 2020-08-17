@@ -45,6 +45,7 @@ js_type_check("closure_compile_module") {
     ":file_selection",
     ":file_tasks",
     ":file_transfer_controller",
+    ":file_type_filters_controller",
     ":file_watcher",
     ":folder_shortcuts_data_model",
     ":gear_menu_controller",
@@ -358,6 +359,7 @@ js_library("file_manager") {
     ":empty_folder_controller",
     ":file_selection",
     ":file_transfer_controller",
+    ":file_type_filters_controller",
     ":folder_shortcuts_data_model",
     ":gear_menu_controller",
     ":import_controller",
@@ -484,6 +486,20 @@ js_unittest("file_transfer_controller_unittest") {
     "//ui/file_manager/file_manager/background/js:mock_volume_manager",
     "//ui/file_manager/file_manager/foreground/js:mock_directory_model",
     "//ui/file_manager/file_manager/foreground/js/metadata:mock_metadata",
+    "//ui/webui/resources/js:webui_resource_test",
+  ]
+}
+
+js_library("file_type_filters_controller") {
+  deps = [
+    ":directory_model",
+    "//ui/file_manager/file_manager/common/js:files_app_entry_types",
+  ]
+}
+
+js_unittest("file_type_filters_controller_unittest") {
+  deps = [
+    ":file_type_filters_controller",
     "//ui/webui/resources/js:webui_resource_test",
   ]
 }
@@ -847,6 +863,7 @@ js_test_gen_html("js_test_gen_html") {
     ":file_manager_commands_unittest",
     ":file_tasks_unittest",
     ":file_transfer_controller_unittest",
+    ":file_type_filters_controller_unittest",
     ":import_controller_unittest",
     ":list_thumbnail_loader_unittest",
     ":navigation_list_model_unittest",

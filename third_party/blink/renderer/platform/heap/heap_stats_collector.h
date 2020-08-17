@@ -265,9 +265,6 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
     // Overall time spent sweeping the heap.
     base::TimeDelta sweeping_time() const;
 
-    // Marking speed in bytes/s.
-    double marking_time_in_bytes_per_second() const;
-
     // Marked bytes collected during sweeping.
     size_t unique_id = -1;
     size_t marked_bytes = 0;

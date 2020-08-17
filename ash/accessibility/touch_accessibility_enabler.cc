@@ -159,9 +159,8 @@ void TouchAccessibilityEnabler::CancelTimer() {
 }
 
 void TouchAccessibilityEnabler::OnTimer() {
-  base::TimeTicks now = Now();
-  double tick_count_f = (now - two_finger_start_time_) / kTimerDelay;
-  int tick_count = base::ClampRound(tick_count_f);
+  const int tick_count =
+      base::ClampRound((Now() - two_finger_start_time_) / kTimerDelay);
 
   if (tick_count == kTimerTicksOfFirstSoundFeedback) {
     base::RecordAction(

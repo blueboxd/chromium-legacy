@@ -138,6 +138,27 @@ TouchEventConverterEvdev::TouchEventConverterEvdev(
 TouchEventConverterEvdev::~TouchEventConverterEvdev() {
 }
 
+// static
+std::unique_ptr<TouchEventConverterEvdev> TouchEventConverterEvdev::Create(
+    base::ScopedFD fd,
+    base::FilePath path,
+    int id,
+    const EventDeviceInfo& devinfo,
+    SharedPalmDetectionFilterState* shared_palm_state,
+    DeviceEventDispatcherEvdev* dispatcher) {
+  auto converter = std::make_unique<TouchEventConverterEvdev>(
+      std::move(fd), std::move(path), id, devinfo, shared_palm_state,
+      dispatcher);
+  converter->Initialize(devinfo);
+  if (!converter->GetTouchscreenSize().GetCheckedArea().IsValid()) {
+    LOG(WARNING) << "Ignoring touchscreen \"" << converter->input_device().name
+                 << "\" reporting invalid size "
+                 << converter->GetTouchscreenSize().ToString();
+    return nullptr;
+  }
+  return converter;
+}
+
 void TouchEventConverterEvdev::Initialize(const EventDeviceInfo& info) {
   has_mt_ = info.HasMultitouch();
   has_pen_ = info.HasKeyEvent(BTN_TOOL_PEN);

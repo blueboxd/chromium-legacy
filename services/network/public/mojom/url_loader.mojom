@@ -62,6 +62,7 @@ enum DataElementType {
   // Only used for Upload with Network Service as of now:
   kDataPipe,
   kChunkedDataPipe,
+  kReadOnceStream,
   kRawFile,
 
   // Used for Upload when Network Service is disabled:

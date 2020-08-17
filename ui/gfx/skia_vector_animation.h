@@ -185,7 +185,7 @@ class GFX_EXPORT SkiaVectorAnimation {
     // Time duration from 0 which marks the beginning of a cycle.
     const base::TimeDelta start_offset_;
 
-    // Time duration  from 0 which marks the end of a cycle.
+    // Time duration from 0 which marks the end of a cycle.
     const base::TimeDelta end_offset_;
 
     // Time duration for one cycle. This is essentially a cache of the

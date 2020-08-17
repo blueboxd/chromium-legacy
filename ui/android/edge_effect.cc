@@ -204,9 +204,8 @@ bool EdgeEffect::Update(base::TimeTicks current_time) {
   if (IsFinished())
     return false;
 
-  const base::TimeDelta dt = current_time - start_time_;
-  const double t = std::min(dt / duration_, 1.);
-  const float interp = static_cast<float>(Damp(t, 1.));
+  const double t = std::min((current_time - start_time_) / duration_, 1.0);
+  const float interp = static_cast<float>(Damp(t, 1.0));
 
   glow_alpha_ = Lerp(glow_alpha_start_, glow_alpha_finish_, interp);
   glow_scale_y_ = Lerp(glow_scale_y_start_, glow_scale_y_finish_, interp);
@@ -222,8 +221,8 @@ bool EdgeEffect::Update(base::TimeTicks current_time) {
         glow_alpha_start_ = glow_alpha_;
         glow_scale_y_start_ = glow_scale_y_;
 
-        glow_alpha_finish_ = 0.f;
-        glow_scale_y_finish_ = 0.f;
+        glow_alpha_finish_ = 0.0f;
+        glow_scale_y_finish_ = 0.0f;
         break;
       case STATE_PULL:
         state_ = STATE_PULL_DECAY;
@@ -234,8 +233,8 @@ bool EdgeEffect::Update(base::TimeTicks current_time) {
         glow_scale_y_start_ = glow_scale_y_;
 
         // After pull, the glow should fade to nothing.
-        glow_alpha_finish_ = 0.f;
-        glow_scale_y_finish_ = 0.f;
+        glow_alpha_finish_ = 0.0f;
+        glow_scale_y_finish_ = 0.0f;
         break;
       case STATE_PULL_DECAY:
         state_ = STATE_RECEDE;

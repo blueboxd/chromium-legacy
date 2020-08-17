@@ -200,7 +200,7 @@ bool PowerNotificationController::UpdateNotificationStateForRemainingTime() {
   // The notification includes a rounded minutes value, so round the estimate
   // received from the power manager to match.
   const int remaining_minutes =
-      base::ClampRound(remaining_time->InSecondsF() / 60.0);
+      base::ClampRound(*remaining_time / base::TimeDelta::FromMinutes(1));
 
   if (remaining_minutes >= kNoWarningMinutes ||
       PowerStatus::Get()->IsBatteryFull()) {

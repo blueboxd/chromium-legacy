@@ -62,7 +62,8 @@ void LayoutProgress::UpdateFromElement() {
 double LayoutProgress::AnimationProgress() const {
   if (!animating_)
     return 0;
-  base::TimeDelta elapsed = base::TimeTicks::Now() - animation_start_time_;
+  const base::TimeDelta elapsed =
+      base::TimeTicks::Now() - animation_start_time_;
   return (elapsed % animation_duration_) / animation_duration_;
 }
 

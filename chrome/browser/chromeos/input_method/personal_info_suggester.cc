@@ -25,7 +25,6 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/strings/grit/components_strings.h"
 #include "third_party/re2/src/re2/re2.h"
-#include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
 
@@ -46,8 +45,22 @@ const char kPhoneNumberRegex[] =
 const char kFirstNameRegex[] = "first name";
 const char kLastNameRegex[] = "last name";
 
-const char kAnnounceAnnotation[] =
-    "Press down to navigate and enter to insert.";
+const char kShowPersonalInfoSuggestionMessage[] =
+    "Personal info suggested. Press down arrow to access; escape to ignore.";
+const char kDismissPersonalInfoSuggestionMessage[] = "Suggestion dismissed.";
+const char kAcceptPersonalInfoSuggestionMessage[] = "Suggestion inserted.";
+
+// The current personal information would only provide one suggestion, so there
+// could be only two possible UI: 1. only one suggestion, 2. one suggestion and
+// one learn more button, and the suggestion is always before the learn more
+// button. So suggestion could be 1 of 1 or 1 of 2 depending on whether the
+// learn more button is displayed, but learn more button can only be 2 of 2.
+const char kSuggestionMessageTemplate[] =
+    "Suggestion %s. Button. Menu item 1 of %d. Press enter to insert; escape "
+    "to dismiss.";
+const char kLearnMoreMessage[] =
+    "Learn more about suggestions. Link. Menu item 2 of 2. Press enter to "
+    "activate; escape to dismiss.";
 const int kNoneHighlighted = -1;
 
 constexpr base::TimeDelta kTtsShowDelay =
@@ -172,7 +185,7 @@ PersonalInfoSuggester::PersonalInfoSuggester(
       ui::ime::AssistiveWindowType::kPersonalInfoSuggestion;
   suggestion_button_.index = 0;
   settings_button_.id = ui::ime::ButtonId::kSmartInputsSettingLink;
-  settings_button_.announce_string = l10n_util::GetStringUTF8(IDS_LEARN_MORE);
+  settings_button_.announce_string = kLearnMoreMessage;
   settings_button_.window_type =
       ui::ime::AssistiveWindowType::kPersonalInfoSuggestion;
 }
@@ -335,7 +348,9 @@ void PersonalInfoSuggester::ShowSuggestion(const base::string16& text,
     LOG(ERROR) << "Fail to show suggestion. " << error;
   }
 
-  suggestion_button_.announce_string = base::UTF16ToUTF8(text);
+  suggestion_button_.announce_string = base::StringPrintf(
+      kSuggestionMessageTemplate, base::UTF16ToUTF8(text).c_str(),
+      details.show_setting_link ? 2 : 1);
   buttons_.clear();
   buttons_.push_back(suggestion_button_);
   if (details.show_setting_link)
@@ -349,11 +364,9 @@ void PersonalInfoSuggester::ShowSuggestion(const base::string16& text,
     IncrementPrefValueTilCapped(kPersonalInfoSuggesterShowSettingCount,
                                 kMaxShowSettingCount);
     tts_handler_->Announce(
-        // TODO(jiwan): Add translation to other languages when we support more
-        // than English.
-        base::StringPrintf("Suggestion %s. %s", base::UTF16ToUTF8(text).c_str(),
-                           show_annotation ? kAnnounceAnnotation : ""),
-        kTtsShowDelay);
+        // TODO(jiwan): Add translation to other languages when we support
+        // more than English.
+        kShowPersonalInfoSuggestionMessage, kTtsShowDelay);
   }
 
   suggestion_shown_ = true;
@@ -398,8 +411,7 @@ bool PersonalInfoSuggester::AcceptSuggestion(size_t index) {
   IncrementPrefValueTilCapped(kPersonalInfoSuggesterAcceptanceCount,
                               kMaxAcceptanceCount);
   suggestion_shown_ = false;
-  tts_handler_->Announce(base::StringPrintf(
-      "Inserted suggestion %s.", base::UTF16ToUTF8(suggestion_).c_str()));
+  tts_handler_->Announce(kAcceptPersonalInfoSuggestionMessage);
 
   return true;
 }
@@ -413,6 +425,7 @@ void PersonalInfoSuggester::DismissSuggestion() {
   }
   suggestion_shown_ = false;
   RecordTimeToDismiss(base::TimeTicks::Now() - session_start_);
+  tts_handler_->Announce(kDismissPersonalInfoSuggestionMessage);
 }
 
 void PersonalInfoSuggester::SetButtonHighlighted(

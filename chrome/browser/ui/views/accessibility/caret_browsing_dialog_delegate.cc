@@ -48,6 +48,7 @@ CaretBrowsingDialogDelegate::CaretBrowsingDialogDelegate(
 
   auto* message_label = AddChildView(std::make_unique<views::Label>(
       message_text, views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT));
+  message_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   message_label->SetMultiLine(true);
 
   do_not_ask_checkbox_ = AddChildView(std::make_unique<views::Checkbox>(

@@ -25,12 +25,8 @@ FORWARD_DECLARE_TEST(DarkModeImageClassifierTest, Caching);
 // results is not threadsafe. So it can be used only in blink main thread.
 class PLATFORM_EXPORT DarkModeImageClassifier {
  public:
-  virtual ~DarkModeImageClassifier();
-
-  static std::unique_ptr<DarkModeImageClassifier> MakeBitmapImageClassifier();
-  static std::unique_ptr<DarkModeImageClassifier> MakeSVGImageClassifier();
-  static std::unique_ptr<DarkModeImageClassifier>
-  MakeGradientGeneratedImageClassifier();
+  DarkModeImageClassifier();
+  ~DarkModeImageClassifier();
 
   struct Features {
     // True if the image is in color, false if it is grayscale.
@@ -55,11 +51,6 @@ class PLATFORM_EXPORT DarkModeImageClassifier {
 
   // Removes cache identified by given |image_id|.
   static void RemoveCache(PaintImage::Id image_id);
-
- protected:
-  DarkModeImageClassifier();
-
-  virtual DarkModeClassification DoInitialClassification(const SkRect& dst) = 0;
 
  private:
   DarkModeClassification ClassifyWithFeatures(const Features& features);

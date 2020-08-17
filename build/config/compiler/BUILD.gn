@@ -1538,9 +1538,6 @@ config("default_warnings") {
 
           # TODO(https://crbug.com/1050281): Clean up, enable.
           "-Wno-non-c-typedef-for-linkage",
-
-          # TODO(https://crbug.com/1114873): Clean up and enable.
-          "-Wno-string-concatenation",
         ]
 
         cflags_c += [
@@ -1553,6 +1550,12 @@ config("default_warnings") {
         } else {
           # TODO(https://crbug.com/1049569): Remove after Clang 87b235db.
           cflags += [ "-Wno-max-tokens" ]
+        }
+
+        if (llvm_force_head_revision) {
+          # TODO(https://crbug.com/1114873):
+          # Remove after false positives are fixed
+          cflags += [ "-Wno-string-concatenation" ]
         }
       }
     }

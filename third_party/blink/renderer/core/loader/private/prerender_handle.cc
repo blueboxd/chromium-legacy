@@ -104,7 +104,7 @@ PrerenderHandle::PrerenderHandle(
 PrerenderHandle::~PrerenderHandle() = default;
 
 void PrerenderHandle::Dispose() {
-  if (remote_handle_.is_bound())
+  if (remote_handle_.is_bound() && !GetExecutionContext()->IsContextDestroyed())
     remote_handle_->Abandon();
   Detach();
 }

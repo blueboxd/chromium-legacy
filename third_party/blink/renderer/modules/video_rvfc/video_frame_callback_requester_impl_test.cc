@@ -153,8 +153,8 @@ class VfcRequesterParameterVerifierCallback
     EXPECT_NE(processing_time.InSecondsF(), metadata->processingDuration());
   }
 
-  double last_now() { return now_; }
-  bool was_invoked() { return was_invoked_; }
+  double last_now() const { return now_; }
+  bool was_invoked() const { return was_invoked_; }
 
  private:
   void VerifyTicksClamping(base::TimeTicks reference,
@@ -167,11 +167,10 @@ class VfcRequesterParameterVerifierCallback
   }
 
   double TicksToClampedMillisecondsF(base::TimeTicks ticks) {
-    constexpr double kSecondsToMillis = 1000.0;
     return Performance::ClampTimeResolution(
                timing_.MonotonicTimeToZeroBasedDocumentTime(ticks)
                    .InSecondsF()) *
-           kSecondsToMillis;
+           base::Time::kMillisecondsPerSecond;
   }
 
   double TicksToMillisecondsF(base::TimeTicks ticks) {
@@ -180,12 +179,8 @@ class VfcRequesterParameterVerifierCallback
   }
 
   static double ClampElapsedProcessingTime(base::TimeDelta time) {
-    constexpr auto kProcessingTimeResolution =
-        base::TimeDelta::FromMicroseconds(100);
-    double clamped_time =
-        time.FloorToMultiple(kProcessingTimeResolution).InSecondsF();
-
-    return clamped_time;
+    return time.FloorToMultiple(base::TimeDelta::FromMicroseconds(100))
+        .InSecondsF();
   }
 
   double now_;
@@ -344,7 +339,7 @@ TEST_F(VideoFrameCallbackRequesterImplTest, VerifyParameters) {
   EXPECT_CALL(*media_player(), GetVideoFramePresentationMetadata())
       .WillOnce(Return(ByMove(MetadataHelper::CopyDefaultMedatada())));
 
-  double now_ms =
+  const double now_ms =
       timing.MonotonicTimeToZeroBasedDocumentTime(base::TimeTicks::Now())
           .InMillisecondsF();
 

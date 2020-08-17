@@ -170,6 +170,8 @@ enum Setting {
   kShowEmojiSuggestions = 1203,
   kChangeSystemLanguage = 1204,
   kOfferTranslation = 1205,
+  kAddInputMethod = 1206,
+  kSpellCheck = 1207,
 
   // Files section.
   kGoogleDriveConnection = 1300,

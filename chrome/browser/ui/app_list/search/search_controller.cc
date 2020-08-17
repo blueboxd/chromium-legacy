@@ -133,10 +133,8 @@ void SearchController::InvokeResultAction(ChromeSearchResult* result,
   result->InvokeAction(action_index, event_flags);
 }
 
-size_t SearchController::AddGroup(size_t max_results,
-                                  double multiplier,
-                                  double boost) {
-  return mixer_->AddGroup(max_results, multiplier, boost);
+size_t SearchController::AddGroup(size_t max_results, double boost) {
+  return mixer_->AddGroup(max_results, boost);
 }
 
 void SearchController::AddProvider(size_t group_id,

@@ -62,25 +62,6 @@
 
 namespace blink {
 
-namespace {
-DarkModeFilter::ElementRole GetElementRoleForImage(Image* image) {
-  DCHECK(image);
-
-  if (image->IsBitmapImage())
-    return DarkModeFilter::ElementRole::kBitmapImage;
-
-  if (image->IsSVGImage() || image->IsSVGImageForContainer())
-    return DarkModeFilter::ElementRole::kSVGImage;
-
-  if (image->IsGradientGeneratedImage())
-    return DarkModeFilter::ElementRole::kGradientGeneratedImage;
-
-  // TODO(prashant.n): Check if remaining image types need to be treated
-  // separately.
-  return DarkModeFilter::ElementRole::kUnhandledImage;
-}
-}  // namespace
-
 // Helper class that copies |flags| only when dark mode is enabled.
 //
 // TODO(gilmanmh): Investigate removing const from |flags| in the calling
@@ -890,10 +871,10 @@ void GraphicsContext::DrawImage(
   image_flags.setFilterQuality(ComputeFilterQuality(image, dest, src));
 
   // Do not classify the image if the element has any CSS filters.
-  if (!has_filter_property && dark_mode_filter_.IsDarkModeActive()) {
+  if (!has_filter_property && dark_mode_filter_.IsDarkModeActive() &&
+      dark_mode_filter_.AnalyzeShouldApplyToImage(src, dest)) {
     dark_mode_filter_.ApplyToImageFlagsIfNeeded(
-        src, dest, image->PaintImageForCurrentFrame(), &image_flags,
-        GetElementRoleForImage(image));
+        src, dest, image->PaintImageForCurrentFrame(), &image_flags);
   }
 
   image->Draw(canvas_, image_flags, dest, src, should_respect_image_orientation,
@@ -931,10 +912,11 @@ void GraphicsContext::DrawImageRRect(
   image_flags.setFilterQuality(
       ComputeFilterQuality(image, dest.Rect(), src_rect));
 
-  if (dark_mode_filter_.IsDarkModeActive()) {
+  if (dark_mode_filter_.IsDarkModeActive() &&
+      dark_mode_filter_.AnalyzeShouldApplyToImage(src_rect, dest.Rect())) {
     dark_mode_filter_.ApplyToImageFlagsIfNeeded(
-        src_rect, dest.Rect(), image->PaintImageForCurrentFrame(), &image_flags,
-        GetElementRoleForImage(image));
+        src_rect, dest.Rect(), image->PaintImageForCurrentFrame(),
+        &image_flags);
   }
 
   bool use_shader = (visible_src == src_rect) &&

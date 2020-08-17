@@ -86,6 +86,7 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
+import org.chromium.chrome.browser.tab.MockTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabImpl;
@@ -2187,6 +2188,13 @@ public class TabListMediatorUnitTest {
         // triggers.
         mModel.set(new ArrayList<>());
         mCallbackCaptor.getValue().onResult(mFaviconDrawable);
+    }
+
+    @Test
+    public void testGetDomainOnDestroyedTab() {
+        Tab tab = new MockTab(TAB1_ID, false);
+        tab.destroy();
+        assertEquals("", TabListMediator.getDomain(tab));
     }
 
     private void initAndAssertAllProperties() {

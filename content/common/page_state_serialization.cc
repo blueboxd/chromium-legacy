@@ -710,6 +710,7 @@ void WriteResourceRequestBody(const network::ResourceRequestBody& request_body,
         break;
       case network::mojom::DataElementType::kRawFile:
       case network::mojom::DataElementType::kChunkedDataPipe:
+      case network::mojom::DataElementType::kReadOnceStream:
       case network::mojom::DataElementType::kUnknown:
         NOTREACHED();
         continue;

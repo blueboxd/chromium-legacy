@@ -82,10 +82,15 @@ MediaAppUI::MediaAppUI(content::WebUI* web_ui,
   auto* allowlist = WebUIAllowlist::GetOrCreate(browser_context);
   const url::Origin host_origin =
       url::Origin::Create(GURL(kChromeUIMediaAppURL));
-  allowlist->RegisterAutoGrantedPermission(
-      host_origin, ContentSettingsType::FILE_SYSTEM_READ_GUARD);
-  allowlist->RegisterAutoGrantedPermission(
-      host_origin, ContentSettingsType::FILE_SYSTEM_WRITE_GUARD);
+  allowlist->RegisterAutoGrantedPermissions(
+      host_origin, {
+                       ContentSettingsType::COOKIES,
+                       ContentSettingsType::FILE_SYSTEM_READ_GUARD,
+                       ContentSettingsType::FILE_SYSTEM_WRITE_GUARD,
+                       ContentSettingsType::IMAGES,
+                       ContentSettingsType::JAVASCRIPT,
+                       ContentSettingsType::SOUND,
+                   });
 
   content::WebUIDataSource* untrusted_source =
       CreateMediaAppUntrustedDataSource(delegate_.get());

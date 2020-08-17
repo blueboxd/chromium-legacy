@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/platform/heap/marking_scheduling_oracle.h"
 
+#include "base/numerics/ranges.h"
+
 namespace blink {
 
 constexpr double MarkingSchedulingOracle::kEstimatedMarkingTimeMs;
@@ -51,10 +53,8 @@ double MarkingSchedulingOracle::GetElapsedTimeInMs(base::TimeTicks start_time) {
 base::TimeDelta MarkingSchedulingOracle::GetMinimumStepDuration() {
   DCHECK_LT(0u, incrementally_marked_bytes_);
   DCHECK(!incremental_marking_time_so_far_.is_zero());
-  base::TimeDelta minimum_duration = incremental_marking_time_so_far_ *
-                                     kMinimumMarkedBytesInStep /
-                                     incrementally_marked_bytes_;
-  return minimum_duration;
+  return incremental_marking_time_so_far_ * kMinimumMarkedBytesInStep /
+         incrementally_marked_bytes_;
 }
 
 base::TimeDelta MarkingSchedulingOracle::GetNextIncrementalStepDurationForTask(
@@ -84,14 +84,12 @@ base::TimeDelta MarkingSchedulingOracle::GetNextIncrementalStepDurationForTask(
   // up" by marking (|expected_marked_bytes| - |actual_marked_bytes|).
   // Assuming constant marking speed, duration of the next incremental step
   // should be as follows:
-  double marking_time_to_catch_up_in_ms =
-      (expected_marked_bytes - actual_marked_bytes) *
-      incremental_marking_time_so_far_.InMillisecondsF() /
+  const base::TimeDelta marking_time_to_catch_up =
+      incremental_marking_time_so_far_ *
+      (expected_marked_bytes - actual_marked_bytes) /
       incrementally_marked_bytes_;
-  return std::min(
-      kMaximumIncrementalMarkingStepDuration,
-      std::max(minimum_duration, base::TimeDelta::FromMillisecondsD(
-                                     marking_time_to_catch_up_in_ms)));
+  return base::ClampToRange(marking_time_to_catch_up, minimum_duration,
+                            kMaximumIncrementalMarkingStepDuration);
 }
 
 }  // namespace blink

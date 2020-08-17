@@ -10,6 +10,7 @@
 #include "cc/paint/paint_flags.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/dark_mode_settings.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_types.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_image.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -40,28 +41,24 @@ class PLATFORM_EXPORT DarkModeFilter {
   // TODO(gilmanmh): Add a role for shadows. In general, we don't want to
   // invert shadows, but we may need to do some other kind of processing for
   // them.
-  enum class ElementRole {
-    kText,
-    kListSymbol,
-    kBackground,
-    kSVG,
-    kUnhandledImage,
-    kBitmapImage,
-    kSVGImage,
-    kGradientGeneratedImage
-  };
+  enum class ElementRole { kText, kListSymbol, kBackground, kSVG };
 
   SkColor InvertColorIfNeeded(SkColor color, ElementRole element_role);
   base::Optional<cc::PaintFlags> ApplyToFlagsIfNeeded(
       const cc::PaintFlags& flags,
       ElementRole element_role);
 
-  // |image| and |flags| must not be null.
+  // Decides whether to apply dark mode or not based on |src| and |dst|. True
+  // means dark mode should be applied. For applying the dark mode color filter
+  // to the image call ApplyToImageFlagsIfNeeded().
+  bool AnalyzeShouldApplyToImage(const SkRect& src, const SkRect& dst);
+
+  // Sets dark mode color filter on the flags based on the classification done
+  // on |paint_image|. |flags| must not be null.
   void ApplyToImageFlagsIfNeeded(const SkRect& src,
                                  const SkRect& dst,
                                  const PaintImage& paint_image,
-                                 cc::PaintFlags* flags,
-                                 ElementRole element_role);
+                                 cc::PaintFlags* flags);
 
   SkColorFilter* GetImageFilterForTesting() { return image_filter_.get(); }
   size_t GetInvertedColorCacheSizeForTesting();
@@ -72,17 +69,14 @@ class PLATFORM_EXPORT DarkModeFilter {
   DarkModeSettings settings_;
 
   bool ShouldApplyToColor(SkColor color, ElementRole role);
-  bool ShouldApplyToImage(const DarkModeSettings& settings,
-                          const SkRect& src,
-                          const SkRect& dst,
-                          const PaintImage& paint_image,
-                          ElementRole role);
+  DarkModeClassification ClassifyImage(const DarkModeSettings& settings,
+                                       const SkRect& src,
+                                       const SkRect& dst,
+                                       const PaintImage& paint_image);
 
   std::unique_ptr<DarkModeColorClassifier> text_classifier_;
   std::unique_ptr<DarkModeColorClassifier> background_classifier_;
-  std::unique_ptr<DarkModeImageClassifier> bitmap_image_classifier_;
-  std::unique_ptr<DarkModeImageClassifier> svg_image_classifier_;
-  std::unique_ptr<DarkModeImageClassifier> gradient_generated_image_classifier_;
+  std::unique_ptr<DarkModeImageClassifier> image_classifier_;
 
   std::unique_ptr<DarkModeColorFilter> color_filter_;
   sk_sp<SkColorFilter> image_filter_;

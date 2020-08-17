@@ -183,16 +183,15 @@ static LocaleMap CreateLocaleFallbackMap() {
 
 scoped_refptr<Hyphenation> Hyphenation::PlatformGetHyphenation(
     const AtomicString& locale) {
-  scoped_refptr<HyphenationMinikin> hyphenation(
-      base::AdoptRef(new HyphenationMinikin));
-  if (hyphenation->OpenDictionary(locale.LowerASCII()))
-    return hyphenation;
-  hyphenation = nullptr;
-
   DEFINE_STATIC_LOCAL(LocaleMap, locale_fallback, (CreateLocaleFallbackMap()));
   const auto& it = locale_fallback.find(locale);
   if (it != locale_fallback.end())
     return LayoutLocale::Get(it->value)->GetHyphenation();
+
+  scoped_refptr<HyphenationMinikin> hyphenation(
+      base::AdoptRef(new HyphenationMinikin));
+  if (hyphenation->OpenDictionary(locale.LowerASCII()))
+    return hyphenation;
 
   return nullptr;
 }

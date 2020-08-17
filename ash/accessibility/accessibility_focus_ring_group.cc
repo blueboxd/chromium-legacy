@@ -115,10 +115,8 @@ void AccessibilityFocusRingGroup::AnimateFocusRings(base::TimeTicks timestamp) {
       return;
     }
 
-    double fraction = delta / transition_time;
-
     // Ease-in effect.
-    fraction = pow(fraction, 0.3);
+    const double fraction = pow(delta / transition_time, 0.3);
 
     // Handle corner case where we're animating but we don't have previous
     // rings.
@@ -129,8 +127,8 @@ void AccessibilityFocusRingGroup::AnimateFocusRings(base::TimeTicks timestamp) {
         previous_focus_rings_[0], focus_rings_[0], fraction));
   } else {
     ash::ComputeOpacity(&(focus_animation_info_), timestamp);
-    for (size_t i = 0; i < focus_layers_.size(); ++i)
-      focus_layers_[i]->SetOpacity(focus_animation_info_.opacity);
+    for (auto& focus_layer : focus_layers_)
+      focus_layer->SetOpacity(focus_animation_info_.opacity);
   }
 }
 

@@ -327,7 +327,8 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
   }
   static mojo::PendingRemote<network::mojom::ChunkedDataPipeGetter>
   chunked_data_pipe_getter(const network::DataElement& element) {
-    if (element.type_ != network::mojom::DataElementType::kChunkedDataPipe)
+    if (element.type_ != network::mojom::DataElementType::kChunkedDataPipe &&
+        element.type_ != network::mojom::DataElementType::kReadOnceStream)
       return mojo::NullRemote();
     return const_cast<network::DataElement&>(element)
         .ReleaseChunkedDataPipeGetter();

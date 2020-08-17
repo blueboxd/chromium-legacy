@@ -77,6 +77,13 @@ void DataElement::SetToChunkedDataPipe(
   chunked_data_pipe_getter_ = std::move(chunked_data_pipe_getter);
 }
 
+void DataElement::SetToReadOnceStream(
+    mojo::PendingRemote<mojom::ChunkedDataPipeGetter>
+        chunked_data_pipe_getter) {
+  type_ = mojom::DataElementType::kReadOnceStream;
+  chunked_data_pipe_getter_ = std::move(chunked_data_pipe_getter);
+}
+
 base::File DataElement::ReleaseFile() {
   return std::move(file_);
 }
@@ -103,7 +110,9 @@ mojo::PendingRemote<mojom::DataPipeGetter> DataElement::CloneDataPipeGetter()
 
 mojo::PendingRemote<mojom::ChunkedDataPipeGetter>
 DataElement::ReleaseChunkedDataPipeGetter() {
-  DCHECK_EQ(mojom::DataElementType::kChunkedDataPipe, type_);
+  DCHECK(type_ == mojom::DataElementType::kChunkedDataPipe ||
+         type_ == mojom::DataElementType::kReadOnceStream)
+      << type_;
   return std::move(chunked_data_pipe_getter_);
 }
 
@@ -138,6 +147,9 @@ void PrintTo(const DataElement& x, std::ostream* os) {
     case mojom::DataElementType::kChunkedDataPipe:
       *os << "TYPE_CHUNKED_DATA_PIPE";
       break;
+    case mojom::DataElementType::kReadOnceStream:
+      *os << "TYPE_READ_ONCE_STREAM";
+      break;
     case mojom::DataElementType::kUnknown:
       *os << "TYPE_UNKNOWN";
       break;
@@ -163,6 +175,8 @@ bool operator==(const DataElement& a, const DataElement& b) {
     case mojom::DataElementType::kDataPipe:
       return false;
     case mojom::DataElementType::kChunkedDataPipe:
+      return false;
+    case mojom::DataElementType::kReadOnceStream:
       return false;
     case mojom::DataElementType::kUnknown:
       NOTREACHED();

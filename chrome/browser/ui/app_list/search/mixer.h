@@ -34,8 +34,7 @@ enum class RankingItemType;
 
 // Mixer collects results from providers, sorts them and publishes them to the
 // SearchResults UI model. The targeted results have 6 slots to hold the
-// result. The search controller can specify any number of groups, each with a
-// different number of results and priority boost.
+// result.
 class Mixer {
  public:
   explicit Mixer(AppListModelUpdater* model_updater);
@@ -45,9 +44,8 @@ class Mixer {
   // chosen from this group (if 0, will allow unlimited results from this
   // group). If there aren't enough results from all groups, more than
   // |max_results| may be chosen from this group. Each result in the group will
-  // have its score multiplied by |multiplier| and added by |boost|. Returns the
-  // group's group_id.
-  size_t AddGroup(size_t max_results, double multiplier, double boost);
+  // have its score increased by |boost|. Returns the group's group_id.
+  size_t AddGroup(size_t max_results, double boost);
 
   // Associates a provider with a mixer group.
   void AddProviderToGroup(size_t group_id, SearchProvider* provider);

@@ -28,7 +28,7 @@ StructTraits<blink::mojom::FetchAPIRequestBodyDataView,
 
   if (mutable_body.StreamBody()) {
     auto out = blink::mojom::blink::FetchAPIDataElement::New();
-    out->type = network::mojom::DataElementType::kChunkedDataPipe;
+    out->type = network::mojom::DataElementType::kReadOnceStream;
     out->chunked_data_pipe_getter = mutable_body.TakeStreamBody();
     out_elements.push_back(std::move(out));
     return out_elements;
@@ -105,7 +105,7 @@ bool StructTraits<blink::mojom::FetchAPIRequestBodyDataView,
     if (!view.ReadType(&type)) {
       return false;
     }
-    if (type == network::mojom::DataElementType::kChunkedDataPipe) {
+    if (type == network::mojom::DataElementType::kReadOnceStream) {
       auto chunked_data_pipe_getter = view.TakeChunkedDataPipeGetter<
           mojo::PendingRemote<network::mojom::blink::ChunkedDataPipeGetter>>();
       *out = blink::ResourceRequestBody(std::move(chunked_data_pipe_getter));
@@ -162,6 +162,7 @@ bool StructTraits<blink::mojom::FetchAPIRequestBodyDataView,
       case network::mojom::DataElementType::kBlob:
       case network::mojom::DataElementType::kUnknown:
       case network::mojom::DataElementType::kChunkedDataPipe:
+      case network::mojom::DataElementType::kReadOnceStream:
       case network::mojom::DataElementType::kRawFile:
         NOTREACHED();
         return false;

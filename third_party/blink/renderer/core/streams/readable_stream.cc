@@ -860,6 +860,12 @@ class ReadableStream::TeeEngine::PullAlgorithm final : public StreamAlgorithm {
                 script_state, engine_->controller_[branch]);
           }
         }
+
+        // TODO(ricea): Implement https://github.com/whatwg/streams/pull/1045 so
+        // this step can be numbered correctly.
+        // Resolve |cancelPromise| with undefined.
+        engine_->cancel_promise_->ResolveWithUndefined(script_state);
+
         //    3. Set closed to true.
         engine_->closed_ = true;
 
@@ -1068,6 +1074,11 @@ void ReadableStream::TeeEngine::Start(ScriptState* script_state,
       //      [[readableStreamController]], r).
       ReadableStreamDefaultController::Error(GetScriptState(),
                                              engine_->controller_[1], r);
+
+      // TODO(ricea): Implement https://github.com/whatwg/streams/pull/1045 so
+      // this step can be numbered correctly.
+      // Resolve |cancelPromise| with undefined.
+      engine_->cancel_promise_->ResolveWithUndefined(GetScriptState());
     }
 
     void Trace(Visitor* visitor) const override {

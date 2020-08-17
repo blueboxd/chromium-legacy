@@ -2984,10 +2984,9 @@ TEST_F(TextfieldTest, CommitComposingTextTest) {
   InitTextfield();
   ui::CompositionText composition;
   composition.text = UTF8ToUTF16("abc123");
-  ui::TextInputClient* client = textfield_;
-  client->SetCompositionText(composition);
+  textfield_->SetCompositionText(composition);
   uint32_t composed_text_length =
-      client->ConfirmCompositionText(/* keep_selection */ false);
+      textfield_->ConfirmCompositionText(/* keep_selection */ false);
 
   EXPECT_EQ(composed_text_length, static_cast<uint32_t>(6));
 }
@@ -2996,10 +2995,9 @@ TEST_F(TextfieldTest, CommitEmptyComposingTextTest) {
   InitTextfield();
   ui::CompositionText composition;
   composition.text = UTF8ToUTF16("");
-  ui::TextInputClient* client = textfield_;
-  client->SetCompositionText(composition);
+  textfield_->SetCompositionText(composition);
   uint32_t composed_text_length =
-      client->ConfirmCompositionText(/* keep_selection */ false);
+      textfield_->ConfirmCompositionText(/* keep_selection */ false);
 
   EXPECT_EQ(composed_text_length, static_cast<uint32_t>(0));
 }
@@ -3009,31 +3007,32 @@ TEST_F(TextfieldTest, GetCompositionCharacterBoundsTest) {
   ui::CompositionText composition;
   composition.text = UTF8ToUTF16("abc123");
   const uint32_t char_count = static_cast<uint32_t>(composition.text.length());
-  ui::TextInputClient* client = textfield_;
 
   // Compare the composition character bounds with surrounding cursor bounds.
   for (uint32_t i = 0; i < char_count; ++i) {
     composition.selection = gfx::Range(i);
-    client->SetCompositionText(composition);
+    textfield_->SetCompositionText(composition);
     gfx::Point cursor_origin = GetCursorBounds().origin();
     views::View::ConvertPointToScreen(textfield_, &cursor_origin);
 
     composition.selection = gfx::Range(i + 1);
-    client->SetCompositionText(composition);
+    textfield_->SetCompositionText(composition);
     gfx::Point next_cursor_bottom_left = GetCursorBounds().bottom_left();
     views::View::ConvertPointToScreen(textfield_, &next_cursor_bottom_left);
 
     gfx::Rect character;
-    EXPECT_TRUE(client->GetCompositionCharacterBounds(i, &character));
+    EXPECT_TRUE(textfield_->GetCompositionCharacterBounds(i, &character));
     EXPECT_EQ(character.origin(), cursor_origin) << " i=" << i;
     EXPECT_EQ(character.bottom_right(), next_cursor_bottom_left) << " i=" << i;
   }
 
   // Return false if the index is out of range.
   gfx::Rect rect;
-  EXPECT_FALSE(client->GetCompositionCharacterBounds(char_count, &rect));
-  EXPECT_FALSE(client->GetCompositionCharacterBounds(char_count + 1, &rect));
-  EXPECT_FALSE(client->GetCompositionCharacterBounds(char_count + 100, &rect));
+  EXPECT_FALSE(textfield_->GetCompositionCharacterBounds(char_count, &rect));
+  EXPECT_FALSE(
+      textfield_->GetCompositionCharacterBounds(char_count + 1, &rect));
+  EXPECT_FALSE(
+      textfield_->GetCompositionCharacterBounds(char_count + 100, &rect));
 }
 
 TEST_F(TextfieldTest, GetCompositionCharacterBounds_ComplexText) {
@@ -3059,13 +3058,12 @@ TEST_F(TextfieldTest, GetCompositionCharacterBounds_ComplexText) {
 
   ui::CompositionText composition;
   composition.text.assign(kUtf16Chars, kUtf16Chars + kUtf16CharsCount);
-  ui::TextInputClient* client = textfield_;
-  client->SetCompositionText(composition);
+  textfield_->SetCompositionText(composition);
 
   // Make sure GetCompositionCharacterBounds never fails for index.
   gfx::Rect rects[kUtf16CharsCount];
   for (uint32_t i = 0; i < kUtf16CharsCount; ++i)
-    EXPECT_TRUE(client->GetCompositionCharacterBounds(i, &rects[i]));
+    EXPECT_TRUE(textfield_->GetCompositionCharacterBounds(i, &rects[i]));
 
   // Here we might expect the following results but it actually depends on how
   // Uniscribe or HarfBuzz treats them with given font.
@@ -3077,90 +3075,85 @@ TEST_F(TextfieldTest, GetCompositionCharacterBounds_ComplexText) {
 #if defined(OS_CHROMEOS)
 TEST_F(TextfieldTest, SetAutocorrectRangeText) {
   InitTextfield();
-  ui::TextInputClient* client = textfield_;
 
   ui::CompositionText composition;
   composition.text = UTF8ToUTF16("Initial txt");
-  client->SetCompositionText(composition);
-  client->SetAutocorrectRange(ASCIIToUTF16("text replacement"),
-                              gfx::Range(8, 11));
+  textfield_->SetCompositionText(composition);
+  textfield_->SetAutocorrectRange(ASCIIToUTF16("text replacement"),
+                                  gfx::Range(8, 11));
 
-  gfx::Range autocorrect_range = client->GetAutocorrectRange();
+  gfx::Range autocorrect_range = textfield_->GetAutocorrectRange();
   EXPECT_EQ(autocorrect_range, gfx::Range(8, 24));
 
   base::string16 text;
-  client->GetTextFromRange(gfx::Range(0, 24), &text);
+  textfield_->GetTextFromRange(gfx::Range(0, 24), &text);
   EXPECT_EQ(text, UTF8ToUTF16("Initial text replacement"));
 }
 
 TEST_F(TextfieldTest, SetAutocorrectRangeExplicitlySet) {
   InitTextfield();
-  ui::TextInputClient* client = textfield_;
-  client->InsertText(UTF8ToUTF16("Initial txt"));
-  client->SetAutocorrectRange(ASCIIToUTF16("text replacement"),
-                              gfx::Range(8, 11));
+  textfield_->InsertText(UTF8ToUTF16("Initial txt"));
+  textfield_->SetAutocorrectRange(ASCIIToUTF16("text replacement"),
+                                  gfx::Range(8, 11));
 
-  gfx::Range autocorrectRange = client->GetAutocorrectRange();
+  gfx::Range autocorrectRange = textfield_->GetAutocorrectRange();
   EXPECT_EQ(autocorrectRange, gfx::Range(8, 24));
 
   base::string16 text;
-  client->GetTextFromRange(gfx::Range(0, 24), &text);
+  textfield_->GetTextFromRange(gfx::Range(0, 24), &text);
   EXPECT_EQ(text, UTF8ToUTF16("Initial text replacement"));
 }
 
 TEST_F(TextfieldTest, DoesNotSetAutocorrectRangeWhenRangeGivenIsInvalid) {
   InitTextfield();
-  ui::TextInputClient* client = textfield_;
 
   ui::CompositionText composition;
   composition.text = UTF8ToUTF16("Initial");
-  client->SetCompositionText(composition);
+  textfield_->SetCompositionText(composition);
 
-  EXPECT_FALSE(client->SetAutocorrectRange(ASCIIToUTF16("text replacement"),
-                                           gfx::Range(8, 11)));
-  EXPECT_EQ(gfx::Range(0, 0), client->GetAutocorrectRange());
+  EXPECT_FALSE(textfield_->SetAutocorrectRange(ASCIIToUTF16("text replacement"),
+                                               gfx::Range(8, 11)));
+  EXPECT_EQ(gfx::Range(0, 0), textfield_->GetAutocorrectRange());
   gfx::Range range;
-  client->GetTextRange(&range);
+  textfield_->GetTextRange(&range);
   base::string16 text;
-  client->GetTextFromRange(range, &text);
+  textfield_->GetTextFromRange(range, &text);
   EXPECT_EQ(composition.text, text);
 }
 
 TEST_F(TextfieldTest,
        ClearsAutocorrectRangeWhenSetAutocorrectRangeWithEmptyText) {
   InitTextfield();
-  ui::TextInputClient* client = textfield_;
 
   ui::CompositionText composition;
   composition.text = UTF8ToUTF16("Initial");
-  client->SetCompositionText(composition);
+  textfield_->SetCompositionText(composition);
 
   EXPECT_TRUE(
-      client->SetAutocorrectRange(base::EmptyString16(), gfx::Range(0, 2)));
-  EXPECT_EQ(gfx::Range(0, 0), client->GetAutocorrectRange());
+      textfield_->SetAutocorrectRange(base::EmptyString16(), gfx::Range(0, 2)));
+  EXPECT_EQ(gfx::Range(0, 0), textfield_->GetAutocorrectRange());
   gfx::Range range;
-  client->GetTextRange(&range);
+  textfield_->GetTextRange(&range);
   base::string16 text;
-  client->GetTextFromRange(range, &text);
+  textfield_->GetTextFromRange(range, &text);
   EXPECT_EQ(composition.text, text);
 }
 
 TEST_F(TextfieldTest,
        ClearsAutocorrectRangeWhenSetAutocorrectRangeWithEmptyRange) {
   InitTextfield();
-  ui::TextInputClient* client = textfield_;
 
   ui::CompositionText composition;
   composition.text = UTF8ToUTF16("Initial");
-  client->SetCompositionText(composition);
+  textfield_->SetCompositionText(composition);
 
   EXPECT_TRUE(
-      client->SetAutocorrectRange(UTF8ToUTF16("Test"), gfx::Range(0, 0)));
-  EXPECT_EQ(gfx::Range(0, 0), client->GetAutocorrectRange());
+      textfield_->SetAutocorrectRange(UTF8ToUTF16("Test"), gfx::Range(0, 0)));
+  EXPECT_EQ(gfx::Range(0, 0), textfield_->GetAutocorrectRange());
   gfx::Range range;
-  client->GetTextRange(&range);
+  textfield_->GetTextRange(&range);
   base::string16 text;
-  client->GetTextFromRange(range, &text);
+  textfield_->GetTextFromRange(range, &text);
   EXPECT_EQ(composition.text, text);
 }
 

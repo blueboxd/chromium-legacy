@@ -565,7 +565,7 @@ class NavigationListModel extends cr.EventTarget {
 
     if (this.recentModelItem_) {
       this.navigationItems_.push(this.recentModelItem_);
-      if (util.isUnifiedMediaViewEnabled()) {
+      if (util.isUnifiedMediaViewEnabled() && !util.isRecentsFilterEnabled()) {
         // Unified Media View (Images, Videos and Audio).
         this.navigationItems_.push(createFilteredRecentModelItem(
             str('MEDIA_VIEW_AUDIO_ROOT_LABEL'),

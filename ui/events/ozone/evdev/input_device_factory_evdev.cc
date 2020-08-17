@@ -107,12 +107,9 @@ std::unique_ptr<EventConverterEvdev> CreateConverter(
 
   // Touchscreen: use TouchEventConverterEvdev.
   if (devinfo.HasTouchscreen()) {
-    std::unique_ptr<TouchEventConverterEvdev> converter(
-        new TouchEventConverterEvdev(std::move(fd), params.path, params.id,
-                                     devinfo, params.shared_palm_state,
-                                     params.dispatcher));
-    converter->Initialize(devinfo);
-    return std::move(converter);
+    return TouchEventConverterEvdev::Create(
+        std::move(fd), params.path, params.id, devinfo,
+        params.shared_palm_state, params.dispatcher);
   }
 
   // Graphics tablet

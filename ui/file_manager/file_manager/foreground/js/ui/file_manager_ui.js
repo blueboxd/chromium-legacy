@@ -374,6 +374,13 @@ class FileManagerUI {
         /** @type {!FilesToast} */ (document.querySelector('files-toast'));
 
     /**
+     * Container of file-type filter buttons.
+     * @const {!HTMLElement}
+     */
+    this.fileTypeFilterContainer =
+        queryRequiredElement('#file-type-filter-container', this.element);
+
+    /**
      * A hidden div that can be used to announce text to screen
      * reader/ChromeVox.
      * @private {!HTMLElement}

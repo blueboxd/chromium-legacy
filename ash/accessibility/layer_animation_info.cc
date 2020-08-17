@@ -33,9 +33,7 @@ void ComputeOpacity(LayerAnimationInfo* animation_info,
     opacity = 1.0 - (change_delta / (fade_in_time + fade_out_time));
 
   // Layer::SetOpacity will throw an error if we're not within 0...1.
-  opacity = base::ClampToRange(opacity, 0.0f, 1.0f);
-
-  animation_info->opacity = opacity;
+  animation_info->opacity = base::ClampToRange(opacity, 0.0f, 1.0f);
 }
 
 }  // namespace ash

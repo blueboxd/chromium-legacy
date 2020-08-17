@@ -464,15 +464,21 @@ TEST_F(PersonalInfoSuggesterTest, AnnounceSpokenFeedbackWhenChromeVoxIsOn) {
   tts_handler_->VerifyAnnouncement("");
 
   task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(1000));
-  tts_handler_->VerifyAnnouncement(base::StringPrintf(
-      "Suggestion %s. Press down to navigate and enter to insert.",
-      base::UTF16ToUTF8(email_).c_str()));
+  tts_handler_->VerifyAnnouncement(
+      "Personal info suggested. Press down arrow to access; escape to ignore.");
 
   SendKeyboardEvent("Down");
   SendKeyboardEvent("Enter");
   task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(200));
-  tts_handler_->VerifyAnnouncement(base::StringPrintf(
-      "Inserted suggestion %s.", base::UTF16ToUTF8(email_).c_str()));
+  tts_handler_->VerifyAnnouncement("Suggestion inserted.");
+
+  suggester_->Suggest(base::UTF8ToUTF16("my email is "));
+  task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(1500));
+  tts_handler_->VerifyAnnouncement(
+      "Personal info suggested. Press down arrow to access; escape to ignore.");
+  SendKeyboardEvent("Esc");
+  task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(200));
+  tts_handler_->VerifyAnnouncement("Suggestion dismissed.");
 }
 
 TEST_F(PersonalInfoSuggesterTest, DoNotShowAnnotationAfterMaxAcceptanceCount) {
@@ -484,24 +490,6 @@ TEST_F(PersonalInfoSuggesterTest, DoNotShowAnnotationAfterMaxAcceptanceCount) {
   }
   suggester_->Suggest(base::UTF8ToUTF16("my email is "));
   suggestion_handler_->VerifyShowAnnotation(false);
-}
-
-TEST_F(PersonalInfoSuggesterTest, DoNotAnnounceAnnotationWhenTabNotShown) {
-  profile_->set_profile_name(base::UTF16ToUTF8(email_));
-  profile_->GetPrefs()->SetBoolean(
-      ash::prefs::kAccessibilitySpokenFeedbackEnabled, true);
-  DictionaryPrefUpdate update(profile_->GetPrefs(),
-                              prefs::kAssistiveInputFeatureSettings);
-  update->SetIntKey(kPersonalInfoSuggesterAcceptanceCount, kMaxAcceptanceCount);
-
-  suggester_->Suggest(base::UTF8ToUTF16("my email is "));
-  suggestion_handler_->VerifyShowAnnotation(false);
-  task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(500));
-  tts_handler_->VerifyAnnouncement("");
-
-  task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(1000));
-  tts_handler_->VerifyAnnouncement(
-      base::StringPrintf("Suggestion %s. ", base::UTF16ToUTF8(email_).c_str()));
 }
 
 TEST_F(PersonalInfoSuggesterTest, ShowSettingLink) {

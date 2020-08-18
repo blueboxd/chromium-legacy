@@ -36,6 +36,7 @@ class GPU_IPC_SERVICE_EXPORT GpuMemoryBufferFactoryDXGI
   gfx::GpuMemoryBufferHandle CreateGpuMemoryBuffer(
       gfx::GpuMemoryBufferId id,
       const gfx::Size& size,
+      const gfx::Size& framebuffer_size,
       gfx::BufferFormat format,
       gfx::BufferUsage usage,
       int client_id,

@@ -14,6 +14,7 @@ import org.chromium.base.Callback;
 import org.chromium.chrome.browser.password_check.internal.R;
 import org.chromium.chrome.browser.password_manager.settings.ReauthenticationManager;
 import org.chromium.chrome.browser.password_manager.settings.ReauthenticationManager.ReauthScope;
+import org.chromium.ui.widget.Toast;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -75,6 +76,15 @@ public class PasswordCheckReauthenticationHelper {
                 : R.string.password_check_lockscreen_description_edit;
         ReauthenticationManager.displayReauthenticationFragment(
                 descriptionId, View.NO_ID, mFragmentManager, ReauthScope.ONE_AT_A_TIME);
+    }
+
+    /**
+     * Shows a toast to the user nudging them to set up a screen lock. Intended to be called in case
+     * {@link #canReauthenticate()} returns false.
+     */
+    public void showScreenLockToast() {
+        Toast.makeText(mContext, R.string.password_check_set_screen_lock_text, Toast.LENGTH_LONG)
+                .show();
     }
 
     /**

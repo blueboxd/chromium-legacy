@@ -4,8 +4,12 @@
 
 #include "third_party/blink/renderer/core/content_capture/content_capture_task.h"
 
+#include <cmath>
+
 #include "base/auto_reset.h"
+#include "base/feature_list.h"
 #include "cc/trees/layer_tree_host.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/web/web_content_capture_client.h"
 #include "third_party/blink/public/web/web_content_holder.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
@@ -19,12 +23,38 @@
 
 namespace blink {
 
+ContentCaptureTask::TaskDelay::TaskDelay(
+    const base::TimeDelta& task_short_delay,
+    const base::TimeDelta& task_long_delay)
+    : task_short_delay_(task_short_delay), task_long_delay_(task_long_delay) {}
+
+base::TimeDelta ContentCaptureTask::TaskDelay::ResetAndGetInitialDelay() {
+  delay_exponent_ = 0;
+  return task_short_delay_;
+}
+
+base::TimeDelta ContentCaptureTask::TaskDelay::GetNextTaskDelay() const {
+  return base::TimeDelta::FromMilliseconds(task_short_delay_.InMilliseconds() *
+                                           (1 << delay_exponent_));
+}
+
+void ContentCaptureTask::TaskDelay::IncreaseDelayExponent() {
+  // Increases the delay up to 128s.
+  if (delay_exponent_ < 8)
+    ++delay_exponent_;
+}
+
 ContentCaptureTask::ContentCaptureTask(LocalFrame& local_frame_root,
                                        TaskSession& task_session)
     : local_frame_root_(&local_frame_root), task_session_(&task_session) {
+  base::TimeDelta task_short_delay;
+  base::TimeDelta task_long_delay;
+
   local_frame_root.Client()
       ->GetWebContentCaptureClient()
-      ->GetTaskTimingParameters(task_short_delay_, task_long_delay_);
+      ->GetTaskTimingParameters(task_short_delay, task_long_delay);
+  task_delay_ = std::make_unique<TaskDelay>(task_short_delay, task_long_delay);
+
   // The histogram is all about time, just disable it if high resolution isn't
   // supported.
   if (base::TimeTicks::IsHighResolution()) {
@@ -37,7 +67,7 @@ ContentCaptureTask::ContentCaptureTask(LocalFrame& local_frame_root,
   }
 }
 
-ContentCaptureTask::~ContentCaptureTask() {}
+ContentCaptureTask::~ContentCaptureTask() = default;
 
 void ContentCaptureTask::Shutdown() {
   DCHECK(local_frame_root_);
@@ -197,25 +227,35 @@ bool ContentCaptureTask::RunInternal() {
 
 void ContentCaptureTask::Run(TimerBase*) {
   TRACE_EVENT0("content_capture", "RunTask");
+  task_delay_->IncreaseDelayExponent();
   if (!RunInternal()) {
     ScheduleInternal(ScheduleReason::kRetryTask);
   }
 }
 
-void ContentCaptureTask::ScheduleInternal(ScheduleReason reason) {
-  DCHECK(local_frame_root_);
-
-  base::TimeDelta delay;
+base::TimeDelta ContentCaptureTask::GetAndAdjustDelay(ScheduleReason reason) {
+  bool user_activated_delay_enabled =
+      base::FeatureList::IsEnabled(features::kContentCaptureUserActivatedDelay);
   switch (reason) {
     case ScheduleReason::kFirstContentChange:
     case ScheduleReason::kScrolling:
     case ScheduleReason::kRetryTask:
-      delay = task_short_delay_;
-      break;
-    case ScheduleReason::kContentChange:
-      delay = task_long_delay_;
-      break;
+      return user_activated_delay_enabled
+                 ? task_delay_->ResetAndGetInitialDelay()
+                 : task_delay_->task_short_delay();
+    case ScheduleReason::kUserActivatedContentChange:
+      return user_activated_delay_enabled
+                 ? task_delay_->ResetAndGetInitialDelay()
+                 : task_delay_->task_long_delay();
+    case ScheduleReason::kNonUserActivatedContentChange:
+      return user_activated_delay_enabled ? task_delay_->GetNextTaskDelay()
+                                          : task_delay_->task_long_delay();
   }
+}
+
+void ContentCaptureTask::ScheduleInternal(ScheduleReason reason) {
+  DCHECK(local_frame_root_);
+  base::TimeDelta delay = GetAndAdjustDelay(reason);
 
   // Return if the current task is about to run soon.
   if (delay_task_ && delay_task_->IsActive() &&

@@ -2599,10 +2599,11 @@ PhysicalRect LayoutText::DebugRect() const {
 
 DOMNodeId LayoutText::EnsureNodeId() {
   if (node_id_ == kInvalidDOMNodeId) {
-    auto* content_capture_manager = GetContentCaptureManager();
-    if (content_capture_manager) {
-      content_capture_manager->ScheduleTaskIfNeeded();
-      node_id_ = DOMNodeIds::IdForNode(GetNode());
+    if (auto* content_capture_manager = GetContentCaptureManager()) {
+      if (auto* node = GetNode()) {
+        content_capture_manager->ScheduleTaskIfNeeded(*node);
+        node_id_ = DOMNodeIds::IdForNode(node);
+      }
     }
   }
   return node_id_;

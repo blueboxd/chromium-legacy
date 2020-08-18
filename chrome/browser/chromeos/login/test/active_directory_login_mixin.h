@@ -34,6 +34,8 @@ class ActiveDirectoryLoginMixin : public InProcessBrowserTestMixin {
     autocomplete_realm_ = autocomplete_realm;
   }
 
+  // Navigates to gaia screen from user creation screen.
+  void NavigateToGaiaScreen();
   // Checks if Active Directory login is visible.
   void TestLoginVisible();
   // Checks if Active Directory password change screen is shown.

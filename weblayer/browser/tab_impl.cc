@@ -952,6 +952,17 @@ bool TabImpl::DoBrowserControlsShrinkRendererSize(
 #endif
 }
 
+bool TabImpl::ShouldAnimateBrowserControlsHeightChanges() {
+#if defined(OS_ANDROID)
+  return top_controls_container_view_
+             ? top_controls_container_view_
+                   ->ShouldAnimateBrowserControlsHeightChanges()
+             : false;
+#else
+  return false;
+#endif
+}
+
 bool TabImpl::OnlyExpandTopControlsAtPageTop() {
 #if defined(OS_ANDROID)
   return top_controls_container_view_

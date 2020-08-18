@@ -42,6 +42,7 @@ class AppsContainerView;
 class AppsGridView;
 class AssistantPageView;
 class ExpandArrowView;
+class PrivacyContainerView;
 class SearchBoxView;
 class SearchResultAnswerCardView;
 class SearchResultListView;
@@ -143,6 +144,9 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   }
   SearchResultListView* search_result_list_view_for_test() const {
     return search_result_list_view_;
+  }
+  PrivacyContainerView* privacy_container_view() const {
+    return privacy_container_view_;
   }
   AppsContainerView* apps_container_view() const {
     return apps_container_view_;
@@ -282,6 +286,7 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   SearchResultAnswerCardView* search_result_answer_card_view_ = nullptr;
   SearchResultTileItemListView* search_result_tile_item_list_view_ = nullptr;
   SearchResultListView* search_result_list_view_ = nullptr;
+  PrivacyContainerView* privacy_container_view_ = nullptr;
 
   // The child page views. Owned by the views hierarchy.
   std::vector<AppListPage*> app_list_pages_;

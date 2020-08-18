@@ -726,7 +726,7 @@ void PDFiumEngine::OnPendingRequestComplete() {
   }
   pending_pages_.swap(still_pending);
   if (update_pages) {
-    DCHECK(document_loaded_);
+    DCHECK(!document_loaded_);
     LoadPageInfo();
   }
 }

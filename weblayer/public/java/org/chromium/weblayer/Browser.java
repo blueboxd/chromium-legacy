@@ -227,17 +227,20 @@ public class Browser {
      * @param pinToContentTop Whether the top-view should only be expanded when the web
      *        content is scrolled to the top. A true value makes the top-view behave as though it
      *        were inserted into the top of the page content.
+     * @param animate Whether or not any height/visibility changes that result from this call
+     *        should be animated.
      *
      * @since 86
      */
-    public void setTopView(@Nullable View view, int minHeight, boolean pinToContentTop) {
+    public void setTopView(
+            @Nullable View view, int minHeight, boolean pinToContentTop, boolean animate) {
         ThreadCheck.ensureOnUiThread();
         if (WebLayer.getSupportedMajorVersionInternal() < 86) {
             throw new UnsupportedOperationException();
         }
         try {
             mImpl.setTopViewAndScrollingBehavior(
-                    ObjectWrapper.wrap(view), minHeight, pinToContentTop);
+                    ObjectWrapper.wrap(view), minHeight, pinToContentTop, animate);
         } catch (RemoteException e) {
             throw new APICallException(e);
         }

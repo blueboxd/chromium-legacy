@@ -68,6 +68,7 @@ gfx::GpuMemoryBufferHandle
 GpuMemoryBufferFactoryNativePixmap::CreateGpuMemoryBuffer(
     gfx::GpuMemoryBufferId id,
     const gfx::Size& size,
+    const gfx::Size& framebuffer_size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
     int client_id,
@@ -78,11 +79,12 @@ GpuMemoryBufferFactoryNativePixmap::CreateGpuMemoryBuffer(
         ui::OzonePlatform::GetInstance()
             ->GetSurfaceFactoryOzone()
             ->CreateNativePixmap(surface_handle, GetVulkanDevice(), size,
-                                 format, usage);
+                                 format, usage, framebuffer_size);
     return CreateGpuMemoryBufferFromNativePixmap(id, size, format, usage,
                                                  client_id, std::move(pixmap));
   }
 #endif
+  DCHECK_EQ(framebuffer_size, size);
 
 #if defined(USE_X11)
   DCHECK(!features::IsUsingOzonePlatform());
@@ -126,8 +128,9 @@ void GpuMemoryBufferFactoryNativePixmap::CreateGpuMemoryBufferAsync(
 #endif
 
 #if defined(USE_X11)
-  std::move(callback).Run(CreateGpuMemoryBuffer(id, size, format, usage,
-                                                client_id, surface_handle));
+  std::move(callback).Run(
+      CreateGpuMemoryBuffer(id, size, /*framebuffer_size=*/size, format, usage,
+                            client_id, surface_handle));
 #else
   NOTIMPLEMENTED();
   std::move(callback).Run(gfx::GpuMemoryBufferHandle());

@@ -38,6 +38,11 @@ class NativeIOFileHost : public blink::mojom::NativeIOFileHost {
   // blink::mojom::NativeIOFileHost:
   void Close(CloseCallback callback) override;
 
+  // blink::mojom::NativeIOFileHost:
+  void SetLength(const int64_t length,
+                 base::File file,
+                 SetLengthCallback callback) override;
+
  private:
   // Called when the receiver is disconnected.
   void OnReceiverDisconnect();

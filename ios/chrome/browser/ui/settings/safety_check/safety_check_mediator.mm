@@ -27,6 +27,7 @@
 #import "ios/chrome/browser/ui/settings/utils/observable_boolean.h"
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_link_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
@@ -46,20 +47,18 @@
 using l10n_util::GetNSString;
 using safe_browsing::kSafeBrowsingAvailableOnIOS;
 
+constexpr char kSafeBrowsingStringURL[] = "chrome://settings/syncSetup";
+
 namespace {
 
 typedef NSArray<TableViewItem*>* ItemArray;
-
-typedef NS_ENUM(NSInteger, SectionIdentifier) {
-  SectionIdentifierCheckTypes = kSectionIdentifierEnumZero,
-  SectionIdentifierCheckStart,
-};
 
 typedef NS_ENUM(NSInteger, ItemType) {
   // CheckTypes section.
   UpdateItemType = kItemTypeEnumZero,
   PasswordItemType,
   SafeBrowsingItemType,
+  HeaderItem,
   // CheckStart section.
   CheckStartItemType,
 };
@@ -99,7 +98,7 @@ typedef NS_ENUM(NSInteger, SafeBrowsingCheckRowStates) {
   // When check was not run yet.
   SafeBrowsingCheckRowStateDefault,
   // When Safe Browsing is managed by admin.
-  SafeBrowsingCheckRowStateManged,
+  SafeBrowsingCheckRowStateManaged,
   // When the Safe Browsing check is running.
   SafeBrowsingCheckRowStateRunning,
   // When Safe Browsing is enabled.
@@ -123,6 +122,9 @@ typedef NS_ENUM(NSInteger, CheckStartStates) {
   // and changes to the compromised credentials list.
   std::unique_ptr<PasswordCheckObserverBridge> _passwordCheckObserver;
 }
+
+// Header for the Safety Check page.
+@property(nonatomic, strong) TableViewLinkHeaderFooterItem* headerItem;
 
 // SettingsCheckItem used to display the state of the Safe Browsing check.
 @property(nonatomic, strong) SettingsCheckItem* safeBrowsingCheckItem;
@@ -149,9 +151,12 @@ typedef NS_ENUM(NSInteger, CheckStartStates) {
 // Current state of the start safety check row button.
 @property(nonatomic, assign) CheckStartStates checkStartState;
 
-// Preference value for the "Safe Browsing" feature.
+// Preference value for Safe Browsing.
 @property(nonatomic, strong, readonly)
     PrefBackedBoolean* safeBrowsingPreference;
+
+// If the Safe Browsing preference is managed.
+@property(nonatomic, assign) BOOL safeBrowsingPreferenceManaged;
 
 // The service responsible for password check feature.
 @property(nonatomic, assign) scoped_refptr<IOSChromePasswordCheckManager>
@@ -160,8 +165,8 @@ typedef NS_ENUM(NSInteger, CheckStartStates) {
 // Current state of password check.
 @property(nonatomic, assign) PasswordCheckState currentPasswordCheckState;
 
-// How many safety check items are still running (max 3).
-@property(nonatomic, assign) int checkRunningRemaining;
+// If any checks in safety check are still running.
+@property(nonatomic, assign, readonly) BOOL checksRemaining;
 
 // Service used to check if user is signed in.
 @property(nonatomic, assign) AuthenticationService* authService;
@@ -199,8 +204,13 @@ typedef NS_ENUM(NSInteger, CheckStartStates) {
         initWithPrefService:userPrefService
                    prefName:prefs::kSafeBrowsingEnabled];
     _safeBrowsingPreference.observer = self;
+    _safeBrowsingPreferenceManaged =
+        userPrefService->IsManagedPreference(prefs::kSafeBrowsingEnabled);
 
-    _checkRunningRemaining = 0;
+    _headerItem =
+        [[TableViewLinkHeaderFooterItem alloc] initWithType:HeaderItem];
+    _headerItem.text =
+        l10n_util::GetNSString(IDS_IOS_SETTINGS_SAFETY_CHECK_PAGE_HEADER);
 
     _updateCheckRowState = UpdateCheckRowStateDefault;
     _updateCheckItem = [[SettingsCheckItem alloc] initWithType:UpdateItemType];
@@ -210,6 +220,10 @@ typedef NS_ENUM(NSInteger, CheckStartStates) {
         imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
     _updateCheckItem.leadingImage = updateCheckIcon;
     _updateCheckItem.leadingImageTintColor = [UIColor colorNamed:kGrey400Color];
+    _updateCheckItem.enabled = YES;
+    _updateCheckItem.indicatorHidden = YES;
+    _updateCheckItem.infoButtonHidden = YES;
+    _updateCheckItem.trailingImage = nil;
 
     _passwordCheckRowState = PasswordCheckRowStateDefault;
     _passwordCheckItem =
@@ -221,6 +235,10 @@ typedef NS_ENUM(NSInteger, CheckStartStates) {
     _passwordCheckItem.leadingImage = passwordCheckIcon;
     _passwordCheckItem.leadingImageTintColor =
         [UIColor colorNamed:kGrey400Color];
+    _passwordCheckItem.enabled = YES;
+    _passwordCheckItem.indicatorHidden = YES;
+    _passwordCheckItem.infoButtonHidden = YES;
+    _passwordCheckItem.trailingImage = nil;
 
     _safeBrowsingCheckRowState = SafeBrowsingCheckRowStateDefault;
     _safeBrowsingCheckItem =
@@ -233,6 +251,10 @@ typedef NS_ENUM(NSInteger, CheckStartStates) {
     _safeBrowsingCheckItem.leadingImage = safeBrowsingCheckIcon;
     _safeBrowsingCheckItem.leadingImageTintColor =
         [UIColor colorNamed:kGrey400Color];
+    _safeBrowsingCheckItem.enabled = YES;
+    _safeBrowsingCheckItem.indicatorHidden = YES;
+    _safeBrowsingCheckItem.infoButtonHidden = YES;
+    _safeBrowsingCheckItem.trailingImage = nil;
 
     _checkStartState = CheckStartStateDefault;
     _checkStartItem =
@@ -251,6 +273,7 @@ typedef NS_ENUM(NSInteger, CheckStartStates) {
     self.updateCheckItem, self.passwordCheckItem, self.safeBrowsingCheckItem
   ];
   [_consumer setCheckItems:checkItems];
+  [_consumer setSafetyCheckHeaderItem:self.headerItem];
   [_consumer setCheckStartItem:self.checkStartItem];
 }
 
@@ -279,18 +302,16 @@ typedef NS_ENUM(NSInteger, CheckStartStates) {
 - (void)didSelectItem:(TableViewItem*)item {
   ItemType type = static_cast<ItemType>(item.type);
   switch (type) {
-    // TODO(crbug.com/1078782): Handle row taps.
     case UpdateItemType: {
       switch (self.updateCheckRowState) {
         case UpdateCheckRowStateDefault:   // No tap action.
         case UpdateCheckRowStateRunning:   // No tap action.
         case UpdateCheckRowStateUpToDate:  // No tap action.
           break;
-        case UpdateCheckRowStateManaged:
-          // Show popover.
+        case UpdateCheckRowStateManaged:  // Managed state popover handled by
+                                          // coordinator.
           break;
-        case UpdateCheckRowStateOutOfDate:
-          // Show popover and link to update page.
+        case UpdateCheckRowStateOutOfDate:  // Link to app store.
           break;
       }
       break;
@@ -304,8 +325,8 @@ typedef NS_ENUM(NSInteger, CheckStartStates) {
         case PasswordCheckRowStateUnSafe:
           [self.handler showPasswordIssuesPage];
           break;
-        case PasswordCheckRowStateDisabled:  // Popover handled by cellitem.
-        case PasswordCheckRowStateError:     // Popover handled by cellitem.
+        case PasswordCheckRowStateDisabled:  // Popover handled by coordinator.
+        case PasswordCheckRowStateError:     // Popover handled by coordinator.
           break;
       }
       break;
@@ -316,12 +337,11 @@ typedef NS_ENUM(NSInteger, CheckStartStates) {
         case SafeBrowsingCheckRowStateRunning:  // No tap action.
         case SafeBrowsingCheckRowStateSafe:     // No tap action.
           break;
-        case SafeBrowsingCheckRowStateManged:
-          // Managed state popover.
+        case SafeBrowsingCheckRowStateManaged:  // Managed state popover handled
+                                                // by coordinator.
           break;
         case SafeBrowsingCheckRowStateUnsafe:
-          // Subtext about non advised, i state (sans popover) links to
-          // safebrowsing page.
+          [self.handler showSafeBrowsingPreferencePage];
           break;
       }
       break;
@@ -330,6 +350,8 @@ typedef NS_ENUM(NSInteger, CheckStartStates) {
       [self checkStartOrCancel];
       break;
     }
+    case HeaderItem:
+      break;
   }
 }
 
@@ -340,6 +362,11 @@ typedef NS_ENUM(NSInteger, CheckStartStates) {
 
 - (void)infoButtonWasTapped:(UIButton*)buttonView
               usingItemType:(NSInteger)itemType {
+  // Show the managed popover if needed.
+  if (self.safeBrowsingCheckRowState == SafeBrowsingCheckRowStateManaged) {
+    [self.handler showManagedInfoFrom:buttonView];
+    return;
+  }
   NSAttributedString* info = [self getPopoverInfoForType:itemType];
 
   // If |info| is empty there is no popover to display.
@@ -366,9 +393,15 @@ typedef NS_ENUM(NSInteger, CheckStartStates) {
   switch (type) {
     case PasswordItemType:
       return [self passwordCheckErrorInfo];
-    case SafeBrowsingItemType:
+    case SafeBrowsingItemType: {
+      NSString* message = l10n_util::GetNSString(
+          IDS_IOS_SETTINGS_SAFETY_CHECK_SAFE_BROWSING_DISABLED_INFO);
+      GURL safeBrowsingURL(kSafeBrowsingStringURL);
+      return [self attributedStringWithText:message link:safeBrowsingURL];
+    }
     case UpdateItemType:
     case CheckStartItemType:
+    case HeaderItem:
       return nil;
   }
 }
@@ -457,7 +490,7 @@ typedef NS_ENUM(NSInteger, CheckStartStates) {
           !self.syncService->IsEncryptEverythingEnabled());
 }
 
-// Configures check passwords error info with a link.
+// Configures check error info with a link for popovers.
 - (NSAttributedString*)attributedStringWithText:(NSString*)text
                                            link:(GURL)link {
   NSRange range;
@@ -489,7 +522,7 @@ typedef NS_ENUM(NSInteger, CheckStartStates) {
 // Upon a tap of checkStartItem either starts or cancels a safety check.
 - (void)checkStartOrCancel {
   // If a check is already running cancel it.
-  if (self.checkRunningRemaining > 0) {
+  if (self.checksRemaining) {
     // Reset check items to default.
     self.updateCheckRowState = UpdateCheckRowStateDefault;
     self.passwordCheckRowState = PasswordCheckRowStateDefault;
@@ -497,9 +530,6 @@ typedef NS_ENUM(NSInteger, CheckStartStates) {
 
     // Change checkStartItem to default state.
     self.checkStartState = CheckStartStateDefault;
-
-    // Set remaining check running counter to 0.
-    self.checkRunningRemaining = 0;
 
     // Stop any running checks.
     self.passwordCheckManager->StopPasswordCheck();
@@ -514,9 +544,6 @@ typedef NS_ENUM(NSInteger, CheckStartStates) {
 
     // Change checkStartItem to cancel state.
     self.checkStartState = CheckStartStateCancel;
-
-    // Set remaining check running counter to 3.
-    self.checkRunningRemaining = 3;
   }
 
   // Update the display.
@@ -527,7 +554,7 @@ typedef NS_ENUM(NSInteger, CheckStartStates) {
 
   // The display should be changed to loading icons before any checks are
   // started.
-  if (self.checkRunningRemaining > 0) {
+  if (self.checksRemaining) {
     // This handles a discrepancy between password check and safety check.  In
     // password check a user cannot start a check if they have no passwords, but
     // in safety check they can, but the |passwordCheckManager| won't even start
@@ -539,12 +566,63 @@ typedef NS_ENUM(NSInteger, CheckStartStates) {
       dispatch_after(
           dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.5 * NSEC_PER_SEC)),
           dispatch_get_main_queue(), ^{
-            [self reconfigurePasswordCheckItem];
+            // Check if the check was cancelled while waiting.
+            if (self.checksRemaining)
+              [self reconfigurePasswordCheckItem];
           });
     } else {
       self.passwordCheckManager->StartPasswordCheck();
     }
+    // Want to show the loading wheel momentarily.
+    dispatch_after(
+        dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.75 * NSEC_PER_SEC)),
+        dispatch_get_main_queue(), ^{
+          // Check if the check was cancelled while waiting.
+          if (self.checksRemaining)
+            [self checkAndReconfigureSafeBrowsingState];
+        });
   }
+}
+
+// Checks if any of the safety checks are still running, resets |checkStartItem|
+// if all checks have finished..
+- (void)resetsCheckStartItemIfNeeded {
+  if (self.checksRemaining) {
+    return;
+  }
+  // If no checks are still running, reset |checkStartItem|.
+  self.checkStartState = CheckStartStateDefault;
+  [self reconfigureCheckStartSection];
+  return;
+}
+
+// Computes if any of the safety checks are still running.
+- (BOOL)checksRemaining {
+  BOOL passwordCheckRunning =
+      self.passwordCheckRowState == PasswordCheckRowStateRunning;
+  BOOL safeBrowsingCheckRunning =
+      self.safeBrowsingCheckRowState == SafeBrowsingCheckRowStateRunning;
+  BOOL updateCheckRunning =
+      self.updateCheckRowState == UpdateCheckRowStateRunning;
+  return updateCheckRunning || passwordCheckRunning || safeBrowsingCheckRunning;
+}
+
+// Performs the Safe Browsing check and triggers the display update/
+- (void)checkAndReconfigureSafeBrowsingState {
+  if (!self.safeBrowsingPreferenceManaged) {
+    self.safeBrowsingCheckRowState = self.safeBrowsingPreference.value
+                                         ? SafeBrowsingCheckRowStateSafe
+                                         : SafeBrowsingCheckRowStateUnsafe;
+  }
+  if (self.safeBrowsingCheckRowState == SafeBrowsingCheckRowStateUnsafe &&
+      self.safeBrowsingPreferenceManaged) {
+    self.safeBrowsingCheckRowState = SafeBrowsingCheckRowStateManaged;
+  }
+  // See if this was the last test.
+  [self resetsCheckStartItemIfNeeded];
+
+  // Update |safeBrowsingCheckItem| display.
+  [self reconfigureSafeBrowsingCheckItem];
 }
 
 // Reconfigures the display of the |updateCheckItem| based on current state of
@@ -557,6 +635,9 @@ typedef NS_ENUM(NSInteger, CheckStartStates) {
   self.updateCheckItem.detailText = nil;
   self.updateCheckItem.trailingImage = nil;
   self.updateCheckItem.trailingImageTintColor = nil;
+
+  // On any item update, see if any checks are still running.
+  [self resetsCheckStartItemIfNeeded];
 
   switch (self.updateCheckRowState) {
     case UpdateCheckRowStateDefault:
@@ -585,6 +666,9 @@ typedef NS_ENUM(NSInteger, CheckStartStates) {
   self.passwordCheckItem.trailingImage = nil;
   self.passwordCheckItem.trailingImageTintColor = nil;
   self.passwordCheckItem.accessoryType = UITableViewCellAccessoryNone;
+
+  // On any item update, see if any checks are still running.
+  [self resetsCheckStartItemIfNeeded];
 
   switch (self.passwordCheckRowState) {
     case PasswordCheckRowStateDefault:
@@ -642,6 +726,9 @@ typedef NS_ENUM(NSInteger, CheckStartStates) {
   self.safeBrowsingCheckItem.trailingImage = nil;
   self.safeBrowsingCheckItem.trailingImageTintColor = nil;
 
+  // On any item update, see if any checks are still running.
+  [self resetsCheckStartItemIfNeeded];
+
   switch (self.safeBrowsingCheckRowState) {
     case SafeBrowsingCheckRowStateDefault:
       break;
@@ -649,10 +736,28 @@ typedef NS_ENUM(NSInteger, CheckStartStates) {
       self.safeBrowsingCheckItem.indicatorHidden = NO;
       break;
     }
-    case SafeBrowsingCheckRowStateManged:
-    case SafeBrowsingCheckRowStateSafe:
-    case SafeBrowsingCheckRowStateUnsafe:
+    case SafeBrowsingCheckRowStateManaged: {
+      self.safeBrowsingCheckItem.infoButtonHidden = NO;
+      self.safeBrowsingCheckItem.detailText =
+          GetNSString(IDS_IOS_SETTINGS_SAFETY_CHECK_SAFE_BROWSING_MANAGED_DESC);
       break;
+    }
+    case SafeBrowsingCheckRowStateSafe: {
+      UIImage* safeIconImage = [[UIImage imageNamed:@"settings_safe_state"]
+          imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+      self.safeBrowsingCheckItem.trailingImage = safeIconImage;
+      self.safeBrowsingCheckItem.trailingImageTintColor =
+          [UIColor colorNamed:kGreenColor];
+      self.safeBrowsingCheckItem.detailText =
+          GetNSString(IDS_IOS_SETTINGS_SAFETY_CHECK_SAFE_BROWSING_ENABLED_DESC);
+      break;
+    }
+    case SafeBrowsingCheckRowStateUnsafe: {
+      self.safeBrowsingCheckItem.infoButtonHidden = NO;
+      self.safeBrowsingCheckItem.detailText = GetNSString(
+          IDS_IOS_SETTINGS_SAFETY_CHECK_SAFE_BROWSING_DISABLED_DESC);
+      break;
+    }
   }
 
   [self.consumer reconfigureCellsForItems:@[ self.safeBrowsingCheckItem ]];

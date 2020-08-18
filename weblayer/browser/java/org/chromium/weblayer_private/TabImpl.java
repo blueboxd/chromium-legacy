@@ -925,6 +925,12 @@ public final class TabImpl extends ITab.Stub implements LoginPrompt.Observer {
         mBrowserControlsDelegates.get(reason).set(constraint);
     }
 
+    @BrowserControlsState
+    /* package */ int getBrowserControlsVisibilityConstraint(
+            @ImplControlsVisibilityReason int reason) {
+        return mBrowserControlsDelegates.get(reason).get();
+    }
+
     @CalledByNative
     public void showRepostFormWarningDialog() {
         BrowserViewController viewController = getViewController();
@@ -972,8 +978,10 @@ public final class TabImpl extends ITab.Stub implements LoginPrompt.Observer {
             hideFindInPageUiAndNotifyClient();
         }
 
-        // Don't animate when hiding the controls.
-        boolean animate = constraint != BrowserControlsState.HIDDEN;
+        // Don't animate when hiding the controls unless an animation was requested by
+        // BrowserControlsContainerView.
+        boolean animate = constraint != BrowserControlsState.HIDDEN
+                || mBrowser.getViewController().shouldAnimateBrowserControlsHeightChanges();
 
         // If the renderer is not controlling the offsets (possibly hung or crashed). Then this
         // needs to force the controls to show (because notification from the renderer will not

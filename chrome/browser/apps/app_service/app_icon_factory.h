@@ -54,6 +54,26 @@ enum IconEffects : uint32_t {
                               // and kCrOsStandardMask together.
 };
 
+inline IconEffects operator|(IconEffects a, IconEffects b) {
+  return static_cast<IconEffects>(static_cast<uint32_t>(a) |
+                                  static_cast<uint32_t>(b));
+}
+
+inline IconEffects operator|=(IconEffects& a, IconEffects b) {
+  a = a | b;
+  return a;
+}
+
+inline IconEffects operator&(IconEffects a, uint32_t b) {
+  return static_cast<IconEffects>(static_cast<uint32_t>(a) &
+                                  static_cast<uint32_t>(b));
+}
+
+inline IconEffects operator&=(IconEffects& a, uint32_t b) {
+  a = a & b;
+  return a;
+}
+
 // Returns a callback that converts compressed data to an ImageSkia.
 base::OnceCallback<void(std::vector<uint8_t> compressed_data)>
 CompressedDataToImageSkiaCallback(

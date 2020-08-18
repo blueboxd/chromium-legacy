@@ -10,7 +10,9 @@
 #import "ios/chrome/browser/ui/settings/safety_check/safety_check_navigation_commands.h"
 #import "ios/chrome/browser/ui/settings/safety_check/safety_check_service_delegate.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_link_header_footer_item.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
+#include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -34,6 +36,10 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
 // Current state of array of items that form the safety check.
 @property(nonatomic, strong) NSArray<TableViewItem*>* checkTypesItems;
 
+// Header for the safety check page.
+@property(nonatomic, strong)
+    TableViewLinkHeaderFooterItem* safetyCheckHeaderItem;
+
 // Current display state of the check start item.
 @property(nonatomic, strong) TableViewItem* checkStartItem;
 
@@ -55,6 +61,11 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
   [self reloadData];
 }
 
+- (void)setSafetyCheckHeaderItem:(TableViewLinkHeaderFooterItem*)item {
+  _safetyCheckHeaderItem = item;
+  [self reloadData];
+}
+
 - (void)setCheckStartItem:(TableViewItem*)item {
   _checkStartItem = item;
   [self reloadData];
@@ -70,6 +81,10 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
     for (TableViewItem* item in self.checkTypesItems) {
       [self.tableViewModel addItem:item
            toSectionWithIdentifier:SectionIdentifierCheckTypes];
+    }
+    if (self.safetyCheckHeaderItem) {
+      [self.tableViewModel setHeader:self.safetyCheckHeaderItem
+            forSectionWithIdentifier:SectionIdentifierCheckTypes];
     }
   }
 

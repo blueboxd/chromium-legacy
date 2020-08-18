@@ -142,7 +142,7 @@ class PasswordCheckMediator
     @Override
     public void onEdit(CompromisedCredential credential) {
         if (!mReauthenticationHelper.canReauthenticate()) {
-            // TODO(crbug.com/1114720): Implement Toast explaining to set-up screen lock.
+            mReauthenticationHelper.showScreenLockToast();
             return;
         }
 

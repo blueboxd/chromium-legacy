@@ -205,7 +205,8 @@ TEST_F(CrostiniExportImportTest, TestNotAllowed) {
 }
 
 // TODO(juwa): remove this once tremplin has been shipped.
-TEST_F(CrostiniExportImportTest, TestDeprecatedExportSuccess) {
+// TODO(crbug.com/1117356) Flaky
+TEST_F(CrostiniExportImportTest, DISABLED_TestDeprecatedExportSuccess) {
   crostini_export_import_->FileSelected(
       tarball_, 0,
       crostini_export_import_->NewOperationData(ExportImportType::EXPORT));
@@ -287,7 +288,8 @@ TEST_F(CrostiniExportImportTest, TestDeprecatedExportSuccess) {
   EXPECT_TRUE(base::PathExists(tarball_));
 }
 
-TEST_F(CrostiniExportImportTest, TestExportSuccess) {
+// TODO(crbug.com/1117356) Flaky
+TEST_F(CrostiniExportImportTest, DISABLED_TestExportSuccess) {
   crostini_export_import_->FileSelected(
       tarball_, 0,
       crostini_export_import_->NewOperationData(ExportImportType::EXPORT));
@@ -416,7 +418,8 @@ TEST_F(CrostiniExportImportTest, TestExportFail) {
   EXPECT_FALSE(base::PathExists(tarball_));
 }
 
-TEST_F(CrostiniExportImportTest, TestExportCancelled) {
+// TODO(crbug.com/1117356) Flaky
+TEST_F(CrostiniExportImportTest, DISABLED_TestExportCancelled) {
   crostini_export_import_->FileSelected(
       tarball_, 0,
       crostini_export_import_->NewOperationData(ExportImportType::EXPORT));
@@ -482,7 +485,8 @@ TEST_F(CrostiniExportImportTest, TestExportCancelled) {
   EXPECT_FALSE(base::PathExists(tarball_));
 }
 
-TEST_F(CrostiniExportImportTest, TestExportDoneBeforeCancelled) {
+// TODO(crbug.com/1117356) Flaky
+TEST_F(CrostiniExportImportTest, DISABLED_TestExportDoneBeforeCancelled) {
   crostini_export_import_->FileSelected(
       tarball_, 0,
       crostini_export_import_->NewOperationData(ExportImportType::EXPORT));

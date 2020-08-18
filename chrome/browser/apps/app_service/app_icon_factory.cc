@@ -327,7 +327,7 @@ base::Optional<IconPurpose> GetIconPurpose(
   }
 
   return base::nullopt;
-}  // namespace
+}
 
 // This pipeline is meant to:
 // * Simplify loading icons, as things like effects and type are common
@@ -540,12 +540,9 @@ void IconLoadingPipeline::LoadWebAppIcon(
   // safe zone, and clear the standard icon effect, apply the mask to the icon
   // without shrinking it.
   if (icon_purpose_to_read.value() == IconPurpose::MASKABLE) {
-    icon_effects_ = static_cast<apps::IconEffects>(
-        icon_effects_ & ~apps::IconEffects::kCrOsStandardIcon);
-    icon_effects_ = static_cast<apps::IconEffects>(
-        icon_effects_ | apps::IconEffects::kCrOsStandardBackground);
-    icon_effects_ = static_cast<apps::IconEffects>(
-        icon_effects_ | apps::IconEffects::kCrOsStandardMask);
+    icon_effects_ &= ~apps::IconEffects::kCrOsStandardIcon;
+    icon_effects_ |= apps::IconEffects::kCrOsStandardBackground;
+    icon_effects_ |= apps::IconEffects::kCrOsStandardMask;
   }
 
   switch (icon_type_) {
@@ -564,15 +561,12 @@ void IconLoadingPipeline::LoadWebAppIcon(
     case apps::mojom::IconType::kUncompressed:
       if (icon_type_ == apps::mojom::IconType::kUncompressed) {
         // For uncompressed icon, apply the resize and pad effect.
-        icon_effects_ = static_cast<apps::IconEffects>(
-            icon_effects_ | apps::IconEffects::kResizeAndPad);
+        icon_effects_ |= apps::IconEffects::kResizeAndPad;
 
         // For uncompressed icon, clear the standard icon effects: kBackground
         // and kMask.
-        icon_effects_ = static_cast<apps::IconEffects>(
-            icon_effects_ & ~apps::IconEffects::kCrOsStandardBackground);
-        icon_effects_ = static_cast<apps::IconEffects>(
-            icon_effects_ & ~apps::IconEffects::kCrOsStandardMask);
+        icon_effects_ &= ~apps::IconEffects::kCrOsStandardBackground;
+        icon_effects_ &= ~apps::IconEffects::kCrOsStandardMask;
       }
       FALLTHROUGH;
     case apps::mojom::IconType::kStandard:
@@ -676,8 +670,7 @@ void IconLoadingPipeline::LoadIconFromResource(int icon_resource) {
     //
     // For the default icon, use the raw icon, because the standard icon image
     // convert could break the test cases.
-    icon_effects_ = static_cast<apps::IconEffects>(
-        icon_effects_ & ~apps::IconEffects::kCrOsStandardIcon);
+    icon_effects_ &= ~apps::IconEffects::kCrOsStandardIcon;
   }
 #endif
 

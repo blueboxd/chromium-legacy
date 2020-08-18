@@ -16,7 +16,7 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/family_link_notice_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/user_creation_screen_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/login/auth/stub_authenticator_builder.h"
@@ -53,7 +53,7 @@ class FamilyLinkNoticeScreenTest : public OobeBaseTest {
 
   void LoginAsRegularUser() {
     login_manager_mixin_.LoginAsNewRegularUser();
-    OobeScreenExitWaiter(GaiaView::kScreenId).Wait();
+    OobeScreenExitWaiter(UserCreationView::kScreenId).Wait();
   }
 
   void ExpectHelpAppPrefValue(bool expected) {
@@ -138,7 +138,7 @@ class FamilyLinkNoticeScreenChildTest : public FamilyLinkNoticeScreenTest {
 
   void LoginAsChildUser() {
     login_manager_mixin_.LoginAsNewChildUser();
-    OobeScreenExitWaiter(GaiaView::kScreenId).Wait();
+    OobeScreenExitWaiter(UserCreationView::kScreenId).Wait();
   }
 
  private:
@@ -179,7 +179,7 @@ class FamilyLinkNoticeScreenManagedTest : public FamilyLinkNoticeScreenTest {
   void LoginAsManagedUser() {
     user_policy_mixin_.RequestPolicyUpdate();
     login_manager_mixin_.LoginWithDefaultContext(test_user_);
-    OobeScreenExitWaiter(GaiaView::kScreenId).Wait();
+    OobeScreenExitWaiter(UserCreationView::kScreenId).Wait();
   }
 
  private:

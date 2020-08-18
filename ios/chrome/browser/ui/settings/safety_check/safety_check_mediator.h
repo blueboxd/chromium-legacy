@@ -11,6 +11,9 @@
 
 #import <UIKit/UIKit.h>
 
+// Webpage with safe browsing toggle.
+extern const char kSafeBrowsingStringURL[];
+
 class AuthenticationService;
 class IOSChromePasswordCheckManager;
 class PrefService;

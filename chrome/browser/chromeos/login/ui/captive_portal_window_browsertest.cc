@@ -20,8 +20,10 @@
 #include "chrome/browser/chromeos/login/ui/captive_portal_window_proxy.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
+#include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/shill/fake_shill_manager_client.h"
@@ -219,6 +221,10 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalWindowCtorDtorTest, OpenPortalDialog) {
   ASSERT_TRUE(host);
   OobeUI* oobe = host->GetOobeUI();
   ASSERT_TRUE(oobe);
+
+  // Skip to gaia screen.
+  host->GetWizardController()->SkipToLoginForTesting();
+  OobeScreenWaiter(GaiaView::kScreenId).Wait();
 
   // Error screen asks portal detector to change detection strategy.
   ErrorScreen* error_screen = oobe->GetErrorScreen();

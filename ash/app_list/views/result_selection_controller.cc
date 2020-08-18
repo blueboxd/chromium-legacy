@@ -120,9 +120,9 @@ void ResultSelectionController::ResetSelection(const ui::KeyEvent* key_event,
 
   // Set the state of the new selected result.
   if (selected_result_) {
-    selected_result_->SetSelected(true, is_shift_tab);
     selected_result_->set_is_default_result(default_selection &&
                                             !selected_id_preserved);
+    selected_result_->SetSelected(true, is_shift_tab);
     selected_result_id_ = new_selection->result()->id();
   } else {
     selected_result_id_ = std::string();

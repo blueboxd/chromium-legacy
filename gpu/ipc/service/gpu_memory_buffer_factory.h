@@ -35,10 +35,14 @@ class GPU_IPC_SERVICE_EXPORT GpuMemoryBufferFactory {
   // Creates a new GPU memory buffer instance. A valid handle is returned on
   // success. This method is thread-safe but it should not be called on the IO
   // thread as it can lead to deadlocks (see https://crbug.com/981721). Instead
-  // use the asynchronous version on the IO thread.
+  // use the asynchronous version on the IO thread. |framebuffer_size| specifies
+  // the size used to create a framebuffer when the |usage| requires it and the
+  // particular GpuMemoryBufferFactory implementation supports it (for example,
+  // when creating a buffer for scanout using the Ozone/DRM backend).
   virtual gfx::GpuMemoryBufferHandle CreateGpuMemoryBuffer(
       gfx::GpuMemoryBufferId id,
       const gfx::Size& size,
+      const gfx::Size& framebuffer_size,
       gfx::BufferFormat format,
       gfx::BufferUsage usage,
       int client_id,

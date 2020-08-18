@@ -4,6 +4,8 @@
 
 #include "pdf/pdfium/pdfium_engine.h"
 
+#include <stdint.h>
+
 #include "base/hash/md5.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
@@ -70,7 +72,9 @@ class PDFiumEngineTest : public PDFiumTestBase {
     CompareRect(expected_rect, page->rect());
   }
 
-  // Tries to load a PDF incrementally, returning `true` on success.
+  // Tries to load a PDF incrementally, returning `true` if the PDF actually was
+  // loaded incrementally. Note that this function will return `false` if
+  // incremental loading fails, but also if incremental loading is disabled.
   bool TryLoadIncrementally() {
     NiceMock<MockTestClient> client;
     InitializeEngineResult initialize_result = InitializeEngineWithoutLoading(
@@ -81,14 +85,43 @@ class PDFiumEngineTest : public PDFiumTestBase {
     }
     PDFiumEngine* engine = initialize_result.engine.get();
 
-    // Note: Plugin size chosen so all pages of the document are visible. The
-    // engine only updates availability incrementally for visible pages.
-    engine->PluginSizeUpdated({1024, 4096});
+    // Load enough for the document to become partially available.
     initialize_result.document_loader->SimulateLoadData(8192);
 
-    PDFiumPage* page0 = GetPDFiumPageForTest(engine, 0);
-    PDFiumPage* page1 = GetPDFiumPageForTest(engine, 1);
-    return page0 && page0->available() && page1 && !page1->available();
+    bool loaded_incrementally;
+    if (engine->GetNumberOfPages() == 0) {
+      // This is not necessarily a test failure; it just indicates incremental
+      // loading is not occurring.
+      loaded_incrementally = false;
+    } else {
+      // Note: Plugin size chosen so all pages of the document are visible. The
+      // engine only updates availability incrementally for visible pages.
+      EXPECT_EQ(0, CountAvailablePages(engine));
+      engine->PluginSizeUpdated({1024, 4096});
+      int available_pages = CountAvailablePages(engine);
+      loaded_incrementally =
+          0 < available_pages && available_pages < engine->GetNumberOfPages();
+    }
+
+    // Verify that loading can finish.
+    while (initialize_result.document_loader->SimulateLoadData(UINT32_MAX))
+      continue;
+
+    EXPECT_EQ(engine->GetNumberOfPages(), CountAvailablePages(engine));
+
+    return loaded_incrementally;
+  }
+
+ private:
+  // Counts the number of available pages. Returns `int` instead of `size_t` for
+  // consistency with `PDFiumEngine::GetNumberOfPages()`.
+  int CountAvailablePages(PDFiumEngine* engine) {
+    int available_pages = 0;
+    for (int i = 0; i < engine->GetNumberOfPages(); ++i) {
+      if (GetPDFiumPageForTest(engine, i)->available())
+        ++available_pages;
+    }
+    return available_pages;
   }
 };
 

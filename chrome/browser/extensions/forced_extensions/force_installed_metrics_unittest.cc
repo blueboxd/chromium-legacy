@@ -115,6 +115,12 @@ constexpr char kVerificationTimeStats[] =
     "Extensions.ForceInstalledTime.VerificationStartTo.CopyingStart";
 constexpr char kCopyingTimeStats[] =
     "Extensions.ForceInstalledTime.CopyingStartTo.UnpackingStart";
+constexpr char kUnpackingTimeStats[] =
+    "Extensions.ForceInstalledTime.UnpackingStartTo.CheckingExpectationsStart";
+constexpr char kCheckingExpectationsTimeStats[] =
+    "Extensions.ForceInstalledTime.CheckingExpectationsStartTo.FinalizingStart";
+constexpr char kFinalizingTimeStats[] =
+    "Extensions.ForceInstalledTime.FinalizingStartTo.CRXInstallComplete";
 
 }  // namespace
 
@@ -199,12 +205,9 @@ class ForceInstalledMetricsTest : public testing::Test,
 
   // Report downloading manifest stage for both the extensions.
   void ReportDownloadingManifestStage() {
-    auto ext1 = ExtensionBuilder(kExtensionName1).SetID(kExtensionId1).Build();
     install_stage_tracker_->ReportDownloadingStage(
         kExtensionId1,
         ExtensionDownloaderDelegate::Stage::DOWNLOADING_MANIFEST);
-    tracker_->OnExtensionLoaded(profile_, ext1.get());
-    auto ext2 = ExtensionBuilder(kExtensionName2).SetID(kExtensionId2).Build();
     install_stage_tracker_->ReportDownloadingStage(
         kExtensionId2,
         ExtensionDownloaderDelegate::Stage::DOWNLOADING_MANIFEST);
@@ -340,6 +343,8 @@ TEST_F(ForceInstalledMetricsTest, ExtensionsManifestDownloadTime) {
   ReportDownloadingManifestStage();
   install_stage_tracker_->ReportDownloadingStage(
       kExtensionId1, ExtensionDownloaderDelegate::Stage::MANIFEST_LOADED);
+  auto ext1 = ExtensionBuilder(kExtensionName1).SetID(kExtensionId1).Build();
+  tracker_->OnExtensionLoaded(profile_, ext1.get());
   install_stage_tracker_->ReportFailure(
       kExtensionId2, InstallStageTracker::FailureReason::MANIFEST_INVALID);
   // ForceInstalledMetrics shuts down timer because all extension are either
@@ -354,6 +359,8 @@ TEST_F(ForceInstalledMetricsTest, ExtensionsCrxDownloadTime) {
   SetupForceList();
   ReportDownloadingManifestStage();
   ReportInstallationStarted();
+  auto ext1 = ExtensionBuilder(kExtensionName1).SetID(kExtensionId1).Build();
+  tracker_->OnExtensionLoaded(profile_, ext1.get());
   install_stage_tracker_->ReportFailure(
       kExtensionId2, InstallStageTracker::FailureReason::MANIFEST_INVALID);
   // ForceInstalledMetrics shuts down timer because all extension are either
@@ -372,6 +379,8 @@ TEST_F(ForceInstalledMetricsTest,
       kExtensionId1, ExtensionDownloaderDelegate::Stage::FINISHED);
   install_stage_tracker_->ReportInstallationStage(
       kExtensionId1, InstallStageTracker::Stage::INSTALLING);
+  auto ext1 = ExtensionBuilder(kExtensionName1).SetID(kExtensionId1).Build();
+  tracker_->OnExtensionLoaded(profile_, ext1.get());
   install_stage_tracker_->ReportFailure(
       kExtensionId2, InstallStageTracker::FailureReason::MANIFEST_INVALID);
   // ForceInstalledMetrics shuts down timer because all extension are either
@@ -393,6 +402,14 @@ TEST_F(ForceInstalledMetricsTest, ExtensionsReportInstallationStageTimes) {
       kExtensionId1, InstallationStage::kCopying);
   install_stage_tracker_->ReportCRXInstallationStage(
       kExtensionId1, InstallationStage::kUnpacking);
+  install_stage_tracker_->ReportCRXInstallationStage(
+      kExtensionId1, InstallationStage::kCheckingExpectations);
+  install_stage_tracker_->ReportCRXInstallationStage(
+      kExtensionId1, InstallationStage::kFinalizing);
+  install_stage_tracker_->ReportCRXInstallationStage(
+      kExtensionId1, InstallationStage::kComplete);
+  auto ext1 = ExtensionBuilder(kExtensionName1).SetID(kExtensionId1).Build();
+  tracker_->OnExtensionLoaded(profile_, ext1.get());
   install_stage_tracker_->ReportFailure(
       kExtensionId2, InstallStageTracker::FailureReason::MANIFEST_INVALID);
   // ForceInstalledMetrics shuts down timer because all extension are either
@@ -400,6 +417,9 @@ TEST_F(ForceInstalledMetricsTest, ExtensionsReportInstallationStageTimes) {
   EXPECT_FALSE(fake_timer_->IsRunning());
   histogram_tester_.ExpectTotalCount(kVerificationTimeStats, 1);
   histogram_tester_.ExpectTotalCount(kCopyingTimeStats, 1);
+  histogram_tester_.ExpectTotalCount(kUnpackingTimeStats, 1);
+  histogram_tester_.ExpectTotalCount(kCheckingExpectationsTimeStats, 1);
+  histogram_tester_.ExpectTotalCount(kFinalizingTimeStats, 1);
 }
 
 // Reporting disable reason for the force installed extensions which are

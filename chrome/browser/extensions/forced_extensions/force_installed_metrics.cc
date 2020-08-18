@@ -205,6 +205,30 @@ void ForceInstalledMetrics::ReportMetrics() {
             installation.unpacking_started_time.value() -
                 installation.copying_started_time.value());
       }
+      if (installation.checking_expectations_started_time) {
+        DCHECK(installation.unpacking_started_time);
+        base::UmaHistogramLongTimes(
+            "Extensions.ForceInstalledTime.UnpackingStartTo."
+            "CheckingExpectationsStart",
+            installation.checking_expectations_started_time.value() -
+                installation.unpacking_started_time.value());
+      }
+      if (installation.finalizing_started_time) {
+        DCHECK(installation.checking_expectations_started_time);
+        base::UmaHistogramLongTimes(
+            "Extensions.ForceInstalledTime.CheckingExpectationsStartTo."
+            "FinalizingStart",
+            installation.finalizing_started_time.value() -
+                installation.checking_expectations_started_time.value());
+      }
+      if (installation.installation_complete_time) {
+        DCHECK(installation.finalizing_started_time);
+        base::UmaHistogramLongTimes(
+            "Extensions.ForceInstalledTime.FinalizingStartTo."
+            "CRXInstallComplete",
+            installation.installation_complete_time.value() -
+                installation.finalizing_started_time.value());
+      }
     }
   }
   if (missing_forced_extensions.empty()) {

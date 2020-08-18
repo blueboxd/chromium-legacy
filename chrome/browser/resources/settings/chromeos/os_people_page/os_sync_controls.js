@@ -151,6 +151,17 @@ Polymer({
   },
 
   /**
+   * @return {string}
+   * @private
+   */
+  getSyncOnOffButtonLabel_() {
+    if (!this.osSyncFeatureEnabled) {
+      return this.i18n('osSyncTurnOn');
+    }
+    return this.i18n('osSyncTurnOff');
+  },
+
+  /**
    * Returns the CSS class for the sync status icon.
    * @return {string}
    * @private
@@ -216,14 +227,8 @@ Polymer({
   },
 
   /** @private */
-  onTurnOnSyncButtonClick_() {
-    this.browserProxy_.setOsSyncFeatureEnabled(true);
-    settings.recordSettingChange();
-  },
-
-  /** @private */
-  onTurnOffSyncButtonClick_() {
-    this.browserProxy_.setOsSyncFeatureEnabled(false);
+  onSyncOnOffButtonClick_() {
+    this.browserProxy_.setOsSyncFeatureEnabled(!this.osSyncFeatureEnabled);
     settings.recordSettingChange();
   },
 

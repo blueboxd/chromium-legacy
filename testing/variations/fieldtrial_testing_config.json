@@ -1336,6 +1336,23 @@
             ]
         }
     ],
+    "ContentCaptureUserActivatedDelay": [
+        {
+            "platforms": [
+                "android",
+                "android_weblayer",
+                "android_webview"
+            ],
+            "experiments": [
+                {
+                    "name": "ContentCaptureUserActivatedDelay",
+                    "enable_features": [
+                        "ContentCaptureUserActivatedDelay"
+                    ]
+                }
+            ]
+        }
+    ],
     "ContentIndexingDownloadHome": [
         {
             "platforms": [
@@ -2569,6 +2586,24 @@
                     "name": "Enabled",
                     "enable_features": [
                         "FontSrcLocalMatching"
+                    ]
+                }
+            ]
+        }
+    ],
+    "FormControlsDarkMode": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "CSSColorSchemeUARendering"
                     ]
                 }
             ]

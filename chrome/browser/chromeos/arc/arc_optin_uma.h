@@ -124,7 +124,9 @@ enum class ProvisioningResult : int {
 
   // Mojo errors.
   MOJO_VERSION_MISMATCH = 7,
-  MOJO_CALL_TIMEOUT = 8,
+
+  // Misc
+  PROVISIONING_TIMEOUT = 8,
 
   // Check in error.
   DEVICE_CHECK_IN_TIMEOUT = 9,

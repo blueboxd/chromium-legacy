@@ -56,6 +56,19 @@ struct NativeIOFile::FileState {
   // Lock coordinating cross-thread access to the state.
   WTF::Mutex mutex;
   // The file on disk backing this NativeIOFile.
+  //
+  // The mutex is there to protect us against using the file after it was
+  // closed, and against OS-specific behavior around concurrent file access. It
+  // should never cause the main (JS) thread to block. This is because the mutex
+  // is only taken on the main thread in CloseBackingFile(), which is called
+  // when the NativeIOFile is destroyed (which implies there's no pending I/O
+  // operation, because all I/O operations hold onto a Persistent<NativeIOFile>)
+  // and when the mojo pipe is closed, which currently only happens when the JS
+  // context is being torn down.
+  //
+  // TODO(rstz): Is it possible and worthwhile to remove the mutex and rely
+  // exclusively on |NativeIOFile::io_pending_|, or remove
+  // |NativeIOFile::io_pending_| in favor of the mutex (might be harder)?
   base::File file GUARDED_BY(mutex);
 };
 
@@ -128,6 +141,44 @@ ScriptPromise NativeIOFile::getLength(ScriptState* script_state,
                           WrapCrossThreadPersistent(resolver),
                           CrossThreadUnretained(file_state_.get()),
                           resolver_task_runner_));
+  return resolver->Promise();
+}
+
+ScriptPromise NativeIOFile::setLength(ScriptState* script_state,
+                                      uint64_t length,
+                                      ExceptionState& exception_state) {
+  if (!base::IsValueInRangeForNumericType<int64_t>(length)) {
+    exception_state.ThrowTypeError("Quota exceeded.");
+    return ScriptPromise();
+  }
+  if (io_pending_) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "Another I/O operation is in progress on the same file");
+    return ScriptPromise();
+  }
+  if (closed_) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "The file was already closed");
+    return ScriptPromise();
+  }
+  io_pending_ = true;
+
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+
+  // Calls to base::File::SetLength() are routed through the browser process,
+  // see crbug.com/1084565.
+  //
+  // We keep a single handle per file, so this handle is passed to the browser
+  // process and is given back to the renderer afterwards.
+  {
+    WTF::MutexLocker locker(file_state_->mutex);
+    backend_file_->SetLength(
+        base::as_signed(length), std::move(file_state_->file),
+        WTF::Bind(&NativeIOFile::DidSetLength, WrapPersistent(this),
+                  WrapPersistent(resolver)));
+  }
+
   return resolver->Promise();
 }
 
@@ -388,6 +439,33 @@ void NativeIOFile::DidGetLength(
   // which is done through exceptions, and seeking from an offset without type
   // conversions, which is not supported by NativeIO.
   resolver->Resolve(length);
+}
+
+void NativeIOFile::DidSetLength(ScriptPromiseResolver* resolver,
+                                bool backend_success,
+                                base::File backing_file) {
+  DCHECK(backing_file.IsValid()) << "browser returned closed file";
+  {
+    WTF::MutexLocker locker(file_state_->mutex);
+    file_state_->file = std::move(backing_file);
+  }
+
+  DCHECK(io_pending_) << "I/O operation performed without io_pending_ set";
+  io_pending_ = false;
+
+  ScriptState* script_state = resolver->GetScriptState();
+  if (!script_state->ContextIsValid())
+    return;
+  ScriptState::Scope scope(script_state);
+
+  if (!backend_success) {
+    resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
+        script_state->GetIsolate(), DOMExceptionCode::kUnknownError,
+        "setLength() failed"));
+    return;
+  }
+
+  resolver->Resolve();
 }
 
 // static

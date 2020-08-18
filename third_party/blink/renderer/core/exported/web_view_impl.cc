@@ -65,6 +65,7 @@
 #include "third_party/blink/public/web/web_widget_client.h"
 #include "third_party/blink/public/web/web_window_features.h"
 #include "third_party/blink/renderer/core/clipboard/data_object.h"
+#include "third_party/blink/renderer/core/content_capture/content_capture_manager.h"
 #include "third_party/blink/renderer/core/core_initializer.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/dom/context_features_client_impl.h"
@@ -1797,6 +1798,11 @@ WebInputEventResult WebViewImpl::HandleInputEvent(
                                    .NeedToNotifyInputOrScroll()) {
       local_frame->View()->GetPaintTimingDetector().NotifyInputEvent(
           input_event.GetType());
+    }
+    if (auto* content_capture_manager =
+            local_frame->LocalFrameRoot().GetContentCaptureManager()) {
+      content_capture_manager->NotifyInputEvent(input_event.GetType(),
+                                                *local_frame);
     }
   }
 

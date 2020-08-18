@@ -38,6 +38,17 @@ interface NativeIOFileHost {
   // browser-managed quota on open file descriptors, but compromised renderers
   // can already exhaust the system's resources.
   [Sync] Close() => ();
+
+  // Extends or truncates a previously opened file.
+  //
+  // The rendererer passes the file handle to the backend to avoid having
+  // multiple file handles to the same file. A compromised renderer may hand
+  // over an arbitrary file. As base::File::SetLength() is allowed by the
+  // Windows, Linux, and macOS 10.15+ sandbox, it is safe to expose this
+  // functionality to the renderer on macOS < 10.15 as well. See
+  // crbug.com/1084565.
+  [Sync] SetLength(int64 length, mojo_base.mojom.File backing_file) => (bool
+  success, mojo_base.mojom.File backing_file);
 };
 
 // Origin-scoped implementation of the Web Platform's NativeIO API.

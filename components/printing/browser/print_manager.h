@@ -42,6 +42,7 @@ class PrintManager : public content::WebContentsObserver,
 
   // printing::mojom::PrintManager:
   void DidGetPrintedPagesCount(int32_t cookie, int32_t number_pages) override;
+  void DidGetDocumentCookie(int32_t cookie) override;
 
  protected:
   explicit PrintManager(content::WebContents* contents);
@@ -111,8 +112,6 @@ class PrintManager : public content::WebContentsObserver,
 #endif
 
  private:
-  void OnDidGetDocumentCookie(int cookie);
-
   // Stores a PrintRenderFrame associated remote with the RenderFrameHost used
   // to bind it. The PrintRenderFrame is used to transmit mojo interface method
   // calls to the associated receiver.

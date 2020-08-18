@@ -440,6 +440,14 @@ scheduler::WorkerScheduler* WorkerThread::GetScheduler() {
   return worker_scheduler_.get();
 }
 
+scoped_refptr<base::SingleThreadTaskRunner> WorkerThread::GetTaskRunner(
+    TaskType type) {
+  // Task runners must be captured when the worker scheduler is initialized. See
+  // comments in InitializeSchedulerOnWorkerThread().
+  CHECK(worker_task_runners_.Contains(type)) << static_cast<int>(type);
+  return worker_task_runners_.at(type);
+}
+
 void WorkerThread::ChildThreadStartedOnWorkerThread(WorkerThread* child) {
   DCHECK(IsCurrentThread());
 #if DCHECK_IS_ON()
@@ -545,6 +553,46 @@ void WorkerThread::InitializeSchedulerOnWorkerThread(
       static_cast<scheduler::WorkerThreadScheduler*>(
           worker_thread.GetNonMainThreadScheduler()),
       worker_thread.worker_scheduler_proxy());
+
+  // Capture the worker task runners so that it's safe to access GetTaskRunner()
+  // from any threads even after the worker scheduler is disposed of on the
+  // worker thread. See also comments on GetTaskRunner().
+  // We only capture task types that are actually used. When you want to use a
+  // new task type, add it here.
+  Vector<TaskType> available_task_types = {TaskType::kBackgroundFetch,
+                                           TaskType::kCanvasBlobSerialization,
+                                           TaskType::kDatabaseAccess,
+                                           TaskType::kDOMManipulation,
+                                           TaskType::kFileReading,
+                                           TaskType::kFontLoading,
+                                           TaskType::kInternalDefault,
+                                           TaskType::kInternalInspector,
+                                           TaskType::kInternalLoading,
+                                           TaskType::kInternalMedia,
+                                           TaskType::kInternalMediaRealTime,
+                                           TaskType::kInternalTest,
+                                           TaskType::kInternalWebCrypto,
+                                           TaskType::kJavascriptTimerDelayed,
+                                           TaskType::kJavascriptTimerImmediate,
+                                           TaskType::kMediaElementEvent,
+                                           TaskType::kMicrotask,
+                                           TaskType::kMiscPlatformAPI,
+                                           TaskType::kNetworking,
+                                           TaskType::kPerformanceTimeline,
+                                           TaskType::kPermission,
+                                           TaskType::kPostedMessage,
+                                           TaskType::kRemoteEvent,
+                                           TaskType::kUserInteraction,
+                                           TaskType::kWebGL,
+                                           TaskType::kWebLocks,
+                                           TaskType::kWebSocket,
+                                           TaskType::kWorkerAnimation};
+  for (auto type : available_task_types) {
+    auto task_runner = worker_scheduler_->GetTaskRunner(type);
+    auto result = worker_task_runners_.insert(type, std::move(task_runner));
+    DCHECK(result.is_new_entry);
+  }
+
   waitable_event->Signal();
 }
 

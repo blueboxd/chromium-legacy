@@ -281,6 +281,9 @@ BLINK_COMMON_EXPORT extern const base::Feature kCompositingOptimizations;
 
 BLINK_COMMON_EXPORT extern const base::Feature kReducedReferrerGranularity;
 
+BLINK_COMMON_EXPORT extern const base::Feature
+    kContentCaptureUserActivatedDelay;
+
 }  // namespace features
 }  // namespace blink
 

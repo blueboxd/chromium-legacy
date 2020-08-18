@@ -26,7 +26,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_FILTER_OPERATION_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_FILTER_OPERATION_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/style/shadow_data.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
@@ -114,7 +113,8 @@ class CORE_EXPORT FilterOperation : public GarbageCollected<FilterOperation> {
   OperationType type_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(FilterOperation);
+  FilterOperation(const FilterOperation&) = delete;
+  FilterOperation& operator=(const FilterOperation&) = delete;
 };
 
 class CORE_EXPORT ReferenceFilterOperation : public FilterOperation {

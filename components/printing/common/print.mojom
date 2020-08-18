@@ -246,4 +246,7 @@ interface PrintManagerHost {
   // Tells the browser that the renderer is done calculating the number of
   // rendered pages according to the specified settings.
   DidGetPrintedPagesCount(int32 cookie, int32 number_pages);
+
+  // Sends the document cookie of the current printer query to the browser.
+  DidGetDocumentCookie(int32 cookie);
 };

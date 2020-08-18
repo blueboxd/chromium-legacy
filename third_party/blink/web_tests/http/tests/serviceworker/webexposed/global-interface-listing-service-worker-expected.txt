@@ -926,6 +926,7 @@ interface NativeIOFile
     method flush
     method getLength
     method read
+    method setLength
     method write
 interface NativeIOManager
     attribute @@toStringTag

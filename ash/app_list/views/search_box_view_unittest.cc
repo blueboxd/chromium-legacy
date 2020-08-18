@@ -15,6 +15,7 @@
 #include "ash/app_list/views/app_list_main_view.h"
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/app_list/views/contents_view.h"
+#include "ash/app_list/views/privacy_container_view.h"
 #include "ash/app_list/views/search_result_page_view.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/vector_icons/vector_icons.h"
@@ -113,8 +114,9 @@ class SearchBoxViewTest : public views::test::WidgetTest,
     return counter_view_->GetCountAndReset();
   }
 
-  void KeyPress(ui::KeyboardCode key_code) {
-    ui::KeyEvent event(ui::ET_KEY_PRESSED, key_code, ui::EF_NONE);
+  void KeyPress(ui::KeyboardCode key_code, bool is_shift_down = false) {
+    ui::KeyEvent event(ui::ET_KEY_PRESSED, key_code,
+                       is_shift_down ? ui::EF_SHIFT_DOWN : ui::EF_NONE);
     view()->search_box()->OnKeyEvent(&event);
     // Emulates the input method.
     if (::isalnum(static_cast<int>(key_code))) {
@@ -637,6 +639,199 @@ TEST_F(SearchBoxViewTest, NewSearchQueryActionRecordedWhenUserType) {
   KeyPress(ui::VKEY_BACK);
   KeyPress(ui::VKEY_C);
   EXPECT_EQ(2, user_action_tester.GetActionCount("AppList_SearchQueryStarted"));
+}
+
+TEST_F(SearchBoxViewTest, NavigatePrivacyNotice) {
+  // Create a new contents view that contains a privacy notice.
+  view_delegate()->SetShouldShowAssistantPrivacyInfo(true);
+  auto* contents_view = widget()->GetContentsView()->AddChildView(
+      std::make_unique<KeyPressCounterView>(app_list_view()));
+  contents_view->Init(view_delegate()->GetModel());
+  view()->set_contents_view(contents_view);
+
+  PrivacyContainerView* const privacy_container_view =
+      contents_view->privacy_container_view();
+  ASSERT_TRUE(privacy_container_view);
+
+  // Set up the search box.
+  SetSearchBoxActive(true, ui::ET_UNKNOWN);
+  CreateSearchResult(ash::SearchResultDisplayType::kList, 1.0,
+                     base::ASCIIToUTF16("test"), base::string16());
+  base::RunLoop().RunUntilIdle();
+
+  SearchResultPageView* const result_page_view =
+      contents_view->search_results_page_view();
+  ResultSelectionController* const selection_controller =
+      result_page_view->result_selection_controller();
+
+  // The privacy view should be selected by default.
+  const SearchResultBaseView* selection =
+      selection_controller->selected_result();
+  EXPECT_TRUE(selection);
+  EXPECT_TRUE(selection->is_default_result());
+  EXPECT_EQ(selection, privacy_container_view->GetResultViewAt(0));
+
+  // The privacy view should have two additional non-default actions.
+  KeyPress(ui::VKEY_TAB);
+  selection = selection_controller->selected_result();
+  EXPECT_EQ(selection, privacy_container_view->GetResultViewAt(0));
+
+  KeyPress(ui::VKEY_TAB);
+  selection = selection_controller->selected_result();
+  EXPECT_EQ(selection, privacy_container_view->GetResultViewAt(0));
+
+  KeyPress(ui::VKEY_TAB);
+  selection = selection_controller->selected_result();
+  ASSERT_TRUE(selection->result());
+  EXPECT_EQ(selection->result()->title(), base::ASCIIToUTF16("test"));
+
+  // Move focus forward to the close button and then the privacy view again.
+  // The privacy view should now have only two actions.
+  KeyPress(ui::VKEY_TAB);
+  selection = selection_controller->selected_result();
+  EXPECT_FALSE(selection);
+
+  KeyPress(ui::VKEY_TAB);
+  selection = selection_controller->selected_result();
+  EXPECT_EQ(selection, privacy_container_view->GetResultViewAt(0));
+
+  KeyPress(ui::VKEY_TAB);
+  selection = selection_controller->selected_result();
+  EXPECT_EQ(selection, privacy_container_view->GetResultViewAt(0));
+
+  KeyPress(ui::VKEY_TAB);
+  selection = selection_controller->selected_result();
+  ASSERT_TRUE(selection->result());
+  EXPECT_EQ(selection->result()->title(), base::ASCIIToUTF16("test"));
+
+  // When navigating backwards, the privacy notice should have two actions.
+  KeyPress(ui::VKEY_TAB, /*is_shift_down=*/true);
+  selection = selection_controller->selected_result();
+  EXPECT_EQ(selection, privacy_container_view->GetResultViewAt(0));
+
+  KeyPress(ui::VKEY_TAB, /*is_shift_down=*/true);
+  selection = selection_controller->selected_result();
+  EXPECT_EQ(selection, privacy_container_view->GetResultViewAt(0));
+
+  KeyPress(ui::VKEY_TAB, /*is_shift_down=*/true);
+  selection = selection_controller->selected_result();
+  EXPECT_FALSE(selection);
+}
+
+TEST_F(SearchBoxViewTest, KeyboardEventClosesPrivacyNotice) {
+  // Create a new contents view that contains a privacy notice.
+  view_delegate()->SetShouldShowAssistantPrivacyInfo(true);
+  auto* contents_view = widget()->GetContentsView()->AddChildView(
+      std::make_unique<KeyPressCounterView>(app_list_view()));
+  contents_view->Init(view_delegate()->GetModel());
+  view()->set_contents_view(contents_view);
+
+  PrivacyContainerView* const privacy_container_view =
+      contents_view->privacy_container_view();
+  ASSERT_TRUE(privacy_container_view);
+
+  // Set up the search box.
+  SetSearchBoxActive(true, ui::ET_UNKNOWN);
+  CreateSearchResult(ash::SearchResultDisplayType::kList, 1.0,
+                     base::ASCIIToUTF16("test"), base::string16());
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(contents_view->search_results_page_view()
+                ->result_selection_controller()
+                ->selected_result(),
+            privacy_container_view->GetResultViewAt(0));
+
+  // Navigate to the close button and press enter. The privacy info should no
+  // longer be shown.
+  KeyPress(ui::VKEY_TAB);
+  KeyPress(ui::VKEY_TAB);
+  KeyPress(ui::VKEY_RETURN);
+  EXPECT_FALSE(view_delegate()->ShouldShowAssistantPrivacyInfo());
+}
+
+TEST_F(SearchBoxViewTest, PrivacyViewActionNotOverriddenByNewResults) {
+  // Create a new contents view that contains a privacy notice.
+  view_delegate()->SetShouldShowAssistantPrivacyInfo(true);
+  auto* contents_view = widget()->GetContentsView()->AddChildView(
+      std::make_unique<KeyPressCounterView>(app_list_view()));
+  contents_view->Init(view_delegate()->GetModel());
+  view()->set_contents_view(contents_view);
+
+  PrivacyContainerView* const privacy_container_view =
+      contents_view->privacy_container_view();
+  ASSERT_TRUE(privacy_container_view);
+
+  // Set up the search box.
+  SetSearchBoxActive(true, ui::ET_UNKNOWN);
+  CreateSearchResult(ash::SearchResultDisplayType::kList, 1.0,
+                     base::ASCIIToUTF16("test"), base::string16());
+  base::RunLoop().RunUntilIdle();
+
+  ResultSelectionController* const selection_controller =
+      contents_view->search_results_page_view()->result_selection_controller();
+  const SearchResultBaseView* selection =
+      selection_controller->selected_result();
+  EXPECT_EQ(selection, privacy_container_view->GetResultViewAt(0));
+
+  // The privacy view should have two additional actions. Tab to the next
+  // privacy view action.
+  KeyPress(ui::VKEY_TAB);
+  selection = selection_controller->selected_result();
+  EXPECT_EQ(selection, privacy_container_view->GetResultViewAt(0));
+
+  // Create a new search result. The privacy view should only have one action
+  // remaining.
+  CreateSearchResult(ash::SearchResultDisplayType::kList, 0.5,
+                     base::ASCIIToUTF16("testing"), base::string16());
+  base::RunLoop().RunUntilIdle();
+
+  KeyPress(ui::VKEY_TAB);
+  selection = selection_controller->selected_result();
+  EXPECT_EQ(selection, privacy_container_view->GetResultViewAt(0));
+
+  KeyPress(ui::VKEY_TAB);
+  selection = selection_controller->selected_result();
+  ASSERT_TRUE(selection);
+  EXPECT_EQ(selection->result()->title(), base::ASCIIToUTF16("test"));
+}
+
+TEST_F(SearchBoxViewTest, PrivacySelectionDoesNotChangeSearchBoxText) {
+  // Create a new contents view that contains a privacy notice.
+  view_delegate()->SetShouldShowAssistantPrivacyInfo(true);
+  auto* contents_view = widget()->GetContentsView()->AddChildView(
+      std::make_unique<KeyPressCounterView>(app_list_view()));
+  contents_view->Init(view_delegate()->GetModel());
+  view()->set_contents_view(contents_view);
+
+  PrivacyContainerView* const privacy_container_view =
+      contents_view->privacy_container_view();
+  ASSERT_TRUE(privacy_container_view);
+
+  // Set up the search box.
+  SetSearchBoxActive(true, ui::ET_UNKNOWN);
+  CreateSearchResult(ash::SearchResultDisplayType::kList, 1.0,
+                     base::ASCIIToUTF16("test"), base::string16());
+  base::RunLoop().RunUntilIdle();
+
+  ResultSelectionController* const selection_controller =
+      contents_view->search_results_page_view()->result_selection_controller();
+  EXPECT_EQ(selection_controller->selected_result(),
+            privacy_container_view->GetResultViewAt(0));
+  EXPECT_TRUE(view()->search_box()->GetText().empty());
+
+  // Navigate to a search result and back to the privacy notice. The text should
+  // not be reset.
+  KeyPress(ui::VKEY_DOWN);
+  const SearchResultBaseView* selection =
+      selection_controller->selected_result();
+  ASSERT_TRUE(selection->result());
+  EXPECT_EQ(selection->result()->title(), base::ASCIIToUTF16("test"));
+  EXPECT_EQ(base::ASCIIToUTF16("test"), view()->search_box()->GetText());
+
+  KeyPress(ui::VKEY_UP);
+  EXPECT_EQ(selection_controller->selected_result(),
+            privacy_container_view->GetResultViewAt(0));
+  EXPECT_EQ(base::ASCIIToUTF16("test"), view()->search_box()->GetText());
 }
 
 class SearchBoxViewAssistantButtonTest : public SearchBoxViewTest {

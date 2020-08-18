@@ -17,7 +17,7 @@ class EventRewriter;
 
 namespace ash {
 
-class AccessibilityEventRewriterDelegate;
+class SpokenFeedbackEventRewriterDelegate;
 
 // Allows clients to toggle some event rewriting behavior.
 class ASH_EXPORT EventRewriterController {
@@ -28,8 +28,8 @@ class ASH_EXPORT EventRewriterController {
   // Initializes this controller after ash::Shell finishes initialization.
   virtual void Initialize(
       ui::EventRewriterChromeOS::Delegate* event_rewriter_delegate,
-      AccessibilityEventRewriterDelegate*
-          accessibility_event_rewriter_delegate) = 0;
+      SpokenFeedbackEventRewriterDelegate*
+          spoken_feedback_event_rewriter_delegate) = 0;
 
   // Takes ownership of |rewriter| and adds it to the current event sources.
   virtual void AddEventRewriter(

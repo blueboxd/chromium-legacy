@@ -23,6 +23,8 @@ if (is_win || ((is_linux || is_chromeos) && use_udev) || is_mac) {
     sources = [
       "bluetooth_serial_device_enumerator.cc",
       "bluetooth_serial_device_enumerator.h",
+      "bluetooth_serial_port_impl.cc",
+      "bluetooth_serial_port_impl.h",
       "buffer.cc",
       "buffer.h",
       "serial_device_enumerator.cc",
@@ -53,6 +55,7 @@ if (is_win || ((is_linux || is_chromeos) && use_udev) || is_mac) {
       "//device/bluetooth/public/cpp",
       "//mojo/public/cpp/bindings",
       "//net",
+      "//services/device/public/cpp/bluetooth:bluetooth",
       "//services/device/public/cpp/serial:switches",
     ]
 

@@ -82,6 +82,11 @@ async function runTestQuery(data) {
               .call(firstReceivedItem(), data.renameLastFile);
       if (renameResult === RenameResult.FILE_EXISTS) {
         result = 'renameOriginalFile resolved file exists';
+      } else if (
+          renameResult ===
+          RenameResult.FILE_NO_LONGER_IN_LAST_OPENED_DIRECTORY) {
+        result = 'renameOriginalFile resolved ' +
+            'FILE_NO_LONGER_IN_LAST_OPENED_DIRECTORY';
       } else {
         result = 'renameOriginalFile resolved success';
       }

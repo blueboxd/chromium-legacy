@@ -6,6 +6,7 @@
 #define SERVICES_DEVICE_PUBLIC_CPP_BLUETOOTH_BLUETOOTH_UTILS_H_
 
 #include "base/strings/string16.h"
+#include "device/bluetooth/public/cpp/bluetooth_uuid.h"
 #include "services/device/public/mojom/bluetooth_system.mojom.h"
 
 namespace device {
@@ -24,6 +25,9 @@ base::string16 GetBluetoothDeviceNameForDisplay(
 // device type.
 base::string16 GetBluetoothDeviceLabelForAccessibility(
     const mojom::BluetoothDeviceInfoPtr& device_info);
+
+// Returns a BluetoothUUID for a Bluetooth SPP device.
+const BluetoothUUID& GetSerialPortProfileUUID();
 
 }  // namespace device
 

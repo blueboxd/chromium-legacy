@@ -68,6 +68,34 @@ uint64_t NativeIOFileSync::getLength(ExceptionState& exception_state) {
   return base::as_unsigned(length);
 }
 
+void NativeIOFileSync::setLength(uint64_t length,
+                                 ExceptionState& exception_state) {
+  if (!base::IsValueInRangeForNumericType<int64_t>(length)) {
+    exception_state.ThrowTypeError("Length out of bounds");
+    return;
+  }
+  if (!backing_file_.IsValid()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "The file was already closed");
+    return;
+  }
+  bool backend_success = false;
+
+  // Calls to setLength are routed through the browser process, see
+  // crbug.com/1084565.
+  //
+  // We keep a single handle per file, so this handle is passed to the backend
+  // and is then given back to the renderer afterwards.
+  backend_file_->SetLength(base::as_signed(length), std::move(backing_file_),
+                           &backend_success, &backing_file_);
+  DCHECK(backing_file_.IsValid()) << "browser returned closed file";
+  if (!backend_success) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
+                                      "setLength() failed");
+  }
+  return;
+}
+
 uint64_t NativeIOFileSync::read(MaybeShared<DOMArrayBufferView> buffer,
                                 uint64_t file_offset,
                                 ExceptionState& exception_state) {

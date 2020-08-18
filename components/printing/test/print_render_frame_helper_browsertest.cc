@@ -228,6 +228,7 @@ class TestPrintManagerHost
       EXPECT_EQ(number_pages, number_pages_);
     printer_->SetPrintedPagesCount(cookie, number_pages);
   }
+  void DidGetDocumentCookie(int32_t cookie) override {}
 
   void SetExpectedPagesCount(int32_t number_pages) {
     number_pages_ = number_pages;

@@ -17,6 +17,10 @@
 
   [
     CallWith=ScriptState, RaisesException
+  ] Promise<void> setLength(unsigned long long length);
+
+  [
+    CallWith=ScriptState, RaisesException
   ] Promise<unsigned long long> read([AllowShared] ArrayBufferView buffer,
                                      unsigned long long file_offset);
   [

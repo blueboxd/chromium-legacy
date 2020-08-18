@@ -70,22 +70,21 @@ void ResourceLoadingHintsAgent::DidCreateNewDocument() {
   if (!GetDocumentURL().SchemeIsHTTPOrHTTPS())
     return;
 
-  if (subresource_patterns_to_block_.empty())
-    return;
-
   blink::WebLocalFrame* web_frame = render_frame()->GetWebFrame();
   DCHECK(web_frame);
 
-  std::unique_ptr<blink::WebLoadingHintsProvider> loading_hints =
-      std::make_unique<blink::WebLoadingHintsProvider>(
-          ukm_source_id_.value(),
-          convert_to_web_vector(subresource_patterns_to_block_));
+  if (!subresource_patterns_to_block_.empty()) {
+    std::unique_ptr<blink::WebLoadingHintsProvider> loading_hints =
+        std::make_unique<blink::WebLoadingHintsProvider>(
+            ukm_source_id_.value(),
+            convert_to_web_vector(subresource_patterns_to_block_));
 
-  web_frame->GetDocumentLoader()->SetLoadingHintsProvider(
-      std::move(loading_hints));
-  // Once the hints are sent to the document loader, clear the local copy to
-  // prevent accidental reuse.
-  subresource_patterns_to_block_.clear();
+    web_frame->GetDocumentLoader()->SetLoadingHintsProvider(
+        std::move(loading_hints));
+    // Once the hints are sent to the document loader, clear the local copy to
+    // prevent accidental reuse.
+    subresource_patterns_to_block_.clear();
+  }
 
   // Pass the optimization hints for Blink to LocalFrame.
   // TODO(https://crbug.com/1113980): Onion-soupify the optimization guide for
@@ -96,8 +95,10 @@ void ResourceLoadingHintsAgent::DidCreateNewDocument() {
     web_frame->SetOptimizationGuideHints(
         blink_optimization_guide_hints_->delay_async_script_execution_hints
             ->delay_type);
-    blink_optimization_guide_hints_.reset();
   }
+  // Once the hints are sent to the local frame, clear the local copy to prevent
+  // accidental reuse.
+  blink_optimization_guide_hints_.reset();
 }
 
 void ResourceLoadingHintsAgent::OnDestruct() {

@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/unguessable_token.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
+#include "services/device/public/cpp/bluetooth/bluetooth_utils.h"
 #include "services/device/public/cpp/serial/serial_switches.h"
 #include "services/device/public/mojom/serial.mojom.h"
 
@@ -18,11 +19,6 @@ BluetoothSerialDeviceEnumerator::BluetoothSerialDeviceEnumerator() {
   device::BluetoothAdapterFactory::Get()->GetClassicAdapter(
       base::BindOnce(&BluetoothSerialDeviceEnumerator::OnGotClassicAdapter,
                      base::Unretained(this)));
-}
-
-const BluetoothUUID& GetSerialPortProfileUUID() {
-  static const BluetoothUUID kValue("1101");
-  return kValue;
 }
 
 BluetoothSerialDeviceEnumerator::~BluetoothSerialDeviceEnumerator() = default;

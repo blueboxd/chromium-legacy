@@ -15,8 +15,8 @@
 #include "ash/accessibility/accessibility_panel_layout_manager.h"
 #include "ash/accessibility/point_scan_controller.h"
 #include "ash/autoclick/autoclick_controller.h"
-#include "ash/events/accessibility_event_rewriter.h"
 #include "ash/events/select_to_speak_event_handler.h"
+#include "ash/events/switch_access_event_handler.h"
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/keyboard/keyboard_controller_impl.h"
 #include "ash/keyboard/ui/keyboard_util.h"
@@ -1138,10 +1138,9 @@ bool AccessibilityControllerImpl::IsEnterpriseIconVisibleForSwitchAccess() {
   return switch_access().IsEnterpriseIconVisible();
 }
 
-void AccessibilityControllerImpl::SetAccessibilityEventRewriter(
-    AccessibilityEventRewriter* accessibility_event_rewriter) {
-  accessibility_event_rewriter_ = accessibility_event_rewriter;
-  UpdateKeyCodesAfterSwitchAccessEnabled();
+void AccessibilityControllerImpl::
+    SetSwitchAccessIgnoreVirtualKeyEventForTesting(bool should_ignore) {
+  switch_access_event_handler_->set_ignore_virtual_key_events(should_ignore);
 }
 
 void AccessibilityControllerImpl::HideSwitchAccessBackButton() {
@@ -1174,11 +1173,22 @@ void AccessibilityControllerImpl::
   Shell::Get()->policy_recommendation_restorer()->DisableForTesting();
 }
 
+void AccessibilityControllerImpl::ForwardKeyEventsToSwitchAccess(
+    bool should_forward) {
+  switch_access_event_handler_->set_forward_key_events(should_forward);
+}
+
 void AccessibilityControllerImpl::StartPointScanning() {
   if (!point_scan_controller_)
     point_scan_controller_.reset(new PointScanController());
 
   point_scan_controller_->Start();
+}
+
+void AccessibilityControllerImpl::SetSwitchAccessEventHandlerDelegate(
+    SwitchAccessEventHandlerDelegate* delegate) {
+  switch_access_event_handler_delegate_ = delegate;
+  MaybeCreateSwitchAccessEventHandler();
 }
 
 void AccessibilityControllerImpl::SetStickyKeysEnabled(bool enabled) {
@@ -1392,9 +1402,11 @@ void AccessibilityControllerImpl::OnActiveUserPrefServiceChanged(
   ObservePrefs(prefs);
 }
 
-AccessibilityEventRewriter*
-AccessibilityControllerImpl::GetAccessibilityEventRewriterForTest() {
-  return accessibility_event_rewriter_;
+SwitchAccessEventHandler*
+AccessibilityControllerImpl::GetSwitchAccessEventHandlerForTest() {
+  if (switch_access_event_handler_)
+    return switch_access_event_handler_.get();
+  return nullptr;
 }
 
 void AccessibilityControllerImpl::
@@ -1737,11 +1749,6 @@ void AccessibilityControllerImpl::MaybeCreateSelectToSpeakEventHandler() {
 
 void AccessibilityControllerImpl::UpdateSwitchAccessKeyCodesFromPref(
     SwitchAccessCommand command) {
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExperimentalAccessibilitySwitchAccess)) {
-    return;
-  }
-
   DCHECK(active_user_prefs_);
 
   std::string pref_key = PrefKeyForSwitchAccessCommand(command);
@@ -1762,9 +1769,10 @@ void AccessibilityControllerImpl::UpdateSwitchAccessKeyCodesFromPref(
     base::UmaHistogramEnumeration(uma_name, uma_value);
   }
 
-  if (accessibility_event_rewriter_)
-    accessibility_event_rewriter_->SetKeyCodesForSwitchAccessCommand(key_codes,
-                                                                     command);
+  if (!switch_access_event_handler_)
+    return;
+
+  switch_access_event_handler_->SetKeyCodesForCommand(key_codes, command);
 }
 
 void AccessibilityControllerImpl::UpdateSwitchAccessAutoScanEnabledFromPref() {
@@ -1814,7 +1822,25 @@ void AccessibilityControllerImpl::SwitchAccessDisableDialogClosed(
   }
 }
 
-void AccessibilityControllerImpl::UpdateKeyCodesAfterSwitchAccessEnabled() {
+void AccessibilityControllerImpl::MaybeCreateSwitchAccessEventHandler() {
+  // Construct the handler as needed when Switch Access is enabled and the
+  // delegate is set. Otherwise, destroy the handler when Switch Access is
+  // disabled or the delegate has been destroyed.
+  if (!switch_access().enabled() || !switch_access_event_handler_delegate_) {
+    switch_access_event_handler_.reset();
+    return;
+  }
+
+  if (switch_access_event_handler_)
+    return;
+
+  switch_access_event_handler_ = std::make_unique<SwitchAccessEventHandler>(
+      switch_access_event_handler_delegate_);
+
+  if (!active_user_prefs_)
+    return;
+
+  // Update the key codes for each command once the handler is initialized.
   UpdateSwitchAccessKeyCodesFromPref(SwitchAccessCommand::kSelect);
   UpdateSwitchAccessKeyCodesFromPref(SwitchAccessCommand::kNext);
   UpdateSwitchAccessKeyCodesFromPref(SwitchAccessCommand::kPrevious);
@@ -1823,7 +1849,7 @@ void AccessibilityControllerImpl::UpdateKeyCodesAfterSwitchAccessEnabled() {
 void AccessibilityControllerImpl::ActivateSwitchAccess() {
   switch_access_bubble_controller_ =
       std::make_unique<SwitchAccessMenuBubbleController>();
-  UpdateKeyCodesAfterSwitchAccessEnabled();
+  MaybeCreateSwitchAccessEventHandler();
   if (::switches::IsSwitchAccessPointScanningEnabled())
     StartPointScanning();
   if (skip_switch_access_notification_) {
@@ -1838,6 +1864,7 @@ void AccessibilityControllerImpl::DeactivateSwitchAccess() {
   if (client_)
     client_->OnSwitchAccessDisabled();
   switch_access_bubble_controller_.reset();
+  switch_access_event_handler_.reset();
 }
 
 void AccessibilityControllerImpl::UpdateShortcutsEnabledFromPref() {

@@ -166,7 +166,8 @@ TEST_F(VulkanImageTest, CreateFromGpuMemoryBufferHandle) {
     gfx::BufferUsage buffer_usage = gfx::BufferUsage::SCANOUT;
     int client_id = 1;
     auto gmb_handle = factory->CreateGpuMemoryBuffer(
-        id, size, format.buffer, buffer_usage, client_id, kNullSurfaceHandle);
+        id, size, /*framebuffer_size=*/size, format.buffer, buffer_usage,
+        client_id, kNullSurfaceHandle);
     EXPECT_TRUE(!gmb_handle.is_null());
     EXPECT_EQ(gmb_handle.type,
               gfx::GpuMemoryBufferType::ANDROID_HARDWARE_BUFFER);

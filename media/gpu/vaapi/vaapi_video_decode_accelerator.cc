@@ -25,7 +25,6 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
-#include "build/build_config.h"
 #include "gpu/ipc/service/gpu_channel.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/format_utils.h"
@@ -44,7 +43,6 @@
 #include "media/gpu/vp8_decoder.h"
 #include "media/gpu/vp9_decoder.h"
 #include "media/video/picture.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/gl/gl_image.h"
 
 namespace media {
@@ -194,12 +192,6 @@ VaapiVideoDecodeAccelerator::~VaapiVideoDecodeAccelerator() {
 bool VaapiVideoDecodeAccelerator::Initialize(const Config& config,
                                              Client* client) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-
-#if defined(USE_X11)
-  // TODO(crbug/1116701): implement decode acceleration when running with Ozone.
-  if (features::IsUsingOzonePlatform())
-    return false;
-#endif
 
   if (config.is_encrypted()) {
     NOTREACHED() << "Encrypted streams are not supported for this VDA";
@@ -701,34 +693,30 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
 
   va_surface_format_ = GetVaFormatForVideoCodecProfile(profile_);
   std::vector<VASurfaceID> va_surface_ids;
-  scoped_refptr<VaapiWrapper> vaapi_wrapper_for_picture = vaapi_wrapper_;
 
-  // The X11/ANGLE implementation can use |vaapi_wrapper_| to copy from an
-  // internal libva buffer into an X Pixmap without having to use a processing
-  // wrapper.
-#if !defined(USE_X11)
   // If we aren't in BufferAllocationMode::kNone, we have to allocate a
   // |vpp_vaapi_wrapper_| for VaapiPicture to DownloadFromSurface() the VA's
   // internal decoded frame.
-  if (buffer_allocation_mode_ != BufferAllocationMode::kNone) {
-    if (!vpp_vaapi_wrapper_) {
-      vpp_vaapi_wrapper_ = VaapiWrapper::Create(
-          VaapiWrapper::kVideoProcess, VAProfileNone,
-          base::BindRepeating(&ReportToUMA, VAAPI_VPP_ERROR));
-      RETURN_AND_NOTIFY_ON_FAILURE(vpp_vaapi_wrapper_,
-                                   "Failed to initialize VppVaapiWrapper",
-                                   PLATFORM_FAILURE, );
-      // Size is irrelevant for a VPP context.
-      RETURN_AND_NOTIFY_ON_FAILURE(
-          vpp_vaapi_wrapper_->CreateContext(gfx::Size()),
-          "Failed to create Context", PLATFORM_FAILURE, );
-    }
-    vaapi_wrapper_for_picture = vpp_vaapi_wrapper_;
+  if (buffer_allocation_mode_ != BufferAllocationMode::kNone &&
+      !vpp_vaapi_wrapper_) {
+    vpp_vaapi_wrapper_ = VaapiWrapper::Create(
+        VaapiWrapper::kVideoProcess, VAProfileNone,
+        base::BindRepeating(&ReportToUMA, VAAPI_VPP_ERROR));
+    RETURN_AND_NOTIFY_ON_FAILURE(vpp_vaapi_wrapper_,
+                                 "Failed to initialize VppVaapiWrapper",
+                                 PLATFORM_FAILURE, );
+
+    // Size is irrelevant for a VPP context.
+    RETURN_AND_NOTIFY_ON_FAILURE(vpp_vaapi_wrapper_->CreateContext(gfx::Size()),
+                                 "Failed to create Context",
+                                 PLATFORM_FAILURE, );
   }
 
-#endif  // !defined(USE_X11)
-
   for (size_t i = 0; i < buffers.size(); ++i) {
+    // If we aren't in BufferAllocationMode::kNone, this |picture| is
+    // only used as a copy destination. Therefore, the VaapiWrapper used and
+    // owned by |picture| is |vpp_vaapi_wrapper_|.
+
     // TODO(b/139460315): Create with buffers[i] once the AMD driver issue is
     // resolved.
     PictureBuffer buffer = buffers[i];
@@ -741,15 +729,16 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
             : gfx::Size();
 
     std::unique_ptr<VaapiPicture> picture = vaapi_picture_factory_->Create(
-        vaapi_wrapper_for_picture, make_context_current_cb_, bind_image_cb_,
-        buffer, size_to_bind);
+        (buffer_allocation_mode_ == BufferAllocationMode::kNone)
+            ? vaapi_wrapper_
+            : vpp_vaapi_wrapper_,
+        make_context_current_cb_, bind_image_cb_, buffer, size_to_bind);
     RETURN_AND_NOTIFY_ON_FAILURE(picture, "Failed creating a VaapiPicture",
                                  PLATFORM_FAILURE, );
 
     if (output_mode_ == Config::OutputMode::ALLOCATE) {
       RETURN_AND_NOTIFY_ON_STATUS(
           picture->Allocate(vaapi_picture_factory_->GetBufferFormat()), );
-
       available_picture_buffers_.push_back(buffers[i].id());
       VASurfaceID va_surface_id = picture->va_surface_id();
       if (va_surface_id != VA_INVALID_ID)
@@ -1201,20 +1190,6 @@ VaapiVideoDecodeAccelerator::GetSupportedProfiles() {
 
 VaapiVideoDecodeAccelerator::BufferAllocationMode
 VaapiVideoDecodeAccelerator::DecideBufferAllocationMode() {
-#if defined(USE_X11)
-  // The IMPORT mode is used for Android on Chrome OS, so this doesn't apply
-  // here.
-  DCHECK_NE(output_mode_, VideoDecodeAccelerator::Config::OutputMode::IMPORT);
-  // TODO(crbug/1116701): get video decode acceleration working with ozone.
-  DCHECK(!features::IsUsingOzonePlatform());
-  // For H.264 on older devices, another +1 is experimentally needed for
-  // high-to-high resolution changes.
-  // TODO(mcasas): Figure out why and why only H264, see crbug.com/912295 and
-  // http://crrev.com/c/1363807/9/media/gpu/h264_decoder.cc#1449.
-  if (profile_ >= H264PROFILE_MIN && profile_ <= H264PROFILE_MAX)
-    return BufferAllocationMode::kReduced;
-  return BufferAllocationMode::kSuperReduced;
-#else
   // TODO(crbug.com/912295): Enable a better BufferAllocationMode for IMPORT
   // |output_mode_| as well.
   if (output_mode_ == VideoDecodeAccelerator::Config::OutputMode::IMPORT)
@@ -1249,7 +1224,6 @@ VaapiVideoDecodeAccelerator::DecideBufferAllocationMode() {
   // GetNumReferenceFrames() + 1. Moreover, we also request the |client_| to
   // allocate less than the usual |decoder_|s GetRequiredNumOfPictures().
   return BufferAllocationMode::kSuperReduced;
-#endif
 }
 
 bool VaapiVideoDecodeAccelerator::IsBufferAllocationModeReducedOrSuperReduced()

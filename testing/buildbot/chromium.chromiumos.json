@@ -4188,6 +4188,9 @@
     ],
     "gtest_tests": [
       {
+        "args": [
+          "--test-launcher-filter-file=../../testing/buildbot/filters/lacros.unit_tests.filter"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -4382,7 +4385,6 @@
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/lacros.browser_tests.filter"
         ],
-        "experiment_percentage": 100,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -5129,7 +5131,7 @@
       },
       {
         "args": [
-          "--gtest_filter=-NativeDesktopMediaListTest*:PermissionMessageCombinationsUnittest.USBSerialBluetoothCoalescing:RelaunchNotificationControllerPlatformImplTest.SynchronousNotification:WindowSizerTest*:ChromeContentBrowserClientTest.UserAgentStringOrdering:ChromeMetricsServiceClientTest.TestRegisterMetricsServiceProviders"
+          "--test-launcher-filter-file=../../testing/buildbot/filters/lacros.unit_tests.filter"
         ],
         "merge": {
           "args": [],

@@ -122,7 +122,6 @@ class CONTENT_EXPORT SignedExchangeHandler {
     kReadingPrologueFallbackUrlAndAfter,
     kReadingHeaders,
     kFetchingCertificate,
-    kSignatureVerified,
     kHeadersCallbackCalled,
   };
 

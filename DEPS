@@ -195,7 +195,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'e9d783c4d235d6bf8b27de1a1de84ff1ef846fb2',
+  'skia_revision': '688e0966cb1669d63b0764cdb3d64ea1c847d9da',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -207,7 +207,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '693d0e0bb6731b163cadc9dd3dd76f114e787f81',
+  'angle_revision': '863115fb49d768404b65637a6011f61fbca507a9',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -258,7 +258,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '03f545114e8edb67fb725a03818f7b74f1c3de75',
+  'catapult_revision': '26ea611a4edbffea23e4ad28887dba209c7f7d50',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -266,7 +266,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '8d6628854c8b9aba93157086654bc2d2c43b452a',
+  'devtools_frontend_revision': 'c298799c308164473a50dba6e948f1dee499c4c6',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -1231,7 +1231,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/cisco/openh264' + '@' + '3dd5b80bc4f172dd82925bb259cb7c82348409c5',
 
   'src/third_party/openscreen/src':
-    Var('chromium_git') + '/openscreen' + '@' + '8f1c253940472b1a961a8c3ca548f612c441b5a7',
+    Var('chromium_git') + '/openscreen' + '@' + '44b62e8d91822892241510de92783d38b7288ef1',
 
   'src/third_party/openxr/src': {
     'url': Var('chromium_git') + '/external/github.com/KhronosGroup/OpenXR-SDK' + '@' + '9e97b73e7dd2bfc07745489d728f6a36665c648f',
@@ -1470,7 +1470,7 @@ deps = {
   },
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '2549f174b533bb2eb35d3b0c3856e1a0ffa0c9b7',
+    Var('webrtc_git') + '/src.git' + '@' + '88816e373d305d64192ed815edfaf746afc96280',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1550,7 +1550,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': 'Fa2uaWyUkyfb0dZlfDu9CiOQue9NyZDytZiTrkZdzm0C',
+        'version': 'v84Xu6J9UdiZkQPrVZVu5ECq1RWmFqIUZgaH-BecwToC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -2899,7 +2899,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/com_android_tools_desugar_jdk_libs',
-              'version': 'version:1.0.5-cr0',
+              'version': 'version:1.0.10-cr0',
           },
       ],
       'condition': 'checkout_android',
@@ -2910,7 +2910,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/com_android_tools_desugar_jdk_libs_configuration',
-              'version': 'version:0.11.1-cr0',
+              'version': 'version:1.0.10-cr0',
           },
       ],
       'condition': 'checkout_android',

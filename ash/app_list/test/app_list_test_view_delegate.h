@@ -59,6 +59,10 @@ class AppListTestViewDelegate : public AppListViewDelegate,
   // Set whether tablet mode is enabled.
   void SetIsTabletModeEnabled(bool is_tablet_mode);
 
+  // Set whether the privacy notices should be shown.
+  void SetShouldShowAssistantPrivacyInfo(bool should_show);
+  void SetShouldShowSuggestedContentInfo(bool should_show);
+
   // AppListViewDelegate overrides:
   AppListModel* GetModel() override;
   SearchModel* GetSearchModel() override;
@@ -147,6 +151,8 @@ class AppListTestViewDelegate : public AppListViewDelegate,
   int next_profile_app_count_ = 0;
   int show_wallpaper_context_menu_count_ = 0;
   bool is_tablet_mode_ = false;
+  bool should_show_assistant_privacy_info_ = false;
+  bool should_show_suggested_content_info_ = false;
   std::map<size_t, int> open_search_result_counts_;
   std::unique_ptr<AppListTestModel> model_;
   std::unique_ptr<SearchModel> search_model_;

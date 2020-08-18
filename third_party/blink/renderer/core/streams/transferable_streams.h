@@ -20,12 +20,16 @@ class WritableStream;
 // Creates the writable side of a cross-realm identity transform stream, using
 // |port| for communication. |port| must be entangled with another MessagePort
 // which is passed to CreateCrossRealmTransformReadable().
+// Equivalent to SetUpCrossRealmTransformWritable in the standard:
+// https://streams.spec.whatwg.org/#abstract-opdef-setupcrossrealmtransformwritable
 CORE_EXPORT WritableStream* CreateCrossRealmTransformWritable(ScriptState*,
                                                               MessagePort* port,
                                                               ExceptionState&);
 
 // Creates the readable side of a cross-realm identity transform stream. |port|
 // is used symmetrically with CreateCrossRealmTransformWritable().
+// Equivalent to SetUpCrossRealmTransformReadable in the standard:
+// https://streams.spec.whatwg.org/#abstract-opdef-setupcrossrealmtransformreadable
 CORE_EXPORT ReadableStream* CreateCrossRealmTransformReadable(ScriptState*,
                                                               MessagePort* port,
                                                               ExceptionState&);

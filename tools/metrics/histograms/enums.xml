@@ -3302,7 +3302,7 @@ Unknown properties are collapsed to zero. -->
   <int value="5" label="GMS check-in was failed"/>
   <int value="6" label="Cloud provision flow failed"/>
   <int value="7" label="Mojo version mistmached"/>
-  <int value="8" label="Mojo call timeout"/>
+  <int value="8" label="Provisioning timeout"/>
   <int value="9" label="GMS check-in was timed out"/>
   <int value="10" label="GMS check-in reported internal error"/>
   <int value="11" label="GMS core sign in procedure was failed"/>
@@ -28544,7 +28544,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3201" label="OBSOLETE_WrongBaselineOfButtonElement"/>
   <int value="3202" label="V8Document_HasTrustToken_Method"/>
   <int value="3203" label="ForceLoadAtTop"/>
-  <int value="3204" label="OBSOLETE_LegacyLayoutByButton"/>
+  <int value="3204" label="LegacyLayoutByButton"/>
   <int value="3205" label="LegacyLayoutByDeprecatedFlexBox"/>
   <int value="3206" label="LegacyLayoutByDetailsMarker"/>
   <int value="3207" label="LegacyLayoutByEditing"/>

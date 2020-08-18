@@ -103,6 +103,7 @@ let NavigateMessage;
  * @enum {number}
  */
 const RenameResult = {
+  FILE_NO_LONGER_IN_LAST_OPENED_DIRECTORY: -1,
   SUCCESS: 0,
   FILE_EXISTS: 1,
 };

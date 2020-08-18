@@ -25,7 +25,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
-#include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/user_creation_screen_handler.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/constants/chromeos_switches.h"
@@ -98,7 +98,7 @@ class LoginScreenGuestButtonPolicyTest : public LoginScreenPolicyTest {
 };
 
 IN_PROC_BROWSER_TEST_F(LoginScreenGuestButtonPolicyTest, NoUsers) {
-  OobeScreenWaiter(GaiaView::kScreenId).Wait();
+  OobeScreenWaiter(UserCreationView::kScreenId).Wait();
 
   // Default.
   EXPECT_TRUE(ash::LoginScreenTestApi::IsGuestButtonShown());
@@ -122,7 +122,7 @@ IN_PROC_BROWSER_TEST_F(LoginScreenGuestButtonPolicyTest, NoUsers) {
 }
 
 IN_PROC_BROWSER_TEST_F(LoginScreenGuestButtonPolicyTest, HasUsers) {
-  OobeScreenWaiter(GaiaView::kScreenId).Wait();
+  OobeScreenWaiter(UserCreationView::kScreenId).Wait();
 
   // Default.
   EXPECT_TRUE(ash::LoginScreenTestApi::IsGuestButtonShown());

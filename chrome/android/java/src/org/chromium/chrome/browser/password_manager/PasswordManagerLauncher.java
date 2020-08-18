@@ -7,7 +7,9 @@ package org.chromium.chrome.browser.password_manager;
 import android.app.Activity;
 
 import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.AppHooks;
@@ -98,7 +100,9 @@ public class PasswordManagerLauncher {
         int minGooglePlayServicesVersion = ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
                 GOOGLE_ACCOUNT_PWM_UI, MIN_GOOGLE_PLAY_SERVICES_VERSION_PARAM,
                 DEFAULT_MIN_GOOGLE_PLAY_SERVICES_APK_VERSION);
-        if (AppHooks.get().isGoogleApiAvailableWithMinApkVersion(minGooglePlayServicesVersion)
+
+        if (GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(
+                    ContextUtils.getApplicationContext(), minGooglePlayServicesVersion)
                 != ConnectionResult.SUCCESS) {
             return false;
         }

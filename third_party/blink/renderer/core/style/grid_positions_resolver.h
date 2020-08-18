@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_GRID_POSITIONS_RESOLVER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_GRID_POSITIONS_RESOLVER_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/style/grid_position.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
@@ -49,7 +48,8 @@ class NamedLineCollection {
   size_t auto_repeat_total_tracks_;
   size_t auto_repeat_track_list_length_;
 
-  DISALLOW_COPY_AND_ASSIGN(NamedLineCollection);
+  NamedLineCollection(const NamedLineCollection&) = delete;
+  NamedLineCollection& operator=(const NamedLineCollection&) = delete;
 };
 
 // This is a utility class with all the code related to grid items positions

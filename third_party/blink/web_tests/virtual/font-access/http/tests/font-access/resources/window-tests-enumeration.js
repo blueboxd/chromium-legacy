@@ -1,7 +1,12 @@
 'use strict';
 
 promise_test(async t => {
-  await test_driver.set_permission({name: 'font-access'}, 'granted');
+  assert_throws_dom('SecurityError', () => {
+    navigator.fonts.query();
+  });
+}, 'query(): fails if there is no user activation');
+
+font_access_test(async t => {
   const iterator = navigator.fonts.query();
   assert_equals(typeof iterator, 'object', 'query() should return an Object');
   assert_true(!!iterator[Symbol.asyncIterator],

@@ -429,7 +429,10 @@ AccessibilityPrivateForwardKeyEventsToSwitchAccessFunction::Run() {
               *args_);
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  return RespondNow(Error("Forwarding key events is no longer supported."));
+  ash::AccessibilityController::Get()->ForwardKeyEventsToSwitchAccess(
+      params->should_forward);
+
+  return RespondNow(NoArguments());
 }
 
 ExtensionFunction::ResponseAction

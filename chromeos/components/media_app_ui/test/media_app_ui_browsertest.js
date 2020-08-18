@@ -284,12 +284,9 @@ TEST_F('MediaAppUIBrowserTest', 'NonLaunchableIpcAfterFastLoad', async () => {
   testDone();
 });
 
-
 // Tests that we can launch the MediaApp with the selected (first) file,
-// interact with it by invoking IPC (rename) that re-launches the
-// MediaApp (calls `launchWithDirectory`), then the rest of the files
-// in the current directory are loaded in.
-TEST_F('MediaAppUIBrowserTest', 'ReLaunchableIpcAfterFastLoad', async () => {
+// and re-launch it before all files from the first launch are loaded in.
+TEST_F('MediaAppUIBrowserTest', 'ReLaunchableAfterFastLoad', async () => {
   const files =
       await createMultipleImageFiles(['file1', 'file2', 'file3', 'file4']);
   const directory = await createMockTestDirectory(files);
@@ -303,48 +300,42 @@ TEST_F('MediaAppUIBrowserTest', 'ReLaunchableIpcAfterFastLoad', async () => {
 
   await assertSingleFileLaunch(directory, files.length);
 
-  // Invoke Rename IPC that relaunches the app, this calls
-  // `launchWithDirectory()` which increments globalLaunchNumber.
-  const messageRename = {renameLastFile: 'new_file_name.png'};
-  const testResponse = await sendTestMessage(messageRename);
-  assertEquals(
-      testResponse.testQueryResult, 'renameOriginalFile resolved success');
+  // Mutate the second file.
+  directory.files[1].name = 'changed.png';
+  // Relaunch the app with the second file.
+  await launchWithDirectory(directory, directory.files[1]);
 
-  // Ensure rename relaunches the app incremented the `globalLaunchNumber`.
+  // Ensure second launch incremented the `globalLaunchNumber`.
   assertEquals(1, globalLaunchNumber);
-  // The renamed file (also the focused file) is at the end of the
-  // `FileSystemDirectoryHandle.files` since it was deleted and a new file
-  // with the same contents and a different name was created.
-  assertEquals(directory.files[3].name, 'new_file_name.png');
 
-  // The call to `launchWithDirectory()` from rename relaunching the app loads
-  // other files into `currentFiles`.
+  // Second launch loads other files into `currentFiles`.
   await assertFilesLoaded(
-      directory, ['new_file_name.png', 'file2.png', 'file3.png', 'file4.png'],
-      'fast files: check files after renaming');
-  const currentFilesAfterRenameLaunch = [...currentFiles];
-  const loadedFilesAfterRename = await getLoadedFiles();
+      directory, ['changed.png', 'file3.png', 'file4.png', 'file1.png'],
+      'fast files: check files after relaunching');
+  const currentFilesAfterSecondLaunch = [...currentFiles];
+  const loadedFilesSecondLaunch = await getLoadedFiles();
 
-  // Try to load with previous launch number, has no effect as it is aborted
-  // early due to different launch numbers.
+  // Try to load with previous launch number simulating the first launch
+  // completing after the second launch. Has no effect as it is aborted early
+  // due to different launch numbers.
   const previousLaunchNumber = 0;
   await loadOtherRelatedFiles(
       directory, focusFile.file, focusFile.handle, previousLaunchNumber);
 
-  // Ensure same files as before the call to `loadOtherRelatedFiles()` by for
-  // equality equality.
-  currentFilesAfterRenameLaunch.map(
+  // Ensure `currentFiles is the same as the file state at the end of the second
+  // launch before the call to `loadOtherRelatedFiles()`.
+  currentFilesAfterSecondLaunch.map(
       (fd, index) => assertEquals(
           fd, currentFiles[index],
           `Equality check for file ${
               JSON.stringify(fd)} in currentFiles filed`));
 
-  // Focus file stays index 0.
+  // Focus file (file that the directory was launched with) stays index 0.
   const lastLoadedFiles = await getLoadedFiles();
-  assertEquals('new_file_name.png', lastLoadedFiles[0].name);
-  assertEquals(loadedFilesAfterRename[0].name, lastLoadedFiles[0].name);
-  // Focus file in the `FileSystemDirectoryHandle` is at index 3.
-  assertEquals(directory.files[3].name, lastLoadedFiles[0].name);
+  assertEquals('changed.png', lastLoadedFiles[0].name);
+  assertEquals(loadedFilesSecondLaunch[0].name, lastLoadedFiles[0].name);
+  // Focus file in the `FileSystemDirectoryHandle` is at index 1.
+  assertEquals(directory.files[1].name, lastLoadedFiles[0].name);
 
   testDone();
 });
@@ -764,49 +755,94 @@ TEST_F('MediaAppUIBrowserTest', 'NavigateIPC', async () => {
 });
 
 // Tests the IPC behind the implementation of ReceivedFile.renameOriginalFile()
-// in the untrusted context.
+// in the untrusted context. This test is integration-y making sure we rename
+// the focus file and that gets inserted in the right place in `currentFiles`
+// preserving navigation order.
 TEST_F('MediaAppUIBrowserTest', 'RenameOriginalIPC', async () => {
-  const directory = await launchWithFiles([await createTestImageFile()]);
-  const firstFileHandle = directory.files[0];
-  const firstFile = firstFileHandle.getFileSync();
-
-  let testResponse;
+  const directory = await launchWithFiles([
+    await createTestImageFile(1, 1, 'file1.png'),
+    await createTestImageFile(1, 1, 'file2.png')
+  ]);
 
   // Nothing should be deleted initially.
   assertEquals(null, directory.lastDeleted);
 
+  // Navigate to second file "file2.png".
+  await advance(1);
+
   // Test normal rename flow.
-  const messageRename = {renameLastFile: 'new_file_name.png'};
+  const file2Handle = directory.files[entryIndex];
+  const file2File = file2Handle.getFileSync();
+  const file2Token = currentFiles[entryIndex].token;
+  let messageRename = {renameLastFile: 'new_file_name.png'};
+  let testResponse;
+
   testResponse = await sendTestMessage(messageRename);
 
   assertEquals(
       testResponse.testQueryResult, 'renameOriginalFile resolved success');
   // The original file that was renamed got deleted.
-  assertEquals(firstFileHandle, directory.lastDeleted);
-  // There is still one file which is the renamed version of the original file.
-  assertEquals(directory.files.length, 1);
-  assertEquals(directory.files[0].name, 'new_file_name.png');
+  assertEquals(file2Handle, directory.lastDeleted);
+  assertEquals(directory.files.length, 2);
+  assertEquals(directory.files[entryIndex].name, 'new_file_name.png');
+  // The new file uses the same token as the old file.
+  assertEquals(currentFiles[entryIndex].token, file2Token);
   // Check the new file written has the correct data.
-  const newHandle = directory.files[0];
-  const newFile = await newHandle.getFile();
-  assertEquals(newFile.size, firstFile.size);
-  assertEquals(await newFile.text(), await firstFile.text());
+  const renamedHandle = directory.files[entryIndex];
+  const renamedFile = await renamedHandle.getFile();
+  assertEquals(renamedFile.size, file2File.size);
+  assertEquals(await renamedFile.text(), await file2File.text());
+  // Check the internal representation (token map & currentFiles) is updated.
+  assertEquals(tokenMap.get(file2Token), renamedHandle);
+  assertEquals(currentFiles[entryIndex].handle, renamedHandle);
 
-  // Test renaming when a file with the new name already exists.
+  // Check navigation order is preserved.
+  assertEquals(entryIndex, 1);
+  assertEquals(currentFiles[entryIndex].handle.name, 'new_file_name.png');
+  assertEquals(currentFiles[0].handle.name, 'file1.png');
+
+  // Advancing wraps around back to the first file.
+  await advance(1);
+
+  assertEquals(entryIndex, 0);
+  assertEquals(currentFiles[entryIndex].handle.name, 'file1.png');
+  assertEquals(currentFiles[1].handle.name, 'new_file_name.png');
+
+  // Test renaming when a file with the new name already exists, tries to rename
+  // `file1.png` to `new_file_name.png` which already exists.
   const messageRenameExists = {renameLastFile: 'new_file_name.png'};
   testResponse = await sendTestMessage(messageRenameExists);
 
   assertEquals(
       testResponse.testQueryResult, 'renameOriginalFile resolved file exists');
   // No change to the existing file.
-  assertEquals(directory.files.length, 1);
-  assertEquals(directory.files[0].name, 'new_file_name.png');
+  assertEquals(directory.files.length, 2);
+  assertEquals(directory.files[entryIndex].name, 'file1.png');
+  assertEquals(directory.files[1].name, 'new_file_name.png');
+
+  // Test renaming when something is out of sync with `currentFiles` and has an
+  // expired token.
+  const expiredToken = tokenGenerator.next().value;
+  currentFiles[entryIndex].token = expiredToken;
+
+  messageRename = {renameLastFile: 'another_name.png'};
+
+  testResponse = await sendTestMessage(messageRename);
+
+  // Fails silently, nothing changes.
+  assertEquals(
+      testResponse.testQueryResult,
+      'renameOriginalFile resolved FILE_NO_LONGER_IN_LAST_OPENED_DIRECTORY');
+  assertEquals(currentFiles[entryIndex].handle.name, 'file1.png');
+  assertEquals(currentFiles.length, 2);
+  assertEquals(directory.files.length, 2);
+
+  // Test it throws an error by simulating a failed directory change.
+  simulateLosingAccessToDirectory();
 
   // Prevent the trusted context throwing errors resulting JS errors.
   guestMessagePipe.logClientError = error => console.log(JSON.stringify(error));
   guestMessagePipe.rethrowErrors = false;
-  // Test it throws an error by simulating a failed directory change.
-  simulateLosingAccessToDirectory();
 
   const messageRenameNoOp = {renameLastFile: 'new_file_name_2.png'};
   testResponse = await sendTestMessage(messageRenameNoOp);
@@ -815,6 +851,7 @@ TEST_F('MediaAppUIBrowserTest', 'RenameOriginalIPC', async () => {
       testResponse.testQueryResult,
       'renameOriginalFile failed Error: Error: rename-file: Rename failed. ' +
           'File without launch directory.');
+
   testDone();
 });
 

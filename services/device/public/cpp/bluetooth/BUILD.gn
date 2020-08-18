@@ -11,6 +11,7 @@ source_set("bluetooth") {
   deps = [
     "//base",
     "//device/bluetooth",
+    "//device/bluetooth/public/cpp:cpp",
     "//device/bluetooth/strings",
     "//services/device/public/mojom",
     "//ui/base",

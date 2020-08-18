@@ -878,23 +878,19 @@ TEST_F(CastRunnerIntegrationTest, LegacyMetricsRedirect) {
   CreateComponentContext(component_url);
   EXPECT_NE(component_context_, nullptr);
 
+  base::RunLoop run_loop;
+
+  // Add MetricsRecorder the the component's incoming_services.
+  component_services_.AddPublicService(
+      std::make_unique<vfs::Service>(
+          [&run_loop](zx::channel request, async_dispatcher_t* dispatcher) {
+            run_loop.Quit();
+          }),
+      fuchsia::legacymetrics::MetricsRecorder::Name_);
+
   StartCastComponent(component_url);
 
-  // Wait until we see the CastRunner connect to the LegacyMetrics service.
-  base::RunLoop run_loop;
-  component_state_created_callback_ = base::BindOnce(
-      [](FakeComponentState** component_state,
-         base::RepeatingClosure quit_closure) {
-        (*component_state)
-            ->outgoing_directory()
-            ->AddPublicService(
-                std::make_unique<vfs::Service>(
-                    [quit_closure](zx::channel, async_dispatcher_t*) {
-                      quit_closure.Run();
-                    }),
-                fuchsia::legacymetrics::MetricsRecorder::Name_);
-      },
-      base::Unretained(&component_state_), run_loop.QuitClosure());
+  // Wait until we see the CastRunner connect to the MetricsRecorder service.
   run_loop.Run();
 }
 

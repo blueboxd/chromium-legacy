@@ -79,6 +79,8 @@ def _ParseOptions():
                       help='GN-list of .jar files to optimize.')
   parser.add_argument('--desugar-jdk-libs-jar',
                       help='Path to desugar_jdk_libs.jar.')
+  parser.add_argument('--desugar-jdk-libs-configuration-jar',
+                      help='Path to desugar_jdk_libs_configuration.jar.')
   parser.add_argument('--output-path', help='Path to the generated .jar file.')
   parser.add_argument(
       '--proguard-configs',
@@ -327,6 +329,7 @@ def _OptimizeWithR8(options,
       base_has_imported_lib = dex_jdk_libs.DexJdkLibJar(
           options.r8_path, options.min_api, options.desugar_jdk_libs_json,
           options.desugar_jdk_libs_jar,
+          options.desugar_jdk_libs_configuration_jar,
           options.desugared_library_keep_rule_output, jdk_dex_output,
           options.warnings_as_errors)
 

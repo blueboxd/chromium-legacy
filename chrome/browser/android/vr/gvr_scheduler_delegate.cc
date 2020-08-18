@@ -367,11 +367,9 @@ void GvrSchedulerDelegate::OnVSync(base::TimeTicks frame_time) {
   // since we seem to be >1ms behind the vsync time when we receive this call.
   //
   // See third_party/catapult/tracing/tracing/extras/vsync/vsync_auditor.html
-  std::unique_ptr<base::trace_event::TracedValue> args =
-      std::make_unique<base::trace_event::TracedValue>();
-  args->SetDouble(
-      "frame_time_us",
-      static_cast<double>((frame_time - base::TimeTicks()).InMicroseconds()));
+  auto args = std::make_unique<base::trace_event::TracedValue>();
+  args->SetDouble("frame_time_us",
+                  (frame_time - base::TimeTicks()).InMicrosecondsF());
   TRACE_EVENT_INSTANT1("viz", "DisplayScheduler::BeginFrame",
                        TRACE_EVENT_SCOPE_THREAD, "args", std::move(args));
 
@@ -881,7 +879,7 @@ bool GvrSchedulerDelegate::WebVrHasOverstuffedBuffers() {
 
 device::mojom::VRPosePtr GvrSchedulerDelegate::GetHeadPose(
     gfx::Transform* head_mat_out) {
-  int64_t prediction_nanos = GetPredictedFrameTime().InMicroseconds() * 1000;
+  int64_t prediction_nanos = GetPredictedFrameTime().InNanoseconds();
 
   TRACE_EVENT_BEGIN0("gpu", "GvrSchedulerDelegate::GetVRPosePtrWithNeckModel");
   device::mojom::VRPosePtr pose =

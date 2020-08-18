@@ -68,6 +68,7 @@
 #include "services/network/public/mojom/network_service_test.mojom.h"
 #include "services/service_manager/embedder/switches.h"
 #include "services/tracing/public/cpp/trace_startup.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/display/display_switches.h"
 #include "ui/gl/gl_implementation.h"
@@ -176,6 +177,18 @@ class InitialNavigationObserver : public WebContentsObserver {
 }  // namespace
 
 BrowserTestBase::BrowserTestBase() {
+#if defined(USE_OZONE) && defined(USE_X11)
+  // In case of the USE_OZONE + USE_X11 build, the OzonePlatform can either be
+  // enabled or disabled. However, tests may override the FeatureList that will
+  // result in unknown state for the UseOzonePlatform feature. Thus, the
+  // features::IsUsingOzonePlatform has static const initializer that won't be
+  // changed despite FeatureList being overridden. However, it requires to call
+  // this method at least once so that the value is set correctly. This place
+  // looks the most appropriate as tests haven't started to add own FeatureList
+  // yet and we still have the original value set by base::TestSuite.
+  ignore_result(features::IsUsingOzonePlatform());
+#endif
+
   CHECK(!g_instance_already_created)
       << "Each browser test should be run in a new process. If you are adding "
          "a new browser test suite that runs on Android, please add it to "
@@ -352,6 +365,19 @@ void BrowserTestBase::SetUp() {
     base::FeatureList::GetInstance()->GetFeatureOverrides(&enabled_features,
                                                           &disabled_features);
   }
+
+#if defined(USE_X11) && defined(USE_OZONE)
+  // Append OzonePlatform to the enabled features so that the CommandLine
+  // instance has correct values, and other processes if any (GPU, for example),
+  // also use correct path.  features::IsUsingOzonePlatform() has static const
+  // initializer, which means the value of the features::IsUsingOzonePlatform()
+  // doesn't change even if tests override the FeatureList. Thus, it's correct
+  // to call it now as it is set way earlier than tests override the features.
+  //
+  // TODO(https://crbug.com/1096425): remove this as soon as use_x11 goes away.
+  if (features::IsUsingOzonePlatform())
+    enabled_features += ",UseOzonePlatform";
+#endif
 
   if (!enabled_features.empty()) {
     command_line->AppendSwitchASCII(switches::kEnableFeatures,

@@ -60,7 +60,8 @@ InProcessGpuMemoryBufferManager::CreateGpuMemoryBuffer(
   gfx::GpuMemoryBufferId id(next_gpu_memory_id_++);
   gfx::GpuMemoryBufferHandle buffer_handle =
       gpu_memory_buffer_factory_->CreateGpuMemoryBuffer(
-          id, size, format, usage, client_id_, surface_handle);
+          id, size, /*framebuffer_size=*/size, format, usage, client_id_,
+          surface_handle);
 
   AllocatedBufferInfo buffer_info(buffer_handle, size, format);
 

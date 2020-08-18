@@ -127,29 +127,31 @@ Manifest::ImageResource ConvertManifestImageResource(
     manifest_icon.type = WebString(mojo::ParseType(icon->type())).Utf16();
 
   // Parse 'purpose'
-  const auto purposes = mojo::ParsePurpose(icon->purpose());
-  // ParsePurpose() would've weeded out any purposes that're not ANY or
-  // MONOCHROME.
-  for (auto purpose : purposes) {
-    switch (purpose) {
-      case mojo::Purpose::ANY:
-        manifest_icon.purpose.emplace_back(
-            Manifest::ImageResource::Purpose::ANY);
-        break;
-      case mojo::Purpose::MONOCHROME:
-        manifest_icon.purpose.emplace_back(
-            Manifest::ImageResource::Purpose::MONOCHROME);
-        break;
-      case mojo::Purpose::MASKABLE:
-        manifest_icon.purpose.emplace_back(
-            Manifest::ImageResource::Purpose::MASKABLE);
-        break;
+  if (icon->hasPurpose()) {
+    // ParsePurpose() would've weeded out any purposes that're not ANY or
+    // MONOCHROME.
+    for (auto purpose : mojo::ParsePurpose(icon->purpose())) {
+      switch (purpose) {
+        case mojo::Purpose::ANY:
+          manifest_icon.purpose.emplace_back(
+              Manifest::ImageResource::Purpose::ANY);
+          break;
+        case mojo::Purpose::MONOCHROME:
+          manifest_icon.purpose.emplace_back(
+              Manifest::ImageResource::Purpose::MONOCHROME);
+          break;
+        case mojo::Purpose::MASKABLE:
+          manifest_icon.purpose.emplace_back(
+              Manifest::ImageResource::Purpose::MASKABLE);
+          break;
+      }
     }
   }
   // Parse 'sizes'.
-  WTF::Vector<gfx::Size> sizes = mojo::ParseSizes(icon->sizes());
-  for (const auto& size : sizes) {
-    manifest_icon.sizes.emplace_back(size);
+  if (icon->hasSizes()) {
+    for (const auto& size : mojo::ParseSizes(icon->sizes())) {
+      manifest_icon.sizes.emplace_back(size);
+    }
   }
 
   return manifest_icon;

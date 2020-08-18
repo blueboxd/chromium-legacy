@@ -8,6 +8,7 @@
 #include "content/browser/permissions/permission_controller_impl.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "third_party/blink/public/common/features.h"
 
 namespace content {
 
@@ -20,6 +21,7 @@ FontAccessManagerImpl::~FontAccessManagerImpl() {
 void FontAccessManagerImpl::BindReceiver(
     const BindingContext& context,
     mojo::PendingReceiver<blink::mojom::FontAccessManager> receiver) {
+  DCHECK(base::FeatureList::IsEnabled(blink::features::kFontAccess));
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   receivers_.Add(this, std::move(receiver), context);
@@ -32,11 +34,19 @@ void FontAccessManagerImpl::RequestPermission(
   const BindingContext& context = receivers_.current_context();
   RenderFrameHost* rfh = RenderFrameHost::FromID(context.frame_id);
 
+  // Double checking: renderer processes should already have checked for user
+  // activation before the RPC has been made. It is not an error, because it is
+  // possible that user activation has lapsed before reaching here.
+  if (!rfh->HasTransientUserActivation()) {
+    std::move(callback).Run(blink::mojom::PermissionStatus::DENIED);
+    return;
+  }
+
   auto* permission_controller = PermissionControllerImpl::FromBrowserContext(
       rfh->GetProcess()->GetBrowserContext());
   permission_controller->RequestPermission(
       PermissionType::FONT_ACCESS, rfh, context.origin.GetURL(),
-      /*user_gesture=*/false,
+      /*user_gesture=*/true,
       base::BindOnce(
           [](RequestPermissionCallback callback,
              blink::mojom::PermissionStatus status) {

@@ -169,21 +169,8 @@ Polymer({
     const status = this.getNetworkStateText_();
     const isManaged = this.item.source === OncSource.kDevicePolicy ||
         this.item.source === OncSource.kUserPolicy;
-
-    // TODO(jonmann): Reaching into the parent element breaks encapsulation so
-    // refactor this logic into the parent (NetworkList) and pass into
-    // NetworkListItem as a property.
-    let index;
-    let total;
-    if (this.parentElement.items) {
-      index = this.parentElement.items.indexOf(this.item) + 1;
-      total = this.parentElement.items.length;
-    } else {
-      // This should only happen in tests; see TODO above.
-      index = 0;
-      total = 1;
-    }
-
+    const index = this.parentElement.items.indexOf(this.item) + 1;
+    const total = this.parentElement.items.length;
     switch (this.item.type) {
       case NetworkType.kCellular:
         if (isManaged) {

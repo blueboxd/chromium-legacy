@@ -6,9 +6,11 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CONTENT_CAPTURE_CONTENT_CAPTURE_MANAGER_H_
 
 #include "base/memory/scoped_refptr.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/renderer/core/content_capture/content_capture_task.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/graphics/dom_node_id.h"
+#include "third_party/blink/renderer/platform/heap/member.h"
 
 namespace blink {
 
@@ -24,14 +26,19 @@ class CORE_EXPORT ContentCaptureManager
   explicit ContentCaptureManager(LocalFrame& local_frame_root);
   virtual ~ContentCaptureManager();
 
-  // Schedules ContentCaptureTask if it isn't already scheduled.
-  void ScheduleTaskIfNeeded();
+  // Schedules ContentCaptureTask if it isn't already scheduled. The |node| is
+  // the one newly painted.
+  void ScheduleTaskIfNeeded(const Node& node);
 
-  // Invokes when the |node_holder| asscociated LayoutText will be destroyed.
+  // Invokes when the |node_holder| associated LayoutText will be destroyed.
   void OnLayoutTextWillBeDestroyed(const Node& node);
 
   // Invokes when scroll position was changed.
   void OnScrollPositionChanged();
+
+  // Invoked on the user input on the |local_frame|.
+  void NotifyInputEvent(WebInputEvent::Type type,
+                        const LocalFrame& local_frame);
 
   // Invokes when text node content was changed.
   void OnNodeTextChanged(Node& node);
@@ -50,8 +57,22 @@ class CORE_EXPORT ContentCaptureManager
   TaskSession& GetTaskSessionForTesting() const { return *task_session_; }
 
  private:
+  struct UserActivation : public GarbageCollected<UserActivation> {
+    explicit UserActivation(const LocalFrame& local_frame);
+
+    // The LocalFrame that the user activation occurred.
+    const WeakMember<const LocalFrame> local_frame;
+    const base::TimeTicks activation_time;
+
+    virtual void Trace(Visitor*) const;
+  };
+
   void NotifyNodeDetached(const Node& node);
   void ScheduleTask(ContentCaptureTask::ScheduleReason reason);
+
+  // Returns true if the user had the input in last
+  // |kUserActivationExpiryPeriod| on the |node|'s frame.
+  bool UserActivated(const Node& node) const;
 
   Member<ContentCaptureTask> content_capture_idle_task_;
 
@@ -64,6 +85,9 @@ class CORE_EXPORT ContentCaptureManager
 
   // A set of weak reference of the node that has been sent.
   Member<SentNodes> sent_nodes_;
+
+  // The latest user activation in any frame of the |local_frame_root_|.
+  Member<UserActivation> latest_user_activation_;
 };
 
 }  // namespace blink

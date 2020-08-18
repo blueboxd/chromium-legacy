@@ -79,7 +79,8 @@ _java_target_patterns = _java_library_patterns + _java_resource_patterns
 
 _r8_path = "//third_party/r8/lib/r8.jar"
 _desugar_jdk_libs_json = "//third_party/r8/desugar_jdk_libs.json"
-_desugar_jdk_libs_jar = "//third_party/android_deps/libs/com_android_tools_desugar_jdk_libs/desugar_jdk_libs-1.0.5.jar"
+_desugar_jdk_libs_jar = "//third_party/android_deps/libs/com_android_tools_desugar_jdk_libs/desugar_jdk_libs-1.0.10.jar"
+_desugar_jdk_libs_configuration_jar = "//third_party/android_deps/libs/com_android_tools_desugar_jdk_libs_configuration/desugar_jdk_libs_configuration-1.0.10.jar"
 _desugar_runtime_jar = "$root_build_dir/obj/third_party/bazel/desugar/Desugar_runtime.processed.jar"
 
 # Where to write failed expectations for bots to read.
@@ -1227,8 +1228,13 @@ if (enable_java_templates) {
       _args += [
         "--desugar-jdk-libs-jar",
         rebase_path(_desugar_jdk_libs_jar, root_build_dir),
+        "--desugar-jdk-libs-configuration-jar",
+        rebase_path(_desugar_jdk_libs_configuration_jar, root_build_dir),
       ]
-      _inputs += [ _desugar_jdk_libs_jar ]
+      _inputs += [
+        _desugar_jdk_libs_jar,
+        _desugar_jdk_libs_configuration_jar,
+      ]
 
       _desugared_library_keep_rule_output_path =
           "$target_gen_dir/$target_name.desugared_library_keep_rules.flags"
@@ -1734,6 +1740,7 @@ if (enable_java_templates) {
         _r8_path,
         _desugar_jdk_libs_json,
         _desugar_jdk_libs_jar,
+        _desugar_jdk_libs_configuration_jar,
       ]
       outputs = [ invoker.output ]
       args = [
@@ -1743,6 +1750,8 @@ if (enable_java_templates) {
         rebase_path(_desugar_jdk_libs_json, root_build_dir),
         "--desugar-jdk-libs-jar",
         rebase_path(_desugar_jdk_libs_jar, root_build_dir),
+        "--desugar-jdk-libs-configuration-jar",
+        rebase_path(_desugar_jdk_libs_configuration_jar, root_build_dir),
         "--output",
         rebase_path(invoker.output, root_build_dir),
         "--min-api=${invoker.min_sdk_version}",

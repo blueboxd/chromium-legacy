@@ -197,6 +197,12 @@ void InstallStageTracker::ReportCRXInstallationStage(const ExtensionId& id,
     data.copying_started_time = current_time;
   else if (stage == InstallationStage::kUnpacking)
     data.unpacking_started_time = current_time;
+  else if (stage == InstallationStage::kCheckingExpectations)
+    data.checking_expectations_started_time = current_time;
+  else if (stage == InstallationStage::kFinalizing)
+    data.finalizing_started_time = current_time;
+  else if (stage == InstallationStage::kComplete)
+    data.installation_complete_time = current_time;
 
   for (auto& observer : observers_) {
     observer.OnExtensionDataChangedForTesting(id, browser_context_, data);

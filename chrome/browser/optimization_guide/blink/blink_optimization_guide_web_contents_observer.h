@@ -13,6 +13,8 @@ class Profile;
 
 namespace optimization_guide {
 
+class BlinkOptimizationGuideInquirer;
+
 // BlinkOptimizationGuideWebContentsObserver observes navigation events, queries
 // the optimization guide service about optimization hints for Blink, and then
 // sends them to a renderer immediately before navigation commit.
@@ -42,9 +44,8 @@ class BlinkOptimizationGuideWebContentsObserver final
   void ReadyToCommitNavigation(
       content::NavigationHandle* navigation_handle) override;
 
-  // Used for testing.
-  blink::mojom::BlinkOptimizationGuideHints& sent_hints_for_testing() {
-    return *sent_hints_for_testing_;
+  BlinkOptimizationGuideInquirer* current_inquirer() {
+    return current_inquirer_.get();
   }
 
  private:
@@ -57,8 +58,8 @@ class BlinkOptimizationGuideWebContentsObserver final
 
   Profile* const profile_;
 
-  // Used for testing.
-  blink::mojom::BlinkOptimizationGuideHintsPtr sent_hints_for_testing_;
+  // Reset every time the main frame navigation gets ready to commit.
+  std::unique_ptr<BlinkOptimizationGuideInquirer> current_inquirer_;
 };
 
 }  // namespace optimization_guide

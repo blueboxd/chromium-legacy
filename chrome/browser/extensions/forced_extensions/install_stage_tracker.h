@@ -331,6 +331,14 @@ class InstallStageTracker : public KeyedService {
     base::Optional<base::TimeTicks> copying_started_time;
     // Time at which unpacking of the extension archive is started.
     base::Optional<base::TimeTicks> unpacking_started_time;
+    // Time at which the extension archive has been successfully unpacked and
+    // the expectation checks before extension installation are started.
+    base::Optional<base::TimeTicks> checking_expectations_started_time;
+    // Time at which the extension has passed the expectation checks and the
+    // installation is started.
+    base::Optional<base::TimeTicks> finalizing_started_time;
+    // Time at which the installation process is complete.
+    base::Optional<base::TimeTicks> installation_complete_time;
   };
 
   class Observer : public base::CheckedObserver {

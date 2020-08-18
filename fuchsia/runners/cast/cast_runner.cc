@@ -358,6 +358,5 @@ void CastRunner::OnMetricsRecorderServiceRequest(
       reinterpret_cast<CastComponent*>(main_context_->GetAnyComponent());
   DCHECK(component);
 
-  component->agent_manager()->ConnectToAgentService(
-      component->application_config().agent_url(), std::move(request));
+  component->startup_context()->svc()->Connect(std::move(request));
 }

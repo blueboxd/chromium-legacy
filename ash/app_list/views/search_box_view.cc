@@ -740,6 +740,12 @@ void SearchBoxView::ButtonPressed(views::Button* sender,
 
 void SearchBoxView::UpdateSearchBoxTextForSelectedResult(
     SearchResult* selected_result) {
+  // TODO(wrong): Filter by result type instead of id.
+  if (selected_result->id() == "PrivacyInfoResult") {
+    // Privacy view should not change the search box text.
+    return;
+  }
+
   if (selected_result->result_type() == AppListSearchResultType::kOmnibox &&
       !selected_result->is_omnibox_search() &&
       !selected_result->details().empty()) {

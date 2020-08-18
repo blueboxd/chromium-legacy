@@ -4,11 +4,27 @@
 
 #include "third_party/blink/renderer/core/content_capture/content_capture_manager.h"
 
+#include "base/time/time.h"
 #include "third_party/blink/renderer/core/content_capture/sent_nodes.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 
 namespace blink {
+
+namespace {
+
+static constexpr base::TimeDelta kUserActivationExpiryPeriod =
+    base::TimeDelta::FromSeconds(5);
+
+}  // namespace
+
+ContentCaptureManager::UserActivation::UserActivation(
+    const LocalFrame& local_frame)
+    : local_frame(&local_frame), activation_time(base::TimeTicks::Now()) {}
+
+void ContentCaptureManager::UserActivation::Trace(Visitor* visitor) const {
+  visitor->Trace(local_frame);
+}
 
 ContentCaptureManager::ContentCaptureManager(LocalFrame& local_frame_root)
     : local_frame_root_(&local_frame_root) {
@@ -19,13 +35,27 @@ ContentCaptureManager::ContentCaptureManager(LocalFrame& local_frame_root)
 
 ContentCaptureManager::~ContentCaptureManager() = default;
 
-void ContentCaptureManager::ScheduleTaskIfNeeded() {
+void ContentCaptureManager::ScheduleTaskIfNeeded(const Node& node) {
   if (first_node_holder_created_) {
-    ScheduleTask(ContentCaptureTask::ScheduleReason::kContentChange);
+    ScheduleTask(
+        UserActivated(node)
+            ? ContentCaptureTask::ScheduleReason::kUserActivatedContentChange
+            : ContentCaptureTask::ScheduleReason::
+                  kNonUserActivatedContentChange);
   } else {
     ScheduleTask(ContentCaptureTask::ScheduleReason::kFirstContentChange);
     first_node_holder_created_ = true;
   }
+}
+
+bool ContentCaptureManager::UserActivated(const Node& node) const {
+  if (auto* frame = node.GetDocument().GetFrame()) {
+    return latest_user_activation_ &&
+           latest_user_activation_->local_frame == frame &&
+           (base::TimeTicks::Now() - latest_user_activation_->activation_time <
+            kUserActivationExpiryPeriod);
+  }
+  return false;
 }
 
 void ContentCaptureManager::ScheduleTask(
@@ -47,16 +77,37 @@ void ContentCaptureManager::NotifyNodeDetached(const Node& node) {
 
 void ContentCaptureManager::OnLayoutTextWillBeDestroyed(const Node& node) {
   NotifyNodeDetached(node);
-  ScheduleTask(ContentCaptureTask::ScheduleReason::kContentChange);
+  ScheduleTask(
+      UserActivated(node)
+          ? ContentCaptureTask::ScheduleReason::kUserActivatedContentChange
+          : ContentCaptureTask::ScheduleReason::kNonUserActivatedContentChange);
 }
 
 void ContentCaptureManager::OnScrollPositionChanged() {
   ScheduleTask(ContentCaptureTask::ScheduleReason::kScrolling);
 }
 
+void ContentCaptureManager::NotifyInputEvent(WebInputEvent::Type type,
+                                             const LocalFrame& local_frame) {
+  // Ignores events that are not actively interacting with the page. The ignored
+  // input is the same as PaintTimeDetector::NotifyInputEvent().
+  if (type == WebInputEvent::Type::kMouseMove ||
+      type == WebInputEvent::Type::kMouseEnter ||
+      type == WebInputEvent::Type::kMouseLeave ||
+      type == WebInputEvent::Type::kKeyUp ||
+      WebInputEvent::IsPinchGestureEventType(type)) {
+    return;
+  }
+
+  latest_user_activation_ = MakeGarbageCollected<UserActivation>(local_frame);
+}
+
 void ContentCaptureManager::OnNodeTextChanged(Node& node) {
   task_session_->OnNodeChanged(node);
-  ScheduleTask(ContentCaptureTask::ScheduleReason::kContentChange);
+  ScheduleTask(
+      UserActivated(node)
+          ? ContentCaptureTask::ScheduleReason::kUserActivatedContentChange
+          : ContentCaptureTask::ScheduleReason::kNonUserActivatedContentChange);
 }
 
 void ContentCaptureManager::Trace(Visitor* visitor) const {
@@ -64,6 +115,7 @@ void ContentCaptureManager::Trace(Visitor* visitor) const {
   visitor->Trace(local_frame_root_);
   visitor->Trace(task_session_);
   visitor->Trace(sent_nodes_);
+  visitor->Trace(latest_user_activation_);
 }
 
 void ContentCaptureManager::Shutdown() {

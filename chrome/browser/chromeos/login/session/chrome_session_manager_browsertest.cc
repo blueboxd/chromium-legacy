@@ -23,6 +23,7 @@
 #include "chrome/browser/google/google_brand_chromeos.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/user_creation_screen_handler.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/system/fake_statistics_provider.h"
@@ -99,7 +100,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSessionManagerTest, OobeNewUser) {
   fake_gaia_.SetupFakeGaiaForLoginManager();
   fake_gaia_.fake_gaia()->SetFakeMergeSessionParams(
       FakeGaiaMixin::kFakeUserEmail, "fake_sid", "fake_lsid");
-  OobeScreenWaiter(GaiaView::kScreenId).Wait();
+  OobeScreenWaiter(UserCreationView::kScreenId).Wait();
 
   LoginDisplayHost::default_host()
       ->GetOobeUI()
@@ -183,7 +184,7 @@ class ChromeSessionManagerRlzTest : public ChromeSessionManagerTest {
     fake_gaia_.SetupFakeGaiaForLoginManager();
     fake_gaia_.fake_gaia()->SetFakeMergeSessionParams(
         FakeGaiaMixin::kFakeUserEmail, "fake_sid", "fake_lsid");
-    OobeScreenWaiter(GaiaView::kScreenId).Wait();
+    OobeScreenWaiter(UserCreationView::kScreenId).Wait();
 
     LoginDisplayHost::default_host()
         ->GetOobeUI()

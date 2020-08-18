@@ -12,13 +12,13 @@
 namespace ash {
 
 class AppListViewDelegate;
-class SearchResultPageView;
+class PrivacyContainerView;
 
 // View representing Assistant's privacy info in the Launcher.
 class AssistantPrivacyInfoView : public PrivacyInfoView {
  public:
   AssistantPrivacyInfoView(AppListViewDelegate* view_delegate,
-                           SearchResultPageView* search_result_page_view);
+                           PrivacyContainerView* container);
   AssistantPrivacyInfoView(const AssistantPrivacyInfoView&) = delete;
   AssistantPrivacyInfoView& operator=(const AssistantPrivacyInfoView&) = delete;
   ~AssistantPrivacyInfoView() override;
@@ -29,7 +29,7 @@ class AssistantPrivacyInfoView : public PrivacyInfoView {
 
  private:
   AppListViewDelegate* const view_delegate_;
-  SearchResultPageView* const search_result_page_view_;
+  PrivacyContainerView* const container_;
 };
 
 }  // namespace ash

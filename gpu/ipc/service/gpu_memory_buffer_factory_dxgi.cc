@@ -20,11 +20,13 @@ GpuMemoryBufferFactoryDXGI::~GpuMemoryBufferFactoryDXGI() {}
 gfx::GpuMemoryBufferHandle GpuMemoryBufferFactoryDXGI::CreateGpuMemoryBuffer(
     gfx::GpuMemoryBufferId id,
     const gfx::Size& size,
+    const gfx::Size& framebuffer_size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
     int client_id,
     SurfaceHandle surface_handle) {
   TRACE_EVENT0("gpu", "GpuMemoryBufferFactoryDXGI::CreateGpuMemoryBuffer");
+  DCHECK_EQ(framebuffer_size, size);
 
   gfx::GpuMemoryBufferHandle handle;
 

@@ -580,6 +580,11 @@ bool V8ScriptValueSerializer::WriteDOMObject(ScriptWrappable* wrappable,
                                         "because it was not transferred.");
       return false;
     }
+    // https://streams.spec.whatwg.org/#ts-transfer
+    // 3. If ! IsReadableStreamLocked(readable) is true, throw a
+    //    "DataCloneError" DOMException.
+    // 4. If ! IsWritableStreamLocked(writable) is true, throw a
+    //    "DataCloneError" DOMException.
     if (stream->Readable()->locked() || stream->Writable()->locked()) {
       exception_state.ThrowDOMException(
           DOMExceptionCode::kDataCloneError,

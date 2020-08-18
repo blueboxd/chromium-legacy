@@ -15,9 +15,12 @@ enum class InstallationStage {
   kCopying = 1,
   // Extension archive is about to be unpacked.
   kUnpacking = 2,
-  // Final checks before the installation is finished.
-  kFinalizing = 3,
-  kComplete = 4,
+  // Performing the expectation checks before the installation can be started.
+  kCheckingExpectations = 3,
+  // Installation of unpacked extension is started.
+  kFinalizing = 4,
+  // Extension installation process is complete.
+  kComplete = 5,
 };
 
 }  // namespace extensions

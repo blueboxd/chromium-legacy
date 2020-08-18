@@ -17,6 +17,10 @@
 
   [
     RaisesException
+  ] void setLength(unsigned long long length);
+
+  [
+    RaisesException
   ] unsigned long long read([AllowShared] ArrayBufferView buffer,
                             unsigned long long file_offset);
   [

@@ -660,10 +660,10 @@ TEST(URLRequestThrottlerSimulation, PerceivedDowntimeRatio) {
     Stats stats;
 
     void PrintTrialDescription() {
-      double duration_minutes =
-          static_cast<double>(duration.InSeconds()) / 60.0;
-      double interval_minutes =
-          static_cast<double>(average_client_interval.InSeconds()) / 60.0;
+      const double duration_minutes =
+          duration / base::TimeDelta::FromMinutes(1);
+      const double interval_minutes =
+          average_client_interval / base::TimeDelta::FromMinutes(1);
       VerboseOut("Trial with %.2f min downtime, avg. interval %.2f min.\n",
                  duration_minutes, interval_minutes);
     }

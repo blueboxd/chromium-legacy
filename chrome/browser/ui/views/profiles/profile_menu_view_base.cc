@@ -343,6 +343,7 @@ void BuildProfileBackgroundContainer(
     views::View* parent,
     std::unique_ptr<views::View> heading_label,
     base::Optional<SkColor> background_color,
+    int corner_radius,
     std::unique_ptr<views::View> avatar_image_view,
     std::unique_ptr<views::View> edit_button) {
   constexpr int kExtraMarginInsideProfileBackground = 2;
@@ -374,8 +375,7 @@ void BuildProfileBackgroundContainer(
     profile_background_container->SetBackground(
         views::CreateBackgroundFromPainter(
             views::Painter::CreateSolidRoundRectPainter(
-                background_color.value(),
-                /*radius=*/kDefaultMargin, background_insets)));
+                background_color.value(), corner_radius, background_insets)));
   }
 
   // The |heading_and_image_container| is on the left and it stretches almost
@@ -588,7 +588,9 @@ void ProfileMenuViewBase::SetProfileIdentityInfo(
 
   BuildProfileBackgroundContainer(
       /*parent=*/identity_info_container_, std::move(heading_label),
-      background_color, std::move(avatar_image_view), std::move(edit_button));
+      background_color,
+      GetCornerRadius(),  // Use the same radius as the bubble has.
+      std::move(avatar_image_view), std::move(edit_button));
   BuildProfileTitleAndSubtitle(/*parent=*/identity_info_container_, title,
                                subtitle);
 }

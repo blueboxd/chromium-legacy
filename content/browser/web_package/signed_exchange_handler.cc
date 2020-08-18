@@ -84,23 +84,12 @@ using VerifyCallback = base::OnceCallback<void(int32_t,
                                                const net::CertVerifyResult&,
                                                const net::ct::CTVerifyResult&)>;
 
-void VerifyCert(const SignedExchangeCertificateChain& unverified_cert_chain,
+void VerifyCert(const scoped_refptr<net::X509Certificate>& certificate,
                 const GURL& url,
+                const std::string& ocsp_result,
+                const std::string& sct_list,
                 int frame_tree_node_id,
                 VerifyCallback callback) {
-  // https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#cross-origin-trust
-  // Step 6.4 Validate that valid SCTs from trusted logs are available from any
-  // of:
-  // - The SignedCertificateTimestampList in main-certificate’s sct property
-  //   (Section 3.3),
-  const std::string& sct_list_from_cert_cbor = unverified_cert_chain.sct();
-  // - An OCSP extension in the OCSP response in main-certificate’s ocsp
-  //   property, or
-  const std::string& stapled_ocsp_response = unverified_cert_chain.ocsp();
-  // - An X.509 extension in the certificate in main-certificate's cert property
-  const scoped_refptr<net::X509Certificate>& certificate =
-      unverified_cert_chain.cert();
-
   VerifyCallback wrapped_callback = mojo::WrapCallbackWithDefaultInvokeIfNotRun(
       std::move(callback), net::ERR_FAILED, net::CertVerifyResult(),
       net::ct::CTVerifyResult());
@@ -119,8 +108,7 @@ void VerifyCert(const SignedExchangeCertificateChain& unverified_cert_chain,
   }
 
   network_context->VerifyCertForSignedExchange(
-      certificate, url, stapled_ocsp_response, sct_list_from_cert_cbor,
-      std::move(wrapped_callback));
+      certificate, url, ocsp_result, sct_list, std::move(wrapped_callback));
 }
 
 std::string OCSPErrorToString(const net::OCSPVerifyResult& ocsp_result) {
@@ -500,13 +488,6 @@ void SignedExchangeHandler::OnCertReceived(
                              cert_fetch_duration);
   unverified_cert_chain_ = std::move(cert_chain);
 
-  // Start cert verification here so that it runs in parallel with signature
-  // verification.
-  VerifyCert(*unverified_cert_chain_, envelope_->request_url().url,
-             frame_tree_node_id_,
-             base::BindOnce(&SignedExchangeHandler::OnVerifyCert,
-                            weak_factory_.GetWeakPtr()));
-
   DCHECK(version_.has_value());
   const SignedExchangeSignatureVerifier::Result verify_result =
       SignedExchangeSignatureVerifier::Verify(
@@ -528,7 +509,24 @@ void SignedExchangeHandler::OnCertReceived(
         net::ERR_INVALID_SIGNED_EXCHANGE);
     return;
   }
-  state_ = State::kSignatureVerified;
+
+  auto certificate = unverified_cert_chain_->cert();
+  auto url = envelope_->request_url().url;
+
+  // https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#cross-origin-trust
+  // Step 6.4 Validate that valid SCTs from trusted logs are available from any
+  // of:
+  // - The SignedCertificateTimestampList in main-certificate’s sct property
+  //   (Section 3.3),
+  const std::string& sct_list_from_cert_cbor = unverified_cert_chain_->sct();
+  // - An OCSP extension in the OCSP response in main-certificate’s ocsp
+  //   property, or
+  const std::string& stapled_ocsp_response = unverified_cert_chain_->ocsp();
+
+  VerifyCert(certificate, url, stapled_ocsp_response, sct_list_from_cert_cbor,
+             frame_tree_node_id_,
+             base::BindOnce(&SignedExchangeHandler::OnVerifyCert,
+                            weak_factory_.GetWeakPtr()));
 }
 
 // https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#cross-origin-cert-req
@@ -603,15 +601,6 @@ void SignedExchangeHandler::OnVerifyCert(
     const net::ct::CTVerifyResult& ct_result) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"),
                "SignedExchangeHandler::OnCertVerifyComplete");
-
-  if (state_ == State::kHeadersCallbackCalled) {
-    // This means signature verification has failed.
-    // NOTE: This code may not be reached because |this_| may have been deleted
-    // by |headers_callback_|.
-    return;
-  }
-  CHECK_EQ(state_, State::kSignatureVerified);
-
   // net::Error codes are negative, so we put - in front of it.
   base::UmaHistogramSparse(kHistogramCertVerificationResult, -error_code);
   UMA_HISTOGRAM_ENUMERATION(kHistogramCTVerificationResult,

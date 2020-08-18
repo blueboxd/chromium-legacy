@@ -7,15 +7,19 @@
 #include <memory>
 #include <utility>
 
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/border.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/image_view.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
@@ -38,7 +42,9 @@ constexpr int kIconSizeDip = 20;
 
 PrivacyInfoView::PrivacyInfoView(const int info_string_id,
                                  const int link_string_id)
-    : info_string_id_(info_string_id), link_string_id_(link_string_id) {
+    : SearchResultBaseView(),
+      info_string_id_(info_string_id),
+      link_string_id_(link_string_id) {
   InitLayout();
 }
 
@@ -59,6 +65,17 @@ int PrivacyInfoView::GetHeightForWidth(int width) const {
   const int text_height = text_view_->GetHeightForWidth(available_width);
   return kRowMarginDip + /*border*/ 1 + kVerticalPaddingDip + text_height +
          kVerticalPaddingDip + /*border*/ 1 + kRowMarginDip;
+}
+
+void PrivacyInfoView::OnPaintBackground(gfx::Canvas* canvas) {
+  if (selected_action_ == Action::kCloseButton) {
+    cc::PaintFlags flags;
+    flags.setAntiAlias(true);
+    flags.setColor(SkColorSetA(gfx::kGoogleGrey900, 0x14));
+    flags.setStyle(cc::PaintFlags::kFill_Style);
+    canvas->DrawCircle(close_button_->bounds().CenterPoint(),
+                       close_button_->width() / 2, flags);
+  }
 }
 
 void PrivacyInfoView::OnMouseEvent(ui::MouseEvent* event) {
@@ -88,15 +105,91 @@ void PrivacyInfoView::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 void PrivacyInfoView::OnKeyEvent(ui::KeyEvent* event) {
-  switch (event->key_code()) {
-    case ui::VKEY_RETURN:
-      // TODO(crbug.com/1079169): Update this once the text view and close
-      // button can be selected separately.
-      LinkClicked();
-      break;
-    default:
-      break;
+  if (event->key_code() == ui::VKEY_RETURN) {
+    switch (selected_action_) {
+      case Action::kTextLink:
+        LinkClicked();
+        break;
+      case Action::kCloseButton:
+        CloseButtonPressed();
+        break;
+      case Action::kNone:
+      case Action::kDefault:
+        break;
+    }
   }
+}
+
+void PrivacyInfoView::SelectInitialResultAction(bool reverse_tab_order) {
+  if (!reverse_tab_order) {
+    if (is_default_result()) {
+      // Hold the selection but do nothing. This is so that the text view is not
+      // selected immediately after the launcher opens.
+      selected_action_ = Action::kDefault;
+    } else {
+      selected_action_ = Action::kTextLink;
+      text_view_->NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
+    }
+  } else {
+    selected_action_ = Action::kCloseButton;
+    close_button_->NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
+  }
+
+  // Update visual indicators for focus.
+  UpdateLinkStyle();
+  SchedulePaint();
+}
+
+bool PrivacyInfoView::SelectNextResultAction(bool reverse_tab_order) {
+  // There are three selection elements: default -> text view -> close button.
+  // The default selection is not traversed if selection is caused by user
+  // action.
+  bool action_changed = false;
+
+  if (!reverse_tab_order) {
+    switch (selected_action_) {
+      case Action::kDefault:
+        // Move selection forward from default to the text view.
+        selected_action_ = Action::kTextLink;
+        text_view_->NotifyAccessibilityEvent(ax::mojom::Event::kSelection,
+                                             true);
+        action_changed = true;
+        break;
+      case Action::kTextLink:
+        // Move selection forward from the text view to the close button.
+        selected_action_ = Action::kCloseButton;
+        close_button_->NotifyAccessibilityEvent(ax::mojom::Event::kSelection,
+                                                true);
+        action_changed = true;
+        break;
+      case Action::kNone:
+      case Action::kCloseButton:
+        break;
+    }
+  } else {
+    switch (selected_action_) {
+      case Action::kCloseButton:
+        // Move selection backward from the close button to the text view.
+        selected_action_ = Action::kTextLink;
+        text_view_->NotifyAccessibilityEvent(ax::mojom::Event::kSelection,
+                                             true);
+        action_changed = true;
+        break;
+      case Action::kNone:
+      case Action::kDefault:
+      case Action::kTextLink:
+        break;
+    }
+  }
+
+  if (!action_changed) {
+    selected_action_ = Action::kNone;
+  }
+
+  // Update visual indicators for focus.
+  UpdateLinkStyle();
+  SchedulePaint();
+  return action_changed;
 }
 
 void PrivacyInfoView::ButtonPressed(views::Button* sender,
@@ -132,8 +225,8 @@ void PrivacyInfoView::InitLayout() {
   // Text.
   InitText();
 
-  // Set flex so that text takes up the right amount of horizontal space between
-  // the info icon and close button.
+  // Set flex so that text takes up the right amount of horizontal space
+  // between the info icon and close button.
   layout_manager->SetFlexForView(text_view_, 1);
 
   // Close button.
@@ -153,15 +246,24 @@ void PrivacyInfoView::InitText() {
   const base::string16 text =
       l10n_util::GetStringFUTF16(info_string_id_, link, &offset);
   auto text_view = std::make_unique<views::StyledLabel>(text, this);
+
   views::StyledLabel::RangeStyleInfo style;
   style.override_color = gfx::kGoogleGrey900;
   text_view->AddStyleRange(gfx::Range(0, offset), style);
 
-  views::StyledLabel::RangeStyleInfo link_style =
-      views::StyledLabel::RangeStyleInfo::CreateForLink();
-  link_style.override_color = gfx::kGoogleBlue700;
+  // TODO(crbug.com/1114628): Remove the custom view once RangeStyleInfo
+  // supports selected links.
+  views::StyledLabel::RangeStyleInfo link_style;
+  link_style.disable_line_wrapping = true;
+  auto custom_view = std::make_unique<views::Label>(link);
+  custom_view->SetEnabledColor(gfx::kGoogleBlue700);
+  link_style.custom_view = custom_view.get();
+  link_view_ = custom_view.get();
+  text_view->AddCustomView(std::move(custom_view));
   text_view->AddStyleRange(gfx::Range(offset, offset + link.length()),
                            link_style);
+
+  text_view->SetFocusBehavior(FocusBehavior::ALWAYS);
   text_view->SetAutoColorReadabilityEnabled(false);
   text_view_ = AddChildView(std::move(text_view));
 }
@@ -194,6 +296,15 @@ void PrivacyInfoView::InitCloseButton() {
   close_button->set_has_ink_drop_action_on_click(true);
   views::InstallCircleHighlightPathGenerator(close_button.get());
   close_button_ = AddChildView(std::move(close_button));
+}
+
+void PrivacyInfoView::UpdateLinkStyle() {
+  if (selected_action_ == Action::kTextLink) {
+    link_view_->SetFontList(
+        text_view_->GetFontList().DeriveWithStyle(gfx::Font::UNDERLINE));
+  } else {
+    link_view_->SetFontList(text_view_->GetFontList());
+  }
 }
 
 }  // namespace ash

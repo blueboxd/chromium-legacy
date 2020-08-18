@@ -37,11 +37,13 @@ gfx::GpuMemoryBufferHandle
 GpuMemoryBufferFactoryIOSurface::CreateGpuMemoryBuffer(
     gfx::GpuMemoryBufferId id,
     const gfx::Size& size,
+    const gfx::Size& framebuffer_size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
     int client_id,
     SurfaceHandle surface_handle) {
   DCHECK_NE(client_id, kAnonymousClientId);
+  DCHECK_EQ(framebuffer_size, size);
 
   bool should_clear = true;
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface(

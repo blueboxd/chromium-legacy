@@ -15,6 +15,7 @@
 #include "ash/app_list/views/apps_grid_view.h"
 #include "ash/app_list/views/assistant/assistant_page_view.h"
 #include "ash/app_list/views/expand_arrow_view.h"
+#include "ash/app_list/views/privacy_container_view.h"
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/app_list/views/search_result_answer_card_view.h"
 #include "ash/app_list/views/search_result_list_view.h"
@@ -116,10 +117,14 @@ void ContentsView::Init(AppListModel* model) {
                       AppListState::kStateApps);
 
   // Search results UI.
-  auto search_results_page_view = std::make_unique<SearchResultPageView>(
-      view_delegate, view_delegate->GetSearchModel());
+  auto search_results_page_view =
+      std::make_unique<SearchResultPageView>(view_delegate->GetSearchModel());
 
   // Search result containers:
+  privacy_container_view_ =
+      search_results_page_view->AddSearchResultContainerView(
+          std::make_unique<PrivacyContainerView>(view_delegate));
+
   if (app_list_features::IsAnswerCardEnabled()) {
     search_result_answer_card_view_ =
         search_results_page_view->AddSearchResultContainerView(

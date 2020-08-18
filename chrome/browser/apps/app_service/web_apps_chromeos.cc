@@ -388,30 +388,23 @@ IconEffects WebAppsChromeOs::GetIconEffects(const web_app::WebApp* web_app,
                                             bool is_disabled) {
   IconEffects icon_effects = IconEffects::kNone;
   if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon)) {
-    icon_effects = web_app->is_generated_icon()
-                       ? static_cast<IconEffects>(
-                             icon_effects | IconEffects::kCrOsStandardMask)
-                       : static_cast<IconEffects>(
-                             icon_effects | IconEffects::kCrOsStandardIcon);
+    icon_effects |= web_app->is_generated_icon()
+                        ? IconEffects::kCrOsStandardMask
+                        : IconEffects::kCrOsStandardIcon;
   } else {
-    icon_effects =
-        static_cast<IconEffects>(icon_effects | IconEffects::kResizeAndPad);
+    icon_effects |= IconEffects::kResizeAndPad;
   }
   if (extensions::util::ShouldApplyChromeBadgeToWebApp(profile(),
                                                        web_app->app_id())) {
-    icon_effects =
-        static_cast<IconEffects>(icon_effects | IconEffects::kChromeBadge);
+    icon_effects |= IconEffects::kChromeBadge;
   }
-  icon_effects = static_cast<IconEffects>(icon_effects |
-                                          WebAppsBase::GetIconEffects(web_app));
+  icon_effects |= WebAppsBase::GetIconEffects(web_app);
   if (paused) {
-    icon_effects =
-        static_cast<IconEffects>(icon_effects | IconEffects::kPaused);
+    icon_effects |= IconEffects::kPaused;
   }
 
   if (is_disabled) {
-    icon_effects =
-        static_cast<IconEffects>(icon_effects | IconEffects::kBlocked);
+    icon_effects |= IconEffects::kBlocked;
   }
 
   return icon_effects;

@@ -9,6 +9,8 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/font_access/font_iterator.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 
@@ -22,7 +24,12 @@ void ReturnDataFunction(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
 }  // namespace
 
-ScriptValue FontManager::query(ScriptState* script_state) {
+ScriptValue FontManager::query(ScriptState* script_state,
+                               ExceptionState& exception_state) {
+  ValidateRequest(ExecutionContext::From(script_state), exception_state);
+  if (exception_state.HadException())
+    return ScriptValue();
+
   auto* iterator =
       MakeGarbageCollected<FontIterator>(ExecutionContext::From(script_state));
   auto* isolate = script_state->GetIsolate();
@@ -42,6 +49,17 @@ ScriptValue FontManager::query(ScriptState* script_state) {
 
 void FontManager::Trace(blink::Visitor* visitor) const {
   ScriptWrappable::Trace(visitor);
+}
+
+void FontManager::ValidateRequest(ExecutionContext* context,
+                                  ExceptionState& exception_state) {
+  DCHECK(context);
+  auto* frame = To<LocalDOMWindow>(context)->GetFrame();
+
+  if (!LocalFrame::HasTransientUserActivation(frame)) {
+    exception_state.ThrowSecurityError(
+        "Must be handling a user gesture to enumerate local fonts.");
+  }
 }
 
 }  // namespace blink

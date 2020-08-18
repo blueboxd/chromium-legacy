@@ -290,10 +290,6 @@ IPC_STRUCT_END()
 
 // Messages sent from the renderer to the browser.
 
-// Sends the document cookie of the current printer query to the browser.
-IPC_MESSAGE_ROUTED1(PrintHostMsg_DidGetDocumentCookie,
-                    int /* rendered document cookie */)
-
 // Tells the browser that the print dialog has been shown.
 IPC_MESSAGE_ROUTED0(PrintHostMsg_DidShowPrintDialog)
 

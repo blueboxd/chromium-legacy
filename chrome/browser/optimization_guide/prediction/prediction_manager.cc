@@ -257,7 +257,7 @@ void PredictionManager::Initialize(const std::vector<proto::OptimizationTarget>&
 }
 
 void PredictionManager::UpdateFCPSessionStatistics(base::TimeDelta fcp) {
-  previous_load_fcp_ms_ = static_cast<float>(fcp.InMilliseconds());
+  previous_load_fcp_ms_ = fcp.InMillisecondsF();
   session_fcp_.AddSample(*previous_load_fcp_ms_);
   pref_service_->SetDouble(prefs::kSessionStatisticFCPMean,
                            session_fcp_.GetMean());

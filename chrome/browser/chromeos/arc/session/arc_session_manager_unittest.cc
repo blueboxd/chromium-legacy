@@ -1506,7 +1506,7 @@ constexpr ArcSessionRetryTestParam kRetryTestCases[] = {
     {ArcSessionRetryTestParam::Negotiation::REQUIRED,
      ProvisioningResult::MOJO_VERSION_MISMATCH, true, false, base::nullopt},
     {ArcSessionRetryTestParam::Negotiation::REQUIRED,
-     ProvisioningResult::MOJO_CALL_TIMEOUT, true, false, base::nullopt},
+     ProvisioningResult::PROVISIONING_TIMEOUT, true, false, base::nullopt},
     {ArcSessionRetryTestParam::Negotiation::REQUIRED,
      ProvisioningResult::DEVICE_CHECK_IN_TIMEOUT, true, false, base::nullopt},
     {ArcSessionRetryTestParam::Negotiation::REQUIRED,

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/feature_list.h"
+#include "chrome/browser/optimization_guide/blink/blink_optimization_guide_inquirer.h"
 #include "chrome/browser/optimization_guide/blink/blink_optimization_guide_web_contents_observer.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
@@ -38,6 +39,10 @@ class BlinkOptimizationGuideBrowserTestBase : public InProcessBrowserTest {
     return content::WebContentsUserData<
         BlinkOptimizationGuideWebContentsObserver>::
         FromWebContents(browser()->tab_strip_model()->GetActiveWebContents());
+  }
+
+  BlinkOptimizationGuideInquirer* GetCurrentInquirer() {
+    return GetObserverForActiveWebContents()->current_inquirer();
   }
 
   GURL GetURLWithMockHost(const std::string& relative_url) const {
@@ -152,11 +157,12 @@ IN_PROC_BROWSER_TEST_P(BlinkOptimizationGuideBrowserTest, Basic) {
   // is enabled.
   ui_test_utils::NavigateToURL(browser(), GetURLWithMockHost("/simple.html"));
   {
-    auto& hints = GetObserverForActiveWebContents()->sent_hints_for_testing();
+    blink::mojom::BlinkOptimizationGuideHintsPtr hints =
+        GetCurrentInquirer()->GetHints();
     if (IsFeatureFlagEnabled()) {
-      EXPECT_TRUE(CheckIfHintsAvailable(hints));
+      EXPECT_TRUE(CheckIfHintsAvailable(*hints));
     } else {
-      EXPECT_FALSE(CheckIfHintsAvailable(hints));
+      EXPECT_FALSE(CheckIfHintsAvailable(*hints));
     }
   }
 
@@ -164,19 +170,21 @@ IN_PROC_BROWSER_TEST_P(BlinkOptimizationGuideBrowserTest, Basic) {
   ui_test_utils::NavigateToURL(browser(),
                                GetURLWithMockHost("/simple.html?different"));
   {
-    auto& hints = GetObserverForActiveWebContents()->sent_hints_for_testing();
-    EXPECT_FALSE(CheckIfHintsAvailable(hints));
+    blink::mojom::BlinkOptimizationGuideHintsPtr hints =
+        GetCurrentInquirer()->GetHints();
+    EXPECT_FALSE(CheckIfHintsAvailable(*hints));
   }
 
   // Navigation to the URL again should see the same hints as long as the
   // optimization guide is enabled.
   ui_test_utils::NavigateToURL(browser(), GetURLWithMockHost("/simple.html"));
   {
-    auto& hints = GetObserverForActiveWebContents()->sent_hints_for_testing();
+    blink::mojom::BlinkOptimizationGuideHintsPtr hints =
+        GetCurrentInquirer()->GetHints();
     if (IsFeatureFlagEnabled()) {
-      EXPECT_TRUE(CheckIfHintsAvailable(hints));
+      EXPECT_TRUE(CheckIfHintsAvailable(*hints));
     } else {
-      EXPECT_FALSE(CheckIfHintsAvailable(hints));
+      EXPECT_FALSE(CheckIfHintsAvailable(*hints));
     }
   }
 }
@@ -189,9 +197,9 @@ IN_PROC_BROWSER_TEST_P(BlinkOptimizationGuideBrowserTest, NoMetadata) {
 
   // Navigation to the URL shouldn't see the hints.
   ui_test_utils::NavigateToURL(browser(), GetURLWithMockHost("/simple.html"));
-  blink::mojom::BlinkOptimizationGuideHints& hints =
-      GetObserverForActiveWebContents()->sent_hints_for_testing();
-  EXPECT_FALSE(CheckIfHintsAvailable(hints));
+  blink::mojom::BlinkOptimizationGuideHintsPtr hints =
+      GetCurrentInquirer()->GetHints();
+  EXPECT_FALSE(CheckIfHintsAvailable(*hints));
 }
 
 // Tests behavior when the optimization guide service is disabled.

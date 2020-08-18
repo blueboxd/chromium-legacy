@@ -107,7 +107,7 @@
   </if>
   <if expr="not chromeos">
     <message name="IDS_SETTINGS_THEMES" desc="Name of the control which allows the user to get a theme for the browser.">
-      Themes
+      Theme
     </message>
   </if>
   <if expr="is_linux and not chromeos">

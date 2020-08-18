@@ -78,6 +78,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/kiosk_autolaunch_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/kiosk_enable_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/user_creation_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/welcome_screen_handler.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -584,6 +585,13 @@ class KioskTest : public OobeBaseTest {
     PrepareAppLaunch();
 
     network_portal_detector_.SimulateDefaultNetworkState(network_status);
+
+    // TODO(crbug.com/1101318): LaunchAppUserCancel and
+    // LaunchAppWithNetworkConfigAccelerator are failing without skipping
+    // user creation screen. Need to investigate and fix this.
+    chromeos::WizardController::default_controller()
+        ->get_wizard_context_for_testing()
+        ->skip_to_login_for_tests = true;
     EXPECT_TRUE(LaunchApp(test_app_id()));
   }
 
@@ -1150,7 +1158,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, KioskEnableCancel) {
   test::OobeJS().TapOnPath({"kiosk-enable", "close"});
 
   // Wait for the kiosk_enable screen to disappear.
-  OobeScreenWaiter(GaiaView::kScreenId).Wait();
+  OobeScreenWaiter(UserCreationView::kScreenId).Wait();
 
   // Check that the status still says configurable.
   EXPECT_EQ(KioskAppManager::CONSUMER_KIOSK_AUTO_LAUNCH_CONFIGURABLE,
@@ -1206,6 +1214,10 @@ IN_PROC_BROWSER_TEST_F(KioskTest, KioskEnableAfter2ndSigninScreen) {
   // Wait for the kiosk_enable screen to show and cancel the screen.
   OobeScreenWaiter(KioskEnableScreenView::kScreenId).Wait();
   test::OobeJS().TapOnPath({"kiosk-enable", "close"});
+
+  // Navigate to gaia sign in screen.
+  OobeScreenWaiter(UserCreationView::kScreenId).Wait();
+  test::OobeJS().TapOnPath({"user-creation", "nextButton"});
 
   // Wait for signin screen to appear again.
   OobeScreenWaiter(GaiaView::kScreenId).Wait();

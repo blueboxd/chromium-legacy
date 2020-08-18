@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 26
+// Next MinVersion: 27
 
 module arc.mojom;
 
@@ -18,10 +18,11 @@ enum ArcSignInStatus {
   // Mojo errors:
   // MOJO_VERSION_MISMATCH: is sent when an API is not supported
   //   due to Host/Instance version mismatch.
-  // MOJO_CALL_TIMEOUT: is sent when a Mojo invocation is started
-  //   but not completed with time out.
   MOJO_VERSION_MISMATCH = 6,
-  MOJO_CALL_TIMEOUT = 7,
+
+  // PROVISIONING_TIMEOUT: is sent when provisioning is started
+  //   but not completed with time out.
+  PROVISIONING_TIMEOUT = 7,
 
   // Device check-in errors:
   // DEVICE_CHECK_IN_FAILED: is sent when "check-in" procedure is completed
@@ -88,11 +89,83 @@ enum ArcSignInStatus {
   [MinVersion=21] CHROME_ACCOUNT_NOT_FOUND = 21,
 };
 
-// Represents different kinds of errors that can happen during
-// sign-in. Error codes from ArcSignInStatus should be grouped
-// and moved here.
-union ArcSignInError {
-  CloudProvisionFlowError cloud_provision_flow_error;
+[Extensible]
+enum GeneralSignInError {
+  // Next value: 8.
+  UNKNOWN_ERROR = 0,
+
+  // Mojo errors:
+  // MOJO_VERSION_MISMATCH: is sent when an API is not supported
+  //   due to Host/Instance version mismatch.
+  MOJO_VERSION_MISMATCH = 1,
+
+  // PROVISIONING_TIMEOUT: is sent when provisioning is started
+  //   but not completed with time out.
+  PROVISIONING_TIMEOUT = 2,
+
+  // Network connection is unavailable.
+  NO_NETWORK_CONNECTION = 3,
+
+  // Server does not return authorization.
+  CHROME_SERVER_COMMUNICATION_ERROR = 4,
+
+  // ARC was disabled for Active Directory user.
+  ARC_DISABLED = 5,
+
+  // Account type is not supported for authorization.
+  UNSUPPORTED_ACCOUNT_TYPE = 6,
+
+  // Account is not present in Chrome OS Account Manager.
+  CHROME_ACCOUNT_NOT_FOUND = 7,
+};
+
+[Extensible]
+enum DeviceCheckInError {
+  // Next value: 4.
+
+  // DEVICE_CHECK_IN_FAILED: is sent when "check-in" procedure is completed
+  //   but is actually failed.
+  DEVICE_CHECK_IN_FAILED = 1,
+
+  // DEVICE_CHECK_IN_TIMEOUT: is sent when "check-in" procedure started
+  //   but is not completed.
+  DEVICE_CHECK_IN_TIMEOUT = 2,
+
+  // DEVICE_CHECK_IN_INTERNAL_ERROR: is sent when "check-in" procedure is
+  //   started, but some unexpected error situation happens so that it could
+  //   not completed.
+  DEVICE_CHECK_IN_INTERNAL_ERROR = 3,
+};
+
+[Extensible]
+enum GMSError {
+  // Next value: 7.
+
+  // GMS_NETWORK_ERROR: is sent when GMS sign-in procedure is started, but
+  //   it reports NETWORK_ERROR.
+  GMS_NETWORK_ERROR = 1,
+
+  // GMS_SERVICE_UNAVAILABLE: is sent when GMS sign-in procedure is started
+  //   but it reports SERVICE_UNAVAILABLE. Note that this is not generic
+  //   service unavailable error code.
+  GMS_SERVICE_UNAVAILABLE = 2,
+
+  // GMS_BAD_AUTHENTICATION: is sent when GMS sign-in procedure is started
+  //   but it reports BAD_AUTHENTICATION.
+  GMS_BAD_AUTHENTICATION = 3,
+
+  // GMS_SIGN_IN_FAILED: is sent when GMS sign in procedure is started but
+  //   it reports an error other than above NETWORK_ERROR, SERVICE_UNAVAILABLE
+  //   or BAD_AUTHENTICATION. In general, we do not expect this kind of cases.
+  GMS_SIGN_IN_FAILED = 4,
+
+  // GMS_SIGN_IN_TIMEOUT: is sent when GMS sign in procedure is started but
+  //   not returned.
+  GMS_SIGN_IN_TIMEOUT = 5,
+
+  // GMS_SIGN_IN_INTERNAL_ERROR: is sent when GMS sign in procedure is started
+  //   but could not completed.
+  GMS_SIGN_IN_INTERNAL_ERROR = 6,
 };
 
 [Extensible]
@@ -152,6 +225,40 @@ enum CloudProvisionFlowError {
     ERROR_OAUTH_TOKEN_IO_EXCEPTION = 25,
     // Error with getting OAuth token due to OperationCanceledException.
     ERROR_OAUTH_TOKEN_OPERATION_CANCELED_EXCEPTION = 26,
+};
+
+[Extensible]
+enum ArcSignInSuccess {
+  // Next value: 3.
+  [MinVersion=10] SUCCESS = 1,
+
+  // ARC was already provisioned.
+  [MinVersion=11] SUCCESS_ALREADY_PROVISIONED = 2
+};
+
+// Represents different kinds of errors that can happen during
+// sign-in. Error codes from ArcSignInStatus should be grouped
+// and moved here.
+union ArcSignInError {
+  CloudProvisionFlowError cloud_provision_flow_error;
+  [MinVersion=26] GeneralSignInError general_error;
+  [MinVersion=26] GMSError gms_error;
+  [MinVersion=26] DeviceCheckInError checkin_error;
+};
+
+union ArcSignInResult {
+  ArcSignInSuccess success;
+  ArcSignInError? error;
+};
+
+union ArcSignInAccount {
+  // Placeholder value; if this is the union type, indicates the
+  // auth flow was for initial device provisioning.
+  uint8 initial_signin;
+
+  // If |account_name| is not present, it is assumed to be the Primary/Device
+  // account.
+  string? account_name;
 };
 
 // These values describe account check status.
@@ -327,7 +434,7 @@ struct ArcAccountInfo {
   string gaia_id;
 };
 
-// Next Method ID: 19.
+// Next Method ID: 20.
 interface AuthHost {
   // Notifies Chrome that the authorization flow is completed and provides
   // resulting |status|. If |initial_signin| is true then this indicates that
@@ -338,18 +445,17 @@ interface AuthHost {
   // Currently |error| is only populated for some cases of CloudDPC errors.
   // TODO(b/146435695) Move out all errors from ArcSignInStatus to ArcSignInError and
   // create a union that either has success code or error code
-  [MinVersion=11] OnAuthorizationComplete@10(
+  [MinVersion=11] OnAuthorizationCompleteDeprecated@10(
       ArcSignInStatus status,
       bool initial_signin,
       [MinVersion=18] string? account_name,
       [MinVersion=25] ArcSignInError? error);
 
-  // Notifies Chrome that the sign-in is completed successfully.
-  [MinVersion=2] OnSignInCompleteDeprecated@2();
-
-  // Notifies Chrome that the sign-in fails to complete and provides failure
-  // reason.
-  [MinVersion=2] OnSignInFailedDeprecated@3(ArcSignInStatus reason);
+  // Notifies Chrome that the authorization flow is completed and provides
+  // |result| and |account| that was authorized.
+  [MinVersion=26] OnAuthorizationResult@19(
+      ArcSignInResult result,
+      ArcSignInAccount account);
 
   // Asynchronously requests an authorization code, as well as the account
   // information. If |initial_signin| is true then that means request is for

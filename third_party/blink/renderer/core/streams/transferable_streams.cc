@@ -50,7 +50,7 @@ namespace blink {
 namespace {
 
 // These are the types of messages that are sent between peers.
-enum class MessageType { kPull, kCancel, kChunk, kClose, kAbort, kError };
+enum class MessageType { kPull, kChunk, kClose, kError };
 
 // Creates a JavaScript object with a null prototype structured like {key1:
 // value2, key2: value2}. This is used to create objects to be serialized by
@@ -101,19 +101,33 @@ void PackAndPostMessage(ScriptState* script_state,
   DVLOG(3) << "PackAndPostMessage sending message type "
            << static_cast<int>(type);
   auto* isolate = script_state->GetIsolate();
+
+  // https://streams.spec.whatwg.org/#abstract-opdef-packandpostmessage
+  // 1. Let message be OrdinaryObjectCreate(null).
+  // 2. Perform ! CreateDataProperty(message, "type", type).
+  // 3. Perform ! CreateDataProperty(message, "value", value).
   v8::Local<v8::Object> packed = CreateKeyValueObject(
       isolate, "t", v8::Number::New(isolate, static_cast<int>(type)), "v",
       value);
+
+  // 4. Let targetPort be the port with which port is entangled, if any;
+  //    otherwise let it be null.
+  // 5. Let options be «[ "transfer" → « » ]».
+  // 6. Run the message port post message steps providing targetPort, message,
+  //    and options.
   port->postMessage(script_state, ScriptValue(isolate, packed),
                     PostMessageOptions::Create(), exception_state);
 }
 
 // Sends a kError message to the remote side, disregarding failure.
-void SendError(ScriptState* script_state,
-               MessagePort* port,
-               v8::Local<v8::Value> error) {
+void CrossRealmTransformSendError(ScriptState* script_state,
+                                  MessagePort* port,
+                                  v8::Local<v8::Value> error) {
   ExceptionState exception_state(script_state->GetIsolate(),
                                  ExceptionState::kUnknownContext, "", "");
+
+  // https://streams.spec.whatwg.org/#abstract-opdef-crossrealmtransformsenderror
+  // 1. Perform PackAndPostMessage(port, "error", error), discarding the result.
   PackAndPostMessage(script_state, port, MessageType::kError, error,
                      exception_state);
   if (exception_state.HadException()) {
@@ -123,21 +137,31 @@ void SendError(ScriptState* script_state,
 }
 
 // Same as PackAndPostMessage(), except that it attempts to handle exceptions by
-// sending a kError message to the remote side. On failure |error| is set to the
-// original exception and the function returns false. Any error from sending the
+// sending a kError message to the remote side. Any error from sending the
 // kError message is ignored.
-bool PackAndPostMessageHandlingExceptions(ScriptState* script_state,
-                                          MessagePort* port,
-                                          MessageType type,
-                                          v8::Local<v8::Value> value,
-                                          v8::Local<v8::Value>* error) {
+//
+// The calling convention differs slightly from the standard to minimize
+// verbosity at the calling sites. The function returns true for a normal
+// completion and false for an abrupt completion.When there's an abrupt
+// completion result.[[Value]] is stored into |error|.
+bool PackAndPostMessageHandlingError(ScriptState* script_state,
+                                     MessagePort* port,
+                                     MessageType type,
+                                     v8::Local<v8::Value> value,
+                                     v8::Local<v8::Value>* error) {
   ExceptionState exception_state(script_state->GetIsolate(),
                                  ExceptionState::kUnknownContext, "", "");
+
+  // https://streams.spec.whatwg.org/#abstract-opdef-packandpostmessagehandlingerror
+  // 1. Let result be PackAndPostMessage(port, type, value).
   PackAndPostMessage(script_state, port, type, value, exception_state);
 
+  // 2. If result is an abrupt completion,
   if (exception_state.HadException()) {
+    //   1. Perform ! CrossRealmTransformSendError(port, result.[[Value]]).
+    // 3. Return result as a completion record.
     *error = exception_state.GetException();
-    SendError(script_state, port, *error);
+    CrossRealmTransformSendError(script_state, port, *error);
     exception_state.ClearException();
     return false;
   }
@@ -179,12 +203,25 @@ class CrossRealmTransformMessageListener final : public NativeEventListener {
     // The deserializer code called by message->data() looks up the ScriptState
     // from the current context, so we need to make sure it is set.
     ScriptState::Scope scope(script_state);
+
+    // Common to
+    // https://streams.spec.whatwg.org/#abstract-opdef-setupcrossrealmtransformreadable
+    // and
+    // https://streams.spec.whatwg.org/#abstract-opdef-setupcrossrealmtransformwritable.
+
+    // 1. Let data be the data of the message.
     v8::Local<v8::Value> data = message->data(script_state).V8Value();
+
+    // 2. Assert: Type(data) is Object.
+    // In the world of the standard, this is guaranteed to be true. In the real
+    // world, the data could come from a compromised renderer and be malicious.
     if (!data->IsObject()) {
       DLOG(WARNING) << "Invalid message from peer ignored (not object)";
       return;
     }
 
+    // 3. Let type be ! Get(data, "type").
+    // 4. Let value be ! Get(data, "value").
     v8::Local<v8::Value> type;
     v8::Local<v8::Value> value;
     if (!UnpackKeyValueObject(script_state, data.As<v8::Object>(), "t", &type,
@@ -193,6 +230,8 @@ class CrossRealmTransformMessageListener final : public NativeEventListener {
       return;
     }
 
+    // 5. Assert: Type(type) is String
+    // This implementation uses numbers for types rather than strings.
     if (!type->IsNumber()) {
       DLOG(WARNING) << "Invalid message from peer ignored (type is not number)";
       return;
@@ -220,14 +259,24 @@ class CrossRealmTransformErrorListener final : public NativeEventListener {
 
   void Invoke(ExecutionContext*, Event*) override {
     ScriptState* script_state = target_->GetScriptState();
+
+    // Common to
+    // https://streams.spec.whatwg.org/#abstract-opdef-setupcrossrealmtransformreadable
+    // and
+    // https://streams.spec.whatwg.org/#abstract-opdef-setupcrossrealmtransformwritable.
+
+    // 1. Let error be a new "DataCloneError" DOMException.
     const auto* error =
         DOMException::Create("chunk could not be cloned", "DataCloneError");
     auto* message_port = target_->GetMessagePort();
     v8::Local<v8::Value> error_value = ToV8(error, script_state);
 
-    SendError(script_state, message_port, error_value);
+    // 2. Perform ! CrossRealmTransformSendError(port, error).
+    CrossRealmTransformSendError(script_state, message_port, error_value);
 
+    // 4. Disentangle port.
     message_port->close();
+
     target_->HandleError(error_value);
   }
 
@@ -287,14 +336,26 @@ class CrossRealmTransformWritable::WriteAlgorithm final
   v8::Local<v8::Promise> Run(ScriptState* script_state,
                              int argc,
                              v8::Local<v8::Value> argv[]) override {
+    // https://streams.spec.whatwg.org/#abstract-opdef-setupcrossrealmtransformwritable
+    // 8. Let writeAlgorithm be the following steps, taking a chunk argument:
     DCHECK_EQ(argc, 1);
     auto chunk = argv[0];
 
+    // 1. If backpressurePromise is undefined, set backpressurePromise to a
+    //    promise resolved with undefined.
+
+    // As an optimization for the common case, we call DoWrite() synchronously
+    // instead. The difference is not observable because the result is only
+    // visible asynchronously anyway. This avoids doing an extra allocation and
+    // creating a TraceWrappertV8Reference.
     if (!writable_->backpressure_promise_) {
       return DoWrite(script_state, chunk);
     }
 
     auto* isolate = script_state->GetIsolate();
+
+    // 2. Return the result of reacting to backpressurePromise with the
+    //    following fulfillment steps:
     return StreamThenPromise(
         script_state->GetContext(),
         writable_->backpressure_promise_->V8Promise(isolate),
@@ -337,18 +398,31 @@ class CrossRealmTransformWritable::WriteAlgorithm final
   // Sends a chunk over the message port to the readable side.
   v8::Local<v8::Promise> DoWrite(ScriptState* script_state,
                                  v8::Local<v8::Value> chunk) {
+    // https://streams.spec.whatwg.org/#abstract-opdef-setupcrossrealmtransformwritable
+    // 8. Let writeAlgorithm be the following steps, taking a chunk argument:
+    //   2. Return the result of reacting to backpressurePromise with the
+    //      following fulfillment steps:
+    //     1. Set backpressurePromise to a new promise.
     writable_->backpressure_promise_ =
         MakeGarbageCollected<StreamPromiseResolver>(script_state);
 
     v8::Local<v8::Value> error;
-    bool success = PackAndPostMessageHandlingExceptions(
-        script_state, writable_->message_port_, MessageType::kChunk, chunk,
-        &error);
+
+    //     2. Let result be PackAndPostMessageHandlingError(port, "chunk",
+    //        chunk).
+    bool success =
+        PackAndPostMessageHandlingError(script_state, writable_->message_port_,
+                                        MessageType::kChunk, chunk, &error);
+    //     3. If result is an abrupt completion,
     if (!success) {
+      //     1. Disentangle port.
       writable_->message_port_->close();
+
+      //     2. Return a promise rejected with result.[[Value]].
       return PromiseReject(script_state, error);
     }
 
+    //     4. Otherwise, return a promise resolved with undefined.
     return PromiseResolveWithUndefined(script_state);
   }
 
@@ -367,17 +441,25 @@ class CrossRealmTransformWritable::CloseAlgorithm final
                              v8::Local<v8::Value> argv[]) override {
     DCHECK_EQ(argc, 0);
 
+    // https://streams.spec.whatwg.org/#abstract-opdef-setupcrossrealmtransformwritable
+    // 9. Let closeAlgorithm be the folowing steps:
     v8::Local<v8::Value> error;
-    bool success = PackAndPostMessageHandlingExceptions(
+    //   1. Perform ! PackAndPostMessage(port, "close", undefined).
+    // In the standard, this can't fail. However, in the implementation failure
+    // is possible, so we have to handle it.
+    bool success = PackAndPostMessageHandlingError(
         script_state, writable_->message_port_, MessageType::kClose,
         v8::Undefined(script_state->GetIsolate()), &error);
 
+    //   2. Disentangle port.
     writable_->message_port_->close();
 
+    // Error the stream if an error occurred.
     if (!success) {
       return PromiseReject(script_state, error);
     }
 
+    //   3. Return a promise resolved with undefined.
     return PromiseResolveWithUndefined(script_state);
   }
 
@@ -400,20 +482,29 @@ class CrossRealmTransformWritable::AbortAlgorithm final
   v8::Local<v8::Promise> Run(ScriptState* script_state,
                              int argc,
                              v8::Local<v8::Value> argv[]) override {
+    // https://streams.spec.whatwg.org/#abstract-opdef-setupcrossrealmtransformwritable
+    // 10. Let abortAlgorithm be the following steps, taking a reason argument:
     DCHECK_EQ(argc, 1);
     auto reason = argv[0];
 
     v8::Local<v8::Value> error;
-    bool success = PackAndPostMessageHandlingExceptions(
-        script_state, writable_->message_port_, MessageType::kAbort, reason,
-        &error);
 
+    //   1. Let result be PackAndPostMessageHandlingError(port, "error",
+    //      reason).
+    bool success =
+        PackAndPostMessageHandlingError(script_state, writable_->message_port_,
+                                        MessageType::kError, reason, &error);
+
+    //   2. Disentangle port.
     writable_->message_port_->close();
 
+    //   3. If result is an abrupt completion, return a promise rejected with
+    //      result.[[Value]].
     if (!success) {
       return PromiseReject(script_state, error);
     }
 
+    //   4. Otherwise, return a promise resolved with undefined.
     return PromiseResolveWithUndefined(script_state);
   }
 
@@ -430,11 +521,29 @@ WritableStream* CrossRealmTransformWritable::CreateWritableStream(
     ExceptionState& exception_state) {
   DCHECK(!controller_) << "CreateWritableStream() can only be called once";
 
+  // https://streams.spec.whatwg.org/#abstract-opdef-setupcrossrealmtransformwritable
+  // The order of operations is significantly different from the standard, but
+  // functionally equivalent.
+
+  //  3. Let backpressurePromise be a new promise.
+  // |backpressure_promise_| is initialized by the constructor.
+
+  //  4. Add a handler for port’s message event with the following steps:
+  //  6. Enable port’s port message queue.
   message_port_->setOnmessage(
       MakeGarbageCollected<CrossRealmTransformMessageListener>(this));
+
+  //  5. Add a handler for port’s messageerror event with the following steps:
   message_port_->setOnmessageerror(
       MakeGarbageCollected<CrossRealmTransformErrorListener>(this));
 
+  //  1. Perform ! InitializeWritableStream(stream).
+  //  2. Let controller be a new WritableStreamDefaultController.
+  //  7. Let startAlgorithm be an algorithm that returns undefined.
+  // 11. Let sizeAlgorithm be an algorithm that returns 1.
+  // 12. Perform ! SetUpWritableStreamDefaultController(stream, controller,
+  //     startAlgorithm, writeAlgorithm, closeAlgorithm, abortAlgorithm, 1,
+  //     sizeAlgorithm).
   auto* stream =
       WritableStream::Create(script_state_, CreateTrivialStartAlgorithm(),
                              MakeGarbageCollected<WriteAlgorithm>(this),
@@ -452,24 +561,35 @@ WritableStream* CrossRealmTransformWritable::CreateWritableStream(
 
 void CrossRealmTransformWritable::HandleMessage(MessageType type,
                                                 v8::Local<v8::Value> value) {
+  // https://streams.spec.whatwg.org/#abstract-opdef-setupcrossrealmtransformwritable
+  // 4. Add a handler for port’s message event with the following steps:
+  // The initial steps are done by CrossRealmTransformMessageListener
   switch (type) {
+    // 6. If type is "pull",
     case MessageType::kPull:
+      // 1. If backpressurePromise is not undefined,
       if (backpressure_promise_) {
+        // 1. Resolve backpressurePromise with undefined.
         backpressure_promise_->ResolveWithUndefined(script_state_);
+        // 2. Set backpressurePromise to undefined.
         backpressure_promise_ = nullptr;
       }
       return;
 
-    case MessageType::kCancel:
-    case MessageType::kError: {
+    // 7. Otherwise if type is "error",
+    case MessageType::kError:
+      // 1. Perform ! WritableStreamDefaultControllerErrorIfNeeded(controller,
+      //    value).
       WritableStreamDefaultController::ErrorIfNeeded(script_state_, controller_,
                                                      value);
+      // 2. If backpressurePromise is not undefined,
       if (backpressure_promise_) {
+        // 1. Resolve backpressurePromise with undefined.
+        // 2. Set backpressurePromise to undefined.
         backpressure_promise_->ResolveWithUndefined(script_state_);
         backpressure_promise_ = nullptr;
       }
       return;
-    }
 
     default:
       DLOG(WARNING) << "Invalid message from peer ignored (invalid type): "
@@ -479,6 +599,14 @@ void CrossRealmTransformWritable::HandleMessage(MessageType type,
 }
 
 void CrossRealmTransformWritable::HandleError(v8::Local<v8::Value> error) {
+  // https://streams.spec.whatwg.org/#abstract-opdef-setupcrossrealmtransformwritable
+  // 5. Add a handler for port’s messageerror event with the following steps:
+  // The first two steps, and the last step, are performed by
+  // CrossRealmTransformErrorListener.
+
+  //   3. Perform ! WritableStreamDefaultControllerError(controller, error).
+  // TODO(ricea): Fix the standard to say ErrorIfNeeded and update the above
+  // line once that is done.
   WritableStreamDefaultController::ErrorIfNeeded(script_state_, controller_,
                                                  error);
 }
@@ -511,7 +639,6 @@ class CrossRealmTransformReadable final : public CrossRealmTransformStream {
   const Member<ScriptState> script_state_;
   const Member<MessagePort> message_port_;
   Member<ReadableStreamDefaultController> controller_;
-  bool finished_ = false;
 };
 
 class CrossRealmTransformReadable::PullAlgorithm final
@@ -528,8 +655,15 @@ class CrossRealmTransformReadable::PullAlgorithm final
     DCHECK_EQ(argc, 0);
     auto* isolate = script_state->GetIsolate();
 
+    // https://streams.spec.whatwg.org/#abstract-opdef-setupcrossrealmtransformreadable
+    // 7. Let pullAlgorithm be the following steps:
+
     v8::Local<v8::Value> error;
-    bool success = PackAndPostMessageHandlingExceptions(
+
+    //   1. Perform ! PackAndPostMessage(port, "pull", undefined).
+    // In the standard this can't throw an exception, but in the implementation
+    // it can, so we need to be able to handle it.
+    bool success = PackAndPostMessageHandlingError(
         script_state, readable_->message_port_, MessageType::kPull,
         v8::Undefined(isolate), &error);
 
@@ -538,6 +672,7 @@ class CrossRealmTransformReadable::PullAlgorithm final
       return PromiseReject(script_state, error);
     }
 
+    //   2. Return a promise resolved with undefined.
     // The Streams Standard guarantees that PullAlgorithm won't be called again
     // until Enqueue() is called.
     return PromiseResolveWithUndefined(script_state);
@@ -562,21 +697,29 @@ class CrossRealmTransformReadable::CancelAlgorithm final
   v8::Local<v8::Promise> Run(ScriptState* script_state,
                              int argc,
                              v8::Local<v8::Value> argv[]) override {
+    // https://streams.spec.whatwg.org/#abstract-opdef-setupcrossrealmtransformreadable
+    // 8. Let cancelAlgorithm be the following steps, taking a reason argument:
     DCHECK_EQ(argc, 1);
     auto reason = argv[0];
-    readable_->finished_ = true;
 
     v8::Local<v8::Value> error;
-    bool success = PackAndPostMessageHandlingExceptions(
-        script_state, readable_->message_port_, MessageType::kCancel, reason,
-        &error);
 
+    //   1. Let result be PackAndPostMessageHandlingError(port, "error",
+    //      reason).
+    bool success =
+        PackAndPostMessageHandlingError(script_state, readable_->message_port_,
+                                        MessageType::kError, reason, &error);
+
+    //   2. Disentangle port.
     readable_->message_port_->close();
 
+    //   3. If result is an abrupt completion, return a promise rejected with
+    //      result.[[Value]].
     if (!success) {
       return PromiseReject(script_state, error);
     }
 
+    //   4. Otherwise, return a promise resolved with undefined.
     return PromiseResolveWithUndefined(script_state);
   }
 
@@ -593,11 +736,25 @@ ReadableStream* CrossRealmTransformReadable::CreateReadableStream(
     ExceptionState& exception_state) {
   DCHECK(!controller_) << "CreateReadableStream can only be called once";
 
+  // https://streams.spec.whatwg.org/#abstract-opdef-setupcrossrealmtransformreadable
+  // The order of operations is significantly different from the standard, but
+  // functionally equivalent.
+
+  //  3. Add a handler for port’s message event with the following steps:
+  //  5. Enable port’s port message queue.
   message_port_->setOnmessage(
       MakeGarbageCollected<CrossRealmTransformMessageListener>(this));
+
+  //  4. Add a handler for port’s messageerror event with the following steps:
   message_port_->setOnmessageerror(
       MakeGarbageCollected<CrossRealmTransformErrorListener>(this));
 
+  //  6. Let startAlgorithm be an algorithm that returns undefined.
+  //  7. Let pullAlgorithm be the following steps:
+  //  8. Let cancelAlgorithm be the following steps, taking a reason argument:
+  //  9. Let sizeAlgorithm be an algorithm that returns 1.
+  // 10. Perform ! SetUpReadableStreamDefaultController(stream, controller,
+  //     startAlgorithm, pullAlgorithm, cancelAlgorithm, 0, sizeAlgorithm).
   auto* stream = ReadableStream::Create(
       script_state_, CreateTrivialStartAlgorithm(),
       MakeGarbageCollected<PullAlgorithm>(this),
@@ -614,8 +771,16 @@ ReadableStream* CrossRealmTransformReadable::CreateReadableStream(
 
 void CrossRealmTransformReadable::HandleMessage(MessageType type,
                                                 v8::Local<v8::Value> value) {
+  // https://streams.spec.whatwg.org/#abstract-opdef-setupcrossrealmtransformreadable
+  // 3. Add a handler for port’s message event with the following steps:
+  // The first 5 steps are handled by CrossRealmTransformMessageListener.
   switch (type) {
-    case MessageType::kChunk: {
+    // 6. If type is "chunk",
+    case MessageType::kChunk:
+      // 1. Perform ! ReadableStreamDefaultControllerEnqueue(controller,
+      //    value).
+      // TODO(ricea): Update ReadableStreamDefaultController::Enqueue() to match
+      // the standard so this extra check is not needed.
       if (ReadableStreamDefaultController::CanCloseOrEnqueue(controller_)) {
         // This can't throw because we always use the default strategy size
         // algorithm, which doesn't throw, and always returns a valid value of
@@ -624,23 +789,28 @@ void CrossRealmTransformReadable::HandleMessage(MessageType type,
                                                  value, ASSERT_NO_EXCEPTION);
       }
       return;
-    }
 
+    // 7. Otherwise, if type is "close",
     case MessageType::kClose:
-      finished_ = true;
+      // 1. Perform ! ReadableStreamDefaultControllerClose(controller).
+      // TODO(ricea): Update ReadableStreamDefaultController::Close() to match
+      // the standard so this extra check is not needed.
       if (ReadableStreamDefaultController::CanCloseOrEnqueue(controller_)) {
         ReadableStreamDefaultController::Close(script_state_, controller_);
       }
+
+      // Disentangle port.
       message_port_->close();
       return;
 
-    case MessageType::kAbort:
-    case MessageType::kError: {
-      finished_ = true;
+    // 8. Otherwise, if type is "error",
+    case MessageType::kError:
+      // 1. Perform ! ReadableStreamDefaultControllerError(controller, value).
       ReadableStreamDefaultController::Error(script_state_, controller_, value);
+
+      // 2. Disentangle port.
       message_port_->close();
       return;
-    }
 
     default:
       DLOG(WARNING) << "Invalid message from peer ignored (invalid type): "
@@ -650,6 +820,12 @@ void CrossRealmTransformReadable::HandleMessage(MessageType type,
 }
 
 void CrossRealmTransformReadable::HandleError(v8::Local<v8::Value> error) {
+  // https://streams.spec.whatwg.org/#abstract-opdef-setupcrossrealmtransformreadable
+  // 4. Add a handler for port’s messageerror event with the following steps:
+  // The first two steps, and the last step, are performed by
+  // CrossRealmTransformErrorListener.
+
+  //   3. Perform ! ReadableStreamDefaultControllerError(controller, error).
   ReadableStreamDefaultController::Error(script_state_, controller_, error);
 }
 

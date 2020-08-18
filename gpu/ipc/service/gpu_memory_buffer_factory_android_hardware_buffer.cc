@@ -54,10 +54,12 @@ gfx::GpuMemoryBufferHandle
 GpuMemoryBufferFactoryAndroidHardwareBuffer::CreateGpuMemoryBuffer(
     gfx::GpuMemoryBufferId id,
     const gfx::Size& size,
+    const gfx::Size& framebuffer_size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
     int client_id,
     SurfaceHandle surface_handle) {
+  DCHECK_EQ(framebuffer_size, size);
   auto buffer = GpuMemoryBufferImplAndroidHardwareBuffer::Create(
       id, size, format, usage, GpuMemoryBufferImpl::DestructionCallback());
   if (!buffer) {

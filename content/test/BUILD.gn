@@ -1721,6 +1721,7 @@ test("content_unittests") {
     "../browser/download/save_package_unittest.cc",
     "../browser/file_system/browser_file_system_helper_unittest.cc",
     "../browser/file_system/file_system_operation_runner_unittest.cc",
+    "../browser/font_access/font_access_manager_impl_unittest.cc",
     "../browser/frame_host/ancestor_throttle_unittest.cc",
     "../browser/frame_host/back_forward_cache_metrics_unittest.cc",
     "../browser/frame_host/clipboard_host_impl_unittest.cc",

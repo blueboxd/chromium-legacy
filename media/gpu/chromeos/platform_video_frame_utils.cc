@@ -51,9 +51,9 @@ gfx::GpuMemoryBufferHandle AllocateGpuMemoryBufferHandle(
 
   // TODO(hiroh): Rename the client id to more generic one.
   gmb_handle = factory->CreateGpuMemoryBuffer(
-      gfx::GpuMemoryBufferId(gpu_memory_buffer_id), coded_size, *buffer_format,
-      buffer_usage, gpu::kPlatformVideoFramePoolClientId,
-      gfx::kNullAcceleratedWidget);
+      gfx::GpuMemoryBufferId(gpu_memory_buffer_id), coded_size,
+      /*framebuffer_size=*/coded_size, *buffer_format, buffer_usage,
+      gpu::kPlatformVideoFramePoolClientId, gfx::kNullAcceleratedWidget);
   DCHECK(gmb_handle.is_null() || gmb_handle.type != gfx::NATIVE_PIXMAP ||
          VideoFrame::NumPlanes(pixel_format) ==
              gmb_handle.native_pixmap_handle.planes.size());

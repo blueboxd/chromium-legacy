@@ -59,13 +59,28 @@ class TerminalPrivateOpenTerminalProcessFunction : public ExtensionFunction {
       std::unique_ptr<std::vector<std::string>> args);
 
  private:
-  // Callback for when starting crostini is complete.
   void OnCrostiniRestarted(
       std::unique_ptr<CrostiniStartupStatus> startup_status,
       const std::string& user_id_hash,
       int tab_id,
-      const std::vector<std::string>& arguments,
+      base::CommandLine cmdline,
       crostini::CrostiniResult result);
+
+  void OpenVmshellProcess(const std::string& user_id_hash,
+                          int tab_id,
+                          base::CommandLine cmdline);
+
+  void OnGetVshSession(const std::string& user_id_hash,
+                       int tab_id,
+                       base::CommandLine cmdline,
+                       int32_t vsh_pid,
+                       bool success,
+                       const std::string& failure_reason,
+                       int32_t container_shell_pid);
+
+  void OpenProcess(const std::string& user_id_hash,
+                   int tab_id,
+                   base::CommandLine cmdline);
 
   using ProcessOutputCallback =
       base::Callback<void(const std::string& terminal_id,
@@ -73,13 +88,9 @@ class TerminalPrivateOpenTerminalProcessFunction : public ExtensionFunction {
                           const std::string& output)>;
   using OpenProcessCallback =
       base::Callback<void(bool success, const std::string& terminal_id)>;
-
-  void OpenProcess(const std::string& user_id_hash,
-                   int tab_id,
-                   const std::vector<std::string>& arguments);
   void OpenOnRegistryTaskRunner(const ProcessOutputCallback& output_callback,
                                 const OpenProcessCallback& callback,
-                                const std::vector<std::string>& arguments,
+                                base::CommandLine cmdline,
                                 const std::string& user_id_hash);
   void RespondOnUIThread(bool success, const std::string& terminal_id);
 };

@@ -35,8 +35,9 @@ class PrivacyBudgetUkmEntryFilterTest : public ::testing::Test {
 
 }  // namespace
 
+// TODO(crbug.com/1117358) Flaky
 TEST(PrivacyBudgetUkmEntryFilterStandaloneTest,
-     BlocksIdentifiabilityMetricsByDefault) {
+     DISABLED_BlocksIdentifiabilityMetricsByDefault) {
   TestingPrefServiceSimple pref_service;
   prefs::RegisterPrivacyBudgetPrefs(pref_service.registry());
   auto settings = std::make_unique<IdentifiabilityStudyState>(&pref_service);
@@ -53,7 +54,9 @@ TEST(PrivacyBudgetUkmEntryFilterStandaloneTest,
   EXPECT_TRUE(filtered.empty());
 }
 
-TEST(PrivacyBudgetUkmEntryFilterStandaloneTest, AllowsOtherMetricsByDefault) {
+// TODO(crbug.com/1117358) Flaky
+TEST(PrivacyBudgetUkmEntryFilterStandaloneTest,
+     DISABLED_AllowsOtherMetricsByDefault) {
   TestingPrefServiceSimple pref_service;
   prefs::RegisterPrivacyBudgetPrefs(pref_service.registry());
   auto settings = std::make_unique<IdentifiabilityStudyState>(&pref_service);

@@ -231,16 +231,11 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
 
   scheduler::WorkerScheduler* GetScheduler();
 
-  // Returns a task runner bound to the per-global-scope scheduler's task queue.
-  // You don't have to care about the lifetime of the associated global scope
-  // and underlying thread. After the global scope is destroyed, queued tasks
-  // are discarded and PostTask on the returned task runner just fails. This
-  // function can be called on both the main thread and the worker thread.
-  // You must not call this after Terminate() is called.
-  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType type) {
-    DCHECK(worker_scheduler_);
-    return worker_scheduler_->GetTaskRunner(type);
-  }
+  // Returns a task runner bound to this worker. Users of the task runner don't
+  // have to care about the lifetime of the worker. When the worker global scope
+  // is destroyed, the task runner starts failing PostTask calls and discards
+  // queued tasks. This function can be called from any threads.
+  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType type);
 
   void ChildThreadStartedOnWorkerThread(WorkerThread*);
   void ChildThreadTerminatedOnWorkerThread(WorkerThread*);
@@ -438,6 +433,14 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
   // Tasks managed by this scheduler are canceled when the global scope is
   // closed.
   std::unique_ptr<scheduler::WorkerScheduler> worker_scheduler_;
+
+  // Task runners bound with |worker_scheduler_|. These are captured when the
+  // worker scheduler is initialized.
+  using TaskRunnerHashMap = HashMap<TaskType,
+                                    scoped_refptr<base::SingleThreadTaskRunner>,
+                                    WTF::IntHash<TaskType>,
+                                    TaskTypeTraits>;
+  TaskRunnerHashMap worker_task_runners_;
 
   // This lock protects shared states between the main thread and the worker
   // thread. See thread-safety annotations (e.g., GUARDED_BY) in this header

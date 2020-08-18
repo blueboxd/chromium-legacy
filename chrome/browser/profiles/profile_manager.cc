@@ -1240,13 +1240,11 @@ void ProfileManager::DoFinalInit(ProfileInfo* profile_info,
   signin_util::EnsurePrimaryAccountAllowedForProfile(profile);
 
 #if !defined(OS_ANDROID)
-  // Caret browsing mode preference is not persisted between browser sessions,
-  // unless the command-line switch is also set - because otherwise it can be
-  // confusing if users don't realize that it was set.
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  profile->GetPrefs()->SetBoolean(
-      prefs::kCaretBrowsingEnabled,
-      command_line->HasSwitch(switches::kEnableCaretBrowsing));
+  // The caret browsing command-line switch toggles caret browsing on
+  // initially, but the user can still toggle it from there.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableCaretBrowsing))
+    profile->GetPrefs()->SetBoolean(prefs::kCaretBrowsingEnabled, true);
 #endif
 }
 

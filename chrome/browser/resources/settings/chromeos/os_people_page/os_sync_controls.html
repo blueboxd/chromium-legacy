@@ -120,20 +120,12 @@
         </div>
       </div>
 
-      <cr-button id="turnOnSyncButton"
+      <cr-button id="syncOnOffButton"
           class="action-button"
-          on-click="onTurnOnSyncButtonClick_"
-          aria-labelledby="turnOnSyncButton accountTitle accountSubtitle"
-          aria-describedby="featureLabel"
-          hidden="[[osSyncFeatureEnabled]]">
-        $i18n{osSyncTurnOn}
-      </cr-button>
-      <cr-button id="turnOffSyncButton"
-          on-click="onTurnOffSyncButtonClick_"
-          aria-labelledby="turnOffSyncButton accountTitle accountSubtitle"
-          aria-describedby="featureLabel"
-          hidden="[[!osSyncFeatureEnabled]]">
-        $i18n{osSyncTurnOff}
+          on-click="onSyncOnOffButtonClick_"
+          aria-labelledby="syncOnOffButton accountTitle accountSubtitle"
+          aria-describedby="featureLabel">
+        [[getSyncOnOffButtonLabel_(osSyncFeatureEnabled)]]
       </cr-button>
     </div>
 

@@ -2780,8 +2780,7 @@ void PrintRenderFrameHelper::PrintPreviewContext::CalculatePluginAttributes() {
 void PrintRenderFrameHelper::SetPrintPagesParams(
     const PrintMsg_PrintPages_Params& settings) {
   print_pages_params_ = std::make_unique<PrintMsg_PrintPages_Params>(settings);
-  Send(new PrintHostMsg_DidGetDocumentCookie(routing_id(),
-                                             settings.params.document_cookie));
+  GetPrintManagerHost()->DidGetDocumentCookie(settings.params.document_cookie);
 }
 
 PrintRenderFrameHelper::ScopedIPC::ScopedIPC(

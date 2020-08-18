@@ -341,3 +341,37 @@ async function getUint32(blob, offset) {
   const dataView = new DataView(buf);
   return dataView.getUint32(0);
 }
+
+function promiseDocumentReady() {
+  return new Promise(resolve => {
+    if (document.readyState === 'complete') {
+      resolve();
+    }
+    window.addEventListener('load', () => {
+      resolve();
+    }, {once: true});
+  });
+}
+
+async function simulateUserActivation() {
+  await promiseDocumentReady();
+  return new Promise(resolve => {
+    const button = document.createElement('button');
+    button.textContent = 'Click to enumerate fonts';
+    button.style.fontSize = '40px';
+    button.onclick = () => {
+      document.body.removeChild(button);
+      resolve();
+    };
+    document.body.appendChild(button);
+    test_driver.click(button);
+  });
+}
+
+function font_access_test(test_function, name, properties) {
+  return promise_test(async (t) => {
+    await test_driver.set_permission({name: 'font-access'}, 'granted');
+    await simulateUserActivation();
+    await test_function(t, name, properties);
+  });
+}

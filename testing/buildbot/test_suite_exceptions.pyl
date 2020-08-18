@@ -581,7 +581,6 @@
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/lacros.browser_tests.filter',
         ],
-        'experiment_percentage': 100,
       },
       'linux-trusty-rel': {
        'args': [
@@ -2642,6 +2641,12 @@
           'shards': 2,
         },
       },
+      # https://crbug.com/1111979,
+      'linux-lacros-rel': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/lacros.unit_tests.filter',
+        ],
+      },
       # https://crbug.com/1111979
       'linux-lacros-tester-fyi-rel': {
         'experiment_percentage': 100,
@@ -2649,10 +2654,7 @@
       # https://crbug.com/1111979,
       'linux-lacros-tester-rel': {
         'args': [
-          '--gtest_filter=-NativeDesktopMediaListTest*:PermissionMessageCombinationsUnittest.USBSerialBluetoothCoalescing:'
-          'RelaunchNotificationControllerPlatformImplTest.SynchronousNotification:WindowSizerTest*:'
-          'ChromeContentBrowserClientTest.UserAgentStringOrdering:'
-          'ChromeMetricsServiceClientTest.TestRegisterMetricsServiceProviders',
+          '--test-launcher-filter-file=../../testing/buildbot/filters/lacros.unit_tests.filter',
         ],
       },
     },

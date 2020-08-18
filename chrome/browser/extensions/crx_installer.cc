@@ -524,7 +524,7 @@ void CrxInstaller::OnUnpackSuccess(
   extension_ = extension;
   temp_dir_ = temp_dir;
   ruleset_checksums_ = std::move(ruleset_checksums);
-  ReportInstallationStage(InstallationStage::kFinalizing);
+  ReportInstallationStage(InstallationStage::kCheckingExpectations);
 
   if (!install_icon.empty())
     install_icon_ = std::make_unique<SkBitmap>(install_icon);
@@ -722,7 +722,7 @@ void CrxInstaller::OnInstallChecksComplete(const PreloadCheck::Errors& errors) {
 
 void CrxInstaller::ConfirmInstall() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  ReportInstallationStage(InstallationStage::kComplete);
+  ReportInstallationStage(InstallationStage::kFinalizing);
   ExtensionService* service = service_weak_.get();
   if (!service || service->browser_terminating())
     return;
@@ -1047,6 +1047,7 @@ void CrxInstaller::NotifyCrxInstallBegin() {
 
 void CrxInstaller::NotifyCrxInstallComplete(
     const base::Optional<CrxInstallError>& error) {
+  ReportInstallationStage(InstallationStage::kComplete);
   const std::string extension_id =
       expected_id_.empty() && extension() ? extension()->id() : expected_id_;
   InstallStageTracker* install_stage_tracker =

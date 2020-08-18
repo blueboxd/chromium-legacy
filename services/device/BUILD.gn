@@ -8,7 +8,8 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
-is_serial_enabled_platform = is_win || ((is_linux || is_chromeos) && use_udev) || is_mac
+is_serial_enabled_platform =
+    is_win || ((is_linux || is_chromeos) && use_udev) || is_mac
 
 source_set("lib") {
   # This should be visible only to embedders of the Device Service, and the
@@ -247,6 +248,7 @@ source_set("tests") {
 
   if (is_serial_enabled_platform) {
     sources += [
+      "serial/bluetooth_serial_port_impl_unittest.cc",
       "serial/serial_device_enumerator_linux_unittest.cc",
       "serial/serial_device_enumerator_unittest.cc",
       "serial/serial_port_impl_unittest.cc",
@@ -263,6 +265,7 @@ source_set("tests") {
 
     deps += [
       "//device/bluetooth:mocks",
+      "//services/device/public/cpp/bluetooth:bluetooth",
       "//services/device/public/cpp/serial:switches",
       "//services/device/serial",
       "//services/device/serial:test_support",

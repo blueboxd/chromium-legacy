@@ -14,16 +14,20 @@ namespace blink {
 
 class ScriptState;
 class ScriptValue;
+class ExecutionContext;
 
 class FontManager final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
   FontManager() = default;
-  ScriptValue query(ScriptState*);
+  ScriptValue query(ScriptState*, ExceptionState&);
 
   DISALLOW_COPY_AND_ASSIGN(FontManager);
   void Trace(blink::Visitor*) const override;
+
+ private:
+  void ValidateRequest(ExecutionContext*, ExceptionState&);
 };
 
 }  // namespace blink

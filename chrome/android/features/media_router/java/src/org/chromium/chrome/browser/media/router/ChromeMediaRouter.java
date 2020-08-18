@@ -18,7 +18,6 @@ import org.chromium.base.SysUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.media.router.caf.CafMediaRouteProvider;
 import org.chromium.chrome.browser.media.router.caf.remoting.CafRemotingMediaRouteProvider;
 
@@ -41,7 +40,8 @@ public class ChromeMediaRouter implements MediaRouteManager {
                 @Override
                 public void addProviders(MediaRouteManager manager) {
                     int googleApiAvailabilityResult =
-                            AppHooks.get().isGoogleApiAvailableWithMinApkVersion(
+                            GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(
+                                    ContextUtils.getApplicationContext(),
                                     MIN_GOOGLE_PLAY_SERVICES_APK_VERSION);
                     if (googleApiAvailabilityResult != ConnectionResult.SUCCESS) {
                         GoogleApiAvailability.getInstance().showErrorNotification(

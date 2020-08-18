@@ -1,7 +1,6 @@
 'use strict';
 
-promise_test(async t => {
-  await test_driver.set_permission({name: 'font-access'}, 'granted');
+font_access_test(async t => {
   const iterator = navigator.fonts.query();
   const expectedFonts = await filterEnumeration(iterator,
                                                 getEnumerationTestSet({

@@ -18,19 +18,26 @@
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
+#import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
+#import "ios/chrome/browser/ui/settings/elements/enterprise_info_popover_view_controller.h"
+#import "ios/chrome/browser/ui/settings/google_services/google_services_settings_coordinator.h"
 #import "ios/chrome/browser/ui/settings/password/password_issues_coordinator.h"
 #import "ios/chrome/browser/ui/settings/safety_check/safety_check_mediator.h"
 #import "ios/chrome/browser/ui/settings/safety_check/safety_check_navigation_commands.h"
 #import "ios/chrome/browser/ui/settings/safety_check/safety_check_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/chrome/common/ui/elements/popover_label_view_controller.h"
+#import "net/base/mac/url_conversions.h"
+#include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
 @interface SafetyCheckCoordinator () <
+    GoogleServicesSettingsCoordinatorDelegate,
     PasswordIssuesCoordinatorDelegate,
+    PopoverLabelViewControllerDelegate,
     SafetyCheckNavigationCommands,
     SafetyCheckTableViewControllerPresentationDelegate>
 
@@ -46,6 +53,14 @@
 
 // Dispatcher which can handle changing passwords on sites.
 @property(nonatomic, strong) id<ApplicationCommands> handler;
+
+// Coordinator for the Google Services screen (SafeBrowsing toggle location).
+@property(nonatomic, strong)
+    GoogleServicesSettingsCoordinator* googleServicesSettingsCoordinator;
+
+// Popover view controller with error information.
+@property(nonatomic, strong)
+    PopoverLabelViewController* errorInfoPopoverViewController;
 
 @end
 
@@ -102,6 +117,28 @@
   [self.delegate safetyCheckCoordinatorDidRemove:self];
 }
 
+#pragma mark - PopoverLabelViewControllerDelegate
+
+- (void)didTapLinkURL:(NSURL*)URL {
+  GURL convertedURL = net::GURLWithNSURL(URL);
+  const GURL safeBrowsingURL(kSafeBrowsingStringURL);
+
+  // Take the user to Sync and Google Services page in Bling instead of desktop
+  // settings.
+  if (convertedURL == safeBrowsingURL) {
+    [self.errorInfoPopoverViewController
+        dismissViewControllerAnimated:YES
+                           completion:^{
+                             [self showSafeBrowsingPreferencePage];
+                           }];
+    return;
+  }
+
+  OpenNewTabCommand* command =
+      [OpenNewTabCommand commandWithURLFromChrome:convertedURL];
+  [self.handler closeSettingsUIAndOpenURL:command];
+}
+
 #pragma mark - SafetyCheckNavigationCommands
 
 - (void)showPasswordIssuesPage {
@@ -120,15 +157,19 @@
 
 - (void)showErrorInfoFrom:(UIButton*)buttonView
                  withText:(NSAttributedString*)text {
-  PopoverLabelViewController* errorInfoPopover =
+  self.errorInfoPopoverViewController =
       [[PopoverLabelViewController alloc] initWithPrimaryAttributedString:text
                                                 secondaryAttributedString:nil];
 
-  errorInfoPopover.popoverPresentationController.sourceView = buttonView;
-  errorInfoPopover.popoverPresentationController.sourceRect = buttonView.bounds;
-  errorInfoPopover.popoverPresentationController.permittedArrowDirections =
-      UIPopoverArrowDirectionAny;
-  [self.viewController presentViewController:errorInfoPopover
+  self.errorInfoPopoverViewController.delegate = self;
+
+  self.errorInfoPopoverViewController.popoverPresentationController.sourceView =
+      buttonView;
+  self.errorInfoPopoverViewController.popoverPresentationController.sourceRect =
+      buttonView.bounds;
+  self.errorInfoPopoverViewController.popoverPresentationController
+      .permittedArrowDirections = UIPopoverArrowDirectionAny;
+  [self.viewController presentViewController:self.errorInfoPopoverViewController
                                     animated:YES
                                   completion:nil];
 }
@@ -138,7 +179,36 @@
 }
 
 - (void)showSafeBrowsingPreferencePage {
-  // TODO(crbug.com/1078782): Add navigation to Safe Browsing preference page.
+  DCHECK(!self.googleServicesSettingsCoordinator);
+  self.googleServicesSettingsCoordinator =
+      [[GoogleServicesSettingsCoordinator alloc]
+          initWithBaseNavigationController:self.baseNavigationController
+                                   browser:self.browser
+                                      mode:GoogleServicesSettingsModeSettings];
+  self.googleServicesSettingsCoordinator.handler = self.handler;
+  self.googleServicesSettingsCoordinator.delegate = self;
+  [self.googleServicesSettingsCoordinator start];
+}
+
+- (void)showManagedInfoFrom:(UIButton*)buttonView {
+  EnterpriseInfoPopoverViewController* bubbleViewController =
+      [[EnterpriseInfoPopoverViewController alloc] initWithEnterpriseName:nil];
+  [self.viewController presentViewController:bubbleViewController
+                                    animated:YES
+                                  completion:nil];
+
+  // Disable the button when showing the bubble.
+  // The button will be enabled when close the bubble in
+  // (void)popoverPresentationControllerDidDismissPopover: of
+  // EnterpriseInfoPopoverViewController.
+  buttonView.enabled = NO;
+
+  // Set the anchor and arrow direction of the bubble.
+  bubbleViewController.popoverPresentationController.sourceView = buttonView;
+  bubbleViewController.popoverPresentationController.sourceRect =
+      buttonView.bounds;
+  bubbleViewController.popoverPresentationController.permittedArrowDirections =
+      UIPopoverArrowDirectionAny;
 }
 
 #pragma mark - PasswordIssuesCoordinatorDelegate
@@ -153,6 +223,16 @@
 
 - (BOOL)willHandlePasswordDeletion:(const autofill::PasswordForm&)password {
   return NO;
+}
+
+#pragma mark - GoogleServicesSettingsCoordinatorDelegate
+
+- (void)googleServicesSettingsCoordinatorDidRemove:
+    (GoogleServicesSettingsCoordinator*)coordinator {
+  DCHECK_EQ(_googleServicesSettingsCoordinator, coordinator);
+  [self.googleServicesSettingsCoordinator stop];
+  self.googleServicesSettingsCoordinator.delegate = nil;
+  self.googleServicesSettingsCoordinator = nil;
 }
 
 @end

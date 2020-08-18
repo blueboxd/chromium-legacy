@@ -225,21 +225,39 @@ WritableStream* WritableStream::CreateWithCountQueueingStrategy(
 void WritableStream::Serialize(ScriptState* script_state,
                                MessagePort* port,
                                ExceptionState& exception_state) {
+  // https://streams.spec.whatwg.org/#ws-transfer
+  // 1. If ! IsWritableStreamLocked(value) is true, throw a "DataCloneError"
+  //    DOMException.
   if (IsLocked(this)) {
     exception_state.ThrowTypeError("Cannot transfer a locked stream");
     return;
   }
 
+  // Done by SerializedScriptValue::TransferWritableStream():
+  // 2. Let port1 be a new MessagePort in the current Realm.
+  // 3. Let port2 be a new MessagePort in the current Realm.
+  // 4. Entangle port1 and port2.
+
+  // 5. Let readable be a new ReadableStream in the current Realm.
+  // 6. Perform ! SetUpCrossRealmTransformReadable(readable, port1).
   auto* readable =
       CreateCrossRealmTransformReadable(script_state, port, exception_state);
   if (exception_state.HadException()) {
     return;
   }
 
+  // 7. Let promise be ! ReadableStreamPipeTo(readable, value, false, false,
+  //    false).
   auto promise = ReadableStream::PipeTo(
       script_state, readable, this,
       MakeGarbageCollected<ReadableStream::PipeOptions>());
+
+  // 8. Set promise.[[PromiseIsHandled]] to true.
   promise.MarkAsHandled();
+
+  // This step is done in a roundabout way by the caller:
+  // 9. Set dataHolder.[[port]] to ! StructuredSerializeWithTransfer(port2, «
+  //    port2 »).
 }
 
 WritableStream* WritableStream::Deserialize(ScriptState* script_state,
@@ -249,6 +267,17 @@ WritableStream* WritableStream::Deserialize(ScriptState* script_state,
   // run author code.
   v8::Isolate::AllowJavascriptExecutionScope allow_js(
       script_state->GetIsolate());
+
+  // https://streams.spec.whatwg.org/#ws-transfer
+  // These step is done by V8ScriptValueDeserializer::ReadDOMObject().
+  // 1. Let deserializedRecord be !
+  //    StructuredDeserializeWithTransfer(dataHolder.[[port]], the current
+  //    Realm).
+  // 2. Let port be deserializedRecord.[[Deserialized]].
+
+  // 3. Perform ! SetUpCrossRealmTransformWritable(value, port).
+  // In the standard |value| contains an unitialized WritableStream. In the
+  // implementation, we create the stream here.
   auto* writable =
       CreateCrossRealmTransformWritable(script_state, port, exception_state);
   if (exception_state.HadException()) {

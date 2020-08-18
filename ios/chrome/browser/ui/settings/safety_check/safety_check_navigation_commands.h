@@ -22,6 +22,10 @@
 - (void)showErrorInfoFrom:(UIButton*)buttonView
                  withText:(NSAttributedString*)text;
 
+// Called when the user clicks on the information button of the managed
+// setting's UI. Shows a textual bubble with the information of the enterprise.
+- (void)showManagedInfoFrom:(UIButton*)buttonView;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_SETTINGS_SAFETY_CHECK_SAFETY_CHECK_NAVIGATION_COMMANDS_H_

@@ -26,7 +26,6 @@ class DialogDelegateView;
 
 namespace ash {
 
-class AppListViewDelegate;
 class SearchResultBaseView;
 class ViewShadow;
 class SearchResultPageAnchoredDialog;
@@ -37,8 +36,7 @@ class APP_LIST_EXPORT SearchResultPageView
       public SearchResultContainerView::Delegate,
       public SearchBoxModelObserver {
  public:
-  SearchResultPageView(AppListViewDelegate* view_delegate,
-                       SearchModel* search_model);
+  explicit SearchResultPageView(SearchModel* search_model);
   ~SearchResultPageView() override;
 
   template <typename T>
@@ -97,8 +95,6 @@ class APP_LIST_EXPORT SearchResultPageView
   void Update() override;
   void SearchEngineChanged() override;
   void ShowAssistantChanged() override;
-
-  void OnPrivacyInfoViewCloseButtonPressed();
 
   // Shows a dialog widget, and anchors it within the search results page. The
   // dialog will be positioned relative to the search box bounds, and will be
@@ -163,8 +159,6 @@ class APP_LIST_EXPORT SearchResultPageView
   void AddSearchResultContainerViewInternal(
       std::unique_ptr<SearchResultContainerView> result_container);
 
-  AppListViewDelegate* view_delegate_;
-
   // The search model for which the results are displayed.
   SearchModel* const search_model_;
 
@@ -194,9 +188,6 @@ class APP_LIST_EXPORT SearchResultPageView
   // The last reported number of search results shown within search result
   // containers.
   int last_search_result_count_ = 0;
-
-  views::View* assistant_privacy_info_view_ = nullptr;
-  views::View* suggested_content_info_view_ = nullptr;
 
   std::unique_ptr<ViewShadow> view_shadow_;
 

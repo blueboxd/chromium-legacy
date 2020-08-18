@@ -163,8 +163,12 @@ dependencies {
     compile "javax.inject:javax.inject:1"
 
     // Used by R8 to desugar library functions.
-    compile "com.android.tools:desugar_jdk_libs:1.0.5"
-    compile "com.android.tools:desugar_jdk_libs_configuration:0.11.1"
+    compile "com.android.tools:desugar_jdk_libs:1.0.10"
+    // When updating this line, please run the following to update the
+    // desugar.json file:
+    //  $ unzip -p third_party/android_deps/libs/desugar_jdk_libs_configuration/desugar_jdk_libs_configuration_$VERSION.jar \
+    //      META-INF/desugar/d8/desugar.json > third_party/r8/desugar_jdk_libs.json
+    compile "com.android.tools:desugar_jdk_libs_configuration:1.0.10"
 
     // buildCompile targets have supports_android = false.
     buildCompile "com.google.guava:guava:27.0.1-jre"

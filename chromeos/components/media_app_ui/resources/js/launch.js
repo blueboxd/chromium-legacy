@@ -154,6 +154,13 @@ guestMessagePipe.registerHandler(Message.RENAME_FILE, async (message) => {
   }
 
   const originalFile = await handle.getFile();
+  let originalFileIndex =
+      currentFiles.findIndex(fd => fd.token === renameMsg.token);
+
+  if (originalFileIndex < 0) {
+    return {renameResult: RenameResult.FILE_NO_LONGER_IN_LAST_OPENED_DIRECTORY};
+  }
+
   const renamedFileHandle =
       await directory.getFileHandle(renameMsg.newFilename, {create: true});
   // Copy file data over to the new file.
@@ -171,9 +178,30 @@ guestMessagePipe.registerHandler(Message.RENAME_FILE, async (message) => {
     await directory.removeEntry(originalFile.name);
   }
 
-  // Reload current file so it is in an editable state, this is done before
-  // removing the old file so the relaunch starts sooner.
-  await launchWithDirectory(directory, renamedFileHandle);
+  // Replace the old file in our internal representation. There is no harm using
+  // the old file's token since the old file is removed.
+  tokenMap.set(renameMsg.token, renamedFileHandle);
+  // Remove the entry for `originalFile` in current files, replace it with a
+  // FileDescriptor for the renamed file.
+
+  const renamedFile = await renamedFileHandle.getFile();
+  // Ensure the file is still in `currentFiles` after all the above `awaits`. If
+  // missing it means either new files have loaded (or tried to), see
+  // b/164985809.
+  originalFileIndex =
+      currentFiles.findIndex(fd => fd.token === renameMsg.token);
+
+  if (originalFileIndex < 0) {
+    // Can't navigate to the renamed file so don't add it to `currentFiles`.
+    return {renameResult: RenameResult.SUCCESS};
+  }
+
+  currentFiles.splice(originalFileIndex, 1, {
+    token: renameMsg.token,
+    file: renamedFile,
+    handle: renamedFileHandle,
+    inCurrentDirectory: true
+  });
 
   return {renameResult: RenameResult.SUCCESS};
 });
@@ -614,6 +642,8 @@ async function processOtherFilesInDirectory(
 
     // Only allow traversal of related file types.
     if (entry && isFileRelated(focusFile, entry.file)) {
+      // Note: The focus file will be processed here again but will be skipped
+      // over when added to `currentFiles`.
       relatedFiles.push({
         token: generateToken(entry.handle),
         file: entry.file,
@@ -730,6 +760,9 @@ async function launchWithDirectory(directory, handle) {
   // The app is operable with the first file now.
 
   // Process other files in directory.
+  // TODO(https://github.com/WICG/native-file-system/issues/215): Don't process
+  // other files if there is only 1 file which is already loaded by
+  // `sendSnapshotToGuest()` above.
   await loadOtherRelatedFiles(
       directory, asFile.file, asFile.handle, localLaunchNumber);
 }

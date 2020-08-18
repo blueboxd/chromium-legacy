@@ -1,9 +1,9 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_PUBLIC_CPP_ACCESSIBILITY_EVENT_REWRITER_DELEGATE_H_
-#define ASH_PUBLIC_CPP_ACCESSIBILITY_EVENT_REWRITER_DELEGATE_H_
+#ifndef ASH_PUBLIC_CPP_SPOKEN_FEEDBACK_EVENT_REWRITER_DELEGATE_H_
+#define ASH_PUBLIC_CPP_SPOKEN_FEEDBACK_EVENT_REWRITER_DELEGATE_H_
 
 #include <memory>
 
@@ -15,11 +15,8 @@ class Event;
 
 namespace ash {
 
-enum class SwitchAccessCommand;
-
-// Allows a client to implement event processing for accessibility features;
-// used for ChromeVox and Switch Access.
-class ASH_PUBLIC_EXPORT AccessibilityEventRewriterDelegate {
+// Allows a client to implement spoken feedback features; used for ChromeVox.
+class ASH_PUBLIC_EXPORT SpokenFeedbackEventRewriterDelegate {
  public:
   // Used to send key events to the ChromeVox extension. |capture| is true if
   // the rewriter discarded the event, false if the rewriter continues event
@@ -31,13 +28,10 @@ class ASH_PUBLIC_EXPORT AccessibilityEventRewriterDelegate {
   virtual void DispatchMouseEventToChromeVox(
       std::unique_ptr<ui::Event> event) = 0;
 
-  // Sends a command to Switch Access.
-  virtual void SendSwitchAccessCommand(SwitchAccessCommand command) = 0;
-
  protected:
-  virtual ~AccessibilityEventRewriterDelegate() {}
+  virtual ~SpokenFeedbackEventRewriterDelegate() {}
 };
 
 }  // namespace ash
 
-#endif  // ASH_PUBLIC_CPP_ACCESSIBILITY_EVENT_REWRITER_DELEGATE_H_
+#endif  // ASH_PUBLIC_CPP_SPOKEN_FEEDBACK_EVENT_REWRITER_DELEGATE_H_

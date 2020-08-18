@@ -278,10 +278,9 @@ bool ThroughputAnalyzer::IsHangingWindow(int64_t bits_received,
   // Scale the |duration| to one HTTP RTT, and compute the number of bits that
   // would be received over a duration of one HTTP RTT.
   size_t bits_received_over_one_http_rtt =
-      bits_received * (network_quality_estimator_->GetHttpRTT()
-                           .value_or(base::TimeDelta::FromSeconds(10))
-                           .InMillisecondsF() /
-                       duration.InMillisecondsF());
+      bits_received * (network_quality_estimator_->GetHttpRTT().value_or(
+                           base::TimeDelta::FromSeconds(10)) /
+                       duration);
 
   // If |is_hanging| is true, it implies that less than
   // kCwndSizeKilobytes were received over a period of 1 HTTP RTT. For a network

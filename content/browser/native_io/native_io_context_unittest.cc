@@ -112,6 +112,21 @@ class NativeIOFileHostSync {
     return;
   }
 
+  std::pair<bool, base::File> SetLength(const int64_t length, base::File file) {
+    bool success;
+    base::RunLoop run_loop;
+    file_host_->SetLength(
+        length, std::move(file),
+        base::BindLambdaForTesting(
+            [&](bool backend_success, base::File backend_file) {
+              success = backend_success;
+              file = std::move(backend_file);
+              run_loop.Quit();
+            }));
+    run_loop.Run();
+    return {success, std::move(file)};
+  }
+
  private:
   blink::mojom::NativeIOFileHost* const file_host_;
 };
@@ -325,6 +340,18 @@ TEST_F(NativeIOContextTest, RenameFile_BadNames) {
     EXPECT_FALSE(example_host_->RenameFile(bad_name, "inexistant_test_file"));
     EXPECT_EQ("Invalid file name", bad_message_observer.WaitForBadMessage());
   }
+}
+
+TEST_F(NativeIOContextTest, SetLength_NegativeLength) {
+  mojo::Remote<blink::mojom::NativeIOFileHost> file_host_remote;
+  base::File file = example_host_->OpenFile(
+      "test_file", file_host_remote.BindNewPipeAndPassReceiver());
+  NativeIOFileHostSync file_host(file_host_remote.get());
+  std::pair<bool, base::File> res = file_host.SetLength(-5, std::move(file));
+  EXPECT_FALSE(res.first) << "A file can have no negative length.";
+
+  res.second.Close();
+  file_host.Close();
 }
 
 TEST_F(NativeIOContextTest, OriginIsolation) {

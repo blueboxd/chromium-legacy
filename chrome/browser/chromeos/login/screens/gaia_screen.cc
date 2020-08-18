@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/screens/gaia_screen.h"
 
 #include "chrome/browser/chromeos/login/screen_manager.h"
+#include "chrome/browser/chromeos/login/wizard_context.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "components/account_id/account_id.h"
 
@@ -55,6 +56,8 @@ void GaiaScreen::LoadOffline(const AccountId& account) {
 }
 
 void GaiaScreen::ShowImpl() {
+  // Landed on the login screen. No longer skipping enrollment for tests.
+  context()->skip_to_login_for_tests = false;
   view_->Show();
 }
 

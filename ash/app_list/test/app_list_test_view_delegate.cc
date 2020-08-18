@@ -88,6 +88,16 @@ void AppListTestViewDelegate::SetIsTabletModeEnabled(bool is_tablet_mode) {
   is_tablet_mode_ = is_tablet_mode;
 }
 
+void AppListTestViewDelegate::SetShouldShowAssistantPrivacyInfo(
+    bool should_show) {
+  should_show_assistant_privacy_info_ = should_show;
+}
+
+void AppListTestViewDelegate::SetShouldShowSuggestedContentInfo(
+    bool should_show) {
+  should_show_suggested_content_info_ = should_show;
+}
+
 const std::vector<SkColor>&
 AppListTestViewDelegate::GetWallpaperProminentColors() {
   return wallpaper_prominent_colors_;
@@ -183,16 +193,20 @@ bool AppListTestViewDelegate::IsAssistantAllowedAndEnabled() const {
 }
 
 bool AppListTestViewDelegate::ShouldShowAssistantPrivacyInfo() const {
-  return false;
+  return should_show_assistant_privacy_info_;
 }
 
-void AppListTestViewDelegate::MarkAssistantPrivacyInfoDismissed() {}
+void AppListTestViewDelegate::MarkAssistantPrivacyInfoDismissed() {
+  should_show_assistant_privacy_info_ = false;
+}
 
 bool AppListTestViewDelegate::ShouldShowSuggestedContentInfo() const {
-  return false;
+  return should_show_suggested_content_info_;
 }
 
-void AppListTestViewDelegate::MarkSuggestedContentInfoDismissed() {}
+void AppListTestViewDelegate::MarkSuggestedContentInfoDismissed() {
+  should_show_suggested_content_info_ = false;
+}
 
 void AppListTestViewDelegate::OnStateTransitionAnimationCompleted(
     ash::AppListViewState state) {}

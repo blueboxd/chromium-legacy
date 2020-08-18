@@ -85,8 +85,6 @@ bool PrintManager::OnMessageReceived(
   FrameDispatchHelper helper = {this, render_frame_host};
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PrintManager, message)
-    IPC_MESSAGE_HANDLER(PrintHostMsg_DidGetDocumentCookie,
-                        OnDidGetDocumentCookie)
     IPC_MESSAGE_FORWARD_DELAY_REPLY(
         PrintHostMsg_GetDefaultPrintSettings, &helper,
         FrameDispatchHelper::OnGetDefaultPrintSettings)
@@ -113,7 +111,7 @@ void PrintManager::DidGetPrintedPagesCount(int32_t cookie,
   number_pages_ = number_pages;
 }
 
-void PrintManager::OnDidGetDocumentCookie(int cookie) {
+void PrintManager::DidGetDocumentCookie(int32_t cookie) {
   cookie_ = cookie;
 }
 

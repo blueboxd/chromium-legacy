@@ -85,6 +85,7 @@ class FakeGpuMemoryBufferFactory : public gpu::GpuMemoryBufferFactory {
   gfx::GpuMemoryBufferHandle CreateGpuMemoryBuffer(
       gfx::GpuMemoryBufferId id,
       const gfx::Size& size,
+      const gfx::Size& framebuffer_size,
       gfx::BufferFormat format,
       gfx::BufferUsage usage,
       int client_id,

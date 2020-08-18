@@ -456,9 +456,18 @@ void SerializedScriptValue::TransferTransformStreams(
 // a MessagePortChannel, and returns the other end as a MessagePort.
 MessagePort* SerializedScriptValue::AddStreamChannel(
     ExecutionContext* execution_context) {
+  // Used for both https://streams.spec.whatwg.org/#rs-transfer and
+  // https://streams.spec.whatwg.org/#ws-transfer.
+  // 2. Let port1 be a new MessagePort in the current Realm.
+  // 3. Let port2 be a new MessagePort in the current Realm.
   MessagePortDescriptorPair pipe;
   auto* local_port = MakeGarbageCollected<MessagePort>(*execution_context);
+
+  // 4. Entangle port1 and port2.
   local_port->Entangle(pipe.TakePort0());
+
+  // 9. Set dataHolder.[[port]] to ! StructuredSerializeWithTransfer(port2,
+  //    « port2 »).
   stream_channels_.push_back(MessagePortChannel(pipe.TakePort1()));
   return local_port;
 }

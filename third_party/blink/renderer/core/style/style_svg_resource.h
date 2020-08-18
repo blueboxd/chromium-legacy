@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_STYLE_SVG_RESOURCE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_STYLE_SVG_RESOURCE_H_
 
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/svg/svg_resource.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
@@ -46,7 +45,8 @@ class StyleSVGResource : public RefCounted<StyleSVGResource> {
   Persistent<SVGResource> resource_;
   const AtomicString url_;
 
-  DISALLOW_COPY_AND_ASSIGN(StyleSVGResource);
+  StyleSVGResource(const StyleSVGResource&) = delete;
+  StyleSVGResource& operator=(const StyleSVGResource&) = delete;
 };
 
 }  // namespace blink

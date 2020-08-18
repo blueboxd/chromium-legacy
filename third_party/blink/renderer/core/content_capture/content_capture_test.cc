@@ -5,6 +5,8 @@
 #include "third_party/blink/renderer/core/content_capture/content_capture_manager.h"
 
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/web/web_content_capture_client.h"
 #include "third_party/blink/public/web/web_content_holder.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
@@ -155,9 +157,19 @@ class ContentCaptureLocalFrameClientHelper : public EmptyLocalFrameClient {
   WebContentCaptureClient& client_;
 };
 
-class ContentCaptureTest : public PageTestBase {
+class ContentCaptureTest : public PageTestBase,
+                           public ::testing::WithParamInterface<bool> {
  public:
-  ContentCaptureTest() { EnablePlatform(); }
+  ContentCaptureTest() {
+    EnablePlatform();
+    if (GetParam()) {
+      feature_list_.InitAndEnableFeature(
+          features::kContentCaptureUserActivatedDelay);
+    } else {
+      feature_list_.InitAndDisableFeature(
+          features::kContentCaptureUserActivatedDelay);
+    }
+  }
 
   void SetUp() override {
     content_capture_client_ =
@@ -198,7 +210,7 @@ class ContentCaptureTest : public PageTestBase {
     Element* div_element = GetElementById("d1");
     div_element->appendChild(element);
     UpdateAllLifecyclePhasesForTest();
-    GetContentCaptureManager()->ScheduleTaskIfNeeded();
+    GetContentCaptureManager()->ScheduleTaskIfNeeded(*node);
     created_node_id_ = DOMNodeIds::IdForNode(node);
     Vector<DOMNodeId> captured_content{created_node_id_};
     content_capture_manager_->GetContentCaptureTask()
@@ -275,7 +287,7 @@ class ContentCaptureTest : public PageTestBase {
       CHECK(layout_object);
       CHECK(layout_object->IsText());
       nodes_.push_back(node);
-      GetContentCaptureManager()->ScheduleTaskIfNeeded();
+      GetContentCaptureManager()->ScheduleTaskIfNeeded(*node);
       node_ids_.push_back(DOMNodeIds::IdForNode(node));
     }
   }
@@ -286,9 +298,12 @@ class ContentCaptureTest : public PageTestBase {
   Persistent<ContentCaptureManagerTestHelper> content_capture_manager_;
   Persistent<ContentCaptureLocalFrameClientHelper> local_frame_client_;
   DOMNodeId created_node_id_ = kInvalidDOMNodeId;
+  base::test::ScopedFeatureList feature_list_;
 };
 
-TEST_F(ContentCaptureTest, Basic) {
+INSTANTIATE_TEST_SUITE_P(, ContentCaptureTest, testing::Values(true, false));
+
+TEST_P(ContentCaptureTest, Basic) {
   RunContentCaptureTask();
   EXPECT_EQ(ContentCaptureTask::TaskState::kStop,
             GetContentCaptureTask()->GetTaskStateForTesting());
@@ -297,7 +312,7 @@ TEST_F(ContentCaptureTest, Basic) {
             GetWebContentCaptureClient()->Data().size());
 }
 
-TEST_F(ContentCaptureTest, PauseAndResume) {
+TEST_P(ContentCaptureTest, PauseAndResume) {
   // The task stops before captures content.
   GetContentCaptureTask()->SetTaskStopState(
       ContentCaptureTask::TaskState::kCaptureContent);
@@ -337,7 +352,7 @@ TEST_F(ContentCaptureTest, PauseAndResume) {
             GetWebContentCaptureClient()->Data().size());
 }
 
-TEST_F(ContentCaptureTest, NodeOnlySendOnce) {
+TEST_P(ContentCaptureTest, NodeOnlySendOnce) {
   // Send all nodes
   RunContentCaptureTask();
   EXPECT_FALSE(GetWebContentCaptureClient()->Data().empty());
@@ -350,7 +365,7 @@ TEST_F(ContentCaptureTest, NodeOnlySendOnce) {
   EXPECT_TRUE(GetWebContentCaptureClient()->RemovedData().empty());
 }
 
-TEST_F(ContentCaptureTest, RemoveNodeBeforeSendingOut) {
+TEST_P(ContentCaptureTest, RemoveNodeBeforeSendingOut) {
   // Capture the content, but didn't send them.
   GetContentCaptureTask()->SetTaskStopState(
       ContentCaptureTask::TaskState::kProcessCurrentSession);
@@ -376,7 +391,7 @@ TEST_F(ContentCaptureTest, RemoveNodeBeforeSendingOut) {
   EXPECT_EQ(0u, GetWebContentCaptureClient()->RemovedData().size());
 }
 
-TEST_F(ContentCaptureTest, RemoveNodeInBetweenSendingOut) {
+TEST_P(ContentCaptureTest, RemoveNodeInBetweenSendingOut) {
   // Capture the content, but didn't send them.
   GetContentCaptureTask()->SetTaskStopState(
       ContentCaptureTask::TaskState::kProcessCurrentSession);
@@ -406,7 +421,7 @@ TEST_F(ContentCaptureTest, RemoveNodeInBetweenSendingOut) {
   EXPECT_EQ(0u, GetWebContentCaptureClient()->RemovedData().size());
 }
 
-TEST_F(ContentCaptureTest, RemoveNodeAfterSendingOut) {
+TEST_P(ContentCaptureTest, RemoveNodeAfterSendingOut) {
   // Captures the content, but didn't send them.
   GetContentCaptureTask()->SetTaskStopState(
       ContentCaptureTask::TaskState::kProcessCurrentSession);
@@ -434,7 +449,7 @@ TEST_F(ContentCaptureTest, RemoveNodeAfterSendingOut) {
   EXPECT_EQ(1u, GetWebContentCaptureClient()->RemovedData().size());
 }
 
-TEST_F(ContentCaptureTest, TaskHistogramReporter) {
+TEST_P(ContentCaptureTest, TaskHistogramReporter) {
   // This performs gc for all DocumentSession, flushes the existing
   // SentContentCount and give a clean baseline for histograms.
   // We are not sure if it always work, maybe still be the source of flaky.
@@ -529,32 +544,42 @@ TEST_F(ContentCaptureTest, TaskHistogramReporter) {
       ContentCaptureTaskHistogramReporter::kSentContentCount, 9u, 1u);
 }
 
-TEST_F(ContentCaptureTest, RescheduleTask) {
+TEST_P(ContentCaptureTest, RescheduleTask) {
   // This test assumes test runs much faster than task's long delay which is 5s.
   Persistent<ContentCaptureTaskTestHelper> task = GetContentCaptureTask();
   task->CancelTaskForTesting();
   EXPECT_TRUE(task->GetTaskNextFireIntervalForTesting().is_zero());
-  task->Schedule(ContentCaptureTask::ScheduleReason::kContentChange);
+  task->Schedule(
+      ContentCaptureTask::ScheduleReason::kNonUserActivatedContentChange);
   auto begin = base::TimeTicks::Now();
   base::TimeDelta interval1 = task->GetTaskNextFireIntervalForTesting();
   task->Schedule(ContentCaptureTask::ScheduleReason::kScrolling);
   base::TimeDelta interval2 = task->GetTaskNextFireIntervalForTesting();
   auto test_running_time = base::TimeTicks::Now() - begin;
-  // The interval1 will be greater than interval2 even the task wasn't
-  // rescheduled, removing the test_running_time from interval1 make sure
-  // task rescheduled.
-  EXPECT_GT(interval1 - test_running_time, interval2);
+  if (GetParam()) {
+    // The first scheduled task is always shortest even though caused by
+    // NonUserTriggered.
+    EXPECT_LE(interval1, GetWebContentCaptureClient()->GetTaskShortDelay());
+    EXPECT_LE(interval2, interval1);
+  } else {
+    // The interval1 will be greater than interval2 even the task wasn't
+    // rescheduled, removing the test_running_time from interval1 make sure
+    // task rescheduled.
+    EXPECT_GT(interval1 - test_running_time, interval2);
+  }
 }
 
-TEST_F(ContentCaptureTest, NotRescheduleTask) {
+TEST_P(ContentCaptureTest, NotRescheduleTask) {
   // This test assumes test runs much faster than task's long delay which is 5s.
   Persistent<ContentCaptureTaskTestHelper> task = GetContentCaptureTask();
   task->CancelTaskForTesting();
   EXPECT_TRUE(task->GetTaskNextFireIntervalForTesting().is_zero());
-  task->Schedule(ContentCaptureTask::ScheduleReason::kContentChange);
+  task->Schedule(
+      ContentCaptureTask::ScheduleReason::kNonUserActivatedContentChange);
   auto begin = base::TimeTicks::Now();
   base::TimeDelta interval1 = task->GetTaskNextFireIntervalForTesting();
-  task->Schedule(ContentCaptureTask::ScheduleReason::kContentChange);
+  task->Schedule(
+      ContentCaptureTask::ScheduleReason::kNonUserActivatedContentChange);
   base::TimeDelta interval2 = task->GetTaskNextFireIntervalForTesting();
   auto test_running_time = base::TimeTicks::Now() - begin;
   EXPECT_GE(interval1, interval2);
@@ -583,6 +608,11 @@ class ContentCaptureSimTest : public SimTest {
         .GetContentCaptureManager()
         ->GetContentCaptureTaskForTesting()
         ->RunTaskForTestingUntil(state);
+    // Cancels the scheduled task to simulate that the task is running by
+    // scheduler.
+    GetContentCaptureManager()
+        ->GetContentCaptureTaskForTesting()
+        ->CancelTaskForTesting();
   }
 
   WebContentCaptureClientTestHelper& Client() { return client_; }
@@ -635,6 +665,35 @@ class ContentCaptureSimTest : public SimTest {
                  main_frame_expected_text_.end(), old_text, new_text);
   }
 
+  ContentCaptureManager* GetContentCaptureManager() {
+    return DynamicTo<LocalFrame>(LocalFrameRoot().GetFrame())
+        ->GetContentCaptureManager();
+  }
+
+  void SimulateUserInputOnMainFrame() {
+    GetContentCaptureManager()->NotifyInputEvent(
+        WebInputEvent::Type::kMouseDown,
+        *DynamicTo<LocalFrame>(MainFrame().GetFrame()));
+  }
+
+  void SimulateUserInputOnChildFrame() {
+    GetContentCaptureManager()->NotifyInputEvent(
+        WebInputEvent::Type::kMouseDown, *child_document_->GetFrame());
+  }
+
+  base::TimeDelta GetNextTaskDelay() {
+    return GetContentCaptureManager()
+        ->GetContentCaptureTaskForTesting()
+        ->GetTaskDelayForTesting()
+        .GetNextTaskDelay();
+  }
+
+  base::TimeDelta GetTaskNextFireInterval() {
+    return GetContentCaptureManager()
+        ->GetContentCaptureTaskForTesting()
+        ->GetTaskNextFireIntervalForTesting();
+  }
+
  private:
   void SetupPage() {
     SimRequest main_resource("https://example.com/test.html", "text/html");
@@ -668,9 +727,9 @@ class ContentCaptureSimTest : public SimTest {
 
     static_cast<WebLocalFrame*>(MainFrame().FindFrameByName("frame"))
         ->SetContentCaptureClient(&child_client_);
-    auto* child_frame =
+    auto* child_frame_element =
         To<HTMLIFrameElement>(GetDocument().getElementById("frame"));
-    child_document_ = child_frame->contentDocument();
+    child_document_ = child_frame_element->contentDocument();
     child_document_->UpdateStyleAndLayout(DocumentUpdateReason::kTest);
     Compositor().BeginFrame();
     InitMainFrameNodeHolders();
@@ -908,6 +967,68 @@ TEST_F(ContentCaptureSimTest, DeleteNodeContent) {
   EXPECT_FALSE(Client().FirstData());
   EXPECT_TRUE(ChildClient().Data().empty());
   EXPECT_EQ(1u, Client().RemovedData().size());
+}
+
+TEST_F(ContentCaptureSimTest, UserActivatedDelay) {
+  base::TimeDelta expected_delays[] = {
+      base::TimeDelta::FromMilliseconds(500), base::TimeDelta::FromSeconds(1),
+      base::TimeDelta::FromSeconds(2),        base::TimeDelta::FromSeconds(4),
+      base::TimeDelta::FromSeconds(8),        base::TimeDelta::FromSeconds(16),
+      base::TimeDelta::FromSeconds(32),       base::TimeDelta::FromSeconds(64),
+      base::TimeDelta::FromSeconds(128)};
+  size_t expected_delays_size = base::size(expected_delays);
+
+  base::test::ScopedFeatureList user_activated_delay;
+  user_activated_delay.InitAndEnableFeature(
+      features::kContentCaptureUserActivatedDelay);
+  // The first task has been scheduled but not run yet, the delay will be
+  // increased until current task starts to run. Verifies the value is
+  // unchanged.
+  EXPECT_EQ(expected_delays[0], GetNextTaskDelay());
+  // Settles the initial task.
+  RunContentCaptureTaskUntil(ContentCaptureTask::TaskState::kStop);
+
+  for (size_t i = 1; i < expected_delays_size; ++i) {
+    EXPECT_EQ(expected_delays[i], GetNextTaskDelay());
+    // Add a node to schedule the task.
+    AddOneNodeToMainFrame();
+    auto scheduled_interval = GetTaskNextFireInterval();
+    EXPECT_GE(expected_delays[i], scheduled_interval);
+    EXPECT_LT(expected_delays[i - 1], scheduled_interval);
+    RunContentCaptureTaskUntil(ContentCaptureTask::TaskState::kStop);
+  }
+
+  // Verifies the delay is up to 128s.
+  AddOneNodeToMainFrame();
+  EXPECT_EQ(expected_delays[expected_delays_size - 1], GetNextTaskDelay());
+  auto scheduled_interval = GetTaskNextFireInterval();
+  EXPECT_GE(expected_delays[expected_delays_size - 1], scheduled_interval);
+  EXPECT_LT(expected_delays[expected_delays_size - 2], scheduled_interval);
+  RunContentCaptureTaskUntil(ContentCaptureTask::TaskState::kStop);
+
+  // Verifies the user activated change will reset the delay.
+  SimulateUserInputOnMainFrame();
+  AddOneNodeToMainFrame();
+  EXPECT_EQ(expected_delays[0], GetNextTaskDelay());
+  scheduled_interval = GetTaskNextFireInterval();
+  EXPECT_GE(expected_delays[0], scheduled_interval);
+
+  // Verifies the multiple changes won't reschedule the task.
+  AddOneNodeToMainFrame();
+  EXPECT_GE(scheduled_interval, GetTaskNextFireInterval());
+
+  RunContentCaptureTaskUntil(ContentCaptureTask::TaskState::kStop);
+
+  // Overrides the main frame's user activation, and verify the child one won't
+  // effect the main frame.
+  SimulateUserInputOnChildFrame();
+  AddOneNodeToMainFrame();
+  // Verifies the delay time become one step longer since no user activation was
+  // override by child frame's.
+  EXPECT_EQ(expected_delays[1], GetNextTaskDelay());
+  scheduled_interval = GetTaskNextFireInterval();
+  EXPECT_GE(expected_delays[1], scheduled_interval);
+  EXPECT_LT(expected_delays[0], scheduled_interval);
 }
 
 }  // namespace blink

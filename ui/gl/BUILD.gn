@@ -252,6 +252,8 @@ component("gl") {
 
   if (use_x11 || ozone_platform_x11) {
     sources += [
+      "gl_image_egl_pixmap.cc",
+      "gl_image_egl_pixmap.h",
       "gl_surface_egl_x11.cc",
       "gl_surface_egl_x11.h",
       "gl_surface_egl_x11_gles2.cc",

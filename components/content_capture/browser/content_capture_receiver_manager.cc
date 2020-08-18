@@ -87,6 +87,16 @@ void ContentCaptureReceiverManager::RenderFrameDeleted(
 
 void ContentCaptureReceiverManager::ReadyToCommitNavigation(
     content::NavigationHandle* navigation_handle) {
+  // Don't remove the session for the same document navigation.
+  if (!navigation_handle->IsSameDocument()) {
+    if (auto* rfh = content::RenderFrameHost::FromID(
+            navigation_handle->GetPreviousRenderFrameHostId())) {
+      if (auto* receiver = ContentCaptureReceiverForFrame(rfh)) {
+        receiver->RemoveSession();
+      }
+    }
+  }
+
   if (auto* receiver = ContentCaptureReceiverForFrame(
           navigation_handle->GetRenderFrameHost())) {
     if (web_contents()->GetBrowserContext()->IsOffTheRecord() ||

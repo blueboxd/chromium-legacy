@@ -1396,7 +1396,6 @@
   'interactive_ui_tests': {
     'remove_from': [
       'CrWinAsan(dll)', # https://crbug.com/935598
-      'linux-lacros-tester-rel', # https://crbug.com/1111979
     ],
     'modifications': {
       'Linux - Future (dbg)': {  # client.v8.chromium
@@ -1473,6 +1472,13 @@
       # https://crbug.com/1111979
       'linux-lacros-tester-fyi-rel': {
         'experiment_percentage': 100,
+      },
+      # https://crbug.com/1111979
+      'linux-lacros-tester-rel': {
+        'experiment_percentage': 100,
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/lacros.interactive_ui_tests.filter',
+        ],
       },
     },
   },

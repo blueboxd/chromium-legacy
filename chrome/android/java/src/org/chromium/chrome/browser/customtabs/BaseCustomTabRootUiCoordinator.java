@@ -28,13 +28,13 @@ import org.chromium.components.feature_engagement.Tracker;
  */
 public class BaseCustomTabRootUiCoordinator
         extends RootUiCoordinator implements NativeInitObserver {
-    private final CustomTabToolbarCoordinator mToolbarCoordinator;
-    private final CustomTabActivityNavigationController mNavigationController;
+    private final Supplier<CustomTabToolbarCoordinator> mToolbarCoordinator;
+    private final Supplier<CustomTabActivityNavigationController> mNavigationController;
 
     public BaseCustomTabRootUiCoordinator(ChromeActivity activity,
             ObservableSupplier<ShareDelegate> shareDelegateSupplier,
-            CustomTabToolbarCoordinator customTabToolbarCoordinator,
-            CustomTabActivityNavigationController customTabNavigationController,
+            Supplier<CustomTabToolbarCoordinator> customTabToolbarCoordinator,
+            Supplier<CustomTabActivityNavigationController> customTabNavigationController,
             ActivityTabProvider tabProvider, ObservableSupplier<Profile> profileSupplier,
             ObservableSupplier<BookmarkBridge> bookmarkBridgeSupplier,
             ObservableSupplier<OverviewModeBehavior> overviewModeBehaviorSupplier,
@@ -50,8 +50,8 @@ public class BaseCustomTabRootUiCoordinator
     protected void initializeToolbar() {
         super.initializeToolbar();
 
-        mToolbarCoordinator.onToolbarInitialized(mToolbarManager);
-        mNavigationController.onToolbarInitialized(mToolbarManager);
+        mToolbarCoordinator.get().onToolbarInitialized(mToolbarManager);
+        mNavigationController.get().onToolbarInitialized(mToolbarManager);
     }
 
     @Override

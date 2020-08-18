@@ -611,18 +611,11 @@ bool ZeroSuggestProvider::AllowZeroSuggestSuggestions(
   const auto page_class = input.current_page_classification();
   const auto input_type = input.type();
 
-  if (client()->IsOffTheRecord())
-    return false;
-
   if (input.focus_type() == OmniboxFocusType::DEFAULT)
     return false;
 
-  if (input.focus_type() == OmniboxFocusType::ON_FOCUS &&
-      page_class == metrics::OmniboxEventProto::OTHER &&
-      !base::FeatureList::IsEnabled(
-          omnibox::kFocusGestureTriggersContextualWebZeroSuggest)) {
+  if (client()->IsOffTheRecord())
     return false;
-  }
 
   if (input_type == metrics::OmniboxInputType::EMPTY) {
     // Function that returns whether EMPTY input zero-suggest is allowed.

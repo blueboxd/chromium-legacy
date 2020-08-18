@@ -1605,19 +1605,20 @@ TEST_P(CompositingSimTest, FrameAttribution) {
   ASSERT_TRUE(child_transform_node);
 
   // Iterate the transform tree to gather the parent frame element ID.
-  cc::ElementId frame_element_id;
+  cc::ElementId visible_frame_element_id;
   auto* current_transform_node = child_transform_node;
   while (current_transform_node) {
-    frame_element_id = current_transform_node->frame_element_id;
-    if (frame_element_id)
+    visible_frame_element_id = current_transform_node->visible_frame_element_id;
+    if (visible_frame_element_id)
       break;
     current_transform_node =
         GetPropertyTrees()->transform_tree.parent(current_transform_node);
   }
 
-  EXPECT_EQ(frame_element_id, CompositorElementIdFromUniqueObjectId(
-                                  DOMNodeIds::IdForNode(&GetDocument()),
-                                  CompositorElementIdNamespace::kDOMNodeId));
+  EXPECT_EQ(visible_frame_element_id,
+            CompositorElementIdFromUniqueObjectId(
+                DOMNodeIds::IdForNode(&GetDocument()),
+                CompositorElementIdNamespace::kDOMNodeId));
 
   // Test that a layerized subframe's frame element ID is that of its
   // containing document.
@@ -1631,10 +1632,62 @@ TEST_P(CompositingSimTest, FrameAttribution) {
   auto* iframe_transform_node = GetTransformNode(iframe_layer);
   EXPECT_TRUE(iframe_transform_node);
 
-  EXPECT_EQ(iframe_transform_node->frame_element_id,
+  EXPECT_EQ(iframe_transform_node->visible_frame_element_id,
             CompositorElementIdFromUniqueObjectId(
                 DOMNodeIds::IdForNode(iframe_doc),
                 CompositorElementIdNamespace::kDOMNodeId));
+}
+
+TEST_P(CompositingSimTest, VisibleFrameRootLayers) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatureState(
+      blink::features::kCompositeCrossOriginIframes, true);
+
+  SimRequest main_resource("https://origin-a.com/a.html", "text/html");
+  SimRequest frame_resource("https://origin-b.com/b.html", "text/html");
+
+  LoadURL("https://origin-a.com/a.html");
+  main_resource.Complete(R"HTML(
+      <!DOCTYPE html>
+      <iframe id="iframe" src="https://origin-b.com/b.html"></iframe>
+  )HTML");
+  frame_resource.Complete("<!DOCTYPE html>");
+  Compositor().BeginFrame();
+
+  // Ensure that the toplevel is marked as a visible root.
+  auto* toplevel_layer = CcLayerByOwnerNodeId(&GetDocument());
+  ASSERT_TRUE(toplevel_layer);
+  auto* toplevel_transform_node = GetTransformNode(toplevel_layer);
+  ASSERT_TRUE(toplevel_transform_node);
+
+  EXPECT_TRUE(toplevel_transform_node->visible_frame_element_id);
+
+  // Ensure that the iframe is marked as a visible root.
+  Document* iframe_doc =
+      To<HTMLFrameOwnerElement>(GetElementById("iframe"))->contentDocument();
+  Node* owner_node = iframe_doc;
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    owner_node = iframe_doc->documentElement();
+  auto* iframe_layer = CcLayerByOwnerNodeId(owner_node);
+  ASSERT_TRUE(iframe_layer);
+  auto* iframe_transform_node = GetTransformNode(iframe_layer);
+  ASSERT_TRUE(iframe_transform_node);
+
+  EXPECT_TRUE(iframe_transform_node->visible_frame_element_id);
+
+  // Verify that after adding `pointer-events: none`, the subframe is no longer
+  // considered a visible root.
+  GetElementById("iframe")->SetInlineStyleProperty(
+      CSSPropertyID::kPointerEvents, "none");
+
+  UpdateAllLifecyclePhases();
+
+  iframe_layer = CcLayerByOwnerNodeId(owner_node);
+  ASSERT_TRUE(iframe_layer);
+  iframe_transform_node = GetTransformNode(iframe_layer);
+  ASSERT_TRUE(iframe_transform_node);
+
+  EXPECT_FALSE(iframe_transform_node->visible_frame_element_id);
 }
 
 }  // namespace blink

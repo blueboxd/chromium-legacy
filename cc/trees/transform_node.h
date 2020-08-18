@@ -122,8 +122,8 @@ struct CC_EXPORT TransformNode {
   float starting_animation_scale;
 
   // Set to the element ID of containing document if this transform node is the
-  // root of a frame subtree.
-  ElementId frame_element_id;
+  // root of a visible frame subtree.
+  ElementId visible_frame_element_id;
 
   bool operator==(const TransformNode& other) const;
 

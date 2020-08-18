@@ -15,6 +15,7 @@
 #include "cc/trees/swap_promise.h"
 #include "cc/trees/ukm_manager.h"
 #include "third_party/blink/public/mojom/input/input_handler.mojom-blink.h"
+#include "third_party/blink/public/mojom/input/touch_event.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/scheduler/web_render_widget_scheduling_state.h"
 #include "third_party/blink/public/web/web_autofill_client.h"
@@ -47,6 +48,7 @@
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/pointer_lock_controller.h"
+#include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
 #include "third_party/blink/renderer/platform/graphics/animation_worklet_mutator_dispatcher_impl.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_mutator_client.h"
 #include "third_party/blink/renderer/platform/graphics/paint_worklet_paint_dispatcher.h"
@@ -701,7 +703,12 @@ void WebFrameWidgetBase::SetEventListenerProperties(
       // Can be NULL when running tests.
       if (auto* scheduler_state = widget_base_->RendererWidgetSchedulingState())
         scheduler_state->SetHasTouchHandler(has_touch_handlers);
-      frame_widget_host_->SetHasTouchEventHandlers(has_touch_handlers);
+      // Set touch event consumers based on whether there are touch event
+      // handlers or the page has hit testable scrollbars.
+      auto touch_event_consumers = mojom::blink::TouchEventConsumers::New(
+          has_touch_handlers, GetPage()->GetScrollbarTheme().AllowsHitTest());
+      frame_widget_host_->SetHasTouchEventConsumers(
+          std::move(touch_event_consumers));
     }
   } else if (listener_class == cc::EventListenerClass::kPointerRawUpdate) {
     SetHasPointerRawUpdateEventHandlers(listener_properties !=

@@ -120,6 +120,10 @@ class FixedInvalidationPictureLayerTilingClient
     return base_client_->GetPaintWorkletRecords();
   }
 
+  bool IsDirectlyCompositedImage() const override {
+    return base_client_->IsDirectlyCompositedImage();
+  }
+
  private:
   PictureLayerTilingClient* base_client_;
   Region invalidation_;

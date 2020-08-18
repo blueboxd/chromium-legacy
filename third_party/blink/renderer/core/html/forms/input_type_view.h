@@ -71,6 +71,9 @@ class ClickHandlingState final : public EventDispatchHandlingState {
 // derived from it to classes other than HTMLInputElement.
 class CORE_EXPORT InputTypeView : public GarbageCollectedMixin {
  public:
+  // Called by the owner HTMLInputElement when this InputType is disconnected
+  // from the HTMLInputElement.
+  void WillBeDestroyed();
   virtual ~InputTypeView();
   void Trace(Visitor*) const override;
 
@@ -147,6 +150,8 @@ class CORE_EXPORT InputTypeView : public GarbageCollectedMixin {
  protected:
   InputTypeView(HTMLInputElement& element) : element_(&element) {}
   HTMLInputElement& GetElement() const { return *element_; }
+
+  bool will_be_destroyed_ = false;
 
  private:
   Member<HTMLInputElement> element_;

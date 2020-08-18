@@ -29,6 +29,7 @@
 #include "net/base/escape.h"
 #include "net/base/filename_util.h"
 #include "pdf/accessibility.h"
+#include "pdf/document_attachment_info.h"
 #include "pdf/document_layout.h"
 #include "pdf/document_metadata.h"
 #include "pdf/pdf_features.h"
@@ -126,11 +127,18 @@ constexpr char kJSGetPasswordCompleteType[] = "getPasswordComplete";
 constexpr char kJSPassword[] = "password";
 // Print (Page -> Plugin)
 constexpr char kJSPrintType[] = "print";
+// Save attachment (Page -> Plugin)
+constexpr char kJSSaveAttachmentType[] = "saveAttachment";
+constexpr char kJSAttachmentIndex[] = "attachmentIndex";
+constexpr char kJSAttachmentToken[] = "attachmentToken";
+// Save attachment data (Plugin -> Page)
+constexpr char kJSSaveAttachmentDataType[] = "saveAttachmentData";
+constexpr char kJSAttachmentDataToSave[] = "attachmentDataToSave";
 // Save (Page -> Plugin)
 constexpr char kJSSaveType[] = "save";
 constexpr char kJSToken[] = "token";
 constexpr char kJSSaveRequestType[] = "saveRequestType";
-// Save Data (Plugin -> Page)
+// Save data (Plugin -> Page)
 constexpr char kJSSaveDataType[] = "saveData";
 constexpr char kJSFileName[] = "fileName";
 constexpr char kJSDataToSave[] = "dataToSave";
@@ -580,6 +588,8 @@ void OutOfProcessInstance::HandleMessage(const pp::Var& message) {
     HandleGetPasswordCompleteMessage(dict);
   } else if (type == kJSPrintType) {
     Print();
+  } else if (type == kJSSaveAttachmentType) {
+    HandleSaveAttachmentMessage(dict);
   } else if (type == kJSSaveType) {
     HandleSaveMessage(dict);
   } else if (type == kJSRotateClockwiseType) {
@@ -1696,6 +1706,44 @@ void OutOfProcessInstance::HandleResetPrintPreviewModeMessage(
   engine()->New(url_.c_str(), /*headers=*/nullptr);
 
   paint_manager_.InvalidateRect(gfx::Rect(SizeFromPPSize(plugin_size_)));
+}
+
+void OutOfProcessInstance::HandleSaveAttachmentMessage(
+    const pp::VarDictionary& dict) {
+  if (!dict.Get(pp::Var(kJSAttachmentToken)).is_string() ||
+      !dict.Get(pp::Var(kJSAttachmentIndex)).is_int() ||
+      dict.Get(pp::Var(kJSAttachmentIndex)).AsInt() < 0) {
+    NOTREACHED();
+    return;
+  }
+
+  int index = dict.Get(pp::Var(kJSAttachmentIndex)).AsInt();
+  const std::vector<DocumentAttachmentInfo>& list =
+      engine()->GetDocumentAttachmentInfoList();
+  if (static_cast<size_t>(index) >= list.size() || !list[index].is_readable ||
+      list[index].size_bytes == 0) {
+    NOTREACHED();
+    return;
+  }
+
+  pp::VarDictionary message;
+  message.Set(kType, kJSSaveAttachmentDataType);
+  message.Set(kJSAttachmentToken, dict.Get(pp::Var(kJSAttachmentToken)));
+  // This will be overwritten if the save is successful.
+  message.Set(kJSAttachmentDataToSave, pp::Var(pp::Var::Null()));
+
+  std::vector<uint8_t> data = engine()->GetAttachmentData(index);
+  if (data.size() != list[index].size_bytes) {
+    NOTREACHED();
+    return;
+  }
+
+  if (IsSaveDataSizeValid(data.size())) {
+    pp::VarArrayBuffer buffer(data.size());
+    std::copy(data.begin(), data.end(), reinterpret_cast<char*>(buffer.Map()));
+    message.Set(kJSAttachmentDataToSave, buffer);
+  }
+  PostMessage(message);
 }
 
 void OutOfProcessInstance::HandleSaveMessage(const pp::VarDictionary& dict) {

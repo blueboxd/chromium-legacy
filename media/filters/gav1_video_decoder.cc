@@ -71,20 +71,26 @@ VideoPixelFormat Libgav1ImageFormatToVideoPixelFormat(
 }
 
 int GetDecoderThreadCounts(int coded_height) {
-  // Tile thread counts based on currently available content. Recommended by
-  // YouTube, while frame thread values fit within limits::kMaxVideoThreads.
-  // libgav1 doesn't support parallel frame decoding.
-  // We can set the number of tile threads to as many as we like, but not
-  // greater than limits::kMaxVideoDecodeThreads.
+  // Thread counts based on currently available content. We set the number of
+  // threads to be equal to the general number of tiles for the given
+  // resolution. As of now, YouTube content has the following tile settings:
+  //   240p and below - 1 tile
+  //   360p and 480p - 2 tiles
+  //   720p - 4 tiles
+  //   1080p - 8 tiles
+  // libgav1 supports frame parallel decoding, but we do not use it (yet) since
+  // the performance for this thread configuration is good enough without it.
+  // Also, the memory usage is much lower in non-frame parallel mode. This can
+  // be revisited as performance numbers change/evolve.
   static const int num_cores = base::SysInfo::NumberOfProcessors();
   auto threads_by_height = [](int coded_height) {
     if (coded_height >= 1000)
       return 8;
     if (coded_height >= 700)
-      return 5;
+      return 4;
     if (coded_height >= 300)
-      return 3;
-    return 2;
+      return 2;
+    return 1;
   };
 
   return std::min(threads_by_height(coded_height), num_cores);

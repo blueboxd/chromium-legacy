@@ -124,6 +124,8 @@ class CORE_EXPORT DisplayLockContext final
   // Returns true if this context is locked.
   bool IsLocked() const { return is_locked_; }
 
+  EContentVisibility GetState() { return state_; }
+
   bool UpdateForced() const { return update_forced_; }
 
   // This is called when the element with which this context is associated is

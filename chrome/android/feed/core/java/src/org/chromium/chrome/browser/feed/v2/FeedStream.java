@@ -35,8 +35,7 @@ import java.util.List;
  */
 public class FeedStream implements Stream {
     private static final String TAG = "FeedStream";
-    private static final String SCROLL_POSITION = "scroll_pos";
-    private static final String SCROLL_OFFSET = "scroll_off";
+
     // How far the user has to scroll down in DP before attempting to load more content.
     static final int LOAD_MORE_TRIGGER_SCROLL_DISTANCE_DP = 100;
 
@@ -93,24 +92,19 @@ public class FeedStream implements Stream {
         if (layoutManager == null) {
             return "";
         }
-        int firstItemPosition = layoutManager.findFirstVisibleItemPosition();
-        if (firstItemPosition == RecyclerView.NO_POSITION) {
+        ScrollState state = new ScrollState();
+        state.position = layoutManager.findFirstVisibleItemPosition();
+        state.lastPosition = layoutManager.findLastVisibleItemPosition();
+        if (state.position == RecyclerView.NO_POSITION) {
             return "";
         }
-        View firstVisibleView = layoutManager.findViewByPosition(firstItemPosition);
+
+        View firstVisibleView = layoutManager.findViewByPosition(state.position);
         if (firstVisibleView == null) {
             return "";
         }
-        int firstVisibleTop = firstVisibleView.getTop();
-
-        JSONObject jsonSavedState = new JSONObject();
-        try {
-            jsonSavedState.put(SCROLL_POSITION, firstItemPosition);
-            jsonSavedState.put(SCROLL_OFFSET, firstVisibleTop);
-        } catch (JSONException e) {
-            Log.d(TAG, "Unable to write to a JSONObject.");
-        }
-        return jsonSavedState.toString();
+        state.offset = firstVisibleView.getTop();
+        return state.toJson();
     }
 
     @Override
@@ -250,25 +244,54 @@ public class FeedStream implements Stream {
      */
     private boolean restoreScrollState(String savedInstanceState) {
         assert (mRecyclerView != null);
-        int scrollPosition;
-        int scrollOffset;
-        try {
-            JSONObject jsonSavedState = new JSONObject(savedInstanceState);
-            scrollPosition = jsonSavedState.getInt(SCROLL_POSITION);
-            scrollOffset = jsonSavedState.getInt(SCROLL_OFFSET);
-        } catch (JSONException e) {
-            Log.d(TAG, "Unable to parse a JSONObject from a string.");
-            return true;
-        }
+        ScrollState state = ScrollState.fromJson(savedInstanceState);
+        if (state == null) return true;
 
         // If too few items exist, defer scrolling until later.
-        if (mRecyclerView.getAdapter().getItemCount() <= scrollPosition) return false;
+        if (mRecyclerView.getAdapter().getItemCount() <= state.lastPosition) return false;
 
         LinearLayoutManager layoutManager = (LinearLayoutManager) mRecyclerView.getLayoutManager();
         if (layoutManager != null) {
-            layoutManager.scrollToPositionWithOffset(scrollPosition, scrollOffset);
+            layoutManager.scrollToPositionWithOffset(state.position, state.offset);
         }
         return true;
+    }
+
+    static class ScrollState {
+        private static final String SCROLL_POSITION = "pos";
+        private static final String SCROLL_LAST_POSITION = "lpos";
+        private static final String SCROLL_OFFSET = "off";
+
+        public int position;
+        public int lastPosition;
+        public int offset;
+
+        String toJson() {
+            JSONObject jsonSavedState = new JSONObject();
+            try {
+                jsonSavedState.put(SCROLL_POSITION, position);
+                jsonSavedState.put(SCROLL_LAST_POSITION, lastPosition);
+                jsonSavedState.put(SCROLL_OFFSET, offset);
+                return jsonSavedState.toString();
+            } catch (JSONException e) {
+                Log.d(TAG, "Unable to write to a JSONObject.");
+                return "";
+            }
+        }
+        @Nullable
+        static ScrollState fromJson(String json) {
+            ScrollState result = new ScrollState();
+            try {
+                JSONObject jsonSavedState = new JSONObject(json);
+                result.position = jsonSavedState.getInt(SCROLL_POSITION);
+                result.lastPosition = jsonSavedState.getInt(SCROLL_LAST_POSITION);
+                result.offset = jsonSavedState.getInt(SCROLL_OFFSET);
+            } catch (JSONException e) {
+                Log.d(TAG, "Unable to parse a JSONObject from a string.");
+                return null;
+            }
+            return result;
+        }
     }
 
     // Scroll state can't be restored until enough items are added to the recycler view adapter.

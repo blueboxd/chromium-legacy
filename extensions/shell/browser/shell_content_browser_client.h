@@ -108,6 +108,7 @@ class ShellContentBrowserClient : public content::ContentBrowserClient {
       const url::Origin& origin,
       bool is_for_isolated_world,
       network::mojom::URLLoaderFactoryParams* factory_params) override;
+  base::FilePath GetSandboxedStorageServiceDataDirectory() override;
   std::string GetUserAgent() override;
 
  protected:

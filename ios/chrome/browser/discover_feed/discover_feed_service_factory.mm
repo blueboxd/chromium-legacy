@@ -9,8 +9,6 @@
 #include "ios/chrome/browser/discover_feed/discover_feed_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
-#import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
-#import "ios/public/provider/chrome/browser/discover_feed/discover_feed_provider.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -44,12 +42,5 @@ DiscoverFeedServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
   ChromeBrowserState* browser_state =
       ChromeBrowserState::FromBrowserState(context);
-  signin::IdentityManager* identity_manager =
-      IdentityManagerFactory::GetForBrowserState(browser_state);
-  AuthenticationService* authentication_service =
-      AuthenticationServiceFactory::GetForBrowserState(browser_state);
-
-  return std::make_unique<DiscoverFeedService>(
-      identity_manager, authentication_service,
-      ios::GetChromeBrowserProvider()->GetDiscoverFeedProvider());
+  return std::make_unique<DiscoverFeedService>(browser_state);
 }

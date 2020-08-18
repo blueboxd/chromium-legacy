@@ -30,6 +30,9 @@
 // bug is fixed.
 CG_EXTERN const CFStringRef kCGColorSpaceITUR_2020_PQ_EOTF
 CG_AVAILABLE_BUT_DEPRECATED(10.14.6, 10.15.4, 12.6, 13.4);
+
+CG_EXTERN const CFStringRef kCGColorSpaceITUR_2020_HLG
+    CG_AVAILABLE_BUT_DEPRECATED(10.14.6, 10.15.4, 12.6, 13.4);
 #endif
 
 namespace gfx {
@@ -167,11 +170,14 @@ bool IOSurfaceSetColorSpace(IOSurfaceRef io_surface,
                                          ColorSpace::TransferID::ARIB_STD_B67,
                                          ColorSpace::MatrixID::BT2020_NCL,
                                          ColorSpace::RangeID::LIMITED)) {
-      // The CGColorSpace kCGColorSpaceITUR_2020_HLG cannot be used here because
-      // it expects that "pixel values should be between 0.0 and 12.0", while
-      // Chrome uses pixel values between 0.0 and 1.0.
-      // https://crbug.com/1061723.
-      return false;
+      // The CGColorSpace kCGColorSpaceITUR_2020_HLG cannot be used to display
+      // an IOSurface directly, because it expects that "pixel values should be
+      // between 0.0 and 12.0", while Chrome uses pixel values between 0.0 and
+      // 1.0. That said, because we use the HDRCopier for this content, we can
+      // perform the color conversion ourselves.
+      // https://crbug.com/1061723 (for the HLG issue).
+      // https://crbug.com/1101041 (for the HDR copier).
+      color_space_name = kCGColorSpaceITUR_2020_HLG;
     }
   }
   if (color_space_name) {

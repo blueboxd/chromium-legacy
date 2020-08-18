@@ -19,6 +19,7 @@ static_library("web_ui") {
     "//components/safe_browsing:buildflags",
     "//components/safe_browsing/core:csd_proto",
     "//components/safe_browsing/core:features",
+    "//components/safe_browsing/core:public",
     "//components/safe_browsing/core:realtimeapi_proto",
     "//components/safe_browsing/core:webprotect_proto",
     "//components/safe_browsing/core/browser:network_context",

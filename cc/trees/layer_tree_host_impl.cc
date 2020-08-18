@@ -2430,7 +2430,7 @@ viz::CompositorFrame LayerTreeHostImpl::GenerateCompositorFrame(
     // For now cap the interval assuming a 24fps video, which is likely the
     // lowest frame rate we'll see for a video that would also be acceptable to
     // the page.
-    double interval_in_seconds = 1 / 24;
+    double interval_in_seconds = 1.0 / 24.0;
     metadata.preferred_frame_interval =
         base::TimeDelta::FromSecondsD(interval_in_seconds);
   } else {
@@ -2948,8 +2948,8 @@ void LayerTreeHostImpl::DidLoseLayerTreeFrameSink() {
   lag_tracking_manager_.Clear();
 }
 
-bool LayerTreeHostImpl::ShouldPinTopControlsToContentTop() const {
-  return active_tree_->pin_top_controls_to_content_top();
+bool LayerTreeHostImpl::OnlyExpandTopControlsAtPageTop() const {
+  return active_tree_->only_expand_top_controls_at_page_top();
 }
 
 bool LayerTreeHostImpl::HaveRootScrollNode() const {

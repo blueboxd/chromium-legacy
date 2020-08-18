@@ -440,6 +440,10 @@ class TestMetricsReporter : public MetricsReporter {
     this->time_since_last_clear = time_since_last_clear;
     MetricsReporter::OnClearAll(time_since_last_clear);
   }
+  void OnUploadActions(UploadActionsStatus status) override {
+    upload_action_status = status;
+    MetricsReporter::OnUploadActions(status);
+  }
 
   // Test access.
 
@@ -450,6 +454,7 @@ class TestMetricsReporter : public MetricsReporter {
   base::Optional<LoadStreamStatus> background_refresh_status;
   base::Optional<base::TimeDelta> time_since_last_clear;
   base::Optional<TriggerType> refresh_trigger_type;
+  base::Optional<UploadActionsStatus> upload_action_status;
 };
 
 class TestPrefetchService : public offline_pages::StubPrefetchService {
@@ -572,6 +577,7 @@ class FeedStreamTest : public testing::Test, public FeedStream::Delegate {
   }
   std::string GetLanguageTag() override { return "en-US"; }
   void ClearAll() override {}
+  bool IsSignedIn() override { return is_signed_in_; }
 
   // For tests.
 
@@ -660,6 +666,7 @@ class FeedStreamTest : public testing::Test, public FeedStream::Delegate {
   std::unique_ptr<FeedStream> stream_;
   bool is_eula_accepted_ = true;
   bool is_offline_ = false;
+  bool is_signed_in_ = true;
 };
 
 TEST_F(FeedStreamTest, IsArticlesListVisibleByDefault) {
@@ -1489,6 +1496,25 @@ TEST_F(FeedStreamTest, StorePendingAction) {
       ReadStoredActions(stream_->GetStore());
   ASSERT_EQ(1ul, result.size());
   EXPECT_EQ(42ul, result[0].action().content_id().id());
+}
+
+TEST_F(FeedStreamTest, UploadActionWhileSignedOutIsNoOp) {
+  is_signed_in_ = false;
+  stream_->UploadAction(MakeFeedAction(42ul), false, base::DoNothing());
+  WaitForIdleTaskQueue();
+
+  EXPECT_EQ(0ul, ReadStoredActions(stream_->GetStore()).size());
+}
+
+TEST_F(FeedStreamTest, SignOutWhileUploadActionDoesNotUpload) {
+  stream_->UploadAction(MakeFeedAction(42ul), true, base::DoNothing());
+  is_signed_in_ = false;
+
+  WaitForIdleTaskQueue();
+
+  EXPECT_EQ(UploadActionsStatus::kAbortUploadForSignedOutUser,
+            metrics_reporter_->upload_action_status);
+  EXPECT_EQ(0, network_.action_request_call_count);
 }
 
 TEST_F(FeedStreamTest, StorePendingActionAndUploadNow) {

@@ -34,6 +34,8 @@
 #include "components/nacl/common/buildflags.h"
 #include "components/nacl/common/nacl_switches.h"
 #include "content/public/browser/network_service_instance.h"
+#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
@@ -66,6 +68,8 @@
 #include "services/network/public/mojom/udp_socket.mojom.h"
 #include "services/network/test/test_dns_util.h"
 #include "services/network/test/test_network_context.h"
+#include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 
 #if defined(OS_MAC)
 #include "base/mac/mac_util.h"
@@ -2073,21 +2077,27 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, DISABLED_View_PageHideShow) {
 
 // Tests that if a plugin accepts touch events, the browser knows to send touch
 // events to the renderer.
-IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, InputEvent_AcceptTouchEvent) {
-  std::string positive_tests[] = { "InputEvent_AcceptTouchEvent_1",
-                                   "InputEvent_AcceptTouchEvent_2",
-                                   "InputEvent_AcceptTouchEvent_3",
-                                   "InputEvent_AcceptTouchEvent_4"
-                                 };
-
-  for (size_t i = 0; i < base::size(positive_tests); ++i) {
-    RunTest(positive_tests[i]);
-    RenderViewHost* host = browser()->tab_strip_model()->
-        GetActiveWebContents()->GetRenderViewHost();
-    EXPECT_TRUE(content::RenderViewHostTester::HasTouchEventHandler(host));
-  }
+IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, InputEvent_AcceptTouchEvent1) {
+  RunTouchEventTest("InputEvent_AcceptTouchEvent_1");
 }
 
+// The browser sends touch events to the renderer if the plugin registers for
+// touch events and then unregisters.
+IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, InputEvent_AcceptTouchEvent2) {
+  RunTouchEventTest("InputEvent_AcceptTouchEvent_2");
+}
+
+// Tests that if a plugin accepts touch events, the browser knows to send touch
+// events to the renderer. In this case, the plugin requests that input events
+// corresponding to touch events are delivered for filtering.
+IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, InputEvent_AcceptTouchEvent3) {
+  RunTouchEventTest("InputEvent_AcceptTouchEvent_3");
+}
+// The plugin sends multiple RequestInputEvent() with the second
+// requesting touch events to be delivered.
+IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, InputEvent_AcceptTouchEvent4) {
+  RunTouchEventTest("InputEvent_AcceptTouchEvent_4");
+}
 // View tests.
 #define RUN_VIEW_SUBTESTS \
   RunTestViaHTTP( \

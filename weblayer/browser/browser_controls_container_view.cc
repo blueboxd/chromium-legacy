@@ -57,8 +57,8 @@ int BrowserControlsContainerView::GetMinHeight() {
       AttachCurrentThread(), java_browser_controls_container_view_);
 }
 
-bool BrowserControlsContainerView::ShouldPinControlsToContentTop() {
-  return Java_BrowserControlsContainerView_shouldPinControlsToContentTop(
+bool BrowserControlsContainerView::OnlyExpandControlsAtPageTop() {
+  return Java_BrowserControlsContainerView_onlyExpandControlsAtPageTop(
       AttachCurrentThread(), java_browser_controls_container_view_);
 }
 

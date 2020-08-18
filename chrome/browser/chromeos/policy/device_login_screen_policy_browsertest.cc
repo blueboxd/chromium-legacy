@@ -27,8 +27,8 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/reset_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/user_creation_screen_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/policy/core/common/policy_types.h"
@@ -230,7 +230,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLoginScreenPolicyBrowsertest, DeviceLocalAccount) {
 // Tests that adding public accounts does not close the Oobe dialog when it
 // shows a screen different from the Gaia login screen.
 IN_PROC_BROWSER_TEST_F(DeviceLoginScreenPolicyBrowsertest, ResetScreen) {
-  chromeos::OobeScreenWaiter(chromeos::UserCreationView::kScreenId).Wait();
+  chromeos::OobeScreenWaiter(chromeos::GaiaView::kScreenId).Wait();
   EXPECT_TRUE(ash::LoginScreenTestApi::IsOobeDialogVisible());
   EXPECT_EQ(ash::LoginScreenTestApi::GetUsersCount(), 0);
 

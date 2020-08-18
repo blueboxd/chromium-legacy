@@ -45,6 +45,7 @@
 #include "components/safe_browsing/core/ping_manager.h"
 #include "components/safe_browsing/core/realtime/policy_engine.h"
 #include "components/safe_browsing/core/triggers/trigger_manager.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "services/network/public/cpp/cross_thread_pending_shared_url_loader_factory.h"
@@ -114,8 +115,7 @@ void SafeBrowsingService::Initialize() {
           base::BindRepeating(&SafeBrowsingService::CreateNetworkContextParams,
                               base::Unretained(this)));
 
-  WebUIInfoSingleton::GetInstance()->set_network_context(
-      network_context_.get());
+  WebUIInfoSingleton::GetInstance()->set_safe_browsing_service(this);
 
   ui_manager_ = CreateUIManager();
 
@@ -155,6 +155,8 @@ void SafeBrowsingService::ShutDown() {
 
   services_delegate_->ShutdownServices();
 
+  WebUIInfoSingleton::GetInstance()->set_safe_browsing_service(nullptr);
+
   network_context_->ServiceShuttingDown();
   proxy_config_monitor_.reset();
 }
@@ -173,12 +175,14 @@ SafeBrowsingService::GetURLLoaderFactory() {
 }
 
 network::mojom::NetworkContext* SafeBrowsingService::GetNetworkContext(
-    Profile* profile) {
+    content::BrowserContext* browser_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!base::FeatureList::IsEnabled(kSafeBrowsingSeparateNetworkContexts))
     return GetNetworkContext();
 
-  return services_delegate_->GetSafeBrowsingNetworkContext(profile)
+  return services_delegate_
+      ->GetSafeBrowsingNetworkContext(
+          Profile::FromBrowserContext(browser_context))
       ->GetNetworkContext();
 }
 

@@ -185,6 +185,17 @@ bool BubbleFrameView::GetClientMask(const gfx::Size& size, SkPath* path) const {
   DCHECK_EQ(GetBoundsForClientView().size(), size);
   DCHECK_EQ(GetWidget()->client_view()->size(), size);
 
+  // BubbleFrameView only returns a SkPath for the purpose of clipping the
+  // client view's corners so that it fits within the borders of its rounded
+  // frame. With MD rounded coners if a client view is painted to a layer the
+  // rounding is handled by the |SetRoundedCornerRadius()| layer API, so we
+  // return false here.
+  if (base::FeatureList::IsEnabled(
+          features::kEnableMDRoundedCornersOnDialogs) &&
+      GetWidget()->client_view()->layer()) {
+    return false;
+  }
+
   const gfx::RoundedCornersF corner_radii = GetClientCornerRadii();
 
   // If corner radii are all zero we do not need to apply a mask.
@@ -450,8 +461,16 @@ void BubbleFrameView::OnThemeChanged() {
 
 void BubbleFrameView::ViewHierarchyChanged(
     const ViewHierarchyChangedDetails& details) {
-  if (details.is_add && details.child == this)
+  if (details.is_add && details.child == this) {
     OnThemeChanged();
+    UpdateClientLayerCornerRadius();
+  }
+
+  // We need to update the client view's corner radius whenever the header or
+  // footer are added/removed from the bubble frame so that the client view
+  // sits flush with both.
+  if (details.parent == this)
+    UpdateClientLayerCornerRadius();
 
   if (!details.is_add && details.parent == footnote_container_ &&
       footnote_container_->children().size() == 1 &&
@@ -859,6 +878,15 @@ int BubbleFrameView::GetHeaderHeightForFrameWidth(int frame_width) const {
   return header_view_ && header_view_->GetVisible()
              ? header_view_->GetHeightForWidth(frame_width)
              : 0;
+}
+
+void BubbleFrameView::UpdateClientLayerCornerRadius() {
+  if (GetWidget() && GetWidget()->client_view()->layer() &&
+      base::FeatureList::IsEnabled(
+          features::kEnableMDRoundedCornersOnDialogs)) {
+    GetWidget()->client_view()->layer()->SetRoundedCornerRadius(
+        GetClientCornerRadii());
+  }
 }
 
 }  // namespace views

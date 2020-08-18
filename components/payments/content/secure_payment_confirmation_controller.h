@@ -6,6 +6,8 @@
 #define COMPONENTS_PAYMENTS_CONTENT_SECURE_PAYMENT_CONFIRMATION_CONTROLLER_H_
 
 #include "base/memory/weak_ptr.h"
+#include "components/payments/content/secure_payment_confirmation_model.h"
+#include "components/payments/content/secure_payment_confirmation_view.h"
 
 namespace payments {
 
@@ -35,6 +37,20 @@ class SecurePaymentConfirmationController {
   void OnDismiss();
   void OnCancel();
   void OnConfirm();
+
+ private:
+  base::WeakPtr<PaymentRequest> request_;
+
+  SecurePaymentConfirmationModel model_;
+
+  // On desktop, the SecurePaymentConfirmationView object is memory managed by
+  // the views:: machinery. It is deleted when the window is closed and
+  // views::DialogDelegateView::DeleteDelegate() is called by its corresponding
+  // views::Widget.
+  base::WeakPtr<SecurePaymentConfirmationView> view_;
+
+  base::WeakPtrFactory<SecurePaymentConfirmationController> weak_ptr_factory_{
+      this};
 };
 
 }  // namespace payments

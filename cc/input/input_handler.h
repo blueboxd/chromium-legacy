@@ -226,7 +226,7 @@ class CC_EXPORT InputHandler {
       const gfx::PointF& mouse_position) = 0;
   virtual void MouseLeave() = 0;
 
-  // Returns frame_element_id from the layer hit by the given point.
+  // Returns visible_frame_element_id from the layer hit by the given point.
   // If the hit test failed, an invalid element ID is returned.
   virtual ElementId FindFrameElementIdAtPoint(
       const gfx::PointF& mouse_position) = 0;

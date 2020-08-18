@@ -32,6 +32,7 @@
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/core/features.h"
 #include "components/safe_browsing/core/proto/csd.pb.h"
+#include "services/network/public/mojom/cookie_manager.mojom.h"
 #if BUILDFLAG(FULL_SAFE_BROWSING)
 #include "components/enterprise/common/proto/connectors.pb.h"
 #include "components/safe_browsing/core/proto/webprotect.pb.h"
@@ -342,33 +343,20 @@ void WebUIInfoSingleton::UnregisterWebUIInstance(SafeBrowsingUIHandler* webui) {
   MaybeClearData();
 }
 
-network::mojom::CookieManager* WebUIInfoSingleton::GetCookieManager() {
-  if (!cookie_manager_remote_)
-    InitializeCookieManager();
+mojo::Remote<network::mojom::CookieManager>
+WebUIInfoSingleton::GetCookieManager(content::BrowserContext* browser_context) {
+  mojo::Remote<network::mojom::CookieManager> cookie_manager_remote;
+  if (sb_service_) {
+    sb_service_->GetNetworkContext(browser_context)
+        ->GetCookieManager(cookie_manager_remote.BindNewPipeAndPassReceiver());
+  }
 
-  return cookie_manager_remote_.get();
+  return cookie_manager_remote;
 }
 
 void WebUIInfoSingleton::ClearListenerForTesting() {
   has_test_listener_ = false;
   MaybeClearData();
-}
-
-void WebUIInfoSingleton::InitializeCookieManager() {
-  DCHECK(network_context_);
-
-  // Reset |cookie_manager_remote_|, and only re-initialize it if we have a
-  // listening SafeBrowsingUIHandler.
-  cookie_manager_remote_.reset();
-
-  if (HasListener()) {
-    network_context_->GetNetworkContext()->GetCookieManager(
-        cookie_manager_remote_.BindNewPipeAndPassReceiver());
-
-    // base::Unretained is safe because |this| owns |cookie_manager_remote_|.
-    cookie_manager_remote_.set_disconnect_handler(base::BindOnce(
-        &WebUIInfoSingleton::InitializeCookieManager, base::Unretained(this)));
-  }
 }
 
 void WebUIInfoSingleton::MaybeClearData() {
@@ -1717,7 +1705,9 @@ void SafeBrowsingUIHandler::GetCookie(const base::ListValue* args) {
   std::string callback_id;
   args->GetString(0, &callback_id);
 
-  WebUIInfoSingleton::GetInstance()->GetCookieManager()->GetAllCookies(
+  cookie_manager_remote_ =
+      WebUIInfoSingleton::GetInstance()->GetCookieManager(browser_context_);
+  cookie_manager_remote_->GetAllCookies(
       base::BindOnce(&SafeBrowsingUIHandler::OnGetCookie,
                      weak_factory_.GetWeakPtr(), std::move(callback_id)));
 }

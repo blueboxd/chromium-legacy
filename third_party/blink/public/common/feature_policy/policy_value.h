@@ -25,7 +25,6 @@ class BLINK_COMMON_EXPORT PolicyValue {
 
   explicit PolicyValue(bool bool_value);
   explicit PolicyValue(double double_value);
-  PolicyValue(bool bool_value, mojom::PolicyValueType type);
   PolicyValue(double double_value, mojom::PolicyValueType type);
 
   // A 'max' PolicyValue is the most permissive value for the policy.

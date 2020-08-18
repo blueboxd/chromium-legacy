@@ -17,10 +17,11 @@ android_library("java") {
     "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/android_deps:androidx_core_core_java",
   ]
+  resources_package = "org.chromium.components.webrtc"
 }
 
 android_resources("java_resources") {
-  custom_package = "org.chromium.components.webrtc"
+  create_srcjar = false
   deps = [
     "//components/browser_ui/strings/android:browser_ui_strings_grd",
     "//components/browser_ui/styles/android:java_resources",

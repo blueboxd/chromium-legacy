@@ -96,6 +96,8 @@ template("remoting_android_client_java_tmpl") {
       "//ui/android:ui_utils_java",
     ]
 
+    resources_package = "org.chromium.chromoting"
+
     annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 
     srcjar_deps = [ "//remoting/client/jni:jni_enums" ]

@@ -282,11 +282,13 @@ public class BrowserControlsTest {
     @MinAndroidSdkLevel(Build.VERSION_CODES.M)
     @Test
     @SmallTest
-    public void testPinTopControlsToContentTop() throws Exception {
+    public void testOnlyExpandTopControlsAtPageTop() throws Exception {
         InstrumentationActivity activity = mActivityTestRule.getActivity();
         View topContents = activity.getTopContentsContainer();
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> activity.getBrowser().setTopView(topContents, 0, /*pinToContentTop=*/true));
+                ()
+                        -> activity.getBrowser().setTopView(
+                                topContents, 0, /*onlyExpandControlsAtPageTop=*/true));
 
         // Scroll down past the top-controls, which should collapse the top-controls and change the
         // page height.

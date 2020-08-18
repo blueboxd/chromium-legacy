@@ -5,7 +5,7 @@
 import("//build/config/android/rules.gni")
 
 android_resources("java_resources") {
-  custom_package = "org.chromium.components.browser_ui.client_certificate"
+  create_srcjar = false
   deps = [
     "//components/browser_ui/strings/android:browser_ui_strings_grd",
     "//components/browser_ui/styles/android:java_resources",
@@ -28,6 +28,7 @@ android_library("java") {
     "//ui/android:ui_java",
   ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
+  resources_package = "org.chromium.components.browser_ui.client_certificate"
 }
 
 source_set("android") {

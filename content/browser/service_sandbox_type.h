@@ -10,7 +10,6 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/service_process_host.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/content_features.h"
 #include "sandbox/policy/sandbox_type.h"
 
 // This file maps service classes to sandbox types.  Services which
@@ -80,28 +79,5 @@ inline sandbox::policy::SandboxType
 content::GetServiceSandboxType<video_capture::mojom::VideoCaptureService>() {
   return sandbox::policy::SandboxType::kVideoCapture;
 }
-
-// storage::mojom::StorageService
-// This service is being moved out of process and will eventually be a utility.
-#if !defined(OS_ANDROID)
-namespace storage {
-namespace mojom {
-class StorageService;
-}
-}  // namespace storage
-
-template <>
-inline sandbox::policy::SandboxType
-content::GetServiceSandboxType<storage::mojom::StorageService>() {
-  const bool should_sandbox =
-      base::FeatureList::IsEnabled(features::kStorageServiceSandbox);
-  const base::FilePath sandboxed_data_dir =
-      GetContentClient()->browser()->GetSandboxedStorageServiceDataDirectory();
-  const bool is_sandboxed = should_sandbox && !sandboxed_data_dir.empty();
-
-  return is_sandboxed ? sandbox::policy::SandboxType::kUtility
-                      : sandbox::policy::SandboxType::kNoSandbox;
-}
-#endif
 
 #endif  // CONTENT_BROWSER_SERVICE_SANDBOX_TYPE_H_

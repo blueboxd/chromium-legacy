@@ -18,12 +18,14 @@
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/navigation_policy.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_browser_context.h"
@@ -36,6 +38,8 @@
 #include "content/test/test_render_widget_host_factory.h"
 #include "content/test/test_web_contents.h"
 #include "net/base/mock_network_change_notifier.h"
+#include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 
 #if defined(OS_ANDROID)
 #include "ui/android/dummy_screen_android.h"
@@ -97,12 +101,24 @@ void RenderViewHostTester::SimulateFirstPaint(RenderViewHost* rvh) {
 }
 
 // static
-bool RenderViewHostTester::HasTouchEventHandler(RenderViewHost* rvh) {
+std::unique_ptr<content::InputMsgWatcher>
+RenderViewHostTester::CreateInputWatcher(RenderViewHost* rvh,
+                                         blink::WebInputEvent::Type type) {
   RenderWidgetHostImpl* host_impl =
       RenderWidgetHostImpl::From(rvh->GetWidget());
-  return host_impl->has_touch_handler();
+  return std::make_unique<content::InputMsgWatcher>(host_impl, type);
 }
 
+// static
+void RenderViewHostTester::SendTouchEvent(
+    RenderViewHost* rvh,
+    blink::SyntheticWebTouchEvent* touch_event) {
+  RenderWidgetHostImpl* host_impl =
+      RenderWidgetHostImpl::From(rvh->GetWidget());
+  auto* input_event_router = host_impl->delegate()->GetInputEventRouter();
+  input_event_router->RouteTouchEvent(host_impl->GetView(), touch_event,
+                                      ui::LatencyInfo());
+}
 
 // RenderViewHostTestEnabler --------------------------------------------------
 

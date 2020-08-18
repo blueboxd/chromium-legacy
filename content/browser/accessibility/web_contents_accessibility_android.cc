@@ -797,7 +797,9 @@ jboolean WebContentsAccessibilityAndroid::PopulateAccessibilityNodeInfo(
       base::android::ConvertUTF16ToJavaString(
           env, node->GetInheritedString16Attribute(
                    ax::mojom::StringAttribute::kLanguage)),
-      suggestion_starts_java, suggestion_ends_java, suggestion_text_java);
+      suggestion_starts_java, suggestion_ends_java, suggestion_text_java,
+      base::android::ConvertUTF16ToJavaString(env,
+                                              node->GetStateDescription()));
 
   base::string16 element_id;
   if (node->GetHtmlAttribute("id", &element_id)) {

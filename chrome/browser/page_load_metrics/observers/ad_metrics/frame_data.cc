@@ -218,11 +218,6 @@ base::TimeDelta FrameData::GetTotalCpuUsage() const {
   return total_cpu_time;
 }
 
-void FrameData::SetReceivedUserActivation(base::TimeDelta foreground_duration) {
-  user_activation_status_ = UserActivationStatus::kReceivedActivation;
-  pre_activation_foreground_duration_ = foreground_duration;
-}
-
 size_t FrameData::GetAdNetworkBytesForMime(ResourceMimeType mime_type) const {
   return ad_bytes_by_mime_[static_cast<size_t>(mime_type)];
 }
@@ -264,8 +259,6 @@ void FrameData::RecordAdFrameLoadUkmEvent(ukm::SourceId source_id) const {
     builder.SetCpuTime_PreActivation(
         GetActivationCpuUsage(UserActivationStatus::kNoActivation)
             .InMilliseconds());
-    builder.SetTiming_PreActivationForegroundDuration(
-        pre_activation_foreground_duration().InMilliseconds());
   }
 
   builder.SetCpuTime_PeakWindowedPercent(peak_windowed_cpu_percent_);

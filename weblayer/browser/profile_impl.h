@@ -127,6 +127,10 @@ class ProfileImpl : public Profile {
       const base::android::JavaRef<jobjectArray>& j_ids,
       const base::android::JavaRef<jobject>& j_callback);
   void PrepareForPossibleCrossOriginNavigation(JNIEnv* env);
+  void GetCachedFaviconForPageUrl(
+      JNIEnv* env,
+      const base::android::JavaRef<jstring>& j_page_url,
+      const base::android::JavaRef<jobject>& j_callback);
 #endif
 
   const base::FilePath& download_directory() { return download_directory_; }

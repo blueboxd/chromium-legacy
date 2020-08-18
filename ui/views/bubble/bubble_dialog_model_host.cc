@@ -18,12 +18,18 @@
 
 namespace views {
 namespace {
-constexpr int kColumnId = 0;
+// Note that textfields and comboboxes share column sets.
+constexpr int kTextfieldColumnSetId = 0;
+// Column sets used for fields where an individual control spans the entire
+// dialog width.
+constexpr int kSingleColumnSetId = 1;
 
 DialogContentType FieldTypeToContentType(ui::DialogModelField::Type type) {
   switch (type) {
     case ui::DialogModelField::kButton:
       return DialogContentType::CONTROL;
+    case ui::DialogModelField::kBodyText:
+      return DialogContentType::TEXT;
     case ui::DialogModelField::kTextfield:
       return DialogContentType::CONTROL;
     case ui::DialogModelField::kCombobox:
@@ -95,13 +101,12 @@ BubbleDialogModelHost::~BubbleDialogModelHost() {
 }
 
 View* BubbleDialogModelHost::GetInitiallyFocusedView() {
-  ui::DialogModelField* focused_field = model_->GetTextfieldByUniqueId(
-      *model_->initially_focused_field(GetPassKey()));
+  base::Optional<int> unique_id = model_->initially_focused_field(GetPassKey());
 
-  if (!focused_field)
+  if (!unique_id)
     return BubbleDialogDelegateView::GetInitiallyFocusedView();
 
-  return FieldToView(focused_field);
+  return FieldToView(model_->GetFieldByUniqueId(unique_id.value()));
 }
 
 void BubbleDialogModelHost::OnDialogInitialized() {
@@ -113,6 +118,12 @@ void BubbleDialogModelHost::OnDialogInitialized() {
     OnViewCreatedForField(GetCancelButton(),
                           model_->cancel_button(GetPassKey()));
   }
+}
+
+gfx::Size BubbleDialogModelHost::CalculatePreferredSize() const {
+  // TODO(pbos): Move DISTANCE_BUBBLE_PREFERRED_WIDTH into views.
+  const int width = 320 - margins().width();
+  return gfx::Size(width, GetHeightForWidth(width));
 }
 
 void BubbleDialogModelHost::Close() {
@@ -158,14 +169,17 @@ void BubbleDialogModelHost::AddInitialFields() {
       case ui::DialogModelField::kButton:
         // TODO(pbos): Add support for buttons that are part of content area.
         continue;
-      case ui::DialogModelField::kTextfield:
-        last_view = AddOrUpdateTextfield(FieldAsTextfield(field.get()));
+      case ui::DialogModelField::kBodyText:
+        last_view = AddOrUpdateBodyText(FieldAsBodyText(field.get()));
         break;
-
       case ui::DialogModelField::kCombobox:
         last_view = AddOrUpdateCombobox(FieldAsCombobox(field.get()));
         break;
+      case ui::DialogModelField::kTextfield:
+        last_view = AddOrUpdateTextfield(FieldAsTextfield(field.get()));
+        break;
     }
+
     DCHECK(last_view);
     OnViewCreatedForField(last_view, field.get());
     last_field_content_type = FieldTypeToContentType(field->type(GetPassKey()));
@@ -183,19 +197,26 @@ GridLayout* BubbleDialogModelHost::GetGridLayout() {
 }
 
 void BubbleDialogModelHost::ConfigureGridLayout() {
-  auto* grid_layout = SetLayoutManager(std::make_unique<GridLayout>());
+  SetLayoutManager(std::make_unique<GridLayout>());
   LayoutProvider* const provider = LayoutProvider::Get();
   const int between_padding =
       provider->GetDistanceMetric(DISTANCE_RELATED_CONTROL_HORIZONTAL);
 
-  ColumnSet* const column_set = grid_layout->AddColumnSet(kColumnId);
-  column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER,
-                        GridLayout::kFixedSize,
-                        GridLayout::ColumnSize::kUsePreferred, 0, 0);
-  column_set->AddPaddingColumn(GridLayout::kFixedSize, between_padding);
+  ColumnSet* const textfield_column_set =
+      GetGridLayout()->AddColumnSet(kTextfieldColumnSetId);
+  textfield_column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER,
+                                  GridLayout::kFixedSize,
+                                  GridLayout::ColumnSize::kUsePreferred, 0, 0);
+  textfield_column_set->AddPaddingColumn(GridLayout::kFixedSize,
+                                         between_padding);
 
-  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1.0,
-                        GridLayout::ColumnSize::kFixed, 0, 0);
+  textfield_column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1.0,
+                                  GridLayout::ColumnSize::kFixed, 0, 0);
+
+  GetGridLayout()
+      ->AddColumnSet(kSingleColumnSetId)
+      ->AddColumn(GridLayout::FILL, GridLayout::FILL, 1.0,
+                  GridLayout::ColumnSize::kUsePreferred, 0, 0);
 }
 
 Textfield* BubbleDialogModelHost::AddOrUpdateTextfield(
@@ -217,6 +238,23 @@ Textfield* BubbleDialogModelHost::AddOrUpdateTextfield(
                    textfield_ptr->GetFontList());
 
   return textfield_ptr;
+}
+
+Label* BubbleDialogModelHost::AddOrUpdateBodyText(
+    ui::DialogModelBodyText* field) {
+  // TODO(pbos): Handle updating existing field.
+
+  auto text_label = std::make_unique<Label>(
+      field->text(GetPassKey()), style::CONTEXT_MESSAGE_BOX_BODY_TEXT,
+      field->is_secondary(GetPassKey()) ? style::STYLE_SECONDARY
+                                        : style::STYLE_PRIMARY);
+  text_label->SetMultiLine(true);
+  text_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+
+  auto* layout = GetGridLayout();
+  layout->StartRow(1.0, kSingleColumnSetId);
+
+  return layout->AddView(std::move(text_label));
 }
 
 Combobox* BubbleDialogModelHost::AddOrUpdateCombobox(
@@ -245,7 +283,7 @@ void BubbleDialogModelHost::AddLabelAndField(const base::string16& label_text,
   int row_height = LayoutProvider::GetControlHeightForFont(
       kFontContext, kFontStyle, field_font);
   GridLayout* const layout = GetGridLayout();
-  layout->StartRow(GridLayout::kFixedSize, kColumnId, row_height);
+  layout->StartRow(GridLayout::kFixedSize, kTextfieldColumnSetId, row_height);
   layout->AddView(
       std::make_unique<Label>(label_text, kFontContext, kFontStyle));
   layout->AddView(std::move(field));
@@ -305,6 +343,13 @@ ui::DialogModelButton* BubbleDialogModelHost::FieldAsButton(
   DCHECK(field);
   DCHECK_EQ(field->type(GetPassKey()), ui::DialogModelField::kButton);
   return static_cast<ui::DialogModelButton*>(field);
+}
+
+ui::DialogModelBodyText* BubbleDialogModelHost::FieldAsBodyText(
+    ui::DialogModelField* field) {
+  DCHECK(field);
+  DCHECK_EQ(field->type(GetPassKey()), ui::DialogModelField::kBodyText);
+  return static_cast<ui::DialogModelBodyText*>(field);
 }
 
 ui::DialogModelCombobox* BubbleDialogModelHost::FieldAsCombobox(

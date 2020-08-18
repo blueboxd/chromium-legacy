@@ -778,6 +778,12 @@ below:
         <message name="IDS_AX_ROLE_TREE_ITEM" desc="Accessibility role description for a tree item">
           tree item
         </message>
+        <message name="IDS_AX_MULTISELECTABLE_STATE_DESCRIPTION" desc="Accessibility state description for a multiselectable node when some children are selected">
+          multiselectable, <ph name="SELECTED">$1<ex>3</ex></ph> of <ph name="COUNT">$2<ex>10</ex></ph> selected.
+        </message>
+        <message name="IDS_AX_MULTISELECTABLE_STATE_DESCRIPTION_NONE" desc="Accessibility state description for a multiselectable node when no children are selected">
+          multiselectable, none selected.
+        </message>
       </if>
 
       <!-- Automatic image annotations for accessibility -->

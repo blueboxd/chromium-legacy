@@ -26,7 +26,7 @@ android_resources("weblayer_resources") {
     "res/values/dimens.xml",
     "res/values/styles.xml",
   ]
-  custom_package = "org.chromium.weblayer_private"
+  create_srcjar = false
   deps = [
     ":weblayer_strings_grd",
     "//components/blocked_content/android:java_resources",
@@ -154,6 +154,7 @@ android_library("java") {
     "org/chromium/weblayer_private/resources/ResourceMapper.java",
     _bundle_utils_output,
   ]
+  resources_package = "org.chromium.weblayer_private"
 
   deps = [
     ":base_module_java",
@@ -258,7 +259,7 @@ android_resources("weblayer_test_resources") {
     "res_test/layout/test_layout.xml",
     "res_test/values/values.xml",
   ]
-  custom_package = "org.chromium.weblayer_private.test"
+  create_srcjar = false
 }
 
 android_library("test_java") {
@@ -267,6 +268,7 @@ android_library("test_java") {
     "org/chromium/weblayer_private/test/TestInfoBar.java",
     "org/chromium/weblayer_private/test/TestWebLayerImpl.java",
   ]
+  resources_package = "org.chromium.weblayer_private.test"
   deps = [
     ":interfaces_java",
     ":java",

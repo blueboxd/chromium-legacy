@@ -107,6 +107,7 @@ class DlcserviceClientImpl : public DlcserviceClient {
   void Install(const std::string& dlc_id,
                InstallCallback install_callback,
                ProgressCallback progress_callback) override {
+    CheckServiceAvailable("Install");
     // If another installation for the same DLC ID was already called, go ahead
     // and hold the installation fields.
     if (installation_holder_.find(dlc_id) != installation_holder_.end()) {
@@ -138,6 +139,7 @@ class DlcserviceClientImpl : public DlcserviceClient {
 
   void Uninstall(const std::string& dlc_id,
                  UninstallCallback uninstall_callback) override {
+    CheckServiceAvailable("Uninstall");
     dbus::MethodCall method_call(dlcservice::kDlcServiceInterface,
                                  dlcservice::kUninstallMethod);
     dbus::MessageWriter writer(&method_call);
@@ -152,6 +154,7 @@ class DlcserviceClientImpl : public DlcserviceClient {
   }
 
   void Purge(const std::string& dlc_id, PurgeCallback purge_callback) override {
+    CheckServiceAvailable("Purge");
     dbus::MethodCall method_call(dlcservice::kDlcServiceInterface,
                                  dlcservice::kPurgeMethod);
     dbus::MessageWriter writer(&method_call);
@@ -166,6 +169,7 @@ class DlcserviceClientImpl : public DlcserviceClient {
   }
 
   void GetExistingDlcs(GetExistingDlcsCallback callback) override {
+    CheckServiceAvailable("GetExistingDlcs");
     dbus::MethodCall method_call(dlcservice::kDlcServiceInterface,
                                  dlcservice::kGetExistingDlcsMethod);
 
@@ -198,6 +202,9 @@ class DlcserviceClientImpl : public DlcserviceClient {
                             weak_ptr_factory_.GetWeakPtr()),
         base::BindOnce(&DlcserviceClientImpl::DlcStateChangedConnected,
                        weak_ptr_factory_.GetWeakPtr()));
+    dlcservice_proxy_->WaitForServiceToBeAvailable(
+        base::BindOnce(&DlcserviceClientImpl::OnServiceAvailable,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
  private:
@@ -213,6 +220,14 @@ class DlcserviceClientImpl : public DlcserviceClient {
         : install_callback(std::move(install_callback)),
           progress_callback(std::move(progress_callback)) {}
   };
+
+  void OnServiceAvailable(bool service_available) {
+    if (service_available)
+      VLOG(1) << "dlcservice is available.";
+    else
+      LOG(ERROR) << "dlcservice is not available.";
+    service_available_ = service_available;
+  }
 
   // Set the indication that an install is being performed which was requested
   // from this client (Chrome specifically).
@@ -372,6 +387,14 @@ class DlcserviceClientImpl : public DlcserviceClient {
     }
   }
 
+  // TODO(b/164310699): This check is added in order to see if dlcservice daemon
+  // not being available is the cause of flakes in the CQ.
+  void CheckServiceAvailable(const std::string& method_name) {
+    if (!service_available_)
+      LOG(WARNING) << method_name
+                   << " called when dlcservice is not available.";
+  }
+
   // DLC ID to |InstallationCallbacks| mapping.
   std::map<std::string, std::vector<InstallationCallbacks>>
       installation_holder_;
@@ -389,6 +412,9 @@ class DlcserviceClientImpl : public DlcserviceClient {
 
   // A list of observers that are listening on state changes, etc.
   base::ObserverList<Observer> observers_;
+
+  // Indicates if dlcservice daemon is available.
+  bool service_available_ = false;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

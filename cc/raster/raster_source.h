@@ -26,6 +26,7 @@ namespace cc {
 class DisplayItemList;
 class DrawImage;
 class ImageProvider;
+class PictureLayerTilingClient;
 
 class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
  public:
@@ -88,7 +89,8 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
 
   // Return true iff this raster source can raster the given rect in layer
   // space.
-  bool CoversRect(const gfx::Rect& layer_rect) const;
+  bool CoversRect(const gfx::Rect& layer_rect,
+                  const PictureLayerTilingClient& client) const;
 
   // Returns true if this raster source has anything to rasterize.
   bool HasRecordings() const;

@@ -520,6 +520,7 @@ if (is_android) {
       "test/android/browsertests_apk/src/org/chromium/components_browsertests_apk/ComponentsBrowserTestsActivity.java",
       "test/android/browsertests_apk/src/org/chromium/components_browsertests_apk/ComponentsBrowserTestsApplication.java",
     ]
+    resources_package = "org.chromium.components_browsertests_apk"
   }
 
   jinja_template("components_browsertests_manifest") {
@@ -535,7 +536,7 @@ if (is_android) {
     sources = [
       "//components/test/android/browsertests_apk/res/layout/test_activity.xml",
     ]
-    custom_package = "org.chromium.components_browsertests_apk"
+    create_srcjar = false
   }
 }
 

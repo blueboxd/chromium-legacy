@@ -67,6 +67,7 @@ class FeedStream : public FeedStreamApi,
     virtual DisplayMetrics GetDisplayMetrics() = 0;
     virtual std::string GetLanguageTag() = 0;
     virtual void ClearAll() = 0;
+    virtual bool IsSignedIn() = 0;
   };
 
   // Forwards to |feed::TranslateWireResponse()| by default. Can be overridden
@@ -203,11 +204,13 @@ class FeedStream : public FeedStreamApi,
   FeedStore* GetStore() { return store_; }
   RequestThrottler* GetRequestThrottler() { return &request_throttler_; }
   Metadata* GetMetadata() { return &metadata_; }
+  MetricsReporter* GetMetricsReporter() const { return metrics_reporter_; }
 
   // Returns the time of the last content fetch.
   base::Time GetLastFetchTime();
 
   bool HasSurfaceAttached() const;
+  bool IsSignedIn() const { return delegate_->IsSignedIn(); }
 
   // Determines if we should attempt loading the stream or refreshing at all.
   // Returns |LoadStreamStatus::kNoStatus| if loading may be attempted.

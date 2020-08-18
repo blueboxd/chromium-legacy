@@ -368,7 +368,7 @@
     "dependencies": ["manifest:mime_types_handler"],
     "contexts": ["blessed_extension"]
   },
-  "mojoPrivate": [{
+  "mojoPrivate": {
     "contexts": ["blessed_extension"],
     "channel": "stable",
     "extension_types": ["platform_app", "extension"],
@@ -378,13 +378,7 @@
       "B41E7F08E1179CC03CBD1F49E57CF353A40ADE07",   // Chrome Camera App Dev
       "A3E3DE9E9F16B41D4A2FAD106BD6CA76B94A0C94"    // Chrome Camera App Stable
     ]
-  }, {
-    "contexts": ["blessed_extension"],
-    "dependencies": ["behavior:imprivata_in_session_extension"],
-    "extension_types": ["extension"],
-    "location": "policy",
-    "platforms": ["chromeos"]
-  }],
+  },
   "networking.config": {
     "dependencies": ["permission:networking.config"],
     "contexts": ["blessed_extension"]

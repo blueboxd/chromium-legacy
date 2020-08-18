@@ -549,6 +549,11 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // RenderProcessHostImpl::AddCorbExceptionForPlugin).
   virtual void CleanupNetworkServicePluginExceptionsUponDestruction() = 0;
 
+  // Returns a string that contains information useful for debugging
+  // crashes related to RenderProcessHost objects staying alive longer than
+  // the BrowserContext they are associated with.
+  virtual std::string GetInfoForBrowserContextDestructionCrashReporting() = 0;
+
 #if BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX)
   // Ask the renderer process to dump its profiling data to disk. Invokes
   // |callback| once this has completed.

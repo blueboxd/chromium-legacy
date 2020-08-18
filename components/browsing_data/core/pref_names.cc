@@ -76,6 +76,7 @@ void RegisterBrowserUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(
       kDeleteSiteSettings, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+#else
   registry->RegisterInt64Pref(prefs::kLastClearBrowsingDataTime, 0);
 #endif  // !defined(OS_IOS)
 

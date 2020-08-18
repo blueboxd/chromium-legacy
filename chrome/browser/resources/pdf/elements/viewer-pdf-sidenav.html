@@ -1,8 +1,10 @@
-<style include="pdf-shared">
+<style include="pdf-shared cr-hidden-style">
   :host {
     background-color: var(--viewer-pdf-toolbar-background-color);
     display: flex;
     min-width: 300px;
+    overflow: hidden;
+    width: 300px;
   }
 
   #icons {
@@ -14,10 +16,8 @@
   /* These are dummy styles currently - replace with real content. */
   #content {
     color: white;
-    font-weight: 500;
-    line-height: 36px;
-    text-align: center;
-    width: 100%;
+    flex: 1;
+    overflow-x: hidden;
   }
 
   .selected cr-icon-button {
@@ -45,7 +45,8 @@
         title="$i18n{tooltipThumbnails}" on-click="onThumbnailClick_">
     </cr-icon-button>
   </div>
-  <div class$="button-wrapper [[outlineButtonClass_(thumbnailView_)]]">
+  <div class$="button-wrapper [[outlineButtonClass_(thumbnailView_)]]"
+      hidden$="[[!bookmarks.length]]">
     <cr-icon-button iron-icon="pdf:doc-outline" role="tab"
         title="$i18n{tooltipDocumentOutline}" on-click="onOutlineClick_">
     </cr-icon-button>
@@ -55,5 +56,7 @@
   <viewer-thumbnail-bar id="thumbnail-bar" hidden="[[!thumbnailView_]]"
       doc-length="[[docLength]]">
   </viewer-thumbnail-bar>
-  <div id="outline" hidden="[[thumbnailView_]]">Outline</div>
+  <viewer-document-outline id="outline" hidden="[[thumbnailView_]]"
+      bookmarks="[[bookmarks]]">
+  </viewer-document-outline>
 </div>

@@ -9,8 +9,11 @@
 
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sharesheet/sharesheet_service_delegate.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/app_window/app_window.h"
+#include "extensions/browser/app_window/app_window_registry.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/font_list.h"
@@ -38,6 +41,8 @@ constexpr int kButtonWidth = 92;
 constexpr int kButtonHeight = 104;
 constexpr int kButtonLineHeight = 20;
 constexpr int kButtonPadding = 8;
+
+constexpr int kBubbleTopPaddingFromWindow = 36;
 
 constexpr int kCornerRadius = 12;
 constexpr int kMaxTargetsPerRow = 4;
@@ -115,9 +120,28 @@ SharesheetBubbleView::SharesheetBubbleView(
     content::WebContents* web_contents,
     sharesheet::SharesheetServiceDelegate* delegate)
     : delegate_(delegate) {
-  // TODO(crbug.com/1097623): Make the bubble located in the center of the
-  // invoke window.
-  set_parent_window(web_contents->GetNativeView());
+  // TODO(crbug.com/1097623): When supporting open from multiple apps,
+  // pass in |app_id| and get NativeWindow from it.
+  Profile* const profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  gfx::NativeWindow parent =
+      extensions::AppWindowRegistry::Get(profile)
+          ->GetCurrentAppWindowForApp(extension_misc::kFilesManagerAppId)
+          ->GetNativeWindow();
+  set_parent_window(parent);
+  View* parent_view =
+      views::Widget::GetWidgetForNativeWindow(parent)->GetRootView();
+
+  // Horizontally centered
+  int x_within_parent_view = parent_view->GetMirroredXInView(
+      (parent_view->bounds().width() - kBubbleWidth) / 2);
+  // Get position in screen, taking parent view origin into account. This is
+  // 0,0 in fullscreen on the primary display, but not on secondary displays, or
+  // in Hosted App windows.
+  gfx::Point origin = parent_view->GetBoundsInScreen().origin();
+  origin += gfx::Vector2d(x_within_parent_view, kBubbleTopPaddingFromWindow);
+  SetAnchorRect(gfx::Rect(origin, gfx::Size()));
+
   CreateBubble();
 }
 
@@ -233,6 +257,7 @@ gfx::Size SharesheetBubbleView::CalculatePreferredSize() const {
 }
 
 void SharesheetBubbleView::CreateBubble() {
+  set_close_on_deactivate(true);
   SetButtons(ui::DIALOG_BUTTON_NONE);
 
   SetLayoutManager(std::make_unique<views::BoxLayout>(

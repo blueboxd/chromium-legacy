@@ -10,4 +10,9 @@ SecurePaymentConfirmationModel::SecurePaymentConfirmationModel() = default;
 
 SecurePaymentConfirmationModel::~SecurePaymentConfirmationModel() = default;
 
+base::WeakPtr<SecurePaymentConfirmationModel>
+SecurePaymentConfirmationModel::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
+}
+
 }  // namespace payments

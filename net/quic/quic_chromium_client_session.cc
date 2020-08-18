@@ -2040,9 +2040,14 @@ void QuicChromiumClientSession::OnMigrationTimeout(size_t num_sockets) {
   if (num_sockets != sockets_.size())
     return;
 
+  int net_error = current_migration_cause_ == ON_NETWORK_DISCONNECTED
+                      ? ERR_INTERNET_DISCONNECTED
+                      : ERR_NETWORK_CHANGED;
+
+  // |current_migration_cause_| will be reset after logging.
   LogMigrationResultToHistogram(MIGRATION_STATUS_TIMEOUT);
-  CloseSessionOnError(ERR_NETWORK_CHANGED,
-                      quic::QUIC_CONNECTION_MIGRATION_NO_NEW_NETWORK,
+
+  CloseSessionOnError(net_error, quic::QUIC_CONNECTION_MIGRATION_NO_NEW_NETWORK,
                       quic::ConnectionCloseBehavior::SILENT_CLOSE);
 }
 

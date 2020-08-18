@@ -126,11 +126,15 @@ Element& ChooserOnlyTemporalInputTypeView::OwnerElement() const {
 }
 
 void ChooserOnlyTemporalInputTypeView::DidChooseValue(const String& value) {
+  if (will_be_destroyed_)
+    return;
   GetElement().setValue(value,
                         TextFieldEventBehavior::kDispatchInputAndChangeEvent);
 }
 
 void ChooserOnlyTemporalInputTypeView::DidChooseValue(double value) {
+  if (will_be_destroyed_)
+    return;
   DCHECK(std::isfinite(value) || std::isnan(value));
   if (std::isnan(value)) {
     GetElement().setValue(g_empty_string,

@@ -26,10 +26,10 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/system/device_disabling_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/device_disabled_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/user_creation_screen_handler.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
@@ -159,7 +159,7 @@ IN_PROC_BROWSER_TEST_F(DeviceDisablingTest, DisableWithEphemeralUsers) {
   connect_run_loop.Run();
 
   // Skip to the login screen.
-  OobeScreenWaiter(UserCreationView::kScreenId).Wait();
+  OobeScreenWaiter(GaiaView::kScreenId).Wait();
 
   // Mark the device as disabled and wait until cros settings update.
   MarkDisabledAndWaitForPolicyFetch();
@@ -227,7 +227,7 @@ class DeviceDisablingWithUsersTest : public DeviceDisablingTest {
 IN_PROC_BROWSER_TEST_F(DeviceDisablingWithUsersTest, DialogNotHidden) {
   EXPECT_TRUE(ash::LoginScreenTestApi::ClickAddUserButton());
   EXPECT_TRUE(ash::LoginScreenTestApi::IsOobeDialogVisible());
-  OobeScreenWaiter(UserCreationView::kScreenId).Wait();
+  OobeScreenWaiter(GaiaView::kScreenId).Wait();
   MarkDisabledAndWaitForPolicyFetch();
   OobeScreenWaiter(DeviceDisabledScreenView::kScreenId).Wait();
   LoginDisplayHost::default_host()->StartSignInScreen();

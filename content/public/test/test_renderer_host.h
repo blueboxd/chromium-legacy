@@ -19,7 +19,10 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/test/browser_task_environment.h"
+#include "content/public/test/browser_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 #include "ui/base/page_transition_types.h"
 
 #if defined(USE_AURA)
@@ -138,8 +141,12 @@ class RenderViewHostTester {
 
   static void SimulateFirstPaint(RenderViewHost* rvh);
 
-  // Returns whether the underlying web-page has any touch-event handlers.
-  static bool HasTouchEventHandler(RenderViewHost* rvh);
+  static std::unique_ptr<content::InputMsgWatcher> CreateInputWatcher(
+      RenderViewHost* rvh,
+      blink::WebInputEvent::Type type);
+
+  static void SendTouchEvent(RenderViewHost* rvh,
+                             blink::SyntheticWebTouchEvent* touch_event);
 
   virtual ~RenderViewHostTester() {}
 

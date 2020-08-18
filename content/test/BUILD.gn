@@ -843,6 +843,7 @@ if (is_android) {
 
   android_library("content_browsertests_java") {
     testonly = true
+    resources_package = "org.chromium.content_browsertests_apk"
     sources = [
       "../shell/android/browsertests_apk/src/org/chromium/content_browsertests_apk/ContentBrowserTestsActivity.java",
       "../shell/android/browsertests_apk/src/org/chromium/content_browsertests_apk/ContentBrowserTestsApplication.java",
@@ -868,7 +869,7 @@ if (is_android) {
       "//content/shell/android/browsertests_apk/res/layout/test_activity.xml",
       "//content/shell/android/browsertests_apk/res/xml/file_paths.xml",
     ]
-    custom_package = "org.chromium.content_browsertests_apk"
+    create_srcjar = false
   }
 }
 

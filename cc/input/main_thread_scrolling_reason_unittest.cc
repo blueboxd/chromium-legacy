@@ -19,7 +19,6 @@ TEST_F(MainThreadScrollingReasonTest, AsText) {
       "Scrollbar scrolling, "
       "Frame overlay, "
       "Handling scroll from main thread, "
-      "Has transform and LCD text, "
       "Not opaque for text and LCD text, "
       "Can't paint scrolling background and LCD text, "
       "Non fast scrollable region, "

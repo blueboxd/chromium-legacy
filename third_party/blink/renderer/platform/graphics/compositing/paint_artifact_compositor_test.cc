@@ -5046,7 +5046,7 @@ TEST_P(PaintArtifactCompositorTest, AddNonCompositedScrollNodes) {
       scroll_unification_enabled_(true);
 
   const uint32_t main_thread_scrolling_reason =
-      cc::MainThreadScrollingReason::kHasTransformAndLCDText;
+      cc::MainThreadScrollingReason::kNotOpaqueForTextAndLCDText;
   ASSERT_TRUE(cc::MainThreadScrollingReason::HasNonCompositedScrollReasons(
       main_thread_scrolling_reason));
   CompositorElementId scroll_element_id = ScrollElementId(123);

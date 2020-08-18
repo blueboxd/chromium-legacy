@@ -18,14 +18,10 @@
 #include "extensions/common/permissions/permissions_data.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/remote_apps/remote_apps_impl.h"
-#include "chrome/browser/chromeos/remote_apps/remote_apps_manager.h"
-#include "chrome/browser/chromeos/remote_apps/remote_apps_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/speech/extension_api/tts_engine_extension_observer.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chromeos/components/camera_app_ui/camera_app_ui.h"
-#include "chromeos/components/remote_apps/mojom/remote_apps.mojom.h"
 #include "chromeos/services/cfm/public/buildflags/buildflags.h"
 #include "chromeos/services/media_perception/public/mojom/media_perception.mojom.h"
 #include "chromeos/services/tts/public/mojom/tts_service.mojom.h"
@@ -84,20 +80,7 @@ void BindTtsStream(
       ->BindTtsStream(std::move(receiver));
 }
 
-void BindRemoteAppsFactory(
-    content::RenderFrameHost* render_frame_host,
-    mojo::PendingReceiver<chromeos::remote_apps::mojom::RemoteAppsFactory>
-        pending_receiver) {
-  // |remote_apps_manager| will be null in non-managed guest sessions, but this
-  // is already checked in |RemoteAppsImpl::IsAllowed()|.
-  chromeos::RemoteAppsManager* remote_apps_manager =
-      chromeos::RemoteAppsManagerFactory::GetForProfile(
-          Profile::FromBrowserContext(render_frame_host->GetBrowserContext()));
-  DCHECK(remote_apps_manager);
-  remote_apps_manager->BindInterface(std::move(pending_receiver));
-}
-
-#endif  // defined(OS_CHROMEOS)
+#endif
 }  // namespace
 
 void PopulateChromeFrameBindersForExtension(
@@ -172,12 +155,7 @@ void PopulateChromeFrameBindersForExtension(
     binder_map->Add<chromeos::tts::mojom::TtsStream>(
         base::BindRepeating(&BindTtsStream));
   }
-
-  if (chromeos::RemoteAppsImpl::IsAllowed(render_frame_host, extension)) {
-    binder_map->Add<chromeos::remote_apps::mojom::RemoteAppsFactory>(
-        base::BindRepeating(&BindRemoteAppsFactory));
-  }
-#endif  // defined(OS_CHROMEOS)
+#endif
 }
 
 }  // namespace extensions

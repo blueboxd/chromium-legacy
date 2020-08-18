@@ -120,6 +120,9 @@ void PaymentRequestDialogView::CloseDialog() {
 }
 
 void PaymentRequestDialogView::ShowErrorMessage() {
+  if (being_closed_)
+    return;
+
   view_stack_->Push(CreateViewAndInstallController(
                         std::make_unique<ErrorMessageViewController>(
                             request_->spec(), request_->state(), this),

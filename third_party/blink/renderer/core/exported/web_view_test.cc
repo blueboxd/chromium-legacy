@@ -60,6 +60,7 @@
 #include "third_party/blink/public/mojom/frame/frame_owner_element_type.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/tree_scope_type.mojom-blink.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
+#include "third_party/blink/public/mojom/input/touch_event.mojom-blink.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom-shared.h"
 #include "third_party/blink/public/platform/web_drag_data.h"
 #include "third_party/blink/public/platform/web_size.h"
@@ -4054,8 +4055,10 @@ class FakeFrameWidgetHost : public mojom::blink::FrameWidgetHost {
   }
   void ZoomToFindInPageRectInMainFrame(const gfx::Rect& rect_to_zoom) override {
   }
-  void SetHasTouchEventHandlers(bool state) override {
+  void SetHasTouchEventConsumers(
+      mojom::blink::TouchEventConsumersPtr consumers) override {
     // Only count the times the state changes.
+    bool state = consumers->has_touch_event_handlers;
     if (state != has_touch_event_handler_)
       has_touch_event_handler_count_[state]++;
     has_touch_event_handler_ = state;
@@ -4076,11 +4079,11 @@ class FakeFrameWidgetHost : public mojom::blink::FrameWidgetHost {
   DISALLOW_COPY_AND_ASSIGN(FakeFrameWidgetHost);
 };
 
-// This test verifies that FrameWidgetHost::SetHasTouchEventHandlers is called
+// This test verifies that FrameWidgetHost::SetHasTouchEventConsumers is called
 // accordingly for various calls to EventHandlerRegistry::did{Add|Remove|
 // RemoveAll}EventHandler(..., TouchEvent). Verifying that those calls are made
 // correctly is the job of web_tests/fast/events/event-handler-count.html.
-TEST_F(WebViewTest, SetHasTouchEventHandlers) {
+TEST_F(WebViewTest, SetHasTouchEventConsumers) {
   // Note: this test doesn't use WebViewHelper since it intentionally runs
   // initialization code between WebView and WebLocalFrame creation.
   frame_test_helpers::TestWebViewClient web_view_client;

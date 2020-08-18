@@ -97,6 +97,19 @@ VaapiVideoDecoder::~VaapiVideoDecoder() {
   ClearDecodeTaskQueue(DecodeStatus::ABORTED);
 
   weak_this_factory_.InvalidateWeakPtrs();
+
+  // Destroy explicitly to DCHECK() that |vaapi_wrapper_| references are held
+  // inside the accelerator in |decoder_|, by the |allocated_va_surfaces_| and
+  // of course by this class. To clear |allocated_va_surfaces_| we have to first
+  // DestroyContext().
+  decoder_ = nullptr;
+  if (vaapi_wrapper_) {
+    vaapi_wrapper_->DestroyContext();
+    allocated_va_surfaces_.clear();
+
+    DCHECK(vaapi_wrapper_->HasOneRef());
+    vaapi_wrapper_ = nullptr;
+  }
 }
 
 void VaapiVideoDecoder::Initialize(const VideoDecoderConfig& config,
@@ -124,6 +137,12 @@ void VaapiVideoDecoder::Initialize(const VideoDecoderConfig& config,
     DVLOGF(3) << "Reinitializing decoder";
 
     decoder_ = nullptr;
+    DCHECK(vaapi_wrapper_);
+    // To clear |allocated_va_surfaces_| we have to first DestroyContext().
+    vaapi_wrapper_->DestroyContext();
+    allocated_va_surfaces_.clear();
+
+    DCHECK(vaapi_wrapper_->HasOneRef());
     vaapi_wrapper_ = nullptr;
     decoder_delegate_ = nullptr;
     SetState(State::kUninitialized);
@@ -300,22 +319,36 @@ scoped_refptr<VASurface> VaapiVideoDecoder::CreateSurface() {
     return nullptr;
   }
 
-  scoped_refptr<gfx::NativePixmap> pixmap =
-      CreateNativePixmapDmaBuf(frame.get());
-  if (!pixmap) {
-    LOG(ERROR) << "Failed to create NativePixmap from VideoFrame";
-    SetState(State::kError);
-    return nullptr;
-  }
+  // |frame|s coming from ARC++ are not GpuMemoryBuffer-backed, but they have
+  // DmaBufs whose fd numbers are consistent along the lifetime of the VA
+  // surfaces they back.
+  DCHECK(frame->GetGpuMemoryBuffer() || frame->HasDmaBufs());
+  const gfx::GpuMemoryBufferId frame_id =
+      frame->GetGpuMemoryBuffer()
+          ? frame->GetGpuMemoryBuffer()->GetId()
+          : gfx::GpuMemoryBufferId(frame->DmabufFds()[0].get());
 
-  // Create VASurface from the native pixmap.
-  scoped_refptr<VASurface> va_surface =
-      vaapi_wrapper_->CreateVASurfaceForPixmap(std::move(pixmap));
+  scoped_refptr<VASurface> va_surface;
+  if (!base::Contains(allocated_va_surfaces_, frame_id)) {
+    scoped_refptr<gfx::NativePixmap> pixmap =
+        CreateNativePixmapDmaBuf(frame.get());
+    if (!pixmap) {
+      LOG(ERROR) << "Failed to create NativePixmap from VideoFrame";
+      SetState(State::kError);
+      return nullptr;
+    }
 
-  if (!va_surface || va_surface->id() == VA_INVALID_ID) {
-    LOG(ERROR) << "Failed to create VASurface from VideoFrame";
-    SetState(State::kError);
-    return nullptr;
+    va_surface = vaapi_wrapper_->CreateVASurfaceForPixmap(std::move(pixmap));
+    if (!va_surface || va_surface->id() == VA_INVALID_ID) {
+      LOG(ERROR) << "Failed to create VASurface from VideoFrame";
+      SetState(State::kError);
+      return nullptr;
+    }
+
+    allocated_va_surfaces_[frame_id] = va_surface;
+  } else {
+    va_surface = allocated_va_surfaces_[frame_id];
+    DCHECK_EQ(frame->coded_size(), va_surface->size());
   }
 
   // Store the mapping between surface and video frame, so we know which video
@@ -327,14 +360,12 @@ scoped_refptr<VASurface> VaapiVideoDecoder::CreateSurface() {
   output_frames_[surface_id] = frame;
 
   // When the decoder is done using the frame for output or reference, it will
-  // drop its reference to the surface. We can then safely destroy the surface
-  // and remove the associated video frame from |output_frames_|. To be notified
-  // when this happens we wrap the surface in another surface that calls
-  // ReleaseFrame() on destruction. The |va_surface| object is bound to the
-  // destruction callback to keep it alive, since the associated VAAPI surface
-  // will be automatically destroyed when we drop the reference.
-  VASurface::ReleaseCB release_frame_cb = base::BindOnce(
-      &VaapiVideoDecoder::ReleaseFrame, weak_this_, std::move(va_surface));
+  // drop its reference to the surface. We can then safely remove the associated
+  // video frame from |output_frames_|. To be notified when this happens we wrap
+  // the surface in another surface with ReleaseVideoFrame() as destruction
+  // observer.
+  VASurface::ReleaseCB release_frame_cb =
+      base::BindOnce(&VaapiVideoDecoder::ReleaseVideoFrame, weak_this_);
 
   return new VASurface(surface_id, frame->layout().coded_size(),
                        GetVaFormatForVideoCodecProfile(profile_),
@@ -416,7 +447,11 @@ void VaapiVideoDecoder::ApplyResolutionChange() {
   }
 
   // All pending decode operations will be completed before triggering a
-  // resolution change, so we can safely destroy the context here.
+  // resolution change, so we can safely DestroyContext() here; that, in turn,
+  // allows for clearing the |allocated_va_surfaces_|.
+  vaapi_wrapper_->DestroyContext();
+  allocated_va_surfaces_.clear();
+
   if (profile_ != decoder_->GetProfile()) {
     // When a profile is changed, we need to re-initialize VaapiWrapper.
     profile_ = decoder_->GetProfile();
@@ -429,8 +464,6 @@ void VaapiVideoDecoder::ApplyResolutionChange() {
     }
     decoder_delegate_->set_vaapi_wrapper(new_vaapi_wrapper.get());
     vaapi_wrapper_ = std::move(new_vaapi_wrapper);
-  } else {
-    vaapi_wrapper_->DestroyContext();
   }
 
   vaapi_wrapper_->CreateContext(pic_size);
@@ -447,9 +480,7 @@ void VaapiVideoDecoder::ApplyResolutionChange() {
   }
 }
 
-void VaapiVideoDecoder::ReleaseFrame(scoped_refptr<VASurface> va_surface,
-                                     VASurfaceID surface_id) {
-  DCHECK_EQ(va_surface->id(), surface_id);
+void VaapiVideoDecoder::ReleaseVideoFrame(VASurfaceID surface_id) {
   DVLOGF(4);
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 

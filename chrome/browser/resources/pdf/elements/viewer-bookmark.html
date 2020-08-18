@@ -7,6 +7,10 @@
         position: relative;
       }
 
+      :host-context([pdf-viewer-update-enabled]) #item {
+        height: initial;
+      }
+
       #item:hover {
         background-color: var(--cr-menu-background-focus-color);
       }
@@ -25,6 +29,10 @@
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+      }
+
+      :host-context([pdf-viewer-update-enabled]) #title {
+        white-space: initial;
       }
 
       #expand {

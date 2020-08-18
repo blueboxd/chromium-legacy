@@ -171,12 +171,9 @@ class FrameData {
   base::TimeDelta GetTotalCpuUsage() const;
 
   // Records that the sticky user activation bit has been set on the frame.
-  // Cannot be unset.  Also records the page foreground duration at that time.
-  void SetReceivedUserActivation(base::TimeDelta foreground_duration);
-
-  // Get the unactivated duration for this frame.
-  base::TimeDelta pre_activation_foreground_duration() const {
-    return pre_activation_foreground_duration_;
+  // Cannot be unset.
+  void set_received_user_activation() {
+    user_activation_status_ = UserActivationStatus::kReceivedActivation;
   }
 
   // Updates the max frame depth of this frames tree given the newly seen child
@@ -306,9 +303,6 @@ class FrameData {
   base::TimeDelta cpu_by_activation_period_
       [static_cast<size_t>(UserActivationStatus::kMaxValue) + 1] = {
           base::TimeDelta(), base::TimeDelta()};
-
-  // Duration of time the page spent in the foreground before activation.
-  base::TimeDelta pre_activation_foreground_duration_;
 
   // The cpu time spent in the current window.
   base::TimeDelta cpu_total_for_current_window_;

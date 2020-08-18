@@ -374,12 +374,12 @@ void VideoCaptureDeviceFuchsia::ProcessNewFrame(
   base::TimeDelta timestamp =
       std::max(reference_time - start_time_, base::TimeDelta());
 
+  ++frames_received_;
   float frame_rate =
       (timestamp > base::TimeDelta())
           ? static_cast<float>(frames_received_) / timestamp.InSecondsF()
           : 0.0;
   VideoCaptureFormat capture_format(output_size, frame_rate, PIXEL_FORMAT_I420);
-  capture_format.pixel_format = PIXEL_FORMAT_I420;
 
   Client::Buffer buffer;
   Client::ReserveResult result = client_->ReserveOutputBuffer(

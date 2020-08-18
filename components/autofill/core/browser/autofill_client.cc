@@ -35,10 +35,6 @@ version_info::Channel AutofillClient::GetChannel() const {
   return version_info::Channel::UNKNOWN;
 }
 
-payments::AutofillOfferManager* AutofillClient::GetAutofillOfferManager() {
-  return nullptr;
-}
-
 std::string AutofillClient::GetPageLanguage() const {
   return std::string();
 }

@@ -319,6 +319,7 @@ void UkmPageLoadMetricsObserver::OnComplete(
     RecordInputTimingMetrics();
   }
   ReportLayoutStability();
+  ReportPerfectHeuristicsMetrics();
   ReportAbortMetrics(timing, current_time);
 }
 
@@ -877,6 +878,15 @@ void UkmPageLoadMetricsObserver::ReportLayoutStability() {
   }
 }
 
+void UkmPageLoadMetricsObserver::ReportPerfectHeuristicsMetrics() {
+  ukm::builders::PerfectHeuristics builder(GetDelegate().GetPageUkmSourceId());
+  if (!delay_async_script_execution_before_finished_parsing_seen_)
+    return;
+
+  builder.Setdelay_async_script_execution_before_finished_parsing(1).Record(
+      ukm::UkmRecorder::Get());
+}
+
 void UkmPageLoadMetricsObserver::ReportAbortMetrics(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     base::TimeTicks page_end_time) {
@@ -1143,5 +1153,11 @@ void UkmPageLoadMetricsObserver::OnLoadingBehaviorObserved(
   if (behavior_flag & blink::LoadingBehaviorFlag::
                           kLoadingBehaviorFontPreloadStartedBeforeRendering) {
     font_preload_started_before_rendering_observed_ = true;
+  }
+
+  if (behavior_flag &
+      blink::LoadingBehaviorFlag::
+          kLoadingBehaviorAsyncScriptReadyBeforeDocumentFinishedParsing) {
+    delay_async_script_execution_before_finished_parsing_seen_ = true;
   }
 }

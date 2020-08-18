@@ -609,6 +609,11 @@ void FeedStream::UploadAction(
     feedwire::FeedAction action,
     bool upload_now,
     base::OnceCallback<void(UploadActionsTask::Result)> callback) {
+  if (!delegate_->IsSignedIn()) {
+    DLOG(WARNING)
+        << "Called UploadActions while user is signed-out, dropping upload";
+    return;
+  }
   task_queue_.AddTask(std::make_unique<UploadActionsTask>(
       std::move(action), upload_now, this, std::move(callback)));
 }

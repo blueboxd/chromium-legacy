@@ -39,6 +39,10 @@
 
 namespace blink {
 
+void InputTypeView::WillBeDestroyed() {
+  will_be_destroyed_ = true;
+}
+
 InputTypeView::~InputTypeView() = default;
 
 void InputTypeView::Trace(Visitor* visitor) const {

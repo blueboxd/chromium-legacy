@@ -22,8 +22,8 @@ constexpr int32_t kTFLitePredictorEvaluationLoop = 10;
 
 namespace {
 
-// Returns the TFLitePredictor.
-machine_learning::TFLitePredictor* GetTFLitePredictorFromWebContents(
+// Returns the InProcessTFLitePredictor.
+machine_learning::InProcessTFLitePredictor* GetTFLitePredictorFromWebContents(
     content::WebContents* web_contents) {
   if (!web_contents)
     return nullptr;

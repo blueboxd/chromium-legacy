@@ -4885,6 +4885,51 @@ TEST_F(LegacySWPictureLayerImplTest, CloneMissingRecordings) {
   EXPECT_EQ(tile22, active_tiling->TileAt(2, 2)->id());
 }
 
+TEST_F(LegacySWPictureLayerImplTest,
+       DirectlyCompositedImageRasterSourceCoverage) {
+  gfx::Size tile_size(100, 100);
+  gfx::Size layer_bounds(400, 400);
+
+  scoped_refptr<FakeRasterSource> filled_raster_source =
+      FakeRasterSource::CreateFilled(layer_bounds);
+
+  scoped_refptr<FakeRasterSource> partial_raster_source =
+      FakeRasterSource::CreatePartiallyFilled(layer_bounds,
+                                              gfx::Rect(150, 150, 100, 100));
+
+  SetupPendingTreeWithFixedTileSize(filled_raster_source, tile_size, Region());
+  pending_layer()->SetDirectlyCompositedImageSize(layer_bounds);
+  ActivateTree();
+
+  PictureLayerTiling* pending_tiling = old_pending_layer()->HighResTiling();
+  PictureLayerTiling* active_tiling = active_layer()->HighResTiling();
+
+  // We should have all tiles on active, and none on pending.
+  EXPECT_EQ(0u, pending_tiling->AllTilesForTesting().size());
+  EXPECT_EQ(5u * 5u, active_tiling->AllTilesForTesting().size());
+
+  // Now put a partially-recorded raster source on the pending tree (and
+  // invalidate everything, since the main thread recording will invalidate
+  // dropped recordings). Because the layer is a directly composited image, all
+  // tiles should be created.
+  SetupPendingTreeWithFixedTileSize(partial_raster_source, tile_size,
+                                    Region(gfx::Rect(layer_bounds)));
+  EXPECT_EQ(5u * 5u, pending_tiling->AllTilesForTesting().size());
+
+  // Activate the tree. The same tiles should have been moved to active tree.
+  EXPECT_EQ(5u * 5u, pending_tiling->AllTilesForTesting().size());
+  Tile::Id tile00 = pending_tiling->TileAt(0, 0)->id();
+  Tile::Id tile11 = pending_tiling->TileAt(1, 1)->id();
+  Tile::Id tile22 = pending_tiling->TileAt(2, 2)->id();
+
+  // Activate the tree. The tiles are moved to the active tree.
+  ActivateTree();
+  EXPECT_EQ(5u * 5u, active_tiling->AllTilesForTesting().size());
+  EXPECT_EQ(tile00, active_tiling->TileAt(0, 0)->id());
+  EXPECT_EQ(tile11, active_tiling->TileAt(1, 1)->id());
+  EXPECT_EQ(tile22, active_tiling->TileAt(2, 2)->id());
+}
+
 TEST_F(LegacySWPictureLayerImplTest, ScrollPastLiveTilesRectAndBack) {
   host_impl()->AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(1));
 
@@ -4983,11 +5028,10 @@ TEST_F(LegacySWPictureLayerImplTest, UpdateLCDTextInvalidatesPendingTree) {
 
   pending_layer()->SetContentsOpaque(true);
   pending_layer()->UpdateTiles();
-  // Once we disable lcd text, we don't re-enable it.
-  EXPECT_FALSE(pending_layer()->can_use_lcd_text());
+  EXPECT_TRUE(pending_layer()->can_use_lcd_text());
   EXPECT_TRUE(pending_layer()->HighResTiling()->has_tiles());
   for (Tile* tile : pending_layer()->HighResTiling()->AllTilesForTesting())
-    EXPECT_FALSE(tile->can_use_lcd_text());
+    EXPECT_TRUE(tile->can_use_lcd_text());
 }
 
 TEST_F(LegacySWPictureLayerImplTest, UpdateLCDTextPushToActiveTree) {

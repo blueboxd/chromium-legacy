@@ -26,10 +26,11 @@ android_library("java") {
     "//third_party/android_deps:androidx_collection_collection_java",
     "//third_party/android_deps:androidx_core_core_java",
   ]
+  resources_package = "org.chromium.components.browser_ui.util"
 }
 
 android_resources("java_resources") {
-  custom_package = "org.chromium.components.browser_ui.util"
+  create_srcjar = false
   sources = []
   deps = [ "//components/browser_ui/strings/android:browser_ui_strings_grd" ]
 }

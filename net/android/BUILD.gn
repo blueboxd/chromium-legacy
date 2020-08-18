@@ -41,6 +41,7 @@ android_library("net_java") {
     ":net_android_java_enums_srcjar",
     ":net_errors_java",
   ]
+  resources_package = "org.chromium.native_test"
 }
 
 android_library("net_thread_stats_uid_java") {
@@ -166,7 +167,7 @@ android_resources("net_unittests_apk_resources") {
     "unittest_support/res/xml/dummy_spnego_account_preferences.xml",
     "unittest_support/res/xml/dummy_spnego_authenticator.xml",
   ]
-  custom_package = "org.chromium.native_test"
+  create_srcjar = false
 }
 
 android_library("net_javatests") {

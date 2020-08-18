@@ -651,11 +651,6 @@ const base::Feature kStoragePressureUI {
 const base::Feature kStorageServiceOutOfProcess{
     "StorageServiceOutOfProcess", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables the Storage Service sandbox whenever out-of-process Storage Service
-// is enabled.
-const base::Feature kStorageServiceSandbox{"StorageServiceSandbox",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Controls whether site isolation should use origins instead of scheme and
 // eTLD+1.
 const base::Feature kStrictOriginIsolation{"StrictOriginIsolation",

@@ -10,7 +10,7 @@ android_resources("customtabs_benchmark_apk_resources") {
     "res/layout/main.xml",
     "res/values/strings.xml",
   ]
-  custom_package = "org.chromium.customtabs.test"
+  create_srcjar = false
 }
 
 android_apk("customtabs_benchmark_apk") {

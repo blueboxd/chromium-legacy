@@ -489,6 +489,7 @@ if (enable_extensions) {
       "//content/test:test_support",
       "//extensions:extensions_resources",
       "//extensions/common/api",
+      "//tools/json_schema_compiler:generated_api_util",
 
       # TODO(brettw) these tests should not be including headers from browser.
       "//extensions:test_support",

@@ -4,23 +4,31 @@
 
 #include "ios/chrome/browser/discover_feed/discover_feed_service.h"
 
+#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/signin/authentication_service_factory.h"
+#include "ios/chrome/browser/signin/identity_manager_factory.h"
+#import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#import "ios/public/provider/chrome/browser/discover_feed/discover_feed_configuration.h"
 #import "ios/public/provider/chrome/browser/discover_feed/discover_feed_provider.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-DiscoverFeedService::DiscoverFeedService(
-    signin::IdentityManager* identity_manager,
-    AuthenticationService* authentication_service,
-    DiscoverFeedProvider* feed_provider)
-    : identity_manager_(identity_manager),
-      authentication_service_(authentication_service),
-      discover_feed_provider_(feed_provider) {
+DiscoverFeedService::DiscoverFeedService(ChromeBrowserState* browser_state) {
+  discover_feed_provider_ =
+      ios::GetChromeBrowserProvider()->GetDiscoverFeedProvider();
+  identity_manager_ = IdentityManagerFactory::GetForBrowserState(browser_state);
   if (identity_manager_) {
     identity_manager_->AddObserver(this);
   }
-  discover_feed_provider_->StartFeed(authentication_service_);
+
+  DiscoverFeedConfiguration* discover_config =
+      [[DiscoverFeedConfiguration alloc] init];
+  discover_config.browserState = browser_state;
+  // TODO(crbug.com/1085419): Send discover_config once downstream CL lands.
+  discover_feed_provider_->StartFeed(
+      AuthenticationServiceFactory::GetForBrowserState(browser_state));
 }
 
 DiscoverFeedService::~DiscoverFeedService() {}

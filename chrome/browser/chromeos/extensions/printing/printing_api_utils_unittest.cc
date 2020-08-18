@@ -134,7 +134,7 @@ TEST(PrintingApiUtilsTest, PrinterToIdl) {
   chromeos::Printer printer(kId);
   printer.set_display_name(kName);
   printer.set_description(kDescription);
-  printer.set_uri(kUri);
+  EXPECT_TRUE(printer.SetUri(kUri));
   printer.set_source(chromeos::Printer::SRC_POLICY);
 
   base::Optional<DefaultPrinterRules> default_printer_rules =

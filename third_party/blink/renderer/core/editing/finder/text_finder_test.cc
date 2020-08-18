@@ -34,8 +34,6 @@
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
-using blink::test::RunPendingTasks;
-
 namespace blink {
 
 class TextFinderTest : public testing::Test {
@@ -67,7 +65,7 @@ class TextFinderTest : public testing::Test {
 };
 
 class TextFinderSimTest : public SimTest {
- public:
+ protected:
   TextFinder& GetTextFinder() {
     return WebLocalFrameImpl::FromFrame(GetDocument().GetFrame())
         ->EnsureTextFinder();
@@ -743,7 +741,7 @@ TEST_F(TextFinderSimTest, BeforeMatchEventAsyncExpandHighlight) {
 
     <script>
       hiddenid.addEventListener('beforematch', () => {
-        setTimeout(() => {
+        requestAnimationFrame(() => {
           hiddenid.classList.remove('hidden');
         }, 0);
       });

@@ -60,7 +60,7 @@ import org.chromium.chrome.browser.feed.library.sharedstream.piet.PietEventLogge
 import org.chromium.chrome.browser.feed.library.sharedstream.publicapi.scroll.ScrollObservable;
 import org.chromium.chrome.browser.feed.shared.stream.Header;
 import org.chromium.chrome.browser.feed.shared.stream.Stream.ContentChangedListener;
-import org.chromium.chrome.feed.R;
+import org.chromium.chrome.R;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.util.Collections;

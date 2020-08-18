@@ -1469,9 +1469,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
       NavigationRequest* committing_navigation_request,
       std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params> params);
 
-  // Whether there's any "unload" event handlers registered on this frame or
-  // subframes that share the same SiteInstance as this frame.
-  bool UnloadHandlerExistsInSameSiteInstance();
+  // Whether there's any "unload" event handlers registered on this
+  // RenderFrameHost or subframes that share the same SiteInstance as this
+  // RenderFrameHost.
+  bool UnloadHandlerExistsInSameSiteInstanceSubtree();
 
   bool has_committed_any_navigation() const {
     return has_committed_any_navigation_;

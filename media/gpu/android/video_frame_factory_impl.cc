@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/android/android_image_reader_compat.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -19,6 +18,7 @@
 #include "gpu/command_buffer/service/abstract_texture.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/texture_owner.h"
+#include "gpu/config/gpu_finch_features.h"
 #include "media/base/android/media_codec_util.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/media_switches.h"
@@ -43,9 +43,7 @@ base::Optional<VideoFrameMetadata::CopyMode> GetVideoFrameCopyMode(
   if (!enable_threaded_texture_mailboxes)
     return base::nullopt;
 
-  const bool a_image_reader_supported =
-      base::android::AndroidImageReader::GetInstance().IsSupported();
-  if (a_image_reader_supported &&
+  if (features::IsAImageReaderEnabled() &&
       base::FeatureList::IsEnabled(media::kWebViewZeroCopyVideo) &&
       !media::MediaCodecUtil::LimitAImageReaderMaxSizeToOne()) {
     return VideoFrameMetadata::CopyMode::kCopyMailboxesOnly;
@@ -57,11 +55,8 @@ base::Optional<VideoFrameMetadata::CopyMode> GetVideoFrameCopyMode(
 gpu::TextureOwner::Mode GetTextureOwnerMode(
     VideoFrameFactory::OverlayMode overlay_mode,
     const base::Optional<VideoFrameMetadata::CopyMode>& copy_mode) {
-  const bool a_image_reader_supported =
-      base::android::AndroidImageReader::GetInstance().IsSupported();
-
   if (copy_mode == VideoFrameMetadata::kCopyMailboxesOnly) {
-    DCHECK(a_image_reader_supported &&
+    DCHECK(features::IsAImageReaderEnabled() &&
            base::FeatureList::IsEnabled(media::kWebViewZeroCopyVideo) &&
            !media::MediaCodecUtil::LimitAImageReaderMaxSizeToOne());
     return gpu::TextureOwner::Mode::kAImageReaderInsecureMultithreaded;
@@ -70,14 +65,14 @@ gpu::TextureOwner::Mode GetTextureOwnerMode(
   switch (overlay_mode) {
     case VideoFrameFactory::OverlayMode::kDontRequestPromotionHints:
     case VideoFrameFactory::OverlayMode::kRequestPromotionHints:
-      return a_image_reader_supported
+      return features::IsAImageReaderEnabled()
                  ? gpu::TextureOwner::Mode::kAImageReaderInsecure
                  : gpu::TextureOwner::Mode::kSurfaceTextureInsecure;
     case VideoFrameFactory::OverlayMode::kSurfaceControlSecure:
-      DCHECK(a_image_reader_supported);
+      DCHECK(features::IsAImageReaderEnabled());
       return gpu::TextureOwner::Mode::kAImageReaderSecureSurfaceControl;
     case VideoFrameFactory::OverlayMode::kSurfaceControlInsecure:
-      DCHECK(a_image_reader_supported);
+      DCHECK(features::IsAImageReaderEnabled());
       return gpu::TextureOwner::Mode::kAImageReaderInsecureSurfaceControl;
   }
 

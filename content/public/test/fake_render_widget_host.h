@@ -12,6 +12,7 @@
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/frame/intrinsic_sizing_info.mojom-forward.h"
+#include "third_party/blink/public/mojom/input/touch_event.mojom-forward.h"
 #include "third_party/blink/public/mojom/page/widget.mojom.h"
 #include "ui/base/ime/mojom/text_input_state.mojom.h"
 
@@ -36,7 +37,8 @@ class FakeRenderWidgetHost : public blink::mojom::FrameWidgetHost,
   void AnimateDoubleTapZoomInMainFrame(const gfx::Point& tap_point,
                                        const gfx::Rect& rect_to_zoom) override;
   void ZoomToFindInPageRectInMainFrame(const gfx::Rect& rect_to_zoom) override;
-  void SetHasTouchEventHandlers(bool has_handlers) override;
+  void SetHasTouchEventConsumers(
+      blink::mojom::TouchEventConsumersPtr consumers) override;
   void IntrinsicSizingInfoChanged(
       blink::mojom::IntrinsicSizingInfoPtr sizing_info) override;
   void AutoscrollStart(const gfx::PointF& position) override;

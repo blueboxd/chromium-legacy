@@ -8,7 +8,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 
-class AuthenticationService;
+class ChromeBrowserState;
 class DiscoverFeedProvider;
 
 // A browser-context keyed service that is used to keep the Discover Feed data
@@ -17,9 +17,7 @@ class DiscoverFeedService : public KeyedService,
                             public signin::IdentityManager::Observer {
  public:
   // Initializes the service.
-  DiscoverFeedService(signin::IdentityManager* identity_manager,
-                      AuthenticationService* authentication_service,
-                      DiscoverFeedProvider* feed_provider);
+  DiscoverFeedService(ChromeBrowserState* browser_state);
   ~DiscoverFeedService() override;
 
   // KeyedService:
@@ -34,9 +32,6 @@ class DiscoverFeedService : public KeyedService,
 
   // Identity manager to observe.
   signin::IdentityManager* identity_manager_;
-
-  // The AuthenticationService sent to DiscoverFeedProvider;
-  AuthenticationService* authentication_service_ = nullptr;
 
   // Discover Feed provider to notify of changes.
   DiscoverFeedProvider* discover_feed_provider_;

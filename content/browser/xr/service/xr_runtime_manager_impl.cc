@@ -15,7 +15,6 @@
 #include "base/memory/singleton.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/trace_event/common/trace_event_common.h"
-#include "build/build_config.h"
 #include "content/browser/xr/xr_utils.h"
 #include "content/public/browser/device_service.h"
 #include "content/public/browser/gpu_data_manager.h"
@@ -340,12 +339,24 @@ void XRRuntimeManagerImpl::MakeXrCompatible() {
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kUseAdapterLuid, luid_string);
 
+    // Store the current GPU so we can revert back once XR is no longer needed.
+    // If default_gpu_ is nonzero, we have already previously stored the
+    // default GPU and should not overwrite it.
+    if (default_gpu_.LowPart == 0 && default_gpu_.HighPart == 0) {
+      default_gpu_ = content::GpuDataManager::GetInstance()
+                         ->GetGPUInfo()
+                         .active_gpu()
+                         .luid;
+    }
+    xr_compatible_restarted_gpu_ = true;
+
     // Get notified when the new GPU process sends back its GPUInfo. This
     // indicates that the GPU process has finished initializing and the GPUInfo
     // contains the LUID of the active adapter.
     content::GpuDataManager::GetInstance()->AddObserver(this);
 
     content::KillGpuProcess();
+
     return;
 #else
     // MakeXrCompatible is not yet supported on other platforms so
@@ -408,6 +419,27 @@ XRRuntimeManagerImpl::~XRRuntimeManagerImpl() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   CHECK_EQ(g_xr_runtime_manager, this);
   g_xr_runtime_manager = nullptr;
+
+  // If a GPU adapter LUID was added to the command line to pass to the GPU
+  // process, remove the switch so subsequent GPU processes initialize on the
+  // default GPU.
+  if (xr_compatible_restarted_gpu_) {
+    base::CommandLine::ForCurrentProcess()->RemoveSwitch(
+        switches::kUseAdapterLuid);
+
+#if defined(OS_WIN)
+    // If we changed the GPU, revert it back to the default GPU. This is
+    // separate from xr_compatible_restarted_gpu_ because the GPU process may
+    // not have been successfully initialized using the specified GPU and is
+    // still on the default adapter.
+    LUID active_gpu =
+        content::GpuDataManager::GetInstance()->GetGPUInfo().active_gpu().luid;
+    if (active_gpu.LowPart != default_gpu_.LowPart ||
+        active_gpu.HighPart != default_gpu_.HighPart) {
+      content::KillGpuProcess();
+    }
+#endif
+  }
 }
 
 scoped_refptr<XRRuntimeManagerImpl> XRRuntimeManagerImpl::CreateInstance(

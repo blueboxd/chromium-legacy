@@ -2439,7 +2439,7 @@ gfx::Range OmniboxViewViews::GetSimplifiedDomainBounds(
     return gfx::Range(host.begin, host.end());
   }
 
-  size_t simplified_domain_pos = text.rfind(simplified_domain);
+  size_t simplified_domain_pos = text.rfind(simplified_domain, host.end());
   DCHECK_NE(simplified_domain_pos, std::string::npos);
   ranges_surrounding_simplified_domain->emplace_back(0, simplified_domain_pos);
   ranges_surrounding_simplified_domain->emplace_back(host.end(), text.size());

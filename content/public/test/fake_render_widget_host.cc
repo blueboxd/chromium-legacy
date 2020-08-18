@@ -5,6 +5,7 @@
 #include "content/public/test/fake_render_widget_host.h"
 
 #include "third_party/blink/public/mojom/frame/intrinsic_sizing_info.mojom.h"
+#include "third_party/blink/public/mojom/input/touch_event.mojom.h"
 
 namespace content {
 
@@ -39,7 +40,8 @@ void FakeRenderWidgetHost::AnimateDoubleTapZoomInMainFrame(
 void FakeRenderWidgetHost::ZoomToFindInPageRectInMainFrame(
     const gfx::Rect& rect_to_zoom) {}
 
-void FakeRenderWidgetHost::SetHasTouchEventHandlers(bool has_handlers) {}
+void FakeRenderWidgetHost::SetHasTouchEventConsumers(
+    blink::mojom::TouchEventConsumersPtr consumers) {}
 
 void FakeRenderWidgetHost::IntrinsicSizingInfoChanged(
     blink::mojom::IntrinsicSizingInfoPtr sizing_info) {}

@@ -14,7 +14,7 @@ TFLiteExperimentKeyedService::TFLiteExperimentKeyedService(
   if (!model_path)
     return;
 
-  predictor_ = std::make_unique<machine_learning::TFLitePredictor>(
+  predictor_ = std::make_unique<machine_learning::InProcessTFLitePredictor>(
       model_path.value(),
       tflite_experiment::switches::GetTFLitePredictorNumThreads());
   predictor_->Initialize();

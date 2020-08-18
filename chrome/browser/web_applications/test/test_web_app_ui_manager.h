@@ -17,6 +17,7 @@ class TestWebAppUiManager : public WebAppUiManager {
   TestWebAppUiManager();
   ~TestWebAppUiManager() override;
 
+  void SetSubsystems(AppRegistryController* app_registry_controller) override;
   void Start() override;
   void Shutdown() override;
 

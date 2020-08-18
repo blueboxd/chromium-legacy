@@ -18,21 +18,62 @@
 
 namespace {
 
-// Source of the shader to perform tonemapping.
-// TODO(https://crbug.com/1101041): This shader just does a copy for now.
+// Source of the shader to perform tonemapping. Note that the functions
+// ToLinearSRGB, ToLinearPQ, and ToLinearHLG are copy-pasted from the GLSL
+// shader source in gfx::ColorTransform.
+// TODO(https://crbug.com/1101041): Add non-identity tonemapping to the shader.
 const char* tonemapping_shader_source =
     "#include <metal_stdlib>\n"
     "#include <simd/simd.h>\n"
     "using metal::float2;\n"
+    "using metal::float3;\n"
     "using metal::float3x3;\n"
     "using metal::float4;\n"
     "using metal::sampler;\n"
     "using metal::texture2d;\n"
+    "using metal::abs;\n"
+    "using metal::exp;\n"
+    "using metal::max;\n"
+    "using metal::pow;\n"
+    "using metal::sign;\n"
     "\n"
     "typedef struct {\n"
     "    float4 clipSpacePosition [[position]];\n"
     "    float2 texcoord;\n"
     "} RasterizerData;\n"
+    "\n"
+    "float ToLinearSRGB(float v) {\n"
+    "  float abs_v = abs(v);\n"
+    "  float sgn_v = sign(v);\n"
+    "  if (abs_v < 0.0404482362771082f)\n"
+    "    return v/12.92f;\n"
+    "  else\n"
+    "    return sgn_v*pow((abs_v+0.055f)/1.055f, 2.4f);\n"
+    "}\n"
+    "\n"
+    "float ToLinearPQ(float v) {\n"
+    "  v = max(0.0f, v);\n"
+    "  constexpr float m1 = (2610.0 / 4096.0) / 4.0;\n"
+    "  constexpr float m2 = (2523.0 / 4096.0) * 128.0;\n"
+    "  constexpr float c1 = 3424.0 / 4096.0;\n"
+    "  constexpr float c2 = (2413.0 / 4096.0) * 32.0;\n"
+    "  constexpr float c3 = (2392.0 / 4096.0) * 32.0;\n"
+    "  float p = pow(v, 1.f / m2);\n"
+    "  v = pow(max(p - c1, 0.f) / (c2 - c3 * p), 1.f / m1);\n"
+    "  float sdr_white_level = 100.f;\n"
+    "  v *= 10000.f / sdr_white_level;\n"
+    "  return v;\n"
+    "}\n"
+    "\n"
+    "float ToLinearHLG(float v) {\n"
+    "  constexpr float a = 0.17883277;\n"
+    "  constexpr float b = 0.28466892;\n"
+    "  constexpr float c = 0.55991073;\n"
+    "  v = max(0.f, v);\n"
+    "  if (v <= 0.5f)\n"
+    "    return (v * 2.f) * (v * 2.f);\n"
+    "  return exp((v - c) / a) + b;\n"
+    "}\n"
     "\n"
     "vertex RasterizerData vertexShader(\n"
     "    uint vertexID [[vertex_id]],\n"
@@ -45,6 +86,10 @@ const char* tonemapping_shader_source =
     "  return out;\n"
     "}\n"
     "\n"
+    "float3 ToneMap(float3 v) {\n"
+    "  return v;\n"
+    "}\n"
+    "\n"
     "fragment float4 fragmentShader(RasterizerData in [[stage_in]],\n"
     "                               texture2d<float> t [[texture(0)]],\n"
     "                               constant float3x3& m [[buffer(0)]],\n"
@@ -52,8 +97,44 @@ const char* tonemapping_shader_source =
     "    constexpr sampler s(metal::mag_filter::nearest,\n"
     "                        metal::min_filter::nearest);\n"
     "    float4 color = t.sample(s, in.texcoord);\n"
+    "    switch (f) {\n"
+    "      case 1:\n"
+    "         color.x = ToLinearSRGB(color.x);\n"
+    "         color.y = ToLinearSRGB(color.y);\n"
+    "         color.z = ToLinearSRGB(color.z);\n"
+    "         break;\n"
+    "      case 2:\n"
+    "         color.x = ToLinearPQ(color.x);\n"
+    "         color.y = ToLinearPQ(color.y);\n"
+    "         color.z = ToLinearPQ(color.z);\n"
+    "         break;\n"
+    "      case 3:\n"
+    "         color.x = ToLinearHLG(color.x);\n"
+    "         color.y = ToLinearHLG(color.y);\n"
+    "         color.z = ToLinearHLG(color.z);\n"
+    "         break;\n"
+    "      default:\n"
+    "         break;\n"
+    "    }\n"
+    "    color.xyz = ToneMap(m * color.xyz);\n"
     "    return color;\n"
     "}\n";
+
+// Return the integer to use to specify a transfer function to the shader
+// defined in the above source. Return 0 if the transfer function is
+// unsupported.
+uint32_t GetTransferFunctionIndex(const gfx::ColorSpace& color_space) {
+  switch (color_space.GetTransferID()) {
+    case gfx::ColorSpace::TransferID::IEC61966_2_1_HDR:
+      return 1;
+    case gfx::ColorSpace::TransferID::SMPTEST2084:
+      return 2;
+    case gfx::ColorSpace::TransferID::ARIB_STD_B67:
+      return 3;
+    default:
+      return 0;
+  }
+}
 
 // Convert from an IOSurface's pixel format to a MTLPixelFormat. Crash on any
 // unsupported formats.
@@ -69,24 +150,6 @@ MTLPixelFormat IOSurfaceGetMTLPixelFormat(IOSurfaceRef buffer)
       break;
   }
   return MTLPixelFormatInvalid;
-}
-
-// Retrieve the named color space from an IOSurface and convert it to a
-// CGColorSpace. Return nullptr on failure.
-CGColorSpaceRef IOSurfaceCopyCGColorSpace(IOSurfaceRef buffer) {
-  base::ScopedCFTypeRef<CFTypeRef> color_space_value(
-      IOSurfaceCopyValue(buffer, CFSTR("IOSurfaceColorSpace")));
-  if (!color_space_value)
-    return nullptr;
-  CFStringRef color_space_string =
-      base::mac::CFCast<CFStringRef>(color_space_value);
-  if (!color_space_string)
-    return nullptr;
-  base::ScopedCFTypeRef<CGColorSpaceRef> color_space(
-      CGColorSpaceCreateWithName(color_space_string));
-  if (!color_space)
-    return nullptr;
-  return color_space.release();
 }
 
 base::scoped_nsprotocol<id<MTLRenderPipelineState>> CreateRenderPipelineState(
@@ -158,6 +221,9 @@ API_AVAILABLE(macos(10.15))
     [self setDevice:device];
     [self setOpaque:NO];
     [self setPresentsWithTransaction:YES];
+    [self setPixelFormat:MTLPixelFormatRGBA16Float];
+    [self setColorspace:CGColorSpaceCreateWithName(
+                            kCGColorSpaceExtendedLinearSRGB)];
   }
   return self;
 }
@@ -171,11 +237,6 @@ API_AVAILABLE(macos(10.15))
   if (mtl_format == MTLPixelFormatInvalid) {
     DLOG(ERROR) << "Unsupported IOSurface format.";
     return;
-  }
-  base::ScopedCFTypeRef<CGColorSpaceRef> cg_color_space(
-      IOSurfaceCopyCGColorSpace(buffer));
-  if (!cg_color_space) {
-    DLOG(ERROR) << "Unsupported IOSurface color space.";
   }
 
   // Migrate to the MTLDevice on which the CAMetalLayer is being composited, if
@@ -195,8 +256,6 @@ API_AVAILABLE(macos(10.15))
 
   // Update the layer's properties to match the IOSurface.
   [self setDrawableSize:CGSizeMake(width, height)];
-  [self setPixelFormat:MTLPixelFormatRGBA16Float];
-  [self setColorspace:cg_color_space];
 
   // Create a texture to wrap the IOSurface.
   base::scoped_nsprotocol<id<MTLTexture>> buffer_texture;
@@ -253,9 +312,31 @@ API_AVAILABLE(macos(10.15))
         simd::make_float2(1, 1), simd::make_float2(1, 1),
         simd::make_float2(1, 0), simd::make_float2(0, 0),
     };
-    simd::float3x3 matrix(simd::make_float3(1, 0, 0),
-                          simd::make_float3(0, 1, 0),
-                          simd::make_float3(0, 0, 1));
+
+    // The value of |transfer_function| corresponds to the value as used in
+    // the above shader source.
+    uint32_t transfer_function_index = GetTransferFunctionIndex(color_space);
+    DCHECK(transfer_function_index);
+
+    // Matrix is the primary transform matrix from |color_space| to sRGB.
+    simd::float3x3 matrix;
+    {
+      skcms_Matrix3x3 src_to_xyz;
+      skcms_Matrix3x3 srgb_to_xyz;
+      skcms_Matrix3x3 xyz_to_srgb;
+      color_space.GetPrimaryMatrix(&src_to_xyz);
+      gfx::ColorSpace::CreateSRGB().GetPrimaryMatrix(&srgb_to_xyz);
+      skcms_Matrix3x3_invert(&srgb_to_xyz, &xyz_to_srgb);
+      skcms_Matrix3x3 m = skcms_Matrix3x3_concat(&xyz_to_srgb, &src_to_xyz);
+      matrix = simd::float3x3(
+          simd::make_float3(m.vals[0][0], m.vals[1][0], m.vals[2][0]),
+          simd::make_float3(m.vals[0][1], m.vals[1][1], m.vals[2][1]),
+          simd::make_float3(m.vals[0][2], m.vals[1][2], m.vals[2][2]));
+    }
+
+    [encoder setFragmentBytes:&transfer_function_index
+                       length:sizeof(transfer_function_index)
+                      atIndex:1];
     [encoder setVertexBytes:positions length:sizeof(positions) atIndex:0];
     [encoder setFragmentBytes:&matrix length:sizeof(matrix) atIndex:0];
     [encoder drawPrimitives:MTLPrimitiveTypeTriangle
@@ -296,7 +377,7 @@ void UpdateHDRCopierLayer(CALayer* layer,
 bool ShouldUseHDRCopier(IOSurfaceRef buffer,
                         const gfx::ColorSpace& color_space) {
   if (@available(macos 10.15, *)) {
-    return color_space.IsHDR() &&
+    return GetTransferFunctionIndex(color_space) &&
            IOSurfaceGetMTLPixelFormat(buffer) != MTLPixelFormatInvalid;
   }
   return false;

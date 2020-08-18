@@ -9,6 +9,7 @@ js_type_check("closure_compile") {
   is_polymer3 = true
   deps = [
     ":viewer-bookmark",
+    ":viewer-document-outline",
     ":viewer-download-controls",
     ":viewer-error-screen",
     ":viewer-page-indicator",
@@ -37,6 +38,14 @@ js_library("viewer-bookmark") {
   deps = [
     "..:bookmark_type",
     "//third_party/polymer/v3_0/components-chromium/iron-a11y-keys-behavior",
+  ]
+}
+
+js_library("viewer-document-outline") {
+  deps = [
+    ":viewer-bookmark",
+    "..:bookmark_type",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
 }
 
@@ -99,6 +108,8 @@ js_library("viewer-password-screen") {
 
 js_library("viewer-pdf-sidenav") {
   deps = [
+    ":viewer-document-outline",
+    ":viewer-thumbnail-bar",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/cr_elements/cr_icon_button:cr_icon_button.m",
   ]
@@ -166,6 +177,7 @@ html_to_js("web_components") {
     "shared-vars.js",
     "shared-css.js",
     "viewer-bookmark.js",
+    "viewer-document-outline.js",
     "viewer-download-controls.js",
     "viewer-error-screen.js",
     "viewer-page-indicator.js",

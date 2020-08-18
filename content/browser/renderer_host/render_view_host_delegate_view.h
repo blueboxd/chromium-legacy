@@ -93,9 +93,9 @@ class CONTENT_EXPORT RenderViewHostDelegateView {
   // Returns true if the browser controls resize the renderer's view size.
   virtual bool DoBrowserControlsShrinkRendererSize() const;
 
-  // Returns true if the top controls should be pinned to the top of the page,
+  // Returns true if the top controls should only expand at the top of the page,
   // so they'll only be visible if the page is scrolled to the top.
-  virtual bool ShouldPinTopControlsToContentTop() const;
+  virtual bool OnlyExpandTopControlsAtPageTop() const;
 
   // Do post-event tasks for gesture events.
   virtual void GestureEventAck(const blink::WebGestureEvent& event,

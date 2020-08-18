@@ -25,6 +25,13 @@ DialogModelField::~DialogModelField() = default;
 DialogModelButton::Params::Params() = default;
 DialogModelButton::Params::~Params() = default;
 
+DialogModelButton::Params& DialogModelButton::Params::SetUniqueId(
+    int unique_id) {
+  DCHECK_GE(unique_id, 0);
+  unique_id_ = unique_id;
+  return *this;
+}
+
 DialogModelButton::Params& DialogModelButton::Params::AddAccelerator(
     Accelerator accelerator) {
   accelerators_.insert(std::move(accelerator));
@@ -53,6 +60,26 @@ void DialogModelButton::OnPressed(util::PassKey<DialogModelHost>,
                                   const Event& event) {
   callback_.Run(event);
 }
+
+DialogModelBodyText::Params& DialogModelBodyText::Params::SetIsSecondary() {
+  is_secondary_ = true;
+  return *this;
+}
+
+DialogModelBodyText::DialogModelBodyText(
+    util::PassKey<DialogModel> pass_key,
+    DialogModel* model,
+    base::string16 text,
+    const DialogModelBodyText::Params& params)
+    : DialogModelField(pass_key,
+                       model,
+                       kBodyText,
+                       -1,
+                       base::flat_set<Accelerator>()),
+      text_(std::move(text)),
+      is_secondary_(params.is_secondary_) {}
+
+DialogModelBodyText::~DialogModelBodyText() = default;
 
 DialogModelCombobox::Params::Params() = default;
 DialogModelCombobox::Params::~Params() = default;

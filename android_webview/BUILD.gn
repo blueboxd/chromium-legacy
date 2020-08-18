@@ -465,6 +465,7 @@ android_library("browser_java") {
     "java/src/org/chromium/android_webview/AwDataDirLock.java",
     "java/src/org/chromium/android_webview/AwDebug.java",
     "java/src/org/chromium/android_webview/AwDevToolsServer.java",
+    "java/src/org/chromium/android_webview/AwDisplayCutoutController.java",
     "java/src/org/chromium/android_webview/AwFeatureList.java",
     "java/src/org/chromium/android_webview/AwFormDatabase.java",
     "java/src/org/chromium/android_webview/AwGeolocationPermissions.java",
@@ -585,6 +586,8 @@ android_library("browser_java") {
     "//android_webview/browser:browser_enums",
     "//components/safe_browsing/core/db:sb_threat_values",
   ]
+
+  resources_package = "org.chromium.android_webview"
 }
 
 android_library("common_variations_java") {
@@ -880,7 +883,7 @@ android_resources("resources") {
     "java/res/drawable-xxhdpi/ic_play_circle_outline_black_48dp.png",
     "java/res/drawable-xxxhdpi/ic_play_circle_outline_black_48dp.png",
   ]
-  custom_package = "org.chromium.android_webview"
+  create_srcjar = false
   deps = [ ":strings_grd" ]
 }
 

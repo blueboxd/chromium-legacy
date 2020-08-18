@@ -19,6 +19,7 @@ class WebContents;
 
 namespace web_app {
 
+class AppRegistryController;
 // WebAppUiManagerImpl can be used only in UI code.
 class WebAppUiManagerImpl;
 
@@ -32,6 +33,8 @@ class WebAppUiManager {
 
   virtual ~WebAppUiManager() = default;
 
+  virtual void SetSubsystems(
+      AppRegistryController* app_registry_controller) = 0;
   virtual void Start() = 0;
   virtual void Shutdown() = 0;
 

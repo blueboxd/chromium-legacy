@@ -17,7 +17,7 @@ android_resources("java_resources") {
     "java/res/layout/translate_menu_item_checked.xml",
     "java/res/values/dimens.xml",
   ]
-  custom_package = "org.chromium.components.translate"
+  create_srcjar = false
   deps = [
     "//components/browser_ui/widget/android:java_resources",
     "//components/strings:components_strings_grd",
@@ -33,6 +33,7 @@ android_library("java") {
     "java/src/org/chromium/components/translate/TranslateTabContent.java",
     "java/src/org/chromium/components/translate/TranslateTabLayout.java",
   ]
+  resources_package = "org.chromium.components.translate"
   deps = [
     ":java_resources",
     "//base:base_java",

@@ -141,15 +141,27 @@ class CORE_EXPORT TextFinder final : public GarbageCollected<TextFinder> {
  private:
   // Context needed by asynchronous tasks used for beforematch and scrolling.
   struct AsyncScrollContext {
-    // Copy of parameters to Find() so that it can be called again later.
+    // Copy of parameters to FindInternal so that it can be called again later.
     int identifier;
     WebString search_text;
     mojom::blink::FindOptions options;
     bool wrap_within_frame;
+    Persistent<Range> first_match;
+    bool wrapped_around;
 
     // Range to fire beforematch on and scroll to.
     Persistent<Range> range;
   };
+
+  // Same as Find but with extra internal parameters used to track incremental
+  // attempts to scroll to the next match when the first/previous was hidden.
+  bool FindInternal(int identifier,
+                    const WebString& search_text,
+                    const mojom::blink::FindOptions& options,
+                    bool wrap_within_frame,
+                    bool* active_now = nullptr,
+                    Range* first_match = nullptr,
+                    bool wrapped_around = false);
 
   // Notifies the delegate about a new selection rect.
   void ReportFindInPageSelection(const gfx::Rect& selection_rect,

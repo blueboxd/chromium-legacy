@@ -36,6 +36,7 @@ static_library("content") {
     "payment_request_converter.h",
     "payment_request_spec.cc",
     "payment_request_spec.h",
+    "secure_payment_confirmation_view.h",
     "service_worker_payment_app.cc",
     "service_worker_payment_app.h",
     "service_worker_payment_app_factory.cc",
@@ -74,7 +75,9 @@ static_library("content") {
     sources += [ "android_app_communication_stub.cc" ]
   }
 
-  if (!is_android) {
+  if (is_android) {
+    sources += [ "secure_payment_confirmation_view_stub.cc" ]
+  } else {
     sources += [
       "content_payment_request_delegate.h",
       "payment_request.cc",

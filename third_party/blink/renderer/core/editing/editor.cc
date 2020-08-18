@@ -813,7 +813,8 @@ Range* Editor::FindRangeOfString(
     Document& document,
     const String& target,
     const EphemeralRangeInFlatTree& reference_range,
-    FindOptions options) {
+    FindOptions options,
+    bool* wrapped_around) {
   if (target.IsEmpty())
     return nullptr;
 
@@ -867,8 +868,11 @@ Range* Editor::FindRangeOfString(
     result_range = FindStringBetweenPositions(target, search_range, options);
   }
 
-  if (!result_range && options & kWrapAround)
+  if (!result_range && options & kWrapAround) {
+    if (wrapped_around)
+      *wrapped_around = true;
     return FindStringBetweenPositions(target, document_range, options);
+  }
 
   return result_range;
 }

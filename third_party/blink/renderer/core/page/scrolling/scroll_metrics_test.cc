@@ -129,10 +129,9 @@ TEST_F(NonCompositedMainThreadScrollingReasonRecordTest,
   SetUpHtml(R"HTML(
     <style>
      .box { overflow:scroll; width: 100px; height: 100px; }
-     .transform { transform: translateX(0.5px); }
      .spacer { height: 1000px; }
     </style>
-    <div id='box' class='transform box'>
+    <div id='box' class='box'>
      <div class='spacer'></div>
     </div>
   )HTML");
@@ -144,19 +143,16 @@ TEST_F(NonCompositedMainThreadScrollingReasonRecordTest,
 
   // Test touch scroll.
   Scroll(box, WebGestureDevice::kTouchscreen);
-  EXPECT_TOUCH_BUCKET(kHasTransformAndLCDText, 1);
   EXPECT_TOUCH_BUCKET(kNotOpaqueForTextAndLCDText, 1);
 
   Scroll(box, WebGestureDevice::kTouchscreen);
-  EXPECT_TOUCH_BUCKET(kHasTransformAndLCDText, 2);
   EXPECT_TOUCH_BUCKET(kNotOpaqueForTextAndLCDText, 2);
-  EXPECT_TOUCH_TOTAL(4);
+  EXPECT_TOUCH_TOTAL(2);
 
   // Test wheel scroll.
   Scroll(box, WebGestureDevice::kTouchpad);
-  EXPECT_WHEEL_BUCKET(kHasTransformAndLCDText, 1);
   EXPECT_WHEEL_BUCKET(kNotOpaqueForTextAndLCDText, 1);
-  EXPECT_WHEEL_TOTAL(2);
+  EXPECT_WHEEL_TOTAL(1);
 }
 
 TEST_F(NonCompositedMainThreadScrollingReasonRecordTest,
@@ -164,11 +160,10 @@ TEST_F(NonCompositedMainThreadScrollingReasonRecordTest,
   SetUpHtml(R"HTML(
     <style>
      .box { overflow:scroll; width: 100px; height: 100px; }
-     .transform { transform: scale(0.8); }
      .composited { will-change: transform; }
      .spacer { height: 1000px; }
     </style>
-    <div id='box' class='transform box'>
+    <div id='box' class='box'>
      <div class='spacer'></div>
     </div>
   )HTML");
@@ -181,9 +176,8 @@ TEST_F(NonCompositedMainThreadScrollingReasonRecordTest,
   HistogramTester histogram_tester;
 
   Scroll(box, WebGestureDevice::kTouchpad);
-  EXPECT_WHEEL_BUCKET(kHasTransformAndLCDText, 1);
   EXPECT_WHEEL_BUCKET(kNotOpaqueForTextAndLCDText, 1);
-  EXPECT_WHEEL_TOTAL(2);
+  EXPECT_WHEEL_TOTAL(1);
 
   box->setAttribute("class", "composited transform box");
   UpdateAllLifecyclePhases();
@@ -191,20 +185,18 @@ TEST_F(NonCompositedMainThreadScrollingReasonRecordTest,
   EXPECT_FALSE(ToLayoutBox(box->GetLayoutObject())
                    ->GetScrollableArea()
                    ->GetNonCompositedMainThreadScrollingReasons());
-  EXPECT_WHEEL_BUCKET(kHasTransformAndLCDText, 1);
   EXPECT_WHEEL_BUCKET(kNotOpaqueForTextAndLCDText, 1);
-  EXPECT_WHEEL_TOTAL(2);
+  EXPECT_WHEEL_TOTAL(1);
 }
 
 TEST_F(NonCompositedMainThreadScrollingReasonRecordTest,
        NotScrollableAreaTest) {
   SetUpHtml(R"HTML(
     <style>.box { overflow:scroll; width: 100px; height: 100px; }
-     .transform { transform: scale(0.8); }
      .hidden { overflow: hidden; }
      .spacer { height: 1000px; }
     </style>
-    <div id='box' class='transform box'>
+    <div id='box' class='box'>
      <div class='spacer'></div>
     </div>
   )HTML");
@@ -215,16 +207,14 @@ TEST_F(NonCompositedMainThreadScrollingReasonRecordTest,
   HistogramTester histogram_tester;
 
   Scroll(box, WebGestureDevice::kTouchpad);
-  EXPECT_WHEEL_BUCKET(kHasTransformAndLCDText, 1);
   EXPECT_WHEEL_BUCKET(kNotOpaqueForTextAndLCDText, 1);
-  EXPECT_WHEEL_TOTAL(2);
+  EXPECT_WHEEL_TOTAL(1);
 
   box->setAttribute("class", "hidden transform box");
   UpdateAllLifecyclePhases();
   Scroll(box, WebGestureDevice::kTouchpad);
-  EXPECT_WHEEL_BUCKET(kHasTransformAndLCDText, 1);
   EXPECT_WHEEL_BUCKET(kNotOpaqueForTextAndLCDText, 1);
-  EXPECT_WHEEL_TOTAL(2);
+  EXPECT_WHEEL_TOTAL(1);
 }
 
 TEST_F(NonCompositedMainThreadScrollingReasonRecordTest, NestedScrollersTest) {
@@ -232,13 +222,12 @@ TEST_F(NonCompositedMainThreadScrollingReasonRecordTest, NestedScrollersTest) {
     <style>
      .container { overflow:scroll; width: 200px; height: 200px; }
      .box { overflow:scroll; width: 100px; height: 100px; }
-     .transform { transform: scale(0.8); }
      .spacer { height: 1000px; }
      .composited { will-change: transform; }
     </style>
     <div id='container' class='container with-border-radius'>
       <div class='box'>
-        <div id='inner' class='composited transform box'>
+        <div id='inner' class='composited box'>
           <div class='spacer'></div>
         </div>
         <div class='spacer'></div>
@@ -259,7 +248,6 @@ TEST_F(NonCompositedMainThreadScrollingReasonRecordTest, NestedScrollersTest) {
   // inner box itself has no reason because it's composited. Other scrollable
   // areas from the chain have corresponding reasons.
   EXPECT_WHEEL_BUCKET(kNotOpaqueForTextAndLCDText, 1);
-  EXPECT_WHEEL_BUCKET(kHasTransformAndLCDText, 0);
   EXPECT_WHEEL_TOTAL(1);
 }
 

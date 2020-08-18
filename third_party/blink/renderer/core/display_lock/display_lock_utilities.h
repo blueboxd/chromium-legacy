@@ -110,6 +110,10 @@ class CORE_EXPORT DisplayLockUtilities {
   static const Element* NearestLockedInclusiveAncestor(const Node& node);
   static Element* NearestLockedInclusiveAncestor(Node& node);
 
+  // Returns the nearest inclusive ancestor of |element| that has
+  // content-visibility: hidden-matchable.
+  static Element* NearestHiddenMatchableInclusiveAncestor(Element& element);
+
   // Returns the nearest non-inclusive ancestor of |node| that is display
   // locked.
   static Element* NearestLockedExclusiveAncestor(const Node& node);

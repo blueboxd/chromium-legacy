@@ -18,9 +18,7 @@ LegacyDomStorageDatabase::LegacyDomStorageDatabase(
     const base::FilePath& file_path,
     std::unique_ptr<FilesystemProxy> filesystem_proxy)
     : file_path_(file_path), filesystem_proxy_(std::move(filesystem_proxy)) {
-  // Note: in normal use we should never get an empty backing path here.
-  // However, the unit test for this class can contruct an instance
-  // with an empty path.
+  DCHECK(!file_path_.empty());
   Init();
 }
 
@@ -167,22 +165,13 @@ bool LegacyDomStorageDatabase::LazyOpen(bool create_if_needed) {
   // (tiny amount of) problems that mmap() may cause.
   db_->set_mmap_disabled();
 
-  if (file_path_.empty()) {
-    // This code path should only be triggered by unit tests.
-    if (!db_->OpenInMemory()) {
-      NOTREACHED() << "Unable to open DOM storage database in memory.";
-      failed_to_open_ = true;
-      return false;
-    }
-  } else {
-    if (!db_->Open(file_path_)) {
-      LOG(ERROR) << "Unable to open DOM storage database at "
-                 << file_path_.value() << " error: " << db_->GetErrorMessage();
-      if (database_exists && !tried_to_recreate_)
-        return DeleteFileAndRecreate();
-      failed_to_open_ = true;
-      return false;
-    }
+  if (!db_->Open(file_path_)) {
+    LOG(ERROR) << "Unable to open DOM storage database at "
+               << file_path_.value() << " error: " << db_->GetErrorMessage();
+    if (database_exists && !tried_to_recreate_)
+      return DeleteFileAndRecreate();
+    failed_to_open_ = true;
+    return false;
   }
 
   // sql::Database uses UTF-8 encoding, but WebCore style databases use

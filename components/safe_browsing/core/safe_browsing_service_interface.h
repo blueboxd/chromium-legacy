@@ -7,7 +7,9 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 
 namespace safe_browsing {
 
@@ -30,6 +32,9 @@ class SafeBrowsingServiceInterface
 
   // Create an instance of the safe browsing service.
   static SafeBrowsingServiceInterface* CreateSafeBrowsingService();
+
+  virtual network::mojom::NetworkContext* GetNetworkContext(
+      content::BrowserContext* browser_context) = 0;
 
  protected:
   SafeBrowsingServiceInterface() {}

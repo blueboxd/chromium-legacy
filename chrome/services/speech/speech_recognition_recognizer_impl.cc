@@ -131,7 +131,7 @@ void SpeechRecognitionRecognizerImpl::SendAudioToSpeechRecognitionService(
       soda_client_->DidAudioPropertyChange(sample_rate, channel_count)) {
     // Initialize the SODA instance.
     auto api_key = google_apis::GetSodaAPIKey();
-    auto config_file_path = config_path_.value();
+    std::string config_file_path = config_path_.AsUTF8Unsafe();
     SodaConfig config;
     config.channel_count = channel_count;
     config.sample_rate = sample_rate;

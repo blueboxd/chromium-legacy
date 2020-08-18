@@ -60,13 +60,12 @@ NetworkInterface NetworkInterfaceFromAddress(
 
 NetworkChangeNotifier::ConnectionType ConvertConnectionType(
     const fuchsia::netstack::NetInterface& iface) {
-  auto wlan = static_cast<decltype(iface.features)>(
-      fuchsia::hardware::ethernet::INFO_FEATURE_WLAN);
   auto up =
       static_cast<decltype(iface.flags)>(fuchsia::netstack::NetInterfaceFlagUp);
   if ((iface.flags & up) != up) {
     return NetworkChangeNotifier::CONNECTION_NONE;
-  } else if ((iface.features & wlan) == wlan) {
+  } else if ((iface.features & fuchsia::hardware::ethernet::Features::WLAN) ==
+             fuchsia::hardware::ethernet::Features::WLAN) {
     return NetworkChangeNotifier::CONNECTION_WIFI;
   }
   return NetworkChangeNotifier::CONNECTION_UNKNOWN;
@@ -122,11 +121,11 @@ bool GetNetworkList(NetworkInterfaceList* networks, int policy) {
   }
 
   for (auto& interface : interfaces) {
-    auto loopback = static_cast<decltype(interface.features)>(
-        fuchsia::hardware::ethernet::INFO_FEATURE_LOOPBACK);
     if ((internal::ConvertConnectionType(interface) ==
          NetworkChangeNotifier::CONNECTION_NONE) ||
-        ((interface.features & loopback) == loopback)) {
+        (interface.features &
+         fuchsia::hardware::ethernet::Features::LOOPBACK) ==
+            fuchsia::hardware::ethernet::Features::LOOPBACK) {
       continue;
     }
 

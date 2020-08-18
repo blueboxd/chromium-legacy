@@ -40,8 +40,7 @@ class PolicyLoaderCommandLineTest : public ::testing::Test {
   }
 
   std::unique_ptr<PolicyLoaderCommandLine> CreatePolicyLoader() {
-    return std::make_unique<PolicyLoaderCommandLine>(
-        task_environment_.GetMainThreadTaskRunner(), command_line_);
+    return std::make_unique<PolicyLoaderCommandLine>(command_line_);
   }
 
  private:

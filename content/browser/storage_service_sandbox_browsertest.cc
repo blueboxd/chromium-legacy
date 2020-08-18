@@ -29,9 +29,7 @@ class StorageServiceSandboxBrowserTest : public ContentBrowserTest {
   StorageServiceSandboxBrowserTest() {
     // These tests only make sense when the service is running out-of-process
     // with sandboxing enabled.
-    feature_list_.InitWithFeatures({features::kStorageServiceOutOfProcess,
-                                    features::kStorageServiceSandbox},
-                                   {});
+    feature_list_.InitWithFeatures({features::kStorageServiceOutOfProcess}, {});
   }
 
   DOMStorageContextWrapper* dom_storage() {

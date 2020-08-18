@@ -63,15 +63,10 @@
 
           <!-- ChromeOS IME Mojo service and bindings. -->
           <include name="IDR_IME_SERVICE_BINDINGS_JS" file="extensions\chromeos_ime_service_bindings.js" type="BINDATA" />
-          <include name="IDR_IME_SERVICE_MOJOM_JS" file="${mojom_root}\chromeos\services\ime\public\mojom\input_engine.mojom.js" use_base_dir="false" type="BINDATA" />
-
-          <!-- Remote Apps bindings. -->
-          <include name="IDR_REMOTE_APPS_BINDINGS_JS" file="extensions\remote_apps\remote_apps_bindings.js" type="BINDATA" />
-          <include name="IDR_REMOTE_APPS_MOJOM_LITE_JS" file="${mojom_root}\chromeos\components\remote_apps\mojom\remote_apps.mojom-lite.js" use_base_dir="false" type="BINDATA" />
-          <include name="IDR_MOJO_URL_MOJOM_LITE_JS" file="${mojom_root}\url\mojom\url.mojom-lite.js" use_base_dir="false" type="BINDATA" />
+          <include name="IDR_IME_SERVICE_MOJOM_JS" file="${mojom_root}\chromeos/services/ime/public/mojom/input_engine.mojom.js" use_base_dir="false" type="BINDATA" />
 
           <include name="IDR_TTS_STREAM_BINDINGS_JS" file="extensions\chromeos_tts_stream_bindings.js" type="BINDATA" />
-          <include name="IDR_TTS_STREAM_MOJOM_JS" file="${mojom_root}\chromeos\services\tts\public\mojom\tts_service.mojom.js" use_base_dir="false" type="BINDATA" />
+          <include name="IDR_TTS_STREAM_MOJOM_JS" file="${mojom_root}\chromeos/services/tts/public/mojom/tts_service.mojom.js" use_base_dir="false" type="BINDATA" />
         </if>
         <!-- Media Router Mojo service and bindings. -->
         <include name="IDR_MEDIA_CONTROLLER_MOJOM_JS" file="${mojom_root}\chrome\common\media_router\mojom\media_controller.mojom.js" use_base_dir="false" type="BINDATA" />

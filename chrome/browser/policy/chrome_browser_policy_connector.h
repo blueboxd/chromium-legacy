@@ -85,6 +85,8 @@ class ChromeBrowserPolicyConnector : public BrowserPolicyConnector {
       nullptr;
 #endif
 
+  ConfigurationPolicyProvider* command_line_provider_ = nullptr;
+
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserPolicyConnector);
 };
 

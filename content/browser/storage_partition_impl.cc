@@ -174,44 +174,36 @@ mojo::Remote<storage::mojom::StorageService>& GetStorageServiceRemote() {
       GetStorageServiceRemoteStorage();
   if (!remote) {
 #if !defined(OS_ANDROID)
-    if (base::FeatureList::IsEnabled(features::kStorageServiceOutOfProcess)) {
-      const bool should_sandbox =
-          base::FeatureList::IsEnabled(features::kStorageServiceSandbox);
+    const bool oop_storage_enabled =
+        base::FeatureList::IsEnabled(features::kStorageServiceOutOfProcess);
+    const bool single_process_mode =
+        base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kSingleProcess);
+    if (oop_storage_enabled && !single_process_mode) {
       const base::FilePath sandboxed_data_dir =
           GetContentClient()
               ->browser()
               ->GetSandboxedStorageServiceDataDirectory();
-      const bool is_sandboxed = should_sandbox && !sandboxed_data_dir.empty();
-      if (should_sandbox && !is_sandboxed) {
-        DLOG(ERROR) << "Running unsandboxed Storage Service instance,because "
-                    << "the current ContentBrowserClient does not specify a "
-                    << "sandboxed data directory.";
-      }
+      DCHECK(!sandboxed_data_dir.empty())
+          << "Cannot run Storage Service out-of-process without a non-default "
+          << "implementation of "
+          << "ContentBrowserClient::GetSandboxedStorageServiceDataDirectory().";
       remote = ServiceProcessHost::Launch<storage::mojom::StorageService>(
           ServiceProcessHost::Options()
               .WithDisplayName("Storage Service")
               .Pass());
       remote.reset_on_disconnect();
 
-      if (is_sandboxed) {
-        // In sandboxed mode, provide the service with an API it can use to
-        // access filesystem contents *only* within the embedder's specified
-        // data directory.
-        const base::FilePath data_dir =
-            GetContentClient()
-                ->browser()
-                ->GetSandboxedStorageServiceDataDirectory();
-        DCHECK(!data_dir.empty())
-            << "Storage Service sandboxing requires a root data directory.";
-        mojo::PendingRemote<storage::mojom::Directory> directory;
-        base::ThreadPool::CreateSequencedTaskRunner(
-            {base::MayBlock(), base::TaskPriority::USER_VISIBLE})
-            ->PostTask(
-                FROM_HERE,
-                base::BindOnce(&BindStorageServiceFilesystemImpl, data_dir,
-                               directory.InitWithNewPipeAndPassReceiver()));
-        remote->SetDataDirectory(data_dir, std::move(directory));
-      }
+      // Provide the service with an API it can use to access filesystem
+      // contents *only* within the embedder's specified data directory.
+      mojo::PendingRemote<storage::mojom::Directory> directory;
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE})
+          ->PostTask(FROM_HERE,
+                     base::BindOnce(
+                         &BindStorageServiceFilesystemImpl, sandboxed_data_dir,
+                         directory.InitWithNewPipeAndPassReceiver()));
+      remote->SetDataDirectory(sandboxed_data_dir, std::move(directory));
     } else
 #endif  // !defined(OS_ANDROID)
     {

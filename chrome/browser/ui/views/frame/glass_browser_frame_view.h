@@ -47,7 +47,6 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   SkColor GetCaptionColor(BrowserFrameActiveState active_state) const override;
   void UpdateThrobber(bool running) override;
   gfx::Size GetMinimumSize() const override;
-  CaptionButtonContainer* GetCaptionButtonContainer() const override;
 
   // views::NonClientFrameView:
   gfx::Rect GetBoundsForClientView() const override;
@@ -162,11 +161,6 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   views::Label* window_title_ = nullptr;
 
   // The container holding the caption buttons (minimize, maximize, close, etc.)
-  //
-  // This is normally parented to the frame view, but in some modes (e.g. tablet
-  // mode on Windows) it is handed off to the browser view to be displayed in
-  // the client area.
-  //
   // May be null if the caption button container is destroyed before the frame
   // view. Always check for validity before using!
   GlassBrowserCaptionButtonContainer* caption_button_container_;

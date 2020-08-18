@@ -173,9 +173,9 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
     CompositingReasons direct_compositing_reasons = CompositingReason::kNone;
     CompositorElementId compositor_element_id;
     std::unique_ptr<CompositorStickyConstraint> sticky_constraint;
-    // If a frame is rooted at this node, this represents the element ID of the
-    // containing document.
-    CompositorElementId frame_element_id;
+    // If a visible frame is rooted at this node, this represents the element
+    // ID of the containing document.
+    CompositorElementId visible_frame_element_id;
 
     PaintPropertyChangeType ComputeChange(
         const State& other,
@@ -198,7 +198,7 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
           rendering_context_id != other.rendering_context_id ||
           compositor_element_id != other.compositor_element_id ||
           scroll != other.scroll || !StickyConstraintEquals(other) ||
-          frame_element_id != other.frame_element_id) {
+          visible_frame_element_id != other.visible_frame_element_id) {
         return PaintPropertyChangeType::kChangedOnlyValues;
       }
 
@@ -427,8 +427,8 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
     return state_.compositor_element_id;
   }
 
-  const CompositorElementId& GetFrameElementId() const {
-    return state_.frame_element_id;
+  const CompositorElementId& GetVisibleFrameElementId() const {
+    return state_.visible_frame_element_id;
   }
 
   bool IsFramePaintOffsetTranslation() const {

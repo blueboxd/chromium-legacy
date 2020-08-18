@@ -45,8 +45,6 @@ const char kConvertedFromUserScript[] = "converted_from_user_script";
 const char kCss[] = "css";
 const char kCtrlKey[] = "ctrlKey";
 const char kCurrentLocale[] = "current_locale";
-const char kDeclarativeNetRequestKey[] = "declarative_net_request";
-const char kDeclarativeRuleResourcesKey[] = "rule_resources";
 const char kDefaultLocale[] = "default_locale";
 const char kDescription[] = "description";
 const char kDevToolsPage[] = "devtools_page";
@@ -393,10 +391,6 @@ const char kInvalidCss[] =
     "Invalid value for 'content_scripts[*].css[*]'.";
 const char kInvalidCssList[] =
     "Required value 'content_scripts[*].css' is invalid.";
-const char kInvalidDeclarativeNetRequestKey[] = "Invalid value for '*' key";
-const char kInvalidDeclarativeRulesFileKey[] =
-    "Invalid value for '*.*' key. It must be a list containing Ruleset "
-    "dictionaries.";
 const char kInvalidDefaultLocale[] =
     "Invalid value for default locale - locale name must be a string.";
 const char kInvalidDescription[] =

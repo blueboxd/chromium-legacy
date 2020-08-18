@@ -59,13 +59,13 @@
 }
 
 - (UIAction*)actionToCopyURL:(const GURL)URL {
-  return
-      [self actionWithTitle:l10n_util::GetNSString(IDS_IOS_CONTENT_CONTEXT_COPY)
-                      image:[UIImage imageNamed:@"copy_link_url"]
-                       type:MenuActionType::Copy
-                      block:^{
-                        StoreURLInPasteboard(URL);
-                      }];
+  return [self
+      actionWithTitle:l10n_util::GetNSString(IDS_IOS_COPY_LINK_ACTION_TITLE)
+                image:[UIImage imageNamed:@"copy_link_url"]
+                 type:MenuActionType::Copy
+                block:^{
+                  StoreURLInPasteboard(URL);
+                }];
 }
 
 - (UIAction*)actionToShareWithBlock:(ProceduralBlock)block {

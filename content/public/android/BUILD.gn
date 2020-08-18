@@ -26,7 +26,7 @@ android_resources("content_java_resources") {
     ":content_strings_grd",
     "//ui/android:ui_java_resources",
   ]
-  custom_package = "org.chromium.content"
+  create_srcjar = false
   sources = [
     "java/res/drawable-hdpi/ic_menu_share_holo_light.png",
     "java/res/drawable-hdpi/ic_search.png",
@@ -114,7 +114,7 @@ android_library("content_java") {
     "//url:gurl_java",
     "//url:origin_java",
   ]
-
+  resources_package = "org.chromium.content"
   srcjar_deps = [
     ":common_aidl",
     ":content_public_android_java_enums_srcjar",
@@ -187,6 +187,7 @@ android_library("content_java") {
     "java/src/org/chromium/content/browser/accessibility/BrowserAccessibilityState.java",
     "java/src/org/chromium/content/browser/accessibility/OWebContentsAccessibility.java",
     "java/src/org/chromium/content/browser/accessibility/PieWebContentsAccessibility.java",
+    "java/src/org/chromium/content/browser/accessibility/RWebContentsAccessibility.java",
     "java/src/org/chromium/content/browser/accessibility/WebContentsAccessibilityImpl.java",
     "java/src/org/chromium/content/browser/accessibility/captioning/CaptioningBridge.java",
     "java/src/org/chromium/content/browser/accessibility/captioning/CaptioningChangeDelegate.java",
@@ -481,6 +482,7 @@ android_library("content_javatests") {
     "javatests/src/org/chromium/content/browser/ContentViewLocationTest.java",
     "javatests/src/org/chromium/content/browser/ContentViewPointerTypeTest.java",
     "javatests/src/org/chromium/content/browser/ContentViewScrollingTest.java",
+    "javatests/src/org/chromium/content/browser/CriteriaHelperTest.java",
     "javatests/src/org/chromium/content/browser/EncodeHtmlDataUriTest.java",
     "javatests/src/org/chromium/content/browser/GestureDetectorResetTest.java",
     "javatests/src/org/chromium/content/browser/GestureListenerManagerTest.java",
@@ -542,7 +544,6 @@ junit_binary("content_junit_tests") {
   sources = [
     "junit/src/org/chromium/content/browser/BindingManagerTest.java",
     "junit/src/org/chromium/content/browser/ChildProcessRankingTest.java",
-    "junit/src/org/chromium/content/browser/CriteriaHelperTest.java",
     "junit/src/org/chromium/content/browser/ScreenOrientationProviderImplTest.java",
     "junit/src/org/chromium/content/browser/SpareChildConnectionTest.java",
     "junit/src/org/chromium/content/browser/UiThreadTaskTraitsImplTest.java",

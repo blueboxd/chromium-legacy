@@ -6,7 +6,6 @@
 
 #include <string.h>
 
-#include "base/android/android_image_reader_compat.h"
 #include "base/android/scoped_hardware_buffer_fence_sync.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
@@ -48,11 +47,9 @@ std::unique_ptr<ui::ScopedMakeCurrent> MakeCurrent(
 }
 
 TextureOwner::Mode GetTextureOwnerMode() {
-  const bool a_image_reader_supported =
-      base::android::AndroidImageReader::GetInstance().IsSupported();
-
-  return a_image_reader_supported ? TextureOwner::Mode::kAImageReaderInsecure
-                                  : TextureOwner::Mode::kSurfaceTextureInsecure;
+  return features::IsAImageReaderEnabled()
+             ? TextureOwner::Mode::kAImageReaderInsecure
+             : TextureOwner::Mode::kSurfaceTextureInsecure;
 }
 
 }  // namespace

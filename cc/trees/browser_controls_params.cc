@@ -16,8 +16,8 @@ bool BrowserControlsParams::operator==(
              other.animate_browser_controls_height_changes &&
          browser_controls_shrink_blink_size ==
              other.browser_controls_shrink_blink_size &&
-         pin_top_controls_to_content_top ==
-             other.pin_top_controls_to_content_top;
+         only_expand_top_controls_at_page_top ==
+             other.only_expand_top_controls_at_page_top;
 }
 
 bool BrowserControlsParams::operator!=(

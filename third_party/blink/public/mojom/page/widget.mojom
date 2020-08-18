@@ -5,6 +5,7 @@
 module blink.mojom;
 
 import "cc/mojom/touch_action.mojom";
+import "third_party/blink/public/mojom/input/touch_event.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/text_direction.mojom";
 import "services/viz/public/mojom/compositing/local_surface_id_allocation.mojom";
@@ -109,8 +110,9 @@ interface FrameWidgetHost {
   // main-frame's widget for find-in-page zoom.
   ZoomToFindInPageRectInMainFrame(gfx.mojom.Rect rect_to_zoom);
 
-  // Notifies whether there are JavaScript touch event handlers or not.
-  SetHasTouchEventHandlers(bool has_handlers);
+  // Notifies what type of touch event consumers, if any, exist in the renderer,
+  // e.g. JavaScript touch event handlers or hit testable scrollbars.
+  SetHasTouchEventConsumers(TouchEventConsumers touch_event_consumers);
 
   // Sent by a widget to the browser to be used for SVGs inside of <object> and
   // not for iframes. Informs the browser that the current frame's intrinsic

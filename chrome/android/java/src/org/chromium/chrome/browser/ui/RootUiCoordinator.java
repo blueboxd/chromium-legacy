@@ -10,6 +10,7 @@ import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
@@ -39,6 +40,7 @@ import org.chromium.chrome.browser.findinpage.FindToolbar;
 import org.chromium.chrome.browser.findinpage.FindToolbarManager;
 import org.chromium.chrome.browser.findinpage.FindToolbarObserver;
 import org.chromium.chrome.browser.flags.ActivityType;
+import org.chromium.chrome.browser.fullscreen.BrowserControlsManager;
 import org.chromium.chrome.browser.identity_disc.IdentityDiscController;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.lifecycle.InflationObserver;
@@ -136,7 +138,7 @@ public class RootUiCoordinator
     private List<ButtonDataProvider> mButtonDataProviders;
     private IdentityDiscController mIdentityDiscController;
     private ChromeActionModeHandler mChromeActionModeHandler;
-    private ToolbarActionModeCallback mActionModeControllerCallback;
+    private final ToolbarActionModeCallback mActionModeControllerCallback;
     private ObservableSupplierImpl<Boolean> mOmniboxFocusStateSupplier =
             new ObservableSupplierImpl<>();
     protected final ObservableSupplier<Profile> mProfileSupplier;
@@ -145,6 +147,8 @@ public class RootUiCoordinator
     private BottomSheetObserver mContextualSearchSuppressor;
     private final Supplier<ContextualSearchManager> mContextualSearchManagerSupplier;
     protected final CallbackController mCallbackController;
+    @Nullable
+    private BrowserControlsManager mBrowserControlsManager;
 
     /**
      * Create a new {@link RootUiCoordinator} for the given activity.
@@ -187,6 +191,7 @@ public class RootUiCoordinator
         mBookmarkBridgeSupplier = bookmarkBridgeSupplier;
         mAppMenuSupplier = new ObservableSupplierImpl<>();
         mContextualSearchManagerSupplier = contextualSearchManagerSupplier;
+        mActionModeControllerCallback = new ToolbarActionModeCallback();
 
         mOmniboxFocusStateSupplier.set(false);
 
@@ -252,6 +257,11 @@ public class RootUiCoordinator
             }
             BottomSheetControllerFactory.detach(mBottomSheetController);
             mBottomSheetController.destroy();
+        }
+
+        if (mBrowserControlsManager != null) {
+            mBrowserControlsManager.destroy();
+            mBrowserControlsManager = null;
         }
 
         if (mButtonDataProviders != null) {
@@ -500,7 +510,6 @@ public class RootUiCoordinator
                     bottomToolbarVisibilitySupplier, mActivity.getLifecycleDispatcher(),
                     mActivity.getModalDialogManager());
             mButtonDataProviders = Arrays.asList(mIdentityDiscController, shareButtonController);
-            mActionModeControllerCallback = new ToolbarActionModeCallback();
             mToolbarManager = new ToolbarManager(mActivity, mActivity.getBrowserControlsManager(),
                     mActivity.getFullscreenManager(), toolbarContainer,
                     mActivity.getCompositorViewHolder().getInvalidator(), urlFocusChangedCallback,
@@ -659,6 +668,33 @@ public class RootUiCoordinator
     /** @return The {@link BottomSheetController} for this activity. */
     public ManagedBottomSheetController getBottomSheetController() {
         return mBottomSheetController;
+    }
+
+    /**
+     * Gets the browser controls manager, creates it unless already created.
+     */
+    @NonNull
+    public BrowserControlsManager getBrowserControlsManager() {
+        if (mBrowserControlsManager == null) {
+            // When finish()ing, getBrowserControlsManager() is required to perform cleanup logic.
+            // It should never be called when it results in creating a new manager though.
+            if (mActivity.isActivityFinishingOrDestroyed()) {
+                throw new IllegalStateException();
+            }
+            mBrowserControlsManager = createBrowserControlsManager();
+            assert mBrowserControlsManager != null;
+        }
+        return mBrowserControlsManager;
+    }
+
+    /**
+     * Create a browser controls manager to be used by ChromeActivity.
+     * Note: This may be called before native code is initialized.
+     * @return A {@link BrowserControlsManager} instance that's been created.
+     */
+    @NonNull
+    protected BrowserControlsManager createBrowserControlsManager() {
+        return new BrowserControlsManager(mActivity, BrowserControlsManager.ControlsPosition.TOP);
     }
 
     /** @return The {@link ScrimCoordinator} to control activity's primary scrim. */

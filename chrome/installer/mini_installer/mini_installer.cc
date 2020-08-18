@@ -103,6 +103,14 @@ void WriteInstallResults(const Configuration& configuration,
   }
 }
 
+// Writes the value |extra_code_1| into ExtraCode1 for reporting by Omaha.
+void WriteExtraCode1(const Configuration& configuration, DWORD extra_code_1) {
+  // Write the value in Chrome ClientState key.
+  RegKey key;
+  if (OpenInstallStateKey(configuration, &key))
+    key.WriteDWValue(kInstallerExtraCode1RegistryValue, extra_code_1);
+}
+
 // This function sets the flag in registry to indicate that Google Update
 // should try full installer next time. If the current installer works, this
 // flag is cleared by setup.exe at the end of install.
@@ -604,6 +612,38 @@ bool SetSecurityDescriptor(const wchar_t* path, PSECURITY_DESCRIPTOR* sd) {
   return result;
 }
 
+bool GetModuleDir(HMODULE module, PathString* directory) {
+  DWORD len = ::GetModuleFileName(module, directory->get(),
+                                  static_cast<DWORD>(directory->capacity()));
+  if (!len || len >= directory->capacity())
+    return false;  // Failed to get module path.
+
+  // Chop off the basename of the path.
+  wchar_t* name = GetNameFromPathExt(directory->get(), len);
+  if (name == directory->get())
+    return false;  // No path separator found.
+
+  *name = L'\0';
+
+  return true;
+}
+
+bool GetTempDir(PathString* directory, ProcessExitResult* exit_code) {
+  DWORD len = ::GetTempPath(static_cast<DWORD>(directory->capacity()),
+                            directory->get());
+  if (!len) {
+    *exit_code =
+        ProcessExitResult(UNABLE_TO_GET_WORK_DIRECTORY, ::GetLastError());
+    return false;
+  }
+  if (len >= directory->capacity()) {
+    *exit_code = ProcessExitResult(PATH_STRING_OVERFLOW);
+    return false;
+  }
+
+  return true;
+}
+
 // Creates a temporary directory under |base_path| and returns the full path
 // of created directory in |work_dir|. If successful return true, otherwise
 // false.  When successful, the returned |work_dir| will always have a trailing
@@ -677,31 +717,23 @@ bool CreateWorkDir(const wchar_t* base_path,
 
 // Creates and returns a temporary directory in |work_dir| that can be used to
 // extract mini_installer payload. |work_dir| ends with a path separator.
+// |used_fallback| is set to true if the %TMP% directory was used rather than
+// the directory containing |module|.
 bool GetWorkDir(HMODULE module,
                 PathString* work_dir,
+                bool* used_fallback,
                 ProcessExitResult* exit_code) {
   PathString base_path;
-  DWORD len =
-      ::GetTempPath(static_cast<DWORD>(base_path.capacity()), base_path.get());
-  if (!len || len >= base_path.capacity() ||
-      !CreateWorkDir(base_path.get(), work_dir, exit_code)) {
-    // Problem creating the work dir under TEMP path, so try using the
-    // current directory as the base path.
-    len = ::GetModuleFileName(module, base_path.get(),
-                              static_cast<DWORD>(base_path.capacity()));
-    if (len >= base_path.capacity() || !len)
-      return false;  // Can't even get current directory? Return an error.
 
-    wchar_t* name = GetNameFromPathExt(base_path.get(), len);
-    if (name == base_path.get())
-      return false;  // There was no directory in the string!  Bail out.
-
-    *name = L'\0';
-
-    *exit_code = ProcessExitResult(SUCCESS_EXIT_CODE);
-    return CreateWorkDir(base_path.get(), work_dir, exit_code);
+  // Try to create a directory next to the current module.
+  if (GetModuleDir(module, &base_path) &&
+      CreateWorkDir(base_path.get(), work_dir, exit_code)) {
+    return true;
   }
-  return true;
+
+  // Failing that, try to create one in the TMP directory.
+  return GetTempDir(&base_path, exit_code) &&
+         CreateWorkDir(base_path.get(), work_dir, exit_code);
 }
 
 // Returns true for ".." and "." directories.
@@ -798,12 +830,10 @@ void DeleteOldChromeTempDirectories() {
                   // and there are still some lying around.
   };
 
+  ProcessExitResult ignore(SUCCESS_EXIT_CODE);
   PathString temp;
-  // GetTempPath always returns a path with a trailing backslash.
-  DWORD len = ::GetTempPath(static_cast<DWORD>(temp.capacity()), temp.get());
-  // GetTempPath returns 0 or number of chars copied, not including the
-  // terminating '\0'.
-  if (!len || len >= temp.capacity())
+  // GetTempDir always returns a path with a trailing backslash.
+  if (!GetTempDir(&temp, &ignore))
     return;
 
   for (size_t i = 0; i < _countof(kDirectoryPrefixes); ++i) {
@@ -854,8 +884,9 @@ ProcessExitResult WMain(HMODULE module) {
     return exit_code;
 
   // First get a path where we can extract payload
+  bool work_dir_in_fallback = false;
   PathString base_path;
-  if (!GetWorkDir(module, &base_path, &exit_code))
+  if (!GetWorkDir(module, &base_path, &work_dir_in_fallback, &exit_code))
     return exit_code;
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -884,7 +915,23 @@ ProcessExitResult WMain(HMODULE module) {
     DeleteExtractedFiles(base_path.get(), archive_path.get(), setup_path.get());
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  WriteInstallResults(configuration, exit_code);
+  if (exit_code.IsSuccess()) {
+    // Send up a signal in ExtraCode1 upon successful install where the fallback
+    // work dir location was used. This means that GetWorkDir failed to create a
+    // temporary directory next to the executable (in a directory owned by
+    // Omaha) then succeeded to create one in %TMP% and ultimately resulted in
+    // a successful install/update. If we ~never see this signal, then we know
+    // that it's safe to remove the fallback code and associated cleanup. See
+    // https://crbug.com/516207 for more info.
+    // Pick two arbitrary values that should stand out obviously in queries.
+    constexpr DWORD kSucceededWithFallback = 0x1U << 16;
+    constexpr DWORD kSucceededWithoutFallback = 0x2U << 16;
+    WriteExtraCode1(configuration, work_dir_in_fallback
+                                       ? kSucceededWithFallback
+                                       : kSucceededWithoutFallback);
+  } else {
+    WriteInstallResults(configuration, exit_code);
+  }
 #endif
 
   return exit_code;

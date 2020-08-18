@@ -500,7 +500,8 @@ int PropertyTreeManager::EnsureCompositorTransformNode(
     }
   }
 
-  compositor_node.frame_element_id = transform_node.GetFrameElementId();
+  compositor_node.visible_frame_element_id =
+      transform_node.GetVisibleFrameElementId();
 
   // Attach the index of the nearest parent node associated with a frame.
   int parent_frame_id = kInvalidNodeId;

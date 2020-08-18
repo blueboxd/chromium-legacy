@@ -544,10 +544,14 @@ void FragmentPaintPropertyTreeBuilder::UpdatePaintOffsetTranslation(
         CompositingReason::kDirectReasonsForPaintOffsetTranslationProperty;
     state.rendering_context_id = context_.current.rendering_context_id;
     if (IsA<LayoutView>(object_)) {
+      DCHECK(object_.GetFrame());
       state.flags.is_frame_paint_offset_translation = true;
-      state.frame_element_id = CompositorElementIdFromUniqueObjectId(
-          DOMNodeIds::IdForNode(&object_.GetDocument()),
-          CompositorElementIdNamespace::kDOMNodeId);
+      state.visible_frame_element_id =
+          object_.GetFrame()->GetVisibleToHitTesting()
+              ? CompositorElementIdFromUniqueObjectId(
+                    DOMNodeIds::IdForNode(&object_.GetDocument()),
+                    CompositorElementIdNamespace::kDOMNodeId)
+              : cc::ElementId();
     }
     OnUpdate(properties_->UpdatePaintOffsetTranslation(
         *context_.current.transform, std::move(state)));

@@ -25,10 +25,8 @@
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/data_model/autofill_data_model.h"
-#include "components/autofill/core/browser/data_model/autofill_offer_data.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/payments/account_info_getter.h"
-#include "components/autofill/core/browser/payments/autofill_offer_manager.h"
 #include "components/autofill/core/browser/payments/local_card_migration_manager.h"
 #include "components/autofill/core/browser/payments/payments_request.h"
 #include "components/autofill/core/browser/payments/payments_service_url.h"
@@ -83,9 +81,6 @@ const char kMigrateCardsRequestPath[] =
     "?s7e_suffix=chromewallet";
 const char kMigrateCardsRequestFormat[] =
     "requestContentType=application/json; charset=utf-8&request=%s";
-
-const char kGetOfferDataRequestPath[] =
-    "payments/apis/chromepaymentsservice/getoffers";
 
 const char kTokenFetchId[] = "wallet_client";
 const char kPaymentsOAuth2Scope[] =
@@ -1013,109 +1008,6 @@ class MigrateCardsRequest : public PaymentsRequest {
   DISALLOW_COPY_AND_ASSIGN(MigrateCardsRequest);
 };
 
-class GetOfferDataRequest : public PaymentsRequest {
- public:
-  GetOfferDataRequest(
-      const std::string& app_locale,
-      base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
-                              const std::vector<AutofillOfferData>&)> callback)
-      : app_locale_(app_locale), callback_(std::move(callback)) {}
-  ~GetOfferDataRequest() override = default;
-  GetOfferDataRequest(const GetOfferDataRequest& other) = delete;
-  GetOfferDataRequest& operator=(const GetOfferDataRequest& other) = delete;
-
-  std::string GetRequestUrlPath() override { return kGetOfferDataRequestPath; }
-
-  std::string GetRequestContentType() override { return "application/json"; }
-
-  std::string GetRequestContent() override {
-    base::Value request_dict(base::Value::Type::DICTIONARY);
-    base::Value context(base::Value::Type::DICTIONARY);
-    context.SetKey("language_code", base::Value(app_locale_));
-    request_dict.SetKey("context", std::move(context));
-
-    std::string request_content;
-    base::JSONWriter::Write(request_dict, &request_content);
-    VLOG(3) << "getoffers request body: " << request_content;
-    return request_content;
-  }
-
-  void ParseResponse(const base::Value& response) override {
-    const auto* found_list =
-        response.FindKeyOfType("offer", base::Value::Type::LIST);
-    if (!found_list)
-      return;
-
-    std::vector<AutofillOfferData> offers;
-    for (const base::Value& result : found_list->GetList()) {
-      AutofillOfferData offer_data;
-      if (!result.is_dict() || !JsonToAutofillOfferData(result, offer_data))
-        continue;
-      offers.push_back(offer_data);
-    }
-    offers_.emplace(offers);
-  }
-
-  bool IsResponseComplete() override { return offers_.has_value(); }
-
-  void RespondToDelegate(AutofillClient::PaymentsRpcResult result) override {
-    std::move(callback_).Run(result, std::move(offers_.value()));
-  }
-
- private:
-  // Extract, validate, and assign all required fields.
-  bool JsonToAutofillOfferData(const base::Value& value,
-                               AutofillOfferData& result) {
-    const std::string* offer_id = value.FindStringKey("offer_id");
-    if (!offer_id || offer_id->empty())
-      return false;
-    result.offer_id = *offer_id;
-    const std::string* name = value.FindStringKey("name");
-    if (!name || name->empty())
-      return false;
-    result.name = base::UTF8ToUTF16(*name);
-    const std::string* description = value.FindStringKey("description");
-    result.description =
-        description ? base::UTF8ToUTF16(*description) : base::string16();
-    const std::string* expiry = value.FindStringKey("expiry");
-    int64_t expiry_value;
-    if (!expiry || !base::StringToInt64(*expiry, &expiry_value))
-      return false;
-    result.expiry = expiry_value;
-    const std::string* merchant_domain = value.FindStringKey("merchant_domain");
-    if (!merchant_domain || !GURL(*merchant_domain).is_valid())
-      return false;
-    result.merchant_domain = GURL(*merchant_domain);
-    const auto* eligible_instrument_id =
-        value.FindKeyOfType("eligible_instrument_id", base::Value::Type::LIST);
-    if (eligible_instrument_id) {
-      for (const base::Value& id : eligible_instrument_id->GetList()) {
-        if (!id.GetString().empty()) {
-          result.eligible_instrument_id.push_back(id.GetString());
-        }
-      }
-    }
-    const auto* eligible_legacy_instrument_id = value.FindKeyOfType(
-        "eligible_legacy_instrument_id", base::Value::Type::LIST);
-    if (eligible_legacy_instrument_id) {
-      for (const base::Value& id : eligible_legacy_instrument_id->GetList()) {
-        if (!id.GetString().empty()) {
-          result.eligible_legacy_instrument_id.push_back(id.GetString());
-        }
-      }
-    }
-    return result.eligible_instrument_id.size() +
-               result.eligible_legacy_instrument_id.size() >
-           0;
-  }
-
-  const std::string app_locale_;
-  base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
-                          const std::vector<AutofillOfferData>&)>
-      callback_;
-  base::Optional<std::vector<AutofillOfferData>> offers_;
-};
-
 }  // namespace
 
 const char PaymentsClient::kRecipientName[] = "recipient_name";
@@ -1305,15 +1197,6 @@ void PaymentsClient::MigrateCards(
       std::make_unique<MigrateCardsRequest>(
           request_details, migratable_credit_cards,
           account_info_getter_->IsSyncFeatureEnabled(), std::move(callback)),
-      /*authenticate=*/true);
-}
-
-void PaymentsClient::GetOfferData(
-    const std::string& app_locale,
-    base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
-                            const std::vector<AutofillOfferData>&)> callback) {
-  IssueRequest(
-      std::make_unique<GetOfferDataRequest>(app_locale, std::move(callback)),
       /*authenticate=*/true);
 }
 

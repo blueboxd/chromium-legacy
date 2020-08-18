@@ -5,35 +5,31 @@
 #ifndef COMPONENTS_POLICY_CORE_COMMON_POLICY_LOADER_COMMAND_LINE_H_
 #define COMPONENTS_POLICY_CORE_COMMON_POLICY_LOADER_COMMAND_LINE_H_
 
+#include <memory>
+
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
-#include "components/policy/core/common/async_policy_loader.h"
 #include "components/policy/policy_export.h"
 
-namespace base {
-class SequencedTaskRunner;
-}
-
 namespace policy {
+
+class PolicyBundle;
 
 // Loads policy value from command line switch for development and testing
 // purposes. It can be only used with strict limitation. For example, on
 // Android, the device must be rooted.
-class POLICY_EXPORT PolicyLoaderCommandLine : public AsyncPolicyLoader {
+class POLICY_EXPORT PolicyLoaderCommandLine {
  public:
-  PolicyLoaderCommandLine(scoped_refptr<base::SequencedTaskRunner> task_runner,
-                          const base::CommandLine& command_line);
+  explicit PolicyLoaderCommandLine(const base::CommandLine& command_line);
   PolicyLoaderCommandLine(const PolicyLoaderCommandLine&) = delete;
   PolicyLoaderCommandLine& operator=(const PolicyLoaderCommandLine&) = delete;
 
-  ~PolicyLoaderCommandLine() override;
+  ~PolicyLoaderCommandLine();
 
-  // AsumcPolicyLoader implementation.
-  void InitOnBackgroundThread() override;
-  std::unique_ptr<PolicyBundle> Load() override;
+  std::unique_ptr<PolicyBundle> Load();
 
  private:
-  const base::CommandLine command_line_;
+  const base::CommandLine& command_line_;
 };
 
 }  // namespace policy

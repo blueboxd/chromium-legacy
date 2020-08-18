@@ -517,9 +517,9 @@ bool WebContentsViewAndroid::DoBrowserControlsShrinkRendererSize() const {
          delegate->DoBrowserControlsShrinkRendererSize(web_contents_);
 }
 
-bool WebContentsViewAndroid::ShouldPinTopControlsToContentTop() const {
+bool WebContentsViewAndroid::OnlyExpandTopControlsAtPageTop() const {
   auto* delegate = web_contents_->GetDelegate();
-  return delegate && delegate->ShouldPinTopControlsToContentTop();
+  return delegate && delegate->OnlyExpandTopControlsAtPageTop();
 }
 
 bool WebContentsViewAndroid::OnTouchEvent(const ui::MotionEventAndroid& event) {

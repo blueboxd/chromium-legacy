@@ -932,10 +932,9 @@ class PDFExtensionContentSettingJSTest
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     PDFExtensionJSTest::SetUpCommandLine(command_line);
-    if (ShouldHonorJsContentSettings()) {
-      feature_list_.InitAndEnableFeature(
-          chrome_pdf::features::kPdfHonorJsContentSettings);
-    }
+    feature_list_.InitWithFeatureState(
+        chrome_pdf::features::kPdfHonorJsContentSettings,
+        ShouldHonorJsContentSettings());
   }
 
   bool ShouldHonorJsContentSettings() const { return GetParam(); }

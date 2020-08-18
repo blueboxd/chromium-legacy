@@ -440,7 +440,7 @@ void OverviewController::ToggleOverview(OverviewEnterExitType type) {
     // the overview immediately, so delaying blur start until start animations
     // finish looks janky.
     overview_wallpaper_controller_->Blur(
-        /*animate_only=*/new_type == OverviewEnterExitType::kFadeInEnter);
+        /*animate=*/new_type == OverviewEnterExitType::kFadeInEnter);
 
     // For app dragging, there are no start animations so add a delay to delay
     // animations observing when the start animation ends, such as the shelf,
@@ -508,7 +508,7 @@ void OverviewController::OnStartingAnimationComplete(bool canceled) {
   // so it doesn't have to be requested again on starting animation end.
   if (!canceled && overview_session_->enter_exit_overview_type() !=
                        OverviewEnterExitType::kFadeInEnter) {
-    overview_wallpaper_controller_->Blur(/*animate_only=*/true);
+    overview_wallpaper_controller_->Blur(/*animate=*/true);
   }
 
   for (auto& observer : observers_)

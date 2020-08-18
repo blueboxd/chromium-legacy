@@ -243,7 +243,7 @@ std::unique_ptr<NetworkChangeNotifier> NetworkChangeNotifier::CreateIfNeeded(
   return std::make_unique<NetworkChangeNotifierMac>();
 #elif defined(OS_FUCHSIA)
   return std::make_unique<NetworkChangeNotifierFuchsia>(
-      0 /* required_features */);
+      fuchsia::hardware::ethernet::Features());
 #else
   NOTIMPLEMENTED();
   return NULL;

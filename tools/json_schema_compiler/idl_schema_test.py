@@ -456,6 +456,22 @@ class IdlSchemaTest(unittest.TestCase):
       ])),
     ]), schema.get('properties'))
 
+  def testManifestKeys(self):
+    schema = self.idl_basics
+    self.assertEquals(
+        OrderedDict([('key_str',
+                      OrderedDict([('description', 'String manifest key.'),
+                                   ('jsexterns', None), ('name', 'key_str'),
+                                   ('type', 'string')])),
+                     ('key_ref',
+                      OrderedDict([('name', 'key_ref'),
+                                   ('$ref', 'MyType2')]))]),
+        schema.get('manifest_keys'))
+
+  def testNoManifestKeys(self):
+    schema = idl_schema.Load('test/idl_properties.idl')[0]
+    self.assertIsNone(schema.get('manifest_keys'))
+
 
 if __name__ == '__main__':
   unittest.main()

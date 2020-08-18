@@ -3,3 +3,9 @@ include_rules = [
   "+content/public/test",
   "+third_party/blink/public/common/associated_interfaces",
 ]
+
+specific_include_rules = {
+  ".*_test.cc": [
+    "+content/public/common",
+  ],
+}

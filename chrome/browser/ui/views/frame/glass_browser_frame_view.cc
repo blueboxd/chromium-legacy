@@ -231,11 +231,6 @@ gfx::Size GlassBrowserFrameView::GetMinimumSize() const {
   return min_size;
 }
 
-CaptionButtonContainer* GlassBrowserFrameView::GetCaptionButtonContainer()
-    const {
-  return caption_button_container_;
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // GlassBrowserFrameView, views::NonClientFrameView implementation:
 
@@ -407,7 +402,7 @@ void GlassBrowserFrameView::OnPaint(gfx::Canvas* canvas) {
 
 void GlassBrowserFrameView::Layout() {
   TRACE_EVENT0("views.frame", "GlassBrowserFrameView::Layout");
-  if (ShouldCustomDrawSystemTitlebar())
+  if (ShouldCustomDrawSystemTitlebar() || IsWebUITabStrip())
     LayoutCaptionButtons();
 
   if (ShouldCustomDrawSystemTitlebar())
@@ -426,8 +421,6 @@ int GlassBrowserFrameView::FrameBorderThickness() const {
 }
 
 int GlassBrowserFrameView::FrameTopBorderThickness(bool restored) const {
-  constexpr int kRestoredWebUITopBorder = 1;
-
   const bool is_fullscreen =
       (frame()->IsFullscreen() || IsMaximized()) && !restored;
   if (!is_fullscreen) {
@@ -437,8 +430,15 @@ int GlassBrowserFrameView::FrameTopBorderThickness(bool restored) const {
     // value.
     if (browser_view()->IsTabStripVisible())
       return drag_handle_padding_;
+
+    // There is no top border in tablet mode when the window is "restored"
+    // because it is still tiled into either the left or right pane of the
+    // display takes up the entire vertical extent of the screen. Note that a
+    // rendering bug in Windows may still cause the very top of the window to be
+    // cut off intermittently, but that's an OS issue that affects all
+    // applications, not specifically Chrome.
     if (IsWebUITabStrip())
-      return kRestoredWebUITopBorder;
+      return 0;
   }
 
   // Mouse and touch locations are floored but GetSystemMetricsInDIP is rounded,
@@ -472,10 +472,20 @@ int GlassBrowserFrameView::TopAreaHeight(bool restored) const {
   if (frame()->IsFullscreen() && !restored)
     return 0;
 
-  // Return only the top border thickness (no extra drag handle) if maximized or
-  // in WebUI tab strip (tablet) mode.
+  const bool maximized = IsMaximized() && !restored;
   int top = FrameTopBorderThickness(restored);
-  if ((IsMaximized() && !restored) || IsWebUITabStrip())
+  if (IsWebUITabStrip()) {
+    // Caption bar is default Windows size in maximized mode but full size when
+    // windows are tiled in tablet mode (baesd on behavior of first-party
+    // Windows applications).
+    top += maximized ? TitlebarMaximizedVisualHeight()
+                     : caption_button_container_->GetPreferredSize().height();
+    return top;
+  }
+
+  // In maximized mode, we do not add any additional thickness to the grab
+  // handle above the tabs; just return the frame thickness.
+  if (maximized)
     return top;
 
   // Besides the frame border, there's empty space atop the window in restored
@@ -506,10 +516,14 @@ int GlassBrowserFrameView::TitlebarMaximizedVisualHeight() const {
 int GlassBrowserFrameView::TitlebarHeight(bool restored) const {
   if (frame()->IsFullscreen() && !restored)
     return 0;
+
   // The titlebar's actual height is the same in restored and maximized, but
   // some of it is above the screen in maximized mode. See the comment in
-  // FrameTopBorderThicknessPx().
-  return TitlebarMaximizedVisualHeight() + FrameTopBorderThickness(false);
+  // FrameTopBorderThicknessPx(). For WebUI,
+  return (IsWebUITabStrip()
+              ? caption_button_container_->GetPreferredSize().height()
+              : TitlebarMaximizedVisualHeight()) +
+         FrameTopBorderThickness(false);
 }
 
 int GlassBrowserFrameView::WindowTopY() const {
@@ -517,7 +531,9 @@ int GlassBrowserFrameView::WindowTopY() const {
   // FrameTopBorderThickness()) and floor(system dsf) pixels when restored.
   // Unfortunately we can't represent either of those at hidpi without using
   // non-integral dips, so we return the closest reasonable values instead.
-  return IsMaximized() ? FrameTopBorderThickness(false) : 1;
+  if (IsMaximized())
+    return FrameTopBorderThickness(false);
+  return IsWebUITabStrip() ? FrameTopBorderThickness(true) : 1;
 }
 
 int GlassBrowserFrameView::MinimizeButtonX() const {
@@ -690,9 +706,14 @@ void GlassBrowserFrameView::LayoutCaptionButtons() {
 
   const gfx::Size preferred_size =
       caption_button_container_->GetPreferredSize();
+  int height = preferred_size.height();
+  // We use the standard caption bar height when maximized in tablet mode, which
+  // is smaller than our preferred button size.
+  if (IsWebUITabStrip() && IsMaximized())
+    height = std::min(height, TitlebarMaximizedVisualHeight());
   caption_button_container_->SetBounds(width() - preferred_size.width(),
                                        WindowTopY(), preferred_size.width(),
-                                       preferred_size.height());
+                                       height);
 }
 
 void GlassBrowserFrameView::LayoutClientView() {

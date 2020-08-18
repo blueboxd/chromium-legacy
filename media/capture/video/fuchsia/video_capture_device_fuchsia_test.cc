@@ -33,6 +33,7 @@ void ValidateReceivedFrame(const ReceivedFrame& frame,
                        (expected_size.height() + 1) & ~1);
   ASSERT_EQ(frame.format.frame_size, coded_size);
   EXPECT_EQ(frame.format.pixel_format, PIXEL_FORMAT_I420);
+  EXPECT_GT(frame.format.frame_rate, 0.0);
   EXPECT_EQ(frame.visible_rect, gfx::Rect(expected_size));
   EXPECT_EQ(frame.color_space, gfx::ColorSpace());
 
@@ -293,11 +294,13 @@ TEST_F(VideoCaptureDeviceFuchsiaTest, MultipleFrames) {
 
   EXPECT_TRUE(fake_device_watcher_.stream()->WaitBuffersAllocated());
 
+  auto start_timestamp = base::TimeTicks::Now();
+
   for (size_t i = 0; i < 10; ++i) {
     ASSERT_TRUE(fake_device_watcher_.stream()->WaitFreeBuffer());
 
     auto frame_timestamp =
-        base::TimeTicks() + base::TimeDelta::FromMilliseconds(i * 16);
+        start_timestamp + base::TimeDelta::FromMilliseconds(i * 16);
     fake_device_watcher_.stream()->ProduceFrame(frame_timestamp, i);
     client_->WaitFrame();
 

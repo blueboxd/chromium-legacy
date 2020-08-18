@@ -11,6 +11,7 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -30,9 +31,13 @@
 #include "components/infobars/core/infobar.h"
 #include "components/nacl/common/buildflags.h"
 #include "components/nacl/common/nacl_switches.h"
+#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/ppapi_test_utils.h"
+#include "content/public/test/test_renderer_host.h"
 #include "media/base/media_switches.h"
 #include "net/base/features.h"
 #include "net/base/filename_util.h"
@@ -40,6 +45,8 @@
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/test/test_data_directory.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
+#include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 #include "ui/gl/gl_switches.h"
 
 using content::RenderViewHost;
@@ -306,6 +313,49 @@ OutOfProcessPPAPITest::OutOfProcessPPAPITest() {
 void OutOfProcessPPAPITest::SetUpCommandLine(base::CommandLine* command_line) {
   PPAPITest::SetUpCommandLine(command_line);
   command_line->AppendSwitch(switches::kUseFakeUIForMediaStream);
+}
+
+// Send touch events to a plugin and expect the events to reach the renderer
+void OutOfProcessPPAPITest::RunTouchEventTest(const std::string& test_case) {
+  RunTest(test_case);
+  blink::SyntheticWebTouchEvent touchEvent;
+  touchEvent.PressPoint(5, 5);
+  RenderViewHost* rvh =
+      browser()->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost();
+  auto watcher = content::RenderViewHostTester::CreateInputWatcher(
+      rvh, blink::WebInputEvent::Type::kTouchStart);
+
+  // Wait for changes to be visible on the screen so that the touch event
+  // can be consumed by the renderer.
+  base::RunLoop run_loop;
+  browser()
+      ->tab_strip_model()
+      ->GetActiveWebContents()
+      ->GetMainFrame()
+      ->InsertVisualStateCallback(base::BindOnce(
+          [](base::OnceClosure quit_closure, bool result) {
+            EXPECT_TRUE(result);
+            std::move(quit_closure).Run();
+          },
+          run_loop.QuitClosure()));
+  run_loop.Run();
+
+  content::RenderViewHostTester::SendTouchEvent(rvh, &touchEvent);
+  touchEvent.ResetPoints();
+
+  blink::mojom::InputEventResultState result = watcher->WaitForAck();
+  blink::mojom::InputEventResultSource source =
+      watcher->last_event_ack_source();
+
+  // Verify the event reaches the renderer and an ack is received
+  EXPECT_EQ(blink::mojom::InputEventResultState::kConsumed, result);
+  EXPECT_NE(blink::mojom::InputEventResultSource::kBrowser, source);
+
+  touchEvent.ReleasePoint(0);
+  watcher = content::RenderViewHostTester::CreateInputWatcher(
+      rvh, blink::WebInputEvent::Type::kTouchEnd);
+  content::RenderViewHostTester::SendTouchEvent(rvh, &touchEvent);
+  watcher->WaitForAck();
 }
 
 void OutOfProcessPPAPIPrivateTest::SetUpCommandLine(

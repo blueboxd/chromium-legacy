@@ -7,8 +7,10 @@ package org.chromium.components.payments;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.Log;
 import org.chromium.components.autofill.EditableOption;
 import org.chromium.content_public.browser.RenderFrameHost;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsStatics;
 import org.chromium.mojo.system.MojoException;
 import org.chromium.payments.mojom.PayerDetail;
@@ -36,19 +38,20 @@ import java.util.List;
  * {@link ComponentPaymentRequestImpl#close()}, after which no usage is allowed.
  */
 public class ComponentPaymentRequestImpl {
+    private static final String TAG = "CompPaymentRequest";
     private static PaymentRequestServiceObserverForTest sObserverForTest;
     private static NativeObserverForTest sNativeObserverForTest;
     private final Runnable mOnClosedListener;
+    private final WebContents mWebContents;
+    private final JourneyLogger mJourneyLogger;
     private boolean mSkipUiForNonUrlPaymentMethodIdentifiers;
     private PaymentRequestLifecycleObserver mPaymentRequestLifecycleObserver;
     private boolean mHasClosed;
 
-    // After create(), mClient is null only when it has closed.
-    @Nullable
+    // mClient is null only when it has closed.
     private PaymentRequestClient mClient;
 
-    // After the constructor, mBrowserPaymentRequest is null only when it has closed.
-    @Nullable
+    // mBrowserPaymentRequest is null when it has closed or is uninitiated.
     private BrowserPaymentRequest mBrowserPaymentRequest;
 
     /**
@@ -173,11 +176,45 @@ public class ComponentPaymentRequestImpl {
         assert browserPaymentRequestFactory != null;
         assert onClosedListener != null;
 
-        ComponentPaymentRequestImpl instance = new ComponentPaymentRequestImpl(renderFrameHost,
-                isOffTheRecord, skipUiForBasicCard, browserPaymentRequestFactory, onClosedListener);
+        WebContents webContents = WebContentsStatics.fromRenderFrameHost(renderFrameHost);
+        if (webContents == null) {
+            abortBeforeInstantiation(client, /*journeyLogger=*/null, ErrorStrings.NO_WEB_CONTENTS,
+                    AbortReason.INVALID_DATA_FROM_RENDERER);
+            return null;
+        }
+
+        JourneyLogger journeyLogger = new JourneyLogger(isOffTheRecord, webContents);
+
+        if (client == null) {
+            abortBeforeInstantiation(/*client=*/null, journeyLogger, ErrorStrings.INVALID_STATE,
+                    AbortReason.INVALID_DATA_FROM_RENDERER);
+            return null;
+        }
+
+        if (!OriginSecurityChecker.isOriginSecure(webContents.getLastCommittedUrl())) {
+            abortBeforeInstantiation(client, journeyLogger, ErrorStrings.NOT_IN_A_SECURE_ORIGIN,
+                    AbortReason.INVALID_DATA_FROM_RENDERER);
+            return null;
+        }
+
+        if (methodData == null) {
+            abortBeforeInstantiation(client, journeyLogger,
+                    ErrorStrings.INVALID_PAYMENT_METHODS_OR_DATA,
+                    AbortReason.INVALID_DATA_FROM_RENDERER);
+            return null;
+        }
+
+        if (details == null) {
+            abortBeforeInstantiation(client, journeyLogger, ErrorStrings.INVALID_PAYMENT_DETAILS,
+                    AbortReason.INVALID_DATA_FROM_RENDERER);
+            return null;
+        }
+
+        ComponentPaymentRequestImpl instance = new ComponentPaymentRequestImpl(client,
+                renderFrameHost, webContents, journeyLogger, skipUiForBasicCard, onClosedListener);
         instance.onCreated();
-        boolean valid = instance.initAndValidate(
-                client, methodData, details, options, googlePayBridgeEligible);
+        boolean valid = instance.initAndValidate(renderFrameHost, browserPaymentRequestFactory,
+                methodData, details, options, googlePayBridgeEligible, isOffTheRecord);
         if (!valid) {
             instance.close();
             return null;
@@ -190,15 +227,27 @@ public class ComponentPaymentRequestImpl {
         sObserverForTest.onPaymentRequestCreated(this);
     }
 
-    private ComponentPaymentRequestImpl(RenderFrameHost renderFrameHost, boolean isOffTheRecord,
-            boolean skipUiForBasicCard, BrowserPaymentRequest.Factory browserPaymentRequestFactory,
-            Runnable onClosedListener) {
+    /** Abort the request, used before this class's instantiation. */
+    private static void abortBeforeInstantiation(@Nullable PaymentRequestClient client,
+            @Nullable JourneyLogger journeyLogger, String debugMessage, int reason) {
+        Log.d(TAG, debugMessage);
+        if (client != null) client.onError(reason, debugMessage);
+        if (journeyLogger != null) journeyLogger.setAborted(reason);
+        if (sNativeObserverForTest != null) sNativeObserverForTest.onConnectionTerminated();
+    }
+
+    private ComponentPaymentRequestImpl(PaymentRequestClient client,
+            RenderFrameHost renderFrameHost, WebContents webContents, JourneyLogger journeyLogger,
+            boolean skipUiForBasicCard, Runnable onClosedListener) {
+        assert client != null;
+        assert renderFrameHost != null;
+        assert webContents != null;
+        assert journeyLogger != null;
+
         mSkipUiForNonUrlPaymentMethodIdentifiers = skipUiForBasicCard;
-        JourneyLogger journeyLogger = new JourneyLogger(
-                isOffTheRecord, WebContentsStatics.fromRenderFrameHost(renderFrameHost));
-        mBrowserPaymentRequest = browserPaymentRequestFactory.createBrowserPaymentRequest(
-                renderFrameHost, this, isOffTheRecord, journeyLogger);
-        assert mBrowserPaymentRequest != null;
+        mClient = client;
+        mWebContents = webContents;
+        mJourneyLogger = journeyLogger;
         mOnClosedListener = onClosedListener;
         mHasClosed = false;
     }
@@ -219,24 +268,12 @@ public class ComponentPaymentRequestImpl {
         return sNativeObserverForTest;
     }
 
-    private boolean initAndValidate(@Nullable PaymentRequestClient client,
-            @Nullable PaymentMethodData[] methodData, @Nullable PaymentDetails details,
-            @Nullable PaymentOptions options, boolean googlePayBridgeEligible) {
-        if (client == null) {
-            abortForInvalidDataFromRenderer(ErrorStrings.INVALID_STATE);
-            return false;
-        }
-        mClient = client;
-        if (methodData == null) {
-            abortForInvalidDataFromRenderer(ErrorStrings.INVALID_PAYMENT_METHODS_OR_DATA);
-            return false;
-        }
-        if (details == null) {
-            abortForInvalidDataFromRenderer(ErrorStrings.INVALID_PAYMENT_DETAILS);
-            return false;
-        }
-
-        assert mBrowserPaymentRequest != null;
+    private boolean initAndValidate(RenderFrameHost renderFrameHost,
+            BrowserPaymentRequest.Factory factory, @Nullable PaymentMethodData[] methodData,
+            @Nullable PaymentDetails details, @Nullable PaymentOptions options,
+            boolean googlePayBridgeEligible, boolean isOffTheRecord) {
+        mBrowserPaymentRequest =
+                factory.createBrowserPaymentRequest(renderFrameHost, this, isOffTheRecord);
         return mBrowserPaymentRequest.initAndValidate(
                 methodData, details, options, googlePayBridgeEligible);
     }
@@ -327,7 +364,7 @@ public class ComponentPaymentRequestImpl {
         // Every caller should stop referencing this class once close() is called.
         assert mBrowserPaymentRequest != null;
 
-        mBrowserPaymentRequest.getJourneyLogger().setAborted(AbortReason.MOJO_RENDERER_CLOSING);
+        mJourneyLogger.setAborted(AbortReason.MOJO_RENDERER_CLOSING);
         close();
         if (sObserverForTest != null) {
             sObserverForTest.onRendererClosedMojoConnection();
@@ -346,7 +383,7 @@ public class ComponentPaymentRequestImpl {
         // Every caller should stop referencing this class once close() is called.
         assert mBrowserPaymentRequest != null;
 
-        mBrowserPaymentRequest.getJourneyLogger().setAborted(AbortReason.MOJO_CONNECTION_ERROR);
+        mJourneyLogger.setAborted(AbortReason.MOJO_CONNECTION_ERROR);
         close();
         if (sNativeObserverForTest != null) {
             sNativeObserverForTest.onConnectionTerminated();
@@ -361,8 +398,7 @@ public class ComponentPaymentRequestImpl {
         // Every caller should stop referencing this class once close() is called.
         assert mBrowserPaymentRequest != null;
 
-        mBrowserPaymentRequest.getJourneyLogger().setAborted(
-                AbortReason.INVALID_DATA_FROM_RENDERER);
+        mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
         mBrowserPaymentRequest.disconnectFromClientWithDebugMessage(debugMessage);
     }
 
@@ -515,5 +551,18 @@ public class ComponentPaymentRequestImpl {
         assert mClient != null;
 
         mClient.warnNoFavicon();
+    }
+
+    /**
+     * @return The logger of the user journey of the Android PaymentRequest service, cannot be
+     *         null.
+     */
+    public JourneyLogger getJourneyLogger() {
+        return mJourneyLogger;
+    }
+
+    /** @return The WebContents of the merchant's page, cannot be null. */
+    public WebContents getWebContents() {
+        return mWebContents;
     }
 }

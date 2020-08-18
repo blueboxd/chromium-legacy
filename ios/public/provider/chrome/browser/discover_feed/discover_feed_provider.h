@@ -10,6 +10,7 @@
 @protocol ApplicationCommands;
 class AuthenticationService;
 class Browser;
+@class DiscoverFeedConfiguration;
 
 // DiscoverFeedProvider allows embedders to provide functionality for a Discover
 // Feed.
@@ -34,7 +35,10 @@ class DiscoverFeedProvider {
   DiscoverFeedProvider(const DiscoverFeedProvider&) = delete;
   DiscoverFeedProvider& operator=(const DiscoverFeedProvider&) = delete;
 
-  // Starts the Feed using |auth_service| to check if user is Signed In/Out.
+  // Starts the Feed using |discover_config| which contains various configs for
+  // the Feed.
+  virtual void StartFeed(DiscoverFeedConfiguration* discover_config);
+  // DEPRECATED. Delete once this method has been deleted downstream.
   virtual void StartFeed(AuthenticationService* auth_service);
   // Returns true if the Discover Feed is enabled.
   virtual bool IsDiscoverFeedEnabled();

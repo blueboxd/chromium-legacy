@@ -92,7 +92,7 @@ class BrowserControlsContainerView extends FrameLayout {
 
     // Whether the controls should only expand when the page is scrolled to the top. Only used for
     // top controls.
-    private boolean mPinControlsToContentTop;
+    private boolean mOnlyExpandControlsAtPageTop;
 
     // Set to true if |mView| is hidden because the user has scrolled or triggered some action such
     // that mView is not visible. While |mView| is not visible if this is true, the bitmap from
@@ -259,8 +259,8 @@ class BrowserControlsContainerView extends FrameLayout {
      * Sets whether the controls should only expand at the top of the page contents.
      * Only valid for top controls.
      */
-    public void setPinControlsToContentTop(boolean pinToContentTop) {
-        mPinControlsToContentTop = pinToContentTop;
+    public void setOnlyExpandControlsAtPageTop(boolean onlyExpandControlsAtPageTop) {
+        mOnlyExpandControlsAtPageTop = onlyExpandControlsAtPageTop;
     }
 
     /**
@@ -439,8 +439,8 @@ class BrowserControlsContainerView extends FrameLayout {
     }
 
     @CalledByNative
-    private boolean shouldPinControlsToContentTop() {
-        return mPinControlsToContentTop;
+    private boolean onlyExpandControlsAtPageTop() {
+        return mOnlyExpandControlsAtPageTop;
     }
 
     @CalledByNative

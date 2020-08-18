@@ -358,6 +358,15 @@ namespace declarativeNetRequest {
     RequestDetails request;
   };
 
+  [nodoc]
+  dictionary DNRInfo {
+    Ruleset[] rule_resources;
+  };
+
+  dictionary ManifestKeys {
+    DNRInfo declarative_net_request;
+  };
+
   callback EmptyCallback = void();
   callback GetAllowedPagesCallback = void(DOMString[] result);
   callback GetRulesCallback = void(Rule[] rules);

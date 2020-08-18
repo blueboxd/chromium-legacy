@@ -164,6 +164,7 @@ dependencies {
 
     // Used by R8 to desugar library functions.
     compile "com.android.tools:desugar_jdk_libs:1.0.5"
+    compile "com.android.tools:desugar_jdk_libs_configuration:0.11.1"
 
     // buildCompile targets have supports_android = false.
     buildCompile "com.google.guava:guava:27.0.1-jre"

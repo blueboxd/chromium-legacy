@@ -114,6 +114,7 @@ enum class StatusCode : StatusCodeType {
   kVaapiUnsupportedFormat = 0x0000070A,
   kVaapiFailedToExportImage = 0x0000070B,
   kVaapiBadImageSize = 0x0000070C,
+  kVaapiNoTexture = 0x0000070D,
 
   // Special codes
   kGenericErrorPleaseRemove = 0x79999999,

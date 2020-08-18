@@ -94,7 +94,7 @@ import org.chromium.chrome.browser.feed.library.testing.shadows.ShadowRecycledVi
 import org.chromium.chrome.browser.feed.shared.stream.Header;
 import org.chromium.chrome.browser.feed.shared.stream.Stream.ContentChangedListener;
 import org.chromium.chrome.browser.feed.shared.stream.Stream.ScrollListener;
-import org.chromium.chrome.feed.R;
+import org.chromium.chrome.R;
 import org.chromium.components.feed.core.proto.libraries.api.internal.StreamDataProto.UiContext;
 import org.chromium.components.feed.core.proto.libraries.basicstream.internal.StreamSavedInstanceStateProto.StreamSavedInstanceState;
 import org.chromium.components.feed.core.proto.libraries.sharedstream.ScrollStateProto.ScrollState;

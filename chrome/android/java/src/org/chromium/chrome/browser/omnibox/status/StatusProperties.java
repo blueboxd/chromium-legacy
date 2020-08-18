@@ -25,9 +25,7 @@ import org.chromium.ui.modelutil.PropertyModel.WritableFloatPropertyKey;
 import org.chromium.ui.modelutil.PropertyModel.WritableIntPropertyKey;
 import org.chromium.ui.modelutil.PropertyModel.WritableObjectPropertyKey;
 
-/**
- * Model for the Status view.
- */
+/** Model properties for the Status. */
 class StatusProperties {
     // TODO(wylieb): Investigate the case where we only want to swap the tint (if any).
     /** Encapsulates an icon and tint to allow atomic drawable updates for StatusView. */
@@ -101,56 +99,67 @@ class StatusProperties {
         }
     }
 
-    /** Enables / disables animations. */
+    /** Whether animations are turned on. */
     static final WritableBooleanPropertyKey ANIMATIONS_ENABLED = new WritableBooleanPropertyKey();
 
-    /** Specifies the icon. */
-    static final WritableObjectPropertyKey<StatusIconResource> STATUS_ICON_RESOURCE =
-            new WritableObjectPropertyKey<>();
-
-    /** Specifies the icon alpha. */
-    static final WritableFloatPropertyKey STATUS_ICON_ALPHA = new WritableFloatPropertyKey();
-
-    /** Specifies if the icon should be shown or not. */
-    static final WritableBooleanPropertyKey SHOW_STATUS_ICON = new WritableBooleanPropertyKey();
-
-    /** Specifies accessibility string presented to user upon long click on security icon. */
-    public static final WritableIntPropertyKey STATUS_ICON_ACCESSIBILITY_TOAST_RES =
-            new WritableIntPropertyKey();
-
-    /** Specifies string resource holding content description for security icon. */
-    static final WritableIntPropertyKey STATUS_ICON_DESCRIPTION_RES = new WritableIntPropertyKey();
-
-    /** Specifies status separator color. */
-    static final WritableIntPropertyKey SEPARATOR_COLOR_RES = new WritableIntPropertyKey();
-
-    /** Specifies object to receive status click events. */
-    static final WritableObjectPropertyKey<View.OnClickListener> STATUS_CLICK_LISTENER =
-            new WritableObjectPropertyKey<>();
-
-    static final WritableIntPropertyKey VERBOSE_STATUS_TEXT_COLOR_RES =
-            new WritableIntPropertyKey();
-
-    /** Specifies content of the verbose status text field. */
-    static final WritableIntPropertyKey VERBOSE_STATUS_TEXT_STRING_RES =
-            new WritableIntPropertyKey();
-
-    /** Specifies whether verbose status text view is visible. */
-    static final WritableBooleanPropertyKey VERBOSE_STATUS_TEXT_VISIBLE =
-            new WritableBooleanPropertyKey();
-
-    /** Specifies width of the verbose status text view. */
-    static final WritableIntPropertyKey VERBOSE_STATUS_TEXT_WIDTH = new WritableIntPropertyKey();
-
-    /** Specifies whether the incognito badge is visible or not. */
+    /** Whether the incognito badge is visible. */
     static final WritableBooleanPropertyKey INCOGNITO_BADGE_VISIBLE =
             new WritableBooleanPropertyKey();
 
-    public static final PropertyKey[] ALL_KEYS = new PropertyKey[] {ANIMATIONS_ENABLED,
-            STATUS_ICON_ACCESSIBILITY_TOAST_RES, STATUS_ICON_RESOURCE, STATUS_ICON_ALPHA,
-            SHOW_STATUS_ICON, STATUS_ICON_DESCRIPTION_RES, SEPARATOR_COLOR_RES,
-            STATUS_CLICK_LISTENER, VERBOSE_STATUS_TEXT_COLOR_RES, VERBOSE_STATUS_TEXT_STRING_RES,
-            VERBOSE_STATUS_TEXT_VISIBLE, VERBOSE_STATUS_TEXT_WIDTH, INCOGNITO_BADGE_VISIBLE};
+    /** The status separator color. */
+    static final WritableIntPropertyKey SEPARATOR_COLOR_RES = new WritableIntPropertyKey();
+
+    /** Whether the icon is shown. */
+    static final WritableBooleanPropertyKey SHOW_STATUS_ICON = new WritableBooleanPropertyKey();
+
+    /** The handler of status click events. */
+    static final WritableObjectPropertyKey<View.OnClickListener> STATUS_CLICK_LISTENER =
+            new WritableObjectPropertyKey<>();
+
+    /** The accessibility string shown upon a long click on security icon. */
+    static final WritableIntPropertyKey STATUS_ICON_ACCESSIBILITY_TOAST_RES =
+            new WritableIntPropertyKey();
+
+    /** Alpha of the icon. */
+    static final WritableFloatPropertyKey STATUS_ICON_ALPHA = new WritableFloatPropertyKey();
+
+    /** The string resource used for the description for security icon. */
+    static final WritableIntPropertyKey STATUS_ICON_DESCRIPTION_RES = new WritableIntPropertyKey();
+
+    /** The icon resource. */
+    static final WritableObjectPropertyKey<StatusIconResource> STATUS_ICON_RESOURCE =
+            new WritableObjectPropertyKey<>();
+
+    /** Text color of the verbose status text field. */
+    static final WritableIntPropertyKey VERBOSE_STATUS_TEXT_COLOR_RES =
+            new WritableIntPropertyKey();
+
+    /** The string resource used for the content of the verbose status text field. */
+    static final WritableIntPropertyKey VERBOSE_STATUS_TEXT_STRING_RES =
+            new WritableIntPropertyKey();
+
+    /** Whether verbose status text field is visible. */
+    static final WritableBooleanPropertyKey VERBOSE_STATUS_TEXT_VISIBLE =
+            new WritableBooleanPropertyKey();
+
+    /** Specifies width of the verbose status text field. */
+    static final WritableIntPropertyKey VERBOSE_STATUS_TEXT_WIDTH = new WritableIntPropertyKey();
+
+    static final PropertyKey[] ALL_KEYS = new PropertyKey[] {
+            ANIMATIONS_ENABLED,
+            INCOGNITO_BADGE_VISIBLE,
+            SEPARATOR_COLOR_RES,
+            SHOW_STATUS_ICON,
+            STATUS_CLICK_LISTENER,
+            STATUS_ICON_ACCESSIBILITY_TOAST_RES,
+            STATUS_ICON_ALPHA,
+            STATUS_ICON_DESCRIPTION_RES,
+            STATUS_ICON_RESOURCE,
+            VERBOSE_STATUS_TEXT_COLOR_RES,
+            VERBOSE_STATUS_TEXT_STRING_RES,
+            VERBOSE_STATUS_TEXT_VISIBLE,
+            VERBOSE_STATUS_TEXT_WIDTH,
+    };
 
     private StatusProperties() {}
 }

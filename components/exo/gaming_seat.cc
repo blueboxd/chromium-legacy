@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "components/exo/gamepad.h"
 #include "components/exo/gamepad_delegate.h"
 #include "components/exo/gaming_seat_delegate.h"
 #include "components/exo/shell_surface_util.h"
@@ -27,9 +28,6 @@ GamingSeat::~GamingSeat() {
   if (focused_)
     ui::GamepadProviderOzone::GetInstance()->RemoveGamepadObserver(this);
   delegate_->OnGamingSeatDestroying(this);
-  // Disconnect all the gamepads.
-  for (auto& entry : gamepads_)
-    entry.second->OnRemoved();
 
   WMHelper::GetInstance()->RemoveFocusObserver(this);
 }
@@ -55,8 +53,12 @@ void GamingSeat::OnWindowFocused(aura::Window* gained_focus,
     if (focused) {
       ui::GamepadProviderOzone::GetInstance()->AddGamepadObserver(this);
       OnGamepadDevicesUpdated();
+      for (auto& entry : gamepads_)
+        entry.second->OnGamepadFocused();
     } else {
       ui::GamepadProviderOzone::GetInstance()->RemoveGamepadObserver(this);
+      for (auto& entry : gamepads_)
+        entry.second->OnGamepadFocusLost();
     }
   }
 }
@@ -68,25 +70,26 @@ void GamingSeat::OnGamepadDevicesUpdated() {
   std::vector<ui::GamepadDevice> gamepad_devices =
       ui::GamepadProviderOzone::GetInstance()->GetGamepadDevices();
 
-  base::flat_map<int, GamepadDelegate*> new_gamepads;
+  base::flat_map<int, std::unique_ptr<Gamepad>> new_gamepads;
 
   // Copy the "still connected gamepads".
   for (auto& device : gamepad_devices) {
     auto it = gamepads_.find(device.id);
     if (it != gamepads_.end()) {
-      new_gamepads[device.id] = it->second;
+      new_gamepads[device.id] = std::move(it->second);
       gamepads_.erase(it);
     }
   }
 
-  // Remove each disconected gamepad.
-  for (auto& entry : gamepads_)
-    entry.second->OnRemoved();
-
   // Add each new connected gamepad.
   for (auto& device : gamepad_devices) {
-    if (new_gamepads.find(device.id) == new_gamepads.end())
-      new_gamepads[device.id] = delegate_->GamepadAdded(device);
+    if (new_gamepads.find(device.id) == new_gamepads.end()) {
+      std::unique_ptr<Gamepad> gamepad = std::make_unique<Gamepad>(device);
+      if (focused_)
+        gamepad->OnGamepadFocused();
+      delegate_->GamepadAdded(*gamepad);
+      new_gamepads[device.id] = std::move(gamepad);
+    }
   }
 
   new_gamepads.swap(gamepads_);
@@ -97,17 +100,7 @@ void GamingSeat::OnGamepadEvent(const ui::GamepadEvent& event) {
   if (it == gamepads_.end())
     return;
 
-  switch (event.type()) {
-    case ui::GamepadEventType::BUTTON:
-      it->second->OnButton(event.code(), event.value(), event.timestamp());
-      break;
-    case ui::GamepadEventType::AXIS:
-      it->second->OnAxis(event.code(), event.value(), event.timestamp());
-      break;
-    case ui::GamepadEventType::FRAME:
-      it->second->OnFrame(event.timestamp());
-      break;
-  }
+  it->second->OnGamepadEvent(event);
 }
 
 }  // namespace exo

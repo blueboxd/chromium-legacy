@@ -426,7 +426,8 @@ void FileInputType::FilesChosen(FileChooserFileInfoList files,
     }
     ++i;
   }
-  SetFilesAndDispatchEvents(CreateFileList(files, base_dir));
+  if (!will_be_destroyed_)
+    SetFilesAndDispatchEvents(CreateFileList(files, base_dir));
   if (HasConnectedFileChooser())
     DisconnectFileChooser();
 }

@@ -62,7 +62,7 @@ android_resources("java_resources") {
     "java/res/values/styles.xml",
     "java/res/xml/page_info_cookie_preference.xml",
   ]
-  custom_package = "org.chromium.components.page_info"
+  create_srcjar = false
   deps = [
     "//components/browser_ui/strings/android:browser_ui_strings_grd",
     "//components/permissions/android:java_resources",
@@ -126,6 +126,7 @@ android_library("java") {
     "//url:gurl_java",
   ]
 
+  resources_package = "org.chromium.components.page_info"
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 }
 

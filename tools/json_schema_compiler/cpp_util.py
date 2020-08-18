@@ -123,11 +123,20 @@ def CloseNamespace(cpp_namespace):
   return c
 
 
+# TODO(karandeepb): Rename to FeatureNameToConstantName.
 def ConstantName(feature_name):
   """Returns a kName for a feature's name.
   """
   return ('k' + ''.join(word[0].upper() + word[1:]
       for word in feature_name.replace('.', ' ').split()))
+
+
+def UnixNameToConstantName(unix_name):
+  # type (str) -> str
+  """Converts unix_name to kUnixName.
+  """
+  return ('k' + ''.join(word[0].upper() + word[1:]
+      for word in unix_name.split('_')))
 
 
 def CamelCase(unix_name):

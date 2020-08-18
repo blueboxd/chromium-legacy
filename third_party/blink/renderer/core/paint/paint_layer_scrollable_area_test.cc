@@ -437,11 +437,10 @@ TEST_P(PaintLayerScrollableAreaTest, OpaqueLayersPromotedOnStyleChange) {
     EXPECT_TRUE(GraphicsLayerContentsOpaque(scroller->GetLayoutObject()));
 }
 
-// Tests that a transform on the scroller or an ancestor (pre-CAP only) will
-// prevent promotion.
-// TODO(flackr): Allow integer transforms as long as all of the ancestor
-// transforms are also integer.
-TEST_P(PaintLayerScrollableAreaTest, OnlyNonTransformedOpaqueLayersPromoted) {
+// Tests that a transform on the scroller or an ancestor doesn't prevent
+// promotion.
+TEST_P(PaintLayerScrollableAreaTest,
+       TransformDoesNotPreventCompositedScrolling) {
   SetBodyInnerHTML(R"HTML(
     <style>
     #scroller { overflow: scroll; height: 200px; width: 200px; background:
@@ -462,12 +461,7 @@ TEST_P(PaintLayerScrollableAreaTest, OnlyNonTransformedOpaqueLayersPromoted) {
   // Change the parent to have a transform.
   parent->setAttribute(html_names::kStyleAttr, "transform: translate(1px, 0);");
   UpdateAllLifecyclePhasesForTest();
-  // TODO(crbug.com/1025927): In CompositeAfterPaint mode, ancestor transform
-  // is not checked.
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    EXPECT_TRUE(UsesCompositedScrolling(scroller->GetLayoutObject()));
-  else
-    EXPECT_FALSE(UsesCompositedScrolling(scroller->GetLayoutObject()));
+  EXPECT_TRUE(UsesCompositedScrolling(scroller->GetLayoutObject()));
 
   // Change the parent to have no transform again.
   parent->removeAttribute(html_names::kStyleAttr);
@@ -480,7 +474,7 @@ TEST_P(PaintLayerScrollableAreaTest, OnlyNonTransformedOpaqueLayersPromoted) {
   scroller->setAttribute(html_names::kStyleAttr,
                          "transform: translate(1px, 0);");
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_FALSE(UsesCompositedScrolling(scroller->GetLayoutObject()));
+  EXPECT_TRUE(UsesCompositedScrolling(scroller->GetLayoutObject()));
 }
 
 TEST_P(PaintLayerScrollableAreaTest,

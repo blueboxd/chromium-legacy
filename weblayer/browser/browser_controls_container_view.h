@@ -42,7 +42,7 @@ class BrowserControlsContainerView : public content::WebContentsObserver {
 
   // Returns true if the browser controls should only expand when the page
   // contents are scrolled to the top.
-  bool ShouldPinControlsToContentTop();
+  bool OnlyExpandControlsAtPageTop();
 
   // Returns the amount of vertical space to take away from the contents.
   int GetContentHeightDelta();

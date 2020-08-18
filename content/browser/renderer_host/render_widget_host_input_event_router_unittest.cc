@@ -27,6 +27,7 @@
 #include "services/viz/public/mojom/hit_test/input_target_client.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
+#include "third_party/blink/public/mojom/input/touch_event.mojom.h"
 
 namespace content {
 
@@ -443,7 +444,10 @@ TEST_F(RenderWidgetHostInputEventRouterTest,
 
   // Tell the child that it has event handlers, to prevent the touch event
   // queue in the renderer host from acking the touch events immediately.
-  child.widget_host->SetHasTouchEventHandlers(true);
+  auto touch_event_consumers = blink::mojom::TouchEventConsumers::New(
+      /*has_touch_event_handlers=*/true, /*has_hit_testable_scrollbar=*/false);
+  child.widget_host->SetHasTouchEventConsumers(
+      std::move(touch_event_consumers));
 
   // Make sure we route touch events to child. This will cause the RWH's
   // InputRouter to IPC the event into the ether, from which it will never

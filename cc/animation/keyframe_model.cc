@@ -198,21 +198,22 @@ KeyframeModel::Phase KeyframeModel::CalculatePhase(
       (local_time == before_active_boundary_time && playback_rate_ < 0)) {
     return KeyframeModel::Phase::BEFORE;
   }
-  // Scaling the duration is against spec but needed to comply with the cc
-  // implementation. By spec (in blink) the playback rate is an Animation level
-  // concept but in cc it's per KeyframeModel. We grab the active time
-  // calculated here and later scale it with the playback rate in order to get a
-  // proper progress. Therefore we need to un-scale it here. This can be fixed
-  // once we scale the local time by playback rate. See
-  // https://crbug.com/912407.
-  base::TimeDelta active_duration =
-      curve_->Duration() * iterations_ / std::abs(playback_rate_);
   // TODO(crbug.com/909794): By spec end time = max(start delay + duration +
   // end delay, 0). The logic should be updated once "end delay" is supported.
-  base::TimeDelta active_after_boundary_time =
-      std::isfinite(iterations_)
-          ? std::max(opposite_time_offset + active_duration, base::TimeDelta())
-          : base::TimeDelta::Max();
+  base::TimeDelta active_after_boundary_time = base::TimeDelta::Max();
+  if (std::isfinite(iterations_)) {
+    // Scaling the duration is against spec but needed to comply with the cc
+    // implementation. By spec (in blink) the playback rate is an Animation
+    // level concept but in cc it's per KeyframeModel. We grab the active time
+    // calculated here and later scale it with the playback rate in order to get
+    // a proper progress. Therefore we need to un-scale it here. This can be
+    // fixed once we scale the local time by playback rate. See
+    // https://crbug.com/912407.
+    base::TimeDelta active_duration =
+        curve_->Duration() * iterations_ / std::abs(playback_rate_);
+    active_after_boundary_time =
+        std::max(opposite_time_offset + active_duration, base::TimeDelta());
+  }
   if (local_time > active_after_boundary_time ||
       (local_time == active_after_boundary_time && playback_rate_ > 0)) {
     return KeyframeModel::Phase::AFTER;

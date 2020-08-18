@@ -673,69 +673,6 @@ TEST_F(DisplayLockContextTest,
   EXPECT_TRUE(child->GetDisplayLockContext()->IsLocked());
 }
 
-TEST_F(DisplayLockContextTest,
-       FindInPageNavigateLockedMatchesRespectsActivatable) {
-  ResizeAndFocus();
-  SetHtmlInnerHTML(R"HTML(
-    <style>
-    div {
-      width: 100px;
-      height: 100px;
-      contain: style layout paint;
-    }
-    </style>
-    <body>
-      <div id="container">
-        <div id="one">result</div>
-        <div id="two"><b>r</b>esult</div>
-        <div id="three">r<i>esul</i>t</div>
-      </div>
-    </body>
-  )HTML");
-
-  auto* div_one = GetDocument().getElementById("one");
-  auto* div_two = GetDocument().getElementById("two");
-  auto* div_three = GetDocument().getElementById("three");
-  // Lock three divs, make #div_two non-activatable.
-  LockElement(*div_one, true /* activatable */);
-  LockElement(*div_two, false /* activatable */);
-  LockElement(*div_three, true /* activatable */);
-
-  DisplayLockTestFindInPageClient client;
-  client.SetFrame(LocalMainFrame());
-  WebString search_text(String("result"));
-
-  auto text_rect = [](Element* element) {
-    return ComputeTextRect(EphemeralRange::RangeOfContents(*element));
-  };
-
-  // Find result in #one.
-  Find(search_text, client);
-  EXPECT_EQ(2, client.Count());
-  EXPECT_EQ(1, client.ActiveIndex());
-  EXPECT_EQ(text_rect(div_one), client.ActiveMatchRect());
-  // Pretend that the event unlocked the element.
-  CommitElement(*div_one);
-
-  // Going forward from #one would go to #three.
-  Find(search_text, client, false /* new_session */);
-  EXPECT_EQ(2, client.Count());
-  EXPECT_EQ(2, client.ActiveIndex());
-  EXPECT_EQ(text_rect(div_three), client.ActiveMatchRect());
-  // Pretend that the event unlocked the element.
-  CommitElement(*div_three);
-
-  // Going backwards from #three would go to #one.
-  client.Reset();
-  auto find_options = FindOptions();
-  find_options->forward = false;
-  GetFindInPage()->Find(FAKE_FIND_ID, search_text, find_options->Clone());
-  test::RunPendingTasks();
-  EXPECT_EQ(2, client.Count());
-  EXPECT_EQ(1, client.ActiveIndex());
-  EXPECT_EQ(text_rect(div_one), client.ActiveMatchRect());
-}
-
 TEST_F(DisplayLockContextTest, CallUpdateStyleAndLayoutAfterChange) {
   ResizeAndFocus();
   SetHtmlInnerHTML(R"HTML(

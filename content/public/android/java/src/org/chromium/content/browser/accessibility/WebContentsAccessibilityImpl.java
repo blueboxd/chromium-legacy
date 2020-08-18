@@ -203,7 +203,9 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
     private static class Factory implements UserDataFactory<WebContentsAccessibilityImpl> {
         @Override
         public WebContentsAccessibilityImpl create(WebContents webContents) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                return new RWebContentsAccessibility(webContents);
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                 return new PieWebContentsAccessibility(webContents);
             } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 return new OWebContentsAccessibility(webContents);
@@ -1552,9 +1554,9 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
 
     @SuppressLint("NewApi")
     @CalledByNative
-    private void setAccessibilityNodeInfoText(AccessibilityNodeInfo node, String text,
+    protected void setAccessibilityNodeInfoText(AccessibilityNodeInfo node, String text,
             boolean annotateAsLink, boolean isEditableText, String language, int[] suggestionStarts,
-            int[] suggestionEnds, String[] suggestions) {
+            int[] suggestionEnds, String[] suggestions, String stateDescription) {
         CharSequence computedText = computeText(
                 text, isEditableText, language, suggestionStarts, suggestionEnds, suggestions);
         // We expose the nested structure of links, which results in the roles of all nested nodes
@@ -1563,6 +1565,11 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
             node.setContentDescription(computedText);
         } else {
             node.setText(computedText);
+        }
+
+        // For pre-Android R, we add stateDescription to text for backwards compatibility.
+        if (stateDescription != null && !stateDescription.isEmpty()) {
+            node.setText(computedText + ", " + stateDescription);
         }
     }
 

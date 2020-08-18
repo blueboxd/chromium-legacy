@@ -114,7 +114,7 @@ class MetricsReporter {
 
   // Actions upload.
   static void OnUploadActionsBatch(UploadActionsBatchStatus status);
-  static void OnUploadActions(UploadActionsStatus status);
+  virtual void OnUploadActions(UploadActionsStatus status);
 
   static void NoticeCardFulfilled(bool response_has_notice_card);
 

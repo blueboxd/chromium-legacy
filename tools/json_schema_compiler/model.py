@@ -10,6 +10,15 @@ from json_parse import OrderedDict
 from memoize import memoize
 
 
+def _IsTypeFromManifestKeys(namespace, typename, fallback):
+  # type(Namespace, str, bool) -> bool
+  """Computes whether 'from_manifest_keys' is true for the given type.
+  """
+  if typename in namespace._manifest_referenced_types:
+    return True
+
+  return fallback
+
 class ParseException(Exception):
   """Thrown when data in the model is invalid.
   """
@@ -103,6 +112,7 @@ class Namespace(object):
   - |properties| a map of property names to their model.Property
   - |compiler_options| the compiler_options dict, only not empty if
                        |include_compiler_options| is True
+  - |manifest_keys| is a Type representing the manifest keys for this namespace.
   """
   def __init__(self,
                json,
@@ -126,6 +136,13 @@ class Namespace(object):
     self.allow_inline_enums = allow_inline_enums
     self.platforms = _GetPlatforms(json)
     toplevel_origin = Origin(from_client=True, from_json=True)
+
+    # While parsing manifest keys, we store all the types referenced by manifest
+    # keys. This is useful for computing the correct Origin for types in the
+    # namespace. This also necessitates parsing manifest keys before types.
+    self._manifest_referenced_types = set()
+    self.manifest_keys = _GetManifestKeysType(self, json)
+
     self.types = _GetTypes(self, json, self, toplevel_origin)
     self.functions = _GetFunctions(self, json, self)
     self.events = _GetEvents(self, json, self)
@@ -145,16 +162,24 @@ class Origin(object):
                 generated code (for example, function results), or
   |from_json|   indicating that instances can originate from the JSON (for
                 example, function parameters)
+  |from_manifest_keys| indicating that instances for this type can be parsed
+                from manifest keys.
 
   It is possible for model objects to originate from both the client and json,
   for example Types defined in the top-level schema, in which case both
   |from_client| and |from_json| would be True.
   """
-  def __init__(self, from_client=False, from_json=False):
-    if not from_client and not from_json:
-      raise ValueError('One of from_client or from_json must be true')
+
+  def __init__(self,
+               from_client=False,
+               from_json=False,
+               from_manifest_keys=False):
+    if not from_client and not from_json and not from_manifest_keys:
+      raise ValueError(
+          'One of (from_client, from_json, from_manifest_keys) must be true')
     self.from_client = from_client
     self.from_json = from_json
+    self.from_manifest_keys = from_manifest_keys
 
 
 class Type(object):
@@ -179,31 +204,49 @@ class Type(object):
                name,
                json,
                namespace,
-               origin):
+               input_origin):
     self.name = name
+
+    # The typename "ManifestKeys" is reserved.
+    if name is 'ManifestKeys':
+      assert parent == namespace and input_origin.from_manifest_keys, \
+          'ManifestKeys type is reserved'
+
     self.namespace = namespace
     self.simple_name = _StripNamespace(self.name, namespace)
     self.unix_name = UnixName(self.name)
     self.description = json.get('description', None)
     self.jsexterns = json.get('jsexterns', None)
-    self.origin = origin
+
+    # Copy the Origin and override the |from_manifest_keys| value as necessary.
+    # We need to do this to ensure types reference by manifest types have the
+    # correct value for |origin.from_manifest_keys|.
+    self.origin = Origin(
+      input_origin.from_client, input_origin.from_json,
+      _IsTypeFromManifestKeys(namespace, name, input_origin.from_manifest_keys))
+
     self.parent = parent
     self.instance_of = json.get('isInstanceOf', None)
-
     # TODO(kalman): Only objects need functions/events/properties, but callers
     # assume that all types have them. Fix this.
     self.functions = _GetFunctions(self, json, namespace)
     self.events = _GetEvents(self, json, namespace)
-    self.properties = _GetProperties(self, json, namespace, origin)
+    self.properties = _GetProperties(self, json, namespace, self.origin)
 
     json_type = json.get('type', None)
     if json_type == 'array':
       self.property_type = PropertyType.ARRAY
-      self.item_type = Type(
-          self, '%sType' % name, json['items'], namespace, origin)
+      self.item_type = Type(self, '%sType' % name, json['items'], namespace,
+                            self.origin)
     elif '$ref' in json:
       self.property_type = PropertyType.REF
       self.ref_type = json['$ref']
+
+      # Record all types referenced by manifest types so that the proper Origin
+      # can be set for them during type parsing.
+      if self.origin.from_manifest_keys:
+        namespace._manifest_referenced_types.add(self.ref_type)
+
     elif 'enum' in json and json_type == 'string':
       if not namespace.allow_inline_enums and not isinstance(parent, Namespace):
         raise ParseException(
@@ -241,7 +284,7 @@ class Type(object):
                generate_type_name(choice) or 'choice%s' % i,
                choice,
                namespace,
-               origin)
+               self.origin)
           for i, choice in enumerate(json['choices'])]
     elif json_type == 'object':
       if not (
@@ -258,7 +301,7 @@ class Type(object):
                                           'additionalProperties',
                                           additional_properties_json,
                                           namespace,
-                                          origin)
+                                          self.origin)
       else:
         self.additional_properties = None
     elif json_type == 'function':
@@ -266,10 +309,17 @@ class Type(object):
       # Sometimes we might have an unnamed function, e.g. if it's a property
       # of an object. Use the name of the property in that case.
       function_name = json.get('name', name)
-      self.function = Function(self, function_name, json, namespace, origin)
+      self.function = Function(
+        self, function_name, json, namespace, self.origin)
     else:
       raise ParseException(self, 'Unsupported JSON type %s' % json_type)
 
+  def IsRootManifestKeyType(self):
+    # type: () -> boolean
+    ''' Returns true if this type corresponds to the top level ManifestKeys
+    type.
+    '''
+    return self.name == 'ManifestKeys'
 
 class Function(object):
   """A Function defined in the API.
@@ -551,6 +601,9 @@ def _GetModelHierarchy(entity):
 def _GetTypes(parent, json, namespace, origin):
   """Creates Type objects extracted from |json|.
   """
+  assert hasattr(namespace, 'manifest_keys'), \
+    'Types should be parsed after parsing manifest keys.'
+
   types = OrderedDict()
   for type_json in json.get('types', []):
     type_ = Type(parent, type_json['id'], type_json, namespace, origin)
@@ -593,6 +646,23 @@ def _GetProperties(parent, json, namespace, origin):
   for name, property_json in json.get('properties', {}).items():
     properties[name] = Property(parent, name, property_json, namespace, origin)
   return properties
+
+
+def _GetManifestKeysType(self, json):
+  # type: (OrderedDict) -> Type
+  """Returns the Type for manifest keys parsing, or None if there are no
+  manifest keys in this namespace.
+  """
+  if not json.get('manifest_keys'):
+    return None
+
+  # Create a dummy object to parse "manifest_keys" as a type.
+  manifest_keys_type = {
+    'type': 'object',
+    'properties': json['manifest_keys'],
+  }
+  return Type(self, 'ManifestKeys', manifest_keys_type, self,
+              Origin(from_manifest_keys=True))
 
 
 class _PlatformInfo(_Enum):

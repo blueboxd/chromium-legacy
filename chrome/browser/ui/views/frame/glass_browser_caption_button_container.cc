@@ -11,6 +11,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/layout/flex_layout.h"
+#include "ui/views/view_class_properties.h"
 
 namespace {
 
@@ -51,9 +52,16 @@ GlassBrowserCaptionButtonContainer::GlassBrowserCaptionButtonContainer(
   // Layout is horizontal, with buttons placed at the trailing end of the view.
   // This allows the container to expand to become a faux titlebar/drag handle.
   auto* const layout = SetLayoutManager(std::make_unique<views::FlexLayout>());
-  layout->SetOrientation(views::LayoutOrientation::kHorizontal);
-  layout->SetMainAxisAlignment(views::LayoutAlignment::kEnd);
-  layout->SetCrossAxisAlignment(views::LayoutAlignment::kStart);
+  layout->SetOrientation(views::LayoutOrientation::kHorizontal)
+      .SetMainAxisAlignment(views::LayoutAlignment::kEnd)
+      .SetCrossAxisAlignment(views::LayoutAlignment::kStart)
+      .SetDefault(
+          views::kFlexBehaviorKey,
+          views::FlexSpecification(views::LayoutOrientation::kHorizontal,
+                                   views::MinimumFlexSizeRule::kPreferred,
+                                   views::MaximumFlexSizeRule::kPreferred,
+                                   /* adjust_width_for_height */ false,
+                                   views::MinimumFlexSizeRule::kScaleToZero));
 }
 
 GlassBrowserCaptionButtonContainer::~GlassBrowserCaptionButtonContainer() {}
@@ -97,25 +105,24 @@ void GlassBrowserCaptionButtonContainer::AddedToWidget() {
   views::Widget* const widget = GetWidget();
   if (!widget_observer_.IsObserving(widget))
     widget_observer_.Add(widget);
-  UpdateButtonVisibility();
+  UpdateButtons();
 }
 
 void GlassBrowserCaptionButtonContainer::OnWidgetBoundsChanged(
     views::Widget* widget,
     const gfx::Rect& new_bounds) {
-  UpdateButtonVisibility();
+  UpdateButtons();
 }
 
-void GlassBrowserCaptionButtonContainer::UpdateButtonVisibility() {
-  if (frame_view_->IsWebUITabStrip()) {
-    // In tablet mode, all windows are effectively full-screen and cannot be
-    // restored, so don't show either button.
-    restore_button_->SetVisible(false);
-    maximize_button_->SetVisible(false);
-  } else {
-    const bool is_maximized = frame_view_->IsMaximized();
-    restore_button_->SetVisible(is_maximized);
-    maximize_button_->SetVisible(!is_maximized);
-  }
+void GlassBrowserCaptionButtonContainer::UpdateButtons() {
+  const bool is_maximized = frame_view_->IsMaximized();
+  restore_button_->SetVisible(is_maximized);
+  maximize_button_->SetVisible(!is_maximized);
+
+  // In touch mode, windows cannot be taken out of fullscreen or tiled mode, so
+  // the maximize/restore button should be disabled.
+  const bool is_touch = ui::TouchUiController::Get()->touch_ui();
+  restore_button_->SetEnabled(!is_touch);
+  maximize_button_->SetEnabled(!is_touch);
   InvalidateLayout();
 }

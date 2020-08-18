@@ -709,9 +709,6 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
         }
 
         String url = productSpecificDataMap.get(XSURFACE_CARD_URL);
-        if (url == null) {
-            return;
-        }
 
         Map<String, String> feedContext = convertNameFormat(productSpecificDataMap);
 

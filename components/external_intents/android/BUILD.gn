@@ -33,11 +33,12 @@ android_library("java") {
     "//url:gurl_java",
     "//url:origin_java",
   ]
+  resources_package = "org.chromium.components.external_intents"
 }
 
 android_resources("java_resources") {
   sources = []
-  custom_package = "org.chromium.components.external_intents"
+  create_srcjar = false
   deps = [
     "//components/browser_ui/strings/android:browser_ui_strings_grd",
     "//components/browser_ui/styles/android:java_resources",

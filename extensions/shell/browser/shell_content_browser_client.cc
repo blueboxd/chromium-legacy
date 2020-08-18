@@ -328,6 +328,11 @@ void ShellContentBrowserClient::OverrideURLLoaderFactoryParams(
       browser_context, origin, is_for_isolated_world, factory_params);
 }
 
+base::FilePath
+ShellContentBrowserClient::GetSandboxedStorageServiceDataDirectory() {
+  return GetBrowserContext()->GetPath();
+}
+
 std::string ShellContentBrowserClient::GetUserAgent() {
   // Must contain a user agent string for version sniffing. For example,
   // pluginless WebRTC Hangouts checks the Chrome version number.

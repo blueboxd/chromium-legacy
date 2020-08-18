@@ -23,7 +23,7 @@ class CC_EXPORT BrowserControlsOffsetManagerClient {
   virtual float CurrentBottomControlsShownRatio() const = 0;
   virtual gfx::ScrollOffset ViewportScrollOffset() const = 0;
   virtual void DidChangeBrowserControlsPosition() = 0;
-  virtual bool ShouldPinTopControlsToContentTop() const = 0;
+  virtual bool OnlyExpandTopControlsAtPageTop() const = 0;
   virtual bool HaveRootScrollNode() const = 0;
   virtual void SetNeedsCommit() = 0;
 

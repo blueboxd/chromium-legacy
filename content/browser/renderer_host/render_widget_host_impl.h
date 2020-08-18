@@ -546,8 +546,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Whether forwarded WebInputEvents are being ignored.
   bool IsIgnoringInputEvents() const;
 
-  bool has_touch_handler() const { return has_touch_handler_; }
-
   // Called when the response to a pending mouse lock request has arrived.
   // Returns true if |allowed| is true and the mouse has been successfully
   // locked.
@@ -926,7 +924,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void AnimateDoubleTapZoomInMainFrame(const gfx::Point& tap_point,
                                        const gfx::Rect& rect_to_zoom) override;
   void ZoomToFindInPageRectInMainFrame(const gfx::Rect& rect_to_zoom) override;
-  void SetHasTouchEventHandlers(bool has_handlers) override;
+  void SetHasTouchEventConsumers(
+      blink::mojom::TouchEventConsumersPtr consumers) override;
   void IntrinsicSizingInfoChanged(
       blink::mojom::IntrinsicSizingInfoPtr sizing_info) override;
   void AutoscrollStart(const gfx::PointF& position) override;
@@ -1224,11 +1223,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // unlocked and desires to relock the mouse. If the mouse is unlocked due
   // to ESC being pressed by the user, this will be false.
   bool is_last_unlocked_by_target_ = false;
-
-  // Keeps track of whether the webpage has any touch event handler. If it does,
-  // then touch events are sent to the renderer. Otherwise, the touch events are
-  // not sent to the renderer.
-  bool has_touch_handler_ = false;
 
   // TODO(wjmaclean) Remove the code for supporting resending gesture events
   // when WebView transitions to OOPIF and BrowserPlugin is removed.

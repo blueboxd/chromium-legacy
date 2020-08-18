@@ -1395,7 +1395,7 @@ RenderFrameHostManager::ShouldProactivelySwapBrowsingInstance(
     // after we committed the navigation, regardless of our decision to swap
     // BrowsingInstances or not.
     if (ShouldSkipSameSiteBackForwardCacheForPageWithUnload() &&
-        render_frame_host_->UnloadHandlerExistsInSameSiteInstance()) {
+        render_frame_host_->UnloadHandlerExistsInSameSiteInstanceSubtree()) {
       return ShouldSwapBrowsingInstance::
           kNo_UnloadHandlerExistsOnSameSiteNavigation;
     }

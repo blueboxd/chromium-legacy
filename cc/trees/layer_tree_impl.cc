@@ -2382,17 +2382,17 @@ static ElementId GetFrameElementIdForLayer(const LayerImpl* layer) {
   auto& transform_tree =
       layer->layer_tree_impl()->property_trees()->transform_tree;
   auto* node = transform_tree.Node(layer->transform_tree_index());
-  while (node && !node->frame_element_id) {
+  while (node && !node->visible_frame_element_id) {
     node = transform_tree.Node(node->parent_frame_id);
   }
-  return node ? node->frame_element_id : ElementId();
+  return node ? node->visible_frame_element_id : ElementId();
 }
 
 static void FindClosestMatchingLayerForAttribution(
     const gfx::PointF& screen_space_point,
     const LayerImpl* root_layer,
     FindClosestMatchingLayerState* state) {
-  std::unordered_set<ElementId, ElementIdHash> hit_frame_element_ids;
+  std::unordered_set<ElementId, ElementIdHash> hit_visible_frame_element_ids;
   // We want to iterate from front to back when hit testing.
   for (auto* layer : base::Reversed(*root_layer->layer_tree_impl())) {
     if (!layer->HitTestable())
@@ -2422,8 +2422,8 @@ static void FindClosestMatchingLayerForAttribution(
       state->closest_match = layer;
     }
 
-    ElementId frame_element_id = GetFrameElementIdForLayer(layer);
-    hit_frame_element_ids.insert(frame_element_id);
+    ElementId visible_frame_element_id = GetFrameElementIdForLayer(layer);
+    hit_visible_frame_element_ids.insert(visible_frame_element_id);
   }
 
   // Iterate through the transform tree of the hit layer in order to derive the
@@ -2439,12 +2439,12 @@ static void FindClosestMatchingLayerForAttribution(
         layer->layer_tree_impl()->property_trees()->transform_tree;
     for (auto* node = transform_tree.Node(layer->transform_tree_index()); node;
          node = transform_tree.Node(node->parent_frame_id)) {
-      hit_frame_element_ids.erase(node->frame_element_id);
-      if (hit_frame_element_ids.size() == 0)
+      hit_visible_frame_element_ids.erase(node->visible_frame_element_id);
+      if (hit_visible_frame_element_ids.size() == 0)
         break;
     }
 
-    if (hit_frame_element_ids.size() > 0) {
+    if (hit_visible_frame_element_ids.size() > 0) {
       state->closest_distance = 0.f;
       state->closest_match = nullptr;
     }

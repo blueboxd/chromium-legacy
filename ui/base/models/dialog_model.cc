@@ -84,11 +84,10 @@ DialogModel::Builder& DialogModel::Builder::AddDialogExtraButton(
   return *this;
 }
 
-DialogModel::Builder& DialogModel::Builder::AddTextfield(
-    base::string16 label,
+DialogModel::Builder& DialogModel::Builder::AddBodyText(
     base::string16 text,
-    const DialogModelTextfield::Params& params) {
-  model_->AddTextfield(std::move(label), std::move(text), params);
+    const DialogModelBodyText::Params& params) {
+  model_->AddBodyText(std::move(text), params);
   return *this;
 }
 
@@ -97,6 +96,14 @@ DialogModel::Builder& DialogModel::Builder::AddCombobox(
     std::unique_ptr<ui::ComboboxModel> combobox_model,
     const DialogModelCombobox::Params& params) {
   model_->AddCombobox(std::move(label), std::move(combobox_model), params);
+  return *this;
+}
+
+DialogModel::Builder& DialogModel::Builder::AddTextfield(
+    base::string16 label,
+    base::string16 text,
+    const DialogModelTextfield::Params& params) {
+  model_->AddTextfield(std::move(label), std::move(text), params);
   return *this;
 }
 
@@ -118,11 +125,10 @@ DialogModel::DialogModel(util::PassKey<Builder>,
 
 DialogModel::~DialogModel() = default;
 
-void DialogModel::AddTextfield(base::string16 label,
-                               base::string16 text,
-                               const DialogModelTextfield::Params& params) {
-  fields_.push_back(std::make_unique<DialogModelTextfield>(
-      GetPassKey(), this, std::move(label), std::move(text), params));
+void DialogModel::AddBodyText(base::string16 text,
+                              const DialogModelBodyText::Params& params) {
+  fields_.push_back(std::make_unique<DialogModelBodyText>(
+      GetPassKey(), this, std::move(text), params));
   if (host_)
     host_->OnFieldAdded(fields_.back().get());
 }
@@ -136,6 +142,15 @@ void DialogModel::AddCombobox(base::string16 label,
     host_->OnFieldAdded(fields_.back().get());
 }
 
+void DialogModel::AddTextfield(base::string16 label,
+                               base::string16 text,
+                               const DialogModelTextfield::Params& params) {
+  fields_.push_back(std::make_unique<DialogModelTextfield>(
+      GetPassKey(), this, std::move(label), std::move(text), params));
+  if (host_)
+    host_->OnFieldAdded(fields_.back().get());
+}
+
 DialogModelField* DialogModel::GetFieldByUniqueId(int unique_id) {
   for (auto& field : fields_) {
     if (field->unique_id_ == unique_id)
@@ -143,12 +158,6 @@ DialogModelField* DialogModel::GetFieldByUniqueId(int unique_id) {
   }
   NOTREACHED();
   return nullptr;
-}
-
-DialogModelButton* DialogModel::GetButtonByUniqueId(int unique_id) {
-  auto* field = GetFieldByUniqueId(unique_id);
-  DCHECK_EQ(field->type_, DialogModelField::kButton);
-  return static_cast<DialogModelButton*>(field);
 }
 
 DialogModelCombobox* DialogModel::GetComboboxByUniqueId(int unique_id) {

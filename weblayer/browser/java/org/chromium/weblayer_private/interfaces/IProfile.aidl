@@ -36,4 +36,8 @@ interface IProfile {
   void removeBrowserPersistenceStorage(in String[] ids,
                                        in IObjectWrapper resultCallback) = 10;
   void prepareForPossibleCrossOriginNavigation() = 11;
+
+  // Added in Version 86.
+  void getCachedFaviconForPageUri(in String uri,
+                                  in IObjectWrapper resultCallback) = 12;
 }

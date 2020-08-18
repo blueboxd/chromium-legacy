@@ -58,6 +58,9 @@ extern const char kMissingMethodNameFromPaymentApp[];
 // The PaymentRequest API is available only on secure origins.
 extern const char kNotInASecureOrigin[];
 
+// WebContents is not available from RenderFrameHost.
+extern const char kNoWebContents[];
+
 // The payment handler responded with an empty "payer name" field.
 extern const char kPayerNameEmpty[];
 

@@ -92,8 +92,11 @@ class FeedService::NetworkDelegateImpl : public FeedNetworkImpl::Delegate {
 class FeedService::StreamDelegateImpl : public FeedStream::Delegate {
  public:
   StreamDelegateImpl(PrefService* local_state,
-                     FeedService::Delegate* service_delegate)
-      : service_delegate_(service_delegate), eula_notifier_(local_state) {}
+                     FeedService::Delegate* service_delegate,
+                     signin::IdentityManager* identity_manager)
+      : service_delegate_(service_delegate),
+        eula_notifier_(local_state),
+        identity_manager_(identity_manager) {}
   StreamDelegateImpl(const StreamDelegateImpl&) = delete;
   StreamDelegateImpl& operator=(const StreamDelegateImpl&) = delete;
 
@@ -112,12 +115,14 @@ class FeedService::StreamDelegateImpl : public FeedStream::Delegate {
     return service_delegate_->GetLanguageTag();
   }
   void ClearAll() override { service_delegate_->ClearAll(); }
+  bool IsSignedIn() override { return identity_manager_->HasPrimaryAccount(); }
 
  private:
   FeedService::Delegate* service_delegate_;
   web_resource::EulaAcceptedNotifier eula_notifier_;
   std::unique_ptr<EulaObserver> eula_observer_;
   std::unique_ptr<HistoryObserverImpl> history_observer_;
+  signin::IdentityManager* identity_manager_;
 };
 
 class FeedService::IdentityManagerObserverImpl
@@ -165,8 +170,8 @@ FeedService::FeedService(
     const ChromeInfo& chrome_info)
     : delegate_(std::move(delegate)),
       refresh_task_scheduler_(std::move(refresh_task_scheduler)) {
-  stream_delegate_ =
-      std::make_unique<StreamDelegateImpl>(local_state, delegate_.get());
+  stream_delegate_ = std::make_unique<StreamDelegateImpl>(
+      local_state, delegate_.get(), identity_manager);
   network_delegate_ = std::make_unique<NetworkDelegateImpl>(delegate_.get());
   metrics_reporter_ = std::make_unique<MetricsReporter>(
       base::DefaultTickClock::GetInstance(), profile_prefs);

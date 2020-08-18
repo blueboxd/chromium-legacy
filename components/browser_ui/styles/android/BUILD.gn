@@ -14,10 +14,11 @@ android_library("java") {
     "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/android_deps:androidx_appcompat_appcompat_resources_java",
   ]
+  resources_package = "org.chromium.components.browser_ui.styles"
 }
 
 android_resources("java_resources") {
-  custom_package = "org.chromium.components.browser_ui.styles"
+  create_srcjar = false
   sources = [
     "java/res/color/blue_mode_tint.xml",
     "java/res/color/checkbox_tint.xml",

@@ -1412,9 +1412,6 @@ void SimpleEntryImpl::CreationOperationComplete(
   DCHECK_EQ(state_, STATE_IO_PENDING);
   DCHECK(in_results);
   ScopedOperationRunner operation_runner(this);
-  SIMPLE_CACHE_UMA(BOOLEAN,
-                   "EntryCreationResult", cache_type_,
-                   in_results->result == net::OK);
   if (in_results->result != net::OK) {
     if (in_results->result != net::ERR_FILE_EXISTS) {
       // Here we keep index up-to-date, but don't remove ourselves from active

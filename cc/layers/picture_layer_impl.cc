@@ -819,10 +819,6 @@ bool PictureLayerImpl::UpdateCanUseLCDText(
   if (!layer_tree_impl()->IsSyncTree())
     return false;
 
-  // Once we disable lcd text, we don't re-enable it.
-  if (!can_use_lcd_text())
-    return false;
-
   auto new_lcd_text_disallowed_reason =
       ComputeLCDTextDisallowedReason(raster_translation_aligns_pixels);
   if (lcd_text_disallowed_reason_ == new_lcd_text_disallowed_reason)
@@ -973,6 +969,10 @@ bool PictureLayerImpl::RequiresHighResToDraw() const {
 
 const PaintWorkletRecordMap& PictureLayerImpl::GetPaintWorkletRecords() const {
   return paint_worklet_records_;
+}
+
+bool PictureLayerImpl::IsDirectlyCompositedImage() const {
+  return directly_composited_image_size_.has_value();
 }
 
 gfx::Rect PictureLayerImpl::GetEnclosingRectInTargetSpace() const {

@@ -73,11 +73,12 @@ android_resources("content_shell_java_resources") {
     "java/res/mipmap-xxxhdpi/app_icon.png",
     "java/res/values/strings.xml",
   ]
-  custom_package = "org.chromium.content_shell"
+  create_srcjar = false
 }
 
 android_library("content_shell_java") {
   testonly = true
+  resources_package = "org.chromium.content_shell"
   deps = [
     ":content_shell_java_resources",
     ":content_shell_manifest",
@@ -126,7 +127,7 @@ android_resources("content_shell_apk_resources") {
     "shell_apk/res/values/strings.xml",
   ]
   deps = [ ":content_shell_java_resources" ]
-  custom_package = "org.chromium.content_shell_apk"
+  create_srcjar = false
 }
 
 android_library("content_shell_apk_java") {
@@ -134,6 +135,7 @@ android_library("content_shell_apk_java") {
 
   srcjar_deps = [ ":content_javatests_aidl" ]
 
+  resources_package = "org.chromium.content_shell_apk"
   deps = [
     ":content_shell_apk_resources",
     ":content_shell_java",

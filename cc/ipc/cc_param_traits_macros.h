@@ -32,7 +32,7 @@ IPC_STRUCT_TRAITS_BEGIN(cc::BrowserControlsParams)
   IPC_STRUCT_TRAITS_MEMBER(bottom_controls_min_height)
   IPC_STRUCT_TRAITS_MEMBER(animate_browser_controls_height_changes)
   IPC_STRUCT_TRAITS_MEMBER(browser_controls_shrink_blink_size)
-  IPC_STRUCT_TRAITS_MEMBER(pin_top_controls_to_content_top)
+  IPC_STRUCT_TRAITS_MEMBER(only_expand_top_controls_at_page_top)
 IPC_STRUCT_TRAITS_END()
 
 #endif  // CC_IPC_CC_PARAM_TRAITS_MACROS_H_

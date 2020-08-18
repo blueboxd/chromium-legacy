@@ -253,6 +253,10 @@ bool BrowserAccessibilityAndroid::IsMultiLine() const {
   return HasState(ax::mojom::State::kMultiline);
 }
 
+bool BrowserAccessibilityAndroid::IsMultiselectable() const {
+  return HasState(ax::mojom::State::kMultiselectable);
+}
+
 bool BrowserAccessibilityAndroid::IsRangeType() const {
   return (GetRole() == ax::mojom::Role::kProgressIndicator ||
           GetRole() == ax::mojom::Role::kMeter ||
@@ -532,6 +536,47 @@ base::string16 BrowserAccessibilityAndroid::GetHint() const {
     strings.push_back(description);
 
   return base::JoinString(strings, base::ASCIIToUTF16(" "));
+}
+
+base::string16 BrowserAccessibilityAndroid::GetStateDescription() const {
+  // For multiselectable state, generate a state description
+  if (IsMultiselectable())
+    return GetMultiselectableStateDescription();
+
+  // Otherwise we will not use state description
+  return base::string16();
+}
+
+base::string16 BrowserAccessibilityAndroid::GetMultiselectableStateDescription()
+    const {
+  content::ContentClient* content_client = content::GetContentClient();
+
+  // Count the number of children and selected children.
+  int child_count = 0;
+  int selected_count = 0;
+  for (PlatformChildIterator it = PlatformChildrenBegin();
+       it != PlatformChildrenEnd(); ++it) {
+    child_count++;
+    BrowserAccessibilityAndroid* child =
+        static_cast<BrowserAccessibilityAndroid*>(it.get());
+    if (child->IsSelected())
+      selected_count++;
+  }
+
+  // If none are selected, return special case.
+  if (!selected_count)
+    return content_client->GetLocalizedString(
+        IDS_AX_MULTISELECTABLE_STATE_DESCRIPTION_NONE);
+
+  // Generate a state description of the form: "multiselectable, x of y
+  // selected.".
+  std::vector<base::string16> values;
+  values.push_back(base::NumberToString16(selected_count));
+  values.push_back(base::NumberToString16(child_count));
+  return base::ReplaceStringPlaceholders(
+      content_client->GetLocalizedString(
+          IDS_AX_MULTISELECTABLE_STATE_DESCRIPTION),
+      values, nullptr);
 }
 
 std::string BrowserAccessibilityAndroid::GetRoleString() const {

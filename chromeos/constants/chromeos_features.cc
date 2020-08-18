@@ -97,7 +97,7 @@ const base::Feature kCdmFactoryDaemon{"CdmFactoryDaemon",
 
 // Enables or disables entry point for child account sign in or creation.
 const base::Feature kChildSpecificSignin{"ChildSpecificSignin",
-                                         base::FEATURE_ENABLED_BY_DEFAULT};
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
 // If enabled, options page for each input method will be opened in ChromeOS
 // settings. Otherwise it will be opened in a new web page in Chrome browser.
@@ -221,6 +221,10 @@ const base::Feature kFilesZipPack{"FilesZipPack",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kFilesZipUnpack{"FilesZipUnpack",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Controls gamepad vibration in Exo.
+const base::Feature kGamepadVibration{"ExoGamepadVibration",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables the use of Mojo by Chrome-process code to communicate with Power
 // Manager. In order to use mojo, this feature must be turned on and a callsite
@@ -444,7 +448,7 @@ const base::Feature kSmartDimExperimentalComponent{
 // Uses the smart dim component updater to provide smart dim model and
 // preprocessor configuration.
 const base::Feature kSmartDimNewMlAgent{"SmartDimNewMlAgent",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Uses the V3 (~2019-05 era) Smart Dim model instead of the default V2
 // (~2018-11) model.

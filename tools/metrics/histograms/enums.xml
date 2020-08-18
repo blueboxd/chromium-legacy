@@ -28757,6 +28757,12 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3408" label="ThirdPartyCookieRead"/>
   <int value="3409" label="ThirdPartyCookieWrite"/>
   <int value="3410" label="RTCLegacyRtpDataChannelNegotiated"/>
+  <int value="3411" label="CrossSitePostMessage"/>
+  <int value="3412" label="SchemelesslySameSitePostMessage"/>
+  <int value="3413" label="SchemefulSameSitePostMessage"/>
+  <int value="3414" label="UnspecifiedTargetOriginPostMessage"/>
+  <int value="3415" label="SchemelesslySameSitePostMessageSecureToInsecure"/>
+  <int value="3416" label="SchemelesslySameSitePostMessageInsecureToSecure"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -29015,6 +29021,8 @@ Called by update_feature_policy_enum.py.-->
   <int value="5"
       label="Updated and tried to upload all pending actions and finished
              without receiving a new consistency token"/>
+  <int value="6"
+      label="Upload attempt was aborted because the account is now signed-out"/>
 </enum>
 
 <enum name="FeedUserActionType">
@@ -41670,6 +41678,7 @@ from previous Chrome versions.
   <int value="-435914745" label="ClipboardContentSetting:disabled"/>
   <int value="-433879402"
       label="EnableAmbientAuthenticationInIncognito:disabled"/>
+  <int value="-432612065" label="AImageReader:enabled"/>
   <int value="-430369215" label="AssistPersonalInfo:disabled"/>
   <int value="-430360431" label="disable-password-generation"/>
   <int value="-428599163" label="NTPDownloadSuggestions:enabled"/>
@@ -42536,8 +42545,6 @@ from previous Chrome versions.
   <int value="504994663" label="GenericSensor:disabled"/>
   <int value="505561325" label="OpenXR:disabled"/>
   <int value="506680761" label="WebNFC:disabled"/>
-  <int value="510060832"
-      label="OmniboxFocusGestureTriggersContextualWebZeroSuggest:disabled"/>
   <int value="510066229"
       label="AutofillEnforceMinRequiredFieldsForQuery:enabled"/>
   <int value="510814146" label="OfflineBookmarks:enabled"/>
@@ -42787,8 +42794,6 @@ from previous Chrome versions.
   <int value="749516419" label="DragToSnapInClamshellMode:disabled"/>
   <int value="752194066" label="enable-app-window-cycling"/>
   <int value="752939691" label="disable-tab-for-desktop-share"/>
-  <int value="754816492"
-      label="OmniboxFocusGestureTriggersContextualWebZeroSuggest:enabled"/>
   <int value="757645375" label="AndroidDarkSearch:disabled"/>
   <int value="760542355" label="ServiceWorkerScriptFullCodeCache:enabled"/>
   <int value="762700519" label="enable-checker-imaging"/>
@@ -43539,6 +43544,7 @@ from previous Chrome versions.
   <int value="1584039096" label="highlight-all-webviews"/>
   <int value="1584425198" label="NtpModules:enabled"/>
   <int value="1584536816" label="LimitAltTabToActiveDesk:enabled"/>
+  <int value="1585990408" label="AImageReader:disabled"/>
   <int value="1586022426" label="AutofillCreditCardAssist:enabled"/>
   <int value="1587521886" label="SSLCommittedInterstitials:enabled"/>
   <int value="1589341623" label="disable-easy-unlock"/>
@@ -44731,7 +44737,7 @@ from previous Chrome versions.
   <int value="15" label="Has sticky position objects (obsolete)"/>
   <int value="16" label="Requires hit testing on custom scrollbars (obsolete)"/>
   <int value="17" label="Has opacity (obsolete)"/>
-  <int value="18" label="Has transform"/>
+  <int value="18" label="Has transform (obsolete)"/>
   <int value="19" label="Not opaque for text"/>
   <int value="20" label="Can't paint scrolling background"/>
   <int value="21" label="Has clip related property (obsolete)"/>

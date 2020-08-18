@@ -1487,16 +1487,6 @@ const char kOmniboxClobberTriggersContextualWebZeroSuggestDescription[] =
     "Backspace), Chrome will request ZeroSuggest suggestions for the OTHER "
     "page classification (contextual web).";
 
-const char kOmniboxFocusGestureTriggersContextualWebZeroSuggestName[] =
-    "Omnibox Focus Gesture Triggers Contextual Web ZeroSuggest";
-const char kOmniboxFocusGestureTriggersContextualWebZeroSuggestDescription[] =
-    "Disable this flag to prevent focus gestures (e.g. clicks, taps, Ctrl+L) "
-    "from triggering ZeroSuggest for the OTHER page classification (contextual "
-    "web). This is used to experiment with alternate ZeroSuggest triggers like "
-    "clobber. Note, this flag is Enabled by default, as on-focus is the "
-    "standard ZeroSuggest trigger. This flag doesn't affect the NTP or SERP. "
-    "We don't want to accidentally unlaunch on-focus NTP ZeroSuggest.";
-
 const char kOmniboxCompactSuggestionsName[] = "Omnibox: Compact suggestions";
 const char kOmniboxCompactSuggestionsDescription[] =
     "Conserve the space for Omnibox Suggestions by slightly reducing their "
@@ -2544,6 +2534,12 @@ const char kEnableVulkanDescription[] = "Use vulkan as the graphics backend.";
 
 #if defined(OS_ANDROID)
 
+const char kAImageReaderName[] = "Android ImageReader";
+const char kAImageReaderDescription[] =
+    " Enables MediaPlayer and MediaCodec to use AImageReader on Android. "
+    " This feature is only available for android P+ devices. Disabling it also "
+    " disables SurfaceControl.";
+
 const char kAndroidAutofillAccessibilityName[] = "Autofill Accessibility";
 const char kAndroidAutofillAccessibilityDescription[] =
     "Enable accessibility for autofill popup.";
@@ -2563,8 +2559,9 @@ const char kAndroidMultipleDisplayDescription[] =
 
 const char kAndroidSurfaceControlName[] = "Android SurfaceControl";
 const char kAndroidSurfaceControlDescription[] =
-    " Enables SurfaceControl to "
-    " manage the buffer queue for the DisplayCompositor on Android.";
+    " Enables SurfaceControl to manage the buffer queue for the "
+    " DisplayCompositor on Android. This feature is only available on "
+    " android Q+ devices";
 
 const char kAppNotificationStatusMessagingName[] =
     "App notification status messaging";

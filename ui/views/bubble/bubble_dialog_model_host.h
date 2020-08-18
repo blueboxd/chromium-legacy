@@ -17,6 +17,7 @@
 namespace views {
 class Combobox;
 class GridLayout;
+class Label;
 class Textfield;
 
 // BubbleDialogModelHost is a views implementation of ui::DialogModelHost which
@@ -45,6 +46,7 @@ class VIEWS_EXPORT BubbleDialogModelHost : public BubbleDialogDelegateView,
   // GetInitiallyFocusedView().
   View* GetInitiallyFocusedView() override;
   void OnDialogInitialized() override;
+  gfx::Size CalculatePreferredSize() const override;
 
   // ui::DialogModelHost:
   void Close() override;
@@ -62,8 +64,9 @@ class VIEWS_EXPORT BubbleDialogModelHost : public BubbleDialogDelegateView,
   void ConfigureGridLayout();
 
   void AddInitialFields();
-  Textfield* AddOrUpdateTextfield(ui::DialogModelTextfield* field);
+  Label* AddOrUpdateBodyText(ui::DialogModelBodyText* field);
   Combobox* AddOrUpdateCombobox(ui::DialogModelCombobox* field);
+  Textfield* AddOrUpdateTextfield(ui::DialogModelTextfield* field);
   void AddLabelAndField(const base::string16& label_text,
                         std::unique_ptr<views::View> field,
                         const gfx::FontList& field_font);
@@ -76,6 +79,7 @@ class VIEWS_EXPORT BubbleDialogModelHost : public BubbleDialogDelegateView,
   View* FieldToView(ui::DialogModelField* field);
 
   ui::DialogModelButton* FieldAsButton(ui::DialogModelField* field);
+  ui::DialogModelBodyText* FieldAsBodyText(ui::DialogModelField* field);
   ui::DialogModelCombobox* FieldAsCombobox(ui::DialogModelField* field);
   ui::DialogModelTextfield* FieldAsTextfield(ui::DialogModelField* field);
 

@@ -1634,6 +1634,11 @@
     "expiry_milestone": 77
   },
   {
+    "name": "enable-image-reader",
+    "owners": [ "vikassoni", "khushalsagar" ],
+    "expiry_milestone": 90
+  },
+  {
     "name": "enable-immersive-fullscreen-toolbar",
     "owners": [ "lgrey" ],
     "expiry_milestone": 90
@@ -3299,11 +3304,6 @@
     "name": "omnibox-experimental-suggest-scoring",
     "owners": [ "jdonnelly", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 85
-  },
-  {
-    "name": "omnibox-focus-gesture-triggers-contextual-web-zero-suggest",
-    "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 95
   },
   {
     "name": "omnibox-history-quick-provider-allow-but-do-not-score-midword-terms",

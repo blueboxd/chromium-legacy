@@ -78,6 +78,8 @@ js_library("setup_pin_keyboard.m") {
     "//ui/webui/resources/cr_components/chromeos/quick_unlock:lock_screen_constants.m",
     "//ui/webui/resources/js:i18n_behavior.m",
   ]
+  externs_list = [ "$externs_path/quick_unlock_private.js" ]
+  extra_sources = [ "$interfaces_path/quick_unlock_private_interface.js" ]
   extra_deps = [ ":setup_pin_keyboard_module" ]
 }
 

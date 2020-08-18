@@ -13,16 +13,11 @@
 #include "base/observer_list.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/apps/app_service/remote_apps.h"
-#include "chrome/browser/chromeos/remote_apps/remote_apps_impl.h"
 #include "chrome/browser/chromeos/remote_apps/remote_apps_model.h"
-#include "chrome/browser/chromeos/remote_apps/remote_apps_types.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater_observer.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_model_updater.h"
-#include "chromeos/components/remote_apps/mojom/remote_apps.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/receiver_set.h"
 
 class AppListModelUpdater;
 class ChromeAppListItem;
@@ -38,8 +33,6 @@ class ImageSkia;
 
 namespace chromeos {
 
-class RemoteAppsImpl;
-
 // KeyedService which manages the logic for |AppType::kRemote| in AppService.
 // This service is only created for Managed Guest Sessions.
 // The IDs of the added apps and folders are GUIDs generated using
@@ -47,9 +40,16 @@ class RemoteAppsImpl;
 class RemoteAppsManager : public KeyedService,
                           public apps::RemoteApps::Delegate,
                           public app_list::AppListSyncableService::Observer,
-                          public AppListModelUpdaterObserver,
-                          public remote_apps::mojom::RemoteAppsFactory {
+                          public AppListModelUpdaterObserver {
  public:
+  enum class Error {
+    kNone = 0,
+    kAppIdDoesNotExist,
+    kFolderIdDoesNotExist,
+    // Manager has not been initialized.
+    kNotReady,
+  };
+
   class Observer : public base::CheckedObserver {
    public:
     ~Observer() override = default;
@@ -73,12 +73,8 @@ class RemoteAppsManager : public KeyedService,
 
   bool is_initialized() const { return is_initialized_; }
 
-  void BindInterface(
-      mojo::PendingReceiver<remote_apps::mojom::RemoteAppsFactory>
-          pending_remote_apps_factory);
-
   using AddAppCallback =
-      base::OnceCallback<void(const std::string& id, RemoteAppsError error)>;
+      base::OnceCallback<void(const std::string& id, Error error)>;
 
   // Adds a app with the given |name|. If |folder_id| is non-empty, the app is
   // added to the folder with the given ID. The icon of the app is an image
@@ -96,7 +92,7 @@ class RemoteAppsManager : public KeyedService,
 
   // Deletes the app with id |id|.
   // Deleting a non-existent app will result in an error.
-  RemoteAppsError DeleteApp(const std::string& id);
+  Error DeleteApp(const std::string& id);
 
   // Adds a folder with |folder_name|. Note that empty folders are not
   // shown in the launcher. Returns the ID for the added folder.
@@ -105,19 +101,13 @@ class RemoteAppsManager : public KeyedService,
   // Deletes the folder with id |folder_id|. All items in the folder are moved
   // to the top-level in the launcher.
   // Deleting a non-existent folder will result in an error.
-  RemoteAppsError DeleteFolder(const std::string& folder_id);
+  Error DeleteFolder(const std::string& folder_id);
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
   // KeyedService:
   void Shutdown() override;
-
-  // remote_apps::mojom::RemoteAppsFactory:
-  void Create(
-      mojo::PendingReceiver<remote_apps::mojom::RemoteApps> pending_remote_apps,
-      mojo::PendingRemote<remote_apps::mojom::RemoteAppLaunchObserver>
-          pending_observer) override;
 
   // apps::RemoteApps::Delegate:
   const std::map<std::string, RemoteAppsModel::AppInfo>& GetApps() override;
@@ -156,11 +146,9 @@ class RemoteAppsManager : public KeyedService,
   app_list::AppListSyncableService* app_list_syncable_service_ = nullptr;
   AppListModelUpdater* model_updater_ = nullptr;
   std::unique_ptr<apps::RemoteApps> remote_apps_;
-  RemoteAppsImpl remote_apps_impl_{this};
   std::unique_ptr<RemoteAppsModel> model_;
   std::unique_ptr<ImageDownloader> image_downloader_;
   base::ObserverList<Observer> observer_list_;
-  mojo::ReceiverSet<remote_apps::mojom::RemoteAppsFactory> receivers_;
   // Map from id to callback. The callback is run after |OnAppUpdate| for the
   // app has been observed.
   std::map<std::string, AddAppCallback> add_app_callback_map_;

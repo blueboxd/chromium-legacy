@@ -76,6 +76,7 @@ source_set("unit_tests") {
   deps = [
     ":generated_types",
     "//base",
+    "//testing/gmock",
     "//testing/gtest",
   ]
 }

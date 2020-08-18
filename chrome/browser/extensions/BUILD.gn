@@ -1028,7 +1028,6 @@ static_library("extensions") {
       "//chromeos/components/camera_app_ui:mojo_bindings",
       "//chromeos/components/camera_app_ui/resources:chrome_camera_app",
       "//chromeos/components/proximity_auth",
-      "//chromeos/components/remote_apps/mojom",
       "//chromeos/constants",
       "//chromeos/cryptohome",
       "//chromeos/dbus",

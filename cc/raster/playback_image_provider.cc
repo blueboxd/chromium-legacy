@@ -67,10 +67,9 @@ ImageProvider::ScopedResult PlaybackImageProvider::GetRasterContent(
           SkSize::Make(1.f, 1.f), draw_image.filter_quality(),
           true /* is_budgeted */));
     } else {
-      return ScopedResult(
-          DecodedDrawImage(paint_image.GetSwSkImage(), SkSize::Make(0, 0),
-                           SkSize::Make(1.f, 1.f), draw_image.filter_quality(),
-                           true /* is_budgeted */));
+      return ScopedResult(DecodedDrawImage(
+          paint_image.GetSkImage(), SkSize::Make(0, 0), SkSize::Make(1.f, 1.f),
+          draw_image.filter_quality(), true /* is_budgeted */));
     }
   }
 

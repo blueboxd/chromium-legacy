@@ -61,6 +61,8 @@ class DlcserviceClientTest : public testing::Test {
                 DoConnectToSignal(dlcservice::kDlcServiceInterface, _, _, _))
         .WillOnce(Invoke(this, &DlcserviceClientTest::ConnectToSignal));
 
+    EXPECT_CALL(*mock_proxy_.get(), DoWaitForServiceToBeAvailable(_)).Times(1);
+
     DlcserviceClient::Initialize(mock_bus_.get());
     client_ = DlcserviceClient::Get();
 

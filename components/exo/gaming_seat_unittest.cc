@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "base/time/time.h"
 #include "components/exo/buffer.h"
+#include "components/exo/gamepad.h"
 #include "components/exo/gamepad_delegate.h"
 #include "components/exo/gaming_seat_delegate.h"
 #include "components/exo/shell_surface.h"
@@ -26,24 +27,33 @@
 namespace exo {
 namespace {
 
-class MockGamingSeatDelegate : public GamingSeatDelegate {
- public:
-  MOCK_CONST_METHOD1(CanAcceptGamepadEventsForSurface, bool(Surface*));
-  MOCK_METHOD1(GamepadAdded, GamepadDelegate*(const ui::GamepadDevice&));
-  MOCK_METHOD0(Die, void());
-  void OnGamingSeatDestroying(GamingSeat*) override { delete this; }
-  ~MockGamingSeatDelegate() { Die(); }
-};
-
 class MockGamepadDelegate : public GamepadDelegate {
  public:
   MockGamepadDelegate() {}
 
   // Overridden from GamepadDelegate:
-  MOCK_METHOD0(OnRemoved, void());
-  MOCK_METHOD3(OnAxis, void(int, double, base::TimeTicks));
-  MOCK_METHOD3(OnButton, void(int, bool, base::TimeTicks));
-  MOCK_METHOD1(OnFrame, void(base::TimeTicks));
+  MOCK_METHOD(void, OnRemoved, (), (override));
+  MOCK_METHOD(void,
+              OnAxis,
+              (int axis, double value, base::TimeTicks timestamp),
+              (override));
+  MOCK_METHOD(void,
+              OnButton,
+              (int button, bool pressed, base::TimeTicks timestamp),
+              (override));
+  MOCK_METHOD(void, OnFrame, (base::TimeTicks timestamp), (override));
+};
+
+class MockGamingSeatDelegate : public GamingSeatDelegate {
+ public:
+  MOCK_METHOD(bool,
+              CanAcceptGamepadEventsForSurface,
+              (Surface * surface),
+              (const, override));
+  MOCK_METHOD(void, GamepadAdded, (Gamepad & gamepad), (override));
+  MOCK_METHOD(void, Die, (), ());
+  void OnGamingSeatDestroying(GamingSeat*) override { delete this; }
+  ~MockGamingSeatDelegate() { Die(); }
 };
 
 class GamingSeatTest : public test::ExoTestBase {
@@ -89,7 +99,6 @@ class GamingSeatTest : public test::ExoTestBase {
 
  protected:
   std::unique_ptr<GamingSeat> gaming_seat_;
-
   DISALLOW_COPY_AND_ASSIGN(GamingSeatTest);
 };
 
@@ -109,53 +118,76 @@ TEST_F(GamingSeatTest, ConnectionChange) {
       .WillOnce(testing::Return(true));
 
   InitializeGamingSeat(gaming_seat_delegate);
-  testing::StrictMock<MockGamepadDelegate> gamepad_delegate[6];
+  std::unique_ptr<MockGamepadDelegate> gamepad_delegates[6];
+  for (auto& delegate : gamepad_delegates)
+    delegate = std::make_unique<testing::StrictMock<MockGamepadDelegate>>();
 
   {  // Test sequence
     testing::InSequence s;
     // Connect 2 gamepads.
     EXPECT_CALL(*gaming_seat_delegate, GamepadAdded(testing::_))
-        .WillOnce(testing::Return(&gamepad_delegate[0]))
-        .WillOnce(testing::Return(&gamepad_delegate[1]));
+        .WillOnce(testing::Invoke([&gamepad_delegates](auto& gamepad) {
+          gamepad.SetDelegate(std::move(gamepad_delegates[0]));
+        }));
+    EXPECT_CALL(*gaming_seat_delegate, GamepadAdded(testing::_))
+        .WillOnce(testing::Invoke([&gamepad_delegates](auto& gamepad) {
+          gamepad.SetDelegate(std::move(gamepad_delegates[1]));
+        }));
     // Send frame to connected gamepad.
-    EXPECT_CALL(gamepad_delegate[0], OnFrame(testing::_)).Times(1);
-    EXPECT_CALL(gamepad_delegate[1], OnFrame(testing::_)).Times(1);
+    EXPECT_CALL(*gamepad_delegates[0], OnFrame(testing::_)).Times(1);
+    EXPECT_CALL(*gamepad_delegates[1], OnFrame(testing::_)).Times(1);
     // Connect 3 more.
     EXPECT_CALL(*gaming_seat_delegate, GamepadAdded(testing::_))
-        .WillOnce(testing::Return(&gamepad_delegate[2]))
-        .WillOnce(testing::Return(&gamepad_delegate[3]))
-        .WillOnce(testing::Return(&gamepad_delegate[4]));
-    // Send frame to all gamepads.
-    EXPECT_CALL(gamepad_delegate[0], OnFrame(testing::_)).Times(1);
-    EXPECT_CALL(gamepad_delegate[1], OnFrame(testing::_)).Times(1);
-    EXPECT_CALL(gamepad_delegate[2], OnFrame(testing::_)).Times(1);
-    EXPECT_CALL(gamepad_delegate[3], OnFrame(testing::_)).Times(1);
-    EXPECT_CALL(gamepad_delegate[4], OnFrame(testing::_)).Times(1);
-    // Disconnect gamepad 0 and gamepad 2 and connect a new gamepad.
-    EXPECT_CALL(gamepad_delegate[0], OnRemoved()).Times(1);
-    EXPECT_CALL(gamepad_delegate[2], OnRemoved()).Times(1);
-    EXPECT_CALL(gamepad_delegate[4], OnRemoved()).Times(1);
+        .WillOnce(testing::Invoke([&gamepad_delegates](auto& gamepad) {
+          gamepad.SetDelegate(std::move(gamepad_delegates[2]));
+        }));
     EXPECT_CALL(*gaming_seat_delegate, GamepadAdded(testing::_))
-        .WillOnce(testing::Return(&gamepad_delegate[5]));
+        .WillOnce(testing::Invoke([&gamepad_delegates](auto& gamepad) {
+          gamepad.SetDelegate(std::move(gamepad_delegates[3]));
+        }));
+    EXPECT_CALL(*gaming_seat_delegate, GamepadAdded(testing::_))
+        .WillOnce(testing::Invoke([&gamepad_delegates](auto& gamepad) {
+          gamepad.SetDelegate(std::move(gamepad_delegates[4]));
+        }));
     // Send frame to all gamepads.
-    EXPECT_CALL(gamepad_delegate[1], OnFrame(testing::_)).Times(1);
-    EXPECT_CALL(gamepad_delegate[3], OnFrame(testing::_)).Times(1);
-    EXPECT_CALL(gamepad_delegate[5], OnFrame(testing::_)).Times(1);
-
-    // disconnect other gamepads
-    EXPECT_CALL(gamepad_delegate[1], OnRemoved()).Times(1);
-    EXPECT_CALL(gamepad_delegate[3], OnRemoved()).Times(1);
-    EXPECT_CALL(gamepad_delegate[5], OnRemoved()).Times(1);
+    EXPECT_CALL(*gamepad_delegates[0], OnFrame(testing::_)).Times(1);
+    EXPECT_CALL(*gamepad_delegates[1], OnFrame(testing::_)).Times(1);
+    EXPECT_CALL(*gamepad_delegates[2], OnFrame(testing::_)).Times(1);
+    EXPECT_CALL(*gamepad_delegates[3], OnFrame(testing::_)).Times(1);
+    EXPECT_CALL(*gamepad_delegates[4], OnFrame(testing::_)).Times(1);
+    // Disconnect gamepads 0, 2 and 4.
+    EXPECT_CALL(*gamepad_delegates[0], OnRemoved()).Times(1);
+    EXPECT_CALL(*gamepad_delegates[2], OnRemoved()).Times(1);
+    EXPECT_CALL(*gamepad_delegates[4], OnRemoved()).Times(1);
+    // Connect a new gamepad.
+    EXPECT_CALL(*gaming_seat_delegate, GamepadAdded(testing::_))
+        .WillOnce(testing::Invoke([&gamepad_delegates](auto& gamepad) {
+          gamepad.SetDelegate(std::move(gamepad_delegates[5]));
+        }));
+    // Send frame to all gamepads.
+    EXPECT_CALL(*gamepad_delegates[1], OnFrame(testing::_)).Times(1);
+    EXPECT_CALL(*gamepad_delegates[3], OnFrame(testing::_)).Times(1);
+    EXPECT_CALL(*gamepad_delegates[5], OnFrame(testing::_)).Times(1);
   }
+
+  // The rest of gamepads should be disconnected after GamingSeat is
+  // destroyed.
+  EXPECT_CALL(*gamepad_delegates[1], OnRemoved()).Times(1);
+  EXPECT_CALL(*gamepad_delegates[3], OnRemoved()).Times(1);
+  EXPECT_CALL(*gamepad_delegates[5], OnRemoved()).Times(1);
+
   // Gamepad connected.
   UpdateGamepadDevice({0, 1});
   SendFrameToGamepads({0, 1});
   UpdateGamepadDevice({0, 1, 2, 3, 4});
   SendFrameToGamepads({0, 1, 2, 3, 4});
+  UpdateGamepadDevice({1, 2, 3, 4});
+  UpdateGamepadDevice({1, 3, 4});
+  UpdateGamepadDevice({1, 3});
   UpdateGamepadDevice({1, 3, 5});
   SendFrameToGamepads({1, 2, 3, 4, 5});
-  UpdateGamepadDevice({});
   DestroyGamingSeat(gaming_seat_delegate);
+  UpdateGamepadDevice({});
 }
 
 TEST_F(GamingSeatTest, Timestamp) {
@@ -174,8 +206,8 @@ TEST_F(GamingSeatTest, Timestamp) {
       .WillOnce(testing::Return(true));
 
   InitializeGamingSeat(gaming_seat_delegate);
-  testing::StrictMock<MockGamepadDelegate> gamepad_delegate;
-
+  auto gamepad_delegate =
+      std::make_unique<testing::StrictMock<MockGamepadDelegate>>();
   base::TimeTicks expected_time = base::TimeTicks::Now();
 
   {  // Test sequence
@@ -183,14 +215,18 @@ TEST_F(GamingSeatTest, Timestamp) {
 
     // Connect gamepad.
     EXPECT_CALL(*gaming_seat_delegate, GamepadAdded(testing::_))
-        .WillOnce(testing::Return(&gamepad_delegate));
+        .WillOnce(testing::Invoke([&gamepad_delegate](auto& gamepad) {
+          gamepad.SetDelegate(std::move(gamepad_delegate));
+        }));
     // Send button to connected gamepad. Expect correct timestamp.
-    EXPECT_CALL(gamepad_delegate,
+    EXPECT_CALL(*gamepad_delegate,
                 OnButton(testing::_, testing::_, testing::Eq(expected_time)))
         .Times(1);
-    // Disconnect gamepad.
-    EXPECT_CALL(gamepad_delegate, OnRemoved()).Times(1);
   }
+
+  // Disconnect gamepad.
+  EXPECT_CALL(*gamepad_delegate, OnRemoved()).Times(1);
+
   // Gamepad connected.
   UpdateGamepadDevice({1});
   SendButtonToGamepads({1}, expected_time);

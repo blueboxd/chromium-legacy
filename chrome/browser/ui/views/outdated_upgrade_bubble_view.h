@@ -16,32 +16,11 @@ class PageNavigator;
 // It is intended to be used as the content of a bubble anchored off of the
 // Chrome toolbar. Don't create an OutdatedUpgradeBubbleView directly,
 // instead use the static ShowBubble method.
-class OutdatedUpgradeBubbleView : public views::BubbleDialogDelegateView {
+class OutdatedUpgradeBubbleView {
  public:
   static void ShowBubble(views::View* anchor_view,
                          content::PageNavigator* navigator,
                          bool auto_update_enabled);
-
-  // views::BubbleDialogDelegateView:
-  void WindowClosing() override;
-  bool ShouldShowCloseButton() const override;
-  void Init() override;
-
- private:
-  OutdatedUpgradeBubbleView(views::View* anchor_view,
-                            content::PageNavigator* navigator,
-                            bool auto_update_enabled);
-  ~OutdatedUpgradeBubbleView() override;
-
-  void OnDialogAccepted();
-
-  // Identifies if auto-update is enabled or not.
-  const bool auto_update_enabled_;
-
-  // The PageNavigator to use for opening the Download Chrome URL.
-  content::PageNavigator* navigator_;
-
-  DISALLOW_COPY_AND_ASSIGN(OutdatedUpgradeBubbleView);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_OUTDATED_UPGRADE_BUBBLE_VIEW_H_

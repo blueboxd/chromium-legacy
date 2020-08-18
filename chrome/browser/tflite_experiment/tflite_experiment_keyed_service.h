@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_TFLITE_EXPERIMENT_TFLITE_EXPERIMENT_KEYED_SERVICE_H_
 #define CHROME_BROWSER_TFLITE_EXPERIMENT_TFLITE_EXPERIMENT_KEYED_SERVICE_H_
 
-#include "chrome/services/machine_learning/machine_learning_tflite_predictor.h"
+#include "chrome/services/machine_learning/in_process_tflite_predictor.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 namespace content {
@@ -20,14 +20,14 @@ class TFLiteExperimentKeyedService : public KeyedService {
       content::BrowserContext* browser_context);
   ~TFLiteExperimentKeyedService() override;
 
-  machine_learning::TFLitePredictor* tflite_predictor() {
+  machine_learning::InProcessTFLitePredictor* tflite_predictor() {
     return predictor_.get();
   }
 
  private:
   // The predictor owned by this keyed service capable of
   // running a TFLite model.
-  std::unique_ptr<machine_learning::TFLitePredictor> predictor_;
+  std::unique_ptr<machine_learning::InProcessTFLitePredictor> predictor_;
 };
 
 #endif  // CHROME_BROWSER_TFLITE_EXPERIMENT_TFLITE_EXPERIMENT_KEYED_SERVICE_H_

@@ -28,7 +28,7 @@ class Event;
 // stays in sync with the visible dialog (through DialogModelHosts).
 class COMPONENT_EXPORT(UI_BASE) DialogModelField {
  public:
-  enum Type { kButton, kTextfield, kCombobox };
+  enum Type { kButton, kBodyText, kCombobox, kTextfield };
 
   DialogModelField(const DialogModelField&) = delete;
   DialogModelField& operator=(const DialogModelField&) = delete;
@@ -111,6 +111,47 @@ class COMPONENT_EXPORT(UI_BASE) DialogModelButton : public DialogModelField {
   base::RepeatingCallback<void(const Event&)> callback_;
 };
 
+// Field class representing body text
+class COMPONENT_EXPORT(UI_BASE) DialogModelBodyText : public DialogModelField {
+ public:
+  class COMPONENT_EXPORT(UI_BASE) Params {
+   public:
+    Params() = default;
+    Params(const Params&) = delete;
+    Params& operator=(const Params&) = delete;
+
+    // The body text is "secondary", often adding detail and context to other,
+    // more prominent text.
+    Params& SetIsSecondary();
+
+   private:
+    friend class DialogModelBodyText;
+
+    bool is_secondary_ = false;
+  };
+
+  // Note that this is constructed through a DialogModel which adds it to model
+  // fields.
+  DialogModelBodyText(util::PassKey<DialogModel> pass_key,
+                      DialogModel* model,
+                      base::string16 text,
+                      const Params& params);
+  DialogModelBodyText(const DialogModelBodyText&) = delete;
+  DialogModelBodyText& operator=(const DialogModelBodyText&) = delete;
+  ~DialogModelBodyText() override;
+
+  const base::string16& text(util::PassKey<DialogModelHost>) const {
+    return text_;
+  }
+  bool is_secondary(util::PassKey<DialogModelHost>) const {
+    return is_secondary_;
+  }
+
+ private:
+  const base::string16 text_;
+  const bool is_secondary_;
+};
+
 // Field class representing a combobox and corresponding label to describe the
 // combobox:
 //
@@ -140,7 +181,6 @@ class COMPONENT_EXPORT(UI_BASE) DialogModelCombobox : public DialogModelField {
    private:
     friend class DialogModelCombobox;
 
-    const base::string16 label_;
     int unique_id_ = -1;
     base::string16 accessible_name_;
     base::RepeatingClosure callback_;

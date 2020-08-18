@@ -78,7 +78,7 @@ const char kSqrtNumberOfPixelsHistogramId[] =
     "SqrtNumberOfPixels";
 
 const char kPeakWindowdPercentHistogramId[] =
-    "PageLoad.Clients.Ads.Cpu.FullPage.PeakWindowedPercent";
+    "PageLoad.Clients.Ads.Cpu.FullPage.PeakWindowedPercent2";
 
 const char kHeavyAdInterventionTypeHistogramId[] =
     "PageLoad.Clients.Ads.HeavyAds.InterventionType2";

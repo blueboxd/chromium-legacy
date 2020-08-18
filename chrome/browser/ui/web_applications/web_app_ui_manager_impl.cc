@@ -10,6 +10,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -18,8 +19,10 @@
 #include "chrome/browser/ui/web_applications/web_app_dialog_manager.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
 #include "chrome/browser/ui/web_applications/web_app_metrics.h"
+#include "chrome/browser/web_applications/components/app_registry_controller.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "extensions/browser/app_sorting.h"
 #include "extensions/browser/extension_system.h"
 
@@ -58,6 +61,11 @@ WebAppUiManagerImpl::WebAppUiManagerImpl(Profile* profile)
       profile_(profile) {}
 
 WebAppUiManagerImpl::~WebAppUiManagerImpl() = default;
+
+void WebAppUiManagerImpl::SetSubsystems(
+    AppRegistryController* app_registry_controller) {
+  app_registry_controller_ = app_registry_controller;
+}
 
 void WebAppUiManagerImpl::Start() {
   DCHECK(!started_);
@@ -122,6 +130,7 @@ void WebAppUiManagerImpl::UninstallAndReplace(
   for (const AppId& from_app : from_apps) {
     if (!has_migrated) {
 #if defined(OS_CHROMEOS)
+      // Grid position in app list.
       auto* app_list_syncable_service =
           app_list::AppListSyncableServiceFactory::GetForProfile(profile_);
       if (app_list_syncable_service->GetSyncItem(from_app)) {
@@ -129,6 +138,39 @@ void WebAppUiManagerImpl::UninstallAndReplace(
         has_migrated = true;
       }
 #endif
+
+      // If migration of user/UI data is required for other app types consider
+      // generalising this operation to be part of app service.
+      const extensions::Extension* from_extension =
+          extensions::ExtensionRegistry::Get(profile_)
+              ->enabled_extensions()
+              .GetByID(from_app);
+      if (from_extension) {
+        // Grid position in chrome://apps.
+        extensions::AppSorting* app_sorting =
+            extensions::ExtensionSystem::Get(profile_)->app_sorting();
+        app_sorting->SetAppLaunchOrdinal(
+            to_app, app_sorting->GetAppLaunchOrdinal(from_app));
+        app_sorting->SetPageOrdinal(to_app,
+                                    app_sorting->GetPageOrdinal(from_app));
+
+        // User pref for window/tab launch.
+        switch (extensions::GetLaunchContainer(
+            extensions::ExtensionPrefs::Get(profile_), from_extension)) {
+          case extensions::LaunchContainer::kLaunchContainerWindow:
+          case extensions::LaunchContainer::kLaunchContainerPanelDeprecated:
+            app_registry_controller_->SetAppUserDisplayMode(
+                to_app, DisplayMode::kStandalone);
+            break;
+          case extensions::LaunchContainer::kLaunchContainerTab:
+          case extensions::LaunchContainer::kLaunchContainerNone:
+            app_registry_controller_->SetAppUserDisplayMode(
+                to_app, DisplayMode::kBrowser);
+            break;
+        }
+
+        has_migrated = true;
+      }
     }
 
     apps::AppServiceProxy* proxy =

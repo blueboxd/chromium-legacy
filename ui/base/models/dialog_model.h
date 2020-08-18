@@ -136,6 +136,10 @@ class COMPONENT_EXPORT(UI_BASE) DialogModel final {
                          std::unique_ptr<ui::ComboboxModel> combobox_model,
                          const DialogModelCombobox::Params& params);
 
+    // Adds body text. See DialogModel::AddBodyText().
+    Builder& AddBodyText(base::string16 label,
+                         const DialogModelBodyText::Params& params);
+
     // Sets which field should be initially focused in the dialog model. Must be
     // called after that field has been added. Can only be called once.
     Builder& SetInitiallyFocusedField(int unique_id);
@@ -152,20 +156,23 @@ class COMPONENT_EXPORT(UI_BASE) DialogModel final {
   // during Host construction where it takes ownership of |this|.
   DialogModelHost* host() { return host_; }
 
-  // Adds a labeled textfield (label: [text]) at the end of the dialog model.
-  void AddTextfield(base::string16 label,
-                    base::string16 text,
-                    const ui::DialogModelTextfield::Params& params);
+  // Adds body text at the end of the dialog model.
+  void AddBodyText(base::string16 label,
+                   const DialogModelBodyText::Params& params);
 
   // Adds a labeled combobox (label: [model]) at the end of the dialog model.
   void AddCombobox(base::string16 label,
                    std::unique_ptr<ui::ComboboxModel> combobox_model,
                    const DialogModelCombobox::Params& params);
 
+  // Adds a labeled textfield (label: [text]) at the end of the dialog model.
+  void AddTextfield(base::string16 label,
+                    base::string16 text,
+                    const ui::DialogModelTextfield::Params& params);
+
   // Gets DialogModelFields from their unique identifier. |unique_id| is
-  // supplied to AddX methods.
+  // supplied to the ::Params class during construction.
   DialogModelField* GetFieldByUniqueId(int unique_id);
-  DialogModelButton* GetButtonByUniqueId(int unique_id);
   DialogModelCombobox* GetComboboxByUniqueId(int unique_id);
   DialogModelTextfield* GetTextfieldByUniqueId(int unique_id);
 

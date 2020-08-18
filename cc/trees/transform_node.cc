@@ -69,7 +69,7 @@ bool TransformNode::operator==(const TransformNode& other) const {
          snap_amount == other.snap_amount &&
          maximum_animation_scale == other.maximum_animation_scale &&
          starting_animation_scale == other.starting_animation_scale &&
-         frame_element_id == other.frame_element_id;
+         visible_frame_element_id == other.visible_frame_element_id;
 }
 
 void TransformNode::AsValueInto(base::trace_event::TracedValue* value) const {

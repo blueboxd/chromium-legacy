@@ -454,6 +454,7 @@
     {
       name: "caretBrowsingEnabled",
       initial: false,
+      invalidate: "Style",
     },
 
     // Font scale factor for accessibility, applied as part of text autosizing.

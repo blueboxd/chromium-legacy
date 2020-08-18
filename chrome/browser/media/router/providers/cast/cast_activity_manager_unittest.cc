@@ -608,6 +608,18 @@ TEST_F(CastActivityManagerTest, TerminateSessionFails) {
   TerminateSession(false);
 }
 
+TEST_F(CastActivityManagerTest, DestructorClosesMirroringSession) {
+  LaunchMirroringSession();
+  ExpectMirroringActivityStopped();
+  manager_.reset();
+}
+
+TEST_F(CastActivityManagerTest, DestructorIgnoresAppSession) {
+  LaunchAppSession();
+  ExpectAppActivityStoppedTimes(0);
+  manager_.reset();
+}
+
 TEST_F(CastActivityManagerTest, TerminateSessionBeforeLaunchResponse) {
   CallLaunchSession();
   // Stop session message not sent because session has not launched yet.

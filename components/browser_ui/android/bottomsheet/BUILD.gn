@@ -21,16 +21,17 @@ android_library("java") {
     "//third_party/android_deps:androidx_annotation_annotation_java",
     "//ui/android:ui_java",
   ]
+  resources_package = "org.chromium.components.browser_ui.bottomsheet"
 }
 
 android_resources("java_resources") {
-  custom_package = "org.chromium.components.browser_ui.bottomsheet"
   sources = [
     "java/res/layout/bottom_sheet.xml",
     "java/res/values/dimens.xml",
   ]
 
   deps = [ "//components/browser_ui/strings/android:browser_ui_strings_grd" ]
+  create_srcjar = false
 }
 
 # The only dependent on this code outside of this component should be glue.

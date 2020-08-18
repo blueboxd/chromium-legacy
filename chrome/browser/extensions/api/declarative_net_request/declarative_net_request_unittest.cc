@@ -48,7 +48,6 @@
 #include "extensions/common/error_utils.h"
 #include "extensions/common/file_util.h"
 #include "extensions/common/install_warning.h"
-#include "extensions/common/manifest_constants.h"
 #include "extensions/common/url_pattern.h"
 #include "extensions/common/value_builder.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -92,8 +91,8 @@ InstallWarning GetLargeRegexWarning(
   return InstallWarning(ErrorUtils::FormatErrorMessage(
                             GetErrorWithFilename(kErrorRegexTooLarge, filename),
                             base::NumberToString(rule_id), kRegexFilterKey),
-                        manifest_keys::kDeclarativeNetRequestKey,
-                        manifest_keys::kDeclarativeRuleResourcesKey);
+                        dnr_api::ManifestKeys::kDeclarativeNetRequest,
+                        dnr_api::DNRInfo::kRuleResources);
 }
 
 // Base test fixture to test indexing of rulesets.
@@ -521,8 +520,8 @@ TEST_P(SingleRulesetTest, TooManyParseFailures) {
     ASSERT_EQ(1u + kMaxUnparsedRulesWarnings, expected_warnings.size());
 
     InstallWarning warning("");
-    warning.key = manifest_keys::kDeclarativeNetRequestKey;
-    warning.specific = manifest_keys::kDeclarativeRuleResourcesKey;
+    warning.key = dnr_api::ManifestKeys::kDeclarativeNetRequest;
+    warning.specific = dnr_api::DNRInfo::kRuleResources;
 
     // The initial warnings should correspond to the first
     // |kMaxUnparsedRulesWarnings| rules, which couldn't be parsed.
@@ -579,10 +578,8 @@ TEST_P(SingleRulesetTest, InvalidJSONRules_StrongTypes) {
     std::vector<InstallWarning> expected_warnings;
 
     for (const auto& warning : extension()->install_warnings()) {
-      EXPECT_EQ(extensions::manifest_keys::kDeclarativeNetRequestKey,
-                warning.key);
-      EXPECT_EQ(extensions::manifest_keys::kDeclarativeRuleResourcesKey,
-                warning.specific);
+      EXPECT_EQ(dnr_api::ManifestKeys::kDeclarativeNetRequest, warning.key);
+      EXPECT_EQ(dnr_api::DNRInfo::kRuleResources, warning.specific);
       EXPECT_THAT(warning.message, ::testing::HasSubstr("Parse error"));
     }
   }
@@ -635,20 +632,20 @@ TEST_P(SingleRulesetTest, InvalidJSONRules_Parsed) {
         ErrorUtils::FormatErrorMessage(
             GetErrorWithFilename(kRuleNotParsedWarning), "id 1",
             "'condition': expected dictionary, got list"),
-        manifest_keys::kDeclarativeNetRequestKey,
-        manifest_keys::kDeclarativeRuleResourcesKey);
+        dnr_api::ManifestKeys::kDeclarativeNetRequest,
+        dnr_api::DNRInfo::kRuleResources);
     expected_warnings.emplace_back(
         ErrorUtils::FormatErrorMessage(
             GetErrorWithFilename(kRuleNotParsedWarning), "id 3",
             "found unexpected key 'invalidKey'"),
-        manifest_keys::kDeclarativeNetRequestKey,
-        manifest_keys::kDeclarativeRuleResourcesKey);
+        dnr_api::ManifestKeys::kDeclarativeNetRequest,
+        dnr_api::DNRInfo::kRuleResources);
     expected_warnings.emplace_back(
         ErrorUtils::FormatErrorMessage(
             GetErrorWithFilename(kRuleNotParsedWarning), "index 4",
             "'id': expected id, got string"),
-        manifest_keys::kDeclarativeNetRequestKey,
-        manifest_keys::kDeclarativeRuleResourcesKey);
+        dnr_api::ManifestKeys::kDeclarativeNetRequest,
+        dnr_api::DNRInfo::kRuleResources);
     EXPECT_EQ(expected_warnings, extension()->install_warnings());
   }
 }
@@ -689,8 +686,8 @@ TEST_P(SingleRulesetTest, RuleCountLimitExceeded) {
   if (GetParam() != ExtensionLoadType::PACKED) {
     ASSERT_EQ(1u, extension()->install_warnings().size());
     EXPECT_EQ(InstallWarning(GetErrorWithFilename(kRuleCountExceeded),
-                             manifest_keys::kDeclarativeNetRequestKey,
-                             manifest_keys::kDeclarativeRuleResourcesKey),
+                             dnr_api::ManifestKeys::kDeclarativeNetRequest,
+                             dnr_api::DNRInfo::kRuleResources),
               extension()->install_warnings()[0]);
   }
 }
@@ -786,8 +783,8 @@ TEST_P(SingleRulesetTest, RegexRuleCountExceeded) {
   if (GetParam() != ExtensionLoadType::PACKED) {
     ASSERT_EQ(1u, extension()->install_warnings().size());
     EXPECT_EQ(InstallWarning(GetErrorWithFilename(kRegexRuleCountExceeded),
-                             manifest_keys::kDeclarativeNetRequestKey,
-                             manifest_keys::kDeclarativeRuleResourcesKey),
+                             dnr_api::ManifestKeys::kDeclarativeNetRequest,
+                             dnr_api::DNRInfo::kRuleResources),
               extension()->install_warnings()[0]);
   }
 }

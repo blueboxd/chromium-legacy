@@ -480,6 +480,11 @@ void MockRenderProcessHost::BindIndexedDB(
 void MockRenderProcessHost::
     CleanupNetworkServicePluginExceptionsUponDestruction() {}
 
+std::string
+MockRenderProcessHost::GetInfoForBrowserContextDestructionCrashReporting() {
+  return std::string();
+}
+
 void MockRenderProcessHost::FilterURL(bool empty_allowed, GURL* url) {
   RenderProcessHostImpl::FilterURL(this, empty_allowed, url);
 }

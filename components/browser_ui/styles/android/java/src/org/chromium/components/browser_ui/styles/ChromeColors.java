@@ -42,9 +42,8 @@ public class ChromeColors {
      * @return The primary background color.
      */
     public static @ColorInt int getPrimaryBackgroundColor(Resources res, boolean forceDarkBgColor) {
-        return forceDarkBgColor
-                ? ApiCompatibilityUtils.getColor(res, org.chromium.ui.R.color.default_bg_color_dark)
-                : ApiCompatibilityUtils.getColor(res, org.chromium.ui.R.color.default_bg_color);
+        return forceDarkBgColor ? ApiCompatibilityUtils.getColor(res, R.color.default_bg_color_dark)
+                                : ApiCompatibilityUtils.getColor(res, R.color.default_bg_color);
     }
 
     /**

@@ -195,7 +195,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '5cfa7194d55e066477524b9edeacae9f6f2f758c',
+  'skia_revision': 'e9d783c4d235d6bf8b27de1a1de84ff1ef846fb2',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -207,11 +207,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'd63bca58a0852240be34d74e79c77591b7f283f6',
+  'angle_revision': '693d0e0bb6731b163cadc9dd3dd76f114e787f81',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': 'e7cd224e55fa55ba248d8fba0d0dd34b948c12ae',
+  'swiftshader_revision': '6f74415e2f74b36784f4a8a08647db405473fbfc',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
@@ -258,7 +258,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '3f714d9026a262760813a0ae24d85bec686e9def',
+  'catapult_revision': '03f545114e8edb67fb725a03818f7b74f1c3de75',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -266,7 +266,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '78fa1f578a2c3d19bdbfa8bcd88e45485662aaa4',
+  'devtools_frontend_revision': '8d6628854c8b9aba93157086654bc2d2c43b452a',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -334,7 +334,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling wuffs
   # and whatever else without interference from each other.
-  'wuffs_revision': '4ed17ada9f0afaa73eba02a941e05e773a11f2d9',
+  'wuffs_revision': '67503b5bda0274b637671e277ede1e34dd08b1d7',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libgifcodec
   # and whatever else without interference from each other.
@@ -895,7 +895,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '42e3f1d3cb7698b5ad20475f5b942c4404bea155',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '5664586374b9a80af397354523e93b9ef9333f16',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1248,7 +1248,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'f926b0866fe44bc2b8b3a023c86de8143e0e4085',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '1756465158d32f3b4095c839bef6fa2a73b74fa0',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1470,7 +1470,7 @@ deps = {
   },
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'c8ac35879c9db21b25143d2075ce37f44b8f1897',
+    Var('webrtc_git') + '/src.git' + '@' + '2549f174b533bb2eb35d3b0c3856e1a0ffa0c9b7',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1561,7 +1561,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'tnUpbECn-eLbumpU1g06p173LxX2eM_OP4QF_-OtILgC',
+        'version': 'tERUmejT2tSaTumq5zSy0ws4x3w3pAMkEcpgdkD5WTEC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -2900,6 +2900,17 @@ deps = {
           {
               'package': 'chromium/third_party/android_deps/libs/com_android_tools_desugar_jdk_libs',
               'version': 'version:1.0.5-cr0',
+          },
+      ],
+      'condition': 'checkout_android',
+      'dep_type': 'cipd',
+  },
+
+  'src/third_party/android_deps/libs/com_android_tools_desugar_jdk_libs_configuration': {
+      'packages': [
+          {
+              'package': 'chromium/third_party/android_deps/libs/com_android_tools_desugar_jdk_libs_configuration',
+              'version': 'version:0.11.1-cr0',
           },
       ],
       'condition': 'checkout_android',

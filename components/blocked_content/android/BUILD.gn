@@ -12,5 +12,5 @@ android_resources("java_resources") {
     "res/drawable-xxhdpi/infobar_blocked_popups.png",
     "res/drawable-xxxhdpi/infobar_blocked_popups.png",
   ]
-  custom_package = "org.chromium.components.blocked_content"
+  create_srcjar = false
 }

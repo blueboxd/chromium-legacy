@@ -261,6 +261,9 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="Timing.PreActivationForegroundDuration">
+    <obsolete>
+      Deprecated 07/2020.
+    </obsolete>
     <summary>
       Number of millseconds that the current web contents spent in the
       foreground prior to the frame receiving user activation.
@@ -9604,6 +9607,21 @@ be describing additional metrics about the same event.
     Event recorded when a flash instance connects to the broker, resulting in a
     channel being opened to the broker process.
   </summary>
+</event>
+
+<event name="PerfectHeuristics" singular="True">
+  <owner>dom@chromium.org</owner>
+  <owner>chrome-loading@google.com</owner>
+  <summary>
+    Metrics recorded for the various Perfect Heuristics experiments being run.
+  </summary>
+  <metric name="delay_async_script_execution_before_finished_parsing"
+      enum="Boolean">
+    <summary>
+      Set to 1 when blink::ScriptRunner sees an async script before the
+      associated document has finished parsing.
+    </summary>
+  </metric>
 </event>
 
 <event name="PeriodicBackgroundSyncEventCompleted">

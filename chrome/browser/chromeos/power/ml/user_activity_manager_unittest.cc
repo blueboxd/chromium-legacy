@@ -987,13 +987,12 @@ TEST_P(UserActivityManagerTest, ScreenDimDeferredWithFinalEvent) {
   base::test::ScopedFeatureList scoped_feature_list;
   if (use_new_ml_agent_) {
     SmartDimMlAgent::GetInstance()->ResetForTesting();
-    scoped_feature_list.InitWithFeaturesAndParameters(
-        {{features::kUserActivityPrediction, params},
-         {features::kSmartDimNewMlAgent, {{}}}},
-        {});
-  } else {
     scoped_feature_list.InitAndEnableFeatureWithParameters(
         features::kUserActivityPrediction, params);
+  } else {
+    scoped_feature_list.InitWithFeaturesAndParameters(
+        {{features::kUserActivityPrediction, params}},
+        {{features::kSmartDimNewMlAgent, {{}}}});
   }
 
   // sigmoid(0.43) * 100 = 60
@@ -1043,13 +1042,12 @@ TEST_P(UserActivityManagerTest, ScreenDimDeferredWithoutFinalEvent) {
   base::test::ScopedFeatureList scoped_feature_list;
   if (use_new_ml_agent_) {
     SmartDimMlAgent::GetInstance()->ResetForTesting();
-    scoped_feature_list.InitWithFeaturesAndParameters(
-        {{features::kUserActivityPrediction, params},
-         {features::kSmartDimNewMlAgent, {{}}}},
-        {});
-  } else {
     scoped_feature_list.InitAndEnableFeatureWithParameters(
         features::kUserActivityPrediction, params);
+  } else {
+    scoped_feature_list.InitWithFeaturesAndParameters(
+        {{features::kUserActivityPrediction, params}},
+        {{features::kSmartDimNewMlAgent, {{}}}});
   }
 
   // sigmoid(0.43) * 100 = 60
@@ -1084,13 +1082,12 @@ TEST_P(UserActivityManagerTest, ScreenDimRequestCanceled) {
   base::test::ScopedFeatureList scoped_feature_list;
   if (use_new_ml_agent_) {
     SmartDimMlAgent::GetInstance()->ResetForTesting();
-    scoped_feature_list.InitWithFeaturesAndParameters(
-        {{features::kUserActivityPrediction, params},
-         {features::kSmartDimNewMlAgent, {{}}}},
-        {});
-  } else {
     scoped_feature_list.InitAndEnableFeatureWithParameters(
         features::kUserActivityPrediction, params);
+  } else {
+    scoped_feature_list.InitWithFeaturesAndParameters(
+        {{features::kUserActivityPrediction, params}},
+        {{features::kSmartDimNewMlAgent, {{}}}});
   }
 
   // sigmoid(0.43) * 100 = 60
@@ -1132,13 +1129,12 @@ TEST_P(UserActivityManagerTest, ScreenDimConsecutiveRequests) {
   base::test::ScopedFeatureList scoped_feature_list;
   if (use_new_ml_agent_) {
     SmartDimMlAgent::GetInstance()->ResetForTesting();
-    scoped_feature_list.InitWithFeaturesAndParameters(
-        {{features::kUserActivityPrediction, params},
-         {features::kSmartDimNewMlAgent, {{}}}},
-        {});
-  } else {
     scoped_feature_list.InitAndEnableFeatureWithParameters(
         features::kUserActivityPrediction, params);
+  } else {
+    scoped_feature_list.InitWithFeaturesAndParameters(
+        {{features::kUserActivityPrediction, params}},
+        {{features::kSmartDimNewMlAgent, {{}}}});
   }
 
   // sigmoid(0.43) * 100 = 60
@@ -1192,13 +1188,12 @@ TEST_P(UserActivityManagerTest, ScreenDimNotDeferred) {
   base::test::ScopedFeatureList scoped_feature_list;
   if (use_new_ml_agent_) {
     SmartDimMlAgent::GetInstance()->ResetForTesting();
-    scoped_feature_list.InitWithFeaturesAndParameters(
-        {{features::kUserActivityPrediction, params},
-         {features::kSmartDimNewMlAgent, {{}}}},
-        {});
-  } else {
     scoped_feature_list.InitAndEnableFeatureWithParameters(
         features::kUserActivityPrediction, params);
+  } else {
+    scoped_feature_list.InitWithFeaturesAndParameters(
+        {{features::kUserActivityPrediction, params}},
+        {{features::kSmartDimNewMlAgent, {{}}}});
   }
 
   // sigmoid(0.43) * 100 = 60
@@ -1240,13 +1235,12 @@ TEST_P(UserActivityManagerTest, TwoScreenDimImminentWithEventInBetween) {
   base::test::ScopedFeatureList scoped_feature_list;
   if (use_new_ml_agent_) {
     SmartDimMlAgent::GetInstance()->ResetForTesting();
-    scoped_feature_list.InitWithFeaturesAndParameters(
-        {{features::kUserActivityPrediction, params},
-         {features::kSmartDimNewMlAgent, {{}}}},
-        {});
-  } else {
     scoped_feature_list.InitAndEnableFeatureWithParameters(
         features::kUserActivityPrediction, params);
+  } else {
+    scoped_feature_list.InitWithFeaturesAndParameters(
+        {{features::kUserActivityPrediction, params}},
+        {{features::kSmartDimNewMlAgent, {{}}}});
   }
   model_.set_decision_threshold(50);
 
@@ -1334,13 +1328,12 @@ TEST_P(UserActivityManagerTest, TwoScreenDimImminentWithoutEventInBetween) {
   base::test::ScopedFeatureList scoped_feature_list;
   if (use_new_ml_agent_) {
     SmartDimMlAgent::GetInstance()->ResetForTesting();
-    scoped_feature_list.InitWithFeaturesAndParameters(
-        {{features::kUserActivityPrediction, params},
-         {features::kSmartDimNewMlAgent, {{}}}},
-        {});
-  } else {
     scoped_feature_list.InitAndEnableFeatureWithParameters(
         features::kUserActivityPrediction, params);
+  } else {
+    scoped_feature_list.InitWithFeaturesAndParameters(
+        {{features::kUserActivityPrediction, params}},
+        {{features::kSmartDimNewMlAgent, {{}}}});
   }
   model_.set_decision_threshold(50);
 
@@ -1416,8 +1409,12 @@ TEST_P(UserActivityManagerTest, ModelError) {
   const std::map<std::string, std::string> params = {
       {"dim_threshold", "0.651"}};
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeatureWithParameters(
-      features::kUserActivityPrediction, params);
+  // This ModelError only happens in old SmartDimModel, not for new ml_agent.
+  // Now that the new ml_agent is the default behavior, we need to disable
+  // kSmartDimNewMlAgent for this test.
+  scoped_feature_list.InitWithFeaturesAndParameters(
+      {{features::kUserActivityPrediction, params}},
+      {{features::kSmartDimNewMlAgent, {{}}}});
 
   // This value will trigger a model error.
   model_.set_inactivity_score(160);

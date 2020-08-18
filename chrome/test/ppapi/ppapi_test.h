@@ -13,8 +13,10 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/infobars/core/infobar_manager.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/javascript_test_observer.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 
 class InfoBarService;
 
@@ -123,6 +125,7 @@ class OutOfProcessPPAPITest : public PPAPITest {
   OutOfProcessPPAPITest();
 
   void SetUpCommandLine(base::CommandLine* command_line) override;
+  void RunTouchEventTest(const std::string& test_case);
 };
 
 class OutOfProcessPPAPIPrivateTest : public OutOfProcessPPAPITest {

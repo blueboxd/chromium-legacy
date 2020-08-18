@@ -104,6 +104,7 @@ TEST_F(FrameCaretTest, ShouldBlinkCaretWhileCaretBrowsing) {
   Selection().SetCaretVisible(true);
   EXPECT_FALSE(ShouldBlinkCaret(caret));
   GetDocument().GetFrame()->GetSettings()->SetCaretBrowsingEnabled(true);
+  UpdateAllLifecyclePhasesForTest();
   EXPECT_TRUE(ShouldBlinkCaret(caret));
 }
 

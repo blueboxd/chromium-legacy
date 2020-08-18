@@ -4184,10 +4184,7 @@
   },
   "linux-lacros-rel": {
     "additional_compile_targets": [
-      "chrome",
-      "chrome_sandbox",
-      "linux_symbols",
-      "symupload"
+      "gn_all"
     ],
     "gtest_tests": [
       {
@@ -4737,6 +4734,23 @@
         },
         "test": "gwp_asan_unittests",
         "test_id_prefix": "ninja://components/gwp_asan:gwp_asan_unittests/"
+      },
+      {
+        "args": [
+          "--test-launcher-filter-file=../../testing/buildbot/filters/lacros.interactive_ui_tests.filter"
+        ],
+        "experiment_percentage": 100,
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 3
+        },
+        "test": "interactive_ui_tests",
+        "test_id_prefix": "ninja://chrome/test:interactive_ui_tests/"
       },
       {
         "merge": {

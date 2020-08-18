@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 from code import Code
-from model import PropertyType
+from model import PropertyType, Property, Type
 import cpp_util
 import schema_util
 import util_cc_helper
@@ -51,6 +51,7 @@ class _Generator(object):
               (self._namespace.source_file_dir, self._namespace.short_filename))
       .Append('#include <set>')
       .Append('#include <utility>')
+      .Cblock(self._GenerateManifestKeysIncludes())
       .Cblock(self._type_helper.GenerateIncludes(include_soft=True))
       .Append()
       .Append('using base::UTF8ToUTF16;')
@@ -76,6 +77,13 @@ class _Generator(object):
         .Append('//')
         .Append()
         .Cblock(self._GenerateTypes(None, self._namespace.types.values()))
+      )
+    if self._namespace.manifest_keys:
+      (c.Append('//')
+        .Append('// Manifest Keys')
+        .Append('//')
+        .Append()
+        .Cblock(self._GenerateManifestKeys())
       )
     if self._namespace.functions:
       (c.Append('//')
@@ -138,12 +146,23 @@ class _Generator(object):
                      classname))
         .Cblock(self._GenerateMoveAssignOperator(type_))
       )
+
+      if type_.origin.from_manifest_keys:
+        c.Cblock(
+          self._GenerateManifestKeyConstants(
+            classname_in_namespace, type_.properties.values()))
+
       if type_.origin.from_json:
         c.Cblock(self._GenerateTypePopulate(classname_in_namespace, type_))
         if cpp_namespace is None:  # only generate for top-level types
           c.Cblock(self._GenerateTypeFromValue(classname_in_namespace, type_))
       if type_.origin.from_client:
         c.Cblock(self._GenerateTypeToValue(classname_in_namespace, type_))
+
+      if type_.origin.from_manifest_keys:
+        c.Cblock(
+          self._GenerateParseFromDictionary(classname, classname_in_namespace,
+                                            type_))
     elif type_.property_type == PropertyType.ENUM:
       (c.Cblock(self._GenerateEnumToString(cpp_namespace, type_))
         .Cblock(self._GenerateEnumFromString(cpp_namespace, type_))
@@ -437,6 +456,189 @@ class _Generator(object):
       return self._GenerateChoiceTypeToValue(cpp_namespace, type_)
     else:
       raise ValueError("Unsupported property type %s" % type_.type_)
+
+  def _GenerateManifestKeysIncludes(self):
+    # type: () -> (Code)
+    """Returns the includes needed for manifest key parsing.
+    """
+    c = Code()
+    if not self._namespace.manifest_keys:
+      return c
+
+    c.Append('#include "tools/json_schema_compiler/manifest_parse_util.h"')
+    return c
+
+  def _GenerateManifestKeyConstants(self, classname_in_namespace, properties):
+    # type: (str, List[Property]) -> Code
+    """ Generates the definition for manifest key constants declared in the
+    header.
+    """
+    c = Code()
+    for prop in properties:
+      c.Comment('static')
+      c.Append('constexpr char %s::%s[];' %
+               (classname_in_namespace,
+                cpp_util.UnixNameToConstantName(prop.unix_name)))
+
+    return c
+
+  def _GenerateManifestKeys(self):
+    # type: () -> Code
+    """Generates the types and parsing code for manifest keys.
+    """
+    assert self._namespace.manifest_keys
+    assert self._namespace.manifest_keys.property_type == PropertyType.OBJECT
+    return self._GenerateType(None, self._namespace.manifest_keys)
+
+  def _GenerateParseFromDictionary(self, classname, classname_in_namespace,
+                                   type_):
+    # type: (str, str, Type) -> Code
+    """Generates a function that deserializes the type from the passed
+    dictionary. E.g. for type "Foo", generates Foo::ParseFromDictionary().
+    """
+    assert type_.property_type == PropertyType.OBJECT, \
+      ('Manifest type %s must be an object, but it is: %s' %
+      (type_.name, type_.property_type))
+
+    if type_.IsRootManifestKeyType():
+      return self._GenerateParseFromDictionaryForRootManifestType(
+        classname, classname_in_namespace, type_.properties.values())
+    return self._GenerateParseFromDictionaryForChildManifestType(
+      classname, classname_in_namespace, type_.properties.values())
+
+  def _GenerateParseFromDictionaryForRootManifestType(
+    self, classname, classname_in_namespace, properties):
+    # type: (str, str, List[Property]) -> Code
+    """Generates definition for ManifestKeys::ParseFromDictionary.
+    """
+    params = [
+      'const base::DictionaryValue& root_dict',
+      '%(classname)s* out'
+    ]
+
+    c = Code()
+    c.Append('//static')
+    c.Append('bool %(classname_in_namespace)s::ParseFromDictionary(')
+
+    # Make |generate_error_messages| True since we always generate error
+    # messages for manifest parsing.
+    c.Sblock('%s) {' %
+             self._GenerateParams(params, generate_error_messages=True))
+
+    c.Append('DCHECK(out);')
+    c.Append('DCHECK(error);')
+    c.Append()
+
+    c.Append('std::vector<base::StringPiece> error_path_reversed_vec;')
+    c.Append('auto* error_path_reversed = &error_path_reversed_vec;')
+    c.Append('const base::DictionaryValue& dict = root_dict;')
+
+    for prop in properties:
+      c.Concat(self._InitializePropertyToDefault(prop, 'out'))
+
+    for prop in properties:
+      c.Cblock(
+        self._ParsePropertyFromDictionary(prop, is_root_manifest_type=True))
+
+    c.Append('return true;')
+    c.Eblock('}')
+    c.Substitute({
+      'classname_in_namespace': classname_in_namespace,
+      'classname': classname
+    })
+    return c
+
+  def _GenerateParseFromDictionaryForChildManifestType(
+    self, classname, classname_in_namespace, properties):
+    # type: (str, str, List[Property]) -> Code
+    """Generates T::ParseFromDictionary for a child manifest type.
+    """
+    params = [
+      'const base::DictionaryValue& root_dict',
+      'base::StringPiece key',
+      '%(classname)s* out',
+      'base::string16* error',
+      'std::vector<base::StringPiece>* error_path_reversed'
+    ]
+
+    c = Code()
+    c.Append('//static')
+    c.Append('bool %(classname_in_namespace)s::ParseFromDictionary(')
+
+    # Make |generate_error_messages| False since |error| is already included
+    # within |params|.
+    c.Sblock('%s) {' %
+             self._GenerateParams(params, generate_error_messages=False))
+
+    c.Append('DCHECK(out);')
+    c.Append('DCHECK(error);')
+    c.Append('DCHECK(error_path_reversed);')
+    c.Append()
+
+    c.Append(
+      'const base::Value* value = '
+      '::json_schema_compiler::manifest_parse_util::FindKeyOfType('
+      'root_dict, key, base::Value::Type::DICTIONARY, error, '
+      'error_path_reversed);'
+    )
+    c.Sblock('if (!value)')
+    c.Append('return false;')
+    c.Eblock('const base::DictionaryValue& dict = '
+             'base::Value::AsDictionaryValue(*value);')
+
+    for prop in properties:
+      c.Concat(self._InitializePropertyToDefault(prop, 'out'))
+
+    for prop in properties:
+      c.Cblock(
+        self._ParsePropertyFromDictionary(prop, is_root_manifest_type=False))
+
+    c.Append('return true;')
+    c.Eblock('}')
+    c.Substitute({
+      'classname_in_namespace': classname_in_namespace,
+      'classname': classname
+    })
+    return c
+
+  def _ParsePropertyFromDictionary(self, property, is_root_manifest_type):
+    # type: (Property, bool) -> Code
+    """Generates the code to parse a single property from a dictionary.
+    """
+    supported_property_types = {
+      PropertyType.ARRAY,
+      PropertyType.BOOLEAN,
+      PropertyType.DOUBLE,
+      PropertyType.INT64,
+      PropertyType.INTEGER,
+      PropertyType.OBJECT,
+      PropertyType.STRING,
+    }
+
+    c = Code()
+    underlying_type = self._type_helper.FollowRef(property.type_)
+    underlying_property_type = underlying_type.property_type
+    assert (underlying_property_type in supported_property_types), (
+      'Property type not implemented for %s, type: %s, namespace: %s' %
+      (underlying_property_type, underlying_type.name,
+        underlying_type.namespace.name))
+
+    property_constant = cpp_util.UnixNameToConstantName(property.unix_name)
+    out_expression = '&out->%s' % property.unix_name
+    c.Sblock(
+      'if (!::json_schema_compiler::manifest_parse_util::ParseFromDictionary'
+      '(dict, %s, %s, error, error_path_reversed)) {' %
+      (property_constant, out_expression)
+    )
+    if is_root_manifest_type:
+      c.Append('::json_schema_compiler::manifest_parse_util::'
+        'PopulateFinalError(error, error_path_reversed);')
+    else:
+      c.Append('error_path_reversed->push_back(key);')
+    c.Append('return false;')
+    c.Eblock('}')
+
+    return c
 
   def _GenerateObjectTypeToValue(self, cpp_namespace, type_):
     """Generates a function that serializes an object-representing type
@@ -1139,10 +1341,14 @@ class _Generator(object):
       .Append('error->append(UTF8ToUTF16(%s));' % body))
     return c
 
-  def _GenerateParams(self, params):
+  def _GenerateParams(self, params, generate_error_messages=None):
     """Builds the parameter list for a function, given an array of parameters.
+    If |generate_error_messages| is specified, it overrides
+    |self._generate_error_messages|.
     """
-    if self._generate_error_messages:
+    if generate_error_messages is None:
+      generate_error_messages = self._generate_error_messages
+    if generate_error_messages:
       params = list(params) + ['base::string16* error']
     return ', '.join(str(p) for p in params)
 

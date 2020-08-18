@@ -38,10 +38,10 @@ android_library("java") {
     "//net/dns:secure_dns_mode_generated_enum",
   ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
+  resources_package = "org.chromium.chrome.browser.privacy.secure_dns"
 }
 
 android_resources("java_resources") {
-  custom_package = "org.chromium.chrome.browser.privacy.secure_dns"
   sources = [
     "java/res/layout/secure_dns_provider_preference.xml",
     "java/res/layout/secure_dns_provider_spinner_item.xml",
@@ -54,6 +54,7 @@ android_resources("java_resources") {
     "//components/browser_ui/widget/android:java_resources",
     "//third_party/android_deps:material_design_java",
   ]
+  create_srcjar = false
 }
 
 generate_jni("jni_headers") {

@@ -1,5 +1,13 @@
 rootWebArea
 ++genericContainer ignored
 ++++genericContainer ignored
-++++++listBox multiselectable
-++++++listBox
+++++++listBox multiselectable name='My Listbox'
+++++++++listBoxOption name='Example 1' selected=false
+++++++++listBoxOption name='Example 2' selected=false
+++++++++listBoxOption name='Example 3' selected=false
+++++++++listBoxOption name='Example 4' selected=false
+++++++listBox multiselectable name='My Listbox'
+++++++++listBoxOption name='Example 1' selected=false
+++++++++listBoxOption name='Example 2' selected=true
+++++++++listBoxOption name='Example 3' selected=false
+++++++++listBoxOption name='Example 4' selected=true

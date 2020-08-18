@@ -18,6 +18,7 @@
 #include "ui/compositor/layer_animation_element.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rounded_corners_f.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/bubble/bubble_frame_view.h"
@@ -387,13 +388,17 @@ BubbleDialogDelegate::CreateNonClientFrameView(Widget* widget) {
 
 ClientView* BubbleDialogDelegate::CreateClientView(Widget* widget) {
   client_view_ = DialogDelegate::CreateClientView(widget);
-  // In order for the |client_view|'s content view hierarchy to respect its clip
-  // mask we must paint to a layer. This is necessary because layers do not
-  // respect the clip of a non-layer backed parent.
+  // In order for the |client_view|'s content view hierarchy to respect its
+  // rounded corner clip we must paint the client view to a layer. This is
+  // necessary because layers do not respect the clip of a non-layer backed
+  // parent.
   if (base::FeatureList::IsEnabled(
           features::kEnableMDRoundedCornersOnDialogs) &&
       GetProperty(kPaintClientToLayer)) {
     client_view_->SetPaintToLayer();
+    client_view_->layer()->SetRoundedCornerRadius(
+        gfx::RoundedCornersF(GetCornerRadius()));
+    client_view_->layer()->SetIsFastRoundedCorner(true);
   }
 
   return client_view_;

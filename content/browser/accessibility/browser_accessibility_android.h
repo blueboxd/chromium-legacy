@@ -45,6 +45,7 @@ class CONTENT_EXPORT BrowserAccessibilityAndroid : public BrowserAccessibility {
   bool IsHierarchical() const;
   bool IsLink() const;
   bool IsMultiLine() const;
+  bool IsMultiselectable() const;
   bool IsRangeType() const;
   bool IsScrollable() const;
   bool IsSelected() const;
@@ -87,6 +88,9 @@ class CONTENT_EXPORT BrowserAccessibilityAndroid : public BrowserAccessibility {
   std::string GetRoleString() const;
 
   base::string16 GetContentInvalidErrorMessage() const;
+
+  base::string16 GetStateDescription() const;
+  base::string16 GetMultiselectableStateDescription() const;
 
   base::string16 GetRoleDescription() const;
 

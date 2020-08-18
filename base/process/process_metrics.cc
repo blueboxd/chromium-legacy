@@ -12,35 +12,29 @@
 #include "base/values.h"
 #include "build/build_config.h"
 
+namespace base {
+
 namespace {
+
 int CalculateEventsPerSecond(uint64_t event_count,
                              uint64_t* last_event_count,
                              base::TimeTicks* last_calculated) {
-  base::TimeTicks time = base::TimeTicks::Now();
+  const base::TimeTicks time = base::TimeTicks::Now();
 
-  if (*last_event_count == 0) {
-    // First call, just set the last values.
-    *last_calculated = time;
-    *last_event_count = event_count;
-    return 0;
-  }
-
-  int64_t events_delta = event_count - *last_event_count;
-  base::TimeDelta time_delta = time - *last_calculated;
-  if (time_delta == base::TimeDelta()) {
-    NOTREACHED();
-    return 0;
+  int events_per_second = 0;
+  if (*last_event_count != 0) {
+    const int64_t events_delta = event_count - *last_event_count;
+    const base::TimeDelta time_delta = time - *last_calculated;
+    DCHECK(!time_delta.is_zero());
+    events_per_second = ClampRound(events_delta / time_delta.InSecondsF());
   }
 
   *last_calculated = time;
   *last_event_count = event_count;
-
-  return base::ClampRound(events_delta / time_delta.InSecondsF());
+  return events_per_second;
 }
 
 }  // namespace
-
-namespace base {
 
 SystemMemoryInfoKB::SystemMemoryInfoKB() = default;
 
@@ -119,8 +113,7 @@ double ProcessMetrics::GetPlatformIndependentCPUUsage() {
   last_cumulative_cpu_ = cumulative_cpu;
   last_cpu_time_ = time;
 
-  return 100.0 * system_time_delta.InMicrosecondsF() /
-         time_delta.InMicrosecondsF();
+  return 100.0 * system_time_delta / time_delta;
 }
 #endif
 

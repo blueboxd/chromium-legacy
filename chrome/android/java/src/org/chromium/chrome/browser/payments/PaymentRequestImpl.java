@@ -63,7 +63,6 @@ import org.chromium.components.payments.Event;
 import org.chromium.components.payments.JourneyLogger;
 import org.chromium.components.payments.MethodStrings;
 import org.chromium.components.payments.NotShownReason;
-import org.chromium.components.payments.OriginSecurityChecker;
 import org.chromium.components.payments.PackageManagerDelegate;
 import org.chromium.components.payments.PayerData;
 import org.chromium.components.payments.PaymentApp;
@@ -83,7 +82,6 @@ import org.chromium.components.security_state.SecurityStateModel;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.content_public.browser.WebContentsStatics;
 import org.chromium.payments.mojom.CanMakePaymentQueryResult;
 import org.chromium.payments.mojom.HasEnrolledInstrumentQueryResult;
 import org.chromium.payments.mojom.PayerDetail;
@@ -340,20 +338,18 @@ public class PaymentRequestImpl
      * @param renderFrameHost The host of the frame that has invoked the PaymentRequest API.
      * @param componentPaymentRequestImpl The component side of the PaymentRequest implementation.
      * @param isOffTheRecord Whether the merchant page is shown in an off-the-record tab.
-     * @param journeyLogger The JourneyLogger that records the user journey of using the
-     *         PaymentRequest service.
      * @param delegate The delegate of this class.
      */
     public PaymentRequestImpl(RenderFrameHost renderFrameHost,
             ComponentPaymentRequestImpl componentPaymentRequestImpl, boolean isOffTheRecord,
-            JourneyLogger journeyLogger, Delegate delegate) {
+            Delegate delegate) {
         assert renderFrameHost != null;
         assert componentPaymentRequestImpl != null;
         assert delegate != null;
 
         mRenderFrameHost = renderFrameHost;
         mDelegate = delegate;
-        mWebContents = WebContentsStatics.fromRenderFrameHost(renderFrameHost);
+        mWebContents = componentPaymentRequestImpl.getWebContents();
         mPaymentRequestOrigin =
                 UrlFormatter.formatUrlForSecurityDisplay(mRenderFrameHost.getLastCommittedURL());
         mPaymentRequestSecurityOrigin = mRenderFrameHost.getLastCommittedOrigin();
@@ -362,7 +358,7 @@ public class PaymentRequestImpl
         mMerchantName = mWebContents.getTitle();
         mCertificateChain = CertificateChainHelper.getCertificateChain(mWebContents);
         mIsOffTheRecord = isOffTheRecord;
-        mJourneyLogger = journeyLogger;
+        mJourneyLogger = componentPaymentRequestImpl.getJourneyLogger();
         mPaymentUIsManager = new PaymentUIsManager(/*delegate=*/this,
                 /*params=*/this, mWebContents, mIsOffTheRecord, mJourneyLogger);
         mComponentPaymentRequestImpl = componentPaymentRequestImpl;
@@ -375,12 +371,6 @@ public class PaymentRequestImpl
             @Nullable PaymentOptions options, boolean googlePayBridgeEligible) {
         assert mComponentPaymentRequestImpl != null;
         mMethodData = new HashMap<>();
-
-        if (!OriginSecurityChecker.isOriginSecure(mWebContents.getLastCommittedUrl())) {
-            mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
-            disconnectFromClientWithDebugMessage(ErrorStrings.NOT_IN_A_SECURE_ORIGIN);
-            return false;
-        }
 
         mPaymentOptions = options;
         mRequestShipping = options != null && options.requestShipping;
@@ -1454,11 +1444,6 @@ public class PaymentRequestImpl
             mPaymentHandlerHost = new PaymentHandlerHost(mWebContents, /*delegate=*/this);
         }
         return mPaymentHandlerHost;
-    }
-
-    @Override
-    public JourneyLogger getJourneyLogger() {
-        return mJourneyLogger;
     }
 
     @Override

@@ -143,7 +143,7 @@ static_library("web_contents_delegate") {
 }
 
 android_resources("web_contents_delegate_java_resources") {
-  custom_package = "org.chromium.components.embedder_support.delegate"
+  create_srcjar = false
   sources = [
     "java/res/drawable-hdpi/color_picker_advanced_select_handle.png",
     "java/res/drawable-mdpi/color_picker_advanced_select_handle.png",
@@ -169,6 +169,7 @@ android_library("web_contents_delegate_java") {
     "//third_party/android_deps:androidx_core_core_java",
     "//ui/android:ui_java",
   ]
+  resources_package = "org.chromium.components.embedder_support.delegate"
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
   sources = [
     "java/src/org/chromium/components/embedder_support/delegate/ColorChooserAndroid.java",

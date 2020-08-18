@@ -191,7 +191,7 @@ public class BrowserImpl extends IBrowser.Stub implements View.OnAttachStateChan
 
     @Override
     public void setTopViewAndScrollingBehavior(
-            IObjectWrapper viewWrapper, int minHeight, boolean pinToContentTop) {
+            IObjectWrapper viewWrapper, int minHeight, boolean onlyExpandControlsAtPageTop) {
         StrictModeWorkaround.apply();
         if (minHeight < 0) {
             throw new IllegalArgumentException("Top view min height must be non-negative.");
@@ -199,7 +199,7 @@ public class BrowserImpl extends IBrowser.Stub implements View.OnAttachStateChan
 
         getViewController().setTopView(ObjectWrapper.unwrap(viewWrapper, View.class));
         getViewController().setTopControlsMinHeight(minHeight);
-        getViewController().setPinTopControlsToContentTop(pinToContentTop);
+        getViewController().setOnlyExpandTopControlsAtPageTop(onlyExpandControlsAtPageTop);
     }
 
     @Override

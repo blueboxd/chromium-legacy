@@ -303,7 +303,8 @@ class NetworkChangeNotifierFuchsiaTest : public testing::Test {
   // populate from the list of interfaces which have already been added to
   // |netstack_|. |observer_| is registered last, so that tests need only
   // express expectations on changes they make themselves.
-  void CreateNotifier(uint32_t required_features = 0) {
+  void CreateNotifier(
+      fuchsia::hardware::ethernet::Features required_features = {}) {
     // Ensure that the Netstack internal state is up-to-date before the
     // notifier queries it.
     netstack_.FlushNetstackThread();
@@ -357,8 +358,7 @@ TEST_F(NetworkChangeNotifierFuchsiaTest, NotifyNetworkChangeOnInitialIPChange) {
   // Set a live interface with an IP address and create the notifier.
   std::vector<fuchsia::netstack::NetInterface> interfaces(1);
   interfaces[0] = DefaultNetInterface();
-  interfaces[0].features = static_cast<decltype(interfaces[0].features)>(
-      fuchsia::hardware::ethernet::INFO_FEATURE_WLAN);
+  interfaces[0].features = fuchsia::hardware::ethernet::Features::WLAN;
 
   netstack_.SetInterfaces(interfaces);
   CreateNotifier();
@@ -560,8 +560,7 @@ TEST_F(NetworkChangeNotifierFuchsiaTest, InterfaceAdded) {
 
   std::vector<fuchsia::netstack::NetInterface> interfaces(1);
   interfaces[0] = DefaultNetInterface();
-  interfaces[0].features = static_cast<decltype(interfaces[0].features)>(
-      fuchsia::hardware::ethernet::INFO_FEATURE_WLAN);
+  interfaces[0].features = fuchsia::hardware::ethernet::Features::WLAN;
 
   netstack_.SetInterfaces(interfaces);
 
@@ -596,8 +595,7 @@ TEST_F(NetworkChangeNotifierFuchsiaTest, SecondaryInterfaceDeletedNoop) {
 TEST_F(NetworkChangeNotifierFuchsiaTest, FoundWiFi) {
   std::vector<fuchsia::netstack::NetInterface> interfaces(1);
   interfaces[0] = DefaultNetInterface();
-  interfaces[0].features = static_cast<decltype(interfaces[0].features)>(
-      fuchsia::hardware::ethernet::INFO_FEATURE_WLAN);
+  interfaces[0].features = fuchsia::hardware::ethernet::Features::WLAN;
 
   netstack_.SetInterfaces(interfaces);
   CreateNotifier();
@@ -608,11 +606,10 @@ TEST_F(NetworkChangeNotifierFuchsiaTest, FoundWiFi) {
 TEST_F(NetworkChangeNotifierFuchsiaTest, FindsInterfaceWithRequiredFeature) {
   std::vector<fuchsia::netstack::NetInterface> interfaces(1);
   interfaces[0] = DefaultNetInterface();
-  interfaces[0].features = static_cast<decltype(interfaces[0].features)>(
-      fuchsia::hardware::ethernet::INFO_FEATURE_WLAN);
+  interfaces[0].features = fuchsia::hardware::ethernet::Features::WLAN;
 
   netstack_.SetInterfaces(interfaces);
-  CreateNotifier(fuchsia::hardware::ethernet::INFO_FEATURE_WLAN);
+  CreateNotifier(fuchsia::hardware::ethernet::Features::WLAN);
   EXPECT_EQ(NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI,
             notifier_->GetCurrentConnectionType());
 }
@@ -622,7 +619,7 @@ TEST_F(NetworkChangeNotifierFuchsiaTest, IgnoresInterfaceWithMissingFeature) {
   interfaces[0] = DefaultNetInterface();
 
   netstack_.SetInterfaces(interfaces);
-  CreateNotifier(fuchsia::hardware::ethernet::INFO_FEATURE_WLAN);
+  CreateNotifier(fuchsia::hardware::ethernet::Features::WLAN);
   EXPECT_EQ(NetworkChangeNotifier::ConnectionType::CONNECTION_NONE,
             notifier_->GetCurrentConnectionType());
 }

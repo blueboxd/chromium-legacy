@@ -466,6 +466,7 @@ void AssistantManagerServiceImpl::UpdateInternalMediaPlayerStatus(
 
 void AssistantManagerServiceImpl::StartVoiceInteraction() {
   DCHECK(assistant_manager_);
+  DVLOG(1) << __FUNCTION__;
 
   platform_api_->SetMicState(true);
   assistant_manager_->StartAssistantInteraction();
@@ -473,6 +474,7 @@ void AssistantManagerServiceImpl::StartVoiceInteraction() {
 
 void AssistantManagerServiceImpl::StopActiveInteraction(
     bool cancel_conversation) {
+  DVLOG(1) << __FUNCTION__;
   platform_api_->SetMicState(false);
 
   if (!assistant_manager_internal_) {
@@ -520,6 +522,7 @@ void AssistantManagerServiceImpl::StartTextInteraction(
     const std::string& query,
     AssistantQuerySource source,
     bool allow_tts) {
+  DVLOG(1) << __FUNCTION__;
   assistant_client::VoicelessOptions options;
   options.is_user_initiated = true;
   options.enable_on_device_assistant_for_voiceless =

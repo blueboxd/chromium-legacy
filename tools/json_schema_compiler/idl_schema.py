@@ -417,6 +417,7 @@ class Namespace(object):
     self.events = []
     self.functions = []
     self.properties = OrderedDict()
+    self.manifest_keys = None
     self.types = []
     self.callbacks = OrderedDict()
     self.description = description
@@ -425,7 +426,10 @@ class Namespace(object):
 
   def process(self):
     for node in self.namespace.GetChildren():
-      if node.cls == 'Dictionary':
+      if node.cls == 'Dictionary' and node.GetName() == 'ManifestKeys':
+        self.manifest_keys = Dictionary(node).process(
+            self.callbacks)['properties']
+      elif node.cls == 'Dictionary':
         self.types.append(Dictionary(node).process(self.callbacks))
       elif node.cls == 'Callback':
         k, v = Member(node).process(self.callbacks)
@@ -450,18 +454,21 @@ class Namespace(object):
         sys.exit('Did not process %s %s' % (node.cls, node))
     compiler_options = self.compiler_options or {}
     documentation_options = self.documentation_options or {}
-    return {'namespace': self.namespace.GetName(),
-            'description': self.description,
-            'nodoc': self.nodoc,
-            'types': self.types,
-            'functions': self.functions,
-            'properties': self.properties,
-            'internal': self.internal,
-            'events': self.events,
-            'platforms': self.platforms,
-            'compiler_options': compiler_options,
-            'deprecated': self.deprecated,
-            'documentation_options': documentation_options}
+    return {
+      'namespace': self.namespace.GetName(),
+      'description': self.description,
+      'nodoc': self.nodoc,
+      'types': self.types,
+      'functions': self.functions,
+      'properties': self.properties,
+      'manifest_keys': self.manifest_keys,
+      'internal': self.internal,
+      'events': self.events,
+      'platforms': self.platforms,
+      'compiler_options': compiler_options,
+      'deprecated': self.deprecated,
+      'documentation_options': documentation_options
+    }
 
   def process_interface(self, node, functions_are_properties=False):
     members = []

@@ -272,6 +272,7 @@ void WebAppProvider::ConnectSubsystems() {
   web_app_policy_manager_->SetSubsystems(pending_app_manager_.get());
   file_handler_manager_->SetSubsystems(registrar_.get());
   shortcut_manager_->SetSubsystems(icon_manager_.get(), registrar_.get());
+  ui_manager_->SetSubsystems(registry_controller_.get());
   os_integration_manager_->SetSubsystems(
       registrar_.get(), shortcut_manager_.get(), file_handler_manager_.get(),
       ui_manager_.get());

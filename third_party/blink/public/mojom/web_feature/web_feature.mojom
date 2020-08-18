@@ -2738,6 +2738,12 @@ enum WebFeature {
   kThirdPartyCookieRead = 3408,
   kThirdPartyCookieWrite = 3409,
   kRTCLegacyRtpDataChannelNegotiated = 3410,
+  kCrossSitePostMessage = 3411,
+  kSchemelesslySameSitePostMessage = 3412,
+  kSchemefulSameSitePostMessage = 3413,
+  kUnspecifiedTargetOriginPostMessage = 3414,
+  kSchemelesslySameSitePostMessageSecureToInsecure = 3415,
+  kSchemelesslySameSitePostMessageInsecureToSecure = 3416,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

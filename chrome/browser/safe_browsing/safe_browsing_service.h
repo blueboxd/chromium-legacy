@@ -129,9 +129,10 @@ class SafeBrowsingService : public SafeBrowsingServiceInterface,
   network::mojom::NetworkContext* GetNetworkContext();
   virtual scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory();
 
-  // Get the NetworkContext or URLLoaderFactory attached to |profile|. Called on
-  // UI thread.
-  network::mojom::NetworkContext* GetNetworkContext(Profile* profile);
+  // Get the NetworkContext or URLLoaderFactory attached to |browser_context|.
+  // Called on UI thread.
+  network::mojom::NetworkContext* GetNetworkContext(
+      content::BrowserContext* browser_context) override;
   virtual scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory(
       Profile* profile);
 

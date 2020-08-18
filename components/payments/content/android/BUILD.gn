@@ -70,7 +70,7 @@ generate_jni("jni_headers") {
 }
 
 android_resources("java_resources") {
-  custom_package = "org.chromium.components.payments"
+  create_srcjar = false
   sources = payments_java_resources
 }
 
@@ -136,6 +136,7 @@ android_library("java") {
     ":payment_details_update_service_aidl",
     ":payments_journey_logger_enum_javagen",
   ]
+  resources_package = "org.chromium.components.payments"
 }
 
 android_aidl("payment_details_update_service_aidl") {

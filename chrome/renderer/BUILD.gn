@@ -38,7 +38,6 @@ grit("resources") {
   ]
   if (is_chromeos) {
     deps += [
-      "//chromeos/components/remote_apps/mojom:mojom_js",
       "//chromeos/services/ime/public/mojom:mojom_js",
       "//chromeos/services/tts/public/mojom:mojom_js",
     ]

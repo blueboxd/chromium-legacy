@@ -614,19 +614,19 @@ This file contains the strings for ash.
         Input methods
       </message>
       <message name="IDS_ASH_STATUS_TRAY_IME_SETTINGS" desc="The label used for IME settings entry.">
-        Customize languages and input...
+        Input settings
       </message>
       <message name="IDS_ASH_STATUS_TRAY_IME_MANAGED" desc="Tooltip for the icon displayed when input methods are managed by enterprise policy">
         Input methods are configured by your administrator.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_IME_EMOJI" desc="The label used for IME emoji entry.">
-        Emoji palette
+        Emojis
       </message>
       <message name="IDS_ASH_STATUS_TRAY_IME_HANDWRITING" desc="The label used for IME handwriting entry.">
-        Handwriting input
+        Handwriting
       </message>
       <message name="IDS_ASH_STATUS_TRAY_IME_VOICE" desc="The label used for IME voice entry.">
-        Voice input
+        Voice
       </message>
 
       <message name="IDS_ASH_STATUS_TRAY_LOCALE_CHANGE_TITLE" desc="The title used for locale change notifications in the system tray.">
@@ -2185,12 +2185,6 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_LOGIN_SCREEN_UNVERIFIED_CODE_WARNING" desc="Message shown at the bottom of the login screen when the device has ran or is capable to run unverified code.">
         This device may contain apps that haven't been verified by Google.
-      </message>
-      <message name="IDS_ASH_LOGIN_POD_TPM_LOCKED_ISSUE_WARNING" desc="Message shown as part of the TPM locked warning bubble when TPM is locked.">
-        Your Chromebook is locked due to a known issue. You will be able to sign in after: <ph name="TIME_LEFT">$1<ex>1 hour, 15 minutes, 10 seconds</ex></ph>.
-      </message>
-      <message name="IDS_ASH_LOGIN_POD_TPM_LOCKED_ISSUE_DESCRIPTION" desc="Message shown as part of the TPM locked warning bubble when TPM is locked.">
-        Your Chromebook needs to stay on and connected to power during this time. Make sure the charger or adapter cables are completely plugged in, both to your Chromebook and the power outlet. Do not turn off your Chromebook.
       </message>
 
       <!-- Multi-profiles intro dialog -->

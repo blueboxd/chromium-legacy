@@ -162,6 +162,8 @@ class CppTypeGenerator(object):
     """Returns the #include lines for self._default_namespace.
     """
     c = Code()
+    if self._default_namespace.manifest_keys:
+      c.Append('#include "base/strings/string_piece.h"')
     for namespace, dependencies in self._NamespaceTypeDependencies().items():
       for dependency in dependencies:
         if dependency.hard or include_soft:

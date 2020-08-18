@@ -18,6 +18,7 @@
 #include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
+#include "build/build_config.h"
 #include "content/browser/xr/service/browser_xr_runtime_impl.h"
 #include "content/browser/xr/service/vr_service_impl.h"
 #include "content/common/content_export.h"
@@ -129,6 +130,11 @@ class CONTENT_EXPORT XRRuntimeManagerImpl
 
   bool providers_initialized_ = false;
   size_t num_initialized_providers_ = 0;
+
+  bool xr_compatible_restarted_gpu_ = false;
+#if defined(OS_WIN)
+  LUID default_gpu_ = {0, 0};
+#endif
 
   std::set<VRServiceImpl*> services_;
 

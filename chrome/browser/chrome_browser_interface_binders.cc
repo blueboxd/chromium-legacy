@@ -104,6 +104,7 @@
 #include "chrome/browser/accessibility/caption_host_impl.h"
 #include "chrome/browser/badging/badge_manager.h"
 #include "chrome/browser/media/feeds/media_feeds_store.mojom.h"
+#include "chrome/browser/media/kaleidoscope/kaleidoscope_data_provider_impl.h"
 #include "chrome/browser/media/kaleidoscope/kaleidoscope_ui.h"
 #include "chrome/browser/media/kaleidoscope/mojom/kaleidoscope.mojom.h"
 #include "chrome/browser/payments/payment_request_factory.h"
@@ -121,6 +122,7 @@
 #include "chrome/browser/ui/webui/tab_search/tab_search.mojom.h"
 #include "chrome/browser/ui/webui/tab_search/tab_search_ui.h"
 #include "chrome/common/caption.mojom.h"
+#include "chrome/common/webui_url_constants.h"
 #include "media/mojo/mojom/speech_recognition_service.mojom.h"
 #endif
 
@@ -639,7 +641,7 @@ void PopulateChromeWebUIFrameBinders(
 
 #if !defined(OS_ANDROID)
   RegisterWebUIControllerInterfaceBinder<media::mojom::KaleidoscopeDataProvider,
-                                         KaleidoscopeUI>(map);
+                                         KaleidoscopeUI, NewTabPageUI>(map);
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)

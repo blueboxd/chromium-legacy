@@ -27,12 +27,10 @@ public interface BrowserPaymentRequest {
          *         the BrowserPaymentRequest instance.
          * @param isOffTheRecord Whether the merchant page is in an OffTheRecord (e.g., incognito,
          *         guest mode) Tab.
-         * @param journeyLogger The logger that records the user journey of PaymentRequest.
          * @return An instance of BrowserPaymentRequest, cannot be null.
          */
         BrowserPaymentRequest createBrowserPaymentRequest(RenderFrameHost renderFrameHost,
-                ComponentPaymentRequestImpl componentPaymentRequestImpl, boolean isOffTheRecord,
-                JourneyLogger journeyLogger);
+                ComponentPaymentRequestImpl componentPaymentRequestImpl, boolean isOffTheRecord);
     }
 
     /**
@@ -89,9 +87,6 @@ public interface BrowserPaymentRequest {
 
     /** The browser part of the {@link PaymentRequest#canMakePayment} implementation. */
     void canMakePayment();
-
-    /** @return The JourneyLogger of PaymentRequestImpl. */
-    JourneyLogger getJourneyLogger();
 
     /** Delegate to the same method of PaymentRequestImpl. */
     void disconnectFromClientWithDebugMessage(String debugMessage);

@@ -266,9 +266,9 @@ std::unique_ptr<base::DictionaryValue> CreateManifest(
     DCHECK(ruleset_info.empty());
   } else {
     manifest_builder.Set(
-        keys::kDeclarativeNetRequestKey,
+        dnr_api::ManifestKeys::kDeclarativeNetRequest,
         DictionaryBuilder()
-            .Set(keys::kDeclarativeRuleResourcesKey, ToValue(ruleset_info))
+            .Set(dnr_api::DNRInfo::kRuleResources, ToValue(ruleset_info))
             .Build());
   }
 

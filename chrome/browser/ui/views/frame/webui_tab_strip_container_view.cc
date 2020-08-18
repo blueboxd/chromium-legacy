@@ -274,7 +274,7 @@ class WebUITabStripContainerView::DragToOpenHandler : public ui::EventHandler {
         // scrolls are used in the toolbar, e.g. for text scrolling in
         // the Omnibox.
         if (event->details().scroll_y_hint() >
-            event->details().scroll_x_hint()) {
+            std::fabs(event->details().scroll_x_hint())) {
           drag_in_progress_ = true;
           container_->UpdateHeightForDragToOpen(
               event->details().scroll_y_hint());

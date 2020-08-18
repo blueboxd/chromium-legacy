@@ -23,16 +23,17 @@ android_library("java") {
     "//content/public/android:content_java",
     "//ui/android:ui_java",
   ]
+  resources_package = "org.chromium.components.find_in_page"
 }
 
 android_resources("java_resources") {
-  custom_package = "org.chromium.components.find_in_page"
   sources = [
     "java/res/values/colors.xml",
     "java/res/values/dimens.xml",
   ]
 
   deps = [ "//ui/android:ui_java_resources" ]
+  create_srcjar = false
 }
 
 generate_jni("jni_headers") {

@@ -38,7 +38,7 @@ bool RenderViewHostDelegateView::DoBrowserControlsShrinkRendererSize() const {
   return false;
 }
 
-bool RenderViewHostDelegateView::ShouldPinTopControlsToContentTop() const {
+bool RenderViewHostDelegateView::OnlyExpandTopControlsAtPageTop() const {
   return false;
 }
 

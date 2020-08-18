@@ -14,7 +14,6 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/autofill/core/browser/autofill_client.h"
-#include "components/autofill/core/browser/data_model/autofill_offer_data.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/payments/card_unmask_delegate.h"
@@ -316,12 +315,6 @@ class PaymentsClient {
       const MigrationRequestDetails& details,
       const std::vector<MigratableCreditCard>& migratable_credit_cards,
       MigrateCardsCallback callback);
-
-  // The user has opened a new tab and their offer data needs to be refreshed.
-  virtual void GetOfferData(
-      const std::string& app_locale,
-      base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
-                              const std::vector<AutofillOfferData>&)> callback);
 
   // Cancels and clears the current |request_|.
   void CancelRequest();

@@ -7,7 +7,7 @@ import("//build/config/android/rules.gni")
 assert(is_android)
 
 android_resources("android_media_resources") {
-  custom_package = "org.chromium.third_party.android.media"
+  create_srcjar = false
   sources = [
     "java/res/layout/media_controller.xml",
     "java/res/values/colors.xml",
@@ -19,6 +19,7 @@ android_resources("android_media_resources") {
 }
 
 android_library("android_media_java") {
+  resources_package = "org.chromium.third_party.android.media"
   sources =
       [ "java/src/org/chromium/third_party/android/media/MediaController.java" ]
   deps = [

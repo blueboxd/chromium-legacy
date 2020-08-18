@@ -320,7 +320,7 @@ bool WebContentsDelegate::DoBrowserControlsShrinkRendererSize(
   return false;
 }
 
-bool WebContentsDelegate::ShouldPinTopControlsToContentTop() {
+bool WebContentsDelegate::OnlyExpandTopControlsAtPageTop() {
   return false;
 }
 

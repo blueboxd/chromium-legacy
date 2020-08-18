@@ -5,6 +5,7 @@
 package org.chromium.weblayer;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.RemoteException;
 import android.webkit.ValueCallback;
@@ -332,6 +333,28 @@ public class Profile {
 
         try {
             mImpl.prepareForPossibleCrossOriginNavigation();
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
+    /**
+     * Returns the previously downloaded favicon for {@link uri}.
+     *
+     * @param uri The uri to get the favicon for.
+     * @param callback The callback that is notified of the bitmap. The bitmap passed to the
+     * callback will be null if one is not available.
+     *
+     * @since 86
+     */
+    public void getCachedFaviconForPageUri(@NonNull Uri uri, @NonNull Callback<Bitmap> callback) {
+        ThreadCheck.ensureOnUiThread();
+        if (WebLayer.getSupportedMajorVersionInternal() < 86) {
+            throw new UnsupportedOperationException();
+        }
+        try {
+            mImpl.getCachedFaviconForPageUri(
+                    uri.toString(), ObjectWrapper.wrap((ValueCallback<Bitmap>) callback::onResult));
         } catch (RemoteException e) {
             throw new APICallException(e);
         }

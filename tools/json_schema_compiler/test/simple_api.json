@@ -22,6 +22,22 @@
           "integer": {
             "type": "integer",
             "description": "Some integer."
+          },
+          "object": {
+            "type": "object",
+            "optional": true,
+            "properties": {
+              "foo": {
+                "type": "integer"
+              }
+            }
+          },
+          "array": {
+            "type": "array",
+            "optional": true,
+            "items": {
+              "type": "string"
+            }
           }
         }
       },
@@ -31,6 +47,28 @@
         "enum": ["one", "two", "three"]
       }
     ],
+    "manifest_keys": {
+      "key_string": {
+        "type": "string",
+        "description": "String key."
+      },
+      "key_ref": {
+        "$ref": "TestType",
+        "description": "Reference key"
+      },
+      "key_obj": {
+        "type": "object",
+        "optional": true,
+        "properties": {
+          "obj_string": {
+            "type": "string"
+          },
+          "obj_bool": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
     "functions": [
       {
         "name": "incrementInteger",

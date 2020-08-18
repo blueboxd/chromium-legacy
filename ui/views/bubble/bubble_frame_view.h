@@ -241,6 +241,12 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
   // if there is no header view or if it is not visible.
   int GetHeaderHeightForFrameWidth(int frame_width) const;
 
+  // Updates the corner radius of a layer backed client view for MD rounded
+  // corners.
+  // TODO(tluk): Use this and remove the need for GetClientMask() for clipping
+  // client views to the bubble border's bounds.
+  void UpdateClientLayerCornerRadius();
+
   // The bubble border.
   BubbleBorder* bubble_border_ = nullptr;
 

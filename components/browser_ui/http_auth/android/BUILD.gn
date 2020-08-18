@@ -18,10 +18,11 @@ android_library("java") {
     "//third_party/android_deps:material_design_java",
     "//ui/android:ui_java",
   ]
+  resources_package = "org.chromium.components.browser_ui.http_auth"
 }
 
 android_resources("java_resources") {
-  custom_package = "org.chromium.components.browser_ui.http_auth"
+  create_srcjar = false
   sources = [ "java/res/layout/http_auth_dialog.xml" ]
 
   deps = [

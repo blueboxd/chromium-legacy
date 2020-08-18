@@ -23,7 +23,7 @@
 namespace net {
 
 NetworkChangeNotifierFuchsia::NetworkChangeNotifierFuchsia(
-    uint32_t required_features)
+    fuchsia::hardware::ethernet::Features required_features)
     : NetworkChangeNotifierFuchsia(base::ComponentContextForProcess()
                                        ->svc()
                                        ->Connect<fuchsia::netstack::Netstack>(),
@@ -31,7 +31,7 @@ NetworkChangeNotifierFuchsia::NetworkChangeNotifierFuchsia(
 
 NetworkChangeNotifierFuchsia::NetworkChangeNotifierFuchsia(
     fidl::InterfaceHandle<fuchsia::netstack::Netstack> netstack,
-    uint32_t required_features,
+    fuchsia::hardware::ethernet::Features required_features,
     SystemDnsConfigChangeNotifier* system_dns_config_notifier)
     : NetworkChangeNotifier(NetworkChangeCalculatorParams(),
                             system_dns_config_notifier),
@@ -100,18 +100,16 @@ void NetworkChangeNotifierFuchsia::OnRouteTableReceived(
   base::flat_set<IPAddress> addresses;
   for (auto& interface : interfaces) {
     // Filter out loopback and invalid connection types.
-    auto loopback = static_cast<decltype(interface.features)>(
-        fuchsia::hardware::ethernet::INFO_FEATURE_LOOPBACK);
     if ((internal::ConvertConnectionType(interface) ==
          NetworkChangeNotifier::CONNECTION_NONE) ||
-        ((interface.features & loopback) == loopback)) {
+        (interface.features &
+         fuchsia::hardware::ethernet::Features::LOOPBACK) ==
+            fuchsia::hardware::ethernet::Features::LOOPBACK) {
       continue;
     }
 
     // Filter out interfaces that do not meet the |required_features_|.
-    auto required_features =
-        static_cast<decltype(interface.features)>(required_features_);
-    if ((interface.features & required_features) != required_features) {
+    if ((interface.features & required_features_) != required_features_) {
       continue;
     }
 

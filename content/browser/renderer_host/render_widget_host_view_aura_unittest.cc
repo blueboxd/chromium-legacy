@@ -80,6 +80,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
+#include "third_party/blink/public/mojom/input/touch_event.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/env.h"
@@ -610,6 +611,9 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
   }
 
   const ui::MotionEventAura& pointer_state() { return view_->pointer_state(); }
+
+  bool HasTouchEventHandlers(bool has_handlers) { return has_handlers; }
+  bool HasHitTestableScrollbar(bool has_scrollbar) { return has_scrollbar; }
 
  protected:
   BrowserContext* browser_context() { return browser_context_.get(); }
@@ -1411,7 +1415,9 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchEventState) {
   view_->Show();
 
   // Start with no touch-event handler in the renderer.
-  widget_host_->SetHasTouchEventHandlers(false);
+  auto touch_event_consumers = blink::mojom::TouchEventConsumers::New(
+      HasTouchEventHandlers(false), HasHitTestableScrollbar(false));
+  widget_host_->SetHasTouchEventConsumers(std::move(touch_event_consumers));
 
   ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(30, 30),
                        ui::EventTimeForNow(),
@@ -1453,7 +1459,9 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchEventState) {
   // Now install some touch-event handlers and do the same steps. The touch
   // events should now be consumed. However, the touch-event state should be
   // updated as before.
-  widget_host_->SetHasTouchEventHandlers(true);
+  touch_event_consumers = blink::mojom::TouchEventConsumers::New(
+      HasTouchEventHandlers(true), HasHitTestableScrollbar(false));
+  widget_host_->SetHasTouchEventConsumers(std::move(touch_event_consumers));
 
   view_->OnTouchEvent(&press);
   base::RunLoop().RunUntilIdle();
@@ -1482,7 +1490,9 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchEventState) {
   events = GetAndResetDispatchedMessages();
   EXPECT_EQ(3U, events.size());
 
-  widget_host_->SetHasTouchEventHandlers(false);
+  touch_event_consumers = blink::mojom::TouchEventConsumers::New(
+      HasTouchEventHandlers(false), HasHitTestableScrollbar(false));
+  widget_host_->SetHasTouchEventConsumers(std::move(touch_event_consumers));
 
   // All outstanding events should have already been sent but no new events
   // should get sent.
@@ -2506,7 +2516,9 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchEventSyncAsync) {
   view_->InitAsChild(nullptr);
   view_->Show();
 
-  widget_host_->SetHasTouchEventHandlers(true);
+  auto touch_event_consumers = blink::mojom::TouchEventConsumers::New(
+      HasTouchEventHandlers(true), HasHitTestableScrollbar(false));
+  widget_host_->SetHasTouchEventConsumers(std::move(touch_event_consumers));
 
   ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(30, 30),
                        ui::EventTimeForNow(),
@@ -4235,7 +4247,9 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
 // gesture deals with them correctly.
 TEST_F(RenderWidgetHostViewAuraOverscrollTest, OverscrollWithTouchEvents) {
   SetUpOverscrollEnvironmentWithDebounce(10);
-  widget_host_->SetHasTouchEventHandlers(true);
+  auto touch_event_consumers = blink::mojom::TouchEventConsumers::New(
+      HasTouchEventHandlers(true), HasHitTestableScrollbar(false));
+  widget_host_->SetHasTouchEventConsumers(std::move(touch_event_consumers));
 
   // The test sends an intermingled sequence of touch and gesture events.
   PressTouchPoint(0, 1);
@@ -4361,7 +4375,9 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest, OverscrollWithTouchEvents) {
 TEST_F(RenderWidgetHostViewAuraOverscrollTest,
        DISABLED_TouchGestureEndDispatchedAfterOverscrollComplete) {
   SetUpOverscrollEnvironmentWithDebounce(10);
-  widget_host_->SetHasTouchEventHandlers(true);
+  auto touch_event_consumers = blink::mojom::TouchEventConsumers::New(
+      HasTouchEventHandlers(true), HasHitTestableScrollbar(false));
+  widget_host_->SetHasTouchEventConsumers(std::move(touch_event_consumers));
 
   PressAndSetTouchActionAuto();
   // Start scrolling. Receive ACK as it being processed.
@@ -4947,7 +4963,9 @@ TEST_F(RenderWidgetHostViewAuraTest,
   view_->InitAsChild(nullptr);
   view_->Show();
 
-  widget_host_->SetHasTouchEventHandlers(true);
+  auto touch_event_consumers = blink::mojom::TouchEventConsumers::New(
+      HasTouchEventHandlers(true), HasHitTestableScrollbar(false));
+  widget_host_->SetHasTouchEventConsumers(std::move(touch_event_consumers));
 
   ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(30, 30),
                        ui::EventTimeForNow(),

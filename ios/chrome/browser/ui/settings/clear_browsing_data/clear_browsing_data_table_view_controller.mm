@@ -7,6 +7,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#include "components/browsing_data/core/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_features.h"
@@ -340,6 +341,11 @@
         completionBlock();
     });
   };
+
+  // Set the kLastClearBrowsingDataTime Pref.
+  self.browserState->GetPrefs()->SetInt64(
+      browsing_data::prefs::kLastClearBrowsingDataTime,
+      base::Time::Now().ToTimeT());
 
   [self.dispatcher
       removeBrowsingDataForBrowserState:browserState

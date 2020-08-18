@@ -188,7 +188,7 @@ chromeos::Printer ConstructPrinter(const std::string& id,
   chromeos::Printer printer(id);
   printer.set_display_name(name);
   printer.set_description(description);
-  printer.set_uri(uri);
+  EXPECT_TRUE(printer.SetUri(uri));
   printer.set_source(source);
   return printer;
 }

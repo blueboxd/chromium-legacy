@@ -120,9 +120,8 @@ class ThreadPerfTest : public testing::Test {
 
     Reset();
 
-    double num_runs = static_cast<double>(kNumRuns);
-    double us_per_task_clock = (end - start).InMicroseconds() / num_runs;
-    double us_per_task_cpu = thread_time.InMicroseconds() / num_runs;
+    double us_per_task_clock = (end - start).InMicrosecondsF() / kNumRuns;
+    double us_per_task_cpu = thread_time.InMicrosecondsF() / kNumRuns;
 
     auto reporter = SetUpReporter(story_name);
     // Clock time per task.

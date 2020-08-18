@@ -98,7 +98,7 @@ TEST_F(ActionFactoryTest, CopyAction) {
 
     UIImage* expectedImage = [UIImage imageNamed:@"copy_link_url"];
     NSString* expectedTitle =
-        l10n_util::GetNSString(IDS_IOS_CONTENT_CONTEXT_COPY);
+        l10n_util::GetNSString(IDS_IOS_COPY_LINK_ACTION_TITLE);
 
     GURL testURL = GURL("https://example.com");
 

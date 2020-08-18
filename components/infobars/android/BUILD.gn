@@ -26,7 +26,7 @@ android_resources("java_resources") {
     "res/values/dimens.xml",
     "res/values/ids.xml",
   ]
-  custom_package = "org.chromium.components.infobars"
+  create_srcjar = false
   deps = [
     "//components/browser_ui/strings/android:browser_ui_strings_grd",
     "//components/browser_ui/widget/android:java_resources",
@@ -78,6 +78,7 @@ android_library("java") {
     "//ui/android:ui_java",
   ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
+  resources_package = "org.chromium.components.infobars"
 }
 
 java_cpp_enum("infobar_android_enums") {

@@ -213,34 +213,35 @@ class RemoteAppsManagerBrowsertest
                      const GURL& icon_url) {
     base::RunLoop run_loop;
     std::string id;
-    manager_->AddApp(name, folder_id, icon_url,
-                     base::BindOnce(
-                         [](base::RepeatingClosure closure, std::string* id_arg,
-                            const std::string& id, RemoteAppsError error) {
-                           ASSERT_EQ(RemoteAppsError::kNone, error);
+    manager_->AddApp(
+        name, folder_id, icon_url,
+        base::BindOnce(
+            [](base::RepeatingClosure closure, std::string* id_arg,
+               const std::string& id, RemoteAppsManager::Error error) {
+              ASSERT_EQ(RemoteAppsManager::Error::kNone, error);
 
-                           ash::AppListControllerImpl* controller =
-                               ash::Shell::Get()->app_list_controller();
-                           ash::AppListModel* model = controller->GetModel();
-                           ASSERT_TRUE(model->FindItem(id));
-                           *id_arg = id;
+              ash::AppListControllerImpl* controller =
+                  ash::Shell::Get()->app_list_controller();
+              ash::AppListModel* model = controller->GetModel();
+              ASSERT_TRUE(model->FindItem(id));
+              *id_arg = id;
 
-                           closure.Run();
-                         },
-                         run_loop.QuitClosure(), &id));
+              closure.Run();
+            },
+            run_loop.QuitClosure(), &id));
     run_loop.Run();
     return id;
   }
 
-  RemoteAppsError DeleteApp(const std::string& id) {
-    RemoteAppsError error = manager_->DeleteApp(id);
+  RemoteAppsManager::Error DeleteApp(const std::string& id) {
+    RemoteAppsManager::Error error = manager_->DeleteApp(id);
     // Allow updates to propagate to AppList.
     base::RunLoop().RunUntilIdle();
     return error;
   }
 
-  RemoteAppsError DeleteFolder(const std::string& id) {
-    RemoteAppsError error = manager_->DeleteFolder(id);
+  RemoteAppsManager::Error DeleteFolder(const std::string& id) {
+    RemoteAppsManager::Error error = manager_->DeleteFolder(id);
     // Allow updates to propagate to AppList.
     base::RunLoop().RunUntilIdle();
     return error;
@@ -257,7 +258,7 @@ class RemoteAppsManagerBrowsertest
     waiter.Wait();
   }
 
-  void AddAppAssertError(RemoteAppsError error,
+  void AddAppAssertError(RemoteAppsManager::Error error,
                          const std::string& name,
                          const std::string& folder_id,
                          const GURL& icon_url) {
@@ -265,8 +266,9 @@ class RemoteAppsManagerBrowsertest
     manager_->AddApp(
         name, folder_id, icon_url,
         base::BindOnce(
-            [](base::RepeatingClosure closure, RemoteAppsError expected_error,
-               const std::string& id, RemoteAppsError error) {
+            [](base::RepeatingClosure closure,
+               RemoteAppsManager::Error expected_error, const std::string& id,
+               RemoteAppsManager::Error error) {
               ASSERT_EQ(expected_error, error);
               closure.Run();
             },
@@ -306,8 +308,8 @@ IN_PROC_BROWSER_TEST_F(RemoteAppsManagerBrowsertest, AddAppError) {
   GURL icon_url("icon_url");
   gfx::ImageSkia icon = CreateTestIcon(32, SK_ColorRED);
 
-  AddAppAssertError(RemoteAppsError::kFolderIdDoesNotExist, name, kMissingId,
-                    icon_url);
+  AddAppAssertError(RemoteAppsManager::Error::kFolderIdDoesNotExist, name,
+                    kMissingId, icon_url);
 }
 
 IN_PROC_BROWSER_TEST_F(RemoteAppsManagerBrowsertest, AddAppErrorNotReady) {
@@ -316,7 +318,8 @@ IN_PROC_BROWSER_TEST_F(RemoteAppsManagerBrowsertest, AddAppErrorNotReady) {
   gfx::ImageSkia icon = CreateTestIcon(32, SK_ColorRED);
 
   manager_->SetIsInitializedForTesting(false);
-  AddAppAssertError(RemoteAppsError::kNotReady, name, std::string(), icon_url);
+  AddAppAssertError(RemoteAppsManager::Error::kNotReady, name, std::string(),
+                    icon_url);
 }
 
 IN_PROC_BROWSER_TEST_F(RemoteAppsManagerBrowsertest, DeleteApp) {
@@ -324,14 +327,15 @@ IN_PROC_BROWSER_TEST_F(RemoteAppsManagerBrowsertest, DeleteApp) {
   AddAppAndWaitForIconChange(kId1, "name", std::string(), GURL("icon_url"),
                              CreateTestIcon(32, SK_ColorRED));
 
-  RemoteAppsError error = DeleteApp(kId1);
+  RemoteAppsManager::Error error = DeleteApp(kId1);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(RemoteAppsError::kNone, error);
+  EXPECT_EQ(RemoteAppsManager::Error::kNone, error);
   EXPECT_FALSE(GetAppListItem(kId1));
 }
 
 IN_PROC_BROWSER_TEST_F(RemoteAppsManagerBrowsertest, DeleteAppError) {
-  EXPECT_EQ(RemoteAppsError::kAppIdDoesNotExist, DeleteApp(kMissingId));
+  EXPECT_EQ(RemoteAppsManager::Error::kAppIdDoesNotExist,
+            DeleteApp(kMissingId));
 }
 
 IN_PROC_BROWSER_TEST_F(RemoteAppsManagerBrowsertest, AddAndDeleteFolder) {
@@ -339,11 +343,12 @@ IN_PROC_BROWSER_TEST_F(RemoteAppsManagerBrowsertest, AddAndDeleteFolder) {
   // Empty folder has no AppListItem.
   EXPECT_FALSE(GetAppListItem(kId1));
 
-  EXPECT_EQ(RemoteAppsError::kNone, DeleteFolder(kId1));
+  EXPECT_EQ(RemoteAppsManager::Error::kNone, DeleteFolder(kId1));
 }
 
 IN_PROC_BROWSER_TEST_F(RemoteAppsManagerBrowsertest, DeleteFolderError) {
-  EXPECT_EQ(RemoteAppsError::kFolderIdDoesNotExist, DeleteFolder(kMissingId));
+  EXPECT_EQ(RemoteAppsManager::Error::kFolderIdDoesNotExist,
+            DeleteFolder(kMissingId));
 }
 
 IN_PROC_BROWSER_TEST_F(RemoteAppsManagerBrowsertest, AddFolderAndApp) {

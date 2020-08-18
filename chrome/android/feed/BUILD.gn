@@ -37,6 +37,6 @@ if (enable_feed_in_chrome) {
       "//chrome/android:chrome_app_java_resources",
       "//ui/android:ui_java_resources",
     ]
-    custom_package = "org.chromium.chrome.feed"
+    create_srcjar = false
   }
 }

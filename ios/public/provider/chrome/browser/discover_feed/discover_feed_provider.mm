@@ -8,6 +8,8 @@
 #error "This file requires ARC support."
 #endif
 
+void DiscoverFeedProvider::StartFeed(
+    DiscoverFeedConfiguration* discover_config) {}
 void DiscoverFeedProvider::StartFeed(AuthenticationService* auth_service) {}
 
 bool DiscoverFeedProvider::IsDiscoverFeedEnabled() {

@@ -12,6 +12,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
 #include "chrome/browser/extensions/external_testing_loader.h"
+#include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/web_applications/test/ssl_test_utils.h"
@@ -22,6 +23,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/url_loader_interceptor.h"
+#include "extensions/browser/app_sorting.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/test_extension_registry_observer.h"
@@ -29,6 +31,14 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+
+#if defined(OS_CHROMEOS)
+#include "ash/public/cpp/app_list/app_list_types.h"
+#include "chrome/browser/ui/app_list/app_list_model_updater.h"
+#include "chrome/browser/ui/app_list/app_list_syncable_service.h"
+#include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
+#include "chrome/browser/ui/app_list/chrome_app_list_item.h"
+#endif
 
 namespace {
 
@@ -241,6 +251,100 @@ IN_PROC_BROWSER_TEST_F(ExternalWebAppMigrationBrowserTest, MigrateAndRevert) {
 
     EXPECT_TRUE(IsExtensionAppInstalled());
     EXPECT_FALSE(IsWebAppInstalled());
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(ExternalWebAppMigrationBrowserTest, MigratePreferences) {
+#if defined(OS_CHROMEOS)
+  app_list::AppListSyncableService* app_list_syncable_service =
+      app_list::AppListSyncableServiceFactory::GetForProfile(profile());
+  AppListModelUpdater* app_list_model_updater =
+      app_list_syncable_service->GetModelUpdater();
+  app_list_model_updater->SetActive(true);
+#endif
+  extensions::AppSorting* app_sorting =
+      extensions::ExtensionSystem::Get(profile())->app_sorting();
+
+  // Set up pre-migration state.
+  {
+    ASSERT_FALSE(IsExternalAppInstallFeatureEnabled(kMigrationFlag));
+
+    SyncExternalExtensions();
+    SyncExternalWebApps(/*expect_install=*/false, /*expect_uninstall=*/false);
+
+    EXPECT_FALSE(IsWebAppInstalled());
+    EXPECT_TRUE(IsExtensionAppInstalled());
+
+#if defined(OS_CHROMEOS)
+    ChromeAppListItem* app_list_item =
+        app_list_model_updater->FindItem(kExtensionId);
+    app_list_item->SetPosition(syncer::StringOrdinal("testapplistposition"));
+    app_list_model_updater->OnItemUpdated(app_list_item->CloneMetadata());
+    app_list_syncable_service->SetPinPosition(
+        kExtensionId, syncer::StringOrdinal("testpinposition"));
+#endif
+
+    // Set chrome://apps position.
+    app_sorting->SetAppLaunchOrdinal(kExtensionId,
+                                     syncer::StringOrdinal("testapplaunch"));
+    app_sorting->SetPageOrdinal(kExtensionId,
+                                syncer::StringOrdinal("testpageordinal"));
+
+    // Set user preference to launch as browser tab.
+    extensions::SetLaunchType(profile(), kExtensionId,
+                              extensions::LAUNCH_TYPE_REGULAR);
+  }
+
+  // Migrate extension app to web app.
+  {
+    base::AutoReset<bool> testing_scope =
+        SetExternalAppInstallFeatureAlwaysEnabledForTesting();
+    ASSERT_TRUE(IsExternalAppInstallFeatureEnabled(kMigrationFlag));
+
+    SyncExternalExtensions();
+    // Extension sticks around to be uninstalled by the replacement web app.
+    EXPECT_TRUE(IsExtensionAppInstalled());
+
+    {
+      extensions::TestExtensionRegistryObserver uninstall_observer(
+          extensions::ExtensionRegistry::Get(profile()));
+
+      SyncExternalWebApps(/*expect_install=*/true, /*expect_uninstall=*/false);
+      EXPECT_TRUE(IsWebAppInstalled());
+
+      scoped_refptr<const extensions::Extension> uninstalled_app =
+          uninstall_observer.WaitForExtensionUninstalled();
+      EXPECT_EQ(uninstalled_app->id(), kExtensionId);
+      EXPECT_FALSE(IsExtensionAppInstalled());
+    }
+  }
+
+  // Check UI preferences have migrated across.
+  {
+    const AppId web_app_id = GetWebAppId();
+
+#if defined(OS_CHROMEOS)
+    // Chrome OS shelf/list position should migrate.
+    EXPECT_EQ(app_list_model_updater->FindItem(web_app_id)
+                  ->position()
+                  .ToDebugString(),
+              "testapplistposition");
+    EXPECT_EQ(
+        app_list_syncable_service->GetPinPosition(web_app_id).ToDebugString(),
+        "testpinposition");
+#endif
+
+    // chrome://apps position should migrate.
+    EXPECT_EQ(app_sorting->GetAppLaunchOrdinal(web_app_id).ToDebugString(),
+              "testapplaunch");
+    EXPECT_EQ(app_sorting->GetPageOrdinal(web_app_id).ToDebugString(),
+              "testpageordinal");
+
+    // User launch preference should migrate across and override
+    // "launch_container": "window" in the JSON config.
+    EXPECT_EQ(WebAppProvider::Get(profile())->registrar().GetAppUserDisplayMode(
+                  web_app_id),
+              DisplayMode::kBrowser);
   }
 }
 

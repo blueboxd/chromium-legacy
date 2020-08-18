@@ -3090,7 +3090,7 @@ TEST_P(QuicStreamFactoryTest, MigrationTimeoutWithNoNewNetwork) {
   // headers should fail.
   EXPECT_FALSE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
   EXPECT_FALSE(HasActiveSession(host_port_pair_));
-  EXPECT_EQ(ERR_NETWORK_CHANGED, callback_.WaitForResult());
+  EXPECT_EQ(ERR_INTERNET_DISCONNECTED, callback_.WaitForResult());
 
   EXPECT_TRUE(socket_data.AllReadDataConsumed());
   EXPECT_TRUE(socket_data.AllWriteDataConsumed());

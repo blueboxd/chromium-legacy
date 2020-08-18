@@ -24,6 +24,7 @@ const char kMethodNameRequired[] = "Method name required.";
 const char kMissingDetailsFromPaymentApp[] = "Payment app returned invalid response. Missing field \"details\".";
 const char kMissingMethodNameFromPaymentApp[] = "Payment app returned invalid response. Missing field \"methodName\".";
 const char kNotInASecureOrigin[] = "Not in a secure origin.";
+const char kNoWebContents[] = "The frame that initiated payment is not associated with any web page.";
 const char kPayerEmailEmpty[] = "Payment app returned invalid response. Missing field \"payerEmail\".";
 const char kPayerNameEmpty[] = "Payment app returned invalid response. Missing field \"payerName\".";
 const char kPayerPhoneEmpty[] = "Payment app returned invalid response. Missing field \"payerPhone\".";

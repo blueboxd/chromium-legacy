@@ -19,6 +19,7 @@ namespace features {
 #if defined(OS_ANDROID)
 GPU_EXPORT extern const base::Feature kUseGles2ForOopR;
 GPU_EXPORT extern const base::Feature kAndroidSurfaceControl;
+GPU_EXPORT extern const base::Feature kAImageReader;
 #endif  // defined(OS_ANDROID)
 
 GPU_EXPORT extern const base::Feature kDefaultEnableGpuRasterization;
@@ -56,6 +57,7 @@ GPU_EXPORT extern const base::Feature kSkiaDawn;
 GPU_EXPORT extern const base::Feature kEnableSharedImageForWebview;
 
 #if defined(OS_ANDROID)
+GPU_EXPORT bool IsAImageReaderEnabled();
 GPU_EXPORT bool IsAndroidSurfaceControlEnabled();
 #endif
 

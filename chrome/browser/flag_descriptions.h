@@ -871,10 +871,6 @@ extern const char kOmniboxAutocompleteTitlesDescription[];
 extern const char kOmniboxClobberTriggersContextualWebZeroSuggestName[];
 extern const char kOmniboxClobberTriggersContextualWebZeroSuggestDescription[];
 
-extern const char kOmniboxFocusGestureTriggersContextualWebZeroSuggestName[];
-extern const char
-    kOmniboxFocusGestureTriggersContextualWebZeroSuggestDescription[];
-
 extern const char kOmniboxCompactSuggestionsName[];
 extern const char kOmniboxCompactSuggestionsDescription[];
 
@@ -1467,6 +1463,9 @@ extern const char kEnableVulkanDescription[];
 // Android --------------------------------------------------------------------
 
 #if defined(OS_ANDROID)
+
+extern const char kAImageReaderName[];
+extern const char kAImageReaderDescription[];
 
 extern const char kAndroidAutofillAccessibilityName[];
 extern const char kAndroidAutofillAccessibilityDescription[];

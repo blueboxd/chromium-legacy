@@ -32,6 +32,7 @@ generate_jni("jni_headers") {
 }
 
 android_library("java") {
+  resources_package = "org.chromium.components.browser_ui.sms"
   sources = [
     "java/src/org/chromium/components/browser_ui/sms/SmsReceiverInfoBar.java",
     "java/src/org/chromium/components/browser_ui/sms/SmsReceiverUma.java",

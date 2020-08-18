@@ -261,6 +261,39 @@ Element* DisplayLockUtilities::NearestLockedInclusiveAncestor(Node& node) {
       NearestLockedInclusiveAncestor(static_cast<const Node&>(node)));
 }
 
+Element* DisplayLockUtilities::NearestHiddenMatchableInclusiveAncestor(
+    Element& element) {
+  if (!RuntimeEnabledFeatures::CSSContentVisibilityEnabled() ||
+      !element.isConnected() ||
+      element.GetDocument()
+              .GetDisplayLockDocumentState()
+              .LockedDisplayLockCount() == 0 ||
+      !element.CanParticipateInFlatTree()) {
+    return nullptr;
+  }
+
+  if (auto* context = element.GetDisplayLockContext()) {
+    if (context->GetState() == EContentVisibility::kHiddenMatchable) {
+      return &element;
+    }
+  }
+
+  element.UpdateDistributionForFlatTreeTraversal();
+  // TODO(crbug.com/924550): Once we figure out a more efficient way to
+  // determine whether we're inside a locked subtree or not, change this.
+  for (Node& ancestor : FlatTreeTraversal::AncestorsOf(element)) {
+    auto* ancestor_element = DynamicTo<Element>(ancestor);
+    if (!ancestor_element)
+      continue;
+    if (auto* context = ancestor_element->GetDisplayLockContext()) {
+      if (context->GetState() == EContentVisibility::kHiddenMatchable) {
+        return ancestor_element;
+      }
+    }
+  }
+  return nullptr;
+}
+
 Element* DisplayLockUtilities::NearestLockedExclusiveAncestor(
     const Node& node) {
   if (!RuntimeEnabledFeatures::CSSContentVisibilityEnabled() ||

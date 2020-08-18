@@ -1504,42 +1504,6 @@ crbug.com/1053725 [ Win7 ] fast/forms/calendar-picker/date-picker-appearance-dis
 # ====== Form Controls Refresh failures until here ======
 
 
-# ====== CORS virtual test failures from here ======
-# Expectations for virtual/cors/.
-# Failures for linux-blink-cors-rel fyi bot should not be marked here, but be in
-# FlagExpectations/disable-features=OutOfBlinkCors instead.
-
-# Following tests failed in the initial run. Confirmed that this list is a
-# subset of disabled tests in FlagExpectations/disable-features=OutOfBlinkCors.
-crbug.com/1091139 virtual/cors/external/wpt/fetch/api/basic/keepalive.html [ Skip ]
-crbug.com/1091139 virtual/cors/external/wpt/fetch/api/basic/request-upload.any.html [ Skip ]
-crbug.com/1091139 virtual/cors/external/wpt/fetch/api/basic/request-upload.any.worker.html [ Skip ]
-crbug.com/1091139 virtual/cors/external/wpt/fetch/api/request/request-init-stream.any.html [ Skip ]
-crbug.com/1091139 virtual/cors/external/wpt/fetch/api/request/request-init-stream.any.serviceworker.html [ Skip ]
-crbug.com/1091139 virtual/cors/external/wpt/fetch/api/request/request-init-stream.any.sharedworker.html [ Skip ]
-crbug.com/1091139 virtual/cors/external/wpt/fetch/api/request/request-init-stream.any.worker.html [ Skip ]
-crbug.com/1091139 virtual/cors/external/wpt/resource-timing/cors-preflight.any.html [ Skip ]
-crbug.com/1091139 virtual/cors/external/wpt/resource-timing/cors-preflight.any.worker.html [ Skip ]
-crbug.com/1091139 virtual/cors/external/wpt/resource-timing/redirects.sub.html [ Skip ]
-crbug.com/1091139 virtual/cors/external/wpt/resource-timing/resource_connection_reuse_mixed_content_redirect.html [ Skip ]
-crbug.com/1091139 virtual/cors/external/wpt/service-workers/service-worker/fetch-request-xhr.https.html [ Skip ]
-crbug.com/1091139 virtual/cors/http/tests/fetch/serviceworker/fetch_upload-base-https-other-https.html [ Skip ]
-crbug.com/1091139 virtual/cors/http/tests/fetch/serviceworker/fetch_upload.html [ Skip ]
-crbug.com/1091139 virtual/cors/http/tests/fetch/window/fetch_upload-base-https-other-https.html [ Skip ]
-crbug.com/1091139 virtual/cors/http/tests/fetch/window/fetch_upload.html [ Skip ]
-crbug.com/1091139 virtual/cors/http/tests/fetch/workers/fetch_upload-base-https-other-https.html [ Skip ]
-crbug.com/1091139 virtual/cors/http/tests/fetch/workers/fetch_upload.html [ Skip ]
-crbug.com/1091139 virtual/cors/http/tests/misc/resource-timing-sizes-redirect-worker.html [ Skip ]
-crbug.com/1091139 virtual/cors/http/tests/misc/resource-timing-sizes-redirect.html [ Skip ]
-crbug.com/1091139 virtual/cors/http/tests/security/img-redirect-to-crossorigin-credentials.https.html [ Skip ]
-crbug.com/1091139 virtual/cors/http/tests/security/script-crossorigin-redirect-credentials.html [ Skip ]
-crbug.com/1091139 virtual/cors/http/tests/xmlhttprequest/cross-origin-unsupported-url.html [ Skip ]
-crbug.com/1091139 virtual/cors/http/tests/xmlhttprequest/workers/cross-origin-unsupported-url.html [ Skip ]
-
-# Add other failures after this line with some explanations.
-
-# ====== CORS virtual test failures until here ======
-
 # Bug in FormControlsRefresh <select multiple> tap behavior:
 crbug.com/1045672 fast/forms/select/listbox-tap.html [ Failure ]
 
@@ -2714,9 +2678,6 @@ crbug.com/626703 [ Linux ] external/wpt/css/css-color/t425-hsla-basic-a.xht [ Fa
 crbug.com/626703 [ Linux ] external/wpt/wasm/jsapi/functions/incumbent.html [ Crash ]
 crbug.com/626703 [ Mac ] external/wpt/wasm/jsapi/functions/incumbent.html [ Crash ]
 crbug.com/626703 [ Win ] external/wpt/wasm/jsapi/functions/incumbent.html [ Crash ]
-crbug.com/626703 [ Mac10.12 ] virtual/cors/external/wpt/preload/download-resources.html [ Timeout ]
-crbug.com/626703 [ Mac10.15 ] virtual/cors/external/wpt/preload/download-resources.html [ Timeout ]
-crbug.com/626703 [ Win7 ] virtual/cors/external/wpt/preload/download-resources.html [ Failure Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/mathml/presentation-markup/fractions/frac-invalid-3.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/mathml/presentation-markup/fractions/frac-invalid-3.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/mathml/presentation-markup/fractions/frac-invalid-3.html [ Failure ]
@@ -6558,7 +6519,6 @@ crbug.com/1041973 virtual/web-components-v0-disabled/external/wpt/html/semantics
 # Sheriff 2020-06-05
 crbug.com/1091829 [ Mac ] fast/scrolling/scroll-non-composited-scroller.html [ Pass Failure ]
 crbug.com/1091829 [ Linux ] virtual/threaded-prefer-compositing/fast/scrolling/scroll-non-composited-scroller.html [ Pass Failure ]
-crbug.com/1091250 virtual/cors/http/tests/misc/resource-timing-sizes-multipart.html [ Pass Failure ]
 crbug.com/1091948 [ Linux ] external/wpt/html/canvas/element/manual/fill-and-stroke-styles/canvas_colorsandstyles_createlineargradient_001.htm [ Pass Timeout ]
 
 # Sheriff 2020-06-06

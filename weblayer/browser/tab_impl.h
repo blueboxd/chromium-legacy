@@ -268,7 +268,7 @@ class TabImpl : public Tab,
   int GetBottomControlsHeight() override;
   bool DoBrowserControlsShrinkRendererSize(
       const content::WebContents* web_contents) override;
-  bool ShouldPinTopControlsToContentTop() override;
+  bool OnlyExpandTopControlsAtPageTop() override;
   bool EmbedsFullscreenWidget() override;
   void RequestMediaAccessPermission(
       content::WebContents* web_contents,

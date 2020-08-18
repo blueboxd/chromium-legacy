@@ -33,10 +33,10 @@ MAC_BINARIES_LABEL = 'infra_internal/ios/xcode/xcode_binaries/mac-amd64'
 MAC_BINARIES_TAG = {
     # This contains binaries from Xcode 11.2.1, along with the 10.15 SDKs (aka
     # 11B53).
-    'default': 'X5ZbqG_UKa-N64_XSBkAwShWPtzskeXhQRfpzc_1KUYC',
+    'default': 'wXywrnOhzFxwLYlwO62UzRxVCjnu6DoSI2D2jrCd00gC',
     # This contains binaries from Xcode 12 beta 4, along with the
     # 11 SDK (aka 12A8179i).
-    'xcode_12_beta': 'LGFg5-BnRNuEMwcDjlvByCaT4S3O_nGfUOsj18xeXJIC',
+    'xcode_12_beta': 'cDHYuQ9HUo7nJd1w8GfZfifcjGt2ZWVNykJn399Xz6YC',
 }
 
 # The toolchain will not be downloaded if the minimum OS version is not met.

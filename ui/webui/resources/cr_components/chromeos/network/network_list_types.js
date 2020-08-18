@@ -23,3 +23,5 @@ NetworkList.CustomItemState;
 
 /** @typedef {OncMojo.NetworkStateProperties|NetworkList.CustomItemState} */
 NetworkList.NetworkListItemType;
+
+// #export {NetworkList}

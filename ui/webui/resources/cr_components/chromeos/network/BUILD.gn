@@ -262,8 +262,8 @@ js_type_check("closure_compile_module") {
 
     #  ":network_ip_config.m",
     #  ":network_list.m",
-    #  ":network_list_item.m",
-    #  ":network_list_types.m",
+    ":network_list_item.m",
+    ":network_list_types.m",
     ":network_listener_behavior.m",
 
     #  ":network_nameservers.m",
@@ -392,17 +392,14 @@ js_library("network_list.m") {
 js_library("network_list_item.m") {
   sources = [ "$root_gen_dir/ui/webui/resources/cr_components/chromeos/network/network_list_item.m.js" ]
   deps = [
-    # TODO: Fill those in.
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
   extra_deps = [ ":network_list_item_module" ]
 }
 
 js_library("network_list_types.m") {
   sources = [ "$root_gen_dir/ui/webui/resources/cr_components/chromeos/network/network_list_types.m.js" ]
-  deps = [
-    # TODO: Fill those in.
-  ]
-  extra_deps = [ ":network_list_types_module" ]
+  extra_deps = [ ":modulize" ]
 }
 
 js_library("network_listener_behavior.m") {
@@ -520,7 +517,6 @@ group("polymer3_elements") {
     ":network_ip_config_module",
     ":network_list_item_module",
     ":network_list_module",
-    ":network_list_types_module",
     ":network_nameservers_module",
     ":network_password_input_module",
     ":network_property_list_mojo_module",
@@ -606,12 +602,7 @@ polymer_modulizer("network_list_item") {
   js_file = "network_list_item.js"
   html_file = "network_list_item.html"
   html_type = "dom-module"
-}
-
-polymer_modulizer("network_list_types") {
-  js_file = "network_list_types.js"
-  html_file = "network_list_types.html"
-  html_type = "dom-module"
+  auto_imports = cr_components_chromeos_auto_imports
 }
 
 polymer_modulizer("network_nameservers") {
@@ -673,6 +664,7 @@ js_modulizer("modulize") {
     "mojo_interface_provider.js",
     "network_config_element_behavior.js",
     "network_listener_behavior.js",
+    "network_list_types.js",
     "network_proxy.js",
     "onc_mojo.js",
   ]

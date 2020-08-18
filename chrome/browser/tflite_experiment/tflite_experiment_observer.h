@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "base/timer/timer.h"
-#include "chrome/services/machine_learning/machine_learning_tflite_predictor.h"
+#include "chrome/services/machine_learning/in_process_tflite_predictor.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -49,7 +49,7 @@ class TFLiteExperimentObserver
                             const std::string&);
 
   // The predictor is capable of running a TFLite model.
-  machine_learning::TFLitePredictor* tflite_predictor_ = nullptr;
+  machine_learning::InProcessTFLitePredictor* tflite_predictor_ = nullptr;
 
   // True when |tflite_predictor_| ran model evaluation. It forces
   // the observer to run tflite prediction only once.

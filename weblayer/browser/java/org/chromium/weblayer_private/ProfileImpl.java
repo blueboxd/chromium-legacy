@@ -5,6 +5,7 @@
 package org.chromium.weblayer_private;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.text.TextUtils;
 import android.webkit.ValueCallback;
 
@@ -206,6 +207,16 @@ public final class ProfileImpl extends IProfile.Stub implements BrowserContextHa
         ProfileImplJni.get().prepareForPossibleCrossOriginNavigation(mNativeProfile);
     }
 
+    @Override
+    public void getCachedFaviconForPageUri(@NonNull String uri, @NonNull IObjectWrapper callback) {
+        StrictModeWorkaround.apply();
+        checkNotDestroyed();
+        ValueCallback<Bitmap> valueCallback =
+                (ValueCallback<Bitmap>) ObjectWrapper.unwrap(callback, ValueCallback.class);
+        Callback<Bitmap> baseCallback = valueCallback::onReceiveValue;
+        ProfileImplJni.get().getCachedFaviconForPageUrl(mNativeProfile, uri, baseCallback);
+    }
+
     void checkNotDestroyed() {
         if (!mBeingDeleted) return;
         throw new IllegalArgumentException("Profile being destroyed: " + mName);
@@ -274,5 +285,7 @@ public final class ProfileImpl extends IProfile.Stub implements BrowserContextHa
         void removeBrowserPersistenceStorage(
                 long nativeProfileImpl, String[] ids, Callback<Boolean> callback);
         void prepareForPossibleCrossOriginNavigation(long nativeProfileImpl);
+        void getCachedFaviconForPageUrl(
+                long nativeProfileImpl, String url, Callback<Bitmap> callback);
     }
 }

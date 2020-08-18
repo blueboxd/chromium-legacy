@@ -952,10 +952,10 @@ bool TabImpl::DoBrowserControlsShrinkRendererSize(
 #endif
 }
 
-bool TabImpl::ShouldPinTopControlsToContentTop() {
+bool TabImpl::OnlyExpandTopControlsAtPageTop() {
 #if defined(OS_ANDROID)
   return top_controls_container_view_
-             ? top_controls_container_view_->ShouldPinControlsToContentTop()
+             ? top_controls_container_view_->OnlyExpandControlsAtPageTop()
              : false;
 #else
   return false;

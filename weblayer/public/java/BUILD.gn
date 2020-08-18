@@ -18,7 +18,7 @@ jinja_template("weblayer_client_manifest") {
 }
 
 android_resources("client_resources") {
-  custom_package = "org.chromium.weblayer"
+  create_srcjar = false
   sources = [
     "res/values-night/colors.xml",
     "res/values-night/values.xml",
@@ -98,6 +98,7 @@ android_library("java") {
     _version_constants_java_file,
   ]
 
+  resources_package = "org.chromium.weblayer"
   deps = [
     ":client_resources",
     ":client_version",

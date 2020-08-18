@@ -30,10 +30,11 @@ android_library("java") {
     "//ui/android:ui_full_java",
     "//url:gurl_java",
   ]
+  resources_package = "org.chromium.components.browser_ui.media"
 }
 
 android_resources("java_resources") {
-  custom_package = "org.chromium.components.browser_ui.media"
+  create_srcjar = false
   sources = [
     "java/res/drawable-hdpi/audio_playing.png",
     "java/res/drawable-hdpi/audio_playing_square.png",

@@ -17588,7 +17588,7 @@ TEST_F(LayerTreeHostImplTest, FrameElementIdHitTestSimple) {
   frame_layer->SetDrawsContent(true);
   frame_layer->SetHitTestable(true);
   CopyProperties(root_layer(), frame_layer);
-  CreateTransformNode(frame_layer).frame_element_id = ElementId(0x10);
+  CreateTransformNode(frame_layer).visible_frame_element_id = ElementId(0x10);
 
   UpdateDrawProperties(host_impl_->active_tree());
 
@@ -17604,7 +17604,7 @@ TEST_F(LayerTreeHostImplTest, FrameElementIdHitTestInheritance) {
   frame_layer->SetHitTestable(true);
   CopyProperties(root_layer(), frame_layer);
   CreateTransformNode(frame_layer, root_layer()->transform_tree_index())
-      .frame_element_id = ElementId(0x20);
+      .visible_frame_element_id = ElementId(0x20);
 
   // Create a child layer with no associated frame, but with the above frame
   // layer as a parent.
@@ -17636,7 +17636,7 @@ TEST_F(LayerTreeHostImplTest, FrameElementIdHitTestOverlap) {
   frame_layer->SetBounds(gfx::Size(50, 50));
   frame_layer->SetHitTestable(true);
   CopyProperties(root_layer(), frame_layer);
-  CreateTransformNode(frame_layer).frame_element_id = ElementId(0x10);
+  CreateTransformNode(frame_layer).visible_frame_element_id = ElementId(0x10);
 
   LayerImpl* occluding_frame_layer = AddLayer();
   occluding_frame_layer->SetBounds(gfx::Size(50, 50));
@@ -17644,7 +17644,7 @@ TEST_F(LayerTreeHostImplTest, FrameElementIdHitTestOverlap) {
   CopyProperties(root_layer(), occluding_frame_layer);
   auto& occluding_frame_node = CreateTransformNode(
       occluding_frame_layer, frame_layer->transform_tree_index());
-  occluding_frame_node.frame_element_id = ElementId(0x20);
+  occluding_frame_node.visible_frame_element_id = ElementId(0x20);
   occluding_frame_node.parent_frame_id = frame_layer->transform_tree_index();
   occluding_frame_layer->SetOffsetToTransformParent(gfx::Vector2dF(25, 25));
 
@@ -17665,13 +17665,14 @@ TEST_F(LayerTreeHostImplTest, FrameElementIdHitTestOverlapSimpleClip) {
   frame_layer->SetBounds(gfx::Size(50, 50));
   frame_layer->SetHitTestable(true);
   CopyProperties(root_layer(), frame_layer);
-  CreateTransformNode(frame_layer).frame_element_id = ElementId(0x10);
+  CreateTransformNode(frame_layer).visible_frame_element_id = ElementId(0x10);
 
   LayerImpl* clipped_frame_layer = AddLayer();
   clipped_frame_layer->SetBounds(gfx::Size(50, 50));
   clipped_frame_layer->SetHitTestable(true);
   CopyProperties(root_layer(), clipped_frame_layer);
-  CreateTransformNode(clipped_frame_layer).frame_element_id = ElementId(0x20);
+  CreateTransformNode(clipped_frame_layer).visible_frame_element_id =
+      ElementId(0x20);
   clipped_frame_layer->SetOffsetToTransformParent(gfx::Vector2dF(25, 25));
 
   // Create a clip excluding the overlapped region.
@@ -17692,14 +17693,14 @@ TEST_F(LayerTreeHostImplTest, FrameElementIdHitTestOverlapRoundedCorners) {
   frame_layer->SetBounds(gfx::Size(50, 50));
   frame_layer->SetHitTestable(true);
   CopyProperties(root_layer(), frame_layer);
-  CreateTransformNode(frame_layer).frame_element_id = ElementId(0x10);
+  CreateTransformNode(frame_layer).visible_frame_element_id = ElementId(0x10);
 
   LayerImpl* rounded_frame_layer = AddLayer();
   rounded_frame_layer->SetBounds(gfx::Size(50, 50));
   rounded_frame_layer->SetHitTestable(true);
   CopyProperties(root_layer(), rounded_frame_layer);
   CreateTransformNode(rounded_frame_layer, frame_layer->transform_tree_index())
-      .frame_element_id = ElementId(0x20);
+      .visible_frame_element_id = ElementId(0x20);
   rounded_frame_layer->SetOffsetToTransformParent(gfx::Vector2dF(25, 25));
 
   // Add rounded corners to the layer, which are unable to be hit tested by the
@@ -17722,14 +17723,14 @@ TEST_F(LayerTreeHostImplTest, FrameElementIdHitTestOverlapSibling) {
   frame_layer->SetHitTestable(true);
   CopyProperties(root_layer(), frame_layer);
   CreateTransformNode(frame_layer, root_layer()->transform_tree_index())
-      .frame_element_id = ElementId(0x20);
+      .visible_frame_element_id = ElementId(0x20);
 
   LayerImpl* sibling_frame_layer = AddLayer();
   sibling_frame_layer->SetBounds(gfx::Size(50, 50));
   sibling_frame_layer->SetHitTestable(true);
   CopyProperties(root_layer(), sibling_frame_layer);
   CreateTransformNode(sibling_frame_layer, root_layer()->transform_tree_index())
-      .frame_element_id = ElementId(0x30);
+      .visible_frame_element_id = ElementId(0x30);
   sibling_frame_layer->SetOffsetToTransformParent(gfx::Vector2dF(25, 25));
 
   UpdateDrawProperties(host_impl_->active_tree());

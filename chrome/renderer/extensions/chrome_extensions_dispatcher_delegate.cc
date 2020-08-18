@@ -178,14 +178,6 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
   source_map->RegisterSource("chromeos.tts.mojom.tts_stream.mojom",
                              IDR_TTS_STREAM_MOJOM_JS);
   source_map->RegisterSource("chromeos.tts.stream", IDR_TTS_STREAM_BINDINGS_JS);
-
-  // Imprivata API.
-  source_map->RegisterSource("chromeos.remote_apps.mojom-lite",
-                             IDR_REMOTE_APPS_MOJOM_LITE_JS);
-  source_map->RegisterSource("chromeos.remote_apps",
-                             IDR_REMOTE_APPS_BINDINGS_JS);
-  source_map->RegisterSource("url/mojom/url.mojom-lite",
-                             IDR_MOJO_URL_MOJOM_LITE_JS);
 #endif  // defined(OS_CHROMEOS)
 
   source_map->RegisterSource(

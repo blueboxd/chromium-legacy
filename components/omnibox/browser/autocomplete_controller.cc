@@ -43,6 +43,7 @@
 #include "components/omnibox/browser/search_provider.h"
 #include "components/omnibox/browser/shortcuts_provider.h"
 #include "components/omnibox/browser/zero_suggest_provider.h"
+#include "components/omnibox/browser/zero_suggest_verbatim_match_provider.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/open_from_clipboard/clipboard_recent_content.h"
 #include "components/search_engines/omnibox_focus_type.h"
@@ -287,6 +288,18 @@ AutocompleteController::AutocompleteController(
         ZeroSuggestProvider::Create(provider_client_.get(), this);
     if (zero_suggest_provider_)
       providers_.push_back(zero_suggest_provider_);
+#if defined(OS_ANDROID)
+    // Note: the need for the always-present verbatim match originates from the
+    // OmniboxSearchReadyIncognito feature.
+    // The feature aims at showing SRO in an Incognito mode, where the
+    // ZeroSuggestProvider intentionally never gets invoked.
+    // The gating flag here should be removed when the SRO Incognito is
+    // launched.
+    if (base::FeatureList::IsEnabled(omnibox::kOmniboxSearchReadyIncognito)) {
+      providers_.push_back(
+          new ZeroSuggestVerbatimMatchProvider(provider_client_.get()));
+    }
+#endif
   }
   if (provider_types & AutocompleteProvider::TYPE_ZERO_SUGGEST_LOCAL_HISTORY) {
     providers_.push_back(

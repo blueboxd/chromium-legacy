@@ -28,6 +28,7 @@ import org.chromium.base.ObserverList;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent.HeightMode;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController.SheetState;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController.StateChangeReason;
+import org.chromium.components.browser_ui.bottomsheet.internal.R;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.util.AccessibilityUtil;
 
@@ -282,8 +283,7 @@ class BottomSheet extends FrameLayout
 
         mToolbarHolder =
                 (TouchRestrictingFrameLayout) findViewById(R.id.bottom_sheet_toolbar_container);
-        mToolbarHolder.setBackgroundResource(
-                org.chromium.components.browser_ui.styles.R.drawable.top_round);
+        mToolbarHolder.setBackgroundResource(R.drawable.top_round);
 
         mDefaultToolbarView = mToolbarHolder.findViewById(R.id.bottom_sheet_toolbar);
 
@@ -292,8 +292,7 @@ class BottomSheet extends FrameLayout
         mBottomSheetContentContainer =
                 (TouchRestrictingFrameLayout) findViewById(R.id.bottom_sheet_content);
         mBottomSheetContentContainer.setBottomSheet(this);
-        mBottomSheetContentContainer.setBackgroundResource(
-                org.chromium.components.browser_ui.styles.R.drawable.top_round);
+        mBottomSheetContentContainer.setBackgroundResource(R.drawable.top_round);
 
         mContainerWidth = root.getWidth();
         mContainerHeight = root.getHeight();
@@ -937,9 +936,7 @@ class BottomSheet extends FrameLayout
 
             if (getCurrentSheetContent().swipeToDismissEnabled()) {
                 contentDescription += ". "
-                        + getResources().getString(
-                                org.chromium.components.browser_ui.widget.R.string
-                                        .bottom_sheet_accessibility_description);
+                        + getResources().getString(R.string.bottom_sheet_accessibility_description);
             }
 
             setContentDescription(contentDescription);

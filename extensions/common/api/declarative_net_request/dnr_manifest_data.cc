@@ -8,9 +8,11 @@
 
 #include "base/check_op.h"
 #include "base/no_destructor.h"
-#include "extensions/common/manifest_constants.h"
+#include "extensions/common/api/declarative_net_request.h"
 
 namespace extensions {
+
+namespace dnr_api = api::declarative_net_request;
 namespace declarative_net_request {
 
 DNRManifestData::RulesetInfo::RulesetInfo() = default;
@@ -36,7 +38,7 @@ const std::vector<DNRManifestData::RulesetInfo>& DNRManifestData::GetRulesets(
       empty_vector;
 
   Extension::ManifestData* data =
-      extension.GetManifestData(manifest_keys::kDeclarativeNetRequestKey);
+      extension.GetManifestData(dnr_api::ManifestKeys::kDeclarativeNetRequest);
   if (!data)
     return *empty_vector;
 
@@ -50,7 +52,7 @@ DNRManifestData::GetManifestIDToRulesetMap(const Extension& extension) {
   static const base::NoDestructor<ManifestIDToRulesetMap> empty_map;
 
   Extension::ManifestData* data =
-      extension.GetManifestData(manifest_keys::kDeclarativeNetRequestKey);
+      extension.GetManifestData(dnr_api::ManifestKeys::kDeclarativeNetRequest);
   if (!data)
     return *empty_map;
 
@@ -62,7 +64,7 @@ const DNRManifestData::RulesetInfo& DNRManifestData::GetRuleset(
     const Extension& extension,
     RulesetID ruleset_id) {
   Extension::ManifestData* data =
-      extension.GetManifestData(manifest_keys::kDeclarativeNetRequestKey);
+      extension.GetManifestData(dnr_api::ManifestKeys::kDeclarativeNetRequest);
   DCHECK(data);
 
   const std::vector<DNRManifestData::RulesetInfo>& rulesets =

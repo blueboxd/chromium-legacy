@@ -18,8 +18,8 @@ source_set("machine_learning") {
 
   if (build_with_tflite_lib) {
     sources += [
-      "machine_learning_tflite_predictor.cc",
-      "machine_learning_tflite_predictor.h",
+      "in_process_tflite_predictor.cc",
+      "in_process_tflite_predictor.h",
     ]
 
     deps += [
@@ -52,7 +52,7 @@ source_set("unit_tests") {
   ]
 
   if (build_with_tflite_lib) {
-    sources += [ "machine_learning_tflite_predictor_unittest.cc" ]
+    sources += [ "in_process_tflite_predictor_unittest.cc" ]
   }
 
   deps = [

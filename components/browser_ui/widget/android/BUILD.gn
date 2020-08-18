@@ -111,10 +111,11 @@ android_library("java") {
     "//ui/android:ui_java",
     "//url:gurl_java",
   ]
+  resources_package = "org.chromium.components.browser_ui.widget"
 }
 
 android_resources("java_resources") {
-  custom_package = "org.chromium.components.browser_ui.widget"
+  create_srcjar = false
   sources = [
     "java/res/anim/image_grid_enter.xml",
     "java/res/anim/image_tile_enter.xml",
@@ -255,12 +256,13 @@ android_library("javatests") {
     "//ui/android:ui_java",
     "//ui/android:ui_java_test_support",
   ]
+  resources_package = "org.chromium.components.browser_ui.widget.test"
 }
 
 android_resources("java_test_resources") {
   testonly = true
 
-  custom_package = "org.chromium.components.browser_ui.widget.test"
+  create_srcjar = false
   sources = [
     "test/java/res/drawable-hdpi/promo_dialog_test_drawable.png",
     "test/java/res/drawable-mdpi/promo_dialog_test_drawable.png",

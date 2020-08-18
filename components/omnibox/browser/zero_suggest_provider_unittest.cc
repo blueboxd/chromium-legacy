@@ -209,7 +209,7 @@ void ZeroSuggestProviderTest::SetZeroSuggestVariantForAllContexts(
         variant}});
 }
 
-TEST_F(ZeroSuggestProviderTest, AllowZeroSuggestSuggestionsContextualWeb) {
+TEST_F(ZeroSuggestProviderTest, AllowZeroSuggestSuggestions) {
   provider_->SetPageClassificationForTesting(metrics::OmniboxEventProto::OTHER);
   std::string input_url = "https://example.com/";
 
@@ -230,11 +230,17 @@ TEST_F(ZeroSuggestProviderTest, AllowZeroSuggestSuggestionsContextualWeb) {
   on_clobber_input.set_current_url(GURL(input_url));
   on_clobber_input.set_focus_type(OmniboxFocusType::DELETED_PERMANENT_TEXT);
 
+  // ZeroSuggest should never deal with prefix suggestions.
   EXPECT_FALSE(provider_->AllowZeroSuggestSuggestions(prefix_input));
+
+  // This should always be true, as otherwise we will break MostVisited.
+  // TODO(tommycli): We should split this into its own provider to avoid
+  // breaking it again.
   EXPECT_TRUE(provider_->AllowZeroSuggestSuggestions(on_focus_input));
+
   EXPECT_FALSE(provider_->AllowZeroSuggestSuggestions(on_clobber_input));
 
-  // Enable on-clobber in addition to on-focus.
+  // Enable on-clobber.
   {
     base::test::ScopedFeatureList features;
     features.InitAndEnableFeature(
@@ -252,36 +258,6 @@ TEST_F(ZeroSuggestProviderTest, AllowZeroSuggestSuggestionsContextualWeb) {
     on_clobber_serp.set_current_url(GURL(input_url));
     on_clobber_serp.set_focus_type(OmniboxFocusType::DELETED_PERMANENT_TEXT);
     EXPECT_FALSE(provider_->AllowZeroSuggestSuggestions(on_clobber_serp));
-  }
-
-  // Disable on-focus.
-  {
-    base::test::ScopedFeatureList features;
-    features.InitAndDisableFeature(
-        omnibox::kFocusGestureTriggersContextualWebZeroSuggest);
-    EXPECT_FALSE(provider_->AllowZeroSuggestSuggestions(prefix_input));
-    EXPECT_FALSE(provider_->AllowZeroSuggestSuggestions(on_focus_input));
-    EXPECT_FALSE(provider_->AllowZeroSuggestSuggestions(on_clobber_input));
-
-    // Sanity check that we don't accidentally disable on-focus for NTP here.
-    AutocompleteInput on_focus_ntp(
-        base::ASCIIToUTF16(input_url),
-        metrics::OmniboxEventProto::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS,
-        TestSchemeClassifier());
-    on_focus_ntp.set_current_url(GURL(input_url));
-    on_focus_ntp.set_focus_type(OmniboxFocusType::ON_FOCUS);
-    EXPECT_TRUE(provider_->AllowZeroSuggestSuggestions(on_focus_ntp));
-  }
-
-  // Enable on-clobber and disable on-focus.
-  {
-    base::test::ScopedFeatureList features;
-    features.InitWithFeatures(
-        {omnibox::kClobberTriggersContextualWebZeroSuggest},
-        {omnibox::kFocusGestureTriggersContextualWebZeroSuggest});
-    EXPECT_FALSE(provider_->AllowZeroSuggestSuggestions(prefix_input));
-    EXPECT_FALSE(provider_->AllowZeroSuggestSuggestions(on_focus_input));
-    EXPECT_TRUE(provider_->AllowZeroSuggestSuggestions(on_clobber_input));
   }
 }
 

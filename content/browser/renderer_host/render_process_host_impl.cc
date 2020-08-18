@@ -2221,6 +2221,33 @@ void RenderProcessHostImpl::
   cleanup_network_service_plugin_exceptions_upon_destruction_ = true;
 }
 
+std::string
+RenderProcessHostImpl::GetInfoForBrowserContextDestructionCrashReporting() {
+  ChildProcessSecurityPolicyImpl* policy =
+      ChildProcessSecurityPolicyImpl::GetInstance();
+  std::string ret = " pl='" + policy->GetProcessLock(GetID()).ToString() + "'";
+
+  if (HostHasNotBeenUsed())
+    ret += " hnbu";
+
+  if (IsSpareProcessForCrashReporting(this))
+    ret += " spr";
+
+  if (delayed_cleanup_needed_)
+    ret += " dcn";
+
+  if (keep_alive_ref_count_ != 0)
+    ret += " karc=" + base::NumberToString(keep_alive_ref_count_);
+
+  if (!listeners_.IsEmpty())
+    ret += " lsn=" + base::NumberToString(listeners_.size());
+
+  if (deleting_soon_)
+    ret += " ds";
+
+  return ret;
+}
+
 #if BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX)
 void RenderProcessHostImpl::DumpProfilingData(base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

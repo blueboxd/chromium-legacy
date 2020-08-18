@@ -126,10 +126,10 @@
     on-change-page="onChangePage_"
     on-display-annotations-changed="onDisplayAnnotationsChanged_"
     on-dropdown-opened="onDropdownOpened_"
-    on-fit-to-changed="onFitToChanged" on-zoom-in="onZoomIn"
+    on-fit-to-changed="onFitToChanged"
     on-sidenav-toggle-click="onSidenavToggleClick_"
     on-two-up-view-changed="onTwoUpViewChanged_"
-    on-zoom-changed="onZoomChanged"
+    on-zoom-changed="onZoomChanged" on-zoom-in="onZoomIn"
     on-zoom-out="onZoomOut" on-rotate-left="rotateCounterclockwise"
 <if expr="chromeos">
     on-annotation-mode-toggled="onAnnotationModeToggled_"
@@ -141,7 +141,10 @@
 <template is="dom-if" if="[[pdfViewerUpdateEnabled_]]">
   <div id="container">
     <viewer-pdf-sidenav id="sidenav" hidden="[[sidenavCollapsed_]]"
-        doc-length="[[docLength_]]">
+        bookmarks="[[bookmarks_]]" doc-length="[[docLength_]]"
+        on-change-page="onChangePage_"
+        on-change-page-and-xy="onChangePageAndXy_"
+        on-navigate="onNavigate_">
     </viewer-pdf-sidenav>
     <div id="main" on-scroll="onScroll_">
       <div id="sizer"></div>

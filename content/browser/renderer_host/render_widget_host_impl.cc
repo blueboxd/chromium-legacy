@@ -107,6 +107,7 @@
 #include "storage/browser/file_system/isolated_context.h"
 #include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
 #include "third_party/blink/public/common/widget/visual_properties.h"
+#include "third_party/blink/public/mojom/input/touch_event.mojom.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_drag_drop_token.mojom.h"
 #include "third_party/blink/public/mojom/page/drag.mojom.h"
 #include "ui/base/clipboard/clipboard_constants.h"
@@ -887,8 +888,9 @@ blink::VisualProperties RenderWidgetHostImpl::GetVisualProperties() {
   visual_properties.browser_controls_params
       .animate_browser_controls_height_changes =
       rvh_delegate_view->ShouldAnimateBrowserControlsHeightChanges();
-  visual_properties.browser_controls_params.pin_top_controls_to_content_top =
-      rvh_delegate_view->ShouldPinTopControlsToContentTop();
+  visual_properties.browser_controls_params
+      .only_expand_top_controls_at_page_top =
+      rvh_delegate_view->OnlyExpandTopControlsAtPageTop();
 
   float top_controls_height = rvh_delegate_view->GetTopControlsHeight();
   float top_controls_min_height = rvh_delegate_view->GetTopControlsMinHeight();
@@ -3466,9 +3468,9 @@ void RenderWidgetHostImpl::ZoomToFindInPageRectInMainFrame(
   root_rvhi->ZoomToFindInPageRect(transformed_rect_to_zoom);
 }
 
-void RenderWidgetHostImpl::SetHasTouchEventHandlers(bool has_handlers) {
-  input_router_->OnHasTouchEventHandlers(has_handlers);
-  has_touch_handler_ = has_handlers;
+void RenderWidgetHostImpl::SetHasTouchEventConsumers(
+    blink::mojom::TouchEventConsumersPtr consumers) {
+  input_router_->OnHasTouchEventHandlers(consumers->has_touch_event_handlers);
 }
 
 void RenderWidgetHostImpl::IntrinsicSizingInfoChanged(

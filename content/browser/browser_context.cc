@@ -487,24 +487,14 @@ BrowserContext::~BrowserContext() {
   std::string rph_crash_key_value;
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
-
   for (RenderProcessHost::iterator host_iterator =
            RenderProcessHost::AllHostsIterator();
        !host_iterator.IsAtEnd(); host_iterator.Advance()) {
     RenderProcessHost* host = host_iterator.GetCurrentValue();
     if (host->GetBrowserContext() == this) {
-      rph_crash_key_value += "{";
-
       rph_crash_key_value +=
-          " pl='" + policy->GetProcessLock(host->GetID()).ToString() + "'";
-
-      if (host->HostHasNotBeenUsed())
-        rph_crash_key_value += " hnbu";
-
-      if (RenderProcessHostImpl::IsSpareProcessForCrashReporting(host))
-        rph_crash_key_value += " spr";
-
-      rph_crash_key_value += " }";
+          "{ " + host->GetInfoForBrowserContextDestructionCrashReporting() +
+          " }";
     }
   }
   if (!rph_crash_key_value.empty()) {

@@ -68,8 +68,8 @@ class MockBrowserControlsOffsetManagerClient
     return browser_controls_params_.top_controls_min_height;
   }
 
-  bool ShouldPinTopControlsToContentTop() const override {
-    return browser_controls_params_.pin_top_controls_to_content_top;
+  bool OnlyExpandTopControlsAtPageTop() const override {
+    return browser_controls_params_.only_expand_top_controls_at_page_top;
   }
 
   gfx::ScrollOffset ViewportScrollOffset() const override {
@@ -1163,11 +1163,11 @@ TEST(BrowserControlsOffsetManagerTest,
   EXPECT_FLOAT_EQ(1.f, client.CurrentBottomControlsShownRatio());
 }
 
-TEST(BrowserControlsOffsetManagerTest, PinTopControlsToContentTop) {
+TEST(BrowserControlsOffsetManagerTest, OnlyExpandTopControlsAtPageTop) {
   MockBrowserControlsOffsetManagerClient client(0.f, 0.5f, 0.5f);
-  client.SetBrowserControlsParams({/*top_controls_height=*/100.f, 0, 0, 0,
-                                   false, false,
-                                   /*pin_top_controls_to_content_top=*/true});
+  client.SetBrowserControlsParams(
+      {/*top_controls_height=*/100.f, 0, 0, 0, false, false,
+       /*only_expand_top_controls_at_page_top=*/true});
   BrowserControlsOffsetManager* manager = client.manager();
 
   // Scroll down to hide the controls entirely.

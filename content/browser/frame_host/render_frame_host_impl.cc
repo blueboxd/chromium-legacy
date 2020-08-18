@@ -4471,11 +4471,9 @@ bool RenderFrameHostImpl::GetSuddenTerminationDisablerState(
   }
 }
 
-bool RenderFrameHostImpl::UnloadHandlerExistsInSameSiteInstance() {
+bool RenderFrameHostImpl::UnloadHandlerExistsInSameSiteInstanceSubtree() {
   DCHECK(!GetParent());
   auto* main_frame_site_instance = GetSiteInstance();
-  if (has_unload_handler_)
-    return true;
   for (auto* subframe : GetFramesInSubtree()) {
     auto* rfhi = static_cast<RenderFrameHostImpl*>(subframe);
     if (rfhi->GetSiteInstance() == main_frame_site_instance &&

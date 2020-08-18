@@ -643,9 +643,9 @@ class CONTENT_EXPORT WebContentsDelegate {
   virtual bool ShouldAnimateBrowserControlsHeightChanges();
   virtual bool DoBrowserControlsShrinkRendererSize(
       const WebContents* web_contents);
-  // Returns true if the top controls should be pinned to the top of the page,
+  // Returns true if the top controls should only expand at the top of the page,
   // so they'll only be visible if the page is scrolled to the top.
-  virtual bool ShouldPinTopControlsToContentTop();
+  virtual bool OnlyExpandTopControlsAtPageTop();
 
   // Propagates to the browser that gesture scrolling has changed state. This is
   // used by the browser to assist in controlling the behavior of sliding the

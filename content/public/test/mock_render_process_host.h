@@ -217,6 +217,7 @@ class MockRenderProcessHost : public RenderProcessHost {
       override {}
 
   void CleanupNetworkServicePluginExceptionsUponDestruction() override;
+  std::string GetInfoForBrowserContextDestructionCrashReporting() override;
 
   // IPC::Sender via RenderProcessHost.
   bool Send(IPC::Message* msg) override;

@@ -39,8 +39,8 @@
 #include "chrome/browser/chromeos/policy/device_wifi_allowed_handler.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
 #include "chrome/browser/chromeos/policy/enrollment_requisition_manager.h"
-#include "chrome/browser/chromeos/policy/external_data_handlers/device_native_printers_external_data_handler.h"
 #include "chrome/browser/chromeos/policy/external_data_handlers/device_print_servers_external_data_handler.h"
+#include "chrome/browser/chromeos/policy/external_data_handlers/device_printers_external_data_handler.h"
 #include "chrome/browser/chromeos/policy/external_data_handlers/device_wallpaper_image_external_data_handler.h"
 #include "chrome/browser/chromeos/policy/external_data_handlers/device_wilco_dtc_configuration_external_data_handler.h"
 #include "chrome/browser/chromeos/policy/hostname_handler.h"
@@ -271,7 +271,7 @@ void BrowserPolicyConnectorChromeOS::Init(
   DCHECK(calculator_factory)
       << "Policy connector initialized before the bulk printers factory";
   device_cloud_external_data_policy_handlers_.push_back(
-      std::make_unique<policy::DeviceNativePrintersExternalDataHandler>(
+      std::make_unique<policy::DevicePrintersExternalDataHandler>(
           GetPolicyService(), calculator_factory->GetForDevice()));
   device_cloud_external_data_policy_handlers_.push_back(
       std::make_unique<policy::DevicePrintServersExternalDataHandler>(

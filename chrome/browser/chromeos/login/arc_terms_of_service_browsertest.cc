@@ -36,9 +36,9 @@
 #include "chrome/browser/consent_auditor/consent_auditor_test_utils.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/arc_terms_of_service_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/recommend_apps_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/user_creation_screen_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -215,7 +215,7 @@ class ArcTermsOfServiceScreenTest : public OobeBaseTest {
   void LoginAsRegularUser() {
     SetUpExitCallback();
     login_manager_mixin_.LoginAsNewRegularUser();
-    OobeScreenExitWaiter(UserCreationView::kScreenId).Wait();
+    OobeScreenExitWaiter(GaiaView::kScreenId).Wait();
   }
 
   void ShowArcTosScreen() {

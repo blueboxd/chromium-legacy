@@ -15,3 +15,9 @@ enum TouchState {
   kStateMax = kStateCancelled
 };
 
+// Describes which touch event consumers are present in the renderer, for use in
+// touch action and touch event filtering.
+struct TouchEventConsumers {
+  bool has_touch_event_handlers;
+  bool has_hit_testable_scrollbar;
+};

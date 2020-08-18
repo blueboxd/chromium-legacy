@@ -971,42 +971,6 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BrowserActionWithRectangularIcon) {
   EXPECT_FALSE(gfx::test::AreImagesEqual(first_icon, next_icon));
 }
 
-// Test that we don't try and show a browser action popup with
-// browserAction.openPopup if there is no toolbar (e.g., for web popup windows).
-// Regression test for crbug.com/584747.
-IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BrowserActionOpenPopupOnPopup) {
-  // Open a new web popup window.
-  NavigateParams params(browser(), GURL("http://www.google.com/"),
-                        ui::PAGE_TRANSITION_LINK);
-  params.disposition = WindowOpenDisposition::NEW_POPUP;
-  params.window_action = NavigateParams::SHOW_WINDOW;
-  ui_test_utils::NavigateToURL(&params);
-  Browser* popup_browser = params.browser;
-  // Verify it is a popup, and it is the active window.
-  ASSERT_TRUE(popup_browser);
-  // The window isn't considered "active" on MacOSX for odd reasons. The more
-  // important test is that it *is* considered the last active browser, since
-  // that's what we check when we try to open the popup.
-#if !defined(OS_MAC)
-  EXPECT_TRUE(popup_browser->window()->IsActive());
-#endif
-  EXPECT_FALSE(browser()->window()->IsActive());
-  EXPECT_FALSE(popup_browser->SupportsWindowFeature(Browser::FEATURE_TOOLBAR));
-  EXPECT_EQ(popup_browser,
-            chrome::FindLastActiveWithProfile(browser()->profile()));
-
-  // Load up the extension, which will call chrome.browserAction.openPopup()
-  // when it is loaded and verify that the popup didn't open.
-  ExtensionTestMessageListener listener("ready", true);
-  EXPECT_TRUE(LoadExtension(
-      test_data_dir_.AppendASCII("browser_action/open_popup_on_reply")));
-  EXPECT_TRUE(listener.WaitUntilSatisfied());
-
-  ResultCatcher catcher;
-  listener.Reply(std::string());
-  EXPECT_TRUE(catcher.GetNextResult()) << message_;
-}
-
 // Verify video can enter and exit Picture-in_Picture when browser action icon
 // is clicked.
 IN_PROC_BROWSER_TEST_F(BrowserActionApiTest,

@@ -15,7 +15,6 @@
 #include "extensions/common/api/declarative_net_request.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
-#include "extensions/common/manifest_constants.h"
 
 namespace extensions {
 namespace declarative_net_request {
@@ -75,14 +74,15 @@ IndexHelper::Result CombineResults(
   // We don't raise a hard error to maintain forwards compatibility.
   if (enabled_rules_count > static_cast<size_t>(GetStaticRuleLimit())) {
     total_result.warnings.emplace_back(
-        kEnabledRuleCountExceeded, manifest_keys::kDeclarativeNetRequestKey,
-        manifest_keys::kDeclarativeRuleResourcesKey);
+        kEnabledRuleCountExceeded,
+        dnr_api::ManifestKeys::kDeclarativeNetRequest,
+        dnr_api::DNRInfo::kRuleResources);
   } else if (enabled_regex_rules_count >
              static_cast<size_t>(GetRegexRuleLimit())) {
     total_result.warnings.emplace_back(
         kEnabledRegexRuleCountExceeded,
-        manifest_keys::kDeclarativeNetRequestKey,
-        manifest_keys::kDeclarativeRuleResourcesKey);
+        dnr_api::ManifestKeys::kDeclarativeNetRequest,
+        dnr_api::DNRInfo::kRuleResources);
   }
 
   if (log_histograms) {

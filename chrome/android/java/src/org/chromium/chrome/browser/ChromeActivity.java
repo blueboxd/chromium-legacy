@@ -251,9 +251,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     // Observes when sync becomes ready to create the mContextReporter.
     private ProfileSyncService.SyncStateChangedListener mSyncStateChangedListener;
 
-    @Nullable
-    private BrowserControlsManager mBrowserControlsManager;
-
     // The PictureInPictureController is initialized lazily https://crbug.com/729738.
     private PictureInPictureController mPictureInPictureController;
 
@@ -325,6 +322,10 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
     @Override
     public void performPreInflationStartup() {
+        // Make sure the root coordinator is created prior to calling super to ensure all the
+        // activity lifecycle events are called.
+        mRootUiCoordinator = createRootUiCoordinator();
+
         // Create component before calling super to give its members a chance to catch
         // onPreInflationStartup event.
         mComponent = createComponent();
@@ -336,9 +337,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             if (oldBridge != null) oldBridge.destroy();
             mBookmarkBridgeSupplier.set(profile == null ? null : new BookmarkBridge(profile));
         });
-        // Make sure the root coordinator is created prior to calling super to ensure all the
-        // activity lifecycle events are called.
-        mRootUiCoordinator = createRootUiCoordinator();
 
         super.performPreInflationStartup();
 
@@ -1261,11 +1259,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             mActivityTabStartupMetricsTracker = null;
         }
 
-        if (mBrowserControlsManager != null) {
-            mBrowserControlsManager.destroy();
-            mBrowserControlsManager = null;
-        }
-
         if (mTabModelsInitialized) {
             TabModelSelector selector = getTabModelSelector();
             if (selector != null) selector.destroy();
@@ -1635,16 +1628,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      */
     @NonNull
     public BrowserControlsManager getBrowserControlsManager() {
-        if (mBrowserControlsManager == null) {
-            // When finish()ing, getBrowserControlsManager() is required to perform cleanup logic.
-            // It should never be called when it results in creating a new manager though.
-            if (isActivityFinishingOrDestroyed()) {
-                throw new IllegalStateException();
-            }
-            mBrowserControlsManager = createBrowserControlsManager();
-            assert mBrowserControlsManager != null;
-        }
-        return mBrowserControlsManager;
+        return mRootUiCoordinator.getBrowserControlsManager();
     }
 
     /**

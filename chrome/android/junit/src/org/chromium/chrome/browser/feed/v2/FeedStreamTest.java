@@ -30,6 +30,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowLog;
 
 import org.chromium.base.Callback;
 import org.chromium.base.test.BaseRobolectricTestRunner;
@@ -79,6 +80,9 @@ public class FeedStreamTest {
         mRecyclerView = (RecyclerView) mFeedStream.getView();
         mLayoutManager = new FakeLinearLayoutManager(mActivity);
         mRecyclerView.setLayoutManager(mLayoutManager);
+
+        // Print logs to stdout.
+        ShadowLog.stream = System.out;
     }
 
     @Test
@@ -220,6 +224,48 @@ public class FeedStreamTest {
         mFeedStream.checkScrollingForLoadMore(triggerDistance / 2);
         verify(mFeedStreamSurfaceJniMock)
                 .loadMore(anyLong(), any(FeedStreamSurface.class), any(Callback.class));
+    }
+
+    @Test
+    public void testSerializeScrollState() {
+        FeedStream.ScrollState state = new FeedStream.ScrollState();
+        state.position = 2;
+        state.lastPosition = 4;
+        state.offset = 50;
+
+        FeedStream.ScrollState deserializedState = FeedStream.ScrollState.fromJson(state.toJson());
+
+        Assert.assertEquals(2, deserializedState.position);
+        Assert.assertEquals(4, deserializedState.lastPosition);
+        Assert.assertEquals(50, deserializedState.offset);
+        Assert.assertEquals(state.toJson(), deserializedState.toJson());
+    }
+
+    @Test
+    public void testGetSavedInstanceStateString() {
+        mFeedStream.onShow();
+        mFeedStream.setStreamContentVisibility(true);
+
+        View view1 = new FrameLayout(mActivity);
+        mLayoutManager.addChildToPosition(0, new FrameLayout(mActivity));
+        mLayoutManager.addChildToPosition(1, view1);
+        mLayoutManager.addChildToPosition(2, new FrameLayout(mActivity));
+        mLayoutManager.addChildToPosition(3, new FrameLayout(mActivity));
+
+        mLayoutManager.setFirstVisiblePosition(1);
+        mLayoutManager.setLastVisiblePosition(3);
+
+        String json = mFeedStream.getSavedInstanceStateString();
+        Assert.assertNotEquals("", json);
+
+        FeedStream.ScrollState state = FeedStream.ScrollState.fromJson(json);
+        Assert.assertEquals(1, state.position);
+        Assert.assertEquals(3, state.lastPosition);
+    }
+
+    @Test
+    public void testScrollStateFromInvalidJson() {
+        Assert.assertEquals(null, FeedStream.ScrollState.fromJson("{{=xcg"));
     }
 
     private int getLoadMoreTriggerScrollDistance() {

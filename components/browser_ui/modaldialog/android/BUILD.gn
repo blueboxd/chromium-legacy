@@ -21,10 +21,11 @@ android_library("java") {
     "//third_party/android_deps:androidx_annotation_annotation_java",
     "//ui/android:ui_java",
   ]
+  resources_package = "org.chromium.components.browser_ui.modaldialog"
 }
 
 android_resources("java_resources") {
-  custom_package = "org.chromium.components.browser_ui.modaldialog"
+  create_srcjar = false
   sources = [
     "java/res/layout/modal_dialog_container.xml",
     "java/res/layout/modal_dialog_title.xml",
@@ -67,12 +68,13 @@ android_library("javatests") {
     "//ui/android:ui_java",
     "//ui/android:ui_java_test_support",
   ]
+  resources_package = "org.chromium.components.browser_ui.modaldialog.test"
 }
 
 android_resources("java_test_resources") {
   testonly = true
 
-  custom_package = "org.chromium.components.browser_ui.modaldialog.test"
+  create_srcjar = false
   sources = [
     "test/java/res/drawable/ic_add.xml",
     "test/java/res/values/ids.xml",

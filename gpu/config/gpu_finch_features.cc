@@ -4,6 +4,7 @@
 #include "gpu/config/gpu_finch_features.h"
 
 #if defined(OS_ANDROID)
+#include "base/android/android_image_reader_compat.h"
 #include "base/android/build_info.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/string_split.h"
@@ -22,6 +23,10 @@ const base::Feature kUseGles2ForOopR{"UseGles2ForOopR",
 // SurfaceControl.
 const base::Feature kAndroidSurfaceControl{"AndroidSurfaceControl",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Use AImageReader for MediaCodec and MediaPlyer on android.
+const base::Feature kAImageReader{"AImageReader",
+                                  base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 // Enable GPU Rasterization by default. This can still be overridden by
@@ -119,8 +124,14 @@ const base::Feature kEnableSharedImageForWebview{
     "EnableSharedImageForWebview", base::FEATURE_ENABLED_BY_DEFAULT};
 
 #if defined(OS_ANDROID)
+bool IsAImageReaderEnabled() {
+  return base::FeatureList::IsEnabled(kAImageReader) &&
+         base::android::AndroidImageReader::GetInstance().IsSupported();
+}
+
 bool IsAndroidSurfaceControlEnabled() {
-  return base::FeatureList::IsEnabled(kAndroidSurfaceControl) &&
+  return IsAImageReaderEnabled() &&
+         base::FeatureList::IsEnabled(kAndroidSurfaceControl) &&
          gl::SurfaceControl::IsSupported();
 }
 #endif

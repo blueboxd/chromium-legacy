@@ -193,6 +193,11 @@ void UploadActionsTask::UploadPendingActions() {
     Done(UploadActionsStatus::kNoPendingActions);
     return;
   }
+  // Can't upload actions for signed-out users, so abort.
+  if (!stream_->IsSignedIn()) {
+    Done(UploadActionsStatus::kAbortUploadForSignedOutUser);
+    return;
+  }
   UpdateAndUploadNextBatch();
 }
 
@@ -287,7 +292,7 @@ void UploadActionsTask::UpdateTokenAndFinish() {
 }
 
 void UploadActionsTask::Done(UploadActionsStatus status) {
-  MetricsReporter::OnUploadActions(status);
+  stream_->GetMetricsReporter()->OnUploadActions(status);
   Result result;
   result.status = status;
   result.upload_attempt_count = upload_attempt_count_;

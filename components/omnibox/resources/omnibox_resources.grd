@@ -141,8 +141,47 @@
       <if expr="lang == 'en'">
         <include name="IDR_OMNIBOX_PEDAL_CONCEPTS" file="omnibox_pedal_concepts_en.json" type="BINDATA" compress="gzip" />
       </if>
+      <if expr="lang == 'en-GB'">
+        <include name="IDR_OMNIBOX_PEDAL_CONCEPTS" file="omnibox_pedal_concepts_en-GB.json" type="BINDATA" compress="gzip" />
+      </if>
+      <if expr="lang == 'es'">
+        <include name="IDR_OMNIBOX_PEDAL_CONCEPTS" file="omnibox_pedal_concepts_es.json" type="BINDATA" compress="gzip" />
+      </if>
+      <if expr="lang == 'es-419'">
+        <include name="IDR_OMNIBOX_PEDAL_CONCEPTS" file="omnibox_pedal_concepts_es-419.json" type="BINDATA" compress="gzip" />
+      </if>
+      <if expr="lang == 'et'">
+        <include name="IDR_OMNIBOX_PEDAL_CONCEPTS" file="omnibox_pedal_concepts_et.json" type="BINDATA" compress="gzip" />
+      </if>
+      <if expr="lang == 'fa'">
+        <include name="IDR_OMNIBOX_PEDAL_CONCEPTS" file="omnibox_pedal_concepts_fa.json" type="BINDATA" compress="gzip" />
+      </if>
+      <if expr="lang == 'fi'">
+        <include name="IDR_OMNIBOX_PEDAL_CONCEPTS" file="omnibox_pedal_concepts_fi.json" type="BINDATA" compress="gzip" />
+      </if>
+      <if expr="lang == 'fil'">
+        <include name="IDR_OMNIBOX_PEDAL_CONCEPTS" file="omnibox_pedal_concepts_fil.json" type="BINDATA" compress="gzip" />
+      </if>
       <if expr="lang == 'fr'">
         <include name="IDR_OMNIBOX_PEDAL_CONCEPTS" file="omnibox_pedal_concepts_fr.json" type="BINDATA" compress="gzip" />
+      </if>
+      <if expr="lang == 'gu'">
+        <include name="IDR_OMNIBOX_PEDAL_CONCEPTS" file="omnibox_pedal_concepts_gu.json" type="BINDATA" compress="gzip" />
+      </if>
+      <if expr="lang == 'he'">
+        <include name="IDR_OMNIBOX_PEDAL_CONCEPTS" file="omnibox_pedal_concepts_he.json" type="BINDATA" compress="gzip" />
+      </if>
+      <if expr="lang == 'hi'">
+        <include name="IDR_OMNIBOX_PEDAL_CONCEPTS" file="omnibox_pedal_concepts_hi.json" type="BINDATA" compress="gzip" />
+      </if>
+      <if expr="lang == 'hr'">
+        <include name="IDR_OMNIBOX_PEDAL_CONCEPTS" file="omnibox_pedal_concepts_hr.json" type="BINDATA" compress="gzip" />
+      </if>
+      <if expr="lang == 'id'">
+        <include name="IDR_OMNIBOX_PEDAL_CONCEPTS" file="omnibox_pedal_concepts_id.json" type="BINDATA" compress="gzip" />
+      </if>
+      <if expr="lang == 'it'">
+        <include name="IDR_OMNIBOX_PEDAL_CONCEPTS" file="omnibox_pedal_concepts_it.json" type="BINDATA" compress="gzip" />
       </if>
       <if expr="lang == 'ja'">
         <include name="IDR_OMNIBOX_PEDAL_CONCEPTS" file="omnibox_pedal_concepts_ja.json" type="BINDATA" compress="gzip" />
@@ -150,7 +189,7 @@
       <if expr="lang == 'zh-CN'">
         <include name="IDR_OMNIBOX_PEDAL_CONCEPTS" file="omnibox_pedal_concepts_zh-CN.json" type="BINDATA" compress="gzip" />
       </if>
-      <if expr="lang not in ['am','ar','bg','bn','ca','cs','da','de','el','en','fr','ja','zh-CN',]">
+      <if expr="lang not in ['am','ar','bg','bn','ca','cs','da','de','el','en','en-GB','es','es-419','et','fa','fi','fil','fr','gu','he','hi','hr','id','it','ja','zh-CN',]">
         <!-- Fall back to English for unsupported languages. -->
         <include name="IDR_OMNIBOX_PEDAL_CONCEPTS" file="omnibox_pedal_concepts_en.json" type="BINDATA" compress="gzip" />
       </if>

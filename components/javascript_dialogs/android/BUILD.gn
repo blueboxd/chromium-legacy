@@ -14,6 +14,7 @@ android_library("java") {
   ]
 
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
+  resources_package = "org.chromium.components.javascript_dialogs"
 
   deps = [
     ":java_resources",
@@ -28,7 +29,7 @@ android_library("java") {
 }
 
 android_resources("java_resources") {
-  custom_package = "org.chromium.components.javascript_dialogs"
+  create_srcjar = false
   sources = [ "java/res/layout/js_modal_dialog.xml" ]
 
   deps = [

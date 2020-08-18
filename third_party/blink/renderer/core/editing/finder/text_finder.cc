@@ -110,6 +110,17 @@ bool TextFinder::Find(int identifier,
                       const mojom::blink::FindOptions& options,
                       bool wrap_within_frame,
                       bool* active_now) {
+  return FindInternal(identifier, search_text, options, wrap_within_frame,
+                      active_now);
+}
+
+bool TextFinder::FindInternal(int identifier,
+                              const WebString& search_text,
+                              const mojom::blink::FindOptions& options,
+                              bool wrap_within_frame,
+                              bool* active_now,
+                              Range* first_match,
+                              bool wrapped_around) {
   if (options.new_session) {
     // This find-in-page is redone due to the frame finishing loading.
     // If we can, just reuse the old active match;
@@ -150,7 +161,8 @@ bool TextFinder::Find(int identifier,
       (options.new_session ? kStartInSelection : 0);
   active_match_ = Editor::FindRangeOfString(
       *OwnerFrame().GetFrame()->GetDocument(), search_text,
-      EphemeralRangeInFlatTree(active_match_.Get()), find_options);
+      EphemeralRangeInFlatTree(active_match_.Get()), find_options,
+      &wrapped_around);
 
   if (!active_match_) {
     if (current_active_match_frame_ && options.new_session)
@@ -164,13 +176,38 @@ bool TextFinder::Find(int identifier,
     return false;
   }
 
+  // We don't want to search past the same position twice, so if the new match
+  // is past the original one and we have wrapped around, then stop now.
+  if (first_match && wrapped_around) {
+    if (options.forward) {
+      // If the start of the new match has gone past the start of the original
+      // match, then stop.
+      if (ComparePositions(first_match->StartPosition(),
+                           active_match_->StartPosition()) <= 0) {
+        return false;
+      }
+    } else {
+      // If the end of the new match has gone before the end of the original
+      // match, then stop.
+      if (ComparePositions(active_match_->EndPosition(),
+                           first_match->EndPosition()) <= 0) {
+        return false;
+      }
+    }
+  }
+
   std::unique_ptr<AsyncScrollContext> scroll_context =
       std::make_unique<AsyncScrollContext>();
   scroll_context->identifier = identifier;
   scroll_context->search_text = search_text;
   scroll_context->options = options;
+  // Set new_session to false to make sure that subsequent searches are
+  // incremental instead of repeatedly finding the same match.
+  scroll_context->options.new_session = false;
   scroll_context->wrap_within_frame = wrap_within_frame;
   scroll_context->range = active_match_.Get();
+  scroll_context->first_match = first_match ? first_match : active_match_.Get();
+  scroll_context->wrapped_around = wrapped_around;
   if (options.run_synchronously_for_testing) {
     FireBeforematchEvent(std::move(scroll_context));
   } else {
@@ -764,8 +801,9 @@ void TextFinder::FireBeforematchEvent(
     // initiated, because if it was, then the task to run this would have been
     // canceled.
     active_match_ = context->range;
-    Find(context->identifier, context->search_text, context->options,
-         context->wrap_within_frame, nullptr);
+    FindInternal(context->identifier, context->search_text, context->options,
+                 context->wrap_within_frame, /*active_now=*/nullptr,
+                 context->first_match, context->wrapped_around);
     return;
   }
 
@@ -810,15 +848,26 @@ void TextFinder::Scroll(std::unique_ptr<AsyncScrollContext> context) {
   // The beforematch event, as well as any other script that may have run during
   // the async step, may have removed the matching text from the dom, in which
   // case we shouldn't scroll to it.
-  if (context->range->collapsed()) {
-    // If the range we were going to scroll to was removed, then we should
-    // continue to search for the next match.
+  // Likewise, if the target scroll element is display locked, then we shouldn't
+  // scroll to it.
+  Element* enclosing_block = EnclosingBlock(context->range->StartPosition(),
+                                            kCannotCrossEditingBoundary);
+  if (context->range->collapsed() ||
+      (enclosing_block &&
+       DisplayLockUtilities::NearestHiddenMatchableInclusiveAncestor(
+           *enclosing_block))) {
+    // If the range we were going to scroll to was removed or display locked,
+    // then we should continue to search for the next match.
     // We don't need to worry about the case where another Find has already been
     // initiated, because if it was, then the task to run this would have been
     // canceled.
+    // We also need to re-assign to active_match_ here in order to make sure the
+    // search starts from context->range. active_match_ may have been unassigned
+    // during the async steps.
     active_match_ = context->range;
-    Find(context->identifier, context->search_text, context->options,
-         context->wrap_within_frame, nullptr);
+    FindInternal(context->identifier, context->search_text, context->options,
+                 context->wrap_within_frame, /*active_now=*/nullptr,
+                 context->first_match, context->wrapped_around);
     return;
   }
 

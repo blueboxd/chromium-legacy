@@ -16,6 +16,7 @@
 #include "cc/paint/display_item_list.h"
 #include "cc/paint/image_provider.h"
 #include "cc/paint/skia_paint_canvas.h"
+#include "cc/tiles/picture_layer_tiling.h"
 #include "components/viz/common/traced_value.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/geometry/axis_transform2d.h"
@@ -155,9 +156,18 @@ RasterSource::TakeDecodingModeMap() {
   return display_list_->TakeDecodingModeMap();
 }
 
-bool RasterSource::CoversRect(const gfx::Rect& layer_rect) const {
+bool RasterSource::CoversRect(const gfx::Rect& layer_rect,
+                              const PictureLayerTilingClient& client) const {
   if (size_.IsEmpty())
     return false;
+
+  // Directly composited images by definition have a single DrawImageRectOp that
+  // covers the entire layer, so return true for these raster sources.
+  // TODO(crbug.com/1117174): This will miss cases when the raster source
+  // partially covers the layer rect.
+  if (client.IsDirectlyCompositedImage())
+    return true;
+
   gfx::Rect bounded_rect = layer_rect;
   bounded_rect.Intersect(gfx::Rect(size_));
   return recorded_viewport_.Contains(bounded_rect);

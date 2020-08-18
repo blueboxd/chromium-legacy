@@ -226,8 +226,8 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
   // May be null.
   ObserverForTest* observer_for_testing_;
 
-  // Used when the dialog is being closed to avoid re-entrancy into the
-  // controller_map_.
+  // Used when the dialog is being closed to avoid re-entrance into the
+  // controller_map_ or view_stack_.
   bool being_closed_ = false;
 
   // The number of initialization tasks that are not yet initialized.

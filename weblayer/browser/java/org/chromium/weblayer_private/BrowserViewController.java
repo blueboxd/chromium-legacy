@@ -208,8 +208,8 @@ public final class BrowserViewController
         mTopControlsContainerView.setMinHeight(minHeight);
     }
 
-    public void setPinTopControlsToContentTop(boolean pinToContentTop) {
-        mTopControlsContainerView.setPinControlsToContentTop(pinToContentTop);
+    public void setOnlyExpandTopControlsAtPageTop(boolean onlyExpandControlsAtPageTop) {
+        mTopControlsContainerView.setOnlyExpandControlsAtPageTop(onlyExpandControlsAtPageTop);
     }
 
     public void setBottomView(View view) {

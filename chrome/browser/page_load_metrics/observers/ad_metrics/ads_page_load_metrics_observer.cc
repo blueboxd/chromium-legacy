@@ -309,10 +309,6 @@ void AdsPageLoadMetricsObserver::OnCpuTimingUpdate(
   // We should never trigger if the timing is null, no data should be sent.
   DCHECK(!timing.task_time.is_zero());
 
-  // If the page is backgrounded, don't update CPU times.
-  if (!GetDelegate().GetVisibilityTracker().currently_in_foreground())
-    return;
-
   // Get the current time, considered to be when this update occurred.
   base::TimeTicks current_time = clock_->NowTicks();
 
@@ -512,8 +508,7 @@ void AdsPageLoadMetricsObserver::FrameReceivedFirstUserActivation(
   FrameData* ancestor_data =
       FindFrameData(render_frame_host->GetFrameTreeNodeId());
   if (ancestor_data) {
-    ancestor_data->SetReceivedUserActivation(
-        GetDelegate().GetVisibilityTracker().GetForegroundDuration());
+    ancestor_data->set_received_user_activation();
   }
 }
 
@@ -843,14 +838,6 @@ void AdsPageLoadMetricsObserver::RecordAggregateHistogramsForCpuUsage() {
     return;
   }
 
-  base::TimeDelta total_duration =
-      GetDelegate().GetVisibilityTracker().GetForegroundDuration();
-  DCHECK(total_duration >= base::TimeDelta());
-
-  // Do not record for pages with duration less than a millisecond.
-  if (total_duration.InMilliseconds() == 0)
-    return;
-
   // Only record cpu usage aggregate data for the AnyVisibility suffix as these
   // numbers do not change for different visibility types.
   FrameData::FrameVisibility visibility =
@@ -861,16 +848,16 @@ void AdsPageLoadMetricsObserver::RecordAggregateHistogramsForCpuUsage() {
   // windowed percent?  Obviously this would be a max of maxes, but might be
   // useful to have that for comparisons as well.
   ADS_HISTOGRAM(
-      "Cpu.AdFrames.Aggregate.TotalUsage", PAGE_LOAD_HISTOGRAM, visibility,
+      "Cpu.AdFrames.Aggregate.TotalUsage2", PAGE_LOAD_HISTOGRAM, visibility,
       aggregate_ad_info_by_visibility_[static_cast<int>(visibility)].cpu_time);
-  ADS_HISTOGRAM("Cpu.NonAdFrames.Aggregate.TotalUsage", PAGE_LOAD_HISTOGRAM,
+  ADS_HISTOGRAM("Cpu.NonAdFrames.Aggregate.TotalUsage2", PAGE_LOAD_HISTOGRAM,
                 visibility, aggregate_non_ad_frame_data_->GetTotalCpuUsage());
-  ADS_HISTOGRAM("Cpu.NonAdFrames.Aggregate.PeakWindowedPercent",
+  ADS_HISTOGRAM("Cpu.NonAdFrames.Aggregate.PeakWindowedPercent2",
                 UMA_HISTOGRAM_PERCENTAGE, visibility,
                 aggregate_non_ad_frame_data_->peak_windowed_cpu_percent());
-  ADS_HISTOGRAM("Cpu.FullPage.TotalUsage", PAGE_LOAD_HISTOGRAM, visibility,
+  ADS_HISTOGRAM("Cpu.FullPage.TotalUsage2", PAGE_LOAD_HISTOGRAM, visibility,
                 aggregate_frame_data_->GetTotalCpuUsage());
-  ADS_HISTOGRAM("Cpu.FullPage.PeakWindowedPercent", UMA_HISTOGRAM_PERCENTAGE,
+  ADS_HISTOGRAM("Cpu.FullPage.PeakWindowedPercent2", UMA_HISTOGRAM_PERCENTAGE,
                 visibility, aggregate_frame_data_->peak_windowed_cpu_percent());
   if (aggregate_frame_data_->peak_window_start_time()) {
     // Use the window's start time as the event. It is assumed that
@@ -878,11 +865,8 @@ void AdsPageLoadMetricsObserver::RecordAggregateHistogramsForCpuUsage() {
     base::TimeDelta start_time =
         aggregate_frame_data_->peak_window_start_time().value() -
         GetDelegate().GetNavigationStart();
-    if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
-            start_time, GetDelegate())) {
-      ADS_HISTOGRAM("Cpu.FullPage.PeakWindowStartTime", PAGE_LOAD_HISTOGRAM,
-                    visibility, start_time);
-    }
+    ADS_HISTOGRAM("Cpu.FullPage.PeakWindowStartTime2", PAGE_LOAD_HISTOGRAM,
+                  visibility, start_time);
   }
 }
 
@@ -994,14 +978,6 @@ void AdsPageLoadMetricsObserver::RecordPerFrameHistograms(
 
 void AdsPageLoadMetricsObserver::RecordPerFrameHistogramsForCpuUsage(
     const FrameData& ad_frame_data) {
-  base::TimeDelta total_duration =
-      GetDelegate().GetVisibilityTracker().GetForegroundDuration();
-  DCHECK(total_duration >= base::TimeDelta());
-
-  // Do not record for pages with small durations.
-  if (total_duration.InMilliseconds() == 0)
-    return;
-
   // This aggregate gets reported regardless of whether the frame used bytes.
   aggregate_ad_info_by_visibility_
       [static_cast<int>(FrameData::FrameVisibility::kAnyVisibility)]
@@ -1014,34 +990,23 @@ void AdsPageLoadMetricsObserver::RecordPerFrameHistogramsForCpuUsage(
   for (const auto visibility : {FrameData::FrameVisibility::kAnyVisibility,
                                 ad_frame_data.visibility()}) {
     // Report the peak windowed usage, which is independent of activation status
-    // (measured only for the unactivated period).  Only reported if there was a
-    // relevant unactivated period.
-    if ((ad_frame_data.user_activation_status() ==
-         FrameData::UserActivationStatus::kNoActivation) ||
-        (ad_frame_data.user_activation_status() ==
-             FrameData::UserActivationStatus::kReceivedActivation &&
-         ad_frame_data.pre_activation_foreground_duration().InMilliseconds() >
-             0)) {
-      ADS_HISTOGRAM("Cpu.AdFrames.PerFrame.PeakWindowedPercent",
-                    UMA_HISTOGRAM_PERCENTAGE, visibility,
-                    ad_frame_data.peak_windowed_cpu_percent());
-      if (ad_frame_data.peak_window_start_time()) {
-        // Use the window's start time as the event. It is assumed that
-        // backgrounding would unlikely happen in the peaked window.
-        base::TimeDelta start_time =
-            ad_frame_data.peak_window_start_time().value() -
-            GetDelegate().GetNavigationStart();
-        if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
-                start_time, GetDelegate())) {
-          ADS_HISTOGRAM("Cpu.AdFrames.PerFrame.PeakWindowStartTime",
-                        PAGE_LOAD_HISTOGRAM, visibility, start_time);
-        }
-      }
+    // (measured only for the unactivated period).
+    ADS_HISTOGRAM("Cpu.AdFrames.PerFrame.PeakWindowedPercent2",
+                  UMA_HISTOGRAM_PERCENTAGE, visibility,
+                  ad_frame_data.peak_windowed_cpu_percent());
+    if (ad_frame_data.peak_window_start_time()) {
+      // Use the window's start time as the event. It is assumed that
+      // backgrounding would unlikely happen in the peaked window.
+      base::TimeDelta start_time =
+          ad_frame_data.peak_window_start_time().value() -
+          GetDelegate().GetNavigationStart();
+      ADS_HISTOGRAM("Cpu.AdFrames.PerFrame.PeakWindowStartTime2",
+                    PAGE_LOAD_HISTOGRAM, visibility, start_time);
     }
 
     if (ad_frame_data.user_activation_status() ==
         FrameData::UserActivationStatus::kNoActivation) {
-      ADS_HISTOGRAM("Cpu.AdFrames.PerFrame.TotalUsage.Unactivated",
+      ADS_HISTOGRAM("Cpu.AdFrames.PerFrame.TotalUsage2.Unactivated",
                     PAGE_LOAD_HISTOGRAM, visibility,
                     ad_frame_data.GetTotalCpuUsage());
     } else {
@@ -1051,23 +1016,13 @@ void AdsPageLoadMetricsObserver::RecordPerFrameHistogramsForCpuUsage(
           FrameData::UserActivationStatus::kReceivedActivation);
       base::TimeDelta task_duration_total =
           task_duration_pre + task_duration_post;
-      base::TimeDelta pre_activation_duration =
-          ad_frame_data.pre_activation_foreground_duration();
-      base::TimeDelta post_activation_duration =
-          total_duration - pre_activation_duration;
-      ADS_HISTOGRAM("Cpu.AdFrames.PerFrame.TotalUsage.Activated",
+      ADS_HISTOGRAM("Cpu.AdFrames.PerFrame.TotalUsage2.Activated",
                     PAGE_LOAD_HISTOGRAM, visibility, task_duration_total);
-
-      if (pre_activation_duration.InMilliseconds() > 0) {
-        ADS_HISTOGRAM(
-            "Cpu.AdFrames.PerFrame.TotalUsage.Activated.PreActivation",
-            PAGE_LOAD_HISTOGRAM, visibility, task_duration_pre);
-      }
-      if (post_activation_duration.InMilliseconds() > 0) {
-        ADS_HISTOGRAM(
-            "Cpu.AdFrames.PerFrame.TotalUsage.Activated.PostActivation",
-            PAGE_LOAD_HISTOGRAM, visibility, task_duration_post);
-      }
+      ADS_HISTOGRAM("Cpu.AdFrames.PerFrame.TotalUsage2.Activated.PreActivation",
+                    PAGE_LOAD_HISTOGRAM, visibility, task_duration_pre);
+      ADS_HISTOGRAM(
+          "Cpu.AdFrames.PerFrame.TotalUsage2.Activated.PostActivation",
+          PAGE_LOAD_HISTOGRAM, visibility, task_duration_post);
     }
   }
 }

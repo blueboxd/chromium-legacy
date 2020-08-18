@@ -22,24 +22,39 @@ using base::StringPrintf;
 namespace content {
 
 namespace {
-
+// clang-format off
 const char* const BOOL_ATTRIBUTES[] = {
-    "checkable",       "checked",
-    "clickable",       "collection",
-    "collection_item", "content_invalid",
-    "disabled",        "dismissable",
-    "editable_text",   "focusable",
-    "focused",         "has_character_locations",
-    "has_image",       "has_non_empty_value",
-    "heading",         "hierarchical",
-    "invisible",       "link",
-    "multiline",       "password",
-    "range",           "scrollable",
-    "selected",        "interesting"};
+    "checkable",
+    "checked",
+    "clickable",
+    "collection",
+    "collection_item",
+    "content_invalid",
+    "disabled",
+    "dismissable",
+    "editable_text",
+    "focusable",
+    "focused",
+    "has_character_locations",
+    "has_image",
+    "has_non_empty_value",
+    "heading",
+    "hierarchical",
+    "invisible",
+    "link",
+    "multiline",
+    "multiselectable",
+    "password",
+    "range",
+    "scrollable",
+    "selected",
+    "interesting"
+};
 
 const char* const STRING_ATTRIBUTES[] = {
     "name",
     "hint",
+    "state_description",
 };
 
 const char* const INT_ATTRIBUTES[] = {
@@ -59,7 +74,7 @@ const char* const INT_ATTRIBUTES[] = {
     "text_change_added_count",
     "text_change_removed_count",
 };
-
+// clang-format on
 }  // namespace
 
 class AccessibilityTreeFormatterAndroid
@@ -211,6 +226,7 @@ void AccessibilityTreeFormatterAndroid::AddProperties(
   dict->SetBoolean("invisible", !android_node->IsVisibleToUser());
   dict->SetBoolean("link", android_node->IsLink());
   dict->SetBoolean("multiline", android_node->IsMultiLine());
+  dict->SetBoolean("multiselectable", android_node->IsMultiselectable());
   dict->SetBoolean("range", android_node->IsRangeType());
   dict->SetBoolean("password", android_node->IsPasswordField());
   dict->SetBoolean("scrollable", android_node->IsScrollable());
@@ -221,6 +237,7 @@ void AccessibilityTreeFormatterAndroid::AddProperties(
   dict->SetString("name", android_node->GetInnerText());
   dict->SetString("hint", android_node->GetHint());
   dict->SetString("role_description", android_node->GetRoleDescription());
+  dict->SetString("state_description", android_node->GetStateDescription());
 
   // Int attributes.
   dict->SetInteger("item_index", android_node->GetItemIndex());

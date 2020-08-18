@@ -67,6 +67,13 @@ CastActivityManager::CastActivityManager(
 
 CastActivityManager::~CastActivityManager() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // This call is needed to ensure mirroring activies are terminated when the
+  // browser shuts down.  This works when the browser is closed through its UI,
+  // or when it is given an opportunity to shut down gracefully, e.g. with
+  // SIGINT on Linux, but not SIGTERM.
+  TerminateAllMirroringActivities();
+
   message_handler_->RemoveObserver(this);
   session_tracker_->RemoveObserver(this);
 }
@@ -624,6 +631,8 @@ void CastActivityManager::OnMediaStatusUpdated(const MediaSinkInternal& sink,
   }
 }
 
+// TODO(jrw): This method is only called in one place.  Just implement the
+// functionality there.
 cast_channel::ResultCallback CastActivityManager::MakeResultCallbackForRoute(
     const std::string& route_id,
     mojom::MediaRouteProvider::TerminateRouteCallback callback) {
@@ -894,6 +903,22 @@ std::string CastActivityManager::ChooseAppId(
   }
   NOTREACHED() << "Can't determine app ID from capabilities.";
   return source.app_infos()[0].app_id;
+}
+
+void CastActivityManager::TerminateAllMirroringActivities() {
+  // Save all route IDs so we aren't iterating over |activities_| when it's
+  // modified.
+  std::vector<MediaRoute::Id> route_ids;
+  for (const auto& pair : activities_) {
+    // Anything that isn't an app activity is a mirroring activity.
+    if (app_activities_.find(pair.first) == app_activities_.end())
+      route_ids.push_back(pair.first);
+  }
+
+  // Terminate the activities.
+  for (const auto& id : route_ids) {
+    TerminateSession(id, base::DoNothing());
+  }
 }
 
 CastActivityManager::DoLaunchSessionParams::DoLaunchSessionParams(

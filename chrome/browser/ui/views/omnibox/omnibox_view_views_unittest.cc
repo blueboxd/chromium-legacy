@@ -1845,6 +1845,39 @@ TEST_P(OmniboxViewViewsRevealOnHoverTest, PrivateRegistry) {
       ShouldElideToRegistrableDomain()));
 }
 
+// Tests the field trial variation that shows a simplified domain by default and
+// reveals the unsimplified URL on hover, using a URL where the path contains
+// the domain name.
+TEST_P(OmniboxViewViewsRevealOnHoverTest, HoverAndExitDomainInPath) {
+  // The display URL used in simplified domain display tests.
+  const base::string16 kSimplifiedDomainDisplayRepeatedUrl =
+      base::UTF8ToUTF16("https://ex.example.test/example.test");
+  const base::string16 kSimplifiedDomainDisplayRepeatedUrlHostnameAndScheme =
+      base::UTF8ToUTF16("https://ex.example.test");
+  const base::string16 kSimplifiedDomainDisplayRepeatedUrlSubdomainAndScheme =
+      base::UTF8ToUTF16("https://ex.");
+  const base::string16 kSimplifiedDomainDisplayRepeatedUrlSubdomain =
+      base::UTF8ToUTF16("ex.");
+  const base::string16 kSimplifiedDomainDisplayRepeatedUrlPath =
+      base::UTF8ToUTF16("/example.test");
+  const base::string16 kSimplifiedDomainDisplayRepeatedUrlScheme =
+      base::UTF8ToUTF16("https://");
+  location_bar_model()->set_url(GURL(kSimplifiedDomainDisplayRepeatedUrl));
+  location_bar_model()->set_url_for_display(
+      kSimplifiedDomainDisplayRepeatedUrl);
+  omnibox_view()->model()->ResetDisplayTexts();
+  omnibox_view()->RevertAll();
+  // Call OnThemeChanged() to create the animations.
+  omnibox_view()->OnThemeChanged();
+
+  ASSERT_NO_FATAL_FAILURE(ExpectElidedToSimplifiedDomain(
+      omnibox_view(), kSimplifiedDomainDisplayRepeatedUrlScheme,
+      kSimplifiedDomainDisplayRepeatedUrlSubdomain,
+      kSimplifiedDomainDisplayRepeatedUrlHostnameAndScheme,
+      kSimplifiedDomainDisplayRepeatedUrlPath,
+      ShouldElideToRegistrableDomain()));
+}
+
 class OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest
     : public OmniboxViewViewsTest,
       public ::testing::WithParamInterface<std::pair<bool, bool>> {

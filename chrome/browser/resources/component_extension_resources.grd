@@ -124,6 +124,7 @@
         <include name="IDR_PDF_SHARED_VARS_JS" file="${root_gen_dir}/chrome/browser/resources/pdf/elements/shared-vars.js" use_base_dir="false" type="BINDATA" />
         <include name="IDR_PDF_ICONS_JS" file="${root_gen_dir}/chrome/browser/resources/pdf/elements/icons.js" use_base_dir="false" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_BOOKMARK_JS" file="${root_gen_dir}/chrome/browser/resources/pdf/elements/viewer-bookmark.js" use_base_dir="false" type="BINDATA" />
+        <include name="IDR_PDF_VIEWER_DOCUMENT_OUTLINE_JS" file="${root_gen_dir}/chrome/browser/resources/pdf/elements/viewer-document-outline.js" use_base_dir="false" type="BINDATA"/>
         <include name="IDR_PDF_VIEWER_DOWNLOADS_JS" file="${root_gen_dir}/chrome/browser/resources/pdf/elements/viewer-download-controls.js" use_base_dir="false" type="BINDATA"/>
         <include name="IDR_PDF_VIEWER_ERROR_SCREEN_JS" file="${root_gen_dir}/chrome/browser/resources/pdf/elements/viewer-error-screen.js" use_base_dir="false" type="BINDATA" />
         <if expr="chromeos">

@@ -37,7 +37,6 @@
 #include "extensions/common/extension_resource.h"
 #include "extensions/common/file_util.h"
 #include "extensions/common/install_warning.h"
-#include "extensions/common/manifest_constants.h"
 #include "services/data_decoder/public/cpp/data_decoder.h"
 #include "tools/json_schema_compiler/util.h"
 #include "url/gurl.h"
@@ -71,8 +70,8 @@ InstallWarning CreateInstallWarning(const base::FilePath& json_path,
                                     const std::string& message) {
   std::string message_with_filename = GetErrorWithFilename(json_path, message);
   return InstallWarning(message_with_filename,
-                        manifest_keys::kDeclarativeNetRequestKey,
-                        manifest_keys::kDeclarativeRuleResourcesKey);
+                        dnr_api::ManifestKeys::kDeclarativeNetRequest,
+                        dnr_api::DNRInfo::kRuleResources);
 }
 
 // Adds install warnings for rules which exceed the per-rule regex memory limit.

@@ -7,6 +7,10 @@
 #include <memory>
 #include <utility>
 
+#include "chrome/browser/buildflags.h"
+#include "chrome/browser/media/kaleidoscope/constants.h"
+#include "chrome/browser/media/kaleidoscope/kaleidoscope_data_provider_impl.h"
+#include "chrome/browser/media/kaleidoscope/kaleidoscope_ui.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
@@ -298,6 +302,13 @@ void NewTabPageUI::BindInterface(
     mojo::PendingReceiver<promo_browser_command::mojom::CommandHandler>
         pending_page_handler) {
   promo_browser_command_handler_ = std::make_unique<PromoBrowserCommandHandler>(
+      std::move(pending_page_handler), profile_);
+}
+
+void NewTabPageUI::BindInterface(
+    mojo::PendingReceiver<media::mojom::KaleidoscopeDataProvider>
+        pending_page_handler) {
+  kaleidoscope_data_provider_ = std::make_unique<KaleidoscopeDataProviderImpl>(
       std::move(pending_page_handler), profile_);
 }
 

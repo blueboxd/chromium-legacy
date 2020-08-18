@@ -182,7 +182,7 @@ bool TimeDurationFormat(const TimeDelta time,
                         string16* out) {
   DCHECK(out);
   UErrorCode status = U_ZERO_ERROR;
-  const int total_minutes = base::ClampRound(time.InSecondsF() / 60);
+  const int total_minutes = ClampRound(time / base::TimeDelta::FromMinutes(1));
   const int hours = total_minutes / 60;
   const int minutes = total_minutes % 60;
   UMeasureFormatWidth u_width = DurationWidthToMeasureWidth(width);
@@ -223,10 +223,12 @@ bool TimeDurationFormatWithSeconds(const TimeDelta time,
                                    string16* out) {
   DCHECK(out);
   UErrorCode status = U_ZERO_ERROR;
-  const int64_t total_seconds = static_cast<int64_t>(time.InSecondsF() + 0.5);
-  const int64_t hours = total_seconds / 3600;
-  const int64_t minutes = (total_seconds - hours * 3600) / 60;
-  const int64_t seconds = total_seconds % 60;
+  const int64_t total_seconds = ClampRound<int64_t>(time.InSecondsF());
+  const int64_t hours = total_seconds / base::Time::kSecondsPerHour;
+  const int64_t minutes =
+      (total_seconds - hours * base::Time::kSecondsPerHour) /
+      base::Time::kSecondsPerMinute;
+  const int64_t seconds = total_seconds % base::Time::kSecondsPerMinute;
   UMeasureFormatWidth u_width = DurationWidthToMeasureWidth(width);
 
   const icu::Measure measures[] = {

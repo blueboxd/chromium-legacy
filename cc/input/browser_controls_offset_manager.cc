@@ -371,9 +371,9 @@ gfx::Vector2dF BrowserControlsOffsetManager::ScrollBy(
     return pending_delta;
 
   // Scroll the page up before expanding the browser controls if
-  // ShouldPinTopControlsToContentTop() returns true.
+  // OnlyExpandTopControlsAtPageTop() returns true.
   float viewport_offset_y = client_->ViewportScrollOffset().y();
-  if (client_->ShouldPinTopControlsToContentTop() && pending_delta.y() < 0 &&
+  if (client_->OnlyExpandTopControlsAtPageTop() && pending_delta.y() < 0 &&
       viewport_offset_y > 0) {
     // Reset the baseline so the controls will immediately begin to scroll
     // once we're at the top.

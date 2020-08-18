@@ -5,6 +5,7 @@
 package org.chromium.weblayer.test;
 
 import android.graphics.Bitmap;
+import android.net.Uri;
 
 import androidx.test.filters.SmallTest;
 
@@ -46,8 +47,21 @@ public class FaviconFetcherTest {
                 }
             });
         });
-        mActivityTestRule.navigateAndWait(
-                mActivityTestRule.getTestDataURL("simple_page_with_favicon.html"));
+        String url = mActivityTestRule.getTestDataURL("simple_page_with_favicon.html");
+        mActivityTestRule.navigateAndWait(url);
         callbackHelper.waitForFirst();
+
+        // Verify the favicon can get obtained from the Profile.
+        final CallbackHelper downloadCallbackHelper = new CallbackHelper();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mActivity.getBrowser().getProfile().getCachedFaviconForPageUri(
+                    Uri.parse(url), (Bitmap bitmap) -> {
+                        Assert.assertTrue(bitmap != null);
+                        Assert.assertTrue(bitmap.getWidth() > 0);
+                        Assert.assertTrue(bitmap.getHeight() > 0);
+                        downloadCallbackHelper.notifyCalled();
+                    });
+        });
+        downloadCallbackHelper.waitForFirst();
     }
 }

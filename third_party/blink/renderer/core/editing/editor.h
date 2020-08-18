@@ -164,7 +164,8 @@ class CORE_EXPORT Editor final : public GarbageCollected<Editor> {
       Document&,
       const String& target,
       const EphemeralRangeInFlatTree& reference_range,
-      FindOptions);
+      FindOptions,
+      bool* wrapped_around = nullptr);
 
   const VisibleSelection& Mark() const;  // Mark, to be used as emacs uses it.
   bool MarkIsDirectional() const;

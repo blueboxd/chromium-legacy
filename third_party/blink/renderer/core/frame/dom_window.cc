@@ -529,6 +529,9 @@ void DOMWindow::DoPostMessage(scoped_refptr<SerializedScriptValue> message,
       PostMessageHelper::GetTargetOrigin(options, *source, exception_state);
   if (exception_state.HadException())
     return;
+  if (!target) {
+    UseCounter::Count(source, WebFeature::kUnspecifiedTargetOriginPostMessage);
+  }
 
   auto channels = MessagePort::DisentanglePorts(GetExecutionContext(), ports,
                                                 exception_state);
@@ -537,12 +540,12 @@ void DOMWindow::DoPostMessage(scoped_refptr<SerializedScriptValue> message,
 
   const SecurityOrigin* target_security_origin =
       GetFrame()->GetSecurityContext()->GetSecurityOrigin();
+  const SecurityOrigin* source_security_origin = source->GetSecurityOrigin();
   auto* local_dom_window = DynamicTo<LocalDOMWindow>(this);
   KURL target_url = local_dom_window
                         ? local_dom_window->Url()
                         : KURL(NullURL(), target_security_origin->ToString());
-  if (MixedContentChecker::IsMixedContent(source->GetSecurityOrigin(),
-                                          target_url)) {
+  if (MixedContentChecker::IsMixedContent(source_security_origin, target_url)) {
     UseCounter::Count(source, WebFeature::kPostMessageFromSecureToInsecure);
   } else if (MixedContentChecker::IsMixedContent(target_security_origin,
                                                  source->Url())) {
@@ -555,6 +558,34 @@ void DOMWindow::DoPostMessage(scoped_refptr<SerializedScriptValue> message,
     }
   }
 
+  if (source->GetFrame() &&
+      source->GetFrame()->Tree().Top() != GetFrame()->Tree().Top()) {
+    if ((!target_security_origin->RegistrableDomain() &&
+         target_security_origin->Host() == source_security_origin->Host()) ||
+        (target_security_origin->RegistrableDomain() &&
+         target_security_origin->RegistrableDomain() ==
+             source_security_origin->RegistrableDomain())) {
+      if (target_security_origin->Protocol() ==
+          source_security_origin->Protocol()) {
+        UseCounter::Count(source, WebFeature::kSchemefulSameSitePostMessage);
+      } else {
+        UseCounter::Count(source, WebFeature::kSchemelesslySameSitePostMessage);
+        if (MixedContentChecker::IsMixedContent(source_security_origin,
+                                                target_url)) {
+          UseCounter::Count(
+              source,
+              WebFeature::kSchemelesslySameSitePostMessageSecureToInsecure);
+        } else if (MixedContentChecker::IsMixedContent(target_security_origin,
+                                                       source->Url())) {
+          UseCounter::Count(
+              source,
+              WebFeature::kSchemelesslySameSitePostMessageInsecureToSecure);
+        }
+      }
+    } else {
+      UseCounter::Count(source, WebFeature::kCrossSitePostMessage);
+    }
+  }
   if (!source->GetContentSecurityPolicy()->AllowConnectToSource(
           target_url, target_url, RedirectStatus::kNoRedirect,
           ReportingDisposition::kSuppressReporting)) {

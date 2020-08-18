@@ -87,7 +87,7 @@ IN_PROC_BROWSER_TEST_F(IncognitoApiTest, IncognitoYesScript) {
 }
 
 // Tests that an extension which is enabled for incognito mode doesn't
-// accidentally create and incognito profile.
+// accidentally create an incognito profile.
 IN_PROC_BROWSER_TEST_F(IncognitoApiTest, DontCreateIncognitoProfile) {
   ASSERT_FALSE(browser()->profile()->HasPrimaryOTRProfile());
   ASSERT_TRUE(RunExtensionTestIncognito(

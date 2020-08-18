@@ -2540,6 +2540,11 @@ void LocalFrame::DidChangeVisibleToHitTesting() {
        child = child->Tree().NextSibling()) {
     child->UpdateVisibleToHitTesting();
   }
+
+  // The transform property tree node depends on visibility.
+  if (auto* view = View()->GetLayoutView()) {
+    view->SetNeedsPaintPropertyUpdate();
+  }
 }
 
 WebPrescientNetworking* LocalFrame::PrescientNetworking() {

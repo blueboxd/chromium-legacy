@@ -50,6 +50,8 @@ class ContentCaptureReceiver : public mojom::ContentCaptureReceiver {
     return frame_content_capture_data_;
   }
 
+  void RemoveSession();
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ContentCaptureReceiverTest, RenderFrameHostGone);
 
@@ -68,6 +70,12 @@ class ContentCaptureReceiver : public mojom::ContentCaptureReceiver {
   // ContentCaptureReceiverManager can't get parent frame id in both cases.
   int64_t id_;
   bool content_capture_enabled_ = false;
+
+  // Indicates whether this receiver is visible to consumer. It should be set
+  // upon the |frame_content_capture_data_| is created and reset on the session
+  // removed; the former is caused by either the content captured or the
+  // |frame_content_capture_data_| required by child frame.
+  bool has_session_ = false;
   mojo::AssociatedRemote<mojom::ContentCaptureSender> content_capture_sender_;
   DISALLOW_COPY_AND_ASSIGN(ContentCaptureReceiver);
 };

@@ -82,7 +82,6 @@
 <translation id="1294154142200295408">Варіанти командного рядка</translation>
 <translation id="129553762522093515">Нещодавно закриті</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Спробуйте видалити файли cookie<ph name="END_LINK" /></translation>
-<translation id="1299917195319242089">Кнопка "Відкрити вікно в режимі анонімного перегляду"; натисніть Enter, щоб відкрити нове вікно в режимі анонімного перегляду в Chrome</translation>
 <translation id="1301324364792935241">Перевірте налаштування безпеки DNS</translation>
 <translation id="1307966114820526988">Функції не підтримуються</translation>
 <translation id="131405271941274527">Сайт <ph name="URL" /> хоче обмінюватися даними з телефоном через NFC</translation>
@@ -255,7 +254,6 @@
 <translation id="1919345977826869612">Оголошення</translation>
 <translation id="1919367280705858090">Як виправити конкретну помилку</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Немає}=1{1 сайт}one{# сайт}few{# сайти}many{# сайтів}other{# сайту}}</translation>
-<translation id="1926148189358507356">Кнопка "Перезапустити, щоб оновити"; натисніть Enter, щоб оновити Chrome</translation>
 <translation id="1945968466830820669">Ви можете втратити доступ до облікового запису організації, або хтось може викрасти вашу особисту інформацію. Chromium радить змінити пароль.</translation>
 <translation id="1947454675006758438">Скріпити вгорі праворуч</translation>
 <translation id="1959001866257244765">Допоможіть посилити безпеку в Інтернеті для всіх користувачів, надсилаючи в Google <ph name="BEGIN_WHITEPAPER_LINK" />URL-адреси та вміст деяких відвіданих сторінок, а також обмежену системну інформацію<ph name="END_WHITEPAPER_LINK" />. <ph name="BEGIN_PRIVACY_PAGE_LINK" />Політика конфіденційності<ph name="END_PRIVACY_PAGE_LINK" /></translation>
@@ -360,7 +358,6 @@
 <translation id="2367567093518048410">Рівень</translation>
 <translation id="2380886658946992094">Legal</translation>
 <translation id="2384307209577226199">Стандартне корпоративне правило</translation>
-<translation id="238547550913364157"><ph name="LAUNCH_INCOGNITO_FOCUSED_FRIENDLY_MATCH_TEXT" />; натисніть Tab, а потім – Enter, щоб відкрити нове вікно в режимі анонімного перегляду в Chrome</translation>
 <translation id="2385809941344967209">Оновити веб-переглядач Chrome у його налаштуваннях</translation>
 <translation id="2386255080630008482">Сертифікат сервера відкликано.</translation>
 <translation id="2392959068659972793">Показувати правила, для яких не встановлено значення</translation>
@@ -403,7 +400,6 @@
 <translation id="2586657967955657006">Буфер обміну</translation>
 <translation id="2587730715158995865">Видавець: <ph name="ARTICLE_PUBLISHER" />. Читайте цю та ще <ph name="OTHER_ARTICLE_COUNT" /> статей.</translation>
 <translation id="2587841377698384444">Ідентифікатор API каталогу:</translation>
-<translation id="2592698726824597401"><ph name="UPDATE_CREDIT_CARD_FOCUSED_FRIENDLY_MATCH_TEXT" />; натисніть Tab, а потім – Enter, щоб оновити дані кредитних карток для автозаповнення в налаштуваннях Chrome</translation>
 <translation id="2595719060046994702">Цими пристроєм і обліковим записом не керує компанія чи інша організація.</translation>
 <translation id="2597378329261239068">Цей документ захищено паролем. Введіть пароль.</translation>
 <translation id="2609632851001447353">Різновиди</translation>
@@ -425,7 +421,6 @@
 <translation id="2677748264148917807">Вийти</translation>
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">Оптимальний розмір</translation>
-<translation id="2688738823074468716">Кнопка "Керувати паролями"; натисніть Enter, щоб керувати паролями в налаштуваннях Chrome</translation>
 <translation id="2688969097326701645">Так, продовжити</translation>
 <translation id="2691924980723297736">Попередження щодо безпеки</translation>
 <translation id="2699302886720511147">Картки, які приймаються до оплати</translation>
@@ -746,7 +741,6 @@
 <translation id="4088981014127559358">Вертикальний зсув сторони 1 зображення</translation>
 <translation id="4098354747657067197">Оманливий сайт</translation>
 <translation id="4101413244023615925">Текст і графіка</translation>
-<translation id="4103147722950692857"><ph name="MANAGE_PASSWORDS_FOCUSED_FRIENDLY_MATCH_TEXT" />; натисніть Tab, а потім – Enter, щоб керувати паролями в налаштуваннях Chrome</translation>
 <translation id="4103249731201008433">Недійсний серійний номер пристрою</translation>
 <translation id="4103763322291513355">Перейдіть на сторінку &lt;strong&gt;chrome://policy&lt;/strong&gt;, щоб переглянути список URL-адрес із "чорного" списку й інші правила, що примусово застосовується системним адміністратором.</translation>
 <translation id="4110652170750985508">Переглянути платіж</translation>
@@ -917,7 +911,6 @@
 <translation id="4738601419177586157">Пропозиція пошуку за запитом "<ph name="TEXT" />"</translation>
 <translation id="4742407542027196863">Керувати паролями…</translation>
 <translation id="4744603770635761495">Виконуваний шлях</translation>
-<translation id="4750085040310563588"><ph name="UPDATE_CHROME_FOCUSED_FRIENDLY_MATCH_TEXT" />; натисніть Tab, а потім – Enter, щоб оновити Chrome</translation>
 <translation id="4750917950439032686">Ваша інформація (як-от паролі та номери кредитних карток) залишається конфіденційною, коли надсилається на цей сайт.</translation>
 <translation id="4756388243121344051">&amp;Історія</translation>
 <translation id="4758311279753947758">Додати контактну інформацію</translation>
@@ -1036,7 +1029,6 @@
 <translation id="5215116848420601511">Способи оплати й адреси, пов’язані з Google Pay</translation>
 <translation id="5215363486134917902">Folio-Sp</translation>
 <translation id="5222812217790122047">Укажіть електронну адресу</translation>
-<translation id="5222994811833658317">Кнопка "Очистити дані"; натисніть Enter, щоб очистити історію веб-перегляду Chrome</translation>
 <translation id="5230733896359313003">Адреса доставки</translation>
 <translation id="5230815978613972521">B8</translation>
 <translation id="5233045608889518621">12x19</translation>
@@ -1303,7 +1295,6 @@
 <translation id="6302269476990306341">Припинення роботи Google Асистента в Chrome</translation>
 <translation id="6305205051461490394">Сторінка <ph name="URL" /> недоступна.</translation>
 <translation id="6312113039770857350">Веб-сторінка недоступна</translation>
-<translation id="6315224405718249523">Кнопка "Перекласти сторінку"; натисніть Enter, що перекласти цю сторінку</translation>
 <translation id="6321917430147971392">Перевірте налаштування DNS</translation>
 <translation id="6322182122604171028">Не вдалося скористатися Windows Hello</translation>
 <translation id="6328639280570009161">Спробуйте вимкнути прогнозування мережі.</translation>
@@ -1358,7 +1349,6 @@
 <translation id="6547208576736763147">Пробити два отвори ліворуч</translation>
 <translation id="6554795675067793129">Вашим обліковим записом керує <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="6556866813142980365">Повторити</translation>
-<translation id="6566840325635607048">Кнопка "Оновити кредитну картку"; натисніть Enter, щоб оновити дані кредитних карток для автозаповнення в налаштуваннях Chrome</translation>
 <translation id="6569060085658103619">Ви переглядаєте сторінку розширень</translation>
 <translation id="6573200754375280815">Пробити два отвори праворуч</translation>
 <translation id="6578796323535178455">C2 (конверт)</translation>
@@ -1599,7 +1589,6 @@
 <translation id="7549584377607005141">Для належного відображення цій веб-сторінці потрібні введені вами раніше дані. Можна ще раз надіслати дані, однак зробивши це, ви повторите всі дії, які ця сторінка виконувала раніше.</translation>
 <translation id="7550637293666041147">Імена користувачів для пристрою та Chrome</translation>
 <translation id="7552846755917812628">Виконайте вказівки нижче.</translation>
-<translation id="7553823544414963579"><ph name="CLEAR_BROWSING_DATA_FOCUSED_FRIENDLY_MATCH_TEXT" />; натисніть Tab, а потім – Enter, щоб очистити історію веб-перегляду Chrome</translation>
 <translation id="7554791636758816595">Нова вкладка</translation>
 <translation id="7564049878696755256">Ви можете втратити доступ до облікового запису, який вам надає <ph name="ORG_NAME" />, або хтось може викрасти вашу особисту інформацію. Chrome радить змінити пароль.</translation>
 <translation id="7567204685887185387">Цей сервер не зміг довести, що він – домен <ph name="DOMAIN" />. Можливо, його сертифікат безпеки видали шахраї. Імовірні причини: неправильна конфігурація або хтось намагається перехопити ваше з’єднання.</translation>
@@ -1766,7 +1755,6 @@
 <translation id="8225771182978767009">Користувач, який налаштував комп’ютер, заблокував цей сайт.</translation>
 <translation id="8228419419708659934">Перегляд по дві сторінки</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
-<translation id="8230646577665563479"><ph name="TRANSLATE_FOCUSED_FRIENDLY_MATCH_TEXT" />; натисніть Tab, а потім – Enter, щоб перекласти цю сторінку</translation>
 <translation id="8232343881378637145">Температура платформи</translation>
 <translation id="8238581221633243064">Відкрити сторінку в новій анонімній вкладці</translation>
 <translation id="8241707690549784388">Сторінка, яку ви шукаєте, використовувала інформацію, введену вами. Повернення до такої сторінки може призвести до повторення ваших попередніх дій. Ви дійсно бажаєте продовжити?</translation>
@@ -1834,6 +1822,7 @@
 <translation id="8498891568109133222">Хост <ph name="HOST_NAME" /> довго не відповідає.</translation>
 <translation id="8503559462189395349">Паролі Chrome</translation>
 <translation id="8503813439785031346">Ім’я користувача</translation>
+<translation id="8507227106804027148">Командний рядок</translation>
 <translation id="8508648098325802031">Значок пошуку</translation>
 <translation id="8522552481199248698">Chrome допоможе захистити обліковий запис Google і змінити пароль.</translation>
 <translation id="8530813470445476232">Очистити історію веб-перегляду, файли cookie, кеш та інше в налаштуваннях Chrome</translation>

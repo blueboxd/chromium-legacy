@@ -82,9 +82,6 @@ class SupervisionTransitionScreenHandler
 
   base::TimeTicks screen_shown_time_;
 
-  // The primary user profile.
-  Profile* profile_ = nullptr;
-
   // Timer used to exit the page when timeout reaches.
   base::OneShotTimer timer_;
 

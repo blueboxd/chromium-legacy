@@ -82,7 +82,6 @@
 <translation id="1294154142200295408">命令行变体</translation>
 <translation id="129553762522093515">最近关闭的标签页</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />尝试清除 Cookie<ph name="END_LINK" /></translation>
-<translation id="1299917195319242089">“打开无痕式窗口”按钮，按 Enter 键可打开新的 Chrome 无痕式窗口</translation>
 <translation id="1301324364792935241">请检查您的安全 DNS 设置</translation>
 <translation id="1307966114820526988">已被弃用的功能</translation>
 <translation id="131405271941274527"><ph name="URL" /> 想在您的手机与 NFC 设备触碰时发送和接收信息</translation>
@@ -251,7 +250,6 @@
 <translation id="1919345977826869612">广告</translation>
 <translation id="1919367280705858090">了解如何解决特定错误消息指出的错误</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{无}=1{1 个网站}other{# 个网站}}</translation>
-<translation id="1926148189358507356">“重新启动以进行更新”按钮，按 Enter 键可更新 Chrome</translation>
 <translation id="1945968466830820669">您可能会无法再访问所属组织的帐号，或被他人盗用身份信息。Chromium 建议您立即更改密码。</translation>
 <translation id="1947454675006758438">钉装（右上角）</translation>
 <translation id="1959001866257244765">向 Google 发送<ph name="BEGIN_WHITEPAPER_LINK" />您访问的部分网页的网址、有限的系统信息以及部分网页内容<ph name="END_WHITEPAPER_LINK" />，帮助我们为所有人改善网络安全环境。<ph name="BEGIN_PRIVACY_PAGE_LINK" />隐私权政策<ph name="END_PRIVACY_PAGE_LINK" /></translation>
@@ -356,7 +354,6 @@
 <translation id="2367567093518048410">级别</translation>
 <translation id="2380886658946992094">Legal</translation>
 <translation id="2384307209577226199">在企业环境中默认实施</translation>
-<translation id="238547550913364157"><ph name="LAUNCH_INCOGNITO_FOCUSED_FRIENDLY_MATCH_TEXT" />，按 Tab 键再按 Enter 键可打开新的 Chrome 无痕式窗口</translation>
 <translation id="2385809941344967209">请前往 Chrome 设置以更新 Chrome</translation>
 <translation id="2386255080630008482">服务器的证书已撤消。</translation>
 <translation id="2392959068659972793">显示未设定值的政策</translation>
@@ -399,7 +396,6 @@
 <translation id="2586657967955657006">剪贴板</translation>
 <translation id="2587730715158995865">来自<ph name="ARTICLE_PUBLISHER" />。阅读这篇报道以及其他 <ph name="OTHER_ARTICLE_COUNT" /> 篇报道。</translation>
 <translation id="2587841377698384444">Directory API ID：</translation>
-<translation id="2592698726824597401"><ph name="UPDATE_CREDIT_CARD_FOCUSED_FRIENDLY_MATCH_TEXT" />，按 Tab 键再按 Enter 键可在 Chrome 设置中更新信用卡自动填充信息</translation>
 <translation id="2595719060046994702">此设备和帐号不由某个公司或其他组织管理。</translation>
 <translation id="2597378329261239068">本文档设置了密码保护，请输入密码。</translation>
 <translation id="2609632851001447353">其他变体</translation>
@@ -421,7 +417,6 @@
 <translation id="2677748264148917807">离开</translation>
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">最适合</translation>
-<translation id="2688738823074468716">“管理密码”按钮，按 Enter 键可在 Chrome 设置中管理密码</translation>
 <translation id="2688969097326701645">是的，继续</translation>
 <translation id="2691924980723297736">安全警告</translation>
 <translation id="2699302886720511147">接受的银行卡</translation>
@@ -737,7 +732,6 @@
 <translation id="4088981014127559358">侧边 1，图片沿 Y 轴位移</translation>
 <translation id="4098354747657067197">您要访问的是诈骗网站</translation>
 <translation id="4101413244023615925">文字和图形</translation>
-<translation id="4103147722950692857"><ph name="MANAGE_PASSWORDS_FOCUSED_FRIENDLY_MATCH_TEXT" />，按 Tab 键再按 Enter 键可在 Chrome 设置中管理密码</translation>
 <translation id="4103249731201008433">设备序列号无效</translation>
 <translation id="4103763322291513355">请访问 &lt;strong&gt;chrome:// 政策&lt;/strong&gt;，查看列入黑名单的网址列表以及您的系统管理员强制要求执行的其他政策。</translation>
 <translation id="4110652170750985508">查看您的付款</translation>
@@ -904,7 +898,6 @@
 <translation id="4738601419177586157"><ph name="TEXT" />搜索建议</translation>
 <translation id="4742407542027196863">管理密码…</translation>
 <translation id="4744603770635761495">可执行文件路径</translation>
-<translation id="4750085040310563588"><ph name="UPDATE_CHROME_FOCUSED_FRIENDLY_MATCH_TEXT" />，按 Tab 键再按 Enter 键可更新 Chrome</translation>
 <translation id="4750917950439032686">您发送给这个网站的信息（例如密码或信用卡号）不会外泄。</translation>
 <translation id="4756388243121344051">历史记录(&amp;H)</translation>
 <translation id="4758311279753947758">添加联系信息</translation>
@@ -1023,7 +1016,6 @@
 <translation id="5215116848420601511">Google Pay 中存储的付款方式和地址信息</translation>
 <translation id="5215363486134917902">Folio-Sp</translation>
 <translation id="5222812217790122047">需要提供电子邮件地址</translation>
-<translation id="5222994811833658317">“清除数据”按钮，按 Enter 键可清除 Chrome 的浏览记录数据</translation>
 <translation id="5230733896359313003">送货地址</translation>
 <translation id="5230815978613972521">B8</translation>
 <translation id="5233045608889518621">12x19</translation>
@@ -1289,7 +1281,6 @@
 <translation id="6302269476990306341">Chrome 中的 Google 助理即将停止工作</translation>
 <translation id="6305205051461490394">无法访问 <ph name="URL" />。</translation>
 <translation id="6312113039770857350">网页无法打开</translation>
-<translation id="6315224405718249523">“翻译网页”按钮，按 Enter 键可翻译此网页</translation>
 <translation id="6321917430147971392">请检查您的DNS设置是否正确</translation>
 <translation id="6322182122604171028">无法使用 Windows Hello</translation>
 <translation id="6328639280570009161">请尝试停用网络联想查询功能</translation>
@@ -1344,7 +1335,6 @@
 <translation id="6547208576736763147">双孔（左侧）</translation>
 <translation id="6554795675067793129">您的帐号由 <ph name="ENROLLMENT_DOMAIN" /> 管理。</translation>
 <translation id="6556866813142980365">重做</translation>
-<translation id="6566840325635607048">“更新信用卡”按钮，按 Enter 键可在 Chrome 设置中更新信用卡自动填充信息</translation>
 <translation id="6569060085658103619">您正在查看扩展程序页面</translation>
 <translation id="6573200754375280815">双孔（右侧）</translation>
 <translation id="6578796323535178455">C2 (Envelope)</translation>
@@ -1585,7 +1575,6 @@
 <translation id="7549584377607005141">此网页需要使用您之前输入的数据才能正常显示。您可以重新发送这些数据，不过，这么做会重复执行此网页之前执行过的所有操作。</translation>
 <translation id="7550637293666041147">您的设备用户名和 Chrome 用户名</translation>
 <translation id="7552846755917812628">请尝试按以下提示操作：</translation>
-<translation id="7553823544414963579"><ph name="CLEAR_BROWSING_DATA_FOCUSED_FRIENDLY_MATCH_TEXT" />，按 Tab 键再按 Enter 键可清除 Chrome 的浏览记录数据</translation>
 <translation id="7554791636758816595">新标签页</translation>
 <translation id="7564049878696755256">您可能会无法再访问自己的 <ph name="ORG_NAME" /> 帐号，或者身份信息遭到盗用。Chrome 建议您立即更改密码。</translation>
 <translation id="7567204685887185387">此服务器无法证明它是<ph name="DOMAIN" />；其安全证书可能是由骗子发出的。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
@@ -1752,7 +1741,6 @@
 <translation id="8225771182978767009">设置此计算机的用户已选择屏蔽此网站。</translation>
 <translation id="8228419419708659934">双页视图</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />、<ph name="TYPE_2" /></translation>
-<translation id="8230646577665563479"><ph name="TRANSLATE_FOCUSED_FRIENDLY_MATCH_TEXT" />，按 Tab 键再按 Enter 键可翻译此网页</translation>
 <translation id="8232343881378637145">平台温度</translation>
 <translation id="8238581221633243064">在新的无痕式标签页中打开网页</translation>
 <translation id="8241707690549784388">您所查找的网页要使用已输入的信息。返回此页可能需要重复已进行的所有操作。是否要继续操作？</translation>

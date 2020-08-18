@@ -82,7 +82,6 @@
 <translation id="1294154142200295408">Komandrindu varianti</translation>
 <translation id="129553762522093515">Nesen aizvērtas</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Dzēsiet sīkfailus<ph name="END_LINK" /></translation>
-<translation id="1299917195319242089">Poga Atvērt inkognito režīma logu. Lai pārlūkā Chrome atvērtu jaunu inkognito režīma logu, nospiediet taustiņu Enter.</translation>
 <translation id="1301324364792935241">Pārbaudiet drošā DNS servera iestatījumus</translation>
 <translation id="1307966114820526988">Funkcijas, kuru darbība ir pārtraukta</translation>
 <translation id="131405271941274527"><ph name="URL" /> vēlas sūtīt un saņemt informāciju, kad ar tālruni pieskaraties NFC ierīcei</translation>
@@ -255,7 +254,6 @@
 <translation id="1919345977826869612">Reklāmas</translation>
 <translation id="1919367280705858090">Palīdzība par konkrētu kļūdas ziņojumu</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Nav}=1{1 vietne}zero{# vietnes}one{# vietne}other{# vietnes}}</translation>
-<translation id="1926148189358507356">Poga “Palaist atkārtoti, lai atjauninātu”. Lai atjauninātu Chrome, nospiediet taustiņu Enter.</translation>
 <translation id="1945968466830820669">Varat zaudēt piekļuvi savam organizācijas kontam, vai jūsu identitāte var tikt nozagta. Chromium iesaka nekavējoties nomainīt paroli.</translation>
 <translation id="1947454675006758438">Skavojums augšējā labajā malā</translation>
 <translation id="1959001866257244765">Palīdzēt uzlabot drošību tīmeklī visiem, nosūtot Google serveriem <ph name="BEGIN_WHITEPAPER_LINK" />dažu apmeklēto lapu vietrāžus URL, ierobežotu sistēmas informāciju un daļu lapu satura<ph name="END_WHITEPAPER_LINK" />. <ph name="BEGIN_PRIVACY_PAGE_LINK" />Konfidencialitātes politika<ph name="END_PRIVACY_PAGE_LINK" /></translation>
@@ -360,7 +358,6 @@ Pretējā gadījumā šī iespēja būtu liegta saskaņā ar jūsu konfidenciali
 <translation id="2367567093518048410">Līmenis</translation>
 <translation id="2380886658946992094">Legal</translation>
 <translation id="2384307209577226199">Uzņēmuma noklusējuma politika</translation>
-<translation id="238547550913364157"><ph name="LAUNCH_INCOGNITO_FOCUSED_FRIENDLY_MATCH_TEXT" />, lai pārlūkā Chrome atvērtu jaunu inkognito režīma logu, nospiediet tabulēšanas taustiņu un pēc tam taustiņu Enter</translation>
 <translation id="2385809941344967209">Atjauniniet pārlūku Chrome savos Chrome iestatījumos.</translation>
 <translation id="2386255080630008482">Servera sertifikāts ir atsaukts.</translation>
 <translation id="2392959068659972793">Rādīt politikas, kuru vērtība nav iestatīta</translation>
@@ -403,7 +400,6 @@ Pretējā gadījumā šī iespēja būtu liegta saskaņā ar jūsu konfidenciali
 <translation id="2586657967955657006">Starpliktuve</translation>
 <translation id="2587730715158995865">No: <ph name="ARTICLE_PUBLISHER" />. Lasiet šo un vēl <ph name="OTHER_ARTICLE_COUNT" /> rakstus.</translation>
 <translation id="2587841377698384444">Direktorija API ID:</translation>
-<translation id="2592698726824597401"><ph name="UPDATE_CREDIT_CARD_FOCUSED_FRIENDLY_MATCH_TEXT" />, lai Chrome iestatījumos atjauninātu kredītkaršu automātiskās aizpildes informāciju, nospiediet tabulēšanas taustiņu un pēc tam Enter</translation>
 <translation id="2595719060046994702">Šī ierīce un konts netiek pārvaldīts uzņēmumā vai citā organizācijā.</translation>
 <translation id="2597378329261239068">Šis dokuments ir aizsargāts ar paroli. Lūdzu, ievadiet paroli.</translation>
 <translation id="2609632851001447353">Varianti</translation>
@@ -425,7 +421,6 @@ Pretējā gadījumā šī iespēja būtu liegta saskaņā ar jūsu konfidenciali
 <translation id="2677748264148917807">Iziet</translation>
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">Optimāla ietilpināšana</translation>
-<translation id="2688738823074468716">Poga Pārvaldīt paroles. Lai Chrome iestatījumos pārvaldītu paroles, nospiediet taustiņu Enter.</translation>
 <translation id="2688969097326701645">Jā, turpināt</translation>
 <translation id="2691924980723297736">Drošības brīdinājums</translation>
 <translation id="2699302886720511147">Atbalstītās kartes</translation>
@@ -745,7 +740,6 @@ Pretējā gadījumā šī iespēja būtu liegta saskaņā ar jūsu konfidenciali
 <translation id="4088981014127559358">1. puses attēla nobīde uz Y ass</translation>
 <translation id="4098354747657067197">Maldinoša vietne</translation>
 <translation id="4101413244023615925">Teksts un grafika</translation>
-<translation id="4103147722950692857"><ph name="MANAGE_PASSWORDS_FOCUSED_FRIENDLY_MATCH_TEXT" />, lai Chrome iestatījumos pārvaldītu paroles, nospiediet tabulēšanas taustiņu un pēc tam taustiņu Enter</translation>
 <translation id="4103249731201008433">Ierīces sērijas numurs nav derīgs.</translation>
 <translation id="4103763322291513355">Apmeklējiet vietni &lt;strong&gt;chrome://policy&lt;/strong&gt;, lai skatītu melnajā sarakstā iekļautos vietrāžus URL, kā arī citas politikas, ko noteicis sistēmas administrators.</translation>
 <translation id="4110652170750985508">Maksājuma pārskatīšana</translation>
@@ -916,7 +910,6 @@ Pretējā gadījumā šī iespēja būtu liegta saskaņā ar jūsu konfidenciali
 <translation id="4738601419177586157">Meklēšanas ieteikums vaicājumam “<ph name="TEXT" />”</translation>
 <translation id="4742407542027196863">Pārvaldīt paroles…</translation>
 <translation id="4744603770635761495">Izpildāms ceļš</translation>
-<translation id="4750085040310563588"><ph name="UPDATE_CHROME_FOCUSED_FRIENDLY_MATCH_TEXT" />, lai atjauninātu pārlūku Chrome, nospiediet tabulēšanas taustiņu un pēc tam taustiņu Enter</translation>
 <translation id="4750917950439032686">Jūsu informācija (piemēram, paroles vai kredītkaršu numuri) ir privāta, kad tā tiek nosūtīta uz šo vietni.</translation>
 <translation id="4756388243121344051">Vēsture</translation>
 <translation id="4758311279753947758">Pievienot kontaktinformāciju</translation>
@@ -1035,7 +1028,6 @@ Pretējā gadījumā šī iespēja būtu liegta saskaņā ar jūsu konfidenciali
 <translation id="5215116848420601511">Adreses un maksājumu veidi, kuros tiek izmantots pakalpojums Google Pay</translation>
 <translation id="5215363486134917902">Folio-Sp</translation>
 <translation id="5222812217790122047">Jānorāda e-pasta adrese.</translation>
-<translation id="5222994811833658317">Poga Notīrīt datus. Lai notīrītu Chrome pārlūkošanas vēstures datus, nospiediet taustiņu Enter.</translation>
 <translation id="5230733896359313003">Piegādes adrese</translation>
 <translation id="5230815978613972521">B8</translation>
 <translation id="5233045608889518621">12x19</translation>
@@ -1302,7 +1294,6 @@ Pretējā gadījumā šī iespēja būtu liegta saskaņā ar jūsu konfidenciali
 <translation id="6302269476990306341">Tiek pārtraukta Google asistenta darbība pārlūkprogrammā Chrome.</translation>
 <translation id="6305205051461490394">Vietne <ph name="URL" /> nav sasniedzama.</translation>
 <translation id="6312113039770857350">Tīmekļa lapa nav pieejama</translation>
-<translation id="6315224405718249523">Poga Tulkot lapu. Lai tulkotu šo lapu, nospiediet taustiņu Enter.</translation>
 <translation id="6321917430147971392">Sistēmas DNS iestatījumu pārbaude</translation>
 <translation id="6322182122604171028">Neizdevās izmantot Windows Hello</translation>
 <translation id="6328639280570009161">Tīkla prognožu atspējošana</translation>
@@ -1357,7 +1348,6 @@ Pretējā gadījumā šī iespēja būtu liegta saskaņā ar jūsu konfidenciali
 <translation id="6547208576736763147">Divi caurumi kreisajā pusē</translation>
 <translation id="6554795675067793129">Jūsu kontu pārvalda <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="6556866813142980365">Atcelt atsaukšanu</translation>
-<translation id="6566840325635607048">Poga Kredītkartes informācijas atjaunināšana. Lai Chrome iestatījumos atjauninātu kredītkaršu automātiskās aizpildes informāciju, nospiediet taustiņu Enter.</translation>
 <translation id="6569060085658103619">Jūs skatāt paplašinājumu lapu.</translation>
 <translation id="6573200754375280815">Divi caurumi labajā pusē</translation>
 <translation id="6578796323535178455">C2 (aploksne)</translation>
@@ -1598,7 +1588,6 @@ Papildu informācija:
 <translation id="7549584377607005141">Lai tīmekļa lapu varētu attēlot pareizi, tai nepieciešami jūsu iepriekš ievadītie dati. Varat atkārtoti nosūtīt šos datus, taču tādā gadījumā tiks atkārtota ikviena darbība, ko pirms tam veica lapa.</translation>
 <translation id="7550637293666041147">Jūsu lietotājvārds ierīcē un pārlūkā Chrome</translation>
 <translation id="7552846755917812628">Izmantojiet tālāk sniegtos padomus.</translation>
-<translation id="7553823544414963579"><ph name="CLEAR_BROWSING_DATA_FOCUSED_FRIENDLY_MATCH_TEXT" />, lai notīrītu Chrome pārlūkošanas vēstures datus, nospiediet tabulēšanas taustiņu un pēc tam taustiņu Enter</translation>
 <translation id="7554791636758816595">Jauna cilne</translation>
 <translation id="7564049878696755256">Varat zaudēt piekļuvi savam <ph name="ORG_NAME" /> kontam, vai jūsu identitāte var tikt nozagta. Chrome iesaka nekavējoties nomainīt paroli.</translation>
 <translation id="7567204685887185387">Šis serveris nevarēja pierādīt, ka šī ir vietne <ph name="DOMAIN" />; tās drošības sertifikāts, iespējams, ir izveidots krāpnieciski. Iespējams, tas ir nepareizas konfigurācijas dēļ vai arī kāds ir ļaunprātīgi izmantojis jūsu savienojumu.</translation>
@@ -1765,7 +1754,6 @@ Papildu informācija:
 <translation id="8225771182978767009">Persona, kura iestatīja šo datoru, izvēlējās bloķēt šo vietni.</translation>
 <translation id="8228419419708659934">Divu lappušu skats</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
-<translation id="8230646577665563479"><ph name="TRANSLATE_FOCUSED_FRIENDLY_MATCH_TEXT" />, lai tulkotu šo lapu, nospiediet tabulēšanas taustiņu un pēc tam taustiņu Enter</translation>
 <translation id="8232343881378637145">Platformas temperatūra</translation>
 <translation id="8238581221633243064">Atvērt lapu jaunā inkognito režīma cilnē</translation>
 <translation id="8241707690549784388">Lapa, ko meklējāt, izmantoja jūsu ievadīto informāciju. Atgriešanās lapā var radīt jebkuras jūsu darbības atkārtojumu. Vai vēlaties turpināt?</translation>

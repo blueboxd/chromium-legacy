@@ -1050,9 +1050,6 @@ extern const char kSharingLocalSharingInfo[];
 extern const char kHatsSurveyMetadata[];
 #endif  // !defined(OS_ANDROID)
 
-extern const char kCorsMitigationList[];
-extern const char kCorsLegacyModeEnabled[];
-
 extern const char kExternalProtocolDialogShowAlwaysOpenCheckbox[];
 
 extern const char kAutoLaunchProtocolsFromOrigins[];

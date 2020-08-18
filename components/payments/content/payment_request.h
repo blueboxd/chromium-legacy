@@ -83,7 +83,7 @@ class PaymentRequest : public mojom::PaymentRequest,
   void Abort() override;
   void Complete(mojom::PaymentComplete result) override;
   void CanMakePayment() override;
-  void HasEnrolledInstrument(bool per_method_quota) override;
+  void HasEnrolledInstrument() override;
 
   // PaymentHandlerHost::Delegate
   bool ChangePaymentMethod(const std::string& method_name,
@@ -171,8 +171,7 @@ class PaymentRequest : public mojom::PaymentRequest,
 
   // The callback for PaymentRequestState::HasEnrolledInstrument. Checks for
   // query quota and may send QUERY_QUOTA_EXCEEDED.
-  void HasEnrolledInstrumentCallback(bool per_method_quota,
-                                     bool has_enrolled_instrument);
+  void HasEnrolledInstrumentCallback(bool has_enrolled_instrument);
 
   // The callback for PaymentRequestState::AreRequestedMethodsSupported.
   void AreRequestedMethodsSupportedCallback(bool methods_supported,

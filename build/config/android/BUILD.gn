@@ -7,6 +7,10 @@ import("//build/config/c++/c++.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 
+if (current_toolchain == default_toolchain) {
+  import("//build/toolchain/concurrent_links.gni")
+}
+
 assert(is_android)
 
 # This is included by reference in the //build/config/compiler config that
@@ -158,5 +162,13 @@ if (current_toolchain == default_toolchain) {
   pool("goma_javac_pool") {
     # Override action_pool when goma is enabled for javac.
     depth = 10000
+  }
+
+  # When defined, this pool should be used instead of link_pool for command
+  # that need 1-2GB of RAM. https://crbug.com/1078460
+  if (defined(java_cmd_pool_size)) {
+    pool("java_cmd_pool") {
+      depth = java_cmd_pool_size
+    }
   }
 }

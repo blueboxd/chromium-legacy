@@ -8866,43 +8866,55 @@ Please help our engineers fix this problem. Tell us what happened right before y
       </if>
 
       <!-- Geolocation messages -->
-      <message name="IDS_GEOLOCATION_BUBBLE_SECTION_ALLOWED" desc="Heading for a section in the geolocation bubble listing all sites which are currently tracking the user's location.">
-        This page contains elements from the following sites that are tracking your location:
+      <message name="IDS_ALLOWED_GEOLOCATION_TITLE" desc="Title of the info bubble shown when a site has been allowed access to the system geolocation.">
+        Location access allowed
       </message>
-      <message name="IDS_GEOLOCATION_BUBBLE_SECTION_DENIED" desc="Heading for a section in the geolocation bubble listing all sites which are currently blocked from accessing the user's location.">
-        The following sites have been blocked from tracking your location on this page:
+      <message name="IDS_BLOCKED_GEOLOCATION_TITLE" desc="Title of the info bubble shown when a site has been denied access to the system geolocation.">
+        Location access denied
       </message>
-      <message name="IDS_GEOLOCATION_BUBBLE_REQUIRE_RELOAD_TO_CLEAR" desc="Hint text for the geolocation bubble informing user they must reload the page for the Clear settings command to take effect.">
-        Settings will be cleared on next reload.
+      <message name="IDS_ALLOWED_GEOLOCATION_MESSAGE" desc="Info bubble message and location bar icon tooltip text shown when a site has been allowed access to access the system location.">
+        This site can access your location.
       </message>
-      <message name="IDS_GEOLOCATION_BUBBLE_CLEAR_LINK" desc="Link on the geolocation bubble that resets the list of allowed and blocked sites.">
-        Clear these settings for future visits
+      <message name="IDS_ALLOWED_GEOLOCATION_BLOCK" desc="Radio button to block access to the system location">
+        Always block <ph name="HOST">$1<ex>example.com</ex></ph> from accessing your location
       </message>
-      <message name="IDS_GEOLOCATION_ALLOWED_TOOLTIP" desc="Location bar icon tooltip text when a page is allowed to use geolocation.">
-        This page is tracking your location.
+      <message name="IDS_ALLOWED_GEOLOCATION_NO_ACTION" desc="Radio button to keep allowing access to the system location">
+        Continue allowing this site to access your location
       </message>
-      <message name="IDS_GEOLOCATION_BLOCKED_TOOLTIP" desc="Location bar icon tooltip text when a page is blocked from using geolocation.">
-        This page has been blocked from tracking your location.
+      <message name="IDS_BLOCKED_GEOLOCATION_MESSAGE" desc="Info bubble message and location bar icon tooltip text shown when a site has been denied access to the system location.">
+        This site has been blocked from accessing your location.
+      </message>
+      <message name="IDS_BLOCKED_GEOLOCATION_UNBLOCK" desc="Radio button choice to unblock a site from accessing the system location.">
+        Always allow <ph name="HOST">$1<ex>mail.google.com</ex></ph> to access your location
+      </message>
+      <message name="IDS_BLOCKED_GEOLOCATION_NO_ACTION" desc="Radio button choice to continue blocking a site from accessing the system location.">
+        Continue blocking this site from accessing your location
       </message>
 
       <!-- Web MIDI messages -->
-      <message name="IDS_MIDI_SYSEX_ALLOWED_TOOLTIP" desc="Location bar icon tooltip text when a page is allowed to use MIDI system exclusive messages.">
+      <message name="IDS_ALLOWED_MIDI_SYSEX_TITLE" desc="Title of the info bubble shown when a site is allowed to use MIDI system exclusive messages.">
+        Full control of MIDI devices allowed
+      </message>
+      <message name="IDS_BLOCKED_MIDI_SYSEX_TITLE" desc="Title of the info bubble shown when a site is denied to use MIDI system exclusive messages.">
+        Full control of MIDI devices denied
+      </message>
+      <message name="IDS_ALLOWED_MIDI_SYSEX_MESSAGE" desc="Info bubble message and location bar icon tooltip text shown when a site has been allowed to use MIDI system exclusive messages.">
         This page has full control of MIDI devices.
       </message>
-      <message name="IDS_MIDI_SYSEX_BLOCKED_TOOLTIP" desc="Location bar icon tooltip text when a page is blocked from using MIDI system exclusive messages.">
-        This page has been blocked from having full control of MIDI devices.
+      <message name="IDS_ALLOWED_MIDI_SYSEX_BLOCK" desc="Radio button to block access to use MIDI system exclusive messages.">
+        Always block <ph name="HOST">$1<ex>example.com</ex></ph> from having full control of MIDI devices.
       </message>
-      <message name="IDS_MIDI_SYSEX_BUBBLE_ALLOWED" desc="Title of the MIDI bubble where system exclusive messages are allowed.">
-        This site has full control of MIDI devices.
+      <message name="IDS_ALLOWED_MIDI_SYSEX_NO_ACTION" desc="Radio button to keep allowing access to use MIDI system exclusive messages.">
+        Continue allowing this site to have full control of MIDI devices
       </message>
-      <message name="IDS_MIDI_SYSEX_BUBBLE_DENIED" desc="Title of the MIDI bubble where system exclusive messages are blocked.">
+      <message name="IDS_BLOCKED_MIDI_SYSEX_MESSAGE" desc="Info bubble message and location bar icon tooltip text shown when a site has been denied access to use MIDI system exclusive messages.">
         This site has been blocked from having full control of MIDI devices.
       </message>
-      <message name="IDS_MIDI_SYSEX_BUBBLE_REQUIRE_RELOAD_TO_CLEAR" desc="Hint text for the MIDI bubble informing user they must reload the page for the Clear settings command to take effect.">
-        Settings will be cleared on next reload.
+      <message name="IDS_BLOCKED_MIDI_SYSEX_UNBLOCK" desc="Radio button choice to unblock a site from using MIDI system exclusive messages.">
+        Always allow <ph name="HOST">$1<ex>mail.google.com</ex></ph> to have full control of MIDI devices
       </message>
-      <message name="IDS_MIDI_SYSEX_BUBBLE_CLEAR_LINK" desc="Link on the MIDI bubble that resets the list of allowed and blocked sites.">
-        Clear these settings for future visits
+      <message name="IDS_BLOCKED_MIDI_SYSEX_NO_ACTION" desc="Radio button choice to continue blocking a site from using MIDI system exclusive messages.">
+        Continue blocking this site from having full control of MIDI devices
       </message>
 
       <!-- Protocol Handler -->

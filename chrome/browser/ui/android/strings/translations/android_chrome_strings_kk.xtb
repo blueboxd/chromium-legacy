@@ -252,7 +252,6 @@
 <translation id="2942036813789421260">"Алдын ала қарау" қойындысы жабық.</translation>
 <translation id="2956410042958133412">Бұл есептік жазбаны <ph name="PARENT_NAME_1" /> және <ph name="PARENT_NAME_2" /> басқарады.</translation>
 <translation id="2962095958535813455">Инкогнито режиміндегі қойындыларға ауысты</translation>
-<translation id="2968755619301702150">Сертификат көру құралы</translation>
 <translation id="2979025552038692506">Таңдалған инкогнито қойындысы</translation>
 <translation id="2987620471460279764">Басқа құрылғылардан келген мәтін</translation>
 <translation id="2989523299700148168">Соңғы кіргендер</translation>
@@ -669,7 +668,6 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="6157392216611456285"><ph name="APP_NAME" /> қолданбасын таңдаy</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> дерек үнемделді</translation>
 <translation id="6186394685773237175">Ешқандай құпия сөз ұрланбаған.</translation>
-<translation id="6201345951596836663">Сілтеме көшірілді.</translation>
 <translation id="6206830853671714236">Жүктеп алу уақытын таңдаңыз</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> емес пе?</translation>
 <translation id="6218096829563201111">Ұқсас өнімдерді іздеу <ph name="BEGIN_NEW" />Жаңа<ph name="END_NEW" /></translation>

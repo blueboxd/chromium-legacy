@@ -330,12 +330,13 @@ def transfer_extended_attributes(dependency_interface,
 
 
 def inherit_unforgeable_attributes(resolved_definitions, interfaces_info):
-    """Inherits [Unforgeable] attributes and updates the arguments accordingly.
-
-    For each interface in |resolved_definitions|, collects all [Unforgeable]
-    attributes in ancestor interfaces and adds them to the interface.
-    'referenced_interfaces' and 'cpp_includes' in |interfaces_info| are updated
+    """Inherits [LegacyUnforgeable] attributes and updates the arguments
     accordingly.
+
+    For each interface in |resolved_definitions|, collects all
+    [LegacyUnforgeable] attributes in ancestor interfaces and adds them to the
+    interface. 'referenced_interfaces' and 'cpp_includes' in |interfaces_info|
+    are updated accordingly.
     """
 
     def collect_unforgeable_attributes_in_ancestors(interface_name, component):

@@ -24,11 +24,6 @@ abstract class NavigationGlow {
     public abstract void prepare(float startX, float startY);
 
     /**
-     * @return The total amount of pull offset.
-     */
-    public abstract float getPullOffset();
-
-    /**
      * Called when user scroll is performed.
      * @param offset Newly updated pull offset.
      */

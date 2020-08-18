@@ -28,6 +28,7 @@
 <translation id="2294245788148774212">(Facoltativo) Contribuisci a migliorare le funzionalità e le prestazioni di Chromium OS inviando automaticamente a Google dati diagnostici e sull'utilizzo.</translation>
 <translation id="2347108572062610441">Questa estensione ha cambiato la pagina mostrata all'avvio di Chromium.</translation>
 <translation id="2396765026452590966">L'estensione "<ph name="EXTENSION_NAME" />" ha cambiato la pagina mostrata all'avvio di Chromium.</translation>
+<translation id="2442081746662839303">Vuoi creare un nuovo spazio Chromium per <ph name="NEW_USER" />?</translation>
 <translation id="2483889755041906834">In Chromium</translation>
 <translation id="2485422356828889247">Disinstalla</translation>
 <translation id="2527042973354814951">Riavvia Chromium per attivare <ph name="PLUGIN_NAME" /></translation>
@@ -105,6 +106,7 @@
 <translation id="4943838377383847465">Chromium è in modalità background.</translation>
 <translation id="4987820182225656817">Gli ospiti possono utilizzare Chromium senza lasciare tracce.</translation>
 <translation id="4994636714258228724">Aggiungiti a Chromium</translation>
+<translation id="5053724573690775822">Vuoi creare un nuovo spazio di lavoro Chromium?</translation>
 <translation id="5224391634244552924">Nessuna password salvata. Chromium può controllare le password quando le salvi.</translation>
 <translation id="5277894862589591112">Riavvia Chromium per applicare le modifiche</translation>
 <translation id="5358375970380395591">Stai per accedere con un account gestito e per dare al relativo amministratore il controllo del tuo profilo Chromium. I tuoi dati di Chromium, come app, Preferiti, cronologia, password e altre impostazioni, verranno collegati definitivamente a <ph name="USER_NAME" />. Potrai eliminare questi dati tramite la Dashboard di Google Account, ma non potrai associare questi dati a un altro account. <ph name="LEARN_MORE" /></translation>
@@ -114,6 +116,7 @@
 <translation id="5416696090975899932">Impossibile visualizzare l'anteprima di stampa in Chromium senza il visualizzatore PDF integrato.</translation>
 <translation id="5427571867875391349">Imposta Chromium come browser predefinito</translation>
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> - Chromium beta</translation>
+<translation id="544968170749360982">Hai eseguito l'accesso con un nuovo account nello spazio di <ph name="EXISTING_USER" />. Vuoi creare un nuovo spazio Chromium per <ph name="NEW_USER" /> in modo da mantenere separati i tuoi dati?</translation>
 <translation id="5479196819031988440">Chromium OS non è in grado di aprire la pagina.</translation>
 <translation id="5480860683791598150">Chromium deve poter accedere alla tua posizione per condividerla con questo sito</translation>
 <translation id="549669000822060376">Attendi mentre Chromium installa gli aggiornamenti di sistema più recenti.</translation>
@@ -136,6 +139,7 @@
 <translation id="608189560609172163">Impossibile sincronizzare i dati in Chromium a causa di un errore durante l'accesso.</translation>
 <translation id="6096348254544841612">È disponibile un nuovo aggiornamento.</translation>
 <translation id="6120345080069858279">Chromium salverà la password nel tuo Account Google affinché tu non debba memorizzarla.</translation>
+<translation id="6128834065531097268">Hai eseguito l'accesso con un account di lavoro nello spazio di <ph name="EXISTING_USER" />. Vuoi creare un nuovo spazio Chromium per <ph name="WORK_DOMAIN" /> in modo da mantenere separati i tuoi dati?</translation>
 <translation id="6129621093834146363"><ph name="FILE_NAME" /> è pericoloso, pertanto è stato bloccato da Chromium.</translation>
 <translation id="6134968993075716475">Navigazione sicura è disattivata. Chromium consiglia di attivarla.</translation>
 <translation id="6212496753309875659">Questo computer ha già una versione più recente di Chromium. Se il software non funziona, disinstalla Chromium e riprova.</translation>
@@ -196,6 +200,7 @@ Chromium non è in grado di recuperare le impostazioni.</translation>
 <translation id="7549178288319965365">Informazioni su Chromium OS</translation>
 <translation id="7561906087460245826">Cancella anche i dati di Chromium (<ph name="URL" />)</translation>
 <translation id="7585853947355360626">Se un'impostazione non viene mostrata in questa pagina, cercala nelle <ph name="LINK_BEGIN" />impostazioni del sistema operativo Chromium<ph name="LINK_END" />.</translation>
+<translation id="7607142834923530546">Hai eseguito l'accesso con un account di lavoro. Vuoi creare un nuovo spazio Chromium per <ph name="NEW_USER" /> in modo da mantenere separati i tuoi dati personali?</translation>
 <translation id="761356813943268536">Chromium sta utilizzando videocamera e microfono.</translation>
 <translation id="7617377681829253106">Da oggi Chromium è ancora meglio</translation>
 <translation id="7628001322379820951">Chromium ha rilevato software dannoso sul tuo computer</translation>

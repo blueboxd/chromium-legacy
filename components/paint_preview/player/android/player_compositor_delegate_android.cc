@@ -92,10 +92,12 @@ PlayerCompositorDelegateAndroid::PlayerCompositorDelegateAndroid(
 }
 
 void PlayerCompositorDelegateAndroid::OnCompositorReady(
-    mojom::PaintPreviewCompositor::Status status,
+    mojom::PaintPreviewCompositor::BeginCompositeStatus status,
     mojom::PaintPreviewBeginCompositeResponsePtr composite_response) {
   bool compositor_started =
-      status == mojom::PaintPreviewCompositor::Status::kSuccess;
+      status == mojom::PaintPreviewCompositor::BeginCompositeStatus::kSuccess ||
+      status ==
+          mojom::PaintPreviewCompositor::BeginCompositeStatus::kPartialSuccess;
   base::UmaHistogramBoolean(
       "Browser.PaintPreview.Player.CompositorProcessStartedCorrectly",
       compositor_started);
@@ -217,14 +219,14 @@ void PlayerCompositorDelegateAndroid::OnBitmapCallback(
     const ScopedJavaGlobalRef<jobject>& j_bitmap_callback,
     const ScopedJavaGlobalRef<jobject>& j_error_callback,
     int request_id,
-    mojom::PaintPreviewCompositor::Status status,
+    mojom::PaintPreviewCompositor::BitmapStatus status,
     const SkBitmap& sk_bitmap) {
   TRACE_EVENT_NESTABLE_ASYNC_END2(
       "paint_preview", "PlayerCompositorDelegateAndroid::RequestBitmap",
       TRACE_ID_LOCAL(request_id), "status", static_cast<int>(status), "bytes",
       sk_bitmap.computeByteSize());
 
-  if (status == mojom::PaintPreviewCompositor::Status::kSuccess &&
+  if (status == mojom::PaintPreviewCompositor::BitmapStatus::kSuccess &&
       !sk_bitmap.isNull()) {
     base::ThreadPool::PostTaskAndReplyWithResult(
         FROM_HERE, {base::TaskPriority::USER_VISIBLE},

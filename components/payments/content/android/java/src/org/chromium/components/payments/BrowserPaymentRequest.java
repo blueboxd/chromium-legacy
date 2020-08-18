@@ -81,9 +81,8 @@ public interface BrowserPaymentRequest {
 
     /**
      * The browser part of the {@link PaymentRequest#hasEnrolledInstrument} implementation.
-     * @param perMethodQuota Whether to query with per-method quota.
      */
-    void hasEnrolledInstrument(boolean perMethodQuota);
+    void hasEnrolledInstrument();
 
     /** The browser part of the {@link PaymentRequest#canMakePayment} implementation. */
     void canMakePayment();

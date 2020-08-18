@@ -11,6 +11,7 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
@@ -19,6 +20,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.preference.PreferenceFragmentCompat;
+
+import com.google.android.material.textfield.TextInputLayout;
+
+import org.chromium.base.supplier.Supplier;
 
 /**
  * This class is responsible for rendering the edit fragment where users can provide a new password
@@ -30,10 +35,22 @@ public class PasswordCheckEditFragmentView extends PreferenceFragmentCompat {
     @VisibleForTesting
     static final String EXTRA_NEW_PASSWORD = "extra_new_password";
 
+    private Supplier<PasswordCheck> mPasswordCheckFactory;
     private String mNewPassword;
     private CompromisedCredential mCredential;
 
     private EditText mPasswordText;
+    private MenuItem mSaveButton;
+    private TextInputLayout mPasswordLabel;
+
+    /**
+     * Initializes the password check factory that allows to retrieve a {@link PasswordCheck}
+     * implementation used for saving the changed credential.
+     * @param passwordCheckFactory A {@link Supplier<PasswordCheck>}.
+     */
+    public void setCheckProvider(Supplier<PasswordCheck> passwordCheckFactory) {
+        mPasswordCheckFactory = passwordCheckFactory;
+    }
 
     @Override
     public void onCreatePreferences(Bundle bundle, String s) {}
@@ -58,6 +75,7 @@ public class PasswordCheckEditFragmentView extends PreferenceFragmentCompat {
         EditText usernameText = (EditText) view.findViewById(R.id.username_edit);
         usernameText.setText(mCredential.getDisplayUsername());
 
+        mPasswordLabel = (TextInputLayout) view.findViewById(R.id.password_label);
         mPasswordText = (EditText) view.findViewById(R.id.password_edit);
         mPasswordText.setText(mCredential.getPassword());
         mPasswordText.addTextChangedListener(new TextWatcher() {
@@ -70,17 +88,19 @@ public class PasswordCheckEditFragmentView extends PreferenceFragmentCompat {
             @Override
             public void afterTextChanged(Editable editable) {
                 mNewPassword = mPasswordText.getText().toString();
-                if (TextUtils.isEmpty(mNewPassword)) {
-                    // TODO(crbug.com/1114720): setError on R.id.password_label.
-                }
+                checkSavingConditions(TextUtils.isEmpty(mNewPassword));
             }
         });
+        // Enforce that even the initial password (maybe from a saved instance) cannot be empty.
+        checkSavingConditions(TextUtils.isEmpty(mNewPassword));
     }
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         menu.clear(); // Remove help and feedback for this screen.
         inflater.inflate(R.menu.password_check_editor_action_bar_menu, menu);
+        mSaveButton = menu.findItem(R.id.action_save_edited_password);
+        checkSavingConditions(mNewPassword.isEmpty()); // Enable the newly created save button.
         // TODO(crbug.com/1092444): Make the back arrow an 'X'.
     }
 
@@ -89,6 +109,22 @@ public class PasswordCheckEditFragmentView extends PreferenceFragmentCompat {
         super.onSaveInstanceState(outState);
         outState.putParcelable(EXTRA_COMPROMISED_CREDENTIAL, mCredential);
         outState.putString(EXTRA_NEW_PASSWORD, mNewPassword);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.action_save_edited_password) {
+            saveChanges();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void saveChanges() {
+        assert !TextUtils.isEmpty(mNewPassword);
+        mPasswordCheckFactory.get().updateCredential(mCredential, mNewPassword);
+        getActivity().finish();
     }
 
     private CompromisedCredential getCredentialFromInstanceStateOrLaunchBundle(
@@ -114,5 +150,12 @@ public class PasswordCheckEditFragmentView extends PreferenceFragmentCompat {
             return extras.getParcelable(EXTRA_NEW_PASSWORD);
         }
         return mCredential.getPassword();
+    }
+
+    private void checkSavingConditions(boolean emptyPassword) {
+        if (mSaveButton != null) mSaveButton.setEnabled(!emptyPassword);
+        mPasswordLabel.setError(emptyPassword ? getContext().getString(
+                                        R.string.pref_edit_dialog_field_required_validation_message)
+                                              : "");
     }
 }

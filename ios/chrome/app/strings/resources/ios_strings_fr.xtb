@@ -338,6 +338,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="4881695831933465202">Ouvrir</translation>
 <translation id="4901778704868714008">Enregistrer…</translation>
 <translation id="4904877109095351937">Marquer comme lues</translation>
+<translation id="4908869848243824489">Discover de Google</translation>
 <translation id="4930268273022498155">Supprimer les données actuelles. Vous pouvez les récupérer en repassant sur le compte <ph name="USER_EMAIL1" />.</translation>
 <translation id="4930714375720679147">Activer</translation>
 <translation id="4941089862236492464">Désolé, un problème est survenu lors du partage de l'élément.</translation>
@@ -554,6 +555,7 @@ En revanche, ils ne peuvent pas en utiliser pour voir votre activité de navigat
 <translation id="7293171162284876153">Pour lancer la synchronisation, activez l'option "Synchroniser vos données Chrome".</translation>
 <translation id="7313347584264171202">Les onglets de navigation privée s'afficheront ici</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> % téléchargés</translation>
+<translation id="7340958967809483333">Options pour Discover</translation>
 <translation id="7346909386216857016">OK</translation>
 <translation id="734758817008927353">Options d'enregistrement de la carte</translation>
 <translation id="7348502496356775519">Ajouter aux favoris</translation>
@@ -665,6 +667,7 @@ Ils peuvent également s'en servir pour voir votre activité de navigation sur l
 <translation id="8668210798914567634">Cette page a été enregistrée dans votre liste de lecture.</translation>
 <translation id="8680787084697685621">Les informations de connexion au compte sont obsolètes.</translation>
 <translation id="8706588385081740091">Mots de passe</translation>
+<translation id="8717864919010420084">Copier le lien</translation>
 <translation id="8721297211384281569">Menu "Outils"</translation>
 <translation id="8725066075913043281">Réessayer</translation>
 <translation id="8730621377337864115">OK</translation>

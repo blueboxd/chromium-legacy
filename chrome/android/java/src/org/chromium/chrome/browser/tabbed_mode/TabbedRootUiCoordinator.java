@@ -226,9 +226,10 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
 
         // clang-format off
         mHistoryNavigationCoordinator = HistoryNavigationCoordinator.create(
-                mActivity.getLifecycleDispatcher(), mActivity.getCompositorViewHolder(),
-                mActivity.getActivityTabProvider(), mActivity.getInsetObserverView(),
-                mActivity::backShouldCloseTab, mActivity::onBackPressed,
+                mActivity.getWindowAndroid(), mActivity.getLifecycleDispatcher(),
+                mActivity.getCompositorViewHolder(), mActivity.getActivityTabProvider(),
+                mActivity.getInsetObserverView(), mActivity::backShouldCloseTab,
+                mActivity::onBackPressed, layoutManager,
                 tab -> HistoryManagerUtils.showHistoryManager(mActivity, tab),
                 mActivity.getResources().getString(R.string.show_full_history),
                 () -> mActivity.isActivityFinishingOrDestroyed() ? null

@@ -82,7 +82,6 @@
 <translation id="1294154142200295408">Buyruqlar qatori variantlari</translation>
 <translation id="129553762522093515">Yaqinda yopilganlar</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Cookie-fayllarni tozalab ko‘ring<ph name="END_LINK" /></translation>
-<translation id="1299917195319242089">Inkognito oynasi tugmasini oching, yangi Chrome inkognito oynasini ochish uchun Enter tugmasini bosing</translation>
 <translation id="1301324364792935241">DNS sozlamalar himoyasini tekshiring</translation>
 <translation id="1307966114820526988">Eskirgan funksiyalar</translation>
 <translation id="131405271941274527"><ph name="URL" /> sayti NFC orqali axborot almashinishga ruxsat soʻramoqda</translation>
@@ -254,7 +253,6 @@
 <translation id="1919345977826869612">Reklamalar</translation>
 <translation id="1919367280705858090">Maxsus turdagi xato xabarlari asosida yordam olish</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Yo‘q}=1{1 ta sayt}other{# ta sayt}}</translation>
-<translation id="1926148189358507356">Yangilash uchun qayta ishga tushirish tugmasi, Chrome brauzerini yangilash uchun Enter tugmasini bosing</translation>
 <translation id="1945968466830820669">Tashkilot hisobingiz xavf ostida va o‘g‘irlanishi mumkin. Chromium parolingizni hoziroq o‘zgartirishni tavsiya etadi.</translation>
 <translation id="1947454675006758438">Yuqori oʻngdan steplerlash</translation>
 <translation id="1959001866257244765"><ph name="BEGIN_WHITEPAPER_LINK" />Ochilgan sahifalar manzillari, tizim va sahifalar<ph name="END_WHITEPAPER_LINK" /> haqidagi ayrim maʼlumotlarni Google serverlariga yuborish orqali internetdagi xavfsizlik tizimini hamma uchun yaxshilashga yordam berasiz. <ph name="BEGIN_PRIVACY_PAGE_LINK" />Maxfiylik siyosati<ph name="END_PRIVACY_PAGE_LINK" /></translation>
@@ -275,7 +273,7 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="2003775180883135320">Yuqoridan 4 ta teshik ochish</translation>
 <translation id="2025115093177348061">Boyitilgan reallik</translation>
 <translation id="2025186561304664664">Proksi-server avtomatik sozlanadi.</translation>
-<translation id="2032962459168915086"><ph name="BEGIN_LINK" />Proksi va himoya devorini tekshiring<ph name="END_LINK" /></translation>
+<translation id="2032962459168915086"><ph name="BEGIN_LINK" />Proksi-server va himoya devori sozlamalarini tekshiring<ph name="END_LINK" /></translation>
 <translation id="2042213636306070719">Tarnov 7</translation>
 <translation id="204357726431741734">Google hisobingizda saqlangan parollardan foydalanish uchun hisobingizga kiring</translation>
 <translation id="2053111141626950936"><ph name="LANGUAGE" /> tilidagi sahifalar tarjima qilinmaydi</translation>
@@ -359,7 +357,6 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="2367567093518048410">Daraja</translation>
 <translation id="2380886658946992094">Legal</translation>
 <translation id="2384307209577226199">Korporativ (birlamchi)</translation>
-<translation id="238547550913364157"><ph name="LAUNCH_INCOGNITO_FOCUSED_FRIENDLY_MATCH_TEXT" />, yangi Chrome inkognito oynasini ochish uchun avval Tab, keyin esa Enter tugmasini bosing</translation>
 <translation id="2385809941344967209">Chrome brauzerini Chrome sozlamalari orqali yangilash</translation>
 <translation id="2386255080630008482">Server sertifikati bekor qilingan.</translation>
 <translation id="2392959068659972793">Qiymati belgilanmagan qoidalarni ko‘rsatish</translation>
@@ -402,7 +399,6 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="2586657967955657006">Klipbord</translation>
 <translation id="2587730715158995865">Manba: <ph name="ARTICLE_PUBLISHER" />. Bu va yana <ph name="OTHER_ARTICLE_COUNT" /> ta maqolani mutolaa qilishingiz mumkin.</translation>
 <translation id="2587841377698384444">Katalog API ID:</translation>
-<translation id="2592698726824597401"><ph name="UPDATE_CREDIT_CARD_FOCUSED_FRIENDLY_MATCH_TEXT" />, Chrome sozlamalari orqali kredit karta uchun avtomatik kiritish axborotini yangilash uchun avval Tab, keyin esa Enter tugmasini bosing</translation>
 <translation id="2595719060046994702">Bu qurilma va hisob kompaniya yoki tashkilot boshqaruvida emas.</translation>
 <translation id="2597378329261239068">Bu hujjat parol bilan himoyalangan. Iltimos parolni kiriting.</translation>
 <translation id="2609632851001447353">Variantlar</translation>
@@ -424,7 +420,6 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="2677748264148917807">Tark etish</translation>
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">Eng mos</translation>
-<translation id="2688738823074468716">Parollarni boshqarish tugmasi, Chrome sozlamalari orqali parollarni boshqarish uchun Enter tugmasini bosing</translation>
 <translation id="2688969097326701645">Ha, davom etilsin</translation>
 <translation id="2691924980723297736">Ogohlantirish</translation>
 <translation id="2699302886720511147">Qabul qilinadigan kartalar</translation>
@@ -743,7 +738,6 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="4088981014127559358">Tasvirning old tomondagi Y oʻqidagi siljish</translation>
 <translation id="4098354747657067197">Ehtiyot bo‘ling, qalbaki sayt!</translation>
 <translation id="4101413244023615925">Matn va grafika</translation>
-<translation id="4103147722950692857"><ph name="MANAGE_PASSWORDS_FOCUSED_FRIENDLY_MATCH_TEXT" />, Chrome sozlamalari orqali parollarni boshqarish uchun avval Tab, keyin esa Enter tugmasini bosing</translation>
 <translation id="4103249731201008433">Qurilma seriya raqami noto‘g‘ri</translation>
 <translation id="4103763322291513355">Administrator tomonidan qora ro‘yxatga qo‘shilgan URL manzillar va boshqa parametrlarni ko‘rish uchun quyidagi sahifaga o‘ting: &lt;strong&gt;chrome://policy&lt;/strong&gt;</translation>
 <translation id="4110652170750985508">To‘lovingizni tekshiring</translation>
@@ -754,7 +748,7 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="4121428309786185360">Amal qilish muddati</translation>
 <translation id="4123572138124678573">Quyidan 3 ta teshik ochish</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{yana 1 ta}other{yana # ta}}</translation>
-<translation id="4130226655945681476">Tarmoq kabellari, modem, routerni tekshirish</translation>
+<translation id="4130226655945681476">Tarmoq kabellari, modem va routerni tekshiring</translation>
 <translation id="413544239732274901">Batafsil</translation>
 <translation id="4142935452406587478">Tarnov 10</translation>
 <translation id="4148925816941278100">American Express</translation>
@@ -914,7 +908,6 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="4738601419177586157"><ph name="TEXT" /> qidiruv taklifi</translation>
 <translation id="4742407542027196863">Parollarni boshqarish…</translation>
 <translation id="4744603770635761495">Ishga tushirish havolasi</translation>
-<translation id="4750085040310563588"><ph name="UPDATE_CHROME_FOCUSED_FRIENDLY_MATCH_TEXT" />, Chrome brauzerini yangilash uchun avval Tab, keyin esa Enter tugmasini bosing</translation>
 <translation id="4750917950439032686">Bu saytga shaxsiy ma’lumotlaringiz (parollar yoki bank kartalar kabi) xavfsiz uzatiladi.</translation>
 <translation id="4756388243121344051">&amp;Tarix</translation>
 <translation id="4758311279753947758">Aloqa ma’lumotini qo‘shish</translation>
@@ -1033,7 +1026,6 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="5215116848420601511">Google Pay xizmatidagi bank kartalari va manzillar</translation>
 <translation id="5215363486134917902">Folio-Sp</translation>
 <translation id="5222812217790122047">E-pochtangizni kiriting</translation>
-<translation id="5222994811833658317">“Maʼlumotlarni tozalash” tugmasi, Chrome brauzeri tarixini tozalash uchun Enter tugmasini bosing</translation>
 <translation id="5230733896359313003">Yetkazib berish manzili</translation>
 <translation id="5230815978613972521">B8</translation>
 <translation id="5233045608889518621">12x19</translation>
@@ -1074,7 +1066,7 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="534295439873310000">NFC qurilmalar</translation>
 <translation id="5344579389779391559">Bu sahifa sizdan pul talab qilishi mumkin</translation>
 <translation id="5355557959165512791"><ph name="SITE" /> sayti ochilmadi, bu sayt bekor qilingan sertifikatdan foydalanayotgan bo‘lishi mumkin. Bunday xatolik tarmoq xatoligi va saytga hujumlar bo‘layotganda yuz beradi, lekin keyinroq sayt ishlab ketishi mumkin.</translation>
-<translation id="5361930801096459163">Qidiruv tugasi, <ph name="KEYWORD_SUFFIX" /> deb qidirish uchun Enter tugmasini bosing</translation>
+<translation id="5361930801096459163">Qidiruv tugmasi, <ph name="KEYWORD_SUFFIX" /> deb qidirish uchun Enter tugmasini bosing</translation>
 <translation id="536296301121032821">Tartib-qoida parametrlarini saqlab bo‘lmadi</translation>
 <translation id="5371425731340848620">Kartani yangilash</translation>
 <translation id="5377026284221673050">“Soatingiz orqada” yoki “Soatingiz oldinda” yoki “&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;”</translation>
@@ -1299,7 +1291,6 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="6302269476990306341">Chrome ichidagi Google Assistent toʻxtatilmoqda</translation>
 <translation id="6305205051461490394"><ph name="URL" /> bilan aloqa o‘rnatib bo‘lmadi.</translation>
 <translation id="6312113039770857350">Veb-sahifa mavjud emas</translation>
-<translation id="6315224405718249523">“Sahifani tarjima qilish” tugmasi, bu sahifani tarjima qilish uchun Enter tugasini bosing</translation>
 <translation id="6321917430147971392">DNS sozlamalarini tekshiring</translation>
 <translation id="6322182122604171028">Windows Hello ishlatib boʻlmadi</translation>
 <translation id="6328639280570009161">Tarmoqni oldindan aniqlash funksiyasidan foydalanib ko‘ring</translation>
@@ -1354,7 +1345,6 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="6547208576736763147">Chapdan 2 ta teshik ochish</translation>
 <translation id="6554795675067793129">Hisobingiz <ph name="ENROLLMENT_DOMAIN" /> domenida boshqariladi.</translation>
 <translation id="6556866813142980365">Qaytarish</translation>
-<translation id="6566840325635607048">Kredit kartani yangilash tugmasi, Chrome sozlamalari orqali kredit karta axborotini avtomatik toʻldirishni oʻzgartirish uchun Enter tugmasini bosing</translation>
 <translation id="6569060085658103619">Siz kengaytma sahifasidasiz.</translation>
 <translation id="6573200754375280815">Oʻngdan 2 ta teshik ochish</translation>
 <translation id="6578796323535178455">C2 (Envelope)</translation>
@@ -1595,7 +1585,6 @@ Batafsil axborot:
 <translation id="7549584377607005141">Veb-sahifaning to‘g‘ri ko‘rsatilishi uchun avval kiritilgan ma’lumotlar kerak bo‘ladi. Ularni qayta jo‘natish mumkin, lekin bu holatda sahifada bajarilgan barcha amallarni qaytadan bajarish kerak bo‘ladi.</translation>
 <translation id="7550637293666041147">Qurilmangiz va Chrome foydalanuvchilari nomi</translation>
 <translation id="7552846755917812628">Quyidagi amallarni bajarib ko‘ring:</translation>
-<translation id="7553823544414963579"><ph name="CLEAR_BROWSING_DATA_FOCUSED_FRIENDLY_MATCH_TEXT" />, Chrome brauzeri tarixini tozalash uchun avval Tab, keyin esa Enter tugmasini bosing</translation>
 <translation id="7554791636758816595">Yangi varaq</translation>
 <translation id="7564049878696755256"><ph name="ORG_NAME" /> hisobingiz xavf ostida va shaxsiy ma’lumotlaringizni kimdir ko‘rishi mumkin. Parolingizni hoziroq o‘zgartirishni tavsiya etamiz.</translation>
 <translation id="7567204685887185387">Bu <ph name="DOMAIN" /> serveri ekanligini tasdiqlab bo‘lmadi. Uning havfsizlik sertifikati ishonchli tuyulmayapti. Server noto‘g‘ri sozlangan yoki kimdir ma’lumotlaringizni o‘g‘rilashga urinayotgan bo‘lishi mumkin.</translation>
@@ -1762,7 +1751,6 @@ Batafsil axborot:
 <translation id="8225771182978767009">Bu saytga kirish ushbu kompyuter sozlamalarida taqiqlab qo‘yilgan.</translation>
 <translation id="8228419419708659934">Ikkita sahifani chiqarish</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
-<translation id="8230646577665563479"><ph name="TRANSLATE_FOCUSED_FRIENDLY_MATCH_TEXT" />, bu sahifani tarjima qilish uchun avval Tab, keyin esa Enter tugmasini bosing</translation>
 <translation id="8232343881378637145">Platforma harorati</translation>
 <translation id="8238581221633243064">Sahifani yangi inkognito varaqda ochish</translation>
 <translation id="8241707690549784388">Siz qidirayotgan sahifada o‘zingiz kiritgan ma’lumotlardan foydalanilgan. Unga qaytib borsangiz, u yerda bajargan amallaringiz takrorlanishi mumkin. Davom etasizmi?</translation>
@@ -1827,9 +1815,10 @@ Batafsil axborot:
 <translation id="8485393050551136813">Hozirgina shubhali saytda parol kiritdingiz. Chromium hoziroq <ph name="WEBSITE_1" /> va boshqa saytlardagi shu parolingizni tekshirishni tavsiya qiladi.</translation>
 <translation id="8488350697529856933">Tatbiq etish obyekti</translation>
 <translation id="8490137692873530638">Taxlovchi 10</translation>
-<translation id="8498891568109133222"><ph name="HOST_NAME" /> saytidan javob vaqti judayam cho‘zilib ketdi.</translation>
+<translation id="8498891568109133222"><ph name="HOST_NAME" /> saytidan javobni kutish vaqti tugadi.</translation>
 <translation id="8503559462189395349">Chrome parollari</translation>
 <translation id="8503813439785031346">Foydalanuvchi nomi</translation>
+<translation id="8507227106804027148">Buyruqlar qatori</translation>
 <translation id="8508648098325802031">Qidiruv ikonkasi</translation>
 <translation id="8522552481199248698">Chrome Google hisobingizni himoyalash va parolni almashtirish uchun yordam beradi.</translation>
 <translation id="8530813470445476232">Brauzer tarixi, cookie fayllar, kesh va boshqa Chrome sozlamalarini tozalang</translation>

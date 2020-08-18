@@ -252,7 +252,6 @@
 <translation id="2942036813789421260">Вкладку "Попередній перегляд" закрито</translation>
 <translation id="2956410042958133412">Цим обліковим записом керують <ph name="PARENT_NAME_1" /> і <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2962095958535813455">Ви перейшли на анонімні вкладки</translation>
-<translation id="2968755619301702150">Перегляд сертифікатів</translation>
 <translation id="2979025552038692506">Вибрана анонімна вкладка</translation>
 <translation id="2987620471460279764">Текст, яким поділилися з іншого пристрою</translation>
 <translation id="2989523299700148168">Нещодавно відвідані</translation>
@@ -453,6 +452,7 @@
 <translation id="4605958867780575332">Елемент "<ph name="ITEM_TITLE" />" вилучено</translation>
 <translation id="4616150815774728855">Відкрити файл <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">Прийняти пароль</translation>
+<translation id="4640331037679501949">{NUM_PASSWORDS,plural, =1{1 зламаний пароль}one{# зламаний пароль}few{# зламані паролі}many{# зламаних паролів}other{# зламаного пароля}}</translation>
 <translation id="4650364565596261010">За умовчанням у системі</translation>
 <translation id="465657074423018424">Безпечний перегляд захищає вас від оманливих веб-сайтів. Якщо ви вимкнете цю функцію, будьте обережні під час перегляду веб-сторінок, особливо коли вводите паролі.</translation>
 <translation id="4662373422909645029">Не можна додавати цифри</translation>
@@ -669,7 +669,6 @@
 <translation id="6157392216611456285">Вибрати <ph name="APP_NAME" /></translation>
 <translation id="6159335304067198720">Заощадження даних: <ph name="PERCENT" /></translation>
 <translation id="6186394685773237175">Немає зламаних паролів</translation>
-<translation id="6201345951596836663">Посилання скопійовано</translation>
 <translation id="6206830853671714236">Виберіть, коли завантажити</translation>
 <translation id="6210748933810148297">Не <ph name="EMAIL" />?</translation>
 <translation id="6218096829563201111">Шукати схожі продукти <ph name="BEGIN_NEW" />Нове<ph name="END_NEW" /></translation>

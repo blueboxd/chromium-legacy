@@ -257,5 +257,5 @@ interface PaymentRequest {
   // Queries whether support for the merchant-specified payment method is
   // available and the user has an enrolled instrument for that payment method
   // that is ready to pay.
-  HasEnrolledInstrument(bool per_method_quota);
+  HasEnrolledInstrument();
 };

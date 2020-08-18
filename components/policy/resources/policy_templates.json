@@ -21720,7 +21720,7 @@
         'type': 'array',
         'items': { 'type': 'string' },
       },
-      'supported_on': ['chrome.*:79-', 'chrome_os:79-'],
+      'supported_on': ['chrome.*:79-83', 'chrome_os:79-83'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -21740,14 +21740,14 @@
 
       For details on <ph name="CORS">CORS</ph>, visit: <ph name="CORS_HELP_URL">https://www.chromestatus.com/feature/5768642492891136</ph>.
 
-      Note that this policy was announced to be removed in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 82, but the plan was changed to be removed in version 84.'''
+      Note that this policy was announced to be removed in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 82, but removed in version 84.'''
     },
     {
       'name': 'CorsLegacyModeEnabled',
       'owners': ['toyoshim@chromium.org', 'yhirano@chromium.org', 'kinuko@chromium.org'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:79-', 'chrome_os:79-'],
+      'supported_on': ['chrome.*:79-83', 'chrome_os:79-83'],
       'features': {
         'dynamic_refresh': False,
         'per_profile': True,
@@ -21767,7 +21767,7 @@
 
       For details on <ph name="CORS">CORS</ph>, visit: <ph name="CORS_HELP_URL">https://www.chromestatus.com/feature/5768642492891136</ph>.
 
-      Note that this policy was announced to be removed in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 82, but the plan was changed to be removed in version 84.'''
+      Note that this policy was announced to be removed in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 82, but removed in version 84.'''
     },
     {
       'name': 'ExternalPrintServersWhitelist',

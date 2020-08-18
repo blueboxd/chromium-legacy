@@ -82,7 +82,6 @@
 <translation id="1294154142200295408">Тушаалын мөрийн хувилбар</translation>
 <translation id="129553762522093515">Саяхан хаагдсан</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Күүкигээ устгана уу<ph name="END_LINK" /></translation>
-<translation id="1299917195319242089">Нууцлалтай цонхыг нээх товч, Chrome-н нууцлалтай цонхыг шинээр нээхийн тулд Enter дарна уу</translation>
 <translation id="1301324364792935241">Аюулгүй DNS тохиргоогоо шалгана уу</translation>
 <translation id="1307966114820526988">Хуучирсан онцлог</translation>
 <translation id="131405271941274527">Таныг NFC төхөөрөмж дээр утсаараа товших үед <ph name="URL" /> нь мэдээлэл илгээх, хүлээн авах хүсэлтэй байна</translation>
@@ -255,7 +254,6 @@
 <translation id="1919345977826869612">Зар</translation>
 <translation id="1919367280705858090">Тодорхой алдаатай зурвасаар тусламж авах</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Байхгүй}=1{1 сайт}other{# сайт}}</translation>
-<translation id="1926148189358507356">Шинэчлэхээр дахин ачаалах товч, Chrome-г шинэчлэхийн тулд Enter дарна уу</translation>
 <translation id="1945968466830820669">Та байгууллагынхаа бүртгэлд хандах эрх эсвэл нууц үгээ бусдад алдаж болзошгүй. Chromium-с таныг нууц үгээ өөрчлөхийг зөвлөж байна.</translation>
 <translation id="1947454675006758438">Баруун дээд буланд үдэх</translation>
 <translation id="1959001866257244765"><ph name="BEGIN_WHITEPAPER_LINK" />Зарим зочилдог хуудасныхаа URL, системийн хязгаарлагдмал мэдээлэл болон зарим хуудасны контент<ph name="END_WHITEPAPER_LINK" />-ыг Google-д илгээж, хүн бүрд вэбийн аюулгүй байдлыг сайжруулахад тусална уу. <ph name="BEGIN_PRIVACY_PAGE_LINK" />Нууцлалын бодлого<ph name="END_PRIVACY_PAGE_LINK" /></translation>
@@ -360,7 +358,6 @@
 <translation id="2367567093518048410">Түвшин</translation>
 <translation id="2380886658946992094">Хууль ёсны</translation>
 <translation id="2384307209577226199">Байгууллагын өгөгдмөл</translation>
-<translation id="238547550913364157"><ph name="LAUNCH_INCOGNITO_FOCUSED_FRIENDLY_MATCH_TEXT" />, Chrome-н нууцлалтай цонх шинээр нээхийн тулд Таб дээр, дараа нь Enter дарна уу</translation>
 <translation id="2385809941344967209">Chrome-н тохиргоон дээрээс Chrome-г шинэчлэх</translation>
 <translation id="2386255080630008482">Серверийн гэрчилгээг цуцалсан байна.</translation>
 <translation id="2392959068659972793">Утга нь тодорхойлогдоогүй журмуудыг харуул</translation>
@@ -403,7 +400,6 @@
 <translation id="2586657967955657006">Түр санах ой</translation>
 <translation id="2587730715158995865"><ph name="ARTICLE_PUBLISHER" />-н энэ болон бусад <ph name="OTHER_ARTICLE_COUNT" /> нийтлэлийг уншина уу.</translation>
 <translation id="2587841377698384444">Хадгалалтын сангийн API ID:</translation>
-<translation id="2592698726824597401"><ph name="UPDATE_CREDIT_CARD_FOCUSED_FRIENDLY_MATCH_TEXT" />, Chrome-н тохиргоонд кредит картын автоматаар бөглөх хэсгийн мэдээллийг шинэчлэхийн тулд Таб дээр, дараа нь Enter дарна уу</translation>
 <translation id="2595719060046994702">Энэ төхөөрөмж болон бүртгэлийг компани эсвэл бусад байгууллагаас удирдаагүй байна.</translation>
 <translation id="2597378329261239068">Энэхүү баримт бичиг нь нууц үгээр хамгаалагдсан. Нууц үгээ оруулна уу.</translation>
 <translation id="2609632851001447353">Хувилбарууд</translation>
@@ -425,7 +421,6 @@
 <translation id="2677748264148917807">Үлдээх</translation>
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">Хамгийн оновтой тохирол</translation>
-<translation id="2688738823074468716">Нууц үг удирдах товч, Chrome-н тохиргоонд нууц үгийг удирдахын тулд Enter дарна уу</translation>
 <translation id="2688969097326701645">Тийм, үргэлжлүүлье</translation>
 <translation id="2691924980723297736">Аюулгүй байдлын анхааруулга</translation>
 <translation id="2699302886720511147">Зөвшөөрсөн карт</translation>
@@ -749,7 +744,6 @@
 <translation id="4088981014127559358">Хуудасны нүүрэн тал дээр Y тэнхлэгийн дагуу зураг шилжүүлэх</translation>
 <translation id="4098354747657067197">Сэжиг бүхий сайт байна</translation>
 <translation id="4101413244023615925">Текст болон график</translation>
-<translation id="4103147722950692857"><ph name="MANAGE_PASSWORDS_FOCUSED_FRIENDLY_MATCH_TEXT" />, Chrome-н тохиргоон дээр нууц үг удирдахын тулд Таб дээр, дараа нь Enter дарна уу</translation>
 <translation id="4103249731201008433">Төхөөрөмжийн сериал дугаар буруу байна</translation>
 <translation id="4103763322291513355">Системийн админаас тодорхойлсон хар жагсаалтанд орсон холбоосууд болон бусад бодлогуудыг харахаар бол  &lt;strong&gt; chrome://policy&lt;/strong&gt; руу орно уу.</translation>
 <translation id="4110652170750985508">Төлбөрөө хянах</translation>
@@ -920,7 +914,6 @@
 <translation id="4738601419177586157"><ph name="TEXT" />-н хайлтын зөвлөмж</translation>
 <translation id="4742407542027196863">Нууц үгийг удирдах...</translation>
 <translation id="4744603770635761495">Гүйцэтгэх боломжтой зам</translation>
-<translation id="4750085040310563588"><ph name="UPDATE_CHROME_FOCUSED_FRIENDLY_MATCH_TEXT" />, Chrome-г шинэчлэхийн тулд Таб дээр, дараа нь Enter дарна уу</translation>
 <translation id="4750917950439032686">Таны мэдээллийг (нууц үг, кредит картын дугаар зэрэг) энэ сайтад нууцлалтайгаар илгээнэ.</translation>
 <translation id="4756388243121344051">&amp; Түүх</translation>
 <translation id="4758311279753947758">Харилцагчийн мэдээлэл нэмэх</translation>
@@ -1039,7 +1032,6 @@
 <translation id="5215116848420601511">Google Pay-г ашиглаж буй төлбөрийн хэрэгсэл болон хаяг</translation>
 <translation id="5215363486134917902">Folio-Sp</translation>
 <translation id="5222812217790122047">Имэйл шаардлагатай</translation>
-<translation id="5222994811833658317">Өгөгдөл арилгах товч, Chrome-н хөтчийн түүхийн өгөгдлийг арилгахын тулд Enter дарна уу</translation>
 <translation id="5230733896359313003">Хүргэлтийн хаяг</translation>
 <translation id="5230815978613972521">B8</translation>
 <translation id="5233045608889518621">12x19</translation>
@@ -1305,7 +1297,6 @@
 <translation id="6302269476990306341">Chrome-н Google Туслахыг зогсоож байна</translation>
 <translation id="6305205051461490394"><ph name="URL" />-г ашиглах боломжгүй байна.</translation>
 <translation id="6312113039770857350">Вэб хуудас боломжгүй байна</translation>
-<translation id="6315224405718249523">Хуудас орчуулах товч, энэ хуудсыг орчуулахын тулд Enter дарна уу</translation>
 <translation id="6321917430147971392">DNS тохиргоогоо шалгана уу</translation>
 <translation id="6322182122604171028">Windows Hello-г ашиглаж чадсангүй</translation>
 <translation id="6328639280570009161">Сүлжээний таамаглалыг идэвхгүй болгох гээд үзээрэй</translation>
@@ -1360,7 +1351,6 @@
 <translation id="6547208576736763147">Зүүн ирмэг дагуу хоёр нүх цоолох</translation>
 <translation id="6554795675067793129">Таны бүртгэлийг <ph name="ENROLLMENT_DOMAIN" />-с удирдаж байна.</translation>
 <translation id="6556866813142980365">Дахин хийх</translation>
-<translation id="6566840325635607048">Кредит карт шинэчлэх товч, Chrome-н тохиргоонд кредит картын автоматаар бөглөх хэсгийн мэдээллийг шинэчлэхийн тулд Enter дарна уу</translation>
 <translation id="6569060085658103619">Та өргөтгөлийн хуудсыг харж байна.</translation>
 <translation id="6573200754375280815">Баруун ирмэг дагуу хоёр нүх цоолох</translation>
 <translation id="6578796323535178455">C2 (Дугтуй)</translation>
@@ -1601,7 +1591,6 @@
 <translation id="7549584377607005141">Энэ вэб хуудас нь зохих хэмжээнд гарахын тулд таны өмнө оруулсан мэдээллийг шаардаж байна. Та энэ өгөгдлийг дахин илгээж болно, гэхдээ үүнийг хийснээрээ та энэ хуудасны өмнө нь хийж байсан үйлдлийг давтах хэрэгтэй болно.</translation>
 <translation id="7550637293666041147">Таны төхөөрөмжийн хэрэглэгчийн нэр болон Chrome хэрэглэгчийн нэр</translation>
 <translation id="7552846755917812628">Дараах зөвлөгөөг дагана уу:</translation>
-<translation id="7553823544414963579"><ph name="CLEAR_BROWSING_DATA_FOCUSED_FRIENDLY_MATCH_TEXT" />, Chrome-н хөтчийн түүхийн өгөгдлийг арилгахын тулд Таб дээр, дараа нь Enter дарна уу</translation>
 <translation id="7554791636758816595">Шинэ таб</translation>
 <translation id="7564049878696755256">Та <ph name="ORG_NAME" /> бүртгэлдээ хандах эрх эсвэл нууц үгээ бусдад алдаж болзошгүй. Chrome-с таныг нууц үгээ өөрчлөхийг зөвлөж байна.</translation>
 <translation id="7567204685887185387">Энэ сервер нь <ph name="DOMAIN" />-аа баталж чадсангүй;  хамгаалалтын сертификат хууль бусаар боловсруулагдсан байж болзошгүй. Энэ нь тохиргоо буруу хийгдсэнээс эсвэл халдагч таны холболтон саад учруулж байж болох юм.</translation>
@@ -1768,7 +1757,6 @@
 <translation id="8225771182978767009">Энэ компьютерийг тохиуулсан хүн энэ сайтыг блоклосон байна.</translation>
 <translation id="8228419419708659934">Хоёр хуудсаар харах</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
-<translation id="8230646577665563479"><ph name="TRANSLATE_FOCUSED_FRIENDLY_MATCH_TEXT" />, энэ хуудсыг орчуулахын тулд Таб дээр, дараа нь Enter дарна уу</translation>
 <translation id="8232343881378637145">Платформын температур</translation>
 <translation id="8238581221633243064">Хуудсыг шинэ Нууцлалтай цонхонд нээх</translation>
 <translation id="8241707690549784388">Таны хайж буй хуудас нь таны оруулсан мэдээллийг ашиглаж байна.  Энэ хуудас руу буцсанаар та хийсэн үйлдлээ дахин давтах хэрэгтэй болж магадгүй. Та үргэлжлүүлэхийг хүсч байна уу?</translation>
@@ -1836,6 +1824,7 @@
 <translation id="8498891568109133222"><ph name="HOST_NAME" />-д холбогдоход хэтэрхий удаж байна.</translation>
 <translation id="8503559462189395349">Chrome-н нууц үг</translation>
 <translation id="8503813439785031346">Хэрэглэгчийн нэр</translation>
+<translation id="8507227106804027148">Тушаалын мөр</translation>
 <translation id="8508648098325802031">Хайлтын дүрс тэмдэг</translation>
 <translation id="8522552481199248698">Chrome танд Google Бүртгэлээ хамгаалах болон нууц үгээ солиход туслах боломжтой.</translation>
 <translation id="8530813470445476232">Chrome тохиргооноос хөтчийн түүх, күүки, завсрын санах ой болон бусад зүйлийг устгах</translation>

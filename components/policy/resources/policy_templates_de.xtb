@@ -83,26 +83,6 @@ Wenn die Richtlinie nicht festgelegt ist, gilt die Standardeinstellung: Vom Unte
 <translation id="1095209545735032039">Serial API auf diesen Websites blockieren</translation>
 <translation id="1096105751829466145">Standardsuchmaschine</translation>
 <translation id="1099282607296956954">Website-Isolierung für jede Website aktivieren</translation>
-<translation id="1100570158310952027">Mit dieser Richtlinie wird eine Liste von Quellen (URLs) oder Hostnamenmustern
-      wie "*.example.com" festgelegt, für die keine Sicherheitsbeschränkungen für
-      unsichere Quellen gelten.
-
-      Auf diese Weise können Organisationen Quellen für ältere Anwendungen,
-      die kein TLS bereitstellen können, auf die weiße Liste setzen oder einen
-      Testserver für die interne Webentwicklung einrichten, damit die Entwickler
-      Funktionen testen können, die einen sicheren Kontext erfordern, ohne TLS
-      auf dem Testserver bereitstellen zu müssen. Außerdem wird mit dieser Richtlinie
-      verhindert, dass die Quelle in der Omnibox als "Nicht sicher" gekennzeichnet wird.
-
-      Das Festlegen einer Liste von URLs in dieser Richtlinie hat den gleichen Effekt wie
-      das Festlegen des Befehlszeilen-Flags "--unsafely-treat-insecure-origin-as-secure"
-      für eine durch Kommas getrennte Liste mit denselben URLs. Wenn diese Richtlinie
-      konfiguriert ist, wird das Befehlszeilen-Flag überschrieben.
-
-      Mit dieser Richtlinie wird "UnsafelyTreatInsecureOriginAsSecure" überschrieben, sofern vorhanden.
-
-      Weitere Informationen zu sicheren Kontexten finden Sie unter
-      https://www.w3.org/TR/secure-contexts/.</translation>
 <translation id="1107764601871839136">Gibt die Lebensdauer des GPO-Cache (Group Policy Object) in Stunden an. Anstatt bei jedem Richtlinienabruf die GPOs herunterzuladen, kann das System die im Cache gespeicherten GPOs nochmals verwenden, solange die Version dieselbe ist. Mit dieser Richtlinie wird die maximale Dauer festgelegt, während der im Cache gespeicherte GPOs wiederverwendet werden können, bevor sie nochmals heruntergeladen werden. Durch einen Neustart oder eine Abmeldung wird der Cache geleert.
 
       Wird diese Richtlinie nicht konfiguriert, können im Cache gespeicherte GPOs für maximal 25 Stunden wiederverwendet werden.
@@ -236,13 +216,6 @@ Bei verwalteten Geräten sind standardmäßig keine Modi für das schnelle Entsp
           Wenn diese Richtlinie nicht konfiguriert ist, kann der Nutzer jede Erweiterung in <ph name="PRODUCT_NAME" /> installieren.</translation>
 <translation id="1393485621820363363">Aktivierte, an Geräte gebundene Unternehmensdrucker</translation>
 <translation id="1397855852561539316">Vorschlags-URL für die Standardsuchmaschine</translation>
-<translation id="1404043648050567997">Der Safe Browsing-Dienst zeigt eine Seite mit einer Warnmeldung an, wenn Nutzer Websites aufrufen, die als potenziell schädlich eingestuft sind. Wenn diese Einstellung aktiviert ist, können Nutzer die schädliche Website nicht von der Hinweisseite aus besuchen.
-
-      Durch diese Richtlinie werden Nutzer nur bei Safe Browsing-Warnungen (etwa wegen Malware oder Phishing) daran gehindert weiterzugehen, nicht jedoch bei Problemen mit SSL-Zertifikaten, z. B. wenn diese ungültig oder abgelaufen sind.
-
-      Ist die Einstellung deaktiviert oder nicht konfiguriert, können Nutzer die gekennzeichnete Website aufrufen, nachdem sie den Warnhinweis gesehen haben.
-
-      Weitere Informationen zu Safe Browsing finden Sie unter https://developers.google.com/safe-browsing.</translation>
 <translation id="1413936351612032792">Informationen zur Nutzung von Linux-Apps senden</translation>
 <translation id="142346659686073702">Nicht verknüpften Nutzern die Verwendung von Crostini gestatten</translation>
 <translation id="1425551776320718592">Nutzer des Geräts daran hindern, ADB-Sideloading zu verwenden, jedoch kein Powerwash für das Gerät erzwingen, was zu einem unklaren Sicherheitszustand des Geräts führen kann</translation>
@@ -392,7 +365,7 @@ Wenn die Richtlinie nicht festgelegt wird, wird angenommen, dass <ph name="PRINT
 
 Wenn die Richtlinie auf "True" gesetzt oder nicht konfiguriert ist, können Nutzer eigene Drucker hinzufügen, konfigurieren und mit ihnen drucken.
 
-Ist die Richtlinie auf "False" gesetzt, können Nutzer keine eigenen Drucker hinzufügen, konfigurieren oder mit ihnen drucken. Sie können auch keine zuvor konfigurierten Drucker verwenden.
+Ist die Richtlinie auf "False" gesetzt, können Nutzer keine eigenen Drucker hinzufügen oder konfigurieren. Sie können auch keine zuvor konfigurierten Drucker verwenden.
       </translation>
 <translation id="1615221548356595305">Zusammenführen von HTTP/2-Verbindungen für diese Hosts zulassen, auch wenn Clientzertifikate verwendet werden</translation>
 <translation id="1615855314789673708">Stellt eine Wilco DTC-Konfiguration (Diagnostics and Telemetry Controller) bereit.
@@ -446,15 +419,6 @@ Ist die Richtlinie auf "False" gesetzt, können Nutzer keine eigenen Drucker hin
 
       Wird sie auf "true" gesetzt oder nicht konfiguriert, werden die Mediensteuerelemente auf dem Sperrbildschirm angezeigt, wenn Nutzer das Gerät während der Medienwiedergabe sperren.
       </translation>
-<translation id="1696540175770069132">Hiermit wird ermittelt, ob <ph name="PRODUCT_NAME" /> einen Download ohne eine Überprüfung durch Safe Browsing erlauben darf, wenn die Quelle vertrauenswürdig ist.
-
-      Wird die Richtlinie auf "False" gesetzt, werden die heruntergeladenen Dateien nicht von Safe Browsing analysiert, wenn sie von einer vertrauenswürdigen Quelle stammen.
-
-      Wird diese Richtlinie nicht konfiguriert oder auf "True" gesetzt, werden die heruntergeladenen Dateien von Safe Browsing analysiert, auch wenn sie von einer vertrauenswürdigen Quelle stammen.
-
-      Diese Einschränkungen gelten für Downloads, die durch Websiteinhalte ausgelöst werden, sowie für die Kontextmenüoption "Link herunterladen". Die Einschränkungen gelten aber weder für das Speichern oder Herunterladen der gerade angezeigten Seite noch für die Speicherung als PDF-Datei in den Druckoptionen.
-
-      Diese Richtlinie steht nur bei Windows-Instanzen zur Verfügung, die Teil einer <ph name="MS_AD_NAME" />-Domain sind, oder bei Windows 10 Pro- oder Enterprise-Instanzen, die für die Geräteverwaltung angemeldet sind, sowie macOS-Instanzen, die über die Mobilgeräteverwaltung verwaltet werden oder per MCX mit einer Domain verbunden sind.</translation>
 <translation id="1700811900332333712">Powerwash-Anfrage durch Gerät zulassen</translation>
 <translation id="1708496595873025510">Beschränkung für Abruf des Varianten-Seeds festlegen</translation>
 <translation id="171511968762040550">Wenn diese Richtlinie auf "True" gesetzt oder nicht konfiguriert ist, können Nutzer Lesezeichen hinzufügen, entfernen oder ändern.
@@ -537,7 +501,6 @@ Wenn diese Richtlinie verwendet wird, werden dem Nutzer alle Drucker mit Ausnahm
 
       Wenn diese Richtlinie nicht konfiguriert ist, gibt es keine Einschränkungen im Hinblick auf die Nutzer, die sich anmelden dürfen. Zum Erstellen neuer Nutzer muss aber weiterhin die Richtlinie <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" /> entsprechend konfiguriert werden.</translation>
 <translation id="186719019195685253">Auszuführende Aktion beim Erreichen der Leerlaufverzögerung während des Wechselstrombetriebs</translation>
-<translation id="187819629719252111">Ermöglicht den Zugriff auf lokale Dateien auf dem Computer, indem <ph name="PRODUCT_NAME" /> gestattet wird, Dialogfelder zur Dateiauswahl anzuzeigen. Wenn Sie diese Einstellung aktivieren, können Nutzer Dateiauswahl-Dialogfelder wie gewohnt öffnen. Ist diese Einstellung deaktiviert, wird bei jeder Nutzeraktion, bei der ein Dialogfeld zur Dateiauswahl angezeigt werden würde, etwa beim Importieren von Lesezeichen, beim Hochladen von Dateien oder beim Speichern von Links, stattdessen eine Meldung angezeigt. Außerdem wird davon ausgegangen, dass der Nutzer im Dialogfeld zur Dateiauswahl auf "Abbrechen" geklickt hat. Wenn diese Einstellung nicht konfiguriert ist, so können Nutzer Dateiauswahl-Dialogfelder wie gewohnt öffnen.</translation>
 <translation id="1885782360784839335">Einblendung von Werbung auf dem gesamten Tab aktivieren</translation>
 <translation id="1888871729456797026">Das Registrierungstoken der Cloud-Richtlinie auf dem Desktop</translation>
 <translation id="1894790493260633497">Standardmäßig Druckmodus mit Hintergrundgrafiken aktivieren</translation>
@@ -922,11 +885,6 @@ Wird die Richtlinie auf "False" gesetzt ist, wird der Datenschutzbildschirm imme
 Ist diese Richtlinie konfiguriert, können Nutzer den Wert nicht überschreiben.
 
 Ist sie nicht konfiguriert, ist der Datenschutzbildschirm anfangs deaktiviert, Nutzer können ihn jedoch steuern.</translation>
-<translation id="2418507228189425036">Deaktiviert das Speichern des Browserverlaufs in <ph name="PRODUCT_NAME" /> und verhindert, dass Nutzer diese Einstellung ändern. 
-
-      Wenn diese Einstellung aktiviert ist, wird der Browserverlauf nicht gespeichert. Mit dieser Einstellung wird auch die Tab-Synchronisierung deaktiviert.
-
-      Ist diese Einstellung deaktiviert oder nicht konfiguriert, wird der Browserverlauf gespeichert.</translation>
 <translation id="2423038190900972331">Mit dieser Richtlinie legen Sie fest, wie Daten, die hochgeladen, heruntergeladen oder aus der Zwischenablage bzw. per Drag-and-drop eingefügt werden, in <ph name="PRODUCT_NAME" /> auf Verstöße gegen die Richtlinie zum Schutz von sensiblen Daten geprüft werden.
 
       Wenn diese Richtlinie auf "Keine" gesetzt ist, wird <ph name="PRODUCT_NAME" /> keine Inhalte auf Verstöße gegen die Richtlinie zum Schutz von sensiblen Daten prüfen.
@@ -954,6 +912,13 @@ Ist sie nicht konfiguriert, ist der Datenschutzbildschirm anfangs deaktiviert, N
 
       Wenn diese Richtlinie auf "false" eingestellt, können Nutzer die Funktion "Netzwerkfreigaben" nicht verwenden.</translation>
 <translation id="2435052056904485763">Zulassungsliste für Kerberos-Bevollmächtigungs-Server</translation>
+<translation id="2439793457499023062">Wenn die Richtlinie nicht konfiguriert ist und das Chrome Cleanup Tool unerwünschte Software findet, kann es Metadaten betreffend den Scan an Google senden. Dies geschieht in Übereinstimmung mit der über SafeBrowsingExtendedReportingEnabled festgelegten Richtlinie. Der Nutzer wird dann vom Chrome Cleanup Tool gefragt, ob die unerwünschte Software gelöscht werden soll. Er kann die Ergebnisse der Bereinigung mit Google teilen, damit unerwünschte Software zukünftig besser erkannt wird. Diese Ergebnisse enthalten Dateimetadaten, automatisch installierte Erweiterungen und Registrierungsschlüssel, wie es im Whitepaper zum Datenschutz bei Chrome beschrieben ist.
+
+      Falls die Richtlinie deaktiviert ist und das Chrome Cleanup Tool unerwünschte Software findet, werden keine Metadaten betreffend den Scan an Google gesendet. Über SafeBrowsingExtendedReportingEnabled festgelegte Richtlinien werden überschrieben. Der Nutzer wird dann vom Chrome Cleanup Tool gefragt, ob die unerwünschte Software gelöscht werden soll.  Ergebnisse der Bereinigung werden nicht an Google gesendet und der Nutzer hat auch keine Möglichkeit dazu.
+
+      Wenn die Richtlinie aktiviert ist und das Chrome Cleanup Tool unerwünschte Software findet, kann es Metadaten betreffend den Scan an Google senden. Dies geschieht in Übereinstimmung mit der über SafeBrowsingExtendedReportingEnabled festgelegten Richtlinie. Der Nutzer wird dann vom Chrome Cleanup Tool gefragt, ob die unerwünschte Software gelöscht werden soll.  Ergebnisse der Bereinigung werden an Google gesendet und der Nutzer hat keine Möglichkeit, dies zu verhindern.
+
+      Unter <ph name="MS_WIN_NAME" /> steht diese Funktion nur bei Instanzen zur Verfügung, die Teil einer <ph name="MS_AD_NAME" />-Domain sind, auf der Windows 10 Pro läuft, oder die von der Chrome-Verwaltung über die Cloud verwaltet werden.</translation>
 <translation id="2440773021691931148">Hiermit können Hardwarestatistiken und Kennzeichnungen im Zusammenhang mit der Stromversorgung gemeldet werden.
 
       Wird die Richtlinie auf "false" gesetzt oder nicht konfiguriert, werden keine Statistiken gemeldet.
@@ -997,12 +962,6 @@ Ist sie nicht konfiguriert, ist der Datenschutzbildschirm anfangs deaktiviert, N
       Wird sie nicht konfiguriert, ist die Funktion "Zum Anrufen klicken" standardmäßig aktiviert.</translation>
 <translation id="2482676533225429905">Natives Messaging</translation>
 <translation id="2483146640187052324">Netzwerkaktionen über alle Netzwerkverbindungen vervollständigen</translation>
-<translation id="2484208301968418871">Mit dieser Richtlinie wird die Anwendung des URL-Filters "SafeSites" konfiguriert.
-      Der Filter greift auf die Google Safe Search API zurück, um URLs als pornografisch oder nicht pornografisch einzuordnen.
-
-      Wenn diese Richtlinie nicht konfiguriert oder auf "Websites mit Inhalten nur für Erwachsene nicht filtern" festgelegt ist, werden Websites nicht gefiltert.
-
-      Falls die Richtlinie auf "Websites auf oberster Ebene mit Inhalten nur für Erwachsene filtern" gesetzt ist, werden als pornografisch eingestufte Websites gefiltert.</translation>
 <translation id="2498238926436517902">Ablage immer automatisch ausblenden</translation>
 <translation id="2502467045153796624">Verhalten zum Versionsdowngrade</translation>
 <translation id="250670737672448119">Mit dieser Richtlinie wird die Bedienungshilfe "Textcursor hervorheben" aktiviert.
@@ -1605,13 +1564,6 @@ Wird die Richtlinie auf "False" gesetzt , verwendet <ph name="PRODUCT_NAME" /> k
 <translation id="3417418267404583991">Wenn diese Richtlinie auf "true" gesetzt oder nicht konfiguriert ist, sind Gastanmeldungen in <ph name="PRODUCT_OS_NAME" /> möglich. Eine Anmeldung als Gast erfolgt anonym und erfordert keine Passworteingabe.
 
       Ist die Richtlinie auf "false" eingestellt, können in <ph name="PRODUCT_OS_NAME" /> keine Gastsitzungen gestartet werden.</translation>
-<translation id="3418871497193485241">Erzwingt einen minimalen eingeschränkten Modus auf YouTube und verhindert, dass Nutzer einen weniger eingeschränkten Modus auswählen.
-
-Wenn diese Einstellung auf "Strikt" festgelegt wird, ist der strikte eingeschränkte Modus auf YouTube immer aktiv.
-
-Wird diese Einstellung auf "Moderat" festgelegt, kann der Nutzer auf YouTube nur den moderaten eingeschränkten Modus und den strikten eingeschränkten Modus auswählen, den eingeschränkten Modus aber nicht deaktivieren.
-
-Wenn diese Einstellung auf "Aus" oder kein Wert festgelegt wird, wird der eingeschränkte Modus auf YouTube nicht durch <ph name="PRODUCT_NAME" /> erzwungen. Der eingeschränkte Modus wird jedoch möglicherweise trotzdem durch externe Richtlinien wie YouTube-Richtlinien erzwungen.</translation>
 <translation id="3420141485959154417">Wenn "<ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" />" aktiviert ist, gibt "<ph name="DEFAULT_SEARCH_PROVIDER_IMAGE_URL_POLICY_NAME" />" die URL der Suchmaschine an, die für die Bildersuche verwendet wird. (Ist "<ph name="DEFAULT_SEARCH_PROVIDER_IMAGE_URL_POST_PARMS_POLICY_NAME" />" konfiguriert, wird bei Bildsuchanfragen stattdessen die POST-Methode verwendet.)
 
       Wenn "<ph name="DEFAULT_SEARCH_PROVIDER_IMAGE_URL_POLICY_NAME" />" nicht konfiguriert ist, wird keine Bildersuche verwendet.</translation>
@@ -1690,14 +1642,6 @@ Wenn diese Einstellung auf "Aus" oder kein Wert festgelegt wird, wird der einges
        Der Wert "<ph name="ALL_EXTENSIONS" />" in der Sperrliste gibt an, dass alle Erweiterungen gesperrt sind und Nutzer nur die in der Zulassungsliste angegebenen Erweiterungen installieren können.
 
        Standardmäßig können alle Erweiterungen installiert werden. Wurden jedoch alle Erweiterungen durch eine Richtlinie auf die Sperrliste gesetzt, kann diese Richtlinie mithilfe der Zulassungsliste außer Kraft gesetzt werden.</translation>
-<translation id="3500732098526756068">Damit können Sie das Auslösen der Passwortschutzwarnung steuern. Durch diese Meldung werden Nutzer gewarnt, wenn sie ihr geschütztes Passwort auf potenziell verdächtigen Websites wiederverwenden.
-
-      Anhand der Richtlinien "PasswordProtectionLoginURLs" und "PasswordProtectionChangePasswordURL" können Sie konfigurieren, welches Passwort geschützt werden soll.
-
-      Wenn die Richtlinie auf "PasswordProtectionWarningOff" festgelegt ist, wird keine Passwortschutzwarnung angezeigt.
-      Wenn die Richtlinie auf "PasswordProtectionWarningOnPasswordReuse" festgelegt ist, wird die Passwortschutzwarnung angezeigt, wenn der Nutzer sein geschütztes Passwort auf einer Website wiederverwendet, die nicht auf der weißen Liste steht.
-      Wenn die Richtlinie auf "PasswordProtectionWarningOnPhishingReuse" festgelegt ist, wird die Passwortschutzwarnung angezeigt, wenn der Nutzer sein geschütztes Passwort auf einer Phishingwebsite wiederverwendet.
-      Wenn die Richtlinie nicht konfiguriert ist, werden ausschließlich Google-Passwörter geschützt. Der Nutzer kann diese Einstellung jedoch ändern.</translation>
 <translation id="3502555714327823858">Alle Duplexmodi zulassen</translation>
 <translation id="350443680860256679">ARC konfigurieren</translation>
 <translation id="350797926066071931">Übersetzung aktivieren</translation>
@@ -1741,6 +1685,13 @@ Wenn diese Einstellung auf "Aus" oder kein Wert festgelegt wird, wird der einges
 <translation id="355118380775352753">Websites, die in einem alternativen Browser geöffnet werden sollen</translation>
 <translation id="3554498762428140109">Native Fenster-Okklusion aktivieren</translation>
 <translation id="3554984410014457319">Google Assistant erlauben, bei Gesprächen zuzuhören und so zu prüfen, ob die Wortgruppe für die Sprachaktivierung genannt wird</translation>
+<translation id="3562741878192828370">Liste von Dateitypen, die nach dem Download automatisch geöffnet werden sollen. Das vorangestellte Trennzeichen sollte beim Aufführen der Dateitypen nicht mit angegeben werden. Geben Sie also beispielsweise "txt" und nicht ".txt" an.
+
+      Dateitypen, die automatisch geöffnet werden sollen, unterliegen dennoch den aktivierten Safe Browsing-Überprüfungen und werden nicht geöffnet, falls sie diese nicht bestehen.
+
+      Wenn diese Richtlinie nicht konfiguriert ist, werden nach dem Download nur die Dateitypen automatisch geöffnet, die der Nutzer bereits angegeben hat.
+
+      Unter <ph name="MS_WIN_NAME" /> steht diese Funktion nur bei Instanzen zur Verfügung, die Teil einer <ph name="MS_AD_NAME" />-Domain sind, auf der Windows 10 Pro läuft, oder die von der Chrome-Verwaltung über die Cloud verwaltet werden. Unter <ph name="MAC_OS_NAME" /> steht diese Funktion nur bei Instanzen zur Verfügung, die über die Mobilgeräteverwaltung verwaltet werden oder per MCX mit einer Domain verbunden sind.</translation>
 <translation id="356579196325389849">Nutzer dürfen die Chrome OS-Release-Version konfigurieren</translation>
 <translation id="3575011234198230041">HTTP-Authentifizierung</translation>
 <translation id="3577251398714997599">Einstellungen für Werbung für Websites mit aufdringlichen Werbeanzeigen</translation>
@@ -2027,13 +1978,6 @@ Wird die Richtlinie auf "false" gesetzt oder nicht konfiguriert, wird kein Zerti
 <translation id="398884292557092447">Wenn die Richtlinie auf "True" gesetzt oder nicht konfiguriert ist, können Nutzer die Vorschläge zum automatischen Ausfüllen für Kreditkarten in der UI steuern.
 
       Ist sie auf "False" gesetzt, schlägt die Funktion "Automatisches Ausfüllen" keine Kreditkartendaten vor und füllt entsprechende Felder auch nicht automatisch aus. Außerdem werden keine zusätzlichen Kreditkartendaten gespeichert, die Nutzer beim Surfen im Internet eventuell senden.</translation>
-<translation id="3992309308803906690">Hiermit wird die Liste der URLs für die Unternehmensanmeldung konfiguriert (nur HTTP- und HTTPS-Schemas). Der Passwortschutzdienst erfasst auf diesen URLs den Salted-Hash-Wert von Passwörtern und verwendet ihn, um zu prüfen, ob Passwörter wiederverwendet werden.
-      Ihre Anmeldeseiten müssen den Richtlinien unter https://www.chromium.org/developers/design-documents/create-amazing-password-forms entsprechen, damit Salted-Hash-Werte von Passwörtern in <ph name="PRODUCT_NAME" /> richtig erfasst werden können.
-
-      Wenn diese Einstellung aktiviert ist, erfasst der Passwortschutzdienst den Salted-Hash-Wert von Passwörtern auf diesen URLs und verwendet ihn, um zu prüfen, ob Passwörter wiederverwendet werden.
-      Ist sie deaktiviert oder nicht konfiguriert, erfasst der Passwortschutzdienst die Salted-Hash-Werte von Passwörtern nur unter https://accounts.google.com.
-
-      Diese Richtlinie ist nur bei Windows-Instanzen verfügbar, die mit einer <ph name="MS_AD_NAME" />-Domain verbunden sind, oder bei Windows 10 Pro- oder Enterprise-Instanzen, die für die Geräteverwaltung angemeldet sind, sowie macOS-Instanzen, die über die Mobilgeräteverwaltung verwaltet oder per MCX mit einer Domain verbunden sind.</translation>
 <translation id="3993187551086357615">Uploads und Downloads hinauszögern, bis Scanergebnisse vorliegen</translation>
 <translation id="3997519162482760140">URLs, denen auf SAML-Log-in-Seiten Zugriff auf Videoaufnahmegeräte gestattet wird</translation>
 <translation id="4001275826058808087">IT-Administratoren von Unternehmensgeräten können hiermit festlegen, ob Nutzer Angebote über die Chrome OS-Registrierung einlösen können.
@@ -2428,13 +2372,6 @@ Diese Richtlinie hat keine Auswirkungen darauf, ob die lokalen Nutzerdaten auf d
 <translation id="4649395978608361979">Lokale Druckziele</translation>
 <translation id="4650759511838826572">URL-Protokollschemas deaktivieren</translation>
 <translation id="465099050592230505">Unternehmens-Web-Store-URL (veraltet)</translation>
-<translation id="4655140492481307570">Hiermit wird die URL zur Passwortänderung konfiguriert (nur HTTP- und HTTPS-Schemas). Nutzer, in deren Browser eine Warnung angezeigt wurde, werden vom Passwortschutzdienst an diese URL weitergeleitet, damit sie ihr Passwort ändern können.
-      Die Seite zum Ändern des Passworts muss den Richtlinien unter https://www.chromium.org/developers/design-documents/create-amazing-password-forms entsprechen, damit der Salted-Hash-Wert des neuen Passworts in <ph name="PRODUCT_NAME" /> richtig erfasst werden kann.
-
-      Wenn diese Einstellung aktiviert ist, leitet der Passwortschutzdienst Nutzer, in deren Browser eine Warnung angezeigt wurde, an diese URL weiter, damit sie ihr Passwort ändern können.
-      Ist sie deaktiviert oder nicht konfiguriert, werden Nutzer an https://myaccount.google.com weitergeleitet, damit sie ihr Passwort ändern können.
-
-      Diese Richtlinie steht nur bei Windows-Instanzen zur Verfügung, die Teil einer <ph name="MS_AD_NAME" />-Domain sind, oder bei Windows 10 Pro- oder Enterprise-Instanzen, die für die Geräteverwaltung angemeldet sind, sowie macOS-Instanzen, die über die Mobilgeräteverwaltung verwaltet werden oder per MCX mit einer Domain verbunden sind.</translation>
 <translation id="4661889655253181651">Unter "Inhaltseinstellungen" können Sie angeben, wie Inhalte bestimmter Typen (z. B. Cookies, Bilder oder JavaScript) verarbeitet werden.</translation>
 <translation id="4665897631924472251">Verwaltungseinstellungen für Erweiterungen</translation>
 <translation id="4666930704271463612">Gibt die Untergruppe der Druckserver an, von denen Serverdrucker abgefragt werden.
@@ -2460,12 +2397,6 @@ Diese Richtlinie hat keine Auswirkungen darauf, ob die lokalen Nutzerdaten auf d
 
       Diese Richtlinie wurde eingestellt. Bitte verwenden Sie stattdessen "<ph name="NOTE_TAKING_APPS_LOCK_SCREEN_ALLOWLIST" />".</translation>
 <translation id="4670865688564083639">Minimum:</translation>
-<translation id="4671708336564240458">Hiermit kann festgelegt werden, ob von Websites mit irreführenden Inhalten neue Fenster oder Tabs geöffnet werden können.
-
-      Wenn diese Richtlinie auf "True" gesetzt wird, können von Websites mit irreführenden Inhalten keine neuen Fenster oder Tabs geöffnet werden.
-      Dies ist jedoch nicht der Fall, wenn die Richtlinie SafeBrowsingEnabled auf "False" gesetzt ist.
-      Wenn diese Richtlinie auf "False" gesetzt wird, können von Websites mit irreführenden Inhalten neue Fenster oder Tabs geöffnet werden.
-      Wenn diese Richtlinie nicht definiert ist, wird als Einstellung "True" verwendet.</translation>
 <translation id="467236746355332046">Unterstützte Funktionen:</translation>
 <translation id="4674167212832291997">Passt die Liste mit URL-Mustern an, die immer von <ph name="PRODUCT_FRAME_NAME" /> gerendert werden müssen.
 
@@ -2805,11 +2736,6 @@ Diese Richtlinie hat keine Auswirkungen darauf, ob die lokalen Nutzerdaten auf d
 <translation id="5182483318861266793">Ablage auf der rechten Seite des Bildschirms anzeigen</translation>
 <translation id="519247340330463721">Hiermit werden die Safe Browsing-Richtlinien konfiguriert.</translation>
 <translation id="5196520640744454600">Einfingerbedienung auf dem Anmeldebildschirm aktivieren</translation>
-<translation id="5196805177499964601">Entwicklermodus blockieren:
-
-      Wenn für diese Richtlinie "True" festgelegt ist, verhindert <ph name="PRODUCT_OS_NAME" />, dass das Gerät im Entwicklermodus gestartet wird. Das System verweigert den Start und es wird ein Fehlerbildschirm angezeigt, wenn der Schalter für Entwickler aktiviert wird.
-
-      Wird für diese Richtlinie "False" oder gar nichts festgelegt, bleibt der Entwicklermodus für das Gerät verfügbar.</translation>
 <translation id="5212118847531454979">Mit dieser Richtlinie kann der Zeitraum in Millisekunden festgelegt werden, in dem Nutzer eine Benachrichtigung erhalten, dass <ph name="PRODUCT_NAME" /> oder ein Gerät mit <ph name="PRODUCT_OS_NAME" /> für ein Update neu gestartet werden muss.
 
       In diesem Zeitraum werden Nutzer wiederholt darüber informiert, dass ein Update erforderlich ist. Auf <ph name="PRODUCT_OS_NAME" />-Geräten erscheint entsprechend der Richtlinie "<ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />" eine Neustartbenachrichtigung in der Taskleiste. In <ph name="PRODUCT_NAME" />-Browsern ändert sich das App-Menü, sobald ein Drittel des Benachrichtigungszeitraums abgelaufen ist, um zu zeigen, dass ein Neustart nötig ist. Die Farbe dieser Benachrichtigung ändert sich, sobald zwei Drittel des Benachrichtigungszeitraums vergangen sind. Wenn der ganze Zeitraum abgelaufen ist, ändert sich die Farbe erneut. Für die zusätzlichen Benachrichtigungen, die über die Richtlinie "<ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />" aktiviert werden, gilt derselbe Zeitplan.
@@ -3158,7 +3084,7 @@ Wenn die in der Richtlinie <ph name="DEVICE_MINIMUM_VERSION_POLICY_NAME" /> ange
 
 Wenn die Richtlinie auf "True" gesetzt oder nicht konfiguriert ist, können Nutzer eigene native Drucker hinzufügen, konfigurieren und mit ihnen drucken.
 
-      Wenn die Richtlinie auf "False" gesetzt ist, können Nutzer keine eigenen Drucker hinzufügen, konfigurieren oder mit ihnen drucken. Sie können auch keine zuvor konfigurierten nativen Drucker verwenden.
+      Wenn die Richtlinie auf "False" gesetzt ist, können Nutzer keine eigenen nativen Drucker hinzufügen oder konfigurieren. Sie können auch keine zuvor konfigurierten nativen Drucker verwenden.
 
       Diese Richtlinie wurde eingestellt. Bitte verwenden Sie stattdessen die Richtlinie "<ph name="USER_PRINTERS_ALLOWED" />".
       </translation>
@@ -3178,16 +3104,6 @@ Wenn die Richtlinie auf "True" gesetzt oder nicht konfiguriert ist, können Nutz
           Diese Richtlinie ist nur dann wirksam, wenn <ph name="POWER_SMART_DIM_ENABLED_POLICY_NAME" /> deaktiviert ist. Andernfalls wird diese Richtlinie ignoriert, da die Verzögerung für die Bildschirmabdunkelung von einem Modell für maschinelles Lernen festgelegt wird.
 
           Der Skalierungsfaktor muss bei mindestens 100 % liegen. Werte, bei denen die Verzögerung für die Bildschirmabdunkelung im Präsentationsmodus kürzer wäre als normal, sind nicht zulässig.</translation>
-<translation id="5592242031005200087">Wenn die Richtlinie aktiviert ist, wird für jeden der benannten Ursprünge in einer
-      durch Kommas getrennten Liste ein eigener Prozess ausgeführt. Dabei werden auch
-      durch Subdomains benannte Ursprünge isoliert. Wenn Sie z. B. https://example.com/ angeben,
-      wird auch https://foo.example.com/ als Teil der Website https://example.com/ isoliert.
-      Wenn die Richtlinie deaktiviert ist, findet keine explizite Website-Isolierung statt und Feldtests von "IsolateOriginsAndroid" und "SitePerProcessAndroid" werden deaktiviert. Nutzer können aber weiterhin Befehlszeilen-Flags verwenden, um "IsolateOrigins" manuell zu aktivieren.
-      Wenn die Richtlinie nicht konfiguriert ist, kann der Nutzer diese Einstellung ändern.
-
-      HINWEIS: Unter Android ist die Website-Isolierung eine experimentelle Funktion, an deren optimierter Unterstützung wir derzeit arbeiten. Aktuell kann es aber zu Geschwindigkeitseinbußen kommen.
-
-      HINWEIS: Diese Richtlinie funktioniert nur für Chrome unter Android auf Geräten mit mehr als 1 GB RAM. Damit die Richtlinie auf anderen Plattformen als Android genutzt werden kann, muss "IsolateOrigins" verwendet werden.</translation>
 <translation id="5599461642204007579"><ph name="MS_AD_NAME" />-Verwaltungseinstellungen</translation>
 <translation id="5614865701790130558">Ereignisse für richtlinienbasierte Erweiterungsinstallationen protokollieren</translation>
 <translation id="5618398258385745432">Die entsprechende Einstellung wurde verwendet, bevor die erneute Authentifizierung bei der Ansicht von Passwörtern aktiviert wurde. Seither haben die Einstellung und folglich auch diese Richtlinie keinen Einfluss auf das Verhalten von Chrome. Aktuell werden Passwörter auf der Einstellungsseite des Passwortmanagers nicht als Klartext angezeigt. Dies bedeutet, dass die Einstellungsseite nur einen Platzhalter enthält und das Passwort in Chrome nur dann angezeigt wird, wenn der Nutzer auf "Anzeigen" klickt und sich gegebenenfalls noch einmal authentifiziert. Die ursprüngliche Beschreibung der Richtlinie finden Sie unten.
@@ -3264,12 +3180,6 @@ Wenn die Richtlinie auf "True" gesetzt oder nicht konfiguriert ist, können Nutz
       Auch für vorübergehende Nutzer werden Bereichsdaten im Cache gespeichert. Wenn die Bereiche vorübergehender Nutzer nicht verfolgt werden sollen, sollte der Cache deaktiviert werden.</translation>
 <translation id="570062449808736508">Wenn für diese Richtlinie kein leerer String angegeben ist, wird WebView URL-Einschränkungen des Contentanbieters des angegebenen Befugnisnamens erkennen.</translation>
 <translation id="5708969689202733975">Zulässige Modi für das schnelle Entsperren konfigurieren</translation>
-<translation id="5711016543513883877">
-      Wenn die Richtlinie aktiviert ist, wird für jeden der benannten Ursprünge in einer durch Kommas getrennten Liste ein eigener Prozess ausgeführt. Dabei werden auch durch Subdomains benannte Ursprünge isoliert. Wenn Sie z. B. https://example.com/ angeben, wird auch https://foo.example.com/ als Teil der Website https://example.com/ isoliert.
-      Wenn die Richtlinie deaktiviert oder nicht konfiguriert ist, kann der Nutzer diese Einstellung ändern.
-
-      HINWEIS: Diese Richtlinie funktioniert nicht unter Android. Wenn "IsolateOrigins" unter Android aktiviert werden soll, muss die Richtlinieneinstellung "IsolateOriginsAndroid" verwendet werden.
-      </translation>
 <translation id="572155275267014074">Android-Einstellungen</translation>
 <translation id="5728154254076636808">Erstellung von Roaming-Kopien für <ph name="PRODUCT_NAME" />-Profildaten aktivieren</translation>
 <translation id="5732972008943405952">Formulardaten zum automatischen Ausfüllen bei erster Ausführung aus Standardbrowser importieren</translation>
@@ -3422,11 +3332,6 @@ Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy 
 <translation id="5921713479449475707">Downloads automatischer Updates über HTTP zulassen</translation>
 <translation id="5929855945144989709">Geräten die Ausführung von virtuellen Maschinen unter Chrome OS erlauben</translation>
 <translation id="5932767795525445337">Diese Richtlinie kann auch verwendet werden, um Android-Apps anzupinnen.</translation>
-<translation id="5936622343001856595">Erzwingt die Ausführung der Google Websuche mit aktivierter SafeSearch-Funktion und verhindert, dass Nutzer diese Einstellung ändern.
-
-      Wenn diese Einstellung aktiviert ist, ist SafeSearch immer in der Google Suche aktiviert.
-
-      Wenn diese Einstellung deaktiviert ist oder kein Wert festgelegt wurde, wird SafeSearch in der Google Suche nicht erzwungen.</translation>
 <translation id="5946082169633555022">Beta-Kanal</translation>
 <translation id="5946329690214660966">Benutzerdefinierten Zeitplan zum Prüfen auf Updates festlegen</translation>
 <translation id="5951418260805607969">Benachrichtigung anzeigen, wenn nur wenig Speicherplatz verfügbar ist</translation>
@@ -3573,15 +3478,6 @@ Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy 
 <translation id="6190022522129724693">Standardeinstellung für Pop-ups</translation>
 <translation id="6190367314942602985">Personenbezogene Daten erfassen</translation>
 <translation id="6195802366906945965">Mit dieser Richtlinie kann festgelegt werden, ob die integrierte Zertifikatsprüfung zum Verifizieren von Serverzertifikaten verwendet wird</translation>
-<translation id="6197453924249895891">Durch diese Richtlinie wird der Zugriff auf Schlüssel zur geschäftlichen Nutzung in Erweiterungen gewährt
-
-      Schlüssel sind für die geschäftliche Nutzung bestimmt, wenn sie über die chrome.platformKeys API eines verwalteten Kontos generiert wurden. Schlüssel, die auf eine andere Weise importiert oder generiert wurden, sind nicht für die geschäftliche Nutzung bestimmt.
-
-      Der Zugriff auf Schlüssel für die geschäftliche Nutzung wird ausschließlich durch diese Richtlinie geregelt. Der Nutzer kann Erweiterungen Zugriff auf Schlüssel zur geschäftlichen Nutzung weder erteilen noch entziehen.
-
-      Eine Erweiterung kann einen Schlüssel zur geschäftlichen Nutzung standardmäßig nicht nutzen. Dies entspricht der Festlegung von "false" für "allowCorporateKeyUsage" bei dieser Erweiterung.
-
-      Nur wenn "allowCorporateKeyUsage" für eine Erweiterung auf "true" eingestellt ist, kann jeder Plattformschlüssel genutzt werden, der für die geschäftliche Nutzung bestimmt ist, um beliebige Daten zu signieren. Diese Berechtigung sollte nur dann erteilt werden, wenn die Erweiterung den Zugriff auf den Schlüssel sicher vor Angriffen schützt.</translation>
 <translation id="6205094657236844092">Wenn die Richtlinie konfiguriert ist, wird eine Liste von Web-Apps festgelegt, die automatisch installiert werden, also ohne Interaktion des Nutzers, und die vom Nutzer weder deinstalliert noch deaktiviert werden können.
 
 Jedes Listenelement der Richtlinie ist ein Objekt, das aus der obligatorischen Komponente "<ph name="URL_LABEL" />" (die URL der Web-App, die installiert werden soll) und den beiden optionalen Komponenten "<ph name="DEFAULT_LAUNCH_CONTAINER_LABEL" />" (legt fest, wie die Web-App geöffnet wird – standardmäßig in einem neuen Tab) sowie "<ph name="CREATE_DESKTOP_SHORTCUT_LABEL" />" (ist auf "True" gesetzt, wenn Sie Desktopverknüpfungen für <ph name="LINUX_OS_NAME" /> und Windows® erstellen möchten) besteht.
@@ -3989,7 +3885,7 @@ Wenn diese Richtlinie verwendet wird, stehen dem Nutzer nur die Drucker zur Verf
 
           Wenn diese Richtlinie nicht konfiguriert ist, hängt das Standardverhalten bei Anfragen aus unsicheren Kontexten an eher private Netzwerk-Endpunkte von der persönlichen Konfiguration der Funktion "<ph name="BLOCK_INSECURE_PRIVATE_NETWORK_REQUESTS_FEATURE_NAME" />" durch den Nutzer ab. Diese kann im Rahmen einer Testphase oder in der Befehlszeile festgelegt werden.
 
-          Wenn diese Richtlinie auf "False" gesetzt ist, ist es unsicheren Websites nicht gestattet, Anfragen an eher private Netzwerk-Endpunkte zu senden. Das bedeutet, dass es unsicheren Websites, die durch öffentliche IP-Adressen bereitgestellt werden, nicht gestattet ist, Anfragen an localhost oder private IP-Adressen zu senden. Unsicheren Websites, die durch öffentliche IP-Adressen bereitgestellt werden, ist es nicht gestattet, Anfragen an localhost zu senden.
+          Wenn diese Richtlinie auf "False" gesetzt ist, ist es unsicheren Websites nicht gestattet, Anfragen an eher private Netzwerk-Endpunkte zu senden. Das bedeutet, dass es unsicheren Websites, die durch öffentliche IP-Adressen bereitgestellt werden, nicht gestattet ist, Anfragen an localhost oder private IP-Adressen zu senden. Unsicheren Websites, die durch private IP-Adressen bereitgestellt werden, ist es nicht gestattet, Anfragen an localhost zu senden.
 
           Wenn die Richtlinie auf "True" gesetzt ist, dürfen unsichere Websites vorbehaltlich anderer Cross-Origin-Checks Anfragen an alle Netzwerk-Endpunkte senden.</translation>
 <translation id="6833064854262015312">Wenn Sie die Richtlinie auf "True" setzen, wird der Modus mit hohem Kontrast auf dem Anmeldebildschirm aktiviert. Wenn Sie die Richtlinie auf "False" setzen, wird der Modus mit hohem Kontrast auf dem Anmeldebildschirm deaktiviert.
@@ -4593,6 +4489,11 @@ Wenn diese Richtlinie verwendet wird, stehen dem Nutzer nur die Drucker zur Verf
 <translation id="7648907905084499629">Verhalten "<ph name="FEATURE_NAME_SAMESITE_BY_DEFAULT_COOKIES" />" für alle Cookies auf allen Websites verwenden</translation>
 <translation id="7651739109954974365">Legt fest, ob Daten-Roaming für das Gerät aktiviert werden soll. Bei Einstellung auf "true" ist das Roaming erlaubt. Ist die Richtlinie nicht konfiguriert oder auf "false" gesetzt, ist kein Roaming verfügbar.</translation>
 <translation id="7657261947024629645">Für eine optimale Leistung.</translation>
+<translation id="7668830462800981702">Ist diese Richtlinie aktiviert, wird eine Standardsuche durchgeführt, wenn der Nutzer Text in die Adressleiste eingibt, bei dem es sich nicht um eine URL handelt. Wenn Sie den Standardsuchanbieter angeben möchten, legen Sie die restlichen Richtlinien für die Standardsuche fest. Tun Sie das nicht, kann der Nutzer den Standardanbieter selbst auswählen. Ist diese Richtlinie deaktiviert, wird keine Suche durchgeführt, wenn der Nutzer Text in die Adressleiste eingibt, bei dem es sich nicht um eine URL handelt.
+
+      Wenn Sie diese Richtlinie konfigurieren, kann sie von Nutzern in <ph name="PRODUCT_NAME" /> nicht geändert werden. Ist die Richtlinie nicht konfiguriert, wird der Standardsuchanbieter aktiviert und Nutzer können die Suchanbieterliste selbst zusammenstellen.
+
+      Unter <ph name="MS_WIN_NAME" /> steht diese Funktion nur bei Instanzen zur Verfügung, die Teil einer <ph name="MS_AD_NAME" />-Domain sind, auf der Windows 10 Pro läuft, oder die von der Chrome-Verwaltung über die Cloud verwaltet werden. Unter <ph name="MAC_OS_NAME" /> steht diese Funktion nur bei Instanzen zur Verfügung, die über die Mobilgeräteverwaltung verwaltet werden oder per MCX mit einer Domain verbunden sind.</translation>
 <translation id="7673194325208122247">Zeitraum (Millisekunden)</translation>
 <translation id="7677220829878081413">
       Ist diese Richtlinie auf "ArcSession" gesetzt und wurde Android gestartet, wird nach einer Nutzerabmeldung ein Neustart des Geräts erzwungen.
@@ -4658,17 +4559,6 @@ Wenn diese Richtlinie verwendet wird, stehen dem Nutzer nur die Drucker zur Verf
           Wird die Richtlinie nicht konfiguriert oder leer gelassen, wird die standardmäßige "Neuer Tab"-Seite verwendet.
 
           Diese Richtlinie steht nur bei Windows-Instanzen zur Verfügung, die Teil einer <ph name="MS_AD_NAME" />-Domain sind, oder bei Windows 10 Pro- oder Enterprise-Instanzen, die für die Geräteverwaltung angemeldet sind, sowie macOS-Instanzen, die über die Mobilgeräteverwaltung verwaltet werden oder per MCX mit einer Domain verbunden sind.</translation>
-<translation id="7720830724269154872">Diese Richtlinie wurde eingestellt. Bitte verwenden Sie stattdessen <ph name="SAFE_BROWSING_ALLOWLIST_DOMAINS_POLICY_NAME" />.
-
-      Konfigurieren Sie die Liste der Domains, die von Safe Browsing als vertrauenswürdig eingestuft werden. Das bedeutet Folgendes:
-Es findet keine Prüfung auf gefährliche Ressourcen wie Phishing, Malware oder unerwünschte Software durch Safe Browsing statt, wenn die URLs dieser Ressourcen mit diesen Domains übereinstimmen.
-      Es findet keine Prüfung von in diesen Domains gehosteten Downloads durch den Downloadschutzdienst von Safe Browsing statt.
-      Es findet keine Prüfung auf eine Wiederverwendung von Passwörtern durch den Passwortschutzdienst von Safe Browsing statt, wenn die Seiten-URL mit diesen Domains übereinstimmt.
-
-      Wenn diese Einstellung aktiviert ist, stuft Safe Browsing diese Domains als vertrauenswürdig ein.
-      Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird der Safe Browsing-Standardschutz auf alle Ressourcen angewendet.
-
-      Diese Richtlinie steht nur bei Windows-Instanzen zur Verfügung, die Teil einer <ph name="MS_AD_NAME" />-Domain sind, oder bei Windows 10 Pro- oder Enterprise-Instanzen, die für die Geräteverwaltung angemeldet sind, außerdem bei macOS-Instanzen, die über die Mobilgeräteverwaltung verwaltet werden oder per MCX mit einer Domain verbunden sind.</translation>
 <translation id="7721944091689270995"><ph name="PLUGIN_VM_NAME" />-Nutzer-ID</translation>
 <translation id="7724161903134898864">Wenn die Richtlinie auf "1" gesetzt ist, können Websites Pop-ups anzeigen. Wenn die Richtlinie auf "2" gesetzt ist, werden Pop-ups blockiert.
 
@@ -4714,31 +4604,9 @@ Es findet keine Prüfung auf gefährliche Ressourcen wie Phishing, Malware oder 
 
           Standardmäßig sind alle nativen Nachrichtenhosts zulässig. Wurden jedoch alle nativen Nachrichtenhosts durch eine Richtlinie gesperrt, kann diese Richtlinie mithilfe der Zulassungsliste überschrieben werden.</translation>
 <translation id="7818131573217430250">Standardstatus für den Modus mit hohem Kontrast auf der Anmeldeseite festlegen</translation>
-<translation id="7832907442895199611">Diese Richtlinie wurde in M83 eingestellt. Verwenden Sie stattdessen SafeBrowsingProtectionLevel.
-
-      Hiermit wird die Safe Browsing-Funktion von <ph name="PRODUCT_NAME" /> aktiviert. Sie verhindert, dass Nutzer diese Einstellung ändern können.
-
-      Wenn diese Einstellung aktiviert ist, ist Safe Browsing immer aktiv.
-
-      Wenn diese Einstellung deaktiviert ist, ist Safe Browsing nie aktiv.
-
-      Wird diese Einstellung aktiviert oder deaktiviert, können Nutzer die Einstellung "Phishing- und Malware-Schutz aktivieren" in <ph name="PRODUCT_NAME" /> nicht ändern oder überschreiben.
-
-      Ist die Richtlinie nicht konfiguriert, wird diese Einstellung aktiviert, kann jedoch vom Nutzer geändert werden.
-
-      Weitere Informationen zu Safe Browsing finden Sie unter https://developers.google.com/safe-browsing.
-
-      Ist die Richtlinie SafeBrowsingProtectionLevel konfiguriert, wird der Wert der Richtlinie SafeBrowsingEnabled ignoriert.
-
-      Diese Richtlinie steht nur bei Windows-Instanzen zur Verfügung, die Teil einer <ph name="MS_AD_NAME" />-Domain sind, oder bei Windows 10 Pro- oder Enterprise-Instanzen, die für die Geräteverwaltung angemeldet sind, sowie macOS-Instanzen, die über die Mobilgeräteverwaltung verwaltet werden oder per MCX mit einer Domain verbunden sind.</translation>
 <translation id="7841880500990419427">TLS-Mindestversion für Fallback</translation>
 <translation id="7846952520291088817">URLs, für die lokale IPs in WebRTC ICE Candidates offengelegt sind</translation>
 <translation id="7848641140449742406">Einstellungen des Betriebssystems</translation>
-<translation id="7858404742201086014">Wenn Sie diese Einstellung aktivieren, werden veraltete Plug-ins als normale Plug-ins verwendet.
-
-      Ist diese Einstellung deaktiviert, werden veraltete Plug-ins nicht verwendet und Nutzer werden nicht aufgefordert, ihrer Ausführung zuzustimmen.
-
-      Falls diese Einstellung nicht festgelegt ist, müssen die Nutzer zustimmen, damit veraltete Plug-ins ausgeführt werden können.</translation>
 <translation id="7863947545897944083">Hiermit wird die Bedienungshilfe für hohen Kontrast auf dem Anmeldebildschirm aktiviert.
 
           Wird diese Richtlinie auf "true" gesetzt, ist der hohe Kontrast auf dem Anmeldebildschirm immer aktiviert.
@@ -5255,17 +5123,6 @@ Ist die Richtlinie auf "false" gesetzt oder nicht konfiguriert, kann der Nutzer 
       Wenn sie auf "true" gesetzt ist, können diese Tabs deaktiviert werden. Durch die Deaktivierung von Tabs werden CPU, Akku und Arbeitsspeicher entlastet. Bei <ph name="PRODUCT_NAME" /> wird eine Heuristik genutzt, um Tabs zu erkennen, die zwar im Hintergrund ausgeführt werden, jedoch aktiviert bleiben sollten, weil auf ihnen beispielsweise Benachrichtigungen angezeigt, Ton wiedergegeben oder Videos gestreamt werden. Webentwickler können die Deaktivierung ihrer Website auch unterbinden (https://chromium.googlesource.com/chromium/src/+/HEAD/chrome/browser/performance_manager/docs/freezing_opt_out_opt_in.md).
 
       Wenn die Richtlinie auf "false" gesetzt ist, werden Tabs nicht deaktiviert.</translation>
-<translation id="8615400197788843468">Aktiviert die eingeschränkten Anmeldefunktionen von <ph name="PRODUCT_NAME" /> in der G Suite und verhindert, dass Nutzer diese Einstellung ändern.
-
-Wenn Sie diese Einstellung festlegen, können Nutzer nur über Konten der angegebenen Domains auf Apps von Google zugreifen. Möchten Sie gmail.com- und googlemail.com-Konten zulassen, müssen Sie der Domainliste "consumer_accounts" (ohne Anführungszeichen) hinzufügen.
-
-Diese Einstellung verhindert, dass Nutzer sich auf einem verwalteten Gerät, für das eine Authentifizierung durch Google notwendig ist, anmelden und ein zweites Konto hinzufügen können, wenn dieses Konto nicht zu einer der Domains in der oben erwähnten Liste gehört.
-
-Wenn Sie diese Einstellung leer lassen bzw. nicht konfigurieren, können Nutzer über beliebige Konten auf die G Suite zugreifen.
-
-Durch diese Richtlinie wird allen HTTP- und HTTPS-Anforderungen, die an google.com-Domains gesendet werden, der Header "X-GoogApps-Allowed-Domains" angehängt (siehe https://support.google.com/a/answer/1668854).
-
-Nutzer können diese Einstellung weder ändern noch überschreiben.</translation>
 <translation id="8625234016727663537">Hiermit können Sie eine Liste mit URLs festlegen, deren Websites automatisch über den Anmeldebildschirm auf ein USB-Gerät mit der angegebenen Anbieter- und Produkt-ID zugreifen dürfen. Damit die Richtlinie gültig ist, muss jeder Eintrag in der Liste sowohl Geräte als auch URLs enthalten. Jeder Geräteeintrag kann je ein Feld für eine Anbieter-ID und eine Produkt-ID enthalten. Fehlende IDs werden als Platzhalter betrachtet, wobei als Ausnahme zu berücksichtigen ist, dass eine Produkt-ID nicht ohne zugehörige Anbieter-ID angegeben werden kann. Andernfalls ist die Richtlinie ungültig und wird ignoriert.
 
         Im USB-Berechtigungsmodell wird die URL der anfragenden Website ("anfragende URL") und die URL der Frame-Website der obersten Ebene ("einbettende URL") verwendet. Dabei wird der anfragenden URL die Berechtigung erteilt, auf das USB-Gerät zuzugreifen. Wird die anfragende Website in einen iFrame geladen, kann die anfragende von der einbettenden URL abweichen. Deshalb darf das Feld "urls" bis zu zwei durch ein Komma voneinander getrennte URL-Strings enthalten: die anfragende URL und die einbettende URL. Falls nur eine einzige URL angegeben ist, wird der Zugriff auf die entsprechenden USB-Geräte gewährt, wenn unabhängig vom Einbettungsstatus die URL der anfragenden Website mit dieser URL übereinstimmt. Die URLs im Feld "urls" müssen gültig sein, da ansonsten die Richtlinie ignoriert wird.
@@ -5311,19 +5168,6 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
 <translation id="8705895771006864851">Wenn Sie diese Richtlinie auf "True" setzen, wird eine Übersetzungsfunktion implementiert, wenn dies für Nutzer angemessen ist. In diesem Fall werden in <ph name="PRODUCT_NAME" /> eine integrierte Übersetzungssymbolleiste sowie eine Übersetzungsfunktion im Kontextmenü angezeigt, das mit einem Rechtsklick geöffnet werden kann. Wird die Richtlinie auf "False" gesetzt, werden alle integrierten Übersetzungsfunktionen ausgeschaltet.
 
       Nach dem Konfigurieren der Richtlinie kann diese Funktion von den Nutzern nicht mehr geändert werden. Ist sie dagegen nicht konfiguriert, kann der Nutzer die Einstellung ändern.</translation>
-<translation id="8733448613597049197">Hiermit wird die erweiterte Berichterstellung bei der Verwendung von Safe Browsing in <ph name="PRODUCT_NAME" /> aktiviert und verhindert, dass Nutzer diese Einstellung ändern.
-
-      Bei der erweiterten Berichterstellung werden einige Systeminformationen und Seiteninhalte an die Server von Google gesendet, um bei der Erkennung von gefährlichen Apps und Websites zu helfen.
-
-      Wenn diese Einstellung auf "true" gesetzt ist, werden Berichte erstellt und bei Bedarf gesendet, z. B. wenn ein Sicherheits-Interstitial angezeigt wird.
-
-      Ist die Einstellung auf "false" gesetzt, werden keine Berichte gesendet.
-
-      Wenn diese Richtlinie auf "true" oder "false" gesetzt ist, kann der Nutzer die Einstellung nicht ändern.
-
-      Wenn diese Richtlinie nicht konfiguriert ist, kann der Nutzer die Einstellung ändern und entscheiden, ob Berichte gesendet werden sollen.
-
-      Weitere Informationen zu Safe Browsing finden Sie unter https://developers.google.com/safe-browsing.</translation>
 <translation id="8736538322216687231">Minimalen eingeschränkten Modus auf YouTube erzwingen</translation>
 <translation id="8745669971728319820">Mit dieser Richtlinie wird festgelegt, ob Daten zu Erweiterungen und Plug-ins gesendet werden.
 
@@ -5334,13 +5178,6 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
 
       Diese Richtlinie wird nur angewendet, wenn das Gerät für <ph name="PRODUCT_NAME" /> mit <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> registriert ist.
       Für <ph name="PRODUCT_OS_NAME" /> wird diese Richtlinie immer angewendet.</translation>
-<translation id="8749370016497832113">Diese Richtlinie ermöglicht das Löschen des Browserverlaufs und des Downloadverlaufs in <ph name="PRODUCT_NAME" /> und verhindert, dass Nutzer diese Einstellung ändern.
-
-      Hinweis: Die Deaktivierung dieser Richtlinie bedeutet nicht unbedingt, dass der Browser- und Downloadverlauf erhalten bleiben, denn möglicherweise sind die Nutzer berechtigt, die Verlaufsdatenbankdateien direkt zu bearbeiten oder zu löschen. Außerdem kann der Browser jederzeit selbst einige oder alle Verlaufselemente archivieren oder nach deren Ablaufdatum löschen.
-
-      Wenn diese Einstellung aktiviert oder nicht festgelegt ist, können der Browser- und Downloadverlauf gelöscht werden.
-
-      Wenn diese Einstellung deaktiviert ist, können der Browser- und Downloadverlauf nicht gelöscht werden.</translation>
 <translation id="8749536858950505376">Wenn Sie die Richtlinie auf "True" setzen, bleibt der große Cursor aktiviert. Wenn Sie die Richtlinie auf "False" setzen, bleibt der große Cursor deaktiviert.
 
       Wenn Sie diese Richtlinie konfigurieren, kann die Funktion von Nutzern nicht geändert werden. Wird sie nicht konfiguriert, ist der große Cursor erst einmal deaktiviert, kann aber jederzeit von Nutzern aktiviert werden.</translation>
@@ -5507,11 +5344,6 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
 <translation id="8943934315109955032">Nicht auf Verstöße gegen die Richtlinie zum Schutz von sensiblen Daten prüfen</translation>
 <translation id="8947415621777543415">Gerätestandort melden</translation>
 <translation id="8948062138228904066">Zulassungsliste für Authentifizierungsserver</translation>
-<translation id="8949552982791839607">Ist diese Richtlinie deaktiviert, werden keine Sicherheitswarnungen angezeigt, wenn Chrome mit einigen potenziell schädlichen Befehlszeilen-Flags gestartet wird.
-
-          Sollte sie aktiviert oder nicht konfiguriert sein, werden Sicherheitswarnungen angezeigt, wenn Chrome mit einigen Befehlszeilen-Flags gestartet wird.
-
-          Diese Richtlinie steht nur bei Windows-Instanzen zur Verfügung, die Teil einer <ph name="MS_AD_NAME" />-Domain sind, oder bei Windows 10 Pro- oder Enterprise-Instanzen, die für die Geräteverwaltung angemeldet sind, sowie macOS-Instanzen, die über die Mobilgeräteverwaltung verwaltet werden oder per MCX mit einer Domain verbunden sind.</translation>
 <translation id="8951350807133946005">Datenträger-Cache-Verzeichnis festlegen</translation>
 <translation id="8952317565138994125">Deaktiviert die Datensynchronisierung in <ph name="PRODUCT_NAME" /> mithilfe von Synchronisierungsdiensten, die von Google gehostet werden, und verhindert, dass Nutzer diese Einstellung ändern.
 

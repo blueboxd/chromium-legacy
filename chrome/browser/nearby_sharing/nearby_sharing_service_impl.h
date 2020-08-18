@@ -194,13 +194,15 @@ class NearbySharingServiceImpl
   void OnReceivedIntroduction(ShareTarget share_target,
                               base::Optional<std::string> token,
                               base::Optional<sharing::mojom::V1FramePtr> frame);
+  void OnStorageCheckCompleted(ShareTarget share_target,
+                               base::Optional<std::string> token,
+                               bool is_out_of_storage);
   void OnFrameRead(ShareTarget share_target,
                    base::Optional<sharing::mojom::V1FramePtr> frame);
   void HandleCertificateInfoFrame(
       const sharing::mojom::CertificateInfoFramePtr& certificate_frame);
 
   void OnIncomingConnectionDisconnected(const ShareTarget& share_target);
-  bool IsOutOfStorage(const ShareTarget& share_target);
 
   void OnIncomingMutualAcceptanceTimeout(const ShareTarget& share_target);
   base::Optional<ShareTarget> CreateShareTarget(

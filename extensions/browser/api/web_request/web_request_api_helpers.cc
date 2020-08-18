@@ -562,11 +562,7 @@ IgnoredAction::IgnoredAction(IgnoredAction&& rhs) = default;
 bool ExtraInfoSpec::InitFromValue(content::BrowserContext* browser_context,
                                   const base::ListValue& value,
                                   int* extra_info_spec) {
-  *extra_info_spec =
-      extensions::ExtensionsBrowserClient::Get()
-              ->ShouldForceWebRequestExtraHeaders(browser_context)
-          ? EXTRA_HEADERS
-          : 0;
+  *extra_info_spec = 0;
   for (size_t i = 0; i < value.GetSize(); ++i) {
     std::string str;
     if (!value.GetString(i, &str))

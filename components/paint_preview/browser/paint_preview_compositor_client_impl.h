@@ -38,14 +38,25 @@ class PaintPreviewCompositorClientImpl : public PaintPreviewCompositorClient {
   // PaintPreviewCompositorClient implementation.
   const base::Optional<base::UnguessableToken>& Token() const override;
   void SetDisconnectHandler(base::OnceClosure closure) override;
-  void BeginComposite(
+  void BeginSeparatedFrameComposite(
       mojom::PaintPreviewBeginCompositeRequestPtr request,
-      mojom::PaintPreviewCompositor::BeginCompositeCallback callback) override;
-  void BitmapForFrame(
+      mojom::PaintPreviewCompositor::BeginSeparatedFrameCompositeCallback
+          callback) override;
+  void BitmapForSeparatedFrame(
       const base::UnguessableToken& frame_guid,
       const gfx::Rect& clip_rect,
       float scale_factor,
-      mojom::PaintPreviewCompositor::BitmapForFrameCallback callback) override;
+      mojom::PaintPreviewCompositor::BitmapForSeparatedFrameCallback callback)
+      override;
+  void BeginMainFrameComposite(
+      mojom::PaintPreviewBeginCompositeRequestPtr request,
+      mojom::PaintPreviewCompositor::BeginMainFrameCompositeCallback callback)
+      override;
+  void BitmapForMainFrame(
+      const gfx::Rect& clip_rect,
+      float scale_factor,
+      mojom::PaintPreviewCompositor::BitmapForMainFrameCallback callback)
+      override;
   void SetRootFrameUrl(const GURL& url) override;
 
   // Exposes underlying BindNewPipeAndPassReceiver method of |compositor_|.

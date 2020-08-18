@@ -1852,12 +1852,6 @@ const char kPercentBasedScrollingDescription[] =
     "If enabled, mousewheel and keyboard scrolls will scroll by a percentage "
     "of the scroller size.";
 
-const char kPerMethodCanMakePaymentQuotaName[] =
-    "Per-method canMakePayment() quota.";
-const char kPerMethodCanMakePaymentQuotaDescription[] =
-    "Allow calling canMakePayment() for different payment methods, as long as "
-    "method-specific parameters remain unchanged.";
-
 const char kPermissionChipName[] = "Permissions Chip Experiment";
 const char kPermissionChipDescription[] =
     "Enables an experimental permission prompt that uses a chip in the location"

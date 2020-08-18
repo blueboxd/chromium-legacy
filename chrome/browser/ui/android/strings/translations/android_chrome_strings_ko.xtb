@@ -252,7 +252,6 @@
 <translation id="2942036813789421260">미리보기 탭 닫힘</translation>
 <translation id="2956410042958133412"><ph name="PARENT_NAME_1" />님과 <ph name="PARENT_NAME_2" />님이 관리하는 계정입니다.</translation>
 <translation id="2962095958535813455">시크릿 탭으로 전환됨</translation>
-<translation id="2968755619301702150">인증서 뷰어</translation>
 <translation id="2979025552038692506">선택된 시크릿 탭</translation>
 <translation id="2987620471460279764">다른 기기에서 공유된 텍스트</translation>
 <translation id="2989523299700148168">최근 방문</translation>
@@ -669,7 +668,6 @@
 <translation id="6157392216611456285"><ph name="APP_NAME" /> 선택</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> 데이터 절약</translation>
 <translation id="6186394685773237175">유출된 비밀번호가 없습니다.</translation>
-<translation id="6201345951596836663">링크 복사됨</translation>
 <translation id="6206830853671714236">다운로드 시간 선택</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" />이(가) 아닌가요?</translation>
 <translation id="6218096829563201111">비슷한 상품 검색 <ph name="BEGIN_NEW" />New<ph name="END_NEW" /></translation>

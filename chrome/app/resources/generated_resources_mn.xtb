@@ -3,6 +3,7 @@
 <translationbundle lang="mn">
 <translation id="1001307489511021749">Таны аппууд, тохиргоо болон бусад тохируулгыг таны Google бүртгэлээрээ нэвтэрсэн Chrome үйлдлийн системтэй бүх төхөөрөмж дээр синк хийнэ.</translation>
 <translation id="1003088604756913841">Холбоосыг шинэ <ph name="APP" /> цонхонд нээх</translation>
+<translation id="1003363546227723021">Дэлгэц тань идэвхгүй үед зураг, цаг, цаг агаар болон медиа мэдээлэл харуулах</translation>
 <translation id="1004218526896219317">Сайтын хандалт</translation>
 <translation id="1005274289863221750">Микрофон болон камераа ашиглана уу</translation>
 <translation id="1005333234656240382">ADB алдаа засахыг идэвхжүүлэх үү?</translation>
@@ -94,6 +95,7 @@
 <translation id="1108600514891325577">&amp; Зогс</translation>
 <translation id="1110155001042129815">Хүлээх</translation>
 <translation id="1112420131909513020">Дэвсгэр чихтэй хуудас bluetooth-г ашиглаж байна</translation>
+<translation id="1113892970288677790">Шилэгдсэн урлагийн бүтээл, зургуудыг сонгох</translation>
 <translation id="1114102982691049955"><ph name="PRINTER_MANUFACTURER" /> <ph name="PRINTER_MODEL" /> (USB)</translation>
 <translation id="1114202307280046356">Талст</translation>
 <translation id="1114335938027186412">Таны компьютер Chrome OS-ийн аюулгүй байдлын чухал функц хэрэгжүүлдэг Итгэмжлэгдсэн Платформ Модуль (ИПМ) агуулж байна. Дэлгэрэнгүй мэдээллийг Chromebook Тусламжийн төвөөс авна уу. Үүнд: https://support.google.com/chromebook/?p=tpm</translation>
@@ -201,6 +203,7 @@
 <translation id="1224275271335624810">Хамгийн хурдан</translation>
 <translation id="1225177025209879837">Хүсэлтийг боловсруулж байна...</translation>
 <translation id="1227507814927581609">"<ph name="DEVICE_NAME" />" руу холбогдож байх үед таниулах ажиллагаа амжилтгүй боллоо.</translation>
+<translation id="1230417814058465809">Стандарт хамгаалалт асаалттай байна. Аюулгүй байдлаа улам нэмэгдүүлэхийг хүсвэл сайжруулсан хамгаалалтыг ашиглаарай.</translation>
 <translation id="1231733316453485619">Синк асаах уу?</translation>
 <translation id="1232569758102978740">Гарчиггүй</translation>
 <translation id="1233497634904001272">Хүсэлтийг гүйцээхийн тулд аюулгүй байдлын түлхүүр дээрээ дахин хүрнэ үү.</translation>
@@ -1248,6 +1251,7 @@
 <translation id="249113932447298600">Уучлаарай, яг одоо энэ цагт <ph name="DEVICE_LABEL" /> төхөөрөмжийг дэмжиж ажиллаж чадахгүй байна.</translation>
 <translation id="2492461744635776704">Гэрчилгээнд гарын үсэг зурах хүсэлтийг бэлтгэж байна</translation>
 <translation id="249303669840926644">Бүртгэлийг дуусгах боломжгүй байна.</translation>
+<translation id="2493126929778606526">Автоматаар сонгогдсон таны шилдэг зургууд</translation>
 <translation id="2495777824269688114">Бусад онцлогийг хайх эсвэл хариулт авна уу. "?"-г сонгож тусламж авна уу.</translation>
 <translation id="2496180316473517155">Хайлтын түүх</translation>
 <translation id="2497229222757901769">Хулганы хурд</translation>
@@ -1341,6 +1345,7 @@
 <translation id="2604255671529671813">Сүлжээний холболтын алдаа</translation>
 <translation id="2606246518223360146">Өгөгдлийг холбох</translation>
 <translation id="2607101320794533334">Байгууллагын Public Key мэдээлэл</translation>
+<translation id="2607968157341167679">Цомог алга. <ph name="LINK_BEGIN" />Google Зураг<ph name="LINK_END" />дотор цомог үүсгэнэ үү.</translation>
 <translation id="2609896558069604090">Богино холболтуудыг үүсгэх ...</translation>
 <translation id="2610157865375787051">Идэвхгүй</translation>
 <translation id="2610260699262139870">Бодит хэмжээ</translation>
@@ -1477,6 +1482,7 @@
 <translation id="2762441749940182211">Камерыг блоклосон</translation>
 <translation id="2764786626780673772">VPN-н дэлгэрэнгүй</translation>
 <translation id="2765217105034171413">Жижиг</translation>
+<translation id="2765729904637714153">Дуртай дурсамжуудаа сэргээгээрэй. Цомог нэмэх эсвэл засахын тулд <ph name="LINK_BEGIN" />Google Зураг<ph name="LINK_END" /> руу очно уу.</translation>
 <translation id="2766006623206032690">Хуулан буулгасны дараагаар үргэлжлүүлэх</translation>
 <translation id="2766161002040448006">Эцэг эхээс асуух</translation>
 <translation id="2767127727915954024">Таныг энэ сайтын бүх табыг хаах хүртэл <ph name="ORIGIN" /> нь <ph name="FILENAME" />-г засах боломжтой байна</translation>
@@ -2109,6 +2115,7 @@
 <translation id="3566325075220776093">Энэ төхөөрөмжөөс</translation>
 <translation id="3566721612727112615">Нэмсэн сайт алга</translation>
 <translation id="3569382839528428029">Та <ph name="APP_NAME" />-ийг таны дэлгэцийг хуваалцахыг хүсэж байна уу?</translation>
+<translation id="3569407787324516067">Дэлгэц амраагч</translation>
 <translation id="3569682580018832495"><ph name="ORIGIN" /> дараах файл болон фолдерыг үзэх боломжтой</translation>
 <translation id="3571734092741541777">Тохиргоо хийх.</translation>
 <translation id="3574210789297084292">-д нэвтрэх</translation>
@@ -2257,6 +2264,7 @@
 <translation id="3727148787322499904">Энэ тохиргоог өөрчилснөөр хуваалцсан бүх сүлжээнд нөлөөлнө</translation>
 <translation id="3727187387656390258">Зар сурталчилгааг шалгах</translation>
 <translation id="372722114124766626">Нэг удаа</translation>
+<translation id="3728188878314831180">Утаснаасаа мэдэгдэл тусгах</translation>
 <translation id="3728681439294129328">Сүлжээний хаягийг тохируулах</translation>
 <translation id="3729303374699765035">Сайт ойролцоох Bluetooth төхөөрөмжийг илрүүлэх хүсэлтэй үед асуух</translation>
 <translation id="3729506734996624908">Зөвшөөрөгдсөн сайт</translation>
@@ -4705,6 +4713,7 @@
 <translation id="6824584962142919697">&amp;Элементүүдийг шалгах</translation>
 <translation id="6825184156888454064">Нэрээр эрэмбэлэх</translation>
 <translation id="6826872289184051766">USB-р баталгаажуулах</translation>
+<translation id="6827623133556594466">Google Клоуд Хэвлэгчийг XII сарын 31-нээс хойш дэмжихээ болино. <ph name="BEGIN_LINK" />Нэмэлт мэдээлэл авах<ph name="END_LINK" /></translation>
 <translation id="6828153365543658583">Дараах хэрэглэгчид рүү нэвтрэхийг хязгаарлах:</translation>
 <translation id="6828182567531805778">Өгөгдлөө синк хийхийн тулд нэвтрэх үгээ оруулна уу</translation>
 <translation id="682871081149631693">QuickFix</translation>
@@ -5323,6 +5332,7 @@
 <translation id="7605594153474022051">Синк ажиллахгүй байна</translation>
 <translation id="7606992457248886637">Зөвшөөрөл олгогч</translation>
 <translation id="7607002721634913082">зогссон</translation>
+<translation id="7608810328871051088">Андройдын тохиргоо</translation>
 <translation id="7609148976235050828">Интернэтэд холбогдоод дахин оролдоно уу.</translation>
 <translation id="7614260613810441905">Сайт таны төхөөрөмжийн файл эсвэл фолдерыг засах хүсэлтэй үед асуух (санал болгосон)</translation>
 <translation id="761530003705945209">Google Драйвд хуулбарлана уу. Өгөгдлөө амархан сэргээх эсвэл хүссэн үедээ төхөөрөмж хооронд сэлгэнэ үү. Таны нөөцлөлтөд аппын өгөгдөл багтана. Таны нөөцлөлтийг Google-д байршуулдаг бөгөөд таны Google Бүртгэлийн нууц үгийг ашиглан шифрлэдэг.</translation>
@@ -5693,7 +5703,6 @@
 <translation id="8028060951694135607">Microsoft-ын түлхүүр сэргээгч</translation>
 <translation id="8028803902702117856"><ph name="SIZE" />, <ph name="FILE_NAME" />-г татаж байна</translation>
 <translation id="8028993641010258682">Хэмжээ</translation>
-<translation id="8030656706657716245">Принтер нэмэх</translation>
 <translation id="8030852056903932865">Зөвшөөрөх</translation>
 <translation id="8032244173881942855">Чихтэй хуудсыг дамжуулах боломжгүй.</translation>
 <translation id="8033827949643255796">Сонгогдсон</translation>
@@ -5849,6 +5858,7 @@
 <translation id="8225753906568652947">Саналаа зарцуулах</translation>
 <translation id="8226222018808695353">Хориотой</translation>
 <translation id="8226619461731305576">Дараалал</translation>
+<translation id="8226628635270268143">Дуртай зураг, цомгуудаа сонгоно уу</translation>
 <translation id="8226742006292257240">Доор таны компьютерт оноосон, санамсаргүй үүссэн TPM нууц үгийг харуулсан байна:</translation>
 <translation id="8227119283605456246">Файл хавсаргах</translation>
 <translation id="8229943166551236192">Төхөөрөмжийн өгөгдлийг 24 цагийн дараа устгана</translation>
@@ -6345,6 +6355,7 @@
 <translation id="882854468542856424">Ойролцоох Bluetooth төхөөрөмжийг илрүүлэхийг ямар ч сайтад бүү зөвшөөр</translation>
 <translation id="8828933418460119530">DNS-н нэр</translation>
 <translation id="883062543841130884">Солилцоо</translation>
+<translation id="8830779999439981481">Шинэчлэлтийг хэрэгжүүлэхийн тулд дахин эхлүүлж байна</translation>
 <translation id="8830796635868321089">Одоо байгаа прокси тохиргооноос үүдэн шинэчлэлтийг шалгах ажиллагаа амжилтгүй боллоо.  Прокси тохиргоонуудаа <ph name="PROXY_SETTINGS_LINK_START" /> тохируулна уу <ph name="PROXY_SETTINGS_LINK_END" /> .</translation>
 <translation id="8831140208248705279">Таны <ph name="DEVICE_TYPE" /> болон Android утас хамтдаа илүү сайн ажилладаг. Эдгээрийг холбосноор та компьютероосоо мессеж бичих, интернэт холболтоо хуваалцах болон <ph name="DEVICE_TYPE" />-н түгжээг утсаараа тайлах боломжтой.<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />Нэмэлт мэдээлэл авах<ph name="LINK_END" /></translation>
 <translation id="8834039744648160717">Сүлжээний тохиргоог <ph name="USER_EMAIL" /> хянадаг.</translation>

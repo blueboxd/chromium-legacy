@@ -24,6 +24,7 @@
 #include "content/browser/devtools/devtools_io_context.h"
 #include "content/browser/devtools/devtools_stream_pipe.h"
 #include "content/browser/devtools/devtools_url_loader_interceptor.h"
+#include "content/browser/devtools/protocol/handler_helpers.h"
 #include "content/browser/devtools/protocol/network.h"
 #include "content/browser/devtools/protocol/page.h"
 #include "content/browser/devtools/protocol/security.h"
@@ -2144,6 +2145,66 @@ void NetworkHandler::SetNetworkConditions(
   background_sync_restorer_.reset(
       offline ? new BackgroundSyncRestorer(host_id_, storage_partition_)
               : nullptr);
+}
+
+namespace {
+protocol::Network::CrossOriginOpenerPolicyValue
+makeCrossOriginOpenerPolicyValue(
+    network::mojom::CrossOriginOpenerPolicyValue value) {
+  switch (value) {
+    case network::mojom::CrossOriginOpenerPolicyValue::kSameOrigin:
+      return protocol::Network::CrossOriginOpenerPolicyValueEnum::SameOrigin;
+    case network::mojom::CrossOriginOpenerPolicyValue::kSameOriginAllowPopups:
+      return protocol::Network::CrossOriginOpenerPolicyValueEnum::
+          SameOriginAllowPopups;
+    case network::mojom::CrossOriginOpenerPolicyValue::kUnsafeNone:
+      return protocol::Network::CrossOriginOpenerPolicyValueEnum::UnsafeNone;
+    case network::mojom::CrossOriginOpenerPolicyValue::kSameOriginPlusCoep:
+      return protocol::Network::CrossOriginOpenerPolicyValueEnum::
+          SameOriginPlusCoep;
+  }
+}
+protocol::Network::CrossOriginEmbedderPolicyValue
+makeCrossOriginEmbedderPolicyValue(
+    network::mojom::CrossOriginEmbedderPolicyValue value) {
+  switch (value) {
+    case network::mojom::CrossOriginEmbedderPolicyValue::kNone:
+      return protocol::Network::CrossOriginEmbedderPolicyValueEnum::None;
+    case network::mojom::CrossOriginEmbedderPolicyValue::kRequireCorp:
+      return protocol::Network::CrossOriginEmbedderPolicyValueEnum::RequireCorp;
+  }
+}
+}  // namespace
+
+DispatchResponse NetworkHandler::GetSecurityIsolationStatus(
+    Maybe<String> frame_id,
+    std::unique_ptr<protocol::Network::SecurityIsolationStatus>* out_info) {
+  if (!frame_id.isJust() || !host_) {
+    // TODO(sigurds): Support for workers.
+    return Response::InvalidParams("Currently only frames are supported");
+  }
+  FrameTreeNode* frame_tree_node = FrameTreeNodeFromDevToolsFrameToken(
+      host_->frame_tree_node(), frame_id.takeJust());
+  if (!frame_tree_node) {
+    return Response::InvalidParams("No frame with given id found");
+  }
+  RenderFrameHostImpl* rfhi = frame_tree_node->current_frame_host();
+
+  const auto& frame_coep = rfhi->cross_origin_embedder_policy();
+  auto coep =
+      protocol::Network::CrossOriginEmbedderPolicyStatus::Create()
+          .SetValue(makeCrossOriginEmbedderPolicyValue(frame_coep.value))
+          .Build();
+  const auto& frame_coop = rfhi->cross_origin_opener_policy();
+  auto coop = protocol::Network::CrossOriginOpenerPolicyStatus::Create()
+                  .SetValue(makeCrossOriginOpenerPolicyValue(frame_coop.value))
+                  .Build();
+
+  *out_info = protocol::Network::SecurityIsolationStatus::Create()
+                  .SetCoep(std::move(coep))
+                  .SetCoop(std::move(coop))
+                  .Build();
+  return Response::Success();
 }
 
 void NetworkHandler::OnRequestWillBeSentExtraInfo(

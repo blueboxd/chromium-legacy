@@ -24,7 +24,6 @@
 #include "components/browsing_data/content/local_storage_helper.h"
 #include "components/browsing_data/content/service_worker_helper.h"
 #include "components/browsing_data/content/shared_worker_helper.h"
-#include "components/content_settings/browser/content_settings_usages_state.h"
 #include "components/content_settings/common/content_settings_agent.mojom.h"
 #include "components/content_settings/core/browser/content_settings_details.h"
 #include "components/content_settings/core/browser/content_settings_info.h"
@@ -346,14 +345,6 @@ PageSpecificContentSettings::PageSpecificContentSettings(
           handler_.web_contents()->GetBrowserContext(),
           delegate_->GetAdditionalFileSystemTypes(),
           delegate_->GetIsDeletionDisabledCallback()),
-      geolocation_usages_state_(std::make_unique<ContentSettingsUsagesState>(
-          delegate_,
-          ContentSettingsType::GEOLOCATION,
-          handler_.web_contents()->GetVisibleURL())),
-      midi_usages_state_(std::make_unique<ContentSettingsUsagesState>(
-          delegate_,
-          ContentSettingsType::MIDI_SYSEX,
-          handler_.web_contents()->GetVisibleURL())),
       load_plugins_link_enabled_(true),
       microphone_camera_state_(MICROPHONE_CAMERA_NOT_ACCESSED) {
   observer_.Add(map_);
@@ -483,8 +474,6 @@ PageSpecificContentSettings::GetWebContentsObserverForTest(
 
 bool PageSpecificContentSettings::IsContentBlocked(
     ContentSettingsType content_type) const {
-  DCHECK_NE(ContentSettingsType::GEOLOCATION, content_type)
-      << "Geolocation settings handled by ContentSettingGeolocationImageModel";
   DCHECK_NE(ContentSettingsType::NOTIFICATIONS, content_type)
       << "Notifications settings handled by "
       << "ContentSettingsNotificationsImageModel";
@@ -504,7 +493,8 @@ bool PageSpecificContentSettings::IsContentBlocked(
       content_type == ContentSettingsType::ADS ||
       content_type == ContentSettingsType::SOUND ||
       content_type == ContentSettingsType::CLIPBOARD_READ_WRITE ||
-      content_type == ContentSettingsType::SENSORS) {
+      content_type == ContentSettingsType::SENSORS ||
+      content_type == ContentSettingsType::GEOLOCATION) {
     const auto& it = content_settings_status_.find(content_type);
     if (it != content_settings_status_.end())
       return it->second.blocked;
@@ -518,16 +508,16 @@ bool PageSpecificContentSettings::IsContentAllowed(
   DCHECK_NE(ContentSettingsType::AUTOMATIC_DOWNLOADS, content_type)
       << "Automatic downloads handled by DownloadRequestLimiter";
 
-  // This method currently only returns meaningful values for the content type
-  // cookies, media, PPAPI broker, downloads, MIDI sysex, clipboard, and
-  // sensors.
+  // This method currently only returns meaningful values for the types listed
+  // below.
   if (content_type != ContentSettingsType::COOKIES &&
       content_type != ContentSettingsType::MEDIASTREAM_MIC &&
       content_type != ContentSettingsType::MEDIASTREAM_CAMERA &&
       content_type != ContentSettingsType::PPAPI_BROKER &&
       content_type != ContentSettingsType::MIDI_SYSEX &&
       content_type != ContentSettingsType::CLIPBOARD_READ_WRITE &&
-      content_type != ContentSettingsType::SENSORS) {
+      content_type != ContentSettingsType::SENSORS &&
+      content_type != ContentSettingsType::GEOLOCATION) {
     return false;
   }
 
@@ -538,14 +528,11 @@ bool PageSpecificContentSettings::IsContentAllowed(
 }
 
 void PageSpecificContentSettings::OnContentBlocked(ContentSettingsType type) {
-  DCHECK(type != ContentSettingsType::GEOLOCATION)
-      << "Geolocation settings handled by OnGeolocationPermissionSet";
   DCHECK(type != ContentSettingsType::MEDIASTREAM_MIC &&
          type != ContentSettingsType::MEDIASTREAM_CAMERA)
       << "Media stream settings handled by OnMediaStreamPermissionSet";
   if (!content_settings::ContentSettingsRegistry::GetInstance()->Get(type))
     return;
-
   ContentSettingsStatus& status = content_settings_status_[type];
 
   if (!status.blocked) {
@@ -556,8 +543,6 @@ void PageSpecificContentSettings::OnContentBlocked(ContentSettingsType type) {
 }
 
 void PageSpecificContentSettings::OnContentAllowed(ContentSettingsType type) {
-  DCHECK(type != ContentSettingsType::GEOLOCATION)
-      << "Geolocation settings handled by OnGeolocationPermissionSet";
   DCHECK(type != ContentSettingsType::MEDIASTREAM_MIC &&
          type != ContentSettingsType::MEDIASTREAM_CAMERA)
       << "Media stream settings handled by OnMediaStreamPermissionSet";
@@ -733,13 +718,6 @@ void PageSpecificContentSettings::OnFileSystemAccessed(const GURL& url,
   handler_.NotifySiteDataObservers();
 }
 
-void PageSpecificContentSettings::OnGeolocationPermissionSet(
-    const GURL& requesting_origin,
-    bool allowed) {
-  geolocation_usages_state_->OnPermissionSet(requesting_origin, allowed);
-  delegate_->UpdateLocationBar();
-}
-
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
 void PageSpecificContentSettings::OnProtectedMediaIdentifierPermissionSet(
     const GURL& requesting_origin,
@@ -808,18 +786,6 @@ void PageSpecificContentSettings::OnMediaStreamPermissionSet(
     microphone_camera_state_ = new_microphone_camera_state;
     delegate_->UpdateLocationBar();
   }
-}
-
-void PageSpecificContentSettings::OnMidiSysExAccessed(
-    const GURL& requesting_origin) {
-  midi_usages_state_->OnPermissionSet(requesting_origin, true);
-  OnContentAllowed(ContentSettingsType::MIDI_SYSEX);
-}
-
-void PageSpecificContentSettings::OnMidiSysExAccessBlocked(
-    const GURL& requesting_origin) {
-  midi_usages_state_->OnPermissionSet(requesting_origin, false);
-  OnContentBlocked(ContentSettingsType::MIDI_SYSEX);
 }
 
 void PageSpecificContentSettings::FlashDownloadBlocked() {
@@ -892,6 +858,7 @@ void PageSpecificContentSettings::OnContentSettingChanged(
     case ContentSettingsType::ADS:
     case ContentSettingsType::SOUND:
     case ContentSettingsType::CLIPBOARD_READ_WRITE:
+    case ContentSettingsType::GEOLOCATION:
     case ContentSettingsType::SENSORS: {
       ContentSetting setting = map_->GetContentSetting(
           visible_url_, visible_url_, content_type, std::string());
@@ -940,16 +907,14 @@ void PageSpecificContentSettings::BlockAllContentForTesting() {
       content_settings::ContentSettingsRegistry::GetInstance();
   for (const content_settings::ContentSettingsInfo* info : *registry) {
     ContentSettingsType type = info->website_settings_info()->type();
-    if (type != ContentSettingsType::GEOLOCATION &&
-        type != ContentSettingsType::MEDIASTREAM_MIC &&
+    if (type != ContentSettingsType::MEDIASTREAM_MIC &&
         type != ContentSettingsType::MEDIASTREAM_CAMERA) {
       OnContentBlocked(type);
     }
   }
 
-  // Geolocation and media must be blocked separately, as the generic
+  // Media must be blocked separately, as the generic
   // PageSpecificContentSettings::OnContentBlocked does not apply to them.
-  OnGeolocationPermissionSet(main_frame_->GetLastCommittedURL(), false);
   MicrophoneCameraStateFlags media_blocked =
       static_cast<MicrophoneCameraStateFlags>(
           PageSpecificContentSettings::MICROPHONE_ACCESSED |

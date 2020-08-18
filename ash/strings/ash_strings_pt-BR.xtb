@@ -40,6 +40,7 @@ Veja o que você pode fazer para começar.</translation>
 <translation id="1302880136325416935">Mostrar configurações de Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1312604459020188865">Intensidade do sinal em <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="1316069254387866896">Sempre mostrar estante</translation>
+<translation id="1333308631814936910"><ph name="DISPLAY_NAME" /> conectado</translation>
 <translation id="1341651618736211726">Botão flutuante</translation>
 <translation id="1346748346194534595">À direita</translation>
 <translation id="1351937230027495976">Recolher menu</translation>
@@ -369,6 +370,7 @@ Veja o que você pode fazer para começar.</translation>
 <translation id="5114495209940374989">Capturas de tela</translation>
 <translation id="5136175204352732067">Teclado diferente conectado</translation>
 <translation id="5168181903108465623">Dispositivos de transmissão disponíveis</translation>
+<translation id="5170568018924773124">Mostrar na pasta</translation>
 <translation id="5207949376430453814">Destacar cursor de texto</translation>
 <translation id="5222676887888702881">Sair</translation>
 <translation id="523505283826916779">Configurações de acessibilidade</translation>
@@ -461,6 +463,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6288235558961782912"><ph name="USER_EMAIL_ADDRESS" /> pode ser adicionado novamente com a permissão do pai/mãe.</translation>
 <translation id="6297287540776456956">Use a stylus para selecionar uma região</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> foi substituída por <ph name="ROTATION" /></translation>
+<translation id="6315170314923504164">Voz</translation>
 <translation id="6376931439017688372">Bluetooth ativado</translation>
 <translation id="6381109794406942707">Para desbloquear o dispositivo, digite o PIN.</translation>
 <translation id="639644700271529076">CAPS LOCK está desativado</translation>
@@ -477,7 +480,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="649452524636452238">PIN do cartão inteligente</translation>
 <translation id="6501401484702599040">Transmitindo tela para <ph name="RECEIVER_NAME" /></translation>
 <translation id="652139407789908527">Sua tela ficará desligada por mais tempo que o normal (até um minuto) durante a atualização. Não pressione o botão liga/desliga enquanto a atualização está em andamento.</translation>
-<translation id="6521655319214113338">Entrada de texto manuscrito</translation>
+<translation id="6527303717912515753">Compartilhar</translation>
 <translation id="6528179044667508675">Não perturbe</translation>
 <translation id="6537270692134705506">Capturar tela</translation>
 <translation id="6537924328260219877">intensidade do sinal em <ph name="SIGNAL_STRENGTH" />, bateria do smartphone em <ph name="BATTERY_STATUS" /></translation>
@@ -559,7 +562,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7536035074519304529">Endereço IP: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">Hora de dormir</translation>
 <translation id="7561982940498449837">Fechar menu</translation>
-<translation id="7562368315689366235">Teclado de emojis</translation>
 <translation id="7564874036684306347">A movimentação de janelas para outra área de trabalho pode resultar em comportamentos inesperados. Notificações posteriores, janelas e caixas de diálogo podem ser divididas entre as áreas de trabalho.</translation>
 <translation id="7568294522609223312">Desativar cliques automáticos</translation>
 <translation id="7568637526529101738">Quando você clica com o botão direito do mouse ou toca na tela e a mantém pressionada, o Assistente mostra informações como a definição ou a conversão de unidades da sua seleção.</translation>
@@ -622,7 +624,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="8152092012181020186">Pressione Ctrl + W para fechar.</translation>
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" /> Essas configurações são gerenciadas pelo administrador.</translation>
 <translation id="8167567890448493835">Usando <ph name="LOCALE_NAME" /></translation>
-<translation id="8190698733819146287">Personalizar idiomas e entrada...</translation>
 <translation id="8192202700944119416">As notificações estão ocultas.</translation>
 <translation id="8196787716797768628">Use os gestos para alternar rapidamente entre apps e interagir com o Chromebook no modo tablet.</translation>
 <translation id="8200772114523450471">Retomar</translation>
@@ -706,6 +707,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="9029474291399787231">Atualização do Adobe Flash Player disponível</translation>
 <translation id="9047624247355796468">Abrir configurações de <ph name="NETWORK_NAME" /></translation>
 <translation id="9056839673611986238">O dispositivo será revertido</translation>
+<translation id="9065203028668620118">Editar</translation>
 <translation id="9070640332319875144">Configurações do Google Assistente</translation>
 <translation id="9072519059834302790">Tempo restante de bateria: <ph name="TIME_LEFT" />.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>

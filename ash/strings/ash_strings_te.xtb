@@ -40,10 +40,11 @@
 <translation id="1302880136325416935">బ్లూటూత్ సెట్టింగ్‌లను చూపుతుంది. <ph name="STATE_TEXT" /></translation>
 <translation id="1312604459020188865">సిగ్నల్ సామర్థ్యం <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="1316069254387866896">ఎల్లప్పుడూ అరను చూపించు</translation>
+<translation id="1333308631814936910"><ph name="DISPLAY_NAME" /> కనెక్ట్ చేయబడింది</translation>
 <translation id="1341651618736211726">అతివ్యాప్తి అంశాలు</translation>
 <translation id="1346748346194534595">కుడి</translation>
 <translation id="1351937230027495976">మెనూను కుదించు</translation>
-<translation id="1383876407941801731">శోధించు</translation>
+<translation id="1383876407941801731">సెర్చ్</translation>
 <translation id="1391102559483454063">ఆన్</translation>
 <translation id="1419738280318246476">నోటిఫికేషన్ చర్యను నిర్వహించడానికి పరికరాన్ని అన్‌లాక్ చేయండి</translation>
 <translation id="1420408895951708260">రాత్రి కాంతిని టోగుల్ చేయి. <ph name="STATE_TEXT" /></translation>
@@ -370,6 +371,7 @@
 <translation id="5114495209940374989">స్క్రీన్‌షాట్‌లు</translation>
 <translation id="5136175204352732067">వేరే కీబోర్డ్ కనెక్ట్ చేయబడింది</translation>
 <translation id="5168181903108465623">Cast పరికరాలు అందుబాటులో ఉన్నాయి</translation>
+<translation id="5170568018924773124">ఫోల్డర్‌లో చూపించు</translation>
 <translation id="5207949376430453814">వచన కర్సర్ గుర్తును హైలైట్ చేయి</translation>
 <translation id="5222676887888702881">సైన్ ఔట్</translation>
 <translation id="523505283826916779">యాక్సెస్‌ సెట్టింగ్‌లు</translation>
@@ -461,6 +463,7 @@
 <translation id="6288235558961782912">మీ తల్లి/తండ్రి అనుమతితో <ph name="USER_EMAIL_ADDRESS" />ను తిరిగి యాడ్ చేయవచ్చు.</translation>
 <translation id="6297287540776456956">ప్రాంతాన్ని ఎంచుకోవడానికి స్టైలస్‌ను ఉపయోగించండి</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> <ph name="ROTATION" />కి తిప్పబడింది</translation>
+<translation id="6315170314923504164">వాయిస్</translation>
 <translation id="6376931439017688372">బ్లూటూత్ ఆన్ చేయబడింది</translation>
 <translation id="6381109794406942707">పరికరాన్ని అన్‌లాక్ చేయడానికి, మీ పిన్‌ను ఎంటర్ చేయండి.</translation>
 <translation id="639644700271529076">CAPS LOCK ఆపివేయబడింది</translation>
@@ -477,7 +480,7 @@
 <translation id="649452524636452238">స్మార్ట్ కార్డ్ పిన్</translation>
 <translation id="6501401484702599040"><ph name="RECEIVER_NAME" />కి స్క్రీన్‌ను ప్రసారం చేస్తున్నాము</translation>
 <translation id="652139407789908527">ఈ అప్‌డేట్ సమయంలో మీ స్క్రీన్ సాధారణ కంటే ఎక్కువ సమయం పాటు (ఒక నిమిషం వరకు) బ్లాంక్‌గా అవుతుంది. అప్‌డేట్ ప్రోగ్రెస్‌లో ఉన్నప్పుడు దయచేసి పవర్ బటన్‌ను నొక్కవద్దు.</translation>
-<translation id="6521655319214113338">చేతివ్రాత ఇన్‌పుట్</translation>
+<translation id="6527303717912515753">భాగస్వామ్యం చేయి</translation>
 <translation id="6528179044667508675">అంతరాయం వద్దు</translation>
 <translation id="6537270692134705506">స్క్రీన్‌ని సంగ్రహించు</translation>
 <translation id="6537924328260219877">సిగ్నల్ సామర్థ్యం <ph name="SIGNAL_STRENGTH" />, ఫోన్ బ్యాటరీ <ph name="BATTERY_STATUS" /></translation>
@@ -559,7 +562,6 @@
 <translation id="7536035074519304529">IP చిరునామా: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">నిద్రపోయే సమయం</translation>
 <translation id="7561982940498449837">మెనూను మూసివేయి</translation>
-<translation id="7562368315689366235">ఎమోజి ఫలకం</translation>
 <translation id="7564874036684306347">విండోలను మరొక డెస్క్‌టాప్‌కు తరలించడం వలన ఊహించని ప్రవర్తన చోటు చేసుకోవచ్చు. తర్వాత చూపబడే నోటిఫికేషన్‌లు, విండోలు మరియు డైలాగ్‌లు డెస్క్‌టాప్‌ల మధ్య విభజించబడవచ్చు.</translation>
 <translation id="7568294522609223312">ఆటోమేటిక్ క్లిక్‌లను ఆఫ్ చేయండి</translation>
 <translation id="7568637526529101738">కుడి క్లిక్ లేదా ఎక్కువసేపు నొక్కి, ఉంచడం ద్వారా, Assistant మీ ఎంపికకు సంబంధించిన నిర్వచనం లేదా యూనిట్ మార్పిడి లాంటి సమాచారాన్ని చూపిస్తుంది.</translation>
@@ -622,7 +624,6 @@
 <translation id="8152092012181020186">మూసివేయడానికి Ctrl + W నొక్కండి.</translation>
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" /> ఈ సెట్టింగ్ మీ నిర్వాహకుడి ద్వారా నిర్వహించబడుతుంది.</translation>
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" />ని ఉపయోగిస్తోంది</translation>
-<translation id="8190698733819146287">భాషలు మరియు ఇన్‌పుట్ పద్ధతిని అనుకూలీకరించండి...</translation>
 <translation id="8192202700944119416">నోటిఫికేషన్‌లు దాచబడ్డాయి.</translation>
 <translation id="8196787716797768628">టాబ్లెట్ మోడ్‌లో, యాప్‌ల మధ్య త్వరగా మారడానికి, అలాగే మీ Chromebookతో ఇంటరాక్ట్ కావడానికి సంజ్ఞలను ఉపయోగించండి.</translation>
 <translation id="8200772114523450471">మ‌ళ్లీ ప్రారంభించు</translation>
@@ -706,6 +707,7 @@
 <translation id="9029474291399787231">Adobe Flash Player అప్‌డేట్ అందుబాటులో ఉంది</translation>
 <translation id="9047624247355796468"><ph name="NETWORK_NAME" /> సెట్టింగ్‌లను తెరవండి</translation>
 <translation id="9056839673611986238">పరికరం ఉపసంహరించబడుతుంది</translation>
+<translation id="9065203028668620118">సవరించు</translation>
 <translation id="9070640332319875144">అసిస్టెంట్ సెట్టింగ్‌లు</translation>
 <translation id="9072519059834302790">బ్యాటరీ ఛార్జ్ <ph name="TIME_LEFT" />లో ఖాళీ అవుతుంది.</translation>
 <translation id="9074739597929991885">బ్లూటూత్</translation>

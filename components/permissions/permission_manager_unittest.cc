@@ -694,9 +694,6 @@ TEST_F(PermissionManagerTest, GetPermissionStatusDelegation) {
   const char* kOrigin1 = "https://example.com";
   const char* kOrigin2 = "https://google.com";
 
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kPermissionDelegation);
-
   NavigateAndCommit(GURL(kOrigin1));
   content::RenderFrameHost* parent = main_rfh();
 
@@ -788,9 +785,6 @@ TEST_F(PermissionManagerTest, GetPermissionStatusDelegation) {
 TEST_F(PermissionManagerTest, SubscribeWithPermissionDelegation) {
   const char* kOrigin1 = "https://example.com";
   const char* kOrigin2 = "https://google.com";
-
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kPermissionDelegation);
 
   NavigateAndCommit(GURL(kOrigin1));
   content::RenderFrameHost* parent = main_rfh();

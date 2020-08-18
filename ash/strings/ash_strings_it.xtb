@@ -63,6 +63,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="1589090746204042747">Accedere a tutte le tue attività in questa sessione.</translation>
 <translation id="1632985212731562677">È possibile disattivare Switch Access in Impostazioni &gt; Accessibilità.</translation>
 <translation id="1654477262762802994">Avvia una query vocale</translation>
+<translation id="1665244008632896072">Attiva/disattiva la modalità Buio. <ph name="STATE_TEXT" /></translation>
 <translation id="1677472565718498478"><ph name="TIME" /> rimanenti</translation>
 <translation id="1698080062160024910">Timer: <ph name="TOTAL_TIME" /> · <ph name="LABEL" /></translation>
 <translation id="1698760176351776263">Indirizzo IPv6: <ph name="ADDRESS" /></translation>
@@ -72,6 +73,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="1747827819627189109">Tastiera sullo schermo attiva</translation>
 <translation id="1761222317188459878">Attiva/disattiva connessione di rete. <ph name="STATE_TEXT" /></translation>
 <translation id="1771761307086386028">Scorri a destra</translation>
+<translation id="1776485282219497802">Modalità Buio attiva.</translation>
 <translation id="1782199038061388045">traduzione</translation>
 <translation id="181103072419391116">Intensità del segnale <ph name="SIGNAL_STRENGTH" />, gestita dall'amministratore</translation>
 <translation id="1812997170047690955">Cosa c'è sul mio schermo?</translation>
@@ -140,6 +142,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="2484513351006226581">Premi <ph name="KEYBOARD_SHORTCUT" /> per cambiare il layout della tastiera.</translation>
 <translation id="2501920221385095727">Tasti permanenti</translation>
 <translation id="2509468283778169019">BLOC MAIUSC è attivo</translation>
+<translation id="2517829236324128850">Mostra le impostazioni della modalità Buio</translation>
 <translation id="2542089167727451762">Tocca la tua immagine del profilo</translation>
 <translation id="255671100581129685">L'Assistente Google non è disponibile in una sessione pubblica.</translation>
 <translation id="256712445991462162">la lente d'ingrandimento ancorata</translation>
@@ -312,6 +315,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="4421231901400348175">Condividi il controllo dello schermo con <ph name="HELPER_NAME" /> tramite Assistenza remota.</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="4450893287417543264">Non mostrare più</translation>
+<translation id="4458688154122353284">Interrompi registrazione dello schermo</translation>
 <translation id="4477350412780666475">Traccia successiva</translation>
 <translation id="4477892968187500306">Questo dispositivo potrebbe contenere app che non sono state verificate da Google.</translation>
 <translation id="4479639480957787382">Ethernet</translation>
@@ -366,6 +370,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="5114495209940374989">Screenshot</translation>
 <translation id="5136175204352732067">Tastiera diversa collegata</translation>
 <translation id="5168181903108465623">Dispositivi di trasmissione disponibili</translation>
+<translation id="5170568018924773124">Mostra nella cartella</translation>
 <translation id="5207949376430453814">Evidenzia il cursore di testo</translation>
 <translation id="5222676887888702881">Esci</translation>
 <translation id="523505283826916779">Impostazioni di accessibilità</translation>
@@ -416,6 +421,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5837036133683224804">Interrompi <ph name="ROUTE_TITLE" /> su <ph name="RECEIVER_NAME" /></translation>
 <translation id="5860033963881614850">OFF</translation>
+<translation id="5887866489674258948">Modalità Buio</translation>
 <translation id="5895138241574237353">Riavvia</translation>
 <translation id="5901316534475909376">MAIUSC+ESC</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
@@ -456,6 +462,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="6288235558961782912">L'indirizzo <ph name="USER_EMAIL_ADDRESS" /> potrà essere aggiunto di nuovo in un secondo momento con l'autorizzazione di un genitore.</translation>
 <translation id="6297287540776456956">Utilizza lo stilo per selezionare un'area</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> è stato ruotato a <ph name="ROTATION" /></translation>
+<translation id="6315170314923504164">Voce</translation>
 <translation id="6376931439017688372">Bluetooth attivo.</translation>
 <translation id="6381109794406942707">Per sbloccare il dispositivo, inserisci il PIN.</translation>
 <translation id="639644700271529076">Funzione BLOC MAIUSC non attiva</translation>
@@ -472,7 +479,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="649452524636452238">PIN della smart card</translation>
 <translation id="6501401484702599040">Trasmissione dello schermo a <ph name="RECEIVER_NAME" /> in corso</translation>
 <translation id="652139407789908527">Lo schermo sarà oscurato per più tempo del solito (fino a un minuto) durante questo aggiornamento. Non premere il tasto di accensione mentre è in corso l'aggiornamento.</translation>
-<translation id="6521655319214113338">Scrittura a mano libera</translation>
+<translation id="6527303717912515753">Condividi</translation>
 <translation id="6528179044667508675">Non disturbare</translation>
 <translation id="6537270692134705506">Acquisisci schermata</translation>
 <translation id="6537924328260219877">Intensità del segnale <ph name="SIGNAL_STRENGTH" />, batteria del telefono <ph name="BATTERY_STATUS" /></translation>
@@ -554,7 +561,6 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="7536035074519304529">Indirizzo IP: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">È ora di andare a letto</translation>
 <translation id="7561982940498449837">Chiudi menu</translation>
-<translation id="7562368315689366235">Riquadro di emoji</translation>
 <translation id="7564874036684306347">Lo spostamento delle finestre su un altro desktop potrebbe causare comportamenti imprevisti. Le finestre, le notifiche e le finestre di dialogo successive potrebbero essere divise tra i desktop.</translation>
 <translation id="7568294522609223312">Disattiva i clic automatici</translation>
 <translation id="7568637526529101738">Se fai clic con il pulsante destro del mouse o con una pressione prolungata, l'assistente ti mostra informazioni quali la definizione o la conversione di unità per gli elementi selezionati.</translation>
@@ -567,6 +573,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (proprietario)</translation>
 <translation id="7647488630410863958">Sblocca il dispositivo per visualizzare le notifiche</translation>
 <translation id="7649070708921625228">Guida</translation>
+<translation id="7653418004652142983">On</translation>
 <translation id="7654687942625752712">Tieni premuti entrambi i tasti del volume per cinque secondi per disattivare la funzione di lettura vocale.</translation>
 <translation id="7658239707568436148">Annulla</translation>
 <translation id="7705524343798198388">VPN</translation>
@@ -591,6 +598,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="7933084174919150729">L'Assistente Google è disponibile solo per il profilo principale.</translation>
 <translation id="79341161159229895">Account gestito da <ph name="FIRST_PARENT_EMAIL" /> e <ph name="SECOND_PARENT_EMAIL" /></translation>
 <translation id="7955885781510802139">Modalità ad alto contrasto</translation>
+<translation id="7977639574084142279">Off</translation>
 <translation id="7977927628060636163">Ricerca di reti mobili...</translation>
 <translation id="7980780401175799550">Prova nuove modalità di esplorazione di Chrome OS</translation>
 <translation id="7982789257301363584">Rete</translation>
@@ -615,7 +623,6 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="8152092012181020186">Premi CTRL + W per chiudere.</translation>
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" /> Questa impostazione è gestita dall'amministratore.</translation>
 <translation id="8167567890448493835">In uso: <ph name="LOCALE_NAME" /></translation>
-<translation id="8190698733819146287">Personalizza lingue e immissione...</translation>
 <translation id="8192202700944119416">Le notifiche sono nascoste.</translation>
 <translation id="8196787716797768628">Usa i gesti per spostarti rapidamente tra le app e per interagire con il Chromebook in modalità tablet.</translation>
 <translation id="8200772114523450471">Riprendi</translation>
@@ -691,6 +698,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="8936501819958976551">disattivato</translation>
 <translation id="8938800817013097409">Dispositivo USB-C (porta posteriore destra)</translation>
 <translation id="8940956008527784070">Batteria in esaurimento (<ph name="PERCENTAGE" />%)</translation>
+<translation id="8958665219764428373">Modalità Buio non attiva.</translation>
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8990809378771970590">In uso: <ph name="IME_NAME" /></translation>
 <translation id="899350903320462459">Sblocca il dispositivo con l'account <ph name="LOGIN_ID" /> per eseguire l'azione di notifica</translation>
@@ -698,6 +706,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="9029474291399787231">Aggiornamento di Adobe Flash Player disponibile</translation>
 <translation id="9047624247355796468">Apri Impostazioni per <ph name="NETWORK_NAME" /></translation>
 <translation id="9056839673611986238">Verrà eseguito il rollback del dispositivo</translation>
+<translation id="9065203028668620118">Modifica</translation>
 <translation id="9070640332319875144">Impostazioni assistente</translation>
 <translation id="9072519059834302790">Tempo rimanente all'esaurimento completo della batteria: <ph name="TIME_LEFT" />.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>

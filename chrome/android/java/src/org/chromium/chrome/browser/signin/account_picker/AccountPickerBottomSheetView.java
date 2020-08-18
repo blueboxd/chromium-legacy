@@ -18,6 +18,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.signin.DisplayableProfileData;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
 import org.chromium.ui.widget.ButtonCompat;
+import org.chromium.ui.widget.TextViewWithLeading;
 
 /**
  * This class is the AccountPickerBottomsheet view for the web sign-in flow.
@@ -30,6 +31,7 @@ class AccountPickerBottomSheetView implements BottomSheetContent {
     private final Context mContext;
     private final View mContentView;
     private final TextView mAccountPickerTitle;
+    private final TextViewWithLeading mAccountPickerSubtitle;
     private final RecyclerView mAccountListView;
     private final View mSelectedAccountView;
     private final View mIncognitoInterstitialView;
@@ -40,6 +42,8 @@ class AccountPickerBottomSheetView implements BottomSheetContent {
         mContentView = LayoutInflater.from(mContext).inflate(
                 R.layout.account_picker_bottom_sheet_view, null);
         mAccountPickerTitle = mContentView.findViewById(R.id.account_picker_bottom_sheet_title);
+        mAccountPickerSubtitle =
+                mContentView.findViewById(R.id.account_picker_bottom_sheet_subtitle);
         mAccountListView = mContentView.findViewById(R.id.account_picker_account_list);
         mIncognitoInterstitialView =
                 mContentView.findViewById(R.id.incognito_interstitial_bottom_sheet_view);
@@ -120,8 +124,7 @@ class AccountPickerBottomSheetView implements BottomSheetContent {
      */
     void setUpSignInInProgressView() {
         mAccountPickerTitle.setText(R.string.signin_account_picker_bottom_sheet_signin_title);
-        mContentView.findViewById(R.id.account_picker_bottom_sheet_subtitle)
-                .setVisibility(View.GONE);
+        mAccountPickerSubtitle.setVisibility(View.GONE);
         mContentView.findViewById(R.id.account_picker_horizontal_divider).setVisibility(View.GONE);
         mSelectedAccountView.setVisibility(View.GONE);
         mContinueAsButton.setVisibility(View.GONE);
@@ -135,11 +138,22 @@ class AccountPickerBottomSheetView implements BottomSheetContent {
         logo.setImageResource(R.drawable.location_bar_incognito_badge);
 
         mAccountPickerTitle.setVisibility(View.GONE);
-        mContentView.findViewById(R.id.account_picker_bottom_sheet_subtitle)
-                .setVisibility(View.GONE);
+        mAccountPickerSubtitle.setVisibility(View.GONE);
         mContentView.findViewById(R.id.account_picker_horizontal_divider).setVisibility(View.GONE);
         mAccountListView.setVisibility(View.GONE);
         mIncognitoInterstitialView.setVisibility(View.VISIBLE);
+    }
+
+    /**
+     * Sets up the view for sign-in general error.
+     */
+    void setUpSignInGeneralErrorView() {
+        // TODO(https://crbug.com/1114589): Add subtitle string for sign-in general error
+        mAccountPickerSubtitle.setVisibility(View.VISIBLE);
+
+        mContentView.findViewById(R.id.account_picker_horizontal_divider).setVisibility(View.GONE);
+        mSelectedAccountView.setVisibility(View.GONE);
+        mContentView.findViewById(R.id.account_picker_signin_spinner_view).setVisibility(View.GONE);
     }
 
     @Override

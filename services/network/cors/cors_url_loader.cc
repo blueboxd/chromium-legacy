@@ -28,9 +28,7 @@ namespace cors {
 
 namespace {
 
-bool NeedsPreflight(
-    const ResourceRequest& request,
-    const base::flat_set<std::string>& extra_safelisted_header_names) {
+bool NeedsPreflight(const ResourceRequest& request) {
   if (!IsCorsEnabledRequestMode(request.mode))
     return false;
 
@@ -50,8 +48,7 @@ bool NeedsPreflight(
     return true;
 
   return !CorsUnsafeNotForbiddenRequestHeaderNames(
-              request.headers.GetHeaderVector(), request.is_revalidating,
-              extra_safelisted_header_names)
+              request.headers.GetHeaderVector(), request.is_revalidating)
               .empty();
 }
 
@@ -223,9 +220,7 @@ void CorsURLLoader::FollowRedirect(
   //
   // After both OOR-CORS and network service are fully shipped, we may be able
   // to remove the logic in net/.
-  if ((fetch_cors_flag_ &&
-       NeedsPreflight(
-           request_, preflight_controller_->extra_safelisted_header_names())) ||
+  if ((fetch_cors_flag_ && NeedsPreflight(request_)) ||
       (!original_fetch_cors_flag && fetch_cors_flag_) ||
       (fetch_cors_flag_ && original_method != request_.method)) {
     DCHECK_NE(request_.mode, mojom::RequestMode::kNoCors);
@@ -489,9 +484,7 @@ void CorsURLLoader::StartRequest() {
   // Note that even when |NeedsPreflight(request_)| holds we don't make a
   // preflight request when |fetch_cors_flag_| is false (e.g., when the origin
   // of the url is equal to the origin of the request.
-  if (!fetch_cors_flag_ ||
-      !NeedsPreflight(request_,
-                      preflight_controller_->extra_safelisted_header_names())) {
+  if (!fetch_cors_flag_ || !NeedsPreflight(request_)) {
     StartNetworkRequest(net::OK, base::nullopt);
     return;
   }

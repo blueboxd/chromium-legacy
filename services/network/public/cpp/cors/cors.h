@@ -108,10 +108,7 @@ bool IsCorsSafelistedMethod(const std::string& method);
 COMPONENT_EXPORT(NETWORK_CPP)
 bool IsCorsSafelistedContentType(const std::string& name);
 COMPONENT_EXPORT(NETWORK_CPP)
-bool IsCorsSafelistedHeader(
-    const std::string& name,
-    const std::string& value,
-    const base::flat_set<std::string>& extra_safelisted_header_names = {});
+bool IsCorsSafelistedHeader(const std::string& name, const std::string& value);
 COMPONENT_EXPORT(NETWORK_CPP)
 bool IsNoCorsSafelistedHeaderName(const std::string& name);
 COMPONENT_EXPORT(NETWORK_CPP)
@@ -138,8 +135,7 @@ std::vector<std::string> CorsUnsafeRequestHeaderNames(
 COMPONENT_EXPORT(NETWORK_CPP)
 std::vector<std::string> CorsUnsafeNotForbiddenRequestHeaderNames(
     const net::HttpRequestHeaders::HeaderVector& headers,
-    bool is_revalidating,
-    const base::flat_set<std::string>& extra_safelisted_header_names = {});
+    bool is_revalidating);
 
 // Checks forbidden method in the fetch spec.
 // See https://fetch.spec.whatwg.org/#forbidden-method.

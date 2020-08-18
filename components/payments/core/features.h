@@ -50,9 +50,6 @@ extern const base::Feature kWebPaymentsJustInTimePaymentApp;
 // basic-card is also requested.
 extern const base::Feature kAlwaysAllowJustInTimePaymentApp;
 
-// Used to control whether canMakePayment() quota is per-method.
-extern const base::Feature kWebPaymentsPerMethodCanMakePaymentQuota;
-
 // Used to control whether the shipping address returned for the
 // ShippingAddressChangeEvent is redacted of fine-grained details.
 extern const base::Feature kWebPaymentsRedactShippingAddress;

@@ -385,7 +385,7 @@ class IdlCompiler(object):
         )
 
         def is_own_member(member):
-            return 'Unforgeable' in member.extended_attributes
+            return 'LegacyUnforgeable' in member.extended_attributes
 
         old_interfaces = self._ir_map.find_by_kind(IRMap.IR.Kind.INTERFACE)
 
@@ -517,8 +517,8 @@ class IdlCompiler(object):
                         OperationGroup.IR, item.operations)
 
     def _propagate_extattrs_to_overload_group(self):
-        ANY_OF = ('CrossOrigin', 'Custom', 'LenientThis', 'NotEnumerable',
-                  'PerWorldBindings', 'SecureContext', 'Unforgeable',
+        ANY_OF = ('CrossOrigin', 'Custom', 'LegacyUnforgeable', 'LenientThis',
+                  'NotEnumerable', 'PerWorldBindings', 'SecureContext',
                   'Unscopable')
 
         old_irs = self._ir_map.irs_of_kinds(IRMap.IR.Kind.INTERFACE,

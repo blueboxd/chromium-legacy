@@ -511,18 +511,18 @@ def runtime_enabled_feature_name(definition_or_member, runtime_features):
         return feature_name
 
 
-# [Unforgeable]
+# [LegacyUnforgeable]
 def is_unforgeable(member):
-    return 'Unforgeable' in member.extended_attributes
+    return 'LegacyUnforgeable' in member.extended_attributes
 
 
-# [Unforgeable], [Global]
+# [LegacyUnforgeable], [Global]
 def on_instance(interface, member):
     """Returns True if the interface's member needs to be defined on every
     instance object.
 
     The following members must be defined on an instance object.
-    - [Unforgeable] members
+    - [LegacyUnforgeable] members
     - regular members of [Global] interfaces
     """
     if member.is_static:
@@ -539,7 +539,7 @@ def on_instance(interface, member):
         return True
 
     if ('Global' in interface.extended_attributes
-            or 'Unforgeable' in member.extended_attributes):
+            or 'LegacyUnforgeable' in member.extended_attributes):
         return True
     return False
 
@@ -551,7 +551,7 @@ def on_prototype(interface, member):
     Most members are defined on the prototype object.  Exceptions are as
     follows.
     - static members (optional)
-    - [Unforgeable] members
+    - [LegacyUnforgeable] members
     - members of [Global] interfaces
     - named properties of [Global] interfaces
     """
@@ -569,7 +569,7 @@ def on_prototype(interface, member):
         return False
 
     if ('Global' in interface.extended_attributes
-            or 'Unforgeable' in member.extended_attributes):
+            or 'LegacyUnforgeable' in member.extended_attributes):
         return False
     return True
 

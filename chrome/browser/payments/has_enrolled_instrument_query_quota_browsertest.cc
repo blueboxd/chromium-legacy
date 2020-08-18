@@ -35,9 +35,8 @@ class HasEnrolledInstrumentQueryQuotaTestNoFlags
  public:
   HasEnrolledInstrumentQueryQuotaTestNoFlags() {
     features_.InitWithFeatures(
-        /*enabled_features=*/{}, /*disabled_features=*/{
-            features::kStrictHasEnrolledAutofillInstrument,
-            features::kWebPaymentsPerMethodCanMakePaymentQuota});
+        /*enabled_features=*/{},
+        /*disabled_features=*/{features::kStrictHasEnrolledAutofillInstrument});
   }
 
  private:
@@ -54,39 +53,13 @@ IN_PROC_BROWSER_TEST_F(HasEnrolledInstrumentQueryQuotaTestNoFlags, NoFlags) {
                             "hasEnrolledInstrument({requestShipping:true})"));
 }
 
-class HasEnrolledInstrumentQueryQuotaTestPerMethodQuota
-    : public HasEnrolledInstrumentQueryQuotaTest {
- public:
-  HasEnrolledInstrumentQueryQuotaTestPerMethodQuota() {
-    features_.InitWithFeatures(
-        /*enabled_features=*/{features::
-                                  kWebPaymentsPerMethodCanMakePaymentQuota},
-        /*disabled_features=*/{features::kStrictHasEnrolledAutofillInstrument});
-  }
-
- private:
-  base::test::ScopedFeatureList features_;
-};
-
-// Payment options do not trigger query quota when the strict autofill data
-// check is disabled. Per-method query quota is enabled in this test.
-IN_PROC_BROWSER_TEST_F(HasEnrolledInstrumentQueryQuotaTestPerMethodQuota,
-                       PerMethodQuota) {
-  EXPECT_EQ(false,
-            content::EvalJs(GetActiveWebContents(), "hasEnrolledInstrument()"));
-  EXPECT_EQ(false,
-            content::EvalJs(GetActiveWebContents(),
-                            "hasEnrolledInstrument({requestShipping:true})"));
-}
-
 class HasEnrolledInstrumentQueryQuotaTestStrictAutofillDataCheck
     : public HasEnrolledInstrumentQueryQuotaTest {
  public:
   HasEnrolledInstrumentQueryQuotaTestStrictAutofillDataCheck() {
     features_.InitWithFeatures(
         /*enabled_features=*/{features::kStrictHasEnrolledAutofillInstrument},
-        /*disabled_features=*/{
-            features::kWebPaymentsPerMethodCanMakePaymentQuota});
+        /*disabled_features=*/{});
   }
 
  private:
@@ -98,32 +71,6 @@ class HasEnrolledInstrumentQueryQuotaTestStrictAutofillDataCheck
 IN_PROC_BROWSER_TEST_F(
     HasEnrolledInstrumentQueryQuotaTestStrictAutofillDataCheck,
     StrictAutofillDataCheck) {
-  EXPECT_EQ(false,
-            content::EvalJs(GetActiveWebContents(), "hasEnrolledInstrument()"));
-  EXPECT_EQ("NotAllowedError: Exceeded query quota for hasEnrolledInstrument",
-            content::EvalJs(GetActiveWebContents(),
-                            "hasEnrolledInstrument({requestShipping:true})"));
-}
-
-class HasEnrolledInstrumentQueryQuotaTestBothFlags
-    : public HasEnrolledInstrumentQueryQuotaTest {
- public:
-  HasEnrolledInstrumentQueryQuotaTestBothFlags() {
-    features_.InitWithFeatures(
-        /*enabled_features=*/{features::kStrictHasEnrolledAutofillInstrument,
-                              features::
-                                  kWebPaymentsPerMethodCanMakePaymentQuota},
-        /*disabled_features=*/{});
-  }
-
- private:
-  base::test::ScopedFeatureList features_;
-};
-
-// Payment options trigger query quota for Basic Card when the strict autofill
-// data check is enabled. Per-method query quota is also enabled in this test.
-IN_PROC_BROWSER_TEST_F(HasEnrolledInstrumentQueryQuotaTestBothFlags,
-                       BothFlags) {
   EXPECT_EQ(false,
             content::EvalJs(GetActiveWebContents(), "hasEnrolledInstrument()"));
   EXPECT_EQ("NotAllowedError: Exceeded query quota for hasEnrolledInstrument",

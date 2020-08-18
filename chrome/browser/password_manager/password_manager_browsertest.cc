@@ -1275,10 +1275,8 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
 
 // If there is a username and password with prefilled values, overwrite the
 // password if the username looks like a placeholder value
-
-// TODO(crbug.com/1116886) Renable this test
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
-                       DISABLED_PlaceholderPasswordOverwritten) {
+                       PlaceholderPasswordOverwritten) {
   // Save a credential to the password store.
   scoped_refptr<password_manager::TestPasswordStore> password_store =
       static_cast<password_manager::TestPasswordStore*>(
@@ -1337,7 +1335,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
 
   // Now make sure the fields are overwritten
   CheckElementValue("username_field", "example@example.com");
-  CheckElementValue("password_field", "savedPass");
+  WaitForElementValue("password_field", "savedPass");
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,

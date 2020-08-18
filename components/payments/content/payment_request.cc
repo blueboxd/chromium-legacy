@@ -482,7 +482,7 @@ void PaymentRequest::CanMakePayment() {
   }
 }
 
-void PaymentRequest::HasEnrolledInstrument(bool per_method_quota) {
+void PaymentRequest::HasEnrolledInstrument() {
   if (!IsInitialized()) {
     log_.Error(errors::kCannotCallHasEnrolledInstrumentWithoutInit);
     OnConnectionTerminated();
@@ -496,12 +496,11 @@ void PaymentRequest::HasEnrolledInstrument(bool per_method_quota) {
 
   if (!delegate_->GetPrefService()->GetBoolean(kCanMakePaymentEnabled) ||
       !state_) {
-    HasEnrolledInstrumentCallback(per_method_quota,
-                                  /*has_enrolled_instrument=*/false);
+    HasEnrolledInstrumentCallback(/*has_enrolled_instrument=*/false);
   } else {
     state_->HasEnrolledInstrument(
         base::BindOnce(&PaymentRequest::HasEnrolledInstrumentCallback,
-                       weak_ptr_factory_.GetWeakPtr(), per_method_quota));
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
@@ -803,12 +802,11 @@ void PaymentRequest::CanMakePaymentCallback(bool can_make_payment) {
 }
 
 void PaymentRequest::HasEnrolledInstrumentCallback(
-    bool per_method_quota,
     bool has_enrolled_instrument) {
   if (!spec_ || CanMakePaymentQueryFactory::GetInstance()
                     ->GetForContext(web_contents_->GetBrowserContext())
                     ->CanQuery(top_level_origin_, frame_origin_,
-                               spec_->query_for_quota(), per_method_quota)) {
+                               spec_->query_for_quota())) {
     RespondToHasEnrolledInstrumentQuery(has_enrolled_instrument,
                                         /*warn_local_development=*/false);
   } else if (UrlUtil::IsLocalDevelopmentUrl(frame_origin_)) {

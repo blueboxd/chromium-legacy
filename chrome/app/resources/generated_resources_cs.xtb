@@ -3,6 +3,7 @@
 <translationbundle lang="cs">
 <translation id="1001307489511021749">Vaše aplikace, nastavení a další přizpůsobení se budou synchronizovat do všech zařízení se systémem Chrome OS, na kterých jste přihlášeni pomocí svého účtu Google.</translation>
 <translation id="1003088604756913841">Otevřít odkaz v novém okně aplikace <ph name="APP" /></translation>
+<translation id="1003363546227723021">Když je obrazovka nečinná, bude zobrazovat fotky, čas, počasí a informace z médií</translation>
 <translation id="1004218526896219317">Přístup k webu</translation>
 <translation id="1005274289863221750">Používat mikrofon a fotoaparát</translation>
 <translation id="1005333234656240382">Aktivovat ladění ADB?</translation>
@@ -94,6 +95,7 @@
 <translation id="1108600514891325577">&amp;Zastavit</translation>
 <translation id="1110155001042129815">Počkat</translation>
 <translation id="1112420131909513020">Karta na pozadí používá Bluetooth</translation>
+<translation id="1113892970288677790">Vyberte dílo a obrázky</translation>
 <translation id="1114102982691049955"><ph name="PRINTER_MANUFACTURER" /> <ph name="PRINTER_MODEL" /> (USB)</translation>
 <translation id="1114202307280046356">Diamant</translation>
 <translation id="1114335938027186412">Váš počítač obsahuje bezpečnostní zařízení TPM (Trusted Platform Module), jehož pomocí je do systému Chrome OS implementováno mnoho důležitých funkcí zabezpečení. Další informace najdete v centru nápovědy k Chromebookům: https://support.google.com/chromebook/?p=tpm</translation>
@@ -201,6 +203,7 @@
 <translation id="1224275271335624810">Nejrychlejší</translation>
 <translation id="1225177025209879837">Probíhá zpracování požadavku...</translation>
 <translation id="1227507814927581609">Při připojování k zařízení <ph name="DEVICE_NAME" /> selhalo ověření.</translation>
+<translation id="1230417814058465809">Je zapnutá standardní ochrana. Ještě vyšší zabezpečení poskytuje pokročilá ochrana.</translation>
 <translation id="1231733316453485619">Zapnout synchronizaci?</translation>
 <translation id="1232569758102978740">Bez názvu</translation>
 <translation id="1233497634904001272">Tuto žádost dokončíte tím, že se opět dotknete bezpečnostního klíče.</translation>
@@ -1252,6 +1255,7 @@ Chcete-li spravovat nastavení tohoto účtu, nainstalujte si do zařízení apl
 <translation id="249113932447298600">Je nám líto, zařízení <ph name="DEVICE_LABEL" /> není v současné době podporováno.</translation>
 <translation id="2492461744635776704">Probíhá příprava žádosti o podepsání certifikátu</translation>
 <translation id="249303669840926644">Registraci se nepodařilo dokončit</translation>
+<translation id="2493126929778606526">Vaše nejlepší fotky vybrané automaticky</translation>
 <translation id="2495777824269688114">Objevte další funkce a najděte odpovědi. Nápovědu otevřete tlačítkem „?“.</translation>
 <translation id="2496180316473517155">Historie procházení</translation>
 <translation id="2497229222757901769">Rychlost myši</translation>
@@ -1345,6 +1349,7 @@ Chcete-li spravovat nastavení tohoto účtu, nainstalujte si do zařízení apl
 <translation id="2604255671529671813">Chyba připojení k síti</translation>
 <translation id="2606246518223360146">Propojit data</translation>
 <translation id="2607101320794533334">Informace o veřejném klíči subjektu</translation>
+<translation id="2607968157341167679">Žádná alba. Vytvořte album ve <ph name="LINK_BEGIN" />Fotkách Google<ph name="LINK_END" />.</translation>
 <translation id="2609896558069604090">Vytvořit zástupce…</translation>
 <translation id="2610157865375787051">Režim spánku</translation>
 <translation id="2610260699262139870">&amp;Skutečná velikost</translation>
@@ -1481,6 +1486,7 @@ Chcete-li spravovat nastavení tohoto účtu, nainstalujte si do zařízení apl
 <translation id="2762441749940182211">Kamera je blokována</translation>
 <translation id="2764786626780673772">Podrobnosti sítě VPN</translation>
 <translation id="2765217105034171413">Malé</translation>
+<translation id="2765729904637714153">Oživte své oblíbené vzpomínky. Alba můžete přidat a upravit ve <ph name="LINK_BEGIN" />Fotkách Google<ph name="LINK_END" />.</translation>
 <translation id="2766006623206032690">Vl&amp;ožit a rovnou otevřít</translation>
 <translation id="2766161002040448006">Požádat rodiče</translation>
 <translation id="2767127727915954024">Dokud nezavřete všechny karty webu <ph name="ORIGIN" />, bude moci upravovat soubor <ph name="FILENAME" /></translation>
@@ -2113,6 +2119,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="3566325075220776093">Z tohoto zařízení</translation>
 <translation id="3566721612727112615">Nebyly přidány žádné weby</translation>
 <translation id="3569382839528428029">Chcete, aby aplikace <ph name="APP_NAME" /> sdílela vaši obrazovku?</translation>
+<translation id="3569407787324516067">Spořič obrazovky</translation>
 <translation id="3569682580018832495">Web <ph name="ORIGIN" /> může číst následující soubory a složky</translation>
 <translation id="3571734092741541777">Nastavit</translation>
 <translation id="3574210789297084292">Přihlaste se</translation>
@@ -2261,6 +2268,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="3727148787322499904">Změna tohoto nastavení bude mít dopad na všechny sdílené sítě</translation>
 <translation id="3727187387656390258">Prozkoumat vyskakovací kontextovou nabídku</translation>
 <translation id="372722114124766626">Pouze jednou</translation>
+<translation id="3728188878314831180">Zrcadlit oznámení z telefonu</translation>
 <translation id="3728681439294129328">Konfigurovat síťovou adresu</translation>
 <translation id="3729303374699765035">Zeptat se, když chce web objevit zařízení Bluetooth v okolí</translation>
 <translation id="3729506734996624908">Povolené weby</translation>
@@ -2987,7 +2995,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="4638930039313743000">Zapnout ladění ADB</translation>
 <translation id="4641539339823703554">Chromu se nepodařilo nastavit systémový čas. Zkontrolujte čas níže a v případě potřeby jej opravte.</translation>
 <translation id="4643612240819915418">&amp;Otevřít video v nové kartě</translation>
-<translation id="4645551927492192497">{NUM_DAYS,plural, =1{Organizace <ph name="DOMAIN" /> vyžaduje, abyste se dnes za účelem stažení aktualizace připojili k síti Wi-Fi. Případně ji můžete stáhnout přes měřené připojení (mohou být účtovány poplatky).}few{Organizace <ph name="DOMAIN" /> vyžaduje, abyste do stanoveného termínu za účelem stažení aktualizace připojili k síti Wi-Fi. Případně ji můžete stáhnout přes měřené připojení (mohou být účtovány poplatky).}many{Organizace <ph name="DOMAIN" /> vyžaduje, abyste do stanoveného termínu za účelem stažení aktualizace připojili k síti Wi-Fi. Případně ji můžete stáhnout přes měřené připojení (mohou být účtovány poplatky).}other{Organizace <ph name="DOMAIN" /> vyžaduje, abyste do stanoveného termínu za účelem stažení aktualizace připojili k síti Wi-Fi. Případně ji můžete stáhnout přes měřené připojení (mohou být účtovány poplatky).}}</translation>
+<translation id="4645551927492192497">{NUM_DAYS,plural, =1{Organizace <ph name="DOMAIN" /> vyžaduje, abyste se dnes za účelem stažení aktualizace připojili k síti Wi-Fi. Případně ji můžete stáhnout přes měřené připojení (mohou být účtovány poplatky).}few{Organizace <ph name="DOMAIN" /> vyžaduje, abyste se do stanoveného termínu za účelem stažení aktualizace připojili k síti Wi-Fi. Případně ji můžete stáhnout přes měřené připojení (mohou být účtovány poplatky).}many{Organizace <ph name="DOMAIN" /> vyžaduje, abyste se do stanoveného termínu za účelem stažení aktualizace připojili k síti Wi-Fi. Případně ji můžete stáhnout přes měřené připojení (mohou být účtovány poplatky).}other{Organizace <ph name="DOMAIN" /> vyžaduje, abyste se do stanoveného termínu za účelem stažení aktualizace připojili k síti Wi-Fi. Případně ji můžete stáhnout přes měřené připojení (mohou být účtovány poplatky).}}</translation>
 <translation id="4645676300727003670">&amp;Zachovat</translation>
 <translation id="4646675363240786305">Porty</translation>
 <translation id="4646949265910132906">Zabezpečené připojení k Wi-Fi</translation>
@@ -3126,7 +3134,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="4842976633412754305">Tato stránka se pokouší načíst skripty z neověřených zdrojů.</translation>
 <translation id="4844333629810439236">Jiné klávesnice</translation>
 <translation id="4846680374085650406">Řídíte se doporučením administrátora pro toto nastavení.</translation>
-<translation id="4847902821209177679">Je vybrána možnost <ph name="TOPIC_SOURCE" /> <ph name="TOPIC_SOURCE_DESC" />, stisknutím klávesy Enter vyberete alba <ph name="TOPIC_SOURCE" /></translation>
+<translation id="4847902821209177679">Je vybrána možnost <ph name="TOPIC_SOURCE" /> <ph name="TOPIC_SOURCE_DESC" />, stisknutím klávesy Enter vyberete alba z: <ph name="TOPIC_SOURCE" /></translation>
 <translation id="4848191975108266266">Příkaz „Ok Google“ Asistenta Google</translation>
 <translation id="4848518990323155912">Aktivovat uzamykání SIM karty (k použití mobilních dat vyžadovat PIN)</translation>
 <translation id="4849286518551984791">Coordinated Universal Time (UTC/GMT)</translation>
@@ -4709,6 +4717,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="6824584962142919697">&amp;Prozkoumat prvky</translation>
 <translation id="6825184156888454064">Seřadit podle názvu</translation>
 <translation id="6826872289184051766">Ověřit přes USB</translation>
+<translation id="6827623133556594466">Služba Google Cloud Print bude podporována jen do 31. prosince. <ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /></translation>
 <translation id="6828153365543658583">Omezit přihlášení na následující uživatele:</translation>
 <translation id="6828182567531805778">Chcete-li synchronizovat data, zadejte heslovou frázi</translation>
 <translation id="682871081149631693">QuickFix</translation>
@@ -5327,6 +5336,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="7605594153474022051">Synchronizace nefunguje</translation>
 <translation id="7606992457248886637">Autority</translation>
 <translation id="7607002721634913082">Přerušeno</translation>
+<translation id="7608810328871051088">Předvolby Androidu</translation>
 <translation id="7609148976235050828">Připojte se k internetu a zkuste to znovu</translation>
 <translation id="7614260613810441905">Zeptat se, když chce web upravit soubory nebo složky v zařízení (doporučeno)</translation>
 <translation id="761530003705945209">Zálohování na Disk Google. Snadno obnovte svá data nebo kdykoliv přejděte na jiné zařízení. Záloha zahrnuje data aplikací. Zálohy se nahrávají do Googlu a šifrují pomocí hesla účtu Google.</translation>
@@ -5700,7 +5710,6 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="8028060951694135607">Obnovení klíčů Microsoft</translation>
 <translation id="8028803902702117856">Stahování souboru <ph name="FILE_NAME" /> – <ph name="SIZE" /></translation>
 <translation id="8028993641010258682">Velikost</translation>
-<translation id="8030656706657716245">Přidat tiskárnu</translation>
 <translation id="8030852056903932865">Schválit</translation>
 <translation id="8032244173881942855">Kartu nelze odeslat.</translation>
 <translation id="8033827949643255796">vybráno</translation>
@@ -5856,6 +5865,7 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="8225753906568652947">Využít nabídky</translation>
 <translation id="8226222018808695353">Zakázané</translation>
 <translation id="8226619461731305576">Fronta</translation>
+<translation id="8226628635270268143">Vyberte své oblíbené fotky a alba</translation>
 <translation id="8226742006292257240">Níže je náhodně vygenerované heslo modulu TPM, které bylo přiřazeno vašemu počítači:</translation>
 <translation id="8227119283605456246">Přiložit soubor</translation>
 <translation id="8229943166551236192">Data ze zařízení budou vymazána do 24 hodin</translation>
@@ -6354,6 +6364,7 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="882854468542856424">Nepovolovat žádným webům objevovat zařízení Bluetooth v okolí</translation>
 <translation id="8828933418460119530">Název DNS</translation>
 <translation id="883062543841130884">Náhrady</translation>
+<translation id="8830779999439981481">Restartování a instalace aktualizací</translation>
 <translation id="8830796635868321089">Při použití aktuálního nastavení proxy serveru se kontrola aktualizací nezdařila. Upravte <ph name="PROXY_SETTINGS_LINK_START" />nastavení proxy serveru<ph name="PROXY_SETTINGS_LINK_END" />.</translation>
 <translation id="8831140208248705279"><ph name="DEVICE_TYPE" /> a telefon Android společně fungují lépe. Když je propojíte, budete moci posílat SMS z počítače, sdílet připojení k internetu a odemykat zařízení <ph name="DEVICE_TYPE" /> pomocí telefonu.<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />Další informace<ph name="LINK_END" /></translation>
 <translation id="8834039744648160717">Konfiguraci sítě spravuje <ph name="USER_EMAIL" />.</translation>

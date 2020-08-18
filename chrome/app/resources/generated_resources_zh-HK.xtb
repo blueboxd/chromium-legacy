@@ -3,6 +3,7 @@
 <translationbundle lang="zh-HK">
 <translation id="1001307489511021749">您的應用程式、設定和其他自訂設定將會同步至所有您使用 Google 帳戶登入的 Chrome 作業系統裝置。</translation>
 <translation id="1003088604756913841">在 <ph name="APP" />的新視窗中開啟連結</translation>
+<translation id="1003363546227723021">在螢幕閒置時，顯示相片、時間、天氣和媒體資訊</translation>
 <translation id="1004218526896219317">網站存取權</translation>
 <translation id="1005274289863221750">使用您的麥克風和相機</translation>
 <translation id="1005333234656240382">要啟用 ADB 偵錯嗎？</translation>
@@ -94,6 +95,7 @@
 <translation id="1108600514891325577">停止(&amp;S)</translation>
 <translation id="1110155001042129815">等一下</translation>
 <translation id="1112420131909513020">背景分頁正在使用藍牙</translation>
+<translation id="1113892970288677790">選取系統收錄的藝術圖片和圖像</translation>
 <translation id="1114102982691049955"><ph name="PRINTER_MANUFACTURER" /> <ph name="PRINTER_MODEL" /> (USB)</translation>
 <translation id="1114202307280046356">菱形鍵</translation>
 <translation id="1114335938027186412">您的電腦具有可信任平台模組 (TPM) 安全性裝置，Chrome 作業系統需要透過該裝置來執行許多重要的安全防護功能。如要進一步瞭解，請瀏覽 Chromebook 說明中心：https://support.google.com/chromebook/?p=tpm</translation>
@@ -201,6 +203,7 @@
 <translation id="1224275271335624810">最快</translation>
 <translation id="1225177025209879837">正在處理要求…</translation>
 <translation id="1227507814927581609">驗證在連線至「<ph name="DEVICE_NAME" />」時失敗。</translation>
+<translation id="1230417814058465809">已啟用標準防護功能。如需更完整的安全防護，請使用強化防護功能。</translation>
 <translation id="1231733316453485619">要開啟同步處理功能嗎？</translation>
 <translation id="1232569758102978740">無標題</translation>
 <translation id="1233497634904001272">再次輕觸安全密鑰即可完成要求。</translation>
@@ -1252,6 +1255,7 @@
 <translation id="249113932447298600">很抱歉，系統目前不支援 <ph name="DEVICE_LABEL" /> 裝置。</translation>
 <translation id="2492461744635776704">正在準備憑證簽署要求</translation>
 <translation id="249303669840926644">無法完成註冊</translation>
+<translation id="2493126929778606526">你的最佳相片 (自動選取)</translation>
 <translation id="2495777824269688114">探索更多功能或獲得解答。選取 [？] 即可取得協助。</translation>
 <translation id="2496180316473517155">瀏覽記錄</translation>
 <translation id="2497229222757901769">滑鼠速度</translation>
@@ -1345,6 +1349,7 @@
 <translation id="2604255671529671813">網絡連線錯誤</translation>
 <translation id="2606246518223360146">連結資料</translation>
 <translation id="2607101320794533334">主體公開金鑰資料</translation>
+<translation id="2607968157341167679">沒有任何相簿。請在 <ph name="LINK_BEGIN" />Google 相簿<ph name="LINK_END" />中建立相簿。</translation>
 <translation id="2609896558069604090">建立捷徑…</translation>
 <translation id="2610157865375787051">休眠</translation>
 <translation id="2610260699262139870">實際大小(&amp;C)</translation>
@@ -1481,6 +1486,7 @@
 <translation id="2762441749940182211">已禁止使用相機</translation>
 <translation id="2764786626780673772">VPN 詳細資料</translation>
 <translation id="2765217105034171413">小</translation>
+<translation id="2765729904637714153">重溫你最珍視的美好回憶。如要新增或編輯相簿，請前往 <ph name="LINK_BEGIN" />Google 相簿<ph name="LINK_END" />。</translation>
 <translation id="2766006623206032690">貼上及前往(&amp;S)</translation>
 <translation id="2766161002040448006">詢問家長</translation>
 <translation id="2767127727915954024">在您關閉此網站的所有分頁前，<ph name="ORIGIN" /> 都能編輯「<ph name="FILENAME" />」</translation>
@@ -2113,6 +2119,7 @@
 <translation id="3566325075220776093">此裝置中的密碼</translation>
 <translation id="3566721612727112615">沒有新增任何網站</translation>
 <translation id="3569382839528428029">您想讓 <ph name="APP_NAME" /> 共用您的螢幕嗎？</translation>
+<translation id="3569407787324516067">螢幕保護程式</translation>
 <translation id="3569682580018832495"><ph name="ORIGIN" /> 可查看以下檔案和資料夾</translation>
 <translation id="3571734092741541777">設定</translation>
 <translation id="3574210789297084292">登入</translation>
@@ -2261,6 +2268,7 @@
 <translation id="3727148787322499904">變更此設定將會影響所有共用網絡</translation>
 <translation id="3727187387656390258">檢查彈出式視窗</translation>
 <translation id="372722114124766626">只限一次</translation>
+<translation id="3728188878314831180">鏡向投射手機的通知</translation>
 <translation id="3728681439294129328">設定網絡地址</translation>
 <translation id="3729303374699765035">在網站要探索附近的藍牙裝置時詢問您</translation>
 <translation id="3729506734996624908">允許的網站</translation>
@@ -4710,6 +4718,7 @@
 <translation id="6824584962142919697">檢查元素 (&amp;I)</translation>
 <translation id="6825184156888454064">按名稱排序</translation>
 <translation id="6826872289184051766">透過 USB 驗證</translation>
+<translation id="6827623133556594466">12 月 31 日之後，系統將不再支援 Google 雲端列印服務。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="6828153365543658583">只允許下列使用者登入：</translation>
 <translation id="6828182567531805778">如要同步處理資料，請輸入您的密碼短語</translation>
 <translation id="682871081149631693">快速修正</translation>
@@ -5328,6 +5337,7 @@
 <translation id="7605594153474022051">同步處理功能無法正常運作</translation>
 <translation id="7606992457248886637">授權單位</translation>
 <translation id="7607002721634913082">已暫停</translation>
+<translation id="7608810328871051088">Android 偏好設定</translation>
 <translation id="7609148976235050828">請連線至互聯網，然後再試一次。</translation>
 <translation id="7614260613810441905">網站必須先詢問您，才能編輯裝置上的檔案或資料夾 (建議使用)</translation>
 <translation id="761530003705945209">備份至「Google 雲端硬碟」。您可隨時輕鬆還原資料或轉用其他裝置。備份包含應用程式資料。您的備份會上載至 Google，並透過您的 Google 帳戶密碼加密。</translation>
@@ -5701,7 +5711,6 @@
 <translation id="8028060951694135607">Microsoft 金鑰復原</translation>
 <translation id="8028803902702117856">下載緊 <ph name="FILE_NAME" />，檔案大小係 <ph name="SIZE" /></translation>
 <translation id="8028993641010258682">大小</translation>
-<translation id="8030656706657716245">新增打印機</translation>
 <translation id="8030852056903932865">核准</translation>
 <translation id="8032244173881942855">無法投放分頁。</translation>
 <translation id="8033827949643255796">已選取</translation>
@@ -5857,6 +5866,7 @@
 <translation id="8225753906568652947">兌換優惠</translation>
 <translation id="8226222018808695353">禁止</translation>
 <translation id="8226619461731305576">佇列</translation>
+<translation id="8226628635270268143">選擇你最喜愛的相片和相簿</translation>
 <translation id="8226742006292257240">以下是您的電腦專用的 TPM 密碼 (由系統隨機產生)：</translation>
 <translation id="8227119283605456246">附加檔案</translation>
 <translation id="8229943166551236192">系統將在 24 小時後刪除裝置資料</translation>
@@ -6355,6 +6365,7 @@
 <translation id="882854468542856424">不允許任何網站探索附近的藍牙裝置</translation>
 <translation id="8828933418460119530">DNS 名稱</translation>
 <translation id="883062543841130884">替代項目</translation>
+<translation id="8830779999439981481">正在重新啟動以套用更新</translation>
 <translation id="8830796635868321089">無法以目前的 Proxy 設定啟動更新檢查，請調整<ph name="PROXY_SETTINGS_LINK_START" />Proxy 設定<ph name="PROXY_SETTINGS_LINK_END" />。</translation>
 <translation id="8831140208248705279">將 <ph name="DEVICE_TYPE" /> 與 Android 手機配合使用，享受更優質的體驗。連接這兩部裝置後，您便可從電腦發短訊、分享互聯網連線，以及使用手機解鎖 <ph name="DEVICE_TYPE" />。<ph name="FOOTNOTE_POINTER" /><ph name="LINK_BEGIN" />瞭解詳情<ph name="LINK_END" /></translation>
 <translation id="8834039744648160717">網絡設定由 <ph name="USER_EMAIL" /> 控制。</translation>

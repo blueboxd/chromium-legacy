@@ -132,13 +132,6 @@ void ContentSettingBubbleDialogTest::ApplyContentSettingsForType(
           DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED);
       break;
     }
-    case ContentSettingsType::GEOLOCATION:
-      content_settings->OnGeolocationPermissionSet(GURL("https://example.com/"),
-                                                   false);
-      break;
-    case ContentSettingsType::MIDI_SYSEX:
-      content_settings->OnMidiSysExAccessBlocked(GURL("https://example.com/"));
-      break;
     case ContentSettingsType::POPUPS: {
       ui_test_utils::NavigateToURL(
           browser(),

@@ -15,6 +15,7 @@ import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcher;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcherConfig;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcherFactory;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.browser_ui.util.ConversionUtils;
 import org.chromium.components.browser_ui.util.GlobalDiscardableReferencePool;
 import org.chromium.components.browser_ui.widget.image_tiles.ImageTile;
@@ -95,6 +96,22 @@ public class OmniboxQueryTileCoordinator {
         suggestionView.addView(tilesView);
     }
 
+    /**
+     * Triggered when current user profile is changed. This method creates image fetcher using
+     * current user profile.
+     * @param profile Current user profile.
+     */
+    public void setProfile(Profile profile) {
+        if (mImageFetcher != null) {
+            mImageFetcher.destroy();
+            mImageFetcher = null;
+        }
+
+        mImageFetcher = ImageFetcherFactory.createImageFetcher(
+                ImageFetcherConfig.IN_MEMORY_WITH_DISK_CACHE, profile,
+                GlobalDiscardableReferencePool.getReferencePool(), MAX_IMAGE_CACHE_SIZE);
+    }
+
     /** @return A {@link ImageTileCoordinator} instance. Creates if it doesn't exist yet. */
     private ImageTileCoordinator getTileCoordinator() {
         if (mTileCoordinator == null) {
@@ -125,17 +142,7 @@ public class OmniboxQueryTileCoordinator {
         ImageFetcher.Params params = ImageFetcher.Params.createWithExpirationInterval(
                 queryTile.urls.get(0), ImageFetcher.QUERY_TILE_UMA_CLIENT_NAME, mTileWidth,
                 mTileWidth, QueryTileConstants.IMAGE_EXPIRATION_INTERVAL_MINUTES);
-        getImageFetcher().fetchImage(params, bitmap -> callback.onResult(Arrays.asList(bitmap)));
-    }
-
-    /** Create an ImageFetcher instance. Only created if needed. */
-    private ImageFetcher getImageFetcher() {
-        if (mImageFetcher == null) {
-            mImageFetcher = ImageFetcherFactory.createImageFetcher(
-                    ImageFetcherConfig.IN_MEMORY_WITH_DISK_CACHE,
-                    GlobalDiscardableReferencePool.getReferencePool(), MAX_IMAGE_CACHE_SIZE);
-        }
-        return mImageFetcher;
+        mImageFetcher.fetchImage(params, bitmap -> callback.onResult(Arrays.asList(bitmap)));
     }
 
     private void onTileClicked(ImageTile tile) {

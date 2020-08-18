@@ -495,7 +495,7 @@
   {
     "name": "click-to-call-ui",
     "owners": [ "//chrome/browser/sharing/OWNERS" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 90
   },
   {
     "name": "click-to-open-pdf",
@@ -1352,7 +1352,7 @@
   {
     "name": "enable-cssom-view-scroll-coordinates",
     "owners": [ "cathiechen@igalia.com", "fwang@igalia.com" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 87
   },
   {
     "name": "enable-custom-mac-paper-sizes",
@@ -3602,11 +3602,6 @@
     "expiry_milestone": 89
   },
   {
-    "name": "per-method-can-make-payment-quota",
-    "owners": [ "rouslan" ],
-    "expiry_milestone": 78
-  },
-  {
     "name": "percent-based-scrolling",
     "owners": [ "dlibby@microsoft.com", "sarsha@microsoft.com" ],
     "expiry_milestone": 89
@@ -3818,22 +3813,22 @@
   {
     "name": "remote-copy-image-notification",
     "owners": [ "//chrome/browser/sharing/OWNERS" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 90
   },
   {
     "name": "remote-copy-persistent-notification",
     "owners": [ "//chrome/browser/sharing/OWNERS" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 90
   },
   {
     "name": "remote-copy-progress-notification",
     "owners": [ "//chrome/browser/sharing/OWNERS" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 90
   },
   {
     "name": "remote-copy-receiver",
     "owners": [ "//chrome/browser/sharing/OWNERS" ],
-    "expiry_milestone": 86
+    "expiry_milestone": 90
   },
   {
     "name": "report-feed-user-actions",
@@ -3981,7 +3976,7 @@
   {
     "name": "shared-clipboard-ui",
     "owners": [ "//chrome/browser/sharing/OWNERS" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 90
   },
   {
     "name": "shared-highlighting-ios",

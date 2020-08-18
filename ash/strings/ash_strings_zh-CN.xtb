@@ -369,6 +369,7 @@
 <translation id="5114495209940374989">屏幕截图</translation>
 <translation id="5136175204352732067">所连接的键盘已不是原来的那个</translation>
 <translation id="5168181903108465623">有可用的投射设备</translation>
+<translation id="5170568018924773124">在文件夹中显示</translation>
 <translation id="5207949376430453814">突出显示文本插入符号</translation>
 <translation id="5222676887888702881">退出</translation>
 <translation id="523505283826916779">无障碍设置</translation>
@@ -460,6 +461,7 @@
 <translation id="6288235558961782912">日后在获得家长允许的情况下可以重新添加 <ph name="USER_EMAIL_ADDRESS" />。</translation>
 <translation id="6297287540776456956">使用触控笔选择一个区域</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" />已旋转为<ph name="ROTATION" /></translation>
+<translation id="6315170314923504164">语音</translation>
 <translation id="6376931439017688372">蓝牙已开启</translation>
 <translation id="6381109794406942707">要解锁此设备，请输入您的 PIN 码。</translation>
 <translation id="639644700271529076">CAPS LOCK 已关闭</translation>
@@ -476,7 +478,7 @@
 <translation id="649452524636452238">智能卡 PIN 码</translation>
 <translation id="6501401484702599040">正在将屏幕投射到“<ph name="RECEIVER_NAME" />”</translation>
 <translation id="652139407789908527">在此次更新期间，您的屏幕变为空白的时间会比平时长（可长达 1 分钟）。在更新过程中，请不要按电源按钮。</translation>
-<translation id="6521655319214113338">手写输入</translation>
+<translation id="6527303717912515753">分享</translation>
 <translation id="6528179044667508675">请勿打扰</translation>
 <translation id="6537270692134705506">获取屏幕截图</translation>
 <translation id="6537924328260219877">信号强度为 <ph name="SIGNAL_STRENGTH" />，剩余电量为 <ph name="BATTERY_STATUS" /></translation>
@@ -558,7 +560,6 @@
 <translation id="7536035074519304529">IP 地址：<ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">该睡觉了</translation>
 <translation id="7561982940498449837">关闭菜单</translation>
-<translation id="7562368315689366235">表情符号面板</translation>
 <translation id="7564874036684306347">将窗口移至另一桌面可能会导致出现意外行为 - 后续的通知、窗口和对话框可能会被拆分到不同的桌面中。</translation>
 <translation id="7568294522609223312">关闭自动点击</translation>
 <translation id="7568637526529101738">只要您右键点击或长按所选内容，Google 助理即会显示与其相关的信息（例如定义或单位换算）。</translation>
@@ -621,7 +622,6 @@
 <translation id="8152092012181020186">按 Ctrl + W 即可关闭。</translation>
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" />：此设置由您的管理员管理。</translation>
 <translation id="8167567890448493835">目前使用的是“<ph name="LOCALE_NAME" />”</translation>
-<translation id="8190698733819146287">自定义语言和输入法...</translation>
 <translation id="8192202700944119416">已隐藏通知。</translation>
 <translation id="8196787716797768628">在平板电脑模式下，使用手势快速切换应用以及与 Chromebook 互动。</translation>
 <translation id="8200772114523450471">继续</translation>
@@ -705,6 +705,7 @@
 <translation id="9029474291399787231">有可用的 Adobe Flash Player 更新</translation>
 <translation id="9047624247355796468">打开“<ph name="NETWORK_NAME" />”的设置。</translation>
 <translation id="9056839673611986238">设备将被回滚</translation>
+<translation id="9065203028668620118">编辑</translation>
 <translation id="9070640332319875144">Google 助理设置</translation>
 <translation id="9072519059834302790">电池电量将在 <ph name="TIME_LEFT" />后耗尽</translation>
 <translation id="9074739597929991885">蓝牙</translation>

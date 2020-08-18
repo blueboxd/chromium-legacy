@@ -252,7 +252,6 @@ Appuyez sur n'importe quel mot pour effectuer une recherche. Pour affiner la rec
 <translation id="2942036813789421260">L'onglet "Aperçu" est fermé</translation>
 <translation id="2956410042958133412">Ce compte est géré par <ph name="PARENT_NAME_1" /> et <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2962095958535813455">Onglets de navigation privée sélectionnés</translation>
-<translation id="2968755619301702150">Lecteur de certificat</translation>
 <translation id="2979025552038692506">Onglet de navigation privée sélectionné</translation>
 <translation id="2987620471460279764">Texte partagé depuis un autre appareil</translation>
 <translation id="2989523299700148168">Consultations récentes</translation>
@@ -669,7 +668,6 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="6157392216611456285">Sélectionner <ph name="APP_NAME" /></translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> de données économisées</translation>
 <translation id="6186394685773237175">Aucun mot de passe compromis trouvé</translation>
-<translation id="6201345951596836663">Lien copié</translation>
 <translation id="6206830853671714236">Choisissez l'heure du téléchargement</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> n'est pas votre adresse e-mail ?</translation>
 <translation id="6218096829563201111">Rechercher produits similaires <ph name="BEGIN_NEW" />Nouveau<ph name="END_NEW" /></translation>

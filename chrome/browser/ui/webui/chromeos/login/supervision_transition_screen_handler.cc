@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "chrome/browser/chromeos/login/screens/supervision_transition_screen.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chrome/browser/ui/ash/system_tray_client.h"
@@ -90,7 +91,10 @@ void SupervisionTransitionScreenHandler::Show() {
           &SupervisionTransitionScreenHandler::OnSupervisionTransitionFailed,
           weak_factory_.GetWeakPtr()));
 
-  registrar_.Init(profile_->GetPrefs());
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  DCHECK(!ProfileHelper::IsSigninProfile(profile));
+
+  registrar_.Init(profile->GetPrefs());
   registrar_.Add(
       arc::prefs::kArcSupervisionTransition,
       base::BindRepeating(
@@ -106,7 +110,7 @@ void SupervisionTransitionScreenHandler::Show() {
 
   base::DictionaryValue data;
   data.SetBoolean("isRemovingSupervision",
-                  arc::GetSupervisionTransition(profile_) ==
+                  arc::GetSupervisionTransition(profile) ==
                       arc::ArcSupervisionTransition::CHILD_TO_REGULAR);
   ShowScreenWithData(kScreenId, &data);
 }
@@ -118,8 +122,6 @@ base::OneShotTimer* SupervisionTransitionScreenHandler::GetTimerForTesting() {
 }
 
 void SupervisionTransitionScreenHandler::Initialize() {
-  profile_ = ProfileManager::GetPrimaryUserProfile();
-
   if (!screen_ || !show_on_init_)
     return;
 

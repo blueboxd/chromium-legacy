@@ -195,7 +195,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '688e0966cb1669d63b0764cdb3d64ea1c847d9da',
+  'skia_revision': 'f9fb0716512d9a0e517e2816db732b88ad890315',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -207,7 +207,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '863115fb49d768404b65637a6011f61fbca507a9',
+  'angle_revision': '0d421b6025ff785f9e2f0a1c833127db7ce09f69',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -215,7 +215,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': '807e4fa951b9aae0c9355abae7d379b70a5f8677',
+  'pdfium_revision': '5988d0f33501ab96e661377f204f11b36e58276a',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -258,7 +258,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '26ea611a4edbffea23e4ad28887dba209c7f7d50',
+  'catapult_revision': '0dca23916904f0bb7d03ae71b0ad32a8e2f54704',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -302,7 +302,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'spv_tools_revision': 'b8de4f57e9838c107bcbf17cf1e02608651c0e1d',
+  'spv_tools_revision': 'e28436f2b8a2f0705a07de908178d2ea2682c6d3',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -1248,7 +1248,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '1756465158d32f3b4095c839bef6fa2a73b74fa0',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'b6a272ffee65310419846a05e00bb5ce9b27250b',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1542,7 +1542,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@384ea8475558f5142f755fc4cdb9db0ea7d853b5',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@297207f64cc3974d185fa09165f46ec4186f7786',
     'condition': 'checkout_src_internal',
   },
 
@@ -1561,7 +1561,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'tERUmejT2tSaTumq5zSy0ws4x3w3pAMkEcpgdkD5WTEC',
+        'version': 'XU51Rj4Z6rGjyl18zltueVUb6Cpv4ey2XrfMw4NzyacC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -2427,6 +2427,17 @@ deps = {
           {
               'package': 'chromium/third_party/android_deps/libs/androidx_webkit_webkit',
               'version': 'version:1.3.0-rc01-cr0',
+          },
+      ],
+      'condition': 'checkout_android',
+      'dep_type': 'cipd',
+  },
+
+  'src/third_party/android_deps/libs/androidx_window_window': {
+      'packages': [
+          {
+              'package': 'chromium/third_party/android_deps/libs/androidx_window_window',
+              'version': 'version:1.0.0-alpha01-cr0',
           },
       ],
       'condition': 'checkout_android',

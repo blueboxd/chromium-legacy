@@ -40,6 +40,7 @@
 <translation id="1302880136325416935">ব্লুটুথ ছেটিংসমূহ দেখুৱাওক। <ph name="STATE_TEXT" /></translation>
 <translation id="1312604459020188865">ছিগনেলৰ ক্ষমতা <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="1316069254387866896">সদায় শ্বেল্ফ দেখুৱাওক</translation>
+<translation id="1333308631814936910"><ph name="DISPLAY_NAME" /> সংযোগ কৰা হৈছে</translation>
 <translation id="1341651618736211726">অভাৰফ্ল'</translation>
 <translation id="1346748346194534595">সোঁ</translation>
 <translation id="1351937230027495976">মেনু সংকোচন কৰক</translation>
@@ -368,6 +369,7 @@
 <translation id="5114495209940374989">স্ক্ৰীনশ্বট</translation>
 <translation id="5136175204352732067">বিভিন্ন কীব’র্ড সংযোগ কৰা হৈছে</translation>
 <translation id="5168181903108465623">কাষ্ট কৰিব পৰা ডিভাইচ উপলব্ধ</translation>
+<translation id="5170568018924773124">ফ’ল্ডাৰত দেখুৱাওক</translation>
 <translation id="5207949376430453814">পাঠৰ কেৰেট হাইলাইট কৰক</translation>
 <translation id="5222676887888702881">ছাইন আউট কৰক</translation>
 <translation id="523505283826916779">সাধ্য সুবিধাৰ ছেটিংসমূহ</translation>
@@ -475,7 +477,7 @@
 <translation id="649452524636452238">স্মার্ট কার্ডৰ পিন</translation>
 <translation id="6501401484702599040"><ph name="RECEIVER_NAME" />লৈ স্ক্ৰীণ কাষ্টিং কৰি থকা হৈছে</translation>
 <translation id="652139407789908527">এই আপডে’টটোৰ সময়ত আপোনাৰ স্ক্ৰীনখনত স্বাভাৱিকতকৈ বেছি সময়ৰ বাবে (এক মিনিট পৰ্যন্ত) একো নোহোৱা হৈ পৰিব। অনুগ্ৰহ কৰি আপডে’ট হৈ থকাৰ সময়ত পাৱাৰ বুটামটো নিটিপিব।</translation>
-<translation id="6521655319214113338">হাতেৰে লিখা ইনপুট</translation>
+<translation id="6527303717912515753">শ্বেয়াৰ কৰক</translation>
 <translation id="6528179044667508675">অসুবিধা নিদিব</translation>
 <translation id="6537270692134705506">স্ক্ৰীণ কেপচাৰ কৰক</translation>
 <translation id="6537924328260219877">ছিগনেলৰ ক্ষমতা <ph name="SIGNAL_STRENGTH" />, ফ’নৰ বেটাৰী <ph name="BATTERY_STATUS" /></translation>
@@ -555,7 +557,6 @@
 <translation id="7536035074519304529">আইপি ঠিকনা: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">শুবৰ সময় হ’ল</translation>
 <translation id="7561982940498449837">মেনু বন্ধ কৰক</translation>
-<translation id="7562368315689366235">ইম’জি পেলেট</translation>
 <translation id="7564874036684306347">ৱিণ্ড’সমূহ অন্য ডেস্কটপলৈ নিয়া কার্যই আচৰণসমূহ অপ্ৰত্যাশিতভাৱে সলনি হ’ব পাৰে। পৰৱর্তী জাননী, ৱিণ্ড’ আৰু ডায়ল’গসমূহ ডেস্কটপৰ মাজত বিভক্ত হৈ পৰিব পাৰে।</translation>
 <translation id="7568294522609223312">স্বয়ংক্ৰিয়ভাৱে ক্লিক কৰা সুবিধাটো অফ কৰক</translation>
 <translation id="7568637526529101738">ৰাইট-ক্লিক কৰিলে অথবা দীঘলীয়াকৈ টিপিলে Assistantএ আপুনি কৰা বাছনিটোৰ সংজ্ঞা অথবা ইউনিট ৰূপান্তৰৰ দৰে তথ্য দেখুৱায়।</translation>
@@ -617,7 +618,6 @@
 <translation id="8152092012181020186">বন্ধ কৰিবলৈ Ctrl + W টিপক৷</translation>
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" /> এই ছেটিংটো আপোনাৰ প্ৰশাসকে পৰিচালনা কৰে।</translation>
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" /> ব্যৱহাৰ কৰি থকা হৈছে</translation>
-<translation id="8190698733819146287">ভাষা আৰু ইনপুট কাষ্টমাইজ কৰক...</translation>
 <translation id="8192202700944119416">জাননীবোৰ লুকুৱাই ৰখা হৈছে।</translation>
 <translation id="8196787716797768628">ক্ষিপ্ৰতাৰে অন্য এপ্ ব্যৱহাৰ কৰিবলৈ আৰু টেবলেট ম'ডত আপোনাৰ Chromebook ব্যৱহাৰ কৰিবলৈ নিৰ্দেশসমূহ ব্যৱহাৰ কৰক।</translation>
 <translation id="8200772114523450471">পুনৰ আৰম্ভ কৰক</translation>
@@ -701,6 +701,7 @@
 <translation id="9029474291399787231">Adobe Flash Playerৰ আপডে’ট উপলব্ধ</translation>
 <translation id="9047624247355796468"><ph name="NETWORK_NAME" />ৰ বাবে ছেটিংসমূহ খোলক</translation>
 <translation id="9056839673611986238">ডিভাইচটো ৰ’লবেক কৰা হ’ব</translation>
+<translation id="9065203028668620118">সম্পাদনা কৰক</translation>
 <translation id="9070640332319875144">Assistantৰ ছেটিংসমূহ</translation>
 <translation id="9072519059834302790">বেটাৰী খালী হ’বলৈ <ph name="TIME_LEFT" /> বাকী আছে।</translation>
 <translation id="9074739597929991885">ব্লুটুথ</translation>

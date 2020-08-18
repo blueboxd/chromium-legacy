@@ -24,10 +24,5 @@ const base::Feature kBlockRepeatedNotificationPermissionPrompts{
     "BlockRepeatedNotificationPermissionPrompts",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Delegate permissions to cross-origin iframes when the feature has been
-// allowed by feature policy.
-const base::Feature kPermissionDelegation{"PermissionDelegation",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
-
 }  // namespace features
 }  // namespace permissions

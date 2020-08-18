@@ -338,6 +338,7 @@
 <translation id="4881695831933465202">ဖွင့်</translation>
 <translation id="4901778704868714008">သိမ်းရန်...</translation>
 <translation id="4904877109095351937">ဖတ်ပြီးကြောင်း အမှတ်အသားလုပ်ရန်</translation>
+<translation id="4908869848243824489">Discover by Google</translation>
 <translation id="4930268273022498155">လက်ရှိဒေတာများကို ဖျက်ပါ။ ၎င်းကို <ph name="USER_EMAIL1" /> သို့ ပြန်ပြောင်းခြင်းဖြင့် ပြန်လည်ရယူနိုင်ပါသည်။</translation>
 <translation id="4930714375720679147">ဖွင့်ရန်</translation>
 <translation id="4941089862236492464">ဝမ်းနည်းပါသည်၊ သင့်အကြောင်းအရာကို မျှဝေရာတွင် ပြဿနာတစ်ခုရှိနေသည်။</translation>
@@ -440,6 +441,7 @@ Handoff ကို ဆက်တင်များ၏ ယေဘူယျအပိ�
 <translation id="6125339936101702016"><ph name="COMPANY" /> က စီမံခန့်ခွဲထားသည်။ <ph name="BEGIN_LINK" />ပိုမိုလေ့လာရန်<ph name="END_LINK" /></translation>
 <translation id="6127379762771434464">အကြောင်းအရာကို ဖယ်ရှားလိုက်ပါပြီ</translation>
 <translation id="6136914049981179737">ပြီးခဲ့သော စက္ကန့်</translation>
+<translation id="6144589619057374135">ရုပ်ဖျက်မုဒ်တွင် ${url} ဖွင့်ရန်</translation>
 <translation id="616831107264507309">နောက်မှဖတ်ရန်</translation>
 <translation id="6177442314419606057">Chrome တွင် ရှာဖွေရန်</translation>
 <translation id="6184086493125982861">တဲဘ်များ ပြမည်</translation>
@@ -553,6 +555,7 @@ Handoff ကို ဆက်တင်များ၏ ယေဘူယျအပိ�
 <translation id="7293171162284876153">စင့်ခ် စတင်ရန်အတွက် "သင်၏ Chrome ဒေတာ စင့်ခ်လုပ်ပါ" ကို ဖွင့်ပါ။</translation>
 <translation id="7313347584264171202">သင့်ရုပ်ဖျက်တဘ်များကို ဤနေရာတွင် ပြပါမည်</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> ရာခိုင်နှုန်းဒေါင်းလုဒ်လုပ်ပြီးပါပြီ</translation>
+<translation id="7340958967809483333">Discover အတွက် ရွေးစရာများ</translation>
 <translation id="7346909386216857016">OK</translation>
 <translation id="734758817008927353">'ကတ်သိမ်းရန်' ရွေးချယ်မှုများ</translation>
 <translation id="7348502496356775519">လိပ်စာ</translation>
@@ -664,6 +667,7 @@ Handoff ကို ဆက်တင်များ၏ ယေဘူယျအပိ�
 <translation id="8668210798914567634">ဤစာမျက်နှာကို သင်၏ဖတ်ရန်စာရင်းတွင် သိမ်းဆည်းလိုက်ပါပြီ။</translation>
 <translation id="8680787084697685621">အကောင့် ဝင်ရောက်မှု အသေးစိတ်များ အသစ်မဖြစ်တော့ပါ။</translation>
 <translation id="8706588385081740091">စကားဝှက်များ</translation>
+<translation id="8717864919010420084">လင့်ခ်မိတ္တူကူးရန်</translation>
 <translation id="8721297211384281569">ကိရိယာမီနျူး</translation>
 <translation id="8725066075913043281">ထပ် စမ်းကြည့်ရန်</translation>
 <translation id="8730621377337864115">ပြီးပါပြီ</translation>

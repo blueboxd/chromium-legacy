@@ -392,16 +392,8 @@ bool IsCorsSafelistedContentType(const std::string& media_type) {
   return IsCorsSafelistedLowerCaseContentType(base::ToLowerASCII(media_type));
 }
 
-bool IsCorsSafelistedHeader(
-    const std::string& name,
-    const std::string& value,
-    const base::flat_set<std::string>& extra_safelisted_header_names) {
+bool IsCorsSafelistedHeader(const std::string& name, const std::string& value) {
   const std::string lower_name = base::ToLowerASCII(name);
-
-  if (extra_safelisted_header_names.find(lower_name) !=
-      extra_safelisted_header_names.end()) {
-    return true;
-  }
 
   // If |value|’s length is greater than 128, then return false.
   if (value.size() > 128)
@@ -535,8 +527,7 @@ std::vector<std::string> CorsUnsafeRequestHeaderNames(
 
 std::vector<std::string> CorsUnsafeNotForbiddenRequestHeaderNames(
     const net::HttpRequestHeaders::HeaderVector& headers,
-    bool is_revalidating,
-    const base::flat_set<std::string>& extra_safelisted_header_names) {
+    bool is_revalidating) {
   std::vector<std::string> header_names;
   std::vector<std::string> potentially_unsafe_names;
 
@@ -555,8 +546,7 @@ std::vector<std::string> CorsUnsafeNotForbiddenRequestHeaderNames(
         continue;
       }
     }
-    if (!IsCorsSafelistedHeader(name, header.value,
-                                extra_safelisted_header_names)) {
+    if (!IsCorsSafelistedHeader(name, header.value)) {
       header_names.push_back(name);
     } else {
       potentially_unsafe_names.push_back(name);

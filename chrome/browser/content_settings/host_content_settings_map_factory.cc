@@ -88,8 +88,7 @@ scoped_refptr<RefcountedKeyedService>
       profile->GetPrefs(),
       profile->IsOffTheRecord() || profile->IsGuestSession(),
       /*store_last_modified=*/true,
-      base::FeatureList::IsEnabled(
-          permissions::features::kPermissionDelegation),
+      /*migrate_requesting_and_top_level_origin_settings=*/true,
       profile->ShouldRestoreOldSessionCookies()));
 
   auto allowlist_provider = std::make_unique<WebUIAllowlistProvider>(

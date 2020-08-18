@@ -481,17 +481,6 @@
     <issue
         id="VisibleForTests"
         message="This method should only be accessed from tests or within private scope"
-        errorLine1="                                || !WebsitePreferenceBridgeJni.get().isContentSettingsPatternValid("
-        errorLine2="                                                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="../../components/browser_ui/site_settings/android/java/src/org/chromium/components/browser_ui/site_settings/AddExceptionPreference.java"
-            line="187"
-            column="70"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
         errorLine1="                IconProvider.getIcon(context, R.drawable.permission_location),"
         errorLine2="                             ~~~~~~~">
         <location
@@ -2868,17 +2857,6 @@
     <issue
         id="VisibleForTests"
         message="This method should only be accessed from tests or within private scope"
-        errorLine1="            WebsitePreferenceBridgeJni.get().revokeObjectPermission("
-        errorLine2="                                             ~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="../../components/browser_ui/site_settings/android/java/src/org/chromium/components/browser_ui/site_settings/ChosenObjectInfo.java"
-            line="84"
-            column="46"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
         errorLine1="        mPartnerBrowserRefreshNeeded = !PartnerBrowserCustomizations.getInstance().isInitialized();"
         errorLine2="                                                                                   ~~~~~~~~~~~~~">
         <location
@@ -3506,28 +3484,6 @@
     <issue
         id="VisibleForTests"
         message="This method should only be accessed from tests or within private scope"
-        errorLine1="        WebsitePreferenceBridgeJni.get().clearCookieData(browserContextHandle, mOrigin);"
-        errorLine2="                                         ~~~~~~~~~~~~~~~">
-        <location
-            file="../../components/browser_ui/site_settings/android/java/src/org/chromium/components/browser_ui/site_settings/LocalStorageInfo.java"
-            line="36"
-            column="42"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="        WebsitePreferenceBridgeJni.get().clearLocalStorageData("
-        errorLine2="                                         ~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="../../components/browser_ui/site_settings/android/java/src/org/chromium/components/browser_ui/site_settings/LocalStorageInfo.java"
-            line="37"
-            column="42"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
         errorLine1="                &amp;&amp; mAutocompleteCoordinator.getSuggestionAt(0).isSearchSuggestion());"
         errorLine2="                                                               ~~~~~~~~~~~~~~~~~~">
         <location
@@ -3737,248 +3693,6 @@
     <issue
         id="VisibleForTests"
         message="This method should only be accessed from tests or within private scope"
-        errorLine1="                return WebsitePreferenceBridgeJni.get().getArSettingForOrigin("
-        errorLine2="                                                        ~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="../../components/browser_ui/site_settings/android/java/src/org/chromium/components/browser_ui/site_settings/PermissionInfo.java"
-            line="97"
-            column="57"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="                return WebsitePreferenceBridgeJni.get().getCameraSettingForOrigin("
-        errorLine2="                                                        ~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="../../components/browser_ui/site_settings/android/java/src/org/chromium/components/browser_ui/site_settings/PermissionInfo.java"
-            line="100"
-            column="57"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="                return WebsitePreferenceBridgeJni.get().getClipboardSettingForOrigin("
-        errorLine2="                                                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="../../components/browser_ui/site_settings/android/java/src/org/chromium/components/browser_ui/site_settings/PermissionInfo.java"
-            line="103"
-            column="57"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="                return WebsitePreferenceBridgeJni.get().getGeolocationSettingForOrigin("
-        errorLine2="                                                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="../../components/browser_ui/site_settings/android/java/src/org/chromium/components/browser_ui/site_settings/PermissionInfo.java"
-            line="106"
-            column="57"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="                return WebsitePreferenceBridgeJni.get().getMicrophoneSettingForOrigin("
-        errorLine2="                                                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="../../components/browser_ui/site_settings/android/java/src/org/chromium/components/browser_ui/site_settings/PermissionInfo.java"
-            line="109"
-            column="57"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="                return WebsitePreferenceBridgeJni.get().getMidiSettingForOrigin("
-        errorLine2="                                                        ~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="../../components/browser_ui/site_settings/android/java/src/org/chromium/components/browser_ui/site_settings/PermissionInfo.java"
-            line="112"
-            column="57"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="                return WebsitePreferenceBridgeJni.get().getNfcSettingForOrigin("
-        errorLine2="                                                        ~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="../../components/browser_ui/site_settings/android/java/src/org/chromium/components/browser_ui/site_settings/PermissionInfo.java"
-            line="115"
-            column="57"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="                return WebsitePreferenceBridgeJni.get().getNotificationSettingForOrigin("
-        errorLine2="                                                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="../../components/browser_ui/site_settings/android/java/src/org/chromium/components/browser_ui/site_settings/PermissionInfo.java"
-            line="118"
-            column="57"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="                return WebsitePreferenceBridgeJni.get().getProtectedMediaIdentifierSettingForOrigin("
-        errorLine2="                                                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="../../components/browser_ui/site_settings/android/java/src/org/chromium/components/browser_ui/site_settings/PermissionInfo.java"
-            line="121"
-            column="57"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="                return WebsitePreferenceBridgeJni.get().getSensorsSettingForOrigin("
-        errorLine2="                                                        ~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="../../components/browser_ui/site_settings/android/java/src/org/chromium/components/browser_ui/site_settings/PermissionInfo.java"
-            line="124"
-            column="57"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="                return WebsitePreferenceBridgeJni.get().getVrSettingForOrigin("
-        errorLine2="                                                        ~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="../../components/browser_ui/site_settings/android/java/src/org/chromium/components/browser_ui/site_settings/PermissionInfo.java"
-            line="127"
-            column="57"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="                WebsitePreferenceBridgeJni.get().setArSettingForOrigin("
-        errorLine2="                                                 ~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="../../components/browser_ui/site_settings/android/java/src/org/chromium/components/browser_ui/site_settings/PermissionInfo.java"
-            line="142"
-            column="50"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="                WebsitePreferenceBridgeJni.get().setCameraSettingForOrigin("
-        errorLine2="                                                 ~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="../../components/browser_ui/site_settings/android/java/src/org/chromium/components/browser_ui/site_settings/PermissionInfo.java"
-            line="146"
-            column="50"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="                WebsitePreferenceBridgeJni.get().setClipboardSettingForOrigin("
-        errorLine2="                                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="../../components/browser_ui/site_settings/android/java/src/org/chromium/components/browser_ui/site_settings/PermissionInfo.java"
-            line="150"
-            column="50"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="                WebsitePreferenceBridgeJni.get().setGeolocationSettingForOrigin("
-        errorLine2="                                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="../../components/browser_ui/site_settings/android/java/src/org/chromium/components/browser_ui/site_settings/PermissionInfo.java"
-            line="154"
-            column="50"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="                WebsitePreferenceBridgeJni.get().setMicrophoneSettingForOrigin("
-        errorLine2="                                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="../../components/browser_ui/site_settings/android/java/src/org/chromium/components/browser_ui/site_settings/PermissionInfo.java"
-            line="158"
-            column="50"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="                WebsitePreferenceBridgeJni.get().setMidiSettingForOrigin("
-        errorLine2="                                                 ~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="../../components/browser_ui/site_settings/android/java/src/org/chromium/components/browser_ui/site_settings/PermissionInfo.java"
-            line="162"
-            column="50"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="                WebsitePreferenceBridgeJni.get().setNfcSettingForOrigin("
-        errorLine2="                                                 ~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="../../components/browser_ui/site_settings/android/java/src/org/chromium/components/browser_ui/site_settings/PermissionInfo.java"
-            line="166"
-            column="50"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="                WebsitePreferenceBridgeJni.get().setNotificationSettingForOrigin("
-        errorLine2="                                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="../../components/browser_ui/site_settings/android/java/src/org/chromium/components/browser_ui/site_settings/PermissionInfo.java"
-            line="170"
-            column="50"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="                WebsitePreferenceBridgeJni.get().setProtectedMediaIdentifierSettingForOrigin("
-        errorLine2="                                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="../../components/browser_ui/site_settings/android/java/src/org/chromium/components/browser_ui/site_settings/PermissionInfo.java"
-            line="174"
-            column="50"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="                WebsitePreferenceBridgeJni.get().setSensorsSettingForOrigin("
-        errorLine2="                                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="../../components/browser_ui/site_settings/android/java/src/org/chromium/components/browser_ui/site_settings/PermissionInfo.java"
-            line="178"
-            column="50"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="                WebsitePreferenceBridgeJni.get().setVrSettingForOrigin("
-        errorLine2="                                                 ~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="../../components/browser_ui/site_settings/android/java/src/org/chromium/components/browser_ui/site_settings/PermissionInfo.java"
-            line="182"
-            column="50"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
         errorLine1="        return getBrowserStartupController().isRunningInServiceManagerMode();"
         errorLine2="               ~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
@@ -4111,50 +3825,6 @@
     <issue
         id="VisibleForTests"
         message="This method should only be accessed from tests or within private scope"
-        errorLine1="                WebsitePreferenceBridgeJni.get().reportNotificationRevokedForOrigin("
-        errorLine2="                                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="../../components/browser_ui/site_settings/android/java/src/org/chromium/components/browser_ui/site_settings/SingleWebsiteSettings.java"
-            line="646"
-            column="50"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="        WebsitePreferenceBridgeJni.get().clearCookieData(browserContextHandle, origin);"
-        errorLine2="                                         ~~~~~~~~~~~~~~~">
-        <location
-            file="../../components/browser_ui/site_settings/android/java/src/org/chromium/components/browser_ui/site_settings/SiteDataCleaner.java"
-            line="22"
-            column="42"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="        WebsitePreferenceBridgeJni.get().clearBannerData(browserContextHandle, origin);"
-        errorLine2="                                         ~~~~~~~~~~~~~~~">
-        <location
-            file="../../components/browser_ui/site_settings/android/java/src/org/chromium/components/browser_ui/site_settings/SiteDataCleaner.java"
-            line="23"
-            column="42"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="        WebsitePreferenceBridgeJni.get().clearMediaLicenses(browserContextHandle, origin);"
-        errorLine2="                                         ~~~~~~~~~~~~~~~~~~">
-        <location
-            file="../../components/browser_ui/site_settings/android/java/src/org/chromium/components/browser_ui/site_settings/SiteDataCleaner.java"
-            line="24"
-            column="42"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
         errorLine1="            SnackbarController controller = current.getController();"
         errorLine2="                                                    ~~~~~~~~~~~~~">
         <location
@@ -4183,17 +3853,6 @@
             file="../../chrome/browser/ui/messages/android/java/src/org/chromium/chrome/browser/ui/messages/snackbar/SnackbarCollection.java"
             line="140"
             column="26"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="        WebsitePreferenceBridgeJni.get().clearStorageData("
-        errorLine2="                                         ~~~~~~~~~~~~~~~~">
-        <location
-            file="../../components/browser_ui/site_settings/android/java/src/org/chromium/components/browser_ui/site_settings/StorageInfo.java"
-            line="35"
-            column="42"/>
     </issue>
 
     <issue
@@ -5074,17 +4733,6 @@
             file="../../chrome/android/java/src/org/chromium/chrome/browser/webapps/WebappLocator.java"
             line="44"
             column="59"/>
-    </issue>
-
-    <issue
-        id="VisibleForTests"
-        message="This method should only be accessed from tests or within private scope"
-        errorLine1="        return WebsitePreferenceBridgeJni.get().urlMatchesContentSettingsPattern("
-        errorLine2="                                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="../../components/browser_ui/site_settings/android/java/src/org/chromium/components/browser_ui/site_settings/WebsiteAddress.java"
-            line="108"
-            column="49"/>
     </issue>
 
     <issue

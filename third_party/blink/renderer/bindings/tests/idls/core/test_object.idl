@@ -204,7 +204,7 @@ interface TestObject {
     attribute [TreatNullAs=EmptyString] DOMString treatNullAsEmptyStringStringAttribute;
     [Reflect, URL] attribute DOMString urlStringAttribute;
     [Reflect=reflectUrlAttribute, URL] attribute DOMString urlStringAttribute;
-    [Unforgeable] attribute long unforgeableLongAttribute;
+    [LegacyUnforgeable] attribute long unforgeableLongAttribute;
     [Measure] attribute long measuredLongAttribute;
     [SameObject] readonly attribute TestInterface sameObjectAttribute;
     [SameObject, SaveSameObject] readonly attribute TestInterface saveSameObjectAttribute;
@@ -516,7 +516,7 @@ interface TestObject {
     void useToImpl4ArgumentsCheckingIfPossibleWithOptionalArg(Node node1, optional Node node2);
     void useToImpl4ArgumentsCheckingIfPossibleWithNullableArg(Node node1, Node? node2);
     void useToImpl4ArgumentsCheckingIfPossibleWithUndefinedArg(Node node1, [DefaultValue=Undefined] optional Node node2);
-    [Unforgeable] void unforgeableVoidMethod();
+    [LegacyUnforgeable] void unforgeableVoidMethod();
     [NewObject] TestInterface newObjectTestInterfaceMethod();
     [NewObject] Promise<TestInterface> newObjectTestInterfacePromiseMethod();
     [RuntimeCallStatsCounter=RuntimeCallStatsCounterMethod] void RuntimeCallStatsCounterMethod();

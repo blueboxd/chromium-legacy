@@ -48,11 +48,6 @@ public class AndroidUiNavigationGlow extends NavigationGlow {
     }
 
     @Override
-    public float getPullOffset() {
-        return mTotalPullOffset;
-    }
-
-    @Override
     public void onScroll(float offset) {
         float xDelta = -(offset - mTotalPullOffset);
         mTotalPullOffset = offset;

@@ -6,8 +6,6 @@ source_set("browser") {
   sources = [
     "content_settings_manager_impl.cc",
     "content_settings_manager_impl.h",
-    "content_settings_usages_state.cc",
-    "content_settings_usages_state.h",
     "page_specific_content_settings.cc",
     "page_specific_content_settings.h",
   ]

@@ -252,7 +252,6 @@
 <translation id="2942036813789421260">Разделът за визуализация е затворен</translation>
 <translation id="2956410042958133412">Този профил се управлява от <ph name="PARENT_NAME_1" /> и <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2962095958535813455">Превключихте към разделите в режим „инкогнито“</translation>
-<translation id="2968755619301702150">Визуализатор на сертификатите</translation>
 <translation id="2979025552038692506">Избран раздел в режим „инкогнито“</translation>
 <translation id="2987620471460279764">Текст, споделен от друго устройство</translation>
 <translation id="2989523299700148168">Наскоро посетени</translation>
@@ -453,6 +452,7 @@
 <translation id="4605958867780575332">Елементът бе премахнат: <ph name="ITEM_TITLE" /></translation>
 <translation id="4616150815774728855">Отваряне на <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">Използване на паролата</translation>
+<translation id="4640331037679501949">{NUM_PASSWORDS,plural, =1{1 компрометирана парола}other{# компрометирани пароли}}</translation>
 <translation id="4650364565596261010">Стандартно за системата</translation>
 <translation id="465657074423018424">„Безопасно сърфиране“ ви защитава от измамнически сайтове. Ако изключите функцията, действайте с особено внимание, докато сърфирате и особено преди въвеждането на пароли.</translation>
 <translation id="4662373422909645029">Не може да съдържа цифри</translation>
@@ -669,7 +669,6 @@
 <translation id="6157392216611456285">Избор на <ph name="APP_NAME" /></translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> икономия на данни</translation>
 <translation id="6186394685773237175">Няма намерени компрометирани пароли</translation>
-<translation id="6201345951596836663">Връзката е копирана</translation>
 <translation id="6206830853671714236">Избиране на време за изтегляне</translation>
 <translation id="6210748933810148297">Не сте <ph name="EMAIL" />?</translation>
 <translation id="6218096829563201111">Търсене на под. продукти <ph name="BEGIN_NEW" />Ново<ph name="END_NEW" /></translation>

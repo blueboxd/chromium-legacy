@@ -3,6 +3,7 @@
 <translationbundle lang="km">
 <translation id="1001307489511021749">កម្មវិធី​ ការកំណត់ និង​ការប្ដូរ​តាម​បំណងផ្សេងទៀត​របស់អ្នក​នឹងធ្វើសមកាលកម្ម​នៅលើឧបករណ៍ Chrome OS ទាំងអស់ ដែលចូល​ដោយប្រើ​គណនី Google របស់អ្នក។</translation>
 <translation id="1003088604756913841">បើក​តំណ​នៅក្នុងវិនដូ <ph name="APP" /> ថ្មី</translation>
+<translation id="1003363546227723021">នៅពេលអេក្រង់​របស់អ្នកអសកម្ម សូមបង្ហាញព័ត៌មានអំពី​មេឌៀ ម៉ោង អាកាសធាតុ និងរូបថត</translation>
 <translation id="1004218526896219317">សិទ្ធិចូលប្រើ​គេហទំព័រ</translation>
 <translation id="1005274289863221750">ប្រើម៉ៃក្រូហ្វូន និងកាមេរ៉ារបស់អ្នក</translation>
 <translation id="1005333234656240382">បើក​ការជួសជុល ADB ឬ?</translation>
@@ -94,6 +95,7 @@
 <translation id="1108600514891325577">ឈប់</translation>
 <translation id="1110155001042129815">រង់ចាំ</translation>
 <translation id="1112420131909513020">ផ្ទាំងផ្ទៃ​ខាងក្រោយ​កំពុងប្រើ​ប៊្លូធូស</translation>
+<translation id="1113892970288677790">ជ្រើសរើសរូបភាព និងរូបផូស្ទ័រ​ដែលបានជ្រើសរើស</translation>
 <translation id="1114102982691049955"><ph name="PRINTER_MANUFACTURER" /> <ph name="PRINTER_MODEL" /> (USB)</translation>
 <translation id="1114202307280046356">ពេជ្រ</translation>
 <translation id="1114335938027186412">កុំព្យូទ័ររបស់អ្នកផ្ទុកឧបករណ៍សុវត្ថិភាពម៉ូឌុលប្រតិបត្តិការដែលអាចជឿជាក់ (TPM) ដែលត្រូវបានប្រើដើម្បីប្រតិបត្តិការលក្ខណៈសុវត្ថិភាពសំខាន់ៗជាច្រើននៅក្នុង Chrome OS។ ទៅកាន់មជ្ឈមណ្ឌលជំនួយ Chromebook ដើម្បីស្វែងយល់បន្ថែម៖ https://support.google.com/chromebook/?p=tpm</translation>
@@ -201,6 +203,7 @@
 <translation id="1224275271335624810">លឿន​បំផុត</translation>
 <translation id="1225177025209879837">កំពុងដំណើរការសំណើរ...</translation>
 <translation id="1227507814927581609">ការកំណត់អត្តសញ្ញាណបានបរាជ័យ ខណៈពេលកំពុងភ្ជាប់ទៅ "<ph name="DEVICE_NAME" />"។</translation>
+<translation id="1230417814058465809">ការការពារស្តង់ដារ​ត្រូវបានបើក។ ដើម្បី​សុវត្ថិភាពបន្ថែម សូមប្រើការការពារ​ដែលប្រសើរជាងមុន។</translation>
 <translation id="1231733316453485619">បើក​សមកាលកម្ម?</translation>
 <translation id="1232569758102978740">គ្មានចំណងជើង</translation>
 <translation id="1233497634904001272">ចុចសោសុវត្ថិភាព​របស់អ្នកម្ដងទៀត ដើម្បីបញ្ចប់​សំណើ។</translation>
@@ -1253,6 +1256,7 @@
 <translation id="249113932447298600">សូមទោស <ph name="DEVICE_LABEL" /> មិនត្រូវបានគាំទ្រទេនៅពេលនេះ។</translation>
 <translation id="2492461744635776704">កំពុងរៀបចំ​សំណើសុំ​ចុះហត្ថលេខា​លើវិញ្ញាបនបត្រ</translation>
 <translation id="249303669840926644">មិនអាចបញ្ចប់ការចុះឈ្មោះទេ</translation>
+<translation id="2493126929778606526">រូបថតល្អបំផុត​របស់អ្នក ដែលបាន​ជ្រើសរើស​ដោយស្វ័យប្រវត្តិ</translation>
 <translation id="2495777824269688114">ស្វែងយល់អំពី​មុខងារថ្មីៗ ឬទទួលចម្លើយច្រើនទៀត។ សូមជ្រើសរើស “?” ដើម្បីទទួលបានជំនួយ។</translation>
 <translation id="2496180316473517155">ប្រវត្តិរុករក</translation>
 <translation id="2497229222757901769">ល្បឿនកណ្តុរ</translation>
@@ -1346,6 +1350,7 @@
 <translation id="2604255671529671813">មាន​បញ្ហា​ក្នុង​ការភ្ជាប់បណ្តាញ</translation>
 <translation id="2606246518223360146">ភ្ជាប់​ទិន្នន័យ</translation>
 <translation id="2607101320794533334">ព័ត៌មានសោសាធារណៈភាគីវិញ្ញាបនប័ត្រ</translation>
+<translation id="2607968157341167679">គ្មាន​អាល់ប៊ុមទេ។ សូមបង្កើត​អាល់ប៊ុមនៅក្នុង<ph name="LINK_BEGIN" />Google រូបថត<ph name="LINK_END" />។</translation>
 <translation id="2609896558069604090">បង្កើតផ្លូវកាត់...</translation>
 <translation id="2610157865375787051">ដេក</translation>
 <translation id="2610260699262139870">ទំហំពិតប្រាកដ</translation>
@@ -1482,6 +1487,7 @@
 <translation id="2762441749940182211">បាន​ទប់ស្កាត់​កាមេរ៉ា</translation>
 <translation id="2764786626780673772">ព័ត៌មានលម្អិត​អំពី VPN</translation>
 <translation id="2765217105034171413">តូច</translation>
+<translation id="2765729904637714153">រំឭកអនុស្សាវរីយ៍​ដែលអ្នក​ចូលចិត្ត។ ដើម្បីបញ្ចូល ឬកែអាល់ប៊ុម សូមចូល​ទៅកាន់<ph name="LINK_BEGIN" />Google រូបថត<ph name="LINK_END" />។</translation>
 <translation id="2766006623206032690">បិទភ្ជាប់ និងទៅ</translation>
 <translation id="2766161002040448006">ស្នើសុំមាតាបិតា</translation>
 <translation id="2767127727915954024"><ph name="ORIGIN" /> នឹងអាចកែ <ph name="FILENAME" /> បាន រហូតទាល់តែអ្នកបិទផ្ទាំងទាំងអស់​សម្រាប់គេហទំព័រនេះ</translation>
@@ -2114,6 +2120,7 @@
 <translation id="3566325075220776093">ពី​ឧបករណ៍​នេះ</translation>
 <translation id="3566721612727112615">មិនបានបន្ថែមគេហទំព័រទេ</translation>
 <translation id="3569382839528428029">តើអ្នកចង់ឲ្យ <ph name="APP_NAME" /> ចែករំលែកអេក្រង់របស់អ្នកទេ?</translation>
+<translation id="3569407787324516067">ធាតុរក្សាអេក្រង់</translation>
 <translation id="3569682580018832495"><ph name="ORIGIN" /> អាចមើល​ថត និងឯកសារខាងក្រោម</translation>
 <translation id="3571734092741541777">តំឡើង</translation>
 <translation id="3574210789297084292">ចូល</translation>
@@ -2262,6 +2269,7 @@
 <translation id="3727148787322499904">ការផ្លាស់​ប្តូរការ​កំណត់នេះ​នឹង​ប៉ះពាល់​ដល់​បណ្តាញ​ដែល​បានចែករំលែក​ទាំងអស់</translation>
 <translation id="3727187387656390258">តាមដានការលេចឡើង</translation>
 <translation id="372722114124766626">តែ​ម្ដង</translation>
+<translation id="3728188878314831180">បញ្ចាំងការជូនដំណឹង​ពីទូរសព្ទរបស់អ្នក</translation>
 <translation id="3728681439294129328">កំណត់រចនាសម្ព័ន្ធ​អាសយដ្ឋាន​បណ្ដាញ</translation>
 <translation id="3729303374699765035">សួរនៅពេលគេហទំព័រ​ចង់ស្វែងរកឧបករណ៍​ប៊្លូធូសដែលនៅជិត</translation>
 <translation id="3729506734996624908">គេហទំព័រ​​​ដែល​​បាន​​អនុញ្ញាត</translation>
@@ -4407,7 +4415,7 @@
 <translation id="642469772702851743">ឧបករណ៍​នេះ (SN៖ <ph name="SERIAL_NUMBER" />) ត្រូវបាន​ចាក់សោ​ដោយម្ចាស់។</translation>
 <translation id="6425556984042222041">ល្បឿន​បំប្លែង​អត្ថបទ​ទៅជា​ការនិយាយ</translation>
 <translation id="6426200009596957090">បើកការកំណត់ ChromeVox</translation>
-<translation id="642654727595919401"><ph name="DOMAIN" /> តម្រូវឱ្យអ្នកបម្រុងទុក​ទិន្នន័យរបស់អ្នក និងបញ្ជូន <ph name="DEVICE_TYPE" /> នេះត្រឡប់ទៅវិញ​ក្នុងរយៈពេល 1 សប្ដាហ៍។<ph name="LINK_BEGIN" />សូមមើល​ព័ត៌មានលម្អិត<ph name="LINK_END" /></translation>
+<translation id="642654727595919401"><ph name="DOMAIN" /> តម្រូវឱ្យអ្នកបម្រុងទុក​ទិន្នន័យរបស់អ្នក និងបញ្ជូន <ph name="DEVICE_TYPE" /> នេះត្រឡប់ទៅវិញ​ក្នុងរយៈពេល 1 សប្ដាហ៍។ <ph name="LINK_BEGIN" />សូមមើល​ព័ត៌មានលម្អិត<ph name="LINK_END" /></translation>
 <translation id="6428982734197629783">កំពុង​ដំណើរការ​រូបភាព</translation>
 <translation id="6429384232893414837">មាន​បញ្ហា​ក្នុង​ការ​ធ្វើ​បច្ចុប្បន្នភាព</translation>
 <translation id="6430814529589430811">Base64-encoded ASCII, វិញ្ញាបនប័ត្រទោល</translation>
@@ -4712,6 +4720,7 @@
 <translation id="6824584962142919697">ត្រួតពិនិត្យ​ធាតុ</translation>
 <translation id="6825184156888454064">តម្រៀប​តាម​ឈ្មោះ</translation>
 <translation id="6826872289184051766">ផ្ទៀងផ្ទាត់​តាមរយៈ USB</translation>
+<translation id="6827623133556594466">Google បោះពុម្ពតាម​ពពកនឹងមិនអាចប្រើបានទៀតទេ បន្ទាប់ពីថ្ងៃទី 31 ខែធ្នូ។ <ph name="BEGIN_LINK" />ស្វែងយល់បន្ថែម<ph name="END_LINK" /></translation>
 <translation id="6828153365543658583">រឹតបណ្តឹងការចូលចំពោះអ្នកប្រើខាងក្រោម៖</translation>
 <translation id="6828182567531805778">បញ្ចូល​ឃ្លាសម្ងាត់​របស់អ្នក ដើម្បី​ធ្វើសមកាលកម្ម​ទិន្នន័យ​របស់អ្នក</translation>
 <translation id="682871081149631693">QuickFix</translation>
@@ -5218,7 +5227,7 @@
 <translation id="7456847797759667638">បើកទីតាំង...</translation>
 <translation id="7458168200501453431">ប្រើ​មុខងារ​ពិនិត្យអក្ខរាវិរុទ្ធតែមួយ ដែល​ត្រូវបានប្រើ​ក្នុង​កម្មវិធី​ស្វែងរក​នៅលើ Google ។ អក្សរដែល​អ្នកវាយបញ្ចូល​នៅក្នុង​កម្មវិធីរុករក​តាមអ៊ីនធឺណិត​ត្រូវបានផ្ញើ​ទៅ Google ។</translation>
 <translation id="7460045493116006516">រចនាប័ទ្ម​បច្ចុប្បន្នដែលអ្នក​បានដំឡើង</translation>
-<translation id="7461729991508684543">{NUM_DAYS,plural, =1{<ph name="DOMAIN" /> តម្រូវឱ្យអ្នកបម្រុងទុក​ទិន្នន័យរបស់អ្នក និងបញ្ជូន <ph name="DEVICE_TYPE" /> នេះត្រឡប់ទៅវិញនៅថ្ងៃនេះ។<ph name="LINK_BEGIN" />សូមមើលព័ត៌មានលម្អិត<ph name="LINK_END" />}other{<ph name="DOMAIN" /> តម្រូវឱ្យអ្នកបម្រុងទុក​ទិន្នន័យរបស់អ្នក និងបញ្ជូន <ph name="DEVICE_TYPE" /> នេះត្រឡប់ទៅវិញក្នុងរយៈពេល {NUM_DAYS} ថ្ងៃ។<ph name="LINK_BEGIN" />សូមមើលព័ត៌មានលម្អិត<ph name="LINK_END" />}}</translation>
+<translation id="7461729991508684543">{NUM_DAYS,plural, =1{<ph name="DOMAIN" /> តម្រូវឱ្យអ្នកបម្រុងទុក​ទិន្នន័យរបស់អ្នក និងបញ្ជូន <ph name="DEVICE_TYPE" /> នេះត្រឡប់ទៅវិញនៅថ្ងៃនេះ។ <ph name="LINK_BEGIN" />សូមមើលព័ត៌មានលម្អិត<ph name="LINK_END" />}other{<ph name="DOMAIN" /> តម្រូវឱ្យអ្នកបម្រុងទុក​ទិន្នន័យរបស់អ្នក និងបញ្ជូន <ph name="DEVICE_TYPE" /> នេះត្រឡប់ទៅវិញក្នុងរយៈពេល {NUM_DAYS} ថ្ងៃ។ <ph name="LINK_BEGIN" />សូមមើលព័ត៌មានលម្អិត<ph name="LINK_END" />}}</translation>
 <translation id="7461924472993315131">លេខសម្គាល់</translation>
 <translation id="746216226901520237">លើកក្រោយ ទូរសព្ទរបស់អ្នក​នឹងដោះសោ <ph name="DEVICE_TYPE" /> របស់អ្នក។ អ្នក​អាច​បិទ Smart Lock នៅក្នុង​ការកំណត់។</translation>
 <translation id="7463006580194749499">បន្ថែមបុគ្គល</translation>
@@ -5330,6 +5339,7 @@
 <translation id="7605594153474022051">សមកាលកម្មមិនដំណើរការទេ</translation>
 <translation id="7606992457248886637">អាជ្ញាធរ</translation>
 <translation id="7607002721634913082">បានផ្អាក</translation>
+<translation id="7608810328871051088">ចំណូលចិត្ត Android</translation>
 <translation id="7609148976235050828">សូមភ្ជាប់​អ៊ីនធឺណិត រួច​ព្យាយាម​ម្តងទៀត។</translation>
 <translation id="7614260613810441905">សួរ​នៅពេល​គេហទំព័រចង់កែឯកសារ ឬថត​នៅលើឧបករណ៍​របស់អ្នក (បានណែនាំ)</translation>
 <translation id="761530003705945209">បម្រុង​ទុក​ទៅ​ក្នុង Google ថាស។ ងាយស្រួល​ក្នុងការ​ស្ដារ​ទិន្នន័យ​របស់​អ្នក ឬ​ប្ដូរ​ឧបករណ៍បានគ្រប់ពេល។ ការបម្រុង​ទុក​របស់អ្នក​រួមបញ្ចូល​ទាំង​ទិន្នន័យ​កម្មវិធី។ ការបម្រុងទុក​របស់អ្នក​ត្រូវបាន​បង្ហោះ​ទៅ Google និង​អ៊ីនគ្រីប​ដោយប្រើ​ពាក្យសម្ងាត់​គណនី Google របស់អ្នក។</translation>
@@ -5702,7 +5712,6 @@
 <translation id="8028060951694135607">ការសង្គ្រោះសោ Microsoft</translation>
 <translation id="8028803902702117856">កំពុង​ទាញយក <ph name="SIZE" />, <ph name="FILE_NAME" /></translation>
 <translation id="8028993641010258682">ទំហំ</translation>
-<translation id="8030656706657716245">បន្ថែម​ម៉ាស៊ីន​បោះពុម្ព</translation>
 <translation id="8030852056903932865">យល់ព្រម</translation>
 <translation id="8032244173881942855">មិនអាចខាសផ្ទាំងបានទេ</translation>
 <translation id="8033827949643255796">បានជ្រើសរើស</translation>
@@ -5859,6 +5868,7 @@
 <translation id="8225753906568652947">ប្ដូរការផ្តល់ជូនរបស់អ្នក</translation>
 <translation id="8226222018808695353">ហាមឃាត់</translation>
 <translation id="8226619461731305576">ជួរ</translation>
+<translation id="8226628635270268143">ជ្រើសរើស​រូបថត និងអាល់ប៊ុមដែលអ្នកចូលចិត្ត</translation>
 <translation id="8226742006292257240">ខាងក្រោមនេះគឺជាពាក្យសម្ងាត់ដែលបានបង្កើតដោយចៃដន្យ TPM ដែលត្រូវបានផ្ដល់ទៅឲ្យកុំព្យូទ័ររបស់អ្នក៖</translation>
 <translation id="8227119283605456246">ភ្ជាប់ឯកសារ</translation>
 <translation id="8229943166551236192">ទិន្នន័យឧបករណ៍នឹងត្រូវលុបក្នុងរយៈពេល 24 ម៉ោង</translation>
@@ -6357,6 +6367,7 @@
 <translation id="882854468542856424">កុំអនុញ្ញាតឱ្យ​គេហទំព័រ​ណាមួយ​រកឃើញ​ឧបករណ៍​ប៊្លូធូសដែលនៅជិត</translation>
 <translation id="8828933418460119530">ឈ្មោះ DNS</translation>
 <translation id="883062543841130884">ការ​ជំនួស</translation>
+<translation id="8830779999439981481">កំពុងចាប់ផ្ដើម​ឡើងវិញ ដើម្បីអនុវត្ត​កំណែថ្មី</translation>
 <translation id="8830796635868321089">ការពិនិត្យការធ្វើបច្ចុប្បន្នភាពបានបរាជ័យក្នុងការប្រើការកំណត់ប្រូកស៊ីបច្ចុប្បន្ន។ សូមកែសម្រួល <ph name="PROXY_SETTINGS_LINK_START" />ការកំណត់ប្រូកស៊ី<ph name="PROXY_SETTINGS_LINK_END" /> របស់អ្នក។</translation>
 <translation id="8831140208248705279"><ph name="DEVICE_TYPE" /> និងទូរសព្ទ Android របស់អ្នក​ដំណើរការជាមួយគ្នាប្រសើរជាងមុន។ សូមភ្ជាប់ឧបករណ៍​ទាំងពីរជាមួយគ្នា ដើម្បីអាចឱ្យអ្នកផ្ញើសារពីកុំព្យូទ័រ ចែករំលែកការតភ្ជាប់អ៊ីនធឺណិត និងដោះសោ <ph name="DEVICE_TYPE" /> ដោយប្រើទូរសព្ទរបស់អ្នក។<ph name="FOOTNOTE_POINTER" /><ph name="LINK_BEGIN" />ស្វែងយល់បន្ថែម<ph name="LINK_END" /></translation>
 <translation id="8834039744648160717">ការ​កំណត់​រចនាសម្ព័ន្ធ​បណ្តាញ ​ដែល​គ្រប់គ្រង​ដោយ <ph name="USER_EMAIL" /> ។</translation>

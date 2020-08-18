@@ -892,15 +892,7 @@ ScriptPromise PaymentRequest::hasEnrolledInstrument(
     return ScriptPromise();
   }
 
-  bool per_method_quota =
-      RuntimeEnabledFeatures::PerMethodCanMakePaymentQuotaEnabled(
-          GetExecutionContext());
-  if (per_method_quota) {
-    UseCounter::Count(GetExecutionContext(),
-                      WebFeature::kPerMethodCanMakePaymentQuota);
-  }
-
-  payment_provider_->HasEnrolledInstrument(per_method_quota);
+  payment_provider_->HasEnrolledInstrument();
 
   has_enrolled_instrument_resolver_ =
       MakeGarbageCollected<ScriptPromiseResolver>(script_state);

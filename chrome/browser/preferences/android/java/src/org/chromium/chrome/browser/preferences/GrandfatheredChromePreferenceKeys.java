@@ -169,6 +169,7 @@ public class GrandfatheredChromePreferenceKeys {
                 ChromePreferenceKeys.SIGNIN_PROMO_NTP_PROMO_SUPPRESSION_PERIOD_START,
                 ChromePreferenceKeys.SIGNIN_PROMO_PERSONALIZED_DECLINED,
                 ChromePreferenceKeys.SIGNIN_PROMO_SETTINGS_PERSONALIZED_DISMISSED,
+                ChromePreferenceKeys.SIGNIN_LEGACY_SYNC_ACCOUNT_EMAIL,
                 ChromePreferenceKeys.SNAPSHOT_DATABASE_REMOVED,
                 ChromePreferenceKeys.SURVEY_DATE_LAST_ROLLED,
                 ChromePreferenceKeys.SURVEY_INFO_BAR_DISPLAYED,

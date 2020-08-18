@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.autofill_assistant;
 
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantArguments.PARAMETER_TRIGGER_FIRST_TIME_USER;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantArguments.PARAMETER_TRIGGER_RETURNING_TIME_USER;
+import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantArguments.PARAMETER_TRIGGER_SCRIPT_USED;
 
 import android.content.Context;
 import android.text.TextUtils;
@@ -46,9 +47,14 @@ public class AutofillAssistantModuleEntryImpl implements AutofillAssistantModule
 
             String firstTimeUserScriptPath = parameters.get(PARAMETER_TRIGGER_FIRST_TIME_USER);
             String returningUserScriptPath = parameters.get(PARAMETER_TRIGGER_RETURNING_TIME_USER);
+            boolean isFirstTimeUser =
+                    AutofillAssistantPreferencesUtil.isAutofillAssistantFirstTimeLiteScriptUser();
             startAutofillAssistantLite(bottomSheetController, browserControls, compositorViewHolder,
                     webContents, firstTimeUserScriptPath, returningUserScriptPath, result -> {
                         if (result) {
+                            parameters.put(PARAMETER_TRIGGER_SCRIPT_USED,
+                                    isFirstTimeUser ? firstTimeUserScriptPath
+                                                    : returningUserScriptPath);
                             startAutofillAssistantRegular(bottomSheetController, browserControls,
                                     compositorViewHolder, context, webContents, skipOnboarding,
                                     isChromeCustomTab, initialUrl, parameters, experimentIds,

@@ -1111,7 +1111,6 @@ if (!is_android) {
       "../browser/policy/cloud/device_management_service_browsertest.cc",
       "../browser/policy/component_updater_policy_browsertest.cc",
       "../browser/policy/content_settings_policy_browsertest.cc",
-      "../browser/policy/cors_policy_browsertest.cc",
       "../browser/policy/hsts_policy_browsertest.cc",
       "../browser/policy/media_stream_policy_browsertest.cc",
       "../browser/policy/policy_browsertest.cc",
@@ -3211,7 +3210,6 @@ test("unit_tests") {
     "../browser/content_settings/content_settings_origin_identifier_value_map_unittest.cc",
     "../browser/content_settings/content_settings_policy_provider_unittest.cc",
     "../browser/content_settings/content_settings_pref_provider_unittest.cc",
-    "../browser/content_settings/content_settings_usages_state_unittest.cc",
     "../browser/content_settings/cookie_settings_factory_unittest.cc",
     "../browser/content_settings/host_content_settings_map_unittest.cc",
     "../browser/content_settings/mock_settings_observer.cc",
@@ -3978,6 +3976,7 @@ test("unit_tests") {
       "../browser/signin/dice_web_signin_interceptor_unittest.cc",
       "../browser/signin/process_dice_header_delegate_impl_unittest.cc",
       "../browser/signin/signin_manager_unittest.cc",
+      "../browser/ui/views/profiles/dice_web_signin_interception_bubble_view_unittest.cc",
       "../browser/ui/webui/signin/dice_turn_sync_on_helper_unittest.cc",
     ]
   }

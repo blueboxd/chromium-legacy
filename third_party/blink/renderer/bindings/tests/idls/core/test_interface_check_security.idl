@@ -41,7 +41,7 @@
 
     [CrossOrigin] void doNotCheckSecurityVoidMethod();
     [CrossOrigin, PerWorldBindings] void doNotCheckSecurityPerWorldBindingsVoidMethod();
-    [CrossOrigin, Unforgeable] void doNotCheckSecurityUnforgeableVoidMethod();
+    [CrossOrigin, LegacyUnforgeable] void doNotCheckSecurityUnforgeableVoidMethod();
     [CrossOrigin] void doNotCheckSecurityVoidOverloadMethod(String argument1, String argument2);
     [CrossOrigin, RuntimeEnabled=RuntimeFeature] void doNotCheckSecurityVoidOverloadMethod(String argument1, optional long argument2);
     [SecureContext, RuntimeEnabled=RuntimeFeature] void secureContextRuntimeEnabledMethod(String arg);

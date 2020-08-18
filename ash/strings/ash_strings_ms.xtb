@@ -40,6 +40,7 @@ Berikut ialah beberapa perkara yang boleh anda cuba untuk bermula.</translation>
 <translation id="1302880136325416935">Tunjukkan tetapan Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1312604459020188865">Kekuatan Isyarat <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="1316069254387866896">Sentiasa tunjukkan rak</translation>
+<translation id="1333308631814936910"><ph name="DISPLAY_NAME" /> disambungkan</translation>
 <translation id="1341651618736211726">Limpahan</translation>
 <translation id="1346748346194534595">Kanan</translation>
 <translation id="1351937230027495976">Runtuhkan menu</translation>
@@ -370,6 +371,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="5114495209940374989">Tangkapan skrin</translation>
 <translation id="5136175204352732067">Papan kekunci lain disambungkan</translation>
 <translation id="5168181903108465623">Peranti Cast tersedia</translation>
+<translation id="5170568018924773124">Paparkan dalam folder</translation>
 <translation id="5207949376430453814">Serlahkan karet teks</translation>
 <translation id="5222676887888702881">Log keluar</translation>
 <translation id="523505283826916779">Tetapan kebolehcapaian</translation>
@@ -461,6 +463,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="6288235558961782912"><ph name="USER_EMAIL_ADDRESS" /> boleh ditambahkan semula kemudian dengan kebenaran ibu bapa.</translation>
 <translation id="6297287540776456956">Gunakan stilus untuk memilih bahagian</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> telah diputarkan ke <ph name="ROTATION" /></translation>
+<translation id="6315170314923504164">Suara</translation>
 <translation id="6376931439017688372">Bluetooth dihidupkan</translation>
 <translation id="6381109794406942707">Untuk membuka kunci peranti, masukkan PIN anda.</translation>
 <translation id="639644700271529076">Kekunci CAPS LOCK dimatikan</translation>
@@ -477,7 +480,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="649452524636452238">PIN kad pintar</translation>
 <translation id="6501401484702599040">Menghantar skrin ke <ph name="RECEIVER_NAME" /></translation>
 <translation id="652139407789908527">Skrin anda akan menjadi kosong lebih lama daripada biasa (sehingga seminit) semasa kemas kini ini. Jangan tekan butang kuasa semasa kemas kini sedang berlangsung.</translation>
-<translation id="6521655319214113338">Input tulisan tangan</translation>
+<translation id="6527303717912515753">Kongsi</translation>
 <translation id="6528179044667508675">Jangan ganggu</translation>
 <translation id="6537270692134705506">Tangkap skrin</translation>
 <translation id="6537924328260219877">Kekuatan Isyarat <ph name="SIGNAL_STRENGTH" />, Bateri Telefon <ph name="BATTERY_STATUS" /></translation>
@@ -559,7 +562,6 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="7536035074519304529">Alamat IP: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">Masa untuk tidur</translation>
 <translation id="7561982940498449837">Tutup menu</translation>
-<translation id="7562368315689366235">Palet emoji</translation>
 <translation id="7564874036684306347">Tindakan memindahkan tetingkap ke desktop lain boleh menyebabkan gelagat yang tidak dijangka. Pemberitahuan, tetingkap dan dialog yang seterusnya mungkin dipisahkan antara desktop.</translation>
 <translation id="7568294522609223312">Matikan klik automatik</translation>
 <translation id="7568637526529101738">Dengan klik kanan atau tekan lama, Assistant menunjukkan maklumat seperti takrif atau penukaran unit untuk pilihan anda.</translation>
@@ -622,7 +624,6 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="8152092012181020186">Tekan Ctrl + W untuk tutup.</translation>
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" /> Tetapan ini diurus oleh pentadbir anda.</translation>
 <translation id="8167567890448493835">Menggunakan <ph name="LOCALE_NAME" /></translation>
-<translation id="8190698733819146287">Sesuaikan bahasa dan input...</translation>
 <translation id="8192202700944119416">Pemberitahuan disembunyikan.</translation>
 <translation id="8196787716797768628">Gunakan gerak isyarat untuk bertukar antara apl dengan pantas dan berinteraksi dengan Chromebook anda dalam mod tablet.</translation>
 <translation id="8200772114523450471">Sambung semula</translation>
@@ -706,6 +707,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="9029474291399787231">Kemas kini Adobe Flash Player tersedia</translation>
 <translation id="9047624247355796468">Buka tetapan untuk <ph name="NETWORK_NAME" /></translation>
 <translation id="9056839673611986238">Peranti akan dibalikkan</translation>
+<translation id="9065203028668620118">Edit</translation>
 <translation id="9070640332319875144">Tetapan Pembantu</translation>
 <translation id="9072519059834302790"><ph name="TIME_LEFT" /> sehingga kuasa bateri habis.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>

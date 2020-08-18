@@ -338,6 +338,7 @@ Podatki so šifrirani z vašim geslom za sinhronizacijo. Vnesite ga, če želite
 <translation id="4881695831933465202">Odpri</translation>
 <translation id="4901778704868714008">Shrani ...</translation>
 <translation id="4904877109095351937">Označi kot prebrano</translation>
+<translation id="4908869848243824489">Googlovo Odkrivanje</translation>
 <translation id="4930268273022498155">Izbris obstoječih podatkov. Pridobite jih lahko tako, da preklopite nazaj na račun <ph name="USER_EMAIL1" />.</translation>
 <translation id="4930714375720679147">Vklop</translation>
 <translation id="4941089862236492464">Težava pri deljenju elementa z drugimi.</translation>
@@ -441,6 +442,7 @@ Handoff must also be enabled in the General section of Settings, and your device
 <translation id="6125339936101702016">Brskalnik upravlja podjetje <ph name="COMPANY" />. <ph name="BEGIN_LINK" />Več o tem<ph name="END_LINK" /></translation>
 <translation id="6127379762771434464">Element odstranjen</translation>
 <translation id="6136914049981179737">Pred sek.</translation>
+<translation id="6144589619057374135">Odprite ${url} v načinu brez beleženja dejavnosti</translation>
 <translation id="616831107264507309">Poznejše branje</translation>
 <translation id="6177442314419606057">Iskanje v Chromu</translation>
 <translation id="6184086493125982861">Pokaži zavihke</translation>
@@ -554,6 +556,7 @@ Spletna mesta ne smejo uporabljati piškotkov za ogled dejavnosti brskanja na ra
 <translation id="7293171162284876153">Če želite začeti sinhronizacijo, vklopite »Sinhronizacija podatkov v Chromu«.</translation>
 <translation id="7313347584264171202">Tu bodo prikazani zavihki brez beleženja dejavnosti</translation>
 <translation id="7336264872878993241">Preneseno: <ph name="PERCENT" /> %</translation>
+<translation id="7340958967809483333">Možnosti za Odkrivanje</translation>
 <translation id="7346909386216857016">V redu, razumem</translation>
 <translation id="734758817008927353">Možnosti za shranjevanje kartic</translation>
 <translation id="7348502496356775519">Zaznamuj</translation>
@@ -665,6 +668,7 @@ Spletna mesta lahko uporabljajo piškotke za ogled dejavnosti brskanja na razli�
 <translation id="8668210798914567634">Ta stran je shranjena na bralni seznam.</translation>
 <translation id="8680787084697685621">Podrobnosti prijave v račun so zastarele.</translation>
 <translation id="8706588385081740091">Gesla</translation>
+<translation id="8717864919010420084">Kopiraj povezavo</translation>
 <translation id="8721297211384281569">Meni »Orodja«</translation>
 <translation id="8725066075913043281">Poskusite znova</translation>
 <translation id="8730621377337864115">Končano</translation>

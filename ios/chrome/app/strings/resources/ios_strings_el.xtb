@@ -338,6 +338,7 @@
 <translation id="4881695831933465202">Άνοιγμα</translation>
 <translation id="4901778704868714008">Αποθήκευση…</translation>
 <translation id="4904877109095351937">Επισήμ. ως αναγνωσμένων</translation>
+<translation id="4908869848243824489">Discover από την Google</translation>
 <translation id="4930268273022498155">Διαγραφή υπαρχόντων δεδομένων. Μπορείτε να τα επαναφέρετε επιστρέφοντας στον λογαριασμό <ph name="USER_EMAIL1" />.</translation>
 <translation id="4930714375720679147">Ενεργοποίηση</translation>
 <translation id="4941089862236492464">Παρουσιάστηκε πρόβλημα με την κοινοποίηση του στοιχείου σας.</translation>
@@ -441,6 +442,7 @@
 <translation id="6125339936101702016">Η διαχείριση του προγράμματος περιήγησης γίνεται από την εταιρεία <ph name="COMPANY" />. <ph name="BEGIN_LINK" />Μάθετε περισσότερα<ph name="END_LINK" /></translation>
 <translation id="6127379762771434464">Το στοιχείο καταργήθηκε</translation>
 <translation id="6136914049981179737">Δευτ.πριν</translation>
+<translation id="6144589619057374135">Άνοιγμα ${url} σε ανώνυμη περιήγηση</translation>
 <translation id="616831107264507309">Ανάγνωση αργότερα</translation>
 <translation id="6177442314419606057">Αναζήτηση στο Chrome</translation>
 <translation id="6184086493125982861">Εμφάνιση καρτελών</translation>
@@ -555,6 +557,7 @@
 <translation id="7293171162284876153">Για να ξεκινήσετε τον συγχρονισμό, ενεργοποιήστε την επιλογή "Συγχρονισμός των δεδομένων του Chrome".</translation>
 <translation id="7313347584264171202">Εδώ θα βρείτε τις καρτέλες ανώνυμης περιήγησής σας</translation>
 <translation id="7336264872878993241">Έγινε λήψη του <ph name="PERCENT" /> τοις εκατό</translation>
+<translation id="7340958967809483333">Επιλογές για Discover</translation>
 <translation id="7346909386216857016">OK, το κατάλαβα</translation>
 <translation id="734758817008927353">Επιλογές για την Αποθήκευση κάρτας</translation>
 <translation id="7348502496356775519">Σελιδοδείκτης</translation>
@@ -666,6 +669,7 @@
 <translation id="8668210798914567634">Αυτή η σελίδα αποθηκεύτηκε στη λίστα ανάγνωσης</translation>
 <translation id="8680787084697685621">Τα στοιχεία σύνδεσης λογαριασμού έχουν λήξει.</translation>
 <translation id="8706588385081740091">Κωδικοί πρόσβασης</translation>
+<translation id="8717864919010420084">Αντιγραφή συνδέσμου</translation>
 <translation id="8721297211384281569">Μενού εργαλείων</translation>
 <translation id="8725066075913043281">Προσπαθήστε ξανά</translation>
 <translation id="8730621377337864115">Ολοκληρώθηκε</translation>

@@ -252,7 +252,6 @@ Tik op een woord en houd dit vast om te zoeken. Selecteer meer of minder woorden
 <translation id="2942036813789421260">Voorbeeldtabblad is gesloten</translation>
 <translation id="2956410042958133412">Dit account wordt beheerd door <ph name="PARENT_NAME_1" /> en <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2962095958535813455">Overgeschakeld naar incognitotabbladen</translation>
-<translation id="2968755619301702150">Certificaatviewer</translation>
 <translation id="2979025552038692506">Geselecteerd incognitotabblad</translation>
 <translation id="2987620471460279764">Gedeelde tekst van ander apparaat</translation>
 <translation id="2989523299700148168">Onlangs bezocht</translation>
@@ -453,6 +452,7 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="4605958867780575332">Item verwijderd: <ph name="ITEM_TITLE" /></translation>
 <translation id="4616150815774728855"><ph name="WEBAPK_NAME" /> openen</translation>
 <translation id="4634124774493850572">Wachtwoord gebruiken</translation>
+<translation id="4640331037679501949">{NUM_PASSWORDS,plural, =1{1 gehackt wachtwoord}other{# gehackte wachtwoorden}}</translation>
 <translation id="4650364565596261010">Systeemstandaard</translation>
 <translation id="465657074423018424">Safe Browsing beschermt je tegen misleidende websites. Als je deze functie uitschakelt, moet je extra voorzichtig zijn als je browst, met name voordat je wachtwoorden opgeeft.</translation>
 <translation id="4662373422909645029">Cijfers niet toegestaan</translation>
@@ -669,7 +669,6 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="6157392216611456285"><ph name="APP_NAME" /> kiezen</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> data bespaard</translation>
 <translation id="6186394685773237175">Geen gehackte wachtwoorden gevonden</translation>
-<translation id="6201345951596836663">Link gekopieerd</translation>
 <translation id="6206830853671714236">Kies wanneer je wilt downloaden</translation>
 <translation id="6210748933810148297">Niet <ph name="EMAIL" />?</translation>
 <translation id="6218096829563201111">Vergelijkbare producten zoeken <ph name="BEGIN_NEW" />Nieuw<ph name="END_NEW" /></translation>

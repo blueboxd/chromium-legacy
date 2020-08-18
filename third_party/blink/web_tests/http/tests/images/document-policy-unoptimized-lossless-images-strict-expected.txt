@@ -1,2 +1,0 @@
-CONSOLE ERROR: Document policy violation: unoptimized-lossless-images-strict is not allowed in this document.
-CONSOLE ERROR: Document policy violation: unoptimized-lossless-images-strict is not allowed in this document.

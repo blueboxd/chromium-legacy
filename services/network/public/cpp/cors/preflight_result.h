@@ -57,9 +57,7 @@ class COMPONENT_EXPORT(NETWORK_CPP) PreflightResult final {
   // JavaScript-initiated requests.
   base::Optional<CorsErrorStatus> EnsureAllowedCrossOriginHeaders(
       const net::HttpRequestHeaders& headers,
-      bool is_revalidating,
-      const base::flat_set<std::string>& extra_safelisted_header_names = {})
-      const;
+      bool is_revalidating) const;
 
   // Checks if this entry is expired.
   bool IsExpired() const;

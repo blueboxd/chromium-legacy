@@ -39,10 +39,6 @@ const base::Feature kWebPaymentsJustInTimePaymentApp{
 const base::Feature kAlwaysAllowJustInTimePaymentApp{
     "AlwaysAllowJustInTimePaymentApp", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kWebPaymentsPerMethodCanMakePaymentQuota{
-    "WebPaymentsPerMethodCanMakePaymentQuota",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kWebPaymentsRedactShippingAddress{
     "WebPaymentsRedactShippingAddress", base::FEATURE_ENABLED_BY_DEFAULT};
 

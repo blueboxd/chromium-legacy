@@ -369,6 +369,7 @@
 <translation id="5114495209940374989">ეკრანის ანაბეჭდები</translation>
 <translation id="5136175204352732067">დაკავშირებულია განსხვავებული კლავიატურა</translation>
 <translation id="5168181903108465623">ხელმისაწვდომია გადაცემის მოწყობილობები</translation>
+<translation id="5170568018924773124">საქაღალდეში ჩვენება</translation>
 <translation id="5207949376430453814">ტექსტის კურსორის გამოყოფა</translation>
 <translation id="5222676887888702881">გამოსვლა</translation>
 <translation id="523505283826916779">მარტივი წვდომის პარამეტრები</translation>
@@ -460,6 +461,7 @@
 <translation id="6288235558961782912"><ph name="USER_EMAIL_ADDRESS" /> მოგვიანებით მშობლის ნებართვით შეგიძლიათ დაამატოთ.</translation>
 <translation id="6297287540776456956">რეგიონის ასარჩევად, გამოიყენეთ სტილუსი</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> შეტრიალებულია <ph name="ROTATION" /></translation>
+<translation id="6315170314923504164">ხმა</translation>
 <translation id="6376931439017688372">Bluetooth ჩართულია</translation>
 <translation id="6381109794406942707">მოწყობილობის განსაბლოკად შეიყვანეთ PIN-კოდი.</translation>
 <translation id="639644700271529076">CAPS LOCK გამორთულია</translation>
@@ -476,7 +478,7 @@
 <translation id="649452524636452238">სმარტ-ბარათის PIN-კოდი</translation>
 <translation id="6501401484702599040">ეკრანის ტრანსლირება აქ: <ph name="RECEIVER_NAME" />…</translation>
 <translation id="652139407789908527">განახლებისას ეკრანი ჩვეულზე დიდი ხნის (ერთ წუთამდე) განმავლობაში იქნება მონოტონური. განახლების მიმდინარეობისას არ დააჭიროთ ელკვების ღილაკზე.</translation>
-<translation id="6521655319214113338">ხელნაწერის შეყვანა</translation>
+<translation id="6527303717912515753">გაზიარება</translation>
 <translation id="6528179044667508675">არ შემაწუხოთ</translation>
 <translation id="6537270692134705506">ეკრანის აღბეჭდვა</translation>
 <translation id="6537924328260219877">სიგნალის სიძლიერე: <ph name="SIGNAL_STRENGTH" />, ტელეფონის ბატარეა: <ph name="BATTERY_STATUS" /></translation>
@@ -558,7 +560,6 @@
 <translation id="7536035074519304529">IP მისამართი: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">ძილის დროა</translation>
 <translation id="7561982940498449837">მენიუს დახურვა</translation>
-<translation id="7562368315689366235">Emoji-ების პალიტრა</translation>
 <translation id="7564874036684306347">ფანჯრების სხვა დესკტოპზე გადატანამ შეიძლება მოულოდნელი ქცევა გამოიწვიოს. შემდგომი შეტყობინებები, ფანჯრები და დიალოგები შეიძლება გაიყოს დესკტოპებს შორის.</translation>
 <translation id="7568294522609223312">ავტომატური დაწკაპუნებების გამორთვა</translation>
 <translation id="7568637526529101738">მარჯვენა ღილაკზე დაწკაპუნების ან ხანგრძლივად დაჭერის შემთხვევაში ასისტენტი გაჩვენებთ არჩეულ კონტენტთან დაკავშირებულ ინფორმაციას, მაგალითად, განმარტებას ან საზომი ერთეულის გარდაქმნის ვარიანტს.</translation>
@@ -621,7 +622,6 @@
 <translation id="8152092012181020186">დასახურად დააჭირეთ კლავიშთა კომბინაციას: Ctrl + W.</translation>
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" /> ამ პარამეტრს მართავს თქვენი ადმინისტრატორი.</translation>
 <translation id="8167567890448493835">გამოიყენება <ph name="LOCALE_NAME" /></translation>
-<translation id="8190698733819146287">ენების და შეყვანის მორგება…</translation>
 <translation id="8192202700944119416">შეტყობინებები დამალულია.</translation>
 <translation id="8196787716797768628">გამოიყენეთ ჟესტები აპებს შორის სწრაფად გადასართავად ან თქვენს Chromebook-თან ტაბლეტის რეჟიმში ურთიერთქმედებისთვის.</translation>
 <translation id="8200772114523450471">გაგრძელება</translation>
@@ -705,6 +705,7 @@
 <translation id="9029474291399787231">ხელმისაწვდომია Adobe Flash Player-ის განახლება</translation>
 <translation id="9047624247355796468"><ph name="NETWORK_NAME" />-ის პარამეტრების გახსნა</translation>
 <translation id="9056839673611986238">მოწყობილობა დაბრუნდება ძველ ვერსიაზე</translation>
+<translation id="9065203028668620118">რედაქტირება</translation>
 <translation id="9070640332319875144">ასისტენტის პარამეტრები</translation>
 <translation id="9072519059834302790">ბატარეის დაცლამდე დარჩენილია <ph name="TIME_LEFT" />.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>

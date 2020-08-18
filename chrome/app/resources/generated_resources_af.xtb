@@ -3,6 +3,7 @@
 <translationbundle lang="af">
 <translation id="1001307489511021749">Jou programme, instellings en ander pasmakings sal gesinkroniseer word op alle toestelle met Chrome-bedryfstelsel waarop jy met jou Google-rekening aangemeld is.</translation>
 <translation id="1003088604756913841">Maak skakel in nuwe <ph name="APP" />-venster oop</translation>
+<translation id="1003363546227723021">Wys foto's, die tyd, die weer, en media-inligting wanneer jou skerm onaktief is</translation>
 <translation id="1004218526896219317">Werftoegang</translation>
 <translation id="1005274289863221750">Gebruik jou mikrofoon en kamera</translation>
 <translation id="1005333234656240382">Aktiveer ADB-ontfouting?</translation>
@@ -94,6 +95,7 @@
 <translation id="1108600514891325577">Stop</translation>
 <translation id="1110155001042129815">Wag</translation>
 <translation id="1112420131909513020">Agtergrondoortjie gebruik tans Bluetooth</translation>
+<translation id="1113892970288677790">Kies saamgestelde kunswerke en prente</translation>
 <translation id="1114102982691049955"><ph name="PRINTER_MANUFACTURER" /> <ph name="PRINTER_MODEL" /> (USB)</translation>
 <translation id="1114202307280046356">Diamant</translation>
 <translation id="1114335938027186412">Jou rekenaar bevat 'n Vertroude Platform-module (VPM)-sekuriteitstoestel, wat gebruik word om baie belangrike sekuriteitskenmerke in die Chrome-bedryfstelsel te implementeer. Besoek die Chromebook-hulpsentrum om meer te wete te kom: https://support.google.com/chromebook/?p=tpm</translation>
@@ -201,6 +203,7 @@
 <translation id="1224275271335624810">Vinnigste</translation>
 <translation id="1225177025209879837">Verwerk tans versoek …</translation>
 <translation id="1227507814927581609">Kon nie staaf terwyl daar aan "<ph name="DEVICE_NAME" />" gekoppel word nie.</translation>
+<translation id="1230417814058465809">Standaardbeskerming is aan. Gebruik verbeterde beskerming vir selfs nog meer sekuriteit.</translation>
 <translation id="1231733316453485619">Skakel sinkronisering aan?</translation>
 <translation id="1232569758102978740">Titelloos</translation>
 <translation id="1233497634904001272">Raak jou sekuriteitsleutel weer om die versoek te voltooi.</translation>
@@ -1253,6 +1256,7 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="249113932447298600">Jammer, die toestel <ph name="DEVICE_LABEL" /> word nie op hierdie tydstip gesteun nie.</translation>
 <translation id="2492461744635776704">Berei tans sertifikaatondertekeningversoek voor</translation>
 <translation id="249303669840926644">Kon nie registrasie voltooi nie</translation>
+<translation id="2493126929778606526">Jou beste foto's, outomaties gekies</translation>
 <translation id="2495777824269688114">Ontdek nog kenmerke of kry antwoorde. Kies "?" vir hulp.</translation>
 <translation id="2496180316473517155">Blaaigeskiedenis</translation>
 <translation id="2497229222757901769">Muisspoed</translation>
@@ -1346,6 +1350,7 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="2604255671529671813">Netwerkverbinding-fout</translation>
 <translation id="2606246518223360146">Koppel data</translation>
 <translation id="2607101320794533334">Inligting oor entiteit se openbare sleutel</translation>
+<translation id="2607968157341167679">Geen albums nie. Skep 'n album in <ph name="LINK_BEGIN" />Google Foto's<ph name="LINK_END" />.</translation>
 <translation id="2609896558069604090">Skep kortpaaie …</translation>
 <translation id="2610157865375787051">Slaap</translation>
 <translation id="2610260699262139870">Ware grootte</translation>
@@ -1482,6 +1487,7 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="2762441749940182211">Kamera word geblokkeer</translation>
 <translation id="2764786626780673772">VPN-besonderhede</translation>
 <translation id="2765217105034171413">Klein</translation>
+<translation id="2765729904637714153">Herleef jou gunstelingherinneringe. Gaan na <ph name="LINK_BEGIN" />Google Foto's<ph name="LINK_END" /> toe om albums by te voeg of te wysig.</translation>
 <translation id="2766006623206032690">Plak en gaan</translation>
 <translation id="2766161002040448006">Vra 'n ouer</translation>
 <translation id="2767127727915954024"><ph name="ORIGIN" /> sal <ph name="FILENAME" /> kan wysig totdat jy alle oortjies vir hierdie werf toemaak</translation>
@@ -2114,6 +2120,7 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="3566325075220776093">Van hierdie toestel af</translation>
 <translation id="3566721612727112615">Geen werwe bygevoeg nie</translation>
 <translation id="3569382839528428029">Wil jy hê <ph name="APP_NAME" /> moet jou skerm deel?</translation>
+<translation id="3569407787324516067">Sluimerskerm</translation>
 <translation id="3569682580018832495"><ph name="ORIGIN" /> kan die volgende lêers en vouers bekyk</translation>
 <translation id="3571734092741541777">Stel op</translation>
 <translation id="3574210789297084292">meld aan</translation>
@@ -2262,6 +2269,7 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="3727148787322499904">As hierdie instelling verander word, sal dit alle gedeelde netwerke raak</translation>
 <translation id="3727187387656390258">Ondersoek opspringer</translation>
 <translation id="372722114124766626">Net een keer</translation>
+<translation id="3728188878314831180">Weerspieël kennisgewings van jou foon af</translation>
 <translation id="3728681439294129328">Stel netwerkadres op</translation>
 <translation id="3729303374699765035">Vra wanneer 'n werf Bluetooth-toestelle in die omtrek wil ontdek</translation>
 <translation id="3729506734996624908">Toegelate werwe</translation>
@@ -4276,7 +4284,7 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="625369703868467034">Netwerkgesondheid</translation>
 <translation id="6254503684448816922">Sleutelkompromie</translation>
 <translation id="6257602895346497974">Skakel sinkronisering aan …</translation>
-<translation id="625895209797312329">Keer werwe om lettertipes te gebruik wat op jou toestel geïnstalleer is</translation>
+<translation id="625895209797312329">Keer dat werwe lettertipes gebruik wat op jou toestel geïnstalleer is</translation>
 <translation id="6259104249628300056">Ontdek toestelle in jou plaaslike netwerk</translation>
 <translation id="6262371516389954471">Jou rugsteune word na Google toe opgelaai en met jou Google-rekeningwagwoord geënkripteer.</translation>
 <translation id="6263082573641595914">Microsoft CA-weergawe</translation>
@@ -4712,6 +4720,7 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="6824584962142919697">&amp;Ondersoek elemente</translation>
 <translation id="6825184156888454064">Sorteer volgens naam</translation>
 <translation id="6826872289184051766">Verifieer deur USB</translation>
+<translation id="6827623133556594466">Google Wolk-drukker sal ná 31 Desember nie meer gesteun word nie. <ph name="BEGIN_LINK" />Kom meer te wete<ph name="END_LINK" /></translation>
 <translation id="6828153365543658583">Beperk aanmelding tot die volgende gebruikers:</translation>
 <translation id="6828182567531805778">Voer jou wagfrase in om jou data te sinkroniseer</translation>
 <translation id="682871081149631693">QuickFix</translation>
@@ -5330,6 +5339,7 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="7605594153474022051">Sinkronisering werk nie</translation>
 <translation id="7606992457248886637">Outoriteite</translation>
 <translation id="7607002721634913082">Laat wag</translation>
+<translation id="7608810328871051088">Android-voorkeure</translation>
 <translation id="7609148976235050828">Koppel aan die internet en probeer weer.</translation>
 <translation id="7614260613810441905">Vra wanneer 'n werf lêers of vouers op jou toestel wil wysig (aanbeveel)</translation>
 <translation id="761530003705945209">Rugsteun in Google Drive. Laai jou data maklik terug of wissel enige tyd jou toestel. Jou rugsteun sluit programdata in. Jou rugsteune word na Google toe opgelaai en met jou Google-rekeningwagwoord geënkripteer.</translation>
@@ -5702,7 +5712,6 @@ Hou jou sleutellêer op 'n veilige plek. Jy gaan dit nodig hê om nuwe weergawes
 <translation id="8028060951694135607">Microsoft-sleutelherwinning</translation>
 <translation id="8028803902702117856">Laai nou af: <ph name="SIZE" />, <ph name="FILE_NAME" /></translation>
 <translation id="8028993641010258682">Grootte</translation>
-<translation id="8030656706657716245">Voeg drukker by</translation>
 <translation id="8030852056903932865">Keur goed</translation>
 <translation id="8032244173881942855">Kan nie oortjie uitsaai nie.</translation>
 <translation id="8033827949643255796">gekies</translation>
@@ -5859,6 +5868,7 @@ Hou jou sleutellêer op 'n veilige plek. Jy gaan dit nodig hê om nuwe weergawes
 <translation id="8225753906568652947">Gebruik jou aanbiedings</translation>
 <translation id="8226222018808695353">Verbode</translation>
 <translation id="8226619461731305576">Waglys</translation>
+<translation id="8226628635270268143">Kies jou gunstelingfoto's en -albums</translation>
 <translation id="8226742006292257240">Hieronder is die TPM-wagwoord wat lukraak gegenereer is en wat aan jou rekenaar toegewys is:</translation>
 <translation id="8227119283605456246">Heg lêer aan</translation>
 <translation id="8229943166551236192">Toesteldata sal binne 24 uur uitgevee word</translation>
@@ -6357,6 +6367,7 @@ Hou jou sleutellêer op 'n veilige plek. Jy gaan dit nodig hê om nuwe weergawes
 <translation id="882854468542856424">Moenie enige werf toelaat om Bluetooth-toestelle in die omtrek te ontdek nie</translation>
 <translation id="8828933418460119530">DNS-naam</translation>
 <translation id="883062543841130884">Plaasvervangers</translation>
+<translation id="8830779999439981481">Herbegin tans om opdaterings toe te pas</translation>
 <translation id="8830796635868321089">Die opdateringkontrolering het misluk met die huidige instaanbedienerinstellings. Verstel asseblief jou <ph name="PROXY_SETTINGS_LINK_START" />instaanbedienerinstellings<ph name="PROXY_SETTINGS_LINK_END" />.</translation>
 <translation id="8831140208248705279">Jou <ph name="DEVICE_TYPE" /> en Android-foon werk beter saam. Koppel hulle om teksboodskappe van jou rekenaar af te stuur, jou internetverbinding te deel, en jou <ph name="DEVICE_TYPE" /> met jou foon te ontsluit.<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />Kom meer te wete<ph name="LINK_END" /></translation>
 <translation id="8834039744648160717">Netwerkopstelling word beheer deur <ph name="USER_EMAIL" />.</translation>

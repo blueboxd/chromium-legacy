@@ -252,7 +252,6 @@
 <translation id="2942036813789421260">Алдын ала көрүү өтмөгү жабылды</translation>
 <translation id="2956410042958133412">Бул аккаунтту <ph name="PARENT_NAME_1" /> менен <ph name="PARENT_NAME_2" /> башкарат.</translation>
 <translation id="2962095958535813455">Жашыруун өтмөктөргө которулду</translation>
-<translation id="2968755619301702150">Тастыктаманы көрүүчү</translation>
 <translation id="2979025552038692506">Жашыруун режимде тандалган өтмөк</translation>
 <translation id="2987620471460279764">Текст башка түзмөктөн бөлүшүлдү</translation>
 <translation id="2989523299700148168">Жакында колдонулгандар</translation>
@@ -597,7 +596,7 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="568275469169136466">Убактылуу кирүү үчүн</translation>
 <translation id="5683547024293500885">Chrome жаңыртууларды текшере алган жок</translation>
 <translation id="5686790454216892815">Файлдын аталышы өтө узун</translation>
-<translation id="5687809546194252819">Өчүрүп күйгүзүгөндөн кийин<ph name="APP_NAME" /> колдонмосу <ph name="LANGUAGE" /> тилинде иштейт.</translation>
+<translation id="5687809546194252819">Өчүрүп күйгүзүгөндөн кийин <ph name="APP_NAME" /> колдонмосу <ph name="LANGUAGE" /> тилинде иштейт.</translation>
 <translation id="5694049548840660018">Башкы бетке оңой кайтыңыз</translation>
 <translation id="569536719314091526">"Дагы параметрлер" баскычын басып, бул баракты каалаган тилге котортуп алыңыз</translation>
 <translation id="5696597120588531049">Chrome сырсөздөрүңүздү коопсуз сактоого, кооптуу вебсайттардан жана башкалардан коргоого жардам берет</translation>
@@ -669,7 +668,6 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="6157392216611456285"><ph name="APP_NAME" /> колдонмосун тандоо</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> сакталган дайындар</translation>
 <translation id="6186394685773237175">Уурдалган сырсөздөр аныкталган жок</translation>
-<translation id="6201345951596836663">Шилтеме көчүрүлдү</translation>
 <translation id="6206830853671714236">Качан жүктөлүп алынышы керек экенин тандаңыз</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> эмеспи?</translation>
 <translation id="6218096829563201111">Окшош өнүмдөрдү издөө <ph name="BEGIN_NEW" />Жаңы<ph name="END_NEW" /></translation>

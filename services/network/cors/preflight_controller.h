@@ -52,9 +52,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) PreflightController final {
       bool tainted,
       base::Optional<CorsErrorStatus>* detected_error_status);
 
-  PreflightController(
-      const std::vector<std::string>& extra_safelisted_header_names,
-      NetworkService* network_service);
+  explicit PreflightController(NetworkService* network_service);
   ~PreflightController();
 
   // Determines if a CORS-preflight request is needed, and checks the cache, or
@@ -70,15 +68,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) PreflightController final {
       int32_t process_id,
       const net::IsolationInfo& isolation_info);
 
-  const base::flat_set<std::string>& extra_safelisted_header_names() const {
-    return extra_safelisted_header_names_;
-  }
-
-  void set_extra_safelisted_header_names(
-      const base::flat_set<std::string>& extra_safelisted_header_names) {
-    extra_safelisted_header_names_ = extra_safelisted_header_names;
-  }
-
  private:
   class PreflightLoader;
 
@@ -93,8 +82,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) PreflightController final {
   PreflightCache cache_;
   std::set<std::unique_ptr<PreflightLoader>, base::UniquePtrComparator>
       loaders_;
-
-  base::flat_set<std::string> extra_safelisted_header_names_;
 
   NetworkService* const network_service_;
 

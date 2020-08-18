@@ -4,8 +4,6 @@
 
 package org.chromium.components.browser_ui.site_settings;
 
-import androidx.annotation.VisibleForTesting;
-
 import org.chromium.base.Callback;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
@@ -596,7 +594,6 @@ public class WebsitePreferenceBridge {
                 contentSettingType, primaryPattern, secondaryPattern, setting);
     }
 
-    @VisibleForTesting
     @NativeMethods
     public interface Natives {
         void getArOrigins(BrowserContextHandle browserContextHandle, Object list);

@@ -421,6 +421,7 @@ class BuildConfigGenerator extends DefaultTask {
                 |""".stripMargin())
                 break
             case 'androidx_test_espresso_espresso_web':
+            case 'androidx_window_window':
                 sb.append('  enable_bytecode_checks = false\n')
                 break
             case 'net_sf_kxml_kxml2':

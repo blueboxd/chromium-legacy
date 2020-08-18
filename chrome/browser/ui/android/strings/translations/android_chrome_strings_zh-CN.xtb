@@ -252,7 +252,6 @@
 <translation id="2942036813789421260">预览标签页已关闭</translation>
 <translation id="2956410042958133412">该帐号由 <ph name="PARENT_NAME_1" /> 和 <ph name="PARENT_NAME_2" /> 管理。</translation>
 <translation id="2962095958535813455">已切换到隐身标签页</translation>
-<translation id="2968755619301702150">证书查看器</translation>
 <translation id="2979025552038692506">所选的隐身标签页</translation>
 <translation id="2987620471460279764">从其他设备分享的文字</translation>
 <translation id="2989523299700148168">最近用过的搜索引擎</translation>
@@ -669,7 +668,6 @@
 <translation id="6157392216611456285">选择 <ph name="APP_NAME" /></translation>
 <translation id="6159335304067198720">节省 <ph name="PERCENT" /> 的数据流量</translation>
 <translation id="6186394685773237175">未发现任何已泄露的密码</translation>
-<translation id="6201345951596836663">已复制链接</translation>
 <translation id="6206830853671714236">请选择下载时间</translation>
 <translation id="6210748933810148297">不是 <ph name="EMAIL" />？</translation>
 <translation id="6218096829563201111">搜索类似商品<ph name="BEGIN_NEW" />新<ph name="END_NEW" /></translation>

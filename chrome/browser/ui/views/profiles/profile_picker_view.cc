@@ -32,6 +32,7 @@ namespace {
 ProfilePickerView* g_profile_picker_view = nullptr;
 constexpr int kWindowWidth = 1024;
 constexpr int kWindowHeight = 758;
+constexpr float kMaxRatioOfWorkArea = 0.9;
 }  // namespace
 
 // static
@@ -117,7 +118,14 @@ void ProfilePickerView::Init(Profile* system_profile) {
 }
 
 gfx::Size ProfilePickerView::CalculatePreferredSize() const {
-  return gfx::Size(kWindowWidth, kWindowHeight);
+  gfx::Size preferred_size = gfx::Size(kWindowWidth, kWindowHeight);
+  gfx::Size work_area_size = GetWidget()->GetWorkAreaBoundsInScreen().size();
+  // Keep the window smaller then |work_area_size| so that it feels more like a
+  // dialog then like the actual Chrome window.
+  gfx::Size max_dialog_size = ScaleToFlooredSize(
+      work_area_size, kMaxRatioOfWorkArea, kMaxRatioOfWorkArea);
+  preferred_size.SetToMin(max_dialog_size);
+  return preferred_size;
 }
 
 void ProfilePickerView::WindowClosing() {

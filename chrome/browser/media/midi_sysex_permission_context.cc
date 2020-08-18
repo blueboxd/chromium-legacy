@@ -28,12 +28,12 @@ void MidiSysexPermissionContext::UpdateTabContext(
     return;
 
   if (allowed) {
-    content_settings->OnMidiSysExAccessed(requesting_frame);
+    content_settings->OnContentAllowed(ContentSettingsType::MIDI_SYSEX);
 
     content::ChildProcessSecurityPolicy::GetInstance()
         ->GrantSendMidiSysExMessage(id.render_process_id());
   } else {
-    content_settings->OnMidiSysExAccessBlocked(requesting_frame);
+    content_settings->OnContentBlocked(ContentSettingsType::MIDI_SYSEX);
   }
 }
 

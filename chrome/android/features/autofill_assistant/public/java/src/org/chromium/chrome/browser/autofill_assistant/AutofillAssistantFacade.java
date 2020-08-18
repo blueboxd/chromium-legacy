@@ -98,7 +98,8 @@ public class AutofillAssistantFacade {
         waitForTabWithWebContents(activity, tab -> {
             if (arguments.containsTriggerScript()) {
                 if (!AutofillAssistantPreferencesUtil.isAutofillAssistantSwitchOn()) {
-                    // Opt-out users who have seen and rejected the onboarding.
+                    // Opt-out users who have seen and rejected the onboarding, or who have canceled
+                    // the lite script too many times.
                     return;
                 }
                 if (AutofillAssistantModuleEntryProvider.INSTANCE.getModuleEntryIfInstalled()

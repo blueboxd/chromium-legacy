@@ -35,11 +35,11 @@ class AutofillAssistantLiteScriptCoordinator {
 
     void startLiteScript(String firstTimeUserScriptPath, String returningUserScriptPath,
             Callback<Boolean> onFinishedCallback) {
-        // TODO(arbesser) distinguish first-time users from returning users and serve the
-        // appropriate script to each.
-        AutofillAssistantLiteService liteService =
-                new AutofillAssistantLiteService(mWebContents, firstTimeUserScriptPath,
-                        finishedState -> handleLiteScriptResult(finishedState, onFinishedCallback));
+        AutofillAssistantLiteService liteService = new AutofillAssistantLiteService(mWebContents,
+                AutofillAssistantPreferencesUtil.isAutofillAssistantFirstTimeLiteScriptUser()
+                        ? firstTimeUserScriptPath
+                        : returningUserScriptPath,
+                finishedState -> handleLiteScriptResult(finishedState, onFinishedCallback));
         AutofillAssistantServiceInjector.setServiceToInject(liteService);
         AutofillAssistantClient.fromWebContents(mWebContents)
                 .start(/* initialUrl= */ "", /* parameters= */ new HashMap<>(),
@@ -51,7 +51,6 @@ class AutofillAssistantLiteScriptCoordinator {
     private void handleLiteScriptResult(
             @LiteScriptFinishedState int finishedState, Callback<Boolean> onFinishedCallback) {
         // TODO(arbesser) add UKM metric for state.
-        // TODO(arbesser) increment canceled counter on LITE_SCRIPT_PROMPT_FAILED_CLOSE.
         // TODO(arbesser) restart lite script on LITE_SCRIPT_BROWSE_FAILED_NAVIGATE.
         switch (finishedState) {
             case LiteScriptFinishedState.LITE_SCRIPT_UNKNOWN_FAILURE:
@@ -63,10 +62,18 @@ class AutofillAssistantLiteScriptCoordinator {
             case LiteScriptFinishedState.LITE_SCRIPT_INVALID_SCRIPT:
             case LiteScriptFinishedState.LITE_SCRIPT_BROWSE_FAILED_NAVIGATE:
             case LiteScriptFinishedState.LITE_SCRIPT_BROWSE_FAILED_OTHER:
+                onFinishedCallback.onResult(false);
+                return;
             case LiteScriptFinishedState.LITE_SCRIPT_PROMPT_FAILED_NAVIGATE:
             case LiteScriptFinishedState.LITE_SCRIPT_PROMPT_FAILED_CONDITION_NO_LONGER_TRUE:
             case LiteScriptFinishedState.LITE_SCRIPT_PROMPT_FAILED_CLOSE:
+                AutofillAssistantPreferencesUtil
+                        .incrementAutofillAssistantNumberOfLiteScriptsCanceled();
+                // fall through
             case LiteScriptFinishedState.LITE_SCRIPT_PROMPT_FAILED_OTHER:
+                // The prompt was displayed on screen, hence we mark them as returning user from now
+                // on.
+                AutofillAssistantPreferencesUtil.setAutofillAssistantReturningLiteScriptUser();
                 onFinishedCallback.onResult(false);
                 return;
             case LiteScriptFinishedState.LITE_SCRIPT_PROMPT_SUCCEEDED:

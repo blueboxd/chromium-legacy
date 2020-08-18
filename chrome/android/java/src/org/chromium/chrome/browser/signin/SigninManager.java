@@ -16,7 +16,6 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.TraceEvent;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.metrics.RecordHistogram;
@@ -26,7 +25,6 @@ import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.sync.AndroidSyncSettings;
 import org.chromium.components.signin.AccountTrackerService;
 import org.chromium.components.signin.AccountUtils;
-import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.ClearAccountsAction;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
@@ -238,25 +236,6 @@ public class SigninManager
         mIdentityManager.addObserver(this);
 
         reloadAllAccountsFromSystem();
-
-        reconcileJavaAndNativeStates();
-    }
-
-    private void reconcileJavaAndNativeStates() {
-        try (TraceEvent ignored = TraceEvent.scoped("SigninManager.reconcileJavaAndNativeStates")) {
-            ThreadUtils.assertOnUiThread();
-            // The sign out flow starts by clearing the signed in user in the ChromeSigninController
-            // on the Java side, and then performs a sign out on the native side. If there is a
-            // crash on the native side then the signin state may get out of sync. Make sure that
-            // the native side is signed out if the Java side doesn't have a currently signed in
-            // user.
-            if (!ChromeSigninController.get().isSignedIn()
-                    && mIdentityManager.hasPrimaryAccount()) {
-                Log.w(TAG, "Signed in state got out of sync, forcing native sign out");
-                // TODO(https://crbug.com/873116): Pass the correct reason for the signout.
-                signOut(SignoutReason.USER_CLICKED_SIGNOUT_SETTINGS);
-            }
-        }
     }
 
     /**
@@ -488,10 +467,11 @@ public class SigninManager
             return;
         }
 
-        // Cache the signed-in account name. This must be done after the native call, otherwise
-        // sync tries to start without being signed in natively and crashes.
-        ChromeSigninController.get().setSignedInAccountName(
+        // TODO(https://crbug.com/1091858): Remove this after migrating the legacy code that uses
+        //                                  the sync account before the native is loaded.
+        SigninPreferencesManager.getInstance().setLegacySyncAccountEmail(
                 mSignInState.mCoreAccountInfo.getEmail());
+
         enableSync(mSignInState.mCoreAccountInfo);
 
         if (mSignInState.mCallback != null) {
@@ -649,9 +629,10 @@ public class SigninManager
 
         Log.d(TAG, "On native signout, wipe user data: " + mSignOutState.mShouldWipeUserData);
 
-        // Native sign-out must happen before resetting the account so data is deleted correctly.
-        // http://crbug.com/589028
-        ChromeSigninController.get().setSignedInAccountName(null);
+        // TODO(https://crbug.com/1091858): Remove this after migrating the legacy code that uses
+        //                                  the sync account before the native is loaded.
+        SigninPreferencesManager.getInstance().setLegacySyncAccountEmail(null);
+
         if (mSignOutState.mSignOutCallback != null) mSignOutState.mSignOutCallback.preWipeData();
         disableSyncAndWipeData(mSignOutState.mShouldWipeUserData, this::finishSignOut);
         mAccountTrackerService.invalidateAccountSeedStatus(true);

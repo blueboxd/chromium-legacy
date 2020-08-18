@@ -3,6 +3,7 @@
 <translationbundle lang="vi">
 <translation id="1001307489511021749">Các ứng dụng, tùy chọn cài đặt và những mục tùy chỉnh khác của bạn sẽ được đồng bộ hóa trên mọi thiết bị Chrome OS mà bạn đăng nhập bằng Tài khoản Google của mình.</translation>
 <translation id="1003088604756913841">Mở liên kết trong cửa sổ mới của <ph name="APP" /></translation>
+<translation id="1003363546227723021">Hiển thị ảnh, thời gian, thông tin về thời tiết và nội dung nghe nhìn khi ở chế độ màn hình chờ</translation>
 <translation id="1004218526896219317">Quyền truy cập vào trang web</translation>
 <translation id="1005274289863221750">Sử dụng micrô và máy ảnh của bạn</translation>
 <translation id="1005333234656240382">Bật tùy chọn gỡ lỗi ADB?</translation>
@@ -94,6 +95,7 @@
 <translation id="1108600514891325577">&amp;Dừng</translation>
 <translation id="1110155001042129815">Chờ</translation>
 <translation id="1112420131909513020">Thẻ nền đang sử dụng Bluetooth</translation>
+<translation id="1113892970288677790">Chọn các hình ảnh và tác phẩm nghệ thuật tuyển chọn</translation>
 <translation id="1114102982691049955"><ph name="PRINTER_MANUFACTURER" /> <ph name="PRINTER_MODEL" /> (USB)</translation>
 <translation id="1114202307280046356">Kim cương</translation>
 <translation id="1114335938027186412">Máy tính của bạn chứa thiết bị bảo mật Mô-đun nền tảng đáng tin cậy (TPM) dùng để triển khai nhiều tính năng bảo mật quan trọng trong Chrome OS. Hãy truy cập Trung tâm trợ giúp Chromebook để tìm hiểu thêm: https://support.google.com/chromebook/?p=tpm</translation>
@@ -201,6 +203,7 @@
 <translation id="1224275271335624810">Nhanh nhất</translation>
 <translation id="1225177025209879837">Đang xử lý yêu cầu...</translation>
 <translation id="1227507814927581609">Xác thực không thành công trong khi kết nối với "<ph name="DEVICE_NAME" />".</translation>
+<translation id="1230417814058465809">Tính năng Bảo vệ thông thường đang bật. Để tăng cường khả năng bảo mật, hãy sử dụng chế độ bảo vệ nâng cao.</translation>
 <translation id="1231733316453485619">Bạn muốn bật tính năng đồng bộ hóa?</translation>
 <translation id="1232569758102978740">Không tên</translation>
 <translation id="1233497634904001272">Chạm lại vào khóa bảo mật để hoàn tất yêu cầu.</translation>
@@ -1253,6 +1256,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="249113932447298600">Rất tiếc, thiết bị <ph name="DEVICE_LABEL" /> không được hỗ trợ vào thời điểm này.</translation>
 <translation id="2492461744635776704">Đang chuẩn bị yêu cầu ký chứng chỉ</translation>
 <translation id="249303669840926644">Không thể hoàn tất đăng ký</translation>
+<translation id="2493126929778606526">Những ảnh đẹp nhất của bạn được chọn tự động</translation>
 <translation id="2495777824269688114">Khám phá các tính năng khác hoặc nhận câu trả lời. Hãy chọn “?” để được trợ giúp.</translation>
 <translation id="2496180316473517155">Lịch sử duyệt web</translation>
 <translation id="2497229222757901769">Tốc độ chuột</translation>
@@ -1346,6 +1350,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="2604255671529671813">Lỗi kết nối mạng</translation>
 <translation id="2606246518223360146">Liên kết dữ liệu</translation>
 <translation id="2607101320794533334">Thông tin Khoá Công cộng Đối tượng</translation>
+<translation id="2607968157341167679">Không có album nào. Hãy tạo một album trong <ph name="LINK_BEGIN" />Google Photos<ph name="LINK_END" />.</translation>
 <translation id="2609896558069604090">Tạo phím tắt...</translation>
 <translation id="2610157865375787051">Ngủ</translation>
 <translation id="2610260699262139870">Kíc&amp;h thước thực</translation>
@@ -1482,6 +1487,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="2762441749940182211">Máy ảnh bị chặn</translation>
 <translation id="2764786626780673772">Chi tiết về VPN</translation>
 <translation id="2765217105034171413">Nhỏ</translation>
+<translation id="2765729904637714153">Hồi tưởng lại những kỷ niệm đáng nhớ của bạn. Để thêm hoặc chỉnh sửa album, hãy chuyển đến <ph name="LINK_BEGIN" />Google Photos<ph name="LINK_END" />.</translation>
 <translation id="2766006623206032690">Dán và tru&amp;y cập</translation>
 <translation id="2766161002040448006">Xin phép cha mẹ</translation>
 <translation id="2767127727915954024"><ph name="ORIGIN" /> sẽ có thể chỉnh sửa <ph name="FILENAME" /> cho đến khi bạn đóng tất cả các thẻ cho trang web này</translation>
@@ -2114,6 +2120,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="3566325075220776093">Từ thiết bị này</translation>
 <translation id="3566721612727112615">Chưa thêm trang web nào</translation>
 <translation id="3569382839528428029">Bạn có muốn <ph name="APP_NAME" /> chia sẻ màn hình của bạn không?</translation>
+<translation id="3569407787324516067">Trình bảo vệ màn hình</translation>
 <translation id="3569682580018832495"><ph name="ORIGIN" /> có thể xem các tệp và thư mục sau</translation>
 <translation id="3571734092741541777">Thiết lập</translation>
 <translation id="3574210789297084292">đăng nhập</translation>
@@ -2262,6 +2269,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="3727148787322499904">Việc thay đổi cài đặt này sẽ ảnh hưởng đến tất cả các mạng chia sẻ</translation>
 <translation id="3727187387656390258">Kiểm tra cửa sổ bật lên</translation>
 <translation id="372722114124766626">Chỉ một lần</translation>
+<translation id="3728188878314831180">Phản chiếu các thông báo từ điện thoại</translation>
 <translation id="3728681439294129328">Định cấu hình địa chỉ mạng</translation>
 <translation id="3729303374699765035">Hỏi khi một trang web muốn tìm các thiết bị Bluetooth ở gần</translation>
 <translation id="3729506734996624908">Trang web được phép</translation>
@@ -4711,6 +4719,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="6824584962142919697">&amp;Kiểm tra các yếu tố</translation>
 <translation id="6825184156888454064">Sắp xếp theo tên</translation>
 <translation id="6826872289184051766">Xác minh qua USB</translation>
+<translation id="6827623133556594466">Sau ngày 31 tháng 12, Google Cloud Print sẽ không còn được hỗ trợ nữa. <ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /></translation>
 <translation id="6828153365543658583">Giới hạn đăng nhập cho những người dùng sau:</translation>
 <translation id="6828182567531805778">Nhập cụm mật khẩu để đồng bộ hóa dữ liệu</translation>
 <translation id="682871081149631693">QuickFix</translation>
@@ -5329,6 +5338,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="7605594153474022051">Đồng bộ hóa không hoạt động</translation>
 <translation id="7606992457248886637">Quyền</translation>
 <translation id="7607002721634913082">Đã tạm dừng</translation>
+<translation id="7608810328871051088">Các tùy chọn Android</translation>
 <translation id="7609148976235050828">Vui lòng kết nối với Internet và thử lại.</translation>
 <translation id="7614260613810441905">Hỏi khi một trang web muốn chỉnh sửa các tệp hoặc thư mục trên thiết bị (khuyên dùng)</translation>
 <translation id="761530003705945209">Sao lưu vào Google Drive. Dễ dàng khôi phục dữ liệu hoặc chuyển đổi thiết bị bất cứ lúc nào. Nội dung sao lưu của bạn bao gồm các dữ liệu ứng dụng. Các bản sao lưu được tải lên Google và mã hóa bằng mật khẩu Tài khoản Google của bạn.</translation>
@@ -5702,7 +5712,6 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8028060951694135607">Khôi phục Khoá Microsoft</translation>
 <translation id="8028803902702117856">Đang tải xuống <ph name="SIZE" />, <ph name="FILE_NAME" /></translation>
 <translation id="8028993641010258682">Kích thước</translation>
-<translation id="8030656706657716245">Thêm máy in</translation>
 <translation id="8030852056903932865">Phê duyệt</translation>
 <translation id="8032244173881942855">Không thể truyền thẻ.</translation>
 <translation id="8033827949643255796">đã chọn</translation>
@@ -5859,6 +5868,7 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8225753906568652947">Đổi ưu đãi của bạn</translation>
 <translation id="8226222018808695353">Bị cấm</translation>
 <translation id="8226619461731305576">Hàng đợi</translation>
+<translation id="8226628635270268143">Chọn ảnh và album bạn yêu thích</translation>
 <translation id="8226742006292257240">Dưới đây là mật khẩu TPM được tạo ngẫu nhiên đã được gán cho máy tính của bạn:</translation>
 <translation id="8227119283605456246">Đính kèm tệp</translation>
 <translation id="8229943166551236192">Dữ liệu trên thiết bị sẽ bị xóa sau 24 giờ</translation>
@@ -6357,6 +6367,7 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="882854468542856424">Không cho phép bất kỳ trang web nào tìm các thiết bị Bluetooth ở gần</translation>
 <translation id="8828933418460119530">Tên DNS</translation>
 <translation id="883062543841130884">Ký tự thay thế</translation>
+<translation id="8830779999439981481">Đang khởi động lại để áp dụng bản cập nhật</translation>
 <translation id="8830796635868321089">Kiểm tra cập nhật không thành công khi sử dụng cài đặt proxy hiện tại. Vui lòng điều chỉnh <ph name="PROXY_SETTINGS_LINK_START" />cài đặt proxy<ph name="PROXY_SETTINGS_LINK_END" /> của bạn.</translation>
 <translation id="8831140208248705279"><ph name="DEVICE_TYPE" /> và điện thoại Android hoạt động hiệu quả hơn khi kết hợp cùng nhau. Hãy kết nối hai thiết bị này với nhau để có thể nhắn tin từ máy tính, chia sẻ kết nối Internet và mở khóa <ph name="DEVICE_TYPE" /> bằng điện thoại.<ph name="FOOTNOTE_POINTER" /><ph name="LINK_BEGIN" />Tìm hiểu thêm<ph name="LINK_END" /></translation>
 <translation id="8834039744648160717">Cấu hình mạng do <ph name="USER_EMAIL" /> kiểm soát.</translation>

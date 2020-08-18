@@ -41,6 +41,7 @@ public class AccountPickerDelegate implements WebSigninBridge.Listener {
     private final String mContinueUrl;
     private final SigninManager mSigninManager;
     private WebSigninBridge mWebSigninBridge;
+    private Callback<GoogleServiceAuthError> mOnSignInErrorCallback;
 
     public AccountPickerDelegate(WindowAndroid windowAndroid, String continueUrl) {
         mWindowAndroid = windowAndroid;
@@ -64,9 +65,10 @@ public class AccountPickerDelegate implements WebSigninBridge.Listener {
     /**
      * Signs the user into the account of the given accountName.
      */
-    public void signIn(String accountName) {
+    public void signIn(String accountName, Callback<GoogleServiceAuthError> onSignInErrorCallback) {
         Account account = AccountUtils.findAccountByName(
                 AccountManagerFacadeProvider.getInstance().tryGetGoogleAccounts(), accountName);
+        mOnSignInErrorCallback = onSignInErrorCallback;
         mSigninManager.signIn(
                 SigninAccessPoint.WEB_SIGNIN, account, new SigninManager.SignInCallback() {
                     @Override
@@ -126,11 +128,12 @@ public class AccountPickerDelegate implements WebSigninBridge.Listener {
     public void onSigninSucceded() {}
 
     /**
-     * TODO(https//crbug.com/1114589): Handle web sign-in errors.
      * Sign-in process failed.
      *
      * @param error Details about the error that occurred in the sign-in process.
      */
     @Override
-    public void onSigninFailed(GoogleServiceAuthError error) {}
+    public void onSigninFailed(GoogleServiceAuthError error) {
+        mOnSignInErrorCallback.onResult(error);
+    }
 }

@@ -361,8 +361,6 @@ public abstract class ChromeFeatureList {
             "PasswordManagerOnboardingAndroid";
     public static final String PAY_WITH_GOOGLE_V1 = "PayWithGoogleV1";
     public static final String PERMISSION_DELEGATION = "PermissionDelegation";
-    public static final String PER_METHOD_CAN_MAKE_PAYMENT_QUOTA =
-            "WebPaymentsPerMethodCanMakePaymentQuota";
     public static final String PHOTO_PICKER_VIDEO_SUPPORT = "PhotoPickerVideoSupport";
     public static final String PHOTO_PICKER_ZOOM = "PhotoPickerZoom";
     public static final String PORTALS = "Portals";

@@ -542,7 +542,7 @@ def v8_value_to_local_cpp_value(interface_name, method, argument, index):
 ################################################################################
 
 
-# [NotEnumerable], [Unforgeable]
+# [NotEnumerable], [LegacyUnforgeable]
 def property_attributes(interface, method):
     extended_attributes = method.extended_attributes
     property_attributes_list = []

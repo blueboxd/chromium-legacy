@@ -44,6 +44,7 @@
 <translation id="2123055963409958220"><ph name="BEGIN_LINK" />Aktuelle Einstellungen<ph name="END_LINK" /> übermitteln und so helfen, Chrome noch besser zu machen</translation>
 <translation id="2151406531797534936">Starten Sie Chrome jetzt neu</translation>
 <translation id="2246246234298806438">Google Chrome kann ohne den integrierten PDF-Viewer keine Druckvorschau anzeigen.</translation>
+<translation id="226038281051944330">Sie haben sich mit einem neuen Konto im Profil von <ph name="EXISTING_USER" /> angemeldet. Möchten Sie ein neues Chrome-Profil für <ph name="NEW_USER" /> erstellen, um Ihre Daten getrennt zu halten?</translation>
 <translation id="2290014774651636340">Google API-Schlüssel fehlen. Einige Funktionen von Google Chrome sind deaktiviert.</translation>
 <translation id="2290095356545025170">Möchten Sie Google Chrome wirklich deinstallieren?</translation>
 <translation id="2309047409763057870">Dies ist eine Zweitinstallation, daher kann Google Chrome nicht als Standardbrowser festgelegt werden.</translation>
@@ -142,10 +143,12 @@
 <translation id="4895437082222824641">Link in neuem Chrome-Tab öffnen</translation>
 <translation id="4953650215774548573">Google Chrome als Standardbrowser festlegen</translation>
 <translation id="495931528404527476">In Chrome</translation>
+<translation id="4960472897514318257">Sie haben sich mit einem Arbeitskonto angemeldet. Möchten Sie eine neues Chrome-Profil für <ph name="NEW_USER" /> erstellen, um Ihre persönlichen Daten getrennt zu halten?</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5062123544085870375">Chrome OS neu starten</translation>
 <translation id="5132929315877954718">Entdecken Sie tolle Apps, Spiele, Erweiterungen und Designs für Google Chrome.</translation>
 <translation id="5170938038195470297">Ihr Profil kann nicht verwendet werden, da es von einer neueren Version von Google Chrome stammt. Einige Funktionen stehen möglicherweise nicht zur Verfügung. Geben Sie bitte ein anderes Profilverzeichnis an oder verwenden Sie eine neuere Version von Google Chrome.</translation>
+<translation id="5171117065011130146">Neues Chrome-Arbeitsprofil erstellen?</translation>
 <translation id="5193136243808726294">Google Chrome OS kann diese Seite nicht öffnen.</translation>
 <translation id="5251420635869119124">Gastnutzer können Chrome verwenden, ohne Daten zu hinterlassen.</translation>
 <translation id="532046782124376502">Achtung: Google Chrome kann nicht verhindern, dass Ihr Browser-Verlauf von Erweiterungen aufgezeichnet wird. Schalten Sie diese Option aus, um die Erweiterung im Inkognitomodus zu deaktivieren.</translation>
@@ -257,7 +260,9 @@
 <translation id="8823341990149967727">Chrome ist veraltet.</translation>
 <translation id="8834965163890861871">Google Chrome versucht, Passwörter zu bearbeiten. Geben Sie Ihr Windows-Passwort ein, um dies zuzulassen.</translation>
 <translation id="884296878221830158">Die Erweiterung legt auch fest, welche Seite beim Start von Chrome angezeigt wird oder wenn Sie auf die Schaltfläche "Startseite" klicken.</translation>
+<translation id="8859948767482842016">Sie haben sich mit einem Arbeitskonto im Profil von <ph name="EXISTING_USER" /> angemeldet. Möchten Sie ein neues Chrome-Profil für <ph name="WORK_DOMAIN" /> erstellen, um Ihre Daten getrennt zu halten?</translation>
 <translation id="8862326446509486874">Sie verfügen nicht über die erforderlichen Rechte für eine systemweite Installation. Starten Sie das Installationsprogramm als Administrator.</translation>
+<translation id="8877586659207810298">Neues Chrome-Profil für <ph name="NEW_USER" /> erstellen?</translation>
 <translation id="8914504000324227558">Chrome neu starten</translation>
 <translation id="8999208279178790196">{0,plural, =0{Ein Chrome-Update ist verfügbar}=1{Ein Chrome-Update ist verfügbar}other{Ein Chrome-Update ist seit # Tagen verfügbar}}</translation>
 <translation id="9026991721384951619">Chrome OS konnte Ihre Daten nicht synchronisieren, da die Anmeldedaten Ihres Kontos veraltet sind.</translation>

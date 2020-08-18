@@ -4281,7 +4281,7 @@ def _make_property_entry_v8_property_attribute(property_):
     values = []
     if "NotEnumerable" in property_.extended_attributes:
         values.append("v8::DontEnum")
-    if "Unforgeable" in property_.extended_attributes:
+    if "LegacyUnforgeable" in property_.extended_attributes:
         if not isinstance(property_, web_idl.Attribute):
             values.append("v8::ReadOnly")
         values.append("v8::DontDelete")
@@ -4304,7 +4304,7 @@ def _make_property_entry_on_which_object(property_):
         return ON_INTERFACE
     if "Global" in property_.owner.extended_attributes:
         return ON_INSTANCE
-    if "Unforgeable" in property_.extended_attributes:
+    if "LegacyUnforgeable" in property_.extended_attributes:
         return ON_INSTANCE
     return ON_PROTOTYPE
 

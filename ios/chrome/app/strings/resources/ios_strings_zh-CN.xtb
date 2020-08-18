@@ -338,6 +338,7 @@
 <translation id="4881695831933465202">打开</translation>
 <translation id="4901778704868714008">保存…</translation>
 <translation id="4904877109095351937">标记为已读</translation>
+<translation id="4908869848243824489">Google 探索</translation>
 <translation id="4930268273022498155">删除现有数据。您可通过切换回 <ph name="USER_EMAIL1" /> 来获取现有数据。</translation>
 <translation id="4930714375720679147">开启</translation>
 <translation id="4941089862236492464">很抱歉，分享您的信息时出现问题。</translation>
@@ -554,6 +555,7 @@
 <translation id="7293171162284876153">要开始同步，请开启“同步 Chrome 数据”。</translation>
 <translation id="7313347584264171202">您已打开的无痕模式标签页会显示在此处</translation>
 <translation id="7336264872878993241">已下载<ph name="PERCENT" />%</translation>
+<translation id="7340958967809483333">“探索”功能的选项</translation>
 <translation id="7346909386216857016">知道了</translation>
 <translation id="734758817008927353">卡片信息保存选项</translation>
 <translation id="7348502496356775519">添加书签</translation>
@@ -665,6 +667,7 @@
 <translation id="8668210798914567634">此页面已保存到您的阅读列表。</translation>
 <translation id="8680787084697685621">帐号登录详细信息已过期。</translation>
 <translation id="8706588385081740091">密码</translation>
+<translation id="8717864919010420084">复制链接</translation>
 <translation id="8721297211384281569">工具菜单</translation>
 <translation id="8725066075913043281">重试</translation>
 <translation id="8730621377337864115">完成</translation>

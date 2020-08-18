@@ -221,7 +221,6 @@ public class PaymentRequestImpl
 
     private boolean mIsCanMakePaymentResponsePending;
     private boolean mIsHasEnrolledInstrumentResponsePending;
-    private boolean mHasEnrolledInstrumentUsesPerMethodQuota;
     private boolean mIsCurrentPaymentRequestShowing;
     private boolean mWasRetryCalled;
 
@@ -1619,14 +1618,12 @@ public class PaymentRequestImpl
     // Implement BrowserPaymentRequest:
     /** Called by the merchant website to check if the user has complete payment instruments. */
     @Override
-    public void hasEnrolledInstrument(boolean perMethodQuota) {
+    public void hasEnrolledInstrument() {
         if (mComponentPaymentRequestImpl == null) return;
 
         if (ComponentPaymentRequestImpl.getNativeObserverForTest() != null) {
             ComponentPaymentRequestImpl.getNativeObserverForTest().onHasEnrolledInstrumentCalled();
         }
-
-        mHasEnrolledInstrumentUsesPerMethodQuota = perMethodQuota;
 
         if (mIsFinishedQueryingPaymentApps) {
             respondHasEnrolledInstrumentQuery(mHasEnrolledInstrument);
@@ -1640,8 +1637,8 @@ public class PaymentRequestImpl
 
         mIsHasEnrolledInstrumentResponsePending = false;
 
-        if (CanMakePaymentQuery.canQuery(mWebContents, mTopLevelOrigin, mPaymentRequestOrigin,
-                    mQueryForQuota, mHasEnrolledInstrumentUsesPerMethodQuota)) {
+        if (CanMakePaymentQuery.canQuery(
+                    mWebContents, mTopLevelOrigin, mPaymentRequestOrigin, mQueryForQuota)) {
             mComponentPaymentRequestImpl.onHasEnrolledInstrument(response
                             ? HasEnrolledInstrumentQueryResult.HAS_ENROLLED_INSTRUMENT
                             : HasEnrolledInstrumentQueryResult.HAS_NO_ENROLLED_INSTRUMENT);

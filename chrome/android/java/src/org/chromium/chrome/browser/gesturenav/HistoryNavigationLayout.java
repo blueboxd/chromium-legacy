@@ -20,14 +20,20 @@ import org.chromium.chrome.browser.gesturenav.NavigationBubble.CloseTarget;
  * FrameLayout that supports side-wise slide gesture for history navigation.
  */
 class HistoryNavigationLayout extends FrameLayout implements ViewGroup.OnHierarchyChangeListener {
-    // Supplies a {@link NavigationGlow} object for either native or rendered page.
-    private final Supplier<NavigationGlow> mGlowEffect;
+    // {@link NavigationGlow} object for rendered pages.
+    private final NavigationGlow mCompositorGlowEffect;
+
+    // Whether the current tab shows a native or rendered page.
+    private final Supplier<Boolean> mIsNativePage;
 
     // Callback that performs navigation action in response to UI.,
     private final Callback<Boolean> mNavigateCallback;
 
     // Frame layout hosting the arrow puck UI.
     private SideSlideLayout mSideSlideLayout;
+
+    // {@link NavigationGlow} object for native pages. Lazily created.
+    private NavigationGlow mJavaGlowEffect;
 
     // Navigation sheet showing the navigation history.
     private Supplier<NavigationSheet> mNavigationSheet;
@@ -40,10 +46,12 @@ class HistoryNavigationLayout extends FrameLayout implements ViewGroup.OnHierarc
     // it does not conflict with pending Android draws.
     private Runnable mDetachLayoutRunnable;
 
-    public HistoryNavigationLayout(Context context, Supplier<NavigationGlow> glowEffect,
-            Supplier<NavigationSheet> navigationSheet, Callback<Boolean> navigateCallback) {
+    public HistoryNavigationLayout(Context context, Supplier<Boolean> isNativePage,
+            NavigationGlow compositorGlowEffect, Supplier<NavigationSheet> navigationSheet,
+            Callback<Boolean> navigateCallback) {
         super(context);
-        mGlowEffect = glowEffect;
+        mIsNativePage = isNativePage;
+        mCompositorGlowEffect = compositorGlowEffect;
         mNavigationSheet = navigationSheet;
         mNavigateCallback = navigateCallback;
         setOnHierarchyChangeListener(this);
@@ -99,11 +107,23 @@ class HistoryNavigationLayout extends FrameLayout implements ViewGroup.OnHierarc
     }
 
     /**
+     * Create {@link NavigationGlow} object, lazily when possible.
+     */
+    private NavigationGlow getGlowEffect() {
+        if (mIsNativePage.get()) {
+            if (mJavaGlowEffect == null) mJavaGlowEffect = new AndroidUiNavigationGlow(this);
+            return mJavaGlowEffect;
+        } else {
+            return mCompositorGlowEffect;
+        }
+    }
+
+    /**
      * Start showing edge glow effect.
      * @param p Current position of the touch event.
      */
     void showGlow(GesturePoint p) {
-        if (mGlowEffect.get() != null) mGlowEffect.get().prepare(p.x, p.y);
+        getGlowEffect().prepare(p.x, p.y);
     }
 
     /**
@@ -127,7 +147,7 @@ class HistoryNavigationLayout extends FrameLayout implements ViewGroup.OnHierarc
      * @param offset The change in horizontal pull distance.
      */
     void pullGlow(float offset) {
-        if (mGlowEffect.get() != null) mGlowEffect.get().onScroll(offset);
+        getGlowEffect().onScroll(offset);
     }
 
     /**
@@ -147,7 +167,7 @@ class HistoryNavigationLayout extends FrameLayout implements ViewGroup.OnHierarc
      * Release the glow effect.
      */
     void releaseGlow() {
-        if (mGlowEffect.get() != null) mGlowEffect.get().release();
+        getGlowEffect().release();
     }
 
     /**
@@ -163,7 +183,7 @@ class HistoryNavigationLayout extends FrameLayout implements ViewGroup.OnHierarc
      * Reset the glow effect.
      */
     void resetGlow() {
-        if (mGlowEffect.get() != null) mGlowEffect.get().reset();
+        getGlowEffect().reset();
     }
 
     /**

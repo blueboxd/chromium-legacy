@@ -3,6 +3,7 @@
 <translationbundle lang="uk">
 <translation id="1001307489511021749">Додатки, налаштування й інші параметри синхронізуватимуться між усіма пристроями з ОС Chrome, на яких ви ввійшли в обліковий запис Google.</translation>
 <translation id="1003088604756913841">Відкрити посилання в новому вікні додатка <ph name="APP" /></translation>
+<translation id="1003363546227723021">Показувати фотографії, час, прогноз погоди й медіадані на неактивному екрані</translation>
 <translation id="1004218526896219317">Доступ до сайту</translation>
 <translation id="1005274289863221750">Використовувати ваш мікрофон і камеру</translation>
 <translation id="1005333234656240382">Увімкнути налагодження ADB?</translation>
@@ -94,6 +95,7 @@
 <translation id="1108600514891325577">&amp;Зупинити</translation>
 <translation id="1110155001042129815">Зачекайте</translation>
 <translation id="1112420131909513020">Фонова вкладка використовує Bluetooth</translation>
+<translation id="1113892970288677790">Вибрати рекомендовані твори мистецтва й зображення</translation>
 <translation id="1114102982691049955"><ph name="PRINTER_MANUFACTURER" /> <ph name="PRINTER_MODEL" /> (USB)</translation>
 <translation id="1114202307280046356">Ромб</translation>
 <translation id="1114335938027186412">Ваш комп’ютер оснащено пристроєм Trusted Platform Module (TPM), який виконує багато важливих функцій безпеки в ОС Chrome. Щоб дізнатися більше, відвідайте Довідковий центр Chromebook: https://support.google.com/chromebook/?p=tpm</translation>
@@ -201,6 +203,7 @@
 <translation id="1224275271335624810">найшвидше</translation>
 <translation id="1225177025209879837">Обробка запиту…</translation>
 <translation id="1227507814927581609">Помилка автентифікації під час під’єднання до "<ph name="DEVICE_NAME" />".</translation>
+<translation id="1230417814058465809">Стандартний захист увімкнено. Щоб посилити свою безпеку, активуйте покращений захист.</translation>
 <translation id="1231733316453485619">Увімкнути синхронізацію?</translation>
 <translation id="1232569758102978740">Без імені</translation>
 <translation id="1233497634904001272">Щоб завершити запит, знову торкніться ключа безпеки.</translation>
@@ -1253,6 +1256,7 @@
 <translation id="249113932447298600">На жаль, зараз пристрій <ph name="DEVICE_LABEL" /> не підтримується.</translation>
 <translation id="2492461744635776704">Підготовка запиту на підпис сертифіката</translation>
 <translation id="249303669840926644">Не вдалося закінчити реєстрацію</translation>
+<translation id="2493126929778606526">Ваші найкращі автоматично вибрані фотографії</translation>
 <translation id="2495777824269688114">Відкрийте для себе нові функції або отримайте відповіді. Виберіть "?", щоб переглянути довідку.</translation>
 <translation id="2496180316473517155">Історія переглядів</translation>
 <translation id="2497229222757901769">Швидкість миші</translation>
@@ -1346,6 +1350,7 @@
 <translation id="2604255671529671813">Помилка з’єднання з мережею</translation>
 <translation id="2606246518223360146">Зв’язати профіль</translation>
 <translation id="2607101320794533334">Інформація про відкритий ключ суб'єкта</translation>
+<translation id="2607968157341167679">Немає альбомів. Створіть їх у <ph name="LINK_BEGIN" />Google Фото<ph name="LINK_END" />.</translation>
 <translation id="2609896558069604090">Створення ярликів...</translation>
 <translation id="2610157865375787051">Сон</translation>
 <translation id="2610260699262139870">Ді&amp;йсний розмір</translation>
@@ -1482,6 +1487,7 @@
 <translation id="2762441749940182211">Заборонено використовувати камеру</translation>
 <translation id="2764786626780673772">Дані про VPN</translation>
 <translation id="2765217105034171413">Малий</translation>
+<translation id="2765729904637714153">Пориньте в улюблені спогади. Щоб додати або змінити альбом, перейдіть у <ph name="LINK_BEGIN" />Google Фото<ph name="LINK_END" />.</translation>
 <translation id="2766006623206032690">Вста&amp;вити та перейти</translation>
 <translation id="2766161002040448006">Попросити батьків</translation>
 <translation id="2767127727915954024"><ph name="ORIGIN" /> зможе змінювати файл "<ph name="FILENAME" />", поки ви не закриєте всі вкладки для цього сайту</translation>
@@ -2114,6 +2120,7 @@
 <translation id="3566325075220776093">З цього пристрою</translation>
 <translation id="3566721612727112615">Немає сайтів</translation>
 <translation id="3569382839528428029">Надати програмі <ph name="APP_NAME" /> доступ до вашого екрана?</translation>
+<translation id="3569407787324516067">Заставка</translation>
 <translation id="3569682580018832495">Сайт <ph name="ORIGIN" /> може переглядати вказані нижче файли й папки</translation>
 <translation id="3571734092741541777">Налаштувати</translation>
 <translation id="3574210789297084292">увійти</translation>
@@ -2262,6 +2269,7 @@
 <translation id="3727148787322499904">Зміна цього налаштування вплине на всі спільні мережі</translation>
 <translation id="3727187387656390258">Перевірити спливаюче вікно</translation>
 <translation id="372722114124766626">Лише один раз</translation>
+<translation id="3728188878314831180">Дублювати сповіщення з телефона</translation>
 <translation id="3728681439294129328">Налаштувати адресу мережі</translation>
 <translation id="3729303374699765035">Запитувати, коли сайт хоче шукати пристрої Bluetooth поблизу</translation>
 <translation id="3729506734996624908">Дозволені сайти</translation>
@@ -4711,6 +4719,7 @@
 <translation id="6824584962142919697">&amp;Перевірити елементи</translation>
 <translation id="6825184156888454064">Сортувати за назвою</translation>
 <translation id="6826872289184051766">Підтвердити через USB</translation>
+<translation id="6827623133556594466">З 31 грудня Google Cloud Print більше не підтримуватиметься. <ph name="BEGIN_LINK" />Докладніше<ph name="END_LINK" /></translation>
 <translation id="6828153365543658583">Дозволити вхід цим користувачам:</translation>
 <translation id="6828182567531805778">Щоб синхронізувати дані, введіть парольну фразу</translation>
 <translation id="682871081149631693">QuickFix</translation>
@@ -5329,6 +5338,7 @@
 <translation id="7605594153474022051">Синхронізація не працює</translation>
 <translation id="7606992457248886637">Центри сертифікації</translation>
 <translation id="7607002721634913082">Призупинено</translation>
+<translation id="7608810328871051088">Параметри Android</translation>
 <translation id="7609148976235050828">Підключіться до Інтернету та повторіть спробу.</translation>
 <translation id="7614260613810441905">Запитувати, коли сайт хоче змінювати файли або папки на пристрої (рекомендується)</translation>
 <translation id="761530003705945209">Створювати резервні копії на Google Диску. Легко відновлюйте дані чи переносьте їх на інші пристрої. Резервні копії містять дані додатків. Ваші резервні копії завантажуються в Google і шифруються за допомогою пароля облікового запису Google.</translation>
@@ -5702,7 +5712,6 @@
 <translation id="8028060951694135607">Відновлення ключів Microsoft</translation>
 <translation id="8028803902702117856">Завантаження <ph name="SIZE" />, <ph name="FILE_NAME" /></translation>
 <translation id="8028993641010258682">Розмір</translation>
-<translation id="8030656706657716245">Додати принтер</translation>
 <translation id="8030852056903932865">Дозволити</translation>
 <translation id="8032244173881942855">Не вдається транслювати вкладку.</translation>
 <translation id="8033827949643255796">виділено</translation>
@@ -5859,6 +5868,7 @@
 <translation id="8225753906568652947">Скористатися пропозиціями</translation>
 <translation id="8226222018808695353">Заборонено</translation>
 <translation id="8226619461731305576">Черга</translation>
+<translation id="8226628635270268143">Вибрати улюблені фотографії й альбоми</translation>
 <translation id="8226742006292257240">Нижче наведено навмання створений пароль для модуля TPM, присвоєний вашому комп'ютеру:</translation>
 <translation id="8227119283605456246">Вкласти файл</translation>
 <translation id="8229943166551236192">Дані пристрою буде видалено впродовж 24 годин</translation>
@@ -6357,6 +6367,7 @@
 <translation id="882854468542856424">Заборонити всім сайтам шукати пристрої Bluetooth поблизу</translation>
 <translation id="8828933418460119530">DNS-ім'я</translation>
 <translation id="883062543841130884">Заміни</translation>
+<translation id="8830779999439981481">Відбувається перезапуск, щоб застосувати оновлення</translation>
 <translation id="8830796635868321089">Помилка перевірки наявності оновлень за допомогою поточних налаштувань проксі-сервера. Змініть <ph name="PROXY_SETTINGS_LINK_START" />налаштування проксі-сервера<ph name="PROXY_SETTINGS_LINK_END" />.</translation>
 <translation id="8831140208248705279">Підключіть телефон Android до <ph name="DEVICE_TYPE" />, щоб мати змогу надсилати SMS із комп'ютера, надавати доступ до інтернет-з'єднання й розблоковувати <ph name="DEVICE_TYPE" /> за допомогою телефона.<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />Докладніше<ph name="LINK_END" /></translation>
 <translation id="8834039744648160717">Користувач <ph name="USER_EMAIL" /> керує налаштуваннями мережі.</translation>

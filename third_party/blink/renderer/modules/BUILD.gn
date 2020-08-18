@@ -319,6 +319,7 @@ source_set("unit_tests") {
     "indexeddb/mock_web_idb_transaction.h",
     "indexeddb/web_idb_cursor_impl_unittest.cc",
     "indexeddb/web_idb_transaction_impl_unittest.cc",
+    "installedapp/installed_app_controller_test.cc",
     "manifest/image_resource_type_converters_test.cc",
     "manifest/manifest_manager_unittest.cc",
     "manifest/manifest_parser_unittest.cc",

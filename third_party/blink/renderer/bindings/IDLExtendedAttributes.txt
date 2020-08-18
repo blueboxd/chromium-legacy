@@ -66,6 +66,7 @@ ImmutablePrototype
 ImplementedAs=*
 LegacyTreatAsPartialInterface
 LegacyUnenumerableNamedProperties
+LegacyUnforgeable
 LegacyWindowAlias=*
 LegacyWindowAlias_Measure=|*
 LegacyWindowAlias_RuntimeEnabled=*
@@ -109,5 +110,4 @@ Transferable
 TreatNonObjectAsNull
 TreatNullAs=EmptyString
 URL
-Unforgeable
 Unscopable

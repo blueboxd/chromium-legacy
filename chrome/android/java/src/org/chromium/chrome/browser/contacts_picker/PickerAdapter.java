@@ -22,6 +22,7 @@ import androidx.recyclerview.widget.RecyclerView.Adapter;
 
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.DisplayableProfileData;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.ProfileDataCache;
@@ -29,6 +30,7 @@ import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
+import org.chromium.components.signin.identitymanager.IdentityManager;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -441,9 +443,7 @@ public class PickerAdapter extends Adapter<RecyclerView.ViewHolder>
     private String getOwnerEmail() {
         if (sTestOwnerEmail != null) return sTestOwnerEmail;
 
-        CoreAccountInfo coreAccountInfo =
-                IdentityServicesProvider.get().getIdentityManager().getPrimaryAccountInfo(
-                        ConsentLevel.SYNC);
+        CoreAccountInfo coreAccountInfo = getCoreAccountInfo();
         if (coreAccountInfo != null) {
             return coreAccountInfo.getEmail();
         }
@@ -508,9 +508,7 @@ public class PickerAdapter extends Adapter<RecyclerView.ViewHolder>
         DisplayableProfileData profileData = mProfileDataCache.getProfileDataOrDefault(ownerEmail);
         String name = profileData.getFullNameOrEmail();
         if (TextUtils.isEmpty(name) || TextUtils.equals(name, ownerEmail)) {
-            name = CoreAccountInfo.getEmailFrom(
-                    IdentityServicesProvider.get().getIdentityManager().getPrimaryAccountInfo(
-                            ConsentLevel.SYNC));
+            name = CoreAccountInfo.getEmailFrom(getCoreAccountInfo());
         }
 
         ArrayList<String> telephones = new ArrayList<>();
@@ -521,5 +519,13 @@ public class PickerAdapter extends Adapter<RecyclerView.ViewHolder>
         contact.setIsSelf(true);
         contact.setSelfIcon(icon);
         return contact;
+    }
+
+    private CoreAccountInfo getCoreAccountInfo() {
+        // Since this is read-only operation to obtain email address, always using regular profile
+        // for both regular and off-the-record profile is safe.
+        IdentityManager identityManager = IdentityServicesProvider.get().getIdentityManager(
+                Profile.getLastUsedRegularProfile());
+        return identityManager.getPrimaryAccountInfo(ConsentLevel.SYNC);
     }
 }

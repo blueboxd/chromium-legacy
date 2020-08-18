@@ -43,7 +43,7 @@
 <translation id="1341651618736211726">ओवरफ़्लो</translation>
 <translation id="1346748346194534595">दाएं</translation>
 <translation id="1351937230027495976">मेन्यू छोटा करें</translation>
-<translation id="1383876407941801731">खोजें</translation>
+<translation id="1383876407941801731">Search</translation>
 <translation id="1391102559483454063">चालू है</translation>
 <translation id="1419738280318246476">सूचना से जुड़ी कार्रवाई करने के लिए डिवाइस को अनलॉक करें</translation>
 <translation id="1420408895951708260">नाइट लाइट को टॉगल करें. <ph name="STATE_TEXT" /></translation>
@@ -370,6 +370,7 @@
 <translation id="5114495209940374989">स्क्रीनशॉट</translation>
 <translation id="5136175204352732067">अलग कीबोर्ड कनेक्ट किया गया</translation>
 <translation id="5168181903108465623">कास्ट डिवाइस उपलब्ध हैं</translation>
+<translation id="5170568018924773124">फ़ोल्डर में दिखाएं</translation>
 <translation id="5207949376430453814">लेख कैरेट हाइलाइट करें</translation>
 <translation id="5222676887888702881">साइन आउट करें</translation>
 <translation id="523505283826916779">सुलभता सेटिंग</translation>
@@ -461,6 +462,7 @@
 <translation id="6288235558961782912"><ph name="USER_EMAIL_ADDRESS" /> काे माता-पिता की अनुमति से, बाद में जोड़ा जा सकता है.</translation>
 <translation id="6297287540776456956">कोई क्षेत्र चुनने के लिए स्टाइलस का उपयोग करें</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> को <ph name="ROTATION" /> पर घुमाया गया</translation>
+<translation id="6315170314923504164">ध्वनि</translation>
 <translation id="6376931439017688372">ब्लूटूथ चालू है</translation>
 <translation id="6381109794406942707">यह डिवाइस अनलॉक करने के लिए, अपना पिन डालें.</translation>
 <translation id="639644700271529076">CAPS LOCK बंद है</translation>
@@ -477,7 +479,7 @@
 <translation id="649452524636452238">स्मार्ट कार्ड पिन</translation>
 <translation id="6501401484702599040">स्‍क्रीन को <ph name="RECEIVER_NAME" /> पर कास्‍ट किया जा रहा है</translation>
 <translation id="652139407789908527">इस अपडेट के दौरान आपकी स्क्रीन सामान्य से ज़्यादा समय (एक मिनट तक) के लिए काली दिखेगी. कृपया अपडेट होते समय पावर बटन न दबाएं.</translation>
-<translation id="6521655319214113338">हस्तलेखन इनपुट</translation>
+<translation id="6527303717912515753">शेयर करें</translation>
 <translation id="6528179044667508675">परेशान न करें</translation>
 <translation id="6537270692134705506">स्क्रीन कैप्चर करें</translation>
 <translation id="6537924328260219877">सिग्नल की क्षमता <ph name="SIGNAL_STRENGTH" />, फ़ोन की बैटरी <ph name="BATTERY_STATUS" /></translation>
@@ -559,7 +561,6 @@
 <translation id="7536035074519304529">आईपी पता: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">सोने का समय हो गया</translation>
 <translation id="7561982940498449837">मेन्यू बंद करें</translation>
-<translation id="7562368315689366235">इमोजी पैलेट</translation>
 <translation id="7564874036684306347">विंडो को किसी दूसरे डेस्कटॉप पर ले जाने से अनचाहा बर्ताव हो सकता है. इसके बाद की सूचनाएं, विंडो और संवाद डेस्कटॉप के बीच बंट सकती हैं.</translation>
 <translation id="7568294522609223312">अपने-आप क्लिक होने की सुविधा बंद करें</translation>
 <translation id="7568637526529101738">दायां क्लिक करने या दबाकर रखने पर, Assistant आपको स्क्रीन पर चुने गए कॉन्टेंट से जुड़ी जानकारी दिखाती है. जैसे कि परिभाषा या एक यूनिट से दूसरी यूनिट में बदलकर दिखाना.</translation>
@@ -622,7 +623,6 @@
 <translation id="8152092012181020186">बंद करने के लिए Ctrl + W दबाएं.</translation>
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" /> इस सेटिंग को आपका एडमिन प्रबंधित करता है.</translation>
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" /> का इस्तेमाल किया जा रहा है</translation>
-<translation id="8190698733819146287">भाषा और इनपुट को पसंद के मुताबिक बनाएं...</translation>
 <translation id="8192202700944119416">सूचनाएं छिपी हुई हैं.</translation>
 <translation id="8196787716797768628">एक ऐप्लिकेशन से दूसरे ऐप्लिकेशन पर तेज़ी से जाने और अपने Chromebook से टैबलेट मोड में इंटरैक्ट करने के लिए, हाथ के जेस्चर (हाव-भाव) का इस्तेमाल करें.</translation>
 <translation id="8200772114523450471">फिर से शुरू करें</translation>
@@ -706,6 +706,7 @@
 <translation id="9029474291399787231">Adobe Flash Player का अपडेट मौजूद है</translation>
 <translation id="9047624247355796468"><ph name="NETWORK_NAME" /> के लिए सेटिंग खोलें</translation>
 <translation id="9056839673611986238">डिवाइस बहाल कर दिया जाएगा</translation>
+<translation id="9065203028668620118">बदलाव करें</translation>
 <translation id="9070640332319875144">Assistant की सेटिंग</translation>
 <translation id="9072519059834302790">बैटरी खाली होने में<ph name="TIME_LEFT" /> का समय बाकी है.</translation>
 <translation id="9074739597929991885">ब्लूटूथ</translation>

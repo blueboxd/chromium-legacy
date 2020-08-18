@@ -40,6 +40,7 @@
 <translation id="1302880136325416935">ਬਲੂਟੁੱਥ ਸੈਟਿੰਗਾਂ ਦਿਖਾਓ। <ph name="STATE_TEXT" /></translation>
 <translation id="1312604459020188865">ਸਿਗਨਲ ਦੀ ਤੀਬਰਤਾ <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="1316069254387866896">ਹਮੇਸ਼ਾਂ ਸ਼ੈਲਫ਼ ਦਿਖਾਓ</translation>
+<translation id="1333308631814936910"><ph name="DISPLAY_NAME" /> ਕਨੈਕਟ ਹੈ</translation>
 <translation id="1341651618736211726">ਓਵਰਫ਼ਲੋ</translation>
 <translation id="1346748346194534595">ਸੱਜਾ</translation>
 <translation id="1351937230027495976">ਮੀਨੂ ਸਮੇਟੋ</translation>
@@ -369,6 +370,7 @@
 <translation id="5114495209940374989">ਸਕ੍ਰੀਨਸ਼ਾਟ</translation>
 <translation id="5136175204352732067">ਵੱਖਰਾ ਕੀ-ਬੋਰਡ ਕਨੈਕਟ ਕੀਤਾ ਗਿਆ</translation>
 <translation id="5168181903108465623">ਕਾਸਟ ਡਿਵਾਈਸਾਂ ਉਪਲਬਧ</translation>
+<translation id="5170568018924773124">ਫੋਲਡਰ ਵਿੱਚ ਦਿਖਾਓ</translation>
 <translation id="5207949376430453814">ਲਿਖਤ ਕੈਰੇਟ ਨੂੰ ਉਜਾਗਰ ਕਰੋ</translation>
 <translation id="5222676887888702881">ਸਾਈਨ-ਆਊਟ ਕਰੋ</translation>
 <translation id="523505283826916779">ਪਹੁੰਚਯੋਗਤਾ ਸੈਟਿੰਗਾਂ</translation>
@@ -476,7 +478,7 @@
 <translation id="649452524636452238">ਸਮਾਰਟ ਕਾਰਡ ਦਾ ਪਿੰਨ</translation>
 <translation id="6501401484702599040"><ph name="RECEIVER_NAME" /> ਲਈ ਸਕਰੀਨ ਕਾਸਟ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ</translation>
 <translation id="652139407789908527">ਇਸ ਅੱਪਡੇਟ ਵੇਲੇ ਤੁਹਾਡੀ ਸਕ੍ਰੀਨ ਆਮ ਨਾਲੋਂ ਵੱਧ ਸਮਾਂ (ਇੱਕ ਮਿੰਟ ਤੱਕ) ਖਾਲੀ ਰਹੇਗੀ। ਕਿਰਪਾ ਕਰਕੇ ਅੱਪਡੇਟ ਜਾਰੀ ਰਹਿਣ ਤੱਕ ਪਾਵਰ ਬਟਨ ਨੂੰ ਨਾ ਦਬਾਓ।</translation>
-<translation id="6521655319214113338">ਲਿਖਾਈ ਇਨਪੁੱਟ</translation>
+<translation id="6527303717912515753">ਸ਼ੇਅਰ ਕਰੋ</translation>
 <translation id="6528179044667508675">ਪਰੇਸ਼ਾਨ ਨਾ ਕਰੋ</translation>
 <translation id="6537270692134705506">ਸਕ੍ਰੀਨ ਕੈਪਚਰ ਕਰੋ</translation>
 <translation id="6537924328260219877">ਸਿਗਨਲ ਦੀ ਤੀਬਰਤਾ <ph name="SIGNAL_STRENGTH" />, ਫ਼ੋਨ ਦੀ ਬੈਟਰੀ <ph name="BATTERY_STATUS" /></translation>
@@ -558,7 +560,6 @@
 <translation id="7536035074519304529">IP ਪਤਾ: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">ਸੌਣ ਦਾ ਸਮਾਂ ਹੋ ਗਿਆ ਹੈ</translation>
 <translation id="7561982940498449837">ਮੀਨੂ ਬੰਦ ਕਰੋ</translation>
-<translation id="7562368315689366235">ਇਮੋਜੀ ਪੈਲੇਟ</translation>
 <translation id="7564874036684306347">ਵਿੰਡੋਆਂ ਨੂੰ ਕਿਸੇ ਹੋਰ ਡੈਸਕਟਾਪ 'ਤੇ ਲਿਜਾਉਣ ਨਾਲ ਅਣਕਿਆਸਿਆ ਵਰਤਾਅ ਦਿਖ ਸਕਦਾ ਹੈ। ਇਸ ਤੋਂ ਬਾਅਦ ਦੀਆਂ ਸੂਚਨਾਵਾਂ, ਵਿੰਡੋਆਂ ਅਤੇ ਡਾਇਲੌਗ ਡੈਸਕਟਾਪਾਂ ਵਿੱਚ ਵੱਖ-ਵੱਖ ਕੀਤੇ ਜਾ ਸਕਦੇ ਹਨ।</translation>
 <translation id="7568294522609223312">ਸਵੈਚਲਿਤ ਕਲਿੱਕਾਂ ਨੂੰ ਬੰਦ ਕਰੋ</translation>
 <translation id="7568637526529101738">ਸੱਜੇ-ਕਲਿੱਕ ਜਾਂ ਦਬਾਈ ਰੱਖਣ ਨਾਲ, Assistant ਤੁਹਾਡੀ ਚੋਣ ਲਈ ਪਰਿਭਾਸ਼ਾ ਜਾਂ ਇਕਾਈ ਰੂਪਾਂਤਰਨ ਵਰਗੀ ਜਾਣਕਾਰੀ ਦਿਖਾਉਂਦੀ ਹੈ।</translation>
@@ -621,7 +622,6 @@
 <translation id="8152092012181020186">ਬੰਦ ਕਰਨ ਲਈ Ctrl + W ਦਬਾਓ।</translation>
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" /> ਤੁਹਾਡਾ ਪ੍ਰਸ਼ਾਸਕ ਇਸ ਸੈਟਿੰਗ ਦਾ ਪ੍ਰਬੰਧਨ ਕਰਦਾ ਹੈ।</translation>
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" /> ਦੀ ਵਰਤੋਂ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ</translation>
-<translation id="8190698733819146287">ਭਾਸ਼ਾਵਾਂ ਅਤੇ ਇਨਪੁਟ ਨੂੰ ਵਿਉਂਤਬੱਧ ਕਰੋ...</translation>
 <translation id="8192202700944119416">ਸੂਚਨਾਵਾਂ ਲੁਕੀਆਂ ਹੋਈਆਂ ਹਨ।</translation>
 <translation id="8196787716797768628">ਐਪਾਂ ਵਿਚਾਲੇ ਤੁਰੰਤ ਅਦਲਾ-ਬਦਲੀ ਕਰਨ ਲਈ ਅਤੇ ਟੈਬਲੈੱਟ ਮੋਡ ਵਿੱਚ ਆਪਣੀ Chromebook ਨਾਲ ਅੰਤਰਕਿਰਿਆ ਕਰਨ ਲਈ ਇਸ਼ਾਰਿਆਂ ਦੀ ਵਰਤੋਂ ਕਰੋ।</translation>
 <translation id="8200772114523450471">ਦੁਬਾਰਾ ਸ਼ੁਰੂ ਕਰੋ</translation>
@@ -705,6 +705,7 @@
 <translation id="9029474291399787231">Adobe Flash Player ਅੱਪਡੇਟ ਉਪਲਬਧ ਹੈ</translation>
 <translation id="9047624247355796468"><ph name="NETWORK_NAME" /> ਲਈ ਸੈਟਿੰਗਾਂ ਖੋਲ੍ਹੋ</translation>
 <translation id="9056839673611986238">ਡੀਵਾਈਸ ਨੂੰ ਪਿਛਲੇ ਵਰਜਨ 'ਤੇ ਵਾਪਸ ਲਿਆਇਆ ਜਾਵੇਗਾ</translation>
+<translation id="9065203028668620118">ਸੰਪਾਦਿਤ ਕਰੋ</translation>
 <translation id="9070640332319875144">'ਅਸਿਸਟੈਂਟ' ਸੈਟਿੰਗਾਂ</translation>
 <translation id="9072519059834302790">ਬੈਟਰੀ ਮੁੱਕਣ ਵਿੱਚ <ph name="TIME_LEFT" /> ਬਾਕੀ।</translation>
 <translation id="9074739597929991885">ਬਲੂਟੁੱਥ</translation>

@@ -11,20 +11,31 @@
 #include "base/gtest_prod_util.h"
 #include "chrome/browser/signin/dice_web_signin_interceptor.h"
 
-namespace content {
-class BrowserContext;
-}
-
 namespace views {
 class View;
 }  // namespace views
 
+class Profile;
 
 // Bubble shown as part of Dice web signin interception. This bubble is
 // implemented as a WebUI page rendered inside a native bubble.
 class DiceWebSigninInterceptionBubbleView
     : public views::BubbleDialogDelegateView {
  public:
+  // User action resulting from the interception bubble.
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class SigninInterceptionResult {
+    kAccepted = 0,
+    kDeclined = 1,
+    kIgnored = 2,
+
+    // Used when the bubble was not shown because it's not implemented.
+    kNotDisplayed = 3,
+
+    kMaxValue = kNotDisplayed,
+  };
+
   ~DiceWebSigninInterceptionBubbleView() override;
 
   DiceWebSigninInterceptionBubbleView(
@@ -33,18 +44,25 @@ class DiceWebSigninInterceptionBubbleView
       const DiceWebSigninInterceptionBubbleView& other) = delete;
 
   static void CreateBubble(
-      content::BrowserContext* browser_context,
+      Profile* profile,
       views::View* anchor_view,
       const DiceWebSigninInterceptor::Delegate::BubbleParameters&
           bubble_parameters,
       base::OnceCallback<void(bool)> callback);
+
+  // Record metrics about the result of the signin interception.
+  static void RecordInterceptionResult(
+      const DiceWebSigninInterceptor::Delegate::BubbleParameters&
+          bubble_parameters,
+      Profile* profile,
+      SigninInterceptionResult result);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(DiceWebSigninInterceptionBubbleBrowserTest,
                            BubbleClosed);
 
   DiceWebSigninInterceptionBubbleView(
-      content::BrowserContext* browser_context,
+      Profile* profile,
       views::View* anchor_view,
       const DiceWebSigninInterceptor::Delegate::BubbleParameters&
           bubble_parameters,
@@ -54,6 +72,8 @@ class DiceWebSigninInterceptionBubbleView
   // method, which is called by the inner web UI.
   void OnWebUIUserChoice(bool accept);
 
+  Profile* profile_;
+  DiceWebSigninInterceptor::Delegate::BubbleParameters bubble_parameters_;
   base::OnceCallback<void(bool)> callback_;
 };
 

@@ -1580,7 +1580,7 @@
 <translation id="2876336351874743617">นิ้วที่ 2</translation>
 <translation id="2876369937070532032">ส่ง URL ของหน้าบางส่วนที่คุณเข้าชมไปให้ Google เมื่อการรักษาความปลอดภัยมีความเสี่ยง</translation>
 <translation id="2878782256107578644">กำลังสแกน จะเปิดเลยไหม</translation>
-<translation id="2878889940310164513">เพิ่มอินเทอร์เน็ตมือถือ...</translation>
+<translation id="2878889940310164513">เพิ่มการเชื่อมต่อเครือข่ายมือถือ...</translation>
 <translation id="288042212351694283">เข้าถึงอุปกรณ์ Universal 2nd Factor</translation>
 <translation id="2880660355386638022">ตำแหน่งหน้าต่าง</translation>
 <translation id="2881076733170862447">เมื่อคุณคลิกส่วนขยาย</translation>
@@ -2380,7 +2380,7 @@
 <translation id="3850914401008572843"><ph name="ORIGIN" /> เปิดโฟลเดอร์นี้ไม่ได้เพราะมีไฟล์ระบบอยู่</translation>
 <translation id="3851428669031642514">โหลดสคริปต์ที่ไม่ปลอดภัย</translation>
 <translation id="3854599674806204102">เลือกตัวเลือก</translation>
-<translation id="3854976556788175030">ถาดรับกระดาษออกเต็มแล้ว</translation>
+<translation id="3854976556788175030">ถาดกระดาษออกเต็มแล้ว</translation>
 <translation id="3855441664322950881">แพคส่วนขยาย</translation>
 <translation id="3855676282923585394">นำเข้าบุ๊กมาร์กและการตั้งค่า...</translation>
 <translation id="3856096718352044181">โปรดยืนยันว่านี่เป็นผู้ให้บริการที่ถูกต้องหรือลองอีกครั้งภายหลัง</translation>
@@ -5359,7 +5359,7 @@
 <translation id="7643932971554933646">อนุญาตให้เว็บไซต์ดูไฟล์ใช่ไหม</translation>
 <translation id="7644543211198159466">สีและธีม</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (เจ้าของ)</translation>
-<translation id="7645300866575922143">เพิ่มอินเทอร์เน็ตมือถือ</translation>
+<translation id="7645300866575922143">เพิ่มการเชื่อมต่อเครือข่ายมือถือ</translation>
 <translation id="7645681574855902035">กำลังยกเลิกการสำรองข้อมูล Linux</translation>
 <translation id="7646772052135772216">การซิงค์รหัสผ่านไม่ทำงาน</translation>
 <translation id="7647403192093989392">ไม่มีกิจกรรมล่าสุด</translation>
@@ -5702,7 +5702,6 @@
 <translation id="8028060951694135607">การกู้คืนคีย์ของ Microsoft</translation>
 <translation id="8028803902702117856">กำลังดาวน์โหลด <ph name="SIZE" /> <ph name="FILE_NAME" /></translation>
 <translation id="8028993641010258682">ขนาด</translation>
-<translation id="8030656706657716245">เพิ่มเครื่องพิมพ์</translation>
 <translation id="8030852056903932865">อนุญาต</translation>
 <translation id="8032244173881942855">ไม่สามารถแคสต์แท็บ</translation>
 <translation id="8033827949643255796">เลือกแล้ว</translation>

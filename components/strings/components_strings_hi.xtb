@@ -82,7 +82,6 @@
 <translation id="1294154142200295408">अलग-अलग तरह की कमांड-लाइन</translation>
 <translation id="129553762522093515">हाल ही में बंद किए गए</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />अपनी कुकी साफ़ करके देखें<ph name="END_LINK" /></translation>
-<translation id="1299917195319242089">'गुप्त विंडो खोलें' बटन, Chrome में नई गुप्त विंडो खोलने के लिए Enter दबाएं</translation>
 <translation id="1301324364792935241">अपने सुरक्षित डीएनएस की सेटिंग की जांच करें</translation>
 <translation id="1307966114820526988">बंद की गई सुविधाएं</translation>
 <translation id="131405271941274527">किसी NFC डिवाइस में आपके फ़ोन पर टैप किए जाने पर, <ph name="URL" /> जानकारी भेजना और पाना चाहता है</translation>
@@ -255,7 +254,6 @@
 <translation id="1919345977826869612">विज्ञापन</translation>
 <translation id="1919367280705858090">गड़बड़ी के किसी खास मैसेज से मदद पाना</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{कुछ नहीं}=1{1 साइट}one{# साइट}other{# साइट}}</translation>
-<translation id="1926148189358507356">'अपडेट करने के लिए फिर से लॉन्च करें' बटन, Chrome को अपडेट करने के लिए Enter दबाएं</translation>
 <translation id="1945968466830820669">आपके संगठन के खाते का एक्सेस खो सकता है या आपकी पहचान चोरी हो सकती है. Chromium आपको अभी अपना पासवर्ड बदलने का सुझाव देता है.</translation>
 <translation id="1947454675006758438">सबसे ऊपर दाईं ओर स्टेपल</translation>
 <translation id="1959001866257244765"><ph name="BEGIN_WHITEPAPER_LINK" />आप जिन पेजों पर जाते हैं उनमें से कुछ के यूआरएल, सिस्टम की थोड़ी जानकारी, और पेज का कुछ कॉन्टेंट<ph name="END_WHITEPAPER_LINK" /> Google को भेजकर, वेब पर सभी के लिए सुरक्षा को बेहतर बनाने में मदद करें. <ph name="BEGIN_PRIVACY_PAGE_LINK" />निजता नीति<ph name="END_PRIVACY_PAGE_LINK" /></translation>
@@ -360,7 +358,6 @@
 <translation id="2367567093518048410">स्तर</translation>
 <translation id="2380886658946992094">कानूनी</translation>
 <translation id="2384307209577226199">एंटरप्राइज़ डिफ़ॉल्ट</translation>
-<translation id="238547550913364157"><ph name="LAUNCH_INCOGNITO_FOCUSED_FRIENDLY_MATCH_TEXT" />, Chrome में नई गुप्त विंडो खोलने के लिए, Tab के बाद Enter दबाएं</translation>
 <translation id="2385809941344967209">अपनी Chrome की सेटिंग में जाकर Chrome को अपडेट करें</translation>
 <translation id="2386255080630008482">सर्वर का प्रमाणपत्र निरस्त कर दिया गया है.</translation>
 <translation id="2392959068659972793">ऐसी नीतियां दिखाएं जिनके लिए कोई मान सेट नहीं किया गया है</translation>
@@ -403,7 +400,6 @@
 <translation id="2586657967955657006">क्लिपबोर्ड</translation>
 <translation id="2587730715158995865"><ph name="ARTICLE_PUBLISHER" /> की ओर से. यह और <ph name="OTHER_ARTICLE_COUNT" /> दूसरे समाचार पढ़ें.</translation>
 <translation id="2587841377698384444">निर्देशिका API (एपीआई) आईडी:</translation>
-<translation id="2592698726824597401"><ph name="UPDATE_CREDIT_CARD_FOCUSED_FRIENDLY_MATCH_TEXT" />, Chrome की सेटिंग में क्रेडिट कार्ड की अपने-आप भरने वाली जानकारी अपडेट करने के लिए, Tab के बाद Enter दबाएं</translation>
 <translation id="2595719060046994702">इस डिवाइस और खाते का प्रबंधन कोई कंपनी या दूसरा संगठन नहीं करता है.</translation>
 <translation id="2597378329261239068">यह दस्तावेज़ पासवर्ड सुरक्षित है.  कृपया पासवर्ड डालें.</translation>
 <translation id="2609632851001447353">विविधताएं</translation>
@@ -425,7 +421,6 @@
 <translation id="2677748264148917807">छोड़ें</translation>
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">सबसे बढ़िया फ़िटिंग</translation>
-<translation id="2688738823074468716">'पासवर्ड प्रबंधित करें' बटन, Chrome की सेटिंग में पासवर्ड प्रबंधित करने के लिए Enter दबाएं</translation>
 <translation id="2688969097326701645">हां, जारी रखें</translation>
 <translation id="2691924980723297736">सुरक्षा की चेतावनी</translation>
 <translation id="2699302886720511147">स्वीकार किए जाने वाले कार्ड</translation>
@@ -745,7 +740,6 @@
 <translation id="4088981014127559358">साइड 1 इमेज Y शिफ़्ट</translation>
 <translation id="4098354747657067197">आगे भ्रामक साइट है</translation>
 <translation id="4101413244023615925">टेक्स्ट और ग्राफ़िक</translation>
-<translation id="4103147722950692857"><ph name="MANAGE_PASSWORDS_FOCUSED_FRIENDLY_MATCH_TEXT" />, Chrome की सेटिंग में पासवर्ड प्रबंधित करने के लिए, Tab के बाद Enter दबाएं</translation>
 <translation id="4103249731201008433">डिवाइस की क्रम संख्या गलत है</translation>
 <translation id="4103763322291513355">प्रतिबंधित किए गए यूआरएल और आपके सिस्टम ए़़डमिन ने जिन अन्य नीतियों को लागू किया है, उन्हें देखने के लिए &lt;strong&gt;chrome://policy&lt;/strong&gt; पर जाएं.</translation>
 <translation id="4110652170750985508">अपना भुगतान देखें</translation>
@@ -916,7 +910,6 @@
 <translation id="4738601419177586157"><ph name="TEXT" /> खोज सुझाव</translation>
 <translation id="4742407542027196863">पासवर्ड प्रबंधित करें…</translation>
 <translation id="4744603770635761495">निष्पादित किए जाने वाले पाथ</translation>
-<translation id="4750085040310563588"><ph name="UPDATE_CHROME_FOCUSED_FRIENDLY_MATCH_TEXT" />, Chrome को अपडेट करने के लिए Tab के बाद Enter दबाएं</translation>
 <translation id="4750917950439032686">आपकी जानकारी (जैसे- पासवर्ड या क्रेडिट कार्ड नंबर वगैरह) जब इस साइट पर भेजी जाती है, तब वह निजी होती है.</translation>
 <translation id="4756388243121344051">&amp;इतिहास</translation>
 <translation id="4758311279753947758">संपर्क जानकारी जोड़ें</translation>
@@ -1035,7 +1028,6 @@
 <translation id="5215116848420601511">Google Pay का इस्तेमाल करने वाले भुगतान के तरीके और पते</translation>
 <translation id="5215363486134917902">फ़ोलियो-एसपी</translation>
 <translation id="5222812217790122047">ईमेल आवश्यक है</translation>
-<translation id="5222994811833658317">'डेटा मिटाएं' बटन, Chrome के ब्राउज़िंग इतिहास का डेटा मिटाने के लिए Enter दबाएं</translation>
 <translation id="5230733896359313003">शिपिंग पता</translation>
 <translation id="5230815978613972521">बी8</translation>
 <translation id="5233045608889518621">12x19</translation>
@@ -1302,7 +1294,6 @@
 <translation id="6302269476990306341">'Chrome में Google Assistant' को रोका जा रहा है</translation>
 <translation id="6305205051461490394"><ph name="URL" /> तक नहीं पहुंचा जा सकता.</translation>
 <translation id="6312113039770857350">वेबपेज उपलब्ध नहीं है</translation>
-<translation id="6315224405718249523">'पेज का अनुवाद करें' बटन, इस पेज का अनुवाद करने के लिए Enter दबाएं</translation>
 <translation id="6321917430147971392">अपनी DNS सेटिंग जांचे</translation>
 <translation id="6322182122604171028">Windows Hello का इस्तेमाल नहीं किया जा सका</translation>
 <translation id="6328639280570009161">नेटवर्क पूर्वानुमान को अक्षम करके देखें</translation>
@@ -1357,7 +1348,6 @@
 <translation id="6547208576736763147">बाईं ओर ड्युएल पंच</translation>
 <translation id="6554795675067793129">आपके खाते का प्रबंधन <ph name="ENROLLMENT_DOMAIN" /> करता हैै.</translation>
 <translation id="6556866813142980365">फिर से करें</translation>
-<translation id="6566840325635607048">'क्रेडिट कार्ड अपडेट करें' बटन, Chrome की सेटिंग में क्रेडिट कार्ड की अपने-आप भरने वाली जानकारी अपडेट करने के लिए Enter दबाएं</translation>
 <translation id="6569060085658103619">आप एक एक्सटेंशन पेज देख रहे हैं</translation>
 <translation id="6573200754375280815">दाईं ओर ड्युएल पंच</translation>
 <translation id="6578796323535178455">सी2 (एन्वेलप)</translation>
@@ -1598,7 +1588,6 @@
 <translation id="7549584377607005141">इस वेबपेज को उस डेटा की ज़रूरत है जिसे आपने पहले सही तरह से दिखाने के लिए डाला था. आप इस डेटा को फिर से भेज सकते हैं, लेकिन ऐसा करने से इस पेज पर पहले से हो चुकी कार्रवाई फिर से होगी.</translation>
 <translation id="7550637293666041147">आपके डिवाइस का उपयोगकर्ता नाम और Chrome उपयोगकर्ता नाम</translation>
 <translation id="7552846755917812628">ये टिप्स आज़माएं:</translation>
-<translation id="7553823544414963579"><ph name="CLEAR_BROWSING_DATA_FOCUSED_FRIENDLY_MATCH_TEXT" />, Chrome के ब्राउज़िंग इतिहास का डेटा मिटाने के लिए, Tab के बाद Enter दबाएं</translation>
 <translation id="7554791636758816595">नया टैब</translation>
 <translation id="7564049878696755256">आपके <ph name="ORG_NAME" /> खाते का एक्सेस खो सकता है या पहचान चोरी हो सकती है. Chrome आपको अभी अपना पासवर्ड बदलने का सुझाव देता है.</translation>
 <translation id="7567204685887185387">यह सर्वर यह प्रमाणित नहीं कर सका कि यह <ph name="DOMAIN" /> है; हो सकता है इसका सुरक्षा प्रमाणपत्र धोखे से जारी किया गया हो. ऐसा गलत कॉन्फ़िगरेशन के कारण या किसी आक्रमणकर्ता द्वारा आपके कनेक्शन में अवरोध डालने के कारण हो सकता है.</translation>
@@ -1765,7 +1754,6 @@
 <translation id="8225771182978767009">जिस व्यक्ति ने इस कंप्यूटर को सेट किया है, उसने इस साइट को ब्लॉक करना चुना है.</translation>
 <translation id="8228419419708659934">दो पेजों वाला व्यू</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
-<translation id="8230646577665563479"><ph name="TRANSLATE_FOCUSED_FRIENDLY_MATCH_TEXT" />, इस पेज का अनुवाद करने के लिए Tab के बाद Enter दबाएं</translation>
 <translation id="8232343881378637145">प्लैटफ़ॉर्म का तापमान</translation>
 <translation id="8238581221633243064">पेज को नए गुप्त टैब में खोलें</translation>
 <translation id="8241707690549784388">आप जिस पेज को ढूंढ रहे हैं उसने आपकी डाली गई जानकारी का इस्तेमाल किया है. उस पेज पर वापस लौटने से आपकी कोई कार्रवाई दोहराई जा सकती है. क्या आप जारी रखना चाहते हैं?</translation>

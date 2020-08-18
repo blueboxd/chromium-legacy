@@ -252,7 +252,6 @@ Prek dhe mbaj shtypur një fjalë për ta kërkuar. Për të përsosur kërkimin
 <translation id="2942036813789421260">Skeda e shikimit paraprak është e mbyllur</translation>
 <translation id="2956410042958133412">Kjo llogari menaxhohet nga <ph name="PARENT_NAME_1" /> dhe <ph name="PARENT_NAME_2" />.</translation>
 <translation id="2962095958535813455">Kaloi në skedat "e fshehta"</translation>
-<translation id="2968755619301702150">Shikuesi i certifikatave</translation>
 <translation id="2979025552038692506">Skeda e zgjedhur "e fshehtë"</translation>
 <translation id="2987620471460279764">Teksti i ndarë nga pajisje tjetër</translation>
 <translation id="2989523299700148168">Vizituar së fundi</translation>
@@ -453,6 +452,7 @@ Llogaria jote e Google mund të ketë forma të tjera të historikut të shfleti
 <translation id="4605958867780575332">Artikulli u hoq: <ph name="ITEM_TITLE" /></translation>
 <translation id="4616150815774728855">Hap <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">Përdor fjalëkalimin</translation>
+<translation id="4640331037679501949">{NUM_PASSWORDS,plural, =1{1 fjalëkalim i komprometuar}other{# fjalëkalime të komprometuara}}</translation>
 <translation id="4650364565596261010">Parazgjedhja e sistemit</translation>
 <translation id="465657074423018424">"Shfletimi i sigurt" të mbron kundër sajteve mashtruese. Nëse e çaktivizon, ki shumë kujdes kur shfleton, sidomos përpara se të futësh fjalëkalime.</translation>
 <translation id="4662373422909645029">Pseudonimi nuk mund të përmbajë numra</translation>
@@ -597,7 +597,7 @@ Për të ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />rivendos sinkronizim
 <translation id="568275469169136466">Për t'u identifikuar përkohësisht</translation>
 <translation id="5683547024293500885">Chrome nuk mund të kontrollojë për përditësime</translation>
 <translation id="5686790454216892815">Emri i skedarit është tepër i gjatë</translation>
-<translation id="5687809546194252819"><ph name="APP_NAME" /> do të përdorë gjuhën <ph name="LANGUAGE" /> pas rinisjes.</translation>
+<translation id="5687809546194252819">Pas rinisjes, <ph name="APP_NAME" /> do të përdorë këtë gjuhë: "<ph name="LANGUAGE" />".</translation>
 <translation id="5694049548840660018">Kthehu te faqja kryesore me lehtësi</translation>
 <translation id="569536719314091526">Përktheje këtë faqe në çdo gjuhë nga butoni "Më shumë opsione"</translation>
 <translation id="5696597120588531049">Chrome mund të të ndihmojë të qëndrosh i sigurt nga nxjerrjet e paautorizuara të të dhënave, faqet e pasigurta të internetit etj.</translation>
@@ -669,7 +669,6 @@ Për të ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />rivendos sinkronizim
 <translation id="6157392216611456285">Zgjidh <ph name="APP_NAME" /></translation>
 <translation id="6159335304067198720">Kursimi i të dhënave: <ph name="PERCENT" /></translation>
 <translation id="6186394685773237175">Nuk u gjetën fjalëkalime të komprometuara</translation>
-<translation id="6201345951596836663">Lidhja u kopjua</translation>
 <translation id="6206830853671714236">Zgjidh kur të shkarkohet</translation>
 <translation id="6210748933810148297">Nuk je <ph name="EMAIL" />?</translation>
 <translation id="6218096829563201111">Kërko produkte të ngjashme <ph name="BEGIN_NEW" />E re<ph name="END_NEW" /></translation>
@@ -1050,7 +1049,7 @@ Për shembull, disa sajte uebi mund t'i përgjigjen kësaj kërkese duke të tre
 <translation id="9050666287014529139">Shprehje kalimi</translation>
 <translation id="9063523880881406963">Çaktivizo "Kërko faqen për desktop"</translation>
 <translation id="9065203028668620118">Redakto</translation>
-<translation id="9065383040763568503">Të dhënat e ruajtura që Chrome nuk i konsideron të rëndësishme (p.sh. sajtet pa cilësime të ruajtura ose ti që nuk i viziton shpesh)</translation>
+<translation id="9065383040763568503">Të dhënat e ruajtura që Chrome nuk i konsideron të rëndësishme (p.sh. sajtet pa cilësime të ruajtura ose që ti nuk i viziton shpesh)</translation>
 <translation id="9069543557624799859">Shkarkimi do të nisë në <ph name="TIME" />.</translation>
 <translation id="9070377983101773829">Nis kërkimin me zë</translation>
 <translation id="9074336505530349563">Për të marrë përmbajtje të personalizuar të sugjeruar nga Google, identifikohu dhe aktivizo sinkronizimin</translation>

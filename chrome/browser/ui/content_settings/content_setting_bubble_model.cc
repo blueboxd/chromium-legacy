@@ -44,7 +44,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/blocked_content/popup_blocker_tab_helper.h"
-#include "components/content_settings/browser/content_settings_usages_state.h"
 #include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/content_settings/common/content_settings_agent.mojom.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
@@ -222,6 +221,8 @@ void ContentSettingSimpleBubbleModel::SetTitle() {
       {ContentSettingsType::PPAPI_BROKER, IDS_BLOCKED_PPAPI_BROKER_TITLE},
       {ContentSettingsType::SOUND, IDS_BLOCKED_SOUND_TITLE},
       {ContentSettingsType::CLIPBOARD_READ_WRITE, IDS_BLOCKED_CLIPBOARD_TITLE},
+      {ContentSettingsType::GEOLOCATION, IDS_BLOCKED_GEOLOCATION_TITLE},
+      {ContentSettingsType::MIDI_SYSEX, IDS_BLOCKED_MIDI_SYSEX_TITLE},
       {ContentSettingsType::SENSORS, IDS_BLOCKED_SENSORS_TITLE},
   };
   // Fields as for kBlockedTitleIDs, above.
@@ -229,6 +230,8 @@ void ContentSettingSimpleBubbleModel::SetTitle() {
       {ContentSettingsType::COOKIES, IDS_ACCESSED_COOKIES_TITLE},
       {ContentSettingsType::PPAPI_BROKER, IDS_ALLOWED_PPAPI_BROKER_TITLE},
       {ContentSettingsType::CLIPBOARD_READ_WRITE, IDS_ALLOWED_CLIPBOARD_TITLE},
+      {ContentSettingsType::GEOLOCATION, IDS_ALLOWED_GEOLOCATION_TITLE},
+      {ContentSettingsType::MIDI_SYSEX, IDS_ALLOWED_MIDI_SYSEX_TITLE},
       {ContentSettingsType::SENSORS, IDS_ALLOWED_SENSORS_TITLE},
   };
   const ContentSettingsTypeIdEntry* title_ids = kBlockedTitleIDs;
@@ -257,6 +260,8 @@ void ContentSettingSimpleBubbleModel::SetMessage() {
       {ContentSettingsType::MIXEDSCRIPT,
        IDS_BLOCKED_DISPLAYING_INSECURE_CONTENT},
       {ContentSettingsType::PPAPI_BROKER, IDS_BLOCKED_PPAPI_BROKER_MESSAGE},
+      {ContentSettingsType::GEOLOCATION, IDS_BLOCKED_GEOLOCATION_MESSAGE},
+      {ContentSettingsType::MIDI_SYSEX, IDS_BLOCKED_MIDI_SYSEX_MESSAGE},
       {ContentSettingsType::CLIPBOARD_READ_WRITE,
        IDS_BLOCKED_CLIPBOARD_MESSAGE},
       {ContentSettingsType::SENSORS,
@@ -268,6 +273,8 @@ void ContentSettingSimpleBubbleModel::SetMessage() {
   const ContentSettingsTypeIdEntry kAccessedMessageIDs[] = {
       {ContentSettingsType::COOKIES, IDS_ACCESSED_COOKIES_MESSAGE},
       {ContentSettingsType::PPAPI_BROKER, IDS_ALLOWED_PPAPI_BROKER_MESSAGE},
+      {ContentSettingsType::GEOLOCATION, IDS_ALLOWED_GEOLOCATION_MESSAGE},
+      {ContentSettingsType::MIDI_SYSEX, IDS_ALLOWED_MIDI_SYSEX_MESSAGE},
       {ContentSettingsType::CLIPBOARD_READ_WRITE,
        IDS_ALLOWED_CLIPBOARD_MESSAGE},
       {ContentSettingsType::SENSORS,
@@ -500,190 +507,6 @@ void ContentSettingRPHBubbleModel::PerformActionForSelectedItem() {
     NOTREACHED();
 }
 
-// ContentSettingMidiSysExBubbleModel ------------------------------------------
-
-class ContentSettingMidiSysExBubbleModel
-    : public ContentSettingSimpleBubbleModel {
- public:
-  ContentSettingMidiSysExBubbleModel(Delegate* delegate,
-                                     WebContents* web_contents);
-  ~ContentSettingMidiSysExBubbleModel() override {}
-
- private:
-  void MaybeAddDomainList(const std::set<std::string>& hosts, int title_id);
-  void SetDomainsAndCustomLink();
-  void OnCustomLinkClicked() override;
-
-  DISALLOW_COPY_AND_ASSIGN(ContentSettingMidiSysExBubbleModel);
-};
-
-ContentSettingMidiSysExBubbleModel::ContentSettingMidiSysExBubbleModel(
-    Delegate* delegate,
-    WebContents* web_contents)
-    : ContentSettingSimpleBubbleModel(delegate,
-                                      web_contents,
-                                      ContentSettingsType::MIDI_SYSEX) {
-  SetDomainsAndCustomLink();
-}
-
-void ContentSettingMidiSysExBubbleModel::MaybeAddDomainList(
-    const std::set<std::string>& hosts,
-    int title_id) {
-  if (!hosts.empty()) {
-    DomainList domain_list;
-    domain_list.title = l10n_util::GetStringUTF16(title_id);
-    domain_list.hosts = hosts;
-    add_domain_list(domain_list);
-  }
-}
-
-void ContentSettingMidiSysExBubbleModel::SetDomainsAndCustomLink() {
-  PageSpecificContentSettings* content_settings =
-      PageSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
-  const ContentSettingsUsagesState& usages_state =
-      content_settings->midi_usages_state();
-  ContentSettingsUsagesState::FormattedHostsPerState formatted_hosts_per_state;
-  unsigned int tab_state_flags = 0;
-  usages_state.GetDetailedInfo(&formatted_hosts_per_state, &tab_state_flags);
-  // Divide the tab's current MIDI sysex users into sets according to their
-  // permission state.
-  MaybeAddDomainList(formatted_hosts_per_state[CONTENT_SETTING_ALLOW],
-                     IDS_MIDI_SYSEX_BUBBLE_ALLOWED);
-
-  MaybeAddDomainList(formatted_hosts_per_state[CONTENT_SETTING_BLOCK],
-                     IDS_MIDI_SYSEX_BUBBLE_DENIED);
-
-  if (tab_state_flags & ContentSettingsUsagesState::TABSTATE_HAS_EXCEPTION) {
-    set_custom_link(
-        l10n_util::GetStringUTF16(IDS_MIDI_SYSEX_BUBBLE_CLEAR_LINK));
-    set_custom_link_enabled(true);
-  } else if (tab_state_flags &
-             ContentSettingsUsagesState::TABSTATE_HAS_CHANGED) {
-    set_custom_link(l10n_util::GetStringUTF16(
-        IDS_MIDI_SYSEX_BUBBLE_REQUIRE_RELOAD_TO_CLEAR));
-  }
-}
-
-void ContentSettingMidiSysExBubbleModel::OnCustomLinkClicked() {
-  // Reset this embedder's entry to default for each of the requesting
-  // origins currently on the page.
-  const GURL& embedder_url = web_contents()->GetURL();
-  PageSpecificContentSettings* content_settings =
-      PageSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
-  const ContentSettingsUsagesState::StateMap& state_map =
-      content_settings->midi_usages_state().state_map();
-  HostContentSettingsMap* map =
-      HostContentSettingsMapFactory::GetForProfile(GetProfile());
-  auto* auto_blocker =
-      PermissionDecisionAutoBlockerFactory::GetForProfile(GetProfile());
-  for (const std::pair<const GURL, ContentSetting>& map_entry : state_map) {
-    permissions::PermissionUmaUtil::ScopedRevocationReporter(
-        GetProfile(), map_entry.first, embedder_url,
-        ContentSettingsType::MIDI_SYSEX,
-        permissions::PermissionSourceUI::PAGE_ACTION);
-    map->SetContentSettingDefaultScope(map_entry.first, embedder_url,
-                                       ContentSettingsType::MIDI_SYSEX,
-                                       std::string(), CONTENT_SETTING_DEFAULT);
-    auto_blocker->RemoveEmbargoAndResetCounts(map_entry.first,
-                                              ContentSettingsType::MIDI_SYSEX);
-  }
-}
-
-// ContentSettingDomainListBubbleModel -----------------------------------------
-
-class ContentSettingDomainListBubbleModel
-    : public ContentSettingSimpleBubbleModel {
- public:
-  ContentSettingDomainListBubbleModel(Delegate* delegate,
-                                      WebContents* web_contents,
-                                      ContentSettingsType content_type);
-  ~ContentSettingDomainListBubbleModel() override {}
-
- private:
-  void MaybeAddDomainList(const std::set<std::string>& hosts, int title_id);
-  void SetDomainsAndCustomLink();
-  void OnCustomLinkClicked() override;
-
-  DISALLOW_COPY_AND_ASSIGN(ContentSettingDomainListBubbleModel);
-};
-
-ContentSettingDomainListBubbleModel::ContentSettingDomainListBubbleModel(
-    Delegate* delegate,
-    WebContents* web_contents,
-    ContentSettingsType content_type)
-    : ContentSettingSimpleBubbleModel(delegate,
-                                      web_contents,
-                                      content_type) {
-  DCHECK_EQ(ContentSettingsType::GEOLOCATION, content_type)
-      << "SetDomains currently only supports geolocation content type";
-  SetDomainsAndCustomLink();
-}
-
-void ContentSettingDomainListBubbleModel::MaybeAddDomainList(
-    const std::set<std::string>& hosts,
-    int title_id) {
-  if (!hosts.empty()) {
-    DomainList domain_list;
-    domain_list.title = l10n_util::GetStringUTF16(title_id);
-    domain_list.hosts = hosts;
-    add_domain_list(domain_list);
-  }
-}
-
-void ContentSettingDomainListBubbleModel::SetDomainsAndCustomLink() {
-  PageSpecificContentSettings* content_settings =
-      PageSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
-  const ContentSettingsUsagesState& usages =
-      content_settings->geolocation_usages_state();
-  ContentSettingsUsagesState::FormattedHostsPerState formatted_hosts_per_state;
-  unsigned int tab_state_flags = 0;
-  usages.GetDetailedInfo(&formatted_hosts_per_state, &tab_state_flags);
-  // Divide the tab's current geolocation users into sets according to their
-  // permission state.
-  MaybeAddDomainList(formatted_hosts_per_state[CONTENT_SETTING_ALLOW],
-                     IDS_GEOLOCATION_BUBBLE_SECTION_ALLOWED);
-
-  MaybeAddDomainList(formatted_hosts_per_state[CONTENT_SETTING_BLOCK],
-                     IDS_GEOLOCATION_BUBBLE_SECTION_DENIED);
-
-  if (tab_state_flags & ContentSettingsUsagesState::TABSTATE_HAS_EXCEPTION) {
-    set_custom_link(
-        l10n_util::GetStringUTF16(IDS_GEOLOCATION_BUBBLE_CLEAR_LINK));
-    set_custom_link_enabled(true);
-  } else if (tab_state_flags &
-             ContentSettingsUsagesState::TABSTATE_HAS_CHANGED) {
-    set_custom_link(l10n_util::GetStringUTF16(
-        IDS_GEOLOCATION_BUBBLE_REQUIRE_RELOAD_TO_CLEAR));
-  }
-}
-
-void ContentSettingDomainListBubbleModel::OnCustomLinkClicked() {
-  // Reset this embedder's entry to default for each of the requesting
-  // origins currently on the page.
-  const GURL& embedder_url = web_contents()->GetURL();
-  PageSpecificContentSettings* content_settings =
-      PageSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
-  const ContentSettingsUsagesState::StateMap& state_map =
-      content_settings->geolocation_usages_state().state_map();
-  HostContentSettingsMap* map =
-      HostContentSettingsMapFactory::GetForProfile(GetProfile());
-  auto* auto_blocker =
-      PermissionDecisionAutoBlockerFactory::GetForProfile(GetProfile());
-  for (const std::pair<const GURL, ContentSetting>& map_entry : state_map) {
-    permissions::PermissionUmaUtil::ScopedRevocationReporter(
-        GetProfile(), map_entry.first, embedder_url,
-        ContentSettingsType::GEOLOCATION,
-        permissions::PermissionSourceUI::PAGE_ACTION);
-    map->SetContentSettingDefaultScope(map_entry.first, embedder_url,
-                                       ContentSettingsType::GEOLOCATION,
-                                       std::string(), CONTENT_SETTING_DEFAULT);
-    auto_blocker->RemoveEmbargoAndResetCounts(map_entry.first,
-                                              ContentSettingsType::GEOLOCATION);
-  }
-}
-
-// ContentSettingPluginBubbleModel ---------------------------------------------
-
 class ContentSettingPluginBubbleModel : public ContentSettingSimpleBubbleModel {
  public:
   ContentSettingPluginBubbleModel(Delegate* delegate,
@@ -816,6 +639,8 @@ void ContentSettingSingleRadioGroup::SetRadioGroup() {
       {ContentSettingsType::POPUPS, IDS_BLOCKED_POPUPS_REDIRECTS_UNBLOCK},
       {ContentSettingsType::PPAPI_BROKER, IDS_BLOCKED_PPAPI_BROKER_UNBLOCK},
       {ContentSettingsType::SOUND, IDS_BLOCKED_SOUND_UNBLOCK},
+      {ContentSettingsType::GEOLOCATION, IDS_BLOCKED_GEOLOCATION_UNBLOCK},
+      {ContentSettingsType::MIDI_SYSEX, IDS_BLOCKED_MIDI_SYSEX_UNBLOCK},
       {ContentSettingsType::CLIPBOARD_READ_WRITE,
        IDS_BLOCKED_CLIPBOARD_UNBLOCK},
       {ContentSettingsType::SENSORS, IDS_BLOCKED_SENSORS_UNBLOCK},
@@ -824,6 +649,8 @@ void ContentSettingSingleRadioGroup::SetRadioGroup() {
   static const ContentSettingsTypeIdEntry kAllowedAllowIDs[] = {
       {ContentSettingsType::COOKIES, IDS_ALLOWED_COOKIES_NO_ACTION},
       {ContentSettingsType::PPAPI_BROKER, IDS_ALLOWED_PPAPI_BROKER_NO_ACTION},
+      {ContentSettingsType::GEOLOCATION, IDS_ALLOWED_GEOLOCATION_NO_ACTION},
+      {ContentSettingsType::MIDI_SYSEX, IDS_ALLOWED_MIDI_SYSEX_NO_ACTION},
       {ContentSettingsType::CLIPBOARD_READ_WRITE,
        IDS_ALLOWED_CLIPBOARD_NO_ACTION},
       {ContentSettingsType::SENSORS, IDS_ALLOWED_SENSORS_NO_ACTION},
@@ -848,6 +675,8 @@ void ContentSettingSingleRadioGroup::SetRadioGroup() {
       {ContentSettingsType::POPUPS, IDS_BLOCKED_POPUPS_REDIRECTS_NO_ACTION},
       {ContentSettingsType::PPAPI_BROKER, IDS_BLOCKED_PPAPI_BROKER_NO_ACTION},
       {ContentSettingsType::SOUND, IDS_BLOCKED_SOUND_NO_ACTION},
+      {ContentSettingsType::GEOLOCATION, IDS_BLOCKED_GEOLOCATION_NO_ACTION},
+      {ContentSettingsType::MIDI_SYSEX, IDS_BLOCKED_MIDI_SYSEX_NO_ACTION},
       {ContentSettingsType::CLIPBOARD_READ_WRITE,
        IDS_BLOCKED_CLIPBOARD_NO_ACTION},
       {ContentSettingsType::SENSORS, IDS_BLOCKED_SENSORS_NO_ACTION},
@@ -855,6 +684,8 @@ void ContentSettingSingleRadioGroup::SetRadioGroup() {
   static const ContentSettingsTypeIdEntry kAllowedBlockIDs[] = {
       {ContentSettingsType::COOKIES, IDS_ALLOWED_COOKIES_BLOCK},
       {ContentSettingsType::PPAPI_BROKER, IDS_ALLOWED_PPAPI_BROKER_BLOCK},
+      {ContentSettingsType::GEOLOCATION, IDS_ALLOWED_GEOLOCATION_BLOCK},
+      {ContentSettingsType::MIDI_SYSEX, IDS_ALLOWED_MIDI_SYSEX_BLOCK},
       {ContentSettingsType::CLIPBOARD_READ_WRITE, IDS_ALLOWED_CLIPBOARD_BLOCK},
       {ContentSettingsType::SENSORS, IDS_ALLOWED_SENSORS_BLOCK},
   };
@@ -1786,10 +1617,7 @@ ContentSettingBubbleModel::CreateContentSettingBubbleModel(
     return std::make_unique<ContentSettingPopupBubbleModel>(delegate,
                                                             web_contents);
   }
-  if (content_type == ContentSettingsType::GEOLOCATION) {
-    return std::make_unique<ContentSettingDomainListBubbleModel>(
-        delegate, web_contents, content_type);
-  }
+
   if (content_type == ContentSettingsType::PLUGINS) {
     return std::make_unique<ContentSettingPluginBubbleModel>(delegate,
                                                              web_contents);
@@ -1805,10 +1633,6 @@ ContentSettingBubbleModel::CreateContentSettingBubbleModel(
     return std::make_unique<ContentSettingRPHBubbleModel>(
         delegate, web_contents, registry);
   }
-  if (content_type == ContentSettingsType::MIDI_SYSEX) {
-    return std::make_unique<ContentSettingMidiSysExBubbleModel>(delegate,
-                                                                web_contents);
-  }
   if (content_type == ContentSettingsType::AUTOMATIC_DOWNLOADS) {
     return std::make_unique<ContentSettingDownloadsBubbleModel>(delegate,
                                                                 web_contents);
@@ -1822,6 +1646,8 @@ ContentSettingBubbleModel::CreateContentSettingBubbleModel(
       content_type == ContentSettingsType::PPAPI_BROKER ||
       content_type == ContentSettingsType::SOUND ||
       content_type == ContentSettingsType::CLIPBOARD_READ_WRITE ||
+      content_type == ContentSettingsType::GEOLOCATION ||
+      content_type == ContentSettingsType::MIDI_SYSEX ||
       content_type == ContentSettingsType::SENSORS) {
     return std::make_unique<ContentSettingSingleRadioGroup>(
         delegate, web_contents, content_type);

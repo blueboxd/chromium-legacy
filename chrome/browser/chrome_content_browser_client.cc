@@ -1305,8 +1305,6 @@ void ChromeContentBrowserClient::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kAutoplayAllowed, false);
   registry->RegisterListPref(prefs::kAutoplayWhitelist);
 #endif
-  registry->RegisterListPref(prefs::kCorsMitigationList);
-  registry->RegisterBooleanPref(prefs::kCorsLegacyModeEnabled, false);
 }
 
 // static

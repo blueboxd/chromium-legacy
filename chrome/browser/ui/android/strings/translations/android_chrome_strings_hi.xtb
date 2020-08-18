@@ -55,7 +55,7 @@
 <translation id="1360432990279830238">साइन आउट करें और सिंक बंद करें?</translation>
 <translation id="1373696734384179344">चयनित सामग्री डाउनलोड करने के लिए मेमोरी अपर्याप्‍त है.</translation>
 <translation id="1376578503827013741">गणना की जा रही है…</translation>
-<translation id="1383876407941801731">खोजें</translation>
+<translation id="1383876407941801731">Search</translation>
 <translation id="1386674309198842382"><ph name="LAST_UPDATED" />दिन पहले सिंक किया गया</translation>
 <translation id="1397811292916898096"><ph name="PRODUCT_NAME" /> के ज़रिए खोजें</translation>
 <translation id="1406000523432664303">“नज़र न रखें”</translation>
@@ -252,7 +252,6 @@
 <translation id="2942036813789421260">झलक टैब बंद है</translation>
 <translation id="2956410042958133412">यह खाता <ph name="PARENT_NAME_1" /> और <ph name="PARENT_NAME_2" /> के द्वारा प्रबंधित है.</translation>
 <translation id="2962095958535813455">गुप्त टैब पर स्विच कर दिया गया</translation>
-<translation id="2968755619301702150">प्रमाणपत्र व्यूअर</translation>
 <translation id="2979025552038692506">चयनित गुप्त टैब</translation>
 <translation id="2987620471460279764">दूसरी साइटों से शेयर किया गया टेक्स्ट</translation>
 <translation id="2989523299700148168">हाल ही में देखे गए</translation>
@@ -669,7 +668,6 @@
 <translation id="6157392216611456285"><ph name="APP_NAME" /> चुनें</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> डेटा बचत</translation>
 <translation id="6186394685773237175">ऐसा कोई भी पासवर्ड नहीं मिला जो या तो हैक हुआ है या चोरी हुआ है</translation>
-<translation id="6201345951596836663">लिंक कॉपी किया गया</translation>
 <translation id="6206830853671714236">चुनें कि कब डाउनलोड करना है</translation>
 <translation id="6210748933810148297">क्या <ph name="EMAIL" /> नहीं हैं?</translation>
 <translation id="6218096829563201111">मिलते-जुलते उत्पाद खोजें <ph name="BEGIN_NEW" />नए<ph name="END_NEW" /></translation>

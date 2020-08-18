@@ -17,7 +17,7 @@
 <translation id="1012876632442809908">USB-C 기기(전면 포트)</translation>
 <translation id="1013707859758800957">이 페이지에서 샌드박스 처리되지 않은 플러그인 실행을 허용했습니다.</translation>
 <translation id="1015318665228971643">폴더 이름 수정</translation>
-<translation id="1015578595646638936">{NUM_DAYS,plural, =1{<ph name="DEVICE_TYPE" /> 업데이트 기한 마지막 날}other{<ph name="DEVICE_TYPE" /> 기기를 {NUM_DAYS}일 이내로 업데이트해 주세요}}</translation>
+<translation id="1015578595646638936">{NUM_DAYS,plural, =1{<ph name="DEVICE_TYPE" /> 업데이트 기한 마지막 날}other{<ph name="DEVICE_TYPE" /> 기기를 {NUM_DAYS}일 이내로 업데이트하세요}}</translation>
 <translation id="1016437870506746108">{COUNT,plural, =0{모두 새 창에서 열기(N)}=1{새 창에서 열기(N)}other{#개 모두 새 창에서 열기(N)}}</translation>
 <translation id="1016566241875885511">추가 정보(선택사항)</translation>
 <translation id="1017280919048282932">사전에 추가(&amp;A)</translation>
@@ -1580,7 +1580,7 @@
 <translation id="2876336351874743617">손가락 2</translation>
 <translation id="2876369937070532032">보안상의 위험이 있을 때 일부 방문 페이지의 URL을 Google로 전송합니다.</translation>
 <translation id="2878782256107578644">검사가 진행 중입니다. 지금 여시겠습니까?</translation>
-<translation id="2878889940310164513">셀룰러 추가...</translation>
+<translation id="2878889940310164513">셀룰러 네트워크 추가...</translation>
 <translation id="288042212351694283">Universal 2nd Factor 기기에 액세스</translation>
 <translation id="2880660355386638022">창 배치</translation>
 <translation id="2881076733170862447">확장 프로그램을 클릭할 경우</translation>
@@ -2184,7 +2184,7 @@
 <translation id="3640214691812501263"><ph name="USER_NAME" />님에 대하여 '<ph name="EXTENSION_NAME" />'을(를) 추가할까요?</translation>
 <translation id="3640613767643722554">어시스턴트가 내 음성을 인식하도록 학습시키기</translation>
 <translation id="3645372836428131288">지문의 다른 부분이 인식되도록 손가락을 살짝 움직이세요.</translation>
-<translation id="3647998456578545569">{COUNT,plural, =1{<ph name="DEVICE_NAME" />에서 <ph name="ATTACHMENTS" /> 받음}other{<ph name="DEVICE_NAME" />에서 <ph name="ATTACHMENTS" /> 받음}}</translation>
+<translation id="3647998456578545569">{COUNT,plural, =1{<ph name="DEVICE_NAME" />에서 <ph name="ATTACHMENTS" /> 수신}other{<ph name="DEVICE_NAME" />에서 <ph name="ATTACHMENTS" /> 수신}}</translation>
 <translation id="3648348069317717750"><ph name="USB_DEVICE_NAME" /> 발견됨</translation>
 <translation id="3649138363871392317">사진이 캡처되었습니다.</translation>
 <translation id="3649505501900178324">업데이트 지연됨</translation>
@@ -3000,7 +3000,7 @@
 <translation id="4651484272688821107">데모 모드 리소스로 온라인 구성요소를 로드하지 못했습니다.</translation>
 <translation id="4652935475563630866">카메라 설정을 변경하려면 Parallels Desktop을 다시 실행해야 합니다. 계속하려면 Parallels Desktop을 다시 실행하세요.</translation>
 <translation id="4653405415038586100">Linux 설정 중 오류 발생</translation>
-<translation id="4657810666108475055">검색을 탭하세요</translation>
+<translation id="4657810666108475055">탭 검색</translation>
 <translation id="465878909996028221">http, https 및 파일 프로토콜에만 브라우저 리디렉션이 지원됩니다.</translation>
 <translation id="4659077111144409915">기본 계정</translation>
 <translation id="4660476621274971848">'<ph name="EXPECTED_VERSION" />' 버전을 예상했으나 '<ph name="NEW_ID" />' 버전이 표시되었습니다</translation>
@@ -3126,7 +3126,7 @@
 <translation id="4842976633412754305">이 페이지가 인증되지 않은 소스에서 스크립트를 로드하려고 시도하고 있습니다.</translation>
 <translation id="4844333629810439236">기타 키보드</translation>
 <translation id="4846680374085650406">이 설정에 대한 관리자 권장사항을 따릅니다.</translation>
-<translation id="4847902821209177679"><ph name="TOPIC_SOURCE" /> <ph name="TOPIC_SOURCE_DESC" /> 선택됨, <ph name="TOPIC_SOURCE" /> 앨범을 선택하려면 Enter 누르기</translation>
+<translation id="4847902821209177679"><ph name="TOPIC_SOURCE" /> <ph name="TOPIC_SOURCE_DESC" /> 선택됨, <ph name="TOPIC_SOURCE" /> 앨범을 선택하려면 Enter를 누르세요</translation>
 <translation id="4848191975108266266">Google 어시스턴트 'Ok Google'</translation>
 <translation id="4848518990323155912">SIM 카드 잠금 사용(모바일 데이터를 사용하려면 PIN 필요)</translation>
 <translation id="4849286518551984791">협정세계시(UTC/GMT)</translation>
@@ -5215,7 +5215,7 @@
 <translation id="7456847797759667638">위치 열기...</translation>
 <translation id="7458168200501453431">Google 검색에서 사용되는 것과 동일한 맞춤법 검사기를 사용합니다. 브라우저에 입력하는 텍스트는 Google로 전송됩니다.</translation>
 <translation id="7460045493116006516">내가 설치한 현재 테마입니다.</translation>
-<translation id="7461729991508684543">{NUM_DAYS,plural, =1{<ph name="DOMAIN" />에서 데이터를 백업하고 오늘 이 <ph name="DEVICE_TYPE" /> 기기를 반납할 것을 요청합니다.<ph name="LINK_BEGIN" />세부정보 보기<ph name="LINK_END" />}other{<ph name="DOMAIN" />에서 데이터를 백업하고 {NUM_DAYS}일 이내에 이 <ph name="DEVICE_TYPE" /> 기기를 반납할 것을 요청합니다.<ph name="LINK_BEGIN" />세부정보 보기<ph name="LINK_END" />}}</translation>
+<translation id="7461729991508684543">{NUM_DAYS,plural, =1{<ph name="DOMAIN" />에서 데이터를 백업하고 오늘 이 <ph name="DEVICE_TYPE" /> 기기를 반납할 것을 요청합니다. <ph name="LINK_BEGIN" />세부정보 보기<ph name="LINK_END" />}other{<ph name="DOMAIN" />에서 데이터를 백업하고 {NUM_DAYS}일 이내에 이 <ph name="DEVICE_TYPE" /> 기기를 반납할 것을 요청합니다. <ph name="LINK_BEGIN" />세부정보 보기<ph name="LINK_END" />}}</translation>
 <translation id="7461924472993315131">고정</translation>
 <translation id="746216226901520237">다음번에는 휴대전화를 통해 <ph name="DEVICE_TYPE" />이 잠금 해제됩니다. 설정에서 Smart Lock을 사용 중지할 수 있습니다.</translation>
 <translation id="7463006580194749499">사용자 추가</translation>
@@ -5700,7 +5700,6 @@
 <translation id="8028060951694135607">Microsoft Key Recovery</translation>
 <translation id="8028803902702117856"><ph name="SIZE" /> 다운로드 중, <ph name="FILE_NAME" /></translation>
 <translation id="8028993641010258682">크기</translation>
-<translation id="8030656706657716245">프린터 추가</translation>
 <translation id="8030852056903932865">승인</translation>
 <translation id="8032244173881942855">탭을 전송할 수 없습니다.</translation>
 <translation id="8033827949643255796">선택됨</translation>
@@ -6188,7 +6187,7 @@
 <translation id="8648544143274677280"><ph name="SITE_NAME" />의 권한 요청: <ph name="FIRST_PERMISSION" />, <ph name="SECOND_PERMISSION" /> 등</translation>
 <translation id="8650543407998814195">더 이상 기존 프로필에 액세스할 수 없지만 삭제할 수는 있습니다.</translation>
 <translation id="8651585100578802546">캐시를 무시하고 페이지 새로고침</translation>
-<translation id="8651940856056821914">Chrome에서 실시간 자막을 사용하여 자동으로 영어 자막을 생성합니다. 현재 영어로만 제공됩니다.</translation>
+<translation id="8651940856056821914">Chrome에서 실시간 자막을 사용하여 자동으로 자막을 생성합니다. 현재는 영어로만 제공됩니다.</translation>
 <translation id="8652400352452647993">확장 프로그램 패키지 오류</translation>
 <translation id="8654151524613148204">파일이 너무 커서 컴퓨터에서 처리할 수 없습니다.</translation>
 <translation id="8655295600908251630">채널</translation>

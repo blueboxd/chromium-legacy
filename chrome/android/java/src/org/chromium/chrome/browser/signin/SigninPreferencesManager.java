@@ -168,4 +168,24 @@ public class SigninPreferencesManager {
     public void clearNewTabPageSigninPromoSuppressionPeriodStart() {
         mManager.removeKey(ChromePreferenceKeys.SIGNIN_PROMO_NTP_PROMO_SUPPRESSION_PERIOD_START);
     }
+
+    /**
+     * Sets the email of the account for which sync was enabled.
+     *
+     * @param accountEmail The email of the sync account or null if sync isn't enabled.
+     */
+    // TODO(https://crbug.com/1091858): Remove this after migrating the legacy code that uses
+    //                                  the sync account before the native is loaded.
+    public void setLegacySyncAccountEmail(@Nullable String accountEmail) {
+        mManager.writeString(ChromePreferenceKeys.SIGNIN_LEGACY_SYNC_ACCOUNT_EMAIL, accountEmail);
+    }
+
+    /**
+     * The email of the account for which sync was enabled.
+     */
+    // TODO(https://crbug.com/1091858): Remove this after migrating the legacy code that uses
+    //                                  the sync account before the native is loaded.
+    public String getLegacySyncAccountEmail() {
+        return mManager.readString(ChromePreferenceKeys.SIGNIN_LEGACY_SYNC_ACCOUNT_EMAIL, null);
+    }
 }

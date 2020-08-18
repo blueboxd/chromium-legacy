@@ -83,17 +83,6 @@
 <translation id="1095209545735032039">Blocca l'API Serial su questi siti</translation>
 <translation id="1096105751829466145">Provider di ricerca predefinito</translation>
 <translation id="1099282607296956954">Attiva isolamento sito per ogni sito</translation>
-<translation id="1100570158310952027">
-      Questa norma consente di specificare un elenco di origini (URL) o di schemi di nomi host (ad esempio "*.example.com") a cui non vengono applicate limitazioni di sicurezza previste per le origini non sicure.
-
-Lo scopo è consentire alle organizzazioni di configurare le origini della whitelist per le applicazioni precedenti che non possono eseguire il deployment di TLS o configurare un server di gestione temporanea per gli sviluppi web interni, di modo che gli sviluppatori possano testare le funzioni che richiedono contesti sicuri senza dover eseguire il deployment di TLS sul server di gestione temporanea. Questa norma impedisce inoltre che l'origine venga contrassegnata come "Non sicura" nella omnibox.
-
-L'impostazione di un elenco di URL in questa norma ha lo stesso effetto dell'impostazione del flag della riga di comando "--unsafely-treat-insecure-origin-as-secure" su un elenco separato da virgole degli stessi URL. Se viene impostata, questa norma sostituisce il flag della riga di comando.
-
-Questa norma sostituirà UnsafelyTreatInsecureOriginAsSecure, se presente.
-
-Per ulteriori informazioni sui contesti sicuri, visita il sito https://www.w3.org/TR/secure-contexts/.
-      </translation>
 <translation id="1107764601871839136">Questa norma consente di specificare la durata in ore della cache dell'Oggetto Criteri di gruppo (GPO). Invece di scaricare di nuovo i GPO a ogni recupero della norma, il sistema può riutilizzare i GPO memorizzati nella cache finché la loro versione non viene modificata. Questa norma consente di specificare per quanto tempo è possibile riutilizzare i GPO memorizzati nella cache prima che vengano scaricati di nuovo. Se esegui il riavvio ed esci, la cache verrà svuotata.
 
       Se la norma non viene impostata, i GPO memorizzati nella cache possono essere riutilizzati per un periodo massimo di 25 ore.
@@ -223,13 +212,6 @@ Per ulteriori informazioni sui contesti sicuri, visita il sito https://www.w3.or
           Se questo criterio non viene configurato, l'utente può installare qualsiasi estensione in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1393485621820363363">Stampanti aziendali associate ai dispositivi attive</translation>
 <translation id="1397855852561539316">URL di suggerimento del provider di ricerca predefinito</translation>
-<translation id="1404043648050567997">Il servizio Navigazione sicura mostra una pagina di avviso quando gli utenti visitano siti che sono segnalati come potenzialmente dannosi. L'attivazione di questa impostazione impedisce agli utenti di proseguire dalla pagina di avviso al sito dannoso.
-
-      Questa norma impedisce agli utenti di proseguire solo in presenza degli avvisi di Navigazione sicura (ad es. malware e phishing) e non nell'eventualità di problematiche relative al certificato SSL, come nei casi di certificati scaduti o non validi.
-
-      Se questa impostazione è disattivata o non è configurata, gli utenti possono scegliere di proseguire al sito segnalato dopo che è stato mostrato l'avviso.
-
-      Visita il sito https://developers.google.com/safe-browsing per avere ulteriori informazioni sulla funzione Navigazione sicura.</translation>
 <translation id="1413936351612032792">Segnala informazioni sull'utilizzo delle app Linux</translation>
 <translation id="142346659686073702">Consenti agli utenti non affiliati di usare Crostini</translation>
 <translation id="1425551776320718592">Impedisci agli utenti di questo dispositivo di utilizzare il processo sideload ADB senza forzare la funzione Powerwash, che potrebbe lasciare il dispositivo in uno stato di sicurezza discutibile</translation>
@@ -429,15 +411,6 @@ Se disattivi questo criterio, lo scorrimento della pagina web ai frammenti di te
 
       Se questo criterio viene impostato su True o non viene impostato, i controlli multimediali vengono visualizzati nella schermata di blocco se l'utente blocca il dispositivo durante la riproduzione di contenuti multimediali.
       </translation>
-<translation id="1696540175770069132">Questo criterio determina se <ph name="PRODUCT_NAME" /> può consentire il download senza che Navigazione sicura effettui controlli nel caso in cui la fonte sia attendibile.
-
-      Se il criterio è impostato su false, i file scaricati da una fonte attendibile non verranno inviati a Navigazione sicura per l'analisi.
-
-      Se il criterio non viene configurato o è impostato su true, i file scaricati vengono inviati a Navigazione sicura per l'analisi anche se la fonte è attendibile.
-
-      Tieni presente che tali limitazioni vengono applicate ai download attivati dai contenuti delle pagine web, nonché all'opzione del menu contestuale "Link di download...". Tali limitazioni non vengono applicate al salvataggio o al download della pagina attualmente visualizzata né all'opzione di stampa relativa al salvataggio in PDF.
-
-      Questo criterio è disponibile esclusivamente per le istanze di Windows che fanno parte di un dominio <ph name="MS_AD_NAME" /> così come per le istanze di Windows 10 Pro o Enterprise registrate per la gestione dei dispositivi. Inoltre è disponibile per le istanze di macOS gestite tramite MDM o aggiunte a un dominio tramite MCX.</translation>
 <translation id="1700811900332333712">Consenti al dispositivo di richiedere il powerwash</translation>
 <translation id="1708496595873025510">Imposta la limitazione sul recupero del numero di inizializzazione delle varianti</translation>
 <translation id="171511968762040550">Se il criterio è impostato su True o se non viene configurato, gli utenti possono aggiungere, rimuovere o modificare i preferiti.
@@ -520,7 +493,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 
       Se questo criterio non viene configurato, non vi sono limitazioni in termini di utenti autorizzati ad accedere. Tieni presente che la creazione di nuovi utenti richiede comunque la corretta configurazione del criterio <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" />.</translation>
 <translation id="186719019195685253">Azione da compiere quando il ritardo di inattività viene raggiunto durante l'utilizzo della corrente CA</translation>
-<translation id="187819629719252111">Consente di accedere ai file locali presenti sul computer, permettendo a <ph name="PRODUCT_NAME" /> di visualizzare le finestre di dialogo di selezione dei file. Se attivi questa impostazione, gli utenti potranno aprire le finestre di dialogo di selezione dei file come di consueto. Se disattivi questa impostazione, ogni volta che l'utente eseguirà un'azione che apre una finestra di dialogo di selezione file (ad esempio importazione di Preferiti, caricamento di file, salvataggio di link e così via), verrà visualizzato un messaggio e il sistema presupporrà che l'utente abbia fatto clic sul pulsante Annulla della finestra di dialogo stessa. Se questa impostazione non viene impostata, gli utenti potranno aprire le finestre di dialogo di selezione file come di consueto.</translation>
 <translation id="1885782360784839335">Attiva la visualizzazione di contenuti promozionali a scheda intera</translation>
 <translation id="1888871729456797026">Il token di registrazione della norma relativa alla cloud su desktop</translation>
 <translation id="1894790493260633497">Attiva la modalità di stampa delle immagini di sfondo per impostazione predefinita</translation>
@@ -915,11 +887,6 @@ Se questo criterio viene impostato su False, la Schermata sulla privacy sarà se
 Se questo criterio viene impostato, l'utente non potrà sostituire il valore.
 
 Se questo criterio non viene impostato, la Schermata sulla privacy verrà inizialmente disattivata, ma potrà essere controllata dall'utente.</translation>
-<translation id="2418507228189425036">Consente di disattivare il salvataggio della cronologia del browser in <ph name="PRODUCT_NAME" /> e di impedire agli utenti di modificare questa impostazione.
-
-      Se questa impostazione è attivata, la cronologia di navigazione non viene salvata. Con questa impostazione viene disattivata anche la sincronizzazione delle schede.
-
-      Se questa impostazione è disattivata o non viene impostata, la cronologia di navigazione viene salvata.</translation>
 <translation id="2423038190900972331">Consente di stabilire in che modo <ph name="PRODUCT_NAME" /> verifica eventuali violazioni delle regole relative alla protezione dei dati sensibili nei dati caricati, scaricati, incollati dagli appunti o trascinati.
 
       Se questo criterio non è impostato o è impostato su "Nessuno", <ph name="PRODUCT_NAME" /> non verificherà la presenza di eventuali violazioni delle regole relative alla protezione dei dati sensibili all'interno dei dati.
@@ -947,6 +914,14 @@ Se questo criterio non viene impostato, la Schermata sulla privacy verrà inizia
 
       Quando questa norma è impostata su False, gli utenti non possono utilizzare la funzione Condivisioni file di rete.</translation>
 <translation id="2435052056904485763">Lista consentita server di delega Kerberos</translation>
+<translation id="2439793457499023062">Se questo criterio non viene impostato, nel caso in cui Chrome Software Cleaner dovesse rilevare software indesiderato, a Google potrebbero essere segnalati metadati relativi alla scansione in base al criterio stabilito da SafeBrowsingExtendedReportingEnabled. Chrome Software Cleaner chiederà poi all'utente se vuole ripulire il software indesiderato. L'utente può scegliere se condividere i risultati della pulizia con Google per facilitare l'identificazione di software indesiderato in futuro. Questi risultati contengono metadati di file, estensioni installate automaticamente e chiavi del Registro di sistema, come spiegato nel White paper sulla privacy di Chrome.
+
+      Se il criterio viene disattivato, nel caso in cui Chrome Software Cleaner dovesse rilevare software indesiderato, a Google non verranno segnalati metadati relativi alla scansione, ignorando qualsiasi criterio stabilito da SafeBrowsingExtendedReportingEnabled. Chrome Software Cleaner chiederà all'utente se vuole ripulire il software indesiderato.  I risultati della pulizia non verranno segnalati a Google e l'utente non avrà la possibilità di segnalarli.
+
+
+      Se questo criterio viene attivato, nel caso in cui Chrome Software Cleaner dovesse rilevare software indesiderato, a Google potrebbero essere segnalati metadati relativi alla scansione in base al criterio stabilito da SafeBrowsingExtendedReportingEnabled. Chrome Software Cleaner chiederà all'utente se vuole ripulire il software indesiderato.  I risultati della pulizia verranno segnalati a Google e l'utente non avrà la possibilità di impedire la segnalazione.
+
+      Su <ph name="MS_WIN_NAME" />, questa funzionalità è disponibile soltanto sulle istanze che fanno parte di un dominio <ph name="MS_AD_NAME" />, sono in esecuzione su Windows 10 Pro o sono registrate in Chrome Browser Cloud Management.</translation>
 <translation id="2440773021691931148">Consente di segnalare statistiche hardware e identificatori relativi all'alimentazione.
 
       Se il criterio viene impostato su false o non viene impostato, le statistiche non vengono segnalate.
@@ -990,12 +965,6 @@ Se questo criterio non viene impostato, la Schermata sulla privacy verrà inizia
       Se questo criterio non viene impostato, la funzionalità Click-to-call sarà attiva per impostazione predefinita.</translation>
 <translation id="2482676533225429905">Messaggi nativi</translation>
 <translation id="2483146640187052324">Prevedi le azioni di rete su qualsiasi connessione di rete</translation>
-<translation id="2484208301968418871">Questa norma consente di gestire l'applicazione del filtro di URL di SafeSites.
-      Questo filtro usa l'API Google SafeSearch per classificare gli URL come pornografici o meno.
-
-      Se questa norma non viene configurata o viene impostata su "Non filtrare i siti di contenuti per adulti", i siti non verranno filtrati.
-
-      Se questa norma viene impostata su "Filtra i siti di contenuti per adulti di primo livello", i siti classificati come pornografici verranno filtrati.</translation>
 <translation id="2498238926436517902">Nascondi sempre automaticamente lo shelf</translation>
 <translation id="2502467045153796624">Comportamento del downgrade del canale</translation>
 <translation id="250670737672448119">Consente di attivare la funzione di accessibilità di evidenziazione del cursore di testo.
@@ -1598,13 +1567,6 @@ Se questo criterio viene impostato su False, <ph name="PRODUCT_NAME" /> non util
 <translation id="3417418267404583991">Se questa norma viene impostata su true o non viene configurata, in <ph name="PRODUCT_OS_NAME" /> verranno attivati gli accessi come ospite. Gli accessi come ospite sono sessioni utente anonime che non richiedono password.
 
       Se questa norma viene impostata su false, in <ph name="PRODUCT_OS_NAME" /> non sarà possibile avviare sessioni Ospite.</translation>
-<translation id="3418871497193485241">Consente di imporre su YouTube un livello minimo della Modalità con restrizioni e di impedire agli utenti di scegliere un livello inferiore.
-
-      Se questa impostazione viene impostata su Livello massimo, su YouTube sarà sempre attivo questo livello della Modalità con restrizioni.
-
-      Se questa impostazione viene impostata su Livello medio, l'utente può scegliere il Livello medio o massimo della Modalità con restrizioni su YouTube, ma non può disattivare la modalità.
-
-      Se questa impostazione viene disattivata o non viene impostato alcun valore, la Modalità con restrizioni di YouTube non viene imposta da <ph name="PRODUCT_NAME" />. La Modalità con restrizioni potrebbe essere comunque imposta da norme esterne, ad esempio dalle norme di YouTube.</translation>
 <translation id="3420141485959154417">Se il criterio <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> è attivo, l'assegnazione di un valore al criterio <ph name="DEFAULT_SEARCH_PROVIDER_IMAGE_URL_POLICY_NAME" /> consente di specificare l'URL del motore di ricerca utilizzato per le immagini. Se il criterio <ph name="DEFAULT_SEARCH_PROVIDER_IMAGE_URL_POST_PARMS_POLICY_NAME" /> viene configurato, la ricerca di immagini richiede invece l'utilizzo del metodo POST.
 
       Se il criterio <ph name="DEFAULT_SEARCH_PROVIDER_IMAGE_URL_POLICY_NAME" /> non viene configurato, non viene utilizzata alcuna ricerca di immagini.</translation>
@@ -1684,14 +1646,6 @@ Se questa norma viene impostata su False o non viene impostata, i ritardi di ges
        Il valore <ph name="ALL_EXTENSIONS" /> nella lista bloccata significa che tutte le estensioni vengono bloccate e che gli utenti possono installare solo le estensioni presenti nella lista consentita.
 
        Per impostazione predefinita, tutte le estensioni sono consentite. Se invece non hai consentito estensioni tramite criterio, utilizza l'elenco delle estensioni consentite per modificare il criterio.</translation>
-<translation id="3500732098526756068">Ti consente di controllare l'attivazione dell'avviso di protezione tramite password. La protezione tramite password avvisa gli utenti quando riutilizzano le proprie password protette su siti potenzialmente sospetti.
-
-      Puoi utilizzare le norme "PasswordProtectionLoginURLs" e "PasswordProtectionChangePasswordURL" per configurare la password da proteggere.
-
-      Se questa norma viene impostata su "PasswordProtectionWarningOff", non apparirà alcun avviso di protezione tramite password.
-      Se questa norma viene impostata su "PasswordProtectionWarningOnPasswordReuse", l'avviso di protezione tramite password apparirà quando l'utente riutilizza la propria password protetta su un sito non autorizzato.
-      Se questa norma viene impostata su "PasswordProtectionWarningOnPhishingReuse", l'avviso di protezione tramite password apparirà quando l'utente riutilizza la propria password protetta su un sito di phishing.
-      Se questa norma viene lasciata non impostata, il servizio di protezione tramite password proteggerà esclusivamente le password Google, ma l'utente sarà in grado di modificare questa impostazione.</translation>
 <translation id="3502555714327823858">Consenti tutte le modalità fronte/retro</translation>
 <translation id="350443680860256679">Configura ARC</translation>
 <translation id="350797926066071931">Abilita traduzione</translation>
@@ -1735,6 +1689,13 @@ Se questa norma viene impostata su False o non viene impostata, i ritardi di ges
 <translation id="355118380775352753">Siti web da aprire in un browser alternativo</translation>
 <translation id="3554498762428140109">Attiva Copertura finestra nativa</translation>
 <translation id="3554984410014457319">Consente all'Assistente Google di ascoltare la frase di attivazione vocale</translation>
+<translation id="3562741878192828370">Elenco dei tipi di file che dovrebbero essere aperti automaticamente al termine del download. Il separatore iniziale non deve essere incluso nell'elenco dei tipi di file, quindi usa "txt" anziché ".txt".
+
+      I tipi di file che dovrebbero essere aperti automaticamente saranno comunque soggetti ai controlli attivi di Navigazione sicura e non verranno aperti se non superano tali controlli.
+
+      Se questo criterio non viene impostato, al termine del download verranno aperti automaticamente soltanto i tipi di file per cui l'utente ha già specificato tale tipo di apertura.
+
+      Su <ph name="MS_WIN_NAME" />, questa funzionalità è disponibile soltanto sulle istanze che fanno parte di un dominio <ph name="MS_AD_NAME" />, sono in esecuzione su Windows 10 Pro o sono registrate in Chrome Browser Cloud Management. Su <ph name="MAC_OS_NAME" />, questa funzionalità è disponibile soltanto sulle istanze gestite tramite MDM o aggiunte a un dominio tramite MCX.</translation>
 <translation id="356579196325389849">Gli utenti possono configurare il canale di rilascio di Chrome OS</translation>
 <translation id="3575011234198230041">Autenticazione HTTP</translation>
 <translation id="3577251398714997599">Impostazione annunci per i siti con annunci invasivi</translation>
@@ -2021,13 +1982,6 @@ Se questa norma viene impostata su False o non viene impostata, i ritardi di ges
 <translation id="398884292557092447">Se il criterio viene impostato su true o se non viene configurato, gli utenti possono controllare i suggerimenti di compilazione automatica per le carte di credito nella UI.
 
       Se il criterio è impostato su false, la compilazione automatica non fornisce mai suggerimenti, né compila i dati della carta di credito, né salva dati aggiuntivi della carta di credito che gli utenti potrebbero inviare durante la navigazione sul Web.</translation>
-<translation id="3992309308803906690">Consente di configurare l'elenco di URL di accesso aziendale (solo schemi HTTP e HTTPS). Il servizio di protezione tramite password acquisirà gli hash con salt delle password in questi URL e li userà per il rilevamento del riutilizzo delle password.
-      Per consentire a <ph name="PRODUCT_NAME" /> di acquisire correttamente gli hash con salt delle password, assicurati che le pagine di accesso rispettino le linee guida disponibili all'indirizzo https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Se questa impostazione viene attivata, il servizio di protezione tramite password acquisirà gli hash con salt delle password in questi URL per il rilevamento del riutilizzo delle password.
-      Se questa impostazione viene disattivata o non viene configurata, il servizio di protezione tramite password acquisirà soltanto gli hash con salt delle password sul sito https://accounts.google.com.
-
-      Questo criterio è disponibile esclusivamente per le istanze di Windows che fanno parte di un dominio <ph name="MS_AD_NAME" /> così come per le istanze di Windows 10 Pro o Enterprise registrate per la gestione dei dispositivi. Inoltre è disponibile per le istanze di macOS gestite tramite MDM o aggiunte a un dominio tramite MCX.</translation>
 <translation id="3993187551086357615">Ritarda caricamenti e download finché il risultato dell'analisi non viene reso noto</translation>
 <translation id="3997519162482760140">URL a cui verrà concesso l'accesso ai dispositivi di acquisizione video su pagine di accesso SAML</translation>
 <translation id="4001275826058808087">Gli amministratori IT di dispositivi aziendali possono utilizzare questo flag per stabilire se consentire agli utenti di utilizzare le offerte tramite la registrazione a Chrome OS.
@@ -2422,13 +2376,6 @@ Se questa norma non viene impostata, verranno utilizzate le dimensioni predefini
 <translation id="4649395978608361979">Destinazioni stampanti locali</translation>
 <translation id="4650759511838826572">Disabilita schemi di protocollo dell'URL</translation>
 <translation id="465099050592230505">URL del web store dell'azienda (obsoleta)</translation>
-<translation id="4655140492481307570">Consente di configurare l'URL di modifica della password (solo schemi HTTP e HTTPS). Il servizio di protezione tramite password indirizzerà gli utenti a questo URL per modificare la password, dopo la visualizzazione di un avviso nel browser.
-      Per consentire a <ph name="PRODUCT_NAME" /> di acquisire correttamente l'hash con salt della nuova password in questa pagina di modifica della password, assicurati che tale pagina rispetti le linee guida disponibili all'indirizzo https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Se questa impostazione è attiva, il servizio di protezione tramite password indirizza gli utenti a questo URL per modificare la password, dopo la visualizzazione di un avviso nel browser.
-      Se questa impostazione è disattivata o non configurata, il servizio di protezione tramite password indirizzerà gli utenti alla pagina https://myaccount.google.com per modificare la loro password.
-
-      Questo criterio è disponibile esclusivamente per le istanze di Windows che fanno parte di un dominio <ph name="MS_AD_NAME" /> così come per le istanze di Windows 10 Pro o Enterprise registrate per la gestione dei dispositivi. Inoltre è disponibile per le istanze di macOS gestite tramite MDM o aggiunte a un dominio tramite MCX.</translation>
 <translation id="4661889655253181651">Le impostazioni contenuti consentono di specificare la modalità di gestione di determinati tipi di contenuto (ad esempio Cookie, Immagini o JavaScript).</translation>
 <translation id="4665897631924472251">Impostazioni di gestione delle estensioni</translation>
 <translation id="4666930704271463612">Consente di specificare il sottoinsieme di server di stampa a cui verranno inviate query sulle stampanti.
@@ -2455,12 +2402,6 @@ Se questa norma non viene impostata, verranno utilizzate le dimensioni predefini
 
      Questo criterio è deprecato. Usa il criterio "<ph name="NOTE_TAKING_APPS_LOCK_SCREEN_ALLOWLIST" />".</translation>
 <translation id="4670865688564083639">Minimo:</translation>
-<translation id="4671708336564240458">Ti consente di determinare se evitare l'apertura di nuove finestre o schede da parte di siti con esperienze intrusive.
-
-      Se questa norma è impostata su True, verrà evitata l'apertura di nuove finestre o schede da parte di siti con esperienze intrusive.
-      Tuttavia, questo comportamento non viene attivato se la norma SafeBrowsingEnabled è impostata su False.
-      Se questa norma è impostata su False, verrà consentita l'apertura di nuove finestre o schede da parte di siti con esperienze intrusive.
-      Se questa norma non viene impostata, verrà usata l'impostazione True.</translation>
 <translation id="467236746355332046">Funzionalità supportate:</translation>
 <translation id="4674167212832291997">Consente di personalizzare l'elenco di pattern URL per i quali il rendering deve sempre essere eseguito da <ph name="PRODUCT_FRAME_NAME" />.
 
@@ -2801,11 +2742,6 @@ Se questa norma non viene impostata viene utilizzata la riga di comando predefin
 <translation id="5182483318861266793">Posiziona la shelf sul lato destro dello schermo</translation>
 <translation id="519247340330463721">Configura le norme relative alla Navigazione sicura.</translation>
 <translation id="5196520640744454600">Attiva i tasti permanenti nella schermata di accesso</translation>
-<translation id="5196805177499964601">Blocca la modalità sviluppatore.
-
-      Se questa norma viene impostata su True, <ph name="PRODUCT_OS_NAME" /> impedirà l'avvio del dispositivo in modalità sviluppatore. Il sistema non verrà avviato e verrà visualizzata una schermata di errore quando viene attivata la modalità sviluppatore.
-
-      Se questa norma non è impostata o è impostata su False, la modalità sviluppatore continuerà a essere disponibile per il dispositivo.</translation>
 <translation id="5212118847531454979">Consente di stabilire per quanto tempo, in millisecondi, gli utenti riceveranno notifiche relative alla necessità di riavviare <ph name="PRODUCT_NAME" /> o un dispositivo <ph name="PRODUCT_OS_NAME" /> per applicare un aggiornamento in sospeso.
 
       Durante questo periodo di tempo l'utente verrà informato più volte della necessità di un aggiornamento. Per quanto riguarda i dispositivi <ph name="PRODUCT_OS_NAME" />, nella barra delle applicazioni viene mostrata una notifica relativa al riavvio in base al criterio <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. Per quanto riguarda i browser <ph name="PRODUCT_NAME" />, il menu delle app cambia per indicare che è necessario il riavvio una volta trascorso un terzo del periodo di notifica. Questa notifica cambia colore una volta trascorsi due terzi del periodo di notifica e lo cambia di nuovo al termine dell'intero periodo di notifica. Le notifiche aggiuntive attivate in base al criterio <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> seguono questa stessa pianificazione.
@@ -3173,15 +3109,6 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
           Questa norma viene applicata soltanto se la norma <ph name="POWER_SMART_DIM_ENABLED_POLICY_NAME" /> è disattivata. In caso contrario, questa norma viene ignorata perché il ritardo di oscuramento dello schermo viene stabilito da un modello di machine learning.
 
           Il fattore di regolazione minimo deve essere 100%. Non sono consentiti valori che renderebbero il ritardo di oscuramento dello schermo in modalità di presentazione inferiore al ritardo di oscuramento dello schermo normale.</translation>
-<translation id="5592242031005200087">
-      Se la norma è attivata, ciascuna delle origini denominate all'interno di un elenco separato da virgole verrà eseguita nel proprio processo. Ciò isolerà anche le origini indicate dai sottodomini, ad esempio specificando https://example.com/ si isolerà anche https://foo.example.com/, perché fa parte del sito https://example.com/.
-      Se la norma è disattivata, non avverrà alcun isolamento esplicito dei siti e le prove sul campo di IsolateOriginsAndroid e SitePerProcessAndroid saranno disattivate. Gli utenti potranno ancora attivare IsolateOrigins manualmente, tramite flag da riga di comando.
-      Se la norma non è configurata, l'utente potrà modificare questa impostazione.
-
-      NOTA: su Android, l'isolamento dei siti è sperimentale. L'assistenza verrà migliorata, ma attualmente potrebbe causare problemi di prestazioni.
-
-      NOTA: questa norma viene applicata solo a Chrome su dispositivi Android con più di 1 GB di RAM. Per applicare la norma su piattaforme non Android, utilizza IsolateOrigins.
-      </translation>
 <translation id="5599461642204007579">Impostazioni di gestione di <ph name="MS_AD_NAME" /></translation>
 <translation id="5614865701790130558">Registra eventi per le installazioni di estensioni basate sul criterio</translation>
 <translation id="5618398258385745432">L'impostazione associata veniva utilizzata prima dell'introduzione della riautenticazione per la visualizzazione delle password. Dopodiché l'impostazione e quindi la norma non hanno più inciso sul comportamento di Chrome. Ora Chrome funziona come se la norma fosse impostata in modo da disattivare la visualizzazione delle password in testo non criptato nella pagina delle impostazioni di Gestione password. Ciò significa che la pagina delle impostazioni contiene soltanto un segnaposto e che Chrome mostra la password soltanto se l'utente fa clic su "Mostra" (ed esegue la riautenticazione, se possibile). Di seguito è riportata la descrizione originale della norma.
@@ -3258,16 +3185,6 @@ Se il criterio viene configurato, gli utenti non possono apportare modifiche. Gl
       Tieni presente che i dati relativi all'area di autenticazione vengono memorizzati nella cache anche per gli utenti temporanei. Per impedire che i dati di autenticazione degli utenti temporanei vengano tracciati è necessario disattivare la cache.</translation>
 <translation id="570062449808736508">Se per questa norma viene impostata una stringa, WebView legge le limitazioni relative agli URL del fornitore di contenuti con il nome dell'autorità indicato.</translation>
 <translation id="5708969689202733975">Configura le modalità di sblocco rapido consentite</translation>
-<translation id="5711016543513883877">
-      Se il criterio è attivato, ciascuna delle origini denominate all'interno di un
-      elenco separato da virgole verrà eseguita nel proprio processo. Ciò isolerà anche
-      le origini indicate dai sottodomini, ad esempio specificando https://example.com/
-      si isolerà anche https://foo.example.com/, perché fa parte
-      del sito https://example.com/.
-      Se il criterio non è configurato o è disattivato, l'utente potrà modificare questa impostazione.
-
-      NOTA: questo criterio non viene applicato su Android. Per attivare IsolateOrigins su Android, utilizza l'impostazione del criterio IsolateOriginsAndroid.
-      </translation>
 <translation id="572155275267014074">Impostazioni di Android</translation>
 <translation id="5728154254076636808">Consente la creazione di copie di roaming per i dati dei profili <ph name="PRODUCT_NAME" /></translation>
 <translation id="5732972008943405952">Importa i dati della compilazione automatica dei moduli dal browser predefinito alla prima esecuzione</translation>
@@ -3420,11 +3337,6 @@ Se il criterio viene configurato, gli utenti non possono apportare modifiche. Gl
 <translation id="5921713479449475707">Permetti download di aggiornamento automatico tramite HTTP</translation>
 <translation id="5929855945144989709">Consente ai dispositivi di eseguire macchine virtuali su Chrome OS</translation>
 <translation id="5932767795525445337">Questa policy può essere utilizzata anche per bloccare app per Android.</translation>
-<translation id="5936622343001856595">Forza l'esecuzione delle query in Ricerca Google con l'opzione SafeSearch attiva e impedisce agli utenti di modificare questa impostazione.
-
-      Se attivi l'impostazione, SafeSearch in Ricerca Google è sempre attiva.
-
-      Se disattivi l'impostazione o non imposti un valore, l'utilizzo di SafeSearch non viene forzato in Ricerca Google.</translation>
 <translation id="5946082169633555022">Canale Beta</translation>
 <translation id="5946329690214660966">Imposta una pianificazione personalizzata per verificare la presenza di aggiornamenti</translation>
 <translation id="5951418260805607969">Mostra una notifica quando lo spazio sul disco è in esaurimento</translation>
@@ -3571,15 +3483,6 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 <translation id="6190022522129724693">Impostazione popup predefiniti</translation>
 <translation id="6190367314942602985">Segnala informazioni di identificazione degli utenti</translation>
 <translation id="6195802366906945965">Consente di stabilire se verrà utilizzato lo strumento di verifica dei certificati integrato per verificare i certificati dei server</translation>
-<translation id="6197453924249895891">Consente di concedere alle estensioni l'accesso alle chiavi aziendali.
-
-      Le chiavi sono destinate all'utilizzo aziendale se generate tramite l'API chrome.enterprise.platformKeys su un account gestito. Le chiavi importate o generate in altro modo non sono destinate all'utilizzo aziendale.
-
-      L'accesso a chiavi destinate all'utilizzo aziendale è controllato esclusivamente da questa norma. L'utente non può concedere o revocare l'accesso delle estensioni alle chiavi aziendali.
-
-      Per impostazione predefinita, un'estensione non può utilizzare una chiave destinata all'utilizzo aziendale. Questo equivale a impostare la norma allowCorporateKeyUsage su false per l'estensione in questione.
-
-      Soltanto se la norma allowCorporateKeyUsage relativa a un'estensione viene impostata su true l'estensione può utilizzare qualsiasi chiave della piattaforma contrassegnata per l'utilizzo aziendale per firmare dati arbitrari. Questa autorizzazione dovrebbe essere concessa soltanto se l'estensione è ritenuta attendibile ai fini della protezione della chiave da potenziali attacchi.</translation>
 <translation id="6205094657236844092">Questo criterio consente di specificare un elenco di app web installate automaticamente, senza interazione dell'utente e che non possono essere disinstallate o disattivate dagli utenti.
 
       Ogni voce del criterio è un oggetto con un componente obbligatorio: <ph name="URL_LABEL" /> (l'URL dell'app web da installare) e due componenti facoltativi: <ph name="DEFAULT_LAUNCH_CONTAINER_LABEL" /> (che indica la modalità di apertura dell'app web, ovvero una nuova scheda per impostazione predefinita) e <ph name="CREATE_DESKTOP_SHORTCUT_LABEL" /> (True, se vuoi creare collegamenti sul desktop <ph name="LINUX_OS_NAME" /> e Windows®).
@@ -4588,6 +4491,11 @@ Se l'impostazione viene disattivata, questa funzione non sarà disponibile.</tra
 <translation id="7648907905084499629">Usa il comportamento <ph name="FEATURE_NAME_SAMESITE_BY_DEFAULT_COOKIES" /> per i cookie su tutti i siti</translation>
 <translation id="7651739109954974365">È possibile stabilire se attivare o meno il roaming dei dati per il dispositivo. Se la norma viene impostata su true, il roaming dei dati sarà consentito. Se non viene configurata o viene impostata su false, il roaming dei dati non sarà disponibile.</translation>
 <translation id="7657261947024629645">Ottimizza per ottenere il massimo rendimento.</translation>
+<translation id="7668830462800981702">Se il criterio viene impostato su Attivato, viene eseguita una ricerca predefinita quando un utente inserisce nella barra degli indirizzi un testo che non è un URL. Per specificare il provider di ricerca predefinito, imposta gli altri criteri relativi alla ricerca predefinita. Se non configuri questi criteri, l'utente può scegliere il provider predefinito. Se il criterio viene impostato su Disattivato, non viene eseguita alcuna ricerca quando l'utente inserisce nella barra degli indirizzi un testo che non è un URL.
+
+      Se il criterio viene impostato, gli utenti non possono modificarlo in <ph name="PRODUCT_NAME" />. Se non viene impostato, il provider di ricerca predefinito è attivo e gli utenti possono configurare l'elenco dei provider di ricerca.
+
+      Su <ph name="MS_WIN_NAME" />, questa funzionalità è disponibile soltanto sulle istanze che fanno parte di un dominio <ph name="MS_AD_NAME" />, sono in esecuzione su Windows 10 Pro o sono registrate in Chrome Browser Cloud Management. Su <ph name="MAC_OS_NAME" />, questa funzionalità è disponibile soltanto sulle istanze gestite tramite MDM o aggiunte a un dominio tramite MCX.</translation>
 <translation id="7673194325208122247">Periodo di tempo (millisecondi)</translation>
 <translation id="7677220829878081413">
       Se è impostato su ArcSession, questo criterio forza il riavvio del dispositivo all'uscita dell'utente se Android è stato avviato.
@@ -4654,17 +4562,6 @@ Nota. Attualmente i riavvii automatici vengono attivati soltanto durante la visu
           Se il criterio non è impostato o risulta vuoto, viene utilizzata la pagina predefinita Nuova scheda.
 
           Questo criterio è disponibile esclusivamente per le istanze di Windows che fanno parte di un dominio <ph name="MS_AD_NAME" /> così come per le istanze di Windows 10 Pro o Enterprise registrate per la gestione dei dispositivi. Inoltre è disponibile per le istanze di macOS gestite tramite MDM o aggiunte a un dominio tramite MCX.</translation>
-<translation id="7720830724269154872">Questo criterio è deprecato, al suo posto utilizza <ph name="SAFE_BROWSING_ALLOWLIST_DOMAINS_POLICY_NAME" />.
-
-      Consente di configurare l'elenco dei domini che Navigazione sicura riterrà attendibili. Questo significa quanto segue:
-      Navigazione sicura non controllerà la presenza di risorse pericolose (ad esempio phishing, malware o software indesiderato) se i rispettivi URL corrispondono a questi domini.
-      Il servizio di protezione dei download di Navigazione sicura non controllerà i download ospitati su questi domini.
-      Il servizio di protezione tramite password di Navigazione sicura non controllerà il riutilizzo della password se l'URL della pagina corrisponde a questi domini.
-
-      Se questa impostazione è attivata, Navigazione sicura considererà questi domini attendibili.
-      Se questa impostazione è disattivata o non impostata, a tutte le risorse verrà applicata la protezione predefinita di Navigazione sicura.
-
-      Questo criterio è disponibile esclusivamente per le istanze di Windows che fanno parte di un dominio <ph name="MS_AD_NAME" /> o per le istanze di Windows 10 Pro o Enterprise registrate per la gestione dei dispositivi. Inoltre è disponibile per le istanze di macOS gestite tramite MDM o aggiunte a un dominio tramite MCX.</translation>
 <translation id="7721944091689270995">ID utente <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="7724161903134898864">Se il criterio è impostato su 1, i siti web possono mostrare i popup. Se il criterio è impostato su 2, i popup vengono negati.
 
@@ -4710,31 +4607,9 @@ Per informazioni dettagliate sui pattern <ph name="URL_LABEL" /> validi, visita 
 
           Per impostazione predefinita sono consentiti tutti gli host di messaggi nativi, ma se sono stati bloccati tutti gli host di messaggi nativi in base al criterio, la lista consentita può essere utilizzata per ignorare tale criterio.</translation>
 <translation id="7818131573217430250">Impostazione stato predefinito modalità ad alto contrasto nella schermata di accesso</translation>
-<translation id="7832907442895199611">Questo criterio è deprecato in M83, utilizza invece SafeBrowsingProtectionLevel.
-
-      Consente di attivare la funzione Navigazione sicura di <ph name="PRODUCT_NAME" /> e di impedire agli utenti di modificare questa impostazione.
-
-      Se attivi questa impostazione, la Navigazione sicura è sempre attiva.
-
-      Se la disattivi, Navigazione sicura non è mai attiva.
-
-      Se attivi questa impostazione o la disattivi, gli utenti non potranno modificare o ignorare l'impostazione "Attiva protezione contro phishing e malware" su <ph name="PRODUCT_NAME" />.
-
-      Se questo criterio non viene configurato, l'impostazione verrà attivata, ma gli utenti potranno modificarla.
-
-      Visita il sito https://developers.google.com/safe-browsing per ulteriori informazioni sulla funzionalità Navigazione sicura.
-
-      Se il criterio SafeBrowsingProtectionLevel è impostato, il valore del criterio SafeBrowsingEnabled verrà ignorato.
-
-      Questo criterio è disponibile esclusivamente per le istanze di Windows che fanno parte di un dominio <ph name="MS_AD_NAME" /> così come per le istanze di Windows 10 Pro o Enterprise registrate per la gestione dei dispositivi. Inoltre è disponibile per le istanze di macOS gestite tramite MDM o aggiunte a un dominio tramite MCX.</translation>
 <translation id="7841880500990419427">Versione TLS minima a cui retrocedere</translation>
 <translation id="7846952520291088817">URL per cui vengono esposti IP locali nei candidati ICE WebRTC</translation>
 <translation id="7848641140449742406">Impostazioni del sistema operativo</translation>
-<translation id="7858404742201086014">Se attivi questa impostazione, i plug-in obsoleti vengono utilizzati come normali plug-in.
-
-      Se disattivi questa impostazione, i plug-in obsoleti non vengono utilizzati e agli utenti non è richiesta l'autorizzazione per eseguirli.
-
-      Se questa impostazione non è configurata, agli utenti verrà chiesta l'autorizzazione di eseguire i plug-in obsoleti.</translation>
 <translation id="7863947545897944083">Consente di attivare la funzione di accessibilità ad alto contrasto nella schermata di accesso.
 
           Se questo criterio è impostato su true, l'alto contrasto sarà sempre attivato nella schermata di accesso.
@@ -5252,17 +5127,6 @@ Se questa norma non viene impostata, le pagine saranno sottoposte a scansione pe
       Se il criterio viene impostato su true, le schede che sono in secondo piano da almeno cinque minuti potrebbero essere bloccate. Il blocco delle schede riduce l'utilizzo di CPU, batteria e memoria. <ph name="PRODUCT_NAME" /> usa l'euristica per evitare di bloccare le schede in secondo piano che hanno una funzione utile (ad esempio visualizzare notifiche, riprodurre audio, riprodurre video in streaming). Gli sviluppatori web possono anche disattivare il blocco nei loro siti (https://chromium.googlesource.com/chromium/src/+/HEAD/chrome/browser/performance_manager/docs/freezing_opt_out_opt_in.md).
 
       Se il criterio viene impostato su false, le schede non verranno bloccate.</translation>
-<translation id="8615400197788843468">Consente di attivare la funzione di accesso limitato di <ph name="PRODUCT_NAME" /> in G Suite e di impedire agli utenti di modificare questa impostazione.
-
-      Se l'impostazione viene definita, l'utente potrà accedere alle app Google soltanto usando gli account dei domini specificati (tieni presente che per consentire gli account gmail.com/googlemail.com devi aggiungere "consumer_accounts", senza virgolette, all'elenco di domini).
-
-      Questa impostazione impedirà all'utente di accedere e aggiungere un account secondario su un dispositivo gestito che richiede l'autenticazione di Google, se tale account non appartiene all'elenco sopracitato di domini consentiti. 
-
-      Se l'impostazione viene lasciata vuota/non configurata, l'utente potrà accedere a G Suite con qualsiasi account.
-
-      Questa norma comporta l'aggiunta dell'intestazione X-GoogApps-Allowed-Domains a tutte le richieste HTTP e HTTPS inviate a tutti i domini google.com, come descritto all'indirizzo https://support.google.com/a/answer/1668854.
-
-      L'utente non può modificare o ignorare questa impostazione.</translation>
 <translation id="8625234016727663537">Consente di impostare un elenco di URL che specifica a quali siti verrà concessa automaticamente l'autorizzazione per accedere a un dispositivo USB con gli ID prodotto e fornitore indicati nella schermata di accesso. Perché il criterio sia valido, ogni elemento dell'elenco deve contenere sia dispositivi sia URL. Ogni elemento nei dispositivi può contenere un campo ID fornitore e un campo ID prodotto. Gli eventuali ID omessi verranno considerati caratteri jolly con l'eccezione che non è possibile specificare un ID prodotto senza aver specificato un ID fornitore. In caso contrario, il criterio non sarà valido e verrà ignorato.
 
         Il modello di autorizzazione USB utilizza l'URL del sito richiedente ("URL richiedente") e l'URL del sito frame di livello principale ("URL di incorporamento") per concedere all'URL richiedente l'autorizzazione di accesso al dispositivo USB. L'URL richiedente può essere diverso dall'URL di incorporamento quando il sito richiedente viene caricato in un iframe. Di conseguenza il campo "URL" può contenere fino a due stringhe URL delimitate da virgola per specificare rispettivamente l'URL richiedente e l'URL di incorporamento. Se è specificato un solo URL, l'accesso ai dispositivi USB corrispondenti viene concesso quando l'URL del sito richiedente corrisponde all'URL, a prescindere dallo stato di incorporamento. Gli URL in "URL" devono essere validi, altrimenti il criterio viene ignorato.
@@ -5308,19 +5172,6 @@ Se l'impostazione viene impostata su true, o se non viene impostata, l'attestazi
 <translation id="8705895771006864851">Se il criterio viene impostato su True, agli utenti viene fornita una funzionalità di traduzione, quando opportuno, tramite una barra degli strumenti di traduzione integrata in <ph name="PRODUCT_NAME" /> e un'opzione di traduzione nel menu contestuale visualizzabile facendo clic con il pulsante destro del mouse. Se il criterio viene impostato su False, tutte le funzionalità di traduzione integrate vengono disattivate.
 
       Se imposti il criterio, gli utenti non possono modificare questa funzione. Se non viene impostato, gli utenti possono cambiare l'impostazione.</translation>
-<translation id="8733448613597049197">Attiva i rapporti estesi su Navigazione sicura di <ph name="PRODUCT_NAME" /> e impedisce agli utenti di modificare questa impostazione.
-
-      I rapporti estesi inviano ai server di Google alcune informazioni di sistema e i contenuti della pagina per contribuire a rilevare app e siti pericolosi.
-
-      Se l'impostazione è configurata su True, i rapporti verranno creati e inviati a seconda delle necessità (ad esempio, quando viene mostrato un annuncio interstitial di sicurezza).
-
-      Se l'impostazione è configurata su False, i rapporti non vengono inviati.
-
-      Se la norma è impostata su True o False, l'utente non potrà modificare l'impostazione.
-
-      Se la norma non viene impostata, l'utente potrà modificare l'impostazione e decidere se inviare rapporti o meno.
-
-      Visita il sito https://developers.google.com/safe-browsing per avere ulteriori informazioni sulla funzione Navigazione sicura.</translation>
 <translation id="8736538322216687231">Imponi livello minimo della Modalità con restrizioni di YouTube</translation>
 <translation id="8745669971728319820">Questo criterio consente di stabilire se segnalare o meno le informazioni relative a estensioni e plug-in.
 
@@ -5331,13 +5182,6 @@ Se l'impostazione viene impostata su true, o se non viene impostata, l'attestazi
 
       Questo criterio viene applicato soltanto se la macchina viene registrata con il criterio <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> per <ph name="PRODUCT_NAME" />.
       Questo criterio viene sempre applicato per <ph name="PRODUCT_OS_NAME" />.</translation>
-<translation id="8749370016497832113">Consente di eliminare la cronologia del browser e la cronologia dei download in <ph name="PRODUCT_NAME" /> e impedisce agli utenti di modificare questa impostazione.
-
-      Tieni presente che anche quando questa norma è disattivata, non è garantita la memorizzazione della cronologia di navigazione e della cronologia dei download: gli utenti potrebbero essere in grado di modificare o eliminare direttamente i file dei database delle cronologie e il browser stesso potrebbe far scadere o archiviare alcuni o tutti gli elementi della cronologia in qualsiasi momento.
-
-      Se questa impostazione è attivata o non è impostata, la cronologia di navigazione e la cronologia dei download possono essere eliminate.
-
-      Se questa impostazione è disattivata, la cronologia di navigazione e la cronologia dei download non possono essere eliminate.</translation>
 <translation id="8749536858950505376">Se il criterio è impostato su True, il cursore grande rimane attivato. Se il criterio è impostato su False, il cursore grande rimane disattivato.
 
       Se imposti il criterio, gli utenti non possono modificare la funzionalità. Se il criterio non è impostato, il cursore grande risulta disattivato all'inizio, ma gli utenti possono attivarlo in qualsiasi momento.</translation>
@@ -5489,11 +5333,6 @@ https://www.w3.org/TR/secure-contexts/
 <translation id="8943934315109955032">Non verificare eventuali violazioni delle regole relative alla protezione dei dati sensibili</translation>
 <translation id="8947415621777543415">Segnala posizione del dispositivo</translation>
 <translation id="8948062138228904066">Lista consentita di server di autenticazione</translation>
-<translation id="8949552982791839607">Se disattivato, impedisce la visualizzazione degli avvisi sulla sicurezza quando Chrome viene avviato con alcuni flag della riga di comando potenzialmente pericolosi.
-
-          Se attivato o non impostato, gli avvisi sulla sicurezza vengono visualizzati quando vengono utilizzati determinati flag della linea di comando per avviare Chrome.
-
-          Questo criterio è disponibile esclusivamente per le istanze di Windows che fanno parte di un dominio <ph name="MS_AD_NAME" /> così come per le istanze di Windows 10 Pro o Enterprise registrate per la gestione dei dispositivi. Inoltre è disponibile per le istanze di macOS gestite tramite MDM o aggiunte a un dominio tramite MCX.</translation>
 <translation id="8951350807133946005">Impostazione directory della cache su disco</translation>
 <translation id="8952317565138994125">Consente di disattivare la sincronizzazione dei dati in <ph name="PRODUCT_NAME" /> tramite servizi di sincronizzazione in hosting su Google e di impedire agli utenti di modificare questa impostazione.
 

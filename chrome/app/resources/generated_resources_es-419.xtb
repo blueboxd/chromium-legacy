@@ -3,6 +3,7 @@
 <translationbundle lang="es-419">
 <translation id="1001307489511021749">Se sincronizarán tus apps, opciones de configuración y otras personalizaciones en todos los dispositivos con el Sistema operativo Chrome a los que hayas accedido con tu Cuenta de Google.</translation>
 <translation id="1003088604756913841">Abrir vínculo en una ventana nueva de <ph name="APP" /></translation>
+<translation id="1003363546227723021">Cuando la pantalla está inactiva, muestra fotos, la hora, información de los medios y el clima</translation>
 <translation id="1004218526896219317">Acceso al sitio</translation>
 <translation id="1005274289863221750">Usar tu micrófono y tu cámara</translation>
 <translation id="1005333234656240382">¿Quieres habilitar la depuración de adb?</translation>
@@ -94,6 +95,7 @@
 <translation id="1108600514891325577">&amp;Interrumpir</translation>
 <translation id="1110155001042129815">Esperar</translation>
 <translation id="1112420131909513020">La pestaña en segundo plano está usando Bluetooth</translation>
+<translation id="1113892970288677790">Imágenes y obras de arte seleccionadas especialmente</translation>
 <translation id="1114102982691049955"><ph name="PRINTER_MANUFACTURER" /> <ph name="PRINTER_MODEL" /> (USB)</translation>
 <translation id="1114202307280046356">Diamante</translation>
 <translation id="1114335938027186412">La computadora contiene un dispositivo de seguridad del Módulo de plataforma segura (TPM) que se usa para implementar varias funciones clave de seguridad en el Sistema operativo Chrome. Para obtener más información, visita el Centro de ayuda de Chromebook: https://support.google.com/chromebook/?p=tpm.</translation>
@@ -201,6 +203,7 @@
 <translation id="1224275271335624810">Más rápido</translation>
 <translation id="1225177025209879837">Procesando la solicitud...</translation>
 <translation id="1227507814927581609">Error de autenticación al establecer la conexión con "<ph name="DEVICE_NAME" />".</translation>
+<translation id="1230417814058465809">Se activó la protección estándar. Para obtener más seguridad, usa la protección mejorada.</translation>
 <translation id="1231733316453485619">¿Quieres activar la sincronización?</translation>
 <translation id="1232569758102978740">Sin título</translation>
 <translation id="1233497634904001272">Vuelve a presionar tu llave de seguridad para completar la solicitud.</translation>
@@ -1250,6 +1253,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="249113932447298600">Lo sentimos, el dispositivo <ph name="DEVICE_LABEL" /> no se admite en este momento.</translation>
 <translation id="2492461744635776704">Preparando la solicitud de firma del certificado</translation>
 <translation id="249303669840926644">Error al completar el registro</translation>
+<translation id="2493126929778606526">Tus mejores fotos seleccionadas automáticamente</translation>
 <translation id="2495777824269688114">Obtén respuestas o descubre más funciones. Selecciona "?" para obtener ayuda.</translation>
 <translation id="2496180316473517155">Historial de navegación</translation>
 <translation id="2497229222757901769">Velocidad del mouse</translation>
@@ -1343,6 +1347,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="2604255671529671813">Error de conexión de red</translation>
 <translation id="2606246518223360146">Vincular datos</translation>
 <translation id="2607101320794533334">Información sobre la clave pública del sujeto</translation>
+<translation id="2607968157341167679">No hay álbumes. Crea un álbum en <ph name="LINK_BEGIN" />Google Fotos<ph name="LINK_END" />.</translation>
 <translation id="2609896558069604090">Crear accesos directos...</translation>
 <translation id="2610157865375787051">Suspender</translation>
 <translation id="2610260699262139870">T&amp;amaño real</translation>
@@ -1479,6 +1484,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="2762441749940182211">Cámara bloqueada</translation>
 <translation id="2764786626780673772">Detalles de VPN</translation>
 <translation id="2765217105034171413">Pequeño</translation>
+<translation id="2765729904637714153">Revive tus recuerdos favoritos. Para agregar o editar álbumes, ve a <ph name="LINK_BEGIN" />Google Fotos<ph name="LINK_END" />.</translation>
 <translation id="2766006623206032690">Pe&amp;gar y acceder</translation>
 <translation id="2766161002040448006">Preguntarles a tus padres</translation>
 <translation id="2767127727915954024"><ph name="ORIGIN" /> podrá editar <ph name="FILENAME" /> hasta que cierres todas las pestañas de este sitio</translation>
@@ -2111,6 +2117,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="3566325075220776093">De este dispositivo</translation>
 <translation id="3566721612727112615">No se agregaron sitios</translation>
 <translation id="3569382839528428029">¿Quieres que <ph name="APP_NAME" /> comparta tu pantalla?</translation>
+<translation id="3569407787324516067">Protector de pantalla</translation>
 <translation id="3569682580018832495"><ph name="ORIGIN" /> puede ver los siguientes archivos y carpetas</translation>
 <translation id="3571734092741541777">Configurar</translation>
 <translation id="3574210789297084292">acceder</translation>
@@ -2259,6 +2266,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="3727148787322499904">Si cambias esta configuración, las redes compartidas se verán afectadas</translation>
 <translation id="3727187387656390258">Inspeccionar ventana emergente</translation>
 <translation id="372722114124766626">Solo una vez</translation>
+<translation id="3728188878314831180">Mostrar las notificaciones de tu teléfono</translation>
 <translation id="3728681439294129328">Configurar la dirección de red</translation>
 <translation id="3729303374699765035">Preguntarme cuando un sitio intente conectarse a dispositivos Bluetooth cercanos</translation>
 <translation id="3729506734996624908">Sitios permitidos</translation>
@@ -3383,7 +3391,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="5159419673777902220">Tu padre o madre inhabilitaron los permisos de extensiones</translation>
 <translation id="5160634252433617617">Teclado físico</translation>
 <translation id="5160857336552977725">Accede a tu <ph name="DEVICE_TYPE" />.</translation>
-<translation id="5162905305237671850">Se bloqueó a <ph name="DEVICE_TYPE" /></translation>
+<translation id="5162905305237671850">Se bloqueó <ph name="DEVICE_TYPE" /></translation>
 <translation id="5166596762332123936"><ph name="PLUGIN_NAME" /> se bloqueó porque no está actualizado</translation>
 <translation id="5170568018924773124">Mostrar en carpeta</translation>
 <translation id="5171045022955879922">Buscar o escribir URL</translation>
@@ -3965,7 +3973,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="5877064549588274448">Se cambió el canal. Reinicia el dispositivo para aplicar los cambios.</translation>
 <translation id="5877584842898320529">La impresora seleccionada no está disponible o no se instaló correctamente. <ph name="BR" /> Comprueba tu impresora o selecciona otra.</translation>
 <translation id="5882919346125742463">Redes conocidas</translation>
-<translation id="5883464818836130222">A partir del 31 de diciembre, la impresión desde la nube ya no será compatible. Comunícate con el administrador.</translation>
+<translation id="5883464818836130222">A partir del 31 de diciembre, la impresión desde la nube dejará de ser compatible. Comunícate con el administrador.</translation>
 <translation id="5884474295213649357">Esta pestaña está conectada a un dispositivo USB.</translation>
 <translation id="5886009770935151472">Dedo 1</translation>
 <translation id="5889282057229379085">Cantidad máxima de certificados intermedios: <ph name="NUM_INTERMEDIATE_CA" /></translation>
@@ -4272,7 +4280,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="625369703868467034">Calidad de la red</translation>
 <translation id="6254503684448816922">Compromiso de la clave</translation>
 <translation id="6257602895346497974">Activar la sincronización…</translation>
-<translation id="625895209797312329">No permitir que los sitios usen las fuentes instaladas en tu dispositivo</translation>
+<translation id="625895209797312329">Impedir que los sitios usen las fuentes instaladas en tu dispositivo</translation>
 <translation id="6259104249628300056">Mostrar los dispositivos de la red local</translation>
 <translation id="6262371516389954471">Se suben las copias de seguridad a Google y se encriptan con la contraseña de tu Cuenta de Google.</translation>
 <translation id="6263082573641595914">Versión de entidad de certificación de Microsoft</translation>
@@ -4708,6 +4716,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="6824584962142919697">Analizar elementos</translation>
 <translation id="6825184156888454064">Ordenar por nombre</translation>
 <translation id="6826872289184051766">Verificar mediante USB</translation>
+<translation id="6827623133556594466">Google Cloud Print dejará de ser compatible después del 31 de diciembre. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="6828153365543658583">Restringir el inicio de sesión a los siguientes usuarios:</translation>
 <translation id="6828182567531805778">Ingresa la frase de contraseña para sincronizar tus datos</translation>
 <translation id="682871081149631693">QuickFix</translation>
@@ -5326,6 +5335,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="7605594153474022051">La sincronización no funciona</translation>
 <translation id="7606992457248886637">Autoridades</translation>
 <translation id="7607002721634913082">Detenido</translation>
+<translation id="7608810328871051088">Preferencias de Android</translation>
 <translation id="7609148976235050828">Conéctate a Internet y vuelve a intentarlo.</translation>
 <translation id="7614260613810441905">Preguntar cuando un sitio quiera editar archivos o carpetas de tu dispositivo (recomendado)</translation>
 <translation id="761530003705945209">Crea una copia de seguridad en Google Drive. Restaura tus datos o cambia de dispositivo en cualquier momento con facilidad. Se incluyen datos de apps. Se suben las copias de seguridad a Google y se encriptan con la contraseña de tu Cuenta de Google.</translation>
@@ -5377,7 +5387,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="7664620655576155379">Dispositivo Bluetooth no compatible: "<ph name="DEVICE_NAME" />"</translation>
 <translation id="7665082356120621510">Reservar espacio</translation>
 <translation id="7665369617277396874">Agregar cuenta</translation>
-<translation id="7668002322287525834">{NUM_WEEKS,plural, =1{Devuelve el este dispositivo <ph name="DEVICE_TYPE" /> en el transcurso de {NUM_WEEKS} semana}other{Devuelve este dispositivo <ph name="DEVICE_TYPE" /> en el transcurso de {NUM_WEEKS} semanas}}</translation>
+<translation id="7668002322287525834">{NUM_WEEKS,plural, =1{Devuelve el dispositivo <ph name="DEVICE_TYPE" /> en el transcurso de {NUM_WEEKS} semana}other{Devuelve el dispositivo <ph name="DEVICE_TYPE" /> en el transcurso de {NUM_WEEKS} semanas}}</translation>
 <translation id="7669825497510425694">{NUM_ATTEMPTS,plural, =1{El PIN es incorrecto. Te queda un intento.}other{El PIN es incorrecto. Te quedan # intentos.}}</translation>
 <translation id="7671130400130574146">Usar la barra de título y los bordes del sistema</translation>
 <translation id="767127784612208024">Toca para confirmar que quieres restablecer la llave</translation>
@@ -5585,7 +5595,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="7893008570150657497">Acceder a fotos, música y otros medios desde tu computadora</translation>
 <translation id="7893153962594818789">Bluetooth está desactivado en esta <ph name="DEVICE_TYPE" />. Ingresa tu contraseña y activa Bluetooth.</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME" /> (predeterminado)</translation>
-<translation id="7897865097438730075">A partir del 31 de diciembre, Google Cloud Print ya no estará disponible. Comunícate con el administrador.</translation>
+<translation id="7897865097438730075">A partir del 31 de diciembre, Google Cloud Print dejará de ser compatible. Comunícate con el administrador.</translation>
 <translation id="7897900149154324287">En el futuro, asegúrate de quitar el dispositivo extraíble desde la aplicación Archivos antes de desconectarlo. De lo contario, es posible que pierdas datos.</translation>
 <translation id="7898627924844766532">Mantener en la barra de herramientas</translation>
 <translation id="7898725031477653577">Traducir siempre</translation>
@@ -5699,7 +5709,6 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8028060951694135607">Recuperación de claves de Microsoft</translation>
 <translation id="8028803902702117856">Descargando <ph name="SIZE" />, <ph name="FILE_NAME" /></translation>
 <translation id="8028993641010258682">Tamaño</translation>
-<translation id="8030656706657716245">Agregar impresora</translation>
 <translation id="8030852056903932865">Aprobar</translation>
 <translation id="8032244173881942855">No se puede transmitir la pestaña</translation>
 <translation id="8033827949643255796">seleccionados</translation>
@@ -5724,7 +5733,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8054563304616131773">Ingresa una dirección de correo electrónico válida.</translation>
 <translation id="8054921503121346576">Teclado USB conectado</translation>
 <translation id="8058655154417507695">Año de vencimiento</translation>
-<translation id="8058811362315390556">Google Cloud Print ya no estará disponible después del 31 de diciembre</translation>
+<translation id="8058811362315390556">Google Cloud Print dejará de ser compatible después del 31 de diciembre</translation>
 <translation id="8059417245945632445">&amp;Inspeccionar dispositivos</translation>
 <translation id="8059456211585183827">No hay impresoras disponibles para guardar.</translation>
 <translation id="8061091456562007989">Deshacer el cambio</translation>
@@ -5856,6 +5865,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8225753906568652947">Canjear tus ofertas</translation>
 <translation id="8226222018808695353">Prohibido</translation>
 <translation id="8226619461731305576">Cola</translation>
+<translation id="8226628635270268143">Elige tus fotos y álbumes favoritos</translation>
 <translation id="8226742006292257240">A continuación verás la contraseña TPM, generada al azar, que se le ha asignado a tu equipo:</translation>
 <translation id="8227119283605456246">Adjuntar un archivo</translation>
 <translation id="8229943166551236192">Se borrarán los datos del dispositivo en 24 horas</translation>
@@ -6187,7 +6197,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8648544143274677280"><ph name="SITE_NAME" /> desea hacer lo siguiente: <ph name="FIRST_PERMISSION" />, <ph name="SECOND_PERMISSION" /> y más</translation>
 <translation id="8650543407998814195">Si bien ya no puedes acceder a tu perfil anterior, aún puedes quitarlo.</translation>
 <translation id="8651585100578802546">Volver a cargar esta página</translation>
-<translation id="8651940856056821914">Chrome crea automáticamente subtítulos mediante Subtitulado instantáneo (disponible por el momento solo en inglés)</translation>
+<translation id="8651940856056821914">Chrome crea subtítulos automáticamente mediante Subtitulado instantáneo (disponible por el momento solo en inglés)</translation>
 <translation id="8652400352452647993">Error al empaquetar extensiones</translation>
 <translation id="8654151524613148204">El archivo es demasiado grande para que tu equipo lo procese.</translation>
 <translation id="8655295600908251630">Canal</translation>
@@ -6354,6 +6364,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="882854468542856424">No permitir que ningún sitio intente conectarse a dispositivos Bluetooth cercanos</translation>
 <translation id="8828933418460119530">Nombre de DNS</translation>
 <translation id="883062543841130884">Sustituciones</translation>
+<translation id="8830779999439981481">Reiniciando para aplicar actualizaciones</translation>
 <translation id="8830796635868321089">La búsqueda de actualizaciones no pudo usar la configuración del servidor proxy actual. Ajusta tu <ph name="PROXY_SETTINGS_LINK_START" />configuración de proxy<ph name="PROXY_SETTINGS_LINK_END" />.</translation>
 <translation id="8831140208248705279">Tu <ph name="DEVICE_TYPE" /> y tu teléfono Android trabajan mejor juntos. Conéctalos para poder enviar mensajes de texto desde la computadora, compartir la conexión de Internet y desbloquear tu <ph name="DEVICE_TYPE" /> con el teléfono.<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />Más información<ph name="LINK_END" /></translation>
 <translation id="8834039744648160717"><ph name="USER_EMAIL" /> controla la configuración de la red.</translation>
@@ -6651,7 +6662,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="9209563766569767417">Revisando la configuración del contenedor de Linux</translation>
 <translation id="9209689095351280025">Los sitios no pueden usar cookies para rastrearte en la Web</translation>
 <translation id="9211177926627870898">Actualización necesaria</translation>
-<translation id="9211904674129619383">A partir del 31 de diciembre, la impresión desde la nube ya no será compatible. <ph name="BEGIN_LINK_LEARN_MORE" />Más información<ph name="END_LINK_LEARN_MORE" /></translation>
+<translation id="9211904674129619383">A partir del 31 de diciembre, la impresión desde la nube dejará de ser compatible. <ph name="BEGIN_LINK_LEARN_MORE" />Más información<ph name="END_LINK_LEARN_MORE" /></translation>
 <translation id="9214520840402538427">¡Vaya! Se ha agotado el tiempo de la inicialización de los atributos de tiempo de instalación. Comunícate con el representante de asistencia.</translation>
 <translation id="9214695392875603905">Cupcake</translation>
 <translation id="9215293857209265904">"<ph name="EXTENSION_NAME" />" agregada</translation>

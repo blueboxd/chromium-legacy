@@ -3,6 +3,7 @@
 <translationbundle lang="sr">
 <translation id="1001307489511021749">Апликације, подешавања и друга прилагођавања ће се синхронизовати на свим Chrome ОС уређајима на којима сте пријављени помоћу Google налога.</translation>
 <translation id="1003088604756913841">Отвори линк у новом <ph name="APP" /> прозору</translation>
+<translation id="1003363546227723021">Када је екран неактиван, приказују се слике, време, временска прогноза и информације о медијском садржају</translation>
 <translation id="1004218526896219317">Приступ сајту</translation>
 <translation id="1005274289863221750">Коришћење микрофона и камере</translation>
 <translation id="1005333234656240382">Желите да омогућите ADB отклањање грешака?</translation>
@@ -94,6 +95,7 @@
 <translation id="1108600514891325577">&amp;Stop (Заустави)</translation>
 <translation id="1110155001042129815">Сачекај</translation>
 <translation id="1112420131909513020">Картица у позадини користи Bluetooth</translation>
+<translation id="1113892970288677790">Одаберите неке од изабраних илустрација и слика</translation>
 <translation id="1114102982691049955"><ph name="PRINTER_MANUFACTURER" /> <ph name="PRINTER_MODEL" /> (USB)</translation>
 <translation id="1114202307280046356">Дијамант</translation>
 <translation id="1114335938027186412">Рачунар садржи безбедносни уређај са модулом поуздане платформе (TPM), који се користи за примену многих безбедносних функција од суштинске важности у Chrome ОС-у. Посетите Центар за помоћ за Chromebook да бисте сазнали више: https://support.google.com/chromebook/?p=tpm</translation>
@@ -201,6 +203,7 @@
 <translation id="1224275271335624810">Најбрже</translation>
 <translation id="1225177025209879837">Обрада захтева...</translation>
 <translation id="1227507814927581609">Потврда аутентичности током повезивања са „<ph name="DEVICE_NAME" />“ није успела.</translation>
+<translation id="1230417814058465809">Стандардна заштита је укључена. Користите напредну заштиту да бисте се додатно заштитили.</translation>
 <translation id="1231733316453485619">Желите ли да укључите синхронизацију?</translation>
 <translation id="1232569758102978740">Без наслова</translation>
 <translation id="1233497634904001272">Поново додирните безбедносни кључ да бисте довршили захтев.</translation>
@@ -1250,6 +1253,7 @@
 <translation id="249113932447298600">Жао нам је, уређај <ph name="DEVICE_LABEL" /> тренутно није подржан.</translation>
 <translation id="2492461744635776704">Припрема се захтев за потписивање сертификата</translation>
 <translation id="249303669840926644">Није могуће довршити регистрацију</translation>
+<translation id="2493126929778606526">Најбоље аутоматски изабране слике</translation>
 <translation id="2495777824269688114">Откријте још функција или добијте одговоре. Изаберите „?“ да бисте добили помоћ.</translation>
 <translation id="2496180316473517155">Историја прегледања</translation>
 <translation id="2497229222757901769">Брзина миша</translation>
@@ -1343,6 +1347,7 @@
 <translation id="2604255671529671813">Грешка мрежне везе</translation>
 <translation id="2606246518223360146">Повежи податке</translation>
 <translation id="2607101320794533334">Информације о јавном кључу субјекта</translation>
+<translation id="2607968157341167679">Нема албума. Направите албум у <ph name="LINK_BEGIN" />Google сликама<ph name="LINK_END" />.</translation>
 <translation id="2609896558069604090">Направи пречице...</translation>
 <translation id="2610157865375787051">Спавање</translation>
 <translation id="2610260699262139870">A&amp;ctual Size (Стварна величина)</translation>
@@ -1479,6 +1484,7 @@
 <translation id="2762441749940182211">Камера је блокирана</translation>
 <translation id="2764786626780673772">Детаљи о VPN-у</translation>
 <translation id="2765217105034171413">Мала</translation>
+<translation id="2765729904637714153">Поново проживите омиљене успомене. Да бисте додали или изменили албуме, идите у <ph name="LINK_BEGIN" />Google слике<ph name="LINK_END" />.</translation>
 <translation id="2766006623206032690">На&amp;лепи и иди</translation>
 <translation id="2766161002040448006">Замоли родитеља</translation>
 <translation id="2767127727915954024"><ph name="ORIGIN" /> ће моћи да мења датотеку <ph name="FILENAME" /> док не затворите све картице овог сајта</translation>
@@ -2111,6 +2117,7 @@
 <translation id="3566325075220776093">Са овог уређаја</translation>
 <translation id="3566721612727112615">Ниједан сајт није додат</translation>
 <translation id="3569382839528428029">Да ли желите да <ph name="APP_NAME" /> дели екран?</translation>
+<translation id="3569407787324516067">Чувар екрана</translation>
 <translation id="3569682580018832495"><ph name="ORIGIN" /> може да прегледа датотеке и директоријуме у наставку</translation>
 <translation id="3571734092741541777">Подеси</translation>
 <translation id="3574210789297084292">пријави ме</translation>
@@ -2259,6 +2266,7 @@
 <translation id="3727148787322499904">Ако промените ово подешавање, то ће утицати на све дељене мреже</translation>
 <translation id="3727187387656390258">Испитај искачући прозор</translation>
 <translation id="372722114124766626">Само једном</translation>
+<translation id="3728188878314831180">да преслика обавештења са вашег телефона</translation>
 <translation id="3728681439294129328">Конфигуриши мрежну адресу</translation>
 <translation id="3729303374699765035">Питај када сајт жели да открије Bluetooth уређаје у близини</translation>
 <translation id="3729506734996624908">Дозвољени сајтови</translation>
@@ -4709,6 +4717,7 @@
 <translation id="6824584962142919697">&amp;Провери елементе</translation>
 <translation id="6825184156888454064">Сортирај према називу</translation>
 <translation id="6826872289184051766">Потврди помоћу USB-а</translation>
+<translation id="6827623133556594466">Google Cloud штампање више неће бити подржано од 31. децембра. <ph name="BEGIN_LINK" />Сазнајте више<ph name="END_LINK" /></translation>
 <translation id="6828153365543658583">Ограничи пријављивање на следеће кориснике:</translation>
 <translation id="6828182567531805778">Унесите приступну фразу да бисте синхронизовали податке</translation>
 <translation id="682871081149631693">Брзо решавање проблема</translation>
@@ -5327,6 +5336,7 @@
 <translation id="7605594153474022051">Синхронизација не функционише</translation>
 <translation id="7606992457248886637">Ауторитети за сертификате</translation>
 <translation id="7607002721634913082">Паузирано</translation>
+<translation id="7608810328871051088">Android подешавања</translation>
 <translation id="7609148976235050828">Повежите се на интернет и пробајте поново.</translation>
 <translation id="7614260613810441905">Питај када сајт жели да измени датотеке или директоријуме на уређају (препоручено)</translation>
 <translation id="761530003705945209">Правите резервне копије на Google диску. Лако вратите податке или пређите на други уређај у било ком тренутку. Резервна копија обухвата податке апликација. Резервне копије се отпремају на Google и шифрују помоћу лозинке за Google налог.</translation>
@@ -5700,7 +5710,6 @@
 <translation id="8028060951694135607">Microsoft опоравак кључа</translation>
 <translation id="8028803902702117856">Преузима се <ph name="SIZE" />, <ph name="FILE_NAME" /></translation>
 <translation id="8028993641010258682">Величина</translation>
-<translation id="8030656706657716245">Додај штампач</translation>
 <translation id="8030852056903932865">Одобри</translation>
 <translation id="8032244173881942855">Није успело пребацивање картице.</translation>
 <translation id="8033827949643255796">изабрано</translation>
@@ -5725,7 +5734,7 @@
 <translation id="8054563304616131773">Унесите важећу имејл адресу</translation>
 <translation id="8054921503121346576">USB тастатура је повезана</translation>
 <translation id="8058655154417507695">Година истека</translation>
-<translation id="8058811362315390556">Google Cloud штампање више неће бити подржано од 31. децембра</translation>
+<translation id="8058811362315390556">Google Cloud штампање ће бити подржано до 31. децембра</translation>
 <translation id="8059417245945632445">&amp;Испитај уређаје</translation>
 <translation id="8059456211585183827">Нема доступних штампача за чување.</translation>
 <translation id="8061091456562007989">Поништи измене</translation>
@@ -5857,6 +5866,7 @@
 <translation id="8225753906568652947">Искористите понуде</translation>
 <translation id="8226222018808695353">Забрањено је</translation>
 <translation id="8226619461731305576">Ред</translation>
+<translation id="8226628635270268143">Одаберите омиљене слике и албуме</translation>
 <translation id="8226742006292257240">У наставку је насумично генерисана TPM лозинка која је додељена рачунару:</translation>
 <translation id="8227119283605456246">Приложи датотеку</translation>
 <translation id="8229943166551236192">Подаци са уређаја ће бити избрисани за 24 сата</translation>
@@ -6355,6 +6365,7 @@
 <translation id="882854468542856424">Не дозвољавај ниједном сајту да открива Bluetooth уређаје у близини</translation>
 <translation id="8828933418460119530">Име DNS-а</translation>
 <translation id="883062543841130884">Замене</translation>
+<translation id="8830779999439981481">Рестартује се да би се применила ажурирања</translation>
 <translation id="8830796635868321089">Провера ажурирања није успела помоћу актуелних подешавања проксија. Прилагодите <ph name="PROXY_SETTINGS_LINK_START" />подешавања проксија<ph name="PROXY_SETTINGS_LINK_END" />.</translation>
 <translation id="8831140208248705279"><ph name="DEVICE_TYPE" /> и Android телефон боље раде заједно. Повежите их да бисте могли да шаљете SMS-ове помоћу рачунара, делите интернет везу и откључавате <ph name="DEVICE_TYPE" /> помоћу телефона.<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />Сазнајте више<ph name="LINK_END" /></translation>
 <translation id="8834039744648160717">Конфигурацију мреже контролише <ph name="USER_EMAIL" />.</translation>

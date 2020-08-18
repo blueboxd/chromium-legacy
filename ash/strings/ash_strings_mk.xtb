@@ -40,6 +40,7 @@
 <translation id="1302880136325416935">Прикажи ги поставките за Bluetooth. <ph name="STATE_TEXT" /></translation>
 <translation id="1312604459020188865">Јачина на сигналот: <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="1316069254387866896">Секогаш прикажувај ја полицата</translation>
+<translation id="1333308631814936910"><ph name="DISPLAY_NAME" /> е поврзан</translation>
 <translation id="1341651618736211726">Прелевање</translation>
 <translation id="1346748346194534595">Надесно</translation>
 <translation id="1351937230027495976">Собери го менито</translation>
@@ -370,6 +371,7 @@
 <translation id="5114495209940374989">Слики од екранот</translation>
 <translation id="5136175204352732067">Поврзана е друга тастатура</translation>
 <translation id="5168181903108465623">Достапни се уреди за емитување</translation>
+<translation id="5170568018924773124">Прикажи во папка</translation>
 <translation id="5207949376430453814">Нагласи го каретот за текст</translation>
 <translation id="5222676887888702881">Одјави се</translation>
 <translation id="523505283826916779">Поставки за пристапност</translation>
@@ -461,6 +463,7 @@
 <translation id="6288235558961782912"><ph name="USER_EMAIL_ADDRESS" /> може повторно да се додаде подоцна со дозвола од родителот.</translation>
 <translation id="6297287540776456956">Употребете го пенкалото за да изберете регион</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> беше ротирано до <ph name="ROTATION" /></translation>
+<translation id="6315170314923504164">Глас</translation>
 <translation id="6376931439017688372">Bluetooth е вклучен</translation>
 <translation id="6381109794406942707">За да го отклучите уредот, внесете го вашиот PIN.</translation>
 <translation id="639644700271529076">CAPS LOCK е исклучено</translation>
@@ -477,7 +480,7 @@
 <translation id="649452524636452238">PIN-код на паметна картичка</translation>
 <translation id="6501401484702599040">Екранот се емитува на <ph name="RECEIVER_NAME" /></translation>
 <translation id="652139407789908527">Вашиот екран ќе остане затемнет подолго од вообичаено (до една минута) при ова ажурирање. Не притискајте го копчето за вклучување додека ажурирањето е во тек.</translation>
-<translation id="6521655319214113338">Внесување со ракопис</translation>
+<translation id="6527303717912515753">Сподели</translation>
 <translation id="6528179044667508675">Не вознем.</translation>
 <translation id="6537270692134705506">Снимајте екран</translation>
 <translation id="6537924328260219877">Јачина на сигналот: <ph name="SIGNAL_STRENGTH" />, батерија на телефонот: <ph name="BATTERY_STATUS" /></translation>
@@ -559,7 +562,6 @@
 <translation id="7536035074519304529">IP адреса: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">Време за спиење</translation>
 <translation id="7561982940498449837">Затвори го менито</translation>
-<translation id="7562368315689366235">Палета со емотикони</translation>
 <translation id="7564874036684306347">Преместувањето на прозорците на друга работна површина може да доведе до неочекувано однесување. Следните известувања, прозорци и дијалози може да се поделат помеѓу работните површини.</translation>
 <translation id="7568294522609223312">Исклучете ги автоматските кликови</translation>
 <translation id="7568637526529101738">Со кликнување со десното копче или со долго притискање, „Помошникот“ ви прикажува информации, како што се дефиниција или конверзија на единиците за вашиот избор.</translation>
@@ -622,7 +624,6 @@
 <translation id="8152092012181020186">Притиснете Ctrl + W за да затворите.</translation>
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" /> Администраторот управува со поставкава.</translation>
 <translation id="8167567890448493835">Се користи <ph name="LOCALE_NAME" /></translation>
-<translation id="8190698733819146287">Приспособи јазици и внесување...</translation>
 <translation id="8192202700944119416">Известувањата се скриени.</translation>
 <translation id="8196787716797768628">Користете движења за брзо префрлање помеѓу апликациите и за да комуницирате со вашиот Chromebook во режим на таблет.</translation>
 <translation id="8200772114523450471">Продолжи</translation>
@@ -706,6 +707,7 @@
 <translation id="9029474291399787231">Достапно е ажурирање за Adobe Flash Player</translation>
 <translation id="9047624247355796468">Отвори поставки за <ph name="NETWORK_NAME" /></translation>
 <translation id="9056839673611986238">Уредот ќе се врати на фабричките поставки</translation>
+<translation id="9065203028668620118">Измени</translation>
 <translation id="9070640332319875144">Поставки за „Помошникот“</translation>
 <translation id="9072519059834302790"><ph name="TIME_LEFT" /> до празна батерија.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>

@@ -60,6 +60,10 @@ void InstalledAppController::OnGetManifestForRelatedApps(
     std::unique_ptr<AppInstalledCallbacks> callbacks,
     const KURL& url,
     mojom::blink::ManifestPtr manifest) {
+  if (!GetExecutionContext()) {
+    callbacks->OnError();
+    return;
+  }
   Vector<mojom::blink::RelatedApplicationPtr> mojo_related_apps;
   for (const auto& related_application : manifest->related_applications) {
     auto application = mojom::blink::RelatedApplication::New();

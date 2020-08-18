@@ -442,7 +442,7 @@
 <translation id="1521442365706402292">管理证书</translation>
 <translation id="1521774566618522728">今天曾有活动</translation>
 <translation id="152234381334907219">一律不保存</translation>
-<translation id="1523170391134722817">待 12 月过后将不再受支持</translation>
+<translation id="1523170391134722817">12 月之后将不再受支持</translation>
 <translation id="1523978563989812243">文字转语音引擎</translation>
 <translation id="1524430321211440688">键盘</translation>
 <translation id="1524563461097350801">不用了</translation>
@@ -3123,7 +3123,7 @@
 <translation id="4842976633412754305">此网页正试图从未经验证的来源加载脚本。</translation>
 <translation id="4844333629810439236">其他键盘布局</translation>
 <translation id="4846680374085650406">您目前所采用的是管理员的建议设置。</translation>
-<translation id="4847902821209177679">已选中“<ph name="TOPIC_SOURCE" /> - <ph name="TOPIC_SOURCE_DESC" />”，按 Enter 键即可从 <ph name="TOPIC_SOURCE" />中选择影集</translation>
+<translation id="4847902821209177679">已选中 <ph name="TOPIC_SOURCE" /> - <ph name="TOPIC_SOURCE_DESC" />，按 Enter 键即可从 <ph name="TOPIC_SOURCE" />中选择影集</translation>
 <translation id="4848191975108266266">Google 助理“Ok Google”</translation>
 <translation id="4848518990323155912">启用 SIM 卡锁定功能（需要输入 PIN 码才能使用移动数据网络）</translation>
 <translation id="4849286518551984791">协调世界时 (UTC/GMT)</translation>
@@ -3963,7 +3963,7 @@
 <translation id="5877064549588274448">版本已更改。请重新启动设备来应用这些变更。</translation>
 <translation id="5877584842898320529">所选打印机不可用或未正确安装。<ph name="BR" />请检查打印机，或尝试另选一台打印机。</translation>
 <translation id="5882919346125742463">已知网络</translation>
-<translation id="5883464818836130222">待 12 月 31 日过后，云打印将不再受支持。如需了解详情，请联系您的管理员。</translation>
+<translation id="5883464818836130222">12 月 31 日之后，云打印将不再受支持。如需了解详情，请联系您的管理员。</translation>
 <translation id="5884474295213649357">此标签页已连接到 USB 设备。</translation>
 <translation id="5886009770935151472">手指 1</translation>
 <translation id="5889282057229379085">中级 CA 证书数目的上限为：<ph name="NUM_INTERMEDIATE_CA" /></translation>
@@ -4045,7 +4045,7 @@
 <translation id="5979156418378918004">{NUM_EXTENSIONS,plural, =1{您重新开启了 1 个可能有害的扩展程序}other{您重新开启了 {NUM_EXTENSIONS} 个可能有害的扩展程序}}</translation>
 <translation id="5979421442488174909">翻成<ph name="LANGUAGE" />(&amp;T)</translation>
 <translation id="5979469435153841984">要为网页添加书签，请点击地址栏中的星形图标</translation>
-<translation id="5983642582671533177">待 12 月过后，此打印机将不再受支持。如需了解详情，请联系您的管理员。</translation>
+<translation id="5983642582671533177">12 月之后，此打印机将不再受支持。如需了解详情，请联系您的管理员。</translation>
 <translation id="5984222099446776634">最近访问过的内容</translation>
 <translation id="598472838394900788">{0,plural, =1{无痕模式}other{无痕模式（已打开 # 个窗口）}}</translation>
 <translation id="5985458664595100876">网址格式无效。支持的格式为 \\server\share 和 smb://server/share。</translation>
@@ -4185,7 +4185,7 @@
 <translation id="6150961653851236686">将网页翻译成此语言</translation>
 <translation id="6151323131516309312">按 <ph name="SEARCH_KEY" /> 可通过 <ph name="SITE_NAME" /> 进行搜索</translation>
 <translation id="6151771661215463137">“下载”文件夹中已存在此文件。</translation>
-<translation id="6153808139779428578">待 12 月过后，此打印机将不再受支持。<ph name="BEGIN_LINK_LEARN_MORE" />了解详情<ph name="END_LINK_LEARN_MORE" /></translation>
+<translation id="6153808139779428578">12 月之后，此打印机将不再受支持。<ph name="BEGIN_LINK_LEARN_MORE" />了解详情<ph name="END_LINK_LEARN_MORE" /></translation>
 <translation id="6154240335466762404">移除所有端口</translation>
 <translation id="615436196126345398">协议</translation>
 <translation id="6154697846084421647">当前已登录</translation>
@@ -5558,7 +5558,7 @@
 <translation id="7855678561139483478">将标签页移至新窗口</translation>
 <translation id="7857117644404132472">添加例外情况</translation>
 <translation id="7857949311770343000">这是您想要的新标签页吗？</translation>
-<translation id="785948723952233770">待 12 月过后，此选项将不再受支持。如需了解详情，请联系您的管理员。</translation>
+<translation id="785948723952233770">12 月之后，此选项将不再受支持。如需了解详情，请联系您的管理员。</translation>
 <translation id="786073089922909430">服务：<ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="7861215335140947162">下载内容(&amp;D)</translation>
 <translation id="7864539943188674973">停用蓝牙</translation>
@@ -5583,7 +5583,7 @@
 <translation id="7893008570150657497">通过计算机访问照片、音乐和其他媒体</translation>
 <translation id="7893153962594818789">此 <ph name="DEVICE_TYPE" /> 上的蓝牙处于关闭状态。请输入您的密码，然后开启蓝牙。</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME" />（默认）</translation>
-<translation id="7897865097438730075">待 12 月 31 日过后，Google 云打印将不再受支持。如需了解详情，请联系您的管理员。</translation>
+<translation id="7897865097438730075">12 月 31 日之后，Google 云打印将不再受支持。如需了解详情，请联系您的管理员。</translation>
 <translation id="7897900149154324287">日后在拔下您的可移动设备之前，请务必先使用“文件”菜单将其弹出。否则，您的数据可能会丢失。</translation>
 <translation id="7898627924844766532">固定在工具栏中</translation>
 <translation id="7898725031477653577">一律翻译</translation>
@@ -5697,7 +5697,6 @@
 <translation id="8028060951694135607">Microsoft 密钥恢复</translation>
 <translation id="8028803902702117856">正在下载“<ph name="FILE_NAME" />”，大小为 <ph name="SIZE" /></translation>
 <translation id="8028993641010258682">大小</translation>
-<translation id="8030656706657716245">添加打印机</translation>
 <translation id="8030852056903932865">批准</translation>
 <translation id="8032244173881942855">无法投射标签页。</translation>
 <translation id="8033827949643255796">已选中</translation>
@@ -5722,7 +5721,7 @@
 <translation id="8054563304616131773">请输入有效的电子邮件地址</translation>
 <translation id="8054921503121346576">USB键盘已连接</translation>
 <translation id="8058655154417507695">到期年份</translation>
-<translation id="8058811362315390556">待 12 月 31 日过后，Google 云打印将不再受支持</translation>
+<translation id="8058811362315390556">12 月 31 日之后，Google 云打印将不再受支持</translation>
 <translation id="8059417245945632445">检查设备(&amp;I)</translation>
 <translation id="8059456211585183827">没有可保存的打印机。</translation>
 <translation id="8061091456562007989">改回原来的设置</translation>
@@ -5795,7 +5794,7 @@
 <translation id="8141584439523427891">目前正在替代浏览器中打开</translation>
 <translation id="8141725884565838206">管理您的密码</translation>
 <translation id="8143442547342702591">无效的应用</translation>
-<translation id="8143951647992294073">选择“<ph name="TOPIC_SOURCE" /> - <ph name="TOPIC_SOURCE_DESC" />”</translation>
+<translation id="8143951647992294073">选择 <ph name="TOPIC_SOURCE" /> - <ph name="TOPIC_SOURCE_DESC" /></translation>
 <translation id="8146177459103116374">如果您已在此设备上注册，就能<ph name="LINK2_START" />以现有用户的身份登录<ph name="LINK2_END" />。</translation>
 <translation id="8146793085009540321">登录失败，请与管理员联系或重试。</translation>
 <translation id="8148760431881541277">限制登录</translation>
@@ -6305,7 +6304,7 @@
 <translation id="8783834180813871000">输入蓝牙配对码，然后按回车键。</translation>
 <translation id="8784626084144195648">按区段计算的平均值</translation>
 <translation id="8785622406424941542">触控笔</translation>
-<translation id="8786697630358316925">待 12 月过后，此选项将不再受支持。<ph name="BEGIN_LINK_LEARN_MORE" />了解详情<ph name="END_LINK_LEARN_MORE" /></translation>
+<translation id="8786697630358316925">12 月之后，此选项将不再受支持。<ph name="BEGIN_LINK_LEARN_MORE" />了解详情<ph name="END_LINK_LEARN_MORE" /></translation>
 <translation id="8787254343425541995">允许共享网络使用代理</translation>
 <translation id="8791534160414513928">随浏览流量一起发送“不跟踪”请求</translation>
 <translation id="8794025342371547160">受限 IP</translation>
@@ -6648,7 +6647,7 @@
 <translation id="9209563766569767417">正在检查 Linux 容器设置</translation>
 <translation id="9209689095351280025">网站无法使用 Cookie 来跟踪您在网上的活动</translation>
 <translation id="9211177926627870898">需要更新</translation>
-<translation id="9211904674129619383">待 12 月 31 日过后，云打印将不再受支持。<ph name="BEGIN_LINK_LEARN_MORE" />了解详情<ph name="END_LINK_LEARN_MORE" /></translation>
+<translation id="9211904674129619383">12 月 31 日之后，云打印将不再受支持。<ph name="BEGIN_LINK_LEARN_MORE" />了解详情<ph name="END_LINK_LEARN_MORE" /></translation>
 <translation id="9214520840402538427">糟糕！安装时间属性的初始化已过期，请与您的支持代表联系。</translation>
 <translation id="9214695392875603905">纸杯蛋糕</translation>
 <translation id="9215293857209265904">已添加“<ph name="EXTENSION_NAME" />”</translation>

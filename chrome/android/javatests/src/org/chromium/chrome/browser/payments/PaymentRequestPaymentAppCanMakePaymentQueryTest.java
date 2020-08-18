@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.payments;
 
 import androidx.test.filters.MediumTest;
 
-import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -14,7 +13,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.AppPresence;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.FactorySpeed;
@@ -28,8 +26,7 @@ import java.util.concurrent.TimeoutException;
  * A payment integration test for checking whether user can make a payment using a payment app.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        "enable-features=" + ChromeFeatureList.PER_METHOD_CAN_MAKE_PAYMENT_QUOTA})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class PaymentRequestPaymentAppCanMakePaymentQueryTest implements MainActivityStartCallback {
     // Disable animations to reduce flakiness.
     @ClassRule
@@ -41,11 +38,6 @@ public class PaymentRequestPaymentAppCanMakePaymentQueryTest implements MainActi
 
     @Override
     public void onMainActivityStarted() {}
-
-    @Before
-    public void setUp() {
-        PaymentRequestImpl.setIsLocalCanMakePaymentQueryQuotaEnforcedForTest();
-    }
 
     @Test
     @MediumTest

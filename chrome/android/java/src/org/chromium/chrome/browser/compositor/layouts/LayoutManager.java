@@ -129,6 +129,7 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
     private final OverlayPanelManager mOverlayPanelManager;
     private TopToolbarOverlayCoordinator mToolbarOverlay;
     private SceneOverlay mStatusIndicatorSceneOverlay;
+    private SceneOverlay mGestureNavigationOverscrollGlow;
 
     /** A delegate for interacting with the Contextual Search manager. */
     protected ContextualSearchManagementDelegate mContextualSearchDelegate;
@@ -978,6 +979,15 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
             addGlobalSceneOverlay(mStatusIndicatorSceneOverlay);
         }
         mStaticLayout.addSceneOverlay(mContextualSearchPanel);
+    }
+
+    /**
+     * Add a {@link SceneOverlay} to the front of the list. This means the overlay will be drawn
+     * last and therefore above all other overlays currently in the list.
+     * @param overlay The overlay to be added to the back of the list.
+     */
+    public void addSceneOverlayToFront(SceneOverlay overlay) {
+        mStaticLayout.addSceneOverlay(overlay);
     }
 
     /**

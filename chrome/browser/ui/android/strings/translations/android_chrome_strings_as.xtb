@@ -252,7 +252,6 @@
 <translation id="2942036813789421260">পূৰ্বদৰ্শন টেবটো বন্ধ কৰা আছে</translation>
 <translation id="2956410042958133412"><ph name="PARENT_NAME_1" /> আৰু <ph name="PARENT_NAME_2" />এ এই একাউণ্টটো পৰিচালনা কৰে।</translation>
 <translation id="2962095958535813455">ইনক‘গনিট’ টেবলৈ সলনি কৰক</translation>
-<translation id="2968755619301702150">প্ৰমাণপত্ৰ ভিউৱাৰ</translation>
 <translation id="2979025552038692506">বাছনি কৰা ইনকগনিট’ টেব</translation>
 <translation id="2987620471460279764">অন্য ডিভাইচৰ পৰা শ্বেয়াৰ কৰা পাঠ</translation>
 <translation id="2989523299700148168">শেহতীয়াকৈ চোৱা</translation>
@@ -453,6 +452,7 @@
 <translation id="4605958867780575332">আঁতৰোৱা বস্তু: <ph name="ITEM_TITLE" /></translation>
 <translation id="4616150815774728855"><ph name="WEBAPK_NAME" /> খোলক</translation>
 <translation id="4634124774493850572">পাছৱৰ্ড দিয়ক</translation>
+<translation id="4640331037679501949">{NUM_PASSWORDS,plural, =1{১ টা হেক হোৱা পাছৱৰ্ড}one{# টা হেক হোৱা পাছৱৰ্ড}other{# টা হেক হোৱা পাছৱৰ্ড}}</translation>
 <translation id="4650364565596261010">ছিষ্টেম ডিফ’ল্ট</translation>
 <translation id="465657074423018424">সুৰক্ষিত ব্ৰাউজিঙে আপোনাক প্ৰতাৰণামূলক ৱেবছাইটৰ পৰা সুৰক্ষা দিয়ে। আপুনি যদি এইটো অফ কৰে, ব্ৰাউজ কৰোঁতে অতি সাৱধান হওক, বিশেষকৈ পাছৱৰ্ড দিয়াৰ আগত।</translation>
 <translation id="4662373422909645029">উপনামত সংখ্যা থাকিব নোৱাৰে</translation>
@@ -669,7 +669,6 @@
 <translation id="6157392216611456285"><ph name="APP_NAME" /> বাছনি কৰক</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> ডেটা ৰাহি</translation>
 <translation id="6186394685773237175">হেক হোৱা কোনো পাছৱর্ড পোৱা নাই</translation>
-<translation id="6201345951596836663">লিংকটোৰ প্ৰতিলিপি কৰা হ’ল</translation>
 <translation id="6206830853671714236">ডাউনল’ড কৰাৰ সময় বাছনি কৰক</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> নহয় নেকি?</translation>
 <translation id="6218096829563201111">একেধৰণৰ প্ৰ’ডাক্ট বিচাৰক <ph name="BEGIN_NEW" />নতুন<ph name="END_NEW" /></translation>

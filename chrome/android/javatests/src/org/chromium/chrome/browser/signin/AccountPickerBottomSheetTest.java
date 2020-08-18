@@ -18,7 +18,10 @@ import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.AllOf.allOf;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.notNull;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.verify;
 import static org.mockito.MockitoAnnotations.initMocks;
 
@@ -53,6 +56,8 @@ import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.ProfileDataSource;
+import org.chromium.components.signin.base.GoogleServiceAuthError;
+import org.chromium.components.signin.base.GoogleServiceAuthError.State;
 import org.chromium.components.signin.test.util.FakeAccountManagerFacade;
 import org.chromium.components.signin.test.util.FakeProfileDataSource;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
@@ -260,7 +265,7 @@ public class AccountPickerBottomSheetTest {
         CriteriaHelper.pollUiThread(() -> {
             return !bottomSheetView.findViewById(R.id.account_picker_continue_as_button).isShown();
         });
-        verify(mAccountPickerDelegateMock).signIn(PROFILE_DATA1.getAccountName());
+        verify(mAccountPickerDelegateMock).signIn(eq(PROFILE_DATA1.getAccountName()), any());
         Assert.assertTrue(
                 bottomSheetView.findViewById(R.id.account_picker_signin_spinner_view).isShown());
         // Currently the ProgressBar animation cannot be disabled on android-marshmallow-arm64-rel
@@ -295,7 +300,34 @@ public class AccountPickerBottomSheetTest {
         CriteriaHelper.pollUiThread(() -> {
             return !bottomSheetView.findViewById(R.id.account_picker_continue_as_button).isShown();
         });
-        verify(mAccountPickerDelegateMock).signIn(PROFILE_DATA2.getAccountName());
+        verify(mAccountPickerDelegateMock).signIn(eq(PROFILE_DATA2.getAccountName()), any());
+    }
+
+    @Test
+    @MediumTest
+    public void testSignInGeneralError() {
+        // Throws a connection error during the sign-in action
+        doAnswer(invocation -> {
+            Callback<GoogleServiceAuthError> onSignInErrorCallback = invocation.getArgument(1);
+            onSignInErrorCallback.onResult(new GoogleServiceAuthError(State.CONNECTION_FAILED));
+            return null;
+        })
+                .when(mAccountPickerDelegateMock)
+                .signIn(eq(PROFILE_DATA1.getAccountName()), any());
+
+        buildAndShowCollapsedBottomSheet();
+        View bottomSheetView = mCoordinator.getBottomSheetViewForTesting();
+        ThreadUtils.runOnUiThread(
+                bottomSheetView.findViewById(R.id.account_picker_continue_as_button)::performClick);
+        CriteriaHelper.pollUiThread(() -> {
+            return !bottomSheetView.findViewById(R.id.account_picker_selected_account).isShown()
+                    && bottomSheetView.findViewById(R.id.account_picker_bottom_sheet_subtitle)
+                               .isShown();
+        });
+        onView(withId(R.id.account_picker_bottom_sheet_subtitle)).check(matches(isDisplayed()));
+        onView(withId(R.id.account_picker_horizontal_divider)).check(matches(not(isDisplayed())));
+        onView(withId(R.id.account_picker_selected_account)).check(matches(not(isDisplayed())));
+        onView(withId(R.id.account_picker_signin_spinner_view)).check(matches(not(isDisplayed())));
     }
 
     @Test

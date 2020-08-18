@@ -83,28 +83,6 @@
 <translation id="1095209545735032039">Bloquer l'API Serial sur ces sites</translation>
 <translation id="1096105751829466145">Moteur de recherche par défaut</translation>
 <translation id="1099282607296956954">Activer l'isolation des sites pour tous les sites</translation>
-<translation id="1100570158310952027">
-      Cette règle répertorie les origines (URL) ou les modèles de nom d'hôte (par exemple,
-      "*.example.com") non soumis aux restrictions de sécurité applicables
-      aux origines non sécurisées.
-
-      L'objectif est de permettre aux organisations d'établir une liste blanche des origines
-      pour les anciennes applications qui ne peuvent pas déployer TLS, ou de configurer un serveur
-      de test pour les développements Web internes. Cela permet aux développeurs de tester
-      les fonctionnalités nécessitant des contextes sécurisés sans avoir à déployer TLS
-      sur le serveur de test. Cette règle empêche également que la mention "Non sécurisé"
-      soit attribuée à une origine dans l'omnibox.
-
-      Définir une liste d'URL dans cette règle a le même effet qu'utiliser
-      l'indicateur de ligne de commande "--unsafely-treat-insecure-origin-as-secure"
-      avec une liste des URL en question séparées par une virgule. Si la règle est définie,
-      elle remplace l'indicateur de ligne de commande.
-
-      Cette règle remplace l'indicateur UnsafelyTreatInsecureOriginAsSecure, si celui-ci est spécifié.
-
-      Pour en savoir plus sur les contextes sécurisés, consultez
-      https://www.w3.org/TR/secure-contexts/.
-      </translation>
 <translation id="1107764601871839136">Permet de spécifier la durée de réutilisation (en heures) des objets de stratégie de groupe appelés également "GPO" (Group Policy Objects) qui sont mis en cache. Au lieu de télécharger de nouveau les GPO à chaque récupération de règle, le système peut réutiliser ceux mis en cache tant que leur version ne change pas. Cette règle spécifie la durée maximale pendant laquelle les GPO mis en cache peuvent être réutilisés avant d'être de nouveau téléchargés. Notez que le cache est vidé en cas de redémarrage ou de déconnexion.
 
       Si cette règle n'est pas définie, les GPO mis en cache peuvent être réutilisés dans un délai maximal de 25 heures.
@@ -194,21 +172,6 @@
 <translation id="1291880496936992484">Avertissement : RC4 sera intégralement supprimé de <ph name="PRODUCT_NAME" /> après la version 52 (autour de septembre 2016) et cette règle ne sera plus valable.
 
       Si cette règle n'est pas configurée, ou si elle est définie sur "False", les suites de chiffrement RC4 dans TLS ne seront pas activées. La règle peut être définie sur "True" pour assurer la compatibilité avec un serveur obsolète. Il s'agit là d'une solution provisoire, et le serveur devrait être reconfiguré.</translation>
-<translation id="1294120942989031743">Permet d'établir la liste des applications et des extensions qui s'installent de manière autonome, sans aucune intervention de l'utilisateur, et que celui-ci ne peut pas désinstaller ni désactiver. Les autorisations sont accordées implicitement, y compris pour les API d'extension enterprise.deviceAttributes et enterprise.platformKeys (ces deux API ne sont pas disponibles pour les applications et extensions qui ne sont pas installées d'office).
-
-      Si cette règle n'est pas configurée, aucune application ni extension ne s'installe automatiquement, et l'utilisateur peut désinstaller n'importe quelle application ou extension dans <ph name="PRODUCT_NAME" />.
-
-      Cette règle remplace la règle <ph name="EXTENSION_INSTALL_BLOCKLIST_POLICY_NAME" />. Si une application ou une extension installée d'office est supprimée de cette liste, <ph name="PRODUCT_NAME" /> la désinstalle automatiquement.
-
-      Pour les instances <ph name="MS_WIN_NAME" />, les applications et extensions ne venant pas du Chrome Web Store ne peuvent être installées d'office que si l'instance est associée à un domaine <ph name="MS_AD_NAME" />, exécutée sur Windows 10 Pro ou qu'elle bénéficie de la gestion cloud du navigateur Chrome.
-
-      Pour les instances <ph name="MAC_OS_NAME" />, les applications et extensions ne venant pas du Chrome Web Store ne peuvent être installées d'office que si l'instance est gérée via MDM ou associée à un domaine via MCX.
-
-      Le code source de toute extension peut être modifié par les utilisateurs à l'aide des outils pour les développeurs, ce qui peut entraîner des dysfonctionnements. Si cela pose problème, configurez la règle <ph name="DEVELOPER_TOOLS_DISABLED_POLICY_NAME" />.
-
-      Chaque élément de la règle correspond à une chaîne constituée d'un ID d'extension et éventuellement d'une URL de mise à jour séparés par un point-virgule (;). L'ID d'extension est la chaîne de 32 lettres qui se trouve, par exemple, dans chrome://extensions en mode développeur. Si elle est indiquée, l'URL de mise à jour doit renvoyer à un fichier manifeste au format XML (voir https://developer.chrome.com/extensions/autoupdate). Par défaut, l'URL de mise à jour du Chrome Web Store est utilisée. L'URL de mise à jour spécifiée dans cette règle ne sert que pour l'installation initiale. Toute mise à jour ultérieure de l'extension est effectuée avec l'URL dans le fichier manifeste de l'extension.
-
-       Remarque : cette règle ne s'applique pas en mode navigation privée. Pour en savoir plus sur l'hébergement des extensions, consultez la page https://developer.chrome.com/extensions/hosting.</translation>
 <translation id="1294263471858445589">Activer l'authentification ambiante pour les sessions standards et de navigation privée.</translation>
 <translation id="1295737447968372331">Activer la dictée sur l'écran de connexion</translation>
 <translation id="1297182715641689552">Utiliser un script de proxy .pac</translation>
@@ -253,13 +216,6 @@
           Si cette règle n'est pas configurée, les utilisateurs peuvent installer n'importe quelle extension dans <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1393485621820363363">Imprimantes d'appareils d'entreprise activées</translation>
 <translation id="1397855852561539316">URL de suggestions de recherche du moteur de recherche par défaut</translation>
-<translation id="1404043648050567997">Le service de navigation sécurisée affiche une page d'avertissement lorsque l'utilisateur essaie d'accéder à des sites signalés comme étant potentiellement malveillants. L'activation de ce paramètre bloque la navigation sur ces sites dès lors que l'avertissement apparaît.
-
-      Cette règle empêche l'utilisateur de poursuivre uniquement à la suite d'un avertissement relatif à la navigation sécurisée (en cas de logiciel malveillant ou d'hameçonnage, par exemple). Elle ne s'applique pas en cas de problème lié à un certificat SSL (non valide ou expiré, par exemple).
-
-      Si ce paramètre est désactivé ou n'est pas configuré, l'utilisateur peut choisir d'accéder au site signalé, après avoir lu l'avertissement.
-
-      Consultez la page https://developers.google.com/safe-browsing pour en savoir plus sur la navigation sécurisée.</translation>
 <translation id="1413936351612032792">Transmettre des informations sur l'utilisation des applications Linux</translation>
 <translation id="142346659686073702">Autoriser les utilisateurs non affiliés à utiliser Crostini</translation>
 <translation id="1425551776320718592">Empêche les utilisateurs de cet appareil de recourir au téléchargement indépendant adb, mais sans imposer la réinitialisation Powerwash. Cela peut remettre en question la sécurité de l'appareil.</translation>
@@ -474,15 +430,6 @@ Si vous la désactivez, le défilement des pages Web vers des fragments de texte
 
       Si cette règle est définie sur "True" ou n'est pas configurée, les commandes multimédias restent affichées sur l'écran si l'utilisateur verrouille l'appareil en cours de lecture.
       </translation>
-<translation id="1696540175770069132">Permet de déterminer si <ph name="PRODUCT_NAME" /> peut autoriser le téléchargement de fichiers provenant d'une source fiable sans que la fonctionnalité de navigation sécurisée ne les vérifie.
-
-      Si la règle est définie sur "False", la fonctionnalité de navigation sécurisée n'analyse pas les fichiers téléchargés qui proviennent d'une source fiable.
-
-      Si la règle n'est pas définie (ou qu'elle est définie sur "True"), la fonctionnalité de navigation sécurisée analyse les fichiers téléchargés, même s'ils proviennent d'une source fiable.
-
-      Notez que ces restrictions s'appliquent aux téléchargements déclenchés à partir du contenu d'une page Web et de l'option de menu contextuel "Télécharger le lien". Elles ne s'appliquent pas à l'enregistrement ni au téléchargement de la page actuellement affichée, ni à l'enregistrement au format PDF depuis les options d'impression.
-
-      Cette règle n'est disponible que sur les instances Windows qui sont associées à un domaine <ph name="MS_AD_NAME" />, les instances Windows 10 Pro ou Windows Enterprise qui sont enregistrées pour bénéficier de la gestion des appareils, ou les instances macOS qui sont gérées via MDM ou associées à un domaine via MCX.</translation>
 <translation id="1700811900332333712">Autoriser l'appareil à lancer Powerwash</translation>
 <translation id="1708496595873025510">Définir la restriction liée à la récupération de la valeur de départ des variantes</translation>
 <translation id="171511968762040550">Si cette règle est définie sur "True" ou qu'elle n'est pas configurée, les utilisateurs peuvent ajouter, supprimer ou modifier des favoris.
@@ -569,13 +516,6 @@ Si vous la désactivez, le défilement des pages Web vers des fragments de texte
 
        Si cette règle n'est pas configurée, aucune restriction ne s'applique quant aux utilisateurs autorisés à se connecter. Notez que la création d'utilisateurs nécessite toujours de configurer correctement la règle <ph name="DEVICE_ALLOW_NEW_USERS_POLICY_NAME" />.</translation>
 <translation id="186719019195685253">Indique l'action à effectuer lorsque le délai d'inactivité est atteint en cas de fonctionnement sur une source d'alimentation CA.</translation>
-<translation id="187819629719252111">Autorise l'accès aux fichiers locaux de la machine en autorisant <ph name="PRODUCT_NAME" /> à afficher des boîtes de dialogue de sélection de fichiers. 
-
-Si vous activez ce paramètre, les utilisateurs peuvent ouvrir normalement les boîtes de dialogue de sélection de fichiers. 
-
-Si vous désactivez ce paramètre, chaque fois que l'utilisateur effectue une action entraînant l'ouverture d'une boîte de dialogue de sélection de fichiers (par exemple, une importation de favoris, un téléchargement de fichiers, l'enregistrement de liens, etc.), un message s'affiche à la place et l'utilisateur est supposé avoir cliqué sur "Annuler" dans la boîte de dialogue de sélection de fichiers. 
-
-Si ce paramètre n'est pas défini, les utilisateurs peuvent ouvrir normalement les boîtes de dialogue de sélection de fichiers.</translation>
 <translation id="1885782360784839335">Activer l'affichage de contenus promotionnels en mode Plein onglet</translation>
 <translation id="1888871729456797026">Jeton d'enregistrement des règles relatives au cloud sur ordinateur</translation>
 <translation id="1894790493260633497">Activer le mode d'impression d'images de fond par défaut</translation>
@@ -975,11 +915,6 @@ Si cette règle est définie sur "False", l'écran de confidentialité sera touj
 Lorsque cette règle est définie, l'utilisateur ne peut pas remplacer la valeur.
 
 Si elle n'est pas définie, l'écran de confidentialité est désactivé initialement, mais l'utilisateur peut le modifier.</translation>
-<translation id="2418507228189425036">Désactive l'enregistrement de l'historique du navigateur dans <ph name="PRODUCT_NAME" /> et empêche les utilisateurs de modifier ce paramètre.
-
-      Si ce paramètre est activé, l'historique de navigation n'est pas enregistré. Il désactive également la synchronisation des onglets.
-
-      Si ce paramètre est désactivé ou n'est pas configuré, l'historique de navigation est enregistré.</translation>
 <translation id="2423038190900972331">Contrôle la manière dont <ph name="PRODUCT_NAME" /> vérifie si les données importées, téléchargées, collées à partir du presse-papiers, ou glissées-déposées respectent les règles de protection des données sensibles.
 
       Si cette règle n'est pas définie, ou si elle est définie sur "Aucune", <ph name="PRODUCT_NAME" /> ne vérifie pas si des règles de protection des données sensibles sont enfreintes.
@@ -1057,12 +992,6 @@ Si elle n'est pas définie, l'écran de confidentialité est désactivé initial
       Si vous ne définissez pas cette règle, la fonctionnalité Click to Call est activée par défaut.</translation>
 <translation id="2482676533225429905">Messagerie native</translation>
 <translation id="2483146640187052324">Prédire les actions réseau lors d'une connexion au réseau</translation>
-<translation id="2484208301968418871">Cette règle contrôle l'application du filtre d'URL SafeSites.
-      Ce filtre permet de déterminer si une URL est associée ou non à du contenu pornographique à l'aide de l'API Google Safe Search.
-
-      Lorsque cette règle n'est pas configurée, ou si elle est définie sur "Ne pas filtrer les sites de contenus réservés aux adultes", les sites ne sont pas filtrés.
-
-      Lorsque cette règle est définie sur "Filtrer les sites de premier niveau présentant des contenus réservés aux adultes", les sites identifiés comme étant pornographiques sont filtrés.</translation>
 <translation id="2498238926436517902">Toujours masquer automatiquement l'étagère</translation>
 <translation id="2502467045153796624">Comportement de retour à une version antérieure</translation>
 <translation id="250670737672448119">Active la fonctionnalité d'accessibilité de mise en surbrillance du curseur de saisie.
@@ -1612,11 +1541,6 @@ Si elle n'est pas définie, l'écran de confidentialité est désactivé initial
 Si cette règle est définie sur "True" ou si elle n'est pas définie, <ph name="PRODUCT_NAME" /> est autorisé à utiliser les notifications natives.
 
 Si elle est définie sur "False", <ph name="PRODUCT_NAME" /> n'utilise pas les notifications natives. Le Centre de messagerie de <ph name="PRODUCT_NAME" /> sera utilisé à la place.</translation>
-<translation id="3359446912268498764">Si cette règle est désactivée, Chrome Cleanup ne peut pas analyser le système pour détecter les éventuels logiciels indésirables et les supprimer. Notez également que le déclenchement manuel de Chrome Cleanup depuis la page chrome://settings/cleanup est désactivé.
-
-      Si cette règle est activée ou si elle n'est pas configurée, Chrome Cleanup analyse régulièrement le système pour détecter les éventuels logiciels indésirables. Si Chrome Cleanup en trouve un, l'utilisateur devra confirmer qu'il souhaite le supprimer. Notez également que le déclenchement manuel de Chrome Cleanup depuis la page chrome://settings est activé.
-
-      Sur <ph name="MS_WIN_NAME" />, cette fonctionnalité n'est disponible que pour les instances associées à un domaine <ph name="MS_AD_NAME" />, exécutées sur Windows 10 Pro ou qui bénéficient de la gestion cloud du navigateur Chrome.</translation>
 <translation id="3360093276083825336">Cette règle étant obsolète, elle sera supprimée dans la version 85 de <ph name="PRODUCT_OS_NAME" />. (Veuillez utiliser la règle <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.)
 
           Délai d'inactivité de l'utilisateur au terme duquel un message d'avertissement s'affiche (en cas d'utilisation de la batterie).
@@ -1666,15 +1590,6 @@ Si elle est définie sur "False", <ph name="PRODUCT_NAME" /> n'utilise pas les n
 <translation id="3417418267404583991">Si cette règle est définie sur "true" ou si elle n'est pas configurée, <ph name="PRODUCT_OS_NAME" /> autorise les connexions en mode invité. Les connexions en mode invité correspondent à des sessions utilisateur anonymes et ne nécessitent pas de mot de passe.
 
        Si cette règle est définie sur "false", <ph name="PRODUCT_OS_NAME" /> n'autorise pas les sessions en mode invité.</translation>
-<translation id="3418871497193485241">Applique un mode restreint minimal sur YouTube et empêche l'utilisateur
-      de choisir un mode moins restrictif.
-
-      Si ce paramètre est défini sur "Strict", le mode restreint strict sur YouTube est toujours activé.
-
-      Si ce paramètre est défini sur "Modéré", l'utilisateur peut choisir le mode restreint modéré
-      ou le mode restreint strict sur YouTube, mais il ne peut pas désactiver le mode restreint.
-
-      Si ce paramètre est défini sur "Désactivé" ou si aucune valeur n'est définie, <ph name="PRODUCT_NAME" /> n'applique pas le mode restreint sur YouTube. Toutefois, des règles externes comme les règles de YouTube peuvent toujours appliquer le mode restreint.</translation>
 <translation id="3420141485959154417">Si la règle <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> est activée, la règle <ph name="DEFAULT_SEARCH_PROVIDER_IMAGE_URL_POLICY_NAME" /> vous permet de spécifier l'URL du moteur de recherche utilisé pour la recherche d'image. (Si la règle <ph name="DEFAULT_SEARCH_PROVIDER_IMAGE_URL_POST_PARMS_POLICY_NAME" /> est configurée, les requêtes de recherche d'image sont envoyées à l'aide de la méthode POST.)
 
       Si la règle <ph name="DEFAULT_SEARCH_PROVIDER_IMAGE_URL_POLICY_NAME" /> n'est pas configurée, aucune recherche d'image n'est effectuée.</translation>
@@ -1753,14 +1668,6 @@ Si elle est définie sur "False", <ph name="PRODUCT_NAME" /> n'utilise pas les n
        Si vous saisissez la valeur "<ph name="ALL_EXTENSIONS" />" dans la liste de blocage, toutes les extensions sont bloquées, et les utilisateurs ne peuvent alors installer que les extensions figurant dans la liste d'autorisation.
 
        Par défaut, toutes les extensions sont autorisées. Toutefois, si vous avez interdit les extensions via une règle, utilisez la liste des extensions autorisées pour modifier cette règle.</translation>
-<translation id="3500732098526756068">Vous permet de contrôler le déclenchement de l'avertissement relatif à la protection par mot de passe. La protection par mot de passe affiche une alerte lorsque les utilisateurs réutilisent leur mot de passe protégé sur des sites potentiellement suspects.
-
-      Vous pouvez utiliser les règles "PasswordProtectionLoginURLs" et "PasswordProtectionChangePasswordURL" pour configurer le mot de passe à protéger.
-
-      Si cette règle est définie sur "PasswordProtectionWarningOff", aucun avertissement relatif à la protection par mot de passe ne s'affiche.
-      Si cette règle est définie sur "PasswordProtectionWarningOnPasswordReuse", l'avertissement relatif à la protection par mot de passe s'affiche lorsque l'utilisateur réutilise son mot de passe protégé sur un site qui ne figure pas dans la liste blanche.
-      Si cette règle est définie sur "PasswordProtectionWarningOnPhishingReuse", l'avertissement relatif à la protection par mot de passe s'affiche lorsque l'utilisateur réutilise son mot de passe protégé sur un site d'hameçonnage.
-      Si cette règle n'est pas définie, le service de protection par mot de passe ne protège que les mots de passe Google. Toutefois, l'utilisateur peut modifier ce paramètre.</translation>
 <translation id="3502555714327823858">Autoriser tous les modes recto verso</translation>
 <translation id="350443680860256679">Configurer ARC</translation>
 <translation id="350797926066071931">Activer Google Traduction</translation>
@@ -2098,13 +2005,6 @@ Si elle est définie sur "False", <ph name="PRODUCT_NAME" /> n'utilise pas les n
 <translation id="398884292557092447">Si cette règle est définie sur "True" ou qu'elle n'est pas configurée, les utilisateurs peuvent contrôler les suggestions de saisie automatique pour les cartes de crédit dans l'interface utilisateur.
 
       Si cette règle est définie sur "False", les informations de carte de crédit ne sont jamais suggérées ni saisies automatiquement. De même, les informations complémentaires de carte de crédit que l'utilisateur est susceptible de fournir sur une page Web ne sont pas enregistrées.</translation>
-<translation id="3992309308803906690">Permet de configurer la liste des URL de connexion d'entreprise (protocoles HTTP et HTTPS uniquement). Le service de protection par mot de passe enregistre des copies hachées et après salage des mots de passe au niveau de ces URL afin de détecter les mots de passe réutilisés.
-      Afin que <ph name="PRODUCT_NAME" /> enregistre correctement une copie hachée et après salage de vos mots de passe, vérifiez que vos pages de connexion respectent bien les consignes indiquées à l'adresse https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Si ce paramètre est activé, le service de protection par mot de passe enregistre une copie hachée et après salage des mots de passe au niveau de ces URL afin de détecter les mots de passe réutilisés.
-      Si ce paramètre est désactivé ou qu'il n'est pas défini, le service de protection par mot de passe n'enregistre que les copies hachées et après salage des mots de passe sur https://accounts.google.com.
-
-      Cette règle n'est disponible que sur les instances Windows qui sont associées à un domaine <ph name="MS_AD_NAME" />, les instances Windows 10 Pro ou Windows Enterprise qui sont enregistrées pour bénéficier de la gestion des appareils, ou les instances macOS qui sont gérées via MDM ou associées à un domaine via MCX.</translation>
 <translation id="3993187551086357615">Retarder les importations et les téléchargements jusqu'à ce que les résultats d'analyse soient connus</translation>
 <translation id="3997519162482760140">URL autorisées à accéder aux appareils de capture vidéo sur les pages de connexion SAML</translation>
 <translation id="4001275826058808087">Les administrateurs informatiques des appareils d'entreprise peuvent utiliser cet indicateur pour autoriser ou non les utilisateurs à profiter de leurs offres via le service d'enregistrement de Chrome OS.
@@ -2318,19 +2218,11 @@ Si elle est définie sur "False", <ph name="PRODUCT_NAME" /> n'utilise pas les n
 <translation id="4313767483634435271">Adresse MAC de la station d'accueil désignée de l'appareil</translation>
 <translation id="4322842393287974810">Autoriser l'application kiosque lancée automatiquement sans délai à contrôler la version de l'application <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Ajouter un bouton de déconnexion dans la barre d'état système</translation>
-<translation id="4330372709562934569">Permet d'autoriser les sites répertoriés à envoyer des requêtes aux points de terminaison de réseaux privés à partir de contextes non sécurisés.</translation>
+<translation id="4330372709562934569">Permet d'autoriser les sites répertoriés à envoyer des requêtes à des points de terminaison plus privés du réseau à partir de contextes non sécurisés.</translation>
 <translation id="4332177773549877617">Enregistrer des événements pour les installations d'applications Android</translation>
 <translation id="4341199399451274159">Si la règle <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> est activée, la règle <ph name="DEFAULT_SEARCH_PROVIDER_ENCODINGS_POLICY_NAME" /> vous permet de spécifier les encodages de caractères compatibles avec le moteur de recherche. Ces encodages sont des noms de page de codes, comme UTF-8, GB2312 et ISO-8859-1, qui sont testés dans l'ordre dans lequel ils sont indiqués.
 
       Si la règle <ph name="DEFAULT_SEARCH_PROVIDER_ENCODINGS_POLICY_NAME" /> n'est pas configurée, l'encodage UTF-8 est alors utilisé.</translation>
-<translation id="4343304913975482972">Elle permet d'établir la liste des domaines que la fonctionnalité de navigation sécurisée juge fiables. Autrement dit, cette fonctionnalité ne vérifie pas s'il y a des ressources dangereuses (hameçonnage, logiciels malveillants ou indésirables, par exemple) lorsque le domaine de l'URL concernée figure dans cette liste.
-      Le service de protection des téléchargements dans le cadre de la navigation privée ne vérifiera pas les téléchargements hébergés sur ces domaines.
-      De même, le service de protection par mot de passe ne vérifie pas non plus si un mot de passe est réutilisé lorsque le domaine de l'URL de la page concernée figure dans la liste.
-
-      Si ce paramètre est activé, la fonctionnalité de navigation privée considère ces domaines comme fiables.
-      Si ce paramètre est désactivé ou qu'il n'est pas défini, la fonctionnalité de navigation privée applique son service de protection par défaut à toutes les ressources.
-
-      Sur <ph name="MS_WIN_NAME" />, cette fonctionnalité n'est disponible que pour les instances associées à un domaine <ph name="MS_AD_NAME" />, exécutées sur Windows 10 Pro ou qui bénéficient de la gestion cloud du navigateur Chrome. Sur <ph name="MAC_OS_NAME" />, cette fonctionnalité n'est disponible que pour les instances gérées via MDM ou associées à un domaine via MCX.</translation>
 <translation id="4343382787226139147">Indique les certificats clients qui doivent être enregistrés à l'aide du protocole de gestion des appareils.</translation>
 <translation id="4347908978527632940">Si la valeur est définie sur "True" et si l'utilisateur est supervisé, d'autres applications Android peuvent envoyer une requête concernant les restrictions Web de ce dernier via un fournisseur de contenu.
 
@@ -2515,13 +2407,6 @@ Si cette règle n'est pas configurée, l'utilisateur peut décider d'afficher ou
 <translation id="4649395978608361979">Destinations des imprimantes locales</translation>
 <translation id="4650759511838826572">Désactiver les schémas de protocole d'URL</translation>
 <translation id="465099050592230505">URL de boutique en ligne d'entreprise (abandonné)</translation>
-<translation id="4655140492481307570">Permet de configurer l'URL de modification de mot de passe (protocoles HTTP et HTTPS uniquement). Le service de protection par mot de passe dirige les utilisateurs vers cette URL afin qu'ils modifient leur mot de passe après avoir lu l'avertissement affiché dans le navigateur.
-      Afin que <ph name="PRODUCT_NAME" /> enregistre correctement une copie hachée et après salage du nouveau mot de passe sur la page de modification de celui-ci, vérifiez si cette page respecte bien les consignes indiquées à l'adresse https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
-
-      Si ce paramètre est activé, le service de protection par mot de passe dirige les utilisateurs vers cette URL afin qu'ils modifient leur mot de passe après avoir lu l'avertissement affiché dans le navigateur.
-      Si ce paramètre est désactivé ou n'est pas défini, le service de protection par mot de passe dirige les utilisateurs vers la page https://myaccount.google.com afin qu'ils modifient leur mot de passe.
-
-      Cette règle n'est disponible que sur les instances Windows qui sont associées à un domaine <ph name="MS_AD_NAME" />, les instances Windows 10 Pro ou Windows Enterprise qui sont enregistrées pour bénéficier de la gestion des appareils, ou les instances macOS qui sont gérées via MDM ou associées à un domaine via MCX.</translation>
 <translation id="4661889655253181651">L'option "Paramètres de contenu" permet d'indiquer la manière dont le contenu d'un type spécifique (par exemple, cookies, images ou JavaScript) est géré.</translation>
 <translation id="4665897631924472251">Paramètres de gestion des extensions</translation>
 <translation id="4666930704271463612">Permet de spécifier le sous-ensemble des serveurs d'impression qui sont interrogés pour accéder aux imprimantes disponibles qui y sont associées.
@@ -2547,12 +2432,6 @@ Si cette règle n'est pas configurée, l'utilisateur peut décider d'afficher ou
 
       Cette règle étant obsolète, veuillez utiliser la règle <ph name="NOTE_TAKING_APPS_LOCK_SCREEN_ALLOWLIST" /> à la place.</translation>
 <translation id="4670865688564083639">Plage minimale :</translation>
-<translation id="4671708336564240458">Vous permet de définir si les sites présentant une expérience abusive doivent être autorisés ou non à ouvrir de nouvelles fenêtres ou de nouveaux onglets.
-
-      Si cette règle est définie sur True, les sites présentant une expérience abusive ne pourront pas ouvrir de nouvelles fenêtres ou de nouveaux onglets.
-      Toutefois, ce comportement ne se déclenchera pas si la règle SafeBrowsingEnabled est définie sur False.
-      Si cette règle est définie sur False, les sites à l'expérience abusive seront autorisés à ouvrir de nouvelles fenêtres ou de nouveaux onglets.
-      Si cette règle n'est pas définie, True sera utilisé.</translation>
 <translation id="467236746355332046">Fonctionnalités compatibles :</translation>
 <translation id="4674167212832291997">Personnalise la liste des formats d'URL qui doivent toujours être affichés par <ph name="PRODUCT_FRAME_NAME" />.
 
@@ -2633,7 +2512,7 @@ Si cette règle n'est pas configurée, l'utilisateur peut décider d'afficher ou
       La propriété <ph name="PAGE_SIZE_NAME" /> doit contenir l'un des formats répertoriés ou être définie sur "Personnalisé" si le format du papier requis ne figure pas dans la liste. Si elle est définie sur "Personnalisé", il est obligatoire de spécifier également la propriété <ph name="PAGE_SIZE_CUSTOM_SIZE" />. La hauteur et la largeur souhaitées sont exprimées en micromètres. Dans le cas contraire, la propriété <ph name="PAGE_SIZE_CUSTOM_SIZE" /> ne doit pas être renseignée. Toute règle qui ne respecte pas ces consignes sera ignorée.
 
       Si la taille de la page n'est pas disponible pour l'imprimante sélectionnée, cette règle est ignorée.</translation>
-<translation id="479290425281021210">Permet de spécifier si les sites Web non sécurisés sont autorisés à envoyer des requêtes aux points de terminaison de réseaux privés.</translation>
+<translation id="479290425281021210">Permet de spécifier si les sites Web non sécurisés sont autorisés à envoyer des requêtes à des points de terminaison plus privés du réseau.</translation>
 <translation id="4802744647065138872">Limite le nombre d'instantanés de données utilisateur retenus en prévision d'un éventuel rollback d'urgence.</translation>
 <translation id="4802905909524200151">Configurer le comportement de la fonctionnalité de mise à jour du micrologiciel <ph name="TPM_FIRMWARE_UPDATE_TPM" /></translation>
 <translation id="4804828344300125154">Redémarrer à chaque déconnexion de l'utilisateur.</translation>
@@ -2890,11 +2769,6 @@ Si vous activez ce paramètre, <ph name="PRODUCT_NAME" /> ignore toutes les opti
 <translation id="5182483318861266793">Placer l'étagère sur le côté droit de l'écran</translation>
 <translation id="519247340330463721">Configurez les règles associées à la navigation sécurisée.</translation>
 <translation id="5196520640744454600">Activer les touches persistantes sur l'écran de connexion</translation>
-<translation id="5196805177499964601">Bloquez le mode développeur.
-
-      Si cette règle est associée à la valeur "True", <ph name="PRODUCT_OS_NAME" /> empêche l'appareil de démarrer en mode développeur. Le système refuse de se lancer et un écran d'erreur s'affiche lorsque le mode développeur est activé.
-
-      Si cette règle n'est pas définie ou si elle est associée à la valeur "False", le mode développeur peut être sélectionné sur l'appareil.</translation>
 <translation id="5212118847531454979">Permet de définir la période, en millisecondes, pendant laquelle les utilisateurs sont avertis que <ph name="PRODUCT_NAME" /> doit être relancé ou qu'un appareil <ph name="PRODUCT_OS_NAME" /> doit être redémarré pour l'application d'une mise à jour en attente.
 
       Au cours de cette période, l'utilisateur est régulièrement informé de la nécessité d'appliquer la mise à jour. Pour les appareils <ph name="PRODUCT_OS_NAME" />, une notification de redémarrage s'affiche dans la barre d'état système conformément à la règle <ph name="RELAUNCH_HEADS_UP_PERIOD_POLICY_NAME" />. Pour les navigateurs <ph name="PRODUCT_NAME" />, lorsqu'un tiers de la période de notification s'est écoulé, le menu d'application change pour indiquer qu'il est nécessaire de redémarrer le navigateur. La notification change de couleur une première fois lorsque les deux tiers de la période de notification se sont écoulés, et une deuxième fois à l'issue de cette période. Les notifications supplémentaires activées par la règle <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> pour les navigateurs suivent le même calendrier.
@@ -3264,19 +3138,6 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
           Cette règle ne prend effet que si la règle <ph name="POWER_SMART_DIM_ENABLED_POLICY_NAME" /> est désactivée. Elle est ignorée dans le cas contraire, le délai d'assombrissement de l'écran étant alors déterminé par un modèle de machine learning.
 
           Le facteur d'adaptation doit être de 100 % ou plus. Les valeurs qui auraient pour conséquence de rendre le délai d'assombrissement de l'écran en mode Présentation plus court que le délai standard d'assombrissement de l'écran ne sont pas autorisées.</translation>
-<translation id="5592242031005200087">
-      Si cette règle est activée, chacune des origines définies et répertoriées dans une
-      liste d'éléments séparés par une virgule exécute son propre processus.
-      Elle isole également les origines par sous-domaines. Par exemple, si vous
-      indiquez https://example.com/, https://foo.example.com/ est également isolé
-      en tant que partie du site https://example.com/.
-      Si cette règle est désactivée, aucune isolation de sites explicite n'est effectuée, et les tests en conditions réelles d'IsolateOriginsAndroid et de SitePerProcessAndroid sont désactivés. Les utilisateurs peuvent toujours activer IsolateOrigins manuellement avec un indicateur de ligne de commande.
-      Si cette règle n'est pas configurée, l'utilisateur peut toujours modifier ce paramètre.
-
-      REMARQUE : Pour Android, l'isolation de sites est une fonctionnalité expérimentale. Nous allons améliorer sa compatibilité au fil du temps. Toutefois, elle peut actuellement entraîner des problèmes de performances.
-
-      REMARQUE : Cette règle ne s'applique qu'à Chrome sur les appareils Android disposant de plus de 1 Go de RAM. Pour l'appliquer sur d'autres plates-formes, utilisez IsolateOrigins.
-      </translation>
 <translation id="5599461642204007579">Paramètres de gestion de <ph name="MS_AD_NAME" /></translation>
 <translation id="5614865701790130558">Enregistrer des événements pour les installations d'extensions basées sur des règles</translation>
 <translation id="5618398258385745432">Ce paramètre était utilisé avant la mise en œuvre de la règle impliquant une nouvelle authentification après consultation du mot de passe. Depuis lors, le paramètre et la règle correspondante sont sans effet sur le fonctionnement de Chrome. Chrome fonctionne actuellement comme si cette règle était définie sur la désactivation de l'affichage des mots de passe en texte clair dans la page des paramètres du gestionnaire de mots de passe. Cela signifie que la page des paramètres contient seulement un espace réservé, et que l'utilisateur doit cliquer sur "Afficher" (et saisir une nouvelle fois son mot de passe, si nécessaire) pour que Chrome affiche le mot de passe. La description initiale de la règle figure ci-dessous.
@@ -3353,16 +3214,6 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
       Notez que les données de domaine sont mises en cache même pour les utilisateurs éphémères. Le cache doit être désactivé si le suivi du domaine des utilisateurs éphémères doit être empêché.</translation>
 <translation id="570062449808736508">Lorsque ce règlement est défini sur une chaîne non vide, WebView lit les restrictions d'URL depuis le fournisseur de contenu portant le nom de l'autorité indiquée.</translation>
 <translation id="5708969689202733975">Configurer les modes de déverrouillage rapide autorisés</translation>
-<translation id="5711016543513883877">
-      Si cette règle est activée, chacune des origines identifiées figurant dans une
-      liste d'éléments séparés par une virgule, exécute son propre processus. Elle isole également ces origines
-      par sous-domaines. Par exemple, si vous indiquez https://example.com/,
-      https://foo.example.com/ est également isolé en tant que partie
-      du site https://example.com/.
-      Si cette règle n'est pas configurée ou si elle est désactivée, les utilisateurs peuvent modifier ce paramètre.
-
-      REMARQUE : Cette règle ne s'applique pas à Android. Pour l'activer sur Android, utilisez le paramètre de la règle IsolateOriginsAndroid.
-      </translation>
 <translation id="572155275267014074">Paramètres Android</translation>
 <translation id="5728154254076636808">Permet de créer des copies itinérantes pour les données de profil <ph name="PRODUCT_NAME" /></translation>
 <translation id="5732972008943405952">Importer les données de saisie automatique du navigateur par défaut à la première exécution</translation>
@@ -3516,11 +3367,6 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
 <translation id="5921713479449475707">Autoriser les téléchargements de mise à jour automatique via HTTP</translation>
 <translation id="5929855945144989709">Autoriser les appareils à exécuter des machines virtuelles sur Chrome OS</translation>
 <translation id="5932767795525445337">Ces règles peuvent également être utilisées pour épingler des applications Android.</translation>
-<translation id="5936622343001856595">SafeSearch est obligatoirement activé pour les recherches sur le Web Google et ce paramètre ne peut être modifié par l'utilisateur.
-
-     Si vous activez ce paramètre, SafeSearch est toujours activé dans la recherche Google.
-
-      Si vous désactivez ce paramètre ou ne définissez pas de valeur, SafeSearch n'est pas activé dans la recherche Google.</translation>
 <translation id="5946082169633555022">Version bêta</translation>
 <translation id="5946329690214660966">Planifier de manière personnalisée la recherche de mises à jour</translation>
 <translation id="5951418260805607969">Afficher une notification lorsque l'espace disque est faible</translation>
@@ -3666,15 +3512,6 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
 <translation id="6190022522129724693">Paramètre de fenêtres pop-up par défaut</translation>
 <translation id="6190367314942602985">Enregistrer les informations d'identification de l'utilisateur</translation>
 <translation id="6195802366906945965">Déterminer si l'outil de vérification des certificats intégré sera utilisé pour vérifier les certificats des serveurs</translation>
-<translation id="6197453924249895891">Permettre aux extensions d'accéder aux clés d'entreprise.
-
-      Les clés sont conçues pour une utilisation en entreprise si elles sont générées à l'aide de l'API chrome.enterprise.platformKeys sur un compte géré. Les clés importées ou générées d'une autre manière ne sont pas prévues pour une utilisation en entreprise.
-
-      L'accès aux clés conçues pour une utilisation en entreprise est exclusivement contrôlé par cette règle. L'utilisateur ne peut ni accorder ni retirer l'accès à ces clés vers les extensions ou à partir de celles-ci.
-
-      Par défaut, une extension ne peut pas utiliser une clé conçue pour une utilisation en entreprise, ce qui équivaut à définir le paramètre allowCorporateKeyUsage sur "False" pour l'extension donnée.
-
-      Si le paramètre allowCorporateKeyUsage est défini sur "True" pour une extension, et uniquement dans ce cas précis, l'extension peut utiliser n'importe quelle clé de plate-forme désignée pour une utilisation en entreprise afin de signer des données arbitraires. Cette autorisation ne doit être accordée que si l'extension est en mesure de protéger l'accès à la clé contre les pirates.</translation>
 <translation id="6205094657236844092">Permet d'établir la liste des applications Web qui s'installent de manière autonome (sans intervention de l'utilisateur) et de spécifier les utilisateurs qui ne peuvent pas les désinstaller ni les désactiver.
 
       Chaque élément de la liste de cette règle est un objet constitué d'un membre obligatoire tel que <ph name="URL_LABEL" /> (qui correspond à l'URL de l'application Web à installer) et de deux membres facultatifs tels que <ph name="DEFAULT_LAUNCH_CONTAINER_LABEL" /> (qui indique où s'ouvre l'application Web ; par défaut, elle s'ouvre dans un nouvel onglet) et <ph name="CREATE_DESKTOP_SHORTCUT_LABEL" /> ("True" si vous voulez créer des raccourcis sur le bureau <ph name="LINUX_OS_NAME" /> ou Windows®).
@@ -4074,13 +3911,13 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
 
       Si cette règle est désactivée, un message d'erreur s'affiche à la place.</translation>
 <translation id="6821268164692776674">Destinations <ph name="CLOUD_PRINT_NAME" /> et "Enregistrer dans Google Drive"</translation>
-<translation id="6823297401452148231">Permet de contrôler si les sites Web non sécurisés sont autorisés à envoyer des requêtes aux points de terminaison de réseaux privés. Par exemple, cette règle vous permet de contrôler si l'URL http://evil.com est autorisée à envoyer des requêtes aux hôtes locaux ("localhost") et aux points de terminaison du réseau privé, aucun n'étant accessible depuis Internet. Pour en savoir plus, consultez la page https://wicg.github.io/cors-rfc1918/#goals.
+<translation id="6823297401452148231">Permet de contrôler si les sites Web non sécurisés sont autorisés à envoyer des requêtes à des points de terminaison plus privés du réseau. Par exemple, cette règle vous permet de contrôler si l'URL http://evil.com est autorisée à envoyer des requêtes aux hôtes locaux ("localhost") et aux points de terminaison du réseau privé, aucun n'étant accessible depuis Internet. Pour en savoir plus, consultez la page https://wicg.github.io/cors-rfc1918/#goals.
 
-          Lorsque cette règle n'est pas configurée, le comportement par défaut des requêtes envoyées depuis des contextes non sécurisés vers les points de terminaison de réseaux privés dépend de la configuration personnelle de l'utilisateur concernant la fonctionnalité <ph name="BLOCK_INSECURE_PRIVATE_NETWORK_REQUESTS_FEATURE_NAME" />, qui peut être définie lors d'un test ou via une ligne de commande.
+          Lorsque cette règle n'est pas configurée, le comportement par défaut des requêtes envoyées depuis des contextes non sécurisés vers des points de terminaison plus privés du réseau dépend de la configuration personnelle de l'utilisateur concernant la fonctionnalité <ph name="BLOCK_INSECURE_PRIVATE_NETWORK_REQUESTS_FEATURE_NAME" />, qui peut être définie lors d'un test ou via une ligne de commande.
 
-          Si cette règle est définie sur "False", les sites Web non sécurisés ne sont pas autorisés à envoyer des requêtes aux points de terminaison de réseaux privés. Cela signifie que les sites Web non sécurisés desservis par des adresses IP publiques ne peuvent pas envoyer des requêtes aux hôtes locaux ("localhost") ni aux adresses IP privées. Les sites Web non sécurisés desservis par des adresses IP privées ne peuvent pas envoyer des requêtes aux hôtes locaux ("localhost").
+          Si cette règle est définie sur "False", les sites Web non sécurisés ne sont pas autorisés à envoyer des requêtes à des points de terminaison plus privés du réseau. Cela signifie que les sites Web non sécurisés desservis par des adresses IP publiques ne peuvent pas envoyer des requêtes à localhost ni aux adresses IP privées. Les sites Web non sécurisés desservis par des adresses IP privées ne peuvent pas envoyer des requêtes à localhost.
 
-          Si cette règle est définie sur "True", les sites Web non sécurisés sont autorisés à envoyer des requêtes aux points de terminaison de n'importe quel réseau (d'autres vérifications inter-URL peuvent être réalisées).</translation>
+          Si cette règle est définie sur "True", les sites Web non sécurisés sont autorisés à envoyer des requêtes à n'importe quel point de terminaison du réseau (d'autres vérifications inter-URL peuvent être réalisées).</translation>
 <translation id="6833064854262015312">Définissez cette règle sur "True" pour activer le mode Contraste élevé sur l'écran de connexion. Définissez-la sur "False" pour désactiver le mode Contraste élevé sur l'écran de connexion.
 
       Si vous définissez cette règle, les utilisateurs peuvent temporairement activer ou désactiver le mode Contraste élevé. Lorsque l'écran de connexion s'actualise ou qu'il reste inactif pendant une minute, il revient à son état d'origine.
@@ -4752,16 +4589,6 @@ au maximum si un utilisateur se sert de l'appareil.
           Si cette règle n'est pas configurée, la page Nouvel onglet par défaut est utilisée.
 
           Cette règle n'est disponible que sur les instances Windows qui sont associées à un domaine <ph name="MS_AD_NAME" />, les instances Windows 10 Pro ou Windows Enterprise qui sont enregistrées pour bénéficier de la gestion des appareils, ou les instances macOS qui sont gérées via MDM ou associées à un domaine via MCX.</translation>
-<translation id="7720830724269154872">Cette règle est obsolète (veuillez utiliser à la place la règle <ph name="SAFE_BROWSING_ALLOWLIST_DOMAINS_POLICY_NAME" />).
-
-      Elle permet d'établir la liste des domaines que la fonctionnalité de navigation sécurisée juge fiables. Autrement dit, cette fonctionnalité ne vérifie pas s'il y a des ressources dangereuses (hameçonnage, logiciels malveillants ou indésirables, par exemple) lorsque le domaine de l'URL concernée figure dans cette liste.
-      Le service de protection des téléchargements dans le cadre de la navigation privée ne vérifiera pas les téléchargements hébergés sur ces domaines.
-      De même, le service de protection par mot de passe ne vérifie pas non plus si un mot de passe est réutilisé lorsque le domaine de l'URL de la page concernée figure dans la liste.
-
-      Si ce paramètre est activé, la fonctionnalité de navigation privée considère ces domaines comme fiables.
-      Si ce paramètre est désactivé ou qu'il n'est pas défini, la fonctionnalité de navigation privée applique son service de protection par défaut à toutes les ressources.
-
-      Cette règle n'est disponible que sur les instances Windows qui sont associées à un domaine <ph name="MS_AD_NAME" />, les instances Windows 10 Pro ou Windows Enterprise qui sont enregistrées pour bénéficier de la gestion des appareils, ou les instances macOS qui sont gérées via MDM ou associées à un domaine via MCX.</translation>
 <translation id="7721944091689270995">ID utilisateur <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="7724161903134898864">Si cette règle est définie sur "1", les sites Web peuvent afficher des pop-up. Si cette règle est définie sur "2", les sites ne sont pas autorisés à afficher de pop-up.
 
@@ -4807,31 +4634,9 @@ au maximum si un utilisateur se sert de l'appareil.
 
           Par défaut, tous les hôtes de messagerie native sont autorisés. Toutefois, s'ils ont tous été bloqués par une règle, la liste d'autorisation peut être utilisée pour ignorer cette règle.</translation>
 <translation id="7818131573217430250">Définir l'état par défaut du mode Contraste élevé sur l'écran de connexion</translation>
-<translation id="7832907442895199611">Cette règle étant obsolète dans la version M83, veuillez utiliser à la place la règle SafeBrowsingProtectionLevel.
-
-      Permet d'activer la fonctionnalité de navigation sécurisée de <ph name="PRODUCT_NAME" /> et d'empêcher les utilisateurs de modifier ce paramètre.
-
-      Si vous activez ce paramètre, la navigation sécurisée est active en permanence.
-
-      Si vous le désactivez, la navigation sécurisée n'est jamais active.
-
-      Si vous activez ou désactivez ce paramètre, les utilisateurs ne peuvent pas modifier ni ignorer le paramètre "Activer la protection contre l'hameçonnage et les logiciels malveillants" dans <ph name="PRODUCT_NAME" />.
-
-      Si cette règle n'est pas configurée, ce paramètre sera activé, mais les utilisateurs pourront le modifier.
-
-      Pour en savoir plus sur la navigation privée, consultez la page https://developers.google.com/safe-browsing.
-
-      Si la règle "SafeBrowsingProtectionLevel" est configurée, la valeur de la règle "SafeBrowsingEnabled" est ignorée.
-
-      Cette règle n'est disponible que sur les instances Windows qui sont associées à un domaine <ph name="MS_AD_NAME" />, les instances Windows 10 Pro ou Windows Enterprise qui sont enregistrées pour bénéficier de la gestion des appareils, ou les instances macOS qui sont gérées via MDM ou associées à un domaine via MCX.</translation>
 <translation id="7841880500990419427">Version minimale de TLS à utiliser en remplacement</translation>
 <translation id="7846952520291088817">URL pour lesquelles les candidats WebRTC ICE affichent les adresses IP locales</translation>
 <translation id="7848641140449742406">Paramètres de l'OS</translation>
-<translation id="7858404742201086014">Si vous activez ce paramètre, les plug-ins obsolètes sont utilisés comme des plug-ins normaux.
-
-      Si vous désactivez ce paramètre, les plug-ins obsolètes ne sont pas utilisés, et l'autorisation des utilisateurs ne sera pas requise pour leur exécution.
-
-      Si ce paramètre n'est pas défini, l'autorisation des utilisateurs sera requise pour l'exécution des plug-ins obsolètes</translation>
 <translation id="7863947545897944083">Permet d'activer la fonctionnalité d'accessibilité de contraste élevé sur l'écran de connexion.
 
           Si cette règle est définie sur "True", le contraste élevé est toujours activé sur l'écran de connexion.
@@ -5355,21 +5160,6 @@ Il est conseillé de configurer les règles sur Windows via GPO, même si la ges
       Si cette règle est définie sur "True", les onglets en arrière-plan depuis au moins cinq minutes peuvent être figés. En figeant ces onglets, vous sollicitez moins le processeur, la batterie et la mémoire. <ph name="PRODUCT_NAME" /> utilise des heuristiques pour ne pas figer les onglets qui exécutent une tâche utile en arrière-plan (par exemple, l'affichage de notifications, la lecture audio d'un contenu, la diffusion d'une vidéo en streaming). Notez que les développeurs Web peuvent également choisir de ne pas figer les pages de leur site (https://chromium.googlesource.com/chromium/src/+/HEAD/chrome/browser/performance_manager/docs/freezing_opt_out_opt_in.md).
 
       Si cette règle est définie sur "False", aucun onglet n'est figé.</translation>
-<translation id="8615400197788843468">Active la fonctionnalité de connexion limitée de <ph name="PRODUCT_NAME" /> dans G Suite et empêche les utilisateurs de modifier ce paramètre.
-
-      Si ce paramètre est activé, l'utilisateur peut uniquement accéder aux applications Google avec les comptes appartenant aux
-      domaines spécifiés. Pour autoriser les comptes gmail.com ou googlemail.com, vous devez ajouter "consumer_accounts" (sans les
-      guillemets) à la liste des domaines.
-
-      Ce paramètre empêche l'utilisateur de se connecter et d'ajouter un compte secondaire sur un appareil exigeant une authentification
-      Google, sauf si le compte en question appartient à la liste de domaines autorisés mentionnée précédemment.
-
-      Si ce paramètre est laissé vide ou n'est pas configuré, l'utilisateur peut accéder à G Suite avec n'importe quel compte.
-
-      Cette règle entraîne l'ajout de l'en-tête "X-GoogApps-Allowed-Domains" à toutes les demandes HTTP et HTTPS sur tous les
-      domaines google.com, comme décrit sur la page https://support.google.com/a/answer/1668854.
-
-      Les utilisateurs ne peuvent pas modifier ni remplacer ce paramètre.</translation>
 <translation id="8625234016727663537">Vous permet de définir une liste d'URL spécifiant les sites automatiquement autorisés à accéder à un appareil USB correspondant aux ID de fournisseur et de produit indiqués sur l'écran de connexion. Chaque élément de la liste doit contenir à la fois les appareils et les URL pour que la règle soit valide. Chaque élément des appareils peut comporter un champ d'ID de produit et d'ID de fournisseur. Les ID non renseignés sont traités comme des caractères génériques, à une exception près : un ID de produit ne peut pas être spécifié si un ID de fournisseur n'est pas aussi spécifié. Sinon, la règle n'est pas valide et est ignorée.
 
         Le modèle d'autorisation USB utilise l'URL du site à l'origine de la demande ("URL de requête") et l'URL du site du cadre de premier niveau ("URL d'intégration") pour autoriser l'URL de requête à accéder à l'appareil USB. L'URL de requête peut être différente de l'URL d'intégration si le site à l'origine de la demande est chargé dans un iFrame. Le champ "URL" peut de ce fait contenir jusqu'à deux chaînes d'URL séparées par une virgule, afin d'indiquer l'URL de requête et l'URL d'intégration, respectivement. Si une seule URL est spécifiée, l'accès aux appareils USB concernés est autorisé si l'URL du site à l'origine de la demande correspond à cette URL, quel que soit l'état d'intégration. Si les URL indiquées dans le champ "URL" ne sont pas valides, la règle est ignorée.
@@ -5415,19 +5205,6 @@ Il est conseillé de configurer les règles sur Windows via GPO, même si la ges
 <translation id="8705895771006864851">Si cette règle est définie sur "True", vous pouvez proposer une fonctionnalité de traduction aux utilisateurs, le cas échéant. Une barre d'outils intégrée de traduction s'affiche alors dans <ph name="PRODUCT_NAME" />, ainsi qu'une option de traduction disponible dans le menu contextuel que l'utilisateur peut afficher en effectuant un clic droit. Si cette règle est définie sur "False", toutes les fonctionnalités de traduction intégrées sont fermées.
 
       Si cette règle est configurée, les utilisateurs ne peuvent pas modifier la fonctionnalité. Si elle n'est pas configurée, les utilisateurs peuvent modifier le paramètre.</translation>
-<translation id="8733448613597049197">Active la création de rapports détaillées dans le cadre de la navigation sécurisée dans <ph name="PRODUCT_NAME" /> et empêche les utilisateurs de modifier cette règle.
-
-      Ces rapports détaillés fournissent aux serveurs Google des informations système et du contenu de pages qui aident à détecter les applications et les sites dangereux.
-
-      Si cette règle est définie sur "True", des rapports sont créés et envoyés si nécessaire (ex. : lorsqu'un interstitiel de sécurité est affiché).
-
-      Si cette règle est définie sur "False", aucun rapport n'est envoyé.
-
-      Si cette règle est définie sur "True" ou "False", l'utilisateur ne peut pas modifier le paramètre correspondant.
-
-      Si cette règle n'est pas définie, l'utilisateur peut la configurer afin de spécifier si des rapports doivent être envoyés ou non.
-
-      Pour en savoir plus sur la navigation sécurisée, consultez la page https://developers.google.com/safe-browsing.</translation>
 <translation id="8736538322216687231">Appliquer un mode restreint minimal sur YouTube</translation>
 <translation id="8745669971728319820">Cette règle détermine si les informations sur les extensions et les plug-ins doivent être enregistrées.
 
@@ -5438,13 +5215,6 @@ Il est conseillé de configurer les règles sur Windows via GPO, même si la ges
 
       Cette règle n'est appliquée que si l'ordinateur est enregistré avec la règle <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> pour <ph name="PRODUCT_NAME" />.
       Elle est toujours appliquée pour <ph name="PRODUCT_OS_NAME" />.</translation>
-<translation id="8749370016497832113">Permet la suppression de l'historique du navigateur et de l'historique des téléchargements dans <ph name="PRODUCT_NAME" /> sans permettre à l'utilisateur de modifier ce paramètre.
-
-      Sachez que, même si cette règle est désactivée, il n'est pas garanti que l'historique du navigateur et l'historique des téléchargements soient conservés. Les utilisateurs peuvent, dans certains cas, modifier ou supprimer directement les fichiers de base de données de ces historiques. De même, le navigateur peut expirer ou archiver à tout moment des éléments de l'historique.
-
-      Si ce paramètre est activé ou s'il n'est pas défini, la suppression de l'historique du navigateur et de l'historique des téléchargements est possible.
-
-      Si ce paramètre est désactivé, la suppression de l'historique du navigateur et de l'historique des téléchargements n'est pas possible.</translation>
 <translation id="8749536858950505376">Définissez cette règle sur "True" pour maintenir le grand curseur activé. Définissez cette règle sur "False" pour le maintenir désactivé.
 
       Si vous définissez cette règle, les utilisateurs ne peuvent pas la modifier. Si elle n'est pas définie, le grand curseur est désactivé par défaut, mais les utilisateurs peuvent l'activer à tout moment.</translation>
@@ -5609,11 +5379,6 @@ Si vous activez ce paramètre, <ph name="PRODUCT_NAME" /> et les applications AR
 <translation id="8943934315109955032">Ne pas vérifier si les règles de protection des données sensibles sont respectées</translation>
 <translation id="8947415621777543415">Indiquer l'emplacement de l'appareil</translation>
 <translation id="8948062138228904066">Liste d'autorisation des serveurs d'authentification</translation>
-<translation id="8949552982791839607">Si cette règle est désactivée, les avertissements de sécurité ne s'affichent pas lorsque Chrome est lancé avec certains indicateurs de ligne de commande présentant un risque.
-
-          Si cette règle est activée ou qu'elle n'est pas configurée, les avertissements de sécurité s'affichent si certains indicateurs de ligne de commande sont utilisés pour lancer Chrome.
-
-          Cette règle n'est disponible que sur les instances Windows qui sont associées à un domaine <ph name="MS_AD_NAME" />, les instances Windows 10 Pro ou Windows Enterprise qui sont enregistrées pour bénéficier de la gestion des appareils, ou les instances macOS qui sont gérées via MDM ou associées à un domaine via MCX.</translation>
 <translation id="8951350807133946005">Définir le répertoire du cache disque</translation>
 <translation id="8952317565138994125">Désactive la synchronisation des données dans <ph name="PRODUCT_NAME" /> à l'aide des services de synchronisation hébergés par Google et empêche les utilisateurs de modifier ce paramètre.
 

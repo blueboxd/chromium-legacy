@@ -32,8 +32,6 @@ void DictionaryTest::set(const InternalDictionary* testing_dictionary) {
   long_member_with_default_ = testing_dictionary->longMemberWithDefault();
   if (testing_dictionary->hasLongOrNullMember())
     long_or_null_member_ = testing_dictionary->longOrNullMember();
-  // |longOrNullMemberWithDefault| has a default value but can be null, so
-  // we need to check availability.
   if (testing_dictionary->hasLongOrNullMemberWithDefault()) {
     long_or_null_member_with_default_ =
         testing_dictionary->longOrNullMemberWithDefault();
@@ -147,9 +145,9 @@ void DictionaryTest::Reset() {
   string_sequence_member_ = base::nullopt;
   string_sequence_member_with_default_.Fill("Should not be returned", 1);
   string_sequence_or_null_member_ = base::nullopt;
-  enum_member_ = String();
+  enum_member_ = base::nullopt;
   enum_member_with_default_ = String();
-  enum_or_null_member_ = String();
+  enum_or_null_member_ = base::nullopt;
   element_member_ = nullptr;
   element_or_null_member_.reset();
   object_member_ = ScriptValue();
@@ -206,9 +204,11 @@ void DictionaryTest::GetInternals(InternalDictionary* dict) {
     dict->setStringSequenceOrNullMember(
         string_sequence_or_null_member_.value());
   }
-  dict->setEnumMember(enum_member_);
+  if (enum_member_)
+    dict->setEnumMember(enum_member_.value());
   dict->setEnumMemberWithDefault(enum_member_with_default_);
-  dict->setEnumOrNullMember(enum_or_null_member_);
+  if (enum_or_null_member_)
+    dict->setEnumOrNullMember(enum_or_null_member_.value());
   if (element_member_)
     dict->setElementMember(element_member_);
   if (element_or_null_member_.has_value())

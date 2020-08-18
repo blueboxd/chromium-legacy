@@ -55,7 +55,7 @@
 <translation id="1360432990279830238">साइन आउट करून सिंक बंद करायचे आहे का?</translation>
 <translation id="1373696734384179344">निवडलेला आशय डाउनलोड करण्यासाठी अपुरी मेमरी.</translation>
 <translation id="1376578503827013741">गणना करत आहे...</translation>
-<translation id="1383876407941801731">शोधा</translation>
+<translation id="1383876407941801731">Search</translation>
 <translation id="1386674309198842382"><ph name="LAST_UPDATED" /> दिवसांपूर्वी ॲक्टिव्ह होते</translation>
 <translation id="1397811292916898096"><ph name="PRODUCT_NAME" /> सह शोधा</translation>
 <translation id="1406000523432664303">“Do Not Track”</translation>
@@ -252,7 +252,6 @@
 <translation id="2942036813789421260">पूर्वावलोकन टॅब बंद आहे</translation>
 <translation id="2956410042958133412">हे खाते <ph name="PARENT_NAME_1" /> आणि <ph name="PARENT_NAME_2" /> द्वारे व्यवस्थापित केले आहे.</translation>
 <translation id="2962095958535813455">गुप्त टॅबवर स्विच केले</translation>
-<translation id="2968755619301702150">सर्टिफिकेट दर्शक</translation>
 <translation id="2979025552038692506">निवडलेला गुप्त टॅब</translation>
 <translation id="2987620471460279764">मजकूर इतर डिव्हाइसवरून शेअर केला आहे</translation>
 <translation id="2989523299700148168">अलीकडे भेट दिलेले</translation>
@@ -669,7 +668,6 @@
 <translation id="6157392216611456285"><ph name="APP_NAME" /> निवडा</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> डेटा बचत</translation>
 <translation id="6186394685773237175">धोक्यात असलेले पासवर्ड सापडले नाहीत</translation>
-<translation id="6201345951596836663">लिंक कॉपी केली</translation>
 <translation id="6206830853671714236">कधी डाउनलोड करायचे ते निवडा</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> नाही?</translation>
 <translation id="6218096829563201111">सारखी उत्पादने शोधा <ph name="BEGIN_NEW" />नवीन<ph name="END_NEW" /></translation>

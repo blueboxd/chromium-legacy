@@ -3,6 +3,7 @@
 <translationbundle lang="pt-PT">
 <translation id="1001307489511021749">As suas apps, definições e outras personalizações serão sincronizadas em todos os dispositivos Chrome OS com sessão iniciada na sua Conta Google.</translation>
 <translation id="1003088604756913841">Abrir link numa nova janela da aplicação <ph name="APP" /></translation>
+<translation id="1003363546227723021">Apresente fotos, as horas, a meteorologia e informações de multimédia quando o ecrã está inativo.</translation>
 <translation id="1004218526896219317">Acesso a sites</translation>
 <translation id="1005274289863221750">Utilizar o seu microfone e a câmara</translation>
 <translation id="1005333234656240382">Pretende ativar a depuração do adb?</translation>
@@ -94,6 +95,7 @@
 <translation id="1108600514891325577">&amp;Parar</translation>
 <translation id="1110155001042129815">Esperar</translation>
 <translation id="1112420131909513020">O separador em segundo plano está a utilizar o Bluetooth.</translation>
+<translation id="1113892970288677790">Selecione obras de arte e imagens organizadas.</translation>
 <translation id="1114102982691049955"><ph name="PRINTER_MANUFACTURER" /> <ph name="PRINTER_MODEL" /> (USB)</translation>
 <translation id="1114202307280046356">Diamante</translation>
 <translation id="1114335938027186412">O seu computador contém um dispositivo de segurança com TPM (Trusted Platform Module, Módulo de plataforma fidedigna), que é utilizado para implementar várias funcionalidades de segurança essenciais no Chrome OS. Visite o Centro de Ajuda do Chromebook em https://support.google.com/chromebook/?p=tpm para saber mais.</translation>
@@ -201,6 +203,7 @@
 <translation id="1224275271335624810">A mais rápida</translation>
 <translation id="1225177025209879837">A processar o pedido...</translation>
 <translation id="1227507814927581609">A autenticação falhou ao ligar a "<ph name="DEVICE_NAME" />".</translation>
+<translation id="1230417814058465809">A proteção padrão está ativada. Para desfrutar de ainda mais segurança, utilize a proteção melhorada.</translation>
 <translation id="1231733316453485619">Pretende ativar a sincronização?</translation>
 <translation id="1232569758102978740">Sem nome</translation>
 <translation id="1233497634904001272">Toque novamente na chave de segurança para concluir o pedido.</translation>
@@ -1252,6 +1255,7 @@ Pode gerir as definições desta conta ao instalar a aplicação Family Link no 
 <translation id="249113932447298600">Lamentamos, mas de momento o aparelho <ph name="DEVICE_LABEL" /> não é suportado.</translation>
 <translation id="2492461744635776704">A preparar pedido de assinatura de certificado…</translation>
 <translation id="249303669840926644">Não foi possível concluir o registo</translation>
+<translation id="2493126929778606526">As suas melhores fotos selecionadas automaticamente.</translation>
 <translation id="2495777824269688114">Descubra mais funcionalidades ou obtenha respostas. Selecione "?" para obter ajuda.</translation>
 <translation id="2496180316473517155">Histórico de navegação</translation>
 <translation id="2497229222757901769">Velocidade do rato</translation>
@@ -1345,6 +1349,7 @@ Pode gerir as definições desta conta ao instalar a aplicação Family Link no 
 <translation id="2604255671529671813">Erro de ligação à rede</translation>
 <translation id="2606246518223360146">Associar dados</translation>
 <translation id="2607101320794533334">Informações de chave pública do requerente</translation>
+<translation id="2607968157341167679">Não existem álbuns. Crie um álbum no <ph name="LINK_BEGIN" />Google Fotos<ph name="LINK_END" />.</translation>
 <translation id="2609896558069604090">Criar Atalhos...</translation>
 <translation id="2610157865375787051">Suspensão</translation>
 <translation id="2610260699262139870">Tamanho R&amp;eal</translation>
@@ -1481,6 +1486,7 @@ Pode gerir as definições desta conta ao instalar a aplicação Family Link no 
 <translation id="2762441749940182211">Câmara bloqueada</translation>
 <translation id="2764786626780673772">Detalhes da VPN</translation>
 <translation id="2765217105034171413">Pequeno</translation>
+<translation id="2765729904637714153">Reviva as suas memórias favoritas. Para adicionar ou editar álbuns, aceda ao <ph name="LINK_BEGIN" />Google Fotos<ph name="LINK_END" />.</translation>
 <translation id="2766006623206032690">Co&amp;lar e ir</translation>
 <translation id="2766161002040448006">Pedir ao pai/mãe</translation>
 <translation id="2767127727915954024"><ph name="ORIGIN" /> poderá editar o ficheiro <ph name="FILENAME" /> até fechar todos os separadores deste site.</translation>
@@ -2114,6 +2120,7 @@ Pretende pará-lo?</translation>
 <translation id="3566325075220776093">Deste dispositivo</translation>
 <translation id="3566721612727112615">Nenhum site adicionado</translation>
 <translation id="3569382839528428029">Deseja que <ph name="APP_NAME" /> partilhe o seu ecrã?</translation>
+<translation id="3569407787324516067">Proteção de ecrã</translation>
 <translation id="3569682580018832495"><ph name="ORIGIN" /> pode ver os seguintes ficheiros e pastas</translation>
 <translation id="3571734092741541777">Configurar</translation>
 <translation id="3574210789297084292">iniciar sessão</translation>
@@ -2262,6 +2269,7 @@ Pretende pará-lo?</translation>
 <translation id="3727148787322499904">Alterar esta definição afetará todas as redes partilhadas</translation>
 <translation id="3727187387656390258">Inspeccionar pop-up</translation>
 <translation id="372722114124766626">Só uma vez</translation>
+<translation id="3728188878314831180">Espelhar as notificações do telemóvel</translation>
 <translation id="3728681439294129328">Configurar endereço de rede</translation>
 <translation id="3729303374699765035">Perguntar quando um site pretende detetar dispositivos Bluetooth próximos</translation>
 <translation id="3729506734996624908">Sites permitidos</translation>
@@ -4712,6 +4720,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6824584962142919697">&amp;Inspecionar elementos</translation>
 <translation id="6825184156888454064">Ordenar por nome</translation>
 <translation id="6826872289184051766">Validar através de USB</translation>
+<translation id="6827623133556594466">O Google Cloud Print deixará de ser suportado depois de 31 de dezembro. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="6828153365543658583">Restringir início de sessão para os seguintes utilizadores:</translation>
 <translation id="6828182567531805778">Introduzir a frase de acesso para sincronizar os dados</translation>
 <translation id="682871081149631693">QuickFix</translation>
@@ -5330,6 +5339,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7605594153474022051">A sincronização não está a funcionar</translation>
 <translation id="7606992457248886637">Autoridades</translation>
 <translation id="7607002721634913082">Em pausa</translation>
+<translation id="7608810328871051088">Preferências do Android</translation>
 <translation id="7609148976235050828">Ligue-se à Internet e tente novamente.</translation>
 <translation id="7614260613810441905">Perguntar quando um site pretender editar ficheiros ou pastas no seu dispositivo (recomendado)</translation>
 <translation id="761530003705945209">Faça uma cópia de segurança para o Google Drive. Restaure facilmente os seus dados ou troque de dispositivo em qualquer altura. A cópia de segurança inclui os dados de apps. As cópias de segurança são carregadas para a Google e encriptadas com a palavra-passe da sua Conta Google.</translation>
@@ -5703,7 +5713,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8028060951694135607">Recuperação de chaves da Microsoft</translation>
 <translation id="8028803902702117856">A transferir <ph name="SIZE" />… <ph name="FILE_NAME" /></translation>
 <translation id="8028993641010258682">Tamanho</translation>
-<translation id="8030656706657716245">Adicionar impressora</translation>
 <translation id="8030852056903932865">Aprovar</translation>
 <translation id="8032244173881942855">Não é possível transmitir o separador.</translation>
 <translation id="8033827949643255796">selecionado</translation>
@@ -5859,6 +5868,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8225753906568652947">Resgatar as suas ofertas</translation>
 <translation id="8226222018808695353">Proibido</translation>
 <translation id="8226619461731305576">Fila</translation>
+<translation id="8226628635270268143">Escolha os seus álbuns ou fotos favoritos.</translation>
 <translation id="8226742006292257240">A palavra-passe TPM abaixo foi gerada aleatoriamente e atribuída ao seu computador:</translation>
 <translation id="8227119283605456246">Anexar ficheiro</translation>
 <translation id="8229943166551236192">Os dados do dispositivo serão eliminados dentro de 24 horas</translation>
@@ -6357,6 +6367,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="882854468542856424">Não permitir que nenhum site detete dispositivos Bluetooth próximos</translation>
 <translation id="8828933418460119530">Nome de DNS</translation>
 <translation id="883062543841130884">Substituições</translation>
+<translation id="8830779999439981481">A reiniciar para aplicar as atualizações…</translation>
 <translation id="8830796635868321089">A verificação de atualizações falhou utilizando as definições de proxy atuais. Ajuste as <ph name="PROXY_SETTINGS_LINK_START" />definições de proxy<ph name="PROXY_SETTINGS_LINK_END" />.</translation>
 <translation id="8831140208248705279">O <ph name="DEVICE_TYPE" /> e o telemóvel Android funcionam melhor em conjunto. Associe-os para que possa enviar mensagens de texto a partir do computador, partilhar a ligação à Internet e desbloquear o <ph name="DEVICE_TYPE" /> com o telemóvel. <ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />Saiba mais<ph name="LINK_END" /></translation>
 <translation id="8834039744648160717">A configuração da rede é controlada por <ph name="USER_EMAIL" />.</translation>

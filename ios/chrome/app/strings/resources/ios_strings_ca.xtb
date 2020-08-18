@@ -338,6 +338,7 @@ Per canviar aquesta opció, <ph name="BEGIN_LINK" />restableix la sincronitzaci�
 <translation id="4881695831933465202">Obre</translation>
 <translation id="4901778704868714008">Desa...</translation>
 <translation id="4904877109095351937">Marca com a llegit</translation>
+<translation id="4908869848243824489">Discover de Google</translation>
 <translation id="4930268273022498155">Suprimeix les dades existents. Per recuperar-les, torna a <ph name="USER_EMAIL1" />.</translation>
 <translation id="4930714375720679147">Activa</translation>
 <translation id="4941089862236492464">S'ha produït un problema en compartir el vostre element.</translation>
@@ -441,6 +442,7 @@ Handoff també ha d'estar activat a la secció General de Configuració, i els v
 <translation id="6125339936101702016">Gestionat per <ph name="COMPANY" />. <ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /></translation>
 <translation id="6127379762771434464">S'ha suprimit l'element</translation>
 <translation id="6136914049981179737">Fa segons</translation>
+<translation id="6144589619057374135">Obre ${url} en mode d'incògnit</translation>
 <translation id="616831107264507309">Ho vull llegir més tard</translation>
 <translation id="6177442314419606057">Fes cerques a Chrome</translation>
 <translation id="6184086493125982861">Mostra les pestanyes</translation>
@@ -554,6 +556,7 @@ Els llocs web no poden fer servir galetes per veure la teva activitat de navegac
 <translation id="7293171162284876153">Per iniciar la sincronització, activa l'opció Sincronitza les dades de Chrome.</translation>
 <translation id="7313347584264171202">Trobaràs les pestanyes d'incògnit aquí</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> per cent baixat</translation>
+<translation id="7340958967809483333">Opcions per a Discover</translation>
 <translation id="7346909386216857016">D'acord</translation>
 <translation id="734758817008927353">Opcions per desar la targeta</translation>
 <translation id="7348502496356775519">Adreça d'interès</translation>
@@ -665,6 +668,7 @@ Els llocs web poden fer servir galetes per veure la teva activitat de navegació
 <translation id="8668210798914567634">Aquesta pàgina s'ha desat a la teva llista de lectura.</translation>
 <translation id="8680787084697685621">Les dades d'inici de sessió del compte no estan actualitzades.</translation>
 <translation id="8706588385081740091">Contrasenyes</translation>
+<translation id="8717864919010420084">Copia l'enllaç</translation>
 <translation id="8721297211384281569">Menú Eines</translation>
 <translation id="8725066075913043281">Torna-ho a provar</translation>
 <translation id="8730621377337864115">Fet</translation>

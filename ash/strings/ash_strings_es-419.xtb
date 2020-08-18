@@ -40,6 +40,7 @@ Estas son algunas de las cosas que puedes probar para comenzar.</translation>
 <translation id="1302880136325416935">Mostrar la configuración de Bluetooth: <ph name="STATE_TEXT" /></translation>
 <translation id="1312604459020188865">Intensidad de la señal: <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="1316069254387866896">Siempre mostrar biblio.</translation>
+<translation id="1333308631814936910">El dispositivo <ph name="DISPLAY_NAME" /> está conectado.</translation>
 <translation id="1341651618736211726">Ampliado</translation>
 <translation id="1346748346194534595">Derecha</translation>
 <translation id="1351937230027495976">Contraer menú</translation>
@@ -370,6 +371,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="5114495209940374989">Capturas de pantalla</translation>
 <translation id="5136175204352732067">Se conectó otro teclado</translation>
 <translation id="5168181903108465623">Dispositivos de transmisión disponibles</translation>
+<translation id="5170568018924773124">Mostrar en carpeta</translation>
 <translation id="5207949376430453814">Destacar el símbolo de intercalación de texto</translation>
 <translation id="5222676887888702881">Salir</translation>
 <translation id="523505283826916779">Configuración de accesibilidad</translation>
@@ -461,6 +463,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="6288235558961782912">Puedes volver a agregar a <ph name="USER_EMAIL_ADDRESS" /> más tarde con el permiso de tu padre o madre.</translation>
 <translation id="6297287540776456956">Usa la pluma stylus para seleccionar una región</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> se giró a <ph name="ROTATION" />.</translation>
+<translation id="6315170314923504164">Voz</translation>
 <translation id="6376931439017688372">Se activó la conexión Bluetooth</translation>
 <translation id="6381109794406942707">Para desbloquear el dispositivo, ingresa el PIN.</translation>
 <translation id="639644700271529076">El bloqueo de mayúsculas está desactivado.</translation>
@@ -477,7 +480,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="649452524636452238">PIN de la tarjeta inteligente</translation>
 <translation id="6501401484702599040">Transmitiendo pantalla a <ph name="RECEIVER_NAME" /></translation>
 <translation id="652139407789908527">Durante esta actualización, se apagará la pantalla por más tiempo que lo usual (hasta un minuto). Mientras se realiza la actualización, no presiones el botón de encendido.</translation>
-<translation id="6521655319214113338">Entrada de escritura a mano</translation>
+<translation id="6527303717912515753">Compartir</translation>
 <translation id="6528179044667508675">No interrumpir</translation>
 <translation id="6537270692134705506">Captura total de pantalla</translation>
 <translation id="6537924328260219877">Intensidad de la señal: <ph name="SIGNAL_STRENGTH" />, nivel de batería del teléfono: <ph name="BATTERY_STATUS" /></translation>
@@ -559,7 +562,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="7536035074519304529">Dirección IP: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">Es hora de ir a la cama</translation>
 <translation id="7561982940498449837">Cerrar menú</translation>
-<translation id="7562368315689366235">Paleta de emoji</translation>
 <translation id="7564874036684306347">Si mueves las ventanas a otro escritorio, puede producirse un comportamiento inesperado. Es posible que las próximas notificaciones, ventanas y cuadros de diálogo se dividan entre los escritorios.</translation>
 <translation id="7568294522609223312">Desactivar los clics automáticos</translation>
 <translation id="7568637526529101738">Si haces clic con el botón derecho en la selección o la mantienes presionada, el Asistente te mostrará información adicional, como su definición o conversión de unidades.</translation>
@@ -622,7 +624,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="8152092012181020186">Presiona Ctrl + W para cerrar.</translation>
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" />: El administrador controla esta configuración.</translation>
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" /> en uso</translation>
-<translation id="8190698733819146287">Personalizar idiomas y la entrada de datos</translation>
 <translation id="8192202700944119416">Las notificaciones están ocultas.</translation>
 <translation id="8196787716797768628">Usa gestos para cambiar rápidamente de app o interactuar con la Chromebook en el modo tablet.</translation>
 <translation id="8200772114523450471">Reanudar</translation>
@@ -706,6 +707,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="9029474291399787231">La actualización de Adobe Flash Player está disponible</translation>
 <translation id="9047624247355796468">Abrir la configuración para <ph name="NETWORK_NAME" /></translation>
 <translation id="9056839673611986238">Se restablecerá el dispositivo</translation>
+<translation id="9065203028668620118">Editar</translation>
 <translation id="9070640332319875144">Configuración del Asistente</translation>
 <translation id="9072519059834302790">Tiempo restante hasta que se agote la batería: <ph name="TIME_LEFT" />.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>

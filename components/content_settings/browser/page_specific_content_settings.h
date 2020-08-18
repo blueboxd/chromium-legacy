@@ -38,8 +38,6 @@ namespace url {
 class Origin;
 }  // namespace url
 
-class ContentSettingsUsagesState;
-
 namespace content_settings {
 
 // TODO(msramek): Media is storing their state in PageSpecificContentSettings:
@@ -290,18 +288,6 @@ class PageSpecificContentSettings
   // has changed since the last permission request.
   bool IsMicrophoneCameraStateChanged() const;
 
-  // Returns the ContentSettingsUsagesState that controls the
-  // geolocation API usage on this page.
-  const ContentSettingsUsagesState& geolocation_usages_state() const {
-    return *geolocation_usages_state_;
-  }
-
-  // Returns the ContentSettingsUsageState that controls the MIDI usage on
-  // this page.
-  const ContentSettingsUsagesState& midi_usages_state() const {
-    return *midi_usages_state_;
-  }
-
   // Returns the |LocalSharedObjectsContainer| instances corresponding to all
   // allowed, and blocked, respectively, local shared objects like cookies,
   // local storage, ... .
@@ -343,7 +329,6 @@ class PageSpecificContentSettings
                               const url::Origin& constructor_origin,
                               bool blocked_by_policy);
   void OnWebDatabaseAccessed(const GURL& url, bool blocked_by_policy);
-  void OnGeolocationPermissionSet(const GURL& requesting_frame, bool allowed);
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
   void OnProtectedMediaIdentifierPermissionSet(const GURL& requesting_frame,
                                                bool allowed);
@@ -358,10 +343,6 @@ class PageSpecificContentSettings
       const std::string& media_stream_selected_video_device,
       const std::string& media_stream_requested_audio_device,
       const std::string& media_stream_requested_video_device);
-
-  // There methods are called to update the status about MIDI access.
-  void OnMidiSysExAccessed(const GURL& reqesting_origin);
-  void OnMidiSysExAccessBlocked(const GURL& requesting_origin);
 
   void OnCookiesAccessed(const content::CookieAccessDetails& details);
   void OnServiceWorkerAccessed(const GURL& scope,
@@ -522,12 +503,6 @@ class PageSpecificContentSettings
   // Stores the blocked/allowed cookies.
   browsing_data::LocalSharedObjectsContainer allowed_local_shared_objects_;
   browsing_data::LocalSharedObjectsContainer blocked_local_shared_objects_;
-
-  // Manages information about Geolocation API usage in this page.
-  std::unique_ptr<ContentSettingsUsagesState> geolocation_usages_state_;
-
-  // Manages information about MIDI usages in this page.
-  std::unique_ptr<ContentSettingsUsagesState> midi_usages_state_;
 
   // Stores whether the user can load blocked plugins on this page.
   bool load_plugins_link_enabled_;

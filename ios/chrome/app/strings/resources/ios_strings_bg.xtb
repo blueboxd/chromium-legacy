@@ -338,6 +338,7 @@
 <translation id="4881695831933465202">Отваряне</translation>
 <translation id="4901778704868714008">Запазване...</translation>
 <translation id="4904877109095351937">Означаване като прочетено</translation>
+<translation id="4908869848243824489">Discover от Google</translation>
 <translation id="4930268273022498155">Изтриване на съществуващите данни. Можете да ги извлечете, като превключите обратно към <ph name="USER_EMAIL1" />.</translation>
 <translation id="4930714375720679147">Включване</translation>
 <translation id="4941089862236492464">При споделянето на елемента възникна проблем.</translation>
@@ -441,6 +442,7 @@
 <translation id="6125339936101702016">Управлява се от <ph name="COMPANY" />. <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" /></translation>
 <translation id="6127379762771434464">Елементът бе премахнат</translation>
 <translation id="6136914049981179737">Току-що</translation>
+<translation id="6144589619057374135">Отваряне на ${url} в режим „инкогнито“</translation>
 <translation id="616831107264507309">Четене по-късно</translation>
 <translation id="6177442314419606057">Търсене в Chrome</translation>
 <translation id="6184086493125982861">Показване на разделите</translation>
@@ -554,6 +556,7 @@
 <translation id="7293171162284876153">За да стартирате синхронизирането, включете „Синхронизиране на данните ви в Chrome“.</translation>
 <translation id="7313347584264171202">Тук ще се показват разделите ви в режим „инкогнито“</translation>
 <translation id="7336264872878993241">Изтеглено: <ph name="PERCENT" />%</translation>
+<translation id="7340958967809483333">Опции за Discover</translation>
 <translation id="7346909386216857016">Добре, разбрах</translation>
 <translation id="734758817008927353">Опции за запазване на картата</translation>
 <translation id="7348502496356775519">Отметка</translation>
@@ -665,6 +668,7 @@
 <translation id="8668210798914567634">Тази страница е запазена в списъка ви за четене.</translation>
 <translation id="8680787084697685621">Данните за вход в профила ви не са актуални.</translation>
 <translation id="8706588385081740091">Пароли</translation>
+<translation id="8717864919010420084">Копиране на връзката</translation>
 <translation id="8721297211384281569">Меню „Инструменти“</translation>
 <translation id="8725066075913043281">Опитайте отново</translation>
 <translation id="8730621377337864115">Готово</translation>

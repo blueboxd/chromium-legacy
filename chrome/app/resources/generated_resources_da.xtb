@@ -3,6 +3,7 @@
 <translationbundle lang="da">
 <translation id="1001307489511021749">DIne apps, indstillinger og andre tilpasninger synkroniseres med alle de Chrome OS-enheder, hvor du er logget ind med din Google-konto.</translation>
 <translation id="1003088604756913841">Åbn linket i et nyt <ph name="APP" />-vindue</translation>
+<translation id="1003363546227723021">Se billeder, klokken, vejret og medieoplysninger, når din skærm er inaktiv</translation>
 <translation id="1004218526896219317">Websiteadgang</translation>
 <translation id="1005274289863221750">Bruge din mikrofon og dit kamera</translation>
 <translation id="1005333234656240382">Vil du aktivere ADB-fejlretning?</translation>
@@ -94,6 +95,7 @@
 <translation id="1108600514891325577">&amp;Stop</translation>
 <translation id="1110155001042129815">Vent</translation>
 <translation id="1112420131909513020">En fane i baggrunden anvender Bluetooth</translation>
+<translation id="1113892970288677790">Vælg blandt udvalgte kunstværker og billeder</translation>
 <translation id="1114102982691049955"><ph name="PRINTER_MANUFACTURER" /> <ph name="PRINTER_MODEL" /> (USB)</translation>
 <translation id="1114202307280046356">Diamant</translation>
 <translation id="1114335938027186412">Computeren indeholder en sikkerhedsenhed for TPM (Trusted Platform Module), som bruges til at implementere flere vigtige sikkerhedsfunktioner i Chrome OS. Du kan få flere oplysninger i Hjælp til Chromebook: https://support.google.com/chromebook/?p=tpm</translation>
@@ -201,6 +203,7 @@
 <translation id="1224275271335624810">Hurtigst</translation>
 <translation id="1225177025209879837">Behandler anmodning...</translation>
 <translation id="1227507814927581609">Godkendelsen mislykkedes under oprettelse af forbindelse til "<ph name="DEVICE_NAME" />".</translation>
+<translation id="1230417814058465809">Standardbeskyttelse er aktiveret. Du kan øge sikkerheden ved at bruge forbedret beskyttelse.</translation>
 <translation id="1231733316453485619">Vil du aktivere synkronisering?</translation>
 <translation id="1232569758102978740">Unavngivet</translation>
 <translation id="1233497634904001272">Tryk på din sikkerhedsnøgle igen for at fuldføre anmodningen.</translation>
@@ -1253,6 +1256,7 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="249113932447298600">Vi beklager, men enheden <ph name="DEVICE_LABEL" /> understøttes ikke på nuværende tidspunkt.</translation>
 <translation id="2492461744635776704">Forbereder anmodning om certifikatsignering</translation>
 <translation id="249303669840926644">Registreringen kunne ikke fuldføres</translation>
+<translation id="2493126929778606526">Dine bedste billeder udvælges automatisk</translation>
 <translation id="2495777824269688114">Oplev flere funktioner, og find svar. Vælg "?" for at få hjælp.</translation>
 <translation id="2496180316473517155">Browserhistorik</translation>
 <translation id="2497229222757901769">Musehastighed</translation>
@@ -1346,6 +1350,7 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="2604255671529671813">Fejl i netværksforbindelsen</translation>
 <translation id="2606246518223360146">Tilknyt data</translation>
 <translation id="2607101320794533334">Oplysninger om emnets offentlige nøgle</translation>
+<translation id="2607968157341167679">Der er ingen album. Opret et album i <ph name="LINK_BEGIN" />Google Fotos<ph name="LINK_END" />.</translation>
 <translation id="2609896558069604090">Opret genveje...</translation>
 <translation id="2610157865375787051">Dvale</translation>
 <translation id="2610260699262139870">Fa&amp;ktisk størrelse</translation>
@@ -1482,6 +1487,7 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="2762441749940182211">Der er blokeret for adgang til kameraet</translation>
 <translation id="2764786626780673772">Info om VPN</translation>
 <translation id="2765217105034171413">Lille</translation>
+<translation id="2765729904637714153">Genoplev dine bedste minder. Gå til <ph name="LINK_BEGIN" />Google Fotos<ph name="LINK_END" /> for at tilføje eller redigere album.</translation>
 <translation id="2766006623206032690">Indsæt og fortsæt</translation>
 <translation id="2766161002040448006">Spørg en forælder</translation>
 <translation id="2767127727915954024"><ph name="ORIGIN" /> vil kunne redigere <ph name="FILENAME" />, indtil du har lukket alle faner for dette website</translation>
@@ -2114,6 +2120,7 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="3566325075220776093">Fra denne enhed</translation>
 <translation id="3566721612727112615">Der er ikke tilføjet nogen websites</translation>
 <translation id="3569382839528428029">Vil du acceptere, at <ph name="APP_NAME" /> deler din skærm?</translation>
+<translation id="3569407787324516067">Pauseskærm</translation>
 <translation id="3569682580018832495"><ph name="ORIGIN" /> kan se følgende filer og mapper</translation>
 <translation id="3571734092741541777">Konfigurer</translation>
 <translation id="3574210789297084292">log ind</translation>
@@ -2262,6 +2269,7 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="3727148787322499904">Hvis denne indstilling ændres, påvirker det alle delte netværk</translation>
 <translation id="3727187387656390258">Undersøg pop op-vindue</translation>
 <translation id="372722114124766626">Kun én gang</translation>
+<translation id="3728188878314831180">Spejl notifikationer fra din telefon</translation>
 <translation id="3728681439294129328">Konfigurer netværksadresse</translation>
 <translation id="3729303374699765035">Spørg, når et website vil søge efter Bluetooth-enheder i nærheden</translation>
 <translation id="3729506734996624908">Tilladte websites</translation>
@@ -4712,6 +4720,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6824584962142919697">&amp;Inspect elements (Undersøg elementer)</translation>
 <translation id="6825184156888454064">Sorter efter navn</translation>
 <translation id="6826872289184051766">Bekræft via USB</translation>
+<translation id="6827623133556594466">Google Cloudprinter understøttes ikke efter den 31. december. <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
 <translation id="6828153365543658583">Begræns login for følgende brugere:</translation>
 <translation id="6828182567531805778">Angiv din adgangssætning for at synkronisere dine data</translation>
 <translation id="682871081149631693">QuickFix</translation>
@@ -5330,6 +5339,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7605594153474022051">Synkronisering fungerer ikke</translation>
 <translation id="7606992457248886637">Autoriteter</translation>
 <translation id="7607002721634913082">Sat på pause</translation>
+<translation id="7608810328871051088">Android-præferencer</translation>
 <translation id="7609148976235050828">Opret forbindelse til internettet, og prøv igen.</translation>
 <translation id="7614260613810441905">Spørg, når et website vil redigere filer eller mapper på din enhed (anbefales)</translation>
 <translation id="761530003705945209">Sikkerhedskopiér i Google Drev. Gendan nemt dine data, eller skift enhed når som helst. Din backup omfatter appdata. Dine backups uploades til Google og krypteres ved hjælp af adgangskoden til din Google-konto.</translation>
@@ -5702,7 +5712,6 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8028060951694135607">Microsoft-nøglegenoprettelse</translation>
 <translation id="8028803902702117856">Downloader <ph name="SIZE" /> – <ph name="FILE_NAME" /></translation>
 <translation id="8028993641010258682">Størrelse</translation>
-<translation id="8030656706657716245">Tilføj printeren</translation>
 <translation id="8030852056903932865">Godkend</translation>
 <translation id="8032244173881942855">Fanen kunne ikke castes.</translation>
 <translation id="8033827949643255796">valgt</translation>
@@ -5859,6 +5868,7 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8225753906568652947">Indløs dine tilbud</translation>
 <translation id="8226222018808695353">Forbudt</translation>
 <translation id="8226619461731305576">Kø</translation>
+<translation id="8226628635270268143">Vælg dine foretrukne billeder og album</translation>
 <translation id="8226742006292257240">Nedenfor ses den vilkårlige TPM-adgangskode, der er tilknyttet din computer:</translation>
 <translation id="8227119283605456246">Vedhæft fil</translation>
 <translation id="8229943166551236192">Enhedsdata slettes om 24 timer</translation>
@@ -6358,6 +6368,7 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="882854468542856424">Tillad ikke, at websites søger efter Bluetooth-enheder i nærheden</translation>
 <translation id="8828933418460119530">DNS-navn</translation>
 <translation id="883062543841130884">Erstatninger</translation>
+<translation id="8830779999439981481">Genstarter for at anvende opdateringer</translation>
 <translation id="8830796635868321089">Opdateringskontrollen kunne ikke anvende de aktuelle indstillinger for proxy. Tilpas dine <ph name="PROXY_SETTINGS_LINK_START" />Indstillinger for proxy<ph name="PROXY_SETTINGS_LINK_END" />.</translation>
 <translation id="8831140208248705279">Din <ph name="DEVICE_TYPE" /> og Android-telefon fungerer bedre sammen. Opret forbindelse mellem dem, så du kan sende sms-beskeder fra din computer, dele din internetforbindelse og låse din <ph name="DEVICE_TYPE" /> op med telefonen.<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />Få flere oplysninger<ph name="LINK_END" /></translation>
 <translation id="8834039744648160717">Netværkskonfiguration kontrolleres af <ph name="USER_EMAIL" />.</translation>

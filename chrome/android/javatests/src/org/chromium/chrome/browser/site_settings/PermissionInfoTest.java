@@ -20,7 +20,6 @@ import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.browser_ui.site_settings.PermissionInfo;
 import org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridgeJni;
@@ -113,23 +112,6 @@ public class PermissionInfoTest {
         setGeolocation(OTHER_ORIGIN, null, ContentSettingValues.DEFAULT, incognito);
         Assert.assertEquals(
                 ContentSettingValues.ASK, getGeolocation(OTHER_ORIGIN, null, incognito));
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"Preferences"})
-    @DisableFeatures(ChromeFeatureList.PERMISSION_DELEGATION)
-    public void testResetDSEGeolocationEmbeddedOrigin() throws Throwable {
-        // It's not possible to set a permission for an embedded origin when permission delegation
-        // is enabled. This code can be deleted when the feature is enabled by default.
-        // Resetting an embedded DSE origin should not have the same behavior.
-        boolean incognito = false;
-        setGeolocation(DSE_ORIGIN, OTHER_ORIGIN, ContentSettingValues.BLOCK, incognito);
-        Assert.assertEquals(
-                ContentSettingValues.BLOCK, getGeolocation(DSE_ORIGIN, OTHER_ORIGIN, incognito));
-        setGeolocation(DSE_ORIGIN, OTHER_ORIGIN, ContentSettingValues.DEFAULT, incognito);
-        Assert.assertEquals(
-                ContentSettingValues.ASK, getGeolocation(DSE_ORIGIN, OTHER_ORIGIN, incognito));
     }
 
     @Test

@@ -15,10 +15,6 @@ function getCorsMode() {
   return mode;
 }
 
-function isExtraHeadersForced() {
-  return params.has('with_force_extra_headers');
-}
-
 function setExpectationsForNonObservablePreflight() {
   // In this case the preflight request is not observable.
   chrome.test.assertTrue(getCorsMode() == 'network_service');
@@ -229,7 +225,7 @@ function registerRequestHeaderInjectionListeners(extraInfoSpec) {
   // Otherwises, modified headers are not observed by CORS implementations, and
   // do not trigger the CORS preflight.
   const triggerPreflight = !extraInfoSpec.includes('extraHeaders') &&
-      !isExtraHeadersForced() && getCorsMode() == 'network_service';
+      getCorsMode() == 'network_service';
 
   const event = triggerPreflight ? chrome.webRequest.onErrorOccurred :
                                    chrome.webRequest.onCompleted;
@@ -256,7 +252,7 @@ function registerResponseHeaderInjectionListeners(extraInfoSpec) {
   // detects CORS failures before |headerReceivedListener| is called and injects
   // fake headers to deceive the CORS checks.
   const canInjectFakeCorsResponse = extraInfoSpec.includes('extraHeaders') ||
-      isExtraHeadersForced() || getCorsMode() == 'blink';
+      getCorsMode() == 'blink';
 
   const event = canInjectFakeCorsResponse ? chrome.webRequest.onCompleted :
                                             chrome.webRequest.onErrorOccurred;
@@ -564,7 +560,7 @@ runTests([
     // without it.
     // If OOR-CORS is enabled, the Origin header is invisible if the
     // extraHeaders is not specified.
-    if (getCorsMode() == 'network_service' && !isExtraHeadersForced())
+    if (getCorsMode() == 'network_service')
       registerOriginListeners([], ['origin'], ['requestHeaders']);
     else
       registerOriginListeners(['origin'], [], ['requestHeaders']);
@@ -606,7 +602,7 @@ runTests([
         'extensions/api_test/webrequest/cors/fetch.html?path=reject'));
   },
   function testCorsPreflightWithoutExtraHeaders() {
-    if (getCorsMode() == 'network_service' && !isExtraHeadersForced()) {
+    if (getCorsMode() == 'network_service') {
       setExpectationsForNonObservablePreflight();
     } else {
       setExpectationsForObservablePreflight([]);

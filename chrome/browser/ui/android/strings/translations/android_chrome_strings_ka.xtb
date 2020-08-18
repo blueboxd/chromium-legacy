@@ -252,7 +252,6 @@
 <translation id="2942036813789421260">გადახედვის ჩანართი დახურულია</translation>
 <translation id="2956410042958133412">ეს ანგარიში იმართება <ph name="PARENT_NAME_1" />-სა და <ph name="PARENT_NAME_2" />-ს მიერ.</translation>
 <translation id="2962095958535813455">გადართულია ინკოგნიტო ჩანართებზე</translation>
-<translation id="2968755619301702150">სერტიფიკატთა მაჩვენებელი</translation>
 <translation id="2979025552038692506">არჩეული ინკოგნიტო ჩანართი</translation>
 <translation id="2987620471460279764">სხვა მოწყობილობიდან გაზიარებული ტექსტი</translation>
 <translation id="2989523299700148168">ახლახან მონახულებული</translation>
@@ -669,7 +668,6 @@
 <translation id="6157392216611456285"><ph name="APP_NAME" />-ის არჩევა</translation>
 <translation id="6159335304067198720">მონაცემების დაზოგვა <ph name="PERCENT" />-ით</translation>
 <translation id="6186394685773237175">გატეხილი პაროლები არ მოიძებნა</translation>
-<translation id="6201345951596836663">ბმული დაკოპირდა</translation>
 <translation id="6206830853671714236">აირჩიეთ, როდის ჩამოიტვირთოს</translation>
 <translation id="6210748933810148297">არ ხართ <ph name="EMAIL" />?</translation>
 <translation id="6218096829563201111">მსგავსის ძიება <ph name="BEGIN_NEW" />სიახლე<ph name="END_NEW" /></translation>

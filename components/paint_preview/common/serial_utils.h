@@ -39,6 +39,35 @@ struct TypefaceSerializationContext {
 // Maps a content ID to a clip rect.
 using DeserializationContext = base::flat_map<uint32_t, gfx::Rect>;
 
+// A pair that contains a frame's |SkPicture| and its associated scroll offsets.
+// Used in |LoadedFramesDeserialContext| to correctly replay the scroll state
+// for subframes.
+struct FrameAndScrollOffsets {
+  FrameAndScrollOffsets();
+  ~FrameAndScrollOffsets();
+
+  FrameAndScrollOffsets(const FrameAndScrollOffsets&);
+  FrameAndScrollOffsets& operator=(const FrameAndScrollOffsets&);
+
+  sk_sp<SkPicture> picture;
+  gfx::Size scroll_offsets;
+};
+
+// Deserialization context for |MakeDeserialProcs| that contains the information
+// needed to embed a subframe within its parent frame.
+struct LoadedFramesDeserialContext {
+  LoadedFramesDeserialContext();
+  ~LoadedFramesDeserialContext();
+
+  // The scroll offsets for the current frame.
+  gfx::Size scroll_offsets;
+
+  // Maps a content ID to a frame's picture. A frame's subframes should be
+  // loaded into this context before |MakeDeserialProcs| is called to ensure
+  // that the resulting |SkPicture| contains all subframes.
+  base::flat_map<uint32_t, FrameAndScrollOffsets> subframes;
+};
+
 // Creates a no-op SkPicture.
 sk_sp<SkPicture> MakeEmptyPicture();
 
@@ -48,8 +77,15 @@ SkSerialProcs MakeSerialProcs(PictureSerializationContext* picture_ctx,
                               TypefaceSerializationContext* typeface_ctx);
 
 // Creates a SkDeserialProcs object. The object *does not* copy |ctx| so |ctx|
-// must outlive the use of the returned object.
+// must outlive the use of the returned object. |ctx| will be filled as pictures
+// are being deserialized. Subframes will be filled with |MakeEmptyPicture|.
 SkDeserialProcs MakeDeserialProcs(DeserializationContext* ctx);
+
+// Creates a SkDeserialProcs object. The object *does not* copy |ctx| so |ctx|
+// must outlive the use of the returned object. |ctx| will be referenced for
+// subframes as pictures are being serialized. If a subframe does not exist in
+// |ctx|, its rectangle will be fillde with |MakeEmptyPicture|.
+SkDeserialProcs MakeDeserialProcs(LoadedFramesDeserialContext* ctx);
 
 }  // namespace paint_preview
 

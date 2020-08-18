@@ -1316,19 +1316,6 @@ ProfileImpl::GetSharedCorsOriginAccessList() {
 }
 
 bool ProfileImpl::ShouldEnableOutOfBlinkCors() {
-  // Obtains the applied policy at most one time per profile, and reuse the
-  // same value for the whole session so that CORS implementations distributed
-  // in multi-processes work consistently. Profile-bound renderers and
-  // NetworkContexts will be initialized based on this returned mode.
-  if (!cors_legacy_mode_enabled_.has_value()) {
-    cors_legacy_mode_enabled_ =
-        base::FeatureList::IsEnabled(
-            features::kHideCorsLegacyModeEnabledPolicySupport)
-            ? false
-            : GetPrefs()->GetBoolean(prefs::kCorsLegacyModeEnabled);
-  }
-  if (cors_legacy_mode_enabled_.value())
-    return false;
   return base::FeatureList::IsEnabled(network::features::kOutOfBlinkCors);
 }
 

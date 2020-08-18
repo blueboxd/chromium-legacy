@@ -7,23 +7,45 @@
 #include <memory>
 #include <utility>
 
+#include "base/optional.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/trace_event/common/trace_event_common.h"
 #include "base/trace_event/trace_event.h"
 #include "components/paint_preview/common/proto/paint_preview.pb.h"
 #include "components/paint_preview/common/recording_map.h"
+#include "components/paint_preview/common/serial_utils.h"
 #include "components/paint_preview/common/serialized_recording.h"
 #include "components/services/paint_preview_compositor/public/mojom/paint_preview_compositor.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/core/SkMatrix.h"
+#include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkStream.h"
 
 namespace paint_preview {
 
 namespace {
+
+// Returns |nullopt| if |proto_memory| cannot be mapped or parsed.
+base::Optional<PaintPreviewProto> ParsePaintPreviewProto(
+    const base::ReadOnlySharedMemoryRegion& proto_memory) {
+  auto mapping = proto_memory.Map();
+  if (!mapping.IsValid()) {
+    DVLOG(1) << "Failed to map proto in shared memory.";
+    return base::nullopt;
+  }
+
+  PaintPreviewProto paint_preview;
+  bool ok = paint_preview.ParseFromArray(mapping.memory(), mapping.size());
+  if (!ok) {
+    DVLOG(1) << "Failed to parse proto.";
+    return base::nullopt;
+  }
+
+  return {paint_preview};
+}
 
 base::Optional<PaintPreviewFrame> BuildFrame(
     const base::UnguessableToken& token,
@@ -89,75 +111,78 @@ PaintPreviewCompositorImpl::~PaintPreviewCompositorImpl() {
   receiver_.reset();
 }
 
-void PaintPreviewCompositorImpl::BeginComposite(
+void PaintPreviewCompositorImpl::BeginSeparatedFrameComposite(
     mojom::PaintPreviewBeginCompositeRequestPtr request,
-    BeginCompositeCallback callback) {
-  TRACE_EVENT0("paint_preview", "PaintPreviewCompositorImpl::BeginComposite");
+    BeginSeparatedFrameCompositeCallback callback) {
+  TRACE_EVENT0("paint_preview",
+               "PaintPreviewCompositorImpl::BeginSeparatedFrameComposite");
+
+  // Remove any previously loaded frames, in case |BeginSeparatedFrameComposite|
+  // is called multiple times.
+  frames_.clear();
+
   auto response = mojom::PaintPreviewBeginCompositeResponse::New();
-  auto mapping = request->proto.Map();
-  if (!mapping.IsValid()) {
-    DVLOG(1) << "Failed to map proto in shared memory.";
+  base::Optional<PaintPreviewProto> paint_preview =
+      ParsePaintPreviewProto(request->proto);
+  if (!paint_preview.has_value()) {
     // Cannot send a null token over mojo. This will be ignored downstream.
     response->root_frame_guid = base::UnguessableToken::Create();
-    std::move(callback).Run(
-        mojom::PaintPreviewCompositor::Status::kDeserializingFailure,
-        std::move(response));
+    std::move(callback).Run(mojom::PaintPreviewCompositor::
+                                BeginCompositeStatus::kDeserializingFailure,
+                            std::move(response));
     return;
   }
 
-  PaintPreviewProto paint_preview;
-  bool ok = paint_preview.ParseFromArray(mapping.memory(), mapping.size());
-  if (!ok) {
-    DVLOG(1) << "Failed to parse proto.";
-    // Cannot send a null token over mojo. This will be ignored downstream.
-    response->root_frame_guid = base::UnguessableToken::Create();
-    std::move(callback).Run(
-        mojom::PaintPreviewCompositor::Status::kDeserializingFailure,
-        std::move(response));
-    return;
-  }
+  DCHECK(paint_preview.has_value());
   response->root_frame_guid = base::UnguessableToken::Deserialize(
-      paint_preview.root_frame().embedding_token_high(),
-      paint_preview.root_frame().embedding_token_low());
+      paint_preview->root_frame().embedding_token_high(),
+      paint_preview->root_frame().embedding_token_low());
   if (response->root_frame_guid.is_empty()) {
     DVLOG(1) << "No valid root frame guid";
     // Cannot send a null token over mojo. This will be ignored downstream.
     response->root_frame_guid = base::UnguessableToken::Create();
-    std::move(callback).Run(
-        mojom::PaintPreviewCompositor::Status::kDeserializingFailure,
-        std::move(response));
+    std::move(callback).Run(mojom::PaintPreviewCompositor::
+                                BeginCompositeStatus::kDeserializingFailure,
+                            std::move(response));
   }
   auto frames = DeserializeAllFrames(std::move(request->recording_map));
 
   // Adding the root frame must succeed.
-  if (!AddFrame(paint_preview.root_frame(), frames, &response)) {
+  if (!AddFrame(paint_preview->root_frame(), frames, &response)) {
     DVLOG(1) << "Root frame not found.";
-    std::move(callback).Run(
-        mojom::PaintPreviewCompositor::Status::kCompositingFailure,
-        std::move(response));
+    std::move(callback).Run(mojom::PaintPreviewCompositor::
+                                BeginCompositeStatus::kCompositingFailure,
+                            std::move(response));
     return;
   }
 
+  bool subframe_failed = false;
   // Adding subframes is optional.
-  for (const auto& subframe_proto : paint_preview.subframes())
-    AddFrame(subframe_proto, frames, &response);
+  for (const auto& subframe_proto : paint_preview->subframes()) {
+    if (!AddFrame(subframe_proto, frames, &response))
+      subframe_failed = true;
+  }
 
-  std::move(callback).Run(mojom::PaintPreviewCompositor::Status::kSuccess,
-                          std::move(response));
+  std::move(callback).Run(
+      subframe_failed
+          ? mojom::PaintPreviewCompositor::BeginCompositeStatus::kPartialSuccess
+          : mojom::PaintPreviewCompositor::BeginCompositeStatus::kSuccess,
+      std::move(response));
 }
 
-void PaintPreviewCompositorImpl::BitmapForFrame(
+void PaintPreviewCompositorImpl::BitmapForSeparatedFrame(
     const base::UnguessableToken& frame_guid,
     const gfx::Rect& clip_rect,
     float scale_factor,
-    BitmapForFrameCallback callback) {
-  TRACE_EVENT0("paint_preview", "PaintPreviewCompositorImpl::BitmapForFrame");
+    BitmapForSeparatedFrameCallback callback) {
+  TRACE_EVENT0("paint_preview",
+               "PaintPreviewCompositorImpl::BitmapForSeparatedFrame");
   SkBitmap bitmap;
   auto frame_it = frames_.find(frame_guid);
   if (frame_it == frames_.end()) {
     DVLOG(1) << "Frame not found for " << frame_guid.ToString();
     std::move(callback).Run(
-        mojom::PaintPreviewCompositor::Status::kCompositingFailure, bitmap);
+        mojom::PaintPreviewCompositor::BitmapStatus::kMissingFrame, bitmap);
     return;
   }
 
@@ -167,7 +192,70 @@ void PaintPreviewCompositorImpl::BitmapForFrame(
       base::BindOnce(&CreateBitmap, frame_it->second.skp, clip_rect,
                      scale_factor),
       base::BindOnce(std::move(callback),
-                     mojom::PaintPreviewCompositor::Status::kSuccess));
+                     mojom::PaintPreviewCompositor::BitmapStatus::kSuccess));
+}
+
+void PaintPreviewCompositorImpl::BeginMainFrameComposite(
+    mojom::PaintPreviewBeginCompositeRequestPtr request,
+    BeginMainFrameCompositeCallback callback) {
+  TRACE_EVENT0("paint_preview",
+               "PaintPreviewCompositorImpl::BeginMainFrameComposite");
+  base::Optional<PaintPreviewProto> paint_preview =
+      ParsePaintPreviewProto(request->proto);
+  if (!paint_preview.has_value()) {
+    std::move(callback).Run(mojom::PaintPreviewCompositor::
+                                BeginCompositeStatus::kDeserializingFailure);
+    return;
+  }
+
+  DCHECK(paint_preview.has_value());
+  base::UnguessableToken root_frame_guid = base::UnguessableToken::Deserialize(
+      paint_preview->root_frame().embedding_token_high(),
+      paint_preview->root_frame().embedding_token_low());
+  if (root_frame_guid.is_empty()) {
+    DVLOG(1) << "No valid root frame guid";
+    std::move(callback).Run(mojom::PaintPreviewCompositor::
+                                BeginCompositeStatus::kDeserializingFailure);
+  }
+
+  base::flat_map<base::UnguessableToken, sk_sp<SkPicture>> loaded_frames;
+  RecordingMap recording_map = std::move(request->recording_map);
+  bool subframes_failed = false;
+  root_frame_ = DeserializeFrameRecursive(paint_preview->root_frame(),
+                                          *paint_preview, &loaded_frames,
+                                          &recording_map, &subframes_failed);
+
+  if (root_frame_ == nullptr) {
+    std::move(callback).Run(mojom::PaintPreviewCompositor::
+                                BeginCompositeStatus::kCompositingFailure);
+    return;
+  }
+
+  std::move(callback).Run(
+      subframes_failed
+          ? mojom::PaintPreviewCompositor::BeginCompositeStatus::kPartialSuccess
+          : mojom::PaintPreviewCompositor::BeginCompositeStatus::kSuccess);
+}
+
+void PaintPreviewCompositorImpl::BitmapForMainFrame(
+    const gfx::Rect& clip_rect,
+    float scale_factor,
+    BitmapForMainFrameCallback callback) {
+  TRACE_EVENT0("paint_preview",
+               "PaintPreviewCompositorImpl::BitmapForSeparatedFrame");
+  if (root_frame_ == nullptr) {
+    DVLOG(1) << "Root frame not loaded";
+    std::move(callback).Run(
+        mojom::PaintPreviewCompositor::BitmapStatus::kMissingFrame, SkBitmap());
+    return;
+  }
+
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::TaskPriority::USER_VISIBLE, base::WithBaseSyncPrimitives()},
+      base::BindOnce(&CreateBitmap, root_frame_, clip_rect, scale_factor),
+      base::BindOnce(std::move(callback),
+                     mojom::PaintPreviewCompositor::BitmapStatus::kSuccess));
 }
 
 void PaintPreviewCompositorImpl::SetRootFrameUrl(const GURL& url) {
@@ -225,6 +313,102 @@ PaintPreviewCompositorImpl::DeserializeAllFrames(RecordingMap&& recording_map) {
   }
 
   return base::flat_map<base::UnguessableToken, SkpResult>(std::move(results));
+}
+
+// static
+sk_sp<SkPicture> PaintPreviewCompositorImpl::DeserializeFrameRecursive(
+    const PaintPreviewFrameProto& frame_proto,
+    const PaintPreviewProto& proto,
+    base::flat_map<base::UnguessableToken, sk_sp<SkPicture>>* loaded_frames,
+    RecordingMap* recording_map,
+    bool* subframe_failed) {
+  auto frame_guid = base::UnguessableToken::Deserialize(
+      frame_proto.embedding_token_high(), frame_proto.embedding_token_low());
+  TRACE_EVENT1("paint_preview",
+               "PaintPreviewCompositorImpl::DeserializeFrameRecursive",
+               "frame_guid", frame_guid.ToString());
+
+  // Sanity check that the frame wasn't already loaded.
+  auto it = loaded_frames->find(frame_guid);
+  if (it != loaded_frames->end())
+    return it->second;
+
+  // Recursively load subframes into to deserialization context. This is done
+  // before the current frame is loaded to ensure the order of loading is
+  // topologically sorted.
+  LoadedFramesDeserialContext deserial_context;
+  deserial_context.scroll_offsets = gfx::Size(
+      frame_proto.has_scroll_offset_x() ? frame_proto.scroll_offset_x() : 0,
+      frame_proto.has_scroll_offset_y() ? frame_proto.scroll_offset_y() : 0);
+
+  *subframe_failed = false;
+  for (const auto& id_pair : frame_proto.content_id_to_embedding_tokens()) {
+    auto subframe_embedding_token = base::UnguessableToken::Deserialize(
+        id_pair.embedding_token_high(), id_pair.embedding_token_low());
+
+    // This subframe is already loaded.
+    if (loaded_frames->contains(subframe_embedding_token)) {
+      DVLOG(1) << "Subframe already loaded: " << subframe_embedding_token;
+      continue;
+    }
+
+    // Try and find the subframe's proto based on its embedding token.
+    auto& subframes = proto.subframes();
+    auto subframe_proto_it = std::find_if(
+        subframes.begin(), subframes.end(),
+        [subframe_embedding_token](const PaintPreviewFrameProto& frame_proto) {
+          return subframe_embedding_token ==
+                 base::UnguessableToken::Deserialize(
+                     frame_proto.embedding_token_high(),
+                     frame_proto.embedding_token_low());
+        });
+    if (subframe_proto_it == subframes.end()) {
+      DVLOG(1) << "Frame embeds subframe that does not exist: "
+               << subframe_embedding_token;
+      *subframe_failed = true;
+      continue;
+    }
+
+    bool subframes_of_subframe_failed = false;
+    sk_sp<SkPicture> subframe =
+        DeserializeFrameRecursive(*subframe_proto_it, proto, loaded_frames,
+                                  recording_map, &subframes_of_subframe_failed);
+    if (subframe == nullptr) {
+      DVLOG(1) << "Subframe could not be deserialized: "
+               << subframe_embedding_token;
+      *subframe_failed = true;
+      continue;
+    }
+
+    // Subframe failure is transitive and should propogate.
+    if (subframes_of_subframe_failed) {
+      *subframe_failed = true;
+    }
+
+    // Place the subframe dependency in our deserialization context.
+    loaded_frames->insert({subframe_embedding_token, subframe});
+
+    FrameAndScrollOffsets frame;
+    frame.picture = subframe;
+    frame.scroll_offsets = gfx::Size(subframe_proto_it->has_scroll_offset_x()
+                                         ? subframe_proto_it->scroll_offset_x()
+                                         : 0,
+                                     subframe_proto_it->has_scroll_offset_y()
+                                         ? subframe_proto_it->scroll_offset_y()
+                                         : 0);
+    deserial_context.subframes.insert({id_pair.content_id(), frame});
+  }
+
+  auto recording_it = recording_map->find(frame_guid);
+  if (recording_it == recording_map->end()) {
+    DVLOG(1) << "Serialized recording doesn't exist for frame: " << frame_guid;
+    return nullptr;
+  }
+
+  sk_sp<SkPicture> picture =
+      std::move(recording_it->second).DeserializeWithContext(&deserial_context);
+  recording_map->erase(recording_it);
+  return picture;
 }
 
 }  // namespace paint_preview

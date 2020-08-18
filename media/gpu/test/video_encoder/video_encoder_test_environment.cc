@@ -50,10 +50,9 @@ const std::vector<base::Feature> kDisabledFeaturesForVideoEncoderTest = {
 uint32_t GetDefaultTargetBitrate(const gfx::Size& resolution,
                                  const uint32_t framerate) {
   constexpr uint32_t Mbps = 1000 * 1000;
-  // The half of video bitrates recommended by YouTube for 16:9 SDR 30fps video.
-  // (https://support.google.com/youtube/answer/1722171). Dividing them by 2 is
-  // to tune for video call apps, which are most frequent use scenarios of video
-  // encoders.
+  // Following bitrates are based on the video bitrates recommended by YouTube
+  // for 16:9 SDR 30fps video.
+  // (https://support.google.com/youtube/answer/1722171).
   // The bitrates don't scale linearly so we use the following lookup table as a
   // base for computing a reasonable bitrate for the specified resolution and
   // framerate.
@@ -61,9 +60,9 @@ uint32_t GetDefaultTargetBitrate(const gfx::Size& resolution,
     gfx::Size resolution;
     uint32_t bitrate;
   } kDefaultTargetBitrates[] = {
-      {gfx::Size(640, 360), 0.5 * Mbps},  {gfx::Size(854, 480), 1.25 * Mbps},
-      {gfx::Size(1280, 720), 2.5 * Mbps}, {gfx::Size(1920, 1080), 4 * Mbps},
-      {gfx::Size(2560, 1440), 8 * Mbps},  {gfx::Size(3840, 2160), 18 * Mbps},
+      {gfx::Size(640, 360), 1 * Mbps},    {gfx::Size(854, 480), 2.5 * Mbps},
+      {gfx::Size(1280, 720), 5 * Mbps},   {gfx::Size(1920, 1080), 8 * Mbps},
+      {gfx::Size(3840, 2160), 18 * Mbps},
   };
 
   const auto* it = std::find_if(

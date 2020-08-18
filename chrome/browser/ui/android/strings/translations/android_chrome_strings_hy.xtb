@@ -252,7 +252,6 @@
 <translation id="2942036813789421260">Նախադիտման ներդիրը փակված է</translation>
 <translation id="2956410042958133412">Այս հաշիվը կառավարվում է <ph name="PARENT_NAME_1" /> և <ph name="PARENT_NAME_2" /> հաշիվների կողմից:</translation>
 <translation id="2962095958535813455">Դուք անցում կատարեցիք ինկոգնիտո ներդիրների ռեժիմին</translation>
-<translation id="2968755619301702150">Վկայագրերի դիտում</translation>
 <translation id="2979025552038692506">Ընտրված ինկոգնիտո ներդիր</translation>
 <translation id="2987620471460279764">Այլ սարքից ուղարկված տեքստ</translation>
 <translation id="2989523299700148168">Վերջերս այցելած</translation>
@@ -669,7 +668,6 @@
 <translation id="6157392216611456285">Ընտրել <ph name="APP_NAME" />-ը</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> տվյալների խնայում</translation>
 <translation id="6186394685773237175">Կոտրված գաղտնաբառեր չեն գտնվել</translation>
-<translation id="6201345951596836663">Հղումը պատճենվեց</translation>
 <translation id="6206830853671714236">Ընտրեք, թե երբ է պետք ներբեռնել</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> հաշիվը ձե՞րը չէ</translation>
 <translation id="6218096829563201111">Որոնել նման ապրանքներ <ph name="BEGIN_NEW" />Նորույթ<ph name="END_NEW" /></translation>
@@ -747,7 +745,7 @@
 <translation id="6659594942844771486">Ներդիր</translation>
 <translation id="6663079968236414793">Հղում տեքստին</translation>
 <translation id="666731172850799929">Բացել <ph name="APP_NAME" /> հավելվածում</translation>
-<translation id="666981079809192359">Chrome-ի Գաղտնիության ծանուցում</translation>
+<translation id="666981079809192359">Chrome-ի Գաղտնիության ծանուցագիր</translation>
 <translation id="6671495933530132209">Պատճենել պատկերը</translation>
 <translation id="6676840375528380067">Հեռացնե՞լ Chrome-ի տվյալները այս սարքից</translation>
 <translation id="6689172468748959065">Պրոֆիլի լուսանկարներ</translation>

@@ -35,11 +35,11 @@
 ] interface Window : EventTarget {
     // the current browsing context
     // FIXME: The spec uses the WindowProxy type for this and many other attributes.
-    [Affects=Nothing, Unforgeable, CrossOrigin, CachedAccessor=kWindowProxy] readonly attribute Window window;
+    [Affects=Nothing, LegacyUnforgeable, CrossOrigin, CachedAccessor=kWindowProxy] readonly attribute Window window;
     [Replaceable, CrossOrigin, CachedAccessor=kWindowProxy] readonly attribute Window self;
-    [Affects=Nothing, Unforgeable, CachedAccessor=kWindowDocument] readonly attribute Document document;
+    [Affects=Nothing, LegacyUnforgeable, CachedAccessor=kWindowDocument] readonly attribute Document document;
     attribute DOMString name;
-    [Affects=Nothing, PutForwards=href, Unforgeable, CrossOrigin=(Getter,Setter), Custom=Getter] readonly attribute Location location;
+    [Affects=Nothing, PutForwards=href, LegacyUnforgeable, CrossOrigin=(Getter,Setter), Custom=Getter] readonly attribute Location location;
     [CallWith=ScriptState] readonly attribute CustomElementRegistry customElements;
     [Affects=Nothing] readonly attribute History history;
     [Replaceable, MeasureAs=BarPropLocationbar] readonly attribute BarProp locationbar;
@@ -58,7 +58,7 @@
     // other browsing contexts
     [Replaceable, CrossOrigin, CachedAccessor=kWindowProxy] readonly attribute Window frames;
     [Replaceable, CrossOrigin] readonly attribute unsigned long length;
-    [Unforgeable, CrossOrigin] readonly attribute Window? top;
+    [LegacyUnforgeable, CrossOrigin] readonly attribute Window? top;
     // FIXME: opener should be of type any.
     [CrossOrigin, Custom=Setter] attribute Window opener;
     [Replaceable, CrossOrigin] readonly attribute Window? parent;

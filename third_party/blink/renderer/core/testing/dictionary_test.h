@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/double_or_string.h"
 #include "third_party/blink/renderer/bindings/core/v8/internal_enum_or_internal_enum_sequence.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_internal_enum.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_test_callback.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
@@ -71,9 +72,15 @@ class DictionaryTest : public ScriptWrappable {
   base::Optional<Vector<String>> string_sequence_member_;
   Vector<String> string_sequence_member_with_default_;
   base::Optional<Vector<String>> string_sequence_or_null_member_;
-  String enum_member_;
+  base::Optional<String> enum_member_;
   String enum_member_with_default_;
-  String enum_or_null_member_;
+#ifdef USE_BLINK_V8_BINDING_NEW_IDL_DICTIONARY
+  // The outer Optional<> represents if the member is missing, and the inner
+  // Optional<> represents if the member is a null value.
+  base::Optional<base::Optional<V8InternalEnum>> enum_or_null_member_;
+#else
+  base::Optional<String> enum_or_null_member_;
+#endif
   Member<Element> element_member_;
   base::Optional<Member<Element>> element_or_null_member_;
   ScriptValue object_member_;

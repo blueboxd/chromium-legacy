@@ -124,9 +124,9 @@ import org.chromium.payments.mojom.PaymentValidationErrors;
 
     // Implement PaymentRequest:
     @Override
-    public void hasEnrolledInstrument(boolean perMethodQuota) {
+    public void hasEnrolledInstrument() {
         if (mComponentPaymentRequestImpl == null) return;
-        mComponentPaymentRequestImpl.hasEnrolledInstrument(perMethodQuota);
+        mComponentPaymentRequestImpl.hasEnrolledInstrument();
     }
 
     // Implement PaymentRequest:

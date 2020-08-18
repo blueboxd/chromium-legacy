@@ -82,7 +82,6 @@
 <translation id="1294154142200295408">انواع مختلف خط فرمان</translation>
 <translation id="129553762522093515">اخیراً بسته‌شده</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />کوکی‌ها را پاک کنید<ph name="END_LINK" /></translation>
-<translation id="1299917195319242089">‏دکمه «باز کردن پنجره ناشناس»، برای باز کردن پنجره ناشناس جدید در Chrome، کلید Enter را فشار دهید</translation>
 <translation id="1301324364792935241">‏تنظیمات DNS امن را بررسی کنید</translation>
 <translation id="1307966114820526988">ویژگی‌های منسوخ‌شده</translation>
 <translation id="131405271941274527">‏<ph name="URL" /> می‌خواهد وقتی با تلفنتان روی دستگاه NFC ضربه می‌زنید، اطلاعات را ارسال و دریافت کند</translation>
@@ -255,7 +254,6 @@
 <translation id="1919345977826869612">آگهی‌ها</translation>
 <translation id="1919367280705858090">دریافت راهنمایی برای پیام خطایی خاص</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{هیچ‌کدام}=1{۱ سایت}one{# سایت}other{# سایت}}</translation>
-<translation id="1926148189358507356">‏دکمه «راه‌اندازی مجدد برای به‌روزرسانی»، برای به‌روزرسانی Chrome، کلید Enter را فشار دهید</translation>
 <translation id="1945968466830820669">‏ممکن است دسترسی به حساب سازمانتان را از دست بدهید یا به سرقت هویت دچار شوید. Chromium توصیه می‌کند هم‌اکنون گذرواژه‌تان را تغییر دهید.</translation>
 <translation id="1947454675006758438">منگنه در بالا راست</translation>
 <translation id="1959001866257244765">‏با ارسال <ph name="BEGIN_WHITEPAPER_LINK" />نشانی وب برخی از صفحه‌هایی که بازدید می‌کنید، اطلاعات محدود سیستم، و بخشی از محتوای صفحه<ph name="END_WHITEPAPER_LINK" /> به Google، به بهبود امنیت وب برای همه کمک کنید. <ph name="BEGIN_PRIVACY_PAGE_LINK" />خط‌مشی رازداری<ph name="END_PRIVACY_PAGE_LINK" /></translation>
@@ -360,7 +358,6 @@
 <translation id="2367567093518048410">سطح</translation>
 <translation id="2380886658946992094">Legal</translation>
 <translation id="2384307209577226199">پیش‌فرض شرکتی</translation>
-<translation id="238547550913364157">‏<ph name="LAUNCH_INCOGNITO_FOCUSED_FRIENDLY_MATCH_TEXT" />، برای باز کردن پنجره ناشناس جدید در Chrome، کلید Tab و سپس Enter را فشار دهید</translation>
 <translation id="2385809941344967209">‏Chrome را از تنظیمات Chrome به‌روزرسانی کنید</translation>
 <translation id="2386255080630008482">گواهی سرور باطل شده است.</translation>
 <translation id="2392959068659972793">نمایش خط‌مشی‌ها با مقدار تنظیم نشده</translation>
@@ -403,7 +400,6 @@
 <translation id="2586657967955657006">بریده‌دان</translation>
 <translation id="2587730715158995865">از <ph name="ARTICLE_PUBLISHER" />. این داستان و <ph name="OTHER_ARTICLE_COUNT" /> داستان دیگر را بخوانید.</translation>
 <translation id="2587841377698384444">‏شناسه Directory API:</translation>
-<translation id="2592698726824597401">‏<ph name="UPDATE_CREDIT_CARD_FOCUSED_FRIENDLY_MATCH_TEXT" />، برای به‌روزرسانی اطلاعات تکمیل خودکار کارت اعتباری در تنظیمات Chrome، کلید Tab و سپس Enter را فشار دهید</translation>
 <translation id="2595719060046994702">این دستگاه و حساب توسط شرکت یا سازمان دیگری مدیریت نمی‌شود.</translation>
 <translation id="2597378329261239068">این سند توسط گذرواژه محافظت می‌شود.  لطفاً یک گذرواژه وارد کنید.</translation>
 <translation id="2609632851001447353">انواع مختلف</translation>
@@ -425,7 +421,6 @@
 <translation id="2677748264148917807">خروج</translation>
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">بهترین اندازه</translation>
-<translation id="2688738823074468716">‏دکمه «مدیریت گذرواژه‌ها»، برای مدیریت گذرواژه‌ها در تنظیمات Chrome، کلید Enter را فشار دهید</translation>
 <translation id="2688969097326701645">بله، ادامه</translation>
 <translation id="2691924980723297736">هشدار ایمنی</translation>
 <translation id="2699302886720511147">کارت‌های قابل‌‌قبول</translation>
@@ -746,7 +741,6 @@
 <translation id="4088981014127559358">‏روی ۱، تغییر جهت تصویر حول محور Y</translation>
 <translation id="4098354747657067197">احتیاط، سایت گول‌زننده</translation>
 <translation id="4101413244023615925">نوشتار و تصاویر گرافیکی</translation>
-<translation id="4103147722950692857">‏<ph name="MANAGE_PASSWORDS_FOCUSED_FRIENDLY_MATCH_TEXT" />، برای مدیریت گذرواژه‌ها در تنظیمات Chrome، کلید Tab و سپس Enter را فشار دهید</translation>
 <translation id="4103249731201008433">شماره سریال دستگاه نامعتبر است</translation>
 <translation id="4103763322291513355">‏برای مشاهده فهرست نشانی‌های وب ممنوع و سایر خط‌مشی‌های اجباری براساس تصمیم سرپرست سیستم خود از &lt;strong&gt;chrome://policy&lt;/strong&gt; بازدید نمایید.</translation>
 <translation id="4110652170750985508">مرور پرداخت</translation>
@@ -917,7 +911,6 @@
 <translation id="4738601419177586157">پیشنهاد جستجوی <ph name="TEXT" /></translation>
 <translation id="4742407542027196863">مدیریت گذرواژه‌ها…</translation>
 <translation id="4744603770635761495">مسیر قابل اجرا</translation>
-<translation id="4750085040310563588">‏<ph name="UPDATE_CHROME_FOCUSED_FRIENDLY_MATCH_TEXT" />، برای به‌روزرسانی Chrome، کلید Tab و سپس Enter را فشار دهید</translation>
 <translation id="4750917950439032686">اطلاعات شما (به‌عنوان مثال، گذرواژه‌ها یا شماره‌ کارت‌های اعتباری) وقتی به این سایت ارسال می‌شوند، خصوصی هستند.</translation>
 <translation id="4756388243121344051">&amp;سابقه</translation>
 <translation id="4758311279753947758">افزودن اطلاعات تماس</translation>
@@ -1036,7 +1029,6 @@
 <translation id="5215116848420601511">‏روش‌های پرداخت و نشانی‌های مورداستفاده در Google Pay</translation>
 <translation id="5215363486134917902">Folio-Sp</translation>
 <translation id="5222812217790122047">ایمیل ضروری است</translation>
-<translation id="5222994811833658317">‏دکمه «پاک کردن داده‌ها»، برای پاک کردن داده‌های سابقه مرور Chrome، کلید Enter را فشار دهید</translation>
 <translation id="5230733896359313003">نشانی تحویل کالا</translation>
 <translation id="5230815978613972521">B8</translation>
 <translation id="5233045608889518621">12x19</translation>
@@ -1303,7 +1295,6 @@
 <translation id="6302269476990306341">‏توقف «دستیار Google» در Chrome</translation>
 <translation id="6305205051461490394">دسترسی به <ph name="URL" /> امکان‌پذیر نیست.</translation>
 <translation id="6312113039770857350">صفحه وب در دسترس نیست</translation>
-<translation id="6315224405718249523">‏دکمه «ترجمه صفحه»، برای ترجمه این صفحه، کلید Enter را فشار دهید</translation>
 <translation id="6321917430147971392">‏تنظیمات DNS خودتان را بررسی کنید</translation>
 <translation id="6322182122604171028">‏استفاده از Windows Hello ممکن نشد</translation>
 <translation id="6328639280570009161">غیرفعال کردن پیش‌بینی شبکه را امتحان کنید</translation>
@@ -1358,7 +1349,6 @@
 <translation id="6547208576736763147">دو سوراخ در چپ</translation>
 <translation id="6554795675067793129">حساب شما توسط <ph name="ENROLLMENT_DOMAIN" /> مدیریت می‌شود.</translation>
 <translation id="6556866813142980365">انجام مجدد</translation>
-<translation id="6566840325635607048">‏دکمه «به‌روزرسانی کارت اعتباری»، برای به‌روزرسانی اطلاعات تکمیل خودکار کارت اعتباری در تنظیمات Chrome، کلید Enter را فشار دهید</translation>
 <translation id="6569060085658103619">درحال مشاهده یک صفحه افزونه هستید</translation>
 <translation id="6573200754375280815">دو سوراخ در راست</translation>
 <translation id="6578796323535178455">C2 (Envelope)</translation>
@@ -1599,7 +1589,6 @@
 <translation id="7549584377607005141">این صفحه وب برای نمایش صحیح به داده‌هایی نیاز دارد که قبلاً وارد کرده‌اید. می‌توانید این داده‌ها را دوباره ارسال کنید، اما با انجام این کار، هر اقدامی که این صفحه قبلاً انجام داده است تکرار می‌شود.</translation>
 <translation id="7550637293666041147">‏نام کاربری شما در دستگاه و Chrome</translation>
 <translation id="7552846755917812628">نکته‌های زیر را امتحان کنید:</translation>
-<translation id="7553823544414963579">‏<ph name="CLEAR_BROWSING_DATA_FOCUSED_FRIENDLY_MATCH_TEXT" />، برای پاک کردن داده‌های سابقه مرور Chrome، کلید Tab و سپس Enter را فشار دهید</translation>
 <translation id="7554791636758816595">برگهٔ جدید</translation>
 <translation id="7564049878696755256">‏ممکن است دسترسی به حساب <ph name="ORG_NAME" /> را از دست بدهید یا به سرقت هویت دچار شوید. Chrome توصیه می‌کند هم‌اکنون گذرواژه‌تان را تغییر دهید.</translation>
 <translation id="7567204685887185387">این سرور نتوانست اثبات کند که این <ph name="DOMAIN" /> است؛ ممکن است گواهی امنیتی آن به صورت تقلبی صادر شده باشد. ممکن است علت این موضوع پیکربندی اشتباه باشد یا مهاجمی اتصال شما را قطع کرده است.</translation>
@@ -1766,7 +1755,6 @@
 <translation id="8225771182978767009">شخصی که این رایانه را راه‌اندازی کرده این سایت را مسدود کرده است.</translation>
 <translation id="8228419419708659934">نمای دوصفحه‌ای</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />،‏ <ph name="TYPE_2" /></translation>
-<translation id="8230646577665563479">‏<ph name="TRANSLATE_FOCUSED_FRIENDLY_MATCH_TEXT" />، برای ترجمه کردن این صفحه، کلید Tab و سپس Enter را فشار دهید</translation>
 <translation id="8232343881378637145">دمای پلتفورم</translation>
 <translation id="8238581221633243064">صفحه را در برگه «ناشناس» جدیدی باز کنید</translation>
 <translation id="8241707690549784388">صفحه‌ای که جستجو می‌کنید از اطلاعاتی استفاده می‌کند که شما وارد کرده‌اید. بازگشت به آن صفحه ممکن است باعث شود اقدامی را که قبلاً انجام دادید دوباره تکرار کنید. آیا می‌خواهید ادامه دهید؟</translation>
@@ -1834,6 +1822,7 @@
 <translation id="8498891568109133222">پاسخ <ph name="HOST_NAME" /> بیش از حد طول کشیده است.</translation>
 <translation id="8503559462189395349">‏گذرواژه‌های Chrome</translation>
 <translation id="8503813439785031346">نام کاربری</translation>
+<translation id="8507227106804027148">خط فرمان</translation>
 <translation id="8508648098325802031">نماد جستجو</translation>
 <translation id="8522552481199248698">‏Chrome می‌تواند کمک کند از حساب Google خود محافظت کنید و گذرواژه‌تان را تغییر دهید.</translation>
 <translation id="8530813470445476232">‏سابقه مرور، کوکی، حافظه پنهان و موارد دیگر را در تنظیمات Chrome پاک کنید.</translation>

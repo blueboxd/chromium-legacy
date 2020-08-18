@@ -441,9 +441,6 @@ struct NetworkContextParams {
   // policy.
   array<string> hsts_policy_bypass_list;
 
-  // Extra CORS safelisted request headers names.
-  array<string> cors_extra_safelisted_request_header_names;
-
   // Specifies the CORS mode.
   //   kDefault - Decided by base::Feature
   //   kEnable  - Enable CORS in Network Service (aka OOR-CORS)
@@ -1337,11 +1334,6 @@ interface NetworkContext {
   SetCorsOriginAccessListsForOrigin(
       url.mojom.Origin source_origin, array<CorsOriginPattern> allow_patterns,
       array<CorsOriginPattern> block_patterns) => ();
-
-  // Sets extra CORS safelisted request headers names dynamically. Headers need
-  // to be in lower case.
-  SetCorsExtraSafelistedRequestHeaderNames(
-      array<string> cors_extra_safelisted_request_header_names);
 
   // Deletes any dynamic data stored for |host| from the transport
   // security state. Returns true iff an entry was deleted.

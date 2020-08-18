@@ -9,6 +9,7 @@
 <translation id="150962533380566081">‏غلط PUK۔</translation>
 <translation id="1510238584712386396">لانچر</translation>
 <translation id="1644574205037202324">سرگزشت</translation>
+<translation id="1662989795263954667">رک گیا - سیاہی ختم ہو گئی</translation>
 <translation id="1734367976349034509">یہ آلہ انٹرپرائز کے زیرِ انتظام ہے</translation>
 <translation id="1905710495812624430">زیادہ سے زیادہ مجاز کوششوں سے تجاوز کرگیا۔</translation>
 <translation id="1930797645656624981">‏Chrome OS اندراج کے طریقہ کی سروس</translation>
@@ -39,17 +40,21 @@
 <translation id="4227825898293920515">پاس ورڈ کی میعاد <ph name="TIME" /> میں ختم ہونے والی ہے</translation>
 <translation id="4238516577297848345">کوئی پرنٹ جاب پیشرفت میں نہیں</translation>
 <translation id="428217921675623177">90 دن سے پرانی پرنٹ جابز کو ہٹا دیا جائے گا</translation>
+<translation id="4297501883039923494">رک گیا - نامعلوم خرابی</translation>
 <translation id="4429881212383817840">‏Kerberos کی ٹکٹ کی میعاد جلد ہی ختم ہو جائے گی</translation>
 <translation id="445059817448385655">پرانا پاس ورڈ</translation>
 <translation id="4627232916386272576">‏<ph name="DOCUMENT_TITLE" />، <ph name="PRINTER_NAME" />، <ph name="CREATION_TIME" />، <ph name="TOTAL_PAGE_NUMBER" /> میں سے <ph name="PRINTED_PAGE_NUMBER" />۔ براہ کرم پرنٹ جاب منسوخ کرنے کے لیے enter دبائیں۔</translation>
 <translation id="467510802200863975">پاس ورڈز مماثل نہیں ہیں</translation>
+<translation id="4691278870498629773">رک گیا - ٹرے موجود نہیں ہے</translation>
 <translation id="4731797938093519117">والدین کی رسائی</translation>
 <translation id="4773299976671772492">روک دیا گیا</translation>
 <translation id="4808449224298348341"><ph name="DOCUMENT_TITLE" /> پرنٹ جاب منسوخ کر دی گئی</translation>
 <translation id="4890353053343094602">فوری طور پر نیا پاس ورڈ منتخب کریں</translation>
+<translation id="4917889632206600977">رک گیا - کاغذ ختم ہو گیا</translation>
 <translation id="4932733599132424254">تاریخ</translation>
 <translation id="5212543919916444558">مجھے آپ کی اسکرین پر ایسا کچھ نہیں ملا جس سے متعلق میں آپ کی مدد کر سکوں۔ مجھ سے کچھ بھی پوچھنے کے لیے مائیک کو تھپتھپانے کی کوشش کریں۔</translation>
 <translation id="5222676887888702881">سائن آؤٹ</translation>
+<translation id="5267975978099728568"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="ERROR_STATUS" /></translation>
 <translation id="5317780077021120954">محفوظ کریں</translation>
 <translation id="5326394068492324457"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="COMPLETION_STATUS" /></translation>
 <translation id="5332948983412042822">ابھی ایک نیا پاس ورڈ منتخب کریں</translation>
@@ -62,9 +67,11 @@
 <translation id="6106186594183574873">مکمل کرنے کے لئے اپنا پرانا پاس ورڈ درج کریں</translation>
 <translation id="6146993107019042706">مکمل کرنے کے لئے اپنا نیا پاس ورڈ درج کریں</translation>
 <translation id="636850387210749493">انٹرپرائز اندراج</translation>
+<translation id="649050271426829538">رک گیا - پیپر جام</translation>
 <translation id="6517239166834772319">دریافت</translation>
 <translation id="6564646048574748301">ناکام ہو گیا - پرنٹر ناقابل رسائی ہے</translation>
 <translation id="6643016212128521049">صاف کریں</translation>
+<translation id="6747215703636344499">رک گیا - آؤٹ پٹ بھر گیا ہے</translation>
 <translation id="7162487448488904999">گیلری</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7561454561030345039">یہ کارروائی آپ کے منتظم کے زیر انتظام ہے</translation>
@@ -76,6 +83,7 @@
 <translation id="8347227221149377169">پرنٹ جابز</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> اس صارف کا نظم کرتا ہے۔ یہ دور سے ترتیبات کا نظم اور صارف کی سرگرمی کو مانیٹر کر سکتا ہے۔</translation>
 <translation id="871560550817059752">ناکام ہو گیا - سیاہی ختم ہو گئی</translation>
+<translation id="8726019395068607495">رک گیا - دروازہ کھلا ہے</translation>
 <translation id="8747900814994928677">تبدیلی کی توثیق کریں</translation>
 <translation id="8919837981463578619">ناکام ہو گیا - ٹرے موجود نہیں ہے</translation>
 <translation id="8928727111548978589">ناکام ہو گیا - کاغذ ختم ہو گیا</translation>

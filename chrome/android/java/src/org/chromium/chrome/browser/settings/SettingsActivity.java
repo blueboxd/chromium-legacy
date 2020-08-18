@@ -30,6 +30,8 @@ import org.chromium.chrome.browser.ChromeBaseAppCompatActivity;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.password_check.PasswordCheckComponentUiFactory;
+import org.chromium.chrome.browser.password_check.PasswordCheckEditFragmentView;
+import org.chromium.chrome.browser.password_check.PasswordCheckFactory;
 import org.chromium.chrome.browser.password_check.PasswordCheckFragmentView;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileManagerUtils;
@@ -284,6 +286,9 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
                     new SafetyCheckUpdatesDelegateImpl(this), new SettingsLauncherImpl());
         } else if (fragment instanceof PasswordCheckFragmentView) {
             PasswordCheckComponentUiFactory.create((PasswordCheckFragmentView) fragment);
+        } else if (fragment instanceof PasswordCheckEditFragmentView) {
+            PasswordCheckEditFragmentView editFragment = (PasswordCheckEditFragmentView) fragment;
+            editFragment.setCheckProvider(PasswordCheckFactory::getOrCreate);
         }
     }
 

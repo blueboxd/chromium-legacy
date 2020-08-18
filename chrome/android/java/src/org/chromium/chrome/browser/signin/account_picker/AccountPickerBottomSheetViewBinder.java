@@ -59,6 +59,9 @@ class AccountPickerBottomSheetViewBinder {
             case AccountPickerBottomSheetState.INCOGNITO_INTERSTITIAL:
                 view.setUpIncognitoInterstitialView();
                 break;
+            case AccountPickerBottomSheetState.SIGNIN_GENERAL_ERROR:
+                view.setUpSignInGeneralErrorView();
+                break;
             default:
                 throw new IllegalArgumentException(
                         "Cannot bind AccountPickerBottomSheetView for the state:"

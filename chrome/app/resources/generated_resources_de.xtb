@@ -307,6 +307,7 @@
 <translation id="1361164813881551742">Manuell hinzufügen</translation>
 <translation id="1361655923249334273">Nicht verwendet</translation>
 <translation id="1361872463926621533">Ton beim Start abspielen</translation>
+<translation id="1362865166188278099">Mechanischer Fehler. Drucker prüfen.</translation>
 <translation id="1363585519747660921">USB-Drucker muss konfiguriert werden</translation>
 <translation id="1365180424462182382"><ph name="BEGIN_LINK" />Ihr Browser wird von <ph name="ENROLLMENT_DOMAIN" /> verwaltet<ph name="END_LINK" /></translation>
 <translation id="1366177842110999534">Sie können auf Ihrem <ph name="DEVICE_TYPE" /> Linux-Tools, -Editoren und -IDEs nutzen. &lt;a target="_blank" href="<ph name="URL" />"&gt;Weitere Informationen&lt;/a&gt;</translation>
@@ -1369,6 +1370,7 @@ Wenn Sie die Family Link App auf Ihrem Gerät installieren, können Sie die Eins
 <translation id="2636625531157955190">Chrome kann nicht auf das Bild zugreifen.</translation>
 <translation id="2637400434494156704">Falsche PIN. Sie haben noch einen Eingabeversuch.</translation>
 <translation id="2638662041295312666">Log-in-Bild</translation>
+<translation id="2640549051766135490">Album <ph name="TITLE" /> <ph name="DESC" /> ausgewählt</translation>
 <translation id="264083724974021997">Mit dem Smartphone verbinden – Dialogfenster</translation>
 <translation id="2641065435954454414">Download wird vorbereitet</translation>
 <translation id="2642111877055905627">Fußball</translation>
@@ -1954,6 +1956,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="338583716107319301">Trennzeichen</translation>
 <translation id="338691029516748599">Netzwerk <ph name="NETWORK_INDEX" /> von <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, Signalstärke bei <ph name="SIGNAL_STRENGTH" /> %, von Ihrem Administrator verwaltet, Verbinden</translation>
 <translation id="3387614642886316601">Erweiterte Rechtschreibprüfung verwenden</translation>
+<translation id="3388094447051599208">Ausgabefach fast voll</translation>
 <translation id="3388788256054548012">Diese Datei ist verschlüsselt. Bitten Sie den Inhaber, sie zu entschlüsseln.</translation>
 <translation id="3390013585654699824">App-Details</translation>
 <translation id="3390741581549395454">Linux-Apps und -Dateien wurden gesichert. Das Upgrade beginnt demnächst.</translation>
@@ -2031,6 +2034,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3471876058939596279">HDMI- und USB-Typ-C-Ports können nicht gleichzeitig für den Anschluss an Bildschirme verwendet werden. Verwenden Sie einen anderen Videoport.</translation>
 <translation id="3473241910002674503">Mit den Schaltflächen im Tablet-Modus zum Launcher, zurück und zwischen Apps wechseln.</translation>
 <translation id="3473479545200714844">Lupe</translation>
+<translation id="347394413229268704">Später lesen</translation>
 <translation id="3475843873335999118">Ihr Fingerabdruck wurde immer noch nicht erkannt. Bitte geben Sie Ihr Passwort ein.</translation>
 <translation id="3476303763173086583">Sie haben die Möglichkeit, Nutzungsdaten &amp; Fehlerberichte zu senden. Sie können uns helfen, Android für Ihr Kind zu verbessern, indem Sie zulassen, dass Diagnose- sowie Geräte- und App-Nutzungsdaten automatisch an Google gesendet werden. Ihr Kind wird mithilfe dieser Daten nicht identifiziert, sie helfen jedoch beispielsweise dabei, die Stabilität des Systems und der Apps zu verbessern. Einige aggregierte Daten sind auch für Apps und Partner von Google, beispielsweise Android-Entwickler, nützlich. Diese <ph name="BEGIN_LINK1" />Einstellung<ph name="END_LINK1" /> wird vom Inhaber erzwungen. Der Inhaber kann festlegen, ob Diagnose- und Nutzungsdaten von diesem Gerät an Google gesendet werden. Wenn zusätzlich die Einstellung "Web- &amp; App-Aktivitäten" für Ihr Kind aktiviert ist, werden diese Daten in seinem Google-Konto gespeichert. <ph name="BEGIN_LINK2" />Weitere Informationen<ph name="END_LINK2" /></translation>
 <translation id="347670947055184738">Hoppla! Das System konnte die Richtlinie für Ihr Gerät nicht abrufen.</translation>
@@ -2591,6 +2595,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4107048419833779140">Speichergeräte ermitteln und auswerfen</translation>
 <translation id="4109135793348361820">Fenster zu <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />) verschieben</translation>
 <translation id="4110490973560452005">Download abgeschlossen: <ph name="FILE_NAME" />. Drücken Sie Umschalttaste + F6, um zum Bereich mit der Downloadleiste zu wechseln.</translation>
+<translation id="4110686435123617899">Album <ph name="TITLE" /> <ph name="DESC" /> auswählen</translation>
 <translation id="4110895898888439383">Das Web in Modus mit hohem Kontrast durchsuchen</translation>
 <translation id="4112194537011183136"><ph name="DEVICE_NAME" /> (offline)</translation>
 <translation id="4115002065223188701">Netzwerk außer Reichweite</translation>
@@ -2916,7 +2921,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4563210852471260509">Anfängliche Eingabesprache ist Chinesisch.</translation>
 <translation id="4563880231729913339">Finger 3</translation>
 <translation id="4565377596337484307">Passwort ausblenden</translation>
-<translation id="4565577809484439917">{NUM_DAYS,plural, =1{Gemäß <ph name="DOMAIN" /> ist es notwendig, dass Sie ein Backup Ihrer Daten erstellen und dieses <ph name="DEVICE_TYPE" /> heute zurückgeben.}other{Gemäß <ph name="DOMAIN" /> ist es notwendig, dass Sie ein Backup Ihrer Daten erstellen und dieses <ph name="DEVICE_TYPE" /> vor Ablauf der Frist zurückgeben.}}</translation>
+<translation id="4565577809484439917">{NUM_DAYS,plural, =1{Gemäß <ph name="DOMAIN" /> ist es notwendig, ein Daten-Backup zu erstellen und dieses <ph name="DEVICE_TYPE" /> heute zurückzugeben.}other{Gemäß <ph name="DOMAIN" /> ist es notwendig, ein Daten-Backup zu erstellen und dieses <ph name="DEVICE_TYPE" /> vor Ablauf der Frist zurückzugeben.}}</translation>
 <translation id="4565917129334815774">Systemprotokolle speichern</translation>
 <translation id="456717285308019641">Sprache der Seite, die übersetzt wird</translation>
 <translation id="4567533462991917415">Nach dem Einrichten lassen sich jederzeit mehr Personen hinzufügen. Jede Person kann ihr Konto personalisieren und ihre Daten schützen.</translation>
@@ -2980,7 +2985,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4638930039313743000">ADB-Fehlerbehebung aktivieren</translation>
 <translation id="4641539339823703554">Die Systemzeit konnte nicht eingestellt werden. Bitte überprüfen Sie die unten angegebene Uhrzeit und korrigieren Sie sie gegebenenfalls.</translation>
 <translation id="4643612240819915418">&amp;Video in neuem Tab öffnen</translation>
-<translation id="4645551927492192497">{NUM_DAYS,plural, =1{Gemäß <ph name="DOMAIN" /> ist es notwendig, dass Sie sich heute mit dem WLAN verbinden und ein Update herunterladen. Das Update kann auch über eine kostenpflichtige Verbindung heruntergeladen werden (hierfür können zusätzliche Gebühren anfallen).}other{Gemäß <ph name="DOMAIN" /> ist es notwendig, dass Sie sich vor Ablauf der Frist mit dem WLAN verbinden und ein Update herunterladen. Das Update kann auch über eine kostenpflichtige Verbindung heruntergeladen werden (hierfür können zusätzliche Gebühren anfallen).}}</translation>
+<translation id="4645551927492192497">{NUM_DAYS,plural, =1{Gemäß <ph name="DOMAIN" /> ist es notwendig, sich heute mit einem WLAN zu verbinden und ein Update herunterzuladen. Das Update kann auch über eine kostenpflichtige Verbindung heruntergeladen werden (hierfür können zusätzliche Gebühren anfallen).}other{Gemäß <ph name="DOMAIN" /> ist es notwendig, sich vor Ablauf der Frist mit einem WLAN zu verbinden und ein Update herunterzuladen. Das Update kann auch über eine kostenpflichtige Verbindung heruntergeladen werden (hierfür können zusätzliche Gebühren anfallen).}}</translation>
 <translation id="4645676300727003670">&amp;Beibehalten</translation>
 <translation id="4646675363240786305">Ports</translation>
 <translation id="4646949265910132906">Sichere WLAN-Verbindung</translation>
@@ -3077,6 +3082,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4780321648949301421">Seite speichern unter...</translation>
 <translation id="4785719467058219317">Sie verwenden einen Sicherheitsschlüssel, der nicht auf dieser Website registriert ist</translation>
 <translation id="4788092183367008521">Bitte überprüfen Sie die Netzwerkverbindung und versuchen Sie es noch einmal.</translation>
+<translation id="4791000909649665275"><ph name="NUMBER" /> Foto(s)</translation>
 <translation id="4791037424585594169">(UDP)</translation>
 <translation id="4792711294155034829">&amp;Probleme melden...</translation>
 <translation id="4794810983896241342">Updates werden von <ph name="BEGIN_LINK" />Ihrem Administrator<ph name="END_LINK" /> verwaltet</translation>
@@ -3118,7 +3124,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4842976633412754305">Diese Seite versucht, Skripts aus nicht authentifizierten Quellen zu laden.</translation>
 <translation id="4844333629810439236">Sonstige Tastaturen</translation>
 <translation id="4846680374085650406">Sie folgen der Empfehlung des Administrators für diese Einstellung.</translation>
-<translation id="4847902821209177679">"<ph name="TOPIC_SOURCE" /> – <ph name="TOPIC_SOURCE_DESC" />" ausgewählt; drücken Sie die Eingabetaste, um <ph name="TOPIC_SOURCE" />-Alben auszuwählen</translation>
+<translation id="4847902821209177679">"<ph name="TOPIC_SOURCE" /> – <ph name="TOPIC_SOURCE_DESC" />" ausgewählt; drücke die Eingabetaste, um <ph name="TOPIC_SOURCE" />-Alben auszuwählen</translation>
 <translation id="4848191975108266266">"Ok Google" bei Google Assistant</translation>
 <translation id="4848518990323155912">Sperren der SIM-Karte aktivieren (PIN zum Zugriff auf Mobilfunknetz erforderlich)</translation>
 <translation id="4849286518551984791">Koordinierte Weltzeit (UTC/GMT)</translation>
@@ -3958,7 +3964,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5877064549588274448">Kanal geändert. Starten Sie Ihr Gerät neu, um die Änderungen zu übernehmen.</translation>
 <translation id="5877584842898320529">Der ausgewählte Drucker ist entweder nicht verfügbar oder nicht ordnungsgemäß installiert. <ph name="BR" /> Überprüfen Sie den Drucker oder wählen Sie einen anderen Drucker aus.</translation>
 <translation id="5882919346125742463">Bekannte Netzwerke</translation>
-<translation id="5883464818836130222">Cloudfähige Drucker werden ab dem 1. Januar nicht mehr unterstützt. Wenden Sie sich an Ihren Administrator.</translation>
+<translation id="5883464818836130222">Das Drucken über die Cloud wird ab dem 1. Januar nicht mehr unterstützt. Wenden Sie sich an Ihren Administrator.</translation>
 <translation id="5884474295213649357">Dieser Tab ist mit einem USB-Gerät verbunden.</translation>
 <translation id="5886009770935151472">Finger 1</translation>
 <translation id="5889282057229379085">Maximal zulässige Anzahl an Zwischenzertifizierungsstellen: <ph name="NUM_INTERMEDIATE_CA" /></translation>
@@ -4265,7 +4271,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="625369703868467034">Netzwerkzustand</translation>
 <translation id="6254503684448816922">Kompromittierung des Schlüssels</translation>
 <translation id="6257602895346497974">Synchronisierung aktivieren…</translation>
-<translation id="625895209797312329">Websites daran hindern, auf Ihrem Gerät installierte Schriftarten zu verwenden</translation>
+<translation id="625895209797312329">Websites daran hindern, auf meinem Gerät installierte Schriftarten zu verwenden</translation>
 <translation id="6259104249628300056">Geräte in Ihrem lokalen Netzwerk finden</translation>
 <translation id="6262371516389954471">Ihre Sicherungen werden an Google gesendet und mit dem Passwort Ihres Google-Kontos verschlüsselt.</translation>
 <translation id="6263082573641595914">Microsoft - Version der Zertifizierungsstelle</translation>
@@ -4396,7 +4402,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="642469772702851743">Dieses Gerät (SN: <ph name="SERIAL_NUMBER" />) wurde vom Eigentümer gesperrt.</translation>
 <translation id="6425556984042222041">Tempo der Sprachausgabe</translation>
 <translation id="6426200009596957090">ChromeVox-Einstellungen öffnen</translation>
-<translation id="642654727595919401">Gemäß <ph name="DOMAIN" /> ist es notwendig, dass Sie Ihre Daten sichern und dieses <ph name="DEVICE_TYPE" /> innerhalb von 1 Woche zurückgeben. <ph name="LINK_BEGIN" />Details anzeigen<ph name="LINK_END" /></translation>
+<translation id="642654727595919401">Gemäß <ph name="DOMAIN" /> ist es notwendig, ein Daten-Backup zu erstellen und dieses <ph name="DEVICE_TYPE" /> innerhalb von 1 Woche zurückzugeben. <ph name="LINK_BEGIN" />Weitere Informationen<ph name="LINK_END" /></translation>
 <translation id="6428982734197629783">Bild wird verarbeitet</translation>
 <translation id="6429384232893414837">Fehler beim Aktualisieren</translation>
 <translation id="6430814529589430811">Base64-codierter ASCII-Code, Einzelzertifikat</translation>
@@ -5207,7 +5213,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7456847797759667638">Adresse öffnen...</translation>
 <translation id="7458168200501453431">Verwendet dieselbe Rechtschreibprüfung, die auch in der Google Suche zum Einsatz kommt. Der in den Browser eingegebene Text wird an Google gesendet.</translation>
 <translation id="7460045493116006516">Derzeit installiertes Design</translation>
-<translation id="7461729991508684543">{NUM_DAYS,plural, =1{Gemäß <ph name="DOMAIN" /> ist es notwendig, dass Sie Ihre Daten sichern und dieses <ph name="DEVICE_TYPE" /> heute zurückgeben. <ph name="LINK_BEGIN" />Details anzeigen<ph name="LINK_END" />}other{Gemäß <ph name="DOMAIN" /> ist es notwendig, dass Sie Ihre Daten sichern und dieses <ph name="DEVICE_TYPE" /> innerhalb von {NUM_DAYS} Tagen zurückgeben. <ph name="LINK_BEGIN" />Details anzeigen<ph name="LINK_END" />}}</translation>
+<translation id="7461729991508684543">{NUM_DAYS,plural, =1{Gemäß <ph name="DOMAIN" /> ist es notwendig, ein Daten-Backup zu erstellen und dieses <ph name="DEVICE_TYPE" /> heute zurückzugeben. <ph name="LINK_BEGIN" />Weitere Informationen<ph name="LINK_END" />}other{Gemäß <ph name="DOMAIN" /> ist es notwendig, ein Daten-Backup zu erstellen und dieses <ph name="DEVICE_TYPE" /> innerhalb von {NUM_DAYS} Tagen zurückzugeben. <ph name="LINK_BEGIN" />Weitere Informationen<ph name="LINK_END" />}}</translation>
 <translation id="7461924472993315131">Anpinnen</translation>
 <translation id="746216226901520237">Das nächste Mal wird Ihr <ph name="DEVICE_TYPE" /> von Ihrem Smartphone entsperrt. Sie können Smart Lock in den Einstellungen deaktivieren.</translation>
 <translation id="7463006580194749499">Person hinzufügen</translation>
@@ -5218,7 +5224,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="747114903913869239">Fehler: Erweiterung kann nicht entschlüsselt werden.</translation>
 <translation id="7473891865547856676">Nein danke</translation>
 <translation id="747459581954555080">Alle wiederherstellen</translation>
-<translation id="747507174130726364">{NUM_DAYS,plural, =1{Sofortige Rückgabe erforderlich}other{Geben Sie <ph name="DEVICE_TYPE" /> innerhalb von {NUM_DAYS} Tagen zurück}}</translation>
+<translation id="747507174130726364">{NUM_DAYS,plural, =1{Sofortige Rückgabe erforderlich}other{<ph name="DEVICE_TYPE" /> innerhalb von {NUM_DAYS} Tagen zurückgeben}}</translation>
 <translation id="7475671414023905704">Netscape-URL für vergessene Passwörter</translation>
 <translation id="7476454130948140105">Der Akku ist für ein Update zu schwach (<ph name="BATTERY_PERCENT" /> %)</translation>
 <translation id="7477793887173910789">Musik, Videos und andere Medien steuern</translation>
@@ -5692,7 +5698,6 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8028060951694135607">Microsoft-Schlüsselwiederherstellung</translation>
 <translation id="8028803902702117856"><ph name="SIZE" /> werden heruntergeladen, <ph name="FILE_NAME" /></translation>
 <translation id="8028993641010258682">Größe</translation>
-<translation id="8030656706657716245">Drucker hinzufügen</translation>
 <translation id="8030852056903932865">Genehmigen</translation>
 <translation id="8032244173881942855">Tab kann nicht gestreamt werden.</translation>
 <translation id="8033827949643255796">Ausgewählt</translation>
@@ -6643,7 +6648,7 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="9209563766569767417">Einrichtung des Linux-Containers wird geprüft</translation>
 <translation id="9209689095351280025">Websites können keine Cookies verwenden, die Ihre Browserdaten über mehrere Websites hinweg erfassen</translation>
 <translation id="9211177926627870898">Aktualisierung erforderlich</translation>
-<translation id="9211904674129619383">Cloudfähige Drucker werden ab dem 1. Januar nicht mehr unterstützt. <ph name="BEGIN_LINK_LEARN_MORE" />Weitere Informationen<ph name="END_LINK_LEARN_MORE" /></translation>
+<translation id="9211904674129619383">Das Drucken über die Cloud wird ab dem 1. Januar nicht mehr unterstützt. <ph name="BEGIN_LINK_LEARN_MORE" />Weitere Informationen<ph name="END_LINK_LEARN_MORE" /></translation>
 <translation id="9214520840402538427">Hoppla! Bei der Initialisierung der Installationszeit-Attribute ist eine Zeitüberschreitung aufgetreten. Bitte wenden Sie sich an Ihren Support-Mitarbeiter.</translation>
 <translation id="9214695392875603905">Cupcake</translation>
 <translation id="9215293857209265904">"<ph name="EXTENSION_NAME" />" hinzugefügt</translation>

@@ -338,6 +338,7 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="4881695831933465202">Åpne</translation>
 <translation id="4901778704868714008">Lagre</translation>
 <translation id="4904877109095351937">Merk som lest</translation>
+<translation id="4908869848243824489">Discover fra Google</translation>
 <translation id="4930268273022498155">Slett eksisterende data. Du kan hente ut dataene ved å bytte tilbake til <ph name="USER_EMAIL1" />.</translation>
 <translation id="4930714375720679147">Slå på</translation>
 <translation id="4941089862236492464">Det oppsto et problem under delingen av artikkelen.</translation>
@@ -554,6 +555,7 @@ Nettsteder kan ikke bruke informasjonskapsler til å se nettleseraktiviteten din
 <translation id="7293171162284876153">For å starte synkronisering, slå på «Synkroniser Chrome-dataene dine».</translation>
 <translation id="7313347584264171202">Her finner du inkognitofanene dine</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> prosent fullført</translation>
+<translation id="7340958967809483333">Alternativer for Discover</translation>
 <translation id="7346909386216857016">Greit</translation>
 <translation id="734758817008927353">Alternativer for lagring av kort</translation>
 <translation id="7348502496356775519">Sett som bokmerke</translation>
@@ -665,6 +667,7 @@ Nettsteder kan bruke informasjonskapsler til å se nettleseraktiviteten din på 
 <translation id="8668210798914567634">Denne siden er lagret i leselisten din.</translation>
 <translation id="8680787084697685621">Kontoens påloggingsdetaljer er utdaterte.</translation>
 <translation id="8706588385081740091">Passord</translation>
+<translation id="8717864919010420084">Kopiér linken</translation>
 <translation id="8721297211384281569">Verktøy-menyen</translation>
 <translation id="8725066075913043281">Prøv igjen</translation>
 <translation id="8730621377337864115">Ferdig</translation>

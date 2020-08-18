@@ -61,8 +61,8 @@
       default_value: "false",
     },
     {
-      name: "UnoptimizedLosslessImagesStrict",
-      document_policy_name: "unoptimized-lossless-images-strict",
+      name: "LosslessImagesStrictMaxBpp",
+      document_policy_name: "lossless-images-strict-max-bpp",
       value_type: "DecDouble",
       default_value: "max",
       depends_on: ["UnoptimizedImagePolicies"],

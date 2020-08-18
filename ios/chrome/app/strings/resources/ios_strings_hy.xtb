@@ -294,7 +294,7 @@
 <translation id="4375040482473363939">Սկանավորել QR կոդը</translation>
 <translation id="4378154925671717803">Հեռախոս</translation>
 <translation id="4389019817280890563">Հպեք՝ լեզուն փոխելու համար։</translation>
-<translation id="441868831736628555">Գաղտնիության ծանուցում</translation>
+<translation id="441868831736628555">Գաղտնիության ծանուցագիր</translation>
 <translation id="4454246407045105932">Ավելացնել լեզու</translation>
 <translation id="4469418912670346607">Շարունակել կարգավորումը</translation>
 <translation id="4476574785019001431">Կարգավորումներ</translation>
@@ -338,6 +338,7 @@
 <translation id="4881695831933465202">Բացել</translation>
 <translation id="4901778704868714008">Պահել…</translation>
 <translation id="4904877109095351937">Նշել որպես կարդացված</translation>
+<translation id="4908869848243824489">Discover by Google</translation>
 <translation id="4930268273022498155">Առկա տվյալների ջնջում: Տվյալները կարող եք առբերել` անցնելով <ph name="USER_EMAIL1" /> հաշիվ:</translation>
 <translation id="4930714375720679147">Միացնել</translation>
 <translation id="4941089862236492464">Չհաջողվեց կիսվել տարրով։</translation>
@@ -554,6 +555,7 @@ Handoff-ը պետք է միացված լինի նաև Կարգավորումնե
 <translation id="7293171162284876153">Սկսելու համար միացրեք «Համաժամացնել Chrome-ի տվյալները» կարգավորումը:</translation>
 <translation id="7313347584264171202">Ձեր ինկոգնիտո ներդիրները կգտնեք այստեղ</translation>
 <translation id="7336264872878993241">Ներբեռնվել է <ph name="PERCENT" /> տոկոսը</translation>
+<translation id="7340958967809483333">Discover-ի կարգավորումներ</translation>
 <translation id="7346909386216857016">Եղավ</translation>
 <translation id="734758817008927353">Քարտը պահելու կարգավորումներ</translation>
 <translation id="7348502496356775519">Էջանիշ</translation>
@@ -665,6 +667,7 @@ Handoff-ը պետք է միացված լինի նաև Կարգավորումնե
 <translation id="8668210798914567634">Այս էջը պահվեց ձեր ընթերցանության ցանկում:</translation>
 <translation id="8680787084697685621">Հաշվի մուտքի տվյալները հնացած են:</translation>
 <translation id="8706588385081740091">Գաղտնաբառեր</translation>
+<translation id="8717864919010420084">Պատճենել հղումը</translation>
 <translation id="8721297211384281569">Գործիքների ընտրացանկ</translation>
 <translation id="8725066075913043281">Փորձել կրկին</translation>
 <translation id="8730621377337864115">Պատրաստ է</translation>

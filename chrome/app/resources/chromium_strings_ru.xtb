@@ -28,6 +28,7 @@
 <translation id="2294245788148774212">Автоматически отправлять данные об использовании и диагностике в Google, чтобы помогать нам повышать производительность и улучшать функции Chromium OS (необязательно)</translation>
 <translation id="2347108572062610441">Расширение изменило стартовую страницу Chromium.</translation>
 <translation id="2396765026452590966">Расширение "<ph name="EXTENSION_NAME" />" изменило стартовую страницу Chromium.</translation>
+<translation id="2442081746662839303">Создать профиль Chromium для нового пользователя (<ph name="NEW_USER" />)?</translation>
 <translation id="2483889755041906834">В Chromium</translation>
 <translation id="2485422356828889247">Удалить</translation>
 <translation id="2527042973354814951">Перезапустите Chromium, чтобы включить плагин "<ph name="PLUGIN_NAME" />"</translation>
@@ -103,6 +104,7 @@
 <translation id="4943838377383847465">Chromium работает в фоновом режиме</translation>
 <translation id="4987820182225656817">Используйте Chromium в гостевом режиме, если не хотите сохранять данные о посещенных сайтах.</translation>
 <translation id="4994636714258228724">Добавить пользователя Chromium</translation>
+<translation id="5053724573690775822">Создать рабочий профиль Chromium?</translation>
 <translation id="5224391634244552924">Сохраненных паролей нет. Чтобы браузер Chromium мог проверять пароли, сохраните их.</translation>
 <translation id="5277894862589591112">Чтобы изменения вступили в силу, перезапустите Chromium.</translation>
 <translation id="5358375970380395591">Выполнив вход в управляемый аккаунт, вы предоставляете администратору право контролировать настройки вашего профиля Chromium. Ваши данные Chromium (приложения, закладки, история, пароли и другие настройки) будут временно связаны с аккаунтом <ph name="USER_NAME" />. Эти данные можно удалить в Личном кабинете Google, но их нельзя связать с другим аккаунтом. <ph name="LEARN_MORE" /></translation>
@@ -112,6 +114,7 @@
 <translation id="5416696090975899932">Если отсутствует встроенная программа для работы с PDF-файлами, предварительный просмотр в Chromium невозможен.</translation>
 <translation id="5427571867875391349">Сделать Chromium браузером по умолчанию</translation>
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> – Chromium (бета-версия)</translation>
+<translation id="544968170749360982">Вы вошли в новый аккаунт в профиле этого пользователя: <ph name="EXISTING_USER" />. Хотите создать для нового пользователя (<ph name="NEW_USER" />) отдельный профиль Chromium?</translation>
 <translation id="5479196819031988440">Chromium OS не может открыть эту страницу</translation>
 <translation id="5480860683791598150">Для этого сайта Chromium запрашивает доступ к данным о вашем местоположении.</translation>
 <translation id="549669000822060376">Подождите, пока Chromium устанавливает последние обновления системы</translation>
@@ -134,6 +137,7 @@
 <translation id="608189560609172163">Chromium не удалось синхронизировать данные из-за ошибки входа в систему.</translation>
 <translation id="6096348254544841612">Новая версия Chromium уже вышла!</translation>
 <translation id="6120345080069858279">Этот пароль будет сохранен в аккаунте Google. Вам не нужно его запоминать.</translation>
+<translation id="6128834065531097268">Вы вошли в рабочий аккаунт в профиле этого пользователя: <ph name="EXISTING_USER" />. Хотите создать для <ph name="WORK_DOMAIN" /> отдельный профиль Chromium?</translation>
 <translation id="6129621093834146363">Chromium заблокировал файл <ph name="FILE_NAME" /> как опасный.</translation>
 <translation id="6134968993075716475">Безопасный просмотр отключен. Chromium рекомендует включить его.</translation>
 <translation id="6212496753309875659">На этом компьютере установлена актуальная версия Chromium. Если программа не работает, удалите Chromium и повторите попытку.</translation>
@@ -192,6 +196,7 @@
 <translation id="7549178288319965365">О Chromium OS</translation>
 <translation id="7561906087460245826">Также удалить данные из Chromium (<ph name="URL" />)</translation>
 <translation id="7585853947355360626">Если нужного параметра нет на этой странице, откройте <ph name="LINK_BEGIN" />настройки Chromium OS<ph name="LINK_END" />.</translation>
+<translation id="7607142834923530546">Вы вошли в рабочий аккаунт. Хотите создать для нового пользователя (<ph name="NEW_USER" />) отдельный личный профиль Chromium?</translation>
 <translation id="761356813943268536">Chromium использует камеру и микрофон.</translation>
 <translation id="7617377681829253106">Chromium становится все лучше</translation>
 <translation id="7628001322379820951">Браузер Chromium обнаружил на вашем компьютере вредоносное ПО.</translation>

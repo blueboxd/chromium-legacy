@@ -55,7 +55,7 @@
 <translation id="1360432990279830238">సైన్ అవుట్ చేసి, సమకాలీకరణను ఆఫ్ చేయలా?</translation>
 <translation id="1373696734384179344">ఎంచుకున్న కంటెంట్‌ను డౌన్‌లోడ్ చేయడానికి తగినంత మెమరీ లేదు.</translation>
 <translation id="1376578503827013741">గణిస్తోంది...</translation>
-<translation id="1383876407941801731">శోధించు</translation>
+<translation id="1383876407941801731">సెర్చ్</translation>
 <translation id="1386674309198842382"><ph name="LAST_UPDATED" /> రోజుల క్రితం యాక్టివ్‌గా ఉంది</translation>
 <translation id="1397811292916898096"><ph name="PRODUCT_NAME" />తో వెతకండి</translation>
 <translation id="1406000523432664303">“ట్రాక్ చేయవద్దు”</translation>
@@ -252,7 +252,6 @@
 <translation id="2942036813789421260">ప్రివ్యూ ట్యాబ్ మూసివేయబడింది</translation>
 <translation id="2956410042958133412">ఈ ఖాతా <ph name="PARENT_NAME_1" /> మరియు <ph name="PARENT_NAME_2" /> నిర్వహణలో ఉంది.</translation>
 <translation id="2962095958535813455">అజ్ఞాత ట్యాబ్‌లకు మార్చబడింది</translation>
-<translation id="2968755619301702150">ప్రమాణపత్రం వ్యూయర్</translation>
 <translation id="2979025552038692506">ఎంచుకున్న అజ్ఞాత ట్యాబ్</translation>
 <translation id="2987620471460279764">ఇతర పరికరం నుండి షేర్ చేయబడిన వచనం</translation>
 <translation id="2989523299700148168">ఇటీవల సందర్శించినవి</translation>
@@ -453,6 +452,7 @@
 <translation id="4605958867780575332">ఈ అంశం తీసివేయబడింది: <ph name="ITEM_TITLE" /></translation>
 <translation id="4616150815774728855"><ph name="WEBAPK_NAME" />ని తెరువు</translation>
 <translation id="4634124774493850572">పాస్‌వర్డ్‌ను ఉపయోగించు</translation>
+<translation id="4640331037679501949">{NUM_PASSWORDS,plural, =1{1 చోరీకి గురైన పాస్‌వర్డ్}other{# చోరీకి గురైన పాస్‌వర్డ్‌లు}}</translation>
 <translation id="4650364565596261010">సిస్టమ్ డిఫాల్ట్</translation>
 <translation id="465657074423018424">మోసపూరిత వైబ్‌సైట్‌ల నుంచి మిమల్ని సురక్షిత బ్రౌజింగ్ రక్షిస్తోంది. మీరు దీనిని ఆఫ్ చేస్తే, బ్రౌజ్ చేసేటప్పుడు మరింత జాగ్రత్త వహించాల్సి ఉంటుంది, ముఖ్యంగా పాస్‌వర్డ్‌లను ఎంటర్ చేసేటప్పుడు.</translation>
 <translation id="4662373422909645029">మారుపేరులో అంకెలు ఉండరాదు</translation>
@@ -669,7 +669,6 @@
 <translation id="6157392216611456285"><ph name="APP_NAME" />ను ఎంచుకోండి</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> డేటా పొదుపులు</translation>
 <translation id="6186394685773237175">చోరీకి గురైన పాస్‌వర్డ్‌లు ఏవీ కనుగొనబడలేదు</translation>
-<translation id="6201345951596836663">లింక్ కాపీ చేయబడింది</translation>
 <translation id="6206830853671714236">ఎప్పుడు డౌన్‌లోడ్ చేయాలో ఎంచుకోండి</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> కాదా?</translation>
 <translation id="6218096829563201111">ఇలాంటి ప్రోడక్ట్ వెతుకు<ph name="BEGIN_NEW" />కొత్తది<ph name="END_NEW" /></translation>

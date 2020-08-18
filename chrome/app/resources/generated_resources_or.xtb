@@ -302,6 +302,7 @@
 <translation id="1361164813881551742">ମାନୁଆଲ୍‌ ଭାବେ ଯୋଗକରନ୍ତୁ</translation>
 <translation id="1361655923249334273">ଅବ୍ୟବହୃତ</translation>
 <translation id="1361872463926621533">ଆରମ୍ଭ ହେବାମାତ୍ରେ ସାଉଣ୍ଡ ଚଲାନ୍ତୁ</translation>
+<translation id="1362865166188278099">ମେକାନିକାଲ୍ ସମସ୍ୟା। ପ୍ରିଣ୍ଟର୍ ଯାଞ୍ଚ କରନ୍ତୁ</translation>
 <translation id="1363585519747660921">USB ପ୍ରିଣ୍ଟର୍ କନ୍‍ଫିଗରେସନ୍ ଦରକାର ହୋ‍ଇଥାଏ।</translation>
 <translation id="1365180424462182382"><ph name="ENROLLMENT_DOMAIN" /> ଦ୍ୱାରା ଆପଣଙ୍କର <ph name="BEGIN_LINK" />ବ୍ରାଉଜର୍ ପରିଚାଳିତ ହୋଇଛି<ph name="END_LINK" /></translation>
 <translation id="1366177842110999534">ଆପଣଙ୍କର <ph name="DEVICE_TYPE" />ରେ Linux ଟୁଲ୍ସ, ଏଡିଟର୍ ଏବଂ IDEs ଚଲାନ୍ତୁ। &lt;a target="_blank" href="<ph name="URL" />"&gt;ଅଧିକ ଜାଣନ୍ତୁ&lt;/a&gt;</translation>
@@ -316,7 +317,7 @@
 <translation id="1380028686461971526">ନେଟୱାର୍କ ସହ ସ୍ୱତଃ ସଂଯୋଗ କରନ୍ତୁ</translation>
 <translation id="1380436189840894976">ଯେକୌଣସି ମତେ ଇନ୍‌କଗ୍ନିଟୋ ମୋଡ୍‌ ଛାଡିବେ?</translation>
 <translation id="1383861834909034572">ସମାପନ ହେବାବେଳେ ଖୋଲୁଛି</translation>
-<translation id="1383876407941801731">ସନ୍ଧାନ</translation>
+<translation id="1383876407941801731">Search</translation>
 <translation id="1386387014181100145">ହାୱଡି</translation>
 <translation id="138784436342154190">ଡିଫଲ୍ଟ ଷ୍ଟାର୍ଟଅପ୍ ପୃଷ୍ଠାକୁ ରିଷ୍ଟୋର୍ କରିବେ?</translation>
 <translation id="1390548061267426325">ନିୟମିତ ଟାବ୍ ଭାବରେ ଖୋଲନ୍ତୁ</translation>
@@ -1355,6 +1356,7 @@
 <translation id="2636625531157955190">Chrome ଛବିକୁ ଆକ୍ସେସ୍ କରିପାରିବ ନାହିଁ।</translation>
 <translation id="2637400434494156704">ଭୁଲ ପିନ୍। ଆପଣଙ୍କର ଗୋଟିଏ ପ୍ରଚେଷ୍ଟା ବାକି ଅଛି।</translation>
 <translation id="2638662041295312666">ସାଇନ୍-ଇନ୍ ଛବି</translation>
+<translation id="2640549051766135490">ଆଲବମ୍ <ph name="TITLE" /> <ph name="DESC" /> ଚୟନ କରାଯାଇଛି</translation>
 <translation id="264083724974021997">ଆପଣଙ୍କର ଫୋନ୍ ସହିତ ସଂଯୋଗ କରନ୍ତୁ - ଡାଏଲଗ୍</translation>
 <translation id="2641065435954454414">ଛବି ଡାଉନଲୋଡ୍ କରିବାକୁ ପ୍ରସ୍ତୁତ କରାଯାଉଛି</translation>
 <translation id="2642111877055905627">ସୋକର୍ ବଲ୍‌</translation>
@@ -1936,6 +1938,7 @@
 <translation id="338583716107319301">ବିଭାଜନକାରୀ</translation>
 <translation id="338691029516748599"><ph name="NETWORK_COUNT" />ଟିର <ph name="NETWORK_INDEX" /> ନେଟ୍‌ୱାର୍କ, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, ସିଗ୍‍ନାଲ୍‍ର କ୍ଷମତା <ph name="SIGNAL_STRENGTH" />%, ଆପଣଙ୍କର ଆଡ୍‍ମିନିଷ୍ଟ୍ରେଟର୍‍ଙ୍କ ଦ୍ୱାରା ପରିଚାଳିତ, ସଂଯୋଗ କରନ୍ତୁ</translation>
 <translation id="3387614642886316601">ଉନ୍ନତ ବନାନ ଯାଞ୍ଚ ବ୍ୟବହାର କରନ୍ତୁ</translation>
+<translation id="3388094447051599208">ଆଉଟପୁଟ୍ ଟ୍ରେ ପ୍ରାୟ ପୂର୍ଣ୍ଣ ହୋଇଯାଇଛି</translation>
 <translation id="3388788256054548012">ଏହି ଫାଇଲଟି ଏନକ୍ରିପ୍ଟ କରାଯାଇଛି। ଏହାର ମାଲିକଙ୍କୁ ଡିକ୍ରିପ୍ଟ କରିବାକୁ କୁହନ୍ତୁ।</translation>
 <translation id="3390013585654699824">ଆପ୍ ବିବରଣୀ</translation>
 <translation id="3390741581549395454">Linux ଆପ୍ ଏବଂ ଫାଇଲ୍‍ଗୁଡ଼ିକର ସଫଳତାପୂର୍ବକ ବ୍ୟାକ୍ ଅପ୍ ନିଆଯାଇଛି। ଅପଗ୍ରେଡ୍ ଶୀଘ୍ର ଆରମ୍ଭ ହେବ।</translation>
@@ -2013,6 +2016,7 @@
 <translation id="3471876058939596279">ଭିଡିଓ ପାଇଁ ସେହି ଏକା ସମୟରେ HDMI ଏବଂ USB ଟାଇପ୍-C ପୋର୍ଟ ବ୍ୟବହାର କରାଯାଇପାରିବ ନାହିଁ। ଏକ ଭିନ୍ନ ଭିଡିଓ ପୋର୍ଟ ବ୍ୟବହାର କରନ୍ତୁ।</translation>
 <translation id="3473241910002674503">ଟାବଲେଟ୍ ମୋଡରେ ବଟନଗୁଡ଼ିକ ସାହାଯ୍ୟରେ ମୂଳ ପୃଷ୍ଠାକୁ ନାଭିଗେଟ୍ କରନ୍ତୁ, ପଛକୁ ଫେରନ୍ତୁ ଏବଂ ଆପଗୁଡ଼ିକ ସ୍ୱିଚ୍ କରନ୍ତୁ।</translation>
 <translation id="3473479545200714844">ସ୍କ୍ରିନ୍ ମ୍ୟାଗ୍ନିଫାୟର୍</translation>
+<translation id="347394413229268704">ପରେ ପଢ଼ନ୍ତୁ</translation>
 <translation id="3475843873335999118">କ୍ଷମା କରିବେ,ଏବେ ମଧ୍ୟ ଆପଣଙ୍କର ଟିପଚିହ୍ନ ଚିହ୍ନଟ କରାଯାଇପାରିନାହିଁ। ଦୟାକରି ନିଜର ପାସ୍‌ୱାର୍ଡ ଲେଖନ୍ତୁ।</translation>
 <translation id="3476303763173086583">ବ୍ୟବହାର ଓ ଡାଏଗ୍ନୋଷ୍ଟିକ୍ ଡାଟାକୁ ପଠାନ୍ତୁ। ସ୍ଵଚାଳିତ ଭାବେ ଡାଏଗ୍ନୋଷ୍ଟିକ୍, ଡିଭାଇସ୍ ଓ ଆପ୍ ବ୍ୟବହାର ଡାଟା Googleକୁ ପଠାଇ ଆପଣଙ୍କ ପିଲାର Android ଅନୁଭବକୁ ଉନ୍ନତ କରିବାରେ ସାହାଯ୍ୟ କରନ୍ତୁ। ଆପଣଙ୍କ ପିଲାକୁ ଚିହ୍ନଟ କରିବାରେ ଏହାକୁ ବ୍ୟବହାର କରାଯିବ ନାହିଁ ଏବଂ ସିଷ୍ଟମ୍ ଓ ଆପ୍‌ର ସ୍ଥିରତା ଏବଂ ଅନ୍ୟାନ୍ୟ ଉନ୍ନତିରେ ସାହାଯ୍ୟ କରିବ। କିଛି ଏକତ୍ରିତ ଡାଟା, Google ଆପ୍ସ ଓ ସହଭାଗୀମାନଙ୍କୁ ମଧ୍ୟ ସାହାଯ୍ୟ କରିବ, ଯେପରି Android ଡେଭଲପର୍। ଏହି <ph name="BEGIN_LINK1" />ସେଟିଂ<ph name="END_LINK1" /> ମାଲିକଙ୍କ ଦ୍ୱାରା ଲାଗୁ କରାଯାଇଛି। ମାଲିକ ଏହି ଡିଭାଇସ୍ ପାଇଁ Googleକୁ ଡାଏଗ୍ନୋଷ୍ଟିକ୍ ଓ ବ୍ୟବହାର ଡାଟା ପଠାଇବାକୁ ବାଛିପାରନ୍ତି। ଯଦି ଆପଣଙ୍କର ପିଲା ପାଇଁ ଅତିରିକ୍ତ ୱେବ୍ ଏବଂ ଆପ୍ କାର୍ଯ୍ୟକଳାପ ସେଟିଂସ୍ ଚାଲୁ କରାଯାଏ, ତେବେ ଏହି ଡାଟା ସେମାନଙ୍କର Google ଆକାଉଣ୍ଟରେ ସେଭ୍ ହୋଇପାରେ। <ph name="BEGIN_LINK2" />ଅଧିକ ଜାଣନ୍ତୁ<ph name="END_LINK2" /></translation>
 <translation id="347670947055184738">ଓହୋଃ!  ସିଷ୍ଟମ୍ ଆପଣଙ୍କ ଡିଭାଇସ୍ ପାଇଁ ନୀତି ଆଣିବାକୁ ବିଫଳ ହେଲା।</translation>
@@ -2569,6 +2573,7 @@
 <translation id="4107048419833779140">ଷ୍ଟୋରେଜ୍‌ ଡିଭାଇସ୍‌ଗୁଡ଼ିକ ଚିହ୍ନଟ କରନ୍ତୁ ଏବଂ ବାହାର କରନ୍ତୁ</translation>
 <translation id="4109135793348361820"><ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)କୁ ୱିଣ୍ଡୋ ନିଅନ୍ତୁ</translation>
 <translation id="4110490973560452005">ଡାଉନ୍‌ଲୋଡ୍ ଶେଷ ହୋଇଛି: <ph name="FILE_NAME" />। ଡାଉନ୍‌ଲୋଡ୍ ବାର୍ କ୍ଷେତ୍ରକୁ ଯିବାକୁ Shift+F6କୁ ଦବାନ୍ତୁ।</translation>
+<translation id="4110686435123617899">ଆଲବମ୍ <ph name="TITLE" /> <ph name="DESC" /> ଚୟନ କରନ୍ତୁ</translation>
 <translation id="4110895898888439383">ଉଚ୍ଚ କଣ୍ଟ୍ରାଷ୍ଟ ମୋଡ୍‌ରେ ୱେବ୍ ବ୍ରାଉଜ୍ କରନ୍ତୁ</translation>
 <translation id="4112194537011183136"><ph name="DEVICE_NAME" /> (ଅଫ୍‌ଲାଇନ୍)</translation>
 <translation id="4115002065223188701">ନେଟ୍‌ୱର୍କ ପରିସୀମା ବାହାରେ ଅଛି</translation>
@@ -3052,6 +3057,7 @@
 <translation id="4780321648949301421">ଏହିପରି ଭାବେ ପୃଷ୍ଠାଟିକୁ ସେଭ୍ କରନ୍ତୁ...</translation>
 <translation id="4785719467058219317">ଆପଣ ଏପରି ଏକ କୀ ବ୍ୟବହାର କରୁଛନ୍ତି, ଯାହାକୁ ଏହି ୱେବସାଇଟ୍‌ରେ ପଞ୍ଜୀକୃତ କରାଯାଇ ନାହିଁ</translation>
 <translation id="4788092183367008521">ଦୟାକରି ଆପଣଙ୍କ ନେଟ୍‍ୱର୍କ ସଂଯୋଗ ଯାଞ୍ଚ କରନ୍ତୁ ଏବଂ ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।</translation>
+<translation id="4791000909649665275"><ph name="NUMBER" />ଟି ଫଟୋ</translation>
 <translation id="4791037424585594169">(UDP)</translation>
 <translation id="4792711294155034829">ଏକ ସମସ୍ୟା ରିପୋର୍ଟ କରନ୍ତୁ...</translation>
 <translation id="4794810983896241342">ଅପଡେଟଗୁଡ଼ିକ <ph name="BEGIN_LINK" />ଆପଣଙ୍କ ଆଡମିନିଷ୍ଟ୍ରେଟର<ph name="END_LINK" />ଙ୍କ ଦ୍ୱାରା ପରିଚାଳିତ ହେଉଛି</translation>
@@ -5648,7 +5654,6 @@ Google Chrome ଆପଣଙ୍କ ମୋବାଇଲ୍ ଡାଟା ବ୍ୟବ
 <translation id="8028060951694135607">Microsoft କୀ ପୁନରୁଦ୍ଧାର</translation>
 <translation id="8028803902702117856"><ph name="SIZE" />, <ph name="FILE_NAME" /> ଡାଉନଲୋଡ୍ ହେଉଛି</translation>
 <translation id="8028993641010258682">ଆକାର</translation>
-<translation id="8030656706657716245">ପ୍ରିଣ୍ଟର୍ ଯୋଗ କରନ୍ତୁ</translation>
 <translation id="8030852056903932865">ଅନୁମୋଦନ କରନ୍ତୁ</translation>
 <translation id="8032244173881942855">ଟାବ୍‌ କାଷ୍ଟ କରିବାରେ ଅକ୍ଷମ।</translation>
 <translation id="8033827949643255796">ଚୟନ କରାଯାଇଛି</translation>

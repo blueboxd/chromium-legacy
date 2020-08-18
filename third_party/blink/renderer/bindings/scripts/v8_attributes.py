@@ -752,7 +752,7 @@ def has_setter(interface, attribute):
     return is_writable(attribute)
 
 
-# [NotEnumerable], [Unforgeable]
+# [NotEnumerable], [LegacyUnforgeable]
 def property_attributes(interface, attribute):
     extended_attributes = attribute.extended_attributes
     property_attributes_list = []

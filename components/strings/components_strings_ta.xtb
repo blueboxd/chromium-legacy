@@ -82,7 +82,6 @@
 <translation id="1294154142200295408">கட்டளை வரி மாற்று வடிவங்கள்</translation>
 <translation id="129553762522093515">சமீபத்தில் மூடியவை</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />குக்கீகளை அழிக்கவும்<ph name="END_LINK" /></translation>
-<translation id="1299917195319242089">’மறைநிலை சாளரத்தைத் திற’ பட்டன், புதிய Chrome மறைநிலை சாளரத்தைத் திறக்க Enter விசையை அழுத்துங்கள்</translation>
 <translation id="1301324364792935241">உங்கள் பாதுகாப்பான DNS அமைப்புகளைச் சரிபாருங்கள்</translation>
 <translation id="1307966114820526988">நிறுத்தப்பட்ட அம்சங்கள்</translation>
 <translation id="131405271941274527">NFC சாதனத்தில் உங்கள் மொபைலைத் தட்டும்போது தகவலை அனுப்புவதற்கும் பெறுவதற்குமான அனுமதி <ph name="URL" />க்குத் தேவை</translation>
@@ -200,7 +199,7 @@
 <translation id="1717494416764505390">அஞ்சல் பெட்டி 3</translation>
 <translation id="1718029547804390981">ஆவணம் மிகப் பெரிதாக இருப்பதால் அதில் விரிவுரையைச் சேர்க்க முடியாது</translation>
 <translation id="1721424275792716183">* அவசியமான புலம்</translation>
-<translation id="1724638245199909652">அக எழுத்துருகளுக்கான அணுகல்</translation>
+<translation id="1724638245199909652">அக எழுத்துருக்களுக்கான அணுகல்</translation>
 <translation id="1727741090716970331">சரியான கார்டு எண்ணைச் சேர்க்கவும்</translation>
 <translation id="1728677426644403582">இணையப் பக்கத்தின் மூலத்தைப் பார்க்கிறீர்கள்</translation>
 <translation id="173080396488393970">இந்தக் கார்டு வகை ஆதரிக்கப்படவில்லை</translation>
@@ -255,7 +254,6 @@
 <translation id="1919345977826869612">விளம்பரங்கள்</translation>
 <translation id="1919367280705858090">குறிப்பிட்ட பிழைச் செய்திக்கான உதவியைப் பெறுங்கள்</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{ஏதுமில்லை}=1{1 தளம்}other{# தளங்கள்}}</translation>
-<translation id="1926148189358507356">’புதுப்பிப்பதற்கு மீண்டும் தொடங்கு’ பட்டன், Chromeமைப் புதுப்பிக்க Enter விசையை அழுத்துங்கள்</translation>
 <translation id="1945968466830820669">உங்கள் நிறுவனத்தின் கணக்கிற்கான அணுகலை நீங்கள் இழக்கக்கூடும் அல்லது அடையாளத் திருட்டை எதிர்கொள்ளக்கூடும். இப்போதே உங்கள் கடவுச்சொல்லை மாற்றும்படி Chromium பரிந்துரைக்கிறது.</translation>
 <translation id="1947454675006758438">ஸ்டேப்பில் டாப் ரைட்</translation>
 <translation id="1959001866257244765"><ph name="BEGIN_WHITEPAPER_LINK" />நீங்கள் பார்வையிட்ட சில பக்கங்களின் URLகளையும் வரம்பிற்குட்பட்ட சிஸ்டம் தகவல்களையும் சில பக்கங்களின் உள்ளடக்கத்தையும்<ph name="END_WHITEPAPER_LINK" /> Googleளுக்கு அனுப்பி இணையத்தில் உள்ள அனைவரின் பாதுகாப்பையும் மேம்படுத்த உதவுங்கள். <ph name="BEGIN_PRIVACY_PAGE_LINK" />தனியுரிமைக் கொள்கை<ph name="END_PRIVACY_PAGE_LINK" /></translation>
@@ -360,7 +358,6 @@
 <translation id="2367567093518048410">நிலை</translation>
 <translation id="2380886658946992094">Legal</translation>
 <translation id="2384307209577226199">நிறுவன இயல்புநிலை</translation>
-<translation id="238547550913364157"><ph name="LAUNCH_INCOGNITO_FOCUSED_FRIENDLY_MATCH_TEXT" />, புதிய Chrome மறைநிலை சாளரத்தைத் திறக்க Tab விசையை அழுத்திய பிறகு Enter விசையை அழுத்துங்கள்</translation>
 <translation id="2385809941344967209">Chrome அமைப்புகளில் Chromeமைப் புதுப்பித்தல்</translation>
 <translation id="2386255080630008482">சேவையகச் சான்றிதழ் திரும்பப் பெறப்பட்டது.</translation>
 <translation id="2392959068659972793">மதிப்பும் எதுவும் அமைக்கப்படாத கொள்கைகளைக் காட்டு</translation>
@@ -403,7 +400,6 @@
 <translation id="2586657967955657006">கிளிப்போர்டு</translation>
 <translation id="2587730715158995865">வெளியீட்டாளர்: <ph name="ARTICLE_PUBLISHER" />. இதையும் பிற வெளியீட்டாளர்கள் வழங்கும் <ph name="OTHER_ARTICLE_COUNT" /> கட்டுரைகளையும் படிக்கவும்.</translation>
 <translation id="2587841377698384444">கோப்பக API ஐடி:</translation>
-<translation id="2592698726824597401"><ph name="UPDATE_CREDIT_CARD_FOCUSED_FRIENDLY_MATCH_TEXT" />, Chrome அமைப்புகளில் கிரெடிட் கார்டு குறித்த தன்னிரப்பித் தகவலை மாற்ற Tab விசையை அழுத்திய பிறகு Enter விசையை அழுத்துங்கள்</translation>
 <translation id="2595719060046994702">இந்தச் சாதனமும் கணக்கும் ஒரு நிறுவனத்தின் மூலமோ பிற அமைப்பின் மூலமோ நிர்வகிக்கப்படவில்லை.</translation>
 <translation id="2597378329261239068">இந்த ஆவணம் கடவுச்சொல் பாதுகாக்கப்பட்ட ஒன்று. தயவுசெய்து ஒரு கடவுச்சொல்லை உள்ளிடுக.</translation>
 <translation id="2609632851001447353">வேறுபாடுகள்</translation>
@@ -425,7 +421,6 @@
 <translation id="2677748264148917807">வெளியேறு</translation>
 <translation id="2684561033061424857">11x12</translation>
 <translation id="2687555958734450033">கச்சிதமாகப் பொருந்தும் அளவு</translation>
-<translation id="2688738823074468716">’கடவுச்சொற்களை நிர்வகியுங்கள்’ பட்டன், Chrome அமைப்புகளில் கடவுச்சொற்களை நிர்வகிக்க Enter விசையை அழுத்துங்கள்</translation>
 <translation id="2688969097326701645">ஆம், தொடர்க</translation>
 <translation id="2691924980723297736">பாதுகாப்பு எச்சரிக்கை</translation>
 <translation id="2699302886720511147">ஏற்கப்படும் கார்டுகள்</translation>
@@ -742,7 +737,6 @@
 <translation id="4088981014127559358">சைடு 1 இமேஜ் Y ஷிஃப்ட்</translation>
 <translation id="4098354747657067197">மோசடிசெய்யும் தளம் உள்ளது</translation>
 <translation id="4101413244023615925">உரை &amp; கிராஃபிக்</translation>
-<translation id="4103147722950692857"><ph name="MANAGE_PASSWORDS_FOCUSED_FRIENDLY_MATCH_TEXT" />, Chrome அமைப்புகளில் கடவுச்சொற்களை நிர்வகிப்பதற்கு Tab விசையை அழுத்திய பிறகு Enter விசையை அழுத்துங்கள்</translation>
 <translation id="4103249731201008433">சாதன சீரியல் எண் தவறானது</translation>
 <translation id="4103763322291513355">ஏற்கத்தகாத URLகளின் பட்டியலையும் உங்கள் கணினி நிர்வாகியால் செயற்படுத்தப்படும் பிற கொள்கைகளையும் காண &lt;strong&gt;chrome://policy&lt;/strong&gt; ஐப் பார்வையிடவும்.</translation>
 <translation id="4110652170750985508">உங்கள் கட்டணத்தை மதிப்பாய்வு செய்யவும்</translation>
@@ -913,7 +907,6 @@
 <translation id="4738601419177586157"><ph name="TEXT" /> தேடல் பரிந்துரை</translation>
 <translation id="4742407542027196863">கடவுச்சொற்களை நிர்வகி…</translation>
 <translation id="4744603770635761495">இயக்கநிரல் பாதை</translation>
-<translation id="4750085040310563588"><ph name="UPDATE_CHROME_FOCUSED_FRIENDLY_MATCH_TEXT" />, Chromeமைப் புதுப்பிக்க Tab விசையை அழுத்திய பிறகு Enter விசையை அழுத்துங்கள்</translation>
 <translation id="4750917950439032686">உங்கள் தகவலை (எடுத்துக்காட்டு: கடவுச்சொற்கள் அல்லது கிரெடிட் கார்டு எண்கள்) இந்தத் தளத்திற்கு அனுப்பும் போது, தனிப்பட்டதாக இருக்கும்.</translation>
 <translation id="4756388243121344051">&amp;வரலாறு</translation>
 <translation id="4758311279753947758">தொடர்புத் தகவலைச் சேர்</translation>
@@ -1032,7 +1025,6 @@
 <translation id="5215116848420601511">Google Payவைப் பயன்படுத்தும் கட்டண முறைகளும் முகவரிகளும்</translation>
 <translation id="5215363486134917902">Folio-Sp</translation>
 <translation id="5222812217790122047">மின்னஞ்சல் தேவை</translation>
-<translation id="5222994811833658317">’தரவை அழி’ பட்டன், Chromeமின் உலாவல் வரலாற்றுத் தரவை அழிக்க Enter விசையை அழுத்துங்கள்</translation>
 <translation id="5230733896359313003">ஷிப்பிங் முகவரி</translation>
 <translation id="5230815978613972521">B8</translation>
 <translation id="5233045608889518621">12x19</translation>
@@ -1298,7 +1290,6 @@
 <translation id="6302269476990306341">’Chromeமில் Google அசிஸ்டண்ட்’ நிறுத்தப்படுகிறது</translation>
 <translation id="6305205051461490394"><ph name="URL" />ஐ அடையமுடியவில்லை.</translation>
 <translation id="6312113039770857350">இணையப்பக்கம் கிடைக்கவில்லை</translation>
-<translation id="6315224405718249523">’பக்கத்தை மொழிபெயர்’ பட்டன், இந்தப் பக்கத்தை மொழிபெயர்க்க Enter விசையை அழுத்துங்கள்</translation>
 <translation id="6321917430147971392">உங்கள் DNS அமைப்புகளைச் சரிபார்க்கவும்</translation>
 <translation id="6322182122604171028">Windows Helloவைப் பயன்படுத்த இயலவில்லை</translation>
 <translation id="6328639280570009161">நெட்வொர்க் யூகத்தை முடக்க முயலவும்</translation>
@@ -1353,7 +1344,6 @@
 <translation id="6547208576736763147">டூயல் பஞ்ச் லெஃப்ட்</translation>
 <translation id="6554795675067793129">உங்கள் கணக்கை நிர்வகிப்பது: <ph name="ENROLLMENT_DOMAIN" />.</translation>
 <translation id="6556866813142980365">மீண்டும் செய்</translation>
-<translation id="6566840325635607048">’கிரெடிட் கார்டைப் புதுப்பியுங்கள்’ பட்டன், Chrome அமைப்புகளில் கிரெடிட் கார்டு குறித்த தன்னிரப்பித் தகவலை மாற்ற Enter விசையை அழுத்துங்கள்</translation>
 <translation id="6569060085658103619">நீட்டிப்புப் பக்கத்தைப் பார்க்கிறீர்கள்</translation>
 <translation id="6573200754375280815">டூயல் பஞ்ச் ரைட்</translation>
 <translation id="6578796323535178455">C2 (என்வலப்)</translation>
@@ -1594,7 +1584,6 @@
 <translation id="7549584377607005141">சரியாக காண்பிக்கப்படுவதற்கு நீங்கள் ஏற்கனவே உள்ளிட்ட தரவு இந்த இணையப்பக்கத்திற்கு தேவைப்படுகிறது. இந்த தரவை நீங்கள் மீண்டும் அனுப்பலாம், ஆனால் அவ்வாறு செய்வதனால் இந்தப் பக்கம் ஏற்கனவே செயற்படுத்திய எல்லாச் செயலையும் மீண்டும் செய்வீர்கள்.</translation>
 <translation id="7550637293666041147">உங்கள் சாதன மற்றும் Chrome பயனர்பெயர்</translation>
 <translation id="7552846755917812628">பின்வரும் உதவிக் குறிப்புகளைச் செய்து பார்க்கவும்:</translation>
-<translation id="7553823544414963579"><ph name="CLEAR_BROWSING_DATA_FOCUSED_FRIENDLY_MATCH_TEXT" />, Chromeமின் உலாவல் வரலாற்றுத் தரவை அழிக்க Tab விசையை அழுத்திய பிறகு Enter விசையை அழுத்துங்கள்</translation>
 <translation id="7554791636758816595">புதிய தாவல்</translation>
 <translation id="7564049878696755256"><ph name="ORG_NAME" /> கணக்கிற்கான அணுகலை நீங்கள் இழக்கக்கூடும் அல்லது அடையாளத் திருட்டை எதிர்கொள்ளக்கூடும். இப்போதே உங்கள் கடவுச்சொல்லை மாற்றும்படி Chrome பரிந்துரைக்கிறது.</translation>
 <translation id="7567204685887185387">இது <ph name="DOMAIN" /> தான் என்பதை இந்தச் சேவையகம் உறுதிப்படுத்தவில்லை; இதன் பாதுகாப்புச் சான்றிதழில் மோசடி செய்யப்பட்டிருக்கலாம். இது தவறான உள்ளமைவால் ஏற்பட்டிருக்கலாம் அல்லது தீங்கிழைப்பவர் உங்கள் இணைப்பில் குறுக்கிட்டிருக்கலாம்.</translation>
@@ -1761,7 +1750,6 @@
 <translation id="8225771182978767009">இந்தக் கம்ப்யூட்டரை அமைத்த நபர் இந்தத் தளத்தைத் தடுக்கும்படி தேர்வுசெய்துள்ளார்.</translation>
 <translation id="8228419419708659934">இரண்டு பக்கப்பார்வை</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
-<translation id="8230646577665563479"><ph name="TRANSLATE_FOCUSED_FRIENDLY_MATCH_TEXT" />, இந்தப் பக்கத்தை மொழிபெயர்க்க Tab விசையை அழுத்திய பிறகு Enter விசையை அழுத்துங்கள்</translation>
 <translation id="8232343881378637145">பிளாட்ஃபார்ம் வெப்பநிலை</translation>
 <translation id="8238581221633243064">புதிய மறைநிலைத் தாவலில் பக்கத்தைத் திறக்கவும்</translation>
 <translation id="8241707690549784388">நீங்கள் தேடும் பக்கமானது நீங்கள் உள்ளிட்ட தகவலைப் பயன்படுத்தியது. மீண்டும் அந்த பக்கத்திற்கு திரும்பினால், நீங்கள் செய்த ஏதேனும் செயலை மீண்டும் செய்ய வேண்டியிருக்கலாம். தொடர விரும்புகிறீர்களா?</translation>

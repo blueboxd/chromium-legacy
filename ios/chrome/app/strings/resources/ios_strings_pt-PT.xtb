@@ -338,6 +338,7 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="4881695831933465202">Abrir</translation>
 <translation id="4901778704868714008">Guardar…</translation>
 <translation id="4904877109095351937">Marcar como lidas</translation>
+<translation id="4908869848243824489">Discover da Google</translation>
 <translation id="4930268273022498155">Eliminar os dados existentes. Pode obtê-los ao mudar novamente para <ph name="USER_EMAIL1" />.</translation>
 <translation id="4930714375720679147">Ativar</translation>
 <translation id="4941089862236492464">Lamentamos, mas ocorreu um erro ao partilhar o seu item.</translation>
@@ -441,6 +442,7 @@ A Entrega também tem de estar ativada na secção Geral das Definições e os s
 <translation id="6125339936101702016">Gerido por <ph name="COMPANY" />. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="6127379762771434464">Item removido</translation>
 <translation id="6136914049981179737">Há segundos</translation>
+<translation id="6144589619057374135">Abrir ${url} na Navegação anónima</translation>
 <translation id="616831107264507309">Ler mais tarde</translation>
 <translation id="6177442314419606057">Pesquisar no Chrome</translation>
 <translation id="6184086493125982861">Mostrar Separadores</translation>
@@ -554,6 +556,7 @@ Os sites não podem utilizar cookies para ver a sua atividade de navegação em 
 <translation id="7293171162284876153">Para iniciar a sincronização, ative a opção "Sincronizar dados do Chrome".</translation>
 <translation id="7313347584264171202">Os seus separadores de navegação anónima serão apresentados aqui</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> por cento transferido</translation>
+<translation id="7340958967809483333">Opções para o Discover</translation>
 <translation id="7346909386216857016">OK, compreendi</translation>
 <translation id="734758817008927353">Opções para guardar o cartão</translation>
 <translation id="7348502496356775519">Adicionar aos marcadores</translation>
@@ -665,6 +668,7 @@ Os sites podem utilizar cookies para ver a sua atividade de navegação em difer
 <translation id="8668210798914567634">Esta página foi guardada na sua lista de leitura.</translation>
 <translation id="8680787084697685621">Os detalhes de início de sessão na conta estão desactualizados.</translation>
 <translation id="8706588385081740091">Palavras-passe</translation>
+<translation id="8717864919010420084">Copiar link</translation>
 <translation id="8721297211384281569">Menu Ferramentas</translation>
 <translation id="8725066075913043281">Tentar novamente</translation>
 <translation id="8730621377337864115">Concluído</translation>

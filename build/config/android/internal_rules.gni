@@ -16,6 +16,9 @@ import("//build/toolchain/goma.gni")
 import("//build/toolchain/kythe.gni")
 import("//build/util/generate_wrapper.gni")
 import("//build_overrides/build.gni")
+if (current_toolchain == default_toolchain) {
+  import("//build/toolchain/concurrent_links.gni")
+}
 assert(is_android)
 
 # The following _java_*_types variables capture all the existing target types.
@@ -970,7 +973,11 @@ if (enable_java_templates) {
       }
 
       # https://crbug.com/1098752 Fix for bot OOM (https://crbug.com/1098333).
-      pool = "//build/toolchain:link_pool($default_toolchain)"
+      if (defined(java_cmd_pool_size)) {
+        pool = "//build/config/android:java_cmd_pool($default_toolchain)"
+      } else {
+        pool = "//build/toolchain:link_pool($default_toolchain)"
+      }
 
       # Lint only requires generated sources and generated resources from the
       # build. Since turbine __header targets already depend on and generate all
@@ -1117,9 +1124,6 @@ if (enable_java_templates) {
                            ])
     _script = "//build/android/gyp/proguard.py"
     _deps = invoker.deps
-
-    # http://crbug.com/725224. Fix for bots running out of memory.
-    _pool = "//build/toolchain:link_pool($default_toolchain)"
 
     _inputs = [
       invoker.build_config,
@@ -1307,7 +1311,6 @@ if (enable_java_templates) {
     action_with_pydeps(target_name) {
       script = _script
       deps = _deps
-      pool = _pool
       inputs = _inputs
       outputs = _outputs
       depfile = "${target_gen_dir}/${target_name}.d"
@@ -1315,6 +1318,13 @@ if (enable_java_templates) {
                "--depfile",
                rebase_path(depfile, root_build_dir),
              ]
+
+      # http://crbug.com/725224. Fix for bots running out of memory.
+      if (defined(java_cmd_pool_size)) {
+        pool = "//build/config/android:java_cmd_pool($default_toolchain)"
+      } else {
+        pool = "//build/toolchain:link_pool($default_toolchain)"
+      }
     }
   }
 
@@ -1539,7 +1549,11 @@ if (enable_java_templates) {
           deps = _deps
 
           # http://crbug.com/725224. Fix for bots running out of memory.
-          pool = "//build/toolchain:link_pool($default_toolchain)"
+          if (defined(java_cmd_pool_size)) {
+            pool = "//build/config/android:java_cmd_pool($default_toolchain)"
+          } else {
+            pool = "//build/toolchain:link_pool($default_toolchain)"
+          }
 
           _shrinked_android = "$android_sdk_build_tools/lib/shrinkedAndroid.jar"
           _dx = "$android_sdk_build_tools/lib/dx.jar"

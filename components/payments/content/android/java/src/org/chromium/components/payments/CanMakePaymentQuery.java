@@ -22,14 +22,13 @@ public class CanMakePaymentQuery {
      * @param topLevelOrigin The top level origin using the Payment Request API.
      * @param frameOrigin    The frame origin using the Payment Request API.
      * @param query          The payment method identifiers and payment method specific data.
-     * @param perMethodQuota Whether each payment method has its own query quota.
      *
      * @return True if the given query for canMakePayment() is allowed.
      */
     public static boolean canQuery(WebContents webContents, String topLevelOrigin,
-            String frameOrigin, Map<String, PaymentMethodData> query, boolean perMethodQuota) {
+            String frameOrigin, Map<String, PaymentMethodData> query) {
         return CanMakePaymentQueryJni.get().canQuery(
-                webContents, topLevelOrigin, frameOrigin, query, perMethodQuota);
+                webContents, topLevelOrigin, frameOrigin, query);
     }
 
     @CalledByNative
@@ -49,6 +48,6 @@ public class CanMakePaymentQuery {
     @NativeMethods
     interface Natives {
         boolean canQuery(WebContents webContents, String topLevelOrigin, String frameOrigin,
-                Map<String, PaymentMethodData> query, boolean perMethodQuota);
+                Map<String, PaymentMethodData> query);
     }
 }

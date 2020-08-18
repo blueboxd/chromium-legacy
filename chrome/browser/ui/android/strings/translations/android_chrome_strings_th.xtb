@@ -252,7 +252,6 @@
 <translation id="2942036813789421260">แท็บแสดงตัวอย่างปิดอยู่</translation>
 <translation id="2956410042958133412">บัญชีนี้ได้รับการจัดการโดย <ph name="PARENT_NAME_1" /> และ <ph name="PARENT_NAME_2" /></translation>
 <translation id="2962095958535813455">สลับเป็นแท็บไม่ระบุตัวตนแล้ว</translation>
-<translation id="2968755619301702150">เครื่องมือดูใบรับรอง</translation>
 <translation id="2979025552038692506">แท็บที่ไม่ระบุตัวตนที่เลือก</translation>
 <translation id="2987620471460279764">ข้อความแชร์มาจากอุปกรณ์อื่น</translation>
 <translation id="2989523299700148168">เข้าชมล่าสุด</translation>
@@ -669,7 +668,6 @@
 <translation id="6157392216611456285">เลือก <ph name="APP_NAME" /></translation>
 <translation id="6159335304067198720">ประหยัดอินเทอร์เน็ต <ph name="PERCENT" /></translation>
 <translation id="6186394685773237175">ไม่พบรหัสผ่านที่ไม่รัดกุม</translation>
-<translation id="6201345951596836663">คัดลอกลิงก์แล้ว</translation>
 <translation id="6206830853671714236">เลือกเวลาที่จะดาวน์โหลด</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> ไม่ใช่บัญชีที่ฉันจะใช้</translation>
 <translation id="6218096829563201111">ค้นหาผลิตภัณฑ์ที่คล้ายกัน <ph name="BEGIN_NEW" />ใหม่<ph name="END_NEW" /></translation>

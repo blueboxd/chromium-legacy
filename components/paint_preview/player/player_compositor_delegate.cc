@@ -157,23 +157,26 @@ void PlayerCompositorDelegate::OnProtoAvailable(
     std::unique_ptr<PaintPreviewProto> proto) {
   if (!proto || !proto->IsInitialized()) {
     // TODO(crbug.com/1021590): Handle initialization errors.
-    OnCompositorReady(
-        mojom::PaintPreviewCompositor::Status::kCompositingFailure, nullptr);
+    OnCompositorReady(mojom::PaintPreviewCompositor::BeginCompositeStatus::
+                          kCompositingFailure,
+                      nullptr);
     return;
   }
 
   auto proto_url = GURL(proto->metadata().url());
   if (expected_url != proto_url) {
-    OnCompositorReady(
-        mojom::PaintPreviewCompositor::Status::kDeserializingFailure, nullptr);
+    OnCompositorReady(mojom::PaintPreviewCompositor::BeginCompositeStatus::
+                          kDeserializingFailure,
+                      nullptr);
     return;
   }
 
   hit_testers_ = BuildHitTesters(*proto);
 
   if (!paint_preview_compositor_client_) {
-    OnCompositorReady(
-        mojom::PaintPreviewCompositor::Status::kCompositingFailure, nullptr);
+    OnCompositorReady(mojom::PaintPreviewCompositor::BeginCompositeStatus::
+                          kCompositingFailure,
+                      nullptr);
     return;
   }
 
@@ -190,12 +193,13 @@ void PlayerCompositorDelegate::SendCompositeRequest(
     mojom::PaintPreviewBeginCompositeRequestPtr begin_composite_request) {
   // TODO(crbug.com/1021590): Handle initialization errors.
   if (!begin_composite_request) {
-    OnCompositorReady(
-        mojom::PaintPreviewCompositor::Status::kCompositingFailure, nullptr);
+    OnCompositorReady(mojom::PaintPreviewCompositor::BeginCompositeStatus::
+                          kCompositingFailure,
+                      nullptr);
     return;
   }
 
-  paint_preview_compositor_client_->BeginComposite(
+  paint_preview_compositor_client_->BeginSeparatedFrameComposite(
       std::move(begin_composite_request),
       base::BindOnce(&PlayerCompositorDelegate::OnCompositorReady,
                      weak_factory_.GetWeakPtr()));
@@ -211,15 +215,15 @@ void PlayerCompositorDelegate::RequestBitmap(
     const base::UnguessableToken& frame_guid,
     const gfx::Rect& clip_rect,
     float scale_factor,
-    base::OnceCallback<void(mojom::PaintPreviewCompositor::Status,
+    base::OnceCallback<void(mojom::PaintPreviewCompositor::BitmapStatus,
                             const SkBitmap&)> callback) {
   if (!paint_preview_compositor_client_) {
     std::move(callback).Run(
-        mojom::PaintPreviewCompositor::Status::kCompositingFailure, SkBitmap());
+        mojom::PaintPreviewCompositor::BitmapStatus::kMissingFrame, SkBitmap());
     return;
   }
 
-  paint_preview_compositor_client_->BitmapForFrame(
+  paint_preview_compositor_client_->BitmapForSeparatedFrame(
       frame_guid, clip_rect, scale_factor, std::move(callback));
 }
 

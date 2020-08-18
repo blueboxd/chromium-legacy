@@ -920,7 +920,7 @@ class WebAppNonClientFrameViewAshTest
     content_settings::PageSpecificContentSettings* content_settings =
         content_settings::PageSpecificContentSettings::GetForFrame(
             frame->GetProcess()->GetID(), frame->GetRoutingID());
-    content_settings->OnGeolocationPermissionSet(GetAppURL().GetOrigin(), true);
+    content_settings->OnContentAllowed(ContentSettingsType::GEOLOCATION);
 
     return *std::find_if(
         content_setting_views_->begin(), content_setting_views_->end(),

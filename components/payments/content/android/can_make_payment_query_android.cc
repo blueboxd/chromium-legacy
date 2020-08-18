@@ -24,8 +24,7 @@ jboolean JNI_CanMakePaymentQuery_CanQuery(
     const base::android::JavaParamRef<jobject>& jweb_contents,
     const base::android::JavaParamRef<jstring>& jtop_level_origin,
     const base::android::JavaParamRef<jstring>& jframe_origin,
-    const base::android::JavaParamRef<jobject>& jquery_map,
-    jboolean per_method_quota) {
+    const base::android::JavaParamRef<jobject>& jquery_map) {
   auto* web_contents = content::WebContents::FromJavaWebContents(jweb_contents);
   if (!web_contents)
     return false;
@@ -51,7 +50,7 @@ jboolean JNI_CanMakePaymentQuery_CanQuery(
       ->CanQuery(
           GURL(base::android::ConvertJavaStringToUTF8(env, jtop_level_origin)),
           GURL(base::android::ConvertJavaStringToUTF8(env, jframe_origin)),
-          query, per_method_quota);
+          query);
 }
 
 }  // namespace payments

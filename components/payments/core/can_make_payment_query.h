@@ -43,23 +43,13 @@ class CanMakePaymentQuery : public KeyedService {
   // also allowed.
   bool CanQuery(const GURL& top_level_origin,
                 const GURL& frame_origin,
-                const std::map<std::string, std::set<std::string>>& query,
-                bool per_method_quota);
+                const std::map<std::string, std::set<std::string>>& query);
 
   // KeyedService implementation.
   void Shutdown() override;
 
  private:
-  bool CanQueryWithPerMethodQuota(
-      const GURL& top_level_origin,
-      const GURL& frame_origin,
-      const std::map<std::string, std::set<std::string>>& query);
-  bool CanQueryWithoutPerMethodQuota(
-      const GURL& top_level_origin,
-      const GURL& frame_origin,
-      const std::map<std::string, std::set<std::string>>& query);
   void ExpireQuotaForFrameOrigin(const std::string& id);
-  void ExpireQuotaForFrameOriginAndMethod(const std::string& id);
 
   // A mapping of an identififer to the timer that, when fired, allows the frame
   // to invoke canMakePayment() with the same identifier again.
@@ -69,10 +59,6 @@ class CanMakePaymentQuery : public KeyedService {
   // query is a mapping of payment method names to the corresponding
   // JSON-stringified payment method data.
   std::map<std::string, std::map<std::string, std::set<std::string>>> queries_;
-
-  // A mapping of frame origin, top level origin, and payment method identifier
-  // to the last query in the form of JSON-stringified payment method data.
-  std::map<std::string, std::set<std::string>> per_method_queries_;
 
   base::WeakPtrFactory<CanMakePaymentQuery> weak_ptr_factory_{this};
 

@@ -2128,7 +2128,6 @@ enum WebFeature {
   kNoSysexWebMIDIWithoutPermission = 2770,
   kNoSysexWebMIDIOnInsecureOrigin = 2771,
   kApplicationCacheInstalledButNoManifest = 2772,
-  kPerMethodCanMakePaymentQuota = 2773,
   kCustomCursorIntersectsViewport = 2776,
   kClientHintsLang = 2777,
   kLinkRelPreloadImageSrcset = 2778,

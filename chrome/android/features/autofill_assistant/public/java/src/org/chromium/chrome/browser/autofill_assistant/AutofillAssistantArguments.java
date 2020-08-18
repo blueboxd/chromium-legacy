@@ -99,6 +99,9 @@ public class AutofillAssistantArguments {
     /** Special parameter for returning user script path. */
     static final String PARAMETER_TRIGGER_RETURNING_TIME_USER = "TRIGGER_RETURNING_USER";
 
+    /** Special output parameter that should hold which of the trigger scripts was used, if any. */
+    static final String PARAMETER_TRIGGER_SCRIPT_USED = "TRIGGER_SCRIPT_USED";
+
     /**
      * Identifier used by parameters/or special intent that indicates experiments passed from
      * the caller.

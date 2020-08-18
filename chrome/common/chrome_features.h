@@ -268,12 +268,6 @@ extern const base::Feature kHeavyAdInterventionWarning;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kHeavyAdPrivacyMitigations;
 
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kHideCorsLegacyModeEnabledPolicySupport;
-
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kHideCorsMitigationListPolicySupport;
-
 #if defined(OS_MAC)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kImmersiveFullscreen;

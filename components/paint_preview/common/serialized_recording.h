@@ -105,6 +105,12 @@ class SerializedRecording {
   // This is not safe to call in the browser process.
   base::Optional<SkpResult> Deserialize() &&;
 
+  // Deserialize into an |SkPicture|. |ctx| should contain entries for any
+  // subframes that should be included in the output.
+  //
+  // This is not safe to call in the browser process.
+  sk_sp<SkPicture> DeserializeWithContext(LoadedFramesDeserialContext* ctx) &&;
+
   // Create a file variant from an existing file. File must have been created
   // with the flags: base::File::FLAG_OPEN | base::File::FLAG_READ.
   explicit SerializedRecording(base::File);

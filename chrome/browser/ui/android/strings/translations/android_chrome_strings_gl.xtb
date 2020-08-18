@@ -252,7 +252,6 @@ Mantén premida calquera palabra para buscala. Se queres refinar a busca, selecc
 <translation id="2942036813789421260">A pestana de vista previa está pechada</translation>
 <translation id="2956410042958133412"><ph name="PARENT_NAME_1" /> e <ph name="PARENT_NAME_2" /> xestionan esta conta.</translation>
 <translation id="2962095958535813455">Cambiouse ás pestanas do modo de incógnito</translation>
-<translation id="2968755619301702150">Visor de certificados</translation>
 <translation id="2979025552038692506">Pestana do modo de incógnito seleccionada</translation>
 <translation id="2987620471460279764">O texto compartiuse desde outro dispositivo</translation>
 <translation id="2989523299700148168">Visitados recentemente</translation>
@@ -453,6 +452,7 @@ Mantén premida calquera palabra para buscala. Se queres refinar a busca, selecc
 <translation id="4605958867780575332">Elemento eliminado: <ph name="ITEM_TITLE" /></translation>
 <translation id="4616150815774728855">Abrir <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">Usar contrasinal</translation>
+<translation id="4640331037679501949">{NUM_PASSWORDS,plural, =1{1 contrasinal vulnerado}other{# contrasinais vulnerados}}</translation>
 <translation id="4650364565596261010">Opción predeterminada do sistema</translation>
 <translation id="465657074423018424">A función Navegación segura protéxete contra os sitios web enganosos. Se a desactivas, ten moito coidado ao navegar, sobre todo antes de escribir contrasinais.</translation>
 <translation id="4662373422909645029">O alcume non pode ter números</translation>
@@ -669,7 +669,6 @@ Para cambiar esta opción de configuración, deberás <ph name="BEGIN_LINK" />re
 <translation id="6157392216611456285">Escoller <ph name="APP_NAME" /></translation>
 <translation id="6159335304067198720">Redución de datos do <ph name="PERCENT" /></translation>
 <translation id="6186394685773237175">Non se atoparon contrasinais vulnerados</translation>
-<translation id="6201345951596836663">Copiouse a ligazón</translation>
 <translation id="6206830853671714236">Escoller cando realizar a descarga</translation>
 <translation id="6210748933810148297">Non es <ph name="EMAIL" />?</translation>
 <translation id="6218096829563201111">Buscar produtos similares <ph name="BEGIN_NEW" />Novo<ph name="END_NEW" /></translation>

@@ -495,7 +495,7 @@ bool ImageResourceContent::IsAcceptableCompressionRatio(
         PolicyValue(compression_ratio_10k), ReportOptions::kReportOnFailure,
         g_empty_string, image_url);
     bool enabled_by_1k_policy = context.IsFeatureEnabled(
-        mojom::blink::DocumentPolicyFeature::kUnoptimizedLosslessImagesStrict,
+        mojom::blink::DocumentPolicyFeature::kLosslessImagesStrictMaxBpp,
         PolicyValue(compression_ratio_1k), ReportOptions::kReportOnFailure,
         g_empty_string, image_url);
     return enabled_by_10k_policy && enabled_by_1k_policy;

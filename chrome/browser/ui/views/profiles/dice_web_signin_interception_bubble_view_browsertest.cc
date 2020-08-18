@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/optional.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -68,6 +69,7 @@ IN_PROC_BROWSER_TEST_F(DiceWebSigninInterceptionBubbleBrowserTest,
 // Tests that the callback is called once when the bubble is closed.
 IN_PROC_BROWSER_TEST_F(DiceWebSigninInterceptionBubbleBrowserTest,
                        BubbleClosed) {
+  base::HistogramTester histogram_tester;
   views::Widget* widget = views::BubbleDialogDelegateView::CreateBubble(
       new DiceWebSigninInterceptionBubbleView(
           browser()->profile(), GetAvatarButton(), GetTestBubbleParameters(),
@@ -82,4 +84,16 @@ IN_PROC_BROWSER_TEST_F(DiceWebSigninInterceptionBubbleBrowserTest,
   waiter.Wait();
   ASSERT_TRUE(callback_result_.has_value());
   EXPECT_FALSE(callback_result_.value());
+
+  // Check that histograms are recorded.
+  histogram_tester.ExpectUniqueSample(
+      "Signin.InterceptResult.MultiUser",
+      DiceWebSigninInterceptionBubbleView::SigninInterceptionResult::kIgnored,
+      1);
+  histogram_tester.ExpectUniqueSample(
+      "Signin.InterceptResult.MultiUser.NoSync",
+      DiceWebSigninInterceptionBubbleView::SigninInterceptionResult::kIgnored,
+      1);
+  histogram_tester.ExpectTotalCount("Signin.InterceptResult.Enterprise", 0);
+  histogram_tester.ExpectTotalCount("Signin.InterceptResult.Switch", 0);
 }

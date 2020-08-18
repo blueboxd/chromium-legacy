@@ -3,6 +3,7 @@
 <translationbundle lang="es">
 <translation id="1001307489511021749">Tus aplicaciones, ajustes y otras personalizaciones se sincronizarán en todos los dispositivos Chrome OS en los que hayas iniciado sesión con tu cuenta de Google.</translation>
 <translation id="1003088604756913841">Abrir enlace en una ventana nueva de <ph name="APP" /></translation>
+<translation id="1003363546227723021">Muestra fotos, la hora, el tiempo e información multimedia mientras la pantalla esté inactiva</translation>
 <translation id="1004218526896219317">Acceso al sitio web</translation>
 <translation id="1005274289863221750">Utilizar el micrófono y la cámara</translation>
 <translation id="1005333234656240382">¿Quieres habilitar la depuración adb?</translation>
@@ -94,6 +95,7 @@
 <translation id="1108600514891325577">&amp;Detener</translation>
 <translation id="1110155001042129815">Esperar</translation>
 <translation id="1112420131909513020">La pestaña en segundo plano está usando el Bluetooth</translation>
+<translation id="1113892970288677790">Elige imágenes y obras de arte seleccionadas</translation>
 <translation id="1114102982691049955"><ph name="PRINTER_MANUFACTURER" /> <ph name="PRINTER_MODEL" /> (USB)</translation>
 <translation id="1114202307280046356">Rombo</translation>
 <translation id="1114335938027186412">Tu ordenador contiene un dispositivo de seguridad del módulo de plataforma de confianza (TPM), que se utiliza para implementar un gran número de funciones clave de seguridad en Chrome OS. Puedes consultar más información en el Centro de ayuda de los Chromebook (https://support.google.com/chromebook/?p=tpm).</translation>
@@ -201,6 +203,7 @@
 <translation id="1224275271335624810">Velocidad máxima</translation>
 <translation id="1225177025209879837">Procesando solicitud...</translation>
 <translation id="1227507814927581609">Se ha producido un error de autenticación al establecer conexión con <ph name="DEVICE_NAME" />.</translation>
+<translation id="1230417814058465809">La protección estándar está activada. Para navegar con aún más seguridad, usa la protección mejorada.</translation>
 <translation id="1231733316453485619">¿Activar sincronización?</translation>
 <translation id="1232569758102978740">Sin título</translation>
 <translation id="1233497634904001272">Vuelve a tocar tu llave de seguridad para completar la solicitud.</translation>
@@ -1253,6 +1256,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="249113932447298600">Lo sentimos, pero el dispositivo <ph name="DEVICE_LABEL" /> no se admite en este momento.</translation>
 <translation id="2492461744635776704">Preparando solicitud de firma de certificado</translation>
 <translation id="249303669840926644">No se ha podido completar el registro</translation>
+<translation id="2493126929778606526">Tus mejores fotos, seleccionadas automáticamente</translation>
 <translation id="2495777824269688114">Descubre más funciones o consigue respuestas. Selecciona ? para obtener ayuda.</translation>
 <translation id="2496180316473517155">Historial de navegación</translation>
 <translation id="2497229222757901769">Velocidad del ratón</translation>
@@ -1346,6 +1350,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="2604255671529671813">No se ha podido establecer conexión con la red</translation>
 <translation id="2606246518223360146">Vincular datos</translation>
 <translation id="2607101320794533334">Información de clave pública de la entidad receptora</translation>
+<translation id="2607968157341167679">No hay álbumes. Crea un álbum en <ph name="LINK_BEGIN" />Google Fotos<ph name="LINK_END" />.</translation>
 <translation id="2609896558069604090">Crear accesos directos...</translation>
 <translation id="2610157865375787051">Suspensión</translation>
 <translation id="2610260699262139870">Tamaño &amp;real</translation>
@@ -1482,6 +1487,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="2762441749940182211">Cámara bloqueada</translation>
 <translation id="2764786626780673772">Detalles de la red VPN</translation>
 <translation id="2765217105034171413">Pequeño</translation>
+<translation id="2765729904637714153">Revive tus recuerdos favoritos. Para añadir o editar álbumes, ve a <ph name="LINK_BEGIN" />Google Fotos<ph name="LINK_END" />.</translation>
 <translation id="2766006623206032690">Pe&amp;gar y acceder</translation>
 <translation id="2766161002040448006">Preguntar a padres</translation>
 <translation id="2767127727915954024"><ph name="ORIGIN" /> podrá editar <ph name="FILENAME" /> hasta que cierres todas las pestañas de este sitio web.</translation>
@@ -2114,6 +2120,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="3566325075220776093">De este dispositivo</translation>
 <translation id="3566721612727112615">No se ha añadido ningún sitio web</translation>
 <translation id="3569382839528428029">¿Quieres que <ph name="APP_NAME" /> comparta tu pantalla?</translation>
+<translation id="3569407787324516067">Salvapantallas</translation>
 <translation id="3569682580018832495"><ph name="ORIGIN" /> puede ver los siguientes archivos y carpetas:</translation>
 <translation id="3571734092741541777">Configurar</translation>
 <translation id="3574210789297084292">iniciar sesión</translation>
@@ -2262,6 +2269,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="3727148787322499904">Si cambias esta opción, todas las redes compartidas se verán afectadas</translation>
 <translation id="3727187387656390258">Inspeccionar ventana emergente</translation>
 <translation id="372722114124766626">Solo una vez</translation>
+<translation id="3728188878314831180">Ver notificaciones del teléfono</translation>
 <translation id="3728681439294129328">Configurar dirección de red</translation>
 <translation id="3729303374699765035">Preguntar cuando un sitio web quiera buscar dispositivos Bluetooth cercanos</translation>
 <translation id="3729506734996624908">Sitios web permitidos</translation>
@@ -3551,7 +3559,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="5372579129492968947">No fijar extensión</translation>
 <translation id="5376169624176189338">Haz clic para retroceder una página o pulsa unos segundos para ver el historial</translation>
 <translation id="5376931455988532197">El archivo es demasiado grande.</translation>
-<translation id="5377721922656071359">{COUNT,plural, =1{<ph name="ATTACHMENTS" /> enviados correctamente a <ph name="DEVICE_NAME" />}other{<ph name="ATTACHMENTS" /> enviados correctamente a <ph name="DEVICE_NAME" />}}</translation>
+<translation id="5377721922656071359">{COUNT,plural, =1{<ph name="ATTACHMENTS" /> enviado correctamente a <ph name="DEVICE_NAME" />}other{<ph name="ATTACHMENTS" /> enviados correctamente a <ph name="DEVICE_NAME" />}}</translation>
 <translation id="537813040452600081">Las páginas que aparezcan en esta ventana no se mostrarán en el historial del navegador y no dejarán otros rastros, como cookies, en el ordenador después de cerrar sesión. No se conservarán los archivos que descargues ni los marcadores que crees.</translation>
 <translation id="5379140238605961210">Seguir bloqueando el acceso al micrófono</translation>
 <translation id="5382591305415226340">Administrar enlaces compatibles</translation>
@@ -4710,6 +4718,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6824584962142919697">&amp;Inspeccionar elementos</translation>
 <translation id="6825184156888454064">Ordenar por nombre</translation>
 <translation id="6826872289184051766">Verificar mediante USB</translation>
+<translation id="6827623133556594466">Google Cloud Print dejará de ser compatible después del 31 de diciembre. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="6828153365543658583">Restringir el inicio de sesión a los siguientes usuarios:</translation>
 <translation id="6828182567531805778">Introduce la frase de contraseña para sincronizar tus datos</translation>
 <translation id="682871081149631693">Quick Fix</translation>
@@ -5328,6 +5337,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7605594153474022051">La sincronización no funciona</translation>
 <translation id="7606992457248886637">Entidades emisoras</translation>
 <translation id="7607002721634913082">En pausa</translation>
+<translation id="7608810328871051088">Preferencias de Android</translation>
 <translation id="7609148976235050828">Conéctate a Internet y vuelve a intentarlo.</translation>
 <translation id="7614260613810441905">Preguntar cuando un sitio web quiera editar archivos o carpetas de tu dispositivo (recomendado)</translation>
 <translation id="761530003705945209">Crea copias de seguridad en Google Drive. Recupera tus datos de forma sencilla o cambia de dispositivo en cualquier momento. La copia de seguridad también incluye datos de las aplicaciones. Tus copias de seguridad se suben a Google y se cifran con la contraseña de tu cuenta de Google.</translation>
@@ -5701,7 +5711,6 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8028060951694135607">Recuperación de claves de Microsoft</translation>
 <translation id="8028803902702117856">Descargando <ph name="SIZE" /> (<ph name="FILE_NAME" />)</translation>
 <translation id="8028993641010258682">Tamaño</translation>
-<translation id="8030656706657716245">Añadir impresora</translation>
 <translation id="8030852056903932865">Aprobar</translation>
 <translation id="8032244173881942855">No se puede enviar la pestaña.</translation>
 <translation id="8033827949643255796">seleccionados</translation>
@@ -5858,6 +5867,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8225753906568652947">Canjear tus ofertas</translation>
 <translation id="8226222018808695353">Prohibido</translation>
 <translation id="8226619461731305576">Cola</translation>
+<translation id="8226628635270268143">Elige tus fotos y álbumes favoritos</translation>
 <translation id="8226742006292257240">Esta es la contraseña del TPM generada aleatoriamente que se ha asignado a tu ordenador:</translation>
 <translation id="8227119283605456246">Adjuntar archivo</translation>
 <translation id="8229943166551236192">Se eliminarán los datos del dispositivo en 24 horas</translation>
@@ -6356,6 +6366,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="882854468542856424">No permitir que ningún sitio web busque dispositivos Bluetooth cercanos</translation>
 <translation id="8828933418460119530">Nombre de DNS</translation>
 <translation id="883062543841130884">Sustituciones</translation>
+<translation id="8830779999439981481">Reiniciando para aplicar actualizaciones</translation>
 <translation id="8830796635868321089">La búsqueda de actualizaciones no ha podido utilizar la configuración de proxy actual. Ajusta la <ph name="PROXY_SETTINGS_LINK_START" />configuración de proxy<ph name="PROXY_SETTINGS_LINK_END" />.</translation>
 <translation id="8831140208248705279">Tu <ph name="DEVICE_TYPE" /> y tu teléfono Android funcionan mejor juntos. Conéctalos para enviar mensajes desde el ordenador, compartir la conexión a Internet y desbloquear tu <ph name="DEVICE_TYPE" /> con el teléfono.<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />Más información<ph name="LINK_END" /></translation>
 <translation id="8834039744648160717"><ph name="USER_EMAIL" /> controla la configuración de red.</translation>

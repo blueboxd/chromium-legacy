@@ -369,6 +369,7 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="5114495209940374989">Skjermdumper</translation>
 <translation id="5136175204352732067">Et annet tastatur er koblet til</translation>
 <translation id="5168181903108465623">Cast-enheter er tilgjengelige</translation>
+<translation id="5170568018924773124">Vis i mappen</translation>
 <translation id="5207949376430453814">Fremhev tekstinnsettingspunktet</translation>
 <translation id="5222676887888702881">Logg av</translation>
 <translation id="523505283826916779">Tilgjengelighetsinnstillinger</translation>
@@ -460,6 +461,7 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="6288235558961782912"><ph name="USER_EMAIL_ADDRESS" /> kan legges til på nytt senere med tillatelse fra en forelder.</translation>
 <translation id="6297287540776456956">Bruk pekepennen til å velge et område</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> ble rotert til <ph name="ROTATION" /></translation>
+<translation id="6315170314923504164">Tale</translation>
 <translation id="6376931439017688372">Bluetooth er på</translation>
 <translation id="6381109794406942707">For å låse opp enheten, skriv inn PIN-koden.</translation>
 <translation id="639644700271529076">CAPS LOCK er av</translation>
@@ -476,7 +478,7 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="649452524636452238">PIN-koden til smartkortet</translation>
 <translation id="6501401484702599040">Caster skjermen til <ph name="RECEIVER_NAME" /></translation>
 <translation id="652139407789908527">Skjermen blir tom i et lengre tidsrom enn vanlig (inntil et minutt) under denne oppdateringen. Ikke trykk på av/på-knappen mens oppdateringen pågår.</translation>
-<translation id="6521655319214113338">Håndskrift-inndata</translation>
+<translation id="6527303717912515753">Del</translation>
 <translation id="6528179044667508675">Ikke forstyrr</translation>
 <translation id="6537270692134705506">Ta skjermdump av skjermen</translation>
 <translation id="6537924328260219877">Signalstyrke <ph name="SIGNAL_STRENGTH" /> – telefonbatterinivå <ph name="BATTERY_STATUS" /></translation>
@@ -558,7 +560,6 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="7536035074519304529">IP-adresse: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">Nå er det sengetid</translation>
 <translation id="7561982940498449837">Lukk menyen</translation>
-<translation id="7562368315689366235">Emoji-palett</translation>
 <translation id="7564874036684306347">Flytting av vinduer til et annet skrivebord kan føre til uventet atferd. Følgende varsler, vinduer og dialogbokser kan bli delt mellom skrivebordene.</translation>
 <translation id="7568294522609223312">Slå av automatiske klikk</translation>
 <translation id="7568637526529101738">Med et høyreklikk eller langt trykk viser assistenten informasjon, som for eksempel definisjonen eller enhetsomregningen for det du har merket.</translation>
@@ -612,7 +613,7 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="8061464966246066292">Høy kontrast</translation>
 <translation id="8098591350844501178">Slutt å caste skjermen til <ph name="RECEIVER_NAME" /></translation>
 <translation id="8113423164597455979">På, alle apper</translation>
-<translation id="8129620843620772246"><ph name="TEMPERATURE_C" />° C</translation>
+<translation id="8129620843620772246"><ph name="TEMPERATURE_C" /> °C</translation>
 <translation id="8131740175452115882">Bekreft</translation>
 <translation id="8132793192354020517">Koblet til <ph name="NAME" /></translation>
 <translation id="813913629614996137">Initialiserer …</translation>
@@ -621,7 +622,6 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="8152092012181020186">Trykk på Ctrl + W for å lukke.</translation>
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" /> Denne innstillingen administreres av administratoren.</translation>
 <translation id="8167567890448493835">Bruker <ph name="LOCALE_NAME" /></translation>
-<translation id="8190698733819146287">Tilpass språk og inndata</translation>
 <translation id="8192202700944119416">Varsler er skjult.</translation>
 <translation id="8196787716797768628">Bruk bevegelser til å bytte raskt mellom apper og samhandle med Chromebook i nettbrettmodus.</translation>
 <translation id="8200772114523450471">Fortsett</translation>
@@ -705,6 +705,7 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="9029474291399787231">En oppdatering av Adobe Flash Player er tilgjengelig</translation>
 <translation id="9047624247355796468">Åpne innstillinger for <ph name="NETWORK_NAME" /></translation>
 <translation id="9056839673611986238">Enheten blir tilbakestilt til forrige versjon</translation>
+<translation id="9065203028668620118">Endre</translation>
 <translation id="9070640332319875144">Assistent-innstillinger</translation>
 <translation id="9072519059834302790"><ph name="TIME_LEFT" /> til batteriet er tomt.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>

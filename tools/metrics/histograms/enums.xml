@@ -16884,7 +16884,7 @@ Called by update_document_policy_enum.py.-->
   <int value="1" label="FontDisplay"/>
   <int value="2" label="UnoptimizedLosslessImages"/>
   <int value="3" label="ForceLoadAtTop"/>
-  <int value="4" label="UnoptimizedLosslessImagesStrict"/>
+  <int value="4" label="LosslessImagesStrictMaxBpp"/>
   <int value="5" label="UnoptimizedLossyImages"/>
   <int value="6" label="OversizedImages"/>
   <int value="7" label="UnsizedMedia"/>
@@ -64740,6 +64740,13 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
     The sync was started through auto-accept with advanced settings.
   </int>
   <int value="10" label="Undo">The sync was aborted with an undo button.</int>
+</enum>
+
+<enum name="SigninInterceptResult">
+  <int value="0" label="Accepted"/>
+  <int value="1" label="Declined"/>
+  <int value="2" label="Ignored"/>
+  <int value="3" label="Not displayed"/>
 </enum>
 
 <enum name="SigninInvalidGaiaCredentialsReason">

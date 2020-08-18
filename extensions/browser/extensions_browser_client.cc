@@ -99,11 +99,6 @@ bool ExtensionsBrowserClient::ShouldSchemeBypassNavigationChecks(
   return false;
 }
 
-bool ExtensionsBrowserClient::ShouldForceWebRequestExtraHeaders(
-    content::BrowserContext* context) const {
-  return false;
-}
-
 base::FilePath ExtensionsBrowserClient::GetSaveFilePath(
     content::BrowserContext* context) {
   return base::FilePath();

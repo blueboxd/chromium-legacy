@@ -252,7 +252,6 @@
 <translation id="2942036813789421260">ផ្ទាំងមើលសាកល្បងបាន​បិទ</translation>
 <translation id="2956410042958133412">គណនីត្រូវបានគ្រប់គ្រងដោយ <ph name="PARENT_NAME_1" /> និង <ph name="PARENT_NAME_2" />។</translation>
 <translation id="2962095958535813455">បានប្តូរទៅផ្ទាំងអនាមិក</translation>
-<translation id="2968755619301702150">កម្មវិធីមើលវិញ្ញាបនប័ត្រ</translation>
 <translation id="2979025552038692506">ផ្ទាំងអនាមិកដែលបានជ្រើស</translation>
 <translation id="2987620471460279764">អត្ថបទដែលបាន​ចែករំលែកពីឧបករណ៍​ផ្សេងទៀត</translation>
 <translation id="2989523299700148168">បាន​ចូល​ទៅ​កាន់​ថ្មីៗ</translation>
@@ -453,6 +452,7 @@
 <translation id="4605958867780575332">បានលុបធាតុ៖ <ph name="ITEM_TITLE" /></translation>
 <translation id="4616150815774728855">បើក <ph name="WEBAPK_NAME" /></translation>
 <translation id="4634124774493850572">ប្រើពាក្យសម្ងាត់​</translation>
+<translation id="4640331037679501949">{NUM_PASSWORDS,plural, =1{ពាក្យសម្ងាត់​ដែលរង​ការលុកលុយ 1}other{ពាក្យសម្ងាត់​ដែលរង​ការលុកលុយ #}}</translation>
 <translation id="4650364565596261010">លំនាំដើម​របស់ប្រព័ន្ធ</translation>
 <translation id="465657074423018424">មុខងាររុករក​ដោយ​សុវត្ថិភាពការពារអ្នកពី​គេហទំព័របញ្ឆោត។ ប្រសិនបើអ្នកបិទមុខងារនេះ សូមប្រុងប្រយ័ត្នបន្ថែមនៅពេលរុករក ជាពិសេស​មុនពេល​បញ្ចូលពាក្យសម្ងាត់។</translation>
 <translation id="4662373422909645029">ឈ្មោះហៅក្រៅមិនអាចមានលេខបានទេ</translation>
@@ -669,7 +669,6 @@
 <translation id="6157392216611456285">ជ្រើសរើស​ <ph name="APP_NAME" /></translation>
 <translation id="6159335304067198720">សន្សំសំចៃទិន្នន័យបាន <ph name="PERCENT" /></translation>
 <translation id="6186394685773237175">រកមិនឃើញពាក្យសម្ងាត់ដែល​រងការលុកលុយទេ</translation>
-<translation id="6201345951596836663">បានចម្លង​តំណ</translation>
 <translation id="6206830853671714236">ជ្រើសរើសពេលដែលត្រូវទាញយក</translation>
 <translation id="6210748933810148297">មិនមែន <ph name="EMAIL" /> ទេ?</translation>
 <translation id="6218096829563201111">ស្វែងរកផលិតផលស្រដៀងគ្នា <ph name="BEGIN_NEW" />ថ្មី<ph name="END_NEW" /></translation>

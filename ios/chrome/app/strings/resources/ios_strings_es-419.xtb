@@ -338,6 +338,7 @@ Para cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la sincroni
 <translation id="4881695831933465202">Abrir</translation>
 <translation id="4901778704868714008">Guardar…</translation>
 <translation id="4904877109095351937">Marcar como leídas</translation>
+<translation id="4908869848243824489">Descubre de Google</translation>
 <translation id="4930268273022498155">Borra los datos existentes. Para recuperarlos, cambia de nuevo a <ph name="USER_EMAIL1" />.</translation>
 <translation id="4930714375720679147">Activar</translation>
 <translation id="4941089862236492464">Se produjo un error al compartir tu elemento.</translation>
@@ -441,6 +442,7 @@ Handoff también debe estar habilitado en la sección General de la configuraci�
 <translation id="6125339936101702016">Administrado por <ph name="COMPANY" />. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="6127379762771434464">Se eliminó el elemento</translation>
 <translation id="6136914049981179737">Hace seg.</translation>
+<translation id="6144589619057374135">Abrir ${url} en modo Incógnito</translation>
 <translation id="616831107264507309">Leer más tarde</translation>
 <translation id="6177442314419606057">Buscar en Chrome</translation>
 <translation id="6184086493125982861">Mostrar las pestañas</translation>
@@ -554,6 +556,7 @@ Sin embargo, no pueden usar cookies para ver la actividad de navegación en dife
 <translation id="7293171162284876153">Para comenzar la sincronización, activa "Sincroniza tus datos de Chrome".</translation>
 <translation id="7313347584264171202">Aquí encontrarás tus pestañas de incógnito</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> % descargado</translation>
+<translation id="7340958967809483333">Opciones para Descubre</translation>
 <translation id="7346909386216857016">Entendido</translation>
 <translation id="734758817008927353">Opciones para guardar una tarjeta</translation>
 <translation id="7348502496356775519">Agregar a favoritos</translation>
@@ -665,6 +668,7 @@ También pueden usar cookies para ver la actividad de navegación en diferentes 
 <translation id="8668210798914567634">Esta página se guardó en tu lista de lectura.</translation>
 <translation id="8680787084697685621">Los datos de inicio de cuenta están desactualizados</translation>
 <translation id="8706588385081740091">Contraseñas</translation>
+<translation id="8717864919010420084">Copiar vínculo</translation>
 <translation id="8721297211384281569">Menú "Herramientas"</translation>
 <translation id="8725066075913043281">Intentar nuevamente</translation>
 <translation id="8730621377337864115">Listo</translation>

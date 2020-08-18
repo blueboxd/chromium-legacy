@@ -266,6 +266,7 @@
 <translation id="4002066346123236978">Название</translation>
 <translation id="4004204301268239848">Пароли сохраняются в аккаунте Google и будут доступны на любом устройстве.</translation>
 <translation id="4006921758705478413">Отправить на свои устройства</translation>
+<translation id="4018310736049373830">Управление историей</translation>
 <translation id="4038354071007134711">Нет приложения, чтобы открыть этот файл.</translation>
 <translation id="4042870976416480368">Найти на странице</translation>
 <translation id="4049507953662678203">Проверьте подключение к Интернету и повторите попытку.</translation>
@@ -337,6 +338,7 @@
 <translation id="4881695831933465202">Открыть</translation>
 <translation id="4901778704868714008">Сохранить</translation>
 <translation id="4904877109095351937">Отметить как прочитанное</translation>
+<translation id="4908869848243824489">Рекомендации от Google</translation>
 <translation id="4930268273022498155">Удалить сохраненные данные. Чтобы снова получить к ним доступ, переключитесь на аккаунт <ph name="USER_EMAIL1" />.</translation>
 <translation id="4930714375720679147">Включить</translation>
 <translation id="4941089862236492464">Не удалось опубликовать запись.</translation>
@@ -440,6 +442,7 @@
 <translation id="6125339936101702016">Устройством управляет компания "<ph name="COMPANY" />". <ph name="BEGIN_LINK" />Подробнее…<ph name="END_LINK" /></translation>
 <translation id="6127379762771434464">Быстрая ссылка удалена</translation>
 <translation id="6136914049981179737">только что</translation>
+<translation id="6144589619057374135">Открыть ${url} в режиме инкогнито</translation>
 <translation id="616831107264507309">Читать позже</translation>
 <translation id="6177442314419606057">Поиск в Chrome</translation>
 <translation id="6184086493125982861">Показать вкладки</translation>
@@ -553,6 +556,7 @@
 <translation id="7293171162284876153">Чтобы начать ее, нажмите "Синхронизировать данные Chrome".</translation>
 <translation id="7313347584264171202">Здесь вы найдете свои вкладки инкогнито</translation>
 <translation id="7336264872878993241">Скачивается: <ph name="PERCENT" />%</translation>
+<translation id="7340958967809483333">Параметры рекомендаций</translation>
 <translation id="7346909386216857016">ОК</translation>
 <translation id="734758817008927353">Параметры сохранения карты</translation>
 <translation id="7348502496356775519">Закладка</translation>
@@ -629,6 +633,7 @@
 <translation id="8225985093977202398">Файлы, сохраненные в кеше</translation>
 <translation id="8261506727792406068">Удалить</translation>
 <translation id="8281781826761538115">Язык по умолчанию: <ph name="DEFAULT_LOCALE" /></translation>
+<translation id="8299417921174340354">Чтобы использовать пароли, установите на устройстве код доступа.</translation>
 <translation id="8319076807703933069">Новый поиск</translation>
 <translation id="8323906514956095947">Нажмите и удерживайте, чтобы открыть список дополнительных действий с вкладками</translation>
 <translation id="8328777765163860529">Закрыть все</translation>
@@ -663,6 +668,7 @@
 <translation id="8668210798914567634">Страница сохранена в список для чтения.</translation>
 <translation id="8680787084697685621">Данные для входа в аккаунт устарели.</translation>
 <translation id="8706588385081740091">Пароли</translation>
+<translation id="8717864919010420084">Копировать ссылку</translation>
 <translation id="8721297211384281569">Меню "Инструменты"</translation>
 <translation id="8725066075913043281">Повторить попытку</translation>
 <translation id="8730621377337864115">Готово</translation>

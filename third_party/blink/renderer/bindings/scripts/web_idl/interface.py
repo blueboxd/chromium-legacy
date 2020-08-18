@@ -284,7 +284,8 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
     @property
     def attributes(self):
         """
-        Returns attributes, including [Unforgeable] attributes in ancestors.
+        Returns attributes, including [LegacyUnforgeable] attributes in
+        ancestors.
         """
         return self._attributes
 
@@ -321,14 +322,14 @@ class Interface(UserDefinedType, WithExtendedAttributes, WithCodeGeneratorInfo,
     def operations(self):
         """
         Returns all operations, including special operations without an
-        identifier, as well as [Unforgeable] operations in ancestors.
+        identifier, as well as [LegacyUnforgeable] operations in ancestors.
         """
         return self._operations
 
     @property
     def operation_groups(self):
         """
-        Returns groups of overloaded operations, including [Unforgeable]
+        Returns groups of overloaded operations, including [LegacyUnforgeable]
         operations in ancestors.
 
         All operations that have an identifier are grouped by identifier, thus

@@ -1,5 +1,6 @@
 <style include="pdf-shared cr-hidden-style">
   :host {
+    --sidenav-selected-tab-color: var(--google-blue-refresh-300);
     background-color: var(--viewer-pdf-toolbar-background-color);
     display: flex;
     min-width: 300px;
@@ -21,11 +22,11 @@
   }
 
   .selected cr-icon-button {
-    --cr-icon-button-fill-color: var(--google-blue-refresh-700);
+    --cr-icon-button-fill-color: var(--sidenav-selected-tab-color);
   }
 
   .button-wrapper {
-    --highlight-border-width: 6px;
+    --highlight-border-width: 4px;
     align-items: center;
     border-inline-start: var(--highlight-border-width) solid transparent;
     display: flex;
@@ -36,7 +37,7 @@
   }
 
   .button-wrapper.selected {
-    border-color: var(--google-blue-refresh-700);
+    border-color: var(--sidenav-selected-tab-color);
   }
 </style>
 <div id="icons">

@@ -346,13 +346,12 @@ public class ComponentPaymentRequestImpl {
 
     /**
      * The component part of the {@link PaymentRequest#hasEnrolledInstrument} implementation.
-     * @param perMethodQuota Whether to query with per-method quota.
      */
-    /* package */ void hasEnrolledInstrument(boolean perMethodQuota) {
+    /* package */ void hasEnrolledInstrument() {
         // Every caller should stop referencing this class once close() is called.
         assert mBrowserPaymentRequest != null;
 
-        mBrowserPaymentRequest.hasEnrolledInstrument(perMethodQuota);
+        mBrowserPaymentRequest.hasEnrolledInstrument();
     }
 
     /**

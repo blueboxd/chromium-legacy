@@ -446,9 +446,7 @@ void ContentSettingsStore::SetExtensionContentSettingFromList(
             content_settings_type);
     if (primary_pattern != secondary_pattern &&
         secondary_pattern != ContentSettingsPattern::Wildcard() &&
-        !info->website_settings_info()->SupportsEmbeddedExceptions() &&
-        base::FeatureList::IsEnabled(
-            permissions::features::kPermissionDelegation)) {
+        !info->website_settings_info()->SupportsEmbeddedExceptions()) {
       // Some types may have had embedded exceptions written even though they
       // aren't supported. This will implicitly delete these old settings from
       // the pref store when it is written back.

@@ -6,6 +6,8 @@
 
 #include "base/notreached.h"
 #include "base/optional.h"
+#include "base/trace_event/common/trace_event_common.h"
+#include "base/trace_event/trace_event.h"
 #include "components/paint_preview/common/file_stream.h"
 #include "components/paint_preview/common/paint_preview_tracker.h"
 #include "components/paint_preview/common/serial_utils.h"
@@ -48,9 +50,7 @@ SerializedRecording::SerializedRecording(base::FilePath path)
 SerializedRecording::SerializedRecording(base::File file)
     : persistence_(RecordingPersistence::kFileSystem),
       file_(std::move(file)),
-      buffer_() {
-  DCHECK(file_.IsValid());
-}
+      buffer_() {}
 
 SerializedRecording::SerializedRecording(mojo_base::BigBuffer buffer)
     : persistence_(RecordingPersistence::kMemoryBuffer),
@@ -76,6 +76,7 @@ bool SerializedRecording::IsValid() const {
 }
 
 base::Optional<SkpResult> SerializedRecording::Deserialize() && {
+  TRACE_EVENT0("paint_preview", "SerializedRecording::Deserialize");
   SkpResult result;
   SkDeserialProcs procs = MakeDeserialProcs(&result.ctx);
 
@@ -93,6 +94,26 @@ base::Optional<SkpResult> SerializedRecording::Deserialize() && {
   }
 
   return {std::move(result)};
+}
+
+sk_sp<SkPicture> SerializedRecording::DeserializeWithContext(
+    LoadedFramesDeserialContext* ctx) && {
+  TRACE_EVENT0("paint_preview", "SerializedRecording::DeserializeWithContext");
+
+  SkDeserialProcs procs = MakeDeserialProcs(ctx);
+
+  if (is_file()) {
+    FileRStream stream(std::move(file_));
+    return SkPicture::MakeFromStream(&stream, &procs);
+  } else if (is_buffer()) {
+    CHECK(buffer_.has_value());
+    SkMemoryStream stream(buffer_->data(), buffer_->size(),
+                          /*copyData=*/false);
+    return SkPicture::MakeFromStream(&stream, &procs);
+  } else {
+    NOTREACHED();
+    return nullptr;
+  }
 }
 
 bool RecordToFile(base::File file,

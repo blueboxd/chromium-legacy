@@ -3,6 +3,7 @@
 <translationbundle lang="sr-Latn">
 <translation id="1001307489511021749">Aplikacije, podešavanja i druga prilagođavanja će se sinhronizovati na svim Chrome OS uređajima na kojima ste prijavljeni pomoću Google naloga.</translation>
 <translation id="1003088604756913841">Otvori link u novom <ph name="APP" /> prozoru</translation>
+<translation id="1003363546227723021">Kada je ekran neaktivan, prikazuju se slike, vreme, vremenska prognoza i informacije o medijskom sadržaju</translation>
 <translation id="1004218526896219317">Pristup sajtu</translation>
 <translation id="1005274289863221750">Korišćenje mikrofona i kamere</translation>
 <translation id="1005333234656240382">Želite da omogućite ADB otklanjanje grešaka?</translation>
@@ -94,6 +95,7 @@
 <translation id="1108600514891325577">&amp;Stop (Zaustavi)</translation>
 <translation id="1110155001042129815">Sačekaj</translation>
 <translation id="1112420131909513020">Kartica u pozadini koristi Bluetooth</translation>
+<translation id="1113892970288677790">Odaberite neke od izabranih ilustracija i slika</translation>
 <translation id="1114102982691049955"><ph name="PRINTER_MANUFACTURER" /> <ph name="PRINTER_MODEL" /> (USB)</translation>
 <translation id="1114202307280046356">Dijamant</translation>
 <translation id="1114335938027186412">Računar sadrži bezbednosni uređaj sa modulom pouzdane platforme (TPM), koji se koristi za primenu mnogih bezbednosnih funkcija od suštinske važnosti u Chrome OS-u. Posetite Centar za pomoć za Chromebook da biste saznali više: https://support.google.com/chromebook/?p=tpm</translation>
@@ -201,6 +203,7 @@
 <translation id="1224275271335624810">Najbrže</translation>
 <translation id="1225177025209879837">Obrada zahteva...</translation>
 <translation id="1227507814927581609">Potvrda autentičnosti tokom povezivanja sa „<ph name="DEVICE_NAME" />“ nije uspela.</translation>
+<translation id="1230417814058465809">Standardna zaštita je uključena. Koristite naprednu zaštitu da biste se dodatno zaštitili.</translation>
 <translation id="1231733316453485619">Želite li da uključite sinhronizaciju?</translation>
 <translation id="1232569758102978740">Bez naslova</translation>
 <translation id="1233497634904001272">Ponovo dodirnite bezbednosni ključ da biste dovršili zahtev.</translation>
@@ -1250,6 +1253,7 @@ Možete da upravljate podešavanjima ovog naloga ako instalirate aplikaciju Fami
 <translation id="249113932447298600">Žao nam je, uređaj <ph name="DEVICE_LABEL" /> trenutno nije podržan.</translation>
 <translation id="2492461744635776704">Priprema se zahtev za potpisivanje sertifikata</translation>
 <translation id="249303669840926644">Nije moguće dovršiti registraciju</translation>
+<translation id="2493126929778606526">Najbolje automatski izabrane slike</translation>
 <translation id="2495777824269688114">Otkrijte još funkcija ili dobijte odgovore. Izaberite „?“ da biste dobili pomoć.</translation>
 <translation id="2496180316473517155">Istorija pregledanja</translation>
 <translation id="2497229222757901769">Brzina miša</translation>
@@ -1343,6 +1347,7 @@ Možete da upravljate podešavanjima ovog naloga ako instalirate aplikaciju Fami
 <translation id="2604255671529671813">Greška mrežne veze</translation>
 <translation id="2606246518223360146">Poveži podatke</translation>
 <translation id="2607101320794533334">Informacije o javnom ključu subjekta</translation>
+<translation id="2607968157341167679">Nema albuma. Napravite album u <ph name="LINK_BEGIN" />Google slikama<ph name="LINK_END" />.</translation>
 <translation id="2609896558069604090">Napravi prečice...</translation>
 <translation id="2610157865375787051">Spavanje</translation>
 <translation id="2610260699262139870">A&amp;ctual Size (Stvarna veličina)</translation>
@@ -1479,6 +1484,7 @@ Možete da upravljate podešavanjima ovog naloga ako instalirate aplikaciju Fami
 <translation id="2762441749940182211">Kamera je blokirana</translation>
 <translation id="2764786626780673772">Detalji o VPN-u</translation>
 <translation id="2765217105034171413">Mala</translation>
+<translation id="2765729904637714153">Ponovo proživite omiljene uspomene. Da biste dodali ili izmenili albume, idite u <ph name="LINK_BEGIN" />Google slike<ph name="LINK_END" />.</translation>
 <translation id="2766006623206032690">Na&amp;lepi i idi</translation>
 <translation id="2766161002040448006">Zamoli roditelja</translation>
 <translation id="2767127727915954024"><ph name="ORIGIN" /> će moći da menja datoteku <ph name="FILENAME" /> dok ne zatvorite sve kartice ovog sajta</translation>
@@ -2111,6 +2117,7 @@ Možete da upravljate podešavanjima ovog naloga ako instalirate aplikaciju Fami
 <translation id="3566325075220776093">Sa ovog uređaja</translation>
 <translation id="3566721612727112615">Nijedan sajt nije dodat</translation>
 <translation id="3569382839528428029">Da li želite da <ph name="APP_NAME" /> deli ekran?</translation>
+<translation id="3569407787324516067">Čuvar ekrana</translation>
 <translation id="3569682580018832495"><ph name="ORIGIN" /> može da pregleda datoteke i direktorijume u nastavku</translation>
 <translation id="3571734092741541777">Podesi</translation>
 <translation id="3574210789297084292">prijavi me</translation>
@@ -2259,6 +2266,7 @@ Možete da upravljate podešavanjima ovog naloga ako instalirate aplikaciju Fami
 <translation id="3727148787322499904">Ako promenite ovo podešavanje, to će uticati na sve deljene mreže</translation>
 <translation id="3727187387656390258">Ispitaj iskačući prozor</translation>
 <translation id="372722114124766626">Samo jednom</translation>
+<translation id="3728188878314831180">da preslika obaveštenja sa vašeg telefona</translation>
 <translation id="3728681439294129328">Konfiguriši mrežnu adresu</translation>
 <translation id="3729303374699765035">Pitaj kada sajt želi da otkrije Bluetooth uređaje u blizini</translation>
 <translation id="3729506734996624908">Dozvoljeni sajtovi</translation>
@@ -4709,6 +4717,7 @@ Vodite računa da ne otkrijete nikakve osetljive informacije.</translation>
 <translation id="6824584962142919697">&amp;Proveri elemente</translation>
 <translation id="6825184156888454064">Sortiraj prema nazivu</translation>
 <translation id="6826872289184051766">Potvrdi pomoću USB-a</translation>
+<translation id="6827623133556594466">Google Cloud štampanje više neće biti podržano od 31. decembra. <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /></translation>
 <translation id="6828153365543658583">Ograniči prijavljivanje na sledeće korisnike:</translation>
 <translation id="6828182567531805778">Unesite pristupnu frazu da biste sinhronizovali podatke</translation>
 <translation id="682871081149631693">Brzo rešavanje problema</translation>
@@ -5327,6 +5336,7 @@ Vodite računa da ne otkrijete nikakve osetljive informacije.</translation>
 <translation id="7605594153474022051">Sinhronizacija ne funkcioniše</translation>
 <translation id="7606992457248886637">Autoriteti za sertifikate</translation>
 <translation id="7607002721634913082">Pauzirano</translation>
+<translation id="7608810328871051088">Android podešavanja</translation>
 <translation id="7609148976235050828">Povežite se na internet i probajte ponovo.</translation>
 <translation id="7614260613810441905">Pitaj kada sajt želi da izmeni datoteke ili direktorijume na uređaju (preporučeno)</translation>
 <translation id="761530003705945209">Pravite rezervne kopije na Google disku. Lako vratite podatke ili pređite na drugi uređaj u bilo kom trenutku. Rezervna kopija obuhvata podatke aplikacija. Rezervne kopije se otpremaju na Google i šifruju pomoću lozinke za Google nalog.</translation>
@@ -5700,7 +5710,6 @@ Datoteka ključa: <ph name="KEY_FILE" />
 <translation id="8028060951694135607">Microsoft oporavak ključa</translation>
 <translation id="8028803902702117856">Preuzima se <ph name="SIZE" />, <ph name="FILE_NAME" /></translation>
 <translation id="8028993641010258682">Veličina</translation>
-<translation id="8030656706657716245">Dodaj štampač</translation>
 <translation id="8030852056903932865">Odobri</translation>
 <translation id="8032244173881942855">Nije uspelo prebacivanje kartice.</translation>
 <translation id="8033827949643255796">izabrano</translation>
@@ -5725,7 +5734,7 @@ Datoteka ključa: <ph name="KEY_FILE" />
 <translation id="8054563304616131773">Unesite važeću imejl adresu</translation>
 <translation id="8054921503121346576">USB tastatura je povezana</translation>
 <translation id="8058655154417507695">Godina isteka</translation>
-<translation id="8058811362315390556">Google Cloud štampanje više neće biti podržano od 31. decembra</translation>
+<translation id="8058811362315390556">Google Cloud štampanje će biti podržano do 31. decembra</translation>
 <translation id="8059417245945632445">&amp;Ispitaj uređaje</translation>
 <translation id="8059456211585183827">Nema dostupnih štampača za čuvanje.</translation>
 <translation id="8061091456562007989">Poništi izmene</translation>
@@ -5857,6 +5866,7 @@ Datoteka ključa: <ph name="KEY_FILE" />
 <translation id="8225753906568652947">Iskoristite ponude</translation>
 <translation id="8226222018808695353">Zabranjeno je</translation>
 <translation id="8226619461731305576">Red</translation>
+<translation id="8226628635270268143">Odaberite omiljene slike i albume</translation>
 <translation id="8226742006292257240">U nastavku je nasumično generisana TPM lozinka koja je dodeljena računaru:</translation>
 <translation id="8227119283605456246">Priloži datoteku</translation>
 <translation id="8229943166551236192">Podaci sa uređaja će biti izbrisani za 24 sata</translation>
@@ -6355,6 +6365,7 @@ Datoteka ključa: <ph name="KEY_FILE" />
 <translation id="882854468542856424">Ne dozvoljavaj nijednom sajtu da otkriva Bluetooth uređaje u blizini</translation>
 <translation id="8828933418460119530">Ime DNS-a</translation>
 <translation id="883062543841130884">Zamene</translation>
+<translation id="8830779999439981481">Restartuje se da bi se primenila ažuriranja</translation>
 <translation id="8830796635868321089">Provera ažuriranja nije uspela pomoću aktuelnih podešavanja proksija. Prilagodite <ph name="PROXY_SETTINGS_LINK_START" />podešavanja proksija<ph name="PROXY_SETTINGS_LINK_END" />.</translation>
 <translation id="8831140208248705279"><ph name="DEVICE_TYPE" /> i Android telefon bolje rade zajedno. Povežite ih da biste mogli da šaljete SMS-ove pomoću računara, delite internet vezu i otključavate <ph name="DEVICE_TYPE" /> pomoću telefona.<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />Saznajte više<ph name="LINK_END" /></translation>
 <translation id="8834039744648160717">Konfiguraciju mreže kontroliše <ph name="USER_EMAIL" />.</translation>

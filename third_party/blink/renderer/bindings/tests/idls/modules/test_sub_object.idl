@@ -3,5 +3,5 @@
 // found in the LICENSE file.
 
 interface TestSubObject : TestObject {
-    [Unforgeable] attribute DOMString unforgeableStringAttribute;
+    [LegacyUnforgeable] attribute DOMString unforgeableStringAttribute;
 };

@@ -58,10 +58,11 @@ void CheckThrottleWillNotCauseCorsPreflight(
     if (cors_exempt_header_flat_set.count(header.key) == 0 &&
         initial_cors_exempt_headers.find(header.key) ==
             initial_cors_exempt_headers.end()) {
-      NOTREACHED() << "Throttle added cors exempt header " << header.key
-                   << " but it wasn't configured as cors exempt by the "
-                      "browser. See "
-                   << "StoragePartition::UpdateCorsMitigationList().";
+      NOTREACHED()
+          << "Throttle added cors exempt header " << header.key
+          << " but it wasn't configured as cors exempt by the browser. See "
+             "content::StoragePartitionImpl::InitNetworkContext() and "
+             "content::ContentBrowserClient::ConfigureNetworkContextParams().";
     }
   }
 }

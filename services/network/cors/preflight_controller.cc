@@ -55,15 +55,13 @@ base::Optional<std::string> GetHeaderString(
 //  - byte-lowercased
 std::string CreateAccessControlRequestHeadersHeader(
     const net::HttpRequestHeaders& headers,
-    bool is_revalidating,
-    const base::flat_set<std::string>& extra_safelisted_header_names) {
+    bool is_revalidating) {
   // Exclude the forbidden headers because they may be added by the user
   // agent. They must be checked separately and rejected for
   // JavaScript-initiated requests.
   std::vector<std::string> filtered_headers =
       CorsUnsafeNotForbiddenRequestHeaderNames(headers.GetHeaderVector(),
-                                               is_revalidating,
-                                               extra_safelisted_header_names);
+                                               is_revalidating);
   if (filtered_headers.empty())
     return std::string();
 
@@ -76,7 +74,6 @@ std::string CreateAccessControlRequestHeadersHeader(
 std::unique_ptr<ResourceRequest> CreatePreflightRequest(
     const ResourceRequest& request,
     bool tainted,
-    const base::flat_set<std::string>& extra_safelisted_header_names,
     const base::Optional<base::UnguessableToken>& devtools_request_id) {
   DCHECK(!request.url.has_username());
   DCHECK(!request.url.has_password());
@@ -106,7 +103,7 @@ std::unique_ptr<ResourceRequest> CreatePreflightRequest(
       header_names::kAccessControlRequestMethod, request.method);
 
   std::string request_headers = CreateAccessControlRequestHeadersHeader(
-      request.headers, request.is_revalidating, extra_safelisted_header_names);
+      request.headers, request.is_revalidating);
   if (!request_headers.empty()) {
     preflight_request->headers.SetHeader(
         header_names::kAccessControlRequestHeaders, request_headers);
@@ -189,16 +186,14 @@ std::unique_ptr<PreflightResult> CreatePreflightResult(
 
 base::Optional<CorsErrorStatus> CheckPreflightResult(
     PreflightResult* result,
-    const ResourceRequest& original_request,
-    const base::flat_set<std::string>& extra_safelisted_header_names) {
+    const ResourceRequest& original_request) {
   base::Optional<CorsErrorStatus> status =
       result->EnsureAllowedCrossOriginMethod(original_request.method);
   if (status)
     return status;
 
   return result->EnsureAllowedCrossOriginHeaders(
-      original_request.headers, original_request.is_revalidating,
-      extra_safelisted_header_names);
+      original_request.headers, original_request.is_revalidating);
 }
 
 }  // namespace
@@ -222,9 +217,8 @@ class PreflightController::PreflightLoader final {
     auto* network_service_client = MaybeGetNetworkServiceClientForDevTools();
     if (network_service_client)
       devtools_request_id_ = base::UnguessableToken::Create();
-    auto preflight_request = CreatePreflightRequest(
-        request, tainted, controller->extra_safelisted_header_names(),
-        devtools_request_id_);
+    auto preflight_request =
+        CreatePreflightRequest(request, tainted, devtools_request_id_);
 
     if (network_service_client) {
       DCHECK(devtools_request_id_);
@@ -302,8 +296,7 @@ class PreflightController::PreflightLoader final {
       // Preflight succeeded. Check |original_request_| with |result|.
       DCHECK(!detected_error_status);
       detected_error_status =
-          CheckPreflightResult(result.get(), original_request_,
-                               controller_->extra_safelisted_header_names());
+          CheckPreflightResult(result.get(), original_request_);
     }
 
     if (!(original_request_.load_flags & net::LOAD_DISABLE_CACHE) &&
@@ -381,7 +374,7 @@ std::unique_ptr<ResourceRequest>
 PreflightController::CreatePreflightRequestForTesting(
     const ResourceRequest& request,
     bool tainted) {
-  return CreatePreflightRequest(request, tainted, {}, base::nullopt);
+  return CreatePreflightRequest(request, tainted, base::nullopt);
 }
 
 // static
@@ -396,12 +389,8 @@ PreflightController::CreatePreflightResultForTesting(
                                detected_error_status);
 }
 
-PreflightController::PreflightController(
-    const std::vector<std::string>& extra_safelisted_header_names,
-    NetworkService* network_service)
-    : extra_safelisted_header_names_(extra_safelisted_header_names.cbegin(),
-                                     extra_safelisted_header_names.cend()),
-      network_service_(network_service) {}
+PreflightController::PreflightController(NetworkService* network_service)
+    : network_service_(network_service) {}
 
 PreflightController::~PreflightController() = default;
 

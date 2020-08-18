@@ -8,10 +8,13 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/numerics/checked_math.h"
 #include "base/strings/stringprintf.h"
+#include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/nearby_sharing/certificates/nearby_share_certificate_manager_impl.h"
 #include "chrome/browser/nearby_sharing/certificates/nearby_share_encrypted_metadata_key.h"
 #include "chrome/browser/nearby_sharing/client/nearby_share_client_impl.h"
@@ -28,6 +31,7 @@
 #include "chrome/services/sharing/public/cpp/advertisement.h"
 #include "chrome/services/sharing/public/mojom/nearby_connections_types.mojom.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/download_manager.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/base/idle/idle.h"
@@ -108,6 +112,11 @@ std::string ToFourDigitString(const std::vector<uint8_t>& bytes) {
   }
 
   return base::StringPrintf("%04d", std::abs(hash));
+}
+
+bool IsOutOfStorage(base::FilePath file_path, int64_t storage_required) {
+  int64_t free_space = base::SysInfo::AmountOfFreeDiskSpace(file_path);
+  return free_space < storage_required;
 }
 
 }  // namespace
@@ -1491,6 +1500,8 @@ void NearbySharingServiceImpl::OnReceivedIntroduction(
 
   NS_LOG(INFO) << __func__ << ": Successfully read the introduction frame.";
 
+  base::CheckedNumeric<int64_t> file_size_sum(0);
+
   sharing::mojom::IntroductionFramePtr introduction_frame =
       std::move((*frame)->get_introduction());
   for (const auto& file : introduction_frame->file_metadata) {
@@ -1509,6 +1520,15 @@ void NearbySharingServiceImpl::OnReceivedIntroduction(
                               file->mime_type);
     SetAttachmentPayloadId(attachment, file->payload_id);
     share_target.file_attachments.push_back(std::move(attachment));
+
+    file_size_sum += file->size;
+    if (!file_size_sum.IsValid()) {
+      Fail(share_target, TransferMetadata::Status::kNotEnoughSpace);
+      NS_LOG(WARNING) << __func__
+                      << ": Ignoring introduction, total file size overflowed "
+                         "64 bit integer.";
+      return;
+    }
   }
 
   for (const auto& text : introduction_frame->text_metadata) {
@@ -1541,10 +1561,41 @@ void NearbySharingServiceImpl::OnReceivedIntroduction(
     return;
   }
 
-  if (IsOutOfStorage(share_target)) {
+  if (file_size_sum.ValueOrDie() == 0) {
+    OnStorageCheckCompleted(std::move(share_target), std::move(token),
+                            /*is_out_of_storage=*/false);
+    return;
+  }
+
+  base::FilePath download_path =
+      DownloadPrefs::FromDownloadManager(
+          content::BrowserContext::GetDownloadManager(profile_))
+          ->DownloadPath();
+
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()},
+      base::BindOnce(&IsOutOfStorage, std::move(download_path),
+                     file_size_sum.ValueOrDie()),
+      base::BindOnce(&NearbySharingServiceImpl::OnStorageCheckCompleted,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(share_target),
+                     std::move(token)));
+}
+
+void NearbySharingServiceImpl::OnStorageCheckCompleted(
+    ShareTarget share_target,
+    base::Optional<std::string> token,
+    bool is_out_of_storage) {
+  if (is_out_of_storage) {
     Fail(share_target, TransferMetadata::Status::kNotEnoughSpace);
     NS_LOG(WARNING) << __func__
                     << ": Not enough space on the receiver. We have informed "
+                    << share_target.device_name;
+    return;
+  }
+
+  NearbyConnection* connection = GetIncomingConnection(share_target);
+  if (!connection) {
+    NS_LOG(WARNING) << __func__ << ": Invalid connection for share target - "
                     << share_target.device_name;
     return;
   }
@@ -1644,11 +1695,6 @@ void NearbySharingServiceImpl::OnIncomingConnectionDisconnected(
                                .set_status(TransferMetadata::Status::kFailed)
                                .build());
   UnregisterShareTarget(share_target);
-}
-
-bool NearbySharingServiceImpl::IsOutOfStorage(const ShareTarget& share_target) {
-  // TODO(himanshujaju) - Check storage space based on file path.
-  return false;
 }
 
 void NearbySharingServiceImpl::OnIncomingMutualAcceptanceTimeout(

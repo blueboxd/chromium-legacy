@@ -3128,7 +3128,7 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="4842976633412754305">Бул барак аныктыгы текшерилбеген булактардан келген скрипттерди жүктөөгө аракет кылууда.</translation>
 <translation id="4844333629810439236">Башка баскычтоптор</translation>
 <translation id="4846680374085650406">Бул жөндөөнү администратордун сунушу боюнча иштетип жатасыз.</translation>
-<translation id="4847902821209177679"><ph name="TOPIC_SOURCE" /> <ph name="TOPIC_SOURCE_DESC" />тандалды, <ph name="TOPIC_SOURCE" /> альбомдорун тандоо үчүн Enter баскычын басыңыз</translation>
+<translation id="4847902821209177679"><ph name="TOPIC_SOURCE" /> <ph name="TOPIC_SOURCE_DESC" /> тандалды, <ph name="TOPIC_SOURCE" /> альбомдорун тандоо үчүн Enter баскычын басыңыз</translation>
 <translation id="4848191975108266266">Google Жардамчыга "Окей Google" деп кайрылуу</translation>
 <translation id="4848518990323155912">SIM картаны кулпулоо иштетилсин (мобилдик дайындарды колдонуу үчүн PIN талап кылынат)</translation>
 <translation id="4849286518551984791">Макулдашылган Дүйнөлүк Убакыт (UTC/GMT)</translation>
@@ -5588,7 +5588,7 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="7893008570150657497">Сүрөттөрдү, музыканы жана башка медиа файлдарын компьютериңиз аркылуу колдонуу мүмкүнчүлүгүн алыңыз</translation>
 <translation id="7893153962594818789"><ph name="DEVICE_TYPE" /> түзмөгүндөгү Bluetooth өчүк. Сырсөзүңүздү киргизип туруп, Bluetooth'ду күйгүзүңүз.</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME" /> (Демейки)</translation>
-<translation id="7897865097438730075">Google Булут Бастыруу 31-декабрдан кийин колдоого алынбай калат. Администраторуңуз менен байланышыңыз.</translation>
+<translation id="7897865097438730075">Google Cloud Print 31-декабрдан кийин колдоого алынбай калат. Администраторуңуз менен байланышыңыз.</translation>
 <translation id="7897900149154324287">Кийинки жолу тышкы дискти түзмөктөн сууруп алаардан мурун, аны Файлдар колдонмосунан чыгарыңыз. Болбосо, дайындарды жоготуп алышыңыз мүмкүн.</translation>
 <translation id="7898627924844766532">Куралдар тилкесинде калтыруу</translation>
 <translation id="7898725031477653577">Ар дайым которуу</translation>
@@ -5701,7 +5701,6 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="8028060951694135607">Microsoft Ачкычты калыбына келтирүү</translation>
 <translation id="8028803902702117856"><ph name="SIZE" />, <ph name="FILE_NAME" /> жүктөлүп алынууда</translation>
 <translation id="8028993641010258682">Өлчөм</translation>
-<translation id="8030656706657716245">Принтер кошуу</translation>
 <translation id="8030852056903932865">Уруксат берүү</translation>
 <translation id="8032244173881942855">Өтмөк тышкы экранга чыгарылбай жатат.</translation>
 <translation id="8033827949643255796">тандалды</translation>
@@ -5726,7 +5725,7 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="8054563304616131773">Жарактуу электрондук почта дарегин киргизиңиз</translation>
 <translation id="8054921503121346576">USB баскычтобу туташып турат</translation>
 <translation id="8058655154417507695">Мөөнөтү аяктаган жыл</translation>
-<translation id="8058811362315390556">Google Булут Бастыруу 31-декабрдан кийин колдоого алынбай калат</translation>
+<translation id="8058811362315390556">Google Cloud Print 31-декабрдан кийин колдоого алынбай калат</translation>
 <translation id="8059417245945632445">Түзмөктөрдү &amp;текшерүү</translation>
 <translation id="8059456211585183827">Сактоо үчүн жеткиликтүү принтерлер жок.</translation>
 <translation id="8061091456562007989">Кайра өзгөртүү</translation>

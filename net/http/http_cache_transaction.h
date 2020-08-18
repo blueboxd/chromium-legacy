@@ -645,7 +645,6 @@ class NET_EXPORT_PRIVATE HttpCache::Transaction : public HttpTransaction {
   base::TimeTicks send_request_since_;
   base::TimeTicks read_headers_since_;
   base::Time open_entry_last_used_;
-  bool cant_conditionalize_zero_freshness_from_memhint_;
   bool recorded_histograms_;
   ParallelWritingPattern parallel_writing_pattern_;
 

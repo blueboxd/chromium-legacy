@@ -17,18 +17,10 @@ void DiceWebSigninInterceptorDelegate::ShowSigninInterceptionBubble(
     content::WebContents* web_contents,
     const BubbleParameters& bubble_parameters,
     base::OnceCallback<void(bool)> callback) {
-  if (bubble_parameters.interception_type ==
-      DiceWebSigninInterceptor::SigninInterceptionType::kProfileSwitch) {
-    // The bubble for profile switch is not implemented.
-    std::move(callback).Run(false);
-    return;
-  }
-
   if (!web_contents) {
     std::move(callback).Run(false);
     return;
   }
-
   ShowSigninInterceptionBubbleInternal(
       chrome::FindBrowserWithWebContents(web_contents), bubble_parameters,
       std::move(callback));

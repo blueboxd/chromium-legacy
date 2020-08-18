@@ -258,11 +258,10 @@ base::Optional<GURL> ChromePermissionsClient::OverrideCanonicalOrigin(
   // when in embedded in non-secure contexts. This is unfortunate and we
   // should remove this at some point, but for now always use the requesting
   // origin for embedded extensions. https://crbug.com/530507.
-  if (base::FeatureList::IsEnabled(
-          permissions::features::kPermissionDelegation) &&
-      requesting_origin.SchemeIs(extensions::kExtensionScheme)) {
+  if (requesting_origin.SchemeIs(extensions::kExtensionScheme)) {
     return requesting_origin;
   }
+
   return base::nullopt;
 }
 

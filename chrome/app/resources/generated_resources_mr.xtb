@@ -322,7 +322,7 @@
 <translation id="1380028686461971526">नेटवर्कशी आपोआप कनेक्ट करा</translation>
 <translation id="1380436189840894976">गुप्त मोड कसाही बंद करायचा?</translation>
 <translation id="1383861834909034572">पूर्ण झाल्यानंतर उघडेल</translation>
-<translation id="1383876407941801731">शोधा</translation>
+<translation id="1383876407941801731">Search</translation>
 <translation id="1386387014181100145">कसे काय.</translation>
 <translation id="1386791642444521222">प्रत्‍यक्ष सिम अ‍ॅक्टिव्हेट करा</translation>
 <translation id="138784436342154190">डीफॉल्ट स्टार्टअप पेज रिस्टोअर करायचे?</translation>
@@ -445,7 +445,7 @@
 <translation id="1521442365706402292">प्रमाणपत्रे व्यवस्थापित करा</translation>
 <translation id="1521774566618522728">आज ॲक्टिव्ह होते</translation>
 <translation id="152234381334907219">कधीही सेव्ह न केलेले</translation>
-<translation id="1523170391134722817">डिसेंबरनंतर सपोर्ट केले जाणार नाही</translation>
+<translation id="1523170391134722817">डिसेंबरनंतर सपोर्ट केला जाणार नाही</translation>
 <translation id="1523978563989812243">टेक्‍स्‍ट टू स्‍पीच इंजिने</translation>
 <translation id="1524430321211440688">कीबोर्ड</translation>
 <translation id="1524563461097350801">नाही, नको</translation>
@@ -2986,7 +2986,7 @@
 <translation id="4638930039313743000">ADB डीबगिंग सुरू करा</translation>
 <translation id="4641539339823703554">प्रणाली वेळ सेट करण्यात Chrome अक्षम होते. कृपया खालील वेळ तपासा आणि आवश्यक असल्यास ती दुरुस्त करा.</translation>
 <translation id="4643612240819915418">नवीन टॅबमध्ये व्हिडिओ &amp;उघडा</translation>
-<translation id="4645551927492192497">{NUM_DAYS,plural, =1{<ph name="DOMAIN" /> साठी अपडेट डाउनलोड करण्याकरिता तुम्ही आजच वाय-फायशी कनेक्ट करणे आवश्यक आहे. किंवा मर्यादित कनेक्शनमधून डाउनलोड करा (शुल्क लागू शकते).}other{<ph name="DOMAIN" /> साठी तुम्ही वाय-फायशी कनेक्ट करणे आणि डेडलाइनच्‍या आधी अपडेट डाउनलोड करणे आवश्यक आहे. किंवा मर्यादित कनेक्शनमधून डाउनलोड करा (शुल्क लागू शकते).}}</translation>
+<translation id="4645551927492192497">{NUM_DAYS,plural, =1{<ph name="DOMAIN" /> साठी अपडेट डाउनलोड करण्याकरिता तुम्ही आजच वाय-फाय शी कनेक्ट करणे आवश्यक आहे. किंवा मर्यादित कनेक्शनमधून डाउनलोड करा (शुल्क लागू शकते).}other{<ph name="DOMAIN" /> साठी तुम्ही वाय-फाय शी कनेक्ट करणे आणि डेडलाइनच्‍या आधी अपडेट डाउनलोड करणे आवश्यक आहे. किंवा मर्यादित कनेक्शनमधून डाउनलोड करा (शुल्क लागू शकते).}}</translation>
 <translation id="4645676300727003670">&amp;ठेवा</translation>
 <translation id="4646675363240786305">पोर्ट</translation>
 <translation id="4646949265910132906">सुरक्षित वायफाय कनेक्शन</translation>
@@ -3965,7 +3965,7 @@
 <translation id="5877064549588274448">चॅनेल बदलले. बदल लागू करण्यासाठी तुमचे डिव्हाइस रीस्टार्ट करा.</translation>
 <translation id="5877584842898320529">निवडलेले प्रिंटर उपलब्ध नाही किंवा योग्यरीत्या इंस्टॉल केलेले नाही. <ph name="BR" /> तुमचा प्रिंटर तपासा किंवा दुसरा प्रिंटर निवडून पहा.</translation>
 <translation id="5882919346125742463">ज्ञात नेटवर्क</translation>
-<translation id="5883464818836130222">३१ डिसेंबरनंतर क्लाउड प्रिंटिंगला सपोर्ट केले जाणार नाही. तुमच्या अ‍ॅडमिनिस्ट्रेटरशी संपर्क साधा.</translation>
+<translation id="5883464818836130222">३१ डिसेंबरनंतर क्लाउड प्रिंटिंगला सपोर्ट केला जाणार नाही. तुमच्या अ‍ॅडमिनिस्ट्रेटरशी संपर्क साधा.</translation>
 <translation id="5884474295213649357">हा टॅब USB डिव्हाइसशी कनेक्ट केला आहे.</translation>
 <translation id="5886009770935151472">पहिले बोट</translation>
 <translation id="5889282057229379085">कमाल इंटरमिजिएट CA संख्या: <ph name="NUM_INTERMEDIATE_CA" /></translation>
@@ -4048,7 +4048,7 @@
 <translation id="5979156418378918004">{NUM_EXTENSIONS,plural, =1{हानीकारक असू शकणारे एक एक्स्टेंशन तुम्ही पुन्हा सुरू केले}other{हानीकारक असू शकणारी {NUM_EXTENSIONS} एक्स्टेंशन तुम्ही पुन्हा सुरू केली}}</translation>
 <translation id="5979421442488174909"><ph name="LANGUAGE" /> मध्ये &amp;अनुवाद करा</translation>
 <translation id="5979469435153841984">पेज बुकमार्क करण्यासाठी, ॲड्रेस बारमधील स्टार क्लिक करा</translation>
-<translation id="5983642582671533177">डिसेंबरनंतर या प्रिंटरला सपोर्ट केले जाणार नाही. तुमच्या ॲडमिनशी संपर्क साधा.</translation>
+<translation id="5983642582671533177">डिसेंबरनंतर या प्रिंटरला सपोर्ट केला जाणार नाही. तुमच्या ॲडमिनशी संपर्क साधा.</translation>
 <translation id="5984222099446776634">अलीकडे भेट दिलेले</translation>
 <translation id="598472838394900788">{0,plural, =1{गुप्त}other{गुप्त (#)}}</translation>
 <translation id="5985458664595100876">चुकीचा URL फॉरमॅट. सपोर्ट केले जाणारे फॉरमॅट \\server\share आणि smb://server/share आहेत.</translation>
@@ -4188,7 +4188,7 @@
 <translation id="6150961653851236686">ही भाषा पेज भाषांतरित करताना वापरली जाते</translation>
 <translation id="6151323131516309312"><ph name="SITE_NAME" /> शोधण्यासाठी <ph name="SEARCH_KEY" /> दाबा</translation>
 <translation id="6151771661215463137">फाइल तुमच्या डाउनलोड फोल्डरमध्ये आधीपासून आहे.</translation>
-<translation id="6153808139779428578">डिसेंबरनंतर या प्रिंटरला सपोर्ट केले जाणार नाही. <ph name="BEGIN_LINK_LEARN_MORE" />अधिक जाणून घ्या<ph name="END_LINK_LEARN_MORE" /></translation>
+<translation id="6153808139779428578">डिसेंबरनंतर या प्रिंटरला सपोर्ट केला जाणार नाही. <ph name="BEGIN_LINK_LEARN_MORE" />अधिक जाणून घ्या<ph name="END_LINK_LEARN_MORE" /></translation>
 <translation id="6154240335466762404">सर्व पोर्ट काढून टाका</translation>
 <translation id="615436196126345398">प्रोटोकॉल</translation>
 <translation id="6154697846084421647">सध्या साइन इन </translation>
@@ -5559,7 +5559,7 @@ https://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featu
 <translation id="7855678561139483478">टॅब नवीन विंडोवर हलवा</translation>
 <translation id="7857117644404132472">एक्सेप्शन जोडा</translation>
 <translation id="7857949311770343000">तुम्ही अपेक्षा करत होता ते हे नवीन पृष्ठ आहे?</translation>
-<translation id="785948723952233770">डिसेंबरनंतर या पर्यायाला सपोर्ट केले जाणार नाही. तुमच्या ॲडमिनशी संपर्क साधा.</translation>
+<translation id="785948723952233770">डिसेंबरनंतर या पर्यायाला सपोर्ट केला जाणार नाही. तुमच्या ॲडमिनशी संपर्क साधा.</translation>
 <translation id="786073089922909430">सेवा: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="7861215335140947162">&amp;डाउनलोड</translation>
 <translation id="7864539943188674973">Bluetooth अक्षम करा</translation>
@@ -5584,7 +5584,7 @@ https://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featu
 <translation id="7893008570150657497">तुमच्या कॉंप्युटरवरील फोटो, संगीत आणि इतर माध्यमे ॲक्सेस करा</translation>
 <translation id="7893153962594818789">या <ph name="DEVICE_TYPE" /> वर ब्लूटूथ बंद आहे. तुमचा पासवर्ड टाका आणि ब्लूटूथ सुरू करा.</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME" /> (डीफॉल्ट)</translation>
-<translation id="7897865097438730075">३१ डिसेंबरनंतर Google Cloud Print ला सपोर्ट केले जाणार नाही. तुमच्या अ‍ॅडमिनिस्ट्रेटरशी संपर्क साधा.</translation>
+<translation id="7897865097438730075">३१ डिसेंबरनंतर Google Cloud Print ला सपोर्ट केला जाणार नाही. तुमच्या अ‍ॅडमिनिस्ट्रेटरशी संपर्क साधा.</translation>
 <translation id="7897900149154324287">भविष्यात, तुम्ही फाइल ॲप मधील तुमचा काढण्यायोग्य डिव्हाइस अनप्लग करण्यापूर्वी तो निष्कासित करण्याचे सुनिश्चित करा. अन्यथा, तुम्ही डेटा गमावू शकता.</translation>
 <translation id="7898627924844766532">टूलबारमध्ये ठेवा</translation>
 <translation id="7898725031477653577">नेहमी भाषांतर करा</translation>
@@ -5698,7 +5698,6 @@ https://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featu
 <translation id="8028060951694135607">Microsoft Key Recovery</translation>
 <translation id="8028803902702117856"><ph name="SIZE" />, <ph name="FILE_NAME" /> डाउनलोड करत आहे</translation>
 <translation id="8028993641010258682">आकार</translation>
-<translation id="8030656706657716245">प्रिंटर जोडा</translation>
 <translation id="8030852056903932865">मंजूर करा</translation>
 <translation id="8032244173881942855">टॅब कास्ट करण्यात अक्षम.</translation>
 <translation id="8033827949643255796">निवडलेले</translation>
@@ -5723,7 +5722,7 @@ https://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featu
 <translation id="8054563304616131773">कृपया एक वैध ईमेल ॲड्रेस एंटर करा</translation>
 <translation id="8054921503121346576">USB कीबोर्ड कनेक्ट झाला</translation>
 <translation id="8058655154417507695">कालबाह्य होण्याचे वर्ष</translation>
-<translation id="8058811362315390556">३१ डिसेंबरनंतर Google Cloud Print ला सपोर्ट केले जाणार नाही</translation>
+<translation id="8058811362315390556">३१ डिसेंबरनंतर Google Cloud Print ला सपोर्ट केला जाणार नाही</translation>
 <translation id="8059417245945632445">&amp;डिव्हाइसेसचा निरीक्षण करा</translation>
 <translation id="8059456211585183827">सेव्ह करण्यासाठी कोणतेही प्रिंटर उपलब्ध नाहीत.</translation>
 <translation id="8061091456562007989">ते पहिल्यासारखे करा</translation>
@@ -6307,7 +6306,7 @@ https://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featu
 <translation id="8783834180813871000">ब्लूटूथ पेअरिंग कोड टाइप करा, नंतर Return किंवा Enter दाबा.</translation>
 <translation id="8784626084144195648">बिन केलेली सरासरी</translation>
 <translation id="8785622406424941542">स्टायलस</translation>
-<translation id="8786697630358316925">डिसेंबरनंतर या पर्यायाला सपोर्ट केले जाणार नाही. <ph name="BEGIN_LINK_LEARN_MORE" />अधिक जाणून घ्या<ph name="END_LINK_LEARN_MORE" /></translation>
+<translation id="8786697630358316925">डिसेंबरनंतर या पर्यायाला सपोर्ट केला जाणार नाही. <ph name="BEGIN_LINK_LEARN_MORE" />अधिक जाणून घ्या<ph name="END_LINK_LEARN_MORE" /></translation>
 <translation id="8787254343425541995">शेअर नेटवर्कसाठी प्रॉक्सीला अनुमती द्या</translation>
 <translation id="8791534160414513928">तुमच्या ब्राउझिंग ट्रॅफिकसह "Do Not Track" विनंती पाठवा</translation>
 <translation id="8794025342371547160">प्रतिबंधित IP</translation>
@@ -6651,7 +6650,7 @@ https://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featu
 <translation id="9209563766569767417">Linux कंटेनर सेटअप तपासत आहे</translation>
 <translation id="9209689095351280025">साइट संपूर्ण वेबवर तुमचा माग ठेवणाऱ्या कुकी वापरू शकत नाहीत</translation>
 <translation id="9211177926627870898">अपडेट आवश्‍यक</translation>
-<translation id="9211904674129619383">३१ डिसेंबरनंतर क्लाउड प्रिंटिंगला सपोर्ट केले जाणार नाही. <ph name="BEGIN_LINK_LEARN_MORE" />अधिक जाणून घ्या<ph name="END_LINK_LEARN_MORE" /></translation>
+<translation id="9211904674129619383">३१ डिसेंबरनंतर क्लाउड प्रिंटिंगला सपोर्ट केला जाणार नाही. <ph name="BEGIN_LINK_LEARN_MORE" />अधिक जाणून घ्या<ph name="END_LINK_LEARN_MORE" /></translation>
 <translation id="9214520840402538427">अरेरे! स्थापना-वेळ विशेषतांचे इंस्टॉलेशन कालबाह्य झाले. कृपया तुमच्या सपोर्ट प्रतिनिधीशी संपर्क साधा.</translation>
 <translation id="9214695392875603905">कपकेक</translation>
 <translation id="9215293857209265904">"<ph name="EXTENSION_NAME" />" जोडले</translation>

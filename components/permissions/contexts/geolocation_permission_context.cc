@@ -58,9 +58,12 @@ void GeolocationPermissionContext::UpdateTabContext(
 
   // WebContents might not exist (extensions) or no longer exist. In which case,
   // PageSpecificContentSettings will be null.
-  if (content_settings)
-    content_settings->OnGeolocationPermissionSet(requesting_frame.GetOrigin(),
-                                                 allowed);
+  if (content_settings) {
+    if (allowed)
+      content_settings->OnContentAllowed(ContentSettingsType::GEOLOCATION);
+    else
+      content_settings->OnContentBlocked(ContentSettingsType::GEOLOCATION);
+  }
 
   if (allowed) {
     GetGeolocationControl()->UserDidOptIntoLocationServices();

@@ -40,6 +40,7 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="1302880136325416935">Bluetooth sozlamalarini ochish. <ph name="STATE_TEXT" /></translation>
 <translation id="1312604459020188865">Signal darajasi: <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="1316069254387866896">Javon doim chiqib tursin</translation>
+<translation id="1333308631814936910"><ph name="DISPLAY_NAME" /> ulandi</translation>
 <translation id="1341651618736211726">Kengaytirish</translation>
 <translation id="1346748346194534595">O‘ngga</translation>
 <translation id="1351937230027495976">Menyuni yopish</translation>
@@ -63,7 +64,7 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="1589090746204042747">Bu seansdagi barcha harakatlaringizga ruxsat</translation>
 <translation id="1632985212731562677">Switch Access funksiyasini Sozlamalar &gt; Maxsus imkoniyatlar orqali faolsizlantirish mumkin.</translation>
 <translation id="1654477262762802994">Ovozli qidiruvni boshlash</translation>
-<translation id="1665244008632896072">Tungi rejimga oʻrish. <ph name="STATE_TEXT" /></translation>
+<translation id="1665244008632896072">Tungi rejimga oʻtish. <ph name="STATE_TEXT" /></translation>
 <translation id="1677472565718498478"><ph name="TIME" /> qoldi</translation>
 <translation id="1698080062160024910"><ph name="TOTAL_TIME" /> taymer · <ph name="LABEL" /></translation>
 <translation id="1698760176351776263">IPv6 manzil: <ph name="ADDRESS" /></translation>
@@ -369,6 +370,7 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="5114495209940374989">Skrinshotlar</translation>
 <translation id="5136175204352732067">Boshqa klaviatura ulandi</translation>
 <translation id="5168181903108465623">Translatsiya qurilmalari mavjud</translation>
+<translation id="5170568018924773124">&amp;Jildda ko‘rsatish</translation>
 <translation id="5207949376430453814">Matn kiritish joyi ajratib ko‘rsatilsin</translation>
 <translation id="5222676887888702881">Tizimdan chiqish</translation>
 <translation id="523505283826916779">Maxsus imkoniyatlar sozlamalari</translation>
@@ -476,7 +478,7 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="649452524636452238">Smart kartaning PIN kodi</translation>
 <translation id="6501401484702599040">Ekran “<ph name="RECEIVER_NAME" />” qurilmasiga translatsiya qilinmoqda</translation>
 <translation id="652139407789908527">Ekran bu safar yangilanish vaqtida odatdagidan uzoqroq yonmay turishi mumkin. Yangilanish vaqtida quvvat tugmasini bosmay turing.</translation>
-<translation id="6521655319214113338">Qo‘lyozma</translation>
+<translation id="6527303717912515753">Ulashish</translation>
 <translation id="6528179044667508675">Bezovta qilinmasin</translation>
 <translation id="6537270692134705506">Ekranni suratga olish</translation>
 <translation id="6537924328260219877">Signal darajasi: <ph name="SIGNAL_STRENGTH" />, Telefon quvvati: <ph name="BATTERY_STATUS" /></translation>
@@ -558,7 +560,6 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="7536035074519304529">IP manzil: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">Uyqu vaqti keldi</translation>
 <translation id="7561982940498449837">Menyuni yopish</translation>
-<translation id="7562368315689366235">Emoji menyusi</translation>
 <translation id="7564874036684306347">Oynalarni boshqa ish stoliga ko‘chirish oqibatida kutilmagan xatti-harakatlar sodir bo‘lishi mumkin. Bildirishnomalar va muloqot oynalari turli ekranlarda ko‘rsatiladi.</translation>
 <translation id="7568294522609223312">Avtomatik kliklarni faolsizlantirish</translation>
 <translation id="7568637526529101738">Oʻng klik yoki biroz bosib turilsa, Assistent ekranda tanlangan narsaga mos tavsif yoki birliklar konvertorini chiqaradi.</translation>
@@ -621,7 +622,6 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="8152092012181020186">Yopish uchun Ctrl+W tugmalarini bosing.</translation>
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" /> Bu sozlama administrator tomonidan boshqariladi.</translation>
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" /> ishlatilmoqda</translation>
-<translation id="8190698733819146287">Tillar va kiritish sozlamalari...</translation>
 <translation id="8192202700944119416">Bildirishnomalar yashirilgan.</translation>
 <translation id="8196787716797768628">Chromebook qurilmangizdagi ilovalarni tez va qulay almashtirish uchun planshet rejimi ishoralaridan foydalaning.</translation>
 <translation id="8200772114523450471">Davom ettirish</translation>
@@ -705,6 +705,7 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="9029474291399787231">Adobe Flash Player uchun yangilanish mavjud</translation>
 <translation id="9047624247355796468"><ph name="NETWORK_NAME" /> sozlamalarini ochish</translation>
 <translation id="9056839673611986238">Qurilma rejadagi versiyaga qaytariladi</translation>
+<translation id="9065203028668620118">O‘zgartirish</translation>
 <translation id="9070640332319875144">Google Assistent sozlamalari</translation>
 <translation id="9072519059834302790">Batareya quvvati tugashigacha qolgan vaqt: <ph name="TIME_LEFT" />.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>

@@ -62,7 +62,9 @@ constexpr int kMaxImageSize = ProfileMenuViewBase::kIdentityImageSize;
 constexpr int kDefaultMargin = 8;
 constexpr int kBadgeSize = 16;
 constexpr int kCircularImageButtonSize = 28;
-constexpr int kAvatarImageViewBottomMargin = kDefaultMargin;
+constexpr int kIdentityImageBorder = 2;
+constexpr int kIdentityImageSizeInclBorder =
+    ProfileMenuViewBase::kIdentityImageSize + 2 * kIdentityImageBorder;
 
 // If the bubble is too large to fit on the screen, it still needs to be at
 // least this tall to show one row.
@@ -253,7 +255,11 @@ class AvatarImageView : public views::ImageView {
   AvatarImageView(const ui::ImageModel& avatar_image,
                   const ProfileMenuViewBase* root_view)
       : avatar_image_(avatar_image), root_view_(root_view) {
-    SetBorder(views::CreateEmptyBorder(0, 0, kAvatarImageViewBottomMargin, 0));
+    if (base::FeatureList::IsEnabled(features::kNewProfilePicker)) {
+      SetBorder(views::CreateRoundedRectBorder(
+          kIdentityImageBorder, /*radius=*/(kIdentityImageSizeInclBorder) / 2,
+          GetBackgroundColor()));
+    }
     if (avatar_image_.IsEmpty()) {
       // This can happen if the account image hasn't been fetched yet, if there
       // is no image, or in tests.
@@ -272,11 +278,9 @@ class AvatarImageView : public views::ImageView {
         SizeImageModel(avatar_image_, GetNativeTheme(),
                        ProfileMenuViewBase::kIdentityImageSize);
 
-    const SkColor background_color = GetNativeTheme()->GetSystemColor(
-        ui::NativeTheme::kColorId_BubbleBackground);
-    gfx::ImageSkia sized_badge =
-        AddCircularBackground(SizeImage(root_view_->GetSyncIcon(), kBadgeSize),
-                              background_color, kBadgeSize + 2 * kBadgePadding);
+    gfx::ImageSkia sized_badge = AddCircularBackground(
+        SizeImage(root_view_->GetSyncIcon(), kBadgeSize), GetBackgroundColor(),
+        kBadgeSize + 2 * kBadgePadding);
     gfx::ImageSkia sized_badge_with_shadow =
         gfx::ImageSkiaOperations::CreateImageWithDropShadow(
             sized_badge, gfx::ShadowValue::MakeMdShadowValues(/*elevation=*/1,
@@ -288,6 +292,11 @@ class AvatarImageView : public views::ImageView {
   }
 
  private:
+  SkColor GetBackgroundColor() const {
+    return GetNativeTheme()->GetSystemColor(
+        ui::NativeTheme::kColorId_BubbleBackground);
+  }
+
   ui::ImageModel avatar_image_;
   const ProfileMenuViewBase* root_view_;
 };
@@ -326,13 +335,19 @@ class SyncImageView : public views::ImageView {
 void BuildProfileTitleAndSubtitle(views::View* parent,
                                   const base::string16& title,
                                   const base::string16& subtitle) {
+  views::View* profile_titles_container =
+      parent->AddChildView(std::make_unique<views::View>());
+  // Separate the titles from the avatar image by the default margin.
+  profile_titles_container->SetBorder(
+      views::CreateEmptyBorder(kDefaultMargin, 0, 0, 0));
+
   if (!title.empty()) {
-    parent->AddChildView(std::make_unique<views::Label>(
+    profile_titles_container->AddChildView(std::make_unique<views::Label>(
         title, views::style::CONTEXT_DIALOG_TITLE));
   }
 
   if (!subtitle.empty()) {
-    parent->AddChildView(std::make_unique<views::Label>(
+    profile_titles_container->AddChildView(std::make_unique<views::Label>(
         subtitle, views::style::CONTEXT_LABEL, views::style::STYLE_SECONDARY));
   }
 }
@@ -367,11 +382,9 @@ void BuildProfileBackgroundContainer(
       .SetInteriorMargin(background_container_insets);
   if (background_color.has_value()) {
     // The bottom background edge should match the center of the identity image.
-    gfx::Insets background_insets(
-        0, 0,
-        /*bottom=*/ProfileMenuViewBase::kIdentityImageSize / 2 +
-            kAvatarImageViewBottomMargin,
-        0);
+    gfx::Insets background_insets(0, 0,
+                                  /*bottom=*/kIdentityImageSizeInclBorder / 2,
+                                  0);
     profile_background_container->SetBackground(
         views::CreateBackgroundFromPainter(
             views::Painter::CreateSolidRoundRectPainter(

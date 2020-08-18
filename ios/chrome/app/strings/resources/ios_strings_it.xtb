@@ -338,6 +338,7 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="4881695831933465202">Apri</translation>
 <translation id="4901778704868714008">Salva…</translation>
 <translation id="4904877109095351937">Segna come già letti</translation>
+<translation id="4908869848243824489">Discover di Google</translation>
 <translation id="4930268273022498155">Elimina i dati esistenti. Puoi recuperarli tornando all'account <ph name="USER_EMAIL1" />.</translation>
 <translation id="4930714375720679147">Attiva</translation>
 <translation id="4941089862236492464">Spiacenti, si è verificato un problema di condivisione.</translation>
@@ -554,6 +555,7 @@ I siti non possono utilizzare i cookie per conoscere la tua attività di navigaz
 <translation id="7293171162284876153">Per iniziare la sincronizzazione, attiva "Sincronizza i tuoi dati di Chrome".</translation>
 <translation id="7313347584264171202">Qui troverai le tue schede di navigazione in incognito</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" />% scaricato</translation>
+<translation id="7340958967809483333">Opzioni per Discover</translation>
 <translation id="7346909386216857016">OK</translation>
 <translation id="734758817008927353">Opzioni per salvare la carta</translation>
 <translation id="7348502496356775519">Aggiungi ai preferiti</translation>
@@ -665,6 +667,7 @@ I siti possono utilizzare i cookie per conoscere la tua attività di navigazione
 <translation id="8668210798914567634">Questa pagina è stata salvata nel tuo Elenco di lettura.</translation>
 <translation id="8680787084697685621">I dati di accesso dell'account sono obsoleti.</translation>
 <translation id="8706588385081740091">Password</translation>
+<translation id="8717864919010420084">Copia link</translation>
 <translation id="8721297211384281569">Menu Strumenti</translation>
 <translation id="8725066075913043281">Riprova</translation>
 <translation id="8730621377337864115">Fine</translation>

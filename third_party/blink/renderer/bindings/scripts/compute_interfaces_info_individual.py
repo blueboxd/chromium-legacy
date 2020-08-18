@@ -146,7 +146,7 @@ def get_put_forward_interfaces_from_definition(definition):
 
 def get_unforgeable_attributes_from_definition(definition):
     return sorted(attribute for attribute in definition.attributes
-                  if 'Unforgeable' in attribute.extended_attributes)
+                  if 'LegacyUnforgeable' in attribute.extended_attributes)
 
 
 def collect_union_types_from_definitions(definitions):
@@ -206,8 +206,9 @@ class InterfaceInfoCollector(object):
         binding code generation."""
 
         def collect_unforgeable_attributes(definition, idl_filename):
-            """Collects [Unforgeable] attributes so that we can define them on
-            sub-interfaces later.  The resulting structure is as follows.
+            """Collects [LegacyUnforgeable] attributes so that we can define
+            them on sub-interfaces later.  The resulting structure is as
+            follows.
                 interfaces_info[interface_name] = {
                     'unforgeable_attributes': [IdlAttribute, ...],
                     ...
@@ -282,7 +283,7 @@ class InterfaceInfoCollector(object):
         if definition.name not in self.interfaces_info:
             self.interfaces_info[definition.name] = {}
 
-        # Remember [Unforgeable] attributes.
+        # Remember [LegacyUnforgeable] attributes.
         if definitions.interfaces:
             merge_dict_recursively(
                 self.interfaces_info[definition.name],

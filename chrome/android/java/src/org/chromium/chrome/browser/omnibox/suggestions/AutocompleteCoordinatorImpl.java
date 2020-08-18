@@ -220,6 +220,7 @@ public class AutocompleteCoordinatorImpl implements AutocompleteCoordinator {
     @Override
     public void setAutocompleteProfile(Profile profile) {
         mMediator.setAutocompleteProfile(profile);
+        mQueryTileCoordinator.setProfile(profile);
     }
 
     @Override

@@ -61,24 +61,6 @@ class ContentSettingBubbleModelTest : public ChromeRenderViewHostTestHarness {
     InfoBarService::CreateForWebContents(web_contents());
   }
 
-  void CheckGeolocationBubble(size_t expected_domains,
-                              bool expect_clear_link,
-                              bool expect_reload_hint) {
-    std::unique_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
-        ContentSettingBubbleModel::CreateContentSettingBubbleModel(
-            NULL, web_contents(), ContentSettingsType::GEOLOCATION));
-    const ContentSettingBubbleModel::BubbleContent& bubble_content =
-        content_setting_bubble_model->bubble_content();
-    EXPECT_TRUE(bubble_content.title.empty());
-    EXPECT_TRUE(bubble_content.radio_group.radio_items.empty());
-    EXPECT_TRUE(bubble_content.list_items.empty());
-    EXPECT_EQ(expected_domains, bubble_content.domain_lists.size());
-    EXPECT_NE(expect_clear_link || expect_reload_hint,
-              bubble_content.custom_link.empty());
-    EXPECT_EQ(expect_clear_link, bubble_content.custom_link_enabled);
-    EXPECT_FALSE(bubble_content.manage_text.empty());
-  }
-
   std::string GetDefaultAudioDevice() {
     PrefService* prefs = profile()->GetPrefs();
     return prefs->GetString(prefs::kDefaultAudioCaptureDevice);
@@ -796,101 +778,194 @@ TEST_F(ContentSettingBubbleModelTest, PepperBroker) {
 }
 
 TEST_F(ContentSettingBubbleModelTest, Geolocation) {
-  const GURL page_url("http://toplevel.example/");
-  const GURL frame1_url("http://host1.example/");
-  const GURL frame2_url("http://host2.example:999/");
-
-  NavigateAndCommit(page_url);
+  WebContentsTester::For(web_contents())
+      ->NavigateAndCommit(GURL("https://www.example.com"));
   PageSpecificContentSettings* content_settings =
       PageSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
-
-  // One permitted frame, but not in the content map: requires reload.
-  content_settings->OnGeolocationPermissionSet(frame1_url, true);
-  CheckGeolocationBubble(1, false, true);
-
-  // Add it to the content map, should now have a clear link.
-  HostContentSettingsMap* setting_map =
+  HostContentSettingsMap* settings_map =
       HostContentSettingsMapFactory::GetForProfile(profile());
-  setting_map->SetContentSettingDefaultScope(
-      frame1_url, page_url, ContentSettingsType::GEOLOCATION, std::string(),
-      CONTENT_SETTING_ALLOW);
-  CheckGeolocationBubble(1, true, false);
 
-  // Change the default to allow: no message needed.
-  setting_map->SetDefaultContentSetting(ContentSettingsType::GEOLOCATION,
-                                        CONTENT_SETTING_ALLOW);
-  CheckGeolocationBubble(1, false, false);
-
-  // Second frame denied, but not stored in the content map: requires reload.
-  content_settings->OnGeolocationPermissionSet(frame2_url, false);
-  CheckGeolocationBubble(2, false, true);
-
-  // Change the default to block: offer a clear link for the persisted frame 1.
-  setting_map->SetDefaultContentSetting(ContentSettingsType::GEOLOCATION,
-                                        CONTENT_SETTING_BLOCK);
-  CheckGeolocationBubble(2, true, false);
-}
-
-TEST_F(ContentSettingBubbleModelTest, GeolocationEmbargo) {
-  GURL origin_to_embargo("http://example.com/");
-
-  // Verify that |origin_to_embargo| is not blocked.
+  // Go from allow by default to block by default to allow by default.
   {
-    auto* content_settings_map =
-        HostContentSettingsMapFactory::GetForProfile(profile());
-    const ContentSetting saved_setting =
-        content_settings_map->GetContentSetting(
-            origin_to_embargo, origin_to_embargo,
-            ContentSettingsType::GEOLOCATION, std::string());
-
-    ASSERT_EQ(CONTENT_SETTING_ASK, saved_setting);
-  }
-
-  NavigateAndCommit(origin_to_embargo);
-  PageSpecificContentSettings* content_settings =
-      PageSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
-  content_settings->OnGeolocationPermissionSet(origin_to_embargo, false);
-
-  // |origin_to_embargo| is not blocked or embargoed. Verify no clear link
-  // shown.
-  CheckGeolocationBubble(1, /*expect_clear_link*/ false,
-                         /*expect_reload_hint*/ true);
-
-  {
-    auto* auto_blocker =
-        PermissionDecisionAutoBlockerFactory::GetForProfile(profile());
-    for (int i = 0; i < 3; ++i)
-      auto_blocker->RecordDismissAndEmbargo(
-          origin_to_embargo, ContentSettingsType::GEOLOCATION, false);
-  }
-
-  // |origin_to_embargo| is not blocked but under embargo. Verify clear link is
-  // shown.
-  CheckGeolocationBubble(1, /*expect_clear_link*/ true,
-                         /*expect_reload_hint*/ false);
-
-  // Reset ContentSettings and embargo state by pressing on Custom Link.
-  {
+    settings_map->SetDefaultContentSetting(ContentSettingsType::GEOLOCATION,
+                                           CONTENT_SETTING_ALLOW);
+    content_settings->OnContentAllowed(ContentSettingsType::GEOLOCATION);
     std::unique_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
         ContentSettingBubbleModel::CreateContentSettingBubbleModel(
             nullptr, web_contents(), ContentSettingsType::GEOLOCATION));
+    const auto& bubble_content = content_setting_bubble_model->bubble_content();
 
-    content_setting_bubble_model->OnCustomLinkClicked();
+    EXPECT_EQ(bubble_content.title,
+              l10n_util::GetStringUTF16(IDS_ALLOWED_GEOLOCATION_TITLE));
+    EXPECT_EQ(bubble_content.message,
+              l10n_util::GetStringUTF16(IDS_ALLOWED_GEOLOCATION_MESSAGE));
+    ASSERT_EQ(bubble_content.radio_group.radio_items.size(), 2U);
+    EXPECT_EQ(bubble_content.radio_group.radio_items[0],
+              l10n_util::GetStringUTF16(IDS_ALLOWED_GEOLOCATION_NO_ACTION));
+    EXPECT_EQ(
+        bubble_content.radio_group.radio_items[1],
+        l10n_util::GetStringFUTF16(IDS_ALLOWED_GEOLOCATION_BLOCK,
+                                   url_formatter::FormatUrlForSecurityDisplay(
+                                       web_contents()->GetURL())));
+    EXPECT_EQ(bubble_content.radio_group.default_item, 0);
+
+    settings_map->SetDefaultContentSetting(ContentSettingsType::GEOLOCATION,
+                                           CONTENT_SETTING_BLOCK);
+    content_settings->OnContentBlocked(ContentSettingsType::GEOLOCATION);
+    content_setting_bubble_model =
+        ContentSettingBubbleModel::CreateContentSettingBubbleModel(
+            nullptr, web_contents(), ContentSettingsType::GEOLOCATION);
+    const auto& bubble_content_2 =
+        content_setting_bubble_model->bubble_content();
+
+    EXPECT_EQ(bubble_content_2.title,
+              l10n_util::GetStringUTF16(IDS_BLOCKED_GEOLOCATION_TITLE));
+    EXPECT_EQ(bubble_content_2.message,
+              l10n_util::GetStringUTF16(IDS_BLOCKED_GEOLOCATION_MESSAGE));
+    EXPECT_EQ(bubble_content_2.radio_group.radio_items.size(), 2U);
+    EXPECT_EQ(
+        bubble_content_2.radio_group.radio_items[0],
+        l10n_util::GetStringFUTF16(IDS_BLOCKED_GEOLOCATION_UNBLOCK,
+                                   url_formatter::FormatUrlForSecurityDisplay(
+                                       web_contents()->GetURL())));
+    EXPECT_EQ(bubble_content_2.radio_group.radio_items[1],
+              l10n_util::GetStringUTF16(IDS_BLOCKED_GEOLOCATION_NO_ACTION));
+    EXPECT_EQ(bubble_content_2.radio_group.default_item, 1);
+
+    settings_map->SetDefaultContentSetting(ContentSettingsType::GEOLOCATION,
+                                           CONTENT_SETTING_ALLOW);
+    content_settings->OnContentAllowed(ContentSettingsType::GEOLOCATION);
+    content_setting_bubble_model =
+        ContentSettingBubbleModel::CreateContentSettingBubbleModel(
+            nullptr, web_contents(), ContentSettingsType::GEOLOCATION);
+    const auto& bubble_content_3 =
+        content_setting_bubble_model->bubble_content();
+
+    EXPECT_EQ(bubble_content_3.title,
+              l10n_util::GetStringUTF16(IDS_ALLOWED_GEOLOCATION_TITLE));
+    EXPECT_EQ(bubble_content_3.message,
+              l10n_util::GetStringUTF16(IDS_ALLOWED_GEOLOCATION_MESSAGE));
+    ASSERT_EQ(bubble_content_3.radio_group.radio_items.size(), 2U);
+    EXPECT_EQ(bubble_content_3.radio_group.radio_items[0],
+              l10n_util::GetStringUTF16(IDS_ALLOWED_GEOLOCATION_NO_ACTION));
+    EXPECT_EQ(
+        bubble_content_3.radio_group.radio_items[1],
+        l10n_util::GetStringFUTF16(IDS_ALLOWED_GEOLOCATION_BLOCK,
+                                   url_formatter::FormatUrlForSecurityDisplay(
+                                       web_contents()->GetURL())));
+    EXPECT_EQ(bubble_content_3.radio_group.default_item, 0);
   }
 
-  // Verify |origin_to_embargo| is no longer under embargo.
+  WebContentsTester::For(web_contents())
+      ->NavigateAndCommit(GURL("https://www.example.com"));
+  content_settings =
+      PageSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
+
+  // Go from block by default to allow by default to block by default.
   {
-    auto* auto_blocker =
-        PermissionDecisionAutoBlockerFactory::GetForProfile(profile());
-    permissions::PermissionResult result = auto_blocker->GetEmbargoResult(
-        origin_to_embargo, ContentSettingsType::GEOLOCATION);
-    ASSERT_EQ(CONTENT_SETTING_ASK, result.content_setting);
+    settings_map->SetDefaultContentSetting(ContentSettingsType::GEOLOCATION,
+                                           CONTENT_SETTING_BLOCK);
+    content_settings->OnContentBlocked(ContentSettingsType::GEOLOCATION);
+    std::unique_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
+        ContentSettingBubbleModel::CreateContentSettingBubbleModel(
+            nullptr, web_contents(), ContentSettingsType::GEOLOCATION));
+    const auto& bubble_content = content_setting_bubble_model->bubble_content();
+
+    EXPECT_EQ(bubble_content.title,
+              l10n_util::GetStringUTF16(IDS_BLOCKED_GEOLOCATION_TITLE));
+    EXPECT_EQ(bubble_content.message,
+              l10n_util::GetStringUTF16(IDS_BLOCKED_GEOLOCATION_MESSAGE));
+    ASSERT_EQ(bubble_content.radio_group.radio_items.size(), 2U);
+    EXPECT_EQ(
+        bubble_content.radio_group.radio_items[0],
+        l10n_util::GetStringFUTF16(IDS_BLOCKED_GEOLOCATION_UNBLOCK,
+                                   url_formatter::FormatUrlForSecurityDisplay(
+                                       web_contents()->GetURL())));
+    EXPECT_EQ(bubble_content.radio_group.radio_items[1],
+              l10n_util::GetStringUTF16(IDS_BLOCKED_GEOLOCATION_NO_ACTION));
+    EXPECT_EQ(bubble_content.radio_group.default_item, 1);
+
+    settings_map->SetDefaultContentSetting(ContentSettingsType::GEOLOCATION,
+                                           CONTENT_SETTING_ALLOW);
+    content_settings->OnContentAllowed(ContentSettingsType::GEOLOCATION);
+    content_setting_bubble_model =
+        ContentSettingBubbleModel::CreateContentSettingBubbleModel(
+            nullptr, web_contents(), ContentSettingsType::GEOLOCATION);
+    const auto& bubble_content_2 =
+        content_setting_bubble_model->bubble_content();
+
+    EXPECT_EQ(bubble_content_2.title,
+              l10n_util::GetStringUTF16(IDS_ALLOWED_GEOLOCATION_TITLE));
+    EXPECT_EQ(bubble_content_2.message,
+              l10n_util::GetStringUTF16(IDS_ALLOWED_GEOLOCATION_MESSAGE));
+    EXPECT_EQ(bubble_content_2.radio_group.radio_items.size(), 2U);
+    EXPECT_EQ(bubble_content_2.radio_group.radio_items[0],
+              l10n_util::GetStringUTF16(IDS_ALLOWED_GEOLOCATION_NO_ACTION));
+    EXPECT_EQ(
+        bubble_content_2.radio_group.radio_items[1],
+        l10n_util::GetStringFUTF16(IDS_ALLOWED_GEOLOCATION_BLOCK,
+                                   url_formatter::FormatUrlForSecurityDisplay(
+                                       web_contents()->GetURL())));
+    EXPECT_EQ(bubble_content_2.radio_group.default_item, 0);
+
+    settings_map->SetDefaultContentSetting(ContentSettingsType::GEOLOCATION,
+                                           CONTENT_SETTING_BLOCK);
+    content_settings->OnContentBlocked(ContentSettingsType::GEOLOCATION);
+    content_setting_bubble_model =
+        ContentSettingBubbleModel::CreateContentSettingBubbleModel(
+            nullptr, web_contents(), ContentSettingsType::GEOLOCATION);
+    const auto& bubble_content_3 =
+        content_setting_bubble_model->bubble_content();
+
+    EXPECT_EQ(bubble_content_3.title,
+              l10n_util::GetStringUTF16(IDS_BLOCKED_GEOLOCATION_TITLE));
+    EXPECT_EQ(bubble_content_3.message,
+              l10n_util::GetStringUTF16(IDS_BLOCKED_GEOLOCATION_MESSAGE));
+    ASSERT_EQ(bubble_content_3.radio_group.radio_items.size(), 2U);
+    EXPECT_EQ(
+        bubble_content_3.radio_group.radio_items[0],
+        l10n_util::GetStringFUTF16(IDS_BLOCKED_GEOLOCATION_UNBLOCK,
+                                   url_formatter::FormatUrlForSecurityDisplay(
+                                       web_contents()->GetURL())));
+    EXPECT_EQ(bubble_content_3.radio_group.radio_items[1],
+              l10n_util::GetStringUTF16(IDS_BLOCKED_GEOLOCATION_NO_ACTION));
+    EXPECT_EQ(bubble_content_3.radio_group.default_item, 1);
   }
 
-  // |origin_to_embargo| returned to default state, not blocked or embargoed.
-  // Verify no clear link shown.
-  CheckGeolocationBubble(1, /*expect_clear_link*/ false,
-                         /*expect_reload_hint*/ true);
+  WebContentsTester::For(web_contents())
+      ->NavigateAndCommit(GURL("https://www.example.com"));
+  content_settings =
+      PageSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
+  // Clear site-specific exceptions.
+  settings_map->ClearSettingsForOneType(ContentSettingsType::GEOLOCATION);
+
+  // Allow by default but block a specific site.
+  {
+    settings_map->SetDefaultContentSetting(ContentSettingsType::GEOLOCATION,
+                                           CONTENT_SETTING_ALLOW);
+    settings_map->SetContentSettingDefaultScope(
+        web_contents()->GetURL(), web_contents()->GetURL(),
+        ContentSettingsType::GEOLOCATION, std::string(), CONTENT_SETTING_BLOCK);
+    content_settings->OnContentBlocked(ContentSettingsType::GEOLOCATION);
+    std::unique_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
+        ContentSettingBubbleModel::CreateContentSettingBubbleModel(
+            nullptr, web_contents(), ContentSettingsType::GEOLOCATION));
+    const auto& bubble_content = content_setting_bubble_model->bubble_content();
+
+    EXPECT_EQ(bubble_content.title,
+              l10n_util::GetStringUTF16(IDS_BLOCKED_GEOLOCATION_TITLE));
+    EXPECT_EQ(bubble_content.message,
+              l10n_util::GetStringUTF16(IDS_BLOCKED_GEOLOCATION_MESSAGE));
+    ASSERT_EQ(bubble_content.radio_group.radio_items.size(), 2U);
+    EXPECT_EQ(
+        bubble_content.radio_group.radio_items[0],
+        l10n_util::GetStringFUTF16(IDS_BLOCKED_GEOLOCATION_UNBLOCK,
+                                   url_formatter::FormatUrlForSecurityDisplay(
+                                       web_contents()->GetURL())));
+    EXPECT_EQ(bubble_content.radio_group.radio_items[1],
+              l10n_util::GetStringUTF16(IDS_BLOCKED_GEOLOCATION_NO_ACTION));
+    EXPECT_EQ(bubble_content.radio_group.default_item, 1);
+  }
 }
 
 TEST_F(ContentSettingBubbleModelTest, FileURL) {

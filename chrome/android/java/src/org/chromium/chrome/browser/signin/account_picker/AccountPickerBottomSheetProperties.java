@@ -25,11 +25,14 @@ class AccountPickerBottomSheetProperties {
      * Different account picker state correspond to different account picker bottom sheet
      * configuration.
      */
-    @IntDef({AccountPickerBottomSheetState.NO_ACCOUNTS,
+    @IntDef({
+            AccountPickerBottomSheetState.NO_ACCOUNTS,
             AccountPickerBottomSheetState.COLLAPSED_ACCOUNT_LIST,
             AccountPickerBottomSheetState.EXPANDED_ACCOUNT_LIST,
             AccountPickerBottomSheetState.SIGNIN_IN_PROGRESS,
-            AccountPickerBottomSheetState.INCOGNITO_INTERSTITIAL})
+            AccountPickerBottomSheetState.INCOGNITO_INTERSTITIAL,
+            AccountPickerBottomSheetState.SIGNIN_GENERAL_ERROR,
+    })
     @Retention(RetentionPolicy.SOURCE)
     @interface AccountPickerBottomSheetState {
         /**
@@ -77,6 +80,14 @@ class AccountPickerBottomSheetProperties {
          * user has clicked the "Go incognito mode" option.
          */
         int INCOGNITO_INTERSTITIAL = 4;
+
+        /**
+         * When user cannot complete sign-in due to connectivity issues for example, the
+         * general sign-in error screen will be shown.
+         *
+         * The state can be reached when an error appears during the sign-in process.
+         */
+        int SIGNIN_GENERAL_ERROR = 5;
     }
 
     // PropertyKeys for the selected account view when the account list is collapsed.

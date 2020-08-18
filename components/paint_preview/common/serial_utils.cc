@@ -26,7 +26,7 @@ struct SerializedRectData {
 #pragma pack(pop)
 
 // Serializes a SkPicture representing a subframe as a custom data placeholder.
-sk_sp<SkData> SerializeSubframe(SkPicture* picture, void* ctx) {
+sk_sp<SkData> SerializePictureAsRectData(SkPicture* picture, void* ctx) {
   const PictureSerializationContext* context =
       reinterpret_cast<PictureSerializationContext*>(ctx);
   SerializedRectData rect_data = {
@@ -66,9 +66,9 @@ sk_sp<SkData> SerializeTypeface(SkTypeface* typeface, void* ctx) {
 // rather than a valid SkPicture.
 // Precondition: the version of the SkPicture should be checked prior to
 // invocation to ensure deserialization will succeed.
-sk_sp<SkPicture> DeserializeSubframe(const void* data,
-                                     size_t length,
-                                     void* ctx) {
+sk_sp<SkPicture> DeserializePictureAsRectData(const void* data,
+                                              size_t length,
+                                              void* ctx) {
   SerializedRectData rect_data;
   if (length < sizeof(rect_data))
     return MakeEmptyPicture();
@@ -80,12 +80,57 @@ sk_sp<SkPicture> DeserializeSubframe(const void* data,
   return MakeEmptyPicture();
 }
 
+// Similar to |DeserializePictureAsRectData|, but instead of writing out the
+// serialized rect data to |ctx|, |ctx| is instead a
+// |LoadedFramesDeserialContext*| that is looked up to return the picture
+// itself. This assumes that the picture was already previously deserialized
+// and recorded into |ctx|. Returns an empty picture if |ctx| does not contain
+// the content ID embedded in |data|.
+sk_sp<SkPicture> GetPictureFromDeserialContext(const void* data,
+                                               size_t length,
+                                               void* ctx) {
+  SerializedRectData rect_data;
+  if (length < sizeof(rect_data))
+    return MakeEmptyPicture();
+  memcpy(&rect_data, data, sizeof(rect_data));
+  auto* context = reinterpret_cast<LoadedFramesDeserialContext*>(ctx);
+
+  auto it = context->subframes.find(rect_data.content_id);
+  if (it == context->subframes.end())
+    return MakeEmptyPicture();
+
+  // Scroll and clip the subframe manually since the picture in |ctx| does not
+  // encode this information.
+  SkRect subframe_bounds = SkRect::MakeWH(rect_data.width, rect_data.height);
+  subframe_bounds.offset(-context->scroll_offsets.width(),
+                         -context->scroll_offsets.height());
+  SkPictureRecorder recorder;
+  SkCanvas* canvas = recorder.beginRecording(subframe_bounds);
+  canvas->clipRect(subframe_bounds);
+  SkMatrix apply_scroll_offsets = SkMatrix::Translate(
+      -context->scroll_offsets.width() - it->second.scroll_offsets.width(),
+      -context->scroll_offsets.height() - it->second.scroll_offsets.height());
+  canvas->drawPicture(it->second.picture, &apply_scroll_offsets, nullptr);
+  return recorder.finishRecordingAsPicture(
+      SkPictureRecorder::kPlaybackDrawPicture_RecordFlag);
+}
+
 }  // namespace
 
 TypefaceSerializationContext::TypefaceSerializationContext(
     TypefaceUsageMap* usage)
     : usage(usage) {}
 TypefaceSerializationContext::~TypefaceSerializationContext() = default;
+
+FrameAndScrollOffsets::FrameAndScrollOffsets() = default;
+FrameAndScrollOffsets::~FrameAndScrollOffsets() = default;
+FrameAndScrollOffsets::FrameAndScrollOffsets(const FrameAndScrollOffsets&) =
+    default;
+FrameAndScrollOffsets& FrameAndScrollOffsets::operator=(
+    const FrameAndScrollOffsets&) = default;
+
+LoadedFramesDeserialContext::LoadedFramesDeserialContext() = default;
+LoadedFramesDeserialContext::~LoadedFramesDeserialContext() = default;
 
 sk_sp<SkPicture> MakeEmptyPicture() {
   // Effectively a no-op.
@@ -97,7 +142,7 @@ sk_sp<SkPicture> MakeEmptyPicture() {
 SkSerialProcs MakeSerialProcs(PictureSerializationContext* picture_ctx,
                               TypefaceSerializationContext* typeface_ctx) {
   SkSerialProcs procs;
-  procs.fPictureProc = SerializeSubframe;
+  procs.fPictureProc = SerializePictureAsRectData;
   procs.fPictureCtx = picture_ctx;
   procs.fTypefaceProc = SerializeTypeface;
   procs.fTypefaceCtx = typeface_ctx;
@@ -108,7 +153,14 @@ SkSerialProcs MakeSerialProcs(PictureSerializationContext* picture_ctx,
 
 SkDeserialProcs MakeDeserialProcs(DeserializationContext* ctx) {
   SkDeserialProcs procs;
-  procs.fPictureProc = DeserializeSubframe;
+  procs.fPictureProc = DeserializePictureAsRectData;
+  procs.fPictureCtx = ctx;
+  return procs;
+}
+
+SkDeserialProcs MakeDeserialProcs(LoadedFramesDeserialContext* ctx) {
+  SkDeserialProcs procs;
+  procs.fPictureProc = GetPictureFromDeserialContext;
   procs.fPictureCtx = ctx;
   return procs;
 }

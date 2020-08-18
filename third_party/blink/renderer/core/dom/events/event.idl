@@ -45,7 +45,7 @@
 
     [MeasureAs=EventComposed] readonly attribute boolean composed;
 
-    [Unforgeable] readonly attribute boolean isTrusted;
+    [LegacyUnforgeable] readonly attribute boolean isTrusted;
 
     [CallWith=ScriptState] readonly attribute DOMHighResTimeStamp timeStamp;
 

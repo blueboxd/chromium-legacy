@@ -338,6 +338,7 @@ Da biste promenili ovo podešavanje, <ph name="BEGIN_LINK" />resetujte sinhroniz
 <translation id="4881695831933465202">Otvori</translation>
 <translation id="4901778704868714008">Sačuvaj...</translation>
 <translation id="4904877109095351937">Označi kao pročitano</translation>
+<translation id="4908869848243824489">Google Discover</translation>
 <translation id="4930268273022498155">Izbrišite postojeće podatke. Možete da ih vratite ako se vratite na <ph name="USER_EMAIL1" />.</translation>
 <translation id="4930714375720679147">Uključi</translation>
 <translation id="4941089862236492464">Žao nam je, došlo je do problema pri deljenju stavke.</translation>
@@ -441,6 +442,7 @@ Handoff treba da se omogući u odeljku General (Opšte) u meniju Settings (Pode
 <translation id="6125339936101702016">Ovim upravlja <ph name="COMPANY" />. <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /></translation>
 <translation id="6127379762771434464">Uklonili ste stavku</translation>
 <translation id="6136914049981179737">Malopre</translation>
+<translation id="6144589619057374135">Otvori ${url} u režimu bez arhiviranja</translation>
 <translation id="616831107264507309">Pročitajte kasnije</translation>
 <translation id="6177442314419606057">Pretražite u Chrome-u</translation>
 <translation id="6184086493125982861">Prikaži kartice</translation>
@@ -554,6 +556,7 @@ Sajtovi ne mogu da koriste kolačiće da bi videli vaše aktivnosti pregledanja
 <translation id="7293171162284876153">Da biste pokrenuli sinhronizaciju, uključite opciju „Sinhronizujte Chrome podatke“.</translation>
 <translation id="7313347584264171202">Ovde ćete pronaći kartice bez arhiviranja</translation>
 <translation id="7336264872878993241">Procenat preuzimanja: <ph name="PERCENT" /></translation>
+<translation id="7340958967809483333">Opcije za Discover</translation>
 <translation id="7346909386216857016">Važi</translation>
 <translation id="734758817008927353">Opcije za čuvanje kartice</translation>
 <translation id="7348502496356775519">Označi</translation>
@@ -665,6 +668,7 @@ Sajtovi mogu da koriste kolačiće da bi videli vaše aktivnosti pregledanja na
 <translation id="8668210798914567634">Ova stranica je sačuvana na Listi za čitanje.</translation>
 <translation id="8680787084697685621">Detalji za prijavljivanje na nalog su zastareli.</translation>
 <translation id="8706588385081740091">Lozinke</translation>
+<translation id="8717864919010420084">Kopiraj link</translation>
 <translation id="8721297211384281569">Meni Alatke</translation>
 <translation id="8725066075913043281">Probajte ponovo</translation>
 <translation id="8730621377337864115">Gotovo</translation>

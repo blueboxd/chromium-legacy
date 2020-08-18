@@ -132,9 +132,6 @@ class ProfileNetworkContextService
 
   void ScheduleUpdateCTPolicy();
 
-  // Update the CORS mitigation list for the all of profiles_'s NetworkContexts.
-  void UpdateCorsMitigationList();
-
   bool ShouldSplitAuthCacheByNetworkIsolationKey() const;
   void UpdateSplitAuthCacheByNetworkIsolationKey();
 

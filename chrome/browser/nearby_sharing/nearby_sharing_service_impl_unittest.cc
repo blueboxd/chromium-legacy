@@ -13,9 +13,14 @@
 #include "base/containers/span.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/system/sys_info.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/browser_features.h"
+#include "chrome/browser/download/chrome_download_manager_delegate.h"
+#include "chrome/browser/download/download_core_service_factory.h"
+#include "chrome/browser/download/download_core_service_impl.h"
+#include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/nearby_sharing/certificates/fake_nearby_share_certificate_manager.h"
 #include "chrome/browser/nearby_sharing/certificates/nearby_share_certificate_manager_impl.h"
 #include "chrome/browser/nearby_sharing/certificates/test_util.h"
@@ -230,6 +235,7 @@ class NearbySharingServiceImplTest : public testing::Test {
 
   void SetUp() override {
     ASSERT_TRUE(profile_manager_.SetUp());
+    network_notifier_ = net::test::MockNetworkChangeNotifier::Create();
 
     NearbyShareLocalDeviceDataManagerImpl::Factory::SetFactoryForTesting(
         &local_device_data_manager_factory_);
@@ -260,22 +266,34 @@ class NearbySharingServiceImplTest : public testing::Test {
         .WillRepeatedly(testing::Return(&mock_decoder_));
   }
 
-  void TearDown() override { profile_manager_.DeleteAllTestingProfiles(); }
+  void TearDown() override {
+    if (profile_) {
+      DownloadCoreServiceFactory::GetForBrowserContext(profile_)
+          ->SetDownloadManagerDelegateForTesting(nullptr);
+      profile_ = nullptr;
+    }
+
+    profile_manager_.DeleteAllTestingProfiles();
+  }
 
   std::unique_ptr<NearbySharingServiceImpl> CreateService(
       const std::string& profile_name) {
-    Profile* profile = profile_manager_.CreateTestingProfile(profile_name);
+    profile_ = profile_manager_.CreateTestingProfile(profile_name);
     fake_nearby_connections_manager_ = new FakeNearbyConnectionsManager();
     notification_tester_ =
-        std::make_unique<NotificationDisplayServiceTester>(profile);
+        std::make_unique<NotificationDisplayServiceTester>(profile_);
     NotificationDisplayService* notification_display_service =
-        NotificationDisplayServiceFactory::GetForProfile(profile);
+        NotificationDisplayServiceFactory::GetForProfile(profile_);
     auto service = std::make_unique<NearbySharingServiceImpl>(
-        &prefs_, notification_display_service, profile,
+        &prefs_, notification_display_service, profile_,
         base::WrapUnique(fake_nearby_connections_manager_),
         &mock_nearby_process_manager_);
-    ON_CALL(mock_nearby_process_manager_, IsActiveProfile(profile))
+    ON_CALL(mock_nearby_process_manager_, IsActiveProfile(profile_))
         .WillByDefault(Return(true));
+
+    DownloadCoreServiceFactory::GetForBrowserContext(profile_)
+        ->SetDownloadManagerDelegateForTesting(
+            std::make_unique<ChromeDownloadManagerDelegate>(profile_));
 
     // Allow the posted task to fetch the BluetoothAdapter to finish.
     base::RunLoop().RunUntilIdle();
@@ -508,9 +526,14 @@ class NearbySharingServiceImplTest : public testing::Test {
   }
 
   base::test::ScopedFeatureList scoped_feature_list_;
+  // We need to ensure that |network_notifier_| is created and destroyed after
+  // |task_environment_| to avoid UAF issues when using
+  // ChromeDownloadManagerDelegate.
+  std::unique_ptr<net::test::MockNetworkChangeNotifier> network_notifier_;
   content::BrowserTaskEnvironment task_environment_;
   ui::ScopedSetIdleState idle_state_{ui::IDLE_STATE_IDLE};
   TestingProfileManager profile_manager_{TestingBrowserProcess::GetGlobal()};
+  Profile* profile_ = nullptr;
   sync_preferences::TestingPrefServiceSyncable prefs_;
   FakeNearbyConnectionsManager* fake_nearby_connections_manager_ = nullptr;
   FakeNearbyShareLocalDeviceDataManager::Factory
@@ -526,8 +549,6 @@ class NearbySharingServiceImplTest : public testing::Test {
   device::BluetoothAdapter::Observer* adapter_observer_ = nullptr;
   scoped_refptr<NiceMock<device::MockBluetoothAdapter>> mock_bluetooth_adapter_;
   NiceMock<MockNearbyProcessManager> mock_nearby_process_manager_;
-  std::unique_ptr<net::test::MockNetworkChangeNotifier> network_notifier_ =
-      net::test::MockNetworkChangeNotifier::Create();
   NiceMock<MockNearbySharingDecoder> mock_decoder_;
   FakeNearbyConnection connection_;
 };
@@ -1565,6 +1586,161 @@ TEST_F(NearbySharingServiceImplTest,
 
   connection_.Close();
   run_loop_2.Run();
+
+  // To avoid UAF in OnIncomingTransferUpdate().
+  service_->UnregisterReceiveSurface(&callback);
+}
+
+TEST_F(NearbySharingServiceImplTest, IncomingConnection_OutOfStorage) {
+  fake_nearby_connections_manager_->SetRawAuthenticationToken(kEndpointId,
+                                                              kToken);
+  SetUpAdvertisementDecoder(kValidV1EndpointInfo,
+                            /*return_empty_advertisement=*/false);
+
+  base::FilePath file_path =
+      DownloadPrefs::FromDownloadManager(
+          content::BrowserContext::GetDownloadManager(profile_))
+          ->DownloadPath();
+  int64_t free_space = base::SysInfo::AmountOfFreeDiskSpace(file_path);
+
+  // Might return -1 for failure.
+  if (free_space < 0)
+    free_space = 0;
+
+  // Set a huge file size in introduction frame to go out of storage.
+  std::string intro = "introduction_frame";
+  std::vector<uint8_t> bytes(intro.begin(), intro.end());
+  EXPECT_CALL(mock_decoder_, DecodeFrame(testing::Eq(bytes), testing::_))
+      .WillOnce(testing::Invoke(
+          [&free_space](
+              const std::vector<uint8_t>& data,
+              MockNearbySharingDecoder::DecodeFrameCallback callback) {
+            std::vector<sharing::mojom::FileMetadataPtr> mojo_file_metadatas;
+            mojo_file_metadatas.push_back(sharing::mojom::FileMetadata::New(
+                "name", sharing::mojom::FileMetadata::Type::kAudio,
+                /*payload_id=*/1, free_space + 1, "mime_type",
+                /*id=*/123));
+
+            sharing::mojom::V1FramePtr mojo_v1frame =
+                sharing::mojom::V1Frame::New();
+            mojo_v1frame->set_introduction(
+                sharing::mojom::IntroductionFrame::New(
+                    std::move(mojo_file_metadatas),
+                    std::vector<sharing::mojom::TextMetadataPtr>(),
+                    /*required_package=*/base::nullopt,
+                    std::vector<sharing::mojom::WifiCredentialsMetadataPtr>()));
+
+            sharing::mojom::FramePtr mojo_frame = sharing::mojom::Frame::New();
+            mojo_frame->set_v1(std::move(mojo_v1frame));
+
+            std::move(callback).Run(std::move(mojo_frame));
+          }));
+  connection_.AppendReadableData(std::move(bytes));
+
+  ui::ScopedSetIdleState unlocked(ui::IDLE_STATE_IDLE);
+  SetConnectionType(net::NetworkChangeNotifier::CONNECTION_WIFI);
+  NiceMock<MockTransferUpdateCallback> callback;
+  base::RunLoop run_loop;
+  EXPECT_CALL(callback, OnTransferUpdate(testing::_, testing::_))
+      .WillOnce(testing::Invoke([&run_loop](const ShareTarget& share_target,
+                                            TransferMetadata metadata) {
+        EXPECT_TRUE(share_target.is_incoming);
+        EXPECT_TRUE(share_target.is_known);
+        EXPECT_TRUE(share_target.has_attachments());
+        EXPECT_EQ(0u, share_target.text_attachments.size());
+        EXPECT_EQ(1u, share_target.file_attachments.size());
+        EXPECT_EQ(kDeviceName, share_target.device_name);
+        EXPECT_EQ(GURL(kTestMetadataIconUrl), share_target.image_url);
+        EXPECT_EQ(nearby_share::mojom::ShareTargetType::kUnknown,
+                  share_target.type);
+        EXPECT_TRUE(share_target.device_id);
+        EXPECT_NE(kEndpointId, share_target.device_id);
+        EXPECT_EQ(kTestMetadataFullName, share_target.full_name);
+
+        EXPECT_EQ(TransferMetadata::Status::kNotEnoughSpace, metadata.status());
+        run_loop.Quit();
+      }));
+
+  SetUpKeyVerification(sharing::mojom::PairedKeyResultFrame_Status::kSuccess);
+  SetUpForegroundReceiveSurface(callback);
+  service_->OnIncomingConnection(kEndpointId, kValidV1EndpointInfo,
+                                 &connection_);
+  ProcessLatestPublicCertificateDecryption(/*expected_num_calls=*/1,
+                                           /*success=*/true);
+  run_loop.Run();
+
+  // To avoid UAF in OnIncomingTransferUpdate().
+  service_->UnregisterReceiveSurface(&callback);
+}
+
+TEST_F(NearbySharingServiceImplTest, IncomingConnection_FileSizeOverflow) {
+  fake_nearby_connections_manager_->SetRawAuthenticationToken(kEndpointId,
+                                                              kToken);
+  SetUpAdvertisementDecoder(kValidV1EndpointInfo,
+                            /*return_empty_advertisement=*/false);
+
+  // Set file size sum huge to check for overflow.
+  std::string intro = "introduction_frame";
+  std::vector<uint8_t> bytes(intro.begin(), intro.end());
+  EXPECT_CALL(mock_decoder_, DecodeFrame(testing::Eq(bytes), testing::_))
+      .WillOnce(testing::Invoke(
+          [](const std::vector<uint8_t>& data,
+             MockNearbySharingDecoder::DecodeFrameCallback callback) {
+            std::vector<sharing::mojom::FileMetadataPtr> mojo_file_metadatas;
+            mojo_file_metadatas.push_back(sharing::mojom::FileMetadata::New(
+                "name_1", sharing::mojom::FileMetadata::Type::kAudio,
+                /*payload_id=*/1, /*size=*/std::numeric_limits<int64_t>::max(),
+                "mime_type",
+                /*id=*/123));
+            mojo_file_metadatas.push_back(sharing::mojom::FileMetadata::New(
+                "name_2", sharing::mojom::FileMetadata::Type::kVideo,
+                /*payload_id=*/2, /*size=*/100, "mime_type",
+                /*id=*/124));
+
+            sharing::mojom::V1FramePtr mojo_v1frame =
+                sharing::mojom::V1Frame::New();
+            mojo_v1frame->set_introduction(
+                sharing::mojom::IntroductionFrame::New(
+                    std::move(mojo_file_metadatas),
+                    std::vector<sharing::mojom::TextMetadataPtr>(),
+                    /*required_package=*/base::nullopt,
+                    std::vector<sharing::mojom::WifiCredentialsMetadataPtr>()));
+
+            sharing::mojom::FramePtr mojo_frame = sharing::mojom::Frame::New();
+            mojo_frame->set_v1(std::move(mojo_v1frame));
+
+            std::move(callback).Run(std::move(mojo_frame));
+          }));
+  connection_.AppendReadableData(std::move(bytes));
+
+  ui::ScopedSetIdleState unlocked(ui::IDLE_STATE_IDLE);
+  SetConnectionType(net::NetworkChangeNotifier::CONNECTION_WIFI);
+  NiceMock<MockTransferUpdateCallback> callback;
+  base::RunLoop run_loop;
+  EXPECT_CALL(callback, OnTransferUpdate(testing::_, testing::_))
+      .WillOnce(testing::Invoke([&run_loop](const ShareTarget& share_target,
+                                            TransferMetadata metadata) {
+        EXPECT_TRUE(share_target.is_incoming);
+        EXPECT_TRUE(share_target.is_known);
+        EXPECT_EQ(kDeviceName, share_target.device_name);
+        EXPECT_EQ(GURL(kTestMetadataIconUrl), share_target.image_url);
+        EXPECT_EQ(nearby_share::mojom::ShareTargetType::kUnknown,
+                  share_target.type);
+        EXPECT_TRUE(share_target.device_id);
+        EXPECT_NE(kEndpointId, share_target.device_id);
+        EXPECT_EQ(kTestMetadataFullName, share_target.full_name);
+
+        EXPECT_EQ(TransferMetadata::Status::kNotEnoughSpace, metadata.status());
+        run_loop.Quit();
+      }));
+
+  SetUpKeyVerification(sharing::mojom::PairedKeyResultFrame_Status::kSuccess);
+  SetUpForegroundReceiveSurface(callback);
+  service_->OnIncomingConnection(kEndpointId, kValidV1EndpointInfo,
+                                 &connection_);
+  ProcessLatestPublicCertificateDecryption(/*expected_num_calls=*/1,
+                                           /*success=*/true);
+  run_loop.Run();
 
   // To avoid UAF in OnIncomingTransferUpdate().
   service_->UnregisterReceiveSurface(&callback);

@@ -4,13 +4,12 @@
 
 package org.chromium.components.signin;
 
-import android.accounts.Account;
-
 import org.chromium.base.ContextUtils;
 
 /**
  * Caches the signed-in username in the app prefs.
  */
+@Deprecated
 public class ChromeSigninController {
     public static final String TAG = "ChromeSigninController";
 
@@ -36,25 +35,8 @@ public class ChromeSigninController {
         return sChromeSigninController;
     }
 
-    public Account getSignedInUser() {
-        String syncAccountName = getSignedInAccountName();
-        if (syncAccountName == null) {
-            return null;
-        }
-        return AccountUtils.createAccountFromName(syncAccountName);
-    }
-
-    public boolean isSignedIn() {
-        return getSignedInAccountName() != null;
-    }
-
-    public void setSignedInAccountName(String accountName) {
-        ContextUtils.getAppSharedPreferences()
-                .edit()
-                .putString(SIGNED_IN_ACCOUNT_KEY, accountName)
-                .apply();
-    }
-
+    // TODO(https://crbug.com/1046412): Remove after migrating downstream usages to
+    //                                  SigninPreferencesManager.
     public String getSignedInAccountName() {
         return ContextUtils.getAppSharedPreferences().getString(SIGNED_IN_ACCOUNT_KEY, null);
     }

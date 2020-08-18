@@ -57,7 +57,7 @@ class MockPaymentProvider : public payments::mojom::blink::PaymentRequest {
     NOTREACHED();
   }
   void CanMakePayment() override { NOTREACHED(); }
-  void HasEnrolledInstrument(bool per_method_quota) override { NOTREACHED(); }
+  void HasEnrolledInstrument() override { NOTREACHED(); }
 
   mojo::PendingRemote<payments::mojom::blink::PaymentRequest>
   CreatePendingRemoteAndBind() {

@@ -338,6 +338,7 @@
 <translation id="4881695831933465202">열기</translation>
 <translation id="4901778704868714008">저장...</translation>
 <translation id="4904877109095351937">읽음으로 표시</translation>
+<translation id="4908869848243824489">Google 디스커버</translation>
 <translation id="4930268273022498155">기존 데이터를 삭제합니다. <ph name="USER_EMAIL1" />(으)로 전환하여 기존 데이터를 가져올 수 있습니다.</translation>
 <translation id="4930714375720679147">사용 설정</translation>
 <translation id="4941089862236492464">죄송합니다. 항목을 공유하는 중에 문제가 발생했습니다.</translation>
@@ -554,6 +555,7 @@
 <translation id="7293171162284876153">동기화를 시작하려면 'Chrome 데이터 동기화'를 사용 설정하세요.</translation>
 <translation id="7313347584264171202">여기에서 시크릿 탭을 확인할 수 있습니다</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" />% 다운로드됨</translation>
+<translation id="7340958967809483333">디스커버용 옵션</translation>
 <translation id="7346909386216857016">확인</translation>
 <translation id="734758817008927353">카드 저장 옵션</translation>
 <translation id="7348502496356775519">북마크</translation>
@@ -665,6 +667,7 @@
 <translation id="8668210798914567634">읽기 목록에 저장된 페이지입니다.</translation>
 <translation id="8680787084697685621">계정 로그인 세부정보의 유효기간이 만료되었습니다.</translation>
 <translation id="8706588385081740091">비밀번호</translation>
+<translation id="8717864919010420084">링크 복사</translation>
 <translation id="8721297211384281569">도구 메뉴</translation>
 <translation id="8725066075913043281">다시 시도하세요</translation>
 <translation id="8730621377337864115">완료</translation>

@@ -345,11 +345,6 @@ class ExtensionsBrowserClient {
   virtual bool ShouldSchemeBypassNavigationChecks(
       const std::string& scheme) const;
 
-  // Returns true when we should enforce 'extraHeaders' option for any
-  // webRequest API callbacks so to mitigate CORS related compatibility issues.
-  virtual bool ShouldForceWebRequestExtraHeaders(
-      content::BrowserContext* context) const;
-
   // Gets and sets the last save (download) path for a given context.
   virtual base::FilePath GetSaveFilePath(content::BrowserContext* context);
   virtual void SetLastSaveFilePath(content::BrowserContext* context,

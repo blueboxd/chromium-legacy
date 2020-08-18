@@ -557,22 +557,22 @@ attribute TrustedString str;
 void func(TrustedString str);
 ```
 
-### [Unforgeable] _(m,a)_
+### [LegacyUnforgeable] _(m,a)_
 
-Standard: [Unforgeable](http://heycam.github.io/webidl/#Unforgeable)
+Standard: [LegacyUnforgeable](https://heycam.github.io/webidl/#Unforgeable)
 
 Summary: Makes interface members unconfigurable and also controls where the member is defined.
 
 Usage: Can be specified on interface methods or non-static interface attributes:
 
 ```webidl
-[Unforgeable] void func();
-[Unforgeable] attribute DOMString str;
+[LegacyUnforgeable] void func();
+[LegacyUnforgeable] attribute DOMString str;
 ```
 
-By default, interface members are configurable (i.e. you can modify a property descriptor corresponding to the member and also you can delete the property). `[Unforgeable]` makes the member unconfiguable so that you cannot modify or delete the property corresponding to the member.
+By default, interface members are configurable (i.e. you can modify a property descriptor corresponding to the member and also you can delete the property). `[LegacyUnforgeable]` makes the member unconfiguable so that you cannot modify or delete the property corresponding to the member.
 
-`[Unforgeable]` changes where the member is defined, too. By default, attribute getters/setters and methods are defined on a prototype chain. `[Unforgeable]` defines the member on the instance object instead of the prototype object.
+`[LegacyUnforgeable]` changes where the member is defined, too. By default, attribute getters/setters and methods are defined on a prototype chain. `[LegacyUnforgeable]` defines the member on the instance object instead of the prototype object.
 
 ### [Unscopable] _(o, a)_
 

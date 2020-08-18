@@ -27,7 +27,6 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/content_settings/browser/content_settings_usages_state.h"
 #include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -487,22 +486,20 @@ bool ContentSettingGeolocationImageModel::UpdateAndGetVisibility(
       PageSpecificContentSettings::GetForFrame(web_contents->GetMainFrame());
   if (!content_settings)
     return false;
-  const ContentSettingsUsagesState& usages_state =
-      content_settings->geolocation_usages_state();
-  if (usages_state.state_map().empty())
+
+  bool is_allowed =
+      content_settings->IsContentAllowed(ContentSettingsType::GEOLOCATION);
+  bool is_blocked =
+      content_settings->IsContentBlocked(ContentSettingsType::GEOLOCATION);
+
+  if (!is_allowed && !is_blocked)
     return false;
 
-  // If any embedded site has access the allowed icon takes priority over the
-  // blocked icon.
-  unsigned int state_flags = 0;
-  usages_state.GetDetailedInfo(nullptr, &state_flags);
-  bool allowed =
-      !!(state_flags & ContentSettingsUsagesState::TABSTATE_HAS_ANY_ALLOWED);
   set_icon(kMyLocationIcon,
-           allowed ? gfx::kNoneIcon : vector_icons::kBlockedBadgeIcon);
-  set_tooltip(l10n_util::GetStringUTF16(allowed
-                                            ? IDS_GEOLOCATION_ALLOWED_TOOLTIP
-                                            : IDS_GEOLOCATION_BLOCKED_TOOLTIP));
+           is_allowed ? gfx::kNoneIcon : vector_icons::kBlockedBadgeIcon);
+  set_tooltip(l10n_util::GetStringUTF16(is_allowed
+                                            ? IDS_ALLOWED_GEOLOCATION_MESSAGE
+                                            : IDS_BLOCKED_GEOLOCATION_MESSAGE));
   return true;
 }
 
@@ -540,22 +537,20 @@ bool ContentSettingMIDISysExImageModel::UpdateAndGetVisibility(
       PageSpecificContentSettings::GetForFrame(web_contents->GetMainFrame());
   if (!content_settings)
     return false;
-  const ContentSettingsUsagesState& usages_state =
-      content_settings->midi_usages_state();
-  if (usages_state.state_map().empty())
+
+  bool is_allowed =
+      content_settings->IsContentAllowed(ContentSettingsType::MIDI_SYSEX);
+  bool is_blocked =
+      content_settings->IsContentBlocked(ContentSettingsType::MIDI_SYSEX);
+
+  if (!is_allowed && !is_blocked)
     return false;
 
-  // If any embedded site has access the allowed icon takes priority over the
-  // blocked icon.
-  unsigned int state_flags = 0;
-  usages_state.GetDetailedInfo(nullptr, &state_flags);
-  bool allowed =
-      !!(state_flags & ContentSettingsUsagesState::TABSTATE_HAS_ANY_ALLOWED);
   set_icon(vector_icons::kMidiIcon,
-           allowed ? gfx::kNoneIcon : vector_icons::kBlockedBadgeIcon);
-  set_tooltip(l10n_util::GetStringUTF16(allowed
-                                            ? IDS_MIDI_SYSEX_ALLOWED_TOOLTIP
-                                            : IDS_MIDI_SYSEX_BLOCKED_TOOLTIP));
+           is_allowed ? gfx::kNoneIcon : vector_icons::kBlockedBadgeIcon);
+  set_tooltip(l10n_util::GetStringUTF16(is_allowed
+                                            ? IDS_ALLOWED_MIDI_SYSEX_MESSAGE
+                                            : IDS_BLOCKED_MIDI_SYSEX_MESSAGE));
   return true;
 }
 
@@ -827,6 +822,7 @@ bool ContentSettingSensorsImageModel::UpdateAndGetVisibility(
 
   bool blocked = content_settings->IsContentBlocked(content_type());
   bool allowed = content_settings->IsContentAllowed(content_type());
+
   if (!blocked && !allowed)
     return false;
 

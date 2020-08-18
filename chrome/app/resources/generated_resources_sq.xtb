@@ -3,6 +3,7 @@
 <translationbundle lang="sq">
 <translation id="1001307489511021749">Aplikacionet, cilësimet dhe personalizimet e tua të tjera do të sinkronizohen nëpër të gjitha pajisjet me Chrome OS ku je identifikuar me "Llogarinë tënde të Google".</translation>
 <translation id="1003088604756913841">Hape lidhjen në një dritare të re të <ph name="APP" /></translation>
+<translation id="1003363546227723021">Kur ekrani yt është në gjendje të qetë, shfaq fotografitë, orën, motin dhe informacionet e medias</translation>
 <translation id="1004218526896219317">Qasja në sajt</translation>
 <translation id="1005274289863221750">Përdor mikrofonin dhe kamerën</translation>
 <translation id="1005333234656240382">Të aktivizohet korrigjimi i ADB-së?</translation>
@@ -17,7 +18,7 @@
 <translation id="1012876632442809908">Pajisja USB-C (porta përpara)</translation>
 <translation id="1013707859758800957">Një përbërës shtesë i pakufizuar u lejua të ekzekutohet në këtë faqe.</translation>
 <translation id="1015318665228971643">Redakto emrin e dosjes</translation>
-<translation id="1015578595646638936">{NUM_DAYS,plural, =1{Dita e fundit për të përditësuar <ph name="DEVICE_TYPE" />}other{Përditësoje <ph name="DEVICE_TYPE" /> brenda {NUM_DAYS} ditësh}}</translation>
+<translation id="1015578595646638936">{NUM_DAYS,plural, =1{Dita e fundit për të përditësuar pajisjen <ph name="DEVICE_TYPE" />}other{Përditësoje pajisjen <ph name="DEVICE_TYPE" /> brenda {NUM_DAYS} ditësh}}</translation>
 <translation id="1016437870506746108">{COUNT,plural, =0{Hapi të gjitha në &amp;dritare të re}=1{Hape në &amp;dritare të re}other{Hapi të gjitha (#) në &amp;dritare të re}}</translation>
 <translation id="1016566241875885511">Informacione shtesë (opsionale)</translation>
 <translation id="1017280919048282932">&amp;Shto në fjalor</translation>
@@ -52,7 +53,7 @@
 <translation id="1049743911850919806">I fshehtë</translation>
 <translation id="1049795001945932310">&amp;Cilësimet e gjuhës</translation>
 <translation id="1054153489933238809">Hap imazhin &amp;origjinal në skedë të re</translation>
-<translation id="1055274863771110134">{NUM_WEEKS,plural, =1{Pëditësoje <ph name="DEVICE_TYPE" /> brenda 1 jave}other{Përditësoje <ph name="DEVICE_TYPE" /> brenda {NUM_WEEKS} javësh}}</translation>
+<translation id="1055274863771110134">{NUM_WEEKS,plural, =1{Pëditësoje pajisjen <ph name="DEVICE_TYPE" /> brenda 1 jave}other{Përditësoje pajisjen <ph name="DEVICE_TYPE" /> brenda {NUM_WEEKS} javësh}}</translation>
 <translation id="1055806300943943258">Po kërkon pajisjet me Bluetooth dhe USB...</translation>
 <translation id="1056466516655540509">Përditësuar <ph name="MINUTES" /> min. më parë</translation>
 <translation id="1056775291175587022">Nuk ka rrjete</translation>
@@ -94,6 +95,7 @@
 <translation id="1108600514891325577">&amp;Ndalo</translation>
 <translation id="1110155001042129815">Prit</translation>
 <translation id="1112420131909513020">Skeda në sfond po përdor Bluetooth</translation>
+<translation id="1113892970288677790">Zgjidh veprat e artit dhe imazhet e përzgjedhura</translation>
 <translation id="1114102982691049955"><ph name="PRINTER_MANUFACTURER" /> <ph name="PRINTER_MODEL" /> (USB)</translation>
 <translation id="1114202307280046356">Diamant</translation>
 <translation id="1114335938027186412">Kompjuteri yt përmban një pajisje sigurie të Modulit të Platformës së Besuar (TPM) e cila përdoret për të zbatuar shumë funksione vendimtare të sigurisë në Sistemin operativ "Chrome". Vizito "Qendrën e ndihmës të Chromebook-ut" për të mësuar më shumë: https://support.google.com/chromebook/?p=tpm</translation>
@@ -201,6 +203,7 @@
 <translation id="1224275271335624810">Më e shpejta</translation>
 <translation id="1225177025209879837">Po përpunon kërkesën...</translation>
 <translation id="1227507814927581609">Dështoi vërtetimi gjatë lidhjes me "<ph name="DEVICE_NAME" />".</translation>
+<translation id="1230417814058465809">"Mbrojtja standarde" është aktive. Për edhe më shumë mbrojtje, përdor "Mbrojtjen e përparuar".</translation>
 <translation id="1231733316453485619">Të aktivizohet sinkronizimi?</translation>
 <translation id="1232569758102978740">Pa titull</translation>
 <translation id="1233497634904001272">Prek përsëri çelësin tënd të sigurisë për të përfunduar kërkesën.</translation>
@@ -1250,6 +1253,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="249113932447298600">Na vjen keq, por pajisja <ph name="DEVICE_LABEL" /> nuk mbështetet në këtë moment.</translation>
 <translation id="2492461744635776704">Kërkesa e identifikimit të certifikatës po përgatitet</translation>
 <translation id="249303669840926644">Nuk mund të përfundonte regjistrimin</translation>
+<translation id="2493126929778606526">Fotografitë e tua më të mira, të zgjedhura automatikisht</translation>
 <translation id="2495777824269688114">Zbulo më shumë funksione ose merr përgjigje. Zgjidh "?" për ndihmë.</translation>
 <translation id="2496180316473517155">Historiku i shfletimit</translation>
 <translation id="2497229222757901769">Shpejtësia e miut</translation>
@@ -1343,6 +1347,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="2604255671529671813">Gabim në lidhjen e rrjetit</translation>
 <translation id="2606246518223360146">Lidh të dhënat</translation>
 <translation id="2607101320794533334">Informacion i çelësit publik të subjektit</translation>
+<translation id="2607968157341167679">Nuk ka albume. Krijo një album në<ph name="LINK_BEGIN" />Fotografitë e Google<ph name="LINK_END" />.</translation>
 <translation id="2609896558069604090">Krijo shkurtore...</translation>
 <translation id="2610157865375787051">Gjumë</translation>
 <translation id="2610260699262139870">Madhësia a&amp;ktuale</translation>
@@ -1479,6 +1484,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="2762441749940182211">Kamera është bllokuar</translation>
 <translation id="2764786626780673772">Detajet e lidhjes VPN</translation>
 <translation id="2765217105034171413">E vogël</translation>
+<translation id="2765729904637714153">Rijeto kujtimet e tua të preferuara. Për të shtuar ose modifikuar albumet, shko te<ph name="LINK_BEGIN" />Fotografitë e Google<ph name="LINK_END" />.</translation>
 <translation id="2766006623206032690">Ngj&amp;it dhe vazhdo</translation>
 <translation id="2766161002040448006">Pyet një prind</translation>
 <translation id="2767127727915954024"><ph name="ORIGIN" /> do të mund ta modifikojë <ph name="FILENAME" /> deri sa t'i mbyllësh të gjitha skedat për këtë sajt</translation>
@@ -2111,6 +2117,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="3566325075220776093">Nga kjo pajisje</translation>
 <translation id="3566721612727112615">Nuk u shtuan sajte</translation>
 <translation id="3569382839528428029">Dëshiron që <ph name="APP_NAME" /> të ndajë ekranin tënd?</translation>
+<translation id="3569407787324516067">Mbrojtësi i ekranit</translation>
 <translation id="3569682580018832495"><ph name="ORIGIN" /> mund t'i shikojë skedarët dhe dosjet e mëposhtme</translation>
 <translation id="3571734092741541777">Konfigurimi</translation>
 <translation id="3574210789297084292">identifikohu</translation>
@@ -2259,6 +2266,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="3727148787322499904">Ndryshimi i këtij cilësimi do të ndikojë në të gjitha rrjetet e ndara</translation>
 <translation id="3727187387656390258">Inspekto dritaret kërcyese</translation>
 <translation id="372722114124766626">Vetëm një herë</translation>
+<translation id="3728188878314831180">Pasqyro njoftimet nga telefoni yt</translation>
 <translation id="3728681439294129328">Konfiguro adresën e rrjetit</translation>
 <translation id="3729303374699765035">Pyet kur një sajt dëshiron të zbulojë pajisjet Bluetooth në afërsi</translation>
 <translation id="3729506734996624908">Faqet e lejuara</translation>
@@ -2502,7 +2510,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="3983586614702900908">pajisjet nga një shitës i panjohur</translation>
 <translation id="3983764759749072418">Aplikacionet e "Dyqanit të Play" kanë qasje në këtë pajisje.</translation>
 <translation id="3983769721878416534">Vonesa përpara klikimit</translation>
-<translation id="3984135167056005094">Mos e përfshi adresën e emai-it</translation>
+<translation id="3984135167056005094">Mos e përfshi adresën e email-it</translation>
 <translation id="3984159763196946143">Nuk mund të hapej modaliteti i demonstrimit</translation>
 <translation id="3984431586879874039">Dëshiron që ky sajt të shikojë çelësin tënd të sigurisë?</translation>
 <translation id="3986705137476756801">Çaktivizo "Titrat në çast" për momentin</translation>
@@ -2922,7 +2930,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="4563210852471260509">Gjuha fillestare e hyrjes është kinezishtja</translation>
 <translation id="4563880231729913339">Gishti 3</translation>
 <translation id="4565377596337484307">Fshih fjalëkalimin</translation>
-<translation id="4565577809484439917">{NUM_DAYS,plural, =1{<ph name="DOMAIN" /> kërkon që të rezervosh të dhënat e tua dhe ta kthesh këtë pajisje <ph name="DEVICE_TYPE" /> sot.}other{<ph name="DOMAIN" /> kërkon që të rezervosh të dhënat dhe ta kthesh këtë pajisje <ph name="DEVICE_TYPE" /> para afatit.}}</translation>
+<translation id="4565577809484439917">{NUM_DAYS,plural, =1{<ph name="DOMAIN" /> kërkon që të rezervosh të dhënat e tua dhe ta kthesh këtë pajisje <ph name="DEVICE_TYPE" /> sot.}other{<ph name="DOMAIN" /> kërkon që të rezervosh të dhënat e tua dhe ta kthesh këtë pajisje <ph name="DEVICE_TYPE" /> para afatit.}}</translation>
 <translation id="4565917129334815774">Ruaj evidencat e sistemit</translation>
 <translation id="456717285308019641">Faqja "Gjuha në të cilën do të përkthehet"</translation>
 <translation id="4567533462991917415">Mund të shtosh gjithmonë persona të tjerë pas konfigurimit. Çdo person mund ta personalizojë llogarinë e vet dhe t'i mbajë të dhënat private.</translation>
@@ -4708,6 +4716,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="6824584962142919697">&amp;Inspekto elementet</translation>
 <translation id="6825184156888454064">Rendit sipas emrit</translation>
 <translation id="6826872289184051766">Verifikohu nëpërmjet USB-së</translation>
+<translation id="6827623133556594466">Google Cloud Print nuk do të mbështetet më pas datës 31 dhjetor. <ph name="BEGIN_LINK" />Mëso më shumë<ph name="END_LINK" /></translation>
 <translation id="6828153365543658583">Kufizo identifikimin e përdoruesve të mëposhtëm:</translation>
 <translation id="6828182567531805778">Fut frazën e kalimit për të sinkronizuar të dhënat</translation>
 <translation id="682871081149631693">QuickFix</translation>
@@ -5225,7 +5234,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="747114903913869239">Gabim: Shtesa nuk mund të dekodohet</translation>
 <translation id="7473891865547856676">Jo, faleminderit</translation>
 <translation id="747459581954555080">Restauroji të gjitha</translation>
-<translation id="747507174130726364">{NUM_DAYS,plural, =1{Kërkohet kthimi i menjëhershëm}other{Ktheje <ph name="DEVICE_TYPE" /> brenda {NUM_DAYS} ditësh}}</translation>
+<translation id="747507174130726364">{NUM_DAYS,plural, =1{Kërkohet kthimi i menjëhershëm}other{Ktheje pajisjen <ph name="DEVICE_TYPE" /> brenda {NUM_DAYS} ditësh}}</translation>
 <translation id="7475671414023905704">URL-ja e Netscape për humbjen e fjalëkalimit</translation>
 <translation id="7476454130948140105">Niveli i baterisë është shumë i ulët për përditësimin (<ph name="BATTERY_PERCENT" />%)</translation>
 <translation id="7477793887173910789">Kontrollo muzikën, videot e tua etj.</translation>
@@ -5326,6 +5335,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="7605594153474022051">Sinkronizimi nuk po funksionon.</translation>
 <translation id="7606992457248886637">Autoritetet</translation>
 <translation id="7607002721634913082">Ndërprerë</translation>
+<translation id="7608810328871051088">Preferencat e Android</translation>
 <translation id="7609148976235050828">Lidhu me internetin dhe provo sërish</translation>
 <translation id="7614260613810441905">Pyet kur një sajt dëshiron të modifikojë skedarë ose dosje në pajisjen tënde (rekomandohet)</translation>
 <translation id="761530003705945209">Rezervo në "Diskun e Google". Restauro të dhënat e tua ose ndërro me lehtësi pajisjen në çdo kohë. Rezervimi yt përfshin të dhënat e aplikacioneve. Rezervimet e tua ngarkohen te Google dhe enkriptohen duke përdorur fjalëkalimin e "Llogarisë sate të Google".</translation>
@@ -5377,7 +5387,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="7664620655576155379">Pajisje me Bluetooth e pambështetur: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="7665082356120621510">Rezervo madhësinë</translation>
 <translation id="7665369617277396874">Shto një llogari</translation>
-<translation id="7668002322287525834">{NUM_WEEKS,plural, =1{Ktheje pajisjen <ph name="DEVICE_TYPE" /> brenda {NUM_WEEKS} jave}other{Ktheje <ph name="DEVICE_TYPE" /> brenda {NUM_WEEKS} javësh}}</translation>
+<translation id="7668002322287525834">{NUM_WEEKS,plural, =1{Ktheje pajisjen <ph name="DEVICE_TYPE" /> brenda {NUM_WEEKS} jave}other{Ktheje pajisjen <ph name="DEVICE_TYPE" /> brenda {NUM_WEEKS} javësh}}</translation>
 <translation id="7669825497510425694">{NUM_ATTEMPTS,plural, =1{Kodi PIN është i pasaktë. Të ka mbetur një përpjekje.}other{Kodi PIN është i pasaktë. Të kanë mbetur # përpjekje.}}</translation>
 <translation id="7671130400130574146">Përdor shiritin dhe kufizimet e titullit të sistemit</translation>
 <translation id="767127784612208024">Prek për të konfirmuar rivendosjen</translation>
@@ -5584,7 +5594,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="7893008570150657497">Qasu në fotografi, muzikë dhe media të tjera nga kompjuteri yt</translation>
 <translation id="7893153962594818789">"Bluetooth-i" është i çaktivizuar në këtë pajisje <ph name="DEVICE_TYPE" />. Fut fjalëkalimin dhe aktivizo "Bluetooth-in".</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME" /> (e parazgjedhur)</translation>
-<translation id="7897865097438730075">"Printimi në renë kompjuterike i Google" nuk do të mbështetet më pas datës 31 dhjetor. Kontakto me administratorin tënd.</translation>
+<translation id="7897865097438730075">Google Cloud Print nuk do të mbështetet më pas datës 31 dhjetor. Kontakto me administratorin tënd.</translation>
 <translation id="7897900149154324287">Në të ardhmen, sigurohu që ta nxjerrësh pajisjen e lëvizshme në aplikacionin "Skedarët" para se ta heqësh. Në rast të kundërt, mund të humbasësh të dhëna.</translation>
 <translation id="7898627924844766532">Mbaje në shiritin e veglave</translation>
 <translation id="7898725031477653577">Përkthe gjithmonë</translation>
@@ -5697,7 +5707,6 @@ Mbaje skedarin e çelësit tënd në një vend të sigurt. Do të të duhet për
 <translation id="8028060951694135607">Rikuperimi i Çelësit të Microsoft</translation>
 <translation id="8028803902702117856">Po shkarkon <ph name="SIZE" />, <ph name="FILE_NAME" /></translation>
 <translation id="8028993641010258682">Madhësia</translation>
-<translation id="8030656706657716245">Shto printer</translation>
 <translation id="8030852056903932865">Mirato</translation>
 <translation id="8032244173881942855">Skeda nuk mund të transmetohet.</translation>
 <translation id="8033827949643255796">u zgjodh</translation>
@@ -5722,7 +5731,7 @@ Mbaje skedarin e çelësit tënd në një vend të sigurt. Do të të duhet për
 <translation id="8054563304616131773">Fut një adresë të vlefshme mail-i.</translation>
 <translation id="8054921503121346576">Tastiera USB është e lidhur</translation>
 <translation id="8058655154417507695">Viti i skadimit</translation>
-<translation id="8058811362315390556">"Printimi në renë kompjuterike i Google" nuk do të mbështetet më pas datës 31 dhjetor</translation>
+<translation id="8058811362315390556">Google Cloud Print nuk do të mbështetet më pas datës 31 dhjetor</translation>
 <translation id="8059417245945632445">&amp;Inspekto pajisjet</translation>
 <translation id="8059456211585183827">Nuk disponohen printerë për ruajtje.</translation>
 <translation id="8061091456562007989">Ndryshoje përsëri</translation>
@@ -5854,6 +5863,7 @@ Mbaje skedarin e çelësit tënd në një vend të sigurt. Do të të duhet për
 <translation id="8225753906568652947">Përdor ofertat e tua</translation>
 <translation id="8226222018808695353">Ndalohet</translation>
 <translation id="8226619461731305576">Vendos në radhë</translation>
+<translation id="8226628635270268143">Zgjidh fotografitë dhe albumet e tua të preferuara</translation>
 <translation id="8226742006292257240">Poshtë është fjalëkalimi TPM i gjeneruar rastësisht që i është caktuar kompjuterit tënd.</translation>
 <translation id="8227119283605456246">Bashkëngjit skedarin</translation>
 <translation id="8229943166551236192">Të dhënat e pajisjes do të fshihen brenda 24 orësh</translation>
@@ -6352,6 +6362,7 @@ Mbaje skedarin e çelësit tënd në një vend të sigurt. Do të të duhet për
 <translation id="882854468542856424">Mos lejo asnjë sajt të zbulojë pajisjet Bluetooth në afërsi</translation>
 <translation id="8828933418460119530">Emri i DNS-së</translation>
 <translation id="883062543841130884">Zëvendësimet</translation>
+<translation id="8830779999439981481">Po riniset për të zbatuar përditësimet</translation>
 <translation id="8830796635868321089">Kontrolli i përditësimit dështoi gjatë përdorimit të cilësimeve të përfaqësuesit aktual. Rregullo <ph name="PROXY_SETTINGS_LINK_START" />cilësimet e përfaqësuesit<ph name="PROXY_SETTINGS_LINK_END" />.</translation>
 <translation id="8831140208248705279">Pajisja jote <ph name="DEVICE_TYPE" /> dhe telefoni Android funksionojnë më mirë së bashku. Lidhi ato që të dërgosh mesazhe me tekst nga kompjuteri, të ndash lidhjen e internetit dhe ta shkyçësh pajisjen <ph name="DEVICE_TYPE" /> me telefonin tënd.<ph name="FOOTNOTE_POINTER" /> <ph name="LINK_BEGIN" />Mëso më shumë<ph name="LINK_END" /></translation>
 <translation id="8834039744648160717">Konfigurimi i rrjetit kontrollohet nga <ph name="USER_EMAIL" />.</translation>

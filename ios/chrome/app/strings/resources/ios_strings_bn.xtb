@@ -266,6 +266,7 @@
 <translation id="4002066346123236978">শিরোনাম</translation>
 <translation id="4004204301268239848">আপনার Google অ্যাকাউন্টে পাসওয়ার্ড সেভ করা থাকে যাতে আপনি যেকোনও ডিভাইসে সেগুলি ব্যবহার করতে পারেন।</translation>
 <translation id="4006921758705478413">আপনার অন্য ডিভাইসে পাঠান</translation>
+<translation id="4018310736049373830">অ্যাক্টিভিটি ম্যানেজ করুন</translation>
 <translation id="4038354071007134711">এই ডিভাইসের কোনো অ্যাপ্লিকেশান ফাইলটি খুলতে পারবে না।</translation>
 <translation id="4042870976416480368">পৃষ্ঠাতে খুঁজুন</translation>
 <translation id="4049507953662678203">আপনি একটি নেটওয়ার্ক সংযোগে আছেন কিনা তা নিশ্চিত করুন এবং আবার চেষ্টা করুন।</translation>
@@ -337,6 +338,7 @@
 <translation id="4881695831933465202">খুলুন</translation>
 <translation id="4901778704868714008">সেভ করুন...</translation>
 <translation id="4904877109095351937">পঠিত হিসেবে চিহ্নিত করুন</translation>
+<translation id="4908869848243824489">Google-এর ডিসকভার</translation>
 <translation id="4930268273022498155">বিদ্যমান ডেটা মুছুন। আপনি <ph name="USER_EMAIL1" /> এ ফিরে গিয়ে এটি পুনরুদ্ধার করতে পারেন।</translation>
 <translation id="4930714375720679147">চালু করুন</translation>
 <translation id="4941089862236492464">দুঃখিত, আপনার জিনিস শেয়ার করার সময় একটা সমস্যা ছিল।</translation>
@@ -554,6 +556,7 @@
 <translation id="7293171162284876153">সিঙ্ক চালু করতে "আপনার Chrome ডেটা সিঙ্ক করুন" বিকল্পটি চালু করুন।</translation>
 <translation id="7313347584264171202">আপনি এখানে নিজের ছদ্মবেশী ট্যাবগুলি খুঁজে পাবেন</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> শতাংশ ডাউনলোড হয়েছে</translation>
+<translation id="7340958967809483333">Discover-এর বিকল্প</translation>
 <translation id="7346909386216857016">ঠিক আছে, বুঝেছি</translation>
 <translation id="734758817008927353">কার্ড সেভ করার বিকল্প দেখার বোতাম</translation>
 <translation id="7348502496356775519">বুকমার্ক</translation>
@@ -630,6 +633,7 @@
 <translation id="8225985093977202398">ক্যাশ করা ছবি এবং ফাইল</translation>
 <translation id="8261506727792406068">মুছুন</translation>
 <translation id="8281781826761538115">ডিফল্ট - <ph name="DEFAULT_LOCALE" /></translation>
+<translation id="8299417921174340354">পাসওয়ার্ড ব্যবহার করার জন্য, আপনাকে ডিভাইসে প্রথমে একটি পাসকোড সেট করতে হবে।</translation>
 <translation id="8319076807703933069">নতুন ট্যাবে সার্চ করুন</translation>
 <translation id="8323906514956095947">আরও ট্যাবের বিকল্প দেখতে টাচ করে ধরে থাকুন</translation>
 <translation id="8328777765163860529">সমস্ত বন্ধ করুন</translation>
@@ -664,6 +668,7 @@
 <translation id="8668210798914567634">এই পৃষ্ঠাটি আপনার পড়ার তালিকায় সংরক্ষণ করা হয়েছে।</translation>
 <translation id="8680787084697685621">অ্যাকাউন্ট সাইন-ইনের বিশদ বিবরণের তারিখ সীমার বাইরে৷</translation>
 <translation id="8706588385081740091">পাসওয়ার্ড</translation>
+<translation id="8717864919010420084">লিঙ্কটি কপি করুন</translation>
 <translation id="8721297211384281569">টুল মেনু</translation>
 <translation id="8725066075913043281">আবার চেষ্টা করুন</translation>
 <translation id="8730621377337864115">হয়ে গেছে</translation>

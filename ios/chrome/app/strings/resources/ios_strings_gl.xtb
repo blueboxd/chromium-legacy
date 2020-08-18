@@ -338,6 +338,7 @@ Para cambiar esta opción de configuración, deberás <ph name="BEGIN_LINK" />re
 <translation id="4881695831933465202">Abrir</translation>
 <translation id="4901778704868714008">Gardar…</translation>
 <translation id="4904877109095351937">Marcar como lidos</translation>
+<translation id="4908869848243824489">Discover, de Google</translation>
 <translation id="4930268273022498155">Elimina os datos existentes. Podes recuperalos volvendo cambiar á conta <ph name="USER_EMAIL1" />.</translation>
 <translation id="4930714375720679147">Activar</translation>
 <translation id="4941089862236492464">Produciuse un problema ao compartir o teu elemento.</translation>
@@ -441,6 +442,7 @@ Handoff tamén debe estar activado na sección Xeral da configuración e os teus
 <translation id="6125339936101702016">Xestionado por <ph name="COMPANY" />. <ph name="BEGIN_LINK" />Máis información<ph name="END_LINK" /></translation>
 <translation id="6127379762771434464">Eliminouse o elemento</translation>
 <translation id="6136914049981179737">Seg. antes</translation>
+<translation id="6144589619057374135">Abrir ${url} no modo de incógnito</translation>
 <translation id="616831107264507309">Ler máis tarde</translation>
 <translation id="6177442314419606057">Busca en Chrome</translation>
 <translation id="6184086493125982861">Amosar pestanas</translation>
@@ -554,6 +556,7 @@ Non poden utilizalas para ver a túa actividade de navegación en distintos siti
 <translation id="7293171162284876153">Para iniciar a sincronización, activa a opción Sincronizar os teus datos de Chrome.</translation>
 <translation id="7313347584264171202">Aquí atoparás as túas pestanas do modo de incógnito</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> por cento descargado</translation>
+<translation id="7340958967809483333">Opcións de Discover</translation>
 <translation id="7346909386216857016">Entendido</translation>
 <translation id="734758817008927353">Opcións para gardar unha tarxeta</translation>
 <translation id="7348502496356775519">Marcador</translation>
@@ -665,6 +668,7 @@ Tamén poden utilizalas para ver a túa actividade de navegación en varios siti
 <translation id="8668210798914567634">Gardouse esta páxina na túa lista de lectura.</translation>
 <translation id="8680787084697685621">Os detalles de inicio de sesión da conta están caducados.</translation>
 <translation id="8706588385081740091">Contrasinais</translation>
+<translation id="8717864919010420084">Copiar ligazón</translation>
 <translation id="8721297211384281569">Menú Ferramentas</translation>
 <translation id="8725066075913043281">Tentar de novo</translation>
 <translation id="8730621377337864115">Feito</translation>

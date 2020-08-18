@@ -369,6 +369,7 @@
 <translation id="5114495209940374989">ภาพหน้าจอ</translation>
 <translation id="5136175204352732067">เชื่อมต่อกับแป้นพิมพ์อื่นแล้ว</translation>
 <translation id="5168181903108465623">เครื่องส่งพร้อมใช้งาน</translation>
+<translation id="5170568018924773124">แสดงในโฟลเดอร์</translation>
 <translation id="5207949376430453814">ไฮไลต์เครื่องหมาย Caret ของข้อความ</translation>
 <translation id="5222676887888702881">ออกจากระบบ</translation>
 <translation id="523505283826916779">การตั้งค่าสำหรับการเข้าถึง</translation>
@@ -460,6 +461,7 @@
 <translation id="6288235558961782912">คุณจะเพิ่ม <ph name="USER_EMAIL_ADDRESS" /> ได้อีกครั้งในภายหลังโดยต้องได้รับอนุญาตจากผู้ปกครอง</translation>
 <translation id="6297287540776456956">ใช้สไตลัสเพื่อเลือกพื้นที่</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> หมุนเวียนเป็น <ph name="ROTATION" /></translation>
+<translation id="6315170314923504164">เสียง</translation>
 <translation id="6376931439017688372">บลูทูธเปิดอยู่</translation>
 <translation id="6381109794406942707">ป้อน PIN เพื่อปลดล็อกอุปกรณ์</translation>
 <translation id="639644700271529076">CAPS LOCK ปิดอยู่</translation>
@@ -476,7 +478,7 @@
 <translation id="649452524636452238">PIN สมาร์ทการ์ด</translation>
 <translation id="6501401484702599040">กำลังแคสต์หน้าจอไปยัง <ph name="RECEIVER_NAME" /></translation>
 <translation id="652139407789908527">หน้าจอจะไม่แสดงผลเป็นเวลานานกว่าปกติ (สูงสุด 1 นาที) ในระหว่างการอัปเดตนี้ โปรดอย่ากดปุ่มเปิด/ปิดขณะอัปเดต</translation>
-<translation id="6521655319214113338">ป้อนข้อมูลด้วยลายมือ</translation>
+<translation id="6527303717912515753">แชร์</translation>
 <translation id="6528179044667508675">ห้ามรบกวน</translation>
 <translation id="6537270692134705506">จับภาพหน้าจอ</translation>
 <translation id="6537924328260219877">ความแรงสัญญาณ <ph name="SIGNAL_STRENGTH" />, แบตเตอรี่โทรศัพท์ <ph name="BATTERY_STATUS" /></translation>
@@ -558,7 +560,6 @@
 <translation id="7536035074519304529">ที่อยู่ IP: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">ได้เวลาเข้านอนแล้ว</translation>
 <translation id="7561982940498449837">ปิดเมนู</translation>
-<translation id="7562368315689366235">ชุดอีโมจิ</translation>
 <translation id="7564874036684306347">การย้ายหน้าต่างไปยังเดสก์ท็อปอื่นอาจส่งผลให้ลักษณะการทำงานผิกปกติ การแจ้งเตือน หน้าต่าง และกล่องโต้ตอบที่ตามมาอาจแสดงแยกส่วนในเดสก์ท็อปทั้งสอง</translation>
 <translation id="7568294522609223312">ปิดการคลิกอัตโนมัติ</translation>
 <translation id="7568637526529101738">เมื่อคลิกขวาหรือกดค้าง Assistant จะแสดงข้อมูล เช่น คำจำกัดความหรือการแปลงหน่วยสำหรับรายการที่คุณเลือก</translation>
@@ -621,7 +622,6 @@
 <translation id="8152092012181020186">กด Ctrl + W เพื่อปิด</translation>
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" /> การตั้งค่านี้จัดการโดยผู้ดูแลระบบ</translation>
 <translation id="8167567890448493835">กำลังใช้<ph name="LOCALE_NAME" /></translation>
-<translation id="8190698733819146287">กำหนดค่าภาษาและการป้อนข้อมูล... </translation>
 <translation id="8192202700944119416">ซ่อนการแจ้งเตือนไว้</translation>
 <translation id="8196787716797768628">ใช้ท่าทางสัมผัสเพื่อสลับระหว่างแอปต่างๆ และโต้ตอบกับ Chromebook ได้อย่างรวดเร็วในโหมดแท็บเล็ต</translation>
 <translation id="8200772114523450471">ทำต่อ</translation>
@@ -705,6 +705,7 @@
 <translation id="9029474291399787231">มีอัปเดต Adobe Flash Player พร้อมใช้งาน</translation>
 <translation id="9047624247355796468">เปิดการตั้งค่าสำหรับ <ph name="NETWORK_NAME" /></translation>
 <translation id="9056839673611986238">อุปกรณ์จะได้รับการคืนค่าสถานะ</translation>
+<translation id="9065203028668620118">แก้ไข</translation>
 <translation id="9070640332319875144">การตั้งค่า Assistant</translation>
 <translation id="9072519059834302790">อีก <ph name="TIME_LEFT" />แบตเตอรี่จะหมด</translation>
 <translation id="9074739597929991885">บลูทูธ</translation>

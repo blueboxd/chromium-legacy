@@ -229,8 +229,7 @@ TEST(PreflightControllerOptionsTest, CheckOptions) {
   base::test::TaskEnvironment task_environment_(
       base::test::TaskEnvironment::MainThreadType::IO);
   TestURLLoaderFactory url_loader_factory;
-  PreflightController preflight_controller(
-      {} /* extra_safelisted_header_names */, nullptr /* network_service */);
+  PreflightController preflight_controller(nullptr /* network_service */);
 
   network::ResourceRequest request;
   request.url = GURL("https://example.com/");
@@ -418,8 +417,8 @@ class PreflightControllerTest : public testing::Test {
   void SetUp() override {
     SetAccessControlAllowOrigin(test_initiator_origin_);
 
-    preflight_controller_ = std::make_unique<PreflightController>(
-        std::vector<std::string>(), network_service_.get());
+    preflight_controller_ =
+        std::make_unique<PreflightController>(network_service_.get());
 
     test_server_.RegisterRequestHandler(base::BindRepeating(
         &PreflightControllerTest::ServePreflight, base::Unretained(this)));

@@ -149,8 +149,6 @@ class ChromeExtensionsBrowserClient : public ExtensionsBrowserClient {
   std::string GetUserAgent() const override;
   bool ShouldSchemeBypassNavigationChecks(
       const std::string& scheme) const override;
-  bool ShouldForceWebRequestExtraHeaders(
-      content::BrowserContext* context) const override;
   base::FilePath GetSaveFilePath(content::BrowserContext* context) override;
   void SetLastSaveFilePath(content::BrowserContext* context,
                            const base::FilePath& path) override;

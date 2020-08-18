@@ -328,16 +328,12 @@ executable("decode_test") {
     "test/shared_va_surface.h",
     "test/vaapi_device.cc",
     "test/vaapi_device.h",
-    "test/video_decoder.h",
-    "test/vp9_decoder.cc",
-    "test/vp9_decoder.h",
   ]
   deps = [
     ":libva_stubs",
     "//base",
     "//media",
     "//media:test_support",
-    "//media/gpu:common",
     "//third_party/libyuv",
     "//ui/gfx/codec:codec",
     "//ui/gfx/geometry",

@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ActivityTabProvider.ActivityTabTabObserver;
 import org.chromium.chrome.browser.SwipeRefreshHandler;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
+import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.PauseResumeWithNativeObserver;
@@ -25,6 +26,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.widget.InsetObserverView;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 /**
@@ -51,10 +53,7 @@ public class HistoryNavigationCoordinator
     private HistoryNavigationDelegate mDelegate;
     private NavigationSheet mNavigationSheet;
 
-    private NavigationGlow mCompositorGlowEffect;
-    private NavigationGlow mJavaGlowEffect;
-
-    private WebContents mWebContents;
+    private OverscrollGlowOverlay mOverscrollGlowOverlay;
 
     private Runnable mInitRunnable;
     private Runnable mCleanupRunnable;
@@ -69,35 +68,38 @@ public class HistoryNavigationCoordinator
      * @param backShouldCloseTab Boolean function that returns true if back button press
      *        will close the tab.
      * @param onBackPressed Runnable that performs an action when back button is pressed.
+     * @param layoutManager LayoutManager for handling overscroll glow effect as scene layer.
      * @param showHistoryManager Function that shows full navigation history UI.
      * @param historyMenu UI string for full history UI in its header.
      * @param bottomSheetControllerSupplier Supplier for {@link BottomSheetController}.
      * @return HistoryNavigationCoordinator object or null if not enabled via feature flag.
      */
-    public static HistoryNavigationCoordinator create(
+    public static HistoryNavigationCoordinator create(WindowAndroid window,
             ActivityLifecycleDispatcher lifecycleDispatcher,
             CompositorViewHolder compositorViewHolder, ActivityTabProvider tabProvider,
             InsetObserverView insetObserverView, Function<Tab, Boolean> backShouldCloseTab,
-            Runnable onBackPressed, Consumer<Tab> showHistoryManager, String historyMenu,
-            Supplier<BottomSheetController> bottomSheetControllerSupplier) {
+            Runnable onBackPressed, LayoutManager layoutManager, Consumer<Tab> showHistoryManager,
+            String historyMenu, Supplier<BottomSheetController> bottomSheetControllerSupplier) {
         if (!isFeatureFlagEnabled()) return null;
         HistoryNavigationCoordinator coordinator = new HistoryNavigationCoordinator();
-        coordinator.init(lifecycleDispatcher, compositorViewHolder, tabProvider, insetObserverView,
-                backShouldCloseTab, onBackPressed, showHistoryManager, historyMenu,
-                bottomSheetControllerSupplier);
+        coordinator.init(window, lifecycleDispatcher, compositorViewHolder, tabProvider,
+                insetObserverView, backShouldCloseTab, onBackPressed, layoutManager,
+                showHistoryManager, historyMenu, bottomSheetControllerSupplier);
         return coordinator;
     }
 
     /**
      * Initializes the navigation layout and internal objects.
      */
-    private void init(ActivityLifecycleDispatcher lifecycleDispatcher,
+    private void init(WindowAndroid window, ActivityLifecycleDispatcher lifecycleDispatcher,
             CompositorViewHolder compositorViewHolder, ActivityTabProvider tabProvider,
             InsetObserverView insetObserverView, Function<Tab, Boolean> backShouldCloseTab,
-            Runnable onBackPressed, Consumer<Tab> showHistoryManager, String historyMenu,
-            Supplier<BottomSheetController> bottomSheetControllerSupplier) {
+            Runnable onBackPressed, LayoutManager layoutManager, Consumer<Tab> showHistoryManager,
+            String historyMenu, Supplier<BottomSheetController> bottomSheetControllerSupplier) {
+        mOverscrollGlowOverlay = new OverscrollGlowOverlay(window, compositorViewHolder,
+                () -> compositorViewHolder.getLayoutManager().getActiveLayout().requestUpdate());
         mNavigationLayout = new HistoryNavigationLayout(compositorViewHolder.getContext(),
-                this::getGlowEffect, this::getNavigationSheet,
+                this::isNativePage, mOverscrollGlowOverlay, this::getNavigationSheet,
                 (direction) -> mNavigationHandler.navigate(direction));
 
         mParentView = compositorViewHolder;
@@ -153,6 +155,7 @@ public class HistoryNavigationCoordinator
             mInsetObserverView = insetObserverView;
             insetObserverView.addObserver(this);
         }
+        layoutManager.addSceneOverlayToFront(mOverscrollGlowOverlay);
     }
 
     private boolean isNativePage() {
@@ -238,38 +241,9 @@ public class HistoryNavigationCoordinator
                                 mShowHistoryManager, mHistoryMenu, mBottomSheetControllerSupplier)
                         : HistoryNavigationDelegate.DEFAULT;
                 initNavigationHandler(delegate);
-
-                // Reset CompositorGlowEffect for new a WebContents. Destroy the current one
-                // (for its native object) so it can be created again lazily.
-                if (mWebContents != webContents) {
-                    resetCompositorGlowEffect();
-                    mWebContents = webContents;
-                }
             }
-        } else {
-            resetCompositorGlowEffect();
         }
         if (mTab != null) SwipeRefreshHandler.from(mTab).setNavigationCoordinator(this);
-    }
-
-    /**
-     * Create {@link NavigationGlow} object lazily.
-     * TODO(jinsukkim): Consider using SceneOverlay to replace this.
-     */
-    private NavigationGlow getGlowEffect() {
-        if (isNativePage()) {
-            if (mJavaGlowEffect == null) {
-                mJavaGlowEffect = new AndroidUiNavigationGlow(mNavigationLayout);
-            }
-            return mJavaGlowEffect;
-        } else {
-            // TODO(crbug.com/1102275): Investigate when this is called with nulled mWebContents.
-            if (mCompositorGlowEffect == null && mWebContents != null) {
-                mCompositorGlowEffect =
-                        new CompositorNavigationGlow(mNavigationLayout, mWebContents);
-            }
-            return mCompositorGlowEffect;
-        }
     }
 
     /**
@@ -377,7 +351,10 @@ public class HistoryNavigationCoordinator
         }
         mCleanupRunnable.run();
         mNavigationLayout = null;
-        resetCompositorGlowEffect();
+        if (mOverscrollGlowOverlay != null) {
+            mOverscrollGlowOverlay.destroy();
+            mOverscrollGlowOverlay = null;
+        }
         mDelegate = HistoryNavigationDelegate.DEFAULT;
         if (mNavigationHandler != null) {
             mNavigationHandler.setDelegate(mDelegate);
@@ -387,13 +364,6 @@ public class HistoryNavigationCoordinator
         if (mActivityLifecycleDispatcher != null) {
             mActivityLifecycleDispatcher.unregister(this);
             mActivityLifecycleDispatcher = null;
-        }
-    }
-
-    private void resetCompositorGlowEffect() {
-        if (mCompositorGlowEffect != null) {
-            mCompositorGlowEffect.destroy();
-            mCompositorGlowEffect = null;
         }
     }
 

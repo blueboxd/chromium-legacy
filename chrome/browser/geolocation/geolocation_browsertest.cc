@@ -26,7 +26,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/content_settings/browser/content_settings_usages_state.h"
 #include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/permissions/features.h"
@@ -511,53 +510,6 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoLeakFromOffTheRecord) {
   ExpectPosition(fake_latitude(), fake_longitude());
 }
 
-// When permission delegation is enabled, there isn't a way to have a pending
-// permission prompt when permission has already been granted in another frame
-// on the same page. That means that once the feature is enabled by default,
-// tests which use this fixture are no longer relevant and can be deleted.
-class GeolocationBrowserTestWithNoPermissionDelegation
-    : public GeolocationBrowserTest {
- public:
-  GeolocationBrowserTestWithNoPermissionDelegation() {
-    feature_list_.InitAndDisableFeature(
-        permissions::features::kPermissionDelegation);
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-IN_PROC_BROWSER_TEST_F(GeolocationBrowserTestWithNoPermissionDelegation,
-                       IFramesWithFreshPosition) {
-  set_html_for_tests("/geolocation/two_iframes.html");
-  ASSERT_NO_FATAL_FAILURE(Initialize(INITIALIZATION_DEFAULT));
-  LoadIFrames();
-
-  // Grant permission in the first frame, the position gets to the script.
-  SetFrameForScriptExecution("iframe_0");
-  ASSERT_TRUE(WatchPositionAndGrantPermission());
-  ExpectPosition(fake_latitude(), fake_longitude());
-
-  // In a second iframe from a different origin with a cached position the
-  // user is prompted.
-  SetFrameForScriptExecution("iframe_1");
-  WatchPositionAndObservePermissionRequest(true);
-
-  // Back to the first frame, enable navigation and refresh geoposition.
-  SetFrameForScriptExecution("iframe_0");
-  double fresh_position_latitude = 3.17;
-  double fresh_position_longitude = 4.23;
-  ASSERT_TRUE(SetPositionAndWaitUntilUpdated(fresh_position_latitude,
-                                             fresh_position_longitude));
-  ExpectPosition(fresh_position_latitude, fresh_position_longitude);
-
-  // When permission is granted to the second iframe the fresh position gets
-  // to the script.
-  SetFrameForScriptExecution("iframe_1");
-  ASSERT_TRUE(WatchPositionAndGrantPermission());
-  ExpectPosition(fresh_position_latitude, fresh_position_longitude);
-}
-
 IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, IFramesWithCachedPosition) {
   set_html_for_tests("/geolocation/two_iframes.html");
   ASSERT_NO_FATAL_FAILURE(Initialize(INITIALIZATION_DEFAULT));
@@ -580,30 +532,6 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, IFramesWithCachedPosition) {
   SetFrameForScriptExecution("iframe_1");
   ASSERT_TRUE(WatchPositionAndGrantPermission());
   ExpectPosition(cached_position_latitude, cached_position_lognitude);
-}
-
-IN_PROC_BROWSER_TEST_F(GeolocationBrowserTestWithNoPermissionDelegation,
-                       CancelPermissionForFrame) {
-  set_html_for_tests("/geolocation/two_iframes.html");
-  ASSERT_NO_FATAL_FAILURE(Initialize(INITIALIZATION_DEFAULT));
-  LoadIFrames();
-
-  SetFrameForScriptExecution("iframe_0");
-  ASSERT_TRUE(WatchPositionAndGrantPermission());
-  ExpectPosition(fake_latitude(), fake_longitude());
-
-  // Test second iframe from a different origin with a cached position will
-  // create the prompt.
-  SetFrameForScriptExecution("iframe_1");
-  WatchPositionAndObservePermissionRequest(true);
-
-  // Navigate the iframe, and ensure the prompt is gone.
-  content::WebContents* web_contents =
-      current_browser()->tab_strip_model()->GetActiveWebContents();
-  IFrameLoader change_iframe_1(current_browser(), 1, current_url());
-  int num_requests_after_cancel = GetRequestQueueSize(
-      permissions::PermissionRequestManager::FromWebContents(web_contents));
-  EXPECT_EQ(0, num_requests_after_cancel);
 }
 
 IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, InvalidUrlRequest) {

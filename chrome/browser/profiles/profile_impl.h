@@ -328,8 +328,6 @@ class ProfileImpl : public Profile {
   scoped_refptr<content::SharedCorsOriginAccessList>
       shared_cors_origin_access_list_;
 
-  base::Optional<bool> cors_legacy_mode_enabled_;
-
   DISALLOW_COPY_AND_ASSIGN(ProfileImpl);
 };
 

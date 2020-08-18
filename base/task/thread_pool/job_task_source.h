@@ -182,7 +182,7 @@ class BASE_EXPORT JobTaskSource : public TaskSource {
   // either there's no work remaining or Job was cancelled.
   bool WaitForParticipationOpportunity() EXCLUSIVE_LOCKS_REQUIRED(worker_lock_);
 
-  size_t GetMaxConcurrency(State::Value value) const;
+  size_t GetMaxConcurrency(size_t worker_count) const;
 
   // TaskSource:
   RunStatus WillRunTask() override;

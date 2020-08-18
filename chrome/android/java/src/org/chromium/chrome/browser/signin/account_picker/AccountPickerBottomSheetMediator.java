@@ -17,6 +17,7 @@ import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.AccountUtils;
 import org.chromium.components.signin.AccountsChangeObserver;
+import org.chromium.components.signin.base.GoogleServiceAuthError;
 import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.Collections;
@@ -165,7 +166,13 @@ class AccountPickerBottomSheetMediator implements AccountPickerCoordinator.Liste
         } else {
             mModel.set(AccountPickerBottomSheetProperties.ACCOUNT_PICKER_BOTTOM_SHEET_STATE,
                     AccountPickerBottomSheetState.SIGNIN_IN_PROGRESS);
-            mAccountPickerDelegate.signIn(mSelectedAccountName);
+            mAccountPickerDelegate.signIn(mSelectedAccountName, this::onSignInError);
         }
+    }
+
+    private void onSignInError(GoogleServiceAuthError error) {
+        // TODO(https://crbug.com/1116952): Implement UI for sign-in auth error
+        mModel.set(AccountPickerBottomSheetProperties.ACCOUNT_PICKER_BOTTOM_SHEET_STATE,
+                AccountPickerBottomSheetState.SIGNIN_GENERAL_ERROR);
     }
 }

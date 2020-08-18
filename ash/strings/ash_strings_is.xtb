@@ -40,6 +40,7 @@ Hér eru nokkrir hlutir sem þú getur prófað til að byrja með.</translation
 <translation id="1302880136325416935">Sýna Bluetooth-stillingar. <ph name="STATE_TEXT" /></translation>
 <translation id="1312604459020188865"><ph name="SIGNAL_STRENGTH" /> sendistyrkur</translation>
 <translation id="1316069254387866896">Sýna alltaf hillu</translation>
+<translation id="1333308631814936910"><ph name="DISPLAY_NAME" /> er tengdur</translation>
 <translation id="1341651618736211726">Yfirflæði</translation>
 <translation id="1346748346194534595">Réttsælis</translation>
 <translation id="1351937230027495976">Draga valmynd saman</translation>
@@ -369,6 +370,7 @@ Hér eru nokkrir hlutir sem þú getur prófað til að byrja með.</translation
 <translation id="5114495209940374989">Skjámyndir</translation>
 <translation id="5136175204352732067">Annað lyklaborð tengt</translation>
 <translation id="5168181903108465623">Útsendingartæki í boði</translation>
+<translation id="5170568018924773124">Sýna í möppu</translation>
 <translation id="5207949376430453814">Auðkenna textainnskotsmerki</translation>
 <translation id="5222676887888702881">Skrá út</translation>
 <translation id="523505283826916779">Aðgengisstillingar</translation>
@@ -460,6 +462,7 @@ Hér eru nokkrir hlutir sem þú getur prófað til að byrja með.</translation
 <translation id="6288235558961782912">Hægt er að bæta <ph name="USER_EMAIL_ADDRESS" /> við aftur síðar með leyfi foreldris.</translation>
 <translation id="6297287540776456956">Notaðu pennann til að velja svæði</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> var snúið í <ph name="ROTATION" /></translation>
+<translation id="6315170314923504164">Tal</translation>
 <translation id="6376931439017688372">Kveikt er á Bluetooth</translation>
 <translation id="6381109794406942707">Til að opna tækið skaltu slá inn PIN-númerið þitt.</translation>
 <translation id="639644700271529076">Slökkt er á HÁSTAFALÁS</translation>
@@ -476,7 +479,7 @@ Hér eru nokkrir hlutir sem þú getur prófað til að byrja með.</translation
 <translation id="649452524636452238">PIN-númer snjallkorts</translation>
 <translation id="6501401484702599040">Sendir út skjáinn til <ph name="RECEIVER_NAME" /></translation>
 <translation id="652139407789908527">Það mun slokkna á skjánum lengur en vanalega (í allt að mínútu) meðan á þessari uppfærslu stendur. Ekki ýta á aflrofann meðan á uppfærslunni stendur.</translation>
-<translation id="6521655319214113338">Handskriftarinnsláttur</translation>
+<translation id="6527303717912515753">Deila</translation>
 <translation id="6528179044667508675">Ónáðið ekki</translation>
 <translation id="6537270692134705506">Taka mynd af skjá</translation>
 <translation id="6537924328260219877"><ph name="SIGNAL_STRENGTH" /> sendistyrkur, <ph name="BATTERY_STATUS" /> hleðsla á rafhlöðu símans</translation>
@@ -558,7 +561,6 @@ Hér eru nokkrir hlutir sem þú getur prófað til að byrja með.</translation
 <translation id="7536035074519304529">IP-tala: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">Háttatími</translation>
 <translation id="7561982940498449837">Loka valmynd</translation>
-<translation id="7562368315689366235">Emoji-spjald</translation>
 <translation id="7564874036684306347">Ef gluggar eru færðir á annað skjáborð getur það valdið óvæntri hegðun. Frekari tilkynningum, gluggum og svargluggum verður hugsanlega deilt á milli skjáborða.</translation>
 <translation id="7568294522609223312">Slökkva á sjálfvirkum smellum</translation>
 <translation id="7568637526529101738">Þegar þú hægrismellir eða heldur inni sýnir hjálparinn þér upplýsingar á borð við skilgreiningu eða umbreytingu mælieingina fyrir valið þitt.</translation>
@@ -621,7 +623,6 @@ Hér eru nokkrir hlutir sem þú getur prófað til að byrja með.</translation
 <translation id="8152092012181020186">Ýttu á Ctrl + W til að loka.</translation>
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" /> Kerfisstjóri stjórnar þessari stillingu.</translation>
 <translation id="8167567890448493835">Notar <ph name="LOCALE_NAME" /></translation>
-<translation id="8190698733819146287">Sérsníða tungumál og innslátt...</translation>
 <translation id="8192202700944119416">Tilkynningar eru faldar.</translation>
 <translation id="8196787716797768628">Notaðu bendingar til að skipta hratt á milli forrita og nota Chromebook í spjaldtölvustillingu.</translation>
 <translation id="8200772114523450471">Halda áfram</translation>
@@ -705,6 +706,7 @@ Hér eru nokkrir hlutir sem þú getur prófað til að byrja með.</translation
 <translation id="9029474291399787231">Uppfærsla Adobe Flash Player í boði</translation>
 <translation id="9047624247355796468">Opna stillingar fyrir <ph name="NETWORK_NAME" /></translation>
 <translation id="9056839673611986238">Tækið verður fært í eldri útgáfu</translation>
+<translation id="9065203028668620118">Breyta</translation>
 <translation id="9070640332319875144">Stillingar hjálpara</translation>
 <translation id="9072519059834302790"><ph name="TIME_LEFT" /> þar til rafhlaðan tæmist.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>

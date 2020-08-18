@@ -338,6 +338,7 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="4881695831933465202">Åbn</translation>
 <translation id="4901778704868714008">Gem...</translation>
 <translation id="4904877109095351937">Markér som læst</translation>
+<translation id="4908869848243824489">Discover fra Google</translation>
 <translation id="4930268273022498155">Slet eksisterende data. Du kan hente dem ved at skifte tilbage til <ph name="USER_EMAIL1" />.</translation>
 <translation id="4930714375720679147">Aktivér</translation>
 <translation id="4941089862236492464">Beklager, men der opstod et problem med at dele dit element.</translation>
@@ -441,6 +442,7 @@ Handoff skal være aktiveret i afsnittet Generelt i Indstillinger, og dine enhed
 <translation id="6125339936101702016">Administreres af <ph name="COMPANY" /> <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
 <translation id="6127379762771434464">Elementet blev fjernet</translation>
 <translation id="6136914049981179737">Sek. siden</translation>
+<translation id="6144589619057374135">Åbn ${url} i inkognito</translation>
 <translation id="616831107264507309">Læs senere</translation>
 <translation id="6177442314419606057">Søg i Chrome</translation>
 <translation id="6184086493125982861">Vis faner</translation>
@@ -554,6 +556,7 @@ Websites kan ikke bruge cookies til at se din browseraktivitet på forskellige w
 <translation id="7293171162284876153">Aktivér "Synkroniser dine Chrome-data" for starte synkroniseringen.</translation>
 <translation id="7313347584264171202">Her finder du dine inkognitofaner</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> procent er downloadet</translation>
+<translation id="7340958967809483333">Indstillinger for Discover</translation>
 <translation id="7346909386216857016">OK</translation>
 <translation id="734758817008927353">Valgmuligheder for at gemme kort</translation>
 <translation id="7348502496356775519">Tilføj bogmærke</translation>
@@ -665,6 +668,7 @@ Websites kan bruge cookies til at se din browseraktivitet på forskellige websit
 <translation id="8668210798914567634">Denne side er gemt på din læseliste.</translation>
 <translation id="8680787084697685621">Oplysningerne om kontologin er forældede.</translation>
 <translation id="8706588385081740091">Adgangskoder</translation>
+<translation id="8717864919010420084">Kopiér link</translation>
 <translation id="8721297211384281569">Menuen Værktøjer</translation>
 <translation id="8725066075913043281">Forsøg igen</translation>
 <translation id="8730621377337864115">Udfør</translation>

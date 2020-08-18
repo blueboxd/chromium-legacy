@@ -82,7 +82,6 @@
 <translation id="1294154142200295408">ကွန်မန်းလိုင်းစနစ် ကွဲပြားမှုများ</translation>
 <translation id="129553762522093515">မကြာသေးခင်က ပိတ်ထားခဲ့သည်</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />သင့်ကွတ်ကီးများကို ရှင်းလင်းကြည့်ပါ<ph name="END_LINK" /></translation>
-<translation id="1299917195319242089">'ရုပ်ဖျက်ဝင်းဒိုးဖွင့်ရန်' ခလုတ်၊ 'Chrome ရုပ်ဖျက်ဝင်းဒိုးအသစ်’ ဖွင့်ရန် Enter နှိပ်ပါ</translation>
 <translation id="1301324364792935241">သင်၏ 'လုံခြုံသော DNS' ဆက်တင်များကို စစ်ဆေးပါ</translation>
 <translation id="1307966114820526988">ရပ်ဆိုင်းထားသော ဝန်ဆောင်မှုများ</translation>
 <translation id="131405271941274527">သင့်ဖုန်းကို NFC စက်တစ်ခုအပေါ် တို့လိုက်သည့်အခါ <ph name="URL" /> သည် အချက်အလက် ပို့ခြင်းနှင့် လက်ခံခြင်းတို့ ပြုလုပ်လိုသည်</translation>
@@ -257,7 +256,6 @@
 <translation id="1919345977826869612">ကြော်ငြာများ</translation>
 <translation id="1919367280705858090">မှားယွင်းကြောင်း မက်ဆေ့ဂျ်အချို့အတွက် အကူအညီ ရယူရန်</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{တစ်ခုမျှမရှိပါ}=1{ဝဘ်ဆိုက် ၁ ခု}other{ဝဘ်ဆိုက် # ခု}}</translation>
-<translation id="1926148189358507356">'အပ်ဒိတ်လုပ်ရန်အတွက် ပြန်ဖွင့်ရန်' ခလုတ်၊ Chrome ကို အပ်ဒိတ်လုပ်ရန် Enter နှိပ်ပါ</translation>
 <translation id="1945968466830820669">သင်သည် သင့်အဖွဲ့အစည်း၏ အကောင့်ကို အသုံးပြုခွင့် ဆုံးရှုံးနိုင်သည် သို့မဟုတ် အထောက်အထား အခိုးခံရနိုင်သည်။ သင့်စကားဝှက်ကို ယခုပင်ပြောင်းလဲရန် Chromium က အကြံပြုပါသည်။</translation>
 <translation id="1947454675006758438">ညာဘက်ထိပ်တွင် ချုပ်စက်ဖြင့် ချုပ်ရန်</translation>
 <translation id="1959001866257244765"><ph name="BEGIN_WHITEPAPER_LINK" />သင်ဝင်ကြည့်သည့် စာမျက်နှာအချို့၏ URL များ၊ ကန့်သတ်ထားသည့် စနစ်အချက်အလက်များနှင့် အချို့သောစာမျက်နှာပါ အကြောင်းအရာများ<ph name="END_WHITEPAPER_LINK" /> ကို Google သို့ ပို့ပေးခြင်းဖြင့် လူတိုင်းအတွက် ဝဘ်ပေါ်တွင် လုံခြုံရေး ကောင်းမွန်လာအောင် ကူညီပါ။ <ph name="BEGIN_PRIVACY_PAGE_LINK" />ပုဂ္ဂိုလ်ရေးဆိုင်ရာ မူဝါဒ<ph name="END_PRIVACY_PAGE_LINK" /></translation>
@@ -362,7 +360,6 @@
 <translation id="2367567093518048410">အဆင့်</translation>
 <translation id="2380886658946992094">Legal</translation>
 <translation id="2384307209577226199">လုပ်ငန်းဆိုင်ရာ ပုံမှန်</translation>
-<translation id="238547550913364157"><ph name="LAUNCH_INCOGNITO_FOCUSED_FRIENDLY_MATCH_TEXT" />၊ 'Chrome ရုပ်ဖျက်ဝင်းဒိုး' အသစ်ဖွင့်ရန် Tab နှိပ်ပြီးနောက် Enter နှိပ်ပါ</translation>
 <translation id="2385809941344967209">သင့် Chrome ဆက်တင်များတွင် Chrome ကို အပ်ဒိတ်လုပ်ပါ</translation>
 <translation id="2386255080630008482">ဆာဗာ၏ လက်မှတ်မှာ ရုပ်သိမ်းခံခဲ့ရသည်။</translation>
 <translation id="2392959068659972793">တန်ဖိုး သတ်မှတ်မထားသည့် မူဝါဒများ ပြရန်</translation>
@@ -405,7 +402,6 @@
 <translation id="2586657967955657006">ကလစ်ဘုတ်</translation>
 <translation id="2587730715158995865"><ph name="ARTICLE_PUBLISHER" /> မှ။ ၎င်းနှင့် အခြားသတင်း <ph name="OTHER_ARTICLE_COUNT" /> ပုဒ်ကို ဖတ်ပါ။</translation>
 <translation id="2587841377698384444">လမ်းညွှန် API ID-</translation>
-<translation id="2592698726824597401"><ph name="UPDATE_CREDIT_CARD_FOCUSED_FRIENDLY_MATCH_TEXT" />၊ ခရက်ဒစ်ကတ် အော်တိုဖြည့်အချက်အလက်ကို Chrome ဆက်တင်များတွင် အပ်ဒိတ်လုပ်ရန် Tab နှိပ်ပြီးနောက် Enter နှိပ်ပါ</translation>
 <translation id="2595719060046994702">ဤကိရိယာနှင့် အကောင့်ကို ကုမ္ပဏီ သို့မဟုတ် အခြားအဖွဲ့အစည်းက စီမံခန့်ခွဲထားခြင်း မရှိပါ။</translation>
 <translation id="2597378329261239068">ဒီစာတမ်းကို စကားဝှက်ဖြင့် ကာကွယ်ထားသည်။ ကျေးဇူးပြုပြီး စကားဝှက် ရိုက်ထည့်ပါ။</translation>
 <translation id="2609632851001447353">မူကွဲများ</translation>
@@ -427,7 +423,6 @@
 <translation id="2677748264148917807">ထွက်ခွာရန်</translation>
 <translation id="2684561033061424857">၁၁x၁၂</translation>
 <translation id="2687555958734450033">အကောင်းဆုံး အံကိုက်ညှိရန်</translation>
-<translation id="2688738823074468716">'စကားဝှက်စီမံရန်' ခလုတ်၊ စကားဝှက်ကို Chrome ဆက်တင်များတွင် စီမံရန် Enter နှိပ်ပါ</translation>
 <translation id="2688969097326701645">ရှေ့ဆက်ပါ</translation>
 <translation id="2691924980723297736">ဘေးကင်းလုံခြုံမှုဆိုင်ရာ သတိပေးချက်</translation>
 <translation id="2699302886720511147">အသုံးပြုနိုင်သည့် ကတ်များ</translation>
@@ -747,7 +742,6 @@
 <translation id="4088981014127559358">ဘေး ၁ ပုံ ဒေါင်လိုက် အရွှေ့</translation>
 <translation id="4098354747657067197">ရှေ့တွင် လှည့်ဖြားတတ်သော ဆိုက်ရှိနေသည်</translation>
 <translation id="4101413244023615925">စာသားနှင့် ဂရပ်ဖစ်</translation>
-<translation id="4103147722950692857"><ph name="MANAGE_PASSWORDS_FOCUSED_FRIENDLY_MATCH_TEXT" /> စကားဝှက်များကို Chrome ဆက်တင်များတွင် စီမံရန် Tab နှိပ်ပြီးနောက် Enter နှိပ်ပါ</translation>
 <translation id="4103249731201008433">စက်ပစ္စည်း၏ နံပါတ်စဉ် မမှန်ကန်ပါ။</translation>
 <translation id="4103763322291513355">နာမည်ပျက် စာရင်းထဲက URL များ နှင့် သင်၏ စီမံအုပ်ချုပ်သူက ချမှတ်ထားသည့် အခြား မူဝါဒများကို ကြည့်ရန် &lt;strong&gt;chrome://policy&lt;/strong&gt; ကို ဝင်ကြည့်ပါ။</translation>
 <translation id="4110652170750985508">သင်၏ ငွေပေးချေမှုကို ပြန်စစ်ကြည့်ပါ</translation>
@@ -919,7 +913,6 @@
 <translation id="4738601419177586157"><ph name="TEXT" /> ရှာဖွေမှု အကြံပြုချက်</translation>
 <translation id="4742407542027196863">စကားဝှက်များ စီမံရန်…</translation>
 <translation id="4744603770635761495">အကောင်ထည်ဖော်နိုင်သည့် လမ်းကြောင်း</translation>
-<translation id="4750085040310563588"><ph name="UPDATE_CHROME_FOCUSED_FRIENDLY_MATCH_TEXT" />၊ Chrome ကို အပ်ဒိတ်လုပ်ရန် Tab နှိပ်ပြီးနောက် Enter နှိပ်ပါ</translation>
 <translation id="4750917950439032686">သင့်အချက်အလက်များ (ဥပမာ - စကားဝှက်များ သို့မဟုတ် ခရက်တစ်ကတ်နံပါတ်များ) ကို ဤဝဘ်ဆိုက်သို့ ပို့ချိန်တွင် လျှို့ဝှက်သီးသန့်အဖြစ် ထားရှိပါသည်။</translation>
 <translation id="4756388243121344051">မှတ်တမ်း</translation>
 <translation id="4758311279753947758">ဆက်သွယ်ရန်အချက်အလက် ထည့်ရန်</translation>
@@ -1038,7 +1031,6 @@
 <translation id="5215116848420601511">Google Pay ကို သုံးထားသော ငွေပေးချေနည်းလမ်းနှင့် လိပ်စာများ</translation>
 <translation id="5215363486134917902">Folio-Sp</translation>
 <translation id="5222812217790122047">အီးမေးလ် လိုအပ်သည်</translation>
-<translation id="5222994811833658317">'ဒေတာရှင်းရန်' ခလုတ်၊ Chrome ၏ ကြည့်ရှုခြင်းမှတ်တမ်းဒေတာကိုဖျက်ရန် Enter နှိပ်ပါ</translation>
 <translation id="5230733896359313003">ပစ္စည်းပို့ရမည့်လိပ်စာ</translation>
 <translation id="5230815978613972521">B8</translation>
 <translation id="5233045608889518621">၁၂x၁၉</translation>
@@ -1304,7 +1296,6 @@
 <translation id="6302269476990306341">Chrome အတွင်းရှိ Google Assistant ရပ်တန့်နေသည်</translation>
 <translation id="6305205051461490394"><ph name="URL" /> ကိုဆက်သွယ်၍မရနိုင်ပါ။</translation>
 <translation id="6312113039770857350">ဝဘ်စာမျက်နှာ မရှိ</translation>
-<translation id="6315224405718249523">'စာမျက်နှာကိုဘာသာပြန်ရန်' ခလုတ်၊ ဤစာမျက်နှာကိုဘာသာပြန်ရန် Enter နှိပ်ပါ</translation>
 <translation id="6321917430147971392">သင်၏ DNS ဆက်တင်များကို စစ်ကြည့်ပါ</translation>
 <translation id="6322182122604171028">Windows Hello ကို အသုံးပြု၍ မရပါ</translation>
 <translation id="6328639280570009161">ကွန်ရက် ခန့်မှန်းမှုကို ပိတ်ထားရန် ကြိုးစားပါ</translation>
@@ -1359,7 +1350,6 @@
 <translation id="6547208576736763147">ဘယ်ဘက်တွင် နှစ်ချက်ဖောက်ရန်</translation>
 <translation id="6554795675067793129">သင့်အကောင့်ကို <ph name="ENROLLMENT_DOMAIN" /> က စီမံခန့်ခွဲထားပါသည်။</translation>
 <translation id="6556866813142980365">ပြန်လုပ်</translation>
-<translation id="6566840325635607048">'ခရက်ဒစ်ကတ် အပ်ဒိတ်လုပ်ရန်' ခလုတ်၊ ခရက်ဒစ်ကတ် အော်တိုဖြည့်အချက်အလက်ကို Chrome ဆက်တင်များတွင် အပ်ဒိတ်လုပ်ရန် Enter နှိပ်ပါ</translation>
 <translation id="6569060085658103619">သင်သည် နောက်ဆက်တွဲစာမျက်နှာကို ကြည့်ရှုနေခြင်းဖြစ်သည်</translation>
 <translation id="6573200754375280815">ညာဘက်တွင် နှစ်ချက်ဖောက်ရန်</translation>
 <translation id="6578796323535178455">C2 (စာအိတ်)</translation>
@@ -1601,7 +1591,6 @@
 <translation id="7549584377607005141">ဝက်ဘ်စာမျက်နှာသည် မှန်ကန်စွာ ဖော်ပြနိုင်ရန် သင်စောစောပိုင်းတွင် ရိုက်ထည့်ထားသည့် အချက်လက်များလိုအပ်ပါသည်။ သင်ဤအချက်လက်ကို ပြန်လည် ပို့နိုင်ပါသည်၊ သို့သော် ဤသို့ပြုလုပ်ခြင်းအားဖြင့် ဤစာမျက်နှာမှ ယခင်လုပ်ဆောင်ခဲ့သည့် အတိုင်းပြန်လည် လုပ်ဆောင်မည် ဖြစ်သည်။</translation>
 <translation id="7550637293666041147">သင်၏ စက်အသုံးပြုသူအမည်နှင့် Chrome အသုံးပြုသူအမည်</translation>
 <translation id="7552846755917812628">အောက်ပါ နည်းလမ်းများကို စမ်းကြည့်ပါ−</translation>
-<translation id="7553823544414963579"><ph name="CLEAR_BROWSING_DATA_FOCUSED_FRIENDLY_MATCH_TEXT" />၊ Chrome ၏ ကြည့်ရှုခြင်းမှတ်တမ်းဒေတာကိုဖျက်ရန် Tab နှိပ်ပြီးနောက် Enter နှိပ်ပါ</translation>
 <translation id="7554791636758816595">တဘ် အသစ်</translation>
 <translation id="7564049878696755256">သင်သည် သင့် <ph name="ORG_NAME" /> အကောင့်ကို အသုံးပြုခွင့် ဆုံးရှုံးနိုင်သည် သို့မဟုတ် အထောက်အထား အခိုးခံနိုင်သည်။ သင့်စကားဝှက်ကို ယခုပင်ပြောင်းလဲရန် Chrome က အကြံပြုပါသည်။</translation>
 <translation id="7567204685887185387">ဒီဆာဗာက <ph name="DOMAIN" /> ဖြစ်တာကို သက်သေထူ မပြနိုင်ခဲ့ပါ၊ ၎င်း၏ လုံခြုံရေး လက်မှတ်ကို လိမ်လည် ထုတ်ပေးခဲ့တာ ဖြစ်နိုင်သည်။ ဖွဲ့စည်းစီစဉ်မှု အမှားကြောင့် သို့မဟုတ် တိုက်ခိုက်လိုသူက သင်၏ ချိတ်ဆက်မှုကို ကြားဖြတ်ယူနေ၍ ထိုသို့ ဖြစ်လာနိုင်ခဲ့ပါသည်။</translation>
@@ -1768,7 +1757,6 @@
 <translation id="8225771182978767009">ဤကွန်ပျူတာကို တပ်ဆင်ခဲ့သူသည် ဤဆိုက်ကိုပိတ်ဆို့ရန် ဆုံးဖြတ်ခဲ့သည်။</translation>
 <translation id="8228419419708659934">စာမျက်နှာနှစ်ခု ကြည့်ရန်</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />၊ <ph name="TYPE_2" /></translation>
-<translation id="8230646577665563479"><ph name="TRANSLATE_FOCUSED_FRIENDLY_MATCH_TEXT" />၊ ဤစာမျက်နှာကို ဘာသာပြန်ရန် Tab နှိပ်ပြီးနောက် Enter နှိပ်ပါ</translation>
 <translation id="8232343881378637145">စနစ် အပူချိန်</translation>
 <translation id="8238581221633243064">စာမျက်နှာကို ရုပ်ဖျက်တဘ်အသစ်တွင် ဖွင့်ရန်</translation>
 <translation id="8241707690549784388">သင်က ရိုက်ထည့် အသုံးပြုခဲ့သည့် အချက်အလက်များကို ကြည့်ရှုရနိုင်သည့် စာမျက်နှာပါ။ သင်က ထပ်လုပ်ရန် တစ်ခုခု လုပ်ဆောင်ခဲ့လျှင် ထိုစာမျက်နှာသို့ ပြန်ရောက်သွားနိုင်သည်။ သင်သည် ဆက်ပြီး လုပ်ကိုင်လိုပါသလား?</translation>
@@ -1836,6 +1824,7 @@
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> တုံ့ပြန်မှု အလွန်ကြာပါသည်။</translation>
 <translation id="8503559462189395349">Chrome စကားဝှက်များ</translation>
 <translation id="8503813439785031346">အသုံးပြုသူအမည်</translation>
+<translation id="8507227106804027148">ညွှန်ကြားချက် လိုင်း</translation>
 <translation id="8508648098325802031">ရှာဖွေမှု သင်္ကေတ</translation>
 <translation id="8522552481199248698">Chrome က သင်၏ Google အကောင့်ကို ကာကွယ်ရန်နှင့် စကားဝှက်ပြောင်းရန် ကူညီနိုင်ပါသည်။</translation>
 <translation id="8530813470445476232">Chrome ဆက်တင်များတွင် ကြည့်ရှုခြင်းမှတ်တမ်း၊ ကွတ်ကီးများ၊ ကက်ရှ်နှင့် အခြားအရာများကို ရှင်းပါ</translation>

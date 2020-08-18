@@ -99,40 +99,18 @@ TEST_F(ChromePermissionManagerTest, GetCanonicalOriginPermissionDelegation) {
   const GURL extensions_requesting_origin(
       "chrome-extension://abcdefghijklmnopqrstuvxyz");
 
-  {
-    base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitAndDisableFeature(
-        permissions::features::kPermissionDelegation);
-    // Without permission delegation enabled the requesting origin should always
-    // be returned.
-    EXPECT_EQ(requesting_origin,
-              GetPermissionControllerDelegate()->GetCanonicalOrigin(
-                  ContentSettingsType::GEOLOCATION, requesting_origin,
-                  embedding_origin));
-    EXPECT_EQ(extensions_requesting_origin,
-              GetPermissionControllerDelegate()->GetCanonicalOrigin(
-                  ContentSettingsType::GEOLOCATION,
-                  extensions_requesting_origin, embedding_origin));
-  }
-
-  {
-    base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitAndEnableFeature(
-        permissions::features::kPermissionDelegation);
-    // With permission delegation, the embedding origin should be returned
-    // except in the case of extensions; and except for notifications, for which
-    // permission delegation is always off.
-    EXPECT_EQ(embedding_origin,
-              GetPermissionControllerDelegate()->GetCanonicalOrigin(
-                  ContentSettingsType::GEOLOCATION, requesting_origin,
-                  embedding_origin));
-    EXPECT_EQ(extensions_requesting_origin,
-              GetPermissionControllerDelegate()->GetCanonicalOrigin(
-                  ContentSettingsType::GEOLOCATION,
-                  extensions_requesting_origin, embedding_origin));
-    EXPECT_EQ(requesting_origin,
-              GetPermissionControllerDelegate()->GetCanonicalOrigin(
-                  ContentSettingsType::NOTIFICATIONS, requesting_origin,
-                  embedding_origin));
-  }
+  // The embedding origin should be returned
+  // except in the case of extensions and notifications.
+  EXPECT_EQ(embedding_origin,
+            GetPermissionControllerDelegate()->GetCanonicalOrigin(
+                ContentSettingsType::GEOLOCATION, requesting_origin,
+                embedding_origin));
+  EXPECT_EQ(extensions_requesting_origin,
+            GetPermissionControllerDelegate()->GetCanonicalOrigin(
+                ContentSettingsType::GEOLOCATION, extensions_requesting_origin,
+                embedding_origin));
+  EXPECT_EQ(requesting_origin,
+            GetPermissionControllerDelegate()->GetCanonicalOrigin(
+                ContentSettingsType::NOTIFICATIONS, requesting_origin,
+                embedding_origin));
 }

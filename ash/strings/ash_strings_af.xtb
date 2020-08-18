@@ -40,6 +40,7 @@ Hier is 'n paar dinge wat jy kan probeer om aan die gang te kom.</translation>
 <translation id="1302880136325416935">Wys Bluetooth-instellings. <ph name="STATE_TEXT" /></translation>
 <translation id="1312604459020188865">Seinsterkte <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="1316069254387866896">Wys altyd rak</translation>
+<translation id="1333308631814936910"><ph name="DISPLAY_NAME" /> is gekoppel</translation>
 <translation id="1341651618736211726">Oorloop</translation>
 <translation id="1346748346194534595">Regs</translation>
 <translation id="1351937230027495976">Vou kieslys in</translation>
@@ -370,6 +371,7 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="5114495209940374989">Skermkiekies</translation>
 <translation id="5136175204352732067">Ander sleutelbord is gekoppel</translation>
 <translation id="5168181903108465623">Uitsaaitoestelle is beskikbaar</translation>
+<translation id="5170568018924773124">Wys in vouer</translation>
 <translation id="5207949376430453814">Lig tekskaret uit</translation>
 <translation id="5222676887888702881">Meld af</translation>
 <translation id="523505283826916779">Toeganklikheidsinstellings</translation>
@@ -461,6 +463,7 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="6288235558961782912"><ph name="USER_EMAIL_ADDRESS" /> kan later weer met 'n ouer se toestemming bygevoeg word.</translation>
 <translation id="6297287540776456956">Gebruik die stilus om 'n area te kies</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> is na <ph name="ROTATION" /> gedraai</translation>
+<translation id="6315170314923504164">Stem</translation>
 <translation id="6376931439017688372">Bluetooth is aan</translation>
 <translation id="6381109794406942707">Voer jou PIN in om die toestel te ontsluit.</translation>
 <translation id="639644700271529076">HOOFLETTERSLOT is af</translation>
@@ -477,7 +480,7 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="649452524636452238">Slimkaart-PIN</translation>
 <translation id="6501401484702599040">Saai tans skerm uit na <ph name="RECEIVER_NAME" /></translation>
 <translation id="652139407789908527">Jou skerm sal langer as gewoonlik (tot 'n minuut lank) donker raak gedurende hierdie opdatering. Moet asseblief nie die aan/af-skakelaar druk terwyl die opdatering aan die gang is nie.</translation>
-<translation id="6521655319214113338">Handskrifinvoer</translation>
+<translation id="6527303717912515753">Deel</translation>
 <translation id="6528179044667508675">Moenie Steur Nie</translation>
 <translation id="6537270692134705506">Vang skerm vas</translation>
 <translation id="6537924328260219877">Seinsterkte <ph name="SIGNAL_STRENGTH" />, foonbattery <ph name="BATTERY_STATUS" /></translation>
@@ -559,7 +562,6 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="7536035074519304529">IP-adres: <ph name="ADDRESS" /></translation>
 <translation id="7548434653388805669">Slaaptyd</translation>
 <translation id="7561982940498449837">Maak kieslys toe</translation>
-<translation id="7562368315689366235">Emosiekoon-palet</translation>
 <translation id="7564874036684306347">Om vensters na 'n ander werkskerm te skuif, kan lei tot onverwagte gedrag. Opeenvolgende kennisgewings, vensters en dialoë kan tussen werkskerms verdeel word.</translation>
 <translation id="7568294522609223312">Skakel outomatiese klikke af</translation>
 <translation id="7568637526529101738">Met 'n regsklik of langdruk wys Assistent inligting soos die definisie of eenheidomskakeling van jou keuse.</translation>
@@ -622,7 +624,6 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="8152092012181020186">Druk Ctrl + W om toe te maak.</translation>
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" /> Jou administrateur bestuur hierdie instelling.</translation>
 <translation id="8167567890448493835">Gebruik tans <ph name="LOCALE_NAME" /></translation>
-<translation id="8190698733819146287">Pasmaak tale en invoer …</translation>
 <translation id="8192202700944119416">Kennisgewings word versteek.</translation>
 <translation id="8196787716797768628">Gebruik gebare om vinnig tussen programme te wissel en met jou Chromebook interaksie te hê in tabletmodus.</translation>
 <translation id="8200772114523450471">Hervat</translation>
@@ -706,6 +707,7 @@ Alle gebruikers moet afmeld om voort te gaan.</translation>
 <translation id="9029474291399787231">Adobe Flash Player-opdatering beskikbaar</translation>
 <translation id="9047624247355796468">Maak instellings oop vir <ph name="NETWORK_NAME" /></translation>
 <translation id="9056839673611986238">Toestel sal teruggerol word</translation>
+<translation id="9065203028668620118">Wysig</translation>
 <translation id="9070640332319875144">Assistent-instellings</translation>
 <translation id="9072519059834302790"><ph name="TIME_LEFT" /> totdat battery leeg is.</translation>
 <translation id="9074739597929991885">Bluetooth</translation>

@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
+#include "base/optional.h"
 #include "components/paint_preview/common/proto/paint_preview.pb.h"
 #include "components/paint_preview/common/recording_map.h"
 #include "components/services/paint_preview_compositor/paint_preview_frame.h"
@@ -39,12 +40,20 @@ class PaintPreviewCompositorImpl : public mojom::PaintPreviewCompositor {
   ~PaintPreviewCompositorImpl() override;
 
   // PaintPreviewCompositor implementation.
-  void BeginComposite(mojom::PaintPreviewBeginCompositeRequestPtr request,
-                      BeginCompositeCallback callback) override;
-  void BitmapForFrame(const base::UnguessableToken& frame_guid,
-                      const gfx::Rect& clip_rect,
-                      float scale_factor,
-                      BitmapForFrameCallback callback) override;
+  void BeginSeparatedFrameComposite(
+      mojom::PaintPreviewBeginCompositeRequestPtr request,
+      BeginSeparatedFrameCompositeCallback callback) override;
+  void BitmapForSeparatedFrame(
+      const base::UnguessableToken& frame_guid,
+      const gfx::Rect& clip_rect,
+      float scale_factor,
+      BitmapForSeparatedFrameCallback callback) override;
+  void BeginMainFrameComposite(
+      mojom::PaintPreviewBeginCompositeRequestPtr request,
+      BeginMainFrameCompositeCallback callback) override;
+  void BitmapForMainFrame(const gfx::Rect& clip_rect,
+                          float scale_factor,
+                          BitmapForMainFrameCallback callback) override;
   void SetRootFrameUrl(const GURL& url) override;
 
  private:
@@ -58,11 +67,34 @@ class PaintPreviewCompositorImpl : public mojom::PaintPreviewCompositor {
   static base::flat_map<base::UnguessableToken, SkpResult> DeserializeAllFrames(
       RecordingMap&& recording_map);
 
+  // Deserialize a the recording of the frame specified by |frame_proto|.
+  // Subframes are recursed into and loaded into |loaded_frames| so the current
+  // frame will have them available during its own deserialization. Recordings
+  // are erased from |recording_map| as they are consumed.
+  // |subframe_failed| returns whether or not any subframes (or subframes of
+  // subframes) failed during deserialization.
+  // The resulting picture will contain subframes (or an empty placeholder in
+  // the case of failed subframes) or will return |nullptr| on failure.
+  static sk_sp<SkPicture> DeserializeFrameRecursive(
+      const PaintPreviewFrameProto& frame_proto,
+      const PaintPreviewProto& proto,
+      base::flat_map<base::UnguessableToken, sk_sp<SkPicture>>* loaded_frames,
+      RecordingMap* recording_map,
+      bool* subframe_failed);
+
   mojo::Receiver<mojom::PaintPreviewCompositor> receiver_{this};
 
   GURL url_;
-  // A mapping from frame GUID to its associated data.
+
+  // A mapping from frame GUID to its associated data. Empty until
+  // |BeginSeparatedFrameComposite| is called.
+  // Must be modified only by |BeginSeparatedFrameComposite|.
   base::flat_map<base::UnguessableToken, PaintPreviewFrame> frames_;
+
+  // Contains the root frame, including content from subframes. |nullptr| until
+  // |BeginMainFrameComposite| succeeds.
+  // Must be modified only by |BeginMainFrameComposite|.
+  sk_sp<SkPicture> root_frame_;
 
   PaintPreviewCompositorImpl(const PaintPreviewCompositorImpl&) = delete;
   PaintPreviewCompositorImpl& operator=(const PaintPreviewCompositorImpl&) =

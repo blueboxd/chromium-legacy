@@ -7872,29 +7872,13 @@
   },
 
   "CorsMitigationList": {
-    "os": ["win", "linux", "mac", "chromeos", "android"],
-    "policy_pref_mapping_test": [
-      {
-        "policies": {
-          "CorsMitigationList": [
-            "x-googapps-allowed-domains",
-            "youtube-restrict"
-          ]
-        },
-        "prefs": { "cors.mitigation.list": {} }
-      }
-    ]
+    "note": "This policy has been removed, as of M84."
   },
 
   "CorsLegacyModeEnabled": {
-    "os": ["win", "linux", "mac", "chromeos", "android"],
-    "policy_pref_mapping_test": [
-      {
-        "policies": { "CorsLegacyModeEnabled": true },
-        "prefs": { "cors.legacy_mode.enabled": {} }
-      }
-    ]
+    "note": "This policy has been removed, as of M84."
   },
+
   "StricterMixedContentTreatmentEnabled" : {
     "note": "This policy has been removed, as of M85."
   },

@@ -338,6 +338,7 @@
 <translation id="4881695831933465202">開啟</translation>
 <translation id="4901778704868714008">儲存...</translation>
 <translation id="4904877109095351937">標示為已讀取</translation>
+<translation id="4908869848243824489">Google 探索</translation>
 <translation id="4930268273022498155">刪除現有資料。你可以切換回 <ph name="USER_EMAIL1" />，重新取得現有資料。</translation>
 <translation id="4930714375720679147">開啟</translation>
 <translation id="4941089862236492464">很抱歉，分享您的項目時發生問題。</translation>
@@ -441,6 +442,7 @@
 <translation id="6125339936101702016">由「<ph name="COMPANY" />」管理。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="6127379762771434464">已移除項目</translation>
 <translation id="6136914049981179737">幾秒前</translation>
+<translation id="6144589619057374135">在無痕模式中開啟 ${url}</translation>
 <translation id="616831107264507309">稍後閱讀</translation>
 <translation id="6177442314419606057">在 Chrome 中搜尋</translation>
 <translation id="6184086493125982861">顯示分頁</translation>
@@ -554,6 +556,7 @@
 <translation id="7293171162284876153">如要開始同步處理，請開啟「同步處理你的 Chrome 資料」。</translation>
 <translation id="7313347584264171202">這裡會顯示你的無痕分頁</translation>
 <translation id="7336264872878993241">已下載 <ph name="PERCENT" /> %</translation>
+<translation id="7340958967809483333">探索的選項</translation>
 <translation id="7346909386216857016">好，我知道了</translation>
 <translation id="734758817008927353">卡片儲存選項</translation>
 <translation id="7348502496356775519">加入書籤</translation>
@@ -665,6 +668,7 @@
 <translation id="8668210798914567634">此網頁內容已儲存至你的閱讀清單。</translation>
 <translation id="8680787084697685621">帳戶登入詳細資料已過期。</translation>
 <translation id="8706588385081740091">密碼</translation>
+<translation id="8717864919010420084">複製連結</translation>
 <translation id="8721297211384281569">工具選單</translation>
 <translation id="8725066075913043281">再試一次</translation>
 <translation id="8730621377337864115">完成</translation>

@@ -90,7 +90,7 @@ public class PaymentRequestFactory implements InterfaceFactory<PaymentRequest> {
         }
 
         @Override
-        public void hasEnrolledInstrument(boolean perMethodQuota) {
+        public void hasEnrolledInstrument() {
             if (mClient != null) {
                 mClient.onHasEnrolledInstrument(
                         HasEnrolledInstrumentQueryResult.HAS_NO_ENROLLED_INSTRUMENT);

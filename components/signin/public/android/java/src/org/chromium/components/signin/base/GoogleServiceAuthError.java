@@ -5,6 +5,7 @@
 package org.chromium.components.signin.base;
 
 import androidx.annotation.IntDef;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.annotations.CalledByNative;
 
@@ -82,8 +83,9 @@ public class GoogleServiceAuthError {
 
     private final @State int mState;
 
+    @VisibleForTesting
     @CalledByNative
-    private GoogleServiceAuthError(@State int state) {
+    public GoogleServiceAuthError(@State int state) {
         mState = state;
     }
 

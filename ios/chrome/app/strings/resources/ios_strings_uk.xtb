@@ -338,6 +338,7 @@
 <translation id="4881695831933465202">Відкрити</translation>
 <translation id="4901778704868714008">Зберегти…</translation>
 <translation id="4904877109095351937">Позначити як прочитані</translation>
+<translation id="4908869848243824489">Рекомендації від Google</translation>
 <translation id="4930268273022498155">Видалити наявні дані. Щоб відновити їх, поверніться в обліковий запис <ph name="USER_EMAIL1" />.</translation>
 <translation id="4930714375720679147">Увімкнути</translation>
 <translation id="4941089862236492464">Під час спроби поділитися елементом виникла проблема.</translation>
@@ -441,6 +442,7 @@
 <translation id="6125339936101702016">Веб-переглядачем керує компанія <ph name="COMPANY" />. <ph name="BEGIN_LINK" />Докладніше<ph name="END_LINK" /></translation>
 <translation id="6127379762771434464">Веб-сайт видалено</translation>
 <translation id="6136914049981179737">Мить тому</translation>
+<translation id="6144589619057374135">Відкрити URL-адресу ${url} в анонімному режимі</translation>
 <translation id="616831107264507309">Читати пізніше</translation>
 <translation id="6177442314419606057">Пошук у Chrome</translation>
 <translation id="6184086493125982861">Показати вкладки</translation>
@@ -554,6 +556,7 @@
 <translation id="7293171162284876153">Щоб почати синхронізацію, увімкніть параметр "Синхронізувати дані Chrome".</translation>
 <translation id="7313347584264171202">Тут відображатимуться ваші анонімні вкладки</translation>
 <translation id="7336264872878993241">Завантажено <ph name="PERCENT" />%</translation>
+<translation id="7340958967809483333">Налаштування рекомендацій</translation>
 <translation id="7346909386216857016">OK</translation>
 <translation id="734758817008927353">Опції збереження картки</translation>
 <translation id="7348502496356775519">Закладка</translation>
@@ -665,6 +668,7 @@
 <translation id="8668210798914567634">Цю сторінку збережено в списку читання.</translation>
 <translation id="8680787084697685621">Дані для входу в обліковий запис застаріли.</translation>
 <translation id="8706588385081740091">Паролі</translation>
+<translation id="8717864919010420084">Скопіювати посилання</translation>
 <translation id="8721297211384281569">Меню інструментів</translation>
 <translation id="8725066075913043281">Повторити спробу</translation>
 <translation id="8730621377337864115">Готово</translation>

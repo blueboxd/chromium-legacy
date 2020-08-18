@@ -3466,11 +3466,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kExperimentalFlingAnimationName,
      flag_descriptions::kExperimentalFlingAnimationDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kExperimentalFlingAnimation)},
-    {"per-method-can-make-payment-quota",
-     flag_descriptions::kPerMethodCanMakePaymentQuotaName,
-     flag_descriptions::kPerMethodCanMakePaymentQuotaDescription, kOsAll,
-     FEATURE_VALUE_TYPE(
-         payments::features::kWebPaymentsPerMethodCanMakePaymentQuota)},
     {"enable-web-payments-experimental-features",
      flag_descriptions::kWebPaymentsExperimentalFeaturesName,
      flag_descriptions::kWebPaymentsExperimentalFeaturesDescription, kOsAll,

@@ -20,7 +20,8 @@ namespace {
 
 // The list of prefs that are reset on the start of each kiosk session.
 const char* const kPrefsToReset[] = {"settings.accessibility",  // ChromeVox
-                                     "settings.a11y", "ash.docked_magnifier"};
+                                     "settings.a11y", "ash.docked_magnifier",
+                                     "settings.tts"};
 
 // This vector is used in tests when they want to replace |kPrefsToReset| with
 // their own list.

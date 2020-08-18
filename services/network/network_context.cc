@@ -391,9 +391,7 @@ NetworkContext::NetworkContext(
           std::make_unique<NetworkContextApplicationStatusListener>()),
 #endif
       receiver_(this, std::move(receiver)),
-      cors_preflight_controller_(
-          params_->cors_extra_safelisted_request_header_names,
-          network_service) {
+      cors_preflight_controller_(network_service) {
   mojo::PendingRemote<mojom::URLLoaderFactory>
       url_loader_factory_for_cert_net_fetcher;
   mojo::PendingReceiver<mojom::URLLoaderFactory>
@@ -464,7 +462,7 @@ NetworkContext::NetworkContext(
       socket_factory_(
           std::make_unique<SocketFactory>(url_request_context_->net_log(),
                                           url_request_context)),
-      cors_preflight_controller_(std::vector<std::string>(), network_service) {
+      cors_preflight_controller_(network_service) {
   // May be nullptr in tests.
   if (network_service_)
     network_service_->RegisterNetworkContext(this);
@@ -1413,15 +1411,6 @@ void NetworkContext::SetCorsOriginAccessListsForOrigin(
   cors_origin_access_list_.SetAllowListForOrigin(source_origin, allow_patterns);
   cors_origin_access_list_.SetBlockListForOrigin(source_origin, block_patterns);
   std::move(callback).Run();
-}
-
-void NetworkContext::SetCorsExtraSafelistedRequestHeaderNames(
-    const std::vector<std::string>&
-        cors_extra_safelisted_request_header_names) {
-  cors_preflight_controller_.set_extra_safelisted_header_names(
-      base::flat_set<std::string>(
-          cors_extra_safelisted_request_header_names.cbegin(),
-          cors_extra_safelisted_request_header_names.cend()));
 }
 
 void NetworkContext::AddHSTS(const std::string& host,

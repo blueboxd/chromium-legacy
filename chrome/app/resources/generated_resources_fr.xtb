@@ -17,7 +17,7 @@
 <translation id="1012876632442809908">Appareil USB de type C (port situé sur l'avant de l'appareil)</translation>
 <translation id="1013707859758800957">L'exécution hors bac à sable d'un plug-in a été autorisée sur cette page</translation>
 <translation id="1015318665228971643">Modifier le nom du dossier</translation>
-<translation id="1015578595646638936">{NUM_DAYS,plural, =1{Dernier jour pour mettre à jour cet <ph name="DEVICE_TYPE" />}one{Mettre à jour cet <ph name="DEVICE_TYPE" /> d'ici {NUM_DAYS} jour}other{Mettre à jour cet <ph name="DEVICE_TYPE" /> d'ici {NUM_DAYS} jours}}</translation>
+<translation id="1015578595646638936">{NUM_DAYS,plural, =1{Dernier jour pour mettre à jour ce <ph name="DEVICE_TYPE" />}one{Mettre à jour ce <ph name="DEVICE_TYPE" /> d'ici {NUM_DAYS} jour}other{Mettre à jour ce <ph name="DEVICE_TYPE" /> d'ici {NUM_DAYS} jours}}</translation>
 <translation id="1016437870506746108">{COUNT,plural, =0{Tout ouvrir dans une &amp;nouvelle fenêtre}=1{Ouvrir dans une &amp;nouvelle fenêtre}one{Tout ouvrir (#) dans une &amp;nouvelle fenêtre}other{Tout ouvrir (#) dans une &amp;nouvelle fenêtre}}</translation>
 <translation id="1016566241875885511">Informations supplémentaires (facultatif)</translation>
 <translation id="1017280919048282932">&amp;Ajouter au dictionnaire</translation>
@@ -48,11 +48,11 @@
 <translation id="1047431265488717055">Copier le te&amp;xte du lien</translation>
 <translation id="1048286738600630630">Affichage</translation>
 <translation id="1048986595386481879">Allouée dynamiquement</translation>
-<translation id="1049324577536766607">{COUNT,plural, =1{Réception de <ph name="ATTACHMENTS" /> depuis l'appareil "<ph name="DEVICE_NAME" />"}one{Réception de <ph name="ATTACHMENTS" /> depuis l'appareil "<ph name="DEVICE_NAME" />"}other{Réception de <ph name="ATTACHMENTS" /> depuis l'appareil "<ph name="DEVICE_NAME" />"}}</translation>
+<translation id="1049324577536766607">{COUNT,plural, =1{Réception de <ph name="ATTACHMENTS" /> de l'appareil "<ph name="DEVICE_NAME" />"}one{Réception de <ph name="ATTACHMENTS" /> de l'appareil "<ph name="DEVICE_NAME" />"}other{Réception de <ph name="ATTACHMENTS" /> de l'appareil "<ph name="DEVICE_NAME" />"}}</translation>
 <translation id="1049743911850919806">Navigation privée</translation>
 <translation id="1049795001945932310">&amp;Paramètres linguistiques</translation>
 <translation id="1054153489933238809">Ouvrir l'&amp;image originale dans un nouvel onglet</translation>
-<translation id="1055274863771110134">{NUM_WEEKS,plural, =1{Mettre à jour cet <ph name="DEVICE_TYPE" /> d'ici une semaine}one{Mettre à jour cet <ph name="DEVICE_TYPE" /> d'ici {NUM_WEEKS} semaine}other{Mettre à jour cet <ph name="DEVICE_TYPE" /> d'ici {NUM_WEEKS} semaines}}</translation>
+<translation id="1055274863771110134">{NUM_WEEKS,plural, =1{Mettre à jour ce <ph name="DEVICE_TYPE" /> d'ici une semaine}one{Mettre à jour ce <ph name="DEVICE_TYPE" /> d'ici {NUM_WEEKS} semaine}other{Mettre à jour ce <ph name="DEVICE_TYPE" /> d'ici {NUM_WEEKS} semaines}}</translation>
 <translation id="1055806300943943258">Recherche des périphériques Bluetooth et USB en cours…</translation>
 <translation id="1056466516655540509">Mis à jour il y a <ph name="MINUTES" /> min</translation>
 <translation id="1056775291175587022">Aucun réseau</translation>
@@ -143,7 +143,7 @@
 <translation id="1166212789817575481">Fermer les onglets sur la droite</translation>
 <translation id="1168020859489941584">Ouverture dans <ph name="TIME_REMAINING" />...</translation>
 <translation id="1168100932582989117">Serveurs de noms Google</translation>
-<translation id="1170288591054440704">Vous demander votre autorisation lorsqu'un site souhaite utiliser des polices installées sur votre appareil</translation>
+<translation id="1170288591054440704">Vous demander lorsqu'un site souhaite utiliser des polices installées sur votre appareil</translation>
 <translation id="1171135284592304528">Mettre en surbrillance l'objet sélectionné au clavier lorsqu'il change</translation>
 <translation id="1171515578268894665"><ph name="ORIGIN" /> tente de se connecter à un appareil HID</translation>
 <translation id="1172750555846831341">Retourner sur les bords courts</translation>
@@ -326,7 +326,7 @@
 <translation id="1386387014181100145">Bonjour</translation>
 <translation id="1386791642444521222">Activer une carte SIM physique</translation>
 <translation id="138784436342154190">Restaurer la page de démarrage par défaut ?</translation>
-<translation id="1388728792929436380">Cet <ph name="DEVICE_TYPE" /> va redémarrer lorsque les mises à jour seront installées.</translation>
+<translation id="1388728792929436380">Ce <ph name="DEVICE_TYPE" /> va redémarrer lorsque les mises à jour seront installées.</translation>
 <translation id="1390548061267426325">Ouvrir dans un onglet standard</translation>
 <translation id="1393283411312835250">Soleil et nuages</translation>
 <translation id="1395730723686586365">Processus de mise à jour lancé</translation>
@@ -1315,7 +1315,7 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="2553340429761841190"><ph name="PRODUCT_NAME" /> n'est pas parvenu à se connecter à <ph name="NETWORK_ID" />. Sélectionnez un autre réseau ou réessayez.</translation>
 <translation id="2553440850688409052">Masquer ce plug-in</translation>
 <translation id="2554553592469060349">Le fichier sélectionné est trop volumineux (taille maximale : 3 Mo).</translation>
-<translation id="2556820440303627606">{NUM_DAYS,plural, =1{<ph name="DOMAIN" /> vous demande de télécharger une mise à jour aujourd'hui. Cette mise à jour sera téléchargée automatiquement lorsque vous vous connecterez à Internet.}one{<ph name="DOMAIN" /> vous demande de télécharger une mise à jour avant la date limite. Cette mise à jour sera téléchargée automatiquement lorsque vous vous connecterez à Internet.}other{<ph name="DOMAIN" /> vous demande de télécharger des mises à jour avant la date limite. Ces mises à jour seront téléchargées automatiquement lorsque vous vous connecterez à Internet.}}</translation>
+<translation id="2556820440303627606">{NUM_DAYS,plural, =1{<ph name="DOMAIN" /> vous demande de télécharger une mise à jour aujourd'hui. Cette mise à jour sera téléchargée automatiquement lorsque vous vous connecterez à Internet.}one{<ph name="DOMAIN" /> vous demande de télécharger une mise à jour avant la date limite. Cette mise à jour sera téléchargée automatiquement lorsque vous vous connecterez à Internet.}other{<ph name="DOMAIN" /> vous demande de télécharger une mise à jour avant la date limite. Cette mise à jour sera téléchargée automatiquement lorsque vous vous connecterez à Internet.}}</translation>
 <translation id="2558896001721082624">Toujours afficher les options d'accessibilité dans le menu système</translation>
 <translation id="2562743677925229011">Vous n'êtes pas connecté à <ph name="SHORT_PRODUCT_NAME" />.</translation>
 <translation id="2564520396658920462">L'exécution de JavaScript via AppleScript est désactivée. Pour l'activer, dans la barre de menu, accédez à Affichage &gt; Développeur &gt; Autoriser JavaScript dans les événements AppleScript. Pour en savoir plus, consultez la page https://support.google.com/chrome/?p=applescript</translation>
@@ -1705,7 +1705,7 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="3029466929721441205">Afficher les outils de stylet sur l'étagère</translation>
 <translation id="3031417829280473749">Agent X</translation>
 <translation id="3031557471081358569">Sélectionnez les éléments à importer :</translation>
-<translation id="3036327949511794916">Le délai de retour de cet <ph name="DEVICE_TYPE" /> a expiré.</translation>
+<translation id="3036327949511794916">Le délai de retour de ce <ph name="DEVICE_TYPE" /> a expiré.</translation>
 <translation id="3036546437875325427">Activer Flash</translation>
 <translation id="3037754279345160234">Impossible d'analyser la configuration d'association de l'appareil au domaine. Veuillez contacter votre administrateur.</translation>
 <translation id="3038612606416062604">Ajouter une imprimante manuellement</translation>
@@ -2925,7 +2925,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4563210852471260509">Le chinois est la langue de saisie initiale</translation>
 <translation id="4563880231729913339">Doigt 3</translation>
 <translation id="4565377596337484307">Masquer le mot de passe</translation>
-<translation id="4565577809484439917">{NUM_DAYS,plural, =1{<ph name="DOMAIN" /> vous demande de sauvegarder vos données et de retourner cet <ph name="DEVICE_TYPE" /> aujourd'hui.}one{<ph name="DOMAIN" /> vous demande de sauvegarder vos données et de retourner cet <ph name="DEVICE_TYPE" /> avant la date limite.}other{<ph name="DOMAIN" /> vous demande de sauvegarder vos données et de retourner cet <ph name="DEVICE_TYPE" /> avant la date limite.}}</translation>
+<translation id="4565577809484439917">{NUM_DAYS,plural, =1{<ph name="DOMAIN" /> vous demande de sauvegarder vos données et de retourner ce <ph name="DEVICE_TYPE" /> aujourd'hui.}one{<ph name="DOMAIN" /> vous demande de sauvegarder vos données et de retourner ce <ph name="DEVICE_TYPE" /> avant la date limite.}other{<ph name="DOMAIN" /> vous demande de sauvegarder vos données et de retourner ce <ph name="DEVICE_TYPE" /> avant la date limite.}}</translation>
 <translation id="4565917129334815774">Stocker les journaux système</translation>
 <translation id="456717285308019641">Langue de la page à traduire</translation>
 <translation id="4567533462991917415">Vous pourrez toujours ajouter des utilisateurs une fois la configuration terminée. Chaque personne pourra personnaliser son compte et préserver la confidentialité de ses données.</translation>
@@ -2989,7 +2989,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4638930039313743000">Activer le débogage ADB</translation>
 <translation id="4641539339823703554">Impossible de définir l'heure du système. Veuillez vérifier l'heure ci-dessous et la corriger si nécessaire.</translation>
 <translation id="4643612240819915418">Ou&amp;vrir la vidéo dans un nouvel onglet</translation>
-<translation id="4645551927492192497">{NUM_DAYS,plural, =1{<ph name="DOMAIN" /> vous demande de vous connecter au Wi-Fi aujourd'hui afin de télécharger une mise à jour. Vous pouvez aussi la télécharger via une connexion facturée à l'usage (susceptible d'entraîner des frais supplémentaires).}one{<ph name="DOMAIN" /> vous demande de vous connecter au Wi-Fi pour télécharger une mise à jour avant la date limite. Vous pouvez aussi la télécharger via une connexion facturée à l'usage (susceptible d'entraîner des frais supplémentaires).}other{<ph name="DOMAIN" /> vous demande de vous connecter au Wi-Fi pour télécharger des mises à jour avant la date limite. Vous pouvez aussi les télécharger via une connexion facturée à l'usage (susceptible d'entraîner des frais supplémentaires).}}</translation>
+<translation id="4645551927492192497">{NUM_DAYS,plural, =1{<ph name="DOMAIN" /> vous demande de vous connecter au Wi-Fi aujourd'hui afin de télécharger une mise à jour. Vous pouvez aussi la télécharger via une connexion facturée à l'usage (susceptible d'entraîner des frais supplémentaires).}one{<ph name="DOMAIN" /> vous demande de vous connecter au Wi-Fi pour télécharger une mise à jour avant la date limite. Vous pouvez aussi la télécharger via une connexion facturée à l'usage (susceptible d'entraîner des frais supplémentaires).}other{<ph name="DOMAIN" /> vous demande de vous connecter au Wi-Fi pour télécharger une mise à jour avant la date limite. Vous pouvez aussi la télécharger via une connexion facturée à l'usage (susceptible d'entraîner des frais supplémentaires).}}</translation>
 <translation id="4645676300727003670">&amp;Conserver</translation>
 <translation id="4646675363240786305">Ports</translation>
 <translation id="4646949265910132906">Connexion Wi-Fi sécurisée</translation>
@@ -3128,7 +3128,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4842976633412754305">Cette page tente de charger des scripts à partir de sources non authentifiées.</translation>
 <translation id="4844333629810439236">Autres claviers</translation>
 <translation id="4846680374085650406">Vous suivez la recommandation de l'administrateur pour ce paramètre.</translation>
-<translation id="4847902821209177679">Source <ph name="TOPIC_SOURCE" /> - <ph name="TOPIC_SOURCE_DESC" /> sélectionnée (appuyez sur Entrée pour sélectionner des albums dans <ph name="TOPIC_SOURCE" />)</translation>
+<translation id="4847902821209177679">Source <ph name="TOPIC_SOURCE" /> (<ph name="TOPIC_SOURCE_DESC" />) sélectionnée, appuyez sur Entrée pour sélectionner des albums dans <ph name="TOPIC_SOURCE" /></translation>
 <translation id="4848191975108266266">Assistant Google "Ok Google"</translation>
 <translation id="4848518990323155912">Activer le verrouillage de la carte SIM (code obligatoire pour utiliser les données mobiles)</translation>
 <translation id="4849286518551984791">Temps universel coordonné (UTC/GMT)</translation>
@@ -3386,7 +3386,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="5159419673777902220">Tes parents ont bloqué les autorisations liées aux extensions</translation>
 <translation id="5160634252433617617">Clavier physique</translation>
 <translation id="5160857336552977725">Connectez-vous à votre <ph name="DEVICE_TYPE" />.</translation>
-<translation id="5162905305237671850">Cet <ph name="DEVICE_TYPE" /> a été bloqué</translation>
+<translation id="5162905305237671850">Ce <ph name="DEVICE_TYPE" /> a été bloqué</translation>
 <translation id="5166596762332123936">Le plug-in <ph name="PLUGIN_NAME" /> a été bloqué, car il est obsolète</translation>
 <translation id="5170568018924773124">Afficher le dossier</translation>
 <translation id="5171045022955879922">Rechercher ou saisir une URL</translation>
@@ -3656,7 +3656,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="5499313591153584299">Ce fichier peut être néfaste pour votre ordinateur.</translation>
 <translation id="5499453227627332024">Une mise à niveau est disponible pour le conteneur Linux. Sachez que vous pouvez également effectuer cette mise à niveau plus tard depuis l'application "Paramètres".</translation>
 <translation id="5500709606820808700">Contrôle de sécurité effectué aujourd'hui</translation>
-<translation id="5501809658163361512">{COUNT,plural, =1{Échec de la réception de <ph name="ATTACHMENTS" /> provenant de l'appareil "<ph name="DEVICE_NAME" />"}one{Échec de la réception de <ph name="ATTACHMENTS" /> provenant de l'appareil "<ph name="DEVICE_NAME" />"}other{Échec de la réception de <ph name="ATTACHMENTS" /> provenant de l'appareil "<ph name="DEVICE_NAME" />"}}</translation>
+<translation id="5501809658163361512">{COUNT,plural, =1{Échec de la réception de <ph name="ATTACHMENTS" /> de l'appareil "<ph name="DEVICE_NAME" />"}one{Échec de la réception de <ph name="ATTACHMENTS" /> de l'appareil "<ph name="DEVICE_NAME" />"}other{Échec de la réception de <ph name="ATTACHMENTS" /> de l'appareil "<ph name="DEVICE_NAME" />"}}</translation>
 <translation id="5502500733115278303">Importés depuis Firefox</translation>
 <translation id="5503982651688210506">Continuer d'autoriser <ph name="HOST" /> à utiliser et bouger la caméra, et à utiliser le micro</translation>
 <translation id="5505264765875738116">Les sites ne peuvent pas vous demander l'autorisation d'envoyer des notifications</translation>
@@ -4407,7 +4407,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="642469772702851743">Le propriétaire de cet appareil (n° de série : <ph name="SERIAL_NUMBER" />) l'a verrouillé.</translation>
 <translation id="6425556984042222041">Débit de la voix de la synthèse vocale</translation>
 <translation id="6426200009596957090">Ouvrir les paramètres ChromeVox</translation>
-<translation id="642654727595919401"><ph name="DOMAIN" /> vous demande de sauvegarder vos données et de retourner cet <ph name="DEVICE_TYPE" /> sous une semaine. <ph name="LINK_BEGIN" />En savoir plus<ph name="LINK_END" /></translation>
+<translation id="642654727595919401"><ph name="DOMAIN" /> vous demande de sauvegarder vos données et de retourner ce <ph name="DEVICE_TYPE" /> sous une semaine. <ph name="LINK_BEGIN" />En savoir plus<ph name="LINK_END" /></translation>
 <translation id="6428982734197629783">Traitement de l'image en cours</translation>
 <translation id="6429384232893414837">Erreur de mise à jour</translation>
 <translation id="6430814529589430811">Certificat unique codé Base 64 ASCII</translation>
@@ -5218,7 +5218,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7456847797759667638">Ouvrir une adresse</translation>
 <translation id="7458168200501453431">Utilise le même correcteur orthographique que celui utilisé dans la recherche Google. Le texte que vous saisissez dans le navigateur est envoyé à Google.</translation>
 <translation id="7460045493116006516">Thème actuel que vous avez installé</translation>
-<translation id="7461729991508684543">{NUM_DAYS,plural, =1{<ph name="DOMAIN" /> vous demande de sauvegarder vos données et de retourner cet <ph name="DEVICE_TYPE" /> aujourd'hui. <ph name="LINK_BEGIN" />En savoir plus<ph name="LINK_END" />}one{<ph name="DOMAIN" /> vous demande de sauvegarder vos données et de retourner cet <ph name="DEVICE_TYPE" /> sous {NUM_DAYS} jour. <ph name="LINK_BEGIN" />En savoir plus<ph name="LINK_END" />}other{<ph name="DOMAIN" /> vous demande de sauvegarder vos données et de retourner cet <ph name="DEVICE_TYPE" /> sous {NUM_DAYS} jours. <ph name="LINK_BEGIN" />En savoir plus<ph name="LINK_END" />}}</translation>
+<translation id="7461729991508684543">{NUM_DAYS,plural, =1{<ph name="DOMAIN" /> vous demande de sauvegarder vos données et de retourner ce <ph name="DEVICE_TYPE" /> aujourd'hui. <ph name="LINK_BEGIN" />En savoir plus<ph name="LINK_END" />}one{<ph name="DOMAIN" /> vous demande de sauvegarder vos données et de retourner ce <ph name="DEVICE_TYPE" /> sous {NUM_DAYS} jour. <ph name="LINK_BEGIN" />En savoir plus<ph name="LINK_END" />}other{<ph name="DOMAIN" /> vous demande de sauvegarder vos données et de retourner ce <ph name="DEVICE_TYPE" /> sous {NUM_DAYS} jours. <ph name="LINK_BEGIN" />En savoir plus<ph name="LINK_END" />}}</translation>
 <translation id="7461924472993315131">Épingler</translation>
 <translation id="746216226901520237">La prochaine fois, votre téléphone déverrouillera votre <ph name="DEVICE_TYPE" />. Vous pouvez désactiver Smart Lock dans les paramètres.</translation>
 <translation id="7463006580194749499">Ajouter une personne</translation>
@@ -5229,7 +5229,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="747114903913869239">Erreur : impossible de décoder l'extension.</translation>
 <translation id="7473891865547856676">Non, merci</translation>
 <translation id="747459581954555080">Tout restaurer</translation>
-<translation id="747507174130726364">{NUM_DAYS,plural, =1{Retour immédiat requis}one{Retourner l’<ph name="DEVICE_TYPE" /> sous {NUM_DAYS} jour}other{Retourner l’<ph name="DEVICE_TYPE" /> sous {NUM_DAYS} jours}}</translation>
+<translation id="747507174130726364">{NUM_DAYS,plural, =1{Retour immédiat requis}one{Retourner le <ph name="DEVICE_TYPE" /> sous {NUM_DAYS} jour}other{Retourner le <ph name="DEVICE_TYPE" /> sous {NUM_DAYS} jours}}</translation>
 <translation id="7475671414023905704">URL de mot de passe perdu Netscape</translation>
 <translation id="7476454130948140105">Batterie trop faible pour la mise à jour (<ph name="BATTERY_PERCENT" /> %)</translation>
 <translation id="7477793887173910789">Contrôler votre musique, vos vidéos et d'autres contenus</translation>
@@ -5381,7 +5381,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7664620655576155379">Appareil Bluetooth non compatible : "<ph name="DEVICE_NAME" />"</translation>
 <translation id="7665082356120621510">Conserver la taille</translation>
 <translation id="7665369617277396874">Ajouter un compte</translation>
-<translation id="7668002322287525834">{NUM_WEEKS,plural, =1{Retourner cet <ph name="DEVICE_TYPE" /> sous {NUM_WEEKS} semaine}one{Retourner cet <ph name="DEVICE_TYPE" /> sous {NUM_WEEKS} semaine}other{Retourner cet <ph name="DEVICE_TYPE" /> sous {NUM_WEEKS} semaines}}</translation>
+<translation id="7668002322287525834">{NUM_WEEKS,plural, =1{Retourner ce <ph name="DEVICE_TYPE" /> sous {NUM_WEEKS} semaine}one{Retourner ce <ph name="DEVICE_TYPE" /> sous {NUM_WEEKS} semaine}other{Retourner ce <ph name="DEVICE_TYPE" /> sous {NUM_WEEKS} semaines}}</translation>
 <translation id="7669825497510425694">{NUM_ATTEMPTS,plural, =1{Code incorrect. Il vous reste une tentative.}one{Code incorrect. Il vous reste # tentative.}other{Code incorrect. Il vous reste # tentatives.}}</translation>
 <translation id="7671130400130574146">Utiliser la barre de titre et les bordures de fenêtre du système</translation>
 <translation id="767127784612208024">Appuyez pour confirmer la réinitialisation</translation>
@@ -5703,7 +5703,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8028060951694135607">Récupération de clé Microsoft</translation>
 <translation id="8028803902702117856">Téléchargement en cours : <ph name="SIZE" />, <ph name="FILE_NAME" /></translation>
 <translation id="8028993641010258682">Taille</translation>
-<translation id="8030656706657716245">Ajouter une imprimante</translation>
 <translation id="8030852056903932865">Approuver</translation>
 <translation id="8032244173881942855">Impossible de caster l'onglet.</translation>
 <translation id="8033827949643255796">sélectionné</translation>

@@ -116,7 +116,7 @@
 <translation id="5416696090975899932">Chromium tidak dapat memaparkan pratonton cetakan apabila alat lihat PDF terbina dalam tiada.</translation>
 <translation id="5427571867875391349">Tetapkan Chromium sebagai penyemak imbas lalai anda</translation>
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> - Chromium Beta</translation>
-<translation id="544968170749360982">Anda dilog masuk dengan akaun baharu di ruang <ph name="EXISTING_USER" />. Adakah anda mahu membuat ruang Chromium baharu untuk <ph name="NEW_USER" /> untuk mengasingkan data anda?</translation>
+<translation id="544968170749360982">Anda dilog masuk dengan akaun baharu di ruang <ph name="EXISTING_USER" />. Adakah anda mahu membuat ruang Chromium baharu untuk <ph name="NEW_USER" /> supaya data anda diasingkan?</translation>
 <translation id="5479196819031988440">OS Chromium tidak boleh membuka halaman ini.</translation>
 <translation id="5480860683791598150">Chromium memerlukan akses kepada lokasi anda untuk berkongsi lokasi dengan tapak ini</translation>
 <translation id="549669000822060376">Sila tunggu sementara Chromium memasang kemas kini sistem terkini.</translation>
@@ -139,7 +139,7 @@
 <translation id="608189560609172163">Chromium tidak dapat menyegerakkan data anda disebabkan ralat melog masuk.</translation>
 <translation id="6096348254544841612">Sesuaikan dan kawal Chromium. Kemas kini tersedia.</translation>
 <translation id="6120345080069858279">Chromium akan menyimpan kata laluan ini dalam Akaun Google anda. Anda tidak perlu mengingati kata laluan tersebut.</translation>
-<translation id="6128834065531097268">Anda dilog masuk dengan akaun Kerja di ruang <ph name="EXISTING_USER" />. Adakah anda mahu membuat ruang Chromium baharu untuk <ph name="WORK_DOMAIN" /> untuk mengasingkan data anda?</translation>
+<translation id="6128834065531097268">Anda dilog masuk dengan akaun Kerja di ruang <ph name="EXISTING_USER" />. Adakah anda mahu membuat ruang Chromium baharu untuk <ph name="WORK_DOMAIN" /> supaya data anda diasingkan?</translation>
 <translation id="6129621093834146363"><ph name="FILE_NAME" /> berbahaya, jadi Chromium telah menyekat fail itu.</translation>
 <translation id="6134968993075716475">Penyemakan Imbas Selamat dimatikan. Chromium mengesyorkan agar ciri ini dihidupkan.</translation>
 <translation id="6212496753309875659">Komputer ini telah mempunyai versi Chromium yang lebih baharu. Jika perisian tidak berfungsi, sila nyahpasang Chromium dan cuba lagi.</translation>
@@ -201,7 +201,7 @@ Chromium tidak dapat mengembalikan tetapan anda.</translation>
 <translation id="7561906087460245826">Kosongkan data daripada Chromium (<ph name="URL" />) juga</translation>
 <translation id="7585853947355360626">Jika tetapan tidak ditunjukkan pada halaman ini, lihat dalam <ph name="LINK_BEGIN" />
       tetapan OS Chromium anda<ph name="LINK_END" /></translation>
-<translation id="7607142834923530546">Anda dilog masuk dengan akaun kerja. Adakah anda mahu membuat ruang Chromium baharu untuk <ph name="NEW_USER" /> untuk mengasingkan data peribadi anda?</translation>
+<translation id="7607142834923530546">Anda dilog masuk dengan akaun kerja. Adakah anda mahu membuat ruang Chromium baharu untuk <ph name="NEW_USER" /> supaya data peribadi anda diasingkan?</translation>
 <translation id="761356813943268536">Chromium menggunakan kamera dan mikrofon anda.</translation>
 <translation id="7617377681829253106">Chromium kini lebih baik</translation>
 <translation id="7628001322379820951">Chromium menemukan perisian berbahaya pada komputer anda</translation>

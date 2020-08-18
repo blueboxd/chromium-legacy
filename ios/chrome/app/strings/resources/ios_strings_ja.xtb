@@ -338,6 +338,7 @@
 <translation id="4881695831933465202">開く</translation>
 <translation id="4901778704868714008">保存...</translation>
 <translation id="4904877109095351937">既読にする</translation>
+<translation id="4908869848243824489">Discover by Google</translation>
 <translation id="4930268273022498155">既存のデータを削除します。<ph name="USER_EMAIL1" /> に切り替えると、削除したデータを取得できます。</translation>
 <translation id="4930714375720679147">ON にする</translation>
 <translation id="4941089862236492464">アイテムの共有中に問題が発生しました。</translation>
@@ -441,6 +442,7 @@
 <translation id="6125339936101702016"><ph name="COMPANY" /> によって管理されています。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="6127379762771434464">アイテムを削除しました</translation>
 <translation id="6136914049981179737">数秒前</translation>
+<translation id="6144589619057374135">${url} をシークレット モードで開く</translation>
 <translation id="616831107264507309">後で読む</translation>
 <translation id="6177442314419606057">Chrome で検索</translation>
 <translation id="6184086493125982861">タブを表示</translation>
@@ -554,6 +556,7 @@
 <translation id="7293171162284876153">同期を開始するには、[Chrome データを同期] をオンにしてください。</translation>
 <translation id="7313347584264171202">シークレット タブはここに表示されます</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" />%ダウンロード</translation>
+<translation id="7340958967809483333">Discover のオプション</translation>
 <translation id="7346909386216857016">OK</translation>
 <translation id="734758817008927353">カードの保存オプション</translation>
 <translation id="7348502496356775519">ブックマーク</translation>
@@ -665,6 +668,7 @@
 <translation id="8668210798914567634">このページはリーディング リストに保存されています。</translation>
 <translation id="8680787084697685621">アカウントのログイン情報が古くなっています。</translation>
 <translation id="8706588385081740091">パスワード</translation>
+<translation id="8717864919010420084">リンクをコピー</translation>
 <translation id="8721297211384281569">ツールメニュー</translation>
 <translation id="8725066075913043281">やり直し</translation>
 <translation id="8730621377337864115">完了</translation>

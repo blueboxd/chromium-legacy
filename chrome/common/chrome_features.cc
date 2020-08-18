@@ -413,16 +413,6 @@ const base::Feature kHeavyAdInterventionWarning{
 const base::Feature kHeavyAdPrivacyMitigations{
     "HeavyAdPrivacyMitigations", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Hide CorsLegacyModeEnabled enterprise policy support. This feature and
-// the enterprise policy supporting code will be removed at m84.
-const base::Feature kHideCorsLegacyModeEnabledPolicySupport{
-    "HideCorsLegacyModeEnabledPolicySupport", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Hide CorsMitigationList enterprise policy support. This feature and
-// the enterprise policy supporting code will be removed at m84.
-const base::Feature kHideCorsMitigationListPolicySupport{
-    "HideCorsMitigationListPolicySupport", base::FEATURE_ENABLED_BY_DEFAULT};
-
 #if defined(OS_MAC)
 const base::Feature kImmersiveFullscreen{"ImmersiveFullscreen",
                                          base::FEATURE_DISABLED_BY_DEFAULT};

@@ -196,6 +196,11 @@ class NetworkHandler : public DevToolsDomainHandler,
       const base::Optional<net::SSLInfo>& ssl_info,
       const std::vector<SignedExchangeError>& errors);
 
+  DispatchResponse GetSecurityIsolationStatus(
+      Maybe<String> in_frameId,
+      std::unique_ptr<protocol::Network::SecurityIsolationStatus>* out_info)
+      override;
+
   void OnRequestWillBeSentExtraInfo(
       const std::string& devtools_request_id,
       const net::CookieAccessResultList& request_cookie_list,

@@ -4,11 +4,20 @@
 
 package org.chromium.chrome.browser.password_check;
 
+import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.ViewMatchers.isEnabled;
+import static androidx.test.espresso.matcher.ViewMatchers.withId;
+
 import static junit.framework.Assert.assertTrue;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 
 import static org.chromium.chrome.browser.password_check.PasswordCheckEditFragmentView.EXTRA_COMPROMISED_CREDENTIAL;
 import static org.chromium.chrome.browser.password_check.PasswordCheckEditFragmentView.EXTRA_NEW_PASSWORD;
@@ -19,18 +28,24 @@ import android.os.Bundle;
 import android.text.InputType;
 import android.widget.EditText;
 
+import androidx.annotation.StringRes;
 import androidx.test.filters.MediumTest;
+
+import com.google.android.material.textfield.TextInputLayout;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.url.GURL;
 
 /**
@@ -38,6 +53,7 @@ import org.chromium.url.GURL;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+@EnableFeatures({ChromeFeatureList.PASSWORD_CHECK})
 public class PasswordCheckEditViewTest {
     private static final CompromisedCredential ANA =
             new CompromisedCredential("https://some-url.com/signin",
@@ -50,17 +66,22 @@ public class PasswordCheckEditViewTest {
     public SettingsActivityTestRule<PasswordCheckEditFragmentView> mTestRule =
             new SettingsActivityTestRule<>(PasswordCheckEditFragmentView.class);
 
+    @Mock
+    private PasswordCheck mPasswordCheck;
+
     @Before
     public void setUp() throws InterruptedException {
         MockitoAnnotations.initMocks(this);
+        PasswordCheckFactory.setPasswordCheckForTesting(mPasswordCheck);
         setUpUiLaunchedFromSettings();
+
+        pollUiThread(() -> mPasswordCheckEditView != null);
+        mPasswordCheckEditView.setCheckProvider(PasswordCheckFactory::getOrCreate);
     }
 
     @Test
     @MediumTest
     public void testLoadsCredential() {
-        pollUiThread(() -> mPasswordCheckEditView != null);
-
         EditText origin = mPasswordCheckEditView.getView().findViewById(R.id.site_edit);
         assertNotNull(origin);
         assertNotNull(origin.getText());
@@ -84,8 +105,6 @@ public class PasswordCheckEditViewTest {
     @Test
     @MediumTest
     public void testSavesCredentialAndChangedPasswordInBundle() {
-        pollUiThread(() -> mPasswordCheckEditView != null);
-
         // Change the password.
         final String newPassword = "NewPassword";
         EditText password = mPasswordCheckEditView.getView().findViewById(R.id.password_edit);
@@ -103,10 +122,43 @@ public class PasswordCheckEditViewTest {
         assertThat(bundle.getString(EXTRA_NEW_PASSWORD), equalTo(newPassword));
     }
 
+    @Test
+    @MediumTest
+    public void testTriggersSendingNewPasswordForCredential() {
+        // Change the password.
+        final String newPassword = "NewPassword";
+        EditText password = mPasswordCheckEditView.getView().findViewById(R.id.password_edit);
+        assertNotNull(password);
+        runOnUiThreadBlocking(() -> password.setText(newPassword));
+
+        onView(withId(R.id.action_save_edited_password)).perform(click());
+
+        verify(mPasswordCheck).updateCredential(eq(ANA), eq(newPassword));
+    }
+
+    @Test
+    @MediumTest
+    public void testEmptyPasswordDisablesSaveButton() {
+        // Delete the password.
+        EditText password = mPasswordCheckEditView.getView().findViewById(R.id.password_edit);
+        runOnUiThreadBlocking(() -> password.setText(""));
+
+        onView(withId(R.id.action_save_edited_password)).check(matches(not(isEnabled())));
+        TextInputLayout passwordLabel =
+                mPasswordCheckEditView.getView().findViewById(R.id.password_label);
+        assertNotNull(passwordLabel.getError());
+        assertThat(passwordLabel.getError().toString(),
+                equalTo(getString(R.string.pref_edit_dialog_field_required_validation_message)));
+    }
+
     private void setUpUiLaunchedFromSettings() {
         Bundle fragmentArgs = new Bundle();
         fragmentArgs.putParcelable(EXTRA_COMPROMISED_CREDENTIAL, ANA);
         mTestRule.startSettingsActivity(fragmentArgs);
         mPasswordCheckEditView = mTestRule.getFragment();
+    }
+
+    private String getString(@StringRes int stringId) {
+        return mPasswordCheckEditView.getContext().getString(stringId);
     }
 }

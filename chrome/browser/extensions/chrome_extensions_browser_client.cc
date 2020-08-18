@@ -550,21 +550,6 @@ bool ChromeExtensionsBrowserClient::ShouldSchemeBypassNavigationChecks(
   return ExtensionsBrowserClient::ShouldSchemeBypassNavigationChecks(scheme);
 }
 
-bool ChromeExtensionsBrowserClient::ShouldForceWebRequestExtraHeaders(
-    content::BrowserContext* context) const {
-  // If OOR-CORS is disabled, we never apply this enforcement.
-  if (!context->ShouldEnableOutOfBlinkCors())
-    return false;
-
-  // Enables the enforcement if the prefs is managed by the enterprise policy.
-  bool apply_cors_mitigation_list =
-      !base::FeatureList::IsEnabled(
-          features::kHideCorsMitigationListPolicySupport) &&
-      Profile::FromBrowserContext(context)->GetPrefs()->IsManagedPreference(
-          prefs::kCorsMitigationList);
-  return apply_cors_mitigation_list;
-}
-
 base::FilePath ChromeExtensionsBrowserClient::GetSaveFilePath(
     content::BrowserContext* context) {
   DownloadPrefs* download_prefs = DownloadPrefs::FromBrowserContext(context);

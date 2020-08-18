@@ -60,7 +60,13 @@ VideoEncoderStats::VideoEncoderStats(uint32_t framerate)
 uint32_t VideoEncoderStats::Bitrate() const {
   const size_t average_frame_size_in_bits =
       total_encoded_frames_size * 8 / num_encoded_frames;
-  return average_frame_size_in_bits * framerate;
+  const uint32_t average_bitrate = average_frame_size_in_bits * framerate;
+  VLOGF(2) << "encoded_frames=" << num_encoded_frames
+           << ", framerate=" << framerate
+           << ", total_encoded_frames_size=" << total_encoded_frames_size
+           << ", average_frame_size_in_bits=" << average_frame_size_in_bits
+           << ", average bitrate=" << average_bitrate;
+  return average_bitrate;
 }
 
 void VideoEncoderStats::Reset() {
@@ -253,6 +259,8 @@ void VideoEncoderClient::BitstreamBufferReady(
     int32_t bitstream_buffer_id,
     const BitstreamBufferMetadata& metadata) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(encoder_client_sequence_checker_);
+  DVLOGF(4) << "frame_index=" << frame_index_
+            << ", encoded image size=" << metadata.payload_size_bytes;
   {
     base::AutoLock auto_lock(stats_lock_);
     current_stats_.num_encoded_frames++;

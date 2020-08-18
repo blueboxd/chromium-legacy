@@ -338,6 +338,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="4881695831933465202">Open</translation>
 <translation id="4901778704868714008">Save...</translation>
 <translation id="4904877109095351937">Mark Read</translation>
+<translation id="4908869848243824489">Discover by Google</translation>
 <translation id="4930268273022498155">Delete existing data. You can retrieve it by switching back to <ph name="USER_EMAIL1" />.</translation>
 <translation id="4930714375720679147">Turn On</translation>
 <translation id="4941089862236492464">Sorry, there was a problem sharing your item.</translation>
@@ -441,6 +442,7 @@ Handoff must also be enabled in the General section of Settings, and your device
 <translation id="6125339936101702016">Managed by <ph name="COMPANY" />. <ph name="BEGIN_LINK" />Learn more<ph name="END_LINK" /></translation>
 <translation id="6127379762771434464">Item removed</translation>
 <translation id="6136914049981179737">Seconds ago</translation>
+<translation id="6144589619057374135">Open ${url} in Incognito</translation>
 <translation id="616831107264507309">Read Later</translation>
 <translation id="6177442314419606057">Search in Chrome</translation>
 <translation id="6184086493125982861">Show Tabs</translation>
@@ -554,6 +556,7 @@ Sites can't use cookies to see your browsing activity across different sites, fo
 <translation id="7293171162284876153">To start sync, turn on 'Sync your Chrome data'.</translation>
 <translation id="7313347584264171202">You'll find your Incognito tabs here</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> percent downloaded</translation>
+<translation id="7340958967809483333">Options for Discover</translation>
 <translation id="7346909386216857016">OK, got it</translation>
 <translation id="734758817008927353">Options to save card</translation>
 <translation id="7348502496356775519">Bookmark</translation>
@@ -665,6 +668,7 @@ Sites can use cookies to see your browsing activity across different sites, for 
 <translation id="8668210798914567634">This page has been saved to your Reading List.</translation>
 <translation id="8680787084697685621">Account sign-in details are out of date.</translation>
 <translation id="8706588385081740091">Passwords</translation>
+<translation id="8717864919010420084">Copy link</translation>
 <translation id="8721297211384281569">Tools Menu</translation>
 <translation id="8725066075913043281">Try again</translation>
 <translation id="8730621377337864115">Done</translation>

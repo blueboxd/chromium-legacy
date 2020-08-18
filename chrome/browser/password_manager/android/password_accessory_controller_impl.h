@@ -28,6 +28,7 @@ class ContentPasswordManagerDriver;
 }  // namespace password_manager
 
 class ManualFillingController;
+class AllPasswordsBottomSheetController;
 
 // Use either PasswordAccessoryController::GetOrCreate or
 // PasswordAccessoryController::GetIfExisting to obtain instances of this class.
@@ -103,7 +104,14 @@ class PasswordAccessoryControllerImpl
   // |web_contents_|. The lazy initialization allows injecting mocks for tests.
   base::WeakPtr<ManualFillingController> GetManualFillingController();
 
+  // Instructs |AllPasswordsBottomSheetController| to show all passwords.
+  void ShowAllPasswords();
+
   url::Origin GetFocusedFrameOrigin() const;
+
+  // Called From |AllPasswordsBottomSheetController| when
+  // the Bottom Sheet view is destroyed.
+  void AllPasswordsSheetDismissed();
 
   // ------------------------------------------------------------------------
   // Members - Make sure to NEVER store state related to a single frame here!
@@ -121,6 +129,11 @@ class PasswordAccessoryControllerImpl
   // The password manager client is used to update the save passwords status
   // for the currently focused origin.
   password_manager::PasswordManagerClient* password_client_ = nullptr;
+
+  // Controller for the all passwords bottom sheet. Created on demand during the
+  // first call to |ShowAllPasswords()|.
+  std::unique_ptr<AllPasswordsBottomSheetController>
+      all_passords_bottom_sheet_controller_;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

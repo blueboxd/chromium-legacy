@@ -171,6 +171,9 @@ void MetricsReporter::ContentSliceViewed(SurfaceId surface_id,
                                          int index_in_stream) {
   base::UmaHistogramExactLinear("NewTabPage.ContentSuggestions.Shown",
                                 index_in_stream, kMaxSuggestionsTotal);
+}
+
+void MetricsReporter::FeedViewed(SurfaceId surface_id) {
   if (load_latencies_) {
     load_latencies_->StepComplete(LoadLatencyTimes::kStreamViewed);
 
@@ -291,7 +294,6 @@ void MetricsReporter::EphemeralStreamChangeRejected() {
 
 void MetricsReporter::SurfaceOpened(SurfaceId surface_id) {
   ReportPersistentDataIfDayIsDone();
-
   surfaces_waiting_for_content_.emplace(surface_id, clock_->NowTicks());
   ReportUserActionHistogram(FeedUserActionType::kOpenedFeedSurface);
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
@@ -327,6 +329,7 @@ void MetricsReporter::ReportOpenFeedIfNeeded(SurfaceId surface_id,
     return;
   base::TimeDelta latency = clock_->NowTicks() - iter->second;
   surfaces_waiting_for_content_.erase(iter);
+
   if (success) {
     base::UmaHistogramCustomTimes(
         "ContentSuggestions.Feed.UserJourney.OpenFeed.SuccessDuration", latency,

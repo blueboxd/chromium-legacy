@@ -333,7 +333,6 @@ class GPU_GLES2_EXPORT SharedContextState
   base::MRUCache<void*, sk_sp<SkSurface>> sk_surface_cache_;
 
   bool device_needs_reset_ = false;
-  bool context_lost_by_robustness_extension = false;
   base::Time last_gl_check_graphics_reset_status_;
   bool disable_check_reset_status_throttling_for_test_ = false;
 

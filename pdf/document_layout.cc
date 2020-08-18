@@ -11,6 +11,7 @@
 #include "ppapi/cpp/rect.h"
 #include "ppapi/cpp/var.h"
 #include "ppapi/cpp/var_dictionary.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace chrome_pdf {

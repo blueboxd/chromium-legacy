@@ -9,7 +9,9 @@
 #include "base/android/jni_string.h"
 #include "chrome/browser/password_check/android/jni_headers/CompromisedCredential_jni.h"
 #include "chrome/browser/password_check/android/jni_headers/PasswordCheckBridge_jni.h"
+#include "chrome/browser/password_manager/android/password_checkup_launcher_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/ui/compromised_credentials_manager.h"
 #include "url/android/gurl_android.h"
 
@@ -87,6 +89,16 @@ void PasswordCheckBridge::GetCompromisedCredentials(
          password_manager::CompromiseTypeFlags::kCredentialPhished),
         credential.has_script);
   }
+}
+
+void PasswordCheckBridge::LaunchCheckupInAccount(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& activity) {
+  PasswordCheckupLauncherHelper::LaunchCheckupInAccountWithActivity(
+      env,
+      base::android::ConvertUTF8ToJavaString(
+          env, password_manager::GetPasswordCheckupURL().spec()),
+      activity);
 }
 
 void PasswordCheckBridge::UpdateCredential(

@@ -101,18 +101,18 @@ static bool ParseVp9CodecID(const std::string& mime_type_lower_case,
                             VideoCodecProfile* out_profile,
                             uint8_t* out_level,
                             VideoColorSpace* out_color_space) {
-  if (mime_type_lower_case == "video/mp4") {
-    // Only new style is allowed for mp4.
-    return ParseNewStyleVp9CodecID(codec_id, out_profile, out_level,
-                                   out_color_space);
-  } else if (mime_type_lower_case == "video/webm") {
-    if (ParseNewStyleVp9CodecID(codec_id, out_profile, out_level,
-                                out_color_space)) {
-      return true;
-    }
-
-    return ParseLegacyVp9CodecID(codec_id, out_profile, out_level);
+  if (ParseNewStyleVp9CodecID(codec_id, out_profile, out_level,
+                              out_color_space)) {
+    // New style (e.g. vp09.00.10.08) is accepted with any mime type (including
+    // empty mime type).
+    return true;
   }
+
+  // Legacy style (e.g. "vp9") is ambiguous about codec profile, and is only
+  // valid with video/webm for legacy reasons.
+  if (mime_type_lower_case == "video/webm")
+    return ParseLegacyVp9CodecID(codec_id, out_profile, out_level);
+
   return false;
 }
 
@@ -453,8 +453,9 @@ bool MimeUtil::ParseVideoCodecString(const std::string& mime_type,
 
   if (!ParseCodecStrings(base::ToLowerASCII(mime_type), codec_strings,
                          &parsed_results)) {
-    DVLOG(3) << __func__ << " Failed to parse mime/codec pair:" << mime_type
-             << "; " << codec_id;
+    DVLOG(3) << __func__ << " Failed to parse mime/codec pair: "
+             << (mime_type.empty() ? "<empty mime>" : mime_type) << "; "
+             << codec_id;
     return false;
   }
 
@@ -489,8 +490,9 @@ bool MimeUtil::ParseAudioCodecString(const std::string& mime_type,
 
   if (!ParseCodecStrings(base::ToLowerASCII(mime_type), codec_strings,
                          &parsed_results)) {
-    DVLOG(3) << __func__ << " Failed to parse mime/codec pair:" << mime_type
-             << "; " << codec_id;
+    DVLOG(3) << __func__ << " Failed to parse mime/codec pair:"
+             << (mime_type.empty() ? "<empty mime>" : mime_type) << "; "
+             << codec_id;
     return false;
   }
 
@@ -670,46 +672,57 @@ bool MimeUtil::ParseCodecStrings(
     std::vector<ParsedCodecResult>* out_results) const {
   DCHECK(out_results);
 
-  // Reject unrecognized mime types.
-  auto it_media_format_map = media_format_map_.find(mime_type_lower_case);
-  if (it_media_format_map == media_format_map_.end()) {
-    DVLOG(3) << __func__ << " Unrecognized mime type: " << mime_type_lower_case;
+  // Nothing to parse.
+  if (mime_type_lower_case.empty() && codecs.empty())
     return false;
-  }
 
-  const CodecSet& valid_codecs = it_media_format_map->second;
-  if (valid_codecs.empty()) {
-    // We get here if the mimetype does not expect a codecs parameter.
-    if (!codecs.empty()) {
+  // When mime type is provided, it may imply a codec or only be valid with
+  // certain codecs.
+  const CodecSet* valid_codecs_for_mime;
+  if (!mime_type_lower_case.empty()) {
+    // Reject unrecognized mime types.
+    auto it_media_format_map = media_format_map_.find(mime_type_lower_case);
+    if (it_media_format_map == media_format_map_.end()) {
       DVLOG(3) << __func__
-               << " Codecs unexpected for mime type:" << mime_type_lower_case;
+               << " Unrecognized mime type: " << mime_type_lower_case;
       return false;
     }
 
-    // Determine implied codec for mime type.
-    ParsedCodecResult implied_result = MakeDefaultParsedCodecResult();
-    if (!GetDefaultCodec(mime_type_lower_case, &implied_result.codec)) {
-      NOTREACHED() << " Mime types must offer a default codec if no explicit "
-                      "codecs are expected";
-      return false;
+    valid_codecs_for_mime = &it_media_format_map->second;
+    if (valid_codecs_for_mime->empty()) {
+      // We get here if the mimetype does not expect a codecs parameter.
+      if (!codecs.empty()) {
+        DVLOG(3) << __func__
+                 << " Codecs unexpected for mime type:" << mime_type_lower_case;
+        return false;
+      }
+
+      // Determine implied codec for mime type.
+      ParsedCodecResult implied_result = MakeDefaultParsedCodecResult();
+      if (!GetDefaultCodec(mime_type_lower_case, &implied_result.codec)) {
+        NOTREACHED() << " Mime types must offer a default codec if no explicit "
+                        "codecs are expected";
+        return false;
+      }
+      out_results->push_back(implied_result);
+      return true;
     }
-    out_results->push_back(implied_result);
-    return true;
+
+    if (codecs.empty()) {
+      // We get here if the mimetype expects to get a codecs parameter,
+      // but didn't get one. If |mime_type_lower_case| does not have a default
+      // codec, the string is considered ambiguous.
+      ParsedCodecResult implied_result = MakeDefaultParsedCodecResult();
+      implied_result.is_ambiguous =
+          !GetDefaultCodec(mime_type_lower_case, &implied_result.codec);
+      out_results->push_back(implied_result);
+      return true;
+    }
   }
 
-  if (codecs.empty()) {
-    // We get here if the mimetype expects to get a codecs parameter,
-    // but didn't get one. If |mime_type_lower_case| does not have a default
-    // codec, the string is considered ambiguous.
-    ParsedCodecResult implied_result = MakeDefaultParsedCodecResult();
-    implied_result.is_ambiguous =
-        !GetDefaultCodec(mime_type_lower_case, &implied_result.codec);
-    out_results->push_back(implied_result);
-    return true;
-  }
+  // All empty cases handled above.
+  DCHECK(!codecs.empty());
 
-  // With empty cases handled, parse given codecs and check that they are valid
-  // for combining with given mime type.
   for (std::string codec_string : codecs) {
     ParsedCodecResult result;
 
@@ -719,15 +732,17 @@ bool MimeUtil::ParseCodecStrings(
 #endif
 
     if (!ParseCodecHelper(mime_type_lower_case, codec_string, &result)) {
-      DVLOG(3) << __func__
-               << " Failed to parse mime/codec pair: " << mime_type_lower_case
+      DVLOG(3) << __func__ << " Failed to parse mime/codec pair: "
+               << (mime_type_lower_case.empty() ? "<empty mime>"
+                                                : mime_type_lower_case)
                << "; " << codec_string;
       return false;
     }
     DCHECK_NE(INVALID_CODEC, result.codec);
 
-    // Fail if mime + codec is not a valid combination.
-    if (valid_codecs.find(result.codec) == valid_codecs.end()) {
+    // If mime type given, fail if mime + codec is not a valid combination.
+    if (!mime_type_lower_case.empty() &&
+        !valid_codecs_for_mime->contains(result.codec)) {
       DVLOG(3) << __func__
                << " Incompatible mime/codec pair: " << mime_type_lower_case
                << "; " << codec_string;

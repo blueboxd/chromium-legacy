@@ -587,6 +587,13 @@ void AddressComponent::RecursivelyUnsetParsedAndFormattedValues() {
     component->RecursivelyUnsetParsedAndFormattedValues();
 }
 
+void AddressComponent::RecursivelyUnsetSubcomponents() {
+  for (auto* subcomponent : subcomponents_) {
+    subcomponent->UnsetValue();
+    subcomponent->RecursivelyUnsetSubcomponents();
+  }
+}
+
 void AddressComponent::UnsetParsedAndFormattedValuesInEntireTree() {
   GetRootNode().RecursivelyUnsetParsedAndFormattedValues();
 }

@@ -59,6 +59,12 @@ public class CrashInfo {
      */
     public long uploadTime = -1;
 
+    /**
+     * Boolean that identifies if the crash should be hidden from the view or not.
+     * Default value is false.
+     */
+    public boolean isHidden;
+
     @NonNull
     private final Map<String, String> mCrashKeys;
 
@@ -66,6 +72,7 @@ public class CrashInfo {
     private static final String CRASH_CAPTURE_TIME_KEY = "crash-capture-time";
     private static final String CRASH_UPLOAD_ID_KEY = "crash-upload-id";
     private static final String CRASH_UPLOAD_TIME_KEY = "crash-upload-time";
+    private static final String CRASH_IS_HIDDEN = "crash-is-hidden";
     private static final String CRASH_KEYS_KEY = "crash-keys";
     // Should match the crash keys used in minidump reports see for example of some keys:
     // {@link android_webview/common/crash_reporter/crash_keys.cc}
@@ -172,6 +179,7 @@ public class CrashInfo {
             if (uploadTime != -1) {
                 jsonObj.put(CRASH_UPLOAD_TIME_KEY, uploadTime);
             }
+            jsonObj.put(CRASH_IS_HIDDEN, isHidden);
             jsonObj.put(CRASH_KEYS_KEY, new JSONObject(mCrashKeys));
             return jsonObj.toString();
         } catch (JSONException e) {
@@ -204,6 +212,10 @@ public class CrashInfo {
         }
         if (jsonObj.has(CRASH_UPLOAD_TIME_KEY)) {
             crashInfo.uploadTime = jsonObj.getLong(CRASH_UPLOAD_TIME_KEY);
+        }
+
+        if (jsonObj.has(CRASH_IS_HIDDEN)) {
+            crashInfo.isHidden = jsonObj.getBoolean(CRASH_IS_HIDDEN);
         }
 
         if (jsonObj.has(CRASH_KEYS_KEY)) {

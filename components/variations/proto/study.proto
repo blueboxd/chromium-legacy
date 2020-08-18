@@ -45,9 +45,28 @@ message Study {
   // Ex: "default"
   optional string default_experiment_name = 8;
 
+  // Specifies under which conditions a |google_web_experiment_id| or
+  // |google_web_trigger_experiment_id| is visible to Google web properties.
+  enum GoogleWebVisibility {
+    // Eligible requests to Google web properties include the experiment ID. See
+    // AppendHeaderIfNeeded() in variations_http_headers.cc for eligibility
+    // details.
+    ANY = 0;
+
+    // Only eligible requests initiated from a first-party context include the
+    // experiment ID.
+    //
+    // The following requests are considered to be from a first-party context:
+    // requests initiated by (i) the browser, (ii) a Chrome internal page,
+    // (iii) a main frame with a Google-owned domain, and (iv) a subframe
+    // whose associated main frame has a Google-owned domain. See
+    // IsFirstPartyContext() in variations_http_headers.cc for more details.
+    FIRST_PARTY = 1;
+  }
+
   // An experiment within the study.
   //
-  // Next tag: 16
+  // Next tag: 17
   message Experiment {
     // A named parameter value for this experiment.
     //
@@ -75,6 +94,10 @@ message Study {
     // Optional id used to allow this experiment to trigger experimental
     // behavior on Google web properties.
     optional uint64 google_web_trigger_experiment_id = 8;
+
+    // Optional id that specifies under which conditions Google web and web
+    // trigger experiment ids are visible to Google web properties.
+    optional GoogleWebVisibility google_web_visibility = 16;
 
     // Optional id used to uniquely identify this experiment for Chrome Sync.
     optional uint64 chrome_sync_experiment_id = 10;

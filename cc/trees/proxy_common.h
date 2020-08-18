@@ -6,6 +6,9 @@
 #define CC_TREES_PROXY_COMMON_H_
 
 #include <stddef.h>
+#include <memory>
+#include <utility>
+#include <vector>
 
 #include "base/callback_forward.h"
 #include "cc/cc_export.h"
@@ -14,7 +17,7 @@
 
 namespace cc {
 
-struct ScrollAndScaleSet;
+struct CompositorCommitData;
 class MutatorEvents;
 
 struct CC_EXPORT BeginMainFrameAndCommitState {
@@ -23,7 +26,7 @@ struct CC_EXPORT BeginMainFrameAndCommitState {
 
   unsigned int begin_frame_id = 0;
   viz::BeginFrameArgs begin_frame_args;
-  std::unique_ptr<ScrollAndScaleSet> scroll_info;
+  std::unique_ptr<CompositorCommitData> commit_data;
   size_t memory_allocation_limit_bytes = 0;
   std::vector<std::pair<int, bool>> completed_image_decode_requests;
   std::unique_ptr<MutatorEvents> mutator_events;

@@ -1326,7 +1326,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="2564653188463346023">Revisión ortográfica mejorada</translation>
 <translation id="2566124945717127842">Haz un Powerwash y restablece el estado de fábrica de tu dispositivo <ph name="IDS_SHORT_PRODUCT_NAME" /> para que quede como nuevo.</translation>
 <translation id="2568774940984945469">Contenedor de barra de información</translation>
-<translation id="257088987046510401">Temas</translation>
 <translation id="2571655996835834626">Cambiar la configuración que controla el acceso de los sitios web a funciones como las cookies, JavaScript, los complementos, la geolocalización, el micrófono o la cámara.</translation>
 <translation id="2572032849266859634">Se ha concedido acceso de solo lectura a <ph name="VOLUME_NAME" />.</translation>
 <translation id="2575247648642144396">Este icono estará visible cuando la extensión se pueda utilizar en la página actual. Para utilizar la extensión, haz clic en el icono o pulsa <ph name="EXTENSION_SHORTCUT" />.</translation>
@@ -3353,7 +3352,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="5115338116365931134">SSO</translation>
 <translation id="5116628073786783676">G&amp;uardar audio como...</translation>
 <translation id="5117139026559873716">Desvincula tu teléfono del <ph name="DEVICE_TYPE" />. Dejarán de conectarse automáticamente.</translation>
-<translation id="5117427536932535467">Temas y fondos de pantalla</translation>
 <translation id="5117930984404104619">Controlar el comportamiento de otras extensiones, incluidas las URL visitadas</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Tu disco duro está lleno. Guarda el archivo en otra ubicación o libera espacio en el disco duro.</translation>
@@ -4299,6 +4297,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6277105963844135994">Tiempo de espera de red agotado</translation>
 <translation id="6277518330158259200">H&amp;acer captura de pantalla</translation>
 <translation id="6278057325678116358">Utilizar GTK+</translation>
+<translation id="6278428485366576908">Tema</translation>
 <translation id="6278776436938569440">Cambiar ubicación</translation>
 <translation id="6279183038361895380">Pulsa |<ph name="ACCELERATOR" />| para mostrar el cursor</translation>
 <translation id="6280215091796946657">Iniciar sesión con otra cuenta</translation>

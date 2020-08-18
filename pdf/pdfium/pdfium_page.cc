@@ -22,11 +22,15 @@
 #include "pdf/pdfium/pdfium_api_string_buffer_adapter.h"
 #include "pdf/pdfium/pdfium_engine.h"
 #include "pdf/pdfium/pdfium_unsupported_features.h"
+#include "pdf/ppapi_migration/geometry_conversions.h"
 #include "ppapi/c/private/ppb_pdf.h"
 #include "printing/units.h"
 #include "third_party/pdfium/public/cpp/fpdf_scopers.h"
 #include "third_party/pdfium/public/fpdf_annot.h"
 #include "third_party/pdfium/public/fpdf_catalog.h"
+#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/range/range.h"
 
 using printing::ConvertUnitDouble;
@@ -747,19 +751,20 @@ PDFiumPage::Area PDFiumPage::GetLinkTarget(FPDF_LINK link, LinkTarget* target) {
   }
 }
 
-PDFiumPage::Area PDFiumPage::GetCharIndex(const pp::Point& point,
+PDFiumPage::Area PDFiumPage::GetCharIndex(const gfx::Point& point,
                                           PageOrientation orientation,
                                           int* char_index,
                                           int* form_type,
                                           LinkTarget* target) {
   if (!available_)
     return NONSELECTABLE_AREA;
-  pp::Point point2 = point - rect_.point();
+  gfx::Point device_point = point - RectFromPPRect(rect_).OffsetFromOrigin();
   double new_x;
   double new_y;
-  FPDF_BOOL ret = FPDF_DeviceToPage(
-      GetPage(), 0, 0, rect_.width(), rect_.height(),
-      ToPDFiumRotation(orientation), point2.x(), point2.y(), &new_x, &new_y);
+  FPDF_BOOL ret =
+      FPDF_DeviceToPage(GetPage(), 0, 0, rect_.width(), rect_.height(),
+                        ToPDFiumRotation(orientation), device_point.x(),
+                        device_point.y(), &new_x, &new_y);
   DCHECK(ret);
 
   // hit detection tolerance, in points.
@@ -928,7 +933,7 @@ int PDFiumPage::GetLink(int char_index, LinkTarget* target) {
     return -1;
   }
 
-  pp::Point origin(PageToScreen(pp::Point(), 1.0, left, top, right, bottom,
+  pp::Point origin(PageToScreen(gfx::Point(), 1.0, left, top, right, bottom,
                                 PageOrientation::kOriginal)
                        .point());
   for (size_t i = 0; i < links_.size(); ++i) {
@@ -1000,7 +1005,7 @@ void PDFiumPage::PopulateWebLinks() {
       double right;
       double bottom;
       FPDFLink_GetRect(links.get(), i, j, &left, &top, &right, &bottom);
-      pp::Rect rect = PageToScreen(pp::Point(), 1.0, left, top, right, bottom,
+      pp::Rect rect = PageToScreen(gfx::Point(), 1.0, left, top, right, bottom,
                                    PageOrientation::kOriginal);
       if (rect.IsEmpty())
         continue;
@@ -1045,13 +1050,13 @@ void PDFiumPage::PopulateAnnotationLinks() {
           // PDF Specifications: Quadpoints start from bottom left (x1, y1) and
           // runs counter clockwise.
           link.bounding_rects.push_back(
-              PageToScreen(pp::Point(), 1.0, point.x4, point.y4, point.x2,
+              PageToScreen(gfx::Point(), 1.0, point.x4, point.y4, point.x2,
                            point.y2, PageOrientation::kOriginal));
         }
       }
     } else {
       link.bounding_rects.push_back(PageToScreen(
-          pp::Point(), 1.0, link_rect.left, link_rect.top, link_rect.right,
+          gfx::Point(), 1.0, link_rect.left, link_rect.top, link_rect.right,
           link_rect.bottom, PageOrientation::kOriginal));
     }
 
@@ -1086,7 +1091,7 @@ void PDFiumPage::CalculateImages() {
         FPDFPageObj_GetBounds(page_object, &left, &bottom, &right, &top);
     DCHECK(ret);
     Image image;
-    image.bounding_rect = PageToScreen(pp::Point(), 1.0, left, top, right,
+    image.bounding_rect = PageToScreen(gfx::Point(), 1.0, left, top, right,
                                        bottom, PageOrientation::kOriginal);
 
     if (is_tagged) {
@@ -1200,7 +1205,7 @@ void PDFiumPage::PopulateHighlight(FPDF_ANNOTATION annot) {
   Highlight highlight;
   // We use the bounding box of the highlight as the bounding rect.
   highlight.bounding_rect =
-      PageToScreen(pp::Point(), 1.0, rect.left, rect.top, rect.right,
+      PageToScreen(gfx::Point(), 1.0, rect.left, rect.top, rect.right,
                    rect.bottom, PageOrientation::kOriginal);
   GetUnderlyingTextRangeForRect(
       pp::FloatRect(rect.left, rect.bottom, std::abs(rect.right - rect.left),
@@ -1340,7 +1345,7 @@ bool PDFiumPage::PopulateFormFieldProperties(FPDF_ANNOTATION annot,
 
   // We use the bounding box of the form field as the bounding rect.
   form_field->bounding_rect =
-      PageToScreen(pp::Point(), 1.0, rect.left, rect.top, rect.right,
+      PageToScreen(gfx::Point(), 1.0, rect.left, rect.top, rect.right,
                    rect.bottom, PageOrientation::kOriginal);
   FPDF_FORMHANDLE form_handle = engine_->form();
   form_field->name = base::UTF16ToUTF8(CallPDFiumWideStringBufferApi(
@@ -1395,7 +1400,7 @@ bool PDFiumPage::GetUnderlyingTextRangeForRect(const pp::FloatRect& rect,
   return true;
 }
 
-pp::Rect PDFiumPage::PageToScreen(const pp::Point& offset,
+pp::Rect PDFiumPage::PageToScreen(const gfx::Point& page_point,
                                   double zoom,
                                   double left,
                                   double top,
@@ -1405,8 +1410,8 @@ pp::Rect PDFiumPage::PageToScreen(const pp::Point& offset,
   if (!available_)
     return pp::Rect();
 
-  double start_x = (rect_.x() - offset.x()) * zoom;
-  double start_y = (rect_.y() - offset.y()) * zoom;
+  double start_x = (rect_.x() - page_point.x()) * zoom;
+  double start_y = (rect_.y() - page_point.y()) * zoom;
   double size_x = rect_.width() * zoom;
   double size_y = rect_.height() * zoom;
   if (!base::IsValueInRangeForNumericType<int>(start_x) ||

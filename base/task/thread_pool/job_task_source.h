@@ -85,13 +85,6 @@ class BASE_EXPORT JobTaskSource : public TaskSource {
 
   PooledTaskRunnerDelegate* delegate() const { return delegate_; }
 
-#if DCHECK_IS_ON()
-  size_t GetConcurrencyIncreaseVersion() const;
-  // Returns true if the concurrency version was updated above
-  // |recorded_version|, or false on timeout.
-  bool WaitForConcurrencyIncreaseUpdate(size_t recorded_version);
-#endif  // DCHECK_IS_ON()
-
  private:
   // Atomic internal state to track the number of workers running a task from
   // this JobTaskSource and whether this JobTaskSource is canceled. All
@@ -216,13 +209,6 @@ class BASE_EXPORT JobTaskSource : public TaskSource {
 
   const TimeTicks queue_time_;
   PooledTaskRunnerDelegate* delegate_;
-
-#if DCHECK_IS_ON()
-  // Signaled whenever |increase_version_| is updated.
-  std::unique_ptr<ConditionVariable> version_condition_for_dcheck_;
-  // Incremented every time max concurrency is increased.
-  size_t increase_version_ GUARDED_BY(worker_lock_) = 0;
-#endif  // DCHECK_IS_ON()
 
   DISALLOW_COPY_AND_ASSIGN(JobTaskSource);
 };

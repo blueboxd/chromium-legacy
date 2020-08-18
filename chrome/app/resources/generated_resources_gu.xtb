@@ -1318,7 +1318,6 @@
 <translation id="2564653188463346023">વધારેલ જોડણીની તપાસ</translation>
 <translation id="2566124945717127842">તમારા <ph name="IDS_SHORT_PRODUCT_NAME" /> ડિવાઇસને નવાની જેમ રીસેટ કરવા માટે પાવરવૉશ કરો.</translation>
 <translation id="2568774940984945469">માહિતી બાર સંગ્રહક</translation>
-<translation id="257088987046510401">થીમ્સ</translation>
 <translation id="2571655996835834626">તમારી તે સેટિંગને બદલો કે જે કૂકી, JavaScript, પ્લગ-ઇન, ભૌગોલિક સ્થાન, માઇક્રોફોન, કૅમેરા, વગેરે જેવી સુવિધાઓની વેબસાઇટના ઍક્સેસને નિયંત્રિત કરે છે</translation>
 <translation id="2572032849266859634"><ph name="VOLUME_NAME" /> ને માત્ર વાંચવાની ઍક્સેસ મંજૂર કરવામાં આવી છે.</translation>
 <translation id="2575247648642144396">જ્યારે એક્સ્ટેંશન વર્તમાન પૃષ્ઠ પર કાર્ય કરી શકે ત્યારે આ આયકન દૃશ્યક્ષમ હશે. આયકન પર ક્લિક કરીને અથવા <ph name="EXTENSION_SHORTCUT" /> દબાવીને આ એક્સ્ટેંશનનો ઉપયોગ કરો.</translation>
@@ -3342,7 +3341,6 @@
 <translation id="5115338116365931134">SSO</translation>
 <translation id="5116628073786783676">ઑડિયો આ રૂપે સા&amp;ચવો...</translation>
 <translation id="5117139026559873716">તમારા ફોનને તમારા <ph name="DEVICE_TYPE" />થી ડિસ્કનેક્ટ કરો. તેઓ હવે ઑટોમૅટિક રીતે કનેક્ટ થશે નહીં.</translation>
-<translation id="5117427536932535467">થીમ્સ અને વૉલપેપર્સ</translation>
 <translation id="5117930984404104619">મુલાકાત લીધેલ URL સહિત, અન્ય એક્સ્ટેન્શન્સની વર્તણૂકનું નિરીક્ષણ કરો</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">તમારી હાર્ડ ડિસ્ક પૂરેપૂરી ભરેલી છે. કૃપા કરીને બીજી જગ્યાએ સાચવો અથવા હાર્ડ ડિસ્કમાં વધારે જગ્યા કરી આપો.</translation>
@@ -4290,6 +4288,7 @@ USB ડિવાઇસ</translation>
 <translation id="6277105963844135994">નેટવર્ક ટાઇમઆઉટ</translation>
 <translation id="6277518330158259200">સ્ક્રીનશોટ &amp;લો</translation>
 <translation id="6278057325678116358">GTK+ નો ઉપયોગ કરો</translation>
+<translation id="6278428485366576908">થીમ</translation>
 <translation id="6278776436938569440">સ્થાન બદલો</translation>
 <translation id="6279183038361895380">તમારા કર્સરને બતાવવા માટે |<ph name="ACCELERATOR" />| દબાવો</translation>
 <translation id="6280215091796946657">એક અલગ એકાઉન્ટ સાથે સાઇન ઇન કરો</translation>

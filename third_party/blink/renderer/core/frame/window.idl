@@ -73,11 +73,12 @@
     [Custom, NotEnumerable, CrossOrigin] getter object (DOMString name);
 
     // the user agent
-    // includes an older version https://github.com/whatwg/html/pull/5545 (originIsolationRestricted)
-    // TODO(https://crbug.com/1103866): rename to originIsolated when the time comes
+    // includes an older version of originIsolated (originIsolationRestricted) to avoid breakage during origin trial
+    // TODO(https://crbug.com/1103866): remove the originIsolationRestricted alias before shipping
     [Affects=Nothing, LogActivity=GetterOnly] readonly attribute Navigator navigator;
     [LogActivity=GetterOnly, SecureContext, RuntimeEnabled=AppCache] readonly attribute ApplicationCache applicationCache;
-    [RuntimeEnabled=OriginIsolationHeader] readonly attribute boolean originIsolationRestricted;
+    [RuntimeEnabled=OriginIsolationHeader] readonly attribute boolean originIsolated;
+    [RuntimeEnabled=OriginIsolationHeader, ImplementedAs=originIsolated] readonly attribute boolean originIsolationRestricted;
 
     // user prompts
     [Measure, CallWith=ScriptState] void alert();
@@ -135,9 +136,9 @@
 
     // viewport scrolling
     [HighEntropy=Direct, MeasureAs=WindowScrollX, Replaceable] readonly attribute double scrollX;
-    [HighEntropy, MeasureAs=WindowPageXOffset, Replaceable] readonly attribute double pageXOffset;
+    [HighEntropy=Direct, MeasureAs=WindowPageXOffset, Replaceable] readonly attribute double pageXOffset;
     [HighEntropy=Direct, MeasureAs=WindowScrollY, Replaceable] readonly attribute double scrollY;
-    [HighEntropy, MeasureAs=WindowPageYOffset, Replaceable] readonly attribute double pageYOffset;
+    [HighEntropy=Direct, MeasureAs=WindowPageYOffset, Replaceable] readonly attribute double pageYOffset;
     void scroll(optional ScrollToOptions options = {});
     void scroll(unrestricted double x, unrestricted double y);
     void scrollTo(optional ScrollToOptions options = {});

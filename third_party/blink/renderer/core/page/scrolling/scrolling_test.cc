@@ -25,8 +25,8 @@
 #include "build/build_config.h"
 #include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/layers/scrollbar_layer_base.h"
+#include "cc/trees/compositor_commit_data.h"
 #include "cc/trees/property_tree.h"
-#include "cc/trees/scroll_and_scale_set.h"
 #include "cc/trees/scroll_node.h"
 #include "cc/trees/sticky_position_constraint.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -1371,10 +1371,10 @@ TEST_P(ScrollingTest, ScrollOffsetClobberedBeforeCompositingUpdate) {
 
   // Simulate 100px of scroll coming from the compositor thread during a commit.
   gfx::ScrollOffset compositor_delta(0, 100.f);
-  cc::ScrollAndScaleSet scroll_and_scale_set;
-  scroll_and_scale_set.scrolls.push_back(
+  cc::CompositorCommitData commit_data;
+  commit_data.scrolls.push_back(
       {scrollable_area->GetScrollElementId(), compositor_delta, base::nullopt});
-  RootCcLayer()->layer_tree_host()->ApplyScrollAndScale(&scroll_and_scale_set);
+  RootCcLayer()->layer_tree_host()->ApplyCompositorChanges(&commit_data);
   // The compositor offset is reflected in blink and cc scroll tree.
   EXPECT_EQ(compositor_delta,
             gfx::ScrollOffset(scrollable_area->ScrollPosition()));
@@ -1662,10 +1662,10 @@ TEST_P(ScrollingTest, MainThreadScrollAndDeltaFromImplSide) {
 
   // Simulate the scroll update with scroll delta from impl-side at the
   // beginning of BeginMainFrame.
-  cc::ScrollAndScaleSet scroll_and_scale;
-  scroll_and_scale.scrolls.push_back(cc::ScrollAndScaleSet::ScrollUpdateInfo(
+  cc::CompositorCommitData commit_data;
+  commit_data.scrolls.push_back(cc::CompositorCommitData::ScrollUpdateInfo(
       element_id, gfx::ScrollOffset(0, 10), base::nullopt));
-  RootCcLayer()->layer_tree_host()->ApplyScrollAndScale(&scroll_and_scale);
+  RootCcLayer()->layer_tree_host()->ApplyCompositorChanges(&commit_data);
   EXPECT_EQ(FloatPoint(0, 210), scrollable_area->ScrollPosition());
   EXPECT_EQ(gfx::ScrollOffset(0, 210), CurrentScrollOffset(element_id));
 }

@@ -204,7 +204,6 @@ Dodirnite i zadržite bilo koju reč za pretragu. Da biste precizirali pretragu,
 <translation id="2537178555904266562">Došlo je do greške pri sinhronizovanju lozinki</translation>
 <translation id="2546283357679194313">Kolačići i podaci o sajtovima</translation>
 <translation id="2567385386134582609">SLIKA</translation>
-<translation id="257088987046510401">Teme</translation>
 <translation id="2581165646603367611">Ovim ćete obrisati kolačiće, keš i druge podatke sajtova koje Chrome ne smatra važnim.</translation>
 <translation id="2587052924345400782">Dostupna je novija verzija</translation>
 <translation id="2593272815202181319">Fiksne širine</translation>
@@ -679,6 +678,7 @@ Na primer, neki veb-sajtovi mogu da odgovore na ovaj zahtev prikazivanjem oglasa
 <translation id="624789221780392884">Ažuriranje je spremno</translation>
 <translation id="6255999984061454636">Predlozi za sadržaj</translation>
 <translation id="6277522088822131679">Došlo je do problema pri štampanju stranice. Probajte ponovo.</translation>
+<translation id="6278428485366576908">Tema</translation>
 <translation id="6292420053234093573">Ako koristite Chrome, prihvatate <ph name="BEGIN_LINK1" />Google uslove korišćenja usluge<ph name="END_LINK1" /> i <ph name="BEGIN_LINK2" />dodatne uslove korišćenja usluge za Google Chrome i Chrome OS<ph name="END_LINK2" />.</translation>
 <translation id="629730747756840877">nalog</translation>
 <translation id="6297765934698848803">Organizacija koja upravlja uređajem vam je isključila kameru.</translation>

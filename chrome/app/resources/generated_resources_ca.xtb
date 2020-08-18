@@ -1325,7 +1325,6 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="2564653188463346023">Corrector ortogràfic millorat</translation>
 <translation id="2566124945717127842">Utilitzeu una operació Powerwash per restablir el dispositiu <ph name="IDS_SHORT_PRODUCT_NAME" /> i deixar-lo com si fos nou.</translation>
 <translation id="2568774940984945469">Contenidor de la barra d'informació</translation>
-<translation id="257088987046510401">Temes</translation>
 <translation id="2571655996835834626">Modifica la configuració que controla l'accés dels llocs web a elements com les galetes, JavaScript, els connectors, la geolocalització, el micròfon, la càmera, etc.</translation>
 <translation id="2572032849266859634">S'ha concedit accés només de lectura a <ph name="VOLUME_NAME" />.</translation>
 <translation id="2575247648642144396">Aquesta icona serà visible quan les extensions puguin actuar a la pàgina actual. Per fer servir aquesta extensió, feu clic a la icona o premeu <ph name="EXTENSION_SHORTCUT" />.</translation>
@@ -3352,7 +3351,6 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="5115338116365931134">SSO</translation>
 <translation id="5116628073786783676">De&amp;sa l'àudio com a...</translation>
 <translation id="5117139026559873716">Desconnecta el telèfon del dispositiu <ph name="DEVICE_TYPE" />. Es deixaran de connectar automàticament.</translation>
-<translation id="5117427536932535467">Temes i fons de pantalla</translation>
 <translation id="5117930984404104619">Control del comportament d'altres extensions, inclosos els URL visitats</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">El vostre disc dur és ple. Deseu-ho en una altra ubicació o allibereu espai del disc dur.</translation>
@@ -4300,6 +4298,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="6277105963844135994">Temps d'espera de la xarxa</translation>
 <translation id="6277518330158259200">Fes una c&amp;aptura de pantalla</translation>
 <translation id="6278057325678116358">Utilitza GTK+</translation>
+<translation id="6278428485366576908">Tema</translation>
 <translation id="6278776436938569440">Canvia la ubicació</translation>
 <translation id="6279183038361895380">Premeu |<ph name="ACCELERATOR" />| per veure el cursor</translation>
 <translation id="6280215091796946657">Inicia la sessió amb un altre compte</translation>

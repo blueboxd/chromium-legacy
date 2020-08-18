@@ -335,6 +335,8 @@ class Controller : public ScriptExecutorDelegate,
   void RecordDropOutOrShutdown(Metrics::DropOutReason reason);
   void PerformDelayedShutdownIfNecessary();
 
+  bool StateNeedsUI(AutofillAssistantState state);
+
   ClientSettings settings_;
   Client* const client_;
   const base::TickClock* const tick_clock_;

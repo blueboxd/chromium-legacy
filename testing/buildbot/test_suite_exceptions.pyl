@@ -574,6 +574,11 @@
           'shards': 50,
         },
       },
+      'linux-lacros-rel': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/lacros.browser_tests.filter',
+        ],
+      },
       'linux-lacros-tester-fyi-rel': {
         'experiment_percentage': 100,
       },
@@ -663,7 +668,6 @@
       'android-asan',  # https://crbug.com/964562
       'android-code-coverage-native', # https://crbug.com/1018780
       'android-lollipop-arm-rel', # https://crbug.com/1060245
-      'android-marshmallow-x86-rel', # crbug.com/1098111
       # TODO https://crbug.com/1109999: Re-enable once there are enough devices
       'android-pie-arm64-rel',
     ],
@@ -710,11 +714,18 @@
           'service_account': 'chrome-gold-dev@chops-service-accounts.iam.gserviceaccount.com'
         },
       },
-      'android-marshmallow-x86-fyi-rel': {
+      'android-marshmallow-x86-rel': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_m.chrome_public_test_apk.filter',
-          '-v', # TODO(crbug.com/1093602) Remove once the issue is resolved
         ],
+        'swarming': {
+          'dimension_sets': [
+            {
+              # Use 8-cores to shorten test runtime.
+              'machine_type': 'n1-standard-8',
+            },
+          ],
+        },
       },
       'android-pie-arm64-rel': {
         'args': [

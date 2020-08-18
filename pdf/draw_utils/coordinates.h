@@ -12,6 +12,7 @@
 #include "ppapi/cpp/rect.h"
 
 namespace gfx {
+class Point;
 class Size;
 }  // namespace gfx
 
@@ -89,7 +90,7 @@ pp::Rect GetRectForSingleView(const gfx::Size& rect_size,
 // result in an empty output rect. For |zoom|, a value of 1 means 100%.
 // |zoom| is never less than or equal to 0.
 pp::Rect GetScreenRect(const pp::Rect& rect,
-                       const pp::Point& position,
+                       const gfx::Point& position,
                        double zoom);
 
 // Given |page_y|, |page_height|, |inset_sizes|, |doc_width|, and
@@ -130,12 +131,12 @@ pp::Rect GetBottomFillRect(const pp::Rect& page_rect,
 // |position|. The width of |rect_size| must be less than or equal to the x
 // value for |position|.
 pp::Rect GetLeftRectForTwoUpView(const gfx::Size& rect_size,
-                                 const pp::Point& position);
+                                 const gfx::Point& position);
 
 // Given |rect_size|, create a pp::Rect where the top-left corner lies at
 // |position|.
 pp::Rect GetRightRectForTwoUpView(const gfx::Size& rect_size,
-                                  const pp::Point& position);
+                                  const gfx::Point& position);
 
 }  // namespace draw_utils
 }  // namespace chrome_pdf

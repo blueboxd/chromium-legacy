@@ -549,7 +549,7 @@ bool TemplateURLRef::ExtractSearchTermsFromURL(
     // not a match.
     if (source.size() < (search_term_value_prefix_.size() +
                          search_term_value_suffix_.size()) ||
-        !source.starts_with(search_term_value_prefix_) ||
+        !base::StartsWith(source, search_term_value_prefix_) ||
         !base::EndsWith(source, search_term_value_suffix_))
       return false;
     position =
@@ -578,7 +578,7 @@ bool TemplateURLRef::ExtractSearchTermsFromURL(
               base::StringPiece(source).substr(value.begin, value.len);
           if (search_term.size() < (search_term_value_prefix_.size() +
                                     search_term_value_suffix_.size()) ||
-              !search_term.starts_with(search_term_value_prefix_) ||
+              !base::StartsWith(search_term, search_term_value_prefix_) ||
               !base::EndsWith(search_term, search_term_value_suffix_))
             continue;
 
@@ -863,7 +863,8 @@ bool TemplateURLRef::PathIsEqual(const GURL& url) const {
   if (!path_wildcard_present_)
     return path == path_prefix_;
   return ((path.length() >= path_prefix_.length() + path_suffix_.length()) &&
-          path.starts_with(path_prefix_) && base::EndsWith(path, path_suffix_));
+          base::StartsWith(path, path_prefix_) &&
+          base::EndsWith(path, path_suffix_));
 }
 
 void TemplateURLRef::ParseHostAndSearchTermKey(

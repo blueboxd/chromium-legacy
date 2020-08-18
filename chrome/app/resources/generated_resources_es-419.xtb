@@ -1323,7 +1323,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="2564653188463346023">Corrector ortográfico mejorado</translation>
 <translation id="2566124945717127842">Usa la función Powerwash para restablecer el dispositivo <ph name="IDS_SHORT_PRODUCT_NAME" /> y que quede como nuevo.</translation>
 <translation id="2568774940984945469">Contenedor de la barra de información</translation>
-<translation id="257088987046510401">Temas</translation>
 <translation id="2571655996835834626">Permite cambiar la configuración que controla el acceso de los sitios web a ciertas funciones, como las cookies, JavaScript, los complementos, la ubicación geográfica, el micrófono, la cámara, etc.</translation>
 <translation id="2572032849266859634">Se concedió acceso de solo lectura a <ph name="VOLUME_NAME" />.</translation>
 <translation id="2575247648642144396">Este ícono estará visible cuando la extensión se pueda utilizar en la página actual. Para usar esta extensión, haz clic en el ícono o presiona <ph name="EXTENSION_SHORTCUT" />.</translation>
@@ -3351,7 +3350,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="5115338116365931134">SSO</translation>
 <translation id="5116628073786783676">Gu&amp;ardar audio como...</translation>
 <translation id="5117139026559873716">Desconecta el teléfono de tu <ph name="DEVICE_TYPE" />. Ya no se conectarán automáticamente.</translation>
-<translation id="5117427536932535467">Temas y fondos de pantalla</translation>
 <translation id="5117930984404104619">Supervisar el comportamiento de otras extensiones (incluidas las URL visitadas)</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Tu disco duro está lleno. Guarda en otra ubicación o libera espacio en el disco duro.</translation>
@@ -4297,6 +4295,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="6277105963844135994">Tiempo de espera de red agotado</translation>
 <translation id="6277518330158259200">Tomar captura de pantalla</translation>
 <translation id="6278057325678116358">Usar GTK+</translation>
+<translation id="6278428485366576908">Tema</translation>
 <translation id="6278776436938569440">Cambiar ubicación</translation>
 <translation id="6279183038361895380">Presiona |<ph name="ACCELERATOR" />| para mostrar tu cursor</translation>
 <translation id="6280215091796946657">Acceder con otra cuenta</translation>

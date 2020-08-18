@@ -16,6 +16,7 @@
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
+#include "components/autofill/core/browser/data_model/autofill_structured_address_utils.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_l10n_util.h"
 #include "components/autofill/core/common/autofill_regexes.h"
@@ -74,9 +75,11 @@ bool NameInfo::IsStructuredNameMergeable(const NameInfo& newer) const {
   return name_.IsMergeableWithComponent(newer.GetStructuredName());
 }
 
-bool NameInfo::FinalizeAfterImport() {
-  if (StructuredAddressesEnabled())
+bool NameInfo::FinalizeAfterImport(bool profile_is_verified) {
+  if (StructuredAddressesEnabled()) {
+    name_.MigrateLegacyStructure(profile_is_verified);
     return name_.CompleteFullTree();
+  }
   return true;
 }
 
@@ -200,6 +203,17 @@ bool NameInfo::SetInfoWithVerificationStatusImpl(const AutofillType& type,
   // TODO(crbug.com/1103421): Clean legacy implementation once structured names
   // are fully launched.
   if (StructuredAddressesEnabled()) {
+    if (type.GetStorableType() == NAME_FULL) {
+      // If the set string is token equivalent to the old one, the value can
+      // just be updated, otherwise create a new name record and complete it in
+      // the end.
+      bool token_equivalent = structured_address::AreStringTokenEquivalent(
+          value, name_.GetValueForType(NAME_FULL));
+      name_.SetValueForTypeIfPossible(
+          type.GetStorableType(), value, status,
+          /*invalidate_child_nodes=*/!token_equivalent);
+      return true;
+    }
     return FormGroup::SetInfoWithVerificationStatusImpl(type, value, app_locale,
                                                         status);
   }

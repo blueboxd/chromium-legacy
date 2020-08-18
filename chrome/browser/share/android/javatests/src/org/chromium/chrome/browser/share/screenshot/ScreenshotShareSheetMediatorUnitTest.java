@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.share.screenshot;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 
 import android.app.Activity;
@@ -97,6 +98,8 @@ public class ScreenshotShareSheetMediatorUnitTest {
 
         doNothing().when(mShareCallback).showThirdPartyShareSheet(any(), any(), anyLong());
 
+        doReturn(true).when(mTab).isInitialized();
+
         mModel = new PropertyModel(ScreenshotShareSheetViewProperties.ALL_KEYS);
 
         mMediator = new MockScreenshotShareSheetMediator(mContext, mModel, mDeleteRunnable,
@@ -129,6 +132,16 @@ public class ScreenshotShareSheetMediatorUnitTest {
 
         Assert.assertTrue(mMediator.generateTemporaryUriFromBitmapCalled());
         verify(mDeleteRunnable).run();
+    }
+
+    @Test
+    public void onClickShareUninitialized() {
+        doReturn(false).when(mTab).isInitialized();
+        Callback<Integer> callback =
+                mModel.get(ScreenshotShareSheetViewProperties.NO_ARG_OPERATION_LISTENER);
+        callback.onResult(ScreenshotShareSheetViewProperties.NoArgOperation.SHARE);
+
+        Assert.assertFalse(mMediator.generateTemporaryUriFromBitmapCalled());
     }
 
     @Test

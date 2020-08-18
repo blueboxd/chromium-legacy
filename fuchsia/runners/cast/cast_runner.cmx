@@ -1,7 +1,8 @@
 {
   "sandbox": {
     "features": [
-      "config-data"
+      "config-data",
+      "isolated-cache-storage"
     ],
     "services": [
       "chromium.cast.ApplicationConfigManager",

@@ -11,7 +11,6 @@ class MediaNotificationContainerImpl {
  public:
   virtual void AddObserver(MediaNotificationContainerObserver* observer) = 0;
   virtual void RemoveObserver(MediaNotificationContainerObserver* observer) = 0;
-  virtual void OnAudioSinkChosen(const std::string& sink_id) = 0;
 
  protected:
   virtual ~MediaNotificationContainerImpl() = default;

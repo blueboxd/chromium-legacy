@@ -684,7 +684,7 @@ int FlagsState::GetCurrentPlatform() {
   return kOsMac;
 #elif defined(OS_WIN)
   return kOsWin;
-#elif defined(OS_CHROMEOS)  // Needs to be before the OS_LINUX check.
+#elif defined(OS_CHROMEOS)
   return kOsCrOS;
 #elif defined(OS_LINUX) || defined(OS_OPENBSD)
   return kOsLinux;

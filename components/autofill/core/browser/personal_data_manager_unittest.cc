@@ -5233,6 +5233,7 @@ TEST_F(PersonalDataManagerTest, ApplyDedupingRoutine_MultipleDedupes) {
                        "91601", "", "");
   Barney.set_use_count(1);
   Barney.set_use_date(AutofillClock::Now() - base::TimeDelta::FromDays(180));
+  Barney.FinalizeAfterImport();
 
   AddProfileToPersonalDataManager(Homer1);
   AddProfileToPersonalDataManager(Homer2);
@@ -6686,7 +6687,8 @@ TEST_F(PersonalDataManagerTest, ExcludeServerSideCards) {
 #endif  // !defined(OS_ANDROID)
 
 // Sync Transport mode is only for Win, Mac, and Linux.
-#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
+    defined(OS_CHROMEOS)
 TEST_F(PersonalDataManagerTest, ServerCardsShowInTransportMode) {
   // Set up PersonalDataManager in transport mode.
   ResetPersonalDataManager(USER_MODE_NORMAL,
@@ -6749,7 +6751,7 @@ TEST_F(PersonalDataManagerTest, ServerCardsShowInTransportMode_NeedOptIn) {
   EXPECT_EQ(2U, personal_data_->GetServerCreditCards().size());
 }
 #endif  // defined(OS_WIN) || defined(OS_MAC) ||
-        // defined(OS_LINUX)
+        // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
 // Tests that all the non settings origins of autofill profiles are cleared but
 // that the settings origins are untouched.

@@ -1577,13 +1577,11 @@ RenderFrameHostManager::GetSiteInstanceForNavigation(
       IsProactivelySwapBrowsingInstanceOnSameSiteNavigationEnabled() ||
       IsSameSiteBackForwardCacheEnabled();
   if (is_same_site_proactive_swap_enabled && is_history_navigation &&
-      swapped_browsing_instance && frame_tree_node_->IsMainFrame() &&
+      swapped_browsing_instance &&
       IsCurrentlySameSite(
           static_cast<RenderFrameHostImpl*>(render_frame_host_.get()),
           dest_url)) {
-    // TODO(crbug.com/1107269): DCHECK for frame_tree_node_->IsMainFrame() once
-    // we can guarantee all cross-BrowsingInstance history navigations only
-    // happen on main frames.
+    DCHECK(frame_tree_node_->IsMainFrame());
     new_instance_impl->ReuseCurrentProcessIfPossible(
         current_instance->GetProcess());
   }

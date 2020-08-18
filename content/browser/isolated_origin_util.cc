@@ -55,7 +55,7 @@ bool IsolatedOriginPattern::Parse(const base::StringPiece& unparsed_pattern) {
   if (host_part.size() == 0)
     return false;
 
-  if (host_part.starts_with(kAllSubdomainsWildcard)) {
+  if (base::StartsWith(host_part, kAllSubdomainsWildcard)) {
     isolate_all_subdomains_ = true;
     host_part.remove_prefix(strlen(kAllSubdomainsWildcard));
   }

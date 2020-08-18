@@ -411,7 +411,7 @@ void DownloadProtectionService::MaybeSendDangerousDownloadOpenedReport(
     report.set_show_download_in_folder(show_download_in_folder);
     std::string serialized_report;
     if (report.SerializeToString(&serialized_report)) {
-      sb_service_->SendSerializedDownloadReport(serialized_report);
+      sb_service_->SendSerializedDownloadReport(profile, serialized_report);
     } else {
       DCHECK(false)
           << "Unable to serialize the dangerous download opened report.";

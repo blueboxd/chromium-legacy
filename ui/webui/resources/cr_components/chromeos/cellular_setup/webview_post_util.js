@@ -95,7 +95,8 @@ cr.define('webviewPost.util', function() {
    * @param {string} paymentUrl URL to load.
    * @param {string} postData Data to pass.
    */
-  function postDeviceDataToWebview(webview, paymentUrl, postData) {
+  /* #export */ function postDeviceDataToWebview(
+      webview, paymentUrl, postData) {
     const webviewSrc = 'data:text/html;charset=utf-8,' +
         encodeURIComponent(WEBVIEW_REDIRECT_HTML);
     webview.addEventListener(
@@ -105,5 +106,6 @@ cr.define('webviewPost.util', function() {
     webview.src = webviewSrc;
   }
 
+  // #cr_define_end
   return {postDeviceDataToWebview: postDeviceDataToWebview};
 });

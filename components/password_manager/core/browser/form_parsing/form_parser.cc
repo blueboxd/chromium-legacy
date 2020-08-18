@@ -869,10 +869,6 @@ std::vector<ProcessedField> ProcessFields(
 bool GetMayUsePrefilledPlaceholder(
     const base::Optional<FormPredictions>& form_predictions,
     const SignificantFields& significant_fields) {
-  if (!base::FeatureList::IsEnabled(
-          password_manager::features::kEnableOverwritingPlaceholderUsernames))
-    return false;
-
   if (!form_predictions || !significant_fields.username)
     return false;
 

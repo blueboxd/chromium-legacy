@@ -542,3 +542,4 @@ crbug.com/1093849 external/wpt/dom/nodes/Element-classlist.html [ Slow ]
 crbug.com/1093853 external/wpt/dom/ranges/Range-surroundContents.html [ Slow ]
 
 crbug.com/1104091 [ Linux ] webcodecs/videoframe-imagebitmap.html [ Slow ]
+crbug.com/1093478 external/wpt/quirks/unitless-length/limited-quirks.html [ Slow ]

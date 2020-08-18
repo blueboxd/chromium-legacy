@@ -162,6 +162,11 @@ using signin_metrics::PromoAction;
       self.viewController);
 }
 
+- (BOOL)googleServicesSettingsViewIsShown {
+  return [self.viewController
+      isEqual:self.baseNavigationController.topViewController];
+}
+
 #pragma mark - GoogleServicesSettingsCommandHandler
 
 - (void)restartAuthenticationFlow {

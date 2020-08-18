@@ -9,14 +9,14 @@
 // not be renumbered. Please keep in sync with "IOSMenuScenario" in
 // src/tools/metrics/histograms/enums.xml.
 enum class MenuScenario {
-  kHistoryEntry = 0,
-  kBookmarkEntry = 1,
+  kBookmarkEntry = 0,
+  kBookmarkFolder = 1,
   kReadingListEntry = 2,
-  kRecentTabsEntry = 3,
-  kContentSuggestionsEntry = 4,
-  kRecentTabsHeader = 5,
-  kBookmarkFolder = 6,
-  kMaxValue = kBookmarkFolder
+  kRecentTabsHeader = 3,
+  kRecentTabsEntry = 4,
+  kHistoryEntry = 5,
+  kMostVisitedEntry = 6,
+  kMaxValue = kMostVisitedEntry
 };
 
 // Records a menu shown histogram metric for the |scenario|.

@@ -49,12 +49,12 @@ const char kProgressBarExperiment[] = "4400697";
 //
 // Note that the UI might be shown in RUNNING state, even if it doesn't require
 // it.
-bool StateNeedsUI(AutofillAssistantState state) {
+bool StateNeedsUiInRegularScript(AutofillAssistantState state) {
   switch (state) {
-    case AutofillAssistantState::STARTING:
     case AutofillAssistantState::PROMPT:
     case AutofillAssistantState::AUTOSTART_FALLBACK_PROMPT:
     case AutofillAssistantState::MODAL_DIALOG:
+    case AutofillAssistantState::STARTING:
     case AutofillAssistantState::BROWSE:
       return true;
 
@@ -64,9 +64,25 @@ bool StateNeedsUI(AutofillAssistantState state) {
     case AutofillAssistantState::RUNNING:
       return false;
   }
+}
 
-  NOTREACHED();
-  return false;
+// Same as |StateNeedsUiInRegularScript|, but does not show UI in STARTING or
+// BROWSE state.
+bool StateNeedsUiInLiteScript(AutofillAssistantState state) {
+  switch (state) {
+    case AutofillAssistantState::PROMPT:
+    case AutofillAssistantState::AUTOSTART_FALLBACK_PROMPT:
+    case AutofillAssistantState::MODAL_DIALOG:
+      return true;
+
+    case AutofillAssistantState::STARTING:
+    case AutofillAssistantState::BROWSE:
+    case AutofillAssistantState::INACTIVE:
+    case AutofillAssistantState::TRACKING:
+    case AutofillAssistantState::STOPPED:
+    case AutofillAssistantState::RUNNING:
+      return false;
+  }
 }
 
 // Check whether a domain is a subdomain of another domain.
@@ -1885,6 +1901,13 @@ void Controller::WriteUserData(
   for (ControllerObserver& observer : observers_) {
     observer.OnUserDataChanged(user_data_.get(), field_change);
   }
+}
+
+bool Controller::StateNeedsUI(AutofillAssistantState state) {
+  if (!trigger_context_ || !trigger_context_->is_lite_script()) {
+    return StateNeedsUiInRegularScript(state);
+  }
+  return StateNeedsUiInLiteScript(state);
 }
 
 ElementArea* Controller::touchable_element_area() {

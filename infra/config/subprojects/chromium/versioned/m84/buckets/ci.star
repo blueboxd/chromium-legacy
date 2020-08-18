@@ -379,6 +379,7 @@ ci.fyi_ios_builder(
         category = "cronet",
     ),
     executable = "recipe:chromium",
+    fully_qualified_builder_dimension = True,
     notifies = ["cronet"],
     properties = {
         "xcode_build_version": "11c29",
@@ -661,6 +662,7 @@ ci.mac_ios_builder(
         category = "ios|default",
         short_name = "sim",
     ),
+    fully_qualified_builder_dimension = True,
 )
 
 ci.mac_ios_builder(
@@ -669,6 +671,7 @@ ci.mac_ios_builder(
         category = "ios|default",
         short_name = "ful",
     ),
+    fully_qualified_builder_dimension = True,
 )
 
 ci.memory_builder(

@@ -199,9 +199,11 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
   enum class BufferAllocationMode {
     // Only using |client_|s provided PictureBuffers, none internal.
     kNone,
+
     // Using a reduced amount of |client_|s provided PictureBuffers and
     // |decoder_|s GetNumReferenceFrames() internallly.
     kSuperReduced,
+
     // Similar to kSuperReduced, but we have to increase slightly the amount of
     // PictureBuffers allocated for the |client_|.
     kReduced,

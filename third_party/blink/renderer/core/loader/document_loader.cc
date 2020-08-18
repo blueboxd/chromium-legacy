@@ -82,6 +82,7 @@
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/page/frame_tree.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/page/scrolling/text_fragment_anchor.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
@@ -258,6 +259,13 @@ DocumentLoader::DocumentLoader(
     if (auto* parent = DynamicTo<LocalFrame>(frame_->Tree().Parent()))
       archive_ = parent->Loader().GetDocumentLoader()->archive_;
   }
+
+  // Determine if this document should have a text fragment permission token.
+  // We can either generate a new one from this navigation, if it's user
+  // activated, or receive one propagated from the prior navigation that didn't
+  // consume its token.
+  has_text_fragment_token_ = TextFragmentAnchor::GenerateNewToken(*this) ||
+                             params_->has_text_fragment_token;
 
   if (frame_->IsMainFrame()) {
     previews_state_ = params_->previews_state;
@@ -494,7 +502,13 @@ void DocumentLoader::UpdateForSameDocumentNavigation(
   if (is_client_redirect_)
     redirect_chain_.push_back(old_url);
   redirect_chain_.push_back(new_url);
-  last_same_document_navigation_was_browser_initiated_ = !is_content_initiated;
+
+  // We want to allow same-document text fragment navigations if they're coming
+  // from the browser.
+  has_text_fragment_token_ =
+      TextFragmentAnchor::GenerateNewTokenForSameDocument(
+          new_url.FragmentIdentifier(), type, is_content_initiated,
+          same_document_navigation_source);
 
   SetHistoryItemStateForCommit(
       history_item_.Get(), type,
@@ -2122,6 +2136,12 @@ DocumentLoader::GetContentSecurityNotifier() {
         content_security_notifier_.BindNewPipeAndPassReceiver());
   }
   return *content_security_notifier_;
+}
+
+bool DocumentLoader::ConsumeTextFragmentToken() {
+  bool token_value = has_text_fragment_token_;
+  has_text_fragment_token_ = false;
+  return token_value;
 }
 
 DEFINE_WEAK_IDENTIFIER_MAP(DocumentLoader)

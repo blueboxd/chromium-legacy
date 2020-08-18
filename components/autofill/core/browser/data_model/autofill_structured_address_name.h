@@ -152,6 +152,10 @@ class NameFull : public AddressComponent {
   // Returns the format string to create the full name from its subcomponents.
   base::string16 GetBestFormatString() const override;
 
+  // Migrates from a legacy structure in which name tokens are imported without
+  // a status.
+  void MigrateLegacyStructure(bool is_verified_profile);
+
  private:
   // TODO(crbug.com/1113617): Honorifics are temporally disabled.
   // NameHonorific name_honorific_;

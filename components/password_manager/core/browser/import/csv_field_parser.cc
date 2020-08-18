@@ -34,7 +34,7 @@ bool CSVFieldParser::NextField(base::StringPiece* field_contents) {
     *field_contents =
         base::StringPiece(row_.data() + start, position_ - start - 1);
 
-    if (field_contents->starts_with("\"")) {
+    if (base::StartsWith(*field_contents, "\"")) {
       DCHECK(base::EndsWith(*field_contents, "\"")) << *field_contents;
       DCHECK_GE(field_contents->size(), 2u);
       field_contents->remove_prefix(1);

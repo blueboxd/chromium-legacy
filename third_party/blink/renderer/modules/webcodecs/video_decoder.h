@@ -11,11 +11,13 @@
 #include "media/base/media_log.h"
 #include "media/base/status.h"
 #include "media/base/video_decoder.h"
+#include "media/base/video_decoder_config.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_video_frame_output_callback.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_web_codecs_error_callback.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/modules/webcodecs/codec_config_eval.h"
 #include "third_party/blink/renderer/modules/webcodecs/decoder_template.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
@@ -48,13 +50,17 @@ class MODULES_EXPORT VideoDecoderTraits {
   using MediaDecoderType = media::VideoDecoder;
   using OutputCallbackType = V8VideoFrameOutputCallback;
   using ConfigType = EncodedVideoConfig;
+  using MediaConfigType = media::VideoDecoderConfig;
   using InputType = EncodedVideoChunk;
 
   static std::unique_ptr<MediaDecoderType> CreateDecoder(
       ExecutionContext& execution_context,
       media::MediaLog* media_log);
+  static CodecConfigEval CreateMediaConfig(const ConfigType& config,
+                                           MediaConfigType* out_media_config,
+                                           String* out_console_message);
   static void InitializeDecoder(MediaDecoderType& decoder,
-                                const ConfigType& config,
+                                const MediaConfigType& media_config,
                                 MediaDecoderType::InitCB init_cb,
                                 MediaDecoderType::OutputCB output_cb);
   static int GetMaxDecodeRequests(const MediaDecoderType& decoder);

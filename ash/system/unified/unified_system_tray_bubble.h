@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/widget/widget_observer.h"
 #include "ui/wm/public/activation_change_observer.h"
@@ -98,6 +99,9 @@ class ASH_EXPORT UnifiedSystemTrayBubble
 
   // Called when the message center widget is activated.
   void OnMessageCenterActivated();
+
+  // Fire a notification that an accessibility event has occured on this object.
+  void NotifyAccessibilityEvent(ax::mojom::Event event, bool send_native_event);
 
   // TrayBubbleBase:
   TrayBackgroundView* GetTray() const override;

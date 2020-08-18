@@ -16,10 +16,10 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/trace_event/traced_value.h"
 #include "cc/trees/clip_node.h"
+#include "cc/trees/compositor_commit_data.h"
 #include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/property_tree.h"
-#include "cc/trees/scroll_and_scale_set.h"
 #include "cc/trees/scroll_node.h"
 #include "cc/trees/transform_node.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
@@ -1456,7 +1456,7 @@ gfx::ScrollOffset ScrollTree::PullDeltaForMainThread(
 }
 
 void ScrollTree::CollectScrollDeltas(
-    ScrollAndScaleSet* scroll_info,
+    CompositorCommitData* commit_data,
     ElementId inner_viewport_scroll_element_id,
     bool use_fractional_deltas,
     const base::flat_set<ElementId>& snapped_elements) {
@@ -1486,13 +1486,13 @@ void ScrollTree::CollectScrollDeltas(
       TRACE_EVENT_INSTANT2("cc", "CollectScrollDeltas",
                            TRACE_EVENT_SCOPE_THREAD, "x", scroll_delta.x(), "y",
                            scroll_delta.y());
-      ScrollAndScaleSet::ScrollUpdateInfo update(id, scroll_delta,
-                                                 snap_target_ids);
+      CompositorCommitData::ScrollUpdateInfo update(id, scroll_delta,
+                                                    snap_target_ids);
       if (id == inner_viewport_scroll_element_id) {
         // Inner (visual) viewport is stored separately.
-        scroll_info->inner_viewport_scroll = std::move(update);
+        commit_data->inner_viewport_scroll = std::move(update);
       } else {
-        scroll_info->scrolls.push_back(std::move(update));
+        commit_data->scrolls.push_back(std::move(update));
       }
     }
   }

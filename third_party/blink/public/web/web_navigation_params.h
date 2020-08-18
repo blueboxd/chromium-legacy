@@ -331,6 +331,10 @@ struct BLINK_EXPORT WebNavigationParams {
   bool had_transient_activation = false;
   // Whether this navigation has a sticky user activation flag.
   bool is_user_activated = false;
+  // Whether the navigation should be allowed to invoke a text fragment anchor.
+  // This is based on a user activation but is different from the above bit as
+  // it can be propagated across redirects and is consumed on use.
+  bool has_text_fragment_token = false;
   // Whether this navigation was browser initiated.
   bool is_browser_initiated = false;
   // Whether the document should be able to access local file:// resources.

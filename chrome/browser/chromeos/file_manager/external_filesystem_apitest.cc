@@ -10,6 +10,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "base/strings/strcat.h"
+#include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/drivefs_test_support.h"
@@ -601,7 +602,7 @@ class MultiProfileDriveFileSystemExtensionApiTest :
                                   base::FilePath::StringType(), &drivefs_dir);
     auto profile_name_storage = profile->GetPath().BaseName().value();
     base::StringPiece profile_name = profile_name_storage;
-    if (profile_name.starts_with("u-")) {
+    if (base::StartsWith(profile_name, "u-")) {
       profile_name = profile_name.substr(2);
     }
     drivefs_dir = drivefs_dir.Append(base::StrCat({"drive-", profile_name}));

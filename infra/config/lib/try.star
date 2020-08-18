@@ -212,7 +212,7 @@ def try_builder(
         be added as includable_only.
       list_view - A string identifying the ID of the list view to
         add an entry to. Supports a module-level default that defaults to
-        the mastername of the builder, if provided. An entry will be added
+        the group of the builder, if provided. An entry will be added
         only if `add_to_list_view` is True.
       main_console_view - A string identifying the ID of the main list
         view to add an entry to. Supports a module-level default that
@@ -257,7 +257,11 @@ def try_builder(
     if add_to_list_view:
         list_view = defaults.get_value("list_view", list_view)
         if list_view == args.COMPUTE:
-            list_view = defaults.get_value_from_kwargs("mastername", kwargs)
+            # The builder function guarantees that at most one of builder_group
+            # or mastername is set
+            builder_group = defaults.get_value_from_kwargs("builder_group", kwargs)
+            mastername = defaults.get_value_from_kwargs("mastername", kwargs)
+            list_view = builder_group or mastername
 
         if list_view:
             add_to_list_view = defaults.get_value(

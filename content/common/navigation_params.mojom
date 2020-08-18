@@ -236,6 +236,13 @@ struct CommonNavigationParams {
   // True if the request was user initiated.
   bool has_user_gesture = false;
 
+  // True if the navigation should allow the target document to invoke a text
+  // fragment (i.e. fragments with :~:text=). This is based on user gesture
+  // presence but separate from the bit above as the semantics for text
+  // fragments are different. Namely, this bit is always consumed on use and is
+  // propagated across client redirects.
+  bool text_fragment_token = false;
+
   // We require a copy of the relevant CSP to perform navigation checks.
   InitiatorCSPInfo initiator_csp_info;
 

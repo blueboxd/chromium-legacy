@@ -29,7 +29,9 @@ SkiaOutputDeviceBufferQueue::SkiaOutputDeviceBufferQueue(
     SkiaOutputSurfaceDependency* deps,
     gpu::MemoryTracker* memory_tracker,
     const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback)
-    : SkiaOutputDevice(memory_tracker, did_swap_buffer_complete_callback),
+    : SkiaOutputDevice(deps->GetSharedContextState()->gr_context(),
+                       memory_tracker,
+                       did_swap_buffer_complete_callback),
       presenter_(std::move(presenter)),
       dependency_(deps) {
   capabilities_.uses_default_gl_framebuffer = false;

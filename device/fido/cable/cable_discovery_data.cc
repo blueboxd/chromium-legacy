@@ -120,54 +120,25 @@ bool CableDiscoveryData::operator==(const CableDiscoveryData& other) const {
   }
 }
 
-base::Optional<CableNonce> CableDiscoveryData::Match(
-    const CableEidArray& eid) const {
-  switch (version) {
-    case Version::V1: {
-      if (eid != v1->authenticator_eid) {
-        return base::nullopt;
-      }
+bool CableDiscoveryData::MatchV1(const CableEidArray& eid) const {
+  DCHECK_EQ(version, Version::V1);
+  return eid == v1->authenticator_eid;
+}
 
-      // The nonce is the first eight bytes of the EID.
-      CableNonce nonce;
-      const bool ok =
-          fido_parsing_utils::ExtractArray(v1->client_eid, 0, &nonce);
-      DCHECK(ok);
-      return nonce;
-    }
+bool CableDiscoveryData::MatchV2(const CableEidArray& eid,
+                                 CableEidArray* out_eid) const {
+  DCHECK_EQ(version, Version::V2);
 
-    case Version::V2: {
-      // Attempt to decrypt the EID with the EID generator key and check whether
-      // it has a valid structure.
-      AES_KEY key;
-      CHECK(AES_set_decrypt_key(v2->eid_gen_key.data(),
-                                /*bits=*/8 * v2->eid_gen_key.size(),
-                                &key) == 0);
-      static_assert(kCableEphemeralIdSize == AES_BLOCK_SIZE,
-                    "EIDs are not AES blocks");
-      CableEidArray decrypted;
-      AES_decrypt(/*in=*/eid.data(), /*out=*/decrypted.data(), &key);
-      const uint8_t kZeroTrailer[8] = {0};
-      static_assert(8 + sizeof(kZeroTrailer) ==
-                        std::tuple_size<decltype(decrypted)>::value,
-                    "Trailer is wrong size");
-      if (CRYPTO_memcmp(kZeroTrailer, decrypted.data() + 8,
-                        sizeof(kZeroTrailer)) != 0) {
-        return base::nullopt;
-      }
-
-      CableNonce nonce;
-      static_assert(
-          sizeof(nonce) <= std::tuple_size<decltype(decrypted)>::value,
-          "nonce too large");
-      memcpy(nonce.data(), decrypted.data(), sizeof(nonce));
-      return nonce;
-    }
-
-    case Version::INVALID:
-      DCHECK(false);
-      return base::nullopt;
-  }
+  // Attempt to decrypt the EID with the EID generator key and check whether
+  // it has a valid structure.
+  AES_KEY key;
+  CableEidArray& out = *out_eid;
+  CHECK(AES_set_decrypt_key(v2->eid_gen_key.data(),
+                            /*bits=*/8 * v2->eid_gen_key.size(), &key) == 0);
+  static_assert(kCableEphemeralIdSize == AES_BLOCK_SIZE,
+                "EIDs are not AES blocks");
+  AES_decrypt(/*in=*/eid.data(), /*out=*/out.data(), &key);
+  return (out[3] & 0xc0) == 0 && out[4] == 0 && out[5] == 0;
 }
 
 // static
@@ -247,6 +218,13 @@ void CableDiscoveryData::InitFromQRSecret(
   ok = HKDF(v2->psk_gen_key.data(), v2->psk_gen_key.size(), EVP_sha256(),
             qr_secret.data(), qr_secret.size(), /*salt=*/nullptr, 0,
             reinterpret_cast<const uint8_t*>(kPSKGen), sizeof(kPSKGen) - 1);
+  DCHECK(ok);
+
+  static const char kTunnelIDGen[] = "caBLE QR to tunnel ID generator key";
+  ok = HKDF(v2->tunnel_id_gen_key.data(), v2->tunnel_id_gen_key.size(),
+            EVP_sha256(), qr_secret.data(), qr_secret.size(), /*salt=*/nullptr,
+            0, reinterpret_cast<const uint8_t*>(kTunnelIDGen),
+            sizeof(kTunnelIDGen) - 1);
   DCHECK(ok);
 }
 

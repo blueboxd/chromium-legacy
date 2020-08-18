@@ -13250,6 +13250,21 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="WebOTPImpact">
+  <owner>yigu@chromium.org</owner>
+  <owner>goto@chromium.org</owner>
+  <owner>web-identity@google.com</owner>
+  <summary>
+    Records in the browser process when a document is destroyed.
+  </summary>
+  <metric name="PhoneCollection" enum="PhoneCollectionState">
+    <summary>
+      Records whether a document collected phone number, and/or used WebOTP,
+      and/or used OneTimeCode (OTC) during its lifecycle.
+    </summary>
+  </metric>
+</event>
+
 <event name="WebRTC.AddressHarvesting">
   <owner>hta@chromium.org</owner>
   <summary>

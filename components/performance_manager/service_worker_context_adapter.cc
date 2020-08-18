@@ -267,6 +267,43 @@ void ServiceWorkerContextAdapter::OnVersionStoppedRunning(int64_t version_id) {
     observer.OnVersionStoppedRunning(version_id);
 }
 
+void ServiceWorkerContextAdapter::OnControlleeAdded(
+    int64_t version_id,
+    const std::string& client_uuid,
+    const content::ServiceWorkerClientInfo& client_info) {
+  // If |client_uuid| is already marked as a client of |version_id|, the
+  // notification is dropped.
+  bool inserted =
+      service_worker_clients_[version_id].insert(client_uuid).second;
+  if (!inserted)
+    return;
+
+  for (auto& observer : observer_list_)
+    observer.OnControlleeAdded(version_id, client_uuid, client_info);
+}
+
+void ServiceWorkerContextAdapter::OnControlleeRemoved(
+    int64_t version_id,
+    const std::string& client_uuid) {
+  // If |client_uuid| is not already marked as a client of |version_id|, the
+  // notification is dropped.
+  auto it = service_worker_clients_.find(version_id);
+  if (it == service_worker_clients_.end())
+    return;
+
+  size_t removed = it->second.erase(client_uuid);
+  if (!removed)
+    return;
+
+  // If a service worker no longer has any clients, it is removed entirely from
+  // |service_worker_clients_|.
+  if (it->second.empty())
+    service_worker_clients_.erase(it);
+
+  for (auto& observer : observer_list_)
+    observer.OnControlleeRemoved(version_id, client_uuid);
+}
+
 void ServiceWorkerContextAdapter::OnNoControllees(int64_t version_id,
                                                   const GURL& scope) {
   for (auto& observer : observer_list_)

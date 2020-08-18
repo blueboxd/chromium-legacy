@@ -1323,7 +1323,6 @@ https://support.google.com/chrome/?p=applescript</translation>
 <translation id="2564653188463346023">Correcteur orthographique amélioré</translation>
 <translation id="2566124945717127842">La fonctionnalité « Powerwash » réinitialise votre appareil <ph name="IDS_SHORT_PRODUCT_NAME" />, qui redevient comme neuf.</translation>
 <translation id="2568774940984945469">Conteneur de barres d'information</translation>
-<translation id="257088987046510401">Thèmes</translation>
 <translation id="2571655996835834626">Modifiez les paramètres qui contrôlent l'accès des sites Web aux éléments comme les témoins, le code JavaScript, les plugiciels, la géolocalisation, le microphone, l'appareil photo, etc.</translation>
 <translation id="2572032849266859634">L'accès en lecture seule à <ph name="VOLUME_NAME" /> a été accordé.</translation>
 <translation id="2575247648642144396">Cette icône s'affiche lorsque l'extension peut être utilisée dans la page affichée. Pour utiliser cette extension, cliquez sur l'icône ou appuyez sur <ph name="EXTENSION_SHORTCUT" />.</translation>
@@ -3347,7 +3346,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5115338116365931134">SSO</translation>
 <translation id="5116628073786783676">En&amp;registrer le fichier audio sous...</translation>
 <translation id="5117139026559873716">Déconnectez votre téléphone de votre <ph name="DEVICE_TYPE" />. Ils ne se connecteront plus automatiquement.</translation>
-<translation id="5117427536932535467">Thèmes et fonds d'écran</translation>
 <translation id="5117930984404104619">Surveiller le comportement des autres extensions, y compris les URL qu'elles visitent.</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Votre disque dur est plein. Veuillez faire l'enregistrement à un autre endroit ou libérer de l'espace sur le disque dur.</translation>
@@ -4293,6 +4291,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6277105963844135994">Délai d'attente réseau dépassé</translation>
 <translation id="6277518330158259200">Faire une s&amp;aisie d'écran</translation>
 <translation id="6278057325678116358">Utiliser GTK+</translation>
+<translation id="6278428485366576908">Thème</translation>
 <translation id="6278776436938569440">Changer le lieu</translation>
 <translation id="6279183038361895380">Appuyez sur |<ph name="ACCELERATOR" />| pour afficher votre curseur</translation>
 <translation id="6280215091796946657">Se connecter avec un autre compte</translation>

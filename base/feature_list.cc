@@ -536,7 +536,7 @@ void FeatureList::RegisterOverride(StringPiece feature_name,
     DCHECK(IsValidFeatureOrFieldTrialName(field_trial->trial_name()))
         << field_trial->trial_name();
   }
-  if (feature_name.starts_with("*")) {
+  if (StartsWith(feature_name, "*")) {
     feature_name = feature_name.substr(1);
     overridden_state = OVERRIDE_USE_DEFAULT;
   }

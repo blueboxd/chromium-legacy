@@ -122,7 +122,7 @@ gfx::Size MediaDialogView::CalculatePreferredSize() const {
   return gfx::Size(width, 1);
 }
 
-void MediaDialogView::OnContainerExpanded(bool expanded) {
+void MediaDialogView::OnContainerSizeChanged() {
   SizeToContents();
 }
 

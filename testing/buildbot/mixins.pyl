@@ -474,6 +474,15 @@
       },
     },
   },
+  'mac_arm64_apple_dtk_experimental': {
+    'swarming': {
+      'dimensions': {
+        'cpu': 'arm64',
+        'os': 'Mac-11.0',
+        'pool': 'chromium.tests.mac-arm64',
+      },
+    },
+  },
   'mac_mini_10.12': {
     'swarming': {
       'dimensions': {

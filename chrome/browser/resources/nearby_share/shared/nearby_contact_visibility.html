@@ -1,0 +1,299 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_radio_group/cr_radio_group.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_radio_button/cr_card_radio_button.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_icons_css.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_toggle/cr_toggle.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
+<link rel="import" href="nearby_share_settings_behavior.html">
+<link rel="import" href="nearby_shared_icons.html">
+
+<dom-module id="nearby-contact-visibility">
+  <template>
+    <style include="cr-icons cr-shared-style">
+      :host {
+        --card-border-color: var(--google-grey-300);
+        --cr-card-radio-button-padding: 8px 16px 8px 16px;
+        --iron-icon-height: var(--cr-icon-size);
+        --iron-icon-width: var(--cr-icon-size);
+      }
+
+      .grey-icon {
+        color: var(--google-grey-refresh-700);
+      }
+
+      #main {
+        display: flex;
+        flex-direction: column;
+      }
+
+      #visibilityRadioGroup {
+        display: flex;
+        justify-content: center;
+        margin-block-end: 8px;
+      }
+
+      cr-card-radio-button {
+        border: 1px solid var(--card-border-color);
+        box-shadow: none;
+        flex: 1;
+        margin-inline-end: 5px;
+        margin-inline-start: 5px;
+        padding: 0;
+        width: auto;
+      }
+
+      cr-card-radio-button[checked] {
+        border: 2px solid var(--cr-checked-color);
+      }
+
+      cr-card-radio-button:first-child {
+        margin-inline-start: 0;
+      }
+
+      cr-card-radio-button:last-child {
+        margin-inline-end: 0;
+      }
+
+      .card-contents {
+        color: var(--google-blue-600);
+      }
+      .card-icon {
+        margin-block-end: 8px;
+      }
+
+      #zeroStateContainer {
+        display: flex;
+        justify-content: center;
+        margin: 8px;
+      }
+
+      #zeroStateImageContainer {
+        flex-basis: 50%;
+        margin-inline-end: 24px;
+        margin-inline-start: auto;
+        text-align: end;
+      }
+
+      #zeroStateTextContainer {
+        display: flex;
+        flex-basis: 50%;
+        flex-direction: column;
+        justify-content: center;
+        margin-inline-end: 8px;
+        margin-inline-start: 8px;
+      }
+
+      #zeroStateText {
+        margin-block-end: 12px;
+      }
+
+      #zeroStateInfoContainer {
+        align-items: center;
+        display: flex;
+      }
+
+      #zeroStateIcon {
+        color: var(--cr-secondary-text-color);
+        margin-inline-end: 8px;
+      }
+
+      .viz-description-section div {
+        margin-block-end: 8px;
+      }
+
+      .explanation-section {
+        display: flex;
+        margin-block-end: 8px;
+        margin-block-start: 8px;
+      }
+
+      .padded-icon {
+        margin-inline-end: 16px;
+        margin-inline-start: 12px;
+        min-height: var(--cr-icon-size);
+        min-width: var(--cr-icon-size);
+      }
+
+      #contactsWrapper {
+        border-bottom: var(--cr-separator-line);
+        border-top: var(--cr-separator-line);
+        padding-block-start: 16px;
+      }
+
+      #contactsHeading {
+        font-size: 1.2rem;
+      }
+
+      #contactList {
+        height: 150px;
+        margin-block-end: 8px;
+        margin-block-start: 8px;
+      }
+
+      .contact-item {
+        display: flex;
+        height: 50px;
+        padding-block-end: 8px;
+        padding-block-start: 8px;
+      }
+
+      .contact-item[disabled] {
+        opacity: var(--cr-disabled-opacity);
+      }
+
+      .contact-toggle {
+        align-self: center;
+        margin-inline-end: 12px;
+        margin-inline-start: auto;
+      }
+
+      .contact-icon {
+        align-self: center;
+      }
+
+      #noContactsContainer {
+        align-items: center;
+        display: flex;
+        flex-direction: column;
+      }
+    </style>
+    <div id="main">
+
+      <cr-radio-group id="visibilityRadioGroup"
+          selected="{{selectedVisibility}}">
+        <cr-card-radio-button id="allContacts" class="flex" name="all">
+          <div class="card-contents">
+            <iron-icon icon="nearby20:contact-all" class="card-icon">
+            </iron-icon>
+            <div class="card-label">
+              All Contacts
+            </div>
+          </div>
+        </cr-card-radio-button>
+        <cr-card-radio-button id="someContacts" class="flex" name="some">
+          <div class="card-contents">
+            <iron-icon icon="nearby20:contact-group" class="card-icon">
+            </iron-icon>
+            <div class="card-label">
+              Some Contacts
+            </div>
+          </div>
+        </cr-card-radio-button>
+        <cr-card-radio-button id="noContacts" class="flex" name="none">
+          <div class="card-contents">
+            <iron-icon icon="nearby20:visibility-off" class="card-icon">
+            </iron-icon>
+            <div class="card-label">
+              Hidden
+            </div>
+          </div>
+        </cr-card-radio-button>
+      </cr-radio-group>
+
+      <!-- Zero state is shown only when no selection has been made yet. -->
+      <template is="dom-if" if="[[!isVisibilitySelected_(selectedVisibility)]]">
+        <div id="zeroStateContainer">
+          <div id="zeroStateImageContainer">
+            <img id="zeroStateImage" width="200" height="200"
+                src="/shared/nearby_device_visibility.svg">
+          </div>
+          <div id="zeroStateTextContainer">
+            <div id="zeroStateText" class="cr-title-text">
+              Your device visibility controls who can share with you while your
+              screen is unlocked.
+            </div>
+            <div id="zeroStateInfoContainer">
+              <iron-icon id="zeroStateIcon" icon="cr:info"></iron-icon>
+              <div class="cr-secondary-text">
+                Learn more about device visibility
+              </div>
+            </div>
+          </div>
+        </div>
+      </template>
+
+      <template is="dom-if" if="[[isVisibilitySelected_(selectedVisibility)]]">
+        <div id="explanation">
+
+          <div class="explanation-section">
+            <iron-icon icon="nearby20:radar" class="padded-icon grey-icon">
+            </iron-icon>
+            <div class="viz-description-section">
+              <div class="cr-title-text">Who you see</div>
+              <div class="cr-secondary-text">
+                Nearby sharing users who are temporarily visible to everyone or
+                have chosen to always be visible to you
+              </div>
+            </div>
+          </div>
+
+          <div class="explanation-section">
+            <iron-icon icon="nearby20:visibility" class="padded-icon grey-icon">
+            </iron-icon>
+            <div class="viz-description-section">
+              <div class="cr-title-text">Who sees you</div>
+              <template is="dom-if"
+                  if="[[isVisibility_(selectedVisibility,'all')]]">
+                <div class="cr-secondary-text">
+                  Current and future contacts who have Nearby Share turned on
+                </div>
+              </template>
+              <template is="dom-if"
+                  if="[[isVisibility_(selectedVisibility,'some')]]">
+                <div class="cr-secondary-text">
+                  Selected contacts who have Nearby Share turned on
+                </div>
+              </template>
+              <template is="dom-if"
+                  if="[[isVisibility_(selectedVisibility,'none')]]">
+                <div class="cr-secondary-text">Nobody!</div>
+              </template>
+            </div>
+          </div>
+
+        </div>
+
+        <div id="contactsWrapper">
+          <div id="contactsHeading">Contacts</div>
+
+          <!-- Show when the user has one or more contacts-->
+          <template is="dom-if" if="[[showContactsList_(contacts)]]">
+            <iron-list id="contactList" items="[[contacts]]">
+              <template>
+                <div class="contact-item"
+                    disabled$="[[isVisibility_(selectedVisibility,'none')]]">
+                  <iron-icon icon="cr:person"
+                      class="padded-icon grey-icon contact-icon">
+                  </iron-icon>
+                  <div>
+                    <div class="cr-title-text">[[item.name]]</div>
+                    <div class="cr-secondary-text">[[item.email]]</div>
+                  </div>
+                  <template is="dom-if"
+                      if="[[showContactCheckBoxes_(selectedVisibility)]]">
+                    <cr-toggle class="contact-toggle" checked="{{item.checked}}"
+                        disabled="[[!isVisibility_(selectedVisibility,'some')]]"
+                        >
+                    </cr-toggle>
+                  </template>
+                </div>
+              </template>
+            </iron-list>
+          </template>
+
+          <!-- Show when the user has no contacts available -->
+          <template is="dom-if" if="[[!showContactsList_(contacts)]]">
+            <div id="noContactsContainer">
+              <div class="cr-title-text">No Reachable Contacts</div>
+              <div class="cr-secondary-text">No Reachable Contacts Subtext</div>
+            </div>
+          </template>
+        </div>
+      </div>
+    </template>
+  </template>
+  <script src="nearby_contact_visibility.js"></script>
+</dom-module>

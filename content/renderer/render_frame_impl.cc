@@ -591,7 +591,8 @@ mojom::CommonNavigationParamsPtr MakeCommonNavigationParams(
       base::TimeTicks::Now(), info->url_request.HttpMethod().Latin1(),
       GetRequestBodyForWebURLRequest(info->url_request),
       std::move(source_location), false /* started_from_context_menu */,
-      info->url_request.HasUserGesture(), std::move(initiator_csp_info),
+      info->url_request.HasUserGesture(),
+      info->url_request.HasTextFragmentToken(), std::move(initiator_csp_info),
       initiator_origin_trial_features, info->href_translate.Latin1(),
       is_history_navigation_in_new_child_frame, info->input_start);
 }
@@ -989,6 +990,9 @@ void FillMiscNavigationParams(
 
   navigation_params->is_user_activated =
       commit_params.was_activated == mojom::WasActivatedOption::kYes;
+
+  navigation_params->has_text_fragment_token =
+      common_params.text_fragment_token;
 
   navigation_params->is_browser_initiated = commit_params.is_browser_initiated;
 

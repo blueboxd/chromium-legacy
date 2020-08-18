@@ -11901,6 +11901,7 @@ interface webkitURL
     getter onwheel
     getter opener
     getter origin
+    getter originIsolated
     getter originIsolationRestricted
     getter originPolicyIds
     getter outerHeight

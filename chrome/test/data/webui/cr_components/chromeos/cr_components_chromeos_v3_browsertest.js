@@ -16,7 +16,8 @@ GEN('#include "chromeos/constants/chromeos_features.h"');
  ['NetworkPasswordInput', 'network/network_password_input_test.m.js'],
 ].forEach(test => registerTest('Network', ...test));
 
-[['BasePage', 'cellular_setup/base_page_test.m.js']
+[['BasePage', 'cellular_setup/base_page_test.m.js'],
+ ['FinalPage', 'cellular_setup/final_page_test.m.js'],
 ].forEach(test => registerTest('CellularSetup', ...test));
 // clang-format on
 

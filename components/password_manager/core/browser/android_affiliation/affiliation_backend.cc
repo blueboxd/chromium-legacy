@@ -181,7 +181,7 @@ void AffiliationBackend::OnFetchSucceeded(
   fetcher_.reset();
   throttler_->InformOfNetworkRequestComplete(true);
 
-  for (const AffiliatedFacets& affiliated_facets : *result) {
+  for (const AffiliatedFacets& affiliated_facets : result->affiliations) {
     AffiliatedFacetsWithUpdateTime affiliation;
     affiliation.facets = affiliated_facets;
     affiliation.last_update_time = clock_->Now();

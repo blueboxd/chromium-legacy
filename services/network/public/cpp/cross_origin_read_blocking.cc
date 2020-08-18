@@ -137,7 +137,8 @@ size_t FindFirstJavascriptLineTerminator(const base::StringPiece& hay,
     // TODO(lukasza): Prevent matching 3 bytes that span/straddle 2 UTF8
     // characters.
     base::StringPiece substr = hay.substr(pos);
-    if (substr.starts_with("\u2028") || substr.starts_with("\u2029"))
+    if (base::StartsWith(substr, "\u2028") ||
+        base::StartsWith(substr, "\u2029"))
       break;
 
     pos++;  // Skip the \xe2 character.
@@ -158,8 +159,8 @@ size_t FindFirstJavascriptLineTerminator(const base::StringPiece& hay,
 // terminating character.
 SniffingResult MaybeSkipHtmlComment(StringPiece* data) {
   constexpr StringPiece kStartString = "<!--";
-  if (!data->starts_with(kStartString)) {
-    if (kStartString.starts_with(*data))
+  if (!base::StartsWith(*data, kStartString)) {
+    if (base::StartsWith(kStartString, *data))
       return CrossOriginReadBlocking::kMaybe;
     return CrossOriginReadBlocking::kNo;
   }

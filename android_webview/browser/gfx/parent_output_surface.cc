@@ -11,6 +11,7 @@
 #include "components/viz/service/display/output_surface_client.h"
 #include "components/viz/service/display/output_surface_frame.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/command_buffer/common/capabilities.h"
 
 namespace android_webview {
 
@@ -33,10 +34,12 @@ ParentOutputSurface::ParentOutputSurface(
     scoped_refptr<AwGLSurface> gl_surface,
     scoped_refptr<AwRenderThreadContextProvider> context_provider)
     : viz::OutputSurface(std::move(context_provider)),
-      gl_surface_(std::move(gl_surface)) {}
-
-ParentOutputSurface::~ParentOutputSurface() {
+      gl_surface_(std::move(gl_surface)) {
+  const auto& context_capabilities = context_provider_->ContextCapabilities();
+  capabilities_.max_render_target_size = context_capabilities.max_texture_size;
 }
+
+ParentOutputSurface::~ParentOutputSurface() = default;
 
 void ParentOutputSurface::BindToClient(viz::OutputSurfaceClient* client) {
   DCHECK(client);

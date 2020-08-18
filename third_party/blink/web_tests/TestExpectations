@@ -2651,7 +2651,6 @@ crbug.com/1110512 external/wpt/css/css-pseudo/selection-contenteditable-011.html
 crbug.com/1105958 external/wpt/payment-request/payment-is-showing.https.html [ Timeout ]
 
 # ====== New tests from wpt-importer added here ======
-crbug.com/626703 external/wpt/dom/events/Event-dispatch-click.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/input-events/input-events-get-target-ranges-backspace.tentative.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/input-events/input-events-get-target-ranges-backspace.tentative.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/input-events/input-events-get-target-ranges-backspace.tentative.html [ Timeout ]
@@ -3504,6 +3503,9 @@ crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/margin-collap
 
 # Other untriaged test failures, timeouts and crashes from newly-imported WPT tests.
 crbug.com/626703 external/wpt/html/browsers/history/the-location-interface/location-protocol-setter-non-broken.html [ Failure Pass ]
+
+# <input disabled> does not fire click events after dispatchEvent
+crbug.com/1115661 external/wpt/dom/events/Event-dispatch-click.html [ Timeout ]
 
 # Underline offset and thickness are not implemented yet.
 crbug.com/785230 external/wpt/css/css-text-decor/text-underline-offset-scroll-001.html [ Skip ]

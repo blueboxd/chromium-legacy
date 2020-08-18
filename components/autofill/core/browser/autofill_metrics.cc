@@ -2428,4 +2428,17 @@ void AutofillMetrics::LogAddressFormImportStatustMetric(
   base::UmaHistogramEnumeration("Autofill.AddressProfileImportStatus", metric);
 }
 
+// static
+void AutofillMetrics::LogWebOTPPhoneCollectionMetricStateUkm(
+    ukm::UkmRecorder* recorder,
+    ukm::SourceId source_id,
+    uint32_t phone_collection_metric_state) {
+  DCHECK(recorder);
+  DCHECK_NE(source_id, ukm::kInvalidSourceId);
+
+  ukm::builders::WebOTPImpact builder(source_id);
+  builder.SetPhoneCollection(phone_collection_metric_state);
+  builder.Record(recorder);
+}
+
 }  // namespace autofill

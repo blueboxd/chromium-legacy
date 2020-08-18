@@ -64,6 +64,8 @@ CSSValue* ConsumeAnimationValue(CSSPropertyID property,
                                              CSSValueID::kPaused>(range);
     case CSSPropertyID::kAnimationTimingFunction:
       return css_parsing_utils::ConsumeAnimationTimingFunction(range, context);
+    case CSSPropertyID::kAnimationTimeline:
+      return css_parsing_utils::ConsumeAnimationTimeline(range, context);
     default:
       NOTREACHED();
       return nullptr;
@@ -127,6 +129,15 @@ const CSSValue* Animation::CSSValueFromComputedStyleInternal(
           CSSTimingData::GetRepeated(animation_data->PlayStateList(), i)));
       list->Append(*MakeGarbageCollected<CSSCustomIdentValue>(
           animation_data->NameList()[i]));
+      // When serializing shorthands, a component value must be omitted
+      // if doesn't change the meaning of the overall value.
+      // https://drafts.csswg.org/cssom/#serializing-css-values
+      if (CSSAnimationData::InitialTimeline() !=
+          animation_data->GetTimeline(i)) {
+        DCHECK(RuntimeEnabledFeatures::CSSScrollTimelineEnabled());
+        list->Append(*ComputedStyleUtils::ValueForStyleNameOrKeyword(
+            animation_data->GetTimeline(i)));
+      }
       animations_list->Append(*list);
     }
     return animations_list;

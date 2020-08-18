@@ -1322,7 +1322,6 @@
 <translation id="2564653188463346023">تدقيق إملائي مُحسّن</translation>
 <translation id="2566124945717127842">‏يمكنك إجراء Powerwash لإعادة تعيين جهاز <ph name="IDS_SHORT_PRODUCT_NAME" /> ليصبح كما لو كان جديدًا.</translation>
 <translation id="2568774940984945469">حاوية شريط المعلومات</translation>
-<translation id="257088987046510401">المظاهر</translation>
 <translation id="2571655996835834626">يمكنك تغيير الإعدادات التي تتحكَّم في وصول المواقع الإلكترونية إلى ميزات مثل ملفات تعريف الارتباط وجافا سكريبت والمكوّنات الإضافية والمواقع الجغرافية والميكروفون والكاميرا وغيرها.</translation>
 <translation id="2572032849266859634">تم منح إذن دخول للقراءة فقط إلى <ph name="VOLUME_NAME" />.</translation>
 <translation id="2575247648642144396">سيكون هذا الرمز مرئيًا عندما تتمكن الإضافة من تنفيذ الإجراءات على الصفحة الحالية. يمكنك استخدام هذه الإضافة بالنقر على الرمز أو بالضغط على <ph name="EXTENSION_SHORTCUT" />.</translation>
@@ -3343,7 +3342,6 @@
 <translation id="5115338116365931134">‏الدخول المُوحَّد (SSO)</translation>
 <translation id="5116628073786783676">حف&amp;ظ ملف الصوت باسم...</translation>
 <translation id="5117139026559873716">يمكنك إلغاء ربط هاتفك بجهاز <ph name="DEVICE_TYPE" />. لن يتم ربطهما تلقائيًا بعد الآن.</translation>
-<translation id="5117427536932535467">المظاهر والخلفيات</translation>
 <translation id="5117930984404104619">‏مراقبة سلوك الإضافات الأخرى، بما في ذلك عناوين URL التي تم الانتقال إليها</translation>
 <translation id="5119173345047096771">موزيلا فايرفوكس</translation>
 <translation id="5121130586824819730">القرص الصلب ممتلئ. يُرجى الحفظ في مكان آخر أو توفير مساحة أكبر على القرص الصلب.</translation>
@@ -4291,6 +4289,7 @@
 <translation id="6277105963844135994">انتهاء مهلة الشبكة</translation>
 <translation id="6277518330158259200">الت&amp;قاط لقطة شاشة</translation>
 <translation id="6278057325678116358">‏استخدام مظهر +GTK</translation>
+<translation id="6278428485366576908">مظهر</translation>
 <translation id="6278776436938569440">تغيير الموقع الجغرافي</translation>
 <translation id="6279183038361895380">اضغط على |<ph name="ACCELERATOR" />| لعرض المؤشر</translation>
 <translation id="6280215091796946657">تسجيل الدخول باستخدام حساب مختلف</translation>

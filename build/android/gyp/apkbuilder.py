@@ -119,6 +119,9 @@ def _ParseArgs(args):
       '--library-renames',
       action='append',
       help='The list of library files that we prepend crazy. to their names.')
+  parser.add_argument('--warnings-as-errors',
+                      action='store_true',
+                      help='Treat all warnings as errors.')
   diff_utils.AddCommandLineFlags(parser)
   options = parser.parse_args(args)
   options.assets = build_utils.ParseGnList(options.assets)
@@ -536,9 +539,15 @@ def main(args):
 
     if options.format == 'apk':
       zipalign_path = None if fast_align else options.zipalign_path
-      finalize_apk.FinalizeApk(options.apksigner_jar, zipalign_path, f.name,
-                               f.name, options.key_path, options.key_passwd,
-                               options.key_name, int(options.min_sdk_version))
+      finalize_apk.FinalizeApk(options.apksigner_jar,
+                               zipalign_path,
+                               f.name,
+                               f.name,
+                               options.key_path,
+                               options.key_passwd,
+                               options.key_name,
+                               int(options.min_sdk_version),
+                               warnings_as_errors=options.warnings_as_errors)
     logging.debug('Moving file into place')
 
     if options.depfile:

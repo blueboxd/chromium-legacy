@@ -28,6 +28,7 @@ import static org.chromium.chrome.browser.password_check.PasswordCheckProperties
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.CHECK_STATUS;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.CHECK_TIMESTAMP;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.COMPROMISED_CREDENTIALS_COUNT;
+import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.LAUNCH_ACCOUNT_CHECKUP_ACTION;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.RESTART_BUTTON_ACTION;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.UNKNOWN_PROGRESS;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.ITEMS;
@@ -100,7 +101,7 @@ public class PasswordCheckControllerTest {
         mModel = PasswordCheckProperties.createDefaultModel();
         mMediator = new PasswordCheckMediator(mChangePasswordDelegate, mReauthenticationHelper);
         PasswordCheckFactory.setPasswordCheckForTesting(mPasswordCheck);
-        mMediator.initialize(mModel, mDelegate, PasswordCheckReferrer.PASSWORD_SETTINGS);
+        mMediator.initialize(mModel, mDelegate, PasswordCheckReferrer.PASSWORD_SETTINGS, () -> {});
     }
 
     @Test
@@ -125,7 +126,7 @@ public class PasswordCheckControllerTest {
     public void testInitializeHeaderWithLastStatusWhenComingFromSafetyCheck() {
         clearInvocations(mPasswordCheck); // Clear invocations from setup code.
         when(mPasswordCheck.getCheckStatus()).thenReturn(PasswordCheckUIStatus.IDLE);
-        mMediator.initialize(mModel, mDelegate, PasswordCheckReferrer.SAFETY_CHECK);
+        mMediator.initialize(mModel, mDelegate, PasswordCheckReferrer.SAFETY_CHECK, () -> {});
         assertIdleHeader(mModel.get(ITEMS).get(0));
         verify(mPasswordCheck, never()).startCheck();
     }
@@ -300,7 +301,6 @@ public class PasswordCheckControllerTest {
         assertNull(header.model.get(CHECK_PROGRESS));
         assertNotNull(header.model.get(CHECK_TIMESTAMP));
         assertNotNull(header.model.get(COMPROMISED_CREDENTIALS_COUNT));
-        assertNotNull(header.model.get(RESTART_BUTTON_ACTION));
     }
 
     private void assertRunningHeader(
@@ -309,7 +309,6 @@ public class PasswordCheckControllerTest {
         assertThat(header.model.get(CHECK_PROGRESS), is(progress));
         assertNull(header.model.get(CHECK_TIMESTAMP));
         assertNull(header.model.get(COMPROMISED_CREDENTIALS_COUNT));
-        assertNotNull(header.model.get(RESTART_BUTTON_ACTION));
     }
 
     private void assertHeaderTypeWithStatus(
@@ -317,5 +316,6 @@ public class PasswordCheckControllerTest {
         assertThat(header.type, is(ItemType.HEADER));
         assertThat(header.model.get(CHECK_STATUS), is(status));
         assertNotNull(header.model.get(RESTART_BUTTON_ACTION));
+        assertNotNull(header.model.get(LAUNCH_ACCOUNT_CHECKUP_ACTION));
     }
 }

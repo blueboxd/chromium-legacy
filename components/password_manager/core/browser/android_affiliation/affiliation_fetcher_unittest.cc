@@ -47,6 +47,12 @@ class MockAffiliationFetcherDelegate
   }
 
   const Result& result() const { return *result_; }
+  const std::vector<AffiliatedFacets>& affiliations() const {
+    return result_->affiliations;
+  }
+  const std::vector<GroupedFacets>& groupings() const {
+    return result_->groupings;
+  }
 
  private:
   std::unique_ptr<Result> result_;
@@ -154,14 +160,14 @@ TEST_F(AffiliationFetcherTest, BasicReqestAndResponse) {
   ASSERT_NO_FATAL_FAILURE(VerifyRequestPayload(requested_uris));
   ASSERT_TRUE(testing::Mock::VerifyAndClearExpectations(&mock_delegate));
 
-  ASSERT_EQ(2u, mock_delegate.result().size());
-  EXPECT_THAT(mock_delegate.result()[0],
+  ASSERT_EQ(2u, mock_delegate.affiliations().size());
+  EXPECT_THAT(mock_delegate.affiliations()[0],
               testing::UnorderedElementsAre(
                   Facet{FacetURI::FromCanonicalSpec(kExampleWebFacet1URI)},
                   Facet{FacetURI::FromCanonicalSpec(kExampleWebFacet2URI)},
                   Facet{FacetURI::FromCanonicalSpec(kExampleAndroidFacetURI)}));
   EXPECT_THAT(
-      mock_delegate.result()[1],
+      mock_delegate.affiliations()[1],
       testing::UnorderedElementsAre(
           Facet{FacetURI::FromCanonicalSpec(kNotExampleWebFacetURI)},
           Facet{FacetURI::FromCanonicalSpec(kNotExampleAndroidFacetURI)}));
@@ -193,8 +199,8 @@ TEST_F(AffiliationFetcherTest, AndroidBrandingInfoIsReturnedIfPresent) {
   ASSERT_NO_FATAL_FAILURE(VerifyRequestPayload(requested_uris));
   ASSERT_TRUE(testing::Mock::VerifyAndClearExpectations(&mock_delegate));
 
-  ASSERT_EQ(1u, mock_delegate.result().size());
-  EXPECT_THAT(mock_delegate.result()[0],
+  ASSERT_EQ(1u, mock_delegate.affiliations().size());
+  EXPECT_THAT(mock_delegate.affiliations()[0],
               testing::UnorderedElementsAre(
                   Facet{FacetURI::FromCanonicalSpec(kExampleWebFacet1URI)},
                   Facet{FacetURI::FromCanonicalSpec(kExampleWebFacet2URI)},
@@ -224,8 +230,8 @@ TEST_F(AffiliationFetcherTest, MissingEquivalenceClassesAreCreated) {
   ASSERT_NO_FATAL_FAILURE(VerifyRequestPayload(requested_uris));
   ASSERT_TRUE(testing::Mock::VerifyAndClearExpectations(&mock_delegate));
 
-  ASSERT_EQ(1u, mock_delegate.result().size());
-  EXPECT_THAT(mock_delegate.result()[0],
+  ASSERT_EQ(1u, mock_delegate.affiliations().size());
+  EXPECT_THAT(mock_delegate.affiliations()[0],
               testing::UnorderedElementsAre(
                   Facet{FacetURI::FromCanonicalSpec(kExampleWebFacet1URI)}));
 }
@@ -254,8 +260,8 @@ TEST_F(AffiliationFetcherTest, DuplicateEquivalenceClassesAreIgnored) {
 
   ASSERT_TRUE(testing::Mock::VerifyAndClearExpectations(&mock_delegate));
 
-  ASSERT_EQ(1u, mock_delegate.result().size());
-  EXPECT_THAT(mock_delegate.result()[0],
+  ASSERT_EQ(1u, mock_delegate.affiliations().size());
+  EXPECT_THAT(mock_delegate.affiliations()[0],
               testing::UnorderedElementsAre(
                   Facet{FacetURI::FromCanonicalSpec(kExampleWebFacet1URI)},
                   Facet{FacetURI::FromCanonicalSpec(kExampleWebFacet2URI)},
@@ -282,8 +288,8 @@ TEST_F(AffiliationFetcherTest, EmptyEquivalenceClassesAreIgnored) {
 
   ASSERT_TRUE(testing::Mock::VerifyAndClearExpectations(&mock_delegate));
 
-  ASSERT_EQ(1u, mock_delegate.result().size());
-  EXPECT_THAT(mock_delegate.result()[0],
+  ASSERT_EQ(1u, mock_delegate.affiliations().size());
+  EXPECT_THAT(mock_delegate.affiliations()[0],
               testing::UnorderedElementsAre(
                   Facet{FacetURI::FromCanonicalSpec(kExampleWebFacet1URI)}));
 }
@@ -314,8 +320,8 @@ TEST_F(AffiliationFetcherTest, UnrecognizedFacetURIsAreIgnored) {
 
   ASSERT_TRUE(testing::Mock::VerifyAndClearExpectations(&mock_delegate));
 
-  ASSERT_EQ(1u, mock_delegate.result().size());
-  EXPECT_THAT(mock_delegate.result()[0],
+  ASSERT_EQ(1u, mock_delegate.affiliations().size());
+  EXPECT_THAT(mock_delegate.affiliations()[0],
               testing::UnorderedElementsAre(
                   Facet{FacetURI::FromCanonicalSpec(kExampleWebFacet1URI)},
                   Facet{FacetURI::FromCanonicalSpec(kExampleWebFacet2URI)},

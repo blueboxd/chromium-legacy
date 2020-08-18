@@ -46,6 +46,8 @@ android_library("internal_java") {
     "java/src/org/chromium/chrome/browser/keyboard_accessory/ManualFillingProperties.java",
     "java/src/org/chromium/chrome/browser/keyboard_accessory/ManualFillingState.java",
     "java/src/org/chromium/chrome/browser/keyboard_accessory/ManualFillingStateCache.java",
+    "java/src/org/chromium/chrome/browser/keyboard_accessory/all_passwords_bottom_sheet/AllPasswordsBottomSheetBridge.java",
+    "java/src/org/chromium/chrome/browser/keyboard_accessory/all_passwords_bottom_sheet/Credential.java",
     "java/src/org/chromium/chrome/browser/keyboard_accessory/bar_component/KeyboardAccessoryCoordinator.java",
     "java/src/org/chromium/chrome/browser/keyboard_accessory/bar_component/KeyboardAccessoryIPHUtils.java",
     "java/src/org/chromium/chrome/browser/keyboard_accessory/bar_component/KeyboardAccessoryMediator.java",

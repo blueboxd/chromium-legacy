@@ -286,7 +286,19 @@ NearbyConnectionsManagerImpl::GetRawAuthenticationToken(
 
 void NearbyConnectionsManagerImpl::UpgradeBandwidth(
     const std::string& endpoint_id) {
-  // TODO(crbug/1076008): Implement.
+  if (!nearby_connections_)
+    return;
+
+  nearby_connections_->InitiateBandwidthUpgrade(
+      endpoint_id,
+      base::BindOnce(
+          [](const std::string& endpoint_id, ConnectionsStatus status) {
+            NS_LOG(VERBOSE)
+                << __func__ << ": Bandwidth upgrade attempted to endpoint "
+                << endpoint_id << "over Nearby Connections with result "
+                << status;
+          },
+          endpoint_id));
 }
 
 void NearbyConnectionsManagerImpl::OnNearbyProfileChanged(Profile* profile) {

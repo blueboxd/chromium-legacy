@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.password_check;
 
+import static android.text.InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD;
+
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
@@ -13,6 +15,7 @@ import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static junit.framework.Assert.assertTrue;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
@@ -25,14 +28,18 @@ import static org.chromium.content_public.browser.test.util.CriteriaHelper.pollU
 import static org.chromium.content_public.browser.test.util.TestThreadUtils.runOnUiThreadBlocking;
 
 import android.os.Bundle;
-import android.text.InputType;
+import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageButton;
 
 import androidx.annotation.StringRes;
 import androidx.test.filters.MediumTest;
 
 import com.google.android.material.textfield.TextInputLayout;
 
+import org.hamcrest.BaseMatcher;
+import org.hamcrest.Description;
+import org.hamcrest.Matcher;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -43,10 +50,13 @@ import org.mockito.MockitoAnnotations;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.password_manager.settings.ReauthenticationManager;
 import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.url.GURL;
+
+import java.util.concurrent.ExecutionException;
 
 /**
  * View tests for the Password Check Edit screen only.
@@ -99,7 +109,7 @@ public class PasswordCheckEditViewTest {
         assertNotNull(password.getText());
         assertNotNull(password.getText().toString());
         assertThat(password.getText().toString(), equalTo(ANA.getPassword()));
-        assertTrue((password.getInputType() & InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD) != 0);
+        assertTrue((password.getInputType() & TYPE_TEXT_VARIATION_VISIBLE_PASSWORD) != 0);
     }
 
     @Test
@@ -151,7 +161,43 @@ public class PasswordCheckEditViewTest {
                 equalTo(getString(R.string.pref_edit_dialog_field_required_validation_message)));
     }
 
+    @Test
+    @MediumTest
+    public void testMasksPasswordOnEyeIconClick() throws ExecutionException {
+        EditText password = mPasswordCheckEditView.getView().findViewById(R.id.password_edit);
+        ImageButton unmaskButton = mPasswordCheckEditView.getView().findViewById(
+                R.id.password_entry_editor_view_password);
+        ImageButton maskButton = mPasswordCheckEditView.getView().findViewById(
+                R.id.password_entry_editor_mask_password);
+        assertNotNull(password);
+        assertNotNull(unmaskButton);
+        assertNotNull(maskButton);
+
+        // Unmasked by default since the user just reauthenticated.
+        assertThat(maskButton.getVisibility(), is(View.VISIBLE));
+        assertThat(unmaskButton.getVisibility(), is(View.GONE));
+        assertThat(password, isVisiblePasswordInput(true));
+
+        // Clicking the mask button obfuscates the password.
+        runOnUiThreadBlocking(maskButton::callOnClick);
+        assertThat(maskButton.getVisibility(), is(View.GONE));
+        assertThat(unmaskButton.getVisibility(), is(View.VISIBLE));
+        assertThat(password, isVisiblePasswordInput(false));
+
+        // Clicking the unmask button shows the password again.
+        runOnUiThreadBlocking(unmaskButton::callOnClick);
+        assertThat(maskButton.getVisibility(), is(View.VISIBLE));
+        assertThat(unmaskButton.getVisibility(), is(View.GONE));
+        assertThat(password, isVisiblePasswordInput(true));
+    }
+
     private void setUpUiLaunchedFromSettings() {
+        ReauthenticationManager.setApiOverride(ReauthenticationManager.OverrideState.AVAILABLE);
+        ReauthenticationManager.setScreenLockSetUpOverride(
+                ReauthenticationManager.OverrideState.AVAILABLE);
+        ReauthenticationManager.recordLastReauth(
+                System.currentTimeMillis(), ReauthenticationManager.ReauthScope.BULK);
+
         Bundle fragmentArgs = new Bundle();
         fragmentArgs.putParcelable(EXTRA_COMPROMISED_CREDENTIAL, ANA);
         mTestRule.startSettingsActivity(fragmentArgs);
@@ -160,5 +206,30 @@ public class PasswordCheckEditViewTest {
 
     private String getString(@StringRes int stringId) {
         return mPasswordCheckEditView.getContext().getString(stringId);
+    }
+
+    /**
+     * Matches any {@link EditText} which has the content visibility matching to |shouldBeVisible|.
+     * @return The matcher checking the input type.
+     */
+    private Matcher<EditText> isVisiblePasswordInput(boolean shouldBeVisible) {
+        return new BaseMatcher<EditText>() {
+            @Override
+            public boolean matches(Object o) {
+                EditText editText = (EditText) o;
+                return ((editText.getInputType() & TYPE_TEXT_VARIATION_VISIBLE_PASSWORD)
+                               == TYPE_TEXT_VARIATION_VISIBLE_PASSWORD)
+                        == shouldBeVisible;
+            }
+
+            @Override
+            public void describeTo(Description description) {
+                if (shouldBeVisible) {
+                    description.appendText("The content should be visible.");
+                } else {
+                    description.appendText("The content should not be visible.");
+                }
+            }
+        };
     }
 }

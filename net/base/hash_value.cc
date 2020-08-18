@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "net/base/hash_value.h"
+#include "base/strings/string_util.h"
 
 #include <stdlib.h>
 #include <algorithm>
@@ -43,7 +44,7 @@ HashValue::HashValue(const SHA256HashValue& hash)
 
 bool HashValue::FromString(const base::StringPiece value) {
   base::StringPiece base64_str;
-  if (value.starts_with("sha256/")) {
+  if (base::StartsWith(value, "sha256/")) {
     tag_ = HASH_VALUE_SHA256;
     base64_str = value.substr(7);
   } else {

@@ -114,7 +114,7 @@ class DomDistillerJsTest : public content::ContentBrowserTest {
 // https://crbug.com/845180
 // Then disabled more generally on Android: https://crbug.com/979685
 #if defined(MEMORY_SANITIZER) || defined(OS_WIN) || defined(OS_ANDROID) || \
-    (defined(OS_LINUX) &&                                                  \
+    ((defined(OS_LINUX) || defined(OS_CHROMEOS)) &&                        \
      (BUILDFLAG(CFI_CAST_CHECK) || BUILDFLAG(CFI_ICALL_CHECK) ||           \
       BUILDFLAG(CFI_ENFORCEMENT_DIAGNOSTIC) ||                             \
       BUILDFLAG(CFI_ENFORCEMENT_TRAP)))

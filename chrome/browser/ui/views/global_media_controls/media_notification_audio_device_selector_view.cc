@@ -9,6 +9,7 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/global_media_controls/media_notification_container_impl.h"
 #include "chrome/browser/ui/global_media_controls/media_notification_service.h"
+#include "chrome/browser/ui/views/global_media_controls/media_notification_audio_device_selector_view_delegate.h"
 #include "components/vector_icons/vector_icons.h"
 #include "media/audio/audio_device_description.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -44,11 +45,11 @@ constexpr gfx::Insets kDeviceButtonInsets = gfx::Insets(5);
 
 MediaNotificationAudioDeviceSelectorView::
     MediaNotificationAudioDeviceSelectorView(
-        MediaNotificationContainerImpl* container,
+        MediaNotificationAudioDeviceSelectorViewDelegate* delegate,
         MediaNotificationService* service,
         gfx::Size size,
         const std::string& current_device_id)
-    : container_(container),
+    : delegate_(delegate),
       service_(service),
       current_device_id_(current_device_id) {
   DCHECK(service);
@@ -147,7 +148,7 @@ void MediaNotificationAudioDeviceSelectorView::ButtonPressed(
     const ui::Event& event) {
   auto it = sink_id_map_.find(sender);
   if (it != sink_id_map_.end()) {
-    container_->OnAudioSinkChosen(it->second);
+    delegate_->OnAudioSinkChosen(it->second);
   }
 }
 

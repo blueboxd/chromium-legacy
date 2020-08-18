@@ -34,7 +34,7 @@ class PingManagerTest : public testing::Test {
     }
 
     ping_manager_.reset(
-        new PingManager(nullptr, safe_browsing::GetTestV4ProtocolConfig()));
+        new PingManager(safe_browsing::GetTestV4ProtocolConfig()));
   }
 
   PingManager* ping_manager() { return ping_manager_.get(); }

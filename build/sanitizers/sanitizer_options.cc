@@ -42,7 +42,7 @@ void _sanitizer_options_link_helper() { }
 //   detect_stack_use_after_return=1 - use fake stack to delay the reuse of
 //     stack allocations and detect stack-use-after-return errors.
 //   symbolize=1 - enable in-process symbolization.
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 const char kAsanDefaultOptions[] =
     "check_printf=1 use_sigaltstack=1 strip_path_prefix=/../../ "
     "fast_unwind_on_fatal=1 detect_stack_use_after_return=1 "
@@ -57,9 +57,10 @@ const char* kAsanDefaultOptions =
 const char* kAsanDefaultOptions =
     "check_printf=1 use_sigaltstack=1 strip_path_prefix=\\..\\..\\ "
     "fast_unwind_on_fatal=1 detect_stack_use_after_return=1 ";
-#endif  // OS_LINUX
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
-#if defined(OS_LINUX) || defined(OS_APPLE) || defined(OS_WIN)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_APPLE) || \
+    defined(OS_WIN)
 // Allow NaCl to override the default asan options.
 extern const char* kAsanDefaultOptionsNaCl;
 __attribute__((weak)) const char* kAsanDefaultOptionsNaCl = nullptr;
@@ -75,10 +76,11 @@ extern char kASanDefaultSuppressions[];
 SANITIZER_HOOK_ATTRIBUTE const char *__asan_default_suppressions() {
   return kASanDefaultSuppressions;
 }
-#endif  // OS_LINUX || OS_APPLE || OS_WIN
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_APPLE) ||
+        // defined(OS_WIN)
 #endif  // ADDRESS_SANITIZER
 
-#if defined(THREAD_SANITIZER) && defined(OS_LINUX)
+#if defined(THREAD_SANITIZER) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
 // Default options for ThreadSanitizer in various configurations:
 //   detect_deadlocks=1 - enable deadlock (lock inversion) detection.
 //   second_deadlock_stack=1 - more verbose deadlock reports.
@@ -106,7 +108,8 @@ SANITIZER_HOOK_ATTRIBUTE const char *__tsan_default_suppressions() {
   return kTSanDefaultSuppressions;
 }
 
-#endif  // THREAD_SANITIZER && OS_LINUX
+#endif  // defined(THREAD_SANITIZER) && (defined(OS_LINUX) ||
+        // defined(OS_CHROMEOS))
 
 #if defined(MEMORY_SANITIZER)
 // Default options for MemorySanitizer:

@@ -9,7 +9,7 @@
 
 #include "base/check_op.h"
 #include "pdf/ppapi_migration/geometry_conversions.h"
-#include "ppapi/cpp/point.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace chrome_pdf {
@@ -91,7 +91,7 @@ pp::Rect GetRectForSingleView(const gfx::Size& rect_size,
 }
 
 pp::Rect GetScreenRect(const pp::Rect& rect,
-                       const pp::Point& position,
+                       const gfx::Point& position,
                        double zoom) {
   DCHECK_GT(zoom, 0);
 
@@ -146,7 +146,7 @@ pp::Rect GetBottomFillRect(const pp::Rect& page_rect,
 }
 
 pp::Rect GetLeftRectForTwoUpView(const gfx::Size& rect_size,
-                                 const pp::Point& position) {
+                                 const gfx::Point& position) {
   DCHECK_LE(rect_size.width(), position.x());
 
   return pp::Rect(position.x() - rect_size.width(), position.y(),
@@ -154,7 +154,7 @@ pp::Rect GetLeftRectForTwoUpView(const gfx::Size& rect_size,
 }
 
 pp::Rect GetRightRectForTwoUpView(const gfx::Size& rect_size,
-                                  const pp::Point& position) {
+                                  const gfx::Point& position) {
   return pp::Rect(position.x(), position.y(), rect_size.width(),
                   rect_size.height());
 }

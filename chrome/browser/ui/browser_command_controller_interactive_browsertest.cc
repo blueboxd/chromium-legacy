@@ -161,7 +161,7 @@ IN_PROC_BROWSER_TEST_F(BrowserCommandControllerInteractiveTest,
                        MAYBE_ShortcutsShouldTakeEffectInJsFullscreen) {
 // This test is flaky. See http://crbug.com/759704.
 // TODO(zijiehe): Find out the root cause.
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   return;
 #endif
   ASSERT_NO_FATAL_FAILURE(SendShortcutsAndExpectNotPrevented(true));

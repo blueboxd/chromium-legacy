@@ -186,7 +186,7 @@ TEST_F(TextfieldModelTest, EditString_ComplexScript) {
 // TODO(xji): temporarily disable in platform Win since the complex script
 // characters turned into empty square due to font regression. So, not able
 // to test 2 characters belong to the same grapheme.
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   EXPECT_EQ(
       base::WideToUTF16(L"\x0915\x093f\x0061\x0062\x0915\x094d\x092e\x094d"),
       model.text());
@@ -198,7 +198,7 @@ TEST_F(TextfieldModelTest, EditString_ComplexScript) {
   // TODO(xji): temporarily disable in platform Win since the complex script
   // characters turned into empty square due to font regression. So, not able
   // to test 2 characters belong to the same grapheme.
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   EXPECT_TRUE(model.Delete());
   EXPECT_EQ(base::WideToUTF16(L"\x0061\x0062\x0915\x094d\x092e\x094d"),
             model.text());
@@ -371,7 +371,7 @@ TEST_F(TextfieldModelTest, Selection_BidiWithNonSpacingMarks) {
   // TODO(xji): temporarily disable in platform Win since the complex script
   // characters turned into empty square due to font regression. So, not able
   // to test 2 characters belong to the same grapheme.
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   model.Append(
       base::WideToUTF16(L"abc\x05E9\x05BC\x05C1\x05B8\x05E0\x05B8"
                         L"def"));
@@ -955,7 +955,7 @@ TEST_F(TextfieldModelTest, SelectWordTest) {
 // TODO(xji): temporarily disable in platform Win since the complex script
 // characters and Chinese characters are turned into empty square due to font
 // regression.
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 TEST_F(TextfieldModelTest, SelectWordTest_MixScripts) {
   TextfieldModel model(nullptr);
   std::vector<WordAndCursor> word_and_cursor;

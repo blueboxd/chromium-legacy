@@ -23,6 +23,8 @@ source_set("metrics") {
   sources = [
     "incognito_web_state_observer.h",
     "incognito_web_state_observer.mm",
+    "ios_chrome_default_browser_metrics_provider.h",
+    "ios_chrome_default_browser_metrics_provider.mm",
     "ios_chrome_metrics_service_accessor.cc",
     "ios_chrome_metrics_service_accessor.h",
     "ios_chrome_metrics_service_client.h",
@@ -79,6 +81,7 @@ source_set("metrics") {
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/translate",
     "//ios/chrome/browser/ui/util:multiwindow_util",
+    "//ios/chrome/browser/ui/whats_new:utils",
     "//ios/chrome/browser/variations",
     "//ios/chrome/browser/variations:ios_chrome_ui_string_overrider_factory",
     "//ios/chrome/browser/web_state_list",
@@ -96,6 +99,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "chrome_browser_state_client_unittest.mm",
+    "ios_chrome_default_browser_metrics_provider_unittest.mm",
     "ios_chrome_metrics_service_accessor_unittest.cc",
     "ios_chrome_metrics_service_client_unittest.mm",
     "ios_chrome_stability_metrics_provider_unittest.mm",
@@ -119,6 +123,7 @@ source_set("unit_tests") {
     "//components/version_info",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state:test_support",
+    "//ios/chrome/browser/ui/whats_new:utils",
     "//ios/chrome/browser/web:test_support",
     "//ios/chrome/test:test_support",
     "//ios/web/common",

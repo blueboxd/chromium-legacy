@@ -132,11 +132,16 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
   // Returns true if the access should be allowed, or false if it should be
   // blocked.
   //
+  // |cookie_being_set| should be non-nullptr if setting a cookie, and should be
+  // nullptr otherwise (getting cookies, subscribing to cookie changes).
+  //
   // If the access would not be allowed, this helper calls
   // mojo::ReportBadMessage(), which closes the pipe.
-  bool ValidateAccessToCookiesAt(const GURL& url,
-                                 const net::SiteForCookies& site_for_cookies,
-                                 const url::Origin& top_frame_origin);
+  bool ValidateAccessToCookiesAt(
+      const GURL& url,
+      const net::SiteForCookies& site_for_cookies,
+      const url::Origin& top_frame_origin,
+      const net::CanonicalCookie* cookie_being_set = nullptr);
 
   const mojom::RestrictedCookieManagerRole role_;
   net::CookieStore* const cookie_store_;

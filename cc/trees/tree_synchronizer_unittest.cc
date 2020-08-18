@@ -26,8 +26,8 @@
 #include "cc/test/fake_rendering_stats_instrumentation.h"
 #include "cc/test/stub_layer_tree_host_single_thread_client.h"
 #include "cc/test/test_task_graph_runner.h"
+#include "cc/trees/compositor_commit_data.h"
 #include "cc/trees/effect_node.h"
-#include "cc/trees/scroll_and_scale_set.h"
 #include "cc/trees/scroll_node.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "cc/trees/task_runner_provider.h"
@@ -661,12 +661,12 @@ TEST_F(TreeSynchronizerTest, SynchronizeScrollTreeScrollOffsetMap) {
                               gfx::ScrollOffset(20, 30));
 
   // Pull ScrollOffset delta for main thread, and change offset on main thread
-  std::unique_ptr<ScrollAndScaleSet> scroll_info(new ScrollAndScaleSet());
-  scroll_tree.CollectScrollDeltas(scroll_info.get(), ElementId(),
+  std::unique_ptr<CompositorCommitData> commit_data(new CompositorCommitData());
+  scroll_tree.CollectScrollDeltas(commit_data.get(), ElementId(),
                                   settings.commit_fractional_scroll_deltas,
                                   base::flat_set<ElementId>());
   host_->proxy()->SetNeedsCommit();
-  host_->ApplyScrollAndScale(scroll_info.get());
+  host_->ApplyCompositorChanges(commit_data.get());
   EXPECT_EQ(gfx::ScrollOffset(20, 30), scroll_layer->scroll_offset());
   scroll_layer->SetScrollOffset(gfx::ScrollOffset(100, 100));
 
@@ -765,10 +765,10 @@ TEST_F(TreeSynchronizerTest, RoundedScrollDeltasOnCommit) {
 
   // When we collect the scroll deltas, we should have truncated the fractional
   // part because the commit_fractional_scroll_deltas setting is enabled.
-  std::unique_ptr<ScrollAndScaleSet> scroll_info =
-      host_impl->ProcessScrollDeltas();
-  ASSERT_EQ(1u, scroll_info->scrolls.size());
-  EXPECT_EQ(2.f, scroll_info->scrolls[0].scroll_delta.y());
+  std::unique_ptr<CompositorCommitData> commit_data =
+      host_impl->ProcessCompositorDeltas();
+  ASSERT_EQ(1u, commit_data->scrolls.size());
+  EXPECT_EQ(2.f, commit_data->scrolls[0].scroll_delta.y());
 }
 
 TEST_F(TreeSynchronizerTest, PreserveFractionalScrollDeltasOnCommit) {
@@ -789,10 +789,10 @@ TEST_F(TreeSynchronizerTest, PreserveFractionalScrollDeltasOnCommit) {
 
   // When we collect the scroll deltas, we should keep the fractional part
   // because the commit_fractional_scroll_deltas setting is disabled.
-  std::unique_ptr<ScrollAndScaleSet> scroll_info =
-      host_impl->ProcessScrollDeltas();
-  ASSERT_EQ(1u, scroll_info->scrolls.size());
-  EXPECT_EQ(1.75f, scroll_info->scrolls[0].scroll_delta.y());
+  std::unique_ptr<CompositorCommitData> commit_data =
+      host_impl->ProcessCompositorDeltas();
+  ASSERT_EQ(1u, commit_data->scrolls.size());
+  EXPECT_EQ(1.75f, commit_data->scrolls[0].scroll_delta.y());
 }
 
 }  // namespace

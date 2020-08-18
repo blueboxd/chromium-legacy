@@ -204,7 +204,6 @@
 <translation id="2537178555904266562">비밀번호 동기화 중 오류 발생</translation>
 <translation id="2546283357679194313">쿠키 및 사이트 데이터</translation>
 <translation id="2567385386134582609">이미지</translation>
-<translation id="257088987046510401">테마</translation>
 <translation id="2581165646603367611">이를 통해 쿠키, 캐시 및 Chrome에서 중요하다고 간주하지 않는 사이트의 기타 데이터가 삭제됩니다.</translation>
 <translation id="2587052924345400782">최신 버전 사용 가능</translation>
 <translation id="2593272815202181319">고정 너비</translation>
@@ -678,6 +677,7 @@
 <translation id="624789221780392884">업데이트 준비 완료</translation>
 <translation id="6255999984061454636">콘텐츠 추천</translation>
 <translation id="6277522088822131679">페이지를 인쇄하는 중에 문제가 발생했습니다. 다시 시도해 주세요.</translation>
+<translation id="6278428485366576908">테마</translation>
 <translation id="6292420053234093573">Chrome을 사용하면 <ph name="BEGIN_LINK1" />Google 서비스 약관<ph name="END_LINK1" />과 <ph name="BEGIN_LINK2" />Chrome 및 Chrome OS 추가 서비스 약관<ph name="END_LINK2" />에 동의하는 것으로 간주됩니다.</translation>
 <translation id="629730747756840877">계정</translation>
 <translation id="6297765934698848803">내 기기를 관리하는 조직에서 카메라를 사용 중지했습니다.</translation>

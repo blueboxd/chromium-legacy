@@ -277,7 +277,23 @@ content::WebUIDataSource* CreateUntrustedWebUIDataSource() {
   return untrusted_source;
 }
 
-content::WebUIDataSource* CreateWebUIDataSource() {
+}  // anonymous namespace
+
+// We set |enable_chrome_send| to true since we need it for browser tests.
+KaleidoscopeUI::KaleidoscopeUI(content::WebUI* web_ui)
+    : ui::MojoWebUIController(web_ui, /*enable_chrome_send=*/true) {
+  web_ui->AddRequestableScheme(content::kChromeUIUntrustedScheme);
+
+  auto* browser_context = web_ui->GetWebContents()->GetBrowserContext();
+  content::WebUIDataSource::Add(browser_context, CreateWebUIDataSource());
+  content::WebUIDataSource::Add(browser_context,
+                                CreateUntrustedWebUIDataSource());
+}
+
+KaleidoscopeUI::~KaleidoscopeUI() = default;
+
+// static
+content::WebUIDataSource* KaleidoscopeUI::CreateWebUIDataSource() {
   content::WebUIDataSource* html_source =
       content::WebUIDataSource::Create(kKaleidoscopeUIHost);
 
@@ -312,26 +328,13 @@ content::WebUIDataSource* CreateWebUIDataSource() {
   html_source->AddResourcePath(
       "chrome/browser/media/feeds/media_feeds_store.mojom-lite.js",
       IDR_MEDIA_FEEDS_STORE_MOJOM_LITE_JS);
+  html_source->AddResourcePath("module.js", IDR_KALEIDOSCOPE_NTP_MODULE_JS);
+
   html_source->SetDefaultResource(IDR_KALEIDOSCOPE_HTML);
 #endif  // BUILDFLAG(ENABLE_KALEIDOSCOPE)
 
   return html_source;
 }
-
-}  // anonymous namespace
-
-// We set |enable_chrome_send| to true since we need it for browser tests.
-KaleidoscopeUI::KaleidoscopeUI(content::WebUI* web_ui)
-    : ui::MojoWebUIController(web_ui, /*enable_chrome_send=*/true) {
-  web_ui->AddRequestableScheme(content::kChromeUIUntrustedScheme);
-
-  auto* browser_context = web_ui->GetWebContents()->GetBrowserContext();
-  content::WebUIDataSource::Add(browser_context, CreateWebUIDataSource());
-  content::WebUIDataSource::Add(browser_context,
-                                CreateUntrustedWebUIDataSource());
-}
-
-KaleidoscopeUI::~KaleidoscopeUI() = default;
 
 void KaleidoscopeUI::BindInterface(
     mojo::PendingReceiver<media::mojom::KaleidoscopeDataProvider> provider) {

@@ -59,6 +59,7 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/layout/layout_shift_tracker.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/text_autosizer.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -822,6 +823,13 @@ void TextFinder::FireBeforematchEvent(
     // the beginning of the range. See
     // https://github.com/WICG/display-locking/issues/125 for more details.
     if (enclosing_block) {
+      // If the beforematch event handler causes layout shift, then we should
+      // give it layout shift allowance because it is responding to the user
+      // initiated find-in-page.
+      OwnerFrame()
+          .GetFrameView()
+          ->GetLayoutShiftTracker()
+          .NotifyFindInPageInput();
       enclosing_block->DispatchEvent(
           *Event::CreateBubble(event_type_names::kBeforematch));
     }

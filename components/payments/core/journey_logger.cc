@@ -264,6 +264,10 @@ void JourneyLogger::RecordTransactionAmount(std::string currency,
       .Record(ukm::UkmRecorder::Get());
 }
 
+void JourneyLogger::RecordCheckoutStep(CheckoutFunnelStep step) {
+  base::UmaHistogramEnumeration("PaymentRequest.CheckoutFunnel", step);
+}
+
 void JourneyLogger::RecordJourneyStatsHistograms(
     CompletionStatus completion_status) {
   if (has_recorded_) {
@@ -274,6 +278,23 @@ void JourneyLogger::RecordJourneyStatsHistograms(
 
   RecordEventsMetric(completion_status);
   RecordTimeToCheckout(completion_status);
+
+  // Depending on the completion status record kPaymentRequestTriggered and/or
+  // kCompleted checkout steps.
+  switch (completion_status) {
+    case COMPLETION_STATUS_COMPLETED:
+      RecordCheckoutStep(CheckoutFunnelStep::kPaymentRequestTriggered);
+      RecordCheckoutStep(CheckoutFunnelStep::kCompleted);
+      break;
+    case COMPLETION_STATUS_USER_ABORTED:
+    case COMPLETION_STATUS_OTHER_ABORTED:
+      RecordCheckoutStep(CheckoutFunnelStep::kPaymentRequestTriggered);
+      break;
+    case COMPLETION_STATUS_COULD_NOT_SHOW:
+      break;
+    default:
+      NOTREACHED();
+  }
 
   // These following metrics only make sense if the Payment Request was
   // triggered.

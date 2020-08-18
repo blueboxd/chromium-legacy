@@ -1022,7 +1022,7 @@ TEST_F(DesktopWidgetTest, GetWindowPlacement) {
 
   native_widget->GetWindowPlacement(&restored_bounds, &show_state);
   EXPECT_EQ(expected_bounds, restored_bounds);
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   // Non-desktop/Ash widgets start off in "default" until a Restore().
   EXPECT_EQ(ui::SHOW_STATE_DEFAULT, show_state);
   widget->Restore();

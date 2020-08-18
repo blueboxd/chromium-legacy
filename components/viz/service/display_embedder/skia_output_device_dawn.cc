@@ -4,6 +4,8 @@
 
 #include "components/viz/service/display_embedder/skia_output_device_dawn.h"
 
+#include <utility>
+
 #include "base/check_op.h"
 #include "base/notreached.h"
 #include "components/viz/common/gpu/dawn_context_provider.h"
@@ -33,7 +35,9 @@ SkiaOutputDeviceDawn::SkiaOutputDeviceDawn(
     gfx::SurfaceOrigin origin,
     gpu::MemoryTracker* memory_tracker,
     DidSwapBufferCompleteCallback did_swap_buffer_complete_callback)
-    : SkiaOutputDevice(memory_tracker, did_swap_buffer_complete_callback),
+    : SkiaOutputDevice(context_provider->GetGrContext(),
+                       memory_tracker,
+                       did_swap_buffer_complete_callback),
       context_provider_(context_provider),
       child_window_(widget) {
   capabilities_.output_surface_origin = origin;

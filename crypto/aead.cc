@@ -27,6 +27,9 @@ Aead::Aead(AeadAlgorithm algorithm) {
     case AES_256_GCM_SIV:
       aead_ = EVP_aead_aes_256_gcm_siv();
       break;
+    case CHACHA20_POLY1305:
+      aead_ = EVP_aead_chacha20_poly1305();
+      break;
   }
 }
 

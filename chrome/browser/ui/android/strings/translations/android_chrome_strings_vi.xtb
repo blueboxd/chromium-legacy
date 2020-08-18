@@ -204,7 +204,6 @@ Chạm và giữ từ bất kỳ để tìm kiếm. Để điều chỉnh nội 
 <translation id="2537178555904266562">Lỗi khi đồng bộ hóa mật khẩu</translation>
 <translation id="2546283357679194313">Cookie và dữ liệu trang web</translation>
 <translation id="2567385386134582609">HÌNH ẢNH</translation>
-<translation id="257088987046510401">Chủ đề</translation>
 <translation id="2581165646603367611">Thao tác này sẽ xóa cookie, bộ nhớ đệm và các dữ liệu khác của các trang web mà Chrome cho rằng không quan trọng.</translation>
 <translation id="2587052924345400782">Đã có phiên bản mới hơn</translation>
 <translation id="2593272815202181319">Monospace</translation>
@@ -679,6 +678,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="624789221780392884">Bản cập nhật đã sẵn sàng</translation>
 <translation id="6255999984061454636">Đề xuất nội dung</translation>
 <translation id="6277522088822131679">Đã xảy ra sự cố khi in trang này. Vui lòng thử lại.</translation>
+<translation id="6278428485366576908">Chủ đề</translation>
 <translation id="6292420053234093573">Bằng việc sử dụng Chrome, bạn đồng ý với <ph name="BEGIN_LINK1" />Điều khoản dịch vụ của Google<ph name="END_LINK1" /> cũng như <ph name="BEGIN_LINK2" />Điều khoản dịch vụ bổ sung của Google Chrome và Chrome OS<ph name="END_LINK2" />.</translation>
 <translation id="629730747756840877">Tài khoản</translation>
 <translation id="6297765934698848803">Tổ chức giữ quyền quản lý thiết bị của bạn đã tắt máy ảnh của bạn.</translation>

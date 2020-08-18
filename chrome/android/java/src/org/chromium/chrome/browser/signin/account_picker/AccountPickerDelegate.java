@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.signin.account_picker;
 
-import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.Activity;
 import android.content.Intent;
@@ -21,7 +20,7 @@ import org.chromium.chrome.browser.signin.SigninUtils;
 import org.chromium.chrome.browser.signin.WebSigninBridge;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
-import org.chromium.components.signin.AccountUtils;
+import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.base.GoogleServiceAuthError;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -63,14 +62,13 @@ public class AccountPickerDelegate implements WebSigninBridge.Listener {
     }
 
     /**
-     * Signs the user into the account of the given accountName.
+     * Signs the user into the given account.
      */
-    public void signIn(String accountName, Callback<GoogleServiceAuthError> onSignInErrorCallback) {
-        Account account = AccountUtils.findAccountByName(
-                AccountManagerFacadeProvider.getInstance().tryGetGoogleAccounts(), accountName);
+    public void signIn(CoreAccountInfo coreAccountInfo,
+            Callback<GoogleServiceAuthError> onSignInErrorCallback) {
         mOnSignInErrorCallback = onSignInErrorCallback;
         mSigninManager.signIn(
-                SigninAccessPoint.WEB_SIGNIN, account, new SigninManager.SignInCallback() {
+                SigninAccessPoint.WEB_SIGNIN, coreAccountInfo, new SigninManager.SignInCallback() {
                     @Override
                     public void onSignInComplete() {
                         // TODO(https://crbug.com/1092399): Implement sign-in properly in delegate

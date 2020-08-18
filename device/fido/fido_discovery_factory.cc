@@ -60,7 +60,8 @@ std::unique_ptr<FidoDiscoveryBase> FidoDiscoveryFactory::Create(
           (cable_data_.has_value() || qr_generator_key_.has_value())) {
         return std::make_unique<FidoCableDiscovery>(
             cable_data_.value_or(std::vector<CableDiscoveryData>()),
-            qr_generator_key_, cable_pairing_callback_);
+            qr_generator_key_, cable_pairing_callback_,
+            /*network_context=*/nullptr);
       }
       return nullptr;
     case FidoTransportProtocol::kNearFieldCommunication:

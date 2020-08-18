@@ -1321,7 +1321,6 @@
 <translation id="2564653188463346023">वर्धित केलेले स्पेल चेक</translation>
 <translation id="2566124945717127842">तुमचा <ph name="IDS_SHORT_PRODUCT_NAME" /> डिव्हाइस अगदी नवीन सारखे रीसेट करण्यासाठी Powerwash करा.</translation>
 <translation id="2568774940984945469">इंफोबार कंटेनर</translation>
-<translation id="257088987046510401">थीम</translation>
 <translation id="2571655996835834626">कुकी, JavaScript, प्लग-इन, भौगोलिक स्थान, मायक्रोफोन, कॅमेरा इ. सारख्या वैशिष्ट्यांवरील वेबसाइटचे अ‍ॅक्सेस नियंत्रित करणार्‍या तुमच्या सेटिंग्ज बदला.</translation>
 <translation id="2572032849266859634"><ph name="VOLUME_NAME" /> साठी रीड-ओन्ली ॲक्सेस मंजूर केला गेला आहे.</translation>
 <translation id="2575247648642144396">एक्स्टेंशन वर्तमान पेजवर ॲक्शन करु शकत असेल तेव्हा हे आयकन दृश्यमान होईल. आयकनवर क्लिक करुन किंवा <ph name="EXTENSION_SHORTCUT" /> दाबून हे एक्स्टेंशन वापरा.</translation>
@@ -3343,7 +3342,6 @@
 <translation id="5115338116365931134">SSO</translation>
 <translation id="5116628073786783676">म्हणून ऑडिओ ज&amp;तन करा...</translation>
 <translation id="5117139026559873716">तुमचा फोन तुमच्या <ph name="DEVICE_TYPE" /> वरून डिस्कनेक्ट करा. ते यापुढे आपोआप कनेक्ट होणार नाहीत.</translation>
-<translation id="5117427536932535467">थीम आणि वॉलपेपर</translation>
 <translation id="5117930984404104619">भेट दिलेल्या URL सह, अन्य विस्तारांच्या वर्तनाचे परीक्षण करा</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">तुमची हार्ड डिस्क पूर्ण भरली आहे. कृपया दुसर्‍या स्‍थानावर सेव्ह करा किंवा हार्ड डिस्कवर अधिक जागा तयार करा.</translation>
@@ -4290,6 +4288,7 @@
 <translation id="6277105963844135994">नेटवर्क कालबाह्य</translation>
 <translation id="6277518330158259200">स्क्रीनशॉट घ्या</translation>
 <translation id="6278057325678116358">GTK+ वापरा</translation>
+<translation id="6278428485366576908">थीम</translation>
 <translation id="6278776436938569440">स्थान बदला</translation>
 <translation id="6279183038361895380">तुमचा कर्सर दर्शविण्‍यासाठी |<ph name="ACCELERATOR" />| दाबा</translation>
 <translation id="6280215091796946657">एका भिन्न खात्याने साइन इन करा</translation>

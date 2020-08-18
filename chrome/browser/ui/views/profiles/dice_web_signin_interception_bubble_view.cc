@@ -119,6 +119,7 @@ DiceWebSigninInterceptionBubbleView::DiceWebSigninInterceptionBubbleView(
       bubble_parameters_(bubble_parameters),
       callback_(std::move(callback)) {
   DCHECK(profile_);
+  set_close_on_deactivate(false);
 
   // Create the web view in the native bubble.
   std::unique_ptr<views::WebView> web_view =

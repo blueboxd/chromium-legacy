@@ -204,7 +204,6 @@
 <translation id="2537178555904266562">ເກີດຄວາມຜິດພາດໃນການຊິ້ງຂໍ້ມູນລະຫັດຜ່ານ</translation>
 <translation id="2546283357679194313">ຄຸກກີ້ ແລະຂໍ້ມູນເວັບໄຊທ໌...</translation>
 <translation id="2567385386134582609">ຮູບ</translation>
-<translation id="257088987046510401">ເທມ</translation>
 <translation id="2581165646603367611">ນີ້ຈະລຶບລ້າງຄຸກກີ້, ແຄສ ແລະ ຂໍ້ມູນອື່ນຂອງເວັບໄຊທີ່ Chrome ຄິດວ່າບໍ່ສຳຄັນ.</translation>
 <translation id="2587052924345400782">ມີເວີຊັນທີ່ໃໝ່ກວ່າ</translation>
 <translation id="2593272815202181319">Monospace</translation>
@@ -679,6 +678,7 @@
 <translation id="624789221780392884">ອັບເດດພ້ອມແລ້ວ</translation>
 <translation id="6255999984061454636">ການແນະນຳເນື້ອຫາ</translation>
 <translation id="6277522088822131679">ມີບັນຫາການພິມໜ້າ. ກະລຸນາລອງໃໝ່ອີກ.</translation>
+<translation id="6278428485366576908">ສີສັນໜ້າຕາ</translation>
 <translation id="6292420053234093573">ໂດຍການໃຊ້ Chrome, ແມ່ນຖືວ່າທ່ານເຫັນດີນຳ <ph name="BEGIN_LINK1" />ຂໍ້ກຳນົດການບໍລິການຂອງ Google<ph name="END_LINK1" /> ແລະ <ph name="BEGIN_LINK2" />ຂໍ້ກຳນົດການບໍລິການເພີ່ມເຕີມຂອງ Google Chrome ແລະ Chrome OS<ph name="END_LINK2" />.</translation>
 <translation id="629730747756840877">ບັນ​ຊີ</translation>
 <translation id="6297765934698848803">ອົງການທີ່ຈັດການອຸປະກອນຂອງທ່ານໄດ້ປິດກ້ອງຂອງທ່ານແລ້ວ.</translation>

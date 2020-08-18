@@ -53,8 +53,15 @@
  * include DOM elements for styling.
  * @prop {number} value The size number used to create the other strings.
  */
+
 /**
  * @typedef {(node: TreeNode, unit: string) => GetSizeResult} GetSize
+ */
+
+/**
+ * @typedef {object} SizeProperties Properties loaded from .size / .sizediff
+ * files.
+ * @prop {boolean} isMultiContainer Whether multiple containers exist.
  */
 
 /**

@@ -3175,6 +3175,13 @@ const char kAndroidNightModeTabReparentingDescription[] =
 
 #else  // !defined(OS_ANDROID)
 
+extern const char kAllowAllSitesToInitiateMirroringName[] =
+    "Allow all sites to initiate mirroring";
+extern const char kAllowAllSitesToInitiateMirroringDescription[] =
+    "When enabled, allows all websites to request to initiate tab mirroring "
+    "via Presentation API. Requires #cast-media-route-provider to also be "
+    "enabled";
+
 const char kEditPasswordsInDesktopSettingsName[] = "Edit passwords in settings";
 const char kEditPasswordsInDesktopSettingsDescription[] =
     "Enables password editing in settings.";

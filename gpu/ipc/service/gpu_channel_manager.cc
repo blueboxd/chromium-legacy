@@ -317,8 +317,7 @@ GpuChannelManager::GpuChannelManager(
   if (enable_gr_shader_cache && !disable_disk_cache) {
     gr_shader_cache_.emplace(gpu_preferences.gpu_program_cache_size, this);
     if (using_skia_renderer) {
-      gr_shader_cache_->CacheClientIdOnDisk(
-          gpu::kInProcessCommandBufferClientId);
+      gr_shader_cache_->CacheClientIdOnDisk(gpu::kDisplayCompositorClientId);
     }
   }
 }
@@ -839,8 +838,10 @@ void GpuChannelManager::OnContextLost(bool synthetic_loss) {
   }
 
   // Work around issues with recovery by allowing a new GPU process to launch.
-  if (gpu_driver_bug_workarounds_.exit_on_context_lost)
+  if (gpu_driver_bug_workarounds_.exit_on_context_lost ||
+      (shared_context_state_ && !shared_context_state_->GrContextIsGL())) {
     delegate_->MaybeExitOnContextLost();
+  }
 }
 
 void GpuChannelManager::ScheduleGrContextCleanup() {

@@ -26,7 +26,7 @@ class EntropyStateTest : public testing::Test {
   TestingPrefServiceSimple prefs_;
 };
 
-TEST_F(EntropyStateTest, LowEntropySource0NotReset) {
+TEST_F(EntropyStateTest, LowEntropySourceNotReset) {
   EntropyState entropy_state(&prefs_);
   // Get the low entropy source once, to initialize it.
   entropy_state.GetLowEntropySource();
@@ -143,6 +143,16 @@ TEST_F(EntropyStateTest, CorruptOldLowEntropySources) {
     EXPECT_EQ(EntropyState::kLowEntropySourceNotSet,
               entropy_state.GetOldLowEntropySource());
   }
+}
+
+TEST_F(EntropyStateTest, ClearPrefs) {
+  prefs_.SetInteger(prefs::kMetricsLowEntropySource, 1234);
+  prefs_.SetInteger(prefs::kMetricsOldLowEntropySource, 5678);
+
+  EntropyState::ClearPrefs(&prefs_);
+
+  EXPECT_FALSE(prefs_.HasPrefPath(prefs::kMetricsLowEntropySource));
+  EXPECT_FALSE(prefs_.HasPrefPath(prefs::kMetricsOldLowEntropySource));
 }
 
 }  // namespace metrics

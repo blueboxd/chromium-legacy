@@ -171,13 +171,15 @@ BASE_EXPORT bool LowerCaseEqualsASCII(WStringPiece str,
 
 BASE_EXPORT bool EqualsASCII(StringPiece16 str, StringPiece ascii);
 
-BASE_EXPORT bool StartsWith(WStringPiece str,
-                            WStringPiece search_for,
-                            CompareCase case_sensitivity);
+BASE_EXPORT bool StartsWith(
+    WStringPiece str,
+    WStringPiece search_for,
+    CompareCase case_sensitivity = CompareCase::SENSITIVE);
 
-BASE_EXPORT bool EndsWith(WStringPiece str,
-                          WStringPiece search_for,
-                          CompareCase case_sensitivity);
+BASE_EXPORT bool EndsWith(
+    WStringPiece str,
+    WStringPiece search_for,
+    CompareCase case_sensitivity = CompareCase::SENSITIVE);
 
 BASE_EXPORT void ReplaceFirstSubstringAfterOffset(std::wstring* str,
                                                   size_t start_offset,

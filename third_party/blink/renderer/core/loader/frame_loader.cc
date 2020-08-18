@@ -97,6 +97,7 @@
 #include "third_party/blink/renderer/core/page/plugin_script_forbidden_scope.h"
 #include "third_party/blink/renderer/core/page/scrolling/fragment_anchor.h"
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
+#include "third_party/blink/renderer/core/page/scrolling/text_fragment_anchor.h"
 #include "third_party/blink/renderer/core/page/viewport_description.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
@@ -707,6 +708,14 @@ void FrameLoader::StartNavigation(FrameLoadRequest& request,
         nullptr /* extra_data */);
     return;
   }
+
+  // If we're navigating and there's still a text fragment permission token on
+  // the document loader, it means this navigation didn't try to invoke a text
+  // fragment. In this case, we want to propagate this to the next document to
+  // allow text-fragments across client-side redirects.
+  bool text_fragment_token = GetDocumentLoader()->ConsumeTextFragmentToken();
+
+  resource_request.SetHasTextFragmentToken(text_fragment_token);
 
   WebNavigationType navigation_type = DetermineNavigationType(
       frame_load_type, resource_request.HttpBody() || request.Form(),

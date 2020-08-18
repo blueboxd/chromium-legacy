@@ -308,10 +308,6 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
 
   const KURL& WebBundlePhysicalUrl() const { return web_bundle_physical_url_; }
 
-  bool LastSameDocumentNavigationWasBrowserInitiated() const {
-    return last_same_document_navigation_was_browser_initiated_;
-  }
-
   bool NavigationScrollAllowed() const { return navigation_scroll_allowed_; }
 
   // We want to make sure that the largest content is painted before the "LCP
@@ -320,6 +316,10 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   base::TimeDelta RemainingTimeToLCPLimit() const;
 
   mojom::blink::ContentSecurityNotifier& GetContentSecurityNotifier();
+
+  // Returns the value of the text fragment token and then resets it to false
+  // to ensure the token can only be used to invoke a single text fragment.
+  bool ConsumeTextFragmentToken();
 
  protected:
   Vector<KURL> redirect_chain_;
@@ -514,6 +514,11 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   // Whether this load request was initiated by the same origin.
   bool is_same_origin_navigation_ = false;
 
+  // If true, the navigation loading this document should allow a text fragment
+  // to invoke. This token may be instead consumed to pass this permission
+  // through a redirect.
+  bool has_text_fragment_token_ = false;
+
   // See WebNavigationParams for definition.
   const bool was_discarded_ = false;
 
@@ -545,10 +550,6 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   const Vector<OriginTrialFeature> initiator_origin_trial_features_;
 
   const Vector<String> force_enabled_origin_trials_;
-
-  // Whether this load request is a result of a browser initiated same-document
-  // navigation.
-  bool last_same_document_navigation_was_browser_initiated_ = false;
 
   // Whether the document can be scrolled on load
   bool navigation_scroll_allowed_ = true;

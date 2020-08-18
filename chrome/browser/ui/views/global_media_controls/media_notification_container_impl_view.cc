@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/global_media_controls/media_notification_container_impl_view.h"
 
 #include "base/feature_list.h"
+#include "chrome/browser/ui/global_media_controls/media_notification_container_impl.h"
 #include "chrome/browser/ui/global_media_controls/media_notification_container_observer.h"
 #include "chrome/browser/ui/global_media_controls/media_notification_service.h"
 #include "chrome/browser/ui/global_media_controls/media_toolbar_button_controller.h"
@@ -272,16 +273,8 @@ void MediaNotificationContainerImplView::OnDidChangeFocus(
 }
 
 void MediaNotificationContainerImplView::OnExpanded(bool expanded) {
-  gfx::Size new_size = expanded ? kExpandedSize : kNormalSize;
-
-  if (overlay_)
-    overlay_->SetSize(new_size);
-
-  SetPreferredSize(new_size);
-  PreferredSizeChanged();
-
-  for (auto& observer : observers_)
-    observer.OnContainerExpanded(expanded);
+  is_expanded_ = expanded;
+  OnSizeChanged();
 }
 
 void MediaNotificationContainerImplView::OnMediaSessionInfoChanged(
@@ -355,6 +348,11 @@ void MediaNotificationContainerImplView::OnAudioSinkChosen(
   for (auto& observer : observers_) {
     observer.OnAudioSinkChosen(id_, sink_id);
   }
+}
+
+void MediaNotificationContainerImplView::
+    OnAudioDeviceSelectorViewSizeChanged() {
+  OnSizeChanged();
 }
 
 ui::Layer* MediaNotificationContainerImplView::GetSlideOutLayer() {
@@ -472,4 +470,28 @@ bool MediaNotificationContainerImplView::ShouldHandleMouseEvent(
 
   // We only drag via the left button.
   return event.IsLeftMouseButton();
+}
+
+void MediaNotificationContainerImplView::OnSizeChanged() {
+  gfx::Size new_size = is_expanded_ ? kExpandedSize : kNormalSize;
+
+  // |new_size| does not contain the height for the audio device selector view.
+  // If this view is present, we should query it for its preferred height and
+  // include that in |new_size|.
+  if (audio_device_selector_view_) {
+    auto audio_device_selector_view_size =
+        audio_device_selector_view_->GetPreferredSize();
+    DCHECK(audio_device_selector_view_size.width() == kWidth);
+    new_size.set_height(new_size.height() +
+                        audio_device_selector_view_size.height());
+  }
+
+  if (overlay_)
+    overlay_->SetSize(new_size);
+
+  SetPreferredSize(new_size);
+  PreferredSizeChanged();
+
+  for (auto& observer : observers_)
+    observer.OnContainerSizeChanged();
 }

@@ -9,6 +9,7 @@
 const HullDisplay = {
   NONE: 'none',
   BUILD_TARGET: 'build-target',
+  JAVA_PACKAGE: 'java-package',
 };
 
 export {

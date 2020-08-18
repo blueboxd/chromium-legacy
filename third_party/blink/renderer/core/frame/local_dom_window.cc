@@ -1651,8 +1651,7 @@ void LocalDOMWindow::SetOriginPolicyIds(const Vector<String>& ids) {
   origin_policy_ids_ = ids;
 }
 
-// TODO(https://crbug.com/1103866): rename to originIsolated
-bool LocalDOMWindow::originIsolationRestricted() const {
+bool LocalDOMWindow::originIsolated() const {
   return GetAgent()->IsOriginIsolated();
 }
 

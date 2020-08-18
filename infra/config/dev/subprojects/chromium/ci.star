@@ -37,11 +37,11 @@ luci.recipe.defaults.cipd_package.set(
 
 defaults.bucket.set("ci")
 defaults.build_numbers.set(True)
+defaults.builder_group.set("chromium.dev")
 defaults.builderless.set(None)
 defaults.cpu.set(cpu.X86_64)
 defaults.executable.set(luci.recipe(name = "swarming/staging"))
 defaults.execution_timeout.set(3 * time.hour)
-defaults.mastername.set("chromium.dev")
 defaults.os.set(os.LINUX_DEFAULT)
 defaults.service_account.set(
     "chromium-ci-builder-dev@chops-service-accounts.iam.gserviceaccount.com",
@@ -68,7 +68,7 @@ ci_builder(
 
 ci_builder(
     name = "linux-rel-swarming",
-    description_html = "Test description. <b>Test HTML</b>."
+    description_html = "Test description. <b>Test HTML</b>.",
 )
 
 ci_builder(

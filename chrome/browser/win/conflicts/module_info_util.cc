@@ -255,7 +255,7 @@ void GetCertificateInfo(const base::FilePath& filename,
 
 bool IsMicrosoftModule(base::StringPiece16 subject) {
   static constexpr wchar_t kMicrosoft[] = L"Microsoft ";
-  return subject.starts_with(kMicrosoft);
+  return base::StartsWith(subject, kMicrosoft);
 }
 
 StringMapping GetEnvironmentVariablesMapping(
@@ -284,8 +284,7 @@ void CollapseMatchingPrefixInPath(const StringMapping& prefix_mapping,
   size_t min_length = std::numeric_limits<size_t>::max();
   for (const auto& mapping : prefix_mapping) {
     DCHECK_EQ(base::i18n::ToLower(mapping.first), mapping.first);
-    if (base::StartsWith(path_copy, mapping.first,
-                         base::CompareCase::SENSITIVE)) {
+    if (base::StartsWith(path_copy, mapping.first)) {
       // Make sure the matching prefix is a full path component.
       if (path_copy[mapping.first.length()] != '\\' &&
           path_copy[mapping.first.length()] != '\0') {

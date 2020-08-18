@@ -10,6 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/ui/global_media_controls/media_notification_container_impl.h"
+#include "chrome/browser/ui/views/global_media_controls/media_notification_audio_device_selector_view_delegate.h"
 #include "chrome/browser/ui/views/global_media_controls/overlay_media_notification_view.h"
 #include "components/media_message_center/media_notification_container.h"
 #include "components/media_message_center/media_notification_view_impl.h"
@@ -39,6 +40,7 @@ class MediaNotificationContainerImplView
     : public views::Button,
       public media_message_center::MediaNotificationContainer,
       public MediaNotificationContainerImpl,
+      public MediaNotificationAudioDeviceSelectorViewDelegate,
       public views::SlideOutControllerDelegate,
       public views::ButtonListener,
       public views::FocusChangeListener {
@@ -89,8 +91,11 @@ class MediaNotificationContainerImplView
   // MediaNotificationContainerImpl:
   void AddObserver(MediaNotificationContainerObserver* observer) override;
   void RemoveObserver(MediaNotificationContainerObserver* observer) override;
+
+  // MediaNotificationAudioDeviceSelectorViewDelegate
   // Called when an audio device has been selected for output.
   void OnAudioSinkChosen(const std::string& sink_id) override;
+  void OnAudioDeviceSelectorViewSizeChanged() override;
 
   // Sets up the notification to be ready to display in an overlay instead of
   // the dialog.
@@ -108,6 +113,7 @@ class MediaNotificationContainerImplView
   }
 
   bool is_playing_for_testing() { return is_playing_; }
+  bool is_expanded_for_testing() { return is_expanded_; }
 
   views::Widget* drag_image_widget_for_testing() {
     return drag_image_widget_.get();
@@ -134,6 +140,8 @@ class MediaNotificationContainerImplView
 
   // True if we should handle the given mouse event for dragging purposes.
   bool ShouldHandleMouseEvent(const ui::MouseEvent& event, bool is_press);
+
+  void OnSizeChanged();
 
   const std::string id_;
   views::View* swipeable_container_ = nullptr;
@@ -178,6 +186,8 @@ class MediaNotificationContainerImplView
   bool is_dragging_ = false;
 
   bool is_playing_ = false;
+
+  bool is_expanded_ = false;
 
   std::string audio_sink_id_ = media::AudioDeviceDescription::kDefaultDeviceId;
 

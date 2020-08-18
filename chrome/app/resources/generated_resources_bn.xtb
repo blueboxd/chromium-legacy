@@ -1321,7 +1321,6 @@
 <translation id="2564653188463346023">আরও উন্নত বানান পরীক্ষা</translation>
 <translation id="2566124945717127842">আপনার <ph name="IDS_SHORT_PRODUCT_NAME" /> ডিভাইস আবার নতুনের মত সেট করতে পাওয়ারওয়াশ করুন।</translation>
 <translation id="2568774940984945469">তথ্যবার ধারক</translation>
-<translation id="257088987046510401">থিমসমূহ</translation>
 <translation id="2571655996835834626">কুকি, জাভাস্ক্রিপ্ট, প্লাগ-ইন, ভৌগোলিক লোকেশন, মাইক্রোফোন, ক্যামেরার মতো ফিচারগুলিতে ওয়েবসাইটের অ্যাক্সেস নিয়ন্ত্রণ করে যে সেটিংস সেটি পরিবর্তন করুন।</translation>
 <translation id="2572032849266859634"><ph name="VOLUME_NAME" />-এ শুধুমাত্র পাঠযোগ্য অ্যাক্সেস মঞ্জুর করা হয়েছে৷</translation>
 <translation id="2575247648642144396">এই আইকনটি দৃশ্যমান হবে যখন এক্সটেনশন বর্তমান পৃষ্ঠার উপর কাজ করতে পারবে৷ আইকনে ক্লিক করে বা <ph name="EXTENSION_SHORTCUT" /> টিপে এই এক্সটেনশন ব্যবহার করুন৷</translation>
@@ -3344,7 +3343,6 @@
 <translation id="5115338116365931134">SSO</translation>
 <translation id="5116628073786783676">এইরূপে অডিও সংর&amp;ক্ষণ করুন...</translation>
 <translation id="5117139026559873716"><ph name="DEVICE_TYPE" /> থেকে আপনার ফোন ডিসকানেক্ট করুন। সেগুলি আর অটোমেটিক কানেক্ট হবে না।</translation>
-<translation id="5117427536932535467">থিম ও ওয়ালপেপার</translation>
 <translation id="5117930984404104619">পরিদর্শিত URL গুলি সহ অন্যান্য এক্সটেনশানগুলির আচরণ নিরীক্ষণ করুন</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">আপনার হার্ড ডিস্ক পূর্ণ৷ দয়া করে অন্য কোনো স্থানে সেভ করুন অথবা হার্ড ডিস্কে আরও জায়গা তৈরী করুন৷</translation>
@@ -4292,6 +4290,7 @@
 <translation id="6277105963844135994">নেটওয়ার্কের সময় শেষ হয়েছে</translation>
 <translation id="6277518330158259200">স্ক্রিনশট নিন</translation>
 <translation id="6278057325678116358">GTK+ ব্যবহার করুন</translation>
+<translation id="6278428485366576908">থীম</translation>
 <translation id="6278776436938569440">লোকেশন পরিবর্তন করুন</translation>
 <translation id="6279183038361895380">আপনার কার্সার দেখাতে |<ph name="ACCELERATOR" />| চাপুন</translation>
 <translation id="6280215091796946657">অন্য একটি অ্যাকাউন্ট দিয়ে সাইন-ইন করুন</translation>

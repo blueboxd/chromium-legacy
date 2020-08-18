@@ -680,7 +680,7 @@ bool ShortcutFilenameMatcher::IsCanonical(
     return true;
 
   base::StringPiece16 shortcut_suffix(filename);
-  if (!shortcut_suffix.starts_with(profile_shortcut_name_))
+  if (!base::StartsWith(shortcut_suffix, profile_shortcut_name_))
     return false;
   shortcut_suffix.remove_prefix(profile_shortcut_name_.size());
 
@@ -688,7 +688,7 @@ bool ShortcutFilenameMatcher::IsCanonical(
     return false;
   shortcut_suffix.remove_suffix(lnk_ext_.size());
 
-  if (shortcut_suffix.size() < 4 || !shortcut_suffix.starts_with(L" (") ||
+  if (shortcut_suffix.size() < 4 || !base::StartsWith(shortcut_suffix, L" (") ||
       !base::EndsWith(shortcut_suffix, L")")) {
     return false;
   }

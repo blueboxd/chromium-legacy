@@ -762,6 +762,7 @@ async function buildTree(groupBy, filterTest, methodCountMode, onProgress) {
       root: builder.formatNode(data.root || builder.rootNode),
       percent,
       diffMode: meta && meta.diff_mode,
+      isMultiContainer: false,
     };
     if (data.error) {
       message.error = data.error.message;

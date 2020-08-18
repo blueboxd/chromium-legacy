@@ -68,6 +68,7 @@ class MetricsReporter {
   // User interactions. See |FeedStreamApi| for definitions.
 
   virtual void ContentSliceViewed(SurfaceId surface_id, int index_in_stream);
+  void FeedViewed(SurfaceId surface_id);
   void OpenAction(int index_in_stream);
   void OpenVisitComplete(base::TimeDelta visit_time);
   void OpenInNewTabAction(int index_in_stream);

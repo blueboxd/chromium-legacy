@@ -85,7 +85,7 @@ class ParsedMetadata {
         pdl = value.as_string();
       } else if (key == "product") {
         // Strip parens; ignore anything not enclosed in parens as malformed.
-        if (value.starts_with("(") && base::EndsWith(value, ")")) {
+        if (base::StartsWith(value, "(") && base::EndsWith(value, ")")) {
           product = value.substr(1, value.size() - 2).as_string();
         }
       } else if (key == "rp") {
@@ -188,7 +188,7 @@ bool ConvertToPrinter(const std::string& service_type,
   // (possibly in addition to prefix-free versions).  If we get a printer from a
   // _print service type, it should be auto-configurable with IPP Everywhere.
   printer.mutable_ppd_reference()->autoconf =
-      base::StringPiece(service_type).starts_with("_print._sub");
+      base::StartsWith(service_type, "_print._sub");
 
   // Gather ppd identification candidates.
   detected_printer->ppd_search_data.discovery_type =

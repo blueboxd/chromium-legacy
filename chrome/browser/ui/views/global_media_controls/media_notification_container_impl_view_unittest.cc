@@ -36,7 +36,7 @@ class MockMediaNotificationContainerObserver
   ~MockMediaNotificationContainerObserver() = default;
 
   // MediaNotificationContainerObserver implementation.
-  MOCK_METHOD1(OnContainerExpanded, void(bool expanded));
+  MOCK_METHOD0(OnContainerSizeChanged, void());
   MOCK_METHOD0(OnContainerMetadataChanged, void());
   MOCK_METHOD0(OnContainerActionsChanged, void());
   MOCK_METHOD1(OnContainerClicked, void(const std::string& id));
@@ -350,30 +350,24 @@ TEST_F(MediaNotificationContainerImplViewTest, KeyboardToDismiss) {
 }
 
 TEST_F(MediaNotificationContainerImplViewTest, ForceExpandedState) {
-  bool notification_expanded = false;
-  EXPECT_CALL(observer(), OnContainerExpanded(_))
-      .WillRepeatedly([&notification_expanded](bool expanded) {
-        notification_expanded = expanded;
-      });
-
   // When we have many actions enabled, we should be forced into the expanded
   // state.
   SimulateAllActionsEnabled();
-  EXPECT_TRUE(notification_expanded);
+  EXPECT_TRUE(notification_container()->is_expanded_for_testing());
 
   // When we don't have many actions enabled, we should be forced out of the
   // expanded state.
   SimulateOnlyPlayPauseEnabled();
-  EXPECT_FALSE(notification_expanded);
+  EXPECT_FALSE(notification_container()->is_expanded_for_testing());
 
   // We will also be forced into the expanded state when artwork is present.
   SimulateHasArtwork();
-  EXPECT_TRUE(notification_expanded);
+  EXPECT_TRUE(notification_container()->is_expanded_for_testing());
 
   // Once the artwork is gone, we should be forced back out of the expanded
   // state.
   SimulateHasNoArtwork();
-  EXPECT_FALSE(notification_expanded);
+  EXPECT_FALSE(notification_container()->is_expanded_for_testing());
 }
 
 TEST_F(MediaNotificationContainerImplViewTest, SendsMetadataUpdates) {

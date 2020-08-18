@@ -164,7 +164,7 @@ NACL_BROWSER_TEST_F(NaClBrowserTest, MAYBE_CrashPPAPIOffMainThread, {
 IN_PROC_BROWSER_TEST_F(NaClBrowserTestNewlib, IrtManifestFile) {
   RunNaClIntegrationTest(FILE_PATH_LITERAL("irt_manifest_file_test.html"));
 }
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 // http://crbug.com/579804
 #define MAYBE_IrtManifestFile DISABLED_IrtManifestFile
 #else
@@ -183,7 +183,7 @@ IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnaclNonSfi, MAYBE_IrtManifestFile) {
 IN_PROC_BROWSER_TEST_F(NaClBrowserTestNewlib, MAYBE_IrtException) {
   RunNaClIntegrationTest(FILE_PATH_LITERAL("irt_exception_test.html"));
 }
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 // http://crbug.com/579804
 #define MAYBE_IrtException2 DISABLED_IrtException
 #else
@@ -391,7 +391,8 @@ IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnaclDebugMasked,
 
 // NaClBrowserTestPnacl.PnaclErrorHandling is flaky on Win, Mac, and Linux.
 // http://crbug.com/704980, http://crbug.com/870309
-#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
+    defined(OS_CHROMEOS)
 #define MAYBE_PnaclErrorHandling DISABLED_PnaclErrorHandling
 #else
 #define MAYBE_PnaclErrorHandling PnaclErrorHandling

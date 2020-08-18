@@ -50,6 +50,9 @@ GEN('#endif');
   ['BasePage', 'cellular_setup/base_page_test.js',
     []
   ],
+  ['FinalPage', 'cellular_setup/final_page_test.js',
+    []
+  ],
 ].forEach(test => registerTest('CellularSetup', 'cellular-setup', ...test));
 
 // clang-format on

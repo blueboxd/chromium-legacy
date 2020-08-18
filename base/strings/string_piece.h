@@ -260,13 +260,6 @@ template <typename STRING_TYPE> class BasicStringPiece {
     return internal::copy(*this, buf, n, pos);
   }
 
-  // Does "this" start with "x"
-  constexpr bool starts_with(BasicStringPiece x) const noexcept {
-    return (
-        (this->length_ >= x.length_) &&
-        (CharTraits<value_type>::compare(this->ptr_, x.ptr_, x.length_) == 0));
-  }
-
   // find: Search for a character or substring at a given offset.
   size_type find(const BasicStringPiece<STRING_TYPE>& s,
                  size_type pos = 0) const {

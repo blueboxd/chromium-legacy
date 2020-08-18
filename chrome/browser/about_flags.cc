@@ -3057,6 +3057,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kGlobalMediaControlsCastStartStopDescription,
      kOsWin | kOsMac | kOsLinux,
      FEATURE_VALUE_TYPE(media_router::kGlobalMediaControlsCastStartStop)},
+    {"allow-all-sites-to-initiate-mirroring",
+     flag_descriptions::kAllowAllSitesToInitiateMirroringName,
+     flag_descriptions::kAllowAllSitesToInitiateMirroringDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(media_router::kAllowAllSitesToInitiateMirroring)},
 #endif  // !OS_ANDROID
 #if defined(OS_ANDROID)
     {"autofill-keyboard-accessory-view",

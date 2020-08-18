@@ -1325,7 +1325,6 @@
 <translation id="2564653188463346023">進階拼字檢查功能</translation>
 <translation id="2566124945717127842">Powerwash 會將你的 <ph name="IDS_SHORT_PRODUCT_NAME" /> 裝置重設並恢復為原廠設定。</translation>
 <translation id="2568774940984945469">資訊列容器</translation>
-<translation id="257088987046510401">主題</translation>
 <translation id="2571655996835834626">變更設定來管理網站對 Cookie、JavaScript、外掛程式、地理位置、麥克風、相機等功能的存取權。</translation>
 <translation id="2572032849266859634">已授予 <ph name="VOLUME_NAME" /> 的唯讀權限。</translation>
 <translation id="2575247648642144396">畫面上顯示這個圖示時，表示擴充功能可在目前網頁上運作。如要啟用這項擴充功能，請按一下圖示或按下 <ph name="EXTENSION_SHORTCUT" />。</translation>
@@ -3352,7 +3351,6 @@
 <translation id="5115338116365931134">單一登入 (SSO)</translation>
 <translation id="5116628073786783676">另存音訊(&amp;V)...</translation>
 <translation id="5117139026559873716">中斷手機與 <ph name="DEVICE_TYPE" /> 的連線。這兩個裝置將不再自動連線。</translation>
-<translation id="5117427536932535467">主題和桌布</translation>
 <translation id="5117930984404104619">監控其他擴充功能的行為 (包括造訪過的網址)。</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">你的硬碟已滿。請選擇其他儲存位置，或清出足夠的硬碟空間。</translation>
@@ -4298,6 +4296,7 @@
 <translation id="6277105963844135994">網路逾時</translation>
 <translation id="6277518330158259200">擷取螢幕畫面(&amp;A)</translation>
 <translation id="6278057325678116358">使用 GTK+</translation>
+<translation id="6278428485366576908">主題</translation>
 <translation id="6278776436938569440">變更位置</translation>
 <translation id="6279183038361895380">按下 |<ph name="ACCELERATOR" />| 即可顯示游標</translation>
 <translation id="6280215091796946657">以其他帳戶登入</translation>

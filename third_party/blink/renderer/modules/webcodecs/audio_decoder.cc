@@ -10,11 +10,14 @@
 #include "media/base/channel_layout.h"
 #include "media/base/encryption_scheme.h"
 #include "media/base/media_util.h"
+#include "media/base/mime_util.h"
+#include "media/base/supported_types.h"
 #include "media/base/waiting.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_audio_decoder_init.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_encoded_audio_chunk.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_encoded_audio_config.h"
 #include "third_party/blink/renderer/modules/webcodecs/audio_decoder_broker.h"
+#include "third_party/blink/renderer/modules/webcodecs/codec_config_eval.h"
 
 #include <memory>
 #include <vector>
@@ -29,11 +32,30 @@ AudioDecoderTraits::CreateDecoder(ExecutionContext& execution_context,
 }
 
 // static
-void AudioDecoderTraits::InitializeDecoder(
-    MediaDecoderType& decoder,
+CodecConfigEval AudioDecoderTraits::CreateMediaConfig(
     const ConfigType& config,
-    MediaDecoderType::InitCB init_cb,
-    MediaDecoderType::OutputCB output_cb) {
+    MediaConfigType* out_media_config,
+    String* out_console_message) {
+  media::AudioCodec codec = media::kUnknownAudioCodec;
+  bool is_codec_ambiguous = true;
+  bool parse_succeeded = ParseAudioCodecString("", config.codec().Utf8(),
+                                               &is_codec_ambiguous, &codec);
+
+  if (!parse_succeeded) {
+    *out_console_message = "Failed to parse codec string.";
+    return CodecConfigEval::kInvalid;
+  }
+
+  if (is_codec_ambiguous) {
+    *out_console_message = "Codec string is ambiguous.";
+    return CodecConfigEval::kInvalid;
+  }
+
+  if (!media::IsSupportedAudioType({codec})) {
+    *out_console_message = "Configuration is not supported.";
+    return CodecConfigEval::kUnsupported;
+  }
+
   std::vector<uint8_t> extra_data;
   if (config.hasDescription()) {
     DOMArrayBuffer* buffer;
@@ -50,11 +72,27 @@ void AudioDecoderTraits::InitializeDecoder(
     extra_data.assign(start, start + size);
   }
 
-  // TODO(chcunningham): Convert the rest of blink config -> media config.
-  auto media_config =
-      media::AudioDecoderConfig(media::kCodecAAC, media::kSampleFormatPlanarF32,
-                                media::CHANNEL_LAYOUT_STEREO, 48000, extra_data,
-                                media::EncryptionScheme::kUnencrypted);
+  media::ChannelLayout channel_layout =
+      config.numberOfChannels() > 8
+          // GuesschannelLayout() doesn't know how to guess above 8 channels.
+          ? media::CHANNEL_LAYOUT_DISCRETE
+          : media::GuessChannelLayout(config.numberOfChannels());
+
+  // TODO(chcunningham): Add sample format to IDL.
+  out_media_config->Initialize(
+      codec, media::kSampleFormatPlanarF32, channel_layout, config.sampleRate(),
+      extra_data, media::EncryptionScheme::kUnencrypted,
+      base::TimeDelta() /* seek preroll */, 0 /* codec delay */);
+
+  return CodecConfigEval::kSupported;
+}
+
+// static
+void AudioDecoderTraits::InitializeDecoder(
+    MediaDecoderType& decoder,
+    const MediaConfigType& media_config,
+    MediaDecoderType::InitCB init_cb,
+    MediaDecoderType::OutputCB output_cb) {
   decoder.Initialize(media_config, nullptr /* cdm_context */,
                      std::move(init_cb), output_cb, media::WaitingCB());
 }

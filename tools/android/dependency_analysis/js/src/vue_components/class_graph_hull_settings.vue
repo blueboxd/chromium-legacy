@@ -4,7 +4,7 @@
 
 <template>
   <div id="hull-settings">
-    <label>Convex hull display:</label>
+    <label>Group nodes by:</label>
     <div
         v-for="hullDisplay in HullDisplay"
         :key="hullDisplay"
@@ -57,6 +57,7 @@ export default ClassGraphHullSettings;
   display: flex;
   flex-direction: column;
   margin-bottom: 10px;
+  padding-top: 10px;
 }
 
 .hull-settings-option {

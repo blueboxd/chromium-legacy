@@ -21,6 +21,7 @@
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/views/accessibility/view_accessibility.h"
+#include "ui/views/accessibility/view_ax_platform_node_delegate.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
@@ -386,7 +387,10 @@ gfx::NativeViewAccessible AXVirtualView::GetFocus() {
 }
 
 ui::AXPlatformNode* AXVirtualView::GetFromNodeID(int32_t id) {
-  // TODO(nektar): Implement.
+  AXVirtualView* virtual_view = GetFromId(id);
+  if (virtual_view) {
+    return virtual_view->ax_platform_node();
+  }
   return nullptr;
 }
 
@@ -421,6 +425,18 @@ gfx::AcceleratedWidget AXVirtualView::GetTargetForNativeAccessibilityEvent() {
     return HWNDForView(GetOwnerView());
 #endif
   return gfx::kNullAcceleratedWidget;
+}
+
+base::Optional<bool> AXVirtualView::GetTableHasColumnOrRowHeaderNode() const {
+  return GetDelegate()->GetTableHasColumnOrRowHeaderNode();
+}
+
+std::vector<int32_t> AXVirtualView::GetColHeaderNodeIds() const {
+  return GetDelegate()->GetColHeaderNodeIds();
+}
+
+std::vector<int32_t> AXVirtualView::GetColHeaderNodeIds(int col_index) const {
+  return GetDelegate()->GetColHeaderNodeIds(col_index);
 }
 
 bool AXVirtualView::IsIgnored() const {
@@ -471,6 +487,12 @@ View* AXVirtualView::GetOwnerView() const {
 
   // This virtual view hasn't been added to a parent view yet.
   return nullptr;
+}
+
+ViewAXPlatformNodeDelegate* AXVirtualView::GetDelegate() const {
+  DCHECK(GetOwnerView());
+  return static_cast<ViewAXPlatformNodeDelegate*>(
+      &GetOwnerView()->GetViewAccessibility());
 }
 
 AXVirtualViewWrapper* AXVirtualView::GetOrCreateWrapper(

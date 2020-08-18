@@ -12,6 +12,7 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/log/net_log_with_source.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/websockets/websocket_basic_handshake_stream.h"
 #include "net/websockets/websocket_handshake_request_info.h"
 #include "net/websockets/websocket_handshake_response_info.h"
@@ -105,7 +106,8 @@ void WebSocketStreamCreateTestBase::CreateAndConnectStream(
   stream_request_ = WebSocketStream::CreateAndConnectStreamForTesting(
       socket_url, sub_protocols, origin, site_for_cookies, isolation_info,
       additional_headers, url_request_context_host_.GetURLRequestContext(),
-      NetLogWithSource(), std::move(connect_delegate),
+      NetLogWithSource(), TRAFFIC_ANNOTATION_FOR_TESTS,
+      std::move(connect_delegate),
       timer ? std::move(timer) : std::make_unique<base::OneShotTimer>(),
       std::move(api_delegate));
 }

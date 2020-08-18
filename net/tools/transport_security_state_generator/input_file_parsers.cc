@@ -69,7 +69,7 @@ bool MatchCertificateName(base::StringPiece name, base::StringPiece pin_name) {
     first_word = first_word.substr(0, first_word.size() - 1);
   }
 
-  if (first_word.starts_with("*.")) {
+  if (base::StartsWith(first_word, "*.")) {
     first_word = first_word.substr(2, first_word.size() - 2);
   }
 

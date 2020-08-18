@@ -558,5 +558,113 @@ TEST(AutofillStructuredName, TestCopyConstructuror) {
   EXPECT_EQ(orginal, copy);
 }
 
+TEST(AutofillStructuredName,
+     MigrationFromLegacyStructure_WithFullName_Unverified) {
+  NameFull name;
+  name.SetValueForTypeIfPossible(NAME_FULL,
+                                 base::ASCIIToUTF16("Thomas Neo Anderson"),
+                                 VerificationStatus::kNoStatus);
+  name.SetValueForTypeIfPossible(NAME_FIRST, base::ASCIIToUTF16("Thomas"),
+                                 VerificationStatus::kNoStatus);
+  name.SetValueForTypeIfPossible(NAME_MIDDLE, base::ASCIIToUTF16("Neo"),
+                                 VerificationStatus::kNoStatus);
+  name.SetValueForTypeIfPossible(NAME_LAST, base::ASCIIToUTF16("Anderson"),
+                                 VerificationStatus::kNoStatus);
+
+  name.MigrateLegacyStructure(false);
+
+  // Since the full name is set and the profile is not verified it is promoted
+  // to observed. All other tokens are reset.
+  EXPECT_EQ(name.GetValueForType(NAME_FULL),
+            base::ASCIIToUTF16("Thomas Neo Anderson"));
+  EXPECT_EQ(name.GetValueForType(NAME_FIRST), base::ASCIIToUTF16("Thomas"));
+  EXPECT_EQ(name.GetValueForType(NAME_MIDDLE), base::ASCIIToUTF16("Neo"));
+  EXPECT_EQ(name.GetValueForType(NAME_LAST), base::ASCIIToUTF16("Anderson"));
+  EXPECT_EQ(name.GetValueForType(NAME_LAST_SECOND),
+            base::ASCIIToUTF16("Anderson"));
+
+  EXPECT_EQ(name.GetVerificationStatusForType(NAME_FULL),
+            VerificationStatus::kObserved);
+  EXPECT_EQ(name.GetVerificationStatusForType(NAME_FIRST),
+            VerificationStatus::kParsed);
+  EXPECT_EQ(name.GetVerificationStatusForType(NAME_MIDDLE),
+            VerificationStatus::kParsed);
+  EXPECT_EQ(name.GetVerificationStatusForType(NAME_LAST),
+            VerificationStatus::kParsed);
+  EXPECT_EQ(name.GetVerificationStatusForType(NAME_LAST_SECOND),
+            VerificationStatus::kParsed);
+}
+
+TEST(AutofillStructuredName,
+     MigrationFromLegacyStructure_WithFullName_Verified) {
+  NameFull name;
+  name.SetValueForTypeIfPossible(NAME_FULL,
+                                 base::ASCIIToUTF16("Thomas Neo Anderson"),
+                                 VerificationStatus::kNoStatus);
+  name.SetValueForTypeIfPossible(NAME_FIRST, base::ASCIIToUTF16("Thomas"),
+                                 VerificationStatus::kNoStatus);
+  name.SetValueForTypeIfPossible(NAME_MIDDLE, base::ASCIIToUTF16("Neo"),
+                                 VerificationStatus::kNoStatus);
+  name.SetValueForTypeIfPossible(NAME_LAST, base::ASCIIToUTF16("Anderson"),
+                                 VerificationStatus::kNoStatus);
+
+  name.MigrateLegacyStructure(true);
+
+  // Since the full name is set and the profile is verified, it is promoted to
+  // kUserVerified. All other tokens are reset.
+  EXPECT_EQ(name.GetValueForType(NAME_FULL),
+            base::ASCIIToUTF16("Thomas Neo Anderson"));
+  EXPECT_EQ(name.GetValueForType(NAME_FIRST), base::ASCIIToUTF16("Thomas"));
+  EXPECT_EQ(name.GetValueForType(NAME_MIDDLE), base::ASCIIToUTF16("Neo"));
+  EXPECT_EQ(name.GetValueForType(NAME_LAST), base::ASCIIToUTF16("Anderson"));
+  EXPECT_EQ(name.GetValueForType(NAME_LAST_SECOND),
+            base::ASCIIToUTF16("Anderson"));
+
+  EXPECT_EQ(name.GetVerificationStatusForType(NAME_FULL),
+            VerificationStatus::kUserVerified);
+  EXPECT_EQ(name.GetVerificationStatusForType(NAME_FIRST),
+            VerificationStatus::kParsed);
+  EXPECT_EQ(name.GetVerificationStatusForType(NAME_MIDDLE),
+            VerificationStatus::kParsed);
+  EXPECT_EQ(name.GetVerificationStatusForType(NAME_LAST),
+            VerificationStatus::kParsed);
+  EXPECT_EQ(name.GetVerificationStatusForType(NAME_LAST_SECOND),
+            VerificationStatus::kParsed);
+}
+
+TEST(AutofillStructuredName, MigrationFromLegacyStructure_WithoutFullName) {
+  NameFull name;
+  // The first name has an incorrect componentization of the last name, but
+  // a correctly observed structure of title, first, middle, last.
+  name.SetValueForTypeIfPossible(NAME_FULL, base::ASCIIToUTF16(""),
+                                 VerificationStatus::kNoStatus);
+  name.SetValueForTypeIfPossible(NAME_FIRST, base::ASCIIToUTF16("Thomas"),
+                                 VerificationStatus::kNoStatus);
+  name.SetValueForTypeIfPossible(NAME_MIDDLE, base::ASCIIToUTF16("Neo"),
+                                 VerificationStatus::kNoStatus);
+  name.SetValueForTypeIfPossible(NAME_LAST, base::ASCIIToUTF16("Anderson"),
+                                 VerificationStatus::kNoStatus);
+
+  name.MigrateLegacyStructure(false);
+
+  // Since the full name is not set, the substructure is set to observed.
+  // This is an edge case that normally should not happen.
+  // Also, it is ignored that the profile might be verified because a verified
+  // profile should contain a full name (or potentially no name).
+  EXPECT_EQ(name.GetValueForType(NAME_FULL), base::ASCIIToUTF16(""));
+  EXPECT_EQ(name.GetValueForType(NAME_FIRST), base::ASCIIToUTF16("Thomas"));
+  EXPECT_EQ(name.GetValueForType(NAME_MIDDLE), base::ASCIIToUTF16("Neo"));
+  EXPECT_EQ(name.GetValueForType(NAME_LAST), base::ASCIIToUTF16("Anderson"));
+
+  EXPECT_EQ(name.GetVerificationStatusForType(NAME_FULL),
+            VerificationStatus::kNoStatus);
+  EXPECT_EQ(name.GetVerificationStatusForType(NAME_FIRST),
+            VerificationStatus::kObserved);
+  EXPECT_EQ(name.GetVerificationStatusForType(NAME_MIDDLE),
+            VerificationStatus::kObserved);
+  EXPECT_EQ(name.GetVerificationStatusForType(NAME_LAST),
+            VerificationStatus::kObserved);
+}
+
 }  // namespace structured_address
 }  // namespace autofill

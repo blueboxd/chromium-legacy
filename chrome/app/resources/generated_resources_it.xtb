@@ -1321,7 +1321,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="2564653188463346023">Controllo ortografico avanzato</translation>
 <translation id="2566124945717127842">Esegui il powerwash per ripristinare il tuo dispositivo <ph name="IDS_SHORT_PRODUCT_NAME" /> e farlo tornare come nuovo.</translation>
 <translation id="2568774940984945469">Infobar Container</translation>
-<translation id="257088987046510401">Temi</translation>
 <translation id="2571655996835834626">Modifica delle impostazioni che controllano l'accesso dei siti web a funzioni quali cookie, JavaScript, plug-in, geolocalizzazione, microfono, videocamera e così via.</translation>
 <translation id="2572032849266859634">È stato concesso l'accesso in sola lettura a <ph name="VOLUME_NAME" />.</translation>
 <translation id="2575247648642144396">Questa icona sarà visibile quando l'estensione potrà agire sulla pagina corrente. Utilizza questa estensione facendo clic sull'icona o premendo <ph name="EXTENSION_SHORTCUT" />.</translation>
@@ -3345,7 +3344,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="5115338116365931134">SSO</translation>
 <translation id="5116628073786783676">Sal&amp;va audio come...</translation>
 <translation id="5117139026559873716">Disconnetti il telefono da <ph name="DEVICE_TYPE" />. I due dispositivi non si connetteranno più automaticamente.</translation>
-<translation id="5117427536932535467">Temi e sfondi</translation>
 <translation id="5117930984404104619">Monitoraggio del comportamento di altre estensioni, compresi gli URL visitati</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Il disco rigido è pieno. Salva in un'altra posizione o libera spazio sul disco rigido.</translation>
@@ -4291,6 +4289,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="6277105963844135994">Timeout di rete</translation>
 <translation id="6277518330158259200">&amp;Acquisisci screenshot</translation>
 <translation id="6278057325678116358">Usa GTK+</translation>
+<translation id="6278428485366576908">Tema</translation>
 <translation id="6278776436938569440">Cambia posizione</translation>
 <translation id="6279183038361895380">Premi |<ph name="ACCELERATOR" />| per mostrare il puntatore</translation>
 <translation id="6280215091796946657">Accedi con un altro account</translation>

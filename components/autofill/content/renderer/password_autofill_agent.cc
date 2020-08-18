@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/i18n/case_conversion.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
@@ -35,6 +36,7 @@
 #include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "components/autofill/core/common/signatures.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/safe_browsing/buildflags.h"
 #include "content/public/renderer/document_state.h"
 #include "content/public/renderer/render_frame.h"
@@ -1531,7 +1533,11 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
         !username_element.Value().IsEmpty() &&
         (PossiblePrefilledUsernameValue(username_element.Value().Utf8(),
                                         possible_email_domain) ||
-         fill_data.username_may_use_prefilled_placeholder);
+         (fill_data.username_may_use_prefilled_placeholder &&
+          base::FeatureList::IsEnabled(
+              password_manager::features::
+                  kEnableOverwritingPlaceholderUsernames)));
+
     if (!username_element.Value().IsEmpty() &&
         username_element.GetAutofillState() == WebAutofillState::kNotFilled &&
         !prefilled_placeholder_username) {

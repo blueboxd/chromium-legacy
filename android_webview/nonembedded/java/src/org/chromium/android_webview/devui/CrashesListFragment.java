@@ -24,6 +24,7 @@ import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.Button;
 import android.widget.ExpandableListView;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -212,7 +213,6 @@ public class CrashesListFragment extends DevUiBaseFragment {
             }
             setTwoLineListItemText(view.findViewById(R.id.crash_header), packageName,
                     new Date(crashInfo.captureTime).toString());
-
             return view;
         }
 
@@ -295,6 +295,13 @@ public class CrashesListFragment extends DevUiBaseFragment {
             } else {
                 uploadButton.setVisibility(View.GONE);
             }
+
+            ImageButton hideButton = view.findViewById(R.id.crash_hide_button);
+            hideButton.setOnClickListener(v -> {
+                crashInfo.isHidden = true;
+                WebViewCrashInfoCollector.updateCrashLogFileWithNewCrashInfo(crashInfo);
+                updateCrashes();
+            });
 
             return view;
         }

@@ -8,19 +8,27 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.android_webview.common.crash.CrashInfo;
 import org.chromium.android_webview.common.crash.SystemWideCrashDirectories;
+import org.chromium.base.Log;
 import org.chromium.components.minidump_uploader.CrashFileManager;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Aggregates webview crash info from different sources into one single list.
  * This list may be used to be displayed in a Crash UI.
  */
 public class WebViewCrashInfoCollector {
+    private static final String TAG = "WebViewCrashCollect";
+
     private final CrashInfoLoader[] mCrashInfoLoaders;
 
     /**
@@ -94,18 +102,31 @@ public class WebViewCrashInfoCollector {
 
     /**
      * Merge duplicate crashes (crashes which have the same local-id) into one object.
+     * Removes crashes that have to be hidden.
      */
     @VisibleForTesting
     public static List<CrashInfo> mergeDuplicates(List<CrashInfo> crashesList) {
         Map<String, CrashInfo> crashInfoMap = new HashMap<>();
+        Set<String> hiddenCrashes = new HashSet<>();
         for (CrashInfo c : crashesList) {
+            if (c.isHidden) {
+                hiddenCrashes.add(c.localId);
+                continue;
+            }
             CrashInfo previous = crashInfoMap.get(c.localId);
             if (previous != null) {
                 c = new CrashInfo(previous, c);
             }
             crashInfoMap.put(c.localId, c);
         }
-        return new ArrayList<CrashInfo>(crashInfoMap.values());
+
+        List<CrashInfo> crashes = new ArrayList<>();
+        for (Map.Entry<String, CrashInfo> entry : crashInfoMap.entrySet()) {
+            if (!hiddenCrashes.contains(entry.getKey())) {
+                crashes.add(entry.getValue());
+            }
+        }
+        return crashes;
     }
 
     /**
@@ -119,5 +140,31 @@ public class WebViewCrashInfoCollector {
             if (a.uploadTime != b.uploadTime) return a.uploadTime < b.uploadTime ? 1 : -1;
             return 0;
         });
+    }
+
+    /**
+     * Modify WebView crash JSON log file with the new crash info if the JSON file exists
+     */
+    public static void updateCrashLogFileWithNewCrashInfo(CrashInfo crashInfo) {
+        File logDir = SystemWideCrashDirectories.getWebViewCrashLogDir();
+        File[] logFiles = logDir.listFiles();
+        for (File logFile : logFiles) {
+            // Ignore non-json files.
+            if (!logFile.isFile() || !logFile.getName().endsWith(".json")) continue;
+            // Ignore unrelated json files
+            if (!logFile.getName().contains(crashInfo.localId)) continue;
+            try {
+                FileWriter writer = new FileWriter(logFile);
+                try {
+                    writer.write(crashInfo.serializeToJson());
+                } finally {
+                    writer.close();
+                }
+            } catch (IOException e) {
+                Log.e(TAG, "failed to modify JSON log entry for crash", e);
+            }
+            return;
+        }
+        // logfile does not exist
     }
 }

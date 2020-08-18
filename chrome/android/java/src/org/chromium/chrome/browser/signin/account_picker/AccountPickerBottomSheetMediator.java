@@ -10,6 +10,7 @@ import android.text.TextUtils;
 
 import androidx.annotation.Nullable;
 
+import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.signin.ProfileDataCache;
 import org.chromium.chrome.browser.signin.account_picker.AccountPickerBottomSheetProperties.AccountPickerBottomSheetState;
@@ -17,6 +18,8 @@ import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.AccountUtils;
 import org.chromium.components.signin.AccountsChangeObserver;
+import org.chromium.components.signin.base.CoreAccountId;
+import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.base.GoogleServiceAuthError;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -56,6 +59,9 @@ class AccountPickerBottomSheetMediator implements AccountPickerCoordinator.Liste
      *
      * @param accountName The email of the selected account.
      * @param isDefaultAccount Whether the selected account is the first in the account list.
+     *
+     * TODO(https://crbug.com/1115965): Use CoreAccountInfo instead of account's email
+     * as the first argument of the method.
      */
     @Override
     public void onAccountSelected(String accountName, boolean isDefaultAccount) {
@@ -166,7 +172,20 @@ class AccountPickerBottomSheetMediator implements AccountPickerCoordinator.Liste
         } else {
             mModel.set(AccountPickerBottomSheetProperties.ACCOUNT_PICKER_BOTTOM_SHEET_STATE,
                     AccountPickerBottomSheetState.SIGNIN_IN_PROGRESS);
-            mAccountPickerDelegate.signIn(mSelectedAccountName, this::onSignInError);
+            new AsyncTask<String>() {
+                @Override
+                protected String doInBackground() {
+                    return mAccountManagerFacade.getAccountGaiaId(mSelectedAccountName);
+                }
+
+                @Override
+                protected void onPostExecute(String accountGaiaId) {
+                    CoreAccountInfo coreAccountInfo = new CoreAccountInfo(
+                            new CoreAccountId(accountGaiaId), mSelectedAccountName, accountGaiaId);
+                    mAccountPickerDelegate.signIn(
+                            coreAccountInfo, AccountPickerBottomSheetMediator.this::onSignInError);
+                }
+            }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         }
     }
 

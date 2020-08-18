@@ -231,6 +231,8 @@ class WebURLRequest {
   BLINK_PLATFORM_EXPORT bool HasUserGesture() const;
   BLINK_PLATFORM_EXPORT void SetHasUserGesture(bool);
 
+  BLINK_PLATFORM_EXPORT bool HasTextFragmentToken() const;
+
   // A consumer controlled value intended to be used to identify the
   // requestor.
   BLINK_PLATFORM_EXPORT int RequestorID() const;

@@ -10,7 +10,7 @@ bool ParseLookupAffiliationResponse(
     const std::vector<FacetURI>& requested_facet_uris,
     const affiliation_pb::LookupAffiliationResponse& response,
     AffiliationFetcherDelegate::Result* result) {
-  result->reserve(requested_facet_uris.size());
+  result->affiliations.reserve(requested_facet_uris.size());
 
   std::map<FacetURI, size_t> facet_uri_to_class_index;
   for (int i = 0; i < response.affiliation_size(); ++i) {
@@ -39,7 +39,7 @@ bool ParseLookupAffiliationResponse(
     // affiliations must form an equivalence relation.
     for (const Facet& facet : affiliated_facets) {
       if (!facet_uri_to_class_index.count(facet.uri))
-        facet_uri_to_class_index[facet.uri] = result->size();
+        facet_uri_to_class_index[facet.uri] = result->affiliations.size();
       if (facet_uri_to_class_index[facet.uri] !=
           facet_uri_to_class_index[affiliated_facets[0].uri]) {
         return false;
@@ -47,15 +47,17 @@ bool ParseLookupAffiliationResponse(
     }
 
     // Filter out duplicate equivalence classes in the response.
-    if (facet_uri_to_class_index[affiliated_facets[0].uri] == result->size())
-      result->push_back(affiliated_facets);
+    if (facet_uri_to_class_index[affiliated_facets[0].uri] ==
+        result->affiliations.size()) {
+      result->affiliations.push_back(affiliated_facets);
+    }
   }
 
   // Synthesize an equivalence class (of size one) for each facet that did not
   // appear in the server response due to not being affiliated with any others.
   for (const FacetURI& uri : requested_facet_uris) {
     if (!facet_uri_to_class_index.count(uri))
-      result->push_back({{uri}});
+      result->affiliations.push_back({{uri}});
   }
 
   return true;

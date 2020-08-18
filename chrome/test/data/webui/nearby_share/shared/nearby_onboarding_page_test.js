@@ -23,8 +23,8 @@ suite('nearby-onboarding-page', function() {
     element.settings = {
       enabled: false,
       deviceName: deviceName,
-      dataUsage: 1,
-      visibility: 1,
+      dataUsage: nearbyShare.mojom.DataUsage.kOnline,
+      visibility: nearbyShare.mojom.Visibility.kAllContacts,
       allowedContacts: [],
     };
     document.body.appendChild(element);

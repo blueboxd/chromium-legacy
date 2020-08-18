@@ -16,6 +16,7 @@
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
@@ -111,7 +112,7 @@ new_tab_page::mojom::ThemePtr MakeTheme(const NtpTheme& ntp_theme) {
   if (!ntp_theme.custom_background_url.is_empty()) {
     base::StringPiece url = ntp_theme.custom_background_url.spec();
     // TODO(crbug.com/1041125): Clean up when chrome-search://local-ntp removed.
-    if (url.starts_with("chrome-search://local-ntp/")) {
+    if (base::StartsWith(url, "chrome-search://local-ntp/")) {
       background_image->url =
           GURL("chrome-untrusted://new-tab-page/" +
                url.substr(strlen("chrome-search://local-ntp/")).as_string());

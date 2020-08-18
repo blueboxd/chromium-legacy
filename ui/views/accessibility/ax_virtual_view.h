@@ -40,6 +40,7 @@ namespace views {
 class AXAuraObjCache;
 class View;
 class ViewAccessibility;
+class ViewAXPlatformNodeDelegate;
 
 // Implements a virtual view that is used only for accessibility.
 //
@@ -99,6 +100,8 @@ class VIEWS_EXPORT AXVirtualView : public ui::AXPlatformNodeDelegateBase {
   }
   AXVirtualView* virtual_parent_view() { return virtual_parent_view_; }
 
+  ui::AXPlatformNode* ax_platform_node() { return ax_platform_node_; }
+
   // Returns true if |view| is contained within the hierarchy of this
   // AXVirtualView, even as an indirect descendant. Will return true if |view|
   // is also this AXVirtualView.
@@ -153,9 +156,15 @@ class VIEWS_EXPORT AXVirtualView : public ui::AXPlatformNodeDelegateBase {
   bool IsOffscreen() const override;
   const ui::AXUniqueId& GetUniqueId() const override;
   gfx::AcceleratedWidget GetTargetForNativeAccessibilityEvent() override;
+  base::Optional<bool> GetTableHasColumnOrRowHeaderNode() const override;
+  std::vector<int32_t> GetColHeaderNodeIds() const override;
+  std::vector<int32_t> GetColHeaderNodeIds(int col_index) const override;
 
   // Gets the real View that owns our shallowest virtual ancestor,, if any.
   View* GetOwnerView() const;
+
+  // Gets the view platform delegate if exists, otherwise nullptr.
+  ViewAXPlatformNodeDelegate* GetDelegate() const;
 
   // Gets or creates a wrapper suitable for use with tree sources.
   AXVirtualViewWrapper* GetOrCreateWrapper(views::AXAuraObjCache* cache);

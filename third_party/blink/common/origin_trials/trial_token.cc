@@ -7,6 +7,7 @@
 #include "base/base64.h"
 #include "base/big_endian.h"
 #include "base/json/json_reader.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
@@ -74,6 +75,7 @@ std::unique_ptr<TrialToken> TrialToken::From(
   *out_status = Extract(token_text, public_key, &token_payload,
                         &token_signature, &token_version);
   if (*out_status != OriginTrialTokenStatus::kSuccess) {
+    DVLOG(2) << "Malformed origin trial token found (unable to extract)";
     return nullptr;
   }
   std::unique_ptr<TrialToken> token = Parse(token_payload, token_version);
@@ -81,8 +83,11 @@ std::unique_ptr<TrialToken> TrialToken::From(
     token->signature_ = token_signature;
     *out_status = OriginTrialTokenStatus::kSuccess;
   } else {
+    DVLOG(2) << "Malformed origin trial token found (unable to parse)";
     *out_status = OriginTrialTokenStatus::kMalformed;
   }
+  DVLOG(2) << "Valid origin trial token found for feature "
+           << token->feature_name();
   return token;
 }
 
@@ -91,9 +96,11 @@ OriginTrialTokenStatus TrialToken::IsValid(const url::Origin& origin,
   // The order of these checks is intentional. For example, will only report a
   // token as expired if it is valid for the origin.
   if (!ValidateOrigin(origin)) {
+    DVLOG(2) << "Origin trial token from different origin";
     return OriginTrialTokenStatus::kWrongOrigin;
   }
   if (!ValidateDate(now)) {
+    DVLOG(2) << "Origin trial token expired";
     return OriginTrialTokenStatus::kExpired;
   }
   return OriginTrialTokenStatus::kSuccess;

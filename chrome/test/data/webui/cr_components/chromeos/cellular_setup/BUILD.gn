@@ -7,5 +7,6 @@ import("//ui/webui/resources/tools/js_modulizer.gni")
 js_modulizer("modulize") {
   input_files = [
     "base_page_test.js",
+    "final_page_test.js",
   ]
 }

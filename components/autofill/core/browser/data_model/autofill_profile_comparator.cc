@@ -343,8 +343,8 @@ bool AutofillProfileComparator::MergeNames(const AutofillProfile& p1,
   DCHECK(HaveMergeableNames(p1, p2));
 
   const AutofillType kFullName(NAME_FULL);
-  const base::string16& full_name_1 = p1.GetInfo(kFullName, app_locale_);
-  const base::string16& full_name_2 = p2.GetInfo(kFullName, app_locale_);
+  const base::string16 full_name_1 = p1.GetInfo(kFullName, app_locale_);
+  const base::string16 full_name_2 = p2.GetInfo(kFullName, app_locale_);
 
   // At this state it is already determined that the two names are mergeable.
   // This can mean of of the following things:
@@ -361,7 +361,7 @@ bool AutofillProfileComparator::MergeNames(const AutofillProfile& p1,
       return true;
     // Vice verse set name to the one of |p1| if |p2| has an empty name
     if (HasOnlySkippableCharacters(full_name_2)) {
-      *name_info = p2.GetNameInfo();
+      *name_info = p1.GetNameInfo();
       return true;
     }
     // Try to apply a direct merging.

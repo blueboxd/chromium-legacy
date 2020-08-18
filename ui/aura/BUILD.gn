@@ -247,9 +247,14 @@ static_library("test_support") {
     sources += [ "test/ui_controls_factory_aurawin.cc" ]
   }
 
+  if (is_linux) {
+    sources += [ "test/ui_controls_factory_aura_linux.cc" ]
+  }
+
   if (use_x11) {
     sources += [
-      "test/ui_controls_factory_aurax11.cc",
+      "test/ui_controls_aurax11.cc",
+      "test/ui_controls_aurax11.h",
       "test/x11_event_sender.cc",
       "test/x11_event_sender.h",
     ]
@@ -264,7 +269,10 @@ static_library("test_support") {
     if (is_fuchsia) {
       deps += [ "//ui/ozone" ]
     }
-    sources += [ "test/ui_controls_factory_ozone.cc" ]
+    sources += [
+      "test/ui_controls_ozone.cc",
+      "test/ui_controls_ozone.h",
+    ]
   }
 
   if (is_linux || is_chromeos) {

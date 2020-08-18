@@ -1307,7 +1307,6 @@
 <translation id="2564653188463346023">परिष्कृत हिज्जे जाँच</translation>
 <translation id="2566124945717127842">तपाईंको <ph name="IDS_SHORT_PRODUCT_NAME" /> लाई नयाँ जस्तै हुने गरि रिसेट गर्न पावरवाश गर्नुहोस्।</translation>
 <translation id="2568774940984945469">इनफोबर कन्टेनर</translation>
-<translation id="257088987046510401">थिमहरू</translation>
 <translation id="2571655996835834626">कुकी, JavaScript, प्लग-इन, भूस्थान, माइक्रोफोन र क्यामेरा जस्ता सुविधाहरूमाथि वेबसाइटको पहुँच नियन्त्रण गर्ने आफ्ना सेटिङहरू परिवर्तन गर्नुहोस्।</translation>
 <translation id="2572032849266859634"><ph name="VOLUME_NAME" /> मा पढ्ने-मात्र अनुमति प्रदान गरिएको छ।</translation>
 <translation id="2575247648642144396">जब एक्स्टेन्सनले हालको पृष्ठमा कार्य गर्न सक्छ तब यो प्रतिमालाई देख्न सकिनेछ। प्रतिमामा क्लिक गरेर वा <ph name="EXTENSION_SHORTCUT" /> लाई थिचेर यो एक्स्टेन्सन प्रयोग गर्नुहोस्।</translation>
@@ -3320,7 +3319,6 @@
 <translation id="5115338116365931134">SSO</translation>
 <translation id="5116628073786783676">अडियोको रूपमा &amp;बचत गर्नुहोस्...</translation>
 <translation id="5117139026559873716">आफ्नो <ph name="DEVICE_TYPE" /> बाट आफ्नो फोन विच्छेद गर्नुहोस्। तिनीहरू अब उप्रान्त स्वतः जोडिने छैनन्।</translation>
-<translation id="5117427536932535467">विषयवस्तु &amp; वालपेपरहरू</translation>
 <translation id="5117930984404104619">गरिएका युआरएलहरू समावेश गर्दै, अन्य विस्तारहरूको व्यवहारलाई सञ्चालन अनुश्रवण गर्नुहोस्।</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">तपाईंको हार्ड डिस्क भरिएको छ । कृपया अर्को स्थानमा बचत गर्नुहोस् वा हार्डडिस्कमा थप खाली ठाउँ बनाउनुहोस् ।</translation>
@@ -4257,6 +4255,7 @@
 <translation id="6277105963844135994">नेटवर्कको समय समाप्त भयो</translation>
 <translation id="6277518330158259200">स्क्रिसट लि&amp;नुहोस्</translation>
 <translation id="6278057325678116358">GTK+ प्रयोग गर्नुहोस्</translation>
+<translation id="6278428485366576908">विषयवस्तु</translation>
 <translation id="6278776436938569440">स्थान परिवर्तन गर्नुहोस्</translation>
 <translation id="6279183038361895380">तपाईंको कर्सर देखाउन |<ph name="ACCELERATOR" />| लाई थिच्नुहोस्</translation>
 <translation id="6280215091796946657">फरक खाता मार्फत साइन इन गर्नुहोस्</translation>

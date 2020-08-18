@@ -307,11 +307,13 @@ void TableSectionPainter::PaintBoxDecorationBackground(
         }
       }
     }
+    uint64_t paint_area = base::saturated_cast<uint64_t>(
+        paint_rect.Width().ToUnsigned() * paint_rect.Height().ToUnsigned());
     paint_info.context.GetPaintController().SetPossibleBackgroundColor(
         layout_table_section_,
         layout_table_section_.ResolveColor(GetCSSPropertyBackgroundColor())
             .Rgb(),
-        paint_rect.Width().ToUnsigned() * paint_rect.Height().ToUnsigned());
+        paint_area);
   }
 
   if (has_box_shadow) {

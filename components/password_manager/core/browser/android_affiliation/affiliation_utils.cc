@@ -265,13 +265,21 @@ FacetURI::FacetURI(const std::string& canonical_spec, bool is_valid)
                         &parsed_);
 }
 
-
 // AffiliatedFacetsWithUpdateTime ---------------------------------------------
 
 AffiliatedFacetsWithUpdateTime::AffiliatedFacetsWithUpdateTime() = default;
 
 AffiliatedFacetsWithUpdateTime::AffiliatedFacetsWithUpdateTime(
     const AffiliatedFacetsWithUpdateTime& other) = default;
+
+AffiliatedFacetsWithUpdateTime::AffiliatedFacetsWithUpdateTime(
+    AffiliatedFacetsWithUpdateTime&& other) = default;
+
+AffiliatedFacetsWithUpdateTime& AffiliatedFacetsWithUpdateTime::operator=(
+    const AffiliatedFacetsWithUpdateTime& other) = default;
+
+AffiliatedFacetsWithUpdateTime& AffiliatedFacetsWithUpdateTime::operator=(
+    AffiliatedFacetsWithUpdateTime&& other) = default;
 
 AffiliatedFacetsWithUpdateTime::~AffiliatedFacetsWithUpdateTime() = default;
 

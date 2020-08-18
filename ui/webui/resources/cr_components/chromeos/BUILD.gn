@@ -21,6 +21,7 @@ group("closure_compile") {
     # "network:closure_compile_module",
 
     "quick_unlock:closure_compile_module",
+    "cellular_setup:closure_compile_module",
     "bluetooth:closure_compile_module",
     "network_health:closure_compile_module",
     "smb_shares:closure_compile_module",

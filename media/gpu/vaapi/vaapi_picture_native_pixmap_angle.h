@@ -13,6 +13,7 @@
 #include "media/gpu/vaapi/vaapi_picture_native_pixmap.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gl/gl_bindings.h"
 
 namespace media {
 
@@ -39,8 +40,14 @@ class VaapiPictureNativePixmapAngle : public VaapiPictureNativePixmap {
   bool ImportGpuMemoryBufferHandle(
       gfx::BufferFormat format,
       gfx::GpuMemoryBufferHandle gpu_memory_buffer_handle) override;
+  bool DownloadFromSurface(scoped_refptr<VASurface> va_surface) override;
+
+  // This native pixmap implementation never instantiates its own VASurfaces.
+  VASurfaceID va_surface_id() const override;
 
  private:
+  Pixmap x_pixmap_ = 0;
+
   DISALLOW_COPY_AND_ASSIGN(VaapiPictureNativePixmapAngle);
 };
 

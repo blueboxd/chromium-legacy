@@ -404,7 +404,7 @@ void MetricsStateManager::ResetMetricsIDsIfNecessary() {
   DCHECK(client_id_.empty());
 
   local_state_->ClearPref(prefs::kMetricsClientID);
-  entropy_state_.ClearPrefs();
+  EntropyState::ClearPrefs(local_state_);
 
   // Also clear the backed up client info.
   store_client_info_.Run(ClientInfo());

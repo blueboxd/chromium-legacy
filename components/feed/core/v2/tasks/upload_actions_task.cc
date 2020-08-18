@@ -139,7 +139,10 @@ void UploadActionsTask::Run() {
   // to upload all pending actions.
   if (wire_action_) {
     StoredAction action;
-    action.set_id(stream_->GetMetadata()->GetNextActionId().GetUnsafeValue());
+    int32_t action_id =
+        stream_->GetMetadata()->GetNextActionId().GetUnsafeValue();
+    action.set_id(action_id);
+    wire_action_->mutable_client_data()->set_sequence_number(action_id);
     *action.mutable_action() = std::move(*wire_action_);
     // No need to set upload_attempt_count as it defaults to 0.
     // WriteActions() sets the ID.

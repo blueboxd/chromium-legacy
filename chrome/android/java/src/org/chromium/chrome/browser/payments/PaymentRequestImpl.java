@@ -55,6 +55,7 @@ import org.chromium.components.page_info.CertificateChainHelper;
 import org.chromium.components.payments.AbortReason;
 import org.chromium.components.payments.BrowserPaymentRequest;
 import org.chromium.components.payments.CanMakePaymentQuery;
+import org.chromium.components.payments.CheckoutFunnelStep;
 import org.chromium.components.payments.ComponentPaymentRequestImpl;
 import org.chromium.components.payments.CurrencyFormatter;
 import org.chromium.components.payments.ErrorMessageUtil;
@@ -370,6 +371,7 @@ public class PaymentRequestImpl
             @Nullable PaymentOptions options, boolean googlePayBridgeEligible) {
         assert mComponentPaymentRequestImpl != null;
         mMethodData = new HashMap<>();
+        mJourneyLogger.recordCheckoutStep(CheckoutFunnelStep.INITIATED);
 
         mPaymentOptions = options;
         mRequestShipping = options != null && options.requestShipping;
@@ -434,7 +436,7 @@ public class PaymentRequestImpl
             mQueryForQuota.put("basic-card-payment-options", paymentMethodData);
         }
 
-        if (!parseAndValidateDetailsOrDisconnectFromClient(details)) return true;
+        if (!parseAndValidateDetailsOrDisconnectFromClient(details)) return false;
         mSpec = new PaymentRequestSpec(mPaymentOptions, details, mMethodData.values(),
                 LocaleUtils.getDefaultLocaleString());
 
@@ -650,6 +652,7 @@ public class PaymentRequestImpl
             return;
         }
 
+        mJourneyLogger.recordCheckoutStep(CheckoutFunnelStep.SHOW_CALLED);
         setShowingPaymentRequest(this);
         mIsCurrentPaymentRequestShowing = true;
         mIsUserGestureShow = isUserGesture;
@@ -1363,6 +1366,7 @@ public class PaymentRequestImpl
     @Override
     public boolean onPayClicked(EditableOption selectedShippingAddress,
             EditableOption selectedShippingOption, EditableOption selectedPaymentMethod) {
+        mJourneyLogger.recordCheckoutStep(CheckoutFunnelStep.PAYMENT_HANDLER_INVOKED);
         mInvokedPaymentApp = (PaymentApp) selectedPaymentMethod;
 
         EditableOption selectedContact = mPaymentUIsManager.getContactSection() != null

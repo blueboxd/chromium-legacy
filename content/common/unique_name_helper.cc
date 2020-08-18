@@ -69,7 +69,8 @@ constexpr char kDynamicFrameMarker[] = "<!--dynamicFrame";
 constexpr size_t kMaxRequestedNameSize = 80;
 
 bool IsNameWithFramePath(base::StringPiece name) {
-  return name.starts_with(kFramePathPrefix) && base::EndsWith(name, "-->") &&
+  return base::StartsWith(name, kFramePathPrefix) &&
+         base::EndsWith(name, "-->") &&
          (kFramePathPrefixLength + kFramePathSuffixLength) < name.size();
 }
 

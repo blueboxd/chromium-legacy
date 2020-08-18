@@ -35,7 +35,6 @@
 #endif
 
 #if defined(USE_OZONE)
-#include "ui/base/ui_base_features.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
 #include "ui/ozone/public/ozone_platform.h"
 #endif
@@ -425,7 +424,7 @@ void GpuHostImpl::DidInitialize(
                            gpu_feature_info_for_hardware_gpu, gpu_extra_info);
 
   if (!params_.disable_gpu_shader_disk_cache) {
-    CreateChannelCache(gpu::kInProcessCommandBufferClientId);
+    CreateChannelCache(gpu::kDisplayCompositorClientId);
 
     bool use_gr_shader_cache = base::FeatureList::IsEnabled(
                                    features::kDefaultEnableOopRasterization) ||

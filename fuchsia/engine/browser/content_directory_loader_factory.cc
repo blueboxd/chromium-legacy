@@ -21,6 +21,7 @@
 #include "base/no_destructor.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
@@ -405,7 +406,7 @@ void ContentDirectoryLoaderFactory::CreateLoaderAndStart(
   // Fuchsia paths do not support the notion of absolute paths, so strip the
   // leading slash from the URL's path fragment.
   base::StringPiece requested_path = request.url.path_piece();
-  DCHECK(requested_path.starts_with("/"));
+  DCHECK(base::StartsWith(requested_path, "/"));
   requested_path.remove_prefix(1);
 
   fidl::InterfaceHandle<fuchsia::io::Node> file_handle;

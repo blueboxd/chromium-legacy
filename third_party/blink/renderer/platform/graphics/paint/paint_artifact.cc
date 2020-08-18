@@ -123,8 +123,9 @@ void PaintArtifact::UpdateBackgroundColor(
 
   layer->SetSafeOpaqueBackgroundColor(color);
 
-  uint64_t layer_area = layer->bounds().width() * layer->bounds().height();
-  if (area < layer_area / 2)
+  base::ClampedNumeric<uint64_t> layer_area = layer->bounds().width();
+  layer_area *= layer->bounds().height();
+  if (area < static_cast<uint64_t>(layer_area) / 2)
     color = SK_ColorTRANSPARENT;
   layer->SetBackgroundColor(color);
 }

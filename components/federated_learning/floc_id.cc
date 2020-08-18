@@ -45,6 +45,14 @@ bool FlocId::IsValid() const {
   return id_.has_value();
 }
 
+bool FlocId::operator==(const FlocId& other) const {
+  return id_ == other.id_;
+}
+
+bool FlocId::operator!=(const FlocId& other) const {
+  return !(*this == other);
+}
+
 uint64_t FlocId::ToUint64() const {
   DCHECK(id_.has_value());
   return id_.value();

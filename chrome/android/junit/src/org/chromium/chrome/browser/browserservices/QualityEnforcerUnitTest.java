@@ -52,7 +52,8 @@ import org.chromium.net.NetError;
  */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
-@DisableFeatures(ChromeFeatureList.TRUSTED_WEB_ACTIVITY_QUALITY_ENFORCEMENT)
+@EnableFeatures(ChromeFeatureList.TRUSTED_WEB_ACTIVITY_QUALITY_ENFORCEMENT)
+@DisableFeatures(ChromeFeatureList.TRUSTED_WEB_ACTIVITY_QUALITY_ENFORCEMENT_FORCED)
 public class QualityEnforcerUnitTest {
     private static final String TRUSTED_ORIGIN_PAGE = "https://www.origin1.com/page1";
     private static final String UNTRUSTED_PAGE = "https://www.origin2.com/page1";
@@ -135,7 +136,16 @@ public class QualityEnforcerUnitTest {
     }
 
     @Test
-    @EnableFeatures(ChromeFeatureList.TRUSTED_WEB_ACTIVITY_QUALITY_ENFORCEMENT)
+    public void trigger_offline() {
+        navigateToUrlInternet(TRUSTED_ORIGIN_PAGE);
+        Assert.assertEquals(
+                ContextUtils.getApplicationContext().getString(
+                        R.string.twa_quality_enforcement_violation_offline, TRUSTED_ORIGIN_PAGE),
+                ShadowToast.getTextOfLatestToast());
+        verifyNotifyClientApp();
+    }
+
+    @Test
     public void triggerCrash_whenClientSupports() {
         Bundle result = new Bundle();
         result.putBoolean("success", true);
@@ -148,8 +158,7 @@ public class QualityEnforcerUnitTest {
     }
 
     @Test
-    @EnableFeatures(ChromeFeatureList.TRUSTED_WEB_ACTIVITY_QUALITY_ENFORCEMENT)
-    public void notTriggerCrash_whenClientDoesntSupport() {
+    public void notTriggerCrash_whenClientNotSupport() {
         Bundle result = new Bundle();
         result.putBoolean("success", false);
         when(mCustomTabsConnection.sendExtraCallbackWithResult(
@@ -158,16 +167,6 @@ public class QualityEnforcerUnitTest {
 
         navigateToUrlNotFound(TRUSTED_ORIGIN_PAGE);
         verify(mActivity, never()).finish();
-    }
-
-    @Test
-    public void trigger_offline() {
-        navigateToUrlInternet(TRUSTED_ORIGIN_PAGE);
-        Assert.assertEquals(
-                ContextUtils.getApplicationContext().getString(
-                        R.string.twa_quality_enforcement_violation_offline, TRUSTED_ORIGIN_PAGE),
-                ShadowToast.getTextOfLatestToast());
-        verifyNotifyClientApp();
     }
 
     @Test
@@ -189,6 +188,26 @@ public class QualityEnforcerUnitTest {
         verifyNotifyClientApp();
     }
 
+    @Test
+    @EnableFeatures(ChromeFeatureList.TRUSTED_WEB_ACTIVITY_QUALITY_ENFORCEMENT_FORCED)
+    public void notTriggerCrash_whenClientNotSupportButForced() {
+        Bundle result = new Bundle();
+        result.putBoolean("success", false);
+        when(mCustomTabsConnection.sendExtraCallbackWithResult(
+                     any(), eq(QualityEnforcer.CRASH), any()))
+                .thenReturn(result);
+
+        navigateToUrlNotFound(TRUSTED_ORIGIN_PAGE);
+        verify(mActivity).finish();
+    }
+
+    @Test
+    @DisableFeatures(ChromeFeatureList.TRUSTED_WEB_ACTIVITY_QUALITY_ENFORCEMENT)
+    public void notTriggerCrash_whenFlagIsDisabled() {
+        navigateToUrlNotFound(TRUSTED_ORIGIN_PAGE);
+        verifyNotTriggered();
+    }
+
     private void verifyTriggered404() {
         Assert.assertEquals(ContextUtils.getApplicationContext().getString(
                                     R.string.twa_quality_enforcement_violation_error,
@@ -199,12 +218,14 @@ public class QualityEnforcerUnitTest {
 
     private void verifyNotifyClientApp() {
         verify(mCustomTabsConnection)
-                .sendExtraCallbackWithResult(any(), eq(QualityEnforcer.NOTIFY), any());
+                .sendExtraCallbackWithResult(any(), eq(QualityEnforcer.CRASH), any());
+        doNothing().when(mActivity).finish();
     }
 
     private void verifyNotTriggered() {
         verify(mCustomTabsConnection, never())
-                .sendExtraCallbackWithResult(any(), eq(QualityEnforcer.NOTIFY), any());
+                .sendExtraCallbackWithResult(any(), eq(QualityEnforcer.CRASH), any());
+        verify(mActivity, never()).finish();
     }
 
     private void navigateToUrlNoError(String url) {

@@ -147,6 +147,7 @@ class FeedStream : public FeedStreamApi,
 
   void ReportSliceViewed(SurfaceId surface_id,
                          const std::string& slice_id) override;
+  void ReportFeedViewed(SurfaceId surface_id) override;
   void ReportNavigationStarted() override;
   void ReportPageLoaded() override;
   void ReportOpenAction(const std::string& slice_id) override;

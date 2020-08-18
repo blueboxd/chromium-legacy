@@ -181,9 +181,10 @@ PrinterSemanticCapsAndDefaults::Paper ParsePaper(base::StringPiece value) {
   // We expect at least a display string and a dimension string.
   // Additionally, we drop the "custom_min*" and "custom_max*" special
   // "sizes" (not for users' eyes).
-  if (pieces.size() < 2 || value.starts_with(kMediaCustomMinPrefix) ||
-      value.starts_with(kMediaCustomMaxPrefix))
+  if (pieces.size() < 2 || base::StartsWith(value, kMediaCustomMinPrefix) ||
+      base::StartsWith(value, kMediaCustomMaxPrefix)) {
     return PrinterSemanticCapsAndDefaults::Paper();
+  }
 
   base::StringPiece dimensions = pieces.back();
 

@@ -5,6 +5,7 @@
 #include "net/test/revocation_builder.h"
 
 #include "base/hash/sha1.h"
+#include "base/strings/string_util.h"
 #include "net/cert/asn1_util.h"
 #include "net/cert/x509_util.h"
 #include "net/der/encode_values.h"
@@ -108,7 +109,7 @@ std::string PKeyToSPK(const EVP_PKEY* pkey) {
   // ExtractSubjectPublicKeyFromSPKI() includes the unused bit count. For this
   // application, the unused bit count must be zero, and is not included in the
   // result.
-  if (!spk.starts_with("\0")) {
+  if (!base::StartsWith(spk, "\0")) {
     ADD_FAILURE();
     return std::string();
   }

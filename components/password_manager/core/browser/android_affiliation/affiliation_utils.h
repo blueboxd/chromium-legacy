@@ -174,7 +174,10 @@ struct Facet {
 };
 
 // A collection of facets affiliated with each other, i.e. an equivalence class.
-typedef std::vector<Facet> AffiliatedFacets;
+using AffiliatedFacets = std::vector<Facet>;
+
+// A collection of grouped facets.
+using GroupedFacets = std::vector<Facet>;
 
 // A collection of facets affiliated with each other, i.e. an equivalence class,
 // plus a timestamp that indicates the last time the data was updated from an
@@ -182,6 +185,11 @@ typedef std::vector<Facet> AffiliatedFacets;
 struct AffiliatedFacetsWithUpdateTime {
   AffiliatedFacetsWithUpdateTime();
   AffiliatedFacetsWithUpdateTime(const AffiliatedFacetsWithUpdateTime& other);
+  AffiliatedFacetsWithUpdateTime(AffiliatedFacetsWithUpdateTime&& other);
+  AffiliatedFacetsWithUpdateTime& operator=(
+      const AffiliatedFacetsWithUpdateTime& other);
+  AffiliatedFacetsWithUpdateTime& operator=(
+      AffiliatedFacetsWithUpdateTime&& other);
   ~AffiliatedFacetsWithUpdateTime();
 
   AffiliatedFacets facets;

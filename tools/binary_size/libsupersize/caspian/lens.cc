@@ -11,6 +11,7 @@
 
 namespace {
 
+constexpr const char* kDefaultContainer = "(Default container)";
 constexpr const char* kNoComponent = "(No component)";
 
 bool PartialMatch(std::string_view view, const RE2& regex) {
@@ -31,6 +32,14 @@ namespace caspian {
 
 std::string_view IdPathLens::ParentName(const BaseSymbol& symbol) {
   return "";
+}
+
+std::string_view ContainerLens::ParentName(const BaseSymbol& symbol) {
+  std::string component;
+  if (symbol.ContainerName() && *symbol.ContainerName()) {
+    return symbol.ContainerName();
+  }
+  return kDefaultContainer;
 }
 
 std::string_view ComponentLens::ParentName(const BaseSymbol& symbol) {

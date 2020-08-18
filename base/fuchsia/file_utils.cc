@@ -20,6 +20,7 @@ namespace base {
 namespace fuchsia {
 
 const char kPersistedDataDirectoryPath[] = "/data";
+const char kPersistedCacheDirectoryPath[] = "/cache";
 const char kServiceDirectoryPath[] = "/svc";
 const char kPackageRootDirectoryPath[] = "/pkg";
 

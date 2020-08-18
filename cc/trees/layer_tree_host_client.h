@@ -62,11 +62,10 @@ struct ApplyViewportChangesArgs {
 
 using ManipulationInfo = uint32_t;
 constexpr ManipulationInfo kManipulationInfoNone = 0;
-constexpr ManipulationInfo kManipulationInfoHasScrolledByWheel = 1 << 0;
-constexpr ManipulationInfo kManipulationInfoHasScrolledByTouch = 1 << 1;
-constexpr ManipulationInfo kManipulationInfoHasScrolledByPrecisionTouchPad =
-    1 << 2;
-constexpr ManipulationInfo kManipulationInfoHasPinchZoomed = 1 << 3;
+constexpr ManipulationInfo kManipulationInfoWheel = 1 << 0;
+constexpr ManipulationInfo kManipulationInfoTouch = 1 << 1;
+constexpr ManipulationInfo kManipulationInfoPrecisionTouchPad = 1 << 2;
+constexpr ManipulationInfo kManipulationInfoPinchZoom = 1 << 3;
 
 // A LayerTreeHost is bound to a LayerTreeHostClient. The main rendering
 // loop (in ProxyMain or SingleThreadProxy) calls methods on the

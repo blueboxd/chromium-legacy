@@ -42,6 +42,7 @@ class URLRequest;
 class URLRequestContext;
 struct WebSocketHandshakeRequestInfo;
 struct WebSocketHandshakeResponseInfo;
+struct NetworkTrafficAnnotationTag;
 
 // Transport-independent implementation of WebSockets. Implements protocol
 // semantics that do not depend on the underlying transport. Provides the
@@ -61,6 +62,7 @@ class NET_EXPORT WebSocketChannel {
       const HttpRequestHeaders&,
       URLRequestContext*,
       const NetLogWithSource&,
+      NetworkTrafficAnnotationTag,
       std::unique_ptr<WebSocketStream::ConnectDelegate>)>
       WebSocketStreamRequestCreationCallback;
 
@@ -83,7 +85,8 @@ class NET_EXPORT WebSocketChannel {
       const url::Origin& origin,
       const SiteForCookies& site_for_cookies,
       const IsolationInfo& isolation_info,
-      const HttpRequestHeaders& additional_headers);
+      const HttpRequestHeaders& additional_headers,
+      NetworkTrafficAnnotationTag traffic_annotation);
 
   // Sends a data frame to the remote side. It is the responsibility of the
   // caller to ensure that they have sufficient send quota to send this data,
@@ -127,6 +130,7 @@ class NET_EXPORT WebSocketChannel {
       const SiteForCookies& site_for_cookies,
       const IsolationInfo& isolation_info,
       const HttpRequestHeaders& additional_headers,
+      NetworkTrafficAnnotationTag traffic_annotation,
       WebSocketStreamRequestCreationCallback callback);
 
   // The default timout for the closing handshake is a sensible value (see
@@ -189,6 +193,7 @@ class NET_EXPORT WebSocketChannel {
       const SiteForCookies& site_for_cookies,
       const IsolationInfo& isolation_info,
       const HttpRequestHeaders& additional_headers,
+      NetworkTrafficAnnotationTag traffic_annotation,
       WebSocketStreamRequestCreationCallback callback);
 
   // Called when a URLRequest is created for handshaking.

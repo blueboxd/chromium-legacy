@@ -170,9 +170,7 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
 
   std::unique_ptr<JSONArray> GetPendingLayersAsJSON() const;
 
-  std::unique_ptr<JSONObject> GetLayersAsJSON(
-      LayerTreeFlags,
-      const PaintArtifact* = nullptr) const;
+  std::unique_ptr<JSONObject> GetLayersAsJSON(LayerTreeFlags) const;
 
 #if DCHECK_IS_ON()
   void ShowDebugData();
@@ -222,10 +220,19 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
   // A pending layer is a collection of paint chunks that will end up in
   // the same cc::Layer.
   struct PLATFORM_EXPORT PendingLayer {
+    enum CompositingType {
+      kScrollHitTestLayer,
+      kGraphicsLayerWrapper,
+      kForeignLayer,
+      kScrollbarLayer,
+      kOverlap,
+      kOther,
+    };
+
     PendingLayer(scoped_refptr<const PaintArtifact>,
                  const PaintChunk& first_paint_chunk,
                  wtf_size_t first_chunk_index,
-                 bool requires_own_layer);
+                 CompositingType compositng_type = kOther);
 
     // Merges |guest| into |this| if it can, by appending chunks of |guest|
     // after chunks of |this|, with appropriate space conversion applied to
@@ -251,6 +258,7 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
     void Upcast(const PropertyTreeState&);
 
     const PaintChunk& FirstPaintChunk() const;
+    const DisplayItem& FirstDisplayItem() const;
 
     // Returns the largest rect known to be opaque given two opaque rects.
     static FloatRect UniteRectsKnownToBeOpaque(const FloatRect&,
@@ -263,6 +271,10 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
 
     bool MayDrawContent() const;
 
+    bool RequiresOwnLayer() const {
+      return compositing_type != kOverlap && compositing_type != kOther;
+    }
+
     // The rects are in the space of property_tree_state.
     FloatRect bounds;
     FloatRect rect_known_to_be_opaque;
@@ -271,16 +283,10 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
     Vector<wtf_size_t> paint_chunk_indices;
     PropertyTreeState property_tree_state;
     FloatPoint offset_of_decomposited_transforms;
-
-    enum {
-      kRequiresOwnLayer,
-      kOverlap,
-      kOther,
-    } compositing_type;
+    CompositingType compositing_type;
   };
 
   void UpdateRepaintedLayerProperties(
-      scoped_refptr<const PaintArtifact> paint_artifact,
       const HashSet<const GraphicsLayer*>& repainted_layers) const;
 
   void DecompositeTransforms(const PaintArtifact&);
@@ -333,6 +339,13 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
   // scroll translation node.
   const TransformPaintPropertyNode* ScrollTranslationForLayer(
       const PendingLayer&);
+
+  // Returns the cc::Layer if the pending layer contains a foreign layer or a
+  // wrapper of a GraphicsLayer. If it's the latter and the graphics layer has
+  // been repainted, also updates the layer properties.
+  scoped_refptr<cc::Layer> WrappedCcLayerForPendingLayer(
+      const PendingLayer&,
+      const HashSet<const GraphicsLayer*>& repainted_layers);
 
   // Finds an existing or creates a new scroll hit test layer for the pending
   // layer, returning nullptr if the layer is not a scroll hit test layer.

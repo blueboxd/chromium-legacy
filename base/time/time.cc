@@ -15,6 +15,7 @@
 #include "base/no_destructor.h"
 #include "base/notreached.h"
 #include "base/optional.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/third_party/nspr/prtime.h"
 #include "base/time/time_override.h"
@@ -36,7 +37,7 @@ namespace {
 // Adapted from absl::ConsumePrefix():
 // https://cs.chromium.org/chromium/src/third_party/abseil-cpp/absl/strings/strip.h?l=45&rcl=2c22e9135f107a4319582ae52e2e3e6b201b6b7c
 inline bool ConsumePrefix(StringPiece& str, StringPiece expected) {
-  if (!str.starts_with(expected))
+  if (!StartsWith(str, expected))
     return false;
   str.remove_prefix(expected.size());
   return true;

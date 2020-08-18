@@ -15,6 +15,7 @@
 #include "components/viz/service/display/dc_layer_overlay.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "third_party/skia/include/core/SkSurface.h"
+#include "third_party/skia/include/gpu/GrContext.h"
 #include "ui/gfx/gpu_fence.h"
 #include "ui/gfx/presentation_feedback.h"
 #include "ui/latency/latency_tracker.h"
@@ -54,6 +55,7 @@ SkiaOutputDevice::ScopedPaint::~ScopedPaint() {
 }
 
 SkiaOutputDevice::SkiaOutputDevice(
+    GrContext* gr_context,
     gpu::MemoryTracker* memory_tracker,
     DidSwapBufferCompleteCallback did_swap_buffer_complete_callback)
     : did_swap_buffer_complete_callback_(
@@ -61,7 +63,10 @@ SkiaOutputDevice::SkiaOutputDevice(
       memory_type_tracker_(
           std::make_unique<gpu::MemoryTypeTracker>(memory_tracker)),
       latency_tracker_(std::make_unique<ui::LatencyTracker>()),
-      latency_tracker_runner_(CreateLatencyTracerRunner()) {}
+      latency_tracker_runner_(CreateLatencyTracerRunner()) {
+  DCHECK(gr_context);
+  capabilities_.max_render_target_size = gr_context->maxRenderTargetSize();
+}
 
 SkiaOutputDevice::~SkiaOutputDevice() {
   if (latency_tracker_runner_)

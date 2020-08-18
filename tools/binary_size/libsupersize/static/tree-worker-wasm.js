@@ -136,9 +136,12 @@ async function Open(name) {
 }
 
 // Placeholder input name until supplied via setInput()
-const fetcher = new DataFetcher('data.ndjson');
-let beforeFetcher = null;
-let sizeFileLoaded = false;
+const g_fetcher = new DataFetcher('data.ndjson');
+let g_beforeFetcher = null;
+let g_sizeFileLoaded = false;
+
+/** @type {SizeProperties} */
+let g_size_properties = null;
 
 async function loadSizeFile(isBefore, fetcher) {
   const sizeBuffer = await fetcher.loadSizeBuffer();
@@ -153,20 +156,34 @@ async function loadSizeFile(isBefore, fetcher) {
   Module._free(heapBuffer.byteOffset);
 }
 
+async function loadSizeProperties() {
+  const QueryProperty = Module.cwrap('QueryProperty', 'number', ['string']);
+  const getProperty = (key) => {
+    const stringPtr = QueryProperty(key);
+    const r = Module.UTF8ToString(stringPtr, 2 ** 16);
+    return r;
+  };
+  g_size_properties = {
+    isMultiContainer: (getProperty('isMultiContainer') === 'true')
+  };
+}
+
 async function buildTree(
     groupBy, includeRegex, excludeRegex, includeSections, minSymbolSize,
     flagToFilter, methodCountMode, onProgress) {
 
   onProgress({percent: 0.1, id: 0});
+  /** @type {Metadata} */
   return await LoadWasm.then(async () => {
-    if (!sizeFileLoaded) {
-      const current = loadSizeFile(false, fetcher);
-      const before =
-          beforeFetcher !== null ? loadSizeFile(true, beforeFetcher) : null;
-      await current;
-      await before;
+    if (!g_sizeFileLoaded) {
+      const load_promises = [];
+      load_promises.push(loadSizeFile(false, g_fetcher));
+      if (g_beforeFetcher !== null) {
+        load_promises.push(loadSizeFile(true, g_beforeFetcher));
+      }
+      await Promise.all(load_promises).then(loadSizeProperties);
       onProgress({percent: 0.4, id: 0});
-      sizeFileLoaded = true;
+      g_sizeFileLoaded = true;
     }
 
     const BuildTree = Module.cwrap(
@@ -186,6 +203,7 @@ async function buildTree(
       root,
       percent: 1.0,
       diffMode,
+      isMultiContainer: g_size_properties.isMultiContainer,
     };
   });
 }
@@ -251,19 +269,19 @@ const actions = {
       beforeUrl,
     } = parseOptions(options);
     if (accessToken) {
-      fetcher.setAccessToken(accessToken);
+      g_fetcher.setAccessToken(accessToken);
     }
     if (input === 'from-url://' && url) {
       // Display the data from the `load_url` query parameter
       console.info('Displaying data from', url);
-      fetcher.setInput(url);
+      g_fetcher.setInput(url);
     } else if (input != null) {
       console.info('Displaying uploaded data');
-      fetcher.setInput(input);
+      g_fetcher.setInput(input);
     }
 
     if (beforeUrl) {
-      beforeFetcher = new DataFetcher(beforeUrl);
+      g_beforeFetcher = new DataFetcher(beforeUrl);
     }
 
     return buildTree(
@@ -315,4 +333,3 @@ self.onmessage = async event => {
     runAction(id, action, data);
   }
 };
-

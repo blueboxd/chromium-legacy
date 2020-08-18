@@ -40,6 +40,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/appcache/appcache.h"
 #include "third_party/blink/public/common/origin_trials/trial_token.h"
@@ -217,8 +218,7 @@ GURL ParseUrlToken(base::StringPiece url_token, const GURL& manifest_url) {
 }
 
 bool IsUrlWithinScope(const GURL& url, const GURL& scope) {
-  return base::StartsWith(url.spec(), scope.spec(),
-                          base::CompareCase::SENSITIVE);
+  return base::StartsWith(url.spec(), scope.spec());
 }
 
 // Records UMA metrics for parsing one AppCache manifest.
@@ -344,16 +344,16 @@ bool ParseManifest(const GURL& manifest_url,
 
   // Discard a leading UTF-8 Byte-Order-Mark (BOM) (0xEF, 0xBB, 0xBF);
   static constexpr base::StringPiece kUtf8Bom("\xEF\xBB\xBF");
-  if (data.starts_with(kUtf8Bom))
+  if (base::StartsWith(data, kUtf8Bom))
     data = data.substr(kUtf8Bom.length());
 
   // The manifest has to start with a well-defined signature.
   static constexpr base::StringPiece kSignature("CACHE MANIFEST");
   static constexpr base::StringPiece kChromiumSignature(
       "CHROMIUM CACHE MANIFEST");
-  if (data.starts_with(kSignature)) {
+  if (base::StartsWith(data, kSignature)) {
     data = data.substr(kSignature.length());
-  } else if (data.starts_with(kChromiumSignature)) {
+  } else if (base::StartsWith(data, kChromiumSignature)) {
     // Chrome recognizes a separate signature, CHROMIUM CACHE MANIFEST. This was
     // built so that manifests that use the Chrome-only feature
     // CHROMIUM-INTERCEPT will be ignored by other browsers.

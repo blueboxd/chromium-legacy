@@ -199,15 +199,7 @@ bool PasswordAccessoryControllerImpl::ShouldAcceptFocusEvent(
 void PasswordAccessoryControllerImpl::OnOptionSelected(
     autofill::AccessoryAction selected_action) {
   if (selected_action == autofill::AccessoryAction::USE_OTHER_PASSWORD) {
-    password_manager::ContentPasswordManagerDriverFactory* factory =
-        password_manager::ContentPasswordManagerDriverFactory::FromWebContents(
-            web_contents_);
-    password_manager::ContentPasswordManagerDriver* driver =
-        factory->GetDriverForFrame(web_contents_->GetFocusedFrame());
-    AllPasswordsBottomSheetController* controller =
-        AllPasswordsBottomSheetController::Create(
-            driver, password_client_->GetProfilePasswordStore());
-    controller->Show();
+    ShowAllPasswords();
     return;
   }
   if (selected_action == autofill::AccessoryAction::MANAGE_PASSWORDS) {
@@ -278,6 +270,8 @@ void PasswordAccessoryControllerImpl::RefreshSuggestionsForField(
 
   if (base::FeatureList::IsEnabled(
           password_manager::features::kFillingPasswordsFromAnyOrigin)) {
+    // TODO(crbug.com/1104132): Disable the feature in insecure websites and on
+    // cross-origin iframes (https://crbug.com/1117015).
     base::string16 use_other_password_title = l10n_util::GetStringUTF16(
         IDS_PASSWORD_MANAGER_ACCESSORY_USE_OTHER_PASSWORD);
     footer_commands_to_add.push_back(
@@ -402,6 +396,30 @@ url::Origin PasswordAccessoryControllerImpl::GetFocusedFrameOrigin() const {
     return url::Origin();  // Nonce!
   }
   return web_contents_->GetFocusedFrame()->GetLastCommittedOrigin();
+}
+
+void PasswordAccessoryControllerImpl::ShowAllPasswords() {
+  // If the controller is initialized that means that the UI is showing.
+  if (all_passords_bottom_sheet_controller_) {
+    return;
+  }
+
+  // We can use |base::Unretained| safely because at the time of calling
+  // |AllPasswordsSheetDismissed| we are sure that this controller is alive as
+  // it owns |AllPasswordsBottomSheetController| from which the method is
+  // called.
+  all_passords_bottom_sheet_controller_ =
+      std::make_unique<AllPasswordsBottomSheetController>(
+          web_contents_, password_client_->GetProfilePasswordStore(),
+          base::BindOnce(
+              &PasswordAccessoryControllerImpl::AllPasswordsSheetDismissed,
+              base::Unretained(this)));
+
+  all_passords_bottom_sheet_controller_->Show();
+}
+
+void PasswordAccessoryControllerImpl::AllPasswordsSheetDismissed() {
+  all_passords_bottom_sheet_controller_.reset();
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(PasswordAccessoryControllerImpl)

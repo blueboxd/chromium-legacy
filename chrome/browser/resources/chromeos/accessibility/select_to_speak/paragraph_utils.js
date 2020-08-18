@@ -122,6 +122,117 @@ class ParagraphUtils {
   }
 
   /**
+   * Gets the text to be read aloud for a particular node.
+   * Compared with the bounds of the blockParent, the overflow
+   * words of the text will be replaced with empty space.
+   * @param {!ParagraphUtils.NodeGroupItem} nodeGroupItem
+   * @param {?AutomationNode} blockParent
+   * @return {string} The text to read for this node.
+   */
+  static getNodeNameWithoutOverflowWords(nodeGroupItem, blockParent) {
+    const unclippedText = ParagraphUtils.getNodeName(nodeGroupItem.node);
+    if (blockParent == null || blockParent.location == null) {
+      return unclippedText;
+    }
+
+    // Get the bounds of blockparent.
+    const bounds = blockParent.location;
+    const leftBound = bounds.left;
+    const rightBound = bounds.left + bounds.width;
+    const topBound = bounds.top;
+    const bottomBound = bounds.top + bounds.height;
+
+    const nodeBounds = nodeGroupItem.node.unclippedLocation;
+    const nodeLeftBound = nodeBounds.left;
+    const nodeRightBound = nodeBounds.left + nodeBounds.width;
+    const nodeTopBound = nodeBounds.top;
+    const nodeBottomBound = nodeBounds.top + nodeBounds.height;
+
+    // If the node bounds are entirely within the blockparent bounds, return
+    // the unclipped text.
+    if (nodeLeftBound >= leftBound && nodeRightBound <= rightBound &&
+        nodeTopBound >= topBound && nodeBottomBound <= bottomBound) {
+      return unclippedText;
+    }
+
+    // If the node bounds are entirely out of the blockparent bounds, return
+    // empty text with the same length of the unclipped text.
+    if (nodeLeftBound >= rightBound || nodeRightBound <= leftBound ||
+        nodeTopBound >= nodeBottomBound || nodeBottomBound <= topBound) {
+      return ' '.repeat(unclippedText.length);
+    }
+
+    // Go through words one by one and construct the output text.
+    let outputText = unclippedText;
+    let index = 0;
+    while (index < unclippedText.length) {
+      // The index of the first char of the word. The startIndex is guaranteed
+      // to be equal or lager than the input index, and is capped at
+      // nodeGroupItem.name.length.
+      const startIndex = WordUtils.getNextWordStart(
+          unclippedText,
+          index,
+          nodeGroupItem,
+          true /* ignoreStartChar */,
+      );
+
+      // The index of the last char of the word + 1. The endIndex is guaranteed
+      // to be larger than the input startIndex, and is capped at
+      // unclippedText.length.
+      const endIndex = WordUtils.getNextWordEnd(
+          unclippedText,
+          startIndex,
+          nodeGroupItem,
+          true /* ignoreStartChar */,
+      );
+
+      // Prepare the index for the next word. The endIndex is guarantted to be
+      // larger than the original index, and is capped at unclippedText.length,
+      // so the while loop will be stopped.
+      index = endIndex;
+
+      // If nodeGroupItem.hasInlineText is true, the nodeGroupItem is a
+      // staticText node that has inlineTextBox children, and we need to select
+      // a child inlineTextBox node corresponding to the startIndex. We also
+      // need to offset the query indexes for the inlineTextBox node. If
+      // nodeGroupItem.hasInlineText is false, the node of the NodeGroupItem
+      // should not be an inlineTextBox node, and we assigns the node and
+      // indexes directly from the nodeGroupItem.
+      let node;
+      let boundQueryStartIndex;
+      let boundQueryEndIndex;
+      if (nodeGroupItem.hasInlineText) {
+        node = ParagraphUtils.findInlineTextNodeByCharacterIndex(
+            nodeGroupItem.node, startIndex);
+        const charIndexInParent =
+            ParagraphUtils.getStartCharIndexInParent(node);
+        boundQueryStartIndex = startIndex - charIndexInParent;
+        boundQueryEndIndex = endIndex - charIndexInParent;
+      } else {
+        console.assert(
+            nodeGroupItem.node.role != RoleType.INLINE_TEXT_BOX,
+            'NodeGroupItem.node should not be an inlineTextBox node');
+        node = nodeGroupItem.node;
+        boundQueryStartIndex = startIndex;
+        boundQueryEndIndex = endIndex;
+      }
+
+      node.unclippedBoundsForRange(
+          boundQueryStartIndex, boundQueryEndIndex, (b) => {
+            // If the word is entirely out of the blockparent bounds,
+            // replace the word with space characters.
+            if (b.left + b.width <= leftBound || b.left >= rightBound ||
+                b.top >= bottomBound || b.top + b.height <= topBound) {
+              outputText = outputText.substr(0, startIndex) +
+                  ' '.repeat(endIndex - startIndex) +
+                  outputText.substr(endIndex);
+            }
+          });
+    }
+    return outputText;
+  }
+
+  /**
    * Determines the index into the parent name at which the inlineTextBox
    * node name begins.
    * @param {AutomationNode} inlineTextNode An inlineTextBox type node.
@@ -178,8 +289,8 @@ class ParagraphUtils {
   static buildNodeGroup(nodes, index, splitOnLanguage) {
     let node = nodes[index];
     let next = nodes[index + 1];
-    const result = new ParagraphUtils.NodeGroup(
-        ParagraphUtils.getFirstBlockAncestor(nodes[index]));
+    const blockParent = ParagraphUtils.getFirstBlockAncestor(nodes[index]);
+    const result = new ParagraphUtils.NodeGroup(blockParent);
     let staticTextParent = null;
     let currentLanguage = undefined;
     // TODO: Don't skip nodes. Instead, go through every node in
@@ -220,7 +331,9 @@ class ParagraphUtils {
               new ParagraphUtils.NodeGroupItem(node, result.text.length, false);
         }
         if (newNode) {
-          result.text += ParagraphUtils.getNodeName(newNode.node) + ' ';
+          result.text += ParagraphUtils.getNodeNameWithoutOverflowWords(
+                             newNode, blockParent) +
+              ' ';
           result.nodes.push(newNode);
         }
       }

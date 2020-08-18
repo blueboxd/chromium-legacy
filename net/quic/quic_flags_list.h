@@ -260,7 +260,7 @@ QUIC_FLAG(bool,
           false)
 
 // If true, enables support for TLS resumption in QUIC.
-QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_enable_tls_resumption_v4, false)
+QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_enable_tls_resumption_v4, true)
 
 // When true, QUIC's BBRv2 ignores inflight_lo in PROBE_BW.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr2_ignore_inflight_lo, true)
@@ -270,12 +270,6 @@ QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_enable_zero_rtt_for_tls_v2, true)
 
 // If true, default on PTO which unifies TLP + RTO loss recovery.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_default_on_pto, false)
-
-// When true, QUIC+TLS will not send nor parse the old-format Google-specific
-// transport parameters.
-QUIC_FLAG(bool,
-          FLAGS_quic_restart_flag_quic_google_transport_param_omit_old,
-          true)
 
 // If true, the B2HI connection option limits reduction of inflight_hi to
 // (1-Beta)*CWND.
@@ -292,11 +286,6 @@ QUIC_FLAG(
 
 // If true, disable QUIC version h3-29.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_draft_29, false)
-
-// If true, support HANDSHAKE_DONE frame in T050
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_support_handshake_done_in_t050,
-          true)
 
 // When true, QuicDispatcher supports decapsulation of Legacy Version
 // Encapsulation packets.
@@ -347,7 +336,7 @@ QUIC_FLAG(
 // mitigate RTT inflations.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_coalesced_packet_of_higher_space2,
-          false)
+          true)
 
 // If true, record the received min_ack_delay in transport parameters to QUIC
 // config.
@@ -395,9 +384,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_http3_goaway_new_behavior, true)
 
 // If true, QUIC connection will revert to a previously validated MTU (if
 // exists) after two PTOs.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_revert_mtu_after_two_ptos,
-          false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_revert_mtu_after_two_ptos, true)
 
 // Simplify the ACK code in quic_received_packet_manager.
 QUIC_FLAG(bool,
@@ -411,16 +398,14 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_half_rtt_as_first_pto, true)
 // supplied.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_enable_overshooting_detection,
-          false)
+          true)
 
 // If true, enable QUIC version h3-T051.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_t051, true)
 
 // If true, fix a case where data is marked lost in HANDSHAKE level but
 // HANDSHAKE key gets decrypted later.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_fix_neuter_handshake_data,
-          false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_neuter_handshake_data, true)
 
 // If true, when data is sending in fast path mode in the creator, making sure
 // stream data is sent in the right encryption level.
@@ -456,3 +441,8 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_on_ping_timeout, true)
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_send_key_update_not_yet_supported,
           true)
+
+// If true, QUIC will default enable MTU discovery, with a target of 1450 bytes.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_enable_mtu_discovery_at_server,
+          false)

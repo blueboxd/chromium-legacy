@@ -10,6 +10,8 @@
 #include "ash/public/cpp/keyboard/keyboard_controller.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "ash/public/cpp/login_screen_test_api.h"
+#include "ash/public/cpp/shelf_config.h"
+#include "ash/public/cpp/shelf_test_api.h"
 #include "ash/public/cpp/wallpaper_controller_observer.h"
 #include "base/barrier_closure.h"
 #include "base/bind.h"
@@ -124,6 +126,7 @@
 #include "ui/aura/window.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/page_transition_types.h"
+#include "ui/events/test/event_generator.h"
 
 namespace em = enterprise_management;
 
@@ -875,6 +878,40 @@ IN_PROC_BROWSER_TEST_F(KioskTest, VirtualKeyboardFeaturesEnabledByDefault) {
   EXPECT_TRUE(config.handwriting);
   EXPECT_TRUE(config.spell_check);
   EXPECT_TRUE(config.voice_input);
+}
+
+IN_PROC_BROWSER_TEST_F(KioskTest, HiddenShelf) {
+  ExtensionTestMessageListener app_window_loaded_listener("appWindowLoaded",
+                                                          false);
+  StartAppLaunchFromLoginScreen(
+      NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE);
+  EXPECT_TRUE(app_window_loaded_listener.WaitUntilSatisfied());
+
+  // The shelf should be hidden at the beginning.
+  EXPECT_FALSE(ash::ShelfTestApi().IsVisible());
+
+  // Simulate the swipe-up gesture.
+  Profile* app_profile = ProfileManager::GetPrimaryUserProfile();
+  ASSERT_TRUE(app_profile);
+
+  extensions::AppWindowRegistry* app_window_registry =
+      extensions::AppWindowRegistry::Get(app_profile);
+  extensions::AppWindow* app_window =
+      apps::AppWindowWaiter(app_window_registry, test_app_id()).Wait();
+  ASSERT_TRUE(app_window);
+
+  gfx::NativeWindow window = app_window->GetNativeWindow()->GetRootWindow();
+  const gfx::Rect display_bounds = window->bounds();
+  const gfx::Point start_point = gfx::Point(
+      display_bounds.width() / 4,
+      display_bounds.bottom() - ash::ShelfConfig::Get()->shelf_size() / 2);
+  gfx::Point end_point(start_point.x(), start_point.y() - 80);
+  ui::test::EventGenerator event_generator(window);
+  event_generator.GestureScrollSequence(
+      start_point, end_point, base::TimeDelta::FromMilliseconds(500), 4);
+
+  // The shelf should be still hidden after the gesture.
+  EXPECT_FALSE(ash::ShelfTestApi().IsVisible());
 }
 
 IN_PROC_BROWSER_TEST_F(KioskTest, ZoomSupport) {
@@ -2036,8 +2073,7 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PermissionChange) {
   EXPECT_EQ("2.0.0", GetInstalledAppVersion().GetString());
 }
 
-// TODO(crbug.com/949490): PreserveLocalData is flaky ChromeOS rel AND deb.
-IN_PROC_BROWSER_TEST_F(KioskUpdateTest, DISABLED_PRE_PreserveLocalData) {
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PRE_PreserveLocalData) {
   // Installs v1 app and writes some local data.
   set_test_app_id(kTestLocalFsKioskApp);
   set_test_app_version("1.0.0");
@@ -2051,7 +2087,7 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, DISABLED_PRE_PreserveLocalData) {
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-IN_PROC_BROWSER_TEST_F(KioskUpdateTest, DISABLED_PreserveLocalData) {
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PreserveLocalData) {
   // Update existing v1 app installed in PRE_PreserveLocalData to v2
   // that reads and verifies the local data.
   set_test_app_id(kTestLocalFsKioskApp);
@@ -2157,16 +2193,13 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest,
   LaunchTestKioskAppWithTwoSecondaryApps();
 }
 
-// TODO(crbug.com/949490): test is flaky ChromeOS rel AND deb.
-IN_PROC_BROWSER_TEST_F(KioskUpdateTest,
-                       DISABLED_PRE_UpdateMultiAppKioskRemoveOneApp) {
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PRE_UpdateMultiAppKioskRemoveOneApp) {
   LaunchTestKioskAppWithTwoSecondaryApps();
 }
 
 // Update the primary app to version 2 which removes one of the secondary app
 // from its manifest.
-IN_PROC_BROWSER_TEST_F(KioskUpdateTest,
-                       DISABLED_UpdateMultiAppKioskRemoveOneApp) {
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest, UpdateMultiAppKioskRemoveOneApp) {
   set_test_app_id(kTestPrimaryKioskApp);
   fake_cws()->SetUpdateCrx(kTestPrimaryKioskApp,
                            std::string(kTestPrimaryKioskApp) + "-2.0.0.crx",
@@ -2185,15 +2218,13 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest,
   EXPECT_TRUE(IsAppInstalled(kTestSecondaryApp2, "1.0.0"));
 }
 
-// crbug/1028606 Fails on linux-chromeos-*.
-IN_PROC_BROWSER_TEST_F(KioskUpdateTest,
-                       DISABLED_PRE_UpdateMultiAppKioskAddOneApp) {
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PRE_UpdateMultiAppKioskAddOneApp) {
   LaunchTestKioskAppWithTwoSecondaryApps();
 }
 
 // Update the primary app to version 3 which adds a new secondary app in its
 // manifest.
-IN_PROC_BROWSER_TEST_F(KioskUpdateTest, DISABLED_UpdateMultiAppKioskAddOneApp) {
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest, UpdateMultiAppKioskAddOneApp) {
   set_test_app_id(kTestPrimaryKioskApp);
   fake_cws()->SetUpdateCrx(kTestPrimaryKioskApp,
                            std::string(kTestPrimaryKioskApp) + "-3.0.0.crx",

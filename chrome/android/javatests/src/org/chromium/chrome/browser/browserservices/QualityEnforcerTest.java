@@ -48,7 +48,7 @@ import java.util.concurrent.TimeoutException;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-@DisableFeatures(ChromeFeatureList.TRUSTED_WEB_ACTIVITY_QUALITY_ENFORCEMENT)
+@DisableFeatures(ChromeFeatureList.TRUSTED_WEB_ACTIVITY_QUALITY_ENFORCEMENT_FORCED)
 public class QualityEnforcerTest {
     private static final String TEST_PAGE = "/chrome/test/data/android/google.html";
     // A not exist test page to triger 404.
@@ -74,7 +74,7 @@ public class QualityEnforcerTest {
     CustomTabsCallback mCallback = new CustomTabsCallback() {
         @Override
         public Bundle extraCallbackWithResult(String callbackName, Bundle args) {
-            if (callbackName.equals(QualityEnforcer.NOTIFY)) {
+            if (callbackName.equals(QualityEnforcer.CRASH)) {
                 mCallbackHelper.notifyCalled();
                 mErrorMessage = args.getString(QualityEnforcer.KEY_CRASH_REASON);
             }

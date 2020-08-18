@@ -5,9 +5,9 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "cc/layers/picture_layer.h"
+#include "cc/trees/compositor_commit_data.h"
 #include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_host.h"
-#include "cc/trees/scroll_and_scale_set.h"
 #include "cc/trees/scroll_node.h"
 #include "cc/trees/transform_node.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -143,11 +143,11 @@ TEST_P(CompositingTest, DidScrollCallbackAfterScrollableAreaChanges) {
   // Ensure a synthetic impl-side scroll offset propagates to the scrollable
   // area using the DidScroll callback.
   EXPECT_EQ(ScrollOffset(), scrollable_area->GetScrollOffset());
-  cc::ScrollAndScaleSet scroll_and_scale_set;
-  scroll_and_scale_set.scrolls.push_back(
+  cc::CompositorCommitData commit_data;
+  commit_data.scrolls.push_back(
       {scroll_element_id, gfx::ScrollOffset(0, 1), base::nullopt});
-  overflow_scroll_layer->layer_tree_host()->ApplyScrollAndScale(
-      &scroll_and_scale_set);
+  overflow_scroll_layer->layer_tree_host()->ApplyCompositorChanges(
+      &commit_data);
   UpdateAllLifecyclePhases();
   EXPECT_EQ(ScrollOffset(0, 1), scrollable_area->GetScrollOffset());
 
@@ -166,10 +166,10 @@ TEST_P(CompositingTest, DidScrollCallbackAfterScrollableAreaChanges) {
   // apply impl-side offsets without crashing.
   ASSERT_EQ(overflow_scroll_layer,
             CcLayerByCcElementId(RootCcLayer(), scroll_element_id));
-  scroll_and_scale_set.scrolls[0] = {scroll_element_id, gfx::ScrollOffset(0, 1),
-                                     base::nullopt};
-  overflow_scroll_layer->layer_tree_host()->ApplyScrollAndScale(
-      &scroll_and_scale_set);
+  commit_data.scrolls[0] = {scroll_element_id, gfx::ScrollOffset(0, 1),
+                            base::nullopt};
+  overflow_scroll_layer->layer_tree_host()->ApplyCompositorChanges(
+      &commit_data);
 
   UpdateAllLifecyclePhases();
   EXPECT_FALSE(CcLayerByCcElementId(RootCcLayer(), scroll_element_id));
@@ -201,11 +201,10 @@ TEST_P(CompositingTest, FrameViewScroll) {
   // Ensure a synthetic impl-side scroll offset propagates to the scrollable
   // area using the DidScroll callback.
   EXPECT_EQ(ScrollOffset(), scrollable_area->GetScrollOffset());
-  cc::ScrollAndScaleSet scroll_and_scale_set;
-  scroll_and_scale_set.scrolls.push_back({scrollable_area->GetScrollElementId(),
-                                          gfx::ScrollOffset(0, 1),
-                                          base::nullopt});
-  RootCcLayer()->layer_tree_host()->ApplyScrollAndScale(&scroll_and_scale_set);
+  cc::CompositorCommitData commit_data;
+  commit_data.scrolls.push_back({scrollable_area->GetScrollElementId(),
+                                 gfx::ScrollOffset(0, 1), base::nullopt});
+  RootCcLayer()->layer_tree_host()->ApplyCompositorChanges(&commit_data);
   UpdateAllLifecyclePhases();
   EXPECT_EQ(ScrollOffset(0, 1), scrollable_area->GetScrollOffset());
 }
@@ -1563,10 +1562,10 @@ TEST_P(CompositingSimTest, ImplSideScrollSkipsCommit) {
   EXPECT_FALSE(Compositor().layer_tree_host()->CommitRequested());
 
   // Simulate the scroll update with scroll delta from impl-side.
-  cc::ScrollAndScaleSet scroll_and_scale;
-  scroll_and_scale.scrolls.emplace_back(cc::ScrollAndScaleSet::ScrollUpdateInfo(
+  cc::CompositorCommitData commit_data;
+  commit_data.scrolls.emplace_back(cc::CompositorCommitData::ScrollUpdateInfo(
       element_id, gfx::ScrollOffset(0, 10), base::nullopt));
-  Compositor().layer_tree_host()->ApplyScrollAndScale(&scroll_and_scale);
+  Compositor().layer_tree_host()->ApplyCompositorChanges(&commit_data);
   EXPECT_EQ(FloatPoint(0, 10), scrollable_area->ScrollPosition());
   EXPECT_EQ(gfx::ScrollOffset(0, 10),
             GetPropertyTrees()->scroll_tree.current_scroll_offset(element_id));

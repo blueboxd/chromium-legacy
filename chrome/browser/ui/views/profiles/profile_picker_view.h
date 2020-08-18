@@ -26,16 +26,17 @@ class ProfilePickerView : public views::DialogDelegateView {
   };
 
   // Displays the profile picker.
-  void Display();
+  void Display(ProfilePicker::Page page);
   // Hides the profile picker.
   void Clear();
 
   // On system profile creation success, it initializes the view.
-  void OnSystemProfileCreated(Profile* system_profile,
+  void OnSystemProfileCreated(ProfilePicker::Page init_page,
+                              Profile* system_profile,
                               Profile::CreateStatus status);
 
   // Creates and shows the dialog.
-  void Init(Profile* guest_profile);
+  void Init(ProfilePicker::Page init_page, Profile* system_profile);
 
   // views::DialogDelegateView:
   gfx::Size CalculatePreferredSize() const override;

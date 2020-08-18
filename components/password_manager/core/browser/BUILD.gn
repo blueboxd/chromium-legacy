@@ -43,6 +43,7 @@ static_library("browser") {
     "android_affiliation/affiliation_fetch_throttler_delegate.h",
     "android_affiliation/affiliation_fetcher.cc",
     "android_affiliation/affiliation_fetcher.h",
+    "android_affiliation/affiliation_fetcher_delegate.cc",
     "android_affiliation/affiliation_fetcher_delegate.h",
     "android_affiliation/affiliation_fetcher_interface.h",
     "android_affiliation/android_affiliation_service.cc",

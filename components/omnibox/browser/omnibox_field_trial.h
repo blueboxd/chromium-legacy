@@ -398,10 +398,10 @@ bool IsShortBookmarkSuggestionsEnabled();
 // elements like keywords, tab-switch buttons, and Pedals.
 bool IsSuggestionButtonRowEnabled();
 
-// Returns true if either the tab switch suggestions flag is enabled.
+// Returns true if the tab switch suggestions flag is enabled.
 bool IsTabSwitchSuggestionsEnabled();
 
-// Returns true if the Pedals feature is enabled.
+// Returns true if the Pedals and suggestion button row features are enabled.
 bool IsPedalSuggestionsEnabled();
 
 // Returns true if the keyword button and suggestion button row features are

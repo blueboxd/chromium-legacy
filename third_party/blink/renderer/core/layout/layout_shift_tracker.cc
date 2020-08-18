@@ -595,6 +595,12 @@ void LayoutShiftTracker::NotifyViewportSizeChanged() {
   UpdateInputTimestamp(base::TimeTicks::Now());
 }
 
+void LayoutShiftTracker::NotifyFindInPageInput() {
+  // This cancels any previously scheduled task from the same timer.
+  timer_.StartOneShot(kTimerDelay, FROM_HERE);
+  UpdateInputTimestamp(base::TimeTicks::Now());
+}
+
 std::unique_ptr<TracedValue> LayoutShiftTracker::PerFrameTraceData(
     double score_delta,
     bool input_detected) const {

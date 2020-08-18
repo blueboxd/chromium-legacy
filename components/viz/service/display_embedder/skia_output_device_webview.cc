@@ -21,7 +21,8 @@ SkiaOutputDeviceWebView::SkiaOutputDeviceWebView(
     scoped_refptr<gl::GLSurface> gl_surface,
     gpu::MemoryTracker* memory_tracker,
     DidSwapBufferCompleteCallback did_swap_buffer_complete_callback)
-    : SkiaOutputDevice(memory_tracker,
+    : SkiaOutputDevice(context_state->gr_context(),
+                       memory_tracker,
                        std::move(did_swap_buffer_complete_callback)),
       context_state_(context_state),
       gl_surface_(std::move(gl_surface)) {

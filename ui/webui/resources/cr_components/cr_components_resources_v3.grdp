@@ -82,6 +82,18 @@
            file="${root_gen_dir}/ui/webui/resources/cr_components/chromeos/cellular_setup/base_page.m.js"
            use_base_dir="false"
            type="BINDATA" />
+    <include name="IDR_WEBUI_CHROMEOS_CELLULAR_SETUP_FINAL_PAGE_M_JS"
+           file="${root_gen_dir}/ui/webui/resources/cr_components/chromeos/cellular_setup/final_page.m.js"
+           use_base_dir="false"
+           type="BINDATA" />
+    <include name="IDR_WEBUI_CHROMEOS_CELLULAR_SETUP_MOJO_INTERFACE_PROVIDER_M_JS"
+           file="${root_gen_dir}/ui/webui/resources/cr_components/chromeos/cellular_setup/mojo_interface_provider.m.js"
+           use_base_dir="false"
+           type="BINDATA" />
+    <include name="IDR_WEBUI_CHROMEOS_CELLULAR_SETUP_WEBVIEW_POST_UTIL_M_JS"
+           file="${root_gen_dir}/ui/webui/resources/cr_components/chromeos/cellular_setup/webview_post_util.m.js"
+           use_base_dir="false"
+           type="BINDATA" />
   </if>
   <if expr="use_nss_certs">
     <include name="IDR_WEBUI_CA_TRUST_EDIT_DIALOG_JS"

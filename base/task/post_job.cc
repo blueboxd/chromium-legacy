@@ -18,24 +18,11 @@ JobDelegate::JobDelegate(
     : task_source_(task_source),
       pooled_task_runner_delegate_(pooled_task_runner_delegate) {
   DCHECK(task_source_);
-#if DCHECK_IS_ON()
-  recorded_increase_version_ = task_source_->GetConcurrencyIncreaseVersion();
-  // Record max concurrency before running the worker task.
-  recorded_max_concurrency_ = task_source_->GetMaxConcurrency();
-#endif  // DCHECK_IS_ON()
 }
 
 JobDelegate::~JobDelegate() {
   if (task_id_ != kInvalidTaskId)
     task_source_->ReleaseTaskId(task_id_);
-#if DCHECK_IS_ON()
-  // When ShouldYield() returns false, the worker task is expected to do
-  // work before returning.
-  size_t expected_max_concurrency = recorded_max_concurrency_;
-  if (!last_should_yield_ && expected_max_concurrency > 0)
-    --expected_max_concurrency;
-  AssertExpectedConcurrency(expected_max_concurrency);
-#endif  // DCHECK_IS_ON()
 }
 
 bool JobDelegate::ShouldYield() {
@@ -66,50 +53,6 @@ uint8_t JobDelegate::GetTaskId() {
   if (task_id_ == kInvalidTaskId)
     task_id_ = task_source_->AcquireTaskId();
   return task_id_;
-}
-
-void JobDelegate::AssertExpectedConcurrency(size_t expected_max_concurrency) {
-  // In dcheck builds, verify that max concurrency falls in one of the following
-  // cases:
-  // 1) max concurrency behaves normally and is below or equals the expected
-  //    value.
-  // 2) max concurrency increased above the expected value, which implies
-  //    there are new work items that the associated worker task didn't see and
-  //    NotifyConcurrencyIncrease() should be called to adjust the number of
-  //    worker.
-  //   a) NotifyConcurrencyIncrease() was already called and the recorded
-  //      concurrency version is out of date, i.e. less than the actual version.
-  //   b) NotifyConcurrencyIncrease() has not yet been called, in which case the
-  //      function waits for an imminent increase of the concurrency version,
-  //      or for max concurrency to decrease below or equal the expected value.
-  // This prevent ill-formed GetMaxConcurrency() implementations that:
-  // - Don't decrease with the number of remaining work items.
-  // - Don't return an up-to-date value.
-#if DCHECK_IS_ON()
-  // Case 1:
-  if (task_source_->GetMaxConcurrency() <= expected_max_concurrency)
-    return;
-
-  // Case 2a:
-  const size_t actual_version = task_source_->GetConcurrencyIncreaseVersion();
-  DCHECK_LE(recorded_increase_version_, actual_version);
-  if (recorded_increase_version_ < actual_version)
-    return;
-
-  // Case 2b:
-  const bool updated = task_source_->WaitForConcurrencyIncreaseUpdate(
-      recorded_increase_version_);
-  const size_t max_concurrency = task_source_->GetMaxConcurrency();
-  DCHECK(updated || max_concurrency <= expected_max_concurrency)
-      << "Value returned by |max_concurrency_callback| (" << max_concurrency
-      << ") is expected to decrease below or equal to "
-      << expected_max_concurrency
-      << ", unless NotifyConcurrencyIncrease() is called."
-      << "Last ShouldYield() returned " << last_should_yield_;
-
-  recorded_increase_version_ = task_source_->GetConcurrencyIncreaseVersion();
-  recorded_max_concurrency_ = task_source_->GetMaxConcurrency();
-#endif  // DCHECK_IS_ON()
 }
 
 JobHandle::JobHandle() = default;

@@ -614,28 +614,6 @@ TEST_P(RestrictedCookieManagerTest, SetCanonicalCookieHttpOnly) {
   }
 }
 
-TEST_P(RestrictedCookieManagerTest, SetCanonicalCookieValidateDomain) {
-  GURL other_site("https://not-example.com");
-  auto cookie = net::CanonicalCookie::Create(
-      other_site, "cookie=foo;domain=not-example.com", base::Time::Now(),
-      base::nullopt);
-  ASSERT_EQ(".not-example.com", cookie->Domain());
-  EXPECT_FALSE(sync_service_->SetCanonicalCookie(
-      *cookie, GURL("https://example.com/test"), GURL("https://example.com"),
-      url::Origin::Create(GURL("https://example.com"))));
-  ASSERT_EQ(1u, recorded_activity().size());
-  EXPECT_TRUE(recorded_activity()[0].status.HasExclusionReason(
-      net::CookieInclusionStatus::EXCLUDE_DOMAIN_MISMATCH));
-
-  auto options = mojom::CookieManagerGetOptions::New();
-  options->name = "cookie";
-  options->match_type = mojom::CookieMatchType::EQUALS;
-  std::vector<net::CanonicalCookie> cookies = sync_service_->GetAllForUrl(
-      GURL("https://example.com/test/"), GURL("https://example.com"),
-      url::Origin::Create(GURL("https://example.com")), std::move(options));
-  EXPECT_THAT(cookies, testing::SizeIs(0));
-}
-
 TEST_P(RestrictedCookieManagerTest, SetCookieFromString) {
   EXPECT_TRUE(backend()->SetCookieFromString(
       GURL("https://example.com/test/"),
@@ -673,6 +651,19 @@ TEST_P(RestrictedCookieManagerTest, SetCanonicalCookieFromOpaqueOrigin) {
   ASSERT_TRUE(opaque_origin.opaque());
   service_->OverrideOriginForTesting(opaque_origin);
 
+  ExpectBadMessage();
+  EXPECT_FALSE(sync_service_->SetCanonicalCookie(
+      net::CanonicalCookie(
+          "new-name", "new-value", "not-example.com", "/", base::Time(),
+          base::Time(), base::Time(), /* secure = */ true,
+          /* httponly = */ false, net::CookieSameSite::NO_RESTRICTION,
+          net::COOKIE_PRIORITY_DEFAULT),
+      GURL("https://example.com/test/"), GURL("https://example.com"),
+      url::Origin::Create(GURL("https://example.com"))));
+  ASSERT_TRUE(received_bad_message());
+}
+
+TEST_P(RestrictedCookieManagerTest, SetCanonicalCookieWithMismatchingDomain) {
   ExpectBadMessage();
   EXPECT_FALSE(sync_service_->SetCanonicalCookie(
       net::CanonicalCookie(

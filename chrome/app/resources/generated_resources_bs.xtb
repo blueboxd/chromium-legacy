@@ -1326,7 +1326,6 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="2564653188463346023">Poboljšana provjera pravopisa</translation>
 <translation id="2566124945717127842">Pokrenite Powerwash da svoj <ph name="IDS_SHORT_PRODUCT_NAME" /> uređaj vratite na fabričke postavke kako bi bio kao nov.</translation>
 <translation id="2568774940984945469">Spremnik trake s informacijama</translation>
-<translation id="257088987046510401">Teme</translation>
 <translation id="2571655996835834626">Mijenja postavke koje upravljaju pristupom web-lokacija značajkama kao što su kolačići, JavaScript, priključci, geolokacija, mikrofon, fotoaparat itd.</translation>
 <translation id="2572032849266859634">Jedinici <ph name="VOLUME_NAME" /> je dodijeljen pristup samo za čitanje.</translation>
 <translation id="2575247648642144396">Ikona će se vidjeti kada ekstenzija može djelovati na trenutnoj stranici. Da koristite ovu ekstenziju kliknite na ikonu ili pritisnite tipke prečice <ph name="EXTENSION_SHORTCUT" />.</translation>
@@ -3354,7 +3353,6 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="5115338116365931134">SSO</translation>
 <translation id="5116628073786783676">Sač&amp;uvaj zvuk kao…</translation>
 <translation id="5117139026559873716">Prekinite povezanost telefona i uređaja <ph name="DEVICE_TYPE" />. Oni se više neće automatski povezivati.</translation>
-<translation id="5117427536932535467">Teme i pozadinske slike</translation>
 <translation id="5117930984404104619">Praćenje ponašanja drugih ekstenzija, uključujući posjećene URL-ove</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Vaš tvrdi disk je pun.  Sačuvajte na drugoj lokaciji ili oslobodite više prostora na tvrdom disku.</translation>
@@ -4300,6 +4298,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="6277105963844135994">Vrijeme mreže je isteklo</translation>
 <translation id="6277518330158259200">N&amp;apravi snimak ekrana</translation>
 <translation id="6278057325678116358">Koristi GTK+</translation>
+<translation id="6278428485366576908">Tema</translation>
 <translation id="6278776436938569440">Promijeni lokaciju</translation>
 <translation id="6279183038361895380">Pritisnite |<ph name="ACCELERATOR" />| da prikažete kursor</translation>
 <translation id="6280215091796946657">Prijavite se s drugim računom</translation>

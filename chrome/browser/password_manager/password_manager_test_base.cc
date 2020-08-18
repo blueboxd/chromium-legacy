@@ -444,29 +444,11 @@ void PasswordManagerBrowserTestBase::SetUpOnMainThread() {
   verify_result.verified_cert = cert;
   mock_cert_verifier()->AddResultForCert(cert.get(), verify_result, net::OK);
 
-  SetUpOnMainThreadAndGetNewTab(browser(), &web_contents_);
+  GetNewTab(browser(), &web_contents_);
 }
 
 void PasswordManagerBrowserTestBase::TearDownOnMainThread() {
   ASSERT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
-}
-
-// static
-void PasswordManagerBrowserTestBase::SetUpOnMainThreadAndGetNewTab(
-    Browser* browser,
-    content::WebContents** web_contents) {
-  // Use TestPasswordStore to remove a possible race. Normally the
-  // PasswordStore does its database manipulation on a background thread, which
-  // creates a possible race during navigation. Specifically the
-  // PasswordManager will ignore any forms in a page if the load from the
-  // PasswordStore has not completed.
-  PasswordStoreFactory::GetInstance()->SetTestingFactory(
-      browser->profile(),
-      base::BindRepeating(
-          &password_manager::BuildPasswordStore<
-              content::BrowserContext, password_manager::TestPasswordStore>));
-
-  GetNewTab(browser, web_contents);
 }
 
 // static
@@ -681,17 +663,18 @@ void PasswordManagerBrowserTestBase::SetUpInProcessBrowserTestFixture() {
   create_services_subscription_ =
       BrowserContextDependencyManager::GetInstance()
           ->RegisterCreateServicesCallbackForTesting(
-              base::BindRepeating(&PasswordManagerBrowserTestBase::
-                                      OnWillCreateBrowserContextServices));
-}
-
-// static
-void PasswordManagerBrowserTestBase::OnWillCreateBrowserContextServices(
-    content::BrowserContext* context) {
-  // Set up a TestSyncService which will happily return "everything is active"
-  // so that password generation is considered enabled.
-  ProfileSyncServiceFactory::GetInstance()->SetTestingFactory(
-      context, base::BindRepeating(&BuildTestSyncService));
+              base::BindRepeating([](content::BrowserContext* context) {
+                // Set up a TestSyncService which will happily return
+                // "everything is active" so that password generation is
+                // considered enabled.
+                ProfileSyncServiceFactory::GetInstance()->SetTestingFactory(
+                    context, base::BindRepeating(&BuildTestSyncService));
+                PasswordStoreFactory::GetInstance()->SetTestingFactory(
+                    context,
+                    base::BindRepeating(&password_manager::BuildPasswordStore<
+                                        content::BrowserContext,
+                                        password_manager::TestPasswordStore>));
+              }));
 }
 
 void PasswordManagerBrowserTestBase::AddHSTSHost(const std::string& host) {

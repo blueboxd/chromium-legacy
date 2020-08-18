@@ -204,7 +204,6 @@
 <translation id="2537178555904266562">Չհաջողվեց համաժամացնել գաղտնաբառերը</translation>
 <translation id="2546283357679194313">Cookie ֆայլեր և կայքի տվյալներ</translation>
 <translation id="2567385386134582609">ՊԱՏԿԵՐ</translation>
-<translation id="257088987046510401">Թեմաներ</translation>
 <translation id="2581165646603367611">Բոլոր քուքիները, քեշը և այլ տվյալները, որոնք Chrome-ին անհրաժեշտ չեն, կջնջվեն:</translation>
 <translation id="2587052924345400782">Հասանելի է նոր տարբերակ</translation>
 <translation id="2593272815202181319">Միալայն</translation>
@@ -678,6 +677,7 @@
 <translation id="624789221780392884">Թարմացումը պատրաստ է</translation>
 <translation id="6255999984061454636">Բովանդակության առաջարկներ</translation>
 <translation id="6277522088822131679">Այս էջը տպելիս խնդիր առաջացավ: Նորից փորձեք:</translation>
+<translation id="6278428485366576908">Թեմա</translation>
 <translation id="6292420053234093573">Օգտվելով Chrome-ից՝ դուք ընդունում եք <ph name="BEGIN_LINK1" />Google-ի օգտագործման պայմանները<ph name="END_LINK1" /> և <ph name="BEGIN_LINK2" />Google Chrome-ի և Chrome OS-ի օգտագործման լրացուցիչ պայմանները<ph name="END_LINK2" />։</translation>
 <translation id="629730747756840877">Հաշիվ</translation>
 <translation id="6297765934698848803">Ձեր սարքը կառավարող կազմակերպությունն անջատել է տեսախցիկը։</translation>

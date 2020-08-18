@@ -439,6 +439,7 @@ ci.fyi_ios_builder(
     console_view_entry = ci.console_view_entry(
         category = "cronet",
     ),
+    fully_qualified_builder_dimension = True,
     executable = "recipe:chromium",
     notifies = ["cronet"],
     properties = {
@@ -722,6 +723,7 @@ ci.mac_ios_builder(
         category = "ios|default",
         short_name = "sim",
     ),
+    fully_qualified_builder_dimension = True,
 )
 
 ci.mac_ios_builder(
@@ -730,6 +732,7 @@ ci.mac_ios_builder(
         category = "ios|default",
         short_name = "ful",
     ),
+    fully_qualified_builder_dimension = True,
 )
 
 ci.memory_builder(

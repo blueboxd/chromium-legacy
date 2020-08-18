@@ -75,13 +75,14 @@ class MEDIA_EXPORT MimeUtil {
   void SplitCodecs(const std::string& codecs,
                    std::vector<std::string>* codecs_out) const;
   void StripCodecs(std::vector<std::string>* codecs) const;
-  bool ParseVideoCodecString(const std::string& mime_type,
-                             const std::string& codec_id,
-                             bool* out_is_ambiguous,
-                             VideoCodec* out_codec,
-                             VideoCodecProfile* out_profile,
-                             uint8_t* out_level,
-                             VideoColorSpace* out_color_space) const;
+  bool ParseVideoCodecString(
+      const std::string& mime_type,  // fixme, make optional
+      const std::string& codec_id,
+      bool* out_is_ambiguous,
+      VideoCodec* out_codec,
+      VideoCodecProfile* out_profile,
+      uint8_t* out_level,
+      VideoColorSpace* out_color_space) const;
   bool ParseAudioCodecString(const std::string& mime_type,
                              const std::string& codec_id,
                              bool* out_is_ambiguous,

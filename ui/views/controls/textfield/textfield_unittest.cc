@@ -981,7 +981,7 @@ TEST_F(TextfieldTest, KeyTest) {
     EXPECT_STR_EQ("TexT!1!1", textfield_->GetText());
 }
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 // Control key shouldn't generate a printable character on Linux.
 TEST_F(TextfieldTest, KeyTestControlModifier) {
   InitTextfield();
@@ -1333,7 +1333,7 @@ TEST_F(TextfieldTest, InsertionDeletionTest) {
   SendWordEvent(ui::VKEY_LEFT, shift);
   shift = true;
   SendWordEvent(ui::VKEY_BACK, shift);
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   EXPECT_STR_EQ("three ", textfield_->GetText());
 #else
   EXPECT_STR_EQ("one three ", textfield_->GetText());
@@ -1354,7 +1354,7 @@ TEST_F(TextfieldTest, InsertionDeletionTest) {
   SendWordEvent(ui::VKEY_RIGHT, shift);
   shift = true;
   SendWordEvent(ui::VKEY_DELETE, shift);
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   EXPECT_STR_EQ(" two", textfield_->GetText());
 #elif defined(OS_WIN)
   EXPECT_STR_EQ("two four", textfield_->GetText());

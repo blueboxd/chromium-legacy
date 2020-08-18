@@ -396,8 +396,7 @@ def console_view_entry(*, category = None, short_name = None):
 
     Returns:
       A struct that can be passed to the `console_view_entry` argument of
-      `ci.builder` to add an entry to the console for the builder's
-      mastername.
+      `ci.builder` to add an entry to the console for the builder's group.
     """
     return struct(
         category = category,
@@ -425,7 +424,7 @@ def ci_builder(
         False.
       console_view - A string identifying the ID of the console view to
         add an entry to. Supports a module-level default that defaults to
-        the mastername of the builder, if provided. An entry will be added
+        the group of the builder, if provided. An entry will be added
         only if `add_to_console_view` is True and `console_view_entry` is
         provided.
       main_console_view - A string identifying the ID of the main console
@@ -466,7 +465,11 @@ def ci_builder(
     if console_view_entry:
         console_view = defaults.get_value("console_view", console_view)
         if console_view == args.COMPUTE:
-            console_view = defaults.get_value_from_kwargs("mastername", kwargs)
+            # The builder function guarantees that at most one of builder_group
+            # or mastername is set
+            builder_group = defaults.get_value_from_kwargs("builder_group", kwargs)
+            mastername = defaults.get_value_from_kwargs("mastername", kwargs)
+            console_view = builder_group or mastername
 
         if console_view:
             add_to_console_view = defaults.get_value(
@@ -718,10 +721,10 @@ def gpu_fyi_linux_builder(
         **kwargs
     )
 
-def gpu_fyi_mac_builder(*, name, **kwargs):
+def gpu_fyi_mac_builder(*, name, cores = 4, **kwargs):
     return gpu_fyi_builder(
         name = name,
-        cores = 4,
+        cores = cores,
         execution_timeout = 6 * time.hour,
         goma_backend = builders.goma.backend.RBE_PROD,
         os = builders.os.MAC_ANY,
@@ -907,12 +910,18 @@ def swangle_windows_builder(*, name, **kwargs):
 def thin_tester(
         *,
         name,
-        mastername,
         triggered_by,
+        # TODO(https://crbug.com/1109276) Remove mastername and remove default
+        # for builder_group
+        builder_group = None,
+        mastername = None,
         tree_closing = True,
         **kwargs):
+    if builder_group == None and mastername == None:
+        fail("One of builder_group or mastername must be set")
     return ci.builder(
         name = name,
+        builder_group = builder_group,
         mastername = mastername,
         triggered_by = triggered_by,
         goma_backend = None,

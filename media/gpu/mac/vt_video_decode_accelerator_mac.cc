@@ -1643,7 +1643,7 @@ VTVideoDecodeAccelerator::GetSupportedProfiles() {
     SupportedProfile profile;
     profile.profile = supported_profile;
     profile.min_resolution.SetSize(16, 16);
-    profile.max_resolution.SetSize(4096, 2160);
+    profile.max_resolution.SetSize(4096, 4096);
     profiles.push_back(profile);
   }
   return profiles;

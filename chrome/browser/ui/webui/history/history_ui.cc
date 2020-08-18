@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
@@ -29,6 +30,7 @@
 #include "chrome/grit/history_resources.h"
 #include "chrome/grit/history_resources_map.h"
 #include "chrome/grit/locale_settings.h"
+#include "components/grit/components_scaled_resources.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -36,6 +38,7 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/web_ui_util.h"
 
 namespace {
@@ -177,6 +180,14 @@ void HistoryUI::RegisterProfilePrefs(
   registry->RegisterBooleanPref(
       prefs::kHistoryMenuPromoShown, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+}
+
+// static
+base::RefCountedMemory* HistoryUI::GetFaviconResourceBytes(
+    ui::ScaleFactor scale_factor) {
+  return static_cast<base::RefCountedMemory*>(
+      ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(
+          IDR_HISTORY_FAVICON, scale_factor));
 }
 
 void HistoryUI::UpdateDataSource() {

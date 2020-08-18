@@ -713,7 +713,8 @@ void RenderViewTest::Reload(const GURL& url) {
       blink::PreviewsTypes::PREVIEWS_UNSPECIFIED, base::TimeTicks::Now(), "GET",
       nullptr, network::mojom::SourceLocation::New(),
       false /* started_from_context_menu */, false /* has_user_gesture */,
-      CreateInitiatorCSPInfo(), std::vector<int>(), std::string(),
+      false /* has_text_fragment_token */, CreateInitiatorCSPInfo(),
+      std::vector<int>(), std::string(),
       false /* is_history_navigation_in_new_child_frame */, base::TimeTicks());
   RenderViewImpl* view = static_cast<RenderViewImpl*>(view_);
   TestRenderFrame* frame =
@@ -867,7 +868,8 @@ void RenderViewTest::GoToOffset(int offset,
       blink::PreviewsTypes::PREVIEWS_UNSPECIFIED, base::TimeTicks::Now(), "GET",
       nullptr, network::mojom::SourceLocation::New(),
       false /* started_from_context_menu */, false /* has_user_gesture */,
-      CreateInitiatorCSPInfo(), std::vector<int>(), std::string(),
+      false /* has_text_fragment_token */, CreateInitiatorCSPInfo(),
+      std::vector<int>(), std::string(),
       false /* is_history_navigation_in_new_child_frame */, base::TimeTicks());
   auto commit_params = CreateCommitNavigationParams();
   commit_params->page_state = state;

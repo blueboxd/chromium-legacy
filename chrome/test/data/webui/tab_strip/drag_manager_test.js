@@ -638,7 +638,7 @@ suite('DragManager', () => {
     delegate.dispatchEvent(new DragEvent('dragleave', {dataTransfer}));
     assertTrue(isDraggedOut);
 
-    delegate.dispatchEvent(new DragEvent('dragenter', {dataTransfer}));
+    delegate.dispatchEvent(new DragEvent('dragover', {dataTransfer}));
     assertFalse(isDraggedOut);
   });
 });

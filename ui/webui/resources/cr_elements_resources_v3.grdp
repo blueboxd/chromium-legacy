@@ -77,6 +77,10 @@
          file="${root_gen_dir}/ui/webui/resources/cr_elements/cr_profile_avatar_selector/cr_profile_avatar_selector_grid.m.js"
          use_base_dir="false"
          type="BINDATA" />
+  <include name="IDR_CR_ELEMENTS_CR_CARD_RADIO_BUTTON_M_JS"
+         file="${root_gen_dir}/ui/webui/resources/cr_elements/cr_radio_button/cr_card_radio_button.m.js"
+         use_base_dir="false"
+         type="BINDATA" />
   <include name="IDR_CR_ELEMENTS_CR_RADIO_BUTTON_M_JS"
          file="${root_gen_dir}/ui/webui/resources/cr_elements/cr_radio_button/cr_radio_button.m.js"
          use_base_dir="false"

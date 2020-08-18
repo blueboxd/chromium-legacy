@@ -415,7 +415,7 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
 // embedded flash fullscreen, since the Flash plugin handles user permissions
 // requests itself).
 // Flaky on Linux: crbug.com/1066607
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #define MAYBE_PrivilegedMouseLockAndFullscreen \
   DISABLED_PrivilegedMouseLockAndFullscreen
 #else

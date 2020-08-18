@@ -5,6 +5,7 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
@@ -129,7 +130,7 @@ void SendRangeResponse(net::test_server::ControllableHttpResponse* response,
     ASSERT_NE(response->http_request()->headers.end(), it);
     base::StringPiece range_header = it->second;
     base::StringPiece kBytesPrefix = "bytes=";
-    ASSERT_TRUE(range_header.starts_with(kBytesPrefix));
+    ASSERT_TRUE(base::StartsWith(range_header, kBytesPrefix));
     range_header.remove_prefix(kBytesPrefix.size());
     auto dash_pos = range_header.find('-');
     ASSERT_NE(std::string::npos, dash_pos);

@@ -17,6 +17,7 @@ destination_select_test.suiteName = 'DestinationSelectTest';
 /** @enum {string} */
 destination_select_test.TestNames = {
   UpdateStatus: 'update status',
+  UpdateStatusDeprecationWarnings: 'update status deprecation warnings',
   ChangeIcon: 'change icon',
   ChangeIconDeprecationWarnings: 'change icon deprecation warnings',
 };
@@ -27,6 +28,13 @@ suite(destination_select_test.suiteName, function() {
 
   /** @type {string} */
   const account = 'foo@chromium.org';
+
+  /** @type {!DestinationOrigin} */
+  const cookieOrigin = DestinationOrigin.COOKIES;
+
+  /** @type {string} */
+  const driveKey =
+      `${Destination.GooglePromotedId.DOCS}/${cookieOrigin}/${account}`;
 
   /** @type {!Array<!Destination>} */
   let recentDestinationList = [];
@@ -59,10 +67,10 @@ suite(destination_select_test.suiteName, function() {
           'ID1', DestinationType.LOCAL, DestinationOrigin.LOCAL, 'One',
           DestinationConnectionStatus.ONLINE),
       new Destination(
-          'ID2', DestinationType.GOOGLE, DestinationOrigin.COOKIES, 'Two',
+          'ID2', DestinationType.GOOGLE, cookieOrigin, 'Two',
           DestinationConnectionStatus.OFFLINE, {account: account}),
       new Destination(
-          'ID3', DestinationType.GOOGLE, DestinationOrigin.COOKIES, 'Three',
+          'ID3', DestinationType.GOOGLE, cookieOrigin, 'Three',
           DestinationConnectionStatus.ONLINE,
           {account: account, isOwned: true}),
     ];
@@ -90,24 +98,19 @@ suite(destination_select_test.suiteName, function() {
     destinationSelect.loaded = true;
     const selectEl = destinationSelect.$$('.md-select');
     compareIcon(selectEl, 'print');
-    const cookieOrigin = DestinationOrigin.COOKIES;
-    const driveKey =
-        `${Destination.GooglePromotedId.DOCS}/${cookieOrigin}/${account}`;
     destinationSelect.driveDestinationKey = driveKey;
 
     return selectOption(destinationSelect, driveKey)
         .then(() => {
-          // Icon updates early based on the ID.
-          // TODO(dhoss): This icon should be 'save-to-drive-not-supported'
-          // after all cloud print deprecation warnings are implemented.
-          compareIcon(selectEl, 'save-to-drive');
-
-          // Update the destination.
-          destinationSelect.destination = getGoogleDriveDestination(account);
-
           const saveToDriveIcon = cloudPrintDeprecationWarningsSuppressed ?
               'save-to-drive' :
               'save-to-drive-not-supported';
+
+          // Icon updates early based on the ID.
+          compareIcon(selectEl, saveToDriveIcon);
+
+          // Update the destination.
+          destinationSelect.destination = getGoogleDriveDestination(account);
 
           // Still Save to Drive icon.
           compareIcon(selectEl, saveToDriveIcon);
@@ -141,7 +144,18 @@ suite(destination_select_test.suiteName, function() {
         });
   }
 
-  test(assert(destination_select_test.TestNames.UpdateStatus), function() {
+  /**
+   * Test that changing different destinations results in the correct status
+   * being shown.
+   * @param {boolean} cloudPrintDeprecationWarningsSuppressed Whether cloud
+   *     print deprecation warnings should be suppressed.
+   */
+  function testUpdateStatus(cloudPrintDeprecationWarningsSuppressed) {
+    loadTimeData.overrideValues({
+      offline: 'offline',
+      saveToDriveNotSupportedWarning: 'saveToDriveNotSupportedWarning',
+    });
+
     assertFalse(destinationSelect.$$('.throbber-container').hidden);
     assertTrue(destinationSelect.$$('.md-select').hidden);
 
@@ -149,14 +163,52 @@ suite(destination_select_test.suiteName, function() {
     assertTrue(destinationSelect.$$('.throbber-container').hidden);
     assertFalse(destinationSelect.$$('.md-select').hidden);
 
+    const additionalInfoEl =
+        destinationSelect.$$('.destination-additional-info');
+    const statusEl = destinationSelect.$$('.destination-status');
+
+    destinationSelect.driveDestinationKey = driveKey;
+    destinationSelect.destination = getGoogleDriveDestination(account);
+    destinationSelect.updateDestination();
+    const saveToDriveStatus = cloudPrintDeprecationWarningsSuppressed ?
+        '' :
+        'saveToDriveNotSupportedWarning';
+    assertEquals(
+        cloudPrintDeprecationWarningsSuppressed, additionalInfoEl.hidden);
+    assertEquals(saveToDriveStatus, statusEl.innerHTML);
+
     destinationSelect.destination = recentDestinationList[0];
     destinationSelect.updateDestination();
-    assertTrue(destinationSelect.$$('.destination-additional-info').hidden);
+    assertTrue(additionalInfoEl.hidden);
+    assertEquals('', statusEl.innerHTML);
 
     destinationSelect.destination = recentDestinationList[1];
     destinationSelect.updateDestination();
-    assertFalse(destinationSelect.$$('.destination-additional-info').hidden);
+    assertFalse(additionalInfoEl.hidden);
+    assertEquals('offline', statusEl.innerHTML);
+
+    destinationSelect.destination = recentDestinationList[2];
+    destinationSelect.updateDestination();
+    assertTrue(additionalInfoEl.hidden);
+    assertEquals('', statusEl.innerHTML);
+  }
+
+  test(assert(destination_select_test.TestNames.UpdateStatus), function() {
+    loadTimeData.overrideValues(
+        {cloudPrintDeprecationWarningsSuppressed: true});
+
+    // Repopulate |recentDestinationList| to have
+    // |cloudPrintDeprecationWarningsSuppressed| take effect during creation of
+    // new Destinations.
+    populateRecentDestinationList();
+    return testUpdateStatus(true);
   });
+
+  test(
+      assert(destination_select_test.TestNames.UpdateStatusDeprecationWarnings),
+      function() {
+        return testUpdateStatus(false);
+      });
 
   test(assert(destination_select_test.TestNames.ChangeIcon), function() {
     loadTimeData.overrideValues(

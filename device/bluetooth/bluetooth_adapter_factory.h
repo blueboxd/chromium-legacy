@@ -70,7 +70,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterFactory {
   // GetAdapter(), as the default adapter already supports Bluetooth classic.
   void GetClassicAdapter(AdapterCallback callback);
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   // Calls |BluetoothAdapter::Shutdown| on the adapter if
   // present.
   static void Shutdown();

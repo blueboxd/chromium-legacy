@@ -1541,7 +1541,7 @@ bool ChildProcessSecurityPolicyImpl::CanAccessDataForOrigin(
         const GURL& lock_url = actual_process_lock.lock_url();
         // SitePerProcessBrowserTest.TwoBlobURLsWithNullOriginDontShareProcess.
         if (lock_url.SchemeIsBlob() &&
-            lock_url.path_piece().starts_with("null/")) {
+            base::StartsWith(lock_url.path_piece(), "null/")) {
           return true;
         }
 

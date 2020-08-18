@@ -268,6 +268,16 @@ interface NearbyConnections {
    // Possible return values include:
    //   Status::kSuccess disconnected from all endpoints successfully.
   StopAllEndpoints() => (Status status);
+
+  // Sends a request to initiate connection bandwidth upgrade.
+  //
+  // endpoint_id - The identifier for the remote endpoint which will be
+  //               switching to a higher connection data rate and possibly
+  //               different wireless protocol. On success, calls
+  //               ConnectionLifecycleListener::OnBandwidthChanged.
+  // Possible return values include:
+  //   Status::kSuccess if upgraded successfully.
+  InitiateBandwidthUpgrade(string endpoint_id) => (Status status);
 };
 
 // Provide all the dependencies that NearbyConnections library requires.

@@ -121,20 +121,39 @@
     <fieldset>
       <legend class="subhead">Group symbols by</legend>
       <div class="radio-wrapper">
-        <input type="radio" id="sourcepath" name="group_by" value="source_path" checked>
-        <label class="radio-label" for="sourcepath">Nothing</label>
+        <input type="radio"
+               id="group-by-sourcepath"
+               name="group_by"
+               value="source_path" checked>
+        <label class="radio-label" for="group-by-sourcepath">Nothing</label>
+      </div>
+      <div class="radio-wrapper show-if-multi-container">
+        <input type="radio"
+               id="group-by-container"
+               name="group_by"
+               value="container">
+        <label class="radio-label" for="group-by-container">Container</label>
       </div>
       <div class="radio-wrapper">
-        <input type="radio" id="component" name="group_by" value="component">
-        <label class="radio-label" for="component">Component</label>
+        <input type="radio"
+               id="group-by-component"
+               name="group_by"
+               value="component">
+        <label class="radio-label" for="group-by-component">Component</label>
       </div>
       <div class="radio-wrapper">
-        <input type="radio" id="template" name="group_by" value="template">
-        <label class="radio-label" for="template">Template</label>
+        <input type="radio"
+               id="group-by-template"
+               name="group_by"
+               value="template">
+        <label class="radio-label" for="group-by-template">Template</label>
       </div>
       <div class="radio-wrapper">
-        <input type="radio" id="generated_type" name="group_by" value="generated_type">
-        <label class="radio-label" for="generated_type">Generated type</label>
+        <input type="radio"
+               id="group-by-generated_type"
+               name="group_by"
+               value="generated_type">
+        <label class="radio-label" for="group-by-generated_type">Generated type</label>
       </div>
     </fieldset>
 

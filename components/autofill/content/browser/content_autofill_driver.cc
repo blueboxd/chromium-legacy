@@ -393,6 +393,11 @@ void ContentAutofillDriver::ReportAutofillWebOTPMetrics(
   if (document_used_webotp)
     phone_collection_metric_state_ |= phone_collection_metric::kWebOTPUsed;
 
+  ukm::UkmRecorder* recorder = autofill_manager_->client()->GetUkmRecorder();
+  ukm::SourceId source_id = autofill_manager_->client()->GetUkmSourceId();
+  AutofillMetrics::LogWebOTPPhoneCollectionMetricStateUkm(
+      recorder, source_id, phone_collection_metric_state_);
+
   UMA_HISTOGRAM_ENUMERATION(
       "Autofill.WebOTP.PhonePlusWebOTPPlusOTC",
       static_cast<PhoneCollectionMetricState>(phone_collection_metric_state_));

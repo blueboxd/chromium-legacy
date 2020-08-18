@@ -1323,7 +1323,6 @@ Unaweza kudhibiti mipangilio ya akaunti hii kwa kusakinisha programu ya Family L
 <translation id="2564653188463346023">Kikagua maendelezo kilichoboreshwa</translation>
 <translation id="2566124945717127842">Tumia Powerwash ili uweke upya kifaa chako cha <ph name="IDS_SHORT_PRODUCT_NAME" /> kiwe kama kipya.</translation>
 <translation id="2568774940984945469">Hifadhi ya Upau wa Maelezo</translation>
-<translation id="257088987046510401">Mandhari</translation>
 <translation id="2571655996835834626">Badilisha mipangilio yako inayodhibiti idhini ya tovuti kufikia vipengele kama vile vidakuzi, JavaScript, programu-jalizi, kutambulisha mahali, maikrofoni, kamera n.k.</translation>
 <translation id="2572032849266859634">Idhini ya kufikia kusoma tu kwenye <ph name="VOLUME_NAME" /> imeruhusiwa.</translation>
 <translation id="2575247648642144396">Aikoni hii itaonekana wakati kiendelezi kitakapoweza kufanya kazi kwenye ukurasa wa sasa. Tumia kiendelezi hiki kwa kubofya aikoni au kwa kubonyeza <ph name="EXTENSION_SHORTCUT" />.</translation>
@@ -3349,7 +3348,6 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5115338116365931134">SSO</translation>
 <translation id="5116628073786783676">&amp;Hifadhi Sauti Kama...</translation>
 <translation id="5117139026559873716">Tenganisha simu yako na <ph name="DEVICE_TYPE" /> yako Hazitaunganishwa tena kiotomatiki.</translation>
-<translation id="5117427536932535467">Mandhari</translation>
 <translation id="5117930984404104619">Ufuatiliaji wa tabia ya viendelezi vingine, pamoja na URL zilizotembelewa</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Diski yako kuu imejaa. Tafadhali hifadhi kwenye eneo jingine au utafute nafasi zaidi kwenye diski kuu.</translation>
@@ -4295,6 +4293,7 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6277105963844135994">Muda wa Mtandao Umekwisha</translation>
 <translation id="6277518330158259200">Piga Picha ya Skrini</translation>
 <translation id="6278057325678116358">Tumia GTK+</translation>
+<translation id="6278428485366576908">Mandhari</translation>
 <translation id="6278776436938569440">Badilisha mahali</translation>
 <translation id="6279183038361895380">Bonyeza |<ph name="ACCELERATOR" />| ili kiteuzi kionekane</translation>
 <translation id="6280215091796946657">Ingia kwa kutumia akaunti tofauti</translation>

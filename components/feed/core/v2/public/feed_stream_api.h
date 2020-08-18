@@ -110,6 +110,9 @@ class FeedStreamApi {
   // once for each viewed slice in the stream.
   virtual void ReportSliceViewed(SurfaceId surface_id,
                                  const std::string& slice_id) = 0;
+  // Some feed content has been loaded and is now available to the user on the
+  // feed surface. Reported only once after a surface is attached.
+  virtual void ReportFeedViewed(SurfaceId surface_id) = 0;
   // Navigation was started in response to a link in the Feed. This event
   // eventually leads to |ReportPageLoaded()| if a page is loaded successfully.
   virtual void ReportNavigationStarted() = 0;

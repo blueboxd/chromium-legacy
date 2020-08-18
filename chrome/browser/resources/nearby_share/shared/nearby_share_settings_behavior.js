@@ -15,8 +15,8 @@ cr.define('nearby_share', function() {
    * @typedef {{
    *            enabled:boolean,
    *            deviceName:string,
-   *            dataUsage:number,
-   *            visibility:number,
+   *            dataUsage:nearbyShare.mojom.DataUsage,
+   *            visibility:nearbyShare.mojom.Visibility,
    *            allowedContacts:Array<string>
    *          }}
    */

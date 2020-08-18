@@ -273,7 +273,7 @@ TEST_F(LocationBarModelImplTest, FormatsReaderModeUrls) {
 
 // TODO(https://crbug.com/1010418): Fix flakes on linux_chromium_asan_rel_ng and
 // re-enable this test.
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #define MAYBE_PreventElisionWorks DISABLED_PreventElisionWorks
 #else
 #define MAYBE_PreventElisionWorks PreventElisionWorks

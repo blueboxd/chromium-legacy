@@ -38,6 +38,7 @@ using CableEidGeneratorKey = std::array<uint8_t, 32>;
 // CablePskGeneratorKey is HKDF input keying material that is used to
 // generate a Noise PSK given the nonce decrypted from an EID.
 using CablePskGeneratorKey = std::array<uint8_t, 32>;
+using CableTunnelIDGeneratorKey = std::array<uint8_t, 32>;
 // CableAuthenticatorIdentityKey is a P-256 public value used to authenticate a
 // paired phone.
 using CableAuthenticatorIdentityKey = std::array<uint8_t, kP256X962Length>;
@@ -84,9 +85,15 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) CableDiscoveryData {
   CableDiscoveryData& operator=(const CableDiscoveryData& other);
   bool operator==(const CableDiscoveryData& other) const;
 
-  // Match attempts to recognise the given EID. If it matches this discovery
-  // data, the nonce is returned.
-  base::Optional<CableNonce> Match(const CableEidArray& candidate_eid) const;
+  // MatchV1 returns true if |candidate_eid| matches this caBLE discovery
+  // instance, which must be version one.
+  bool MatchV1(const CableEidArray& candidate_eid) const;
+
+  // MatchV2 returns true if |candidate_eid| matches this caBLE discovery
+  // instance, which must be version two. If so, |*out_eid| is set to the value
+  // of the decrypted EID.
+  bool MatchV2(const CableEidArray& candidate_eid,
+               CableEidArray* out_eid) const;
 
   // NewQRKey returns a random key for QR generation.
   static QRGeneratorKey NewQRKey();
@@ -133,6 +140,7 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) CableDiscoveryData {
 
     CableEidGeneratorKey eid_gen_key;
     CablePskGeneratorKey psk_gen_key;
+    CableTunnelIDGeneratorKey tunnel_id_gen_key;
     base::Optional<CableAuthenticatorIdentityKey> peer_identity;
     base::Optional<CableIdentityKeySeed> local_identity_seed;
     // peer_name is an authenticator-controlled, UTF8-valid string containing

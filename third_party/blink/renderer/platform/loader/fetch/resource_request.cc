@@ -53,6 +53,7 @@ ResourceRequestHead::ResourceRequestHead(const KURL& url)
       report_upload_progress_(false),
       report_raw_headers_(false),
       has_user_gesture_(false),
+      has_text_fragment_token_(false),
       download_to_blob_(false),
       use_stream_on_response_(false),
       keepalive_(false),
@@ -398,6 +399,11 @@ bool ResourceRequestHead::IsConditional() const {
 
 void ResourceRequestHead::SetHasUserGesture(bool has_user_gesture) {
   has_user_gesture_ |= has_user_gesture;
+}
+
+void ResourceRequestHead::SetHasTextFragmentToken(
+    bool has_text_fragment_token) {
+  has_text_fragment_token_ = has_text_fragment_token;
 }
 
 bool ResourceRequestHead::CanDisplay(const KURL& url) const {

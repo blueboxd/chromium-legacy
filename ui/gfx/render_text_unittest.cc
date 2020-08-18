@@ -6309,7 +6309,7 @@ TEST_F(RenderTextTest, EmojiFlagGlyphCount) {
 
   const internal::TextRunList* run_list = GetHarfBuzzRunList();
   ASSERT_EQ(1U, run_list->runs().size());
-#if defined(OS_LINUX) || defined(OS_APPLE)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_APPLE)
   // On Linux and macOS, the flags should be found, so two glyphs result.
   EXPECT_EQ(2u, run_list->runs()[0]->shape.glyph_count);
 #elif defined(OS_ANDROID)
@@ -6459,7 +6459,7 @@ TEST_F(RenderTextTest, HarfBuzz_FontListFallback) {
 // this test assumes the font "Arial" doesn't provide a unicode glyph for a
 // particular character, and that there is a system fallback font which does.
 // TODO(msw): Fallback doesn't find a glyph on Linux and Android.
-#if !defined(OS_LINUX) && !defined(OS_ANDROID)
+#if !defined(OS_LINUX) && !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
 TEST_F(RenderTextTest, HarfBuzz_UnicodeFallback) {
   RenderTextHarfBuzz* render_text = GetRenderText();
   render_text->SetFontList(FontList("Arial, 12px"));
@@ -6470,7 +6470,7 @@ TEST_F(RenderTextTest, HarfBuzz_UnicodeFallback) {
   ASSERT_EQ(1U, run_list->size());
   EXPECT_EQ(0U, run_list->runs()[0]->CountMissingGlyphs());
 }
-#endif  // !defined(OS_LINUX) && !defined(OS_ANDROID)
+#endif  // !defined(OS_LINUX) && !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
 
 // Ensure that the fallback fonts offered by GetFallbackFont() support glyphs
 // for different languages.
@@ -7006,7 +7006,8 @@ TEST_F(RenderTextTest, SubpixelRenderingSuppressed) {
   render_text->SetText(ASCIIToUTF16("x"));
 
   DrawVisualText();
-#if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_FUCHSIA)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID) || \
+    defined(OS_FUCHSIA)
   // On Linux, whether subpixel AA is supported is determined by the platform
   // FontConfig. Force it into a particular style after computing runs. Other
   // platforms use a known default FontRenderParams from a static local.
@@ -7020,7 +7021,8 @@ TEST_F(RenderTextTest, SubpixelRenderingSuppressed) {
 
   render_text->set_subpixel_rendering_suppressed(true);
   DrawVisualText();
-#if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_FUCHSIA)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID) || \
+    defined(OS_FUCHSIA)
   // For Linux, runs shouldn't be re-calculated, and the suppression of the
   // SUBPIXEL_RENDERING_RGB set above should now take effect. But, after
   // checking, apply the override anyway to be explicit that it is suppressed.
@@ -7872,7 +7874,7 @@ TEST_F(RenderTextTest, DrawSelectAll) {
   ExpectTextLog(kUnselected);
 }
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 TEST_F(RenderTextTest, StringSizeUpdatedWhenDeviceScaleFactorChanges) {
   RenderText* render_text = GetRenderText();
   render_text->SetText(ASCIIToUTF16("Test - 1"));

@@ -75,21 +75,23 @@
         [[NSMutableArray alloc] init];
 
     [menuElements
-        addObject:[actionFactory
-                      actionToOpenInNewTabWithURL:item.URL
-                                       completion:^{
-                                         [self.recentTabsPresentationDelegate
-                                                 dismissRecentTabs];
-                                       }]];
+        addObject:
+            [actionFactory
+                actionToOpenInNewTabWithURL:item.URL
+                                 completion:^{
+                                   [strongSelf.recentTabsPresentationDelegate
+                                           showActiveRegularTabFromRecentTabs];
+                                 }]];
 
+    ProceduralBlock incognitoCompletion = ^{
+      [strongSelf.recentTabsPresentationDelegate
+              showActiveIncognitoTabFromRecentTabs];
+    };
     [menuElements
         addObject:
             [actionFactory
                 actionToOpenInNewIncognitoTabWithURL:item.URL
-                                          completion:^{
-                                            [self.recentTabsPresentationDelegate
-                                                    dismissRecentTabs];
-                                          }]];
+                                          completion:incognitoCompletion]];
 
     if (IsMultipleScenesSupported()) {
       [menuElements
@@ -98,8 +100,9 @@
                   actionToOpenInNewWindowWithURL:item.URL
                                   activityOrigin:WindowActivityRecentTabsOrigin
                                       completion:^{
-                                        [self.recentTabsPresentationDelegate
-                                                dismissRecentTabs];
+                                        [strongSelf
+                                                .recentTabsPresentationDelegate
+                                                    dismissRecentTabs];
                                       }]];
     }
 
@@ -133,11 +136,13 @@
           return [UIMenu menuWithTitle:@"" children:@[]];
         }
 
+        RecentTabsContextMenuHelper* strongSelf = weakSelf;
+
         // Record that this context menu was shown to the user.
         RecordMenuShown(MenuScenario::kRecentTabsHeader);
 
         ActionFactory* actionFactory = [[ActionFactory alloc]
-            initWithBrowser:self.browser
+            initWithBrowser:strongSelf.browser
                    scenario:MenuScenario::kRecentTabsHeader];
 
         NSMutableArray<UIMenuElement*>* menuElements =
@@ -149,14 +154,14 @@
 
         if (!session->tabs.empty()) {
           [menuElements addObject:[actionFactory actionToOpenAllTabsWithBlock:^{
-                          [self.recentTabsPresentationDelegate
+                          [strongSelf.recentTabsPresentationDelegate
                               openAllTabsFromSession:session];
                         }]];
         }
 
         [menuElements
             addObject:[actionFactory actionToHideWithBlock:^{
-              [weakSelf.recentTabsContextMenuDelegate
+              [strongSelf.recentTabsContextMenuDelegate
                   removeSessionAtSessionSectionIdentifier:sectionIdentifier];
             }]];
 

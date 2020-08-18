@@ -123,6 +123,8 @@ void PaymentRequest::Init(
     return;
   }
 
+  journey_logger_.RecordCheckoutStep(
+      JourneyLogger::CheckoutFunnelStep::kInitiated);
   is_initialized_ = true;
   client_.Bind(std::move(client));
 
@@ -227,6 +229,8 @@ void PaymentRequest::Show(bool is_user_gesture, bool wait_for_updated_details) {
     return;
   }
 
+  journey_logger_.RecordCheckoutStep(
+      JourneyLogger::CheckoutFunnelStep::kShowCalled);
   is_show_called_ = true;
   journey_logger_.SetTriggerTime();
 
@@ -760,6 +764,8 @@ void PaymentRequest::OnConnectionTerminated() {
 
 void PaymentRequest::Pay() {
   journey_logger_.SetEventOccurred(JourneyLogger::EVENT_PAY_CLICKED);
+  journey_logger_.RecordCheckoutStep(
+      JourneyLogger::CheckoutFunnelStep::kPaymentHandlerInvoked);
   DCHECK(state_->selected_app());
   state_->selected_app()->SetPaymentHandlerHost(
       payment_handler_host_.AsWeakPtr());

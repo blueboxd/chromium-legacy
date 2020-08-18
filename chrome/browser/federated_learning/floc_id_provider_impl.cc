@@ -48,14 +48,11 @@ FlocIdProviderImpl::FlocIdProviderImpl(
 
 FlocIdProviderImpl::~FlocIdProviderImpl() = default;
 
-void FlocIdProviderImpl::NotifyFlocIdUpdated(
-    EventLoggingAction event_logging_action) {
+void FlocIdProviderImpl::NotifyFlocIdUpdated() {
   DCHECK(floc_session_count_ > 0);
 
-  if (event_logging_action != EventLoggingAction::kAllow ||
-      !base::FeatureList::IsEnabled(features::kFlocIdComputedEventLogging)) {
+  if (!base::FeatureList::IsEnabled(features::kFlocIdComputedEventLogging))
     return;
-  }
 
   auto specifics = std::make_unique<sync_pb::UserEventSpecifics>();
 
@@ -68,7 +65,9 @@ void FlocIdProviderImpl::NotifyFlocIdUpdated(
           : sync_pb::UserEventSpecifics::FlocIdComputed::REFRESHED;
 
   floc_id_computed_event->set_event_trigger(event_trigger);
-  floc_id_computed_event->set_floc_id(floc_id_.ToUint64());
+
+  if (floc_id_.IsValid())
+    floc_id_computed_event->set_floc_id(floc_id_.ToUint64());
 
   user_event_service_->RecordUserEvent(std::move(specifics));
 }
@@ -164,7 +163,7 @@ void FlocIdProviderImpl::OnCheckCanComputeFlocIdCompleted(
   if (!can_compute_floc) {
     if (floc_id_.IsValid()) {
       floc_id_ = FlocId();
-      NotifyFlocIdUpdated(EventLoggingAction::kDisallow);
+      NotifyFlocIdUpdated();
     }
     return;
   }
@@ -201,16 +200,14 @@ void FlocIdProviderImpl::OnGetRecentlyVisitedURLsCompleted(
         net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES));
   }
 
-  if (domains.size() < kMinHistoryDomainSizeToReportFlocId) {
-    if (floc_id_.IsValid()) {
-      floc_id_ = FlocId();
-      NotifyFlocIdUpdated(EventLoggingAction::kDisallow);
-    }
-    return;
-  }
+  FlocId floc_id = domains.size() >= kMinHistoryDomainSizeToReportFlocId
+                       ? FlocId::CreateFromHistory(domains)
+                       : FlocId();
 
-  floc_id_ = FlocId::CreateFromHistory(domains);
-  NotifyFlocIdUpdated(EventLoggingAction::kAllow);
+  if (floc_id_ != floc_id) {
+    floc_id_ = floc_id;
+    NotifyFlocIdUpdated();
+  }
 }
 
 }  // namespace federated_learning

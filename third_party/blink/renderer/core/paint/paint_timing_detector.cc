@@ -137,6 +137,8 @@ void PaintTimingDetector::NotifyImagePaint(
     const ImageResourceContent* cached_image,
     const PropertyTreeStateOrAlias& current_paint_chunk_properties,
     const IntRect& image_border) {
+  if (IgnorePaintTimingScope::ShouldIgnore())
+    return;
   LocalFrameView* frame_view = object.GetFrameView();
   if (!frame_view)
     return;
@@ -153,6 +155,8 @@ void PaintTimingDetector::NotifyImagePaint(
 void PaintTimingDetector::NotifyImageFinished(
     const LayoutObject& object,
     const ImageResourceContent* cached_image) {
+  if (IgnorePaintTimingScope::ShouldIgnore())
+    return;
   if (image_paint_timing_detector_)
     image_paint_timing_detector_->NotifyImageFinished(object, cached_image);
 }

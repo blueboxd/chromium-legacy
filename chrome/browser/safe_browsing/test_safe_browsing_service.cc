@@ -83,6 +83,7 @@ SafeBrowsingUIManager* TestSafeBrowsingService::CreateUIManager() {
 }
 
 void TestSafeBrowsingService::SendSerializedDownloadReport(
+    Profile* profile,
     const std::string& report) {
   serialized_download_report_ = report;
 }
@@ -207,6 +208,7 @@ void TestSafeBrowsingUIManager::SetSafeBrowsingService(
 }
 
 void TestSafeBrowsingUIManager::SendSerializedThreatDetails(
+    content::BrowserContext* browser_context,
     const std::string& serialized) {
   details_.push_back(serialized);
 }

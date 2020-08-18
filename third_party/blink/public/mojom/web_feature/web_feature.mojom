@@ -2744,6 +2744,15 @@ enum WebFeature {
   kUnspecifiedTargetOriginPostMessage = 3414,
   kSchemelesslySameSitePostMessageSecureToInsecure = 3415,
   kSchemelesslySameSitePostMessageInsecureToSecure = 3416,
+  kBCPBroadcast = 3417,
+  kBCPRead = 3418,
+  kBCPWriteWithoutResponse = 3419,
+  kBCPWrite = 3420,
+  kBCPNotify = 3421,
+  kBCPIndicate = 3422,
+  kBCPAuthenticatedSignedWrites = 3423,
+  kBCPReliableWrite = 3424,
+  kBCPWritableAuxiliaries = 3425,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

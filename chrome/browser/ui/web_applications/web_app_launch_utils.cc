@@ -65,7 +65,7 @@ base::Optional<AppId> GetWebAppForActiveTab(Browser* browser) {
   if (!web_contents)
     return base::nullopt;
 
-  return provider->registrar().FindAppWithUrlInScope(
+  return provider->registrar().FindInstalledAppWithUrlInScope(
       web_contents->GetMainFrame()->GetLastCommittedURL());
 }
 

@@ -64,6 +64,7 @@ class CORE_EXPORT LayoutShiftTracker final
   void NotifyInput(const WebInputEvent&);
   void NotifyScroll(mojom::blink::ScrollType, ScrollOffset delta);
   void NotifyViewportSizeChanged();
+  void NotifyFindInPageInput();
   bool IsActive() const { return is_active_; }
   double Score() const { return score_; }
   double WeightedScore() const { return weighted_score_; }

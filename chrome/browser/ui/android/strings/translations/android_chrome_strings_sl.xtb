@@ -204,7 +204,6 @@ Dotaknite se poljubne besede in jo pridržite, če želite iskati. Če želite i
 <translation id="2537178555904266562">Napaka pri sinhronizaciji gesel</translation>
 <translation id="2546283357679194313">Piškotki in podatki o spletnih mestih</translation>
 <translation id="2567385386134582609">SLIKA</translation>
-<translation id="257088987046510401">Teme</translation>
 <translation id="2581165646603367611">S tem bodo izbrisani piškotki, predpomnilnik in drugi podatki spletnih mest, ki se Chromu ne zdijo pomembni.</translation>
 <translation id="2587052924345400782">Na voljo je nov. različica</translation>
 <translation id="2593272815202181319">Stalna širina</translation>
@@ -679,6 +678,7 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="624789221780392884">Posodobitev je pripravljena</translation>
 <translation id="6255999984061454636">Predlogi za vsebino</translation>
 <translation id="6277522088822131679">Pri tiskanju strani je prišlo do težave. Poskusite znova.</translation>
+<translation id="6278428485366576908">Tema</translation>
 <translation id="6292420053234093573">Če uporabljate Chrome, se strinjate z <ph name="BEGIN_LINK1" />Googlovimi pogoji storitve<ph name="END_LINK1" /> in <ph name="BEGIN_LINK2" />dodatnimi pogoji storitve za Google Chrome in Chrome OS<ph name="END_LINK2" />.</translation>
 <translation id="629730747756840877">Račun</translation>
 <translation id="6297765934698848803">Organizacija, ki upravlja vašo napravo, je izklopila kamero.</translation>

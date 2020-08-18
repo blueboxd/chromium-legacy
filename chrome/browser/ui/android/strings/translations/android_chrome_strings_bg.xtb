@@ -204,7 +204,6 @@
 <translation id="2537178555904266562">Грешка при синхронизирането на паролите</translation>
 <translation id="2546283357679194313">„Бисквитки“ и данни за сайтове</translation>
 <translation id="2567385386134582609">ИЗОБРАЖЕНИЕ</translation>
-<translation id="257088987046510401">Теми</translation>
 <translation id="2581165646603367611">Така ще се изчистят „бисквитките“, кешът и другата информация от сайтове, която не е важна за Chrome.</translation>
 <translation id="2587052924345400782">Налице е по-нова версия</translation>
 <translation id="2593272815202181319">Непропорционален</translation>
@@ -679,6 +678,7 @@
 <translation id="624789221780392884">Актуализацията е готова</translation>
 <translation id="6255999984061454636">Предложения за съдържание</translation>
 <translation id="6277522088822131679">При отпечатването на страницата възникна проблем. Моля, опитайте отново.</translation>
+<translation id="6278428485366576908">Тема</translation>
 <translation id="6292420053234093573">С използването на Chrome приемате <ph name="BEGIN_LINK1" />Общите условия на Google<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />Допълнителните общи условия на Chrome и Chrome OS<ph name="END_LINK2" />.</translation>
 <translation id="629730747756840877">Профил</translation>
 <translation id="6297765934698848803">Организацията, която управлява устройството ви, е изключила камерата.</translation>

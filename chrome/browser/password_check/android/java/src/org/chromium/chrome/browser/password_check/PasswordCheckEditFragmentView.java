@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.password_check;
 
 import android.os.Bundle;
 import android.text.Editable;
+import android.text.InputType;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -14,7 +15,9 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.EditText;
+import android.widget.ImageButton;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -24,6 +27,8 @@ import androidx.preference.PreferenceFragmentCompat;
 import com.google.android.material.textfield.TextInputLayout;
 
 import org.chromium.base.supplier.Supplier;
+import org.chromium.chrome.browser.password_manager.settings.ReauthenticationManager;
+import org.chromium.chrome.browser.password_manager.settings.ReauthenticationManager.ReauthScope;
 
 /**
  * This class is responsible for rendering the edit fragment where users can provide a new password
@@ -34,14 +39,18 @@ public class PasswordCheckEditFragmentView extends PreferenceFragmentCompat {
     public static final String EXTRA_COMPROMISED_CREDENTIAL = "extra_compromised_credential";
     @VisibleForTesting
     static final String EXTRA_NEW_PASSWORD = "extra_new_password";
+    static final String EXTRA_PASSWORD_MASKED = "extra_password_masked";
 
     private Supplier<PasswordCheck> mPasswordCheckFactory;
     private String mNewPassword;
     private CompromisedCredential mCredential;
+    private boolean mPasswordVisible;
 
     private EditText mPasswordText;
     private MenuItem mSaveButton;
     private TextInputLayout mPasswordLabel;
+    private ImageButton mViewPasswordButton;
+    private ImageButton mMaskPasswordButton;
 
     /**
      * Initializes the password check factory that allows to retrieve a {@link PasswordCheck}
@@ -68,6 +77,7 @@ public class PasswordCheckEditFragmentView extends PreferenceFragmentCompat {
         super.onViewCreated(view, savedInstanceState);
         mCredential = getCredentialFromInstanceStateOrLaunchBundle(savedInstanceState);
         mNewPassword = getNewPasswordFromInstanceStateOrLaunchBundle(savedInstanceState);
+        mPasswordVisible = getViewButtonPressedFromInstanceState(savedInstanceState);
 
         EditText siteText = (EditText) view.findViewById(R.id.site_edit);
         siteText.setText(mCredential.getDisplayOrigin());
@@ -93,6 +103,16 @@ public class PasswordCheckEditFragmentView extends PreferenceFragmentCompat {
         });
         // Enforce that even the initial password (maybe from a saved instance) cannot be empty.
         checkSavingConditions(TextUtils.isEmpty(mNewPassword));
+
+        mViewPasswordButton = view.findViewById(R.id.password_entry_editor_view_password);
+        mViewPasswordButton.setOnClickListener(unusedView -> this.unmaskPassword());
+        mMaskPasswordButton = view.findViewById(R.id.password_entry_editor_mask_password);
+        mMaskPasswordButton.setOnClickListener(unusedView -> this.maskPassword());
+        if (mPasswordVisible) {
+            maskPassword();
+        } else {
+            unmaskPassword();
+        }
     }
 
     @Override
@@ -105,10 +125,22 @@ public class PasswordCheckEditFragmentView extends PreferenceFragmentCompat {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        if (!ReauthenticationManager.authenticationStillValid(ReauthScope.ONE_AT_A_TIME)) {
+            // If the page was idle (e.g. screenlocked for a few minutes), go back to the previous
+            // page to ensure the user goes through reauth again.
+            // TODO(crbug.com/1114720): Trigger another reauth instead.
+            getActivity().finish();
+        }
+    }
+
+    @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putParcelable(EXTRA_COMPROMISED_CREDENTIAL, mCredential);
         outState.putString(EXTRA_NEW_PASSWORD, mNewPassword);
+        outState.putBoolean(EXTRA_PASSWORD_MASKED, mPasswordVisible);
     }
 
     @Override
@@ -157,5 +189,30 @@ public class PasswordCheckEditFragmentView extends PreferenceFragmentCompat {
         mPasswordLabel.setError(emptyPassword ? getContext().getString(
                                         R.string.pref_edit_dialog_field_required_validation_message)
                                               : "");
+    }
+
+    private boolean getViewButtonPressedFromInstanceState(Bundle savedInstanceState) {
+        return (savedInstanceState != null && savedInstanceState.containsKey(EXTRA_PASSWORD_MASKED))
+                && savedInstanceState.getBoolean(EXTRA_PASSWORD_MASKED);
+    }
+
+    private void maskPassword() {
+        getActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SECURE);
+        mPasswordText.setInputType(InputType.TYPE_CLASS_TEXT
+                | InputType.TYPE_TEXT_VARIATION_PASSWORD | InputType.TYPE_TEXT_FLAG_MULTI_LINE);
+        mViewPasswordButton.setVisibility(View.VISIBLE);
+        mMaskPasswordButton.setVisibility(View.GONE);
+        mPasswordVisible = false;
+    }
+
+    private void unmaskPassword() {
+        getActivity().getWindow().setFlags(
+                WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);
+        mPasswordText.setInputType(InputType.TYPE_CLASS_TEXT
+                | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+                | InputType.TYPE_TEXT_FLAG_MULTI_LINE);
+        mViewPasswordButton.setVisibility(View.GONE);
+        mMaskPasswordButton.setVisibility(View.VISIBLE);
+        mPasswordVisible = true;
     }
 }

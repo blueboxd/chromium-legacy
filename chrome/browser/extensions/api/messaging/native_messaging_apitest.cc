@@ -6,6 +6,7 @@
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
+#include "base/strings/string_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/background/background_mode_manager.h"
@@ -388,9 +389,9 @@ class NativeMessagingLaunchBackgroundModeApiTest
   void SetUpCommandLine(base::CommandLine* command_line) override {
     NativeMessagingLaunchApiTest::SetUpCommandLine(command_line);
 
-    if (base::StringPiece(
-            ::testing::UnitTest::GetInstance()->current_test_info()->name())
-            .starts_with("PRE")) {
+    if (base::StartsWith(
+            ::testing::UnitTest::GetInstance()->current_test_info()->name(),
+            "PRE")) {
       return;
     }
     set_exit_when_last_browser_closes(false);

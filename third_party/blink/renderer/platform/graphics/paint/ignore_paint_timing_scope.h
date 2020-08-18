@@ -35,6 +35,14 @@ class PLATFORM_EXPORT IgnorePaintTimingScope {
   static void IncrementIgnoreDepth() { ++ignore_depth_; }
   static int IgnoreDepth() { return ignore_depth_; }
 
+  // Used to bail out of paint timing algorithms when we know we won't track
+  // anything. We want to do this when a) document is visible but there is some
+  // opacity b) document is invisible but the depth is beyond 1.
+  static bool ShouldIgnore() {
+    return (!is_document_element_invisible_ && ignore_depth_) ||
+           ignore_depth_ > 1;
+  }
+
  private:
   base::AutoReset<int> reset_ignore_depth_;
   base::AutoReset<bool> reset_is_document_element_invisible_;

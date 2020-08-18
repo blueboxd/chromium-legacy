@@ -590,7 +590,7 @@ bool TrafficAnnotationAuditor::CheckIfCallCanBeUnannotated(
       FILE_PATH_LITERAL("buildtools/win/gn.exe"),
 #elif defined(OS_MAC)
       FILE_PATH_LITERAL("buildtools/mac/gn"),
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || defined(OS_CHROMEOS)
       FILE_PATH_LITERAL("buildtools/linux64/gn"),
 #else
       // Fallback to using PATH to find gn.

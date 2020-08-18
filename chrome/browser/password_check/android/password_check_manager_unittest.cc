@@ -143,7 +143,6 @@ auto ExpectCompromisedCredentialForUI(
     const base::string16& display_origin,
     const base::Optional<std::string>& package_name,
     const base::Optional<std::string>& change_password_url,
-    bool is_android_credential,
     bool has_script) {
   auto package_name_field_matcher =
       package_name.has_value()
@@ -159,8 +158,6 @@ auto ExpectCompromisedCredentialForUI(
       Field(&CompromisedCredentialForUI::display_username, display_username),
       Field(&CompromisedCredentialForUI::display_origin, display_origin),
       package_name_field_matcher, change_password_url_field_matcher,
-      Field(&CompromisedCredentialForUI::is_android_credential,
-            is_android_credential),
       Field(&CompromisedCredentialForUI::has_script, has_script));
 }
 
@@ -239,8 +236,7 @@ TEST_F(PasswordCheckManagerTest, CorrectlyCreatesUIStructForSiteCredential) {
       manager_->GetCompromisedCredentials(),
       ElementsAre(ExpectCompromisedCredentialForUI(
           base::ASCIIToUTF16(kUsername1), base::ASCIIToUTF16("example.com"),
-          base::nullopt, "https://example.com/",
-          /*is_android_credential=*/false, /*has_script=*/false)));
+          base::nullopt, "https://example.com/", /*has_script=*/false)));
 }
 
 TEST_F(PasswordCheckManagerTest, CorrectlyCreatesUIStructForAppCredentials) {
@@ -257,18 +253,17 @@ TEST_F(PasswordCheckManagerTest, CorrectlyCreatesUIStructForAppCredentials) {
 
   RunUntilIdle();
 
-  EXPECT_THAT(
-      manager_->GetCompromisedCredentials(),
-      ElementsAre(
-          ExpectCompromisedCredentialForUI(
-              base::ASCIIToUTF16(kUsername1),
-              base::ASCIIToUTF16("App (com.example.app)"), "com.example.app",
-              base::nullopt, /*is_android_credential=*/true,
-              /*has_script=*/false),
-          ExpectCompromisedCredentialForUI(
-              base::ASCIIToUTF16(kUsername2), base::ASCIIToUTF16("Example App"),
-              "com.example.app", base::nullopt, /*is_android_credential=*/true,
-              /*has_script=*/false)));
+  EXPECT_THAT(manager_->GetCompromisedCredentials(),
+              ElementsAre(ExpectCompromisedCredentialForUI(
+                              base::ASCIIToUTF16(kUsername1),
+                              base::ASCIIToUTF16("App (com.example.app)"),
+                              "com.example.app", base::nullopt,
+                              /*has_script=*/false),
+                          ExpectCompromisedCredentialForUI(
+                              base::ASCIIToUTF16(kUsername2),
+                              base::ASCIIToUTF16("Example App"),
+                              "com.example.app", base::nullopt,
+                              /*has_script=*/false)));
 }
 
 TEST_F(PasswordCheckManagerTest, SetsTimestampOnSuccessfulCheck) {

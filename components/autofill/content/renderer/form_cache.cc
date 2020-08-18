@@ -17,6 +17,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/content/renderer/form_autofill_util.h"
@@ -93,9 +94,9 @@ blink::FormElementPiiType MapTypePredictionToFormElementPiiType(
     return blink::FormElementPiiType::kUnknown;
   }
 
-  if (type.starts_with("EMAIL_"))
+  if (base::StartsWith(type, "EMAIL_"))
     return blink::FormElementPiiType::kEmail;
-  if (type.starts_with("PHONE_"))
+  if (base::StartsWith(type, "PHONE_"))
     return blink::FormElementPiiType::kPhone;
   return blink::FormElementPiiType::kOthers;
 }

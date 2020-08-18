@@ -117,6 +117,14 @@ function getNodeBuildTarget(node) {
   return null;
 }
 
+/**
+ * @param {!ClassNode} node The node to get the Java package of.
+ * @return {?string} The Java package of the node.
+ */
+function getNodePackageName(node) {
+  return node.packageName;
+}
+
 // @vue/component
 const ClassGraphPage = {
   components: {
@@ -163,6 +171,8 @@ const ClassGraphPage = {
       switch (this.displaySettingsData.hullDisplay) {
         case HullDisplay.BUILD_TARGET:
           return getNodeBuildTarget;
+        case HullDisplay.JAVA_PACKAGE:
+          return getNodePackageName;
         default:
           return () => null;
       }

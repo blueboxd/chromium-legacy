@@ -27,6 +27,7 @@ template <typename Traits>
 class MODULES_EXPORT DecoderTemplate : public ScriptWrappable {
  public:
   typedef typename Traits::ConfigType ConfigType;
+  typedef typename Traits::MediaConfigType MediaConfigType;
   typedef typename Traits::InputType InputType;
   typedef typename Traits::InitType InitType;
   typedef typename Traits::MediaDecoderType MediaDecoderType;
@@ -48,7 +49,7 @@ class MODULES_EXPORT DecoderTemplate : public ScriptWrappable {
   void Trace(Visitor*) const override;
 
  private:
-  struct Request : public GarbageCollected<Request> {
+  struct Request final : public GarbageCollected<Request> {
     enum class Type {
       kConfigure,
       kDecode,
@@ -61,7 +62,7 @@ class MODULES_EXPORT DecoderTemplate : public ScriptWrappable {
     Type type;
 
     // For kConfigure Requests.
-    Member<const ConfigType> config;
+    std::unique_ptr<MediaConfigType> media_config;
 
     // For kDecode Requests.
     Member<const InputType> chunk;

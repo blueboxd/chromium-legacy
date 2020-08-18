@@ -1322,7 +1322,6 @@
 <translation id="2564653188463346023">ವರ್ಧಿತ ಕಾಗುಣಿತ ಪರೀಕ್ಷೆ</translation>
 <translation id="2566124945717127842">ಹೊಸದರಂತೆ ಮಾಡುವುದಕ್ಕಾಗಿ ನಿಮ್ಮ <ph name="IDS_SHORT_PRODUCT_NAME" /> ಸಾಧನವನ್ನು ಮರುಹೊಂದಿಸಲು ಪವರ್‌ವಾಶ್ ಮಾಡಿ.</translation>
 <translation id="2568774940984945469">ಮಾಹಿತಿಪಟ್ಟಿಯ ಕಂಟೇನರ್</translation>
-<translation id="257088987046510401">ಥೀಮ್‌ಗಳು</translation>
 <translation id="2571655996835834626">ಕುಕೀಗಳು, JavaScript, ಪ್ಲಗ್ಇನ್‌ಗಳು, ಜಿಯೊಲೊಕೇಶನ್, ಮೈಕ್ರೊಫೋನ್, ಕ್ಯಾಮರಾ, ಮುಂತಾದ ವೈಶಿಷ್ಟ್ಯಗಳಿಗೆ ವೆಬ್‌‌ಸೈಟ್‌ಗಳ ಪ್ರವೇಶವನ್ನು ನಿಯಂತ್ರಿಸುವ ನಿಮ್ಮ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಬದಲಾಯಿಸಿ.</translation>
 <translation id="2572032849266859634"><ph name="VOLUME_NAME" /> ಗೆ ಓದಲು-ಮಾತ್ರ ಪ್ರವೇಶವನ್ನು ಅನುಮತಿಸಲಾಗಿದೆ.</translation>
 <translation id="2575247648642144396">ಪ್ರಸ್ತುತ ಪುಟದಲ್ಲಿ ವಿಸ್ತರಣೆಯು ಕಾರ್ಯನಿರ್ವಹಿಸಿದಾಗ ಈ ಐಕಾನ್ ಗೋಚರಿಸುತ್ತದೆ. ಐಕಾನ್‌ನ ಮೇಲೆ ಕ್ಲಿಕ್ ಮಾಡುವುದರ ಮೂಲಕ ಅಥವಾ <ph name="EXTENSION_SHORTCUT" /> ಒತ್ತುವುದರ ಮೂಲಕ ಈ ವಿಸ್ತರಣೆಯನ್ನು ಬಳಸಿ.</translation>
@@ -3347,7 +3346,6 @@
 <translation id="5115338116365931134">SSO</translation>
 <translation id="5116628073786783676">ಇದರಂತೆ ಆಡಿಯೋ ಉ&amp;ಳಿಸಿ...</translation>
 <translation id="5117139026559873716">ನಿಮ್ಮ <ph name="DEVICE_TYPE" /> ನಿಂದ ನಿಮ್ಮ ಫೋನ್‌ನ ಸಂಪರ್ಕವನ್ನು ಕಡಿತಗೊಳಿಸಿ. ಇನ್ನು ಮುಂದೆ ಅವು ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಸಂಪರ್ಕ ಹೊಂದುವುದಿಲ್ಲ.</translation>
-<translation id="5117427536932535467">ಥೀಮ್‌ಗಳು ಮತ್ತು ವಾಲ್‌ಪೇಪರ್‌ಗಳು</translation>
 <translation id="5117930984404104619">ಭೇಟಿ ನೀಡಿದ URL ಗಳು ಸೇರಿದಂತೆ, ಇತರ ವಿಸ್ತರಣೆಗಳ ವರ್ತನೆಯ ಮೇಲೆ ನಿಗಾವಹಿಸಿ</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">ನಿಮ್ಮ ಹಾರ್ಡ್ ಡಿಸ್ಕ್ ಭರ್ತಿಯಾಗಿದೆ. ದಯವಿಟ್ಟು ಬೇರೊಂದು ಸ್ಥಳದಲ್ಲಿ ಉಳಿಸಿ ಇಲ್ಲವೇ ಹಾರ್ಡ್ ಡಿಸ್ಕ್‌ನಲ್ಲಿ ಹೆಚ್ಚಿನ ಅವಕಾಶ ಕಲ್ಪಿಸಿ.</translation>
@@ -4294,6 +4292,7 @@
 <translation id="6277105963844135994">ನೆಟ್‌ವರ್ಕ್ ಅವಧಿ ಮುಗಿದಿದೆ</translation>
 <translation id="6277518330158259200">ಸ್ಕ್ರೀ&amp;ನ್‌ಶಾಟ್‌ ತೆಗೆದುಕೊಳ್ಳಿ</translation>
 <translation id="6278057325678116358">GTK+ ಬಳಸಿ</translation>
+<translation id="6278428485366576908">ಥೀಮ್</translation>
 <translation id="6278776436938569440">ಸ್ಥಳವನ್ನು ಬದಲಾಯಿಸಿ</translation>
 <translation id="6279183038361895380">ನಿಮ್ಮ ಕರ್ಸರ್ ತೋರಿಸಲು |<ph name="ACCELERATOR" />| ಒತ್ತಿ</translation>
 <translation id="6280215091796946657">ಬೇರೆ ಖಾತೆಯೊಂದಿಗೆ ಸೈನ್ ಇನ್ ಮಾಡಿ</translation>

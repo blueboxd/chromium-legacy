@@ -571,13 +571,8 @@ void Display::InitializeRenderer(bool enable_shared_images) {
 
   aggregator_->set_output_is_secure(output_is_secure_);
   aggregator_->SetDisplayColorSpaces(display_color_spaces_);
-  // Consider adding a softare limit as well.
-  aggregator_->SetMaximumTextureSize(
-      (output_surface_ && output_surface_->context_provider())
-          ? output_surface_->context_provider()
-                ->ContextCapabilities()
-                .max_texture_size
-          : 0);
+  aggregator_->SetMaxRenderTargetSize(
+      output_surface_->capabilities().max_render_target_size);
 }
 
 bool Display::IsRootFrameMissing() const {

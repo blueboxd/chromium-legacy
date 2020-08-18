@@ -1326,7 +1326,6 @@
 <translation id="2564653188463346023">Ενισχυμένος ορθογραφικός έλεγχος</translation>
 <translation id="2566124945717127842">Το Powerwash θα επαναφέρει τη συσκευή σας <ph name="IDS_SHORT_PRODUCT_NAME" /> και θα την κάνει σαν καινούρια.</translation>
 <translation id="2568774940984945469">Υποδοχέας γραμμής πληροφοριών</translation>
-<translation id="257088987046510401">Θέματα</translation>
 <translation id="2571655996835834626">Αλλάξτε τις ρυθμίσεις που ελέγχουν την πρόσβαση των ιστοτόπων σε λειτουργίες, όπως είναι τα cookie, η JavaScript, οι προσθήκες, η γεωγραφική τοποθεσία, το μικρόφωνο, η κάμερα κ.λπ.</translation>
 <translation id="2572032849266859634">Παραχωρήθηκε πρόσβαση ανάγνωσης σε <ph name="VOLUME_NAME" />.</translation>
 <translation id="2575247648642144396">Αυτό το εικονίδιο θα είναι ορατό όταν η επέκταση μπορεί να λειτουργήσει στην τρέχουσα σελίδα. Χρησιμοποιήστε αυτήν την επέκταση κάνοντας κλικ στο εικονίδιο ή πατώντας <ph name="EXTENSION_SHORTCUT" />.</translation>
@@ -3354,7 +3353,6 @@
 <translation id="5115338116365931134">SSO</translation>
 <translation id="5116628073786783676">Απο&amp;θήκευση ήχου ως...</translation>
 <translation id="5117139026559873716">Αποσυνδέστε το τηλέφωνό σας από τη συσκευή <ph name="DEVICE_TYPE" />. Δεν θα συνδέονται πλέον αυτόματα.</translation>
-<translation id="5117427536932535467">Θέματα και ταπετσαρίες</translation>
 <translation id="5117930984404104619">Παρακολούθηση της συμπεριφοράς άλλων επεκτάσεων, συμπεριλαμβανομένων των διευθύνσεων URL που έχουν δεχτεί επίσκεψη</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Ο σκληρός σας δίσκος είναι πλήρης. Αποθηκεύστε σε άλλη τοποθεσία ή αδειάστε τον σκληρό δίσκο.</translation>
@@ -4301,6 +4299,7 @@
 <translation id="6277105963844135994">Χρονικό όριο δικτύου</translation>
 <translation id="6277518330158259200">Λήψη στιγμιότυπου οθόνης</translation>
 <translation id="6278057325678116358">Χρήση GTK+</translation>
+<translation id="6278428485366576908">Θέμα</translation>
 <translation id="6278776436938569440">Αλλαγή τοποθεσίας</translation>
 <translation id="6279183038361895380">Πιέστε |<ph name="ACCELERATOR" />| για να εμφανιστεί ο δρομέας</translation>
 <translation id="6280215091796946657">Συνδεθείτε με διαφορετικό λογαριασμό</translation>

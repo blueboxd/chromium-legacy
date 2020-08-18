@@ -60,6 +60,14 @@ html {
   --oobe-dialog-side-margin: 48px;
 
   --oobe-dialog-adaptable-flex-direction: column;
+
+  --oobe-forward-slide-animation: translateX(+100%);
+  --oobe-backward-slide-animation: translateX(-100%);
+}
+
+html[dir=rtl] {
+  --oobe-forward-slide-animation: translateX(-100%);
+  --oobe-backward-slide-animation: translateX(+100%);
 }
 
 html[screen=gaia-signin] {

@@ -204,7 +204,6 @@
 <translation id="2537178555904266562">خطا در همگام‌سازی گذرواژه‌ها</translation>
 <translation id="2546283357679194313">کوکی‌ها و داده‌های سایت</translation>
 <translation id="2567385386134582609">تصویر</translation>
-<translation id="257088987046510401">طرح‌‌های قسمت</translation>
 <translation id="2581165646603367611">‏این کار کوکی‌ها، حافظه پنهان و داده‌های دیگر سایت‌ها را که از نظر Chrome مهم نیست پاک می‌کند.</translation>
 <translation id="2587052924345400782">نسخه جدیدتری در دسترس است</translation>
 <translation id="2593272815202181319">قلم‌های با عرض ثابت</translation>
@@ -679,6 +678,7 @@
 <translation id="624789221780392884">به‌روزرسانی آماده است</translation>
 <translation id="6255999984061454636">پیشنهادهای محتوا</translation>
 <translation id="6277522088822131679">در چاپ صفحه مشکلی پیش آمد. لطفاً دوباره امتحان کنید.</translation>
+<translation id="6278428485366576908">طرح زمینه</translation>
 <translation id="6292420053234093573">‏با استفاده کردن از Chrome، با <ph name="BEGIN_LINK1" />شرایط خدمات Google<ph name="END_LINK1" /> و <ph name="BEGIN_LINK2" />شرایط خدمات تکمیلی Google Chrome و سیستم‌عامل Chrome<ph name="END_LINK2" /> موافقت می‌کنید.</translation>
 <translation id="629730747756840877">حساب</translation>
 <translation id="6297765934698848803">سازمانی که دستگاهتان را مدیریت می‌کند دوربین را خاموش کرده است.</translation>

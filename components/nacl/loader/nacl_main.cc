@@ -36,7 +36,7 @@ int NaClMain(const content::MainFunctionParams& parameters) {
   base::HighResolutionTimerManager hi_res_timer_manager;
 
 #if defined(OS_WIN) || defined(OS_APPLE) || defined(OS_LINUX) || \
-    defined(OS_ANDROID)
+    defined(OS_CHROMEOS) || defined(OS_ANDROID)
   NaClMainPlatformDelegate platform;
   bool no_sandbox =
       parsed_command_line.HasSwitch(sandbox::policy::switches::kNoSandbox);

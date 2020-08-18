@@ -304,13 +304,13 @@ void AccessibilityEventRecorderWin::OnWinEventHook(HWINEVENTHOOK handle,
           base::string16(attributes_bstr.Get(), attributes_bstr.Length()),
           base::string16(1, ';'), base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
       for (base::string16& attr : ia2_attributes) {
-        if (base::StringPiece16(attr).starts_with(L"class:"))
+        if (base::StartsWith(attr, L"class:"))
           obj_class = attr.substr(6);  // HTML or view class
-        if (base::StringPiece16(attr).starts_with(L"id:")) {
+        if (base::StartsWith(attr, L"id:")) {
           html_id = base::string16(L"#");
           html_id += attr.substr(3);
         }
-        if (base::StringPiece16(attr).starts_with(L"tag:")) {
+        if (base::StartsWith(attr, L"tag:")) {
           html_tag = attr.substr(4);
         }
       }

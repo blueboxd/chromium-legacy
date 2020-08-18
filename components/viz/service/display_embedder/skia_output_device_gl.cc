@@ -41,7 +41,8 @@ SkiaOutputDeviceGL::SkiaOutputDeviceGL(
     scoped_refptr<gpu::gles2::FeatureInfo> feature_info,
     gpu::MemoryTracker* memory_tracker,
     DidSwapBufferCompleteCallback did_swap_buffer_complete_callback)
-    : SkiaOutputDevice(memory_tracker,
+    : SkiaOutputDevice(context_state->gr_context(),
+                       memory_tracker,
                        std::move(did_swap_buffer_complete_callback)),
       mailbox_manager_(mailbox_manager),
       representation_factory_(representation_factory),
@@ -79,11 +80,12 @@ SkiaOutputDeviceGL::SkiaOutputDeviceGL(
     context_state_->MakeCurrent(gl_surface_.get());
   }
 
+  GrContext* gr_context = context_state_->gr_context();
   gl::CurrentGL* current_gl = context_state_->context()->GetCurrentGL();
 
   // Get alpha bits from the default frame buffer.
   glBindFramebufferEXT(GL_FRAMEBUFFER, 0);
-  context_state_->gr_context()->resetContext(kRenderTarget_GrGLBackendState);
+  gr_context->resetContext(kRenderTarget_GrGLBackendState);
   const auto* version = current_gl->Version;
   GLint alpha_bits = 0;
   if (version->is_desktop_core_profile) {
@@ -98,13 +100,11 @@ SkiaOutputDeviceGL::SkiaOutputDeviceGL(
 
   capabilities_.sk_color_type =
       supports_alpha_ ? kRGBA_8888_SkColorType : kRGB_888x_SkColorType;
-  capabilities_.gr_backend_format =
-      context_state_->gr_context()->defaultBackendFormat(
-          capabilities_.sk_color_type, GrRenderable::kYes);
+  capabilities_.gr_backend_format = gr_context->defaultBackendFormat(
+      capabilities_.sk_color_type, GrRenderable::kYes);
   capabilities_.sk_color_type_for_hdr = kRGBA_F16_SkColorType;
-  capabilities_.gr_backend_format_for_hdr =
-      context_state_->gr_context()->defaultBackendFormat(
-          capabilities_.sk_color_type_for_hdr, GrRenderable::kYes);
+  capabilities_.gr_backend_format_for_hdr = gr_context->defaultBackendFormat(
+      capabilities_.sk_color_type_for_hdr, GrRenderable::kYes);
 }
 
 SkiaOutputDeviceGL::~SkiaOutputDeviceGL() {

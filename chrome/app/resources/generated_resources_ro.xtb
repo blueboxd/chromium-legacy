@@ -1326,7 +1326,6 @@ Poți gestiona setările contului dacă instalezi aplicația Family Link pe disp
 <translation id="2564653188463346023">Verificarea îmbunătățită a ortografiei</translation>
 <translation id="2566124945717127842">Folosiți Powerwash pentru a reseta dispozitivul <ph name="IDS_SHORT_PRODUCT_NAME" /> la configurația din fabrică.</translation>
 <translation id="2568774940984945469">Container bară de informații</translation>
-<translation id="257088987046510401">Teme</translation>
 <translation id="2571655996835834626">Modifică setările care controlează accesul site-ului la funcții cum ar fi cookie-urile, JavaScript, pluginurile, localizarea geografică, microfonul, camera etc.</translation>
 <translation id="2572032849266859634">A fost acordat accesul numai în citire la <ph name="VOLUME_NAME" />.</translation>
 <translation id="2575247648642144396">Această pictogramă va fi vizibilă atunci când extensia poate acționa pe pagina actuală. Utilizați această extensie dând clic pe pictogramă sau apăsând pe <ph name="EXTENSION_SHORTCUT" />.</translation>
@@ -3354,7 +3353,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="5115338116365931134">SSO</translation>
 <translation id="5116628073786783676">Sal&amp;vează conținutul audio ca...</translation>
 <translation id="5117139026559873716">Deconectează telefonul de la <ph name="DEVICE_TYPE" />. Nu se va mai conecta automat.</translation>
-<translation id="5117427536932535467">Teme și imagini de fundal</translation>
 <translation id="5117930984404104619">Monitorizarea comportamentului altor extensii, inclusiv al adreselor URL accesate</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Hard diskul este plin. Salvați în altă locație sau eliberați mai mult spațiu pe hard disk.</translation>
@@ -4300,6 +4298,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6277105963844135994">Conectarea la rețea a expirat</translation>
 <translation id="6277518330158259200">F&amp;aceți o captură de ecran</translation>
 <translation id="6278057325678116358">Folosește GTK+</translation>
+<translation id="6278428485366576908">Temă</translation>
 <translation id="6278776436938569440">Schimbă locația</translation>
 <translation id="6279183038361895380">Apasă pe |<ph name="ACCELERATOR" />| pentru a fi afișat cursorul</translation>
 <translation id="6280215091796946657">Conectează-te cu alt cont</translation>

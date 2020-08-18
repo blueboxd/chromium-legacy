@@ -186,6 +186,12 @@ void FeedStreamSurface::ReportSliceViewed(
       GetSurfaceId(), base::android::ConvertJavaStringToUTF8(env, slice_id));
 }
 
+void FeedStreamSurface::ReportFeedViewed(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  feed_stream_api_->ReportFeedViewed(GetSurfaceId());
+}
+
 void FeedStreamSurface::ReportSendFeedbackAction(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {

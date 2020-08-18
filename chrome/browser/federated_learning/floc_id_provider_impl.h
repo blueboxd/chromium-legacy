@@ -41,11 +41,6 @@ class FlocIdProviderImpl : public FlocIdProvider,
   using GetRecentlyVisitedURLsCallback =
       history::HistoryService::QueryHistoryCallback;
 
-  enum class EventLoggingAction {
-    kAllow,
-    kDisallow,
-  };
-
   FlocIdProviderImpl(
       syncer::SyncService* sync_service,
       scoped_refptr<content_settings::CookieSettings> cookie_settings,
@@ -58,7 +53,7 @@ class FlocIdProviderImpl : public FlocIdProvider,
 
  protected:
   // protected virtual for testing.
-  virtual void NotifyFlocIdUpdated(EventLoggingAction);
+  virtual void NotifyFlocIdUpdated();
   virtual bool IsSyncHistoryEnabled();
   virtual bool AreThirdPartyCookiesAllowed();
   virtual void IsSwaaNacAccountEnabled(CanComputeFlocIdCallback callback);

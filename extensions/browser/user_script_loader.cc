@@ -12,6 +12,7 @@
 
 #include "base/bind.h"
 #include "base/memory/writable_shared_memory_region.h"
+#include "base/strings/string_util.h"
 #include "base/version.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_context.h"
@@ -97,10 +98,10 @@ bool UserScriptLoader::ParseMetadataHeader(const base::StringPiece& script_text,
                              line_end - line_start);
 
     if (!in_metadata) {
-      if (line.starts_with(kUserScriptBegin))
+      if (base::StartsWith(line, kUserScriptBegin))
         in_metadata = true;
     } else {
-      if (line.starts_with(kUserScriptEng))
+      if (base::StartsWith(line, kUserScriptEng))
         break;
 
       std::string value;

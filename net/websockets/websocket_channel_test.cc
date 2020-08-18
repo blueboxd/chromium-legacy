@@ -34,6 +34,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/log/net_log_with_source.h"
 #include "net/test/test_with_task_environment.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_context.h"
 #include "net/websockets/websocket_errors.h"
 #include "net/websockets/websocket_event_interface.h"
@@ -749,6 +750,7 @@ struct WebSocketStreamCreationCallbackArgumentSaver {
       const HttpRequestHeaders& additional_headers,
       URLRequestContext* url_request_context,
       const NetLogWithSource& net_log,
+      NetworkTrafficAnnotationTag traffic_annotation,
       std::unique_ptr<WebSocketStream::ConnectDelegate> connect_delegate) {
     this->socket_url = socket_url;
     this->origin = origin;
@@ -801,6 +803,7 @@ class WebSocketChannelTest : public TestWithTaskEnvironment {
         connect_data_.socket_url, connect_data_.requested_subprotocols,
         connect_data_.origin, connect_data_.site_for_cookies,
         connect_data_.isolation_info, HttpRequestHeaders(),
+        TRAFFIC_ANNOTATION_FOR_TESTS,
         base::BindOnce(&WebSocketStreamCreationCallbackArgumentSaver::Create,
                        base::Unretained(&connect_data_.argument_saver)));
   }

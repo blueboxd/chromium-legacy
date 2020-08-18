@@ -74,7 +74,8 @@ gfx::Range PlatformStyle::RangeToDeleteBackwards(const base::string16& text,
 
 #endif  // OS_APPLE
 
-#if !BUILDFLAG(ENABLE_DESKTOP_AURA) || !defined(OS_LINUX)
+#if !BUILDFLAG(ENABLE_DESKTOP_AURA) || \
+    (!defined(OS_LINUX) && !defined(OS_CHROMEOS))
 // static
 std::unique_ptr<Border> PlatformStyle::CreateThemedLabelButtonBorder(
     LabelButton* button) {

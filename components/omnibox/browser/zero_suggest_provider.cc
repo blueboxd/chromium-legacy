@@ -235,9 +235,7 @@ void ZeroSuggestProvider::Start(const AutocompleteInput& input,
 
   TemplateURLRef::SearchTermsArgs search_terms_args;
   search_terms_args.page_classification = current_page_classification_;
-  // TODO(tommycli): Once AutocompleteInput supports tracking OmniboxFocusType,
-  // copy the value from there.
-  search_terms_args.focus_type = OmniboxFocusType::ON_FOCUS;
+  search_terms_args.focus_type = input.focus_type();
   GURL suggest_url = RemoteSuggestionsService::EndpointUrl(
       search_terms_args, client()->GetTemplateURLService());
   if (!suggest_url.is_valid())

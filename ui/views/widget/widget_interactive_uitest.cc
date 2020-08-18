@@ -1242,7 +1242,8 @@ TEST_F(DesktopWidgetTestInteractive, EventHandlersClearedOnWidgetMinimize) {
 }
 #endif
 
-#if defined(OS_LINUX) && BUILDFLAG(ENABLE_DESKTOP_AURA)
+#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && \
+    BUILDFLAG(ENABLE_DESKTOP_AURA)
 // Tests that when a desktop native widget has modal transient child, it should
 // avoid restore focused view itself as the modal transient child window will do
 // that, thus avoids having multiple focused view visually (crbug.com/727641).
@@ -1289,7 +1290,8 @@ TEST_F(DesktopWidgetTestInteractive,
   EXPECT_TRUE(dialog_textfield->HasFocus());
   EXPECT_FALSE(textfield->HasFocus());
 }
-#endif  // defined(OS_LINUX) && BUILDFLAG(ENABLE_DESKTOP_AURA)
+#endif  // (defined(OS_LINUX) || defined(OS_CHROMEOS)) &&
+        // BUILDFLAG(ENABLE_DESKTOP_AURA)
 
 namespace {
 

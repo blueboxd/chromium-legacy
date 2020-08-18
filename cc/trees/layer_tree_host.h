@@ -80,7 +80,7 @@ class TaskGraphRunner;
 class UIResourceManager;
 class UkmRecorderFactory;
 struct RenderingStats;
-struct ScrollAndScaleSet;
+struct CompositorCommitData;
 
 // Returned from LayerTreeHost::DeferMainFrameUpdate. Automatically un-defers on
 // destruction.
@@ -607,7 +607,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
       const gfx::PresentationFeedback& feedback);
   // Called when the compositor completed page scale animation.
   void DidCompletePageScaleAnimation();
-  void ApplyScrollAndScale(ScrollAndScaleSet* info);
+  void ApplyCompositorChanges(CompositorCommitData* commit_data);
   void ApplyMutatorEvents(std::unique_ptr<MutatorEvents> events);
   void RecordStartOfFrameMetrics();
   void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time,
@@ -768,10 +768,10 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // free of slow-paths before toggling the flag.
   enum { kNumFramesToConsiderBeforeRemovingSlowPathFlag = 60 };
 
-  void ApplyViewportChanges(const ScrollAndScaleSet& info);
-  void RecordManipulationTypeCounts(const ScrollAndScaleSet& scroll_info);
+  void ApplyViewportChanges(const CompositorCommitData& commit_data);
+  void RecordManipulationTypeCounts(const CompositorCommitData& commit_data);
   void SendOverscrollAndScrollEndEventsFromImplSide(
-      const ScrollAndScaleSet& info);
+      const CompositorCommitData& commit_data);
   void ApplyPageScaleDeltaFromImplSide(float page_scale_delta);
   void InitializeProxy(std::unique_ptr<Proxy> proxy);
 

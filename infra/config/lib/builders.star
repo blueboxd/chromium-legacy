@@ -25,6 +25,7 @@ for use with the corresponding arguments to `builder`. Can also be accessed
 through `builders.cpu`, `builders.os` and `builders.goma` respectively.
 """
 
+load("//project.star", "settings")
 load("./args.star", "args")
 
 ################################################################################
@@ -236,16 +237,19 @@ defaults = args.defaults(
 
     # Our custom arguments
     auto_builder_dimension = args.COMPUTE,
+    builder_group = None,
     builderless = args.COMPUTE,
     bucketed_triggers = False,
     configure_kitchen = False,
     cores = None,
     cpu = None,
+    fully_qualified_builder_dimension = False,
     goma_backend = None,
     goma_debug = False,
     goma_enable_ats = args.COMPUTE,
     goma_jobs = None,
     goma_use_luci_auth = None,
+    # TODO(https://crbug.com/1109276) Remove mastername
     mastername = None,
     os = None,
     project_trigger_overrides = None,
@@ -276,8 +280,11 @@ def builder(
         os = args.DEFAULT,
         builderless = args.DEFAULT,
         auto_builder_dimension = args.DEFAULT,
+        fully_qualified_builder_dimension = args.DEFAULT,
         cores = args.DEFAULT,
         cpu = args.DEFAULT,
+        builder_group = args.DEFAULT,
+        # TODO(https://crbug.com/1109276) Remove mastername
         mastername = args.DEFAULT,
         pool = args.DEFAULT,
         ssd = args.DEFAULT,
@@ -325,8 +332,18 @@ def builder(
         machines devoted to the builder. If True, a dimension will be emitted of
         the form 'builder:<name>'. By default, considered True iff `builderless`
         is considered False.
-      * mastername - a string with the mastername of the builder. Emits a property
+      * fully_qualified_builder_dimension - a boolean modifying the behavior of
+        auto_builder_dimension to generate a builder dimensions that is
+        fully-qualified with the project and bucket of the builder. If True, and
+        `auto_builder_dimension` is considered True, a dimension will be emitted
+        of the form 'builder:<project>/<bucket>/<name>'. By default, considered
+        False.
+      * builder_group - a string with the group of the builder. Emits a property
+        of the form 'builder_group:<builder_group>'. By default, considered None.
+      * mastername - a string with the group of the builder. Emits a property
         of the form 'mastername:<mastername>'. By default, considered None.
+        Other than the property emitted, should be treated the same as
+        builder_group. At most one of builder_group or mastername can be set.
       * cores - an int indicating the number of cores the builder requires for the
         machines that run it. Emits a dimension of the form 'cores:<cores>' will
         be emitted. By default, considered None.
@@ -418,6 +435,12 @@ def builder(
     if builderless:
         dimensions["builderless"] = "1"
 
+    # bucket might be the args.COMPUTE sentinel value if the caller didn't set
+    # bucket in some way, which will result in a weird fully-qualified builder
+    # dimension, but it shouldn't matter because the call to luci.builder will
+    # fail without bucket being set
+    bucket = defaults.get_value("bucket", bucket)
+
     auto_builder_dimension = defaults.get_value(
         "auto_builder_dimension",
         auto_builder_dimension,
@@ -425,7 +448,11 @@ def builder(
     if auto_builder_dimension == args.COMPUTE:
         auto_builder_dimension = builderless == False
     if auto_builder_dimension:
-        dimensions["builder"] = name
+        fully_qualified_builder_dimension = defaults.get_value("fully_qualified_builder_dimension", fully_qualified_builder_dimension)
+        if fully_qualified_builder_dimension:
+            dimensions["builder"] = "{}/{}/{}".format(settings.project, bucket, name)
+        else:
+            dimensions["builder"] = name
 
     cores = defaults.get_value("cores", cores)
     if cores != None:
@@ -435,7 +462,13 @@ def builder(
     if cpu != None:
         dimensions["cpu"] = cpu
 
+    builder_group = defaults.get_value("builder_group", builder_group)
     mastername = defaults.get_value("mastername", mastername)
+    if builder_group != None and mastername != None:
+        fail("builder_group and mastername cannot both be set")
+
+    if builder_group != None:
+        properties["builder_group"] = builder_group
     if mastername != None:
         properties["mastername"] = mastername
 
@@ -484,7 +517,6 @@ def builder(
         properties["$build/code_coverage"] = code_coverage
 
     kwargs = dict(kwargs)
-    bucket = defaults.get_value("bucket", bucket)
     if bucket != args.COMPUTE:
         kwargs["bucket"] = bucket
     executable = defaults.get_value("executable", executable)

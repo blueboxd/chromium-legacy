@@ -167,4 +167,7 @@ specific_include_rules = {
     "+services/network/cookie_manager.h",
     "+third_party/leveldatabase",
   ],
+  "launch_as_mojo_client_browsertest.cc": [
+    "+ui/ozone/public/ozone_switches.h",
+  ],
 }

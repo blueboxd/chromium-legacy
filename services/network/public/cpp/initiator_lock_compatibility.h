@@ -24,8 +24,8 @@ enum class InitiatorLockCompatibility {
   // |request_initiator_site_lock| doesn't apply.
   kBrowserProcess = 0,
 
-  // |request_initiator_site_lock| is missing - see https://crbug.com/1098938
-  // and RenderProcessHostImpl::CreateURLLoaderFactoryForRendererProcess.
+  // |request_initiator_site_lock| is missing.  For historical context see
+  // https://crbug.com/1098938.
   kNoLock = 1,
 
   // |request_initiator| is missing.  This indicates that the renderer has a bug

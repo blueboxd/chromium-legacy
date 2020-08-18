@@ -42,7 +42,7 @@ void TraceConfigCategoryFilter::InitializeFromString(
       // Excluded categories start with '-'.
       // Remove '-' from category string.
       excluded_categories_.push_back(category.substr(1).as_string());
-    } else if (category.starts_with(TRACE_DISABLED_BY_DEFAULT(""))) {
+    } else if (StartsWith(category, TRACE_DISABLED_BY_DEFAULT(""))) {
       disabled_categories_.push_back(category.as_string());
     } else {
       included_categories_.push_back(category.as_string());

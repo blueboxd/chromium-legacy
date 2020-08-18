@@ -1325,7 +1325,6 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="2564653188463346023">Rozšírená kontrola pravopisu</translation>
 <translation id="2566124945717127842">Funkcia PowerWash resetuje zariadenie <ph name="IDS_SHORT_PRODUCT_NAME" /> tak, aby bolo ako nové.</translation>
 <translation id="2568774940984945469">Kontajner informačného panela</translation>
-<translation id="257088987046510401">Motívy</translation>
 <translation id="2571655996835834626">Meniť nastavenia, ktoré ovládajú prístup webových stránok k funkciám, ako sú súbory cookie, JavaScript, doplnky, geolokácia, mikrofón, fotoaparát atď.</translation>
 <translation id="2572032849266859634">Bol udelený prístup k médiu <ph name="VOLUME_NAME" /> s povolením iba na čítanie.</translation>
 <translation id="2575247648642144396">Ikona sa zobrazí, keď sa na aktuálnej stránke bude dať použiť rozšírenie. Rozšírenie použijete kliknutím na ikonu alebo stlačením klávesov <ph name="EXTENSION_SHORTCUT" />.</translation>
@@ -3353,7 +3352,6 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="5115338116365931134">Jediné prihlásenie</translation>
 <translation id="5116628073786783676">Uložiť &amp;zvuk ako...</translation>
 <translation id="5117139026559873716">Odpojte telefón od zariadenia <ph name="DEVICE_TYPE" />. Už sa nebude automaticky pripájať.</translation>
-<translation id="5117427536932535467">Motívy a tapety</translation>
 <translation id="5117930984404104619">Sledovať správanie ďalších rozšírení vrátane navštívených webových adries</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Pevný disk je plný. Uložte inde alebo uvoľnite viac miesta na pevnom disku. </translation>
@@ -4299,6 +4297,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="6277105963844135994">Časový limit siete</translation>
 <translation id="6277518330158259200">&amp;Vytvoriť snímku obrazovky</translation>
 <translation id="6278057325678116358">Použiť motív GTK+</translation>
+<translation id="6278428485366576908">Motív</translation>
 <translation id="6278776436938569440">Zmeniť umiestnenie</translation>
 <translation id="6279183038361895380">Stlačením klávesa |<ph name="ACCELERATOR" />| zobrazíte kurzor</translation>
 <translation id="6280215091796946657">Prihlásiť sa pomocou iného účtu</translation>

@@ -107,7 +107,7 @@ UnifiedSystemTrayBubble::UnifiedSystemTrayBubble(UnifiedSystemTray* tray,
   bubble_view_->InitializeAndShowBubble();
 
   // Notify accessibility features that the status tray has opened.
-  bubble_view_->NotifyAccessibilityEvent(ax::mojom::Event::kShow, true);
+  NotifyAccessibilityEvent(ax::mojom::Event::kShow, true);
 
   tray->tray_event_filter()->AddBubble(this);
   tray->shelf()->AddObserver(this);
@@ -352,6 +352,11 @@ void UnifiedSystemTrayBubble::OnAnimationFinished() {
 void UnifiedSystemTrayBubble::SetFrameVisible(bool visible) {
   DCHECK(bubble_widget_);
   bubble_widget_->non_client_view()->frame_view()->SetVisible(visible);
+}
+
+void UnifiedSystemTrayBubble::NotifyAccessibilityEvent(ax::mojom::Event event,
+                                                       bool send_native_event) {
+  bubble_view_->NotifyAccessibilityEvent(event, send_native_event);
 }
 
 }  // namespace ash

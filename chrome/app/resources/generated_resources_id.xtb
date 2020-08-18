@@ -1326,7 +1326,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="2564653188463346023">Pemeriksaan ejaan yang disempurnakan</translation>
 <translation id="2566124945717127842">Powerwash untuk mengatur ulang perangkat <ph name="IDS_SHORT_PRODUCT_NAME" /> agar jadi seperti baru.</translation>
 <translation id="2568774940984945469">Infobar Container</translation>
-<translation id="257088987046510401">Tema</translation>
 <translation id="2571655996835834626">Mengubah setelan yang mengontrol akses situs ke fitur seperti cookie, JavaScript, plugin, geolokasi, mikrofon, kamera, dll.</translation>
 <translation id="2572032849266859634">Akses hanya baca ke <ph name="VOLUME_NAME" /> telah diberikan.</translation>
 <translation id="2575247648642144396">Ikon ini akan terlihat saat ekstensi dapat berperan di halaman aktif. Gunakan ekstensi ini dengan mengeklik ikon atau dengan menekan <ph name="EXTENSION_SHORTCUT" />.</translation>
@@ -3354,7 +3353,6 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="5115338116365931134">SSO</translation>
 <translation id="5116628073786783676">Sim&amp;pan Audio Sebagai...</translation>
 <translation id="5117139026559873716">Putuskan sambungan ponsel Anda dari <ph name="DEVICE_TYPE" />. Keduanya tidak akan lagi terhubung secara otomatis.</translation>
-<translation id="5117427536932535467">Tema &amp; Wallpaper</translation>
 <translation id="5117930984404104619">Memantau perilaku ekstensi lain, termasuk URL yang dikunjungi</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Hard disk Anda sudah penuh. Simpan ke lokasi lain atau kosongkan lebih banyak ruang pada hard disk.</translation>
@@ -4300,6 +4298,7 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="6277105963844135994">Waktu tunggu jaringan habis</translation>
 <translation id="6277518330158259200">Ambil Screenshot</translation>
 <translation id="6278057325678116358">Gunakan GTK+</translation>
+<translation id="6278428485366576908">Tema</translation>
 <translation id="6278776436938569440">Ubah lokasi</translation>
 <translation id="6279183038361895380">Tekan |<ph name="ACCELERATOR" />| untuk menampilkan kursor</translation>
 <translation id="6280215091796946657">Login dengan akun lain</translation>

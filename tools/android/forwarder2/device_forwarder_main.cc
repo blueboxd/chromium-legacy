@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread.h"
 #include "tools/android/forwarder2/common.h"
@@ -119,7 +120,7 @@ class ClientDelegate : public Daemon::ClientDelegate {
     DCHECK(static_cast<unsigned int>(bytes_read) < sizeof(buf));
     buf[bytes_read] = 0;
     base::StringPiece msg(buf, bytes_read);
-    if (msg.starts_with("ERROR")) {
+    if (base::StartsWith(msg, "ERROR")) {
       LOG(ERROR) << msg;
       has_failed_ = true;
       return;

@@ -195,8 +195,6 @@ OverlayRequest* OverlayPresenterImpl::GetActiveRequest() const {
 #pragma mark UI Presentation and Dismissal helpers
 
 void OverlayPresenterImpl::PresentOverlayForActiveRequest() {
-  // Overlays cannot be presented if one is already presented.
-  DCHECK(!presenting_);
 
   // Overlays cannot be shown without a presentation context or if the
   // presentation context is already showing overlay UI.
@@ -215,6 +213,9 @@ void OverlayPresenterImpl::PresentOverlayForActiveRequest() {
     return;
   }
 
+  // If an overlay is already presented, the Presentation Context should be
+  // marked as showing an Overlay.
+  DCHECK(!presenting_);
   presenting_ = true;
   presented_request_ = request;
 

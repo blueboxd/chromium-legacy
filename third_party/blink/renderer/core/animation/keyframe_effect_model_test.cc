@@ -74,7 +74,7 @@ class AnimationKeyframeEffectModel : public PageTestBase {
             ->GetCachedValueForTesting();
     // Length values are stored as an |InterpolableLength|; here we assume
     // pixels.
-    EXPECT_TRUE(typed_value->GetInterpolableValue().IsLength());
+    ASSERT_TRUE(typed_value->GetInterpolableValue().IsLength());
     const InterpolableLength& length =
         To<InterpolableLength>(typed_value->GetInterpolableValue());
     // Lengths are computed in logical units, which are quantized to 64ths of

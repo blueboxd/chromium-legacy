@@ -46,7 +46,6 @@ class PasswordCheckManager
     base::string16 display_origin;
     std::string package_name;
     std::string change_password_url;
-    bool is_android_credential = false;
     bool has_script = false;
   };
 

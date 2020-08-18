@@ -1319,7 +1319,6 @@
 <translation id="2564653188463346023">Жақсартылған емле тексеру</translation>
 <translation id="2566124945717127842">Powerwash функциясы <ph name="IDS_SHORT_PRODUCT_NAME" /> құрылғыңызды бастапқы күйіне қайта орнатуға арналған.</translation>
 <translation id="2568774940984945469">Ақпараттық жолақ контейнері</translation>
-<translation id="257088987046510401">Тақырыптар</translation>
 <translation id="2571655996835834626">Веб-сайттардың cookie файлдары, JavaScript, плагиндер, геоорын, микрофон, камера т.б. сияқты мүмкіндіктерді пайдалану рұқсатын басқаратын параметрлеріңізді өзгертіңіз.</translation>
 <translation id="2572032849266859634"><ph name="VOLUME_NAME" /> тек оқу құқығы берілді.</translation>
 <translation id="2575247648642144396">Бұл бетбелгі кеңейтім ағымдағы бетте әрекет еткенде ғана көрінеді. Бұл кеңейтімді белгішені басу арқылы немесе <ph name="EXTENSION_SHORTCUT" /> басу арқылы пайдаланыңыз.</translation>
@@ -3343,7 +3342,6 @@
 <translation id="5115338116365931134">SSO</translation>
 <translation id="5116628073786783676">Аудионы басқаша с&amp;ақтау…</translation>
 <translation id="5117139026559873716">Телефонды <ph name="DEVICE_TYPE" /> құрылғысынан ажыратыңыз. Олар енді автоматты түрде жалғанбайды.</translation>
-<translation id="5117427536932535467">Тақырыптар мен тұсқағаздар</translation>
 <translation id="5117930984404104619">Басқа кеңейтімдердің, соның ішінде ашылған URL мекенжайларының әрекетін бақылау</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Қатты дискіңіз толған. Басқа орынға сақтаңыз немесе қатты дискіні босатыңыз.</translation>
@@ -4289,6 +4287,7 @@
 <translation id="6277105963844135994">Желіні күту уақыты</translation>
 <translation id="6277518330158259200">Скриншот т&amp;үсіру</translation>
 <translation id="6278057325678116358">GTK+ пайдалану</translation>
+<translation id="6278428485366576908">Тақырып</translation>
 <translation id="6278776436938569440">Орналасқан жерін өзгерту</translation>
 <translation id="6279183038361895380">Курсорды көрсету үшін |<ph name="ACCELERATOR" />| басыңыз</translation>
 <translation id="6280215091796946657">Басқа есептік жазбамен кіру</translation>

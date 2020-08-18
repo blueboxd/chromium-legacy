@@ -60,7 +60,6 @@
 }
 
 #footerContainer ::slotted(*) {
-  color: var(--oobe-subheader-text-color);
   line-height: var(--subtitle-line-height);
 }
 

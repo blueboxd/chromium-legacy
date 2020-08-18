@@ -461,7 +461,7 @@ void BrowserGpuChannelHostFactory::InitializeShaderDiskCacheOnIO(
     const base::FilePath& cache_dir) {
   GetShaderCacheFactorySingleton()->SetCacheInfo(gpu_client_id, cache_dir);
   GetShaderCacheFactorySingleton()->SetCacheInfo(
-      gpu::kInProcessCommandBufferClientId, cache_dir);
+      gpu::kDisplayCompositorClientId, cache_dir);
 }
 
 // static

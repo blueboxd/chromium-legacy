@@ -8,6 +8,7 @@
 
 #include "base/strings/strcat.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 
 namespace installer {
@@ -126,7 +127,7 @@ ExperimentLabels::LabelAndValue ExperimentLabels::FindLabel(
   std::vector<base::StringPiece16> labels = Parse(value_);
   for (const auto& label : labels) {
     if (label.size() < label_name.size() + 2 ||
-        !label.starts_with(label_name) ||
+        !base::StartsWith(label, label_name) ||
         label[label_name.size()] != kNameValueSeparator[0]) {
       continue;
     }

@@ -153,6 +153,7 @@ class CORE_EXPORT KeyframeEffect final : public AnimationEffect {
   void AttachTarget(Animation*);
   void DetachTarget(Animation*);
   void RefreshTarget();
+  void CountAnimatedProperties() const;
   AnimationTimeDelta CalculateTimeToEffectChange(
       bool forwards,
       base::Optional<double> inherited_time,

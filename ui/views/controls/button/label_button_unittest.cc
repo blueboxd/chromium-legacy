@@ -111,7 +111,8 @@ class LabelButtonTest : public test::WidgetTest {
     // NativeTheme and use a hardcoded black or (on Mac) have a NativeTheme that
     // reliably returns black.
     styled_normal_text_color_ = SK_ColorBLACK;
-#if defined(OS_LINUX) && BUILDFLAG(ENABLE_DESKTOP_AURA)
+#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && \
+    BUILDFLAG(ENABLE_DESKTOP_AURA)
     // The Linux theme provides a non-black highlight text color, but it's not
     // used for styled buttons.
     styled_highlight_text_color_ = styled_normal_text_color_ =

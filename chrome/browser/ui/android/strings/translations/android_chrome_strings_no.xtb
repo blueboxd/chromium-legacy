@@ -204,7 +204,6 @@ Trykk og hold inne på et ord for å søke. For å finstemme søket, merk flere 
 <translation id="2537178555904266562">Feil under synkronisering av passord</translation>
 <translation id="2546283357679194313">Informasjonskapsler og data fra nettsteder</translation>
 <translation id="2567385386134582609">BILDE</translation>
-<translation id="257088987046510401">Temaer</translation>
 <translation id="2581165646603367611">Dette sletter informasjonskapsler, buffere og annen data fra nettsteder Chrome ikke tror er viktige.</translation>
 <translation id="2587052924345400782">En nyere versjon er tilgjengelig</translation>
 <translation id="2593272815202181319">Monospace</translation>
@@ -678,6 +677,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="624789221780392884">Oppdateringen er klar</translation>
 <translation id="6255999984061454636">Innholdsforslag</translation>
 <translation id="6277522088822131679">Det oppsto et problem med å skrive ut siden. Prøv på nytt.</translation>
+<translation id="6278428485366576908">Tema</translation>
 <translation id="6292420053234093573">Ved å bruke Chrome samtykker du i <ph name="BEGIN_LINK1" />Googles vilkår for bruk<ph name="END_LINK1" /> og <ph name="BEGIN_LINK2" />tilleggsvilkårene for bruk av Google Chrome og Chrome OS<ph name="END_LINK2" />.</translation>
 <translation id="629730747756840877">Konto</translation>
 <translation id="6297765934698848803">Organisasjonen som administrerer enheten din, har slått av kameraet.</translation>

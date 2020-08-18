@@ -4,6 +4,7 @@
 
 #include "net/cert/internal/crl.h"
 
+#include "base/strings/string_util.h"
 #include "net/cert/internal/cert_errors.h"
 #include "net/cert/internal/parsed_certificate.h"
 #include "net/cert/internal/test_helpers.h"
@@ -174,9 +175,9 @@ TEST_P(CheckCRLTest, FromFile) {
       base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(1489017600);
 
   CRLRevocationStatus expected_revocation_status = CRLRevocationStatus::UNKNOWN;
-  if (file_name.starts_with("good"))
+  if (base::StartsWith(file_name, "good"))
     expected_revocation_status = CRLRevocationStatus::GOOD;
-  else if (file_name.starts_with("revoked"))
+  else if (base::StartsWith(file_name, "revoked"))
     expected_revocation_status = CRLRevocationStatus::REVOKED;
 
   CRLRevocationStatus revocation_status =

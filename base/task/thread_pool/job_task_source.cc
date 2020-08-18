@@ -99,12 +99,6 @@ JobTaskSource::JobTaskSource(
       queue_time_(TimeTicks::Now()),
       delegate_(delegate) {
   DCHECK(delegate_);
-#if DCHECK_IS_ON()
-  version_condition_for_dcheck_ = worker_lock_.CreateConditionVariable();
-  // Prevent wait from triggering a ScopedBlockingCall as this would add
-  // complexity outside this DCHECK-only code.
-  version_condition_for_dcheck_->declare_only_used_while_idle();
-#endif  // DCHECK_IS_ON()
 }
 
 JobTaskSource::~JobTaskSource() {
@@ -161,11 +155,6 @@ void JobTaskSource::Cancel(TaskSource::Transaction* transaction) {
   // WillRunTask() never succeed. std::memory_order_relaxed is sufficient
   // because this task source never needs to be re-enqueued after Cancel().
   state_.Cancel();
-
-#if DCHECK_IS_ON()
-    ++increase_version_;
-    version_condition_for_dcheck_->Broadcast();
-#endif  // DCHECK_IS_ON()
 }
 
 // EXCLUSIVE_LOCK_REQUIRED(worker_lock_)
@@ -260,14 +249,6 @@ size_t JobTaskSource::GetWorkerCount() const {
 }
 
 void JobTaskSource::NotifyConcurrencyIncrease() {
-#if DCHECK_IS_ON()
-  {
-    CheckedAutoLock auto_lock(worker_lock_);
-    ++increase_version_;
-    version_condition_for_dcheck_->Broadcast();
-  }
-#endif  // DCHECK_IS_ON()
-
   // Avoid unnecessary locks when NotifyConcurrencyIncrease() is spuriously
   // called.
   if (GetRemainingConcurrency() == 0)
@@ -329,32 +310,6 @@ bool JobTaskSource::ShouldYield() {
   return TS_UNCHECKED_READ(join_flag_).ShouldWorkerYield() ||
          TS_UNCHECKED_READ(state_).Load().is_canceled();
 }
-
-#if DCHECK_IS_ON()
-
-size_t JobTaskSource::GetConcurrencyIncreaseVersion() const {
-  CheckedAutoLock auto_lock(worker_lock_);
-  return increase_version_;
-}
-
-bool JobTaskSource::WaitForConcurrencyIncreaseUpdate(size_t recorded_version) {
-  CheckedAutoLock auto_lock(worker_lock_);
-  constexpr TimeDelta timeout = TimeDelta::FromSeconds(1);
-  const base::TimeTicks start_time = subtle::TimeTicksNowIgnoringOverride();
-  do {
-    DCHECK_LE(recorded_version, increase_version_);
-    const auto state = state_.Load();
-    if (recorded_version != increase_version_ || state.is_canceled())
-      return true;
-    // Waiting is acceptable because it is in DCHECK-only code.
-    ScopedAllowBaseSyncPrimitivesOutsideBlockingScope
-        allow_base_sync_primitives;
-    version_condition_for_dcheck_->TimedWait(timeout);
-  } while (subtle::TimeTicksNowIgnoringOverride() - start_time < timeout);
-  return false;
-}
-
-#endif  // DCHECK_IS_ON()
 
 Task JobTaskSource::TakeTask(TaskSource::Transaction* transaction) {
   // JobTaskSource members are not lock-protected so no need to acquire a lock

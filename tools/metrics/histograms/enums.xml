@@ -28763,6 +28763,15 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3414" label="UnspecifiedTargetOriginPostMessage"/>
   <int value="3415" label="SchemelesslySameSitePostMessageSecureToInsecure"/>
   <int value="3416" label="SchemelesslySameSitePostMessageInsecureToSecure"/>
+  <int value="3417" label="BCPBroadcast"/>
+  <int value="3418" label="BCPRead"/>
+  <int value="3419" label="BCPWriteWithoutResponse"/>
+  <int value="3420" label="BCPWrite"/>
+  <int value="3421" label="BCPNotify"/>
+  <int value="3422" label="BCPIndicate"/>
+  <int value="3423" label="BCPAuthenticatedSignedWrites"/>
+  <int value="3424" label="BCPReliableWrite"/>
+  <int value="3425" label="BCPWritableAuxiliaries"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -37351,27 +37360,27 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 </enum>
 
 <enum name="IOSMenuAction">
-  <int value="0" label="Copy"/>
-  <int value="1" label="Delete"/>
-  <int value="2" label="Open in New Tab"/>
-  <int value="3" label="Open in New Incognito Tab"/>
-  <int value="4" label="Open in New Window"/>
-  <int value="5" label="Remove"/>
-  <int value="6" label="Edit"/>
+  <int value="0" label="Open in New Tab"/>
+  <int value="1" label="Open in New Incognito Tab"/>
+  <int value="2" label="Open in New Window"/>
+  <int value="3" label="Open all in New Tabs"/>
+  <int value="4" label="Copy"/>
+  <int value="5" label="Edit"/>
+  <int value="6" label="Move"/>
   <int value="7" label="Share"/>
-  <int value="8" label="Open all in New Tabs"/>
-  <int value="9" label="Hide"/>
-  <int value="10" label="Move"/>
+  <int value="8" label="Delete"/>
+  <int value="9" label="Remove"/>
+  <int value="10" label="Hide"/>
 </enum>
 
 <enum name="IOSMenuScenario">
-  <int value="0" label="History Entry"/>
-  <int value="1" label="Bookmark Entry"/>
-  <int value="2" label="ReadingList Entry"/>
-  <int value="3" label="RecentTabs Entry"/>
-  <int value="4" label="ContentSuggestions Entry"/>
-  <int value="5" label="RecentTabs Header"/>
-  <int value="6" label="Bookmark Folder"/>
+  <int value="0" label="Bookmark Entry"/>
+  <int value="1" label="Bookmark Folder"/>
+  <int value="2" label="Reading List Entry"/>
+  <int value="3" label="Recent Tabs Header"/>
+  <int value="4" label="Recent Tabs Entry"/>
+  <int value="5" label="History Entry"/>
+  <int value="6" label="Most Visited Entry"/>
 </enum>
 
 <enum name="IOSNTPImpression">
@@ -41241,6 +41250,7 @@ from previous Chrome versions.
   <int value="-913294939" label="DriveFS:enabled"/>
   <int value="-912456561" label="MidiManagerWinrt:enabled"/>
   <int value="-910452816" label="ChromeOSParentalControlsSettings:disabled"/>
+  <int value="-909905655" label="AllowAllSitesToInitiateMirroring:disabled"/>
   <int value="-909351661" label="OmniboxOnFocusSuggestions:disabled"/>
   <int value="-908421850" label="PointerEvent:enabled"/>
   <int value="-907234795" label="NewAudioRenderingMixingStrategy:disabled"/>
@@ -42594,6 +42604,7 @@ from previous Chrome versions.
   <int value="564522013" label="Av1Decoder:disabled"/>
   <int value="565406673" label="EnableVirtualKeyboardMdUi:enabled"/>
   <int value="567368307" label="enable-experimental-canvas-features"/>
+  <int value="571349694" label="AllowAllSitesToInitiateMirroring:enabled"/>
   <int value="572915501" label="FilesZipUnpack:disabled"/>
   <int value="573385109" label="SharedClipboardUI:enabled"/>
   <int value="575380532" label="ExperimentalAccessibilityLabels:disabled"/>
@@ -55138,6 +55149,14 @@ Called by update_net_trust_anchors.py.-->
   <int value="2"
       label="CanMakePayment() returned true and show() was not called"/>
   <int value="3" label="CanMakePayment() returned true and show() was called"/>
+</enum>
+
+<enum name="PaymentRequestCheckoutFunnelSteps">
+  <int value="0" label="Initiated"/>
+  <int value="1" label="Show() called"/>
+  <int value="2" label="Payment request triggered (shown + skipped show)"/>
+  <int value="3" label="Payment handler invoked"/>
+  <int value="4" label="Completed"/>
 </enum>
 
 <enum name="PaymentRequestFlowCompletionStatus">

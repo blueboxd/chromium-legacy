@@ -82,6 +82,11 @@ class MockNearbyConnections : public NearbyConnectionsMojom {
               StopAllEndpoints,
               (DisconnectFromEndpointCallback callback),
               (override));
+  MOCK_METHOD(void,
+              InitiateBandwidthUpgrade,
+              (const std::string& endpoint_id,
+               InitiateBandwidthUpgradeCallback callback),
+              (override));
 };
 
 #endif  // CHROME_BROWSER_NEARBY_SHARING_MOCK_NEARBY_CONNECTIONS_H_

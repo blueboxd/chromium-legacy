@@ -999,9 +999,8 @@ TEST_F(AutofillTableTest,
       table_->GetAutofillProfile(structured_name_profile.guid());
   ASSERT_TRUE(db_migrated_profile);
 
-  // Verify that the legacy tokens are written correctly to the profile and that
-  // all new tokens are empty and that the verification status is set to
-  // |kNoStatus| for all tokens.
+  // Verify that the legacy tokens are written correctly to the profile and
+  // the profile is migrated correctly.
   // TODO(crbug.com/1113617): Honorifics are temporally disabled.
   EXPECT_EQ(db_migrated_profile->GetRawInfo(NAME_FULL),
             ASCIIToUTF16("John Q. Agent 007 Smith"));
@@ -1012,24 +1011,26 @@ TEST_F(AutofillTableTest,
             ASCIIToUTF16("Agent 007 Smith"));
   EXPECT_TRUE(db_migrated_profile->GetRawInfo(NAME_LAST_FIRST).empty());
   EXPECT_TRUE(db_migrated_profile->GetRawInfo(NAME_LAST_CONJUNCTION).empty());
-  EXPECT_TRUE(db_migrated_profile->GetRawInfo(NAME_LAST_SECOND).empty());
+  EXPECT_EQ(db_migrated_profile->GetRawInfo(NAME_LAST_SECOND),
+            ASCIIToUTF16("Agent 007 Smith"));
 
   EXPECT_EQ(db_migrated_profile->GetVerificationStatus(NAME_FULL),
-            VerificationStatus::kNoStatus);
+            VerificationStatus::kObserved);
+  // TODO(crbug.com/1113617): Honorifics are temporally disabled.
   EXPECT_EQ(db_migrated_profile->GetVerificationStatus(NAME_HONORIFIC_PREFIX),
             VerificationStatus::kNoStatus);
   EXPECT_EQ(db_migrated_profile->GetVerificationStatus(NAME_FIRST),
-            VerificationStatus::kNoStatus);
+            VerificationStatus::kParsed);
   EXPECT_EQ(db_migrated_profile->GetVerificationStatus(NAME_MIDDLE),
-            VerificationStatus::kNoStatus);
+            VerificationStatus::kParsed);
   EXPECT_EQ(db_migrated_profile->GetVerificationStatus(NAME_LAST),
-            VerificationStatus::kNoStatus);
+            VerificationStatus::kParsed);
   EXPECT_EQ(db_migrated_profile->GetVerificationStatus(NAME_LAST_FIRST),
-            VerificationStatus::kNoStatus);
+            VerificationStatus::kParsed);
   EXPECT_EQ(db_migrated_profile->GetVerificationStatus(NAME_LAST_CONJUNCTION),
-            VerificationStatus::kNoStatus);
+            VerificationStatus::kParsed);
   EXPECT_EQ(db_migrated_profile->GetVerificationStatus(NAME_LAST_SECOND),
-            VerificationStatus::kNoStatus);
+            VerificationStatus::kParsed);
 }
 
 TEST_F(AutofillTableTest, AutofillProfile_StructuredAddresses) {

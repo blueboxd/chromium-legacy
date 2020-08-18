@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/strings/string_util.h"
 #include "chromeos/printing/ppd_provider.h"
 
 namespace chromeos {
@@ -34,7 +35,7 @@ bool CanUseEpsonGenericPPD(const PrinterSearchData& sd) {
   // The command set is retrieved from the 'CMD' field of the printer's IEEE
   // 1284 Device ID.
   for (base::StringPiece format : sd.printer_id.command_set()) {
-    if (format.starts_with("ESCPR")) {
+    if (base::StartsWith(format, "ESCPR")) {
       return true;
     }
   }

@@ -46,7 +46,7 @@ bool BluetoothAdapterFactory::IsBluetoothSupported() {
   if (Get()->adapter_)
     return true;
 #if defined(OS_ANDROID) || defined(OS_WIN) || defined(OS_LINUX) || \
-    defined(OS_MAC)
+    defined(OS_CHROMEOS) || defined(OS_MAC)
   return true;
 #else
   return false;
@@ -68,7 +68,7 @@ bool BluetoothAdapterFactory::IsLowEnergySupported() {
   return base::win::GetVersion() >= base::win::Version::WIN10;
 #elif defined(OS_MAC)
   return true;
-#elif defined(OS_LINUX)
+#elif (defined(OS_LINUX) || defined(OS_CHROMEOS))
   return true;
 #else
   return false;
@@ -130,7 +130,7 @@ void BluetoothAdapterFactory::GetClassicAdapter(AdapterCallback callback) {
 #endif  // defined(OS_WIN)
 }
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 // static
 void BluetoothAdapterFactory::Shutdown() {
   if (Get()->adapter_)

@@ -38,7 +38,7 @@ std::vector<SandboxType> GetSandboxTypesToTest() {
     // These sandbox types can't be spawned in a utility process.
     if (t == SandboxType::kRenderer || t == SandboxType::kGpu)
       continue;
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
     if (t == SandboxType::kZygoteIntermediateSandbox)
       continue;
 #endif

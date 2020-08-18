@@ -15,22 +15,27 @@ class WordUtils {
    *      searching.
    * @param {ParagraphUtils.NodeGroupItem} nodeGroupItem The node whose name we
    *      are searching through.
+   * @param {boolean?} ignoreStartChar When set to true, the search will only
+   *      consider the index within the input node and ignore
+   *      nodeGroupItem.startChar offsets. This is useful when we only search
+   *      within the input nodeGroupItem, instead of the parent nodeGroup.
    * @return {number} The index of the next word's start
    */
-  static getNextWordStart(text, indexAfter, nodeGroupItem) {
+  static getNextWordStart(
+      text, indexAfter, nodeGroupItem, ignoreStartChar = false) {
     if (nodeGroupItem.hasInlineText && nodeGroupItem.node.children.length > 0) {
+      const startChar = ignoreStartChar ? 0 : nodeGroupItem.startChar;
       const node = ParagraphUtils.findInlineTextNodeByCharacterIndex(
-          nodeGroupItem.node, indexAfter - nodeGroupItem.startChar);
+          nodeGroupItem.node, indexAfter - startChar);
       const startCharInParent = ParagraphUtils.getStartCharIndexInParent(node);
       for (var i = 0; i < node.wordStarts.length; i++) {
-        if (node.wordStarts[i] + nodeGroupItem.startChar + startCharInParent <
-            indexAfter) {
+        if (node.wordStarts[i] + startChar + startCharInParent < indexAfter) {
           continue;
         }
-        return node.wordStarts[i] + nodeGroupItem.startChar + startCharInParent;
+        return node.wordStarts[i] + startChar + startCharInParent;
       }
       // Default: We are just off the edge of this node.
-      return node.name.length + nodeGroupItem.startChar + startCharInParent;
+      return node.name.length + startChar + startCharInParent;
     } else {
       // Try to parse using a regex, which is imperfect.
       // Fall back to the given index if we can't find a match.
@@ -47,20 +52,24 @@ class WordUtils {
    *      searching.
    * @param {ParagraphUtils.NodeGroupItem} nodeGroupItem The node whose name we
    *      are searching through.
+   * @param {boolean?} ignoreStartChar When set to true, the search will only
+   *      consider the index within the input node and ignore
+   *      nodeGroupItem.startChar offsets. This is useful when we only search
+   *      within the input nodeGroupItem, instead of the parent nodeGroup.
    * @return {number} The index of the next word's end
    */
-  static getNextWordEnd(text, indexAfter, nodeGroupItem) {
+  static getNextWordEnd(
+      text, indexAfter, nodeGroupItem, ignoreStartChar = false) {
     if (nodeGroupItem.hasInlineText && nodeGroupItem.node.children.length > 0) {
+      const startChar = ignoreStartChar ? 0 : nodeGroupItem.startChar;
       const node = ParagraphUtils.findInlineTextNodeByCharacterIndex(
-          nodeGroupItem.node, indexAfter - nodeGroupItem.startChar + 1);
+          nodeGroupItem.node, indexAfter - startChar + 1);
       const startCharInParent = ParagraphUtils.getStartCharIndexInParent(node);
       for (var i = 0; i < node.wordEnds.length; i++) {
-        if (node.wordEnds[i] + nodeGroupItem.startChar + startCharInParent - 1 <
-            indexAfter) {
+        if (node.wordEnds[i] + startChar + startCharInParent - 1 < indexAfter) {
           continue;
         }
-        const result =
-            node.wordEnds[i] + nodeGroupItem.startChar + startCharInParent;
+        const result = node.wordEnds[i] + startChar + startCharInParent;
         return text.length > result ? result : text.length;
       }
       // Default.

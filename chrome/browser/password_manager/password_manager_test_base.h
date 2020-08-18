@@ -169,15 +169,6 @@ class PasswordManagerBrowserTestBase : public CertVerifierBrowserTest {
   void SetUpOnMainThread() override;
   void TearDownOnMainThread() override;
 
-  // Bring up a new Chrome tab set up with password manager test hooks.
-  // @param[in] browser the browser running the password manager test, upon
-  // which this function will perform the setup steps.
-  // @param[out] a new tab on the browser set up with password manager test
-  // hooks.
-  static void SetUpOnMainThreadAndGetNewTab(
-      Browser* browser,
-      content::WebContents** web_contents);
-
   // Creates a new tab with all the password manager test hooks and returns it
   // in |web_contents|.
   static void GetNewTab(Browser* browser, content::WebContents** web_contents);
@@ -248,9 +239,6 @@ class PasswordManagerBrowserTestBase : public CertVerifierBrowserTest {
   net::EmbeddedTestServer& https_test_server() { return https_test_server_; }
 
  private:
-  static void OnWillCreateBrowserContextServices(
-      content::BrowserContext* context);
-
   net::EmbeddedTestServer https_test_server_;
   // A tab with some hooks injected.
   content::WebContents* web_contents_;

@@ -2,6 +2,8 @@
 -AppWindowInteractiveTest.TestFullscreen
 -AppWindowTest*
 -BookmarkBarViewTest*
+-BrowserActionInteractiveTest.OpenPopupOnPopup
+-BrowserActionInteractiveTest.TestOpenPopup
 -BrowserActionInteractiveTest.TestOpenPopupIncognito
 -BrowserFocusTest.BackgroundBrowserDontStealFocus
 -ChromeVisibilityObserverInteractiveTest.VisibilityTest

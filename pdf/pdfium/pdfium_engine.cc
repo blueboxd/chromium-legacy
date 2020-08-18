@@ -61,6 +61,7 @@
 #include "third_party/pdfium/public/fpdf_searchex.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -1100,11 +1101,12 @@ PDFiumPage::Area PDFiumEngine::GetCharIndex(const pp::Point& point,
                                             int* form_type,
                                             PDFiumPage::LinkTarget* target) {
   int page = -1;
-  pp::Point point_in_page(
+  gfx::Point point_in_page(
       static_cast<int>((point.x() + position_.x()) / current_zoom_),
       static_cast<int>((point.y() + position_.y()) / current_zoom_));
   for (int visible_page : visible_pages_) {
-    if (pages_[visible_page]->rect().Contains(point_in_page)) {
+    if (pages_[visible_page]->rect().Contains(
+            PPPointFromPoint(point_in_page))) {
       page = visible_page;
       break;
     }
@@ -1993,7 +1995,7 @@ bool PDFiumEngine::SelectFindResult(bool forward) {
   // Use zoom of 1.0 since |visible_rect| is without zoom.
   const std::vector<pp::Rect>& rects =
       find_results_[current_find_index_.value()].GetScreenRects(
-          pp::Point(), 1.0, layout_.options().default_page_orientation());
+          gfx::Point(), 1.0, layout_.options().default_page_orientation());
   for (const auto& rect : rects)
     bounding_rect = bounding_rect.Union(rect);
   if (!visible_rect.Contains(bounding_rect)) {
@@ -2042,7 +2044,7 @@ std::vector<pp::Rect> PDFiumEngine::GetAllScreenRectsUnion(
   for (const auto& range : rect_range) {
     pp::Rect result_rect;
     const std::vector<pp::Rect>& rects =
-        range.GetScreenRects(offset_point, current_zoom_,
+        range.GetScreenRects(PointFromPPPoint(offset_point), current_zoom_,
                              layout_.options().default_page_orientation());
     for (const auto& rect : rects)
       result_rect = result_rect.Union(rect);
@@ -3220,9 +3222,9 @@ void PDFiumEngine::DrawSelections(int progressive_index,
     if (range.page_index() != page_index)
       continue;
 
-    const std::vector<pp::Rect>& rects =
-        range.GetScreenRects(visible_rect.point(), current_zoom_,
-                             layout_.options().default_page_orientation());
+    const std::vector<pp::Rect>& rects = range.GetScreenRects(
+        PointFromPPPoint(visible_rect.point()), current_zoom_,
+        layout_.options().default_page_orientation());
     for (const auto& rect : rects) {
       pp::Rect visible_selection = rect.Intersect(dirty_in_screen);
       if (visible_selection.IsEmpty())
@@ -3444,7 +3446,7 @@ PDFiumEngine::SelectionChangeInvalidator::GetVisibleSelections() const {
       continue;
 
     const std::vector<pp::Rect>& selection_rects = range.GetScreenRects(
-        visible_point, engine_->current_zoom_,
+        PointFromPPPoint(visible_point), engine_->current_zoom_,
         engine_->layout_.options().default_page_orientation());
     rects.insert(rects.end(), selection_rects.begin(), selection_rects.end());
   }
@@ -3611,9 +3613,9 @@ void PDFiumEngine::OnSelectionPositionChanged() {
                 std::numeric_limits<int32_t>::max(), 0, 0);
   pp::Rect right;
   for (const auto& sel : selection_) {
-    const std::vector<pp::Rect>& screen_rects =
-        sel.GetScreenRects(GetVisibleRect().point(), current_zoom_,
-                           layout_.options().default_page_orientation());
+    const std::vector<pp::Rect>& screen_rects = sel.GetScreenRects(
+        PointFromPPPoint(GetVisibleRect().point()), current_zoom_,
+        layout_.options().default_page_orientation());
     for (const auto& rect : screen_rects) {
       if (IsAboveOrDirectlyLeftOf(rect, left))
         left = rect;
@@ -3808,7 +3810,7 @@ void PDFiumEngine::ScrollAnnotationIntoView(FPDF_ANNOTATION annot,
     return;
 
   pp::Rect rect = pages_[page_index]->PageToScreen(
-      pp::Point(), /*zoom=*/1.0, annot_rect.left, annot_rect.top,
+      gfx::Point(), /*zoom=*/1.0, annot_rect.left, annot_rect.top,
       annot_rect.right, annot_rect.bottom,
       layout_.options().default_page_orientation());
 

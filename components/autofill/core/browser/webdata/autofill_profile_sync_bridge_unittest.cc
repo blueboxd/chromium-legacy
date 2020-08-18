@@ -638,6 +638,52 @@ TEST_P(AutofillProfileSyncBridgeTest, MergeSyncData) {
                            CreateAutofillProfile(remote3_specifics)));
 }
 
+// Tests the profile migration that is performed after specifics are converted
+// to profiles.
+TEST_P(AutofillProfileSyncBridgeTest, ProfileMigration) {
+  // This test is only applicable when structured names are enabled.
+  if (!UsingStructuredNames())
+    return;
+
+  AutofillProfile remote1 = AutofillProfile(kGuidC, kHttpOrigin);
+  remote1.SetRawInfo(NAME_FIRST, ASCIIToUTF16("Thomas"));
+  remote1.SetRawInfo(NAME_MIDDLE, ASCIIToUTF16("Neo"));
+  remote1.SetRawInfo(NAME_LAST, ASCIIToUTF16("Anderson"));
+
+  AutofillProfileSpecifics remote1_specifics =
+      CreateAutofillProfileSpecifics(remote1);
+
+  EXPECT_CALL(*backend(), CommitChanges());
+
+  StartSyncing({remote1_specifics});
+
+  // Create the expected profile after migration.
+  AutofillProfile finalized_profile = AutofillProfile(kGuidC, kHttpOrigin);
+  finalized_profile.SetRawInfoWithVerificationStatus(
+      NAME_FULL, ASCIIToUTF16("Thomas Neo Anderson"),
+      structured_address::VerificationStatus::kFormatted);
+  finalized_profile.SetRawInfoWithVerificationStatus(
+      NAME_FIRST, ASCIIToUTF16("Thomas"),
+      structured_address::VerificationStatus::kObserved);
+  finalized_profile.SetRawInfoWithVerificationStatus(
+      NAME_MIDDLE, ASCIIToUTF16("Neo"),
+      structured_address::VerificationStatus::kObserved);
+  finalized_profile.SetRawInfoWithVerificationStatus(
+      NAME_LAST, ASCIIToUTF16("Anderson"),
+      structured_address::VerificationStatus::kObserved);
+  finalized_profile.SetRawInfoWithVerificationStatus(
+      NAME_LAST_SECOND, ASCIIToUTF16("Anderson"),
+      structured_address::VerificationStatus::kParsed);
+  finalized_profile.SetRawInfoWithVerificationStatus(
+      NAME_LAST_FIRST, ASCIIToUTF16(""),
+      structured_address::VerificationStatus::kParsed);
+  finalized_profile.SetRawInfoWithVerificationStatus(
+      NAME_LAST_CONJUNCTION, ASCIIToUTF16(""),
+      structured_address::VerificationStatus::kParsed);
+
+  EXPECT_THAT(GetAllLocalData(), UnorderedElementsAre(finalized_profile));
+}
+
 // Ensure that all profile fields are able to be synced up from the client to
 // the server.
 TEST_P(AutofillProfileSyncBridgeTest, MergeSyncData_SyncAllFieldsToServer) {

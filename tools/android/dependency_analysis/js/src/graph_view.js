@@ -309,6 +309,10 @@ class GraphView {
     this.colorEdgesOnlyOnHover_ = true;
     /** @private {string} */
     this.graphEdgeColor_ = GraphEdgeColor.DEFAULT;
+    /** @private {boolean} */
+    this.reheatRequested_ = false;
+    /** @private {?string} */
+    this.lastHullDisplay_ = null;
     /** @private {!HoveredNodeManager} */
     this.hoveredNodeManager_ = new HoveredNodeManager();
     /** @private {!HullColorManager} */
@@ -731,6 +735,12 @@ class GraphView {
     this.colorEdgesOnlyOnHover_ = colorOnlyOnHover;
     this.graphEdgeColor_ = graphEdgeColor;
 
+    // Reheat if node grouping changed.
+    if (this.lastHullDisplay_ !== displaySettings.hullDisplay) {
+      this.lastHullDisplay_ = displaySettings.hullDisplay;
+      this.reheatRequested_ = true;
+    }
+
     this.syncEdgeGradients();
     this.syncEdgePaths();
     this.syncEdgeColors();
@@ -897,7 +907,8 @@ class GraphView {
 
     // The graph should not be reheated on a no-op (eg. adding a visible node to
     // the filter which doesn't add/remove any new nodes).
-    if (nodesAddedOrRemoved) {
+    if (this.reheatRequested_ || nodesAddedOrRemoved) {
+      this.reheatRequested_ = false;
       this.simulation_.stop();
       this.reheatSimulation(/* shouldEase */ true);
     }

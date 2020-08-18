@@ -116,20 +116,21 @@ int AwSafeBrowsingUIManager::GetErrorUiType(
 }
 
 void AwSafeBrowsingUIManager::SendSerializedThreatDetails(
+    content::BrowserContext* browser_context,
     const std::string& serialized) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!ping_manager_) {
     // Lazy creation of ping manager, needs to happen on IO thread.
     ping_manager_ = ::safe_browsing::PingManager::Create(
-        network_context_->GetURLLoaderFactory(),
         safe_browsing::GetV4ProtocolConfig(GetProtocolConfigClientName(),
                                            false /* disable_auto_update */));
   }
 
   if (!serialized.empty()) {
     DVLOG(1) << "Sending serialized threat details";
-    ping_manager_->ReportThreatDetails(serialized);
+    ping_manager_->ReportThreatDetails(network_context_->GetURLLoaderFactory(),
+                                       serialized);
   }
 }
 

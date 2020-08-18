@@ -25,7 +25,9 @@ SkiaOutputDeviceOffscreen::SkiaOutputDeviceOffscreen(
     bool has_alpha,
     gpu::MemoryTracker* memory_tracker,
     DidSwapBufferCompleteCallback did_swap_buffer_complete_callback)
-    : SkiaOutputDevice(memory_tracker, did_swap_buffer_complete_callback),
+    : SkiaOutputDevice(context_state->gr_context(),
+                       memory_tracker,
+                       did_swap_buffer_complete_callback),
       context_state_(context_state),
       has_alpha_(has_alpha) {
   capabilities_.uses_default_gl_framebuffer = false;

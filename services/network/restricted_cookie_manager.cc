@@ -344,7 +344,8 @@ void RestrictedCookieManager::SetCanonicalCookie(
     const url::Origin& top_frame_origin,
     SetCanonicalCookieCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!ValidateAccessToCookiesAt(url, site_for_cookies, top_frame_origin)) {
+  if (!ValidateAccessToCookiesAt(url, site_for_cookies, top_frame_origin,
+                                 &cookie)) {
     std::move(callback).Run(false);
     return;
   }
@@ -363,17 +364,6 @@ void RestrictedCookieManager::SetCanonicalCookie(
   if (!net::cookie_util::DomainIsHostOnly(url.host()))
     status.AddExclusionReason(
         net::CookieInclusionStatus::EXCLUDE_INVALID_DOMAIN);
-
-  // Don't allow setting cookies on other domains.
-  // TODO(crbug.com/996786): This should never happen. This should eventually
-  // result in a renderer kill, but for now just log metrics.
-  bool domain_match = cookie.IsDomainMatch(url.host());
-  if (!domain_match)
-    status.AddExclusionReason(
-        net::CookieInclusionStatus::EXCLUDE_DOMAIN_MISMATCH);
-  UMA_HISTOGRAM_BOOLEAN(
-      "Net.RestrictedCookieManager.SetCanonicalCookieDomainMatch",
-      domain_match);
 
   if (!status.IsInclude()) {
     if (cookie_observer_) {
@@ -541,7 +531,8 @@ void RestrictedCookieManager::RemoveChangeListener(Listener* listener) {
 bool RestrictedCookieManager::ValidateAccessToCookiesAt(
     const GURL& url,
     const net::SiteForCookies& site_for_cookies,
-    const url::Origin& top_frame_origin) {
+    const url::Origin& top_frame_origin,
+    const net::CanonicalCookie* cookie_being_set) {
   if (origin_.opaque()) {
     mojo::ReportBadMessage("Access is denied in this context");
     return false;
@@ -561,6 +552,12 @@ bool RestrictedCookieManager::ValidateAccessToCookiesAt(
                         site_for_cookies_ok);
   UMA_HISTOGRAM_BOOLEAN("Net.RestrictedCookieManager.TopFrameOriginOK",
                         top_frame_origin_ok);
+
+  // Don't allow setting cookies on other domains. See crbug.com/996786.
+  if (cookie_being_set && !cookie_being_set->IsDomainMatch(url.host())) {
+    mojo::ReportBadMessage("Setting cookies on other domains is disallowed.");
+    return false;
+  }
 
   if (origin_.IsSameOriginWith(url::Origin::Create(url)))
     return true;

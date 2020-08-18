@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "ash/public/cpp/login_screen_test_api.h"
+#include "ash/public/cpp/shelf_config.h"
+#include "ash/public/cpp/shelf_test_api.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/web_app/web_kiosk_app_manager.h"
 #include "chrome/browser/chromeos/login/kiosk_launch_controller.h"
@@ -15,6 +17,8 @@
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/ownership/fake_owner_settings_service.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 #include "chrome/common/web_application_info.h"
 #include "components/account_id/account_id.h"
@@ -22,6 +26,7 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/events/test/event_generator.h"
 
 namespace chromeos {
 
@@ -220,6 +225,33 @@ IN_PROC_BROWSER_TEST_F(WebKioskTest,
       /* require_network*/ false);
 
   KioskSessionInitializedWaiter().Wait();
+}
+
+// The shelf should be forcedly hidden in the web kiosk session.
+IN_PROC_BROWSER_TEST_F(WebKioskTest, HiddenShelf) {
+  SetOnline(true);
+  PrepareAppLaunch();
+  LaunchApp();
+  KioskSessionInitializedWaiter().Wait();
+
+  // The shelf should be hidden at the beginning.
+  EXPECT_FALSE(ash::ShelfTestApi().IsVisible());
+
+  // Simulate the swipe-up gesture.
+  EXPECT_EQ(BrowserList::GetInstance()->size(), 1U);
+  BrowserWindow* browser_window = BrowserList::GetInstance()->get(0)->window();
+  gfx::NativeWindow window = browser_window->GetNativeWindow()->GetRootWindow();
+  const gfx::Rect display_bounds = window->bounds();
+  const gfx::Point start_point = gfx::Point(
+      display_bounds.width() / 4,
+      display_bounds.bottom() - ash::ShelfConfig::Get()->shelf_size() / 2);
+  gfx::Point end_point(start_point.x(), start_point.y() - 80);
+  ui::test::EventGenerator event_generator(window);
+  event_generator.GestureScrollSequence(
+      start_point, end_point, base::TimeDelta::FromMilliseconds(500), 4);
+
+  // The shelf should be still hidden after the gesture.
+  EXPECT_FALSE(ash::ShelfTestApi().IsVisible());
 }
 
 }  // namespace chromeos

@@ -69,7 +69,7 @@ TEST_F(DesktopNativeWidgetAuraTest, DesktopAuraWindowSizeTest) {
 
   // On Linux we test this with popup windows because the WM may ignore the size
   // suggestion for normal windows.
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   Widget::InitParams init_params = CreateParams(Widget::InitParams::TYPE_POPUP);
 #else
   Widget::InitParams init_params =

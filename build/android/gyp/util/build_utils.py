@@ -33,16 +33,30 @@ DIR_SOURCE_ROOT = os.path.relpath(
             os.path.dirname(__file__), os.pardir, os.pardir, os.pardir,
             os.pardir)))
 JAVA_HOME = os.path.join(DIR_SOURCE_ROOT, 'third_party', 'jdk', 'current')
-JAVA_PATH = os.path.join(JAVA_HOME, 'bin', 'java')
 JAVAC_PATH = os.path.join(JAVA_HOME, 'bin', 'javac')
 JAVAP_PATH = os.path.join(JAVA_HOME, 'bin', 'javap')
 RT_JAR_PATH = os.path.join(DIR_SOURCE_ROOT, 'third_party', 'jdk', 'extras',
                            'java_8', 'jre', 'lib', 'rt.jar')
 
+# TODO(agrieve): Remove once safe to do so.
+JAVA_PATH = os.path.join(JAVA_HOME, 'bin', 'java')
+
 try:
   string_types = basestring
 except NameError:
   string_types = (str, bytes)
+
+
+def JavaCmd(verify=True):
+  ret = [os.path.join(JAVA_HOME, 'bin', 'java')]
+  # Limit heap to 1GB of RAM.
+  ret += ['-Xmx1G']
+
+  # Disable bytecode verification for local builds gives a ~2% speed-up.
+  if not verify:
+    ret += ['-noverify']
+
+  return ret
 
 
 @contextlib.contextmanager

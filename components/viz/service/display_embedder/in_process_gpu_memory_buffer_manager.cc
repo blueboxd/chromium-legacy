@@ -35,7 +35,7 @@ void DestroyOnThread(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
 InProcessGpuMemoryBufferManager::InProcessGpuMemoryBufferManager(
     gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory,
     gpu::SyncPointManager* sync_point_manager)
-    : client_id_(gpu::kInProcessCommandBufferClientId),
+    : client_id_(gpu::kDisplayCompositorClientId),
       gpu_memory_buffer_factory_(gpu_memory_buffer_factory),
       sync_point_manager_(sync_point_manager),
       task_runner_(base::ThreadTaskRunnerHandle::Get()) {

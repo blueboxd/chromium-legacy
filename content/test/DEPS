@@ -50,4 +50,7 @@ specific_include_rules = {
     "+services/viz/public/cpp/gpu/command_buffer_metrics.h",
     "+services/viz/public/cpp/gpu/context_provider_command_buffer.h",
   ],
+  "content_browser_test_test.cc": [
+    "+ui/ozone/public/ozone_switches.h",
+  ]
 }

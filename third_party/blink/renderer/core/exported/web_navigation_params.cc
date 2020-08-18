@@ -43,6 +43,7 @@ std::unique_ptr<WebNavigationParams> WebNavigationParams::CreateFromInfo(
       info.initiator_origin_trial_features;
   result->ip_address_space = info.initiator_address_space;
   result->frame_policy = info.frame_policy;
+  result->had_transient_activation = info.url_request.HasUserGesture();
   return result;
 }
 

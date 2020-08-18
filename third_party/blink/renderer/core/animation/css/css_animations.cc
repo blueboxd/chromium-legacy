@@ -102,7 +102,6 @@ StringKeyframeVector ProcessKeyframesRule(
     const ComputedStyle* parent_style,
     TimingFunction* default_timing_function) {
   StringKeyframeVector keyframes;
-  PropertySet specified_properties_for_use_counter;
   const HeapVector<Member<StyleRuleKeyframe>>& style_keyframes =
       keyframes_rule->Keyframes();
 
@@ -118,7 +117,6 @@ StringKeyframeVector ProcessKeyframesRule(
       // TODO(crbug.com/980160): Remove access to static Variable instance.
       const CSSProperty& property =
           CSSProperty::Get(properties.PropertyAt(j).Id());
-      specified_properties_for_use_counter.insert(&property);
       if (property.PropertyID() == CSSPropertyID::kAnimationTimingFunction) {
         const CSSValue& value = properties.PropertyAt(j).Value();
         scoped_refptr<TimingFunction> timing_function;
@@ -143,11 +141,6 @@ StringKeyframeVector ProcessKeyframesRule(
       keyframes.push_back(
           To<StringKeyframe>(keyframe->CloneWithOffset(offsets[j])));
     }
-  }
-
-  for (const CSSProperty* property : specified_properties_for_use_counter) {
-    DCHECK(isValidCSSPropertyID(property->PropertyID()));
-    document.CountAnimatedProperty(property->PropertyID());
   }
 
   std::stable_sort(keyframes.begin(), keyframes.end(),
@@ -1025,9 +1018,6 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
     animation->Update(kTimingUpdateOnDemand);
     running_transition->animation = animation;
     transitions_.Set(property, running_transition);
-    DCHECK(isValidCSSPropertyID(property.GetCSSProperty().PropertyID()));
-    element->GetDocument().CountAnimatedProperty(
-        property.GetCSSProperty().PropertyID());
   }
   ClearPendingUpdate();
 }

@@ -1141,6 +1141,12 @@ class ContentScriptRelatedFrameTest : public ContentScriptApiTest {
   }
   const GURL& null_document_url() const { return null_document_url_; }
   const GURL& data_url() const { return data_url_; }
+  const GURL& path_specific_allowed_url() const {
+    return path_specific_allowed_url_;
+  }
+  const GURL& path_specific_iframe_url() const {
+    return path_specific_iframe_url_;
+  }
 
  private:
   static constexpr char kMarkerSpanId[] = "content-script-marker";
@@ -1160,6 +1166,11 @@ class ContentScriptRelatedFrameTest : public ContentScriptApiTest {
   GURL null_document_url_;
   // A simple data URL.
   GURL data_url_;
+  // A URL that matches a path-specific match pattern.
+  GURL path_specific_allowed_url_;
+  // A URL that matches the domain of a path-specific match pattern - but not
+  // the path component - which also has an iframe in the DOM.
+  GURL path_specific_iframe_url_;
 
   // The test directory used to load our extension.
   TestExtensionDir test_extension_dir_;
@@ -1182,6 +1193,10 @@ void ContentScriptRelatedFrameTest::SetUpOnMainThread() {
       embedded_test_server()->GetURL("chromium.org", "/iframe.html");
   null_document_url_ = embedded_test_server()->GetURL(
       "chromium.org", "/extensions/null_document.html");
+  path_specific_allowed_url_ =
+      embedded_test_server()->GetURL("path-test.example", "/simple.html");
+  path_specific_iframe_url_ =
+      embedded_test_server()->GetURL("path-test.example", "/iframe.html");
   data_url_ = GURL("data:text/html,<html>Hi</html>");
 
   constexpr char kManifest[] =
@@ -1196,12 +1211,20 @@ void ContentScriptRelatedFrameTest::SetUpOnMainThread() {
              "all_frames": true,
              %s
              "match_about_blank": true
+           }, {
+             "matches": ["http://path-test.example/simple.html"],
+             "js": ["script.js"],
+             "run_at": "document_end",
+             "all_frames": true,
+             %s
+             "match_about_blank": true
            }]
          })";
   const char* extra_property = "";
   if (IncludeMatchOriginAsFallback())
     extra_property = R"("match_origin_as_fallback": true,)";
-  std::string manifest = base::StringPrintf(kManifest, extra_property);
+  std::string manifest =
+      base::StringPrintf(kManifest, extra_property, extra_property);
   test_extension_dir_.WriteManifest(manifest);
 
   std::string script = base::StringPrintf(
@@ -1360,6 +1383,36 @@ IN_PROC_BROWSER_TEST_F(ContentScriptRelatedFrameTest,
   // precursor origin, which caused a crash during the document writing.
 }
 
+// Test content script injection into iframes when the script has a
+// path-specific pattern.
+IN_PROC_BROWSER_TEST_F(ContentScriptRelatedFrameTest,
+                       FrameInjectionWithPathSpecificMatchPattern) {
+  // Open a page to the page that's same-origin with the match pattern, but
+  // doesn't match.
+  content::WebContents* tab = NavigateTab(path_specific_iframe_url());
+  // Navigate the child frame to the URL that matches the path requirement.
+  NavigateIframe(tab->GetMainFrame(), "frames[0]", path_specific_allowed_url());
+
+  content::RenderFrameHost* child_frame =
+      content::ChildFrameAt(tab->GetMainFrame(), 0);
+
+  EXPECT_EQ(path_specific_allowed_url(), child_frame->GetLastCommittedURL());
+  // The script should have ran in the child frame (which matches the pattern),
+  // but not the parent frame (which doesn't match the path component).
+  EXPECT_TRUE(DidScriptRunInFrame(child_frame));
+  EXPECT_FALSE(DidScriptRunInFrame(tab->GetMainFrame()));
+
+  // Now, navigate the iframe to an about:blank URL.
+  NavigateIframe(tab->GetMainFrame(), "frames[0]", about_blank());
+
+  // Unlike match_origin_as_fallback, match_about_blank will attempt to climb
+  // the frame tree to find an ancestor with path. This results in finding the
+  // parent frame, which doesn't match the script's pattern, and so the script
+  // does not inject.
+  EXPECT_EQ(about_blank(), child_frame->GetLastCommittedURL());
+  EXPECT_FALSE(DidScriptRunInFrame(child_frame));
+}
+
 // TODO(devlin): Similar to the above test, exercise one with a frame that
 // closes its own parent. This needs to use tabs.executeScript (for timing
 // reasons), but is close enough to a content script test to re-use the same
@@ -1512,12 +1565,44 @@ IN_PROC_BROWSER_TEST_F(ContentScriptDataURLTest,
     ASSERT_TRUE(data_url_host);
     EXPECT_TRUE(data_url_host->GetParent());
     EXPECT_EQ(data_url(), data_url_host->GetLastCommittedURL());
-    // TODO(devlin): This should *probably* be allowed to inject at this point,
-    // since the extension has access to the related frame.
-    // See https://crbug.com/1111028.
-    // EXPECT_TRUE(DidScriptRunInFrame(data_url_host));
-    EXPECT_FALSE(DidScriptRunInFrame(data_url_host));
+    // The extension should be allowed to inject since it has access to the
+    // related frame. https://crbug.com/1111028.
+    EXPECT_TRUE(DidScriptRunInFrame(data_url_host));
   }
+}
+
+// Test content script injection into iframes when the script has a
+// path-specific pattern.
+IN_PROC_BROWSER_TEST_F(ContentScriptDataURLTest,
+                       FrameInjectionWithPathSpecificMatchPattern) {
+  // Open a page to the page that's same-origin with the match pattern, but
+  // doesn't match.
+  content::WebContents* tab = NavigateTab(path_specific_iframe_url());
+  // Navigate the child frame to the URL that matches the path requirement.
+  NavigateIframe(tab->GetMainFrame(), "frames[0]", path_specific_allowed_url());
+
+  content::RenderFrameHost* child_frame =
+      content::ChildFrameAt(tab->GetMainFrame(), 0);
+
+  EXPECT_EQ(path_specific_allowed_url(), child_frame->GetLastCommittedURL());
+  // The script should have ran in the child frame (which matches the pattern),
+  // but not the parent frame (which doesn't match the path component).
+  EXPECT_TRUE(DidScriptRunInFrame(child_frame));
+  EXPECT_FALSE(DidScriptRunInFrame(tab->GetMainFrame()));
+
+  // Now, navigate the iframe to a data URL.
+  NavigateIframe(tab->GetMainFrame(), "frames[0]", data_url());
+
+  // Subtle: When using match_origin_as_fallback, the script will inject if it
+  // is same-origin with the initiator origin. In this case, even though no
+  // frames match the path of the script's match pattern, it will still inject
+  // in the data: frame, since the match pattern is same origin with the
+  // initiator (|path_specific_iframe_url|).
+  EXPECT_EQ(data_url(), child_frame->GetLastCommittedURL());
+  // TODO(devlin): Enable this check when we adjust the matching logic for
+  // these frames.
+  // EXPECT_TRUE(DidScriptRunInFrame(child_frame));
+  EXPECT_FALSE(DidScriptRunInFrame(child_frame));
 }
 
 // Test fixture which sets a custom NTP Page.

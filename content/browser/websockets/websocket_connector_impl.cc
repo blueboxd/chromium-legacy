@@ -14,6 +14,32 @@
 
 namespace content {
 
+namespace {
+constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
+    net::DefineNetworkTrafficAnnotation("websocket_stream", R"(
+        semantics {
+          sender: "WebSocket Handshake"
+          description:
+            "Renderer process initiated WebSocket handshake. The WebSocket "
+            "handshake is used to establish a connection between a web page "
+            "and a consenting server for bi-directional communication."
+          trigger:
+            "A handshake is performed every time a new connection is "
+            "established via the Javascript or PPAPI WebSocket API. Any web "
+            "page or extension can create a WebSocket connection."
+          data: "The path and sub-protocols requested when the WebSocket was "
+                "created, plus the origin of the creating page."
+          destination: OTHER
+        }
+        policy {
+          cookies_allowed: YES
+          cookies_store: "user or per-app cookie store"
+          setting: "These requests cannot be disabled."
+          policy_exception_justification:
+            "Not implemented. WebSocket is a core web platform API."
+        })");
+}
+
 WebSocketConnectorImpl::WebSocketConnectorImpl(
     int process_id,
     int frame_id,
@@ -60,6 +86,7 @@ void WebSocketConnectorImpl::Connect(
   process->GetStoragePartition()->GetNetworkContext()->CreateWebSocket(
       url, requested_protocols, site_for_cookies, isolation_info_,
       std::move(headers), process_id_, frame_id_, origin_, options,
+      net::MutableNetworkTrafficAnnotationTag(kTrafficAnnotation),
       std::move(handshake_client), mojo::NullRemote(), mojo::NullRemote());
 }
 
@@ -86,6 +113,7 @@ void WebSocketConnectorImpl::ConnectCalledByContentBrowserClient(
   process->GetStoragePartition()->GetNetworkContext()->CreateWebSocket(
       url, requested_protocols, site_for_cookies, isolation_info,
       std::move(additional_headers), process_id, frame_id, origin, options,
+      net::MutableNetworkTrafficAnnotationTag(kTrafficAnnotation),
       std::move(handshake_client), std::move(auth_handler),
       std::move(trusted_header_client));
 }

@@ -18,6 +18,8 @@
 namespace {
 
 constexpr char kGoogleSearchURL[] = "https://www.google.com/search?q=test";
+constexpr char kOriginA[] = "https://a.test";
+constexpr char kOriginB[] = "https://b.test";
 
 const base::Feature kNavigationPredictorRendererWarmup{
     "NavigationPredictorRendererWarmup", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -87,28 +89,57 @@ class NavigationPredictorRendererWarmupClientTest
   std::unique_ptr<TestNavigationPredictorRendererWarmupClient> client_;
 };
 
-TEST_F(NavigationPredictorRendererWarmupClientTest, SuccessCase) {
+TEST_F(NavigationPredictorRendererWarmupClientTest, SuccessCase_Search) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeatureWithParameters(
-      kNavigationPredictorRendererWarmup, {
-                                              {"counterfactual", "false"},
-                                              {"mem_threshold_mb", "0"},
-                                              {"cooldown_duration_ms", "60000"},
-                                          });
+      kNavigationPredictorRendererWarmup,
+      {
+          {"counterfactual", "false"},
+          {"mem_threshold_mb", "0"},
+          {"warmup_on_dse", "true"},
+          {"use_navigation_predictions", "true"},
+          {"examine_top_n_predictions", "10"},
+          {"prediction_crosss_origin_threshold", "0.5"},
+          {"cooldown_duration_ms", "60000"},
+      });
 
   client()->OnPredictionUpdated(
       CreateValidPrediction(GURL(kGoogleSearchURL), {}));
   EXPECT_TRUE(client()->DidDoRendererWarmup());
 }
 
+TEST_F(NavigationPredictorRendererWarmupClientTest, SuccessCase_CrossOrigin) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      kNavigationPredictorRendererWarmup,
+      {
+          {"counterfactual", "false"},
+          {"mem_threshold_mb", "0"},
+          {"warmup_on_dse", "true"},
+          {"use_navigation_predictions", "true"},
+          {"examine_top_n_predictions", "10"},
+          {"prediction_crosss_origin_threshold", "0.5"},
+          {"cooldown_duration_ms", "60000"},
+      });
+
+  client()->OnPredictionUpdated(
+      CreateValidPrediction(GURL(kOriginA), {GURL(kOriginB)}));
+  EXPECT_TRUE(client()->DidDoRendererWarmup());
+}
+
 TEST_F(NavigationPredictorRendererWarmupClientTest, SuccessCase_AfterCooldown) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeatureWithParameters(
-      kNavigationPredictorRendererWarmup, {
-                                              {"counterfactual", "false"},
-                                              {"mem_threshold_mb", "0"},
-                                              {"cooldown_duration_ms", "100"},
-                                          });
+      kNavigationPredictorRendererWarmup,
+      {
+          {"counterfactual", "false"},
+          {"mem_threshold_mb", "0"},
+          {"warmup_on_dse", "true"},
+          {"use_navigation_predictions", "true"},
+          {"examine_top_n_predictions", "10"},
+          {"prediction_crosss_origin_threshold", "0.5"},
+          {"cooldown_duration_ms", "100"},
+      });
 
   client()->OnPredictionUpdated(
       CreateValidPrediction(GURL(kGoogleSearchURL), {}));
@@ -126,11 +157,16 @@ TEST_F(NavigationPredictorRendererWarmupClientTest, SuccessCase_AfterCooldown) {
 TEST_F(NavigationPredictorRendererWarmupClientTest, NullPrediction) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeatureWithParameters(
-      kNavigationPredictorRendererWarmup, {
-                                              {"counterfactual", "false"},
-                                              {"mem_threshold_mb", "0"},
-                                              {"cooldown_duration_ms", "60000"},
-                                          });
+      kNavigationPredictorRendererWarmup,
+      {
+          {"counterfactual", "false"},
+          {"mem_threshold_mb", "0"},
+          {"warmup_on_dse", "true"},
+          {"use_navigation_predictions", "true"},
+          {"examine_top_n_predictions", "10"},
+          {"prediction_crosss_origin_threshold", "0.5"},
+          {"cooldown_duration_ms", "60000"},
+      });
 
   client()->OnPredictionUpdated(base::nullopt);
   EXPECT_FALSE(client()->DidDoRendererWarmup());
@@ -139,11 +175,16 @@ TEST_F(NavigationPredictorRendererWarmupClientTest, NullPrediction) {
 TEST_F(NavigationPredictorRendererWarmupClientTest, BadPredictionSrc) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeatureWithParameters(
-      kNavigationPredictorRendererWarmup, {
-                                              {"counterfactual", "false"},
-                                              {"mem_threshold_mb", "0"},
-                                              {"cooldown_duration_ms", "60000"},
-                                          });
+      kNavigationPredictorRendererWarmup,
+      {
+          {"counterfactual", "false"},
+          {"mem_threshold_mb", "0"},
+          {"warmup_on_dse", "true"},
+          {"use_navigation_predictions", "true"},
+          {"examine_top_n_predictions", "10"},
+          {"prediction_crosss_origin_threshold", "0.5"},
+          {"cooldown_duration_ms", "60000"},
+      });
 
   client()->OnPredictionUpdated(NavigationPredictorKeyedService::Prediction(
       nullptr, base::nullopt, std::vector<std::string>{""},
@@ -155,11 +196,16 @@ TEST_F(NavigationPredictorRendererWarmupClientTest, BadPredictionSrc) {
 TEST_F(NavigationPredictorRendererWarmupClientTest, CoolDown) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeatureWithParameters(
-      kNavigationPredictorRendererWarmup, {
-                                              {"counterfactual", "false"},
-                                              {"mem_threshold_mb", "0"},
-                                              {"cooldown_duration_ms", "60000"},
-                                          });
+      kNavigationPredictorRendererWarmup,
+      {
+          {"counterfactual", "false"},
+          {"mem_threshold_mb", "0"},
+          {"warmup_on_dse", "true"},
+          {"use_navigation_predictions", "true"},
+          {"examine_top_n_predictions", "10"},
+          {"prediction_crosss_origin_threshold", "0.5"},
+          {"cooldown_duration_ms", "60000"},
+      });
 
   client()->OnPredictionUpdated(
       CreateValidPrediction(GURL(kGoogleSearchURL), {}));
@@ -175,11 +221,16 @@ TEST_F(NavigationPredictorRendererWarmupClientTest, CoolDown) {
 TEST_F(NavigationPredictorRendererWarmupClientTest, HasSpareRenderer) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeatureWithParameters(
-      kNavigationPredictorRendererWarmup, {
-                                              {"counterfactual", "false"},
-                                              {"mem_threshold_mb", "0"},
-                                              {"cooldown_duration_ms", "60000"},
-                                          });
+      kNavigationPredictorRendererWarmup,
+      {
+          {"counterfactual", "false"},
+          {"mem_threshold_mb", "0"},
+          {"warmup_on_dse", "true"},
+          {"use_navigation_predictions", "true"},
+          {"examine_top_n_predictions", "10"},
+          {"prediction_crosss_origin_threshold", "0.5"},
+          {"cooldown_duration_ms", "60000"},
+      });
 
   client()->SetBrowserHasSpareRenderer(true);
   client()->OnPredictionUpdated(
@@ -196,14 +247,134 @@ TEST_F(NavigationPredictorRendererWarmupClientTest, FeatureOff) {
   EXPECT_FALSE(client()->DidDoRendererWarmup());
 }
 
+TEST_F(NavigationPredictorRendererWarmupClientTest, DSEWarmupNotEnabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      kNavigationPredictorRendererWarmup,
+      {
+          {"counterfactual", "false"},
+          {"mem_threshold_mb", "0"},
+          {"warmup_on_dse", "false"},
+          {"use_navigation_predictions", "true"},
+          {"examine_top_n_predictions", "10"},
+          {"prediction_crosss_origin_threshold", "0.5"},
+          {"cooldown_duration_ms", "60000"},
+      });
+
+  client()->OnPredictionUpdated(
+      CreateValidPrediction(GURL(kGoogleSearchURL), {}));
+  EXPECT_FALSE(client()->DidDoRendererWarmup());
+}
+
+TEST_F(NavigationPredictorRendererWarmupClientTest, NotSearchURL) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      kNavigationPredictorRendererWarmup,
+      {
+          {"counterfactual", "false"},
+          {"mem_threshold_mb", "0"},
+          {"warmup_on_dse", "true"},
+          {"use_navigation_predictions", "true"},
+          {"examine_top_n_predictions", "10"},
+          {"prediction_crosss_origin_threshold", "0.5"},
+          {"cooldown_duration_ms", "60000"},
+      });
+
+  client()->OnPredictionUpdated(
+      CreateValidPrediction(GURL("http://test.com/"), {}));
+  EXPECT_FALSE(client()->DidDoRendererWarmup());
+}
+
+TEST_F(NavigationPredictorRendererWarmupClientTest, InvalidCrossOrigins) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      kNavigationPredictorRendererWarmup,
+      {
+          {"counterfactual", "false"},
+          {"mem_threshold_mb", "0"},
+          {"warmup_on_dse", "true"},
+          {"use_navigation_predictions", "true"},
+          {"examine_top_n_predictions", "10"},
+          {"prediction_crosss_origin_threshold", "0.5"},
+          {"cooldown_duration_ms", "60000"},
+      });
+
+  client()->OnPredictionUpdated(
+      CreateValidPrediction(GURL(kOriginA), {GURL()}));
+  EXPECT_FALSE(client()->DidDoRendererWarmup());
+}
+
+TEST_F(NavigationPredictorRendererWarmupClientTest, NonHTTPCrossOrigins) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      kNavigationPredictorRendererWarmup,
+      {
+          {"counterfactual", "false"},
+          {"mem_threshold_mb", "0"},
+          {"warmup_on_dse", "true"},
+          {"use_navigation_predictions", "true"},
+          {"examine_top_n_predictions", "10"},
+          {"prediction_crosss_origin_threshold", "0.5"},
+          {"cooldown_duration_ms", "60000"},
+      });
+
+  client()->OnPredictionUpdated(
+      CreateValidPrediction(GURL(kOriginA), {GURL("ftp://test.com")}));
+  EXPECT_FALSE(client()->DidDoRendererWarmup());
+}
+
+TEST_F(NavigationPredictorRendererWarmupClientTest,
+       CrossOriginsBelowThreshold) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      kNavigationPredictorRendererWarmup,
+      {
+          {"counterfactual", "false"},
+          {"mem_threshold_mb", "0"},
+          {"warmup_on_dse", "true"},
+          {"use_navigation_predictions", "true"},
+          {"examine_top_n_predictions", "10"},
+          {"prediction_crosss_origin_threshold", "0.5"},
+          {"cooldown_duration_ms", "60000"},
+      });
+
+  client()->OnPredictionUpdated(CreateValidPrediction(
+      GURL(kOriginA), {GURL(kOriginA), GURL(kOriginA), GURL(kOriginB)}));
+  EXPECT_FALSE(client()->DidDoRendererWarmup());
+}
+
+TEST_F(NavigationPredictorRendererWarmupClientTest, CrossOriginNotEnabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      kNavigationPredictorRendererWarmup,
+      {
+          {"counterfactual", "false"},
+          {"mem_threshold_mb", "0"},
+          {"warmup_on_dse", "true"},
+          {"use_navigation_predictions", "false"},
+          {"examine_top_n_predictions", "10"},
+          {"prediction_crosss_origin_threshold", "0.5"},
+          {"cooldown_duration_ms", "60000"},
+      });
+
+  client()->OnPredictionUpdated(
+      CreateValidPrediction(GURL(kOriginA), {GURL(kOriginB)}));
+  EXPECT_FALSE(client()->DidDoRendererWarmup());
+}
+
 TEST_F(NavigationPredictorRendererWarmupClientTest, Counterfactual) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeatureWithParameters(
-      kNavigationPredictorRendererWarmup, {
-                                              {"counterfactual", "true"},
-                                              {"mem_threshold_mb", "0"},
-                                              {"cooldown_duration_ms", "60000"},
-                                          });
+      kNavigationPredictorRendererWarmup,
+      {
+          {"counterfactual", "true"},
+          {"mem_threshold_mb", "0"},
+          {"warmup_on_dse", "true"},
+          {"use_navigation_predictions", "true"},
+          {"examine_top_n_predictions", "10"},
+          {"prediction_crosss_origin_threshold", "0.5"},
+          {"cooldown_duration_ms", "60000"},
+      });
 
   client()->OnPredictionUpdated(
       CreateValidPrediction(GURL(kGoogleSearchURL), {}));
@@ -217,6 +388,10 @@ TEST_F(NavigationPredictorRendererWarmupClientTest, MemThreshold) {
       {
           {"counterfactual", "true"},
           {"mem_threshold_mb", "99999999999"},
+          {"warmup_on_dse", "true"},
+          {"use_navigation_predictions", "true"},
+          {"examine_top_n_predictions", "10"},
+          {"prediction_crosss_origin_threshold", "0.5"},
           {"cooldown_duration_ms", "60000"},
       });
 

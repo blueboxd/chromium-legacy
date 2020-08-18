@@ -1538,6 +1538,9 @@ test("content_browsertests") {
       "//content/shell:content_shell",
       "//mojo/core:shared_library",
     ]
+    if (use_ozone) {
+      deps += [ "//ui/ozone" ]
+    }
   }
 
   if (!is_chrome_branded) {
@@ -1590,6 +1593,10 @@ test("content_browsertests") {
       # exclude them all.
       "../browser/snapshot_browsertest.cc",
     ]
+  }
+
+  if (use_ozone) {
+    deps += [ "//ui/ozone" ]
   }
 }
 

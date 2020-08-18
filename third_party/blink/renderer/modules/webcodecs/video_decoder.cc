@@ -10,11 +10,14 @@
 #include "base/time/time.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/media_util.h"
+#include "media/base/mime_util.h"
+#include "media/base/supported_types.h"
 #include "media/base/video_decoder.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_encoded_video_chunk.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_encoded_video_config.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/modules/webcodecs/codec_config_eval.h"
 #include "third_party/blink/renderer/modules/webcodecs/encoded_video_chunk.h"
 #include "third_party/blink/renderer/modules/webcodecs/video_decoder_broker.h"
 #include "third_party/blink/renderer/modules/webcodecs/video_frame.h"
@@ -37,11 +40,37 @@ VideoDecoderTraits::CreateDecoder(ExecutionContext& execution_context,
 }
 
 // static
-void VideoDecoderTraits::InitializeDecoder(
-    MediaDecoderType& decoder,
+CodecConfigEval VideoDecoderTraits::CreateMediaConfig(
     const ConfigType& config,
-    MediaDecoderType::InitCB init_cb,
-    MediaDecoderType::OutputCB output_cb) {
+    MediaConfigType* out_media_config,
+    String* out_console_message) {
+  DCHECK(out_media_config);
+  DCHECK(out_console_message);
+
+  bool is_codec_ambiguous = true;
+  media::VideoCodec codec = media::kUnknownVideoCodec;
+  media::VideoCodecProfile profile = media::VIDEO_CODEC_PROFILE_UNKNOWN;
+  media::VideoColorSpace color_space = media::VideoColorSpace::REC709();
+  uint8_t level = 0;
+  bool parse_succeeded = media::ParseVideoCodecString(
+      "", config.codec().Utf8(), &is_codec_ambiguous, &codec, &profile, &level,
+      &color_space);
+
+  if (!parse_succeeded) {
+    *out_console_message = "Failed to parse codec string.";
+    return CodecConfigEval::kInvalid;
+  }
+
+  if (is_codec_ambiguous) {
+    *out_console_message = "Codec string is ambiguous.";
+    return CodecConfigEval::kInvalid;
+  }
+
+  if (!media::IsSupportedVideoType({codec, profile, level, color_space})) {
+    *out_console_message = "Configuration is not supported.";
+    return CodecConfigEval::kUnsupported;
+  }
+
   std::vector<uint8_t> extra_data;
   if (config.hasDescription()) {
     DOMArrayBuffer* buffer;
@@ -58,22 +87,27 @@ void VideoDecoderTraits::InitializeDecoder(
     extra_data.assign(start, start + size);
   }
 
-  media::VideoCodec codec = media::kUnknownVideoCodec;
-  media::VideoCodecProfile profile = media::VIDEO_CODEC_PROFILE_UNKNOWN;
-  media::VideoColorSpace color_space = media::VideoColorSpace::REC709();
-  uint8_t level = 0;
-  media::ParseCodec(config.codec().Utf8(), codec, profile, level, color_space);
   // TODO(sandersd): Either remove sizes from VideoDecoderConfig (replace with
   // sample aspect) or parse the AvcC here to get the actual size.
   // For the moment, hard-code 720p to prefer hardware decoders.
   gfx::Size size = gfx::Size(1280, 720);
-  media::VideoDecoderConfig video_decoder_config(
-      codec, profile, media::VideoDecoderConfig::AlphaMode::kIsOpaque,
-      color_space, media::kNoTransformation, size,
-      gfx::Rect(gfx::Point(), size), size, extra_data,
-      media::EncryptionScheme::kUnencrypted);
 
-  decoder.Initialize(video_decoder_config, false /* low_delay */,
+  out_media_config->Initialize(codec, profile,
+                               media::VideoDecoderConfig::AlphaMode::kIsOpaque,
+                               color_space, media::kNoTransformation, size,
+                               gfx::Rect(gfx::Point(), size), size, extra_data,
+                               media::EncryptionScheme::kUnencrypted);
+
+  return CodecConfigEval::kSupported;
+}
+
+// static
+void VideoDecoderTraits::InitializeDecoder(
+    MediaDecoderType& decoder,
+    const MediaConfigType& media_config,
+    MediaDecoderType::InitCB init_cb,
+    MediaDecoderType::OutputCB output_cb) {
+  decoder.Initialize(media_config, false /* low_delay */,
                      nullptr /* cdm_context */, std::move(init_cb), output_cb,
                      media::WaitingCB());
 }

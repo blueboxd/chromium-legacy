@@ -54,7 +54,8 @@ class AwSafeBrowsingUIManager : public safe_browsing::BaseUIManager {
 
   // Called on the UI thread by the ThreatDetails with the serialized
   // protocol buffer, so the service can send it over.
-  void SendSerializedThreatDetails(const std::string& serialized) override;
+  void SendSerializedThreatDetails(content::BrowserContext* browser_context,
+                                   const std::string& serialized) override;
 
   // Called on the IO thread to get a SharedURLLoaderFactory that can be used on
   // the IO thread.

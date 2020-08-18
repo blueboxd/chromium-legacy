@@ -7,6 +7,7 @@
 // and when chrome is started from scratch.
 
 #include "apps/switches.h"
+#include "base/base_switches.h"
 #include "base/process/launch.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -27,6 +28,10 @@
 #include "extensions/test/extension_test_message_listener.h"
 #include "sandbox/policy/switches.h"
 
+#if defined(USE_OZONE)
+#include "ui/ozone/public/ozone_switches.h"
+#endif
+
 using extensions::PlatformAppBrowserTest;
 
 namespace apps {
@@ -36,6 +41,19 @@ namespace {
 const char* kSwitchesToCopy[] = {
     sandbox::policy::switches::kNoSandbox,
     switches::kUserDataDir,
+#if defined(USE_OZONE)
+    // Keep the kOzonePlatform switch that the Ozone must use.
+    switches::kOzonePlatform,
+#endif
+    // Some tests use custom cmdline that doesn't hold switches from previous
+    // cmdline. Only a couple of switches are copied. That can result in
+    // incorrect initialization of a process. For example, the work that we do
+    // to have use_x11 && use_ozone, requires UseOzonePlatform feature flag to
+    // be passed to all the process to ensure correct path is chosen.
+    // TODO(https://crbug.com/1096425): update this comment once USE_X11 goes
+    // away.
+    switches::kEnableFeatures,
+    switches::kDisableFeatures,
 };
 
 constexpr char kTestExtensionId[] = "behllobkkfkfnphdnhnkndlbkcpglgmj";

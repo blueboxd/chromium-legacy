@@ -327,13 +327,13 @@ class XRSystem final : public EventTargetWithInlineData,
     // NativeEventListener
     void Invoke(ExecutionContext*, Event*) override;
 
-    void ExitFullscreen(Element* element, base::OnceClosure on_exited);
+    void ExitFullscreen(Document* doc, base::OnceClosure on_exited);
 
     void Trace(Visitor*) const override;
 
    private:
     Member<XRSystem> xr_;
-    Member<Element> element_;
+    Member<Document> document_;
     base::OnceClosure on_exited_;
     DISALLOW_COPY_AND_ASSIGN(OverlayFullscreenExitObserver);
   };

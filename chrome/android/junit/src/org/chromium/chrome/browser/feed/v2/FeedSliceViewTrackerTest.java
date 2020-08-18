@@ -8,6 +8,7 @@ import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -111,8 +112,8 @@ public class FeedSliceViewTrackerTest {
     public void testOnPreDraw_BothVisibleAreReportedExactlyOnce() {
         mContentManager.addContents(0,
                 Arrays.asList(new FeedListContentManager.FeedContent[] {
-                        new FeedListContentManager.NativeViewContent("key1", mChildA),
-                        new FeedListContentManager.NativeViewContent("key2", mChildB),
+                        new FeedListContentManager.NativeViewContent("c/key1", mChildA),
+                        new FeedListContentManager.NativeViewContent("c/key2", mChildB),
                 }));
         doReturn(0).when(mLayoutManager).findFirstVisibleItemPosition();
         doReturn(1).when(mLayoutManager).findLastVisibleItemPosition();
@@ -124,8 +125,58 @@ public class FeedSliceViewTrackerTest {
 
         mTracker.onPreDraw();
 
-        verify(mObserver).sliceVisible(eq("key1"));
-        verify(mObserver).sliceVisible(eq("key2"));
+        verify(mObserver).feedContentVisible();
+        verify(mObserver).sliceVisible(eq("c/key1"));
+        verify(mObserver).sliceVisible(eq("c/key2"));
+
+        mTracker.onPreDraw(); // Does not repeat call to sliceVisible().
+    }
+
+    @Test
+    @SmallTest
+    public void testOnPreDraw_AfterClearReportsAgain() {
+        mContentManager.addContents(0,
+                Arrays.asList(new FeedListContentManager.FeedContent[] {
+                        new FeedListContentManager.NativeViewContent("c/key1", mChildA),
+                        new FeedListContentManager.NativeViewContent("c/key2", mChildB),
+                }));
+        doReturn(0).when(mLayoutManager).findFirstVisibleItemPosition();
+        doReturn(1).when(mLayoutManager).findLastVisibleItemPosition();
+        doReturn(mChildA).when(mLayoutManager).findViewByPosition(eq(0));
+        doReturn(mChildB).when(mLayoutManager).findViewByPosition(eq(1));
+
+        doReturn(true).when(mTracker).isViewVisible(mChildA);
+        doReturn(true).when(mTracker).isViewVisible(mChildB);
+
+        mTracker.onPreDraw();
+        mTracker.clear();
+        mTracker.onPreDraw(); // repeats observer calls.
+
+        verify(mObserver, times(2)).feedContentVisible();
+        verify(mObserver, times(2)).sliceVisible(eq("c/key1"));
+        verify(mObserver, times(2)).sliceVisible(eq("c/key2"));
+    }
+
+    @Test
+    @SmallTest
+    public void testOnPreDraw_IgnoresNonContentViews() {
+        mContentManager.addContents(0,
+                Arrays.asList(new FeedListContentManager.FeedContent[] {
+                        new FeedListContentManager.NativeViewContent("non-content-key1", mChildA),
+                        new FeedListContentManager.NativeViewContent("non-content-key2", mChildB),
+                }));
+        doReturn(0).when(mLayoutManager).findFirstVisibleItemPosition();
+        doReturn(1).when(mLayoutManager).findLastVisibleItemPosition();
+        doReturn(mChildA).when(mLayoutManager).findViewByPosition(eq(0));
+        doReturn(mChildB).when(mLayoutManager).findViewByPosition(eq(1));
+
+        doReturn(true).when(mTracker).isViewVisible(mChildA);
+        doReturn(true).when(mTracker).isViewVisible(mChildB);
+
+        mTracker.onPreDraw();
+
+        verify(mObserver, times(0)).feedContentVisible();
+        verify(mObserver, times(0)).sliceVisible(any());
 
         mTracker.onPreDraw(); // Does not repeat call to sliceVisible().
     }
@@ -135,8 +186,8 @@ public class FeedSliceViewTrackerTest {
     public void testOnPreDraw_OnlyOneVisible() {
         mContentManager.addContents(0,
                 Arrays.asList(new FeedListContentManager.FeedContent[] {
-                        new FeedListContentManager.NativeViewContent("key1", mChildA),
-                        new FeedListContentManager.NativeViewContent("key2", mChildB),
+                        new FeedListContentManager.NativeViewContent("c/key1", mChildA),
+                        new FeedListContentManager.NativeViewContent("c/key2", mChildB),
                 }));
         doReturn(0).when(mLayoutManager).findFirstVisibleItemPosition();
         doReturn(1).when(mLayoutManager).findLastVisibleItemPosition();
@@ -148,7 +199,7 @@ public class FeedSliceViewTrackerTest {
 
         mTracker.onPreDraw();
 
-        verify(mObserver).sliceVisible(eq("key2"));
+        verify(mObserver).sliceVisible(eq("c/key2"));
     }
 
     @Test
@@ -156,8 +207,8 @@ public class FeedSliceViewTrackerTest {
     public void testOnPreDraw_EmptyRecyclerView() {
         mContentManager.addContents(0,
                 Arrays.asList(new FeedListContentManager.FeedContent[] {
-                        new FeedListContentManager.NativeViewContent("key1", mChildA),
-                        new FeedListContentManager.NativeViewContent("key2", mChildB),
+                        new FeedListContentManager.NativeViewContent("c/key1", mChildA),
+                        new FeedListContentManager.NativeViewContent("c/key2", mChildB),
                 }));
         doReturn(RecyclerView.NO_POSITION).when(mLayoutManager).findFirstVisibleItemPosition();
         doReturn(RecyclerView.NO_POSITION).when(mLayoutManager).findLastVisibleItemPosition();

@@ -206,7 +206,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   // and metrics logging,
   virtual uint32_t GetBluetoothClass() const = 0;
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   // Returns the transport type of the device. Some devices only support one
   // of BR/EDR or LE, and some support both.
   virtual BluetoothTransport GetType() const = 0;

@@ -13,13 +13,15 @@ namespace {
 using history::DeletionInfo;
 
 TEST(ShouldClearFeed, ShouldClearFeed) {
-  EXPECT_TRUE(ShouldClearFeed(DeletionInfo::ForAllHistory()));
-  EXPECT_FALSE(ShouldClearFeed(DeletionInfo::ForUrls(
-      {
-          history::URLRow(GURL("http://url1")),
-          history::URLRow(GURL("http://url2")),
-      },
-      /*favicon_urls=*/{})));
+  EXPECT_TRUE(ShouldClearFeed(true, DeletionInfo::ForAllHistory()));
+  EXPECT_FALSE(
+      ShouldClearFeed(true, DeletionInfo::ForUrls(
+                                {
+                                    history::URLRow(GURL("http://url1")),
+                                    history::URLRow(GURL("http://url2")),
+                                },
+                                /*favicon_urls=*/{})));
+  EXPECT_FALSE(ShouldClearFeed(false, DeletionInfo::ForAllHistory()));
 }
 
 }  // namespace

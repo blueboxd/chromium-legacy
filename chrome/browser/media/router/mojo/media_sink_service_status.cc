@@ -32,9 +32,9 @@ base::StringPiece ExtractUUID(const base::StringPiece& sink_id) {
     return sink_id;
 
   size_t prefix_length = 0;
-  if (sink_id.starts_with(kCastPrefix))
+  if (base::StartsWith(sink_id, kCastPrefix))
     prefix_length = sizeof(kCastPrefix) - 1;
-  if (sink_id.starts_with(kDialPrefix))
+  if (base::StartsWith(sink_id, kDialPrefix))
     prefix_length = sizeof(kDialPrefix) - 1;
 
   if (prefix_length == 0)

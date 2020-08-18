@@ -17,7 +17,18 @@ namespace password_manager {
 class AffiliationFetcherDelegate {
  public:
   // Encapsulates the response to an affiliations request.
-  typedef std::vector<AffiliatedFacets> Result;
+  struct Result {
+    // copyable and movable
+    Result();
+    Result(const Result& other);
+    Result(Result&& other);
+    Result& operator=(const Result& other);
+    Result& operator=(Result&& other);
+    ~Result();
+
+    std::vector<AffiliatedFacets> affiliations;
+    std::vector<GroupedFacets> groupings;
+  };
 
   // Called when affiliation information has been successfully retrieved. The
   // |result| will contain at most as many equivalence class as facet URIs in

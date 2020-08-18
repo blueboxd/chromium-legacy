@@ -26,7 +26,12 @@ namespace crypto {
 // Prefer the latter in new code.
 class CRYPTO_EXPORT Aead {
  public:
-  enum AeadAlgorithm { AES_128_CTR_HMAC_SHA256, AES_256_GCM, AES_256_GCM_SIV };
+  enum AeadAlgorithm {
+    AES_128_CTR_HMAC_SHA256,
+    AES_256_GCM,
+    AES_256_GCM_SIV,
+    CHACHA20_POLY1305
+  };
 
   explicit Aead(AeadAlgorithm algorithm);
   Aead(const Aead&) = delete;

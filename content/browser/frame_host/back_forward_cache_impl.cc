@@ -9,6 +9,7 @@
 
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/render_frame_host_delegate.h"
@@ -648,7 +649,7 @@ bool BackForwardCacheImpl::IsAllowed(const GURL& current_url) {
   const auto& entry = allowed_urls_.find(current_url.host());
   if (entry != allowed_urls_.end()) {
     for (auto allowed_path : entry->second) {
-      if (current_url.path_piece().starts_with(allowed_path))
+      if (base::StartsWith(current_url.path_piece(), allowed_path))
         return true;
     }
   }

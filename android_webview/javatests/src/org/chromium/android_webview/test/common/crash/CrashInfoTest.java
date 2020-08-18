@@ -103,6 +103,7 @@ public class CrashInfoTest {
     public void testSerializeToJson() throws Throwable {
         final String jsonObjectString =
                 "{'crash-local-id':'123456abc','crash-capture-time':1234567890,"
+                + "'crash-is-hidden':false,"
                 + "'crash-keys':{'app-package-name':'org.test.package'}}";
         JSONObject expectedJsonObject = new JSONObject(jsonObjectString);
 

@@ -7,6 +7,7 @@
 #include "base/base64.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "components/link_header_util/link_header_util.h"
 #include "content/browser/loader/cross_origin_read_blocking_checker.h"
@@ -530,7 +531,7 @@ bool CanUseEntry(const PrefetchedSignedExchangeCacheEntry& entry,
 // This method support the form of "sha256-<base64-hash-value>".
 bool ExtractSHA256HashValueFromString(const base::StringPiece value,
                                       net::SHA256HashValue* out) {
-  if (!value.starts_with("sha256-"))
+  if (!base::StartsWith(value, "sha256-"))
     return false;
   const base::StringPiece base64_str = value.substr(7);
   std::string decoded;

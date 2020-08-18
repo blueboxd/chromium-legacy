@@ -354,7 +354,7 @@ const base::Feature kOmniboxKeywordSearchButton{
 // Enables using an Android RecyclerView to render the suggestions dropdown
 // instead of a ListView.
 const base::Feature kOmniboxSuggestionsRecyclerView{
-    "OmniboxSuggestionsRecyclerView", base::FEATURE_DISABLED_BY_DEFAULT};
+    "OmniboxSuggestionsRecyclerView", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Allows long Omnibox suggestions to wrap around to next line.
 const base::Feature kOmniboxSuggestionsWrapAround{
@@ -373,7 +373,7 @@ const base::Feature kOmniboxAssistantVoiceSearch{
 // When enabled, provides an omnibox context menu option that prevents URL
 // elisions.
 const base::Feature kOmniboxContextMenuShowFullUrls{
-    "OmniboxContextMenuShowFullUrls", base::FEATURE_DISABLED_BY_DEFAULT};
+    "OmniboxContextMenuShowFullUrls", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Feature used to reveal the path, query and ref from steady state URLs
 // on hover.

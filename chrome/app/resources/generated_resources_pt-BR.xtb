@@ -1326,7 +1326,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="2564653188463346023">Verificação ortográfica aprimorada</translation>
 <translation id="2566124945717127842">Use a função "Powerwash" para redefinir seu dispositivo <ph name="IDS_SHORT_PRODUCT_NAME" /> para as condições de fábrica.</translation>
 <translation id="2568774940984945469">Recipiente da barra de informações</translation>
-<translation id="257088987046510401">Temas</translation>
 <translation id="2571655996835834626">Alterar configurações que controlam o acesso de sites a recursos como cookies, JavaScript, plug-ins, geolocalização, microfone, câmera etc.</translation>
 <translation id="2572032849266859634">Foi concedido acesso apenas de leitura a <ph name="VOLUME_NAME" />.</translation>
 <translation id="2575247648642144396">Este ícone ficará visível quando a extensão puder agir na página atual. Para usar essa extensão, clique no ícone ou pressione <ph name="EXTENSION_SHORTCUT" />.</translation>
@@ -3355,7 +3354,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="5115338116365931134">SSO</translation>
 <translation id="5116628073786783676">Sal&amp;var áudio como...</translation>
 <translation id="5117139026559873716">Desconecte o smartphone do <ph name="DEVICE_TYPE" />. Eles não se conectarão mais um ao outro automaticamente.</translation>
-<translation id="5117427536932535467">Temas e planos de fundo</translation>
 <translation id="5117930984404104619">Monitorar o comportamento de outras extensões, incluindo URLs visitados</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Seu disco rígido está cheio. Salve em outro local ou libere mais espaço no disco rígido.</translation>
@@ -4303,6 +4301,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6277105963844135994">Tempo limite de rede</translation>
 <translation id="6277518330158259200">T&amp;irar captura de tela</translation>
 <translation id="6278057325678116358">Usar GTK+</translation>
+<translation id="6278428485366576908">Tema</translation>
 <translation id="6278776436938569440">Mudar local</translation>
 <translation id="6279183038361895380">Pressione |<ph name="ACCELERATOR" />| para exibir seu cursor</translation>
 <translation id="6280215091796946657">Fazer login com outra conta</translation>

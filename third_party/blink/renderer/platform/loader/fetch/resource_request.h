@@ -224,6 +224,9 @@ class PLATFORM_EXPORT ResourceRequestHead {
   bool HasUserGesture() const { return has_user_gesture_; }
   void SetHasUserGesture(bool);
 
+  bool HasTextFragmentToken() const { return has_text_fragment_token_; }
+  void SetHasTextFragmentToken(bool);
+
   // True if request shuold be downloaded to blob.
   bool DownloadToBlob() const { return download_to_blob_; }
   void SetDownloadToBlob(bool download_to_blob) {
@@ -488,6 +491,7 @@ class PLATFORM_EXPORT ResourceRequestHead {
   bool report_upload_progress_ : 1;
   bool report_raw_headers_ : 1;
   bool has_user_gesture_ : 1;
+  bool has_text_fragment_token_ : 1;
   bool download_to_blob_ : 1;
   bool use_stream_on_response_ : 1;
   bool keepalive_ : 1;

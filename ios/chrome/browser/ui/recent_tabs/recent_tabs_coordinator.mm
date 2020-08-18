@@ -180,14 +180,17 @@
 }
 
 - (void)dismissRecentTabs {
+  // Stopping this coordinator reveals the tab UI underneath.
   self.completion = nil;
   [self stop];
 }
 
 - (void)showActiveRegularTabFromRecentTabs {
-  // Stopping this coordinator reveals the tab UI underneath.
-  self.completion = nil;
-  [self stop];
+  [self dismissRecentTabs];
+}
+
+- (void)showActiveIncognitoTabFromRecentTabs {
+  [self dismissRecentTabs];
 }
 
 - (void)showHistoryFromRecentTabs {

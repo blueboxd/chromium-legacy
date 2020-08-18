@@ -71,7 +71,7 @@ class MediaNotificationService
       media_session::mojom::MediaSessionAction action) override;
 
   // MediaNotificationContainerObserver implementation.
-  void OnContainerExpanded(bool expanded) override {}
+  void OnContainerSizeChanged() override {}
   void OnContainerMetadataChanged() override {}
   void OnContainerActionsChanged() override {}
   void OnContainerClicked(const std::string& id) override;

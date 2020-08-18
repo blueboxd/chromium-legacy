@@ -273,6 +273,9 @@ class AddressComponent {
     return sorted_normalized_tokens_;
   }
 
+  // Recursively unsets all subcomponents.
+  void RecursivelyUnsetSubcomponents();
+
 #ifdef UNIT_TEST
   // Initiates the formatting of the values from the subcomponents.
   void FormatValueFromSubcomponentsForTesting() {

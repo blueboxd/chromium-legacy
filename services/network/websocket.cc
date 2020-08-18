@@ -393,6 +393,7 @@ WebSocket::WebSocket(
     int32_t frame_id,
     const url::Origin& origin,
     uint32_t options,
+    net::NetworkTrafficAnnotationTag traffic_annotation,
     HasRawHeadersAccess has_raw_headers_access,
     mojo::PendingRemote<mojom::WebSocketHandshakeClient> handshake_client,
     mojo::PendingRemote<mojom::AuthenticationHandler> auth_handler,
@@ -408,6 +409,7 @@ WebSocket::WebSocket(
       pending_connection_tracker_(std::move(pending_connection_tracker)),
       delay_(delay),
       options_(options),
+      traffic_annotation_(traffic_annotation),
       child_id_(child_id),
       frame_id_(frame_id),
       origin_(std::move(origin)),
@@ -609,7 +611,7 @@ void WebSocket::AddChannel(
   }
   channel_->SendAddChannelRequest(socket_url, requested_protocols, origin_,
                                   site_for_cookies, isolation_info,
-                                  headers_to_pass);
+                                  headers_to_pass, traffic_annotation_);
 }
 
 void WebSocket::OnWritable(MojoResult result,

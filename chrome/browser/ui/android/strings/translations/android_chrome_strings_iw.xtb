@@ -204,7 +204,6 @@
 <translation id="2537178555904266562">אירעה שגיאה בסנכרון הסיסמאות</translation>
 <translation id="2546283357679194313">‏נתוני אתר וקובצי Cookie</translation>
 <translation id="2567385386134582609">תמונה</translation>
-<translation id="257088987046510401">ערכות נושא</translation>
 <translation id="2581165646603367611">‏פעולה זו תמחק את קובצי ה-Cookie, את המטמון ונתונים אחרים של אתרים ש-Chrome לא מחשיב כחשובים.</translation>
 <translation id="2587052924345400782">יש גרסה חדשה יותר</translation>
 <translation id="2593272815202181319">רוחב אחיד</translation>
@@ -678,6 +677,7 @@
 <translation id="624789221780392884">העדכון מוכן</translation>
 <translation id="6255999984061454636">הצעות לתוכן</translation>
 <translation id="6277522088822131679">אירעה בעיה בעת הדפסת הדף. נסה שוב.</translation>
+<translation id="6278428485366576908">עיצוב</translation>
 <translation id="6292420053234093573">‏השימוש ב-Chrome מבטא הסכמה ל<ph name="BEGIN_LINK1" />תנאים ולהגבלות של Google<ph name="END_LINK1" /> ול<ph name="BEGIN_LINK2" />תנאים ולהגבלות הנוספים של Google Chrome ו-Chrome OS<ph name="END_LINK2" />.</translation>
 <translation id="629730747756840877">חשבון</translation>
 <translation id="6297765934698848803">המצלמה הושבתה במכשיר, בהתאם להגדרות שנקבעו על ידי הארגון שמנהל את המכשיר.</translation>

@@ -5,5 +5,3 @@ tbarzic@chromium.org
 xiyuan@chromium.org
 
 per-file *login*=file://ash/login/OWNERS
-
-# COMPONENT: UI>Shell>Shelf

@@ -6,8 +6,11 @@
 
 #include "chrome/browser/ui/browser_dialogs.h"
 
+#include "base/util/values/values_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_destroyer.h"
+#include "chrome/browser/ui/hats/hats_service.h"
+#include "chrome/browser/ui/hats/hats_service_factory.h"
 #include "chrome/browser/ui/views/frame/app_menu_button.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
@@ -15,7 +18,9 @@
 #include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_isolated_world_ids.h"
+#include "chrome/common/pref_names.h"
 #include "components/constrained_window/constrained_window_views.h"
+#include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -225,6 +230,11 @@ void HatsNextWebDialog::OnSurveyStateUpdateReceived(std::string state) {
   loading_timer_.AbandonAndStop();
 
   if (state == "loaded") {
+    // Record that the survey was shown, and display the widget.
+    auto* service =
+        HatsServiceFactory::GetForProfile(browser_->profile(), false);
+    DCHECK(service);
+    service->RecordSurveyAsShown(trigger_id_);
     ShowWidget();
   } else if (state == "close") {
     CloseWidget();

@@ -28,7 +28,7 @@ class InteractionMediaQueriesDynamicTest : public ContentBrowserTest {
 }  //  namespace
 
 // Disable test on Android ASAN bot: crbug.com/807420
-#if defined(OS_WIN) || defined(OS_LINUX) || \
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS) || \
     (defined(OS_ANDROID) && !defined(ADDRESS_SANITIZER))
 IN_PROC_BROWSER_TEST_F(InteractionMediaQueriesDynamicTest,
                        PointerMediaQueriesDynamic) {

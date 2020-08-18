@@ -111,7 +111,8 @@ SkColor DrawingDisplayItem::BackgroundColor(uint64_t& area) const {
       default:
         continue;
     }
-    area = static_cast<uint64_t>(item_rect.width() * item_rect.height());
+    area =
+        base::saturated_cast<uint64_t>(item_rect.width() * item_rect.height());
     return flags.getColor();
   }
   return SK_ColorTRANSPARENT;

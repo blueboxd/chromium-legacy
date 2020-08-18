@@ -163,7 +163,7 @@ HeapVector<GPUBufferOrArrayBuffer> GPUDevice::createBufferMapped(
     const GPUBufferDescriptor* descriptor,
     ExceptionState& exception_state) {
   AddConsoleWarning(
-      "createBufferMapped is deprecated: use mapAtCreation instead");
+      "createBufferMapped is deprecated: use mappedAtCreation instead");
 
   GPUBuffer* gpu_buffer;
   DOMArrayBuffer* array_buffer;

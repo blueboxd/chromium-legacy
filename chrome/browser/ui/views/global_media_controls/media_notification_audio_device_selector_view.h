@@ -15,14 +15,14 @@ namespace views {
 class Button;
 }  // namespace views
 
-class MediaNotificationContainerImpl;
+class MediaNotificationAudioDeviceSelectorViewDelegate;
 class MediaNotificationService;
 
 class MediaNotificationAudioDeviceSelectorView : public views::View,
                                                  public views::ButtonListener {
  public:
   MediaNotificationAudioDeviceSelectorView(
-      MediaNotificationContainerImpl* container,
+      MediaNotificationAudioDeviceSelectorViewDelegate* delegate,
       MediaNotificationService* service,
       gfx::Size size,
       const std::string& current_device_id);
@@ -55,9 +55,7 @@ class MediaNotificationAudioDeviceSelectorView : public views::View,
   void CreateDeviceButton(
       const media::AudioDeviceDescription& device_description);
 
-  // The parent container
-  MediaNotificationContainerImpl* const container_;
-
+  MediaNotificationAudioDeviceSelectorViewDelegate* const delegate_;
   MediaNotificationService* const service_;
 
   std::unique_ptr<MediaNotificationDeviceProvider::

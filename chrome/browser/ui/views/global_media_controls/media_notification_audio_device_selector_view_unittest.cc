@@ -9,9 +9,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/media/router/test/mock_media_router.h"
-#include "chrome/browser/ui/global_media_controls/media_notification_container_impl.h"
 #include "chrome/browser/ui/global_media_controls/media_notification_device_provider.h"
 #include "chrome/browser/ui/global_media_controls/media_notification_service.h"
+#include "chrome/browser/ui/views/global_media_controls/media_notification_audio_device_selector_view_delegate.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/views/chrome_views_test_base.h"
 #include "media/audio/audio_device_description.h"
@@ -44,21 +44,14 @@ class MockMediaNotificationDeviceProvider
   media::AudioDeviceDescriptions device_descriptions;
 };
 
-class MockMediaNotificationContainerImpl
-    : public MediaNotificationContainerImpl {
+class MockMediaNotificationAudioDeviceSelectorViewDelegate
+    : public MediaNotificationAudioDeviceSelectorViewDelegate {
  public:
-  MOCK_METHOD(void,
-              AddObserver,
-              (MediaNotificationContainerObserver * observer),
-              (override));
-  MOCK_METHOD(void,
-              RemoveObserver,
-              (MediaNotificationContainerObserver * observer),
-              (override));
   MOCK_METHOD(void,
               OnAudioSinkChosen,
               (const std::string& sink_id),
               (override));
+  MOCK_METHOD(void, OnAudioDeviceSelectorViewSizeChanged, (), (override));
 };
 
 }  // anonymous namespace
@@ -102,8 +95,9 @@ TEST_F(MediaNotificationAudioDeviceSelectorViewTest, DeviceButtonsCreated) {
   provider_->AddDevice("Earbuds", "3");
   service_->set_device_provider_for_testing(std::move(provider_));
 
+  MockMediaNotificationAudioDeviceSelectorViewDelegate delegate;
   view_ = std::make_unique<MediaNotificationAudioDeviceSelectorView>(
-      nullptr, service_.get(), gfx::Size(), "1");
+      &delegate, service_.get(), gfx::Size(), "1");
 
   std::vector<std::string> button_texts;
   ASSERT_TRUE(view_->device_button_container_ != nullptr);
@@ -128,13 +122,13 @@ TEST_F(MediaNotificationAudioDeviceSelectorViewTest,
   provider_->AddDevice("Earbuds", "3");
   service_->set_device_provider_for_testing(std::move(provider_));
 
-  MockMediaNotificationContainerImpl container;
-  EXPECT_CALL(container, OnAudioSinkChosen("1")).Times(1);
-  EXPECT_CALL(container, OnAudioSinkChosen("2")).Times(1);
-  EXPECT_CALL(container, OnAudioSinkChosen("3")).Times(1);
+  MockMediaNotificationAudioDeviceSelectorViewDelegate delegate;
+  EXPECT_CALL(delegate, OnAudioSinkChosen("1")).Times(1);
+  EXPECT_CALL(delegate, OnAudioSinkChosen("2")).Times(1);
+  EXPECT_CALL(delegate, OnAudioSinkChosen("3")).Times(1);
 
   view_ = std::make_unique<MediaNotificationAudioDeviceSelectorView>(
-      &container, service_.get(), gfx::Size(), "1");
+      &delegate, service_.get(), gfx::Size(), "1");
 
   for (views::View* child : view_->device_button_container_->children()) {
     view_->ButtonPressed(
@@ -152,9 +146,9 @@ TEST_F(MediaNotificationAudioDeviceSelectorViewTest, CurrentDeviceHighlighted) {
   provider_->AddDevice("Earbuds", "3");
   service_->set_device_provider_for_testing(std::move(provider_));
 
-  MockMediaNotificationContainerImpl container;
+  MockMediaNotificationAudioDeviceSelectorViewDelegate delegate;
   view_ = std::make_unique<MediaNotificationAudioDeviceSelectorView>(
-      &container, service_.get(), gfx::Size(), "3");
+      &delegate, service_.get(), gfx::Size(), "3");
 
   auto* first_button = static_cast<views::MdTextButton*>(
       view_->device_button_container_->children().front());
@@ -170,9 +164,9 @@ TEST_F(MediaNotificationAudioDeviceSelectorViewTest,
   provider_->AddDevice("Earbuds", "3");
   service_->set_device_provider_for_testing(std::move(provider_));
 
-  MockMediaNotificationContainerImpl container;
+  MockMediaNotificationAudioDeviceSelectorViewDelegate delegate;
   view_ = std::make_unique<MediaNotificationAudioDeviceSelectorView>(
-      &container, service_.get(), gfx::Size(), "1");
+      &delegate, service_.get(), gfx::Size(), "1");
 
   auto button_is_highlighted = [](views::View* view) {
     return static_cast<views::MdTextButton*>(view)->GetProminent();

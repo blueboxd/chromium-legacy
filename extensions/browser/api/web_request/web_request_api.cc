@@ -215,9 +215,9 @@ ExtensionWebRequestEventRouter::EventTypes GetEventTypeFromEventName(
       strlen(webview::kWebViewEventPrefix);
 
   // Canonicalize the |event_name| to the request stage.
-  if (event_name.starts_with(kWebRequestEventPrefix))
+  if (base::StartsWith(event_name, kWebRequestEventPrefix))
     event_name.remove_prefix(kWebRequestEventPrefixLen);
-  else if (event_name.starts_with(webview::kWebViewEventPrefix))
+  else if (base::StartsWith(event_name, webview::kWebViewEventPrefix))
     event_name.remove_prefix(kWebViewEventPrefixLen);
   else
     return ExtensionWebRequestEventRouter::kInvalidEvent;

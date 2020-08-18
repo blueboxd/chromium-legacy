@@ -25,6 +25,7 @@
 #include "chrome/browser/nearby_sharing/certificates/nearby_share_certificate_manager_impl.h"
 #include "chrome/browser/nearby_sharing/certificates/test_util.h"
 #include "chrome/browser/nearby_sharing/common/nearby_share_prefs.h"
+#include "chrome/browser/nearby_sharing/constants.h"
 #include "chrome/browser/nearby_sharing/contacts/fake_nearby_share_contact_manager.h"
 #include "chrome/browser/nearby_sharing/contacts/nearby_share_contact_manager_impl.h"
 #include "chrome/browser/nearby_sharing/fake_nearby_connection.h"
@@ -172,6 +173,8 @@ class MockShareTargetDiscoveredCallback : public ShareTargetDiscoveredCallback {
 };
 
 namespace {
+
+constexpr base::TimeDelta kDelta = base::TimeDelta::FromMilliseconds(100);
 
 const char kServiceId[] = "NearbySharing";
 const char kDeviceName[] = "test_device_name";
@@ -1570,6 +1573,23 @@ TEST_F(NearbySharingServiceImplTest,
   service_->UnregisterReceiveSurface(&callback);
 }
 
+TEST_F(NearbySharingServiceImplTest, IncomingConnection_TimedOut) {
+  NiceMock<MockTransferUpdateCallback> callback;
+  ShareTarget share_target = SetUpIncomingConnection(callback);
+  EXPECT_FALSE(connection_.IsClosed());
+
+  EXPECT_CALL(callback, OnTransferUpdate(testing::_, testing::_))
+      .WillOnce(testing::Invoke(
+          [](const ShareTarget& share_target, TransferMetadata metadata) {
+            EXPECT_EQ(TransferMetadata::Status::kTimedOut, metadata.status());
+            EXPECT_TRUE(metadata.is_final_status());
+          }));
+
+  task_environment_.FastForwardBy(kReadResponseFrameTimeout +
+                                  kIncomingRejectionDelay + kDelta);
+  EXPECT_TRUE(connection_.IsClosed());
+}
+
 TEST_F(NearbySharingServiceImplTest,
        IncomingConnection_ClosedWaitingLocalConfirmation) {
   NiceMock<MockTransferUpdateCallback> callback;
@@ -1892,8 +1912,7 @@ TEST_F(NearbySharingServiceImplTest, RejectValidShareTarget) {
   ExpectConnectionResponseFrame(
       sharing::nearby::ConnectionResponseFrame::REJECT);
 
-  // TODO(himanshujaju) - Extract out to a common constant b/w impl and test.
-  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(2));
+  task_environment_.FastForwardBy(kIncomingRejectionDelay + kDelta);
   EXPECT_TRUE(connection_.IsClosed());
 
   // To avoid UAF in OnIncomingTransferUpdate().

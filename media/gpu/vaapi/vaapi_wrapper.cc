@@ -419,9 +419,8 @@ bool VADisplayState::InitializeOnce() {
       break;
     case gl::kGLImplementationEGLANGLE:
 #if defined(USE_X11)
-      va_display_ = vaGetDisplay(gfx::GetXDisplay());
-      if (vaDisplayIsValid(va_display_))
-        break;
+      if (!features::IsUsingOzonePlatform())
+        va_display_ = vaGetDisplay(gfx::GetXDisplay());
 #endif  // USE_X11
       break;
     // Cannot infer platform from GL, try all available displays
@@ -447,11 +446,24 @@ bool VADisplayState::InitializeOnce() {
     return false;
   }
 
-  // Set VA logging level to enable error messages, unless already set
+  // Set VA logging level and driver name, unless already set.
   constexpr char libva_log_level_env[] = "LIBVA_MESSAGING_LEVEL";
   std::unique_ptr<base::Environment> env(base::Environment::Create());
   if (!env->HasVar(libva_log_level_env))
     env->SetVar(libva_log_level_env, "1");
+
+#if defined(USE_X11)
+  if (gl::GetGLImplementation() == gl::kGLImplementationEGLANGLE) {
+    DCHECK(!features::IsUsingOzonePlatform());
+    constexpr char libva_driver_impl_env[] = "LIBVA_DRIVER_NAME";
+    // TODO(crbug/1116703) The libva intel-media driver has a known segfault in
+    // vaPutSurface, so until this is fixed, fall back to the i965 driver. There
+    // is discussion of the issue here:
+    // https://github.com/intel/media-driver/issues/818
+    if (!env->HasVar(libva_driver_impl_env))
+      env->SetVar(libva_driver_impl_env, "i965");
+  }
+#endif  // USE_X11
 
   // The VAAPI version.
   int major_version, minor_version;

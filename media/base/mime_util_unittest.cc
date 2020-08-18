@@ -27,6 +27,8 @@ namespace media {
 namespace internal {
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
+// TODO(https://crbug.com/1117275): Remove conditioning of kUsePropCodecs when
+// testing *parsing* functions.
 const bool kUsePropCodecs = true;
 #else
 const bool kUsePropCodecs = false;
@@ -295,6 +297,69 @@ TEST(MimeUtilTest, ParseVideoCodecString) {
                                      &out_colorspace));
 }
 
+// Basic smoke test for API. More exhaustive codec string testing found in
+// media_canplaytype_browsertest.cc.
+TEST(MimeUtilTest, ParseVideoCodecString_NoMimeType) {
+  bool out_is_ambiguous;
+  VideoCodec out_codec;
+  VideoCodecProfile out_profile;
+  uint8_t out_level;
+  VideoColorSpace out_colorspace;
+
+  // Invalid to give empty codec without a mime type.
+  EXPECT_FALSE(ParseVideoCodecString("", "", &out_is_ambiguous, &out_codec,
+                                     &out_profile, &out_level,
+                                     &out_colorspace));
+
+  // Valid AVC string whenever proprietary codecs are supported.
+  EXPECT_TRUE(ParseVideoCodecString("", "avc3.42E01E", &out_is_ambiguous,
+                                    &out_codec, &out_profile, &out_level,
+                                    &out_colorspace));
+  EXPECT_FALSE(out_is_ambiguous);
+  EXPECT_EQ(kCodecH264, out_codec);
+  EXPECT_EQ(H264PROFILE_BASELINE, out_profile);
+  EXPECT_EQ(30, out_level);
+  EXPECT_EQ(VideoColorSpace::REC709(), out_colorspace);
+
+  // Valid VP9 string.
+  EXPECT_TRUE(ParseVideoCodecString("", "vp09.00.10.08", &out_is_ambiguous,
+                                    &out_codec, &out_profile, &out_level,
+                                    &out_colorspace));
+  EXPECT_FALSE(out_is_ambiguous);
+  EXPECT_EQ(kCodecVP9, out_codec);
+  EXPECT_EQ(VP9PROFILE_PROFILE0, out_profile);
+  EXPECT_EQ(10, out_level);
+  EXPECT_EQ(VideoColorSpace::REC709(), out_colorspace);
+
+  EXPECT_TRUE(ParseVideoCodecString("", "vp09.02.10.10.01.06.06.06",
+                                    &out_is_ambiguous, &out_codec, &out_profile,
+                                    &out_level, &out_colorspace));
+  EXPECT_FALSE(out_is_ambiguous);
+  EXPECT_EQ(kCodecVP9, out_codec);
+  EXPECT_EQ(VP9PROFILE_PROFILE2, out_profile);
+  EXPECT_EQ(10, out_level);
+  EXPECT_EQ(VideoColorSpace::REC601(), out_colorspace);
+
+  // Ambiguous AVC string (when proprietary codecs are supported).
+  EXPECT_TRUE(ParseVideoCodecString("", "avc3", &out_is_ambiguous, &out_codec,
+                                    &out_profile, &out_level, &out_colorspace));
+  EXPECT_TRUE(out_is_ambiguous);
+  EXPECT_EQ(kCodecH264, out_codec);
+  EXPECT_EQ(VIDEO_CODEC_PROFILE_UNKNOWN, out_profile);
+  EXPECT_EQ(0, out_level);
+  EXPECT_EQ(VideoColorSpace::REC709(), out_colorspace);
+
+  // Audio codecs codec is not valid for video API.
+  EXPECT_FALSE(ParseVideoCodecString("", "opus", &out_is_ambiguous, &out_codec,
+                                     &out_profile, &out_level,
+                                     &out_colorspace));
+
+  // Made up codec is invalid.
+  EXPECT_FALSE(ParseVideoCodecString("", "bogus", &out_is_ambiguous, &out_codec,
+                                     &out_profile, &out_level,
+                                     &out_colorspace));
+}
+
 TEST(MimeUtilTest, ParseAudioCodecString) {
   bool out_is_ambiguous;
   AudioCodec out_codec;
@@ -350,6 +415,79 @@ TEST(MimeUtilTest, ParseAudioCodecString) {
   // Made up codec is also not valid.
   EXPECT_FALSE(ParseAudioCodecString("audio/webm", "bogus", &out_is_ambiguous,
                                      &out_codec));
+}
+
+TEST(MimeUtilTest, ParseAudioCodecString_NoMimeType) {
+  bool out_is_ambiguous;
+  AudioCodec out_codec;
+
+  // Invalid to give empty codec without a mime type.
+  EXPECT_FALSE(ParseAudioCodecString("", "", &out_is_ambiguous, &out_codec));
+
+  // Valid Opus string.
+  EXPECT_TRUE(ParseAudioCodecString("", "opus", &out_is_ambiguous, &out_codec));
+  EXPECT_FALSE(out_is_ambiguous);
+  EXPECT_EQ(kCodecOpus, out_codec);
+
+  // Valid AAC string when proprietary codecs are supported.
+  EXPECT_TRUE(
+      ParseAudioCodecString("", "mp4a.40.2", &out_is_ambiguous, &out_codec));
+  EXPECT_FALSE(out_is_ambiguous);
+  EXPECT_EQ(kCodecAAC, out_codec);
+
+  // Valid FLAC string. Neither decoding nor demuxing is proprietary.
+  EXPECT_TRUE(ParseAudioCodecString("", "flac", &out_is_ambiguous, &out_codec));
+  EXPECT_FALSE(out_is_ambiguous);
+  EXPECT_EQ(kCodecFLAC, out_codec);
+
+  // Ambiguous AAC string.
+  // TODO(chcunningha): This can probably be allowed. I think we treat all
+  // MPEG4_AAC the same.
+  EXPECT_TRUE(
+      ParseAudioCodecString("", "mp4a.40", &out_is_ambiguous, &out_codec));
+  if (kUsePropCodecs) {
+    EXPECT_TRUE(out_is_ambiguous);
+    EXPECT_EQ(kCodecAAC, out_codec);
+  }
+
+  // Video codec is not valid for audio API.
+  EXPECT_FALSE(ParseAudioCodecString("", "vp09.00.10.08", &out_is_ambiguous,
+                                     &out_codec));
+
+  // Made up codec is also not valid.
+  EXPECT_FALSE(
+      ParseAudioCodecString("", "bogus", &out_is_ambiguous, &out_codec));
+}
+
+// MP3 is a weird case where we allow either the mime type, codec string, or
+// both, and there are several valid codec strings.
+TEST(MimeUtilTest, ParseAudioCodecString_Mp3) {
+  bool out_is_ambiguous;
+  AudioCodec out_codec;
+
+  EXPECT_TRUE(ParseAudioCodecString("audio/mpeg", "mp3", &out_is_ambiguous,
+                                    &out_codec));
+  EXPECT_FALSE(out_is_ambiguous);
+  EXPECT_EQ(kCodecMP3, out_codec);
+
+  EXPECT_TRUE(
+      ParseAudioCodecString("audio/mpeg", "", &out_is_ambiguous, &out_codec));
+  EXPECT_FALSE(out_is_ambiguous);
+  EXPECT_EQ(kCodecMP3, out_codec);
+
+  EXPECT_TRUE(ParseAudioCodecString("", "mp3", &out_is_ambiguous, &out_codec));
+  EXPECT_FALSE(out_is_ambiguous);
+  EXPECT_EQ(kCodecMP3, out_codec);
+
+  EXPECT_TRUE(
+      ParseAudioCodecString("", "mp4a.69", &out_is_ambiguous, &out_codec));
+  EXPECT_FALSE(out_is_ambiguous);
+  EXPECT_EQ(kCodecMP3, out_codec);
+
+  EXPECT_TRUE(
+      ParseAudioCodecString("", "mp4a.6B", &out_is_ambiguous, &out_codec));
+  EXPECT_FALSE(out_is_ambiguous);
+  EXPECT_EQ(kCodecMP3, out_codec);
 }
 
 // These codecs really only have one profile. Ensure that |out_profile| is

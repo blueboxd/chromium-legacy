@@ -7799,6 +7799,9 @@ the Bookmarks menu.">
         <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_BUBBLE_CANCEL_BUTTON_LABEL" desc="Label of the cancel button in the web signin interception bubble">
           Cancel
         </message>
+        <message name="IDS_SIGNIN_DICE_WEB_INTERCEPT_ENTERPRISE_PROFILE_NAME" desc="Default name for work profiles created after signin interception">
+          Work
+        </message>
       </if>
 
       <!-- Signin Error tab modal dialog -->

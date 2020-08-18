@@ -1326,7 +1326,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="2564653188463346023">Enhanced spell check</translation>
 <translation id="2566124945717127842">Powerwash to reset your <ph name="IDS_SHORT_PRODUCT_NAME" /> device to be just like new.</translation>
 <translation id="2568774940984945469">Infobar Container</translation>
-<translation id="257088987046510401">Themes</translation>
 <translation id="2571655996835834626">Change your settings that control websites' access to features such as cookies, JavaScript, plugins, geolocation, microphone, camera, etc.</translation>
 <translation id="2572032849266859634">Read-only access to <ph name="VOLUME_NAME" /> has been granted.</translation>
 <translation id="2575247648642144396">This icon will be visible when the extension can act on the current page. Use this extension by clicking on the icon or by pressing <ph name="EXTENSION_SHORTCUT" />.</translation>
@@ -3354,7 +3353,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="5115338116365931134">SSO</translation>
 <translation id="5116628073786783676">Sa&amp;ve Audio As...</translation>
 <translation id="5117139026559873716">Disconnect your phone from your <ph name="DEVICE_TYPE" />. They will no longer connect automatically.</translation>
-<translation id="5117427536932535467">Themes &amp; Wallpapers</translation>
 <translation id="5117930984404104619">Monitor the behaviour of other extensions, including visited URLs</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Your hard disk is full.  Please save to another location or make more room on the hard disk.</translation>
@@ -4300,6 +4298,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="6277105963844135994">Network timeout</translation>
 <translation id="6277518330158259200">T&amp;ake Screenshot</translation>
 <translation id="6278057325678116358">Use GTK+</translation>
+<translation id="6278428485366576908">Theme</translation>
 <translation id="6278776436938569440">Change location</translation>
 <translation id="6279183038361895380">Press |<ph name="ACCELERATOR" />| to show your cursor</translation>
 <translation id="6280215091796946657">Sign in with a different account</translation>

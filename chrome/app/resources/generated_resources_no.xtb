@@ -1319,7 +1319,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="2564653188463346023">Bedre stavekontroll</translation>
 <translation id="2566124945717127842">Kjør Powerwash for å tilbakestille <ph name="IDS_SHORT_PRODUCT_NAME" />-enheten så den blir som ny.</translation>
 <translation id="2568774940984945469">Beholder for inforad</translation>
-<translation id="257088987046510401">Temaer</translation>
 <translation id="2571655996835834626">Endre innstillingene som styrer nettsteders tilgang til elementer som informasjonskapsler, JavaScript, programtillegg, geolokalisering, mikrofon, kamera osv.</translation>
 <translation id="2572032849266859634">Skrivebeskyttet tilgang til <ph name="VOLUME_NAME" /> er innvilget.</translation>
 <translation id="2575247648642144396">Dette ikonet vises når utvidelsen kan brukes på den gjeldende siden. Aktivér utvidelsen ved å klikke på ikonet eller trykke på <ph name="EXTENSION_SHORTCUT" />.</translation>
@@ -3341,7 +3340,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="5115338116365931134">SSO</translation>
 <translation id="5116628073786783676">La&amp;gre lyd som</translation>
 <translation id="5117139026559873716">Koble telefonen fra <ph name="DEVICE_TYPE" />. De blir ikke koblet sammen automatisk lenger.</translation>
-<translation id="5117427536932535467">Temaer og bakgrunner</translation>
 <translation id="5117930984404104619">overvåke atferden til andre utvidelser, inkludert besøkte nettadresser</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Harddisken din er full. Lagre på et annet sted, eller frigjør plass på harddisken.</translation>
@@ -4287,6 +4285,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="6277105963844135994">Tidsavbrudd for nettverket</translation>
 <translation id="6277518330158259200">Ta en skjermdump</translation>
 <translation id="6278057325678116358">Bruk GTK+</translation>
+<translation id="6278428485366576908">Tema</translation>
 <translation id="6278776436938569440">Endre plassering</translation>
 <translation id="6279183038361895380">Trykk på |<ph name="ACCELERATOR" />| for å se markøren</translation>
 <translation id="6280215091796946657">Logg på med en annen konto</translation>

@@ -404,7 +404,7 @@ void KioskLaunchController::OnAppLaunched() {
 }
 
 void KioskLaunchController::OnAppWindowCreated() {
-  DVLOG(1) << "App window created, closing splash screen.";
+  SYSLOG(INFO) << "App window created, closing splash screen.";
   // If timer is running, do not remove splash screen for a few
   // more seconds to give the user ability to exit kiosk session.
   if (splash_wait_timer_.IsRunning())

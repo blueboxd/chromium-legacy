@@ -724,7 +724,8 @@ bool OmniboxFieldTrial::IsTabSwitchSuggestionsEnabled() {
 }
 
 bool OmniboxFieldTrial::IsPedalSuggestionsEnabled() {
-  return base::FeatureList::IsEnabled(omnibox::kOmniboxPedalSuggestions);
+  return base::FeatureList::IsEnabled(omnibox::kOmniboxSuggestionButtonRow) &&
+         base::FeatureList::IsEnabled(omnibox::kOmniboxPedalSuggestions);
 }
 
 bool OmniboxFieldTrial::IsKeywordSearchButtonEnabled() {

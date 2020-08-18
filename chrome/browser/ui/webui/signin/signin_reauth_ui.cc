@@ -22,6 +22,7 @@
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
+#include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "google_apis/gaia/core_account_id.h"
 #include "services/network/public/mojom/content_security_policy.mojom.h"
@@ -159,3 +160,5 @@ void SigninReauthUI::AddStringResource(content::WebUIDataSource* source,
 
   js_localized_string_to_ids_.emplace_back(sanitized_string, ids);
 }
+
+WEB_UI_CONTROLLER_TYPE_IMPL(SigninReauthUI)

@@ -333,13 +333,15 @@ const char kLastNameRe[] =
     "|(\\b|_|\\*)(soyisim|soyad(i|ı|iniz|ınız)?)(\\b|_|\\*)"  // tr
     "|\\b성(?:[^명]|\\b)";                                    // ko-KR
 const char kNameLastFirstRe[] =
-    "(primer.*apellido)"           // es
-    "|(apellido.*paterno)"         // es
-    "|surname_?1|first_?surname";  // es
+    "(primer.*apellido)"                 // es
+    "|(apellido1)"                       // es
+    "|(apellido.*paterno)"               // es
+    "|surname_?1|first(\\s|_)?surname";  // es
 const char kNameLastSecondRe[] =
-    "(segunda.*apellido)"           // es
-    "|(apellido.*materno)"          // es
-    "|surname_?2|second_?surname";  // es
+    "(segund.*apellido)"                  // es
+    "|(apellido2)"                        // es
+    "|(apellido.*materno)"                // es
+    "|surname_?2|second(\\s|_)?surname";  // es
 const char kHonorificPrefixRe[] =
     "anrede|titel"                 // de-DE
     "|tratamiento|encabezamiento"  // es

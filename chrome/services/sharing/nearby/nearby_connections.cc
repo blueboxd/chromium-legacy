@@ -341,6 +341,13 @@ void NearbyConnections::StopAllEndpoints(StopAllEndpointsCallback callback) {
   core_->StopAllEndpoints(ResultCallbackFromMojom(std::move(callback)));
 }
 
+void NearbyConnections::InitiateBandwidthUpgrade(
+    const std::string& endpoint_id,
+    InitiateBandwidthUpgradeCallback callback) {
+  core_->InitiateBandwidthUpgrade(endpoint_id,
+                                  ResultCallbackFromMojom(std::move(callback)));
+}
+
 base::File NearbyConnections::ExtractFileForPayload(int64_t payload_id) {
   auto file_it = outgoing_file_map_.find(payload_id);
   if (file_it == outgoing_file_map_.end())

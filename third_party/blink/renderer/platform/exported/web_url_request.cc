@@ -278,6 +278,10 @@ bool WebURLRequest::HasUserGesture() const {
   return resource_request_->HasUserGesture();
 }
 
+bool WebURLRequest::HasTextFragmentToken() const {
+  return resource_request_->HasTextFragmentToken();
+}
+
 void WebURLRequest::SetHasUserGesture(bool has_user_gesture) {
   resource_request_->SetHasUserGesture(has_user_gesture);
 }

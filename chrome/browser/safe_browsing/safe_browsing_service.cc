@@ -323,8 +323,7 @@ void SafeBrowsingService::Start() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!ping_manager_) {
-    ping_manager_ =
-        PingManager::Create(GetURLLoaderFactory(), GetV4ProtocolConfig());
+    ping_manager_ = PingManager::Create(GetV4ProtocolConfig());
   }
 
   content::GetIOThreadTaskRunner({})->PostTask(
@@ -432,10 +431,11 @@ void SafeBrowsingService::RefreshState() {
 }
 
 void SafeBrowsingService::SendSerializedDownloadReport(
+    Profile* profile,
     const std::string& report) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (ping_manager())
-    ping_manager()->ReportThreatDetails(report);
+    ping_manager()->ReportThreatDetails(GetURLLoaderFactory(profile), report);
 }
 
 void SafeBrowsingService::CreateTriggerManager() {

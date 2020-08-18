@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "components/services/storage/dom_storage/async_dom_storage_database.h"
 #include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
@@ -148,9 +149,10 @@ bool SessionStorageMetadata::ParseNamespaces(
     }
 
     // The key must start with 'namespace-'.
-    if (!key_as_string.starts_with(base::StringPiece(
-            reinterpret_cast<const char*>(kNamespacePrefixBytes),
-            kNamespacePrefixLength))) {
+    if (!base::StartsWith(key_as_string,
+                          base::StringPiece(reinterpret_cast<const char*>(
+                                                kNamespacePrefixBytes),
+                                            kNamespacePrefixLength))) {
       LOG(ERROR) << "Key must start with 'namespace-': " << key_as_string;
       error = true;
       break;

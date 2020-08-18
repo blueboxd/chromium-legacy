@@ -214,6 +214,8 @@ bool IsValidMimeType(const String& content_type, const String& prefix) {
   if (!parsed_content_type.IsValid())
     return false;
 
+  // Valid ParsedContentType implies we have a mime type.
+  DCHECK(parsed_content_type.MimeType());
   if (!parsed_content_type.MimeType().StartsWith(prefix) &&
       !parsed_content_type.MimeType().StartsWith(kApplicationMimeTypePrefix)) {
     return false;

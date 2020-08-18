@@ -79,6 +79,7 @@
 #include "cc/tiles/raster_tile_priority_queue.h"
 #include "cc/tiles/software_image_decode_cache.h"
 #include "cc/trees/clip_node.h"
+#include "cc/trees/compositor_commit_data.h"
 #include "cc/trees/damage_tracker.h"
 #include "cc/trees/debug_rect_history.h"
 #include "cc/trees/draw_property_utils.h"
@@ -91,7 +92,6 @@
 #include "cc/trees/presentation_time_callback_buffer.h"
 #include "cc/trees/render_frame_metadata.h"
 #include "cc/trees/render_frame_metadata_observer.h"
-#include "cc/trees/scroll_and_scale_set.h"
 #include "cc/trees/scroll_node.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "cc/trees/transform_node.h"
@@ -3866,89 +3866,48 @@ void LayerTreeHostImpl::PinchGestureEnd(const gfx::Point& anchor,
   input_handler_.PinchGestureEnd(anchor, snap_to_min);
 }
 
-void LayerTreeHostImpl::CollectScrollDeltas(ScrollAndScaleSet* scroll_info) {
-  if (active_tree_->LayerListIsEmpty())
-    return;
-
-  ElementId inner_viewport_scroll_element_id =
-      InnerViewportScrollNode() ? InnerViewportScrollNode()->element_id
-                                : ElementId();
-
-  active_tree_->property_trees()->scroll_tree.CollectScrollDeltas(
-      scroll_info, inner_viewport_scroll_element_id,
-      active_tree_->settings().commit_fractional_scroll_deltas,
-      input_handler_.TakeUpdatedSnappedElements());
-}
-
-void LayerTreeHostImpl::CollectScrollbarUpdates(
-    ScrollAndScaleSet* scroll_info) const {
-  scroll_info->scrollbars.reserve(scrollbar_animation_controllers_.size());
+void LayerTreeHostImpl::CollectScrollbarUpdatesForCommit(
+    CompositorCommitData* commit_data) const {
+  commit_data->scrollbars.reserve(scrollbar_animation_controllers_.size());
   for (auto& pair : scrollbar_animation_controllers_) {
-    scroll_info->scrollbars.push_back(
+    commit_data->scrollbars.push_back(
         {pair.first, pair.second->ScrollbarsHidden()});
   }
 }
 
-std::unique_ptr<ScrollAndScaleSet> LayerTreeHostImpl::ProcessScrollDeltas() {
-  auto scroll_info = std::make_unique<ScrollAndScaleSet>();
+std::unique_ptr<CompositorCommitData>
+LayerTreeHostImpl::ProcessCompositorDeltas() {
+  auto commit_data = std::make_unique<CompositorCommitData>();
 
-  CollectScrollDeltas(scroll_info.get());
-  CollectScrollbarUpdates(scroll_info.get());
-  scroll_info->page_scale_delta =
+  input_handler_.ProcessCommitDeltas(commit_data.get());
+  CollectScrollbarUpdatesForCommit(commit_data.get());
+
+  commit_data->page_scale_delta =
       active_tree_->page_scale_factor()->PullDeltaForMainThread();
-  scroll_info->is_pinch_gesture_active = active_tree_->PinchGestureActive();
+  commit_data->is_pinch_gesture_active = active_tree_->PinchGestureActive();
   // We should never process non-unit page_scale_delta for an OOPIF subframe.
   // TODO(wjmaclean): Remove this DCHECK as a pre-condition to closing the bug.
   // https://crbug.com/845097
   DCHECK(!settings().is_layer_tree_for_subframe ||
-         scroll_info->page_scale_delta == 1.f);
-  scroll_info->top_controls_delta =
+         commit_data->page_scale_delta == 1.f);
+  commit_data->top_controls_delta =
       active_tree()->top_controls_shown_ratio()->PullDeltaForMainThread();
-  scroll_info->bottom_controls_delta =
+  commit_data->bottom_controls_delta =
       active_tree()->bottom_controls_shown_ratio()->PullDeltaForMainThread();
-  scroll_info->elastic_overscroll_delta =
+  commit_data->elastic_overscroll_delta =
       active_tree_->elastic_overscroll()->PullDeltaForMainThread();
-  scroll_info->swap_promises.swap(swap_promises_for_main_thread_scroll_update_);
+  commit_data->swap_promises.swap(swap_promises_for_main_thread_scroll_update_);
 
-  // Record and reset scroll source flags.
-  if (input_handler_.TakeHasScrolledByWheelForCommit()) {
-    scroll_info->manipulation_info |= kManipulationInfoHasScrolledByWheel;
-  }
-  if (input_handler_.TakeHasScrolledByTouchForCommit()) {
-    scroll_info->manipulation_info |= kManipulationInfoHasScrolledByTouch;
-  }
-  if (input_handler_.TakeHasScrolledByPrecisionTouchpadForCommit()) {
-    scroll_info->manipulation_info |=
-        kManipulationInfoHasScrolledByPrecisionTouchPad;
-  }
-  if (input_handler_.TakeHasPinchZoomedForCommit()) {
-    scroll_info->manipulation_info |= kManipulationInfoHasPinchZoomed;
-  }
-
-  scroll_info->scroll_gesture_did_end =
-      input_handler_.TakeScrollGestureDidEndForCommit();
-
-  // Record and reset overscroll delta.
-  scroll_info->overscroll_delta = input_handler_.TakeOverscrollDeltaForCommit();
-
-  scroll_info->ongoing_scroll_animation =
+  commit_data->ongoing_scroll_animation =
       !!mutator_host_->ImplOnlyScrollAnimatingElement();
 
-  // Use the |last_latched_scroller_| rather than the |CurrentlyScrollingNode|
-  // since the latter may be cleared by a GSE before we've committed these
-  // values to the main thread.
-  scroll_info->scroll_latched_element_id =
-      input_handler_.GetLastLatchedScroller();
-  if (scroll_info->scroll_gesture_did_end)
-    input_handler_.ClearLastLatchedScroller();
-
   if (browser_controls_manager()) {
-    scroll_info->browser_controls_constraint =
+    commit_data->browser_controls_constraint =
         browser_controls_manager()->PullConstraintForMainThread(
-            &scroll_info->browser_controls_constraint_changed);
+            &commit_data->browser_controls_constraint_changed);
   }
 
-  return scroll_info;
+  return commit_data;
 }
 
 void LayerTreeHostImpl::SetFullViewportDamage() {

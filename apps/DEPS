@@ -30,5 +30,8 @@ specific_include_rules = {
     "+chrome/browser/extensions/api/file_system/file_system_api.h",
     # To access sandbox includes.
     "+sandbox/policy",
-  ]
+  ],
+ "load_and_launch_browsertest.cc": [
+  "+ui/ozone/public/ozone_switches.h"
+  ],
 }

@@ -37,6 +37,23 @@ NavigationPredictorRendererWarmupClient::
           kNavigationPredictorRendererWarmup,
           "mem_threshold_mb",
           1024)),
+      warmup_on_dse_(base::GetFieldTrialParamByFeatureAsBool(
+          kNavigationPredictorRendererWarmup,
+          "warmup_on_dse",
+          true)),
+      use_navigation_predictions_(base::GetFieldTrialParamByFeatureAsBool(
+          kNavigationPredictorRendererWarmup,
+          "use_navigation_predictions",
+          true)),
+      examine_top_n_predictions_(base::GetFieldTrialParamByFeatureAsInt(
+          kNavigationPredictorRendererWarmup,
+          "examine_top_n_predictions",
+          10)),
+      prediction_crosss_origin_threshold_(
+          base::GetFieldTrialParamByFeatureAsDouble(
+              kNavigationPredictorRendererWarmup,
+              "prediction_crosss_origin_threshold",
+              0.5)),
       cooldown_duration_(base::TimeDelta::FromMilliseconds(
           base::GetFieldTrialParamByFeatureAsInt(
               kNavigationPredictorRendererWarmup,
@@ -74,9 +91,10 @@ void NavigationPredictorRendererWarmupClient::OnPredictionUpdated(
     return;
   }
 
-  // TODO(robertogden): Actually use the predicted URLs.
-
-  RecordMetricsAndMaybeDoWarmup();
+  if (IsEligibleForCrossNavigationWarmup(*prediction) ||
+      IsEligibleForDSEWarmup(*prediction)) {
+    RecordMetricsAndMaybeDoWarmup();
+  }
 }
 
 void NavigationPredictorRendererWarmupClient::DoRendererWarmpup() {
@@ -115,6 +133,61 @@ bool NavigationPredictorRendererWarmupClient::
   }
 
   return true;
+}
+
+bool NavigationPredictorRendererWarmupClient::
+    IsEligibleForCrossNavigationWarmup(
+        const NavigationPredictorKeyedService::Prediction& prediction) const {
+  if (!use_navigation_predictions_) {
+    return false;
+  }
+
+  url::Origin src_origin =
+      url::Origin::Create(prediction.source_document_url().value());
+
+  const std::vector<GURL> urls = prediction.sorted_predicted_urls();
+
+  size_t examine_n_urls =
+      std::min(urls.size(), static_cast<size_t>(examine_top_n_predictions_));
+  if (examine_n_urls == 0) {
+    return false;
+  }
+
+  int cross_origin_count = 0;
+  for (size_t i = 0; i < examine_n_urls; ++i) {
+    const GURL& url = urls[i];
+
+    if (!url.is_valid()) {
+      continue;
+    }
+
+    if (!url.SchemeIsHTTPOrHTTPS()) {
+      continue;
+    }
+
+    url::Origin url_origin = url::Origin::Create(url);
+    if (!url_origin.IsSameOriginWith(src_origin)) {
+      cross_origin_count++;
+    }
+  }
+
+  // Just in case there's very few links on a page, check against the threshold
+  // as a ratio. This may be helpful on redirector sites, like Cloudflare's DDoS
+  // checker.
+  double cross_origin_ratio = static_cast<double>(cross_origin_count) /
+                              static_cast<double>(examine_n_urls);
+  return cross_origin_ratio >= prediction_crosss_origin_threshold_;
+}
+
+bool NavigationPredictorRendererWarmupClient::IsEligibleForDSEWarmup(
+    const NavigationPredictorKeyedService::Prediction& prediction) const {
+  if (!warmup_on_dse_) {
+    return false;
+  }
+
+  return TemplateURLServiceFactory::GetForProfile(profile_)
+      ->IsSearchResultsPageFromDefaultSearchProvider(
+          prediction.source_document_url().value());
 }
 
 void NavigationPredictorRendererWarmupClient::RecordMetricsAndMaybeDoWarmup() {

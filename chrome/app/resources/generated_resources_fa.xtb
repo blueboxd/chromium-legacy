@@ -1323,7 +1323,6 @@
 <translation id="2564653188463346023">غلط‌گیر املا بهبودیافته</translation>
 <translation id="2566124945717127842">‏Powerwash، دستگاه <ph name="IDS_SHORT_PRODUCT_NAME" /> شما را بازنشانی می‌کند، به نحوی که مانند یک دستگاه جدید به نظر می‌رسد.</translation>
 <translation id="2568774940984945469">قسمت نوار اطلاعات</translation>
-<translation id="257088987046510401">طرح‌‌های قسمت</translation>
 <translation id="2571655996835834626">تنظیماتی را تغییر دهید که دسترسی وب‌سایت‌ها را به ویژگی‌هایی مثل کوکی‌ها، جاوا اسکریپت، افزایه، موقعیت جغرافیایی، میکروفون، دوربین و غیره کنترل می‌کنند.</translation>
 <translation id="2572032849266859634">مجوز دسترسی فقط خواندنی به <ph name="VOLUME_NAME" /> صادر شد.</translation>
 <translation id="2575247648642144396">وقتی برنامه افزودنی بتواند در صفحه کنونی کار کند این نماد قابل مشاهده خواهد بود. با کلیک کردن روی نماد یا با فشار دادن <ph name="EXTENSION_SHORTCUT" /> از این برنامه افزودنی استفاده کنید.</translation>
@@ -3351,7 +3350,6 @@
 <translation id="5115338116365931134">SSO</translation>
 <translation id="5116628073786783676">ذ&amp;خیره فایل صوتی به‌عنوان...</translation>
 <translation id="5117139026559873716">اتصال تلفن و <ph name="DEVICE_TYPE" /> قطع می‌شود و دیگر به‌طور خودکار به هم وصل نمی‌شوند.</translation>
-<translation id="5117427536932535467">طرح زمینه و کاغذ دیواری</translation>
 <translation id="5117930984404104619">کنترل رفتار افزودنی‌های دیگر از جمله نشانی‌های وب بازدید شده</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">دیسک سخت پر است. لطفاً در محل دیگری ذخیره کنید یا فضای بیشتری در دیسک سخت ایجاد کنید.</translation>
@@ -4297,6 +4295,7 @@
 <translation id="6277105963844135994">درنگ شبکه</translation>
 <translation id="6277518330158259200">گرفتن نماگرفت</translation>
 <translation id="6278057325678116358">‏استفاده از GTK+‎</translation>
+<translation id="6278428485366576908">طرح زمینه</translation>
 <translation id="6278776436938569440">تغییر مکان</translation>
 <translation id="6279183038361895380">برای نمایش نشان‌گر |<ph name="ACCELERATOR" />| را فشار دهید</translation>
 <translation id="6280215091796946657">ورود به سیستم با حساب دیگر</translation>

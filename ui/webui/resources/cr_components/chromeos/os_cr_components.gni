@@ -8,6 +8,7 @@ cr_components_chromeos_namespace_rewrites = [
   "network_config.MojoInterfaceProvider|MojoInterfaceProvider",
   "settings.receivedEventFromKeyboard|receivedEventFromKeyboard",
   "settings.LockScreenProgress|LockScreenProgress",
+  "cellular_setup.MojoInterfaceProvider|MojoInterfaceProvider",
 ]
 
 cr_components_chromeos_auto_imports = [

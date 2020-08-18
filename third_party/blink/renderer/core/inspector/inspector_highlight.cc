@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/core/style/grid_positions_resolver.h"
+#include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 #include "third_party/blink/renderer/platform/graphics/path.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
@@ -419,10 +420,15 @@ PhysicalOffset Transpose(PhysicalOffset& offset) {
   return PhysicalOffset(offset.top, offset.left);
 }
 
-PhysicalOffset LocalToAbsolutePoint(LayoutGrid* layout_grid,
+PhysicalOffset LocalToAbsolutePoint(Node* node,
                                     PhysicalOffset local,
                                     float scale) {
-  PhysicalOffset abs_number_pos = layout_grid->LocalToAbsolutePoint(local);
+  LayoutObject* layout_object = node->GetLayoutObject();
+  LayoutGrid* layout_grid = ToLayoutGrid(layout_object);
+  FloatPoint local_in_frame = FramePointToViewport(
+      node->GetDocument().View(), FloatPoint(local.left, local.top));
+  PhysicalOffset abs_number_pos = layout_grid->LocalToAbsolutePoint(
+      PhysicalOffset::FromFloatPointRound(local_in_frame));
   abs_number_pos.Scale(scale);
   return abs_number_pos;
 }
@@ -437,11 +443,13 @@ std::unique_ptr<protocol::DictionaryValue> BuildPosition(
 }
 
 std::unique_ptr<protocol::ListValue> BuildGridTrackSizes(
-    LayoutGrid* layout_grid,
+    Node* node,
     GridTrackSizingDirection direction,
     float scale,
     LayoutUnit gap,
     const Vector<String>* authored_values) {
+  LayoutObject* layout_object = node->GetLayoutObject();
+  LayoutGrid* layout_grid = ToLayoutGrid(layout_object);
   std::unique_ptr<protocol::ListValue> sizes = protocol::ListValue::create();
   const Vector<LayoutUnit>& positions = direction == kForRows
                                             ? layout_grid->RowPositions()
@@ -462,7 +470,7 @@ std::unique_ptr<protocol::ListValue> BuildGridTrackSizes(
     if (direction == kForRows)
       track_size_pos = Transpose(track_size_pos);
     std::unique_ptr<protocol::DictionaryValue> size_info =
-        BuildPosition(LocalToAbsolutePoint(layout_grid, track_size_pos, scale));
+        BuildPosition(LocalToAbsolutePoint(node, track_size_pos, scale));
     size_info->setDouble("computedSize", adjusted_size);
     if (i - 1 < authored_values->size()) {
       size_info->setString("authoredSize", authored_values->at(i - 1));
@@ -474,11 +482,14 @@ std::unique_ptr<protocol::ListValue> BuildGridTrackSizes(
 }
 
 std::unique_ptr<protocol::ListValue> BuildGridPositiveLineNumberPositions(
-    LayoutGrid* layout_grid,
+    Node* node,
     const Vector<LayoutUnit>& track_positions,
     const LayoutUnit& grid_gap,
     GridTrackSizingDirection direction,
     float scale) {
+  LayoutObject* layout_object = node->GetLayoutObject();
+  LayoutGrid* layout_grid = ToLayoutGrid(layout_object);
+
   std::unique_ptr<protocol::ListValue> number_positions =
       protocol::ListValue::create();
 
@@ -504,19 +515,22 @@ std::unique_ptr<protocol::ListValue> BuildGridPositiveLineNumberPositions(
                                    alt_axis_pos);
     if (direction == kForRows)
       number_position = Transpose(number_position);
-    number_positions->pushValue(BuildPosition(
-        LocalToAbsolutePoint(layout_grid, number_position, scale)));
+    number_positions->pushValue(
+        BuildPosition(LocalToAbsolutePoint(node, number_position, scale)));
   }
 
   return number_positions;
 }
 
 std::unique_ptr<protocol::ListValue> BuildGridNegativeLineNumberPositions(
-    LayoutGrid* layout_grid,
+    Node* node,
     const Vector<LayoutUnit>& trackPositions,
     const LayoutUnit& grid_gap,
     GridTrackSizingDirection direction,
     float scale) {
+  LayoutObject* layout_object = node->GetLayoutObject();
+  LayoutGrid* layout_grid = ToLayoutGrid(layout_object);
+
   std::unique_ptr<protocol::ListValue> number_positions =
       protocol::ListValue::create();
 
@@ -539,7 +553,7 @@ std::unique_ptr<protocol::ListValue> BuildGridNegativeLineNumberPositions(
   if (direction == kForRows)
     number_position = Transpose(number_position);
   number_positions->pushValue(
-      BuildPosition(LocalToAbsolutePoint(layout_grid, number_position, scale)));
+      BuildPosition(LocalToAbsolutePoint(node, number_position, scale)));
 
   // Then go line by line, calculating the offset to fall in the middle of gaps
   // if needed.
@@ -553,16 +567,19 @@ std::unique_ptr<protocol::ListValue> BuildGridNegativeLineNumberPositions(
                                    alt_axis_pos);
     if (direction == kForRows)
       number_position = Transpose(number_position);
-    number_positions->pushValue(BuildPosition(
-        LocalToAbsolutePoint(layout_grid, number_position, scale)));
+    number_positions->pushValue(
+        BuildPosition(LocalToAbsolutePoint(node, number_position, scale)));
   }
 
   return number_positions;
 }
 
-std::unique_ptr<protocol::DictionaryValue> BuildAreaNamePaths(
-    LayoutGrid* layout_grid,
-    float scale) {
+std::unique_ptr<protocol::DictionaryValue> BuildAreaNamePaths(Node* node,
+                                                              float scale) {
+  LayoutObject* layout_object = node->GetLayoutObject();
+  LayoutGrid* layout_grid = ToLayoutGrid(layout_object);
+  LocalFrameView* containing_view = node->GetDocument().View();
+
   std::unique_ptr<protocol::DictionaryValue> area_paths =
       protocol::DictionaryValue::create();
 
@@ -594,7 +611,7 @@ std::unique_ptr<protocol::DictionaryValue> BuildAreaNamePaths(
                       end_row - start_row - row_gap_offset);
     PhysicalRect area_rect(position, size);
     FloatQuad area_quad = layout_grid->LocalRectToAbsoluteQuad(area_rect);
-
+    FrameQuadToViewport(containing_view, area_quad);
     PathBuilder area_builder;
     area_builder.AppendPath(QuadToPath(area_quad), scale);
 
@@ -605,9 +622,12 @@ std::unique_ptr<protocol::DictionaryValue> BuildAreaNamePaths(
 }
 
 std::unique_ptr<protocol::ListValue> BuildGridLineNames(
-    LayoutGrid* layout_grid,
+    Node* node,
     GridTrackSizingDirection direction,
     float scale) {
+  LayoutObject* layout_object = node->GetLayoutObject();
+  LayoutGrid* layout_grid = ToLayoutGrid(layout_object);
+
   std::unique_ptr<protocol::ListValue> lines = protocol::ListValue::create();
 
   const Vector<LayoutUnit>& tracks = direction == kForColumns
@@ -637,8 +657,8 @@ std::unique_ptr<protocol::ListValue> BuildGridLineNames(
       if (direction == kForRows)
         line_name_pos = Transpose(line_name_pos);
 
-      std::unique_ptr<protocol::DictionaryValue> line = BuildPosition(
-          LocalToAbsolutePoint(layout_grid, line_name_pos, scale));
+      std::unique_ptr<protocol::DictionaryValue> line =
+          BuildPosition(LocalToAbsolutePoint(node, line_name_pos, scale));
 
       line->setString("name", name);
 
@@ -764,11 +784,11 @@ std::unique_ptr<protocol::DictionaryValue> BuildGridInfo(
 
     grid_info->setValue(
         "columnTrackSizes",
-        BuildGridTrackSizes(layout_grid, kForColumns, scale, column_gap,
+        BuildGridTrackSizes(node, kForColumns, scale, column_gap,
                             &column_authored_values));
     grid_info->setValue("rowTrackSizes",
-                        BuildGridTrackSizes(layout_grid, kForRows, scale,
-                                            row_gap, &row_authored_values));
+                        BuildGridTrackSizes(node, kForRows, scale, row_gap,
+                                            &row_authored_values));
   }
 
   PathBuilder row_builder;
@@ -838,35 +858,33 @@ std::unique_ptr<protocol::DictionaryValue> BuildGridInfo(
   if (grid_highlight_config.show_positive_line_numbers) {
     grid_info->setValue("positiveRowLineNumberPositions",
                         BuildGridPositiveLineNumberPositions(
-                            layout_grid, rows, row_gap, kForRows, scale));
-    grid_info->setValue(
-        "positiveColumnLineNumberPositions",
-        BuildGridPositiveLineNumberPositions(layout_grid, columns, column_gap,
-                                             kForColumns, scale));
+                            node, rows, row_gap, kForRows, scale));
+    grid_info->setValue("positiveColumnLineNumberPositions",
+                        BuildGridPositiveLineNumberPositions(
+                            node, columns, column_gap, kForColumns, scale));
   }
 
   // Negative Row and column Line positions
   if (grid_highlight_config.show_negative_line_numbers) {
     grid_info->setValue("negativeRowLineNumberPositions",
                         BuildGridNegativeLineNumberPositions(
-                            layout_grid, rows, row_gap, kForRows, scale));
-    grid_info->setValue(
-        "negativeColumnLineNumberPositions",
-        BuildGridNegativeLineNumberPositions(layout_grid, columns, column_gap,
-                                             kForColumns, scale));
+                            node, rows, row_gap, kForRows, scale));
+    grid_info->setValue("negativeColumnLineNumberPositions",
+                        BuildGridNegativeLineNumberPositions(
+                            node, columns, column_gap, kForColumns, scale));
   }
 
   // Area names
   if (grid_highlight_config.show_area_names) {
-    grid_info->setValue("areaNames", BuildAreaNamePaths(layout_grid, scale));
+    grid_info->setValue("areaNames", BuildAreaNamePaths(node, scale));
   }
 
   // line names
   if (grid_highlight_config.show_line_names) {
     grid_info->setValue("rowLineNameOffsets",
-                        BuildGridLineNames(layout_grid, kForRows, scale));
+                        BuildGridLineNames(node, kForRows, scale));
     grid_info->setValue("columnLineNameOffsets",
-                        BuildGridLineNames(layout_grid, kForColumns, scale));
+                        BuildGridLineNames(node, kForColumns, scale));
   }
 
   // Grid border

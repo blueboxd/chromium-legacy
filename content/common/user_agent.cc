@@ -99,10 +99,12 @@ std::string GetLowEntropyCpuArchitecture() {
   // internal std::string, resulting in a memory violation.
   std::string cpu_info_str = BuildCpuInfo();
   base::StringPiece cpu_info = cpu_info_str;
-  if (cpu_info.starts_with("arm") || cpu_info.starts_with("aarch")) {
+  if (base::StartsWith(cpu_info, "arm") ||
+      base::StartsWith(cpu_info, "aarch")) {
     return "arm";
-  } else if ((cpu_info.starts_with("i") && cpu_info.substr(2, 2) == "86") ||
-             cpu_info.starts_with("x86")) {
+  } else if ((base::StartsWith(cpu_info, "i") &&
+              cpu_info.substr(2, 2) == "86") ||
+             base::StartsWith(cpu_info, "x86")) {
     return "x86";
   }
 #elif defined(OS_WIN)

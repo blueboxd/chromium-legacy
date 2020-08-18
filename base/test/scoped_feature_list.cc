@@ -49,7 +49,7 @@ StringPiece GetFeatureName(StringPiece feature) {
   StringPiece feature_name = feature;
 
   // Remove default info.
-  if (feature_name.starts_with("*"))
+  if (StartsWith(feature_name, "*"))
     feature_name = feature_name.substr(1);
 
   // Remove field_trial info.

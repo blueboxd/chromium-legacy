@@ -1326,7 +1326,6 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="2564653188463346023">Izboljšano preverjanje črkovanja</translation>
 <translation id="2566124945717127842">Uporabite Powerwash za ponastavitev naprave <ph name="IDS_SHORT_PRODUCT_NAME" />, da bo kot nova.</translation>
 <translation id="2568774940984945469">Vsebnik informacijske vrstice</translation>
-<translation id="257088987046510401">Teme</translation>
 <translation id="2571655996835834626">Spreminjanje nastavitev, ki nadzirajo dostop spletnih mest do funkcij, kot so piškotki, JavaScript, vtičniki, geolokacija, mikrofon, fotoaparat ipd.</translation>
 <translation id="2572032849266859634">Odobren je dostop samo za branje za <ph name="VOLUME_NAME" />.</translation>
 <translation id="2575247648642144396">Ikona bo vidna, če lahko razširitev deluje na trenutni strani. Razširitev uporabite tako, da kliknete ikono ali pritisnete <ph name="EXTENSION_SHORTCUT" />.</translation>
@@ -3354,7 +3353,6 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="5115338116365931134">Enotna prijava</translation>
 <translation id="5116628073786783676">Shr&amp;ani zvok kot ...</translation>
 <translation id="5117139026559873716">Prekličite povezavo telefona in naprave <ph name="DEVICE_TYPE" />. Ne bosta se več samodejno povezala.</translation>
-<translation id="5117427536932535467">Teme in ozadja</translation>
 <translation id="5117930984404104619">Spremljanje obnašanja drugih razširitev, vključno z obiskanimi URL-ji</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Trdi disk je poln. Shranite na drugo mesto ali sprostite prostor na trdem disku.</translation>
@@ -4302,6 +4300,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="6277105963844135994">Potek časovne omejitve omrežja</translation>
 <translation id="6277518330158259200">N&amp;aredi posnetek zaslona</translation>
 <translation id="6278057325678116358">Uporaba teme GTK+</translation>
+<translation id="6278428485366576908">Tema</translation>
 <translation id="6278776436938569440">Spremeni lokacijo</translation>
 <translation id="6279183038361895380">Pritisnite |<ph name="ACCELERATOR" />| za prikaz kazalca</translation>
 <translation id="6280215091796946657">Prijava z drugim računom</translation>

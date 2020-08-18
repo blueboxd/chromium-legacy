@@ -186,7 +186,7 @@ bool ParseMultipartResponse(const std::string& content_type,
     return false;
 
   base::StringPiece content_type_piece(content_type);
-  if (!content_type_piece.starts_with(kMultipartMixedMimeTypePrefix)) {
+  if (!base::StartsWith(content_type_piece, kMultipartMixedMimeTypePrefix)) {
     return false;
   }
   content_type_piece.remove_prefix(
@@ -228,7 +228,7 @@ bool ParseMultipartResponse(const std::string& content_type,
     }
 
     if (state == STATE_PART_HTTP_STATUS_LINE) {
-      if (line.starts_with(kHttpStatusPrefix)) {
+      if (base::StartsWith(line, kHttpStatusPrefix)) {
         int int_code;
         base::StringToInt(
             line.substr(base::StringPiece(kHttpStatusPrefix).size()),

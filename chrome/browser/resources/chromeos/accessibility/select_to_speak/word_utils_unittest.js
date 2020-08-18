@@ -55,6 +55,30 @@ TEST_F('SelectToSpeakWordUtilsUnitTest', 'getNextWordStart', function() {
 });
 
 TEST_F(
+    'SelectToSpeakWordUtilsUnitTest', 'getNextWordStartIgnoresStartCharOffset',
+    function() {
+      const inlineText = {
+        wordStarts: [0, 5, 10, 16],
+        name: 'once upon kitty cat'
+      };
+      const staticText = {children: [inlineText], name: 'once upon kitty cat'};
+      const node = {node: staticText, startChar: 9, hasInlineText: true};
+
+      // If search within the node and ignore starChar offset, returns the index
+      // of character "k".
+      assertEquals(
+          10, WordUtils.getNextWordStart('once upon kitty cat', 9, node, true));
+      // If consider the starChar offset, returns the index of character "o"
+      // with offset.
+      assertEquals(
+          9, WordUtils.getNextWordStart('once upon kitty cat', 9, node, false));
+      // Should return the default if the inlineText children are missing.
+      staticText.children = [];
+      assertEquals(
+          10, WordUtils.getNextWordStart('once upon a kitty cat', 10, node));
+    });
+
+TEST_F(
     'SelectToSpeakWordUtilsUnitTest', 'getNextWordStartMultipleChildren',
     function() {
       const inlineText1 = {

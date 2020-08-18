@@ -312,7 +312,7 @@ class ScopedPaintTimingDetectorBlockPaintHook {
 // static
 inline void PaintTimingDetector::NotifyTextPaint(
     const IntRect& text_visual_rect) {
-  if (IgnorePaintTimingScope::IgnoreDepth() > 1)
+  if (IgnorePaintTimingScope::ShouldIgnore())
     return;
   ScopedPaintTimingDetectorBlockPaintHook::AggregateTextPaint(text_visual_rect);
 }

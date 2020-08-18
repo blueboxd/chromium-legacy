@@ -1323,7 +1323,6 @@ Možete da upravljate podešavanjima ovog naloga ako instalirate aplikaciju Fami
 <translation id="2564653188463346023">Poboljšana provera pravopisa</translation>
 <translation id="2566124945717127842">Powerwash resetuje <ph name="IDS_SHORT_PRODUCT_NAME" /> uređaj da bi bio kao nov.</translation>
 <translation id="2568774940984945469">Kontejner trake sa informacijama</translation>
-<translation id="257088987046510401">Teme</translation>
 <translation id="2571655996835834626">Promenite podešavanja koja kontrolišu pristup veb-sajtova funkcijama kao što su kolačići, JavaScript, dodatne komponente, geolociranje, mikrofon, kamera itd.</translation>
 <translation id="2572032849266859634">Odobren je pristup za <ph name="VOLUME_NAME" /> samo za čitanje.</translation>
 <translation id="2575247648642144396">Ova ikona će biti vidljiva kada dodatak bude mogao da funkcioniše na trenutnoj stranici. Koristite ovaj dodatak klikom na ikonu ili pritiskom na <ph name="EXTENSION_SHORTCUT" />.</translation>
@@ -3351,7 +3350,6 @@ Možete da upravljate podešavanjima ovog naloga ako instalirate aplikaciju Fami
 <translation id="5115338116365931134">SSO</translation>
 <translation id="5116628073786783676">Sa&amp;čuvaj audio snimak kao...</translation>
 <translation id="5117139026559873716">Prekinite vezu telefona sa uređajem <ph name="DEVICE_TYPE" />. Oni se više neće povezivati automatski.</translation>
-<translation id="5117427536932535467">Teme i pozadine</translation>
 <translation id="5117930984404104619">Praćenje ponašanja drugih dodataka, uključujući posećene URL-ove</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Hard-disk je pun. Sačuvajte na drugu lokaciju ili napravite više prostora na hard-disku.</translation>
@@ -4298,6 +4296,7 @@ Vodite računa da ne otkrijete nikakve osetljive informacije.</translation>
 <translation id="6277105963844135994">Vremensko ograničenje mreže</translation>
 <translation id="6277518330158259200">S&amp;nimi ekran</translation>
 <translation id="6278057325678116358">Koristi GTK+</translation>
+<translation id="6278428485366576908">Tema</translation>
 <translation id="6278776436938569440">Promeni lokaciju</translation>
 <translation id="6279183038361895380">Pritisnite |<ph name="ACCELERATOR" />| da biste prikazali pokazivač</translation>
 <translation id="6280215091796946657">Prijavi me na drugi nalog</translation>

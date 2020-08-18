@@ -147,7 +147,7 @@ libvpx::VP9RateControlRtcConfig CreateRateControlConfig(
     rc_cfg.min_quantizers[ti] = rc_cfg.min_quantizer;
     rc_cfg.layer_target_bitrate[ti] = base::checked_cast<int>(
         bitrate_allocation.GetBitrateBps(0, ti) / 1000.0);
-    rc_cfg.ts_rate_decimator[ti] = 1u << ti;
+    rc_cfg.ts_rate_decimator[ti] = 1u << (num_temporal_layers - ti - 1);
   }
   return rc_cfg;
 }

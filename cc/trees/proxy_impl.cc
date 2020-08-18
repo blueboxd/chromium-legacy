@@ -20,13 +20,13 @@
 #include "cc/input/browser_controls_offset_manager.h"
 #include "cc/metrics/compositor_timing_history.h"
 #include "cc/paint/paint_worklet_layer_painter.h"
+#include "cc/trees/compositor_commit_data.h"
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/mutator_host.h"
 #include "cc/trees/proxy_main.h"
 #include "cc/trees/render_frame_metadata_observer.h"
-#include "cc/trees/scroll_and_scale_set.h"
 #include "cc/trees/task_runner_provider.h"
 #include "components/viz/common/frame_sinks/delay_based_time_source.h"
 #include "components/viz/common/frame_timing_details.h"
@@ -582,7 +582,7 @@ void ProxyImpl::ScheduledActionSendBeginMainFrame(
       new BeginMainFrameAndCommitState);
   begin_main_frame_state->begin_frame_id = begin_frame_id;
   begin_main_frame_state->begin_frame_args = args;
-  begin_main_frame_state->scroll_info = host_impl_->ProcessScrollDeltas();
+  begin_main_frame_state->commit_data = host_impl_->ProcessCompositorDeltas();
   begin_main_frame_state->completed_image_decode_requests =
       host_impl_->TakeCompletedImageDecodeRequests();
   begin_main_frame_state->mutator_events = host_impl_->TakeMutatorEvents();

@@ -4,13 +4,13 @@
 
 package org.chromium.chrome.browser.contacts_picker;
 
-import android.content.Context;
-
 import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.app.AlertDialog;
 
 import org.chromium.chrome.R;
 import org.chromium.ui.ContactsPickerListener;
+import org.chromium.ui.base.WindowAndroid;
+import org.chromium.ui.vr.VrModeProvider;
 
 /**
  * UI for the contacts picker that shows on the Android platform as a result of
@@ -23,7 +23,7 @@ public class ContactsPickerDialog
 
     /**
      * The ContactsPickerDialog constructor.
-     * @param context The context to use.
+     * @param windowAndroid The window associated with the main Activity.
      * @param listener The listener object that gets notified when an action is taken.
      * @param allowMultiple Whether the contacts picker should allow multiple items to be selected.
      * @param includeNames Whether the contacts data returned should include names.
@@ -34,14 +34,16 @@ public class ContactsPickerDialog
      * @param formattedOrigin The origin the data will be shared with, formatted for display with
      *                        the scheme omitted.
      */
-    public ContactsPickerDialog(Context context, ContactsPickerListener listener,
+    public ContactsPickerDialog(WindowAndroid windowAndroid, ContactsPickerListener listener,
             boolean allowMultiple, boolean includeNames, boolean includeEmails, boolean includeTel,
-            boolean includeAddresses, boolean includeIcons, String formattedOrigin) {
-        super(context, R.style.Theme_Chromium_Fullscreen);
+            boolean includeAddresses, boolean includeIcons, String formattedOrigin,
+            VrModeProvider vrModeProvider) {
+        super(windowAndroid.getContext().get(), R.style.Theme_Chromium_Fullscreen);
 
         // Initialize the main content view.
-        mCategoryView = new PickerCategoryView(context, allowMultiple, includeNames, includeEmails,
-                includeTel, includeAddresses, includeIcons, formattedOrigin, this);
+        mCategoryView = new PickerCategoryView(windowAndroid, allowMultiple, includeNames,
+                includeEmails, includeTel, includeAddresses, includeIcons, formattedOrigin, this,
+                vrModeProvider);
         mCategoryView.initialize(this, listener);
         setView(mCategoryView);
     }

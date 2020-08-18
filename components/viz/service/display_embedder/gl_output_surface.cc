@@ -50,6 +50,7 @@ GLOutputSurface::GLOutputSurface(
       context_provider->GetGpuFeatureInfo()
           .status_values[gpu::GPU_FEATURE_TYPE_ANDROID_SURFACE_CONTROL] ==
       gpu::kGpuFeatureStatusEnabled;
+  capabilities_.max_render_target_size = context_capabilities.max_texture_size;
 }
 
 GLOutputSurface::~GLOutputSurface() {

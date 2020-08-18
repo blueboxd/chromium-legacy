@@ -210,10 +210,11 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kTabToGTSAnimation,
     &kTestDefaultDisabled,
     &kTestDefaultEnabled,
-    &kTrustedWebActivityNewDisclosure,
     &kTrustedWebActivityLocationDelegation,
-    &kTrustedWebActivityQualityEnforcement,
+    &kTrustedWebActivityNewDisclosure,
     &kTrustedWebActivityPostMessage,
+    &kTrustedWebActivityQualityEnforcement,
+    &kTrustedWebActivityQualityEnforcementForced,
     &kStartSurfaceAndroid,
     &kUmaBackgroundSessions,
     &kUpdateNotificationSchedulingIntegration,
@@ -616,17 +617,21 @@ const base::Feature kTestDefaultDisabled{"TestDefaultDisabled",
 const base::Feature kTestDefaultEnabled{"TestDefaultEnabled",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kTrustedWebActivityNewDisclosure{
-    "TrustedWebActivityNewDisclosure", base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kTrustedWebActivityQualityEnforcement{
-    "TrustedWebActivityQualityEnforcement", base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kTrustedWebActivityLocationDelegation{
     "TrustedWebActivityLocationDelegation", base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kTrustedWebActivityNewDisclosure{
+    "TrustedWebActivityNewDisclosure", base::FEATURE_ENABLED_BY_DEFAULT};
+
 const base::Feature kTrustedWebActivityPostMessage{
     "TrustedWebActivityPostMessage", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kTrustedWebActivityQualityEnforcement{
+    "TrustedWebActivityQualityEnforcement", base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kTrustedWebActivityQualityEnforcementForced{
+    "TrustedWebActivityQualityEnforcementForced",
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kStartSurfaceAndroid{"StartSurfaceAndroid",
                                          base::FEATURE_DISABLED_BY_DEFAULT};

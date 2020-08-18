@@ -204,7 +204,6 @@
 <translation id="2537178555904266562">पासवर्ड सिंक करने में गड़बड़ी हुई</translation>
 <translation id="2546283357679194313">कुकी और साइट डेटा</translation>
 <translation id="2567385386134582609">इमेज</translation>
-<translation id="257088987046510401">थीम</translation>
 <translation id="2581165646603367611">यह साइट की कुकी, कैश और अन्य डेटा निकाल देगा जो Chrome के विचार में महत्वपूर्ण नहीं है.</translation>
 <translation id="2587052924345400782">नया वर्शन उपलब्ध है</translation>
 <translation id="2593272815202181319">मोनोस्पेस</translation>
@@ -678,6 +677,7 @@
 <translation id="624789221780392884">अपडेट तैयार है</translation>
 <translation id="6255999984061454636">सामग्री के सुझाव</translation>
 <translation id="6277522088822131679">पेज को प्रिंट करने में समस्या थी. कृपया फिर से प्रयास करें.</translation>
+<translation id="6278428485366576908">थीम</translation>
 <translation id="6292420053234093573">Chrome इस्तेमाल करने का मतलब है कि आप <ph name="BEGIN_LINK1" />Google की सेवा की शर्तों<ph name="END_LINK1" /> और <ph name="BEGIN_LINK2" />Google Chrome और Chrome OS की सेवा की अतिरिक्त शर्तों<ph name="END_LINK2" /> से सहमत हैं.</translation>
 <translation id="629730747756840877">खाता</translation>
 <translation id="6297765934698848803">आपके डिवाइस काे प्रबंधित करने वाले संगठन ने आपका कैमरा बंद कर दिया है.</translation>

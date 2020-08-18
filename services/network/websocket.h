@@ -22,6 +22,7 @@
 #include "base/util/type_safety/strong_alias.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/websockets/websocket_event_interface.h"
 #include "services/network/network_service.h"
 #include "services/network/public/mojom/network_context.mojom.h"
@@ -64,6 +65,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
       int32_t render_frame_id,
       const url::Origin& origin,
       uint32_t options,
+      net::NetworkTrafficAnnotationTag traffic_annotation,
       HasRawHeadersAccess has_raw_cookie_access,
       mojo::PendingRemote<mojom::WebSocketHandshakeClient> handshake_client,
       mojo::PendingRemote<mojom::AuthenticationHandler> auth_handler,
@@ -192,6 +194,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
   const base::TimeDelta delay_;
 
   const uint32_t options_;
+
+  const net::NetworkTrafficAnnotationTag traffic_annotation_;
 
   const int32_t child_id_;
   const int32_t frame_id_;

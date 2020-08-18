@@ -1322,7 +1322,6 @@
 <translation id="2564653188463346023">การตรวจตัวสะกดที่ได้รับการปรับปรุง</translation>
 <translation id="2566124945717127842">Powerwash เพื่อรีเซ็ตอุปกรณ์ <ph name="IDS_SHORT_PRODUCT_NAME" /> ให้เหมือนใหม่</translation>
 <translation id="2568774940984945469">ที่เก็บแถบข้อมูล</translation>
-<translation id="257088987046510401">ธีม</translation>
 <translation id="2571655996835834626">เปลี่ยนการตั้งค่าที่ควบคุมการเข้าถึงฟีเจอร์ของเว็บไซต์ เช่น คุกกี้, JavaScript, ปลั๊กอิน, ตำแหน่งทางภูมิศาสตร์, ไมโครโฟน, กล้องถ่ายรูป และอื่นๆ</translation>
 <translation id="2572032849266859634">ได้รับสิทธิ์ในการอ่าน <ph name="VOLUME_NAME" /> เท่านั้นแล้ว</translation>
 <translation id="2575247648642144396">ไอคอนนี้จะปรากฏเมื่อส่วนขยายสามารถทำงานบนหน้าเว็บปัจจุบัน ใช้ส่วนขยายนี้โดยคลิกที่ไอคอน หรือกด <ph name="EXTENSION_SHORTCUT" /></translation>
@@ -3346,7 +3345,6 @@
 <translation id="5115338116365931134">SSO</translation>
 <translation id="5116628073786783676">บั&amp;นทึกเสียงเป็น...</translation>
 <translation id="5117139026559873716">ยกเลิกการเชื่อมต่อโทรศัพท์กับ <ph name="DEVICE_TYPE" /> อุปกรณ์ทั้งสองจะไม่เชื่อมต่อกันโดยอัตโนมัติอีกต่อไป</translation>
-<translation id="5117427536932535467">ธีมและวอลเปเปอร์</translation>
 <translation id="5117930984404104619">ตรวจสอบพฤติกรรมของส่วนขยายอื่นๆ รวมถึง URL ที่เข้าชม</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">ฮาร์ดดิสก์ของคุณเต็ม โปรดบันทึกลงในตำแหน่งอื่นหรือเพิ่มเนื้อที่ว่างในฮาร์ดดิสก์</translation>
@@ -4292,6 +4290,7 @@
 <translation id="6277105963844135994">ระยะหมดเวลาของเครือข่าย</translation>
 <translation id="6277518330158259200">จับ&amp;ภาพหน้าจอ</translation>
 <translation id="6278057325678116358">ใช้ GTK+</translation>
+<translation id="6278428485366576908">ธีม</translation>
 <translation id="6278776436938569440">เปลี่ยนสถานที่</translation>
 <translation id="6279183038361895380">กด |<ph name="ACCELERATOR" />| เพื่อแสดงเคอร์เซอร์ของคุณ</translation>
 <translation id="6280215091796946657">ลงชื่อเข้าใช้ด้วยบัญชีอื่น</translation>

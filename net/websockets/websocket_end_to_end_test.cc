@@ -298,9 +298,9 @@ class WebSocketEndToEndTest : public TestWithTaskEnvironment {
     event_interface_ = new ConnectTestingEventInterface();
     channel_ = std::make_unique<WebSocketChannel>(
         base::WrapUnique(event_interface_), &context_);
-    channel_->SendAddChannelRequest(GURL(socket_url), sub_protocols_, origin,
-                                    site_for_cookies, isolation_info,
-                                    HttpRequestHeaders());
+    channel_->SendAddChannelRequest(
+        GURL(socket_url), sub_protocols_, origin, site_for_cookies,
+        isolation_info, HttpRequestHeaders(), TRAFFIC_ANNOTATION_FOR_TESTS);
     event_interface_->WaitForResponse();
     return !event_interface_->failed();
   }

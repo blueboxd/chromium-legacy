@@ -52,10 +52,10 @@
 #include "cc/test/skia_common.h"
 #include "cc/test/test_layer_tree_frame_sink.h"
 #include "cc/trees/clip_node.h"
+#include "cc/trees/compositor_commit_data.h"
 #include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/layer_tree_impl.h"
-#include "cc/trees/scroll_and_scale_set.h"
 #include "cc/trees/scroll_node.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "cc/trees/swap_promise.h"
@@ -6795,8 +6795,8 @@ class LayerTreeHostAcceptsDeltasFromImplWithoutRootLayer
 
   void BeginTest() override {
     layer_tree_host()->SetRootLayer(nullptr);
-    info_.page_scale_delta = 3.14f;
-    info_.top_controls_delta = 2.73f;
+    commit_data_.page_scale_delta = 3.14f;
+    commit_data_.top_controls_delta = 2.73f;
 
     PostSetNeedsCommitToMainThread();
   }
@@ -6804,21 +6804,21 @@ class LayerTreeHostAcceptsDeltasFromImplWithoutRootLayer
   void BeginMainFrame(const viz::BeginFrameArgs& args) override {
     EXPECT_EQ(nullptr, layer_tree_host()->root_layer());
 
-    layer_tree_host()->ApplyScrollAndScale(&info_);
+    layer_tree_host()->ApplyCompositorChanges(&commit_data_);
     EndTest();
   }
 
   void ApplyViewportChanges(const ApplyViewportChangesArgs& args) override {
-    EXPECT_EQ(info_.page_scale_delta, args.page_scale_delta);
-    EXPECT_EQ(info_.top_controls_delta, args.top_controls_delta);
-    EXPECT_EQ(info_.browser_controls_constraint,
+    EXPECT_EQ(commit_data_.page_scale_delta, args.page_scale_delta);
+    EXPECT_EQ(commit_data_.top_controls_delta, args.top_controls_delta);
+    EXPECT_EQ(commit_data_.browser_controls_constraint,
               args.browser_controls_constraint);
     deltas_sent_to_client_ = true;
   }
 
   void AfterTest() override { EXPECT_TRUE(deltas_sent_to_client_); }
 
-  ScrollAndScaleSet info_;
+  CompositorCommitData commit_data_;
   bool deltas_sent_to_client_;
 };
 

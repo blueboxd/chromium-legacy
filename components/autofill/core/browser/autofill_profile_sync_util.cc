@@ -361,6 +361,15 @@ std::unique_ptr<AutofillProfile> CreateAutofillProfileFromSpecifics(
   profile->set_is_client_validity_states_updated(
       specifics.is_client_validity_states_updated());
 
+  // The profile may be in a legacy state. By calling |FinalizeAfterImport()|
+  // * The profile is migrated if the name structure is in legacy state.
+  // * Nothing happens if the profile is already migrated and therefore
+  // finalized.
+  // * If structured names are not enabled, this operation is a noop.
+  //
+  // Here, the return value of the finalization step does not have an
+  // implication.
+  profile->FinalizeAfterImport();
   return profile;
 }
 

@@ -32,28 +32,29 @@ class PingManager {
   virtual ~PingManager();
 
   // Create an instance of the safe browsing ping manager.
-  static std::unique_ptr<PingManager> Create(
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      const V4ProtocolConfig& config);
+  static std::unique_ptr<PingManager> Create(const V4ProtocolConfig& config);
 
   void OnURLLoaderComplete(network::SimpleURLLoader* source,
                            std::unique_ptr<std::string> response_body);
 
   // Report to Google when a SafeBrowsing warning is shown to the user.
   // |hit_report.threat_type| should be one of the types known by
-  // SafeBrowsingtHitUrl.
-  void ReportSafeBrowsingHit(const safe_browsing::HitReport& hit_report);
+  // SafeBrowsingtHitUrl. Uses the given |url_loader_factory| to get the network
+  // context.
+  void ReportSafeBrowsingHit(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      const safe_browsing::HitReport& hit_report);
 
   // Users can opt-in on the SafeBrowsing interstitial to send detailed
   // threat reports. |report| is the serialized report.
-  void ReportThreatDetails(const std::string& report);
+  void ReportThreatDetails(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      const std::string& report);
 
  protected:
   friend class PingManagerTest;
-  // Constructs a PingManager that issues network requests
-  // using |url_loader_factory|.
-  PingManager(scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-              const V4ProtocolConfig& config);
+  // Constructs a PingManager with the given |config|.
+  explicit PingManager(const V4ProtocolConfig& config);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(PingManagerTest, TestSafeBrowsingHitUrl);
@@ -71,9 +72,6 @@ class PingManager {
 
   // Generates URL for reporting threat details for users who opt-in.
   GURL ThreatDetailsUrl() const;
-
-  // The URLLoaderFactory we use to issue network requests.
-  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   // Track outstanding SafeBrowsing report fetchers for clean up.
   // We add both "hit" and "detail" fetchers in this set.

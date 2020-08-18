@@ -23,6 +23,10 @@
 #include "third_party/pdfium/public/fpdf_text.h"
 #include "ui/gfx/geometry/point_f.h"
 
+namespace gfx {
+class Point;
+}  // namespace gfx
+
 namespace chrome_pdf {
 
 class PDFiumEngine;
@@ -118,7 +122,7 @@ class PDFiumPage {
   // index if it's near a character, and also the type of text.
   // Target is optional. It will be filled in for WEBLINK_AREA or
   // DOCLINK_AREA only.
-  Area GetCharIndex(const pp::Point& point,
+  Area GetCharIndex(const gfx::Point& point,
                     PageOrientation orientation,
                     int* char_index,
                     int* form_type,
@@ -145,7 +149,7 @@ class PDFiumPage {
                                      int* char_len);
 
   // Converts from page coordinates to screen coordinates.
-  pp::Rect PageToScreen(const pp::Point& offset,
+  pp::Rect PageToScreen(const gfx::Point& page_point,
                         double zoom,
                         double left,
                         double top,

@@ -445,59 +445,6 @@ TEST_F(ThreadPoolJobTaskSourceTest, MaxConcurrencyStagnateIfShouldYield) {
   registered_task_source.DidProcessTask();
 }
 
-// Verifies that a missing call to NotifyConcurrencyIncrease() causes a DCHECK
-// death after a timeout.
-TEST_F(ThreadPoolJobTaskSourceTest, InvalidConcurrency) {
-  testing::FLAGS_gtest_death_test_style = "threadsafe";
-
-  scoped_refptr<test::MockJobTask> job_task;
-  job_task = base::MakeRefCounted<test::MockJobTask>(
-      BindLambdaForTesting([&](JobDelegate* delegate) {
-        EXPECT_FALSE(delegate->ShouldYield());
-        job_task->SetNumTasksToRun(2);
-        EXPECT_FALSE(delegate->ShouldYield());
-
-        // After returning, a DCHECK should trigger because we never called
-        // NotifyConcurrencyIncrease().
-      }),
-      /* num_tasks_to_run */ 1);
-  scoped_refptr<JobTaskSource> task_source =
-      job_task->GetJobTaskSource(FROM_HERE, {}, &pooled_task_runner_delegate_);
-
-  auto registered_task_source =
-      RegisteredTaskSource::CreateForTesting(task_source);
-  ASSERT_EQ(registered_task_source.WillRunTask(),
-            TaskSource::RunStatus::kAllowedSaturated);
-  auto task = registered_task_source.TakeTask();
-
-  EXPECT_DCHECK_DEATH(std::move(task.task).Run());
-
-  registered_task_source.DidProcessTask();
-}
-
-// Verifies that a stale concurrency with no call to NotifyConcurrencyIncrease()
-// causes a DCHECK death after a timeout.
-TEST_F(ThreadPoolJobTaskSourceTest, StaleConcurrency) {
-  testing::FLAGS_gtest_death_test_style = "threadsafe";
-
-  auto task_source = MakeRefCounted<JobTaskSource>(
-      FROM_HERE, TaskTraits{}, BindRepeating([](JobDelegate*) {}),
-      BindRepeating([](size_t /*worker_count*/) -> size_t { return 1; }),
-      &pooled_task_runner_delegate_);
-
-  auto registered_task_source =
-      RegisteredTaskSource::CreateForTesting(task_source);
-  ASSERT_EQ(registered_task_source.WillRunTask(),
-            TaskSource::RunStatus::kAllowedSaturated);
-  auto task = registered_task_source.TakeTask();
-
-  // A DCHECK should trigger when |JobTaskSource::primary_task_| returns and
-  // ~JobDelegate() invokes AssertExpectedConcurrency(0)
-  EXPECT_DCHECK_DEATH(std::move(task.task).Run());
-
-  registered_task_source.DidProcessTask();
-}
-
 TEST_F(ThreadPoolJobTaskSourceTest, InvalidTakeTask) {
   auto job_task =
       base::MakeRefCounted<test::MockJobTask>(DoNothing(),

@@ -7,8 +7,15 @@
 
 class ProfilePicker {
  public:
-  // Shows the Profile picker or re-activates an existing one.
-  static void Show();
+  // Different pages to be displayed when the profile picker window opens.
+  enum class Page {
+    kManageProfiles,
+    kAddNewProfile,
+  };
+
+  // Shows the Profile picker on the given `page` or re-activates an existing
+  // one. In the latter case, the `page` parameter is ignored.
+  static void Show(Page page = Page::kManageProfiles);
 
   // Hides the profile picker.
   static void Hide();

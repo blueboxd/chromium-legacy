@@ -12,7 +12,7 @@ PRESUBMIT_VERSION = '2.0.0'
 _EXCLUDED_PATHS = (
     # Generated file.
     (r"^components[\\/]variations[\\/]proto[\\/]devtools[\\/]"
-     r"client_variations_parser.js"),
+     r"client_variations.js"),
     r"^native_client_sdk[\\/]src[\\/]build_tools[\\/]make_rules.py",
     r"^native_client_sdk[\\/]src[\\/]build_tools[\\/]make_simple.py",
     r"^native_client_sdk[\\/]src[\\/]tools[\\/].*.mk",

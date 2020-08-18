@@ -68,7 +68,19 @@ def main_mac(src_dir):
       # Count the number of files with at least one static initializer.
       si_count = 0
       # Find the __DATA,__mod_init_func section.
-      stdout = run_process(['otool', '-l', chromium_framework_executable])
+
+      # If the checkout uses the hermetic xcode binaries, then otool must be
+      # directly invoked. The indirection via /usr/bin/otool won't work unless
+      # there's an actual system install of Xcode.
+      hermetic_xcode_path = os.path.join(src_dir, 'build', 'mac_files',
+          'xcode_binaries')
+      if os.path.exists(hermetic_xcode_path):
+        otool_path = os.path.join(hermetic_xcode_path, 'Contents', 'Developer',
+            'Toolchains', 'XcodeDefault.xctoolchain', 'usr', 'bin', 'otool')
+      else:
+        otool_path = 'otool'
+
+      stdout = run_process([otool_path, '-l', chromium_framework_executable])
       section_index = stdout.find('sectname __mod_init_func')
       if section_index != -1:
         # If the section exists, the "size" line must follow it.
@@ -106,6 +118,10 @@ def main_mac(src_dir):
           else:
             print '# Warning: Falling back to potentially stripped output.'
             args.append(chromium_framework_executable)
+
+          if os.path.exists(hermetic_xcode_path):
+            args.extend(['--xcode-path', hermetic_xcode_path])
+
           stdout = run_process(args)
           print stdout
   return ret

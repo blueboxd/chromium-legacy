@@ -5,8 +5,10 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_SCROLLING_TEXT_FRAGMENT_ANCHOR_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_SCROLLING_TEXT_FRAGMENT_ANCHOR_H_
 
+#include "third_party/blink/public/web/web_frame_load_type.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
+#include "third_party/blink/renderer/core/loader/frame_loader_types.h"
 #include "third_party/blink/renderer/core/page/scrolling/element_fragment_anchor.h"
 #include "third_party/blink/renderer/core/page/scrolling/fragment_anchor.h"
 #include "third_party/blink/renderer/core/page/scrolling/text_fragment_anchor_metrics.h"
@@ -17,6 +19,7 @@
 
 namespace blink {
 
+class DocumentLoader;
 class LocalFrame;
 class KURL;
 
@@ -33,10 +36,26 @@ constexpr size_t kTextFragmentIdentifierPrefixStringLength =
 class CORE_EXPORT TextFragmentAnchor final : public FragmentAnchor,
                                              public TextFragmentFinder::Client {
  public:
+  // When a document is loaded, this method will be called to see if it meets
+  // the criteria to generate a new permission token (at a high level it means:
+  // did the user initiate the navigation?). This token can then be used to
+  // invoke the text fragment anchor later during loading or propagated across
+  // a redirect so that the real destination can invoke a text fragment.
+  static bool GenerateNewToken(const DocumentLoader&);
+
+  // Same as above but for same-document navigations. These require a bit of
+  // care since DocumentLoader's state is based on the initial document load.
+  // In this case, we also avoid generating the token unless the new URL has a
+  // text fragment in it (and thus it'll be consumed immediately).
+  static bool GenerateNewTokenForSameDocument(
+      const String& fragment,
+      WebFrameLoadType load_type,
+      bool is_content_initiated,
+      SameDocumentNavigationSource source);
+
   static TextFragmentAnchor* TryCreateFragmentDirective(
       const KURL& url,
       LocalFrame& frame,
-      bool same_document_navigation,
       bool should_scroll);
 
   TextFragmentAnchor(

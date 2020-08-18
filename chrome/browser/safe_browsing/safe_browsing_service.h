@@ -181,7 +181,8 @@ class SafeBrowsingService : public SafeBrowsingServiceInterface,
       const base::Callback<void(void)>& callback);
 
   // Sends serialized download report to backend.
-  virtual void SendSerializedDownloadReport(const std::string& report);
+  virtual void SendSerializedDownloadReport(Profile* profile,
+                                            const std::string& report);
 
   // Create the default v4 protocol config struct.
   virtual V4ProtocolConfig GetV4ProtocolConfig() const;

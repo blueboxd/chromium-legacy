@@ -18,6 +18,7 @@ Polymer({
     /** @type {?nearby_share.NearbySettings} */
     settings: {
       type: Object,
+      notify: true,
     }
   },
 

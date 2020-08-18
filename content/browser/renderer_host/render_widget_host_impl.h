@@ -125,16 +125,13 @@ class WebCursor;
 //
 // RenderWidget represents a surface that can paint and receive input. It is
 // used in four contexts:
-//   * Main frame for webpage
-//   * Child frame for webpage
-//   * Popups
-//   * Pepper Fullscreen
+//   * Main frame for webpage (root is RenderView)
+//   * Child frame for webpage (root is RenderFrame)
+//   * Popups (root is RenderWidget)
+//   * Pepper Fullscreen (root is RenderWidget)
 //
-// In the first two cases, the RenderFrame is not the root of the renderer
-// object graph. For the main frame, the root is the RenderView. For child
-// frames, the root is RenderFrame. As such, for the first two cases,
-// destruction of the RenderWidgetHost will not trigger destruction of the
-// RenderWidget.
+// Destruction of the RenderWidgetHost will trigger destruction of the
+// RenderWidget iff RenderWidget is the root of the renderer object graph.
 //
 // Note: We want to converge on RenderFrame always being the root.
 class CONTENT_EXPORT RenderWidgetHostImpl

@@ -173,7 +173,10 @@ void SafeBrowsingUIManager::MaybeReportSafeBrowsingHit(
   DVLOG(1) << "ReportSafeBrowsingHit: " << hit_report.malicious_url << " "
            << hit_report.page_url << " " << hit_report.referrer_url << " "
            << hit_report.is_subresource << " " << hit_report.threat_type;
-  sb_service_->ping_manager()->ReportSafeBrowsingHit(hit_report);
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  sb_service_->ping_manager()->ReportSafeBrowsingHit(
+      sb_service_->GetURLLoaderFactory(profile), hit_report);
 }
 
 // Static.
@@ -213,6 +216,7 @@ const GURL SafeBrowsingUIManager::default_safe_page() const {
 // If the user had opted-in to send ThreatDetails, this gets called
 // when the report is ready.
 void SafeBrowsingUIManager::SendSerializedThreatDetails(
+    content::BrowserContext* browser_context,
     const std::string& serialized) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -223,7 +227,10 @@ void SafeBrowsingUIManager::SendSerializedThreatDetails(
 
   if (!serialized.empty()) {
     DVLOG(1) << "Sending serialized threat details.";
-    sb_service_->ping_manager()->ReportThreatDetails(serialized);
+    sb_service_->ping_manager()->ReportThreatDetails(
+        sb_service_->GetURLLoaderFactory(
+            Profile::FromBrowserContext(browser_context)),
+        serialized);
   }
 }
 

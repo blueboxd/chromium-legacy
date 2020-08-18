@@ -91,8 +91,6 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(Profile* profile) {
       base::FeatureList::IsEnabled(ntp_features::kWebUIThemeModeDoodles));
   source->AddBoolean("modulesEnabled",
                      base::FeatureList::IsEnabled(ntp_features::kModules));
-  source->AddBoolean("kaleidoscopeModuleEnabled",
-                     base::FeatureList::IsEnabled(media::kKaleidoscopeModule));
 
   static constexpr webui::LocalizedString kStrings[] = {
       {"doneButton", IDS_DONE},
@@ -211,6 +209,13 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(Profile* profile) {
       {omnibox::kSearchIconResourceName, IDR_WEBUI_IMAGES_ICON_SEARCH}};
   webui::AddResourcePathsBulk(source, kImages);
 
+#if BUILDFLAG(ENABLE_KALEIDOSCOPE)
+  source->AddBoolean("kaleidoscopeModuleEnabled",
+                     base::FeatureList::IsEnabled(media::kKaleidoscopeModule));
+#else
+  source->AddBoolean("kaleidoscopeModuleEnabled", false);
+#endif  // BUILDFLAG(ENABLE_KALEIDOSCOPE)
+
   source->AddResourcePath("new_tab_page.mojom-lite.js",
                           IDR_NEW_TAB_PAGE_MOJO_LITE_JS);
   source->AddResourcePath("omnibox.mojom-lite.js",
@@ -231,15 +236,17 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(Profile* profile) {
   // script-src.
   source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::ScriptSrc,
-      "script-src chrome://resources chrome://test 'self' 'unsafe-inline' "
-      "https:;");
+      "script-src chrome://resources chrome://test chrome://kaleidoscope "
+      "'self' 'unsafe-inline' https:;");
   // Allow embedding of iframes from the One Google Bar and
-  // chrome-untrusted://new-tab-page for other external content and resources.
+  // chrome-untrusted://new-tab-page for other external content and resources
+  // and chrome-untrusted://kaleidoscope for Kaleidoscope.
   source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::ChildSrc,
-      base::StringPrintf("child-src https: %s %s;",
+      base::StringPrintf("child-src https: %s %s %s;",
                          google_util::CommandLineGoogleBaseURL().spec().c_str(),
-                         chrome::kChromeUIUntrustedNewTabPageUrl));
+                         chrome::kChromeUIUntrustedNewTabPageUrl,
+                         kKaleidoscopeUntrustedContentUIURL));
 
   return source;
 }
@@ -270,6 +277,9 @@ NewTabPageUI::NewTabPageUI(content::WebUI* web_ui)
   content::URLDataSource::Add(
       profile_,
       std::make_unique<ThemeSource>(profile_, /*serve_untrusted=*/true));
+
+  content::WebUIDataSource::Add(profile_,
+                                KaleidoscopeUI::CreateWebUIDataSource());
 
   web_ui->AddRequestableScheme(content::kChromeUIUntrustedScheme);
 

@@ -13,6 +13,7 @@
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/simple_download_manager_coordinator.h"
 #include "components/safe_browsing/core/proto/csd.pb.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_manager.h"
 
 class Profile;
@@ -97,6 +98,7 @@ class AndroidTelemetryService
   // Sends |report| proto to the Safe Browsing backend. The report may not be
   // sent if the proto fails to serialize.
   void MaybeSendApkDownloadReport(
+      content::BrowserContext* browser_context,
       std::unique_ptr<ClientSafeBrowsingReportRequest> report);
 
   // Helper method to get prefs from |profile_|.

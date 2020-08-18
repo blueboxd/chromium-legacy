@@ -48,8 +48,6 @@ import javax.inject.Inject;
 @ActivityScope
 public class QualityEnforcer implements NativeInitObserver {
     @VisibleForTesting
-    static final String NOTIFY = "quality_enforcement.notify";
-    @VisibleForTesting
     static final String CRASH = "quality_enforcement.crash";
     @VisibleForTesting
     static final String KEY_CRASH_REASON = "crash_reason";
@@ -138,18 +136,28 @@ public class QualityEnforcer implements NativeInitObserver {
 
     private void trigger(@ViolationType int type, String url, int httpStatusCode) {
         mUmaRecorder.recordQualityEnforcementViolation(type);
-        showErrorToast(getToastMessage(type, url, httpStatusCode));
+
+        if (!ChromeFeatureList.isEnabled(
+                    ChromeFeatureList.TRUSTED_WEB_ACTIVITY_QUALITY_ENFORCEMENT)) {
+            showErrorToast(getToastMessage(type, url, httpStatusCode));
+            return;
+        }
 
         // Notify the client app.
         Bundle args = new Bundle();
         args.putString(KEY_CRASH_REASON, toTwaCrashMessage(type, url, httpStatusCode));
-        if (!ChromeFeatureList.isEnabled(
-                    ChromeFeatureList.TRUSTED_WEB_ACTIVITY_QUALITY_ENFORCEMENT)) {
-            mConnection.sendExtraCallbackWithResult(mSessionToken, NOTIFY, args);
-        } else {
-            Bundle result = mConnection.sendExtraCallbackWithResult(mSessionToken, CRASH, args);
-            boolean success = result != null && result.getBoolean(KEY_SUCCESS);
-            if (success) mActivity.finish();
+        Bundle result = mConnection.sendExtraCallbackWithResult(mSessionToken, CRASH, args);
+        boolean success = result != null && result.getBoolean(KEY_SUCCESS);
+
+        // Show the Toast if client app does not enable quality enforcement.
+        if (!success) {
+            showErrorToast(getToastMessage(type, url, httpStatusCode));
+        }
+
+        if (ChromeFeatureList.isEnabled(
+                    ChromeFeatureList.TRUSTED_WEB_ACTIVITY_QUALITY_ENFORCEMENT_FORCED)
+                || success) {
+            mActivity.finish();
         }
     }
 

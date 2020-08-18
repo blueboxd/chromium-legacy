@@ -251,7 +251,11 @@ using l10n_util::GetNSString;
 
 - (void)presentationControllerDidAttemptToDismiss:
     (UIPresentationController*)presentationController {
-  [self showCancelConfirmationAlert];
+  // Only show cancel confirmation when "Sync and Google Services" is displayed.
+  if (self.googleServicesSettingsCoordinator
+          .googleServicesSettingsViewIsShown) {
+    [self showCancelConfirmationAlert];
+  }
 }
 
 @end

@@ -1824,6 +1824,9 @@ extern const char kAndroidNightModeTabReparentingDescription[];
 
 #else  // !defined(OS_ANDROID)
 
+extern const char kAllowAllSitesToInitiateMirroringName[];
+extern const char kAllowAllSitesToInitiateMirroringDescription[];
+
 extern const char kEditPasswordsInDesktopSettingsName[];
 extern const char kEditPasswordsInDesktopSettingsDescription[];
 

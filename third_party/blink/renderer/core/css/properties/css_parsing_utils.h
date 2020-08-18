@@ -56,7 +56,7 @@ using ConsumeAnimationItemValue = CSSValue* (*)(CSSPropertyID,
                                                 bool use_legacy_parsing);
 using IsPositionKeyword = bool (*)(CSSValueID);
 
-constexpr size_t kMaxNumAnimationLonghands = 8;
+constexpr size_t kMaxNumAnimationLonghands = 9;
 
 void Complete4Sides(CSSValue* side[4]);
 

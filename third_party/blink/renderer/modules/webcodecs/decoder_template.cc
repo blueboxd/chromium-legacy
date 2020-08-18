@@ -24,6 +24,7 @@
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/webcodecs/audio_decoder.h"
 #include "third_party/blink/renderer/modules/webcodecs/audio_frame.h"
+#include "third_party/blink/renderer/modules/webcodecs/codec_config_eval.h"
 #include "third_party/blink/renderer/modules/webcodecs/video_decoder.h"
 #include "third_party/blink/renderer/modules/webcodecs/video_frame.h"
 #include "third_party/blink/renderer/platform/bindings/exception_code.h"
@@ -60,11 +61,30 @@ int32_t DecoderTemplate<Traits>::decodeQueueSize() {
 
 template <typename Traits>
 void DecoderTemplate<Traits>::configure(const ConfigType* config,
-                                        ExceptionState&) {
+                                        ExceptionState& exception_state) {
   DVLOG(1) << __func__;
+
+  auto media_config = std::make_unique<MediaConfigType>();
+  String console_message;
+
+  CodecConfigEval eval =
+      Traits::CreateMediaConfig(*config, media_config.get(), &console_message);
+  switch (eval) {
+    case CodecConfigEval::kInvalid:
+      exception_state.ThrowTypeError(console_message);
+      return;
+    case CodecConfigEval::kUnsupported:
+      exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
+                                        console_message);
+      return;
+    case CodecConfigEval::kSupported:
+      // Good, lets proceed.
+      break;
+  }
+
   Request* request = MakeGarbageCollected<Request>();
   request->type = Request::Type::kConfigure;
-  request->config = config;
+  request->media_config = std::move(media_config);
   requests_.push_back(request);
   ProcessRequests();
 }
@@ -141,7 +161,7 @@ bool DecoderTemplate<Traits>::ProcessConfigureRequest(Request* request) {
   DVLOG(3) << __func__;
   DCHECK(!pending_request_);
   DCHECK_EQ(request->type, Request::Type::kConfigure);
-  DCHECK(request->config);
+  DCHECK(request->media_config);
 
   // TODO(sandersd): If we require configure() after reset() and there is a
   // pending reset, then we could drop this request.
@@ -165,7 +185,7 @@ bool DecoderTemplate<Traits>::ProcessConfigureRequest(Request* request) {
     // case it must not call ProcessRequests().
     pending_request_ = request;
     Traits::InitializeDecoder(
-        *decoder_, *pending_request_->config,
+        *decoder_, *pending_request_->media_config,
         WTF::Bind(&DecoderTemplate::OnInitializeDone, WrapWeakPersistent(this)),
         WTF::BindRepeating(&DecoderTemplate::OnOutput,
                            WrapWeakPersistent(this)));
@@ -290,7 +310,7 @@ void DecoderTemplate<Traits>::OnConfigureFlushDone(media::DecodeStatus status) {
 
   // Processing continues in OnInitializeDone().
   Traits::InitializeDecoder(
-      *decoder_, *pending_request_->config,
+      *decoder_, *pending_request_->media_config,
       WTF::Bind(&DecoderTemplate::OnInitializeDone, WrapWeakPersistent(this)),
       WTF::BindRepeating(&DecoderTemplate::OnOutput, WrapWeakPersistent(this)));
 }
@@ -374,7 +394,6 @@ void DecoderTemplate<Traits>::Trace(Visitor* visitor) const {
 
 template <typename Traits>
 void DecoderTemplate<Traits>::Request::Trace(Visitor* visitor) const {
-  visitor->Trace(config);
   visitor->Trace(chunk);
   visitor->Trace(resolver);
 }

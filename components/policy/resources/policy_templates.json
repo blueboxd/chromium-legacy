@@ -4241,7 +4241,7 @@
       'id': 528,
       'caption': '''Use KDC policy to delegate credentials.''',
       'tags': ['website-sharing'],
-      'desc': '''Setting the policy to Enabled means HTTP authentication respects approval by KDC policy. In other words, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> delegates credentials if the KDC sets <ph name="OK_AS_DELEGATE">OK-AS-DELEGATE</ph> on a service ticket. See RFC 5896 ( https://tools.ietf.org/html/rfc5896.html ). Service should match <ph name="AUTH_NEGOTIATE_DELEGATE_ALLOWLIST_POLICY_NAME">AuthNegotiateDelegateAllowlist</ph>.
+      'desc': '''Setting the policy to Enabled means HTTP authentication respects approval by KDC policy. In other words, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> delegates user credentials to the service being accessed if the KDC sets <ph name="OK_AS_DELEGATE">OK-AS-DELEGATE</ph> on the service ticket. See RFC 5896 ( https://tools.ietf.org/html/rfc5896.html ). The service should also be allowed by <ph name="AUTH_NEGOTIATE_DELEGATE_ALLOWLIST_POLICY_NAME">AuthNegotiateDelegateAllowlist</ph>.
 
       Setting the policy to Disabled or leaving it unset means KDC policy is ignored on supported platforms and only <ph name="AUTH_NEGOTIATE_DELEGATE_ALLOWLIST_POLICY_NAME">AuthNegotiateDelegateAllowlist</ph> is respected.
 
@@ -7039,7 +7039,7 @@
       'name': 'PolicyRefreshRate',
       'owners': ['file://components/policy/resources/OWNERS'],
       'type': 'int',
-      'schema': { 'type': 'integer' },
+      'schema': { 'type': 'integer', 'minimum': 1800000, 'maximum': 86400000 },
       'supported_on': ['chrome_os:11-', 'chrome.*:79-'],
       'features': {
         'dynamic_refresh': True,
@@ -7061,7 +7061,7 @@
       'name': 'MaxInvalidationFetchDelay',
       'owners': ['stepco@chromium.org', 'poromov@chromium.org'],
       'type': 'int',
-      'schema': { 'type': 'integer' },
+      'schema': { 'type': 'integer', 'minimum': 1000, 'maximum': 30000 },
       'supported_on': ['chrome.*:30-', 'chrome_os:30-'],
       'features': {
         'dynamic_refresh': True,

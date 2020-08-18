@@ -1469,8 +1469,8 @@ void LocalFrameView::ProcessUrlFragment(const KURL& url,
                                         bool should_scroll) {
   // We want to create the anchor even if we don't need to scroll. This ensures
   // all the side effects like setting CSS :target are correctly set.
-  FragmentAnchor* anchor = FragmentAnchor::TryCreate(
-      url, *frame_, same_document_navigation, should_scroll);
+  FragmentAnchor* anchor =
+      FragmentAnchor::TryCreate(url, *frame_, should_scroll);
 
   if (anchor) {
     fragment_anchor_ = anchor;
@@ -3130,12 +3130,9 @@ void LocalFrameView::PushPaintArtifactToCompositor(
 std::unique_ptr<JSONObject> LocalFrameView::CompositedLayersAsJSON(
     LayerTreeFlags flags) {
   auto* root_frame_view = GetFrame().LocalFrameRoot().View();
-  if (root_frame_view->GetPaintController()) {
-    return root_frame_view->paint_artifact_compositor_->GetLayersAsJSON(
-        flags, &root_frame_view->GetPaintController()->GetPaintArtifact());
-  } else {
-    return std::make_unique<JSONObject>();
-  }
+  if (root_frame_view->GetPaintController())
+    return root_frame_view->paint_artifact_compositor_->GetLayersAsJSON(flags);
+  return std::make_unique<JSONObject>();
 }
 
 void LocalFrameView::UpdateStyleAndLayoutIfNeededRecursive() {

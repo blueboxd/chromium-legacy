@@ -27,6 +27,7 @@ import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvid
 import org.chromium.chrome.browser.customtabs.content.TabCreationMode;
 import org.chromium.chrome.browser.customtabs.dependency_injection.BaseCustomTabActivityComponent;
 import org.chromium.chrome.browser.flags.ActivityType;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.lifecycle.InflationObserver;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -37,6 +38,7 @@ import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorBase;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
+import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 
 import java.util.Arrays;
 import java.util.List;
@@ -148,6 +150,8 @@ public class CustomTabDeferredStartupTest {
 
     @Test
     @LargeTest
+    @DisableFeatures(ChromeFeatureList.TRUSTED_WEB_ACTIVITY_QUALITY_ENFORCEMENT_FORCED)
+    // TODO(eirage): Make this test work with quality enforcement.
     public void testPageIsLoadedOnDeferredStartup() throws Exception {
         PageLoadFinishedTabObserver tabObserver = new PageLoadFinishedTabObserver();
         NewTabObserver newTabObserver = new NewTabObserver(tabObserver);

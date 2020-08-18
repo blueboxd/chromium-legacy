@@ -1322,7 +1322,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="2564653188463346023">Ulepszone sprawdzanie pisowni</translation>
 <translation id="2566124945717127842">Wykonaj Powerwash, by zresetować urządzenie z <ph name="IDS_SHORT_PRODUCT_NAME" /> do ustawień fabrycznych.</translation>
 <translation id="2568774940984945469">Kontener paska informacji</translation>
-<translation id="257088987046510401">Motywy</translation>
 <translation id="2571655996835834626">Możesz zmienić swoje ustawienia kontrolujące dostęp witryn internetowych do plików cookie, kodu JavaScript, wtyczek, geolokalizacji, mikrofonu, kamery itd.</translation>
 <translation id="2572032849266859634">Uprawnienia tylko do odczytu dysku <ph name="VOLUME_NAME" /> zostały przyznane.</translation>
 <translation id="2575247648642144396">Ta ikona będzie widoczna, gdy rozszerzenie będzie mogło działać na bieżącej stronie. Użyj tego rozszerzenia, klikając ikonę lub naciskając <ph name="EXTENSION_SHORTCUT" />.</translation>
@@ -3350,7 +3349,6 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="5115338116365931134">SSO</translation>
 <translation id="5116628073786783676">Za&amp;pisz dźwięk jako...</translation>
 <translation id="5117139026559873716">Odłącz telefon od urządzenia <ph name="DEVICE_TYPE" />. Te urządzenia nie będą już łączyć się ze sobą automatycznie.</translation>
-<translation id="5117427536932535467">Motywy i tapety</translation>
 <translation id="5117930984404104619">Monitorowanie działania innych rozszerzeń, w tym otwieranych adresów URL</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Dysk twardy jest pełny. Zapisz w innej lokalizacji lub zwolnij miejsce na dysku.</translation>
@@ -4296,6 +4294,7 @@ Możesz zarządzać ustawieniami konta, korzystając z aplikacji Family Link na
 <translation id="6277105963844135994">Przekroczono czas oczekiwania na sieć</translation>
 <translation id="6277518330158259200">Wykon&amp;aj zrzut ekranu</translation>
 <translation id="6278057325678116358">Użyj motywu GTK+</translation>
+<translation id="6278428485366576908">Motyw</translation>
 <translation id="6278776436938569440">Zmień lokalizację</translation>
 <translation id="6279183038361895380">Naciśnij |<ph name="ACCELERATOR" />|, by wyświetlić kursor</translation>
 <translation id="6280215091796946657">Zaloguj się na inne konto</translation>

@@ -204,7 +204,6 @@ Tocca e tieni premuta una parola per eseguire una ricerca. Per perfezionare la r
 <translation id="2537178555904266562">Errore durante la sincronizzazione delle password</translation>
 <translation id="2546283357679194313">Cookie e dati dei siti</translation>
 <translation id="2567385386134582609">IMMAGINE</translation>
-<translation id="257088987046510401">Temi</translation>
 <translation id="2581165646603367611">Verrà svuotata la cache e verranno cancellati i cookie e altri dati relativi a siti che Chrome non ritiene importanti.</translation>
 <translation id="2587052924345400782">Nuova versione disponibile</translation>
 <translation id="2593272815202181319">Monospace</translation>
@@ -678,6 +677,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="624789221780392884">Aggiornamento pronto</translation>
 <translation id="6255999984061454636">Contenuti suggeriti</translation>
 <translation id="6277522088822131679">Si è verificato un problema durante la stampa della pagina. Riprova.</translation>
+<translation id="6278428485366576908">Tema</translation>
 <translation id="6292420053234093573">Utilizzando Chrome, accetti i <ph name="BEGIN_LINK1" />Termini di servizio di Google<ph name="END_LINK1" /> e i <ph name="BEGIN_LINK2" />Termini di servizio aggiuntivi di Google Chrome e Chrome OS<ph name="END_LINK2" />.</translation>
 <translation id="629730747756840877">Account</translation>
 <translation id="6297765934698848803">L'organizzazione che gestisce il tuo dispositivo ha disattivato la fotocamera.</translation>

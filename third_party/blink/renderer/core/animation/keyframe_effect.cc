@@ -173,6 +173,8 @@ KeyframeEffect::KeyframeEffect(Element* target,
     DCHECK(!target_element_->IsPseudoElement());
     target_pseudo_ = target->tagName();
   }
+
+  CountAnimatedProperties();
 }
 
 KeyframeEffect::~KeyframeEffect() = default;
@@ -293,6 +295,7 @@ void KeyframeEffect::SetKeyframes(StringKeyframeVector keyframes) {
   // potentially affect the effect owner.
   ClearEffects();
   InvalidateAndNotifyOwner();
+  CountAnimatedProperties();
 }
 
 bool KeyframeEffect::Affects(const PropertyHandle& property) const {
@@ -684,6 +687,18 @@ ActiveInterpolationsMap KeyframeEffect::InterpolationsForCommitStyles() {
     ClearEffects();
 
   return results;
+}
+
+void KeyframeEffect::CountAnimatedProperties() const {
+  if (target_element_) {
+    Document& document = target_element_->GetDocument();
+    for (const auto& property : model_->Properties()) {
+      if (property.IsCSSProperty()) {
+        DCHECK(isValidCSSPropertyID(property.GetCSSProperty().PropertyID()));
+        document.CountAnimatedProperty(property.GetCSSProperty().PropertyID());
+      }
+    }
+  }
 }
 
 }  // namespace blink

@@ -1326,7 +1326,6 @@
 <translation id="2564653188463346023">Подобрена проверка на правописот</translation>
 <translation id="2566124945717127842">Вратете ги фабричките вредности да го ресетирате уредот <ph name="IDS_SHORT_PRODUCT_NAME" /> за да биде како нов.</translation>
 <translation id="2568774940984945469">Контејнер на лента со информации</translation>
-<translation id="257088987046510401">Теми</translation>
 <translation id="2571655996835834626">Променете ги поставките што го контролираат пристапот на веб-сајтовите до функциите како што се колачиња, JavaScript, приклучоци, геолокација, микрофон, камера итн.</translation>
 <translation id="2572032849266859634">Доделен е пристап само за читање на <ph name="VOLUME_NAME" />.</translation>
 <translation id="2575247648642144396">Иконата ќе се гледа кога наставката може да дејствува на тековната страница. Користете ја наставката со кликање на иконата или со притискање <ph name="EXTENSION_SHORTCUT" />.</translation>
@@ -3354,7 +3353,6 @@
 <translation id="5115338116365931134">SSO</translation>
 <translation id="5116628073786783676">За&amp;чувај аудио како...</translation>
 <translation id="5117139026559873716">Прекинете ја врската на телефонот со вашиот <ph name="DEVICE_TYPE" />. Веќе нема да се поврзуваат автоматски.</translation>
-<translation id="5117427536932535467">Теми и тапети</translation>
 <translation id="5117930984404104619">Следење на однесувањето на други наставки, вклучувајќи посетени URL-адреси</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Тврдиот диск е полн. Зачувувајте на друга локација или направете простор на тврдиот диск.</translation>
@@ -4300,6 +4298,7 @@
 <translation id="6277105963844135994">Истек на време на мрежата</translation>
 <translation id="6277518330158259200">&amp;Сними слика од екранот</translation>
 <translation id="6278057325678116358">Користи GTK+</translation>
+<translation id="6278428485366576908">Тема</translation>
 <translation id="6278776436938569440">Променете ја локацијата</translation>
 <translation id="6279183038361895380">Притиснете |<ph name="ACCELERATOR" />| за да се покаже покажувачот</translation>
 <translation id="6280215091796946657">Најави се со друга сметка</translation>

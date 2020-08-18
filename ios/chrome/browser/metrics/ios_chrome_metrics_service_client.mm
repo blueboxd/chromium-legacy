@@ -63,6 +63,7 @@
 #include "ios/chrome/browser/google/google_brand.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/metrics/chrome_browser_state_client.h"
+#import "ios/chrome/browser/metrics/ios_chrome_default_browser_metrics_provider.h"
 #include "ios/chrome/browser/metrics/ios_chrome_stability_metrics_provider.h"
 #include "ios/chrome/browser/metrics/mobile_session_shutdown_metrics_provider.h"
 #include "ios/chrome/browser/signin/ios_chrome_signin_status_metrics_provider_delegate.h"
@@ -268,6 +269,9 @@ void IOSChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
   stability_metrics_provider_ = stability_metrics_provider.get();
   metrics_service_->RegisterMetricsProvider(
       std::move(stability_metrics_provider));
+
+  metrics_service_->RegisterMetricsProvider(
+      std::make_unique<IOSChromeDefaultBrowserMetricsProvider>());
 
   // NOTE: metrics_state_manager_->IsMetricsReportingEnabled() returns false
   // during local testing. To test locally, modify

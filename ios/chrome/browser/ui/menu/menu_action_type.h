@@ -9,18 +9,18 @@
 // should not be renumbered. Please keep in sync with "IOSMenuAction" in
 // src/tools/metrics/histograms/enums.xml.
 enum class MenuActionType {
-  Copy = 0,
-  Delete = 1,
-  OpenInNewTab = 2,
-  OpenInNewIncognitoTab = 3,
-  OpenInNewWindow = 4,
-  Remove = 5,
-  Edit = 6,
+  OpenInNewTab = 0,
+  OpenInNewIncognitoTab = 1,
+  OpenInNewWindow = 2,
+  OpenAllInNewTabs = 3,
+  Copy = 4,
+  Edit = 5,
+  Move = 6,
   Share = 7,
-  OpenAllInNewTabs = 8,
-  Hide = 9,
-  Move = 10,
-  kMaxValue = Move
+  Delete = 8,
+  Remove = 9,
+  Hide = 10,
+  kMaxValue = Hide
 };
 
 #endif  // IOS_CHROME_BROWSER_UI_MENU_MENU_ACTION_TYPE_H_

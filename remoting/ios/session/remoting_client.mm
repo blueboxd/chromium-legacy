@@ -130,7 +130,7 @@ static void ResolveFeedbackDataCallback(
   info.capabilities = "";
   if ([RemotingPreferences.instance boolForFlag:RemotingFlagUseWebRTC]) {
     info.flags = "useWebrtc";
-    [MDCSnackbarManager
+    [MDCSnackbarManager.defaultManager
         showMessage:[MDCSnackbarMessage messageWithText:@"Using WebRTC"]];
   }
 

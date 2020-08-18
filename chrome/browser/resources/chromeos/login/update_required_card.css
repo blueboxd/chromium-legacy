@@ -11,6 +11,10 @@
   margin-top: 20px;
 }
 
+#adminMessageContainer {
+  color: var(--oobe-subheader-text-color);
+}
+
 .bold {
   font-weight: bold;
 }

@@ -1,7 +1,8 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icons_css.html">
-<link rel="import" href="./nearby_share_settings_behavior.html">
+<link rel="import" href="nearby_share_settings_behavior.html">
+<link rel="import" href="nearby_contact_visibility.html">
 
 <dom-module id="nearby-visibility-page">
   <template>
@@ -28,6 +29,8 @@
         display: flex;
         flex-grow: 1;
         justify-content: center;
+        margin-inline-end: 24px;
+        margin-inline-start: 24px;
         overflow: hidden;
       }
 
@@ -62,7 +65,9 @@
       </div>
 
       <div id=center-content>
-        <!-- TODO(vecore): add scroll host and visibility component -->
+        <nearby-contact-visibility id="contactVisibility"
+            settings="{{settings}}">
+        </nearby-contact-visibility>
       </div>
 
       <div id="actions">

@@ -32,12 +32,12 @@ SafeBrowsingUIManager::SafeBrowsingUIManager(
 SafeBrowsingUIManager::~SafeBrowsingUIManager() = default;
 
 void SafeBrowsingUIManager::SendSerializedThreatDetails(
+    content::BrowserContext* browser_context,
     const std::string& serialized) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!ping_manager_) {
     ping_manager_ = ::safe_browsing::PingManager::Create(
-        safe_browsing_service_->GetURLLoaderFactory(),
         safe_browsing::GetV4ProtocolConfig(GetProtocolConfigClientName(),
                                            false /* auto_update */));
   }
@@ -46,7 +46,8 @@ void SafeBrowsingUIManager::SendSerializedThreatDetails(
     return;
 
   DVLOG(1) << "Sending serialized threat details";
-  ping_manager_->ReportThreatDetails(serialized);
+  ping_manager_->ReportThreatDetails(
+      safe_browsing_service_->GetURLLoaderFactory(), serialized);
 }
 
 safe_browsing::BaseBlockingPage*

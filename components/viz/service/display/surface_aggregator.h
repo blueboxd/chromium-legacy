@@ -81,7 +81,7 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   // to the output surface.
   void SetDisplayColorSpaces(const gfx::DisplayColorSpaces& color_spaces);
 
-  void SetMaximumTextureSize(int max_texture_size);
+  void SetMaxRenderTargetSize(int max_size);
 
   bool NotifySurfaceDamageAndCheckForDisplayDamage(const SurfaceId& surface_id);
 
@@ -331,9 +331,9 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   // between the two will be added. This space must always be valid.
   gfx::DisplayColorSpaces display_color_spaces_;
 
-  // Maximum texture size which if positive, will limit the size of render
-  // passes.
-  int max_texture_size_ = 0;
+  // Maximum texture size which if larger than zero, will limit the size of
+  // render passes.
+  int max_render_target_size_ = 0;
   // The id for the final color conversion render pass.
   RenderPassId color_conversion_render_pass_id_;
   // The id for the optional render pass used to apply the display transform.

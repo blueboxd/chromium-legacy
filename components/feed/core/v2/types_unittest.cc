@@ -123,4 +123,14 @@ TEST(PersistentMetricsData, SerializesAndDeserializes) {
   EXPECT_EQ(data.current_day_start, deserialized_value.current_day_start);
 }
 
+TEST(Types, ToContentRevision) {
+  const ContentRevision cr = ContentRevision::Generator().GenerateNextId();
+
+  EXPECT_EQ("c/1", ToString(cr));
+  EXPECT_EQ(cr, ToContentRevision(ToString(cr)));
+  EXPECT_EQ(ContentRevision(), ToContentRevision("2"));
+  EXPECT_EQ(ContentRevision(), ToContentRevision("c"));
+  EXPECT_EQ(ContentRevision(), ToContentRevision("c/"));
+}
+
 }  // namespace feed

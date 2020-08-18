@@ -1326,7 +1326,6 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="2564653188463346023">Pinahusay na pang-check ng pagbabaybay</translation>
 <translation id="2566124945717127842">Mag-powerwash upang i-reset ang iyong <ph name="IDS_SHORT_PRODUCT_NAME" /> device upang maging parang bago.</translation>
 <translation id="2568774940984945469">Infobar Container</translation>
-<translation id="257088987046510401">Mga tema</translation>
 <translation id="2571655996835834626">Palitan ang iyong mga setting na kumokontrol sa access ng mga website sa mga feature gaya ng mga cookie, JavaScript, plugin, geolocation, mikropono, camera, atbp.</translation>
 <translation id="2572032849266859634">Ipinagkaloob na sa <ph name="VOLUME_NAME" /> ang read-only na access.</translation>
 <translation id="2575247648642144396">Makikita ang icon na ito kapag makakakilos ang extension sa kasalukuyang pahina. Gamitin ang extension na ito sa pamamagitan ng pag-click sa icon o sa pamamagitan ng pagpindot sa <ph name="EXTENSION_SHORTCUT" />.</translation>
@@ -3354,7 +3353,6 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="5115338116365931134">SSO</translation>
 <translation id="5116628073786783676">I-Sa&amp;ve ang Audio Bilang...</translation>
 <translation id="5117139026559873716">Idiskonekta ang iyong telepono sa <ph name="DEVICE_TYPE" /> mo. Hindi na awtomatikong makokonekta ang mga ito.</translation>
-<translation id="5117427536932535467">Mga Tema at Wallpaper</translation>
 <translation id="5117930984404104619">Subaybayan ang pagkilos ng iba pang mga extension, kasama ang mga binisitang URL</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Puno na ang iyong hard disk. Mangyaring i-save sa isa pang lokasyon o magbakante ng espasyo sa hard disk.</translation>
@@ -4300,6 +4298,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="6277105963844135994">Nag-timeout ang network</translation>
 <translation id="6277518330158259200">Kumuha ng Screenshot</translation>
 <translation id="6278057325678116358">Gamitin ang GTK+</translation>
+<translation id="6278428485366576908">Tema</translation>
 <translation id="6278776436938569440">Baguhin ang lokasyon</translation>
 <translation id="6279183038361895380">Pindutin ang |<ph name="ACCELERATOR" />| upang ipakita ang iyong cursor</translation>
 <translation id="6280215091796946657">Mag-sign in gamit ang ibang account</translation>

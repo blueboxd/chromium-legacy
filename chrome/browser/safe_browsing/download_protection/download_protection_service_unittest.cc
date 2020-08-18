@@ -189,7 +189,8 @@ class FakeSafeBrowsingService : public TestSafeBrowsingService {
     return it->second;
   }
 
-  void SendSerializedDownloadReport(const std::string& unused_report) override {
+  void SendSerializedDownloadReport(Profile* profile,
+                                    const std::string& unused_report) override {
     download_report_count_++;
   }
 

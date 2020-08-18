@@ -38,10 +38,17 @@ base::Optional<fuchsia::web::FrameError> BlinkMessageFromFidl(
   blink_message->data = data_utf16;
 
   if (fidl_message.has_outgoing_transfer()) {
-    for (fuchsia::web::OutgoingTransferable& outgoing :
+    for (fuchsia::web::OutgoingTransferable& transferrable :
          *fidl_message.mutable_outgoing_transfer()) {
       blink_message->ports.push_back(
-          BlinkMessagePortFromFidl(std::move(outgoing.message_port())));
+          BlinkMessagePortFromFidl(std::move(transferrable.message_port())));
+    }
+  }
+  if (fidl_message.has_incoming_transfer()) {
+    for (fuchsia::web::IncomingTransferable& transferrable :
+         *fidl_message.mutable_incoming_transfer()) {
+      blink_message->ports.push_back(
+          BlinkMessagePortFromFidl(std::move(transferrable.message_port())));
     }
   }
 

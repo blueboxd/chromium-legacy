@@ -8,16 +8,23 @@
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
+#include "base/util/values/values_util.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/hats/hats_service.h"
+#include "chrome/browser/ui/hats/hats_service_factory.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/hats/hats_bubble_view.h"
 #include "chrome/browser/ui/views/hats/hats_next_web_dialog.h"
 #include "chrome/browser/ui/views/hats/hats_web_dialog.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/pref_names.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/version_info/version_info.h"
 #include "content/public/test/browser_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "url/gurl.h"
@@ -193,17 +200,47 @@ class MockHatsNextWebDialog : public HatsNextWebDialog {
   MOCK_METHOD1(UpdateWidgetSize, void(gfx::Size));
 };
 
-typedef InProcessBrowserTest HatsNextWebDialogBrowserTest;
+class HatsNextWebDialogBrowserTest : public InProcessBrowserTest {
+ public:
+  HatsNextWebDialogBrowserTest() {
+    feature_list_.InitAndEnableFeature(
+        features::kHappinessTrackingSurveysForDesktopMigration);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
 
 // Test that the web dialog correctly receives change to history state that
 // indicates a survey is ready to be shown.
 IN_PROC_BROWSER_TEST_F(HatsNextWebDialogBrowserTest, SurveyLoaded) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
+  // Use the preference path constants defined in hats_service.cc.
+  const std::string kLastSurveyStartedTime =
+      std::string(kHatsSurveyTriggerTesting) + ".last_survey_started_time";
+  const std::string kLastMajorVersion =
+      std::string(kHatsSurveyTriggerTesting) + ".last_major_version";
+
+  // Ensure the HatsService has been created, as the Web Dialog relies on it
+  // to record a survey has been shown.
+  HatsServiceFactory::GetForProfile(browser()->profile(), true);
+
   auto* dialog = new MockHatsNextWebDialog(
-      browser(), "load_for_testing",
+      browser(), kHatsNextSurveyTriggerIDTesting,
       embedded_test_server()->GetURL("/hats/hats_next_mock.html"),
       base::TimeDelta::FromSeconds(100));
+
+  // Check that no record of a survey being shown is present.
+  const base::DictionaryValue* pref_data =
+      browser()->profile()->GetPrefs()->GetDictionary(
+          prefs::kHatsSurveyMetadata);
+  base::Optional<base::Time> last_survey_started_time =
+      util::ValueToTime(pref_data->FindPath(kLastSurveyStartedTime));
+  base::Optional<int> last_major_version =
+      pref_data->FindIntPath(kLastMajorVersion);
+  ASSERT_FALSE(last_survey_started_time.has_value());
+  ASSERT_FALSE(last_major_version.has_value());
 
   // The hats_next_mock.html will provide a state update to the dialog to
   // indicate that the survey has been loaded.
@@ -214,6 +251,17 @@ IN_PROC_BROWSER_TEST_F(HatsNextWebDialogBrowserTest, SurveyLoaded) {
         run_loop.Quit();
       }));
   run_loop.Run();
+
+  // Check that a record of the survey being shown has been recorded.
+  pref_data = browser()->profile()->GetPrefs()->GetDictionary(
+      prefs::kHatsSurveyMetadata);
+  last_survey_started_time =
+      util::ValueToTime(pref_data->FindPath(kLastSurveyStartedTime));
+  last_major_version = pref_data->FindIntPath(kLastMajorVersion);
+  ASSERT_TRUE(last_survey_started_time.has_value());
+  ASSERT_TRUE(last_major_version.has_value());
+  ASSERT_EQ(static_cast<uint32_t>(*last_major_version),
+            version_info::GetVersion().components()[0]);
 }
 
 // Test that the web dialog correctly receives change to history state that
@@ -277,10 +325,10 @@ IN_PROC_BROWSER_TEST_F(HatsNextWebDialogBrowserTest, NewWebContents) {
       embedded_test_server()->GetURL("/hats/hats_next_mock.html"),
       base::TimeDelta::FromSeconds(100));
 
-  // The mock hats dialog will push a loaded state after it has attempted to
+  // The mock hats dialog will push a close state after it has attempted to
   // open another web contents.
   base::RunLoop run_loop;
-  EXPECT_CALL(*dialog, ShowWidget).WillOnce(testing::Invoke([&run_loop]() {
+  EXPECT_CALL(*dialog, CloseWidget).WillOnce(testing::Invoke([&run_loop]() {
     run_loop.Quit();
   }));
   run_loop.Run();

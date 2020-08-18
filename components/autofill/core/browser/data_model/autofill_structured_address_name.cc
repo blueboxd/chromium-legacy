@@ -155,6 +155,52 @@ NameFull::NameFull(const NameFull& other) : NameFull() {
   *this = other;
 }
 
+void NameFull::MigrateLegacyStructure(bool is_verified_profile) {
+  // Only if the name was imported from a legacy structure, the component has no
+  if (GetVerificationStatus() != VerificationStatus::kNoStatus)
+    return;
+
+  // If the value of the component is set, use this value as a basis to migrate
+  // the name.
+  if (!GetValue().empty()) {
+    // If the profile is verified, set the verification status to accordingly
+    // and reset all the subcomponents.
+    VerificationStatus status = is_verified_profile
+                                    ? VerificationStatus::kUserVerified
+                                    : VerificationStatus::kObserved;
+    SetValue(GetValue(), status);
+
+    // Set the verification status of all subcomponents to |kParsed|.
+    for (auto* subcomponent : Subcomponents()) {
+      subcomponent->SetValue(subcomponent->GetValue(),
+                             subcomponent->GetValue().empty()
+                                 ? VerificationStatus::kNoStatus
+                                 : VerificationStatus::kParsed);
+    }
+
+    // Finally, unset the substructure of the last name and complete it;
+    name_last_.RecursivelyUnsetSubcomponents();
+    // This tree is not trivially completable, because it has values both at the
+    // root node and in the first layer. Make a manual completion call for the
+    // structure of the last name.
+    name_last_.RecursivelyCompleteTree();
+
+    return;
+  }
+
+  // Otherwise, at least one of the subcomponents should be set.
+  // Set its verification status to observed.
+  for (auto* subcomponent : Subcomponents()) {
+    if (!subcomponent->GetValue().empty())
+      subcomponent->SetValue(subcomponent->GetValue(),
+                             VerificationStatus::kObserved);
+  }
+
+  // If no subcomponent is set, the name is empty. In any case, the name was
+  // successfully migrated.
+  return;
+}
+
 std::vector<const re2::RE2*> NameFull::GetParseRegularExpressionsByRelevance()
     const {
   auto* pattern_provider = StructuredAddressesRegExProvider::Instance();

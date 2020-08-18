@@ -13,7 +13,8 @@ found in the LICENSE file. -->
         --oobe-dialog-content-padding-top: 0;
       }
     </style>
-    <oobe-dialog id="familyLinkDialog" role="dialog" has-buttons>
+    <oobe-dialog id="familyLinkDialog" role="dialog" has-buttons
+        aria-label$="[[getDialogTitle_(locale, email_, domain_)]]">
       <hd-iron-icon slot="oobe-icon"
           icon1x="oobe-32:family" icon2x="oobe-64:family">
       </hd-iron-icon>

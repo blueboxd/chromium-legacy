@@ -326,10 +326,10 @@ _CONFIG = [
             'cc::PaintHoldingCommitTrigger',
 
             # Scrolling
-            'cc::kManipulationInfoHasPinchZoomed',
-            'cc::kManipulationInfoHasScrolledByPrecisionTouchPad',
-            'cc::kManipulationInfoHasScrolledByTouch',
-            'cc::kManipulationInfoHasScrolledByWheel',
+            'cc::kManipulationInfoPinchZoom',
+            'cc::kManipulationInfoPrecisionTouchPad',
+            'cc::kManipulationInfoTouch',
+            'cc::kManipulationInfoWheel',
             'cc::kPixelsPerLineStep',
             'cc::kMinFractionToStepWhenPaging',
             'cc::kPercentDeltaForDirectionalScroll',

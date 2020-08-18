@@ -1322,7 +1322,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="2564653188463346023">Ortografia-zuzentzaile hobetua</translation>
 <translation id="2566124945717127842">Berrezarri fabrikako ezarpenak eta <ph name="IDS_SHORT_PRODUCT_NAME" /> gailua berria izango balitz bezala geratuko da.</translation>
 <translation id="2568774940984945469">Informazio-barraren edukiontzia</translation>
-<translation id="257088987046510401">Gaiak</translation>
 <translation id="2571655996835834626">Aldatu webguneek darabiltzaten eginbideen baimenak kontrolatzen dituzten ezarpenak; besteak beste, cookieak, JavaScript, pluginak, geokokapena, mikrofonoa eta kamera.</translation>
 <translation id="2572032849266859634"><ph name="VOLUME_NAME" /> bolumenean irakurtzeko sarbidea bakarrik eman da.</translation>
 <translation id="2575247648642144396">Ikono hau ikusgai egongo da luzapena orri honetan ekintzak egin ditzakeenean. Luzapena erabiltzeko, sakatu ikonoa edo <ph name="EXTENSION_SHORTCUT" />.</translation>
@@ -3346,7 +3345,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="5115338116365931134">Saio-hasiera bakarra</translation>
 <translation id="5116628073786783676">Go&amp;rde audioa honela…</translation>
 <translation id="5117139026559873716">Deskonektatu telefonoa <ph name="DEVICE_TYPE" /> gailutik. Automatikoki konektatzeari utziko diote.</translation>
-<translation id="5117427536932535467">Gaiak eta horma-paperak</translation>
 <translation id="5117930984404104619">Kontrolatu beste luzapenen funtzionamendua, bisitatutako URLena barne</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Disko gogorra beteta duzu. Gorde beste kokapen batean edo libratu espazioa disko gogorrean.</translation>
@@ -4292,6 +4290,7 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="6277105963844135994">Sarera konektatzeko denbora-muga gainditu da</translation>
 <translation id="6277518330158259200">&amp;Atera pantaila-argazkia</translation>
 <translation id="6278057325678116358">Erabili GTK+</translation>
+<translation id="6278428485366576908">Gaia</translation>
 <translation id="6278776436938569440">Aldatu kokapena</translation>
 <translation id="6279183038361895380">Kurtsorea ikusteko, sakatu |<ph name="ACCELERATOR" />|</translation>
 <translation id="6280215091796946657">Hasi saioa beste kontu batekin</translation>

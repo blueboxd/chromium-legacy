@@ -433,7 +433,7 @@ int ExtractPrintPreviewPageIndex(base::StringPiece src_url) {
 }
 
 bool IsPrintPreviewUrl(base::StringPiece url) {
-  return url.starts_with(kChromePrint);
+  return base::StartsWith(url, kChromePrint);
 }
 
 bool IsPreviewingPDF(int print_preview_page_count) {
@@ -503,7 +503,8 @@ bool OutOfProcessInstance::Init(uint32_t argc,
   std::string document_url = document_url_var.AsString();
   base::StringPiece document_url_piece(document_url);
   is_print_preview_ = IsPrintPreviewUrl(document_url_piece);
-  CHECK(document_url_piece.starts_with(kChromeExtension) || is_print_preview_);
+  CHECK(base::StartsWith(document_url_piece, kChromeExtension) ||
+        is_print_preview_);
 
   // Check if the plugin is full frame. This is passed in from JS.
   for (uint32_t i = 0; i < argc; ++i) {

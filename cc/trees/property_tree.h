@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include <memory>
+#include <string>
 #include <unordered_map>
 #include <vector>
 
@@ -42,7 +43,7 @@ class LayerTreeImpl;
 class RenderSurfaceImpl;
 struct ClipNode;
 struct EffectNode;
-struct ScrollAndScaleSet;
+struct CompositorCommitData;
 struct ScrollNode;
 struct TransformNode;
 struct TransformCachedNodeData;
@@ -434,7 +435,7 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
   // Collects deltas for scroll changes on the impl thread that need to be
   // reported to the main thread during the main frame. As such, should only be
   // called on the impl thread side PropertyTrees.
-  void CollectScrollDeltas(ScrollAndScaleSet* scroll_info,
+  void CollectScrollDeltas(CompositorCommitData* commit_data,
                            ElementId inner_viewport_scroll_element_id,
                            bool use_fractional_deltas,
                            const base::flat_set<ElementId>& snapped_elements);

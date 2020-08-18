@@ -543,18 +543,6 @@ TEST(StringPieceTest, CheckCustom) {
   StringPiece e;
   std::string s2;
 
-  // starts_with
-  ASSERT_TRUE(a.starts_with(a));
-  ASSERT_TRUE(a.starts_with("foo"));
-  ASSERT_TRUE(a.starts_with(e));
-  ASSERT_TRUE(b.starts_with(s1));
-  ASSERT_TRUE(b.starts_with(b));
-  ASSERT_TRUE(b.starts_with(e));
-  ASSERT_TRUE(e.starts_with(""));
-  ASSERT_TRUE(!a.starts_with(b));
-  ASSERT_TRUE(!b.starts_with(a));
-  ASSERT_TRUE(!e.starts_with(a));
-
   StringPiece c;
   c = {"foobar", 6};
   ASSERT_EQ(c, a);
@@ -593,16 +581,6 @@ TYPED_TEST(CommonStringPieceTest, CheckComparisons2) {
 
   ASSERT_TRUE(abc > BasicStringPiece<TypeParam>(alphabet_y));
   ASSERT_GT(abc.compare(BasicStringPiece<TypeParam>(alphabet_y)), 0);
-}
-
-// Test operations only supported by std::string version.
-TEST(StringPieceTest, CheckComparisons2) {
-  StringPiece abc("abcdefghijklmnopqrstuvwxyz");
-
-  // starts_with
-  ASSERT_TRUE(abc.starts_with(abc));
-  ASSERT_TRUE(abc.starts_with("abcdefghijklm"));
-  ASSERT_TRUE(!abc.starts_with("abcdefguvwxyz"));
 }
 
 TYPED_TEST(CommonStringPieceTest, StringCompareNotAmbiguous) {
@@ -772,20 +750,6 @@ TEST(StringPieceTest, Compare) {
   static_assert(piece.compare("gh") == -1, "");
   static_assert(piece.compare("ghi") == -1, "");
   static_assert(piece.compare("ghij") == -1, "");
-}
-
-TEST(StringPieceTest, StartsWith) {
-  constexpr StringPiece piece("abc");
-
-  static_assert(piece.starts_with(""), "");
-  static_assert(piece.starts_with("a"), "");
-  static_assert(piece.starts_with("ab"), "");
-  static_assert(piece.starts_with("abc"), "");
-
-  static_assert(!piece.starts_with("b"), "");
-  static_assert(!piece.starts_with("bc"), "");
-
-  static_assert(!piece.starts_with("abcd"), "");
 }
 
 TEST(StringPieceTest, Substr) {

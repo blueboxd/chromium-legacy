@@ -79,6 +79,9 @@ class ScreenshotShareSheetMediator {
      * Sends the current image to the share target.
      */
     private void share() {
+        if (!mTab.isInitialized()) {
+            return;
+        }
         Bitmap bitmap = mModel.get(ScreenshotShareSheetViewProperties.SCREENSHOT_BITMAP);
 
         WindowAndroid window = mTab.getWindowAndroid();

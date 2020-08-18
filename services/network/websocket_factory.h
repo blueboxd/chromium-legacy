@@ -22,6 +22,7 @@ namespace net {
 class IsolationInfo;
 class SiteForCookies;
 class SSLInfo;
+struct NetworkTrafficAnnotationTag;
 }  // namespace net
 
 namespace url {
@@ -48,6 +49,7 @@ class WebSocketFactory final {
       int32_t render_frame_id,
       const url::Origin& origin,
       uint32_t options,
+      net::NetworkTrafficAnnotationTag traffic_annotation,
       mojo::PendingRemote<mojom::WebSocketHandshakeClient> handshake_client,
       mojo::PendingRemote<mojom::AuthenticationHandler> auth_handler,
       mojo::PendingRemote<mojom::TrustedHeaderClient> header_client);

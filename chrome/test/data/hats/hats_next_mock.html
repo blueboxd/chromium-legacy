@@ -4,7 +4,9 @@
     <script>
       const params = new URLSearchParams(window.location.search);
 
-      if (params.get('trigger_id') == "load_for_testing") {
+      // Watch for the testing trigger_id for HaTS Next, defined on the browser
+      // side in hats_service.cc.
+      if (params.get('trigger_id') == 'zishSVViB0kPN8UwQ150VGjBKuBP') {
         history.pushState('', '', '#loaded');
       }
 
@@ -18,7 +20,7 @@
 
       if (params.get('trigger_id') == "open_new_web_contents_for_testing"){
         window.open('http://foo.com', '_blank');
-        history.pushState('', '', '#loaded');
+        history.pushState('', '', '#close');
       }
 
       if (params.get('trigger_id') == "resize_for_testing") {

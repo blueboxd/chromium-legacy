@@ -1227,7 +1227,7 @@ class PpdProviderImpl : public PpdProvider {
     size_t best_idx = -1;
     for (size_t i = 0; i < available_locales.size(); ++i) {
       const std::string& available = available_locales[i];
-      if (base::StringPiece(browser_locale_).starts_with(available + "-") &&
+      if (base::StartsWith(browser_locale_, available + "-") &&
           available.size() > best_len) {
         best_len = available.size();
         best_idx = i;

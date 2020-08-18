@@ -30,6 +30,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
 #include "net/log/net_log_with_source.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/websockets/websocket_errors.h"
 #include "net/websockets/websocket_event_interface.h"
 #include "net/websockets/websocket_frame.h"
@@ -311,10 +312,11 @@ void WebSocketChannel::SendAddChannelRequest(
     const url::Origin& origin,
     const SiteForCookies& site_for_cookies,
     const IsolationInfo& isolation_info,
-    const HttpRequestHeaders& additional_headers) {
+    const HttpRequestHeaders& additional_headers,
+    NetworkTrafficAnnotationTag traffic_annotation) {
   SendAddChannelRequestWithSuppliedCallback(
       socket_url, requested_subprotocols, origin, site_for_cookies,
-      isolation_info, additional_headers,
+      isolation_info, additional_headers, traffic_annotation,
       base::BindOnce(&WebSocketStream::CreateAndConnectStream));
 }
 
@@ -446,10 +448,12 @@ void WebSocketChannel::SendAddChannelRequestForTesting(
     const SiteForCookies& site_for_cookies,
     const IsolationInfo& isolation_info,
     const HttpRequestHeaders& additional_headers,
+    NetworkTrafficAnnotationTag traffic_annotation,
     WebSocketStreamRequestCreationCallback callback) {
   SendAddChannelRequestWithSuppliedCallback(
       socket_url, requested_subprotocols, origin, site_for_cookies,
-      isolation_info, additional_headers, std::move(callback));
+      isolation_info, additional_headers, traffic_annotation,
+      std::move(callback));
 }
 
 void WebSocketChannel::SetClosingHandshakeTimeoutForTesting(
@@ -469,6 +473,7 @@ void WebSocketChannel::SendAddChannelRequestWithSuppliedCallback(
     const SiteForCookies& site_for_cookies,
     const IsolationInfo& isolation_info,
     const HttpRequestHeaders& additional_headers,
+    NetworkTrafficAnnotationTag traffic_annotation,
     WebSocketStreamRequestCreationCallback callback) {
   DCHECK_EQ(FRESHLY_CONSTRUCTED, state_);
   if (!socket_url.SchemeIsWSOrWSS()) {
@@ -483,7 +488,7 @@ void WebSocketChannel::SendAddChannelRequestWithSuppliedCallback(
   stream_request_ = std::move(callback).Run(
       socket_url_, requested_subprotocols, origin, site_for_cookies,
       isolation_info, additional_headers, url_request_context_,
-      NetLogWithSource(), std::move(connect_delegate));
+      NetLogWithSource(), traffic_annotation, std::move(connect_delegate));
   SetState(CONNECTING);
 }
 

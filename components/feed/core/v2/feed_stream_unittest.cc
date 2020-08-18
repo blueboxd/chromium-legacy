@@ -1569,6 +1569,31 @@ TEST_F(FeedStreamTest, LoadStreamFromNetworkUploadsActions) {
   EXPECT_EQ(1, network_.action_request_sent->feed_actions_size());
 }
 
+TEST_F(FeedStreamTest, UploadedActionsHaveSequentialNumbers) {
+  // Send 3 actions.
+  stream_->UploadAction(MakeFeedAction(1ul), false, base::DoNothing());
+  stream_->UploadAction(MakeFeedAction(2ul), false, base::DoNothing());
+  stream_->UploadAction(MakeFeedAction(3ul), true, base::DoNothing());
+  WaitForIdleTaskQueue();
+  ASSERT_EQ(1, network_.action_request_call_count);
+  feedwire::UploadActionsRequest request1 = *network_.action_request_sent;
+
+  // Send another action in a new request.
+  stream_->UploadAction(MakeFeedAction(4ul), true, base::DoNothing());
+  WaitForIdleTaskQueue();
+  ASSERT_EQ(2, network_.action_request_call_count);
+  feedwire::UploadActionsRequest request2 = *network_.action_request_sent;
+
+  // Verify that sent actions have sequential numbers.
+  ASSERT_EQ(3, request1.feed_actions_size());
+  ASSERT_EQ(1, request2.feed_actions_size());
+
+  EXPECT_EQ(1, request1.feed_actions(0).client_data().sequence_number());
+  EXPECT_EQ(2, request1.feed_actions(1).client_data().sequence_number());
+  EXPECT_EQ(3, request1.feed_actions(2).client_data().sequence_number());
+  EXPECT_EQ(4, request2.feed_actions(0).client_data().sequence_number());
+}
+
 TEST_F(FeedStreamTest, LoadMoreUploadsActions) {
   response_translator_.InjectResponse(MakeTypicalInitialModelState());
   TestSurface surface(stream_.get());
@@ -1711,14 +1736,14 @@ TEST_F(FeedStreamTest, MetadataLoadedWhenDatabaseInitialized) {
 
   // Set the token and increment next action ID.
   stream_->GetMetadata()->SetConsistencyToken("token");
-  EXPECT_EQ(0, stream_->GetMetadata()->GetNextActionId().GetUnsafeValue());
+  EXPECT_EQ(1, stream_->GetMetadata()->GetNextActionId().GetUnsafeValue());
 
   // Creating a stream should load metadata.
   CreateStream();
 
   ASSERT_TRUE(stream_->GetMetadata());
   EXPECT_EQ("token", stream_->GetMetadata()->GetConsistencyToken());
-  EXPECT_EQ(1, stream_->GetMetadata()->GetNextActionId().GetUnsafeValue());
+  EXPECT_EQ(2, stream_->GetMetadata()->GetNextActionId().GetUnsafeValue());
 }
 
 TEST_F(FeedStreamTest, ModelUnloadsAfterTimeout) {

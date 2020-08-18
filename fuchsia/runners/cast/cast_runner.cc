@@ -12,6 +12,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/files/file_path.h"
 #include "base/fuchsia/file_utils.h"
 #include "base/fuchsia/filtered_service_directory.h"
 #include "base/fuchsia/fuchsia_logging.h"
@@ -209,6 +210,12 @@ fuchsia::web::CreateContextParams CastRunner::GetCommonContextParams() {
         fuchsia::web::ContextFeatureFlags::HARDWARE_VIDEO_DECODER_ONLY |
         fuchsia::web::ContextFeatureFlags::VULKAN;
   }
+
+  // TODO(b/154204041) Migrate to using persistent data, and specifying an
+  // explicit quota for CDM storage.
+  params.set_cdm_data_directory(base::fuchsia::OpenDirectory(
+      base::FilePath(base::fuchsia::kPersistedCacheDirectoryPath)));
+  CHECK(params.cdm_data_directory());
 
   const char kCastPlayreadyKeySystem[] = "com.chromecast.playready";
   params.set_playready_key_system(kCastPlayreadyKeySystem);

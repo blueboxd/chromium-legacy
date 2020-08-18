@@ -3364,22 +3364,20 @@ void WebViewImpl::RecordManipulationTypeCounts(cc::ManipulationInfo info) {
   if (!MainFrameImpl())
     return;
 
-  if ((info & cc::kManipulationInfoHasScrolledByWheel) ==
-      cc::kManipulationInfoHasScrolledByWheel) {
+  if ((info & cc::kManipulationInfoWheel) == cc::kManipulationInfoWheel) {
     UseCounter::Count(MainFrameImpl()->GetDocument(),
                       WebFeature::kScrollByWheel);
   }
-  if ((info & cc::kManipulationInfoHasScrolledByTouch) ==
-      cc::kManipulationInfoHasScrolledByTouch) {
+  if ((info & cc::kManipulationInfoTouch) == cc::kManipulationInfoTouch) {
     UseCounter::Count(MainFrameImpl()->GetDocument(),
                       WebFeature::kScrollByTouch);
   }
-  if ((info & cc::kManipulationInfoHasPinchZoomed) ==
-      cc::kManipulationInfoHasPinchZoomed) {
+  if ((info & cc::kManipulationInfoPinchZoom) ==
+      cc::kManipulationInfoPinchZoom) {
     UseCounter::Count(MainFrameImpl()->GetDocument(), WebFeature::kPinchZoom);
   }
-  if ((info & cc::kManipulationInfoHasScrolledByPrecisionTouchPad) ==
-      cc::kManipulationInfoHasScrolledByPrecisionTouchPad) {
+  if ((info & cc::kManipulationInfoPrecisionTouchPad) ==
+      cc::kManipulationInfoPrecisionTouchPad) {
     UseCounter::Count(MainFrameImpl()->GetDocument(),
                       WebFeature::kScrollByPrecisionTouchPad);
   }

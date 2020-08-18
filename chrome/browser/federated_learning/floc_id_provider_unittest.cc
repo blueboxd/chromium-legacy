@@ -29,9 +29,9 @@ class MockFlocIdProvider : public FlocIdProviderImpl {
  public:
   using FlocIdProviderImpl::FlocIdProviderImpl;
 
-  void NotifyFlocIdUpdated(EventLoggingAction event_logging_action) override {
-    ++floc_id_notification_count_;
-    FlocIdProviderImpl::NotifyFlocIdUpdated(event_logging_action);
+  void NotifyFlocIdUpdated() override {
+    ++floc_update_notification_count_;
+    FlocIdProviderImpl::NotifyFlocIdUpdated();
   }
 
   bool AreThirdPartyCookiesAllowed() override {
@@ -42,8 +42,8 @@ class MockFlocIdProvider : public FlocIdProviderImpl {
     std::move(callback).Run(swaa_nac_account_enabled_);
   }
 
-  size_t floc_id_notification_count() const {
-    return floc_id_notification_count_;
+  size_t floc_update_notification_count() const {
+    return floc_update_notification_count_;
   }
 
   void set_third_party_cookies_allowed(bool allowed) {
@@ -55,7 +55,7 @@ class MockFlocIdProvider : public FlocIdProviderImpl {
   }
 
  private:
-  size_t floc_id_notification_count_ = 0u;
+  size_t floc_update_notification_count_ = 0u;
   bool third_party_cookies_allowed_ = true;
   bool swaa_nac_account_enabled_ = true;
 };
@@ -142,7 +142,7 @@ TEST_F(FlocIdProviderUnitTest, QualifiedInitialHistory) {
 
   // Expect that the floc session hasn't started, as the floc_id_provider hasn't
   // been notified about state of the sync_service.
-  ASSERT_EQ(0u, floc_id_provider_->floc_id_notification_count());
+  ASSERT_EQ(0u, floc_id_provider_->floc_update_notification_count());
   ASSERT_FALSE(floc_id().IsValid());
   ASSERT_EQ(0u, floc_session_count());
 
@@ -154,7 +154,7 @@ TEST_F(FlocIdProviderUnitTest, QualifiedInitialHistory) {
   task_environment_.RunUntilIdle();
 
   // Expect a floc id update notification.
-  ASSERT_EQ(1u, floc_id_provider_->floc_id_notification_count());
+  ASSERT_EQ(1u, floc_id_provider_->floc_update_notification_count());
   ASSERT_TRUE(floc_id().IsValid());
   ASSERT_EQ(FlocId::CreateFromHistory({domain}).ToDebugHeaderValue(),
             floc_id().ToDebugHeaderValue());
@@ -164,7 +164,7 @@ TEST_F(FlocIdProviderUnitTest, QualifiedInitialHistory) {
   // there's no history in the last 7 days so the id has been reset to empty.
   task_environment_.FastForwardBy(base::TimeDelta::FromDays(1));
 
-  ASSERT_EQ(2u, floc_id_provider_->floc_id_notification_count());
+  ASSERT_EQ(2u, floc_id_provider_->floc_update_notification_count());
   ASSERT_FALSE(floc_id().IsValid());
   ASSERT_EQ(2u, floc_session_count());
 }
@@ -183,7 +183,7 @@ TEST_F(FlocIdProviderUnitTest, UnqualifiedInitialHistory) {
 
   // Expect that the floc session hasn't started, as the floc_id_provider hasn't
   // been notified about state of the sync_service.
-  ASSERT_EQ(0u, floc_id_provider_->floc_id_notification_count());
+  ASSERT_EQ(0u, floc_id_provider_->floc_update_notification_count());
   ASSERT_FALSE(floc_id().IsValid());
   ASSERT_EQ(0u, floc_session_count());
 
@@ -196,7 +196,7 @@ TEST_F(FlocIdProviderUnitTest, UnqualifiedInitialHistory) {
 
   // Expect no floc id update notification, as there is no qualified history
   // entry. However, the 1st session should already have started.
-  ASSERT_EQ(0u, floc_id_provider_->floc_id_notification_count());
+  ASSERT_EQ(0u, floc_id_provider_->floc_update_notification_count());
   ASSERT_EQ(1u, floc_session_count());
 
   // Add a history entry with a timestamp 6 days back from now.
@@ -207,7 +207,7 @@ TEST_F(FlocIdProviderUnitTest, UnqualifiedInitialHistory) {
   // as the id refresh interval is 24 hours.
   task_environment_.FastForwardBy(base::TimeDelta::FromHours(23));
 
-  ASSERT_EQ(0u, floc_id_provider_->floc_id_notification_count());
+  ASSERT_EQ(0u, floc_id_provider_->floc_update_notification_count());
   ASSERT_EQ(1u, floc_session_count());
 
   // Advance the clock by 1 hour. Expect a floc id update notification, as the
@@ -215,11 +215,40 @@ TEST_F(FlocIdProviderUnitTest, UnqualifiedInitialHistory) {
   // days.
   task_environment_.FastForwardBy(base::TimeDelta::FromHours(1));
 
-  ASSERT_EQ(1u, floc_id_provider_->floc_id_notification_count());
+  ASSERT_EQ(1u, floc_id_provider_->floc_update_notification_count());
   ASSERT_TRUE(floc_id().IsValid());
   ASSERT_EQ(FlocId::CreateFromHistory({domain}).ToDebugHeaderValue(),
             floc_id().ToDebugHeaderValue());
   ASSERT_EQ(2u, floc_session_count());
+}
+
+TEST_F(FlocIdProviderUnitTest, ScheduledUpdateSameFloc_NoNotification) {
+  std::string domain = "foo.com";
+
+  // Add a history entry with a timestamp 2 days back from now.
+  history::HistoryAddPageArgs add_page_args;
+  add_page_args.url = GURL(base::StrCat({"https://www.", domain}));
+  add_page_args.time = base::Time::Now() - base::TimeDelta::FromDays(2);
+  add_page_args.publicly_routable = true;
+  history_service_->AddPage(add_page_args);
+
+  task_environment_.RunUntilIdle();
+
+  // Trigger the start of the 1st floc session.
+  test_sync_service_->SetTransportState(
+      syncer::SyncService::TransportState::ACTIVE);
+  test_sync_service_->FireStateChanged();
+
+  task_environment_.RunUntilIdle();
+
+  // Expect a floc id update notification.
+  ASSERT_EQ(1u, floc_id_provider_->floc_update_notification_count());
+
+  // Advance the clock by 1 day. Expect no additional floc id update
+  // notification, as the floc didn't change.
+  task_environment_.FastForwardBy(base::TimeDelta::FromDays(1));
+
+  ASSERT_EQ(1u, floc_id_provider_->floc_update_notification_count());
 }
 
 TEST_F(FlocIdProviderUnitTest, CheckCanComputeFlocId_Success) {
@@ -275,8 +304,7 @@ TEST_F(FlocIdProviderUnitTest, EventLogging) {
 
   set_floc_session_count(1u);
   set_floc_id(FlocId(12345ULL));
-  floc_id_provider_->NotifyFlocIdUpdated(
-      FlocIdProviderImpl::EventLoggingAction::kAllow);
+  floc_id_provider_->NotifyFlocIdUpdated();
 
   ASSERT_EQ(1u, fake_user_event_service_->GetRecordedUserEvents().size());
   const sync_pb::UserEventSpecifics& specifics1 =
@@ -292,8 +320,7 @@ TEST_F(FlocIdProviderUnitTest, EventLogging) {
 
   set_floc_session_count(2u);
   set_floc_id(FlocId(999ULL));
-  floc_id_provider_->NotifyFlocIdUpdated(
-      FlocIdProviderImpl::EventLoggingAction::kAllow);
+  floc_id_provider_->NotifyFlocIdUpdated();
 
   ASSERT_EQ(2u, fake_user_event_service_->GetRecordedUserEvents().size());
   const sync_pb::UserEventSpecifics& specifics2 =
@@ -306,6 +333,21 @@ TEST_F(FlocIdProviderUnitTest, EventLogging) {
   EXPECT_EQ(sync_pb::UserEventSpecifics::FlocIdComputed::REFRESHED,
             event2.event_trigger());
   EXPECT_EQ(999ULL, event2.floc_id());
+
+  set_floc_id(FlocId());
+  floc_id_provider_->NotifyFlocIdUpdated();
+
+  ASSERT_EQ(3u, fake_user_event_service_->GetRecordedUserEvents().size());
+  const sync_pb::UserEventSpecifics& specifics3 =
+      fake_user_event_service_->GetRecordedUserEvents()[2];
+  EXPECT_EQ(sync_pb::UserEventSpecifics::kFlocIdComputedEvent,
+            specifics3.event_case());
+
+  const sync_pb::UserEventSpecifics_FlocIdComputed& event3 =
+      specifics3.floc_id_computed_event();
+  EXPECT_EQ(sync_pb::UserEventSpecifics::FlocIdComputed::REFRESHED,
+            event3.event_trigger());
+  EXPECT_FALSE(event3.has_floc_id());
 }
 
 TEST_F(FlocIdProviderUnitTest, HistoryEntriesWithPrivateIP) {
@@ -364,7 +406,7 @@ TEST_F(FlocIdProviderUnitTest, TurnSyncOffAndOn) {
   task_environment_.RunUntilIdle();
 
   // Expect a floc id update notification.
-  ASSERT_EQ(1u, floc_id_provider_->floc_id_notification_count());
+  ASSERT_EQ(1u, floc_id_provider_->floc_update_notification_count());
   ASSERT_EQ(FlocId::CreateFromHistory({domain}).ToDebugHeaderValue(),
             floc_id().ToDebugHeaderValue());
   ASSERT_EQ(1u, floc_session_count());
@@ -377,7 +419,7 @@ TEST_F(FlocIdProviderUnitTest, TurnSyncOffAndOn) {
   // the sync was turned off so the id has been reset to empty.
   task_environment_.FastForwardBy(base::TimeDelta::FromDays(1));
 
-  ASSERT_EQ(2u, floc_id_provider_->floc_id_notification_count());
+  ASSERT_EQ(2u, floc_id_provider_->floc_update_notification_count());
   ASSERT_FALSE(floc_id().IsValid());
   ASSERT_EQ(2u, floc_session_count());
 
@@ -389,7 +431,7 @@ TEST_F(FlocIdProviderUnitTest, TurnSyncOffAndOn) {
   // valid floc id.
   task_environment_.FastForwardBy(base::TimeDelta::FromDays(1));
 
-  ASSERT_EQ(3u, floc_id_provider_->floc_id_notification_count());
+  ASSERT_EQ(3u, floc_id_provider_->floc_update_notification_count());
   ASSERT_EQ(FlocId::CreateFromHistory({domain}).ToDebugHeaderValue(),
             floc_id().ToDebugHeaderValue());
   ASSERT_EQ(3u, floc_session_count());

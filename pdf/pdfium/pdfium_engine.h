@@ -37,10 +37,8 @@
 #include "third_party/pdfium/public/fpdf_progressive.h"
 #include "third_party/pdfium/public/fpdfview.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-
-namespace gfx {
-class Size;
-}  // namespace gfx
+#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace chrome_pdf {
 
@@ -642,7 +640,7 @@ class PDFiumEngine : public PDFEngine,
   DocumentLayout::Options desired_layout_options_;
 
   // The scroll position in screen coordinates.
-  pp::Point position_;
+  gfx::Point position_;
   // The offset of the page into the viewport.
   pp::Point page_offset_;
   // The plugin size in screen coordinates.

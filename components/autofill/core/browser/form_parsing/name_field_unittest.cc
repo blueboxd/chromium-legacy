@@ -14,6 +14,8 @@
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/form_parsing/autofill_scanner.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "components/autofill/core/common/autofill_regex_constants.h"
+#include "components/autofill/core/common/autofill_regexes.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -527,6 +529,43 @@ TEST_F(NameFieldTest, MiddleInitialAtEnd) {
               field_candidates_map_.end());
   EXPECT_EQ(NAME_LAST,
             field_candidates_map_[ASCIIToUTF16("name3")].BestHeuristicType());
+}
+
+// Test the coverage of all found strings for first and second last names.
+TEST_F(NameFieldTest, HispanicLastNameRegexConverage) {
+  std::vector<std::string> first_last_name_strings = {
+      "Primer apellido", "apellidoPaterno", "apellido_paterno",
+      "first_surname",   "first surname",   "apellido1"};
+
+  std::vector<std::string> second_last_name_strings = {
+      "Segundo apellido", "apellidoMaterno", "apellido_materno",
+      "apellido2",        "second_surname",  "second surname",
+  };
+
+  std::vector<std::string> neither_first_or_second_last_name_strings = {
+      "apellido",
+      "apellidos",
+  };
+
+  for (const auto& string : first_last_name_strings) {
+    SCOPED_TRACE(string);
+    EXPECT_TRUE(MatchesPattern(ASCIIToUTF16(string),
+                               ASCIIToUTF16(kNameLastFirstRe), nullptr));
+  }
+
+  for (const auto& string : second_last_name_strings) {
+    SCOPED_TRACE(string);
+    EXPECT_TRUE(MatchesPattern(ASCIIToUTF16(string),
+                               ASCIIToUTF16(kNameLastSecondRe), nullptr));
+  }
+
+  for (const auto& string : neither_first_or_second_last_name_strings) {
+    SCOPED_TRACE(string);
+    EXPECT_FALSE(MatchesPattern(ASCIIToUTF16(string),
+                                ASCIIToUTF16(kNameLastFirstRe), nullptr));
+    EXPECT_FALSE(MatchesPattern(ASCIIToUTF16(string),
+                                ASCIIToUTF16(kNameLastSecondRe), nullptr));
+  }
 }
 
 }  // namespace autofill

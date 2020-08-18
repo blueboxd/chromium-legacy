@@ -45,6 +45,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/test/test_data_directory.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/websocket.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -532,6 +533,7 @@ IN_PROC_BROWSER_TEST_F(WebSocketBrowserTest, SendBadUtf8) {
       url, requested_protocols, site_for_cookies, isolation_info,
       std::move(additional_headers), process->GetID(), frame->GetRoutingID(),
       origin, network::mojom::kWebSocketOptionNone,
+      net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
       std::move(handshake_client_remote), mojo::NullRemote(),
       mojo::NullRemote());
 

@@ -914,7 +914,7 @@ TEST_P(OmniboxViewViewsClipboardTest, ClipboardCopyOrCutURL) {
   // Windows clipboard only supports text URLs.
   // Mac clipboard not reporting URL format available for some reason.
   // crbug.com/751031
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   EXPECT_TRUE(
       clipboard->IsFormatAvailable(ui::ClipboardFormatType::GetUrlType(),
                                    clipboard_buffer, /* data_dst = */ nullptr));

@@ -746,11 +746,16 @@ void LayoutCounter::LayoutObjectSubtreeAttached(LayoutObject* layout_object) {
   for (LayoutObject* descendant = layout_object; descendant;
        descendant = descendant->NextInPreOrder(layout_object))
     UpdateCounters(*descendant);
+
+  bool crossed_boundary = false;
   // Since we skipped counter updates if there were no counters, we might need
   // to update parent counters that lie beyond the style containment boundary.
   for (LayoutObject* parent = layout_object->Parent(); parent;
-       parent = parent->Parent())
-    UpdateCounters(*parent);
+       parent = parent->Parent()) {
+    crossed_boundary |= parent->ShouldApplyStyleContainment();
+    if (crossed_boundary)
+      UpdateCounters(*parent);
+  }
 }
 
 void LayoutCounter::LayoutObjectStyleChanged(LayoutObject& layout_object,

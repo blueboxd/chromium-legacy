@@ -438,7 +438,7 @@ IN_PROC_BROWSER_TEST_F(KeyboardLockInteractiveBrowserTest,
   ASSERT_FALSE(IsKeyboardLockActive());
 }
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 // BringBrowserWindowToFront hangs on Linux: http://crbug.com/163931
 #define MAYBE_GainAndLoseFocusInWindowMode DISABLED_GainAndLoseFocusInWindowMode
 #else
@@ -499,7 +499,7 @@ IN_PROC_BROWSER_TEST_F(KeyboardLockInteractiveBrowserTest,
   ASSERT_FALSE(IsKeyboardLockActive());
 }
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 // BringBrowserWindowToFront hangs on Linux: http://crbug.com/163931
 #define MAYBE_GainAndLoseFocusInFullscreen DISABLED_GainAndLoseFocusInFullscreen
 #else

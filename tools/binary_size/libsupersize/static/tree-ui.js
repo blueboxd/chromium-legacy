@@ -451,7 +451,11 @@ const newTreeElement = (() => {
     );
   }
 
-  window.supersize.treeReady.then(displayTree);
+  window.supersize.treeReady.then((message) => {
+    document.querySelector('#group-by-container')
+            .toggleAttribute('disabled', !message.isMultiContainer);
+    displayTree(message);
+  });
   window.supersize.worker.setOnProgressHandler(displayTree);
 
   _fileUpload.addEventListener('change', event => {

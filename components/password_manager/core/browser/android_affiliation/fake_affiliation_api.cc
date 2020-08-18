@@ -57,7 +57,7 @@ void ScopedFakeAffiliationAPI::ServeNextRequest() {
       }
     }
     if (had_intersection_with_request)
-      fake_response->push_back(preset_equivalence_class);
+      fake_response->affiliations.push_back(preset_equivalence_class);
   }
   fetcher->SimulateSuccess(std::move(fake_response));
 }

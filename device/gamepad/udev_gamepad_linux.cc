@@ -19,7 +19,7 @@ bool DeviceIndexFromDevicePath(base::StringPiece path,
                                base::StringPiece prefix,
                                int* index) {
   DCHECK(index);
-  if (!path.starts_with(prefix))
+  if (!base::StartsWith(path, prefix))
     return false;
   base::StringPiece index_str = path;
   index_str.remove_prefix(prefix.length());

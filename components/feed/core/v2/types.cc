@@ -8,6 +8,7 @@
 
 #include "base/base64.h"
 #include "base/pickle.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/util/values/values_util.h"
 #include "base/values.h"
@@ -108,14 +109,21 @@ NetworkResponseInfo& NetworkResponseInfo::operator=(
     const NetworkResponseInfo&) = default;
 
 std::string ToString(ContentRevision c) {
-  return base::NumberToString(c.value());
+  // The 'c/' prefix is used to identify slices as content. Don't change this
+  // without updating the Java side.
+  return base::StrCat({"c/", base::NumberToString(c.value())});
 }
 
 ContentRevision ToContentRevision(const std::string& str) {
-  uint32_t value;
-  if (!base::StringToUint(str, &value))
+  if (str.size() < 3)
     return {};
-  return ContentRevision(value);
+
+  uint32_t value;
+  if (str[0] == 'c' && str[1] == '/' &&
+      base::StringToUint(base::StringPiece(str).substr(2), &value)) {
+    return ContentRevision(value);
+  }
+  return {};
 }
 
 std::string SerializeDebugStreamData(const DebugStreamData& data) {

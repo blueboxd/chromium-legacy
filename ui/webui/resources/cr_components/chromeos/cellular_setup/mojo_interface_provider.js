@@ -2,15 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// #import {addSingletonGetter} from 'chrome://resources/js/cr.m.js';
+
 cr.define('cellular_setup', function() {
   /** @interface */
-  class MojoInterfaceProvider {
+  /* #export */ class MojoInterfaceProvider {
     /** @return {!chromeos.cellularSetup.mojom.CellularSetupRemote} */
     getMojoServiceRemote() {}
   }
 
   /** @implements {cellular_setup.MojoInterfaceProvider} */
-  class MojoInterfaceProviderImpl {
+  /* #export */ class MojoInterfaceProviderImpl {
     constructor() {
       /** @private {?chromeos.cellularSetup.mojom.CellularSetupRemote} */
       this.remote_ = null;
@@ -28,6 +30,7 @@ cr.define('cellular_setup', function() {
 
   cr.addSingletonGetter(MojoInterfaceProviderImpl);
 
+  // #cr_define_end
   return {
     MojoInterfaceProvider: MojoInterfaceProvider,
     MojoInterfaceProviderImpl: MojoInterfaceProviderImpl,

@@ -1115,6 +1115,13 @@ TEST_F('PrintPreviewDestinationSelectTestCrOS', 'UpdateStatus', function() {
   this.runMochaTest(destination_select_test_cros.TestNames.UpdateStatus);
 });
 
+TEST_F(
+    'PrintPreviewDestinationSelectTestCrOS', 'UpdateStatusDeprecationWarnings',
+    function() {
+      this.runMochaTest(destination_select_test_cros.TestNames
+                            .UpdateStatusDeprecationWarnings);
+    });
+
 TEST_F('PrintPreviewDestinationSelectTestCrOS', 'ChangeIcon', function() {
   this.runMochaTest(destination_select_test_cros.TestNames.ChangeIcon);
 });
@@ -1304,6 +1311,13 @@ var PrintPreviewDestinationSelectTest = class extends PrintPreviewTest {
 TEST_F('PrintPreviewDestinationSelectTest', 'UpdateStatus', function() {
   this.runMochaTest(destination_select_test.TestNames.UpdateStatus);
 });
+
+TEST_F(
+    'PrintPreviewDestinationSelectTest', 'UpdateStatusDeprecationWarnings',
+    function() {
+      this.runMochaTest(
+          destination_select_test.TestNames.UpdateStatusDeprecationWarnings);
+    });
 
 TEST_F('PrintPreviewDestinationSelectTest', 'ChangeIcon', function() {
   this.runMochaTest(destination_select_test.TestNames.ChangeIcon);

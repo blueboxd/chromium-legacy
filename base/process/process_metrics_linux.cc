@@ -195,7 +195,7 @@ bool SupportsPerTaskTimeInState() {
                                     .Append("time_in_state");
   std::string contents;
   return internal::ReadProcFile(time_in_state_path, &contents) &&
-         StartsWith(contents, "cpu", CompareCase::SENSITIVE);
+         StartsWith(contents, "cpu");
 }
 
 }  // namespace
@@ -350,7 +350,7 @@ int ProcessMetrics::GetOpenFdSoftLimit() const {
 
   for (const auto& line : SplitStringPiece(
            limits_contents, "\n", KEEP_WHITESPACE, SPLIT_WANT_NONEMPTY)) {
-    if (!line.starts_with("Max open files"))
+    if (!StartsWith(line, "Max open files"))
       continue;
 
     auto tokens =
@@ -790,7 +790,7 @@ bool IsValidDiskName(StringPiece candidate) {
   }
 
   const char kMMCName[] = "mmcblk";
-  if (!candidate.starts_with(kMMCName))
+  if (!StartsWith(candidate, kMMCName))
     return false;
 
   // mmcblk[0-9]+ case

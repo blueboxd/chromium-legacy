@@ -492,7 +492,7 @@ bool SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
     base::Optional<gpu::raster::GrShaderCache::ScopedCacheUse> cache_use;
     if (dependency_->GetGrShaderCache()) {
       cache_use.emplace(dependency_->GetGrShaderCache(),
-                        gpu::kInProcessCommandBufferClientId);
+                        gpu::kDisplayCompositorClientId);
     }
 
     std::vector<GrBackendSemaphore> begin_semaphores;
@@ -619,7 +619,7 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
     base::Optional<gpu::raster::GrShaderCache::ScopedCacheUse> cache_use;
     if (dependency_->GetGrShaderCache()) {
       cache_use.emplace(dependency_->GetGrShaderCache(),
-                        gpu::kInProcessCommandBufferClientId);
+                        gpu::kDisplayCompositorClientId);
     }
     std::vector<GrBackendSemaphore> begin_semaphores;
     std::vector<GrBackendSemaphore> end_semaphores;
@@ -716,7 +716,7 @@ bool SkiaOutputSurfaceImplOnGpu::CopyOutput(
     base::Optional<gpu::raster::GrShaderCache::ScopedCacheUse> cache_use;
     if (dependency_->GetGrShaderCache()) {
       cache_use.emplace(dependency_->GetGrShaderCache(),
-                        gpu::kInProcessCommandBufferClientId);
+                        gpu::kDisplayCompositorClientId);
     }
     SkPaint paint;
     paint.setColor(SK_ColorBLACK);
@@ -728,7 +728,7 @@ bool SkiaOutputSurfaceImplOnGpu::CopyOutput(
   base::Optional<gpu::raster::GrShaderCache::ScopedCacheUse> cache_use;
   if (dependency_->GetGrShaderCache()) {
     cache_use.emplace(dependency_->GetGrShaderCache(),
-                      gpu::kInProcessCommandBufferClientId);
+                      gpu::kDisplayCompositorClientId);
   }
 
   // For downscaling, use the GOOD quality setting (appropriate for

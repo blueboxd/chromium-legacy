@@ -2,4 +2,3 @@ file://ash/login/LOGIN_LOCK_OWNERS
 
 # For login-screen issues use component UI>Shell>StartScreen
 #
-# COMPONENT: UI>Shell>LockScreen

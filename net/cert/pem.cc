@@ -44,7 +44,7 @@ bool PEMTokenizer::GetNext() {
     std::vector<PEMType>::const_iterator it;
     // Check to see if it is of an acceptable block type.
     for (it = block_types_.begin(); it != block_types_.end(); ++it) {
-      if (!str_.substr(pos_).starts_with(it->header))
+      if (!base::StartsWith(str_.substr(pos_), it->header))
         continue;
 
       // Look for a footer matching the header. If none is found, then all

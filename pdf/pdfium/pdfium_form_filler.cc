@@ -12,6 +12,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "pdf/pdfium/pdfium_engine.h"
+#include "pdf/ppapi_migration/geometry_conversions.h"
 #include "ppapi/cpp/point.h"
 #include "ppapi/cpp/rect.h"
 #include "third_party/pdfium/public/fpdf_annot.h"
@@ -124,8 +125,9 @@ void PDFiumFormFiller::Form_Invalidate(FPDF_FORMFILLINFO* param,
   }
 
   pp::Rect rect = engine->pages_[page_index]->PageToScreen(
-      engine->GetVisibleRect().point(), engine->current_zoom_, left, top, right,
-      bottom, engine->layout_.options().default_page_orientation());
+      PointFromPPPoint(engine->GetVisibleRect().point()), engine->current_zoom_,
+      left, top, right, bottom,
+      engine->layout_.options().default_page_orientation());
   engine->client_->Invalidate(rect);
 }
 
@@ -143,8 +145,9 @@ void PDFiumFormFiller::Form_OutputSelectedRect(FPDF_FORMFILLINFO* param,
     return;
   }
   pp::Rect rect = engine->pages_[page_index]->PageToScreen(
-      engine->GetVisibleRect().point(), engine->current_zoom_, left, top, right,
-      bottom, engine->layout_.options().default_page_orientation());
+      PointFromPPPoint(engine->GetVisibleRect().point()), engine->current_zoom_,
+      left, top, right, bottom,
+      engine->layout_.options().default_page_orientation());
   if (rect.IsEmpty())
     return;
 

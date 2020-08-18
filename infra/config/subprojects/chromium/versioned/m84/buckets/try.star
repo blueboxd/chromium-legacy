@@ -447,6 +447,7 @@ try_.chromium_mac_builder(
 try_.chromium_mac_ios_builder(
     name = "ios-simulator",
     executable = "recipe:chromium_trybot",
+    fully_qualified_builder_dimension = True,
     properties = {
         "xcode_build_version": "11e146",
     },
@@ -456,6 +457,7 @@ try_.chromium_mac_ios_builder(
 try_.chromium_mac_ios_builder(
     name = "ios-simulator-cronet",
     executable = "recipe:chromium_trybot",
+    fully_qualified_builder_dimension = True,
     tryjob = try_.job(
         location_regexp = [
             ".+/[+]/components/cronet/.+",
@@ -471,6 +473,7 @@ try_.chromium_mac_ios_builder(
 try_.chromium_mac_ios_builder(
     name = "ios-simulator-full-configs",
     executable = "recipe:chromium_trybot",
+    fully_qualified_builder_dimension = True,
     tryjob = try_.job(
         location_regexp = [
             ".+/[+]/ios/.+",

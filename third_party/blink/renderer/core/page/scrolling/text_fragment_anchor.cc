@@ -26,28 +26,30 @@ namespace blink {
 
 namespace {
 
-bool ParseTextDirective(const String& fragment,
+bool ParseTextDirective(const String& fragment_directive,
                         Vector<TextFragmentSelector>* out_selectors) {
   DCHECK(out_selectors);
 
   size_t start_pos = 0;
   size_t end_pos = 0;
   while (end_pos != kNotFound) {
-    if (fragment.Find(kTextFragmentIdentifierPrefix, start_pos) != start_pos) {
+    if (fragment_directive.Find(kTextFragmentIdentifierPrefix, start_pos) !=
+        start_pos) {
       // If this is not a text directive, continue to the next directive
-      end_pos = fragment.find('&', start_pos + 1);
+      end_pos = fragment_directive.find('&', start_pos + 1);
       start_pos = end_pos + 1;
       continue;
     }
 
     start_pos += kTextFragmentIdentifierPrefixStringLength;
-    end_pos = fragment.find('&', start_pos);
+    end_pos = fragment_directive.find('&', start_pos);
 
     String target_text;
     if (end_pos == kNotFound) {
-      target_text = fragment.Substring(start_pos);
+      target_text = fragment_directive.Substring(start_pos);
     } else {
-      target_text = fragment.Substring(start_pos, end_pos - start_pos);
+      target_text =
+          fragment_directive.Substring(start_pos, end_pos - start_pos);
       start_pos = end_pos + 1;
     }
 
@@ -59,8 +61,7 @@ bool ParseTextDirective(const String& fragment,
   return out_selectors->size() > 0;
 }
 
-bool CheckSecurityRestrictions(LocalFrame& frame,
-                               bool same_document_navigation) {
+bool CheckSecurityRestrictions(LocalFrame& frame) {
   // This algorithm checks the security restrictions detailed in
   // https://wicg.github.io/ScrollToTextFragment/#should-allow-a-text-fragment
   // TODO(bokan): These are really only relevant for observable actions like
@@ -68,29 +69,10 @@ bool CheckSecurityRestrictions(LocalFrame& frame,
   // conditions. See the TODO in the relevant spec section:
   // https://wicg.github.io/ScrollToTextFragment/#restricting-the-text-fragment
 
-  // History navigation is special because it's considered to be browser
-  // initiated even if the navigation originated via use of the history API
-  // within the renderer. We avoid creating a text fragment for history
-  // navigations since history scroll restoration should take precedence but
-  // it'd be bad if we ever got here for a history navigation since the check
-  // below would pass even if the user took no action.
-  SECURITY_CHECK(frame.Loader().GetDocumentLoader()->GetNavigationType() !=
-                 kWebNavigationTypeBackForward);
-
   // We only allow text fragment anchors for user navigations, e.g. link
   // clicks, omnibox navigations, no script navigations.
-  if (!frame.Loader().GetDocumentLoader()->HadTransientActivation() &&
-      !frame.Loader().GetDocumentLoader()->IsBrowserInitiated()) {
+  if (!frame.Loader().GetDocumentLoader()->ConsumeTextFragmentToken())
     return false;
-  }
-
-  // Allow same-document navigations only if they are browser initiated, e.g.
-  // same-document bookmarks.
-  if (same_document_navigation) {
-    return frame.Loader()
-        .GetDocumentLoader()
-        ->LastSameDocumentNavigationWasBrowserInitiated();
-  }
 
   // Allow text fragments on same-origin initiated navigations.
   if (frame.Loader().GetDocumentLoader()->IsSameOriginNavigation())
@@ -107,10 +89,69 @@ bool CheckSecurityRestrictions(LocalFrame& frame,
 
 }  // namespace
 
+// static
+bool TextFragmentAnchor::GenerateNewToken(const DocumentLoader& loader) {
+  // Avoid invoking the text fragment for history, reload as they'll be
+  // clobbered by scroll restoration anyway. In particular, history navigation
+  // is considered browser initiated even if performed via non-activated script
+  // so we don't want this case to produce a token. See
+  // https://crbug.com/1042986 for details. This will also block form
+  // navigations but that's fine since the intent is to generate a token in
+  // real cross-page navigations only.
+  if (loader.GetNavigationType() != kWebNavigationTypeLinkClicked &&
+      loader.GetNavigationType() != kWebNavigationTypeOther) {
+    return false;
+  }
+
+  // A new permission to invoke should only be granted if the navigation had a
+  // user gesture attached to it. Browser initiated navigations (e.g. typed
+  // address in the omnibox) don't carry the |had_transient_activation_| bit so
+  // we have to check that separately but we consider that user initiated as
+  // well.
+  return loader.HadTransientActivation() || loader.IsBrowserInitiated();
+}
+
+// static
+bool TextFragmentAnchor::GenerateNewTokenForSameDocument(
+    const String& fragment,
+    WebFrameLoadType load_type,
+    bool is_content_initiated,
+    SameDocumentNavigationSource source) {
+  if (load_type != WebFrameLoadType::kStandard ||
+      source != kSameDocumentNavigationDefault)
+    return false;
+
+  // Only allow browser-initiated navigations are allowed for same-document
+  // navigations (e.g. typing in the omnibox). This is restricted by the spec:
+  // https://wicg.github.io/scroll-to-text-fragment/#restricting-the-text-fragment.
+  // Note: this could change in the future but we should ensure in that case we
+  // look for the user gesture on the LocalFrame, rather than DocumentLoader,
+  // since the latter's state isn't updated by same document navigations (and
+  // hence why we pass individual properties to this method rather than a
+  // DocumentLoader reference).
+  if (is_content_initiated)
+    return false;
+
+  // Only generate a token if it's going to be consumed (i.e. the new fragment
+  // has a text fragment in it).
+  {
+    wtf_size_t start_pos = fragment.Find(kFragmentDirectivePrefix);
+    if (start_pos == kNotFound)
+      return false;
+
+    String fragment_directive =
+        fragment.Substring(start_pos + kFragmentDirectivePrefixStringLength);
+    Vector<TextFragmentSelector> selectors;
+    if (!ParseTextDirective(fragment_directive, &selectors))
+      return false;
+  }
+
+  return true;
+}
+
 TextFragmentAnchor* TextFragmentAnchor::TryCreateFragmentDirective(
     const KURL& url,
     LocalFrame& frame,
-    bool same_document_navigation,
     bool should_scroll) {
   DCHECK(RuntimeEnabledFeatures::TextFragmentIdentifiersEnabled(
       frame.DomWindow()));
@@ -118,18 +159,7 @@ TextFragmentAnchor* TextFragmentAnchor::TryCreateFragmentDirective(
   if (!frame.GetDocument()->GetFragmentDirective())
     return nullptr;
 
-  // Avoid invoking the text fragment for history or reload navigations as
-  // they'll be clobbered by scroll restoration; this prevents a transient
-  // scroll as well as user gesture issues; see https://crbug.com/1042986 for
-  // details.
-  auto navigation_type =
-      frame.Loader().GetDocumentLoader()->GetNavigationType();
-  if (navigation_type == kWebNavigationTypeBackForward ||
-      navigation_type == kWebNavigationTypeReload) {
-    return nullptr;
-  }
-
-  if (!CheckSecurityRestrictions(frame, same_document_navigation))
+  if (!CheckSecurityRestrictions(frame))
     return nullptr;
 
   Vector<TextFragmentSelector> selectors;

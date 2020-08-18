@@ -108,6 +108,10 @@ class VIZ_SERVICE_EXPORT OutputSurface {
     // SwapBuffersCompleteParams::frame_buffer_damage_area for every
     // SwapBuffers complete callback.
     bool damage_area_from_skia_output_device = false;
+    // This is the maximum size for RenderPass textures. No maximum size is
+    // enforced if zero.
+    int max_render_target_size = 0;
+
     // The SkColorType and GrBackendFormat for non-HDR and HDR.
     // TODO(penghuang): remove SkColorType and GrBackendFormat when
     // OutputSurface uses the |format| passed to Reshape().

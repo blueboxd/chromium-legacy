@@ -14,7 +14,7 @@ bool IsNonSFIModeEnabled() {
 #if defined(OS_CHROMEOS) && \
     (defined(ARCH_CPU_X86_FAMILY) || defined(ARCH_CPU_ARMEL))
   return true;
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || defined(OS_CHROMEOS)
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableNaClNonSfiMode);
 #else

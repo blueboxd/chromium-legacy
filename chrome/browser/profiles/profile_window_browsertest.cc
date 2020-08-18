@@ -271,7 +271,7 @@ IN_PROC_BROWSER_TEST_F(ProfileWindowBrowserTest, OpenBrowserWindowForProfile) {
 }
 
 // TODO(crbug.com/935746): Test is flaky on Win and Linux.
-#if defined(OS_LINUX) || defined(OS_WIN)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_WIN)
 #define MAYBE_OpenBrowserWindowForProfileWithSigninRequired \
   DISABLED_OpenBrowserWindowForProfileWithSigninRequired
 #else

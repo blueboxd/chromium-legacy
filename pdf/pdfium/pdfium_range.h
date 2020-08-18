@@ -12,6 +12,7 @@
 #include "pdf/page_orientation.h"
 #include "pdf/pdfium/pdfium_page.h"
 #include "ppapi/cpp/rect.h"
+#include "ui/gfx/geometry/point.h"
 
 namespace chrome_pdf {
 
@@ -40,7 +41,7 @@ class PDFiumRange {
 
   // Gets bounding rectangles of range in screen coordinates.
   const std::vector<pp::Rect>& GetScreenRects(
-      const pp::Point& offset,
+      const gfx::Point& point,
       double zoom,
       PageOrientation orientation) const;
 
@@ -56,7 +57,7 @@ class PDFiumRange {
 
   // Cache of ScreenRect, and the associated variables used when caching it.
   mutable std::vector<pp::Rect> cached_screen_rects_;
-  mutable pp::Point cached_screen_rects_offset_;
+  mutable gfx::Point cached_screen_rects_point_;
   mutable double cached_screen_rects_zoom_ = 0;
 };
 

@@ -308,6 +308,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       int32_t render_frame_id,
       const url::Origin& origin,
       uint32_t options,
+      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
       mojo::PendingRemote<mojom::WebSocketHandshakeClient> handshake_client,
       mojo::PendingRemote<mojom::AuthenticationHandler> auth_handler,
       mojo::PendingRemote<mojom::TrustedHeaderClient> header_client) override;

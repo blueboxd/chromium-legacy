@@ -94,6 +94,7 @@ luci.list_view(
         "try/gpu-fyi-try-mac-amd-retina-dbg",
         "try/gpu-fyi-try-mac-amd-retina-exp",
         "try/gpu-fyi-try-mac-amd-retina-rel",
+        "try/gpu-fyi-try-mac-arm64-apple-dtk-rel",
         "try/gpu-fyi-try-mac-asan",
         "try/gpu-fyi-try-mac-intel-dbg",
         "try/gpu-fyi-try-mac-intel-dqp",

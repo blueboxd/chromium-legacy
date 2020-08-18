@@ -353,8 +353,8 @@ PrintingContext::Result PrintingContextChromeos::UpdatePrinterSettings(
     DCHECK(printer_);
     std::string uri_string = printer_->GetUri();
     const base::StringPiece uri(uri_string);
-    if (!uri.starts_with("ipps:") && !uri.starts_with("https:") &&
-        !uri.starts_with("usb:") && !uri.starts_with("ippusb:")) {
+    if (!base::StartsWith(uri, "ipps:") && !base::StartsWith(uri, "https:") &&
+        !base::StartsWith(uri, "usb:") && !base::StartsWith(uri, "ippusb:")) {
       return OnError();
     }
   }

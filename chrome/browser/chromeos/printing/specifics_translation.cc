@@ -123,8 +123,8 @@ void MergePrinterToSpecifics(const Printer& printer,
 }
 
 std::string MakeAndModel(base::StringPiece make, base::StringPiece model) {
-  return model.starts_with(make) ? model.as_string()
-                                 : base::JoinString({make, model}, " ");
+  return base::StartsWith(model, make) ? model.as_string()
+                                       : base::JoinString({make, model}, " ");
 }
 
 }  // namespace chromeos

@@ -62,7 +62,7 @@ class JourneyLogger {
     EVENT_SKIPPED_SHOW = 1 << 3,
     // .complete() was called by the merchant, completing the flow.
     EVENT_COMPLETED = 1 << 4,
-    // The user aborted the flow by either dismissing it explicitely, or
+    // The user aborted the flow by either dismissing it explicitly, or
     // navigating away (if possible).
     EVENT_USER_ABORTED = 1 << 5,
     // Other reasons for aborting include the merchant calling .abort(), the
@@ -152,6 +152,30 @@ class JourneyLogger {
     kMaxValue = kRegularTransaction,
   };
 
+  // Records different checkout steps for payment requests. The difference
+  // between number of requests recorded for each step and its successor shows
+  // the drop-off that happened during that step.
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.payments
+  // GENERATED_JAVA_CLASS_NAME_OVERRIDE: CheckoutFunnelStep
+  enum class CheckoutFunnelStep {
+    // Payment request has been initiated.
+    kInitiated = 0,
+    // .show() has been called. (a.k.a. the user has clicked on the checkout/buy
+    // button on merchant's site.)
+    kShowCalled = 1,
+    // Payment request UI has been shown or skipped in favor of the payment
+    // handler UI. Drop-off before this step means that the browser could not
+    // proceed with the payment request. (e.g. because of no payment app being
+    // available for requested payment method(s) or an unsecured origin.)
+    kPaymentRequestTriggered = 2,
+    // Payment handler UI has been invoked either by skipping to it directly or
+    // the user clicking on the "Continue" button in payment sheet UI.
+    kPaymentHandlerInvoked = 3,
+    // Payment request has been completed with 'success' status.
+    kCompleted = 4,
+    kMaxValue = kCompleted,
+  };
+
   JourneyLogger(bool is_incognito, ukm::SourceId payment_request_source_id);
   ~JourneyLogger();
 
@@ -206,16 +230,19 @@ class JourneyLogger {
   // reason.
   void SetNotShown(NotShownReason reason);
 
-  // Records the transcation amount after converting to USD separated by
+  // Records the transaction amount after converting to USD separated by
   // completion status (complete vs triggered).
   void RecordTransactionAmount(std::string currency,
                                const std::string& value,
                                bool completed);
 
+  // Increments the bucket count for the given checkout step.
+  void RecordCheckoutStep(CheckoutFunnelStep step);
+
   // Records when Payment Request .show is called.
   void SetTriggerTime();
 
-  // Sets the ukm source id of the selected app when it gets invoked.
+  // Sets the UKM source id of the selected app when it gets invoked.
   void SetPaymentAppUkmSourceId(ukm::SourceId payment_app_source_id);
 
  private:

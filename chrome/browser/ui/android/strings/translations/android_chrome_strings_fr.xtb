@@ -204,7 +204,6 @@ Appuyez sur n'importe quel mot pour effectuer une recherche. Pour affiner la rec
 <translation id="2537178555904266562">Erreur lors de la synchronisation des mots de passe</translation>
 <translation id="2546283357679194313">Cookies et données de sites</translation>
 <translation id="2567385386134582609">IMAGE</translation>
-<translation id="257088987046510401">Thèmes</translation>
 <translation id="2581165646603367611">Cette action aura pour effet de vider le cache et de supprimer les cookies, ainsi que d'autres données de site que Chrome ne considère pas comme importantes.</translation>
 <translation id="2587052924345400782">Nouvelle version disponible</translation>
 <translation id="2593272815202181319">Monospace</translation>
@@ -678,6 +677,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="624789221780392884">Mise à jour prête</translation>
 <translation id="6255999984061454636">Recommandations de contenus</translation>
 <translation id="6277522088822131679">Un problème est survenu lors de l'impression de la page. Veuillez réessayer.</translation>
+<translation id="6278428485366576908">Thème</translation>
 <translation id="6292420053234093573">En utilisant Chrome, vous acceptez les <ph name="BEGIN_LINK1" />Conditions d'utilisation de Google<ph name="END_LINK1" /> et les <ph name="BEGIN_LINK2" />Conditions d'utilisation supplémentaires de Google Chrome et Chrome OS<ph name="END_LINK2" />.</translation>
 <translation id="629730747756840877">Compte</translation>
 <translation id="6297765934698848803">L'organisation qui gère votre appareil a désactivé la caméra.</translation>

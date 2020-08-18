@@ -32,7 +32,6 @@ class CORE_EXPORT FragmentAnchor : public GarbageCollected<FragmentAnchor> {
   // will be performed, for example, setting/clearing :target and svgView().
   static FragmentAnchor* TryCreate(const KURL& url,
                                    LocalFrame& frame,
-                                   bool same_document_navigation,
                                    bool should_scroll);
 
   FragmentAnchor() = default;

@@ -43,6 +43,16 @@ class NavigationPredictorRendererWarmupClient
   // renderer too recently.
   bool IsEligibleForWarmupOnCommonCriteria() const;
 
+  // Checks if the |prediction| is eligible to trigger a renderer warmup based
+  // on the number of predicted origins.
+  bool IsEligibleForCrossNavigationWarmup(
+      const NavigationPredictorKeyedService::Prediction& prediction) const;
+
+  // Checks if the |prediction| is eligible to trigger a renderer warmup based
+  // on the current page being search results for the default search engine.
+  bool IsEligibleForDSEWarmup(
+      const NavigationPredictorKeyedService::Prediction& prediction) const;
+
   // Records class state and metrics before checking |counterfactual_| and then
   // calling |DoRendererWarmpup| if |counterfactual_| is false.
   void RecordMetricsAndMaybeDoWarmup();
@@ -56,6 +66,18 @@ class NavigationPredictorRendererWarmupClient
   // The minimum amount of memory the devices is required to have to enable
   // renderer warmup.
   const int mem_threshold_mb_;
+
+  // Whether to initiate a renderer warmup on a search result page for the
+  // default search engine.
+  const bool warmup_on_dse_;
+
+  // Whether to initiate a renderer warmup based on the top N predictions being
+  // cross origin.
+  const bool use_navigation_predictions_;
+  // How many prediction urls to examine.
+  const int examine_top_n_predictions_;
+  // The threshold ratio of how many of the top urls need to be cross-origin.
+  const double prediction_crosss_origin_threshold_;
 
   // The tick clock used within this class.
   const base::TickClock* tick_clock_;

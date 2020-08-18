@@ -27,9 +27,14 @@ class PrefRegistrySimple;
 class Profile;
 
 // Trigger identifiers currently used; duplicates not allowed.
+extern const char kHatsSurveyTriggerTesting[];
 extern const char kHatsSurveyTriggerSatisfaction[];
 extern const char kHatsSurveyTriggerSettings[];
 extern const char kHatsSurveyTriggerSettingsPrivacy[];
+
+// The Trigger ID for a test HaTS Next survey which is available for testing
+// and demo purposes when the migration feature flag is enabled.
+extern const char kHatsNextSurveyTriggerIDTesting[];
 
 // This class provides the client side logic for determining if a
 // survey should be shown for any trigger based on input from a finch
@@ -118,6 +123,12 @@ class HatsService : public KeyedService {
       const std::string& trigger,
       content::WebContents* web_contents,
       int timeout_ms);
+
+  // Updates the user preferences to record that the survey associated with
+  // |survey_id| was shown to the user. |survey_id| is the unique_id provided
+  // to the HaTS Service to identify a survey. This is the trigger ID for HaTS
+  // Next, and the site ID for HaTS v1.
+  void RecordSurveyAsShown(std::string survey_id);
 
   void SetSurveyMetadataForTesting(const SurveyMetadata& metadata);
   void GetSurveyMetadataForTesting(HatsService::SurveyMetadata* metadata) const;

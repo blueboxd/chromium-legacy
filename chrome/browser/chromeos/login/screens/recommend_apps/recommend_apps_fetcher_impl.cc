@@ -13,6 +13,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/chromeos/login/screens/recommend_apps/recommend_apps_fetcher_delegate.h"
@@ -490,7 +491,7 @@ void RecommendAppsFetcherImpl::OnDownloaded(
   RecordUmaResponseSize(response_body->size());
   constexpr base::StringPiece json_xss_prevention_prefix(")]}'");
   base::StringPiece response_body_json(*response_body);
-  if (response_body_json.starts_with(json_xss_prevention_prefix))
+  if (base::StartsWith(response_body_json, json_xss_prevention_prefix))
     response_body_json.remove_prefix(json_xss_prevention_prefix.length());
   base::Optional<base::Value> output = ParseResponse(response_body_json);
   if (!output.has_value()) {

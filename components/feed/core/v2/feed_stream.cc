@@ -122,6 +122,9 @@ void FeedStream::Metadata::SetConsistencyToken(std::string consistency_token) {
 
 LocalActionId FeedStream::Metadata::GetNextActionId() {
   uint32_t id = metadata_.next_action_id();
+  // Never use 0, as that's an invalid LocalActionId.
+  if (id == 0)
+    ++id;
   metadata_.set_next_action_id(id + 1);
   store_->WriteMetadata(metadata_, base::DoNothing());
   return LocalActionId(id);
@@ -670,7 +673,9 @@ void FeedStream::ReportSliceViewed(SurfaceId surface_id,
   if (index >= 0)
     metrics_reporter_->ContentSliceViewed(surface_id, index);
 }
-
+void FeedStream::ReportFeedViewed(SurfaceId surface_id) {
+  metrics_reporter_->FeedViewed(surface_id);
+}
 void FeedStream::ReportSendFeedbackAction() {
   metrics_reporter_->SendFeedbackAction();
 }

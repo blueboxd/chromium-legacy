@@ -200,7 +200,7 @@ pid_t FindThreadID(pid_t pid, pid_t ns_tid, bool* ns_pid_supported) {
     StringTokenizer tokenizer(status, "\n");
     while (tokenizer.GetNext()) {
       StringPiece value_str(tokenizer.token_piece());
-      if (!value_str.starts_with("NSpid"))
+      if (!StartsWith(value_str, "NSpid"))
         continue;
 
       *ns_pid_supported = true;

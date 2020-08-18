@@ -67,8 +67,8 @@ const base::flat_set<CryptAuthFeatureType>& GetAllCryptAuthFeatureTypes() {
         if (features::IsPhoneHubEnabled()) {
           feature_set.insert(CryptAuthFeatureType::kPhoneHubClientSupported);
           feature_set.insert(CryptAuthFeatureType::kPhoneHubClientEnabled);
+          feature_set.insert(CryptAuthFeatureType::kPhoneHubHostSupported);
           feature_set.insert(CryptAuthFeatureType::kPhoneHubHostEnabled);
-          feature_set.insert(CryptAuthFeatureType::kPhoneHubClientEnabled);
         }
         return feature_set;
       }());

@@ -374,7 +374,7 @@ void ScrollbarThemeMac::PaintThumbInternal(GraphicsContext& context,
         setBoundsSize:NSSizeFromCGSize(CGSize(scrollbar.FrameRect().Size()))];
     [observer setSuppressSetScrollbarsHidden:NO];
 
-    thumb_size = [scrollbar_painter trackBoxWidth];
+    thumb_size = [scrollbar_painter trackBoxWidth] * scrollbar.ScaleFromDIP();
   }
 
   if (!scrollbar.Enabled())

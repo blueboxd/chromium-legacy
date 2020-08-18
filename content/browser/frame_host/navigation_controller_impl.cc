@@ -3324,7 +3324,8 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
           params.load_type == LOAD_TYPE_HTTP_POST ? "POST" : "GET",
           params.post_data, network::mojom::SourceLocation::New(),
           params.started_from_context_menu, has_user_gesture,
-          CreateInitiatorCSPInfo(), std::vector<int>(), params.href_translate,
+          false /* has_text_fragment_token */, CreateInitiatorCSPInfo(),
+          std::vector<int>(), params.href_translate,
           false /* is_history_navigation_in_new_child_frame */,
           params.input_start);
 

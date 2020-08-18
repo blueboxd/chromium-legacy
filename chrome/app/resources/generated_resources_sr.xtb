@@ -1323,7 +1323,6 @@
 <translation id="2564653188463346023">Побољшана провера правописа</translation>
 <translation id="2566124945717127842">Powerwash ресетује <ph name="IDS_SHORT_PRODUCT_NAME" /> уређај да би био као нов.</translation>
 <translation id="2568774940984945469">Контејнер траке са информацијама</translation>
-<translation id="257088987046510401">Теме</translation>
 <translation id="2571655996835834626">Промените подешавања која контролишу приступ веб-сајтова функцијама као што су колачићи, JavaScript, додатне компоненте, геолоцирање, микрофон, камера итд.</translation>
 <translation id="2572032849266859634">Одобрен је приступ за <ph name="VOLUME_NAME" /> само за читање.</translation>
 <translation id="2575247648642144396">Ова икона ће бити видљива када додатак буде могао да функционише на тренутној страници. Користите овај додатак кликом на икону или притиском на <ph name="EXTENSION_SHORTCUT" />.</translation>
@@ -3351,7 +3350,6 @@
 <translation id="5115338116365931134">SSO</translation>
 <translation id="5116628073786783676">Са&amp;чувај аудио снимак као...</translation>
 <translation id="5117139026559873716">Прекините везу телефона са уређајем <ph name="DEVICE_TYPE" />. Они се више неће повезивати аутоматски.</translation>
-<translation id="5117427536932535467">Теме и позадине</translation>
 <translation id="5117930984404104619">Праћење понашања других додатака, укључујући посећене URL-ове</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Хард-диск је пун. Сачувајте на другу локацију или направите више простора на хард-диску.</translation>
@@ -4298,6 +4296,7 @@
 <translation id="6277105963844135994">Временско ограничење мреже</translation>
 <translation id="6277518330158259200">С&amp;ними екран</translation>
 <translation id="6278057325678116358">Користи GTK+</translation>
+<translation id="6278428485366576908">Тема</translation>
 <translation id="6278776436938569440">Промени локацију</translation>
 <translation id="6279183038361895380">Притисните |<ph name="ACCELERATOR" />| да бисте приказали показивач</translation>
 <translation id="6280215091796946657">Пријави ме на други налог</translation>

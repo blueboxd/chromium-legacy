@@ -358,7 +358,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   // Returns a weak pointer to an existing adapter for testing purposes only.
   base::WeakPtr<BluetoothAdapter> GetWeakPtrForTesting();
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   // Shutdown the adapter: tear down and clean up all objects owned by
   // BluetoothAdapter. After this call, the BluetoothAdapter will behave as if
   // no Bluetooth controller exists in the local system. |IsPresent| will return
@@ -558,7 +558,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
       CreateAdvertisementCallback callback,
       AdvertisementErrorCallback error_callback) = 0;
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   // Sets the interval between two consecutive advertisements. Valid ranges
   // for the interval are from 20ms to 10.24 seconds, with min <= max.
   // Note: This is a best effort. The actual interval may vary non-trivially

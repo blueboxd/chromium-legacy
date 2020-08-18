@@ -8,7 +8,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
 #include "base/strings/string16.h"
-#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
@@ -131,21 +130,21 @@ TokensLoadedCallbackRunner::TokensLoadedCallbackRunner(
 DiceSignedInProfileCreator::DiceSignedInProfileCreator(
     Profile* source_profile,
     CoreAccountId account_id,
-    const std::string& local_profile_name,
+    const base::string16& local_profile_name,
+    base::Optional<size_t> icon_index,
     base::OnceCallback<void(Profile*)> callback)
     : source_profile_(source_profile),
       account_id_(account_id),
       callback_(std::move(callback)) {
   ProfileAttributesStorage& storage =
       g_browser_process->profile_manager()->GetProfileAttributesStorage();
-  size_t icon_index = storage.ChooseAvatarIconIndexForNewProfile();
-
+  if (!icon_index.has_value())
+    icon_index = storage.ChooseAvatarIconIndexForNewProfile();
   base::string16 name = local_profile_name.empty()
-                            ? storage.ChooseNameForNewProfile(icon_index)
-                            : base::UTF8ToUTF16(local_profile_name);
-
+                            ? storage.ChooseNameForNewProfile(*icon_index)
+                            : local_profile_name;
   ProfileManager::CreateMultiProfileAsync(
-      name, profiles::GetDefaultAvatarIconUrl(icon_index),
+      name, profiles::GetDefaultAvatarIconUrl(*icon_index),
       base::BindRepeating(&DiceSignedInProfileCreator::OnNewProfileCreated,
                           weak_pointer_factory_.GetWeakPtr()));
 }

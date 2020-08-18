@@ -1323,7 +1323,6 @@
 <translation id="2564653188463346023">වැඩි දියුණු කරන ලද අක්ෂර වින්‍යාස පරික්ෂාව</translation>
 <translation id="2566124945717127842">ඔබේ <ph name="IDS_SHORT_PRODUCT_NAME" /> අලුත් එකක් මෙන් දිස් වීමට පවර්වොෂ් කරන්න.</translation>
 <translation id="2568774940984945469">තොරතුරු තීරු බහාලුම</translation>
-<translation id="257088987046510401">තේමා</translation>
 <translation id="2571655996835834626">කුකී, ජාවාස්ක්‍රිප්ට්, පේනු මෘදුකාංග, භූ ස්ථානය, මයික්‍රොෆෝනය, කැමරා ආදි විශේෂාංග සඳහා වෙබ් අඩවිවල ප්‍රවේශය පාලන කරන ඔබගේ සැකසීම් වෙනස් කරන්න.</translation>
 <translation id="2572032849266859634"><ph name="VOLUME_NAME" /> වෙත කියවීමට-පමණයි ප්‍රවේශය ලබා දී ඇත.</translation>
 <translation id="2575247648642144396">දිගුවට වත්මන් පිටුවේ ක්‍රියා කළ හැකි විට මෙම අයිකනය පෙනෙනු ඇත. අයිකනය මත ක්ලික් කිරීමෙන් හෝ <ph name="EXTENSION_SHORTCUT" /> එබීමෙන් මෙම දිගුව භාවිතා කරන්න.</translation>
@@ -3352,7 +3351,6 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="5115338116365931134">SSO</translation>
 <translation id="5116628073786783676">ගීතය ලෙස සුරකින්න... (&amp;v)</translation>
 <translation id="5117139026559873716">ඔබේ දුරකථනය ඔබේ <ph name="DEVICE_TYPE" /> එකෙන් විසන්ධි කරන්න. ඒවා තවදුරටත් ස්වයංක්‍රීයව සම්බන්ධ වන්නේ නැත.</translation>
-<translation id="5117427536932535467">තේමා සහ බිතු රූ</translation>
 <translation id="5117930984404104619">පිවිසි URL ඇතුළත්ව, වෙනත් දිගුවල හැසිරීම නිරීක්ෂණය කරන්න</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">ඔබේ දෘඩතැටිය පිරී ඇත. කරුණාකර වෙනතව ස්ථානයක් තෝරන්න නැතහොත් දෘඩ තැටිය හිස් කරන්න.</translation>
@@ -4299,6 +4297,7 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="6277105963844135994">ජාල කල් ඉකුත්වීම</translation>
 <translation id="6277518330158259200">තිරපිටපතක් ලබාගන්න</translation>
 <translation id="6278057325678116358">GTK+ භාවිත කරන්න</translation>
+<translation id="6278428485366576908">තේමාව</translation>
 <translation id="6278776436938569440">ස්ථානය මාරු කරන්න</translation>
 <translation id="6279183038361895380">ඔබේ කර්සරය පෙන්වීමට |<ph name="ACCELERATOR" />| ඔබන්න</translation>
 <translation id="6280215091796946657">වෙනස් ගිණුමක් සමඟ පුරන්න</translation>

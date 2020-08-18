@@ -1326,7 +1326,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="2564653188463346023">Uitgebreide spellingcontrole</translation>
 <translation id="2566124945717127842">Voer de Powerwash-functie uit om je <ph name="IDS_SHORT_PRODUCT_NAME" />-apparaat opnieuw in te stellen.</translation>
 <translation id="2568774940984945469">Container voor infobalk</translation>
-<translation id="257088987046510401">Thema's</translation>
 <translation id="2571655996835834626">Je instellingen wijzigen die de toegang van websites bepalen tot functies zoals cookies, JavaScript, plug-ins, geografische locatie, microfoon, camera, enzovoort.</translation>
 <translation id="2572032849266859634">Alleen-lezen-toegang tot <ph name="VOLUME_NAME" /> is toegekend.</translation>
 <translation id="2575247648642144396">Dit pictogram is zichtbaar als de extensie acties kan uitvoeren op de huidige pagina. Gebruik deze extensie door op het icoon te klikken of op <ph name="EXTENSION_SHORTCUT" /> te drukken.</translation>
@@ -3354,7 +3353,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="5115338116365931134">SSO</translation>
 <translation id="5116628073786783676">Audio op&amp;slaan als...</translation>
 <translation id="5117139026559873716">Ontkoppel je telefoon van je <ph name="DEVICE_TYPE" />. Je apparaten maken dan niet meer automatisch verbinding.</translation>
-<translation id="5117427536932535467">Thema's en achtergronden</translation>
 <translation id="5117930984404104619">Het gedrag van andere extensies controleren, waaronder bezochte URL's</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Je vaste schijf is vol. Sla op een andere locatie op of maak ruimte vrij op de vaste schijf.</translation>
@@ -4300,6 +4298,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="6277105963844135994">Time-out van netwerk</translation>
 <translation id="6277518330158259200">&amp;Screenshot maken</translation>
 <translation id="6278057325678116358">GTK+ gebruiken</translation>
+<translation id="6278428485366576908">Thema</translation>
 <translation id="6278776436938569440">Locatie wijzigen</translation>
 <translation id="6279183038361895380">Druk op |<ph name="ACCELERATOR" />| om je cursor weer te geven</translation>
 <translation id="6280215091796946657">Inloggen met een ander account</translation>

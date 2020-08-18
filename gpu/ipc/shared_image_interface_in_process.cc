@@ -296,7 +296,7 @@ void SharedImageInterfaceInProcess::CreateGMBSharedImageOnGpuThread(
   // TODO(piman): add support for SurfaceHandle (for backbuffers for ozone/drm).
   SurfaceHandle surface_handle = kNullSurfaceHandle;
   if (!shared_image_factory_->CreateSharedImage(
-          mailbox, kInProcessCommandBufferClientId, std::move(handle), format,
+          mailbox, kDisplayCompositorClientId, std::move(handle), format,
           surface_handle, size, color_space, surface_origin, alpha_type,
           usage)) {
     // Signal errors by losing the command buffer.

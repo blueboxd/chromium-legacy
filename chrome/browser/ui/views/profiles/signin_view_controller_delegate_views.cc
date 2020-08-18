@@ -264,12 +264,9 @@ void SigninViewControllerDelegateViews::DisplayModal() {
       NOTREACHED() << "Unsupported dialog modal type " << dialog_modal_type_;
   }
   if (should_show_close_button_) {
-    SkColor border_color = GetNativeTheme()->ShouldUseDarkColors()
-                               ? gfx::kGoogleGrey900
-                               : SK_ColorWHITE;
     GetBubbleFrameView()->SetBubbleBorder(std::make_unique<views::BubbleBorder>(
         views::BubbleBorder::NONE, views::BubbleBorder::BIG_SHADOW,
-        border_color));
+        SK_ColorWHITE));
   }
 
   content_view_->RequestFocus();

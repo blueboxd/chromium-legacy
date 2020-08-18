@@ -41,7 +41,7 @@ class MediaDialogView : public views::BubbleDialogDelegateView,
   gfx::Size CalculatePreferredSize() const override;
 
   // MediaNotificationContainerObserver implementation.
-  void OnContainerExpanded(bool expanded) override;
+  void OnContainerSizeChanged() override;
   void OnContainerMetadataChanged() override;
   void OnContainerActionsChanged() override;
   void OnContainerClicked(const std::string& id) override {}

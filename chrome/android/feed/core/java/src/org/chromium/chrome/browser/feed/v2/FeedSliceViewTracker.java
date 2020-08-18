@@ -30,12 +30,17 @@ class FeedSliceViewTracker implements ViewTreeObserver.OnPreDrawListener {
     private FeedListContentManager mContentManager;
     // The set of content keys already reported as visible.
     private HashSet<String> mContentKeysVisible = new HashSet<String>();
+    private boolean mFeedContentVisible;
     @Nullable
     private Observer mObserver;
 
     /** Notified the first time slices are visible */
     public interface Observer {
+        // Invoked the first time a slice is 66% visible.
         void sliceVisible(String sliceId);
+        // Invoked when feed content is first visible. This can happens as soon as an xsurface view
+        // is partially visible.
+        void feedContentVisible();
     }
 
     FeedSliceViewTracker(@NonNull RecyclerView rootView,
@@ -56,6 +61,14 @@ class FeedSliceViewTracker implements ViewTreeObserver.OnPreDrawListener {
         mContentManager = null;
     }
 
+    /**
+     * Clear tracking so that slices already seen can be reported as viewed again.
+     */
+    public void clear() {
+        mContentKeysVisible.clear();
+        mFeedContentVisible = false;
+    }
+
     // ViewTreeObserver.OnPreDrawListener.
     @Override
     public boolean onPreDraw() {
@@ -69,11 +82,19 @@ class FeedSliceViewTracker implements ViewTreeObserver.OnPreDrawListener {
         for (int i = firstPosition;
                 i <= lastPosition && i < mContentManager.getItemCount() && i >= 0; ++i) {
             String contentKey = mContentManager.getContent(i).getKey();
+            // Feed content slices come with a 'c/' prefix. Ignore everything else.
+            if (!contentKey.startsWith("c/")) continue;
             View childView = layoutManager.findViewByPosition(i);
-            if (mContentKeysVisible.contains(contentKey) || childView == null
-                    || !isViewVisible(childView)) {
+            if (childView == null) continue;
+
+            if (!mFeedContentVisible) {
+                mFeedContentVisible = true;
+                mObserver.feedContentVisible();
+            }
+            if (mContentKeysVisible.contains(contentKey) || !isViewVisible(childView)) {
                 continue;
             }
+
             mContentKeysVisible.add(contentKey);
             mObserver.sliceVisible(contentKey);
         }

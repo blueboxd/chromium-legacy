@@ -106,7 +106,7 @@ bool IsValidLookingOwner(base::StringPiece owner) {
     return owner.find(".", at_pos) != std::string::npos;
   }
 
-  if (owner.starts_with("//")) {
+  if (base::StartsWith(owner, "//")) {
     // Looks like a path to a file. It would be nice to check that the file
     // actually exists here, but that's not possible because when this test
     // runs it runs in an isolated environment. To check for the presence of the

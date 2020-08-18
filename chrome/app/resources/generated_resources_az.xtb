@@ -1317,7 +1317,6 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="2564653188463346023">Təkmilləşdirilmiş yazı yoxlaması</translation>
 <translation id="2566124945717127842"><ph name="IDS_SHORT_PRODUCT_NAME" /> cihazınızı tam sıfırlamaq üçün fabrik sıfırlaması edin.</translation>
 <translation id="2568774940984945469">Məlumat paneli konteyneri</translation>
-<translation id="257088987046510401">Temalar</translation>
 <translation id="2571655996835834626">Veb səhifələrin kuki, JavaScript, plaqin, coğrafi məkan, mikrofon, kamera və s. kimi funksiyalara girişinə nəzarət edən ayarları dəyişin.</translation>
 <translation id="2572032849266859634"><ph name="VOLUME_NAME" /> yalnız oxumaq hüququ verilmişdir.</translation>
 <translation id="2575247648642144396">Artırmalar cari səhifədə fəaliyyət göstərəndə bu ikona görünəcək. İkonaya klikləməklə və ya <ph name="EXTENSION_SHORTCUT" /> bu artırmanı istifadə edin.</translation>
@@ -3339,7 +3338,6 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="5115338116365931134">SSO</translation>
 <translation id="5116628073786783676">Audionu yadda saxlayacağınız format...</translation>
 <translation id="5117139026559873716">Telefonu <ph name="DEVICE_TYPE" /> cihazından ayırın. Onlar artıq avtomatik qoşulmayacaqlar.</translation>
-<translation id="5117427536932535467">Temalar və Divar kağızları</translation>
 <translation id="5117930984404104619">Ziyarət edilmiş URL-lər daxil olmaqla, digər artırmaların davranışlarını nəzərdən keçirin</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Sərt diskiniz doludur. Lütfən, başqa yerdə saxlayın və ya sərt diskdə daha çox boş yer saxlayın.</translation>
@@ -4283,6 +4281,7 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="6277105963844135994">Şəbəkə fasiləsi</translation>
 <translation id="6277518330158259200">Skrinşot çəkin</translation>
 <translation id="6278057325678116358">GTK+ istifadə edin</translation>
+<translation id="6278428485366576908">Tema</translation>
 <translation id="6278776436938569440">Məkanı dəyişin</translation>
 <translation id="6279183038361895380">Kursorunuzu göstərmək üçün |<ph name="ACCELERATOR" />| basın</translation>
 <translation id="6280215091796946657">Fərqli hesab ilə daxil olun</translation>

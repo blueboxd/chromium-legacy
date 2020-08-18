@@ -900,6 +900,7 @@ TEST_F(NearbyConnectionsManagerImplTest, ShutdownDiscoveryConnectionFails) {
         nearby_connection = connection;
         run_loop.Quit();
       }));
+  run_loop.Run();
 
   EXPECT_FALSE(nearby_connection);
 }
@@ -908,4 +909,54 @@ TEST_F(NearbyConnectionsManagerImplTest,
        ShutdownBeforeStartDiscoveryOrAdvertising) {
   EXPECT_CALL(nearby_connections_, StopAllEndpoints).Times(0);
   nearby_connections_manager_.Shutdown();
+}
+
+TEST_F(NearbyConnectionsManagerImplTest,
+       UpgradeBandwidthAfterAdvertisingSucceeds) {
+  mojo::Remote<ConnectionLifecycleListener> listener_remote;
+  testing::NiceMock<MockIncomingConnectionListener>
+      incoming_connection_listener;
+  StartAdvertising(listener_remote, incoming_connection_listener);
+
+  // Upgrading bandwidth will succeed.
+  EXPECT_CALL(nearby_connections_, InitiateBandwidthUpgrade)
+      .WillOnce([&](const std::string& endpoint_id,
+                    NearbyConnectionsMojom::InitiateBandwidthUpgradeCallback
+                        callback) {
+        EXPECT_EQ(kRemoteEndpointId, endpoint_id);
+        std::move(callback).Run(Status::kSuccess);
+      });
+  nearby_connections_manager_.UpgradeBandwidth(kRemoteEndpointId);
+}
+
+TEST_F(NearbyConnectionsManagerImplTest,
+       UpgradeBandwidthAfterDiscoverySucceeds) {
+  // StartDiscovery will succeed.
+  mojo::Remote<EndpointDiscoveryListener> discovery_listener_remote;
+  testing::NiceMock<MockDiscoveryListener> discovery_listener;
+  StartDiscovery(discovery_listener_remote, discovery_listener);
+
+  // RequestConnection will succeed.
+  mojo::Remote<ConnectionLifecycleListener> connection_listener_remote;
+  mojo::Remote<PayloadListener> payload_listener_remote;
+  NearbyConnection* nearby_connection =
+      Connect(connection_listener_remote, payload_listener_remote,
+              ConnectionResponse::kAccepted);
+  EXPECT_TRUE(nearby_connection);
+
+  // Upgrading bandwidth will succeed.
+  EXPECT_CALL(nearby_connections_, InitiateBandwidthUpgrade)
+      .WillOnce([&](const std::string& endpoint_id,
+                    NearbyConnectionsMojom::InitiateBandwidthUpgradeCallback
+                        callback) {
+        EXPECT_EQ(kRemoteEndpointId, endpoint_id);
+        std::move(callback).Run(Status::kSuccess);
+      });
+  nearby_connections_manager_.UpgradeBandwidth(kRemoteEndpointId);
+}
+
+TEST_F(NearbyConnectionsManagerImplTest,
+       UpgradeBandwidthBeforeStartDiscoveryOrAdvertising) {
+  EXPECT_CALL(nearby_connections_, InitiateBandwidthUpgrade).Times(0);
+  nearby_connections_manager_.UpgradeBandwidth(kRemoteEndpointId);
 }

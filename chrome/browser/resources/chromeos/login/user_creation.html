@@ -55,6 +55,7 @@ found in the LICENSE file. -->
     </style>
     <oobe-dialog id="userCreationDialog" role="dialog" has-buttons
         title-key="userCreationTitle" subtitle-key="userCreationSubtitle"
+        aria-label$="[[i18nDynamic(locale, 'userCreationTitle')]]"
         for-step="create">
       <hd-iron-icon icon1x="oobe-32:googleg" icon2x="oobe-64:googleg"
         slot="oobe-icon">
@@ -102,6 +103,7 @@ found in the LICENSE file. -->
     </oobe-dialog>
     <oobe-dialog id="childSignInDialog" role="dialog" has-buttons
         title-key="childSignInTitle" subtitle-key="childSignInSubtitle"
+        aria-label$="[[i18nDynamic(locale, 'childSignInTitle')]]"
         for-step="child">
       <hd-iron-icon icon1x="oobe-32:family" icon2x="oobe-64:family"
         slot="oobe-icon">

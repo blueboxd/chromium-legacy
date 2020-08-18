@@ -1326,7 +1326,6 @@
 <translation id="2564653188463346023">మెరుగుపరిచిన స్పెల్ చెక్</translation>
 <translation id="2566124945717127842">మీ <ph name="IDS_SHORT_PRODUCT_NAME" /> పరికరాన్ని కొత్త దాని లాగా రీసెట్ చేయడానికి పవర్‌వాష్ చేయండి.</translation>
 <translation id="2568774940984945469">సమాచారబార్ కంటైనర్</translation>
-<translation id="257088987046510401">థీమ్‌లు</translation>
 <translation id="2571655996835834626">కుక్కీలు, JavaScript, ప్లగ్ఇన్‌లు, భౌగోళిక స్థానం, మైక్రోఫోన్, కెమెరా మొదలైన ఫీచ‌ర్‌లకు వెబ్‌సైట్‌ల యాక్సెస్‌ను నియంత్రించే మీ సెట్టింగ్‌లను మార్చండి.</translation>
 <translation id="2572032849266859634"><ph name="VOLUME_NAME" />కి చదవడానికి మాత్రమే యాక్సెస్ మంజూరు చేయబడింది.</translation>
 <translation id="2575247648642144396">ప్రస్తుత పేజీలో ఎక్స్‌టెన్ష‌న్‌ను అమలు చేయగలిగినప్పుడు ఈ చిహ్నం కనిపిస్తుంది. చిహ్నంపై క్లిక్ చేయడం ద్వారా లేదా <ph name="EXTENSION_SHORTCUT" />ను నొక్కడం ద్వారా ఈ ఎక్స్‌టెన్ష‌న్‌ను ఉపయోగించండి.</translation>
@@ -3354,7 +3353,6 @@
 <translation id="5115338116365931134">SSO</translation>
 <translation id="5116628073786783676">ఆడియోని ఇలా సే&amp;వ్ చేయి...</translation>
 <translation id="5117139026559873716">మీ <ph name="DEVICE_TYPE" /> నుండి మీ ఫోన్‌ను డిస్‌కనెక్ట్ చేయండి. అవి ఇకపై ఆటోమేటిక్‌గా కనెక్ట్ కావు.</translation>
-<translation id="5117427536932535467">థీమ్‌లు &amp; వాల్‌పేపర్‌లు</translation>
 <translation id="5117930984404104619">సందర్శించిన URLలతో సహా ఇతర పొడిగింపుల యొక్క ప్రవర్తనను పర్యవేక్షించండి</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">మీ హార్డ్ డిస్క్ నిండింది. దయచేసి మరొక స్థానానికి సేవ్ చేయండి లేదా హార్డ్ డిస్క్‌లోని నిల్వను ఖాళీ చేయండి.</translation>
@@ -4300,6 +4298,7 @@
 <translation id="6277105963844135994">నెట్‌వర్క్ సమయం ముగిసింది</translation>
 <translation id="6277518330158259200">స్క్రీన్‌షాట్‌ను తీ&amp;యి</translation>
 <translation id="6278057325678116358">GTK+ని ఉపయోగించు</translation>
+<translation id="6278428485366576908">థీమ్</translation>
 <translation id="6278776436938569440">లొకేషన్‌ను మార్చు</translation>
 <translation id="6279183038361895380">మీ కర్సర్‌ను చూపడానికి |<ph name="ACCELERATOR" />| నొక్కండి</translation>
 <translation id="6280215091796946657">వేరొక ఖాతాతో సైన్ ఇన్ చేయండి</translation>

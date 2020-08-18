@@ -7,6 +7,7 @@
 #include "base/check_op.h"
 #include "base/strings/string_util.h"
 #include "pdf/pdfium/pdfium_api_string_buffer_adapter.h"
+#include "ui/gfx/geometry/point.h"
 
 namespace chrome_pdf {
 
@@ -47,21 +48,21 @@ void PDFiumRange::SetCharCount(int char_count) {
   DCHECK_LE(char_count, FPDFText_CountChars(page_->GetTextPage()));
 #endif
 
-  cached_screen_rects_offset_ = pp::Point();
+  cached_screen_rects_point_ = gfx::Point();
   cached_screen_rects_zoom_ = 0;
 }
 
 const std::vector<pp::Rect>& PDFiumRange::GetScreenRects(
-    const pp::Point& offset,
+    const gfx::Point& point,
     double zoom,
     PageOrientation orientation) const {
-  if (offset == cached_screen_rects_offset_ &&
+  if (point == cached_screen_rects_point_ &&
       zoom == cached_screen_rects_zoom_) {
     return cached_screen_rects_;
   }
 
   cached_screen_rects_.clear();
-  cached_screen_rects_offset_ = offset;
+  cached_screen_rects_point_ = point;
   cached_screen_rects_zoom_ = zoom;
 
   int char_index = char_index_;
@@ -82,8 +83,8 @@ const std::vector<pp::Rect>& PDFiumRange::GetScreenRects(
     double right;
     double bottom;
     FPDFText_GetRect(page_->GetTextPage(), i, &left, &top, &right, &bottom);
-    pp::Rect rect = page_->PageToScreen(offset, zoom, left, top, right, bottom,
-                                        orientation);
+    pp::Rect rect =
+        page_->PageToScreen(point, zoom, left, top, right, bottom, orientation);
     if (rect.IsEmpty())
       continue;
     cached_screen_rects_.push_back(rect);

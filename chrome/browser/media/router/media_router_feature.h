@@ -35,6 +35,10 @@ extern const base::Feature kCastAllowAllIPsFeature;
 // Only relevant when media::kGlobalMediaControlsOverlayControls is enabled.
 extern const base::Feature kGlobalMediaControlsCastStartStop;
 
+// If enabled, allows all websites to request to start mirroring via
+// Presentation API. If disabled, only the allowlisted sites can do so.
+extern const base::Feature kAllowAllSitesToInitiateMirroring;
+
 namespace prefs {
 // Pref name for the enterprise policy for allowing Cast devices on all IPs.
 constexpr char kMediaRouterCastAllowAllIPs[] =

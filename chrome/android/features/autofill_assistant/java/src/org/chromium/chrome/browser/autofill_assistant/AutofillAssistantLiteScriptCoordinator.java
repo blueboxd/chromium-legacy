@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.autofill_assistant;
 
+import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantArguments.PARAMETER_TRIGGER_SCRIPT_USED;
+
 import androidx.annotation.NonNull;
 
 import org.chromium.base.Callback;
@@ -14,6 +16,7 @@ import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.content_public.browser.WebContents;
 
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Configures and runs a lite script and returns the result to the caller.
@@ -35,14 +38,18 @@ class AutofillAssistantLiteScriptCoordinator {
 
     void startLiteScript(String firstTimeUserScriptPath, String returningUserScriptPath,
             Callback<Boolean> onFinishedCallback) {
-        AutofillAssistantLiteService liteService = new AutofillAssistantLiteService(mWebContents,
+        String usedScriptPath =
                 AutofillAssistantPreferencesUtil.isAutofillAssistantFirstTimeLiteScriptUser()
-                        ? firstTimeUserScriptPath
-                        : returningUserScriptPath,
-                finishedState -> handleLiteScriptResult(finishedState, onFinishedCallback));
+                ? firstTimeUserScriptPath
+                : returningUserScriptPath;
+        AutofillAssistantLiteService liteService =
+                new AutofillAssistantLiteService(mWebContents, usedScriptPath,
+                        finishedState -> handleLiteScriptResult(finishedState, onFinishedCallback));
         AutofillAssistantServiceInjector.setServiceToInject(liteService);
+        Map<String, String> parameters = new HashMap<>();
+        parameters.put(PARAMETER_TRIGGER_SCRIPT_USED, usedScriptPath);
         AutofillAssistantClient.fromWebContents(mWebContents)
-                .start(/* initialUrl= */ "", /* parameters= */ new HashMap<>(),
+                .start(/* initialUrl= */ "", /* parameters= */ parameters,
                         /* experimentIds= */ "", /* callerAccount= */ "", /* userName= */ "",
                         /* isChromeCustomTab= */ true, /* onboardingCoordinator= */ null);
         AutofillAssistantServiceInjector.setServiceToInject(null);

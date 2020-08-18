@@ -17,6 +17,9 @@ namespace fuchsia {
 // PathService.
 BASE_EXPORT extern const char kPersistedDataDirectoryPath[];
 
+// Persisted cache directory, i.e. /cache .
+BASE_EXPORT extern const char kPersistedCacheDirectoryPath[];
+
 // Services directory, i.e. /svc .
 BASE_EXPORT extern const char kServiceDirectoryPath[];
 

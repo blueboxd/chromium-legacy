@@ -51,6 +51,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/numerics/ranges.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/compositor/animation_metrics_reporter.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/message_center/message_center.h"
@@ -459,8 +460,11 @@ void UnifiedSystemTrayController::ShowDetailedView(
   detailed_view_controller_ = std::move(controller);
 
   // |bubble_| may be null in tests.
-  if (bubble_)
+  if (bubble_) {
     bubble_->UpdateBubble();
+    // Notify accessibility features that a new view is showing.
+    bubble_->NotifyAccessibilityEvent(ax::mojom::Event::kShow, true);
+  }
 }
 
 void UnifiedSystemTrayController::UpdateExpandedAmount() {

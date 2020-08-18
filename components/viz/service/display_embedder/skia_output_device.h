@@ -22,6 +22,7 @@
 #include "third_party/skia/src/gpu/GrSemaphore.h"
 #include "ui/gfx/swap_result.h"
 
+class GrContext;
 class SkSurface;
 
 namespace base {
@@ -76,6 +77,7 @@ class SkiaOutputDevice {
       base::RepeatingCallback<void(gpu::SwapBuffersCompleteParams,
                                    const gfx::Size& pixel_size)>;
   SkiaOutputDevice(
+      GrContext* gr_context,
       gpu::MemoryTracker* memory_tracker,
       DidSwapBufferCompleteCallback did_swap_buffer_complete_callback);
   virtual ~SkiaOutputDevice();

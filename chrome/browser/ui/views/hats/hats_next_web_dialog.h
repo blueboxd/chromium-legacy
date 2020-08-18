@@ -102,7 +102,7 @@ class HatsNextWebDialog : public ui::WebDialogDelegate,
   Browser* browser_;
 
   // The HaTS Next survey trigger ID that is provided to the HaTS webpage.
-  const std::string& trigger_id_;
+  const std::string trigger_id_;
 
   // The size of the dialog. Desired dimensions are provided by the site loaded
   // in the web contents. Initialised to arbitrary non-zero value as creation

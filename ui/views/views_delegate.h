@@ -133,7 +133,8 @@ class VIEWS_EXPORT ViewsDelegate {
   // Returns true if the window passed in is in the Windows 8 metro
   // environment.
   virtual bool IsWindowInMetro(gfx::NativeWindow window) const;
-#elif defined(OS_LINUX) && BUILDFLAG(ENABLE_DESKTOP_AURA)
+#elif BUILDFLAG(ENABLE_DESKTOP_AURA) && \
+  (defined(OS_LINUX) || defined(OS_CHROMEOS))
   virtual gfx::ImageSkia* GetDefaultWindowIcon() const;
 #endif
 

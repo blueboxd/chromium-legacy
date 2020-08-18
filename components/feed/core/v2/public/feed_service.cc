@@ -43,9 +43,12 @@ class EulaObserver : public web_resource::EulaAcceptedNotifier::Observer {
 }  // namespace
 
 namespace internal {
-bool ShouldClearFeed(const history::DeletionInfo& deletion_info) {
-  // Only clear the feed if all history is deleted.
-  return deletion_info.IsAllHistory();
+bool ShouldClearFeed(bool is_signed_in,
+                     const history::DeletionInfo& deletion_info) {
+  // Only clear the feed if all history is deleted while a user is signed-in.
+  // Clear history events happen between sign-in events, and those should be
+  // ignored.
+  return is_signed_in && deletion_info.IsAllHistory();
 }
 }  // namespace internal
 
@@ -53,8 +56,9 @@ class FeedService::HistoryObserverImpl
     : public history::HistoryServiceObserver {
  public:
   HistoryObserverImpl(history::HistoryService* history_service,
-                      FeedStream* feed_stream)
-      : feed_stream_(feed_stream) {
+                      FeedStream* feed_stream,
+                      signin::IdentityManager* identity_manager)
+      : feed_stream_(feed_stream), identity_manager_(identity_manager) {
     // May be null for some profiles.
     if (history_service)
       history_service->AddObserver(this);
@@ -65,12 +69,14 @@ class FeedService::HistoryObserverImpl
   // history::HistoryServiceObserver.
   void OnURLsDeleted(history::HistoryService* history_service,
                      const history::DeletionInfo& deletion_info) override {
-    if (internal::ShouldClearFeed(deletion_info))
+    if (internal::ShouldClearFeed(identity_manager_->HasPrimaryAccount(),
+                                  deletion_info))
       feed_stream_->OnAllHistoryDeleted();
   }
 
  private:
   FeedStream* feed_stream_;
+  signin::IdentityManager* identity_manager_;
 };
 
 class FeedService::NetworkDelegateImpl : public FeedNetworkImpl::Delegate {
@@ -189,7 +195,8 @@ FeedService::FeedService(
       chrome_info);
 
   history_observer_ = std::make_unique<HistoryObserverImpl>(
-      history_service, static_cast<FeedStream*>(stream_.get()));
+      history_service, static_cast<FeedStream*>(stream_.get()),
+      identity_manager);
   stream_delegate_->Initialize(static_cast<FeedStream*>(stream_.get()));
 
   identity_manager_observer_ = std::make_unique<IdentityManagerObserverImpl>(

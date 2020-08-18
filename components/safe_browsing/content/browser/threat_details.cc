@@ -383,6 +383,7 @@ ThreatDetails::ThreatDetails(
     : content::WebContentsObserver(web_contents),
       url_loader_factory_(url_loader_factory),
       ui_manager_(ui_manager),
+      browser_context_(web_contents->GetBrowserContext()),
       resource_(resource),
       referrer_chain_provider_(referrer_chain_provider),
       cache_result_(false),
@@ -854,7 +855,7 @@ void ThreatDetails::OnCacheCollectionReady() {
                      base::Unretained(WebUIInfoSingleton::GetInstance()),
                      std::move(report_)));
 
-  ui_manager_->SendSerializedThreatDetails(serialized);
+  ui_manager_->SendSerializedThreatDetails(browser_context_, serialized);
 
   AllDone();
 }

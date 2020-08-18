@@ -204,7 +204,6 @@ Vyhľadávanie spustíte pridržaním ľubovoľného slova. Spresníte ho výber
 <translation id="2537178555904266562">Chyba pri synchronizovaní hesiel</translation>
 <translation id="2546283357679194313">Súbory cookie a dáta webov</translation>
 <translation id="2567385386134582609">OBRÁZOK</translation>
-<translation id="257088987046510401">Motívy</translation>
 <translation id="2581165646603367611">Táto akcia vymaže súbory cookie, vyrovnávaciu pamäť a ďalšie údaje webov, ktoré Chrome nepovažuje za dôležité.</translation>
 <translation id="2587052924345400782">Je dostupná novšia verzia</translation>
 <translation id="2593272815202181319">Neproporcionálne</translation>
@@ -679,6 +678,7 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="624789221780392884">Aktualizácia je pripravená</translation>
 <translation id="6255999984061454636">Návrhy obsahu</translation>
 <translation id="6277522088822131679">Pri tlačení stránky sa vyskytol problém. Skúste to znova.</translation>
+<translation id="6278428485366576908">Motív</translation>
 <translation id="6292420053234093573">Používaním Chromu vyjadrujete súhlas so <ph name="BEGIN_LINK1" />zmluvnými podmienkami spoločnosti Google<ph name="END_LINK1" /> a <ph name="BEGIN_LINK2" />dodatočnými zmluvnými podmienkami prehliadača Google Chrome a systému Chrome OS<ph name="END_LINK2" />.</translation>
 <translation id="629730747756840877">Účet</translation>
 <translation id="6297765934698848803">Organizácia, ktorá spravuje vaše zariadenie, vypla vašu kameru.</translation>

@@ -96,10 +96,11 @@ def main():
   print("Making a patch for Clang {}-{}".format(clang_git_revision,
                                                 clang_sub_revision))
 
-  old_rev_string = PatchRevision(clang_git_revision, clang_sub_revision)
-
   rev_string = "{}-{}".format(clang_git_revision, clang_sub_revision)
   Git(["checkout", "origin/master", "-b", "clang-{}".format(rev_string)])
+
+  old_rev_string = PatchRevision(clang_git_revision, clang_sub_revision)
+
   Git(["add", UPDATE_PY_PATH])
 
   commit_message = 'Ran `{}`.'.format(' '.join(sys.argv)) + COMMIT_FOOTER

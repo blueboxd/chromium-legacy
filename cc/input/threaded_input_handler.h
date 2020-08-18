@@ -93,17 +93,12 @@ class CC_EXPORT ThreadedInputHandler {
   void NotifyInputEvent();
 
   // ========== Rough Interface exposed for LTHI
-  // TODO(bokan): Merge these and scroll into into a single API to take scroll
-  // and input information for commit.
-  gfx::Vector2dF TakeOverscrollDeltaForCommit();
-  bool TakeScrollGestureDidEndForCommit();
-  base::flat_set<ElementId> TakeUpdatedSnappedElements();
-  bool TakeHasPinchZoomedForCommit();
-  bool TakeHasScrolledByWheelForCommit();
-  bool TakeHasScrolledByTouchForCommit();
-  bool TakeHasScrolledByPrecisionTouchpadForCommit();
-  ElementId GetLastLatchedScroller() const;
-  void ClearLastLatchedScroller();
+
+  // Called during a commit to communicate changes to Blink that it needs to
+  // know about. This method sets input-related values in the output parameter
+  // with the delta since the last commit. It then resets the tracking
+  // variables so that the next call will be a delta from this one.
+  void ProcessCommitDeltas(CompositorCommitData* commit_data);
 
   void WillShutdown();
   void WillDraw();

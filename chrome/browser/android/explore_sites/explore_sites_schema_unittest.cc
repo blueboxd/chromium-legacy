@@ -90,8 +90,7 @@ DatabaseTables ReadTables(sql::Database* db) {
       "SELECT name FROM sqlite_master WHERE type='table'"));
   while (table_names.Step()) {
     const std::string table_name = table_names.ColumnString(0);
-    if (table_name == "meta" ||
-        base::StringPiece(table_name).starts_with("sqlite_"))
+    if (table_name == "meta" || base::StartsWith(table_name, "sqlite_"))
       continue;
     database_tables.tables[table_name] = ReadTable(db, table_name);
   }

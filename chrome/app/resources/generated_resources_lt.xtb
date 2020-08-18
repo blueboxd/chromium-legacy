@@ -1326,7 +1326,6 @@ Jei nenorite, dabar atsijunkite, kad šios paskyros pakeitimai būtų matomi ši
 <translation id="2564653188463346023">Patobulinta rašybos tikrinimo funkcija</translation>
 <translation id="2566124945717127842">Atlikite „Powewash“, kad „<ph name="IDS_SHORT_PRODUCT_NAME" />“ įrenginys būtų nustatytas tarsi naujas.</translation>
 <translation id="2568774940984945469">Informacinės juostos sudėtinis rodinys</translation>
-<translation id="257088987046510401">Temos</translation>
 <translation id="2571655996835834626">Pakeisti nustatymus, pagal kuriuos tvarkoma svetainių prieiga prie funkcijų, pvz., slapukų, „JavaScript“, papildinių, geografinės vietovės, mikrofono, fotoaparato ir kt.</translation>
 <translation id="2572032849266859634">„<ph name="VOLUME_NAME" />“ suteiktas leidimas tik skaityti.</translation>
 <translation id="2575247648642144396">Ši piktograma bus matoma, kai plėtinys galės veikti dabartiniame puslapyje. Naudokite šį plėtinį spustelėję piktogramą arba paspaudę <ph name="EXTENSION_SHORTCUT" />.</translation>
@@ -3354,7 +3353,6 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="5115338116365931134">SSO</translation>
 <translation id="5116628073786783676">Iš&amp;saugoti garso įrašą kaip...</translation>
 <translation id="5117139026559873716">Atjunkite telefoną nuo „<ph name="DEVICE_TYPE" />“. Įrenginiai nebebus susiejami automatiškai.</translation>
-<translation id="5117427536932535467">Temos ir ekrano fonai</translation>
 <translation id="5117930984404104619">Stebėti kitų plėtinių veikimą, įskaitant aplankytus URL</translation>
 <translation id="5119173345047096771">„Mozilla Firefox“</translation>
 <translation id="5121130586824819730">Jūsų standusis diskas pilnas. Išsaugokite kitoje vietoje arba atlaisvinkite vietos standžiajame diske.</translation>
@@ -4301,6 +4299,7 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="6277105963844135994">Baigėsi tinklo skirtasis laikas</translation>
 <translation id="6277518330158259200">S&amp;ukurti ekrano kopiją</translation>
 <translation id="6278057325678116358">Naudoti GTK+</translation>
+<translation id="6278428485366576908">Tema</translation>
 <translation id="6278776436938569440">Keisti vietą</translation>
 <translation id="6279183038361895380">Paspauskite |<ph name="ACCELERATOR" />|, kad būtų rodomas žymeklis</translation>
 <translation id="6280215091796946657">Prisijunkite naudodami kitą paskyrą</translation>

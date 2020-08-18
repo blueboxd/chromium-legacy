@@ -204,7 +204,6 @@ Maintenez le doigt sur un mot pour effectuer une recherche sur celui-ci. Pour af
 <translation id="2537178555904266562">Erreur lors de la synchronisation des mots de passe</translation>
 <translation id="2546283357679194313">Témoins et données de site</translation>
 <translation id="2567385386134582609">IMAGE</translation>
-<translation id="257088987046510401">Thèmes</translation>
 <translation id="2581165646603367611">Cette action entraînera la suppression de tous les témoins, caches et autres données provenant de sites que Chrome estime ne pas être importants.</translation>
 <translation id="2587052924345400782">Version plus récente dispo</translation>
 <translation id="2593272815202181319">Espace simple</translation>
@@ -678,6 +677,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="624789221780392884">Une mise à jour est prête à être installée</translation>
 <translation id="6255999984061454636">Suggestions de contenu</translation>
 <translation id="6277522088822131679">Un problème est survenu lors de l'impression de la page. Veuillez réessayer.</translation>
+<translation id="6278428485366576908">Thème</translation>
 <translation id="6292420053234093573">En utilisant Chrome, vous acceptez les <ph name="BEGIN_LINK1" />conditions d'utilisation de Google<ph name="END_LINK1" /> et les <ph name="BEGIN_LINK2" />conditions d'utilisation supplémentaires pour Google Chrome et Chrome OS<ph name="END_LINK2" />.</translation>
 <translation id="629730747756840877">Compte</translation>
 <translation id="6297765934698848803">L'organisation qui gère votre appareil a désactivé votre appareil photo.</translation>

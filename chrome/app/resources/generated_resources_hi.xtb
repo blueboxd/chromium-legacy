@@ -1322,7 +1322,6 @@
 <translation id="2564653188463346023">वर्तनी की बेहतर जांच</translation>
 <translation id="2566124945717127842">अपने <ph name="IDS_SHORT_PRODUCT_NAME" /> डिवाइस को बिल्कुल नए जैसा रीसेट करने के लिए पावरवॉश करें.</translation>
 <translation id="2568774940984945469">जानकारी बार कंटेनर</translation>
-<translation id="257088987046510401">थीम</translation>
 <translation id="2571655996835834626">कुकी, JavaScript, प्लग इन, भौगोलिक स्थान, माइक्रोफ़ोन, कैमरा वगैरह जैसी सुविधाओं तक वेबसाइट का ऐक्सेस नियंत्रित करने वाली सेटिंग में बदलाव करें.</translation>
 <translation id="2572032849266859634"><ph name="VOLUME_NAME" /> को सिर्फ़ पढ़ने के लिए एक्सेस दी गई है.</translation>
 <translation id="2575247648642144396">यह आइकॉन तब दिखाई देगा जब एक्सटेंशन मौजूदा पेज पर काम कर सकेगा. आइकॉन पर क्लिक करके या <ph name="EXTENSION_SHORTCUT" /> को दबाकर यह एक्सटेंशन चालू करें.</translation>
@@ -3345,7 +3344,6 @@
 <translation id="5115338116365931134">एसएसओ (SSO)</translation>
 <translation id="5116628073786783676">इस रूप में ऑडियो स&amp;हेजें...</translation>
 <translation id="5117139026559873716">अपने फ़ोन को <ph name="DEVICE_TYPE" /> से डिसकनेक्ट करें. अब वे अपने आप नहीं जुड़ेंगे.</translation>
-<translation id="5117427536932535467">थीम और वॉलपेपर</translation>
 <translation id="5117930984404104619">विज़िट किए गए यूआरएल के साथ-साथ दूसरे एक्सटेंशन के व्यवहार की निगरानी करें</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">आपकी हार्ड डिस्‍क भर गई है.  कृपया किसी दूसरी जगह पर सेव करें या हार्ड डिस्‍क में जगह बनाएं.</translation>
@@ -4291,6 +4289,7 @@
 <translation id="6277105963844135994">नेटवर्क समय खत्म</translation>
 <translation id="6277518330158259200">स्क्री&amp;नशॉट लें</translation>
 <translation id="6278057325678116358">GTK+ का उपयोग करें</translation>
+<translation id="6278428485366576908">थीम</translation>
 <translation id="6278776436938569440">जगह बदलें</translation>
 <translation id="6279183038361895380">अपना कर्सर दिखाने के लिए |<ph name="ACCELERATOR" />| दबाएं</translation>
 <translation id="6280215091796946657">किसी दूसरे खाते से साइन इन करें</translation>

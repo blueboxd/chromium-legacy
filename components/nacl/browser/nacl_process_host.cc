@@ -381,7 +381,7 @@ void NaClProcessHost::Launch(
 
   if (uses_nonsfi_mode_) {
     bool nonsfi_mode_forced_by_command_line = false;
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
     nonsfi_mode_forced_by_command_line =
         cmd->HasSwitch(switches::kEnableNaClNonSfiMode);
 #endif
@@ -478,7 +478,7 @@ bool NaClProcessHost::LaunchSelLdr() {
 
   // Build command line for nacl.
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   int flags = ChildProcessHost::CHILD_ALLOW_SELF;
 #elif defined(OS_APPLE)
   int flags = ChildProcessHost::CHILD_PLUGIN;
@@ -843,7 +843,7 @@ void NaClProcessHost::StartNaClFileResolved(
     params.nexe_file = IPC::TakePlatformFileForTransit(std::move(nexe_file_));
   }
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   // In Non-SFI mode, create socket pairs for IPC channels here, unlike in
   // SFI-mode, in which those channels are created in nacl_listener.cc.
   // This is for security hardening. We can then prohibit the socketpair()

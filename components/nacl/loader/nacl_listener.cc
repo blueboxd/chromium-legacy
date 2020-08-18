@@ -41,7 +41,7 @@
 #include "native_client/src/public/nacl_app.h"
 #include "native_client/src/public/nacl_desc.h"
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #include "content/public/common/zygote/sandbox_support_linux.h"
 #endif
 
@@ -156,7 +156,7 @@ NaClListener::NaClListener()
     : shutdown_event_(base::WaitableEvent::ResetPolicy::MANUAL,
                       base::WaitableEvent::InitialState::NOT_SIGNALED),
       io_thread_("NaCl_IOThread"),
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
       prereserved_sandbox_size_(0),
 #endif
 #if defined(OS_POSIX)
@@ -226,7 +226,7 @@ void NaClListener::Listen() {
   base::RunLoop().Run();
 }
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 // static
 int NaClListener::MakeSharedMemorySegment(size_t length, int executable) {
   return content::SharedMemoryIPCSupport::MakeSharedMemorySegment(length,
@@ -288,7 +288,7 @@ void NaClListener::OnAddPrefetchedResource(
 
 void NaClListener::OnStart(nacl::NaClStartParams params) {
   is_started_ = true;
-#if defined(OS_LINUX) || defined(OS_APPLE)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_APPLE)
   int urandom_fd = HANDLE_EINTR(dup(base::GetUrandomFD()));
   if (urandom_fd < 0) {
     LOG(FATAL) << "Failed to dup() the urandom FD";
@@ -351,7 +351,7 @@ void NaClListener::OnStart(nacl::NaClStartParams params) {
   args->number_of_cores = number_of_cores_;
 #endif
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   args->create_memory_object_func = &MakeSharedMemorySegment;
 #endif
 
@@ -415,7 +415,7 @@ void NaClListener::OnStart(nacl::NaClStartParams params) {
       DebugStubPortSelectedHandler;
 #endif
   args->load_status_handler_func = LoadStatusCallback;
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   args->prereserved_sandbox_size = prereserved_sandbox_size_;
 #endif
 

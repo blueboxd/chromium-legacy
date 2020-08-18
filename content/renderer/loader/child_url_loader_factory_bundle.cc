@@ -242,13 +242,20 @@ network::mojom::URLLoaderFactory* ChildURLLoaderFactoryBundle::GetFactory(
 
   // All renderer-initiated requests need to provide a value for
   // |request_initiator| - this is enforced by
-  // CorsURLLoaderFactory::IsValidRequest.
+  // CorsURLLoaderFactory::IsValidRequest (see the
+  // InitiatorLockCompatibility::kNoInitiator case).
   DCHECK(request.request_initiator.has_value());
-  if (is_deprecated_process_wide_factory_ &&
-      !request.request_initiator->opaque()) {
-    NOTREACHED();
-    ScopedRequestCrashKeys crash_keys(request);
-    base::debug::DumpWithoutCrashing();
+  if (is_deprecated_process_wide_factory_) {
+    // The CHECK condition below (in a Renderer process) is also enforced later
+    // (in the NetworkService process) by CorsURLLoaderFactory::IsValidRequest
+    // (see the InitiatorLockCompatibility::kNoLock case) - this enforcement may
+    // result in a renderer kill when the NetworkService is hosted in a separate
+    // process from the Browser process.  Despite the redundancy, we want to
+    // also have the CHECK below, so that the Renderer process terminates
+    // earlier, with a callstack that (unlike the NetworkService
+    // mojo::ReportBadMessage) is hopefully useful for tracking down the source
+    // of the problem.
+    CHECK(request.request_initiator->opaque());
   }
 
   InitDirectNetworkFactoryIfNecessary();

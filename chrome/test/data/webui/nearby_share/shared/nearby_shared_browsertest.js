@@ -75,3 +75,22 @@ var NearbyVisibilityPageTest = class extends NearbySharedBrowserTest {
 };
 
 TEST_F('NearbyVisibilityPageTest', 'All', () => mocha.run());
+
+/**
+ * @extends {NearbySharedBrowserTest}
+ */
+var NearbyContactVisibilityTest = class extends NearbySharedBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return super.browsePreload + 'shared/nearby_contact_visibility.html';
+  }
+
+  /** @override */
+  get extraLibraries() {
+    return super.extraLibraries.concat([
+      'nearby_contact_visibility_test.js',
+    ]);
+  }
+};
+
+TEST_F('NearbyContactVisibilityTest', 'All', () => mocha.run());

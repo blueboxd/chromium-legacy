@@ -71,6 +71,8 @@ class FeedStreamSurface : public FeedStreamApi::SurfaceInterface {
   void ReportSliceViewed(JNIEnv* env,
                          const base::android::JavaParamRef<jobject>& obj,
                          const base::android::JavaParamRef<jstring>& slice_id);
+  void ReportFeedViewed(JNIEnv* env,
+                        const base::android::JavaParamRef<jobject>& obj);
   void ReportOpenAction(JNIEnv* env,
                         const base::android::JavaParamRef<jobject>& obj,
                         const base::android::JavaParamRef<jstring>& slice_id);

@@ -49,7 +49,7 @@ These builders must pass before a CL may land that affects files outside of
 
 * [linux-chromeos-rel](https://ci.chromium.org/p/chromium/builders/try/linux-chromeos-rel) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+linux-chromeos-rel)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+linux-chromeos-rel))
 
-* [linux-lacros-compile-rel](https://ci.chromium.org/p/chromium/builders/try/linux-lacros-compile-rel) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+linux-lacros-compile-rel)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+linux-lacros-compile-rel))
+* [linux-lacros-rel](https://ci.chromium.org/p/chromium/builders/try/linux-lacros-rel) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+linux-lacros-rel)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+linux-lacros-rel))
 
 * [linux-libfuzzer-asan-rel](https://ci.chromium.org/p/chromium/builders/try/linux-libfuzzer-asan-rel) ([definition](https://cs.chromium.org/search?q=package:%5Echromium$+file:/cq.star$+-file:/beta/+-file:/stable/+linux-libfuzzer-asan-rel)) ([matching builders](https://cs.chromium.org/search?q=+file:trybots.py+linux-libfuzzer-asan-rel))
 

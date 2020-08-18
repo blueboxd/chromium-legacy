@@ -199,6 +199,8 @@ class ThreatDetails : public content::WebContentsObserver {
 
   scoped_refptr<BaseUIManager> ui_manager_;
 
+  content::BrowserContext* browser_context_;
+
   const UnsafeResource resource_;
 
   ReferrerChainProvider* referrer_chain_provider_;

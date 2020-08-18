@@ -152,7 +152,7 @@ MATCHER_P4(MatchRtcConfigWithRates,
         static_cast<int>(bitrate_allocation.GetBitrateBps(0, i) / 1000.0)) {
       return false;
     }
-    if (arg.ts_rate_decimator[i] != (1 << i))
+    if (arg.ts_rate_decimator[i] != (1 << (num_temporal_layers - i - 1)))
       return false;
   }
 

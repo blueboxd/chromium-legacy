@@ -48,7 +48,7 @@ void RegisterNearbySharingPrefs(PrefRegistrySimple* registry) {
                                 /*default_value=*/true);
   registry->RegisterIntegerPref(
       prefs::kNearbySharingBackgroundVisibilityName,
-      /*default_value=*/static_cast<int>(Visibility::kNoOne));
+      /*default_value=*/static_cast<int>(Visibility::kUnknown));
   registry->RegisterIntegerPref(
       prefs::kNearbySharingDataUsageName,
       /*default_value=*/static_cast<int>(DataUsage::kWifiOnly));

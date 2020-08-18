@@ -73,7 +73,8 @@ class SafeBrowsingUIManager : public BaseUIManager {
 
   // Called on the IO thread by the ThreatDetails with the serialized
   // protocol buffer, so the service can send it over.
-  void SendSerializedThreatDetails(const std::string& serialized) override;
+  void SendSerializedThreatDetails(content::BrowserContext* browser_context,
+                                   const std::string& serialized) override;
 
   // Calls |BaseUIManager::OnBlockingPageDone()| and triggers
   // |OnSecurityInterstitialProceeded| event if |proceed| is true.

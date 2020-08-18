@@ -11,6 +11,11 @@
       "bounds": [800, 300],
       "backgroundColor": "#FF0000E6",
       "transform": 2
+    },
+    {
+      "name": "Synthesized Clip",
+      "bounds": [800, 300],
+      "transform": 2
     }
   ],
   "transforms": [

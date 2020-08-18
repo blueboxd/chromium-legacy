@@ -831,7 +831,12 @@ group("gn_all") {
   deps += [ "//third_party/opencv:opencv_emd_fuzzer" ]
 }
 
-if ((is_linux || is_chromeos || is_win) && enable_remoting && !use_ozone) {
+# TODO(https://crbug.com/1112776): ensure remoting is functional on Linux builds with
+# ozone. We also need to figure out what to do with remoting_host that is set for
+# use_x11 && is_linux. See remoting/remoting_options.gni.  For now, just allow to
+# enable remoting for is_linux && use_x11 && use_ozone.
+if ((is_linux || is_chromeos || is_win) && enable_remoting &&
+    (use_x11 || !use_ozone)) {
   # This group is used for network annotation check test.
   group("shipped_binaries") {
     deps = [

@@ -17,6 +17,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/accessibility/view_accessibility.h"
+#include "ui/views/controls/table/table_view.h"
 #include "ui/views/widget/widget_observer.h"
 
 namespace ui {
@@ -83,6 +84,9 @@ class ViewAXPlatformNodeDelegate : public ViewAccessibility,
   bool IsMinimized() const override;
   // Also in |ViewAccessibility|.
   const ui::AXUniqueId& GetUniqueId() const override;
+  base::Optional<bool> GetTableHasColumnOrRowHeaderNode() const override;
+  std::vector<int32_t> GetColHeaderNodeIds() const override;
+  std::vector<int32_t> GetColHeaderNodeIds(int col_index) const override;
 
   // Ordered-set-like and item-like nodes.
   bool IsOrderedSetItem() const override;
@@ -107,6 +111,9 @@ class ViewAXPlatformNodeDelegate : public ViewAccessibility,
   struct ChildWidgetsResult;
 
   ChildWidgetsResult GetChildWidgets() const;
+
+  // Gets the real TableView, otherwise nullptr.
+  TableView* GetAncestorTableView() const;
 
   // We own this, but it is reference-counted on some platforms so we can't use
   // a unique_ptr. It is destroyed in the destructor.

@@ -10,6 +10,7 @@
 #include "android_webview/common/aw_hit_test_data.h"
 #include "android_webview/common/render_view_messages.h"
 #include "base/no_destructor.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/content/renderer/autofill_agent.h"
 #include "components/autofill/content/renderer/password_autofill_agent.h"
@@ -79,7 +80,7 @@ bool RemovePrefixAndAssignIfMatches(const base::StringPiece& prefix,
                                     std::string* dest) {
   const base::StringPiece spec(url.possibly_invalid_spec());
 
-  if (spec.starts_with(prefix)) {
+  if (base::StartsWith(spec, prefix)) {
     url::RawCanonOutputW<1024> output;
     url::DecodeURLEscapeSequences(
         spec.data() + prefix.length(), spec.length() - prefix.length(),

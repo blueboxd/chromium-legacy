@@ -1318,7 +1318,6 @@
 <translation id="2564653188463346023">增强的“拼写检查”功能</translation>
 <translation id="2566124945717127842">Powerwash会将您的<ph name="IDS_SHORT_PRODUCT_NAME" />设备重置为初始状态。</translation>
 <translation id="2568774940984945469">信息栏容器</translation>
-<translation id="257088987046510401">主题背景</translation>
 <translation id="2571655996835834626">更改您用于控制以下权限的设置：网站对 Cookie、JavaScript、插件、地理位置信息、麦克风、摄像头等功能的使用权限。</translation>
 <translation id="2572032849266859634">已授予对 <ph name="VOLUME_NAME" />的只读权限。</translation>
 <translation id="2575247648642144396">仅当此扩展程序能够对当前网页采取操作时，该图标才会显示。要使用此扩展程序，请点击该图标或按 <ph name="EXTENSION_SHORTCUT" />。</translation>
@@ -3341,7 +3340,6 @@
 <translation id="5115338116365931134">SSO</translation>
 <translation id="5116628073786783676">音频存储为(&amp;V)...</translation>
 <translation id="5117139026559873716">断开手机与 <ph name="DEVICE_TYPE" /> 的连接。断开后，它们将无法再自动连接。</translation>
-<translation id="5117427536932535467">主题背景和壁纸</translation>
 <translation id="5117930984404104619">监控其他扩展程序的行为（包括访问过的网址）</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">您的硬盘已满。请保存到其他位置或在硬盘上腾出更多空间。</translation>
@@ -4287,6 +4285,7 @@
 <translation id="6277105963844135994">网络超时</translation>
 <translation id="6277518330158259200">屏幕截图(&amp;A)</translation>
 <translation id="6278057325678116358">使用 GTK+</translation>
+<translation id="6278428485366576908">主题背景</translation>
 <translation id="6278776436938569440">更改位置</translation>
 <translation id="6279183038361895380">按 |<ph name="ACCELERATOR" />| 可显示鼠标光标</translation>
 <translation id="6280215091796946657">使用其他帐号登录</translation>

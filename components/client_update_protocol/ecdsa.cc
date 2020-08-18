@@ -48,9 +48,10 @@ bool ParseETagHeader(const base::StringPiece& etag_header_value_in,
 
   // Remove the weak prefix, then remove the begin and the end quotes.
   const char kWeakETagPrefix[] = "W/";
-  if (etag_header_value.starts_with(kWeakETagPrefix))
+  if (base::StartsWith(etag_header_value, kWeakETagPrefix))
     etag_header_value.remove_prefix(base::size(kWeakETagPrefix) - 1);
-  if (etag_header_value.size() >= 2 && etag_header_value.starts_with("\"") &&
+  if (etag_header_value.size() >= 2 &&
+      base::StartsWith(etag_header_value, "\"") &&
       base::EndsWith(etag_header_value, "\"")) {
     etag_header_value.remove_prefix(1);
     etag_header_value.remove_suffix(1);

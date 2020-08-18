@@ -1201,15 +1201,23 @@ TEST_P(AutofillProfileTest, OverwriteName_AddNameFull) {
 // case.
 TEST_P(AutofillProfileTest, OverwriteName_DifferentCase) {
   AutofillProfile a;
-
-  a.SetRawInfo(NAME_FIRST, base::ASCIIToUTF16("marion"));
-  a.SetRawInfo(NAME_MIDDLE, base::ASCIIToUTF16("mitchell"));
-  a.SetRawInfo(NAME_LAST, base::ASCIIToUTF16("morrison"));
-
   AutofillProfile b = a;
-  b.SetRawInfo(NAME_FIRST, base::ASCIIToUTF16("Marion"));
-  b.SetRawInfo(NAME_MIDDLE, base::ASCIIToUTF16("Mitchell"));
-  b.SetRawInfo(NAME_LAST, base::ASCIIToUTF16("Morrison"));
+
+  a.SetRawInfoWithVerificationStatus(NAME_FIRST, base::ASCIIToUTF16("marion"),
+                                     VerificationStatus::kObserved);
+  a.SetRawInfoWithVerificationStatus(NAME_MIDDLE,
+                                     base::ASCIIToUTF16("mitchell"),
+                                     VerificationStatus::kObserved);
+  a.SetRawInfoWithVerificationStatus(NAME_LAST, base::ASCIIToUTF16("morrison"),
+                                     VerificationStatus::kObserved);
+
+  b.SetRawInfoWithVerificationStatus(NAME_FIRST, base::ASCIIToUTF16("Marion"),
+                                     VerificationStatus::kObserved);
+  b.SetRawInfoWithVerificationStatus(NAME_MIDDLE,
+                                     base::ASCIIToUTF16("Mitchell"),
+                                     VerificationStatus::kObserved);
+  b.SetRawInfoWithVerificationStatus(NAME_LAST, base::ASCIIToUTF16("Morrison"),
+                                     VerificationStatus::kObserved);
 
   a.FinalizeAfterImport();
   b.FinalizeAfterImport();
@@ -1269,6 +1277,7 @@ TEST_P(AutofillProfileTest, Compare) {
                        nullptr, nullptr, nullptr, nullptr, nullptr, nullptr);
   test::SetProfileInfo(&b, "Ringo", nullptr, nullptr, nullptr, nullptr, nullptr,
                        nullptr, nullptr, nullptr, nullptr, nullptr, nullptr);
+
   EXPECT_GT(0, a.Compare(b));
   EXPECT_LT(0, b.Compare(a));
 
@@ -1402,6 +1411,55 @@ TEST_P(AutofillProfileTest, FullAddress) {
   EXPECT_TRUE(profile.GetInfo(full_address, "en-US").empty());
 }
 
+TEST_P(AutofillProfileTest, SaveAdditionalInfo_Verified_MergeStructure) {
+  // This test is only applicable for structured names.
+  if (!StructuredNames())
+    return;
+
+  AutofillProfile a;
+  a.SetRawInfoWithVerificationStatus(
+      NAME_FULL, base::ASCIIToUTF16("Marion Mitchell Morrison"),
+      VerificationStatus::kUserVerified);
+  a.FinalizeAfterImport();
+  ASSERT_FALSE(a.IsVerified());
+  a.set_origin(autofill::kSettingsOrigin);
+  ASSERT_TRUE(a.IsVerified());
+
+  EXPECT_EQ(a.GetVerificationStatus(NAME_FULL),
+            VerificationStatus::kUserVerified);
+  EXPECT_EQ(a.GetVerificationStatus(NAME_FIRST), VerificationStatus::kParsed);
+  EXPECT_EQ(a.GetVerificationStatus(NAME_MIDDLE), VerificationStatus::kParsed);
+  EXPECT_EQ(a.GetVerificationStatus(NAME_LAST), VerificationStatus::kParsed);
+  EXPECT_EQ(a.GetRawInfo(NAME_FIRST), base::ASCIIToUTF16("Marion"));
+  EXPECT_EQ(a.GetRawInfo(NAME_MIDDLE), base::ASCIIToUTF16("Mitchell"));
+  EXPECT_EQ(a.GetRawInfo(NAME_LAST), base::ASCIIToUTF16("Morrison"));
+
+  AutofillProfile b;
+  b.SetRawInfoWithVerificationStatus(NAME_FIRST, base::ASCIIToUTF16("Mitchell"),
+                                     VerificationStatus::kObserved);
+  b.SetRawInfoWithVerificationStatus(NAME_MIDDLE, base::ASCIIToUTF16("Marion"),
+                                     VerificationStatus::kObserved);
+  b.SetRawInfoWithVerificationStatus(NAME_LAST, base::ASCIIToUTF16("Morrison"),
+                                     VerificationStatus::kObserved);
+  b.FinalizeAfterImport();
+  ASSERT_FALSE(b.IsVerified());
+
+  a.SaveAdditionalInfo(b, "en-US");
+
+  // After merging, the full name is presvered, but the substructure changed.
+  EXPECT_EQ(a.GetVerificationStatus(NAME_FULL),
+            VerificationStatus::kUserVerified);
+  EXPECT_EQ(a.GetVerificationStatus(NAME_FIRST), VerificationStatus::kObserved);
+  EXPECT_EQ(a.GetVerificationStatus(NAME_MIDDLE),
+            VerificationStatus::kObserved);
+  EXPECT_EQ(a.GetVerificationStatus(NAME_LAST), VerificationStatus::kObserved);
+  EXPECT_EQ(a.GetRawInfo(NAME_FULL),
+            base::ASCIIToUTF16("Marion Mitchell Morrison"));
+  EXPECT_EQ(a.GetRawInfo(NAME_FIRST), base::ASCIIToUTF16("Mitchell"));
+  EXPECT_EQ(a.GetRawInfo(NAME_MIDDLE), base::ASCIIToUTF16("Marion"));
+  EXPECT_EQ(a.GetRawInfo(NAME_LAST), base::ASCIIToUTF16("Morrison"));
+}
+
 TEST_P(AutofillProfileTest, SaveAdditionalInfo_Name_AddingNameFull) {
   AutofillProfile a;
 
@@ -1495,7 +1553,7 @@ TEST_P(AutofillProfileTest, SaveAdditionalInfo_Name_LossOfInformation) {
   a.SetRawInfo(NAME_FIRST, base::ASCIIToUTF16("Marion"));
   a.SetRawInfo(NAME_MIDDLE, base::ASCIIToUTF16("Mitchell"));
   a.SetRawInfo(NAME_LAST, base::ASCIIToUTF16("Morrison"));
-
+  a.FinalizeAfterImport();
   AutofillProfile b = a;
   b.SetRawInfo(NAME_MIDDLE, base::ASCIIToUTF16(""));
 

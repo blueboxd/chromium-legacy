@@ -39,7 +39,7 @@ class NaClListener : public IPC::Listener {
 
   bool Send(IPC::Message* msg);
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   void set_prereserved_sandbox_size(size_t prereserved_sandbox_size) {
     prereserved_sandbox_size_ = prereserved_sandbox_size;
   }
@@ -69,7 +69,7 @@ class NaClListener : public IPC::Listener {
                            base::FilePath file_path);
 
  private:
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   static int MakeSharedMemorySegment(size_t length, int executable);
 #endif
 
@@ -96,7 +96,7 @@ class NaClListener : public IPC::Listener {
   base::WaitableEvent shutdown_event_;
   base::Thread io_thread_;
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   size_t prereserved_sandbox_size_;
 #endif
 #if defined(OS_POSIX)

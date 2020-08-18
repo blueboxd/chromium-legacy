@@ -9,10 +9,10 @@ dictionary EncodedAudioConfig {
   required DOMString codec;
 
   // Rate of samples per second. 44100, 48000, etc.
-  unsigned long sampleRate;
+  required unsigned long sampleRate;
 
   // 1, 2, etc.
-  unsigned long numberOfChannels;
+  required unsigned long numberOfChannels;
 
   // Optional byte data required to initialize audio decoders such as Vorbis
   // codebooks.

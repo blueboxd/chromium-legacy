@@ -87,6 +87,28 @@
             ]
         }
     ],
+    "AndroidInProductHelpReengagementNotification": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "availability": ">=2",
+                        "event_trigger": "name:reengagement_notification_iph_trigger;comparator:==0;window:90;storage:360",
+                        "event_used": "name:started_from_main_intent;comparator:==0;window:2;storage:360",
+                        "session_rate": "<1"
+                    },
+                    "enable_features": [
+                        "IPH_ChromeReengagementNotification1",
+                        "ReengagementNotification"
+                    ]
+                }
+            ]
+        }
+    ],
     "AndroidPartnerCustomizationPhenotype": [
         {
             "platforms": [
@@ -4540,6 +4562,8 @@
                         "OmniboxDocumentProvider",
                         "OmniboxMaxURLMatches",
                         "OmniboxMaxZeroSuggestMatches",
+                        "OmniboxReactiveZeroSuggestionsOnNTPOmnibox",
+                        "OmniboxReactiveZeroSuggestionsOnNTPRealbox",
                         "OmniboxRemoveSuggestionsFromClipboard",
                         "OmniboxRichEntitySuggestions",
                         "OmniboxUIExperimentMaxAutocompleteMatches",
@@ -4587,24 +4611,6 @@
                     "enable_features": [
                         "OmniboxDisableInstantExtendedLimit",
                         "OmniboxOnFocusSuggestions"
-                    ]
-                }
-            ]
-        }
-    ],
-    "OmniboxContextMenuShowFullUrls": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "OmniboxContextMenuShowFullUrls"
                     ]
                 }
             ]
@@ -4763,21 +4769,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "OmniboxSpareRenderer"
-                    ]
-                }
-            ]
-        }
-    ],
-    "OmniboxSuggestionsRecyclerView": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "OmniboxSuggestionsRecyclerView"
                     ]
                 }
             ]
@@ -5589,72 +5580,6 @@
                 },
                 {
                     "name": "Disabled"
-                }
-            ]
-        }
-    ],
-    "ReengagementNotification1": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "EnabledTracking1",
-                    "params": {
-                        "availability": "any",
-                        "event_trigger": "name:reengagement_notification_1_trigger;comparator:==0;window:90;storage:360",
-                        "event_used": "name:started_from_main_intent;comparator:==0;window:7;storage:360",
-                        "session_rate": "<=1",
-                        "tracking_only": "true"
-                    },
-                    "enable_features": [
-                        "IPH_ChromeReengagementNotification1"
-                    ]
-                }
-            ]
-        }
-    ],
-    "ReengagementNotification2": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "EnabledTracking2",
-                    "params": {
-                        "availability": "any",
-                        "event_trigger": "name:reengagement_notification_2_trigger;comparator:==0;window:90;storage:360",
-                        "event_used": "name:started_from_main_intent;comparator:==0;window:7;storage:360",
-                        "session_rate": "<=1",
-                        "tracking_only": "true"
-                    },
-                    "enable_features": [
-                        "IPH_ChromeReengagementNotification2"
-                    ]
-                }
-            ]
-        }
-    ],
-    "ReengagementNotification3": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "EnabledTracking3",
-                    "params": {
-                        "availability": "any",
-                        "event_trigger": "name:reengagement_notification_3_trigger;comparator:==0;window:90;storage:360",
-                        "event_used": "name:started_from_main_intent;comparator:==0;window:7;storage:360",
-                        "session_rate": "<=1",
-                        "tracking_only": "true"
-                    },
-                    "enable_features": [
-                        "IPH_ChromeReengagementNotification3"
-                    ]
                 }
             ]
         }
@@ -7884,6 +7809,21 @@
             "experiments": [
                 {
                     "name": "2_V1"
+                }
+            ]
+        }
+    ],
+    "WebRTC-VP8VariableFramerateScreenshare": [
+        {
+            "platforms": [
+                "windows",
+                "mac",
+                "chromeos",
+                "linux"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled"
                 }
             ]
         }

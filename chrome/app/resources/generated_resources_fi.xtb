@@ -1326,7 +1326,6 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="2564653188463346023">Parannettu oikeinkirjoituksen tarkistus</translation>
 <translation id="2566124945717127842">Palauta <ph name="IDS_SHORT_PRODUCT_NAME" />-laitteesi alkuperäiseen tilaan suorittamalla Powerwash.</translation>
 <translation id="2568774940984945469">Tietopalkki</translation>
-<translation id="257088987046510401">Teemat</translation>
 <translation id="2571655996835834626">Muokata asetuksia, jotka määrittävät verkkosivustojen pääsyn ominaisuuksiin (esim. evästeet, JavaScript, laajennukset, sijainnit, mikrofoni, kamera)</translation>
 <translation id="2572032849266859634">Laajennukselle myönnettiin vain luku -oikeus tallennusvälineeseen <ph name="VOLUME_NAME" />.</translation>
 <translation id="2575247648642144396">Tämä kuvake näkyy, kun laajennus voi toimia nykyisellä sivulla. Ota laajennus käyttöön klikkaamalla kuvaketta tai painamalla <ph name="EXTENSION_SHORTCUT" />.</translation>
@@ -3351,7 +3350,6 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="5115338116365931134">SSO</translation>
 <translation id="5116628073786783676">T&amp;allenna audiotiedosto nimellä...</translation>
 <translation id="5117139026559873716">Irrota <ph name="DEVICE_TYPE" /> puhelimesta. Niitä ei enää yhdistetä automaattisesti.</translation>
-<translation id="5117427536932535467">Teemat ja taustakuvat</translation>
 <translation id="5117930984404104619">Seuraa muiden laajennusten toimia, mukaan lukien käydyt URL-osoitteet</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Kiintolevy on täynnä. Tallenna muuhun sijaintiin tai vapauta levytilaa.</translation>
@@ -4299,6 +4297,7 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="6277105963844135994">Verkon aikakatkaisu</translation>
 <translation id="6277518330158259200">Ot&amp;a kuvakaappaus</translation>
 <translation id="6278057325678116358">Ota käyttöön GTK+</translation>
+<translation id="6278428485366576908">Teema</translation>
 <translation id="6278776436938569440">Vaihda sijaintia</translation>
 <translation id="6279183038361895380">Näytä kursori painamalla |<ph name="ACCELERATOR" />|.</translation>
 <translation id="6280215091796946657">Kirjaudu sisään toisella tilillä</translation>

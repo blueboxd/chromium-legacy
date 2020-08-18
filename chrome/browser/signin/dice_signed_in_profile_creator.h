@@ -9,6 +9,8 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/profiles/profile.h"
 #include "google_apis/gaia/core_account_id.h"
 
@@ -22,9 +24,11 @@ class DiceSignedInProfileCreator {
   // failure. The callback is never called synchronously.
   // If |local_profile_name| is not empty, it will be set as local name for the
   // new profile.
+  // If |icon_index| is nullopt, a random icon will be selected.
   DiceSignedInProfileCreator(Profile* source_profile,
                              CoreAccountId account_id,
-                             const std::string& local_profile_name,
+                             const base::string16& local_profile_name,
+                             base::Optional<size_t> icon_index,
                              base::OnceCallback<void(Profile*)> callback);
 
   ~DiceSignedInProfileCreator();

@@ -3624,6 +3624,28 @@
           'gpu_telemetry_tests': 'gpu_fyi_mac_release_telemetry_tests',
         },
       },
+      'Mac FYI arm64 Release (Apple DTK)': {
+        'os_type': 'mac',
+        'browser_config': 'release',
+        'mixins': [
+          'mac_arm64_apple_dtk_experimental',
+        ],
+        # TODO(crbug.com/1105648): Change these to test_suites entries once
+        # there is enough DTK capacity to run tests on CI.
+        'additional_compile_targets': [
+          'angle_end2end_tests',
+          'angle_unittests',
+          'browser_tests',
+          'gl_tests',
+          'gl_unittests',
+          'gles2_conform_test',
+          'gpu_unittests',
+          'services_unittests',
+          'swiftshader_unittests',
+          'rendering_representative_perf_tests',
+          'telemetry_gpu_integration_test',
+        ],
+      },
       'Mac FYI dEQP Release AMD': {
         'os_type': 'mac',
         'mixins': [

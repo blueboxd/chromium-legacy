@@ -108,7 +108,8 @@ bool TextTrackLoader::Load(const KURL& url,
                            CrossOriginAttributeValue cross_origin) {
   CancelLoad();
 
-  ResourceLoaderOptions options(GetDocument().domWindow()->GetCurrentWorld());
+  ResourceLoaderOptions options(
+      GetDocument().GetExecutionContext()->GetCurrentWorld());
   options.initiator_info.name = fetch_initiator_type_names::kTrack;
 
   // Let |request| be the result of creating a potential-CORS request

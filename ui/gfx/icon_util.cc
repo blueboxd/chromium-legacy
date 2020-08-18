@@ -20,6 +20,7 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_family.h"
+#include "ui/gfx/skbitmap_operations.h"
 
 namespace {
 
@@ -628,7 +629,11 @@ void IconUtil::SetSingleIconImageInformation(const SkBitmap& bitmap,
   // opaque.
   unsigned char* image_addr = reinterpret_cast<unsigned char*>(icon_image);
   unsigned char* xor_mask_addr = image_addr + sizeof(BITMAPINFOHEADER);
-  CopySkBitmapBitsIntoIconBuffer(bitmap, xor_mask_addr, xor_mask_size);
+
+  // Make sure pixels are not premultiplied by alpha.
+  SkBitmap unpremul_bitmap = SkBitmapOperations::UnPreMultiply(bitmap);
+  CopySkBitmapBitsIntoIconBuffer(unpremul_bitmap, xor_mask_addr, xor_mask_size);
+
   *image_byte_count = bytes_in_resource;
 }
 

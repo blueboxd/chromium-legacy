@@ -151,6 +151,14 @@ void JourneyLoggerAndroid::RecordTransactionAmount(
       ConvertJavaStringToUTF8(env, jvalue), jcompleted);
 }
 
+void JourneyLoggerAndroid::RecordCheckoutStep(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller,
+    jint jstep) {
+  journey_logger_.RecordCheckoutStep(
+      static_cast<JourneyLogger::CheckoutFunnelStep>(jstep));
+}
+
 void JourneyLoggerAndroid::SetTriggerTime(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller) {

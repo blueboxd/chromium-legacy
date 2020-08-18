@@ -51,7 +51,8 @@ class FeedStream;
 class ImageFetcher;
 
 namespace internal {
-bool ShouldClearFeed(const history::DeletionInfo& deletion_info);
+bool ShouldClearFeed(bool is_signed_in,
+                     const history::DeletionInfo& deletion_info);
 }  // namespace internal
 
 class FeedService : public KeyedService {

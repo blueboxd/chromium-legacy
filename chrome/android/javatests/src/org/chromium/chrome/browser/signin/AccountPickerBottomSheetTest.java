@@ -262,29 +262,7 @@ public class AccountPickerBottomSheetTest {
         View bottomSheetView = mCoordinator.getBottomSheetViewForTesting();
         ThreadUtils.runOnUiThread(
                 bottomSheetView.findViewById(R.id.account_picker_continue_as_button)::performClick);
-        CriteriaHelper.pollUiThread(() -> {
-            return !bottomSheetView.findViewById(R.id.account_picker_continue_as_button).isShown();
-        });
-        verify(mAccountPickerDelegateMock).signIn(eq(PROFILE_DATA1.getAccountName()), any());
-        Assert.assertTrue(
-                bottomSheetView.findViewById(R.id.account_picker_signin_spinner_view).isShown());
-        // Currently the ProgressBar animation cannot be disabled on android-marshmallow-arm64-rel
-        // bot with DisableAnimationsTestRule, we hide the ProgressBar manually here to enable
-        // checks of other elements on the screen.
-        // TODO(https://crbug.com/1115067): Delete this line once DisableAnimationsTestRule is
-        // fixed.
-        ThreadUtils.runOnUiThread(() -> {
-            bottomSheetView.findViewById(R.id.account_picker_signin_spinner_view)
-                    .setVisibility(View.GONE);
-        });
-        onView(withText(R.string.signin_account_picker_bottom_sheet_signin_title))
-                .check(matches(isDisplayed()));
-        onView(withId(R.id.account_picker_bottom_sheet_subtitle))
-                .check(matches(not(isDisplayed())));
-        onView(withId(R.id.account_picker_horizontal_divider)).check(matches(not(isDisplayed())));
-        onView(withId(R.id.account_picker_account_list)).check(matches(not(isDisplayed())));
-        onView(withId(R.id.account_picker_selected_account)).check(matches(not(isDisplayed())));
-        onView(withId(R.id.account_picker_continue_as_button)).check(matches(not(isDisplayed())));
+        checkSignInInProgressBottomSheet();
     }
 
     @Test
@@ -297,10 +275,7 @@ public class AccountPickerBottomSheetTest {
                 bottomSheetView.findViewById(R.id.account_picker_continue_as_button)::isShown);
         ThreadUtils.runOnUiThread(
                 bottomSheetView.findViewById(R.id.account_picker_continue_as_button)::performClick);
-        CriteriaHelper.pollUiThread(() -> {
-            return !bottomSheetView.findViewById(R.id.account_picker_continue_as_button).isShown();
-        });
-        verify(mAccountPickerDelegateMock).signIn(eq(PROFILE_DATA2.getAccountName()), any());
+        checkSignInInProgressBottomSheet();
     }
 
     @Test
@@ -313,7 +288,9 @@ public class AccountPickerBottomSheetTest {
             return null;
         })
                 .when(mAccountPickerDelegateMock)
-                .signIn(eq(PROFILE_DATA1.getAccountName()), any());
+                .signIn(eq(mAccountManagerTestRule.toCoreAccountInfo(
+                                PROFILE_DATA1.getAccountName())),
+                        any());
 
         buildAndShowCollapsedBottomSheet();
         View bottomSheetView = mCoordinator.getBottomSheetViewForTesting();
@@ -383,6 +360,34 @@ public class AccountPickerBottomSheetTest {
         onView(withId(R.id.account_picker_account_list)).check(matches(not(isDisplayed())));
 
         onView(withId(R.id.incognito_interstitial_bottom_sheet_view)).check(matches(isDisplayed()));
+    }
+
+    private void checkSignInInProgressBottomSheet() {
+        View bottomSheetView = mCoordinator.getBottomSheetViewForTesting();
+        CriteriaHelper.pollUiThread(() -> {
+            return !bottomSheetView.findViewById(R.id.account_picker_continue_as_button).isShown();
+        });
+        // TODO(https://crbug.com/1116348): Check AccountPickerDelegate.signIn() is called
+        // after solving AsyncTask wait problem in espresso
+        Assert.assertTrue(
+                bottomSheetView.findViewById(R.id.account_picker_signin_spinner_view).isShown());
+        // Currently the ProgressBar animation cannot be disabled on android-marshmallow-arm64-rel
+        // bot with DisableAnimationsTestRule, we hide the ProgressBar manually here to enable
+        // checks of other elements on the screen.
+        // TODO(https://crbug.com/1115067): Delete this line once DisableAnimationsTestRule is
+        // fixed.
+        ThreadUtils.runOnUiThread(() -> {
+            bottomSheetView.findViewById(R.id.account_picker_signin_spinner_view)
+                    .setVisibility(View.GONE);
+        });
+        onView(withText(R.string.signin_account_picker_bottom_sheet_signin_title))
+                .check(matches(isDisplayed()));
+        onView(withId(R.id.account_picker_bottom_sheet_subtitle))
+                .check(matches(not(isDisplayed())));
+        onView(withId(R.id.account_picker_horizontal_divider)).check(matches(not(isDisplayed())));
+        onView(withId(R.id.account_picker_account_list)).check(matches(not(isDisplayed())));
+        onView(withId(R.id.account_picker_selected_account)).check(matches(not(isDisplayed())));
+        onView(withId(R.id.account_picker_continue_as_button)).check(matches(not(isDisplayed())));
     }
 
     private void checkZeroAccountBottomSheet() {

@@ -67,15 +67,11 @@ namespace safe_browsing {
 
 // static
 std::unique_ptr<PingManager> PingManager::Create(
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const V4ProtocolConfig& config) {
-  return base::WrapUnique(new PingManager(url_loader_factory, config));
+  return base::WrapUnique(new PingManager(config));
 }
 
-PingManager::PingManager(
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    const V4ProtocolConfig& config)
-    : config_(config), url_loader_factory_(url_loader_factory) {}
+PingManager::PingManager(const V4ProtocolConfig& config) : config_(config) {}
 
 PingManager::~PingManager() {}
 
@@ -90,6 +86,7 @@ void PingManager::OnURLLoaderComplete(
 
 // Sends a SafeBrowsing "hit" report.
 void PingManager::ReportSafeBrowsingHit(
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const safe_browsing::HitReport& hit_report) {
   auto resource_request = std::make_unique<network::ResourceRequest>();
   GURL report_url = SafeBrowsingHitUrl(hit_report);
@@ -105,14 +102,16 @@ void PingManager::ReportSafeBrowsingHit(
     report_ptr->AttachStringForUpload(hit_report.post_data, "text/plain");
 
   report_ptr->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
-      url_loader_factory_.get(),
+      url_loader_factory.get(),
       base::BindOnce(&PingManager::OnURLLoaderComplete, base::Unretained(this),
                      report_ptr.get()));
   safebrowsing_reports_.insert(std::move(report_ptr));
 }
 
 // Sends threat details for users who opt-in.
-void PingManager::ReportThreatDetails(const std::string& report) {
+void PingManager::ReportThreatDetails(
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    const std::string& report) {
   GURL report_url = ThreatDetailsUrl();
 
   auto resource_request = std::make_unique<network::ResourceRequest>();
@@ -126,7 +125,7 @@ void PingManager::ReportThreatDetails(const std::string& report) {
   loader->AttachStringForUpload(report, "application/octet-stream");
 
   loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
-      url_loader_factory_.get(),
+      url_loader_factory.get(),
       base::BindOnce(&PingManager::OnURLLoaderComplete, base::Unretained(this),
                      loader.get()));
   safebrowsing_reports_.insert(std::move(loader));

@@ -1318,7 +1318,6 @@ Wenn Sie die Family Link App auf Ihrem Gerät installieren, können Sie die Eins
 <translation id="2564653188463346023">Erweiterte Rechtschreibprüfung</translation>
 <translation id="2566124945717127842">Durch einen Powerwash wird Ihr <ph name="IDS_SHORT_PRODUCT_NAME" />-Gerät auf den Werkszustand zurückgesetzt.</translation>
 <translation id="2568774940984945469">Infoleisten-Container</translation>
-<translation id="257088987046510401">Designs</translation>
 <translation id="2571655996835834626">Ändern Sie Ihre Einstellungen, über die der Websitezugriff auf Funktionen wie Cookies, JavaScript, Plug-ins, Standort, Mikrofon oder Kamera gesteuert wird.</translation>
 <translation id="2572032849266859634">Nur Lesezugriff auf <ph name="VOLUME_NAME" /> wurde zugelassen.</translation>
 <translation id="2575247648642144396">Dieses Symbol wird eingeblendet, wenn die Erweiterung auf die aktuelle Seite angewendet werden kann. Klicken Sie auf das Symbol oder drücken Sie <ph name="EXTENSION_SHORTCUT" />, um diese Erweiterung zu verwenden.</translation>
@@ -3342,7 +3341,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5115338116365931134">SSO</translation>
 <translation id="5116628073786783676">Audio &amp;speichern unter...</translation>
 <translation id="5117139026559873716">Smartphone vom <ph name="DEVICE_TYPE" /> trennen. Die Geräte werden nicht mehr automatisch miteinander verbunden.</translation>
-<translation id="5117427536932535467">Designs &amp; Hintergründe</translation>
 <translation id="5117930984404104619">Verhalten anderer Erweiterungen überwachen, einschließlich besuchter URLs</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Ihre Festplatte ist voll. Wählen Sie bitte einen anderen Speicherort aus oder geben Sie Speicherplatz auf der Festplatte frei.</translation>
@@ -4288,6 +4286,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6277105963844135994">Zeitüberschreitung im Netzwerk</translation>
 <translation id="6277518330158259200">Screenshot &amp;erstellen</translation>
 <translation id="6278057325678116358">GTK+ verwenden</translation>
+<translation id="6278428485366576908">Design</translation>
 <translation id="6278776436938569440">Speicherort ändern</translation>
 <translation id="6279183038361895380">Zum Einblenden des Cursors |<ph name="ACCELERATOR" />| drücken</translation>
 <translation id="6280215091796946657">Mit einem anderen Konto anmelden</translation>

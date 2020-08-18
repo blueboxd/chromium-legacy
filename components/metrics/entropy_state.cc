@@ -41,10 +41,10 @@ EntropyState::EntropyState(PrefService* local_state)
 // static
 constexpr int EntropyState::kLowEntropySourceNotSet;
 
-void EntropyState::ClearPrefs() {
-  DCHECK_EQ(kLowEntropySourceNotSet, low_entropy_source_);
-  local_state_->ClearPref(prefs::kMetricsLowEntropySource);
-  local_state_->ClearPref(prefs::kMetricsOldLowEntropySource);
+// static
+void EntropyState::ClearPrefs(PrefService* local_state) {
+  local_state->ClearPref(prefs::kMetricsLowEntropySource);
+  local_state->ClearPref(prefs::kMetricsOldLowEntropySource);
 }
 
 // static

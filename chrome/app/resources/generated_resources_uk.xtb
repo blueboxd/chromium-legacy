@@ -1326,7 +1326,6 @@
 <translation id="2564653188463346023">Покращена перевірка орфографії</translation>
 <translation id="2566124945717127842">Виконайте Powerwash, щоб відновити заводські налаштування пристрою <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
 <translation id="2568774940984945469">Контейнер інформаційної панелі</translation>
-<translation id="257088987046510401">Теми</translation>
 <translation id="2571655996835834626">Змінювати налаштування, які контролюють доступ веб-сайтів до файлів cookie, файлів JavaScript, плагінів, даних геолокації, мікрофона, камери тощо.</translation>
 <translation id="2572032849266859634">Надано доступ лише для перегляду (<ph name="VOLUME_NAME" />).</translation>
 <translation id="2575247648642144396">Цей значок відображатиметься, якщо розширення зможе працювати на поточній сторінці. Запустіть розширення, натиснувши значок або комбінацію клавіш <ph name="EXTENSION_SHORTCUT" />.</translation>
@@ -3354,7 +3353,6 @@
 <translation id="5115338116365931134">Система єдиного входу (SSO)</translation>
 <translation id="5116628073786783676">Збере&amp;гти аудіо як...</translation>
 <translation id="5117139026559873716">Від'єднайте телефон від <ph name="DEVICE_TYPE" />. Вони більше не під'єднуватимуться автоматично.</translation>
-<translation id="5117427536932535467">Теми та фонові зображення</translation>
 <translation id="5117930984404104619">Відстежувати поведінку інших розширень, зокрема відвідані URL-адреси</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Ваш жорсткий диск заповнено. Збережіть в іншому місці чи звільніть місце на цьому жорстоку диску.</translation>
@@ -4300,6 +4298,7 @@
 <translation id="6277105963844135994">Час очікування мережі минув</translation>
 <translation id="6277518330158259200">З&amp;робити знімок екрана</translation>
 <translation id="6278057325678116358">Вибрати тему GTK+</translation>
+<translation id="6278428485366576908">Тема</translation>
 <translation id="6278776436938569440">Змінити місце</translation>
 <translation id="6279183038361895380">Натисніть |<ph name="ACCELERATOR" />|, щоб побачити курсор</translation>
 <translation id="6280215091796946657">Увійти в інший обліковий запис</translation>

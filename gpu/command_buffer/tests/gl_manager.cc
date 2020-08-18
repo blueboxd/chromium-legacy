@@ -527,11 +527,11 @@ int32_t GLManager::CreateImage(ClientBuffer buffer,
     if (gpu_memory_buffer->GetType() == gfx::NATIVE_PIXMAP) {
       gfx::GpuMemoryBufferHandle handle = gpu_memory_buffer->CloneHandle();
       gfx::BufferFormat format = gpu_memory_buffer->GetFormat();
-      gl_image = gpu_memory_buffer_factory_->AsImageFactory()
-                     ->CreateImageForGpuMemoryBuffer(
-                         std::move(handle), size, format,
-                         gpu::kInProcessCommandBufferClientId,
-                         gpu::kNullSurfaceHandle);
+      gl_image =
+          gpu_memory_buffer_factory_->AsImageFactory()
+              ->CreateImageForGpuMemoryBuffer(std::move(handle), size, format,
+                                              gpu::kDisplayCompositorClientId,
+                                              gpu::kNullSurfaceHandle);
       if (!gl_image)
         return -1;
     }

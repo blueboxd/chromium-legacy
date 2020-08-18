@@ -28,6 +28,7 @@
 #include "components/autofill/core/browser/data_model/address.h"
 #include "components/autofill/core/browser/data_model/autofill_metadata.h"
 #include "components/autofill/core/browser/data_model/autofill_profile_comparator.h"
+#include "components/autofill/core/browser/data_model/autofill_structured_address_utils.h"
 #include "components/autofill/core/browser/data_model/contact_info.h"
 #include "components/autofill/core/browser/data_model/phone_number.h"
 #include "components/autofill/core/browser/geo/address_i18n.h"
@@ -606,6 +607,42 @@ void AutofillProfile::OverwriteDataFrom(const AutofillProfile& profile) {
   }
 }
 
+bool AutofillProfile::MergeStructuredDataFrom(const AutofillProfile& profile,
+                                              const std::string& app_locale) {
+  // Should only be called if the profile is already verified.
+  DCHECK(IsVerified());
+
+  // Only applicable for structured names.
+  if (!base::FeatureList::IsEnabled(
+          features::kAutofillEnableSupportForMoreStructureInNames)) {
+    return false;
+  }
+
+  AutofillProfileComparator comparator(app_locale);
+  NameInfo name;
+  DVLOG(1) << "Merging profile structure information :\nSource = " << profile
+           << "\nDest = " << *this;
+
+  // It is already verified upstream that the profiles and therefore also the
+  // names are mergeable.
+  // However, the structure should only be merged if the full names are token
+  // equivalent.
+  if (!structured_address::AreStringTokenEquivalent(
+          GetRawInfo(NAME_FULL), profile.GetRawInfo(NAME_FULL)))
+    return false;
+
+  if (!comparator.MergeNames(profile, *this, &name)) {
+    NOTREACHED();
+    return false;
+  }
+
+  if (name_ != name) {
+    name_ = name;
+    return true;
+  }
+  return false;
+}
+
 bool AutofillProfile::MergeDataFrom(const AutofillProfile& profile,
                                     const std::string& app_locale) {
   // Verified profiles should never be overwritten with unverified data.
@@ -700,7 +737,7 @@ bool AutofillProfile::SaveAdditionalInfo(const AutofillProfile& profile,
   DCHECK(comparator.AreMergeable(*this, profile));
 
   // We don't replace verified profile data with unverified profile data. But,
-  // we can merge two verified profiles or merge verified profile data into an
+  // we can merge two unverified profiles or merge verified profile data into an
   // unverified profile.
   if (!IsVerified() || profile.IsVerified()) {
     if (MergeDataFrom(profile, app_locale)) {
@@ -710,6 +747,16 @@ bool AutofillProfile::SaveAdditionalInfo(const AutofillProfile& profile,
       AutofillMetrics::LogProfileActionOnFormSubmitted(
           AutofillMetrics::EXISTING_PROFILE_USED);
     }
+    return true;
+  }
+  // If the profile is verified, only the structured name information should be
+  // merged.
+  if (MergeStructuredDataFrom(profile, app_locale)) {
+    AutofillMetrics::LogProfileActionOnFormSubmitted(
+        AutofillMetrics::EXISTING_PROFILE_UPDATED);
+  } else {
+    AutofillMetrics::LogProfileActionOnFormSubmitted(
+        AutofillMetrics::EXISTING_PROFILE_USED);
   }
   return true;
 }
@@ -1286,7 +1333,7 @@ std::ostream& operator<<(std::ostream& os, const AutofillProfile& profile) {
 
 bool AutofillProfile::FinalizeAfterImport() {
   bool success = true;
-  if (!name_.FinalizeAfterImport())
+  if (!name_.FinalizeAfterImport(IsVerified()))
     success = false;
 
   return success;

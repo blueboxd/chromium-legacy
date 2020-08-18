@@ -682,28 +682,27 @@ void XRSystem::OverlayFullscreenExitObserver::Invoke(
     Event* event) {
   DVLOG(2) << __func__ << ": event type=" << event->type();
 
-  element_->GetDocument().removeEventListener(
-      event_type_names::kFullscreenchange, this, true);
+  document_->removeEventListener(event_type_names::kFullscreenchange, this,
+                                 true);
 
   if (event->type() == event_type_names::kFullscreenchange) {
     // Succeeded, proceed with session shutdown. Expanding into the fullscreen
     // cutout is only valid for fullscreen mode which we just exited (cf.
     // MediaControlsDisplayCutoutDelegate::DidExitFullscreen), so we can
     // unconditionally turn this off here.
-    element_->GetDocument().GetViewportData().SetExpandIntoDisplayCutout(false);
+    document_->GetViewportData().SetExpandIntoDisplayCutout(false);
     xr_->ExitPresent(std::move(on_exited_));
   }
 }
 
 void XRSystem::OverlayFullscreenExitObserver::ExitFullscreen(
-    Element* element,
+    Document* document,
     base::OnceClosure on_exited) {
   DVLOG(2) << __func__;
-  element_ = element;
+  document_ = document;
   on_exited_ = std::move(on_exited);
 
-  element->GetDocument().addEventListener(event_type_names::kFullscreenchange,
-                                          this, true);
+  document->addEventListener(event_type_names::kFullscreenchange, this, true);
   // "ua_originated" means that the browser process already exited
   // fullscreen. Set it to false because we need the browser process
   // to get notified that it needs to exit fullscreen. Use
@@ -712,12 +711,12 @@ void XRSystem::OverlayFullscreenExitObserver::ExitFullscreen(
   // leaving others in fullscreen mode.
   constexpr bool kUaOriginated = false;
 
-  Fullscreen::FullyExitFullscreen(element_->GetDocument(), kUaOriginated);
+  Fullscreen::FullyExitFullscreen(*document, kUaOriginated);
 }
 
 void XRSystem::OverlayFullscreenExitObserver::Trace(Visitor* visitor) const {
   visitor->Trace(xr_);
-  visitor->Trace(element_);
+  visitor->Trace(document_);
   EventListener::Trace(visitor);
 }
 
@@ -827,8 +826,7 @@ void XRSystem::ExitPresent(base::OnceClosure on_exited) {
       if (fullscreen_element) {
         fullscreen_exit_observer_ =
             MakeGarbageCollected<OverlayFullscreenExitObserver>(this);
-        fullscreen_exit_observer_->ExitFullscreen(fullscreen_element,
-                                                  std::move(on_exited));
+        fullscreen_exit_observer_->ExitFullscreen(doc, std::move(on_exited));
         return;
       }
     }

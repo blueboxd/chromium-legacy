@@ -1322,7 +1322,6 @@
 <translation id="2564653188463346023">향상된 맞춤법 검사</translation>
 <translation id="2566124945717127842">Powerwash는 <ph name="IDS_SHORT_PRODUCT_NAME" /> 기기를 재설정하여 새것처럼 만듭니다.</translation>
 <translation id="2568774940984945469">정보 표시줄 컨테이너</translation>
-<translation id="257088987046510401">테마</translation>
 <translation id="2571655996835834626">쿠키, 자바스크립트, 플러그인, 위치정보, 마이크, 카메라 등의 기능에 대한 웹사이트의 액세스 권한을 관리하는 설정을 변경합니다.</translation>
 <translation id="2572032849266859634"><ph name="VOLUME_NAME" />에 대한 읽기 전용 액세스가 허용되었습니다.</translation>
 <translation id="2575247648642144396">현재 페이지에서 확장 프로그램을 실행할 수 있으면 아이콘이 표시됩니다. 아이콘을 클릭하거나 <ph name="EXTENSION_SHORTCUT" />을(를) 눌러 확장 프로그램을 사용합니다.</translation>
@@ -3344,7 +3343,6 @@
 <translation id="5115338116365931134">SSO</translation>
 <translation id="5116628073786783676">오디오를 다른 이름으로 저장(&amp;V)...</translation>
 <translation id="5117139026559873716"><ph name="DEVICE_TYPE" />에서 휴대전화를 연결 해제합니다. 더 이상 자동으로 연결되지 않습니다.</translation>
-<translation id="5117427536932535467">테마와 배경화면</translation>
 <translation id="5117930984404104619">방문한 URL을 포함하여 다른 확장 프로그램의 동작을 모니터링합니다.</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">하드 디스크가 가득 찼습니다. 다른 위치에 저장하거나 하드 디스크에 더 많은 공간을 확보하시기 바랍니다.</translation>
@@ -4290,6 +4288,7 @@
 <translation id="6277105963844135994">네트워크 시간 초과</translation>
 <translation id="6277518330158259200">스크린샷 캡쳐하기(&amp;A)</translation>
 <translation id="6278057325678116358">GTK+ 사용</translation>
+<translation id="6278428485366576908">테마</translation>
 <translation id="6278776436938569440">위치 변경</translation>
 <translation id="6279183038361895380">|<ph name="ACCELERATOR" />|을(를) 눌러 커서 표시</translation>
 <translation id="6280215091796946657">다른 계정으로 로그인</translation>

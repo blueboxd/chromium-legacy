@@ -485,7 +485,7 @@ bool GURL::IsAboutUrl(base::StringPiece allowed_path) const {
   if (has_host() || has_username() || has_password() || has_port())
     return false;
 
-  if (!path_piece().starts_with(allowed_path))
+  if (!base::StartsWith(path_piece(), allowed_path))
     return false;
 
   if (path_piece().size() == allowed_path.size()) {

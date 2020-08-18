@@ -22,7 +22,7 @@ enum LensFacing { FRONT = 0, BACK = 1 };
 
 bool ParseCameraId(const base::StringPiece& sub_key, int* camera_id) {
   const base::StringPiece camera_id_prefix = "camera";
-  if (!sub_key.starts_with(camera_id_prefix))
+  if (!base::StartsWith(sub_key, camera_id_prefix))
     return false;
   return base::StringToInt(sub_key.substr(camera_id_prefix.size()), camera_id);
 }
@@ -100,7 +100,7 @@ std::string CameraConfigChromeOS::GetUsbId(const std::string& device_id) const {
   // |device_id| is of the form "/dev/video2".  We want to retrieve "video2"
   // into |file_name|.
   const std::string device_dir = "/dev/";
-  if (!base::StartsWith(device_id, device_dir, base::CompareCase::SENSITIVE)) {
+  if (!base::StartsWith(device_id, device_dir)) {
     DLOG(ERROR) << "device_id is invalid: " << device_id;
     return std::string();
   }
@@ -145,7 +145,8 @@ void CameraConfigChromeOS::InitializeDeviceInfo(
       base::SplitResult::SPLIT_WANT_NONEMPTY);
 
   for (const base::StringPiece& line : lines) {
-    if (line.starts_with("#"))  // Ignore the comments that starts with "#".
+    // Ignore the comments that starts with "#".
+    if (base::StartsWith(line, "#"))
       continue;
     const std::vector<base::StringPiece> key_value = base::SplitStringPiece(
         line, "=", base::WhitespaceHandling::TRIM_WHITESPACE,

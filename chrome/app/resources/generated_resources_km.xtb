@@ -1326,7 +1326,6 @@
 <translation id="2564653188463346023">ពិនិត្យ​អក្ខរាវិរុទ្ធប្រសើរជាងមុន</translation>
 <translation id="2566124945717127842">Powerwash នឹងកំណត់ឧបករណ៍ <ph name="IDS_SHORT_PRODUCT_NAME" /> របស់អ្នកឡើងវិញឲ្យដូចថ្មី។</translation>
 <translation id="2568774940984945469">ឧបករណ៍ផ្ទុករបាព័ត៌មាន</translation>
-<translation id="257088987046510401">ធីម</translation>
 <translation id="2571655996835834626">ផ្លាស់ប្ដូរ​ការកំណត់​របស់អ្នក​ដែល​គ្រប់គ្រង​ការចូលប្រើប្រាស់​មុខងារនានា​របស់​គេហទំព័រ​ដូចជា ខូគី, JavaScript, កម្មវិធីជំនួយ, ទីតាំងភូមិសាស្រ្ត, មីក្រូហ្វូន, កាមេរ៉ា ។ល។</translation>
 <translation id="2572032849266859634">ការចូលប្រើការអានប៉ុណ្ណោះលើ <ph name="VOLUME_NAME" /> ត្រូវបានផ្តល់ជូន។</translation>
 <translation id="2575247648642144396">រូបតំណាងនេះនឹងអាចមើលឃើញ នៅពេលកម្មវិធីបន្ថែមអាចធ្វើសកម្មភាពនៅលើទំព័របច្ចុប្បន្ន។ ប្រើកម្មវិធីបន្ថែមនេះដោយការចុចនៅលើរូបតំណាងនេះ ដោយការចុច <ph name="EXTENSION_SHORTCUT" />។</translation>
@@ -3354,7 +3353,6 @@
 <translation id="5115338116365931134">SSO</translation>
 <translation id="5116628073786783676">រក្សាទុកសម្លេងជា...</translation>
 <translation id="5117139026559873716">ផ្ដាច់​ទូរសព្ទ​ពី <ph name="DEVICE_TYPE" /> របស់អ្នក។ ឧបករណ៍​ទាំងពីរនេះនឹងមិនភ្ជាប់​ដោយស្វ័យប្រវត្តិទៀតទេ។</translation>
-<translation id="5117427536932535467">ធីម &amp; ផ្ទាំងរូបភាព</translation>
 <translation id="5117930984404104619">គ្រប់គ្រងលក្ខណៈកម្មវិធីបន្ថែមដ៏ទៃ ដោយរាប់បញ្ចូលទាំង URLs ដែលអ្នកបានទៅកាន់</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">ឧបករណ៍ផ្ទុកទិន្នន័យរបស់អ្នកពេញហើយ។ សូមរក្សាទុកទីតាំងដ៏ទៃ ឬធ្វើឲ្យមានចន្លោះច្រើនជាងនេះនៅក្នុងឧបករណ៍ផ្ទុកទិន្នន័យ។</translation>
@@ -4301,6 +4299,7 @@
 <translation id="6277105963844135994">បណ្តាញអស់ពេល</translation>
 <translation id="6277518330158259200">ថតអេក្រង់</translation>
 <translation id="6278057325678116358">ប្រើ GTK+</translation>
+<translation id="6278428485366576908">ធីម</translation>
 <translation id="6278776436938569440">ប្ដូរ​ទីតាំង</translation>
 <translation id="6279183038361895380">ចុច |<ph name="ACCELERATOR" />| ដើម្បីបង្ហាញទស្សន៍ទ្រនិចរបស់អ្នក</translation>
 <translation id="6280215091796946657">ចូលដោយប្រើគណនីផ្សេង</translation>

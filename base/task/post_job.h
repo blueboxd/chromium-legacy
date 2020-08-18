@@ -60,21 +60,11 @@ class BASE_EXPORT JobDelegate {
  private:
   static constexpr uint8_t kInvalidTaskId = std::numeric_limits<uint8_t>::max();
 
-  // Verifies that either max concurrency is lower or equal to
-  // |expected_max_concurrency|, or there is an increase version update
-  // triggered by NotifyConcurrencyIncrease().
-  void AssertExpectedConcurrency(size_t expected_max_concurrency);
-
   internal::JobTaskSource* const task_source_;
   internal::PooledTaskRunnerDelegate* const pooled_task_runner_delegate_;
   uint8_t task_id_ = kInvalidTaskId;
 
 #if DCHECK_IS_ON()
-  // Used in AssertExpectedConcurrency(), see that method's impl for details.
-  // Value of max concurrency recorded before running the worker task.
-  size_t recorded_max_concurrency_;
-  // Value of the increase version recorded before running the worker task.
-  size_t recorded_increase_version_;
   // Value returned by the last call to ShouldYield().
   bool last_should_yield_ = false;
 #endif

@@ -184,7 +184,7 @@ void ChangePictureHandler::HandlePhotoTaken(const base::ListValue* args) {
   base::StringPiece url(image_url);
   const char kDataUrlPrefix[] = "data:image/png;base64,";
   const size_t kDataUrlPrefixLength = base::size(kDataUrlPrefix) - 1;
-  if (!url.starts_with(kDataUrlPrefix) ||
+  if (!base::StartsWith(url, kDataUrlPrefix) ||
       !base::Base64Decode(url.substr(kDataUrlPrefixLength), &raw_data)) {
     LOG(WARNING) << "Invalid image URL";
     return;

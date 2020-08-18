@@ -10745,6 +10745,37 @@ TEST_F(AutofillMetricsTest,
   histogram_tester.ExpectTotalCount("Autofill.WebOTP.PhonePlusWebOTPPlusOTC",
                                     1);
 }
+
+// Verify that proper PhoneCollectionMetricsState is logged to UKM.
+TEST_F(AutofillMetricsTest, WebOTPPhoneCollectionMetricsStateLoggedToUKM) {
+  auto entries = test_ukm_recorder_->GetEntriesByName(
+      ukm::builders::WebOTPImpact::kEntryName);
+  ASSERT_TRUE(entries.empty());
+
+  FormData form;
+  CreateSimpleForm(autofill_client_.form_origin(), form);
+  // Document collects phone number
+  AddAutoCompleteFieldToForm("tel", form);
+  // Document uses OntTimeCode
+  AddAutoCompleteFieldToForm("one-time-code", form);
+
+  std::vector<FormData> forms(1, form);
+  base::HistogramTester histogram_tester;
+  autofill_manager_->OnFormsSeen(forms, TimeTicks());
+  autofill_driver_->SetAutofillManager(std::move(autofill_manager_));
+  static_cast<ContentAutofillDriver*>(autofill_driver_.get())
+      ->ReportAutofillWebOTPMetrics(/* Document uses WebOTP */ true);
+
+  entries = test_ukm_recorder_->GetEntriesByName(
+      ukm::builders::WebOTPImpact::kEntryName);
+  ASSERT_EQ(1u, entries.size());
+
+  const int64_t* metric =
+      test_ukm_recorder_->GetEntryMetric(entries[0], "PhoneCollection");
+  EXPECT_EQ(*metric, static_cast<int>(
+                         PhoneCollectionMetricState::kPhonePlusWebOTPPlusOTC));
+}
+
 #endif  // !defined(OS_IOS)
 
 TEST_F(AutofillMetricsTest, LogAutocompleteSuggestionAcceptedIndex_WithIndex) {

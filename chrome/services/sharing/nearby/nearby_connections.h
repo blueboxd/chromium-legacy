@@ -94,6 +94,9 @@ class NearbyConnections : public mojom::NearbyConnections {
   void CancelPayload(int64_t payload_id,
                      CancelPayloadCallback callback) override;
   void StopAllEndpoints(StopAllEndpointsCallback callback) override;
+  void InitiateBandwidthUpgrade(
+      const std::string& endpoint_id,
+      InitiateBandwidthUpgradeCallback callback) override;
 
   // Return the file associated with |payload_id|.
   base::File ExtractFileForPayload(int64_t payload_id);

@@ -783,7 +783,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 // The current page can't enter the BackForwardCache if another page can script
 // it. This can happen when one document opens a popup using window.open() for
 // instance. It prevents the BackForwardCache from being used.
-IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, WindowOpen) {
+// Flaky on all platforms. http://crbug.com/1116023
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, DISABLED_WindowOpen) {
   // This test assumes cross-site navigation staying in the same
   // BrowsingInstance to use a different SiteInstance. Otherwise, it will
   // timeout at step 2).

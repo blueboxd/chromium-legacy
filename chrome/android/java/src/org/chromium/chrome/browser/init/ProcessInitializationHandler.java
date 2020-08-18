@@ -29,6 +29,7 @@ import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AfterStartupTaskUtils;
 import org.chromium.chrome.browser.AppHooks;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeActivitySessionTracker;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeBackupAgent;
@@ -74,6 +75,7 @@ import org.chromium.chrome.browser.share.clipboard.ClipboardImageFileProvider;
 import org.chromium.chrome.browser.sharing.shared_clipboard.SharedClipboardShareActivity;
 import org.chromium.chrome.browser.signin.SigninHelper;
 import org.chromium.chrome.browser.sync.SyncController;
+import org.chromium.chrome.browser.vr.VrModeProviderImpl;
 import org.chromium.chrome.browser.webapps.WebApkVersionManager;
 import org.chromium.chrome.browser.webapps.WebappRegistry;
 import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
@@ -244,8 +246,11 @@ public class ProcessInitializationHandler {
                     boolean allowMultiple, boolean includeNames, boolean includeEmails,
                     boolean includeTel, boolean includeAddresses, boolean includeIcons,
                     String formattedOrigin) {
-                mDialog = new ContactsPickerDialog(context, listener, allowMultiple, includeNames,
-                        includeEmails, includeTel, includeAddresses, includeIcons, formattedOrigin);
+                // TODO(crbug.com/1117536): remove this cast.
+                ChromeActivity activity = (ChromeActivity) context;
+                mDialog = new ContactsPickerDialog(activity.getWindowAndroid(), listener,
+                        allowMultiple, includeNames, includeEmails, includeTel, includeAddresses,
+                        includeIcons, formattedOrigin, new VrModeProviderImpl());
                 mDialog.getWindow().getAttributes().windowAnimations =
                         R.style.PickerDialogAnimation;
                 mDialog.show();

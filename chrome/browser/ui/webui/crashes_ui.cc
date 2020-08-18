@@ -42,7 +42,7 @@
 #include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
 #endif
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #include "components/crash/core/app/crashpad.h"
 #endif
 

@@ -15,13 +15,13 @@ if (is_linux || is_mac) {
   # Run components/variations/proto/devtools/update_client_variations_parser.py
   # to rebuild the library that is synced into the Dev Tools repository.
   group("devtools") {
-    deps = [ ":client_variations_parser_uncompiled" ]
+    deps = [ ":client_variations_uncompiled" ]
   }
 
   # Note that the name passed to the `js_binary` rule implicitly defines a
   # dependency on the file that matches the build rule's name.
-  js_binary("client_variations_parser_uncompiled") {
-    outputs = [ "$target_gen_dir/client_variations_parser_gen.js" ]
+  js_binary("client_variations_uncompiled") {
+    outputs = [ "$target_gen_dir/client_variations_gen.js" ]
     deps = [ "..:proto_js" ]
     closure_flags = strict_error_checking_closure_args + [
                       "compilation_level=ADVANCED_OPTIMIZATIONS",

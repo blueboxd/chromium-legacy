@@ -1321,7 +1321,6 @@
 <translation id="2564653188463346023">የላቀ ፊደል አራሚ</translation>
 <translation id="2566124945717127842">የ<ph name="IDS_SHORT_PRODUCT_NAME" /> መሣሪያዎ ልክ እንደ አዲስ እንዲሆን ዳግም ለማስጀመር Powerwash።</translation>
 <translation id="2568774940984945469">መረጃ አሞሌ መያዣ</translation>
-<translation id="257088987046510401">ገፅታዎች </translation>
 <translation id="2571655996835834626">የድር ጣቢያዎችን መዳረሻ የሚቆጣጠሩ እንደ ኩኪዎች፣ ጃቫስክሪፕት፣ ተሰኪዎች፣ የስነምድራዊ መገኛ ቦታ፣ ማይክራፎን፣ ካሜራ ወዘተ የመሳሰሉ ባህሪዎች  የእርስዎን ቅንብሮች ይለውጡ።</translation>
 <translation id="2572032849266859634">ወደ <ph name="VOLUME_NAME" /> ተነባቢ-ብቻ መዳረሻ ተሰጥቷል።</translation>
 <translation id="2575247648642144396">ቅጥያው በአሁኑ ገጽ ላይ መስራት ሲችል ይህ አዶ የሚታይ ይሆናል። አዶውን ጠቅ በማድረግ ወይም <ph name="EXTENSION_SHORTCUT" />ን በመጫን ይህንን ቅጥያ ይጠቀሙበት።</translation>
@@ -3343,7 +3342,6 @@
 <translation id="5115338116365931134">SSO</translation>
 <translation id="5116628073786783676">ተሰሚ/ኦዲዮ አስ&amp;ቀምጥ እንደ…</translation>
 <translation id="5117139026559873716">የእርስዎን ስልክ ከእርስዎ <ph name="DEVICE_TYPE" /> ጋር ያለውን ግንኙነት ያቋርጡ። ከእንግዲህ በራስ-ሰር አይገናኙም።</translation>
-<translation id="5117427536932535467">ገጽታዎች እና የግድግዳ ወረቀቶች</translation>
 <translation id="5117930984404104619">የተጎበኙ ዩ አር ኤሎችንም ጨምሮ የሌሎች ቅጥያዎች ባህሪ ይከታተሉ</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">ደረቅ አንጻፊዎ ሙሉ ነው። እባክዎ ሌላ ቦታ ላይ ያስቀምጡ ወይም ደረቅ አንጻፊው ላይ ቦታ ያስለቅቁ።</translation>
@@ -4289,6 +4287,7 @@
 <translation id="6277105963844135994">የአውታረ መረብ ጊዜ ማብቂያ</translation>
 <translation id="6277518330158259200">ቅጽበታዊ ገጽ እይታ ፎቶ አን&amp;ሳ</translation>
 <translation id="6278057325678116358">GTK+ን ተጠቀም</translation>
+<translation id="6278428485366576908">ገጽታ</translation>
 <translation id="6278776436938569440">አካባቢ ይቀይሩ</translation>
 <translation id="6279183038361895380">የእርስዎን ጠቋሚ ለማሳየት |<ph name="ACCELERATOR" />| ይጫኑ</translation>
 <translation id="6280215091796946657">በተለየ መለያ ይግቡ</translation>

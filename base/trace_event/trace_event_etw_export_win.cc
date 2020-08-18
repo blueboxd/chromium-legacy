@@ -16,6 +16,7 @@
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/strings/string_tokenizer.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/platform_thread.h"
 #include "base/trace_event/trace_event.h"
@@ -463,7 +464,7 @@ bool TraceEventETWExport::IsCategoryEnabled(StringPiece category_name) const {
 
   // Otherwise return the corresponding default status by first checking if the
   // category is disabled by default.
-  if (category_name.starts_with("disabled-by-default")) {
+  if (StartsWith(category_name, "disabled-by-default")) {
     DCHECK(categories_status_.find(
                kFilteredEventGroupNames[kDisabledOtherEventsGroupNameIndex]) !=
            categories_status_.end());

@@ -100,7 +100,7 @@ base::AtomicSequenceNumber g_next_route_id;
 base::AtomicSequenceNumber g_next_image_id;
 
 CommandBufferId NextCommandBufferId() {
-  return CommandBufferIdFromChannelAndRoute(kInProcessCommandBufferClientId,
+  return CommandBufferIdFromChannelAndRoute(kDisplayCompositorClientId,
                                             g_next_route_id.GetNext() + 1);
 }
 
@@ -881,7 +881,7 @@ void InProcessCommandBuffer::FlushOnGpuThread(
   {
     base::Optional<raster::GrShaderCache::ScopedCacheUse> gr_cache_use;
     if (gr_shader_cache_)
-      gr_cache_use.emplace(gr_shader_cache_, kInProcessCommandBufferClientId);
+      gr_cache_use.emplace(gr_shader_cache_, kDisplayCompositorClientId);
     command_buffer_->Flush(put_offset, decoder_.get());
   }
   // Update state before signaling the flush event.
@@ -1140,7 +1140,7 @@ void InProcessCommandBuffer::CreateImageOnGpuThread(
 
       scoped_refptr<gl::GLImage> image =
           image_factory_->CreateImageForGpuMemoryBuffer(
-              std::move(handle), size, format, kInProcessCommandBufferClientId,
+              std::move(handle), size, format, kDisplayCompositorClientId,
               kNullSurfaceHandle);
       if (!image.get()) {
         LOG(ERROR) << "Failed to create image for buffer.";
@@ -1183,8 +1183,8 @@ void InProcessCommandBuffer::CacheShader(const std::string& key,
                                          const std::string& shader) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
   if (gpu_channel_manager_delegate_)
-    gpu_channel_manager_delegate_->StoreShaderToDisk(
-        kInProcessCommandBufferClientId, key, shader);
+    gpu_channel_manager_delegate_->StoreShaderToDisk(kDisplayCompositorClientId,
+                                                     key, shader);
 }
 
 void InProcessCommandBuffer::OnFenceSyncRelease(uint64_t release) {

@@ -18,6 +18,7 @@
 #include "base/process/process_iterator.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
@@ -145,7 +146,7 @@ bool ReadNameFromStatus(pid_t pid, pid_t tid, std::string* out_name) {
   base::StringTokenizer tokenizer(status, "\n");
   while (tokenizer.GetNext()) {
     base::StringPiece value_str(tokenizer.token_piece());
-    if (!value_str.starts_with("Name:"))
+    if (!base::StartsWith(value_str, "Name:"))
       continue;
     std::vector<base::StringPiece> split_value_str = base::SplitStringPiece(
         value_str, "\t", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);

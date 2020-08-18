@@ -1326,7 +1326,6 @@
 <translation id="2564653188463346023">拡張スペルチェック</translation>
 <translation id="2566124945717127842">お使いの <ph name="IDS_SHORT_PRODUCT_NAME" /> デバイスを出荷時の状態にリセットするために、Powerwash を実行します。</translation>
 <translation id="2568774940984945469">情報バー コンテナ</translation>
-<translation id="257088987046510401">テーマ</translation>
 <translation id="2571655996835834626">Cookie、JavaScript、プラグイン、位置情報、マイク、カメラといった機能へのウェブサイトからのアクセスを制御する設定を変更します。</translation>
 <translation id="2572032849266859634"><ph name="VOLUME_NAME" /> への読み取り専用アクセスが許可されました。</translation>
 <translation id="2575247648642144396">このアイコンは、表示中のページで拡張機能が使用できる場合に表示されます。この拡張機能を使用するには、アイコンをクリックするか、<ph name="EXTENSION_SHORTCUT" /> を押します。</translation>
@@ -3354,7 +3353,6 @@
 <translation id="5115338116365931134">SSO</translation>
 <translation id="5116628073786783676">名前を付けてオーディオを保存(&amp;V)...</translation>
 <translation id="5117139026559873716"><ph name="DEVICE_TYPE" /> からスマートフォンを切断します。以降、自動接続は行われなくなります。</translation>
-<translation id="5117427536932535467">テーマと壁紙</translation>
 <translation id="5117930984404104619">他の拡張機能の動作を監視（アクセスした URL を含む）</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">ハード ディスクがいっぱいです。別の場所に保存するか、ハード ディスクの空き容量を増やしてください。</translation>
@@ -4300,6 +4298,7 @@
 <translation id="6277105963844135994">ネットワークがタイムアウトしました</translation>
 <translation id="6277518330158259200">スクリーンショットを撮る(&amp;A)</translation>
 <translation id="6278057325678116358">GTK+ を使用</translation>
+<translation id="6278428485366576908">テーマ</translation>
 <translation id="6278776436938569440">場所を変更</translation>
 <translation id="6279183038361895380">カーソルを表示するには |<ph name="ACCELERATOR" />| を押します</translation>
 <translation id="6280215091796946657">別のアカウントでログイン</translation>

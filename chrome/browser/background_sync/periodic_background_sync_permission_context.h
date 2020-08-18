@@ -43,6 +43,7 @@ class PeriodicBackgroundSyncPermissionContext
 #if defined(OS_ANDROID)
   virtual bool IsTwaInstalled(const GURL& origin) const;
 #endif
+  virtual GURL GetDefaultSearchEngineUrl() const;
 
  private:
   // PermissionContextBase implementation.

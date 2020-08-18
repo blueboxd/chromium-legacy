@@ -1326,7 +1326,6 @@ Cihazınızda Family Link uygulamasını yükleyerek bu hesabın ayarlarını y�
 <translation id="2564653188463346023">Geliştirilmiş yazım denetimi</translation>
 <translation id="2566124945717127842"><ph name="IDS_SHORT_PRODUCT_NAME" /> cihazınızı yeni alındığı günkü haline sıfırlamak için Powerwash'ı kullanın.</translation>
 <translation id="2568774940984945469">Bilgi Çubuğu Kapsayıcı</translation>
-<translation id="257088987046510401">Temalar</translation>
 <translation id="2571655996835834626">Web sitelerinin çerezler, JavaScript, eklentiler, coğrafi konum, mikrofon, kamera ve benzeri erişimini denetleyen ayarlarınızı değiştirin.</translation>
 <translation id="2572032849266859634"><ph name="VOLUME_NAME" /> birimine salt okunur erişim izni verildi.</translation>
 <translation id="2575247648642144396">Uzantı, mevcut sayfada işlem yapabildiğinde bu simge görünür. Simgeyi tıklayarak veya <ph name="EXTENSION_SHORTCUT" /> tuşuna basarak bu uzantıyı kullanın.</translation>
@@ -3354,7 +3353,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="5115338116365931134">TOA</translation>
 <translation id="5116628073786783676">Sesi Farklı Kay&amp;det...</translation>
 <translation id="5117139026559873716">Telefonunuzun <ph name="DEVICE_TYPE" /> cihazınızla olan bağlantısını kesin. Bundan böyle otomatik olarak bağlanmazlar.</translation>
-<translation id="5117427536932535467">Temalar ve Duvar Kağıtları</translation>
 <translation id="5117930984404104619">Ziyaret edilen URL'ler de dahil olmak üzere diğer uzantıların davranışını izleme</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Sabit diskiniz dolu. Lütfen başka bir yere kaydedin veya sabit diskinizde yer açın.</translation>
@@ -4301,6 +4299,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6277105963844135994">Ağ zaman aşımı</translation>
 <translation id="6277518330158259200">Ekr&amp;an Görüntüsü Al</translation>
 <translation id="6278057325678116358">GTK+ Temasını Kullan</translation>
+<translation id="6278428485366576908">Tema</translation>
 <translation id="6278776436938569440">Konumu değiştir</translation>
 <translation id="6279183038361895380">İmlecinizi göstermek için |<ph name="ACCELERATOR" />| tuşuna basın</translation>
 <translation id="6280215091796946657">Farklı bir hesapla oturum aç</translation>

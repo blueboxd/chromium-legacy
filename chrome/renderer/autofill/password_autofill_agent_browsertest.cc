@@ -429,6 +429,11 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
         password_manager::features::kFillOnAccountSelect);
   }
 
+  void EnableOverwritingPlaceholderUsernames() {
+    scoped_feature_list_.InitAndEnableFeature(
+        password_manager::features::kEnableOverwritingPlaceholderUsernames);
+  }
+
 #if defined(OS_ANDROID)
   void EnableTouchToFillFeature() {
     scoped_feature_list_.InitAndEnableFeature(
@@ -3768,7 +3773,18 @@ TEST_F(PasswordAutofillAgentTest, MayUsePlaceholderNoPlaceholder) {
   CheckTextFieldsSuggestedState(kAliceUsername, true, kAlicePassword, true);
 }
 
-TEST_F(PasswordAutofillAgentTest, MayUsePlaceholderAndPlaceholderOnForm) {
+TEST_F(PasswordAutofillAgentTest,
+       MayUsePlaceholderAndPlaceholderOnFormDisabled) {
+  username_element_.SetValue(WebString::FromUTF8("placeholder"));
+  fill_data_.username_may_use_prefilled_placeholder = true;
+  SimulateOnFillPasswordForm(fill_data_);
+
+  CheckTextFieldsDOMState("placeholder", false, "", false);
+}
+
+TEST_F(PasswordAutofillAgentTest,
+       MayUsePlaceholderAndPlaceholderOnFormEnabled) {
+  EnableOverwritingPlaceholderUsernames();
   username_element_.SetValue(WebString::FromUTF8("placeholder"));
   fill_data_.username_may_use_prefilled_placeholder = true;
   SimulateOnFillPasswordForm(fill_data_);

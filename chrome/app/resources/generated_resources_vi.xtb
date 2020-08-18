@@ -1326,7 +1326,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="2564653188463346023">Cải thiện khả năng kiểm tra chính trả</translation>
 <translation id="2566124945717127842">Powerwash để đặt lại thiết bị <ph name="IDS_SHORT_PRODUCT_NAME" /> của bạn giống như mới.</translation>
 <translation id="2568774940984945469">Bộ chứa Thanh thông tin</translation>
-<translation id="257088987046510401">Chủ đề</translation>
 <translation id="2571655996835834626">Thay đổi các tùy chọn cài đặt kiểm soát quyền truy cập vào các tính năng của trang web, chẳng hạn như cookie, JavaScript, plugin, vị trí địa lý, micrô, máy ảnh, v.v.</translation>
 <translation id="2572032849266859634">Quyền truy cập chỉ đọc vào <ph name="VOLUME_NAME" /> đã được cấp.</translation>
 <translation id="2575247648642144396">Biểu tượng này sẽ hiển thị khi tiện ích có thể hoạt động trên trang hiện tại. Sử dụng tiện ích này bằng cách nhấp vào biểu tượng hoặc bằng cách nhấn <ph name="EXTENSION_SHORTCUT" />.</translation>
@@ -3354,7 +3353,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="5115338116365931134">SSO</translation>
 <translation id="5116628073786783676">Lư&amp;u Âm thanh Dưới dạng...</translation>
 <translation id="5117139026559873716">Ngắt kết nối điện thoại khỏi <ph name="DEVICE_TYPE" />. Hai thiết bị này sẽ không tự động kết nối nữa.</translation>
-<translation id="5117427536932535467">Chủ đề và hình nền</translation>
 <translation id="5117930984404104619">Giám sát hoạt động của các tiện ích khác, bao gồm cả các URL đã truy cập</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Đĩa cứng của bạn đã đầy.  Hãy lưu vào một vị trí khác hoặc tạo thêm dung lượng trống trên đĩa cứng.</translation>
@@ -4300,6 +4298,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="6277105963844135994">Hết thời gian chờ mạng</translation>
 <translation id="6277518330158259200">Chụp ảnh màn hình</translation>
 <translation id="6278057325678116358">Sử dụng GTK+</translation>
+<translation id="6278428485366576908">Chủ đề</translation>
 <translation id="6278776436938569440">Thay đổi vị trí</translation>
 <translation id="6279183038361895380">Nhấn |<ph name="ACCELERATOR" />| để hiển thị con trỏ của bạn</translation>
 <translation id="6280215091796946657">Đăng nhập bằng tài khoản khác</translation>

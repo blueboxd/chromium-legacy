@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.feed.v2;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
@@ -36,6 +37,7 @@ public class FeedImageFetchClient implements ImageFetchClient {
 
     @Override
     public void sendRequest(String url, ImageFetchClient.HttpResponseConsumer responseConsumer) {
+        assert ThreadUtils.runningOnUiThread();
         FeedImageFetchClientJni.get().sendRequest(url, responseConsumer);
     }
 

@@ -60,9 +60,8 @@ NetworkInterface NetworkInterfaceFromAddress(
 
 NetworkChangeNotifier::ConnectionType ConvertConnectionType(
     const fuchsia::netstack::NetInterface& iface) {
-  auto up =
-      static_cast<decltype(iface.flags)>(fuchsia::netstack::NetInterfaceFlagUp);
-  if ((iface.flags & up) != up) {
+  if ((iface.flags & fuchsia::netstack::Flags::UP) !=
+      fuchsia::netstack::Flags::UP) {
     return NetworkChangeNotifier::CONNECTION_NONE;
   } else if ((iface.features & fuchsia::hardware::ethernet::Features::WLAN) ==
              fuchsia::hardware::ethernet::Features::WLAN) {

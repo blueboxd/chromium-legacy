@@ -569,11 +569,11 @@
         ContentSuggestionsCoordinator* strongSelf = weakSelf;
 
         // Record that this context menu was shown to the user.
-        RecordMenuShown(MenuScenario::kContentSuggestionsEntry);
+        RecordMenuShown(MenuScenario::kMostVisitedEntry);
 
         ActionFactory* actionFactory = [[ActionFactory alloc]
             initWithBrowser:strongSelf.browser
-                   scenario:MenuScenario::kContentSuggestionsEntry];
+                   scenario:MenuScenario::kMostVisitedEntry];
 
         NSMutableArray<UIMenuElement*>* menuElements =
             [[NSMutableArray alloc] init];

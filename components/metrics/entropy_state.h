@@ -25,7 +25,7 @@ class EntropyState final {
   EntropyState& operator=(const EntropyState&) = delete;
 
   // Clears low_entropy_source and old_low_entropy_source in the prefs.
-  void ClearPrefs();
+  static void ClearPrefs(PrefService* local_state);
 
   // Registers low_entropy_source and old_low_entropy_source in the prefs.
   static void RegisterPrefs(PrefRegistrySimple* registry);
@@ -46,7 +46,7 @@ class EntropyState final {
   int GetOldLowEntropySource();
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(EntropyStateTest, LowEntropySource0NotReset);
+  FRIEND_TEST_ALL_PREFIXES(EntropyStateTest, LowEntropySourceNotReset);
   FRIEND_TEST_ALL_PREFIXES(EntropyStateTest, HaveNoLowEntropySource);
   FRIEND_TEST_ALL_PREFIXES(EntropyStateTest, HaveOnlyNewLowEntropySource);
   FRIEND_TEST_ALL_PREFIXES(EntropyStateTest, HaveOnlyOldLowEntropySource);

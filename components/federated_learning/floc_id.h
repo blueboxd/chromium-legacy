@@ -30,6 +30,9 @@ class FlocId {
   FlocId& operator=(const FlocId& id);
   FlocId& operator=(FlocId&& id);
 
+  bool operator==(const FlocId& other) const;
+  bool operator!=(const FlocId& other) const;
+
   bool IsValid() const;
   uint64_t ToUint64() const;
 

@@ -113,9 +113,9 @@ void UpdateArchiveAnalyzerResultsWithFile(base::FilePath path,
   uint32_t magic;
   file->Read(0, reinterpret_cast<char*>(&magic), sizeof(uint32_t));
 
-  char dmg_header[DiskImageTypeSnifferMac::AppleDiskImageTrailerSize()];
+  char dmg_header[DiskImageTypeSnifferMac::kAppleDiskImageTrailerSize];
   file->Read(0, dmg_header,
-             DiskImageTypeSnifferMac::AppleDiskImageTrailerSize());
+             DiskImageTypeSnifferMac::kAppleDiskImageTrailerSize);
 
   current_entry_is_executable =
       FileTypePolicies::GetInstance()->IsCheckedBinaryFile(path) ||
@@ -123,20 +123,20 @@ void UpdateArchiveAnalyzerResultsWithFile(base::FilePath path,
       DiskImageTypeSnifferMac::IsAppleDiskImageTrailer(
           base::span<const uint8_t>(
               reinterpret_cast<const uint8_t*>(dmg_header),
-              DiskImageTypeSnifferMac::AppleDiskImageTrailerSize()));
+              DiskImageTypeSnifferMac::kAppleDiskImageTrailerSize));
 
   // We can skip checking the trailer if we already know the file is executable.
   if (!current_entry_is_executable) {
-    char trailer[DiskImageTypeSnifferMac::AppleDiskImageTrailerSize()];
+    char trailer[DiskImageTypeSnifferMac::kAppleDiskImageTrailerSize];
     file->Seek(base::File::Whence::FROM_END,
-               DiskImageTypeSnifferMac::AppleDiskImageTrailerSize());
-    file->ReadAtCurrentPos(
-        trailer, DiskImageTypeSnifferMac::AppleDiskImageTrailerSize());
+               DiskImageTypeSnifferMac::kAppleDiskImageTrailerSize);
+    file->ReadAtCurrentPos(trailer,
+                           DiskImageTypeSnifferMac::kAppleDiskImageTrailerSize);
     current_entry_is_executable =
         DiskImageTypeSnifferMac::IsAppleDiskImageTrailer(
             base::span<const uint8_t>(
                 reinterpret_cast<const uint8_t*>(trailer),
-                DiskImageTypeSnifferMac::AppleDiskImageTrailerSize()));
+                DiskImageTypeSnifferMac::kAppleDiskImageTrailerSize));
   }
 
 #else
@@ -181,10 +181,6 @@ void UpdateArchiveAnalyzerResultsWithFile(base::FilePath path,
     }
 #endif  // OS_MAC
   }
-
-  base::UmaHistogramSparse(
-      "SBClientDownload.ArchiveDownloadExtensions",
-      FileTypePolicies::GetInstance()->UmaValueForFile(path));
 }
 
 }  // namespace safe_browsing

@@ -1322,7 +1322,6 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="2564653188463346023">Correcteur orthographique amélioré</translation>
 <translation id="2566124945717127842">Effectuez un Powerwash pour rétablir la configuration d'usine de votre appareil <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
 <translation id="2568774940984945469">Conteneur de barres d'infos</translation>
-<translation id="257088987046510401">Thèmes</translation>
 <translation id="2571655996835834626">Modifier les paramètres qui contrôlent l'accès des sites Web à des fonctionnalités telles que les cookies, le code JavaScript, les plug-ins, la géolocalisation, le micro, la caméra, etc.</translation>
 <translation id="2572032849266859634">L'accès en lecture seule à "<ph name="VOLUME_NAME" />" a été accordé.</translation>
 <translation id="2575247648642144396">Cette icône s'affiche lorsque l'extension peut être utilisée au sein de la page qui s'affiche actuellement. Pour utiliser cette extension, cliquez sur l'icône ou appuyez sur <ph name="EXTENSION_SHORTCUT" />.</translation>
@@ -3346,7 +3345,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="5115338116365931134">SSO</translation>
 <translation id="5116628073786783676">En&amp;registrer le fichier audio sous...</translation>
 <translation id="5117139026559873716">Déconnectez votre téléphone de votre <ph name="DEVICE_TYPE" />. Ils ne se connecteront plus automatiquement.</translation>
-<translation id="5117427536932535467">Thèmes et fonds d'écran</translation>
 <translation id="5117930984404104619">Surveiller le comportement des autres extensions, y compris des URL consultées</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Votre disque dur est saturé. Veuillez enregistrer à un autre emplacement ou libérer de l'espace sur le disque dur.</translation>
@@ -4293,6 +4291,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6277105963844135994">Délai d'expiration du réseau dépassé.</translation>
 <translation id="6277518330158259200">F&amp;aire une capture d'écran</translation>
 <translation id="6278057325678116358">Utiliser le thème GTK+</translation>
+<translation id="6278428485366576908">Thème</translation>
 <translation id="6278776436938569440">Modifier l'emplacement</translation>
 <translation id="6279183038361895380">Appuyez sur |<ph name="ACCELERATOR" />| pour afficher le curseur.</translation>
 <translation id="6280215091796946657">Se connecter avec un autre compte</translation>

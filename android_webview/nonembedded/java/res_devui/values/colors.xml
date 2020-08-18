@@ -12,4 +12,5 @@
     <color name="navigation_selected">#000000</color>
     <color name="navigation_unselected">#888888</color>
     <color name="medium_text_color">#202124</color>
+    <color name="delete_button">#000000</color>
 </resources>

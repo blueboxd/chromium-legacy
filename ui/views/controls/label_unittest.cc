@@ -244,7 +244,7 @@ TEST_F(LabelTest, Metadata) {
 }
 
 TEST_F(LabelTest, FontPropertySymbol) {
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   // On linux, the fonts are mocked with a custom FontConfig. The "Courier New"
   // family name is mapped to Cousine-Regular.ttf (see: $build/test_fonts/*).
   std::string font_name("Courier New");

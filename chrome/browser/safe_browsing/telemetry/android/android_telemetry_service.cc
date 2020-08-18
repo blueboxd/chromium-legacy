@@ -113,7 +113,8 @@ void AndroidTelemetryService::OnDownloadUpdated(download::DownloadItem* item) {
   if (item->GetState() == download::DownloadItem::COMPLETE) {
     // Download completed. Send report.
     std::unique_ptr<ClientSafeBrowsingReportRequest> report = GetReport(item);
-    MaybeSendApkDownloadReport(std::move(report));
+    MaybeSendApkDownloadReport(
+        content::DownloadItemUtils::GetBrowserContext(item), std::move(report));
     // No longer interested in this |DownloadItem| since the report has been
     // sent so remove the observer.
     item->RemoveObserver(this);
@@ -225,6 +226,7 @@ AndroidTelemetryService::GetReport(download::DownloadItem* item) {
 }
 
 void AndroidTelemetryService::MaybeSendApkDownloadReport(
+    content::BrowserContext* browser_context,
     std::unique_ptr<ClientSafeBrowsingReportRequest> report) {
   std::string serialized;
   if (!report->SerializeToString(&serialized)) {
@@ -233,7 +235,10 @@ void AndroidTelemetryService::MaybeSendApkDownloadReport(
         ApkDownloadTelemetryOutcome::NOT_SENT_FAILED_TO_SERIALIZE);
     return;
   }
-  sb_service_->ping_manager()->ReportThreatDetails(serialized);
+  sb_service_->ping_manager()->ReportThreatDetails(
+      sb_service_->GetURLLoaderFactory(
+          Profile::FromBrowserContext(browser_context)),
+      serialized);
 
   content::GetUIThreadTaskRunner({})->PostTask(
       FROM_HERE,

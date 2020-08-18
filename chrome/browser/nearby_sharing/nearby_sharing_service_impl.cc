@@ -19,6 +19,7 @@
 #include "chrome/browser/nearby_sharing/certificates/nearby_share_encrypted_metadata_key.h"
 #include "chrome/browser/nearby_sharing/client/nearby_share_client_impl.h"
 #include "chrome/browser/nearby_sharing/common/nearby_share_prefs.h"
+#include "chrome/browser/nearby_sharing/constants.h"
 #include "chrome/browser/nearby_sharing/contacts/nearby_share_contact_manager_impl.h"
 #include "chrome/browser/nearby_sharing/fast_initiation_manager.h"
 #include "chrome/browser/nearby_sharing/local_device_data/nearby_share_local_device_data_manager_impl.h"
@@ -38,15 +39,6 @@
 #include "url/gurl.h"
 
 namespace {
-
-constexpr base::TimeDelta kReadFramesTimeout = base::TimeDelta::FromSeconds(15);
-constexpr base::TimeDelta kReadResponseFrameTimeout =
-    base::TimeDelta::FromSeconds(60);
-constexpr base::TimeDelta kIncomingRejectionDelay =
-    base::TimeDelta::FromSeconds(2);
-// Time to delay running the task to invalidate send and receive surfaces.
-constexpr base::TimeDelta kInvalidateDelay =
-    base::TimeDelta::FromMilliseconds(500);
 
 // Used to hash a token into a 4 digit string.
 constexpr int kHashModulo = 9973;
@@ -1251,7 +1243,15 @@ void NearbySharingServiceImpl::Fail(const ShareTarget& share_target,
     return;
   }
 
-  // TODO(himanshujaju) - Create alarm and cancel in SetDisconnectionListener().
+  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&NearbySharingServiceImpl::CloseConnection,
+                     weak_ptr_factory_.GetWeakPtr(), share_target),
+      kIncomingRejectionDelay);
+
+  connection->SetDisconnectionListener(
+      base::BindOnce(&NearbySharingServiceImpl::UnregisterShareTarget,
+                     weak_ptr_factory_.GetWeakPtr(), share_target));
 
   // Send response to remote device.
   sharing::nearby::ConnectionResponseFrame::Status response_status;
@@ -1706,10 +1706,6 @@ void NearbySharingServiceImpl::OnIncomingMutualAcceptanceTimeout(
       << ": Incoming mutual acceptance timed out, closing connection for "
       << share_target.device_name;
 
-  OnIncomingTransferUpdate(share_target,
-                           TransferMetadataBuilder()
-                               .set_status(TransferMetadata::Status::kTimedOut)
-                               .build());
   Fail(share_target, TransferMetadata::Status::kTimedOut);
 }
 

@@ -196,8 +196,8 @@ TEST_F(MetricsReporterTest, ReportsLoadStepLatenciesOnFirstView) {
                             std::move(latencies));
   }
   task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(300));
-  reporter_->ContentSliceViewed(kSurfaceId, 0);
-  reporter_->ContentSliceViewed(kSurfaceId, 1);
+  reporter_->FeedViewed(kSurfaceId);
+  reporter_->FeedViewed(kSurfaceId);
 
   histogram_.ExpectUniqueTimeSample(
       "ContentSuggestions.Feed.LoadStepLatency.LoadFromStore",
@@ -388,7 +388,7 @@ TEST_F(MetricsReporterTest, SurfaceOpened) {
 TEST_F(MetricsReporterTest, OpenFeedSuccessDuration) {
   reporter_->SurfaceOpened(kSurfaceId);
   task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(9));
-  reporter_->ContentSliceViewed(kSurfaceId, 0);
+  reporter_->FeedViewed(kSurfaceId);
 
   histogram_.ExpectUniqueTimeSample(
       "ContentSuggestions.Feed.UserJourney.OpenFeed.SuccessDuration",

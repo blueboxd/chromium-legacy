@@ -86,7 +86,7 @@ HeadlessPrintManager::PageRangeTextToPages(base::StringPiece page_range_text,
     } else if (range_string == "-") {
       range.from = 1;
       range.to = pages_count;
-    } else if (range_string.starts_with("-")) {
+    } else if (base::StartsWith(range_string, "-")) {
       range.from = 1;
       if (!base::StringToInt(range_string.substr(1), &range.to))
         return SYNTAX_ERROR;

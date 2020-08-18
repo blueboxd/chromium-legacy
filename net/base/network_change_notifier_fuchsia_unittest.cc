@@ -68,8 +68,7 @@ fuchsia::netstack::NetInterface DefaultNetInterface() {
   // is sufficient.
   fuchsia::netstack::NetInterface interface;
   interface.id = kDefaultInterfaceId;
-  interface.flags = static_cast<decltype(interface.flags)>(
-      fuchsia::netstack::NetInterfaceFlagUp);
+  interface.flags = fuchsia::netstack::Flags::UP;
   interface.features = {};
   interface.addr = IpAddressFrom(kDefaultIPv4Address);
   interface.netmask = IpAddressFrom(kDefaultIPv4Netmask);
@@ -82,8 +81,7 @@ fuchsia::netstack::NetInterface SecondaryNetInterface() {
   // is sufficient.
   fuchsia::netstack::NetInterface interface;
   interface.id = kSecondaryInterfaceId;
-  interface.flags = static_cast<decltype(interface.flags)>(
-      fuchsia::netstack::NetInterfaceFlagUp);
+  interface.flags = fuchsia::netstack::Flags::UP;
   interface.features = {};
   interface.addr = IpAddressFrom(kSecondaryIPv4Address);
   interface.netmask = IpAddressFrom(kSecondaryIPv4Netmask);
@@ -527,8 +525,7 @@ TEST_F(NetworkChangeNotifierFuchsiaTest, InterfaceUp) {
   EXPECT_EQ(NetworkChangeNotifier::ConnectionType::CONNECTION_NONE,
             notifier_->GetCurrentConnectionType());
 
-  interfaces[0].flags = static_cast<decltype(interfaces[0].flags)>(
-      fuchsia::netstack::NetInterfaceFlagUp);
+  interfaces[0].flags = fuchsia::netstack::Flags::UP;
   netstack_.SetInterfaces(interfaces);
 
   EXPECT_TRUE(type_observer_->RunAndExpectConnectionTypes(

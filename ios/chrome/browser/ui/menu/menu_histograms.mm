@@ -15,20 +15,20 @@ namespace {
 const char kMenuEntryPointsHistogram[] = "Mobile.ContextMenu.EntryPoints";
 
 // Histograms for tracking actions performed on given menus.
-const char kHistoryEntryActionsHistogram[] =
-    "Mobile.ContextMenu.HistoryEntry.Actions";
 const char kBookmarkEntryActionsHistogram[] =
     "Mobile.ContextMenu.BookmarkEntry.Actions";
-const char kReadingListEntryActionsHistogram[] =
-    "Mobile.ContextMenu.ReadingListEntry.Actions";
-const char kRecentTabsEntryActionsHistogram[] =
-    "Mobile.ContextMenu.RecentTabsEntry.Actions";
-const char kRecentTabsHeaderActionsHistogram[] =
-    "Mobile.ContextMenu.RecentTabsHeader.Actions";
-const char kContentSuggestionsEntryActionsHistogram[] =
-    "Mobile.ContextMenu.ContentSuggestionsEntry.Actions";
 const char kBookmarkFolderActionsHistogram[] =
     "Mobile.ContextMenu.BookmarkFolder.Actions";
+const char kReadingListEntryActionsHistogram[] =
+    "Mobile.ContextMenu.ReadingListEntry.Actions";
+const char kRecentTabsHeaderActionsHistogram[] =
+    "Mobile.ContextMenu.RecentTabsHeader.Actions";
+const char kRecentTabsEntryActionsHistogram[] =
+    "Mobile.ContextMenu.RecentTabsEntry.Actions";
+const char kHistoryEntryActionsHistogram[] =
+    "Mobile.ContextMenu.HistoryEntry.Actions";
+const char kMostVisitedEntryActionsHistogram[] =
+    "Mobile.ContextMenu.MostVisitedEntry.Actions";
 }  // namespace
 
 void RecordMenuShown(MenuScenario scenario) {
@@ -47,8 +47,8 @@ const char* GetActionsHistogramName(MenuScenario scenario) {
       return kRecentTabsEntryActionsHistogram;
     case MenuScenario::kRecentTabsHeader:
       return kRecentTabsHeaderActionsHistogram;
-    case MenuScenario::kContentSuggestionsEntry:
-      return kContentSuggestionsEntryActionsHistogram;
+    case MenuScenario::kMostVisitedEntry:
+      return kMostVisitedEntryActionsHistogram;
     case MenuScenario::kBookmarkFolder:
       return kBookmarkFolderActionsHistogram;
   }

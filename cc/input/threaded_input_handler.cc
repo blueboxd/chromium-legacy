@@ -13,6 +13,7 @@
 #include "cc/input/scroll_utils.h"
 #include "cc/input/snap_selection_strategy.h"
 #include "cc/layers/viewport.h"
+#include "cc/trees/compositor_commit_data.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/layer_tree_settings.h"
@@ -43,6 +44,9 @@ void RecordCompositorSlowScrollMetric(ui::ScrollInputType type,
 }
 
 }  // namespace
+
+InputHandlerCommitData::InputHandlerCommitData() = default;
+InputHandlerCommitData::~InputHandlerCommitData() = default;
 
 ThreadedInputHandler::ThreadedInputHandler(LayerTreeHostImpl* host_impl)
     : host_impl_(*host_impl),
@@ -964,46 +968,55 @@ gfx::Vector2dF ThreadedInputHandler::UserScrollableDelta(
   return adjusted_delta;
 }
 
-gfx::Vector2dF ThreadedInputHandler::TakeOverscrollDeltaForCommit() {
-  gfx::Vector2dF overscroll_delta = overscroll_delta_for_main_thread_;
-  overscroll_delta_for_main_thread_ = gfx::Vector2dF();
-  return overscroll_delta;
-}
+void ThreadedInputHandler::ProcessCommitDeltas(
+    CompositorCommitData* commit_data) {
+  DCHECK(commit_data);
+  if (ActiveTree().LayerListIsEmpty())
+    return;
 
-bool ThreadedInputHandler::TakeScrollGestureDidEndForCommit() {
-  bool scroll_gesture_did_end = scroll_gesture_did_end_;
-  scroll_gesture_did_end_ = false;
-  return scroll_gesture_did_end;
-}
+  ElementId inner_viewport_scroll_element_id =
+      InnerViewportScrollNode() ? InnerViewportScrollNode()->element_id
+                                : ElementId();
 
-base::flat_set<ElementId> ThreadedInputHandler::TakeUpdatedSnappedElements() {
-  base::flat_set<ElementId> ret;
-  updated_snapped_elements_.swap(ret);
-  return ret;
-}
+  base::flat_set<ElementId> snapped_elements;
+  updated_snapped_elements_.swap(snapped_elements);
 
-bool ThreadedInputHandler::TakeHasPinchZoomedForCommit() {
-  bool has_pinch_zoomed = has_pinch_zoomed_;
-  has_pinch_zoomed_ = false;
-  return has_pinch_zoomed;
-}
+  // Scroll commit data is stored in the scroll tree so it has its own method
+  // for getting it.
+  GetScrollTree().CollectScrollDeltas(
+      commit_data, inner_viewport_scroll_element_id,
+      Settings().commit_fractional_scroll_deltas, snapped_elements);
 
-bool ThreadedInputHandler::TakeHasScrolledByWheelForCommit() {
-  bool has_scrolled_by_wheel = has_scrolled_by_wheel_;
+  // Record and reset scroll source flags.
+  DCHECK(!commit_data->manipulation_info);
+  if (has_scrolled_by_wheel_)
+    commit_data->manipulation_info |= kManipulationInfoWheel;
+  if (has_scrolled_by_touch_)
+    commit_data->manipulation_info |= kManipulationInfoTouch;
+  if (has_scrolled_by_precisiontouchpad_)
+    commit_data->manipulation_info |= kManipulationInfoPrecisionTouchPad;
+  if (has_pinch_zoomed_)
+    commit_data->manipulation_info |= kManipulationInfoPinchZoom;
+
   has_scrolled_by_wheel_ = false;
-  return has_scrolled_by_wheel;
-}
-
-bool ThreadedInputHandler::TakeHasScrolledByTouchForCommit() {
-  bool has_scrolled_by_touch = has_scrolled_by_touch_;
   has_scrolled_by_touch_ = false;
-  return has_scrolled_by_touch;
-}
-
-bool ThreadedInputHandler::TakeHasScrolledByPrecisionTouchpadForCommit() {
-  bool has_scrolled_by_precisiontouchpad = has_scrolled_by_precisiontouchpad_;
   has_scrolled_by_precisiontouchpad_ = false;
-  return has_scrolled_by_precisiontouchpad;
+  has_pinch_zoomed_ = false;
+
+  commit_data->scroll_gesture_did_end = scroll_gesture_did_end_;
+  scroll_gesture_did_end_ = false;
+
+  commit_data->overscroll_delta = overscroll_delta_for_main_thread_;
+  overscroll_delta_for_main_thread_ = gfx::Vector2dF();
+
+  // Use the |last_latched_scroller_| rather than the
+  // |CurrentlyScrollingNode| since the latter may be cleared by a GSE before
+  // we've committed these values to the main thread.
+  // TODO(bokan): This is wrong - if we also started a scroll this frame then
+  // this will clear this value for that scroll. https://crbug.com/1116780.
+  commit_data->scroll_latched_element_id = last_latched_scroller_;
+  if (commit_data->scroll_gesture_did_end)
+    last_latched_scroller_ = ElementId();
 }
 
 void ThreadedInputHandler::WillShutdown() {
@@ -1049,14 +1062,6 @@ void ThreadedInputHandler::TickAnimations(base::TimeTicks monotonic_time) {
     // does SetNeedsRedraw.
     input_handler_client_->Animate(monotonic_time);
   }
-}
-
-ElementId ThreadedInputHandler::GetLastLatchedScroller() const {
-  return last_latched_scroller_;
-}
-
-void ThreadedInputHandler::ClearLastLatchedScroller() {
-  last_latched_scroller_ = ElementId();
 }
 
 bool ThreadedInputHandler::CurrentScrollAffectsScrollHandler() const {

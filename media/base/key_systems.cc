@@ -367,6 +367,10 @@ EmeCodec KeySystemsImpl::GetEmeCodecForString(
     EmeMediaType media_type,
     const std::string& container_mime_type,
     const std::string& codec_string) const {
+  // Per spec, we should already reject empty mime types in
+  // GetSupportedCapabilities().
+  DCHECK(!container_mime_type.empty());
+
   // This is not checked because MimeUtil declares "vp9" and "vp9.0" as
   // ambiguous, but they have always been supported by EME.
   // TODO(xhwang): Find out whether we should fix MimeUtil about these cases.

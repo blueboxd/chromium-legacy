@@ -513,6 +513,8 @@ void ShelfLayoutManager::UpdateVisibilityState() {
     SetState(SHELF_VISIBLE);
   } else if (Shell::Get()->screen_pinning_controller()->IsPinned()) {
     SetState(SHELF_HIDDEN);
+  } else if (Shell::Get()->session_controller()->IsRunningInAppMode()) {
+    SetState(SHELF_HIDDEN);
   } else {
     // TODO(zelidrag): Verify shelf drag animation still shows on the device
     // when we are in ShelfAutoHideBehavior::kAlwaysHidden.

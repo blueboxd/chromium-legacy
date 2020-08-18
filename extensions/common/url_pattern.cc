@@ -303,7 +303,7 @@ URLPattern::ParseResult URLPattern::Parse(base::StringPiece pattern) {
     if (host_piece == "*") {
       match_subdomains_ = true;
       host_piece = base::StringPiece();
-    } else if (host_piece.starts_with("*.")) {
+    } else if (base::StartsWith(host_piece, "*.")) {
       if (host_piece.length() == 2) {
         // We don't allow just '*.' as a host.
         return ParseResult::kEmptyHost;
@@ -559,8 +559,7 @@ bool URLPattern::MatchesPath(base::StringPiece test) const {
   // need to match hosted apps on e.g. 'google.com' also run on 'google.com/'.
   // The below if is a no-copy way of doing (test + "/*" == path_escaped_).
   if (path_escaped_.length() == test.length() + 2 &&
-      base::StartsWith(path_escaped_.c_str(), test,
-                       base::CompareCase::SENSITIVE) &&
+      base::StartsWith(path_escaped_.c_str(), test) &&
       base::EndsWith(path_escaped_, "/*")) {
     return true;
   }

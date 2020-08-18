@@ -636,10 +636,6 @@ const base::Feature kQuickUnlockPinAutosubmit{
 // Controls whether the PIN auto submit backfill operation should be performed.
 const base::Feature kQuickUnlockPinAutosubmitBackfill{
     "QuickUnlockPinAutosubmitBackfill", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enables pin on the login screen.
-const base::Feature kQuickUnlockPinSignin{"QuickUnlockPinSignin",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 // Enables using quiet prompts for notification permission requests.

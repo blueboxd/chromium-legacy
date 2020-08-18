@@ -514,7 +514,7 @@ TEST(BrokerProcess, OpenComplexFlagsNoClientCheck) {
   // expected.
 }
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 // Flaky on Linux NG bots: https://crbug.com/595199.
 #define MAYBE_RecvMsgDescriptorLeak DISABLED_RecvMsgDescriptorLeak
 #else

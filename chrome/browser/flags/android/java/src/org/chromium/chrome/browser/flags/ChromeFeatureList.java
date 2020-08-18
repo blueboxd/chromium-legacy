@@ -416,15 +416,17 @@ public abstract class ChromeFeatureList {
     public static final String TEST_DEFAULT_ENABLED = "TestDefaultEnabled";
     public static final String TOUCH_TO_FILL_ANDROID = "TouchToFillAndroid";
     public static final String TRUSTED_WEB_ACTIVITY = "TrustedWebActivity";
-    public static final String TRUSTED_WEB_ACTIVITY_POST_MESSAGE = "TrustedWebActivityPostMessage";
-    public static final String TRUSTED_WEB_ACTIVITY_NOTIFICATION_DELEGATION_ENROLMENT =
-            "TrustedWebActivityNotificationDelegationAutoEnrolment";
-    public static final String TRUSTED_WEB_ACTIVITY_NEW_DISCLOSURE =
-            "TrustedWebActivityNewDisclosure";
-    public static final String TRUSTED_WEB_ACTIVITY_QUALITY_ENFORCEMENT =
-            "TrustedWebActivityQualityEnforcement";
     public static final String TRUSTED_WEB_ACTIVITY_LOCATION_DELEGATION =
             "TrustedWebActivityLocationDelegation";
+    public static final String TRUSTED_WEB_ACTIVITY_NEW_DISCLOSURE =
+            "TrustedWebActivityNewDisclosure";
+    public static final String TRUSTED_WEB_ACTIVITY_NOTIFICATION_DELEGATION_ENROLMENT =
+            "TrustedWebActivityNotificationDelegationAutoEnrolment";
+    public static final String TRUSTED_WEB_ACTIVITY_POST_MESSAGE = "TrustedWebActivityPostMessage";
+    public static final String TRUSTED_WEB_ACTIVITY_QUALITY_ENFORCEMENT =
+            "TrustedWebActivityQualityEnforcement";
+    public static final String TRUSTED_WEB_ACTIVITY_QUALITY_ENFORCEMENT_FORCED =
+            "TrustedWebActivityQualityEnforcementForced";
     public static final String VIDEO_PERSISTENCE = "VideoPersistence";
     public static final String VIDEO_TUTORIALS = "VideoTutorials";
     public static final String USAGE_STATS = "UsageStats";

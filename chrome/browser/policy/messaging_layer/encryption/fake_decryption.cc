@@ -24,21 +24,22 @@ class MockRecordHandle : public DecryptorBase::Handle {
 
   void AddToRecord(base::StringPiece data,
                    base::OnceCallback<void(Status)> cb) override {
-    // Decrypt data by XORing every byte with the bytes of symmetric key and add
-    // to the record.
-    record_.reserve(record_.size() + data.size());
-    size_t key_i = 0;
-    for (const auto& data_byte : data) {
-      record_.push_back(data_byte ^ symmetric_key_[key_i++]);
-      if (key_i >= symmetric_key_.size()) {
-        key_i = 0;
-      }
-    }
+    // Add piece of data to the record.
+    record_.append(data.data(), data.size());
     std::move(cb).Run(Status::StatusOK());
   }
 
   void CloseRecord(
       base::OnceCallback<void(StatusOr<base::StringPiece>)> cb) override {
+    // Decrypt data in place by XORing every byte with the bytes of symmetric
+    // key.
+    size_t key_i = 0;
+    for (auto& record_byte : record_) {
+      record_byte ^= symmetric_key_[key_i++];
+      if (key_i >= symmetric_key_.size()) {
+        key_i = 0;
+      }
+    }
     std::move(cb).Run(record_);
     delete this;
   }

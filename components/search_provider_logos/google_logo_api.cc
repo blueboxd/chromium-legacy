@@ -183,7 +183,7 @@ std::unique_ptr<EncodedLogo> ParseDoodleLogoResponse(
     bool* parsing_failed) {
   // The response may start with )]}'. Ignore this.
   base::StringPiece response_sp(*response);
-  if (response_sp.starts_with(kResponsePreamble))
+  if (base::StartsWith(response_sp, kResponsePreamble))
     response_sp.remove_prefix(strlen(kResponsePreamble));
 
   // Default parsing failure to be true.

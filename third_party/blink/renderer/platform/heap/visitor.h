@@ -200,7 +200,7 @@ class PLATFORM_EXPORT Visitor {
   void TraceEphemeron(const WeakMember<T>& key,
                       const void* value,
                       TraceCallback value_trace_callback) {
-    T* t = key.Get();
+    const T* t = key.GetSafe();
     if (!t)
       return;
     VisitEphemeron(TraceDescriptorFor(t).base_object_payload, value,

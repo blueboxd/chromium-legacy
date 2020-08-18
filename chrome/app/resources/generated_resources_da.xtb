@@ -1326,7 +1326,6 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="2564653188463346023">Forbedret stavekontrol</translation>
 <translation id="2566124945717127842">Powerwash for at nulstille din <ph name="IDS_SHORT_PRODUCT_NAME" />-enhed til fabriksindstillingerne.</translation>
 <translation id="2568774940984945469">Container til oplysningsbjælke</translation>
-<translation id="257088987046510401">Temaer</translation>
 <translation id="2571655996835834626">Skift de indstillinger, der styrer websites' adgang til funktioner som f.eks. cookies, JavaScript, plugins, geoplacering, mikrofon og kamera.</translation>
 <translation id="2572032849266859634">Skrivebeskyttet adgang til <ph name="VOLUME_NAME" /> er blevet tildelt.</translation>
 <translation id="2575247648642144396">Dette ikon vil være synligt, når udvidelsen fungerer på den aktuelle side. Brug denne udvidelse ved at klikke på ikonet eller ved at trykke på <ph name="EXTENSION_SHORTCUT" />.</translation>
@@ -3354,7 +3353,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5115338116365931134">SSO</translation>
 <translation id="5116628073786783676">Ge&amp;m lyd som...</translation>
 <translation id="5117139026559873716">Afbryd forbindelsen mellem din telefon og din <ph name="DEVICE_TYPE" />. Der oprettes ikke længere automatisk forbindelse.</translation>
-<translation id="5117427536932535467">Temaer og baggrunde</translation>
 <translation id="5117930984404104619">Overvåge adfærden for andre udvidelser, herunder de webadresser, du har besøgt.</translation>
 <translation id="5119173345047096771">Mozilla Firefox</translation>
 <translation id="5121130586824819730">Din harddisk er fuld. Gem på en anden placering, eller frigør mere plads på harddisken.</translation>
@@ -4301,6 +4299,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6277105963844135994">Netværkstimeout</translation>
 <translation id="6277518330158259200">T&amp;ag screenshot</translation>
 <translation id="6278057325678116358">Brug GTK+</translation>
+<translation id="6278428485366576908">Tema</translation>
 <translation id="6278776436938569440">Skift placering</translation>
 <translation id="6279183038361895380">Tryk på |<ph name="ACCELERATOR" />| at se markøren</translation>
 <translation id="6280215091796946657">Log ind med en anden konto</translation>

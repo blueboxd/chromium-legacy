@@ -3,7 +3,6 @@
 // found in LICENSE file.
 
 #include "base/numerics/safe_conversions.h"
-#include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -28,6 +27,11 @@ namespace blink {
 constexpr auto kDefaultThrottledWakeUpInterval =
     base::TimeDelta::FromSeconds(1);
 
+// This test suite relies on messages being posted to the console. In order to
+// be resilient against messages not posted by this specific test suite, a small
+// prefix is used to allowed filtering.
+constexpr char kTestConsoleMessagePrefix[] = "[ThrottlingTest]";
+
 // A SimTest with mock time.
 class ThrottlingTestBase : public SimTest {
  public:
@@ -39,6 +43,32 @@ class ThrottlingTestBase : public SimTest {
         platform_->NowTicks().SnappedToNextTick(
             base::TimeTicks(), base::TimeDelta::FromMinutes(1)) -
         platform_->NowTicks());
+  }
+
+  String BuildTimerConsoleMessage(String suffix = String()) {
+    String message(kTestConsoleMessagePrefix);
+
+    message = message + " Timer called";
+
+    if (!suffix.IsNull())
+      message + " " + suffix;
+
+    return message;
+  }
+
+  // Returns a filtered copy of console messages where items not prefixed with
+  // |kTestConsoleMessagePrefix| are removed.
+  Vector<String> FilteredConsoleMessages() {
+    Vector<String> result = ConsoleMessages();
+
+    result.erase(
+        std::remove_if(result.begin(), result.end(),
+                       [](const String& element) {
+                         return !element.StartsWith(kTestConsoleMessagePrefix);
+                       }),
+        result.end());
+
+    return result;
   }
 
   ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
@@ -59,15 +89,17 @@ TEST_F(DisableBackgroundThrottlingIsRespectedTest,
 
   LoadURL("https://example.com/");
 
+  const String console_message = BuildTimerConsoleMessage();
   main_resource.Complete(
-      "(<script>"
-      "  function f(repetitions) {"
-      "     if (repetitions == 0) return;"
-      "     console.log('called f');"
-      "     setTimeout(f, 10, repetitions - 1);"
-      "  }"
-      "  f(5);"
-      "</script>)");
+      String::Format("(<script>"
+                     "  function f(repetitions) {"
+                     "     if (repetitions == 0) return;"
+                     "     console.log('%s');"
+                     "     setTimeout(f, 10, repetitions - 1);"
+                     "  }"
+                     "  f(5);"
+                     "</script>)",
+                     console_message.Utf8().c_str()));
 
   GetDocument().GetPage()->GetPageScheduler()->SetPageVisible(false);
 
@@ -75,8 +107,9 @@ TEST_F(DisableBackgroundThrottlingIsRespectedTest,
   // with throttling disabled.
   platform_->RunForPeriod(base::TimeDelta::FromSeconds(1));
 
-  EXPECT_THAT(ConsoleMessages(), ElementsAre("called f", "called f", "called f",
-                                             "called f", "called f"));
+  EXPECT_THAT(FilteredConsoleMessages(),
+              ElementsAre(console_message, console_message, console_message,
+                          console_message, console_message));
 }
 
 class BackgroundPageThrottlingTest : public ThrottlingTestBase {};
@@ -86,22 +119,24 @@ TEST_F(BackgroundPageThrottlingTest, TimersThrottledInBackgroundPage) {
 
   LoadURL("https://example.com/");
 
+  const String console_message = BuildTimerConsoleMessage();
   main_resource.Complete(
-      "(<script>"
-      "  function f(repetitions) {"
-      "     if (repetitions == 0) return;"
-      "     console.log('called f');"
-      "     setTimeout(f, 10, repetitions - 1);"
-      "  }"
-      "  setTimeout(f, 10, 50);"
-      "</script>)");
+      String::Format("(<script>"
+                     "  function f(repetitions) {"
+                     "     if (repetitions == 0) return;"
+                     "     console.log('%s');"
+                     "     setTimeout(f, 10, repetitions - 1);"
+                     "  }"
+                     "  setTimeout(f, 10, 50);"
+                     "</script>)",
+                     console_message.Utf8().c_str()));
 
   GetDocument().GetPage()->GetPageScheduler()->SetPageVisible(false);
 
   // Make sure that we run no more than one task a second.
   platform_->RunForPeriod(base::TimeDelta::FromSeconds(3));
-  EXPECT_THAT(ConsoleMessages(),
-              ElementsAre("called f", "called f", "called f"));
+  EXPECT_THAT(FilteredConsoleMessages(),
+              ElementsAre(console_message, console_message, console_message));
 }
 
 // Same test as above, but using timeout=0.
@@ -111,15 +146,17 @@ TEST_F(BackgroundPageThrottlingTest,
 
   LoadURL("https://example.com/");
 
+  const String console_message = BuildTimerConsoleMessage();
   main_resource.Complete(
-      "(<script>"
-      "  function f(repetitions) {"
-      "     if (repetitions == 0) return;"
-      "     console.log('called f');"
-      "     setTimeout(f, 0, repetitions - 1);"
-      "  }"
-      "  setTimeout(f, 0, 50);"
-      "</script>)");
+      String::Format("(<script>"
+                     "  function f(repetitions) {"
+                     "     if (repetitions == 0) return;"
+                     "     console.log('%s');"
+                     "     setTimeout(f, 0, repetitions - 1);"
+                     "  }"
+                     "  setTimeout(f, 0, 50);"
+                     "</script>)",
+                     console_message.Utf8().c_str()));
 
   GetDocument().GetPage()->GetPageScheduler()->SetPageVisible(false);
 
@@ -128,8 +165,9 @@ TEST_F(BackgroundPageThrottlingTest,
   // throttled wake up is 3ms. Therefore, at the 2 first wake ups, the timer
   // runs twice. At the third wake up, it runs once.
   platform_->RunForPeriod(base::TimeDelta::FromSeconds(3));
-  EXPECT_THAT(ConsoleMessages(), ElementsAre("called f", "called f", "called f",
-                                             "called f", "called f"));
+  EXPECT_THAT(FilteredConsoleMessages(),
+              ElementsAre(console_message, console_message, console_message,
+                          console_message, console_message));
 }
 
 namespace {
@@ -155,25 +193,34 @@ class OptOutZeroTimeoutFromThrottlingTest : public ThrottlingTestBase {
 TEST_F(OptOutZeroTimeoutFromThrottlingTest, WithoutNesting) {
   SimRequest main_resource("https://example.com/", "text/html");
   LoadURL("https://example.com/");
-  main_resource.Complete(
+
+  String timeout_0_message = BuildTimerConsoleMessage("0");
+  String timeout_minus_1_message = BuildTimerConsoleMessage("-1");
+  String timeout_5_message = BuildTimerConsoleMessage("5");
+  main_resource.Complete(String::Format(
       "<script>"
       "  setTimeout(function() {"
-      "    setTimeout(function() { console.log('setTimeout 0'); }, 0);"
-      "    setTimeout(function() { console.log('setTimeout -1'); }, -1);"
-      "    setTimeout(function() { console.log('setTimeout 5'); }, 5);"
+      "    setTimeout(function() { console.log('%s'); }, 0);"
+      "    setTimeout(function() { console.log('%s'); }, -1);"
+      "    setTimeout(function() { console.log('%s'); }, 5);"
       "  }, 1000);"
-      "</script>");
+      "</script>",
+      timeout_0_message.Utf8().c_str(), timeout_minus_1_message.Utf8().c_str(),
+      timeout_5_message.Utf8().c_str()));
   GetDocument().GetPage()->GetPageScheduler()->SetPageVisible(false);
 
   platform_->RunForPeriod(base::TimeDelta::FromMilliseconds(1001));
-  EXPECT_THAT(ConsoleMessages(), ElementsAre("setTimeout 0", "setTimeout -1"));
+  EXPECT_THAT(FilteredConsoleMessages(),
+              ElementsAre(timeout_0_message, timeout_minus_1_message));
 
   platform_->RunForPeriod(base::TimeDelta::FromMilliseconds(998));
-  EXPECT_THAT(ConsoleMessages(), ElementsAre("setTimeout 0", "setTimeout -1"));
+  EXPECT_THAT(FilteredConsoleMessages(),
+              ElementsAre(timeout_0_message, timeout_minus_1_message));
 
   platform_->RunForPeriod(base::TimeDelta::FromMilliseconds(1));
-  EXPECT_THAT(ConsoleMessages(),
-              ElementsAre("setTimeout 0", "setTimeout -1", "setTimeout 5"));
+  EXPECT_THAT(FilteredConsoleMessages(),
+              ElementsAre(timeout_0_message, timeout_minus_1_message,
+                          timeout_5_message));
 }
 
 // Verify that in a hidden page, when the kOptOutZeroTimeoutTimersFromThrottling
@@ -182,29 +229,32 @@ TEST_F(OptOutZeroTimeoutFromThrottlingTest, WithoutNesting) {
 TEST_F(OptOutZeroTimeoutFromThrottlingTest, SetTimeoutNesting) {
   SimRequest main_resource("https://example.com/", "text/html");
   LoadURL("https://example.com/");
+
+  const String console_message = BuildTimerConsoleMessage();
   main_resource.Complete(
-      "<script>"
-      "  function f(repetitions) {"
-      "    if (repetitions == 0) return;"
-      "    console.log('called f');"
-      "    setTimeout(f, 0, repetitions - 1);"
-      "  }"
-      "  setTimeout(f, 0, 50);"
-      "</script>");
+      String::Format("<script>"
+                     "  function f(repetitions) {"
+                     "    if (repetitions == 0) return;"
+                     "    console.log('%s');"
+                     "    setTimeout(f, 0, repetitions - 1);"
+                     "  }"
+                     "  setTimeout(f, 0, 50);"
+                     "</script>",
+                     console_message.Utf8().c_str()));
   GetDocument().GetPage()->GetPageScheduler()->SetPageVisible(false);
 
   platform_->RunForPeriod(base::TimeDelta::FromMilliseconds(1));
-  EXPECT_THAT(ConsoleMessages(), Vector<String>(1, "called f"));
+  EXPECT_THAT(FilteredConsoleMessages(), Vector<String>(1, console_message));
   platform_->RunForPeriod(base::TimeDelta::FromMilliseconds(1));
-  EXPECT_THAT(ConsoleMessages(), Vector<String>(2, "called f"));
+  EXPECT_THAT(FilteredConsoleMessages(), Vector<String>(2, console_message));
   platform_->RunForPeriod(base::TimeDelta::FromMilliseconds(1));
-  EXPECT_THAT(ConsoleMessages(), Vector<String>(3, "called f"));
+  EXPECT_THAT(FilteredConsoleMessages(), Vector<String>(3, console_message));
   platform_->RunForPeriod(base::TimeDelta::FromMilliseconds(1));
-  EXPECT_THAT(ConsoleMessages(), Vector<String>(4, "called f"));
+  EXPECT_THAT(FilteredConsoleMessages(), Vector<String>(4, console_message));
   platform_->RunForPeriod(base::TimeDelta::FromMilliseconds(995));
-  EXPECT_THAT(ConsoleMessages(), Vector<String>(4, "called f"));
+  EXPECT_THAT(FilteredConsoleMessages(), Vector<String>(4, console_message));
   platform_->RunForPeriod(base::TimeDelta::FromMilliseconds(1));
-  EXPECT_THAT(ConsoleMessages(), Vector<String>(5, "called f"));
+  EXPECT_THAT(FilteredConsoleMessages(), Vector<String>(5, console_message));
 }
 
 // Verify that in a hidden page, when the kOptOutZeroTimeoutTimersFromThrottling
@@ -213,30 +263,33 @@ TEST_F(OptOutZeroTimeoutFromThrottlingTest, SetTimeoutNesting) {
 TEST_F(OptOutZeroTimeoutFromThrottlingTest, SetIntervalNesting) {
   SimRequest main_resource("https://example.com/", "text/html");
   LoadURL("https://example.com/");
+
+  const String console_message = BuildTimerConsoleMessage();
   main_resource.Complete(
-      "<script>"
-      "  function f() {"
-      "    if (repetitions == 0) clearInterval(interval_id);"
-      "    console.log('called f');"
-      "    repetitions = repetitions - 1;"
-      "  }"
-      "  var repetitions = 50;"
-      "  var interval_id = setInterval(f, 0);"
-      "</script>");
+      String::Format("<script>"
+                     "  function f() {"
+                     "    if (repetitions == 0) clearInterval(interval_id);"
+                     "    console.log('%s');"
+                     "    repetitions = repetitions - 1;"
+                     "  }"
+                     "  var repetitions = 50;"
+                     "  var interval_id = setInterval(f, 0);"
+                     "</script>",
+                     console_message.Utf8().c_str()));
   GetDocument().GetPage()->GetPageScheduler()->SetPageVisible(false);
 
   platform_->RunForPeriod(base::TimeDelta::FromMilliseconds(1));
-  EXPECT_THAT(ConsoleMessages(), Vector<String>(1, "called f"));
+  EXPECT_THAT(FilteredConsoleMessages(), Vector<String>(1, console_message));
   platform_->RunForPeriod(base::TimeDelta::FromMilliseconds(1));
-  EXPECT_THAT(ConsoleMessages(), Vector<String>(2, "called f"));
+  EXPECT_THAT(FilteredConsoleMessages(), Vector<String>(2, console_message));
   platform_->RunForPeriod(base::TimeDelta::FromMilliseconds(1));
-  EXPECT_THAT(ConsoleMessages(), Vector<String>(3, "called f"));
+  EXPECT_THAT(FilteredConsoleMessages(), Vector<String>(3, console_message));
   platform_->RunForPeriod(base::TimeDelta::FromMilliseconds(1));
-  EXPECT_THAT(ConsoleMessages(), Vector<String>(4, "called f"));
+  EXPECT_THAT(FilteredConsoleMessages(), Vector<String>(4, console_message));
   platform_->RunForPeriod(base::TimeDelta::FromMilliseconds(995));
-  EXPECT_THAT(ConsoleMessages(), Vector<String>(4, "called f"));
+  EXPECT_THAT(FilteredConsoleMessages(), Vector<String>(4, console_message));
   platform_->RunForPeriod(base::TimeDelta::FromMilliseconds(1));
-  EXPECT_THAT(ConsoleMessages(), Vector<String>(5, "called f"));
+  EXPECT_THAT(FilteredConsoleMessages(), Vector<String>(5, console_message));
 }
 
 namespace {
@@ -250,16 +303,17 @@ class IntensiveWakeUpThrottlingTest : public ThrottlingTestBase {
         {features::kStopInBackground});
   }
 
-  void TestNoIntensiveThrotlingOnTitleOrFaviconUpdate() {
+  void TestNoIntensiveThrotlingOnTitleOrFaviconUpdate(
+      const String& console_message) {
     // The page does not attempt to run onTimer in the first 5 minutes.
     platform_->RunForPeriod(base::TimeDelta::FromMinutes(5));
-    EXPECT_THAT(ConsoleMessages(), ElementsAre());
+    EXPECT_THAT(FilteredConsoleMessages(), ElementsAre());
 
     // At 5 minutes, a timer fires to run the afterFiveMinutes() function.
     // This function does not communicate in the background, so the intensive
     // throttling policy applies and onTimer() can only run after 1 minute.
     platform_->RunForPeriod(base::TimeDelta::FromMinutes(1));
-    EXPECT_THAT(ConsoleMessages(), ElementsAre("called onTimer"));
+    EXPECT_THAT(FilteredConsoleMessages(), ElementsAre(console_message));
 
     ConsoleMessages().clear();
 
@@ -274,8 +328,8 @@ class IntensiveWakeUpThrottlingTest : public ThrottlingTestBase {
     Vector<String> expected_ouput(
         base::ClampFloor<wtf_size_t>(kTimeUntilNextCheck /
                                      kDefaultThrottledWakeUpInterval),
-        "called onTimer");
-    EXPECT_THAT(ConsoleMessages(), expected_ouput);
+        console_message);
+    EXPECT_THAT(FilteredConsoleMessages(), expected_ouput);
   }
 
  private:
@@ -310,10 +364,10 @@ constexpr char kCommunicateThroughFavisonScript[] =
 
 // A script that schedules a timer with a long delay that is not aligned on the
 // intensive throttling wake up interval.
-constexpr char kLongUnalignedTimerScript[] =
+constexpr char kLongUnalignedTimerScriptTemplate[] =
     "<script>"
     "  function onTimer() {"
-    "     console.log('called onTimer');"
+    "     console.log('%s');"
     "  }"
     "  setTimeout(onTimer, 342 * 1000);"
     "</script>";
@@ -325,7 +379,8 @@ constexpr base::TimeDelta kLongUnalignedTimerDelay =
 // Use to build a web-page ready to test intensive javascript throttling.
 // The page will differ in its definition of the maybeCommunicateInBackground()
 // function which has to be defined in a script passed in |communicate_script|.
-String BuildRepeatingTimerPage(const char* communicate_script) {
+String BuildRepeatingTimerPage(const char* console_message,
+                               const char* communicate_script) {
   // A template for a page that waits 5 minutes on load then creates a timer
   // that reschedules itself 50 times with 10 ms delay. Contains the minimimal
   // page structure to simulate background communication with the user via title
@@ -340,7 +395,7 @@ String BuildRepeatingTimerPage(const char* communicate_script) {
       "<script>"
       "  function onTimer(repetitions) {"
       "     if (repetitions == 0) return;"
-      "     console.log('called onTimer');"
+      "     console.log('%s');"
       "     maybeCommunicateInBackground();"
       "     setTimeout(onTimer, 10, repetitions - 1);"
       "  }"
@@ -353,10 +408,8 @@ String BuildRepeatingTimerPage(const char* communicate_script) {
       "</body>"
       "</html>";
 
-  std::string page =
-      base::StringPrintf(kRepeatingTimerPageTemplate, communicate_script);
-
-  return {page.data(), page.size()};
+  return String::Format(kRepeatingTimerPageTemplate, console_message,
+                        communicate_script);
 }
 
 }  // namespace
@@ -367,29 +420,32 @@ TEST_F(IntensiveWakeUpThrottlingTest, MainFrameTimer_ShortTimeout) {
   SimRequest main_resource("https://example.com/", "text/html");
   LoadURL("https://example.com/");
 
+  const String console_message = BuildTimerConsoleMessage();
+
   // Page does not communicate with the user. Normal intensive throttling
   // applies.
-  main_resource.Complete(BuildRepeatingTimerPage(kCommunicationNop));
+  main_resource.Complete(BuildRepeatingTimerPage(console_message.Utf8().c_str(),
+                                                 kCommunicationNop));
 
   GetDocument().GetPage()->GetPageScheduler()->SetPageVisible(false);
 
   // No timer is scheduled in the 5 first minutes.
   platform_->RunForPeriod(base::TimeDelta::FromMinutes(5));
-  EXPECT_THAT(ConsoleMessages(), ElementsAre());
+  EXPECT_THAT(FilteredConsoleMessages(), ElementsAre());
 
   // After that, intensive throttling starts and there should be 1 wake up per
   // minute.
   platform_->RunForPeriod(base::TimeDelta::FromMinutes(1));
-  EXPECT_THAT(ConsoleMessages(), ElementsAre("called onTimer"));
+  EXPECT_THAT(FilteredConsoleMessages(), ElementsAre(console_message));
 
   // No tasks execute early.
   platform_->RunForPeriod(base::TimeDelta::FromSeconds(30));
-  EXPECT_THAT(ConsoleMessages(), ElementsAre("called onTimer"));
+  EXPECT_THAT(FilteredConsoleMessages(), ElementsAre(console_message));
 
   // A minute after the last timer.
   platform_->RunForPeriod(base::TimeDelta::FromSeconds(30));
-  EXPECT_THAT(ConsoleMessages(),
-              ElementsAre("called onTimer", "called onTimer"));
+  EXPECT_THAT(FilteredConsoleMessages(),
+              ElementsAre(console_message, console_message));
 }
 
 // Verify that a main frame timer that reposts itself with a 10 ms timeout runs
@@ -398,12 +454,14 @@ TEST_F(IntensiveWakeUpThrottlingTest, MainFrameTimer_ShortTimeout) {
 TEST_F(IntensiveWakeUpThrottlingTest, MainFrameTimer_ShortTimeout_TitleUpdate) {
   SimRequest main_resource("https://example.com/", "text/html");
   LoadURL("https://example.com/");
-  main_resource.Complete(
-      BuildRepeatingTimerPage(kCommunicateThroughTitleScript));
+
+  const String console_message = BuildTimerConsoleMessage();
+  main_resource.Complete(BuildRepeatingTimerPage(
+      console_message.Utf8().c_str(), kCommunicateThroughTitleScript));
 
   GetDocument().GetPage()->GetPageScheduler()->SetPageVisible(false);
 
-  TestNoIntensiveThrotlingOnTitleOrFaviconUpdate();
+  TestNoIntensiveThrotlingOnTitleOrFaviconUpdate(console_message);
 }
 
 // Verify that a main frame timer that reposts itself with a 10 ms timeout runs
@@ -413,12 +471,14 @@ TEST_F(IntensiveWakeUpThrottlingTest,
        MainFrameTimer_ShortTimeout_FaviconUpdate) {
   SimRequest main_resource("https://example.com/", "text/html");
   LoadURL("https://example.com/");
-  main_resource.Complete(
-      BuildRepeatingTimerPage(kCommunicateThroughFavisonScript));
+
+  const String console_message = BuildTimerConsoleMessage();
+  main_resource.Complete(BuildRepeatingTimerPage(
+      console_message.Utf8().c_str(), kCommunicateThroughFavisonScript));
 
   GetDocument().GetPage()->GetPageScheduler()->SetPageVisible(false);
 
-  TestNoIntensiveThrotlingOnTitleOrFaviconUpdate();
+  TestNoIntensiveThrotlingOnTitleOrFaviconUpdate(console_message);
 }
 
 // Verify that a same-origin subframe timer that reposts itself with a 10 ms
@@ -431,21 +491,24 @@ TEST_F(IntensiveWakeUpThrottlingTest, SameOriginSubFrameTimer_ShortTimeout) {
   // Run tasks to let the main frame request the iframe resource. It is not
   // possible to complete the iframe resource request before that.
   platform_->RunUntilIdle();
-  subframe_resource.Complete(BuildRepeatingTimerPage(kCommunicationNop));
+
+  const String console_message = BuildTimerConsoleMessage();
+  subframe_resource.Complete(BuildRepeatingTimerPage(
+      console_message.Utf8().c_str(), kCommunicationNop));
 
   GetDocument().GetPage()->GetPageScheduler()->SetPageVisible(false);
 
   // No timer is scheduled in the 5 first minutes.
   platform_->RunForPeriod(base::TimeDelta::FromMinutes(5));
-  EXPECT_THAT(ConsoleMessages(), ElementsAre());
+  EXPECT_THAT(FilteredConsoleMessages(), ElementsAre());
 
   // After that, intensive throttling starts and there should be 1 wake up per
   // minute.
   platform_->RunForPeriod(base::TimeDelta::FromMinutes(1));
-  EXPECT_THAT(ConsoleMessages(), ElementsAre("called onTimer"));
+  EXPECT_THAT(FilteredConsoleMessages(), ElementsAre(console_message));
   platform_->RunForPeriod(base::TimeDelta::FromMinutes(1));
-  EXPECT_THAT(ConsoleMessages(),
-              ElementsAre("called onTimer", "called onTimer"));
+  EXPECT_THAT(FilteredConsoleMessages(),
+              ElementsAre(console_message, console_message));
 }
 
 // Verify that a cross-origin subframe timer that reposts itself with a 10 ms
@@ -460,21 +523,24 @@ TEST_F(IntensiveWakeUpThrottlingTest, CrossOriginSubFrameTimer_ShortTimeout) {
   // Run tasks to let the main frame request the iframe resource. It is not
   // possible to complete the iframe resource request before that.
   platform_->RunUntilIdle();
-  subframe_resource.Complete(BuildRepeatingTimerPage(kCommunicationNop));
+
+  const String console_message = BuildTimerConsoleMessage();
+  subframe_resource.Complete(BuildRepeatingTimerPage(
+      console_message.Utf8().c_str(), kCommunicationNop));
 
   GetDocument().GetPage()->GetPageScheduler()->SetPageVisible(false);
 
   // No timer is scheduled in the 5 first minutes.
   platform_->RunForPeriod(base::TimeDelta::FromMinutes(5));
-  EXPECT_THAT(ConsoleMessages(), ElementsAre());
+  EXPECT_THAT(FilteredConsoleMessages(), ElementsAre());
 
   // After that, intensive throttling starts and there should be 1 wake up per
   // minute.
   platform_->RunForPeriod(base::TimeDelta::FromMinutes(1));
-  EXPECT_THAT(ConsoleMessages(), ElementsAre("called onTimer"));
+  EXPECT_THAT(FilteredConsoleMessages(), ElementsAre(console_message));
   platform_->RunForPeriod(base::TimeDelta::FromMinutes(1));
-  EXPECT_THAT(ConsoleMessages(),
-              ElementsAre("called onTimer", "called onTimer"));
+  EXPECT_THAT(FilteredConsoleMessages(),
+              ElementsAre(console_message, console_message));
 }
 
 // Verify that a main frame timer with a long timeout runs at the desired run
@@ -482,16 +548,19 @@ TEST_F(IntensiveWakeUpThrottlingTest, CrossOriginSubFrameTimer_ShortTimeout) {
 TEST_F(IntensiveWakeUpThrottlingTest, MainFrameTimer_LongUnalignedTimeout) {
   SimRequest main_resource("https://example.com/", "text/html");
   LoadURL("https://example.com/");
-  main_resource.Complete(kLongUnalignedTimerScript);
+
+  const String console_message = BuildTimerConsoleMessage();
+  main_resource.Complete(String::Format(kLongUnalignedTimerScriptTemplate,
+                                        console_message.Utf8().c_str()));
 
   GetDocument().GetPage()->GetPageScheduler()->SetPageVisible(false);
 
   platform_->RunForPeriod(kLongUnalignedTimerDelay -
                           base::TimeDelta::FromSeconds(1));
-  EXPECT_THAT(ConsoleMessages(), ElementsAre());
+  EXPECT_THAT(FilteredConsoleMessages(), ElementsAre());
 
   platform_->RunForPeriod(base::TimeDelta::FromSeconds(1));
-  EXPECT_THAT(ConsoleMessages(), ElementsAre("called onTimer"));
+  EXPECT_THAT(FilteredConsoleMessages(), ElementsAre(console_message));
 }
 
 // Verify that a same-origin subframe timer with a long timeout runs at the
@@ -505,16 +574,19 @@ TEST_F(IntensiveWakeUpThrottlingTest,
   // Run tasks to let the main frame request the iframe resource. It is not
   // possible to complete the iframe resource request before that.
   platform_->RunUntilIdle();
-  subframe_resource.Complete(kLongUnalignedTimerScript);
+
+  const String console_message = BuildTimerConsoleMessage();
+  subframe_resource.Complete(String::Format(kLongUnalignedTimerScriptTemplate,
+                                            console_message.Utf8().c_str()));
 
   GetDocument().GetPage()->GetPageScheduler()->SetPageVisible(false);
 
   platform_->RunForPeriod(kLongUnalignedTimerDelay -
                           base::TimeDelta::FromSeconds(1));
-  EXPECT_THAT(ConsoleMessages(), ElementsAre());
+  EXPECT_THAT(FilteredConsoleMessages(), ElementsAre());
 
   platform_->RunForPeriod(base::TimeDelta::FromSeconds(1));
-  EXPECT_THAT(ConsoleMessages(), ElementsAre("called onTimer"));
+  EXPECT_THAT(FilteredConsoleMessages(), ElementsAre(console_message));
 }
 
 // Verify that a cross-origin subframe timer with a long timeout runs at an
@@ -531,16 +603,19 @@ TEST_F(IntensiveWakeUpThrottlingTest,
   // Run tasks to let the main frame request the iframe resource. It is not
   // possible to complete the iframe resource request before that.
   platform_->RunUntilIdle();
-  subframe_resource.Complete(kLongUnalignedTimerScript);
+
+  const String console_message = BuildTimerConsoleMessage();
+  subframe_resource.Complete(String::Format(kLongUnalignedTimerScriptTemplate,
+                                            console_message.Utf8().c_str()));
 
   GetDocument().GetPage()->GetPageScheduler()->SetPageVisible(false);
 
   platform_->RunForPeriod(base::TimeDelta::FromSeconds(342));
-  EXPECT_THAT(ConsoleMessages(), ElementsAre());
+  EXPECT_THAT(FilteredConsoleMessages(), ElementsAre());
 
   // Fast-forward to the next aligned time.
   platform_->RunForPeriod(base::TimeDelta::FromSeconds(18));
-  EXPECT_THAT(ConsoleMessages(), ElementsAre("called onTimer"));
+  EXPECT_THAT(FilteredConsoleMessages(), ElementsAre(console_message));
 }
 
 // Verify that if both the main frame and a cross-origin frame schedule a timer
@@ -553,23 +628,28 @@ TEST_F(IntensiveWakeUpThrottlingTest,
   SimRequest subframe_resource("https://cross-origin.example.com/iframe.html",
                                "text/html");
   LoadURL("https://example.com/");
+
+  const String console_message = BuildTimerConsoleMessage();
+  const String script = String::Format(kLongUnalignedTimerScriptTemplate,
+                                       console_message.Utf8().c_str());
+
   main_resource.Complete(
-      WTF::String(kLongUnalignedTimerScript) +
+      script +
       "<iframe src=\"https://cross-origin.example.com/iframe.html\" />");
   // Run tasks to let the main frame request the iframe resource. It is not
   // possible to complete the iframe resource request before that.
   platform_->RunUntilIdle();
-  subframe_resource.Complete(kLongUnalignedTimerScript);
+  subframe_resource.Complete(script);
 
   GetDocument().GetPage()->GetPageScheduler()->SetPageVisible(false);
 
   platform_->RunForPeriod(base::TimeDelta::FromSeconds(342));
-  EXPECT_THAT(ConsoleMessages(), ElementsAre("called onTimer"));
+  EXPECT_THAT(FilteredConsoleMessages(), ElementsAre(console_message));
 
   // Fast-forward to the next aligned time.
   platform_->RunForPeriod(base::TimeDelta::FromSeconds(18));
-  EXPECT_THAT(ConsoleMessages(),
-              ElementsAre("called onTimer", "called onTimer"));
+  EXPECT_THAT(FilteredConsoleMessages(),
+              ElementsAre(console_message, console_message));
 }
 
 }  // namespace blink

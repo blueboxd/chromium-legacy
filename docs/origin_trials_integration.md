@@ -204,6 +204,17 @@ It's also used by Origin Trials unit tests and web tests.
 If you cannot set command-line switches (e.g., on Chrome OS), you can also
 directly modify [chrome_origin_trial_policy.cc].
 
+To see additional information about origin trial token parsing (including reasons
+for failures, or token names for successful tokens), you can add these switches:
+
+  `--vmodule=trial_token=2,origin_trial_context=1`
+
+If you are building with `is_debug=false`, then you will also need to add
+`dcheck_always_on=true` to your build options, and add this to the command line:
+
+  `--enable-logging=stderr`
+
+
 ### Web Tests
 When using the \[RuntimeEnabled\] IDL attribute, you should add web tests
 to verify that the V8 bindings code is working as expected. Depending on how

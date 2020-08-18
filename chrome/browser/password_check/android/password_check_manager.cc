@@ -200,7 +200,6 @@ CompromisedCredentialForUI PasswordCheckManager::MakeUICredential(
     const PasswordForm& android_form =
         compromised_credentials_manager_.GetSavedPasswordsFor(credential)[0];
 
-    ui_credential.is_android_credential = true;
     ui_credential.package_name = facet.android_package_name();
 
     if (android_form.app_display_name.empty()) {
@@ -214,7 +213,6 @@ CompromisedCredentialForUI PasswordCheckManager::MakeUICredential(
           base::UTF8ToUTF16(android_form.app_display_name);
     }
   } else {
-    ui_credential.is_android_credential = false;
     ui_credential.display_origin = url_formatter::FormatUrl(
         credential.url.GetOrigin(),
         url_formatter::kFormatUrlOmitDefaults |

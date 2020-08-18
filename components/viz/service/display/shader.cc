@@ -14,6 +14,7 @@
 #include "base/notreached.h"
 #include "base/strings/char_traits.h"
 #include "base/strings/strcat.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "components/viz/service/display/static_geometry_binding.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -23,7 +24,7 @@
 
 constexpr base::StringPiece StripLambda(base::StringPiece shader) {
   // Must contain at least "[]() {}".
-  DCHECK(shader.starts_with("[]() {"));
+  DCHECK_EQ(shader.substr(0, 6), "[]() {");
   DCHECK_EQ(shader.back(), '}');
   shader.remove_prefix(6);
   shader.remove_suffix(1);

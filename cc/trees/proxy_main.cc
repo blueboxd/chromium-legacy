@@ -221,8 +221,8 @@ void ProxyMain::BeginMainFrame(
     // the compositor thread to the main thread for both cc and and its client
     // (e.g. Blink). Do not do this if we explicitly plan to not commit the
     // layer tree, to prevent scroll offsets getting out of sync.
-    layer_tree_host_->ApplyScrollAndScale(
-        begin_main_frame_state->scroll_info.get());
+    layer_tree_host_->ApplyCompositorChanges(
+        begin_main_frame_state->commit_data.get());
   }
 
   layer_tree_host_->ApplyMutatorEvents(

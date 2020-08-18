@@ -55,6 +55,11 @@ bool MatchesRegex(const GroupedPath& id_path,
   return RE2::PartialMatch(Re2StringPiece(sym.FullName()), regex);
 }
 
+bool IsMultiContainer() {
+  // If DeltaSizeInfo is active, still take |info| since it's the "after" info.
+  return info->containers.size() > 1 || !info->containers[0].name.empty();
+}
+
 }  // namespace
 
 extern "C" {
@@ -177,6 +182,8 @@ bool BuildTree(bool method_count_mode,
   std::cout << "group_by=" << group_by << std::endl;
   if (!strcmp(group_by, "source_path")) {
     lens = std::make_unique<IdPathLens>();
+  } else if (!strcmp(group_by, "container")) {
+    lens = std::make_unique<ContainerLens>();
   } else if (!strcmp(group_by, "component")) {
     lens = std::make_unique<ComponentLens>();
     sep = '>';
@@ -196,12 +203,22 @@ bool BuildTree(bool method_count_mode,
   return bool(diff_info);
 }
 
+// Returns a string that can be parsed to a JS object.
 const char* Open(const char* path) {
-  // Returns a string that can be parsed to a JS object.
   static std::string result;
   Json::Value v = builder->Open(path);
   result = JsonSerialize(v);
   return result.c_str();
 }
+
+// Returns global properties.
+const char* QueryProperty(const char* key) {
+  if (!strcmp(key, "isMultiContainer")) {
+    return IsMultiContainer() ? "true" : "false";
+  }
+  std::cerr << "Unknown property: " << key << std::endl;
+  exit(1);
+}
+
 }  // extern "C"
 }  // namespace caspian

@@ -726,7 +726,14 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
   RunAriaTest(FILE_PATH_LITERAL("aria-grid-extra-wrap-elems.html"));
 }
 
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityAriaGridCell) {
+// https://crbug.com/1117594
+#if defined(OS_ANDROID)
+#define MAYBE_AccessibilityAriaGridCell DISABLED_AccessibilityAriaGridCell
+#else
+#define MAYBE_AccessibilityAriaGridCell AccessibilityAriaGridCell
+#endif
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       MAYBE_AccessibilityAriaGridCell) {
   RunAriaTest(FILE_PATH_LITERAL("aria-gridcell.html"));
 }
 
@@ -2172,7 +2179,13 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
   RunHtmlTest(FILE_PATH_LITERAL("selection-container.html"));
 }
 
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilitySelect) {
+// https://crbug.com/1117594
+#if defined(OS_ANDROID)
+#define MAYBE_AccessibilitySelect DISABLED_AccessibilitySelect
+#else
+#define MAYBE_AccessibilitySelect AccessibilitySelect
+#endif
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, MAYBE_AccessibilitySelect) {
   RunHtmlTest(FILE_PATH_LITERAL("select.html"));
 }
 
@@ -2187,8 +2200,16 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
       FILE_PATH_LITERAL("select-follows-focus-aria-selected-false.html"));
 }
 
+// https://crbug.com/1117594
+#if defined(OS_ANDROID)
+#define MAYBE_AccessibilitySelectFollowsFocusMultiselect \
+  DISABLED_AccessibilitySelectFollowsFocusMultiselect
+#else
+#define MAYBE_AccessibilitySelectFollowsFocusMultiselect \
+  AccessibilitySelectFollowsFocusMultiselect
+#endif
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
-                       AccessibilitySelectFollowsFocusMultiselect) {
+                       MAYBE_AccessibilitySelectFollowsFocusMultiselect) {
   RunHtmlTest(FILE_PATH_LITERAL("select-follows-focus-multiselect.html"));
 }
 

@@ -19936,6 +19936,21 @@
       }
     ]
   },
+  "Mac FYI arm64 Release (Apple DTK)": {
+    "additional_compile_targets": [
+      "angle_end2end_tests",
+      "angle_unittests",
+      "browser_tests",
+      "gl_tests",
+      "gl_unittests",
+      "gles2_conform_test",
+      "gpu_unittests",
+      "services_unittests",
+      "swiftshader_unittests",
+      "rendering_representative_perf_tests",
+      "telemetry_gpu_integration_test"
+    ]
+  },
   "Mac FYI dEQP Release AMD": {
     "gtest_tests": [
       {

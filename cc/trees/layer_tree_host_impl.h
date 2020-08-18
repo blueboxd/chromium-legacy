@@ -674,7 +674,10 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
 
   const gfx::Transform& DrawTransform() const;
 
-  std::unique_ptr<ScrollAndScaleSet> ProcessScrollDeltas();
+  // During commit, processes and returns changes in the compositor since the
+  // last commit.
+  std::unique_ptr<CompositorCommitData> ProcessCompositorDeltas();
+
   DroppedFrameCounter* dropped_frame_counter() {
     return &dropped_frame_counter_;
   }
@@ -875,8 +878,8 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
       compositor_frame_reporting_controller_;
 
  private:
-  void CollectScrollDeltas(ScrollAndScaleSet* scroll_info);
-  void CollectScrollbarUpdates(ScrollAndScaleSet* scroll_info) const;
+  void CollectScrollbarUpdatesForCommit(
+      CompositorCommitData* commit_data) const;
   bool ScrollAnimationCreateInternal(const ScrollNode& scroll_node,
                                      const gfx::Vector2dF& delta,
                                      base::TimeDelta delayed_by,

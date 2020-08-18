@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
@@ -37,6 +38,10 @@
 #include "testing/gtest/include/gtest/gtest-spi.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(USE_OZONE)
+#include "ui/ozone/public/ozone_switches.h"
+#endif
+
 namespace content {
 
 // Disabled on official builds because symbolization in sandboxes processes
@@ -48,6 +53,34 @@ namespace content {
 // TODO(win): send PDB files for component build. http://crbug.com/521459
 #if !defined(OFFICIAL_BUILD) && !defined(OS_ANDROID) && !defined(OS_MAC) && \
     !(defined(COMPONENT_BUILD) && defined(OS_WIN))
+
+namespace {
+
+const char* kSwitchesToCopy[] = {
+#if defined(USE_OZONE)
+    // Keep the kOzonePlatform switch that the Ozone must use.
+    switches::kOzonePlatform,
+#endif
+    // Some tests use custom cmdline that doesn't hold switches from previous
+    // cmdline. Only a couple of switches are copied. That can result in
+    // incorrect initialization of a process. For example, the work that we do
+    // to have use_x11 && use_ozone, requires UseOzonePlatform feature flag to
+    // be passed to all the process to ensure correct path is chosen.
+    // TODO(https://crbug.com/1096425): update this comment once USE_X11 goes
+    // away.
+    switches::kEnableFeatures,
+    switches::kDisableFeatures,
+};
+
+base::CommandLine CreateCommandLine() {
+  const base::CommandLine& cmdline = *base::CommandLine::ForCurrentProcess();
+  base::CommandLine command_line = base::CommandLine(cmdline.GetProgram());
+  command_line.CopySwitchesFrom(cmdline, kSwitchesToCopy,
+                                base::size(kSwitchesToCopy));
+  return command_line;
+}
+
+}  // namespace
 
 IN_PROC_BROWSER_TEST_F(ContentBrowserTest, MANUAL_ShouldntRun) {
   // Ensures that tests with MANUAL_ prefix don't run automatically.
@@ -80,8 +113,8 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTest, RendererCrashCallStack) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  base::CommandLine new_test =
-      base::CommandLine(base::CommandLine::ForCurrentProcess()->GetProgram());
+
+  base::CommandLine new_test = CreateCommandLine();
   new_test.AppendSwitchASCII(base::kGTestFilterFlag,
                              "ContentBrowserTest.MANUAL_RendererCrash");
   new_test.AppendSwitch(switches::kRunManualTestsFlag);
@@ -127,8 +160,8 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTest, MAYBE_BrowserCrashCallStack) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  base::CommandLine new_test =
-      base::CommandLine(base::CommandLine::ForCurrentProcess()->GetProgram());
+
+  base::CommandLine new_test = CreateCommandLine();
   new_test.AppendSwitchASCII(base::kGTestFilterFlag,
                              "ContentBrowserTest.MANUAL_BrowserCrash");
   new_test.AppendSwitch(switches::kRunManualTestsFlag);
@@ -182,8 +215,7 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTest, MAYBE_RunMockTests) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   base::ScopedTempDir temp_dir;
 
-  base::CommandLine command_line(
-      base::CommandLine::ForCurrentProcess()->GetProgram());
+  base::CommandLine command_line = CreateCommandLine();
   command_line.AppendSwitchASCII("gtest_filter",
                                  "MockContentBrowserTest.DISABLED_*");
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());

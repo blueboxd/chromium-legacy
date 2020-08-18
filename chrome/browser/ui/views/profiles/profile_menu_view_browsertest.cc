@@ -766,7 +766,7 @@ constexpr ProfileMenuViewBase::ActionableItem
         ProfileMenuViewBase::ActionableItem::kPasswordsButton};
 
 // TODO(https://crbug.com/1021930) flakey on Linux and Windows.
-#if defined(OS_LINUX) || defined(OS_WIN)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_WIN)
 #define MAYBE_ProfileMenuClickTest_WithUnconsentedPrimaryAccount \
   DISABLED_ProfileMenuClickTest_WithUnconsentedPrimaryAccount
 #else

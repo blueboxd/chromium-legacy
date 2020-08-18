@@ -214,6 +214,13 @@ class ShelfLayoutManagerTest : public ShelfLayoutManagerTestBase,
     ShelfLayoutManagerTestBase::SetUp();
   }
 
+  void SetUpKioskSession() {
+    SessionInfo info;
+    info.is_running_in_app_mode = true;
+    info.state = session_manager::SessionState::ACTIVE;
+    Shell::Get()->session_controller()->SetSessionInfo(info);
+  }
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 };
@@ -777,6 +784,44 @@ TEST_P(ShelfLayoutManagerTest, StatusAreaMoveWithSwipeOnAutoHiddenShelf) {
 
   EXPECT_EQ(hidden_shelf_in_screen_portion,
             GetWidgetOffsetFromBottom(shelf->status_area_widget()));
+}
+
+// Checks that the shelf keeps hidden during the Kiosk mode.
+TEST_P(ShelfLayoutManagerTest, HiddenShelfInKioskMode_FullScreen) {
+  SetUpKioskSession();
+
+  // Create a window and make it full screen; the shelf should be hidden.
+  aura::Window* window = CreateTestWindow();
+  window->SetBounds(gfx::Rect(0, 0, 100, 100));
+  window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
+  window->SetProperty(kHideShelfWhenFullscreenKey, false);
+  window->Show();
+  wm::ActivateWindow(window);
+  GetAppListTestHelper()->CheckVisibility(false);
+  EXPECT_EQ(SHELF_HIDDEN, GetPrimaryShelf()->GetVisibilityState());
+  EXPECT_EQ(WorkspaceWindowState::kFullscreen, GetWorkspaceWindowState());
+
+  SwipeUpOnShelf();
+  EXPECT_EQ(SHELF_HIDDEN, GetPrimaryShelf()->GetVisibilityState());
+}
+
+// Checks that the shelf keeps hidden during the Kiosk mode. (Some windows might
+// not be fullscreen, e.g., the a11y setting window.)
+TEST_P(ShelfLayoutManagerTest, HiddenShelfInKioskMode_Default) {
+  SetUpKioskSession();
+
+  // Create a default window; the shelf should be hidden.
+  aura::Window* window = CreateTestWindow();
+  window->SetBounds(gfx::Rect(0, 0, 100, 100));
+  window->SetProperty(kHideShelfWhenFullscreenKey, false);
+  window->Show();
+  wm::ActivateWindow(window);
+  GetAppListTestHelper()->CheckVisibility(false);
+  EXPECT_EQ(SHELF_HIDDEN, GetPrimaryShelf()->GetVisibilityState());
+  EXPECT_EQ(WorkspaceWindowState::kDefault, GetWorkspaceWindowState());
+
+  SwipeUpOnShelf();
+  EXPECT_EQ(SHELF_HIDDEN, GetPrimaryShelf()->GetVisibilityState());
 }
 
 TEST_P(ShelfLayoutManagerTest,

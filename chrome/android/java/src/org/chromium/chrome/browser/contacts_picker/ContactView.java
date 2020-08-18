@@ -109,7 +109,7 @@ public class ContactView extends SelectableItemView<ContactDetails> {
 
     @Override
     public boolean onLongClick(View view) {
-        mManager = mCategoryView.getActivity().getModalDialogManager();
+        mManager = mCategoryView.getModalDialogManager();
         ModalDialogProperties.Controller controller = new ModalDialogProperties.Controller() {
             @Override
             public void onClick(PropertyModel model, int buttonType) {

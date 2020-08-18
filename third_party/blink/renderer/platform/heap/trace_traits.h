@@ -164,11 +164,6 @@ struct TraceTrait {
     return {self, nullptr};
   }
 
-  static HeapObjectHeader* GetHeapObjectHeader(const void* self) {
-    return AdjustPointerTrait<T>::GetHeapObjectHeader(
-        static_cast<const T*>(self));
-  }
-
   static void Trace(Visitor*, const void* self);
 };
 

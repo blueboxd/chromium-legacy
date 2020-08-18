@@ -382,13 +382,13 @@ bool CorsURLLoaderFactory::IsValidRequest(const ResourceRequest& request,
       break;
 
     case InitiatorLockCompatibility::kNoLock:
-      // TODO(lukasza): https://crbug.com/1114906: Browser process should always
-      // specify the request_initiator_site_lock in URLLoaderFactories given to
-      // a renderer process.  Once issues blocking https://crbug.com/1114906 are
-      // fixed, the case below should return |false| and call
-      // mojo::ReportBadMessage.
+      // |request_initiator_site_lock| should always be set in a
+      // URLLoaderFactory vended to a renderer process.  See also
+      // https://crbug.com/1114906.
       NOTREACHED();
-      break;
+      mojo::ReportBadMessage(
+          "CorsURLLoaderFactory: no initiator lock in a renderer request");
+      return false;
 
     case InitiatorLockCompatibility::kNoInitiator:
       // Requests from the renderer need to always specify an initiator.

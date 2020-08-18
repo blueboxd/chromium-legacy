@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "chrome/browser/ui/webui/signin/signin_web_dialog_ui.h"
+#include "content/public/browser/web_ui_controller.h"
 
 class Browser;
 class SigninReauthViewController;
@@ -16,7 +17,7 @@ class SigninReauthViewController;
 namespace content {
 class WebUI;
 class WebUIDataSource;
-}
+}  // namespace content
 
 // WebUI controller for the signin reauth dialog.
 //
@@ -60,6 +61,8 @@ class SigninReauthUI : public SigninWebDialogUI {
 
   // For consent auditing.
   std::vector<std::pair<std::string, int>> js_localized_string_to_ids_;
+
+  WEB_UI_CONTROLLER_TYPE_DECL();
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_SIGNIN_SIGNIN_REAUTH_UI_H_

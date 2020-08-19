@@ -231,18 +231,29 @@ void Navigator::DidNavigate(
   DCHECK(navigation_request);
   FrameTreeNode* frame_tree_node = render_frame_host->frame_tree_node();
   FrameTree* frame_tree = frame_tree_node->frame_tree();
+  RenderFrameHostImpl* old_frame_host =
+      frame_tree_node->render_manager()->current_frame_host();
 
   bool is_same_document_navigation = controller_->IsURLSameDocumentNavigation(
       params.url, params.origin, was_within_same_document, render_frame_host);
 
   // If a frame claims the navigation was same-document, it must be the current
   // frame, not a pending one.
-  if (is_same_document_navigation &&
-      render_frame_host !=
-          frame_tree_node->render_manager()->current_frame_host()) {
+  if (is_same_document_navigation && render_frame_host != old_frame_host) {
     bad_message::ReceivedBadMessage(render_frame_host->GetProcess(),
                                     bad_message::NI_IN_PAGE_NAVIGATION);
     is_same_document_navigation = false;
+  }
+
+  if (auto& old_page_info = navigation_request->commit_params().old_page_info) {
+    // This is a same-site main-frame navigation where we did a proactive
+    // BrowsingInstance swap but we're reusing the old page's process, and we
+    // have dispatched the pagehide and visibilitychange handlers of the old
+    // page when we committed the new page.
+    auto* page_lifecycle_state_manager =
+        old_frame_host->render_view_host()->GetPageLifecycleStateManager();
+    page_lifecycle_state_manager->DidSetPagehideDispatchDuringNewPageCommit(
+        std::move(old_page_info->new_lifecycle_state_for_old_page));
   }
 
   if (ui::PageTransitionIsMainFrame(params.transition)) {

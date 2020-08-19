@@ -127,7 +127,7 @@ UseCounterPageLoadMetricsObserver::GetAllowedUkmFeatures() {
           WebFeature::kLazyLoadImageLoadingAttributeEager,
           WebFeature::kRequestedFileSystemTemporary,
           WebFeature::kRequestedFileSystemPersistent,
-          WebFeature::kSMSReceiverStart,
+          WebFeature::kWebOTP,
           WebFeature::kSrcsetWDescriptor,
           WebFeature::kSrcsetXDescriptor,
           WebFeature::kRequestFileSystem,

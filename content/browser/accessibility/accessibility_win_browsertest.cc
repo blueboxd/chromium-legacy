@@ -145,7 +145,7 @@ base::string16 AccessibilityWinBrowserTest::PrintAXTree() const {
   DCHECK(formatter);
   formatter->set_show_ids(true);
   formatter->SetPropertyFilters({AccessibilityTreeFormatter::PropertyFilter(
-      L"*", AccessibilityTreeFormatter::PropertyFilter::ALLOW)});
+      "*", AccessibilityTreeFormatter::PropertyFilter::ALLOW)});
 
   base::string16 str;
   formatter->FormatAccessibilityTreeForTesting(

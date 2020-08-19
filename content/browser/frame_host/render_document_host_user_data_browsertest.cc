@@ -18,6 +18,7 @@
 #include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
+#include "content/public/test/back_forward_cache_util.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -550,6 +551,14 @@ IN_PROC_BROWSER_TEST_F(RenderDocumentHostUserDataTest,
   RenderFrameHostImpl* rfh_a = top_frame_host();
   RenderFrameHostImpl* rfh_b = rfh_a->child_at(0)->current_frame_host();
 
+  // Test needs these RenderFrameHosts to be pending deletion after navigating
+  // but it doesn't happen with BackForwardCache as it is stored in cache.
+  // BFCache case is covered explicitly by
+  // "RenderDocumentHostUserDataWithBackForwardCacheTest.BackForwardCacheNavigation"
+  // test.
+  DisableBackForwardCacheForTesting(shell()->web_contents(),
+                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+
   // 2) Leave both rfh_a and rfh_b in pending deletion state.
   LeaveInPendingDeletionState(rfh_a);
   LeaveInPendingDeletionState(rfh_b);
@@ -702,6 +711,9 @@ IN_PROC_BROWSER_TEST_F(RenderDocumentHostUserDataTest, CrossSiteNavigation) {
   Data::CreateForCurrentDocument(rfh_a);
   base::WeakPtr<Data> data = Data::GetForCurrentDocument(rfh_a)->GetWeakPtr();
   EXPECT_TRUE(data);
+
+  DisableBackForwardCacheForTesting(shell()->web_contents(),
+                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
 
   // 3) Navigate to B.
   EXPECT_TRUE(NavigateToURL(shell(), url_b));

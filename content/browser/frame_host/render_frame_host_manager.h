@@ -505,6 +505,10 @@ class CONTENT_EXPORT RenderFrameHostManager
   scoped_refptr<SiteInstance> GetSiteInstanceForNavigationRequest(
       NavigationRequest* navigation_request);
 
+  // Returns true if |candidate| is currently on the same web site as dest_url.
+  bool IsCurrentlySameSite(RenderFrameHostImpl* candidate,
+                           const GURL& dest_url);
+
   // Helper to initialize the main RenderFrame if it's not initialized.
   // TODO(https://crbug.com/936696): Remove this. For now debug URLs and
   // WebView JS execution are an exception to replacing all crashed frames for
@@ -707,10 +711,6 @@ class CONTENT_EXPORT RenderFrameHostManager
   scoped_refptr<SiteInstance> ConvertToSiteInstance(
       const SiteInstanceDescriptor& descriptor,
       SiteInstanceImpl* candidate_instance);
-
-  // Returns true if |candidate| is currently on the same web site as dest_url.
-  bool IsCurrentlySameSite(RenderFrameHostImpl* candidate,
-                           const GURL& dest_url);
 
   // Ensure that we have created all needed proxies for a new RFH with
   // SiteInstance |new_instance|: (1) create swapped-out RVHs and proxies for

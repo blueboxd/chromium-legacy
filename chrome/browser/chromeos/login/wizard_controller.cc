@@ -654,9 +654,6 @@ void WizardController::ShowLoginScreen() {
   if (login_screen_started_)
     return;
 
-  // Landed on the login screen. No longer skipping enrollment for tests.
-  wizard_context_->skip_to_login_for_tests = false;
-
   if (!time_eula_accepted_.is_null()) {
     base::TimeDelta delta = base::TimeTicks::Now() - time_eula_accepted_;
     UMA_HISTOGRAM_MEDIUM_TIMES("OOBE.EULAToSignInTime", delta);
@@ -834,13 +831,11 @@ void WizardController::OnUserCreationScreenExit(
       AdvanceToScreen(GaiaView::kScreenId);
       break;
     case UserCreationScreen::Result::CHILD_SIGNIN:
-      // TODO(crbug.com/1101318): entry point for child sign in screen
-      GaiaScreen::Get(screen_manager())->LoadOnline(EmptyAccountId());
+      GaiaScreen::Get(screen_manager())->LoadOnlineForChildSignin();
       AdvanceToScreen(GaiaView::kScreenId);
       break;
     case UserCreationScreen::Result::CHILD_ACCOUNT_CREATE:
-      // TODO(crbug.com/1101318): entry point for account creation screen
-      GaiaScreen::Get(screen_manager())->LoadOnline(EmptyAccountId());
+      GaiaScreen::Get(screen_manager())->LoadOnlineForChildSignup();
       AdvanceToScreen(GaiaView::kScreenId);
       break;
     case UserCreationScreen::Result::ENTERPRISE_ENROLL:
@@ -1538,10 +1533,10 @@ void WizardController::PerformOOBECompletedActions() {
 void WizardController::SetCurrentScreen(BaseScreen* new_current) {
   VLOG(1) << "SetCurrentScreen: "
           << (new_current ? new_current->screen_id().name : "null");
-  if (current_screen_ == new_current || GetOobeUI() == nullptr)
+  if (new_current && new_current->MaybeSkip(wizard_context_.get()))
     return;
 
-  if (new_current && new_current->MaybeSkip(wizard_context_.get()))
+  if (current_screen_ == new_current || GetOobeUI() == nullptr)
     return;
 
   if (current_screen_) {

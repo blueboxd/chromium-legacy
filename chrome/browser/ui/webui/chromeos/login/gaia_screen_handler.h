@@ -48,6 +48,12 @@ class GaiaScreen;
 
 class GaiaView {
  public:
+  enum class GaiaPath {
+    kDefault,
+    kChildSignup,
+    kChildSignin,
+  };
+
   constexpr static StaticOobeScreenId kScreenId{"gaia-signin"};
 
   GaiaView() = default;
@@ -74,6 +80,8 @@ class GaiaView {
   virtual void Bind(GaiaScreen* screen) = 0;
   // Unbinds the screen from the view.
   virtual void Unbind() = 0;
+  // Sets Gaia path for sign-in, child sign-in or child sign-up.
+  virtual void SetGaiaPath(GaiaPath gaia_path) = 0;
 
   // Show sign-in screen for the given credentials. |services| is a list of
   // services returned by userInfo call as JSON array. Should be an empty array
@@ -132,6 +140,7 @@ class GaiaScreenHandler : public BaseScreenHandler,
   void Hide() override;
   void Bind(GaiaScreen* screen) override;
   void Unbind() override;
+  void SetGaiaPath(GaiaPath gaia_path) override;
   void ShowSigninScreenForTest(const std::string& username,
                                const std::string& password,
                                const std::string& services) override;
@@ -454,6 +463,8 @@ class GaiaScreenHandler : public BaseScreenHandler,
   // Whether the PIN dialog shown during the current authentication attempt was
   // canceled by the user.
   bool was_security_token_pin_canceled_ = false;
+
+  GaiaPath gaia_path_ = GaiaPath::kDefault;
 
   bool hidden_ = true;
 

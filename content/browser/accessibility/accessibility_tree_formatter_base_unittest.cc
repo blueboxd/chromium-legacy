@@ -32,8 +32,7 @@ class AccessibilityTreeFormatterBaseTest : public testing::Test {
 
 PropertyNode Parse(const char* input) {
   AccessibilityTreeFormatter::PropertyFilter filter(
-      base::UTF8ToUTF16(input),
-      AccessibilityTreeFormatter::PropertyFilter::ALLOW);
+      input, AccessibilityTreeFormatter::PropertyFilter::ALLOW);
   return PropertyNode::FromPropertyFilter(filter);
 }
 

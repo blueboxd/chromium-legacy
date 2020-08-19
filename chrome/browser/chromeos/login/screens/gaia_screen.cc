@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/screens/gaia_screen.h"
 
 #include "chrome/browser/chromeos/login/screen_manager.h"
+#include "chrome/browser/chromeos/login/wizard_context.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "components/account_id/account_id.h"
 
@@ -47,7 +48,18 @@ void GaiaScreen::MaybePreloadAuthExtension() {
 }
 
 void GaiaScreen::LoadOnline(const AccountId& account) {
+  view_->SetGaiaPath(GaiaView::GaiaPath::kDefault);
   view_->LoadGaiaAsync(account);
+}
+
+void GaiaScreen::LoadOnlineForChildSignup() {
+  view_->SetGaiaPath(GaiaView::GaiaPath::kChildSignup);
+  view_->LoadGaiaAsync(EmptyAccountId());
+}
+
+void GaiaScreen::LoadOnlineForChildSignin() {
+  view_->SetGaiaPath(GaiaView::GaiaPath::kChildSignin);
+  view_->LoadGaiaAsync(EmptyAccountId());
 }
 
 void GaiaScreen::LoadOffline(const AccountId& account) {
@@ -55,10 +67,13 @@ void GaiaScreen::LoadOffline(const AccountId& account) {
 }
 
 void GaiaScreen::ShowImpl() {
+  // Landed on the login screen. No longer skipping enrollment for tests.
+  context()->skip_to_login_for_tests = false;
   view_->Show();
 }
 
 void GaiaScreen::HideImpl() {
+  view_->SetGaiaPath(GaiaView::GaiaPath::kDefault);
   view_->LoadGaiaAsync(EmptyAccountId());
   view_->Hide();
 }

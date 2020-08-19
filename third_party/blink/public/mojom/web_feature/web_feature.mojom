@@ -2212,7 +2212,7 @@ enum WebFeature {
   kVerticalScrollbarThumbScrollingWithTouch = 2877,
   kHorizontalScrollbarThumbScrollingWithMouse = 2878,
   kHorizontalScrollbarThumbScrollingWithTouch = 2879,
-  kSMSReceiverStart = 2880,
+  kWebOTP = 2880,
   kV8Animation_Pending_AttributeGetter = 2881,
   kFocusWithoutUserActivationNotSandboxedNotAdFrame = 2882,
   kFocusWithoutUserActivationNotSandboxedAdFrame = 2883,

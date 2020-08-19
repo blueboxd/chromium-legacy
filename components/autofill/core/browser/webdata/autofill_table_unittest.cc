@@ -1397,7 +1397,14 @@ TEST_F(AutofillTableTest, AutofillProfile_StructuredNames) {
   EXPECT_FALSE(db_profile);
 }
 
+// TODO(crbug.com/1103421): Clean legacy implementation once structured names
+// are fully launched.
 TEST_F(AutofillTableTest, AutofillProfile) {
+  // Disable the structured names since this test is only applicable if
+  // structured names are not used.
+  scoped_feature_list_.InitAndDisableFeature(
+      features::kAutofillEnableSupportForMoreStructureInNames);
+
   // Add a 'Home' profile with non-default data. The specific values are not
   // important.
   AutofillProfile home_profile;
@@ -1652,6 +1659,7 @@ TEST_F(AutofillTableTest, UpdateAutofillProfile) {
   profile.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("US"));
   profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16("18181234567"));
   profile.set_language_code("en");
+  profile.FinalizeAfterImport();
   table_->AddAutofillProfile(profile);
 
   // Set a mocked value for the profile's creation time.
@@ -1802,6 +1810,7 @@ TEST_F(AutofillTableTest, UpdateProfileOriginOnly) {
   profile.SetRawInfo(ADDRESS_HOME_ZIP, ASCIIToUTF16("90025"));
   profile.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("US"));
   profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, ASCIIToUTF16("18181234567"));
+  profile.FinalizeAfterImport();
   table_->AddAutofillProfile(profile);
 
   // Set a mocked value for the profile's creation time.

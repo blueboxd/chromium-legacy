@@ -242,10 +242,12 @@ MoveToAccountStoreBubbleView::MoveToAccountStoreBubbleView(
       /*from_view=*/std::move(computer_view),
       /*to_view=*/std::move(avatar_view)));
 
-  SetButtonLabel(ui::DIALOG_BUTTON_OK,
-                 l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_MOVE_BUTTON));
+  SetButtonLabel(
+      ui::DIALOG_BUTTON_OK,
+      l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_MOVE_BUBBLE_OK_BUTTON));
   SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
-                 l10n_util::GetStringUTF16(IDS_DECLINE_RECOVERY));
+                 l10n_util::GetStringUTF16(
+                     IDS_PASSWORD_MANAGER_MOVE_BUBBLE_CANCEL_BUTTON));
   SetAcceptCallback(
       base::BindOnce(&MoveToAccountStoreBubbleController::AcceptMove,
                      base::Unretained(&controller_)));

@@ -34,9 +34,9 @@ MAC_BINARIES_TAG = {
     # This contains binaries from Xcode 11.2.1, along with the 10.15 SDKs (aka
     # 11B53).
     'default': 'wXywrnOhzFxwLYlwO62UzRxVCjnu6DoSI2D2jrCd00gC',
-    # This contains binaries from Xcode 12 beta 4, along with the
-    # 11 SDK (aka 12A8179i).
-    'xcode_12_beta': 'cDHYuQ9HUo7nJd1w8GfZfifcjGt2ZWVNykJn399Xz6YC',
+    # This contains binaries from Xcode 12 beta 5, along with the
+    # 11 SDK (aka 12A8189h).
+    'xcode_12_beta': 'MzSaRpqZju2_boJy04DQnw5xpGgiQdPU53iHdst_dHQC',
 }
 
 # The toolchain will not be downloaded if the minimum OS version is not met.

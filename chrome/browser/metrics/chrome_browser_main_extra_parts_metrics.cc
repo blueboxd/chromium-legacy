@@ -120,37 +120,6 @@ enum UMALinuxGlibcVersion {
   // To log newer versions, just update tools/metrics/histograms/histograms.xml.
 };
 
-enum UMALinuxWindowManager {
-  UMA_LINUX_WINDOW_MANAGER_OTHER,
-  UMA_LINUX_WINDOW_MANAGER_BLACKBOX,
-  UMA_LINUX_WINDOW_MANAGER_CHROME_OS,  // Deprecated.
-  UMA_LINUX_WINDOW_MANAGER_COMPIZ,
-  UMA_LINUX_WINDOW_MANAGER_ENLIGHTENMENT,
-  UMA_LINUX_WINDOW_MANAGER_ICE_WM,
-  UMA_LINUX_WINDOW_MANAGER_KWIN,
-  UMA_LINUX_WINDOW_MANAGER_METACITY,
-  UMA_LINUX_WINDOW_MANAGER_MUFFIN,
-  UMA_LINUX_WINDOW_MANAGER_MUTTER,
-  UMA_LINUX_WINDOW_MANAGER_OPENBOX,
-  UMA_LINUX_WINDOW_MANAGER_XFWM4,
-  UMA_LINUX_WINDOW_MANAGER_AWESOME,
-  UMA_LINUX_WINDOW_MANAGER_I3,
-  UMA_LINUX_WINDOW_MANAGER_ION3,
-  UMA_LINUX_WINDOW_MANAGER_MATCHBOX,
-  UMA_LINUX_WINDOW_MANAGER_NOTION,
-  UMA_LINUX_WINDOW_MANAGER_QTILE,
-  UMA_LINUX_WINDOW_MANAGER_RATPOISON,
-  UMA_LINUX_WINDOW_MANAGER_STUMPWM,
-  UMA_LINUX_WINDOW_MANAGER_WMII,
-  UMA_LINUX_WINDOW_MANAGER_FLUXBOX,
-  UMA_LINUX_WINDOW_MANAGER_XMONAD,
-  UMA_LINUX_WINDOW_MANAGER_UNNAMED,
-  // NOTE: Append new window managers to the list above this line (i.e. don't
-  // renumber) and update LinuxWindowManagerName in
-  // tools/metrics/histograms/histograms.xml accordingly.
-  UMA_LINUX_WINDOW_MANAGER_COUNT
-};
-
 enum UMATouchEventFeatureDetectionState {
   UMA_TOUCH_EVENT_FEATURE_DETECTION_ENABLED,
   UMA_TOUCH_EVENT_FEATURE_DETECTION_AUTO_ENABLED,
@@ -318,61 +287,6 @@ void RecordLinuxGlibcVersion() {
   base::UmaHistogramSparse("Linux.GlibcVersion", glibc_version_result);
 #endif
 }
-
-#if defined(USE_X11)
-UMALinuxWindowManager GetLinuxWindowManager() {
-  switch (ui::GuessWindowManager()) {
-    case ui::WM_OTHER:
-      return UMA_LINUX_WINDOW_MANAGER_OTHER;
-    case ui::WM_UNNAMED:
-      return UMA_LINUX_WINDOW_MANAGER_UNNAMED;
-    case ui::WM_AWESOME:
-      return UMA_LINUX_WINDOW_MANAGER_AWESOME;
-    case ui::WM_BLACKBOX:
-      return UMA_LINUX_WINDOW_MANAGER_BLACKBOX;
-    case ui::WM_COMPIZ:
-      return UMA_LINUX_WINDOW_MANAGER_COMPIZ;
-    case ui::WM_ENLIGHTENMENT:
-      return UMA_LINUX_WINDOW_MANAGER_ENLIGHTENMENT;
-    case ui::WM_FLUXBOX:
-      return UMA_LINUX_WINDOW_MANAGER_FLUXBOX;
-    case ui::WM_I3:
-      return UMA_LINUX_WINDOW_MANAGER_I3;
-    case ui::WM_ICE_WM:
-      return UMA_LINUX_WINDOW_MANAGER_ICE_WM;
-    case ui::WM_ION3:
-      return UMA_LINUX_WINDOW_MANAGER_ION3;
-    case ui::WM_KWIN:
-      return UMA_LINUX_WINDOW_MANAGER_KWIN;
-    case ui::WM_MATCHBOX:
-      return UMA_LINUX_WINDOW_MANAGER_MATCHBOX;
-    case ui::WM_METACITY:
-      return UMA_LINUX_WINDOW_MANAGER_METACITY;
-    case ui::WM_MUFFIN:
-      return UMA_LINUX_WINDOW_MANAGER_MUFFIN;
-    case ui::WM_MUTTER:
-      return UMA_LINUX_WINDOW_MANAGER_MUTTER;
-    case ui::WM_NOTION:
-      return UMA_LINUX_WINDOW_MANAGER_NOTION;
-    case ui::WM_OPENBOX:
-      return UMA_LINUX_WINDOW_MANAGER_OPENBOX;
-    case ui::WM_QTILE:
-      return UMA_LINUX_WINDOW_MANAGER_QTILE;
-    case ui::WM_RATPOISON:
-      return UMA_LINUX_WINDOW_MANAGER_RATPOISON;
-    case ui::WM_STUMPWM:
-      return UMA_LINUX_WINDOW_MANAGER_STUMPWM;
-    case ui::WM_WMII:
-      return UMA_LINUX_WINDOW_MANAGER_WMII;
-    case ui::WM_XFWM4:
-      return UMA_LINUX_WINDOW_MANAGER_XFWM4;
-    case ui::WM_XMONAD:
-      return UMA_LINUX_WINDOW_MANAGER_XMONAD;
-  }
-  NOTREACHED();
-  return UMA_LINUX_WINDOW_MANAGER_OTHER;
-}
-#endif
 
 void RecordTouchEventState() {
   const base::CommandLine& command_line =
@@ -585,11 +499,10 @@ void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
   RecordMemoryMetricsAfterDelay();
   RecordLinuxGlibcVersion();
 #if defined(USE_X11)
-  // TODO(https://crbug.com/1097007): capture window manager name on Linux.
   if (!features::IsUsingOzonePlatform()) {
+    // Ozone writes this histogram upon platform initialisation.
     base::UmaHistogramEnumeration("Linux.WindowManager",
-                                  GetLinuxWindowManager(),
-                                  UMA_LINUX_WINDOW_MANAGER_COUNT);
+                                  ui::GetWindowManagerUMA());
   }
 #endif
 

@@ -74,12 +74,12 @@ class CONTENT_EXPORT AccessibilityTreeFormatter
   struct CONTENT_EXPORT PropertyFilter {
     enum Type { ALLOW, ALLOW_EMPTY, DENY };
 
-    base::string16 match_str;
-    base::string16 property_str;
-    base::string16 filter_str;
+    std::string match_str;
+    std::string property_str;
+    std::string filter_str;
     Type type;
 
-    PropertyFilter(const base::string16& str, Type type);
+    PropertyFilter(const std::string& str, Type type);
     PropertyFilter(const PropertyFilter&);
   };
 
@@ -120,7 +120,7 @@ class CONTENT_EXPORT AccessibilityTreeFormatter
 
   static bool MatchesPropertyFilters(
       const std::vector<PropertyFilter>& property_filters,
-      const base::string16& text,
+      const std::string& text,
       bool default_result);
 
   // Check if the given dictionary matches any of the supplied NodeFilter(s).

@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "ash/hud_display/hud_constants.h"
 #include "base/containers/ring_buffer.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/point.h"
@@ -21,11 +22,10 @@ namespace hud_display {
 
 class Graph {
  public:
-  // Graph screen size (that is passed in Layout()) should match (ring buffer
+  // Graph screen size (that is used in Layout()) should match (ring buffer
   // size - 1) to prevent scaling, because RingBuffer always keeps one element
   // unused.
-  static constexpr size_t kDefaultWidth = 190;
-  using Data = base::RingBuffer<float, kDefaultWidth + 1>;
+  using Data = base::RingBuffer<float, kDefaultGraphWidth + 1>;
 
   enum class Baseline {
     BASELINE_BOTTOM,  // Positive values will be drawn from the bottom border

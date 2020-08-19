@@ -86,11 +86,6 @@ void PrintMockRenderThread::OnScriptedPrint(
   }
 }
 
-void PrintMockRenderThread::OnDidGetPrintedPagesCount(int cookie,
-                                                      int number_pages) {
-  printer_->SetPrintedPagesCount(cookie, number_pages);
-}
-
 void PrintMockRenderThread::OnDidPrintDocument(
     const printing::mojom::DidPrintDocumentParams& params,
     IPC::Message* reply_msg) {

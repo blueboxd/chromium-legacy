@@ -19,10 +19,27 @@
 # ****************************************************************************
 
 #
+# Untriaged
+#
+
+wpt_internal/webgpu/cts.html?q=webgpu:api,operation,buffers,map_oom:mappedAtCreation,smaller_getMappedRange:* [ Failure ]
+wpt_internal/webgpu/cts.html?q=webgpu:api,operation,render_pass,storeOp:* [ Failure ]
+wpt_internal/webgpu/cts.html?q=webgpu:api,validation,createBindGroupLayout:bindingTypeSpecific_optional_members,* [ Failure ]
+wpt_internal/webgpu/cts.html?q=webgpu:api,validation,createBindGroupLayout:visibility,* [ Failure ]
+wpt_internal/webgpu/cts.html?q=webgpu:api,validation,render_pass,storeOp:* [ Failure ]
+wpt_internal/webgpu/cts.html?q=webgpu:api,validation,resource_usages,textureUsageInRender:* [ Failure ]
+
+# Timeouts
+wpt_internal/webgpu/cts.html?q=webgpu:api,validation,copy_between_linear_data_and_texture,copyBetweenLinearDataAndTexture_dataRelated:* [ Skip ]
+wpt_internal/webgpu/cts.html?q=webgpu:api,validation,copy_between_linear_data_and_texture,copyBetweenLinearDataAndTexture_textureRelated:* [ Skip ]
+wpt_internal/webgpu/cts.html?q=webgpu:shader,execution,robust_access_vertex:* [ Skip ]
+wpt_internal/webgpu/cts.html?q=webgpu:web-platform,copyImageBitmapToTexture:from_ImageData:* [ Skip ]
+
+#
 # Test bugs
 #
 
-# These tests aren't working on CQ, unclear whether the test or harness is broken.
+# These tests aren't working on CQ, unclear whether the test or harness (or Chrome) is broken.
 # Mac: mostly works
 # Linux: actual is white/blank
 crbug.com/1083478 [ Linux ] wpt_internal/webgpu/webgpu/web-platform/reftests/canvas_clear.html [ Failure ]
@@ -30,9 +47,6 @@ crbug.com/1083478 [ Linux ] wpt_internal/webgpu/webgpu/web-platform/reftests/can
 # Win: actual is black
 crbug.com/1083478 [ Win ] wpt_internal/webgpu/webgpu/web-platform/reftests/canvas_clear.html [ Failure ]
 crbug.com/1083478 [ Win ] wpt_internal/webgpu/webgpu/web-platform/reftests/canvas_complex_bgra8unorm.html [ Failure ]
-
-# Tests have already been updated upstream
-wpt_internal/webgpu/cts.html?q=webgpu:idl,constants,flags:* [ Failure ]
 
 #
 # Platform-independent failures
@@ -55,12 +69,11 @@ wpt_internal/webgpu/cts.html?q=webgpu:api,operation,resource_init,depth_stencil_
 crbug.com/dawn/375 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,createBindGroup:buffer_offset_and_size_for_bind_groups_match:offset=0;size=0 [ Failure ]
 crbug.com/dawn/375 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,createBindGroup:buffer_offset_and_size_for_bind_groups_match:offset=256;size=0 [ Failure ]
 crbug.com/dawn/375 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,createBindGroup:buffer_offset_and_size_for_bind_groups_match:offset=1024;size=0 [ Failure ]
-crbug.com/dawn/375 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,createBindGroup:buffer_offset_and_size_for_bind_groups_match:offset=1024;size=undefined [ Failure ]
+crbug.com/dawn/375 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,createBindGroup:buffer_offset_and_size_for_bind_groups_match:offset=1024;size="_undef_" [ Failure ]
 
 # Test doesn't check for an OOM error. gpuweb/cts#199 crbug.com/1014740 crbug.com/1014740
 # Actually passes on Windows NVIDIA which may be a Dawn bug.
-wpt_internal/webgpu/cts.html?q=webgpu:api,operation,buffers,map_oom:mapReadAsync: [ Failure Crash ]
-wpt_internal/webgpu/cts.html?q=webgpu:api,operation,buffers,map_oom:mapWriteAsync: [ Failure Crash ]
+wpt_internal/webgpu/cts.html?q=webgpu:api,operation,buffers,map_oom:mapAsync:* [ Failure Crash ]
 
 # Timeout on Windows/NVIDIA with backend validation
 # Dawn doesn't implement these limits yet
@@ -71,9 +84,10 @@ wpt_internal/webgpu/cts.html?q=webgpu:api,validation,createBindGroupLayout:max_r
 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,createBindGroupLayout:number_of_dynamic_buffers_exceeds_the_maximum_value,* [ Failure ]
 wpt_internal/webgpu/cts.html?q=webgpu:api,validation,createPipelineLayout:number_of_dynamic_buffers_exceeds_the_maximum_value:* [ Failure ]
 
-crbug.com/1069953 wpt_internal/webgpu/cts.html?q=webgpu:web-platform,copyImageBitmapToTexture:from_ImageData:* [ Failure ]
-
 wpt_internal/webgpu/cts.html?q=webgpu:shader,execution,robust_access:* [ Skip ]
+
+# Failure in both D3D12 and Vulkan validation layers
+wpt_internal/webgpu/cts.html?q=webgpu:api,validation,encoding,cmds,index_access:* [ Skip ]
 
 #
 # Mac (Metal) specific

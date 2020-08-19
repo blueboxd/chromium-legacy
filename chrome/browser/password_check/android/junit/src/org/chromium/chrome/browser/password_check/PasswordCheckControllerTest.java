@@ -193,6 +193,7 @@ public class PasswordCheckControllerTest {
     public void testCreatesEntryForExistingCredentials() {
         when(mPasswordCheck.getCompromisedCredentials())
                 .thenReturn(new CompromisedCredential[] {ANA});
+        when(mPasswordCheck.areScriptsRefreshed()).thenReturn(true);
         when(mChangePasswordDelegate.canManuallyChangeCredential(eq(ANA))).thenReturn(true);
 
         mMediator.onPasswordCheckStatusChanged(IDLE);
@@ -208,6 +209,7 @@ public class PasswordCheckControllerTest {
     public void testHidesChangeButtonIfManualChangeIsNotPossible() {
         when(mPasswordCheck.getCompromisedCredentials())
                 .thenReturn(new CompromisedCredential[] {BOB});
+        when(mPasswordCheck.areScriptsRefreshed()).thenReturn(true);
         when(mChangePasswordDelegate.canManuallyChangeCredential(eq(BOB))).thenReturn(false);
 
         mMediator.onPasswordCheckStatusChanged(IDLE);
@@ -223,6 +225,7 @@ public class PasswordCheckControllerTest {
     public void testAppendsEntryForNewlyFoundCredentials() {
         when(mPasswordCheck.getCompromisedCredentials())
                 .thenReturn(new CompromisedCredential[] {ANA});
+        when(mPasswordCheck.areScriptsRefreshed()).thenReturn(true);
         when(mChangePasswordDelegate.canManuallyChangeCredential(eq(BOB))).thenReturn(true);
         mMediator.onPasswordCheckStatusChanged(IDLE);
         mMediator.onCompromisedCredentialsFetchCompleted();
@@ -243,6 +246,7 @@ public class PasswordCheckControllerTest {
         // First call adds only ANA.
         when(mPasswordCheck.getCompromisedCredentials())
                 .thenReturn(new CompromisedCredential[] {ANA});
+        when(mPasswordCheck.areScriptsRefreshed()).thenReturn(true);
         mMediator.onCompromisedCredentialsFetchCompleted();
         assertThat(mModel.get(ITEMS).size(), is(2)); // Header + existing credentials.
 

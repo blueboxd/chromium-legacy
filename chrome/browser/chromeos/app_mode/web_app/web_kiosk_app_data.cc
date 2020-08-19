@@ -28,6 +28,7 @@ constexpr int kIconSize = 128;  // size of the icon in px.
 constexpr int kMaxIconFileSize = (2 * kIconSize) * (2 * kIconSize) * 4 + 1000;
 
 const char kKeyLaunchUrl[] = "launch_url";
+const char kKeyLastIconUrl[] = "last_icon_url";
 
 // Resizes image into other size on blocking I/O thread.
 SkBitmap ResizeImageBlocking(const SkBitmap& image, int target_size) {
@@ -169,6 +170,11 @@ bool WebKioskAppData::LoadFromCache() {
                           /* lazy_icon_load= */ true))
     return false;
 
+  // If the icon was previously downloaded using a different url, do not use
+  // that icon.
+  if (GetLastIconUrl(*dict) != icon_url_)
+    return false;
+
   if (LoadLaunchUrlFromDictionary(*dict)) {
     SetStatus(STATUS_INSTALLED);
     return true;
@@ -184,7 +190,7 @@ void WebKioskAppData::LoadIcon() {
   if (!icon_.isNull())
     return;
 
-  // We already had some icon cached, it is time to decode it.
+  // Decode the icon if one is already cached.
   if (status_ != STATUS_INIT) {
     DecodeIcon();
     return;
@@ -252,6 +258,17 @@ bool WebKioskAppData::LoadLaunchUrlFromDictionary(const base::Value& dict) {
   return true;
 }
 
+GURL WebKioskAppData::GetLastIconUrl(const base::Value& dict) const {
+  // All the previous keys should be present since this function is executed
+  // after LoadFromDictionary().
+  const std::string* icon_url_string =
+      dict.FindDictKey(KioskAppDataBase::kKeyApps)
+          ->FindDictKey(app_id())
+          ->FindStringKey(kKeyLastIconUrl);
+
+  return icon_url_string ? GURL(*icon_url_string) : GURL();
+}
+
 void WebKioskAppData::OnDidDownloadIcon(const SkBitmap& icon) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -269,6 +286,10 @@ void WebKioskAppData::OnDidDownloadIcon(const SkBitmap& icon) {
   PrefService* local_state = g_browser_process->local_state();
   DictionaryPrefUpdate dict_update(local_state, dictionary_name());
   SaveIconToDictionary(dict_update);
+
+  dict_update->FindDictKey(KioskAppDataBase::kKeyApps)
+      ->FindDictKey(app_id())
+      ->SetStringKey(kKeyLastIconUrl, launch_url_.spec());
 
   SetStatus(STATUS_LOADED);
 }

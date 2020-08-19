@@ -38,7 +38,7 @@ class WindowedPersonalDataManagerObserver : public PersonalDataManagerObserver {
  public:
   explicit WindowedPersonalDataManagerObserver(Profile* profile)
       : profile_(profile),
-        message_loop_runner_(new content::MessageLoopRunner){
+        message_loop_runner_(new content::MessageLoopRunner) {
     PersonalDataManagerFactory::GetForProfile(profile_)->AddObserver(this);
   }
   ~WindowedPersonalDataManagerObserver() override {}
@@ -125,7 +125,7 @@ class WindowedNetworkObserver {
 
 }  // namespace
 
-class AutofillServerTest : public InProcessBrowserTest  {
+class AutofillServerTest : public InProcessBrowserTest {
  public:
   void SetUp() override {
     // Enable data-url support.
@@ -145,8 +145,8 @@ class AutofillServerTest : public InProcessBrowserTest  {
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     // Enable finch experiment for sending field metadata.
-    command_line->AppendSwitchASCII(
-        ::switches::kForceFieldTrials, "AutofillFieldMetadata/Enabled/");
+    command_line->AppendSwitchASCII(::switches::kForceFieldTrials,
+                                    "AutofillFieldMetadata/Enabled/");
   }
 
  private:
@@ -195,8 +195,8 @@ IN_PROC_BROWSER_TEST_F(AutofillServerTest,
 
   WindowedNetworkObserver query_network_observer(expected_query_string);
 
-  ui_test_utils::NavigateToURL(
-      browser(), GURL(std::string(kDataURIPrefix) + kFormHtml));
+  ui_test_utils::NavigateToURL(browser(),
+                               GURL(std::string(kDataURIPrefix) + kFormHtml));
   query_network_observer.Wait();
 
   // Submit the form, using a simulated mouse click because form submissions not
@@ -208,7 +208,15 @@ IN_PROC_BROWSER_TEST_F(AutofillServerTest,
   upload->set_client_version("6.1.1715.1442/en (GGLL)");
   upload->set_form_signature(15916856893790176210U);
   upload->set_autofill_used(false);
-  upload->set_data_present("1f7e0003780000080004");
+  // TODO(crbug.com/1103421): Clean legacy implementation once structured names
+  // are fully launched.
+  // For structured names, there is additional data present.
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillEnableSupportForMoreStructureInNames)) {
+    upload->set_data_present("1f7e000378000008000400000004");
+  } else {
+    upload->set_data_present("1f7e0003780000080004");
+  }
   upload->set_action_signature(15724779818122431245U);
   upload->set_form_name("test_form");
   upload->set_passwords_revealed(false);
@@ -238,8 +246,7 @@ IN_PROC_BROWSER_TEST_F(AutofillServerTest,
 
 // Verify that a site with password fields will query even in the presence
 // of user defined autocomplete types.
-IN_PROC_BROWSER_TEST_F(AutofillServerTest,
-                       AlwaysQueryForPasswordFields) {
+IN_PROC_BROWSER_TEST_F(AutofillServerTest, AlwaysQueryForPasswordFields) {
   // Load the test page. Expect a query request upon loading the page.
   const char kDataURIPrefix[] = "data:text/html;charset=utf-8,";
   const char kFormHtml[] =
@@ -264,8 +271,8 @@ IN_PROC_BROWSER_TEST_F(AutofillServerTest,
   ASSERT_TRUE(query.SerializeToString(&expected_query_string));
 
   WindowedNetworkObserver query_network_observer(expected_query_string);
-  ui_test_utils::NavigateToURL(
-      browser(), GURL(std::string(kDataURIPrefix) + kFormHtml));
+  ui_test_utils::NavigateToURL(browser(),
+                               GURL(std::string(kDataURIPrefix) + kFormHtml));
   query_network_observer.Wait();
 }
 

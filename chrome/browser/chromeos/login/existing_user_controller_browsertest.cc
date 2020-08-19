@@ -29,6 +29,7 @@
 #include "chrome/browser/chromeos/login/session/user_session_manager_test_api.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
+#include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/mock_login_display.h"
 #include "chrome/browser/chromeos/login/ui/mock_login_display_host.h"
@@ -1080,7 +1081,7 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerAuthFailureTest,
                        CryptohomeMissing) {
   SetUpStubAuthenticatorAndAttemptLogin(AuthFailure::MISSING_CRYPTOHOME);
 
-  OobeScreenWaiter(GaiaView::kScreenId).Wait();
+  OobeScreenWaiter(OobeBaseTest::GetFirstSigninScreen()).Wait();
   const user_manager::User* user =
       user_manager::UserManager::Get()->FindUser(test_user_.account_id);
   ASSERT_TRUE(user);

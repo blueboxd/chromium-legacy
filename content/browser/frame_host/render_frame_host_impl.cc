@@ -5882,6 +5882,29 @@ void RenderFrameHostImpl::JavaScriptDialogClosed(
   }
 }
 
+bool RenderFrameHostImpl::ShouldDispatchPagehideAndVisibilitychangeDuringCommit(
+    RenderFrameHostImpl* old_frame_host,
+    const GURL& dest_url) {
+  // Only return true if this is a same-site navigation and we did a proactive
+  // BrowsingInstance swap but we're reusing the old page's renderer process.
+  DCHECK(old_frame_host);
+  if (old_frame_host->GetSiteInstance()->IsRelatedSiteInstance(
+          GetSiteInstance())) {
+    return false;
+  }
+  if (old_frame_host->GetProcess() != GetProcess()) {
+    return false;
+  }
+  if (!frame_tree_node_->render_manager()->IsCurrentlySameSite(old_frame_host,
+                                                               dest_url)) {
+    return false;
+  }
+  DCHECK(frame_tree_node_->IsMainFrame());
+  DCHECK_NE(old_frame_host, this);
+  DCHECK_NE(old_frame_host->GetSiteInstance(), GetSiteInstance());
+  return true;
+}
+
 void RenderFrameHostImpl::CommitNavigation(
     NavigationRequest* navigation_request,
     mojom::CommonNavigationParamsPtr common_params,
@@ -6329,7 +6352,7 @@ void RenderFrameHostImpl::CommitNavigation(
     // point just before the navigation commits.
     // TODO(altimin, crbug.com/933147): Remove this logic after we are done with
     // implementing back-forward cache.
-    if (!GetParent() && frame_tree_node()->current_frame_host() == this) {
+    if (!GetParent() && frame_tree_node_->current_frame_host() == this) {
       if (NavigationEntryImpl* last_committed_entry =
               NavigationEntryImpl::FromNavigationEntry(
                   frame_tree()->controller()->GetLastCommittedEntry())) {

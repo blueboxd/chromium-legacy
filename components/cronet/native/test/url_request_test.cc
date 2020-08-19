@@ -1514,10 +1514,9 @@ TEST_P(UrlRequestTest, PerfTest) {
   LOG(INFO) << "Single Iteration time "
             << delta.InMillisecondsF() / kTestIterations << " ms";
 
-  double bytes_per_ms =
-      kDownloadSize * kTestIterations / delta.InMillisecondsF();
-  double megabytes_per_ms = bytes_per_ms / 1000000;
-  double megabits_per_second = megabytes_per_ms * 8 * 1000;
+  const double bytes_per_second =
+      kDownloadSize * kTestIterations / delta.InSecondsF();
+  const double megabits_per_second = bytes_per_second / 1'000'000 * 8;
   LOG(INFO) << "Average Throughput: " << megabits_per_second << " mbps";
 
   Cronet_EngineParams_Destroy(engine_params);

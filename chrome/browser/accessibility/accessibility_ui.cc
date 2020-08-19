@@ -262,7 +262,7 @@ void HandleAccessibilityRequestCallback(
 bool MatchesPropertyFilters(
     const std::vector<content::AccessibilityTreeFormatter::PropertyFilter>&
         property_filters,
-    const base::string16& text) {
+    const std::string& text) {
   bool allow = false;
   for (const auto& filter : property_filters) {
     if (base::MatchPattern(text, filter.match_str)) {
@@ -271,7 +271,7 @@ bool MatchesPropertyFilters(
           allow = true;
           break;
         case content::AccessibilityTreeFormatter::PropertyFilter::ALLOW:
-          allow = (!base::MatchPattern(text, base::UTF8ToUTF16("*=''")));
+          allow = (!base::MatchPattern(text, "*=''"));
           break;
         case content::AccessibilityTreeFormatter::PropertyFilter::DENY:
           allow = false;
@@ -294,8 +294,7 @@ std::string RecursiveDumpAXPlatformNodeAsString(
   std::vector<std::string> attributes = base::SplitString(
       line, " ", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   for (std::string attribute : attributes) {
-    if (MatchesPropertyFilters(property_filters,
-                               base::UTF8ToUTF16(attribute))) {
+    if (MatchesPropertyFilters(property_filters, attribute)) {
       str += attribute + " ";
     }
   }
@@ -320,9 +319,7 @@ void AddPropertyFilters(
     content::AccessibilityTreeFormatter::PropertyFilter::Type type) {
   for (const std::string& attribute : base::SplitString(
            attributes, " ", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY)) {
-    property_filters.push_back(
-        content::AccessibilityTreeFormatter::PropertyFilter(
-            base::ASCIIToUTF16(attribute), type));
+    property_filters.emplace_back(attribute, type);
   }
 }
 

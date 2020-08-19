@@ -36,6 +36,7 @@
 #include "third_party/blink/public/common/feature_policy/feature_policy_features.h"
 #include "third_party/blink/public/common/frame/user_activation_state.h"
 #include "third_party/blink/public/common/frame/user_activation_update_source.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/user_activation_notification_type.mojom-blink-forward.h"
@@ -87,7 +88,9 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
  public:
   // Returns the Frame instance for the given |frame_token|.
   // Note that this Frame can be either a LocalFrame or Remote instance.
+  // TODO(crbug.com/1096617): Remove the UnguessableToken version of this.
   static Frame* ResolveFrame(const base::UnguessableToken& frame_token);
+  static Frame* ResolveFrame(const FrameToken& frame_token);
 
   virtual ~Frame();
 
@@ -287,6 +290,7 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
   // This identifier represents the stable identifier between a
   // LocalFrame  <--> RenderFrameHostImpl or a
   // RemoteFrame <--> RenderFrameProxyHost in the browser process.
+  // TODO(crbug.com/1096617): Make this return a FrameToken instead.
   const base::UnguessableToken& GetFrameToken() const { return frame_token_; }
 
   bool GetVisibleToHitTesting() const { return visible_to_hit_testing_; }

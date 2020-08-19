@@ -230,6 +230,14 @@ void FakeGaia::Initialize() {
   REGISTER_RESPONSE_HANDLER(gaia_urls->embedded_setup_chromeos_url(2),
                             HandleEmbeddedSetupChromeos);
 
+  // Handles /embedded/setup/kidsignup/chromeos GAIA call.
+  REGISTER_RESPONSE_HANDLER(gaia_urls->embedded_setup_chromeos_kid_signup_url(),
+                            HandleEmbeddedSetupChromeos);
+
+  // Handles /embedded/setup/kidsignin/chromeos GAIA call.
+  REGISTER_RESPONSE_HANDLER(gaia_urls->embedded_setup_chromeos_kid_signin_url(),
+                            HandleEmbeddedSetupChromeos);
+
   // Handles /OAuthLogin GAIA call.
   REGISTER_RESPONSE_HANDLER(
       gaia_urls->oauth1_login_url(), HandleOAuthLogin);

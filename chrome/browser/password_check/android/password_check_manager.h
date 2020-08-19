@@ -6,13 +6,16 @@
 #define CHROME_BROWSER_PASSWORD_CHECK_ANDROID_PASSWORD_CHECK_MANAGER_H_
 
 #include "base/memory/scoped_refptr.h"
+#include "base/optional.h"
 #include "base/strings/string_piece_forward.h"
 #include "chrome/browser/password_check/android/password_check_ui_status.h"
 #include "chrome/browser/password_manager/bulk_leak_check_service_factory.h"
+#include "chrome/browser/password_manager/password_scripts_fetcher_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/password_manager/core/browser/bulk_leak_check_service.h"
 #include "components/password_manager/core/browser/bulk_leak_check_service_interface.h"
+#include "components/password_manager/core/browser/password_scripts_fetcher.h"
 #include "components/password_manager/core/browser/ui/bulk_leak_check_service_adapter.h"
 #include "components/password_manager/core/browser/ui/compromised_credentials_manager.h"
 #include "components/password_manager/core/browser/ui/saved_passwords_presenter.h"
@@ -82,6 +85,12 @@ class PasswordCheckManager
   // UI update on completion.
   void RemoveCredential(const password_manager::CredentialView& credential);
 
+  // Invokes `PasswordScriptsFetcher`'s scripts refreshment.
+  void RefreshScripts();
+
+  // Returns if scripts refreshment is finished.
+  bool AreScriptsRefreshed() const;
+
   // Not copyable or movable
   PasswordCheckManager(const PasswordCheckManager&) = delete;
   PasswordCheckManager& operator=(const PasswordCheckManager&) = delete;
@@ -122,6 +131,9 @@ class PasswordCheckManager
   // in the account if the quota limit was reached.
   bool CanUseAccountCheck() const;
 
+  // Callback when PasswordScriptsFetcher's cache has been warmed up.
+  void OnScriptsFetched();
+
   // Obsever being notified of UI-relevant events.
   // It must outlive `this`.
   Observer* observer_ = nullptr;
@@ -134,6 +146,12 @@ class PasswordCheckManager
   scoped_refptr<password_manager::PasswordStore> password_store_ =
       PasswordStoreFactory::GetForProfile(profile_,
                                           ServiceAccessType::EXPLICIT_ACCESS);
+
+  // Used to check whether autofill assistant scripts are available for
+  // the specified domain.
+  password_manager::PasswordScriptsFetcher* password_script_fetcher_ =
+      PasswordScriptsFetcherFactory::GetInstance()->GetForBrowserContext(
+          profile_);
 
   // Used by `compromised_credentials_manager_` to obtain the list of saved
   // passwords.
@@ -160,6 +178,14 @@ class PasswordCheckManager
 
   // Whether a check is currently running.
   bool is_check_running_ = false;
+
+  // Whether scripts refreshement is finished.
+  bool are_scripts_refreshed_ = false;
+
+  // Latest number of changed compromised credentials while script fetching
+  // was running. If `credentials_count_to_notify_` has value, after scripts are
+  // fetched `onCompromisedCredentials` should be called.
+  base::Optional<size_t> credentials_count_to_notify_;
 
   // A scoped observer for `saved_passwords_presenter_`.
   ScopedObserver<password_manager::SavedPasswordsPresenter,

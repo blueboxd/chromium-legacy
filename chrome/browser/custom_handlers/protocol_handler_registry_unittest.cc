@@ -1070,3 +1070,19 @@ TEST_F(ProtocolHandlerRegistryTest, ExtensionHandler) {
       GURL("chrome-extension://abcdefghijklmnopqrstuvwxyzabcdef/test.html")));
   ASSERT_TRUE(registry()->IsHandledProtocol("news"));
 }
+
+// See
+// https://html.spec.whatwg.org/multipage/system-state.html#safelisted-scheme
+TEST_F(ProtocolHandlerRegistryTest, SafelistedSchemes) {
+  std::string schemes[] = {
+      "bitcoin",  "cabal",       "dat",    "did",    "doi",   "dweb",
+      "ethereum", "geo",         "hyper",  "im",     "ipfs",  "ipns",
+      "irc",      "ircs",        "magnet", "mailto", "mms",   "news",
+      "nntp",     "openpgp4fpr", "sip",    "sms",    "smsto", "ssb",
+      "ssh",      "tel",         "urn",    "webcal", "wtai",  "xmpp"};
+  for (auto& scheme : schemes) {
+    registry()->OnAcceptRegisterProtocolHandler(
+        CreateProtocolHandler(scheme, GURL("https://example.com/url=%s")));
+    ASSERT_TRUE(registry()->IsHandledProtocol(scheme));
+  }
+}

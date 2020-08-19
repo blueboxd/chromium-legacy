@@ -37,7 +37,7 @@ class HUDTabButton : public views::LabelButton {
 
   HUDTabButton(Style style,
                HUDTabStrip* tab_strip,
-               const DisplayModes display_mode,
+               const DisplayMode display_mode,
                const base::string16& text);
   HUDTabButton(const HUDTabButton&) = delete;
   HUDTabButton& operator=(const HUDTabButton&) = delete;
@@ -46,7 +46,7 @@ class HUDTabButton : public views::LabelButton {
 
   void SetStyle(Style style);
 
-  DisplayModes display_mode() const { return display_mode_; }
+  DisplayMode display_mode() const { return display_mode_; }
 
  protected:
   // views::LabelButton:
@@ -56,7 +56,7 @@ class HUDTabButton : public views::LabelButton {
   Style style_ = Style::LEFT;
 
   // Tab activation sends this display mode to the HUD.
-  DisplayModes display_mode_ = DisplayModes::DEFAULT;
+  DisplayMode display_mode_;
 };
 
 class HUDTabStrip : public views::View, public views::ButtonListener {
@@ -71,14 +71,14 @@ class HUDTabStrip : public views::View, public views::ButtonListener {
   ~HUDTabStrip() override;
 
   HUDTabButton* AddTabButton(HUDDisplayView* hud,
-                             const DisplayModes display_mode,
+                             const DisplayMode display_mode,
                              const base::string16& label);
 
   // views::ButtonListener
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // Mark tabs around the active one need repaint to modify borders.
-  void ActivateTab(const views::View* active_tab_button);
+  void ActivateTab(DisplayMode mode);
 
  private:
   HUDDisplayView* hud_;

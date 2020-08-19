@@ -313,10 +313,11 @@ class TelemetryProxy {
       return null;
     }
 
-    // After this closure compiler knows that input is {!Object}.
     if (typeof input !== 'object') {
       return input;
     }
+
+    // At this point, closure compiler knows that the input is {!Object}.
 
     // 1 rule: convert objects like { value: X } to X, where X is a number.
     if (Object.entries(input).length === 1 &&

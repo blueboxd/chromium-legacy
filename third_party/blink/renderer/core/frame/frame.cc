@@ -78,6 +78,14 @@ Frame* Frame::ResolveFrame(const base::UnguessableToken& frame_token) {
   return nullptr;
 }
 
+// static
+Frame* Frame::ResolveFrame(const FrameToken& frame_token) {
+  if (frame_token.Is<RemoteFrameToken>())
+    return RemoteFrame::FromFrameToken(frame_token.GetAs<RemoteFrameToken>());
+  DCHECK(frame_token.Is<LocalFrameToken>());
+  return LocalFrame::FromFrameToken(frame_token.GetAs<LocalFrameToken>());
+}
+
 Frame::~Frame() {
   InstanceCounters::DecrementCounter(InstanceCounters::kFrameCounter);
   DCHECK(!owner_);

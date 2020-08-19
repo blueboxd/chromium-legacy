@@ -369,7 +369,7 @@ IN_PROC_BROWSER_TEST_F(EncryptionMigrationTest, MinimalMigrationWithTimeout) {
       cryptohome::DIRCRYPTO_MIGRATION_SUCCESS, 5 /*current*/, 5 /*total*/);
   EXPECT_EQ(0, FakePowerManagerClient::Get()->num_request_restart_calls());
 
-  OobeScreenWaiter(GaiaView::kScreenId).Wait();
+  OobeScreenWaiter(GetFirstSigninScreen()).Wait();
 }
 
 IN_PROC_BROWSER_TEST_F(EncryptionMigrationTest,
@@ -449,7 +449,7 @@ IN_PROC_BROWSER_TEST_F(EncryptionMigrationTest, WipeMigrationActionPolicy) {
   SetUpStubAuthenticatorAndAttemptLogin(false /* has_incomplete_migration */);
 
   // Wipe is expected to wipe the cryptohome, and force online login.
-  OobeScreenWaiter(GaiaView::kScreenId).Wait();
+  OobeScreenWaiter(GetFirstSigninScreen()).Wait();
 
   EXPECT_FALSE(FakeCryptohomeClient::Get()
                    ->get_id_for_disk_migrated_to_dircrypto()

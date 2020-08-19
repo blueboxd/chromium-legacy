@@ -83,6 +83,11 @@ RemoteFrame* RemoteFrame::FromFrameToken(
   return it == remote_frames_map.end() ? nullptr : it->value.Get();
 }
 
+// static
+RemoteFrame* RemoteFrame::FromFrameToken(const RemoteFrameToken& frame_token) {
+  return FromFrameToken(frame_token.value());
+}
+
 RemoteFrame::RemoteFrame(
     RemoteFrameClient* client,
     Page& page,

@@ -145,7 +145,7 @@ RemotingAuthenticationStatus oauthStatusToRemotingAuthenticationStatus(
     } else {
       LOG(ERROR) << "Failed to fetch access token from authorization code. ("
                  << status << ")";
-      [MDCSnackbarManager
+      [MDCSnackbarManager.defaultManager
           showMessage:
               [MDCSnackbarMessage
                   messageWithText:@"Authentication Failed. Please try again."]];

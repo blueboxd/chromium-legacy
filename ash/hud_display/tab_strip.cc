@@ -77,7 +77,7 @@ END_METADATA()
 
 HUDTabButton::HUDTabButton(Style style,
                            HUDTabStrip* tab_strip,
-                           const DisplayModes display_mode,
+                           const DisplayMode display_mode,
                            const base::string16& text)
     : views::LabelButton(tab_strip, text),
       style_(style),
@@ -171,8 +171,9 @@ HUDTabStrip::HUDTabStrip(HUDDisplayView* hud) : hud_(hud) {
 HUDTabStrip::~HUDTabStrip() = default;
 
 HUDTabButton* HUDTabStrip::AddTabButton(HUDDisplayView* hud,
-                                        const DisplayModes display_mode,
+                                        const DisplayMode display_mode,
                                         const base::string16& label) {
+  CHECK_NE(static_cast<int>(display_mode), 0);
   // Make first tab active by default.
   HUDTabButton* tab_button = AddChildView(std::make_unique<HUDTabButton>(
       tabs_.size() ? HUDTabButton::Style::RIGHT : HUDTabButton::Style::ACTIVE,
@@ -185,14 +186,14 @@ void HUDTabStrip::ButtonPressed(views::Button* sender,
                                 const ui::Event& /*event*/) {
   for (const auto* tab : tabs_) {
     if (tab == sender) {
-      hud_->TabButtonPressed(tab);
+      hud_->SetDisplayMode(tab->display_mode());
       return;
     }
   }
   NOTREACHED();
 }
 
-void HUDTabStrip::ActivateTab(const views::View* active_tab_button) {
+void HUDTabStrip::ActivateTab(const DisplayMode mode) {
   // True if we find given active tab.
   bool found = false;
 
@@ -201,7 +202,7 @@ void HUDTabStrip::ActivateTab(const views::View* active_tab_button) {
       tab->SetStyle(HUDTabButton::Style::RIGHT);
       continue;
     }
-    if (tab == active_tab_button) {
+    if (tab->display_mode() == mode) {
       found = true;
       tab->SetStyle(HUDTabButton::Style::ACTIVE);
       continue;

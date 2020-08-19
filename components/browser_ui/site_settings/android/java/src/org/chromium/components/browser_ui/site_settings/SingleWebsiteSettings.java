@@ -141,8 +141,6 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
     // The Preference key for chooser object permissions.
     private static final String CHOOSER_PERMISSION_PREFERENCE_KEY = "chooser_permission_list";
 
-    // The maximum order of a permission preference.
-    private int mMaxPermissionOrder;
     // The number of user and policy chosen object permissions displayed.
     private int mObjectUserPermissionCount;
     private int mObjectPolicyPermissionCount;
@@ -350,7 +348,7 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
         }
         SettingsUtils.addPreferencesFromResource(this, R.xml.single_website_preferences);
 
-        mMaxPermissionOrder = 0;
+        int maxPermissionOrder = 0;
         PreferenceScreen preferenceScreen = getPreferenceScreen();
         // Iterate over preferences in reverse order because some preferences will be removed during
         // this setup, causing indices of later preferences to change.
@@ -359,10 +357,10 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
             setUpPreference(preference);
             if (getContentSettingsTypeFromPreferenceKey(preference.getKey())
                     != ContentSettingsType.DEFAULT) {
-                mMaxPermissionOrder = Math.max(mMaxPermissionOrder, preference.getOrder());
+                maxPermissionOrder = Math.max(maxPermissionOrder, preference.getOrder());
             }
         }
-        setUpChosenObjectPreferences(mMaxPermissionOrder);
+        setUpChosenObjectPreferences(maxPermissionOrder);
         setUpOsWarningPreferences();
 
         setUpAdsInformationalBanner();
@@ -795,7 +793,13 @@ public class SingleWebsiteSettings extends SiteSettingsPreferenceFragment
 
     private boolean hasPermissionsPreferences() {
         if (mObjectUserPermissionCount > 0 || mObjectPolicyPermissionCount > 0) return true;
-        if (mMaxPermissionOrder > 0) return true;
+        PreferenceScreen preferenceScreen = getPreferenceScreen();
+        for (int i = 0; i < preferenceScreen.getPreferenceCount(); i++) {
+            String key = preferenceScreen.getPreference(i).getKey();
+            if (getContentSettingsTypeFromPreferenceKey(key) != ContentSettingsType.DEFAULT) {
+                return true;
+            }
+        }
         return false;
     }
 

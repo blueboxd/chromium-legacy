@@ -15,6 +15,7 @@
 #include "base/check_op.h"
 #include "base/i18n/case_conversion.h"
 #include "base/metrics/histogram.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
@@ -394,11 +395,10 @@ int ShortcutsProvider::CalculateScore(
   // (1.0 / each 5 additional hits), up to a maximum of 5x as long.
   const double kMaxDecaySpeedDivisor = 5.0;
   const double kNumUsesPerDecaySpeedDivisorIncrement = 5.0;
-  double decay_divisor = std::min(
+  const double decay_divisor = std::min(
       kMaxDecaySpeedDivisor,
       (shortcut.number_of_hits + kNumUsesPerDecaySpeedDivisorIncrement - 1) /
           kNumUsesPerDecaySpeedDivisorIncrement);
 
-  return static_cast<int>((base_score / exp(decay_exponent / decay_divisor)) +
-                          0.5);
+  return base::ClampRound(base_score / exp(decay_exponent / decay_divisor));
 }

@@ -75,27 +75,26 @@ std::vector<AccessibilityTreeFormatter::PropertyFilter> GetPropertyFilters(
                              base::SPLIT_WANT_ALL)) {
         if (base::StartsWith(line, kAllowOptEmptyStr,
                              base::CompareCase::SENSITIVE)) {
-          filters.push_back(AccessibilityTreeFormatter::PropertyFilter(
-              base::UTF8ToUTF16(line.substr(strlen(kAllowOptEmptyStr))),
-              AccessibilityTreeFormatter::PropertyFilter::ALLOW_EMPTY));
+          filters.emplace_back(
+              line.substr(strlen(kAllowOptEmptyStr)),
+              AccessibilityTreeFormatter::PropertyFilter::ALLOW_EMPTY);
         } else if (base::StartsWith(line, kAllowOptStr,
                                     base::CompareCase::SENSITIVE)) {
-          filters.push_back(AccessibilityTreeFormatter::PropertyFilter(
-              base::UTF8ToUTF16(line.substr(strlen(kAllowOptStr))),
-              AccessibilityTreeFormatter::PropertyFilter::ALLOW));
+          filters.emplace_back(
+              line.substr(strlen(kAllowOptStr)),
+              AccessibilityTreeFormatter::PropertyFilter::ALLOW);
         } else if (base::StartsWith(line, kDenyOptStr,
                                     base::CompareCase::SENSITIVE)) {
-          filters.push_back(AccessibilityTreeFormatter::PropertyFilter(
-              base::UTF8ToUTF16(line.substr(strlen(kDenyOptStr))),
-              AccessibilityTreeFormatter::PropertyFilter::DENY));
+          filters.emplace_back(
+              line.substr(strlen(kDenyOptStr)),
+              AccessibilityTreeFormatter::PropertyFilter::DENY);
         }
       }
     }
   }
   if (filters.empty()) {
     filters = {AccessibilityTreeFormatter::PropertyFilter(
-        base::ASCIIToUTF16("*"),
-        AccessibilityTreeFormatter::PropertyFilter::ALLOW)};
+        "*", AccessibilityTreeFormatter::PropertyFilter::ALLOW)};
   }
 
   return filters;

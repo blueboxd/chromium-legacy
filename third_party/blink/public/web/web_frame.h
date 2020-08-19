@@ -33,6 +33,7 @@
 
 #include <memory>
 #include "cc/paint/paint_canvas.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/frame/tree_scope_type.mojom-shared.h"
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-shared.h"
 #include "third_party/blink/public/platform/web_common.h"
@@ -72,7 +73,9 @@ class BLINK_EXPORT WebFrame {
   // Returns the number of live WebFrame objects, used for leak checking.
   static int InstanceCount();
 
+  // TODO(crbug.com/1096617): Remove the UnguessableToken version of this.
   static WebFrame* FromFrameToken(const base::UnguessableToken&);
+  static WebFrame* FromFrameToken(const FrameToken&);
 
   virtual bool IsWebLocalFrame() const = 0;
   virtual WebLocalFrame* ToWebLocalFrame() = 0;
@@ -155,6 +158,7 @@ class BLINK_EXPORT WebFrame {
   // This identifier represents the stable identifier between a
   // LocalFrame  <--> RenderFrameHostImpl or a
   // RemoteFrame <--> RenderFrameProxyHost in the browser process.
+  // TODO(crbug.com/1096617): Make this return a FrameToken instead.
   const base::UnguessableToken& GetFrameToken() const { return frame_token_; }
 
 #if INSIDE_BLINK

@@ -170,7 +170,6 @@ const char kManagementPrinting[] = "managementPrinting";
 const char kManagementCrostini[] = "managementCrostini";
 const char kManagementCrostiniContainerConfiguration[] =
     "managementCrostiniContainerConfiguration";
-const char kManagementReportProxyServer[] = "managementReportProxyServer";
 const char kAccountManagedInfo[] = "accountManagedInfo";
 const char kDeviceManagedInfo[] = "deviceManagedInfo";
 const char kOverview[] = "overview";
@@ -213,8 +212,7 @@ enum class DeviceReportingType {
   kCrostini,
   kUsername,
   kExtensions,
-  kAndroidApplication,
-  kProxyServer
+  kAndroidApplication
 };
 
 // Corresponds to DeviceReportingType in management_browser_proxy.js
@@ -244,8 +242,6 @@ std::string ToJSDeviceReportingType(const DeviceReportingType& type) {
       return "extension";
     case DeviceReportingType::kAndroidApplication:
       return "android application";
-    case DeviceReportingType::kProxyServer:
-      return "proxy server";
     default:
       NOTREACHED() << "Unknown device reporting type";
       return "device";
@@ -609,33 +605,6 @@ void ManagementUIHandler::AddDeviceReportingInfo(
                               kManagementReportAndroidApplications,
                               DeviceReportingType::kAndroidApplication);
   }
-
-  chromeos::NetworkHandler* network_handler = chromeos::NetworkHandler::Get();
-  base::Value proxy_settings(base::Value::Type::DICTIONARY);
-  // |ui_proxy_config_service| may be missing in tests. If the device is offline
-  // (no network connected) the |DefaultNetwork| is null.
-  if (network_handler->has_ui_proxy_config_service() &&
-      network_handler->network_state_handler()->DefaultNetwork()) {
-    // Check if proxy is enforced by user policy, a forced install extension or
-    // ONC policies. This will only read managed settings.
-    network_handler->ui_proxy_config_service()->MergeEnforcedProxyConfig(
-        network_handler->network_state_handler()->DefaultNetwork()->guid(),
-        &proxy_settings);
-  }
-  if (!proxy_settings.DictEmpty()) {
-    // Proxies can be specified by web server url, via a PAC script or via the
-    // web proxy auto-discovery protocol. Chrome also supports the "direct"
-    // mode, in which no proxy is used.
-    base::Value* proxy_specification_mode = proxy_settings.FindPath(
-        {::onc::network_config::kType, ::onc::kAugmentationActiveSetting});
-    bool use_proxy =
-        proxy_specification_mode &&
-        proxy_specification_mode->GetString() != ::onc::proxy::kDirect;
-    if (use_proxy) {
-      AddDeviceReportingElement(report_sources, kManagementReportProxyServer,
-                                DeviceReportingType::kProxyServer);
-    }
-  }
 }
 
 bool ManagementUIHandler::IsUpdateRequiredEol() const {
@@ -663,6 +632,35 @@ void ManagementUIHandler::AddUpdateRequiredEolInfo(
       chromeos::kDeviceMinimumVersionAueMessage, &eol_admin_message);
   response->SetStringPath("eolAdminMessage", eol_admin_message);
 }
+
+void ManagementUIHandler::AddProxyServerPrivacyDisclosure(
+    base::Value* response) const {
+  bool showProxyDisclosure = false;
+  chromeos::NetworkHandler* network_handler = chromeos::NetworkHandler::Get();
+  base::Value proxy_settings(base::Value::Type::DICTIONARY);
+  // |ui_proxy_config_service| may be missing in tests. If the device is offline
+  // (no network connected) the |DefaultNetwork| is null.
+  if (network_handler->has_ui_proxy_config_service() &&
+      network_handler->network_state_handler()->DefaultNetwork()) {
+    // Check if proxy is enforced by user policy, a forced install extension or
+    // ONC policies. This will only read managed settings.
+    network_handler->ui_proxy_config_service()->MergeEnforcedProxyConfig(
+        network_handler->network_state_handler()->DefaultNetwork()->guid(),
+        &proxy_settings);
+  }
+  if (!proxy_settings.DictEmpty()) {
+    // Proxies can be specified by web server url, via a PAC script or via the
+    // web proxy auto-discovery protocol. Chrome also supports the "direct"
+    // mode, in which no proxy is used.
+    base::Value* proxy_specification_mode = proxy_settings.FindPath(
+        {::onc::network_config::kType, ::onc::kAugmentationActiveSetting});
+    showProxyDisclosure =
+        proxy_specification_mode &&
+        proxy_specification_mode->GetString() != ::onc::proxy::kDirect;
+  }
+  response->SetBoolPath("showProxyServerPrivacyDisclosure",
+                        showProxyDisclosure);
+}
 #endif
 
 base::Value ManagementUIHandler::GetContextualManagedData(Profile* profile) {
@@ -672,6 +670,7 @@ base::Value ManagementUIHandler::GetContextualManagedData(Profile* profile) {
   if (management_domain.empty())
     management_domain = GetAccountDomain(profile);
   AddUpdateRequiredEolInfo(&response);
+  AddProxyServerPrivacyDisclosure(&response);
 #else
   std::string management_domain = GetAccountDomain(profile);
 

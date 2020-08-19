@@ -172,6 +172,10 @@ class WebLocalFrame : public WebFrame {
 
   // Basic properties ---------------------------------------------------
 
+  LocalFrameToken GetLocalFrameToken() const {
+    return LocalFrameToken(GetFrameToken());
+  }
+
   virtual WebDocument GetDocument() const = 0;
 
   // The name of this frame. If no name is given, empty string is returned.

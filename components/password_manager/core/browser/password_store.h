@@ -89,6 +89,14 @@ class PasswordStore : protected PasswordStoreSync,
     // the UI thread.
     virtual void OnLoginsChanged(const PasswordStoreChangeList& changes) = 0;
 
+    // Like OnLoginsChanged(), but also receives the originating PasswordStore
+    // as a parameter. This is useful for observers that observe changes in both
+    // the profile-scoped and the account-scoped store. The default
+    // implementation simply calls OnLoginsChanged(), so observers that don't
+    // care about the store can just ignore this.
+    virtual void OnLoginsChangedIn(PasswordStore* store,
+                                   const PasswordStoreChangeList& changes);
+
    protected:
     virtual ~Observer() = default;
   };

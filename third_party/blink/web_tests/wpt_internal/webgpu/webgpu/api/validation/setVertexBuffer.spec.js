@@ -1,19 +1,18 @@
 /**
-* AUTO-GENERATED - DO NOT EDIT. Source: https://github.com/gpuweb/cts
-**/
-
-export const description = `
+ * AUTO-GENERATED - DO NOT EDIT. Source: https://github.com/gpuweb/cts
+ **/ export const description = `
 setVertexBuffer validation tests.
 `;
 import { makeTestGroup } from '../../../common/framework/test_group.js';
 import { range } from '../../../common/framework/util/util.js';
+
 import { ValidationTest } from './validation_test.js';
 
 class F extends ValidationTest {
   getVertexBuffer() {
     return this.device.createBuffer({
       size: 256,
-      usage: GPUBufferUsage.VERTEX
+      usage: GPUBufferUsage.VERTEX,
     });
   }
 
@@ -23,20 +22,21 @@ class F extends ValidationTest {
       fragmentStage: this.getFragmentStage(),
       layout: this.getPipelineLayout(),
       primitiveTopology: 'triangle-list',
-      colorStates: [{
-        format: 'rgba8unorm'
-      }],
+      colorStates: [{ format: 'rgba8unorm' }],
       vertexState: {
-        vertexBuffers: [{
-          arrayStride: 3 * 4,
-          attributes: range(bufferCount, i => ({
-            format: 'float3',
-            offset: 0,
-            shaderLocation: i
-          }))
-        }]
-      }
+        vertexBuffers: [
+          {
+            arrayStride: 3 * 4,
+            attributes: range(bufferCount, i => ({
+              format: 'float3',
+              offset: 0,
+              shaderLocation: i,
+            })),
+          },
+        ],
+      },
     };
+
     return this.device.createRenderPipeline(descriptor);
   }
 
@@ -49,10 +49,8 @@ class F extends ValidationTest {
        }
     `;
     return {
-      module: this.makeShaderModule('vertex', {
-        glsl
-      }),
-      entryPoint: 'main'
+      module: this.makeShaderModule('vertex', { glsl }),
+      entryPoint: 'main',
     };
   }
 
@@ -65,50 +63,42 @@ class F extends ValidationTest {
       }
     `;
     return {
-      module: this.makeShaderModule('fragment', {
-        glsl
-      }),
-      entryPoint: 'main'
+      module: this.makeShaderModule('fragment', { glsl }),
+      entryPoint: 'main',
     };
   }
 
   getPipelineLayout() {
-    return this.device.createPipelineLayout({
-      bindGroupLayouts: []
-    });
+    return this.device.createPipelineLayout({ bindGroupLayouts: [] });
   }
 
   beginRenderPass(commandEncoder) {
     const attachmentTexture = this.device.createTexture({
       format: 'rgba8unorm',
-      size: {
-        width: 16,
-        height: 16,
-        depth: 1
-      },
-      usage: GPUTextureUsage.OUTPUT_ATTACHMENT
+      size: { width: 16, height: 16, depth: 1 },
+      usage: GPUTextureUsage.OUTPUT_ATTACHMENT,
     });
+
     return commandEncoder.beginRenderPass({
-      colorAttachments: [{
-        attachment: attachmentTexture.createView(),
-        loadValue: {
-          r: 1.0,
-          g: 0.0,
-          b: 0.0,
-          a: 1.0
-        }
-      }]
+      colorAttachments: [
+        {
+          attachment: attachmentTexture.createView(),
+          loadValue: { r: 1.0, g: 0.0, b: 0.0, a: 1.0 },
+        },
+      ],
     });
   }
-
 }
 
 export const g = makeTestGroup(F);
+
 g.test('vertex_buffers_inherit_from_previous_pipeline').fn(async t => {
   const pipeline1 = t.createRenderPipeline(1);
   const pipeline2 = t.createRenderPipeline(2);
+
   const vertexBuffer1 = t.getVertexBuffer();
   const vertexBuffer2 = t.getVertexBuffer();
+
   {
     // Check failure when vertex buffer is not set
     const commandEncoder = t.device.createCommandEncoder();
@@ -116,6 +106,7 @@ g.test('vertex_buffers_inherit_from_previous_pipeline').fn(async t => {
     renderPass.setPipeline(pipeline1);
     renderPass.draw(3, 1, 0, 0);
     renderPass.endPass();
+
     t.expectValidationError(() => {
       commandEncoder.finish();
     });
@@ -131,14 +122,18 @@ g.test('vertex_buffers_inherit_from_previous_pipeline').fn(async t => {
     renderPass.setPipeline(pipeline1);
     renderPass.draw(3, 1, 0, 0);
     renderPass.endPass();
+
     commandEncoder.finish();
   }
 });
+
 g.test('vertex_buffers_do_not_inherit_between_render_passes').fn(async t => {
   const pipeline1 = t.createRenderPipeline(1);
   const pipeline2 = t.createRenderPipeline(2);
+
   const vertexBuffer1 = t.getVertexBuffer();
   const vertexBuffer2 = t.getVertexBuffer();
+
   {
     // Check success when vertex buffer is set for each render pass
     const commandEncoder = t.device.createCommandEncoder();
@@ -176,9 +171,9 @@ g.test('vertex_buffers_do_not_inherit_between_render_passes').fn(async t => {
       renderPass.draw(3, 1, 0, 0);
       renderPass.endPass();
     }
+
     t.expectValidationError(() => {
       commandEncoder.finish();
     });
   }
 });
-//# sourceMappingURL=setVertexBuffer.spec.js.map

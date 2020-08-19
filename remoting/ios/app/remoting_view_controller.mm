@@ -276,19 +276,20 @@ using remoting::HostListService;
   if (![cell.hostInfo isOnline]) {
     MDCSnackbarMessage* message = [[MDCSnackbarMessage alloc] init];
     message.text = l10n_util::GetNSString(IDS_HOST_OFFLINE_TOOLTIP);
-    [MDCSnackbarManager showMessage:message];
+    [MDCSnackbarManager.defaultManager showMessage:message];
     return;
   }
 
   if (GetConnectionType() == ConnectionType::NONE) {
-    [MDCSnackbarManager
+    [MDCSnackbarManager.defaultManager
         showMessage:[MDCSnackbarMessage
                         messageWithText:l10n_util::GetNSString(
                                             IDS_ERROR_NETWORK_ERROR)]];
     return;
   }
 
-  [MDCSnackbarManager dismissAndCallCompletionBlocksWithCategory:nil];
+  [MDCSnackbarManager.defaultManager
+      dismissAndCallCompletionBlocksWithCategory:nil];
   ClientConnectionViewController* clientConnectionViewController =
       [[ClientConnectionViewController alloc] initWithHostInfo:cell.hostInfo];
   [self.navigationController pushViewController:clientConnectionViewController

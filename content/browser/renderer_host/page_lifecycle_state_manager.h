@@ -44,6 +44,21 @@ class CONTENT_EXPORT PageLifecycleStateManager {
       bool is_in_back_forward_cache,
       base::Optional<base::TimeTicks> navigation_start);
 
+  // Called when we're committing main-frame same-site navigations where we did
+  // a proactive BrowsingInstance swap and we're reusing the old page's renderer
+  // process, where we will run pagehide & visibilitychange handlers of the old
+  // page from within the new page's commit call. Returns the newly updated
+  // PageLifecycleState for this page (after we've set |pagehide_dispatch_| to
+  // the appropriate value based on |persisted|).
+  blink::mojom::PageLifecycleStatePtr SetPagehideDispatchDuringNewPageCommit(
+      bool persisted);
+
+  // See above, called when we've finished committing the new page (which means
+  // we've finished running pagehide and visibilitychange handlers of the old
+  // page) for certain cases.
+  void DidSetPagehideDispatchDuringNewPageCommit(
+      blink::mojom::PageLifecycleStatePtr acknowledged_state);
+
   // Calculates the per-page lifecycle state based on the per-tab / web contents
   // lifecycle state saved in this instance.
   blink::mojom::PageLifecycleStatePtr CalculatePageLifecycleState();
@@ -81,6 +96,9 @@ class CONTENT_EXPORT PageLifecycleStateManager {
   // is computed based on |is_in_back_forward_cache_| and
   // |web_contents_visibility_|.
   blink::mojom::PageVisibilityState web_contents_visibility_;
+
+  blink::mojom::PagehideDispatch pagehide_dispatch_ =
+      blink::mojom::PagehideDispatch::kNotDispatched;
 
   RenderViewHostImpl* render_view_host_impl_;
 

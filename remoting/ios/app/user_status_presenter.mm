@@ -80,7 +80,7 @@
   MDCSnackbarMessage* message = [[MDCSnackbarMessage alloc] init];
   message.text = l10n_util::GetNSStringF(
       IDS_LOG_IN_ACCOUNT_DESCRIPTION, base::SysNSStringToUTF16(user.userEmail));
-  [MDCSnackbarManager showMessage:message];
+  [MDCSnackbarManager.defaultManager showMessage:message];
 }
 
 @end

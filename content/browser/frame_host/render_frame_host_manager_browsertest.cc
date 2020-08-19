@@ -2666,6 +2666,12 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest, DontSelectInvalidFiles) {
   RenderProcessHostWatcher exit_observer(
       shell()->web_contents()->GetMainFrame()->GetProcess(),
       RenderProcessHostWatcher::WATCH_FOR_HOST_DESTRUCTION);
+
+  // With BackForwardCache, old process won't get deleted on navigation as it is
+  // still in use by the bfcached document, disable back-forward cache to ensure
+  // that the process gets deleted.
+  DisableBackForwardCache(BackForwardCacheImpl::TEST_ASSUMES_NO_CACHING);
+
   EXPECT_TRUE(NavigateToURL(shell(), GetCrossSiteURL("/title1.html")));
   exit_observer.Wait();
   EXPECT_FALSE(ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
@@ -2722,6 +2728,12 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   RenderProcessHostWatcher exit_observer(
       wc->GetMainFrame()->GetProcess(),
       RenderProcessHostWatcher::WATCH_FOR_HOST_DESTRUCTION);
+
+  // With BackForwardCache, old process won't get deleted on navigation as it is
+  // still in use by the bfcached document, disable back-forward cache to ensure
+  // that the process gets deleted.
+  DisableBackForwardCache(BackForwardCacheImpl::TEST_ASSUMES_NO_CACHING);
+
   EXPECT_TRUE(NavigateToURL(shell(), GetCrossSiteURL("/title1.html")));
   exit_observer.Wait();
   EXPECT_FALSE(ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
@@ -2885,6 +2897,12 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   RenderProcessHostWatcher exit_observer(
       shell()->web_contents()->GetMainFrame()->GetProcess(),
       RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+
+  // With BackForwardCache, old process won't get deleted on navigation as it is
+  // still in use by the bfcached document, disable back-forward cache to ensure
+  // that the process gets deleted.
+  DisableBackForwardCache(BackForwardCacheImpl::TEST_ASSUMES_NO_CACHING);
+
   EXPECT_TRUE(NavigateToURL(shell(), GetCrossSiteURL("/title1.html")));
   exit_observer.Wait();
   EXPECT_FALSE(ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
@@ -3009,6 +3027,11 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   GURL cross_site_url =
       embedded_test_server()->GetURL("foo.com", "/title2.html");
   RenderFrameHostDestructionObserver rfh_observer(root->current_frame_host());
+
+  // The old RenderFrameHost might have entered the BackForwardCache. Disable
+  // back-forward cache to ensure that the RenderFrameHost gets deleted.
+  DisableBackForwardCache(BackForwardCacheImpl::TEST_ASSUMES_NO_CACHING);
+
   EXPECT_TRUE(NavigateToURL(shell(), cross_site_url));
   rfh_observer.Wait();
 
@@ -3400,6 +3423,10 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   EXPECT_TRUE(
       ExecuteScript(root, "window.onunload=function(e){ while(1); };\n"));
 
+  // With BackForwardCache, swapped out RenderFrameHost won't have a
+  // replacement proxy as the document is stored in cache.
+  DisableBackForwardCache(BackForwardCacheImpl::TEST_ASSUMES_NO_CACHING);
+
   // Navigate the tab to a different site, and only wait for commit, not load
   // stop.
   RenderFrameHostImpl* rfh_a = root->current_frame_host();
@@ -3640,11 +3667,9 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest, CtrlClickSubframeLink) {
 // See https://crbug.com/577449.
 IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
                        UnloadPushStateOnCrossProcessNavigation) {
-  shell()
-      ->web_contents()
-      ->GetController()
-      .GetBackForwardCache()
-      .DisableForTesting(content::BackForwardCache::TEST_USES_UNLOAD_EVENT);
+  // TODO(sreejakshetty): Replace 'unload' with 'pagehide' and reenable this
+  // test for BackForwardCache.
+  DisableBackForwardCache(content::BackForwardCache::TEST_USES_UNLOAD_EVENT);
 
   StartEmbeddedServer();
   WebContentsImpl* web_contents =
@@ -5182,6 +5207,10 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   // There should be two NavigationEntries.
   EXPECT_EQ(2, nav_controller.GetEntryCount());
 
+  // Ensure that previous document won't be restored from the BackForwardCache,
+  // to force a network fetch, which would result in a network error.
+  DisableBackForwardCache(BackForwardCacheImpl::TEST_ASSUMES_NO_CACHING);
+
   // Create an interceptor to cause navigations to url1 to fail and go back
   // in session history.
   std::unique_ptr<URLLoaderInterceptor> url_interceptor =
@@ -6123,17 +6152,12 @@ IN_PROC_BROWSER_TEST_P(ProactivelySwapBrowsingInstancesSameSiteTest,
 // 3. Go back to A1 (should reuse A2's process).
 IN_PROC_BROWSER_TEST_P(ProactivelySwapBrowsingInstancesSameSiteTest,
                        HistoryNavigationReusesProcess) {
-  if (IsBackForwardCacheEnabled()) {
-    // This test expects a renderer process to eventually get deleted when we
-    // navigate away from the page using it, which won't happen if the page is
-    // kept alive in the back-forward cache.  So, we should disable back-forward
-    // cache for this test.
-    shell()
-        ->web_contents()
-        ->GetController()
-        .GetBackForwardCache()
-        .DisableForTesting(BackForwardCacheImpl::TEST_ASSUMES_NO_CACHING);
-  }
+  // This test expects a renderer process to eventually get deleted when we
+  // navigate away from the page using it, which won't happen if the page is
+  // kept alive in the back-forward cache.  So, we should disable back-forward
+  // cache for this test.
+  DisableBackForwardCache(BackForwardCacheImpl::TEST_ASSUMES_NO_CACHING);
+
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url_1(embedded_test_server()->GetURL("/title1.html"));
   GURL url_2(embedded_test_server()->GetURL("/title2.html"));
@@ -6214,17 +6238,12 @@ IN_PROC_BROWSER_TEST_P(ProactivelySwapBrowsingInstancesSameSiteTest,
 // 3. Go forward to A2 (should reuse A1's process).
 IN_PROC_BROWSER_TEST_P(ProactivelySwapBrowsingInstancesSameSiteTest,
                        HistoryNavigationReusesProcess_SkipSameSiteEntry) {
-  if (IsBackForwardCacheEnabled()) {
-    // This test expects a renderer process to eventually get deleted when we
-    // navigate away from the page using it, which won't happen if the page is
-    // kept alive in the back-forward cache.  So, we should disable back-forward
-    // cache for this test.
-    shell()
-        ->web_contents()
-        ->GetController()
-        .GetBackForwardCache()
-        .DisableForTesting(BackForwardCacheImpl::TEST_ASSUMES_NO_CACHING);
-  }
+  // This test expects a renderer process to eventually get deleted when we
+  // navigate away from the page using it, which won't happen if the page is
+  // kept alive in the back-forward cache.  So, we should disable back-forward
+  // cache for this test.
+  DisableBackForwardCache(BackForwardCacheImpl::TEST_ASSUMES_NO_CACHING);
+
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url_1(embedded_test_server()->GetURL("/title1.html"));
   GURL url_2(embedded_test_server()->GetURL("/title2.html"));
@@ -6306,17 +6325,12 @@ IN_PROC_BROWSER_TEST_P(ProactivelySwapBrowsingInstancesSameSiteTest,
 // 3. Go forward to B (should use new process).
 IN_PROC_BROWSER_TEST_P(ProactivelySwapBrowsingInstancesSameSiteTest,
                        HistoryNavigationReusesProcess_SkipCrossSiteEntry) {
-  if (IsBackForwardCacheEnabled()) {
-    // This test expects a renderer process to eventually get deleted when we
-    // navigate away from the page using it, which won't happen if the page is
-    // kept alive in the back-forward cache.  So, we should disable back-forward
-    // cache for this test.
-    shell()
-        ->web_contents()
-        ->GetController()
-        .GetBackForwardCache()
-        .DisableForTesting(BackForwardCacheImpl::TEST_ASSUMES_NO_CACHING);
-  }
+  // This test expects a renderer process to eventually get deleted when we
+  // navigate away from the page using it, which won't happen if the page is
+  // kept alive in the back-forward cache.  So, we should disable back-forward
+  // cache for this test.
+  DisableBackForwardCache(BackForwardCacheImpl::TEST_ASSUMES_NO_CACHING);
+
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url_1(embedded_test_server()->GetURL("/title1.html"));
   GURL cross_site_url(embedded_test_server()->GetURL("b.com", "/title2.html"));
@@ -6386,17 +6400,12 @@ IN_PROC_BROWSER_TEST_P(ProactivelySwapBrowsingInstancesSameSiteTest,
 // used originally).
 IN_PROC_BROWSER_TEST_P(ProactivelySwapBrowsingInstancesSameSiteTest,
                        HistoryNavigationReusesProcessThatIsStillAlive) {
-  if (IsBackForwardCacheEnabled()) {
-    // This test expects a renderer process to eventually get deleted when we
-    // navigate away from the page using it, which won't happen if the page is
-    // kept alive in the back-forward cache.  So, we should disable back-forward
-    // cache for this test.
-    shell()
-        ->web_contents()
-        ->GetController()
-        .GetBackForwardCache()
-        .DisableForTesting(BackForwardCacheImpl::TEST_ASSUMES_NO_CACHING);
-  }
+  // This test expects a renderer process to eventually get deleted when we
+  // navigate away from the page using it, which won't happen if the page is
+  // kept alive in the back-forward cache.  So, we should disable back-forward
+  // cache for this test.
+  DisableBackForwardCache(BackForwardCacheImpl::TEST_ASSUMES_NO_CACHING);
+
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url_1(embedded_test_server()->GetURL("/title1.html"));
   GURL url_to_open(embedded_test_server()->GetURL("/empty.html"));
@@ -6513,17 +6522,12 @@ class ProactivelySwapBrowsingInstancesSameSiteCoopTest
 // Note: This test is currently disabled due to crbug.com/1107814.
 IN_PROC_BROWSER_TEST_P(ProactivelySwapBrowsingInstancesSameSiteCoopTest,
                        DISABLED_HistoryNavigationReusesProcess_COOP) {
-  if (IsBackForwardCacheEnabled()) {
-    // This test expects a renderer process to eventually get deleted when we
-    // navigate away from the page using it, which won't happen if the page is
-    // kept alive in the back-forward cache.  So, we should disable back-forward
-    // cache for this test.
-    shell()
-        ->web_contents()
-        ->GetController()
-        .GetBackForwardCache()
-        .DisableForTesting(BackForwardCacheImpl::TEST_ASSUMES_NO_CACHING);
-  }
+  // This test expects a renderer process to eventually get deleted when we
+  // navigate away from the page using it, which won't happen if the page is
+  // kept alive in the back-forward cache.  So, we should disable back-forward
+  // cache for this test.
+  DisableBackForwardCache(BackForwardCacheImpl::TEST_ASSUMES_NO_CACHING);
+
   GURL url_1(https_server()->GetURL("a.com", "/title1.html"));
   GURL url_2(https_server()->GetURL("a.com", "/title2.html"));
   GURL coop_url(
@@ -6983,6 +6987,357 @@ IN_PROC_BROWSER_TEST_P(ProactivelySwapBrowsingInstancesSameSiteTest,
   SetBrowserClientForTesting(old_client);
 }
 
+// Tests that pagehide handlers of the old RFH are run during the commit
+// of the new RFH when swapping RFH for same-site navigations due to proactive
+// BrowsingInstance swap.
+IN_PROC_BROWSER_TEST_P(ProactivelySwapBrowsingInstancesSameSiteTest,
+                       PagehideRunsDuringCommit) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_1(embedded_test_server()->GetURL("/title1.html"));
+  GURL url_2(embedded_test_server()->GetURL("/local_storage.html"));
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+
+  // 1) Navigate to title1.html.
+  EXPECT_TRUE(NavigateToURL(shell(), url_1));
+  RenderFrameHostImpl* main_frame_1 = web_contents->GetMainFrame();
+  // Create a pagehide handler that sets item "pagehide_storage" in
+  // localStorage.
+  EXPECT_TRUE(ExecJs(
+      main_frame_1,
+      base::StringPrintf(R"(
+            localStorage.setItem('pagehide_storage', 'not_dispatched');
+            var dispatched_pagehide = false;
+            window.onpagehide = function(e) {
+              if (dispatched_pagehide) {
+                // We shouldn't dispatch pagehide more than once.
+                localStorage.setItem('pagehide_storage',
+                  'dispatched_more_than_once');
+              } else if (e.persisted != %s) {
+                localStorage.setItem('pagehide_storage', 'wrong_persisted');
+              } else {
+                localStorage.setItem('pagehide_storage',
+                  'dispatched_once');
+              }
+              dispatched_pagehide = true;
+            })",
+                         IsBackForwardCacheEnabled() ? "true" : "false")));
+
+  // 2) Navigate to local_storage.html.
+  RenderFrameDeletedObserver main_frame_1_deleted_observer(main_frame_1);
+  EXPECT_TRUE(NavigateToURL(shell(), url_2));
+
+  // Check that title1.html and local_storage.html are in different RFHs.
+  RenderFrameHostImpl* main_frame_2 = web_contents->GetMainFrame();
+  EXPECT_NE(main_frame_1, main_frame_2);
+
+  // Check that the value set by |main_frame_1|'s pagehide handler can be
+  // accessed by |main_frame_2| at load time (the first time the new page runs
+  // scripts), setting the |pagehide_storage_at_load| variable correctly.
+  EXPECT_EQ("dispatched_once",
+            EvalJs(main_frame_2, "pagehide_storage_at_load"));
+
+  // Check that the value for 'pagehide_storage' stays the same after
+  // |main_frame_2| finished loading (or |main_frame_1| deleted if bfcache is
+  // not enabled).
+  if (!IsBackForwardCacheEnabled())
+    main_frame_1_deleted_observer.WaitUntilDeleted();
+  EXPECT_EQ("dispatched_once",
+            EvalJs(main_frame_2, "localStorage.getItem('pagehide_storage')"));
+}
+
+// Tests that visibilitychange handlers of the old RFH are run during the commit
+// of the new RFH when swapping RFH for same-site navigations due to proactive
+// BrowsingInstance swap.
+IN_PROC_BROWSER_TEST_P(ProactivelySwapBrowsingInstancesSameSiteTest,
+                       VisibilitychangeRunsDuringCommit) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_1(embedded_test_server()->GetURL("/title1.html"));
+  GURL url_2(embedded_test_server()->GetURL("/local_storage.html"));
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+
+  // 1) Navigate to title1.html.
+  EXPECT_TRUE(NavigateToURL(shell(), url_1));
+  RenderFrameHostImpl* main_frame_1 = web_contents->GetMainFrame();
+  // Create a visibilitychange handler that sets item "visibilitychange_storage"
+  // localStorage.
+  EXPECT_TRUE(ExecJs(main_frame_1, R"(
+            localStorage.setItem('visibilitychange_storage', 'not_dispatched');
+            var dispatched_visibilitychange = false;
+            document.onvisibilitychange = function(e) {
+              if (dispatched_visibilitychange) {
+                // We shouldn't dispatch visibilitychange more than once.
+                localStorage.setItem('visibilitychange_storage',
+                  'dispatched_more_than_once');
+              } else if (document.visibilityState != 'hidden') {
+                // We should dispatch the event when the visibilityState is
+                // 'hidden'.
+                localStorage.setItem('visibilitychange_storage', 'not_hidden');
+              } else {
+                localStorage.setItem('visibilitychange_storage',
+                  'dispatched_once');
+              }
+              dispatched_visibilitychange = true;
+            })"));
+
+  // 2) Navigate to local_storage.html.
+  RenderFrameDeletedObserver main_frame_1_deleted_observer(main_frame_1);
+  EXPECT_TRUE(NavigateToURL(shell(), url_2));
+
+  // Check that title1.html and local_storage.html are in different RFHs.
+  RenderFrameHostImpl* main_frame_2 = web_contents->GetMainFrame();
+  EXPECT_NE(main_frame_1, main_frame_2);
+
+  // Check that the value set by |main_frame_1|'s pagehide handler can be
+  // accessed by |main_frame_2| at load time (the first time the new page runs
+  // scripts), setting the |visibilitychange_storage_at_load| variable
+  // correctly.
+  EXPECT_EQ("dispatched_once",
+            EvalJs(main_frame_2, "visibilitychange_storage_at_load"));
+
+  // Check that the value for 'visibilitychange_storage' stays the same after
+  // |main_frame_2| finished loading (or |main_frame_1| got deleted, if bfcache
+  // is not enabled).
+  if (!IsBackForwardCacheEnabled())
+    main_frame_1_deleted_observer.WaitUntilDeleted();
+  EXPECT_EQ(
+      "dispatched_once",
+      EvalJs(main_frame_2, "localStorage.getItem('visibilitychange_storage')"));
+}
+
+// Tests that unload handlers of the old RFH are run during commit of the new
+// RFH when swapping RFH for same-site navigations due to proactive
+// BrowsingInstance swap.
+// TODO(crbug.com/1110744): support this.
+IN_PROC_BROWSER_TEST_P(ProactivelySwapBrowsingInstancesSameSiteTest,
+                       DISABLED_UnloadRunsDuringCommit) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_1(embedded_test_server()->GetURL("/title1.html"));
+  GURL url_2(embedded_test_server()->GetURL("/local_storage.html"));
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+
+  // 1) Navigate to title1.html.
+  EXPECT_TRUE(NavigateToURL(shell(), url_1));
+  RenderFrameHostImpl* main_frame_1 = web_contents->GetMainFrame();
+  // Create an unload handler that sets item "unload_storage" in localStorage.
+  EXPECT_TRUE(ExecJs(main_frame_1, R"(
+            localStorage.setItem('unload_storage', 'not_dispatched');
+            var dispatched_unload = false;
+            window.onunload = function(e) {
+              if (dispatched_unload) {
+                // We shouldn't dispatch unload more than once.
+                localStorage.setItem('unload_storage',
+                  'dispatched_more_than_once');
+              } else {
+                localStorage.setItem('unload_storage', 'dispatched_once');
+              }
+              dispatched_unload = true;
+            };)"));
+
+  // 2) Navigate to local_storage.html.
+  RenderFrameDeletedObserver main_frame_1_deleted_observer(main_frame_1);
+  EXPECT_TRUE(NavigateToURL(shell(), url_2));
+
+  // Check that title1.html and local_storage.html are in different RFHs.
+  RenderFrameHostImpl* main_frame_2 = web_contents->GetMainFrame();
+  EXPECT_NE(main_frame_1, main_frame_2);
+
+  // Check that the value set by |main_frame_1|'s unload handler can be
+  // accessed by |main_frame_2| at load time (the first time the new page runs
+  // scripts), setting the |unload_storage_at_load| variable correctly.
+  EXPECT_EQ("dispatched_once", EvalJs(main_frame_2, "unload_storage_at_load"));
+
+  // Check that the value for 'unload_storage' stays the same after
+  // |main_frame_2| finished loading (or |main_frame_1| got deleted, if bfcache
+  // is not enabled).
+  if (!IsBackForwardCacheEnabled())
+    main_frame_1_deleted_observer.WaitUntilDeleted();
+  EXPECT_EQ("dispatched_once",
+            EvalJs(main_frame_2, "localStorage.getItem('unload_storage')"));
+}
+
+// Tests that pagehide and visibilitychange handlers of a subframe in the old
+// page are run during the commit of a new main RFH when swapping RFH for
+// same-site navigations due to proactive BrowsingInstance swap.
+IN_PROC_BROWSER_TEST_P(
+    ProactivelySwapBrowsingInstancesSameSiteTest,
+    PagehideAndVisibilitychangeInSubframesAreRunDuringCommit) {
+  if (IsBackForwardCacheEnabled()) {
+    // bfcached subframes with unload/pagehide/visibilitychange handlers will
+    // crash on a failed DCHECK due to crbug.com/1109742.
+    // TODO(crbug.com/1109742): don't skip this test when bfcache is enabled.
+    return;
+  }
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a.com(a.com)"));
+  GURL child_url = embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a.com()");
+  GURL url_2(embedded_test_server()->GetURL("a.com", "/local_storage.html"));
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+
+  // 1) Navigate to |main_url|.
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  RenderFrameHostImpl* main_frame_1 = web_contents->GetMainFrame();
+  FrameTreeNode* root = web_contents->GetFrameTree()->root();
+  ASSERT_EQ(1U, root->child_count());
+  // Check if the subframe is navigated to the correct URL.
+  FrameTreeNode* child = root->child_at(0);
+  EXPECT_EQ(child_url, child->current_url());
+
+  // Create a pagehide handler that sets item "pagehide_storage" and a
+  // visibilitychange handler that sets item "visibilitychange_storage" in
+  // localStorage in the subframe.
+  EXPECT_TRUE(ExecJs(
+      child,
+      base::StringPrintf(R"(
+          localStorage.setItem('pagehide_storage', 'not_dispatched');
+          var dispatched_pagehide = false;
+          window.onpagehide = function(e) {
+            if (dispatched_pagehide) {
+              // We shouldn't dispatch pagehide more than once.
+              localStorage.setItem('pagehide_storage',
+                'dispatched_more_than_once');
+            } else if (e.persisted != %s) {
+              localStorage.setItem('pagehide_storage', 'wrong_persisted');
+            } else {
+              localStorage.setItem('pagehide_storage', 'dispatched_once');
+            }
+            dispatched_pagehide = true;
+          }
+
+          localStorage.setItem('visibilitychange_storage', 'not_dispatched');
+          var dispatched_visibilitychange = false;
+          document.onvisibilitychange = function(e) {
+            if (dispatched_visibilitychange) {
+              // We shouldn't dispatch visibilitychange more than once.
+              localStorage.setItem('visibilitychange_storage',
+                'dispatched_more_than_once');
+            } else if (document.visibilityState != 'hidden') {
+              // We should dispatch the event when the visibilityState is
+              // 'hidden'.
+              localStorage.setItem('visibilitychange_storage', 'not_hidden');
+            } else {
+              localStorage.setItem('visibilitychange_storage',
+                'dispatched_once');
+            }
+            dispatched_visibilitychange = true;
+          })",
+                         IsBackForwardCacheEnabled() ? "true" : "false")));
+  // 2) Navigate to local_storage.html.
+  RenderFrameDeletedObserver main_frame_1_deleted_observer(main_frame_1);
+  EXPECT_TRUE(NavigateToURL(shell(), url_2));
+
+  // Check that |main_url| and local_storage.html are in different RFHs.
+  RenderFrameHostImpl* main_frame_2 = web_contents->GetMainFrame();
+  EXPECT_NE(main_frame_1, main_frame_2);
+
+  // Check that the value set by |child|'s pagehide and visibilitychange
+  // handlers can be accessed by |main_frame_2| at load time (the first time the
+  // new page runs scripts), setting the |pagehide_storage_at_load| and
+  // |visibilitychange_storage_at_load| variable correctly.
+  EXPECT_EQ("dispatched_once",
+            EvalJs(main_frame_2, "pagehide_storage_at_load"));
+  EXPECT_EQ("dispatched_once",
+            EvalJs(main_frame_2, "visibilitychange_storage_at_load"));
+
+  // Check that the value for 'pagehide_storage' and 'visibilitychange_storage'
+  // stays the same after |main_frame_2| finished loading (or |main_frame_1| got
+  // deleted, if bfcache is not enabled).
+  if (!IsBackForwardCacheEnabled())
+    main_frame_1_deleted_observer.WaitUntilDeleted();
+  EXPECT_EQ("dispatched_once",
+            EvalJs(main_frame_2, "localStorage.getItem('pagehide_storage')"));
+  EXPECT_EQ(
+      "dispatched_once",
+      EvalJs(main_frame_2, "localStorage.getItem('visibilitychange_storage')"));
+}
+
+// Tests that pagehide handlers of the old RFH are run during the commit
+// of the new RFH when swapping RFH for same-site navigations due to proactive
+// BrowsingInstance swap even if the page is already hidden (and
+// visibilitychange won't run).
+IN_PROC_BROWSER_TEST_P(ProactivelySwapBrowsingInstancesSameSiteTest,
+                       PagehideRunsDuringCommitOfHiddenPage) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_1(embedded_test_server()->GetURL("/title1.html"));
+  GURL url_2(embedded_test_server()->GetURL("/local_storage.html"));
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+
+  // 1) Navigate to |url_1| and hide the tab.
+  EXPECT_TRUE(NavigateToURL(shell(), url_1));
+  RenderFrameHostImpl* main_frame_1 = web_contents->GetMainFrame();
+  // We need to set it to Visibility::VISIBLE first in case this is the first
+  // time the visibility is updated.
+  web_contents->UpdateWebContentsVisibility(Visibility::VISIBLE);
+  web_contents->UpdateWebContentsVisibility(Visibility::HIDDEN);
+  EXPECT_EQ(Visibility::HIDDEN, web_contents->GetVisibility());
+
+  // Create a pagehide handler that sets item "pagehide_storage" and a
+  // visibilitychange handler that sets item "visibilitychange_storage" in
+  // localStorage.
+  EXPECT_TRUE(ExecJs(
+      main_frame_1,
+      base::StringPrintf(R"(
+          localStorage.setItem('pagehide_storage', 'not_dispatched');
+          var dispatched_pagehide = false;
+          window.onpagehide = function(e) {
+            if (dispatched_pagehide) {
+              // We shouldn't dispatch pagehide more than once.
+              localStorage.setItem('pagehide_storage',
+                'dispatched_more_than_once');
+            } else if (e.persisted != %s) {
+              localStorage.setItem('pagehide_storage', 'wrong_persisted');
+            } else {
+              localStorage.setItem('pagehide_storage', 'dispatched_once');
+            }
+            dispatched_pagehide = true;
+          }
+
+          localStorage.setItem('visibilitychange_storage', 'not_dispatched');
+          document.onvisibilitychange = function(e) {
+            localStorage.setItem('visibilitychange_storage',
+                'should_not_be_dispatched');
+          })",
+                         IsBackForwardCacheEnabled() ? "true" : "false")));
+  // |visibilitychange_storage| should be set to its initial correct value.
+  EXPECT_EQ(
+      "not_dispatched",
+      EvalJs(main_frame_1, "localStorage.getItem('visibilitychange_storage')"));
+
+  // 2) Navigate to local_storage.html.
+  RenderFrameDeletedObserver main_frame_1_deleted_observer(main_frame_1);
+  EXPECT_TRUE(NavigateToURL(shell(), url_2));
+
+  // Check that |url_1| and local_storage.html are in different RFHs.
+  RenderFrameHostImpl* main_frame_2 = web_contents->GetMainFrame();
+  EXPECT_NE(main_frame_1, main_frame_2);
+
+  // Check that the value set by |main_frame_1|'s pagehide handler can be
+  // accessed by |main_frame_2| at load time (the first time the new page runs
+  // scripts), setting the |pagehide_storage_at_load| and variable correctly.
+  EXPECT_EQ("dispatched_once",
+            EvalJs(main_frame_2, "pagehide_storage_at_load"));
+  // |visibilitychange_storage_at_load| should not be modified.
+  EXPECT_EQ("not_dispatched",
+            EvalJs(main_frame_2, "visibilitychange_storage_at_load"));
+
+  // Check that the value for 'pagehide_storage' and 'visibilitychange_storage'
+  // stays the same after |main_frame_2| finished loading (or |main_frame_1| got
+  // deleted, if bfcache is not enabled).
+  if (!IsBackForwardCacheEnabled())
+    main_frame_1_deleted_observer.WaitUntilDeleted();
+  EXPECT_EQ("dispatched_once",
+            EvalJs(main_frame_2, "localStorage.getItem('pagehide_storage')"));
+  EXPECT_EQ(
+      "not_dispatched",
+      EvalJs(main_frame_2, "localStorage.getItem('visibilitychange_storage')"));
+}
+
 // Helper class to simplify testing of unload handlers.  It allows waiting for
 // particular HTTP requests to be made to the embedded_test_server(); the tests
 // use this to wait for termination pings (e.g., navigator.sendBeacon()) made
@@ -7329,6 +7684,12 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerUnloadBrowserTest,
 
   // Navigate to another page with two subframes.
   RenderFrameDeletedObserver rfh_observer(rfh);
+
+  // Ensure that current document won't enter the BackForwardCache, so that it
+  // properly execute its unload handler. So, we disable back-forward cache for
+  // this test.
+  DisableBackForwardCache(BackForwardCacheImpl::TEST_USES_UNLOAD_EVENT);
+
   GURL second_url(embedded_test_server()->GetURL(
       "b.com", "/cross_site_iframe_factory.html?b(c,b)"));
   EXPECT_TRUE(NavigateToURL(shell(), second_url));
@@ -7634,6 +7995,12 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   GURL url3(embedded_test_server()->GetURL("bar.com", "/title1.html"));
   RenderProcessHostWatcher exit_observer(
       process1, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+
+  // With BackForwardCache, old process won't be deleted on navigation as it is
+  // still in use by the bfcached document, disable back-forward cache to ensure
+  // that the process gets deleted.
+  DisableBackForwardCache(BackForwardCacheImpl::TEST_ASSUMES_NO_CACHING);
+
   EXPECT_TRUE(NavigateToURL(shell(), url3));
   exit_observer.Wait();
 

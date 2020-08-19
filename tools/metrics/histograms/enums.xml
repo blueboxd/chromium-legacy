@@ -28225,7 +28225,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="2877" label="VerticalScrollbarThumbScrollingWithTouch"/>
   <int value="2878" label="HorizontalScrollbarThumbScrollingWithMouse"/>
   <int value="2879" label="HorizontalScrollbarThumbScrollingWithTouch"/>
-  <int value="2880" label="SMSReceiverStart"/>
+  <int value="2880" label="WebOTP"/>
   <int value="2881" label="V8Animation_Pending_AttributeGetter"/>
   <int value="2882" label="FocusWithoutUserActivationNotSandboxedNotAdFrame"/>
   <int value="2883" label="FocusWithoutUserActivationNotSandboxedAdFrame"/>

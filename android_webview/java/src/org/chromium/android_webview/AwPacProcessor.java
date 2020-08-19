@@ -23,42 +23,46 @@ import org.chromium.base.annotations.NativeMethods;
 @TargetApi(28)
 public class AwPacProcessor {
     private long mNativePacProcessor;
-    private long mNetworkHandle;
+    private Network mNetwork;
 
     public static final long NETWORK_UNSPECIFIED = 0;
 
     private static class LazyHolder {
-        static final AwPacProcessor sInstance = new AwPacProcessor(NETWORK_UNSPECIFIED);
+        static final AwPacProcessor sInstance = new AwPacProcessor(null);
     }
 
     public static AwPacProcessor getInstance() {
         return LazyHolder.sInstance;
     }
 
-    public AwPacProcessor(long networkHandle) {
-        mNetworkHandle = networkHandle;
-        mNativePacProcessor = AwPacProcessorJni.get().createNativePacProcessor(networkHandle);
-
-        if (mNetworkHandle != NETWORK_UNSPECIFIED) {
-            Context context = ContextUtils.getApplicationContext();
-            ConnectivityManager connectivityManager =
-                    (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-            NetworkRequest.Builder builder = new NetworkRequest.Builder();
-
-            connectivityManager.registerNetworkCallback(
-                    builder.build(), new ConnectivityManager.NetworkCallback() {
-                        @Override
-                        public void onLinkPropertiesChanged(
-                                Network network, LinkProperties linkProperties) {
-                            if (network.getNetworkHandle() == mNetworkHandle) {
-                                updateNetworkLinkAddress(linkProperties);
-                            }
-                        }
-                    });
-
-            updateNetworkLinkAddress(connectivityManager.getLinkProperties(
-                    Network.fromNetworkHandle(mNetworkHandle)));
+    public AwPacProcessor(Network network) {
+        if (network == null) {
+            mNativePacProcessor =
+                    AwPacProcessorJni.get().createNativePacProcessor(NETWORK_UNSPECIFIED);
+            return;
         }
+
+        mNetwork = network;
+        mNativePacProcessor =
+                AwPacProcessorJni.get().createNativePacProcessor(mNetwork.getNetworkHandle());
+
+        Context context = ContextUtils.getApplicationContext();
+        ConnectivityManager connectivityManager =
+                (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkRequest.Builder builder = new NetworkRequest.Builder();
+
+        connectivityManager.registerNetworkCallback(
+                builder.build(), new ConnectivityManager.NetworkCallback() {
+                    @Override
+                    public void onLinkPropertiesChanged(
+                            Network network, LinkProperties linkProperties) {
+                        if (network.equals(mNetwork)) {
+                            updateNetworkLinkAddress(linkProperties);
+                        }
+                    }
+                });
+
+        updateNetworkLinkAddress(connectivityManager.getLinkProperties(mNetwork));
     }
 
     private void updateNetworkLinkAddress(LinkProperties linkProperties) {
@@ -80,6 +84,10 @@ public class AwPacProcessor {
 
     public String makeProxyRequest(String url) {
         return AwPacProcessorJni.get().makeProxyRequest(mNativePacProcessor, this, url);
+    }
+
+    public Network getNetwork() {
+        return mNetwork;
     }
 
     public static void initializeEnvironment() {

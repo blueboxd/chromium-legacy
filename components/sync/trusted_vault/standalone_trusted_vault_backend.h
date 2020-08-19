@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -27,6 +28,9 @@ namespace syncer {
 class StandaloneTrustedVaultBackend
     : public base::RefCountedThreadSafe<StandaloneTrustedVaultBackend> {
  public:
+  using FetchKeysCallback = base::OnceCallback<void(
+      const std::vector<std::vector<uint8_t>>& vault_keys)>;
+
   StandaloneTrustedVaultBackend(
       const base::FilePath& file_path,
       std::unique_ptr<TrustedVaultConnection> connection);
@@ -39,14 +43,23 @@ class StandaloneTrustedVaultBackend
   // object.
   void ReadDataFromDisk();
 
-  // Returns keys corresponding to |account_info|.
-  std::vector<std::vector<uint8_t>> FetchKeys(
-      const CoreAccountInfo& account_info);
+  // Populates vault keys corresponding to |account_info| into |callback|. If
+  // recent keys are locally available, |callback| will be called immediately.
+  // Otherwise, attempts to download new keys from the server. In case of
+  // failure or if current state isn't sufficient it will populate locally
+  // available keys regardless of their freshness.
+  // Concurrent calls are not supported.
+  void FetchKeys(const CoreAccountInfo& account_info,
+                 FetchKeysCallback callback);
 
   // Replaces keys for given |gaia_id| both in memory and in |file_path_|.
   void StoreKeys(const std::string& gaia_id,
                  const std::vector<std::vector<uint8_t>>& keys,
                  int last_key_version);
+
+  // Marks vault keys as stale.  Afterwards, the next FetchKeys() call for this
+  // |account_info| will trigger a key download attempt.
+  bool MarkKeysAsStale(const CoreAccountInfo& account_info);
 
   // Removes all keys for all accounts from both memory and |file_path_|.
   void RemoveAllStoredKeys();
@@ -76,6 +89,15 @@ class StandaloneTrustedVaultBackend
   void OnDeviceRegistered(const std::string& gaia_id,
                           TrustedVaultRequestStatus status);
 
+  void OnKeysDownloaded(const std::string& gaia_id,
+                        TrustedVaultRequestStatus status,
+                        const std::vector<std::vector<uint8_t>>& vault_keys,
+                        int last_vault_key_version);
+
+  void AbandonConnectionRequest();
+
+  void FulfillOngoingFetchKeys();
+
   const base::FilePath file_path_;
 
   sync_pb::LocalTrustedVault data_;
@@ -86,6 +108,12 @@ class StandaloneTrustedVaultBackend
 
   // Used for communication with trusted vault server.
   std::unique_ptr<TrustedVaultConnection> connection_;
+
+  // Used to plumb FetchKeys() result to the caller.
+  FetchKeysCallback ongoing_fetch_keys_callback_;
+
+  // Account used in last FetchKeys() call.
+  base::Optional<std::string> ongoing_fetch_keys_gaia_id_;
 
   // Used for cancellation of callbacks passed to |connection_|.
   base::WeakPtrFactory<StandaloneTrustedVaultBackend>

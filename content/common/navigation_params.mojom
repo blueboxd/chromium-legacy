@@ -23,6 +23,7 @@ import "third_party/blink/public/mojom/frame/frame_policy.mojom";
 import "third_party/blink/public/mojom/loader/referrer.mojom";
 import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
+import "third_party/blink/public/mojom/page/page.mojom";
 
 [Native]
 struct Impression;
@@ -281,6 +282,23 @@ struct NavigationTiming {
   mojo_base.mojom.TimeTicks fetch_start;
 };
 
+// Sent with CommitNavigationParams and should only be set for main-frame
+// same-site navigations where we did a proactive BrowsingInstance swap and
+// we're reusing the old page's process. Needed to ensure that the previous
+// page's pagehide and visibilitychange handlers are run before the new page
+// runs (which is what happens on other same-site main frame navigations).
+struct OldPageInfo {
+  // |routing_id_for_old_main_frame| contains the routing ID of the old page's
+  // main RenderFrameHost.
+  int32 routing_id_for_old_main_frame = -1;
+  // |new_lifecycle_state_for_old_page| contains the latest PageLifecycleState
+  // of the old page to ensure the PageVisibilityState gets properly updated,
+  // the "persisted" property of the pagehide event is set correctly, and
+  // pagehide and visibilitychange events won't get dispatched again when we
+  // unload/freeze the page later on.
+  blink.mojom.PageLifecycleState new_lifecycle_state_for_old_page;
+};
+
 // Used by commit IPC messages. Holds the parameters needed by the renderer to
 // commit a navigation besides those in CommonNavigationParams.
 struct CommitNavigationParams {
@@ -451,4 +469,9 @@ struct CommitNavigationParams {
   // Enforcement for enforcing on frames Content Security Policies required by
   // their embedders.
   array<string> forced_content_security_policies;
+
+  // Should only be set to a valid value for main-frame same-site navigations
+  // where we did a proactive BrowsingInstance swap and we're reusing the old
+  // page's process.
+  OldPageInfo? old_page_info;
 };

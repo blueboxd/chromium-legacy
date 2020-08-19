@@ -583,9 +583,9 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, AcceptsOptions) {
   auto result =
       EvalJs(shell(),
              "self.showOpenFilePicker({types: ["
-             "  {description: 'foo', accept: {'text/custom': ['txt', 'Js']}},"
+             "  {description: 'foo', accept: {'text/custom': ['.txt', '.Js']}},"
              "  {accept: {'image/jpeg': []}},"
-             "  {accept: {'image/svg+xml': 'svg'}},"
+             "  {accept: {'image/svg+xml': '.svg'}},"
              "]})");
   EXPECT_TRUE(result.error.find("aborted") != std::string::npos)
       << result.error;

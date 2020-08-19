@@ -61,7 +61,7 @@ static NSString* const kFeedbackContext = @"SideMenuFeedbackContext";
                      NSString* message =
                          [NSString stringWithFormat:@"Using WebRTC: %s",
                                                     newValue ? "Yes" : "No"];
-                     [MDCSnackbarManager
+                     [MDCSnackbarManager.defaultManager
                          showMessage:[MDCSnackbarMessage
                                          messageWithText:message]];
                    }],

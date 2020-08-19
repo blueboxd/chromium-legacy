@@ -127,6 +127,7 @@ void DevToolsSession::AddHandler(
     std::unique_ptr<protocol::DevToolsDomainHandler> handler) {
   DCHECK(agent_host_);
   handler->Wire(dispatcher_.get());
+  handler->SetSession(this);
   handlers_[handler->name()] = std::move(handler);
 }
 

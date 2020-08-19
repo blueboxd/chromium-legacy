@@ -37,7 +37,9 @@ class CORE_EXPORT RemoteFrame final : public Frame,
                                       public mojom::blink::RemoteFrame {
  public:
   // Returns the RemoteFrame for the given |frame_token|.
+  // TODO(crbug.com/1096617): Remove the UnguessableToken version of this.
   static RemoteFrame* FromFrameToken(const base::UnguessableToken& frame_token);
+  static RemoteFrame* FromFrameToken(const RemoteFrameToken& frame_token);
 
   // For a description of |inheriting_agent_factory| go see the comment on the
   // Frame constructor.
@@ -177,6 +179,10 @@ class CORE_EXPORT RemoteFrame final : public Frame,
 
   // Indicate that this frame was attached as a MainFrame.
   void WasAttachedAsRemoteMainFrame();
+
+  RemoteFrameToken GetRemoteFrameToken() const {
+    return RemoteFrameToken(GetFrameToken());
+  }
 
  private:
   // Frame protected overrides:

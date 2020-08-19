@@ -195,13 +195,17 @@ SkSurface* SkiaOutputDeviceVulkan::BeginPaint(
     const auto surface_format = vulkan_surface_->surface_format().format;
     DCHECK(surface_format == VK_FORMAT_B8G8R8A8_UNORM ||
            surface_format == VK_FORMAT_R8G8B8A8_UNORM);
-    GrVkImageInfo vk_image_info(
-        scoped_write_->image(), GrVkAlloc(), VK_IMAGE_TILING_OPTIMAL,
-        scoped_write_->image_layout(), surface_format, 1 /* level_count */,
-        VK_QUEUE_FAMILY_IGNORED,
+    GrVkImageInfo vk_image_info;
+    vk_image_info.fImage = scoped_write_->image();
+    vk_image_info.fImageTiling = VK_IMAGE_TILING_OPTIMAL;
+    vk_image_info.fImageLayout = scoped_write_->image_layout();
+    vk_image_info.fFormat = surface_format;
+    vk_image_info.fLevelCount = 1;
+    vk_image_info.fCurrentQueueFamily = VK_QUEUE_FAMILY_IGNORED;
+    vk_image_info.fProtected =
         vulkan_surface_->swap_chain()->use_protected_memory()
             ? GrProtected::kYes
-            : GrProtected::kNo);
+            : GrProtected::kNo;
     const auto& vk_image_size = vulkan_surface_->image_size();
     GrBackendRenderTarget render_target(vk_image_size.width(),
                                         vk_image_size.height(),

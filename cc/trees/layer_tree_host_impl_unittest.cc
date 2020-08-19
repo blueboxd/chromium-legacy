@@ -137,6 +137,8 @@ struct TestFrameData : public LayerTreeHostImpl::FrameData {
   }
 };
 
+}  // namespace
+
 class LayerTreeHostImplTest : public testing::Test,
                               public LayerTreeHostImplClient {
  public:
@@ -2289,14 +2291,14 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, ScrollHandlerNotPresent) {
   EXPECT_FALSE(host_impl_->active_tree()->have_scroll_event_handlers());
   DrawFrame();
 
-  EXPECT_FALSE(host_impl_->scroll_affects_scroll_handler());
+  EXPECT_FALSE(host_impl_->ScrollAffectsScrollHandler());
   host_impl_->ScrollBegin(BeginState(gfx::Point(), gfx::Vector2d(0, 10),
                                      ui::ScrollInputType::kTouchscreen)
                               .get(),
                           ui::ScrollInputType::kTouchscreen);
-  EXPECT_FALSE(host_impl_->scroll_affects_scroll_handler());
+  EXPECT_FALSE(host_impl_->ScrollAffectsScrollHandler());
   host_impl_->ScrollEnd();
-  EXPECT_FALSE(host_impl_->scroll_affects_scroll_handler());
+  EXPECT_FALSE(host_impl_->ScrollAffectsScrollHandler());
 }
 
 TEST_P(ScrollUnifiedLayerTreeHostImplTest, ScrollHandlerPresent) {
@@ -2304,14 +2306,14 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, ScrollHandlerPresent) {
   host_impl_->active_tree()->set_have_scroll_event_handlers(true);
   DrawFrame();
 
-  EXPECT_FALSE(host_impl_->scroll_affects_scroll_handler());
+  EXPECT_FALSE(host_impl_->ScrollAffectsScrollHandler());
   host_impl_->ScrollBegin(BeginState(gfx::Point(), gfx::Vector2d(0, 10),
                                      ui::ScrollInputType::kTouchscreen)
                               .get(),
                           ui::ScrollInputType::kTouchscreen);
-  EXPECT_TRUE(host_impl_->scroll_affects_scroll_handler());
+  EXPECT_TRUE(host_impl_->ScrollAffectsScrollHandler());
   host_impl_->ScrollEnd();
-  EXPECT_FALSE(host_impl_->scroll_affects_scroll_handler());
+  EXPECT_FALSE(host_impl_->ScrollAffectsScrollHandler());
 }
 
 TEST_P(ScrollUnifiedLayerTreeHostImplTest, ScrollUpdateReturnsCorrectValue) {
@@ -2443,7 +2445,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, ScrollSnapOnX) {
   host_impl_->ScrollEnd(true);
 
   // Snap target should not be set until the end of the animation.
-  EXPECT_TRUE(host_impl_->GetInputHandler().IsAnimatingForSnap());
+  EXPECT_TRUE(host_impl_->GetInputHandler().animating_for_snap_for_testing());
   EXPECT_EQ(TargetSnapAreaElementIds(),
             GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
 
@@ -2455,7 +2457,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, ScrollSnapOnX) {
   BeginImplFrameAndAnimate(
       begin_frame_args, start_time + base::TimeDelta::FromMilliseconds(1000));
 
-  EXPECT_FALSE(host_impl_->GetInputHandler().IsAnimatingForSnap());
+  EXPECT_FALSE(host_impl_->GetInputHandler().animating_for_snap_for_testing());
   EXPECT_VECTOR_EQ(gfx::Vector2dF(50, 0), CurrentScrollOffset(overflow));
   EXPECT_EQ(TargetSnapAreaElementIds(ElementId(10), ElementId()),
             GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
@@ -2488,7 +2490,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, ScrollSnapOnY) {
   host_impl_->ScrollEnd(true);
 
   // Snap target should not be set until the end of the animation.
-  EXPECT_TRUE(host_impl_->GetInputHandler().IsAnimatingForSnap());
+  EXPECT_TRUE(host_impl_->GetInputHandler().animating_for_snap_for_testing());
   EXPECT_EQ(TargetSnapAreaElementIds(),
             GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
 
@@ -2500,7 +2502,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, ScrollSnapOnY) {
   BeginImplFrameAndAnimate(
       begin_frame_args, start_time + base::TimeDelta::FromMilliseconds(1000));
 
-  EXPECT_FALSE(host_impl_->GetInputHandler().IsAnimatingForSnap());
+  EXPECT_FALSE(host_impl_->GetInputHandler().animating_for_snap_for_testing());
   EXPECT_VECTOR_EQ(gfx::Vector2dF(0, 50), CurrentScrollOffset(overflow));
   EXPECT_EQ(TargetSnapAreaElementIds(ElementId(), ElementId(10)),
             GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
@@ -2532,7 +2534,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, ScrollSnapOnBoth) {
   host_impl_->ScrollEnd(true);
 
   // Snap target should not be set until the end of the animation.
-  EXPECT_TRUE(host_impl_->GetInputHandler().IsAnimatingForSnap());
+  EXPECT_TRUE(host_impl_->GetInputHandler().animating_for_snap_for_testing());
   EXPECT_EQ(TargetSnapAreaElementIds(),
             GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
 
@@ -2544,7 +2546,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, ScrollSnapOnBoth) {
   BeginImplFrameAndAnimate(
       begin_frame_args, start_time + base::TimeDelta::FromMilliseconds(1000));
 
-  EXPECT_FALSE(host_impl_->GetInputHandler().IsAnimatingForSnap());
+  EXPECT_FALSE(host_impl_->GetInputHandler().animating_for_snap_for_testing());
   EXPECT_VECTOR_EQ(gfx::Vector2dF(50, 50), CurrentScrollOffset(overflow));
   EXPECT_EQ(TargetSnapAreaElementIds(ElementId(10), ElementId(10)),
             GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
@@ -2598,7 +2600,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, ScrollSnapAfterAnimatedScroll) {
   // Animating for the wheel scroll.
   BeginImplFrameAndAnimate(begin_frame_args,
                            start_time + base::TimeDelta::FromMilliseconds(50));
-  EXPECT_FALSE(host_impl_->GetInputHandler().IsAnimatingForSnap());
+  EXPECT_FALSE(host_impl_->GetInputHandler().animating_for_snap_for_testing());
   gfx::ScrollOffset current_offset = CurrentScrollOffset(overflow);
   EXPECT_LT(0, current_offset.x());
   EXPECT_GT(20, current_offset.x());
@@ -2612,7 +2614,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, ScrollSnapAfterAnimatedScroll) {
       begin_frame_args, start_time + base::TimeDelta::FromMilliseconds(1000));
 
   // The snap target should not be set until the end of the animation.
-  EXPECT_TRUE(host_impl_->GetInputHandler().IsAnimatingForSnap());
+  EXPECT_TRUE(host_impl_->GetInputHandler().animating_for_snap_for_testing());
   EXPECT_EQ(TargetSnapAreaElementIds(),
             GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
 
@@ -2620,7 +2622,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, ScrollSnapAfterAnimatedScroll) {
   BeginImplFrameAndAnimate(
       begin_frame_args, start_time + base::TimeDelta::FromMilliseconds(1500));
   EXPECT_VECTOR_EQ(gfx::Vector2dF(50, 50), CurrentScrollOffset(overflow));
-  EXPECT_FALSE(host_impl_->GetInputHandler().IsAnimatingForSnap());
+  EXPECT_FALSE(host_impl_->GetInputHandler().animating_for_snap_for_testing());
   EXPECT_EQ(TargetSnapAreaElementIds(ElementId(10), ElementId(10)),
             GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
 }
@@ -2642,7 +2644,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, SnapAnimationTargetUpdated) {
   host_impl_->ScrollUpdate(
       UpdateState(pointer_position, y_delta, ui::ScrollInputType::kWheel)
           .get());
-  EXPECT_FALSE(host_impl_->GetInputHandler().IsAnimatingForSnap());
+  EXPECT_FALSE(host_impl_->GetInputHandler().animating_for_snap_for_testing());
 
   viz::BeginFrameArgs begin_frame_args =
       viz::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1);
@@ -2654,7 +2656,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, SnapAnimationTargetUpdated) {
   // Finish smooth wheel scroll animation which starts a snap animation.
   BeginImplFrameAndAnimate(begin_frame_args,
                            start_time + base::TimeDelta::FromMilliseconds(100));
-  EXPECT_TRUE(host_impl_->GetInputHandler().IsAnimatingForSnap());
+  EXPECT_TRUE(host_impl_->GetInputHandler().animating_for_snap_for_testing());
   EXPECT_EQ(TargetSnapAreaElementIds(),
             GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
 
@@ -2667,20 +2669,20 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, SnapAnimationTargetUpdated) {
   // animation.
   host_impl_->ScrollUpdate(
       AnimatedUpdateState(gfx::Point(10, 10), gfx::Vector2dF(0, -10)).get());
-  EXPECT_FALSE(host_impl_->GetInputHandler().IsAnimatingForSnap());
+  EXPECT_FALSE(host_impl_->GetInputHandler().animating_for_snap_for_testing());
   // Finish the smooth scroll animation for wheel.
   BeginImplFrameAndAnimate(begin_frame_args,
                            start_time + base::TimeDelta::FromMilliseconds(150));
 
   // At the end of the previous scroll animation, a new animation for the
   // snapping should have started.
-  EXPECT_TRUE(host_impl_->GetInputHandler().IsAnimatingForSnap());
+  EXPECT_TRUE(host_impl_->GetInputHandler().animating_for_snap_for_testing());
 
   // Finish the snap animation.
   BeginImplFrameAndAnimate(
       begin_frame_args, start_time + base::TimeDelta::FromMilliseconds(1000));
 
-  EXPECT_FALSE(host_impl_->GetInputHandler().IsAnimatingForSnap());
+  EXPECT_FALSE(host_impl_->GetInputHandler().animating_for_snap_for_testing());
   // At the end of snap animation we should have updated the
   // TargetSnapAreaElementIds.
   EXPECT_EQ(TargetSnapAreaElementIds(ElementId(), ElementId(10)),
@@ -2705,7 +2707,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, SnapAnimationCancelledByScroll) {
   host_impl_->ScrollUpdate(
       UpdateState(pointer_position, x_delta, ui::ScrollInputType::kWheel)
           .get());
-  EXPECT_FALSE(host_impl_->GetInputHandler().IsAnimatingForSnap());
+  EXPECT_FALSE(host_impl_->GetInputHandler().animating_for_snap_for_testing());
 
   viz::BeginFrameArgs begin_frame_args =
       viz::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1);
@@ -2717,7 +2719,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, SnapAnimationCancelledByScroll) {
   // Animating for the snap.
   BeginImplFrameAndAnimate(begin_frame_args,
                            start_time + base::TimeDelta::FromMilliseconds(100));
-  EXPECT_TRUE(host_impl_->GetInputHandler().IsAnimatingForSnap());
+  EXPECT_TRUE(host_impl_->GetInputHandler().animating_for_snap_for_testing());
   EXPECT_EQ(TargetSnapAreaElementIds(),
             GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
 
@@ -2735,7 +2737,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, SnapAnimationCancelledByScroll) {
       ScrollThread::SCROLL_ON_IMPL_THREAD,
       host_impl_->ScrollBegin(begin_state.get(), ui::ScrollInputType::kWheel)
           .thread);
-  EXPECT_FALSE(host_impl_->GetInputHandler().IsAnimatingForSnap());
+  EXPECT_FALSE(host_impl_->GetInputHandler().animating_for_snap_for_testing());
   EXPECT_EQ(TargetSnapAreaElementIds(),
             GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
 
@@ -2770,14 +2772,14 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest,
   host_impl_->ScrollUpdate(
       UpdateState(pointer_position, x_delta, ui::ScrollInputType::kWheel)
           .get());
-  EXPECT_FALSE(host_impl_->GetInputHandler().IsAnimatingForSnap());
+  EXPECT_FALSE(host_impl_->GetInputHandler().animating_for_snap_for_testing());
 
   viz::BeginFrameArgs begin_frame_args =
       viz::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 1);
   host_impl_->ScrollEnd(true);
 
   // No animation is created, but the snap target should be updated.
-  EXPECT_FALSE(host_impl_->GetInputHandler().IsAnimatingForSnap());
+  EXPECT_FALSE(host_impl_->GetInputHandler().animating_for_snap_for_testing());
   EXPECT_EQ(TargetSnapAreaElementIds(ElementId(10), ElementId()),
             GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
 
@@ -2786,13 +2788,13 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest,
   BeginImplFrameAndAnimate(begin_frame_args, start_time);
 
   // We are already at a snap target so we should not animate for snap.
-  EXPECT_FALSE(host_impl_->GetInputHandler().IsAnimatingForSnap());
+  EXPECT_FALSE(host_impl_->GetInputHandler().animating_for_snap_for_testing());
 
   // Verify that we are not actually animating by running one frame and ensuring
   // scroll offset has not changed.
   BeginImplFrameAndAnimate(begin_frame_args,
                            start_time + base::TimeDelta::FromMilliseconds(100));
-  EXPECT_FALSE(host_impl_->GetInputHandler().IsAnimatingForSnap());
+  EXPECT_FALSE(host_impl_->GetInputHandler().animating_for_snap_for_testing());
   EXPECT_VECTOR_EQ(gfx::Vector2dF(50, 0), CurrentScrollOffset(overflow));
   EXPECT_EQ(TargetSnapAreaElementIds(ElementId(10), ElementId()),
             GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
@@ -2825,7 +2827,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest,
   gfx::Vector2dF initial_offset, target_offset;
   EXPECT_TRUE(host_impl_->GetSnapFlingInfoAndSetAnimatingSnapTarget(
       gfx::Vector2dF(10, 10), &initial_offset, &target_offset));
-  EXPECT_TRUE(host_impl_->GetInputHandler().IsAnimatingForSnap());
+  EXPECT_TRUE(host_impl_->GetInputHandler().animating_for_snap_for_testing());
   EXPECT_VECTOR_EQ(gfx::Vector2dF(4, 4), initial_offset);
   EXPECT_VECTOR_EQ(gfx::Vector2dF(10, 10), target_offset);
   // Snap targets shouldn't be set until the fling animation is complete.
@@ -2833,7 +2835,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest,
             GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
 
   host_impl_->ScrollEndForSnapFling(true /* did_finish */);
-  EXPECT_FALSE(host_impl_->GetInputHandler().IsAnimatingForSnap());
+  EXPECT_FALSE(host_impl_->GetInputHandler().animating_for_snap_for_testing());
   EXPECT_EQ(TargetSnapAreaElementIds(ElementId(10), ElementId(10)),
             GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
 }
@@ -2865,7 +2867,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest,
   gfx::Vector2dF initial_offset, target_offset;
   EXPECT_TRUE(host_impl_->GetSnapFlingInfoAndSetAnimatingSnapTarget(
       gfx::Vector2dF(10, 10), &initial_offset, &target_offset));
-  EXPECT_TRUE(host_impl_->GetInputHandler().IsAnimatingForSnap());
+  EXPECT_TRUE(host_impl_->GetInputHandler().animating_for_snap_for_testing());
   EXPECT_VECTOR_EQ(gfx::Vector2dF(4, 4), initial_offset);
   EXPECT_VECTOR_EQ(gfx::Vector2dF(10, 10), target_offset);
   // Snap targets shouldn't be set until the fling animation is complete.
@@ -2874,7 +2876,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest,
 
   // The snap targets should not be set if the snap fling did not finish.
   host_impl_->ScrollEndForSnapFling(false /* did_finish */);
-  EXPECT_FALSE(host_impl_->GetInputHandler().IsAnimatingForSnap());
+  EXPECT_FALSE(host_impl_->GetInputHandler().animating_for_snap_for_testing());
   EXPECT_EQ(TargetSnapAreaElementIds(),
             GetSnapContainerData(overflow)->GetTargetSnapAreaElementIds());
 }
@@ -13902,7 +13904,8 @@ TEST_F(LayerTreeHostImplTest, AutoscrollTaskAbort) {
         host_impl_
             ->ScrollBegin(begin_state.get(), ui::ScrollInputType::kScrollbar)
             .thread);
-    EXPECT_TRUE(host_impl_->scrollbar_controller_for_testing()
+    EXPECT_TRUE(host_impl_->GetInputHandler()
+                    .scrollbar_controller_for_testing()
                     ->AutoscrollTaskIsScheduled());
   }
 
@@ -13913,7 +13916,8 @@ TEST_F(LayerTreeHostImplTest, AutoscrollTaskAbort) {
         gfx::PointF(350, 575), /*jump_key_modifier*/ false);
     EXPECT_EQ(result.type, PointerResultType::kScrollbarScroll);
     host_impl_->ScrollEnd();
-    EXPECT_FALSE(host_impl_->scrollbar_controller_for_testing()
+    EXPECT_FALSE(host_impl_->GetInputHandler()
+                     .scrollbar_controller_for_testing()
                      ->AutoscrollTaskIsScheduled());
   }
 
@@ -14061,8 +14065,9 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, AnimatedScrollYielding) {
 
   {
     // Set up an animated scrollbar autoscroll.
-    host_impl_->scrollbar_controller_for_testing()->HandlePointerDown(
-        gfx::PointF(350, 560), /*jump_key_modifier*/ false);
+    host_impl_->GetInputHandler()
+        .scrollbar_controller_for_testing()
+        ->HandlePointerDown(gfx::PointF(350, 560), /*jump_key_modifier*/ false);
     auto begin_state = BeginState(gfx::Point(350, 560), gfx::Vector2d(0, 40),
                                   ui::ScrollInputType::kScrollbar);
     EXPECT_EQ(
@@ -14077,7 +14082,8 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, AnimatedScrollYielding) {
     host_impl_->ScrollUpdate(update_state.get());
 
     // Autoscroll animations should be active.
-    EXPECT_TRUE(host_impl_->scrollbar_controller_for_testing()
+    EXPECT_TRUE(host_impl_->GetInputHandler()
+                    .scrollbar_controller_for_testing()
                     ->ScrollbarScrollIsActive());
     EXPECT_TRUE(GetImplAnimationHost()->ImplOnlyScrollAnimatingElement());
   }
@@ -14097,8 +14103,9 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, AnimatedScrollYielding) {
     // clears ScrollbarController::autoscroll_state_,
     // captured_scrollbar_metadata_ etc. That means
     // ScrollbarController::ScrollbarLayer should return null.
-    EXPECT_FALSE(
-        host_impl_->scrollbar_controller_for_testing()->ScrollbarLayer());
+    EXPECT_FALSE(host_impl_->GetInputHandler()
+                     .scrollbar_controller_for_testing()
+                     ->ScrollbarLayer());
 
     EXPECT_EQ(
         ScrollThread::SCROLL_ON_IMPL_THREAD,
@@ -14114,7 +14121,9 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, AnimatedScrollYielding) {
     EXPECT_TRUE(GetImplAnimationHost()->ImplOnlyScrollAnimatingElement());
 
     // This should not trigger any DCHECKs and will be a no-op.
-    host_impl_->scrollbar_controller_for_testing()->WillBeginImplFrame();
+    host_impl_->GetInputHandler()
+        .scrollbar_controller_for_testing()
+        ->WillBeginImplFrame();
   }
 
   // Tear down the LayerTreeHostImpl before the InputHandlerClient.
@@ -17746,5 +17755,4 @@ TEST_F(LayerTreeHostImplTest, FrameElementIdHitTestOverlapSibling) {
   EXPECT_FALSE(host_impl_->FindFrameElementIdAtPoint(gfx::PointF(30, 30)));
 }
 
-}  // namespace
 }  // namespace cc

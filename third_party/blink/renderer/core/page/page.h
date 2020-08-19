@@ -28,6 +28,7 @@
 #include "base/macros.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
+#include "third_party/blink/public/mojom/page/page.mojom-blink.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom-blink.h"
 #include "third_party/blink/public/platform/scheduler/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/public/web/web_window_features.h"
@@ -355,6 +356,21 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
     return page_visibility_observer_list_;
   }
 
+  void SetPageLifecycleState(
+      mojom::blink::PageLifecycleStatePtr lifecycle_state) {
+    lifecycle_state_ = std::move(lifecycle_state);
+  }
+
+  const mojom::blink::PageLifecycleStatePtr& GetPageLifecycleState() {
+    return lifecycle_state_;
+  }
+
+  // Whether we've dispatched "pagehide" on this page previously, and haven't
+  // dispatched the "pageshow" event after the last time we've dispatched
+  // "pagehide". This means that we've navigated away from the page and it's
+  // still hidden (possibly preserved in the back-forward cache, or unloaded).
+  bool DispatchedPagehideAndStillHidden();
+
   static void PrepareForLeakDetection();
 
   TextFragmentSelectorGenerator& GetTextFragmentSelectorGenerator() const {
@@ -434,7 +450,7 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
 
   float device_scale_factor_;
 
-  mojom::blink::PageVisibilityState visibility_state_;
+  mojom::blink::PageLifecycleStatePtr lifecycle_state_;
 
   bool is_ordinary_;
 

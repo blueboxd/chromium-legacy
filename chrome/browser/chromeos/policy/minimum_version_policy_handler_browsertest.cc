@@ -22,6 +22,7 @@
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/test/device_state_mixin.h"
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
+#include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_exit_waiter.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/test/user_policy_mixin.h"
@@ -804,7 +805,8 @@ class MinimumVersionNoUsersLoginTest : public MinimumVersionPolicyTestBase {
 
 IN_PROC_BROWSER_TEST_F(MinimumVersionNoUsersLoginTest,
                        CriticalUpdateOnLoginScreen) {
-  chromeos::OobeScreenWaiter(chromeos::GaiaView::kScreenId).Wait();
+  chromeos::OobeScreenWaiter(chromeos::OobeBaseTest::GetFirstSigninScreen())
+      .Wait();
   EXPECT_EQ(ash::LoginScreenTestApi::GetUsersCount(), 0);
 
   // Create and set policy value.
@@ -825,7 +827,8 @@ IN_PROC_BROWSER_TEST_F(MinimumVersionNoUsersLoginTest,
   SetDevicePolicyAndWaitForSettingChange(empty_policy);
   chromeos::OobeScreenExitWaiter(chromeos::UpdateRequiredView::kScreenId)
       .Wait();
-  chromeos::OobeScreenWaiter(chromeos::GaiaView::kScreenId).Wait();
+  chromeos::OobeScreenWaiter(chromeos::OobeBaseTest::GetFirstSigninScreen())
+      .Wait();
 }
 
 class MinimumVersionPolicyPresentTest : public MinimumVersionPolicyTestBase {

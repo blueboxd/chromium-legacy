@@ -88,7 +88,7 @@ class LoginDisplayHostCommon : public LoginDisplayHost,
   std::unique_ptr<AuthPrewarmer> auth_prewarmer_;
 
   // Kiosk launch controller.
-  std::unique_ptr<KioskLaunchController> app_launch_controller_;
+  std::unique_ptr<KioskLaunchController> kiosk_launch_controller_;
 
   // Demo app launcher.
   std::unique_ptr<DemoAppLauncher> demo_app_launcher_;

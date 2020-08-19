@@ -74,8 +74,42 @@ void PageLifecycleStateManager::SetIsInBackForwardCache(
                 &PageLifecycleStateManager::OnBackForwardCacheTimeout,
                 weak_ptr_factory_.GetWeakPtr()),
             kBackForwardCacheTimeoutInSeconds);
+    pagehide_dispatch_ = blink::mojom::PagehideDispatch::kDispatchedPersisted;
+  } else {
+    // When a page is restored from the back-forward cache, we should reset the
+    // |pagehide_dispatch_| state so that we'd dispatch the
+    // events again the next time we navigate away from the page.
+    pagehide_dispatch_ = blink::mojom::PagehideDispatch::kNotDispatched;
   }
   SendUpdatesToRendererIfNeeded(navigation_start);
+}
+
+blink::mojom::PageLifecycleStatePtr
+PageLifecycleStateManager::SetPagehideDispatchDuringNewPageCommit(
+    bool persisted) {
+  pagehide_dispatch_ =
+      persisted ? blink::mojom::PagehideDispatch::kDispatchedPersisted
+                : blink::mojom::PagehideDispatch::kDispatchedNotPersisted;
+  // We've only modified |pagehide_dispatch_| here, but the "visibility"
+  // property of |last_state_sent_to_renderer_| calculated from
+  // CalculatePageLifecycleState() below will be set to kHidden because it
+  // depends on the value of |pagehide_dispatch_|.
+  last_state_sent_to_renderer_ = CalculatePageLifecycleState();
+  DCHECK_EQ(last_state_sent_to_renderer_->visibility,
+            blink::mojom::PageVisibilityState::kHidden);
+
+  // We don't need to call SendUpdatesToRendererIfNeeded() because the update
+  // will be sent through an OldPageInfo parameter in the CommitNavigation IPC.
+  return last_state_sent_to_renderer_.Clone();
+}
+
+void PageLifecycleStateManager::DidSetPagehideDispatchDuringNewPageCommit(
+    blink::mojom::PageLifecycleStatePtr acknowledged_state) {
+  DCHECK_EQ(acknowledged_state->visibility,
+            blink::mojom::PageVisibilityState::kHidden);
+  DCHECK_NE(acknowledged_state->pagehide_dispatch,
+            blink::mojom::PagehideDispatch::kNotDispatched);
+  OnPageLifecycleChangedAck(std::move(acknowledged_state));
 }
 
 void PageLifecycleStateManager::SendUpdatesToRendererIfNeeded(
@@ -112,9 +146,15 @@ PageLifecycleStateManager::CalculatePageLifecycleState() {
   auto state = blink::mojom::PageLifecycleState::New();
   state->is_in_back_forward_cache = is_in_back_forward_cache_;
   state->is_frozen = is_in_back_forward_cache_ ? true : is_set_frozen_called_;
-  state->visibility = is_in_back_forward_cache_
-                          ? blink::mojom::PageVisibilityState::kHidden
-                          : web_contents_visibility_;
+  state->pagehide_dispatch = pagehide_dispatch_;
+  // If a page is stored in the back-forward cache, or we have already
+  // dispatched/are dispatching pagehide for the page, it should be treated as
+  // "hidden" regardless of what |web_contents_visibility_| is set to.
+  state->visibility =
+      (is_in_back_forward_cache_ ||
+       pagehide_dispatch_ != blink::mojom::PagehideDispatch::kNotDispatched)
+          ? blink::mojom::PageVisibilityState::kHidden
+          : web_contents_visibility_;
   return state;
 }
 

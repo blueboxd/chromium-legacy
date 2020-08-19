@@ -6892,4 +6892,147 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   }
 }
 
+// Tests that pagehide and visibilitychange handlers of the old RFH are run for
+// bfcached pages.
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+                       PagehideAndVisibilitychangeRuns) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_1(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_2(embedded_test_server()->GetURL("b.com", "/title2.html"));
+  GURL url_3(embedded_test_server()->GetURL("a.com", "/title2.html"));
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+
+  // 1) Navigate to |url_1|.
+  EXPECT_TRUE(NavigateToURL(shell(), url_1));
+  RenderFrameHostImpl* main_frame_1 = web_contents->GetMainFrame();
+
+  // Create a pagehide handler that sets item "pagehide_storage" and a
+  // visibilitychange handler that sets item "visibilitychange_storage" in
+  // localStorage.
+  EXPECT_TRUE(ExecJs(main_frame_1,
+                     R"(
+    localStorage.setItem('pagehide_storage', 'not_dispatched');
+    var dispatched_pagehide = false;
+    window.onpagehide = function(e) {
+      if (dispatched_pagehide) {
+        // We shouldn't dispatch pagehide more than once.
+        localStorage.setItem('pagehide_storage', 'dispatched_more_than_once');
+      } else if (!e.persisted) {
+        localStorage.setItem('pagehide_storage', 'wrong_persisted');
+      } else {
+        localStorage.setItem('pagehide_storage', 'dispatched_once');
+      }
+      dispatched_pagehide = true;
+    }
+    localStorage.setItem('visibilitychange_storage', 'not_dispatched');
+    var dispatched_visibilitychange = false;
+    document.onvisibilitychange = function(e) {
+      if (dispatched_visibilitychange) {
+        // We shouldn't dispatch visibilitychange more than once.
+        localStorage.setItem('visibilitychange_storage',
+          'dispatched_more_than_once');
+      } else if (document.visibilityState != 'hidden') {
+        // We should dispatch the event when the visibilityState is 'hidden'.
+        localStorage.setItem('visibilitychange_storage', 'not_hidden');
+      } else {
+        localStorage.setItem('visibilitychange_storage', 'dispatched_once');
+      }
+      dispatched_visibilitychange = true;
+    }
+  )"));
+
+  // 2) Navigate cross-site to |url_2|. We need to navigate cross-site to make
+  // sure we won't run pagehide and visibilitychange during new page's commit,
+  // which is tested in ProactivelySwapBrowsingInstancesSameSiteTest.
+  EXPECT_TRUE(NavigateToURL(shell(), url_2));
+
+  // |main_frame_1| should be in the back-forward cache.
+  EXPECT_TRUE(main_frame_1->IsInBackForwardCache());
+
+  // 3) Navigate to |url_3| which is same-origin with |url_1|, so we can check
+  // the localStorage values.
+  EXPECT_TRUE(NavigateToURL(shell(), url_3));
+  RenderFrameHostImpl* main_frame_3 = web_contents->GetMainFrame();
+
+  // Check that the value for 'pagehide_storage' and 'visibilitychange_storage'
+  // are set correctly.
+  EXPECT_EQ("dispatched_once",
+            EvalJs(main_frame_3, "localStorage.getItem('pagehide_storage')"));
+  EXPECT_EQ(
+      "dispatched_once",
+      EvalJs(main_frame_3, "localStorage.getItem('visibilitychange_storage')"));
+}
+
+// Tests that pagehide handlers of the old RFH are run for bfcached pages even
+// if the page is already hidden (and visibilitychange won't run).
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+                       PagehideRunsWhenPageIsHidden) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_1(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_2(embedded_test_server()->GetURL("b.com", "/title2.html"));
+  GURL url_3(embedded_test_server()->GetURL("a.com", "/title2.html"));
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+
+  // 1) Navigate to |url_1| and hide the tab.
+  EXPECT_TRUE(NavigateToURL(shell(), url_1));
+  RenderFrameHostImpl* main_frame_1 = web_contents->GetMainFrame();
+  // We need to set it to Visibility::VISIBLE first in case this is the first
+  // time the visibility is updated.
+  web_contents->UpdateWebContentsVisibility(Visibility::VISIBLE);
+  web_contents->UpdateWebContentsVisibility(Visibility::HIDDEN);
+  EXPECT_EQ(Visibility::HIDDEN, web_contents->GetVisibility());
+
+  // Create a pagehide handler that sets item "pagehide_storage" and a
+  // visibilitychange handler that sets item "visibilitychange_storage" in
+  // localStorage.
+  EXPECT_TRUE(ExecJs(main_frame_1,
+                     R"(
+    localStorage.setItem('pagehide_storage', 'not_dispatched');
+    var dispatched_pagehide = false;
+    window.onpagehide = function(e) {
+      if (dispatched_pagehide) {
+        // We shouldn't dispatch pagehide more than once.
+        localStorage.setItem('pagehide_storage', 'dispatched_more_than_once');
+      } else if (!e.persisted) {
+        localStorage.setItem('pagehide_storage', 'wrong_persisted');
+      } else {
+        localStorage.setItem('pagehide_storage', 'dispatched_once');
+      }
+      dispatched_pagehide = true;
+    }
+    localStorage.setItem('visibilitychange_storage', 'not_dispatched');
+    document.onvisibilitychange = function(e) {
+      localStorage.setItem('visibilitychange_storage',
+        'should_not_be_dispatched');
+    }
+  )"));
+  // |visibilitychange_storage| should be set to its initial correct value.
+  EXPECT_EQ(
+      "not_dispatched",
+      EvalJs(main_frame_1, "localStorage.getItem('visibilitychange_storage')"));
+
+  // 2) Navigate cross-site to |url_2|. We need to navigate cross-site to make
+  // sure we won't run pagehide and visibilitychange during new page's commit,
+  // which is tested in ProactivelySwapBrowsingInstancesSameSiteTest.
+  EXPECT_TRUE(NavigateToURL(shell(), url_2));
+
+  // |main_frame_1| should be in the back-forward cache.
+  EXPECT_TRUE(main_frame_1->IsInBackForwardCache());
+
+  // 3) Navigate to |url_3| which is same-origin with |url_1|, so we can check
+  // the localStorage values.
+  EXPECT_TRUE(NavigateToURL(shell(), url_3));
+  RenderFrameHostImpl* main_frame_3 = web_contents->GetMainFrame();
+
+  // Check that the value for 'pagehide_storage' and 'visibilitychange_storage'
+  // are set correctly.
+  EXPECT_EQ("dispatched_once",
+            EvalJs(main_frame_3, "localStorage.getItem('pagehide_storage')"));
+  EXPECT_EQ(
+      "not_dispatched",
+      EvalJs(main_frame_3, "localStorage.getItem('visibilitychange_storage')"));
+}
+
 }  // namespace content

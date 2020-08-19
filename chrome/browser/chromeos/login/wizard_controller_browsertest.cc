@@ -1460,7 +1460,7 @@ IN_PROC_BROWSER_TEST_P(WizardControllerDeviceStateExplicitRequirementTest,
     // Don't expect that the auto enrollment screen will be hidden, because
     // OOBE is exited from the auto enrollment screen. Instead only expect
     // that the sign-in screen is reached.
-    OobeScreenWaiter(GaiaView::kScreenId).Wait();
+    OobeScreenWaiter(GetFirstSigninScreen()).Wait();
     EXPECT_EQ(
         0, FakeCryptohomeClient::Get()
                ->remove_firmware_management_parameters_from_tpm_call_count());

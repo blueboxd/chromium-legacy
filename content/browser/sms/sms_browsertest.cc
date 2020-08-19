@@ -720,7 +720,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, SmsFetcherUAF) {
   navigate.Run();
 }
 
-IN_PROC_BROWSER_TEST_F(SmsBrowserTest, ReportSMSReceiverStartInUseCounter) {
+IN_PROC_BROWSER_TEST_F(SmsBrowserTest, ReportWebOTPInUseCounter) {
   GURL url = GetTestUrl(nullptr, "simple_page.html");
   EXPECT_TRUE(NavigateToURL(shell(), url));
 
@@ -745,9 +745,8 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, ReportSMSReceiverStartInUseCounter) {
   EXPECT_EQ("hello", EvalJs(shell(), script));
 
   content::FetchHistogramsFromChildProcesses();
-  histogram_tester.ExpectBucketCount(
-      "Blink.UseCounter.Features", blink::mojom::WebFeature::kSMSReceiverStart,
-      1);
+  histogram_tester.ExpectBucketCount("Blink.UseCounter.Features",
+                                     blink::mojom::WebFeature::kWebOTP, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(SmsBrowserTest, UpdateRenderFrameHostWithWebOTPUsage) {

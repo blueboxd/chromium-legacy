@@ -337,6 +337,11 @@ LocalFrame* LocalFrame::FromFrameToken(
   return it == local_frames_map.end() ? nullptr : it->value.Get();
 }
 
+// static
+LocalFrame* LocalFrame::FromFrameToken(const LocalFrameToken& frame_token) {
+  return FromFrameToken(frame_token.value());
+}
+
 void LocalFrame::Init(Frame* opener) {
   CoreInitializer::GetInstance().InitLocalFrame(*this);
 

@@ -6,8 +6,8 @@
 #define ASH_HUD_DISPLAY_DATA_SOURCE_H_
 
 #include <cstdint>
-
 #include <limits>
+#include "ash/hud_display/cpu_status.h"
 
 namespace ash {
 namespace hud_display {
@@ -44,13 +44,19 @@ class DataSource {
     int64_t renderers_rss = 0;
     // Amount of RSS Shared memory used by Chrome type=renderer processes.
     int64_t renderers_rss_shared = 0;
+
+    // CPU stats are calculated only in GetSnapshotAndReset().
+    // CPU usage values should sum to 1.
+    float cpu_idle_part = 0;    // Amount spent in idle state.
+    float cpu_user_part = 0;    // Amount spent in user + nice mode.
+    float cpu_system_part = 0;  // Amount spent in system mode.
+    float cpu_other_part = 0;   // Other states: irq, etc.
   };
 
   DataSource();
-  ~DataSource();
-
   DataSource(const DataSource&) = delete;
   DataSource& operator=(const DataSource&) = delete;
+  ~DataSource();
 
   Snapshot GetSnapshotAndReset();
 
@@ -62,6 +68,12 @@ class DataSource {
 
   // Current system snapshot.
   Snapshot snapshot_;
+
+  // Last CPU stats snapshot.
+  CpuStats cpu_stats_latest_;
+
+  // Last stats before Reset() to calculate delta.
+  CpuStats cpu_stats_base_;
 };
 
 }  // namespace hud_display

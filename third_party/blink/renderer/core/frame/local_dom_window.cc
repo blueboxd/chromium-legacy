@@ -680,6 +680,21 @@ void LocalDOMWindow::DispatchPersistedPageshowEvent(
                 document_.Get());
 }
 
+void LocalDOMWindow::DispatchPagehideEvent(
+    PageTransitionEventPersistence persistence) {
+  if (document_->UnloadStarted()) {
+    // We've already dispatched pagehide (since it's the first thing we do when
+    // starting unload) and shouldn't dispatch it again. We might get here on
+    // a document that is already unloading/has unloaded but still part of the
+    // FrameTree.
+    // TODO(crbug.com/1119291): Investigate whether this is possible or not.
+    return;
+  }
+  DispatchEvent(
+      *PageTransitionEvent::Create(event_type_names::kPagehide, persistence),
+      document_.Get());
+}
+
 void LocalDOMWindow::EnqueueHashchangeEvent(const String& old_url,
                                             const String& new_url) {
   // https://html.spec.whatwg.org/C/#history-traversal

@@ -20,7 +20,6 @@
 <script type=module src=/wpt_internal/webgpu/common/runtime/wpt.js></script>
 
 <!-- Manually-selected tests to run on worker: -->
-<meta name=variant content='?worker=1&q=webgpu:api,operation,buffers,create_mapped:*'>
 <meta name=variant content='?worker=1&q=webgpu:api,operation,buffers,map:*'>
 <meta name=variant content='?worker=1&q=webgpu:api,operation,buffers,map_detach:*'>
 <meta name=variant content='?worker=1&q=webgpu:api,operation,command_buffer,basic:*'>

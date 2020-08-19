@@ -283,7 +283,7 @@ double UserClassifier::GetHoursSinceLastTime(Event event) const {
     return 0;
   }
 
-  base::TimeDelta since_last_time =
+  const base::TimeDelta since_last_time =
       clock_->Now() - pref_service_->GetTime(GetLastTimeKey(event));
   return since_last_time / base::TimeDelta::FromHours(1);
 }

@@ -882,7 +882,8 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
           std::vector<
               network::mojom::WebClientHintsType>() /* enabled_client_hints */,
           false /* is_cross_browsing_instance */,
-          std::vector<std::string>() /* forced_content_security_policies */);
+          std::vector<std::string>() /* forced_content_security_policies */,
+          nullptr /* old_page_info */);
 
   // CreateRendererInitiated() should only be triggered when the navigation is
   // initiated by a frame in the same process.
@@ -975,7 +976,8 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateForCommit(
           std::vector<
               network::mojom::WebClientHintsType>() /* enabled_client_hints */,
           false /* is_cross_browsing_instance */,
-          std::vector<std::string>() /* forced_content_security_policies */
+          std::vector<std::string>() /* forced_content_security_policies */,
+          nullptr /* old_page_info */
       );
   mojom::BeginNavigationParamsPtr begin_params =
       mojom::BeginNavigationParams::New();
@@ -3099,12 +3101,47 @@ void NavigationRequest::CommitErrorPage(
                                        error_page_content);
 }
 
+void NavigationRequest::AddOldPageInfoToCommitParamsIfNeeded() {
+  // Add the routing ID and the updated lifecycle state of the old page if we
+  // need to run pagehide and visibilitychange handlers of the old page
+  // when we commit the new page.
+  auto* old_frame_host =
+      frame_tree_node_->render_manager()->current_frame_host();
+  if (!GetRenderFrameHost()
+           ->ShouldDispatchPagehideAndVisibilitychangeDuringCommit(
+               old_frame_host, GetURL())) {
+    return;
+  }
+  DCHECK(!IsSameDocument());
+  // The pagehide event's "persisted" property depends on whether the old page
+  // will be put into the back-forward cache or not. As we won't freeze the
+  // page until after the commit finished, there is no way to know for sure
+  // whether the page will actually be persisted or not after commit, but we
+  // will send our best guess by checking if the page can be persisted at this
+  // point.
+  bool can_store_old_page_in_bfcache =
+      frame_tree_node_->frame_tree()
+          ->controller()
+          ->GetBackForwardCache()
+          .CanPotentiallyStorePageLater(old_frame_host);
+  commit_params_->old_page_info = mojom::OldPageInfo::New();
+  commit_params_->old_page_info->routing_id_for_old_main_frame =
+      old_frame_host->GetRoutingID();
+  auto* page_lifecycle_state_manager =
+      old_frame_host->render_view_host()->GetPageLifecycleStateManager();
+  commit_params_->old_page_info->new_lifecycle_state_for_old_page =
+      page_lifecycle_state_manager->SetPagehideDispatchDuringNewPageCommit(
+          can_store_old_page_in_bfcache /* persisted */);
+}
+
 void NavigationRequest::CommitNavigation() {
   UpdateCommitNavigationParamsHistory();
   DCHECK(NeedsUrlLoader() == !!response_head_ ||
          (was_redirected_ && common_params_->url.IsAboutBlank()));
   DCHECK(!common_params_->url.SchemeIs(url::kJavaScriptScheme));
   DCHECK(!IsRendererDebugURL(common_params_->url));
+
+  AddOldPageInfoToCommitParamsIfNeeded();
 
   if (IsServedFromBackForwardCache()) {
     NavigationControllerImpl* controller = GetNavigationController();

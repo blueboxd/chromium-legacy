@@ -9,6 +9,8 @@ import androidx.lifecycle.DefaultLifecycleObserver;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.Observer;
 
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.password_manager.PasswordScriptsFetcherBridge;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
@@ -32,6 +34,10 @@ public class SafetyCheckCoordinator implements DefaultLifecycleObserver {
     public static void create(SafetyCheckSettingsFragment settingsFragment,
             SafetyCheckUpdatesDelegate updatesClient, SettingsLauncher settingsLauncher) {
         new SafetyCheckCoordinator(settingsFragment, updatesClient, settingsLauncher);
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.PASSWORD_CHANGE_IN_SETTINGS)) {
+            // Triggers pre-fetching the list of password change scripts.
+            PasswordScriptsFetcherBridge.prewarmCache();
+        }
     }
 
     private SafetyCheckCoordinator(SafetyCheckSettingsFragment settingsFragment,

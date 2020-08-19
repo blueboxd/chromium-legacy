@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/marketing_opt_in_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/update_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/user_creation_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/welcome_screen_handler.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_test_utils.h"
@@ -133,6 +134,14 @@ void SkipToEnrollmentOnRecovery() {
 
 void WaitForEnrollmentScreen() {
   WaitFor(EnrollmentScreenView::kScreenId);
+}
+
+void WaitForUserCreationScreen() {
+  WaitFor(UserCreationView::kScreenId);
+}
+
+void TapUserCreationNext() {
+  test::OobeJS().TapOnPath({"user-creation", "nextButton"});
 }
 
 void WaitForLastScreenAndTapGetStarted() {

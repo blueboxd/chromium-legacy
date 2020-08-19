@@ -70,10 +70,12 @@ TEST_F(MoveToAccountStoreBubbleViewTest, MAYBE_HasTwoButtons) {
   CreateViewAndShow();
   ASSERT_TRUE(view_->GetOkButton());
   ASSERT_TRUE(view_->GetCancelButton());
-  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_MOVE_BUTTON),
-            view_->GetDialogButtonLabel(ui::DIALOG_BUTTON_OK));
-  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_DECLINE_RECOVERY),
-            view_->GetDialogButtonLabel(ui::DIALOG_BUTTON_CANCEL));
+  EXPECT_EQ(
+      l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_MOVE_BUBBLE_OK_BUTTON),
+      view_->GetDialogButtonLabel(ui::DIALOG_BUTTON_OK));
+  EXPECT_EQ(
+      l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_MOVE_BUBBLE_CANCEL_BUTTON),
+      view_->GetDialogButtonLabel(ui::DIALOG_BUTTON_CANCEL));
 }
 
 // Flaky on Windows due to http://crbug.com/968222

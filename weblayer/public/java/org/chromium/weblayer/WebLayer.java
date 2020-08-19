@@ -91,7 +91,6 @@ public class WebLayer {
      */
     public static boolean isAvailable(Context context) {
         ThreadCheck.ensureOnUiThread();
-        context = context.getApplicationContext();
         return getWebLayerLoader(context).isAvailable();
     }
 
@@ -127,8 +126,7 @@ public class WebLayer {
             throws UnsupportedVersionException {
         ThreadCheck.ensureOnUiThread();
         checkAvailable(appContext);
-        appContext = appContext.getApplicationContext();
-        getWebLayerLoader(appContext).loadAsync(appContext, callback);
+        getWebLayerLoader(appContext).loadAsync(callback);
     }
 
     /**
@@ -150,13 +148,12 @@ public class WebLayer {
     public static WebLayer loadSync(@NonNull Context appContext)
             throws UnsupportedVersionException {
         ThreadCheck.ensureOnUiThread();
-        appContext = appContext.getApplicationContext();
         checkAvailable(appContext);
-        return getWebLayerLoader(appContext).loadSync(appContext);
+        return getWebLayerLoader(appContext).loadSync();
     }
 
-    private static WebLayerLoader getWebLayerLoader(Context appContext) {
-        if (sLoader == null) sLoader = new WebLayerLoader(appContext);
+    private static WebLayerLoader getWebLayerLoader(Context context) {
+        if (sLoader == null) sLoader = new WebLayerLoader(context);
         return sLoader;
     }
 
@@ -167,7 +164,6 @@ public class WebLayer {
     static WebLayer getLoadedWebLayer(@NonNull Context appContext)
             throws UnsupportedVersionException {
         ThreadCheck.ensureOnUiThread();
-        appContext = appContext.getApplicationContext();
         checkAvailable(appContext);
         return getWebLayerLoader(appContext).getLoadedWebLayer();
     }
@@ -186,7 +182,6 @@ public class WebLayer {
      */
     public static int getSupportedMajorVersion(@NonNull Context context) {
         ThreadCheck.ensureOnUiThread();
-        context = context.getApplicationContext();
         return getWebLayerLoader(context).getMajorVersion();
     }
 
@@ -214,7 +209,6 @@ public class WebLayer {
     @NonNull
     public static String getSupportedFullVersion(@NonNull Context context) {
         ThreadCheck.ensureOnUiThread();
-        context = context.getApplicationContext();
         return getWebLayerLoader(context).getVersion();
     }
 
@@ -245,18 +239,27 @@ public class WebLayer {
         private final int mMajorVersion;
         private final String mVersion;
         private boolean mIsLoadingAsync;
+        private Context mContext;
 
         /**
          * Creates WebLayerLoader. This does a minimal amount of loading
          */
-        public WebLayerLoader(@NonNull Context appContext) {
+        public WebLayerLoader(@NonNull Context context) {
             boolean available = false;
             int majorVersion = -1;
             String version = "<unavailable>";
+            // Use the application context as the supplied context may have a shorter lifetime.
+            mContext = context.getApplicationContext();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
+                    && context.getAttributionTag() != null) {
+                // Getting the application context means we lose any attribution. Use the
+                // attribution tag from the supplied context so that embedders have a way to set an
+                // attribution tag.
+                mContext = mContext.createAttributionContext(context.getAttributionTag());
+            }
             try {
-                Class factoryClass =
-                        getOrCreateRemoteClassLoader(appContext)
-                                .loadClass("org.chromium.weblayer_private.WebLayerFactoryImpl");
+                Class factoryClass = getOrCreateRemoteClassLoader(mContext).loadClass(
+                        "org.chromium.weblayer_private.WebLayerFactoryImpl");
                 mFactory = IWebLayerFactory.Stub.asInterface(
                         (IBinder) factoryClass
                                 .getMethod("create", String.class, int.class, int.class)
@@ -291,7 +294,7 @@ public class WebLayer {
             return mVersion;
         }
 
-        public void loadAsync(@NonNull Context appContext, @NonNull Callback<WebLayer> callback) {
+        public void loadAsync(@NonNull Callback<WebLayer> callback) {
             if (mWebLayer != null) {
                 callback.onResult(mWebLayer);
                 return;
@@ -301,35 +304,33 @@ public class WebLayer {
                 return; // Already loading.
             }
             mIsLoadingAsync = true;
-            if (getIWebLayer(appContext) == null) {
+            if (getIWebLayer() == null) {
                 // Unable to create WebLayer. This generally shouldn't happen.
                 onWebLayerReady();
                 return;
             }
             try {
-                getIWebLayer(appContext)
-                        .loadAsync(ObjectWrapper.wrap(appContext),
-                                ObjectWrapper.wrap(getOrCreateRemoteContext(appContext)),
-                                ObjectWrapper.wrap(
-                                        (ValueCallback<Boolean>) result -> { onWebLayerReady(); }));
+                getIWebLayer().loadAsync(ObjectWrapper.wrap(mContext),
+                        ObjectWrapper.wrap(getOrCreateRemoteContext(mContext)),
+                        ObjectWrapper.wrap(
+                                (ValueCallback<Boolean>) result -> { onWebLayerReady(); }));
             } catch (Exception e) {
                 throw new APICallException(e);
             }
         }
 
-        public WebLayer loadSync(@NonNull Context appContext) {
+        public WebLayer loadSync() {
             if (mWebLayer != null) {
                 return mWebLayer;
             }
-            if (getIWebLayer(appContext) == null) {
+            if (getIWebLayer() == null) {
                 // Error in creating WebLayer. This generally shouldn't happen.
                 onWebLayerReady();
                 return null;
             }
             try {
-                getIWebLayer(appContext)
-                        .loadSync(ObjectWrapper.wrap(appContext),
-                                ObjectWrapper.wrap(getOrCreateRemoteContext(appContext)));
+                getIWebLayer().loadSync(ObjectWrapper.wrap(mContext),
+                        ObjectWrapper.wrap(getOrCreateRemoteContext(mContext)));
                 onWebLayerReady();
                 return mWebLayer;
             } catch (Exception e) {
@@ -342,7 +343,7 @@ public class WebLayer {
         }
 
         @Nullable
-        private IWebLayer getIWebLayer(@NonNull Context appContext) {
+        private IWebLayer getIWebLayer() {
             if (mIWebLayer != null) return mIWebLayer;
             if (!mAvailable) return null;
             try {
@@ -560,8 +561,8 @@ public class WebLayer {
         }
     }
 
-    /* package */ static IWebLayer getIWebLayer(Context appContext) {
-        return getWebLayerLoader(appContext).getIWebLayer(appContext);
+    /* package */ static IWebLayer getIWebLayer(Context context) {
+        return getWebLayerLoader(context).getIWebLayer();
     }
 
     /**

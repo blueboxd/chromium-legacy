@@ -53,7 +53,7 @@ class AppDownloadingScreenTest : public OobeBaseTest {
 
   void Login() {
     login_manager_.LoginAsNewRegularUser();
-    OobeScreenExitWaiter(GaiaView::kScreenId).Wait();
+    OobeScreenExitWaiter(GetFirstSigninScreen()).Wait();
   }
 
   void ShowAppDownloadingScreen() {

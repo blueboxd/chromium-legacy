@@ -26,6 +26,7 @@
 #include "content/public/browser/site_isolation_policy.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/back_forward_cache_util.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -3390,6 +3391,12 @@ IN_PROC_BROWSER_TEST_F(DynamicIsolatedOriginTest,
   RenderProcessHostWatcher foo_process_observer(
       web_contents()->GetMainFrame()->GetProcess(),
       RenderProcessHostWatcher::WATCH_FOR_HOST_DESTRUCTION);
+
+  // Disable the BackForwardCache to ensure the old process is going to be
+  // released.
+  DisableBackForwardCacheForTesting(web_contents(),
+                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+
   GURL isolated_bar_url(
       embedded_test_server()->GetURL("isolated.bar.com", "/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), isolated_bar_url));

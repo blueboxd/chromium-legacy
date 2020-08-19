@@ -6,7 +6,6 @@
 
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/web_app/web_kiosk_app_manager.h"
-#include "chrome/browser/chromeos/login/kiosk_launch_controller.h"
 #include "chrome/browser/chromeos/ownership/fake_owner_settings_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 

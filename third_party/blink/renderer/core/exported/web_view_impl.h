@@ -231,8 +231,8 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void AudioStateChanged(bool is_audio_playing) override;
   void SetInsidePortal(bool is_inside_portal) override;
 
-  void DispatchPagehide();
   void DispatchPageshow(base::TimeTicks navigation_start);
+  void DispatchPagehide(mojom::blink::PagehideDispatch pagehide_dispatch);
   void HookBackForwardCacheEviction(bool hook);
 
   float DefaultMinimumPageScaleFactor() const;
@@ -342,6 +342,10 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void SetVisibilityState(mojom::blink::PageVisibilityState visibility_state,
                           bool is_initial_state) override;
   mojom::blink::PageVisibilityState GetVisibilityState() override;
+
+  void SetPageLifecycleStateFromNewPageCommit(
+      mojom::blink::PageVisibilityState visibility,
+      mojom::blink::PagehideDispatch pagehide_dispatch) override;
 
   // Called by a full frame plugin inside this view to inform it that its
   // zoom level has been updated.  The plugin should only call this function
@@ -491,6 +495,10 @@ class CORE_EXPORT WebViewImpl final : public WebView,
                                      bool is_pinch_gesture_active,
                                      const FloatPoint&);
   void PropagateZoomFactorToLocalFrameRoots(Frame*, float);
+
+  void SetPageLifecycleStateInternal(
+      mojom::blink::PageLifecycleStatePtr new_state,
+      base::Optional<base::TimeTicks> navigation_start);
 
   float MaximumLegiblePageScale() const;
   void RefreshPageScaleFactor();
@@ -742,7 +750,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   // Set when a measurement begins, reset when the measurement is taken.
   base::Optional<base::TimeTicks> update_layers_start_time_;
 
-  mojom::blink::PageLifecycleStatePtr lifecycle_state_;
   mojo::AssociatedReceiver<mojom::blink::PageBroadcast> receiver_;
 
   base::WeakPtrFactory<WebViewImpl> weak_ptr_factory_{this};

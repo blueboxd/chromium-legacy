@@ -75,16 +75,13 @@ class DumpAccessibilityEventsTest : public DumpAccessibilityTestBase {
       std::vector<PropertyFilter>* property_filters) override {
     // Suppress spurious focus events on the document object.
     property_filters->push_back(
-        PropertyFilter(base::ASCIIToUTF16("EVENT_OBJECT_FOCUS*DOCUMENT*"),
-                       PropertyFilter::DENY));
-    property_filters->push_back(
-        PropertyFilter(base::ASCIIToUTF16("AutomationFocusChanged*document*"),
-                       PropertyFilter::DENY));
+        PropertyFilter("EVENT_OBJECT_FOCUS*DOCUMENT*", PropertyFilter::DENY));
+    property_filters->push_back(PropertyFilter(
+        "AutomationFocusChanged*document*", PropertyFilter::DENY));
     // Implementing IRawElementProviderAdviseEvents causes Win7 to fire
     // spurious focus events (regardless of what the implementation does).
     property_filters->push_back(PropertyFilter(
-        base::ASCIIToUTF16("AutomationFocusChanged on role=region"),
-        PropertyFilter::DENY));
+        "AutomationFocusChanged on role=region", PropertyFilter::DENY));
   }
 
   std::vector<std::string> Dump(std::vector<std::string>& run_until) override;
@@ -199,7 +196,7 @@ std::vector<std::string> DumpAccessibilityEventsTest::Dump(
 
     for (size_t i = 0; i < event_logs.size(); ++i) {
       if (AccessibilityTreeFormatter::MatchesPropertyFilters(
-              property_filters_, base::UTF8ToUTF16(event_logs[i]), true)) {
+              property_filters_, event_logs[i], true)) {
         result.push_back(event_logs[i]);
       }
     }

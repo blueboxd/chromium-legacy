@@ -33,10 +33,21 @@
 
 using url::Origin;
 
-namespace content {
-
 const char* cmdline[] = {"code_cache_host_mojolpm_fuzzer", nullptr};
 
+// Global environment needed to run the interface being tested.
+//
+// This will be created once, before fuzzing starts, and will be shared between
+// all testcases. It is created on the main thread.
+//
+// At a minimum, we should always be able to set up the command line, i18n and
+// mojo, and create the thread on which the fuzzer will be run. We want to avoid
+// (as much as is reasonable) any state being preserved between testcases.
+//
+// For CodeCacheHost, we can also safely re-use a single BrowserTaskEnvironment
+// and the TestContentClientInitializer between testcases. We try to create an
+// environment that matches the real browser process as much as possible, so we
+// use real platform threads in the task environment.
 class ContentFuzzerEnvironment {
  public:
   ContentFuzzerEnvironment()
@@ -60,154 +71,189 @@ class ContentFuzzerEnvironment {
 
  private:
   base::AtExitManager at_exit_manager_;
-  std::unique_ptr<base::FieldTrialList> field_trial_list_;
-  base::test::ScopedFeatureList scoped_feature_list_;
   base::Thread fuzzer_thread_;
-  BrowserTaskEnvironment task_environment_;
-  TestContentClientInitializer content_client_initializer_;
+  content::BrowserTaskEnvironment task_environment_;
+  content::TestContentClientInitializer content_client_initializer_;
 };
 
-ContentFuzzerEnvironment g_environment;
-
-ContentFuzzerEnvironment& SingletonEnvironment() {
-  return g_environment;
+ContentFuzzerEnvironment& GetEnvironment() {
+  static base::NoDestructor<ContentFuzzerEnvironment> environment;
+  return *environment;
 }
 
 scoped_refptr<base::SequencedTaskRunner> GetFuzzerTaskRunner() {
-  return SingletonEnvironment().fuzzer_task_runner();
+  return GetEnvironment().fuzzer_task_runner();
 }
 
-class CodeCacheHostFuzzerContext : public mojolpm::Context {
-  const Origin kOriginA;
-  const Origin kOriginB;
-  const Origin kOriginOpaque;
-  const Origin kOriginEmpty;
-
+// Per-testcase state needed to run the interface being tested.
+//
+// The lifetime of this is scoped to a single testcase, and it is created and
+// destroyed from the fuzzer sequence.
+//
+// For CodeCacheHost, this needs the basic common Browser process state provided
+// by TestBrowserContext, and to set up the cache storage that will provide the
+// storage backing for the code cache.
+//
+// Since the Browser process will host one CodeCacheHostImpl per
+// RenderProcessHost, we emulate this by allowing the fuzzer to create (and
+// destroy) multiple CodeCacheHostImpl instances.
+class CodeCacheHostTestcase {
  public:
-  CodeCacheHostFuzzerContext()
-      : kOriginA(url::Origin::Create(GURL("http://aaa.com/"))),
-        kOriginB(url::Origin::Create(GURL("http://bbb.com/"))),
-        kOriginOpaque(url::Origin::Create(GURL("opaque"))),
-        kOriginEmpty(url::Origin::Create(GURL("file://this_becomes_empty"))),
-        browser_context_() {
-    base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
-    base::PostTaskAndReply(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&CodeCacheHostFuzzerContext::InitializeOnUIThread,
-                       base::Unretained(this)),
-        run_loop.QuitClosure());
-    run_loop.Run();
-  }
+  explicit CodeCacheHostTestcase(
+      const content::fuzzing::code_cache_host::proto::Testcase& testcase);
 
-  void InitializeOnUIThread() {
-    cache_storage_context_ = base::MakeRefCounted<CacheStorageContextImpl>();
-    cache_storage_context_->Init(browser_context_.GetPath(),
-                                 browser_context_.GetSpecialStoragePolicy(),
-                                 nullptr);
+  // Returns true once either all of the actions in the testcase have been
+  // performed, or the per-testcase action limit has been exceeded.
+  //
+  // This should only be called from the fuzzer sequence.
+  bool IsFinished();
 
-    generated_code_cache_context_ =
-        base::MakeRefCounted<GeneratedCodeCacheContext>();
-    generated_code_cache_context_->Initialize(browser_context_.GetPath(),
-                                              65536);
-  }
+  // If there are still actions remaining in the testcase, this will perform the
+  // next sequence of actions before returning.
+  //
+  // If IsFinished() would return true, then calling this function is a no-op.
+  //
+  // This should only be called from the fuzzer sequence.
+  void NextAction();
 
+  void SetUp();
+  void TearDown();
+
+ private:
+  using Action = content::fuzzing::code_cache_host::proto::Action;
+
+  void SetUpOnUIThread();
+  void TearDownOnUIThread();
+
+  // Used by AddCodeCacheHost to create and bind CodeCacheHostImpl on the UI
+  // thread.
   void AddCodeCacheHostImpl(
       uint32_t id,
       int renderer_id,
       const Origin& origin,
-      mojo::PendingReceiver<::blink::mojom::CodeCacheHost>&& receiver) {
-    code_cache_hosts_[renderer_id] = std::make_unique<CodeCacheHostImpl>(
-        renderer_id, cache_storage_context_, generated_code_cache_context_,
-        std::move(receiver));
-  }
+      mojo::PendingReceiver<::blink::mojom::CodeCacheHost>&& receiver);
 
+  // Create and bind a new instance for fuzzing. This needs to  make sure that
+  // the new instance has been created and bound on the correct sequence before
+  // returning.
   void AddCodeCacheHost(
       uint32_t id,
       int renderer_id,
       content::fuzzing::code_cache_host::proto::NewCodeCacheHostAction::OriginId
-          origin_id) {
-    mojo::Remote<::blink::mojom::CodeCacheHost> remote;
-    auto receiver = remote.BindNewPipeAndPassReceiver();
+          origin_id);
 
-    const Origin* origin = &kOriginA;
-    if (origin_id == 1) {
-      origin = &kOriginB;
-    } else if (origin_id == 2) {
-      origin = &kOriginOpaque;
-    } else if (origin_id == 3) {
-      origin = &kOriginEmpty;
-    }
-
-    base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
-    base::PostTaskAndReply(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&CodeCacheHostFuzzerContext::AddCodeCacheHostImpl,
-                       base::Unretained(this), id, renderer_id, *origin,
-                       std::move(receiver)),
-        run_loop.QuitClosure());
-    run_loop.Run();
-
-    AddInstance(id, std::move(remote));
-  }
-
- private:
-  TestBrowserContext browser_context_;
-
-  scoped_refptr<CacheStorageContextImpl> cache_storage_context_;
-  scoped_refptr<GeneratedCodeCacheContext> generated_code_cache_context_;
-
-  std::map<int, std::unique_ptr<CodeCacheHostImpl>> code_cache_hosts_;
-};
-}  // namespace content
-
-class CodeCacheHostTestcase : public mojolpm::TestcaseBase {
-  content::CodeCacheHostFuzzerContext& cch_context_;
+  // The proto message describing the test actions to perform.
   const content::fuzzing::code_cache_host::proto::Testcase& testcase_;
-  int next_idx_ = 0;
-  int action_count_ = 0;
-  const int MAX_ACTION_COUNT = 512;
 
- public:
-  CodeCacheHostTestcase(
-      content::CodeCacheHostFuzzerContext& cch_context,
-      const content::fuzzing::code_cache_host::proto::Testcase& testcase);
-  ~CodeCacheHostTestcase() override;
-  bool IsFinished() override;
-  void NextAction() override;
+  // This set of origins should cover all of the origin types which have special
+  // handling in CodeCacheHostImpl, and give us two distinct "normal" origins,
+  // which should be enough to exercise all of the code.
+  const Origin origin_a_;
+  const Origin origin_b_;
+  const Origin origin_opaque_;
+  const Origin origin_empty_;
+
+  // Apply a reasonable upper-bound on testcase complexity to avoid timeouts.
+  const int max_action_count_ = 512;
+
+  // Count of total actions performed in this testcase.
+  int action_count_ = 0;
+
+  // The index of the next sequence of actions to execute.
+  int next_sequence_idx_ = 0;
+
+  // Prerequisite state.
+  std::unique_ptr<content::TestBrowserContext> browser_context_;
+  scoped_refptr<content::CacheStorageContextImpl> cache_storage_context_;
+  scoped_refptr<content::GeneratedCodeCacheContext>
+      generated_code_cache_context_;
+
+  // Mapping from renderer id to CodeCacheHostImpl instances being fuzzed.
+  // Access only from UI thread.
+  std::map<int, std::unique_ptr<content::CodeCacheHostImpl>> code_cache_hosts_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 };
 
 CodeCacheHostTestcase::CodeCacheHostTestcase(
-    content::CodeCacheHostFuzzerContext& cch_context,
     const content::fuzzing::code_cache_host::proto::Testcase& testcase)
-    : cch_context_(cch_context), testcase_(testcase) {}
+    : testcase_(testcase),
+      origin_a_(url::Origin::Create(GURL("http://aaa.com/"))),
+      origin_b_(url::Origin::Create(GURL("http://bbb.com/"))),
+      origin_opaque_(url::Origin::Create(GURL("opaque"))),
+      origin_empty_(url::Origin::Create(GURL("file://this_becomes_empty"))) {
+  // CodeCacheHostTestcase is created on the main thread, but the actions that
+  // we want to validate the sequencing of take place on the fuzzer sequence.
+  DETACH_FROM_SEQUENCE(sequence_checker_);
+}
 
-CodeCacheHostTestcase::~CodeCacheHostTestcase() {}
+void CodeCacheHostTestcase::SetUp() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
+  base::PostTaskAndReply(FROM_HERE, {content::BrowserThread::UI},
+                         base::BindOnce(&CodeCacheHostTestcase::SetUpOnUIThread,
+                                        base::Unretained(this)),
+                         run_loop.QuitClosure());
+  run_loop.Run();
+}
+
+void CodeCacheHostTestcase::SetUpOnUIThread() {
+  browser_context_ = std::make_unique<content::TestBrowserContext>();
+
+  cache_storage_context_ =
+      base::MakeRefCounted<content::CacheStorageContextImpl>();
+  cache_storage_context_->Init(browser_context_->GetPath(),
+                               browser_context_->GetSpecialStoragePolicy(),
+                               nullptr);
+
+  generated_code_cache_context_ =
+      base::MakeRefCounted<content::GeneratedCodeCacheContext>();
+  generated_code_cache_context_->Initialize(browser_context_->GetPath(), 65536);
+}
+
+void CodeCacheHostTestcase::TearDown() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
+  base::PostTaskAndReply(
+      FROM_HERE, {content::BrowserThread::UI},
+      base::BindOnce(&CodeCacheHostTestcase::TearDownOnUIThread,
+                     base::Unretained(this)),
+      run_loop.QuitClosure());
+  run_loop.Run();
+}
+
+void CodeCacheHostTestcase::TearDownOnUIThread() {
+  code_cache_hosts_.clear();
+  generated_code_cache_context_.reset();
+  cache_storage_context_.reset();
+  browser_context_.reset();
+}
 
 bool CodeCacheHostTestcase::IsFinished() {
-  return next_idx_ >= testcase_.sequence_indexes_size();
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return next_sequence_idx_ >= testcase_.sequence_indexes_size();
 }
 
 void CodeCacheHostTestcase::NextAction() {
-  if (next_idx_ < testcase_.sequence_indexes_size()) {
-    auto sequence_idx = testcase_.sequence_indexes(next_idx_++);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (next_sequence_idx_ < testcase_.sequence_indexes_size()) {
+    auto sequence_idx = testcase_.sequence_indexes(next_sequence_idx_++);
     const auto& sequence =
         testcase_.sequences(sequence_idx % testcase_.sequences_size());
     for (auto action_idx : sequence.action_indexes()) {
-      if (!testcase_.actions_size() || ++action_count_ > MAX_ACTION_COUNT) {
+      if (!testcase_.actions_size() || ++action_count_ > max_action_count_) {
         return;
       }
       const auto& action =
           testcase_.actions(action_idx % testcase_.actions_size());
       switch (action.action_case()) {
-        case content::fuzzing::code_cache_host::proto::Action::
-            kNewCodeCacheHost: {
-          cch_context_.AddCodeCacheHost(
-              action.new_code_cache_host().id(),
-              action.new_code_cache_host().render_process_id(),
-              action.new_code_cache_host().origin_id());
+        case Action::kNewCodeCacheHost: {
+          AddCodeCacheHost(action.new_code_cache_host().id(),
+                           action.new_code_cache_host().render_process_id(),
+                           action.new_code_cache_host().origin_id());
         } break;
 
-        case content::fuzzing::code_cache_host::proto::Action::kRunThread: {
+        case Action::kRunThread: {
           if (action.run_thread().id()) {
             base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
             base::PostTask(FROM_HERE, {content::BrowserThread::UI},
@@ -221,8 +267,7 @@ void CodeCacheHostTestcase::NextAction() {
           }
         } break;
 
-        case content::fuzzing::code_cache_host::proto::Action::
-            kCodeCacheHostRemoteAction: {
+        case Action::kCodeCacheHostRemoteAction: {
           mojolpm::HandleRemoteAction(action.code_cache_host_remote_action());
         } break;
 
@@ -233,53 +278,100 @@ void CodeCacheHostTestcase::NextAction() {
   }
 }
 
-void NextAction(content::CodeCacheHostFuzzerContext* context,
+void CodeCacheHostTestcase::AddCodeCacheHostImpl(
+    uint32_t id,
+    int renderer_id,
+    const Origin& origin,
+    mojo::PendingReceiver<::blink::mojom::CodeCacheHost>&& receiver) {
+  code_cache_hosts_[renderer_id] = std::make_unique<content::CodeCacheHostImpl>(
+      renderer_id, cache_storage_context_, generated_code_cache_context_,
+      std::move(receiver));
+}
+
+void CodeCacheHostTestcase::AddCodeCacheHost(
+    uint32_t id,
+    int renderer_id,
+    content::fuzzing::code_cache_host::proto::NewCodeCacheHostAction::OriginId
+        origin_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  mojo::Remote<::blink::mojom::CodeCacheHost> remote;
+  auto receiver = remote.BindNewPipeAndPassReceiver();
+
+  const Origin* origin = &origin_a_;
+  if (origin_id == 1) {
+    origin = &origin_b_;
+  } else if (origin_id == 2) {
+    origin = &origin_opaque_;
+  } else if (origin_id == 3) {
+    origin = &origin_empty_;
+  }
+
+  base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
+  base::PostTaskAndReply(
+      FROM_HERE, {content::BrowserThread::UI},
+      base::BindOnce(&CodeCacheHostTestcase::AddCodeCacheHostImpl,
+                     base::Unretained(this), id, renderer_id, *origin,
+                     std::move(receiver)),
+      run_loop.QuitClosure());
+  run_loop.Run();
+
+  mojolpm::GetContext()->AddInstance(id, std::move(remote));
+}
+
+// Helper function to keep scheduling fuzzer actions on the current runloop
+// until the testcase has completed, and then quit the runloop.
+void NextAction(CodeCacheHostTestcase* testcase,
                 base::RepeatingClosure quit_closure) {
-  if (!context->IsFinished()) {
-    context->NextAction();
-    content::GetFuzzerTaskRunner()->PostTask(
-        FROM_HERE, base::BindOnce(NextAction, base::Unretained(context),
+  if (!testcase->IsFinished()) {
+    testcase->NextAction();
+    GetFuzzerTaskRunner()->PostTask(
+        FROM_HERE, base::BindOnce(NextAction, base::Unretained(testcase),
                                   std::move(quit_closure)));
   } else {
-    content::GetFuzzerTaskRunner()->PostTask(FROM_HERE,
-                                             std::move(quit_closure));
+    GetFuzzerTaskRunner()->PostTask(FROM_HERE, std::move(quit_closure));
   }
 }
 
-void RunTestcase(
-    content::CodeCacheHostFuzzerContext* context,
-    const content::fuzzing::code_cache_host::proto::Testcase* testcase) {
+// Helper function to setup and run the testcase, since we need to do that from
+// the fuzzer sequence rather than the main thread.
+void RunTestcase(CodeCacheHostTestcase* testcase) {
   mojo::Message message;
   auto dispatch_context =
       std::make_unique<mojo::internal::MessageDispatchContext>(&message);
 
-  CodeCacheHostTestcase cch_testcase(*context, *testcase);
-  context->StartTestcase(&cch_testcase, content::GetFuzzerTaskRunner());
+  testcase->SetUp();
+
+  mojolpm::GetContext()->StartTestcase();
 
   base::RunLoop fuzzer_run_loop(base::RunLoop::Type::kNestableTasksAllowed);
-  content::GetFuzzerTaskRunner()->PostTask(
-      FROM_HERE, base::BindOnce(NextAction, base::Unretained(context),
+  GetFuzzerTaskRunner()->PostTask(
+      FROM_HERE, base::BindOnce(NextAction, base::Unretained(testcase),
                                 fuzzer_run_loop.QuitClosure()));
   fuzzer_run_loop.Run();
 
-  context->EndTestcase();
+  mojolpm::GetContext()->EndTestcase();
+
+  testcase->TearDown();
 }
 
 DEFINE_BINARY_PROTO_FUZZER(
-    const content::fuzzing::code_cache_host::proto::Testcase& testcase) {
-  if (!testcase.actions_size() || !testcase.sequences_size() ||
-      !testcase.sequence_indexes_size()) {
+    const content::fuzzing::code_cache_host::proto::Testcase& proto_testcase) {
+  if (!proto_testcase.actions_size() || !proto_testcase.sequences_size() ||
+      !proto_testcase.sequence_indexes_size()) {
     return;
   }
 
-  content::CodeCacheHostFuzzerContext context;
-  mojolpm::SetContext(&context);
+  // Make sure that the environment is initialized before we do anything else.
+  GetEnvironment();
+
+  CodeCacheHostTestcase testcase(proto_testcase);
 
   base::RunLoop ui_run_loop(base::RunLoop::Type::kNestableTasksAllowed);
-  content::GetFuzzerTaskRunner()->PostTaskAndReply(
-      FROM_HERE,
-      base::BindOnce(RunTestcase, base::Unretained(&context),
-                     base::Unretained(&testcase)),
+
+  // Unretained is safe here, because ui_run_loop has to finish before testcase
+  // goes out of scope.
+  GetFuzzerTaskRunner()->PostTaskAndReply(
+      FROM_HERE, base::BindOnce(RunTestcase, base::Unretained(&testcase)),
       ui_run_loop.QuitClosure());
 
   ui_run_loop.Run();

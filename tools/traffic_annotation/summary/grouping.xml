@@ -14,6 +14,26 @@ hidden="true" so that these annotations don't show up in the document.
 <groups>
   <group name="Unsorted" hidden="true"> <!--Unsorted annotations go here.-->
     <sender name="Unsorted Sender">
+      <!-- TODO(nicolaso): do a pass through some of the recent ones, and find
+           them a new home -->
+      <traffic_annotation unique_id="isolated_prerender_canary_check"/>
+      <traffic_annotation unique_id="nearby_webrtc_connection"/>
+      <traffic_annotation unique_id="proxy_config_windows_resolver"/>
+      <traffic_annotation unique_id="remoting_directory_delete_host"/>
+      <traffic_annotation unique_id="remoting_directory_get_host_list"/>
+      <traffic_annotation unique_id="remoting_directory_register_host"/>
+      <traffic_annotation unique_id="remoting_telemetry_log_writer"/>
+      <traffic_annotation unique_id="heartbeat_sender"/>
+      <traffic_annotation unique_id="remoting_register_support_host_request"/>
+      <traffic_annotation unique_id="remoting_ice_config_request"/>
+      <traffic_annotation unique_id="ftl_messaging_client_ack_messages"/>
+      <traffic_annotation unique_id="ftl_messaging_client_receive_messages"/>
+      <traffic_annotation unique_id="ftl_messaging_client_send_messages"/>
+      <traffic_annotation unique_id="ftl_registration_manager"/>
+      <traffic_annotation unique_id="remoting_log_to_server"/>
+      <traffic_annotation unique_id="nearby_share_update_device"/>
+      <traffic_annotation unique_id="nearby_share_contacts"/>
+      <traffic_annotation unique_id="nearby_share_list_public_certificates"/>
       <traffic_annotation unique_id="omnibox_result_change"/>
       <traffic_annotation unique_id="browser_switcher_ieem_sitelist"/>
       <traffic_annotation unique_id="adb_client_socket"/>

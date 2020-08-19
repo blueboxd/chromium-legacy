@@ -148,7 +148,9 @@ class CORE_EXPORT LocalFrame final
       public mojom::blink::HighPriorityLocalFrame {
  public:
   // Returns the LocalFrame instance for the given |frame_token|.
+  // TODO(crbug.com/1096617): Remove the UnguessableToken version of this.
   static LocalFrame* FromFrameToken(const base::UnguessableToken& frame_token);
+  static LocalFrame* FromFrameToken(const LocalFrameToken& frame_token);
 
   // For a description of |inheriting_agent_factory| go see the comment on the
   // Frame constructor.
@@ -670,6 +672,10 @@ class CORE_EXPORT LocalFrame final
   }
   mojom::blink::BlinkOptimizationGuideHints* GetOptimizationGuideHints() {
     return optimization_guide_hints_.get();
+  }
+
+  LocalFrameToken GetLocalFrameToken() const {
+    return LocalFrameToken(GetFrameToken());
   }
 
  private:

@@ -58,6 +58,8 @@ public class TabAttributeCache {
      * @param tabModelSelector The {@link TabModelSelector} to observe.
      */
     public TabAttributeCache(TabModelSelector tabModelSelector) {
+        // TODO(hanxi): makes TabAttributeCache a singleton. The TabAttributeCache should be
+        //  instantiated and exactly once before it is used.
         mTabModelSelector = tabModelSelector;
         mTabModelSelectorTabObserver = new TabModelSelectorTabObserver(mTabModelSelector) {
             @Override

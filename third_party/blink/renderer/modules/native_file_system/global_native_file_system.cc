@@ -71,6 +71,18 @@ constexpr bool IsHTTPWhitespace(UChar chr) {
   return chr == ' ' || chr == '\n' || chr == '\t' || chr == '\r';
 }
 
+bool AddExtension(const String& extension,
+                  Vector<String>& extensions,
+                  ExceptionState& exception_state) {
+  if (!extension.StartsWith(".")) {
+    exception_state.ThrowTypeError("Extension '" + extension +
+                                   "' must start with '.'.");
+    return false;
+  }
+  extensions.push_back(extension.Substring(1));
+  return true;
+}
+
 Vector<mojom::blink::ChooseFileSystemEntryAcceptsOptionPtr> ConvertAccepts(
     const HeapVector<Member<FilePickerAcceptType>>& types,
     ExceptionState& exception_state) {
@@ -102,10 +114,16 @@ Vector<mojom::blink::ChooseFileSystemEntryAcceptsOptionPtr> ConvertAccepts(
       }
 
       mimeTypes.push_back(type);
-      if (a.second.IsUSVString())
-        extensions.push_back(a.second.GetAsUSVString());
-      else
-        extensions.AppendVector(a.second.GetAsUSVStringSequence());
+      if (a.second.IsUSVString()) {
+        if (!AddExtension(a.second.GetAsUSVString(), extensions,
+                          exception_state))
+          return {};
+      } else {
+        for (const auto& extension : a.second.GetAsUSVStringSequence()) {
+          if (!AddExtension(extension, extensions, exception_state))
+            return {};
+        }
+      }
     }
     result.emplace_back(
         blink::mojom::blink::ChooseFileSystemEntryAcceptsOption::New(

@@ -22,14 +22,16 @@ Context::Storage::Storage() = default;
 
 Context::Storage::~Storage() = default;
 
-void Context::StartTestcase(
-    TestcaseBase* testcase,
-    scoped_refptr<base::SequencedTaskRunner> task_runner) {
-  testcase_ = testcase;
-  task_runner_ = task_runner;
+void Context::StartTestcase() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 void Context::EndTestcase() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // Some fuzzers need to destroy the fuzzer thread along with their testcase,
+  // so we need to detach the sequence checker here so that it will be attached
+  // to the new sequence for the next testcase.
+  DETACH_FROM_SEQUENCE(sequence_checker_);
   // We need to destroy all Remotes/Receivers before we start destroying other
   // objects (like callbacks).
   for (const TypeId& interface_type_id : interface_type_ids_) {
@@ -38,41 +40,13 @@ void Context::EndTestcase() {
       instances_iter->second.clear();
     }
   }
+  interface_type_ids_.clear();
   instances_.clear();
-  testcase_ = nullptr;
 }
-
-bool Context::IsFinished() {
-  if (testcase_) {
-    return testcase_->IsFinished();
-  }
-  return true;
-}
-
-void Context::NextAction() {
-  // fprintf(stderr, "NextAction\n");
-  CHECK(task_runner_->RunsTasksInCurrentSequence());
-  if (testcase_) {
-    testcase_->NextAction();
-  }
-}
-
-void Context::PostNextAction() {
-  if (task_runner_) {
-    task_runner_->PostTask(FROM_HERE, base::BindOnce(&Context::NextAction,
-                                                     base::Unretained(this)));
-  }
-}
-
-Context* g_context = nullptr;
 
 Context* GetContext() {
-  DCHECK(g_context);
-  return g_context;
-}
-
-void SetContext(Context* context) {
-  g_context = context;
+  static base::NoDestructor<Context> context;
+  return context.get();
 }
 
 bool FromProto(const bool& input, bool& output) {

@@ -789,10 +789,13 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBeforeUnloadBrowserTest,
       web_contents()->GetMainFrame()->is_waiting_for_beforeunload_completion());
 
   // The navigation that succeeded was a browser-initiated, main frame
-  // navigation, so it swapped RenderFrameHosts. |main_frame| should now be
-  // pending deletion and waiting for unload ACK, but it should not be waiting
-  // for the beforeunload completion callback.
-  EXPECT_TRUE(main_frame->IsPendingDeletion());
+  // navigation, so it swapped RenderFrameHosts. |main_frame| should either be
+  // in pending deletion and waiting for unload ACK or enter back-forward cache,
+  // but it should not be waiting for the beforeunload completion callback.
+  EXPECT_THAT(
+      main_frame->lifecycle_state(),
+      testing::AnyOf(testing::Eq(LifecycleState::kRunningUnloadHandlers),
+                     testing::Eq(LifecycleState::kInBackForwardCache)));
   EXPECT_FALSE(main_frame->is_waiting_for_beforeunload_completion());
   EXPECT_EQ(0u, main_frame->beforeunload_pending_replies_.size());
   EXPECT_EQ(nullptr, main_frame->GetBeforeUnloadInitiator());
@@ -3630,7 +3633,14 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   // 4) Navigate rfh_a to C.
   EXPECT_TRUE(NavigateToURL(shell(), url_c));
   RenderFrameHostImpl* rfh_c = web_contents()->GetMainFrame();
-  EXPECT_EQ(LifecycleState::kRunningUnloadHandlers, rfh_b->lifecycle_state());
+
+  EXPECT_THAT(rfh_a->lifecycle_state(),
+              testing::AnyOf(testing::Eq(LifecycleState::kReadyToBeDeleted),
+                             testing::Eq(LifecycleState::kInBackForwardCache)));
+  EXPECT_THAT(
+      rfh_b->lifecycle_state(),
+      testing::AnyOf(testing::Eq(LifecycleState::kRunningUnloadHandlers),
+                     testing::Eq(LifecycleState::kInBackForwardCache)));
 
   // 5) Check the IsCurrent state of rfh_a, rfh_b and rfh_c after navigating to
   // C.
@@ -3680,7 +3690,10 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   RenderFrameHostImpl* rfh_b = root_frame_host();
 
   // 6) Check the LifecycleState of both rfh_a and rfh_b after navigating to B.
-  EXPECT_EQ(LifecycleState::kRunningUnloadHandlers, rfh_a->lifecycle_state());
+  EXPECT_THAT(
+      rfh_a->lifecycle_state(),
+      testing::AnyOf(testing::Eq(LifecycleState::kRunningUnloadHandlers),
+                     testing::Eq(LifecycleState::kInBackForwardCache)));
   EXPECT_EQ(LifecycleState::kActive, rfh_b->lifecycle_state());
 }
 

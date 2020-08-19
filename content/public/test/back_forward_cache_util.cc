@@ -10,6 +10,7 @@
 #include "content/browser/frame_host/back_forward_cache_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/public/browser/global_routing_id.h"
+#include "content/public/browser/web_contents.h"
 
 namespace content {
 
@@ -41,6 +42,13 @@ bool BackForwardCacheDisabledTester::IsDisabledForFrameWithReason(
     base::StringPiece reason) {
   return impl_->IsDisabledForFrameWithReason(
       GlobalFrameRoutingId{process_id, frame_routing_id}, reason);
+}
+
+void DisableBackForwardCacheForTesting(
+    WebContents* web_contents,
+    BackForwardCache::DisableForTestingReason reason) {
+  // Used by tests. Disables BackForwardCache for a given WebContents.
+  web_contents->GetController().GetBackForwardCache().DisableForTesting(reason);
 }
 
 }  // namespace content

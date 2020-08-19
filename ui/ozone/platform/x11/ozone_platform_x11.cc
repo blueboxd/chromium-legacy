@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/message_loop/message_pump_type.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "ui/base/buildflags.h"
@@ -192,6 +193,8 @@ class OzonePlatformX11 : public OzonePlatform,
         std::make_unique<GtkUiDelegateX11>(x11::Connection::Get());
     GtkUiDelegate::SetInstance(gtk_ui_delegate_.get());
 #endif
+
+    base::UmaHistogramEnumeration("Linux.WindowManager", GetWindowManagerUMA());
   }
 
   void InitializeGPU(const InitParams& params) override {

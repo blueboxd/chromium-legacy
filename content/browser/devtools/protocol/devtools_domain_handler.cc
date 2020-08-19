@@ -26,5 +26,17 @@ Response DevToolsDomainHandler::Disable() {
   return Response::Success();
 }
 
+void DevToolsDomainHandler::SetSession(DevToolsSession* session) {
+  session_ = session;
+}
+
+const std::string& DevToolsDomainHandler::name() const {
+  return name_;
+}
+
+DevToolsSession* DevToolsDomainHandler::session() {
+  return session_;
+}
+
 }  // namespace protocol
 }  // namespace content

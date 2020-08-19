@@ -1399,6 +1399,11 @@ void InputHandlerProxy::Animate(base::TimeTicks time) {
     elastic_overscroll_controller_->Animate(time);
 
   snap_fling_controller_->Animate(time);
+
+  // These animations can change the root scroll offset, so inform the
+  // synchronous input handler.
+  if (synchronous_input_handler_)
+    input_handler_->RequestUpdateForSynchronousInputHandler();
 }
 
 void InputHandlerProxy::ReconcileElasticOverscrollAndRootScroll() {

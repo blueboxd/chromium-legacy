@@ -4430,7 +4430,7 @@
   {
     "name": "use-multilogin-endpoint",
     "owners": [ "droger", "msarda" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 88
   },
   {
     "name": "use-preferred-interval-for-video",

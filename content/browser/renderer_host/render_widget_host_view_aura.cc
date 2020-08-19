@@ -1852,13 +1852,13 @@ void RenderWidgetHostViewAura::OnCursorVisibilityChanged(bool is_visible) {
 
 void RenderWidgetHostViewAura::OnWindowFocused(aura::Window* gained_focus,
                                                aura::Window* lost_focus) {
-  if (window_ == gained_focus) {
-    // We need to honor input bypass if the associated tab is does not want
-    // input. This gives the current focused window a chance to be the text
-    // input client and handle events.
-    if (host()->IsIgnoringInputEvents())
-      return;
+  // We need to honor input bypass if the associated tab is does not want
+  // input. This gives the current focused window a chance to be the text
+  // input client and handle events.
+  if (host()->IsIgnoringInputEvents())
+    return;
 
+  if (window_ == gained_focus) {
     host()->GotFocus();
     host()->SetActive(true);
 

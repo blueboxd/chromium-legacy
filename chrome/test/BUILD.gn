@@ -2277,8 +2277,11 @@ if (!is_android) {
         "../browser/chromeos/logging_browsertest.cc",
         "../browser/chromeos/login/accessibility_browsertest.cc",
         "../browser/chromeos/login/active_directory_login_browsertest.cc",
+        "../browser/chromeos/login/app_mode/auto_launched_kiosk_browsertest.cc",
+        "../browser/chromeos/login/app_mode/kiosk_browsertest.cc",
+        "../browser/chromeos/login/app_mode/kiosk_launch_controller_browsertest.cc",
+        "../browser/chromeos/login/app_mode/web_kiosk_browsertest.cc",
         "../browser/chromeos/login/arc_terms_of_service_browsertest.cc",
-        "../browser/chromeos/login/auto_launched_kiosk_browsertest.cc",
         "../browser/chromeos/login/challenge_response_auth_keys_loader_browsertest.cc",
         "../browser/chromeos/login/configuration_based_oobe_browsertest.cc",
         "../browser/chromeos/login/crash_restore_browsertest.cc",
@@ -2301,8 +2304,6 @@ if (!is_android) {
         "../browser/chromeos/login/existing_user_controller_browsertest.cc",
         "../browser/chromeos/login/guest_login_browsertest.cc",
         "../browser/chromeos/login/hid_detection_browsertest.cc",
-        "../browser/chromeos/login/kiosk_browsertest.cc",
-        "../browser/chromeos/login/kiosk_launch_controller_browsertest.cc",
         "../browser/chromeos/login/lock/fingerprint_unlock_browsertest.cc",
         "../browser/chromeos/login/lock/lock_screen_browsertest.cc",
         "../browser/chromeos/login/lock/screen_locker_browsertest.cc",
@@ -2430,7 +2431,6 @@ if (!is_android) {
         "../browser/chromeos/login/users/remove_supervised_users_browsertest.cc",
         "../browser/chromeos/login/users/user_manager_hide_supervised_users_browsertest.cc",
         "../browser/chromeos/login/users/wallpaper_policy_browsertest.cc",
-        "../browser/chromeos/login/web_kiosk_browsertest.cc",
         "../browser/chromeos/login/webview_login_browsertest.cc",
         "../browser/chromeos/login/wizard_controller_browsertest.cc",
         "../browser/chromeos/net/device_event_log_error_browsertest.cc",
@@ -5128,6 +5128,10 @@ test("unit_tests") {
         "../browser/media_galleries/win/mtp_device_delegate_impl_win_unittest.cc",
         "../browser/media_galleries/win/mtp_device_object_enumerator_unittest.cc",
       ]
+    }
+    if (is_mac) {
+      sources +=
+          [ "../browser/ui/startup/mac_system_infobar_delegate_unittest.cc" ]
     }
     if (is_chromeos) {
       sources += [

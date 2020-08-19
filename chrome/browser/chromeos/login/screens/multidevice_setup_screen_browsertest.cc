@@ -58,7 +58,7 @@ class MultiDeviceSetupScreenTest : public OobeBaseTest {
 
   void ShowMultiDeviceSetupScreen() {
     login_manager_mixin_.LoginAsNewRegularUser();
-    OobeScreenExitWaiter(GaiaView::kScreenId).Wait();
+    OobeScreenExitWaiter(GetFirstSigninScreen()).Wait();
     if (!screen_exited_) {
       LoginDisplayHost::default_host()->StartWizard(
           MultiDeviceSetupScreenView::kScreenId);

@@ -865,6 +865,13 @@ class CONTENT_EXPORT NavigationRequest
   // Inform the RenderProcessHost to no longer expect a navigation.
   void ResetExpectedProcess();
 
+  // If this is a same-site main-frame navigation where we did a proactive
+  // BrowsingInstance swap but we're reusing the old page's process, we need
+  // to send the routing ID and the updated lifecycle state of the old page so
+  // that we can run pagehide and visibilitychange handlers of the old page
+  // when we commit the new page.
+  void AddOldPageInfoToCommitParamsIfNeeded();
+
   // Compute the history offset of the new document compared to the current one.
   // See navigation_history_offset_ for more details.
   int EstimateHistoryOffset();

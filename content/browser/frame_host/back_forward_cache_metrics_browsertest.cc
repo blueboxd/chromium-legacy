@@ -12,6 +12,7 @@
 #include "content/browser/frame_host/back_forward_cache_metrics.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/common/content_navigation_policy.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
@@ -566,13 +567,14 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), url1));
   EXPECT_TRUE(NavigateToURL(shell(), url2));
 
-  {
-    TestNavigationObserver navigation_observer(shell()->web_contents(), 2);
-    shell()->GoBackOrForward(-1);
-    navigation_observer.WaitForNavigationFinished();
-  }
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(web_contents()));
 
-  ASSERT_EQ(navigation_ids_.size(), static_cast<size_t>(5));
+  // When the page is restored from back-forward cache, there is one navigation
+  // corresponding to the bfcache restore. Whereas, when the page is reloaded,
+  // there are two navigations i.e., one loading the main frame and one loading
+  // the subframe.
+  ASSERT_EQ(navigation_ids_.size(), IsBackForwardCacheEnabled() ? 4u : 5u);
   // ukm::SourceId id1 = ToSourceId(navigation_ids_[0]);
   // ukm::SourceId id2 = ToSourceId(navigation_ids_[1]);
   // ukm::SourceId id3 = ToSourceId(navigation_ids_[2]);

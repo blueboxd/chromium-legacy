@@ -16,10 +16,18 @@
 #include "chromeos/dbus/system_proxy/system_proxy_service.pb.h"
 #include "net/base/auth.h"
 
+namespace chromeos {
+class RequestSystemProxyCredentialsView;
+}
+
 namespace system_proxy {
 class SetAuthenticationDetailsResponse;
 class ShutDownResponse;
 }  // namespace system_proxy
+
+namespace views {
+class Widget;
+}
 
 class PrefRegistrySimple;
 class PrefService;
@@ -77,7 +85,22 @@ class SystemProxyManager {
   void SetUserTrafficProxyPref(const std::string& user_traffic_address);
   bool IsArcEnabled() const;
 
+  // Sends the authentication details for |protection_space| to System-proxy via
+  // D-Bus.
+  void SendUserAuthenticationCredentials(
+      const system_proxy::ProtectionSpace& protection_space,
+      const std::string& username,
+      const std::string& password);
+  // Send the Kerberos enabled state and active principal name to System-proxy
+  // via D-Bus.
   void SendKerberosAuthenticationDetails();
+  // Sends empty credentials for |protection_space| to System-proxy via D-Bus.
+  // This can mean that a user is not signed into Chrome OS or they didn't
+  // provide proxy authentication credentials. In this case, System-proxy will
+  // forward the authentication failure (HTTP 407 status code) to the Chrome OS
+  // client.
+  void SendEmptyCredentials(
+      const system_proxy::ProtectionSpace& protection_space);
 
   // Once a trusted set of policies is established, this function calls
   // the System-proxy dbus client to start/shutdown the daemon and, if
@@ -100,6 +123,20 @@ class SystemProxyManager {
       const system_proxy::ProtectionSpace& protection_space,
       const base::Optional<net::AuthCredentials>& credentials);
 
+  // Shows a dialog which prompts the user to introduce proxy authentication
+  // credentials for OS level traffic. If |show_error_label| is true, the
+  // dialog will show a label that indicates the previous attempt to
+  // authenticate has failed due to invalid credentials.
+  void ShowAuthenticationDialog(
+      const system_proxy::ProtectionSpace& protection_space,
+      bool show_error_label);
+  void OnDialogAccepted(const system_proxy::ProtectionSpace& protection_space);
+  void OnDialogCanceled(const system_proxy::ProtectionSpace& protection_space);
+  void OnDialogClosed(const system_proxy::ProtectionSpace& protection_space);
+
+  // Closes the authentication dialog if shown.
+  void CloseAuthenticationDialog();
+
   chromeos::CrosSettings* cros_settings_;
   std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
       system_proxy_subscription_;
@@ -111,6 +148,11 @@ class SystemProxyManager {
 
   // Local state prefs, not owned.
   PrefService* local_state_ = nullptr;
+
+  // Owned by |auth_widget_|.
+  chromeos::RequestSystemProxyCredentialsView* active_auth_dialog_ = nullptr;
+  // Owned by the UI code (NativeWidget).
+  views::Widget* auth_widget_ = nullptr;
 
   // Primary profile, not owned.
   Profile* primary_profile_ = nullptr;

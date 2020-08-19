@@ -41,6 +41,29 @@ std::string CreateChangeUrl(const GURL& url) {
   return url.GetOrigin().spec();
 }
 
+// Orders |compromised_credentials| in such a way that phished credentials
+// precede leaked credentials, and that credentials of the same compromise type
+// are ordered by recency.
+// TODO(crbug.com/1117579): Share the common logic with desktop.
+void OrderCompromisedCredentials(
+    std::vector<password_manager::CredentialWithPassword>& credentials) {
+  // Reordering phished credential to the beginning.
+  auto last_phished = std::partition(
+      credentials.begin(), credentials.end(), [](const auto& credential) {
+        return credential.compromise_type !=
+               password_manager::CompromiseTypeFlags::kCredentialLeaked;
+      });
+
+  // By construction the phished credentials precede the leaked credentials in
+  // |credentials|. Now sort both groups by their creation date so that most recent
+  // compromises appear first in both lists.
+  auto create_time_cmp = [](const auto& lhs, const auto& rhs) {
+    return lhs.create_time > rhs.create_time;
+  };
+  std::sort(credentials.begin(), last_phished, create_time_cmp);
+  std::sort(last_phished, credentials.end(), create_time_cmp);
+}
+
 }  // namespace
 
 using autofill::PasswordForm;
@@ -87,7 +110,7 @@ PasswordCheckManager::PasswordCheckManager(Profile* profile, Observer* observer)
 PasswordCheckManager::~PasswordCheckManager() = default;
 
 void PasswordCheckManager::StartCheck() {
-  if (!is_initialized_) {
+  if (!is_initialized_ || !AreScriptsRefreshed()) {
     was_start_requested_ = true;
     return;
   }
@@ -119,6 +142,7 @@ std::vector<CompromisedCredentialForUI>
 PasswordCheckManager::GetCompromisedCredentials() const {
   std::vector<CredentialWithPassword> credentials =
       compromised_credentials_manager_.GetCompromisedCredentials();
+  OrderCompromisedCredentials(credentials);
   std::vector<CompromisedCredentialForUI> ui_credentials;
   ui_credentials.reserve(credentials.size());
   for (const auto& credential : credentials) {
@@ -161,6 +185,9 @@ void PasswordCheckManager::OnSavedPasswordsChanged(
 void PasswordCheckManager::OnCompromisedCredentialsChanged(
     password_manager::CompromisedCredentialsManager::CredentialsView
         credentials) {
+  if (!AreScriptsRefreshed()) {
+    credentials_count_to_notify_ = credentials.size();
+  }
   observer_->OnCompromisedCredentialsChanged(credentials.size());
 }
 
@@ -192,10 +219,19 @@ void PasswordCheckManager::OnCredentialDone(
 CompromisedCredentialForUI PasswordCheckManager::MakeUICredential(
     const CredentialWithPassword& credential) const {
   CompromisedCredentialForUI ui_credential(credential);
+  // UI is only be created after the list of available password check
+  // scripts has been refreshed.
+  DCHECK(AreScriptsRefreshed());
   auto facet = password_manager::FacetURI::FromPotentiallyInvalidSpec(
       credential.signon_realm);
 
   ui_credential.display_username = GetDisplayUsername(credential.username);
+  ui_credential.has_script =
+      base::FeatureList::IsEnabled(
+          password_manager::features::kPasswordChangeInSettings) &&
+      password_script_fetcher_->IsScriptAvailable(
+          url::Origin::Create(credential.url.GetOrigin()));
+
   if (facet.IsValidAndroidFacetURI()) {
     const PasswordForm& android_form =
         compromised_credentials_manager_.GetSavedPasswordsFor(credential)[0];
@@ -261,4 +297,39 @@ bool PasswordCheckManager::CanUseAccountCheck() const {
       ProfileSyncServiceFactory::GetForProfile(profile_));
   return sync_state == SyncState::SYNCING_NORMAL_ENCRYPTION ||
          sync_state == SyncState::ACCOUNT_PASSWORDS_ACTIVE_NORMAL_ENCRYPTION;
+}
+
+bool PasswordCheckManager::AreScriptsRefreshed() const {
+  // Don't fetch scripts if password change is not enabled.
+  return are_scripts_refreshed_ ||
+         !base::FeatureList::IsEnabled(
+             password_manager::features::kPasswordChangeInSettings);
+}
+
+void PasswordCheckManager::RefreshScripts() {
+  // Don't fetch scripts if password change is not enabled.
+  if (!base::FeatureList::IsEnabled(
+          password_manager::features::kPasswordChangeInSettings)) {
+    return;
+  }
+
+  are_scripts_refreshed_ = false;
+  password_script_fetcher_->RefreshScriptsIfNecessary(base::BindOnce(
+      &PasswordCheckManager::OnScriptsFetched, base::Unretained(this)));
+}
+
+void PasswordCheckManager::OnScriptsFetched() {
+  are_scripts_refreshed_ = true;
+
+  if (credentials_count_to_notify_.has_value()) {
+    // Inform the UI about compromised credentials another time because it was
+    // not allowed to generate UI before the availability of password scripts is
+    // known.
+    observer_->OnCompromisedCredentialsChanged(
+        credentials_count_to_notify_.value());
+    credentials_count_to_notify_.reset();
+  }
+
+  if (was_start_requested_)
+    StartCheck();
 }

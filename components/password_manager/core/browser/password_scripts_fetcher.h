@@ -27,7 +27,8 @@ class PasswordScriptsFetcher : public KeyedService {
   // |PrewarmCache| was supposed to fetch the data in advance). In case of
   // several calls of the method, the callbacks will be called one after
   // another.
-  virtual void Fetch(base::OnceClosure fetch_finished_callback) = 0;
+  virtual void RefreshScriptsIfNecessary(
+      base::OnceClosure fetch_finished_callback) = 0;
   // Returns whether there is a password change script for |origin| via
   // |callback|. If the cache was never set or is stale, it triggers a re-fetch.
   // In case of a network error, the verdict will default to no script being

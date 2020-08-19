@@ -654,15 +654,12 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   ScrollNode* CurrentlyScrollingNode();
   const ScrollNode* CurrentlyScrollingNode() const;
 
-  bool scroll_affects_scroll_handler() const {
-    return settings_.enable_synchronized_scrolling &&
-           input_handler_.CurrentScrollAffectsScrollHandler();
-  }
   void QueueSwapPromiseForMainThreadScrollUpdate(
       std::unique_ptr<SwapPromise> swap_promise);
 
   // See comment in equivalent ThreadedInputHandler method for what this means.
   bool IsActivelyPrecisionScrolling() const;
+  bool ScrollAffectsScrollHandler() const;
 
   virtual void SetVisible(bool visible);
   bool visible() const { return visible_; }
@@ -698,9 +695,6 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   }
 
   MutatorHost* mutator_host() const { return mutator_host_.get(); }
-  ScrollbarController* scrollbar_controller_for_testing() const {
-    return input_handler_.get_scrollbar_controller();
-  }
 
   void SetDebugState(const LayerTreeDebugState& new_debug_state);
   const LayerTreeDebugState& debug_state() const { return debug_state_; }
@@ -978,6 +972,10 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   void LogAverageLagEvents(uint32_t frame_token,
                            const viz::FrameTimingDetails& details);
 
+  // TODO(bokan): Temporary, keep multiple pointers to the input_handler_ while
+  // we decouple this into clean interfaces. Once we're done LTHI should only
+  // talk to InputDelegateForCompositor.
+  InputDelegateForCompositor* input_delegate_;
   ThreadedInputHandler input_handler_;
 
   const LayerTreeSettings settings_;

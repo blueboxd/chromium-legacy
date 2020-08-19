@@ -17,6 +17,10 @@ namespace chromeos {
 // Helper class that gives time left expectations.
 class UpdateTimeEstimator {
  public:
+  struct UpdateStatus {
+    base::TimeDelta time_left;
+    int progress;
+  };
   UpdateTimeEstimator();
 
   // Updates data needed for estimation.
@@ -29,8 +33,9 @@ class UpdateTimeEstimator {
   // Estimate time left for a downloading stage to complete.
   base::TimeDelta GetDownloadTimeLeft() const;
 
-  // Estimate time left for an update to complete.
-  base::TimeDelta GetTimeLeft() const;
+  // Estimate time left for an update to complete and current update progress in
+  // procents.
+  UpdateStatus GetUpdateStatus() const;
 
   void set_tick_clock_for_testing(const base::TickClock* tick_clock) {
     tick_clock_ = tick_clock;

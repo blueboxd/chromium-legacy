@@ -145,8 +145,7 @@ base::string16
 DumpAccessibilityTestBase::DumpUnfilteredAccessibilityTreeAsString() {
   std::unique_ptr<AccessibilityTreeFormatter> formatter(formatter_factory_());
   std::vector<PropertyFilter> property_filters;
-  property_filters.push_back(
-      PropertyFilter(base::ASCIIToUTF16("*"), PropertyFilter::ALLOW));
+  property_filters.emplace_back("*", PropertyFilter::ALLOW);
   formatter->SetPropertyFilters(property_filters);
   formatter->set_show_ids(true);
   base::string16 ax_tree_dump;
@@ -174,18 +173,13 @@ void DumpAccessibilityTestBase::ParseHtmlForExtraDirectives(
     const std::string& until_str = formatter_->GetRunUntilEventString();
     const std::string& default_action_on_str = "@DEFAULT-ACTION-ON:";
     if (base::StartsWith(line, allow_empty_str, base::CompareCase::SENSITIVE)) {
-      property_filters_.push_back(
-          PropertyFilter(base::UTF8ToUTF16(line.substr(allow_empty_str.size())),
-                         PropertyFilter::ALLOW_EMPTY));
+      property_filters_.emplace_back(
+          line.substr(allow_empty_str.size()), PropertyFilter::ALLOW_EMPTY);
     } else if (base::StartsWith(line, allow_str,
                                 base::CompareCase::SENSITIVE)) {
-      property_filters_.push_back(
-          PropertyFilter(base::UTF8ToUTF16(line.substr(allow_str.size())),
-                         PropertyFilter::ALLOW));
+      property_filters_.emplace_back(line.substr(allow_str.size()), PropertyFilter::ALLOW);
     } else if (base::StartsWith(line, deny_str, base::CompareCase::SENSITIVE)) {
-      property_filters_.push_back(
-          PropertyFilter(base::UTF8ToUTF16(line.substr(deny_str.size())),
-                         PropertyFilter::DENY));
+      property_filters_.emplace_back(line.substr(deny_str.size()), PropertyFilter::DENY);
     } else if (base::StartsWith(line, deny_node_str,
                                 base::CompareCase::SENSITIVE)) {
       const auto& node_filter = line.substr(deny_node_str.size());

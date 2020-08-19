@@ -403,6 +403,21 @@ class WebView {
                                   bool is_initial_state) = 0;
   virtual mojom::PageVisibilityState GetVisibilityState() = 0;
 
+  // PageLifecycleState ----------------------------------------------------
+
+  // Sets the |visibility| and |pagehide_dispatch| properties for the
+  // PageLifecycleState of this page from a new page's commit. Should only be
+  // called from a main-frame same-site navigation where we did a proactive
+  // BrowsingInstance swap and we're reusing the old page's process.
+  // Note that unlike SetPageLifecycleState in PageBroadcast/WebViewImpl, we
+  // don't need to pass a callback here to notify the browser site that the
+  // PageLifecycleState has been successfully updated.
+  // TODO(rakina): When it's possible to pass PageLifecycleState here, pass
+  // PageLifecycleState instead.
+  virtual void SetPageLifecycleStateFromNewPageCommit(
+      mojom::PageVisibilityState visibility,
+      mojom::PagehideDispatch pagehide_dispatch) = 0;
+
   // Page Importance Signals ----------------------------------------------
 
   virtual WebPageImportanceSignals* PageImportanceSignals() { return nullptr; }

@@ -655,8 +655,7 @@ ScriptPromise CredentialsContainer::get(
         CredentialManagerProxy::From(script_state)->SmsReceiver();
     sms_receiver->Receive(WTF::Bind(&OnSmsReceive, WrapPersistent(resolver),
                                     base::TimeTicks::Now()));
-    UMA_HISTOGRAM_ENUMERATION("Blink.UseCounter.Features",
-                              WebFeature::kSMSReceiverStart);
+    UMA_HISTOGRAM_ENUMERATION("Blink.UseCounter.Features", WebFeature::kWebOTP);
     return promise;
   }
 

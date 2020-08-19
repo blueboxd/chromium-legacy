@@ -71,6 +71,10 @@ TEST_F(GaiaUrlsTest, InitializeDefault_AllUrls) {
             "https://accounts.google.com/ServiceLogin");
   EXPECT_EQ(gaia_urls()->embedded_setup_chromeos_url(2U).spec(),
             "https://accounts.google.com/embedded/setup/v2/chromeos");
+  EXPECT_EQ(gaia_urls()->embedded_setup_chromeos_kid_signup_url().spec(),
+            "https://accounts.google.com/embedded/setup/kidsignup/chromeos");
+  EXPECT_EQ(gaia_urls()->embedded_setup_chromeos_kid_signin_url().spec(),
+            "https://accounts.google.com/embedded/setup/kidsignin/chromeos");
   EXPECT_EQ(gaia_urls()->embedded_setup_windows_url().spec(),
             "https://accounts.google.com/embedded/setup/windows");
   EXPECT_EQ(gaia_urls()->signin_chrome_sync_dice().spec(),
@@ -155,6 +159,10 @@ TEST_F(GaiaUrlsTest, InitializeDefault_URLSwitches) {
             "https://test-gaia.com/ServiceLogin");
   EXPECT_EQ(gaia_urls()->embedded_setup_chromeos_url(2U).spec(),
             "https://test-gaia.com/embedded/setup/v2/chromeos");
+  EXPECT_EQ(gaia_urls()->embedded_setup_chromeos_kid_signup_url().spec(),
+            "https://test-gaia.com/embedded/setup/kidsignup/chromeos");
+  EXPECT_EQ(gaia_urls()->embedded_setup_chromeos_kid_signin_url().spec(),
+            "https://test-gaia.com/embedded/setup/kidsignin/chromeos");
   EXPECT_EQ(gaia_urls()->embedded_setup_windows_url().spec(),
             "https://test-gaia.com/embedded/setup/windows");
   EXPECT_EQ(gaia_urls()->signin_chrome_sync_dice().spec(),
@@ -277,6 +285,10 @@ TEST_F(GaiaUrlsTest, InitializeFromConfig_AllUrls) {
             "https://accounts.example.com/ServiceLogin");
   EXPECT_EQ(gaia_urls()->embedded_setup_chromeos_url(2U).spec(),
             "https://accounts.example.com/embedded/setup/v2/chromeos");
+  EXPECT_EQ(gaia_urls()->embedded_setup_chromeos_kid_signup_url().spec(),
+            "https://accounts.example.com/embedded/setup/kidsignup/chromeos");
+  EXPECT_EQ(gaia_urls()->embedded_setup_chromeos_kid_signin_url().spec(),
+            "https://accounts.example.com/embedded/setup/kidsignin/chromeos");
   EXPECT_EQ(gaia_urls()->embedded_setup_windows_url().spec(),
             "https://accounts.example.com/embedded/setup/windows");
   EXPECT_EQ(gaia_urls()->signin_chrome_sync_dice().spec(),

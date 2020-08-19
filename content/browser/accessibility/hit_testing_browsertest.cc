@@ -268,12 +268,9 @@ AccessibilityHitTestingBrowserTest::FormatHitTestAccessibilityTree() {
       AccessibilityTreeFormatterBlink::CreateBlink();
   accessibility_tree_formatter->set_show_ids(true);
   accessibility_tree_formatter->SetPropertyFilters(
-      {{base::ASCIIToUTF16("name=*"),
-        AccessibilityTreeFormatter::PropertyFilter::ALLOW},
-       {base::ASCIIToUTF16("location=*"),
-        AccessibilityTreeFormatter::PropertyFilter::ALLOW},
-       {base::ASCIIToUTF16("size=*"),
-        AccessibilityTreeFormatter::PropertyFilter::ALLOW}});
+      {{"name=*", AccessibilityTreeFormatter::PropertyFilter::ALLOW},
+       {"location=*", AccessibilityTreeFormatter::PropertyFilter::ALLOW},
+       {"size=*", AccessibilityTreeFormatter::PropertyFilter::ALLOW}});
   base::string16 accessibility_tree;
   accessibility_tree_formatter->FormatAccessibilityTreeForTesting(
       GetRootAndAssertNonNull(), &accessibility_tree);

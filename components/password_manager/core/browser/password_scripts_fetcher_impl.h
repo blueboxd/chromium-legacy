@@ -64,7 +64,8 @@ class PasswordScriptsFetcherImpl
 
   // PasswordScriptsFetcher:
   void PrewarmCache() override;
-  void Fetch(base::OnceClosure fetch_finished_callback) override;
+  void RefreshScriptsIfNecessary(
+      base::OnceClosure fetch_finished_callback) override;
   void FetchScriptAvailability(const url::Origin& origin,
                                ResponseCallback callback) override;
   bool IsScriptAvailable(const url::Origin& origin) const override;

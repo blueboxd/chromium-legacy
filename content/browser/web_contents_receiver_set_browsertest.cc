@@ -7,6 +7,7 @@
 #include "base/run_loop.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/web_contents_receiver_set.h"
+#include "content/public/test/back_forward_cache_util.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -127,6 +128,12 @@ IN_PROC_BROWSER_TEST_F(WebContentsReceiverSetBrowserTest,
   // Now navigate the WebContents elsewhere, eventually tearing down the old
   // main frame.
   RenderFrameDeletedObserver deleted_observer(web_contents->GetMainFrame());
+
+  // Test expects the old frame to be deleted on navigation, but it doesn't
+  // happen as it is stored in bfcache.
+  DisableBackForwardCacheForTesting(shell()->web_contents(),
+                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+
   EXPECT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL(kTestHost2, "/title2.html")));
   deleted_observer.WaitUntilDeleted();

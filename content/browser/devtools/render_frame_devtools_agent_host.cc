@@ -86,6 +86,10 @@ RenderFrameDevToolsAgentHost* FindAgentHost(FrameTreeNode* frame_tree_node) {
   return it == g_agent_host_instances.Get().end() ? nullptr : it->second;
 }
 
+bool ShouldCreateDevToolsForHost(RenderFrameHost* rfh) {
+  return rfh->IsCrossProcessSubframe() || !rfh->GetParent();
+}
+
 bool ShouldCreateDevToolsForNode(FrameTreeNode* ftn) {
   return !ftn->parent() ||
          (ftn->current_frame_host() &&
@@ -136,12 +140,6 @@ scoped_refptr<DevToolsAgentHost> RenderFrameDevToolsAgentHost::GetOrCreateFor(
     result = new RenderFrameDevToolsAgentHost(
         frame_tree_node, frame_tree_node->current_frame_host());
   return result;
-}
-
-// static
-bool RenderFrameDevToolsAgentHost::ShouldCreateDevToolsForHost(
-    RenderFrameHost* rfh) {
-  return rfh->IsCrossProcessSubframe() || !rfh->GetParent();
 }
 
 // static
@@ -616,9 +614,7 @@ void RenderFrameDevToolsAgentHost::OnPageScaleFactorChanged(
 
 void RenderFrameDevToolsAgentHost::OnNavigationRequestWillBeSent(
     const NavigationRequest& navigation_request) {
-  GURL url = navigation_request.common_params().url;
-  if (url.SchemeIs(url::kJavaScriptScheme) && frame_host_)
-    url = frame_host_->GetLastCommittedURL();
+  const auto& url = navigation_request.common_params().url;
   std::vector<DevToolsSession*> restricted_sessions;
   bool is_webui = frame_host_ && frame_host_->web_ui();
   for (DevToolsSession* session : sessions()) {
@@ -832,16 +828,9 @@ bool RenderFrameDevToolsAgentHost::ShouldAllowSession(
       !manager->delegate()->AllowInspectingRenderFrameHost(frame_host_)) {
     return false;
   }
-  auto* root = FrameTreeNode::From(frame_host_);
-  for (FrameTreeNode* node : root->frame_tree()->SubtreeNodes(root)) {
-    // Note this may be called before navigation is committed.
-    RenderFrameHostImpl* rfh = node->current_frame_host();
-    const GURL& url = rfh->GetSiteInstance()->GetSiteURL();
-    if (!session->GetClient()->MayAttachToURL(url, rfh->web_ui())) {
-      return false;
-    }
-  }
-  return true;
+  // Note this may be called before navigation is committed.
+  return session->GetClient()->MayAttachToURL(
+      frame_host_->GetSiteInstance()->GetSiteURL(), frame_host_->web_ui());
 }
 
 void RenderFrameDevToolsAgentHost::UpdateResourceLoaderFactories() {

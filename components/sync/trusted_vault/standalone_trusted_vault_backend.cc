@@ -59,21 +59,72 @@ void StandaloneTrustedVaultBackend::ReadDataFromDisk() {
   data_ = ReadEncryptedFile(file_path_);
 }
 
-std::vector<std::vector<uint8_t>> StandaloneTrustedVaultBackend::FetchKeys(
-    const CoreAccountInfo& account_info) {
+void StandaloneTrustedVaultBackend::FetchKeys(
+    const CoreAccountInfo& account_info,
+    FetchKeysCallback callback) {
+  // Concurrent keys fetches aren't supported.
+  DCHECK(ongoing_fetch_keys_callback_.is_null());
+  DCHECK(!callback.is_null());
+
+  ongoing_fetch_keys_callback_ = std::move(callback);
+  ongoing_fetch_keys_gaia_id_ = account_info.gaia;
+
   const sync_pb::LocalTrustedVaultPerUser* per_user_vault =
       FindUserVault(account_info.gaia);
 
-  std::vector<std::vector<uint8_t>> keys;
-  if (per_user_vault) {
-    for (const sync_pb::LocalTrustedVaultKey& key :
-         per_user_vault->vault_key()) {
-      const std::string& key_material = key.key_material();
-      keys.emplace_back(key_material.begin(), key_material.end());
-    }
+  // TODO(crbug.com/1094326): currently there is no guarantee that
+  // |syncing_account_| is set before FetchKeys() call and this may cause
+  // redundant sync error in the UI (for key retrieval), especially during the
+  // browser startup. Try to find a way to avoid this issue.
+  if (!base::FeatureList::IsEnabled(switches::kFollowTrustedVaultKeyRotation) ||
+      !syncing_account_.has_value() ||
+      syncing_account_->gaia != account_info.gaia || !per_user_vault ||
+      !per_user_vault->keys_are_stale() ||
+      !per_user_vault->local_device_registration_info().device_registered()) {
+    // Keys download attempt is not needed or not possible.
+    FulfillOngoingFetchKeys();
+    return;
   }
 
-  return keys;
+  // Current state guarantees there is no ongoing requests to the server:
+  // 1. Current |syncing_account_| is |account_info|, so there is no ongoing
+  // request for other accounts.
+  // 2. Device is already registered, so there is no device registration for
+  // |account_info|.
+  // 3. Concurrent FetchKeys() calls aren't supported, so there is no keys
+  // download for |account_info|.
+  DCHECK(!weak_factory_for_connection_.HasWeakPtrs());
+
+  std::unique_ptr<SecureBoxKeyPair> key_pair =
+      SecureBoxKeyPair::CreateByPrivateKeyImport(base::as_bytes(
+          base::make_span(per_user_vault->local_device_registration_info()
+                              .private_key_material())));
+  if (!key_pair) {
+    // Corrupted state: device is registered, but |key_pair| can't be imported.
+    // TODO(crbug.com/1094326): restore from this state (throw away the key and
+    // trigger device registration again).
+    FulfillOngoingFetchKeys();
+    return;
+  }
+  if (per_user_vault->vault_key_size() == 0) {
+    // Corrupted state: device is registered, but there is no vault keys.
+    // TODO(crbug.com/1094326): restore from this state (just mark device as not
+    // registered?).
+    FulfillOngoingFetchKeys();
+    return;
+  }
+
+  // TODO(crbug.com/1094326): add throttling mechanism.
+  std::string last_key = per_user_vault->vault_key()
+                             .at(per_user_vault->vault_key_size() - 1)
+                             .key_material();
+  std::vector<uint8_t> last_key_bytes(last_key.begin(), last_key.end());
+  connection_->DownloadKeys(
+      *syncing_account_, last_key_bytes,
+      per_user_vault->last_vault_key_version(), std::move(key_pair),
+      base::BindOnce(&StandaloneTrustedVaultBackend::OnKeysDownloaded,
+                     weak_factory_for_connection_.GetWeakPtr(),
+                     account_info.gaia));
 }
 
 void StandaloneTrustedVaultBackend::StoreKeys(
@@ -102,7 +153,7 @@ void StandaloneTrustedVaultBackend::StoreKeys(
 void StandaloneTrustedVaultBackend::RemoveAllStoredKeys() {
   base::DeleteFile(file_path_);
   data_.Clear();
-  weak_factory_for_connection_.InvalidateWeakPtrs();
+  AbandonConnectionRequest();
 }
 
 void StandaloneTrustedVaultBackend::SetSyncingAccount(
@@ -111,10 +162,24 @@ void StandaloneTrustedVaultBackend::SetSyncingAccount(
     return;
   }
   syncing_account_ = syncing_account;
-  weak_factory_for_connection_.InvalidateWeakPtrs();
+  AbandonConnectionRequest();
   if (syncing_account_.has_value()) {
     MaybeRegisterDevice(syncing_account_->gaia);
   }
+}
+
+bool StandaloneTrustedVaultBackend::MarkKeysAsStale(
+    const CoreAccountInfo& account_info) {
+  sync_pb::LocalTrustedVaultPerUser* per_user_vault =
+      FindUserVault(account_info.gaia);
+  if (!per_user_vault || per_user_vault->keys_are_stale()) {
+    // No keys available for |account_info| or they are already marked as stale.
+    return false;
+  }
+
+  per_user_vault->set_keys_are_stale(true);
+  WriteToDisk(data_, file_path_);
+  return true;
 }
 
 sync_pb::LocalDeviceRegistrationInfo
@@ -180,7 +245,7 @@ void StandaloneTrustedVaultBackend::MaybeRegisterDevice(
 
   // Cancel existing callbacks passed to |connection_| to ensure there is only
   // one ongoing request.
-  weak_factory_for_connection_.InvalidateWeakPtrs();
+  AbandonConnectionRequest();
   connection_->RegisterDevice(
       *syncing_account_, last_key_bytes,
       per_user_vault->last_vault_key_version(), key_pair->public_key(),
@@ -200,8 +265,6 @@ void StandaloneTrustedVaultBackend::OnDeviceRegistered(
 
   switch (status) {
     case TrustedVaultRequestStatus::kSuccess:
-      // TODO(crbug.com/1102340): we may want to immediately fetch fresh keys
-      // (in case they were marked as stale while the request was in flight).
       per_user_vault->mutable_local_device_registration_info()
           ->set_device_registered(true);
       WriteToDisk(data_, file_path_);
@@ -215,6 +278,73 @@ void StandaloneTrustedVaultBackend::OnDeviceRegistered(
       // restarts?
       return;
   }
+}
+
+void StandaloneTrustedVaultBackend::OnKeysDownloaded(
+    const std::string& gaia_id,
+    TrustedVaultRequestStatus status,
+    const std::vector<std::vector<uint8_t>>& vault_keys,
+    int last_vault_key_version) {
+  DCHECK(syncing_account_ && syncing_account_->gaia == gaia_id);
+  DCHECK(!ongoing_fetch_keys_callback_.is_null());
+  DCHECK(ongoing_fetch_keys_gaia_id_ == gaia_id);
+
+  sync_pb::LocalTrustedVaultPerUser* per_user_vault = FindUserVault(gaia_id);
+  DCHECK(per_user_vault);
+
+  switch (status) {
+    case TrustedVaultRequestStatus::kSuccess:
+      StoreKeys(gaia_id, vault_keys, last_vault_key_version);
+      break;
+    case TrustedVaultRequestStatus::kLocalDataObsolete: {
+      sync_pb::LocalTrustedVaultPerUser* per_user_vault =
+          FindUserVault(gaia_id);
+      // Either device isn't registered or vault keys are too outdated or
+      // corrupted. The only way to go out of this states is to receive new
+      // vault keys through external StoreKeys() call. It's safe to mark device
+      // as not registered regardless of the cause (device registration will be
+      // triggered once new vault keys are available).
+      per_user_vault->mutable_local_device_registration_info()
+          ->set_device_registered(false);
+      WriteToDisk(data_, file_path_);
+      break;
+    }
+    case TrustedVaultRequestStatus::kOtherError:
+      // TODO(crbug.com/1102340): prevent future queries until browser restart?
+      // TODO(crbug.com/1102340): introduce throttling mechanism across browser
+      // restarts?
+      break;
+  }
+  // Regardless of the |status| ongoing fetch keys request should be fulfilled.
+  FulfillOngoingFetchKeys();
+}
+
+void StandaloneTrustedVaultBackend::AbandonConnectionRequest() {
+  weak_factory_for_connection_.InvalidateWeakPtrs();
+  FulfillOngoingFetchKeys();
+}
+
+void StandaloneTrustedVaultBackend::FulfillOngoingFetchKeys() {
+  if (!ongoing_fetch_keys_gaia_id_.has_value()) {
+    return;
+  }
+  DCHECK(!ongoing_fetch_keys_callback_.is_null());
+
+  const sync_pb::LocalTrustedVaultPerUser* per_user_vault =
+      FindUserVault(*ongoing_fetch_keys_gaia_id_);
+
+  std::vector<std::vector<uint8_t>> vault_keys;
+  if (per_user_vault) {
+    for (const sync_pb::LocalTrustedVaultKey& key :
+         per_user_vault->vault_key()) {
+      const std::string& key_material = key.key_material();
+      vault_keys.emplace_back(key_material.begin(), key_material.end());
+    }
+  }
+
+  std::move(ongoing_fetch_keys_callback_).Run(vault_keys);
+  ongoing_fetch_keys_callback_.Reset();
+  ongoing_fetch_keys_gaia_id_.reset();
 }
 
 sync_pb::LocalTrustedVaultPerUser* StandaloneTrustedVaultBackend::FindUserVault(

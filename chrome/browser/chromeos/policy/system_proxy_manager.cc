@@ -5,11 +5,17 @@
 #include "chrome/browser/chromeos/policy/system_proxy_manager.h"
 
 #include "base/bind.h"
+#include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/chromeos/ui/request_system_proxy_credentials_view.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/system_proxy/system_proxy_client.h"
 #include "chromeos/network/network_event_log.h"
@@ -27,6 +33,10 @@
 #include "net/http/http_auth_scheme.h"
 #include "net/http/http_util.h"
 #include "services/network/public/mojom/network_context.mojom.h"
+#include "ui/aura/window.h"
+#include "ui/gfx/native_widget_types.h"
+#include "ui/views/widget/widget.h"
+#include "ui/views/window/dialog_delegate.h"
 
 namespace {
 const char kSystemProxyService[] = "system-proxy-service";
@@ -138,6 +148,7 @@ void SystemProxyManager::OnSystemProxySettingsPolicyChanged() {
                                 weak_factory_.GetWeakPtr()));
     system_services_address_.clear();
     SetUserTrafficProxyPref(std::string());
+    CloseAuthenticationDialog();
     return;
   }
 
@@ -207,6 +218,31 @@ bool SystemProxyManager::IsArcEnabled() const {
          primary_profile_->GetPrefs()->GetBoolean(arc::prefs::kArcEnabled);
 }
 
+void SystemProxyManager::SendUserAuthenticationCredentials(
+    const system_proxy::ProtectionSpace& protection_space,
+    const std::string& username,
+    const std::string& password) {
+  // System-proxy is started via d-bus activation, meaning the first d-bus call
+  // will start the daemon. Check that System-proxy was not disabled by policy
+  // while looking for credentials so we don't accidentally restart it.
+  if (!system_proxy_enabled_) {
+    return;
+  }
+
+  system_proxy::Credentials user_credentials;
+  user_credentials.set_username(username);
+  user_credentials.set_password(password);
+
+  system_proxy::SetAuthenticationDetailsRequest request;
+  request.set_traffic_type(system_proxy::TrafficOrigin::ALL);
+  *request.mutable_credentials() = user_credentials;
+  *request.mutable_protection_space() = protection_space;
+
+  chromeos::SystemProxyClient::Get()->SetAuthenticationDetails(
+      request, base::BindOnce(&SystemProxyManager::OnSetAuthenticationDetails,
+                              weak_factory_.GetWeakPtr()));
+}
+
 void SystemProxyManager::SendKerberosAuthenticationDetails() {
   if (!system_proxy_enabled_) {
     return;
@@ -225,6 +261,13 @@ void SystemProxyManager::SendKerberosAuthenticationDetails() {
   chromeos::SystemProxyClient::Get()->SetAuthenticationDetails(
       request, base::BindOnce(&SystemProxyManager::OnSetAuthenticationDetails,
                               weak_factory_.GetWeakPtr()));
+}
+
+void SystemProxyManager::SendEmptyCredentials(
+    const system_proxy::ProtectionSpace& protection_space) {
+  SendUserAuthenticationCredentials(protection_space,
+                                    /*username=*/std::string(),
+                                    /*password=*/std::string());
 }
 
 void SystemProxyManager::SetSystemProxyEnabledForTest(bool enabled) {
@@ -293,8 +336,7 @@ void SystemProxyManager::OnAuthenticationRequired(
   system_proxy::ProtectionSpace protection_space =
       details.proxy_protection_space();
   if (!primary_profile_) {
-    LookupProxyAuthCredentialsCallback(protection_space,
-                                       /* credentials = */ base::nullopt);
+    SendEmptyCredentials(protection_space);
     return;
   }
 
@@ -307,8 +349,7 @@ void SystemProxyManager::OnAuthenticationRequired(
       protection_space.origin(), net::ProxyServer::Scheme::SCHEME_HTTP);
 
   if (!proxy_server.is_valid()) {
-    LookupProxyAuthCredentialsCallback(protection_space,
-                                       /* credentials = */ base::nullopt);
+    SendEmptyCredentials(protection_space);
     return;
   }
   content::BrowserContext::GetDefaultStoragePartition(primary_profile_)
@@ -335,20 +376,61 @@ void SystemProxyManager::LookupProxyAuthCredentialsCallback(
   if (credentials) {
     username = base::UTF16ToUTF8(credentials->username());
     password = base::UTF16ToUTF8(credentials->password());
+    // If there's a dialog requesting credentials for this proxy, close it.
+    if (active_auth_dialog_ &&
+        active_auth_dialog_->GetProxyServer() == protection_space.origin()) {
+      CloseAuthenticationDialog();
+    }
   }
+  SendUserAuthenticationCredentials(protection_space, username, password);
+}
 
-  system_proxy::Credentials user_credentials;
-  user_credentials.set_username(username);
-  user_credentials.set_password(password);
+void SystemProxyManager::ShowAuthenticationDialog(
+    const system_proxy::ProtectionSpace& protection_space,
+    bool show_error_label) {
+  if (active_auth_dialog_)
+    return;
 
-  system_proxy::SetAuthenticationDetailsRequest request;
-  request.set_traffic_type(system_proxy::TrafficOrigin::ALL);
-  *request.mutable_credentials() = user_credentials;
-  *request.mutable_protection_space() = protection_space;
+  active_auth_dialog_ = new chromeos::RequestSystemProxyCredentialsView(
+      protection_space.origin(), show_error_label,
+      base::BindOnce(&SystemProxyManager::OnDialogClosed,
+                     weak_factory_.GetWeakPtr(), protection_space));
 
-  chromeos::SystemProxyClient::Get()->SetAuthenticationDetails(
-      request, base::BindOnce(&SystemProxyManager::OnSetAuthenticationDetails,
-                              weak_factory_.GetWeakPtr()));
+  active_auth_dialog_->SetAcceptCallback(
+      base::BindRepeating(&SystemProxyManager::OnDialogAccepted,
+                          weak_factory_.GetWeakPtr(), protection_space));
+  active_auth_dialog_->SetCancelCallback(
+      base::BindRepeating(&SystemProxyManager::OnDialogCanceled,
+                          weak_factory_.GetWeakPtr(), protection_space));
+
+  auth_widget_ = views::DialogDelegate::CreateDialogWidget(
+      active_auth_dialog_, /*context=*/nullptr, /*parent=*/nullptr);
+  auth_widget_->Show();
+}
+
+void SystemProxyManager::OnDialogAccepted(
+    const system_proxy::ProtectionSpace& protection_space) {
+  SendUserAuthenticationCredentials(
+      protection_space, base::UTF16ToUTF8(active_auth_dialog_->GetUsername()),
+      base::UTF16ToUTF8(active_auth_dialog_->GetPassword()));
+}
+
+void SystemProxyManager::OnDialogCanceled(
+    const system_proxy::ProtectionSpace& protection_space) {
+  SendEmptyCredentials(protection_space);
+}
+
+void SystemProxyManager::OnDialogClosed(
+    const system_proxy::ProtectionSpace& protection_space) {
+  active_auth_dialog_ = nullptr;
+  auth_widget_ = nullptr;
+}
+
+void SystemProxyManager::CloseAuthenticationDialog() {
+  if (!auth_widget_)
+    return;
+  // Also deletes the |auth_widget_| instance.
+  auth_widget_->CloseWithReason(views::Widget::ClosedReason::kUnspecified);
 }
 
 }  // namespace policy

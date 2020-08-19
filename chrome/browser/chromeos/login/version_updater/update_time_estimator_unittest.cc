@@ -13,6 +13,8 @@ constexpr int kFinalizingTimeInSeconds = 5 * 60;
 
 constexpr base::TimeDelta kTimeAdvanceSeconds10 =
     base::TimeDelta::FromSeconds(10);
+constexpr base::TimeDelta kTimeAdvanceSeconds60 =
+    base::TimeDelta::FromSeconds(60);
 constexpr base::TimeDelta kZeroTime = base::TimeDelta();
 
 }  // anonymous namespace
@@ -67,12 +69,41 @@ TEST_F(UpdateTimeEstimatorUnitTest, TotalTimeLeft) {
   time_estimator_.Update(status);
 
   tick_clock_.Advance(kTimeAdvanceSeconds10);
-  EXPECT_EQ(time_estimator_.GetTimeLeft(),
+  EXPECT_EQ(time_estimator_.GetUpdateStatus().time_left,
             base::TimeDelta::FromSeconds(kFinalizingTimeInSeconds) -
                 kTimeAdvanceSeconds10);
 
   tick_clock_.Advance(base::TimeDelta::FromSeconds(kFinalizingTimeInSeconds));
-  EXPECT_EQ(time_estimator_.GetTimeLeft(), kZeroTime);
+  EXPECT_EQ(time_estimator_.GetUpdateStatus().time_left, kZeroTime);
+}
+
+TEST_F(UpdateTimeEstimatorUnitTest, DownloadingProgress) {
+  update_engine::StatusResult status =
+      CreateStatusResult(update_engine::Operation::DOWNLOADING, 1.0, 0.0);
+  time_estimator_.Update(status);
+  EXPECT_EQ(time_estimator_.GetUpdateStatus().progress, 0);
+
+  tick_clock_.Advance(kTimeAdvanceSeconds10);
+  status.set_progress(0.01);
+  time_estimator_.Update(status);
+  EXPECT_EQ(time_estimator_.GetUpdateStatus().progress, 1);
+
+  tick_clock_.Advance(kTimeAdvanceSeconds10);
+  status.set_progress(0.10);
+  time_estimator_.Update(status);
+  EXPECT_EQ(time_estimator_.GetUpdateStatus().progress, 9);
+
+  status = CreateStatusResult(update_engine::Operation::VERIFYING, 0.0, 0.0);
+  time_estimator_.Update(status);
+  EXPECT_EQ(time_estimator_.GetUpdateStatus().progress, 90);
+  tick_clock_.Advance(kTimeAdvanceSeconds60);
+  EXPECT_EQ(time_estimator_.GetUpdateStatus().progress, 91);
+
+  status = CreateStatusResult(update_engine::Operation::FINALIZING, 0.0, 0.0);
+  time_estimator_.Update(status);
+  EXPECT_EQ(time_estimator_.GetUpdateStatus().progress, 95);
+  tick_clock_.Advance(kTimeAdvanceSeconds60);
+  EXPECT_EQ(time_estimator_.GetUpdateStatus().progress, 96);
 }
 
 }  // namespace chromeos

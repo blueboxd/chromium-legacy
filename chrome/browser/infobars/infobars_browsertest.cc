@@ -40,6 +40,7 @@
 #include "chrome/browser/ui/startup/automation_infobar_delegate.h"
 #include "chrome/browser/ui/startup/bad_flags_prompt.h"
 #include "chrome/browser/ui/startup/google_api_keys_infobar_delegate.h"
+#include "chrome/browser/ui/startup/mac_system_infobar_delegate.h"
 #include "chrome/browser/ui/startup/obsolete_system_infobar_delegate.h"
 #include "chrome/browser/ui/tab_sharing/tab_sharing_infobar_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -193,6 +194,7 @@ void InfoBarUiTest::ShowUi(const std::string& name) {
       {"plugin_observer", IBD::PLUGIN_OBSERVER_INFOBAR_DELEGATE},
       {"file_access_disabled", IBD::FILE_ACCESS_DISABLED_INFOBAR_DELEGATE},
       {"keystone_promotion", IBD::KEYSTONE_PROMOTION_INFOBAR_DELEGATE_MAC},
+      {"mac_system", IBD::SYSTEM_INFOBAR_DELEGATE_MAC},
       {"collected_cookies", IBD::COLLECTED_COOKIES_INFOBAR_DELEGATE},
       {"installation_error", IBD::INSTALLATION_ERROR_INFOBAR_DELEGATE},
       {"bad_flags", IBD::BAD_FLAGS_INFOBAR_DELEGATE},
@@ -294,6 +296,14 @@ void InfoBarUiTest::ShowUi(const std::string& name) {
     case IBD::KEYSTONE_PROMOTION_INFOBAR_DELEGATE_MAC:
 #if defined(OS_MAC)
       KeystonePromotionInfoBarDelegate::Create(GetWebContents());
+#else
+      ADD_FAILURE() << "This infobar is not supported on this OS.";
+#endif
+      break;
+
+    case IBD::SYSTEM_INFOBAR_DELEGATE_MAC:
+#if defined(OS_MAC)
+      MacSystemInfoBarDelegate::Create(GetInfoBarService());
 #else
       ADD_FAILURE() << "This infobar is not supported on this OS.";
 #endif
@@ -434,6 +444,9 @@ IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_file_access_disabled) {
 
 #if defined(OS_MAC)
 IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_keystone_promotion) {
+  ShowAndVerifyUi();
+}
+IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_mac_system) {
   ShowAndVerifyUi();
 }
 #endif

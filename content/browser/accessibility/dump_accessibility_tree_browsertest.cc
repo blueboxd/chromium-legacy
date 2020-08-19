@@ -62,10 +62,9 @@ class DumpAccessibilityTreeTest : public DumpAccessibilityTestBase {
   void AddDefaultFilters(
       std::vector<PropertyFilter>* property_filters) override;
   void AddPropertyFilter(std::vector<PropertyFilter>* property_filters,
-                         std::string filter,
+                         const std::string& filter,
                          PropertyFilter::Type type = PropertyFilter::ALLOW) {
-    property_filters->push_back(
-        PropertyFilter(base::ASCIIToUTF16(filter), type));
+    property_filters->push_back(PropertyFilter(filter, type));
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {

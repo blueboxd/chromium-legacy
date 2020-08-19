@@ -405,6 +405,9 @@ LayerTreeHostImpl::LayerTreeHostImpl(
                       compositor_frame_reporting_controller_.get()),
       lcd_text_metrics_reporter_(LCDTextMetricsReporter::CreateIfNeeded(this)),
       frame_rate_estimator_(GetTaskRunner()) {
+  // TODO(bokan): Temporary while we decouple input from the layer tree.
+  input_delegate_ = static_cast<InputDelegateForCompositor*>(&input_handler_);
+
   DCHECK(mutator_host_);
   mutator_host_->SetMutatorHostClient(this);
   mutator_events_ = mutator_host_->CreateEvents();
@@ -452,7 +455,7 @@ LayerTreeHostImpl::~LayerTreeHostImpl() {
   DCHECK(!image_decode_cache_);
   DCHECK(!single_thread_synchronous_task_graph_runner_);
 
-  input_handler_.WillShutdown();
+  input_delegate_->WillShutdown();
 
   // The layer trees must be destroyed before the LayerTreeHost. Also, if they
   // are holding onto any resources, destroying them will release them, before
@@ -529,7 +532,7 @@ void LayerTreeHostImpl::BeginCommit() {
 void LayerTreeHostImpl::CommitComplete() {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::CommitComplete");
 
-  input_handler_.DidCommitFromBlink();
+  input_delegate_->DidCommit();
 
   if (CommitToActiveTree()) {
     active_tree_->HandleScrollbarShowRequestsFromMain();
@@ -837,18 +840,20 @@ void LayerTreeHostImpl::AnimateInternal() {
 
   bool did_animate = false;
 
-  // TODO(bokan): See TODO in ElasticOverscrollController::Animate
-  input_handler_.TickAnimations(monotonic_time);
+  // TODO(bokan): This should return did_animate, see TODO in
+  // ElasticOverscrollController::Animate. crbug.com/551138.
+  input_delegate_->TickAnimations(monotonic_time);
 
   did_animate |= AnimatePageScale(monotonic_time);
   did_animate |= AnimateLayers(monotonic_time, /* is_active_tree */ true);
   did_animate |= AnimateScrollbars(monotonic_time);
   did_animate |= AnimateBrowserControls(monotonic_time);
 
-  // Animating stuff can change the root scroll offset, so inform the
-  // synchronous input handler.
-  input_handler_.UpdateRootLayerStateForSynchronousInputHandler();
   if (did_animate) {
+    // Animating stuff can change the root scroll offset, so inform the
+    // synchronous input handler.
+    input_delegate_->RootLayerStateMayHaveChanged();
+
     // If the tree changed, then we want to draw at the end of the current
     // frame.
     SetNeedsRedraw();
@@ -1454,7 +1459,7 @@ DrawResult LayerTreeHostImpl::PrepareToDraw(FrameData* frame) {
                          TRACE_ID_GLOBAL(CurrentBeginFrameArgs().trace_id),
                          TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
                          "step", "GenerateRenderPass");
-  input_handler_.WillDraw();
+  input_delegate_->WillDraw();
 
   // |client_name| is used for various UMA histograms below.
   // GetClientNameForMetrics only returns one non-null value over the lifetime
@@ -2725,7 +2730,7 @@ bool LayerTreeHostImpl::WillBeginImplFrame(const viz::BeginFrameArgs& args) {
     SetNeedsRedraw();
   }
 
-  input_handler_.WillBeginImplFrame(args);
+  input_delegate_->WillBeginImplFrame(args);
 
   Animate();
 
@@ -2977,7 +2982,13 @@ const ScrollNode* LayerTreeHostImpl::CurrentlyScrollingNode() const {
 }
 
 bool LayerTreeHostImpl::IsActivelyPrecisionScrolling() const {
-  return input_handler_.IsActivelyPrecisionScrolling();
+  return input_delegate_->IsActivelyPrecisionScrolling();
+}
+
+bool LayerTreeHostImpl::ScrollAffectsScrollHandler() const {
+  return settings_.enable_synchronized_scrolling &&
+         input_delegate_->IsCurrentlyScrolling() &&
+         active_tree()->have_scroll_event_handlers();
 }
 
 void LayerTreeHostImpl::CreatePendingTree() {
@@ -3069,8 +3080,6 @@ void LayerTreeHostImpl::ActivateSyncTree() {
 
     active_tree_->lifecycle().AdvanceTo(LayerTreeLifecycle::kNotSyncing);
 
-    input_handler_.DidActivatePendingTree();
-
     // Now that we've synced everything from the pending tree to the active
     // tree, rename the pending tree the recycle tree so we can reuse it on the
     // next sync.
@@ -3129,9 +3138,8 @@ void LayerTreeHostImpl::ActivateSyncTree() {
                             pending_page_scale_animation->scale,
                             pending_page_scale_animation->duration);
   }
-  // Activation can change the root scroll offset, so inform the synchronous
-  // input handler.
-  input_handler_.UpdateRootLayerStateForSynchronousInputHandler();
+
+  input_delegate_->DidActivatePendingTree();
 
   // Update the child's LocalSurfaceId.
   if (active_tree()->local_surface_id_allocation_from_parent().IsValid()) {
@@ -3787,7 +3795,7 @@ float LayerTreeHostImpl::DeviceScaleFactor() const {
 }
 
 void LayerTreeHostImpl::RequestUpdateForSynchronousInputHandler() {
-  input_handler_.UpdateRootLayerStateForSynchronousInputHandler();
+  input_handler_.RequestUpdateForSynchronousInputHandler();
 }
 
 void LayerTreeHostImpl::SetSynchronousInputHandlerRootScrollOffset(
@@ -3879,7 +3887,7 @@ std::unique_ptr<CompositorCommitData>
 LayerTreeHostImpl::ProcessCompositorDeltas() {
   auto commit_data = std::make_unique<CompositorCommitData>();
 
-  input_handler_.ProcessCommitDeltas(commit_data.get());
+  input_delegate_->ProcessCommitDeltas(commit_data.get());
   CollectScrollbarUpdatesForCommit(commit_data.get());
 
   commit_data->page_scale_delta =
@@ -4051,8 +4059,7 @@ void LayerTreeHostImpl::RegisterScrollbarAnimationController(
 void LayerTreeHostImpl::DidUnregisterScrollbarLayer(
     ElementId scroll_element_id) {
   scrollbar_animation_controllers_.erase(scroll_element_id);
-  input_handler_.get_scrollbar_controller()->DidUnregisterScrollbar(
-      scroll_element_id);
+  input_delegate_->DidUnregisterScrollbar(scroll_element_id);
 }
 
 ScrollbarAnimationController*
@@ -4705,7 +4712,7 @@ void LayerTreeHostImpl::AnimationScalesChanged(ElementId element_id,
 }
 
 void LayerTreeHostImpl::ScrollOffsetAnimationFinished() {
-  input_handler_.ScrollOffsetAnimationFinished();
+  input_delegate_->ScrollOffsetAnimationFinished();
 }
 
 void LayerTreeHostImpl::NotifyAnimationWorkletStateChange(

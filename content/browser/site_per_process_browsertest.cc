@@ -97,6 +97,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
+#include "content/public/test/back_forward_cache_util.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -5676,9 +5677,17 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   commit_observer.WaitForCommit();
   EXPECT_FALSE(deleted_observer.deleted());
 
-  // Since the FrameHostMsg_Unload_ACK for A->B is dropped, the first page's
-  // RenderFrameHost should be pending deletion after the last navigation.
-  EXPECT_TRUE(rfh->IsPendingDeletion());
+  // The previous RFH should be either:
+  // 1) In the BackForwardCache, if back-forward cache is enabled.
+  // 2) Pending deletion otherwise, since the FrameHostMsg_Unload_ACK for A->B
+  // is dropped.
+  EXPECT_THAT(
+      rfh->lifecycle_state(),
+      testing::AnyOf(
+          testing::Eq(
+              RenderFrameHostImpl::LifecycleState::kRunningUnloadHandlers),
+          testing::Eq(
+              RenderFrameHostImpl::LifecycleState::kInBackForwardCache)));
 
   // Without the FrameHostMsg_Unload_ACK and timer, the process A will never
   // shutdown. Simulate the process being killed now.
@@ -6262,6 +6271,11 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
     params->devtools_frame_token = base::UnguessableToken::Create();
     process->GetRendererInterface()->CreateFrame(std::move(params));
   }
+
+  // Disable the BackForwardCache to ensure the old process is going to be
+  // released.
+  DisableBackForwardCacheForTesting(web_contents(),
+                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
 
   // The test must wait for the process to exit, but if there is no leak, the
   // RenderFrame will be properly created and there will be no crash.
@@ -11380,10 +11394,19 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
       GURL(embedded_test_server()->GetURL("b.com", "/title1.html")));
   commit_observer.WaitForCommit();
 
-  // The previous RFH should still be pending deletion, as we wait for either
-  // the FrameHostMsg_Unload_ACK or a timeout.
+  // The previous RFH should be either:
+  // 1) In the BackForwardCache, or
+  // 2) Pending deletion, waiting for the FrameHostMsg_Unload_ACK.
+  // As a result, it must still be alive.
   ASSERT_TRUE(rfh->IsRenderFrameLive());
-  ASSERT_TRUE(rfh->IsPendingDeletion());
+  EXPECT_THAT(
+      rfh->lifecycle_state(),
+      testing::AnyOf(
+          testing::Eq(
+              RenderFrameHostImpl::LifecycleState::kRunningUnloadHandlers),
+          testing::Eq(
+              RenderFrameHostImpl::LifecycleState::kInBackForwardCache)));
+
   ASSERT_FALSE(rfh_observer.deleted());
 
   // Check sandbox flags on old RFH -- they should be unchanged.

@@ -10,9 +10,9 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
+#include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/ui/login/login_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
@@ -86,7 +86,7 @@ IN_PROC_BROWSER_TEST_F(ProxyAuthOnUserBoardScreenTest,
   ASSERT_FALSE(ash::LoginScreenTestApi::IsOobeDialogVisible());
   ProxyAuthDialogWaiter auth_dialog_waiter;
   ASSERT_TRUE(ash::LoginScreenTestApi::ClickAddUserButton());
-  OobeScreenWaiter(GaiaView::kScreenId).Wait();
+  OobeScreenWaiter(OobeBaseTest::GetFirstSigninScreen()).Wait();
   auth_dialog_waiter.Wait();
   ASSERT_TRUE(auth_dialog_waiter.login_handler());
 }

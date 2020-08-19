@@ -299,6 +299,7 @@ TEST_P(WaylandWindowDragControllerTest, DragExitWindowAndDrop) {
   SendPointerEnter(window_.get(), &delegate_);
   SendPointerPress(window_.get(), &delegate_, BTN_LEFT);
   SendPointerMotion(window_.get(), &delegate_, {10, 10});
+  Sync();
 
   // Sets up an "interaction flow", start the drag session and run move loop:
   //  - Event dispatching and bounds changes are monitored
@@ -311,13 +312,7 @@ TEST_P(WaylandWindowDragControllerTest, DragExitWindowAndDrop) {
   auto* move_loop_handler = GetWmMoveLoopHandler(*window_);
   DCHECK(move_loop_handler);
 
-  enum {
-    kStarted,
-    kDragging,
-    kExitedWindow,
-    kDropping,
-    kDone
-  } test_step = kStarted;
+  enum { kStarted, kDragging, kExitedDropping, kDone } test_step = kStarted;
 
   EXPECT_CALL(delegate_, DispatchEvent(_)).WillRepeatedly([&](Event* event) {
     EXPECT_TRUE(event->IsMouseEvent());
@@ -332,13 +327,7 @@ TEST_P(WaylandWindowDragControllerTest, DragExitWindowAndDrop) {
         SendDndMotion({20, 20});
         test_step = kDragging;
         break;
-      case kExitedWindow:
-        EXPECT_EQ(ET_MOUSE_EXITED, event->type());
-        // Release mouse button with no window foucsed.
-        SendDndDrop();
-        test_step = kDropping;
-        break;
-      case kDropping:
+      case kExitedDropping:
         EXPECT_EQ(ET_MOUSE_RELEASED, event->type());
         EXPECT_EQ(State::kDropped, drag_controller()->state());
         // Ensure PlatformScreen keeps consistent.
@@ -365,8 +354,9 @@ TEST_P(WaylandWindowDragControllerTest, DragExitWindowAndDrop) {
         EXPECT_EQ(kDragging, test_step);
         EXPECT_EQ(gfx::Point(20, 20), bounds.origin());
 
+        SendDndLeave();
         SendDndDrop();
-        test_step = kDropping;
+        test_step = kExitedDropping;
       });
 
   // RunMoveLoop() blocks until the dragging sessions ends, so resume test
@@ -533,6 +523,50 @@ TEST_P(WaylandWindowDragControllerTest, DragToOtherWindowSnapDragDrop) {
   SendPointerEnter(target_window, &delegate_);
   EXPECT_EQ(target_window, window_manager()->GetCurrentFocusedWindow());
   EXPECT_EQ(target_window->GetWidget(),
+            screen_->GetLocalProcessWidgetAtPoint({20, 20}, {}));
+}
+
+// Verifies wl_data_device::leave events are properly handled and propagated
+// while in window dragging "attached" mode.
+TEST_P(WaylandWindowDragControllerTest, DragExitAttached) {
+  // Ensure there is no window currently focused
+  EXPECT_FALSE(window_manager()->GetCurrentFocusedWindow());
+  EXPECT_EQ(gfx::kNullAcceleratedWidget,
+            screen_->GetLocalProcessWidgetAtPoint({10, 10}, {}));
+
+  SendPointerEnter(window_.get(), &delegate_);
+  SendPointerPress(window_.get(), &delegate_, BTN_LEFT);
+  SendPointerMotion(window_.get(), &delegate_, {10, 10});
+  Sync();
+  EXPECT_EQ(window_->GetWidget(),
+            screen_->GetLocalProcessWidgetAtPoint({10, 10}, {}));
+
+  auto* wayland_extension = GetWaylandExtension(*window_);
+  wayland_extension->StartWindowDraggingSessionIfNeeded();
+  EXPECT_CALL(delegate_, DispatchEvent(_)).Times(1);
+  Sync();
+  Sync();
+  EXPECT_EQ(State::kAttached, drag_controller()->state());
+
+  // Emulate a wl_data_device::leave and make sure a motion event is dispatched
+  // in response.
+  SendDndLeave();
+  EXPECT_CALL(delegate_, DispatchEvent(_)).WillOnce([&](Event* event) {
+    EXPECT_EQ(ET_MOUSE_DRAGGED, event->type());
+    EXPECT_EQ(gfx::Point(-1, -1).ToString(),
+              event->AsMouseEvent()->location().ToString());
+  });
+  Sync();
+
+  SendDndDrop();
+  EXPECT_CALL(delegate_, DispatchEvent(_)).Times(1);
+  Sync();
+
+  SendPointerEnter(window_.get(), &delegate_);
+  Sync();
+
+  EXPECT_EQ(window_.get(), window_manager()->GetCurrentFocusedWindow());
+  EXPECT_EQ(window_->GetWidget(),
             screen_->GetLocalProcessWidgetAtPoint({20, 20}, {}));
 }
 

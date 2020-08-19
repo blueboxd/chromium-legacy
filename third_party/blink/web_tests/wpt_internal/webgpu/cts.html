@@ -21,7 +21,6 @@
 <script type=module src=/wpt_internal/webgpu/common/runtime/wpt.js></script>
 
 <!-- Manually-selected tests to run on worker: -->
-<meta name=variant content='?worker=1&q=webgpu:api,operation,buffers,create_mapped:*'>
 <meta name=variant content='?worker=1&q=webgpu:api,operation,buffers,map:*'>
 <meta name=variant content='?worker=1&q=webgpu:api,operation,buffers,map_detach:*'>
 <meta name=variant content='?worker=1&q=webgpu:api,operation,command_buffer,basic:*'>
@@ -34,12 +33,11 @@
 
 <!-- Variant list is auto-generated below this line: -->
 
-<meta name=variant content='?q=webgpu:api,operation,buffers,create_mapped:*'>
 <meta name=variant content='?q=webgpu:api,operation,buffers,map:*'>
 <meta name=variant content='?q=webgpu:api,operation,buffers,map_detach:*'>
-<meta name=variant content='?q=webgpu:api,operation,buffers,map_oom:mapWriteAsync:'>
-<meta name=variant content='?q=webgpu:api,operation,buffers,map_oom:mapReadAsync:'>
-<meta name=variant content='?q=webgpu:api,operation,buffers,map_oom:createBufferMapped,*'>
+<meta name=variant content='?q=webgpu:api,operation,buffers,map_oom:mapAsync:*'>
+<meta name=variant content='?q=webgpu:api,operation,buffers,map_oom:mappedAtCreation:*'>
+<meta name=variant content='?q=webgpu:api,operation,buffers,map_oom:mappedAtCreation,smaller_getMappedRange:*'>
 <meta name=variant content='?q=webgpu:api,operation,command_buffer,basic:*'>
 <meta name=variant content='?q=webgpu:api,operation,command_buffer,compute,basic:*'>
 <meta name=variant content='?q=webgpu:api,operation,command_buffer,copies:*'>
@@ -47,9 +45,14 @@
 <meta name=variant content='?q=webgpu:api,operation,command_buffer,render,rendering:*'>
 <meta name=variant content='?q=webgpu:api,operation,command_buffer,render,storeop:*'>
 <meta name=variant content='?q=webgpu:api,operation,fences:*'>
+<meta name=variant content='?q=webgpu:api,operation,render_pass,storeOp:*'>
+<meta name=variant content='?q=webgpu:api,operation,render_pipeline,culling_tests:*'>
 <meta name=variant content='?q=webgpu:api,operation,resource_init,copied_texture_clear:*'>
 <meta name=variant content='?q=webgpu:api,operation,resource_init,depth_stencil_attachment_clear:*'>
 <meta name=variant content='?q=webgpu:api,operation,resource_init,sampled_texture_clear:*'>
+<meta name=variant content='?q=webgpu:api,validation,copyBufferToBuffer:*'>
+<meta name=variant content='?q=webgpu:api,validation,copy_between_linear_data_and_texture,copyBetweenLinearDataAndTexture_dataRelated:*'>
+<meta name=variant content='?q=webgpu:api,validation,copy_between_linear_data_and_texture,copyBetweenLinearDataAndTexture_textureRelated:*'>
 <meta name=variant content='?q=webgpu:api,validation,createBindGroup:binding_count_mismatch,*'>
 <meta name=variant content='?q=webgpu:api,validation,createBindGroup:binding_must_be_present_in_layout,*'>
 <meta name=variant content='?q=webgpu:api,validation,createBindGroup:buffer_binding_must_contain_exactly_one_buffer_of_its_type,*'>
@@ -58,36 +61,40 @@
 <meta name=variant content='?q=webgpu:api,validation,createBindGroup:texture_must_have_correct_dimension,*'>
 <meta name=variant content='?q=webgpu:api,validation,createBindGroup:buffer_offset_and_size_for_bind_groups_match:offset=0;size=512;*'>
 <meta name=variant content='?q=webgpu:api,validation,createBindGroup:buffer_offset_and_size_for_bind_groups_match:offset=0;size=1024;*'>
-<meta name=variant content='?q=webgpu:api,validation,createBindGroup:buffer_offset_and_size_for_bind_groups_match:offset=0;size=undefined;*'>
+<meta name=variant content='?q=webgpu:api,validation,createBindGroup:buffer_offset_and_size_for_bind_groups_match:offset=0;size="_undef_";*'>
 <meta name=variant content='?q=webgpu:api,validation,createBindGroup:buffer_offset_and_size_for_bind_groups_match:offset=0;size=0'>
 <meta name=variant content='?q=webgpu:api,validation,createBindGroup:buffer_offset_and_size_for_bind_groups_match:offset=0;size=1280;*'>
 <meta name=variant content='?q=webgpu:api,validation,createBindGroup:buffer_offset_and_size_for_bind_groups_match:offset=256;size=256;*'>
 <meta name=variant content='?q=webgpu:api,validation,createBindGroup:buffer_offset_and_size_for_bind_groups_match:offset=256;size=0'>
 <meta name=variant content='?q=webgpu:api,validation,createBindGroup:buffer_offset_and_size_for_bind_groups_match:offset=768;*'>
 <meta name=variant content='?q=webgpu:api,validation,createBindGroup:buffer_offset_and_size_for_bind_groups_match:offset=1024;size=0'>
-<meta name=variant content='?q=webgpu:api,validation,createBindGroup:buffer_offset_and_size_for_bind_groups_match:offset=1024;size=undefined'>
+<meta name=variant content='?q=webgpu:api,validation,createBindGroup:buffer_offset_and_size_for_bind_groups_match:offset=1024;size="_undef_"'>
 <meta name=variant content='?q=webgpu:api,validation,createBindGroup:buffer_offset_and_size_for_bind_groups_match:offset=1024;size=1;*'>
 <meta name=variant content='?q=webgpu:api,validation,createBindGroup:buffer_offset_and_size_for_bind_groups_match:offset=1;*'>
 <meta name=variant content='?q=webgpu:api,validation,createBindGroup:buffer_offset_and_size_for_bind_groups_match:offset=128;*'>
 <meta name=variant content='?q=webgpu:api,validation,createBindGroup:buffer_offset_and_size_for_bind_groups_match:offset=255;*'>
 <meta name=variant content='?q=webgpu:api,validation,createBindGroup:buffer_offset_and_size_for_bind_groups_match:offset=1280;*'>
 <meta name=variant content='?q=webgpu:api,validation,createBindGroupLayout:some_binding_index_was_specified_more_than_once,*'>
-<meta name=variant content='?q=webgpu:api,validation,createBindGroupLayout:visibility_of_bindings_can_be_0,*'>
+<meta name=variant content='?q=webgpu:api,validation,createBindGroupLayout:visibility,*'>
+<meta name=variant content='?q=webgpu:api,validation,createBindGroupLayout:bindingTypeSpecific_optional_members,*'>
+<meta name=variant content='?q=webgpu:api,validation,createBindGroupLayout:multisample_requires_2d_view_dimension,*'>
 <meta name=variant content='?q=webgpu:api,validation,createBindGroupLayout:number_of_dynamic_buffers_exceeds_the_maximum_value,*'>
-<meta name=variant content='?q=webgpu:api,validation,createBindGroupLayout:dynamic_set_to_true_is_allowed_only_for_buffers,*'>
 <meta name=variant content='?q=webgpu:api,validation,createBindGroupLayout:max_resources_per_stage,in_bind_group_layout,*'>
 <meta name=variant content='?q=webgpu:api,validation,createBindGroupLayout:max_resources_per_stage,in_pipeline_layout:*'>
 <meta name=variant content='?q=webgpu:api,validation,createPipelineLayout:number_of_dynamic_buffers_exceeds_the_maximum_value:*'>
-<meta name=variant content='?q=webgpu:api,validation,createPipelineLayout:visibility_and_dynamic_offsets,*'>
 <meta name=variant content='?q=webgpu:api,validation,createPipelineLayout:number_of_bind_group_layouts_exceeds_the_maximum_value,*'>
 <meta name=variant content='?q=webgpu:api,validation,createRenderPipeline:*'>
 <meta name=variant content='?q=webgpu:api,validation,createTexture:*'>
 <meta name=variant content='?q=webgpu:api,validation,createView:*'>
+<meta name=variant content='?q=webgpu:api,validation,encoding,cmds,index_access:*'>
 <meta name=variant content='?q=webgpu:api,validation,error_scope:*'>
 <meta name=variant content='?q=webgpu:api,validation,fences:*'>
 <meta name=variant content='?q=webgpu:api,validation,queue_submit:*'>
 <meta name=variant content='?q=webgpu:api,validation,render_pass:*'>
+<meta name=variant content='?q=webgpu:api,validation,render_pass,resolve:*'>
+<meta name=variant content='?q=webgpu:api,validation,render_pass,storeOp:*'>
 <meta name=variant content='?q=webgpu:api,validation,render_pass_descriptor:*'>
+<meta name=variant content='?q=webgpu:api,validation,resource_usages,textureUsageInRender:*'>
 <meta name=variant content='?q=webgpu:api,validation,setBindGroup:*'>
 <meta name=variant content='?q=webgpu:api,validation,setBlendColor:*'>
 <meta name=variant content='?q=webgpu:api,validation,setScissorRect:*'>
@@ -98,6 +105,7 @@
 <meta name=variant content='?q=webgpu:examples:*'>
 <meta name=variant content='?q=webgpu:idl,constants,flags:*'>
 <meta name=variant content='?q=webgpu:shader,execution,robust_access:*'>
+<meta name=variant content='?q=webgpu:shader,execution,robust_access_vertex:*'>
 <meta name=variant content='?q=webgpu:web-platform,canvas,context_creation:*'>
 <meta name=variant content='?q=webgpu:web-platform,copyImageBitmapToTexture:from_ImageData:*'>
 <meta name=variant content='?q=webgpu:web-platform,copyImageBitmapToTexture:from_canvas,*'>

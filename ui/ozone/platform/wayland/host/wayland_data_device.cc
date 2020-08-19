@@ -149,15 +149,15 @@ void WaylandDataDevice::OnDrop(void* data, wl_data_device* data_device) {
 
 void WaylandDataDevice::OnLeave(void* data, wl_data_device* data_device) {
   auto* self = static_cast<WaylandDataDevice*>(data);
-  if (self->drag_delegate_) {
+  if (self->drag_delegate_)
     self->drag_delegate_->OnDragLeave();
 
-    // When in a DND session initiated by an external application,
-    // |drag_delegate_| is set at OnEnter, and must be reset here to avoid
-    // potential use-after-free.
-    if (!self->drag_delegate_->IsDragSource())
-      self->drag_delegate_ = nullptr;
-  }
+  // When in a DND session initiated by an external application,
+  // |drag_delegate_| is set at OnEnter, and must be reset here to avoid
+  // potential use-after-free. Above call to OnDragLeave() may result in
+  // |drag_delegate_| being reset, so it must be checked here as well.
+  if (self->drag_delegate_ && !self->drag_delegate_->IsDragSource())
+    self->drag_delegate_ = nullptr;
 }
 
 void WaylandDataDevice::OnSelection(void* data,

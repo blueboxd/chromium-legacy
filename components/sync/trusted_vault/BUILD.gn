@@ -22,6 +22,7 @@ static_library("trusted_vault") {
   deps = [
     "//components/os_crypt",
     "//components/signin/public/identity_manager",
+    "//components/sync/base",
     "//components/sync/protocol",
     "//crypto",
     "//services/network/public/cpp:cpp",

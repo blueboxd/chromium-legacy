@@ -20,10 +20,13 @@
 #include "chrome/browser/chromeos/login/ui/login_display_host_webui.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/user_creation_screen_handler.h"
 #include "chrome/browser/ui/webui/signin/signin_utils.h"
 #include "chrome/common/chrome_switches.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_update_engine_client.h"
@@ -215,6 +218,12 @@ test::JSChecker OobeBaseTest::SigninFrameJS() {
   // Fake GAIA / fake SAML pages do not use polymer-based UI.
   result.set_polymer_ui(false);
   return result;
+}
+
+// static
+OobeScreenId OobeBaseTest::GetFirstSigninScreen() {
+  return features::IsChildSpecificSigninEnabled() ? UserCreationView::kScreenId
+                                                  : GaiaView::kScreenId;
 }
 
 void OobeBaseTest::MaybeWaitForLoginScreenLoad() {

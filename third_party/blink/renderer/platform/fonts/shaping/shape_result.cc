@@ -1259,6 +1259,7 @@ unsigned ShapeResult::CopyRangeInternal(unsigned run_index,
       std::min(end_offset, EndIndex()) - std::max(start_offset, StartIndex());
 
   unsigned target_run_size_before = target->runs_.size();
+  bool should_merge = !target->runs_.IsEmpty();
   for (; run_index < runs_.size(); run_index++) {
     const auto& run = runs_[run_index];
     unsigned run_start = run->start_index_;
@@ -1273,7 +1274,14 @@ unsigned ShapeResult::CopyRangeInternal(unsigned run_index,
       sub_run->start_index_ += index_diff;
       target->width_ += sub_run->width_;
       target->num_glyphs_ += sub_run->glyph_data_.size();
-      target->runs_.push_back(std::move(sub_run));
+      if (auto merged_run =
+              should_merge ? target->runs_.back()->MergeIfPossible(*sub_run)
+                           : scoped_refptr<RunInfo>()) {
+        target->runs_.back() = std::move(merged_run);
+      } else {
+        target->runs_.push_back(std::move(sub_run));
+      }
+      should_merge = false;
 
       // No need to process runs after the end of the range.
       if ((!Rtl() && end_offset <= run_end) ||

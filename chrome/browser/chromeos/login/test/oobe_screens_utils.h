@@ -24,6 +24,8 @@ void WaitForDiscoverScreen();
 void ExitDiscoverPinSetupScreen();
 void SkipToEnrollmentOnRecovery();
 void WaitForEnrollmentScreen();
+void WaitForUserCreationScreen();
+void TapUserCreationNext();
 
 void WaitForEulaScreen();
 void TapEulaAccept();

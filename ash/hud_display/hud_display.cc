@@ -96,7 +96,7 @@ void HUDDisplayView::Toggle() {
                                       kShellWindowId_OverlayContainer);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds =
-      gfx::Rect(Graph::kDefaultWidth + 2 * kHUDInset, kHUDViewDefaultHeight);
+      gfx::Rect(kDefaultGraphWidth + 2 * kHUDInset, kHUDViewDefaultHeight);
   auto* widget = CreateViewTreeHostWidget(std::move(params));
   widget->GetLayer()->SetName("HUDDisplayView");
   widget->Show();
@@ -132,8 +132,10 @@ HUDDisplayView::HUDDisplayView() {
   // Setup header.
 
   // TODO: Add tab buttons via:
-  // header_view_->tab_strip()->AddTabButton(this, DisplayModes::MEMORY_DISPLAY,
-  //                                        base::ASCIIToUTF16("RAM"));
+  header_view_->tab_strip()->AddTabButton(this, DisplayMode::CPU_DISPLAY,
+                                          base::ASCIIToUTF16("CPU"));
+  header_view_->tab_strip()->AddTabButton(this, DisplayMode::MEMORY_DISPLAY,
+                                          base::ASCIIToUTF16("RAM"));
 
   // Setup data.
   data->SetBackground(views::CreateSolidBackground(kHUDBackground));
@@ -148,6 +150,9 @@ HUDDisplayView::HUDDisplayView() {
       data->AddChildView(std::make_unique<GraphsContainerView>());
   settings_view_ = data->AddChildView(std::make_unique<HUDSettingsView>());
   settings_view_->SetVisible(false);
+
+  // CPU display is active by default.
+  SetDisplayMode(DisplayMode::CPU_DISPLAY);
 }
 
 HUDDisplayView::~HUDDisplayView() {
@@ -162,9 +167,9 @@ int HUDDisplayView::NonClientHitTest(const gfx::Point& point) {
   return view->GetProperty(kHUDClickHandler);
 }
 
-void HUDDisplayView::TabButtonPressed(const HUDTabButton* tab_button) {
-  header_view_->tab_strip()->ActivateTab(tab_button);
-  // TODO: switch on tab_button->display_mode().
+void HUDDisplayView::SetDisplayMode(DisplayMode display_mode) {
+  graphs_container_->SetMode(display_mode);
+  header_view_->tab_strip()->ActivateTab(display_mode);
 }
 
 views::ClientView* HUDDisplayView::CreateClientView(views::Widget* widget) {

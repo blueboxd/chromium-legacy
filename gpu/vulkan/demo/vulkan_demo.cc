@@ -117,7 +117,6 @@ void VulkanDemo::CreateSkSurface() {
         SkSurfaceProps(0, SkSurfaceProps::kLegacyFontHost_InitType);
     GrVkImageInfo vk_image_info;
     vk_image_info.fImage = scoped_write_->image();
-    vk_image_info.fAlloc = {VK_NULL_HANDLE, 0, 0, 0};
     vk_image_info.fImageLayout = scoped_write_->image_layout();
     vk_image_info.fImageTiling = VK_IMAGE_TILING_OPTIMAL;
     vk_image_info.fFormat = VK_FORMAT_B8G8R8A8_UNORM;

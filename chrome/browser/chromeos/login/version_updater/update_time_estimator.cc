@@ -18,16 +18,25 @@ constexpr base::TimeDelta kDownloadTime = base::TimeDelta::FromMinutes(50);
 constexpr base::TimeDelta kVerifyingTime = base::TimeDelta::FromMinutes(5);
 constexpr base::TimeDelta kFinalizingTime = base::TimeDelta::FromMinutes(5);
 
-struct StageTimeExpectation {
+// Progress in percent falls on a stage. Should be 100 in total.
+const int kDownloadProgress = 90;
+const int kVerifyingProgress = 5;
+const int kFinalizingProgress = 5;
+
+const int kTotalProgress = 100;
+
+struct StageTimeExpectationProgress {
   update_engine::Operation stage_;
   base::TimeDelta time_estimation_;
+  int progress_;
 };
 
-// Stages for which |estimated_time_left| should be calculated.
-constexpr StageTimeExpectation kStages[] = {
-    {update_engine::Operation::DOWNLOADING, kDownloadTime},
-    {update_engine::Operation::VERIFYING, kVerifyingTime},
-    {update_engine::Operation::FINALIZING, kFinalizingTime},
+// Stages for which `estimated_time_left` and progress should be calculated.
+constexpr StageTimeExpectationProgress kStages[] = {
+    {update_engine::Operation::DOWNLOADING, kDownloadTime, kDownloadProgress},
+    {update_engine::Operation::VERIFYING, kVerifyingTime, kVerifyingProgress},
+    {update_engine::Operation::FINALIZING, kFinalizingTime,
+     kFinalizingProgress},
 };
 
 // Minimum timestep between two consecutive measurements for the download rates.
@@ -74,12 +83,14 @@ base::TimeDelta UpdateTimeEstimator::GetDownloadTimeLeft() const {
   return download_time_left_;
 }
 
-base::TimeDelta UpdateTimeEstimator::GetTimeLeft() const {
+UpdateTimeEstimator::UpdateStatus UpdateTimeEstimator::GetUpdateStatus() const {
   base::TimeDelta time_left_estimation;
+  int progress_left = 0;
   bool stage_found = false;
   for (const auto& el : kStages) {
     if (stage_found) {
       time_left_estimation += el.time_estimation_;
+      progress_left += el.progress_;
     }
     if (el.stage_ != current_stage_)
       continue;
@@ -90,6 +101,7 @@ base::TimeDelta UpdateTimeEstimator::GetTimeLeft() const {
         tick_clock_->NowTicks() - stage_started_time_;
     const base::TimeDelta time_left =
         std::max(el.time_estimation_ - time_spent, base::TimeDelta());
+    // Time left calculation.
     if (current_stage_ == update_engine::Operation::DOWNLOADING &&
         has_download_time_estimation_) {
       const base::TimeDelta time_left_speed_estimation =
@@ -98,8 +110,18 @@ base::TimeDelta UpdateTimeEstimator::GetTimeLeft() const {
     } else {
       time_left_estimation += time_left;
     }
+    // Progress left calculation.
+    if (current_stage_ == update_engine::Operation::DOWNLOADING) {
+      const double download_progress_left = 1.0 - download_last_progress_;
+      const int current_stage_progress_left =
+          base::ClampRound(download_progress_left * el.progress_);
+      progress_left += current_stage_progress_left;
+    } else {
+      progress_left +=
+          base::ClampRound((time_left / el.time_estimation_) * el.progress_);
+    }
   }
-  return time_left_estimation;
+  return {time_left_estimation, kTotalProgress - progress_left};
 }
 
 void UpdateTimeEstimator::UpdateForTotalTimeLeftEstimation(

@@ -193,6 +193,44 @@ struct ShapeResult::RunInfo : public RefCounted<ShapeResult::RunInfo> {
     return run;
   }
 
+  // Returns new |RunInfo| if |this| and |other| are merged. Otherwise returns
+  // null.
+  scoped_refptr<RunInfo> MergeIfPossible(const RunInfo& other) const {
+    if (!CanMerge(other))
+      return nullptr;
+    DCHECK_LT(start_index_, other.start_index_);
+    auto run =
+        Create(font_data_.get(), direction_, canvas_rotation_, script_,
+               start_index_, glyph_data_.size() + other.glyph_data_.size(),
+               num_characters_ + other.num_characters_);
+    // Note: We populate |graphemes_| on demand, e.g. hit testing.
+    const int index_adjust = other.start_index_ - start_index_;
+    if (UNLIKELY(Rtl())) {
+      run->glyph_data_.CopyFrom(other.glyph_data_, glyph_data_);
+      auto* const end = run->glyph_data_.begin() + other.glyph_data_.size();
+      for (auto* it = run->glyph_data_.begin(); it < end; ++it)
+        it->character_index += index_adjust;
+    } else {
+      run->glyph_data_.CopyFrom(glyph_data_, other.glyph_data_);
+      auto* const end = run->glyph_data_.end();
+      for (auto* it = run->glyph_data_.begin() + glyph_data_.size(); it < end;
+           ++it)
+        it->character_index += index_adjust;
+    }
+    run->width_ = width_ + other.width_;
+    return run;
+  }
+
+  // Returns true if |other| can be merged at end of |this|.
+  bool CanMerge(const RunInfo& other) const {
+    return start_index_ + num_characters_ == other.start_index_ &&
+           canvas_rotation_ == other.canvas_rotation_ &&
+           font_data_ == other.font_data_ && direction_ == other.direction_ &&
+           script_ == other.script_ &&
+           glyph_data_.size() + other.glyph_data_.size() <
+               HarfBuzzRunGlyphData::kMaxCharacterIndex + 1;
+  }
+
   void ExpandRangeToIncludePartialGlyphs(int offset, int* from, int* to) const {
     int start = !Rtl() ? offset : (offset + num_characters_);
     int end = offset + num_characters_;
@@ -263,9 +301,29 @@ struct ShapeResult::RunInfo : public RefCounted<ShapeResult::RunInfo> {
     }
 
     unsigned size() const { return size_; }
+    bool IsEmpty() const { return size() == 0; }
 
     size_t ByteSize() const {
       return storage_ ? size() * sizeof(GlyphOffset) : 0;
+    }
+
+    void CopyFrom(const GlyphOffsetArray& other1,
+                  const GlyphOffsetArray& other2) {
+      SECURITY_CHECK(size() == other1.size() + other2.size());
+      DCHECK(!other1.IsEmpty());
+      DCHECK(!other2.IsEmpty());
+      if (other1.storage_) {
+        if (!storage_)
+          AllocateStorage();
+        std::copy(other1.storage_.get(), other1.storage_.get() + other1.size(),
+                  storage_.get());
+      }
+      if (other2.storage_) {
+        if (!storage_)
+          AllocateStorage();
+        std::copy(other2.storage_.get(), other2.storage_.get() + other2.size(),
+                  storage_.get() + other1.size());
+      }
     }
 
     void CopyFromRange(const GlyphDataRange& range) {
@@ -379,6 +437,20 @@ struct ShapeResult::RunInfo : public RefCounted<ShapeResult::RunInfo> {
 
     GlyphOffset* GetMayBeOffsets() const { return offsets_.GetStorage(); }
 
+    // Note: Caller should be adjust |HarfBuzzRunGlyphData.character_index|.
+    void CopyFrom(const GlyphDataCollection& other1,
+                  const GlyphDataCollection& other2) {
+      SECURITY_CHECK(size() == other1.size() + other2.size());
+      DCHECK(!other1.IsEmpty());
+      DCHECK(!other2.IsEmpty());
+      std::copy(other1.data_.get(), other1.data_.get() + other1.size(),
+                data_.get());
+      std::copy(other2.data_.get(), other2.data_.get() + other2.size(),
+                data_.get() + other1.size());
+      offsets_.CopyFrom(other1.offsets_, other2.offsets_);
+    }
+
+    // Note: Caller should be adjust |HarfBuzzRunGlyphData.character_index|.
     void CopyFromRange(const GlyphDataRange& range) {
       DCHECK_EQ(static_cast<size_t>(range.end - range.begin), size());
       static_assert(base::is_trivially_copyable<HarfBuzzRunGlyphData>::value,

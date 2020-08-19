@@ -5,7 +5,6 @@
 #ifndef ASH_HUD_DISPLAY_HUD_DISPLAY_H_
 #define ASH_HUD_DISPLAY_HUD_DISPLAY_H_
 
-#include "ash/hud_display/hud_constants.h"
 #include "base/sequence_checker.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -13,10 +12,10 @@
 namespace ash {
 namespace hud_display {
 
+enum class DisplayMode;
 class GraphsContainerView;
 class HUDHeaderView;
 class HUDSettingsView;
-class HUDTabButton;
 
 // HUDDisplayView class can be used to display a system monitoring overview.
 class HUDDisplayView : public views::WidgetDelegateView,
@@ -48,7 +47,7 @@ class HUDDisplayView : public views::WidgetDelegateView,
   int NonClientHitTest(const gfx::Point& point);
 
   // Changes UI display mode.
-  void TabButtonPressed(const HUDTabButton* tab_button);
+  void SetDisplayMode(const DisplayMode display_mode);
 
  private:
   HUDHeaderView* header_view_ = nullptr;             // not owned

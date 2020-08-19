@@ -88,7 +88,7 @@ class PasswordScriptsFetcherImplTest : public ::testing::Test {
 
   void StartBulkCheck() {
     pending_fetch_finished_callbacks_++;
-    fetcher()->Fetch(
+    fetcher()->RefreshScriptsIfNecessary(
         base::BindOnce(&PasswordScriptsFetcherImplTest::RecordFetchFinished,
                        base::Unretained(this)));
     RequestSingleScriptAvailability(GetOriginWithScript1());

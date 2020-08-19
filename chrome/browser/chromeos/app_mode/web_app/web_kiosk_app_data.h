@@ -62,12 +62,16 @@ class WebKioskAppData : public KioskAppDataBase {
 
   bool LoadLaunchUrlFromDictionary(const base::Value& dict);
 
+  // Returns the icon url of the icon that was being provided during previous
+  // session.
+  GURL GetLastIconUrl(const base::Value& dict) const;
+
   KioskAppDataDelegate* delegate_;  // not owned.
   Status status_;
   const GURL install_url_;  // installation url.
   GURL launch_url_;         // app launch url.
 
-  const GURL icon_url_;  // Url of the icon in case nothing is cached.
+  GURL icon_url_;  // Url of the icon in case nothing is cached.
   // Used to download icon from |icon_url_|.
   std::unique_ptr<IconFetcher> icon_fetcher_;
 

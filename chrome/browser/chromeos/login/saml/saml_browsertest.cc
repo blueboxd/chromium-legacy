@@ -649,7 +649,7 @@ class SamlTest : public OobeBaseTest {
   }
 
   virtual void StartSamlAndWaitForIdpPageLoad(const std::string& gaia_email) {
-    OobeScreenWaiter(GaiaView::kScreenId).Wait();
+    OobeScreenWaiter(GetFirstSigninScreen()).Wait();
 
     content::DOMMessageQueue message_queue;  // Start observe before SAML.
     SetupAuthFlowChangeListener();

@@ -79,6 +79,7 @@
 #import "chrome/browser/mac/dock.h"
 #include "chrome/browser/mac/install_from_dmg.h"
 #include "chrome/browser/ui/cocoa/keystone_infobar_delegate.h"
+#include "chrome/browser/ui/startup/mac_system_infobar_delegate.h"
 #endif
 
 #if defined(OS_WIN)
@@ -912,6 +913,11 @@ void StartupBrowserCreatorImpl::AddInfoBarsIfNecessary(
           !local_state->GetBoolean(prefs::kSuppressUnsupportedOSWarning))
         ObsoleteSystemInfoBarDelegate::Create(infobar_service);
     }
+
+#if defined(OS_MAC)
+    if (MacSystemInfoBarDelegate::ShouldShow())
+      MacSystemInfoBarDelegate::Create(infobar_service);
+#endif
 
 #if !defined(OS_CHROMEOS)
     if (!command_line_.HasSwitch(switches::kNoDefaultBrowserCheck)) {

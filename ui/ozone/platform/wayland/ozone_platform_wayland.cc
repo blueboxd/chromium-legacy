@@ -204,6 +204,8 @@ class OzonePlatformWayland : public OzonePlatform {
         std::make_unique<GtkUiDelegateWayland>(connection_.get());
     GtkUiDelegate::SetInstance(gtk_ui_delegate_.get());
 #endif
+
+    // TODO(crbug.com/1097007): report which Wayland compositor is used.
   }
 
   void InitializeGPU(const InitParams& args) override {

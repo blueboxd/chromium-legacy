@@ -99,7 +99,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSessionManagerTest, OobeNewUser) {
   fake_gaia_.SetupFakeGaiaForLoginManager();
   fake_gaia_.fake_gaia()->SetFakeMergeSessionParams(
       FakeGaiaMixin::kFakeUserEmail, "fake_sid", "fake_lsid");
-  OobeScreenWaiter(GaiaView::kScreenId).Wait();
+  OobeScreenWaiter(OobeBaseTest::GetFirstSigninScreen()).Wait();
 
   LoginDisplayHost::default_host()
       ->GetOobeUI()
@@ -183,7 +183,7 @@ class ChromeSessionManagerRlzTest : public ChromeSessionManagerTest {
     fake_gaia_.SetupFakeGaiaForLoginManager();
     fake_gaia_.fake_gaia()->SetFakeMergeSessionParams(
         FakeGaiaMixin::kFakeUserEmail, "fake_sid", "fake_lsid");
-    OobeScreenWaiter(GaiaView::kScreenId).Wait();
+    OobeScreenWaiter(OobeBaseTest::GetFirstSigninScreen()).Wait();
 
     LoginDisplayHost::default_host()
         ->GetOobeUI()

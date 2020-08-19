@@ -495,6 +495,42 @@ COMPONENT_EXPORT(UI_BASE_X) WindowManagerName GuessWindowManager();
 // can't determine it, return "Unknown".
 COMPONENT_EXPORT(UI_BASE_X) std::string GuessWindowManagerName();
 
+// These values are persisted to logs.  Entries should not be renumbered and
+// numeric values should never be reused.
+//
+// Append new window managers before kMaxValue and update LinuxWindowManagerName
+// in tools/metrics/histograms/enums.xml accordingly.
+//
+// See also tools/metrics/histograms/README.md#enum-histograms
+enum class UMALinuxWindowManager {
+  kOther = 0,
+  kBlackbox = 1,
+  kChromeOS = 2,  // Deprecated.
+  kCompiz = 3,
+  kEnlightenment = 4,
+  kIceWM = 5,
+  kKWin = 6,
+  kMetacity = 7,
+  kMuffin = 8,
+  kMutter = 9,
+  kOpenbox = 10,
+  kXfwm4 = 11,
+  kAwesome = 12,
+  kI3 = 13,
+  kIon3 = 14,
+  kMatchbox = 15,
+  kNotion = 16,
+  kQtile = 17,
+  kRatpoison = 18,
+  kStumpWM = 19,
+  kWmii = 20,
+  kFluxbox = 21,
+  kXmonad = 22,
+  kUnnamed = 23,
+  kMaxValue = kUnnamed
+};
+COMPONENT_EXPORT(UI_BASE_X) UMALinuxWindowManager GetWindowManagerUMA();
+
 // Returns a buest-effort guess as to whether |window_manager| is tiling (true)
 // or stacking (false).
 COMPONENT_EXPORT(UI_BASE_X) bool IsWmTiling(WindowManagerName window_manager);

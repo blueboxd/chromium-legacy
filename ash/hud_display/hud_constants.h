@@ -33,10 +33,15 @@ constexpr int kHUDSettingsIconSize = 18;
 // where needed.
 constexpr int kHUDInset = 5;
 
+// Defines both the pixel width of the graphs and the amount of data stored
+// in each graph ring buffer.
+static constexpr size_t kDefaultGraphWidth = 190;
+
 // HUD display modes.
-enum class DisplayModes {
+enum class DisplayMode {
+  CPU_DISPLAY =
+      1,  // First value should be different from default Views::ID = 0.
   MEMORY_DISPLAY,
-  DEFAULT = MEMORY_DISPLAY
 };
 
 }  // namespace hud_display

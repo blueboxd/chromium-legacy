@@ -325,7 +325,6 @@ WebViewImpl::WebViewImpl(
       maximum_zoom_level_(PageZoomFactorToZoomLevel(kMaximumPageZoomFactor)),
       does_composite_(does_composite),
       fullscreen_controller_(std::make_unique<FullscreenController>(this)),
-      lifecycle_state_(mojom::blink::PageLifecycleState::New()),
       receiver_(this, std::move(page_handle)) {
   if (!AsView().client) {
     DCHECK(!does_composite_);
@@ -339,7 +338,6 @@ WebViewImpl::WebViewImpl(
                                                       AsView().client);
 
   SetVisibilityState(visibility, /*is_initial_state=*/true);
-  lifecycle_state_->visibility = visibility;
 
   // We pass this state to Page, but it's only used by the main frame in the
   // page.
@@ -2419,51 +2417,86 @@ void WebViewImpl::SetZoomFactorForDeviceScaleFactor(
   SetZoomLevel(zoom_level_);
 }
 
+void WebViewImpl::SetPageLifecycleStateFromNewPageCommit(
+    mojom::blink::PageVisibilityState visibility,
+    mojom::blink::PagehideDispatch pagehide_dispatch) {
+  mojom::blink::PageLifecycleStatePtr state =
+      GetPage()->GetPageLifecycleState().Clone();
+  state->visibility = visibility;
+  state->pagehide_dispatch = pagehide_dispatch;
+  SetPageLifecycleStateInternal(std::move(state), base::nullopt);
+}
+
 void WebViewImpl::SetPageLifecycleState(
     mojom::blink::PageLifecycleStatePtr state,
     base::Optional<base::TimeTicks> navigation_start,
     SetPageLifecycleStateCallback callback) {
+  SetPageLifecycleStateInternal(std::move(state), navigation_start);
+  // Tell the browser that the lifecycle update was successful.
+  std::move(callback).Run();
+}
+
+void WebViewImpl::SetPageLifecycleStateInternal(
+    mojom::blink::PageLifecycleStatePtr new_state,
+    base::Optional<base::TimeTicks> navigation_start) {
   Page* page = GetPage();
   if (!page)
     return;
-
-  bool storing_in_bfcache = state->is_in_back_forward_cache &&
-                            !lifecycle_state_->is_in_back_forward_cache;
-  bool restoring_from_bfcache = !state->is_in_back_forward_cache &&
-                                lifecycle_state_->is_in_back_forward_cache;
+  auto& old_state = page->GetPageLifecycleState();
+  bool storing_in_bfcache = new_state->is_in_back_forward_cache &&
+                            !old_state->is_in_back_forward_cache;
+  bool restoring_from_bfcache = !new_state->is_in_back_forward_cache &&
+                                old_state->is_in_back_forward_cache;
   bool hiding_page =
-      (state->visibility != mojom::blink::PageVisibilityState::kVisible) &&
-      (lifecycle_state_->visibility ==
-       mojom::blink::PageVisibilityState::kVisible);
+      (new_state->visibility != mojom::blink::PageVisibilityState::kVisible) &&
+      (old_state->visibility == mojom::blink::PageVisibilityState::kVisible);
   bool showing_page =
-      (state->visibility == mojom::blink::PageVisibilityState::kVisible) &&
-      (lifecycle_state_->visibility !=
-       mojom::blink::PageVisibilityState::kVisible);
-  bool freezing_page = state->is_frozen && !lifecycle_state_->is_frozen;
-  bool resuming_page = !state->is_frozen && lifecycle_state_->is_frozen;
+      (new_state->visibility == mojom::blink::PageVisibilityState::kVisible) &&
+      (old_state->visibility != mojom::blink::PageVisibilityState::kVisible);
+  bool freezing_page = new_state->is_frozen && !old_state->is_frozen;
+  bool resuming_page = !new_state->is_frozen && old_state->is_frozen;
+  bool dispatching_pagehide =
+      (new_state->pagehide_dispatch !=
+       mojom::blink::PagehideDispatch::kNotDispatched) &&
+      !GetPage()->DispatchedPagehideAndStillHidden();
+  bool dispatching_pageshow =
+      (new_state->pagehide_dispatch ==
+       mojom::blink::PagehideDispatch::kNotDispatched) &&
+      GetPage()->DispatchedPagehideAndStillHidden();
 
   if (hiding_page) {
-    SetVisibilityState(state->visibility, /*is_initial_state=*/false);
+    SetVisibilityState(new_state->visibility, /*is_initial_state=*/false);
+  }
+  if (dispatching_pagehide) {
+    // Note that |dispatching_pagehide| is different than |hiding_page|.
+    // |dispatching_pagehide| will only be true when we're navigating away from
+    // a page, while |hiding_page| might be true in other cases too such as when
+    // the tab containing a page is backgrounded, and might be false even when
+    // we're navigating away from a page, if the page is already hidden.
+    DispatchPagehide(new_state->pagehide_dispatch);
   }
   if (storing_in_bfcache) {
-    DispatchPagehide();
-    Scheduler()->SetPageBackForwardCached(state->is_in_back_forward_cache);
+    Scheduler()->SetPageBackForwardCached(new_state->is_in_back_forward_cache);
   }
   if (freezing_page)
     SetPageFrozen(true);
   if (storing_in_bfcache)
     HookBackForwardCacheEviction(true);
-  if (restoring_from_bfcache)
+  if (restoring_from_bfcache) {
     HookBackForwardCacheEviction(false);
+  }
   if (resuming_page)
     SetPageFrozen(false);
-  if (restoring_from_bfcache) {
+  if (dispatching_pageshow) {
+    DCHECK(restoring_from_bfcache);
     DispatchPageshow(navigation_start.value());
-    Scheduler()->SetPageBackForwardCached(state->is_in_back_forward_cache);
+  }
+  if (restoring_from_bfcache) {
+    DCHECK(dispatching_pageshow);
+    Scheduler()->SetPageBackForwardCached(new_state->is_in_back_forward_cache);
   }
   if (showing_page) {
-    SetVisibilityState(mojom::blink::PageVisibilityState::kVisible,
-                       /*is_initial_state=*/false);
+    SetVisibilityState(new_state->visibility, /*is_initial_state=*/false);
   }
 
   // Make sure no TrackedFeaturesUpdate message is sent after the ACK
@@ -2472,9 +2505,7 @@ void WebViewImpl::SetPageLifecycleState(
   // move SchedulerTrackedFeatures to core/ and remove the back and forth.
   ReportActiveSchedulerTrackedFeatures();
 
-  lifecycle_state_ = std::move(state);
-  // Tell the browser that the freezing or resuming was successful.
-  std::move(callback).Run();
+  GetPage()->SetPageLifecycleState(std::move(new_state));
 }
 
 void WebViewImpl::ReportActiveSchedulerTrackedFeatures() {
@@ -2495,12 +2526,20 @@ void WebViewImpl::AudioStateChanged(bool is_audio_playing) {
   GetPage()->GetPageScheduler()->AudioStateChanged(is_audio_playing);
 }
 
-void WebViewImpl::DispatchPagehide() {
+void WebViewImpl::DispatchPagehide(
+    mojom::blink::PagehideDispatch pagehide_dispatch) {
+  DCHECK_NE(pagehide_dispatch, mojom::blink::PagehideDispatch::kNotDispatched);
+  bool persisted = (pagehide_dispatch ==
+                    mojom::blink::PagehideDispatch::kDispatchedPersisted);
+  // Dispatch pagehide on all frames.
   for (Frame* frame = GetPage()->MainFrame(); frame;
        frame = frame->Tree().TraverseNext()) {
     if (frame->DomWindow() && frame->DomWindow()->IsLocalDOMWindow()) {
       frame->DomWindow()->ToLocalDOMWindow()->DispatchPagehideEvent(
-          PageTransitionEventPersistence::kPageTransitionEventPersisted);
+          persisted
+              ? PageTransitionEventPersistence::kPageTransitionEventPersisted
+              : PageTransitionEventPersistence::
+                    kPageTransitionEventNotPersisted);
     }
   }
 }

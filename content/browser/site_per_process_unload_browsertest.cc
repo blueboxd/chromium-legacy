@@ -33,9 +33,9 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/content_navigation_policy.h"
 #include "content/common/frame_messages.h"
-#include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/test/back_forward_cache_util.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -308,6 +308,12 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   auto unload_ack_filter = base::MakeRefCounted<ObserveMessageFilter>(
       FrameMsgStart, FrameHostMsg_Unload_ACK::ID);
   rfh->GetProcess()->AddFilter(unload_ack_filter.get());
+
+  // Disable the BackForwardCache to ensure the old process is going to be
+  // released.
+  DisableBackForwardCacheForTesting(web_contents(),
+                                    BackForwardCache::TEST_ASSUMES_NO_CACHING);
+
   GURL cross_site_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
   EXPECT_TRUE(NavigateToURLFromRenderer(shell(), cross_site_url));
   watcher.Wait();
@@ -475,6 +481,11 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, SlowUnloadHandlerInIframe) {
   RenderFrameHostImpl* rfh_b =
       web_contents()->GetFrameTree()->root()->child_at(0)->current_frame_host();
   rfh_b->DoNotDeleteForTesting();
+
+  // With BackForwardCache, old frame doesn't fire unload handlers as the page
+  // is stored in BackForwardCache on navigating.
+  DisableBackForwardCacheForTesting(web_contents(),
+                                    BackForwardCache::TEST_USES_UNLOAD_EVENT);
 
   // 3) Navigate and check the old frame is deleted after some time.
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();

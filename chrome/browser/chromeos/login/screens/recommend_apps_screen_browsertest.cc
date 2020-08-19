@@ -142,7 +142,7 @@ class RecommendAppsScreenTest : public OobeBaseTest {
 
   void ShowRecommendAppsScreen() {
     login_manager_.LoginAsNewRegularUser();
-    OobeScreenExitWaiter(GaiaView::kScreenId).Wait();
+    OobeScreenExitWaiter(GetFirstSigninScreen()).Wait();
     LoginDisplayHost::default_host()->StartWizard(
         RecommendAppsScreenView::kScreenId);
   }
@@ -562,7 +562,7 @@ IN_PROC_BROWSER_TEST_F(RecommendAppsScreenManagedTest, SkipDueToManagedUser) {
   user_policy_mixin_.RequestPolicyUpdate();
 
   login_manager_.LoginWithDefaultContext(test_user_);
-  OobeScreenExitWaiter(GaiaView::kScreenId).Wait();
+  OobeScreenExitWaiter(GetFirstSigninScreen()).Wait();
   if (!screen_result_.has_value()) {
     // Skip screens to the tested one.
     LoginDisplayHost::default_host()->StartWizard(

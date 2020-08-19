@@ -8,7 +8,7 @@
 #include "base/test/bind_test_util.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/fake_cws.h"
-#include "chrome/browser/chromeos/login/kiosk_launch_controller.h"
+#include "chrome/browser/chromeos/login/app_mode/kiosk_launch_controller.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/test/device_state_mixin.h"

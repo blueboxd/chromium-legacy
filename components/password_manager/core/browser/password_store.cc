@@ -83,6 +83,12 @@ void CloseTraceAndCallBack(
 
 }  // namespace
 
+void PasswordStore::Observer::OnLoginsChangedIn(
+    PasswordStore* store,
+    const PasswordStoreChangeList& changes) {
+  OnLoginsChanged(changes);
+}
+
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 PasswordStore::CheckReuseRequest::CheckReuseRequest(
     PasswordReuseDetectorConsumer* consumer)
@@ -731,7 +737,8 @@ void PasswordStore::NotifyLoginsChanged(
     const PasswordStoreChangeList& changes) {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
   if (!changes.empty()) {
-    observers_->Notify(FROM_HERE, &Observer::OnLoginsChanged, changes);
+    observers_->Notify(FROM_HERE, &Observer::OnLoginsChangedIn,
+                       base::RetainedRef(this), changes);
     if (sync_bridge_)
       sync_bridge_->ActOnPasswordStoreChanges(changes);
 

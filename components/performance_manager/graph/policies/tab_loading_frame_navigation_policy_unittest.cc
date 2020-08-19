@@ -163,10 +163,9 @@ class TabLoadingFrameNavigationPolicyTest
 
   // The current time, expressed as a multiple of the timeout period.
   double GetRelativeTime() {
-    base::TimeTicks now = task_environment()->GetMockTickClock()->NowTicks();
-    base::TimeDelta elapsed = now - start_;
-    double relative = elapsed / policy_->GetMaxTimeoutForTesting();
-    return relative;
+    const base::TimeTicks now =
+        task_environment()->GetMockTickClock()->NowTicks();
+    return (now - start_) / policy_->GetMaxTimeoutForTesting();
   }
 
  private:

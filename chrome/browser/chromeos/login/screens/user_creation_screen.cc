@@ -5,7 +5,10 @@
 #include "chrome/browser/chromeos/login/screens/user_creation_screen.h"
 
 #include "ash/public/cpp/login_screen.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/login/wizard_context.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/ui/webui/chromeos/login/user_creation_screen_handler.h"
 #include "chromeos/constants/chromeos_features.h"
 
@@ -56,12 +59,15 @@ void UserCreationScreen::OnViewDestroyed(UserCreationView* view) {
 }
 
 bool UserCreationScreen::MaybeSkip(WizardContext* context) {
-  if (features::IsChildSpecificSigninEnabled() &&
-      !context->skip_to_login_for_tests) {
-    return false;
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  if (!features::IsChildSpecificSigninEnabled() ||
+      context->skip_to_login_for_tests ||
+      connector->GetDeviceMode() == policy::DEVICE_MODE_ENTERPRISE_AD) {
+    exit_callback_.Run(Result::SKIPPED);
+    return true;
   }
-  exit_callback_.Run(Result::SKIPPED);
-  return true;
+  return false;
 }
 
 void UserCreationScreen::ShowImpl() {

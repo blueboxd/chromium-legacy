@@ -25,6 +25,44 @@ int64_t EstimatePhysicalRAMSize(int64_t total_ram) {
   }
   return total_ram;
 }
+
+// Calculates counter difference with respect to overflow.
+CpuStats Delta(const CpuStats& newer, const CpuStats& older) {
+  static_assert(sizeof(CpuStats) == sizeof(uint64_t) * 10,
+                "This method should be updated when CpuStats is changed.");
+
+  // Calculates (left - right) assuming |left| and |right| are increasing
+  // unsigned counters with respect to possible counter overflow.
+  auto minus = [](const size_t& left, const size_t right) {
+    return left > right ? (left - right)
+                        : (left + (std::numeric_limits<size_t>::max() - right));
+  };
+
+  CpuStats result;
+  result.user = minus(newer.user, older.user);
+  result.nice = minus(newer.nice, older.nice);
+  result.system = minus(newer.system, older.system);
+  result.idle = minus(newer.idle, older.idle);
+  result.iowait = minus(newer.iowait, older.iowait);
+  result.irq = minus(newer.irq, older.irq);
+  result.softirq = minus(newer.softirq, older.softirq);
+  result.steal = minus(newer.steal, older.steal);
+  result.guest = minus(newer.guest, older.guest);
+  result.guest_nice = minus(newer.guest_nice, older.guest_nice);
+  return result;
+}
+
+// Returns sum of all entries. This is useful for deltas to calculate
+// percentage.
+size_t Sum(const CpuStats& stats) {
+  static_assert(sizeof(CpuStats) == sizeof(uint64_t) * 10,
+                "This method should be updated when CpuStats is changed.");
+
+  return stats.user + stats.nice + stats.system + stats.idle + stats.iowait +
+         stats.irq + stats.softirq + stats.steal + stats.guest +
+         stats.guest_nice;
+}
+
 }  // anonymous namespace
 
 // --------------------------------
@@ -35,7 +73,11 @@ int64_t EstimatePhysicalRAMSize(int64_t total_ram) {
 DataSource::Snapshot::Snapshot() = default;
 DataSource::Snapshot::Snapshot(const Snapshot&) = default;
 
-DataSource::DataSource() = default;
+DataSource::DataSource() {
+  cpu_stats_base_ = {0};
+  cpu_stats_latest_ = {0};
+}
+
 DataSource::~DataSource() = default;
 
 DataSource::Snapshot DataSource::GetSnapshotAndReset() {
@@ -43,6 +85,27 @@ DataSource::Snapshot DataSource::GetSnapshotAndReset() {
   Refresh();
 
   Snapshot snapshot = GetSnapshot();
+
+  if (cpu_stats_base_.user > 0) {
+    // Calculate CPU graph values for the last interval.
+    CpuStats cpu_stats_delta = Delta(cpu_stats_latest_, cpu_stats_base_);
+    const double cpu_ticks_total = Sum(cpu_stats_delta);
+
+    // Makes sure that the given value is between 0 and 1 and converts to
+    // float.
+    auto to_0_1 = [](const double& value) -> float {
+      return std::min(1.0f, std::max(0.0f, static_cast<float>(value)));
+    };
+
+    snapshot.cpu_idle_part = cpu_stats_delta.idle / cpu_ticks_total;
+    snapshot.cpu_user_part =
+        (cpu_stats_delta.user + cpu_stats_delta.nice) / cpu_ticks_total;
+    snapshot.cpu_system_part = cpu_stats_delta.system / cpu_ticks_total;
+    // The remaining part is "other".
+    snapshot.cpu_other_part =
+        to_0_1(1 - snapshot.cpu_idle_part - snapshot.cpu_user_part -
+               snapshot.cpu_system_part);
+  }
   ResetCounters();
   return snapshot;
 }
@@ -53,6 +116,9 @@ DataSource::Snapshot DataSource::GetSnapshot() const {
 
 void DataSource::ResetCounters() {
   snapshot_ = Snapshot();
+
+  cpu_stats_base_ = cpu_stats_latest_;
+  cpu_stats_latest_ = {0};
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -83,6 +149,8 @@ void DataSource::Refresh() {
   snapshot_.gpu_rss = std::max(snapshot_.gpu_rss, memory_status.gpu_rss());
   snapshot_.gpu_kernel =
       std::max(snapshot_.gpu_kernel, memory_status.gpu_kernel());
+
+  cpu_stats_latest_ = GetProcStatCPU();
 }
 
 }  // namespace hud_display

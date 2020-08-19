@@ -10,6 +10,7 @@
 #include "base/containers/flat_set.h"
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "cc/input/compositor_input_interfaces.h"
 #include "cc/input/event_listener_properties.h"
 #include "cc/input/input_handler.h"
 #include "cc/input/scroll_snap_data.h"
@@ -39,12 +40,12 @@ class ScrollTree;
 class SwapPromiseMonitor;
 class Viewport;
 
-class CC_EXPORT ThreadedInputHandler {
+class CC_EXPORT ThreadedInputHandler : public InputDelegateForCompositor {
  public:
   explicit ThreadedInputHandler(LayerTreeHostImpl* host_impl);
   ~ThreadedInputHandler();
 
-  // ============ InputHandler "Interface" - will override in a future CL
+  // =========== InputHandler "Interface" - will override in a future CL
   void BindToClient(InputHandlerClient* client);
   InputHandler::ScrollStatus ScrollBegin(ScrollState* scroll_state,
                                          ui::ScrollInputType type);
@@ -92,49 +93,23 @@ class CC_EXPORT ThreadedInputHandler {
   void ScrollEndForSnapFling(bool did_finish);
   void NotifyInputEvent();
 
-  // ========== Rough Interface exposed for LTHI
-
-  // Called during a commit to communicate changes to Blink that it needs to
-  // know about. This method sets input-related values in the output parameter
-  // with the delta since the last commit. It then resets the tracking
-  // variables so that the next call will be a delta from this one.
-  void ProcessCommitDeltas(CompositorCommitData* commit_data);
-
-  void WillShutdown();
-  void WillDraw();
-  void WillBeginImplFrame(const viz::BeginFrameArgs& args);
-  void UpdateRootLayerStateForSynchronousInputHandler();
-  void DidCommitFromBlink();
-  void DidActivatePendingTree();
-  void TickAnimations(base::TimeTicks monotonic_time);
-  void ScrollOffsetAnimationFinished();
-
-  // Returns true if there is an ongoing scroll and the scroller has a scroll
-  // event handler.
-  bool CurrentScrollAffectsScrollHandler() const;
-
-  ScrollbarController* get_scrollbar_controller() const {
-    return scrollbar_controller_.get();
-  }
+  // =========== InputDelegateForCompositor Interface - This section implements
+  // the interface that LayerTreeHostImpl uses to communicate with the input
+  // system.
+  void ProcessCommitDeltas(CompositorCommitData* commit_data) override;
+  void TickAnimations(base::TimeTicks monotonic_time) override;
+  void WillShutdown() override;
+  void WillDraw() override;
+  void WillBeginImplFrame(const viz::BeginFrameArgs& args) override;
+  void DidCommit() override;
+  void DidActivatePendingTree() override;
+  void RootLayerStateMayHaveChanged() override;
+  void DidUnregisterScrollbar(ElementId scroll_element_id) override;
+  void ScrollOffsetAnimationFinished() override;
+  bool IsCurrentlyScrolling() const override;
+  bool IsActivelyPrecisionScrolling() const override;
 
   // =========== Public Interface
-
-  // This method gets the scroll offset for a regular scroller, or the combined
-  // visual and layout offsets of the viewport.
-  gfx::ScrollOffset GetVisualScrollOffset(const ScrollNode& scroll_node) const;
-
-  // Returns true if there is an active scroll in progress.  "Active" here
-  // means that it's been latched (i.e. we have a CurrentlyScrollingNode()) but
-  // also that some ScrollUpdates have been received and their delta consumed
-  // for scrolling. These can differ significantly e.g. the page allows the
-  // touchstart but preventDefaults all the touchmoves. In that case, we latch
-  // and have a CurrentlyScrollingNode() but will never receive a ScrollUpdate.
-  //
-  // "Precision" means it's a non-animated scroll like a touchscreen or
-  // high-precision touchpad. The latter distinction is important for things
-  // like scheduling decisions which might schedule a wheel and a touch
-  // scrolling differently due to user perception.
-  bool IsActivelyPrecisionScrolling() const;
 
   bool CanConsumeDelta(const ScrollState& scroll_state,
                        const ScrollNode& scroll_node);
@@ -142,7 +117,6 @@ class CC_EXPORT ThreadedInputHandler {
   // page scale into account.
   gfx::Vector2dF ComputeScrollDelta(const ScrollNode& scroll_node,
                                     const gfx::Vector2dF& delta);
-  bool IsScrolledBy(LayerImpl* child, ScrollNode* ancestor);
 
   gfx::Vector2dF ScrollSingleNode(const ScrollNode& scroll_node,
                                   const gfx::Vector2dF& delta,
@@ -155,8 +129,6 @@ class CC_EXPORT ThreadedInputHandler {
       const ScrollNode& scroll_node,
       const gfx::Vector2dF& scroll_delta,
       ui::ScrollGranularity granularity);
-
-  bool IsAnimatingForSnap() const;
 
   // Used to set the pinch gesture active state when the pinch gesture is
   // handled on another layer tree. In a page with OOPIFs, only the main
@@ -182,7 +154,19 @@ class CC_EXPORT ThreadedInputHandler {
     return accumulated_root_overscroll_;
   }
 
+  bool animating_for_snap_for_testing() const { return IsAnimatingForSnap(); }
+
  private:
+  FRIEND_TEST_ALL_PREFIXES(ScrollUnifiedLayerTreeHostImplTest,
+                           AnimatedScrollYielding);
+  FRIEND_TEST_ALL_PREFIXES(LayerTreeHostImplTest, AutoscrollTaskAbort);
+
+  // This method gets the scroll offset for a regular scroller, or the combined
+  // visual and layout offsets of the viewport.
+  gfx::ScrollOffset GetVisualScrollOffset(const ScrollNode& scroll_node) const;
+  bool IsScrolledBy(LayerImpl* child, ScrollNode* ancestor);
+  bool IsAnimatingForSnap() const;
+
   ScrollNode* CurrentlyScrollingNode();
   const ScrollNode* CurrentlyScrollingNode() const;
   void ClearCurrentlyScrollingNode();
@@ -207,6 +191,8 @@ class CC_EXPORT ThreadedInputHandler {
       ui::ScrollInputType type);
 
   void ShowScrollbarsForImplScroll(ElementId element_id);
+
+  void UpdateRootLayerStateForSynchronousInputHandler();
 
   // Called during ScrollBegin once a scroller was successfully latched to
   // (i.e.  it can and will consume scroll delta on the compositor thread). The
@@ -344,6 +330,10 @@ class CC_EXPORT ThreadedInputHandler {
   FrameSequenceTrackerType GetTrackerTypeForScroll(
       ui::ScrollInputType input_type) const;
 
+  ScrollbarController* scrollbar_controller_for_testing() const {
+    return scrollbar_controller_.get();
+  }
+
   LayerTreeHostImpl& host_impl_;
 
   InputHandlerClient* input_handler_client_ = nullptr;
@@ -407,13 +397,6 @@ class CC_EXPORT ThreadedInputHandler {
   // sequence on the specific axis.
   bool did_scroll_x_for_scroll_gesture_ = false;
   bool did_scroll_y_for_scroll_gesture_ = false;
-
-  // This is used to tell the scheduler there are active scroll handlers on the
-  // page so we should prioritize latency during a scroll to try to keep
-  // scroll-linked effects up to data.
-  // TODO(bokan): This is quite old and scheduling has become much more
-  // sophisticated since so it's not clear how much value it's still providing.
-  bool scroll_affects_scroll_handler_ = false;
 
   // TODO(bokan): Mac doesn't yet have smooth scrolling for wheel; however, to
   // allow consistency in tests we use this bit to override that decision.

@@ -34,7 +34,6 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -515,6 +514,11 @@ public class PortalsTest {
 
     @TargetApi(Build.VERSION_CODES.M)
     private void waitForNotification(NotificationPredicate pred) {
+        waitForNotification(pred, CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL);
+    }
+
+    @TargetApi(Build.VERSION_CODES.M)
+    private void waitForNotification(NotificationPredicate pred, long maxTimeoutMs) {
         CriteriaHelper.pollInstrumentationThread(() -> {
             StatusBarNotification notifications[] =
                     ((NotificationManager) ContextUtils.getApplicationContext().getSystemService(
@@ -526,7 +530,7 @@ public class PortalsTest {
                 }
             }
             return false;
-        });
+        }, maxTimeoutMs, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
     }
 
     @TargetApi(Build.VERSION_CODES.M)
@@ -549,7 +553,6 @@ public class PortalsTest {
     @LargeTest
     @Feature({"Portals"})
     @MinAndroidSdkLevel(Build.VERSION_CODES.M)
-    @FlakyTest(message = "https://crbug.com/1115888")
     public void testMediaCaptureNotificationVisibleAfterAdoption() throws Exception {
         String mainUrl = mTestServer.getURL("/chrome/test/data/android/portals/media-capture.html");
         mActivityTestRule.startMainActivityWithURL(mainUrl);
@@ -562,7 +565,7 @@ public class PortalsTest {
             PermissionDialogController permissionDialogController =
                     PermissionDialogController.getInstance();
             return permissionDialogController.isDialogShownForTest();
-        });
+        }, 12000, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
         // Accept permissions request by clicking button on permissions dialog.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             PermissionDialogController permissionDialogController =
@@ -571,7 +574,7 @@ public class PortalsTest {
                     ModalDialogProperties.ButtonType.POSITIVE);
         });
         // Wait for video capture notification.
-        waitForNotification(mMediaCaptureNotificationPred);
+        waitForNotification(mMediaCaptureNotificationPred, 12000);
         // Activate portal.
         executeScriptAndAwaitSwap(tab, "activate()");
         // Wait for adoption to complete.

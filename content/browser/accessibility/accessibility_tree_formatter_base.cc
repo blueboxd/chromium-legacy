@@ -43,7 +43,7 @@ PropertyNode PropertyNode::FromPropertyFilter(
   // Property invocation: property_str expected format is
   // prop_name or prop_name(arg1, ... argN).
   PropertyNode root;
-  std::string property_str = base::UTF16ToUTF8(filter.property_str);
+  const std::string& property_str = filter.property_str;
   Parse(&root, property_str.begin(), property_str.end());
 
   PropertyNode* node = &root.parameters[0];
@@ -56,7 +56,7 @@ PropertyNode PropertyNode::FromPropertyFilter(
   // :line_num_1, ... :line_num_N, a comma separated list of line indexes
   // the property should be queried for. For example, ":1,:5,:7" indicates that
   // the property should called for objects placed on 1, 5 and 7 lines only.
-  std::string filter_str = base::UTF16ToUTF8(filter.filter_str);
+  const std::string& filter_str = filter.filter_str;
   if (!filter_str.empty()) {
     node->line_indexes =
         base::SplitString(filter_str, std::string(1, ','),
@@ -269,7 +269,7 @@ AccessibilityTreeFormatter::PropertyFilter::PropertyFilter(
     const PropertyFilter&) = default;
 
 AccessibilityTreeFormatter::PropertyFilter::PropertyFilter(
-    const base::string16& str,
+    const std::string& str,
     Type type)
     : match_str(str), type(type) {
   size_t index = str.find(';');
@@ -311,7 +311,7 @@ base::string16 AccessibilityTreeFormatterBase::DumpAccessibilityTreeFromManager(
 
 bool AccessibilityTreeFormatter::MatchesPropertyFilters(
     const std::vector<PropertyFilter>& property_filters,
-    const base::string16& text,
+    const std::string& text,
     bool default_result) {
   bool allow = default_result;
   for (const auto& filter : property_filters) {
@@ -324,14 +324,13 @@ bool AccessibilityTreeFormatter::MatchesPropertyFilters(
         (filter.match_str.length() > 0 &&
          filter.match_str.find('=') == std::string::npos &&
          filter.match_str[filter.match_str.length() - 1] != '*' &&
-         base::MatchPattern(text,
-                            filter.match_str + base::ASCIIToUTF16("=*")))) {
+         base::MatchPattern(text, filter.match_str + "=*"))) {
       switch (filter.type) {
         case PropertyFilter::ALLOW_EMPTY:
           allow = true;
           break;
         case PropertyFilter::ALLOW:
-          allow = (!base::MatchPattern(text, base::UTF8ToUTF16("*=''")));
+          allow = (!base::MatchPattern(text, "*=''"));
           break;
         case PropertyFilter::DENY:
           allow = false;
@@ -480,8 +479,7 @@ AccessibilityTreeFormatterBase::PropertyFilterNodesFor(
 
 bool AccessibilityTreeFormatterBase::HasMatchAllPropertyFilter() const {
   for (const auto& filter : property_filters_) {
-    if (filter.type == PropertyFilter::ALLOW &&
-        filter.match_str == base::ASCIIToUTF16("*")) {
+    if (filter.type == PropertyFilter::ALLOW && filter.match_str == "*") {
       return true;
     }
   }
@@ -489,7 +487,7 @@ bool AccessibilityTreeFormatterBase::HasMatchAllPropertyFilter() const {
 }
 
 bool AccessibilityTreeFormatterBase::MatchesPropertyFilters(
-    const base::string16& text,
+    const std::string& text,
     bool default_result) const {
   return AccessibilityTreeFormatter::MatchesPropertyFilters(
       property_filters_, text, default_result);
@@ -542,7 +540,7 @@ bool AccessibilityTreeFormatterBase::WriteAttribute(bool include_by_default,
                                                     base::string16* line) {
   if (attr.empty())
     return false;
-  if (!MatchesPropertyFilters(attr, include_by_default))
+  if (!MatchesPropertyFilters(base::UTF16ToUTF8(attr), include_by_default))
     return false;
   if (!line->empty())
     *line += base::ASCIIToUTF16(" ");
@@ -554,7 +552,7 @@ void AccessibilityTreeFormatterBase::AddPropertyFilter(
     std::vector<PropertyFilter>* property_filters,
     std::string filter,
     PropertyFilter::Type type) {
-  property_filters->push_back(PropertyFilter(base::ASCIIToUTF16(filter), type));
+  property_filters->push_back(PropertyFilter(filter, type));
 }
 
 void AccessibilityTreeFormatterBase::AddDefaultFilters(

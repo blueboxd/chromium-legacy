@@ -32,6 +32,7 @@ cc_component("cc") {
     "input/browser_controls_offset_manager.cc",
     "input/browser_controls_offset_manager.h",
     "input/browser_controls_offset_manager_client.h",
+    "input/compositor_input_interfaces.h",
     "input/input_handler.h",
     "input/layer_selection_bound.cc",
     "input/layer_selection_bound.h",

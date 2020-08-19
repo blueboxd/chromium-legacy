@@ -955,6 +955,59 @@ std::string GuessWindowManagerName() {
   return "Unknown";
 }
 
+UMALinuxWindowManager GetWindowManagerUMA() {
+  switch (GuessWindowManager()) {
+    case WM_OTHER:
+      return UMALinuxWindowManager::kOther;
+    case WM_UNNAMED:
+      return UMALinuxWindowManager::kUnnamed;
+    case WM_AWESOME:
+      return UMALinuxWindowManager::kAwesome;
+    case WM_BLACKBOX:
+      return UMALinuxWindowManager::kBlackbox;
+    case WM_COMPIZ:
+      return UMALinuxWindowManager::kCompiz;
+    case WM_ENLIGHTENMENT:
+      return UMALinuxWindowManager::kEnlightenment;
+    case WM_FLUXBOX:
+      return UMALinuxWindowManager::kFluxbox;
+    case WM_I3:
+      return UMALinuxWindowManager::kI3;
+    case WM_ICE_WM:
+      return UMALinuxWindowManager::kIceWM;
+    case WM_ION3:
+      return UMALinuxWindowManager::kIon3;
+    case WM_KWIN:
+      return UMALinuxWindowManager::kKWin;
+    case WM_MATCHBOX:
+      return UMALinuxWindowManager::kMatchbox;
+    case WM_METACITY:
+      return UMALinuxWindowManager::kMetacity;
+    case WM_MUFFIN:
+      return UMALinuxWindowManager::kMuffin;
+    case WM_MUTTER:
+      return UMALinuxWindowManager::kMutter;
+    case WM_NOTION:
+      return UMALinuxWindowManager::kNotion;
+    case WM_OPENBOX:
+      return UMALinuxWindowManager::kOpenbox;
+    case WM_QTILE:
+      return UMALinuxWindowManager::kQtile;
+    case WM_RATPOISON:
+      return UMALinuxWindowManager::kRatpoison;
+    case WM_STUMPWM:
+      return UMALinuxWindowManager::kStumpWM;
+    case WM_WMII:
+      return UMALinuxWindowManager::kWmii;
+    case WM_XFWM4:
+      return UMALinuxWindowManager::kXfwm4;
+    case WM_XMONAD:
+      return UMALinuxWindowManager::kXmonad;
+  }
+  NOTREACHED();
+  return UMALinuxWindowManager::kOther;
+}
+
 bool IsCompositingManagerPresent() {
   auto is_compositing_manager_present_impl = []() {
     auto response = x11::Connection::Get()

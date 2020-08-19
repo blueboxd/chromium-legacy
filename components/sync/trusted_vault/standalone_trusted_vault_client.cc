@@ -13,6 +13,7 @@
 #include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
 #include "components/signin/public/identity_manager/account_info.h"
+#include "components/sync/base/bind_to_task_runner.h"
 #include "components/sync/trusted_vault/standalone_trusted_vault_backend.h"
 #include "components/sync/trusted_vault/trusted_vault_access_token_fetcher.h"
 #include "components/sync/trusted_vault/trusted_vault_connection_impl.h"
@@ -46,11 +47,10 @@ void StandaloneTrustedVaultClient::FetchKeys(
     const CoreAccountInfo& account_info,
     base::OnceCallback<void(const std::vector<std::vector<uint8_t>>&)> cb) {
   TriggerLazyInitializationIfNeeded();
-  base::PostTaskAndReplyWithResult(
-      backend_task_runner_.get(), FROM_HERE,
+  backend_task_runner_->PostTask(
+      FROM_HERE,
       base::BindOnce(&StandaloneTrustedVaultBackend::FetchKeys, backend_,
-                     account_info),
-      std::move(cb));
+                     account_info, BindToCurrentSequence(std::move(cb))));
 }
 
 void StandaloneTrustedVaultClient::StoreKeys(
@@ -76,8 +76,12 @@ void StandaloneTrustedVaultClient::RemoveAllStoredKeys() {
 void StandaloneTrustedVaultClient::MarkKeysAsStale(
     const CoreAccountInfo& account_info,
     base::OnceCallback<void(bool)> cb) {
-  // Not really supported and not useful for this particular implementation.
-  std::move(cb).Run(false);
+  TriggerLazyInitializationIfNeeded();
+  base::PostTaskAndReplyWithResult(
+      backend_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&StandaloneTrustedVaultBackend::MarkKeysAsStale, backend_,
+                     account_info),
+      std::move(cb));
 }
 
 void StandaloneTrustedVaultClient::GetIsRecoverabilityDegraded(

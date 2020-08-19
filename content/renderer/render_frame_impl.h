@@ -1192,6 +1192,19 @@ class CONTENT_EXPORT RenderFrameImpl
   // should be used.
   bool ShouldUseUserAgentOverride() const;
 
+  // Sets the PageLifecycleState and runs pagehide and visibilitychange handlers
+  // of the old page before committing this RenderFrame. Should only be called
+  // for main-frame same-site navigations where we did a proactive
+  // BrowsingInstance swap and we're reusing the old page's process. This is
+  // needed to ensure consistency with other same-site main frame navigations.
+  // Note that we will set the page's visibility to hidden, but not run the
+  // unload handlers of the old page, nor actually unload/freeze the page here.
+  // That needs a more complicated support on the browser side which will be
+  // implemented later.
+  // TODO(crbug.com/1110744): Support unload-in-commit.
+  void SetOldPageLifecycleStateFromNewPageCommitIfNeeded(
+      const mojom::OldPageInfo* old_page_info);
+
   // Updates the state when asked to commit a history navigation.  Sets
   // |item_for_history_navigation| and |load_type| to the appropriate values for
   // commit.

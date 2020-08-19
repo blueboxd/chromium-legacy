@@ -5702,4 +5702,27 @@ You can manage this account’s settings by installing the Family Link app on yo
   <message name="IDS_CUSTOM_TABS_ACTION_MENU_ACCESSIBLE_NAME" desc="Accessible name for the overflow menu of the Chrome Custom Tab toolbar.">
     Action menu button
   </message>
+
+  <!-- Strings for the System-proxy authentication dialog that requests proxy credentials for network traffic at OS level (outside the Browser) -->
+  <message name="IDS_SYSTEM_PROXY_AUTH_DIALOG_TITLE" desc="Title for the dialog.">
+    Sign in
+  </message>
+  <message name="IDS_SYSTEM_PROXY_AUTH_DIALOG_OK_BUTTON" desc="Text for the OK button.">
+    Sign in
+  </message>
+  <message name="IDS_SYSTEM_PROXY_AUTH_DIALOG_TEXT" desc="Text for the dialog informing users that the remote proxy requires authentication.">
+    The proxy <ph name="PROXY_SERVER">$1<ex>http://localhost:3128</ex></ph> requires a username and password.
+  </message>
+  <message name="IDS_SYSTEM_PROXY_AUTH_DIALOG_PRIVACY_WARNING" desc="Text for the privacy disclosure section on the dialog.">
+    Your connection is not private for all network traffic
+  </message>
+  <message name="IDS_SYSTEM_PROXY_AUTH_DIALOG_USERNAME_LABEL" desc="Text for the label associated with the username input.">
+    Username
+  </message>
+  <message name="IDS_SYSTEM_PROXY_AUTH_DIALOG_PASSWORD_LABEL" desc="Text for the label associated with the password input.">
+    Password
+  </message>
+  <message name="IDS_SYSTEM_PROXY_AUTH_DIALOG_ERROR_LABEL" desc="Text for the error label that informs users that the authentication attempt failed.">
+    Unable to connect to the proxy
+  </message>
 </grit-part>

@@ -253,7 +253,9 @@ void VersionUpdater::UpdateStatusChanged(
   }
 
   if (time_estimator_.HasTotalTime(status.current_operation())) {
-    update_info_.total_time_left = time_estimator_.GetTimeLeft();
+    const auto update_status = time_estimator_.GetUpdateStatus();
+    update_info_.total_time_left = update_status.time_left;
+    update_info_.better_update_progress = update_status.progress;
     if (!refresh_timer_) {
       refresh_timer_ = std::make_unique<base::RepeatingTimer>(tick_clock_);
       refresh_timer_->Start(FROM_HERE, kUpdateTime, this,
@@ -272,7 +274,9 @@ void VersionUpdater::UpdateStatusChanged(
 }
 
 void VersionUpdater::RefreshTimeLeftEstimation() {
-  update_info_.total_time_left = time_estimator_.GetTimeLeft();
+  const auto update_status = time_estimator_.GetUpdateStatus();
+  update_info_.total_time_left = update_status.time_left;
+  update_info_.better_update_progress = update_status.progress;
   delegate_->UpdateInfoChanged(update_info_);
 }
 

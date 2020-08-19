@@ -2988,8 +2988,7 @@ class PDFExtensionAccessibilityTreeDumpTest
         if (base::StartsWith(trimmed_line, allow_str,
                              base::CompareCase::SENSITIVE)) {
           property_filters->push_back(PropertyFilter(
-              base::UTF8ToUTF16(trimmed_line.substr(allow_str.size())),
-              PropertyFilter::ALLOW));
+              trimmed_line.substr(allow_str.size()), PropertyFilter::ALLOW));
         }
       }
     }
@@ -3091,8 +3090,7 @@ class PDFExtensionAccessibilityTreeDumpTest
   void AddPropertyFilter(std::vector<PropertyFilter>* property_filters,
                          std::string filter,
                          PropertyFilter::Type type = PropertyFilter::ALLOW) {
-    property_filters->push_back(
-        PropertyFilter(base::ASCIIToUTF16(filter), type));
+    property_filters->push_back(PropertyFilter(filter, type));
   }
 
   content::AccessibilityTreeFormatter::TestPass test_pass_;

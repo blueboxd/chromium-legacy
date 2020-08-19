@@ -1,36 +1,68 @@
 /**
-* AUTO-GENERATED - DO NOT EDIT. Source: https://github.com/gpuweb/cts
-**/
-
-let _Symbol$iterator;
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
+ * AUTO-GENERATED - DO NOT EDIT. Source: https://github.com/gpuweb/cts
+ **/ let _Symbol$iterator;
+function _defineProperty(obj, key, value) {
+  if (key in obj) {
+    Object.defineProperty(obj, key, {
+      value: value,
+      enumerable: true,
+      configurable: true,
+      writable: true,
+    });
+  } else {
+    obj[key] = value;
+  }
+  return obj;
+}
 import { publicParamsEquals } from './params_utils.js';
-import { assert } from './util/util.js'; // https://stackoverflow.com/a/56375136
+import { assert } from './util/util.js';
+/** Forces a type to resolve its type definitions, to make it readable/debuggable. */
+
+function typeAssert() {}
+{
+  {
+    typeAssert();
+    typeAssert();
+    typeAssert();
+    typeAssert();
+    typeAssert();
+
+    typeAssert();
+
+    typeAssert();
+    typeAssert();
+    typeAssert();
+    typeAssert();
+    typeAssert();
+
+    // Unexpected test results - hopefully okay to ignore these
+    typeAssert();
+    typeAssert();
+  }
+}
 
 export function poptions(name, values) {
   const iter = makeReusableIterable(function* () {
     for (const value of values) {
-      yield {
-        [name]: value
-      };
+      yield { [name]: value };
     }
   });
+
   return iter;
 }
+
 export function pbool(name) {
   return poptions(name, [false, true]);
 }
+
 export function params() {
   return new ParamsBuilder();
 }
 _Symbol$iterator = Symbol.iterator;
 export class ParamsBuilder {
   constructor() {
-    _defineProperty(this, "paramSpecs", [{}]);
+    _defineProperty(this, 'paramSpecs', [{}]);
   }
-
   [_Symbol$iterator]() {
     const iter = this.paramSpecs[Symbol.iterator]();
     return iter;
@@ -45,6 +77,7 @@ export class ParamsBuilder {
         }
       }
     });
+
     return this;
   }
 
@@ -57,6 +90,7 @@ export class ParamsBuilder {
         }
       }
     });
+
     return this;
   }
 
@@ -88,24 +122,19 @@ export class ParamsBuilder {
     });
     return this;
   }
+}
 
-} // If you create an Iterable by calling a generator function (e.g. in IIFE), it is exhausted after
+// If you create an Iterable by calling a generator function (e.g. in IIFE), it is exhausted after
 // one use. This just wraps a generator function in an object so it be iterated multiple times.
-
 function makeReusableIterable(generatorFn) {
-  return {
-    [Symbol.iterator]: generatorFn
-  };
+  return { [Symbol.iterator]: generatorFn };
 }
 
 // (keyof A & keyof B) is not empty, so they overlapped
+
 function mergeParams(a, b) {
   for (const key of Object.keys(a)) {
     assert(!(key in b), 'Duplicate key: ' + key);
   }
-
-  return { ...a,
-    ...b
-  };
+  return { ...a, ...b };
 }
-//# sourceMappingURL=params_builder.js.map

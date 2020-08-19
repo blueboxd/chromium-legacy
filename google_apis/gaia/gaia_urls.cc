@@ -32,6 +32,10 @@ const char kDefaultOAuthAccountManagerBaseUrl[] =
 const char kClientLoginUrlSuffix[] = "ClientLogin";
 const char kServiceLoginUrlSuffix[] = "ServiceLogin";
 const char kEmbeddedSetupChromeOsUrlSuffixV2[] = "embedded/setup/v2/chromeos";
+const char kEmbeddedSetupChromeOsKidSignupUrlSuffix[] =
+    "embedded/setup/kidsignup/chromeos";
+const char kEmbeddedSetupChromeOsKidSigninUrlSuffix[] =
+    "embedded/setup/kidsignin/chromeos";
 const char kEmbeddedSetupWindowsUrlSuffix[] = "embedded/setup/windows";
 // Parameter "ssp=1" is used to skip showing the password bubble when a user
 // signs in to Chrome. Note that Gaia will pass this client specified parameter
@@ -162,6 +166,14 @@ const GURL& GaiaUrls::service_login_url() const {
 const GURL& GaiaUrls::embedded_setup_chromeos_url(unsigned version) const {
   DCHECK_EQ(version, 2U);
   return embedded_setup_chromeos_url_v2_;
+}
+
+const GURL& GaiaUrls::embedded_setup_chromeos_kid_signup_url() const {
+  return embedded_setup_chromeos_kid_signup_url_;
+}
+
+const GURL& GaiaUrls::embedded_setup_chromeos_kid_signin_url() const {
+  return embedded_setup_chromeos_kid_signin_url_;
 }
 
 const GURL& GaiaUrls::embedded_setup_windows_url() const {
@@ -329,6 +341,10 @@ void GaiaUrls::InitializeDefault() {
   ResolveURLIfInvalid(&service_login_url_, gaia_url_, kServiceLoginUrlSuffix);
   ResolveURLIfInvalid(&embedded_setup_chromeos_url_v2_, gaia_url_,
                       kEmbeddedSetupChromeOsUrlSuffixV2);
+  ResolveURLIfInvalid(&embedded_setup_chromeos_kid_signup_url_, gaia_url_,
+                      kEmbeddedSetupChromeOsKidSignupUrlSuffix);
+  ResolveURLIfInvalid(&embedded_setup_chromeos_kid_signin_url_, gaia_url_,
+                      kEmbeddedSetupChromeOsKidSigninUrlSuffix);
   ResolveURLIfInvalid(&embedded_setup_windows_url_, gaia_url_,
                       kEmbeddedSetupWindowsUrlSuffix);
   ResolveURLIfInvalid(&signin_chrome_sync_dice_, gaia_url_,
@@ -400,6 +416,10 @@ void GaiaUrls::InitializeFromConfig() {
   config->GetURLIfExists(URL_KEY_AND_PTR(client_login_url));
   config->GetURLIfExists(URL_KEY_AND_PTR(service_login_url));
   config->GetURLIfExists(URL_KEY_AND_PTR(embedded_setup_chromeos_url_v2));
+  config->GetURLIfExists(
+      URL_KEY_AND_PTR(embedded_setup_chromeos_kid_signup_url));
+  config->GetURLIfExists(
+      URL_KEY_AND_PTR(embedded_setup_chromeos_kid_signin_url));
   config->GetURLIfExists(URL_KEY_AND_PTR(embedded_setup_windows_url));
   config->GetURLIfExists(URL_KEY_AND_PTR(signin_chrome_sync_dice));
   config->GetURLIfExists(URL_KEY_AND_PTR(signin_chrome_sync_keys_url));

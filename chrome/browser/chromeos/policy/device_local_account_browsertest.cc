@@ -56,6 +56,7 @@
 #include "chrome/browser/chromeos/login/signin_specifics.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/local_policy_test_server_mixin.h"
+#include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/test/session_manager_state_waiter.h"
 #include "chrome/browser/chromeos/login/test/test_predicate_waiter.h"
@@ -465,7 +466,8 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
       run_loop.Run();
 
     // Skip to the login screen.
-    chromeos::OobeScreenWaiter(chromeos::GaiaView::kScreenId).Wait();
+    chromeos::OobeScreenWaiter(chromeos::OobeBaseTest::GetFirstSigninScreen())
+        .Wait();
 
     chromeos::test::UserSessionManagerTestApi session_manager_test_api(
         chromeos::UserSessionManager::GetInstance());

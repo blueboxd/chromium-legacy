@@ -52,9 +52,11 @@ bool ProtocolHandler::IsValid() const {
   // From:
   // https://html.spec.whatwg.org/multipage/system-state.html#safelisted-scheme
   static constexpr const char* const kProtocolSafelist[] = {
-      "bitcoin", "geo",  "im",   "irc",         "ircs", "magnet", "mailto",
-      "mms",     "news", "nntp", "openpgp4fpr", "sip",  "sms",    "smsto",
-      "ssh",     "tel",  "urn",  "webcal",      "wtai", "xmpp"};
+      "bitcoin",  "cabal",       "dat",    "did",    "doi",   "dweb",
+      "ethereum", "geo",         "hyper",  "im",     "ipfs",  "ipns",
+      "irc",      "ircs",        "magnet", "mailto", "mms",   "news",
+      "nntp",     "openpgp4fpr", "sip",    "sms",    "smsto", "ssb",
+      "ssh",      "tel",         "urn",    "webcal", "wtai",  "xmpp"};
   static constexpr const char kWebPrefix[] = "web+";
 
   bool has_web_prefix =

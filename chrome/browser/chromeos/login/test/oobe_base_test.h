@@ -10,6 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "chrome/browser/chromeos/login/test/embedded_test_server_mixin.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
@@ -32,6 +33,8 @@ class OobeBaseTest : public MixinBasedInProcessBrowserTest {
   // Subclasses may register their own custom request handlers that will
   // process requests prior it gets handled by FakeGaia instance.
   virtual void RegisterAdditionalRequestHandlers();
+
+  static OobeScreenId GetFirstSigninScreen();
 
  protected:
   // MixinBasedInProcessBrowserTest::

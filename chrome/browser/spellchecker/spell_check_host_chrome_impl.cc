@@ -243,6 +243,13 @@ void SpellCheckHostChromeImpl::OnDictionariesInitialized() {
   DCHECK(dictionaries_loaded_callback_);
   SpellcheckService* spellcheck = GetSpellcheckService();
 
+  if (!spellcheck) {  // Teardown.
+    std::move(dictionaries_loaded_callback_)
+        .Run(/*dictionaries=*/{}, /*custom_words=*/{},
+             /*enable=*/false);
+    return;
+  }
+
   const bool enable = spellcheck->IsSpellcheckEnabled();
 
   std::vector<spellcheck::mojom::SpellCheckBDictLanguagePtr> dictionaries;

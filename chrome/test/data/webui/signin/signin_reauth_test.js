@@ -38,7 +38,7 @@ suite('SigninReauthTest', function() {
   test('LoadPage', function() {
     assertDefaultLocale();
     assertEquals(
-        'Save this and other passwords in your Google Account?',
+        'Use your Google Account to save and fill passwords?',
         app.$.signinReauthTitle.textContent.trim());
   });
 
@@ -52,41 +52,33 @@ suite('SigninReauthTest', function() {
     return browserProxy.whenCalled('cancel');
   });
 
-  test('RequiresReauth', async () => {
-    await browserProxy.whenCalled('initialize');
-    assertFalse(isVisible(app.$.confirmButton));
-    assertFalse(isVisible(app.$.cancelButton));
-    assertTrue(isVisible(app.$$('paper-spinner-lite')));
+  const requires_reauth_test_params = [
+    {
+      requires_reauth: true,
+    },
+    {
+      requires_reauth: false,
+    },
+  ];
 
-    webUIListenerCallback('reauth-type-received', true);
-    flush();
+  requires_reauth_test_params.forEach(function(params) {
+    test('ButtonsVisibilityAndFocus', async () => {
+      await browserProxy.whenCalled('initialize');
+      assertFalse(isVisible(app.$.confirmButton));
+      assertFalse(isVisible(app.$.cancelButton));
+      assertTrue(isVisible(app.$$('paper-spinner-lite')));
 
-    assertTrue(isVisible(app.$.confirmButton));
-    assertFalse(isVisible(app.$.cancelButton));
-    assertFalse(isVisible(app.$$('paper-spinner-lite')));
+      webUIListenerCallback('reauth-type-received', params.requires_reauth);
+      flush();
 
-    assertEquals(getDeepActiveElement(), app.$.confirmButton);
+      assertTrue(isVisible(app.$.confirmButton));
+      assertTrue(isVisible(app.$.cancelButton));
+      assertFalse(isVisible(app.$$('paper-spinner-lite')));
 
-    assertDefaultLocale();
-    assertEquals('Next', app.$.confirmButton.textContent.trim());
-  });
+      assertEquals(getDeepActiveElement(), app.$.confirmButton);
 
-  test('DoesNotRequireReauth', async () => {
-    await browserProxy.whenCalled('initialize');
-    assertFalse(isVisible(app.$.confirmButton));
-    assertFalse(isVisible(app.$.cancelButton));
-    assertTrue(isVisible(app.$$('paper-spinner-lite')));
-
-    webUIListenerCallback('reauth-type-received', false);
-    flush();
-
-    assertTrue(isVisible(app.$.confirmButton));
-    assertTrue(isVisible(app.$.cancelButton));
-    assertFalse(isVisible(app.$$('paper-spinner-lite')));
-
-    assertEquals(getDeepActiveElement(), app.$.confirmButton);
-
-    assertDefaultLocale();
-    assertEquals('Save', app.$.confirmButton.textContent.trim());
+      assertDefaultLocale();
+      assertEquals('Yes', app.$.confirmButton.textContent.trim());
+    });
   });
 });

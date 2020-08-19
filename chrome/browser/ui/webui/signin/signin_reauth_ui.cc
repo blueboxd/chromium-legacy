@@ -53,44 +53,11 @@ std::string GetAccountImageURL(Profile* profile) {
              : profiles::GetPlaceholderAvatarIconUrl();
 }
 
-int GetReauthTitleStringId(signin_metrics::ReauthAccessPoint access_point) {
-  switch (access_point) {
-    case signin_metrics::ReauthAccessPoint::kUnknown:
-    case signin_metrics::ReauthAccessPoint::kAutofillDropdown:
-    case signin_metrics::ReauthAccessPoint::kPasswordSettings:
-      return IDS_ACCOUNT_PASSWORDS_REAUTH_SHOW_TITLE;
-    case signin_metrics::ReauthAccessPoint::kGeneratePasswordDropdown:
-    case signin_metrics::ReauthAccessPoint::kGeneratePasswordContextMenu:
-    case signin_metrics::ReauthAccessPoint::kPasswordSaveBubble:
-    case signin_metrics::ReauthAccessPoint::kPasswordMoveBubble:
-      return IDS_ACCOUNT_PASSWORDS_REAUTH_SAVE_TITLE;
-  }
-}
-
-int GetReauthConfirmButtonLabelStringId(
-    signin_metrics::ReauthAccessPoint access_point) {
-  switch (access_point) {
-    case signin_metrics::ReauthAccessPoint::kUnknown:
-    case signin_metrics::ReauthAccessPoint::kAutofillDropdown:
-    case signin_metrics::ReauthAccessPoint::kPasswordSettings:
-      return IDS_ACCOUNT_PASSWORDS_REAUTH_SHOW_BUTTON_LABEL;
-    case signin_metrics::ReauthAccessPoint::kGeneratePasswordDropdown:
-    case signin_metrics::ReauthAccessPoint::kGeneratePasswordContextMenu:
-    case signin_metrics::ReauthAccessPoint::kPasswordSaveBubble:
-    case signin_metrics::ReauthAccessPoint::kPasswordMoveBubble:
-      return IDS_ACCOUNT_PASSWORDS_REAUTH_SAVE_BUTTON_LABEL;
-  }
-}
-
 }  // namespace
 
 SigninReauthUI::SigninReauthUI(content::WebUI* web_ui)
     : SigninWebDialogUI(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
-  signin_metrics::ReauthAccessPoint access_point =
-      signin::GetReauthAccessPointForReauthConfirmationURL(
-          web_ui->GetWebContents()->GetVisibleURL());
-
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUISigninReauthHost);
   source->UseStringsJs();
@@ -118,13 +85,11 @@ SigninReauthUI::SigninReauthUI(content::WebUI* web_ui)
       "images/signin_reauth_illustration_dark.svg",
       IDR_SIGNIN_REAUTH_IMAGES_ACCOUNT_PASSWORDS_REAUTH_ILLUSTRATION_DARK_SVG);
   AddStringResource(source, "signinReauthTitle",
-                    GetReauthTitleStringId(access_point));
+                    IDS_ACCOUNT_PASSWORDS_REAUTH_TITLE);
   AddStringResource(source, "signinReauthDesc",
                     IDS_ACCOUNT_PASSWORDS_REAUTH_DESC);
   AddStringResource(source, "signinReauthConfirmLabel",
-                    GetReauthConfirmButtonLabelStringId(access_point));
-  AddStringResource(source, "signinReauthNextLabel",
-                    IDS_ACCOUNT_PASSWORDS_REAUTH_NEXT_BUTTON_LABEL);
+                    IDS_ACCOUNT_PASSWORDS_REAUTH_CONFIRM_BUTTON_LABEL);
   AddStringResource(source, "signinReauthCloseLabel",
                     IDS_ACCOUNT_PASSWORDS_REAUTH_CLOSE_BUTTON_LABEL);
 

@@ -42,7 +42,6 @@
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service.h"
 #include "chrome/browser/chromeos/login/enterprise_user_session_metrics.h"
 #include "chrome/browser/chromeos/login/helper.h"
-#include "chrome/browser/chromeos/login/kiosk_launch_controller.h"
 #include "chrome/browser/chromeos/login/quick_unlock/pin_storage_cryptohome.h"
 #include "chrome/browser/chromeos/login/reauth_stats.h"
 #include "chrome/browser/chromeos/login/screens/encryption_migration_screen.h"

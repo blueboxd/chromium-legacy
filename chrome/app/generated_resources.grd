@@ -5995,8 +5995,11 @@ the Bookmarks menu.">
         <message name="IDS_PASSWORD_MANAGER_SAVE_BUTTON" desc="Save button text for password manager">
           Save
         </message>
-        <message name="IDS_PASSWORD_MANAGER_MOVE_BUTTON" desc="Move button text for password manager">
+        <message name="IDS_PASSWORD_MANAGER_MOVE_BUBBLE_OK_BUTTON" desc="Text for the ok button in the password manager move bubble.">
           Move
+        </message>
+        <message name="IDS_PASSWORD_MANAGER_MOVE_BUBBLE_CANCEL_BUTTON" desc="Text for the cancel button in the password manager move bubble.">
+          No thanks
         </message>
         <if expr="use_titlecase">
           <message name="IDS_PASSWORD_MANAGER_UPDATE_BUTTON" desc="In Title Case: Update button text for password manager">
@@ -7853,26 +7856,17 @@ the Bookmarks menu.">
       </message>
 
       <!-- Account password storage reauth tab modal dialog -->
-      <message name="IDS_ACCOUNT_PASSWORDS_REAUTH_SAVE_TITLE" desc="Title of the account password storage reauth tab modal dialog. The dialog was shown because the user requested to save a password to their Google account.">
-        Save this and other passwords in your Google Account?
-      </message>
-      <message name="IDS_ACCOUNT_PASSWORDS_REAUTH_SHOW_TITLE" desc="Title of the account password storage reauth tab modal dialog. The dialog was shown because the user requested to get passwords from their Google account.">
-        Show passwords from your Google Account
+      <message name="IDS_ACCOUNT_PASSWORDS_REAUTH_TITLE" desc="Title of the account password storage reauth tab modal dialog.">
+        Use your Google Account to save and fill passwords?
       </message>
       <message name="IDS_ACCOUNT_PASSWORDS_REAUTH_DESC" desc="Body of the account password storage reauth tab modal dialog.">
-        Your passwords from your Google Account will also be available on this device while you're signed in
+        Passwords from your Google Account will also be available on this device while you're signed in
       </message>
-      <message name="IDS_ACCOUNT_PASSWORDS_REAUTH_SAVE_BUTTON_LABEL" desc="Label of the confirmation button in the account password storage reauth tab modal dialog. The dialog was shown because the user requested to save a password to their Google account.">
-        Save
-      </message>
-      <message name="IDS_ACCOUNT_PASSWORDS_REAUTH_SHOW_BUTTON_LABEL" desc="Label of the confirmation button in the account password storage reauth tab modal dialog. The dialog was shown because the user requested to get passwords from their Google account.">
-        Show
+      <message name="IDS_ACCOUNT_PASSWORDS_REAUTH_CONFIRM_BUTTON_LABEL" desc="Label of the confirmation button in the account password storage reauth tab modal dialog.">
+        Yes
       </message>
       <message name="IDS_ACCOUNT_PASSWORDS_REAUTH_CLOSE_BUTTON_LABEL" desc="Label of the close button in the account password storage reauth tab modal dialog.">
-        Cancel
-      </message>
-      <message name="IDS_ACCOUNT_PASSWORDS_REAUTH_NEXT_BUTTON_LABEL" desc="Label of the next button in the account password storage reauth tab modal dialog. This button invites the user to authenticate to unlock the account password storage.">
-        Next
+        No thanks
       </message>
 
       <message name="IDS_PLUGIN_OUTDATED_PROMPT" desc="Infobar message when an outdated plugin was disabled">
@@ -10758,6 +10752,43 @@ Please help our engineers fix this problem. Tell us what happened right before y
         {NUM_EXTENSIONS, plural,
           =1 {Click to view the extension}
           other {Click to view these extensions}}
+      </message>
+    </if>
+
+    <if expr="is_macosx">
+      <!-- These strings are placeholders for strings that are filled in via
+           field trials, so they are *not* used as-is except in tests. -->
+      <message name="IDS_MAC_SYSTEM_INFOBAR_TEXT_ARM"
+               desc="Mac system-specific infobar text for Arm64-on-Arm64."
+               translateable="false">
+        This is an Arm64 Chrome on Arm64, so things might not work quite right
+yet!
+      </message>
+      <message name="IDS_MAC_SYSTEM_INFOBAR_TEXT_ROSETTA"
+               desc="Mac system-specific infobar text for Intel-on-Arm64."
+               translateable="false">
+        This is an x86-64 Chrome on Arm64, so things might not work quite right
+yet!
+      </message>
+      <message name="IDS_MAC_SYSTEM_INFOBAR_LINK_TEXT_ARM"
+               desc="Mac system-specific infobar link text for Arm64-on-Arm64."
+               translateable="false">
+        Learn more
+      </message>
+      <message name="IDS_MAC_SYSTEM_INFOBAR_LINK_URL_ARM"
+               desc="Mac system-specific infobar link for Arm64-on-Arm64."
+               translateable="false">
+        https://www.google.com
+      </message>
+      <message name="IDS_MAC_SYSTEM_INFOBAR_LINK_TEXT_ROSETTA"
+               desc="Mac system-specific infobar link text for Intel-on-Arm64."
+               translateable="false">
+        Learn more
+      </message>
+      <message name="IDS_MAC_SYSTEM_INFOBAR_LINK_URL_ROSETTA"
+               desc="Mac system-specific infobar link for Intel-on-Arm64."
+               translateable="false">
+        https://www.google.com
       </message>
     </if>
   </messages>

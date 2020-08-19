@@ -51,9 +51,11 @@ static const HashSet<String>& SupportedSchemes() {
   DEFINE_STATIC_LOCAL(
       HashSet<String>, supported_schemes,
       ({
-          "bitcoin", "geo",  "im",   "irc",         "ircs", "magnet", "mailto",
-          "mms",     "news", "nntp", "openpgp4fpr", "sip",  "sms",    "smsto",
-          "ssh",     "tel",  "urn",  "webcal",      "wtai", "xmpp",
+          "bitcoin",     "cabal",  "dat",    "did",   "dweb", "ethereum",
+          "geo",         "hyper",  "im",     "ipfs",  "ipns", "irc",
+          "ircs",        "magnet", "mailto", "mms",   "news", "nntp",
+          "openpgp4fpr", "sip",    "sms",    "smsto", "ssb",  "ssh",
+          "tel",         "urn",    "webcal", "wtai",  "xmpp",
       }));
   return supported_schemes;
 }

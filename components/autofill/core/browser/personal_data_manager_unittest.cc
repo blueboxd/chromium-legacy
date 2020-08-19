@@ -7206,12 +7206,26 @@ TEST_F(PersonalDataManagerMockTest,
   AutofillProfile profile2(test::GetFullValidProfileForCanada());
   profile2.set_guid("00000000-0000-0000-0000-000000002019");
   profile2.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, base::UTF8ToUTF16(""));
+  profile2.FinalizeAfterImport();
   AddProfileToPersonalDataManager(profile2);
 
   // The validities were set when the profiles were added.
   auto profiles = personal_data_->GetProfiles();
   ASSERT_EQ(2U, profiles.size());
 
+  // In the legacy implementation of names, the merge operation populates the
+  // full name field. This results in a change of the name although the names
+  // are technically the same. For structured names, this is not true anymore,
+  // because a name is always in a finalized state. To enforce a non-noop merge
+  // for structured names, we lift the verification status of the full name.
+  // TODO(crbug.com/1103421): Make the test logic less implicit once structured
+  // names are fully launched and remove feature test.
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillEnableSupportForMoreStructureInNames)) {
+    profiles[0]->SetRawInfoWithVerificationStatus(
+        NAME_FULL, profiles[1]->GetRawInfo(NAME_FULL),
+        structured_address::VerificationStatus::kUserVerified);
+  }
   profiles[1]->MergeDataFrom(*profiles[0], "en");
   ASSERT_TRUE(profiles[0]->is_client_validity_states_updated());
   ASSERT_FALSE(profiles[1]->is_client_validity_states_updated());

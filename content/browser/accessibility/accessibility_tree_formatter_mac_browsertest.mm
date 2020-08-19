@@ -67,8 +67,7 @@ void AccessibilityTreeFormatterMacBrowserTest::TestAndCheck(
 
   for (const char* filter : filters) {
     property_filters.push_back(AccessibilityTreeFormatter::PropertyFilter(
-        base::UTF8ToUTF16(filter),
-        AccessibilityTreeFormatter::PropertyFilter::ALLOW_EMPTY));
+        filter, AccessibilityTreeFormatter::PropertyFilter::ALLOW_EMPTY));
   }
 
   formatter->AddDefaultFilters(&property_filters);

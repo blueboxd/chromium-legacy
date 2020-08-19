@@ -7,6 +7,7 @@
 
 #include "services/network/public/mojom/content_security_policy.mojom-shared.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-shared.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_element_type.mojom-shared.h"
 #include "third_party/blink/public/mojom/frame/user_activation_notification_type.mojom-shared.h"
@@ -160,6 +161,10 @@ class WebRemoteFrame : public WebFrame {
   // Unique name is an opaque identifier for maintaining association with
   // session restore state for this frame.
   virtual WebString UniqueName() const = 0;
+
+  RemoteFrameToken GetRemoteFrameToken() const {
+    return RemoteFrameToken(GetFrameToken());
+  }
 
  protected:
   explicit WebRemoteFrame(mojom::TreeScopeType scope,

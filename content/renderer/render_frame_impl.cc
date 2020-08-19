@@ -3121,6 +3121,30 @@ void RenderFrameImpl::BindWebUI(mojo::PendingReceiver<mojom::WebUI> receiver,
   WebUIExtensionData::Create(this, std::move(receiver), std::move(remote));
 }
 
+void RenderFrameImpl::SetOldPageLifecycleStateFromNewPageCommitIfNeeded(
+    const mojom::OldPageInfo* old_page_info) {
+  if (!old_page_info)
+    return;
+  RenderFrameImpl* old_main_render_frame = RenderFrameImpl::FromRoutingID(
+      old_page_info->routing_id_for_old_main_frame);
+  if (!old_main_render_frame) {
+    // Even if we sent a valid |routing_id_for_old_main_frame|, it might have
+    // already been destroyed by the time we try to get the RenderFrame, so
+    // we should check if it still exists.
+    return;
+  }
+  CHECK(IsMainFrame());
+  CHECK(old_main_render_frame->IsMainFrame());
+  DCHECK_EQ(old_page_info->new_lifecycle_state_for_old_page->visibility,
+            PageVisibilityState::kHidden);
+  DCHECK_NE(old_page_info->new_lifecycle_state_for_old_page->pagehide_dispatch,
+            blink::mojom::PagehideDispatch::kNotDispatched);
+  WebFrame* old_main_web_frame = old_main_render_frame->GetWebFrame();
+  old_main_web_frame->View()->SetPageLifecycleStateFromNewPageCommit(
+      old_page_info->new_lifecycle_state_for_old_page->visibility,
+      old_page_info->new_lifecycle_state_for_old_page->pagehide_dispatch);
+}
+
 void RenderFrameImpl::CommitNavigation(
     mojom::CommonNavigationParamsPtr common_params,
     mojom::CommitNavigationParamsPtr commit_params,
@@ -3155,6 +3179,9 @@ void RenderFrameImpl::CommitNavigation(
 
     return;
   }
+
+  SetOldPageLifecycleStateFromNewPageCommitIfNeeded(
+      commit_params->old_page_info.get());
 
   bool was_initiated_in_this_frame =
       navigation_client_impl_ &&

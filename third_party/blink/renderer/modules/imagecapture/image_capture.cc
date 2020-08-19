@@ -13,6 +13,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/callback_promise_adapter.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_fill_light_mode.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_settings_range.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_track_capabilities.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_track_constraints.h"
@@ -85,16 +86,29 @@ WebString ToString(MeteringMode value) {
   }
 }
 
-WebString ToString(FillLightMode value) {
+#ifdef USE_BLINK_V8_BINDING_NEW_IDL_DICTIONARY
+V8FillLightMode ToV8FillLightMode(FillLightMode value) {
   switch (value) {
     case FillLightMode::OFF:
-      return WebString::FromUTF8("off");
+      return V8FillLightMode(V8FillLightMode::Enum::kOff);
     case FillLightMode::AUTO:
-      return WebString::FromUTF8("auto");
+      return V8FillLightMode(V8FillLightMode::Enum::kAuto);
     case FillLightMode::FLASH:
-      return WebString::FromUTF8("flash");
+      return V8FillLightMode(V8FillLightMode::Enum::kFlash);
   }
 }
+#else
+String ToV8FillLightMode(FillLightMode value) {
+  switch (value) {
+    case FillLightMode::OFF:
+      return String::FromUTF8("off");
+    case FillLightMode::AUTO:
+      return String::FromUTF8("auto");
+    case FillLightMode::FLASH:
+      return String::FromUTF8("flash");
+  }
+}
+#endif
 
 WebString ToString(RedEyeReduction value) {
   switch (value) {
@@ -965,9 +979,14 @@ void ImageCapture::OnMojoGetPhotoState(
     photo_capabilities_->setImageWidth(
         ToMediaSettingsRange(*photo_state->width));
   }
+
+#ifdef USE_BLINK_V8_BINDING_NEW_IDL_DICTIONARY
+  WTF::Vector<V8FillLightMode> fill_light_mode;
+#else
   WTF::Vector<WTF::String> fill_light_mode;
+#endif
   for (const auto& mode : photo_state->fill_light_mode) {
-    fill_light_mode.push_back(ToString(mode));
+    fill_light_mode.push_back(ToV8FillLightMode(mode));
   }
   if (!fill_light_mode.IsEmpty())
     photo_capabilities_->setFillLightMode(fill_light_mode);

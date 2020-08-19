@@ -553,6 +553,26 @@ void GaiaScreenHandler::LoadGaiaWithPartitionAndVersionAndConsent(
   }
 
   params.SetString("gaiaUrl", GaiaUrls::GetInstance()->gaia_url().spec());
+  switch (gaia_path_) {
+    case GaiaPath::kDefault:
+      // Use the default gaia signin path embedded/setup/v2/chromeos which is
+      // set in authenticator.js
+      break;
+    case GaiaPath::kChildSignup:
+      params.SetString("gaiaPath",
+                       GaiaUrls::GetInstance()
+                           ->embedded_setup_chromeos_kid_signup_url()
+                           .path()
+                           .substr(1));
+      break;
+    case GaiaPath::kChildSignin:
+      params.SetString("gaiaPath",
+                       GaiaUrls::GetInstance()
+                           ->embedded_setup_chromeos_kid_signin_url()
+                           .path()
+                           .substr(1));
+      break;
+  }
 
   // We only send |chromeos_board| Gaia URL parameter if user has opted into
   // sending device statistics.
@@ -1314,6 +1334,10 @@ void GaiaScreenHandler::Bind(GaiaScreen* screen) {
 
 void GaiaScreenHandler::Unbind() {
   BaseScreenHandler::SetBaseScreen(nullptr);
+}
+
+void GaiaScreenHandler::SetGaiaPath(GaiaScreenHandler::GaiaPath gaia_path) {
+  gaia_path_ = gaia_path;
 }
 
 void GaiaScreenHandler::LoadGaiaAsync(const AccountId& account_id) {

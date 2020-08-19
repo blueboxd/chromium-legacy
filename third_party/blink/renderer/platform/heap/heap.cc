@@ -309,23 +309,48 @@ static constexpr size_t kDefaultConcurrentDeadlineCheckInterval =
 
 template <size_t kDeadlineCheckInterval = kDefaultDeadlineCheckInterval,
           typename Worklist,
-          typename Callback>
-bool DrainWorklistWithDeadline(base::TimeTicks deadline,
-                               Worklist* worklist,
-                               Callback callback,
-                               int task_id) {
+          typename Callback,
+          typename YieldPredicate>
+bool DrainWorklist(Worklist* worklist,
+                   Callback callback,
+                   YieldPredicate should_yield,
+                   int task_id) {
   size_t processed_callback_count = 0;
   typename Worklist::EntryType item;
   while (worklist->Pop(task_id, &item)) {
     callback(item);
     if (processed_callback_count-- == 0) {
-      if (deadline <= base::TimeTicks::Now()) {
+      if (should_yield()) {
         return false;
       }
       processed_callback_count = kDeadlineCheckInterval;
     }
   }
   return true;
+}
+
+template <size_t kDeadlineCheckInterval = kDefaultDeadlineCheckInterval,
+          typename Worklist,
+          typename Callback>
+bool DrainWorklistWithDeadline(base::TimeTicks deadline,
+                               Worklist* worklist,
+                               Callback callback,
+                               int task_id) {
+  return DrainWorklist<kDeadlineCheckInterval>(
+      worklist, std::move(callback),
+      [deadline]() { return deadline <= base::TimeTicks::Now(); }, task_id);
+}
+
+template <size_t kDeadlineCheckInterval = kDefaultDeadlineCheckInterval,
+          typename Worklist,
+          typename Callback>
+bool DrainWorklistWithYielding(base::JobDelegate* delegate,
+                               Worklist* worklist,
+                               Callback callback,
+                               int task_id) {
+  return DrainWorklist<kDeadlineCheckInterval>(
+      worklist, std::move(callback),
+      [delegate]() { return delegate->ShouldYield(); }, task_id);
 }
 
 }  // namespace
@@ -492,7 +517,15 @@ bool ThreadHeap::HasWorkForConcurrentMarking() const {
          !ephemeron_pairs_to_process_worklist_->IsGlobalPoolEmpty();
 }
 
+size_t ThreadHeap::ConcurrentMarkingGlobalWorkSize() const {
+  return marking_worklist_->GlobalPoolSize() +
+         write_barrier_worklist_->GlobalPoolSize() +
+         previously_not_fully_constructed_worklist_->GlobalPoolSize() +
+         ephemeron_pairs_to_process_worklist_->GlobalPoolSize();
+}
+
 bool ThreadHeap::AdvanceConcurrentMarking(ConcurrentMarkingVisitor* visitor,
+                                          base::JobDelegate* delegate,
                                           base::TimeTicks deadline) {
   bool finished;
   do {
@@ -500,8 +533,8 @@ bool ThreadHeap::AdvanceConcurrentMarking(ConcurrentMarkingVisitor* visitor,
     // |marking_worklist_|. This merely re-adds items with the proper
     // callbacks.
     finished =
-        DrainWorklistWithDeadline<kDefaultConcurrentDeadlineCheckInterval>(
-            deadline, previously_not_fully_constructed_worklist_.get(),
+        DrainWorklistWithYielding<kDefaultConcurrentDeadlineCheckInterval>(
+            delegate, previously_not_fully_constructed_worklist_.get(),
             [visitor](NotFullyConstructedItem& item) {
               visitor->DynamicallyMarkAddress(
                   reinterpret_cast<ConstAddress>(item));
@@ -512,9 +545,9 @@ bool ThreadHeap::AdvanceConcurrentMarking(ConcurrentMarkingVisitor* visitor,
 
     // Iteratively mark all objects that are reachable from the objects
     // currently pushed onto the marking worklist.
-    finished = DrainWorklistWithDeadline<
+    finished = DrainWorklistWithYielding<
         kDefaultConcurrentDeadlineCheckInterval>(
-        deadline, marking_worklist_.get(),
+        delegate, marking_worklist_.get(),
         [visitor](const MarkingItem& item) {
           HeapObjectHeader* header =
               HeapObjectHeader::FromPayload(item.base_object_payload);
@@ -529,9 +562,9 @@ bool ThreadHeap::AdvanceConcurrentMarking(ConcurrentMarkingVisitor* visitor,
     if (!finished)
       break;
 
-    finished = DrainWorklistWithDeadline<
+    finished = DrainWorklistWithYielding<
         kDefaultConcurrentDeadlineCheckInterval>(
-        deadline, write_barrier_worklist_.get(),
+        delegate, write_barrier_worklist_.get(),
         [visitor](HeapObjectHeader* header) {
           PageFromObject(header)->SynchronizedLoad();
           DCHECK(
@@ -554,8 +587,8 @@ bool ThreadHeap::AdvanceConcurrentMarking(ConcurrentMarkingVisitor* visitor,
       // by the mutator thread and then invoked either concurrently or by the
       // mutator thread (in the atomic pause at latest).
       finished =
-          DrainWorklistWithDeadline<kDefaultConcurrentDeadlineCheckInterval>(
-              deadline, ephemeron_pairs_to_process_worklist_.get(),
+          DrainWorklistWithYielding<kDefaultConcurrentDeadlineCheckInterval>(
+              delegate, ephemeron_pairs_to_process_worklist_.get(),
               [visitor](EphemeronPairItem& item) {
                 visitor->VisitEphemeron(item.key, item.value,
                                         item.value_trace_callback);

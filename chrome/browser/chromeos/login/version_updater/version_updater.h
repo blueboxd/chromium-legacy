@@ -52,6 +52,8 @@ class VersionUpdater : public UpdateEngineClient::Observer,
 
     // Time left for an update to finish in seconds.
     base::TimeDelta total_time_left;
+    // Progress of an update which is based on total time left expectation.
+    int better_update_progress = 0;
 
     // Estimated time left for only downloading stage, in seconds.
     // TODO(crbug.com/1101317): Remove when better update is launched.

@@ -1994,9 +1994,10 @@ TEST_F(SyncSchedulerImplTest, PollOnStartUpWithinBoundsAfterLongPause) {
   bool found_delay_greater_than_5_permille = false;
   bool found_delay_less_or_equal_5_permille = false;
   for (int i = 0; i < 10000; ++i) {
-    base::Time result = ComputeLastPollOnStart(last_poll, poll_interval, now);
-    base::TimeDelta delay = result + poll_interval - now;
-    double fraction = delay / poll_interval;
+    const base::Time result =
+        ComputeLastPollOnStart(last_poll, poll_interval, now);
+    const base::TimeDelta delay = result + poll_interval - now;
+    const double fraction = delay / poll_interval;
     if (fraction > 0.005) {
       found_delay_greater_than_5_permille = true;
     } else {

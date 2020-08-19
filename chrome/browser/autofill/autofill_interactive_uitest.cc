@@ -2211,7 +2211,17 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
   ui_test_utils::NavigateToURL(browser(), url);
   PopulateForm("NAME_FIRST");
 
-  ExpectFieldValue("NAME_MIDDLE", "C");
+  // In the legacy implementation for names, the initial is always created
+  // without a trailing dot even if the user explicitely used a dot.
+  // For structured names, we leave the choice to the user.
+  // TODO(crbug.com/1103421): Clean legacy implementation once structured names
+  // are fully launched.
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillEnableSupportForMoreStructureInNames)) {
+    ExpectFieldValue("NAME_MIDDLE", "C.");
+  } else {
+    ExpectFieldValue("NAME_MIDDLE", "C");
+  }
 }
 
 // Test forms with multiple email addresses are filled properly.

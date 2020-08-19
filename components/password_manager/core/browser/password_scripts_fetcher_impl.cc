@@ -86,7 +86,7 @@ void PasswordScriptsFetcherImpl::PrewarmCache() {
     StartFetch();
 }
 
-void PasswordScriptsFetcherImpl::Fetch(
+void PasswordScriptsFetcherImpl::RefreshScriptsIfNecessary(
     base::OnceClosure fetch_finished_callback) {
   CacheState state = IsCacheStale()
                          ? (url_loader_ ? CacheState::kWaiting

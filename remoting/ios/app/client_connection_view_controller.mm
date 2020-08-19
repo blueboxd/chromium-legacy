@@ -626,7 +626,7 @@ using EntryPoint = remoting::ChromotingEvent::SessionEntryPoint;
       // If the session is closed by the host, just go back to the host list and
       // show a toast.
       state = ClientViewClosed;
-      [MDCSnackbarManager
+      [MDCSnackbarManager.defaultManager
           showMessage:[MDCSnackbarMessage
                           messageWithText:l10n_util::GetNSString(
                                               IDS_MESSAGE_SESSION_FINISHED)]];

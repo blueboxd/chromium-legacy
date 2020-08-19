@@ -596,10 +596,9 @@ void BackForwardCache::DisableForRenderFrameHost(GlobalFrameRoutingId id,
 void BackForwardCacheImpl::DisableForTesting(DisableForTestingReason reason) {
   is_disabled_for_testing_ = true;
 
-  // This could happen if a test populated some entries in the cache, then
-  // called DisableForTesting(). This is not something we currently expect tests
-  // to do.
-  DCHECK(entries_.empty());
+  // Flush all the entries to make sure there are no entries in the cache after
+  // DisableForTesting() is called.
+  Flush();
 }
 
 const std::list<std::unique_ptr<BackForwardCacheImpl::Entry>>&

@@ -191,7 +191,7 @@ class SyncConsentTest : public OobeBaseTest {
 
   void LoginToSyncConsentScreen() {
     login_manager_mixin_.LoginAsNewRegularUser();
-    OobeScreenExitWaiter(GaiaView::kScreenId).Wait();
+    OobeScreenExitWaiter(GetFirstSigninScreen()).Wait();
     // No need to explicitly show the screen as it is the first one after login.
   }
 

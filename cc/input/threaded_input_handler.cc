@@ -54,6 +54,9 @@ ThreadedInputHandler::ThreadedInputHandler(LayerTreeHostImpl* host_impl)
 
 ThreadedInputHandler::~ThreadedInputHandler() = default;
 
+//
+// =========== InputHandler Interface
+//
 void ThreadedInputHandler::BindToClient(InputHandlerClient* client) {
   DCHECK(input_handler_client_ == nullptr);
   input_handler_client_ = client;
@@ -880,6 +883,164 @@ void ThreadedInputHandler::NotifyInputEvent() {
   host_impl_.NotifyInputEvent();
 }
 
+//
+// =========== InputDelegateForCompositor Interface
+//
+
+void ThreadedInputHandler::ProcessCommitDeltas(
+    CompositorCommitData* commit_data) {
+  DCHECK(commit_data);
+  if (ActiveTree().LayerListIsEmpty())
+    return;
+
+  ElementId inner_viewport_scroll_element_id =
+      InnerViewportScrollNode() ? InnerViewportScrollNode()->element_id
+                                : ElementId();
+
+  base::flat_set<ElementId> snapped_elements;
+  updated_snapped_elements_.swap(snapped_elements);
+
+  // Scroll commit data is stored in the scroll tree so it has its own method
+  // for getting it.
+  GetScrollTree().CollectScrollDeltas(
+      commit_data, inner_viewport_scroll_element_id,
+      Settings().commit_fractional_scroll_deltas, snapped_elements);
+
+  // Record and reset scroll source flags.
+  DCHECK(!commit_data->manipulation_info);
+  if (has_scrolled_by_wheel_)
+    commit_data->manipulation_info |= kManipulationInfoWheel;
+  if (has_scrolled_by_touch_)
+    commit_data->manipulation_info |= kManipulationInfoTouch;
+  if (has_scrolled_by_precisiontouchpad_)
+    commit_data->manipulation_info |= kManipulationInfoPrecisionTouchPad;
+  if (has_pinch_zoomed_)
+    commit_data->manipulation_info |= kManipulationInfoPinchZoom;
+
+  has_scrolled_by_wheel_ = false;
+  has_scrolled_by_touch_ = false;
+  has_scrolled_by_precisiontouchpad_ = false;
+  has_pinch_zoomed_ = false;
+
+  commit_data->scroll_gesture_did_end = scroll_gesture_did_end_;
+  scroll_gesture_did_end_ = false;
+
+  commit_data->overscroll_delta = overscroll_delta_for_main_thread_;
+  overscroll_delta_for_main_thread_ = gfx::Vector2dF();
+
+  // Use the |last_latched_scroller_| rather than the
+  // |CurrentlyScrollingNode| since the latter may be cleared by a GSE before
+  // we've committed these values to the main thread.
+  // TODO(bokan): This is wrong - if we also started a scroll this frame then
+  // this will clear this value for that scroll. https://crbug.com/1116780.
+  commit_data->scroll_latched_element_id = last_latched_scroller_;
+  if (commit_data->scroll_gesture_did_end)
+    last_latched_scroller_ = ElementId();
+}
+
+void ThreadedInputHandler::TickAnimations(base::TimeTicks monotonic_time) {
+  if (input_handler_client_) {
+    // This does not set did_animate, because if the InputHandlerClient
+    // changes anything it will be through the InputHandler interface which
+    // does SetNeedsRedraw.
+    input_handler_client_->Animate(monotonic_time);
+  }
+}
+
+void ThreadedInputHandler::WillShutdown() {
+  if (input_handler_client_) {
+    input_handler_client_->WillShutdown();
+    input_handler_client_ = nullptr;
+  }
+
+  if (scroll_elasticity_helper_)
+    scroll_elasticity_helper_.reset();
+}
+
+void ThreadedInputHandler::WillDraw() {
+  if (input_handler_client_)
+    input_handler_client_->ReconcileElasticOverscrollAndRootScroll();
+}
+
+void ThreadedInputHandler::WillBeginImplFrame(const viz::BeginFrameArgs& args) {
+  if (input_handler_client_) {
+    scrollbar_controller_->WillBeginImplFrame();
+    input_handler_client_->DeliverInputForBeginFrame(args);
+  }
+}
+
+void ThreadedInputHandler::DidCommit() {
+  // In high latency mode commit cannot finish within the same frame. We need to
+  // flush input here to make sure they got picked up by |PrepareTiles()|.
+  if (input_handler_client_ &&
+      host_impl_.GetCompositorThreadPhase() == ImplThreadPhase::IDLE)
+    input_handler_client_->DeliverInputForHighLatencyMode();
+}
+
+void ThreadedInputHandler::DidActivatePendingTree() {
+  // The previous scrolling node might no longer exist in the new tree.
+  if (!CurrentlyScrollingNode())
+    ClearCurrentlyScrollingNode();
+
+  // Activation can change the root scroll offset, so inform the synchronous
+  // input handler.
+  UpdateRootLayerStateForSynchronousInputHandler();
+}
+
+void ThreadedInputHandler::RootLayerStateMayHaveChanged() {
+  UpdateRootLayerStateForSynchronousInputHandler();
+}
+
+void ThreadedInputHandler::DidUnregisterScrollbar(ElementId scroll_element_id) {
+  scrollbar_controller_->DidUnregisterScrollbar(scroll_element_id);
+}
+
+void ThreadedInputHandler::ScrollOffsetAnimationFinished() {
+  TRACE_EVENT0("cc", "ThreadedInputHandler::ScrollOffsetAnimationFinished");
+  // ScrollOffsetAnimationFinished is called in two cases:
+  //  1- smooth scrolling animation is over (IsAnimatingForSnap == false).
+  //  2- snap scroll animation is over (IsAnimatingForSnap == true).
+  //
+  //  Only for case (1) we should check and run snap scroll animation if needed.
+  if (!IsAnimatingForSnap() && SnapAtScrollEnd())
+    return;
+
+  // The end of a scroll offset animation means that the scrolling node is at
+  // the target offset.
+  ScrollNode* scroll_node = CurrentlyScrollingNode();
+  if (scroll_node && scroll_node->snap_container_data.has_value()) {
+    scroll_node->snap_container_data.value().SetTargetSnapAreaElementIds(
+        scroll_animating_snap_target_ids_);
+    updated_snapped_elements_.insert(scroll_node->element_id);
+    SetNeedsCommit();
+  }
+  scroll_animating_snap_target_ids_ = TargetSnapAreaElementIds();
+
+  // Call scrollEnd with the deferred scroll end state when the scroll animation
+  // completes after GSE arrival.
+  if (deferred_scroll_end_) {
+    ScrollEnd(/*should_snap=*/false);
+    return;
+  }
+}
+
+bool ThreadedInputHandler::IsCurrentlyScrolling() const {
+  return CurrentlyScrollingNode();
+}
+
+bool ThreadedInputHandler::IsActivelyPrecisionScrolling() const {
+  if (!CurrentlyScrollingNode())
+    return false;
+
+  if (!last_scroll_update_state_)
+    return false;
+
+  bool did_scroll_content =
+      did_scroll_x_for_scroll_gesture_ || did_scroll_y_for_scroll_gesture_;
+  return !ShouldAnimateScroll(last_scroll_update_state_.value()) &&
+         did_scroll_content;
+}
+
 ScrollNode* ThreadedInputHandler::CurrentlyScrollingNode() {
   return GetScrollTree().CurrentlyScrollingNode();
 }
@@ -954,149 +1115,6 @@ bool ThreadedInputHandler::IsMainThreadScrolling(
     return true;
   }
   return false;
-}
-
-gfx::Vector2dF ThreadedInputHandler::UserScrollableDelta(
-    const ScrollNode& node,
-    const gfx::Vector2dF& delta) const {
-  gfx::Vector2dF adjusted_delta = delta;
-  if (!node.user_scrollable_horizontal)
-    adjusted_delta.set_x(0);
-  if (!node.user_scrollable_vertical)
-    adjusted_delta.set_y(0);
-
-  return adjusted_delta;
-}
-
-void ThreadedInputHandler::ProcessCommitDeltas(
-    CompositorCommitData* commit_data) {
-  DCHECK(commit_data);
-  if (ActiveTree().LayerListIsEmpty())
-    return;
-
-  ElementId inner_viewport_scroll_element_id =
-      InnerViewportScrollNode() ? InnerViewportScrollNode()->element_id
-                                : ElementId();
-
-  base::flat_set<ElementId> snapped_elements;
-  updated_snapped_elements_.swap(snapped_elements);
-
-  // Scroll commit data is stored in the scroll tree so it has its own method
-  // for getting it.
-  GetScrollTree().CollectScrollDeltas(
-      commit_data, inner_viewport_scroll_element_id,
-      Settings().commit_fractional_scroll_deltas, snapped_elements);
-
-  // Record and reset scroll source flags.
-  DCHECK(!commit_data->manipulation_info);
-  if (has_scrolled_by_wheel_)
-    commit_data->manipulation_info |= kManipulationInfoWheel;
-  if (has_scrolled_by_touch_)
-    commit_data->manipulation_info |= kManipulationInfoTouch;
-  if (has_scrolled_by_precisiontouchpad_)
-    commit_data->manipulation_info |= kManipulationInfoPrecisionTouchPad;
-  if (has_pinch_zoomed_)
-    commit_data->manipulation_info |= kManipulationInfoPinchZoom;
-
-  has_scrolled_by_wheel_ = false;
-  has_scrolled_by_touch_ = false;
-  has_scrolled_by_precisiontouchpad_ = false;
-  has_pinch_zoomed_ = false;
-
-  commit_data->scroll_gesture_did_end = scroll_gesture_did_end_;
-  scroll_gesture_did_end_ = false;
-
-  commit_data->overscroll_delta = overscroll_delta_for_main_thread_;
-  overscroll_delta_for_main_thread_ = gfx::Vector2dF();
-
-  // Use the |last_latched_scroller_| rather than the
-  // |CurrentlyScrollingNode| since the latter may be cleared by a GSE before
-  // we've committed these values to the main thread.
-  // TODO(bokan): This is wrong - if we also started a scroll this frame then
-  // this will clear this value for that scroll. https://crbug.com/1116780.
-  commit_data->scroll_latched_element_id = last_latched_scroller_;
-  if (commit_data->scroll_gesture_did_end)
-    last_latched_scroller_ = ElementId();
-}
-
-void ThreadedInputHandler::WillShutdown() {
-  if (input_handler_client_) {
-    input_handler_client_->WillShutdown();
-    input_handler_client_ = nullptr;
-  }
-
-  if (scroll_elasticity_helper_)
-    scroll_elasticity_helper_.reset();
-}
-
-void ThreadedInputHandler::WillDraw() {
-  if (input_handler_client_)
-    input_handler_client_->ReconcileElasticOverscrollAndRootScroll();
-}
-
-void ThreadedInputHandler::WillBeginImplFrame(const viz::BeginFrameArgs& args) {
-  if (input_handler_client_) {
-    scrollbar_controller_->WillBeginImplFrame();
-    input_handler_client_->DeliverInputForBeginFrame(args);
-  }
-}
-
-void ThreadedInputHandler::DidCommitFromBlink() {
-  // In high latency mode commit cannot finish within the same frame. We need to
-  // flush input here to make sure they got picked up by |PrepareTiles()|.
-  if (input_handler_client_ &&
-      host_impl_.GetCompositorThreadPhase() == ImplThreadPhase::IDLE)
-    input_handler_client_->DeliverInputForHighLatencyMode();
-}
-
-void ThreadedInputHandler::DidActivatePendingTree() {
-  // The previous scrolling node no longer exists in the new tree.
-  if (!ActiveTree().CurrentlyScrollingNode())
-    ClearCurrentlyScrollingNode();
-}
-
-void ThreadedInputHandler::TickAnimations(base::TimeTicks monotonic_time) {
-  if (input_handler_client_) {
-    // This does not set did_animate, because if the InputHandlerClient
-    // changes anything it will be through the InputHandler interface which
-    // does SetNeedsRedraw.
-    input_handler_client_->Animate(monotonic_time);
-  }
-}
-
-bool ThreadedInputHandler::CurrentScrollAffectsScrollHandler() const {
-  DCHECK(!scroll_affects_scroll_handler_ || CurrentlyScrollingNode());
-  return scroll_affects_scroll_handler_;
-}
-
-// Return true if scrollable node for 'ancestor' is the same as 'child' or an
-// ancestor along the scroll tree.
-bool ThreadedInputHandler::IsScrolledBy(LayerImpl* child,
-                                        ScrollNode* ancestor) {
-  DCHECK(ancestor && ancestor->scrollable);
-  if (!child)
-    return false;
-  DCHECK_EQ(child->layer_tree_impl(), &ActiveTree());
-  ScrollTree& scroll_tree = GetScrollTree();
-  for (ScrollNode* scroll_node = scroll_tree.Node(child->scroll_tree_index());
-       scroll_node; scroll_node = scroll_tree.parent(scroll_node)) {
-    if (scroll_node->id == ancestor->id)
-      return true;
-  }
-  return false;
-}
-
-bool ThreadedInputHandler::IsActivelyPrecisionScrolling() const {
-  if (!CurrentlyScrollingNode())
-    return false;
-
-  if (!last_scroll_update_state_)
-    return false;
-
-  bool did_scroll_content =
-      did_scroll_x_for_scroll_gesture_ || did_scroll_y_for_scroll_gesture_;
-  return !ShouldAnimateScroll(last_scroll_update_state_.value()) &&
-         did_scroll_content;
 }
 
 gfx::Vector2dF ThreadedInputHandler::ResolveScrollGranularityToPixels(
@@ -1817,6 +1835,16 @@ ScrollNode* ThreadedInputHandler::FindNodeToLatch(ScrollState* scroll_state,
   return scroll_node;
 }
 
+void ThreadedInputHandler::UpdateRootLayerStateForSynchronousInputHandler() {
+  if (!input_handler_client_)
+    return;
+  input_handler_client_->UpdateRootLayerStateForSynchronousInputHandler(
+      ActiveTree().TotalScrollOffset(), ActiveTree().TotalMaxScrollOffset(),
+      ActiveTree().ScrollableSize(), ActiveTree().current_page_scale_factor(),
+      ActiveTree().min_page_scale_factor(),
+      ActiveTree().max_page_scale_factor());
+}
+
 void ThreadedInputHandler::DidLatchToScroller(const ScrollState& scroll_state,
                                               ui::ScrollInputType type) {
   DCHECK(CurrentlyScrollingNode());
@@ -1824,7 +1852,6 @@ void ThreadedInputHandler::DidLatchToScroller(const ScrollState& scroll_state,
   host_impl_.browser_controls_manager()->ScrollBegin();
   host_impl_.mutator_host()->ScrollAnimationAbort();
 
-  scroll_affects_scroll_handler_ = ActiveTree().have_scroll_event_handlers();
   scroll_animating_snap_target_ids_ = TargetSnapAreaElementIds();
   last_latched_scroller_ = CurrentlyScrollingNode()->element_id;
   latched_scroll_type_ = type;
@@ -1983,7 +2010,6 @@ gfx::ScrollOffset ThreadedInputHandler::GetVisualScrollOffset(
 void ThreadedInputHandler::ClearCurrentlyScrollingNode() {
   TRACE_EVENT0("cc", "ThreadedInputHandler::ClearCurrentlyScrollingNode");
   ActiveTree().ClearCurrentlyScrollingNode();
-  scroll_affects_scroll_handler_ = false;
   accumulated_root_overscroll_ = gfx::Vector2dF();
   did_scroll_x_for_scroll_gesture_ = false;
   did_scroll_y_for_scroll_gesture_ = false;
@@ -1991,16 +2017,6 @@ void ThreadedInputHandler::ClearCurrentlyScrollingNode() {
   latched_scroll_type_.reset();
   last_scroll_update_state_.reset();
   last_scroll_begin_state_.reset();
-}
-
-void ThreadedInputHandler::UpdateRootLayerStateForSynchronousInputHandler() {
-  if (!input_handler_client_)
-    return;
-  input_handler_client_->UpdateRootLayerStateForSynchronousInputHandler(
-      ActiveTree().TotalScrollOffset(), ActiveTree().TotalMaxScrollOffset(),
-      ActiveTree().ScrollableSize(), ActiveTree().current_page_scale_factor(),
-      ActiveTree().min_page_scale_factor(),
-      ActiveTree().max_page_scale_factor());
 }
 
 bool ThreadedInputHandler::ScrollAnimationUpdateTarget(
@@ -2033,35 +2049,6 @@ bool ThreadedInputHandler::ScrollAnimationUpdateTarget(
   return animation_updated;
 }
 
-void ThreadedInputHandler::ScrollOffsetAnimationFinished() {
-  TRACE_EVENT0("cc", "ThreadedInputHandler::ScrollOffsetAnimationFinished");
-  // ScrollOffsetAnimationFinished is called in two cases:
-  //  1- smooth scrolling animation is over (IsAnimatingForSnap == false).
-  //  2- snap scroll animation is over (IsAnimatingForSnap == true).
-  //
-  //  Only for case (1) we should check and run snap scroll animation if needed.
-  if (!IsAnimatingForSnap() && SnapAtScrollEnd())
-    return;
-
-  // The end of a scroll offset animation means that the scrolling node is at
-  // the target offset.
-  ScrollNode* scroll_node = CurrentlyScrollingNode();
-  if (scroll_node && scroll_node->snap_container_data.has_value()) {
-    scroll_node->snap_container_data.value().SetTargetSnapAreaElementIds(
-        scroll_animating_snap_target_ids_);
-    updated_snapped_elements_.insert(scroll_node->element_id);
-    SetNeedsCommit();
-  }
-  scroll_animating_snap_target_ids_ = TargetSnapAreaElementIds();
-
-  // Call scrollEnd with the deferred scroll end state when the scroll animation
-  // completes after GSE arrival.
-  if (deferred_scroll_end_) {
-    ScrollEnd(/*should_snap=*/false);
-    return;
-  }
-}
-
 void ThreadedInputHandler::UpdateScrollSourceInfo(
     const ScrollState& scroll_state,
     ui::ScrollInputType type) {
@@ -2074,6 +2061,35 @@ void ThreadedInputHandler::UpdateScrollSourceInfo(
   } else if (type == ui::ScrollInputType::kTouchscreen) {
     has_scrolled_by_touch_ = true;
   }
+}
+
+// Return true if scrollable node for 'ancestor' is the same as 'child' or an
+// ancestor along the scroll tree.
+bool ThreadedInputHandler::IsScrolledBy(LayerImpl* child,
+                                        ScrollNode* ancestor) {
+  DCHECK(ancestor && ancestor->scrollable);
+  if (!child)
+    return false;
+  DCHECK_EQ(child->layer_tree_impl(), &ActiveTree());
+  ScrollTree& scroll_tree = GetScrollTree();
+  for (ScrollNode* scroll_node = scroll_tree.Node(child->scroll_tree_index());
+       scroll_node; scroll_node = scroll_tree.parent(scroll_node)) {
+    if (scroll_node->id == ancestor->id)
+      return true;
+  }
+  return false;
+}
+
+gfx::Vector2dF ThreadedInputHandler::UserScrollableDelta(
+    const ScrollNode& node,
+    const gfx::Vector2dF& delta) const {
+  gfx::Vector2dF adjusted_delta = delta;
+  if (!node.user_scrollable_horizontal)
+    adjusted_delta.set_x(0);
+  if (!node.user_scrollable_vertical)
+    adjusted_delta.set_y(0);
+
+  return adjusted_delta;
 }
 
 }  // namespace cc

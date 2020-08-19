@@ -15,7 +15,10 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.tasks.pseudotab.TabAttributeCache;
 import org.chromium.chrome.browser.tasks.tab_management.TabListFaviconProvider;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
@@ -42,6 +45,9 @@ class SingleTabSwitcherCoordinator implements TabSwitcher {
         mTabListFaviconProvider = new TabListFaviconProvider(activity, false);
         mMediator = new SingleTabSwitcherMediator(
                 propertyModel, activity.getTabModelSelector(), mTabListFaviconProvider);
+        if (CachedFeatureFlags.isEnabled(ChromeFeatureList.INSTANT_START)) {
+            new TabAttributeCache(activity.getTabModelSelector());
+        }
 
         // Most of these interfaces should be unused. They are invalid implementations.
         mTabListDelegate = new TabSwitcher.TabListDelegate() {

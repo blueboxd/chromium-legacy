@@ -1725,6 +1725,23 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const base::UnguessableToken& child_frame_token,
       bad_message::BadMessageReason reason);
 
+  // Whether we should run the pagehide/visibilitychange handlers of the
+  // RenderFrameHost we're navigating away from (|old_frame_host|) during the
+  // commit to a new RenderFrameHost (this RenderFrameHost). Should only return
+  // true when we're doing a same-site navigation and we did a proactive
+  // BrowsingInstance swap but we're reusing the old page's renderer process.
+  // We should run pagehide and visibilitychange handlers of the old page during
+  // the commit of the new main frame in those cases because in other same-site
+  // navigations we will run those handlers before the new page finished
+  // committing. Note that unload handlers will still run after the new page
+  // finished committing. Ideally we would run unload handlers alongside
+  // pagehide and visibilitychange handlers at commit time too, but we'd need to
+  // actually unload/freeze the page in that case which is more complex.
+  // TODO(crbug.com/1110744): Support unload-in-commit.
+  bool ShouldDispatchPagehideAndVisibilitychangeDuringCommit(
+      RenderFrameHostImpl* old_frame_host,
+      const GURL& dest_url);
+
   mojo::PendingRemote<network::mojom::CookieAccessObserver>
   CreateCookieAccessObserver();
 

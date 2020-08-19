@@ -10,9 +10,9 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_types.h"
+#include "chrome/browser/chromeos/login/app_mode/kiosk_launch_controller.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_app_launcher.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
-#include "chrome/browser/chromeos/login/kiosk_launch_controller.h"
 #include "chrome/browser/chromeos/login/screens/gaia_screen.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/ui/webui_accelerator_mapping.h"
@@ -90,7 +90,7 @@ void LoginDisplayHostCommon::FinalizeImmediately() {
 }
 
 KioskLaunchController* LoginDisplayHostCommon::GetKioskLaunchController() {
-  return app_launch_controller_.get();
+  return kiosk_launch_controller_.get();
 }
 
 void LoginDisplayHostCommon::StartUserAdding(
@@ -189,8 +189,9 @@ void LoginDisplayHostCommon::StartKiosk(const KioskAppId& kiosk_app_id,
           ? extensions::FeatureSessionType::AUTOLAUNCHED_KIOSK
           : extensions::FeatureSessionType::KIOSK);
 
-  app_launch_controller_ = std::make_unique<KioskLaunchController>(GetOobeUI());
-  app_launch_controller_->Start(kiosk_app_id, is_auto_launch);
+  kiosk_launch_controller_ =
+      std::make_unique<KioskLaunchController>(GetOobeUI());
+  kiosk_launch_controller_->Start(kiosk_app_id, is_auto_launch);
 }
 
 void LoginDisplayHostCommon::CompleteLogin(const UserContext& user_context) {

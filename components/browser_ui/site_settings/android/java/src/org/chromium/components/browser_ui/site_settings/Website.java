@@ -41,7 +41,6 @@ public final class Website implements Serializable {
 
     private LocalStorageInfo mLocalStorageInfo;
     private final List<StorageInfo> mStorageInfo = new ArrayList<>();
-    private int mStorageInfoCallbacksLeft;
 
     // The collection of chooser-based permissions (e.g. USB device access) granted to this site.
     // Each entry declares its own ContentSettingsType and so depending on how this object was
@@ -265,9 +264,9 @@ public final class Website implements Serializable {
             BrowserContextHandle browserContextHandle, final StoredDataClearedCallback callback) {
         // Wait for callbacks from each mStorageInfo and another callback from
         // mLocalStorageInfo.
-        mStorageInfoCallbacksLeft = mStorageInfo.size() + 1;
+        int[] storageInfoCallbacksLeft = {mStorageInfo.size() + 1};
         StorageInfoClearedCallback clearedCallback = () -> {
-            if (--mStorageInfoCallbacksLeft == 0) callback.onStoredDataCleared();
+            if (--storageInfoCallbacksLeft[0] == 0) callback.onStoredDataCleared();
         };
         if (mLocalStorageInfo != null) {
             mLocalStorageInfo.clear(browserContextHandle, clearedCallback);

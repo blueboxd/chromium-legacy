@@ -205,13 +205,25 @@ GrVkImageInfo CreateGrVkImageInfo(VulkanImage* image) {
       image->device_queue()->GetVulkanPhysicalDevice();
   GrVkYcbcrConversionInfo gr_ycbcr_info = CreateGrVkYcbcrConversionInfo(
       physical_device, image->image_tiling(), image->ycbcr_info());
-  GrVkAlloc alloc(image->device_memory(), /*offset=*/0, image->device_size(),
-                  /*flags=*/0);
+  GrVkAlloc alloc;
+  alloc.fMemory = image->device_memory();
+  alloc.fOffset = 0;
+  alloc.fSize = image->device_size();
+  alloc.fFlags = 0;
+
   bool is_protected = image->flags() & VK_IMAGE_CREATE_PROTECTED_BIT;
-  return GrVkImageInfo(
-      image->image(), alloc, image->image_tiling(), image->image_layout(),
-      image->format(), /*levelCount=*/1, image->queue_family_index(),
-      is_protected ? GrProtected::kYes : GrProtected::kNo, gr_ycbcr_info);
+  GrVkImageInfo image_info;
+  image_info.fImage = image->image();
+  image_info.fAlloc = alloc;
+  image_info.fImageTiling = image->image_tiling();
+  image_info.fImageLayout = image->image_layout();
+  image_info.fFormat = image->format();
+  image_info.fLevelCount = 1;
+  image_info.fCurrentQueueFamily = image->queue_family_index();
+  image_info.fProtected = is_protected ? GrProtected::kYes : GrProtected::kNo;
+  image_info.fYcbcrConversionInfo = gr_ycbcr_info;
+
+  return image_info;
 }
 
 GrVkYcbcrConversionInfo CreateGrVkYcbcrConversionInfo(
@@ -251,15 +263,22 @@ GrVkYcbcrConversionInfo CreateGrVkYcbcrConversionInfo(
           ? VK_FILTER_LINEAR
           : VK_FILTER_NEAREST;
 
-  return GrVkYcbcrConversionInfo(
-      vk_format, ycbcr_info->external_format,
-      static_cast<VkSamplerYcbcrModelConversion>(
-          ycbcr_info->suggested_ycbcr_model),
-      static_cast<VkSamplerYcbcrRange>(ycbcr_info->suggested_ycbcr_range),
+  GrVkYcbcrConversionInfo gr_ycbcr_info;
+  gr_ycbcr_info.fFormat = vk_format;
+  gr_ycbcr_info.fExternalFormat = ycbcr_info->external_format;
+  gr_ycbcr_info.fYcbcrModel = static_cast<VkSamplerYcbcrModelConversion>(
+      ycbcr_info->suggested_ycbcr_model);
+  gr_ycbcr_info.fYcbcrRange =
+      static_cast<VkSamplerYcbcrRange>(ycbcr_info->suggested_ycbcr_range);
+  gr_ycbcr_info.fXChromaOffset =
       static_cast<VkChromaLocation>(ycbcr_info->suggested_xchroma_offset),
+  gr_ycbcr_info.fYChromaOffset =
       static_cast<VkChromaLocation>(ycbcr_info->suggested_ychroma_offset),
-      chroma_filter,
-      /*forceExplicitReconstruction=*/false, format_features);
+  gr_ycbcr_info.fChromaFilter = chroma_filter;
+  gr_ycbcr_info.fForceExplicitReconstruction = false;
+  gr_ycbcr_info.fFormatFeatures = format_features;
+
+  return gr_ycbcr_info;
 }
 
 #endif  // BUILDFLAG(ENABLE_VULKAN)

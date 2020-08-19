@@ -512,12 +512,16 @@ class OobeEndToEndTestSetupMixin : public InProcessBrowserTestMixin {
     std::tie(params_.is_tablet, params_.is_quick_unlock_enabled,
              params_.hide_shelf_controls_in_tablet_mode, params_.arc_state) =
         parameters;
+    // TODO(crbug.com/1101318): disable ChildSpecificSign in feature for now due
+    // to test flakiness
     if (params_.hide_shelf_controls_in_tablet_mode) {
-      feature_list_.InitAndEnableFeature(
-          ash::features::kHideShelfControlsInTabletMode);
+      feature_list_.InitWithFeatures(
+          {ash::features::kHideShelfControlsInTabletMode},
+          {features::kChildSpecificSignin});
     } else {
-      feature_list_.InitAndDisableFeature(
-          ash::features::kHideShelfControlsInTabletMode);
+      feature_list_.InitWithFeatures(
+          {}, {ash::features::kHideShelfControlsInTabletMode,
+               features::kChildSpecificSignin});
     }
   }
   ~OobeEndToEndTestSetupMixin() override = default;
@@ -695,6 +699,10 @@ void OobeInteractiveUITest::PerformStepsBeforeEnrollmentCheck() {
 void OobeInteractiveUITest::PerformSessionSignInSteps(
     const ScopedQuickUnlockPrivateGetAuthTokenFunctionObserver&
         get_auth_token_observer) {
+  if (features::IsChildSpecificSigninEnabled()) {
+    test::WaitForUserCreationScreen();
+    test::TapUserCreationNext();
+  }
   WaitForGaiaSignInScreen(test_setup()->arc_state() != ArcState::kNotAvailable);
   LogInAsRegularUser();
 

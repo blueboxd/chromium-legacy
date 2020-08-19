@@ -4,8 +4,10 @@
 #include "chrome/browser/chromeos/login/screens/user_creation_screen.h"
 
 #include "ash/public/cpp/login_screen_test_api.h"
+#include "chrome/browser/chromeos/login/enrollment/enrollment_screen_view.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "chrome/browser/chromeos/login/test/device_state_mixin.h"
+#include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
@@ -13,6 +15,7 @@
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/user_creation_screen_handler.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "content/public/test/browser_test.h"
@@ -100,6 +103,7 @@ class UserCreationScreenTest : public OobeBaseTest {
   UserCreationScreen::ScreenExitCallback original_callback_;
 
   base::test::ScopedFeatureList feature_list_;
+  FakeGaiaMixin fake_gaia_{&mixin_host_, embedded_test_server()};
 };
 
 // Verify flow for setting up the device for self.
@@ -110,6 +114,7 @@ IN_PROC_BROWSER_TEST_F(UserCreationScreenTest, SignInForSelf) {
                    ->get_wizard_context_for_testing()
                    ->sign_in_as_child);
   EXPECT_EQ(screen_result_.value(), UserCreationScreen::Result::SIGNIN);
+  OobeScreenWaiter(GaiaView::kScreenId).Wait();
 }
 
 // Verify flow for setting up the device for a child with a newly created gaia
@@ -126,6 +131,7 @@ IN_PROC_BROWSER_TEST_F(UserCreationScreenTest, CreateAccountForChild) {
                   ->is_child_gaia_account_new);
   EXPECT_EQ(screen_result_.value(),
             UserCreationScreen::Result::CHILD_ACCOUNT_CREATE);
+  OobeScreenWaiter(GaiaView::kScreenId).Wait();
 }
 
 // Verify flow for setting up the device for a child with an existing gaia
@@ -141,6 +147,7 @@ IN_PROC_BROWSER_TEST_F(UserCreationScreenTest, SignInForChild) {
                    ->get_wizard_context_for_testing()
                    ->is_child_gaia_account_new);
   EXPECT_EQ(screen_result_.value(), UserCreationScreen::Result::CHILD_SIGNIN);
+  OobeScreenWaiter(GaiaView::kScreenId).Wait();
 }
 
 // Verify back button is hidden during the oobe flow (when no existing users).
@@ -163,6 +170,7 @@ IN_PROC_BROWSER_TEST_F(UserCreationScreenTest, EnterpriseEnroll) {
   WaitForScreenExit();
   EXPECT_EQ(screen_result_.value(),
             UserCreationScreen::Result::ENTERPRISE_ENROLL);
+  OobeScreenWaiter(EnrollmentScreenView::kScreenId).Wait();
 }
 
 class UserCreationScreenLoginTest : public UserCreationScreenTest {

@@ -395,11 +395,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
 
   void DispatchPersistedPageshowEvent(base::TimeTicks navigation_start);
 
-  void DispatchPagehideEvent(PageTransitionEventPersistence persistence) {
-    DispatchEvent(
-        *PageTransitionEvent::Create(event_type_names::kPagehide, persistence),
-        document_.Get());
-  }
+  void DispatchPagehideEvent(PageTransitionEventPersistence persistence);
 
   InputMethodController& GetInputMethodController() const {
     return *input_method_controller_;

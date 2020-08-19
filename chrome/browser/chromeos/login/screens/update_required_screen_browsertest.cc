@@ -127,7 +127,7 @@ class UpdateRequiredScreenTest : public OobeBaseTest {
     network_state_test_helper_->manager_test()->SetupDefaultEnvironment();
     // Fake networks have been set up. Connect to WiFi network.
     SetConnected(kWifiServicePath);
-    chromeos::OobeScreenWaiter(chromeos::GaiaView::kScreenId).Wait();
+    chromeos::OobeScreenWaiter(GetFirstSigninScreen()).Wait();
   }
   void TearDownOnMainThread() override {
     network_state_test_helper_.reset();

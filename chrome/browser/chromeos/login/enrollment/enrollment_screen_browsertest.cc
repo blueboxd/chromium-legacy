@@ -19,7 +19,6 @@
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
-#include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/test/chromeos_test_utils.h"
 #include "content/public/test/browser_test.h"
@@ -205,7 +204,7 @@ class OobeCompletedUnownedTest : public OobeBaseTest {
 // Tests that enrollment screen could be triggered after OOBE completed and
 // Chrome restarted (or device rebooted).
 IN_PROC_BROWSER_TEST_F(OobeCompletedUnownedTest, TriggerEnrollment) {
-  OobeScreenWaiter(GaiaView::kScreenId).Wait();
+  OobeScreenWaiter(GetFirstSigninScreen()).Wait();
   LoginDisplayHost::default_host()->StartWizard(
       EnrollmentScreenView::kScreenId);
   OobeScreenWaiter(EnrollmentScreenView::kScreenId).Wait();

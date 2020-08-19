@@ -9,7 +9,6 @@ import './strings.m.js';
 import './signin_shared_css.js';
 
 import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
-import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -21,7 +20,7 @@ Polymer({
 
   _template: html`{__html_template__}`,
 
-  behaviors: [I18nBehavior, WebUIListenerBehavior],
+  behaviors: [WebUIListenerBehavior],
 
   properties: {
     /** @private */
@@ -31,9 +30,6 @@ Polymer({
         return loadTimeData.getString('accountImageUrl');
       },
     },
-
-    /** @private */
-    confirmButtonLabel_: String,
 
     /** @private */
     confirmButtonHidden_: {type: Boolean, value: true},
@@ -76,10 +72,7 @@ Polymer({
   onReauthTypeReceived_(requiresReauth) {
     this.confirmButtonHidden_ = false;
     this.$.confirmButton.focus();
-    this.cancelButtonHidden_ = requiresReauth;
-    this.confirmButtonLabel_ = requiresReauth ?
-        this.i18n('signinReauthNextLabel') :
-        this.i18n('signinReauthConfirmLabel');
+    this.cancelButtonHidden_ = false;
   },
 
   /** @return {!Array<string>} Text of the consent description elements. */

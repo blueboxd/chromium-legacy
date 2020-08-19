@@ -210,7 +210,7 @@ class CONTENT_EXPORT AccessibilityTreeFormatterBase
                                         base::string16* contents,
                                         int depth = 0);
 
-  bool MatchesPropertyFilters(const base::string16& text,
+  bool MatchesPropertyFilters(const std::string& text,
                               bool default_result) const;
   bool MatchesNodeFilters(const base::DictionaryValue& dict) const;
 

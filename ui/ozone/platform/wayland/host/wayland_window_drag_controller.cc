@@ -199,9 +199,20 @@ void WaylandWindowDragController::OnDragLeave() {
   // which would require hacky workarounds in HandleDropAndResetState function
   // to properly detect and handle such cases.
 
-  VLOG(1) << "OnLeave";
+  if (!data_offer_)
+    return;
 
+  VLOG(1) << "OnLeave";
   data_offer_.reset();
+
+  // As Wayland clients are only aware of surface-local coordinates and there is
+  // no implicit grab during DND sessions, a fake motion event with negative
+  // coordinates must be used here to make it possible for higher level UI
+  // components to detect when a window should be detached. E.g: On Chrome,
+  // dragging a tab all the way up to the top edge of the window won't work
+  // without this fake motion event upon wl_data_device::leave events.
+  if (state_ == State::kAttached)
+    pointer_delegate_->OnPointerMotionEvent({-1, -1});
 }
 
 void WaylandWindowDragController::OnDragDrop() {

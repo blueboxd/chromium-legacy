@@ -4082,7 +4082,8 @@ void Document::DispatchUnloadEvents(
       input->EndEditing();
     if (load_event_progress_ < kPageHideInProgress) {
       load_event_progress_ = kPageHideInProgress;
-      if (LocalDOMWindow* window = domWindow()) {
+      LocalDOMWindow* window = domWindow();
+      if (window && !GetPage()->DispatchedPagehideAndStillHidden()) {
         const base::TimeTicks pagehide_event_start = base::TimeTicks::Now();
         window->DispatchEvent(
             *PageTransitionEvent::Create(event_type_names::kPagehide, false),

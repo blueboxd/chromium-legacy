@@ -236,11 +236,6 @@ public class OverlayPanelContent {
             public int getBottomControlsHeight() {
                 return 0;
             }
-
-            @Override
-            public boolean controlsResizeView() {
-                return false;
-            }
         };
     }
 

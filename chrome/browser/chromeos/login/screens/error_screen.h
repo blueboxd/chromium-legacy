@@ -124,7 +124,7 @@ class ErrorScreen : public BaseScreen,
   void OnAuthSuccess(const UserContext& user_context) override;
   void OnOffTheRecordAuthSuccess() override;
   void OnPasswordChangeDetected(const UserContext& user_context) override;
-  void WhiteListCheckFailed(const std::string& email) override;
+  void AllowlistCheckFailed(const std::string& email) override;
   void PolicyLoadFailed() override;
   void SetAuthFlowOffline(bool offline) override;
 

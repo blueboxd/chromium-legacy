@@ -166,7 +166,7 @@ class LoginDisplayHost {
   virtual void LoadSigninWallpaper() = 0;
 
   // Returns true if user is allowed to log in by domain policy.
-  virtual bool IsUserWhitelisted(const AccountId& account_id) = 0;
+  virtual bool IsUserAllowlisted(const AccountId& account_id) = 0;
 
   // ----- Password change flow methods -----
   // Cancels current password changed flow.

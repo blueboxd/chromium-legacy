@@ -544,7 +544,7 @@ public class HomepagePromoTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             waitForView(rootView,
                     allOf(withId(R.id.header_status),
-                            withText(expanded ? R.string.hide : R.string.show)));
+                            withText(expanded ? R.string.hide_content : R.string.show_content)));
         });
     }
 }

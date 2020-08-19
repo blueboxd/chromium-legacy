@@ -44,7 +44,7 @@ constexpr double kCmPerInch = kMMPerInch * 0.1;
 
 struct ColorMap {
   const char* color;
-  ColorModel model;
+  mojom::ColorModel model;
 };
 
 struct DuplexMap {
@@ -53,8 +53,8 @@ struct DuplexMap {
 };
 
 const ColorMap kColorList[]{
-    {CUPS_PRINT_COLOR_MODE_COLOR, COLORMODE_COLOR},
-    {CUPS_PRINT_COLOR_MODE_MONOCHROME, COLORMODE_MONOCHROME},
+    {CUPS_PRINT_COLOR_MODE_COLOR, mojom::ColorModel::kColorModeColor},
+    {CUPS_PRINT_COLOR_MODE_MONOCHROME, mojom::ColorModel::kColorModeMonochrome},
 };
 
 const DuplexMap kDuplexList[]{
@@ -63,14 +63,14 @@ const DuplexMap kDuplexList[]{
     {CUPS_SIDES_TWO_SIDED_LANDSCAPE, mojom::DuplexMode::kShortEdge},
 };
 
-ColorModel ColorModelFromIppColor(base::StringPiece ippColor) {
+mojom::ColorModel ColorModelFromIppColor(base::StringPiece ippColor) {
   for (const ColorMap& color : kColorList) {
     if (ippColor.compare(color.color) == 0) {
       return color.model;
     }
   }
 
-  return UNKNOWN_COLOR_MODEL;
+  return mojom::ColorModel::kUnknownColorModel;
 }
 
 mojom::DuplexMode DuplexModeFromIpp(base::StringPiece ipp_duplex) {
@@ -81,25 +81,26 @@ mojom::DuplexMode DuplexModeFromIpp(base::StringPiece ipp_duplex) {
   return mojom::DuplexMode::kUnknownDuplexMode;
 }
 
-ColorModel DefaultColorModel(const CupsOptionProvider& printer) {
+mojom::ColorModel DefaultColorModel(const CupsOptionProvider& printer) {
   // default color
   ipp_attribute_t* attr = printer.GetDefaultOptionValue(kIppColor);
   if (!attr)
-    return UNKNOWN_COLOR_MODEL;
+    return mojom::ColorModel::kUnknownColorModel;
 
   const char* const value = ippGetString(attr, 0, nullptr);
-  return value ? ColorModelFromIppColor(value) : UNKNOWN_COLOR_MODEL;
+  return value ? ColorModelFromIppColor(value)
+               : mojom::ColorModel::kUnknownColorModel;
 }
 
-std::vector<ColorModel> SupportedColorModels(
+std::vector<mojom::ColorModel> SupportedColorModels(
     const CupsOptionProvider& printer) {
-  std::vector<ColorModel> colors;
+  std::vector<mojom::ColorModel> colors;
 
   std::vector<base::StringPiece> color_modes =
       printer.GetSupportedOptionValueStrings(kIppColor);
   for (base::StringPiece color : color_modes) {
-    ColorModel color_model = ColorModelFromIppColor(color);
-    if (color_model != UNKNOWN_COLOR_MODEL) {
+    mojom::ColorModel color_model = ColorModelFromIppColor(color);
+    if (color_model != mojom::ColorModel::kUnknownColorModel) {
       colors.push_back(color_model);
     }
   }
@@ -109,18 +110,18 @@ std::vector<ColorModel> SupportedColorModels(
 
 void ExtractColor(const CupsOptionProvider& printer,
                   PrinterSemanticCapsAndDefaults* printer_info) {
-  printer_info->bw_model = UNKNOWN_COLOR_MODEL;
-  printer_info->color_model = UNKNOWN_COLOR_MODEL;
+  printer_info->bw_model = mojom::ColorModel::kUnknownColorModel;
+  printer_info->color_model = mojom::ColorModel::kUnknownColorModel;
 
   // color and b&w
-  std::vector<ColorModel> color_models = SupportedColorModels(printer);
-  for (ColorModel color : color_models) {
+  std::vector<mojom::ColorModel> color_models = SupportedColorModels(printer);
+  for (mojom::ColorModel color : color_models) {
     switch (color) {
-      case COLORMODE_COLOR:
-        printer_info->color_model = COLORMODE_COLOR;
+      case mojom::ColorModel::kColorModeColor:
+        printer_info->color_model = mojom::ColorModel::kColorModeColor;
         break;
-      case COLORMODE_MONOCHROME:
-        printer_info->bw_model = COLORMODE_MONOCHROME;
+      case mojom::ColorModel::kColorModeMonochrome:
+        printer_info->bw_model = mojom::ColorModel::kColorModeMonochrome;
         break;
       default:
         // value not needed
@@ -130,11 +131,12 @@ void ExtractColor(const CupsOptionProvider& printer,
 
   // changeable
   printer_info->color_changeable =
-      (printer_info->color_model != UNKNOWN_COLOR_MODEL &&
-       printer_info->bw_model != UNKNOWN_COLOR_MODEL);
+      (printer_info->color_model != mojom::ColorModel::kUnknownColorModel &&
+       printer_info->bw_model != mojom::ColorModel::kUnknownColorModel);
 
   // default color
-  printer_info->color_default = DefaultColorModel(printer) == COLORMODE_COLOR;
+  printer_info->color_default =
+      DefaultColorModel(printer) == mojom::ColorModel::kColorModeColor;
 }
 
 void ExtractDuplexModes(const CupsOptionProvider& printer,

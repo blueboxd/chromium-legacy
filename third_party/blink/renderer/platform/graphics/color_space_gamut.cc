@@ -12,7 +12,8 @@ namespace blink {
 namespace color_space_utilities {
 
 ColorSpaceGamut GetColorSpaceGamut(const ScreenInfo& screen_info) {
-  const gfx::ColorSpace& color_space = screen_info.color_space;
+  const gfx::ColorSpace& color_space =
+      screen_info.display_color_spaces.GetScreenInfoColorSpace();
   if (!color_space.IsValid())
     return ColorSpaceGamut::kUnknown;
 

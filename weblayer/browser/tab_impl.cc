@@ -942,7 +942,7 @@ int TabImpl::GetBottomControlsHeight() {
 }
 
 bool TabImpl::DoBrowserControlsShrinkRendererSize(
-    const content::WebContents* web_contents) {
+    content::WebContents* web_contents) {
 #if defined(OS_ANDROID)
   TRACE_EVENT0("weblayer", "Java_TabImpl_doBrowserControlsShrinkRendererSize");
   return Java_TabImpl_doBrowserControlsShrinkRendererSize(AttachCurrentThread(),

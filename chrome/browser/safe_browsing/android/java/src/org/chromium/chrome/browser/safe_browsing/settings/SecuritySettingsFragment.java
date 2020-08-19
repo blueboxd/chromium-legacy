@@ -11,9 +11,13 @@ import androidx.annotation.VisibleForTesting;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 
+import org.chromium.base.IntentUtils;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.safe_browsing.SafeBrowsingBridge;
 import org.chromium.chrome.browser.safe_browsing.SafeBrowsingState;
+import org.chromium.chrome.browser.safe_browsing.metrics.SettingsAccessPoint;
+import org.chromium.chrome.browser.safe_browsing.metrics.UserAction;
 import org.chromium.chrome.browser.settings.ChromeManagedPreferenceDelegate;
 import org.chromium.chrome.browser.settings.FragmentSettingsLauncher;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
@@ -33,10 +37,12 @@ public class SecuritySettingsFragment extends PreferenceFragmentCompat
     static final String PREF_TEXT_MANAGED = "text_managed";
     @VisibleForTesting
     static final String PREF_SAFE_BROWSING = "safe_browsing_radio_button_group";
+    public static final String ACCESS_POINT = "SecuritySettingsFragment.AccessPoint";
 
     // An instance of SettingsLauncher that is used to launch Safe Browsing subsections.
     private SettingsLauncher mSettingsLauncher;
     private RadioButtonGroupSafeBrowsingPreference mSafeBrowsingPreference;
+    private @SettingsAccessPoint int mAccessPoint;
 
     /**
      * @return A summary that describes the current Safe Browsing state.
@@ -59,10 +65,23 @@ public class SecuritySettingsFragment extends PreferenceFragmentCompat
         return context.getString(R.string.prefs_safe_browsing_summary, safeBrowsingStateString);
     }
 
+    /**
+     * Creates an argument bundle to open the Safe Browsing settings page.
+     * @param accessPoint The access point for opening the Safe Browsing settings page.
+     */
+    public static Bundle createArguments(@SettingsAccessPoint int accessPoint) {
+        Bundle result = new Bundle();
+        result.putInt(ACCESS_POINT, accessPoint);
+        return result;
+    }
+
     @Override
     public void onCreatePreferences(Bundle bundle, String s) {
         SettingsUtils.addPreferencesFromResource(this, R.xml.security_preferences);
         getActivity().setTitle(R.string.prefs_safe_browsing_title);
+
+        mAccessPoint =
+                IntentUtils.safeGetInt(getArguments(), ACCESS_POINT, SettingsAccessPoint.DEFAULT);
 
         ManagedPreferenceDelegate managedPreferenceDelegate = createManagedPreferenceDelegate();
 
@@ -78,10 +97,13 @@ public class SecuritySettingsFragment extends PreferenceFragmentCompat
         textManaged.setManagedPreferenceDelegate(managedPreferenceDelegate);
         textManaged.setVisible(managedPreferenceDelegate.isPreferenceClickDisabledByPolicy(
                 mSafeBrowsingPreference));
+
+        recordUserActionHistogram(UserAction.SHOWED);
     }
 
     @Override
     public void onSafeBrowsingModeDetailsRequested(@SafeBrowsingState int safeBrowsingState) {
+        recordUserActionHistogramForStateDetailsClicked(safeBrowsingState);
         if (safeBrowsingState == SafeBrowsingState.ENHANCED_PROTECTION) {
             mSettingsLauncher.launchSettingsActivity(
                     getActivity(), EnhancedProtectionSettingsFragment.class);
@@ -121,6 +143,7 @@ public class SecuritySettingsFragment extends PreferenceFragmentCompat
         if (newState == currentState) {
             return true;
         }
+        recordUserActionHistogramForNewStateClicked(newState);
         // If the user selects no protection from another Safe Browsing state, show a confirmation
         // dialog to double check if they want to select no protection.
         if (newState == SafeBrowsingState.NO_SAFE_BROWSING) {
@@ -130,6 +153,7 @@ public class SecuritySettingsFragment extends PreferenceFragmentCompat
             NoProtectionConfirmationDialog
                     .create(getContext(),
                             (didConfirm) -> {
+                                recordUserActionHistogramForNoProtectionConfirmation(didConfirm);
                                 if (didConfirm) {
                                     // The user has confirmed to select no protection, set Safe
                                     // Browsing pref to no protection, and change the radio button /
@@ -146,5 +170,61 @@ public class SecuritySettingsFragment extends PreferenceFragmentCompat
             SafeBrowsingBridge.setSafeBrowsingState(newState);
         }
         return true;
+    }
+
+    private void recordUserActionHistogramForNewStateClicked(
+            @SafeBrowsingState int safeBrowsingState) {
+        switch (safeBrowsingState) {
+            case (SafeBrowsingState.ENHANCED_PROTECTION):
+                recordUserActionHistogram(UserAction.ENHANCED_PROTECTION_CLICKED);
+                break;
+            case (SafeBrowsingState.STANDARD_PROTECTION):
+                recordUserActionHistogram(UserAction.STANDARD_PROTECTION_CLICKED);
+                break;
+            case (SafeBrowsingState.NO_SAFE_BROWSING):
+                recordUserActionHistogram(UserAction.DISABLE_SAFE_BROWSING_CLICKED);
+                break;
+            default:
+                assert false : "Should not be reached.";
+        }
+    }
+
+    private void recordUserActionHistogramForStateDetailsClicked(
+            @SafeBrowsingState int safeBrowsingState) {
+        switch (safeBrowsingState) {
+            case (SafeBrowsingState.ENHANCED_PROTECTION):
+                recordUserActionHistogram(UserAction.ENHANCED_PROTECTION_EXPAND_ARROW_CLICKED);
+                break;
+            case (SafeBrowsingState.STANDARD_PROTECTION):
+                recordUserActionHistogram(UserAction.STANDARD_PROTECTION_EXPAND_ARROW_CLICKED);
+                break;
+            default:
+                assert false : "Should not be reached.";
+        }
+    }
+
+    private void recordUserActionHistogramForNoProtectionConfirmation(boolean didConfirm) {
+        if (didConfirm) {
+            recordUserActionHistogram(UserAction.DISABLE_SAFE_BROWSING_DIALOG_CONFIRMED);
+        } else {
+            recordUserActionHistogram(UserAction.DISABLE_SAFE_BROWSING_DIALOG_DENIED);
+        }
+    }
+
+    private void recordUserActionHistogram(@UserAction int userAction) {
+        String metricsSuffix;
+        // The metricsSuffix string shouldn't be changed. When adding a new access point, please
+        // also update the "SafeBrowsing.Settings.AccessPoint" histogram suffix in the
+        // histograms.xml file.
+        if (mAccessPoint == SettingsAccessPoint.PARENT_SETTINGS) {
+            metricsSuffix = "ParentSettings";
+        } else if (mAccessPoint == SettingsAccessPoint.SAFETY_CHECK) {
+            metricsSuffix = "SafetyCheck";
+        } else {
+            metricsSuffix = "Default";
+        }
+        RecordHistogram.recordEnumeratedHistogram(
+                "SafeBrowsing.Settings.UserAction." + metricsSuffix, userAction,
+                UserAction.MAX_VALUE + 1);
     }
 }

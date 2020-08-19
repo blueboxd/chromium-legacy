@@ -4998,7 +4998,6 @@ crbug.com/1050754 external/wpt/worklets/layout-worklet-referrer.https.html [ Fai
 crbug.com/1050754 external/wpt/worklets/layout-worklet-service-worker-interception.https.html [ Failure ]
 crbug.com/1050754 external/wpt/worklets/paint-worklet-credentials.https.html [ Failure ]
 crbug.com/1050754 external/wpt/worklets/paint-worklet-csp.https.html [ Timeout ]
-crbug.com/1050754 external/wpt/x-frame-options/multiple.sub.html [ Timeout ]
 crbug.com/1050754 external/wpt/xhr/abort-after-send.any.html [ Failure ]
 crbug.com/1050754 external/wpt/xhr/abort-after-send.any.worker.html [ Failure ]
 crbug.com/1050754 external/wpt/xhr/abort-after-timeout.any.html [ Failure ]

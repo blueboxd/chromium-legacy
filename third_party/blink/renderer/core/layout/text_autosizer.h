@@ -33,7 +33,6 @@
 
 #include <unicode/uchar.h>
 #include <memory>
-#include "base/macros.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
@@ -73,6 +72,8 @@ inline bool operator!=(const mojom::blink::TextAutosizerPageInfo& lhs,
 class CORE_EXPORT TextAutosizer final : public GarbageCollected<TextAutosizer> {
  public:
   explicit TextAutosizer(const Document*);
+  TextAutosizer(const TextAutosizer&) = delete;
+  TextAutosizer& operator=(const TextAutosizer&) = delete;
   ~TextAutosizer();
 
   // computed_size should include zoom.
@@ -383,8 +384,6 @@ class CORE_EXPORT TextAutosizer final : public GarbageCollected<TextAutosizer> {
   // Inflate reports a use counter if we're autosizing a cross site iframe.
   // This flag makes sure we only check it once per layout pass.
   bool did_check_cross_site_use_count_;
-
-  DISALLOW_COPY_AND_ASSIGN(TextAutosizer);
 };
 
 }  // namespace blink

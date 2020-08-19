@@ -6,7 +6,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_ANALYZER_H_
 
 #include <memory>
-#include "base/macros.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
@@ -74,6 +73,8 @@ class LayoutAnalyzer {
   };
 
   LayoutAnalyzer() = default;
+  LayoutAnalyzer(const LayoutAnalyzer&) = delete;
+  LayoutAnalyzer& operator=(const LayoutAnalyzer&) = delete;
 
   void Reset();
   void Push(const LayoutObject&);
@@ -90,7 +91,6 @@ class LayoutAnalyzer {
 
   unsigned depth_;
   unsigned counters_[kNumCounters];
-  DISALLOW_COPY_AND_ASSIGN(LayoutAnalyzer);
 };
 
 }  // namespace blink

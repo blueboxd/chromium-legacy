@@ -169,7 +169,7 @@ PrintingContext::Result PrintingContextWin::UpdatePrinterSettings(
   // See MSDN documentation regarding DocumentProperties.
   std::unique_ptr<DEVMODE, base::FreeDeleter> scoped_dev_mode =
       CreateDevModeWithColor(printer.Get(), settings_->device_name(),
-                             settings_->color() != GRAY);
+                             settings_->color() != mojom::ColorModel::kGray);
   if (!scoped_dev_mode)
     return OnError();
 
@@ -243,8 +243,9 @@ PrintingContext::Result PrintingContextWin::UpdatePrinterSettings(
   // Since CreateDevMode() doesn't honor color settings through the GDI call
   // to DocumentProperties(), ensure the requested values persist here.
   scoped_dev_mode->dmFields |= DM_COLOR;
-  scoped_dev_mode->dmColor =
-      settings_->color() != GRAY ? DMCOLOR_COLOR : DMCOLOR_MONOCHROME;
+  scoped_dev_mode->dmColor = settings_->color() != mojom::ColorModel::kGray
+                                 ? DMCOLOR_COLOR
+                                 : DMCOLOR_MONOCHROME;
 
   return InitializeSettings(settings_->device_name(), scoped_dev_mode.get());
 }

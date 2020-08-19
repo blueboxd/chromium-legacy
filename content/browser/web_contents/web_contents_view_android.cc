@@ -596,4 +596,11 @@ void WebContentsViewAndroid::OnBrowserControlsHeightChanged() {
                                       base::nullopt);
 }
 
+void WebContentsViewAndroid::OnControlsResizeViewChanged() {
+  auto* rwhv = GetRenderWidgetHostViewAndroid();
+  if (rwhv)
+    rwhv->SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),
+                                      base::nullopt);
+}
+
 } // namespace content

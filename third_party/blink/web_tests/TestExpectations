@@ -291,6 +291,10 @@ crbug.com/1007134 external/wpt/intersection-observer/v2/delay-test.html [ Pass F
 crbug.com/1004547 external/wpt/intersection-observer/cross-origin-iframe.sub.html [ Pass Failure ]
 crbug.com/1007229 external/wpt/intersection-observer/same-origin-grand-child-iframe.sub.html [ Pass Failure ]
 
+# Not supported yet
+crbug.com/1045668 external/wpt/css/css-sizing/aspect-ratio/flex-aspect-ratio-013.tentative.html [ Failure ]
+crbug.com/1045668 external/wpt/css/css-sizing/aspect-ratio/flex-aspect-ratio-014.tentative.html [ Failure ]
+
 crbug.com/936084 external/wpt/css/css-sizing/max-content-input-001.html [ Failure ]
 
 # Incorrect blending with foreignObject and svg descendants.
@@ -3090,7 +3094,6 @@ crbug.com/626703 external/wpt/referrer-policy/css-integration/svg/processing-ins
 
 crbug.com/367760 external/wpt/svg/pservers/reftests/meshgradient-complex-001.svg [ Failure ]
 crbug.com/367760 external/wpt/svg/pservers/reftests/meshgradient-bicubic-001.svg [ Failure ]
-crbug.com/626703 external/wpt/x-frame-options/multiple.sub.html [ Timeout ]
 crbug.com/367760 external/wpt/svg/pservers/reftests/meshgradient-basic-005.svg [ Failure ]
 crbug.com/367760 external/wpt/svg/pservers/reftests/meshgradient-basic-002.svg [ Failure ]
 crbug.com/367760 external/wpt/svg/pservers/reftests/meshgradient-basic-003.svg [ Failure ]
@@ -6697,3 +6700,6 @@ crbug.com/1116681 [ Mac ] fast/frames/iframe-scaling-with-scroll.html [ Pass Fai
 
 # Sheriff 2020-08-17
 crbug.com/1069546 [ Mac ] compositing/layer-creation/overflow-scroll-overlap.html [ Pass Failure ]
+
+# Unexpected demuxer success after M86 FFmpeg roll.
+crbug.com/1117613 media/video-error-networkState.html [ Failure ]

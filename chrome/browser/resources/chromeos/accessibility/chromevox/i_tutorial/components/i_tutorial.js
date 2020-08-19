@@ -65,6 +65,8 @@ Polymer({
 
     activeScreen: {type: String},
 
+    interactiveMode: {type: Boolean, value: false},
+
     // Labels and text content.
 
     chooseYourExperience: {
@@ -130,7 +132,7 @@ Polymer({
         {
           content:
               [`The Control key can be used at any time to silence any current
-            speech; however, it does not prevent any new speech from being
+            speech; please note, it does not prevent any new speech from being
             announced. To continue to the next lesson, find and press
             the left Shift key, which is directly above the Control key.`],
           medium: InteractionMedium.KEYBOARD,
@@ -195,11 +197,75 @@ Polymer({
         },
 
         {
+          content: [`In addition to ChromeVox navigation, you can also
+            use built-in keyboard commands to navigate the screen. ChromeVox
+            will respect these commands and they work even when ChromeVox is
+            off. The first example we have is Tab. Pressing Tab will move
+            keyboard focus, which ChromeVox will follow, to the next focusable
+            element. Try pressing the Tab key, which is located directly above
+            the Search key.`],
+          medium: InteractionMedium.KEYBOARD,
+          curriculums: [Curriculum.OOBE],
+          actions: [{
+            type: 'key_sequence',
+            value: {keys: {keyCode: [9 /* Tab */]}},
+            afterActionMsg: 'Great, you found the tab key!'
+          }],
+          autoInteractive: true,
+        },
+
+        {
+          content: [
+            `You can use Tab + Shift to move to the previous focusable element.
+            Try pressing the two together to move to the next lesson.`
+          ],
+          medium: InteractionMedium.KEYBOARD,
+          curriculums: [Curriculum.OOBE],
+          actions: [{
+            type: 'key_sequence',
+            value: {keys: {keyCode: [9 /* Tab */], shiftKey: [true]}},
+          }],
+          autoInteractive: true,
+        },
+
+        {
+          content: [`Similar to using Search + Space, you can also use Enter to
+            activate elements. For example, Enter can be used to submit
+            text in a form field. Try pressing Enter now to move to the next
+            lesson.`],
+          medium: InteractionMedium.KEYBOARD,
+          curriculums: [Curriculum.OOBE],
+          actions: [
+            {type: 'key_sequence', value: {keys: {keyCode: [13 /* Enter */]}}}
+          ],
+          autoInteractive: true,
+        },
+
+        {
+          content: [`Lastly, you will frequently encounter elements which
+            require you to select an item out of a list of choices. You can use
+            the up and down arrow keys to cycle through items. When you've found
+            the item you want to choose, you can simply stop pressing the arrow
+            keys. If you wish to practice this skill, find the Practice Area
+            button and press Enter or Search + Space to activate it. Otherwise,
+            find and press the Next Lesson button.`],
+          medium: InteractionMedium.KEYBOARD,
+          curriculums: [Curriculum.OOBE],
+          practiceTitle: 'Practice Using Drop-Down Lists',
+          practiceInstructions:
+              `Try setting your favorite season from the list below.`,
+          practiceFile: 'selects',
+          practiceState: {},
+          events: [],
+          hints: []
+        },
+
+        {
           title: 'Basic orientation complete!',
           content: [
             `Well done! You have learned the basics of ChromeVox. You can
                 replay the basic orientation or exit this tutorial by
-                finding and clicking on a button below.`,
+                finding and activating the respective button below.`,
             `After you setup your device, you can come back to this tutorial
                 and view more lessons by pressing Search + O, then T.`,
           ],
@@ -451,6 +517,8 @@ Polymer({
       return;
     }
 
+    this.interactiveMode = false;
+
     this.activeLessonIndex = index;
 
     // Lessons observe activeLessonNum. When updated, lessons automatically
@@ -638,6 +706,7 @@ Polymer({
    * @private
    */
   startInteractiveMode(actions) {
+    this.interactiveMode = true;
     this.dispatchEvent(new CustomEvent(
         'startinteractivemode', {composed: true, detail: {actions}}));
   },
@@ -656,6 +725,19 @@ Polymer({
     const key = evt.key;
     if (key === 'Escape') {
       this.exit();
+      evt.preventDefault();
+      evt.stopPropagation();
+      return;
+    }
+
+    if (window.BackgroundKeyboardHandler &&
+        window.BackgroundKeyboardHandler.onKeyDown) {
+      window.BackgroundKeyboardHandler.onKeyDown(evt);
+    }
+
+    if (key === 'Tab' && this.interactiveMode) {
+      // Prevent Tab from being used in interactive mode. This ensures the user
+      // can only navigate if they press the expected sequence of keys.
       evt.preventDefault();
       evt.stopPropagation();
     }

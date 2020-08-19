@@ -1427,9 +1427,9 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, PrefetchIsNotImpacted) {
 
 // This test covers a scenario where foo.com document HTML-Imports a bar.com
 // document.  Because of historical reasons, bar.com fetches use foo.com's
-// URLLoaderFactory.  This means that |request_initiator_site_lock| enforcement
-// can incorrectly classify such fetches as malicious (kIncorrectLock).
-// This test ensures that UMAs properly detect such mishaps.
+// URLLoaderFactory.  This means that |request_initiator_origin_lock|
+// enforcement can incorrectly classify such fetches as malicious
+// (kIncorrectLock). This test ensures that UMAs properly detect such mishaps.
 //
 // TODO(lukasza, yoichio): https://crbug.com/766694: Remove this test once HTML
 // Imports are removed from the codebase.
@@ -1455,7 +1455,7 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
   // perform a fetch of nosniff.json same-origin (bar.com) via <script> element.
   // CORB should normally allow such fetch (request_initiator == bar.com ==
   // origin_of_fetch_target), but here the fetch will be blocked, because
-  // request_initiator_site_lock (a.com) will differ from request_initiator.
+  // request_initiator_origin_lock (a.com) will differ from request_initiator.
   // Such mishap is okay, because CORB only blocks HTML/XML/JSON and such
   // content type wouldn't have worked in <script> (or other non-XHR/fetch
   // context) anyway.
@@ -1474,7 +1474,7 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
     ExecuteScriptAsync(shell()->web_contents(), script);
     interceptor.WaitForRequestCompletion();
 
-    // NetworkService enforices |request_initiator_site_lock| for CORB,
+    // NetworkService enforces |request_initiator_origin_lock| for CORB,
     // which means that legitimate fetches from HTML Imported scripts may get
     // incorrectly blocked.
     interceptor.Verify(CorbExpectations::kShouldBeBlockedWithoutSniffing,
@@ -1491,8 +1491,8 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
 //    - CORB sees that the request was made from bar.com and blocks it.
 //
 // The test helps show that the bug above means that in XHR/fetch scenarios
-// request_initiator is accidentally compatible with request_initiator_site_lock
-// and therefore the lock can be safely enforced.
+// request_initiator is accidentally compatible with
+// request_initiator_origin_lock and therefore the lock can be safely enforced.
 //
 // There are 2 almost identical tests here:
 // - HtmlImports_CompatibleLock1
@@ -1558,8 +1558,8 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest,
 //    - CORB sees that the request was made from bar.com and blocks it.
 //
 // The test helps show that the bug above means that in XHR/fetch scenarios
-// request_initiator is accidentally compatible with request_initiator_site_lock
-// and therefore the lock can be safely enforced.
+// request_initiator is accidentally compatible with
+// request_initiator_origin_lock and therefore the lock can be safely enforced.
 //
 // There are 2 almost identical tests here:
 // - HtmlImports_CompatibleLock1

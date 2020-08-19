@@ -42,8 +42,26 @@ class CONTENT_EXPORT ConversionStorageSql : public ConversionStorage {
   }
 
  private:
+  enum class DbStatus {
+    // The database has never been created, i.e. there is no database file at
+    // all.
+    kDeferringCreation,
+    // The database exists but is not open yet.
+    kDeferringOpen,
+    // The database initialization failed, or the db suffered from an
+    // unrecoverable error.
+    kClosed,
+    kOpen,
+  };
+
+  enum class DbCreationPolicy {
+    // Create the db if it does not exist.
+    kCreateIfAbsent,
+    // Do not create the db if it does not exist.
+    kIgnoreIfAbsent,
+  };
+
   // ConversionStorage
-  bool Initialize() override;
   void StoreImpression(const StorableImpression& impression) override;
   int MaybeCreateAndStoreConversionReports(
       const StorableConversion& conversion) override;
@@ -64,6 +82,10 @@ class CONTENT_EXPORT ConversionStorageSql : public ConversionStorage {
   bool HasCapacityForStoringImpression(const std::string& serialized_origin);
   bool HasCapacityForStoringConversion(const std::string& serialized_origin);
 
+  // Initializes the database if necessary, and returns whether the database is
+  // open. |should_create| indicates whether the database should be created if
+  // it is not already.
+  bool LazyInit(DbCreationPolicy creation_policy);
   bool InitializeSchema();
 
   void DatabaseErrorCallback(int extended_error, sql::Statement* stmt);
@@ -75,9 +97,10 @@ class CONTENT_EXPORT ConversionStorageSql : public ConversionStorage {
 
   const base::FilePath path_to_database_;
 
-  // Whether the db is open and should be accessed. False if database
-  // initialization failed, or if the db suffered from an unrecoverable error.
-  bool db_is_open_ = false;
+  // Current status of the database initialization. Tracks what stage |this| is
+  // at for lazy initialization, and used as a signal for if the database is
+  // closed.
+  DbStatus db_init_status_;
 
   // May be null if the database:
   //  - could not be opened

@@ -527,18 +527,18 @@ void ExistingUserController::UpdateLoginDisplay(
     // KioskAppManager, ArcKioskAppManager and WebKioskAppManager.
     if (user->IsKioskType())
       continue;
-    // TODO(xiyuan): Clean user profile whose email is not in whitelist.
+    // TODO(xiyuan): Clean user profile whose email is not in allowlist.
     const bool meets_supervised_requirements =
         user->GetType() != user_manager::USER_TYPE_SUPERVISED ||
         user_manager->AreSupervisedUsersAllowed();
-    const bool meets_whitelist_requirements =
+    const bool meets_allowlist_requirements =
         !user->HasGaiaAccount() || user_manager->IsGaiaUserAllowed(*user);
 
     // Public session accounts are always shown on login screen.
     const bool meets_show_users_requirements =
         show_users_on_signin ||
         user->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT;
-    if (meets_supervised_requirements && meets_whitelist_requirements &&
+    if (meets_supervised_requirements && meets_allowlist_requirements &&
         meets_show_users_requirements) {
       filtered_users.push_back(user);
     }
@@ -849,12 +849,12 @@ void ExistingUserController::SetDisplayAndGivenName(
   given_name_ = base::UTF8ToUTF16(given_name);
 }
 
-bool ExistingUserController::IsUserWhitelisted(const AccountId& account_id) {
+bool ExistingUserController::IsUserAllowlisted(const AccountId& account_id) {
   bool wildcard_match = false;
   if (login_performer_.get())
-    return login_performer_->IsUserWhitelisted(account_id, &wildcard_match);
+    return login_performer_->IsUserAllowlisted(account_id, &wildcard_match);
 
-  return cros_settings_->IsUserWhitelisted(account_id.GetUserEmail(),
+  return cros_settings_->IsUserAllowlisted(account_id.GetUserEmail(),
                                            &wildcard_match);
 }
 
@@ -1350,7 +1350,7 @@ void ExistingUserController::ForceOnlineLoginForAccountId(
   GetLoginDisplay()->ShowSigninUI(account_id.GetUserEmail());
 }
 
-void ExistingUserController::WhiteListCheckFailed(const std::string& email) {
+void ExistingUserController::AllowlistCheckFailed(const std::string& email) {
   PerformLoginFinishedActions(true /* start auto login timer */);
 
   GetLoginDisplay()->ShowWhitelistCheckFailedError();

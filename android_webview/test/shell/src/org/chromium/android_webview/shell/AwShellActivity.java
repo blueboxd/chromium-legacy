@@ -71,12 +71,10 @@ public class AwShellActivity extends Activity {
 
         AwBrowserProcess.loadLibrary(null);
 
-        // This flag is deprecated. Print a hint instead.
         if (CommandLine.getInstance().hasSwitch(AwShellSwitches.ENABLE_ATRACE)) {
-            Log.e(TAG, "To trace the test shell, run \"atrace webview\"");
+            Log.e(TAG, "Enabling Android trace.");
+            TraceEvent.setATraceEnabled(true);
         }
-        TraceEvent.maybeEnableEarlyTracing(
-                TraceEvent.ATRACE_TAG_WEBVIEW, /*readCommandLine=*/false);
 
         setContentView(R.layout.testshell_activity);
 

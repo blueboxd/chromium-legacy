@@ -28,9 +28,9 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/marketing_opt_in_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/user_creation_screen_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -191,7 +191,7 @@ class SyncConsentTest : public OobeBaseTest {
 
   void LoginToSyncConsentScreen() {
     login_manager_mixin_.LoginAsNewRegularUser();
-    OobeScreenExitWaiter(UserCreationView::kScreenId).Wait();
+    OobeScreenExitWaiter(GaiaView::kScreenId).Wait();
     // No need to explicitly show the screen as it is the first one after login.
   }
 
@@ -653,7 +653,6 @@ class SyncConsentActiveDirectoryTest : public OobeBaseTest {
 
 IN_PROC_BROWSER_TEST_F(SyncConsentActiveDirectoryTest, LoginDoesNotStartSync) {
   // Sign in Active Directory user.
-  ad_login_.NavigateToGaiaScreen();
   ad_login_.TestLoginVisible();
   ad_login_.SubmitActiveDirectoryCredentials(
       "test-user@locally-managed.localhost", "password");

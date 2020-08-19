@@ -100,7 +100,8 @@ public class SectionHeaderView extends LinearLayout implements View.OnClickListe
 
         if (mHeader.isExpandable()) {
             if (!mHasMenu) {
-                mStatusView.setText(mHeader.isExpanded() ? R.string.hide : R.string.show);
+                mStatusView.setText(
+                        mHeader.isExpanded() ? R.string.hide_content : R.string.show_content);
             }
             setBackgroundResource(
                     mHeader.isExpanded() ? 0 : R.drawable.hairline_border_card_background);

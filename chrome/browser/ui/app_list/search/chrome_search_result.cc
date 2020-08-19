@@ -84,6 +84,11 @@ void ChromeSearchResult::SetResultType(ResultType result_type) {
   SetSearchResultMetadata();
 }
 
+void ChromeSearchResult::SetMetricsType(MetricsType metrics_type) {
+  metadata_->metrics_type = metrics_type;
+  SetSearchResultMetadata();
+}
+
 void ChromeSearchResult::SetDisplayIndex(DisplayIndex display_index) {
   metadata_->display_index = display_index;
   SetSearchResultMetadata();

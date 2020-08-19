@@ -61,7 +61,6 @@
 #include "chrome/browser/ui/login/login_handler_test_utils.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/saml_challenge_key_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/user_creation_screen_handler.h"
 #include "chrome/browser/ui/webui/signin/signin_utils.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -650,7 +649,7 @@ class SamlTest : public OobeBaseTest {
   }
 
   virtual void StartSamlAndWaitForIdpPageLoad(const std::string& gaia_email) {
-    OobeScreenWaiter(UserCreationView::kScreenId).Wait();
+    OobeScreenWaiter(GaiaView::kScreenId).Wait();
 
     content::DOMMessageQueue message_queue;  // Start observe before SAML.
     SetupAuthFlowChangeListener();

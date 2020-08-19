@@ -106,6 +106,7 @@
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/explore_sites/explore_sites_service_factory.h"
 #include "chrome/browser/android/search_permissions/search_permissions_service.h"
+#include "chrome/browser/android/thin_webview/chrome_thin_webview_initializer.h"
 #include "chrome/browser/media/android/cdm/media_drm_origin_id_manager_factory.h"
 #else
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
@@ -378,6 +379,9 @@ void ChromeBrowserMainExtraPartsProfiles::
   TemplateURLServiceFactory::GetInstance();
 #if !defined(OS_ANDROID)
   ThemeServiceFactory::GetInstance();
+#endif
+#if defined(OS_ANDROID)
+  thin_webview::android::ChromeThinWebViewInitializer::Initialize();
 #endif
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   ToolbarActionsModelFactory::GetInstance();

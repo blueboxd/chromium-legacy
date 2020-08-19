@@ -104,8 +104,8 @@ struct PRINTING_EXPORT PrinterSemanticCapsAndDefaults {
 
   bool color_changeable = false;
   bool color_default = false;
-  ColorModel color_model = UNKNOWN_COLOR_MODEL;
-  ColorModel bw_model = UNKNOWN_COLOR_MODEL;
+  mojom::ColorModel color_model = mojom::ColorModel::kUnknownColorModel;
+  mojom::ColorModel bw_model = mojom::ColorModel::kUnknownColorModel;
 
   struct Paper {
     std::string display_name;

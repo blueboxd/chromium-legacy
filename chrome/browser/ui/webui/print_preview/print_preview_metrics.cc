@@ -11,6 +11,7 @@
 #include "base/optional.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "printing/mojom/print.mojom.h"
 #include "printing/print_job_constants.h"
 #include "printing/print_settings.h"
 
@@ -103,7 +104,9 @@ void ReportPrintSettingsStats(const base::Value& print_settings,
 
   base::Optional<int> color_mode_opt = print_settings.FindIntKey(kSettingColor);
   if (color_mode_opt.has_value()) {
-    bool unknown_color_model = color_mode_opt.value() == UNKNOWN_COLOR_MODEL;
+    bool unknown_color_model =
+        color_mode_opt.value() ==
+        static_cast<int>(mojom::ColorModel::kUnknownColorModel);
     if (!unknown_color_model) {
       base::Optional<bool> is_color =
           IsColorModelSelected(color_mode_opt.value());

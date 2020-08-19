@@ -18,6 +18,8 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.PostTask;
+import org.chromium.base.task.SequencedTaskRunner;
+import org.chromium.base.task.TaskTraits;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.io.File;
@@ -47,9 +49,15 @@ public class FilePersistedTabDataStorage implements PersistedTabDataStorage {
                     ContextUtils.getApplicationContext().getDir(sBaseDirName, Context.MODE_PRIVATE);
         }
     }
+    private SequencedTaskRunner mSequencedTaskRunner;
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     protected LinkedList<StorageRequest> mQueue = new LinkedList<>();
+
+    protected FilePersistedTabDataStorage() {
+        mSequencedTaskRunner =
+                PostTask.createSequencedTaskRunner(TaskTraits.USER_BLOCKING_MAY_BLOCK);
+    }
 
     @MainThread
     @Override
@@ -338,7 +346,7 @@ public class FilePersistedTabDataStorage implements PersistedTabDataStorage {
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     protected void processNextItemOnQueue() {
         if (mQueue.isEmpty()) return;
-        mQueue.poll().getAsyncTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        mQueue.poll().getAsyncTask().executeOnTaskRunner(mSequencedTaskRunner);
     }
 
     @Override

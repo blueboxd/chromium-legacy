@@ -6,7 +6,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_GRID_TRACK_SIZING_ALGORITHM_H_
 
 #include <memory>
-#include "base/macros.h"
 #include "base/optional.h"
 #include "third_party/blink/renderer/core/layout/grid_baseline_alignment.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
@@ -276,6 +275,10 @@ class GridTrackSizingAlgorithmStrategy {
   USING_FAST_MALLOC(GridTrackSizingAlgorithmStrategy);
 
  public:
+  GridTrackSizingAlgorithmStrategy(const GridTrackSizingAlgorithmStrategy&) =
+      delete;
+  GridTrackSizingAlgorithmStrategy& operator=(
+      const GridTrackSizingAlgorithmStrategy&) = delete;
   virtual ~GridTrackSizingAlgorithmStrategy();
 
   virtual LayoutUnit MinContentForChild(LayoutBox&) const;
@@ -342,9 +345,6 @@ class GridTrackSizingAlgorithmStrategy {
       LayoutUnit size);
 
   GridTrackSizingAlgorithm& algorithm_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(GridTrackSizingAlgorithmStrategy);
 };
 }
 

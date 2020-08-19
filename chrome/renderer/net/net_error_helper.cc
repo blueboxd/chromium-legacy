@@ -194,7 +194,7 @@ std::unique_ptr<network::ResourceRequest> NetErrorHelper::CreatePostRequest(
   DCHECK(!frame->GetDocument().GetSecurityOrigin().IsNull());
   DCHECK(frame->GetDocument().GetSecurityOrigin().IsOpaque());
   // All requests coming from a renderer process have to use |request_initiator|
-  // that matches the |request_initiator_site_lock| set by the browser when
+  // that matches the |request_initiator_origin_lock| set by the browser when
   // creating URLLoaderFactory exposed to the renderer.
   blink::WebSecurityOrigin origin = frame->GetDocument().GetSecurityOrigin();
   resource_request->request_initiator = static_cast<url::Origin>(origin);

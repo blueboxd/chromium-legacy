@@ -662,7 +662,7 @@ CrossOriginReadBlocking::ResponseAnalyzer::ResponseAnalyzer(
     const GURL& request_url,
     const base::Optional<url::Origin>& request_initiator,
     const network::mojom::URLResponseHead& response,
-    const base::Optional<url::Origin>& request_initiator_site_lock,
+    const base::Optional<url::Origin>& request_initiator_origin_lock,
     mojom::RequestMode request_mode,
     const base::Optional<url::Origin>& isolated_world_origin,
     mojom::NetworkServiceClient* network_service_client)
@@ -699,7 +699,7 @@ CrossOriginReadBlocking::ResponseAnalyzer::ResponseAnalyzer(
 
   should_block_based_on_headers_ = ShouldBlockBasedOnHeaders(
       request_mode, request_url, request_initiator, response,
-      request_initiator_site_lock, canonical_mime_type_,
+      request_initiator_origin_lock, canonical_mime_type_,
       &is_cors_blocking_expected_);
 
   // Check if the response seems sensitive and if so include in our CORB
@@ -747,7 +747,7 @@ CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
     const GURL& request_url,
     const base::Optional<url::Origin>& request_initiator,
     const network::mojom::URLResponseHead& response,
-    const base::Optional<url::Origin>& request_initiator_site_lock,
+    const base::Optional<url::Origin>& request_initiator_origin_lock,
     MimeType canonical_mime_type,
     bool* is_cors_blocking_expected) {
   if (is_cors_blocking_expected)
@@ -763,7 +763,7 @@ CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
   // unique origin makes CORB treat the response as cross-origin and thus
   // considers it eligible for blocking (based on content-type, sniffing, etc.).
   url::Origin initiator =
-      GetTrustworthyInitiator(request_initiator_site_lock, request_initiator);
+      GetTrustworthyInitiator(request_initiator_origin_lock, request_initiator);
 
   // Don't block same-origin documents.
   if (initiator.IsSameOriginWith(target_origin))
@@ -845,13 +845,13 @@ CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
   // block will no longer be necessary since all failed CORS requests will be
   // blocked before reaching the renderer process (even without CORB's help).
   // Of course this assumes that OOR-CORS will use trustworthy
-  // |request_initiator| (i.e. vetted against |request_initiator|site_lock|).
+  // |request_initiator| (i.e. vetted against |request_initiator_origin_lock|).
   constexpr mojom::RequestMode kOverreachingRequestMode =
       mojom::RequestMode::kNoCors;
   // COEP is not supported when OOR-CORS is disabled.
   if (CrossOriginResourcePolicy::IsBlocked(
           request_url, request_url, request_initiator, response,
-          kOverreachingRequestMode, request_initiator_site_lock,
+          kOverreachingRequestMode, request_initiator_origin_lock,
           CrossOriginEmbedderPolicy())) {
     // Ignore mime types and/or sniffing and have CORB block all responses with
     // COR*P* header.

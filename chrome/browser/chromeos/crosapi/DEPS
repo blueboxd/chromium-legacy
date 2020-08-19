@@ -6,7 +6,7 @@ specific_include_rules = {
     "+chrome/browser/chromeos/crosapi",
     "+ui/message_center/message_center.h",
   ],
-  "screen_manager_crosapi\.cc": [
+  "screen_manager_ash\.cc": [
     # For window parenting.
     "+ash/shell.h",
   ],

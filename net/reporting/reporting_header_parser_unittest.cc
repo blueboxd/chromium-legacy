@@ -908,14 +908,47 @@ TEST_P(ReportingHeaderParserTest, EndpointGroupKey) {
 
 TEST_P(ReportingHeaderParserTest,
        HeaderErroneouslyContainsMultipleGroupsOfSameName) {
+  // Add a preexisting header to test that a header with multiple groups of the
+  // same name is treated as if it specified a single group with the combined
+  // set of specified endpoints. In particular, it must overwrite/update any
+  // preexisting group all at once. See https://crbug.com/1116529.
+  std::vector<ReportingEndpoint::EndpointInfo> preexisting = {{kEndpoint1_}};
+  std::string preexisting_header =
+      ConstructHeaderGroupString(MakeEndpointGroup(kGroup1_, preexisting));
+
+  ParseHeader(kNik_, kUrl1_, preexisting_header);
+  EXPECT_TRUE(
+      EndpointGroupExistsInCache(kGroupKey11_, OriginSubdomains::DEFAULT));
+  EXPECT_EQ(1u, cache()->GetEndpointGroupCountForTesting());
+  EXPECT_TRUE(ClientExistsInCacheForOrigin(kOrigin1_));
+  EXPECT_EQ(1u, cache()->GetEndpointCount());
+  ReportingEndpoint endpoint = FindEndpointInCache(kGroupKey11_, kEndpoint1_);
+  ASSERT_TRUE(endpoint);
+
+  if (mock_store()) {
+    mock_store()->Flush();
+    EXPECT_EQ(1, mock_store()->StoredEndpointsCount());
+    EXPECT_EQ(1, mock_store()->StoredEndpointGroupsCount());
+    MockPersistentReportingStore::CommandList expected_commands;
+    expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT,
+                                   kGroupKey11_, kEndpoint1_);
+    expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT_GROUP,
+                                   kGroupKey11_);
+    EXPECT_THAT(mock_store()->GetAllCommands(),
+                testing::IsSupersetOf(expected_commands));
+    // Reset commands so we can check that the next part, adding the header with
+    // duplicate groups, does not cause clearing of preexisting endpoints twice.
+    mock_store()->ClearCommands();
+  }
+
   std::vector<ReportingEndpoint::EndpointInfo> endpoints1 = {{kEndpoint1_}};
   std::vector<ReportingEndpoint::EndpointInfo> endpoints2 = {{kEndpoint2_}};
-  std::string header =
+  std::string duplicate_groups_header =
       ConstructHeaderGroupString(MakeEndpointGroup(kGroup1_, endpoints1)) +
       ", " +
       ConstructHeaderGroupString(MakeEndpointGroup(kGroup1_, endpoints2));
 
-  ParseHeader(kNik_, kUrl1_, header);
+  ParseHeader(kNik_, kUrl1_, duplicate_groups_header);
   // Result is as if they set the two groups with the same name as one group.
   EXPECT_TRUE(
       EndpointGroupExistsInCache(kGroupKey11_, OriginSubdomains::DEFAULT));
@@ -924,7 +957,7 @@ TEST_P(ReportingHeaderParserTest,
   EXPECT_TRUE(ClientExistsInCacheForOrigin(kOrigin1_));
 
   EXPECT_EQ(2u, cache()->GetEndpointCount());
-  ReportingEndpoint endpoint = FindEndpointInCache(kGroupKey11_, kEndpoint1_);
+  ReportingEndpoint endpoint1 = FindEndpointInCache(kGroupKey11_, kEndpoint1_);
   ASSERT_TRUE(endpoint);
   EXPECT_EQ(kOrigin1_, endpoint.group_key.origin);
   EXPECT_EQ(kGroup1_, endpoint.group_key.group_name);
@@ -947,14 +980,30 @@ TEST_P(ReportingHeaderParserTest,
     EXPECT_EQ(2, mock_store()->StoredEndpointsCount());
     EXPECT_EQ(1, mock_store()->StoredEndpointGroupsCount());
     MockPersistentReportingStore::CommandList expected_commands;
-    expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT,
-                                   kGroupKey11_, kEndpoint1_);
+    expected_commands.emplace_back(
+        CommandType::UPDATE_REPORTING_ENDPOINT_DETAILS, kGroupKey11_,
+        kEndpoint1_);
     expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT,
                                    kGroupKey11_, kEndpoint2_);
-    expected_commands.emplace_back(CommandType::ADD_REPORTING_ENDPOINT_GROUP,
-                                   kGroupKey11_);
-    EXPECT_THAT(mock_store()->GetAllCommands(),
-                testing::IsSupersetOf(expected_commands));
+    expected_commands.emplace_back(
+        CommandType::UPDATE_REPORTING_ENDPOINT_GROUP_DETAILS, kGroupKey11_);
+    MockPersistentReportingStore::CommandList actual_commands =
+        mock_store()->GetAllCommands();
+    EXPECT_THAT(actual_commands, testing::IsSupersetOf(expected_commands));
+    for (const auto& command : actual_commands) {
+      EXPECT_NE(CommandType::DELETE_REPORTING_ENDPOINT, command.type);
+      EXPECT_NE(CommandType::DELETE_REPORTING_ENDPOINT_GROUP, command.type);
+
+      // The endpoint with URL kEndpoint1_ is only ever updated, not added anew.
+      EXPECT_NE(
+          MockPersistentReportingStore::Command(
+              CommandType::ADD_REPORTING_ENDPOINT, kGroupKey11_, kEndpoint1_),
+          command);
+      // The group is only ever updated, not added anew.
+      EXPECT_NE(MockPersistentReportingStore::Command(
+                    CommandType::ADD_REPORTING_ENDPOINT_GROUP, kGroupKey11_),
+                command);
+    }
   }
 }
 

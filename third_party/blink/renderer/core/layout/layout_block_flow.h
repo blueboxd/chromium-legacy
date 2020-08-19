@@ -37,7 +37,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_BLOCK_FLOW_H_
 
 #include <memory>
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_item.h"
 #include "third_party/blink/renderer/core/layout/floating_objects.h"
@@ -750,6 +749,8 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
       : public GarbageCollected<LayoutBlockFlowRareData> {
    public:
     explicit LayoutBlockFlowRareData(const LayoutBlockFlow* block);
+    LayoutBlockFlowRareData(const LayoutBlockFlowRareData&) = delete;
+    LayoutBlockFlowRareData& operator=(const LayoutBlockFlowRareData&) = delete;
     ~LayoutBlockFlowRareData();
 
     static LayoutUnit PositiveMarginBeforeDefault(
@@ -794,7 +795,6 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
     unsigned break_after_ : 4;
     int line_break_to_avoid_widow_;
     bool did_break_at_line_to_avoid_widow_ : 1;
-    DISALLOW_COPY_AND_ASSIGN(LayoutBlockFlowRareData);
   };
 
   void ClearOffsetMappingIfNeeded();

@@ -1385,8 +1385,8 @@ TEST(TimeDelta, FromAndIn) {
       TimeDelta::FromMillisecondsD(2.5) == TimeDelta::FromMicroseconds(2500),
       "");
   EXPECT_EQ(TimeDelta::FromDays(13).InDays(), 13);
-  EXPECT_EQ(TimeDelta::FromHours(13).InHours(), 13);
-  EXPECT_EQ(TimeDelta::FromMinutes(13).InMinutes(), 13);
+  static_assert(TimeDelta::FromHours(13).InHours() == 13, "");
+  static_assert(TimeDelta::FromMinutes(13).InMinutes() == 13, "");
   EXPECT_EQ(TimeDelta::FromSeconds(13).InSeconds(), 13);
   EXPECT_EQ(TimeDelta::FromSeconds(13).InSecondsF(), 13.0);
   EXPECT_EQ(TimeDelta::FromMilliseconds(13).InMilliseconds(), 13);
@@ -1395,20 +1395,21 @@ TEST(TimeDelta, FromAndIn) {
   EXPECT_EQ(TimeDelta::FromSecondsD(13.1).InSecondsF(), 13.1);
   EXPECT_EQ(TimeDelta::FromMillisecondsD(13.3).InMilliseconds(), 13);
   EXPECT_EQ(TimeDelta::FromMillisecondsD(13.3).InMillisecondsF(), 13.3);
-  EXPECT_EQ(TimeDelta::FromMicroseconds(13).InMicroseconds(), 13);
-  EXPECT_EQ(TimeDelta::FromMicrosecondsD(13.3).InMicroseconds(), 13);
+  static_assert(TimeDelta::FromMicroseconds(13).InMicroseconds() == 13, "");
+  static_assert(TimeDelta::FromMicrosecondsD(13.3).InMicroseconds() == 13, "");
   EXPECT_EQ(TimeDelta::FromMillisecondsD(3.45678).InMillisecondsF(), 3.456);
-  EXPECT_EQ(TimeDelta::FromNanoseconds(12345).InNanoseconds(), 12000);
-  EXPECT_EQ(TimeDelta::FromNanosecondsD(12345.678).InNanoseconds(), 12000);
+  static_assert(TimeDelta::FromNanoseconds(12345).InNanoseconds() == 12000, "");
+  static_assert(TimeDelta::FromNanosecondsD(12345.678).InNanoseconds() == 12000,
+                "");
 }
 
 TEST(TimeDelta, InRoundsTowardsZero) {
   EXPECT_EQ(TimeDelta::FromHours(23).InDays(), 0);
   EXPECT_EQ(TimeDelta::FromHours(-23).InDays(), 0);
-  EXPECT_EQ(TimeDelta::FromMinutes(59).InHours(), 0);
-  EXPECT_EQ(TimeDelta::FromMinutes(-59).InHours(), 0);
-  EXPECT_EQ(TimeDelta::FromSeconds(59).InMinutes(), 0);
-  EXPECT_EQ(TimeDelta::FromSeconds(-59).InMinutes(), 0);
+  static_assert(TimeDelta::FromMinutes(59).InHours() == 0, "");
+  static_assert(TimeDelta::FromMinutes(-59).InHours() == 0, "");
+  static_assert(TimeDelta::FromSeconds(59).InMinutes() == 0, "");
+  static_assert(TimeDelta::FromSeconds(-59).InMinutes() == 0, "");
   EXPECT_EQ(TimeDelta::FromMilliseconds(999).InSeconds(), 0);
   EXPECT_EQ(TimeDelta::FromMilliseconds(-999).InSeconds(), 0);
   EXPECT_EQ(TimeDelta::FromMicroseconds(999).InMilliseconds(), 0);
@@ -1602,8 +1603,8 @@ TEST(TimeDelta, MaxConversions) {
   static_assert(kMax.ToInternalValue() == std::numeric_limits<int64_t>::max(),
                 "");
   EXPECT_EQ(kMax.InDays(), std::numeric_limits<int>::max());
-  EXPECT_EQ(kMax.InHours(), std::numeric_limits<int>::max());
-  EXPECT_EQ(kMax.InMinutes(), std::numeric_limits<int>::max());
+  static_assert(kMax.InHours() == std::numeric_limits<int>::max(), "");
+  static_assert(kMax.InMinutes() == std::numeric_limits<int>::max(), "");
   EXPECT_EQ(kMax.InSecondsF(), std::numeric_limits<double>::infinity());
   EXPECT_EQ(kMax.InSeconds(), std::numeric_limits<int64_t>::max());
   EXPECT_EQ(kMax.InMillisecondsF(), std::numeric_limits<double>::infinity());
@@ -1693,8 +1694,8 @@ TEST(TimeDelta, MinConversions) {
   constexpr TimeDelta kMin = TimeDelta::Min();
 
   EXPECT_EQ(kMin.InDays(), std::numeric_limits<int>::min());
-  EXPECT_EQ(kMin.InHours(), std::numeric_limits<int>::min());
-  EXPECT_EQ(kMin.InMinutes(), std::numeric_limits<int>::min());
+  static_assert(kMin.InHours() == std::numeric_limits<int>::min(), "");
+  static_assert(kMin.InMinutes() == std::numeric_limits<int>::min(), "");
   EXPECT_EQ(kMin.InSecondsF(), -std::numeric_limits<double>::infinity());
   EXPECT_EQ(kMin.InSeconds(), std::numeric_limits<int64_t>::min());
   EXPECT_EQ(kMin.InMillisecondsF(), -std::numeric_limits<double>::infinity());

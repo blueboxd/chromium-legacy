@@ -144,6 +144,7 @@ OmniboxResult::OmniboxResult(Profile* profile,
   set_id(match_.stripped_destination_url.spec());
   SetResultType(ash::AppListSearchResultType::kOmnibox);
   set_result_subtype(static_cast<int>(match_.type));
+  SetMetricsType(GetSearchResultType());
 
   // Derive relevance from omnibox relevance and normalize it to [0, 1].
   // The magic number 1500 is the highest score of an omnibox result.

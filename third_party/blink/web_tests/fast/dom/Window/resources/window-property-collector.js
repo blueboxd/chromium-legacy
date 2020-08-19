@@ -77,6 +77,16 @@ function emitExpectedResult(path, expected)
     if (propertyPath == 'performance.timeOrigin')
       return;
 
+    // Skip proposed multi-screen properties that will be moved off of the Screen interface.
+    // TODO(crbug.com/1116528): Use a dictionary, not the Screen interface, for proposed multi-screen info:
+    // https://github.com/webscreens/window-placement
+    if (propertyPath == "screen.id" || propertyPath == "screen.internal" ||
+        propertyPath == "screen.left" || propertyPath == "screen.primary" ||
+        propertyPath == "screen.scaleFactor" || propertyPath == "screen.top" ||
+        propertyPath == "screen.touchSupport") {
+      return;
+    }
+
     switch (propertyPath) {
     case "location.href":
         expected = "'about:blank'";

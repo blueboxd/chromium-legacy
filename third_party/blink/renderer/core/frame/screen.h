@@ -62,9 +62,8 @@ class CORE_EXPORT Screen final : public ScriptWrappable,
 
   void Trace(Visitor*) const override;
 
-  // Proposed extensions to the Screen interface.
-  // https://github.com/webscreens/screen-enumeration
-  // TODO(msw): Resolve different info sources, caching, and lifetimes.
+  // TODO(crbug.com/1116528): Use a dictionary, not the Screen interface, for
+  // proposed multi-screen info: https://github.com/webscreens/window-placement
   Screen(display::mojom::blink::DisplayPtr display,
          bool internal,
          bool primary,
@@ -83,20 +82,20 @@ class CORE_EXPORT Screen final : public ScriptWrappable,
 
  private:
   // A static snapshot of the display's information, provided upon construction.
-  // This member is only valid for Screen objects obtained via the experimental
-  // Screen Enumeration API.
+  // This member is only non-null for Screen objects obtained via the
+  // experimental Window Placement API.
   const display::mojom::blink::DisplayPtr display_;
   // True if this is an internal display of the device; it is a static value
   // provided upon construction. This member is only valid for Screen objects
-  // obtained via the experimental Screen Enumeration API.
+  // obtained via the experimental Window Placement API.
   const base::Optional<bool> internal_;
   // True if this is the primary screen of the operating system; it is a static
   // value provided upon construction. This member is only valid for Screen
-  // objects obtained via the experimental Screen Enumeration API.
+  // objects obtained via the experimental Window Placement API.
   const base::Optional<bool> primary_;
   // A web-exposed device id; it is a static value provided upon construction.
   // This member is only valid for Screen objects obtained via the experimental
-  // Screen Enumeration API.
+  // Window Placement API.
   const String id_;
 };
 

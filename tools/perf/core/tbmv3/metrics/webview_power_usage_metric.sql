@@ -14,9 +14,12 @@ SELECT WebViewPowerUsageMetric(
   (SELECT RepeatedField(
       EstimatedWebViewAppPowerUsage(
         'app_name', app_name,
-        'webview_power_mas', webview_power_mas
-      )
+        'webview_power_mas', webview_power_mas,
+        'total_app_power_mas', total_app_power_mas
+       )
    )
    FROM webview_power_summary
-  )
+  ),
+  'total_device_power_mas',
+  (SELECT power_mas FROM total_device_power)
 );

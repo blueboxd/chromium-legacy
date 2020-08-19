@@ -774,7 +774,7 @@ void GaiaScreenHandler::OnCookieChange(const net::CookieChangeInfo& change) {
 
 void GaiaScreenHandler::HandleIdentifierEntered(const std::string& user_email) {
   if (LoginDisplayHost::default_host() &&
-      !LoginDisplayHost::default_host()->IsUserWhitelisted(
+      !LoginDisplayHost::default_host()->IsUserAllowlisted(
           user_manager::known_user::GetAccountId(
               user_email, std::string() /* id */, AccountType::UNKNOWN))) {
     ShowAllowlistCheckFailedError();

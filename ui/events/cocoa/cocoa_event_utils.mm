@@ -78,6 +78,10 @@ int EventFlagsFromNSEventWithModifiers(NSEvent* event, NSUInteger modifiers) {
 
   flags |= IsRightButtonEvent(event) ? ui::EF_RIGHT_MOUSE_BUTTON : 0;
   flags |= IsMiddleButtonEvent(event) ? ui::EF_MIDDLE_MOUSE_BUTTON : 0;
+
+  if ([event type] == NSKeyDown && [event isARepeat])
+    flags |= ui::EF_IS_REPEAT;
+
   return flags;
 }
 

@@ -15,7 +15,6 @@
 #include "base/path_service.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
-#include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
@@ -110,7 +109,7 @@ class LocalFileWriter : public FileOperations::Writer {
 
   // FileOperations::Writer implementation.
   void Open(const base::FilePath& filename, Callback callback) override;
-  void WriteChunk(std::string data, Callback callback) override;
+  void WriteChunk(std::vector<std::uint8_t> data, Callback callback) override;
   void Close(Callback callback) override;
   FileOperations::State state() const override;
 
@@ -125,7 +124,7 @@ class LocalFileWriter : public FileOperations::Writer {
   void CreateTempFile(Callback callback, base::FilePath temp_filepath);
   void OnCreateResult(Callback callback, base::File::Error error);
 
-  void OnWriteResult(std::string data,
+  void OnWriteResult(std::vector<std::uint8_t> data,
                      Callback callback,
                      base::File::Error error,
                      int bytes_written);
@@ -270,7 +269,7 @@ void LocalFileReader::OnReadResult(ReadCallback callback,
 
   // The read buffer is provided and owned by FileProxy, so there's no way to
   // avoid a copy, here.
-  std::move(callback).Run(std::string(data, bytes_read));
+  std::move(callback).Run(std::vector<std::uint8_t>(data, data + bytes_read));
 }
 
 void LocalFileReader::SetState(FileOperations::State state) {
@@ -318,7 +317,8 @@ void LocalFileWriter::Open(const base::FilePath& filename, Callback callback) {
                      std::move(callback)));
 }
 
-void LocalFileWriter::WriteChunk(std::string data, Callback callback) {
+void LocalFileWriter::WriteChunk(std::vector<std::uint8_t> data,
+                                 Callback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(FileOperations::kReady, state_);
   SetState(FileOperations::kBusy);
@@ -328,9 +328,10 @@ void LocalFileWriter::WriteChunk(std::string data, Callback callback) {
   //               on error?
 
   // Ensure buffer pointer is obtained before data is moved.
-  const char* buffer = data.data();
+  const std::uint8_t* buffer = data.data();
   const std::size_t size = data.size();
-  file_proxy_->Write(bytes_written_, buffer, size,
+  file_proxy_->Write(bytes_written_, reinterpret_cast<const char*>(buffer),
+                     size,
                      base::BindOnce(&LocalFileWriter::OnWriteResult,
                                     weak_ptr_factory_.GetWeakPtr(),
                                     std::move(data), std::move(callback)));
@@ -441,7 +442,7 @@ void LocalFileWriter::OnCreateResult(Callback callback,
   std::move(callback).Run(kSuccessTag);
 }
 
-void LocalFileWriter::OnWriteResult(std::string data,
+void LocalFileWriter::OnWriteResult(std::vector<std::uint8_t> data,
                                     Callback callback,
                                     base::File::Error error,
                                     int bytes_written) {
@@ -463,7 +464,9 @@ void LocalFileWriter::OnWriteResult(std::string data,
     // probably means that an error occurred. Unfortunately, the only way to
     // find out what went wrong is to try again.
     // TODO(rkjnsn): Would it be better just to return a generic error, here?
-    WriteChunk(data.substr(bytes_written), std::move(callback));
+    WriteChunk(
+        std::vector<std::uint8_t>(data.begin() + bytes_written, data.end()),
+        std::move(callback));
     return;
   }
 

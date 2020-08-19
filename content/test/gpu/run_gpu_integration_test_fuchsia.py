@@ -11,7 +11,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
-import time
+
 from gpu_tests import path_util
 
 sys.path.insert(0,
@@ -56,6 +56,8 @@ def main():
       gpu_script.extend(['--fuchsia-ssh-config-dir', args.output_directory])
       gpu_script.extend(['--fuchsia-ssh-port', str(fuchsia_ssh_port)])
       gpu_script.extend(['--fuchsia-system-log-file', args.system_log_file])
+      if args.verbose:
+        gpu_script.append('-v')
 
       # Set up logging of WebEngine
       listener = target.RunCommandPiped(['log_listener'],

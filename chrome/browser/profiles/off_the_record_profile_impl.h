@@ -7,8 +7,8 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
-#include "base/macros.h"
 #include "base/sequenced_task_runner.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
@@ -39,6 +39,8 @@ class OffTheRecordProfileImpl : public Profile {
  public:
   OffTheRecordProfileImpl(Profile* real_profile,
                           const OTRProfileID& otr_profile_id);
+  OffTheRecordProfileImpl(const OffTheRecordProfileImpl&) = delete;
+  OffTheRecordProfileImpl& operator=(const OffTheRecordProfileImpl&) = delete;
   ~OffTheRecordProfileImpl() override;
   void Init();
 
@@ -83,7 +85,7 @@ class OffTheRecordProfileImpl : public Profile {
   void set_last_selected_directory(const base::FilePath& path) override;
   bool WasCreatedByVersionOrLater(const std::string& version) override;
   void SetExitType(ExitType exit_type) override;
-  ExitType GetLastSessionExitType() override;
+  ExitType GetLastSessionExitType() const override;
 
 #if defined(OS_CHROMEOS)
   void ChangeAppLocale(const std::string& locale, AppLocaleChangedVia) override;
@@ -167,8 +169,6 @@ class OffTheRecordProfileImpl : public Profile {
   std::unique_ptr<ProfileKey> key_;
 
   base::FilePath last_selected_directory_;
-
-  DISALLOW_COPY_AND_ASSIGN(OffTheRecordProfileImpl);
 };
 
 #endif  // CHROME_BROWSER_PROFILES_OFF_THE_RECORD_PROFILE_IMPL_H_

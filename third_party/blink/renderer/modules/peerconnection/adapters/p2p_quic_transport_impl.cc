@@ -546,9 +546,9 @@ void P2PQuicTransportImpl::SetDefaultEncryptionLevel(
   }
 }
 
-void P2PQuicTransportImpl::OnOneRttKeysAvailable() {
+void P2PQuicTransportImpl::OnTlsHandshakeComplete() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  QuicSession::OnOneRttKeysAvailable();
+  QuicSession::OnTlsHandshakeComplete();
   DCHECK(IsEncryptionEstablished());
   DCHECK(OneRttKeysAvailable());
   P2PQuicNegotiatedParams negotiated_params;

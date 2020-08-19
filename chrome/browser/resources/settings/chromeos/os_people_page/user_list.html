@@ -60,10 +60,12 @@
               [[item.displayEmail]]
             </div>
           </div>
-          <cr-icon-button class="icon-clear"
-              hidden="[[shouldHideCloseButton_(disabled, item.isOwner)]]"
-              title="[[getRemoveUserTooltip_(item)]]" on-click="removeUser_">
-          </cr-icon-button>
+          <template is="dom-if"
+              if="[[!shouldHideCloseButton_(disabled, item.isOwner)]]">
+            <cr-icon-button class="icon-clear"
+                title="[[getRemoveUserTooltip_(item)]]" on-click="removeUser_">
+            </cr-icon-button>
+          </template>
         </div>
       </template>
     </div>

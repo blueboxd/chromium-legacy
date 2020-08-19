@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "base/check_op.h"
 #include "build/build_config.h"
 #include "pdf/pdfium/pdfium_engine.h"
 #include "pdf/test/test_client.h"
@@ -111,11 +112,18 @@ void PDFiumTestBase::InitializePDFium() {
   FPDF_InitLibraryWithConfig(&config);
 }
 
-PDFiumPage* PDFiumTestBase::GetPDFiumPageForTest(PDFiumEngine* engine,
+const PDFiumPage& PDFiumTestBase::GetPDFiumPageForTest(
+    const PDFiumEngine& engine,
+    size_t page_index) {
+  return GetPDFiumPageForTest(const_cast<PDFiumEngine&>(engine), page_index);
+}
+
+PDFiumPage& PDFiumTestBase::GetPDFiumPageForTest(PDFiumEngine& engine,
                                                  size_t page_index) {
-  if (engine && page_index < engine->pages_.size())
-    return engine->pages_[page_index].get();
-  return nullptr;
+  DCHECK_LT(page_index, engine.pages_.size());
+  PDFiumPage* page = engine.pages_[page_index].get();
+  DCHECK(page);
+  return *page;
 }
 
 PDFiumTestBase::InitializeEngineResult::InitializeEngineResult() = default;

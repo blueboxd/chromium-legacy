@@ -115,7 +115,7 @@ class COMPONENT_EXPORT(NETWORK_CPP) CrossOriginReadBlocking {
         const GURL& request_url,
         const base::Optional<url::Origin>& request_initiator,
         const network::mojom::URLResponseHead& response,
-        const base::Optional<url::Origin>& request_initiator_site_lock,
+        const base::Optional<url::Origin>& request_initiator_origin_lock,
         mojom::RequestMode request_mode,
         const base::Optional<url::Origin>& isolated_world_origin,
         mojom::NetworkServiceClient* network_service_client);
@@ -197,7 +197,7 @@ class COMPONENT_EXPORT(NETWORK_CPP) CrossOriginReadBlocking {
         const GURL& request_url,
         const base::Optional<url::Origin>& request_initiator,
         const network::mojom::URLResponseHead& response,
-        const base::Optional<url::Origin>& request_initiator_site_lock,
+        const base::Optional<url::Origin>& request_initiator_origin_lock,
         MimeType canonical_mime_type,
         bool* is_cors_blocking_expected);
 

@@ -21,8 +21,8 @@ AudioClock::AudioClock(base::TimeDelta start_timestamp, int sample_rate)
           static_cast<double>(base::Time::kMicrosecondsPerSecond) /
           sample_rate),
       total_buffered_frames_(0),
-      front_timestamp_micros_(start_timestamp.InMicroseconds()),
-      back_timestamp_micros_(start_timestamp.InMicroseconds()) {}
+      front_timestamp_micros_(start_timestamp.InMicrosecondsF()),
+      back_timestamp_micros_(start_timestamp.InMicrosecondsF()) {}
 
 AudioClock::~AudioClock() = default;
 
@@ -36,7 +36,7 @@ void AudioClock::WroteAudio(int frames_written,
   DCHECK_GE(playback_rate, 0);
 
   // First write: initialize buffer with silence.
-  if (start_timestamp_.InMicroseconds() == front_timestamp_micros_ &&
+  if (start_timestamp_.InMicrosecondsF() == front_timestamp_micros_ &&
       buffered_.empty()) {
     PushBufferedAudioData(delay_frames, 0.0);
   }
@@ -63,7 +63,7 @@ void AudioClock::WroteAudio(int frames_written,
   front_timestamp_micros_ =
       std::max(front_timestamp_micros_,
                back_timestamp_micros_ - ComputeBufferedMediaDurationMicros());
-  DCHECK_GE(front_timestamp_micros_, start_timestamp_.InMicroseconds());
+  DCHECK_GE(front_timestamp_micros_, start_timestamp_.InMicrosecondsF());
   DCHECK_LE(front_timestamp_micros_, back_timestamp_micros_);
 }
 
@@ -92,8 +92,8 @@ base::TimeDelta AudioClock::TimeUntilPlayback(base::TimeDelta timestamp) const {
   DCHECK_LE(timestamp, back_timestamp());
 
   int64_t frames_until_timestamp = 0;
-  double timestamp_us = timestamp.InMicroseconds();
-  double media_time_us = front_timestamp().InMicroseconds();
+  double timestamp_us = timestamp.InMicrosecondsF();
+  double media_time_us = front_timestamp().InMicrosecondsF();
 
   for (size_t i = 0; i < buffered_.size(); ++i) {
     // Leading silence is always accounted prior to anything else.

@@ -213,6 +213,7 @@ class ASH_EXPORT AshColorProvider {
                            const gfx::VectorIcon& icon);
 
   AshColorMode color_mode() const { return color_mode_; }
+  bool is_themed() const { return is_themed_; }
 
  private:
   // Gets Shield layer color on |type| and |color_mode|. This function will be

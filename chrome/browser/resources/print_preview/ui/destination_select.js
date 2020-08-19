@@ -21,7 +21,6 @@ import './throbber_css.js';
 import '../strings.m.js';
 
 import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {Base, html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {Destination, DestinationOrigin, PDF_DESTINATION_KEY, RecentDestination} from '../data/destination.js';
@@ -67,7 +66,6 @@ Polymer({
     statusText_: {
       type: String,
       computed: 'computeStatusText_(destination)',
-      observer: 'onStatusTextSet_'
     },
   },
 
@@ -105,9 +103,6 @@ Polymer({
     // Check for the Docs or Save as PDF ids first.
     const keyParams = this.selectedValue.split('/');
     if (keyParams[0] === Destination.GooglePromotedId.DOCS) {
-      if (!loadTimeData.getBoolean('cloudPrintDeprecationWarningsSuppressed')) {
-        return 'print-preview:save-to-drive-not-supported';
-      }
       return 'print-preview:save-to-drive';
     }
     if (keyParams[0] === Destination.GooglePromotedId.SAVE_AS_PDF) {
@@ -163,20 +158,9 @@ Polymer({
       return '';
     }
 
-    if (this.destination.shouldShowInvalidCertificateError) {
-      return this.i18n('noLongerSupportedFragment');
-    }
-
-    if (this.destination.shouldShowSaveToDriveWarning) {
-      return this.i18nAdvanced('saveToDriveNotSupportedWarning');
-    }
-
-    return this.destination.connectionStatusText;
-  },
-
-  /** @private */
-  onStatusTextSet_() {
-    this.$$('.destination-status').innerHTML = this.statusText_;
+    return this.destination.shouldShowInvalidCertificateError ?
+        this.i18n('noLongerSupportedFragment') :
+        this.destination.connectionStatusText;
   },
 
   /**

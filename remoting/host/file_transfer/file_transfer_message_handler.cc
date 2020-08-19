@@ -80,7 +80,14 @@ void FileTransferMessageHandler::OnIncomingMessage(
         UnexpectedMessage(FROM_HERE, "data");
         return;
       }
-      OnData(std::move(*message.mutable_data()->mutable_data()));
+      // The protocol buffer compiler only provides access to byte fields as
+      // std::string. Unfortunately, unlike most C++ containers, std::string
+      // doesn't guarantee that pointers to the data stay valid when the owning
+      // container is moved. Because that guarantee is useful when passing
+      // data and ownership through asynchronous function calls, the received
+      // data is copied into a std::vector and passed around in that form.
+      OnData(std::vector<std::uint8_t>(message.data().data().begin(),
+                                       message.data().data().end()));
       return;
     case protocol::FileTransfer::kEnd:
       if (state_ != kWriting) {
@@ -141,7 +148,7 @@ void FileTransferMessageHandler::OnMetadata(
                             kDefaultFileName));
 }
 
-void FileTransferMessageHandler::OnData(std::string data) {
+void FileTransferMessageHandler::OnData(std::vector<std::uint8_t> data) {
   DCHECK_EQ(kWriting, state_);
   buffered_file_writer_->Write(std::move(data));
 }
@@ -208,7 +215,8 @@ void FileTransferMessageHandler::OnReadResult(
       ReadNextChunk();
     }
     protocol::FileTransfer data_message;
-    data_message.mutable_data()->set_data(std::move(*result));
+    data_message.mutable_data()->set_data(
+        std::string(result->begin(), result->end()));
     // Call Send last in case it invokes ReadNextChunk synchronously.
     protocol::NamedMessagePipeHandler::Send(
         data_message, base::BindOnce(&FileTransferMessageHandler::OnChunkSent,

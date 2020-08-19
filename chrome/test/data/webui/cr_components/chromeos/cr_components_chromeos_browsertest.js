@@ -53,6 +53,9 @@ GEN('#endif');
   ['FinalPage', 'cellular_setup/final_page_test.js',
     []
   ],
+  ['SimDetectPage', 'cellular_setup/sim_detect_page_test.js',
+    []
+  ],
 ].forEach(test => registerTest('CellularSetup', 'cellular-setup', ...test));
 
 // clang-format on

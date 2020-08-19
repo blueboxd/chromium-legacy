@@ -49,6 +49,9 @@ class ASH_PUBLIC_EXPORT AmbientClient {
   virtual void RequestWakeLockProvider(
       mojo::PendingReceiver<device::mojom::WakeLockProvider> receiver) = 0;
 
+  // Whether to use backend production server.
+  virtual bool ShouldUseProdServer() = 0;
+
  protected:
   AmbientClient();
   AmbientClient(const AmbientClient&) = delete;

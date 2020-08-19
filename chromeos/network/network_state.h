@@ -202,6 +202,9 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkState : public ManagedState {
   // portal state, see IsCaptivePortalState in the .cc file).
   bool IsCaptivePortal() const;
 
+  // Returns true if the security type is non-empty and not 'none'.
+  bool IsSecure() const;
+
   // Returns the |raw_ssid| as a hex-encoded string
   std::string GetHexSsid() const;
 

@@ -138,7 +138,7 @@ base::Optional<ash::SearchResultType> SearchMetricsObserver::GetType(
     const std::string& result_id) {
   const auto* result = controller_->FindSearchResult(result_id);
   if (result) {
-    return result->GetSearchResultType();
+    return result->metrics_type();
   } else {
     LogError(Error::kResultNotFound);
     return base::nullopt;

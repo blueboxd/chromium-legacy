@@ -13,6 +13,22 @@
 
 namespace net {
 
+namespace {
+// Used in UMA (DNS.UdpLowEntropyReason). Do not renumber or remove values.
+enum class LowEntropyReason {
+  kPortReuse = 0,
+  kRecognizedIdMismatch = 1,
+  kUnrecognizedIdMismatch = 2,
+  kMaxValue = kUnrecognizedIdMismatch,
+};
+
+void RecordLowEntropyUma(LowEntropyReason reason) {
+  UMA_HISTOGRAM_ENUMERATION("Net.DNS.DnsTransaction.UDP.LowEntropyReason",
+                            reason);
+}
+
+}  // namespace
+
 // static
 constexpr base::TimeDelta DnsUdpTracker::kMaxAge;
 
@@ -62,8 +78,9 @@ void DnsUdpTracker::RecordQuery(uint16_t port, uint16_t query_id) {
         now - most_recent_match->time);
   }
 
-  if (reused_port_count >= kPortReuseThreshold) {
+  if (reused_port_count >= kPortReuseThreshold && !low_entropy_) {
     low_entropy_ = true;
+    RecordLowEntropyUma(LowEntropyReason::kPortReuse);
   }
 
   SaveQuery({port, query_id, now});
@@ -150,6 +167,7 @@ void DnsUdpTracker::SaveIdMismatch(uint16_t id) {
     if (recent_recognized_id_hits_.size() ==
         kRecognizedIdMismatchThreshold - 1) {
       low_entropy_ = true;
+      RecordLowEntropyUma(LowEntropyReason::kRecognizedIdMismatch);
       return;
     }
 
@@ -162,6 +180,7 @@ void DnsUdpTracker::SaveIdMismatch(uint16_t id) {
     if (recent_unrecognized_id_hits_.size() ==
         kUnrecognizedIdMismatchThreshold - 1) {
       low_entropy_ = true;
+      RecordLowEntropyUma(LowEntropyReason::kUnrecognizedIdMismatch);
       return;
     }
 

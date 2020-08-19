@@ -1143,4 +1143,71 @@ TEST_P(AccessibilityControllerSigninTest, EnableOnLoginScreenAndLogin) {
   }
 }
 
+TEST_P(AccessibilityControllerSigninTest, SwitchAccessPrefsSyncToSignIn) {
+  AccessibilityControllerImpl* accessibility =
+      Shell::Get()->accessibility_controller();
+
+  SessionControllerImpl* session = Shell::Get()->session_controller();
+  EXPECT_EQ(session_manager::SessionState::LOGIN_PRIMARY,
+            session->GetSessionState());
+  EXPECT_FALSE(accessibility->switch_access_enabled());
+  using prefs::kAccessibilitySwitchAccessAutoScanEnabled;
+  using prefs::kAccessibilitySwitchAccessAutoScanKeyboardSpeedMs;
+  using prefs::kAccessibilitySwitchAccessAutoScanSpeedMs;
+  using prefs::kAccessibilitySwitchAccessEnabled;
+  using prefs::kAccessibilitySwitchAccessNextSetting;
+  using prefs::kAccessibilitySwitchAccessPreviousSetting;
+  using prefs::kAccessibilitySwitchAccessSelectSetting;
+
+  PrefService* signin_prefs = session->GetSigninScreenPrefService();
+  EXPECT_FALSE(signin_prefs->GetBoolean(kAccessibilitySwitchAccessEnabled));
+  EXPECT_FALSE(
+      signin_prefs->GetBoolean(kAccessibilitySwitchAccessAutoScanEnabled));
+
+  SimulateLogin();
+
+  PrefService* user_prefs = session->GetLastActiveUserPrefService();
+  EXPECT_NE(signin_prefs, user_prefs);
+  EXPECT_FALSE(user_prefs->GetBoolean(kAccessibilitySwitchAccessEnabled));
+  EXPECT_FALSE(
+      user_prefs->GetBoolean(kAccessibilitySwitchAccessAutoScanEnabled));
+
+  // Enabling switch access in a user profile should enable it for the
+  // signin profile.
+  accessibility->SetSwitchAccessEnabled(true);
+  EXPECT_TRUE(user_prefs->GetBoolean(kAccessibilitySwitchAccessEnabled));
+  EXPECT_TRUE(signin_prefs->GetBoolean(kAccessibilitySwitchAccessEnabled));
+
+  // Changing a switch access option in a user profile should sync that
+  // option to the signin profile.
+  user_prefs->Set(kAccessibilitySwitchAccessAutoScanEnabled, base::Value(true));
+  EXPECT_TRUE(
+      signin_prefs->GetBoolean(kAccessibilitySwitchAccessAutoScanEnabled));
+
+  user_prefs->Set(kAccessibilitySwitchAccessAutoScanKeyboardSpeedMs,
+                  base::Value(123));
+  EXPECT_EQ(123, signin_prefs->GetInteger(
+                     kAccessibilitySwitchAccessAutoScanKeyboardSpeedMs));
+
+  user_prefs->Set(kAccessibilitySwitchAccessAutoScanSpeedMs, base::Value(234));
+  EXPECT_EQ(
+      234, signin_prefs->GetInteger(kAccessibilitySwitchAccessAutoScanSpeedMs));
+
+  user_prefs->Set(kAccessibilitySwitchAccessNextSetting, base::Value(3));
+  EXPECT_EQ(3, signin_prefs->GetInteger(kAccessibilitySwitchAccessNextSetting));
+
+  user_prefs->Set(kAccessibilitySwitchAccessPreviousSetting, base::Value(4));
+  EXPECT_EQ(
+      4, signin_prefs->GetInteger(kAccessibilitySwitchAccessPreviousSetting));
+
+  user_prefs->Set(kAccessibilitySwitchAccessSelectSetting, base::Value(5));
+  EXPECT_EQ(5,
+            signin_prefs->GetInteger(kAccessibilitySwitchAccessSelectSetting));
+
+  // The reverse is not true; turning off switch access in the signin profile
+  // has no effect on the user profile.
+  signin_prefs->Set(kAccessibilitySwitchAccessEnabled, base::Value(false));
+  EXPECT_TRUE(user_prefs->GetBoolean(kAccessibilitySwitchAccessEnabled));
+}
+
 }  // namespace ash

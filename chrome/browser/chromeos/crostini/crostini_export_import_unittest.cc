@@ -149,7 +149,7 @@ class CrostiniExportImportTest : public testing::Test {
     storage::ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
         file_manager::util::GetDownloadsMountPointName(profile()),
         storage::kFileSystemTypeNativeLocal, storage::FileSystemMountOption(),
-        file_manager::util::GetMyFilesFolderForProfile(profile()));
+        profile()->GetPath());
     tarball_ = file_manager::util::GetMyFilesFolderForProfile(profile()).Append(
         "crostini_export_import_unittest_tarball.tar.gz");
   }
@@ -204,92 +204,7 @@ TEST_F(CrostiniExportImportTest, TestNotAllowed) {
       }));
 }
 
-// TODO(juwa): remove this once tremplin has been shipped.
-// TODO(crbug.com/1117356) Flaky
-TEST_F(CrostiniExportImportTest, DISABLED_TestDeprecatedExportSuccess) {
-  crostini_export_import_->FileSelected(
-      tarball_, 0,
-      crostini_export_import_->NewOperationData(ExportImportType::EXPORT));
-  task_environment_.RunUntilIdle();
-  base::WeakPtr<CrostiniExportImportNotificationController> controller =
-      GetController();
-  ASSERT_NE(controller, nullptr);
-  EXPECT_EQ(controller->status(),
-            CrostiniExportImportStatusTracker::Status::RUNNING);
-  std::string notification_id;
-  {
-    const message_center::Notification& notification = GetNotification();
-    notification_id = notification.id();
-    EXPECT_EQ(notification.progress(), 0);
-    EXPECT_TRUE(notification.pinned());
-  }
-
-  // 20% PACK = 10% overall.
-  SendExportProgress(vm_tools::cicerone::
-                         ExportLxdContainerProgressSignal_Status_EXPORTING_PACK,
-                     {.progress_percent = 20});
-  ASSERT_NE(controller, nullptr);
-  EXPECT_EQ(controller->status(),
-            CrostiniExportImportStatusTracker::Status::RUNNING);
-  {
-    const message_center::Notification& notification = GetNotification();
-    EXPECT_EQ(notification.id(), notification_id);
-    EXPECT_EQ(notification.progress(), 10);
-    EXPECT_TRUE(notification.pinned());
-  }
-
-  // 20% DOWNLOAD = 60% overall.
-  SendExportProgress(
-      vm_tools::cicerone::
-          ExportLxdContainerProgressSignal_Status_EXPORTING_DOWNLOAD,
-      {.progress_percent = 20});
-  ASSERT_NE(controller, nullptr);
-  EXPECT_EQ(controller->status(),
-            CrostiniExportImportStatusTracker::Status::RUNNING);
-  {
-    const message_center::Notification& notification = GetNotification();
-    EXPECT_EQ(notification.id(), notification_id);
-    EXPECT_EQ(notification.progress(), 60);
-    EXPECT_TRUE(notification.pinned());
-  }
-
-  // Close notification and update progress. Should not update notification.
-  controller->get_delegate()->Close(false);
-  SendExportProgress(
-      vm_tools::cicerone::
-          ExportLxdContainerProgressSignal_Status_EXPORTING_DOWNLOAD,
-      {.progress_percent = 40});
-  ASSERT_NE(controller, nullptr);
-  EXPECT_EQ(controller->status(),
-            CrostiniExportImportStatusTracker::Status::RUNNING);
-  {
-    const message_center::Notification& notification = GetNotification();
-    EXPECT_EQ(notification.id(), notification_id);
-    EXPECT_EQ(notification.progress(), 60);
-    EXPECT_TRUE(notification.pinned());
-  }
-
-  // Done.
-  SendExportProgress(
-      vm_tools::cicerone::ExportLxdContainerProgressSignal_Status_DONE);
-  EXPECT_EQ(GetController(), nullptr);
-  EXPECT_EQ(controller, nullptr);
-  {
-    const base::Optional<message_center::Notification> ui_notification =
-        notification_display_service_->GetNotification(notification_id);
-    ASSERT_NE(ui_notification, base::nullopt);
-    EXPECT_FALSE(ui_notification->pinned());
-    std::string msg("Linux apps & files have been successfully backed up");
-    EXPECT_EQ(ui_notification->message(), base::UTF8ToUTF16(msg));
-  }
-
-  // CrostiniExportImport should've created the exported file.
-  task_environment_.RunUntilIdle();
-  EXPECT_TRUE(base::PathExists(tarball_));
-}
-
-// TODO(crbug.com/1117356) Flaky
-TEST_F(CrostiniExportImportTest, DISABLED_TestExportSuccess) {
+TEST_F(CrostiniExportImportTest, TestExportSuccess) {
   crostini_export_import_->FileSelected(
       tarball_, 0,
       crostini_export_import_->NewOperationData(ExportImportType::EXPORT));
@@ -418,8 +333,7 @@ TEST_F(CrostiniExportImportTest, TestExportFail) {
   EXPECT_FALSE(base::PathExists(tarball_));
 }
 
-// TODO(crbug.com/1117356) Flaky
-TEST_F(CrostiniExportImportTest, DISABLED_TestExportCancelled) {
+TEST_F(CrostiniExportImportTest, TestExportCancelled) {
   crostini_export_import_->FileSelected(
       tarball_, 0,
       crostini_export_import_->NewOperationData(ExportImportType::EXPORT));
@@ -485,8 +399,7 @@ TEST_F(CrostiniExportImportTest, DISABLED_TestExportCancelled) {
   EXPECT_FALSE(base::PathExists(tarball_));
 }
 
-// TODO(crbug.com/1117356) Flaky
-TEST_F(CrostiniExportImportTest, DISABLED_TestExportDoneBeforeCancelled) {
+TEST_F(CrostiniExportImportTest, TestExportDoneBeforeCancelled) {
   crostini_export_import_->FileSelected(
       tarball_, 0,
       crostini_export_import_->NewOperationData(ExportImportType::EXPORT));

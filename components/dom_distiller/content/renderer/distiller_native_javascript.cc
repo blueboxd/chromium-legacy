@@ -18,6 +18,14 @@
 #include "third_party/blink/public/web/blink.h"
 #include "v8/include/v8.h"
 
+namespace {
+
+// These values should agree with those in distilled_page_prefs.cc.
+const float kMinFontScale = 0.4f;
+const float kMaxFontScale = 3.0f;
+
+}  // namespace
+
 namespace dom_distiller {
 
 DistillerNativeJavaScript::DistillerNativeJavaScript(
@@ -38,6 +46,12 @@ void DistillerNativeJavaScript::StoreIntFontFamily(int int_font_family) {
   if (!mojom::IsKnownEnumValue(font_family))
     return;
   distiller_js_service_->HandleStoreFontFamilyPref(font_family);
+}
+
+void DistillerNativeJavaScript::StoreFloatFontScaling(float float_font_scale) {
+  if (float_font_scale < kMinFontScale || float_font_scale > kMaxFontScale)
+    return;
+  distiller_js_service_->HandleStoreFontScalingPref(float_font_scale);
 }
 
 void DistillerNativeJavaScript::AddJavaScriptObjectToFrame(
@@ -71,6 +85,11 @@ void DistillerNativeJavaScript::AddJavaScriptObjectToFrame(
   BindFunctionToObject(
       isolate, distiller_obj, "storeFontFamilyPref",
       base::BindRepeating(&DistillerNativeJavaScript::StoreIntFontFamily,
+                          base::Unretained(this)));
+
+  BindFunctionToObject(
+      isolate, distiller_obj, "storeFontScalingPref",
+      base::BindRepeating(&DistillerNativeJavaScript::StoreFloatFontScaling,
                           base::Unretained(this)));
 }
 

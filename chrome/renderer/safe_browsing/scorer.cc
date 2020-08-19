@@ -11,10 +11,12 @@
 #include <unordered_set>
 
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "chrome/renderer/safe_browsing/features.h"
 #include "components/safe_browsing/content/password_protection/visual_utils.h"
 #include "components/safe_browsing/core/proto/client_model.pb.h"
+#include "crypto/sha2.h"
 
 namespace {
 // Enum used to keep stats about the status of the Scorer creation.
@@ -101,6 +103,9 @@ bool Scorer::GetMatchingVisualTargets(const SkBitmap& bitmap,
     // the browser process if they are not needed.
     VisualFeatures::BlurredImage blurred_image;
     if (visual_utils::GetBlurredImage(bitmap, &blurred_image)) {
+      std::string raw_digest = crypto::SHA256HashString(blurred_image.data());
+      request->set_screenshot_digest(
+          base::HexEncode(raw_digest.data(), raw_digest.size()));
       request->set_screenshot_phash(
           visual_utils::GetHashFromBlurredImage(blurred_image));
       request->set_phash_dimension_size(48);

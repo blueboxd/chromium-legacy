@@ -47,7 +47,7 @@ class IpcFileOperations::IpcWriter : public FileOperations::Writer {
 
   // FileOperations::Writer implementation.
   void Open(const base::FilePath& filename, Callback callback) override;
-  void WriteChunk(std::string data, Callback callback) override;
+  void WriteChunk(std::vector<std::uint8_t> data, Callback callback) override;
   void Close(Callback callback) override;
   State state() const override;
 
@@ -301,7 +301,7 @@ void IpcFileOperations::IpcWriter::Open(const base::FilePath& filename,
   shared_state_->request_handler->WriteFile(file_id_, filename);
 }
 
-void IpcFileOperations::IpcWriter::WriteChunk(std::string data,
+void IpcFileOperations::IpcWriter::WriteChunk(std::vector<std::uint8_t> data,
                                               Callback callback) {
   DCHECK_EQ(kReady, state_);
   if (!shared_state_) {
@@ -314,7 +314,7 @@ void IpcFileOperations::IpcWriter::WriteChunk(std::string data,
   shared_state_->result_callbacks.emplace(
       file_id_, base::BindOnce(&IpcWriter::OnOperationResult,
                                base::Unretained(this), std::move(callback)));
-  shared_state_->request_handler->WriteChunk(file_id_, data);
+  shared_state_->request_handler->WriteChunk(file_id_, std::move(data));
 }
 
 void IpcFileOperations::IpcWriter::Close(Callback callback) {

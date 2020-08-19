@@ -1,4 +1,4 @@
-CONSOLE WARNING: line 138: 'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.
+CONSOLE WARNING: line 148: 'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.
 Tests access of cached DOMWindow properties after the associated frame is navigated. Test should not crash and properties should be set to sane defaults.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
@@ -96,14 +96,7 @@ PASS window.cached_screen.availTop is 0
 PASS window.cached_screen.availWidth is 0
 PASS window.cached_screen.colorDepth is 0
 PASS window.cached_screen.height is 0
-PASS window.cached_screen.id is ''
-PASS window.cached_screen.internal is false
-PASS window.cached_screen.left is 0
 PASS window.cached_screen.pixelDepth is 0
-PASS window.cached_screen.primary is false
-PASS window.cached_screen.scaleFactor is 0
-PASS window.cached_screen.top is 0
-PASS window.cached_screen.touchSupport is false
 PASS window.cached_screen.width is 0
 PASS window.cached_screen_orientation.angle is 0
 PASS window.cached_screen_orientation.onchange is null

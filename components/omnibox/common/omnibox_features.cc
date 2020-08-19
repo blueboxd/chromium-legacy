@@ -10,11 +10,38 @@ namespace omnibox {
 
 const auto enabled_by_default_desktop_only =
 #if defined(OS_ANDROID) || defined(OS_IOS)
-    base::FEATURE_DISABLED_BY_DEFAULT
+    base::FEATURE_DISABLED_BY_DEFAULT;
 #else
-    base::FEATURE_ENABLED_BY_DEFAULT
+    base::FEATURE_ENABLED_BY_DEFAULT;
 #endif
-    ;
+
+const auto enabled_by_default_android_only =
+#if defined(OS_ANDROID)
+    base::FEATURE_ENABLED_BY_DEFAULT;
+#else
+    base::FEATURE_DISABLED_BY_DEFAULT;
+#endif
+
+const auto enabled_by_default_ios_only =
+#if defined(OS_IOS)
+    base::FEATURE_ENABLED_BY_DEFAULT;
+#else
+    base::FEATURE_DISABLED_BY_DEFAULT;
+#endif
+
+const auto enabled_by_default_desktop_android =
+#if defined(OS_IOS)
+    base::FEATURE_DISABLED_BY_DEFAULT;
+#else
+    base::FEATURE_ENABLED_BY_DEFAULT;
+#endif
+
+const auto enabled_by_default_desktop_ios =
+#if defined(OS_ANDROID)
+    base::FEATURE_DISABLED_BY_DEFAULT;
+#else
+    base::FEATURE_ENABLED_BY_DEFAULT;
+#endif
 
 // Allows Omnibox to dynamically adjust number of offered suggestions to fill in
 // the space between Omnibox an the soft keyboard. The number of suggestions
@@ -46,20 +73,14 @@ const base::Feature kOmniboxShortBookmarkSuggestions{
 
 // Feature used to force on the experiment of transmission of tail suggestions
 // from GWS to this client, currently testing for desktop.
-const base::Feature kOmniboxTailSuggestions{
-    "OmniboxTailSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kOmniboxTailSuggestions{"OmniboxTailSuggestions",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Feature that enables the tab-switch suggestions corresponding to an open
 // tab, for a button or dedicated suggestion. Enabled by default on Desktop
 // and iOS.
 const base::Feature kOmniboxTabSwitchSuggestions{
-  "OmniboxTabSwitchSuggestions",
-#if defined(OS_ANDROID)
-      base::FEATURE_DISABLED_BY_DEFAULT
-#else
-      base::FEATURE_ENABLED_BY_DEFAULT
-#endif
-};
+    "OmniboxTabSwitchSuggestions", enabled_by_default_desktop_ios};
 
 // Feature used to enable various experiments on keyword mode, UI and
 // suggestions.
@@ -68,13 +89,8 @@ const base::Feature kExperimentalKeywordMode{"OmniboxExperimentalKeywordMode",
 
 // Feature to enable clipboard provider to suggest searching for copied images.
 const base::Feature kEnableClipboardProviderImageSuggestions{
-  "OmniboxEnableClipboardProviderImageSuggestions",
-#if defined(OS_IOS)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-};
+    "OmniboxEnableClipboardProviderImageSuggestions",
+    enabled_by_default_ios_only};
 
 // Feature to enable the search provider to send a request to the suggest
 // server on focus.  This allows the suggest server to warm up, by, for
@@ -82,41 +98,22 @@ const base::Feature kEnableClipboardProviderImageSuggestions{
 // in memory allows the suggest server to respond more quickly with
 // personalized suggestions as the user types.
 const base::Feature kSearchProviderWarmUpOnFocus{
-  "OmniboxWarmUpSearchProviderOnFocus",
-#if defined(OS_IOS)
-      base::FEATURE_DISABLED_BY_DEFAULT
-#else
-      base::FEATURE_ENABLED_BY_DEFAULT
-#endif
-};
+    "OmniboxWarmUpSearchProviderOnFocus", enabled_by_default_desktop_android};
 
 // Feature used to display the title of the current URL match.
 const base::Feature kDisplayTitleForCurrentUrl{
-  "OmniboxDisplayTitleForCurrentUrl",
-#if !defined(OS_IOS)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-};
+    "OmniboxDisplayTitleForCurrentUrl", enabled_by_default_desktop_android};
 
 // Feature used to always swap the title and URL.
 const base::Feature kUIExperimentSwapTitleAndUrl{
-    "OmniboxUIExperimentSwapTitleAndUrl",
-#if defined(OS_IOS) || defined(OS_ANDROID)
-    base::FEATURE_DISABLED_BY_DEFAULT
-#else
-    base::FEATURE_ENABLED_BY_DEFAULT
-#endif
-};
+    "OmniboxUIExperimentSwapTitleAndUrl", enabled_by_default_desktop_only};
 
 // Feature used to enable speculatively starting a service worker associated
 // with the destination of the default match when the user's input looks like a
 // query.
 const base::Feature kSpeculativeServiceWorkerStartOnQueryInput{
-  "OmniboxSpeculativeServiceWorkerStartOnQueryInput",
-      base::FEATURE_ENABLED_BY_DEFAULT
-};
+    "OmniboxSpeculativeServiceWorkerStartOnQueryInput",
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Feature used to fetch document suggestions.
 const base::Feature kDocumentProvider{"OmniboxDocumentProvider",
@@ -130,13 +127,7 @@ const base::Feature kAutocompleteTitles{"OmniboxAutocompleteTitles",
 // Returns whether IsInstantExtendedAPIEnabled should be ignored when deciding
 // the number of Google-provided search suggestions.
 const base::Feature kOmniboxDisableInstantExtendedLimit{
-  "OmniboxDisableInstantExtendedLimit",
-#if defined(OS_ANDROID)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-};
+    "OmniboxDisableInstantExtendedLimit", enabled_by_default_android_only};
 
 // Show the search engine logo in the omnibox on Android (desktop already does
 // this).
@@ -145,13 +136,7 @@ const base::Feature kOmniboxSearchEngineLogo{"OmniboxSearchEngineLogo",
 
 // Feature used to allow users to remove suggestions from clipboard.
 const base::Feature kOmniboxRemoveSuggestionsFromClipboard{
-  "OmniboxRemoveSuggestionsFromClipboard",
-#if defined(OS_ANDROID)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-};
+    "OmniboxRemoveSuggestionsFromClipboard", enabled_by_default_android_only};
 
 // Feature to debounce drive requests from the document provider.
 const base::Feature kDebounceDocumentProvider{

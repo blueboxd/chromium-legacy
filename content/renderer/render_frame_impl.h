@@ -678,6 +678,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void WillSendSubmitEvent(const blink::WebFormElement& form) override;
   void DidCreateDocumentLoader(
       blink::WebDocumentLoader* document_loader) override;
+  void WillFailCommitNavigation(CommitFailureReason) override;
   void DidCommitNavigation(const blink::WebHistoryItem& item,
                            blink::WebHistoryCommitType commit_type,
                            bool should_reset_browser_interface_broker) override;

@@ -241,7 +241,7 @@ void ZeroSuggestProvider::Start(const AutocompleteInput& input,
   if (!suggest_url.is_valid())
     return;
 
-  result_type_running_ = TypeOfResultToRun(input.current_url(), suggest_url);
+  result_type_running_ = TypeOfResultToRun(client(), input, suggest_url);
   if (result_type_running_ == NONE)
     return;
 
@@ -674,26 +674,34 @@ void ZeroSuggestProvider::MaybeUseCachedSuggestions() {
   }
 }
 
+// static
 ZeroSuggestProvider::ResultType ZeroSuggestProvider::TypeOfResultToRun(
-    const GURL& current_url,
+    AutocompleteProviderClient* client,
+    const AutocompleteInput& input,
     const GURL& suggest_url) {
+  DCHECK(client);
   // Check if the URL can be sent in any suggest request.
   const TemplateURLService* template_url_service =
-      client()->GetTemplateURLService();
+      client->GetTemplateURLService();
   DCHECK(template_url_service);
   const TemplateURL* default_provider =
       template_url_service->GetDefaultSearchProvider();
+
+  GURL current_url = input.current_url();
+  metrics::OmniboxEventProto::PageClassification current_page_classification =
+      input.current_page_classification();
+
   const bool can_send_current_url = CanSendURL(
-      current_url, suggest_url, default_provider, current_page_classification_,
-      template_url_service->search_terms_data(), client(), false);
+      current_url, suggest_url, default_provider, current_page_classification,
+      template_url_service->search_terms_data(), client, false);
   // Collect metrics on eligibility.
   GURL arbitrary_insecure_url(kArbitraryInsecureUrlString);
   ZeroSuggestEligibility eligibility = ZeroSuggestEligibility::ELIGIBLE;
   if (!can_send_current_url) {
     const bool can_send_ordinary_url =
         CanSendURL(arbitrary_insecure_url, suggest_url, default_provider,
-                   current_page_classification_,
-                   template_url_service->search_terms_data(), client(), false);
+                   current_page_classification,
+                   template_url_service->search_terms_data(), client, false);
     eligibility = can_send_ordinary_url
                       ? ZeroSuggestEligibility::URL_INELIGIBLE
                       : ZeroSuggestEligibility::GENERALLY_INELIGIBLE;
@@ -703,12 +711,12 @@ ZeroSuggestProvider::ResultType ZeroSuggestProvider::TypeOfResultToRun(
       static_cast<int>(ZeroSuggestEligibility::ELIGIBLE_MAX_VALUE));
 
   const auto field_trial_variants =
-      OmniboxFieldTrial::GetZeroSuggestVariants(current_page_classification_);
+      OmniboxFieldTrial::GetZeroSuggestVariants(current_page_classification);
 
   if (base::Contains(field_trial_variants, kNoneVariant))
     return NONE;
 
-  if (current_page_classification_ == OmniboxEventProto::CHROMEOS_APP_LIST)
+  if (current_page_classification == OmniboxEventProto::CHROMEOS_APP_LIST)
     return REMOTE_NO_URL;
 
   // Contextual Open Web - (same client side behavior for multiple variants).
@@ -716,25 +724,25 @@ ZeroSuggestProvider::ResultType ZeroSuggestProvider::TypeOfResultToRun(
       base::FeatureList::IsEnabled(omnibox::kOnFocusSuggestionsContextualWeb) ||
       base::FeatureList::IsEnabled(
           omnibox::kOnFocusSuggestionsContextualWebOnContent);
-  if (current_page_classification_ == OmniboxEventProto::OTHER &&
+  if (current_page_classification == OmniboxEventProto::OTHER &&
       can_send_current_url && contextual_web_suggestions_enabled) {
     return REMOTE_SEND_URL;
   }
 
   // Reactive Zero-Prefix Suggestions (rZPS) on NTP cases.
   bool remote_no_url_allowed =
-      RemoteNoUrlSuggestionsAreAllowed(client(), template_url_service);
+      RemoteNoUrlSuggestionsAreAllowed(client, template_url_service);
   if (remote_no_url_allowed) {
     // NTP Omnibox.
-    if ((current_page_classification_ == OmniboxEventProto::NTP ||
-         current_page_classification_ ==
+    if ((current_page_classification == OmniboxEventProto::NTP ||
+         current_page_classification ==
              OmniboxEventProto::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS) &&
         base::FeatureList::IsEnabled(
             omnibox::kReactiveZeroSuggestionsOnNTPOmnibox)) {
       return REMOTE_NO_URL;
     }
     // NTP Realbox.
-    if (current_page_classification_ == OmniboxEventProto::NTP_REALBOX &&
+    if (current_page_classification == OmniboxEventProto::NTP_REALBOX &&
         base::FeatureList::IsEnabled(
             omnibox::kReactiveZeroSuggestionsOnNTPRealbox)) {
       return REMOTE_NO_URL;
@@ -755,13 +763,13 @@ ZeroSuggestProvider::ResultType ZeroSuggestProvider::TypeOfResultToRun(
 
 #if !defined(OS_IOS)
   // For Desktop and Android, default to REMOTE_NO_URL on the NTP, if allowed.
-  if (IsNTPPage(current_page_classification_) && remote_no_url_allowed)
+  if (IsNTPPage(current_page_classification) && remote_no_url_allowed)
     return REMOTE_NO_URL;
 #endif
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
   // For Android and iOS, default to MOST_VISITED everywhere except on the SERP.
-  if (!IsSearchResultsPage(current_page_classification_)) {
+  if (!IsSearchResultsPage(current_page_classification)) {
     return MOST_VISITED;
   }
 #endif

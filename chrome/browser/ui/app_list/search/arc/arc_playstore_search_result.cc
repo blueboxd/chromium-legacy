@@ -122,6 +122,8 @@ ArcPlayStoreSearchResult::ArcPlayStoreSearchResult(
   SetRating(review_score());
   SetResultType(is_instant_app() ? ash::AppListSearchResultType::kInstantApp
                                  : ash::AppListSearchResultType::kPlayStoreApp);
+  SetMetricsType(is_instant_app() ? ash::PLAY_STORE_INSTANT_APP
+                                  : ash::PLAY_STORE_UNINSTALLED_APP);
 
   if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon)) {
     apps::ArcRawIconPngDataToImageSkia(
@@ -158,11 +160,6 @@ ArcPlayStoreSearchResult::~ArcPlayStoreSearchResult() = default;
 void ArcPlayStoreSearchResult::Open(int event_flags) {
   LaunchIntent(install_intent_uri().value(),
                list_controller_->GetAppListDisplayId());
-}
-
-ash::SearchResultType ArcPlayStoreSearchResult::GetSearchResultType() const {
-  return is_instant_app() ? ash::PLAY_STORE_INSTANT_APP
-                          : ash::PLAY_STORE_UNINSTALLED_APP;
 }
 
 void ArcPlayStoreSearchResult::GetContextMenuModel(

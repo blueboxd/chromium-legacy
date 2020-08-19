@@ -117,6 +117,8 @@ class TreeSynchronizerTest : public testing::Test {
   void ResetLayerTreeHost(const LayerTreeSettings& settings) {
     host_ = FakeLayerTreeHost::Create(&client_, &task_graph_runner_,
                                       animation_host_.get(), settings);
+    host_->InitializeSingleThreaded(&single_thread_client_,
+                                    base::ThreadTaskRunnerHandle::Get());
     host_->host_impl()->CreatePendingTree();
   }
 
@@ -591,8 +593,6 @@ TEST_F(TreeSynchronizerTest, SynchronizeCurrentlyScrollingNode) {
 }
 
 TEST_F(TreeSynchronizerTest, SynchronizeScrollTreeScrollOffsetMap) {
-  host_->InitializeSingleThreaded(&single_thread_client_,
-                                  base::ThreadTaskRunnerHandle::Get());
   LayerTreeSettings settings;
   FakeLayerTreeHostImplClient client;
   FakeImplTaskRunnerProvider task_runner_provider;
@@ -704,8 +704,6 @@ TEST_F(TreeSynchronizerTest, SynchronizeScrollTreeScrollOffsetMap) {
 }
 
 TEST_F(TreeSynchronizerTest, RefreshPropertyTreesCachedData) {
-  host_->InitializeSingleThreaded(&single_thread_client_,
-                                  base::ThreadTaskRunnerHandle::Get());
   LayerTreeSettings settings;
   FakeLayerTreeHostImplClient client;
   FakeImplTaskRunnerProvider task_runner_provider;
@@ -752,9 +750,6 @@ TEST_F(TreeSynchronizerTest, RoundedScrollDeltasOnCommit) {
   settings.commit_fractional_scroll_deltas = false;
   ResetLayerTreeHost(settings);
 
-  host_->InitializeSingleThreaded(&single_thread_client_,
-                                  base::ThreadTaskRunnerHandle::Get());
-
   scoped_refptr<Layer> scroll_layer = SetupScrollLayer();
 
   // Scroll the layer by a fractional amount.
@@ -775,9 +770,6 @@ TEST_F(TreeSynchronizerTest, PreserveFractionalScrollDeltasOnCommit) {
   LayerTreeSettings settings;
   settings.commit_fractional_scroll_deltas = true;
   ResetLayerTreeHost(settings);
-
-  host_->InitializeSingleThreaded(&single_thread_client_,
-                                  base::ThreadTaskRunnerHandle::Get());
 
   scoped_refptr<Layer> scroll_layer = SetupScrollLayer();
 

@@ -23,7 +23,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_FRAME_SET_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_FRAME_SET_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 
 namespace blink {
@@ -100,6 +99,8 @@ class LayoutFrameSet final : public LayoutBox {
 
    public:
     GridAxis();
+    GridAxis(const GridAxis&) = delete;
+    GridAxis& operator=(const GridAxis&) = delete;
     void Resize(int);
 
     Vector<int> sizes_;
@@ -108,9 +109,6 @@ class LayoutFrameSet final : public LayoutBox {
     Vector<bool> allow_border_;
     int split_being_resized_;
     int split_resize_offset_;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(GridAxis);
   };
 
   const GridAxis& Rows() const { return rows_; }

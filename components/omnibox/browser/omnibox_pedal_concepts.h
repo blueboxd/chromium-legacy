@@ -10,7 +10,7 @@
 // This value is generated during Pedal concept data processing, and written
 // to all data files as well as the source code here to ensure synchrony.
 // The runtime loaded data must match this version exactly or it won't load.
-constexpr int OMNIBOX_PEDAL_CONCEPTS_DATA_VERSION = 15472385;
+constexpr int OMNIBOX_PEDAL_CONCEPTS_DATA_VERSION = 15474322;
 
 // Unique identifiers for Pedals, used to bind loaded data to implementations.
 enum class OmniboxPedalId {
@@ -22,6 +22,8 @@ enum class OmniboxPedalId {
   LAUNCH_INCOGNITO = 4,
   TRANSLATE = 5,
   UPDATE_CHROME = 6,
+
+  TOTAL_COUNT
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_PEDAL_CONCEPTS_H_

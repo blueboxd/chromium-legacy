@@ -422,12 +422,12 @@ class CONTENT_EXPORT ContentBrowserClient {
   //
   // This method may be called in the following cases:
   // - The default factory to be used by a frame or worker.  In this case both
-  //   the |origin| and |request_initiator_site_lock| are the origin of the
+  //   the |origin| and |request_initiator_origin_lock| are the origin of the
   //   frame or worker (or the origin that is being committed in the frame).
   // - An isolated-world-specific factory for origins covered via
   //   RenderFrameHost::MarkIsolatedWorldAsRequiringSeparateURLLoaderFactory.
   //   In this case |origin| is the origin of the isolated world and the
-  //   |request_initiator_site_lock| is the origin committed in the frame.
+  //   |request_initiator_origin_lock| is the origin committed in the frame.
   virtual void OverrideURLLoaderFactoryParams(
       BrowserContext* browser_context,
       const url::Origin& origin,

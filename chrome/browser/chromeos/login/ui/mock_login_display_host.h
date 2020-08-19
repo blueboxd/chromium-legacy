@@ -72,7 +72,7 @@ class MockLoginDisplayHost : public LoginDisplayHost {
               (override));
   MOCK_METHOD(void, LoadWallpaper, (const AccountId&), (override));
   MOCK_METHOD(void, LoadSigninWallpaper, (), (override));
-  MOCK_METHOD(bool, IsUserWhitelisted, (const AccountId&), (override));
+  MOCK_METHOD(bool, IsUserAllowlisted, (const AccountId&), (override));
   MOCK_METHOD(void, CancelPasswordChangedFlow, (), (override));
   MOCK_METHOD(void, MigrateUserData, (const std::string&), (override));
   MOCK_METHOD(void, ResyncUserData, (), (override));

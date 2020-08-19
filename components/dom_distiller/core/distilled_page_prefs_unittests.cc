@@ -16,9 +16,7 @@ namespace {
 class TestingObserver : public DistilledPagePrefs::Observer {
  public:
   TestingObserver()
-      : font_(mojom::FontFamily::kSansSerif),
-        theme_(mojom::Theme::kLight),
-        scaling_(1.0f) {}
+      : font_(mojom::FontFamily::kSansSerif), theme_(mojom::Theme::kLight) {}
 
   void OnChangeFontFamily(mojom::FontFamily new_font) override {
     font_ = new_font;
@@ -39,7 +37,7 @@ class TestingObserver : public DistilledPagePrefs::Observer {
  private:
   mojom::FontFamily font_;
   mojom::Theme theme_;
-  float scaling_;
+  float scaling_{1.0f};
 };
 
 }  // namespace

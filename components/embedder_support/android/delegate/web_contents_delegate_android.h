@@ -112,7 +112,7 @@ class WebContentsDelegateAndroid : public content::WebContentsDelegate {
   int GetBottomControlsMinHeight() override;
   bool ShouldAnimateBrowserControlsHeightChanges() override;
   bool DoBrowserControlsShrinkRendererSize(
-      const content::WebContents* contents) override;
+      content::WebContents* contents) override;
 
  protected:
   base::android::ScopedJavaLocalRef<jobject> GetJavaDelegate(JNIEnv* env) const;

@@ -9,8 +9,10 @@
 #include "base/bind.h"
 #include "base/check.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/numerics/safe_conversions.h"
+#include "base/numerics/ranges.h"
 #include "base/optional.h"
+#include "chromeos/crosapi/cpp/bitmap.h"
+#include "chromeos/crosapi/cpp/bitmap_util.h"
 #include "chromeos/crosapi/mojom/message_center.mojom.h"
 #include "chromeos/crosapi/mojom/notification.mojom.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -35,6 +37,62 @@ mc::NotificationType FromMojo(mojom::NotificationType type) {
     case mojom::NotificationType::kProgress:
       return mc::NOTIFICATION_TYPE_PROGRESS;
   }
+}
+
+mc::FullscreenVisibility FromMojo(mojom::FullscreenVisibility visibility) {
+  switch (visibility) {
+    case mojom::FullscreenVisibility::kNone:
+      return mc::FullscreenVisibility::NONE;
+    case mojom::FullscreenVisibility::kOverUser:
+      return mc::FullscreenVisibility::OVER_USER;
+  }
+}
+
+gfx::Image ImageFromBitmap(const crosapi::Bitmap& bitmap) {
+  SkBitmap sk_bitmap = crosapi::SkBitmapFromBitmap(bitmap);
+  // TODO(https://crbug.com/1113889): High DPI support.
+  return gfx::Image::CreateFrom1xBitmap(sk_bitmap);
+}
+
+std::unique_ptr<mc::Notification> FromMojo(
+    mojom::NotificationPtr notification) {
+  mc::RichNotificationData rich_data;
+  rich_data.priority = base::ClampToRange(notification->priority, -2, 2);
+  rich_data.never_timeout = notification->require_interaction;
+  rich_data.timestamp = notification->timestamp;
+  if (notification->image)
+    rich_data.image = ImageFromBitmap(notification->image.value());
+  if (notification->badge)
+    rich_data.small_image = ImageFromBitmap(notification->badge.value());
+  for (const auto& mojo_item : notification->items) {
+    mc::NotificationItem item;
+    item.title = mojo_item->title;
+    item.message = mojo_item->message;
+    rich_data.items.push_back(item);
+  }
+  rich_data.progress = base::ClampToRange(notification->progress, -1, 100);
+  rich_data.progress_status = notification->progress_status;
+  for (const auto& mojo_button : notification->buttons) {
+    mc::ButtonInfo button;
+    button.title = mojo_button->title;
+    rich_data.buttons.push_back(button);
+  }
+  rich_data.pinned = notification->pinned;
+  rich_data.renotify = notification->renotify;
+  rich_data.silent = notification->silent;
+  rich_data.accessible_name = notification->accessible_name;
+  rich_data.fullscreen_visibility =
+      FromMojo(notification->fullscreen_visibility);
+
+  gfx::Image icon;
+  if (notification->icon)
+    icon = ImageFromBitmap(notification->icon.value());
+  GURL origin_url = notification->origin_url.value_or(GURL());
+  // TODO(crbug.com/1113889): NotifierId support.
+  return std::make_unique<mc::Notification>(
+      FromMojo(notification->type), notification->id, notification->title,
+      notification->message, icon, notification->display_source, origin_url,
+      mc::NotifierId(), rich_data, /*delegate=*/nullptr);
 }
 
 // Forwards NotificationDelegate methods to a remote delegate over mojo. If the
@@ -116,14 +174,10 @@ void MessageCenterAsh::DisplayNotification(
       notification->id, std::move(delegate));
   forwarding_delegate->Init();
 
-  // TODO(crbug.com/1113889): Icon support.
-  // TODO(crbug.com/1113889): NotifierId support.
-  // TODO(crbug.com/1113889): RichNotificationData support.
-  mc::MessageCenter::Get()->AddNotification(std::make_unique<mc::Notification>(
-      FromMojo(notification->type), notification->id, notification->title,
-      notification->message, gfx::Image(), notification->display_source,
-      notification->origin_url.value_or(GURL()), mc::NotifierId(),
-      mc::RichNotificationData(), std::move(forwarding_delegate)));
+  std::unique_ptr<mc::Notification> mc_notification =
+      FromMojo(std::move(notification));
+  mc_notification->set_delegate(forwarding_delegate);
+  mc::MessageCenter::Get()->AddNotification(std::move(mc_notification));
 }
 
 void MessageCenterAsh::CloseNotification(const std::string& id) {

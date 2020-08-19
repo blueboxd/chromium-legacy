@@ -151,7 +151,7 @@ struct URLRequest {
   //
   // See also:
   // - |isolated_world_origin|
-  // - URLLoaderFactoryParams::request_initiator_site_lock
+  // - URLLoaderFactoryParams::request_initiator_origin_lock
   url.mojom.Origin? request_initiator;
 
   // If this is a subresource request initiated from an isolated world (e.g.

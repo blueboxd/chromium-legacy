@@ -1036,6 +1036,52 @@ TEST_P(QuicStreamFactoryTest, CreateZeroRtt) {
   EXPECT_TRUE(socket_data.AllWriteDataConsumed());
 }
 
+// Regression test for crbug.com/1117331.
+TEST_P(QuicStreamFactoryTest, AsyncZeroRtt) {
+  Initialize();
+
+  if (!version_.UsesTls())
+    return;
+
+  factory_->set_is_quic_known_to_work_on_current_network(true);
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+
+  MockQuicData socket_data(version_);
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  client_maker_.SetEncryptionLevel(quic::ENCRYPTION_ZERO_RTT);
+  if (VersionUsesHttp3(version_.transport_version))
+    socket_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
+  socket_data.AddSocketDataToFactory(socket_factory_.get());
+
+  crypto_client_stream_factory_.set_handshake_mode(
+      MockCryptoClientStream::ASYNC_ZERO_RTT);
+  host_resolver_->set_synchronous_mode(true);
+  host_resolver_->rules()->AddIPLiteralRule(host_port_pair_.host(),
+                                            "192.168.0.1", "");
+
+  QuicStreamRequest request(factory_.get());
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request.Request(
+          host_port_pair_, version_, privacy_mode_, DEFAULT_PRIORITY,
+          SocketTag(), NetworkIsolationKey(), false /* disable_secure_dns */,
+          /*cert_verify_flags=*/0, url_, net_log_, &net_error_details_,
+          failed_on_default_network_callback_, callback_.callback()));
+  EXPECT_FALSE(HasActiveSession(host_port_pair_));
+  EXPECT_EQ(nullptr, CreateStream(&request));
+
+  crypto_client_stream_factory_.last_stream()->NotifySessionZeroRttComplete();
+  EXPECT_TRUE(HasActiveSession(host_port_pair_));
+
+  EXPECT_THAT(callback_.WaitForResult(), IsOk());
+
+  std::unique_ptr<HttpStream> stream = CreateStream(&request);
+  EXPECT_TRUE(stream.get());
+  EXPECT_TRUE(socket_data.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data.AllWriteDataConsumed());
+}
+
 TEST_P(QuicStreamFactoryTest, DefaultInitialRtt) {
   Initialize();
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();

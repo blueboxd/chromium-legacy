@@ -1270,7 +1270,7 @@ int Browser::GetTopControlsHeight() {
 }
 
 bool Browser::DoBrowserControlsShrinkRendererSize(
-    const content::WebContents* contents) {
+    content::WebContents* contents) {
   return window_->DoBrowserControlsShrinkRendererSize(contents);
 }
 

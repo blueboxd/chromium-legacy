@@ -649,9 +649,14 @@ IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest, UISetsPrefs) {
 
   // Verify that the initial preferences aren't the same as those set below.
   ExpectBodyHasThemeAndFont(contents, "light", "sans-serif");
+  std::string initial_font_size;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(contents, kGetFontSize,
+                                                     &initial_font_size));
+  EXPECT_EQ(initial_font_size, "16px");
   EXPECT_NE(mojom::Theme::kDark, distilled_page_prefs->GetTheme());
   EXPECT_NE(mojom::FontFamily::kMonospace,
             distilled_page_prefs->GetFontFamily());
+  EXPECT_NE(3.0, distilled_page_prefs->GetFontScaling());
 
   // 'Click' the associated UI elements for changing each preference.
   const std::string script = R"(
@@ -674,6 +679,9 @@ IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest, UISetsPrefs) {
         document.querySelector(
             '#font-family-selection option[value="monospace"]')
           .dispatchEvent(new Event("change", { bubbles: true }));
+        const slider = document.getElementById('font-size-selection');
+        slider.value = 9;
+        slider.dispatchEvent(new Event("input", {bubbles: true}));
       })();)";
   content::DOMMessageQueue queue(contents);
   std::string result;
@@ -685,7 +693,8 @@ IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest, UISetsPrefs) {
   PrefChangeObserver observer;
   while (distilled_page_prefs->GetTheme() != mojom::Theme::kDark ||
          mojom::FontFamily::kMonospace !=
-             distilled_page_prefs->GetFontFamily()) {
+             distilled_page_prefs->GetFontFamily() ||
+         3.0f != distilled_page_prefs->GetFontScaling()) {
     observer.WaitForChange(distilled_page_prefs);
   }
 }

@@ -80,6 +80,7 @@ source_set("test_support") {
     "fake_file_operations.cc",
     "fake_file_operations.h",
     "get_desktop_directory.cc",
+    "test_byte_vector_utils.h",
   ]
   deps = [
     ":common",

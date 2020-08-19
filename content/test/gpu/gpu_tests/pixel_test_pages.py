@@ -10,6 +10,16 @@ from gpu_tests import skia_gold_matching_algorithms as algo
 
 CRASH_TYPE_GPU = 'gpu'
 
+# These tests attempt to use test rects that are larger than the small screen
+# on some Fuchsia devices, so we need to use a less-desirable screenshot capture
+# method to get the entire page contents instead of just the visible portion.
+PROBLEMATIC_FUCHSIA_TESTS = [
+    'Maps_maps',
+    'Pixel_BackgroundImage',
+    'Pixel_PrecisionRoundedCorner',
+    'Pixel_SolidColorBackground',
+]
+
 # Meant to be used when we know a test is going to be noisy, and we want any
 # images it generates to be auto-triaged until we have enough data to calculate
 # more suitable/less permissive parameters.

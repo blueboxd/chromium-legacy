@@ -7,6 +7,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/no_destructor.h"
+#include "base/run_loop.h"
 #include "weblayer/browser/profile_impl.h"
 #include "weblayer/test/weblayer_browsertests_jni/MetricsTestHelper_jni.h"
 
@@ -48,7 +49,11 @@ ProfileImpl* CreateProfile(const std::string& name) {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_MetricsTestHelper_createProfile(
       env, base::android::ConvertUTF8ToJavaString(env, name));
-  return GetProfileByName(name);
+  ProfileImpl* profile = GetProfileByName(name);
+  // Creating a profile may involve storage partition initialization. Wait for
+  // the initialization to be completed.
+  base::RunLoop().RunUntilIdle();
+  return profile;
 }
 void DestroyProfile(const std::string& name) {
   DCHECK(GetProfileByName(name));

@@ -21,8 +21,8 @@
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/ui/webui/chromeos/login/encryption_migration_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
-#include "chrome/browser/ui/webui/chromeos/login/user_creation_screen_handler.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/cryptohome/account_identifier_operators.h"
 #include "chromeos/dbus/cryptohome/fake_cryptohome_client.h"
@@ -369,7 +369,7 @@ IN_PROC_BROWSER_TEST_F(EncryptionMigrationTest, MinimalMigrationWithTimeout) {
       cryptohome::DIRCRYPTO_MIGRATION_SUCCESS, 5 /*current*/, 5 /*total*/);
   EXPECT_EQ(0, FakePowerManagerClient::Get()->num_request_restart_calls());
 
-  OobeScreenWaiter(UserCreationView::kScreenId).Wait();
+  OobeScreenWaiter(GaiaView::kScreenId).Wait();
 }
 
 IN_PROC_BROWSER_TEST_F(EncryptionMigrationTest,
@@ -449,7 +449,7 @@ IN_PROC_BROWSER_TEST_F(EncryptionMigrationTest, WipeMigrationActionPolicy) {
   SetUpStubAuthenticatorAndAttemptLogin(false /* has_incomplete_migration */);
 
   // Wipe is expected to wipe the cryptohome, and force online login.
-  OobeScreenWaiter(UserCreationView::kScreenId).Wait();
+  OobeScreenWaiter(GaiaView::kScreenId).Wait();
 
   EXPECT_FALSE(FakeCryptohomeClient::Get()
                    ->get_id_for_disk_migrated_to_dircrypto()

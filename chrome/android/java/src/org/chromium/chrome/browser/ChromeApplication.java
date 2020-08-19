@@ -7,7 +7,6 @@ package org.chromium.chrome.browser;
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.ApplicationInfo;
 import android.content.res.Configuration;
 import android.os.Bundle;
 
@@ -93,14 +92,8 @@ public class ChromeApplication extends Application {
             CommandLineInitUtil.initCommandLine(
                     COMMAND_LINE_FILE, ChromeApplication::shouldUseDebugFlags);
 
-            // Enable ATrace on debug OS or app builds.
-            int applicationFlags = context.getApplicationInfo().flags;
-            boolean isAppDebuggable = (applicationFlags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
-            boolean isOsDebuggable = BuildInfo.isDebugAndroid();
             // Requires command-line flags.
-            TraceEvent.maybeEnableEarlyTracing(
-                    (isAppDebuggable || isOsDebuggable) ? TraceEvent.ATRACE_TAG_APP : 0,
-                    /*readCommandLine=*/true);
+            TraceEvent.maybeEnableEarlyTracing();
             TraceEvent.begin("ChromeApplication.attachBaseContext");
 
             // Register for activity lifecycle callbacks. Must be done before any activities are

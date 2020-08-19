@@ -84,6 +84,11 @@ class ASH_EXPORT QuickAnswersControllerImpl
     return quick_answers_ui_controller_.get();
   }
 
+  chromeos::quick_answers::QuickAnswersConsent*
+  GetConsentControllerForTesting() {
+    return consent_controller_.get();
+  }
+
  private:
   void MaybeDismissQuickAnswersConsent();
 

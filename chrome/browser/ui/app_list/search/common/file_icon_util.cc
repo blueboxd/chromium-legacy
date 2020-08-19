@@ -20,6 +20,7 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
 
 namespace {
@@ -32,6 +33,8 @@ constexpr SkColor kFiletypePptColor = SkColorSetRGB(255, 117, 55);
 
 // Hex color: #796EEE
 constexpr SkColor kFiletypeSitesColor = SkColorSetRGB(121, 110, 238);
+
+constexpr SkColor kWhiteBackgroundColor = SkColorSetRGB(255, 255, 255);
 
 constexpr int kIconDipSize = 20;
 
@@ -180,7 +183,7 @@ IconType GetIconTypeFromString(const std::string& icon_type_string) {
   return IconType::GENERIC;
 }
 
-gfx::ImageSkia GetVectorIconFromIconType(IconType icon) {
+gfx::ImageSkia GetVectorIconFromIconType(IconType icon, bool is_chip_icon) {
   // Changes to this map should be reflected in
   // ui/file_manager/file_manager/common/js/file_type.js.
   static const base::NoDestructor<std::map<IconType, gfx::IconDescription>>
@@ -263,42 +266,16 @@ gfx::ImageSkia GetVectorIconFromIconType(IconType icon) {
 
   const auto& id_it = icon_type_to_icon_description->find(icon);
   DCHECK(id_it != icon_type_to_icon_description->end());
+
+  // If it is a launcher chip icon, we need to draw 2 icons: a white circle
+  // background icon (kFiletypeChipBackgroundIcon) and the icon of the file.
+  if (is_chip_icon) {
+    return gfx::ImageSkiaOperations::CreateSuperimposedImage(
+        gfx::CreateVectorIcon(ash::kFiletypeChipBackgroundIcon, kIconDipSize,
+                              kWhiteBackgroundColor),
+        gfx::CreateVectorIcon(id_it->second));
+  }
   return gfx::CreateVectorIcon(id_it->second);
-}
-
-int GetChipResourceIdForIconType(IconType icon) {
-  static const base::NoDestructor<base::flat_map<IconType, int>>
-      icon_to_chip_resource_id({
-          {IconType::ARCHIVE, IDR_LAUNCHER_CHIP_ICON_ARCHIVE},
-          {IconType::AUDIO, IDR_LAUNCHER_CHIP_ICON_AUDIO},
-          {IconType::CHART, IDR_LAUNCHER_CHIP_ICON_CHART},
-          {IconType::DRIVE, IDR_LAUNCHER_CHIP_ICON_DRIVE},
-          {IconType::EXCEL, IDR_LAUNCHER_CHIP_ICON_EXCEL},
-          {IconType::FOLDER, IDR_LAUNCHER_CHIP_ICON_FOLDER},
-          {IconType::FOLDER_SHARED, IDR_LAUNCHER_CHIP_ICON_FOLDER_SHARED},
-          {IconType::GDOC, IDR_LAUNCHER_CHIP_ICON_GDOC},
-          {IconType::GDRAW, IDR_LAUNCHER_CHIP_ICON_GDRAW},
-          {IconType::GENERIC, IDR_LAUNCHER_CHIP_ICON_GENERIC},
-          {IconType::GFORM, IDR_LAUNCHER_CHIP_ICON_GFORM},
-          {IconType::GMAP, IDR_LAUNCHER_CHIP_ICON_GMAP},
-          {IconType::GSHEET, IDR_LAUNCHER_CHIP_ICON_GSHEET},
-          {IconType::GSITE, IDR_LAUNCHER_CHIP_ICON_GSITE},
-          {IconType::GSLIDE, IDR_LAUNCHER_CHIP_ICON_GSLIDE},
-          {IconType::GTABLE, IDR_LAUNCHER_CHIP_ICON_GTABLE},
-          {IconType::IMAGE, IDR_LAUNCHER_CHIP_ICON_IMAGE},
-          {IconType::LINUX, IDR_LAUNCHER_CHIP_ICON_LINUX},
-          {IconType::PDF, IDR_LAUNCHER_CHIP_ICON_PDF},
-          {IconType::PPT, IDR_LAUNCHER_CHIP_ICON_PPT},
-          {IconType::SCRIPT, IDR_LAUNCHER_CHIP_ICON_SCRIPT},
-          {IconType::SITES, IDR_LAUNCHER_CHIP_ICON_SITES},
-          {IconType::TINI, IDR_LAUNCHER_CHIP_ICON_TINI},
-          {IconType::VIDEO, IDR_LAUNCHER_CHIP_ICON_VIDEO},
-          {IconType::WORD, IDR_LAUNCHER_CHIP_ICON_WORD},
-      });
-
-  const auto& id_it = icon_to_chip_resource_id->find(icon);
-  DCHECK(id_it != icon_to_chip_resource_id->end());
-  return id_it->second;
 }
 
 }  // namespace internal
@@ -309,9 +286,8 @@ gfx::ImageSkia GetIconForPath(const base::FilePath& filepath) {
 }
 
 gfx::ImageSkia GetChipIconForPath(const base::FilePath& filepath) {
-  return *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-      internal::GetChipResourceIdForIconType(
-          internal::GetIconTypeForPath(filepath)));
+  return internal::GetVectorIconFromIconType(
+      internal::GetIconTypeForPath(filepath), /*is_chip_icon=*/true);
 }
 
 gfx::ImageSkia GetIconFromType(const std::string& icon_type) {

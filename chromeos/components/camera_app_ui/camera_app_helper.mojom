@@ -30,6 +30,14 @@ interface ScreenStateMonitor {
   Update(ScreenState state);
 };
 
+// Interface for monitoring the existence of external screen. The state is
+// detected from Chrome browser process and is notified to Chrome Camera App in
+// renderer process.
+interface ExternalScreenMonitor {
+  // Updates when the existence of external screen got changed.
+  Update(bool has_external_screen);
+};
+
 // Interface for communication between Chrome Camera App (Remote) and Chrome
 // (Receiver).
 interface CameraAppHelper {
@@ -65,4 +73,10 @@ interface CameraAppHelper {
   // Checks if the logging consent option is enabled. It is only usable for SWA
   // version. For platform app version, we use Chrome MetricsPrivate API.
   IsMetricsAndCrashReportingEnabled() => (bool is_enabled);
+
+  // Registers a ExternalScreenMonitor instance and returns the initial state of
+  // the existence of external screen. Calling the Update() whenever the screen
+  // state changes.
+  SetExternalScreenMonitor(pending_remote<ExternalScreenMonitor> monitor)
+      => (bool has_external_screen);
 };

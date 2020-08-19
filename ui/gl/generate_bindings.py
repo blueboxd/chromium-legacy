@@ -2119,7 +2119,14 @@ GL_FUNCTIONS = [
 { 'return_type': 'void',
  'names': [ 'glTexStorageMem2DEXT'] ,
   'arguments': 'GLenum target, GLsizei levels, GLenum internalFormat, '
-  'GLsizei width, GLsizei height, GLuint memory, GLuint64 offset'},
+  'GLsizei width, GLsizei height, GLuint memory, GLuint64 offset', },
+{ 'return_type': 'void',
+ 'names': [ 'glTexStorageMemFlags2DANGLE'] ,
+  'versions': [{ 'name': 'glTexStorageMemFlags2DANGLE',
+                 'extensions': ['GL_ANGLE_memory_object_flags'] }],
+  'arguments': 'GLenum target, GLsizei levels, GLenum internalFormat, '
+  'GLsizei width, GLsizei height, GLuint memory, GLuint64 offset, '
+  'GLbitfield createFlags, GLbitfield usageFlags', },
 { 'return_type': 'void',
   'names': ['glTexSubImage2D'],
   'arguments':

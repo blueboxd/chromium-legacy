@@ -283,6 +283,10 @@ int MockPersistentReportingStore::CountCommands(Command::Type t) {
   return c;
 }
 
+void MockPersistentReportingStore::ClearCommands() {
+  command_list_.clear();
+}
+
 MockPersistentReportingStore::CommandList
 MockPersistentReportingStore::GetAllCommands() const {
   return command_list_;

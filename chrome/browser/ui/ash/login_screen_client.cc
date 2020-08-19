@@ -166,8 +166,9 @@ void LoginScreenClient::ShowGaiaSignin(const AccountId& prefilled_account) {
         prefilled_account,
         base::BindOnce(&LoginScreenClient::OnParentAccessValidation,
                        weak_ptr_factory_.GetWeakPtr(), prefilled_account),
-        ash::ParentAccessRequestReason::kOnlineLogin, false /* extra_dimmer */,
-        base::Time::Now());
+        prefilled_account.empty() ? ash::ParentAccessRequestReason::kAddUser
+                                  : ash::ParentAccessRequestReason::kReauth,
+        false /* extra_dimmer */, base::Time::Now());
   } else {
     ShowGaiaSigninInternal(prefilled_account);
   }

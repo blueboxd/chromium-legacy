@@ -9,9 +9,9 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/files/file_path.h"
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
@@ -173,6 +173,8 @@ class Profile : public content::BrowserContext {
   static const char kProfileKey[];
 
   Profile();
+  Profile(const Profile&) = delete;
+  Profile& operator=(const Profile&) = delete;
   ~Profile() override;
 
   // Profile prefs are registered as soon as the prefs are loaded for the first
@@ -394,7 +396,7 @@ class Profile : public content::BrowserContext {
   // more recent (or equal to) the one specified.
   virtual bool WasCreatedByVersionOrLater(const std::string& version) = 0;
 
-  std::string GetDebugName();
+  std::string GetDebugName() const;
 
   // IsRegularProfile() and IsIncognitoProfile() are mutually exclusive.
   // IsSystemProfile() implies that IsRegularProfile() is true.
@@ -440,12 +442,12 @@ class Profile : public content::BrowserContext {
   virtual void SetExitType(ExitType exit_type) = 0;
 
   // Returns how the last session was shutdown.
-  virtual ExitType GetLastSessionExitType() = 0;
+  virtual ExitType GetLastSessionExitType() const = 0;
 
   // Returns whether session cookies are restored and saved. The value is
   // ignored for in-memory profiles.
-  virtual bool ShouldRestoreOldSessionCookies();
-  virtual bool ShouldPersistSessionCookies();
+  virtual bool ShouldRestoreOldSessionCookies() const;
+  virtual bool ShouldPersistSessionCookies() const;
 
   // Configures NetworkContextParams and CertVerifierCreationParams for the
   // specified isolated app (or for the profile itself, if |relative_path| is
@@ -476,7 +478,7 @@ class Profile : public content::BrowserContext {
   // Returns whether the profile is new.  A profile is new if the browser has
   // not been shut down since the profile was created.
   // This method is virtual in order to be overridden for tests.
-  virtual bool IsNewProfile();
+  virtual bool IsNewProfile() const;
 
   // Send NOTIFICATION_PROFILE_DESTROYED for this Profile, if it has not
   // already been sent. It is necessary because most Profiles are destroyed by
@@ -518,28 +520,26 @@ class Profile : public content::BrowserContext {
   void NotifyOffTheRecordProfileCreated(Profile* off_the_record);
 
  private:
-  bool restored_last_session_;
+  bool restored_last_session_ = false;
 
   // Used to prevent the notification that this Profile is destroyed from
   // being sent twice.
-  bool sent_destroyed_notification_;
+  bool sent_destroyed_notification_ = false;
 
   // Accessibility events will only be propagated when the pause
   // level is zero.  PauseAccessibilityEvents and ResumeAccessibilityEvents
   // increment and decrement the level, respectively, rather than set it to
   // true or false, so that calls can be nested.
-  int accessibility_pause_level_;
+  int accessibility_pause_level_ = 0;
 
-  bool is_guest_profile_;
+  bool is_guest_profile_ = false;
 
   // A non-browsing profile not associated to a user. Sample use: User-Manager.
-  bool is_system_profile_;
+  bool is_system_profile_ = false;
 
   base::ObserverList<ProfileObserver> observers_;
 
   std::unique_ptr<variations::VariationsClient> chrome_variations_client_;
-
-  DISALLOW_COPY_AND_ASSIGN(Profile);
 };
 
 // The comparator for profile pointers as key in a map.

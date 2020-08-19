@@ -220,15 +220,15 @@ std::vector<AssistantNotificationButton> CreateTimerNotificationButtons(
     }
   }
 
-  // "CANCEL" button.
-  buttons.push_back(
-      {l10n_util::GetStringUTF8(IDS_ASSISTANT_TIMER_NOTIFICATION_CANCEL_BUTTON),
-       assistant::util::CreateAlarmTimerDeepLink(
-           AlarmTimerAction::kRemoveAlarmOrTimer, timer.id)
-           .value(),
-       /*remove_notification_on_click=*/true});
-
   if (timer.state == AssistantTimerState::kFired) {
+    // "STOP" button.
+    buttons.push_back(
+        {l10n_util::GetStringUTF8(IDS_ASSISTANT_TIMER_NOTIFICATION_STOP_BUTTON),
+         assistant::util::CreateAlarmTimerDeepLink(
+             AlarmTimerAction::kRemoveAlarmOrTimer, timer.id)
+             .value(),
+         /*remove_notification_on_click=*/true});
+
     // "ADD 1 MIN" button.
     buttons.push_back({l10n_util::GetStringUTF8(
                            IDS_ASSISTANT_TIMER_NOTIFICATION_ADD_1_MIN_BUTTON),
@@ -237,6 +237,14 @@ std::vector<AssistantNotificationButton> CreateTimerNotificationButtons(
                            base::TimeDelta::FromMinutes(1))
                            .value(),
                        /*remove_notification_on_click=*/false});
+  } else {
+    // "CANCEL" button.
+    buttons.push_back({l10n_util::GetStringUTF8(
+                           IDS_ASSISTANT_TIMER_NOTIFICATION_CANCEL_BUTTON),
+                       assistant::util::CreateAlarmTimerDeepLink(
+                           AlarmTimerAction::kRemoveAlarmOrTimer, timer.id)
+                           .value(),
+                       /*remove_notification_on_click=*/true});
   }
 
   return buttons;
@@ -269,7 +277,9 @@ AssistantNotificationPriority CreateTimerNotificationPriority(
 }
 
 // Creates a notification for the given |timer|.
-AssistantNotification CreateTimerNotification(const AssistantTimer& timer) {
+AssistantNotification CreateTimerNotification(
+    const AssistantTimer& timer,
+    const AssistantNotification* existing_notification = nullptr) {
   AssistantNotification notification;
   notification.title = CreateTimerNotificationTitle(timer);
   notification.message = CreateTimerNotificationMessage(timer);
@@ -280,6 +290,16 @@ AssistantNotification CreateTimerNotification(const AssistantTimer& timer) {
   notification.priority = CreateTimerNotificationPriority(timer);
   notification.remove_on_click = !IsTimersV2Enabled();
   notification.is_pinned = IsTimersV2Enabled();
+
+  // If we are creating a notification to replace an |existing_notification| and
+  // our new notification has higher priority, we want the system to "renotify"
+  // the user of the notification change. This will cause the new notification
+  // to popup to the user even if it was previously marked as read.
+  if (existing_notification &&
+      notification.priority > existing_notification->priority) {
+    notification.renotify = true;
+  }
+
   return notification;
 }
 
@@ -411,14 +431,17 @@ void AssistantAlarmTimerControllerImpl::OnTimerUpdated(
   // Schedule the next tick of |timer|.
   ScheduleNextTick(timer);
 
-  // When a |timer| is updated we need to update the corresponding notification
-  // unless it has already been dismissed by the user.
   auto* notification_controller =
       assistant_controller_->notification_controller();
-  if (notification_controller->model()->HasNotificationForId(
-          CreateTimerNotificationId(timer))) {
+  const auto* existing_notification =
+      notification_controller->model()->GetNotificationById(
+          CreateTimerNotificationId(timer));
+
+  // When a |timer| is updated we need to update the corresponding notification
+  // unless it has already been dismissed by the user.
+  if (existing_notification) {
     notification_controller->AddOrUpdateNotification(
-        CreateTimerNotification(timer));
+        CreateTimerNotification(timer, existing_notification));
   }
 }
 

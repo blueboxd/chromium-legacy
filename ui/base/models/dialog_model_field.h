@@ -15,7 +15,11 @@
 namespace ui {
 
 class DialogModel;
+class DialogModelButton;
+class DialogModelBodyText;
+class DialogModelCombobox;
 class DialogModelHost;
+class DialogModelTextfield;
 class Event;
 
 // These "field" classes represent entries in a DialogModel. They are owned
@@ -41,6 +45,10 @@ class COMPONENT_EXPORT(UI_BASE) DialogModelField {
       util::PassKey<DialogModelHost>) const {
     return accelerators_;
   }
+  DialogModelButton* AsButton(util::PassKey<DialogModelHost>);
+  DialogModelBodyText* AsBodyText(util::PassKey<DialogModelHost>);
+  DialogModelCombobox* AsCombobox(util::PassKey<DialogModelHost>);
+  DialogModelTextfield* AsTextfield(util::PassKey<DialogModelHost>);
 
  protected:
   // Children of this class need to be constructed through DialogModel to help
@@ -50,6 +58,11 @@ class COMPONENT_EXPORT(UI_BASE) DialogModelField {
                    Type type,
                    int unique_id,
                    base::flat_set<Accelerator> accelerators);
+
+  DialogModelButton* AsButton();
+  DialogModelBodyText* AsBodyText();
+  DialogModelCombobox* AsCombobox();
+  DialogModelTextfield* AsTextfield();
 
  private:
   friend class DialogModel;

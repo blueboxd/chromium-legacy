@@ -4,8 +4,9 @@
 
 module crosapi.mojom;
 
-import "mojo/public/mojom/base/time.mojom";
+import "chromeos/crosapi/mojom/bitmap.mojom";
 import "mojo/public/mojom/base/string16.mojom";
+import "mojo/public/mojom/base/time.mojom";
 import "url/mojom/url.mojom";
 
 // Type of notification to show. See the chrome.notifications extension API:
@@ -23,6 +24,30 @@ enum NotificationType {
 
   // Progress bar.
   kProgress = 3,
+};
+
+// How to display notifications when a fullscreen window is open. For example,
+// a child account time limit notification should appear over a fullscreen
+// video.
+[Extensible]
+enum FullscreenVisibility {
+  // Do not show over fullscreen windows.
+  kNone = 0,
+
+  // Show on top of user-created fullscreen windows.
+  kOverUser = 1,
+};
+
+// List items for NotificationType::kList.
+struct NotificationItem {
+  mojo_base.mojom.String16 title;
+  mojo_base.mojom.String16 message;
+};
+
+// Data for each button. Implemented as a struct for extensibility (e.g. so we
+// could add icon buttons).
+struct ButtonInfo {
+  mojo_base.mojom.String16 title;
 };
 
 // A notification to show in the system message center. Fields exist to support
@@ -51,6 +76,56 @@ struct Notification {
   // notification. Otherwise empty.
   url.mojom.Url? origin_url;
 
-  // TODO(https://crbug.com/1113889): Support additional fields, such as images
-  // (icon, large image), priority, timestamp, buttons, item lists, etc.
+  // Icon for the notification.
+  Bitmap? icon;
+
+  // Priority from -2 to 2. Zero is the default. Other values are clamped.
+  int32 priority;
+
+  // User must explicitly dismiss.
+  bool require_interaction;
+
+  // Time at which the notification is applicable (past, present or future).
+  // See web platform API "timestamp" and chrome.notifications "eventTime".
+  mojo_base.mojom.Time timestamp;
+
+  // For type kImage, the large image.
+  Bitmap? image;
+
+  // Badge to show the source of the notification (e.g. a 16x16 browser icon).
+  Bitmap? badge;
+
+  // Item list for type kList. Not displayed for other types.
+  array<NotificationItem> items;
+
+  // Progress from 0 to 100 for type kProgress. Negative values result in an
+  // animating "indefinite progress" indicator. Values above 100 are clamped.
+  int32 progress;
+
+  // Status message for type kProgress.
+  mojo_base.mojom.String16 progress_status;
+
+  // Up to 4 buttons. It is not guaranteed that all buttons will be visible,
+  // especially if the labels are long.
+  array<ButtonInfo> buttons;
+
+  // Pinned notifications cannot be closed by the user, only by a call to
+  // MessageCenter::CloseNotification.
+  bool pinned;
+
+  // Whether an announcement should occur (e.g. a popup or vibration) when an
+  // existing notification is updated. See web platform API
+  // Notification.renotify.
+  bool renotify;
+
+  // Whether all announcement mechanisms should be suppressed. See web platform
+  // API Notification.silent.
+  bool silent;
+
+  // Accessible description of the notification's contents. If empty, the
+  // message field will be used instead.
+  mojo_base.mojom.String16 accessible_name;
+
+  // Whether to show on top of fullscreen windows. See enum definition.
+  FullscreenVisibility fullscreen_visibility;
 };

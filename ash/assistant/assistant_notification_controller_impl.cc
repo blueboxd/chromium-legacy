@@ -51,6 +51,7 @@ std::unique_ptr<message_center::Notification> CreateSystemNotification(
           /*delegate=*/nullptr, kNotificationAssistantIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);
 
+  system_notification->set_renotify(notification.renotify);
   system_notification->set_pinned(notification.is_pinned);
 
   switch (notification.priority) {

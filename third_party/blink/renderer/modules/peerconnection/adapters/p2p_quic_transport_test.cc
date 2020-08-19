@@ -486,7 +486,7 @@ class ConnectedCryptoClientStream final : public quic::QuicCryptoClientStream {
                                           &error_details);
     session()->OnConfigNegotiated();
     if (session()->version().UsesTls()) {
-      session()->OnOneRttKeysAvailable();
+      session()->OnTlsHandshakeComplete();
     } else {
       session()->SetDefaultEncryptionLevel(quic::ENCRYPTION_FORWARD_SECURE);
     }

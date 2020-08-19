@@ -32,8 +32,8 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/marketing_opt_in_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/user_creation_screen_handler.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -180,7 +180,7 @@ void MarketingOptInScreenTest::SetUpOnMainThread() {
 
   OobeBaseTest::SetUpOnMainThread();
   login_manager_mixin_.LoginAsNewRegularUser();
-  OobeScreenExitWaiter(UserCreationView::kScreenId).Wait();
+  OobeScreenExitWaiter(GaiaView::kScreenId).Wait();
   ProfileManager::GetActiveUserProfile()->GetPrefs()->SetBoolean(
       ash::prefs::kGestureEducationNotificationShown, true);
 }

@@ -202,7 +202,7 @@ void KioskProfileLoader::OnAuthFailure(const AuthFailure& error) {
   ReportLaunchResult(LoginFailureToKioskAppLaunchError(error));
 }
 
-void KioskProfileLoader::WhiteListCheckFailed(const std::string& email) {
+void KioskProfileLoader::AllowlistCheckFailed(const std::string& email) {
   NOTREACHED();
 }
 

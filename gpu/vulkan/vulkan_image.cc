@@ -105,6 +105,7 @@ std::unique_ptr<VulkanImage> VulkanImage::Create(
     VkDeviceSize device_size,
     uint32_t memory_type_index,
     base::Optional<VulkanYCbCrInfo>& ycbcr_info,
+    VkImageUsageFlags usage,
     VkImageCreateFlags flags) {
   auto image = std::make_unique<VulkanImage>(util::PassKey<VulkanImage>());
   image->device_queue_ = device_queue;
@@ -116,6 +117,7 @@ std::unique_ptr<VulkanImage> VulkanImage::Create(
   image->device_size_ = device_size;
   image->memory_type_index_ = memory_type_index;
   image->ycbcr_info_ = ycbcr_info;
+  image->usage_ = usage;
   image->flags_ = flags;
   return image;
 }
@@ -181,6 +183,7 @@ bool VulkanImage::Initialize(VulkanDeviceQueue* device_queue,
   device_queue_ = device_queue;
   size_ = size;
   format_ = format;
+  usage_ = usage;
   flags_ = flags;
   image_tiling_ = image_tiling;
 

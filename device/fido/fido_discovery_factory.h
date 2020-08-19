@@ -16,6 +16,7 @@
 #include "device/fido/fido_discovery_base.h"
 #include "device/fido/fido_request_handler_base.h"
 #include "device/fido/fido_transport_protocol.h"
+#include "device/fido/hid/fido_hid_discovery.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/usb_manager.mojom.h"
 
@@ -58,6 +59,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDiscoveryFactory {
   void set_cable_pairing_callback(
       base::RepeatingCallback<void(std::unique_ptr<CableDiscoveryData>)>);
 
+  void set_hid_ignore_list(base::flat_set<VidPid> hid_ignore_list);
+
 #if defined(OS_MAC)
   // Configures the Touch ID authenticator. Set to base::nullopt to disable it.
   void set_mac_touch_id_info(
@@ -96,6 +99,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDiscoveryFactory {
 #if defined(OS_WIN)
   WinWebAuthnApi* win_webauthn_api_ = nullptr;
 #endif  // defined(OS_WIN)
+  base::flat_set<VidPid> hid_ignore_list_;
 };
 
 }  // namespace device

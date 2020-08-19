@@ -18,7 +18,9 @@
 namespace content {
 
 // This class provides an interface for persisting impression/conversion data to
-// disk, and performing queries on it.
+// disk, and performing queries on it. ConversionStorage should initialize
+// itself. Calls to a ConversionStorage instance that failed to initialize
+// properly should result in no-ops.
 class ConversionStorage {
  public:
   // Storage delegate that can supplied to extend basic conversion storage
@@ -63,10 +65,6 @@ class ConversionStorage {
 
   // When adding a new method, also add it to
   // ConversionStorageTest.StorageUsedAfterFailedInitilization_FailsSilently.
-
-  // Initializes the storage. Returns true on success, otherwise the storage
-  // should not be used.
-  virtual bool Initialize() = 0;
 
   // Add |impression| to storage. Two impressions are considered
   // matching when they share a <reporting_origin, conversion_origin> pair. When

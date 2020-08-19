@@ -17,39 +17,34 @@ namespace media {
 namespace {
 
 // Period of inactivity after which we stop listening for MediaServer crashes.
-// NOTE: Server crashes don't count as acticity. Only calls to
+// NOTE: Server crashes don't count as activity. Only calls to
 // GetDelayForClientCreation() do.
-constexpr base::TimeDelta kReleaseInactivityDelay =
-    base::TimeDelta::FromMinutes(1);
+constexpr auto kReleaseInactivityDelay = base::TimeDelta::FromMinutes(1);
 
 // Elapsed time between crashes needed to completely reset the media server
 // crash count.
-constexpr base::TimeDelta kTimeUntilCrashReset =
-    base::TimeDelta::FromMinutes(1);
+constexpr auto kTimeUntilCrashReset = base::TimeDelta::FromMinutes(1);
 
 // Elapsed time between schedule calls needed to completely reset the
 // scheduling clock.
-constexpr base::TimeDelta kTimeUntilScheduleReset =
-    base::TimeDelta::FromMinutes(1);
+constexpr auto kTimeUntilScheduleReset = base::TimeDelta::FromMinutes(1);
 
 // Rate at which client creations will be exponentially throttled based on the
 // number of media server crashes.
 // NOTE: Since our exponential delay formula is 2^(server crashes), 0 server
 // crashes still result in this delay being added once.
-constexpr base::TimeDelta kBaseExponentialDelay =
-    base::TimeDelta::FromMilliseconds(120);
+constexpr auto kBaseExponentialDelay = base::TimeDelta::FromMilliseconds(120);
 
 // Base rate at which we schedule client creations.
 // The minimal delay is |kLinearThrottlingDelay| + |kBaseExponentialDelay|.
-// This corresponds to 0.2s.
-constexpr base::TimeDelta kLinearThrottlingDelay =
-    base::TimeDelta::FromMilliseconds(80);
+constexpr auto kLinearThrottlingDelay =
+    base::TimeDelta::FromSecondsD(0.2) - kBaseExponentialDelay;
 
 // Max exponential throttling rate from media server crashes.
 // The max delay will still be |kLinearThrottlingDelay| +
-// |kMaxExponentialDelay|. This corresponds to 3s.
-constexpr base::TimeDelta kMaxExponentialDelay =
-    base::TimeDelta::FromMilliseconds(2920);
+// |kMaxExponentialDelay|.
+constexpr auto kMaxExponentialDelay =
+    base::TimeDelta::FromSeconds(3) - kLinearThrottlingDelay;
 
 // Max number of clients to schedule immediately (e.g when loading a new page).
 const uint32_t kMaxBurstClients = 10;

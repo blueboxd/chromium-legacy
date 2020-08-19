@@ -188,7 +188,7 @@ PrintingContext::Result PrintingContextMac::UpdatePrinterSettings(
         !SetCopiesInPrintSettings(settings_->copies()) ||
         !SetCollateInPrintSettings(settings_->collate()) ||
         !SetDuplexModeInPrintSettings(settings_->duplex_mode()) ||
-        !SetOutputColor(settings_->color())) {
+        !SetOutputColor(static_cast<int>(settings_->color()))) {
       return OnError();
     }
   }

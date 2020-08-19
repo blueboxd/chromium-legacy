@@ -42,12 +42,12 @@ struct GridSpan;
 struct ContentAlignmentData {
  public:
   ContentAlignmentData() = default;
+  ContentAlignmentData(const ContentAlignmentData&) = delete;
+  ContentAlignmentData& operator=(const ContentAlignmentData&) = delete;
   bool IsValid() { return position_offset >= 0 && distribution_offset >= 0; }
 
   LayoutUnit position_offset = LayoutUnit(-1);
   LayoutUnit distribution_offset = LayoutUnit(-1);
-
-  DISALLOW_COPY_AND_ASSIGN(ContentAlignmentData);
 };
 
 enum GridAxisPosition { kGridAxisStart, kGridAxisEnd, kGridAxisCenter };

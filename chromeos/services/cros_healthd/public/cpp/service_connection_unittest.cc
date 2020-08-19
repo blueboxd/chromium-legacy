@@ -205,6 +205,10 @@ class MockNetworkDiagnosticsRoutines : public NetworkDiagnosticsRoutines {
               CaptivePortal,
               (NetworkDiagnosticsRoutines::CaptivePortalCallback),
               (override));
+  MOCK_METHOD(void,
+              HttpFirewall,
+              (NetworkDiagnosticsRoutines::HttpFirewallCallback),
+              (override));
 
   mojo::PendingRemote<NetworkDiagnosticsRoutines> pending_remote() {
     if (receiver_.is_bound()) {

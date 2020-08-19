@@ -52,6 +52,8 @@ and what needs to be resolved to make it non-tentative.
 
 ### Tests that require testing APIs
 
+#### `testdriver.js`
+
 [testdriver.js](https://web-platform-tests.org/writing-tests/testdriver.html)
 provides a means to automate tests that cannot be written purely using web
 platform APIs, similar to `internals.*` and `eventSender.*` in regular Blink
@@ -63,7 +65,36 @@ and otherwise consider filing a new issue. For instructions on how to add a new
 testing API, see [WPT Test Automation for
 Chromium](https://docs.google.com/document/d/18BpD41vyX1cFZ77CE0a_DJYlGpdvyLlx3pwXVRxUzvI/preview#)
 
-An alternative is to write manual tests that are automated with scripts from
+#### MojoJS
+
+Some specs may define testing APIs (e.g.
+[WebUSB](https://wicg.github.io/webusb/test/)), which may be polyfilled with
+internal API like [MojoJS](../../mojo/public/js/README.md).  MojoJS is only
+allowed in WPT for this purpose. Please reach out to
+ecosystem-infra@chromium.org before following the process below for adding a new
+test-only API:
+
+ 1. Create a full list of `*.mojom.js` files that you need, including all
+    dependencies. `mojo_bindings.js` loads dependencies recursively by default,
+    so you can check the network panel of DevTools to see the full list of
+    dependencies it loads.
+ 2. Check [FILES.cfg](../../chrome/tools/build/linux/FILES.cfg) and add any
+    missing `*.mojom.js` files to the `mojojs.zip` archive. Globs are supported
+    in `filename`. Do not copy Mojom bindings into WPT.
+ 3. Meanwhile in Chromium, you can create a helper for your WPT tests to do
+    browser-specific setup using
+    [test-only-api.js](../../third_party/blink/web_tests/external/wpt/resources/test-only-api.js).
+    See
+    [webxr_util.js](../../third_party/blink/web_tests/external/wpt/webxr/resources/webxr_util.js)
+    as an example. You can write tests using this helper right away, but they
+    will not work upstream (i.e. on https://wpt.fyi ) until your change in step
+    2 is included in official channels, as `mojojs.zip` is built alongside with
+    Chrome.
+
+#### `wpt_automation`
+
+An alternative to the above options is to write manual tests that are automated
+with scripts from
 [wpt_automation](../../third_party/blink/web_tests/external/wpt_automation).
 Injection of JS in manual tests is determined by `loadAutomationScript` in
 [testharnessreport.js](../../third_party/blink/web_tests/resources/testharnessreport.js).
@@ -75,6 +106,15 @@ Manual tests that have no automation are still imported, but skipped in
 [NeverFixTests](../../third_party/blink/web_tests/NeverFixTests); see
 [issue 738489](https://crbug.com/738489).
 
+### Contribution process
+
+Changes made in
+[web_tests/external/wpt](../../third_party/blink/web_tests/external/wpt) are
+[automatically exported to GitHub](#exporting-tests).
+
+It's still possible to make direct pull requests to web-platform-tests, see
+https://web-platform-tests.org/writing-tests/github-intro.html.
+
 ### Adding new top-level directories
 
 Entirely new top-level directories should generally be added upstream, since
@@ -84,29 +124,7 @@ directory upstream, you should add a line for it in `W3CImportExpectations`.
 Adding the new directory (and `W3CImportExpectations` entry) in Chromium and
 later adding an OWNERS file upstream also works.
 
-### Will the exported commits be linked to my GitHub profile?
-
-The email you commit with in Chromium will be the author of the commit on
-GitHub. You can [add it as a secondary address on your GitHub
-account](https://help.github.com/articles/adding-an-email-address-to-your-github-account/)
-to link your exported commits to your GitHub profile.
-
-If you are a Googler, you can also register your GitHub account at go/github,
-making it easier for other Googlers to find you.
-
-### What if there are conflicts?
-
-This cannot be avoided entirely as the two repositories are independent, but
-should be rare with frequent imports and exports. When it does happen, manual
-intervention will be needed and in non-trivial cases you may be asked to help
-resolve the conflict.
-
-### Direct pull requests
-
-It's still possible to make direct pull requests to web-platform-tests, see
-https://web-platform-tests.org/writing-tests/github-intro.html.
-
-### wpt_internal
+### `wpt_internal`
 
 It is sometimes desirable to write WPT tests that either test Chromium-specific
 behaviors, or that cannot yet be upstreamed to WPT (e.g. because the spec is
@@ -205,20 +223,7 @@ output.
 Note that we are considering making WPT-NOTIFY opt-out instead of opt-in: see
 https://crbug.com/845232
 
-### Enabling import for a new directory
-
-If you wish to add more tests (by un-skipping some of the directories currently
-skipped in `W3CImportExpectations`), you can modify that file locally and commit
-it, and on the next auto-import, the new tests should be imported.
-
-If you want to import immediately (in order to try the tests out locally, etc)
-you can also run `wpt-import`, but this is not required.
-
-Remember your import might fail due to GitHub's limit for unauthenticated
-requests, so consider [passing your GitHub credentials](#GitHub-credentials) to
-the script.
-
-### Skipped tests
+### Skipped tests (and how to re-enable them)
 
 We control which tests are imported via a file called
 [W3CImportExpectations](../../third_party/blink/web_tests/W3CImportExpectations),
@@ -228,6 +233,17 @@ In addition to the directories and tests explicitly skipped there, tests may
 also be skipped for a couple other reasons, e.g. if the file path is too long
 for Windows. To check what files are skipped in import, check the recent logs
 for [wpt-importer builder][wpt-importer].
+
+If you wish to un-skip some of the directories currently skipped in
+`W3CImportExpectations`, you can modify that file locally and commit it, and on
+the next auto-import, the new tests should be imported.
+
+If you want to import immediately (in order to try the tests out locally, etc)
+you can also run `wpt-import`, but this is not required.
+
+Remember your import might fail due to GitHub's limit for unauthenticated
+requests, so consider [passing your GitHub credentials](#GitHub-credentials) to
+the script.
 
 ### Waterfall failures caused by automatic imports.
 
@@ -272,12 +288,22 @@ Additional things to note:
 -   The exporter cannot create upstream PRs for in-flight CLs with binary files
     (e.g. webm files). An export PR will still be made after the CL lands.
 
-For maintainers:
+### Will the exported commits be linked to my GitHub profile?
 
--   The source lives in
-    [third_party/blink/tools/wpt_export.py](../../third_party/blink/tools/wpt_export.py).
--   If the exporter starts misbehaving (for example, creating the same PR over
-    and over again), put it in "dry run" mode by landing [this CL](https://crrev.com/c/462381/).
+The email you commit with in Chromium will be the author of the commit on
+GitHub. You can [add it as a secondary address on your GitHub
+account](https://help.github.com/articles/adding-an-email-address-to-your-github-account/)
+to link your exported commits to your GitHub profile.
+
+If you are a Googler, you can also register your GitHub account at go/github,
+making it easier for other Googlers to find you.
+
+### What if there are conflicts?
+
+This cannot be avoided entirely as the two repositories are independent, but
+should be rare with frequent imports and exports. When it does happen, manual
+intervention will be needed and in non-trivial cases you may be asked to help
+resolve the conflict.
 
 [wpt-exporter]: https://ci.chromium.org/p/infra/builders/luci.infra.cron/wpt-exporter
 
@@ -296,6 +322,14 @@ committed locally to your local repository. You may then upload the changes.
 Remember your import might fail due to GitHub's limit for unauthenticated
 requests, so consider [passing your GitHub credentials](#GitHub-credentials) to
 the script.
+
+### Exporter
+
+-   The source lives in
+    [third_party/blink/tools/wpt_export.py](../../third_party/blink/tools/wpt_export.py).
+-   If the exporter starts misbehaving (for example, creating the same PR over
+    and over again), put it in "dry run" mode by landing [this
+    CL](https://crrev.com/c/462381/).
 
 ### GitHub credentials
 

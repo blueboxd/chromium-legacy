@@ -104,7 +104,7 @@ TEST_F(CollapsedBorderValueTest, Compare) {
       "solid white thin cell",
       "solid transparent thin cell",
       "medium transparent",
-      "solid black thick table"
+      "solid black thick table",
       "solid black thick cell",
       "border style hidden",
   };

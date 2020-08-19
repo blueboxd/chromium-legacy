@@ -318,7 +318,7 @@ class XRSystem final : public EventTargetWithInlineData,
   };
 
   // Native event listener used when waiting for fullscreen mode to fully exit
-  // when ending an XR session.
+  // when starting or ending an XR session.
   class OverlayFullscreenExitObserver : public NativeEventListener {
    public:
     explicit OverlayFullscreenExitObserver(XRSystem* xr);
@@ -366,6 +366,9 @@ class XRSystem final : public EventTargetWithInlineData,
                             PendingRequestSessionQuery* query,
                             ExceptionState* exception_state);
 
+  void DoRequestSession(
+      PendingRequestSessionQuery* query,
+      device::mojom::blink::XRSessionOptionsPtr session_options);
   void OnRequestSessionSetupForDomOverlay(
       PendingRequestSessionQuery*,
       device::mojom::blink::RequestSessionResultPtr result);

@@ -32,7 +32,6 @@ class ArcAppDataSearchResult : public ChromeSearchResult {
   // ChromeSearchResult:
   void GetContextMenuModel(GetMenuModelCallback callback) override;
   void Open(int event_flags) override;
-  ash::SearchResultType GetSearchResultType() const override;
 
  private:
   const std::string& launch_intent_uri() const {

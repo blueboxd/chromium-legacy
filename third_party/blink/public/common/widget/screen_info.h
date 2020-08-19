@@ -32,7 +32,7 @@
 #define THIRD_PARTY_BLINK_PUBLIC_COMMON_WIDGET_SCREEN_INFO_H_
 
 #include "third_party/blink/public/mojom/widget/screen_orientation.mojom-shared.h"
-#include "ui/gfx/color_space.h"
+#include "ui/gfx/display_color_spaces.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace blink {
@@ -42,10 +42,10 @@ struct ScreenInfo {
   // pixels.
   float device_scale_factor = 1.f;
 
-  // The color space of the output display.
-  gfx::ColorSpace color_space;
+  // The color spaces used by output display for various content types.
+  gfx::DisplayColorSpaces display_color_spaces;
 
-  // The screen depth in bits per pixel
+  // The screen depth in bits per pixel.
   int depth = 0;
 
   // The bits per colour component. This assumes that the colours are balanced
@@ -91,7 +91,7 @@ struct ScreenInfo {
 
   bool operator==(const ScreenInfo& other) const {
     return this->device_scale_factor == other.device_scale_factor &&
-           this->color_space == other.color_space &&
+           this->display_color_spaces == other.display_color_spaces &&
            this->depth == other.depth &&
            this->depth_per_component == other.depth_per_component &&
            this->is_monochrome == other.is_monochrome &&

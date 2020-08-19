@@ -158,7 +158,8 @@ class DesktopSessionProxy
   void ReadChunk(std::uint64_t file_id, std::uint64_t size) override;
   void WriteFile(std::uint64_t file_id,
                  const base::FilePath& filename) override;
-  void WriteChunk(std::uint64_t file_id, std::string data) override;
+  void WriteChunk(std::uint64_t file_id,
+                  std::vector<std::uint8_t> data) override;
   void Close(std::uint64_t file_id) override;
   void Cancel(std::uint64_t file_id) override;
 

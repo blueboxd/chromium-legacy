@@ -1238,6 +1238,11 @@
     "expiry_milestone": 88
   },
   {
+    "name": "enable-avif",
+    "owners": [ "wtc", "dalecurtis" ],
+    "expiry_milestone": 90
+  },
+  {
     "name": "enable-background-blur",
     "owners": [ "newcomer" ],
     "expiry_milestone": 86
@@ -4163,7 +4168,7 @@
   {
     "name": "storage-access-api",
     "owners": [ "brandm@microsoft.com" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 90
   },
   {
     "name": "strict-origin-isolation",
@@ -4234,6 +4239,11 @@
     "name": "tab-outlines-in-low-contrast-themes",
     "owners": [ "dfried" ],
     "expiry_milestone": 82
+  },
+  {
+    "name": "tabbed-app-overflow-menu-icons",
+    "owners": [ "gangwu" ],
+    "expiry_milestone": 90
   },
   {
     "name": "terminal-system-app-legacy-settings",

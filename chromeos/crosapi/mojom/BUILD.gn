@@ -21,6 +21,7 @@ mojom("mojom") {
         {
           mojom = "crosapi.mojom.Bitmap"
           cpp = "crosapi::Bitmap"
+          move_only = true
         },
       ]
       traits_headers = [ "//chromeos/crosapi/mojom/bitmap_mojom_traits.h" ]

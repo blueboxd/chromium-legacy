@@ -43,12 +43,12 @@ class AppServiceAppResult : public AppResult {
   void Open(int event_flags) override;
   void GetContextMenuModel(GetMenuModelCallback callback) override;
   void OnVisibilityChanged(bool visibility) override;
-  ash::SearchResultType GetSearchResultType() const override;
   AppContextMenu* GetAppContextMenu() override;
 
   // AppContextMenuDelegate overrides:
   void ExecuteLaunchCommand(int event_flags) override;
 
+  ash::SearchResultType GetSearchResultType() const;
   void Launch(int event_flags, apps::mojom::LaunchSource launch_source);
 
   void CallLoadIcon(bool chip, bool allow_placeholder_icon);

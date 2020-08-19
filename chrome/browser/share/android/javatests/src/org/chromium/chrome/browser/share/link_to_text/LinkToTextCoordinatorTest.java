@@ -53,9 +53,19 @@ public class LinkToTextCoordinatorTest {
     @SmallTest
     public void getTextToShareTest() {
         String selector = "selector";
-        String expectedTextToShare = "\"selection\"\nwww.example.com:~:text=selector";
+        String expectedTextToShare = "\"selection\"\nwww.example.com#:~:text=selector";
         LinkToTextCoordinator coordinator = new LinkToTextCoordinator(
                 mAcivity, mWindow, mShareCallback, VISIBLE_URL, SELECTED_TEXT);
+        Assert.assertEquals(expectedTextToShare, coordinator.getTextToShare(selector));
+    }
+
+    @Test
+    @SmallTest
+    public void getTextToShareTest_URLWithFragment() {
+        String selector = "selector";
+        String expectedTextToShare = "\"selection\"\nwww.example.com#:~:text=selector";
+        LinkToTextCoordinator coordinator = new LinkToTextCoordinator(
+                mAcivity, mWindow, mShareCallback, VISIBLE_URL + "#elementid", SELECTED_TEXT);
         Assert.assertEquals(expectedTextToShare, coordinator.getTextToShare(selector));
     }
 

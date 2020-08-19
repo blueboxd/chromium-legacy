@@ -37,6 +37,7 @@
 #include "content/public/browser/web_contents.h"
 #include "net/base/filename_util.h"
 #include "printing/backend/print_backend.h"
+#include "printing/mojom/print.mojom.h"
 #include "printing/print_job_constants.h"
 #include "printing/printing_context.h"
 #include "printing/units.h"
@@ -100,7 +101,8 @@ base::Value GetPdfCapabilities(
   {
     cloud_devices::printer::Color standard_color(
         cloud_devices::printer::ColorType::STANDARD_COLOR);
-    standard_color.vendor_id = base::NumberToString(COLOR);
+    standard_color.vendor_id =
+        base::NumberToString(static_cast<int>(mojom::ColorModel::kColor));
     color.AddDefaultOption(standard_color, true);
   }
   color.SaveTo(&description);

@@ -121,7 +121,7 @@ const char kPrintPreviewHTML[] =
 void CreatePrintSettingsDictionary(base::DictionaryValue* dict) {
   dict->SetBoolean(kSettingLandscape, false);
   dict->SetBoolean(kSettingCollate, false);
-  dict->SetInteger(kSettingColor, GRAY);
+  dict->SetInteger(kSettingColor, static_cast<int>(mojom::ColorModel::kGray));
   dict->SetInteger(kSettingPrinterType, static_cast<int>(PrinterType::kPdf));
   dict->SetInteger(kSettingDuplexMode,
                    static_cast<int>(mojom::DuplexMode::kSimplex));

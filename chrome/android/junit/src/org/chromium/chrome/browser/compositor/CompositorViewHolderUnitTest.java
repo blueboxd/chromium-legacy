@@ -6,7 +6,12 @@ package org.chromium.chrome.browser.compositor;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.app.Activity;
@@ -25,7 +30,6 @@ import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
-import org.chromium.base.supplier.Supplier;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
@@ -37,6 +41,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.toolbar.ControlContainer;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.embedder_support.view.ContentView;
+import org.chromium.content_public.browser.WebContents;
 
 /**
  * Unit tests for {@link CompositorViewHolder}.
@@ -64,12 +69,15 @@ public class CompositorViewHolderUnitTest {
     @Mock
     private Tab mTab;
     @Mock
+    private WebContents mWebContents;
+    @Mock
     private ContentView mContentView;
+    @Mock
+    private CompositorView mCompositorView;
 
     private Context mContext;
     private CompositorViewHolder mCompositorViewHolder;
     private BrowserControlsManager mBrowserControlsManager;
-    private Supplier<Boolean> mControlsResizeView;
 
     @Before
     public void setUp() {
@@ -94,9 +102,10 @@ public class CompositorViewHolderUnitTest {
 
         mContext = ApplicationProvider.getApplicationContext();
         mCompositorViewHolder = spy(new CompositorViewHolder(mContext));
+        mCompositorViewHolder.setCompositorViewForTesting(mCompositorView);
         mCompositorViewHolder.setBrowserControlsManager(mBrowserControlsManager);
         when(mCompositorViewHolder.getContentView()).thenReturn(mContentView);
-        mControlsResizeView = mCompositorViewHolder::controlsResizeView;
+        when(mCompositorViewHolder.getWebContents()).thenReturn(mWebContents);
     }
 
     // controlsResizeView tests ---
@@ -125,9 +134,9 @@ public class CompositorViewHolderUnitTest {
         // Initially, the controls should be fully visible.
         assertTrue("Browser controls aren't fully visible.",
                 BrowserControlsUtils.areBrowserControlsFullyVisible(mBrowserControlsManager));
-        assertTrue("ControlsResizeView is false,"
-                        + " but it should be true when the controls are fully visible.",
-                mControlsResizeView.get());
+        // ControlsResizeView is false, but it should be true when the controls are fully visible.
+        verify(mCompositorView).onControlsResizeViewChanged(any(), eq(true));
+        reset(mCompositorView);
 
         // Scroll to fully hidden.
         tabControlsObserver.onBrowserControlsOffsetChanged(mTab, /*topControlsOffsetY*/ -100,
@@ -135,9 +144,9 @@ public class CompositorViewHolderUnitTest {
                 /*topControlsMinHeightOffsetY*/ 0, /*bottomControlsMinHeightOffsetY*/ 0);
         assertTrue("Browser controls aren't at min-height.",
                 mBrowserControlsManager.areBrowserControlsAtMinHeight());
-        assertFalse("ControlsResizeView is true,"
-                        + " but it should be false when the controls are hidden.",
-                mControlsResizeView.get());
+        // ControlsResizeView is true, but it should be false when the controls are hidden.
+        verify(mCompositorView).onControlsResizeViewChanged(any(), eq(false));
+        reset(mCompositorView);
 
         // Now, scroll back to fully visible.
         tabControlsObserver.onBrowserControlsOffsetChanged(mTab, /*topControlsOffsetY*/ 0,
@@ -148,9 +157,9 @@ public class CompositorViewHolderUnitTest {
         assertTrue("Browser controls aren't fully visible.",
                 BrowserControlsUtils.areBrowserControlsFullyVisible(mBrowserControlsManager));
         // #controlsResizeView should be flipped back to true.
-        assertTrue("ControlsResizeView is false,"
-                        + " but it should be true when the controls are fully visible.",
-                mControlsResizeView.get());
+        // ControlsResizeView is false, but it should be true when the controls are fully visible.
+        verify(mCompositorView).onControlsResizeViewChanged(any(), eq(true));
+        reset(mCompositorView);
     }
 
     @Test
@@ -177,9 +186,9 @@ public class CompositorViewHolderUnitTest {
         // Initially, the controls should be fully visible.
         assertTrue("Browser controls aren't fully visible.",
                 BrowserControlsUtils.areBrowserControlsFullyVisible(mBrowserControlsManager));
-        assertTrue("ControlsResizeView is false,"
-                        + " but it should be true when the controls are fully visible.",
-                mControlsResizeView.get());
+        // ControlsResizeView is false, but it should be true when the controls are fully visible.
+        verify(mCompositorView).onControlsResizeViewChanged(any(), eq(true));
+        reset(mCompositorView);
 
         // Scroll all the way to the min-height.
         tabControlsObserver.onBrowserControlsOffsetChanged(mTab, /*topControlsOffsetY*/ -75,
@@ -187,9 +196,9 @@ public class CompositorViewHolderUnitTest {
                 /*topControlsMinHeightOffsetY*/ 25, /*bottomControlsMinHeightOffsetY*/ 0);
         assertTrue("Browser controls aren't at min-height.",
                 mBrowserControlsManager.areBrowserControlsAtMinHeight());
-        assertFalse("ControlsResizeView is true,"
-                        + " but it should be false when the controls are at min-height.",
-                mControlsResizeView.get());
+        // ControlsResizeView is true but it should be false when the controls are at min-height.
+        verify(mCompositorView).onControlsResizeViewChanged(any(), eq(false));
+        reset(mCompositorView);
 
         // Now, scroll back to fully visible.
         tabControlsObserver.onBrowserControlsOffsetChanged(mTab, /*topControlsOffsetY*/ 0,
@@ -200,9 +209,8 @@ public class CompositorViewHolderUnitTest {
         assertTrue("Browser controls aren't fully visible.",
                 BrowserControlsUtils.areBrowserControlsFullyVisible(mBrowserControlsManager));
         // #controlsResizeView should be flipped back to true.
-        assertTrue("ControlsResizeView is false,"
-                        + " but it should be true when the controls are fully visible.",
-                mControlsResizeView.get());
+        verify(mCompositorView).onControlsResizeViewChanged(any(), eq(true));
+        reset(mCompositorView);
     }
 
     @Test
@@ -226,31 +234,35 @@ public class CompositorViewHolderUnitTest {
         tabControlsObserver.onBrowserControlsOffsetChanged(mTab, /*topControlsOffsetY*/ 0,
                 /*bottomControlsOffsetY*/ 0, /*contentOffsetY*/ 100,
                 /*topControlsMinHeightOffsetY*/ 25, /*bottomControlsMinHeightOffsetY*/ 0);
-        assertTrue("ControlsResizeView is false,"
-                        + " but it should be true when the controls are fully visible.",
-                mControlsResizeView.get());
+        // ControlsResizeView is false but it should be true when the controls are fully visible.
+        verify(mCompositorView).onControlsResizeViewChanged(any(), eq(true));
+        reset(mCompositorView);
 
         // Scroll a little hide the controls partially.
         tabControlsObserver.onBrowserControlsOffsetChanged(mTab, /*topControlsOffsetY*/ -25,
                 /*bottomControlsOffsetY*/ 20, /*contentOffsetY*/ 75,
                 /*topControlsMinHeightOffsetY*/ 25, /*bottomControlsMinHeightOffsetY*/ 0);
-        assertTrue("ControlsResizeView is false, but it should still be true.",
-                mControlsResizeView.get());
+        // ControlsResizeView is false, but it should still be true. No-op updates won't trigger a
+        // changed event.
+        verify(mCompositorView, times(0)).onControlsResizeViewChanged(any(), eq(true));
+        reset(mCompositorView);
 
         // Scroll controls all the way to the min-height.
         tabControlsObserver.onBrowserControlsOffsetChanged(mTab, /*topControlsOffsetY*/ -75,
                 /*bottomControlsOffsetY*/ 60, /*contentOffsetY*/ 25,
                 /*topControlsMinHeightOffsetY*/ 25, /*bottomControlsMinHeightOffsetY*/ 0);
-        assertFalse("ControlsResizeView is true,"
-                        + " but it should've flipped to false since the controls are idle now.",
-                mControlsResizeView.get());
+        // ControlsResizeView is true but it should've flipped to false since the controls are idle
+        // now.
+        verify(mCompositorView).onControlsResizeViewChanged(any(), eq(false));
+        reset(mCompositorView);
 
         // Scroll controls to show a little more.
         tabControlsObserver.onBrowserControlsOffsetChanged(mTab, /*topControlsOffsetY*/ -50,
                 /*bottomControlsOffsetY*/ 40, /*contentOffsetY*/ 50,
                 /*topControlsMinHeightOffsetY*/ 25, /*bottomControlsMinHeightOffsetY*/ 0);
-        assertFalse("ControlsResizeView is true, but it should still be false.",
-                mControlsResizeView.get());
+        // ControlsResizeView is true, but it should still be false. No-op updates won't trigger a
+        // changed event.
+        verify(mCompositorView, times(0)).onControlsResizeViewChanged(any(), eq(false));
     }
 
     // --- controlsResizeView tests

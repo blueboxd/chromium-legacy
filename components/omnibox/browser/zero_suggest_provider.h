@@ -66,13 +66,6 @@ class ZeroSuggestProvider : public BaseSearchProvider {
   // Sets |field_trial_triggered_| to false.
   void ResetSession() override;
 
-  // Calling |Start()| will reset the page classification. This is mainly
-  // intended for unit testing TypeOfResultToRun().
-  void SetPageClassificationForTesting(
-      metrics::OmniboxEventProto::PageClassification classification) {
-    current_page_classification_ = classification;
-  }
-
   // Returns the list of experiment stats corresponding to the latest |results_|
   // to be logged to SearchboxStats as part of a GWS experiment, if any.
   const SearchSuggestionParser::ExperimentStats& experiment_stats() const {
@@ -187,8 +180,12 @@ class ZeroSuggestProvider : public BaseSearchProvider {
   // context.
   // Logs UMA metrics. Should be called exactly once, on Start(), otherwise the
   // meaning of the data logged would change.
-  ResultType TypeOfResultToRun(const GURL& current_url,
-                               const GURL& suggest_url);
+  //
+  // This method is static for testability and to avoid depending on the
+  // provider state.
+  static ResultType TypeOfResultToRun(AutocompleteProviderClient* client,
+                                      const AutocompleteInput& input,
+                                      const GURL& suggest_url);
 
   AutocompleteProviderListener* listener_;
 

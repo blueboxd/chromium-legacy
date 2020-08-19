@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.password_check;
 
-import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 
@@ -126,11 +125,6 @@ class PasswordCheckImpl implements PasswordCheck, PasswordCheckObserver {
     @Override
     public int getSavedPasswordsCount() {
         return mPasswordCheckBridge.getSavedPasswordsCount();
-    }
-
-    @Override
-    public void launchCheckupInAccount(Activity activity) {
-        mPasswordCheckBridge.launchCheckupInAccount(activity);
     }
 
     @Override

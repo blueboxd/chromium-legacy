@@ -177,8 +177,8 @@ class PRINTING_EXPORT PrintSettings {
   void set_collate(bool collate) { collate_ = collate; }
   bool collate() const { return collate_; }
 
-  void set_color(ColorModel color) { color_ = color; }
-  ColorModel color() const { return color_; }
+  void set_color(mojom::ColorModel color) { color_ = color; }
+  mojom::ColorModel color() const { return color_; }
 
   void set_copies(int copies) { copies_ = copies; }
   int copies() const { return copies_; }
@@ -262,8 +262,8 @@ class PRINTING_EXPORT PrintSettings {
   // True if the user wants to print with collate.
   bool collate_;
 
-  // True if the user wants to print with collate.
-  ColorModel color_;
+  // Color model type for the printer to use.
+  mojom::ColorModel color_;
 
   // Number of copies user wants to print.
   int copies_;

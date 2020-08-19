@@ -127,28 +127,22 @@ DialogModel::~DialogModel() = default;
 
 void DialogModel::AddBodyText(base::string16 text,
                               const DialogModelBodyText::Params& params) {
-  fields_.push_back(std::make_unique<DialogModelBodyText>(
-      GetPassKey(), this, std::move(text), params));
-  if (host_)
-    host_->OnFieldAdded(fields_.back().get());
+  AddField(std::make_unique<DialogModelBodyText>(GetPassKey(), this,
+                                                 std::move(text), params));
 }
 
 void DialogModel::AddCombobox(base::string16 label,
                               std::unique_ptr<ui::ComboboxModel> combobox_model,
                               const DialogModelCombobox::Params& params) {
-  fields_.push_back(std::make_unique<DialogModelCombobox>(
+  AddField(std::make_unique<DialogModelCombobox>(
       GetPassKey(), this, std::move(label), std::move(combobox_model), params));
-  if (host_)
-    host_->OnFieldAdded(fields_.back().get());
 }
 
 void DialogModel::AddTextfield(base::string16 label,
                                base::string16 text,
                                const DialogModelTextfield::Params& params) {
-  fields_.push_back(std::make_unique<DialogModelTextfield>(
+  AddField(std::make_unique<DialogModelTextfield>(
       GetPassKey(), this, std::move(label), std::move(text), params));
-  if (host_)
-    host_->OnFieldAdded(fields_.back().get());
 }
 
 DialogModelField* DialogModel::GetFieldByUniqueId(int unique_id) {
@@ -161,16 +155,11 @@ DialogModelField* DialogModel::GetFieldByUniqueId(int unique_id) {
 }
 
 DialogModelCombobox* DialogModel::GetComboboxByUniqueId(int unique_id) {
-  auto* field = GetFieldByUniqueId(unique_id);
-
-  DCHECK_EQ(field->type_, DialogModelField::kCombobox);
-  return static_cast<DialogModelCombobox*>(field);
+  return GetFieldByUniqueId(unique_id)->AsCombobox();
 }
 
 DialogModelTextfield* DialogModel::GetTextfieldByUniqueId(int unique_id) {
-  auto* field = GetFieldByUniqueId(unique_id);
-  DCHECK_EQ(field->type_, DialogModelField::kTextfield);
-  return static_cast<DialogModelTextfield*>(field);
+  return GetFieldByUniqueId(unique_id)->AsTextfield();
 }
 
 void DialogModel::OnDialogAccepted(util::PassKey<DialogModelHost>) {
@@ -191,6 +180,12 @@ void DialogModel::OnDialogClosed(util::PassKey<DialogModelHost>) {
 void DialogModel::OnWindowClosing(util::PassKey<DialogModelHost>) {
   if (window_closing_callback_)
     std::move(window_closing_callback_).Run();
+}
+
+void DialogModel::AddField(std::unique_ptr<DialogModelField> field) {
+  fields_.push_back(std::move(field));
+  if (host_)
+    host_->OnFieldAdded(fields_.back().get());
 }
 
 }  // namespace ui

@@ -41,6 +41,7 @@ ArcAppShortcutSearchResult::ArcAppShortcutSearchResult(
   SetAccessibleName(ComputeAccessibleName());
   SetResultType(ash::AppListSearchResultType::kArcAppShortcut);
   SetDisplayType(ash::SearchResultDisplayType::kTile);
+  SetMetricsType(ash::PLAY_STORE_APP_SHORTCUT);
   SetIsRecommendation(is_recommendation);
 
   const int icon_dimension =
@@ -79,10 +80,6 @@ ArcAppShortcutSearchResult::~ArcAppShortcutSearchResult() = default;
 void ArcAppShortcutSearchResult::Open(int event_flags) {
   arc::LaunchAppShortcutItem(profile_, GetAppId(), data_->shortcut_id,
                              list_controller_->GetAppListDisplayId());
-}
-
-ash::SearchResultType ArcAppShortcutSearchResult::GetSearchResultType() const {
-  return ash::PLAY_STORE_APP_SHORTCUT;
 }
 
 void ArcAppShortcutSearchResult::OnAppImageUpdated(

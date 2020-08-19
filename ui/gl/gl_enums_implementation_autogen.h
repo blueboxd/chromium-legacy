@@ -2685,6 +2685,10 @@ static const GLEnums::EnumToString enum_to_string_table[] = {
         "GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM",
     },
     {
+        0x8AF8,
+        "GL_SHARED_IMAGE_ACCESS_MODE_OVERLAY_CHROMIUM",
+    },
+    {
         0x8B30,
         "GL_FRAGMENT_SHADER",
     },

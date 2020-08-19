@@ -860,7 +860,7 @@ void OutOfProcessInstance::SetCaretPosition(const pp::FloatPoint& position) {
   pp::Point new_position(position.x(), position.y());
   ScalePoint(device_scale_, &new_position);
   new_position.set_x(new_position.x() - available_area_.x());
-  engine()->SetCaretPosition(new_position);
+  engine()->SetCaretPosition(PointFromPPPoint(new_position));
 }
 
 void OutOfProcessInstance::MoveRangeSelectionExtent(
@@ -868,7 +868,7 @@ void OutOfProcessInstance::MoveRangeSelectionExtent(
   pp::Point new_extent(extent.x(), extent.y());
   ScalePoint(device_scale_, &new_extent);
   new_extent.set_x(new_extent.x() - available_area_.x());
-  engine()->MoveRangeSelectionExtent(new_extent);
+  engine()->MoveRangeSelectionExtent(PointFromPPPoint(new_extent));
 }
 
 void OutOfProcessInstance::SetSelectionBounds(const pp::FloatPoint& base,
@@ -881,14 +881,15 @@ void OutOfProcessInstance::SetSelectionBounds(const pp::FloatPoint& base,
   ScalePoint(device_scale_, &new_extent_point);
   new_extent_point.set_x(new_extent_point.x() - available_area_.x());
 
-  engine()->SetSelectionBounds(new_base_point, new_extent_point);
+  engine()->SetSelectionBounds(PointFromPPPoint(new_base_point),
+                               PointFromPPPoint(new_extent_point));
 }
 
 pp::Var OutOfProcessInstance::GetLinkAtPosition(const pp::Point& point) {
   pp::Point offset_point(point);
   ScalePoint(device_scale_, &offset_point);
   offset_point.set_x(offset_point.x() - available_area_.x());
-  return engine()->GetLinkAtPosition(offset_point);
+  return engine()->GetLinkAtPosition(PointFromPPPoint(offset_point));
 }
 
 bool OutOfProcessInstance::CanEditText() {
@@ -1202,11 +1203,11 @@ void OutOfProcessInstance::ScrollToY(int y_in_screen_coords,
   PostMessage(position);
 }
 
-void OutOfProcessInstance::ScrollBy(const pp::Point& point) {
+void OutOfProcessInstance::ScrollBy(const gfx::Vector2d& scroll_delta) {
   pp::VarDictionary position;
   position.Set(kType, kJSScrollByType);
-  position.Set(kJSPositionX, pp::Var(point.x() / device_scale_));
-  position.Set(kJSPositionY, pp::Var(point.y() / device_scale_));
+  position.Set(kJSPositionX, pp::Var(scroll_delta.x() / device_scale_));
+  position.Set(kJSPositionY, pp::Var(scroll_delta.y() / device_scale_));
   PostMessage(position);
 }
 
@@ -2056,7 +2057,7 @@ void OutOfProcessInstance::OnGeometryChanged(double old_zoom,
     available_area_.set_height(bottom_of_document);
 
   CalculateBackgroundParts();
-  engine()->PageOffsetUpdated(available_area_.point());
+  engine()->PageOffsetUpdated(PointFromPPPoint(available_area_.point()));
   engine()->PluginSizeUpdated(SizeFromPPSize(available_area_.size()));
 
   if (document_size_.IsEmpty())

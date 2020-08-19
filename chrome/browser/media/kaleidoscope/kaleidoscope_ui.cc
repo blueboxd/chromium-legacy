@@ -200,7 +200,66 @@ void OnStringsRequest(const std::string& path,
   std::move(callback).Run(ref_contents);
 }
 
-content::WebUIDataSource* CreateUntrustedWebUIDataSource() {
+}  // anonymous namespace
+
+// We set |enable_chrome_send| to true since we need it for browser tests.
+KaleidoscopeUI::KaleidoscopeUI(content::WebUI* web_ui)
+    : ui::MojoWebUIController(web_ui, /*enable_chrome_send=*/true) {
+  web_ui->AddRequestableScheme(content::kChromeUIUntrustedScheme);
+
+  auto* browser_context = web_ui->GetWebContents()->GetBrowserContext();
+  content::WebUIDataSource::Add(browser_context, CreateWebUIDataSource());
+  content::WebUIDataSource::Add(browser_context,
+                                CreateUntrustedWebUIDataSource());
+}
+
+KaleidoscopeUI::~KaleidoscopeUI() = default;
+
+// static
+content::WebUIDataSource* KaleidoscopeUI::CreateWebUIDataSource() {
+  content::WebUIDataSource* html_source =
+      content::WebUIDataSource::Create(kKaleidoscopeUIHost);
+
+  // Allows us to put content in an IFrame.
+  html_source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::ChildSrc,
+      "child-src chrome-untrusted://kaleidoscope;");
+  html_source->DisableTrustedTypesCSP();
+
+  // Add a request filter to handle strings.js
+  html_source->SetRequestFilter(base::BindRepeating(OnShouldHandleRequest),
+                                base::BindRepeating(OnStringsRequest));
+
+  // Allow workers from chrome://kaleidoscope (for testing).
+  html_source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::WorkerSrc,
+      "worker-src chrome://kaleidoscope;");
+
+#if BUILDFLAG(ENABLE_KALEIDOSCOPE)
+  html_source->AddResourcePath("kaleidoscope.js", IDR_KALEIDOSCOPE_JS);
+  html_source->AddResourcePath("messages.js", IDR_KALEIDOSCOPE_MESSAGES_JS);
+
+  // TODO(beccahughes): Remove
+  html_source->AddResourcePath("utils.js", IDR_KALEIDOSCOPE_UTILS_JS);
+  html_source->AddResourcePath("content-worker.js",
+                               IDR_KALEIDOSCOPE_CONTENT_WORKER_JS);
+
+  html_source->AddResourcePath("geometry.mojom-lite.js",
+                               IDR_GEOMETRY_MOJOM_LITE_JS);
+  html_source->AddResourcePath("kaleidoscope.mojom-lite.js",
+                               IDR_KALEIDOSCOPE_MOJOM_LITE_JS);
+  html_source->AddResourcePath(
+      "chrome/browser/media/feeds/media_feeds_store.mojom-lite.js",
+      IDR_MEDIA_FEEDS_STORE_MOJOM_LITE_JS);
+  html_source->AddResourcePath("module.js", IDR_KALEIDOSCOPE_NTP_MODULE_JS);
+
+  html_source->SetDefaultResource(IDR_KALEIDOSCOPE_HTML);
+#endif  // BUILDFLAG(ENABLE_KALEIDOSCOPE)
+
+  return html_source;
+}
+
+content::WebUIDataSource* KaleidoscopeUI::CreateUntrustedWebUIDataSource() {
   content::WebUIDataSource* untrusted_source =
       content::WebUIDataSource::Create(kKaleidoscopeUntrustedContentUIURL);
   untrusted_source->DisableDenyXFrameOptions();
@@ -275,65 +334,6 @@ content::WebUIDataSource* CreateUntrustedWebUIDataSource() {
 #endif  // BUILDFLAG(ENABLE_KALEIDOSCOPE)
 
   return untrusted_source;
-}
-
-}  // anonymous namespace
-
-// We set |enable_chrome_send| to true since we need it for browser tests.
-KaleidoscopeUI::KaleidoscopeUI(content::WebUI* web_ui)
-    : ui::MojoWebUIController(web_ui, /*enable_chrome_send=*/true) {
-  web_ui->AddRequestableScheme(content::kChromeUIUntrustedScheme);
-
-  auto* browser_context = web_ui->GetWebContents()->GetBrowserContext();
-  content::WebUIDataSource::Add(browser_context, CreateWebUIDataSource());
-  content::WebUIDataSource::Add(browser_context,
-                                CreateUntrustedWebUIDataSource());
-}
-
-KaleidoscopeUI::~KaleidoscopeUI() = default;
-
-// static
-content::WebUIDataSource* KaleidoscopeUI::CreateWebUIDataSource() {
-  content::WebUIDataSource* html_source =
-      content::WebUIDataSource::Create(kKaleidoscopeUIHost);
-
-  // Allows us to put content in an IFrame.
-  html_source->OverrideContentSecurityPolicy(
-      network::mojom::CSPDirectiveName::ChildSrc,
-      "child-src chrome-untrusted://kaleidoscope;");
-  html_source->DisableTrustedTypesCSP();
-
-  // Add a request filter to handle strings.js
-  html_source->SetRequestFilter(base::BindRepeating(OnShouldHandleRequest),
-                                base::BindRepeating(OnStringsRequest));
-
-  // Allow workers from chrome://kaleidoscope (for testing).
-  html_source->OverrideContentSecurityPolicy(
-      network::mojom::CSPDirectiveName::WorkerSrc,
-      "worker-src chrome://kaleidoscope;");
-
-#if BUILDFLAG(ENABLE_KALEIDOSCOPE)
-  html_source->AddResourcePath("kaleidoscope.js", IDR_KALEIDOSCOPE_JS);
-  html_source->AddResourcePath("messages.js", IDR_KALEIDOSCOPE_MESSAGES_JS);
-
-  // TODO(beccahughes): Remove
-  html_source->AddResourcePath("utils.js", IDR_KALEIDOSCOPE_UTILS_JS);
-  html_source->AddResourcePath("content-worker.js",
-                               IDR_KALEIDOSCOPE_CONTENT_WORKER_JS);
-
-  html_source->AddResourcePath("geometry.mojom-lite.js",
-                               IDR_GEOMETRY_MOJOM_LITE_JS);
-  html_source->AddResourcePath("kaleidoscope.mojom-lite.js",
-                               IDR_KALEIDOSCOPE_MOJOM_LITE_JS);
-  html_source->AddResourcePath(
-      "chrome/browser/media/feeds/media_feeds_store.mojom-lite.js",
-      IDR_MEDIA_FEEDS_STORE_MOJOM_LITE_JS);
-  html_source->AddResourcePath("module.js", IDR_KALEIDOSCOPE_NTP_MODULE_JS);
-
-  html_source->SetDefaultResource(IDR_KALEIDOSCOPE_HTML);
-#endif  // BUILDFLAG(ENABLE_KALEIDOSCOPE)
-
-  return html_source;
 }
 
 void KaleidoscopeUI::BindInterface(

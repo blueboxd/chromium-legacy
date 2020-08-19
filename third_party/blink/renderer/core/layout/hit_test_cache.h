@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_HIT_TEST_CACHE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_HIT_TEST_CACHE_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -47,6 +46,8 @@ struct HitTestCacheEntry {
 class CORE_EXPORT HitTestCache final : public GarbageCollected<HitTestCache> {
  public:
   HitTestCache() : update_index_(0), dom_tree_version_(0) {}
+  HitTestCache(const HitTestCache&) = delete;
+  HitTestCache& operator=(const HitTestCache&) = delete;
 
   // Check the cache for a possible hit and update |result| if
   // hit encountered; returning true. Otherwise false.
@@ -84,7 +85,6 @@ class CORE_EXPORT HitTestCache final : public GarbageCollected<HitTestCache> {
 
   HeapVector<HitTestCacheEntry, HIT_TEST_CACHE_SIZE> items_;
   uint64_t dom_tree_version_;
-  DISALLOW_COPY_AND_ASSIGN(HitTestCache);
 };
 
 }  // namespace blink

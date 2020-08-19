@@ -45,7 +45,7 @@ class Expect {
     EXPECT_EQ(r_.display_index(), ash::SearchResultDisplayIndex::kFirstIndex);
     EXPECT_EQ(r_.display_type(), ash::SearchResultDisplayType::kChip);
     EXPECT_EQ(r_.result_type(), ash::AppListSearchResultType::kAssistantChip);
-    EXPECT_EQ(r_.GetSearchResultType(), ash::SearchResultType::ASSISTANT);
+    EXPECT_EQ(r_.metrics_type(), ash::SearchResultType::ASSISTANT);
     EXPECT_TRUE(r_.chip_icon().BackedBySameObjectAs(gfx::CreateVectorIcon(
         ash::kAssistantIcon,
         ash::AppListConfig::instance().suggestion_chip_icon_dimension(),

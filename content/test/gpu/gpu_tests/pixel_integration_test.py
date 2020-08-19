@@ -142,7 +142,14 @@ class PixelIntegrationTest(
     # Actually run the test and capture the screenshot.
     if not tab.EvaluateJavaScript('domAutomationController._succeeded'):
       self.fail('page indicated test failure')
-    screenshot = tab.Screenshot(5)
+    # Special case some tests on Fuchsia that need to grab the entire contents
+    # in the screenshot instead of just the visible portion due to small screen
+    # sizes.
+    if (PixelIntegrationTest.browser.platform.GetOSName() == 'fuchsia'
+        and page.name in pixel_test_pages.PROBLEMATIC_FUCHSIA_TESTS):
+      screenshot = tab.FullScreenshot(5)
+    else:
+      screenshot = tab.Screenshot(5)
     if screenshot is None:
       self.fail('Could not capture screenshot')
     dpr = tab.EvaluateJavaScript('window.devicePixelRatio')

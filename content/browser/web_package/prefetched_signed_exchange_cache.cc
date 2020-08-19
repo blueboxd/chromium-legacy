@@ -134,7 +134,7 @@ class InnerResponseURLLoader : public network::mojom::URLLoader {
   InnerResponseURLLoader(
       const network::ResourceRequest& request,
       network::mojom::URLResponseHeadPtr inner_response,
-      const url::Origin& request_initiator_site_lock,
+      const url::Origin& request_initiator_origin_lock,
       std::unique_ptr<const storage::BlobDataHandle> blob_data_handle,
       const network::URLLoaderCompletionStatus& completion_status,
       mojo::PendingRemote<network::mojom::URLLoaderClient> client,
@@ -181,7 +181,7 @@ class InnerResponseURLLoader : public network::mojom::URLLoader {
     }
 
     corb_checker_ = std::make_unique<CrossOriginReadBlockingChecker>(
-        request, *response_, request_initiator_site_lock, *blob_data_handle_,
+        request, *response_, request_initiator_origin_lock, *blob_data_handle_,
         base::BindOnce(
             &InnerResponseURLLoader::OnCrossOriginReadBlockingCheckComplete,
             base::Unretained(this)));
@@ -340,9 +340,9 @@ class SubresourceSignedExchangeURLLoaderFactory
   SubresourceSignedExchangeURLLoaderFactory(
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
       std::unique_ptr<const PrefetchedSignedExchangeCacheEntry> entry,
-      const url::Origin& request_initiator_site_lock)
+      const url::Origin& request_initiator_origin_lock)
       : entry_(std::move(entry)),
-        request_initiator_site_lock_(request_initiator_site_lock) {
+        request_initiator_origin_lock_(request_initiator_origin_lock) {
     receivers_.Add(this, std::move(receiver));
     receivers_.set_disconnect_handler(base::BindRepeating(
         &SubresourceSignedExchangeURLLoaderFactory::OnMojoDisconnect,
@@ -364,7 +364,7 @@ class SubresourceSignedExchangeURLLoaderFactory
     mojo::MakeSelfOwnedReceiver(
         std::make_unique<InnerResponseURLLoader>(
             request, entry_->inner_response().Clone(),
-            request_initiator_site_lock_,
+            request_initiator_origin_lock_,
             std::make_unique<const storage::BlobDataHandle>(
                 *entry_->blob_data_handle()),
             *entry_->completion_status(), std::move(client),
@@ -384,7 +384,7 @@ class SubresourceSignedExchangeURLLoaderFactory
   }
 
   std::unique_ptr<const PrefetchedSignedExchangeCacheEntry> entry_;
-  const url::Origin request_initiator_site_lock_;
+  const url::Origin request_initiator_origin_lock_;
   mojo::ReceiverSet<network::mojom::URLLoaderFactory> receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(SubresourceSignedExchangeURLLoaderFactory);
@@ -674,7 +674,7 @@ PrefetchedSignedExchangeCache::GetInfoListForNavigation(
 
   const url::Origin outer_url_origin =
       url::Origin::Create(main_exchange.outer_url());
-  const url::Origin request_initiator_site_lock =
+  const url::Origin request_initiator_origin_lock =
       url::Origin::Create(main_exchange.inner_url());
   const auto inner_url_header_integrity_map = GetAllowedAltSXG(main_exchange);
 
@@ -720,7 +720,7 @@ PrefetchedSignedExchangeCache::GetInfoListForNavigation(
         pending_loader_factory;
     new SubresourceSignedExchangeURLLoaderFactory(
         pending_loader_factory.InitWithNewPipeAndPassReceiver(),
-        exchange->Clone(), request_initiator_site_lock);
+        exchange->Clone(), request_initiator_origin_lock);
     info_list.emplace_back(mojom::PrefetchedSignedExchangeInfo::New(
         exchange->outer_url(), *exchange->header_integrity(),
         exchange->inner_url(), exchange->inner_response().Clone(),

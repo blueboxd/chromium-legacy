@@ -951,13 +951,13 @@ bool TestingProfile::IsGuestSession() const {
   return guest_session_;
 }
 
-bool TestingProfile::IsNewProfile() {
+bool TestingProfile::IsNewProfile() const {
   if (is_new_profile_.has_value())
     return is_new_profile_.value();
   return Profile::IsNewProfile();
 }
 
-Profile::ExitType TestingProfile::GetLastSessionExitType() {
+Profile::ExitType TestingProfile::GetLastSessionExitType() const {
   return last_session_exited_cleanly_ ? EXIT_NORMAL : EXIT_CRASHED;
 }
 

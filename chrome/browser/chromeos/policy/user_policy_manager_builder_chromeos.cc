@@ -307,7 +307,7 @@ void CreateConfigurationPolicyProvider(
 
     bool wildcard_match = false;
     if (connector->IsEnterpriseManaged() &&
-        chromeos::CrosSettings::Get()->IsUserWhitelisted(
+        chromeos::CrosSettings::Get()->IsUserAllowlisted(
             account_id.GetUserEmail(), &wildcard_match) &&
         wildcard_match &&
         !connector->IsNonEnterpriseUser(account_id.GetUserEmail())) {

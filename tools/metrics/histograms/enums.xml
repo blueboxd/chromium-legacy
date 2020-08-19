@@ -12500,8 +12500,8 @@ Called by update_net_error_codes.py.-->
 <enum name="CorbResultVsInitiatorLockCompatibility">
   <summary>
     Whether CORB blocking might have been caused by treating |request_initiator|
-    as opaque when |request_initiator_site_lock| is incompatible (as may be the
-    case for HTML Imports).
+    as opaque when |request_initiator_origin_lock| is incompatible (as may be
+    the case for HTML Imports).
   </summary>
   <int value="0" label="NoBlocking"/>
   <int value="1" label="BenignBlocking">
@@ -12509,7 +12509,7 @@ Called by update_net_error_codes.py.-->
   </int>
   <int value="2" label="BlockingWhenIncorrectLock">
     CORB blocked a response after forcing |request_initiator| to be treated as
-    opaque (because it was incompatible with |request_initiator_site_lock|).
+    opaque (because it was incompatible with |request_initiator_origin_lock|).
     This case is most likely to be hit with HTML Imports.
   </int>
   <int value="3" label="BlockingWhenCompatibleLock"/>
@@ -16774,6 +16774,13 @@ metrics consent we also won't be able to send UMA metrics. -->
   <int value="3" label="No addresses in common"/>
 </enum>
 
+<enum name="DNS.AttemptType">
+  <int value="0" label="DnsUDPAttempt"/>
+  <int value="1" label="DnsTCPAttempt due to low UDP entropy"/>
+  <int value="2" label="DnsTCPAttempt due to retry due to UDP trucation"/>
+  <int value="3" label="DnsHTTPAttempt"/>
+</enum>
+
 <enum name="DNS.HostCache.EraseReason">
   <int value="0" label="Entry evicted"/>
   <int value="1" label="Cache cleared"/>
@@ -16814,6 +16821,16 @@ metrics consent we also won't be able to send UMA metrics. -->
       label="ID mismatch with the response ID recognized as a
              recently-queried ID"/>
   <int value="2" label="ID mismatch with an unrecognized response ID"/>
+</enum>
+
+<enum name="DNS.UdpLowEntropyReason">
+  <int value="0" label="Multiple recent reassignments of the same UDP port"/>
+  <int value="1"
+      label="DNS query/response ID mismatches, where response ID is
+             recognized from a recent query"/>
+  <int value="2"
+      label="DNS query/response ID mismatches, where response ID is
+             unrecognized"/>
 </enum>
 
 <enum name="DNSEmptyAddressListAndNoError">
@@ -40816,6 +40833,7 @@ from previous Chrome versions.
   <int value="-1349826793" label="ArcInputMethod:disabled"/>
   <int value="-1349532167" label="enable-wifi-credential-sync"/>
   <int value="-1346722635" label="gesture-selection"/>
+  <int value="-1345931804" label="TabbedAppOverflowMenuIcons:disabled"/>
   <int value="-1344375439" label="ServiceWorkerPaymentApps:disabled"/>
   <int value="-1343259222" label="RegionalLocalesAsDisplayUI:disabled"/>
   <int value="-1342961844" label="InlineUpdateFlow:disabled"/>
@@ -41025,6 +41043,7 @@ from previous Chrome versions.
   <int value="-1151766565" label="enable-fullscreen-tab-detaching"/>
   <int value="-1150881704"
       label="ArcNativeBridge64BitSupportExperiment:enabled"/>
+  <int value="-1146814438" label="TabbedAppOverflowMenuIcons:enabled"/>
   <int value="-1145905507" label="SendTabToSelfWhenSignedIn:disabled"/>
   <int value="-1145702446" label="ChromeHomeInactivitySheetExpansion:enabled"/>
   <int value="-1145246849" label="ThirdPartyDoodles:enabled"/>
@@ -41552,6 +41571,7 @@ from previous Chrome versions.
   <int value="-579192400" label="disable-input-view"/>
   <int value="-577982497" label="CupsPrintersUiOverhaul:enabled"/>
   <int value="-574354898" label="PostQuantumCECPQ2:enabled"/>
+  <int value="-574000901" label="AVIF:enabled"/>
   <int value="-572112724" label="DialogTouchBar:disabled"/>
   <int value="-572012175" label="AssistantEnableStereoAudioInput:disabled"/>
   <int value="-571236436" label="AppManagement:disabled"/>
@@ -43463,6 +43483,7 @@ from previous Chrome versions.
   <int value="1466380480" label="enable-device-discovery-notifications"/>
   <int value="1466502102" label="DelayNavigation:disabled"/>
   <int value="1467322206" label="AssistAutoCorrect:enabled"/>
+  <int value="1467583815" label="AVIF:disabled"/>
   <int value="1469407485" label="disable-accelerated-2d-canvas"/>
   <int value="1473838479" label="EnableVirtualKeyboardMdUi:disabled"/>
   <int value="1473967338" label="OmniboxShortBookmarkSuggestions:enabled"/>
@@ -50311,6 +50332,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="22" label="NOT_ASSOCIATED"/>
   <int value="23" label="NOT_AUTHENTICATED"/>
   <int value="24" label="TOO_MANY_STAS"/>
+  <int value="25" label="DISCONNECT_FAILURE"/>
 </enum>
 
 <enum name="NetworkStatus">
@@ -61212,35 +61234,35 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
 
 <enum name="RequestInitiatorOriginLockCompatibility">
   <int value="0" label="BrowserProcess">
-    Request came from a browser process and so the |request_initiator_site_lock|
-    doesn't apply.
+    Request came from a browser process and so the
+    |request_initiator_origin_lock| doesn't apply.
   </int>
   <int value="1" label="NoLock">
-    |request_initiator_site_lock| is missing - see https://crbug.com/1098938 and
-    RenderProcessHostImpl::CreateURLLoaderFactoryForRendererProcess.
+    |request_initiator_origin_lock| is missing - see https://crbug.com/1098938
+    and RenderProcessHostImpl::CreateURLLoaderFactoryForRendererProcess.
   </int>
   <int value="2" label="NoInitiator">|request_initiator| is missing.</int>
   <int value="3" label="CompatibleLock">
     |request.request_initiator| is compatible with
-    |factory_params_.request_initiator_site_lock| - either
+    |factory_params_.request_initiator_origin_lock| - either
     |request.request_initiator| is opaque or it is equal to
-    |request_initiator_site_lock|.
+    |request_initiator_origin_lock|.
   </int>
   <int value="4" label="IncorrectLock">
     |request.request_initiator| is non-opaque/unique and differs from
-    |factory_params_.request_initiator_site_lock|.
+    |factory_params_.request_initiator_origin_lock|.
   </int>
   <int value="5" label="ExcludedScheme">
-    Scheme excluded from request_initiator_site_lock checks. Since ~M80 this
+    Scheme excluded from request_initiator_origin_lock checks. Since ~M80 this
     value can only be recorded during tests.
   </int>
   <int value="6" label="ExcludedCorbForPlugin">
     Requests from a renderer process that embeds a plugin (e.g. Flash) that
-    needs to disable CORB and request_initiator_site_lock enforcement.
+    needs to disable CORB and request_initiator_origin_lock enforcement.
   </int>
   <int value="7" label="AllowedRequestInitiatorForPlugin">
     Requests from a renderer process that embeds a plugin (e.g. PDF) that needs
-    to poke small, targeted holes in request_initiator_site_lock enforcement.
+    to poke small, targeted holes in request_initiator_origin_lock enforcement.
   </int>
 </enum>
 
@@ -61667,6 +61689,17 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="0" label="VERDICT_TYPE_UNSPECIFIED"/>
   <int value="1" label="SAFE"/>
   <int value="100" label="DANGEROUS"/>
+</enum>
+
+<enum name="SafeBrowsingSettingsUserAction">
+  <int value="0" label="Settings page showed."/>
+  <int value="1" label="Enhanced protection button clicked."/>
+  <int value="2" label="Standard protection button clicked."/>
+  <int value="3" label="Disable Safe Browsing button clicked."/>
+  <int value="4" label="Enhanced protection expand arrow clicked."/>
+  <int value="5" label="Standard protection expand arrow clicked."/>
+  <int value="6" label="Disable Safe Browsing dialog confirmed."/>
+  <int value="7" label="Disable Safe Browsing dialog denied."/>
 </enum>
 
 <enum name="SafeBrowsingStoreAvailabilityResult">
@@ -71697,19 +71730,60 @@ Full version information for the fingerprint enum values:
   <int value="3" label="FAILED_OTHER">Failed for other reason</int>
 </enum>
 
+<enum name="VaapiFunctions">
+  <int value="0" label="vaBeginPicture()"/>
+  <int value="1" label="vaCreateBuffer()"/>
+  <int value="2" label="vaCreateConfig()"/>
+  <int value="3" label="vaCreateContext()"/>
+  <int value="4" label="vaCreateImage()"/>
+  <int value="5" label="vaCreateSurfaces() (allocate mode)"/>
+  <int value="6" label="vaCreateSurfaces() (import mode)"/>
+  <int value="7" label="vaDestroyBuffer()"/>
+  <int value="8" label="vaDestroyConfig()"/>
+  <int value="9" label="vaDestroyContext()"/>
+  <int value="10" label="vaDestroySurfaces()"/>
+  <int value="11" label="vaEndPicture()"/>
+  <int value="12" label="vaExportSurfaceHandle()"/>
+  <int value="13" label="vaGetConfigAttributes()"/>
+  <int value="14" label="vaPutImage()"/>
+  <int value="15" label="vaPutSurface()"/>
+  <int value="16" label="vaQueryConfigAttributes()"/>
+  <int value="17" label="vaQueryImageFormats()"/>
+  <int value="18" label="vaQuerySurfaceAttributes()"/>
+  <int value="19" label="vaQueryVideoProcPipelineCaps()"/>
+  <int value="20" label="vaRenderPicture() (|pending_va_buffers_|)"/>
+  <int value="21" label="vaRenderPicture() using VPP"/>
+  <int value="22" label="vaSyncSurface()"/>
+  <int value="23" label="vaTerminate()"/>
+  <int value="24" label="vaUnmapBuffer()"/>
+  <int value="25" label="Other VA functions"/>
+</enum>
+
 <enum name="VAIPFailure">
+  <obsolete>
+    Deprecated as of 8/2020.
+  </obsolete>
   <int value="0" label="VAAPI_VPP_ERROR"/>
 </enum>
 
 <enum name="VAJDAFailure">
+  <obsolete>
+    Deprecated as of 8/2020, superseded by VaapiFunctions.
+  </obsolete>
   <int value="0" label="VAAPI_ERROR"/>
 </enum>
 
 <enum name="VAJDAWorkerDecoderFailure">
+  <obsolete>
+    Deprecated as of 8/2020, superseded by VaapiFunctions.
+  </obsolete>
   <int value="0" label="kVaapiError"/>
 </enum>
 
 <enum name="VAJEAEncoderResult">
+  <obsolete>
+    Deprecated as of 8/2020, superseded by VaapiFunctions.
+  </obsolete>
   <int value="0" label="VAAPI_SUCCESS"/>
   <int value="1" label="VAAPI_ERROR"/>
 </enum>
@@ -71934,6 +72008,9 @@ Full version information for the fingerprint enum values:
 </enum>
 
 <enum name="VAVDADecoderFailure">
+  <obsolete>
+    Deprecated as of 8/2020, superseded by VaapiFunctions.
+  </obsolete>
   <int value="0" label="VAAPI_ERROR"/>
   <int value="1" label="VAAPI_VPP_ERROR"/>
 </enum>
@@ -71950,6 +72027,9 @@ Full version information for the fingerprint enum values:
 </enum>
 
 <enum name="VAVEAEncoderFailure">
+  <obsolete>
+    Deprecated as of 8/2020, superseded by VaapiFunctions.
+  </obsolete>
   <int value="0" label="VAAPI_ERROR"/>
 </enum>
 

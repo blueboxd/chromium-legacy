@@ -106,6 +106,11 @@ class AssistantNotificationBuilder {
     return *this;
   }
 
+  AssistantNotificationBuilder& WithRenotify(bool renotify) {
+    notification_.renotify = renotify;
+    return *this;
+  }
+
   AssistantNotificationBuilder& WithTimeout(
       base::Optional<base::TimeDelta> timeout) {
     notification_.expiry_time =
@@ -552,6 +557,39 @@ TEST_F(AssistantNotificationControllerTest, ShouldPropagateIsPinned) {
       message_center::MessageCenter::Get()->FindVisibleNotificationById(kId);
   ASSERT_NE(nullptr, system_notification);
   EXPECT_TRUE(system_notification->pinned());
+}
+
+TEST_F(AssistantNotificationControllerTest, ShouldPropagateRenotify) {
+  constexpr char kId[] = "id";
+
+  // Create an Assistant notification w/ default renotify behavior.
+  AddOrUpdateNotification(AssistantNotificationBuilder().WithId(kId).Build());
+
+  // Verify expected system notification.
+  auto* system_notification =
+      message_center::MessageCenter::Get()->FindVisibleNotificationById(kId);
+  ASSERT_NE(nullptr, system_notification);
+  EXPECT_FALSE(system_notification->renotify());
+
+  // Create an Assistant notification w/ explicitly disabled renotify behavior.
+  AddOrUpdateNotification(
+      AssistantNotificationBuilder().WithId(kId).WithRenotify(false).Build());
+
+  // Verify expected system notification.
+  system_notification =
+      message_center::MessageCenter::Get()->FindVisibleNotificationById(kId);
+  ASSERT_NE(nullptr, system_notification);
+  EXPECT_FALSE(system_notification->renotify());
+
+  // Create an Assistant notification w/ explicitly enabled renotify behavior.
+  AddOrUpdateNotification(
+      AssistantNotificationBuilder().WithId(kId).WithRenotify(true).Build());
+
+  // Verify expected system notification.
+  system_notification =
+      message_center::MessageCenter::Get()->FindVisibleNotificationById(kId);
+  ASSERT_NE(nullptr, system_notification);
+  EXPECT_TRUE(system_notification->renotify());
 }
 
 TEST_F(AssistantNotificationControllerTest,

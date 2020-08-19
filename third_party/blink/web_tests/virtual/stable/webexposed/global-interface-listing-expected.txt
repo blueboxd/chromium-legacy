@@ -3448,6 +3448,7 @@ interface HTMLShadowElement : HTMLElement
 interface HTMLSlotElement : HTMLElement
     attribute @@toStringTag
     getter name
+    method assign
     method assignedElements
     method assignedNodes
     method constructor
@@ -6938,6 +6939,7 @@ interface ShadowRoot : DocumentFragment
     getter mode
     getter pictureInPictureElement
     getter pointerLockElement
+    getter slotAssignment
     getter styleSheets
     method constructor
     method elementFromPoint

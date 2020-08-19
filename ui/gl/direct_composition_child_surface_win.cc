@@ -48,6 +48,15 @@ IDCompositionSurface* g_current_surface = nullptr;
 
 bool g_direct_composition_swap_chain_failed = false;
 
+// When more than percentage of area is damaged, present with full damage
+// is considered.
+// TODO(zmo): 0.6f is just a place holder. Need more profiling to get better
+// heuristics.
+constexpr float kLargeDamageThreshold = 0.6f;
+
+// Only switch out of full damage mode after encountering the certain number
+// of frames with damage < kLargeDamageThreshold.
+constexpr size_t kNumFramesBeforeDisablingFullDamage = 5;
 }  // namespace
 
 DirectCompositionChildSurfaceWin::DirectCompositionChildSurfaceWin(
@@ -125,13 +134,55 @@ bool DirectCompositionChildSurfaceWin::ReleaseDrawTexture(bool will_discard) {
           first_swap_ || !vsync_enabled_ || use_swap_chain_tearing ? 0 : 1;
       UINT flags = use_swap_chain_tearing ? DXGI_PRESENT_ALLOW_TEARING : 0;
       flags |= DXGI_PRESENT_USE_DURATION;
+
+      bool force_full_damage = false;
+      if (base::FeatureList::IsEnabled(
+              features::kDirectCompositionForceFullDamage) &&
+          DirectCompositionSurfaceWin::AreScaledOverlaysSupported()) {
+        // The actual condition we want to check is BGRA hardware overlay
+        // capability. However, that bit is incorrect on devices we tested on.
+        // Here we assume when hardware overlays are supported, BGRA
+        // hardware overlays are supported.
+        // Use AreScaledOverlaysSupported() instead of AreOverlaysSupported()
+        // here because the latter returns true even if only software layers
+        // are supported.
+        base::CheckedNumeric<int> swap_chain_area = size_.GetCheckedArea();
+        base::CheckedNumeric<int> damage_area =
+            swap_rect_.size().GetCheckedArea();
+        if (damage_area.IsValid() && swap_chain_area.IsValid() &&
+            swap_chain_area.ValueOrDie() > 0) {
+          float damage_ratio = static_cast<float>(damage_area.ValueOrDie()) /
+                               static_cast<float>(swap_chain_area.ValueOrDie());
+          if (damage_ratio > kLargeDamageThreshold) {
+            small_damage_frame_count_ = 0;
+            force_full_damage = true;
+          } else {
+            ++small_damage_frame_count_;
+            // There are "noise" frames between large damage frames. For
+            // example, in Google Meet, every 5-10 large damage frames, there
+            // is a "noise" frame with only 1% damage.
+            // If we keep switching between full damage and partial damage
+            // when presenting the swap chain, DWM doesn't seem to consider
+            // the swap chain as an overlay candidate.
+            if (small_damage_frame_count_ < kNumFramesBeforeDisablingFullDamage)
+              force_full_damage = true;
+          }
+        }
+      }
+
       DXGI_PRESENT_PARAMETERS params = {};
       RECT dirty_rect = swap_rect_.ToRECT();
-      params.DirtyRectsCount = 1;
-      params.pDirtyRects = &dirty_rect;
+      if (force_full_damage) {
+        params.DirtyRectsCount = 0;
+        params.pDirtyRects = nullptr;
+      } else {
+        params.DirtyRectsCount = 1;
+        params.pDirtyRects = &dirty_rect;
+      }
 
       TRACE_EVENT2("gpu", "DirectCompositionChildSurfaceWin::PresentSwapChain",
-                   "interval", interval, "dirty_rect", swap_rect_.ToString());
+                   "interval", interval, "dirty_rect",
+                   force_full_damage ? "full_damage" : swap_rect_.ToString());
       HRESULT hr = swap_chain_->Present1(interval, flags, &params);
       // Ignore DXGI_STATUS_OCCLUDED since that's not an error but only
       // indicates that the window is occluded and we can stop rendering.
@@ -139,6 +190,24 @@ bool DirectCompositionChildSurfaceWin::ReleaseDrawTexture(bool will_discard) {
         DLOG(ERROR) << "Present1 failed with error " << std::hex << hr;
         return false;
       }
+
+      Microsoft::WRL::ComPtr<IDXGISwapChainMedia> swap_chain_media;
+      if (force_full_damage && SUCCEEDED(swap_chain_.As(&swap_chain_media))) {
+        DXGI_FRAME_STATISTICS_MEDIA stats = {};
+        // GetFrameStatisticsMedia fails with
+        // DXGI_ERROR_FRAME_STATISTICS_DISJOINT sometimes, which means an
+        // event (such as power cycle) interrupted the gathering of
+        // presentation statistics. In this situation, calling the function
+        // again succeeds but returns with CompositionMode = NONE.
+        // Waiting for the DXGI adapter to finish presenting before calling
+        // the function doesn't get rid of the failure.
+        if (SUCCEEDED(swap_chain_media->GetFrameStatisticsMedia(&stats))) {
+          base::UmaHistogramSparse(
+              "GPU.DirectComposition.CompositionMode.MainBuffer",
+              stats.CompositionMode);
+        }
+      }
+
       if (first_swap_) {
         // Wait for the GPU to finish executing its commands before
         // committing the DirectComposition tree, or else the swapchain

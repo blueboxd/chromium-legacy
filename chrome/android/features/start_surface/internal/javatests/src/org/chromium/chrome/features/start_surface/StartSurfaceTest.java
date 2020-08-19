@@ -68,6 +68,7 @@ import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -865,6 +866,7 @@ public class StartSurfaceTest {
     @MediumTest
     @Feature({"StartSurface"})
     // clang-format off
+    @DisabledTest(message = "crbug.com/1118181")
     @DisableIf.Build(hardware_is = "bullhead", message = "crbug.com/1081657")
     @DisableIf.Build(supported_abis_includes = "x86", message = "https://crbug.com/1108459")
     @CommandLineFlags.Add({BASE_PARAMS + "/omniboxonly" +
@@ -892,6 +894,7 @@ public class StartSurfaceTest {
     @MediumTest
     @Feature({"StartSurface"})
     // clang-format off
+    @DisabledTest(message = "crbug.com/1118181")
     @DisableIf.Build(sdk_is_less_than = P, message = "crbug.com/1083174")
     @DisableIf.Build(supported_abis_includes = "x86", message = "https://crbug.com/1108459")
     @CommandLineFlags.Add({BASE_PARAMS + "/omniboxonly" +
@@ -919,6 +922,7 @@ public class StartSurfaceTest {
     @MediumTest
     @Feature({"StartSurface"})
     // clang-format off
+    @DisabledTest(message = "crbug.com/1118181")
     @DisableIf.Build(sdk_is_less_than = P, message = "crbug.com/1083459")
     @DisableIf.Build(supported_abis_includes = "x86", message = "https://crbug.com/1083459")
     @CommandLineFlags.Add({BASE_PARAMS + "/omniboxonly" +

@@ -83,7 +83,7 @@ constexpr char kIncompleteCjt[] = R"(
 
 std::unique_ptr<printing::PrintSettings> ConstructPrintSettings() {
   auto settings = std::make_unique<printing::PrintSettings>();
-  settings->set_color(printing::COLOR);
+  settings->set_color(printing::mojom::ColorModel::kColor);
   settings->set_duplex_mode(printing::mojom::DuplexMode::kLongEdge);
   settings->SetOrientation(/*landscape=*/true);
   settings->set_copies(kCopies);
@@ -98,7 +98,7 @@ std::unique_ptr<printing::PrintSettings> ConstructPrintSettings() {
 
 printing::PrinterSemanticCapsAndDefaults ConstructPrinterCapabilities() {
   printing::PrinterSemanticCapsAndDefaults capabilities;
-  capabilities.color_model = printing::COLOR;
+  capabilities.color_model = printing::mojom::ColorModel::kColor;
   capabilities.duplex_modes.push_back(printing::mojom::DuplexMode::kLongEdge);
   capabilities.copies_max = 2;
   capabilities.dpis.push_back(gfx::Size(kHorizontalDpi, kVerticalDpi));
@@ -163,7 +163,7 @@ TEST(PrintingApiUtilsTest, ParsePrintTicket) {
       ParsePrintTicket(std::move(*cjt_ticket));
 
   ASSERT_TRUE(settings);
-  EXPECT_EQ(printing::GRAY, settings->color());
+  EXPECT_EQ(printing::mojom::ColorModel::kGray, settings->color());
   EXPECT_EQ(printing::mojom::DuplexMode::kSimplex, settings->duplex_mode());
   EXPECT_TRUE(settings->landscape());
   EXPECT_EQ(5, settings->copies());

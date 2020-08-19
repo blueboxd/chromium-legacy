@@ -97,7 +97,7 @@ void SessionStartupPref::SetStartupPref(PrefService* prefs,
 }
 
 // static
-SessionStartupPref SessionStartupPref::GetStartupPref(Profile* profile) {
+SessionStartupPref SessionStartupPref::GetStartupPref(const Profile* profile) {
   DCHECK(profile);
 
   // Guest sessions should not store any state, therefore they should never
@@ -108,7 +108,8 @@ SessionStartupPref SessionStartupPref::GetStartupPref(Profile* profile) {
 }
 
 // static
-SessionStartupPref SessionStartupPref::GetStartupPref(PrefService* prefs) {
+SessionStartupPref SessionStartupPref::GetStartupPref(
+    const PrefService* prefs) {
   DCHECK(prefs);
 
   SessionStartupPref pref(
@@ -151,7 +152,7 @@ bool SessionStartupPref::TypeHasRecommendedValue(PrefService* prefs) {
 }
 
 // static
-bool SessionStartupPref::TypeIsDefault(PrefService* prefs) {
+bool SessionStartupPref::TypeIsDefault(const PrefService* prefs) {
   DCHECK(prefs);
   const PrefService::Preference* pref_restore =
       prefs->FindPreference(prefs::kRestoreOnStartup);

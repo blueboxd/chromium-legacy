@@ -50,7 +50,7 @@ class FakeLoginDisplayHost : public LoginDisplayHost {
                               const std::string& given_name) override;
   void LoadWallpaper(const AccountId& account_id) override;
   void LoadSigninWallpaper() override;
-  bool IsUserWhitelisted(const AccountId& account_id) override;
+  bool IsUserAllowlisted(const AccountId& account_id) override;
   void ShowGaiaDialog(const AccountId& prefilled_account) override;
   void HideOobeDialog() override;
   void UpdateOobeDialogState(ash::OobeDialogState state) override;

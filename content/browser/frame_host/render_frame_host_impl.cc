@@ -1804,7 +1804,7 @@ void RenderFrameHostImpl::AccessibilityPerformAction(
   }
   // Set the input modality in RenderWidgetHostViewAura to touch so the
   // VK shows up.
-  if (action_data.action == ax::mojom::Action::kDoDefault) {
+  if (action_data.action == ax::mojom::Action::kFocus) {
     RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
         render_view_host_->GetWidget()->GetView());
     if (view)
@@ -7061,7 +7061,7 @@ bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryAndObserve(
     // This factory should never be used to issue actual requests (i.e. it
     // should only be used to monitor for Network Service crashes).  Below is an
     // attempt to enforce that the factory cannot be used in practice.
-    monitoring_factory_params->request_initiator_site_lock =
+    monitoring_factory_params->request_initiator_origin_lock =
         url::Origin::Create(
             GURL("https://monitoring.url.loader.factory.invalid"));
 
@@ -7079,9 +7079,9 @@ bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactoryInternal(
     network::mojom::URLLoaderFactoryParamsPtr params,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory>
         default_factory_receiver) {
-  DCHECK(params->request_initiator_site_lock.has_value());
+  DCHECK(params->request_initiator_origin_lock.has_value());
   const url::Origin& request_initiator =
-      params->request_initiator_site_lock.value();
+      params->request_initiator_origin_lock.value();
 
   bool bypass_redirect_checks = false;
   WillCreateURLLoaderFactory(request_initiator, &default_factory_receiver,

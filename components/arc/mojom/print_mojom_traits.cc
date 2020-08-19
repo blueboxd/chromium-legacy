@@ -66,12 +66,12 @@ StructTraits<arc::mojom::PrinterCapabilitiesDataView,
              printing::PrinterSemanticCapsAndDefaults>::
     color_modes(const printing::PrinterSemanticCapsAndDefaults& caps) {
   auto color_modes = static_cast<arc::mojom::PrintColorMode>(0);
-  if (caps.bw_model != printing::UNKNOWN_COLOR_MODEL) {
+  if (caps.bw_model != printing::mojom::ColorModel::kUnknownColorModel) {
     color_modes = static_cast<arc::mojom::PrintColorMode>(
         static_cast<uint32_t>(color_modes) |
         static_cast<uint32_t>(arc::mojom::PrintColorMode::MONOCHROME));
   }
-  if (caps.color_model != printing::UNKNOWN_COLOR_MODEL) {
+  if (caps.color_model != printing::mojom::ColorModel::kUnknownColorModel) {
     color_modes = static_cast<arc::mojom::PrintColorMode>(
         static_cast<uint32_t>(color_modes) |
         static_cast<uint32_t>(arc::mojom::PrintColorMode::COLOR));

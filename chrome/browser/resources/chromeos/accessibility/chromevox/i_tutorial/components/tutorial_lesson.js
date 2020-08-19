@@ -161,6 +161,10 @@ export const TutorialLesson = Polymer({
    * @private
    */
   isGoalStateReached() {
+    if (!this.practiceState) {
+      return false;
+    }
+
     if (this.goalStateReached === true) {
       return true;
     }

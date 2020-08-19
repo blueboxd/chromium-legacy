@@ -60,9 +60,6 @@ class TestSearchResult : public ChromeSearchResult {
   // ChromeSearchResult overrides:
   void Open(int event_flags) override {}
   void InvokeAction(int action_index, int event_flags) override {}
-  ash::SearchResultType GetSearchResultType() const override {
-    return ash::SEARCH_RESULT_TYPE_BOUNDARY;
-  }
 
  private:
   static int instantiation_count;

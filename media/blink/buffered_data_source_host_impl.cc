@@ -140,11 +140,11 @@ double BufferedDataSourceHostImpl::DownloadRate() const {
     int64_t downloaded_bytes =
         download_history_.back().second - download_history_[i].second;
     base::TimeTicks now = tick_clock_->NowTicks();
-    base::TimeDelta downloaded_seconds = now - download_history_[i].first;
-    if (downloaded_seconds <= base::TimeDelta())
+    base::TimeDelta download_time = now - download_history_[i].first;
+    if (download_time <= base::TimeDelta())
       continue;
-    download_rate = std::min(
-        download_rate, downloaded_bytes / downloaded_seconds.InSecondsF());
+    download_rate =
+        std::min(download_rate, downloaded_bytes / download_time.InSecondsF());
   }
   return download_rate == kVeryLargeRate ? 0.0 : download_rate;
 }
@@ -160,23 +160,18 @@ bool BufferedDataSourceHostImpl::CanPlayThrough(
   }
   if (current_position > media_duration)
     return true;
-  double fraction = current_position / media_duration;
-  int64_t byte_pos = total_bytes_ * fraction;
-  if (byte_pos < 0)
-    byte_pos = 0;
 
-  int64_t unloaded_bytes =
+  const int64_t byte_pos =
+      std::max<int64_t>(total_bytes_ * (current_position / media_duration), 0);
+  const int64_t unloaded_bytes =
       UnloadedBytesInInterval(Interval<int64_t>(byte_pos, total_bytes_));
-
   if (unloaded_bytes == 0)
     return true;
 
   double download_rate = DownloadRate();
-  if (download_rate <= 0.0)
-    return false;
-
-  return unloaded_bytes / download_rate <
-         (media_duration - current_position).InSecondsF() / playback_rate;
+  return (download_rate > 0) &&
+         ((unloaded_bytes / download_rate) <
+          ((media_duration - current_position).InSecondsF() / playback_rate));
 }
 
 void BufferedDataSourceHostImpl::SetTickClockForTest(

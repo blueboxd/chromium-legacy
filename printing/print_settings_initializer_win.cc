@@ -142,7 +142,9 @@ void PrintSettingsInitializerWin::InitPrintSettings(
   print_settings->SetPrinterPrintableArea(physical_size_device_units,
                                           printable_area_device_units, false);
 
-  print_settings->set_color(IsDevModeWithColor(&dev_mode) ? COLOR : GRAY);
+  print_settings->set_color(IsDevModeWithColor(&dev_mode)
+                                ? mojom::ColorModel::kColor
+                                : mojom::ColorModel::kGray);
 
   // Check for postscript first so that we can change the mode with the
   // first command.

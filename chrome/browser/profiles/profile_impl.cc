@@ -1088,14 +1088,14 @@ void ProfileImpl::SetExitType(ExitType exit_type) {
   }
 }
 
-Profile::ExitType ProfileImpl::GetLastSessionExitType() {
+Profile::ExitType ProfileImpl::GetLastSessionExitType() const {
   // last_session_exited_cleanly_ is set when the preferences are loaded. Force
   // it to be set by asking for the prefs.
   GetPrefs();
   return last_session_exit_type_;
 }
 
-bool ProfileImpl::ShouldRestoreOldSessionCookies() {
+bool ProfileImpl::ShouldRestoreOldSessionCookies() const {
 #if defined(OS_ANDROID)
   SessionStartupPref::Type startup_pref_type =
       SessionStartupPref::GetDefaultStartupType();
@@ -1109,7 +1109,7 @@ bool ProfileImpl::ShouldRestoreOldSessionCookies() {
          startup_pref_type == SessionStartupPref::LAST;
 }
 
-bool ProfileImpl::ShouldPersistSessionCookies() {
+bool ProfileImpl::ShouldPersistSessionCookies() const {
   return true;
 }
 

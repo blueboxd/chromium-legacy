@@ -2365,6 +2365,10 @@
           '${buildername}',
           '--extra-browser-args=--disable-features=UseSkiaRenderer',
         ],
+        'android_args': [
+          # TODO(crbug.com/1093085): Remove this once we fix the tests.
+          '--extra-browser-args=--force-online-connection-state-for-indicator',
+        ],
         'mixins': [
           'chrome-gpu-gold-service-account',
           'skia_gold_test',
@@ -2378,6 +2382,10 @@
           '${buildername}',
           '--extra-browser-args=--disable-features=UseSkiaRenderer',
         ],
+        'android_args': [
+          # TODO(crbug.com/1093085): Remove this once we fix the tests.
+          '--extra-browser-args=--force-online-connection-state-for-indicator',
+        ],
         'mixins': [
           'chrome-gpu-gold-service-account',
           'skia_gold_test',
@@ -2389,6 +2397,10 @@
           '--dont-restore-color-profile-after-test',
           '--extra-browser-args=--disable-features=UseSkiaRenderer',
         ],
+        'android_args': [
+          # TODO(crbug.com/1093085): Remove this once we fix the tests.
+          '--extra-browser-args=--force-online-connection-state-for-indicator',
+        ],
       },
     },
 
@@ -2399,6 +2411,10 @@
         'args': [
           '--dont-restore-color-profile-after-test',
           '--extra-browser-args=--disable-features=UseSkiaRenderer',
+        ],
+        'android_args': [
+          # TODO(crbug.com/1093085): Remove this once we fix the tests.
+          '--extra-browser-args=--force-online-connection-state-for-indicator',
         ],
         'telemetry_test_name': 'screenshot_sync',
       },
@@ -2485,6 +2501,10 @@
           '${buildername}',
           '--extra-browser-args=--use-cmd-decoder=passthrough --use-gl=angle',
         ],
+        'android_args': [
+          # TODO(crbug.com/1093085): Remove this once we fix the tests.
+          '--extra-browser-args=--force-online-connection-state-for-indicator',
+        ],
         'chromeos_args': [
           '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
         ],
@@ -2501,6 +2521,10 @@
           '${buildername}',
           '--extra-browser-args=--use-cmd-decoder=passthrough --use-gl=angle',
         ],
+        'android_args': [
+          # TODO(crbug.com/1093085): Remove this once we fix the tests.
+          '--extra-browser-args=--force-online-connection-state-for-indicator',
+        ],
         'chromeos_args': [
           '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
         ],
@@ -2516,6 +2540,10 @@
         'args': [
           '--dont-restore-color-profile-after-test',
           '--extra-browser-args=--use-cmd-decoder=passthrough --use-gl=angle',
+        ],
+        'android_args': [
+          # TODO(crbug.com/1093085): Remove this once we fix the tests.
+          '--extra-browser-args=--force-online-connection-state-for-indicator',
         ],
         'chromeos_args': [
           '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
@@ -2546,6 +2574,10 @@
           '--test-machine-name',
           '${buildername}',
         ],
+        'android_args': [
+          # TODO(crbug.com/1093085): Remove this once we fix the tests.
+          '--extra-browser-args=--force-online-connection-state-for-indicator',
+        ],
         'win_args': [
           '--extra-browser-args=--enable-features=UseSkiaRenderer,SkiaDawn',
         ],
@@ -2561,6 +2593,10 @@
       'screenshot_sync': {
         'args': [
           '--dont-restore-color-profile-after-test',
+        ],
+        'android_args': [
+          # TODO(crbug.com/1093085): Remove this once we fix the tests.
+          '--extra-browser-args=--force-online-connection-state-for-indicator',
         ],
         'win_args': [
           '--extra-browser-args=--enable-features=UseSkiaRenderer,SkiaDawn',
@@ -2626,6 +2662,10 @@
           '${buildername}',
           '--extra-browser-args=--enable-features=UseSkiaRenderer',
         ],
+        'android_args': [
+          # TODO(crbug.com/1093085): Remove this once we fix the tests.
+          '--extra-browser-args=--force-online-connection-state-for-indicator',
+        ],
         'mixins': [
           'chrome-gpu-gold-service-account',
           'skia_gold_test',
@@ -2636,6 +2676,10 @@
           '--dont-restore-color-profile-after-test',
           '--extra-browser-args=--enable-features=UseSkiaRenderer',
         ],
+        'android_args': [
+          # TODO(crbug.com/1093085): Remove this once we fix the tests.
+          '--extra-browser-args=--force-online-connection-state-for-indicator',
+        ],
       },
       'skia_renderer_pixel_skia_gold_test': {
         'name': 'skia_renderer_pixel_skia_gold_test',
@@ -2644,6 +2688,10 @@
           '--test-machine-name',
           '${buildername}',
           '--extra-browser-args=--enable-features=UseSkiaRenderer',
+        ],
+        'android_args': [
+          # TODO(crbug.com/1093085): Remove this once we fix the tests.
+          '--extra-browser-args=--force-online-connection-state-for-indicator',
         ],
         'mixins': [
           'chrome-gpu-gold-service-account',
@@ -2679,6 +2727,10 @@
           '--test-machine-name',
           '${buildername}',
           '--extra-browser-args=--use-vulkan=native --disable-vulkan-fallback-to-gl-for-testing --enable-features=UseSkiaRenderer,Vulkan --use-cmd-decoder=validating',
+        ],
+        'android_args': [
+          # TODO(crbug.com/1093085): Remove this once we fix the tests.
+          '--extra-browser-args=--force-online-connection-state-for-indicator',
         ],
         'mixins': [
           'chrome-gpu-gold-service-account',
@@ -2742,6 +2794,10 @@
           '${buildername}',
           '--extra-browser-args=--use-cmd-decoder=validating',
         ],
+        'android_args': [
+          # TODO(crbug.com/1093085): Remove this once we fix the tests.
+          '--extra-browser-args=--force-online-connection-state-for-indicator',
+        ],
         'chromeos_args': [
           '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
         ],
@@ -2757,6 +2813,10 @@
           '--test-machine-name',
           '${buildername}',
           '--extra-browser-args=--use-cmd-decoder=validating',
+        ],
+        'android_args': [
+          # TODO(crbug.com/1093085): Remove this once we fix the tests.
+          '--extra-browser-args=--force-online-connection-state-for-indicator',
         ],
         'chromeos_args': [
           '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
@@ -2774,6 +2834,10 @@
           '--dont-restore-color-profile-after-test',
           '--extra-browser-args=--use-cmd-decoder=validating',
          ],
+        'android_args': [
+          # TODO(crbug.com/1093085): Remove this once we fix the tests.
+          '--extra-browser-args=--force-online-connection-state-for-indicator',
+        ],
         'chromeos_args': [
           '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
         ],
@@ -2961,6 +3025,23 @@
         ],
         'swarming': {
           'shards': 6,
+        },
+      },
+    },
+
+    'gpu_webgl_conformance_metal_passthrough_telemetry_tests': {
+      'webgl_conformance_metal_passthrough': {
+        'telemetry_test_name': 'webgl_conformance',
+        'args': [
+          # On dual-GPU devices we want the high-performance GPU to be active
+          '--extra-browser-args=--use-gl=angle --use-angle=metal --use-cmd-decoder=passthrough --force_high_performance_gpu',
+          # The current working directory when run via isolate is
+          # out/Debug or out/Release. Reference this file relatively to
+          # it.
+          '--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json',
+        ],
+        'swarming': {
+          'shards': 3,
         },
       },
     },
@@ -3314,6 +3395,11 @@
       'browser_tests': {
         'swarming': {
           'shards': 10,
+        },
+      },
+      'interactive_ui_tests': {
+        'swarming': {
+          'shards': 3,
         },
       },
       'unit_tests': {},
@@ -4874,6 +4960,7 @@
       'gpu_webgl2_conformance_telemetry_tests',
       'gpu_webgl_conformance_telemetry_tests',
       'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
+      'gpu_webgl_conformance_metal_passthrough_telemetry_tests',
       'gpu_webgl_conformance_swangle_passthrough_representative_telemetry_tests',
     ],
 
@@ -5092,6 +5179,17 @@
       'gpu_swiftshader_gtests',
     ],
 
+    'gpu_fyi_mac_pro_release_telemetry_tests': [
+      'gpu_common_and_optional_telemetry_tests',
+      'gpu_passthrough_telemetry_tests',
+      'gpu_validating_telemetry_tests',
+      'gpu_webgl2_conformance_gl_passthrough_telemetry_tests',
+      'gpu_webgl2_conformance_validating_telemetry_tests',
+      'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
+      'gpu_webgl_conformance_validating_telemetry_tests',
+      'gpu_webgl_conformance_swangle_passthrough_representative_telemetry_tests',
+    ],
+
     'gpu_fyi_mac_release_gtests': [
       'gpu_angle_end2end_gtests',
       'gpu_angle_unit_gtests',
@@ -5111,6 +5209,7 @@
       'gpu_webgl2_conformance_gl_passthrough_telemetry_tests',
       'gpu_webgl2_conformance_validating_telemetry_tests',
       'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
+      'gpu_webgl_conformance_metal_passthrough_telemetry_tests',
       'gpu_webgl_conformance_validating_telemetry_tests',
       'gpu_webgl_conformance_swangle_passthrough_representative_telemetry_tests',
     ],
@@ -5126,6 +5225,7 @@
       'gpu_passthrough_telemetry_tests',
       'gpu_webgl2_conformance_validating_telemetry_tests',
       'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
+      'gpu_webgl_conformance_metal_passthrough_telemetry_tests',
       'gpu_webgl_conformance_swangle_passthrough_representative_telemetry_tests',
       # Not currently running
       # gpu_webgl2_conformance_gl_passthrough_telemetry_tests here due

@@ -14,6 +14,7 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
+import org.chromium.base.CommandLine;
 import org.chromium.base.TimeUtilsJni;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
@@ -21,6 +22,7 @@ import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.status_indicator.StatusIndicatorCoordinator;
+import org.chromium.content_public.common.ContentSwitches;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -88,6 +90,13 @@ public class OfflineIndicatorControllerV2 {
     public OfflineIndicatorControllerV2(Context context, StatusIndicatorCoordinator statusIndicator,
             ObservableSupplier<Boolean> isUrlBarFocusedSupplier,
             Supplier<Boolean> canAnimateNativeBrowserControls) {
+        if (CommandLine.getInstance().hasSwitch(
+                    ContentSwitches.FORCE_ONLINE_CONNECTION_STATE_FOR_INDICATOR)) {
+            // If "force online connection state" switch is set, the offline indicator should never
+            // show.
+            return;
+        }
+
         mContext = context;
         mStatusIndicator = statusIndicator;
         mHandler = new Handler();
@@ -196,8 +205,10 @@ public class OfflineIndicatorControllerV2 {
 
         mOnUrlBarFocusChanged = null;
 
-        mHandler.removeCallbacks(mHideRunnable);
-        mHandler.removeCallbacks(mUpdateStatusIndicatorDelayedRunnable);
+        if (mHandler != null) {
+            mHandler.removeCallbacks(mHideRunnable);
+            mHandler.removeCallbacks(mUpdateStatusIndicatorDelayedRunnable);
+        }
     }
 
     private void updateStatusIndicator(boolean offline) {

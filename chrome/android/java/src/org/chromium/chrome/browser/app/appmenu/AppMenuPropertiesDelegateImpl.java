@@ -53,7 +53,6 @@ import org.chromium.chrome.browser.ui.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.ui.appmenu.CustomViewBinder;
 import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
-import org.chromium.components.browser_ui.settings.ManagedPreferencesUtils;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.webapk.lib.client.WebApkValidator;
@@ -159,6 +158,7 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
         List<CustomViewBinder> customViewBinders = new ArrayList<>();
         customViewBinders.add(new UpdateMenuItemViewBinder());
         customViewBinders.add(new ManagedByMenuItemViewBinder());
+        customViewBinders.add(new IncognitoMenuItemViewBinder());
         return customViewBinders;
     }
 
@@ -316,6 +316,23 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
 
         for (int i = 0; i < menu.size(); ++i) {
             MenuItem item = menu.getItem(i);
+            if (!shouldShowIconBeforeItem()) {
+                // Remove icons for menu items except the reader mode prefs and the update menu
+                // item.
+                if (item.getItemId() != R.id.reader_mode_prefs_id
+                        && item.getItemId() != R.id.update_menu_id) {
+                    item.setIcon(null);
+                }
+            }
+
+            if (item.getItemId() == R.id.new_incognito_tab_menu_id && item.isVisible()) {
+                // Disable new incognito tab when it is blocked (e.g. by a policy).
+                // findItem(...).setEnabled(...)" is not enough here, because of the inflated
+                // main_menu.xml contains multiple items with the same id in different groups
+                // e.g.: menu_new_incognito_tab.
+                item.setEnabled(isIncognitoEnabled());
+            }
+
             int itemGroupId = item.getGroupId();
             if (!(menuGroup == MenuGroup.START_SURFACE_MODE_MENU
                                 && itemGroupId == R.id.START_SURFACE_MODE_MENU
@@ -343,13 +360,6 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
                 item.setEnabled(hasIncognitoTabs);
             }
         }
-
-        // Disable new incognito tab when it is blocked (e.g. by a policy).
-        // findItem(...).setEnabled(...)" is not enough here, because of the inflated
-        // main_menu.xml contains multiple items with the same id in different groups
-        // e.g.: new_incognito_tab_menu_id.
-        disableEnableMenuItem(menu, R.id.new_incognito_tab_menu_id, true, isIncognitoEnabled(),
-                isIncognitoManaged());
     }
 
     /**
@@ -559,24 +569,6 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
         return shouldShowIconRow;
     }
 
-    // Set enabled to be |enable| for all MenuItems with |id| in |menu|.
-    // If |managed| is true then the "Managed By Enterprise" icon is shown next to the menu.
-    private void disableEnableMenuItem(
-            Menu menu, int id, boolean visible, boolean enabled, boolean managed) {
-        for (int i = 0; i < menu.size(); ++i) {
-            MenuItem item = menu.getItem(i);
-            if (item.getItemId() == id && item.isVisible()) {
-                item.setVisible(visible);
-                item.setEnabled(enabled);
-                if (managed) {
-                    item.setIcon(ManagedPreferencesUtils.getManagedByEnterpriseIconId());
-                } else {
-                    item.setIcon(null);
-                }
-            }
-        }
-    }
-
     @Override
     public int getFooterResourceId() {
         return 0;
@@ -602,6 +594,11 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
 
     @Override
     public void onHeaderViewInflated(AppMenuHandler appMenuHandler, View view) {}
+
+    @Override
+    public boolean shouldShowIconBeforeItem() {
+        return false;
+    }
 
     /**
      * Updates the bookmark item's visibility.
@@ -673,11 +670,6 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
     @VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)
     public boolean isIncognitoEnabled() {
         return IncognitoUtils.isIncognitoModeEnabled();
-    }
-
-    @VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)
-    public boolean isIncognitoManaged() {
-        return IncognitoUtils.isIncognitoModeManaged();
     }
 
     @VisibleForTesting

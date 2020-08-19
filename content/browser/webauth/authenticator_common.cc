@@ -528,7 +528,8 @@ base::flat_set<device::FidoTransportProtocol> GetAvailableTransports(
 // given frame.
 std::unique_ptr<device::FidoDiscoveryFactory> MakeDiscoveryFactory(
     RenderFrameHost* render_frame_host,
-    AuthenticatorRequestClientDelegate* request_delegate) {
+    AuthenticatorRequestClientDelegate* request_delegate,
+    bool is_u2f_api_request) {
   VirtualAuthenticatorManagerImpl* virtual_authenticator_manager =
       AuthenticatorEnvironmentImpl::GetInstance()
           ->MaybeGetVirtualAuthenticatorManager(
@@ -550,6 +551,17 @@ std::unique_ptr<device::FidoDiscoveryFactory> MakeDiscoveryFactory(
         device::WinWebAuthnApi::GetDefault());
   }
 #endif  // defined(OS_WIN)
+
+#if defined(OS_CHROMEOS)
+  // Ignore the ChromeOS u2fd virtual U2F HID device for WebAuthn requests so
+  // that it doesn't collide with the ChromeOS platform authenticator, also
+  // implemented in u2fd.
+  if (base::FeatureList::IsEnabled(device::kWebAuthCrosPlatformAuthenticator) &&
+      !is_u2f_api_request) {
+    constexpr device::VidPid kChromeOsU2fdVidPid{0x18d1, 0x502c};
+    discovery_factory->set_hid_ignore_list({kChromeOsU2fdVidPid});
+  }
+#endif  // defined(OS_CHROMEOS)
 
   return discovery_factory;
 }
@@ -1096,7 +1108,8 @@ void AuthenticatorCommon::IsUserVerifyingPlatformAuthenticatorAvailable(
                         : maybe_request_delegate.get();
 
   std::unique_ptr<device::FidoDiscoveryFactory> discovery_factory =
-      MakeDiscoveryFactory(render_frame_host_, request_delegate_ptr);
+      MakeDiscoveryFactory(render_frame_host_, request_delegate_ptr,
+                           /*is_u2f_api_request=*/false);
   device::FidoDiscoveryFactory* discovery_factory_testing_override =
       AuthenticatorEnvironmentImpl::GetInstance()
           ->MaybeGetDiscoveryFactoryTestOverride();
@@ -1608,8 +1621,11 @@ device::FidoDiscoveryFactory* AuthenticatorCommon::discovery_factory() {
 
 void AuthenticatorCommon::InitDiscoveryFactory() {
   DCHECK(!discovery_factory_ && !discovery_factory_testing_override_);
-  discovery_factory_ =
-      MakeDiscoveryFactory(render_frame_host_, request_delegate_.get());
+  const bool is_u2f_api_request =
+      WebAuthRequestSecurityChecker::OriginIsCryptoTokenExtension(
+          caller_origin_);
+  discovery_factory_ = MakeDiscoveryFactory(
+      render_frame_host_, request_delegate_.get(), is_u2f_api_request);
   // TODO(martinkr): |discovery_factory_testing_override_| is a long-lived
   // VirtualFidoDeviceDiscovery so that tests can maintain and alter virtual
   // authenticator state in between requests. We should extract a longer-lived

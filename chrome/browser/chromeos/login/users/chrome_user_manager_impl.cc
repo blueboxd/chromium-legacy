@@ -346,7 +346,7 @@ ChromeUserManagerImpl::ChromeUserManagerImpl()
       kAccountsPrefSupervisedUsersEnabled,
       base::Bind(&UserManager::NotifyUsersSignInConstraintsChanged,
                  weak_factory_.GetWeakPtr()));
-  // user whitelist
+  // For user allowlist.
   users_subscription_ = cros_settings_->AddSettingsObserver(
       kAccountsPrefUsers,
       base::Bind(&UserManager::NotifyUsersSignInConstraintsChanged,
@@ -1222,7 +1222,7 @@ bool ChromeUserManagerImpl::IsGuestSessionAllowed() const {
 bool ChromeUserManagerImpl::IsGaiaUserAllowed(
     const user_manager::User& user) const {
   DCHECK(user.HasGaiaAccount());
-  return cros_settings_->IsUserWhitelisted(user.GetAccountId().GetUserEmail(),
+  return cros_settings_->IsUserAllowlisted(user.GetAccountId().GetUserEmail(),
                                            nullptr);
 }
 

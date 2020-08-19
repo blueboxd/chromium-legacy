@@ -26,11 +26,15 @@ import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.content.res.AppCompatResources;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.ui.appmenu.internal.R;
 import org.chromium.components.browser_ui.widget.highlight.ViewHighlighter;
+import org.chromium.components.browser_ui.widget.text.TextViewWithCompoundDrawables;
 import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 import org.chromium.ui.widget.ChromeImageButton;
+import org.chromium.ui.widget.ChromeImageView;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -121,15 +125,17 @@ class AppMenuAdapter extends BaseAdapter {
     private final @Nullable List<CustomViewBinder> mCustomViewBinders;
     private final int mCustomViewTypes;
     private final Map<CustomViewBinder, Integer> mViewTypeOffsetMap;
+    private final boolean mIconBeforeItem;
 
     public AppMenuAdapter(OnClickHandler onClickHandler, List<MenuItem> menuItems,
             LayoutInflater inflater, Integer highlightedItemId,
-            @Nullable List<CustomViewBinder> customViewBinders) {
+            @Nullable List<CustomViewBinder> customViewBinders, boolean iconBeforeItem) {
         mOnClickHandler = onClickHandler;
         mMenuItems = menuItems;
         mInflater = inflater;
         mHighlightedItemId = highlightedItemId;
         mCustomViewBinders = customViewBinders;
+        mIconBeforeItem = iconBeforeItem;
         mNumMenuItems = menuItems.size();
         mDpToPx = inflater.getContext().getResources().getDisplayMetrics().density;
 
@@ -192,9 +198,15 @@ class AppMenuAdapter extends BaseAdapter {
                         || (int) convertView.getTag(R.id.menu_item_view_type)
                                 != MenuItemType.STANDARD) {
                     holder = new StandardMenuItemViewHolder();
-                    convertView = mInflater.inflate(R.layout.menu_item, parent, false);
+                    if (mIconBeforeItem) {
+                        convertView = mInflater.inflate(
+                                R.layout.menu_item_start_with_icon, parent, false);
+                    } else {
+                        convertView = mInflater.inflate(R.layout.menu_item, parent, false);
+                    }
+
                     holder.text = (TextView) convertView.findViewById(R.id.menu_item_text);
-                    holder.image = (AppMenuItemIcon) convertView.findViewById(R.id.menu_item_icon);
+                    holder.image = (ChromeImageView) convertView.findViewById(R.id.menu_item_icon);
                     convertView.setTag(holder);
                     convertView.setTag(R.id.menu_item_enter_anim_id,
                             buildStandardItemEnterAnimator(convertView, position));
@@ -219,13 +231,15 @@ class AppMenuAdapter extends BaseAdapter {
                 final MenuItem subItem = item.getSubMenu().getItem(1);
 
                 TitleButtonMenuItemViewHolder holder = null;
+
                 if (convertView == null
                         || (int) convertView.getTag(R.id.menu_item_view_type)
                                 != MenuItemType.TITLE_BUTTON) {
                     convertView = mInflater.inflate(R.layout.title_button_menu_item, parent, false);
 
                     holder = new TitleButtonMenuItemViewHolder();
-                    holder.title = (TextView) convertView.findViewById(R.id.title);
+                    holder.title =
+                            (TextViewWithCompoundDrawables) convertView.findViewById(R.id.title);
                     holder.checkbox = (AppMenuItemIcon) convertView.findViewById(R.id.checkbox);
                     holder.button = (ChromeImageButton) convertView.findViewById(R.id.button);
 
@@ -234,6 +248,12 @@ class AppMenuAdapter extends BaseAdapter {
                             buildStandardItemEnterAnimator(convertView, position));
                 } else {
                     holder = (TitleButtonMenuItemViewHolder) convertView.getTag();
+                }
+
+                if (mIconBeforeItem) {
+                    Drawable icon = titleItem.getIcon();
+                    assert icon != null;
+                    holder.title.setCompoundDrawablesRelative(icon, null, null, null);
                 }
 
                 holder.title.setText(titleItem.getTitle());
@@ -371,11 +391,13 @@ class AppMenuAdapter extends BaseAdapter {
 
     private void setupStandardMenuItemViewHolder(
             StandardMenuItemViewHolder holder, View convertView, final MenuItem item) {
+        // The standard menu item does not support the checkable item.
+        assert !item.isChecked();
+
         // Set up the icon.
         Drawable icon = item.getIcon();
         holder.image.setImageDrawable(icon);
         holder.image.setVisibility(icon == null ? View.GONE : View.VISIBLE);
-        holder.image.setChecked(item.isChecked());
         holder.text.setText(item.getTitle());
         holder.text.setContentDescription(item.getTitleCondensed());
 
@@ -491,6 +513,13 @@ class AppMenuAdapter extends BaseAdapter {
         for (int i = 0; i < numItems; i++) {
             setupImageButton(holder.buttons[i], item.getSubMenu().getItem(i));
         }
+
+        if (CachedFeatureFlags.isEnabled(ChromeFeatureList.TABBED_APP_OVERFLOW_MENU_ICONS)) {
+            // Tint action bar's background.
+            convertView.setBackgroundDrawable(ApiCompatibilityUtils.getDrawable(
+                    convertView.getContext().getResources(), R.drawable.menu_action_bar_bg));
+        }
+
         convertView.setFocusable(false);
         convertView.setEnabled(false);
         return convertView;
@@ -511,7 +540,7 @@ class AppMenuAdapter extends BaseAdapter {
 
     private static class StandardMenuItemViewHolder {
         public TextView text;
-        public AppMenuItemIcon image;
+        public ChromeImageView image;
     }
 
     private static class RowItemViewHolder {
@@ -523,7 +552,7 @@ class AppMenuAdapter extends BaseAdapter {
     }
 
     private static class TitleButtonMenuItemViewHolder {
-        public TextView title;
+        public TextViewWithCompoundDrawables title;
         public AppMenuItemIcon checkbox;
         public ImageButton button;
     }

@@ -60,6 +60,7 @@ class AppMenu implements OnItemClickListener, OnKeyListener, AppMenuAdapter.OnCl
     private final int mNegativeSoftwareVerticalOffset;
     private final int mNegativeVerticalOffsetNotTopAnchored;
     private final int[] mTempLocation;
+    private final boolean mIconBeforeItem;
 
     private PopupWindow mPopup;
     private ListView mListView;
@@ -77,9 +78,10 @@ class AppMenu implements OnItemClickListener, OnKeyListener, AppMenuAdapter.OnCl
      * @param itemDividerHeight Desired height for the divider between app menu items.
      * @param handler AppMenuHandlerImpl receives callbacks from AppMenu.
      * @param res Resources object used to get dimensions and style attributes.
+     * @param iconBeforeItem Whether icon is shown before the text.
      */
     AppMenu(Menu menu, int itemRowHeight, int itemDividerHeight, AppMenuHandlerImpl handler,
-            Resources res) {
+            Resources res, boolean iconBeforeItem) {
         mMenu = menu;
 
         mItemRowHeight = itemRowHeight;
@@ -97,6 +99,8 @@ class AppMenu implements OnItemClickListener, OnKeyListener, AppMenuAdapter.OnCl
                 res.getDimensionPixelSize(R.dimen.menu_negative_vertical_offset_not_top_anchored);
 
         mTempLocation = new int[2];
+
+        mIconBeforeItem = iconBeforeItem;
     }
 
     /**
@@ -243,7 +247,7 @@ class AppMenu implements OnItemClickListener, OnKeyListener, AppMenuAdapter.OnCl
         // A List adapter for visible items in the Menu. The first row is added as a header to the
         // list view.
         mAdapter = new AppMenuAdapter(this, menuItems, LayoutInflater.from(context),
-                highlightedItemId, customViewBinders);
+                highlightedItemId, customViewBinders, mIconBeforeItem);
 
         ViewGroup contentView =
                 (ViewGroup) LayoutInflater.from(context).inflate(R.layout.app_menu_layout, null);

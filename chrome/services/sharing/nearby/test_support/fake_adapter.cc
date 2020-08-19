@@ -8,6 +8,7 @@
 
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace bluetooth {
 
@@ -20,13 +21,31 @@ class FakeDiscoverySession : public mojom::DiscoverySession {
   ~FakeDiscoverySession() override { std::move(on_destroy_callback_).Run(); }
 
  private:
-  // mojom::FakeDiscoverySession:
+  // mojom::DiscoverySession:
   void IsActive(IsActiveCallback callback) override {
     std::move(callback).Run(true);
   }
   void Stop(StopCallback callback) override { std::move(callback).Run(true); }
 
   base::OnceClosure on_destroy_callback_;
+};
+
+class FakeSocket : public mojom::Socket {
+ public:
+  FakeSocket(mojo::ScopedDataPipeProducerHandle receive_stream,
+             mojo::ScopedDataPipeConsumerHandle send_stream)
+      : receive_stream_(std::move(receive_stream)),
+        send_stream_(std::move(send_stream)) {}
+  ~FakeSocket() override = default;
+
+ private:
+  // mojom::Socket:
+  void Disconnect(DisconnectCallback callback) override {
+    std::move(callback).Run();
+  }
+
+  mojo::ScopedDataPipeProducerHandle receive_stream_;
+  mojo::ScopedDataPipeConsumerHandle send_stream_;
 };
 
 }  // namespace
@@ -83,6 +102,45 @@ void FakeAdapter::StartDiscoverySession(
   std::move(callback).Run(std::move(pending_session));
 }
 
+void FakeAdapter::ConnectToServiceInsecurely(
+    const std::string& address,
+    const device::BluetoothUUID& service_uuid,
+    ConnectToServiceInsecurelyCallback callback) {
+  if (!base::Contains(allowed_connections_for_address_and_uuid_pair_,
+                      std::make_pair(address, service_uuid))) {
+    std::move(callback).Run(/*result=*/nullptr);
+    return;
+  }
+
+  mojo::ScopedDataPipeProducerHandle receive_pipe_producer_handle;
+  mojo::ScopedDataPipeConsumerHandle receive_pipe_consumer_handle;
+  ASSERT_EQ(
+      MOJO_RESULT_OK,
+      mojo::CreateDataPipe(/*options=*/nullptr, &receive_pipe_producer_handle,
+                           &receive_pipe_consumer_handle));
+
+  mojo::ScopedDataPipeProducerHandle send_pipe_producer_handle;
+  mojo::ScopedDataPipeConsumerHandle send_pipe_consumer_handle;
+  ASSERT_EQ(MOJO_RESULT_OK, mojo::CreateDataPipe(/*options=*/nullptr,
+                                                 &send_pipe_producer_handle,
+                                                 &send_pipe_consumer_handle));
+
+  mojo::PendingRemote<mojom::Socket> pending_socket;
+
+  mojo::MakeSelfOwnedReceiver(
+      std::make_unique<FakeSocket>(std::move(receive_pipe_producer_handle),
+                                   std::move(send_pipe_consumer_handle)),
+      pending_socket.InitWithNewPipeAndPassReceiver());
+
+  mojom::ConnectToServiceResultPtr connect_to_service_result =
+      mojom::ConnectToServiceResult::New();
+  connect_to_service_result->socket = std::move(pending_socket);
+  connect_to_service_result->receive_stream =
+      std::move(receive_pipe_consumer_handle);
+  connect_to_service_result->send_stream = std::move(send_pipe_producer_handle);
+  std::move(callback).Run(std::move(connect_to_service_result));
+}
+
 void FakeAdapter::SetShouldDiscoverySucceed(bool should_discovery_succeed) {
   should_discovery_succeed_ = should_discovery_succeed;
 }
@@ -108,16 +166,17 @@ void FakeAdapter::NotifyDeviceRemoved(mojom::DeviceInfoPtr device_info) {
   client_->DeviceRemoved(std::move(device_info));
 }
 
+void FakeAdapter::AllowConnectionForAddressAndUuidPair(
+    const std::string& address,
+    const device::BluetoothUUID& service_uuid) {
+  allowed_connections_for_address_and_uuid_pair_.emplace(address, service_uuid);
+}
+
 void FakeAdapter::OnDiscoverySessionDestroyed() {
   DCHECK(discovery_session_);
   discovery_session_ = nullptr;
   if (on_discovery_session_destroyed_callback_)
     std::move(on_discovery_session_destroyed_callback_).Run();
 }
-
-void FakeAdapter::ConnectToServiceInsecurely(
-    const std::string& address,
-    const device::BluetoothUUID& service_uuid,
-    ConnectToServiceInsecurelyCallback callback) {}
 
 }  // namespace bluetooth

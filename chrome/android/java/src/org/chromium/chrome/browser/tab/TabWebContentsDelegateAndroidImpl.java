@@ -351,11 +351,6 @@ final class TabWebContentsDelegateAndroidImpl extends TabWebContentsDelegateAndr
         return mDelegate.shouldAnimateBrowserControlsHeightChanges();
     }
 
-    @Override
-    public boolean controlsResizeView() {
-        return mDelegate.controlsResizeView();
-    }
-
     @VisibleForTesting
     void showFramebustBlockInfobarForTesting(String url) {
         TabWebContentsDelegateAndroidImplJni.get().showFramebustBlockInfoBar(

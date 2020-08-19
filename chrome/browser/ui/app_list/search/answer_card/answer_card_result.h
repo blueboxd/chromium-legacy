@@ -30,8 +30,6 @@ class AnswerCardResult : public ChromeSearchResult {
 
   void Open(int event_flags) override;
 
-  ash::SearchResultType GetSearchResultType() const override;
-
   const GURL& search_result_url() const { return search_result_url_; }
 
  private:

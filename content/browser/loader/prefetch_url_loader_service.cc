@@ -245,8 +245,8 @@ bool PrefetchURLLoaderService::IsValidCrossOriginPrefetch(
     return false;
   }
 
-  // The request initiator has to match the request_initiator_site_lock - it has
-  // to be the same origin as the last committed origin in the frame.
+  // The request initiator has to match the request_initiator_origin_lock - it
+  // has to be the same origin as the last committed origin in the frame.
   const BindContext& current_context = *current_bind_context();
   // Presence of |render_frame_host| is guaranteed by the caller - the caller
   // calls earlier EnsureCrossOriginFactory which has the same DCHECK.

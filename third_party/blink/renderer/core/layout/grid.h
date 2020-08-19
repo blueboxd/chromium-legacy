@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_GRID_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_GRID_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/order_iterator.h"
 #include "third_party/blink/renderer/core/style/grid_area.h"
@@ -91,6 +90,8 @@ class CORE_EXPORT Grid {
         size_t fixed_track_span,
         size_t varying_track_span) = 0;
 
+    GridIterator(const GridIterator&) = delete;
+    GridIterator& operator=(const GridIterator&) = delete;
     virtual ~GridIterator() = default;
 
    protected:
@@ -105,7 +106,6 @@ class CORE_EXPORT Grid {
     size_t row_index_;
     size_t column_index_;
     size_t child_index_;
-    DISALLOW_COPY_AND_ASSIGN(GridIterator);
   };
 
   virtual std::unique_ptr<GridIterator> CreateIterator(
@@ -285,6 +285,8 @@ class ListGridIterator final : public Grid::GridIterator {
                    GridTrackSizingDirection,
                    size_t fixed_track_index,
                    size_t varying_track_index = 0);
+  ListGridIterator(const ListGridIterator&) = delete;
+  ListGridIterator& operator=(const ListGridIterator&) = delete;
 
   LayoutBox* NextGridItem() override;
   std::unique_ptr<GridArea> NextEmptyGridArea(
@@ -294,7 +296,6 @@ class ListGridIterator final : public Grid::GridIterator {
  private:
   const ListGrid& grid_;
   ListGrid::GridCell* cell_node_{nullptr};
-  DISALLOW_COPY_AND_ASSIGN(ListGridIterator);
 };
 
 }  // namespace blink

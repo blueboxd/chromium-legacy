@@ -483,7 +483,8 @@ void DesktopSessionProxy::WriteFile(uint64_t file_id,
   SendToDesktop(new ChromotingNetworkDesktopMsg_WriteFile(file_id, filename));
 }
 
-void DesktopSessionProxy::WriteChunk(uint64_t file_id, std::string data) {
+void DesktopSessionProxy::WriteChunk(uint64_t file_id,
+                                     std::vector<std::uint8_t> data) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   SendToDesktop(new ChromotingNetworkDesktopMsg_WriteFileChunk(file_id, data));

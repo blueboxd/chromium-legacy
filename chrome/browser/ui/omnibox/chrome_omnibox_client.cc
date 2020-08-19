@@ -400,13 +400,8 @@ void ChromeOmniboxClient::PromptPageTranslation() {
     ChromeTranslateClient* translate_client =
         ChromeTranslateClient::FromWebContents(contents);
     if (translate_client) {
-      translate::LanguageState& state = translate_client->GetLanguageState();
-      // Here we pass triggered_from_menu as true because that is meant to
-      // capture whether the user explicitly requested the translation.
-      translate_client->ShowTranslateUI(
-          translate::TRANSLATE_STEP_TRANSLATING, state.original_language(),
-          state.AutoTranslateTo(), translate::TranslateErrors::NONE,
-          /*triggered_from_menu=*/true);
+      DCHECK_NE(nullptr, translate_client->GetTranslateManager());
+      translate_client->GetTranslateManager()->InitiateManualTranslation(true);
     }
   }
 }

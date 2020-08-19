@@ -622,7 +622,7 @@ bool FakeChromeUserManager::IsGuestSessionAllowed() const {
 bool FakeChromeUserManager::IsGaiaUserAllowed(
     const user_manager::User& user) const {
   DCHECK(user.HasGaiaAccount());
-  return CrosSettings::Get()->IsUserWhitelisted(
+  return CrosSettings::Get()->IsUserAllowlisted(
       user.GetAccountId().GetUserEmail(), nullptr);
 }
 

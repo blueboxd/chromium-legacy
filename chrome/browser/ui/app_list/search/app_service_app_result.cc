@@ -58,6 +58,8 @@ AppServiceAppResult::AppServiceAppResult(Profile* profile,
     CallLoadIcon(true, allow_placeholder_icon);
   }
 
+  SetMetricsType(GetSearchResultType());
+
   switch (app_type_) {
     case apps::mojom::AppType::kBuiltIn:
       set_id(app_id);

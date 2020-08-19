@@ -70,7 +70,7 @@ class CorsURLLoaderFactoryTest : public testing::Test {
 
     auto factory_params = network::mojom::URLLoaderFactoryParams::New();
     factory_params->process_id = kProcessId;
-    factory_params->request_initiator_site_lock =
+    factory_params->request_initiator_origin_lock =
         url::Origin::Create(GURL("http://localhost"));
     auto resource_scheduler_client =
         base::MakeRefCounted<ResourceSchedulerClient>(

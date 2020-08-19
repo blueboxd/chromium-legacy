@@ -112,6 +112,10 @@ bool DisplayColorSpaces::SupportsHDR() const {
          GetOutputColorSpace(ContentColorUsage::kHDR, true).IsHDR();
 }
 
+ColorSpace DisplayColorSpaces::GetScreenInfoColorSpace() const {
+  return GetOutputColorSpace(ContentColorUsage::kHDR, false /* needs_alpha */);
+}
+
 void DisplayColorSpaces::ToStrings(
     std::vector<std::string>* out_names,
     std::vector<gfx::ColorSpace>* out_color_spaces,

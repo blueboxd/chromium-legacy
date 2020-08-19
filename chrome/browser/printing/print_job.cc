@@ -21,6 +21,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "printing/mojom/print.mojom.h"
 #include "printing/printed_document.h"
 
 #if defined(OS_WIN)
@@ -372,7 +373,7 @@ void PrintJob::StartPdfToEmfConversion(
 
   PdfRenderSettings render_settings(
       content_area, gfx::Point(0, 0), settings.dpi_size(),
-      /*autorotate=*/true, settings.color() == COLOR, mode);
+      /*autorotate=*/true, settings.color() == mojom::ColorModel::kColor, mode);
   pdf_conversion_state_->Start(
       bytes, render_settings,
       base::BindOnce(&PrintJob::OnPdfConversionStarted, this));
@@ -450,7 +451,7 @@ void PrintJob::StartPdfToPostScriptConversion(
   const PrintSettings& settings = document()->settings();
   PdfRenderSettings render_settings(
       content_area, physical_offsets, settings.dpi_size(),
-      /*autorotate=*/true, settings.color() == COLOR,
+      /*autorotate=*/true, settings.color() == mojom::ColorModel::kColor,
       ps_level2 ? PdfRenderSettings::Mode::POSTSCRIPT_LEVEL2
                 : PdfRenderSettings::Mode::POSTSCRIPT_LEVEL3);
   pdf_conversion_state_->Start(

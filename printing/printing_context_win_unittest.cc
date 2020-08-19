@@ -15,6 +15,7 @@
 #include "base/win/scoped_hdc.h"
 #include "printing/backend/printing_info_win.h"
 #include "printing/backend/win_helper.h"
+#include "printing/mojom/print.mojom.h"
 #include "printing/print_settings.h"
 #include "printing/printing_context_system_dialog_win.h"
 #include "printing/printing_test.h"
@@ -170,7 +171,7 @@ TEST_F(PrintingContextTest, Color) {
                      base::Unretained(this)));
   EXPECT_EQ(PrintingContext::OK, result());
   const PrintSettings& settings = context.settings();
-  EXPECT_NE(settings.color(), UNKNOWN_COLOR_MODEL);
+  EXPECT_NE(settings.color(), mojom::ColorModel::kUnknownColorModel);
 }
 
 TEST_F(PrintingContextTest, Base) {

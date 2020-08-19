@@ -16,6 +16,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.animation.CompositorAnimator;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelAnimation;
 import org.chromium.chrome.browser.contextualsearch.QuickActionCategory;
+import org.chromium.chrome.browser.contextualsearch.ResolvedSearchTerm.CardTag;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
@@ -262,10 +263,11 @@ public class ContextualSearchBarControl {
     /**
      * Updates the Bar to display a dictionary definition card.
      * @param searchTerm The string that represents the search term to display.
+     * @param cardTagEnum Which kind of card is being shown in this update.
      */
-    public void updateForDictionaryDefinition(String searchTerm) {
+    void updateForDictionaryDefinition(String searchTerm, @CardTag int cardTagEnum) {
         if (!mCardIconControl.didUpdateControlsForDefinition(
-                    mContextControl, mImageControl, searchTerm)) {
+                    mContextControl, mImageControl, searchTerm, cardTagEnum)) {
             // Can't style, just update with the text to display.
             setSearchTerm(searchTerm);
             animateSearchTermResolution();

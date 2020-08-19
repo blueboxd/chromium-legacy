@@ -75,51 +75,26 @@ ConversionStorageSql::ConversionStorageSql(
       weak_factory_(this) {
   DCHECK(delegate_);
   DETACH_FROM_SEQUENCE(sequence_checker_);
+
+  if (g_run_in_memory_) {
+    db_init_status_ = DbStatus::kDeferringCreation;
+  } else {
+    db_init_status_ = base::PathExists(path_to_database_)
+                          ? DbStatus::kDeferringOpen
+                          : DbStatus::kDeferringCreation;
+  }
 }
 
 ConversionStorageSql::~ConversionStorageSql() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-bool ConversionStorageSql::Initialize() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  db_ = std::make_unique<sql::Database>();
-  db_->set_histogram_tag("Conversions");
-
-  // Supply this callback with a weak_ptr to avoid calling the error callback
-  // after |this| has been deleted.
-  db_->set_error_callback(
-      base::BindRepeating(&ConversionStorageSql::DatabaseErrorCallback,
-                          weak_factory_.GetWeakPtr()));
-  db_->set_page_size(4096);
-  db_->set_cache_size(32);
-  db_->set_exclusive_locking();
-
-  const base::FilePath& dir = path_to_database_.DirName();
-  bool opened = false;
-  if (path_to_database_.value() == kInMemoryPath) {
-    opened = db_->OpenInMemory();
-  } else if (base::DirectoryExists(dir) || base::CreateDirectory(dir)) {
-    opened = db_->Open(path_to_database_);
-  } else {
-    DLOG(ERROR) << "Failed to create directory for Conversion database";
-  }
-
-  if (!opened || !InitializeSchema()) {
-    db_.reset();
-    db_is_open_ = false;
-    return false;
-  }
-
-  db_is_open_ = true;
-  return true;
-}
-
 void ConversionStorageSql::StoreImpression(
     const StorableImpression& impression) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!db_is_open_)
+  // Force the creation of the database if it doesn't exist, as we need to
+  // persist the impression.
+  if (!LazyInit(DbCreationPolicy::kCreateIfAbsent))
     return;
 
   // Cleanup any impression that may be expired by this point. This is done when
@@ -181,7 +156,7 @@ void ConversionStorageSql::StoreImpression(
 int ConversionStorageSql::MaybeCreateAndStoreConversionReports(
     const StorableConversion& conversion) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!db_is_open_)
+  if (!LazyInit(DbCreationPolicy::kIgnoreIfAbsent))
     return 0;
 
   const url::Origin& conversion_origin = conversion.conversion_origin();
@@ -306,7 +281,7 @@ int ConversionStorageSql::MaybeCreateAndStoreConversionReports(
 std::vector<ConversionReport> ConversionStorageSql::GetConversionsToReport(
     base::Time max_report_time) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!db_is_open_)
+  if (!LazyInit(DbCreationPolicy::kIgnoreIfAbsent))
     return {};
 
   // Get all entries in the conversions table with a |report_time| less than
@@ -367,7 +342,7 @@ std::vector<ConversionReport> ConversionStorageSql::GetConversionsToReport(
 
 std::vector<StorableImpression> ConversionStorageSql::GetActiveImpressions() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!db_is_open_)
+  if (!LazyInit(DbCreationPolicy::kIgnoreIfAbsent))
     return {};
 
   const char kGetImpressionsSql[] =
@@ -402,7 +377,7 @@ std::vector<StorableImpression> ConversionStorageSql::GetActiveImpressions() {
 
 int ConversionStorageSql::DeleteExpiredImpressions() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!db_is_open_)
+  if (!LazyInit(DbCreationPolicy::kIgnoreIfAbsent))
     return 0;
 
   // Delete all impressions that have no associated conversions and are past
@@ -434,7 +409,7 @@ int ConversionStorageSql::DeleteExpiredImpressions() {
 
 bool ConversionStorageSql::DeleteConversion(int64_t conversion_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!db_is_open_)
+  if (!LazyInit(DbCreationPolicy::kIgnoreIfAbsent))
     return false;
 
   // Delete the row identified by |conversion_id|.
@@ -455,7 +430,7 @@ void ConversionStorageSql::ClearData(
     base::Time delete_end,
     base::RepeatingCallback<bool(const url::Origin&)> filter) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!db_is_open_)
+  if (!LazyInit(DbCreationPolicy::kIgnoreIfAbsent))
     return;
 
   SCOPED_UMA_HISTOGRAM_TIMER("Conversions.ClearDataTime");
@@ -650,6 +625,55 @@ bool ConversionStorageSql::HasCapacityForStoringConversion(
   return count < delegate_->GetMaxConversionsPerOrigin();
 }
 
+bool ConversionStorageSql::LazyInit(DbCreationPolicy creation_policy) {
+  switch (db_init_status_) {
+    // If the database file has not been created, we defer creation until
+    // storage needs to be used for an operation which needs to operate even on
+    // an empty database.
+    case DbStatus::kDeferringCreation:
+      if (creation_policy == DbCreationPolicy::kIgnoreIfAbsent)
+        return false;
+      break;
+    case DbStatus::kDeferringOpen:
+      break;
+    case DbStatus::kClosed:
+      return false;
+    case DbStatus::kOpen:
+      return true;
+  }
+
+  db_ = std::make_unique<sql::Database>();
+  db_->set_histogram_tag("Conversions");
+
+  // Supply this callback with a weak_ptr to avoid calling the error callback
+  // after |this| has been deleted.
+  db_->set_error_callback(
+      base::BindRepeating(&ConversionStorageSql::DatabaseErrorCallback,
+                          weak_factory_.GetWeakPtr()));
+  db_->set_page_size(4096);
+  db_->set_cache_size(32);
+  db_->set_exclusive_locking();
+
+  const base::FilePath& dir = path_to_database_.DirName();
+  bool opened = false;
+  if (path_to_database_.value() == kInMemoryPath) {
+    opened = db_->OpenInMemory();
+  } else if (base::DirectoryExists(dir) || base::CreateDirectory(dir)) {
+    opened = db_->Open(path_to_database_);
+  } else {
+    DLOG(ERROR) << "Failed to create directory for Conversion database";
+  }
+
+  if (!opened || !InitializeSchema()) {
+    db_.reset();
+    db_init_status_ = DbStatus::kClosed;
+    return false;
+  }
+
+  db_init_status_ = DbStatus::kOpen;
+  return true;
+}
+
 bool ConversionStorageSql::InitializeSchema() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // TODO(johnidel, csharrison): Many impressions will share a target origin and
@@ -780,7 +804,7 @@ void ConversionStorageSql::DatabaseErrorCallback(int extended_error,
 
   // Consider the  database closed if we did not attempt to recover so we did
   // not produce further errors.
-  db_is_open_ = false;
+  db_init_status_ = DbStatus::kClosed;
 }
 
 }  // namespace content

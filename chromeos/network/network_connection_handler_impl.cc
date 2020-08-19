@@ -125,7 +125,7 @@ std::string GetDefaultUserProfilePath(const NetworkState* network) {
       (LoginState::IsInitialized() &&
        !LoginState::Get()->UserHasNetworkProfile()) ||
       (network && network->type() == shill::kTypeWifi &&
-       network->security_class() == shill::kSecurityNone)) {
+       !network->IsSecure())) {
     return NetworkProfileHandler::GetSharedProfilePath();
   }
   const NetworkProfile* profile =

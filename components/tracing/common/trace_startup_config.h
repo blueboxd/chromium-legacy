@@ -157,7 +157,6 @@ class TRACING_EXPORT TraceStartupConfig {
   bool EnableFromCommandLine();
   bool EnableFromConfigFile();
   bool EnableFromBackgroundTracing();
-  bool EnableFromATrace();
 
   bool ParseTraceConfigFileContent(const std::string& content);
 

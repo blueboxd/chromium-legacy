@@ -341,8 +341,10 @@ enum class ParentAccessRequestReason {
   kChangeTime,
   // Update values on the timezone settings page.
   kChangeTimezone,
-  // Online login flow.
-  kOnlineLogin,
+  // Add user flow.
+  kAddUser,
+  // Re-authentication flow.
+  kReauth,
 };
 
 // Parameters and callbacks for a security token PIN request that is to be shown

@@ -110,6 +110,10 @@ constexpr gfx::Insets kMicGainSliderViewPadding(0, 52, 0, 0);
 constexpr gfx::Insets kMicGainSliderPadding(0, 8, 0, 48);
 constexpr int kMicGainSliderViewSpacing = 8;
 
+constexpr int kTrayRadioButtonInterSpacing = 20;
+constexpr gfx::Insets kTrayRadioButtonPadding(16, 20, 0, 0);
+constexpr gfx::Insets kTraySubLabelPadding(4, 56, 16, 16);
+
 constexpr int kMessageCenterCollapseThreshold = 175;
 constexpr int kStackedNotificationBarHeight = 32;
 constexpr int kStackedNotificationBarCollapsedHeight = 40;

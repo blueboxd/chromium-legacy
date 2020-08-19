@@ -296,8 +296,8 @@ bool PrintBackendWin::GetPrinterSemanticCapsAndDefaults(
   // http://msdn.microsoft.com/en-us/library/windows/desktop/dd183552(v=vs.85).aspx
   caps.color_changeable =
       (DeviceCapabilities(name, port, DC_COLORDEVICE, nullptr, nullptr) == 1);
-  caps.color_model = printing::COLOR;
-  caps.bw_model = printing::GRAY;
+  caps.color_model = mojom::ColorModel::kColor;
+  caps.bw_model = mojom::ColorModel::kGray;
 
   caps.duplex_modes.push_back(mojom::DuplexMode::kSimplex);
   if (DeviceCapabilities(name, port, DC_DUPLEX, nullptr, nullptr) == 1) {

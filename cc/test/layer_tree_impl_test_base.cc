@@ -44,6 +44,7 @@ LayerTreeImplTestBase::LayerTreeImplTestBase(
                                       settings)),
       render_pass_(viz::RenderPass::Create()),
       layer_impl_id_(2) {
+  host_->CreateFakeLayerTreeHostImpl();
   std::unique_ptr<LayerImpl> root =
       LayerImpl::Create(host_impl()->active_tree(), 1);
   root->SetBounds(gfx::Size(1, 1));

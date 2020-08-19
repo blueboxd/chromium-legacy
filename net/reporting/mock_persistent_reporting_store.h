@@ -121,6 +121,8 @@ class MockPersistentReportingStore
   // Count the number of commands with type |t|.
   int CountCommands(Command::Type t);
 
+  void ClearCommands();
+
   CommandList GetAllCommands() const;
 
   // Gets the number of stored endpoints/groups, simulating the actual number

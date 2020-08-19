@@ -6,8 +6,8 @@
 #define REMOTING_HOST_FILE_TRANSFER_IPC_FILE_OPERATIONS_H_
 
 #include <cstdint>
-#include <string>
 #include <tuple>
+#include <vector>
 
 #include "base/containers/flat_map.h"
 #include "base/memory/weak_ptr.h"
@@ -34,7 +34,8 @@ class IpcFileOperations : public FileOperations {
     virtual void ReadChunk(std::uint64_t file_id, std::uint64_t size) = 0;
     virtual void WriteFile(std::uint64_t file_id,
                            const base::FilePath& filename) = 0;
-    virtual void WriteChunk(std::uint64_t file_id, std::string data) = 0;
+    virtual void WriteChunk(std::uint64_t file_id,
+                            std::vector<std::uint8_t> data) = 0;
     virtual void Close(std::uint64_t file_id) = 0;
     virtual void Cancel(std::uint64_t file_id) = 0;
   };
@@ -45,7 +46,8 @@ class IpcFileOperations : public FileOperations {
     using Result = protocol::FileTransferResult<Monostate>;
     using InfoResult =
         protocol::FileTransferResult<std::tuple<base::FilePath, uint64_t>>;
-    using DataResult = remoting::protocol::FileTransferResult<std::string>;
+    using DataResult =
+        remoting::protocol::FileTransferResult<std::vector<std::uint8_t>>;
 
     virtual ~ResultHandler() = default;
     virtual void OnResult(std::uint64_t file_id, Result result) = 0;

@@ -113,6 +113,8 @@ class MetricsReporter {
   // Called when Chrome is entering the background.
   void OnEnterBackground();
 
+  static void OnImageFetched(int net_error_or_http_status);
+
   // Actions upload.
   static void OnUploadActionsBatch(UploadActionsBatchStatus status);
   virtual void OnUploadActions(UploadActionsStatus status);

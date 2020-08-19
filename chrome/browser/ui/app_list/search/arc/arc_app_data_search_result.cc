@@ -86,9 +86,14 @@ ArcAppDataSearchResult::ArcAppDataSearchResult(
   set_id(kAppDataSearchPrefix + launch_intent_uri());
   if (data_->type == arc::mojom::AppDataResultType::PERSON) {
     SetDisplayType(ash::SearchResultDisplayType::kTile);
+    SetMetricsType(ash::APP_DATA_RESULT_PERSON);
   } else if (data_->type == arc::mojom::AppDataResultType::NOTE_DOCUMENT) {
     SetDetails(base::UTF8ToUTF16(data_->text));
     SetDisplayType(ash::SearchResultDisplayType::kList);
+    SetMetricsType(ash::APP_DATA_RESULT_NOTE_DOCUMENT);
+  } else {
+    NOTREACHED();
+    SetMetricsType(ash::SEARCH_RESULT_TYPE_BOUNDARY);
   }
 
   // TODO(warx): set default images when icon_png_data() is not available.
@@ -142,18 +147,6 @@ void ArcAppDataSearchResult::ApplyIcon(const gfx::ImageSkia& icon) {
     return;
   }
   SetIcon(icon);
-}
-
-ash::SearchResultType ArcAppDataSearchResult::GetSearchResultType() const {
-  switch (data_->type) {
-    case arc::mojom::AppDataResultType::PERSON:
-      return ash::APP_DATA_RESULT_PERSON;
-    case arc::mojom::AppDataResultType::NOTE_DOCUMENT:
-      return ash::APP_DATA_RESULT_NOTE_DOCUMENT;
-    default:
-      NOTREACHED();
-      return ash::SEARCH_RESULT_TYPE_BOUNDARY;
-  }
 }
 
 }  // namespace app_list

@@ -22,7 +22,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_OVERFLOW_MODEL_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_OVERFLOW_MODEL_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 
@@ -89,6 +88,9 @@ class SimpleLayoutOverflowModel {
  public:
   SimpleLayoutOverflowModel(const LayoutRect& layout_rect)
       : layout_overflow_(layout_rect) {}
+  SimpleLayoutOverflowModel(const SimpleLayoutOverflowModel&) = delete;
+  SimpleLayoutOverflowModel& operator=(const SimpleLayoutOverflowModel&) =
+      delete;
 
   const LayoutRect& LayoutOverflowRect() const { return layout_overflow_; }
   void SetLayoutOverflow(const LayoutRect& rect) { layout_overflow_ = rect; }
@@ -100,8 +102,6 @@ class SimpleLayoutOverflowModel {
 
  private:
   LayoutRect layout_overflow_;
-
-  DISALLOW_COPY_AND_ASSIGN(SimpleLayoutOverflowModel);
 };
 
 class SimpleVisualOverflowModel {
@@ -110,7 +110,9 @@ class SimpleVisualOverflowModel {
  public:
   SimpleVisualOverflowModel(const LayoutRect& visual_rect)
       : visual_overflow_(visual_rect) {}
-
+  SimpleVisualOverflowModel(const SimpleVisualOverflowModel&) = delete;
+  SimpleVisualOverflowModel& operator=(const SimpleVisualOverflowModel&) =
+      delete;
   const LayoutRect& VisualOverflowRect() const { return visual_overflow_; }
   void SetVisualOverflow(const LayoutRect& rect) { visual_overflow_ = rect; }
   void AddVisualOverflow(const LayoutRect& rect) {
@@ -123,8 +125,6 @@ class SimpleVisualOverflowModel {
 
  private:
   LayoutRect visual_overflow_;
-
-  DISALLOW_COPY_AND_ASSIGN(SimpleVisualOverflowModel);
 };
 
 struct SimpleOverflowModel {
@@ -163,6 +163,8 @@ class BoxLayoutOverflowModel {
  public:
   BoxLayoutOverflowModel(const LayoutRect& layout_rect)
       : layout_overflow_(layout_rect) {}
+  BoxLayoutOverflowModel(const BoxLayoutOverflowModel&) = delete;
+  BoxLayoutOverflowModel& operator=(const BoxLayoutOverflowModel&) = delete;
 
   const LayoutRect& LayoutOverflowRect() const { return layout_overflow_; }
   void SetLayoutOverflow(const LayoutRect& rect) { layout_overflow_ = rect; }
@@ -180,14 +182,14 @@ class BoxLayoutOverflowModel {
  private:
   LayoutRect layout_overflow_;
   LayoutUnit layout_client_after_edge_;
-
-  DISALLOW_COPY_AND_ASSIGN(BoxLayoutOverflowModel);
 };
 
 class BoxVisualOverflowModel {
  public:
   BoxVisualOverflowModel(const LayoutRect& self_visual_overflow_rect)
       : self_visual_overflow_(self_visual_overflow_rect) {}
+  BoxVisualOverflowModel(const BoxVisualOverflowModel&) = delete;
+  BoxVisualOverflowModel& operator=(const BoxVisualOverflowModel&) = delete;
 
   void SetSelfVisualOverflow(const LayoutRect& rect) {
     self_visual_overflow_ = rect;
@@ -227,8 +229,6 @@ class BoxVisualOverflowModel {
   LayoutRect self_visual_overflow_;
   LayoutRect contents_visual_overflow_;
   bool has_subpixel_visual_effect_outsets_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(BoxVisualOverflowModel);
 };
 
 struct BoxOverflowModel {

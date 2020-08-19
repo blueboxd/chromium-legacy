@@ -140,13 +140,13 @@ std::unique_ptr<printing::PrintSettings> ParsePrintTicket(base::Value ticket) {
   switch (color.value().type) {
     case cloud_devices::printer::ColorType::STANDARD_MONOCHROME:
     case cloud_devices::printer::ColorType::CUSTOM_MONOCHROME:
-      settings->set_color(printing::GRAY);
+      settings->set_color(printing::mojom::ColorModel::kGray);
       break;
 
     case cloud_devices::printer::ColorType::STANDARD_COLOR:
     case cloud_devices::printer::ColorType::CUSTOM_COLOR:
     case cloud_devices::printer::ColorType::AUTO_COLOR:
-      settings->set_color(printing::COLOR);
+      settings->set_color(printing::mojom::ColorModel::kColor);
       break;
 
     default:
@@ -232,14 +232,16 @@ bool CheckSettingsAndCapabilitiesCompatibility(
     return false;
 
   base::Optional<bool> is_color =
-      ::printing::IsColorModelSelected(settings.color());
+      ::printing::IsColorModelSelected(static_cast<int>(settings.color()));
   bool color_mode_selected = is_color.has_value() && is_color.value();
   if (!color_mode_selected &&
-      capabilities.bw_model == printing::UNKNOWN_COLOR_MODEL) {
+      capabilities.bw_model ==
+          printing::mojom::ColorModel::kUnknownColorModel) {
     return false;
   }
   if (color_mode_selected &&
-      capabilities.color_model == printing::UNKNOWN_COLOR_MODEL) {
+      capabilities.color_model ==
+          printing::mojom::ColorModel::kUnknownColorModel) {
     return false;
   }
 

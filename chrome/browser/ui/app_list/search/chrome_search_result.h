@@ -34,6 +34,7 @@ class ChromeSearchResult {
  public:
   using ResultType = ash::AppListSearchResultType;
   using DisplayType = ash::SearchResultDisplayType;
+  using MetricsType = ash::SearchResultType;
   using Tag = ash::SearchResultTag;
   using Tags = ash::SearchResultTags;
   using Action = ash::SearchResultAction;
@@ -59,6 +60,7 @@ class ChromeSearchResult {
   ash::AppListSearchResultType result_type() const {
     return metadata_->result_type;
   }
+  MetricsType metrics_type() const { return metadata_->metrics_type; }
   DisplayIndex display_index() const { return metadata_->display_index; }
   float position_priority() const { return metadata_->position_priority; }
   const Actions& actions() const { return metadata_->actions; }
@@ -88,6 +90,7 @@ class ChromeSearchResult {
   void SetFormattedPrice(const base::string16& formatted_price);
   void SetDisplayType(DisplayType display_type);
   void SetResultType(ResultType result_type);
+  void SetMetricsType(MetricsType metrics_type);
   void SetDisplayIndex(DisplayIndex display_index);
   void SetPositionPriority(float position_priority);
   void SetDisplayScore(double display_score);
@@ -154,9 +157,6 @@ class ChromeSearchResult {
   // Note set_result_subtype() does not call into ModelUpdater so changing the
   // subtype after construction is not reflected in ash.
   int result_subtype() const { return metadata_->result_subtype; }
-
-  // Get the type of the result, used in metrics.
-  virtual ash::SearchResultType GetSearchResultType() const = 0;
 
  protected:
   // These id setters should be called in derived class constructors only.

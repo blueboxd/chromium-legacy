@@ -13,8 +13,10 @@ const base::Feature kEvDetailsInPageInfo{"EvDetailsInPageInfo",
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 // Enables using dialogs (instead of bubbles) for the post-install UI when an
 // extension overrides a setting.
+// TODO(devlin): Remove this feature in M88, since this launched as part of
+// https://crbug.com/1084281.
 const base::Feature kExtensionSettingsOverriddenDialogs{
-    "ExtensionSettingsOverriddenDialogs", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ExtensionSettingsOverriddenDialogs", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 // Enables an extension menu in the toolbar. See https://crbug.com/943702

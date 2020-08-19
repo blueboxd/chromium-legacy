@@ -8,6 +8,12 @@
 #include <memory>
 #include <string>
 
+#include "components/autofill/ios/browser/autofill_driver_ios_bridge.h"
+#import "components/autofill/ios/form_util/form_activity_observer_bridge.h"
+#import "components/password_manager/ios/shared_password_controller.h"
+#import "ios/web/public/web_state_observer_bridge.h"
+#import "ios/web_view/internal/autofill/cwv_autofill_client_ios_bridge.h"
+#import "ios/web_view/internal/passwords/web_view_password_manager_client.h"
 #import "ios/web_view/public/cwv_autofill_controller.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -34,7 +40,12 @@ class WebState;
 @class JsSuggestionManager;
 @class SharedPasswordController;
 
-@interface CWVAutofillController ()
+@interface CWVAutofillController () <AutofillDriverIOSBridge,
+                                     CRWWebStateObserver,
+                                     CWVAutofillClientIOSBridge,
+                                     FormActivityObserver,
+                                     PasswordManagerClientBridge,
+                                     SharedPasswordControllerDelegate>
 
 - (instancetype)
          initWithWebState:(web::WebState*)webState

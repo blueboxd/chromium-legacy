@@ -13,7 +13,6 @@ import static org.chromium.chrome.browser.password_check.PasswordCheckProperties
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.CHECK_STATUS;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.CHECK_TIMESTAMP;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.COMPROMISED_CREDENTIALS_COUNT;
-import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.LAUNCH_ACCOUNT_CHECKUP_ACTION;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.RESTART_BUTTON_ACTION;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.UNKNOWN_PROGRESS;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.ITEMS;
@@ -21,7 +20,6 @@ import static org.chromium.chrome.browser.password_check.PasswordCheckProperties
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
-import android.text.method.LinkMovementMethod;
 import android.util.Pair;
 import android.view.View;
 import android.view.ViewGroup;
@@ -46,8 +44,6 @@ import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.RecyclerViewAdapter;
 import org.chromium.ui.modelutil.SimpleRecyclerViewMcp;
-import org.chromium.ui.text.NoUnderlineClickableSpan;
-import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.widget.ButtonCompat;
 
 /**
@@ -190,30 +186,22 @@ class PasswordCheckViewBinder {
         int status = model.get(CHECK_STATUS);
         Long checkTimestamp = model.get(CHECK_TIMESTAMP);
         Integer compromisedCredentialsCount = model.get(COMPROMISED_CREDENTIALS_COUNT);
-        Runnable launchCheckupInAccount = model.get(LAUNCH_ACCOUNT_CHECKUP_ACTION);
 
         if (key == CHECK_PROGRESS) {
-            updateStatusText(view, status, compromisedCredentialsCount, checkTimestamp, progress,
-                    launchCheckupInAccount);
+            updateStatusText(view, status, compromisedCredentialsCount, checkTimestamp, progress);
         } else if (key == CHECK_STATUS) {
             updateActionButton(view, status, model.get(RESTART_BUTTON_ACTION));
             updateStatusIcon(view, status, compromisedCredentialsCount);
             updateStatusIllustration(view, status, compromisedCredentialsCount);
-            updateStatusText(view, status, compromisedCredentialsCount, checkTimestamp, progress,
-                    launchCheckupInAccount);
+            updateStatusText(view, status, compromisedCredentialsCount, checkTimestamp, progress);
             updateStatusSubtitle(view, status, compromisedCredentialsCount);
         } else if (key == CHECK_TIMESTAMP) {
-            updateStatusText(view, status, compromisedCredentialsCount, checkTimestamp, progress,
-                    launchCheckupInAccount);
+            updateStatusText(view, status, compromisedCredentialsCount, checkTimestamp, progress);
         } else if (key == COMPROMISED_CREDENTIALS_COUNT) {
             updateStatusIcon(view, status, compromisedCredentialsCount);
             updateStatusIllustration(view, status, compromisedCredentialsCount);
-            updateStatusText(view, status, compromisedCredentialsCount, checkTimestamp, progress,
-                    launchCheckupInAccount);
+            updateStatusText(view, status, compromisedCredentialsCount, checkTimestamp, progress);
             updateStatusSubtitle(view, status, compromisedCredentialsCount);
-        } else if (key == LAUNCH_ACCOUNT_CHECKUP_ACTION) {
-            assert model.get(LAUNCH_ACCOUNT_CHECKUP_ACTION)
-                    != null : "Launch checkup in account is always required.";
         } else if (key == RESTART_BUTTON_ACTION) {
             assert model.get(RESTART_BUTTON_ACTION) != null : "Restart action is always required.";
         } else {
@@ -280,7 +268,7 @@ class PasswordCheckViewBinder {
 
     private static void updateStatusText(View view, @PasswordCheckUIStatus int status,
             Integer compromisedCredentialsCount, Long checkTimestamp,
-            Pair<Integer, Integer> progress, Runnable launchCheckupInAccount) {
+            Pair<Integer, Integer> progress) {
         // TODO(crbug.com/1114051): Set default values for header properties.
         if (status == PasswordCheckUIStatus.IDLE
                 && (compromisedCredentialsCount == null || checkTimestamp == null)) {
@@ -289,9 +277,8 @@ class PasswordCheckViewBinder {
         if (status == PasswordCheckUIStatus.RUNNING && progress == null) return;
 
         TextView statusMessage = view.findViewById(R.id.check_status_message);
-        statusMessage.setText(getStatusMessage(
-                view, status, compromisedCredentialsCount, progress, launchCheckupInAccount));
-        statusMessage.setMovementMethod(LinkMovementMethod.getInstance());
+        statusMessage.setText(
+                getStatusMessage(view, status, compromisedCredentialsCount, progress));
 
         LinearLayout textLayout = view.findViewById(R.id.check_status_text_layout);
         int verticalMargin = getDimensionPixelOffset(view, getStatusTextMargin(status));
@@ -302,15 +289,14 @@ class PasswordCheckViewBinder {
         statusDescription.setVisibility(getStatusDescriptionVisibility(status));
     }
 
-    private static CharSequence getStatusMessage(View view, @PasswordCheckUIStatus int status,
-            Integer compromisedCredentialsCount, Pair<Integer, Integer> progress,
-            Runnable launchCheckupInAccount) {
+    private static String getStatusMessage(View view, @PasswordCheckUIStatus int status,
+            Integer compromisedCredentialsCount, Pair<Integer, Integer> progress) {
         switch (status) {
             case PasswordCheckUIStatus.IDLE:
                 assert compromisedCredentialsCount != null;
                 return compromisedCredentialsCount == 0
                         ? getString(view, R.string.password_check_status_message_idle_no_leaks)
-                        : getResources(view).getQuantityString(
+                        : view.getContext().getResources().getQuantityString(
                                 R.plurals.password_check_status_message_idle_with_leaks,
                                 compromisedCredentialsCount, compromisedCredentialsCount);
             case PasswordCheckUIStatus.RUNNING:
@@ -331,12 +317,8 @@ class PasswordCheckViewBinder {
             case PasswordCheckUIStatus.ERROR_QUOTA_LIMIT:
                 return getString(view, R.string.password_check_status_message_error_quota_limit);
             case PasswordCheckUIStatus.ERROR_QUOTA_LIMIT_ACCOUNT_CHECK:
-                NoUnderlineClickableSpan linkSpan = new NoUnderlineClickableSpan(
-                        getResources(view), unusedView -> launchCheckupInAccount.run());
-                return SpanApplier.applySpans(
-                        getString(view,
-                                R.string.password_check_status_message_error_quota_limit_account_check),
-                        new SpanApplier.SpanInfo("<link>", "</link>", linkSpan));
+                return getString(view,
+                        R.string.password_check_status_message_error_quota_limit_account_check);
             case PasswordCheckUIStatus.ERROR_UNKNOWN:
                 return getString(view, R.string.password_check_status_message_error_unknown);
             default:
@@ -366,7 +348,7 @@ class PasswordCheckViewBinder {
 
     private static String getStatusDescription(View view, Long checkTimestamp) {
         if (checkTimestamp == null) return null;
-        Resources res = getResources(view);
+        Resources res = view.getContext().getResources();
         return res.getString(R.string.password_check_status_description_idle,
                 getTimestamp(res, System.currentTimeMillis() - checkTimestamp));
     }
@@ -486,15 +468,11 @@ class PasswordCheckViewBinder {
     }
 
     private static String getString(View view, int resourceId) {
-        return getResources(view).getString(resourceId);
+        return view.getContext().getResources().getString(resourceId);
     }
 
     private static int getDimensionPixelOffset(View view, int resourceId) {
-        return getResources(view).getDimensionPixelOffset(resourceId);
-    }
-
-    private static Resources getResources(View view) {
-        return view.getContext().getResources();
+        return view.getContext().getResources().getDimensionPixelOffset(resourceId);
     }
 
     private static void setTintListForCompoundDrawables(

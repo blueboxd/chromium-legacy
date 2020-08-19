@@ -58,7 +58,7 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) LoginPerformer
   class Delegate : public AuthStatusConsumer {
    public:
     ~Delegate() override {}
-    virtual void WhiteListCheckFailed(const std::string& email) = 0;
+    virtual void AllowlistCheckFailed(const std::string& email) = 0;
     virtual void PolicyLoadFailed() = 0;
     virtual void SetAuthFlowOffline(bool offline) = 0;
   };
@@ -130,7 +130,7 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) LoginPerformer
   // Check if user is allowed to sign in on device. |wildcard_match| will
   // contain additional information whether this user is explicitly listed or
   // not (may be relevant for external-based sign-in).
-  virtual bool IsUserWhitelisted(const AccountId& account_id,
+  virtual bool IsUserAllowlisted(const AccountId& account_id,
                                  bool* wildcard_match) = 0;
 
  protected:
@@ -144,7 +144,7 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) LoginPerformer
   // This method should run addional online check if user can sign in on device.
   // Either |success_callback| or |failure_callback| should be called upon this
   // check.
-  virtual void RunOnlineWhitelistCheck(const AccountId& account_id,
+  virtual void RunOnlineAllowlistCheck(const AccountId& account_id,
                                        bool wildcard_match,
                                        const std::string& refresh_token,
                                        base::OnceClosure success_callback,
@@ -193,7 +193,7 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) LoginPerformer
 
   // Starts authentication.
   void StartAuthentication();
-  void NotifyWhitelistCheckFailure();
+  void NotifyAllowlistCheckFailure();
 
   // Makes sure that authenticator is created.
   void EnsureAuthenticator();

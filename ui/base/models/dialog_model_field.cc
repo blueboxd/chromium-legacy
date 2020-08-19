@@ -21,6 +21,44 @@ DialogModelField::DialogModelField(util::PassKey<DialogModel>,
 
 DialogModelField::~DialogModelField() = default;
 
+DialogModelButton* DialogModelField::AsButton(util::PassKey<DialogModelHost>) {
+  return AsButton();
+}
+
+DialogModelBodyText* DialogModelField::AsBodyText(
+    util::PassKey<DialogModelHost>) {
+  return AsBodyText();
+}
+
+DialogModelCombobox* DialogModelField::AsCombobox(
+    util::PassKey<DialogModelHost>) {
+  return AsCombobox();
+}
+
+DialogModelTextfield* DialogModelField::AsTextfield(
+    util::PassKey<DialogModelHost>) {
+  return AsTextfield();
+}
+
+DialogModelButton* DialogModelField::AsButton() {
+  DCHECK_EQ(type_, kButton);
+  return static_cast<DialogModelButton*>(this);
+}
+
+DialogModelBodyText* DialogModelField::AsBodyText() {
+  DCHECK_EQ(type_, kBodyText);
+  return static_cast<DialogModelBodyText*>(this);
+}
+
+DialogModelCombobox* DialogModelField::AsCombobox() {
+  DCHECK_EQ(type_, kCombobox);
+  return static_cast<DialogModelCombobox*>(this);
+}
+
+DialogModelTextfield* DialogModelField::AsTextfield() {
+  DCHECK_EQ(type_, kTextfield);
+  return static_cast<DialogModelTextfield*>(this);
+}
 
 DialogModelButton::Params::Params() = default;
 DialogModelButton::Params::~Params() = default;

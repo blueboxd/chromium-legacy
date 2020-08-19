@@ -3171,6 +3171,12 @@ const char kAndroidNightModeTabReparentingName[] =
 const char kAndroidNightModeTabReparentingDescription[] =
     "If enabled, when the user changes themes the current tabs are reparented "
     "instead of reloaded.";
+
+const char kTabbedAppOverflowMenuIconsName[] =
+    "Android tabbed app overflow menu icons";
+const char kTabbedAppOverflowMenuIconsDescription[] =
+    "If enabled, shows icon in front of each overflow menu item.";
+
 // Non-Android -----------------------------------------------------------------
 
 #else  // !defined(OS_ANDROID)
@@ -4472,6 +4478,12 @@ const char kDcheckIsFatalDescription[] =
     "By default Chrome will evaluate in this build, but only log failures, "
     "rather than crashing. If enabled, DCHECKs will crash the calling process.";
 #endif  // defined(DCHECK_IS_CONFIGURABLE)
+
+#if BUILDFLAG(ENABLE_AV1_DECODER)
+const char kEnableAVIFName[] = "Enable AVIF image format";
+const char kEnableAVIFDescription[] =
+    "Adds image decoding support for the AVIF image format.";
+#endif  // BUILDFLAG(ENABLE_AV1_DECODER)
 
 #if BUILDFLAG(ENABLE_CLICK_TO_CALL)
 const char kClickToCallUIName[] =

@@ -234,10 +234,10 @@ IPC_MESSAGE_CONTROL(ChromotingDesktopNetworkMsg_FileInfoResult,
 // Carries the result of a file read-chunk operation on the file identified by
 // |file_id|. |result| holds the read data. If |result| is an error, the file ID
 // is no longer valid.
-IPC_MESSAGE_CONTROL(
-    ChromotingDesktopNetworkMsg_FileDataResult,
-    uint64_t /* file_id */,
-    remoting::protocol::FileTransferResult<std::string> /* result */)
+IPC_MESSAGE_CONTROL(ChromotingDesktopNetworkMsg_FileDataResult,
+                    uint64_t /* file_id */,
+                    remoting::protocol::FileTransferResult<
+                        std::vector<std::uint8_t>> /* result */)
 
 //-----------------------------------------------------------------------------
 // Chromoting messages sent from the network to the desktop process.
@@ -299,7 +299,7 @@ IPC_MESSAGE_CONTROL(ChromotingNetworkDesktopMsg_WriteFile,
 // respond with a FileResult message.
 IPC_MESSAGE_CONTROL(ChromotingNetworkDesktopMsg_WriteFileChunk,
                     uint64_t /* file_id */,
-                    std::string /* data */)
+                    std::vector<std::uint8_t> /* data */)
 
 // Prompt the user to select a file for reading, which will be identified by
 // |file_id|. The desktop process will respond with a FileInfoResult message.

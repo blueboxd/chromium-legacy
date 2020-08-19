@@ -2389,14 +2389,16 @@ TEST_F('ChromeVoxBackgroundTest', 'NoFocusTalkBackEnabled', function() {
   const mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree('<p>Start here</p>', function() {
     ChromeVoxState.instance.setCurrentRange(null);
-    mockFeedback.call(doCmd('nextObject'));
-    assertFalse(mockFeedback.utteranceInQueue(
-        'No current ChromeVox focus. ' +
-        'Press Alt+Shift+L to go to the launcher.'));
-    mockFeedback.call(doCmd('previousObject'));
-    assertFalse(mockFeedback.utteranceInQueue(
-        'No current ChromeVox focus. ' +
-        'Press Alt+Shift+L to go to the launcher.'));
+    mockFeedback.call(doCmd('nextObject'))
+        .call(
+            () => assertFalse(mockFeedback.utteranceInQueue(
+                'No current ChromeVox focus. ' +
+                'Press Alt+Shift+L to go to the launcher.')))
+        .call(doCmd('previousObject'))
+        .call(
+            () => assertFalse(mockFeedback.utteranceInQueue(
+                'No current ChromeVox focus. ' +
+                'Press Alt+Shift+L to go to the launcher.')));
     mockFeedback.replay();
   });
 });

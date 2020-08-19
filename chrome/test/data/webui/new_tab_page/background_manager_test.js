@@ -74,6 +74,19 @@ suite('NewTabPageBackgroundManagerTest', () => {
     assertEquals(wrapImageUrl('https://example.com'), backgroundImage.url);
   });
 
+  test('setting same url does not update src', () => {
+    // Arrange.
+    const url = {url: {url: 'https://example.com'}};
+    backgroundManager.setBackgroundImage(url);
+    backgroundImage.url = null;
+
+    // Act.
+    backgroundManager.setBackgroundImage(url);
+
+    // Assert.
+    assertEquals(null, backgroundImage.url);
+  });
+
   test('setting custom style updates src', () => {
     // Act.
     backgroundManager.setBackgroundImage({

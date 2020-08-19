@@ -11,12 +11,11 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 
-class ScreenManagerCrosapi;
-
 namespace crosapi {
 
 class AttestationAsh;
 class MessageCenterAsh;
+class ScreenManagerAsh;
 class SelectFileAsh;
 
 // Implementation of AshChromeService. It provides a set of APIs that
@@ -42,8 +41,8 @@ class AshChromeServiceImpl : public mojom::AshChromeService {
 
   std::unique_ptr<AttestationAsh> attestation_ash_;
   std::unique_ptr<MessageCenterAsh> message_center_ash_;
-  std::unique_ptr<ScreenManagerCrosapi> screen_manager_crosapi_;
-  std::unique_ptr<SelectFileAsh> select_file_crosapi_;
+  std::unique_ptr<ScreenManagerAsh> screen_manager_ash_;
+  std::unique_ptr<SelectFileAsh> select_file_ash_;
 };
 
 }  // namespace crosapi

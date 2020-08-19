@@ -7,12 +7,16 @@ import {assert} from 'chrome://resources/js/assert.m.js';
 import {isChromeOS, isMac, isWindows} from 'chrome://resources/js/cr.m.js';
 import {keyEventOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {NativeLayerStub} from 'chrome://test/print_preview/native_layer_stub.js';
-import {getCddTemplateWithAdvancedSettings, getDefaultInitialSettings} from 'chrome://test/print_preview/print_preview_test_utils.js';
-import {TestPluginProxy} from 'chrome://test/print_preview/test_plugin_proxy.js';
-import {eventToPromise, flushTasks} from 'chrome://test/test_util.m.js';
+
+import {assertEquals, assertTrue} from '../chai_assert.js';
+import {eventToPromise, flushTasks} from '../test_util.m.js';
+
+import {NativeLayerStub} from './native_layer_stub.js';
+import {getCddTemplateWithAdvancedSettings, getDefaultInitialSettings} from './print_preview_test_utils.js';
+import {TestPluginProxy} from './test_plugin_proxy.js';
 
 window.key_event_test = {};
+const key_event_test = window.key_event_test;
 key_event_test.suiteName = 'KeyEventTest';
 /** @enum {string} */
 key_event_test.TestNames = {
@@ -28,11 +32,11 @@ key_event_test.TestNames = {
 };
 
 suite(key_event_test.suiteName, function() {
-  /** @type {?PrintPreviewAppElement} */
-  let page = null;
+  /** @type {!PrintPreviewAppElement} */
+  let page;
 
-  /** @type {?NativeLayer} */
-  let nativeLayer = null;
+  /** @type {!NativeLayerStub} */
+  let nativeLayer;
 
   /** @override */
   setup(function() {
@@ -48,9 +52,11 @@ suite(key_event_test.suiteName, function() {
     PluginProxyImpl.instance_ = pluginProxy;
 
     document.body.innerHTML = '';
-    page = document.createElement('print-preview-app');
+    page = /** @type {!PrintPreviewAppElement} */ (
+        document.createElement('print-preview-app'));
     document.body.appendChild(page);
-    const previewArea = page.$.previewArea;
+    const previewArea = /** @type {!PrintPreviewPreviewAreaElement} */ (
+        page.$$('#previewArea'));
 
     // Wait for initialization to complete.
     return Promise

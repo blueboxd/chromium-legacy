@@ -496,10 +496,10 @@ INSTANTIATE_TEST_SUITE_P(OpenCodecs,
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
 
 const PlaybackTestData kADTSTests[] = {
-    {"bear-audio-main-aac.aac", 0, 2724},
-    {"bear-audio-lc-aac.aac", 0, 2717},
-    {"bear-audio-implicit-he-aac-v1.aac", 0, 2812},
-    {"bear-audio-implicit-he-aac-v2.aac", 0, 3047},
+    {"bear-audio-main-aac.aac", 0, 2708},
+    {"bear-audio-lc-aac.aac", 0, 2791},
+    {"bear-audio-implicit-he-aac-v1.aac", 0, 2829},
+    {"bear-audio-implicit-he-aac-v2.aac", 0, 2900},
 };
 
 // TODO(chcunningham): Migrate other basic playback tests to TEST_P.

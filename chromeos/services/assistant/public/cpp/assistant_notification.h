@@ -85,6 +85,11 @@ struct COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) AssistantNotification {
   // If |true|, the notification will be removed on click.
   bool remove_on_click = true;
 
+  // If |true|, the notification state (e.g. its popup and read status) will be
+  // reset so as to renotify the user of this notification.
+  // See `message_center::Notification::renotify()`.
+  bool renotify = false;
+
   // If |true|, the user can't remove the notification.
   bool is_pinned = false;
 

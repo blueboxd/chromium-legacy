@@ -105,3 +105,6 @@ crbug.com/1079393 [ win10 intel-0x5912 ] VideoPathTraceTest_DirectComposition_Vi
 crbug.com/1079393 [ win10 intel-0x5912 ] VideoPathTraceTest_DirectComposition_Video_MP4_Fullsize [ Failure ]
 crbug.com/1079393 [ win10 intel-0x5912 ] VideoPathTraceTest_DirectComposition_Video_VP9 [ Failure ]
 crbug.com/1079393 [ win10 intel-0x5912 ] VideoPathTraceTest_DirectComposition_Video_VP9_DXVA [ Failure ]
+
+# Fuchsia Flakes.
+crbug.com/1058255 [ fuchsia ] TraceTest_WebGLGreenTriangle_AA_Alpha [ Skip ]

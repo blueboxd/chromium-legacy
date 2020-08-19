@@ -935,7 +935,7 @@ class NetworkServiceTestWithService : public testing::Test {
     mojom::URLLoaderFactoryParamsPtr params =
         mojom::URLLoaderFactoryParams::New();
     params->process_id = process_id;
-    params->request_initiator_site_lock =
+    params->request_initiator_origin_lock =
         url::Origin::Create(GURL("https://initiator.example.com"));
     params->is_corb_enabled = false;
     network_context_->CreateURLLoaderFactory(

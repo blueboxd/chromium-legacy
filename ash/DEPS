@@ -32,6 +32,7 @@ include_rules = [
   "+services/data_decoder/public",
   "+services/media_session/public",
   "+services/network/public",
+  "+services/network/test",
   "+services/preferences/public",
   "+services/viz/public",
   "+skia/ext",

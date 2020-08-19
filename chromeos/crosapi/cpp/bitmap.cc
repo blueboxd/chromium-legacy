@@ -7,6 +7,8 @@
 namespace crosapi {
 
 Bitmap::Bitmap() = default;
+Bitmap::Bitmap(Bitmap&& other) = default;
+Bitmap& Bitmap::operator=(Bitmap&& other) = default;
 Bitmap::~Bitmap() = default;
 
 }  // namespace crosapi

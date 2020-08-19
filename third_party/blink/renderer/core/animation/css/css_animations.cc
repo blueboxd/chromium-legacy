@@ -1060,7 +1060,15 @@ void CSSAnimations::CalculateTransitionUpdateForProperty(
           active_transition_iter->value;
       if (CSSPropertyEquality::PropertiesEqual(property, state.style,
                                                *running_transition->to)) {
-        return;
+        if (!state.transition_data) {
+          UseCounter::Count(state.animating_element->GetDocument(),
+                            WebFeature::kCSSTransitionCancelledByRemovingStyle);
+          // TODO(crbug.com/934700): Add a return to this branch to correctly
+          // continue transitions under default settings (all 0s) in the absence
+          // of a change in base computed style.
+        } else {
+          return;
+        }
       }
       state.update.CancelTransition(property);
       DCHECK(!state.animating_element->GetElementAnimations() ||
@@ -1074,6 +1082,11 @@ void CSSAnimations::CalculateTransitionUpdateForProperty(
       }
     }
   }
+
+  // In the default configutation (transition: all 0s) we continue and cancel
+  // transitions but do not start them.
+  if (!state.transition_data)
+    return;
 
   const PropertyRegistry* registry =
       state.animating_element->GetDocument().GetPropertyRegistry();
@@ -1144,7 +1157,7 @@ void CSSAnimations::CalculateTransitionUpdateForProperty(
   // If we have multiple transitions on the same property, we will use the
   // last one since we iterate over them in order.
 
-  Timing timing = state.transition_data.ConvertToTiming(transition_index);
+  Timing timing = state.transition_data->ConvertToTiming(transition_index);
   // CSS Transitions always have a valid duration (i.e. the value 'auto' is not
   // supported), so iteration_duration will always be set.
   if (timing.start_delay + timing.iteration_duration->InSecondsF() <= 0) {
@@ -1298,7 +1311,7 @@ void CSSAnimations::CalculateTransitionUpdate(CSSAnimationUpdate& update,
   bool any_transition_had_transition_all = false;
   const ComputedStyle* old_style = animating_element->GetComputedStyle();
   if (!animation_style_recalc && style.Display() != EDisplay::kNone &&
-      old_style && !old_style->IsEnsuredInDisplayNone() && transition_data) {
+      old_style && !old_style->IsEnsuredInDisplayNone()) {
     TransitionUpdateState state = {update,
                                    animating_element,
                                    *old_style,
@@ -1307,23 +1320,34 @@ void CSSAnimations::CalculateTransitionUpdate(CSSAnimationUpdate& update,
                                    /*cloned_style=*/nullptr,
                                    active_transitions,
                                    listed_properties,
-                                   *transition_data};
+                                   transition_data};
 
-    for (wtf_size_t transition_index = 0;
-         transition_index < transition_data->PropertyList().size();
-         ++transition_index) {
-      const CSSTransitionData::TransitionProperty& transition_property =
-          transition_data->PropertyList()[transition_index];
-      if (transition_property.unresolved_property == CSSPropertyID::kAll) {
-        any_transition_had_transition_all = true;
+    if (transition_data) {
+      for (wtf_size_t transition_index = 0;
+           transition_index < transition_data->PropertyList().size();
+           ++transition_index) {
+        const CSSTransitionData::TransitionProperty& transition_property =
+            transition_data->PropertyList()[transition_index];
+        if (transition_property.unresolved_property == CSSPropertyID::kAll) {
+          any_transition_had_transition_all = true;
+        }
+        if (property_pass == PropertyPass::kCustom) {
+          CalculateTransitionUpdateForCustomProperty(state, transition_property,
+                                                     transition_index);
+        } else {
+          DCHECK_EQ(property_pass, PropertyPass::kStandard);
+          CalculateTransitionUpdateForStandardProperty(
+              state, transition_property, transition_index, style);
+        }
       }
-      if (property_pass == PropertyPass::kCustom) {
-        CalculateTransitionUpdateForCustomProperty(state, transition_property,
-                                                   transition_index);
-      } else {
-        DCHECK_EQ(property_pass, PropertyPass::kStandard);
-        CalculateTransitionUpdateForStandardProperty(state, transition_property,
-                                                     transition_index, style);
+    } else if (active_transitions && active_transitions->size()) {
+      // !transition_data implies transition: all 0s
+      any_transition_had_transition_all = true;
+      if (property_pass == PropertyPass::kStandard) {
+        CSSTransitionData::TransitionProperty default_property(
+            CSSPropertyID::kAll);
+        CalculateTransitionUpdateForStandardProperty(state, default_property, 0,
+                                                     style);
       }
     }
   }
@@ -1338,12 +1362,6 @@ void CSSAnimations::CalculateTransitionUpdate(CSSAnimationUpdate& update,
       if (!any_transition_had_transition_all && !animation_style_recalc &&
           !listed_properties.Contains(property)) {
         update.CancelTransition(property);
-        // Measure how often transitions are canceled by removing their style.
-        // See https://crbug.com/934700.
-        if (!transition_data) {
-          UseCounter::Count(animating_element->GetDocument(),
-                            WebFeature::kCSSTransitionCancelledByRemovingStyle);
-        }
       } else if (entry.value->animation->FinishedInternal()) {
         update.FinishTransition(property);
       }

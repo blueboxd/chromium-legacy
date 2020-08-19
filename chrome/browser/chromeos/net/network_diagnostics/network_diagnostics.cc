@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/net/network_diagnostics/dns_resolver_present_routine.h"
 #include "chrome/browser/chromeos/net/network_diagnostics/gateway_can_be_pinged_routine.h"
 #include "chrome/browser/chromeos/net/network_diagnostics/has_secure_wifi_connection_routine.h"
+#include "chrome/browser/chromeos/net/network_diagnostics/http_firewall_routine.h"
 #include "chrome/browser/chromeos/net/network_diagnostics/lan_connectivity_routine.h"
 #include "chrome/browser/chromeos/net/network_diagnostics/signal_strength_routine.h"
 #include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
@@ -149,6 +150,20 @@ void NetworkDiagnostics::CaptivePortal(CaptivePortalCallback callback) {
          CaptivePortalCallback callback, mojom::RoutineVerdict verdict,
          const std::vector<mojom::CaptivePortalProblem>& problems) {
         std::move(callback).Run(verdict, problems);
+      },
+      std::move(routine), std::move(callback)));
+}
+
+void NetworkDiagnostics::HttpFirewall(HttpFirewallCallback callback) {
+  auto routine = std::make_unique<HttpFirewallRoutine>();
+  // RunRoutine() takes a lambda callback that takes ownership of the routine.
+  // This ensures that the routine stays alive when it makes asynchronous mojo
+  // calls. The routine will be destroyed when the lambda exits.
+  routine->RunRoutine(base::BindOnce(
+      [](std::unique_ptr<HttpFirewallRoutine> routine,
+         HttpFirewallCallback callback, mojom::RoutineVerdict verdict,
+         const std::vector<mojom::HttpFirewallProblem>& problems) {
+        std::move(callback).Run(verdict, std::move(problems));
       },
       std::move(routine), std::move(callback)));
 }

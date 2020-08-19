@@ -120,6 +120,7 @@ OsSettingsResult::OsSettingsResult(
   SetTitle(result->canonical_result_text);
   SetResultType(ResultType::kOsSettings);
   SetDisplayType(DisplayType::kList);
+  SetMetricsType(ash::OS_SETTINGS);
   SetIcon(icon);
 
   // If the result is not a top-level section, set the display text with
@@ -154,10 +155,6 @@ OsSettingsResult::~OsSettingsResult() = default;
 void OsSettingsResult::Open(int event_flags) {
   chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(profile_,
                                                                url_path_);
-}
-
-ash::SearchResultType OsSettingsResult::GetSearchResultType() const {
-  return ash::OS_SETTINGS;
 }
 
 OsSettingsProvider::OsSettingsProvider(Profile* profile)

@@ -886,6 +886,10 @@ component("ash") {
     "system/cast/tray_cast.h",
     "system/cast/unified_cast_detailed_view_controller.cc",
     "system/cast/unified_cast_detailed_view_controller.h",
+    "system/dark_mode/dark_mode_detailed_view.cc",
+    "system/dark_mode/dark_mode_detailed_view.h",
+    "system/dark_mode/dark_mode_detailed_view_controller.cc",
+    "system/dark_mode/dark_mode_detailed_view_controller.h",
     "system/dark_mode/dark_mode_feature_pod_controller.cc",
     "system/dark_mode/dark_mode_feature_pod_controller.h",
     "system/enterprise/enterprise_domain_observer.h",
@@ -1598,6 +1602,7 @@ component("ash") {
     "//cc/paint:paint",
     "//chromeos/assistant:buildflags",
     "//chromeos/components/quick_answers",
+    "//chromeos/components/quick_answers/public/cpp:prefs",
     "//services/viz/public/mojom",
 
     # TODO(https://crbug.com/644336): Make CrasAudioHandler Chrome or Ash only.
@@ -1929,6 +1934,7 @@ test("ash_unittests") {
     "power/hfp_battery_listener_unittest.cc",
     "power/hid_battery_listener_unittest.cc",
     "power/hid_battery_util_unittest.cc",
+    "quick_answers/quick_answers_controller_unittest.cc",
     "quick_answers/quick_answers_ui_controller_unittest.cc",
     "quick_answers/ui/quick_answers_view_unittest.cc",
     "root_window_controller_unittest.cc",
@@ -2180,6 +2186,7 @@ test("ash_unittests") {
 
     # TODO(https://crbug.com/644336): Make CrasAudioHandler Chrome or Ash only.
     "//chromeos/audio",
+    "//chromeos/components/quick_answers:quick_answers",
     "//chromeos/constants",
     "//chromeos/dbus:test_support",
     "//chromeos/dbus/audio",
@@ -2219,6 +2226,7 @@ test("ash_unittests") {
     "//services/media_session/public/cpp/test:test_support",
     "//services/media_session/public/mojom",
     "//services/metrics/public/cpp:ukm_builders",
+    "//services/network:test_support",
     "//skia",
     "//testing/gmock",
     "//testing/gtest",

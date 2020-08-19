@@ -36,7 +36,6 @@ class ConversionStorageSqlTest : public testing::Test {
     delegate_ = delegate.get();
     storage_ = std::make_unique<ConversionStorageSql>(
         temp_directory_.GetPath(), std::move(delegate), &clock_);
-    EXPECT_TRUE(storage_->Initialize());
   }
 
   void CloseDatabase() { storage_.reset(); }
@@ -66,19 +65,38 @@ class ConversionStorageSqlTest : public testing::Test {
 };
 
 TEST_F(ConversionStorageSqlTest,
-       DatabaseInitialized_TablesAndIndexesInitialized) {
+       DatabaseInitialized_TablesAndIndexesLazilyInitialized) {
   OpenDatabase();
   CloseDatabase();
-  sql::Database raw_db;
-  EXPECT_TRUE(raw_db.Open(db_path()));
 
-  // [impressions] and [conversions].
-  EXPECT_EQ(2u, sql::test::CountSQLTables(&raw_db));
+  // An unused ConversionStorageSql instance should not create the database.
+  EXPECT_FALSE(base::PathExists(db_path()));
 
-  // [conversion_origin_idx], [impression_expiry_idx],
-  // [impression_origin_idx], [conversion_report_time_idx],
-  // [conversion_impression_id_idx].
-  EXPECT_EQ(5u, sql::test::CountSQLIndices(&raw_db));
+  // Operations which don't need to run on an empty database should not create
+  // the database.
+  OpenDatabase();
+  EXPECT_EQ(0u, storage()->GetConversionsToReport(clock()->Now()).size());
+  CloseDatabase();
+
+  EXPECT_FALSE(base::PathExists(db_path()));
+
+  // Storing an impression should create and initialize the database.
+  OpenDatabase();
+  storage()->StoreImpression(ImpressionBuilder(clock()->Now()).Build());
+  CloseDatabase();
+
+  {
+    sql::Database raw_db;
+    EXPECT_TRUE(raw_db.Open(db_path()));
+
+    // [impressions] and [conversions].
+    EXPECT_EQ(2u, sql::test::CountSQLTables(&raw_db));
+
+    // [conversion_origin_idx], [impression_expiry_idx],
+    // [impression_origin_idx], [conversion_report_time_idx],
+    // [conversion_impression_id_idx].
+    EXPECT_EQ(5u, sql::test::CountSQLIndices(&raw_db));
+  }
 }
 
 TEST_F(ConversionStorageSqlTest, DatabaseReopened_DataPersisted) {
@@ -270,10 +288,12 @@ TEST_F(ConversionStorageSqlTest, CantOpenDb_FailsSilentlyInRelease) {
       std::make_unique<ConfigurableStorageDelegate>(), clock());
   sql_storage->set_ignore_errors_for_testing(true);
 
-  // Initialize() is private on ConserionStorageSql, so convert to
-  // ConversionStorage.
   std::unique_ptr<ConversionStorage> storage = std::move(sql_storage);
-  EXPECT_FALSE(storage->Initialize());
+
+  // These calls should be no-ops.
+  storage->StoreImpression(ImpressionBuilder(clock()->Now()).Build());
+  EXPECT_EQ(0,
+            storage->MaybeCreateAndStoreConversionReports(DefaultConversion()));
 }
 
 TEST_F(ConversionStorageSqlTest, DatabaseDirDoesExist_CreateDirAndOpenDB) {
@@ -285,7 +305,9 @@ TEST_F(ConversionStorageSqlTest, DatabaseDirDoesExist_CreateDirAndOpenDB) {
           std::make_unique<ConfigurableStorageDelegate>(), clock());
 
   // The directory should be created, and the database opened.
-  EXPECT_TRUE(storage->Initialize());
+  storage->StoreImpression(ImpressionBuilder(clock()->Now()).Build());
+  EXPECT_EQ(1,
+            storage->MaybeCreateAndStoreConversionReports(DefaultConversion()));
 }
 
 }  // namespace content

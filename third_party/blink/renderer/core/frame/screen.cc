@@ -52,10 +52,8 @@ ScreenInfo GetScreenInfo(LocalFrame& frame) {
 Screen::Screen(LocalFrame* frame) : ExecutionContextClient(frame) {}
 
 int Screen::height() const {
-  if (display_) {
-    DCHECK(RuntimeEnabledFeatures::WindowPlacementEnabled());
+  if (display_)
     return display_->bounds.height();
-  }
   LocalFrame* frame = GetFrame();
   if (!frame)
     return 0;
@@ -69,10 +67,8 @@ int Screen::height() const {
 }
 
 int Screen::width() const {
-  if (display_) {
-    DCHECK(RuntimeEnabledFeatures::WindowPlacementEnabled());
+  if (display_)
     return display_->bounds.width();
-  }
   LocalFrame* frame = GetFrame();
   if (!frame)
     return 0;
@@ -86,10 +82,8 @@ int Screen::width() const {
 }
 
 unsigned Screen::colorDepth() const {
-  if (display_) {
-    DCHECK(RuntimeEnabledFeatures::WindowPlacementEnabled());
+  if (display_)
     return display_->color_depth;
-  }
   LocalFrame* frame = GetFrame();
   if (!frame)
     return 0;
@@ -101,10 +95,8 @@ unsigned Screen::pixelDepth() const {
 }
 
 int Screen::availLeft() const {
-  if (display_) {
-    DCHECK(RuntimeEnabledFeatures::WindowPlacementEnabled());
+  if (display_)
     return display_->work_area.x();
-  }
   LocalFrame* frame = GetFrame();
   if (!frame)
     return 0;
@@ -118,10 +110,8 @@ int Screen::availLeft() const {
 }
 
 int Screen::availTop() const {
-  if (display_) {
-    DCHECK(RuntimeEnabledFeatures::WindowPlacementEnabled());
+  if (display_)
     return display_->work_area.y();
-  }
   LocalFrame* frame = GetFrame();
   if (!frame)
     return 0;
@@ -135,10 +125,8 @@ int Screen::availTop() const {
 }
 
 int Screen::availHeight() const {
-  if (display_) {
-    DCHECK(RuntimeEnabledFeatures::WindowPlacementEnabled());
+  if (display_)
     return display_->work_area.height();
-  }
   LocalFrame* frame = GetFrame();
   if (!frame)
     return 0;
@@ -152,10 +140,8 @@ int Screen::availHeight() const {
 }
 
 int Screen::availWidth() const {
-  if (display_) {
-    DCHECK(RuntimeEnabledFeatures::WindowPlacementEnabled());
+  if (display_)
     return display_->work_area.width();
-  }
   LocalFrame* frame = GetFrame();
   if (!frame)
     return 0;
@@ -185,10 +171,8 @@ Screen::Screen(display::mojom::blink::DisplayPtr display,
       id_(id) {}
 
 int Screen::left() const {
-  if (display_) {
-    DCHECK(RuntimeEnabledFeatures::WindowPlacementEnabled());
+  if (display_)
     return display_->bounds.x();
-  }
   LocalFrame* frame = GetFrame();
   if (!frame)
     return 0;
@@ -202,10 +186,8 @@ int Screen::left() const {
 }
 
 int Screen::top() const {
-  if (display_) {
-    DCHECK(RuntimeEnabledFeatures::WindowPlacementEnabled());
+  if (display_)
     return display_->bounds.y();
-  }
   LocalFrame* frame = GetFrame();
   if (!frame)
     return 0;
@@ -219,30 +201,26 @@ int Screen::top() const {
 }
 
 bool Screen::internal() const {
-  if (display_) {
-    DCHECK(RuntimeEnabledFeatures::WindowPlacementEnabled());
+  if (display_)
     return internal_.has_value() && internal_.value();
-  }
-  // TODO(http://crbug.com/994889): Implement this for |window.screen|?
+  // TODO(crbug.com/1116528): Use a dictionary, not the Screen interface, for
+  // proposed multi-screen info: https://github.com/webscreens/window-placement
   NOTIMPLEMENTED_LOG_ONCE();
   return false;
 }
 
 bool Screen::primary() const {
-  if (display_) {
-    DCHECK(RuntimeEnabledFeatures::WindowPlacementEnabled());
+  if (display_)
     return primary_.has_value() && primary_.value();
-  }
-  // TODO(http://crbug.com/994889): Implement this for |window.screen|?
+  // TODO(crbug.com/1116528): Use a dictionary, not the Screen interface, for
+  // proposed multi-screen info: https://github.com/webscreens/window-placement
   NOTIMPLEMENTED_LOG_ONCE();
   return false;
 }
 
 float Screen::scaleFactor() const {
-  if (display_) {
-    DCHECK(RuntimeEnabledFeatures::WindowPlacementEnabled());
+  if (display_)
     return display_->device_scale_factor;
-  }
   LocalFrame* frame = GetFrame();
   if (!frame)
     return 0;
@@ -250,31 +228,28 @@ float Screen::scaleFactor() const {
 }
 
 const String Screen::id() const {
-  if (display_) {
-    DCHECK(RuntimeEnabledFeatures::WindowPlacementEnabled());
+  if (display_)
     return id_;
-  }
-  // TODO(http://crbug.com/994889): Implement this for |window.screen|?
+  // TODO(crbug.com/1116528): Use a dictionary, not the Screen interface, for
+  // proposed multi-screen info: https://github.com/webscreens/window-placement
   NOTIMPLEMENTED_LOG_ONCE();
   return String();
 }
 
 bool Screen::touchSupport() const {
   if (display_) {
-    DCHECK(RuntimeEnabledFeatures::WindowPlacementEnabled());
     return display_->touch_support ==
            display::mojom::blink::TouchSupport::AVAILABLE;
   }
-  // TODO(http://crbug.com/994889): Implement this for |window.screen|?
+  // TODO(crbug.com/1116528): Use a dictionary, not the Screen interface, for
+  // proposed multi-screen info: https://github.com/webscreens/window-placement
   NOTIMPLEMENTED_LOG_ONCE();
   return false;
 }
 
 int64_t Screen::DisplayId() const {
-  if (display_) {
-    DCHECK(RuntimeEnabledFeatures::WindowPlacementEnabled());
+  if (display_)
     return display_->id;
-  }
   return kInvalidDisplayId;
 }
 

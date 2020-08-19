@@ -440,6 +440,7 @@ TEST_F(CWVAutofillControllerTest, SubmitCallback) {
   [delegate verify];
 }
 
+// Tests that CWVAutofillController notifies user of password leaks.
 TEST_F(CWVAutofillControllerTest, NotifyUserOfLeak) {
   id delegate = OCMProtocolMock(@protocol(CWVAutofillControllerDelegate));
   autofill_controller_.delegate = delegate;
@@ -459,6 +460,30 @@ TEST_F(CWVAutofillControllerTest, NotifyUserOfLeak) {
   password_manager_client_->NotifyUserCredentialsWereLeaked(
       leak_type, password_manager::CompromisedSitesCount(1), leak_url,
       base::SysNSStringToUTF16(@"fake-username"));
+
+  [delegate verify];
+}
+
+// Tests that CWVAutofillController suggests passwords to its delegate.
+TEST_F(CWVAutofillControllerTest, SuggestPasswordCallback) {
+  NSString* fake_generated_password = @"12345";
+  id delegate = OCMProtocolMock(@protocol(CWVAutofillControllerDelegate));
+  autofill_controller_.delegate = delegate;
+  OCMExpect([delegate autofillController:autofill_controller_
+                suggestGeneratedPassword:fake_generated_password
+                         decisionHandler:[OCMArg checkWithBlock:^(void (
+                                             ^decisionHandler)(BOOL)) {
+                           decisionHandler(/*accept=*/YES);
+                           return YES;
+                         }]]);
+  __block BOOL decision_handler_called = NO;
+  [autofill_controller_ sharedPasswordController:password_controller_
+                  showGeneratedPotentialPassword:fake_generated_password
+                                 decisionHandler:^(BOOL accept) {
+                                   decision_handler_called = YES;
+                                   EXPECT_TRUE(accept);
+                                 }];
+  EXPECT_TRUE(decision_handler_called);
 
   [delegate verify];
 }

@@ -21,6 +21,11 @@ bool InputEventActivationProtector::IsPossiblyUnintendedInteraction(
     return false;
   }
 
+  // Don't let key repeats close the dialog, they might've been held when the
+  // dialog pops up.
+  if (event.IsKeyEvent() && event.AsKeyEvent()->is_repeat())
+    return true;
+
   if (!event.IsMouseEvent() && !event.IsTouchEvent())
     return false;
 

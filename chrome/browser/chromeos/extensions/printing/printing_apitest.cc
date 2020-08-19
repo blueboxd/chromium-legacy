@@ -52,7 +52,7 @@ std::unique_ptr<printing::PrinterSemanticCapsAndDefaults>
 ConstructPrinterCapabilities() {
   auto capabilities =
       std::make_unique<printing::PrinterSemanticCapsAndDefaults>();
-  capabilities->color_model = printing::COLOR;
+  capabilities->color_model = printing::mojom::ColorModel::kColor;
   capabilities->duplex_modes.push_back(printing::mojom::DuplexMode::kSimplex);
   capabilities->copies_max = 2;
   capabilities->dpis.push_back(gfx::Size(kHorizontalDpi, kVerticalDpi));

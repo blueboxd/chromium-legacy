@@ -1147,7 +1147,7 @@ GetCodeCacheHostReceiverHandler() {
 }
 
 // Keep track of plugin process IDs that require exceptions from CORB,
-// request_initiator_site_lock checks (for particular origins), or both.
+// request_initiator_origin_lock checks (for particular origins), or both.
 struct PluginExceptionsForNetworkService {
   bool is_corb_disabled = false;
   std::set<url::Origin> allowed_request_initiators;

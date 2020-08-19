@@ -51,23 +51,11 @@ namespace media {
 
 namespace {
 
-// UMA errors that the VaapiVideoDecodeAccelerator class reports.
-enum VAVDADecoderFailure {
-  VAAPI_ERROR = 0,
-  VAAPI_VPP_ERROR = 1,
-  VAVDA_DECODER_FAILURES_MAX,
-};
-
 // Returns the preferred VA_RT_FORMAT for the given |profile|.
 unsigned int GetVaFormatForVideoCodecProfile(VideoCodecProfile profile) {
   if (profile == VP9PROFILE_PROFILE2 || profile == VP9PROFILE_PROFILE3)
     return VA_RT_FORMAT_YUV420_10BPP;
   return VA_RT_FORMAT_YUV420;
-}
-
-void ReportToUMA(VAVDADecoderFailure failure) {
-  UMA_HISTOGRAM_ENUMERATION("Media.VAVDA.DecoderFailure", failure,
-                            VAVDA_DECODER_FAILURES_MAX + 1);
 }
 
 // Returns true if the CPU is an Intel Gemini Lake or later (including Kaby
@@ -216,7 +204,9 @@ bool VaapiVideoDecodeAccelerator::Initialize(const Config& config,
   VLOGF(2) << "Initializing VAVDA, profile: " << GetProfileName(profile);
 
   vaapi_wrapper_ = VaapiWrapper::CreateForVideoCodec(
-      VaapiWrapper::kDecode, profile, base::Bind(&ReportToUMA, VAAPI_ERROR));
+      VaapiWrapper::kDecode, profile,
+      base::Bind(&ReportVaapiErrorToUMA,
+                 "Media.VaapiVideoDecodeAccelerator.VAAPIError"));
 
   UMA_HISTOGRAM_BOOLEAN("Media.VAVDA.VaapiWrapperCreationSuccess",
                         vaapi_wrapper_.get());
@@ -620,7 +610,9 @@ void VaapiVideoDecodeAccelerator::TryFinishSurfaceSetChange() {
     DCHECK(decoder_delegate_);
     profile_ = new_profile;
     auto new_vaapi_wrapper = VaapiWrapper::CreateForVideoCodec(
-        VaapiWrapper::kDecode, profile_, base::Bind(&ReportToUMA, VAAPI_ERROR));
+        VaapiWrapper::kDecode, profile_,
+        base::Bind(&ReportVaapiErrorToUMA,
+                   "Media.VaapiVideoDecodeAccelerator.VAAPIError"));
     RETURN_AND_NOTIFY_ON_FAILURE(new_vaapi_wrapper.get(),
                                  "Failed creating VaapiWrapper",
                                  INVALID_ARGUMENT, );
@@ -714,7 +706,8 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
     if (!vpp_vaapi_wrapper_) {
       vpp_vaapi_wrapper_ = VaapiWrapper::Create(
           VaapiWrapper::kVideoProcess, VAProfileNone,
-          base::BindRepeating(&ReportToUMA, VAAPI_VPP_ERROR));
+          base::Bind(&ReportVaapiErrorToUMA,
+                     "Media.VaapiVideoDecodeAccelerator.VppVAAPIError"));
       RETURN_AND_NOTIFY_ON_FAILURE(vpp_vaapi_wrapper_,
                                    "Failed to initialize VppVaapiWrapper",
                                    PLATFORM_FAILURE, );

@@ -28,7 +28,6 @@ import static org.chromium.chrome.browser.password_check.PasswordCheckProperties
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.CHECK_STATUS;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.CHECK_TIMESTAMP;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.COMPROMISED_CREDENTIALS_COUNT;
-import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.LAUNCH_ACCOUNT_CHECKUP_ACTION;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.RESTART_BUTTON_ACTION;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.HeaderProperties.UNKNOWN_PROGRESS;
 import static org.chromium.chrome.browser.password_check.PasswordCheckProperties.ITEMS;
@@ -123,8 +122,6 @@ public class PasswordCheckViewTest {
     private PasswordCheckComponentUi mComponentUi;
     @Mock
     private PasswordCheckCoordinator.CredentialEventHandler mMockHandler;
-    @Mock
-    private Runnable mMockLaunchCheckupInAccount;
     @Mock
     private Runnable mMockStartButtonCallback;
 
@@ -256,11 +253,11 @@ public class PasswordCheckViewTest {
 
     @Test
     @MediumTest
-    public void testStatusRunningText() {
+    public void testStatusRunnningText() {
         runOnUiThreadBlocking(
                 () -> { mModel.get(ITEMS).add(buildHeader(RUNNING, UNKNOWN_PROGRESS)); });
         waitForListViewToHaveLength(1);
-        assertThat(getHeaderMessageText(),
+        assertThat(getHeaderMessage().getText(),
                 is(getString(R.string.password_check_status_message_initial_running)));
         assertThat(getHeaderMessage().getVisibility(), is(View.VISIBLE));
         assertThat(getHeaderDescription().getVisibility(), is(View.GONE));
@@ -273,7 +270,7 @@ public class PasswordCheckViewTest {
         runOnUiThreadBlocking(
                 () -> { mModel.get(ITEMS).add(buildHeader(IDLE, 0, checkTimestamp)); });
         waitForListViewToHaveLength(1);
-        assertThat(getHeaderMessageText(),
+        assertThat(getHeaderMessage().getText(),
                 is(getString(R.string.password_check_status_message_idle_no_leaks)));
         assertThat(getHeaderMessage().getVisibility(), is(View.VISIBLE));
         assertThat(getHeaderDescription().getVisibility(), is(View.VISIBLE));
@@ -286,7 +283,7 @@ public class PasswordCheckViewTest {
         runOnUiThreadBlocking(
                 () -> { mModel.get(ITEMS).add(buildHeader(IDLE, LEAKS_COUNT, checkTimestamp)); });
         waitForListViewToHaveLength(1);
-        assertThat(getHeaderMessageText(),
+        assertThat(getHeaderMessage().getText(),
                 is(mPasswordCheckView.getContext().getResources().getQuantityString(
                         R.plurals.password_check_status_message_idle_with_leaks, LEAKS_COUNT,
                         LEAKS_COUNT)));
@@ -299,7 +296,7 @@ public class PasswordCheckViewTest {
     public void testStatusErrorOfflineText() {
         runOnUiThreadBlocking(() -> { mModel.get(ITEMS).add(buildHeader(ERROR_OFFLINE)); });
         waitForListViewToHaveLength(1);
-        assertThat(getHeaderMessageText(),
+        assertThat(getHeaderMessage().getText(),
                 is(getString(R.string.password_check_status_message_error_offline)));
         assertThat(getHeaderMessage().getVisibility(), is(View.VISIBLE));
         assertThat(getHeaderDescription().getVisibility(), is(View.GONE));
@@ -310,7 +307,7 @@ public class PasswordCheckViewTest {
     public void testStatusErrorNoPasswordsText() {
         runOnUiThreadBlocking(() -> { mModel.get(ITEMS).add(buildHeader(ERROR_NO_PASSWORDS)); });
         waitForListViewToHaveLength(1);
-        assertThat(getHeaderMessageText(),
+        assertThat(getHeaderMessage().getText(),
                 is(getString(R.string.password_check_status_message_error_no_passwords)));
         assertThat(getHeaderMessage().getVisibility(), is(View.VISIBLE));
         assertThat(getHeaderDescription().getVisibility(), is(View.GONE));
@@ -321,7 +318,7 @@ public class PasswordCheckViewTest {
     public void testStatusErrorQuotaLimitText() {
         runOnUiThreadBlocking(() -> { mModel.get(ITEMS).add(buildHeader(ERROR_QUOTA_LIMIT)); });
         waitForListViewToHaveLength(1);
-        assertThat(getHeaderMessageText(),
+        assertThat(getHeaderMessage().getText(),
                 is(getString(R.string.password_check_status_message_error_quota_limit)));
         assertThat(getHeaderMessage().getVisibility(), is(View.VISIBLE));
         assertThat(getHeaderDescription().getVisibility(), is(View.GONE));
@@ -333,14 +330,11 @@ public class PasswordCheckViewTest {
         runOnUiThreadBlocking(
                 () -> { mModel.get(ITEMS).add(buildHeader(ERROR_QUOTA_LIMIT_ACCOUNT_CHECK)); });
         waitForListViewToHaveLength(1);
-        assertThat(getHeaderMessageText(),
-                is(getString(R.string.password_check_status_message_error_quota_limit_account_check)
-                                .replace("<link>", "")
-                                .replace("</link>", "")));
+        assertThat(getHeaderMessage().getText(),
+                is(getString(
+                        R.string.password_check_status_message_error_quota_limit_account_check)));
         assertThat(getHeaderMessage().getVisibility(), is(View.VISIBLE));
         assertThat(getHeaderDescription().getVisibility(), is(View.GONE));
-        TouchCommon.singleClickView(getHeaderMessage());
-        waitForEvent(mMockLaunchCheckupInAccount).run();
     }
 
     @Test
@@ -348,7 +342,7 @@ public class PasswordCheckViewTest {
     public void testStatusErrorSignedOutText() {
         runOnUiThreadBlocking(() -> { mModel.get(ITEMS).add(buildHeader(ERROR_SIGNED_OUT)); });
         waitForListViewToHaveLength(1);
-        assertThat(getHeaderMessageText(),
+        assertThat(getHeaderMessage().getText(),
                 is(getString(R.string.password_check_status_message_error_signed_out)));
         assertThat(getHeaderMessage().getVisibility(), is(View.VISIBLE));
         assertThat(getHeaderDescription().getVisibility(), is(View.GONE));
@@ -359,7 +353,7 @@ public class PasswordCheckViewTest {
     public void testStatusErrorUnknownText() {
         runOnUiThreadBlocking(() -> { mModel.get(ITEMS).add(buildHeader(ERROR_UNKNOWN)); });
         waitForListViewToHaveLength(1);
-        assertThat(getHeaderMessageText(),
+        assertThat(getHeaderMessage().getText(),
                 is(getString(R.string.password_check_status_message_error_unknown)));
         assertThat(getHeaderMessage().getVisibility(), is(View.VISIBLE));
         assertThat(getHeaderDescription().getVisibility(), is(View.GONE));
@@ -594,7 +588,6 @@ public class PasswordCheckViewTest {
                         .with(CHECK_STATUS, status)
                         .with(CHECK_TIMESTAMP, checkTimestamp)
                         .with(COMPROMISED_CREDENTIALS_COUNT, compromisedCredentialsCount)
-                        .with(LAUNCH_ACCOUNT_CHECKUP_ACTION, mMockLaunchCheckupInAccount)
                         .with(RESTART_BUTTON_ACTION, mMockStartButtonCallback)
                         .build());
     }
@@ -665,10 +658,6 @@ public class PasswordCheckViewTest {
 
     private TextView getHeaderMessage() {
         return getStatus().findViewById(R.id.check_status_message);
-    }
-
-    private String getHeaderMessageText() {
-        return getHeaderMessage().getText().toString();
     }
 
     private TextView getHeaderSubtitle() {

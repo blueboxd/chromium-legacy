@@ -135,36 +135,36 @@ void GetDuplexSettings(ppd_file_t* ppd,
 }
 
 bool GetBasicColorModelSettings(ppd_file_t* ppd,
-                                ColorModel* color_model_for_black,
-                                ColorModel* color_model_for_color,
+                                mojom::ColorModel* color_model_for_black,
+                                mojom::ColorModel* color_model_for_color,
                                 bool* color_is_default) {
   ppd_option_t* color_model = ppdFindOption(ppd, kColorModel);
   if (!color_model)
     return false;
 
   if (ppdFindChoice(color_model, kBlack))
-    *color_model_for_black = BLACK;
+    *color_model_for_black = mojom::ColorModel::kBlack;
   else if (ppdFindChoice(color_model, kGray))
-    *color_model_for_black = GRAY;
+    *color_model_for_black = mojom::ColorModel::kGray;
   else if (ppdFindChoice(color_model, kGrayscale))
-    *color_model_for_black = GRAYSCALE;
+    *color_model_for_black = mojom::ColorModel::kGrayscale;
 
   if (ppdFindChoice(color_model, kColor))
-    *color_model_for_color = COLOR;
+    *color_model_for_color = mojom::ColorModel::kColor;
   else if (ppdFindChoice(color_model, kCMYK))
-    *color_model_for_color = CMYK;
+    *color_model_for_color = mojom::ColorModel::kCMYK;
   else if (ppdFindChoice(color_model, kRGB))
-    *color_model_for_color = RGB;
+    *color_model_for_color = mojom::ColorModel::kRGB;
   else if (ppdFindChoice(color_model, kRGBA))
-    *color_model_for_color = RGBA;
+    *color_model_for_color = mojom::ColorModel::kRGBA;
   else if (ppdFindChoice(color_model, kRGB16))
-    *color_model_for_color = RGB16;
+    *color_model_for_color = mojom::ColorModel::kRGB16;
   else if (ppdFindChoice(color_model, kCMY))
-    *color_model_for_color = CMY;
+    *color_model_for_color = mojom::ColorModel::kCMY;
   else if (ppdFindChoice(color_model, kKCMY))
-    *color_model_for_color = KCMY;
+    *color_model_for_color = mojom::ColorModel::kKCMY;
   else if (ppdFindChoice(color_model, kCMY_K))
-    *color_model_for_color = CMY_K;
+    *color_model_for_color = mojom::ColorModel::kCMYPlusK;
 
   ppd_choice_t* marked_choice = ppdFindMarkedChoice(ppd, kColorModel);
   if (!marked_choice)
@@ -180,22 +180,22 @@ bool GetBasicColorModelSettings(ppd_file_t* ppd,
 }
 
 bool GetPrintOutModeColorSettings(ppd_file_t* ppd,
-                                  ColorModel* color_model_for_black,
-                                  ColorModel* color_model_for_color,
+                                  mojom::ColorModel* color_model_for_black,
+                                  mojom::ColorModel* color_model_for_color,
                                   bool* color_is_default) {
   ppd_option_t* printout_mode = ppdFindOption(ppd, kPrintoutMode);
   if (!printout_mode)
     return false;
 
-  *color_model_for_color = PRINTOUTMODE_NORMAL;
-  *color_model_for_black = PRINTOUTMODE_NORMAL;
+  *color_model_for_color = mojom::ColorModel::kPrintoutModeNormal;
+  *color_model_for_black = mojom::ColorModel::kPrintoutModeNormal;
 
   // Check to see if NORMAL_GRAY value is supported by PrintoutMode.
   // If NORMAL_GRAY is not supported, NORMAL value is used to
   // represent grayscale. If NORMAL_GRAY is supported, NORMAL is used to
   // represent color.
   if (ppdFindChoice(printout_mode, kNormalGray))
-    *color_model_for_black = PRINTOUTMODE_NORMAL_GRAY;
+    *color_model_for_black = mojom::ColorModel::kPrintoutModeNormalGray;
 
   // Get the default marked choice to identify the default color setting
   // value.
@@ -208,7 +208,7 @@ bool GetPrintOutModeColorSettings(ppd_file_t* ppd,
     if (EqualsCaseInsensitiveASCII(printout_mode_choice->choice, kNormalGray) ||
         EqualsCaseInsensitiveASCII(printout_mode_choice->choice, kHighGray) ||
         EqualsCaseInsensitiveASCII(printout_mode_choice->choice, kDraftGray)) {
-      *color_model_for_black = PRINTOUTMODE_NORMAL_GRAY;
+      *color_model_for_black = mojom::ColorModel::kPrintoutModeNormalGray;
       *color_is_default = false;
     }
   }
@@ -216,8 +216,8 @@ bool GetPrintOutModeColorSettings(ppd_file_t* ppd,
 }
 
 bool GetColorModeSettings(ppd_file_t* ppd,
-                          ColorModel* color_model_for_black,
-                          ColorModel* color_model_for_color,
+                          mojom::ColorModel* color_model_for_black,
+                          mojom::ColorModel* color_model_for_color,
                           bool* color_is_default) {
   // Samsung printers use "ColorMode" attribute in their PPDs.
   ppd_option_t* color_mode_option = ppdFindOption(ppd, kColorMode);
@@ -226,12 +226,12 @@ bool GetColorModeSettings(ppd_file_t* ppd,
 
   if (ppdFindChoice(color_mode_option, kColor) ||
       ppdFindChoice(color_mode_option, kSamsungColorTrue)) {
-    *color_model_for_color = COLORMODE_COLOR;
+    *color_model_for_color = mojom::ColorModel::kColorModeColor;
   }
 
   if (ppdFindChoice(color_mode_option, kMonochrome) ||
       ppdFindChoice(color_mode_option, kSamsungColorFalse)) {
-    *color_model_for_black = COLORMODE_MONOCHROME;
+    *color_model_for_black = mojom::ColorModel::kColorModeMonochrome;
   }
 
   ppd_choice_t* mode_choice = ppdFindMarkedChoice(ppd, kColorMode);
@@ -249,8 +249,8 @@ bool GetColorModeSettings(ppd_file_t* ppd,
 }
 
 bool GetBrotherColorSettings(ppd_file_t* ppd,
-                             ColorModel* color_model_for_black,
-                             ColorModel* color_model_for_color,
+                             mojom::ColorModel* color_model_for_black,
+                             mojom::ColorModel* color_model_for_color,
                              bool* color_is_default) {
   // Some Brother printers use "BRMonoColor" attribute in their PPDs.
   // Some Brother printers use "BRPrintQuality" attribute in their PPDs.
@@ -261,14 +261,14 @@ bool GetBrotherColorSettings(ppd_file_t* ppd,
     return false;
 
   if (ppdFindChoice(color_mode_option, kFullColor))
-    *color_model_for_color = BROTHER_CUPS_COLOR;
+    *color_model_for_color = mojom::ColorModel::kBrotherCUPSColor;
   else if (ppdFindChoice(color_mode_option, kColor))
-    *color_model_for_color = BROTHER_BRSCRIPT3_COLOR;
+    *color_model_for_color = mojom::ColorModel::kBrotherBRScript3Color;
 
   if (ppdFindChoice(color_mode_option, kMono))
-    *color_model_for_black = BROTHER_CUPS_MONO;
+    *color_model_for_black = mojom::ColorModel::kBrotherCUPSMono;
   else if (ppdFindChoice(color_mode_option, kBlack))
-    *color_model_for_black = BROTHER_BRSCRIPT3_BLACK;
+    *color_model_for_black = mojom::ColorModel::kBrotherBRScript3Black;
 
   ppd_choice_t* marked_choice = ppdFindMarkedChoice(ppd, kColorMode);
   if (!marked_choice) {
@@ -284,8 +284,8 @@ bool GetBrotherColorSettings(ppd_file_t* ppd,
 }
 
 bool GetHPColorSettings(ppd_file_t* ppd,
-                        ColorModel* color_model_for_black,
-                        ColorModel* color_model_for_color,
+                        mojom::ColorModel* color_model_for_black,
+                        mojom::ColorModel* color_model_for_color,
                         bool* color_is_default) {
   // Some HP printers use "Color/Color Model" attribute in their PPDs.
   ppd_option_t* color_mode_option = ppdFindOption(ppd, kColor);
@@ -293,9 +293,9 @@ bool GetHPColorSettings(ppd_file_t* ppd,
     return false;
 
   if (ppdFindChoice(color_mode_option, kColor))
-    *color_model_for_color = HP_COLOR_COLOR;
+    *color_model_for_color = mojom::ColorModel::kHPColorColor;
   if (ppdFindChoice(color_mode_option, kBlack))
-    *color_model_for_black = HP_COLOR_BLACK;
+    *color_model_for_black = mojom::ColorModel::kHPColorBlack;
 
   ppd_choice_t* mode_choice = ppdFindMarkedChoice(ppd, kColorMode);
   if (!mode_choice) {
@@ -309,8 +309,8 @@ bool GetHPColorSettings(ppd_file_t* ppd,
 }
 
 bool GetHPColorModeSettings(ppd_file_t* ppd,
-                            ColorModel* color_model_for_black,
-                            ColorModel* color_model_for_color,
+                            mojom::ColorModel* color_model_for_black,
+                            mojom::ColorModel* color_model_for_color,
                             bool* color_is_default) {
   // Some HP printers use "HPColorMode/Mode" attribute in their PPDs.
   ppd_option_t* color_mode_option = ppdFindOption(ppd, kHpColorMode);
@@ -318,9 +318,9 @@ bool GetHPColorModeSettings(ppd_file_t* ppd,
     return false;
 
   if (ppdFindChoice(color_mode_option, kHpColorPrint))
-    *color_model_for_color = HP_COLOR_COLOR;
+    *color_model_for_color = mojom::ColorModel::kHPColorColor;
   if (ppdFindChoice(color_mode_option, kHpGrayscalePrint))
-    *color_model_for_black = HP_COLOR_BLACK;
+    *color_model_for_black = mojom::ColorModel::kHPColorBlack;
 
   ppd_choice_t* mode_choice = ppdFindMarkedChoice(ppd, kHpColorMode);
   if (!mode_choice) {
@@ -335,8 +335,8 @@ bool GetHPColorModeSettings(ppd_file_t* ppd,
 }
 
 bool GetEpsonInkSettings(ppd_file_t* ppd,
-                         ColorModel* color_model_for_black,
-                         ColorModel* color_model_for_color,
+                         mojom::ColorModel* color_model_for_black,
+                         mojom::ColorModel* color_model_for_color,
                          bool* color_is_default) {
   // Epson printers use "Ink" attribute in their PPDs.
   ppd_option_t* color_mode_option = ppdFindOption(ppd, kEpsonInk);
@@ -344,9 +344,9 @@ bool GetEpsonInkSettings(ppd_file_t* ppd,
     return false;
 
   if (ppdFindChoice(color_mode_option, kEpsonColor))
-    *color_model_for_color = EPSON_INK_COLOR;
+    *color_model_for_color = mojom::ColorModel::kEpsonInkColor;
   if (ppdFindChoice(color_mode_option, kEpsonMono))
-    *color_model_for_black = EPSON_INK_MONO;
+    *color_model_for_black = mojom::ColorModel::kEpsonInkMono;
 
   ppd_choice_t* mode_choice = ppdFindMarkedChoice(ppd, kEpsonInk);
   if (!mode_choice) {
@@ -361,8 +361,8 @@ bool GetEpsonInkSettings(ppd_file_t* ppd,
 }
 
 bool GetSharpARCModeSettings(ppd_file_t* ppd,
-                             ColorModel* color_model_for_black,
-                             ColorModel* color_model_for_color,
+                             mojom::ColorModel* color_model_for_black,
+                             mojom::ColorModel* color_model_for_color,
                              bool* color_is_default) {
   // Sharp printers use "ARCMode" attribute in their PPDs.
   ppd_option_t* color_mode_option = ppdFindOption(ppd, kSharpARCMode);
@@ -370,9 +370,9 @@ bool GetSharpARCModeSettings(ppd_file_t* ppd,
     return false;
 
   if (ppdFindChoice(color_mode_option, kSharpCMColor))
-    *color_model_for_color = SHARP_ARCMODE_CMCOLOR;
+    *color_model_for_color = mojom::ColorModel::kSharpARCModeCMColor;
   if (ppdFindChoice(color_mode_option, kSharpCMBW))
-    *color_model_for_black = SHARP_ARCMODE_CMBW;
+    *color_model_for_black = mojom::ColorModel::kSharpARCModeCMBW;
 
   ppd_choice_t* mode_choice = ppdFindMarkedChoice(ppd, kSharpARCMode);
   if (!mode_choice) {
@@ -389,8 +389,8 @@ bool GetSharpARCModeSettings(ppd_file_t* ppd,
 }
 
 bool GetXeroxColorSettings(ppd_file_t* ppd,
-                           ColorModel* color_model_for_black,
-                           ColorModel* color_model_for_color,
+                           mojom::ColorModel* color_model_for_black,
+                           mojom::ColorModel* color_model_for_color,
                            bool* color_is_default) {
   // Some Xerox printers use "XRXColor" attribute in their PPDs.
   ppd_option_t* color_mode_option = ppdFindOption(ppd, kXeroxXRXColor);
@@ -398,9 +398,9 @@ bool GetXeroxColorSettings(ppd_file_t* ppd,
     return false;
 
   if (ppdFindChoice(color_mode_option, kXeroxAutomatic))
-    *color_model_for_color = XEROX_XRXCOLOR_AUTOMATIC;
+    *color_model_for_color = mojom::ColorModel::kXeroxXRXColorAutomatic;
   if (ppdFindChoice(color_mode_option, kXeroxBW))
-    *color_model_for_black = XEROX_XRXCOLOR_BW;
+    *color_model_for_black = mojom::ColorModel::kXeroxXRXColorBW;
 
   ppd_choice_t* mode_choice = ppdFindMarkedChoice(ppd, kXeroxXRXColor);
   if (!mode_choice) {
@@ -417,8 +417,8 @@ bool GetXeroxColorSettings(ppd_file_t* ppd,
 }
 
 bool GetProcessColorModelSettings(ppd_file_t* ppd,
-                                  ColorModel* color_model_for_black,
-                                  ColorModel* color_model_for_color,
+                                  mojom::ColorModel* color_model_for_black,
+                                  mojom::ColorModel* color_model_for_color,
                                   bool* color_is_default) {
   // Canon printers use "ProcessColorModel" attribute in their PPDs.
   ppd_option_t* color_mode_option = ppdFindOption(ppd, kProcessColorModel);
@@ -426,12 +426,12 @@ bool GetProcessColorModelSettings(ppd_file_t* ppd,
     return false;
 
   if (ppdFindChoice(color_mode_option, kRGB))
-    *color_model_for_color = PROCESSCOLORMODEL_RGB;
+    *color_model_for_color = mojom::ColorModel::kProcessColorModelRGB;
   else if (ppdFindChoice(color_mode_option, kCMYK))
-    *color_model_for_color = PROCESSCOLORMODEL_CMYK;
+    *color_model_for_color = mojom::ColorModel::kProcessColorModelCMYK;
 
   if (ppdFindChoice(color_mode_option, kGreyscale))
-    *color_model_for_black = PROCESSCOLORMODEL_GREYSCALE;
+    *color_model_for_black = mojom::ColorModel::kProcessColorModelGreyscale;
 
   ppd_choice_t* mode_choice = ppdFindMarkedChoice(ppd, kProcessColorModel);
   if (!mode_choice) {
@@ -447,8 +447,8 @@ bool GetProcessColorModelSettings(ppd_file_t* ppd,
 }
 
 bool GetColorModelSettings(ppd_file_t* ppd,
-                           ColorModel* cm_black,
-                           ColorModel* cm_color,
+                           mojom::ColorModel* cm_black,
+                           mojom::ColorModel* cm_color,
                            bool* is_color) {
   bool is_color_device = false;
   ppd_attr_t* attr = ppdFindAttr(ppd, kColorDevice, nullptr);
@@ -551,15 +551,16 @@ bool ParsePpdCapabilities(cups_dest_t* dest,
 
   GetDuplexSettings(ppd, &caps.duplex_modes, &caps.duplex_default);
 
-  ColorModel cm_black = UNKNOWN_COLOR_MODEL;
-  ColorModel cm_color = UNKNOWN_COLOR_MODEL;
+  mojom::ColorModel cm_black = mojom::ColorModel::kUnknownColorModel;
+  mojom::ColorModel cm_color = mojom::ColorModel::kUnknownColorModel;
   bool is_color = false;
   if (!GetColorModelSettings(ppd, &cm_black, &cm_color, &is_color)) {
     VLOG(1) << "Unknown printer color model";
   }
 
   caps.color_changeable =
-      ((cm_color != UNKNOWN_COLOR_MODEL) && (cm_black != UNKNOWN_COLOR_MODEL) &&
+      ((cm_color != mojom::ColorModel::kUnknownColorModel) &&
+       (cm_black != mojom::ColorModel::kUnknownColorModel) &&
        (cm_color != cm_black));
   caps.color_default = is_color;
   caps.color_model = cm_color;

@@ -60,8 +60,12 @@ class PDFiumTestBase : public testing::Test {
       TestClient* client,
       const base::FilePath::CharType* pdf_name);
 
-  // Returns the PDFiumPage for the page index
-  PDFiumPage* GetPDFiumPageForTest(PDFiumEngine* engine, size_t page_index);
+  // Returns the `PDFiumPage` for the page index. The page index must be valid
+  // (less than `engine.GetNumberOfPages()`).
+  static const PDFiumPage& GetPDFiumPageForTest(const PDFiumEngine& engine,
+                                                size_t page_index);
+  static PDFiumPage& GetPDFiumPageForTest(PDFiumEngine& engine,
+                                          size_t page_index);
 
  private:
   void InitializePDFium();

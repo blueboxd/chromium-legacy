@@ -226,6 +226,8 @@ class COMPONENT_EXPORT(UI_BASE) DialogModel final {
     return util::PassKey<DialogModel>();
   }
 
+  void AddField(std::unique_ptr<DialogModelField> field);
+
   std::unique_ptr<DialogModelDelegate> delegate_;
   DialogModelHost* host_ = nullptr;
 

@@ -2183,6 +2183,8 @@ const FeatureEntry::FeatureVariation kPasswordChangeFeatureVariations[] = {
 constexpr char kAssistantBetterOnboardingInternalName[] =
     "enable-assistant-better-onboarding";
 constexpr char kAssistantTimersV2InternalName[] = "enable-assistant-timers-v2";
+
+constexpr char kAmbientModeInternalName[] = "enable-ambient-mode";
 #endif  // OS_CHROMEOS
 
 // RECORDING USER METRICS FOR FLAGS:
@@ -3830,6 +3832,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableRevampedContextMenuName,
      flag_descriptions::kEnableRevampedContextMenuDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kRevampedContextMenu)},
+    {"tabbed-app-overflow-menu-icons",
+     flag_descriptions::kTabbedAppOverflowMenuIconsName,
+     flag_descriptions::kTabbedAppOverflowMenuIconsDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kTabbedAppOverflowMenuIcons)},
 #endif  // OS_ANDROID
 
     {"omnibox-display-title-for-current-url",
@@ -5909,7 +5915,7 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(switches::kDoubleBufferCompositing)},
 
 #if defined(OS_CHROMEOS)
-    {"enable-ambient-mode", flag_descriptions::kEnableAmbientModeName,
+    {kAmbientModeInternalName, flag_descriptions::kEnableAmbientModeName,
      flag_descriptions::kEnableAmbientModeDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kAmbientModeFeature)},
 #endif  // defined(OS_CHROMEOS)
@@ -6290,6 +6296,12 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(blink::features::kCrOSAutoSelect)},
 #endif  // defined(OS_CHROMEOS)
 
+#if BUILDFLAG(ENABLE_AV1_DECODER)
+    {"enable-avif", flag_descriptions::kEnableAVIFName,
+     flag_descriptions::kEnableAVIFDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(blink::features::kAVIF)},
+#endif  // BUILDFLAG(ENABLE_AV1_DECODER)
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
@@ -6353,6 +6365,14 @@ bool SkipConditionalFeatureEntry(const flags_ui::FlagsStorage* storage,
   if (!strcmp(kAssistantBetterOnboardingInternalName, entry.internal_name) ||
       !strcmp(kAssistantTimersV2InternalName, entry.internal_name)) {
     return !base::FeatureList::IsEnabled(features::kTeamfoodFlags);
+  }
+
+  // enable-ambient-mode is only available for Unknown/Canary/Dev channels.
+  if (!strcmp(kAmbientModeInternalName, entry.internal_name) &&
+      channel != version_info::Channel::DEV &&
+      channel != version_info::Channel::CANARY &&
+      channel != version_info::Channel::UNKNOWN) {
+    return true;
   }
 #endif  // defined(OS_CHROMEOS)
 

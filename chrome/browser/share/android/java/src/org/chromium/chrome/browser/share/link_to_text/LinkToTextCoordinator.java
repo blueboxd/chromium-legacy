@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.share.link_to_text;
 
 import android.content.Context;
+import android.net.Uri;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.share.ChromeShareExtras;
@@ -17,7 +18,7 @@ import org.chromium.ui.base.WindowAndroid;
  */
 public class LinkToTextCoordinator {
     private static final String SHARE_TEXT_TEMPLATE = "\"%s\"\n%s";
-    private static final String URL_TEMPLATE = "%s:~:text=%s";
+    private static final String TEXT_FRAGMENT_PREFIX = ":~:text=";
     private final Context mContext;
     private final WindowAndroid mWindow;
     private final ChromeOptionShareCallback mChromeOptionShareCallback;
@@ -58,11 +59,12 @@ public class LinkToTextCoordinator {
     }
 
     public String getTextToShare(String selector) {
-        // TODO(1102382): visbileUrl might need a cleanup. For example, if already has text fragment
-        // selector.
         String url = mVisibleUrl;
-        if (!selector.isEmpty()) url = String.format(URL_TEMPLATE, mVisibleUrl, selector);
-
+        if (!selector.isEmpty()) {
+            // Set the fragment which will also remove existing fragment, including text fragments.
+            Uri uri = Uri.parse(url);
+            url = uri.buildUpon().encodedFragment(TEXT_FRAGMENT_PREFIX + selector).toString();
+        }
         return String.format(SHARE_TEXT_TEMPLATE, mSelectedText, url);
     }
 }

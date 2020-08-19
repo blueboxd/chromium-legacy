@@ -78,11 +78,6 @@ class VIEWS_EXPORT BubbleDialogModelHost : public BubbleDialogDelegateView,
 
   View* FieldToView(ui::DialogModelField* field);
 
-  ui::DialogModelButton* FieldAsButton(ui::DialogModelField* field);
-  ui::DialogModelBodyText* FieldAsBodyText(ui::DialogModelField* field);
-  ui::DialogModelCombobox* FieldAsCombobox(ui::DialogModelField* field);
-  ui::DialogModelTextfield* FieldAsTextfield(ui::DialogModelField* field);
-
   std::unique_ptr<ui::DialogModel> model_;
   base::flat_map<View*, ui::DialogModelField*> view_to_field_;
   std::vector<PropertyChangedSubscription> property_changed_subscriptions_;

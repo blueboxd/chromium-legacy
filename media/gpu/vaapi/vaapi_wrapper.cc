@@ -80,25 +80,105 @@ using media_gpu_vaapi::IsVa_x11Initialized;
 using media_gpu_vaapi::IsVa_drmInitialized;
 using media_gpu_vaapi::StubPathMap;
 
-#define LOG_VA_ERROR_AND_REPORT(va_error, name)                          \
-  do {                                                                   \
-    LOG(ERROR) << name << " failed, VA error: " << vaErrorStr(va_error); \
-    report_error_to_uma_cb_.Run();                                       \
+namespace media {
+
+// These values are logged to UMA. Entries should not be renumbered and numeric
+// values should never be reused. Please keep in sync with
+// "VaapiFunctions" in src/tools/metrics/histograms/enums.xml.
+enum class VaapiFunctions {
+  kVABeginPicture = 0,
+  kVACreateBuffer = 1,
+  kVACreateConfig = 2,
+  kVACreateContext = 3,
+  kVACreateImage = 4,
+  kVACreateSurfaces_Allocating = 5,
+  kVACreateSurfaces_Importing = 6,
+  kVADestroyBuffer = 7,
+  kVADestroyConfig = 8,
+  kVADestroyContext = 9,
+  kVADestroySurfaces = 10,
+  kVAEndPicture = 11,
+  kVAExportSurfaceHandle = 12,
+  kVAGetConfigAttributes = 13,
+  kVAPutImage = 14,
+  kVAPutSurface = 15,
+  kVAQueryConfigAttributes = 16,
+  kVAQueryImageFormats = 17,
+  kVAQuerySurfaceAttributes = 18,
+  kVAQueryVideoProcPipelineCaps = 19,
+  kVARenderPicture_VABuffers = 20,
+  kVARenderPicture_Vpp = 21,
+  kVASyncSurface = 22,
+  kVATerminate = 23,
+  kVAUnmapBuffer = 24,
+  // Anything else is captured in this last entry.
+  kOtherVAFunction = 25,
+  kMaxValue = kOtherVAFunction,
+};
+
+void ReportVaapiErrorToUMA(const std::string& histogram_name,
+                           VaapiFunctions value) {
+  UMA_HISTOGRAM_ENUMERATION(histogram_name, value);
+}
+
+constexpr std::array<const char*,
+                     static_cast<size_t>(VaapiFunctions::kMaxValue)>
+    kVaapiFunctionNames = {
+        "vaBeginPicture"
+        "vaCreateBuffer"
+        "vaCreateConfig"
+        "vaCreateContext"
+        "vaCreateImage"
+        "vaCreateSurfaces (allocate mode)"
+        "vaCreateSurfaces (import mode)"
+        "vaDestroyBuffer"
+        "vaDestroyConfig"
+        "vaDestroyContext"
+        "vaDestroySurfaces"
+        "vaEndPicture"
+        "vaExportSurfaceHandle"
+        "vaGetConfigAttributes"
+        "vaPutImage"
+        "vaPutSurface"
+        "vaQueryConfigAttributes"
+        "vaQueryImageFormats"
+        "vaQuerySurfaceAttributes"
+        "vaQueryVideoProcPipelineCaps"
+        "vaRenderPicture (|pending_va_buffers_|)"
+        "vaRenderPicture using Vpp"
+        "vaSyncSurface"
+        "vaTerminate"
+        "vaUnmapBuffer"
+        "Other VA function"};
+
+// Translates |function| into a human readable string for logging.
+const char* VaapiFunctionName(VaapiFunctions function) {
+  DCHECK(function <= VaapiFunctions::kMaxValue);
+  return kVaapiFunctionNames[static_cast<size_t>(function)];
+}
+
+}  // namespace media
+
+#define LOG_VA_ERROR_AND_REPORT(va_error, function)              \
+  do {                                                           \
+    LOG(ERROR) << VaapiFunctionName(function)                    \
+               << " failed, VA error: " << vaErrorStr(va_error); \
+    report_error_to_uma_cb_.Run(function);                       \
   } while (0)
 
-#define VA_LOG_ON_ERROR(va_error, name)        \
-  do {                                         \
-    if ((va_error) != VA_STATUS_SUCCESS)       \
-      LOG_VA_ERROR_AND_REPORT(va_error, name); \
+#define VA_LOG_ON_ERROR(va_error, function)        \
+  do {                                             \
+    if ((va_error) != VA_STATUS_SUCCESS)           \
+      LOG_VA_ERROR_AND_REPORT(va_error, function); \
   } while (0)
 
-#define VA_SUCCESS_OR_RETURN(va_error, name, ret) \
-  do {                                            \
-    if ((va_error) != VA_STATUS_SUCCESS) {        \
-      LOG_VA_ERROR_AND_REPORT(va_error, name);    \
-      return (ret);                               \
-    }                                             \
-    DVLOG(3) << name;                             \
+#define VA_SUCCESS_OR_RETURN(va_error, function, ret) \
+  do {                                                \
+    if ((va_error) != VA_STATUS_SUCCESS) {            \
+      LOG_VA_ERROR_AND_REPORT(va_error, function);    \
+      return (ret);                                   \
+    }                                                 \
+    DVLOG(3) << VaapiFunctionName(function);          \
   } while (0)
 
 namespace {
@@ -726,7 +806,7 @@ class VASupportedProfiles {
                     VaapiWrapper::kCodecModeMax,
                 "|supported_profiles_| size is incorrect.");
 
-  const base::Closure report_error_to_uma_cb_;
+  const ReportErrorToUMACB report_error_to_uma_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(VASupportedProfiles);
 };
@@ -765,7 +845,7 @@ VASupportedProfiles::VASupportedProfiles()
   FillSupportedProfileInfos(VADisplayState::Get()->va_lock(), va_display);
 
   const VAStatus va_res = display_state->Deinitialize();
-  VA_LOG_ON_ERROR(va_res, "vaTerminate");
+  VA_LOG_ON_ERROR(va_res, VaapiFunctions::kVATerminate);
 }
 
 void VASupportedProfiles::FillSupportedProfileInfos(base::Lock* va_lock,
@@ -833,7 +913,7 @@ bool VASupportedProfiles::FillProfileInfo_Locked(
   VAStatus va_res =
       vaCreateConfig(va_display, va_profile, entrypoint, &required_attribs[0],
                      required_attribs.size(), &va_config_id);
-  VA_SUCCESS_OR_RETURN(va_res, "vaCreateConfig", false);
+  VA_SUCCESS_OR_RETURN(va_res, VaapiFunctions::kVACreateConfig, false);
   base::ScopedClosureRunner vaconfig_destroyer(base::BindOnce(
       [](VADisplay display, VAConfigID id) {
         if (id != VA_INVALID_ID) {
@@ -851,7 +931,8 @@ bool VASupportedProfiles::FillProfileInfo_Locked(
   unsigned int num_attribs;
   va_res =
       vaQuerySurfaceAttributes(va_display, va_config_id, nullptr, &num_attribs);
-  VA_SUCCESS_OR_RETURN(va_res, "vaQuerySurfaceAttributes", false);
+  VA_SUCCESS_OR_RETURN(va_res, VaapiFunctions::kVAQuerySurfaceAttributes,
+                       false);
   if (!num_attribs)
     return false;
 
@@ -860,7 +941,8 @@ bool VASupportedProfiles::FillProfileInfo_Locked(
 
   va_res = vaQuerySurfaceAttributes(va_display, va_config_id, &attrib_list[0],
                                     &num_attribs);
-  VA_SUCCESS_OR_RETURN(va_res, "vaQuerySurfaceAttributes", false);
+  VA_SUCCESS_OR_RETURN(va_res, VaapiFunctions::kVAQuerySurfaceAttributes,
+                       false);
 
   profile_info->va_profile = va_profile;
   profile_info->va_entrypoint  = entrypoint;
@@ -897,7 +979,7 @@ bool VASupportedProfiles::FillProfileInfo_Locked(
   // supported RT formats.
   va_res = vaCreateConfig(va_display, va_profile, entrypoint, nullptr, 0,
                           &va_config_id);
-  VA_SUCCESS_OR_RETURN(va_res, "vaCreateConfig", false);
+  VA_SUCCESS_OR_RETURN(va_res, VaapiFunctions::kVACreateConfig, false);
   base::ScopedClosureRunner vaconfig_no_attribs_destroyer(base::BindOnce(
       [](VADisplay display, VAConfigID id) {
         if (id != VA_INVALID_ID) {
@@ -920,7 +1002,7 @@ bool VASupportedProfiles::FillProfileInfo_Locked(
   va_res = vaQueryConfigAttributes(va_display, va_config_id, &va_profile,
                                    &entrypoint, config_attributes.data(),
                                    &num_config_attributes);
-  VA_SUCCESS_OR_RETURN(va_res, "vaQueryConfigAttributes", false);
+  VA_SUCCESS_OR_RETURN(va_res, VaapiFunctions::kVAQueryConfigAttributes, false);
   for (int i = 0; i < num_config_attributes; i++) {
     const VAConfigAttrib& attrib = config_attributes[i];
     if (attrib.type != VAConfigAttribRTFormat)
@@ -987,7 +1069,7 @@ class VASupportedImageFormats {
   VADisplay va_display_ GUARDED_BY(va_lock_);
 
   std::vector<VAImageFormat> supported_formats_;
-  const base::RepeatingClosure report_error_to_uma_cb_;
+  const ReportErrorToUMACB report_error_to_uma_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(VASupportedImageFormats);
 };
@@ -1038,7 +1120,7 @@ VASupportedImageFormats::VASupportedImageFormats()
   }
 
   const VAStatus va_res = display_state->Deinitialize();
-  VA_LOG_ON_ERROR(va_res, "vaTerminate");
+  VA_LOG_ON_ERROR(va_res, VaapiFunctions::kVATerminate);
 }
 
 bool VASupportedImageFormats::InitSupportedImageFormats_Locked() {
@@ -1056,7 +1138,7 @@ bool VASupportedImageFormats::InitSupportedImageFormats_Locked() {
   int num_image_formats;
   const VAStatus va_res = vaQueryImageFormats(
       va_display_, supported_formats_.data(), &num_image_formats);
-  VA_SUCCESS_OR_RETURN(va_res, "vaQueryImageFormats", false);
+  VA_SUCCESS_OR_RETURN(va_res, VaapiFunctions::kVAQueryImageFormats, false);
   if (num_image_formats < 0 || num_image_formats > max_image_formats) {
     LOG(ERROR) << "vaQueryImageFormats returned: " << num_image_formats;
     supported_formats_.clear();
@@ -1123,7 +1205,7 @@ VAImplementation VaapiWrapper::GetImplementationType() {
 scoped_refptr<VaapiWrapper> VaapiWrapper::Create(
     CodecMode mode,
     VAProfile va_profile,
-    const base::Closure& report_error_to_uma_cb) {
+    const ReportErrorToUMACB& report_error_to_uma_cb) {
   if (!VASupportedProfiles::Get().IsProfileSupported(mode, va_profile)) {
     DVLOG(1) << "Unsupported va_profile: " << vaProfileStr(va_profile);
     return nullptr;
@@ -1143,7 +1225,7 @@ scoped_refptr<VaapiWrapper> VaapiWrapper::Create(
 scoped_refptr<VaapiWrapper> VaapiWrapper::CreateForVideoCodec(
     CodecMode mode,
     VideoCodecProfile profile,
-    const base::Closure& report_error_to_uma_cb) {
+    const ReportErrorToUMACB& report_error_to_uma_cb) {
   const VAProfile va_profile = ProfileToVAProfile(profile, mode);
   return Create(mode, va_profile, report_error_to_uma_cb);
 }
@@ -1520,7 +1602,7 @@ bool VaapiWrapper::CreateContext(const gfx::Size& size) {
       va_display_, va_config_id_, picture_size.width(), picture_size.height(),
       flag, empty_va_surfaces_ids_pointer, empty_va_surfaces_ids_size,
       &va_context_id_);
-  VA_LOG_ON_ERROR(va_res, "vaCreateContext");
+  VA_LOG_ON_ERROR(va_res, VaapiFunctions::kVACreateContext);
   return va_res == VA_STATUS_SUCCESS;
 }
 
@@ -1578,7 +1660,8 @@ scoped_refptr<VASurface> VaapiWrapper::CreateVASurfaceForPixmap(
         va_display_, va_format, base::checked_cast<unsigned int>(size.width()),
         base::checked_cast<unsigned int>(size.height()), &va_surface_id, 1,
         &va_attribs[0], va_attribs.size());
-    VA_SUCCESS_OR_RETURN(va_res, "vaCreateSurfaces (import mode)", nullptr);
+    VA_SUCCESS_OR_RETURN(va_res, VaapiFunctions::kVACreateSurfaces_Importing,
+                         nullptr);
   }
   DVLOG(2) << __func__ << " " << va_surface_id;
   // VASurface shares an ownership of the buffer referred by the passed file
@@ -1599,13 +1682,14 @@ VaapiWrapper::ExportVASurfaceAsNativePixmapDmaBuf(
   {
     base::AutoLock auto_lock(*va_lock_);
     VAStatus va_res = vaSyncSurface(va_display_, scoped_va_surface.id());
-    VA_SUCCESS_OR_RETURN(va_res, "vaSyncSurface", nullptr);
+    VA_SUCCESS_OR_RETURN(va_res, VaapiFunctions::kVASyncSurface, nullptr);
     va_res = vaExportSurfaceHandle(
         va_display_, scoped_va_surface.id(),
         VA_SURFACE_ATTRIB_MEM_TYPE_DRM_PRIME_2,
         VA_EXPORT_SURFACE_READ_ONLY | VA_EXPORT_SURFACE_SEPARATE_LAYERS,
         &descriptor);
-    VA_SUCCESS_OR_RETURN(va_res, "vaExportSurfaceHandle", nullptr);
+    VA_SUCCESS_OR_RETURN(va_res, VaapiFunctions::kVAExportSurfaceHandle,
+                         nullptr);
   }
 
   // We only support one bo containing all the planes. The fd should be owned by
@@ -1695,7 +1779,7 @@ bool VaapiWrapper::SyncSurface(VASurfaceID va_surface_id) {
   base::AutoLock auto_lock(*va_lock_);
 
   VAStatus va_res = vaSyncSurface(va_display_, va_surface_id);
-  VA_SUCCESS_OR_RETURN(va_res, "vaSyncSurface", false);
+  VA_SUCCESS_OR_RETURN(va_res, VaapiFunctions::kVASyncSurface, false);
   return true;
 }
 
@@ -1714,7 +1798,7 @@ bool VaapiWrapper::SubmitBuffer(VABufferType va_buffer_type,
     const VAStatus va_res =
         vaCreateBuffer(va_display_, va_context_id_, va_buffer_type, size, 1,
                        nullptr, &buffer_id);
-    VA_SUCCESS_OR_RETURN(va_res, "vaCreateBuffer", false);
+    VA_SUCCESS_OR_RETURN(va_res, VaapiFunctions::kVACreateBuffer, false);
   }
 
   ScopedVABufferMapping mapping(
@@ -1741,7 +1825,7 @@ bool VaapiWrapper::SubmitVAEncMiscParamBuffer(
   VAStatus va_res = vaCreateBuffer(
       va_display_, va_context_id_, VAEncMiscParameterBufferType,
       sizeof(VAEncMiscParameterBuffer) + size, 1, NULL, &buffer_id);
-  VA_SUCCESS_OR_RETURN(va_res, "vaCreateBuffer", false);
+  VA_SUCCESS_OR_RETURN(va_res, VaapiFunctions::kVACreateBuffer, false);
 
   ScopedVABufferMapping mapping(
       va_lock_, va_display_, buffer_id,
@@ -1768,7 +1852,7 @@ void VaapiWrapper::DestroyPendingBuffers_Locked() {
   va_lock_->AssertAcquired();
   for (const auto& pending_va_buf : pending_va_buffers_) {
     VAStatus va_res = vaDestroyBuffer(va_display_, pending_va_buf);
-    VA_LOG_ON_ERROR(va_res, "vaDestroyBuffer");
+    VA_LOG_ON_ERROR(va_res, VaapiFunctions::kVADestroyBuffer);
   }
   pending_va_buffers_.clear();
 }
@@ -1788,7 +1872,7 @@ bool VaapiWrapper::PutSurfaceIntoPixmap(VASurfaceID va_surface_id,
   base::AutoLock auto_lock(*va_lock_);
 
   VAStatus va_res = vaSyncSurface(va_display_, va_surface_id);
-  VA_SUCCESS_OR_RETURN(va_res, "vaSyncSurface", false);
+  VA_SUCCESS_OR_RETURN(va_res, VaapiFunctions::kVASyncSurface, false);
 
   // Put the data into an X Pixmap.
   va_res = vaPutSurface(va_display_,
@@ -1797,7 +1881,7 @@ bool VaapiWrapper::PutSurfaceIntoPixmap(VASurfaceID va_surface_id,
                         0, 0, dest_size.width(), dest_size.height(),
                         0, 0, dest_size.width(), dest_size.height(),
                         NULL, 0, 0);
-  VA_SUCCESS_OR_RETURN(va_res, "vaPutSurface", false);
+  VA_SUCCESS_OR_RETURN(va_res, VaapiFunctions::kVAPutSurface, false);
   return true;
 }
 #endif  // USE_X11
@@ -1811,7 +1895,7 @@ std::unique_ptr<ScopedVAImage> VaapiWrapper::CreateVaImage(
     base::AutoLock auto_lock(*va_lock_);
 
     VAStatus va_res = vaSyncSurface(va_display_, va_surface_id);
-    VA_SUCCESS_OR_RETURN(va_res, "vaSyncSurface", nullptr);
+    VA_SUCCESS_OR_RETURN(va_res, VaapiFunctions::kVASyncSurface, nullptr);
 
     scoped_image = std::make_unique<ScopedVAImage>(va_lock_, va_display_,
                                                    va_surface_id, format, size);
@@ -1847,7 +1931,7 @@ bool VaapiWrapper::UploadVideoFrameToSurface(const VideoFrame& frame,
 
     va_res = vaCreateImage(va_display_, &image_format, va_surface_size.width(),
                            va_surface_size.height(), &image);
-    VA_SUCCESS_OR_RETURN(va_res, "vaCreateImage", false);
+    VA_SUCCESS_OR_RETURN(va_res, VaapiFunctions::kVACreateImage, false);
   }
   base::ScopedClosureRunner vaimage_deleter(
       base::Bind(&DestroyVAImage, va_display_, image));
@@ -1923,7 +2007,7 @@ bool VaapiWrapper::UploadVideoFrameToSurface(const VideoFrame& frame,
     va_res = vaPutImage(va_display_, va_surface_id, image.image_id, 0, 0,
                         visible_size.width(), visible_size.height(), 0, 0,
                         visible_size.width(), visible_size.height());
-    VA_SUCCESS_OR_RETURN(va_res, "vaPutImage", false);
+    VA_SUCCESS_OR_RETURN(va_res, VaapiFunctions::kVAPutImage, false);
   }
   return ret == 0;
 }
@@ -1935,7 +2019,7 @@ bool VaapiWrapper::CreateVABuffer(size_t size, VABufferID* buffer_id) {
   VAStatus va_res =
       vaCreateBuffer(va_display_, va_context_id_, VAEncCodedBufferType, size, 1,
                      NULL, buffer_id);
-  VA_SUCCESS_OR_RETURN(va_res, "vaCreateBuffer", false);
+  VA_SUCCESS_OR_RETURN(va_res, VaapiFunctions::kVACreateBuffer, false);
 
   const auto is_new_entry = va_buffers_.insert(*buffer_id).second;
   DCHECK(is_new_entry);
@@ -1948,7 +2032,7 @@ uint64_t VaapiWrapper::GetEncodedChunkSize(VABufferID buffer_id,
   base::AutoLock auto_lock(*va_lock_);
   TRACE_EVENT0("media,gpu", "VaapiWrapper::GetEncodedChunkSizeLocked");
   VAStatus va_res = vaSyncSurface(va_display_, sync_surface_id);
-  VA_SUCCESS_OR_RETURN(va_res, "vaSyncSurface", 0u);
+  VA_SUCCESS_OR_RETURN(va_res, VaapiFunctions::kVASyncSurface, 0u);
 
   ScopedVABufferMapping mapping(va_lock_, va_display_, buffer_id);
   if (!mapping.IsValid())
@@ -1975,7 +2059,7 @@ bool VaapiWrapper::DownloadFromVABuffer(VABufferID buffer_id,
   TRACE_EVENT0("media,gpu", "VaapiWrapper::DownloadFromVABufferLocked");
 
   VAStatus va_res = vaSyncSurface(va_display_, sync_surface_id);
-  VA_SUCCESS_OR_RETURN(va_res, "vaSyncSurface", false);
+  VA_SUCCESS_OR_RETURN(va_res, VaapiFunctions::kVASyncSurface, false);
 
   ScopedVABufferMapping mapping(va_lock_, va_display_, buffer_id);
   if (!mapping.IsValid())
@@ -2021,7 +2105,7 @@ bool VaapiWrapper::GetVAEncMaxNumOfRefFrames(VideoCodecProfile profile,
   VAStatus va_res =
       vaGetConfigAttributes(va_display_, va_profile,
                             va_entrypoint_, &attrib, 1);
-  VA_SUCCESS_OR_RETURN(va_res, "vaGetConfigAttributes", false);
+  VA_SUCCESS_OR_RETURN(va_res, VaapiFunctions::kVAGetConfigAttributes, false);
 
   *max_ref_frames = attrib.value;
   return true;
@@ -2030,7 +2114,7 @@ bool VaapiWrapper::GetVAEncMaxNumOfRefFrames(VideoCodecProfile profile,
 void VaapiWrapper::DestroyVABuffer(VABufferID buffer_id) {
   base::AutoLock auto_lock(*va_lock_);
   VAStatus va_res = vaDestroyBuffer(va_display_, buffer_id);
-  VA_LOG_ON_ERROR(va_res, "vaDestroyBuffer");
+  VA_LOG_ON_ERROR(va_res, VaapiFunctions::kVADestroyBuffer);
   const auto was_found = va_buffers_.erase(buffer_id);
   DCHECK(was_found);
 }
@@ -2040,7 +2124,7 @@ void VaapiWrapper::DestroyVABuffers() {
 
   for (auto it = va_buffers_.begin(); it != va_buffers_.end(); ++it) {
     VAStatus va_res = vaDestroyBuffer(va_display_, *it);
-    VA_LOG_ON_ERROR(va_res, "vaDestroyBuffer");
+    VA_LOG_ON_ERROR(va_res, VaapiFunctions::kVADestroyBuffer);
   }
 
   va_buffers_.clear();
@@ -2052,10 +2136,9 @@ bool VaapiWrapper::IsRotationSupported() {
   memset(&pipeline_caps, 0, sizeof(pipeline_caps));
   VAStatus va_res = vaQueryVideoProcPipelineCaps(va_display_, va_context_id_,
                                                  nullptr, 0, &pipeline_caps);
-  if (va_res != VA_STATUS_SUCCESS) {
-    LOG_VA_ERROR_AND_REPORT(va_res, "vaQueryVideoProcPipelineCaps failed");
-    return false;
-  }
+  VA_SUCCESS_OR_RETURN(va_res, VaapiFunctions::kVAQueryVideoProcPipelineCaps,
+                       false);
+
   if (!pipeline_caps.rotation_flags) {
     DVLOG(2) << "VA-API driver doesn't support any rotation";
     return false;
@@ -2074,10 +2157,10 @@ bool VaapiWrapper::BlitSurface(const VASurface& va_surface_src,
     DCHECK_NE(VA_INVALID_ID, va_context_id_);
     // Create a buffer for VPP if it has not been created.
     VABufferID buffer_id;
-    VAStatus va_res = vaCreateBuffer(
+    const VAStatus va_res = vaCreateBuffer(
         va_display_, va_context_id_, VAProcPipelineParameterBufferType,
         sizeof(VAProcPipelineParameterBuffer), 1, nullptr, &buffer_id);
-    VA_SUCCESS_OR_RETURN(va_res, "vaCreateBuffer", false);
+    VA_SUCCESS_OR_RETURN(va_res, VaapiFunctions::kVACreateBuffer, false);
     DCHECK_NE(buffer_id, VA_INVALID_ID);
     va_buffers_.emplace(buffer_id);
   }
@@ -2131,19 +2214,20 @@ bool VaapiWrapper::BlitSurface(const VASurface& va_surface_src,
         break;
     }
 
-    VA_SUCCESS_OR_RETURN(mapping.Unmap(), "Vpp Buffer unmapping", false);
+    VA_SUCCESS_OR_RETURN(mapping.Unmap(), VaapiFunctions::kVAUnmapBuffer,
+                         false);
   }
 
   VA_SUCCESS_OR_RETURN(
       vaBeginPicture(va_display_, va_context_id_, va_surface_dest.id()),
-      "vaBeginPicture", false);
+      VaapiFunctions::kVABeginPicture, false);
 
   VA_SUCCESS_OR_RETURN(
       vaRenderPicture(va_display_, va_context_id_, &buffer_id, 1),
-      "vaRenderPicture", false);
+      VaapiFunctions::kVARenderPicture_Vpp, false);
 
   VA_SUCCESS_OR_RETURN(vaEndPicture(va_display_, va_context_id_),
-                       "vaEndPicture", false);
+                       VaapiFunctions::kVAEndPicture, false);
 
   return true;
 }
@@ -2224,7 +2308,7 @@ bool VaapiWrapper::Initialize(CodecMode mode, VAProfile va_profile) {
 
   va_entrypoint_ = entrypoint;
 
-  VA_SUCCESS_OR_RETURN(va_res, "vaCreateConfig", false);
+  VA_SUCCESS_OR_RETURN(va_res, VaapiFunctions::kVACreateConfig, false);
   return true;
 }
 
@@ -2233,19 +2317,19 @@ void VaapiWrapper::Deinitialize() {
     base::AutoLock auto_lock(*va_lock_);
     if (va_config_id_ != VA_INVALID_ID) {
       VAStatus va_res = vaDestroyConfig(va_display_, va_config_id_);
-      VA_LOG_ON_ERROR(va_res, "vaDestroyConfig");
+      VA_LOG_ON_ERROR(va_res, VaapiFunctions::kVADestroyConfig);
     }
     va_config_id_ = VA_INVALID_ID;
     va_display_ = nullptr;
   }
 
   const VAStatus va_res = VADisplayState::Get()->Deinitialize();
-  VA_LOG_ON_ERROR(va_res, "vaTerminate");
+  VA_LOG_ON_ERROR(va_res, VaapiFunctions::kVATerminate);
 }
 
-bool VaapiWrapper::VaInitialize(const base::Closure& report_error_to_uma_cb) {
+bool VaapiWrapper::VaInitialize(
+    const ReportErrorToUMACB& report_error_to_uma_cb) {
   report_error_to_uma_cb_ = report_error_to_uma_cb;
-
   if (!VADisplayState::Get()->Initialize())
     return false;
 
@@ -2263,7 +2347,7 @@ void VaapiWrapper::DestroyContext() {
 
   if (va_context_id_ != VA_INVALID_ID) {
     const VAStatus va_res = vaDestroyContext(va_display_, va_context_id_);
-    VA_LOG_ON_ERROR(va_res, "vaDestroyContext");
+    VA_LOG_ON_ERROR(va_res, VaapiFunctions::kVADestroyContext);
   }
 
   va_context_id_ = VA_INVALID_ID;
@@ -2307,7 +2391,7 @@ bool VaapiWrapper::CreateSurfaces(unsigned int va_format,
         base::checked_cast<unsigned int>(size.height()), va_surfaces->data(),
         num_surfaces, &attribute, 1u);
   }
-  VA_LOG_ON_ERROR(va_res, "vaCreateSurfaces (allocate mode)");
+  VA_LOG_ON_ERROR(va_res, VaapiFunctions::kVACreateSurfaces_Allocating);
   return va_res == VA_STATUS_SUCCESS;
 }
 
@@ -2331,7 +2415,8 @@ std::unique_ptr<ScopedVASurface> VaapiWrapper::CreateScopedVASurface(
       va_display_, va_rt_format, base::checked_cast<unsigned int>(size.width()),
       base::checked_cast<unsigned int>(size.height()), &va_surface_id, 1u, NULL,
       0);
-  VA_SUCCESS_OR_RETURN(va_res, "vaCreateSurfaces (allocate mode)", nullptr);
+  VA_SUCCESS_OR_RETURN(va_res, VaapiFunctions::kVACreateSurfaces_Allocating,
+                       nullptr);
 
   DCHECK_NE(VA_INVALID_ID, va_surface_id)
       << "Invalid VA surface id after vaCreateSurfaces";
@@ -2357,7 +2442,7 @@ void VaapiWrapper::DestroySurfaces(std::vector<VASurfaceID> va_surfaces) {
   base::AutoLock auto_lock(*va_lock_);
   const VAStatus va_res =
       vaDestroySurfaces(va_display_, va_surfaces.data(), va_surfaces.size());
-  VA_LOG_ON_ERROR(va_res, "vaDestroySurfaces");
+  VA_LOG_ON_ERROR(va_res, VaapiFunctions::kVADestroySurfaces);
 }
 
 void VaapiWrapper::DestroySurface(VASurfaceID va_surface_id) {
@@ -2366,7 +2451,7 @@ void VaapiWrapper::DestroySurface(VASurfaceID va_surface_id) {
   DVLOG(2) << __func__ << " " << va_surface_id;
   base::AutoLock auto_lock(*va_lock_);
   const VAStatus va_res = vaDestroySurfaces(va_display_, &va_surface_id, 1);
-  VA_LOG_ON_ERROR(va_res, "vaDestroySurfaces");
+  VA_LOG_ON_ERROR(va_res, VaapiFunctions::kVADestroySurfaces);
 }
 
 bool VaapiWrapper::Execute(VASurfaceID va_surface_id) {
@@ -2385,21 +2470,22 @@ bool VaapiWrapper::Execute_Locked(VASurfaceID va_surface_id) {
 
   // Get ready to execute for given surface.
   VAStatus va_res = vaBeginPicture(va_display_, va_context_id_, va_surface_id);
-  VA_SUCCESS_OR_RETURN(va_res, "vaBeginPicture", false);
+  VA_SUCCESS_OR_RETURN(va_res, VaapiFunctions::kVABeginPicture, false);
 
   if (pending_va_buffers_.size() > 0) {
     // Commit parameter and slice buffers.
     va_res =
         vaRenderPicture(va_display_, va_context_id_, &pending_va_buffers_[0],
                         pending_va_buffers_.size());
-    VA_SUCCESS_OR_RETURN(va_res, "vaRenderPicture", false);
+    VA_SUCCESS_OR_RETURN(va_res, VaapiFunctions::kVARenderPicture_VABuffers,
+                         false);
   }
 
   // Instruct HW codec to start processing the submitted commands. In theory,
   // this shouldn't be blocking, relying on vaSyncSurface() instead, however
   // evidence points to it actually waiting for the job to be done.
   va_res = vaEndPicture(va_display_, va_context_id_);
-  VA_SUCCESS_OR_RETURN(va_res, "vaEndPicture", false);
+  VA_SUCCESS_OR_RETURN(va_res, VaapiFunctions::kVAEndPicture, false);
 
   UMA_HISTOGRAM_TIMES("Media.PlatformVideoDecoding.Decode",
                       base::TimeTicks::Now() - decode_start_time);

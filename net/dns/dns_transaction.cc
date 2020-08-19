@@ -1120,6 +1120,15 @@ class DnsTransactionImpl : public DnsTransaction,
     const DnsAttempt* attempt;
   };
 
+  // Used in UMA (DNS.AttemptType). Do not renumber or remove values.
+  enum class DnsAttemptType {
+    kUdp = 0,
+    kTcpLowEntropy = 1,
+    kTcpTruncationRetry = 2,
+    kHttp = 3,
+    kMaxValue = kHttp,
+  };
+
   // Prepares |qnames_| according to the DnsConfig.
   int PrepareSearch() {
     const DnsConfig& config = session_->config();
@@ -1195,10 +1204,16 @@ class DnsTransactionImpl : public DnsTransaction,
     std::move(callback_).Run(this, result.rv, response, doh_provider_id);
   }
 
+  void RecordAttemptUma(DnsAttemptType attempt_type) {
+    UMA_HISTOGRAM_ENUMERATION("Net.DNS.DnsTransaction.AttemptType",
+                              attempt_type);
+  }
+
   AttemptResult MakeAttempt() {
     DnsConfig config = session_->config();
     if (secure_) {
       DCHECK_GT(config.dns_over_https_servers.size(), 0u);
+      RecordAttemptUma(DnsAttemptType::kHttp);
       return MakeHTTPAttempt();
     }
 
@@ -1221,8 +1236,10 @@ class DnsTransactionImpl : public DnsTransaction,
     AttemptResult result;
     if (session_->udp_tracker()->low_entropy()) {
       result = MakeTcpAttempt(server_index, std::move(query));
+      RecordAttemptUma(DnsAttemptType::kTcpLowEntropy);
     } else {
       result = MakeUdpAttempt(server_index, std::move(query));
+      RecordAttemptUma(DnsAttemptType::kUdp);
     }
 
     if (result.rv == ERR_IO_PENDING) {
@@ -1306,6 +1323,7 @@ class DnsTransactionImpl : public DnsTransaction,
     ClearAttempts(nullptr);
 
     AttemptResult result = MakeTcpAttempt(server_index, std::move(query));
+    RecordAttemptUma(DnsAttemptType::kTcpTruncationRetry);
 
     if (result.rv == ERR_IO_PENDING) {
       // On TCP upgrade, use 2x the upgraded timeout.

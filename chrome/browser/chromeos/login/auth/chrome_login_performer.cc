@@ -82,13 +82,13 @@ void ChromeLoginPerformer::DidRunTrustedCheck(base::OnceClosure* callback) {
   }
 }
 
-bool ChromeLoginPerformer::IsUserWhitelisted(const AccountId& account_id,
+bool ChromeLoginPerformer::IsUserAllowlisted(const AccountId& account_id,
                                              bool* wildcard_match) {
-  return CrosSettings::Get()->IsUserWhitelisted(account_id.GetUserEmail(),
+  return CrosSettings::Get()->IsUserAllowlisted(account_id.GetUserEmail(),
                                                 wildcard_match);
 }
 
-void ChromeLoginPerformer::RunOnlineWhitelistCheck(
+void ChromeLoginPerformer::RunOnlineAllowlistCheck(
     const AccountId& account_id,
     bool wildcard_match,
     const std::string& refresh_token,

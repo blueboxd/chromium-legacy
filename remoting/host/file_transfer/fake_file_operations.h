@@ -5,8 +5,8 @@
 #ifndef REMOTING_HOST_FILE_TRANSFER_FAKE_FILE_OPERATIONS_H_
 #define REMOTING_HOST_FILE_TRANSFER_FAKE_FILE_OPERATIONS_H_
 
+#include <cstdint>
 #include <memory>
-#include <string>
 #include <vector>
 
 #include "base/files/file_path.h"
@@ -23,7 +23,7 @@ class FakeFileOperations : public FileOperations {
   struct OutputFile {
     OutputFile(base::FilePath filename,
                bool failed,
-               std::vector<std::string> chunks);
+               std::vector<std::vector<std::uint8_t>> chunks);
     OutputFile(const OutputFile& other);
     OutputFile(OutputFile&& other);
     OutputFile& operator=(const OutputFile&);
@@ -38,13 +38,13 @@ class FakeFileOperations : public FileOperations {
     bool failed;
 
     // All of the chunks successfully written before close/cancel/error.
-    std::vector<std::string> chunks;
+    std::vector<std::vector<std::uint8_t>> chunks;
   };
 
   struct InputFile {
     InputFile();
     InputFile(base::FilePath filename,
-              std::string data,
+              std::vector<std::uint8_t> data,
               base::Optional<protocol::FileTransfer_Error> io_error);
     InputFile(const InputFile& other);
     InputFile(InputFile&& other);
@@ -56,7 +56,7 @@ class FakeFileOperations : public FileOperations {
     base::FilePath filename;
 
     // The file data to provide in response to read requests.
-    std::string data;
+    std::vector<std::uint8_t> data;
 
     // If set, this error will be returned instead of EOF once the provided data
     // has been read.

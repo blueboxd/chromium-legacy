@@ -508,8 +508,8 @@ bool PDFiumEngine::New(const char* url, const char* headers) {
   return true;
 }
 
-void PDFiumEngine::PageOffsetUpdated(const pp::Point& page_offset) {
-  page_offset_ = page_offset;
+void PDFiumEngine::PageOffsetUpdated(const gfx::Point& page_offset) {
+  page_offset_ = PPPointFromPoint(page_offset);
 }
 
 void PDFiumEngine::PluginSizeUpdated(const gfx::Size& size) {
@@ -1452,8 +1452,7 @@ bool PDFiumEngine::OnMouseMove(const MouseInputEvent& event) {
                        page_y);
     }
 
-    UpdateLinkUnderCursor(
-        GetLinkAtPosition(PPPointFromPoint(event.GetPosition())));
+    UpdateLinkUnderCursor(GetLinkAtPosition(event.GetPosition()));
 
     // If in form text area while left mouse button is held down, check if form
     // text selection needs to be updated.
@@ -1467,8 +1466,9 @@ bool PDFiumEngine::OnMouseMove(const MouseInputEvent& event) {
       // moving the page, rather than the delta the mouse moved.
       // GetMovement() does not work here, as small mouse movements are
       // considered zero.
-      pp::Point page_position_delta = mouse_middle_button_last_position_ -
-                                      PPPointFromPoint(event.GetPosition());
+      gfx::Vector2d page_position_delta =
+          PointFromPPPoint(mouse_middle_button_last_position_) -
+          event.GetPosition();
       if (page_position_delta.x() != 0 || page_position_delta.y() != 0) {
         client_->ScrollBy(page_position_delta);
         mouse_middle_button_last_position_ =
@@ -2191,7 +2191,8 @@ void PDFiumEngine::HandleAccessibilityAction(
       break;
     }
     case PP_PdfAccessibilityAction::PP_PDF_SCROLL_TO_GLOBAL_POINT: {
-      ScrollToGlobalPoint(action_data.target_rect, action_data.target_point);
+      ScrollToGlobalPoint(action_data.target_rect,
+                          PointFromPPPoint(action_data.target_point));
       break;
     }
     case PP_PdfAccessibilityAction::PP_PDF_SET_SELECTION: {
@@ -2208,14 +2209,14 @@ void PDFiumEngine::HandleAccessibilityAction(
   }
 }
 
-std::string PDFiumEngine::GetLinkAtPosition(const pp::Point& point) {
+std::string PDFiumEngine::GetLinkAtPosition(const gfx::Point& point) {
   std::string url;
   int temp;
   int page_index = -1;
   int form_type = FPDF_FORMFIELD_UNKNOWN;
   PDFiumPage::LinkTarget target;
-  PDFiumPage::Area area =
-      GetCharIndex(point, &page_index, &temp, &form_type, &target);
+  PDFiumPage::Area area = GetCharIndex(PPPointFromPoint(point), &page_index,
+                                       &temp, &form_type, &target);
   if (area == PDFiumPage::WEBLINK_AREA)
     url = target.url;
   return url;
@@ -2271,7 +2272,7 @@ const DocumentMetadata& PDFiumEngine::GetDocumentMetadata() const {
   return doc_metadata_;
 }
 
-int PDFiumEngine::GetNumberOfPages() {
+int PDFiumEngine::GetNumberOfPages() const {
   return pages_.size();
 }
 
@@ -2344,7 +2345,8 @@ void PDFiumEngine::ScrollBasedOnScrollAlignment(
     const pp::Rect& scroll_rect,
     const PP_PdfAccessibilityScrollAlignment& horizontal_scroll_alignment,
     const PP_PdfAccessibilityScrollAlignment& vertical_scroll_alignment) {
-  pp::Point scroll_offset = GetScreenRect(scroll_rect).point();
+  gfx::Vector2d scroll_offset =
+      PointFromPPPoint(GetScreenRect(scroll_rect).point()).OffsetFromOrigin();
   switch (horizontal_scroll_alignment) {
     case PP_PdfAccessibilityScrollAlignment::PP_PDF_SCROLL_ALIGNMENT_RIGHT:
       scroll_offset.set_x(scroll_offset.x() - plugin_size_.width());
@@ -2397,8 +2399,9 @@ void PDFiumEngine::ScrollBasedOnScrollAlignment(
 }
 
 void PDFiumEngine::ScrollToGlobalPoint(const pp::Rect& target_rect,
-                                       const pp::Point& global_point) {
-  pp::Point scroll_offset = GetScreenRect(target_rect).point();
+                                       const gfx::Point& global_point) {
+  gfx::Point scroll_offset =
+      PointFromPPPoint(GetScreenRect(target_rect).point());
   client_->ScrollBy(scroll_offset - global_point);
 }
 
@@ -3851,16 +3854,17 @@ void PDFiumEngine::OnFocusedAnnotationUpdated(FPDF_ANNOTATION annot,
       is_form_text_area && IsAnnotationAnEditableFormTextArea(annot, form_type);
 }
 
-void PDFiumEngine::SetCaretPosition(const pp::Point& position) {
+void PDFiumEngine::SetCaretPosition(const gfx::Point& position) {
   // TODO(dsinclair): Handle caret position ...
 }
 
-void PDFiumEngine::MoveRangeSelectionExtent(const pp::Point& extent) {
+void PDFiumEngine::MoveRangeSelectionExtent(const gfx::Point& extent) {
   int page_index = -1;
   int char_index = -1;
   int form_type = FPDF_FORMFIELD_UNKNOWN;
   PDFiumPage::LinkTarget target;
-  GetCharIndex(extent, &page_index, &char_index, &form_type, &target);
+  GetCharIndex(PPPointFromPoint(extent), &page_index, &char_index, &form_type,
+               &target);
   if (page_index < 0 || char_index < 0)
     return;
 
@@ -3883,9 +3887,9 @@ void PDFiumEngine::MoveRangeSelectionExtent(const pp::Point& extent) {
   ExtendSelection(page_index, char_index);
 }
 
-void PDFiumEngine::SetSelectionBounds(const pp::Point& base,
-                                      const pp::Point& extent) {
-  range_selection_base_ = base;
+void PDFiumEngine::SetSelectionBounds(const gfx::Point& base,
+                                      const gfx::Point& extent) {
+  range_selection_base_ = PPPointFromPoint(base);
   range_selection_direction_ = IsAboveOrDirectlyLeftOf(base, extent)
                                    ? RangeSelectionDirection::Left
                                    : RangeSelectionDirection::Right;

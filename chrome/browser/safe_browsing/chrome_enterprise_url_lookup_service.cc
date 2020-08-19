@@ -11,6 +11,7 @@
 #include "components/policy/core/common/cloud/dm_token.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/common/thread_utils.h"
+#include "components/safe_browsing/core/features.h"
 #include "components/safe_browsing/core/proto/csd.pb.h"
 #include "components/safe_browsing/core/proto/realtimeapi.pb.h"
 #include "components/safe_browsing/core/realtime/policy_engine.h"
@@ -123,6 +124,11 @@ ChromeEnterpriseRealTimeUrlLookupService::GetTrafficAnnotationTag() const {
 
 std::string ChromeEnterpriseRealTimeUrlLookupService::GetMetricSuffix() const {
   return ".Enterprise";
+}
+
+bool ChromeEnterpriseRealTimeUrlLookupService::ShouldIncludeCredentials()
+    const {
+  return !base::FeatureList::IsEnabled(kSafeBrowsingRemoveCookies);
 }
 
 }  // namespace safe_browsing

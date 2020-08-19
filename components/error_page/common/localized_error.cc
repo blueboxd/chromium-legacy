@@ -1065,10 +1065,12 @@ LocalizedError::PageState LocalizedError::GetPageState(
           {"offlineContentList", "actionText"},
           base::Value(l10n_util::GetStringUTF16(
               IDS_ERRORPAGES_OFFLINE_CONTENT_LIST_OPEN_ALL_BUTTON)));
-      result.strings.SetPath({"offlineContentList", "showText"},
-                             base::Value(l10n_util::GetStringUTF16(IDS_SHOW)));
-      result.strings.SetPath({"offlineContentList", "hideText"},
-                             base::Value(l10n_util::GetStringUTF16(IDS_HIDE)));
+      result.strings.SetPath(
+          {"offlineContentList", "showText"},
+          base::Value(l10n_util::GetStringUTF16(IDS_SHOW_CONTENT)));
+      result.strings.SetPath(
+          {"offlineContentList", "hideText"},
+          base::Value(l10n_util::GetStringUTF16(IDS_HIDE_CONTENT)));
     }
   }
 #endif  // defined(OS_ANDROID)

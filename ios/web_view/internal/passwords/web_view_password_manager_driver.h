@@ -10,6 +10,8 @@
 
 #include "base/macros.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
+#include "components/autofill/core/common/password_form_generation_data.h"
+#include "components/password_manager/core/browser/password_generation_frame_helper.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/ios/password_manager_driver_bridge.h"
@@ -29,6 +31,8 @@ class WebViewPasswordManagerDriver
       const autofill::PasswordFormFillData& form_data) override;
   void InformNoSavedCredentials(
       bool should_show_popup_without_passwords) override;
+  void FormEligibleForGenerationFound(
+      const autofill::PasswordFormGenerationData& form) override;
   void GeneratedPasswordAccepted(const base::string16& password) override;
   void FillSuggestion(const base::string16& username,
                       const base::string16& password) override;

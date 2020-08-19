@@ -14,9 +14,13 @@
 namespace crosapi {
 
 // A 4-byte RGBA bitmap representation. Its size must be exactly equal to
-// width * height * 4.
+// width * height * 4. Move-only because copying |pixels| is expensive.
 struct COMPONENT_EXPORT(CROSAPI) Bitmap {
   Bitmap();
+  Bitmap(const Bitmap&) = delete;
+  Bitmap& operator=(const Bitmap&) = delete;
+  Bitmap(Bitmap&& other);
+  Bitmap& operator=(Bitmap&& other);
   ~Bitmap();
   uint32_t width = 0;
   uint32_t height = 0;

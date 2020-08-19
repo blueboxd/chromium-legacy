@@ -99,10 +99,6 @@ function updateToolbarColor(theme) {
   $('theme-color').content = toolbarColor;
 }
 
-function useFontScaling(scaling) {
-  pincher.useFontScaling(scaling);
-}
-
 function maybeSetWebFont() {
   // On iOS, the web fonts block the rendering until the resources are
   // fetched, which can take a long time on slow networks.
@@ -121,36 +117,44 @@ function maybeSetWebFont() {
 
 // TODO(https://crbug.com/1027612): Consider making this a custom HTML element.
 class FontSizeSlider {
-  constructor(element, supportedFontSizes) {
-    this.element = element;
-    this.supportedFontSizes = supportedFontSizes;
+  constructor() {
+    this.element = $('font-size-selection');
+    this.baseSize = 16;
+    // These scales are applied to a base size of 16px.
+    this.fontSizeScale = [0.875, 0.9375, 1, 1.125, 1.25, 1.5, 1.75, 2, 2.5, 3];
 
     this.element.addEventListener('input', (e) => {
-      document.body.style.fontSize =
-          this.supportedFontSizes[e.target.value] + 'px';
-      this.update(e.target.value);
+      const scale = this.fontSizeScale[e.target.value];
+      this.useFontScaling(scale);
+      distiller.storeFontScalingPref(parseFloat(scale));
     });
 
     this.tickmarks = document.createElement('datalist');
     this.tickmarks.setAttribute('class', 'tickmarks');
     this.element.after(this.tickmarks);
 
-    for (let i = 0; i < this.supportedFontSizes.length; i++) {
+    for (let i = 0; i < this.fontSizeScale.length; i++) {
       const option = document.createElement('option');
       option.setAttribute('value', i);
-      option.textContent = supportedFontSizes[i];
+      option.textContent = this.fontSizeScale[i] * this.baseSize;
       this.tickmarks.appendChild(option);
     }
-
+    this.element.value = 2;
+    this.update(this.element.value);
+  }
+  // TODO(meredithl): validate |scale| and snap to nearest supported font size.
+  useFontScaling(scale) {
+    this.element.value = this.fontSizeScale.indexOf(scale);
+    document.documentElement.style.fontSize = scale * this.baseSize + 'px';
     this.update(this.element.value);
   }
 
   update(position) {
     this.element.style.setProperty(
         '--fontSizePercent',
-        (position / (this.supportedFontSizes.length - 1) * 100) + '%');
+        (position / (this.fontSizeScale.length - 1) * 100) + '%');
     this.element.setAttribute(
-        'aria-valuetext', this.supportedFontSizes[position] + 'px');
+        'aria-valuetext', this.fontSizeScale[position] + 'px');
     for (let option = this.tickmarks.firstChild; option != null;
          option = option.nextSibling) {
       const isBeforeThumb = option.value < position;
@@ -160,20 +164,12 @@ class FontSizeSlider {
   }
 }
 
-const fontSizeSlider = new FontSizeSlider(
-    $('font-size-selection'), [14, 15, 16, 18, 20, 24, 28, 32, 40, 48]);
-
 maybeSetWebFont();
 
 // The zooming speed relative to pinching speed.
 const FONT_SCALE_MULTIPLIER = 0.5;
 
 const MIN_SPAN_LENGTH = 20;
-
-// This has to be in sync with 'font-size' in distilledpage.css.
-// This value is hard-coded because JS might be injected before CSS is ready.
-// See crbug.com/1004663.
-const baseSize = 14;
 
 class Pincher {
   // When users pinch in Reader Mode, the page would zoom in or out as if it
@@ -193,6 +189,10 @@ class Pincher {
   // TODO(wychen): Improve scroll position when elementFromPoint is body.
 
   constructor() {
+    // This has to be in sync with 'font-size' in distilledpage.css.
+    // This value is hard-coded because JS might be injected before CSS is
+    // ready. See crbug.com/1004663.
+    this.baseSize = 14;
     this.pinching = false;
     this.fontSizeAnchor = 1.0;
 
@@ -266,7 +266,7 @@ class Pincher {
     document.body.style.transformOrigin = '';
     document.body.style.transform = '';
     document.documentElement.style.fontSize =
-        this.clampedScale * baseSize + 'px';
+        this.clampedScale * this.baseSize + 'px';
 
     this.restoreCenter_();
 
@@ -338,7 +338,7 @@ class Pincher {
     this.pinching = true;
     this.fontSizeAnchor =
         parseFloat(getComputedStyle(document.documentElement).fontSize) /
-        baseSize;
+        this.baseSize;
 
     const pinchOrigin = this.touchPageMid_(e);
     document.body.style.transformOrigin =
@@ -406,7 +406,7 @@ class Pincher {
     this.shiftY = 0;
     this.clampedScale = 1;
     document.documentElement.style.fontSize =
-        this.clampedScale * baseSize + 'px';
+        this.clampedScale * this.baseSize + 'px';
   }
 
   status() {
@@ -422,13 +422,29 @@ class Pincher {
     this.saveCenter_({x: window.innerWidth / 2, y: window.innerHeight / 2});
     this.shiftX = 0;
     this.shiftY = 0;
-    document.documentElement.style.fontSize = scaling * baseSize + 'px';
+    document.documentElement.style.fontSize = scaling * this.baseSize + 'px';
     this.clampedScale = scaling;
     this.restoreCenter_();
   }
 }
 
-const pincher = new Pincher;
+// The pincher is only defined on Android, and the font size slider only on
+// desktop.
+// eslint-disable-next-line no-var
+var pincher, fontSizeSlider;
+if (navigator.userAgent.toLowerCase().indexOf('android') > -1) {
+  pincher = new Pincher;
+} else {
+  fontSizeSlider = new FontSizeSlider;
+}
+
+function useFontScaling(scale) {
+  if (navigator.userAgent.toLowerCase().indexOf('android') > -1) {
+    pincher.useFontScaling(scale);
+  } else {
+    fontSizeSlider.useFontScaling(scale);
+  }
+}
 
 class SettingsDialog {
   constructor(

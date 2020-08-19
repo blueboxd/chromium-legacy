@@ -15,6 +15,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/safe_browsing/core/common/utils.h"
+#include "components/safe_browsing/core/features.h"
 #include "components/safe_browsing/core/verdict_cache_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "services/network/public/cpp/cross_thread_pending_shared_url_loader_factory.h"
@@ -54,6 +55,11 @@ ChromeEnterpriseRealTimeUrlLookupServiceFactory::BuildServiceInstanceFor(
   auto url_loader_factory =
       std::make_unique<network::CrossThreadPendingSharedURLLoaderFactory>(
           g_browser_process->safe_browsing_service()->GetURLLoaderFactory());
+  if (base::FeatureList::IsEnabled(kSafeBrowsingRemoveCookies)) {
+    url_loader_factory =
+        std::make_unique<network::CrossThreadPendingSharedURLLoaderFactory>(
+            profile->GetURLLoaderFactory());
+  }
   const policy::BrowserPolicyConnector* browser_policy_connector =
       g_browser_process->browser_policy_connector();
   bool is_under_advanced_protection =

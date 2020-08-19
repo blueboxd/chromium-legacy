@@ -88,6 +88,17 @@ enum CaptivePortalProblem {
   kCaptivePortalState,
 };
 
+// Problems related to the HttpFirewall routine.
+[Extensible]
+enum HttpFirewallProblem {
+  // DNS resolution failures above threshold.
+  kDnsResolutionFailuresAboveThreshold,
+  // Firewall detected.
+  kFirewallDetected,
+  // A firewall may potentially exist.
+  kPotentialFirewall,
+};
+
 // This interface is to be used by any clients that need to run specific
 // network-related diagnostics. Expected clients of this interface are
 // NetworkHealth, cros_healthd, and a connectivity diagnostics Web UI (to name
@@ -127,4 +138,8 @@ interface NetworkDiagnosticsRoutines {
   // Tests whether the internet connection is behind a captive portal.
   CaptivePortal() => (RoutineVerdict verdict,
       array<CaptivePortalProblem> problems);
+
+  // Tests whether a firewall is blocking HTTP port 80.
+  HttpFirewall() => (RoutineVerdict verdict,
+      array<HttpFirewallProblem> problems);
 };

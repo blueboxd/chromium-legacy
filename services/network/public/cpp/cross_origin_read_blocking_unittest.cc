@@ -2028,15 +2028,15 @@ class ResponseAnalyzerTest : public testing::Test,
 
     // Create the site lock, which may differ from the initiator origin or be
     // empty.
-    base::Optional<url::Origin> request_initiator_site_lock;
+    base::Optional<url::Origin> request_initiator_origin_lock;
     if (strlen(scenario.initiator_site_lock) > 0)
-      request_initiator_site_lock =
+      request_initiator_origin_lock =
           url::Origin::Create(GURL(scenario.initiator_site_lock));
 
     // Create a ResponseAnalyzer to test.
     analyzer_ = std::make_unique<ResponseAnalyzer>(
         request->url(), request->initiator(), response,
-        request_initiator_site_lock, request_mode,
+        request_initiator_origin_lock, request_mode,
         base::nullopt /* isolated_world_origin */,
         nullptr /* network_service_client */);
 

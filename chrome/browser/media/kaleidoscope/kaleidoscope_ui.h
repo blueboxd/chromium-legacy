@@ -25,6 +25,8 @@ class KaleidoscopeUI : public ui::MojoWebUIController {
 
   static content::WebUIDataSource* CreateWebUIDataSource();
 
+  static content::WebUIDataSource* CreateUntrustedWebUIDataSource();
+
  private:
   std::unique_ptr<media::mojom::KaleidoscopeDataProvider> provider_;
 

@@ -1207,6 +1207,7 @@ TEST_F(ClientSideDetectionHostTest, ClearsScreenshotData) {
   verdict.set_url("http://phishingurl.com/");
   verdict.set_client_score(1.0f);
   verdict.set_is_phishing(true);
+  verdict.set_screenshot_digest("screenshot_digest");
   verdict.set_screenshot_phash("screenshot_phash");
   verdict.set_phash_dimension_size(48);
 
@@ -1224,6 +1225,7 @@ TEST_F(ClientSideDetectionHostTest, ClearsScreenshotData) {
   EXPECT_TRUE(Mock::VerifyAndClear(csd_host_.get()));
   EXPECT_FALSE(request->has_phash_dimension_size());
   EXPECT_FALSE(request->has_screenshot_phash());
+  EXPECT_FALSE(request->has_screenshot_digest());
   delete request;
 }
 
@@ -1239,6 +1241,7 @@ TEST_F(ClientSideDetectionHostTest, AllowsScreenshotDataForSBER) {
   verdict.set_url("http://phishingurl.com/");
   verdict.set_client_score(1.0f);
   verdict.set_is_phishing(true);
+  verdict.set_screenshot_digest("screenshot_digest");
   verdict.set_screenshot_phash("screenshot_phash");
   verdict.set_phash_dimension_size(48);
 
@@ -1256,6 +1259,7 @@ TEST_F(ClientSideDetectionHostTest, AllowsScreenshotDataForSBER) {
   EXPECT_TRUE(Mock::VerifyAndClear(csd_host_.get()));
   EXPECT_TRUE(request->has_phash_dimension_size());
   EXPECT_TRUE(request->has_screenshot_phash());
+  EXPECT_TRUE(request->has_screenshot_digest());
   delete request;
 }
 

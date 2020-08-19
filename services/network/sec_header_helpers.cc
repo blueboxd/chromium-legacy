@@ -78,7 +78,7 @@ void SetSecFetchSiteHeader(
     const mojom::URLLoaderFactoryParams& factory_params) {
   SecFetchSiteValue header_value;
   url::Origin initiator = GetTrustworthyInitiator(
-      factory_params.request_initiator_site_lock, request->initiator());
+      factory_params.request_initiator_origin_lock, request->initiator());
 
   // Browser-initiated requests with no initiator origin, and
   // privileged requests initiated from a "non-webby" context will send

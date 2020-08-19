@@ -1287,7 +1287,8 @@ void RenderWidget::UpdateSurfaceAndScreenInfo(
   // The ViewportVisibleRect derives from the LayerTreeView's viewport size,
   // which is set above.
   layer_tree_host_->SetViewportVisibleRect(ViewportVisibleRect());
-  layer_tree_host_->SetRasterColorSpace(screen_info_.color_space);
+  layer_tree_host_->SetRasterColorSpace(
+      screen_info_.display_color_spaces.GetScreenInfoColorSpace());
 
   if (orientation_changed)
     OnOrientationChange();
@@ -1638,7 +1639,8 @@ void RenderWidget::SetDeviceColorSpaceForTesting(
   layer_tree_host_->RequestNewLocalSurfaceId();
 
   blink::ScreenInfo info = screen_info_;
-  info.color_space = color_space;
+  info.display_color_spaces = gfx::DisplayColorSpaces(color_space);
+
   UpdateSurfaceAndScreenInfo(local_surface_id_allocation_from_parent_,
                              CompositorViewportRect(), info);
 }

@@ -208,7 +208,7 @@ PpapiPluginProcessHost* PluginServiceImpl::FindOrStartPpapiPluginProcess(
     // https://www.chromium.org/flash-roadmap).
     RenderProcessHostImpl::AddCorbExceptionForPlugin(render_process_id);
   } else if (info->permissions & ppapi::PERMISSION_PDF) {
-    // We want to limit ability to bypass |request_initiator_site_lock| to
+    // We want to limit ability to bypass |request_initiator_origin_lock| to
     // trustworthy renderers.  PDF plugin is okay, because it is always hosted
     // by the PDF extension (mhjfbmdgcfjbbpaeojofohoefgiehjai) or
     // chrome://print, both of which we assume are trustworthy (the extension

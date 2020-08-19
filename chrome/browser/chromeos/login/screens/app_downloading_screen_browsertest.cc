@@ -22,8 +22,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/app_downloading_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
-#include "chrome/browser/ui/webui/chromeos/login/user_creation_screen_handler.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "components/arc/arc_prefs.h"
@@ -53,7 +53,7 @@ class AppDownloadingScreenTest : public OobeBaseTest {
 
   void Login() {
     login_manager_.LoginAsNewRegularUser();
-    OobeScreenExitWaiter(UserCreationView::kScreenId).Wait();
+    OobeScreenExitWaiter(GaiaView::kScreenId).Wait();
   }
 
   void ShowAppDownloadingScreen() {

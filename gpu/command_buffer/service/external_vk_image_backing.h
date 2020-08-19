@@ -140,18 +140,6 @@ class ExternalVkImageBacking final : public ClearTrackingSharedImageBacking {
       std::vector<ExternalSemaphore> semaphores);
 
  protected:
-  static std::unique_ptr<ExternalVkImageBacking> CreateInternal(
-      SharedContextState* context_state,
-      VulkanCommandPool* command_pool,
-      const Mailbox& mailbox,
-      viz::ResourceFormat format,
-      const gfx::Size& size,
-      const gfx::ColorSpace& color_space,
-      uint32_t usage,
-      const VulkanImageUsageCache* image_usage_cache,
-      base::span<const uint8_t> pixel_data,
-      bool using_gmb);
-
   void UpdateContent(uint32_t content_flags);
   bool BeginAccessInternal(bool readonly,
                            std::vector<ExternalSemaphore>* external_semaphores);

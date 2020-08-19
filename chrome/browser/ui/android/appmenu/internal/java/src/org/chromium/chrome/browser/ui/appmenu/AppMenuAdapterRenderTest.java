@@ -82,7 +82,7 @@ public class AppMenuAdapterRenderTest extends DummyUiActivityTestCase {
     public void testStandardMenuItem(boolean enabled) throws IOException {
         setRenderTestPrefix(enabled);
         MenuItem item = buildMenuItem(1, TITLE_1, enabled);
-        mRenderTestRule.render(createView(item), "standard");
+        mRenderTestRule.render(createView(item, false), "standard");
     }
 
     @Test
@@ -94,7 +94,19 @@ public class AppMenuAdapterRenderTest extends DummyUiActivityTestCase {
         Drawable icon =
                 AppCompatResources.getDrawable(getActivity(), R.drawable.test_ic_vintage_filter);
         MenuItem item = buildMenuItem(1, TITLE_1, enabled, icon);
-        mRenderTestRule.render(createView(item), "standard_with_icon");
+        mRenderTestRule.render(createView(item, false), "standard_with_icon");
+    }
+
+    @Test
+    @MediumTest
+    @Feature("RenderTest")
+    @ParameterAnnotations.UseMethodParameter(EnabledParams.class)
+    public void testStandardMenuItem_IconBeforeItem(boolean enabled) throws IOException {
+        setRenderTestPrefix(enabled);
+        Drawable icon =
+                AppCompatResources.getDrawable(getActivity(), R.drawable.test_ic_vintage_filter);
+        MenuItem item = buildMenuItem(1, TITLE_1, enabled, icon);
+        mRenderTestRule.render(createView(item, true), "standard_with_icon_before_item");
     }
 
     @Test
@@ -105,8 +117,9 @@ public class AppMenuAdapterRenderTest extends DummyUiActivityTestCase {
         setRenderTestPrefix(enabled);
         Drawable icon =
                 AppCompatResources.getDrawable(getActivity(), R.drawable.test_ic_vintage_filter);
-        MenuItem item = buildTitleMenuItem(1, 2, TITLE_2, 3, TITLE_3, icon, false, false, enabled);
-        mRenderTestRule.render(createView(item), "title_button_icon");
+        MenuItem item =
+                buildTitleMenuItem(1, 2, TITLE_2, 3, TITLE_3, icon, false, false, enabled, null);
+        mRenderTestRule.render(createView(item, false), "title_button_icon");
     }
 
     @Test
@@ -115,8 +128,9 @@ public class AppMenuAdapterRenderTest extends DummyUiActivityTestCase {
     @ParameterAnnotations.UseMethodParameter(EnabledParams.class)
     public void testTitleButtonMenuItem_Checkbox_Checked(boolean enabled) throws IOException {
         setRenderTestPrefix(enabled);
-        MenuItem item = buildTitleMenuItem(1, 2, TITLE_2, 3, TITLE_3, null, true, true, enabled);
-        mRenderTestRule.render(createView(item), "title_button_checkbox_checked");
+        MenuItem item =
+                buildTitleMenuItem(1, 2, TITLE_2, 3, TITLE_3, null, true, true, enabled, null);
+        mRenderTestRule.render(createView(item, false), "title_button_checkbox_checked");
     }
 
     @Test
@@ -125,8 +139,24 @@ public class AppMenuAdapterRenderTest extends DummyUiActivityTestCase {
     @ParameterAnnotations.UseMethodParameter(EnabledParams.class)
     public void testTitleButtonMenuItem_Checkbox_Unchecked(boolean enabled) throws IOException {
         setRenderTestPrefix(enabled);
-        MenuItem item = buildTitleMenuItem(1, 2, TITLE_2, 3, TITLE_3, null, true, false, enabled);
-        mRenderTestRule.render(createView(item), "title_button_checkbox_unchecked");
+        MenuItem item =
+                buildTitleMenuItem(1, 2, TITLE_2, 3, TITLE_3, null, true, false, enabled, null);
+        mRenderTestRule.render(createView(item, false), "title_button_checkbox_unchecked");
+    }
+
+    @Test
+    @MediumTest
+    @Feature("RenderTest")
+    @ParameterAnnotations.UseMethodParameter(EnabledParams.class)
+    public void testTitleButtonMenuItem_Checkbox_Unchecked_IconBeforeItem(boolean enabled)
+            throws IOException {
+        setRenderTestPrefix(enabled);
+        Drawable icon =
+                AppCompatResources.getDrawable(getActivity(), R.drawable.test_ic_vintage_filter);
+        MenuItem item =
+                buildTitleMenuItem(1, 2, TITLE_2, 3, TITLE_3, null, true, false, enabled, icon);
+        mRenderTestRule.render(
+                createView(item, true), "title_button_checkbox_unchecked_icon_before_item");
     }
 
     @Test
@@ -144,7 +174,7 @@ public class AppMenuAdapterRenderTest extends DummyUiActivityTestCase {
         MenuItem item = buildIconRow(1, 2, TITLE_1, icon1, 3, TITLE_2, icon2, 4, TITLE_3, icon3, 0,
                 "", null, 0, "", null, enabled);
 
-        mRenderTestRule.render(createView(item), "iconrow_three_icons");
+        mRenderTestRule.render(createView(item, false), "iconrow_three_icons");
     }
 
     @Test
@@ -163,7 +193,7 @@ public class AppMenuAdapterRenderTest extends DummyUiActivityTestCase {
         MenuItem item = buildIconRow(1, 2, TITLE_1, icon1, 3, TITLE_2, icon2, 4, TITLE_3, icon3, 5,
                 TITLE_4, icon4, 0, "", null, true);
 
-        mRenderTestRule.render(createView(item), "iconrow_four_icons");
+        mRenderTestRule.render(createView(item, false), "iconrow_four_icons");
     }
 
     @Test
@@ -184,18 +214,18 @@ public class AppMenuAdapterRenderTest extends DummyUiActivityTestCase {
         MenuItem item = buildIconRow(1, 2, TITLE_1, icon1, 3, TITLE_2, icon2, 4, TITLE_3, icon3, 5,
                 TITLE_4, icon4, 6, TITLE_5, icon5, true);
 
-        mRenderTestRule.render(createView(item), "iconrow_five_icons");
+        mRenderTestRule.render(createView(item, false), "iconrow_five_icons");
     }
 
     private void setRenderTestPrefix(boolean enabled) {
         mRenderTestRule.setVariantPrefix(enabled ? "Enabled" : "Disabled");
     }
 
-    private View createView(MenuItem item) {
+    private View createView(MenuItem item, boolean iconBeforeMenuItem) {
         List<MenuItem> items = new ArrayList<>();
         items.add(item);
         AppMenuAdapter adapter = new AppMenuAdapter(new AppMenuAdapterTest.TestClickHandler(),
-                items, getActivity().getLayoutInflater(), 0, null);
+                items, getActivity().getLayoutInflater(), 0, null, iconBeforeMenuItem);
 
         // Create a new FrameLayout to set as the main content view.
         FrameLayout parentView = new FrameLayout(getActivity());

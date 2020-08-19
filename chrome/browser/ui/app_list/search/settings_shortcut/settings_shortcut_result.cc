@@ -35,6 +35,7 @@ SettingsShortcutResult::SettingsShortcutResult(
       l10n_util::GetStringUTF16(settings_shortcut.name_string_resource_id));
   // TODO(wutao): create a new display type kSettingsShortcut.
   SetDisplayType(DisplayType::kTile);
+  SetMetricsType(ash::SETTINGS_SHORTCUT);
   SetIcon(gfx::ImageSkiaOperations::CreateResizedImage(
       gfx::CreateVectorIcon(settings_shortcut.vector_icon, kSettingsColor),
       skia::ImageOperations::RESIZE_BEST,
@@ -49,10 +50,6 @@ void SettingsShortcutResult::Open(int event_flags) {
 void SettingsShortcutResult::GetContextMenuModel(
     GetMenuModelCallback callback) {
   std::move(callback).Run(nullptr);
-}
-
-ash::SearchResultType SettingsShortcutResult::GetSearchResultType() const {
-  return ash::SETTINGS_SHORTCUT;
 }
 
 }  // namespace app_list

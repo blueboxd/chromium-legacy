@@ -34,8 +34,6 @@ class AppResult : public ChromeSearchResult, public AppContextMenuDelegate {
 
   const std::string& app_id() const { return app_id_; }
 
-  ash::SearchResultType GetSearchResultType() const override;
-
   base::WeakPtr<AppResult> GetWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
   }

@@ -4,9 +4,11 @@
 
 #include "remoting/host/file_transfer/ipc_file_operations.h"
 
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -18,6 +20,7 @@
 #include "remoting/host/file_transfer/fake_file_chooser.h"
 #include "remoting/host/file_transfer/local_file_operations.h"
 #include "remoting/host/file_transfer/session_file_operations_handler.h"
+#include "remoting/host/file_transfer/test_byte_vector_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace remoting {
@@ -61,7 +64,8 @@ class IpcTestBridge : public IpcFileOperations::RequestHandler,
                  const base::FilePath& filename) override {
     session_file_operations_handler_.WriteFile(file_id, filename);
   }
-  void WriteChunk(std::uint64_t file_id, std::string data) override {
+  void WriteChunk(std::uint64_t file_id,
+                  std::vector<std::uint8_t> data) override {
     session_file_operations_handler_.WriteChunk(file_id, std::move(data));
   }
   void Close(std::uint64_t file_id) override {
@@ -108,9 +112,12 @@ class IpcFileOperationsTest : public testing::Test {
  protected:
   const base::FilePath kTestFilename =
       base::FilePath::FromUTF8Unsafe("test-file.txt");
-  const std::string kTestDataOne = "this is the first test string";
-  const std::string kTestDataTwo = "this is the second test string";
-  const std::string kTestDataThree = "this is the third test string";
+  const std::vector<std::uint8_t> kTestDataOne =
+      ByteArrayFrom("this is the first test string");
+  const std::vector<std::uint8_t> kTestDataTwo =
+      ByteArrayFrom("this is the second test string");
+  const std::vector<std::uint8_t> kTestDataThree =
+      ByteArrayFrom("this is the third test string");
 
   base::FilePath TestDir();
 
@@ -179,7 +186,8 @@ TEST_F(IpcFileOperationsTest, WritesThreeChunks) {
   std::string actual_file_data;
   ASSERT_TRUE(base::ReadFileToString(TestDir().Append(kTestFilename),
                                      &actual_file_data));
-  EXPECT_EQ(kTestDataOne + kTestDataTwo + kTestDataThree, actual_file_data);
+  EXPECT_EQ(ByteArrayFrom(kTestDataOne, kTestDataTwo, kTestDataThree),
+            ByteArrayFrom(actual_file_data));
 }
 
 // Verifies that dropping early cancels the remote writer.
@@ -225,7 +233,7 @@ TEST_F(IpcFileOperationsTest, CancelsWhileOperationPending) {
   ASSERT_TRUE(open_result && *open_result);
 
   base::Optional<FileOperations::Writer::Result> write_result;
-  writer->WriteChunk(std::string(kTestDataOne),
+  writer->WriteChunk(kTestDataOne,
                      BindLambda([&](FileOperations::Writer::Result result) {
                        write_result = std::move(result);
                      }));
@@ -241,9 +249,12 @@ TEST_F(IpcFileOperationsTest, CancelsWhileOperationPending) {
 // Verifies that a file can be successfully read in three chunks.
 TEST_F(IpcFileOperationsTest, ReadsThreeChunks) {
   base::FilePath path = TestDir().Append(kTestFilename);
-  std::string contents = kTestDataOne + kTestDataTwo + kTestDataThree;
-  ASSERT_EQ(static_cast<int>(contents.size()),
-            base::WriteFile(path, contents.data(), contents.size()));
+  std::vector<std::uint8_t> contents =
+      ByteArrayFrom(kTestDataOne, kTestDataTwo, kTestDataThree);
+  ASSERT_EQ(
+      static_cast<int>(contents.size()),
+      base::WriteFile(path, reinterpret_cast<const char*>(contents.data()),
+                      contents.size()));
 
   std::unique_ptr<FileOperations::Reader> reader =
       file_operations_->CreateReader();
@@ -280,9 +291,12 @@ TEST_F(IpcFileOperationsTest, ReadsThreeChunks) {
 TEST_F(IpcFileOperationsTest, ReaderHandlesEof) {
   constexpr std::size_t kOverreadAmount = 5;
   base::FilePath path = TestDir().Append(kTestFilename);
-  std::string contents = kTestDataOne + kTestDataTwo + kTestDataThree;
-  ASSERT_EQ(static_cast<int>(contents.size()),
-            base::WriteFile(path, contents.data(), contents.size()));
+  std::vector<std::uint8_t> contents =
+      ByteArrayFrom(kTestDataOne, kTestDataTwo, kTestDataThree);
+  ASSERT_EQ(
+      static_cast<int>(contents.size()),
+      base::WriteFile(path, reinterpret_cast<const char*>(contents.data()),
+                      contents.size()));
 
   std::unique_ptr<FileOperations::Reader> reader =
       file_operations_->CreateReader();

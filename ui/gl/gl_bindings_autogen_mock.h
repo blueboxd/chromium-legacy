@@ -2088,6 +2088,16 @@ static void GL_BINDING_CALL Mock_glTexStorageMem2DEXT(GLenum target,
                                                       GLsizei height,
                                                       GLuint memory,
                                                       GLuint64 offset);
+static void GL_BINDING_CALL
+Mock_glTexStorageMemFlags2DANGLE(GLenum target,
+                                 GLsizei levels,
+                                 GLenum internalFormat,
+                                 GLsizei width,
+                                 GLsizei height,
+                                 GLuint memory,
+                                 GLuint64 offset,
+                                 GLbitfield createFlags,
+                                 GLbitfield usageFlags);
 static void GL_BINDING_CALL Mock_glTexSubImage2D(GLenum target,
                                                  GLint level,
                                                  GLint xoffset,

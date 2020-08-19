@@ -179,7 +179,7 @@ SkColor AshColorProvider::GetContentLayerColor(
 AshColorProvider::RippleAttributes AshColorProvider::GetRippleAttributes(
     SkColor bg_color) const {
   const bool is_dark = color_utils::IsDark(bg_color);
-  const SkColor base_color = is_dark ? SK_ColorBLACK : SK_ColorWHITE;
+  const SkColor base_color = is_dark ? SK_ColorWHITE : SK_ColorBLACK;
   const float opacity =
       is_dark ? kLightInkRippleOpacity : kDarkInkRippleOpacity;
   return RippleAttributes(base_color, opacity, opacity);

@@ -523,7 +523,7 @@ Polymer({
    */
   onBackButtonClicked_() {
     if (!this.canGoBack_()) {
-      if (!this.isSaml_ && this.childSpecificSigninFeatureEnabled_) {
+      if (this.childSpecificSigninFeatureEnabled_) {
         this.userActed('back');
       } else {
         this.cancel();

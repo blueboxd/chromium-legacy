@@ -4280,7 +4280,10 @@ gfx::ColorSpace HTMLMediaElement::TargetColorSpace() {
   LocalFrame* frame = GetDocument().GetFrame();
   if (!frame)
     return gfx::ColorSpace();
-  return frame->GetPage()->GetChromeClient().GetScreenInfo(*frame).color_space;
+  return frame->GetPage()
+      ->GetChromeClient()
+      .GetScreenInfo(*frame)
+      .display_color_spaces.GetScreenInfoColorSpace();
 }
 
 bool HTMLMediaElement::WasAutoplayInitiated() {

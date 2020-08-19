@@ -7,12 +7,13 @@
 #ifndef CHROME_BROWSER_PROFILES_PROFILE_IMPL_H_
 #define CHROME_BROWSER_PROFILES_PROFILE_IMPL_H_
 
+#include <map>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "base/time/time.h"
@@ -66,6 +67,8 @@ class ProfileImpl : public Profile {
   // Value written to prefs when the exit type is EXIT_NORMAL. Public for tests.
   static const char kPrefExitTypeNormal[];
 
+  ProfileImpl(const ProfileImpl&) = delete;
+  ProfileImpl& operator=(const ProfileImpl&) = delete;
   ~ProfileImpl() override;
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
@@ -159,9 +162,9 @@ class ProfileImpl : public Profile {
   GURL GetHomePage() override;
   bool WasCreatedByVersionOrLater(const std::string& version) override;
   void SetExitType(ExitType exit_type) override;
-  ExitType GetLastSessionExitType() override;
-  bool ShouldRestoreOldSessionCookies() override;
-  bool ShouldPersistSessionCookies() override;
+  ExitType GetLastSessionExitType() const override;
+  bool ShouldRestoreOldSessionCookies() const override;
+  bool ShouldPersistSessionCookies() const override;
 
 #if defined(OS_CHROMEOS)
   void ChangeAppLocale(const std::string& locale, AppLocaleChangedVia) override;
@@ -327,8 +330,6 @@ class ProfileImpl : public Profile {
 
   scoped_refptr<content::SharedCorsOriginAccessList>
       shared_cors_origin_access_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(ProfileImpl);
 };
 
 #endif  // CHROME_BROWSER_PROFILES_PROFILE_IMPL_H_

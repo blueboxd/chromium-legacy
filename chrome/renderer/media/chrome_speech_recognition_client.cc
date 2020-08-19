@@ -53,12 +53,9 @@ ChromeSpeechRecognitionClient::ChromeSpeechRecognitionClient(
       &ChromeSpeechRecognitionClient::SendAudioToSpeechRecognitionService,
       weak_factory_.GetWeakPtr()));
 
-  speech_recognition_context_.set_disconnect_handler(
+  speech_recognition_context_.set_disconnect_handler(media::BindToCurrentLoop(
       base::BindOnce(&ChromeSpeechRecognitionClient::OnRecognizerDisconnected,
-                     base::Unretained(this)));
-  speech_recognition_recognizer_.set_disconnect_handler(
-      base::BindOnce(&ChromeSpeechRecognitionClient::OnRecognizerDisconnected,
-                     base::Unretained(this)));
+                     weak_factory_.GetWeakPtr())));
   caption_host_.set_disconnect_handler(
       base::BindOnce(&ChromeSpeechRecognitionClient::OnCaptionHostDisconnected,
                      base::Unretained(this)));

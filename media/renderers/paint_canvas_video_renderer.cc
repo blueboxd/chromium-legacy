@@ -719,23 +719,14 @@ class VideoImageGenerator : public cc::PaintImageGenerator {
 
       // Copy the frame to the supplied memory.
       // TODO: Find a way (API change?) to avoid this copy.
-      char* out_line = static_cast<char*>(planes[plane]);
+      uint8_t* out_line = static_cast<uint8_t*>(planes[plane]);
       int out_line_stride = sizeInfo.fWidthBytes[plane];
       uint8_t* in_line = frame_->data(plane) + offset;
       int in_line_stride = frame_->stride(plane);
       int plane_height = sizeInfo.fSizes[plane].height();
-      if (in_line_stride == out_line_stride) {
-        memcpy(out_line, in_line, plane_height * in_line_stride);
-      } else {
-        // Different line padding so need to copy one line at a time.
-        int bytes_to_copy_per_line =
-            out_line_stride < in_line_stride ? out_line_stride : in_line_stride;
-        for (int line_no = 0; line_no < plane_height; line_no++) {
-          memcpy(out_line, in_line, bytes_to_copy_per_line);
-          in_line += in_line_stride;
-          out_line += out_line_stride;
-        }
-      }
+      int bytes_to_copy_per_line = std::min(out_line_stride, in_line_stride);
+      libyuv::CopyPlane(in_line, in_line_stride, out_line, out_line_stride,
+                        bytes_to_copy_per_line, plane_height);
     }
     return true;
   }

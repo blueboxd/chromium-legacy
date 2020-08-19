@@ -166,6 +166,8 @@ class UI_ANDROID_EXPORT ViewAndroid {
   // if page is not scrollable, though this should not be called in that case.
   void OnVerticalScrollDirectionChanged(bool direction_up,
                                         float current_scroll_ratio);
+  void OnControlsResizeViewChanged(bool controls_resize_view);
+  bool ControlsResizeView();
 
   // Gets the Visual Viewport inset to apply in physical pixels.
   int GetViewportInsetBottom();
@@ -299,6 +301,8 @@ class UI_ANDROID_EXPORT ViewAndroid {
 
   // Copy output of View rather than window.
   CopyViewCallback copy_view_callback_;
+
+  bool controls_resize_view_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ViewAndroid);
 };

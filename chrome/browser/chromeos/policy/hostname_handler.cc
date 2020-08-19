@@ -119,8 +119,12 @@ void HostnameHandler::OnDeviceHostnamePropertyChanged() {
 void HostnameHandler::
     OnDeviceHostnamePropertyChangedAndMachineStatisticsLoaded() {
   std::string hostname_template;
-  cros_settings_->GetString(chromeos::kDeviceHostnameTemplate,
-                            &hostname_template);
+  if (!cros_settings_->GetString(chromeos::kDeviceHostnameTemplate,
+                                 &hostname_template)) {
+    // Do not set an empty hostname (which would overwrite any custom hostname
+    // set) if DeviceHostnameTemplate is not specified by policy.
+    return;
+  }
 
   const std::string serial = chromeos::system::StatisticsProvider::GetInstance()
                                  ->GetEnterpriseMachineID();

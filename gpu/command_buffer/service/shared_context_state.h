@@ -154,6 +154,9 @@ class GPU_GLES2_EXPORT SharedContextState
   bool support_vulkan_external_object() const {
     return support_vulkan_external_object_;
   }
+  bool support_gl_external_object_flags() const {
+    return support_gl_external_object_flags_;
+  }
   gpu::MemoryTracker::Observer* memory_tracker_observer() {
     return &memory_tracker_observer_;
   }
@@ -292,6 +295,7 @@ class GPU_GLES2_EXPORT SharedContextState
 
   bool use_virtualized_gl_contexts_ = false;
   bool support_vulkan_external_object_ = false;
+  bool support_gl_external_object_flags_ = false;
   ContextLostCallback context_lost_callback_;
   GrContextType gr_context_type_ = GrContextType::kGL;
   MemoryTrackerObserver memory_tracker_observer_;

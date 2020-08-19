@@ -32,19 +32,6 @@
 
 namespace device {
 
-namespace {
-
-std::unique_ptr<FidoDiscoveryBase> CreateUsbFidoDiscovery() {
-#if defined(OS_ANDROID)
-  NOTREACHED() << "USB HID not supported on Android.";
-  return nullptr;
-#else
-  return std::make_unique<FidoHidDiscovery>();
-#endif  // !defined(OS_ANDROID)
-}
-
-}  // namespace
-
 FidoDiscoveryFactory::FidoDiscoveryFactory() = default;
 FidoDiscoveryFactory::~FidoDiscoveryFactory() = default;
 
@@ -52,7 +39,7 @@ std::unique_ptr<FidoDiscoveryBase> FidoDiscoveryFactory::Create(
     FidoTransportProtocol transport) {
   switch (transport) {
     case FidoTransportProtocol::kUsbHumanInterfaceDevice:
-      return CreateUsbFidoDiscovery();
+      return std::make_unique<FidoHidDiscovery>(hid_ignore_list_);
     case FidoTransportProtocol::kBluetoothLowEnergy:
       return nullptr;
     case FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy:
@@ -104,6 +91,11 @@ void FidoDiscoveryFactory::set_cable_pairing_callback(
     base::RepeatingCallback<void(std::unique_ptr<CableDiscoveryData>)>
         pairing_callback) {
   cable_pairing_callback_.emplace(std::move(pairing_callback));
+}
+
+void FidoDiscoveryFactory::set_hid_ignore_list(
+    base::flat_set<VidPid> hid_ignore_list) {
+  hid_ignore_list_ = std::move(hid_ignore_list);
 }
 
 #if defined(OS_WIN)

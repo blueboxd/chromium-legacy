@@ -958,6 +958,7 @@ gpu::ContextResult GLES2DecoderPassthroughImpl::Initialize(
           "GL_ANGLE_depth_texture",
           "GL_ANGLE_framebuffer_multisample",
           "GL_ANGLE_instanced_arrays",
+          "GL_ANGLE_memory_object_flags",
           "GL_ANGLE_pack_reverse_row_order",
           "GL_ANGLE_texture_compression_dxt1",
           "GL_ANGLE_texture_compression_dxt3",

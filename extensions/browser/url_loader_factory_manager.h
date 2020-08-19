@@ -77,20 +77,20 @@ class URLLoaderFactoryManager {
   // The following examples might help understand the difference between
   // |origin| and other properties of a factory and/or network request:
   //
-  //                               |    web      |  extension  | content script
-  // ------------------------------|-------------|-------------|---------------
-  // network::ResourceRequest:     |             |             |
-  // - request_initiator           |    web      |  extension  |     web
-  // - isolated_world_origin       |   nullopt   |   nullopt   |  extension
-  //                               |             |             |
-  // OverrideFactory...Params:     |             |             |
-  // - origin                      |    web      |  extension  |  extension
-  //                               |             |             |
-  // URLLoaderFactoryParams:       |             |             |
-  // - request_initiator_site_lock |    web      |  extension  |     web
-  // - overridden properties?      |    no       |     yes     |  if needed
-  //    - is_corb_enabled          |  secure     |  ext-based  | ext-based if
-  //    - ..._access_patterns      |    default  |             |   allowlisted
+  //                                 |   web     |  extension  | content script
+  // --------------------------------|-----------|-------------|---------------
+  // network::ResourceRequest:       |           |             |
+  // - request_initiator             |    web    |  extension  |     web
+  // - isolated_world_origin         |  nullopt  |   nullopt   |  extension
+  //                                 |           |             |
+  // OverrideFactory...Params:       |           |             |
+  // - origin                        |    web    |  extension  |  extension
+  //                                 |           |             |
+  // URLLoaderFactoryParams:         |           |             |
+  // - request_initiator_origin_lock |    web    |  extension  |     web
+  // - overridden properties?        |   no      |     yes     |  if needed
+  //    - is_corb_enabled            | secure    |  ext-based  | ext-based if
+  //    - ..._access_patterns        |   default |             |   allowlisted
   static void OverrideURLLoaderFactoryParams(
       content::BrowserContext* browser_context,
       const url::Origin& origin,

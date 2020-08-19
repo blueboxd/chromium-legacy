@@ -21,6 +21,7 @@ import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.privacy.secure_dns.SecureDnsSettings;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.safe_browsing.metrics.SettingsAccessPoint;
 import org.chromium.chrome.browser.safe_browsing.settings.SecuritySettingsFragment;
 import org.chromium.chrome.browser.settings.ChromeManagedPreferenceDelegate;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
@@ -76,9 +77,14 @@ public class PrivacySettings
         // See (go/esb-clank-dd) for more context.
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.SAFE_BROWSING_SECURITY_SECTION_UI)) {
             getActivity().setTitle(R.string.prefs_privacy_security);
-            findPreference(PREF_SAFE_BROWSING)
-                    .setSummary(
-                            SecuritySettingsFragment.getSafeBrowsingSummaryString(getContext()));
+            Preference safeBrowsingPreference = findPreference(PREF_SAFE_BROWSING);
+            safeBrowsingPreference.setSummary(
+                    SecuritySettingsFragment.getSafeBrowsingSummaryString(getContext()));
+            safeBrowsingPreference.setOnPreferenceClickListener((preference) -> {
+                preference.getExtras().putInt(
+                        SecuritySettingsFragment.ACCESS_POINT, SettingsAccessPoint.PARENT_SETTINGS);
+                return false;
+            });
         } else {
             getActivity().setTitle(R.string.prefs_privacy);
             getPreferenceScreen().removePreference(findPreference(PREF_SAFE_BROWSING));

@@ -1,4 +1,4 @@
-CONSOLE WARNING: line 138: 'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.
+CONSOLE WARNING: line 148: 'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.
 Tests property access on a cached DOMWindow after the associated frame is navigated. Test should not crash and properties read from the cached DOMWindow should be identical to properties through the 'current' DOMWindow.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
@@ -229,17 +229,10 @@ PASS oldChildWindow.screen.availTop is newChildWindow.screen.availTop
 PASS oldChildWindow.screen.availWidth is newChildWindow.screen.availWidth
 PASS oldChildWindow.screen.colorDepth is newChildWindow.screen.colorDepth
 PASS oldChildWindow.screen.height is newChildWindow.screen.height
-PASS oldChildWindow.screen.id is newChildWindow.screen.id
-PASS oldChildWindow.screen.internal is newChildWindow.screen.internal
-PASS oldChildWindow.screen.left is newChildWindow.screen.left
 PASS oldChildWindow.screen.orientation.angle is newChildWindow.screen.orientation.angle
 PASS oldChildWindow.screen.orientation.onchange is newChildWindow.screen.orientation.onchange
 PASS oldChildWindow.screen.orientation.type is newChildWindow.screen.orientation.type
 PASS oldChildWindow.screen.pixelDepth is newChildWindow.screen.pixelDepth
-PASS oldChildWindow.screen.primary is newChildWindow.screen.primary
-PASS oldChildWindow.screen.scaleFactor is newChildWindow.screen.scaleFactor
-PASS oldChildWindow.screen.top is newChildWindow.screen.top
-PASS oldChildWindow.screen.touchSupport is newChildWindow.screen.touchSupport
 PASS oldChildWindow.screen.width is newChildWindow.screen.width
 PASS oldChildWindow.screenLeft is newChildWindow.screenLeft
 PASS oldChildWindow.screenTop is newChildWindow.screenTop

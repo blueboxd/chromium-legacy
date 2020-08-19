@@ -142,6 +142,9 @@ class RealTimeUrlLookupServiceBase : public KeyedService {
   // Suffix for logging metrics.
   virtual std::string GetMetricSuffix() const = 0;
 
+  // Returns whether real time URL requests should include credentials.
+  virtual bool ShouldIncludeCredentials() const = 0;
+
   // Returns the duration of the next backoff. Starts at
   // |kMinBackOffResetDurationInSeconds| and increases exponentially until
   // it reaches |kMaxBackOffResetDurationInSeconds|.

@@ -46,9 +46,6 @@ static void ReportToVAJEAEncodeResultUMA(VAJEAEncoderResult result) {
   UMA_HISTOGRAM_ENUMERATION("Media.VAJEA.EncoderResult", result);
 }
 
-static void ReportToVAJEAVppFailureUMA(VAJEAEncoderResult result) {
-  base::UmaHistogramEnumeration("Media.VAJEA.VppFailure", result);
-}
 }  // namespace
 
 VaapiJpegEncodeAccelerator::EncodeRequest::EncodeRequest(
@@ -447,20 +444,20 @@ VaapiJpegEncodeAccelerator::Initialize(
   }
 
   client_ = client;
-  scoped_refptr<VaapiWrapper> vaapi_wrapper =
-      VaapiWrapper::Create(VaapiWrapper::kEncode, VAProfileJPEGBaseline,
-                           base::BindRepeating(&ReportToVAJEAEncodeResultUMA,
-                                               VAJEAEncoderResult::kError));
+  scoped_refptr<VaapiWrapper> vaapi_wrapper = VaapiWrapper::Create(
+      VaapiWrapper::kEncode, VAProfileJPEGBaseline,
+      base::Bind(&ReportVaapiErrorToUMA,
+                 "Media.VaapiJpegEncodeAccelerator.VAAPIError"));
 
   if (!vaapi_wrapper) {
     VLOGF(1) << "Failed initializing VAAPI";
     return PLATFORM_FAILURE;
   }
 
-  scoped_refptr<VaapiWrapper> vpp_vaapi_wrapper =
-      VaapiWrapper::Create(VaapiWrapper::kVideoProcess, VAProfileNone,
-                           base::BindRepeating(&ReportToVAJEAVppFailureUMA,
-                                               VAJEAEncoderResult::kError));
+  scoped_refptr<VaapiWrapper> vpp_vaapi_wrapper = VaapiWrapper::Create(
+      VaapiWrapper::kVideoProcess, VAProfileNone,
+      base::Bind(&ReportVaapiErrorToUMA,
+                 "Media.VaapiJpegEncodeAccelerator.VppVAAPIError"));
   if (!vpp_vaapi_wrapper) {
     VLOGF(1) << "Failed initializing VAAPI wrapper for VPP";
     return PLATFORM_FAILURE;

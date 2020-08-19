@@ -560,7 +560,7 @@ bool OffTheRecordProfileImpl::WasCreatedByVersionOrLater(
   return profile_->WasCreatedByVersionOrLater(version);
 }
 
-Profile::ExitType OffTheRecordProfileImpl::GetLastSessionExitType() {
+Profile::ExitType OffTheRecordProfileImpl::GetLastSessionExitType() const {
   return profile_->GetLastSessionExitType();
 }
 

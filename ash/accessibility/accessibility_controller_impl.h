@@ -458,6 +458,7 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
   void MaybeCreateSwitchAccessEventHandler();
   void ActivateSwitchAccess();
   void DeactivateSwitchAccess();
+  void SyncSwitchAccessPrefsToSignInProfile();
 
   // Client interface in chrome browser.
   AccessibilityControllerClient* client_ = nullptr;

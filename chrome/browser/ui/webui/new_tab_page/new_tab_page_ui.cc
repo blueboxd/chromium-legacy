@@ -281,6 +281,9 @@ NewTabPageUI::NewTabPageUI(content::WebUI* web_ui)
   content::WebUIDataSource::Add(profile_,
                                 KaleidoscopeUI::CreateWebUIDataSource());
 
+  content::WebUIDataSource::Add(
+      profile_, KaleidoscopeUI::CreateUntrustedWebUIDataSource());
+
   web_ui->AddRequestableScheme(content::kChromeUIUntrustedScheme);
 
   instant_service_->AddObserver(this);

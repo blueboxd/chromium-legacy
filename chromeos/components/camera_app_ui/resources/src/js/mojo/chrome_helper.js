@@ -61,6 +61,22 @@ export class ChromeHelper {
   }
 
   /**
+   * Starts monitor monitoring the existence of external screens.
+   * @param {function(boolean)} onChange Callback called when the existence of
+   *     external screens changes.
+   * @return {!Promise<boolean>} Resolved to the initial state.
+   */
+  async initExternalScreenMonitor(onChange) {
+    const monitorCallbackRouter =
+        new chromeosCamera.mojom.ExternalScreenMonitorCallbackRouter();
+    monitorCallbackRouter.update.addListener(onChange);
+
+    return (await this.remote_.setExternalScreenMonitor(
+                monitorCallbackRouter.$.bindNewPipeAndPassRemote()))
+        .hasExternalScreen;
+  }
+
+  /**
    * Checks if the device is under tablet mode currently.
    * @return {!Promise<boolean>}
    */

@@ -75,7 +75,8 @@ class COMPONENT_EXPORT(VULKAN) VulkanImage {
       VkDeviceSize device_size,
       uint32_t memory_type_index,
       base::Optional<VulkanYCbCrInfo>& ycbcr_info,
-      VkImageCreateFlags flags = 0);
+      VkImageUsageFlags usage,
+      VkImageCreateFlags flags);
 
   void Destroy();
 
@@ -98,6 +99,7 @@ class COMPONENT_EXPORT(VULKAN) VulkanImage {
   const gfx::Size& size() const { return size_; }
   VkFormat format() const { return format_; }
   VkImageCreateFlags flags() const { return flags_; }
+  VkImageUsageFlags usage() const { return usage_; }
   VkDeviceSize device_size() const { return device_size_; }
   uint32_t memory_type_index() const { return memory_type_index_; }
   VkImageTiling image_tiling() const { return image_tiling_; }
@@ -141,6 +143,7 @@ class COMPONENT_EXPORT(VULKAN) VulkanImage {
   gfx::Size size_;
   VkFormat format_ = VK_FORMAT_UNDEFINED;
   VkImageCreateFlags flags_ = 0;
+  VkImageUsageFlags usage_ = 0;
   VkDeviceSize device_size_ = 0;
   uint32_t memory_type_index_ = 0;
   VkImageTiling image_tiling_ = VK_IMAGE_TILING_OPTIMAL;

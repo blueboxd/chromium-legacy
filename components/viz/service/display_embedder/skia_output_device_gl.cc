@@ -28,6 +28,7 @@
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface.h"
+#include "ui/gl/gl_switches.h"
 #include "ui/gl/gl_utils.h"
 #include "ui/gl/gl_version_info.h"
 
@@ -52,6 +53,15 @@ SkiaOutputDeviceGL::SkiaOutputDeviceGL(
   capabilities_.uses_default_gl_framebuffer = true;
   capabilities_.output_surface_origin = gl_surface_->GetOrigin();
   capabilities_.supports_post_sub_buffer = gl_surface_->SupportsPostSubBuffer();
+#if defined(OS_WIN)
+  if (base::FeatureList::IsEnabled(
+          features::kDirectCompositionForceFullDamage)) {
+    // We need to set this bit to allow viz to track the previous damage rect
+    // of a backbuffer in a multiple backbuffer system, so backbuffers always
+    // have valid pixels, even outside the current damage rect.
+    capabilities_.preserve_buffer_content = true;
+  }
+#endif  // OS_WIN
   if (feature_info->workarounds()
           .disable_post_sub_buffers_for_onscreen_surfaces) {
     capabilities_.supports_post_sub_buffer = false;

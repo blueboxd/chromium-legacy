@@ -113,42 +113,6 @@ enum HorizontalHeaderFooterPosition { LEFT, CENTER, RIGHT };
 // Specifies the vertical alignment of the Headers and Footers.
 enum VerticalHeaderFooterPosition { TOP, BOTTOM };
 
-// Print job color mode values.
-enum ColorModel {
-  UNKNOWN_COLOR_MODEL,
-  GRAY,
-  COLOR,
-  CMYK,
-  CMY,
-  KCMY,
-  CMY_K,  // CMY_K represents CMY+K.
-  BLACK,
-  GRAYSCALE,
-  RGB,
-  RGB16,
-  RGBA,
-  COLORMODE_COLOR,              // Used in Samsung printer PPDs.
-  COLORMODE_MONOCHROME,         // Used in Samsung printer PPDs.
-  HP_COLOR_COLOR,               // Used in HP color printer PPDs.
-  HP_COLOR_BLACK,               // Used in HP color printer PPDs.
-  PRINTOUTMODE_NORMAL,          // Used in Foomatic PPDs.
-  PRINTOUTMODE_NORMAL_GRAY,     // Used in Foomatic PPDs.
-  PROCESSCOLORMODEL_CMYK,       // Used in Canon printer PPDs.
-  PROCESSCOLORMODEL_GREYSCALE,  // Used in Canon printer PPDs.
-  PROCESSCOLORMODEL_RGB,        // Used in Canon printer PPDs
-  BROTHER_CUPS_COLOR,           // Used in Brother color laser printer PPDs.
-  BROTHER_CUPS_MONO,            // Used in Brother color laser printer PPDs.
-  BROTHER_BRSCRIPT3_COLOR,      // Used in Brother BRScript3 color printer PPDs.
-  BROTHER_BRSCRIPT3_BLACK,      // Used in Brother BRScript3 color printer PPDs.
-  EPSON_INK_COLOR,              // Used in Epson printer PPDs.
-  EPSON_INK_MONO,               // Used in Epson printer PPDs.
-  SHARP_ARCMODE_CMCOLOR,        // Used in Sharp printer PPDs.
-  SHARP_ARCMODE_CMBW,           // Used in Sharp printer PPDs.
-  XEROX_XRXCOLOR_AUTOMATIC,     // Used in Xerox printer PPDs.
-  XEROX_XRXCOLOR_BW,            // Used in Xerox printer PPDs.
-  COLOR_MODEL_LAST = XEROX_XRXCOLOR_BW
-};
-
 // Must match print_preview.ScalingType in
 // chrome/browser/resources/print_preview/data/scaling.js
 enum ScalingType {

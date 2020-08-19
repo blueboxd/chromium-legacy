@@ -26,7 +26,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_GEOMETRY_MAP_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_GEOMETRY_MAP_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/core/layout/layout_geometry_map_step.h"
@@ -50,6 +49,8 @@ class CORE_EXPORT LayoutGeometryMap {
 
  public:
   LayoutGeometryMap(MapCoordinatesFlags = 0);
+  LayoutGeometryMap(const LayoutGeometryMap&) = delete;
+  LayoutGeometryMap& operator=(const LayoutGeometryMap&) = delete;
   ~LayoutGeometryMap();
 
   MapCoordinatesFlags GetMapCoordinatesFlags() const {
@@ -125,8 +126,6 @@ class CORE_EXPORT LayoutGeometryMap {
   LayoutGeometryMapSteps mapping_;
   PhysicalOffset accumulated_offset_;
   MapCoordinatesFlags map_coordinates_flags_;
-
-  DISALLOW_COPY_AND_ASSIGN(LayoutGeometryMap);
 };
 
 }  // namespace blink

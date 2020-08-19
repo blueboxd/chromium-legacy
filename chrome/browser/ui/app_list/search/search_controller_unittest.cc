@@ -28,11 +28,6 @@ class TestSearchResult : public ChromeSearchResult {
   ~TestSearchResult() override = default;
 
  private:
-  // ChromeSearchResult:
-  ash::SearchResultType GetSearchResultType() const override {
-    return ash::SearchResultType::SEARCH_RESULT_TYPE_BOUNDARY;
-  }
-
   void Open(int event_flags) override { NOTIMPLEMENTED(); }
 };
 

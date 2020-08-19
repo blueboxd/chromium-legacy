@@ -89,10 +89,6 @@ class WebAppInstallFinalizer final : public InstallFinalizer {
       std::string old_name,
       const WebApplicationInfo& web_app_info,
       bool success);
-  void OnFallbackInstallFinalized(const AppId& app_in_sync_install_id,
-                                  InstallFinalizedCallback callback,
-                                  const AppId& installed_app_id,
-                                  InstallResultCode code);
 
   WebAppRegistrar& GetWebAppRegistrar() const;
 

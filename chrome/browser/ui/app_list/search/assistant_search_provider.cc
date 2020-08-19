@@ -79,6 +79,7 @@ class AssistantSearchResult : public ChromeSearchResult {
     SetDisplayIndex(ash::SearchResultDisplayIndex::kFirstIndex);
     SetDisplayType(ash::SearchResultDisplayType::kChip);
     SetResultType(ash::AppListSearchResultType::kAssistantChip);
+    SetMetricsType(ash::SearchResultType::ASSISTANT);
     SetTitle(base::UTF8ToUTF16(conversation_starter.text));
     SetChipIcon(gfx::CreateVectorIcon(
         ash::kAssistantIcon,
@@ -97,11 +98,6 @@ class AssistantSearchResult : public ChromeSearchResult {
   ~AssistantSearchResult() override = default;
 
  private:
-  // ChromeSearchResult:
-  ash::SearchResultType GetSearchResultType() const override {
-    return ash::SearchResultType::ASSISTANT;
-  }
-
   void Open(int event_flags) override {
     // Opening of |action_url_| is delegated to the Assistant controller as only
     // the Assistant controller knows how to handle Assistant deep links.

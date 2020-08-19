@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/format_utils.h"
@@ -21,6 +22,7 @@
 #include "media/gpu/macros.h"
 #include "media/gpu/vaapi/h264_vaapi_video_decoder_delegate.h"
 #include "media/gpu/vaapi/va_surface.h"
+#include "media/gpu/vaapi/vaapi_utils.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
 #include "media/gpu/vaapi/vp8_vaapi_video_decoder_delegate.h"
 #include "media/gpu/vaapi/vp9_vaapi_video_decoder_delegate.h"
@@ -151,7 +153,10 @@ void VaapiVideoDecoder::Initialize(const VideoDecoderConfig& config,
   // Initialize VAAPI wrapper.
   VideoCodecProfile profile = config.profile();
   vaapi_wrapper_ = VaapiWrapper::CreateForVideoCodec(
-      VaapiWrapper::kDecode, profile, base::DoNothing());
+      VaapiWrapper::kDecode, profile,
+      base::Bind(&ReportVaapiErrorToUMA, "Media.VaapiVideoDecoder.VAAPIError"));
+  UMA_HISTOGRAM_BOOLEAN("Media.VaapiVideoDecoder.VaapiWrapperCreationSuccess",
+                        vaapi_wrapper_.get());
   if (!vaapi_wrapper_.get()) {
     VLOGF(1) << "Failed initializing VAAPI for profile "
              << GetProfileName(profile);
@@ -279,6 +284,7 @@ void VaapiVideoDecoder::HandleDecodeTask() {
       break;
     case AcceleratedVideoDecoder::kDecodeError:
       LOG(ERROR) << "Error decoding stream";
+      UMA_HISTOGRAM_BOOLEAN("Media.VaapiVideoDecoder.DecodeError", true);
       SetState(State::kError);
       break;
     case AcceleratedVideoDecoder::kTryAgain:
@@ -456,7 +462,9 @@ void VaapiVideoDecoder::ApplyResolutionChange() {
     // When a profile is changed, we need to re-initialize VaapiWrapper.
     profile_ = decoder_->GetProfile();
     auto new_vaapi_wrapper = VaapiWrapper::CreateForVideoCodec(
-        VaapiWrapper::kDecode, profile_, base::DoNothing());
+        VaapiWrapper::kDecode, profile_,
+        base::Bind(&ReportVaapiErrorToUMA,
+                   "Media.VaapiVideoDecoder.VAAPIError"));
     if (!new_vaapi_wrapper.get()) {
       DLOG(WARNING) << "Failed creating VaapiWrapper";
       SetState(State::kError);

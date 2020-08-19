@@ -56,7 +56,7 @@ const base::Feature kDelayRequestsOnMultiplexedConnections{
 
 // When kRequestInitiatorSiteLock is enabled, then CORB, CORP and Sec-Fetch-Site
 // will validate network::ResourceRequest::request_initiator against
-// network::mojom::URLLoaderFactoryParams::request_initiator_site_lock.
+// network::mojom::URLLoaderFactoryParams::request_initiator_origin_lock.
 const base::Feature kRequestInitiatorSiteLock{"RequestInitiatorSiteLock",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -180,7 +180,7 @@ const char kCorbAllowlistAlsoAppliesToOorCorsParamName[] =
     "AllowlistForCorbAndCors";
 
 // Controls whether a |request_initiator| that mismatches
-// |request_initiator_site_lock| leads to 1) failing the HTTP request and 2)
+// |request_initiator_origin_lock| leads to 1) failing the HTTP request and 2)
 // calling mojo::ReportBadMessage (on desktop platforms, where NetworkService
 // is hosted outside of the Browser process, this leads to DumpWithoutCrashing
 // and does *not* lead to a renderer kill).

@@ -86,6 +86,8 @@ class ASH_EXPORT UnifiedSystemTrayController
   void ShowLocaleDetailedView();
   // Show the detailed view of audio. Called from the view.
   void ShowAudioDetailedView();
+  // Show the detailed view for dark mode. Called from the feature pod button.
+  void ShowDarkModeDetailedView();
   // Show the detailed view of notifier settings. Called from the view.
   void ShowNotifierSettingsView();
 

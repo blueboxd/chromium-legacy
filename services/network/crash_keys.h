@@ -15,7 +15,7 @@ struct ResourceRequest;
 
 namespace debug {
 
-base::debug::CrashKeyString* GetRequestInitiatorSiteLockCrashKey();
+base::debug::CrashKeyString* GetRequestInitiatorOriginLockCrashKey();
 
 class ScopedRequestCrashKeys {
  public:

@@ -27,6 +27,9 @@ struct NativePixmapAndSizeInfo;
 class ScopedVASurface;
 class VaapiWrapper;
 
+enum class VaapiFunctions;
+using ReportErrorToUMACB = base::RepeatingCallback<void(VaapiFunctions)>;
+
 struct VAContextAndScopedVASurfaceDeleter {
   void operator()(ScopedVASurface* scoped_va_surface) const;
 };
@@ -60,7 +63,7 @@ class VaapiImageDecoder {
 
   // Initializes |vaapi_wrapper_| in kDecode mode with the
   // appropriate VAAPI profile and |error_uma_cb| for error reporting.
-  virtual bool Initialize(const base::RepeatingClosure& error_uma_cb);
+  virtual bool Initialize(const ReportErrorToUMACB& error_uma_cb);
 
   // Decodes a picture. It will fill VA-API parameters and call the
   // corresponding VA-API methods according to the image in |encoded_image|.

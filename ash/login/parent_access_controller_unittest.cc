@@ -189,7 +189,7 @@ TEST_F(ParentAccessControllerTest, ParentAccessUMARecording) {
 
   GetSessionControllerClient()->SetSessionState(
       session_manager::SessionState::LOGIN_PRIMARY);
-  StartParentAccess(ParentAccessRequestReason::kOnlineLogin);
+  StartParentAccess(ParentAccessRequestReason::kReauth);
   histogram_tester_.ExpectBucketCount(
       ParentAccessController::kUMAParentAccessCodeUsage,
       ParentAccessController::UMAUsage::kReauhLoginScreen, 1);
@@ -199,7 +199,7 @@ TEST_F(ParentAccessControllerTest, ParentAccessUMARecording) {
 
   GetSessionControllerClient()->SetSessionState(
       session_manager::SessionState::LOGIN_PRIMARY);
-  StartParentAccess(EmptyAccountId(), ParentAccessRequestReason::kOnlineLogin);
+  StartParentAccess(EmptyAccountId(), ParentAccessRequestReason::kAddUser);
   histogram_tester_.ExpectBucketCount(
       ParentAccessController::kUMAParentAccessCodeUsage,
       ParentAccessController::UMAUsage::kAddUserLoginScreen, 1);

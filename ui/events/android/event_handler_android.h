@@ -30,6 +30,7 @@ class EVENTS_EXPORT EventHandlerAndroid {
   virtual void OnSizeChanged();
   virtual void OnPhysicalBackingSizeChanged();
   virtual void OnBrowserControlsHeightChanged();
+  virtual void OnControlsResizeViewChanged();
 
   virtual bool OnGenericMotionEvent(const MotionEventAndroid& event);
   virtual bool OnKeyUp(const KeyEventAndroid& event);

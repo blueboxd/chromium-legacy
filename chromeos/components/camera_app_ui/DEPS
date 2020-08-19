@@ -5,5 +5,6 @@ include_rules = [
   "+content/public/browser",
   "+media/capture/video/chromeos",
   "+ui/aura",
+  "+ui/display",
   "+ui/webui",
 ]

@@ -301,7 +301,7 @@ void FetchRespondWithObserver::OnResponseFulfilled(
     // which is a client of the service worker.
     //
     // Here is in the renderer and we don't have a "trustworthy" initiator.
-    // Hence we provide |initiator_origin| as |request_initiator_site_lock|.
+    // Hence we provide |initiator_origin| as |request_initiator_origin_lock|.
     auto initiator_origin =
         url::Origin::Create(GURL(service_worker_global_scope->Url()));
     // |corp_checker_| could be nullptr when the request is for a main resource

@@ -45,6 +45,7 @@ struct PP_PdfPrintSettings_Dev;
 class SkBitmap;
 
 namespace gfx {
+class Point;
 class Rect;
 class Size;
 class Vector2d;
@@ -146,7 +147,7 @@ class PDFEngine {
                            bool compensate_for_toolbar) {}
 
     // Scroll by a given delta relative to the current position.
-    virtual void ScrollBy(const pp::Point& point) {}
+    virtual void ScrollBy(const gfx::Vector2d& scroll_delta) {}
 
     // Scroll to zero-based |page|.
     virtual void ScrollToPage(int page) {}
@@ -323,7 +324,7 @@ class PDFEngine {
   // Most of these functions are similar to the Pepper functions of the same
   // name, so not repeating the description here unless it's different.
   virtual bool New(const char* url, const char* headers) = 0;
-  virtual void PageOffsetUpdated(const pp::Point& page_offset) = 0;
+  virtual void PageOffsetUpdated(const gfx::Point& page_offset) = 0;
   virtual void PluginSizeUpdated(const gfx::Size& size) = 0;
   virtual void ScrolledToXPosition(int position) = 0;
   virtual void ScrolledToYPosition(int position) = 0;
@@ -378,7 +379,7 @@ class PDFEngine {
   // Handles actions invoked by Accessibility clients.
   virtual void HandleAccessibilityAction(
       const PP_PdfAccessibilityActionData& action_data) = 0;
-  virtual std::string GetLinkAtPosition(const pp::Point& point) = 0;
+  virtual std::string GetLinkAtPosition(const gfx::Point& point) = 0;
   // Checks the permissions associated with this document.
   virtual bool HasPermission(DocumentPermission permission) const = 0;
   virtual void SelectAll() = 0;
@@ -396,7 +397,7 @@ class PDFEngine {
   // Gets metadata about the document.
   virtual const DocumentMetadata& GetDocumentMetadata() const = 0;
   // Gets the number of pages in the document.
-  virtual int GetNumberOfPages() = 0;
+  virtual int GetNumberOfPages() const = 0;
   // Gets the named destination by name.
   virtual base::Optional<PDFEngine::NamedDestination> GetNamedDestination(
       const std::string& destination) = 0;
@@ -468,10 +469,10 @@ class PDFEngine {
 
   virtual std::vector<uint8_t> GetSaveData() = 0;
 
-  virtual void SetCaretPosition(const pp::Point& position) = 0;
-  virtual void MoveRangeSelectionExtent(const pp::Point& extent) = 0;
-  virtual void SetSelectionBounds(const pp::Point& base,
-                                  const pp::Point& extent) = 0;
+  virtual void SetCaretPosition(const gfx::Point& position) = 0;
+  virtual void MoveRangeSelectionExtent(const gfx::Point& extent) = 0;
+  virtual void SetSelectionBounds(const gfx::Point& base,
+                                  const gfx::Point& extent) = 0;
   virtual void GetSelection(uint32_t* selection_start_page_index,
                             uint32_t* selection_start_char_index,
                             uint32_t* selection_end_page_index,

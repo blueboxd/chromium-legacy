@@ -18,7 +18,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 
-constexpr int32_t kTFLitePredictorEvaluationLoop = 10;
+constexpr int kHistogramBucketSize = 1001;
 
 namespace {
 
@@ -66,18 +66,32 @@ void TFLiteExperimentObserver::DidFinishNavigation(
   if (is_tflite_evaluated_)
     return;
 
-  base::TimeTicks t1 = base::TimeTicks::Now();
+  auto create_predictor_input_start_time(base::TimeTicks::Now());
   CreatePredictorInputForTesting();
-  base::TimeTicks t2 = base::TimeTicks::Now();
-  // Run evaluation for |kTFLitePredictorEvaluationLoop| times and report
-  // average time.
-  for (int i = 0; i < kTFLitePredictorEvaluationLoop; i++)
-    tflite_predictor_->Evaluate();
-  base::TimeTicks t3 = base::TimeTicks::Now();
+  auto create_predictor_input_end_time(base::TimeTicks::Now());
 
-  log_dict_.SetIntKey("input_set_time", (t2 - t1).InMicroseconds());
-  log_dict_.SetIntKey("evaluation_time", (t3 - t2).InMilliseconds() /
-                                             kTFLitePredictorEvaluationLoop);
+  LOCAL_HISTOGRAM_CUSTOM_TIMES(
+      "TFLiteExperiment.Observer.TFLitePredictor.InputSetTime",
+      create_predictor_input_end_time - create_predictor_input_start_time,
+      base::TimeDelta::FromMilliseconds(0), base::TimeDelta::FromSeconds(1),
+      kHistogramBucketSize);
+
+  // Run evaluation report histogram and log time.
+  auto predictor_eval_start_time(base::TimeTicks::Now());
+  tflite_predictor_->Evaluate();
+  auto predictor_eval_end_time(base::TimeTicks::Now());
+  const base::TimeDelta evaluation_time =
+      predictor_eval_end_time - predictor_eval_start_time;
+  LOCAL_HISTOGRAM_CUSTOM_TIMES(
+      "TFLiteExperiment.Observer.TFLitePredictor.EvaluationTime",
+      evaluation_time, base::TimeDelta::FromMilliseconds(0),
+      base::TimeDelta::FromSeconds(1), kHistogramBucketSize);
+
+  // Record timing in TFLite experiment log file in addition to histogram.
+  log_dict_.SetIntKey("input_set_time_ms", (create_predictor_input_end_time -
+                                            create_predictor_input_start_time)
+                                               .InMilliseconds());
+  log_dict_.SetIntKey("evaluation_time_ms", evaluation_time.InMilliseconds());
 
   is_tflite_evaluated_ = true;
   LOCAL_HISTOGRAM_BOOLEAN(

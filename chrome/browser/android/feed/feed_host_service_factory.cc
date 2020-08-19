@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"
@@ -28,6 +29,7 @@
 #include "components/feed/core/feed_logging_metrics.h"
 #include "components/feed/core/feed_networking_host.h"
 #include "components/feed/core/feed_scheduler_host.h"
+#include "components/feed/feed_feature_list.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_context.h"
@@ -71,6 +73,9 @@ FeedHostServiceFactory::~FeedHostServiceFactory() = default;
 
 KeyedService* FeedHostServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
+  // Code here is not compatible with V2.
+  DCHECK(!base::FeatureList::IsEnabled(feed::kInterestFeedV2));
+
   Profile* profile = Profile::FromBrowserContext(context);
 
   content::StoragePartition* storage_partition =

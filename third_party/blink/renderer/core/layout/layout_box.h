@@ -25,7 +25,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
@@ -68,6 +67,8 @@ using SnapAreaSet = HashSet<LayoutBox*>;
 struct LayoutBoxRareData final : public GarbageCollected<LayoutBoxRareData> {
  public:
   LayoutBoxRareData();
+  LayoutBoxRareData(const LayoutBoxRareData&) = delete;
+  LayoutBoxRareData& operator=(const LayoutBoxRareData&) = delete;
 
   void Trace(Visitor* visitor) const;
 
@@ -116,8 +117,6 @@ struct LayoutBoxRareData final : public GarbageCollected<LayoutBoxRareData> {
   // object for this box that web developers can query style, and perform
   // layout upon. Only created if IsCustomItem() is true.
   Member<CustomLayoutChild> layout_child_;
-
-  DISALLOW_COPY_AND_ASSIGN(LayoutBoxRareData);
 };
 
 // LayoutBox implements the full CSS box model.

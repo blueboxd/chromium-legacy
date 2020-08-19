@@ -8,6 +8,7 @@ ExtensionInstallDialogViewInteractiveBrowserTest.*
 ExtensionUninstallDialogViewInteractiveBrowserTest.*
 *EyeDropperBrowserTest.*
 OutdatedUpgradeBubbleTest.*
+SessionCrashedBubbleViewTest.*
 
 # TODO(crbug.com/1102894): Re-enable the following tests.
 # FeaturePromoDialogTest.*
@@ -24,7 +25,6 @@ OutdatedUpgradeBubbleTest.*
 # RelaunchRequiredDialogViewDialogTest.*
 # ReopenTabPromoControllerDialogBrowserTest.*
 # ScreenCaptureNotificationUiBrowserTest.*
-# SessionCrashedBubbleViewTest.*
 # TabGroupEditorBubbleViewDialogBrowserTest.*
 # TabHoverCardBubbleViewBrowserTest.*
 # UpdateRecommendedDialogTest.*

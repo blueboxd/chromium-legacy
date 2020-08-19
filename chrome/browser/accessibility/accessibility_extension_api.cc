@@ -45,6 +45,7 @@
 #include "ash/public/cpp/window_tree_host_lookup.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/arc/accessibility/arc_accessibility_helper_bridge.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes_util.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ui_base_features.h"
@@ -81,8 +82,11 @@ AccessibilityPrivateOpenSettingsSubpageFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params);
 
 #if defined(OS_CHROMEOS)
+  // TODO(chrome-a11y-core): we can't open a settings page when you're on the
+  // signin profile, but maybe we should notify the user and explain why?
   Profile* profile = chromeos::AccessibilityManager::Get()->profile();
-  if (chromeos::settings::IsOSSettingsSubPage(params->subpage)) {
+  if (!chromeos::ProfileHelper::IsSigninProfile(profile) &&
+      chromeos::settings::IsOSSettingsSubPage(params->subpage)) {
     chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
         profile, params->subpage);
   }

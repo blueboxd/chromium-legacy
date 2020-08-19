@@ -15,6 +15,11 @@ namespace cc {
 
 class AnimationHost;
 
+// Note: If you're creating this as a pair with a FakeLayerTreeHost, consider
+// creating it via FakeLayerTreeHost::InitializeSingleThreaded if your test
+// will use a Proxy or FakeLayerTreeHost::CreateFakeLayerTreeHostImpl if it
+// doesn't use a Proxy. These will ensure we're not accidentally creating
+// multiple HostImpls.
 class FakeLayerTreeHostImpl : public LayerTreeHostImpl {
  public:
   FakeLayerTreeHostImpl(TaskRunnerProvider* task_runner_provider,

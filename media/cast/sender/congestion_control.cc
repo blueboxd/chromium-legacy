@@ -20,6 +20,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/numerics/ranges.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "media/cast/constants.h"
@@ -404,9 +405,9 @@ base::TimeTicks AdaptiveCongestionControl::EstimatedSendingTime(
 
 int AdaptiveCongestionControl::GetBitrate(base::TimeTicks playout_time,
                                           base::TimeDelta playout_delay) {
-  double safe_bitrate = CalculateSafeBitrate();
+  const double safe_bitrate = CalculateSafeBitrate();
   // Estimate when we might start sending the next frame.
-  base::TimeDelta time_to_catch_up =
+  const base::TimeDelta time_to_catch_up =
       playout_time -
       EstimatedSendingTime(last_enqueued_frame_ + 1, safe_bitrate);
 
@@ -414,17 +415,16 @@ int AdaptiveCongestionControl::GetBitrate(base::TimeTicks playout_time,
   empty_buffer_fraction = std::min(empty_buffer_fraction, 1.0);
   empty_buffer_fraction = std::max(empty_buffer_fraction, 0.0);
 
-  int bits_per_second = base::ClampRound(safe_bitrate * empty_buffer_fraction /
-                                         kTargetEmptyBufferFraction);
+  const int bits_per_second = base::ClampRound(
+      safe_bitrate * (empty_buffer_fraction / kTargetEmptyBufferFraction));
   VLOG(3) << " FBR:" << (bits_per_second / 1E6)
           << " EBF:" << empty_buffer_fraction
           << " SBR:" << (safe_bitrate / 1E6);
   TRACE_COUNTER_ID1("cast.stream", "Empty Buffer Fraction", this,
                     empty_buffer_fraction);
-  bits_per_second = std::max(bits_per_second, min_bitrate_configured_);
-  bits_per_second = std::min(bits_per_second, max_bitrate_configured_);
 
-  return bits_per_second;
+  return base::ClampToRange(bits_per_second, min_bitrate_configured_,
+                            max_bitrate_configured_);
 }
 
 }  // namespace cast

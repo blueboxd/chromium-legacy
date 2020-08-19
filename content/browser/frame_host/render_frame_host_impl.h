@@ -2088,7 +2088,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   //
   // TODO(lukasza): Rename and make it more general purpose if we find more
   // cases where this origin needs to be used instead of GetLastCommittedOrigin
-  // - currently URLLoaderFactory/request_initiator_site_lock computations are
+  // - currently URLLoaderFactory/request_initiator_origin_lock computations are
   // the only known case.  See also https://crbug.com/1047436#c1.
   url::Origin GetExpectedMainWorldOriginForUrlLoaderFactory();
 

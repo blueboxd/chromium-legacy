@@ -13,9 +13,15 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "media/filters/ivf_parser.h"
+#include "media/gpu/vaapi/test/vaapi_device.h"
+#include "media/gpu/vaapi/test/video_decoder.h"
+#include "media/gpu/vaapi/test/vp9_decoder.h"
 #include "media/gpu/vaapi/va_stubs.h"
 #include "ui/gfx/geometry/size.h"
 
+using media::vaapi_test::VaapiDevice;
+using media::vaapi_test::VideoDecoder;
+using media::vaapi_test::Vp9Decoder;
 using media_gpu_vaapi::InitializeStubs;
 using media_gpu_vaapi::kModuleVa;
 using media_gpu_vaapi::kModuleVa_drm;
@@ -44,9 +50,11 @@ constexpr char kHelpMsg[] =
     "        Optional. Number of frames to decode, defaults to all.\n"
     "        Override with a positive integer to decode at most that many.\n"
     "    --out-prefix=<string>\n"
-    "        Optional. Prefix to prepend to path of saved PNGs of decoded\n"
-    "        frames, defaults to \"frame\", resulting in relative paths\n"
-    "        frame_0.png, frame_1.png, etc. May specify a directory.\n"
+    "        Optional. Save PNGs of decoded frames if and only if a path\n"
+    "        prefix (which may specify a directory) is provided here,\n"
+    "        resulting in e.g. frame_0.png, frame_1.png, etc. if passed\n"
+    "        \"frame\".\n"
+    "        If omitted, the output of this binary is error or lack thereof.\n"
     "    --help\n"
     "        Display this help message and exit.\n";
 
@@ -58,6 +66,20 @@ VAProfile GetProfile(const std::string& profile_str) {
   if (base::EqualsCaseInsensitiveASCII(profile_str, "vp9profile2"))
     return VAProfileVP9Profile2;
   return VAProfileNone;
+}
+
+// Gets the appropriate decoder for the given |va_profile|.
+std::unique_ptr<VideoDecoder> GetDecoder(
+    VAProfile va_profile,
+    std::unique_ptr<media::IvfParser> ivf_parser,
+    const VaapiDevice& va) {
+  switch (va_profile) {
+    case VAProfileVP9Profile0:
+    case VAProfileVP9Profile2:
+      return std::make_unique<Vp9Decoder>(std::move(ivf_parser), va);
+    default:
+      return nullptr;
+  }
 }
 
 }  // namespace
@@ -95,9 +117,6 @@ int main(int argc, char** argv) {
   }
 
   std::string output_prefix = cmd->GetSwitchValueASCII("out-prefix");
-  if (output_prefix.empty()) {
-    output_prefix = "frame";
-  }
 
   const std::string frames = cmd->GetSwitchValueASCII("frames");
   int n_frames;
@@ -135,7 +154,39 @@ int main(int argc, char** argv) {
     return EXIT_FAILURE;
   }
 
-  // TODO: decode.
+  // Initialize VA with profile as provided in cmdline args.
+  VLOG(1) << "Creating VaapiDevice with profile " << profile;
+  const VaapiDevice va(profile);
+
+  std::unique_ptr<VideoDecoder> dec =
+      GetDecoder(profile, std::move(ivf_parser), va);
+  CHECK(dec);
+  VideoDecoder::Result res;
+  int i = 0;
+  while (true) {
+    LOG(INFO) << "Frame " << i << "...";
+    res = dec->DecodeNextFrame();
+
+    if (res == VideoDecoder::kEOStream) {
+      LOG(INFO) << "End of stream.";
+      break;
+    }
+
+    if (res == VideoDecoder::kFailed) {
+      LOG(ERROR) << "Failed to decode.";
+      continue;
+    }
+
+    if (!output_prefix.empty()) {
+      dec->LastDecodedFrameToPNG(
+          base::StringPrintf("%s_%d.png", output_prefix.c_str(), i));
+    }
+
+    if (++i == n_frames)
+      break;
+  };
+
+  LOG(INFO) << "Done reading.";
 
   return EXIT_SUCCESS;
 }

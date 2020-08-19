@@ -73,18 +73,14 @@ class PasswordCheckCoordinator implements PasswordCheckComponentUi, LifecycleObs
                 mReauthenticationHelper);
     }
 
-    private void launchCheckupInAccount() {
-        PasswordCheckFactory.getOrCreate().launchCheckupInAccount(mFragmentView.getActivity());
-    }
-
     @Override
     public void onStartFragment() {
         // In the rare case of a restarted activity, don't recreate the model and mediator.
         if (mModel == null) {
             mModel = PasswordCheckProperties.createDefaultModel();
             PasswordCheckCoordinator.setUpModelChangeProcessors(mModel, mFragmentView);
-            mMediator.initialize(mModel, PasswordCheckFactory.getOrCreate(),
-                    mFragmentView.getReferrer(), this::launchCheckupInAccount);
+            mMediator.initialize(
+                    mModel, PasswordCheckFactory.getOrCreate(), mFragmentView.getReferrer());
         }
     }
 

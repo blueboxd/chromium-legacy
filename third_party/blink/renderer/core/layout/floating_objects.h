@@ -26,7 +26,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_FLOATING_OBJECTS_H_
 
 #include <memory>
-#include "base/macros.h"
 #include "base/util/type_safety/pass_key.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
@@ -156,6 +155,8 @@ class FloatingObject {
                  bool should_paint,
                  bool is_descendant,
                  bool is_lowest_non_overhanging_float_in_child);
+  FloatingObject(const FloatingObject&) = delete;
+  FloatingObject& operator=(const FloatingObject&) = delete;
 
  private:
   LayoutBox* layout_object_;
@@ -175,8 +176,6 @@ class FloatingObject {
   // the float IsPlaced() or not.
   unsigned has_geometry_ : 1;
 #endif
-
-  DISALLOW_COPY_AND_ASSIGN(FloatingObject);
 };
 
 struct FloatingObjectHashFunctions {
@@ -227,6 +226,8 @@ class FloatingObjects {
 
  public:
   FloatingObjects(const LayoutBlockFlow*, bool horizontal_writing_mode);
+  FloatingObjects(const FloatingObjects&) = delete;
+  FloatingObjects& operator=(const FloatingObjects&) = delete;
   ~FloatingObjects();
 
   void Clear();
@@ -305,7 +306,6 @@ class FloatingObjects {
   };
   FloatBottomCachedValue lowest_float_bottom_cache_[2];
   bool cached_horizontal_writing_mode_;
-  DISALLOW_COPY_AND_ASSIGN(FloatingObjects);
 };
 
 }  // namespace blink

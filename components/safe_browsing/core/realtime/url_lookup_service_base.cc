@@ -23,6 +23,7 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/mojom/fetch_api.mojom-shared.h"
 
 namespace safe_browsing {
 
@@ -405,6 +406,8 @@ RealTimeUrlLookupServiceBase::GetResourceRequest() {
   resource_request->url = GetRealTimeLookupUrl();
   resource_request->load_flags = net::LOAD_DISABLE_CACHE;
   resource_request->method = "POST";
+  if (!ShouldIncludeCredentials())
+    resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   return resource_request;
 }
 

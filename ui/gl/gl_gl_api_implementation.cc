@@ -364,6 +364,21 @@ void RealGLApi::glTexStorageMem2DEXTFn(GLenum target,
                                     height, memory, offset);
 }
 
+void RealGLApi::glTexStorageMemFlags2DANGLEFn(GLenum target,
+                                              GLsizei levels,
+                                              GLenum internalformat,
+                                              GLsizei width,
+                                              GLsizei height,
+                                              GLuint memory,
+                                              GLuint64 offset,
+                                              GLbitfield createFlags,
+                                              GLbitfield usageFlags) {
+  internalformat = GetInternalFormat(version_.get(), internalformat);
+  GLApiBase::glTexStorageMemFlags2DANGLEFn(target, levels, internalformat,
+                                           width, height, memory, offset,
+                                           createFlags, usageFlags);
+}
+
 void RealGLApi::glRenderbufferStorageEXTFn(GLenum target,
                                            GLenum internalformat,
                                            GLsizei width,

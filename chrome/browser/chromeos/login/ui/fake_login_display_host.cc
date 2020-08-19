@@ -106,7 +106,7 @@ void FakeLoginDisplayHost::LoadWallpaper(const AccountId& account_id) {}
 
 void FakeLoginDisplayHost::LoadSigninWallpaper() {}
 
-bool FakeLoginDisplayHost::IsUserWhitelisted(const AccountId& account_id) {
+bool FakeLoginDisplayHost::IsUserAllowlisted(const AccountId& account_id) {
   return false;
 }
 

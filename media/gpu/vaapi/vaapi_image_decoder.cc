@@ -27,7 +27,7 @@ VaapiImageDecoder::VaapiImageDecoder(VAProfile va_profile)
 
 VaapiImageDecoder::~VaapiImageDecoder() = default;
 
-bool VaapiImageDecoder::Initialize(const base::RepeatingClosure& error_uma_cb) {
+bool VaapiImageDecoder::Initialize(const ReportErrorToUMACB& error_uma_cb) {
   vaapi_wrapper_ =
       VaapiWrapper::Create(VaapiWrapper::kDecode, va_profile_, error_uma_cb);
   return !!vaapi_wrapper_;

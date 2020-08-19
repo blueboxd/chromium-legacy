@@ -330,10 +330,7 @@ MediaFeedsConverter::GetMediaImage(const Property& property) {
     image->src = url->values->url_values[0];
 
     auto content_attributes = GetContentAttributes(image_object);
-    if (!content_attributes.has_value())
-      continue;
-
-    if (!content_attributes.value().empty()) {
+    if (content_attributes && !content_attributes.value().empty()) {
       image->content_attributes = std::move(content_attributes.value());
     }
 

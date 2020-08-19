@@ -5,14 +5,15 @@
 #include "third_party/blink/public/common/widget/screen_info_mojom_traits.h"
 
 #include "ui/gfx/geometry/mojom/geometry.mojom.h"
-#include "ui/gfx/mojom/color_space.mojom.h"
+#include "ui/gfx/mojom/display_color_spaces.mojom.h"
 
 namespace mojo {
 
 bool StructTraits<blink::mojom::ScreenInfoDataView, blink::ScreenInfo>::Read(
     blink::mojom::ScreenInfoDataView data,
     blink::ScreenInfo* out) {
-  if (!data.ReadColorSpace(&out->color_space) || !data.ReadRect(&out->rect) ||
+  if (!data.ReadDisplayColorSpaces(&out->display_color_spaces) ||
+      !data.ReadRect(&out->rect) ||
       !data.ReadAvailableRect(&out->available_rect))
     return false;
 

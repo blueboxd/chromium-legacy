@@ -16,7 +16,7 @@ class ScriptPromise;
 class ScriptState;
 
 // A proposed interface for querying the state of the device's screen space.
-// https://github.com/webscreens/screen-enumeration
+// https://github.com/webscreens/window-placement
 class GlobalScreenEnumeration {
   STATIC_ONLY(GlobalScreenEnumeration);
 

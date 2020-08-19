@@ -210,7 +210,6 @@ void ZeroSuggestProviderTest::SetZeroSuggestVariantForAllContexts(
 }
 
 TEST_F(ZeroSuggestProviderTest, AllowZeroSuggestSuggestions) {
-  provider_->SetPageClassificationForTesting(metrics::OmniboxEventProto::OTHER);
   std::string input_url = "https://example.com/";
 
   AutocompleteInput prefix_input(base::ASCIIToUTF16(input_url),
@@ -262,17 +261,17 @@ TEST_F(ZeroSuggestProviderTest, AllowZeroSuggestSuggestions) {
 }
 
 TEST_F(ZeroSuggestProviderTest, TypeOfResultToRun) {
-  provider_->SetPageClassificationForTesting(metrics::OmniboxEventProto::OTHER);
-  GURL current_url = GURL("https://example.com/");
-  GURL suggest_url = GetSuggestURL(metrics::OmniboxEventProto::OTHER);
-
   // Verifies the unconfigured state. Returns platorm-specific defaults.
+  // TODO(tommycli): The remote_no_url_allowed idiom seems kind of confusing,
+  // its true meaning seems closer to "expect_remote_no_url". Ideally we can
+  // simplify the test or make this much more obvious.
   auto ExpectPlatformSpecificDefaultZeroSuggestBehavior =
-      [&](const bool remote_no_url_allowed) {
+      [&](AutocompleteInput& input, const bool remote_no_url_allowed) {
         const auto current_page_classification =
-            provider_->current_page_classification_;
-        const auto result_type =
-            provider_->TypeOfResultToRun(current_url, suggest_url);
+            input.current_page_classification();
+        GURL suggest_url = GetSuggestURL(current_page_classification);
+        const auto result_type = ZeroSuggestProvider::TypeOfResultToRun(
+            client_.get(), input, suggest_url);
 #if !defined(OS_ANDROID) && !defined(OS_IOS)  // Desktop
         EXPECT_EQ(BaseSearchProvider::IsNTPPage(current_page_classification) &&
                           remote_no_url_allowed
@@ -296,37 +295,42 @@ TEST_F(ZeroSuggestProviderTest, TypeOfResultToRun) {
                   result_type);
 #endif
       };
+
+  // Verify OTHER defaults (contextual web).
+  std::string url("https://www.example.com/");
+  AutocompleteInput other_input(base::ASCIIToUTF16(url),
+                                metrics::OmniboxEventProto::OTHER,
+                                TestSchemeClassifier());
+  other_input.set_current_url(GURL(url));
   ExpectPlatformSpecificDefaultZeroSuggestBehavior(
+      other_input,
       /*remote_no_url_allowed=*/false);
 
   // Verify the platorm-specific defaults for the NTP.
-  provider_->SetPageClassificationForTesting(metrics::OmniboxEventProto::NTP);
-  suggest_url = GetSuggestURL(metrics::OmniboxEventProto::NTP);
+  AutocompleteInput ntp_input(base::string16(), metrics::OmniboxEventProto::NTP,
+                              TestSchemeClassifier());
   ExpectPlatformSpecificDefaultZeroSuggestBehavior(
+      ntp_input,
       /*remote_no_url_allowed=*/false);
 
   // Verify RemoteNoUrl works when the user is signed in.
   EXPECT_CALL(*client_, IsAuthenticated())
       .WillRepeatedly(testing::Return(true));
-
-  // Verify the platorm-specific defaults for the NTP.
-  provider_->SetPageClassificationForTesting(metrics::OmniboxEventProto::NTP);
-  suggest_url = GetSuggestURL(metrics::OmniboxEventProto::NTP);
   ExpectPlatformSpecificDefaultZeroSuggestBehavior(
+      ntp_input,
       /*remote_no_url_allowed=*/true);
 
-  // Restore to non-NTP page classification.
-  provider_->SetPageClassificationForTesting(metrics::OmniboxEventProto::OTHER);
-  suggest_url = GetSuggestURL(metrics::OmniboxEventProto::OTHER);
-
   CreateRemoteNoUrlFieldTrial();
+  GURL other_suggest_url = GetSuggestURL(metrics::OmniboxEventProto::OTHER);
   EXPECT_EQ(ZeroSuggestProvider::ResultType::REMOTE_NO_URL,
-            provider_->TypeOfResultToRun(current_url, suggest_url));
+            ZeroSuggestProvider::TypeOfResultToRun(client_.get(), other_input,
+                                                   other_suggest_url));
 
   // But if the user has signed out, fall back to platform-specific defaults.
   EXPECT_CALL(*client_, IsAuthenticated())
       .WillRepeatedly(testing::Return(false));
   ExpectPlatformSpecificDefaultZeroSuggestBehavior(
+      other_input,
       /*remote_no_url_allowed=*/false);
 
   // Restore authentication state, but now set a non-Google default search
@@ -342,6 +346,7 @@ TEST_F(ZeroSuggestProviderTest, TypeOfResultToRun) {
       turl_model->Add(std::make_unique<TemplateURL>(data));
   turl_model->SetUserSelectedDefaultSearchProvider(other_search_provider);
   ExpectPlatformSpecificDefaultZeroSuggestBehavior(
+      other_input,
       /*remote_no_url_allowed=*/false);
 
   // Restore Google as the default search provider.
@@ -352,13 +357,16 @@ TEST_F(ZeroSuggestProviderTest, TypeOfResultToRun) {
   SetZeroSuggestVariantForAllContexts(
       ZeroSuggestProvider::kRemoteSendUrlVariant);
   EXPECT_EQ(ZeroSuggestProvider::ResultType::REMOTE_SEND_URL,
-            provider_->TypeOfResultToRun(current_url, suggest_url));
+            ZeroSuggestProvider::TypeOfResultToRun(client_.get(), other_input,
+                                                   other_suggest_url));
   CreateRemoteNoUrlFieldTrial();
   EXPECT_EQ(ZeroSuggestProvider::ResultType::REMOTE_NO_URL,
-            provider_->TypeOfResultToRun(current_url, suggest_url));
+            ZeroSuggestProvider::TypeOfResultToRun(client_.get(), other_input,
+                                                   other_suggest_url));
   CreateMostVisitedFieldTrial();
   EXPECT_EQ(ZeroSuggestProvider::ResultType::MOST_VISITED,
-            provider_->TypeOfResultToRun(current_url, suggest_url));
+            ZeroSuggestProvider::TypeOfResultToRun(client_.get(), other_input,
+                                                   other_suggest_url));
 
   // Verify that a wildcard rule works in conjunction with a
   // page-classification-specific rule.
@@ -373,13 +381,22 @@ TEST_F(ZeroSuggestProviderTest, TypeOfResultToRun) {
                               metrics::OmniboxEventProto::BLANK),
            ZeroSuggestProvider::kNoneVariant},
       });
-  provider_->SetPageClassificationForTesting(metrics::OmniboxEventProto::OTHER);
   EXPECT_EQ(ZeroSuggestProvider::ResultType::MOST_VISITED,
-            provider_->TypeOfResultToRun(current_url, suggest_url));
-  provider_->SetPageClassificationForTesting(metrics::OmniboxEventProto::BLANK);
-  EXPECT_EQ(
-      ZeroSuggestProvider::ResultType::NONE,
-      provider_->TypeOfResultToRun(GURL("chrome://newtab/"), suggest_url));
+            ZeroSuggestProvider::TypeOfResultToRun(client_.get(), other_input,
+                                                   other_suggest_url));
+
+  // Test the BLANK page classification to verify the wildcard rule works.
+  {
+    std::string url("chrome://newtab/");
+    AutocompleteInput blank_input(base::ASCIIToUTF16(url),
+                                  metrics::OmniboxEventProto::BLANK,
+                                  TestSchemeClassifier());
+    blank_input.set_current_url(GURL(url));
+    EXPECT_EQ(ZeroSuggestProvider::ResultType::NONE,
+              ZeroSuggestProvider::TypeOfResultToRun(
+                  client_.get(), blank_input,
+                  GetSuggestURL(metrics::OmniboxEventProto::BLANK)));
+  }
 }
 
 TEST_F(ZeroSuggestProviderTest, TestDoesNotReturnMatchesForPrefix) {

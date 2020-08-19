@@ -25,6 +25,7 @@ class TestAppMenuPropertiesDelegate implements AppMenuPropertiesDelegate {
     public int footerResourceId;
     public int headerResourceId;
     public boolean enableAppIconRow;
+    public boolean iconBeforeItem;
 
     @Override
     public void destroy() {}
@@ -101,5 +102,10 @@ class TestAppMenuPropertiesDelegate implements AppMenuPropertiesDelegate {
     @Override
     public void onHeaderViewInflated(AppMenuHandler appMenuHandler, View view) {
         headerInflatedCallback.notifyCalled();
+    }
+
+    @Override
+    public boolean shouldShowIconBeforeItem() {
+        return iconBeforeItem;
     }
 }

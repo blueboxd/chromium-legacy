@@ -213,6 +213,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_QUICK_SETTINGS_BUBBLE_CAST_SETTINGS_ACCESSIBLE_DESCRIPTION" desc="The accessible description for cast settings accessed through the cast feature pod.">
         Cast Settings
       </message>
+      <message name="IDS_ASH_QUICK_SETTINGS_BUBBLE_DARK_THEME_SETTINGS_ACCESSIBLE_DESCRIPTION" desc="The accessible description for dark theme settings accessed through the dark theme feature pod.">
+        Dark Theme Settings
+      </message>
       <message name="IDS_ASH_QUICK_SETTINGS_BUBBLE_IME_SETTINGS_ACCESSIBLE_DESCRIPTION" desc="The accessible description for IME settings accessed through the IME feature pod.">
         IME Settings
       </message>
@@ -327,10 +330,10 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_CAST_CAST_DESKTOP" desc="The label used in the tray popup to tell the user we are casting the desktop.">
         Casting screen to <ph name="RECEIVER_NAME">$1<ex>Living Room</ex></ph>
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_DARK_MODE_BUTTON_LABEL" desc="The shorter label used for the button in the status tray to toggle the Dark Mode feature (which controls the color temperature of the screen) on or off. [CHAR_LIMIT=14]">
+      <message name="IDS_ASH_STATUS_TRAY_DARK_MODE_BUTTON_LABEL" desc="The shorter label used for the button in the status tray to toggle the Dark Mode feature. [CHAR_LIMIT=14]">
         Dark Mode
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_DARK_MODE_TOGGLE_TOOLTIP" desc="The tooltip text used for the button in the status tray to toggle the Dark Mode feature (which controls the color temperature of the screen) on or off.">
+      <message name="IDS_ASH_STATUS_TRAY_DARK_MODE_TOGGLE_TOOLTIP" desc="The tooltip text used for the button in the status tray to toggle the Dark Mode feature on or off.">
         Toggle Dark Mode. <ph name="STATE_TEXT">$1<ex>Dark Mode is on.</ex></ph>
       </message>
       <message name="IDS_ASH_STATUS_TRAY_DARK_MODE_ENABLED_STATE_TOOLTIP" desc="The tooltip text indicating the Dark Mode feature is on.">
@@ -339,7 +342,7 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_DARK_MODE_DISABLED_STATE_TOOLTIP" desc="The tooltip text indicating the Dark Mode feature is off.">
         Dark Mode is off.
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_DARK_MODE_SETTINGS_TOOLTIP" desc="The tooltip text used for the button in the status tray to show the Dark Mode feature (which controls the color temperature of the screen) settings.">
+      <message name="IDS_ASH_STATUS_TRAY_DARK_MODE_SETTINGS_TOOLTIP" desc="The tooltip text used for the button in the status tray to show the Dark Mode feature settings.">
         Show dark mode settings
       </message>
       <message name="IDS_ASH_STATUS_TRAY_DARK_MODE_OFF_STATE" desc="Button label for the Dark Mode feature." meaning="Dark Mode feature is off. [CHAR_LIMIT=14]">
@@ -347,6 +350,24 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_DARK_MODE_ON_STATE" desc="Button label for the Dark Mode feature." meaning="Dark Mode feature is on. [CHAR_LIMIT=14]">
         On
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_DARK_THEME_TITLE" desc="The title for the dark theme detailed view.">
+        Dark Theme
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_DARK_THEME_COLOR_MODE" desc="The title for the dark theme detailed view.">
+        Color mode
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_DARK_THEME_MODE_THEMED_TITLE" desc="The title for the dark theme detailed view.">
+        Themed (default)
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_DARK_THEME_MODE_THEMED_DESCRIPTION" desc="The description for the neutral color mode.">
+        The themed color mode uses colors extracted from your wallpaper to lightly colorize the interface.
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_DARK_THEME_MODE_NEUTRAL_TITLE" desc="The title for the dark theme detailed view.">
+        Neutral
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_DARK_THEME_MODE_NEUTRAL_DESCRIPTION" desc="The description for the neutral color mode.">
+        The neutral color mode does not use wallpaper extracted colors, replacing them by a set of neutrally toned light or dark hues.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_CAST_CAST_DESKTOP_ACCESSIBILITY_STOP" desc="Stop button accessibility label used in the tray popup to tell the user to stop a cast to the desktop.">
         Stop casting screen to <ph name="RECEIVER_NAME">$1<ex>Living Room</ex></ph>
@@ -2153,11 +2174,20 @@ This file contains the strings for ash.
       <message name="IDS_ASH_LOGIN_PARENT_ACCESS_TITLE_ERROR" desc="Title of the parent access input dialog after incorrect code was entered.">
         Incorrect parent code
       </message>
+      <message name="IDS_ASH_LOGIN_PARENT_ACCESS_GENERIC_TITLE" desc="Title of the parent access input dialog that allows to add user or reauthenticate with a code.">
+        Enter parent code
+      </message>
       <message name="IDS_ASH_LOGIN_PARENT_ACCESS_DESCRIPTION" desc="Description shown on the parent access input dialog. Explains what code should be used to unlock the device.">
         To unlock the device, enter your Family Link parent access code
       </message>
       <message name="IDS_ASH_LOGIN_PARENT_ACCESS_GENERIC_DESCRIPTION" desc="Description shown on the parent access input dialog. Explains what code should be used to unlock the device.">
         Enter Family Link parent access code.
+      </message>
+      <message name="IDS_ASH_LOGIN_PARENT_ACCESS_DESCRIPTION_ADD_USER" desc="Title of the parent access input dialog that allows to add user with a code.">
+        To add a person, enter your Family Link parent access code
+      </message>
+      <message name="IDS_ASH_LOGIN_PARENT_ACCESS_DESCRIPTION_REAUTH" desc="Title of the parent access input dialog that allows to reauthenticate with a code.">
+        To sign in, enter your Family Link parent access code
       </message>
       <message name="IDS_ASH_LOGIN_PIN_REQUEST_HELP" desc="Label of a button shown on the pin request input dialog.">
         Need help?
@@ -2650,6 +2680,13 @@ Here are some things you can try to get started.
       </message>
       <message name="IDS_ASH_SCREEN_CAPTURE_BUTTON_DELETE" desc="The delete button label for the screen capture notificaiton.">
         Delete
+      </message>
+      <!-- Switch Between TABLET/LAPTOP MODE-->
+      <message name="IDS_ASH_SWITCH_TO_TABLET_MODE" desc="Alert of switching to tablet mode.">
+        Switch to tablet mode
+      </message>
+      <message name="IDS_ASH_SWITCH_TO_LAPTOP_MODE" desc="Alert of switching to laptop mode.">
+        Switch to laptop mode
       </message>
     </messages>
   </release>

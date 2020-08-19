@@ -74,6 +74,11 @@ class COLOR_SPACE_EXPORT DisplayColorSpaces {
   }
   float GetSDRWhiteLevel() const { return sdr_white_level_; }
 
+  // TODO(https://crbug.com/1116870): These helper functions exist temporarily
+  // to handle the transition of blink::ScreenInfo off of ColorSpace. All calls
+  // to these functions are to be eliminated.
+  ColorSpace GetScreenInfoColorSpace() const;
+
   // Return the color space that should be used for rasterization.
   // TODO: This will eventually need to take a ContentColorUsage.
   gfx::ColorSpace GetRasterColorSpace() const;
@@ -99,7 +104,7 @@ class COLOR_SPACE_EXPORT DisplayColorSpaces {
 
  private:
   // Serialization of DisplayColorSpaces directly accesses members.
-
+  friend struct IPC::ParamTraits<gfx::DisplayColorSpaces>;
   friend struct mojo::StructTraits<gfx::mojom::DisplayColorSpacesDataView,
                                    gfx::DisplayColorSpaces>;
 

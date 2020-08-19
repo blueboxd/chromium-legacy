@@ -154,4 +154,8 @@ std::string RealTimeUrlLookupService::GetMetricSuffix() const {
   return ".Consumer";
 }
 
+bool RealTimeUrlLookupService::ShouldIncludeCredentials() const {
+  return true;
+}
+
 }  // namespace safe_browsing

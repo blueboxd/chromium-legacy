@@ -209,8 +209,13 @@ class BaseIsolatedScriptArgsAdapter(object):
     self._options = None
     self._rest_args = None
     self._parser.add_argument(
+        '--isolated-outdir', type=str,
+        required=False, # TODO(crbug.com/816629): Make this be required.
+        help='value of $ISOLATED_OUTDIR from swarming task')
+    self._parser.add_argument(
         '--isolated-script-test-output', type=str,
-        required=True)
+        required=True,
+        help='path to write test results JSON object to')
     self._parser.add_argument(
         '--isolated-script-test-filter', type=str,
         required=False)

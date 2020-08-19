@@ -427,9 +427,9 @@ bool StartupBrowserCreator::WasRestarted() {
 // static
 SessionStartupPref StartupBrowserCreator::GetSessionStartupPref(
     const base::CommandLine& command_line,
-    Profile* profile) {
+    const Profile* profile) {
   DCHECK(profile);
-  PrefService* prefs = profile->GetPrefs();
+  const PrefService* prefs = profile->GetPrefs();
   SessionStartupPref pref = SessionStartupPref::GetStartupPref(prefs);
 
   // IsChromeFirstRun() looks for a sentinel file to determine whether the user

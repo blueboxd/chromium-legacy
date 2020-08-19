@@ -57,7 +57,7 @@ class KioskProfileLoader : public LoginPerformer::Delegate,
   // LoginPerformer::Delegate overrides:
   void OnAuthSuccess(const UserContext& user_context) override;
   void OnAuthFailure(const AuthFailure& error) override;
-  void WhiteListCheckFailed(const std::string& email) override;
+  void AllowlistCheckFailed(const std::string& email) override;
   void PolicyLoadFailed() override;
   void SetAuthFlowOffline(bool offline) override;
   void OnOldEncryptionDetected(const UserContext& user_context,

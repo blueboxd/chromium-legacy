@@ -20,7 +20,7 @@ WebViewPasswordFeatureManager::WebViewPasswordFeatureManager(
     : pref_service_(pref_service), sync_service_(sync_service) {}
 
 bool WebViewPasswordFeatureManager::IsGenerationEnabled() const {
-  return false;
+  return true;
 }
 
 bool WebViewPasswordFeatureManager::IsOptedInForAccountStorage() const {

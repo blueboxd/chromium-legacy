@@ -2263,6 +2263,62 @@ TEST_F(URLLoaderTest, UploadChunkedDataPipe) {
   EXPECT_EQ(net::OK, client()->completion_status().error_code);
 }
 
+// Tests a request body with ReadOnceStream.
+TEST_F(URLLoaderTest, UploadReadOnceStream) {
+  const std::string kRequestBody = "Request Body";
+
+  TestChunkedDataPipeGetter data_pipe_getter;
+
+  ResourceRequest request =
+      CreateResourceRequest("POST", test_server()->GetURL("/echo"));
+  request.request_body = base::MakeRefCounted<ResourceRequestBody>();
+  request.request_body->SetToReadOnceStream(
+      data_pipe_getter.GetDataPipeGetterRemote());
+
+  base::HistogramTester tester;
+  std::string histogram_allowh1("Net.Fetch.UploadStreamingProtocolAllowH1");
+  std::string histogram_notallowh1(
+      "Net.Fetch.UploadStreamingProtocolNotAllowH1");
+  tester.ExpectTotalCount(histogram_allowh1, 0);
+  tester.ExpectTotalCount(histogram_notallowh1, 0);
+
+  base::RunLoop delete_run_loop;
+  mojo::Remote<mojom::URLLoader> loader;
+  std::unique_ptr<URLLoader> url_loader;
+  mojom::URLLoaderFactoryParams params;
+  params.process_id = mojom::kBrowserProcessId;
+  params.is_corb_enabled = false;
+  url_loader = std::make_unique<URLLoader>(
+      context(), nullptr /* network_service_client */,
+      nullptr /* network_context_client */,
+      DeleteLoaderCallback(&delete_run_loop, &url_loader),
+      loader.BindNewPipeAndPassReceiver(), 0, request, client()->CreateRemote(),
+      /*reponse_body_use_tracker=*/base::nullopt, TRAFFIC_ANNOTATION_FOR_TESTS,
+      &params, /*coep_reporter=*/nullptr, 0 /* request_id */,
+      0 /* keepalive_request_size */, nullptr /* resource_scheduler_client */,
+      nullptr /* keepalive_statistics_reporter */,
+      nullptr /* network_usage_accumulator */, nullptr /* header_client */,
+      nullptr /* origin_policy_manager */, nullptr /* trust_token_helper */,
+      mojo::NullRemote() /* cookie_observer */);
+
+  mojom::ChunkedDataPipeGetter::GetSizeCallback get_size_callback =
+      data_pipe_getter.WaitForGetSize();
+  mojo::BlockingCopyFromString(kRequestBody,
+                               data_pipe_getter.WaitForStartReading());
+  std::move(get_size_callback).Run(net::OK, kRequestBody.size());
+  delete_run_loop.Run();
+  client()->RunUntilComplete();
+
+  EXPECT_EQ(kRequestBody, ReadBody());
+  EXPECT_EQ(net::OK, client()->completion_status().error_code);
+
+  tester.ExpectTotalCount(histogram_allowh1, 1);
+  // From ReportFetchUploadStreamingUMA()
+  constexpr int kHTTP1_1 = 0;
+  tester.ExpectBucketCount(histogram_allowh1, kHTTP1_1, 1);
+  tester.ExpectTotalCount(histogram_notallowh1, 0);
+}
+
 // Tests that SSLInfo is not attached to OnComplete messages when there is no
 // certificate error.
 TEST_F(URLLoaderTest, NoSSLInfoWithoutCertificateError) {

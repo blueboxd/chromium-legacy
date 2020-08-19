@@ -264,7 +264,7 @@ void ErrorScreen::OnPasswordChangeDetected(const UserContext& user_context) {
   LOG(FATAL);
 }
 
-void ErrorScreen::WhiteListCheckFailed(const std::string& email) {
+void ErrorScreen::AllowlistCheckFailed(const std::string& email) {
   LOG(FATAL);
 }
 

@@ -976,6 +976,12 @@ WebInputEventResult WebFrameWidgetImpl::HandleCharEvent(
   bool suppress = suppress_next_keypress_event_;
   suppress_next_keypress_event_ = false;
 
+  // If there is a popup open, it should be the one processing the event,
+  // not the page.
+  scoped_refptr<WebPagePopupImpl> page_popup = View()->GetPagePopup();
+  if (page_popup)
+    return page_popup->HandleKeyEvent(event);
+
   LocalFrame* frame = To<LocalFrame>(FocusedCoreFrame());
   if (!frame) {
     return suppress ? WebInputEventResult::kHandledSuppressed

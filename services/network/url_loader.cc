@@ -1078,7 +1078,7 @@ void URLLoader::OnReceivedRedirect(net::URLRequest* url_request,
           CrossOriginResourcePolicy::IsBlocked(
               url_request_->url(), url_request_->original_url(),
               url_request_->initiator(), *response, request_mode_,
-              factory_params_->request_initiator_site_lock,
+              factory_params_->request_initiator_origin_lock,
               cross_origin_embedder_policy, coep_reporter_)) {
     CompleteBlockedResponse(net::ERR_BLOCKED_BY_RESPONSE, false,
                             blocked_reason);
@@ -1291,7 +1291,7 @@ void URLLoader::ContinueOnResponseStarted() {
           CrossOriginResourcePolicy::IsBlocked(
               url_request_->url(), url_request_->original_url(),
               url_request_->initiator(), *response_, request_mode_,
-              factory_params_->request_initiator_site_lock,
+              factory_params_->request_initiator_origin_lock,
               cross_origin_embedder_policy, coep_reporter_)) {
     CompleteBlockedResponse(net::ERR_BLOCKED_BY_RESPONSE, false,
                             blocked_reason);
@@ -1308,7 +1308,7 @@ void URLLoader::ContinueOnResponseStarted() {
     corb_analyzer_ =
         std::make_unique<CrossOriginReadBlocking::ResponseAnalyzer>(
             url_request_->url(), url_request_->initiator(), *response_,
-            factory_params_->request_initiator_site_lock, request_mode_,
+            factory_params_->request_initiator_origin_lock, request_mode_,
             isolated_world_origin_, network_service_client_);
     is_more_corb_sniffing_needed_ = corb_analyzer_->needs_sniffing();
     if (corb_analyzer_->ShouldBlock()) {

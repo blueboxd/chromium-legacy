@@ -18,6 +18,7 @@ GEN('#include "chromeos/constants/chromeos_features.h"');
 
 [['BasePage', 'cellular_setup/base_page_test.m.js'],
  ['FinalPage', 'cellular_setup/final_page_test.m.js'],
+ ['SimDetectPage', 'cellular_setup/sim_detect_page_test.m.js'],
 ].forEach(test => registerTest('CellularSetup', ...test));
 // clang-format on
 

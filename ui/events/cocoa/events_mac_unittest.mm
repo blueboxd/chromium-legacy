@@ -204,6 +204,10 @@ TEST_F(EventsMacTest, EventFlagsFromNative) {
       NSLeftMouseUp, NSCommandKeyMask | NSAlternateKeyMask);
   EXPECT_EQ(EF_LEFT_MOUSE_BUTTON | EF_COMMAND_DOWN | EF_ALT_DOWN,
             EventFlagsFromNative(cmdalt));
+
+  // Make sure a repeat key-down event gets ui::EF_IS_REPEAT set.
+  NSEvent* repeat_key_down = cocoa_test_event_utils::KeyDownEventWithRepeat();
+  EXPECT_EQ(ui::EF_IS_REPEAT, EventFlagsFromNative(repeat_key_down));
 }
 
 // Tests mouse button presses and mouse wheel events.

@@ -604,10 +604,10 @@ void UkmPageLoadMetricsObserver::RecordTimingMetrics(
       ukm::GetExponentialBucketMin(js_max_decoded_bytes_, 10));
 
   builder.SetNet_ImageBytes(
-      ukm::GetExponentialBucketMin(image_total_bytes_, 1.3));
+      ukm::GetExponentialBucketMin(image_total_bytes_, 1.15));
   builder.SetNet_ImageSubframeBytes(
-      ukm::GetExponentialBucketMin(image_subframe_bytes_, 1.3));
-  builder.SetNet_MediaBytes(ukm::GetExponentialBucketMin(media_bytes_, 1.3));
+      ukm::GetExponentialBucketMin(image_subframe_bytes_, 1.15));
+  builder.SetNet_MediaBytes(ukm::GetExponentialBucketMin(media_bytes_, 1.15));
 
   if (main_frame_timing_)
     ReportMainResourceTimingMetrics(timing, &builder);

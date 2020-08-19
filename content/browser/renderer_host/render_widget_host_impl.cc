@@ -1780,8 +1780,10 @@ void RenderWidgetHostImpl::GetScreenInfo(blink::ScreenInfo* result) {
   else
     DisplayUtil::GetDefaultScreenInfo(result);
 
-  if (display::Display::HasForceRasterColorProfile())
-    result->color_space = display::Display::GetForcedRasterColorProfile();
+  if (display::Display::HasForceRasterColorProfile()) {
+    result->display_color_spaces = gfx::DisplayColorSpaces(
+        display::Display::GetForcedRasterColorProfile());
+  }
 
   // TODO(sievers): find a way to make this done another way so the method
   // can be const.

@@ -247,7 +247,7 @@ IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(blink::ScreenInfo)
   IPC_STRUCT_TRAITS_MEMBER(device_scale_factor)
-  IPC_STRUCT_TRAITS_MEMBER(color_space)
+  IPC_STRUCT_TRAITS_MEMBER(display_color_spaces)
   IPC_STRUCT_TRAITS_MEMBER(depth)
   IPC_STRUCT_TRAITS_MEMBER(depth_per_component)
   IPC_STRUCT_TRAITS_MEMBER(is_monochrome)

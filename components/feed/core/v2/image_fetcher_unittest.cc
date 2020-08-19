@@ -11,6 +11,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "components/feed/core/v2/public/types.h"
 #include "components/feed/core/v2/test/callback_receiver.h"
@@ -48,29 +49,26 @@ class ImageFetcherTest : public testing::Test {
 
   ImageFetcher* image_fetcher() { return image_fetcher_.get(); }
 
-  void Respond(const GURL& url,
-               const std::string& response_string,
-               net::HttpStatusCode code = net::HTTP_OK,
-               network::URLLoaderCompletionStatus status =
-                   network::URLLoaderCompletionStatus()) {
-    auto head = network::mojom::URLResponseHead::New();
-    if (code >= 0) {
-      head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
-          "HTTP/1.1 " + base::NumberToString(code));
-      status.decoded_body_length = response_string.length();
-    }
+  network::ResourceRequest Respond(const std::string& response_string,
+                                   int net_status_code) {
+    network::URLLoaderCompletionStatus status;
 
-    test_factory_.AddResponse(url, std::move(head), response_string, status);
-  }
-
-  network::ResourceRequest RespondToRequest(const std::string& response_string,
-                                            net::HttpStatusCode code) {
     task_environment_.RunUntilIdle();
     network::TestURLLoaderFactory::PendingRequest* pending_request =
         test_factory_.GetPendingRequest(0);
     CHECK(pending_request);
     network::ResourceRequest resource_request = pending_request->request;
-    Respond(pending_request->request.url, response_string, code);
+    auto head = network::mojom::URLResponseHead::New();
+    if (net_status_code >= 0) {
+      head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+          "HTTP/1.1 " + base::NumberToString(net_status_code));
+      status.decoded_body_length = response_string.length();
+    } else {
+      status.error_code = net_status_code;
+    }
+
+    test_factory_.AddResponse(pending_request->request.url, std::move(head),
+                              response_string, status);
     task_environment_.FastForwardUntilNoTasksRemain();
     return resource_request;
   }
@@ -84,19 +82,34 @@ class ImageFetcherTest : public testing::Test {
 };
 
 TEST_F(ImageFetcherTest, SendRequestSendsValidRequest) {
+  base::HistogramTester histograms;
   CallbackReceiver<NetworkResponse> receiver;
   image_fetcher()->Fetch(GURL("https://example.com"), receiver.Bind());
-  network::ResourceRequest resource_request =
-      RespondToRequest("", net::HTTP_OK);
+  network::ResourceRequest resource_request = Respond("", net::HTTP_OK);
 
   EXPECT_EQ(GURL("https://example.com"), resource_request.url);
   EXPECT_EQ("GET", resource_request.method);
+
+  EXPECT_EQ(
+      std::vector<base::Bucket>({{net::HTTP_OK, 1}}),
+      histograms.GetAllSamples("ContentSuggestions.Feed.ImageFetchStatus"));
+}
+
+TEST_F(ImageFetcherTest, SendRequestReceivesNetError) {
+  base::HistogramTester histograms;
+  CallbackReceiver<NetworkResponse> receiver;
+  image_fetcher()->Fetch(GURL("https://example.com"), receiver.Bind());
+  Respond("", net::ERR_ACCESS_DENIED);
+
+  EXPECT_EQ(
+      std::vector<base::Bucket>({{net::ERR_ACCESS_DENIED, 1}}),
+      histograms.GetAllSamples("ContentSuggestions.Feed.ImageFetchStatus"));
 }
 
 TEST_F(ImageFetcherTest, SendRequestValidResponse) {
   CallbackReceiver<NetworkResponse> receiver;
   image_fetcher()->Fetch(GURL("https://example.com"), receiver.Bind());
-  RespondToRequest("example_response", net::HTTP_OK);
+  Respond("example_response", net::HTTP_OK);
 
   ASSERT_TRUE(receiver.GetResult());
   EXPECT_THAT(receiver.GetResult()->response_bytes,
@@ -107,11 +120,11 @@ TEST_F(ImageFetcherTest, SendRequestValidResponse) {
 TEST_F(ImageFetcherTest, SendSequentialRequestsValidResponses) {
   CallbackReceiver<NetworkResponse> receiver1;
   image_fetcher()->Fetch(GURL("https://example1.com"), receiver1.Bind());
-  RespondToRequest("example1_response", net::HTTP_OK);
+  Respond("example1_response", net::HTTP_OK);
 
   CallbackReceiver<NetworkResponse> receiver2;
   image_fetcher()->Fetch(GURL("https://example2.com"), receiver2.Bind());
-  RespondToRequest("example2_response", net::HTTP_OK);
+  Respond("example2_response", net::HTTP_OK);
 
   ASSERT_TRUE(receiver1.GetResult());
   EXPECT_THAT(receiver1.GetResult()->response_bytes,
@@ -127,8 +140,8 @@ TEST_F(ImageFetcherTest, SendParallelRequestsValidResponses) {
   CallbackReceiver<NetworkResponse> receiver2;
   image_fetcher()->Fetch(GURL("https://example2.com"), receiver2.Bind());
 
-  RespondToRequest("example1_response", net::HTTP_OK);
-  RespondToRequest("example2_response", net::HTTP_OK);
+  Respond("example1_response", net::HTTP_OK);
+  Respond("example2_response", net::HTTP_OK);
 
   ASSERT_TRUE(receiver1.GetResult());
   EXPECT_THAT(receiver1.GetResult()->response_bytes,

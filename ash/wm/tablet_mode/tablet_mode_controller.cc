@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/metrics_util.h"
 #include "ash/public/cpp/shelf_config.h"
@@ -18,6 +19,7 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/tablet_mode/internal_input_devices_event_blocker.h"
@@ -42,6 +44,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/accelerators/accelerator.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"
@@ -1329,6 +1332,11 @@ bool TabletModeController::UpdateUiTabletState() {
     return false;
 
   SetTabletModeEnabledInternal(should_be_in_tablet_mode);
+  Shell::Get()
+      ->accessibility_controller()
+      ->TriggerAccessibilityAlertWithMessage(l10n_util::GetStringUTF8(
+          should_be_in_tablet_mode ? IDS_ASH_SWITCH_TO_TABLET_MODE
+                                   : IDS_ASH_SWITCH_TO_LAPTOP_MODE));
   return true;
 }
 

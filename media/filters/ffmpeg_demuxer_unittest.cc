@@ -660,13 +660,6 @@ TEST_F(FFmpegDemuxerTest, Read_AudioNoStartTime) {
   }
 }
 
-TEST_F(FFmpegDemuxerTest, Read_InvalidNegativeTimestamp) {
-  CreateDemuxer("negative_ts.flac");
-  InitializeDemuxer();
-  EXPECT_CALL(host_, OnDemuxerError(DEMUXER_ERROR_COULD_NOT_PARSE));
-  ReadUntilEndOfStream(GetStream(DemuxerStream::AUDIO));
-}
-
 // Android has no Theora support, so these tests doesn't work.
 #if !defined(OS_ANDROID)
 TEST_F(FFmpegDemuxerTest, Read_AudioNegativeStartTimeAndOggDiscard_Bear) {
@@ -861,7 +854,11 @@ TEST_F(FFmpegDemuxerTest, Read_AudioNegativeStartTimeAndOpusSfxDiscard_Sync) {
 
   // Run the test twice with a seek in between.
   for (int i = 0; i < 2; ++i) {
-    Read(audio, FROM_HERE, 314, 0, true);
+    // TODO(sandersd): Read_AudioNegativeStartTimeAndOpusDiscardH264Mp4_Sync
+    // has the same sequence, but doesn't have a different discard padding
+    // after seeking to the start. Why is this test different?
+    Read(audio, FROM_HERE, 314, 0, true, DemuxerStream::Status::kOk,
+         i == 0 ? base::TimeDelta::FromMicroseconds(6500) : base::TimeDelta());
     Read(audio, FROM_HERE, 244, 20000, true);
 
     // Though the internal start time may be below zero, the exposed media time

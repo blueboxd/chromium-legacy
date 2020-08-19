@@ -62,6 +62,10 @@ void TestAmbientClient::IssueAccessToken(const std::string& access_token,
   }
 }
 
+bool TestAmbientClient::ShouldUseProdServer() {
+  return false;
+}
+
 bool TestAmbientClient::IsAccessTokenRequestPending() const {
   return !!pending_callback_;
 }

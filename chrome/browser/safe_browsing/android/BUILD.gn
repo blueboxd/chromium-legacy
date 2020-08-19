@@ -98,5 +98,8 @@ android_resources("java_resources") {
 }
 
 java_cpp_enum("safe_browsing_enums") {
-  sources = [ "//components/safe_browsing/core/common/safe_browsing_prefs.h" ]
+  sources = [
+    "//components/safe_browsing/core/common/safe_browsing_prefs.h",
+    "//components/safe_browsing/core/common/safe_browsing_settings_metrics.h",
+  ]
 }

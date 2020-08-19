@@ -40,6 +40,7 @@ aggregate_vector_icons("ash_vector_icons") {
     "check_circle.icon",
     "close_button.icon",
     "custom_data.icon",
+    "dark_theme_color_mode.icon",
     "delete.icon",
     "desks_new_desk_button.icon",
     "dictation_menu.icon",

@@ -14,6 +14,16 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 
+namespace {
+
+const float kDefaultFontScale = 1.0f;
+
+// These values should agree with those in distiller_native_javascript.cc.
+const float kMinFontScale = 0.4f;
+const float kMaxFontScale = 3.0f;
+
+}  // namespace
+
 namespace dom_distiller {
 
 DistilledPagePrefs::DistilledPagePrefs(PrefService* pref_service)
@@ -30,7 +40,7 @@ void DistilledPagePrefs::RegisterProfilePrefs(
   registry->RegisterIntegerPref(
       prefs::kFont, static_cast<int32_t>(mojom::FontFamily::kSansSerif),
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterDoublePref(prefs::kFontScale, 1.0);
+  registry->RegisterDoublePref(prefs::kFontScale, kDefaultFontScale);
   registry->RegisterBooleanPref(
       prefs::kReaderForAccessibility, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
@@ -85,11 +95,11 @@ void DistilledPagePrefs::SetFontScaling(float scaling) {
 
 float DistilledPagePrefs::GetFontScaling() {
   float scaling = pref_service_->GetDouble(prefs::kFontScale);
-  if (scaling < 0.4 || scaling > 2.5) {
+  if (scaling < kMinFontScale || scaling > kMaxFontScale) {
     // Persisted data was incorrect, trying to clean it up by storing the
     // default.
-    SetFontScaling(1.0);
-    return 1.0;
+    SetFontScaling(kDefaultFontScale);
+    return kDefaultFontScale;
   }
   return scaling;
 }

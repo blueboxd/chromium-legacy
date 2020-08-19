@@ -31,7 +31,7 @@ void ClockDriftSmoother::Reset(base::TimeTicks now,
                                base::TimeDelta measured_offset) {
   DCHECK(!now.is_null());
   last_update_time_ = now;
-  estimate_us_ = static_cast<double>(measured_offset.InMicroseconds());
+  estimate_us_ = measured_offset.InMicrosecondsF();
 }
 
 void ClockDriftSmoother::Update(base::TimeTicks now,
@@ -39,22 +39,20 @@ void ClockDriftSmoother::Update(base::TimeTicks now,
   DCHECK(!now.is_null());
   if (last_update_time_.is_null()) {
     Reset(now, measured_offset);
-  } else if (now < last_update_time_) {
-    // |now| is not monotonically non-decreasing.
-    NOTREACHED();
-  } else {
-    const base::TimeDelta elapsed = now - last_update_time_;
-    last_update_time_ = now;
-    const double weight = elapsed / (elapsed + time_constant_);
-    estimate_us_ = weight * measured_offset.InMicroseconds() +
-        (1.0 - weight) * estimate_us_;
+    return;
   }
+
+  DCHECK_GE(now, last_update_time_);  // |now| is monotonically non-decreasing.
+  const base::TimeDelta elapsed = now - last_update_time_;
+  last_update_time_ = now;
+  const double weight = elapsed / (elapsed + time_constant_);
+  estimate_us_ = weight * measured_offset.InMicrosecondsF() +
+                 (1.0 - weight) * estimate_us_;
 }
 
 // static
 base::TimeDelta ClockDriftSmoother::GetDefaultTimeConstant() {
-  static const int kDefaultTimeConstantInSeconds = 30;
-  return base::TimeDelta::FromSeconds(kDefaultTimeConstantInSeconds);
+  return base::TimeDelta::FromSeconds(30);
 }
 
 }  // namespace cast

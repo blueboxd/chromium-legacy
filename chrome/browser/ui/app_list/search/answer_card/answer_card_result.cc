@@ -19,6 +19,7 @@ AnswerCardResult::AnswerCardResult(Profile* profile,
   DCHECK(!stripped_search_result_url.is_empty());
   SetDisplayType(ash::SearchResultDisplayType::kCard);
   SetResultType(ash::AppListSearchResultType::kAnswerCard);
+  SetMetricsType(ash::ANSWER_CARD);
   SetQueryUrl(potential_card_url);
   SetEquivalentResutlId(stripped_search_result_url.spec());
   set_id(potential_card_url.spec());
@@ -31,10 +32,6 @@ void AnswerCardResult::Open(int event_flags) {
   list_controller_->OpenURL(profile_, search_result_url_,
                             ui::PAGE_TRANSITION_GENERATED,
                             ui::DispositionFromEventFlags(event_flags));
-}
-
-ash::SearchResultType AnswerCardResult::GetSearchResultType() const {
-  return ash::ANSWER_CARD;
 }
 
 }  // namespace app_list

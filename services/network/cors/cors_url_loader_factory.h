@@ -87,7 +87,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoaderFactory final
 
   InitiatorLockCompatibility VerifyRequestInitiatorLockWithPluginCheck(
       uint32_t process_id,
-      const base::Optional<url::Origin>& request_initiator_site_lock,
+      const base::Optional<url::Origin>& request_initiator_origin_lock,
       const base::Optional<url::Origin>& request_initiator);
 
   bool GetAllowAnyCorsExemptHeaderForBrowser() const;
@@ -105,7 +105,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoaderFactory final
   // Retained from URLLoaderFactoryParams:
   const bool disable_web_security_;
   const int32_t process_id_ = mojom::kInvalidProcessId;
-  const base::Optional<url::Origin> request_initiator_site_lock_;
+  const base::Optional<url::Origin> request_initiator_origin_lock_;
   const bool ignore_isolated_world_origin_;
   const mojom::TrustTokenRedemptionPolicy trust_token_redemption_policy_;
   net::IsolationInfo isolation_info_;

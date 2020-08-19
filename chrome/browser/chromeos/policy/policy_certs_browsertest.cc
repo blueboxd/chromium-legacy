@@ -36,7 +36,6 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/user_creation_screen_handler.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/constants/chromeos_switches.h"
@@ -882,7 +881,7 @@ class PolicyProvidedCertsForSigninExtensionTest
 // caches), the test is able to catch that.
 IN_PROC_BROWSER_TEST_P(PolicyProvidedCertsForSigninExtensionTest,
                        ActiveOnlyInSelectedExtension) {
-  chromeos::OobeScreenWaiter(chromeos::UserCreationView::kScreenId).Wait();
+  chromeos::OobeScreenWaiter(chromeos::GaiaView::kScreenId).Wait();
   content::StoragePartition* signin_profile_default_partition =
       content::BrowserContext::GetDefaultStoragePartition(signin_profile_);
 

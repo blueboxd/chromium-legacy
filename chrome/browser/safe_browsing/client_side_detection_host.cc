@@ -491,6 +491,7 @@ void ClientSideDetectionHost::PhishingDetectionDone(
     if (!IsExtendedReportingEnabled(*profile->GetPrefs()) &&
         !IsEnhancedProtectionEnabled(*profile->GetPrefs())) {
       // These fields should only be set for SBER users.
+      verdict->clear_screenshot_digest();
       verdict->clear_screenshot_phash();
       verdict->clear_phash_dimension_size();
     }

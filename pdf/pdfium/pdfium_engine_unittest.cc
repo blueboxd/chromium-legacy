@@ -64,12 +64,11 @@ class MockTestClient : public TestClient {
 
 class PDFiumEngineTest : public PDFiumTestBase {
  protected:
-  void ExpectPageRect(PDFiumEngine* engine,
+  void ExpectPageRect(const PDFiumEngine& engine,
                       size_t page_index,
                       const pp::Rect& expected_rect) {
-    PDFiumPage* page = GetPDFiumPageForTest(engine, page_index);
-    ASSERT_TRUE(page);
-    CompareRect(expected_rect, page->rect());
+    const PDFiumPage& page = GetPDFiumPageForTest(engine, page_index);
+    CompareRect(expected_rect, page.rect());
   }
 
   // Tries to load a PDF incrementally, returning `true` if the PDF actually was
@@ -83,13 +82,13 @@ class PDFiumEngineTest : public PDFiumTestBase {
       ADD_FAILURE();
       return false;
     }
-    PDFiumEngine* engine = initialize_result.engine.get();
+    PDFiumEngine& engine = *initialize_result.engine;
 
     // Load enough for the document to become partially available.
     initialize_result.document_loader->SimulateLoadData(8192);
 
     bool loaded_incrementally;
-    if (engine->GetNumberOfPages() == 0) {
+    if (engine.GetNumberOfPages() == 0) {
       // This is not necessarily a test failure; it just indicates incremental
       // loading is not occurring.
       loaded_incrementally = false;
@@ -97,17 +96,17 @@ class PDFiumEngineTest : public PDFiumTestBase {
       // Note: Plugin size chosen so all pages of the document are visible. The
       // engine only updates availability incrementally for visible pages.
       EXPECT_EQ(0, CountAvailablePages(engine));
-      engine->PluginSizeUpdated({1024, 4096});
+      engine.PluginSizeUpdated({1024, 4096});
       int available_pages = CountAvailablePages(engine);
       loaded_incrementally =
-          0 < available_pages && available_pages < engine->GetNumberOfPages();
+          0 < available_pages && available_pages < engine.GetNumberOfPages();
     }
 
     // Verify that loading can finish.
     while (initialize_result.document_loader->SimulateLoadData(UINT32_MAX))
       continue;
 
-    EXPECT_EQ(engine->GetNumberOfPages(), CountAvailablePages(engine));
+    EXPECT_EQ(engine.GetNumberOfPages(), CountAvailablePages(engine));
 
     return loaded_incrementally;
   }
@@ -115,10 +114,10 @@ class PDFiumEngineTest : public PDFiumTestBase {
  private:
   // Counts the number of available pages. Returns `int` instead of `size_t` for
   // consistency with `PDFiumEngine::GetNumberOfPages()`.
-  int CountAvailablePages(PDFiumEngine* engine) {
+  int CountAvailablePages(const PDFiumEngine& engine) {
     int available_pages = 0;
-    for (int i = 0; i < engine->GetNumberOfPages(); ++i) {
-      if (GetPDFiumPageForTest(engine, i)->available())
+    for (int i = 0; i < engine.GetNumberOfPages(); ++i) {
+      if (GetPDFiumPageForTest(engine, i).available())
         ++available_pages;
     }
     return available_pages;
@@ -142,11 +141,11 @@ TEST_F(PDFiumEngineTest, InitializeWithRectanglesMultiPagesPdf) {
   ASSERT_TRUE(engine);
   ASSERT_EQ(5, engine->GetNumberOfPages());
 
-  ExpectPageRect(engine.get(), 0, {38, 3, 266, 333});
-  ExpectPageRect(engine.get(), 1, {5, 350, 333, 266});
-  ExpectPageRect(engine.get(), 2, {38, 630, 266, 333});
-  ExpectPageRect(engine.get(), 3, {38, 977, 266, 333});
-  ExpectPageRect(engine.get(), 4, {38, 1324, 266, 333});
+  ExpectPageRect(*engine, 0, {38, 3, 266, 333});
+  ExpectPageRect(*engine, 1, {5, 350, 333, 266});
+  ExpectPageRect(*engine, 2, {38, 630, 266, 333});
+  ExpectPageRect(*engine, 3, {38, 977, 266, 333});
+  ExpectPageRect(*engine, 4, {38, 1324, 266, 333});
 }
 
 TEST_F(PDFiumEngineTest, InitializeWithRectanglesMultiPagesPdfInTwoUpView) {
@@ -165,11 +164,11 @@ TEST_F(PDFiumEngineTest, InitializeWithRectanglesMultiPagesPdfInTwoUpView) {
 
   ASSERT_EQ(5, engine->GetNumberOfPages());
 
-  ExpectPageRect(engine.get(), 0, {72, 3, 266, 333});
-  ExpectPageRect(engine.get(), 1, {340, 3, 333, 266});
-  ExpectPageRect(engine.get(), 2, {72, 346, 266, 333});
-  ExpectPageRect(engine.get(), 3, {340, 346, 266, 333});
-  ExpectPageRect(engine.get(), 4, {68, 689, 266, 333});
+  ExpectPageRect(*engine, 0, {72, 3, 266, 333});
+  ExpectPageRect(*engine, 1, {340, 3, 333, 266});
+  ExpectPageRect(*engine, 2, {72, 346, 266, 333});
+  ExpectPageRect(*engine, 3, {340, 346, 266, 333});
+  ExpectPageRect(*engine, 4, {68, 689, 266, 333});
 }
 
 TEST_F(PDFiumEngineTest, AppendBlankPagesWithFewerPages) {
@@ -188,9 +187,9 @@ TEST_F(PDFiumEngineTest, AppendBlankPagesWithFewerPages) {
   engine->AppendBlankPages(3);
   ASSERT_EQ(3, engine->GetNumberOfPages());
 
-  ExpectPageRect(engine.get(), 0, {5, 3, 266, 333});
-  ExpectPageRect(engine.get(), 1, {5, 350, 266, 333});
-  ExpectPageRect(engine.get(), 2, {5, 697, 266, 333});
+  ExpectPageRect(*engine, 0, {5, 3, 266, 333});
+  ExpectPageRect(*engine, 1, {5, 350, 266, 333});
+  ExpectPageRect(*engine, 2, {5, 697, 266, 333});
 }
 
 TEST_F(PDFiumEngineTest, AppendBlankPagesWithMorePages) {
@@ -209,13 +208,13 @@ TEST_F(PDFiumEngineTest, AppendBlankPagesWithMorePages) {
   engine->AppendBlankPages(7);
   ASSERT_EQ(7, engine->GetNumberOfPages());
 
-  ExpectPageRect(engine.get(), 0, {5, 3, 266, 333});
-  ExpectPageRect(engine.get(), 1, {5, 350, 266, 333});
-  ExpectPageRect(engine.get(), 2, {5, 697, 266, 333});
-  ExpectPageRect(engine.get(), 3, {5, 1044, 266, 333});
-  ExpectPageRect(engine.get(), 4, {5, 1391, 266, 333});
-  ExpectPageRect(engine.get(), 5, {5, 1738, 266, 333});
-  ExpectPageRect(engine.get(), 6, {5, 2085, 266, 333});
+  ExpectPageRect(*engine, 0, {5, 3, 266, 333});
+  ExpectPageRect(*engine, 1, {5, 350, 266, 333});
+  ExpectPageRect(*engine, 2, {5, 697, 266, 333});
+  ExpectPageRect(*engine, 3, {5, 1044, 266, 333});
+  ExpectPageRect(*engine, 4, {5, 1391, 266, 333});
+  ExpectPageRect(*engine, 5, {5, 1738, 266, 333});
+  ExpectPageRect(*engine, 6, {5, 2085, 266, 333});
 }
 
 TEST_F(PDFiumEngineTest, ProposeDocumentLayoutWithOverlap) {

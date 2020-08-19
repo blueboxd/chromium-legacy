@@ -207,6 +207,17 @@ void CompositorView::OnPhysicalBackingSizeChanged(
   web_contents->GetNativeView()->OnPhysicalBackingSizeChanged(size);
 }
 
+void CompositorView::OnControlsResizeViewChanged(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& jweb_contents,
+    jboolean controls_resize_view) {
+  content::WebContents* web_contents =
+      content::WebContents::FromJavaWebContents(jweb_contents);
+  web_contents->GetNativeView()->OnControlsResizeViewChanged(
+      controls_resize_view);
+}
+
 void CompositorView::SetLayoutBounds(JNIEnv* env,
                                      const JavaParamRef<jobject>& object) {
   root_layer_->SetBounds(gfx::Size(content_width_, content_height_));

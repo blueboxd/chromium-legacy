@@ -996,6 +996,37 @@ void XRSystem::RequestImmersiveSession(LocalFrame* frame,
   outstanding_request_queries_.insert(query);
   auto session_options = XRSessionOptionsFromQuery(*query);
 
+  // If using DOM Overlay, if we're already in fullscreen mode, and if this
+  // frame has a remote ancestor (OOPIF with the ancestor in another process),
+  // we need to exit and re-enter fullscreen mode to properly apply the
+  // is_xr_overlay property. Request a fullscreen exit, and continue with
+  // the session request once that completes.
+  if (query->DOMOverlayElement() && Fullscreen::FullscreenElementFrom(*doc)) {
+    bool has_remote_ancestor = false;
+    for (Frame* f = GetFrame(); f; f = f->Tree().Parent()) {
+      if (f->IsRemoteFrame()) {
+        has_remote_ancestor = true;
+        break;
+      }
+    }
+    DVLOG(2) << __func__ << ": has_remote_ancestor=" << has_remote_ancestor;
+    if (has_remote_ancestor) {
+      fullscreen_exit_observer_ =
+          MakeGarbageCollected<OverlayFullscreenExitObserver>(this);
+
+      base::OnceClosure callback =
+          WTF::Bind(&XRSystem::DoRequestSession, WrapWeakPersistent(this),
+                    WrapPersistent(query), std::move(session_options));
+      fullscreen_exit_observer_->ExitFullscreen(doc, std::move(callback));
+      return;
+    }
+  }
+  DoRequestSession(std::move(query), std::move(session_options));
+}
+
+void XRSystem::DoRequestSession(
+    PendingRequestSessionQuery* query,
+    device::mojom::blink::XRSessionOptionsPtr session_options) {
   // In DOM overlay mode, there's an additional step before an immersive-ar
   // session can start, we need to enter fullscreen mode by setting the
   // appropriate element as fullscreen from the Renderer, then waiting for the

@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/containers/queue.h"
 #include "base/memory/weak_ptr.h"
@@ -52,7 +53,7 @@ class FileTransferMessageHandler : public protocol::NamedMessagePipeHandler {
 
   // Handlers for specific messages from the client.
   void OnMetadata(protocol::FileTransfer_Metadata metadata);
-  void OnData(std::string data);
+  void OnData(std::vector<std::uint8_t> data);
   void OnEnd();
   void OnRequestTransfer();
   void OnSuccess();

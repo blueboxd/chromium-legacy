@@ -114,6 +114,11 @@ public class TabbedAppMenuPropertiesDelegate extends AppMenuPropertiesDelegateIm
                         Profile.fromWebContents(currentTab.getWebContents()));
     }
 
+    @Override
+    public boolean shouldShowIconBeforeItem() {
+        return CachedFeatureFlags.isEnabled(ChromeFeatureList.TABBED_APP_OVERFLOW_MENU_ICONS);
+    }
+
     private boolean canShowDataReductionItem(int maxMenuHeight) {
         // TODO(twellington): Account for whether a different footer or header is
         // showing.

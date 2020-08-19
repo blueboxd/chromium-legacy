@@ -117,7 +117,7 @@ class ExistingUserController : public LoginDisplay::Delegate,
   void SetDisplayEmail(const std::string& email);
   void SetDisplayAndGivenName(const std::string& display_name,
                               const std::string& given_name);
-  bool IsUserWhitelisted(const AccountId& account_id);
+  bool IsUserAllowlisted(const AccountId& account_id);
 
   // user_manager::UserManager::Observer:
   void LocalStateChanged(user_manager::UserManager* user_manager) override;
@@ -172,7 +172,7 @@ class ExistingUserController : public LoginDisplay::Delegate,
   void OnPasswordChangeDetected(const UserContext& user_context) override;
   void OnOldEncryptionDetected(const UserContext& user_context,
                                bool has_incomplete_migration) override;
-  void WhiteListCheckFailed(const std::string& email) override;
+  void AllowlistCheckFailed(const std::string& email) override;
   void PolicyLoadFailed() override;
   void SetAuthFlowOffline(bool offline) override;
 

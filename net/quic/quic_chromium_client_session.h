@@ -536,7 +536,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   const quic::QuicCryptoClientStream* GetCryptoStream() const override;
   quic::QuicCryptoClientStream* GetMutableCryptoStream() override;
   void SetDefaultEncryptionLevel(quic::EncryptionLevel level) override;
-  void OnOneRttKeysAvailable() override;
+  void OnTlsHandshakeComplete() override;
   void OnNewEncryptionKeyAvailable(
       quic::EncryptionLevel level,
       std::unique_ptr<quic::QuicEncrypter> encrypter) override;

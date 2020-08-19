@@ -3677,7 +3677,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_mac_release_gtests',
-          'gpu_telemetry_tests': 'gpu_fyi_mac_release_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_fyi_mac_pro_release_telemetry_tests',
         },
       },
       # BEGIN Fake builder used as mirror targets for Optional GPU tryservers

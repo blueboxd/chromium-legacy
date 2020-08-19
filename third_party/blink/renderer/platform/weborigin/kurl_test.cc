@@ -786,7 +786,7 @@ TEST(KURLTest, IsHierarchical) {
       "http://host/path/to/file.txt",
       "ftp://andrew.cmu.edu/foo",
       "file:///path/to/resource",
-      "file://hostname/etc/"
+      "file://hostname/etc/",
       "filesystem:http://www.google.com/type/",
       "filesystem:http://user:pass@google.com:21/blah#baz",
   };

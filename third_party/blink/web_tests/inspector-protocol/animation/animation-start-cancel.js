@@ -20,7 +20,7 @@
     // before we cancel it by clearing the transition.
     window.requestAnimationFrame(function() {
       window.requestAnimationFrame(function() {
-        node.style.transition = '';
+        node.style.transition = 'none';
       });
     });
   `);

@@ -138,6 +138,7 @@ class PhishingClassifierTest : public ChromeRenderViewTest {
                                   verdict.feature_map(i).value());
     }
     is_phishing_ = verdict.is_phishing();
+    screenshot_digest_ = verdict.screenshot_digest();
     screenshot_phash_ = verdict.screenshot_phash();
     phash_dimension_size_ = verdict.phash_dimension_size();
   }
@@ -166,6 +167,7 @@ class PhishingClassifierTest : public ChromeRenderViewTest {
   FeatureMap feature_map_;
   float phishy_score_;
   bool is_phishing_;
+  std::string screenshot_digest_;
   std::string screenshot_phash_;
   int phash_dimension_size_;
 
@@ -274,6 +276,14 @@ TEST_F(PhishingClassifierTest, TestSendsVisualHash) {
 
   EXPECT_EQ(phash_dimension_size_, 48);
   EXPECT_FALSE(screenshot_phash_.empty());
+}
+
+TEST_F(PhishingClassifierTest, TestSendsVisualDigest) {
+  LoadHtml(GURL("https://host.net"),
+           "<html><body><a href=\"http://safe.com/\">login</a></body></html>");
+  RunPhishingClassifier(&page_text_);
+
+  EXPECT_FALSE(screenshot_digest_.empty());
 }
 
 // TODO(jialiul): Add test to verify that classification only starts on GET

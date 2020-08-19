@@ -146,6 +146,10 @@ bool UseSeparateGLTexture(SharedContextState* context_state,
   return true;
 }
 
+bool UseMinimalUsageFlags(SharedContextState* context_state) {
+  return context_state->support_gl_external_object_flags();
+}
+
 void WaitSemaphoresOnGrContext(GrDirectContext* gr_context,
                                std::vector<ExternalSemaphore>* semaphores) {
   std::vector<GrBackendSemaphore> backend_senampres;
@@ -200,8 +204,18 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::Create(
 
   if (is_external && (usage & SHARED_IMAGE_USAGE_GLES2)) {
     // Must request all available image usage flags if aliasing GL texture. This
-    // is a spec requirement.
-    vk_usage |= image_usage_cache->optimal_tiling_usage[format];
+    // is a spec requirement per EXT_memory_object. However, if
+    // ANGLE_memory_object_flags is supported, usage flags can be arbitrary.
+    if (UseMinimalUsageFlags(context_state)) {
+      // The following additional usage flags are provided for ANGLE:
+      //
+      // - TRANSFER_SRC: Used for copies from this image.
+      // - TRANSFER_DST: Used for copies to this image or clears.
+      vk_usage |=
+          VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+    } else {
+      vk_usage |= image_usage_cache->optimal_tiling_usage[format];
+    }
   }
 
   auto* vulkan_implementation =
@@ -645,9 +659,18 @@ GLuint ExternalVkImageBacking::ProduceGLTextureInternal() {
                              size().height());
   } else {
     DCHECK(memory_object);
-    api->glTexStorageMem2DEXTFn(GL_TEXTURE_2D, 1, internal_format,
-                                size().width(), size().height(),
-                                memory_object->id(), 0);
+    // If ANGLE_memory_object_flags is supported, use that to communicate the
+    // exact create and usage flags the image was created with.
+    DCHECK(image_->usage() != 0);
+    if (UseMinimalUsageFlags(context_state_)) {
+      api->glTexStorageMemFlags2DANGLEFn(
+          GL_TEXTURE_2D, 1, internal_format, size().width(), size().height(),
+          memory_object->id(), 0, image_->flags(), image_->usage());
+    } else {
+      api->glTexStorageMem2DEXTFn(GL_TEXTURE_2D, 1, internal_format,
+                                  size().width(), size().height(),
+                                  memory_object->id(), 0);
+    }
   }
 
   return texture_service_id;

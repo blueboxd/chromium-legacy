@@ -88,7 +88,7 @@ class StartupBrowserCreator {
 
   static SessionStartupPref GetSessionStartupPref(
       const base::CommandLine& command_line,
-      Profile* profile);
+      const Profile* profile);
 
   // For faking that no profiles have been launched yet.
   static void ClearLaunchedProfilesForTesting();

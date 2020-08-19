@@ -180,6 +180,22 @@ constexpr const char* const kCopiedOnSigninAccessibilityPrefs[]{
     prefs::kDisplayRotationAcceleratorDialogHasBeenAccepted2,
 };
 
+// List of switch access accessibility prefs that are to be copied (if changed
+// by the user) from the current user to the signin screen profile. That way
+// if a switch access user signs out, their switch continues to function.
+constexpr const char* const kSwitchAccessPrefsCopiedToSignin[]{
+    prefs::kAccessibilitySwitchAccessAutoScanEnabled,
+    prefs::kAccessibilitySwitchAccessAutoScanKeyboardSpeedMs,
+    prefs::kAccessibilitySwitchAccessAutoScanSpeedMs,
+    prefs::kAccessibilitySwitchAccessEnabled,
+    prefs::kAccessibilitySwitchAccessNextKeyCodes,
+    prefs::kAccessibilitySwitchAccessNextSetting,
+    prefs::kAccessibilitySwitchAccessPreviousKeyCodes,
+    prefs::kAccessibilitySwitchAccessPreviousSetting,
+    prefs::kAccessibilitySwitchAccessSelectKeyCodes,
+    prefs::kAccessibilitySwitchAccessSelectSetting,
+};
+
 // Helper function that is used to verify the validity of kFeatures and
 // kFeatureDialogs.
 bool VerifyFeaturesData() {
@@ -1522,6 +1538,21 @@ void AccessibilityControllerImpl::ObservePrefs(PrefService* prefs) {
                               UpdateSwitchAccessAutoScanKeyboardSpeedFromPref,
                           base::Unretained(this)));
   pref_change_registrar_->Add(
+      prefs::kAccessibilitySwitchAccessNextSetting,
+      base::BindRepeating(
+          &AccessibilityControllerImpl::SyncSwitchAccessPrefsToSignInProfile,
+          base::Unretained(this)));
+  pref_change_registrar_->Add(
+      prefs::kAccessibilitySwitchAccessPreviousSetting,
+      base::BindRepeating(
+          &AccessibilityControllerImpl::SyncSwitchAccessPrefsToSignInProfile,
+          base::Unretained(this)));
+  pref_change_registrar_->Add(
+      prefs::kAccessibilitySwitchAccessSelectSetting,
+      base::BindRepeating(
+          &AccessibilityControllerImpl::SyncSwitchAccessPrefsToSignInProfile,
+          base::Unretained(this)));
+  pref_change_registrar_->Add(
       prefs::kAccessibilityTabletModeShelfNavigationButtonsEnabled,
       base::BindRepeating(&AccessibilityControllerImpl::
                               UpdateTabletModeShelfNavigationButtonsFromPref,
@@ -1751,6 +1782,8 @@ void AccessibilityControllerImpl::UpdateSwitchAccessKeyCodesFromPref(
     SwitchAccessCommand command) {
   DCHECK(active_user_prefs_);
 
+  SyncSwitchAccessPrefsToSignInProfile();
+
   std::string pref_key = PrefKeyForSwitchAccessCommand(command);
   const base::ListValue* key_codes_pref = active_user_prefs_->GetList(pref_key);
   std::set<int> key_codes;
@@ -1781,6 +1814,7 @@ void AccessibilityControllerImpl::UpdateSwitchAccessAutoScanEnabledFromPref() {
       prefs::kAccessibilitySwitchAccessAutoScanEnabled);
 
   base::UmaHistogramBoolean("Accessibility.CrosSwitchAccess.AutoScan", enabled);
+  SyncSwitchAccessPrefsToSignInProfile();
 }
 
 void AccessibilityControllerImpl::UpdateSwitchAccessAutoScanSpeedFromPref() {
@@ -1791,6 +1825,7 @@ void AccessibilityControllerImpl::UpdateSwitchAccessAutoScanSpeedFromPref() {
   base::UmaHistogramCustomCounts(
       "Accessibility.CrosSwitchAccess.AutoScan.SpeedMs", speed_ms, 1 /* min */,
       10000 /* max */, 100 /* buckets */);
+  SyncSwitchAccessPrefsToSignInProfile();
 }
 
 void AccessibilityControllerImpl::
@@ -1802,6 +1837,7 @@ void AccessibilityControllerImpl::
   base::UmaHistogramCustomCounts(
       "Accessibility.CrosSwitchAccess.AutoScan.KeyboardSpeedMs", speed_ms,
       1 /* min */, 10000 /* max */, 100 /* buckets */);
+  SyncSwitchAccessPrefsToSignInProfile();
 }
 
 void AccessibilityControllerImpl::SwitchAccessDisableDialogClosed(
@@ -1865,6 +1901,28 @@ void AccessibilityControllerImpl::DeactivateSwitchAccess() {
     client_->OnSwitchAccessDisabled();
   switch_access_bubble_controller_.reset();
   switch_access_event_handler_.reset();
+}
+
+void AccessibilityControllerImpl::SyncSwitchAccessPrefsToSignInProfile() {
+  if (!active_user_prefs_ || IsSigninPrefService(active_user_prefs_))
+    return;
+
+  PrefService* signin_prefs =
+      Shell::Get()->session_controller()->GetSigninScreenPrefService();
+  DCHECK(signin_prefs);
+
+  for (const auto* pref_path : kSwitchAccessPrefsCopiedToSignin) {
+    const PrefService::Preference* pref =
+        active_user_prefs_->FindPreference(pref_path);
+
+    // Ignore if the pref has not been set by the user.
+    if (!pref || !pref->IsUserControlled())
+      continue;
+
+    // Copy the pref value to the signin profile.
+    const base::Value* value = pref->GetValue();
+    signin_prefs->Set(pref_path, *value);
+  }
 }
 
 void AccessibilityControllerImpl::UpdateShortcutsEnabledFromPref() {
@@ -2011,6 +2069,7 @@ void AccessibilityControllerImpl::UpdateFeatureFromPref(FeatureType feature) {
       } else {
         ActivateSwitchAccess();
       }
+      SyncSwitchAccessPrefsToSignInProfile();
       break;
     case FeatureType::kVirtualKeyboard:
       keyboard::SetAccessibilityKeyboardEnabled(enabled);

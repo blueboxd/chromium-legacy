@@ -11,7 +11,7 @@
 #include "base/logging.h"
 #include "chrome/browser/chromeos/crosapi/attestation_ash.h"
 #include "chrome/browser/chromeos/crosapi/message_center_ash.h"
-#include "chrome/browser/chromeos/crosapi/screen_manager_crosapi.h"
+#include "chrome/browser/chromeos/crosapi/screen_manager_ash.h"
 #include "chrome/browser/chromeos/crosapi/select_file_ash.h"
 #include "chromeos/crosapi/mojom/attestation.mojom.h"
 #include "chromeos/crosapi/mojom/message_center.mojom.h"
@@ -23,7 +23,7 @@ namespace crosapi {
 AshChromeServiceImpl::AshChromeServiceImpl(
     mojo::PendingReceiver<mojom::AshChromeService> pending_receiver)
     : receiver_(this, std::move(pending_receiver)),
-      screen_manager_crosapi_(std::make_unique<ScreenManagerCrosapi>()) {
+      screen_manager_ash_(std::make_unique<ScreenManagerAsh>()) {
   // TODO(hidehiko): Remove non-critical log from here.
   // Currently this is the signal that the connection is established.
   LOG(WARNING) << "AshChromeService connected.";
@@ -44,12 +44,12 @@ void AshChromeServiceImpl::BindMessageCenter(
 
 void AshChromeServiceImpl::BindSelectFile(
     mojo::PendingReceiver<mojom::SelectFile> receiver) {
-  select_file_crosapi_ = std::make_unique<SelectFileAsh>(std::move(receiver));
+  select_file_ash_ = std::make_unique<SelectFileAsh>(std::move(receiver));
 }
 
 void AshChromeServiceImpl::BindScreenManager(
     mojo::PendingReceiver<mojom::ScreenManager> receiver) {
-  screen_manager_crosapi_->BindReceiver(std::move(receiver));
+  screen_manager_ash_->BindReceiver(std::move(receiver));
 }
 
 }  // namespace crosapi

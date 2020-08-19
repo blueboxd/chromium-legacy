@@ -149,4 +149,10 @@ TEST_F(DomDistillerViewerTest, TestGetDistilledPageFontFamilyJsOutput) {
             0);
 }
 
+TEST_F(DomDistillerViewerTest, TestGetDistilledPageFontScalingJsOutput) {
+  std::string kJsFontScaling = "useFontScaling(5);";
+  EXPECT_EQ(kJsFontScaling.compare(viewer::GetDistilledPageFontScalingJs(5)),
+            0);
+}
+
 }  // namespace dom_distiller

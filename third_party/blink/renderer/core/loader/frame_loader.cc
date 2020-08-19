@@ -78,6 +78,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
@@ -938,8 +939,13 @@ static bool ShouldNavigate(WebNavigationParams* params, LocalFrame* frame) {
   if (MIMETypeRegistry::IsSupportedMIMEType(mime_type))
     return true;
   PluginData* plugin_data = frame->GetPluginData();
-  return !mime_type.IsEmpty() && plugin_data &&
-         plugin_data->SupportsMimeType(mime_type);
+  bool can_load_with_plugin = !mime_type.IsEmpty() && plugin_data &&
+                              plugin_data->SupportsMimeType(mime_type);
+  if (!can_load_with_plugin) {
+    WebLocalFrameImpl::FromFrame(frame)->Client()->WillFailCommitNavigation(
+        WebLocalFrameClient::CommitFailureReason::kNoPluginForMimeType);
+  }
+  return can_load_with_plugin;
 }
 
 void FrameLoader::CommitNavigation(

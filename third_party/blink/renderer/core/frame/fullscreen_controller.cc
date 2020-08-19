@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_fullscreen_options.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/page_scale_constraints_set.h"
@@ -128,7 +129,7 @@ void FullscreenController::EnterFullscreen(LocalFrame& frame,
   }
 
   // We need to store these values here rather than in |DidEnterFullscreen()|
-  // since by the time the latter is called, a Resize has already occured,
+  // since by the time the latter is called, a Resize has already occurred,
   // clamping the scroll offset. Don't save values if we're still waiting to
   // restore a previous set. This can happen if we exit and quickly reenter
   // fullscreen without performing a layout.
@@ -150,7 +151,7 @@ void FullscreenController::EnterFullscreen(LocalFrame& frame,
   fullscreen_options->prefers_navigation_bar =
       options->navigationUI() != "hide";
   if (options->hasScreen()) {
-    DCHECK(RuntimeEnabledFeatures::WindowPlacementEnabled());
+    DCHECK(RuntimeEnabledFeatures::WindowPlacementEnabled(frame.DomWindow()));
     if (options->screen()->DisplayId() != Screen::kInvalidDisplayId)
       fullscreen_options->display_id = options->screen()->DisplayId();
   }

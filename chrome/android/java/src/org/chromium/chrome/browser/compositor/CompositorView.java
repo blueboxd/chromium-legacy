@@ -433,6 +433,11 @@ public class CompositorView
                 mNativeCompositorView, CompositorView.this, webContents, width, height);
     }
 
+    void onControlsResizeViewChanged(WebContents webContents, boolean controlsResizeView) {
+        CompositorViewJni.get().onControlsResizeViewChanged(
+                mNativeCompositorView, CompositorView.this, webContents, controlsResizeView);
+    }
+
     @CalledByNative
     private void onCompositorLayout() {
         mRenderHost.onCompositorLayout();
@@ -629,6 +634,8 @@ public class CompositorView
                 int height, boolean backedBySurfaceTexture, Surface surface);
         void onPhysicalBackingSizeChanged(long nativeCompositorView, CompositorView caller,
                 WebContents webContents, int width, int height);
+        void onControlsResizeViewChanged(long nativeCompositorView, CompositorView caller,
+                WebContents webContents, boolean controlsResizeView);
         void finalizeLayers(long nativeCompositorView, CompositorView caller);
         void setNeedsComposite(long nativeCompositorView, CompositorView caller);
         void setLayoutBounds(long nativeCompositorView, CompositorView caller);

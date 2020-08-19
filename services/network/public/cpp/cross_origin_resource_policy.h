@@ -45,7 +45,7 @@ class COMPONENT_EXPORT(NETWORK_CPP) CrossOriginResourcePolicy {
       const base::Optional<url::Origin>& request_initiator,
       const network::mojom::URLResponseHead& response,
       mojom::RequestMode request_mode,
-      base::Optional<url::Origin> request_initiator_site_lock,
+      base::Optional<url::Origin> request_initiator_origin_lock,
       const CrossOriginEmbedderPolicy& embedder_policy,
       mojom::CrossOriginEmbedderPolicyReporter* reporter = nullptr)
       WARN_UNUSED_RESULT;
@@ -58,7 +58,7 @@ class COMPONENT_EXPORT(NETWORK_CPP) CrossOriginResourcePolicy {
       const base::Optional<url::Origin>& request_initiator,
       base::Optional<std::string> corp_header_value,
       mojom::RequestMode request_mode,
-      base::Optional<url::Origin> request_initiator_site_lock,
+      base::Optional<url::Origin> request_initiator_origin_lock,
       const CrossOriginEmbedderPolicy& embedder_policy,
       mojom::CrossOriginEmbedderPolicyReporter* reporter = nullptr)
       WARN_UNUSED_RESULT;
@@ -70,7 +70,7 @@ class COMPONENT_EXPORT(NETWORK_CPP) CrossOriginResourcePolicy {
       const GURL& original_url,
       const base::Optional<url::Origin>& request_initiator,
       const network::mojom::URLResponseHead& response,
-      base::Optional<url::Origin> request_initiator_site_lock,
+      base::Optional<url::Origin> request_initiator_origin_lock,
       const CrossOriginEmbedderPolicy& embedder_policy,
       mojom::CrossOriginEmbedderPolicyReporter* reporter = nullptr);
 

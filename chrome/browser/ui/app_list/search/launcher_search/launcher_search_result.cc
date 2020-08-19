@@ -56,10 +56,6 @@ void LauncherSearchResult::Open(int event_flags) {
   service->OnOpenResult(extension_->id(), item_id_);
 }
 
-ash::SearchResultType LauncherSearchResult::GetSearchResultType() const {
-  return ash::LAUNCHER_SEARCH_PROVIDER_RESULT;
-}
-
 LauncherSearchResult::LauncherSearchResult(
     const std::string& item_id,
     const std::string& icon_type,
@@ -81,6 +77,7 @@ void LauncherSearchResult::Initialize() {
                     chromeos::launcher_search_provider::kMaxSearchResultScore));
   SetDetails(base::UTF8ToUTF16(extension_->name()));
   SetResultType(ResultType::kLauncher);
+  SetMetricsType(ash::LAUNCHER_SEARCH_PROVIDER_RESULT);
 
   SetIcon(GetIconFromType(icon_type_));
 }

@@ -156,11 +156,10 @@ Time Time::FromCFAbsoluteTime(CFAbsoluteTime t) {
                 "CFAbsoluteTime must have an infinity value");
   if (t == 0)
     return Time();  // Consider 0 as a null Time.
-  if (t == std::numeric_limits<CFAbsoluteTime>::infinity())
-    return Max();
-  return Time(static_cast<int64_t>((t + kCFAbsoluteTimeIntervalSince1970) *
-                                   kMicrosecondsPerSecond) +
-              kTimeTToMicrosecondsOffset);
+  return (t == std::numeric_limits<CFAbsoluteTime>::infinity())
+             ? Max()
+             : (UnixEpoch() + TimeDelta::FromSecondsD(double{
+                                  t + kCFAbsoluteTimeIntervalSince1970}));
 }
 
 CFAbsoluteTime Time::ToCFAbsoluteTime() const {
@@ -168,11 +167,9 @@ CFAbsoluteTime Time::ToCFAbsoluteTime() const {
                 "CFAbsoluteTime must have an infinity value");
   if (is_null())
     return 0;  // Consider 0 as a null Time.
-  if (is_max())
-    return std::numeric_limits<CFAbsoluteTime>::infinity();
-  return (static_cast<CFAbsoluteTime>(us_ - kTimeTToMicrosecondsOffset) /
-          kMicrosecondsPerSecond) -
-         kCFAbsoluteTimeIntervalSince1970;
+  return is_max() ? std::numeric_limits<CFAbsoluteTime>::infinity()
+                  : (CFAbsoluteTime{(*this - UnixEpoch()).InSecondsF()} -
+                     kCFAbsoluteTimeIntervalSince1970);
 }
 
 // TimeDelta ------------------------------------------------------------------

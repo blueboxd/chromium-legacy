@@ -22,7 +22,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LINE_INLINE_BOX_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LINE_INLINE_BOX_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_box_model.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_item.h"
@@ -70,6 +69,8 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
         logical_width_(logical_width),
         bitfields_(first_line, constructed, dirty, extracted, is_horizontal) {}
 
+  InlineBox(const InlineBox&) = delete;
+  InlineBox& operator=(const InlineBox&) = delete;
   ~InlineBox() override;
 
   virtual void Destroy();
@@ -504,8 +505,6 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
 #if DCHECK_IS_ON()
   bool has_bad_parent_ = false;
 #endif
-
-  DISALLOW_COPY_AND_ASSIGN(InlineBox);
 };
 
 #if !DCHECK_IS_ON()

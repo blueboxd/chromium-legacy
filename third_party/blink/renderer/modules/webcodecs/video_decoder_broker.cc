@@ -109,8 +109,10 @@ class MediaVideoTaskWrapper {
     Document* document = To<LocalDOMWindow>(execution_context).document();
     if (document && document->GetFrame()) {
       LocalFrame* frame = document->GetFrame();
-      target_color_space_ =
-          frame->GetPage()->GetChromeClient().GetScreenInfo(*frame).color_space;
+      target_color_space_ = frame->GetPage()
+                                ->GetChromeClient()
+                                .GetScreenInfo(*frame)
+                                .display_color_spaces.GetScreenInfoColorSpace();
     }
   }
 

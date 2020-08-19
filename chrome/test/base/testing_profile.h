@@ -5,6 +5,7 @@
 #ifndef CHROME_TEST_BASE_TESTING_PROFILE_H_
 #define CHROME_TEST_BASE_TESTING_PROFILE_H_
 
+#include <map>
 #include <memory>
 #include <string>
 #include <utility>
@@ -89,6 +90,8 @@ class TestingProfile : public Profile {
   class Builder {
    public:
     Builder();
+    Builder(const Builder&) = delete;
+    Builder& operator=(const Builder&) = delete;
     ~Builder();
 
     // Sets a Delegate to be called back during profile init. This causes the
@@ -180,8 +183,6 @@ class TestingProfile : public Profile {
     TestingFactories testing_factories_;
     std::string profile_name_;
     base::Optional<bool> override_policy_connector_is_managed_;
-
-    DISALLOW_COPY_AND_ASSIGN(Builder);
   };
 
   // Multi-profile aware constructor that takes the path to a directory managed
@@ -336,9 +337,9 @@ class TestingProfile : public Profile {
   void set_last_selected_directory(const base::FilePath& path) override;
   bool WasCreatedByVersionOrLater(const std::string& version) override;
   bool IsGuestSession() const override;
-  bool IsNewProfile() override;
+  bool IsNewProfile() const override;
   void SetExitType(ExitType exit_type) override {}
-  ExitType GetLastSessionExitType() override;
+  ExitType GetLastSessionExitType() const override;
   void ConfigureNetworkContextParams(
       bool in_memory,
       const base::FilePath& relative_partition_path,

@@ -397,6 +397,8 @@ static_library("common") {
           "chrome_utility_printing_messages.h",
           "service_process_util_win.cc",
         ]
+
+        public_deps += [ "//printing/mojom" ]
       }
     }
   }

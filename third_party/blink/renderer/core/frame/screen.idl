@@ -44,7 +44,8 @@
     [HighEntropy=Direct, Measure] readonly attribute long availTop;
 
     // Proposed
-    // https://github.com/webscreens/screen-enumeration
+    // https://github.com/webscreens/window-placement
+    // TODO(crbug.com/1116528): Use a dictionary, not the Screen interface, for proposed multi-screen info.
     [HighEntropy=Direct, MeasureAs=WindowScreenLeft, RuntimeEnabled=WindowPlacement] readonly attribute long left;
     [HighEntropy=Direct, MeasureAs=WindowScreenTop, RuntimeEnabled=WindowPlacement] readonly attribute long top;
     [HighEntropy=Direct, MeasureAs=WindowScreenInternal, RuntimeEnabled=WindowPlacement] readonly attribute boolean internal;

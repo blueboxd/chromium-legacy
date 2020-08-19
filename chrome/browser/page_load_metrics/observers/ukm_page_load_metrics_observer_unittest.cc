@@ -1351,13 +1351,13 @@ TEST_F(UkmPageLoadMetricsObserverTest, ImageMediaSizeMetrics) {
     // 30 KB for all images, 20 KB for subframe images, and 50 KB for media.
     tester()->test_ukm_recorder().ExpectEntryMetric(
         kv.second.get(), "Net.ImageBytes",
-        ukm::GetExponentialBucketMin(30 * 1024, 1.3));
+        ukm::GetExponentialBucketMin(30 * 1024, 1.15));
     tester()->test_ukm_recorder().ExpectEntryMetric(
         kv.second.get(), "Net.ImageSubframeBytes",
-        ukm::GetExponentialBucketMin(20 * 1024, 1.3));
+        ukm::GetExponentialBucketMin(20 * 1024, 1.15));
     tester()->test_ukm_recorder().ExpectEntryMetric(
         kv.second.get(), "Net.MediaBytes",
-        ukm::GetExponentialBucketMin(50 * 1024, 1.3));
+        ukm::GetExponentialBucketMin(50 * 1024, 1.15));
   }
 }
 

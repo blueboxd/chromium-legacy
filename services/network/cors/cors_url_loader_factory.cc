@@ -159,7 +159,7 @@ CorsURLLoaderFactory::CorsURLLoaderFactory(
       is_trusted_(params->is_trusted),
       disable_web_security_(params->disable_web_security),
       process_id_(params->process_id),
-      request_initiator_site_lock_(params->request_initiator_site_lock),
+      request_initiator_origin_lock_(params->request_initiator_origin_lock),
       ignore_isolated_world_origin_(params->ignore_isolated_world_origin),
       trust_token_redemption_policy_(params->trust_token_redemption_policy),
       isolation_info_(params->isolation_info),
@@ -367,10 +367,11 @@ bool CorsURLLoaderFactory::IsValidRequest(const ResourceRequest& request,
     }
   }
 
-  // Compare |request_initiator| and |request_initiator_site_lock_|.
+  // Compare |request_initiator| and |request_initiator_origin_lock_|.
   InitiatorLockCompatibility initiator_lock_compatibility =
-      VerifyRequestInitiatorLockWithPluginCheck(
-          process_id_, request_initiator_site_lock_, request.request_initiator);
+      VerifyRequestInitiatorLockWithPluginCheck(process_id_,
+                                                request_initiator_origin_lock_,
+                                                request.request_initiator);
   UMA_HISTOGRAM_ENUMERATION(
       "NetworkService.URLLoader.RequestInitiatorOriginLockCompatibility",
       initiator_lock_compatibility);
@@ -382,7 +383,7 @@ bool CorsURLLoaderFactory::IsValidRequest(const ResourceRequest& request,
       break;
 
     case InitiatorLockCompatibility::kNoLock:
-      // |request_initiator_site_lock| should always be set in a
+      // |request_initiator_origin_lock| should always be set in a
       // URLLoaderFactory vended to a renderer process.  See also
       // https://crbug.com/1114906.
       NOTREACHED();
@@ -403,8 +404,8 @@ bool CorsURLLoaderFactory::IsValidRequest(const ResourceRequest& request,
       if (base::FeatureList::IsEnabled(
               features::kRequestInitiatorSiteLockEnfocement)) {
         url::debug::ScopedOriginCrashKey initiator_lock_crash_key(
-            debug::GetRequestInitiatorSiteLockCrashKey(),
-            base::OptionalOrNullptr(request_initiator_site_lock_));
+            debug::GetRequestInitiatorOriginLockCrashKey(),
+            base::OptionalOrNullptr(request_initiator_origin_lock_));
         mojo::ReportBadMessage(
             "CorsURLLoaderFactory: lock VS initiator mismatch");
         return false;
@@ -478,13 +479,13 @@ bool CorsURLLoaderFactory::IsValidRequest(const ResourceRequest& request,
 InitiatorLockCompatibility
 CorsURLLoaderFactory::VerifyRequestInitiatorLockWithPluginCheck(
     uint32_t process_id,
-    const base::Optional<url::Origin>& request_initiator_site_lock,
+    const base::Optional<url::Origin>& request_initiator_origin_lock,
     const base::Optional<url::Origin>& request_initiator) {
   if (process_id == mojom::kBrowserProcessId)
     return InitiatorLockCompatibility::kBrowserProcess;
 
   InitiatorLockCompatibility result = VerifyRequestInitiatorLock(
-      request_initiator_site_lock, request_initiator);
+      request_initiator_origin_lock, request_initiator);
 
   if (result == InitiatorLockCompatibility::kIncorrectLock &&
       CrossOriginReadBlockingExceptionForPlugin::ShouldAllowForPlugin(

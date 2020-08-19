@@ -30,6 +30,7 @@ class DistillerJavaScriptServiceImpl
 
   void HandleStoreThemePref(mojom::Theme theme) override;
   void HandleStoreFontFamilyPref(mojom::FontFamily font_family) override;
+  void HandleStoreFontScalingPref(float font_scale) override;
 
   DistillerJavaScriptServiceImpl(const DistillerJavaScriptServiceImpl&) =
       delete;

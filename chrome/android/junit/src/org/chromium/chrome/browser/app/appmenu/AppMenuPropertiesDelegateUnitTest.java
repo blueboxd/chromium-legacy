@@ -32,6 +32,7 @@ import org.chromium.chrome.browser.app.appmenu.AppMenuPropertiesDelegateImpl.Men
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.multiwindow.MultiWindowModeStateDispatcher;
+import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -70,6 +71,8 @@ public class AppMenuPropertiesDelegateUnitTest {
     private View mDecorView;
     @Mock
     private OverviewModeBehavior mOverviewModeBehavior;
+    @Mock
+    private UpdateMenuItemHelper mUpdateMenuItemHelper;
 
     private ObservableSupplierImpl<OverviewModeBehavior> mOverviewModeSupplier =
             new ObservableSupplierImpl<>();
@@ -77,6 +80,8 @@ public class AppMenuPropertiesDelegateUnitTest {
             new ObservableSupplierImpl<>();
 
     private AppMenuPropertiesDelegateImpl mAppMenuPropertiesDelegate;
+
+    private UpdateMenuItemHelper.MenuUiState mMenuUiState;
 
     @Before
     public void setUp() {
@@ -92,6 +97,10 @@ public class AppMenuPropertiesDelegateUnitTest {
         when(mTabModelSelector.getModel(true)).thenReturn((mIncognitoTabModel));
         when(mTabModel.isIncognito()).thenReturn(false);
         when(mIncognitoTabModel.isIncognito()).thenReturn(true);
+
+        UpdateMenuItemHelper.setInstanceForTesting(mUpdateMenuItemHelper);
+        mMenuUiState = new UpdateMenuItemHelper.MenuUiState();
+        doReturn(mMenuUiState).when(mUpdateMenuItemHelper).getUiState();
 
         mAppMenuPropertiesDelegate = Mockito.spy(new AppMenuPropertiesDelegateImpl(
                 ContextUtils.getApplicationContext(), mActivityTabProvider,
@@ -231,6 +240,60 @@ public class AppMenuPropertiesDelegateUnitTest {
 
     @Test
     @Config(qualifiers = "sw320dp")
+    public void testPageMenuItemsIcons_Phone_RegularPage_iconsAfterMenuItems() {
+        setUpMocksForPageMenu();
+        when(mTab.getUrlString()).thenReturn("https://google.com");
+        when(mTab.isNativePage()).thenReturn(false);
+        doReturn(false)
+                .when(mAppMenuPropertiesDelegate)
+                .shouldShowPaintPreview(anyBoolean(), any(Tab.class), anyBoolean());
+        doReturn(true).when(mAppMenuPropertiesDelegate).shouldShowTranslateMenuItem(any(Tab.class));
+        doReturn(true).when(mAppMenuPropertiesDelegate).shouldShowReaderModePrefs(any(Tab.class));
+        doReturn(true).when(mAppMenuPropertiesDelegate).shouldShowUpdateMenuItem();
+        doReturn(false).when(mAppMenuPropertiesDelegate).shouldShowIconBeforeItem();
+        doReturn(R.string.menu_add_to_homescreen)
+                .when(mAppMenuPropertiesDelegate)
+                .getAddToHomeScreenTitle();
+
+        Assert.assertEquals(MenuGroup.PAGE_MENU, mAppMenuPropertiesDelegate.getMenuGroup());
+        Menu menu = createTestMenu();
+        mAppMenuPropertiesDelegate.prepareMenu(menu, null);
+
+        Integer[] expectedItems = {R.id.update_menu_id, R.id.reader_mode_prefs_id};
+        assertMenuItemsHaveIcons(menu, expectedItems);
+    }
+
+    @Test
+    @Config(qualifiers = "sw320dp")
+    public void testPageMenuItemsIcons_Phone_RegularPage_iconsBeforeMenuItems() {
+        setUpMocksForPageMenu();
+        when(mTab.getUrlString()).thenReturn("https://google.com");
+        when(mTab.isNativePage()).thenReturn(false);
+        doReturn(false)
+                .when(mAppMenuPropertiesDelegate)
+                .shouldShowPaintPreview(anyBoolean(), any(Tab.class), anyBoolean());
+        doReturn(true).when(mAppMenuPropertiesDelegate).shouldShowTranslateMenuItem(any(Tab.class));
+        doReturn(true).when(mAppMenuPropertiesDelegate).shouldShowReaderModePrefs(any(Tab.class));
+        doReturn(true).when(mAppMenuPropertiesDelegate).shouldShowUpdateMenuItem();
+        doReturn(true).when(mAppMenuPropertiesDelegate).shouldShowIconBeforeItem();
+        doReturn(R.string.menu_add_to_homescreen)
+                .when(mAppMenuPropertiesDelegate)
+                .getAddToHomeScreenTitle();
+
+        Assert.assertEquals(MenuGroup.PAGE_MENU, mAppMenuPropertiesDelegate.getMenuGroup());
+        Menu menu = createTestMenu();
+        mAppMenuPropertiesDelegate.prepareMenu(menu, null);
+
+        Integer[] expectedItems = {R.id.update_menu_id, R.id.new_tab_menu_id,
+                R.id.new_incognito_tab_menu_id, R.id.all_bookmarks_menu_id,
+                R.id.recent_tabs_menu_id, R.id.open_history_menu_id, R.id.downloads_menu_id,
+                R.id.translate_id, R.id.find_in_page_id, R.id.add_to_homescreen_id,
+                R.id.reader_mode_prefs_id, R.id.preferences_id, R.id.help_id};
+        assertMenuItemsHaveIcons(menu, expectedItems);
+    }
+
+    @Test
+    @Config(qualifiers = "sw320dp")
     public void testOverviewMenuItems_Phone() {
         setUpMocksForOverviewMenu();
         when(mIncognitoTabModel.getCount()).thenReturn(0);
@@ -286,7 +349,6 @@ public class AppMenuPropertiesDelegateUnitTest {
 
     private void setUpIncognitoMocks() {
         doReturn(true).when(mAppMenuPropertiesDelegate).isIncognitoEnabled();
-        doReturn(false).when(mAppMenuPropertiesDelegate).isIncognitoManaged();
     }
 
     private Menu createTestMenu() {
@@ -305,6 +367,18 @@ public class AppMenuPropertiesDelegateUnitTest {
         }
 
         Assert.assertThat("Populated menu items were:" + getMenuTitles(menu), actualItems,
+                Matchers.containsInAnyOrder(expectedItems));
+    }
+
+    private void assertMenuItemsHaveIcons(Menu menu, Integer... expectedItems) {
+        List<Integer> actualItems = new ArrayList<>();
+        for (int i = 0; i < menu.size(); i++) {
+            if (menu.getItem(i).isVisible() && menu.getItem(i).getIcon() != null) {
+                actualItems.add(menu.getItem(i).getItemId());
+            }
+        }
+
+        Assert.assertThat("menu items with icons were:" + getMenuTitles(menu), actualItems,
                 Matchers.containsInAnyOrder(expectedItems));
     }
 

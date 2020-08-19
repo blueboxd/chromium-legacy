@@ -357,7 +357,23 @@ void ServiceWorkerStorage::StoreRegistrationData(
     storage::mojom::ServiceWorkerRegistrationDataPtr registration_data,
     ResourceList resources,
     StoreRegistrationDataCallback callback) {
-  DCHECK_EQ(state_, STORAGE_STATE_INITIALIZED);
+  switch (state_) {
+    case STORAGE_STATE_DISABLED:
+      std::move(callback).Run(
+          ServiceWorkerDatabase::Status::kErrorDisabled,
+          /*deleted_version=*/blink::mojom::kInvalidServiceWorkerVersionId,
+          /*newly_purgeable_resources=*/{});
+      return;
+    case STORAGE_STATE_INITIALIZING:  // Fall-through.
+    case STORAGE_STATE_UNINITIALIZED:
+      LazyInitialize(base::BindOnce(
+          &ServiceWorkerStorage::StoreRegistrationData,
+          weak_factory_.GetWeakPtr(), std::move(registration_data),
+          std::move(resources), std::move(callback)));
+      return;
+    case STORAGE_STATE_INITIALIZED:
+      break;
+  }
 
   if (!has_checked_for_stale_resources_)
     DeleteStaleResources();

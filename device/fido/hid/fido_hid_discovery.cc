@@ -8,11 +8,23 @@
 
 #include "base/bind.h"
 #include "base/no_destructor.h"
+#include "base/stl_util.h"
+#include "components/device_event_log/device_event_log.h"
 #include "device/fido/hid/fido_hid_device.h"
 
 namespace device {
 
 namespace {
+
+// Checks that the supported report sizes of |device| are sufficient for at
+// least one byte of non-header data per report and not larger than our maximum
+// size.
+bool ReportSizesSufficient(const device::mojom::HidDeviceInfo& device) {
+  return device.max_input_report_size > kHidInitPacketHeaderSize &&
+         device.max_input_report_size <= kHidMaxPacketSize &&
+         device.max_output_report_size > kHidInitPacketHeaderSize &&
+         device.max_output_report_size <= kHidMaxPacketSize;
+}
 
 FidoHidDiscovery::HidManagerBinder& GetHidManagerBinder() {
   static base::NoDestructor<FidoHidDiscovery::HidManagerBinder> binder;
@@ -21,10 +33,19 @@ FidoHidDiscovery::HidManagerBinder& GetHidManagerBinder() {
 
 }  // namespace
 
-FidoHidDiscovery::FidoHidDiscovery()
-    : FidoDeviceDiscovery(FidoTransportProtocol::kUsbHumanInterfaceDevice) {
-  // TODO(piperc@): Give this constant a name.
-  filter_.SetUsagePage(0xf1d0);
+bool operator==(const VidPid& lhs, const VidPid& rhs) {
+  return lhs.vid == rhs.vid && lhs.pid == rhs.pid;
+}
+
+bool operator<(const VidPid& lhs, const VidPid& rhs) {
+  return lhs.vid < rhs.vid || (lhs.vid == rhs.vid && lhs.pid < rhs.pid);
+}
+
+FidoHidDiscovery::FidoHidDiscovery(base::flat_set<VidPid> ignore_list)
+    : FidoDeviceDiscovery(FidoTransportProtocol::kUsbHumanInterfaceDevice),
+      ignore_list_(std::move(ignore_list)) {
+  constexpr uint16_t kFidoUsagePage = 0xf1d0;
+  filter_.SetUsagePage(kFidoUsagePage);
 }
 
 FidoHidDiscovery::~FidoHidDiscovery() = default;
@@ -54,18 +75,19 @@ void FidoHidDiscovery::DeviceAdded(
       kHidInitPacketHeaderSize >= kHidContinuationPacketHeaderSize,
       "init header is expected to be larger than continuation header");
 
-  // Ignore non-U2F devices.
-  if (filter_.Matches(*device_info) &&
-      // Check that the supported report sizes are sufficient for at least one
-      // byte of non-header data per report and not larger than our maximum
-      // size.
-      device_info->max_input_report_size > kHidInitPacketHeaderSize &&
-      device_info->max_input_report_size <= kHidMaxPacketSize &&
-      device_info->max_output_report_size > kHidInitPacketHeaderSize &&
-      device_info->max_output_report_size <= kHidMaxPacketSize) {
-    AddDevice(std::make_unique<FidoHidDevice>(std::move(device_info),
-                                              hid_manager_.get()));
+  if (!filter_.Matches(*device_info) || !ReportSizesSufficient(*device_info)) {
+    return;
   }
+
+  const VidPid vid_pid{device_info->vendor_id, device_info->product_id};
+  if (base::Contains(ignore_list_, vid_pid)) {
+    FIDO_LOG(EVENT) << "Ignoring HID device " << vid_pid.vid << ":"
+                    << vid_pid.pid;
+    return;
+  }
+
+  AddDevice(std::make_unique<FidoHidDevice>(std::move(device_info),
+                                            hid_manager_.get()));
 }
 
 void FidoHidDiscovery::DeviceRemoved(

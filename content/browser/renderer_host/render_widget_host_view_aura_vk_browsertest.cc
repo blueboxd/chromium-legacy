@@ -399,6 +399,7 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewAuraBrowserMockIMETest,
 
   AccessibilityNotificationWaiter waiter2(
       shell()->web_contents(), ui::kAXModeComplete, ax::mojom::Event::kFocus);
+  GetManager()->SetFocus(*target);
   GetManager()->DoDefaultAction(*target);
   waiter2.WaitForNotification();
 

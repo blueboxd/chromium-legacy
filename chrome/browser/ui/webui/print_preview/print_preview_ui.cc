@@ -50,7 +50,6 @@
 #include "chrome/grit/print_preview_resources.h"
 #include "chrome/grit/print_preview_resources_map.h"
 #include "chromeos/constants/chromeos_features.h"
-#include "components/cloud_devices/common/cloud_devices_urls.h"
 #include "components/prefs/pref_service.h"
 #include "components/printing/common/print_messages.h"
 #include "components/strings/grit/components_strings.h"
@@ -351,18 +350,6 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
                     chrome::kCloudPrintCertificateErrorLearnMoreURL);
 
 #if !defined(OS_CHROMEOS)
-  if (webui::IsEnterpriseManaged()) {
-    source->AddLocalizedString(
-        "saveToDriveNotSupportedWarning",
-        IDS_GOOGLE_DRIVE_OPTION_NOT_SUPPORTED_WARNING_ENTERPRISE);
-  } else {
-    source->AddString(
-        "saveToDriveNotSupportedWarning",
-        l10n_util::GetStringFUTF16(
-            IDS_GOOGLE_DRIVE_OPTION_NOT_SUPPORTED_WARNING,
-            base::ASCIIToUTF16(cloud_devices::kCloudPrintDeprecationHelpURL)));
-  }
-
   const base::string16 shortcut_text(base::UTF8ToUTF16(kBasicPrintShortcut));
   source->AddString("systemDialogOption",
                     l10n_util::GetStringFUTF16(

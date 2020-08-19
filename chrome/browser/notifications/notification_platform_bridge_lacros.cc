@@ -8,9 +8,12 @@
 
 #include "base/check.h"
 #include "base/notreached.h"
+#include "base/numerics/ranges.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/optional.h"
 #include "chrome/browser/notifications/notification_platform_bridge_delegate.h"
+#include "chromeos/crosapi/cpp/bitmap.h"
+#include "chromeos/crosapi/cpp/bitmap_util.h"
 #include "chromeos/crosapi/mojom/message_center.mojom.h"
 #include "chromeos/crosapi/mojom/notification.mojom.h"
 #include "ui/message_center/public/cpp/notification.h"
@@ -35,6 +38,62 @@ crosapi::mojom::NotificationType ToMojo(message_center::NotificationType type) {
       NOTREACHED();
       return crosapi::mojom::NotificationType::kSimple;
   }
+}
+
+crosapi::mojom::FullscreenVisibility ToMojo(
+    message_center::FullscreenVisibility visibility) {
+  switch (visibility) {
+    case message_center::FullscreenVisibility::NONE:
+      return crosapi::mojom::FullscreenVisibility::kNone;
+    case message_center::FullscreenVisibility::OVER_USER:
+      return crosapi::mojom::FullscreenVisibility::kOverUser;
+  }
+}
+
+crosapi::mojom::NotificationPtr ToMojo(
+    const message_center::Notification& notification) {
+  auto mojo_note = crosapi::mojom::Notification::New();
+  mojo_note->type = ToMojo(notification.type());
+  mojo_note->id = notification.id();
+  mojo_note->title = notification.title();
+  mojo_note->message = notification.message();
+  mojo_note->display_source = notification.display_source();
+  mojo_note->origin_url = notification.origin_url();
+  if (!notification.icon().IsEmpty()) {
+    SkBitmap icon = notification.icon().AsBitmap();
+    mojo_note->icon = crosapi::BitmapFromSkBitmap(icon);
+  }
+  mojo_note->priority = base::ClampToRange(notification.priority(), -2, 2);
+  mojo_note->require_interaction = notification.never_timeout();
+  mojo_note->timestamp = notification.timestamp();
+  if (!notification.image().IsEmpty()) {
+    SkBitmap image = notification.image().AsBitmap();
+    mojo_note->image = crosapi::BitmapFromSkBitmap(image);
+  }
+  if (!notification.small_image().IsEmpty()) {
+    SkBitmap badge = notification.small_image().AsBitmap();
+    mojo_note->badge = crosapi::BitmapFromSkBitmap(badge);
+  }
+  for (const auto& item : notification.items()) {
+    auto mojo_item = crosapi::mojom::NotificationItem::New();
+    mojo_item->title = item.title;
+    mojo_item->message = item.message;
+    mojo_note->items.push_back(std::move(mojo_item));
+  }
+  mojo_note->progress = base::ClampToRange(notification.progress(), -1, 100);
+  mojo_note->progress_status = notification.progress_status();
+  for (const auto& button : notification.buttons()) {
+    auto mojo_button = crosapi::mojom::ButtonInfo::New();
+    mojo_button->title = button.title;
+    mojo_note->buttons.push_back(std::move(mojo_button));
+  }
+  mojo_note->pinned = notification.pinned();
+  mojo_note->renotify = notification.renotify();
+  mojo_note->silent = notification.silent();
+  mojo_note->accessible_name = notification.accessible_name();
+  mojo_note->fullscreen_visibility =
+      ToMojo(notification.fullscreen_visibility());
+  return mojo_note;
 }
 
 }  // namespace
@@ -118,15 +177,6 @@ void NotificationPlatformBridgeLacros::Display(
   // NotificationPlatformBridgeChromeOs, which includes a profile ID as part of
   // the notification ID. Lacros does not support Chrome OS multi-signin, so we
   // don't need to handle inactive user notification blockers in ash.
-  auto note = crosapi::mojom::Notification::New();
-  note->type = ToMojo(notification.type());
-  note->id = notification.id();
-  note->title = notification.title();
-  note->message = notification.message();
-  note->display_source = notification.display_source();
-  note->origin_url = notification.origin_url();
-  // TODO(https://crbug.com/1113889): Icon.
-  // TODO(https://crbug.com/1113889): RichNotificationData fields.
 
   // Clean up any old notification with the same ID before creating the new one.
   remote_notifications_.erase(notification.id());
@@ -134,7 +184,7 @@ void NotificationPlatformBridgeLacros::Display(
   auto pending_notification = std::make_unique<RemoteNotificationDelegate>(
       notification.id(), bridge_delegate_, weak_factory_.GetWeakPtr());
   (*message_center_remote_)
-      ->DisplayNotification(std::move(note),
+      ->DisplayNotification(ToMojo(notification),
                             pending_notification->BindNotificationDelegate());
   remote_notifications_[notification.id()] = std::move(pending_notification);
 }

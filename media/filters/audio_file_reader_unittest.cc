@@ -213,7 +213,7 @@ TEST_F(AudioFileReaderTest, AAC_SinglePacket) {
 
 TEST_F(AudioFileReaderTest, AAC_ADTS) {
   RunTest("sfx.adts", "1.80,1.66,2.31,3.26,4.46,3.36,", 1, 44100,
-          base::TimeDelta::FromMicroseconds(2825180), 124591, 13312);
+          base::TimeDelta::FromMicroseconds(384733), 16967, 13312);
 }
 
 TEST_F(AudioFileReaderTest, MidStreamConfigChangesFail) {

@@ -32,6 +32,7 @@ include_rules = [
     "+ui/gfx/transform.h",
     "+ui/gfx/geometry",
     "+ui/gfx/mojom/color_space.mojom.h",
+    "+ui/gfx/mojom/display_color_spaces.mojom.h",
     "+ui/gfx/win/direct_write.h",
     "+ui/latency/mojom/latency_info_mojom_traits.h",
     "+url",

@@ -7,9 +7,8 @@
 #include "base/android/jni_android.h"
 #include "cc/layers/layer.h"
 #include "chrome/browser/android/thin_webview/internal/jni_headers/ThinWebViewImpl_jni.h"
-#include "chrome/browser/ui/tab_helpers.h"
+#include "chrome/browser/android/thin_webview/thin_webview_initializer.h"
 #include "components/embedder_support/android/delegate/web_contents_delegate_android.h"
-#include "components/permissions/permission_request_manager.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/browser_controls_state.h"
@@ -77,9 +76,7 @@ void ThinWebView::SetWebContents(content::WebContents* web_contents,
   if (delegate)
     web_contents->SetDelegate(delegate);
 
-  TabHelpers::AttachTabHelpers(web_contents);
-  permissions::PermissionRequestManager::FromWebContents(web_contents)
-      ->set_web_contents_supports_permission_requests(false);
+  ThinWebViewInitializer::GetInstance()->AttachTabHelpers(web_contents);
 
   // Disable browser controls when used for thin webview.
   web_contents->GetMainFrame()->UpdateBrowserControlsState(

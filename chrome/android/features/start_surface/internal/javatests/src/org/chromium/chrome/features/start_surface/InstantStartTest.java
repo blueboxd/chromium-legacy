@@ -825,6 +825,6 @@ public class InstantStartTest {
         waitForView((ViewGroup) mActivityTestRule.getActivity().findViewById(
                             R.id.feed_stream_recycler_view),
                 allOf(withId(R.id.header_status),
-                        withText(expanded ? R.string.hide : R.string.show)));
+                        withText(expanded ? R.string.hide_content : R.string.show_content)));
     }
 }

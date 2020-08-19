@@ -484,6 +484,9 @@ bool SharedContextState::InitializeGL(
       gl_supports_memory_object && gl_supports_semaphore &&
       vk_supports_external_memory && vk_supports_external_semaphore;
 
+  support_gl_external_object_flags_ =
+      gl::g_current_gl_driver->ext.b_GL_ANGLE_memory_object_flags;
+
   return true;
 }
 

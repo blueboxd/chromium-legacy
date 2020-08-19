@@ -75,6 +75,8 @@ class TFLiteExperimentKeyedServiceDisabledBrowserTest
               0);
   }
 
+  const base::HistogramTester* histogram_tester() { return &histogram_tester_; }
+
  private:
   base::HistogramTester histogram_tester_;
 };
@@ -93,6 +95,8 @@ IN_PROC_BROWSER_TEST_F(
   GURL navigation_url(kNavigationURL);
   ui_test_utils::NavigateToURL(browser(), navigation_url);
   WaitForTFLiteObserverToCallNullTFLitePredictor();
+  histogram_tester()->ExpectUniqueSample(
+      "TFLiteExperiment.Observer.TFLitePredictor.Null", true, 1);
 }
 
 class TFLiteExperimentKeyedServiceBrowserTest : public InProcessBrowserTest {
@@ -138,6 +142,8 @@ class TFLiteExperimentKeyedServiceBrowserTest : public InProcessBrowserTest {
         0);
   }
 
+  const base::HistogramTester* histogram_tester() { return &histogram_tester_; }
+
  private:
   base::HistogramTester histogram_tester_;
 };
@@ -174,6 +180,20 @@ IN_PROC_BROWSER_TEST_F(TFLiteExperimentKeyedServiceBrowserTest,
   base::ReadFileToString(GetTFLiteExperimentLogPath(), &data);
   base::Optional<base::Value> root = base::JSONReader::Read(data);
   EXPECT_TRUE(root);
-  EXPECT_TRUE(*root->FindIntKey("input_set_time"));
-  EXPECT_TRUE(*root->FindIntKey("evaluation_time"));
+  EXPECT_TRUE(root->FindIntKey("input_set_time_ms"));
+  EXPECT_TRUE(root->FindIntKey("evaluation_time_ms"));
+}
+
+IN_PROC_BROWSER_TEST_F(TFLiteExperimentKeyedServiceBrowserTest,
+                       TFLiteExperimentHistogram) {
+  GURL navigation_url(kNavigationURL);
+  ui_test_utils::NavigateToURL(browser(), navigation_url);
+  WaitForObserverToFinish();
+
+  histogram_tester()->ExpectTotalCount(
+      "TFLiteExperiment.Observer.TFLitePredictor.InputSetTime", 1);
+  histogram_tester()->ExpectTotalCount(
+      "TFLiteExperiment.Observer.TFLitePredictor.EvaluationTime", 1);
+  histogram_tester()->ExpectUniqueSample("TFLiteExperiment.Observer.Finish",
+                                         true, 1);
 }

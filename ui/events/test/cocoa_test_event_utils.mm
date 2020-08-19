@@ -228,6 +228,19 @@ NSEvent* TestScrollEvent(NSPoint window_point,
   return event;
 }
 
+NSEvent* KeyDownEventWithRepeat() {
+  return [NSEvent keyEventWithType:NSKeyDown
+                          location:NSZeroPoint
+                     modifierFlags:0
+                         timestamp:TimeIntervalSinceSystemStartup()
+                      windowNumber:0
+                           context:nil
+                        characters:@""
+       charactersIgnoringModifiers:@""
+                         isARepeat:YES
+                           keyCode:0x78];
+}
+
 NSEvent* KeyEventWithCharacter(unichar c) {
   return KeyEventWithKeyCode(0, c, NSKeyDown, 0);
 }

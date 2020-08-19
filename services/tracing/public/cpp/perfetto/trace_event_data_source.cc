@@ -301,7 +301,7 @@ void TraceEventMetadataSource::GenerateMetadata(
   trace_packet->set_timestamp_clock_id(kTraceClockId);
   auto* chrome_metadata = trace_packet->set_chrome_metadata();
   for (auto& generator : *proto_generators) {
-    generator.Run(chrome_metadata, privacy_filtering_enabled_);
+    generator.Run(chrome_metadata, privacy_filtering_enabled);
   }
 
   if (privacy_filtering_enabled) {

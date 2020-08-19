@@ -187,7 +187,7 @@ class CORE_EXPORT CSSAnimations final {
     scoped_refptr<const ComputedStyle> cloned_style;
     const TransitionMap* active_transitions;
     HashSet<PropertyHandle>& listed_properties;
-    const CSSTransitionData& transition_data;
+    const CSSTransitionData* transition_data;
   };
 
   static void CalculateTransitionUpdateForCustomProperty(

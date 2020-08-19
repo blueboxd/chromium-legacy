@@ -54,6 +54,7 @@ ZeroStateFileResult::ZeroStateFileResult(const base::FilePath& filepath,
       StripHostedFileExtensions(filepath.BaseName().value())));
   SetResultType(ResultType::kZeroStateFile);
   SetDisplayType(DisplayType::kList);
+  SetMetricsType(ash::ZERO_STATE_FILE);
 
   // For consistency with LauncherSearchProvider results, set the details to the
   // display name of the Files app.
@@ -71,10 +72,6 @@ void ZeroStateFileResult::Open(int event_flags) {
   platform_util::OpenItem(profile_, filepath_,
                           platform_util::OpenItemType::OPEN_FILE,
                           platform_util::OpenOperationCallback());
-}
-
-ash::SearchResultType ZeroStateFileResult::GetSearchResultType() const {
-  return ash::ZERO_STATE_FILE;
 }
 
 ::std::ostream& operator<<(::std::ostream& os,

@@ -18,8 +18,9 @@ struct BLINK_COMMON_EXPORT
     return r.device_scale_factor;
   }
 
-  static const gfx::ColorSpace& color_space(const blink::ScreenInfo& r) {
-    return r.color_space;
+  static const gfx::DisplayColorSpaces& display_color_spaces(
+      const blink::ScreenInfo& r) {
+    return r.display_color_spaces;
   }
 
   static int depth(const blink::ScreenInfo& r) { return r.depth; }

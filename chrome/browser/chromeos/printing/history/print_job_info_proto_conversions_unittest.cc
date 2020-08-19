@@ -33,7 +33,7 @@ constexpr int kPagesNumber = 3;
 
 TEST(PrintJobInfoProtoConversionsTest, PrintSettingsToProto) {
   ::printing::PrintSettings settings;
-  settings.set_color(::printing::ColorModel::COLOR);
+  settings.set_color(::printing::mojom::ColorModel::kColor);
   settings.set_duplex_mode(::printing::mojom::DuplexMode::kLongEdge);
   ::printing::PrintSettings::RequestedMedia media;
   media.size_microns = gfx::Size(kWidth, kHeight);

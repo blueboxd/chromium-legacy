@@ -1047,7 +1047,7 @@
     },
     {
       name:"ManualSlotting",
-      status:"experimental",
+      status:"stable",
     },
     {
       name: "MathMLCore",
@@ -2127,6 +2127,7 @@
     // exposes requisite information about displays connected to the device.
     {
       name: "WindowPlacement",
+      origin_trial_feature_name: "WindowPlacement",
       status: "experimental",
     },
     {

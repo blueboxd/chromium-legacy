@@ -440,8 +440,8 @@ source_set("test_support") {
     "test/test_url_loader_factory.h",
     "test/test_utils.cc",
     "test/test_utils.h",
-    "udp_socket_test_util.cc",
-    "udp_socket_test_util.h",
+    "test/udp_socket_test_util.cc",
+    "test/udp_socket_test_util.h",
   ]
 
   if (is_chromeos) {

@@ -6,8 +6,9 @@
 #define REMOTING_HOST_FILE_TRANSFER_FILE_OPERATIONS_H_
 
 #include <cstddef>
+#include <cstdint>
 #include <memory>
-#include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -49,11 +50,11 @@ class FileOperations {
     using OpenResult = protocol::FileTransferResult<Monostate>;
     using OpenCallback = base::OnceCallback<void(OpenResult result)>;
 
-    // On success, |result| will contain the read data, or an empty string on
+    // On success, |result| will contain the read data, or an empty vector on
     // EOF. Once EOF is reached, the state will transition to kComplete and no
     // more operations may be performed. The reader will attempt to read as much
     // data as requested, but there may be cases where less data is returned.
-    using ReadResult = protocol::FileTransferResult<std::string>;
+    using ReadResult = protocol::FileTransferResult<std::vector<std::uint8_t>>;
     using ReadCallback = base::OnceCallback<void(ReadResult result)>;
 
     // Once destroyed, no further callbacks will be invoked.
@@ -90,7 +91,8 @@ class FileOperations {
     // Writes a chuck to the file. Chunks cannot be queued; the caller must
     // wait until callback is called before calling WriteChunk again or calling
     // Close.
-    virtual void WriteChunk(std::string data, Callback callback) = 0;
+    virtual void WriteChunk(std::vector<std::uint8_t> data,
+                            Callback callback) = 0;
 
     // Closes the file, flushing any data still in the OS buffer and moving the
     // the file to its final location.

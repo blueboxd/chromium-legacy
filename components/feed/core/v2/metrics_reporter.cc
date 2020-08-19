@@ -444,6 +444,11 @@ void MetricsReporter::OnLoadMore(LoadStreamStatus status) {
       "ContentSuggestions.Feed.LoadStreamStatus.LoadMore", status);
 }
 
+void MetricsReporter::OnImageFetched(int net_error_or_http_status) {
+  base::UmaHistogramSparse("ContentSuggestions.Feed.ImageFetchStatus",
+                           net_error_or_http_status);
+}
+
 void MetricsReporter::OnUploadActionsBatch(UploadActionsBatchStatus status) {
   DVLOG(1) << "UploadActionsBatchStatus: " << status;
   base::UmaHistogramEnumeration(

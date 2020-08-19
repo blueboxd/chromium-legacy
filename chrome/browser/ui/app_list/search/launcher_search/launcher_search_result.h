@@ -32,7 +32,6 @@ class LauncherSearchResult : public ChromeSearchResult {
 
   // ChromeSearchResult overrides:
   void Open(int event_flags) override;
-  ash::SearchResultType GetSearchResultType() const override;
 
  private:
   // Constructor for duplicating a result.

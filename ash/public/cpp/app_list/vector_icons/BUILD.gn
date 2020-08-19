@@ -18,6 +18,7 @@ aggregate_vector_icons("app_list_vector_icons") {
     "filetype_archive.icon",
     "filetype_audio.icon",
     "filetype_chart.icon",
+    "filetype_chip_background.icon",
     "filetype_excel.icon",
     "filetype_folder.icon",
     "filetype_gdoc.icon",

@@ -91,3 +91,7 @@ class MediaMobile(_MediaBenchmark):
     # The following option works around that.
     options.AppendExtraBrowserArgs(
         ['--autoplay-policy=no-user-gesture-required'])
+    # Force online state for the offline indicator so it doesn't show and affect
+    # the benchmarks on bots, which are offline by default.
+    options.AppendExtraBrowserArgs(
+        '--force-online-connection-state-for-indicator')

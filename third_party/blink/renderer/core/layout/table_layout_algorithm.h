@@ -21,7 +21,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_TABLE_LAYOUT_ALGORITHM_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_TABLE_LAYOUT_ALGORITHM_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
@@ -34,6 +33,8 @@ class TableLayoutAlgorithm {
 
  public:
   explicit TableLayoutAlgorithm(LayoutTable* table) : table_(table) {}
+  TableLayoutAlgorithm(const TableLayoutAlgorithm&) = delete;
+  TableLayoutAlgorithm& operator=(const TableLayoutAlgorithm&) = delete;
 
   virtual ~TableLayoutAlgorithm() = default;
 
@@ -53,9 +54,6 @@ class TableLayoutAlgorithm {
   const static int kTableMaxWidth = 1000000;
 
   LayoutTable* table_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TableLayoutAlgorithm);
 };
 
 }  // namespace blink

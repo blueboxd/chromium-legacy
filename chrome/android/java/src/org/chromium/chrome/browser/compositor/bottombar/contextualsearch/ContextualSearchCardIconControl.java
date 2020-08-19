@@ -11,6 +11,7 @@ import android.widget.ImageView;
 import androidx.appcompat.content.res.AppCompatResources;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.contextualsearch.ResolvedSearchTerm.CardTag;
 import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
 import org.chromium.ui.resources.dynamics.ViewResourceInflater;
@@ -37,32 +38,38 @@ public class ContextualSearchCardIconControl extends ViewResourceInflater {
 
     /**
      * Tries to update the given controls to display a dictionary definition card, and returns
-     * whether that was successful. We use the Context, which normally shows the word tapped and its
-     * surrounding text to show the dictionary word and its pronunciation.
+     * whether that was successful. We use the Bar's Context, which normally shows the word tapped
+     * and its surrounding text to show the dictionary word with its pronunciation in grey.
      * @param contextControl The {@link ContextualSearchContextControl} that displays a two-part
      *        main bar text, to set to the dictionary-word/pronunciation.
      * @param imageControl The control for the image to show in the bar.  If successful we'll show a
      *        dictionary icon here.
      * @param searchTerm The string that represents the search term to display.
+     * @param cardTagEnum Which kind of card is being shown in this update.
+     * @return Whether the bar could be updated with the given search term.
      */
     boolean didUpdateControlsForDefinition(ContextualSearchContextControl contextControl,
-            ContextualSearchImageControl imageControl, String searchTerm) {
-        // This middle-dot character is returned by the server and marks the beginning of the
+            ContextualSearchImageControl imageControl, String searchTerm,
+            @CardTag int cardTagEnum) {
+        assert cardTagEnum == CardTag.CT_DEFINITION
+                || cardTagEnum == CardTag.CT_CONTEXTUAL_DEFINITION;
+        boolean didUpdate = false;
+        // The middle-dot character is returned by the server and marks the beginning of the
         // pronunciation.
         int dotSeparatorLocation = searchTerm.indexOf(DEFINITION_MID_DOT);
-        if (dotSeparatorLocation <= 0 || dotSeparatorLocation >= searchTerm.length() - 1) {
-            return false;
+        if (dotSeparatorLocation > 0 && dotSeparatorLocation < searchTerm.length()) {
+            // Style with the pronunciation in gray in the second half.
+            String word = searchTerm.substring(0, dotSeparatorLocation);
+            String pronunciation =
+                    searchTerm.substring(dotSeparatorLocation + 1, searchTerm.length());
+            pronunciation = LocalizationUtils.isLayoutRtl() ? pronunciation + DEFINITION_MID_DOT
+                                                            : DEFINITION_MID_DOT + pronunciation;
+            contextControl.setContextDetails(word, pronunciation);
+            didUpdate = true;
         }
-
-        // Style with the pronunciation in gray in the second half.
-        String word = searchTerm.substring(0, dotSeparatorLocation);
-        String pronunciation = searchTerm.substring(dotSeparatorLocation + 1, searchTerm.length());
-        pronunciation = LocalizationUtils.isLayoutRtl() ? pronunciation + DEFINITION_MID_DOT
-                                                        : DEFINITION_MID_DOT + pronunciation;
-        contextControl.setContextDetails(word, pronunciation);
         setVectorDrawableResourceId(R.drawable.ic_book_round);
         imageControl.setCardIconResourceId(getIconResId());
-        return true;
+        return didUpdate;
     }
 
     /**

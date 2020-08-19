@@ -30,7 +30,6 @@
 #include <utility>
 
 #include "base/auto_reset.h"
-#include "base/macros.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_context.h"
@@ -266,6 +265,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // Anonymous objects should pass the document as their node, and they will
   // then automatically be marked as anonymous in the constructor.
   explicit LayoutObject(Node*);
+  LayoutObject(const LayoutObject&) = delete;
+  LayoutObject& operator=(const LayoutObject&) = delete;
   ~LayoutObject() override;
 
   // Returns the name of the layout object.
@@ -3410,7 +3411,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   static bool affects_parent_block_;
 
   FragmentData fragment_;
-  DISALLOW_COPY_AND_ASSIGN(LayoutObject);
 };
 
 // Allow equality comparisons of LayoutObjects by reference or pointer,

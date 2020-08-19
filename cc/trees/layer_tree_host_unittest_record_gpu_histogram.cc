@@ -20,6 +20,7 @@ TEST(LayerTreeHostRecordGpuHistogramTest, SingleThreaded) {
   std::unique_ptr<FakeLayerTreeHost> host = FakeLayerTreeHost::Create(
       &host_client, &task_graph_runner, animation_host.get(), settings,
       CompositorMode::SINGLE_THREADED);
+  host->CreateFakeLayerTreeHostImpl();
   host->RecordGpuRasterizationHistogram(host->host_impl());
   EXPECT_FALSE(host->gpu_rasterization_histogram_recorded());
 }
@@ -32,6 +33,7 @@ TEST(LayerTreeHostRecordGpuHistogramTest, Threaded) {
   std::unique_ptr<FakeLayerTreeHost> host = FakeLayerTreeHost::Create(
       &host_client, &task_graph_runner, animation_host.get(), settings,
       CompositorMode::THREADED);
+  host->CreateFakeLayerTreeHostImpl();
   host->RecordGpuRasterizationHistogram(host->host_impl());
   EXPECT_TRUE(host->gpu_rasterization_histogram_recorded());
 }

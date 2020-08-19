@@ -50,7 +50,7 @@ class LoginDisplayHostCommon : public LoginDisplayHost,
                               const std::string& given_name) final;
   void LoadWallpaper(const AccountId& account_id) final;
   void LoadSigninWallpaper() final;
-  bool IsUserWhitelisted(const AccountId& account_id) final;
+  bool IsUserAllowlisted(const AccountId& account_id) final;
   void CancelPasswordChangedFlow() final;
   void MigrateUserData(const std::string& old_password) final;
   void ResyncUserData() final;

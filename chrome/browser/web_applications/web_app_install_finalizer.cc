@@ -574,21 +574,6 @@ void WebAppInstallFinalizer::OnDatabaseCommitCompletedForUpdate(
   std::move(callback).Run(app_id, InstallResultCode::kSuccessAlreadyInstalled);
 }
 
-void WebAppInstallFinalizer::OnFallbackInstallFinalized(
-    const AppId& app_in_sync_install_id,
-    InstallFinalizedCallback callback,
-    const AppId& installed_app_id,
-    InstallResultCode code) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  UMA_HISTOGRAM_ENUMERATION("Webapp.SyncInitiatedFallbackInstallResult", code);
-  if (!IsSuccess(code)) {
-    DLOG(ERROR) << "Installation failed for app in sync install. app_id="
-                << app_in_sync_install_id << " code=" << static_cast<int>(code);
-  }
-
-  std::move(callback).Run(installed_app_id, code);
-}
-
 WebAppRegistrar& WebAppInstallFinalizer::GetWebAppRegistrar() const {
   WebAppRegistrar* web_app_registrar = registrar().AsWebAppRegistrar();
   DCHECK(web_app_registrar);

@@ -76,7 +76,8 @@ PrintingContext::Result PrintingContext::UsePdfSettings() {
                          static_cast<int>(mojom::MarginType::kNoMargins));
   pdf_settings.SetBoolKey(kSettingCollate, true);
   pdf_settings.SetIntKey(kSettingCopies, 1);
-  pdf_settings.SetIntKey(kSettingColor, printing::COLOR);
+  pdf_settings.SetIntKey(kSettingColor,
+                         static_cast<int>(mojom::ColorModel::kColor));
   pdf_settings.SetIntKey(kSettingDpiHorizontal, kPointsPerInch);
   pdf_settings.SetIntKey(kSettingDpiVertical, kPointsPerInch);
   pdf_settings.SetIntKey(

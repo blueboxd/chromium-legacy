@@ -703,4 +703,13 @@
     <style name="DarkModeCompatibleVerticalScrolling">
         <item name="android:scrollbarThumbVertical">@color/default_scroll_thumb</item>
     </style>
+
+    <!-- Overflow menu -->
+    <style name="AppMenuItemText">
+        <item name="android:textAppearance">@style/TextAppearance.TextLarge.Primary</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:paddingEnd">9dp</item>
+        <item name="android:gravity">center_vertical</item>
+    </style>
+
 </resources>

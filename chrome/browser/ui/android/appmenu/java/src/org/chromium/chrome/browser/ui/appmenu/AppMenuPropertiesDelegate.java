@@ -104,4 +104,10 @@ public interface AppMenuPropertiesDelegate {
      * @param view The view that was inflated.
      */
     void onHeaderViewInflated(AppMenuHandler appMenuHandler, View view);
+
+    /**
+     * @return For items with both a text label and a non-interactive icon, whether the app menu
+     *         should show the icon before the text.
+     */
+    boolean shouldShowIconBeforeItem();
 }

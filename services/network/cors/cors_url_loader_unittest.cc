@@ -362,7 +362,7 @@ class CorsURLLoaderTest : public testing::Test {
 
     auto factory_params = network::mojom::URLLoaderFactoryParams::New();
     if (initiator) {
-      factory_params->request_initiator_site_lock = *initiator;
+      factory_params->request_initiator_origin_lock = *initiator;
       if (!initiator->opaque()) {
         factory_params->factory_bound_access_patterns =
             network::mojom::CorsOriginAccessPatterns::New();

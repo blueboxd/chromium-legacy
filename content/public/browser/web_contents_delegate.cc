@@ -316,7 +316,7 @@ bool WebContentsDelegate::ShouldAnimateBrowserControlsHeightChanges() {
 }
 
 bool WebContentsDelegate::DoBrowserControlsShrinkRendererSize(
-    const WebContents* web_contents) {
+    WebContents* web_contents) {
   return false;
 }
 

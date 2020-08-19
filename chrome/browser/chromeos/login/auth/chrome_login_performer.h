@@ -35,7 +35,7 @@ class ChromeLoginPerformer : public LoginPerformer {
   explicit ChromeLoginPerformer(Delegate* delegate);
   ~ChromeLoginPerformer() override;
 
-  bool IsUserWhitelisted(const AccountId& account_id,
+  bool IsUserAllowlisted(const AccountId& account_id,
                          bool* wildcard_match) override;
 
  protected:
@@ -45,7 +45,7 @@ class ChromeLoginPerformer : public LoginPerformer {
   // Callback pointing to DidRunTrustedCheck.
   void DidRunTrustedCheck(base::OnceClosure* callback);
 
-  void RunOnlineWhitelistCheck(const AccountId& account_id,
+  void RunOnlineAllowlistCheck(const AccountId& account_id,
                                bool wildcard_match,
                                const std::string& refresh_token,
                                base::OnceClosure success_callback,
@@ -73,7 +73,7 @@ class ChromeLoginPerformer : public LoginPerformer {
       base::OnceClosure failure_callback,
       policy::WildcardLoginChecker::Result result);
 
-  // Used to verify logins that matched wildcard on the login whitelist.
+  // Used to verify logins that matched wildcard on the login allowlist.
   std::unique_ptr<policy::WildcardLoginChecker> wildcard_login_checker_;
   base::WeakPtrFactory<ChromeLoginPerformer> weak_factory_{this};
 

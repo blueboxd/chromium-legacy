@@ -36,7 +36,7 @@ void Dactyloscoper::Record(ExecutionContext* context, WebFeature feature) {
 // static
 void Dactyloscoper::RecordDirectSurface(ExecutionContext* context,
                                         WebFeature feature,
-                                        IdentifiableToken value) {
+                                        const IdentifiableToken& value) {
   if (!IdentifiabilityStudySettings::Get()->IsActive() || !context)
     return;
   auto* window = DynamicTo<LocalDOMWindow>(context);
@@ -51,7 +51,7 @@ void Dactyloscoper::RecordDirectSurface(ExecutionContext* context,
 // static
 void Dactyloscoper::RecordDirectSurface(ExecutionContext* context,
                                         WebFeature feature,
-                                        String str) {
+                                        const String& str) {
   if (!IdentifiabilityStudySettings::Get()->IsActive() || !context)
     return;
   if (str.IsEmpty())
@@ -63,7 +63,7 @@ void Dactyloscoper::RecordDirectSurface(ExecutionContext* context,
 // static
 void Dactyloscoper::RecordDirectSurface(ExecutionContext* context,
                                         WebFeature feature,
-                                        Vector<String> strs) {
+                                        const Vector<String>& strs) {
   if (!IdentifiabilityStudySettings::Get()->IsActive() || !context)
     return;
   if (strs.IsEmpty())
@@ -76,9 +76,10 @@ void Dactyloscoper::RecordDirectSurface(ExecutionContext* context,
 }
 
 // static
-void Dactyloscoper::RecordDirectSurface(ExecutionContext* context,
-                                        WebFeature feature,
-                                        NotShared<DOMFloat32Array> buffer) {
+void Dactyloscoper::RecordDirectSurface(
+    ExecutionContext* context,
+    WebFeature feature,
+    const NotShared<DOMFloat32Array>& buffer) {
   if (!IdentifiabilityStudySettings::Get()->IsActive() || !context)
     return;
   if (buffer.IsNull() || buffer->lengthAsSizeT() == 0)

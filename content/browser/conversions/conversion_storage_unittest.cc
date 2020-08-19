@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -56,7 +57,6 @@ class ConversionStorageTest : public testing::Test {
     delegate_ = delegate.get();
     storage_ = std::make_unique<ConversionStorageSql>(
         dir_.GetPath(), std::move(delegate), &clock_);
-    EXPECT_TRUE(storage_->Initialize());
   }
 
   // Given a |conversion|, returns the expected conversion report properties at
@@ -99,11 +99,16 @@ class ConversionStorageTest : public testing::Test {
 
 TEST_F(ConversionStorageTest,
        StorageUsedAfterFailedInitilization_FailsSilently) {
-  // We fake a failed initialization by never initializing |storage|.
+  // We create a failed initialization by writing a dir to the database file
+  // path.
+  base::CreateDirectoryAndGetError(
+      dir_.GetPath().Append(FILE_PATH_LITERAL("Conversions")), nullptr);
   std::unique_ptr<ConversionStorage> storage =
       std::make_unique<ConversionStorageSql>(
           dir_.GetPath(), std::make_unique<ConfigurableStorageDelegate>(),
           clock());
+  static_cast<ConversionStorageSql*>(storage.get())
+      ->set_ignore_errors_for_testing(true);
 
   // Test all public methods on ConversionStorage.
   EXPECT_NO_FATAL_FAILURE(

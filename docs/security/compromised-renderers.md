@@ -44,7 +44,7 @@ One example is validating in the browser process whether an incoming IPC can
 legitimately claim authority over a given origin (e.g. by checking via
 `CanAccessDataForOrigin` if the process lock matches).
 Another example is making sure that capabilities handed over to renderer
-processes are origin-bound (e.g. by setting `request_initiator_site_lock`
+processes are origin-bound (e.g. by setting `request_initiator_origin_lock`
 on a `URLLoaderFactory` given to renderer processes).
 Yet another example is making security decisions based on trustworthy knowledge,
 calculated within the privileged browser process (e.g. using
@@ -87,12 +87,12 @@ Protection techniques:
   `network::mojom::URLLoaderFactory` objects that handle HTTP requests.
   This lets the browser process carefully control security-sensitive
   `network::mojom::URLLoaderFactoryParams` of such factories (such as
-  `request_initiator_site_lock`, `is_corb_enabled`, `disable_web_security` or
+  `request_initiator_origin_lock`, `is_corb_enabled`, `disable_web_security` or
   `isolation_info`).
   This also lets the CORB implementation in the NetworkService process
   prevent spoofing of `network::ResourceRequest::request_initiator`
   by using `network::GetTrustworthyInitiator` for comparison with
-  the trustworthy `request_initiator_site_lock`.
+  the trustworthy `request_initiator_origin_lock`.
 
 **Known gaps in protection**:
 - Content types for which CORB does not apply
@@ -263,7 +263,7 @@ Protection techniques:
   (i.e. before the HTTP response is handed out to the renderer process).
 - Preventing spoofing of `network::ResourceRequest::request_initiator`
   by using `network::GetTrustworthyInitiator` which enforces
-  browser-controlled `request_initiator_site_lock`.
+  browser-controlled `request_initiator_origin_lock`.
 
 
 ## Frame-ancestors CSP and X-Frame-Options response headers
@@ -297,7 +297,7 @@ Protection techniques:
 - `Sec-Fetch-Site` is robust against spoofing of
   `network::ResourceRequest::request_initiator` by using
   `network::GetTrustworthyInitiator` which enforces browser-controlled
-  `request_initiator_site_lock`.
+  `request_initiator_origin_lock`.
 
 **Known gaps in protection**:
 - `Origin` header.  Tracked by

@@ -152,9 +152,9 @@ TEST_F(FormFillerTest, FormOnFocusChange) {
     engine->ScrolledToXPosition(test_case.initial_position.x);
     engine->ScrolledToYPosition(test_case.initial_position.y);
 
-    PDFiumPage* page = GetPDFiumPageForTest(engine.get(), test_case.page_index);
+    PDFiumPage& page = GetPDFiumPageForTest(*engine, test_case.page_index);
     ScopedFPDFAnnotation annot(
-        FPDFPage_GetAnnot(page->GetPage(), test_case.annot_index));
+        FPDFPage_GetAnnot(page.GetPage(), test_case.annot_index));
     ASSERT_TRUE(annot);
     TriggerFormFocusChange(engine.get(), annot.get(), test_case.page_index);
   }

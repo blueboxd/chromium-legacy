@@ -175,6 +175,12 @@ const int kGLSwitchesCopiedFromGpuProcessHostNumSwitches =
 
 namespace features {
 
+// Forces Chrome's main backbuffer to full damage if the actual damage
+// is large enough and allows DWM to consider the main backbuffer as an
+// an overlay candidate.
+const base::Feature kDirectCompositionForceFullDamage{
+    "DirectCompositionForceFullDamage", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Use IDXGIOutput::WaitForVBlank() to drive begin frames.
 const base::Feature kDirectCompositionGpuVSync{
     "DirectCompositionGpuVSync", base::FEATURE_ENABLED_BY_DEFAULT};

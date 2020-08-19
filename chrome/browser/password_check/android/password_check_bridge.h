@@ -42,11 +42,6 @@ class PasswordCheckBridge : public PasswordCheckManager::Observer {
       JNIEnv* env,
       const base::android::JavaParamRef<jobjectArray>& credentials);
 
-  // Called by Java to launch a password check from the Google Account.
-  void LaunchCheckupInAccount(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& activity);
-
   // Called by Java to update a single compromised credential in the password
   // store.
   void UpdateCredential(

@@ -42,7 +42,7 @@ void UndoWindow::AddUndoButton() {
       this, base::UTF8ToUTF16(kUndoButtonText)));
   undo_button_->SetImageLabelSpacing(
       views::LayoutProvider::Get()->GetDistanceMetric(
-          views::DistanceMetric::DISTANCE_RELATED_CONTROL_HORIZONTAL));
+          views::DistanceMetric::DISTANCE_RELATED_BUTTON_HORIZONTAL));
   undo_button_->SetBackground(nullptr);
 }
 

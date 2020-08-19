@@ -14,8 +14,10 @@
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_pedal.h"
 #include "components/omnibox/browser/vector_icons.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/animation/ink_drop_highlight.h"
@@ -90,22 +92,6 @@ class OmniboxSuggestionRowButton : public views::MdTextButton {
   }
 };
 
-namespace {
-
-OmniboxSuggestionRowButton* CreatePillButton(
-    OmniboxSuggestionButtonRowView* button_row,
-    const char* message,
-    const gfx::VectorIcon& icon,
-    const views::FocusRing::ViewPredicate& predicate) {
-  OmniboxSuggestionRowButton* button =
-      button_row->AddChildView(std::make_unique<OmniboxSuggestionRowButton>(
-          button_row, base::ASCIIToUTF16(message), icon, predicate));
-  button->SetVisible(false);
-  return button;
-}
-
-}  // namespace
-
 OmniboxSuggestionButtonRowView::OmniboxSuggestionButtonRowView(
     OmniboxPopupContentsView* popup_contents_view,
     int model_index)
@@ -131,16 +117,22 @@ OmniboxSuggestionButtonRowView::OmniboxSuggestionButtonRowView(
     };
   };
 
-  // TODO(orinj): Use the real translated string table values here instead.
-  keyword_button_ = CreatePillButton(
-      this, "Keyword search", vector_icons::kSearchIcon,
-      make_predicate(OmniboxPopupModel::FOCUSED_BUTTON_KEYWORD));
-  pedal_button_ =
-      CreatePillButton(this, "Pedal", omnibox::kProductIcon,
-                       make_predicate(OmniboxPopupModel::FOCUSED_BUTTON_PEDAL));
-  tab_switch_button_ = CreatePillButton(
-      this, "Switch to this tab", omnibox::kSwitchIcon,
-      make_predicate(OmniboxPopupModel::FOCUSED_BUTTON_TAB_SWITCH));
+  // For all of these buttons, the visibility set from UpdateFromModel().
+  // The Keyword and Pedal buttons also get their text from there, since the
+  // text depends on the actual match. That shouldn't produce a flicker, because
+  // it's called directly from OmniboxResultView::SetMatch(). If this flickers,
+  // then so does everything else in the result view.
+  keyword_button_ = AddChildView(std::make_unique<OmniboxSuggestionRowButton>(
+      this, base::string16(), vector_icons::kSearchIcon,
+      make_predicate(OmniboxPopupModel::FOCUSED_BUTTON_KEYWORD)));
+  tab_switch_button_ =
+      AddChildView(std::make_unique<OmniboxSuggestionRowButton>(
+          this, l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_HINT),
+          omnibox::kSwitchIcon,
+          make_predicate(OmniboxPopupModel::FOCUSED_BUTTON_TAB_SWITCH)));
+  pedal_button_ = AddChildView(std::make_unique<OmniboxSuggestionRowButton>(
+      this, base::string16(), omnibox::kProductIcon,
+      make_predicate(OmniboxPopupModel::FOCUSED_BUTTON_PEDAL)));
 }
 
 OmniboxSuggestionButtonRowView::~OmniboxSuggestionButtonRowView() = default;

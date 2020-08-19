@@ -26,7 +26,9 @@ void TestAccessibilityControllerClient::TriggerAccessibilityAlert(
 }
 
 void TestAccessibilityControllerClient::TriggerAccessibilityAlertWithMessage(
-    const std::string& message) {}
+    const std::string& message) {
+  last_alert_message_ = message;
+}
 
 void TestAccessibilityControllerClient::PlayEarcon(int32_t sound_key) {
   sound_key_ = sound_key;

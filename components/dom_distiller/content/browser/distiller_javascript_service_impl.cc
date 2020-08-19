@@ -33,6 +33,11 @@ void DistillerJavaScriptServiceImpl::HandleStoreFontFamilyPref(
   distilled_page_prefs_->SetFontFamily(font_family);
 }
 
+void DistillerJavaScriptServiceImpl::HandleStoreFontScalingPref(
+    float font_scale) {
+  distilled_page_prefs_->SetFontScaling(font_scale);
+}
+
 void CreateDistillerJavaScriptService(
     DistillerUIHandle* distiller_ui_handle,
     DistilledPagePrefs* distilled_page_prefs,

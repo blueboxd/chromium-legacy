@@ -170,13 +170,13 @@ void BubbleDialogModelHost::AddInitialFields() {
         // TODO(pbos): Add support for buttons that are part of content area.
         continue;
       case ui::DialogModelField::kBodyText:
-        last_view = AddOrUpdateBodyText(FieldAsBodyText(field.get()));
+        last_view = AddOrUpdateBodyText(field->AsBodyText(GetPassKey()));
         break;
       case ui::DialogModelField::kCombobox:
-        last_view = AddOrUpdateCombobox(FieldAsCombobox(field.get()));
+        last_view = AddOrUpdateCombobox(field->AsCombobox(GetPassKey()));
         break;
       case ui::DialogModelField::kTextfield:
-        last_view = AddOrUpdateTextfield(FieldAsTextfield(field.get()));
+        last_view = AddOrUpdateTextfield(field->AsTextfield(GetPassKey()));
         break;
     }
 
@@ -290,19 +290,23 @@ void BubbleDialogModelHost::AddLabelAndField(const base::string16& label_text,
 }
 
 void BubbleDialogModelHost::NotifyTextfieldTextChanged(Textfield* textfield) {
-  FieldAsTextfield(view_to_field_[textfield])
+  view_to_field_[textfield]
+      ->AsTextfield(GetPassKey())
       ->OnTextChanged(GetPassKey(), textfield->GetText());
 }
 
 void BubbleDialogModelHost::NotifyComboboxSelectedIndexChanged(
     Combobox* combobox) {
-  FieldAsCombobox(view_to_field_[combobox])
+  view_to_field_[combobox]
+      ->AsCombobox(GetPassKey())
       ->OnSelectedIndexChanged(GetPassKey(), combobox->GetSelectedIndex());
 }
 
 void BubbleDialogModelHost::ButtonPressed(Button* sender,
                                           const ui::Event& event) {
-  FieldAsButton(view_to_field_[sender])->OnPressed(GetPassKey(), event);
+  view_to_field_[sender]
+      ->AsButton(GetPassKey())
+      ->OnPressed(GetPassKey(), event);
 }
 
 void BubbleDialogModelHost::OnPerformAction(Combobox* combobox) {
@@ -310,7 +314,9 @@ void BubbleDialogModelHost::OnPerformAction(Combobox* combobox) {
   // but Combobox right now doesn't support listening to selected-index changes.
   NotifyComboboxSelectedIndexChanged(combobox);
 
-  FieldAsCombobox(view_to_field_[combobox])->OnPerformAction(GetPassKey());
+  view_to_field_[combobox]
+      ->AsCombobox(GetPassKey())
+      ->OnPerformAction(GetPassKey());
 }
 
 void BubbleDialogModelHost::OnViewCreatedForField(View* view,
@@ -336,34 +342,6 @@ View* BubbleDialogModelHost::FieldToView(ui::DialogModelField* field) {
 
   NOTREACHED();
   return nullptr;
-}
-
-ui::DialogModelButton* BubbleDialogModelHost::FieldAsButton(
-    ui::DialogModelField* field) {
-  DCHECK(field);
-  DCHECK_EQ(field->type(GetPassKey()), ui::DialogModelField::kButton);
-  return static_cast<ui::DialogModelButton*>(field);
-}
-
-ui::DialogModelBodyText* BubbleDialogModelHost::FieldAsBodyText(
-    ui::DialogModelField* field) {
-  DCHECK(field);
-  DCHECK_EQ(field->type(GetPassKey()), ui::DialogModelField::kBodyText);
-  return static_cast<ui::DialogModelBodyText*>(field);
-}
-
-ui::DialogModelCombobox* BubbleDialogModelHost::FieldAsCombobox(
-    ui::DialogModelField* field) {
-  DCHECK(field);
-  DCHECK_EQ(field->type(GetPassKey()), ui::DialogModelField::kCombobox);
-  return static_cast<ui::DialogModelCombobox*>(field);
-}
-
-ui::DialogModelTextfield* BubbleDialogModelHost::FieldAsTextfield(
-    ui::DialogModelField* field) {
-  DCHECK(field);
-  DCHECK_EQ(field->type(GetPassKey()), ui::DialogModelField::kTextfield);
-  return static_cast<ui::DialogModelTextfield*>(field);
 }
 
 }  // namespace views

@@ -81,6 +81,7 @@ class RealTimeUrlLookupService : public RealTimeUrlLookupServiceBase {
                       RTLookupResponseCallback response_callback) override;
   base::Optional<std::string> GetDMTokenString() const override;
   std::string GetMetricSuffix() const override;
+  bool ShouldIncludeCredentials() const override;
 
   // Called when the access token is obtained from |token_fetcher_|.
   void OnGetAccessToken(

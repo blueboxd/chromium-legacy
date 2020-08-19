@@ -168,7 +168,6 @@ public class TabbedAppMenuPropertiesDelegateUnitTest {
 
     private void setUpIncognitoMocks() {
         doReturn(true).when(mTabbedAppMenuPropertiesDelegate).isIncognitoEnabled();
-        doReturn(false).when(mTabbedAppMenuPropertiesDelegate).isIncognitoManaged();
     }
 
     private Menu createTestMenu() {

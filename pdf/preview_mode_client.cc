@@ -39,7 +39,7 @@ void PreviewModeClient::ScrollToY(int y_in_screen_coords,
   NOTREACHED();
 }
 
-void PreviewModeClient::ScrollBy(const pp::Point& point) {
+void PreviewModeClient::ScrollBy(const gfx::Vector2d& scroll_delta) {
   NOTREACHED();
 }
 

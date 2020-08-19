@@ -8,12 +8,16 @@
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
+#include "content/public/common/origin_util.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_utils.h"
 #include "net/disk_cache/disk_cache.h"
+#include "net/test/cert_test_util.h"
+#include "net/test/test_data_directory.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/origin_trials/origin_trial_policy.h"
 
 namespace content {
 
@@ -28,6 +32,21 @@ void FindCallback(base::OnceClosure quit_closure,
   *found = std::move(registration);
   std::move(quit_closure).Run();
 }
+
+// This is a sample public key for testing the API. The corresponding private
+// key (use this to generate new samples for this test file) is:
+//
+//  0x83, 0x67, 0xf4, 0xcd, 0x2a, 0x1f, 0x0e, 0x04, 0x0d, 0x43, 0x13,
+//  0x4c, 0x67, 0xc4, 0xf4, 0x28, 0xc9, 0x90, 0x15, 0x02, 0xe2, 0xba,
+//  0xfd, 0xbb, 0xfa, 0xbc, 0x92, 0x76, 0x8a, 0x2c, 0x4b, 0xc7, 0x75,
+//  0x10, 0xac, 0xf9, 0x3a, 0x1c, 0xb8, 0xa9, 0x28, 0x70, 0xd2, 0x9a,
+//  0xd0, 0x0b, 0x59, 0xe1, 0xac, 0x2b, 0xb7, 0xd5, 0xca, 0x1f, 0x64,
+//  0x90, 0x08, 0x8e, 0xa8, 0xe0, 0x56, 0x3a, 0x04, 0xd0
+const uint8_t kTestPublicKey[] = {
+    0x75, 0x10, 0xac, 0xf9, 0x3a, 0x1c, 0xb8, 0xa9, 0x28, 0x70, 0xd2,
+    0x9a, 0xd0, 0x0b, 0x59, 0xe1, 0xac, 0x2b, 0xb7, 0xd5, 0xca, 0x1f,
+    0x64, 0x90, 0x08, 0x8e, 0xa8, 0xe0, 0x56, 0x3a, 0x04, 0xd0,
+};
 
 }  // namespace
 
@@ -279,6 +298,145 @@ TEST_F(ServiceWorkerRegistryTest, StoragePolicyChange) {
   }
 
   EXPECT_TRUE(registry()->ShouldPurgeOnShutdown(kOrigin));
+}
+
+class ServiceWorkerRegistryOriginTrialsTest : public ServiceWorkerRegistryTest {
+ public:
+  ServiceWorkerRegistryOriginTrialsTest() {
+    blink::TrialTokenValidator::SetOriginTrialPolicyGetter(base::BindRepeating(
+        [](blink::OriginTrialPolicy* policy) { return policy; },
+        base::Unretained(&origin_trial_policy_)));
+  }
+
+  ~ServiceWorkerRegistryOriginTrialsTest() override {
+    blink::TrialTokenValidator::ResetOriginTrialPolicyGetter();
+  }
+
+ private:
+  class TestOriginTrialPolicy : public blink::OriginTrialPolicy {
+   public:
+    TestOriginTrialPolicy() {
+      public_keys_.emplace_back(
+          base::StringPiece(reinterpret_cast<const char*>(kTestPublicKey),
+                            base::size(kTestPublicKey)));
+    }
+
+    bool IsOriginTrialsSupported() const override { return true; }
+
+    std::vector<base::StringPiece> GetPublicKeys() const override {
+      return public_keys_;
+    }
+
+    bool IsOriginSecure(const GURL& url) const override {
+      return content::IsOriginSecure(url);
+    }
+
+   private:
+    std::vector<base::StringPiece> public_keys_;
+  };
+
+  TestOriginTrialPolicy origin_trial_policy_;
+};
+
+TEST_F(ServiceWorkerRegistryOriginTrialsTest, FromMainScript) {
+  const GURL kScope("https://valid.example.com/scope");
+  const GURL kScript("https://valid.example.com/script.js");
+  const int64_t kRegistrationId = 1;
+  const int64_t kVersionId = 1;
+  blink::mojom::ServiceWorkerRegistrationOptions options;
+  options.scope = kScope;
+  scoped_refptr<ServiceWorkerRegistration> registration =
+      new ServiceWorkerRegistration(options, kRegistrationId,
+                                    context()->AsWeakPtr());
+  scoped_refptr<ServiceWorkerVersion> version = new ServiceWorkerVersion(
+      registration.get(), kScript, blink::mojom::ScriptType::kClassic,
+      kVersionId,
+      mojo::PendingRemote<storage::mojom::ServiceWorkerLiveVersionRef>(),
+      context()->AsWeakPtr());
+
+  network::mojom::URLResponseHead response_head;
+  response_head.ssl_info = net::SSLInfo();
+  response_head.ssl_info->cert =
+      net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
+  EXPECT_TRUE(response_head.ssl_info->is_valid());
+  // SSL3 TLS_DHE_RSA_WITH_AES_256_CBC_SHA
+  response_head.ssl_info->connection_status = 0x300039;
+
+  const std::string kHTTPHeaderLine("HTTP/1.1 200 OK\n\n");
+  const std::string kOriginTrial("Origin-Trial");
+  // Token for Feature1 which expires 2033-05-18.
+  // generate_token.py valid.example.com Feature1 --expire-timestamp=2000000000
+  // TODO(horo): Generate this sample token during the build.
+  const std::string kFeature1Token(
+      "AtiUXksymWhTv5ipBE7853JytiYb0RMj3wtEBjqu3PeufQPwV1oEaNjHt4R/oEBfcK0UiWlA"
+      "P2b9BE2/eThqcAYAAABYeyJvcmlnaW4iOiAiaHR0cHM6Ly92YWxpZC5leGFtcGxlLmNvbTo0"
+      "NDMiLCAiZmVhdHVyZSI6ICJGZWF0dXJlMSIsICJleHBpcnkiOiAyMDAwMDAwMDAwfQ==");
+  // Token for Feature2 which expires 2033-05-18.
+  // generate_token.py valid.example.com Feature2 --expire-timestamp=2000000000
+  // TODO(horo): Generate this sample token during the build.
+  const std::string kFeature2Token1(
+      "ApmHVC6Dpez0KQNBy13o6cGuoB5AgzOLN0keQMyAN5mjebCwR0MA8/IyjKQIlyom2RuJVg/u"
+      "LmnqEpldfewkbA8AAABYeyJvcmlnaW4iOiAiaHR0cHM6Ly92YWxpZC5leGFtcGxlLmNvbTo0"
+      "NDMiLCAiZmVhdHVyZSI6ICJGZWF0dXJlMiIsICJleHBpcnkiOiAyMDAwMDAwMDAwfQ==");
+  // Token for Feature2 which expires 2036-07-18.
+  // generate_token.py valid.example.com Feature2 --expire-timestamp=2100000000
+  // TODO(horo): Generate this sample token during the build.
+  const std::string kFeature2Token2(
+      "AmV2SSxrYstE2zSwZToy7brAbIJakd146apC/6+VDflLmc5yDfJlHGILe5+ZynlcliG7clOR"
+      "fHhXCzS5Lh1v4AAAAABYeyJvcmlnaW4iOiAiaHR0cHM6Ly92YWxpZC5leGFtcGxlLmNvbTo0"
+      "NDMiLCAiZmVhdHVyZSI6ICJGZWF0dXJlMiIsICJleHBpcnkiOiAyMTAwMDAwMDAwfQ==");
+  // Token for Feature3 which expired 2001-09-09.
+  // generate_token.py valid.example.com Feature3 --expire-timestamp=1000000000
+  const std::string kFeature3ExpiredToken(
+      "AtSAc03z4qvid34W4MHMxyRFUJKlubZ+P5cs5yg6EiBWcagVbnm5uBgJMJN34pag7D5RywGV"
+      "ol2RFf+4Sdm1hQ4AAABYeyJvcmlnaW4iOiAiaHR0cHM6Ly92YWxpZC5leGFtcGxlLmNvbTo0"
+      "NDMiLCAiZmVhdHVyZSI6ICJGZWF0dXJlMyIsICJleHBpcnkiOiAxMDAwMDAwMDAwfQ==");
+  response_head.headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
+  response_head.headers->AddHeader(kOriginTrial, kFeature1Token);
+  response_head.headers->AddHeader(kOriginTrial, kFeature2Token1);
+  response_head.headers->AddHeader(kOriginTrial, kFeature2Token2);
+  response_head.headers->AddHeader(kOriginTrial, kFeature3ExpiredToken);
+  version->SetMainScriptResponse(
+      std::make_unique<ServiceWorkerVersion::MainScriptResponse>(
+          response_head));
+  ASSERT_TRUE(version->origin_trial_tokens());
+  const blink::TrialTokenValidator::FeatureToTokensMap& tokens =
+      *version->origin_trial_tokens();
+  ASSERT_EQ(2UL, tokens.size());
+  ASSERT_EQ(1UL, tokens.at("Feature1").size());
+  EXPECT_EQ(kFeature1Token, tokens.at("Feature1")[0]);
+  ASSERT_EQ(2UL, tokens.at("Feature2").size());
+  EXPECT_EQ(kFeature2Token1, tokens.at("Feature2")[0]);
+  EXPECT_EQ(kFeature2Token2, tokens.at("Feature2")[1]);
+
+  std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> records;
+  records.push_back(
+      storage::mojom::ServiceWorkerResourceRecord::New(1, kScript, 100));
+  version->script_cache_map()->SetResources(records);
+  version->set_fetch_handler_existence(
+      ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
+  version->SetStatus(ServiceWorkerVersion::INSTALLED);
+  registration->SetActiveVersion(version);
+
+  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
+            StoreRegistration(registration, version));
+  // Simulate browser shutdown and restart.
+  registration = nullptr;
+  version = nullptr;
+  SimulateRestart();
+
+  scoped_refptr<ServiceWorkerRegistration> found_registration;
+  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
+            FindRegistrationForClientUrl(kScope, &found_registration));
+  ASSERT_TRUE(found_registration->active_version());
+  const blink::TrialTokenValidator::FeatureToTokensMap& found_tokens =
+      *found_registration->active_version()->origin_trial_tokens();
+  ASSERT_EQ(2UL, found_tokens.size());
+  ASSERT_EQ(1UL, found_tokens.at("Feature1").size());
+  EXPECT_EQ(kFeature1Token, found_tokens.at("Feature1")[0]);
+  ASSERT_EQ(2UL, found_tokens.at("Feature2").size());
+  EXPECT_EQ(kFeature2Token1, found_tokens.at("Feature2")[0]);
+  EXPECT_EQ(kFeature2Token2, found_tokens.at("Feature2")[1]);
 }
 
 }  // namespace content

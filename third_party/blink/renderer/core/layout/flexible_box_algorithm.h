@@ -31,7 +31,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_FLEXIBLE_BOX_ALGORITHM_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_FLEXIBLE_BOX_ALGORITHM_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/min_max_sizes.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
@@ -368,6 +367,8 @@ class FlexLayoutAlgorithm {
                       LayoutUnit line_break_length,
                       LogicalSize percent_resolution_sizes,
                       Document*);
+  FlexLayoutAlgorithm(const FlexLayoutAlgorithm&) = delete;
+  FlexLayoutAlgorithm& operator=(const FlexLayoutAlgorithm&) = delete;
 
   template <typename... Args>
   FlexItem& emplace_back(Args&&... args) {
@@ -453,7 +454,6 @@ class FlexLayoutAlgorithm {
   FlexItemVector all_items_;
   Vector<FlexLine> flex_lines_;
   size_t next_item_index_;
-  DISALLOW_COPY_AND_ASSIGN(FlexLayoutAlgorithm);
 };
 
 inline const FlexLine* FlexItem::Line() const {

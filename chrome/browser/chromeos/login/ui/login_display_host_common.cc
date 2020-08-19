@@ -228,10 +228,10 @@ void LoginDisplayHostCommon::LoadSigninWallpaper() {
   WallpaperControllerClient::Get()->ShowSigninWallpaper();
 }
 
-bool LoginDisplayHostCommon::IsUserWhitelisted(const AccountId& account_id) {
+bool LoginDisplayHostCommon::IsUserAllowlisted(const AccountId& account_id) {
   if (!GetExistingUserController())
     return true;
-  return GetExistingUserController()->IsUserWhitelisted(account_id);
+  return GetExistingUserController()->IsUserAllowlisted(account_id);
 }
 
 void LoginDisplayHostCommon::CancelPasswordChangedFlow() {

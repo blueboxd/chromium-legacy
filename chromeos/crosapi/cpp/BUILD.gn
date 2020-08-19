@@ -12,7 +12,12 @@ component("cpp") {
   sources = [
     "bitmap.cc",
     "bitmap.h",
+    "bitmap_util.cc",
+    "bitmap_util.h",
   ]
   configs += [ ":crosapi_implementation" ]
-  deps = [ "//base" ]
+  deps = [
+    "//base",
+    "//skia",
+  ]
 }

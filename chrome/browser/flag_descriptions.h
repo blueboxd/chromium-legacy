@@ -1820,6 +1820,9 @@ extern const char kAndroidDarkSearchDescription[];
 extern const char kAndroidNightModeTabReparentingName[];
 extern const char kAndroidNightModeTabReparentingDescription[];
 
+extern const char kTabbedAppOverflowMenuIconsName[];
+extern const char kTabbedAppOverflowMenuIconsDescription[];
+
 // Non-Android ----------------------------------------------------------------
 
 #else  // !defined(OS_ANDROID)
@@ -2627,6 +2630,11 @@ extern const char kWebShareDescription[];
 extern const char kDcheckIsFatalName[];
 extern const char kDcheckIsFatalDescription[];
 #endif  // defined(DCHECK_IS_CONFIGURABLE)
+
+#if BUILDFLAG(ENABLE_AV1_DECODER)
+extern const char kEnableAVIFName[];
+extern const char kEnableAVIFDescription[];
+#endif  // BUILDFLAG(ENABLE_AV1_DECODER)
 
 #if BUILDFLAG(ENABLE_CLICK_TO_CALL)
 extern const char kClickToCallUIName[];

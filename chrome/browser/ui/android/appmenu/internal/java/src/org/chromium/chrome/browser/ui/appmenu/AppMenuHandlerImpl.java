@@ -194,8 +194,8 @@ class AppMenuHandlerImpl
             Drawable itemDivider = a.getDrawable(1);
             int itemDividerHeight = itemDivider != null ? itemDivider.getIntrinsicHeight() : 0;
             a.recycle();
-            mAppMenu = new AppMenu(
-                    mMenu, itemRowHeight, itemDividerHeight, this, context.getResources());
+            mAppMenu = new AppMenu(mMenu, itemRowHeight, itemDividerHeight, this,
+                    context.getResources(), mDelegate.shouldShowIconBeforeItem());
             mAppMenuDragHelper = new AppMenuDragHelper(context, mAppMenu, itemRowHeight);
         }
 

@@ -102,6 +102,13 @@ To configure a new test, you need to modify one to three files:
 The executable must support the following command line arguments (aka flags):
 
 ```
+--isolated-outdir=[PATH]
+```
+
+This argument is required, and should be set to the directory created
+by the swarming task for the task to write outputs into.
+
+```
 --isolated-script-test-output=[FILENAME]
 ```
 

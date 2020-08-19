@@ -39,9 +39,11 @@ class VaapiUtilsTest : public testing::Test {
 
   void SetUp() override {
     // Create a VaapiWrapper for testing.
-    vaapi_wrapper_ = VaapiWrapper::Create(
-        VaapiWrapper::kDecode, VAProfileJPEGBaseline,
-        base::BindRepeating([]() { LOG(FATAL) << "Oh noes! Decoder failed"; }));
+    vaapi_wrapper_ =
+        VaapiWrapper::Create(VaapiWrapper::kDecode, VAProfileJPEGBaseline,
+                             base::BindRepeating([](VaapiFunctions function) {
+                               LOG(FATAL) << "Oh noes! Decoder failed";
+                             }));
     ASSERT_TRUE(vaapi_wrapper_);
   }
 

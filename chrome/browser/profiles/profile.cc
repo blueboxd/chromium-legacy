@@ -181,12 +181,7 @@ JNI_OTRProfileID_CreateUniqueOTRProfileID(
 }
 #endif
 
-Profile::Profile()
-    : restored_last_session_(false),
-      sent_destroyed_notification_(false),
-      accessibility_pause_level_(0),
-      is_guest_profile_(false),
-      is_system_profile_(false) {
+Profile::Profile() {
 #if DCHECK_IS_ON()
   base::AutoLock lock(g_profile_instances_lock.Get());
   g_profile_instances.Get().insert(this);
@@ -359,12 +354,9 @@ void Profile::RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   // chrome/browser/prefs/browser_prefs.cc.
 }
 
-std::string Profile::GetDebugName() {
+std::string Profile::GetDebugName() const {
   std::string name = GetPath().BaseName().MaybeAsASCII();
-  if (name.empty()) {
-    name = "UnknownProfile";
-  }
-  return name;
+  return name.empty() ? "UnknownProfile" : name;
 }
 
 bool Profile::IsRegularProfile() const {
@@ -405,11 +397,11 @@ bool Profile::CanUseDiskWhenOffTheRecord() {
 #endif
 }
 
-bool Profile::ShouldRestoreOldSessionCookies() {
+bool Profile::ShouldRestoreOldSessionCookies() const {
   return false;
 }
 
-bool Profile::ShouldPersistSessionCookies() {
+bool Profile::ShouldPersistSessionCookies() const {
   return false;
 }
 
@@ -424,7 +416,7 @@ void Profile::ConfigureNetworkContextParams(
                                       cert_verifier_creation_params);
 }
 
-bool Profile::IsNewProfile() {
+bool Profile::IsNewProfile() const {
 #if !defined(OS_ANDROID)
   // The profile is new if the preference files has just been created, except on
   // first run, because the installer may create a preference file. See

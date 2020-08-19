@@ -198,7 +198,7 @@ bool PrintSettingsFromJobSettings(const base::Value& job_settings,
       base::UTF8ToUTF16(*job_settings.FindStringKey(kSettingDeviceName)));
   settings->set_duplex_mode(
       static_cast<mojom::DuplexMode>(duplex_mode.value()));
-  settings->set_color(static_cast<ColorModel>(color.value()));
+  settings->set_color(static_cast<mojom::ColorModel>(color.value()));
   settings->set_scale_factor(static_cast<double>(scale_factor.value()) / 100.0);
   settings->set_rasterize_pdf(rasterize_pdf.value());
   settings->set_pages_per_sheet(pages_per_sheet.value());
@@ -263,7 +263,7 @@ void PrintSettingsToJobSettingsDebug(const PrintSettings& settings,
 
   job_settings->SetBoolean(kSettingCollate, settings.collate());
   job_settings->SetInteger(kSettingCopies, settings.copies());
-  job_settings->SetInteger(kSettingColor, settings.color());
+  job_settings->SetInteger(kSettingColor, static_cast<int>(settings.color()));
   job_settings->SetInteger(kSettingDuplexMode,
                            static_cast<int>(settings.duplex_mode()));
   job_settings->SetBoolean(kSettingLandscape, settings.landscape());

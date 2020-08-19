@@ -39,6 +39,15 @@ void WebViewPasswordManagerDriver::InformNoSavedCredentials(
   [bridge_ onNoSavedCredentials];
 }
 
+void WebViewPasswordManagerDriver::FormEligibleForGenerationFound(
+    const autofill::PasswordFormGenerationData& form) {
+  if (GetPasswordGenerationHelper() &&
+      GetPasswordGenerationHelper()->IsGenerationEnabled(
+          /*log_debug_data*/ true)) {
+    [bridge_ formEligibleForGenerationFound:form];
+  }
+}
+
 void WebViewPasswordManagerDriver::GeneratedPasswordAccepted(
     const base::string16& password) {
   NOTIMPLEMENTED();
@@ -62,7 +71,7 @@ void WebViewPasswordManagerDriver::ClearPreviewedForm() {
 
 password_manager::PasswordGenerationFrameHelper*
 WebViewPasswordManagerDriver::GetPasswordGenerationHelper() {
-  return nullptr;
+  return [bridge_ passwordGenerationHelper];
 }
 
 PasswordManager* WebViewPasswordManagerDriver::GetPasswordManager() {

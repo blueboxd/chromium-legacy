@@ -4752,6 +4752,22 @@ MockGLInterface::Mock_glTexStorageMem2DEXT(GLenum target,
                                  memory, offset);
 }
 
+void GL_BINDING_CALL
+MockGLInterface::Mock_glTexStorageMemFlags2DANGLE(GLenum target,
+                                                  GLsizei levels,
+                                                  GLenum internalFormat,
+                                                  GLsizei width,
+                                                  GLsizei height,
+                                                  GLuint memory,
+                                                  GLuint64 offset,
+                                                  GLbitfield createFlags,
+                                                  GLbitfield usageFlags) {
+  MakeGlMockFunctionUnique("glTexStorageMemFlags2DANGLE");
+  interface_->TexStorageMemFlags2DANGLE(target, levels, internalFormat, width,
+                                        height, memory, offset, createFlags,
+                                        usageFlags);
+}
+
 void GL_BINDING_CALL MockGLInterface::Mock_glTexSubImage2D(GLenum target,
                                                            GLint level,
                                                            GLint xoffset,
@@ -6681,6 +6697,9 @@ MockGLInterface::GetGLProcAddress(const char* name) {
     return reinterpret_cast<GLFunctionPointerType>(Mock_glTexStorage3D);
   if (strcmp(name, "glTexStorageMem2DEXT") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glTexStorageMem2DEXT);
+  if (strcmp(name, "glTexStorageMemFlags2DANGLE") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glTexStorageMemFlags2DANGLE);
   if (strcmp(name, "glTexSubImage2D") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glTexSubImage2D);
   if (strcmp(name, "glTexSubImage2DRobustANGLE") == 0)

@@ -336,7 +336,7 @@ TrayBackgroundView::CreateInkDropHighlight() const {
           ShelfConfig::Get()->GetDefaultShelfColor());
   auto highlight = std::make_unique<views::InkDropHighlight>(
       gfx::SizeF(bounds.size()), ripple_attributes.base_color);
-  highlight->set_visible_opacity(ripple_attributes.inkdrop_opacity);
+  highlight->set_visible_opacity(ripple_attributes.highlight_opacity);
   return highlight;
 }
 

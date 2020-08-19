@@ -31,7 +31,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SHAPES_POLYGON_SHAPE_H_
 
 #include <memory>
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/layout/shapes/shape.h"
 #include "third_party/blink/renderer/core/layout/shapes/shape_interval.h"
 #include "third_party/blink/renderer/platform/geometry/float_polygon.h"
@@ -66,6 +65,8 @@ class PolygonShape final : public Shape {
  public:
   PolygonShape(Vector<FloatPoint> vertices, WindRule fill_rule)
       : Shape(), polygon_(std::move(vertices)) {}
+  PolygonShape(const PolygonShape&) = delete;
+  PolygonShape& operator=(const PolygonShape&) = delete;
 
   LayoutRect ShapeMarginLogicalBoundingBox() const override;
   bool IsEmpty() const override { return polygon_.IsEmpty(); }
@@ -75,7 +76,6 @@ class PolygonShape final : public Shape {
 
  private:
   FloatPolygon polygon_;
-  DISALLOW_COPY_AND_ASSIGN(PolygonShape);
 };
 
 }  // namespace blink

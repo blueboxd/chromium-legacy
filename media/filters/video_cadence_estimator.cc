@@ -230,7 +230,7 @@ bool VideoCadenceEstimator::UpdateBresenhamCadenceEstimate(
 
   double current_cadence = bm_.perfect_cadence_.value_or(0.0);
   double new_cadence = frame_duration / render_interval;
-  DCHECK(new_cadence >= 0.0);
+  DCHECK_GE(new_cadence, 0.0);
 
   double cadence_relative_diff = std::abs(current_cadence - new_cadence) /
                                  std::max(current_cadence, new_cadence);

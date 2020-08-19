@@ -123,6 +123,7 @@ class WebContentsViewAndroid : public WebContentsView,
   void OnSizeChanged() override;
   void OnPhysicalBackingSizeChanged() override;
   void OnBrowserControlsHeightChanged() override;
+  void OnControlsResizeViewChanged() override;
 
   void SetFocus(bool focused);
   void set_device_orientation(int orientation) {

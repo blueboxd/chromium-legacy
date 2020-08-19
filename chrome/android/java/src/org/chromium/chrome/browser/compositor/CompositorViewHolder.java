@@ -804,6 +804,12 @@ public class CompositorViewHolder extends FrameLayout
         }
     }
 
+    private void onControlsResizeViewChanged(WebContents webContents, boolean controlsResizeView) {
+        if (webContents != null && mCompositorView != null) {
+            mCompositorView.onControlsResizeViewChanged(webContents, controlsResizeView);
+        }
+    }
+
     /**
      * Called whenever the host activity is started.
      */
@@ -869,7 +875,12 @@ public class CompositorViewHolder extends FrameLayout
             // scrolling or animating.
             if (!BrowserControlsUtils.areBrowserControlsIdle(mBrowserControlsManager)) return;
 
-            mControlsResizeView = BrowserControlsUtils.controlsResizeView(mBrowserControlsManager);
+            boolean controlsResizeView =
+                    BrowserControlsUtils.controlsResizeView(mBrowserControlsManager);
+            if (controlsResizeView != mControlsResizeView) {
+                mControlsResizeView = controlsResizeView;
+                onControlsResizeViewChanged(getWebContents(), mControlsResizeView);
+            }
         }
         // Reflect the changes that may have happened in in view/control size.
         Point viewportSize = getViewportSize();
@@ -1148,13 +1159,6 @@ public class CompositorViewHolder extends FrameLayout
                                                : 0;
     }
 
-    /**
-     * @return {@code true} if browser controls shrink Blink view's size.
-     */
-    public boolean controlsResizeView() {
-        return mControlsResizeView;
-    }
-
     @Override
     public float getOverlayTranslateY() {
         return mBrowserControlsManager.getTopVisibleContentOffset();
@@ -1351,6 +1355,7 @@ public class CompositorViewHolder extends FrameLayout
         if (webContents != null) {
             onPhysicalBackingSizeChanged(
                     webContents, mCompositorView.getWidth(), mCompositorView.getHeight());
+            onControlsResizeViewChanged(webContents, mControlsResizeView);
         }
         if (tab.getView() == null) return;
 
@@ -1561,5 +1566,9 @@ public class CompositorViewHolder extends FrameLayout
             }
             return mPixelRect;
         }
+    }
+
+    void setCompositorViewForTesting(CompositorView compositorView) {
+        mCompositorView = compositorView;
     }
 }

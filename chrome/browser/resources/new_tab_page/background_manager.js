@@ -61,6 +61,8 @@ export class BackgroundManager {
     this.backgroundImage_ = document.body.querySelector('#backgroundImage');
     /** @private {LoadTimeResolver} */
     this.loadTimeResolver_ = null;
+    /** @private {string} */
+    this.url_ = this.backgroundImage_.src;
   }
 
   /**
@@ -105,7 +107,7 @@ export class BackgroundManager {
     if (image.positionY) {
       url.searchParams.append('positionY', image.positionY);
     }
-    if (url.href === this.backgroundImage_.src) {
+    if (url.href === this.url_) {
       return;
     }
     if (this.loadTimeResolver_) {
@@ -115,6 +117,9 @@ export class BackgroundManager {
     // We use |contentWindow.location.replace| because reloading the iframe by
     // setting its |src| adds a history entry.
     this.backgroundImage_.contentWindow.location.replace(url.href);
+    // We track the URL separately because |contentWindow.location.replace| does
+    // not update the iframe's src attribute.
+    this.url_ = url.href;
   }
 
   /**

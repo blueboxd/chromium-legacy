@@ -642,7 +642,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
       override;
 
   // Disables CORB (Cross-Origin Read Blocking) and
-  // |request_initiator_site_lock| enforcement for |process_id|.
+  // |request_initiator_origin_lock| enforcement for |process_id|.
   //
   // The exception will be removed when the corresponding RenderProcessHostImpl
   // is destroyed (see
@@ -650,7 +650,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   static void AddCorbExceptionForPlugin(int process_id);
 
   // Allows |process_id| to use an additional |allowed_request_initiator|
-  // (bypassing |request_initiator_site_lock| enforcement).
+  // (bypassing |request_initiator_origin_lock| enforcement).
   //
   // The exception will be removed when the corresponding RenderProcessHostImpl
   // is destroyed (see

@@ -12,7 +12,7 @@
     node.offsetTop;
     node.style.width = "200px";
     node.offsetTop;
-    node.style.transition = "";
+    node.style.transition = "none";
     node.offsetTop;
   `);
   testRunner.completeTest();

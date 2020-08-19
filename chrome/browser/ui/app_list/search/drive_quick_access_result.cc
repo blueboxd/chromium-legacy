@@ -22,10 +22,7 @@ DriveQuickAccessResult::DriveQuickAccessResult(const base::FilePath& filepath,
     : ZeroStateFileResult(filepath, relevance, profile) {
   set_id(kDriveQuickAccessResultPrefix + filepath.value());
   SetResultType(ResultType::kDriveQuickAccess);
-}
-
-ash::SearchResultType DriveQuickAccessResult::GetSearchResultType() const {
-  return ash::DRIVE_QUICK_ACCESS;
+  SetMetricsType(ash::DRIVE_QUICK_ACCESS);
 }
 
 }  // namespace app_list

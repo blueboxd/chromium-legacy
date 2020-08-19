@@ -36,8 +36,8 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/device_disabled_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/user_creation_screen_handler.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/attestation/mock_attestation_flow.h"
 #include "chromeos/constants/chromeos_switches.h"
@@ -463,7 +463,7 @@ IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
   auto login_waiter = CreateLoginVisibleWaiter();
   enrollment_ui_.LeaveDeviceAttributeErrorScreen();
   login_waiter->Wait();
-  OobeScreenWaiter(UserCreationView::kScreenId).Wait();
+  OobeScreenWaiter(GaiaView::kScreenId).Wait();
 }
 
 // Error during enrollment : Error fetching policy : 500 server error.
@@ -515,7 +515,7 @@ IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
 // No state keys on the server. Auto enrollment check should proceed to login.
 IN_PROC_BROWSER_TEST_F(AutoEnrollmentLocalPolicyServer, AutoEnrollmentCheck) {
   host()->StartWizard(AutoEnrollmentCheckScreenView::kScreenId);
-  OobeScreenWaiter(UserCreationView::kScreenId).Wait();
+  OobeScreenWaiter(GaiaView::kScreenId).Wait();
 }
 
 // State keys are present but restore mode is not requested.
@@ -525,7 +525,7 @@ IN_PROC_BROWSER_TEST_F(AutoEnrollmentLocalPolicyServer, ReenrollmentNone) {
       enterprise_management::DeviceStateRetrievalResponse::RESTORE_MODE_NONE,
       test::kTestDomain));
   host()->StartWizard(AutoEnrollmentCheckScreenView::kScreenId);
-  OobeScreenWaiter(UserCreationView::kScreenId).Wait();
+  OobeScreenWaiter(GaiaView::kScreenId).Wait();
 }
 
 // Reenrollment requested. User can skip.
@@ -538,7 +538,7 @@ IN_PROC_BROWSER_TEST_F(AutoEnrollmentLocalPolicyServer, ReenrollmentRequested) {
   host()->StartWizard(AutoEnrollmentCheckScreenView::kScreenId);
   OobeScreenWaiter(EnrollmentScreenView::kScreenId).Wait();
   enrollment_screen()->OnCancel();
-  OobeScreenWaiter(UserCreationView::kScreenId).Wait();
+  OobeScreenWaiter(GaiaView::kScreenId).Wait();
 }
 
 // Reenrollment forced. User can not skip.
@@ -595,7 +595,7 @@ IN_PROC_BROWSER_TEST_F(AutoEnrollmentNoStateKeys, FREExplicitlyRequired) {
 // normal signin.
 IN_PROC_BROWSER_TEST_F(AutoEnrollmentNoStateKeys, NotRequired) {
   host()->StartWizard(AutoEnrollmentCheckScreenView::kScreenId);
-  OobeScreenWaiter(UserCreationView::kScreenId).Wait();
+  OobeScreenWaiter(GaiaView::kScreenId).Wait();
 }
 
 // FRE explicitly not required in VPD, so it should not even contact the policy
@@ -611,7 +611,7 @@ IN_PROC_BROWSER_TEST_F(AutoEnrollmentWithStatistics, ExplicitlyNotRequired) {
       test::kTestDomain));
 
   host()->StartWizard(AutoEnrollmentCheckScreenView::kScreenId);
-  OobeScreenWaiter(UserCreationView::kScreenId).Wait();
+  OobeScreenWaiter(GaiaView::kScreenId).Wait();
 }
 
 // FRE is not required when VPD is valid and activate date is not there.
@@ -624,7 +624,7 @@ IN_PROC_BROWSER_TEST_F(AutoEnrollmentWithStatistics, MachineNotActivated) {
       test::kTestDomain));
 
   host()->StartWizard(AutoEnrollmentCheckScreenView::kScreenId);
-  OobeScreenWaiter(UserCreationView::kScreenId).Wait();
+  OobeScreenWaiter(GaiaView::kScreenId).Wait();
 }
 
 // FRE is required when VPD is valid and activate date is there.
@@ -806,7 +806,7 @@ IN_PROC_BROWSER_TEST_P(OobeGuestButtonPolicy, VisibilityAfterEnrollment) {
   TriggerEnrollmentAndSignInSuccessfully();
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSuccess);
   ConfirmAndWaitLoginScreen();
-  OobeScreenWaiter(UserCreationView::kScreenId).Wait();
+  OobeScreenWaiter(GaiaView::kScreenId).Wait();
 
   ASSERT_EQ(GetParam(),
             user_manager::UserManager::Get()->IsGuestSessionAllowed());

@@ -113,7 +113,7 @@ class MockVaapiImageDecoder : public VaapiImageDecoder {
     return gpu::ImageDecodeAcceleratorSupportedProfile();
   }
 
-  MOCK_METHOD1(Initialize, bool(const base::RepeatingClosure&));
+  MOCK_METHOD1(Initialize, bool(const ReportErrorToUMACB&));
   MOCK_METHOD1(Decode, VaapiImageDecodeStatus(base::span<const uint8_t>));
   MOCK_CONST_METHOD0(GetScopedVASurface, const ScopedVASurface*());
   MOCK_METHOD1(

@@ -142,6 +142,21 @@
             ]
         }
     ],
+    "AssistPersonalInfo": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "AssistPersonalInfo",
+                    "enable_features": [
+                        "AssistPersonalInfo"
+                    ]
+                }
+            ]
+        }
+    ],
     "AsyncDns": [
         {
             "platforms": [

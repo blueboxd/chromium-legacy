@@ -205,13 +205,14 @@ base::Value PrinterSemanticCapsAndDefaultsToCdd(
   printer::ColorCapability color;
   if (semantic_info.color_default || semantic_info.color_changeable) {
     printer::Color standard_color(printer::ColorType::STANDARD_COLOR);
-    standard_color.vendor_id = base::NumberToString(semantic_info.color_model);
+    standard_color.vendor_id =
+        base::NumberToString(static_cast<int>(semantic_info.color_model));
     color.AddDefaultOption(standard_color, semantic_info.color_default);
   }
   if (!semantic_info.color_default || semantic_info.color_changeable) {
     printer::Color standard_monochrome(printer::ColorType::STANDARD_MONOCHROME);
     standard_monochrome.vendor_id =
-        base::NumberToString(semantic_info.bw_model);
+        base::NumberToString(static_cast<int>(semantic_info.bw_model));
     color.AddDefaultOption(standard_monochrome, !semantic_info.color_default);
   }
   color.SaveTo(&description);

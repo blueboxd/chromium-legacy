@@ -18,19 +18,14 @@ ConversionStorageContext::ConversionStorageContext(
       storage_(new ConversionStorageSql(user_data_directory,
                                         std::move(delegate),
                                         clock),
-               base::OnTaskRunnerDeleter(storage_task_runner_)) {
-  // Unretained is safe when posting to |storage_task_runner_| because any task
-  // to delete |storage_| will be posted after this one.
-  storage_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(base::IgnoreResult(&ConversionStorage::Initialize),
-                     base::Unretained(storage_.get())));
-}
+               base::OnTaskRunnerDeleter(storage_task_runner_)) {}
 
 ConversionStorageContext::~ConversionStorageContext() = default;
 
 void ConversionStorageContext::StoreImpression(
     const StorableImpression& impression) {
+  // Unretained is safe when posting to |storage_task_runner_| because any task
+  // to delete |storage_| will be posted after this one.
   storage_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&ConversionStorage::StoreImpression,
                                 base::Unretained(storage_.get()), impression));

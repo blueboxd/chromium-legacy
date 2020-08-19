@@ -27,6 +27,7 @@ import org.chromium.chrome.browser.password_manager.ManagePasswordsReferrer;
 import org.chromium.chrome.browser.password_manager.PasswordManagerHelper;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
+import org.chromium.chrome.browser.safe_browsing.metrics.SettingsAccessPoint;
 import org.chromium.chrome.browser.safe_browsing.settings.SecuritySettingsFragment;
 import org.chromium.chrome.browser.safety_check.SafetyCheckBridge.SafetyCheckCommonObserver;
 import org.chromium.chrome.browser.safety_check.SafetyCheckProperties.PasswordsState;
@@ -145,6 +146,10 @@ class SafetyCheckMediator implements PasswordCheck.Observer, SafetyCheckCommonOb
                                 ChromeFeatureList.SAFE_BROWSING_SECURITY_SECTION_UI)) {
                         // Open the Security settings since the flag for them is enabled.
                         safeBrowsingSettingsClassName = SecuritySettingsFragment.class.getName();
+                        p.getContext().startActivity(settingsLauncher.createSettingsActivityIntent(
+                                p.getContext(), safeBrowsingSettingsClassName,
+                                SecuritySettingsFragment.createArguments(
+                                        SettingsAccessPoint.SAFETY_CHECK)));
                     } else {
                         // Open the Sync and Services settings.
                         // TODO(crbug.com/1070620): replace the hardcoded class name with an import
@@ -152,9 +157,9 @@ class SafetyCheckMediator implements PasswordCheck.Observer, SafetyCheckCommonOb
                         // //chrome/android.
                         safeBrowsingSettingsClassName =
                                 "org.chromium.chrome.browser.sync.settings.SyncAndServicesSettings";
+                        p.getContext().startActivity(settingsLauncher.createSettingsActivityIntent(
+                                p.getContext(), safeBrowsingSettingsClassName));
                     }
-                    p.getContext().startActivity(settingsLauncher.createSettingsActivityIntent(
-                            p.getContext(), safeBrowsingSettingsClassName));
                     return true;
                 });
         // Set the listener for clicking the passwords element.

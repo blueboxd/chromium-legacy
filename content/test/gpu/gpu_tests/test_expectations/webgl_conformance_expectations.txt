@@ -12,7 +12,7 @@
 #         arm-mali-t860
 #         qualcomm qualcomm-adreno-(tm)-330 qualcomm-adreno-(tm)-418 qualcomm-adreno-(tm)-420 qualcomm-adreno-(tm)-430
 #         google-0xffff ]
-# tags: [ d3d11 d3d9 no-angle opengl opengles vulkan swiftshader ]
+# tags: [ d3d11 d3d9 metal no-angle opengl opengles vulkan swiftshader ]
 # tags: [ no-passthrough passthrough ]
 # tags: [ swiftshader-gl no-swiftshader-gl ]
 # tags: [ webgl-version-1 ]
@@ -110,6 +110,14 @@ crbug.com/867718 [ win d3d9 ] WebglExtension_EXT_disjoint_timer_query [ Skip ]
 # We don't have tags for specific driver version so just skip all
 [ android nvidia ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
 [ android nvidia no-swiftshader-gl ] WebglExtension_EXT_texture_compression_rgtc [ Skip ]
+
+# Extensions not available on metal
+crbug.com/angleproject/4846 [ mac metal passthrough ] WebglExtension_EXT_disjoint_timer_query [ Skip ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] WebglExtension_EXT_shader_texture_lod [ Skip ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] WebglExtension_EXT_texture_compression_rgtc [ Skip ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] WebglExtension_OES_fbo_render_mipmap [ Skip ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] WebglExtension_WEBGL_compressed_texture_s3tc [ Skip ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] WebglExtension_WEBGL_draw_buffers [ Skip ]
 
 # ========================
 # Conformance expectations
@@ -229,6 +237,7 @@ crbug.com/1096746 [ fuchsia ] conformance/rendering/line-rendering-quality.html 
 crbug.com/1096746 [ fuchsia ] conformance/rendering/many-draw-calls.html [ Skip ]
 crbug.com/1096746 [ fuchsia ] conformance/glsl/functions/glsl-function-fract.html [ Skip ]
 crbug.com/1096746 [ fuchsia ] conformance/uniforms/no-over-optimization-on-uniform-array-00.html [ Skip ]
+crbug.com/1096746 [ fuchsia ] conformance/glsl/functions/glsl-function-mix-float.html [ Skip ]
 
 # Fails only on Swarming
 crbug.com/1096746 [ fuchsia ] conformance/glsl/functions/glsl-function-ceil.html [ Skip ]
@@ -412,7 +421,7 @@ crbug.com/599272 [ mac no-passthrough ] conformance/extensions/oes-texture-float
 crbug.com/928926 [ mac ] conformance/ogles/GL/abs/abs_001_to_006.html [ RetryOnFailure ]
 
 # Mac AMD failures
-crbug.com/905007 [ mac amd ] conformance/glsl/bugs/bool-type-cast-bug-int-float.html [ Failure ]
+crbug.com/905007 [ mac amd opengl ] conformance/glsl/bugs/bool-type-cast-bug-int-float.html [ Failure ]
 crbug.com/642822 [ mac amd ] conformance/rendering/clipping-wide-points.html [ Failure ]
 crbug.com/929009 [ mac amd ] conformance/glsl/misc/shader-with-non-reserved-words.html [ RetryOnFailure ]
 
@@ -421,9 +430,12 @@ crbug.com/929009 [ mac amd ] conformance/glsl/misc/shader-with-non-reserved-word
 # crbug.com/735483 [ mac amd release ] conformance/rendering/texture-switch-performance.html [ Failure ]
 
 # Mac Intel
-crbug.com/886970 [ mac intel-0xa2e ] conformance/rendering/canvas-alpha-bug.html [ Failure ]
-crbug.com/782317 [ mac intel ] conformance/rendering/rendering-stencil-large-viewport.html [ Failure ]
-crbug.com/1018028 [ mac intel ] conformance/rendering/bind-framebuffer-flush-bug.html [ Failure ]
+crbug.com/886970 [ mac intel-0xa2e opengl ] conformance/rendering/canvas-alpha-bug.html [ Failure ]
+crbug.com/782317 [ mac intel opengl ] conformance/rendering/rendering-stencil-large-viewport.html [ Failure ]
+crbug.com/1018028 [ mac intel opengl ] conformance/rendering/bind-framebuffer-flush-bug.html [ Failure ]
+crbug.com/886970 [ mac intel-0xa2e no-angle ] conformance/rendering/canvas-alpha-bug.html [ Failure ]
+crbug.com/782317 [ mac intel no-angle ] conformance/rendering/rendering-stencil-large-viewport.html [ Failure ]
+crbug.com/1018028 [ mac intel no-angle ] conformance/rendering/bind-framebuffer-flush-bug.html [ Failure ]
 crbug.com/1092734 [ mac passthrough intel ] conformance/textures/webgl_canvas/tex-2d-rgba-rgba* [ Failure ]
 
 # Mac Retina NVidia failures
@@ -452,8 +464,8 @@ crbug.com/angleproject/3767 [ mac passthrough amd ] conformance/rendering/render
 crbug.com/992231 [ mac passthrough amd-0x679e ] conformance/context/context-size-change.html [ Failure ]
 
 # Mac / Passthrough command decoder / NVIDIA
-crbug.com/982294 [ mac passthrough nvidia ] conformance/renderbuffers/framebuffer-object-attachment.html [ Failure ]
-crbug.com/982294 [ mac passthrough nvidia ] conformance/textures/misc/tex-input-validation.html [ Failure ]
+crbug.com/982294 [ mac passthrough nvidia opengl ] conformance/renderbuffers/framebuffer-object-attachment.html [ Failure ]
+crbug.com/982294 [ mac passthrough nvidia opengl ] conformance/textures/misc/tex-input-validation.html [ Failure ]
 crbug.com/982294 [ mac passthrough nvidia opengl ] conformance/textures/misc/texture-corner-case-videos.html [ Failure ]
 
 # Mac ASAN flakes
@@ -821,3 +833,103 @@ crbug.com/1099979 [ mac swiftshader passthrough ] conformance/textures/video/tex
 crbug.com/1099979 [ mac swiftshader passthrough ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ Failure ]
 crbug.com/1099979 [ mac swiftshader passthrough ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ Failure ]
 crbug.com/1099979 [ mac swiftshader passthrough ] conformance/textures/webgl_canvas/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ Failure ]
+
+########################
+# Metal failures #
+########################
+
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/canvas/canvas-test.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/canvas/draw-static-webgl-to-multiple-canvas-test.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/canvas/draw-webgl-to-canvas-test.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/canvas/to-data-url-test.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/canvas/webgl-to-2d-canvas.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/context/context-attribute-preserve-drawing-buffer.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/context/premultiplyalpha-test.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/extensions/ext-float-blend.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/extensions/ext-sRGB.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/extensions/oes-texture-float-linear.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/extensions/oes-texture-float-with-canvas.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/extensions/oes-texture-float-with-video.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/extensions/oes-texture-float.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/extensions/oes-texture-half-float-with-video.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/extensions/webgl-draw-buffers.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/glsl/functions/glsl-function-distance.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/glsl/misc/shader-varying-packing-restrictions.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/glsl/samplers/glsl-function-texture2dproj.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/glsl/samplers/glsl-function-texture2dprojlod.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/misc/object-deletion-behaviour.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/misc/webgl-specific-stencil-settings.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/more/functions/isTests.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/renderbuffers/depth-renderbuffer-initialization.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/renderbuffers/framebuffer-object-attachment.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/renderbuffers/renderbuffer-initialization.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/renderbuffers/stencil-renderbuffer-initialization.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/textures/canvas/tex-2d-alpha-alpha-unsigned_byte.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/textures/canvas/tex-2d-luminance-luminance-unsigned_byte.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/textures/canvas/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/textures/canvas/tex-2d-rgb-rgb-unsigned_byte.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/textures/canvas/tex-2d-rgb-rgb-unsigned_short_5_6_5.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/textures/canvas/tex-2d-rgba-rgba-unsigned_byte.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/textures/canvas/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/textures/image_bitmap_from_canvas/tex-2d-luminance-luminance-unsigned_byte.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/textures/image_bitmap_from_canvas/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/textures/image_bitmap_from_canvas/tex-2d-rgb-rgb-unsigned_byte.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/textures/image_bitmap_from_canvas/tex-2d-rgb-rgb-unsigned_short_5_6_5.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/textures/image_bitmap_from_canvas/tex-2d-rgba-rgba-unsigned_byte.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/textures/image_bitmap_from_canvas/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/textures/image_bitmap_from_video/tex-2d-luminance-luminance-unsigned_byte.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/textures/image_bitmap_from_video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/textures/image_bitmap_from_video/tex-2d-rgb-rgb-unsigned_byte.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/textures/image_bitmap_from_video/tex-2d-rgb-rgb-unsigned_short_5_6_5.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_byte.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/textures/misc/canvas-teximage-after-multiple-drawimages.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/textures/misc/gl-pixelstorei.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/textures/misc/tex-image-webgl.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/textures/misc/tex-input-validation.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/textures/misc/texparameter-test.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/textures/misc/texture-active-bind-2.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/textures/misc/texture-active-bind.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/textures/misc/texture-corner-case-videos.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/textures/misc/texture-npot-video.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/textures/misc/texture-npot.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/textures/misc/texture-video-transparent.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/textures/video/tex-2d-luminance-luminance-unsigned_byte.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/textures/video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_byte.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_short_5_6_5.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_byte.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/textures/webgl_canvas/tex-2d-luminance-luminance-unsigned_byte.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/textures/webgl_canvas/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/textures/webgl_canvas/tex-2d-rgb-rgb-unsigned_byte.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough ] conformance/textures/webgl_canvas/tex-2d-rgb-rgb-unsigned_short_5_6_5.html [ Failure ]
+
+# Mac/Metal/Intel
+
+crbug.com/angleproject/4846 [ mac metal passthrough intel ] conformance/limits/gl-max-texture-dimensions.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough intel ] conformance/rendering/rendering-stencil-large-viewport.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough intel ] conformance/textures/misc/texture-size.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough intel ] deqp/data/gles2/shaders/conversions.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough intel ] deqp/data/gles2/shaders/swizzles.html [ Failure ]
+
+# Mac/Metal/AMD
+
+crbug.com/angleproject/4846 [ mac metal passthrough amd ] conformance/attribs/gl-vertexattribpointer-offsets.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough amd ] conformance/textures/webgl_canvas/tex-2d-rgba-rgba-unsigned_byte.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough amd ] conformance/textures/webgl_canvas/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough amd ] conformance/textures/webgl_canvas/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough amd ] conformance/uniforms/out-of-bounds-uniform-array-access.html [ Failure ]
+
+# Mac/Metal/Nvidia
+
+crbug.com/angleproject/4846 [ mac metal passthrough nvidia ] conformance/rendering/clipping-wide-points.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough nvidia ] conformance/rendering/more-than-65536-indices.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough nvidia ] conformance/textures/misc/texture-mips.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough nvidia ] conformance/textures/webgl_canvas/tex-2d-rgba-rgba-unsigned_byte.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough nvidia ] conformance/textures/webgl_canvas/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough nvidia ] conformance/textures/webgl_canvas/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ Failure ]
+crbug.com/angleproject/4846 [ mac metal passthrough nvidia ] conformance/uniforms/out-of-bounds-uniform-array-access.html [ Failure ]
+

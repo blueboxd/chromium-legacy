@@ -167,12 +167,4 @@ public class WebContentsDelegateAndroid {
     public boolean shouldAnimateBrowserControlsHeightChanges() {
         return false;
     }
-
-    /**
-     * @return Whether or not the browser controls resize Blink's view size.
-     */
-    @CalledByNative
-    public boolean controlsResizeView() {
-        return false;
-    }
 }

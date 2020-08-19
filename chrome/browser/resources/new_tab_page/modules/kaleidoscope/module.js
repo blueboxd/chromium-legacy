@@ -8,27 +8,46 @@ import 'chrome://resources/mojo/url/mojom/origin.mojom-lite.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {ModuleDescriptor} from '../module_descriptor.js';
 
-// TODO(beccahughes): Use import for these.
+/**
+ * @typedef {{
+ *   url: (string),
+ *   module: (?boolean)
+ * }}
+ */
+const Resource = {};
+
+/**
+ * TODO(beccahughes): use import for these.
+ * @type {Array<Resource>}
+ */
 const KALEIDOSCOPE_RESOURCES = [
-  'chrome://kaleidoscope/geometry.mojom-lite.js',
-  'chrome://kaleidoscope/chrome/browser/media/feeds/media_feeds_store.mojom-lite.js',
-  'chrome://kaleidoscope/kaleidoscope.mojom-lite.js',
-  'chrome://kaleidoscope/messages.js',
-  'chrome://kaleidoscope/kaleidoscope.js',
-  'chrome://kaleidoscope/module.js',
+  {url: 'chrome://kaleidoscope/geometry.mojom-lite.js', module: true},
+  {
+    url:
+        'chrome://kaleidoscope/chrome/browser/media/feeds/media_feeds_store.mojom-lite.js',
+    module: true
+  },
+  {url: 'chrome://kaleidoscope/kaleidoscope.mojom-lite.js', module: true},
+  {url: 'chrome://kaleidoscope/messages.js'},
+  {url: 'chrome://kaleidoscope/kaleidoscope.js'},
+  {url: 'chrome://kaleidoscope/module.js', module: true},
 ];
 
 /**
  * Loads a script resource and returns a promise that will resolve when the
  * loading is complete.
- * @param {string} resource
+ * @param {Resource} resource
  * @returns {Promise}
  */
 function loadResource(resource) {
   return new Promise((resolve) => {
     const script = document.createElement('script');
-    script.type = 'module';
-    script.src = resource;
+
+    if (resource.module) {
+      script.type = 'module';
+    }
+
+    script.src = resource.url;
     script.addEventListener('load', resolve, {once: true});
     document.body.appendChild(script);
   });

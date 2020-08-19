@@ -3980,9 +3980,20 @@ void LayoutBox::ComputeLogicalHeight(
 
     LayoutUnit height_result;
     if (check_min_max_height) {
-      height_result = ComputeLogicalHeightUsing(
-          kMainOrPreferredSize, StyleRef().LogicalHeight(),
-          computed_values.extent_ - BorderAndPaddingLogicalHeight());
+      if (StyleRef().AspectRatio() &&
+          (h.IsAuto() || (h.IsPercentOrCalc() && ComputePercentageLogicalHeight(
+                                                     h) == kIndefiniteSize))) {
+        NGBoxStrut border_padding(
+            BorderStart() + PaddingStart(), BorderEnd() + PaddingEnd(),
+            BorderBefore() + PaddingBefore(), BorderAfter() + PaddingAfter());
+        height_result = BlockSizeFromAspectRatio(
+            border_padding, *StyleRef().LogicalAspectRatio(),
+            StyleRef().BoxSizing(), LogicalWidth());
+      } else {
+        height_result = ComputeLogicalHeightUsing(
+            kMainOrPreferredSize, h,
+            computed_values.extent_ - BorderAndPaddingLogicalHeight());
+      }
       if (height_result == -1)
         height_result = computed_values.extent_;
       height_result = ConstrainLogicalHeightByMinMax(

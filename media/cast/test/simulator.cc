@@ -539,7 +539,7 @@ void RunSimulation(const base::FilePath& source_path,
           ? 0
           : encoded_size * kKilobitsPerByte * elapsed_time_undropped.ToHz();
   double avg_target_bitrate =
-      !encoded_video_frames ? 0 : target_bitrate / encoded_video_frames / 1000;
+      encoded_video_frames ? target_bitrate / encoded_video_frames / 1000 : 0;
 
   LOG(INFO) << "Configured target playout delay (ms): "
             << video_receiver_config.rtp_max_delay_ms;

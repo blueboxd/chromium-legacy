@@ -19,7 +19,7 @@
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/ui/webui/chromeos/login/discover_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/user_creation_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/login/auth/stub_authenticator_builder.h"
 #include "components/user_manager/user_type.h"
@@ -86,7 +86,7 @@ class DiscoverScreenTest
 
   void ShowDiscoverScreen() {
     LogIn();
-    OobeScreenExitWaiter(UserCreationView::kScreenId).Wait();
+    OobeScreenExitWaiter(GaiaView::kScreenId).Wait();
     if (!screen_exited_) {
       LoginDisplayHost::default_host()->StartWizard(
           DiscoverScreenView::kScreenId);

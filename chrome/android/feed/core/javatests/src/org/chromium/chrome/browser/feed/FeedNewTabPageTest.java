@@ -480,7 +480,7 @@ public class FeedNewTabPageTest {
                                 ARTICLE_SECTION_HEADER_POSITION, click()));
         waitForView(rootView,
                 allOf(withId(R.id.header_status),
-                        withText(expanded ? R.string.hide : R.string.show)));
+                        withText(expanded ? R.string.hide_content : R.string.show_content)));
     }
 
     private boolean getPreferenceForArticleSectionHeader() throws Exception {

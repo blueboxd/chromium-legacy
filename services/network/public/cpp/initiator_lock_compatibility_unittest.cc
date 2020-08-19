@@ -12,7 +12,7 @@
 
 namespace network {
 
-TEST(InitiatorLockCompatibilityTest, VerifyRequestInitiatorSiteLock) {
+TEST(InitiatorLockCompatibilityTest, VerifyRequestInitiatorOriginLock) {
   url::Origin opaque_origin = url::Origin();
   url::Origin opaque_origin2 = url::Origin();
 

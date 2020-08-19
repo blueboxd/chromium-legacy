@@ -1584,7 +1584,7 @@ void QuicChromiumClientSession::SetDefaultEncryptionLevel(
   if (!callback_.is_null() &&
       (!require_confirmation_ || level == quic::ENCRYPTION_FORWARD_SECURE ||
        level == quic::ENCRYPTION_ZERO_RTT)) {
-    // TODO(rtenneti): Currently for all CryptoHandshakeEvent events, callback_
+    // Currently for all CryptoHandshakeEvent events, callback_
     // could be called because there are no error events in CryptoHandshakeEvent
     // enum. If error events are added to CryptoHandshakeEvent, then the
     // following code needs to changed.
@@ -1599,9 +1599,9 @@ void QuicChromiumClientSession::SetDefaultEncryptionLevel(
   quic::QuicSpdySession::SetDefaultEncryptionLevel(level);
 }
 
-void QuicChromiumClientSession::OnOneRttKeysAvailable() {
+void QuicChromiumClientSession::OnTlsHandshakeComplete() {
   if (!callback_.is_null()) {
-    // TODO(rtenneti): Currently for all CryptoHandshakeEvent events, callback_
+    // Currently for all CryptoHandshakeEvent events, callback_
     // could be called because there are no error events in CryptoHandshakeEvent
     // enum. If error events are added to CryptoHandshakeEvent, then the
     // following code needs to changed.
@@ -1610,7 +1610,7 @@ void QuicChromiumClientSession::OnOneRttKeysAvailable() {
 
   OnCryptoHandshakeComplete();
   LogZeroRttStats();
-  quic::QuicSpdySession::OnOneRttKeysAvailable();
+  quic::QuicSpdySession::OnTlsHandshakeComplete();
 }
 
 void QuicChromiumClientSession::OnNewEncryptionKeyAvailable(
@@ -1626,6 +1626,15 @@ void QuicChromiumClientSession::OnNewEncryptionKeyAvailable(
   if (level == quic::ENCRYPTION_ZERO_RTT)
     attempted_zero_rtt_ = true;
   QuicSpdySession::OnNewEncryptionKeyAvailable(level, std::move(encrypter));
+
+  if (!callback_.is_null() &&
+      (!require_confirmation_ && level == quic::ENCRYPTION_ZERO_RTT)) {
+    // Currently for all CryptoHandshakeEvent events, callback_
+    // could be called because there are no error events in CryptoHandshakeEvent
+    // enum. If error events are added to CryptoHandshakeEvent, then the
+    // following code needs to changed.
+    std::move(callback_).Run(OK);
+  }
 }
 
 void QuicChromiumClientSession::LogZeroRttStats() {

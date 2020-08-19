@@ -2980,7 +2980,7 @@ void LocalFrame::DidUpdateFramePolicy(const FramePolicy& frame_policy) {
 }
 
 void LocalFrame::OnScreensChange() {
-  if (RuntimeEnabledFeatures::WindowPlacementEnabled()) {
+  if (RuntimeEnabledFeatures::WindowPlacementEnabled(DomWindow())) {
     DomWindow()->DispatchEvent(
         *Event::Create(event_type_names::kScreenschange));
   }

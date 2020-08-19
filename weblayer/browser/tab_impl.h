@@ -267,7 +267,7 @@ class TabImpl : public Tab,
   int GetTopControlsMinHeight() override;
   int GetBottomControlsHeight() override;
   bool DoBrowserControlsShrinkRendererSize(
-      const content::WebContents* web_contents) override;
+      content::WebContents* web_contents) override;
   bool OnlyExpandTopControlsAtPageTop() override;
   bool ShouldAnimateBrowserControlsHeightChanges() override;
   bool EmbedsFullscreenWidget() override;

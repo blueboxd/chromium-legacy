@@ -191,6 +191,9 @@ class TrayPopupUtils {
   static void UpdateCheckMarkVisibility(HoverHighlightView* container,
                                         bool visible);
 
+  // Sets up the font and padding for sub labels used in some detailed views.
+  static void SetupTraySubLabel(views::Label* label);
+
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(TrayPopupUtils);
 };

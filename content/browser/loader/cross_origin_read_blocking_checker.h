@@ -43,7 +43,7 @@ class CrossOriginReadBlockingChecker {
   CrossOriginReadBlockingChecker(
       const network::ResourceRequest& request,
       const network::mojom::URLResponseHead& response,
-      const url::Origin& request_initiator_site_lock,
+      const url::Origin& request_initiator_origin_lock,
       const storage::BlobDataHandle& blob_data_handle,
       base::OnceCallback<void(Result)> callback);
   ~CrossOriginReadBlockingChecker();

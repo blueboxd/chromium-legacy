@@ -13,6 +13,7 @@
 #include "ipc/ipc_param_traits.h"
 #include "printing/backend/print_backend.h"
 #include "printing/buildflags/buildflags.h"
+#include "printing/mojom/print.mojom.h"
 
 #define IPC_MESSAGE_START ChromeUtilityPrintingMsgStart
 
@@ -25,7 +26,8 @@ IPC_STRUCT_TRAITS_BEGIN(printing::PrinterCapsAndDefaults)
   IPC_STRUCT_TRAITS_MEMBER(defaults_mime_type)
 IPC_STRUCT_TRAITS_END()
 
-IPC_ENUM_TRAITS_MAX_VALUE(printing::ColorModel, printing::PROCESSCOLORMODEL_RGB)
+IPC_ENUM_TRAITS_MAX_VALUE(printing::mojom::ColorModel,
+                          printing::mojom::ColorModel::kProcessColorModelRGB)
 
 IPC_STRUCT_TRAITS_BEGIN(printing::PrinterSemanticCapsAndDefaults::Paper)
   IPC_STRUCT_TRAITS_MEMBER(display_name)

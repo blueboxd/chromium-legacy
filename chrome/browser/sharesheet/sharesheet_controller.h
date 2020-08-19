@@ -17,6 +17,10 @@ class SharesheetController {
   // different invocations of the sharesheet.
   virtual uint32_t GetId() = 0;
 
+  // When called will set the bubble size to |width| and |height|.
+  // |width| and |height| must be set to a positive int.
+  virtual void SetSharesheetSize(const int& width, const int& height) = 0;
+
   // Called by ShareAction to notify SharesheetBubbleView that ShareAction
   // has completed.
   virtual void CloseSharesheet() = 0;

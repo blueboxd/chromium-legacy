@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.policy;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -16,12 +18,16 @@ import org.chromium.policy.PolicyService;
  */
 @JNINamespace("policy::android")
 public class PolicyServiceFactory {
+    private static PolicyService sPolicyServiceForTest;
+
     /**
      * Returns the PolicyService instance that contains browser policies.
      * The associated C++ instance is deleted during shutdown.
      */
     public static PolicyService getGlobalPolicyService() {
-        return PolicyServiceFactoryJni.get().getGlobalPolicyService();
+        return sPolicyServiceForTest == null
+                ? PolicyServiceFactoryJni.get().getGlobalPolicyService()
+                : sPolicyServiceForTest;
     }
 
     /**
@@ -30,7 +36,17 @@ public class PolicyServiceFactory {
      * deletion.
      */
     public static PolicyService getProfilePolicyService(Profile profile) {
-        return PolicyServiceFactoryJni.get().getProfilePolicyService(profile);
+        return sPolicyServiceForTest == null
+                ? PolicyServiceFactoryJni.get().getProfilePolicyService(profile)
+                : sPolicyServiceForTest;
+    }
+
+    /**
+     * @param policyService Mock {@link PolicyService} for testing.
+     */
+    @VisibleForTesting
+    public static void setPolicyServiceForTest(PolicyService policyService) {
+        sPolicyServiceForTest = policyService;
     }
 
     @NativeMethods

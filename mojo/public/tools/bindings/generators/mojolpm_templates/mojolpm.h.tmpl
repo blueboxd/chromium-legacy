@@ -177,14 +177,14 @@ bool ToProto(
 {%-   set mojom_type = interface|get_qualified_name_for_kind(flatten_nested_kind=True) %}
 {%-   set proto_type = "::mojolpm" ~ (interface|get_qualified_name_for_kind(flatten_nested_kind=True)) %}
 {%-   if interface.methods %}
-bool HandleRemoteCall(
-  const {{proto_type}}::RemoteCall& input);
+bool HandleRemoteAction(
+  const {{proto_type}}::RemoteAction& input);
 
-bool HandleAssociatedRemoteCall(
-  const {{proto_type}}::AssociatedRemoteCall& input);
+bool HandleAssociatedRemoteAction(
+  const {{proto_type}}::AssociatedRemoteAction& input);
 
-bool HandleResponse(
-  const {{proto_type}}::ReceiverResponse& response);{{"\n"-}}
+bool HandleReceiverAction(
+  const {{proto_type}}::ReceiverAction& input);{{"\n"-}}
 {%-     for method in interface.methods %}
 bool HandleRemoteCall(
   uint32_t instance_id,

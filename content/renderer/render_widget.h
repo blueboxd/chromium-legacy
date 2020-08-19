@@ -65,10 +65,6 @@
 #include "ui/gfx/range/range.h"
 #include "ui/surface/transport_dib.h"
 
-namespace IPC {
-class SyncMessageFilter;
-}
-
 namespace blink {
 struct VisualProperties;
 struct DeviceEmulationParams;
@@ -80,10 +76,6 @@ class WebMouseEvent;
 class WebPagePopup;
 }  // namespace blink
 
-namespace cc {
-class SwapPromise;
-}
-
 namespace gfx {
 class ColorSpace;
 struct PresentationFeedback;
@@ -92,7 +84,6 @@ class Range;
 
 namespace content {
 class CompositorDependencies;
-class FrameSwapMessageQueue;
 class PepperPluginInstanceImpl;
 class RenderFrameImpl;
 class RenderFrameProxy;
@@ -333,17 +324,6 @@ class CONTENT_EXPORT RenderWidget
   cc::LayerTreeHost* layer_tree_host() { return layer_tree_host_; }
   void SetHandlingInputEvent(bool handling_input_event);
 
-  // Queues the IPC |message| to be sent to the browser, delaying sending until
-  // the next compositor frame submission. At that time they will be sent before
-  // any message from the compositor as part of submitting its frame. This is
-  // used for messages that need synchronization with the compositor, but in
-  // general you should use Send().
-  //
-  // This mechanism is not a drop-in replacement for IPC: messages sent this way
-  // will not be automatically available to BrowserMessageFilter, for example.
-  // FIFO ordering is preserved between messages enqueued.
-  void QueueMessage(std::unique_ptr<IPC::Message> msg);
-
   // Checks if the selection bounds have been changed. If they are changed,
   // the new value will be sent to the browser process.
   void UpdateSelectionBounds();
@@ -405,7 +385,6 @@ class CONTENT_EXPORT RenderWidget
   // For unit tests.
   friend class InteractiveRenderWidget;
   friend class PopupRenderWidget;
-  friend class QueueMessageSwapPromiseTest;
   friend class RenderWidgetTest;
   friend class RenderViewImplTest;
 
@@ -464,14 +443,6 @@ class CONTENT_EXPORT RenderWidget
   // is always the entire viewport, but for out-of-process iframes this can be
   // constrained to limit overdraw.
   gfx::Rect ViewportVisibleRect();
-
-  // QueueMessage implementation extracted into a static method for easy
-  // testing.
-  static std::unique_ptr<cc::SwapPromise> QueueMessageImpl(
-      std::unique_ptr<IPC::Message> msg,
-      FrameSwapMessageQueue* frame_swap_message_queue,
-      scoped_refptr<IPC::SyncMessageFilter> sync_message_filter,
-      int source_frame_number);
 
   // Set the pending window rect.
   // Because the real render_widget is hosted in another process, there is
@@ -613,8 +584,6 @@ class CONTENT_EXPORT RenderWidget
 
   // The time spent in input handlers this frame. Used to throttle input acks.
   base::TimeDelta total_input_handling_time_this_frame_;
-
-  scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue_;
 
   // Lists of RenderFrameProxy objects for which this RenderWidget is their
   // local root. Each of these represents a child local root RenderWidget in

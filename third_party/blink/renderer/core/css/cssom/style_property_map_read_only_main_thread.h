@@ -17,6 +17,10 @@ class CORE_EXPORT StylePropertyMapReadOnlyMainThread
  public:
   using StylePropertyMapEntry = std::pair<String, CSSStyleValueVector>;
 
+  StylePropertyMapReadOnlyMainThread(
+      const StylePropertyMapReadOnlyMainThread&) = delete;
+  StylePropertyMapReadOnlyMainThread& operator=(
+      const StylePropertyMapReadOnlyMainThread&) = delete;
   ~StylePropertyMapReadOnlyMainThread() override = default;
 
   CSSStyleValue* get(const ExecutionContext*,
@@ -47,9 +51,6 @@ class CORE_EXPORT StylePropertyMapReadOnlyMainThread
   IterationSource* StartIteration(ScriptState*, ExceptionState&) override;
 
   CSSStyleValue* GetShorthandProperty(const CSSProperty&) const;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(StylePropertyMapReadOnlyMainThread);
 };
 
 }  // namespace blink

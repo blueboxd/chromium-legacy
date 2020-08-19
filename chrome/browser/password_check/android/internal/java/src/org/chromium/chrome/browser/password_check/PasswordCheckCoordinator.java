@@ -43,6 +43,12 @@ class PasswordCheckCoordinator implements PasswordCheckComponentUi, LifecycleObs
         void onRemove(CompromisedCredential credential);
 
         /**
+         * View the given Credential.
+         * @param credential A {@link CompromisedCredential} to be viewed.
+         */
+        void onView(CompromisedCredential credential);
+
+        /**
          * Opens a password change form or home page of |credential|'s origin or an app.
          * @param credential A {@link CompromisedCredential} to be changed.
          */

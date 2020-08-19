@@ -97,8 +97,14 @@ std::unique_ptr<quic::QuicResumptionState> QuicClientSessionCache::Lookup(
   }
   auto state = std::make_unique<quic::QuicResumptionState>();
   state->tls_session = iter->second.PopSession();
-  state->transport_params = iter->second.params.get();
-  state->application_state = iter->second.application_state.get();
+  if (iter->second.params != nullptr) {
+    state->transport_params =
+        std::make_unique<quic::TransportParameters>(*iter->second.params);
+  }
+  if (iter->second.application_state != nullptr) {
+    state->application_state = std::make_unique<quic::ApplicationState>(
+        *iter->second.application_state);
+  }
 
   return state;
 }

@@ -453,6 +453,10 @@ suite(destination_select_test_cros.suiteName, function() {
               'printer-not-supported';
 
           compareIcon(selectEl, dest3Icon);
+
+          // Update destination.
+          destinationSelect.destination = recentDestinationList[2];
+          compareIcon(selectEl, dest3Icon);
         });
   }
 
@@ -465,6 +469,7 @@ suite(destination_select_test_cros.suiteName, function() {
   function testUpdateStatus(cloudPrintDeprecationWarningsSuppressed) {
     loadTimeData.overrideValues({
       offline: 'offline',
+      printerNotSupportedWarning: 'printerNotSupportedWarning',
     });
 
     assertFalse(destinationSelect.$$('.throbber-container').hidden);
@@ -482,22 +487,26 @@ suite(destination_select_test_cros.suiteName, function() {
     destinationSelect.destination = getGoogleDriveDestination(account);
     destinationSelect.updateDestination();
     assertTrue(additionalInfoEl.hidden);
-    assertEquals('', statusEl.innerHTML.trim());
+    assertEquals('', statusEl.innerHTML);
 
     destinationSelect.destination = recentDestinationList[0];
     destinationSelect.updateDestination();
     assertTrue(additionalInfoEl.hidden);
-    assertEquals('', statusEl.innerHTML.trim());
+    assertEquals('', statusEl.innerHTML);
 
     destinationSelect.destination = recentDestinationList[1];
     destinationSelect.updateDestination();
     assertFalse(additionalInfoEl.hidden);
-    assertEquals('offline', statusEl.innerHTML.trim());
+    assertEquals('offline', statusEl.innerHTML);
 
     destinationSelect.destination = recentDestinationList[2];
     destinationSelect.updateDestination();
-    assertTrue(additionalInfoEl.hidden);
-    assertEquals('', statusEl.innerHTML.trim());
+    assertEquals(
+        cloudPrintDeprecationWarningsSuppressed, additionalInfoEl.hidden);
+    const dest3Status = cloudPrintDeprecationWarningsSuppressed ?
+        '' :
+        'printerNotSupportedWarning';
+    assertEquals(dest3Status, statusEl.innerHTML);
   }
 
   test(assert(destination_select_test_cros.TestNames.UpdateStatus), function() {

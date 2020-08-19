@@ -697,16 +697,6 @@
     "expiry_milestone": 95
   },
   {
-    "name": "crostini-port-forwarding",
-    "owners": [ "danielng", "davidmunro@google.com", "hollingum@google.com" ],
-    "expiry_milestone": 86
-  },
-  {
-    "name": "crostini-show-mic-setting",
-    "owners": [ "danielng" ],
-    "expiry_milestone": 85
-  },
-  {
     "name": "crostini-usb-allow-unsupported",
     "owners": [ "nverne", "benwells" ],
     "expiry_milestone": 85
@@ -1988,11 +1978,6 @@
     "name": "enable-reopen-tab-in-product-help",
     "owners": [ "collinbaker" ],
     "expiry_milestone": 76
-  },
-  {
-    "name": "enable-request-tablet-site",
-    "owners": [ "xdai" ],
-    "expiry_milestone": 78
   },
   {
     "name": "enable-resampling-input-events",

@@ -265,7 +265,7 @@ public class SuggestionSpannableUnitTest {
         SuggestionSpannable c1 = new SuggestionSpannable("test string");
         SuggestionSpannable c2 = new SuggestionSpannable("test string");
 
-        c1.setSpan(new TextAppearanceSpan(mActivity, R.style.TextAppearance_TextSmall_Tertiary), 3,
+        c1.setSpan(new TextAppearanceSpan(mActivity, R.style.TextAppearance_TextSmall_Disabled), 3,
                 5, Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
         c2.setSpan(new TextAppearanceSpan(mActivity, R.style.TextAppearance_TextMedium_Secondary),
                 3, 5, Spanned.SPAN_INCLUSIVE_EXCLUSIVE);

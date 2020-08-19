@@ -6,7 +6,6 @@
 
 #include "build/build_config.h"
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/public/common/loader/loading_behavior_flag.h"
 #include "third_party/blink/renderer/core/css/font_face.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
@@ -91,9 +90,6 @@ void FontPreloadManager::FontPreloadingStarted(FontResource* font_resource) {
   if (state_ == State::kUnblocked)
     return;
 
-  document_->Loader()->DidObserveLoadingBehavior(
-      kLoadingBehaviorFontPreloadStartedBeforeRendering);
-
   if (!base::FeatureList::IsEnabled(features::kFontPreloadingDelaysRendering))
     return;
 
@@ -113,9 +109,6 @@ void FontPreloadManager::ImperativeFontLoadingStarted(FontFace* font_face) {
 
   if (state_ == State::kUnblocked)
     return;
-
-  document_->Loader()->DidObserveLoadingBehavior(
-      kLoadingBehaviorFontPreloadStartedBeforeRendering);
 
   if (!base::FeatureList::IsEnabled(features::kFontPreloadingDelaysRendering))
     return;

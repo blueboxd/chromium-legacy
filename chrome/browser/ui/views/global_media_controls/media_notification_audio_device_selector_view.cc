@@ -103,13 +103,17 @@ MediaNotificationAudioDeviceSelectorView::
       SK_ColorBLACK);
 
   // Get a list of the connected audio output devices
-  audio_device_subscription_ = service_->GetOutputDevices(base::BindOnce(
-      &MediaNotificationAudioDeviceSelectorView::UpdateAvailableAudioDevices,
-      weak_ptr_factory_.GetWeakPtr()));
+  audio_device_subscription_ =
+      service_->RegisterAudioOutputDeviceDescriptionsCallback(
+          base::BindRepeating(&MediaNotificationAudioDeviceSelectorView::
+                                  UpdateAvailableAudioDevices,
+                              weak_ptr_factory_.GetWeakPtr()));
 }
 
 MediaNotificationAudioDeviceSelectorView::
-    ~MediaNotificationAudioDeviceSelectorView() = default;
+    ~MediaNotificationAudioDeviceSelectorView() {
+  audio_device_subscription_.release();
+}
 
 void MediaNotificationAudioDeviceSelectorView::UpdateAvailableAudioDevices(
     const media::AudioDeviceDescriptions& device_descriptions) {
@@ -119,17 +123,23 @@ void MediaNotificationAudioDeviceSelectorView::UpdateAvailableAudioDevices(
   for (auto description : device_descriptions) {
     CreateDeviceButton(description);
   }
+
   UpdateCurrentAudioDevice(current_device_id_);
 }
 
 void MediaNotificationAudioDeviceSelectorView::UpdateCurrentAudioDevice(
-    const std::string& current_device_id) {
+    std::string current_device_id) {
   auto it = std::find_if(sink_id_map_.begin(), sink_id_map_.end(),
                          [&current_device_id](auto& item) {
                            return item.second == current_device_id;
                          });
 
-  DCHECK(it != sink_id_map_.end());
+  // If the highlighted device is no longer available, highlight the default
+  // device.
+  if (it == sink_id_map_.end()) {
+    return UpdateCurrentAudioDevice(
+        media::AudioDeviceDescription::kDefaultDeviceId);
+  }
 
   if (current_device_button_)
     current_device_button_->SetProminent(false);

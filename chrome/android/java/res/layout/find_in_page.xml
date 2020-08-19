@@ -32,7 +32,7 @@
         android:layout_marginEnd="16dp"
         android:background="@null"
         android:singleLine="true"
-        android:textAppearance="@style/TextAppearance.TextLarge.Tertiary" />
+        android:textAppearance="@style/TextAppearance.TextLarge.Secondary" />
     <View
         android:id="@+id/find_separator"
         android:layout_width="1dp"

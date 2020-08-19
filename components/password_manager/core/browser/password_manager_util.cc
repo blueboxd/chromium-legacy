@@ -137,10 +137,6 @@ bool ShowAllSavedPasswordsContextMenuEnabled(
       !client->IsFillingFallbackEnabled(driver->GetLastCommittedURL()))
     return false;
 
-  LogContextOfShowAllSavedPasswordsShown(
-      password_manager::metrics_util::ShowAllSavedPasswordsContext::
-          kContextMenu);
-
   return true;
 }
 

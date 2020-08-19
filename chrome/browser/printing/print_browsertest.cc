@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
 #include <memory>
 
 #include "base/auto_reset.h"
@@ -404,6 +405,10 @@ class IsolateOriginsPrintBrowserTest : public PrintBrowserTest {
 class BackForwardCachePrintBrowserTest : public PrintBrowserTest {
  public:
   BackForwardCachePrintBrowserTest() = default;
+  BackForwardCachePrintBrowserTest(const BackForwardCachePrintBrowserTest&) =
+      delete;
+  BackForwardCachePrintBrowserTest& operator=(
+      const BackForwardCachePrintBrowserTest&) = delete;
   ~BackForwardCachePrintBrowserTest() override = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -416,7 +421,7 @@ class BackForwardCachePrintBrowserTest : public PrintBrowserTest {
             {"TimeToLiveInBackForwardCacheInSeconds", "3600"},
         });
 
-    InProcessBrowserTest::SetUpCommandLine(command_line);
+    PrintBrowserTest::SetUpCommandLine(command_line);
   }
 
   content::WebContents* web_contents() const {
@@ -448,8 +453,6 @@ class BackForwardCachePrintBrowserTest : public PrintBrowserTest {
         << location.ToString();
   }
 
-  base::HistogramTester histogram_tester_;
-
  private:
   void AddSampleToBuckets(std::vector<base::Bucket>* buckets,
                           base::HistogramBase::Sample sample) {
@@ -463,10 +466,9 @@ class BackForwardCachePrintBrowserTest : public PrintBrowserTest {
     }
   }
 
+  base::HistogramTester histogram_tester_;
   std::vector<base::Bucket> expected_blocklisted_features_;
   base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(BackForwardCachePrintBrowserTest);
 };
 
 constexpr char IsolateOriginsPrintBrowserTest::kIsolatedSite[];
@@ -789,7 +791,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCachePrintBrowserTest, DisableCaching) {
   ASSERT_TRUE(embedded_test_server()->Started());
 
   // 1) Navigate to A and trigger printing.
-  GURL url(embedded_test_server()->GetURL("a.com", "/printing/test1.html"));
+  GURL url(embedded_test_server()->GetURL(
+      "a.com", "/back_forward_cache/no-favicon.html"));
   ui_test_utils::NavigateToURL(browser(), url);
   content::RenderFrameHost* rfh_a = current_frame_host();
   content::RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
@@ -797,7 +800,8 @@ IN_PROC_BROWSER_TEST_F(BackForwardCachePrintBrowserTest, DisableCaching) {
 
   // 2) Navigate to B.
   // The first page is not cached because printing preview was open.
-  GURL url_2(embedded_test_server()->GetURL("b.com", "/printing/test2.html"));
+  GURL url_2(embedded_test_server()->GetURL(
+      "b.com", "/back_forward_cache/no-favicon.html"));
   ui_test_utils::NavigateToURL(browser(), url_2);
   delete_observer_rfh_a.WaitUntilDeleted();
 

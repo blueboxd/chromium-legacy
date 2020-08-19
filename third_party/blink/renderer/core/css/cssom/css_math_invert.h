@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CSS_MATH_INVERT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CSS_MATH_INVERT_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/css/cssom/css_math_value.h"
 
 namespace blink {
@@ -28,6 +27,8 @@ class CORE_EXPORT CSSMathInvert : public CSSMathValue {
 
   CSSMathInvert(CSSNumericValue* value, const CSSNumericValueType& type)
       : CSSMathValue(type), value_(value) {}
+  CSSMathInvert(const CSSMathInvert&) = delete;
+  CSSMathInvert& operator=(const CSSMathInvert&) = delete;
 
   String getOperator() const final { return "invert"; }
 
@@ -66,7 +67,6 @@ class CORE_EXPORT CSSMathInvert : public CSSMathValue {
   void BuildCSSText(Nested, ParenLess, StringBuilder&) const final;
 
   Member<CSSNumericValue> value_;
-  DISALLOW_COPY_AND_ASSIGN(CSSMathInvert);
 };
 
 }  // namespace blink

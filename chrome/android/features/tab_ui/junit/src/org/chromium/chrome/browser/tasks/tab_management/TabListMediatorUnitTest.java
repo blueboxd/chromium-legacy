@@ -2190,11 +2190,11 @@ public class TabListMediatorUnitTest {
         mCallbackCaptor.getValue().onResult(mFaviconDrawable);
     }
 
-    @Test
+    @Test(expected = AssertionError.class)
     public void testGetDomainOnDestroyedTab() {
         Tab tab = new MockTab(TAB1_ID, false);
         tab.destroy();
-        assertEquals("", TabListMediator.getDomain(tab));
+        TabListMediator.getDomain(tab);
     }
 
     private void initAndAssertAllProperties() {

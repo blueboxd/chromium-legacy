@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/optional.h"
 #include "base/task/post_task.h"
+#include "media/base/video_util.h"
 #include "media/gpu/chromeos/gpu_buffer_layout.h"
 #include "media/gpu/chromeos/platform_video_frame_utils.h"
 #include "media/gpu/macros.h"
@@ -76,12 +77,19 @@ scoped_refptr<VideoFrame> PlatformVideoFramePool::GetFrame() {
     if (GetTotalNumFrames_Locked() >= max_num_frames_)
       return nullptr;
 
-    // VideoFrame::WrapVideoFrame() will check whether the updated visible_rect
-    // is sub rect of the original visible_rect. Therefore we set visible_rect
-    // as large as coded_size to guarantee this condition.
-    scoped_refptr<VideoFrame> new_frame = create_frame_cb_.Run(
-        gpu_memory_buffer_factory_, format, coded_size, gfx::Rect(coded_size),
-        coded_size, base::TimeDelta());
+    // We want to be able to re-use |new_frame| if possible even when the pool
+    // is re-initialized with a different |visible_rect_|. DRM framebuffers can
+    // be re-used if the visible-rect-from-the-origin (a.k.a "usable area") is
+    // the same. For example, say we have a |visible_rect_| of (10, 20), 640x360
+    // (DRM framebuffer of size 650x380); if we re-initialize the pool with
+    // (5, 2), 645x378, we can re-use the resources, but if we re-initialize
+    // with (10, 20), 100x100 we cannot (even though it's contained in the
+    // former). Hence the use of GetRectSizeFromOrigin() to calculate the
+    // visible rect for |new_frame|.
+    scoped_refptr<VideoFrame> new_frame =
+        create_frame_cb_.Run(gpu_memory_buffer_factory_, format, coded_size,
+                             gfx::Rect(GetRectSizeFromOrigin(visible_rect_)),
+                             coded_size, base::TimeDelta());
     if (!new_frame)
       return nullptr;
 
@@ -118,10 +126,6 @@ base::Optional<GpuBufferLayout> PlatformVideoFramePool::Initialize(
   DVLOGF(4);
   base::AutoLock auto_lock(lock_);
 
-  visible_rect_ = visible_rect;
-  natural_size_ = natural_size;
-  max_num_frames_ = max_num_frames;
-
   // Only support the Fourcc that could map to VideoPixelFormat.
   VideoPixelFormat format = fourcc.ToVideoPixelFormat();
   if (format == PIXEL_FORMAT_UNKNOWN) {
@@ -130,11 +134,18 @@ base::Optional<GpuBufferLayout> PlatformVideoFramePool::Initialize(
   }
 
   // If the frame layout changed we need to allocate new frames so we will clear
-  // the pool here. If only the visible or natural size changed we don't need to
-  // allocate new frames, but will just update the properties of wrapped frames
-  // returned by GetFrame().
-  // NOTE: It is assumed layout is determined by |format| and |coded_size|.
-  if (!IsSameFormat_Locked(format, coded_size)) {
+  // the pool here. If only the visible rect or natural size changed, we don't
+  // need to allocate new frames (unless the change in the visible rect causes a
+  // change in the size of the DRM framebuffer, see note below): we'll just
+  // update the properties of wrapped frames returned by GetFrame().
+  //
+  // NOTE: It is assumed layout is determined by |format|, |coded_size|, and
+  // possibly |visible_rect|. The reason for the "possibly" is that
+  // |visible_rect| is used to compute the size of the DRM framebuffer for
+  // hardware overlay purposes. The caveat is that different visible rectangles
+  // can map to the same framebuffer size, i.e., all the visible rectangles with
+  // the same bottom-right corner map to the same framebuffer size.
+  if (!IsSameFormat_Locked(format, coded_size, visible_rect)) {
     DVLOGF(4) << "The video frame format is changed. Clearing the pool.";
     free_frames_.clear();
 
@@ -142,7 +153,7 @@ base::Optional<GpuBufferLayout> PlatformVideoFramePool::Initialize(
     // VideoFrame that will be allocated in GetFrame() has.
     auto frame =
         create_frame_cb_.Run(gpu_memory_buffer_factory_, format, coded_size,
-                             visible_rect_, natural_size_, base::TimeDelta());
+                             visible_rect, natural_size, base::TimeDelta());
     if (!frame) {
       VLOGF(1) << "Failed to create video frame " << format << " (fourcc "
                << fourcc.ToString() << ")";
@@ -151,6 +162,10 @@ base::Optional<GpuBufferLayout> PlatformVideoFramePool::Initialize(
     frame_layout_ = GpuBufferLayout::Create(fourcc, frame->coded_size(),
                                             frame->layout().planes());
   }
+
+  visible_rect_ = visible_rect;
+  natural_size_ = natural_size;
+  max_num_frames_ = max_num_frames;
 
   // The pool might become available because of |max_num_frames_| increased.
   // Notify the client if so.
@@ -219,8 +234,10 @@ void PlatformVideoFramePool::OnFrameReleased(
   DCHECK(it != frames_in_use_.end());
   frames_in_use_.erase(it);
 
-  if (IsSameFormat_Locked(origin_frame->format(), origin_frame->coded_size()))
+  if (IsSameFormat_Locked(origin_frame->format(), origin_frame->coded_size(),
+                          origin_frame->visible_rect())) {
     InsertFreeFrame_Locked(std::move(origin_frame));
+  }
 
   if (frame_available_cb_ && !IsExhausted_Locked())
     std::move(frame_available_cb_).Run();
@@ -245,13 +262,16 @@ size_t PlatformVideoFramePool::GetTotalNumFrames_Locked() const {
 
 bool PlatformVideoFramePool::IsSameFormat_Locked(
     VideoPixelFormat format,
-    const gfx::Size& coded_size) const {
+    const gfx::Size& coded_size,
+    const gfx::Rect& visible_rect) const {
   DVLOGF(4);
   lock_.AssertAcquired();
 
   return frame_layout_ &&
          frame_layout_->fourcc().ToVideoPixelFormat() == format &&
-         frame_layout_->size() == coded_size;
+         frame_layout_->size() == coded_size &&
+         GetRectSizeFromOrigin(visible_rect_) ==
+             GetRectSizeFromOrigin(visible_rect);
 }
 
 size_t PlatformVideoFramePool::GetPoolSizeForTesting() {

@@ -77,16 +77,16 @@ void FindAppServiceTasks(Profile* profile,
   std::vector<std::string> mime_types;
   for (auto& entry : entries)
     mime_types.push_back(entry.mime_type);
-  std::vector<apps::AppIdAndActivityName> app_id_and_activities =
+  std::vector<apps::IntentLaunchInfo> intent_launch_info =
       proxy->GetAppsForFiles(file_urls, mime_types);
 
   std::string task_action_id =
       entries.size() == 1 ? kActionIdSend : kActionIdSendMultiple;
   using extensions::api::file_manager_private::Verb;
   // TODO(crbug/1092784): Support file open with in the future.
-  for (auto& app_id_and_activity : app_id_and_activities) {
+  for (auto& launch_entry : intent_launch_info) {
     apps::mojom::AppType app_type =
-        proxy->AppRegistryCache().GetAppType(app_id_and_activity.app_id);
+        proxy->AppRegistryCache().GetAppType(launch_entry.app_id);
     // TODO(crbug/1092784): Only going to support ARC app and web app.
     if (!(app_type == apps::mojom::AppType::kArc ||
           app_type == apps::mojom::AppType::kWeb)) {
@@ -95,11 +95,11 @@ void FindAppServiceTasks(Profile* profile,
 
     constexpr int kIconSize = 32;
     GURL icon_url =
-        apps::AppIconSource::GetIconURL(app_id_and_activity.app_id, kIconSize);
+        apps::AppIconSource::GetIconURL(launch_entry.app_id, kIconSize);
     result_list->push_back(FullTaskDescriptor(
-        TaskDescriptor(app_id_and_activity.app_id, GetTaskType(app_type),
+        TaskDescriptor(launch_entry.app_id, GetTaskType(app_type),
                        task_action_id),
-        app_id_and_activity.activity_name, Verb::VERB_SHARE_WITH, icon_url,
+        launch_entry.activity_label, Verb::VERB_SHARE_WITH, icon_url,
         /* is_default=*/false,
         /* is_generic=*/true,
         /* is_file_extension_match=*/false));

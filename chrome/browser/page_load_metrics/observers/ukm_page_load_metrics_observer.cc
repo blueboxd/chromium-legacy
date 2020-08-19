@@ -867,15 +867,6 @@ void UkmPageLoadMetricsObserver::ReportLayoutStability() {
       "PageLoad.LayoutInstability.CumulativeShiftScore.MainFrame",
       page_load_metrics::LayoutShiftUmaValue(
           GetDelegate().GetMainFrameRenderData().layout_shift_score));
-
-  // Note: This depends on PageLoadMetrics internally processing loading
-  // behavior before timing metrics if they come in the same IPC update.
-  if (font_preload_started_before_rendering_observed_) {
-    UMA_HISTOGRAM_COUNTS_100(
-        "PageLoad.Clients.FontPreload.LayoutInstability.CumulativeShiftScore",
-        page_load_metrics::LayoutShiftUmaValue(
-            GetDelegate().GetPageRenderData().layout_shift_score));
-  }
 }
 
 void UkmPageLoadMetricsObserver::ReportPerfectHeuristicsMetrics() {
@@ -1150,11 +1141,6 @@ void UkmPageLoadMetricsObserver::RecordGeneratedNavigationUKM(
 void UkmPageLoadMetricsObserver::OnLoadingBehaviorObserved(
     content::RenderFrameHost* rfh,
     int behavior_flag) {
-  if (behavior_flag & blink::LoadingBehaviorFlag::
-                          kLoadingBehaviorFontPreloadStartedBeforeRendering) {
-    font_preload_started_before_rendering_observed_ = true;
-  }
-
   if (behavior_flag &
       blink::LoadingBehaviorFlag::
           kLoadingBehaviorAsyncScriptReadyBeforeDocumentFinishedParsing) {

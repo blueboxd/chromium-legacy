@@ -100,7 +100,6 @@ suite('CrostiniPageTests', function() {
         showCrostiniExportImport: true,
         showCrostiniContainerUpgrade: true,
         showCrostiniPortForwarding: true,
-        showCrostiniMic: true,
         showCrostiniDiskResize: true,
       });
 

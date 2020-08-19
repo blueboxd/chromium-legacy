@@ -26,10 +26,14 @@ constexpr int kCPBWindowSizeMs = 500;
 // Quantization parameter. They are vp9 ac/dc indices and their ranges are
 // 0-255. Based on WebRTC's defaults.
 constexpr int kMinQP = 4;
-// TODO(crbug.com/1060775): Relax this max quantization parameter upper bound
-// so that our encoder and bitrate controller can select a higher value in the
-// case a requested bitrate is small.
 constexpr int kMaxQP = 112;
+// The upper limitation of the quantization parameter for the software rate
+// controller. This is larger than |kMaxQP| because a driver might ignore the
+// specified maximum quantization parameter when the driver determines the
+// value, but it doesn't ignore the quantization parameter by the software rate
+// controller.
+constexpr int kMaxQPForSoftwareRateCtrl = 224;
+
 // This stands for 31 as a real ac value (see rfc 8.6.1 table
 // ac_qlookup[3][256]). Note: This needs to be revisited once we have 10&12 bit
 // encoder support.
@@ -220,6 +224,8 @@ bool VP9Encoder::Initialize(const VideoEncodeAccelerator::Config& config,
       temporal_layers_ =
           std::make_unique<VP9TemporalLayers>(num_temporal_layers);
     }
+    current_params_.scaling_settings.max_qp = kMaxQPForSoftwareRateCtrl;
+
     // |rate_ctrl_| might be injected for tests.
     if (!rate_ctrl_) {
       rate_ctrl_ = VP9RateControl::Create(CreateRateControlConfig(

@@ -85,15 +85,13 @@ def main(argv):
   parser.add_argument(
       '--manifest-package',
       help='Package name of the merged AndroidManifest.xml.')
-  parser.add_argument('--warnings-as-errors',
-                      action='store_true',
-                      help='Treat all warnings as errors.')
   args = parser.parse_args(argv)
 
   classpath = _BuildManifestMergerClasspath(args.android_sdk_cmdline_tools)
 
   with build_utils.AtomicOutput(args.output) as output:
-    cmd = build_utils.JavaCmd(args.warnings_as_errors) + [
+    cmd = [
+        build_utils.JAVA_PATH,
         '-cp',
         classpath,
         _MANIFEST_MERGER_MAIN_CLASS,
@@ -125,13 +123,11 @@ def main(argv):
           '--property',
           'PACKAGE=' + package,
       ]
-      build_utils.CheckOutput(
-          cmd,
-          # https://issuetracker.google.com/issues/63514300:
-          # The merger doesn't set a nonzero exit code for failures.
-          fail_func=lambda returncode, stderr: returncode != 0 or build_utils.
-          IsTimeStale(output.name, [root_manifest] + extras),
-          fail_on_output=args.warnings_as_errors)
+      build_utils.CheckOutput(cmd,
+        # https://issuetracker.google.com/issues/63514300:
+        # The merger doesn't set a nonzero exit code for failures.
+        fail_func=lambda returncode, stderr: returncode != 0 or
+          build_utils.IsTimeStale(output.name, [root_manifest] + extras))
 
     # Check for correct output.
     _, manifest, _ = manifest_utils.ParseManifest(output.name)

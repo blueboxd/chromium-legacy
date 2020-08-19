@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CSS_MATH_SUM_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CSS_MATH_SUM_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/css/cssom/css_math_variadic.h"
 
 namespace blink {
@@ -24,6 +23,8 @@ class CORE_EXPORT CSSMathSum final : public CSSMathVariadic {
 
   CSSMathSum(CSSNumericArray* values, const CSSNumericValueType& type)
       : CSSMathVariadic(values, type) {}
+  CSSMathSum(const CSSMathSum&) = delete;
+  CSSMathSum& operator=(const CSSMathSum&) = delete;
 
   String getOperator() const final { return "sum"; }
 
@@ -36,7 +37,6 @@ class CORE_EXPORT CSSMathSum final : public CSSMathVariadic {
   void BuildCSSText(Nested, ParenLess, StringBuilder&) const final;
 
   base::Optional<CSSNumericSumValue> SumValue() const final;
-  DISALLOW_COPY_AND_ASSIGN(CSSMathSum);
 };
 
 }  // namespace blink

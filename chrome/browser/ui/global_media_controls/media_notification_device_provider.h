@@ -13,12 +13,19 @@ class MediaNotificationDeviceProvider {
   virtual ~MediaNotificationDeviceProvider() = default;
 
   using GetOutputDevicesCallbackList =
-      base::OnceCallbackList<void(const media::AudioDeviceDescriptions&)>;
+      base::RepeatingCallbackList<void(const media::AudioDeviceDescriptions&)>;
   using GetOutputDevicesCallback = GetOutputDevicesCallbackList::CallbackType;
 
+  // Register a callback that will be invoked with the list of audio output
+  // devices currently available. After the first invocation the callback will
+  // be run whenever a change in connected audio devices is detected.
   virtual std::unique_ptr<MediaNotificationDeviceProvider::
                               GetOutputDevicesCallbackList::Subscription>
-  GetOutputDeviceDescriptions(GetOutputDevicesCallback cb) = 0;
+  RegisterOutputDeviceDescriptionsCallback(GetOutputDevicesCallback cb) = 0;
+
+  // Query the system for audio output devices and reply via callback.
+  virtual void GetOutputDeviceDescriptions(
+      media::AudioSystem::OnDeviceDescriptionsCallback) = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_GLOBAL_MEDIA_CONTROLS_MEDIA_NOTIFICATION_DEVICE_PROVIDER_H_

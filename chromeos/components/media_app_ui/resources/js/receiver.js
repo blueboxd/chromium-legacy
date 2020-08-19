@@ -77,6 +77,9 @@ class ReceivedFile {
     const renameResponse =
         /** @type {!RenameFileResponse} */ (await parentMessagePipe.sendMessage(
             Message.RENAME_FILE, {token: this.token, newFilename: newName}));
+    if (renameResponse.renameResult === RenameResult.SUCCESS) {
+      this.name = newName;
+    }
     return renameResponse.renameResult;
   }
 

@@ -112,18 +112,16 @@
         </settings-crostini-disk-resize-confirmation-dialog>
       </template>
     </template>
-    <template is="dom-if" if="[[showCrostiniMic_]]">
-      <div class="settings-box">
-        <div id="crostini-mic-sharing-label" class="start" aria-hidden="true">
-          $i18n{crostiniMicTitle}
-        </div>
-        <cr-toggle id="crostini-mic-sharing-toggle"
-            checked="[[crostiniMicSharingEnabled_]]"
-            on-change="onMicSharingChange_"
-            aria-label="$i18n{crostiniMicTitle}">
-        </cr-toggle>
+    <div class="settings-box">
+      <div id="crostini-mic-sharing-label" class="start" aria-hidden="true">
+        $i18n{crostiniMicTitle}
       </div>
-    </template>
+      <cr-toggle id="crostini-mic-sharing-toggle"
+          checked="[[crostiniMicSharingEnabled_]]"
+          on-change="onMicSharingChange_"
+          aria-describedby="crostini-mic-sharing-label">
+      </cr-toggle>
+    </div>
     <template is="dom-if" if="[[!hideCrostiniUninstall_]]">
       <div id="remove" class="settings-box">
         <div id="removeCrostiniLabel" class="start" aria-hidden="true">

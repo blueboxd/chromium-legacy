@@ -48,7 +48,7 @@ constexpr int kCornerRadius = 12;
 constexpr int kMaxTargetsPerRow = 4;
 // TargetViewHeight is 2*kButtonHeight + kButtonPadding
 constexpr int kTargetViewHeight = 216;
-constexpr int kBubbleWidth = 416;
+constexpr int kDefaultBubbleWidth = 416;
 constexpr int kShortSpacing = 20;
 constexpr int kSpacing = 24;
 constexpr int kTitleLineHeight = 24;
@@ -129,18 +129,8 @@ SharesheetBubbleView::SharesheetBubbleView(
           ->GetCurrentAppWindowForApp(extension_misc::kFilesManagerAppId)
           ->GetNativeWindow();
   set_parent_window(parent);
-  View* parent_view =
-      views::Widget::GetWidgetForNativeWindow(parent)->GetRootView();
-
-  // Horizontally centered
-  int x_within_parent_view = parent_view->GetMirroredXInView(
-      (parent_view->bounds().width() - kBubbleWidth) / 2);
-  // Get position in screen, taking parent view origin into account. This is
-  // 0,0 in fullscreen on the primary display, but not on secondary displays, or
-  // in Hosted App windows.
-  gfx::Point origin = parent_view->GetBoundsInScreen().origin();
-  origin += gfx::Vector2d(x_within_parent_view, kBubbleTopPaddingFromWindow);
-  SetAnchorRect(gfx::Rect(origin, gfx::Size()));
+  parent_view_ = views::Widget::GetWidgetForNativeWindow(parent)->GetRootView();
+  UpdateAnchorPosition();
 
   CreateBubble();
 }
@@ -213,6 +203,9 @@ void SharesheetBubbleView::ShowBubble(std::vector<TargetInfo> targets,
   views::Widget* widget = views::BubbleDialogDelegateView::CreateBubble(this);
   GetWidget()->GetRootView()->Layout();
   widget->Show();
+
+  SetToDefaultBubbleSizing();
+  UpdateAnchorPosition();
 }
 
 void SharesheetBubbleView::ShowActionView() {
@@ -220,9 +213,20 @@ void SharesheetBubbleView::ShowActionView() {
   share_action_view_->SetVisible(true);
 }
 
+void SharesheetBubbleView::ResizeBubble(const int& width, const int& height) {
+  width_ = width;
+  height_ = height;
+  UpdateAnchorPosition();
+}
+
 void SharesheetBubbleView::CloseBubble() {
   views::Widget* widget = View::GetWidget();
   widget->CloseWithReason(views::Widget::ClosedReason::kAcceptButtonClicked);
+  // Reset all bubble values.
+  targets_.clear();
+  active_target_ = base::string16();
+  intent_.reset();
+  SetToDefaultBubbleSizing();
 }
 
 void SharesheetBubbleView::ButtonPressed(views::Button* sender,
@@ -230,6 +234,8 @@ void SharesheetBubbleView::ButtonPressed(views::Button* sender,
   auto type = targets_[sender->tag()].type;
   if (type == sharesheet::TargetType::kAction) {
     active_target_ = targets_[sender->tag()].launch_name;
+  } else {
+    intent_->activity_name = targets_[sender->tag()].activity_name;
   }
   delegate_->OnTargetSelected(targets_[sender->tag()].launch_name, type,
                               std::move(intent_), share_action_view_);
@@ -253,7 +259,7 @@ void SharesheetBubbleView::OnWidgetDestroyed(views::Widget* widget) {
 }
 
 gfx::Size SharesheetBubbleView::CalculatePreferredSize() const {
-  return gfx::Size(kBubbleWidth, GetHeightForWidth(kBubbleWidth));
+  return gfx::Size(width_, height_);
 }
 
 void SharesheetBubbleView::CreateBubble() {
@@ -279,4 +285,28 @@ void SharesheetBubbleView::CreateBubble() {
       views::BoxLayout::Orientation::kVertical, gfx::Insets(), 0, true));
   share_action_view_ = AddChildView(std::move(share_action_view));
   share_action_view_->SetVisible(false);
+}
+
+void SharesheetBubbleView::UpdateAnchorPosition() {
+  // If |width_| is not set, set to default value.
+  if (width_ == 0) {
+    SetToDefaultBubbleSizing();
+  }
+
+  // Horizontally centered
+  int x_within_parent_view = parent_view_->GetMirroredXInView(
+      (parent_view_->bounds().width() - width_) / 2);
+  // Get position in screen, taking parent view origin into account. This is
+  // 0,0 in fullscreen on the primary display, but not on secondary displays, or
+  // in Hosted App windows.
+  gfx::Point origin = parent_view_->GetBoundsInScreen().origin();
+  origin += gfx::Vector2d(x_within_parent_view, kBubbleTopPaddingFromWindow);
+
+  // SetAnchorRect will CalculatePreferredSize when called.
+  SetAnchorRect(gfx::Rect(origin, gfx::Size()));
+}
+
+void SharesheetBubbleView::SetToDefaultBubbleSizing() {
+  width_ = kDefaultBubbleWidth;
+  height_ = GetHeightForWidth(width_);
 }

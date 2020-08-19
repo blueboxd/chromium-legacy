@@ -66,6 +66,9 @@ SkiaOutputDeviceGL::SkiaOutputDeviceGL(
           .disable_post_sub_buffers_for_onscreen_surfaces) {
     capabilities_.supports_post_sub_buffer = false;
   }
+  if (feature_info->workarounds().force_rgb10a2_overlay_support_flags) {
+    capabilities_.forces_rgb10a2_overlay_support_flags = true;
+  }
   capabilities_.max_frames_pending = gl_surface_->GetBufferCount() - 1;
   capabilities_.supports_commit_overlay_planes =
       gl_surface_->SupportsCommitOverlayPlanes();

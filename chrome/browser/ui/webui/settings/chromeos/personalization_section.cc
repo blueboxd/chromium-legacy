@@ -64,7 +64,6 @@ const std::vector<SearchConcept>& GetPersonalizationSearchConcepts() {
   return *tags;
 }
 
-// TODO(b/159766700): Add search concepts for |kAmbientModePhotosSubpagePath|.
 const std::vector<SearchConcept>& GetAmbientModeSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
       {IDS_OS_SETTINGS_TAG_AMBIENT_MODE,
@@ -93,6 +92,18 @@ const std::vector<SearchConcept>& GetAmbientModeOnSearchConcepts() {
        {.setting = mojom::Setting::kAmbientModeOnOff},
        {IDS_OS_SETTINGS_TAG_AMBIENT_MODE_TURN_OFF_ALT1,
         SearchConcept::kAltTagEnd}},
+      {IDS_OS_SETTINGS_TAG_AMBIENT_MODE_GOOGLE_PHOTOS_ALBUM,
+       mojom::kAmbientModeGooglePhotosAlbumSubpagePath,
+       mojom::SearchResultIcon::kWallpaper,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSubpage,
+       {.subpage = mojom::Subpage::kAmbientModeGooglePhotosAlbum}},
+      {IDS_OS_SETTINGS_TAG_AMBIENT_MODE_ART_GALLERY_ALBUM,
+       mojom::kAmbientModeArtGalleryAlbumSubpagePath,
+       mojom::SearchResultIcon::kWallpaper,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSubpage,
+       {.subpage = mojom::Subpage::kAmbientModeArtGalleryAlbum}},
   });
   return *tags;
 }
@@ -283,19 +294,18 @@ void PersonalizationSection::RegisterHierarchy(
   };
   RegisterNestedSettingBulk(mojom::Subpage::kAmbientMode, kAmbientModeSettings,
                             generator);
-
-  // Note: The subpage name in the UI is updated dynamically based on the topic
-  // source.
-  // TODO(b/159766700): Create a string for the page title and strings for the
-  // search.
   generator->RegisterNestedSubpage(
-      IDS_OS_SETTINGS_AMBIENT_MODE_TITLE, mojom::Subpage::kAmbientModePhotos,
+      IDS_OS_SETTINGS_AMBIENT_MODE_TITLE,
+      mojom::Subpage::kAmbientModeGooglePhotosAlbum,
       mojom::Subpage::kAmbientMode, mojom::SearchResultIcon::kWallpaper,
       mojom::SearchResultDefaultRank::kMedium,
-      mojom::kAmbientModePhotosSubpagePath);
-  generator->RegisterNestedSetting(
-      mojom::Setting::kAmbientModeUpdatePhotosContainers,
-      mojom::Subpage::kAmbientModePhotos);
+      mojom::kAmbientModeGooglePhotosAlbumSubpagePath);
+  generator->RegisterNestedSubpage(
+      IDS_OS_SETTINGS_AMBIENT_MODE_TITLE,
+      mojom::Subpage::kAmbientModeArtGalleryAlbum, mojom::Subpage::kAmbientMode,
+      mojom::SearchResultIcon::kWallpaper,
+      mojom::SearchResultDefaultRank::kMedium,
+      mojom::kAmbientModeArtGalleryAlbumSubpagePath);
 }
 
 void PersonalizationSection::OnAmbientModeEnabledStateChanged() {

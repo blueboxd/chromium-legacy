@@ -39,9 +39,6 @@ def _ParseArgs():
   parser.add_argument('--negative-main-dex-globs',
       help='GN-list of globs of .class names (e.g. org/chromium/foo/Bar.class) '
            'that will fail the build if they match files in the main dex.')
-  parser.add_argument('--warnings-as-errors',
-                      action='store_true',
-                      help='Treat all warnings as errors.')
 
   args = parser.parse_args(build_utils.ExpandFileArgs(sys.argv[1:]))
 
@@ -57,7 +54,9 @@ def _ParseArgs():
 
 def main():
   args = _ParseArgs()
-  proguard_cmd = build_utils.JavaCmd(args.warnings_as_errors) + [
+  proguard_cmd = [
+      build_utils.JAVA_PATH,
+      '-Xmx1G',
       '-cp',
       args.r8_path,
       'com.android.tools.r8.R8',
@@ -97,9 +96,7 @@ def main():
         proguard_cmd += ['--pg-conf', proguard_flags_file.name]
         for injar in args.class_inputs:
           proguard_cmd.append(injar)
-        build_utils.CheckOutput(proguard_cmd,
-                                print_stderr=False,
-                                fail_on_output=args.warnings_as_errors)
+        build_utils.CheckOutput(proguard_cmd, print_stderr=False)
 
       # Record the classes kept by ProGuard. Not used by the build, but useful
       # for debugging what classes are kept by ProGuard vs. MainDexListBuilder.
@@ -110,7 +107,8 @@ def main():
 
       # Step 2: Expand inclusion list to all classes referenced by the .class
       # files of kept classes (non-recursive).
-      main_dex_list_cmd = build_utils.JavaCmd() + [
+      main_dex_list_cmd = [
+          build_utils.JAVA_PATH,
           '-cp',
           args.dx_path,
           'com.android.multidex.MainDexListBuilder',
@@ -121,8 +119,7 @@ def main():
           temp_jar.name,
           ':'.join(args.class_inputs)
       ]
-      main_dex_list = build_utils.CheckOutput(
-          main_dex_list_cmd, fail_on_output=args.warnings_as_errors)
+      main_dex_list = build_utils.CheckOutput(main_dex_list_cmd)
 
   except build_utils.CalledProcessError as e:
     if 'output jar is empty' in e.output:

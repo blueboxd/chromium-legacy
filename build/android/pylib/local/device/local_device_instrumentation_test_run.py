@@ -783,24 +783,30 @@ class LocalDeviceInstrumentationTestRun(
       logging.debug('raw output from %s:', test_display_name)
       for l in output:
         logging.debug('  %s', l)
+
     if self._test_instance.store_tombstones:
-      tombstones_url = None
-      for result in results:
-        if result.GetType() == base_test_result.ResultType.CRASH:
-          if not tombstones_url:
-            resolved_tombstones = tombstones.ResolveTombstones(
-                device,
-                resolve_all_tombstones=True,
-                include_stack_symbols=False,
-                wipe_tombstones=True,
-                tombstone_symbolizer=self._test_instance.symbolizer)
-            tombstone_filename = 'tombstones_%s_%s' % (
-                time.strftime('%Y%m%dT%H%M%S-UTC', time.gmtime()),
-                device.serial)
-            with self._env.output_manager.ArchivedTempfile(
-                tombstone_filename, 'tombstones') as tombstone_file:
-              tombstone_file.write('\n'.join(resolved_tombstones))
+      resolved_tombstones = tombstones.ResolveTombstones(
+          device,
+          resolve_all_tombstones=True,
+          include_stack_symbols=False,
+          wipe_tombstones=True,
+          tombstone_symbolizer=self._test_instance.symbolizer)
+      if resolved_tombstones:
+        tombstone_filename = 'tombstones_%s_%s' % (time.strftime(
+            '%Y%m%dT%H%M%S-UTC', time.gmtime()), device.serial)
+        with self._env.output_manager.ArchivedTempfile(
+            tombstone_filename, 'tombstones') as tombstone_file:
+          tombstone_file.write('\n'.join(resolved_tombstones))
+
+        # Associate tombstones with first crashing test.
+        for result in results:
+          if result.GetType() == base_test_result.ResultType.CRASH:
             result.SetLink('tombstones', tombstone_file.Link())
+            break
+        else:
+          # We don't always detect crashes correctly. In this case,
+          # associate with the first test.
+          results[0].SetLink('tombstones', tombstone_file.Link())
     return results, None
 
   def _GetTestsFromRunner(self):

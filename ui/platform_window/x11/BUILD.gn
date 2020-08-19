@@ -24,7 +24,6 @@ component("x11") {
     "//ui/gfx/x",
     "//ui/platform_window",
     "//ui/platform_window/common",
-    "//ui/platform_window/extensions",
     "//ui/platform_window/wm",
   ]
 
@@ -73,7 +72,6 @@ test("x11_unittests") {
     "//ui/gfx:test_support",
     "//ui/gfx/x",
     "//ui/platform_window",
-    "//ui/platform_window/extensions",
   ]
   configs += [ "//build/config:precompiled_headers" ]
 

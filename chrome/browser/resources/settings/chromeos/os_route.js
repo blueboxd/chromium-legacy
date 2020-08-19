@@ -147,9 +147,12 @@ cr.define('settings', function() {
       r.AMBIENT_MODE = createSubpage(
           r.PERSONALIZATION, mojom.AMBIENT_MODE_SUBPAGE_PATH,
           Subpage.kAmbientMode);
+      // Note: AMBIENT_MODE_PHOTOS is a special case because it includes several
+      // subpages, one per topic source. Default to
+      // kAmbientModeGooglePhotosAlbum subpage.
       r.AMBIENT_MODE_PHOTOS = createSubpage(
-          r.AMBIENT_MODE, mojom.AMBIENT_MODE_PHOTOS_SUBPAGE_PATH,
-          Subpage.kAmbientModePhotos);
+          r.AMBIENT_MODE, 'ambientMode/photos',
+          Subpage.kAmbientModeGooglePhotosAlbum);
     }
 
     // Search and Assistant section.

@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CSS_UNSUPPORTED_STYLE_VALUE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CSS_UNSUPPORTED_STYLE_VALUE_H_
 
-#include "base/macros.h"
 #include "base/optional.h"
 #include "third_party/blink/renderer/core/css/css_property_name.h"
 #include "third_party/blink/renderer/core/css/cssom/css_style_value.h"
@@ -35,6 +34,8 @@ class CORE_EXPORT CSSUnsupportedStyleValue : public CSSStyleValue {
       : name_(name) {
     SetCSSText(value.CssText());
   }
+  CSSUnsupportedStyleValue(const CSSUnsupportedStyleValue&) = delete;
+  CSSUnsupportedStyleValue& operator=(const CSSUnsupportedStyleValue&) = delete;
 
   StyleValueType GetType() const override {
     return StyleValueType::kUnknownType;
@@ -52,7 +53,6 @@ class CORE_EXPORT CSSUnsupportedStyleValue : public CSSStyleValue {
 
  private:
   base::Optional<CSSPropertyName> name_;
-  DISALLOW_COPY_AND_ASSIGN(CSSUnsupportedStyleValue);
 };
 
 template <>

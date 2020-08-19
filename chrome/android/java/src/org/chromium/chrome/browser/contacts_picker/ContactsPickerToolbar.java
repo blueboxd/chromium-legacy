@@ -112,7 +112,7 @@ public class ContactsPickerToolbar extends SelectableListToolbar<ContactDetails>
                     done, R.style.TextAppearance_TextMedium_Primary_Inverse);
         } else {
             ApiCompatibilityUtils.setTextAppearance(
-                    done, R.style.TextAppearance_TextMedium_Tertiary);
+                    done, R.style.TextAppearance_TextMedium_Disabled);
             if (contactsSelected) {
                 setNavigationButton(NAVIGATION_BUTTON_SELECTION_BACK);
             } else {

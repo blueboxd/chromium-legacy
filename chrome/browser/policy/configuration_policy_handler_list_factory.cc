@@ -942,9 +942,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kSchedulerConfiguration,
     prefs::kSchedulerConfiguration,
     base::Value::Type::STRING },
-  { key::kNativePrintersBulkBlacklist,
-    prefs::kRecommendedNativePrintersBlacklist,
-    base::Value::Type::LIST },
   { key::kNativePrintersBulkWhitelist,
     prefs::kRecommendedNativePrintersWhitelist,
     base::Value::Type::LIST },
@@ -1736,6 +1733,13 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       std::make_unique<SimplePolicyHandler>(
           key::kPrintersBulkAccessMode, prefs::kRecommendedPrintersAccessMode,
           base::Value::Type::INTEGER)));
+  handlers->AddHandler(std::make_unique<SimpleDeprecatingPolicyHandler>(
+      std::make_unique<SimplePolicyHandler>(
+          key::kNativePrintersBulkBlacklist,
+          prefs::kRecommendedPrintersBlocklist, base::Value::Type::LIST),
+      std::make_unique<SimplePolicyHandler>(
+          key::kPrintersBulkBlocklist, prefs::kRecommendedPrintersBlocklist,
+          base::Value::Type::LIST)));
   handlers->AddHandler(
       std::make_unique<ExternalDataPolicyHandler>(key::kExternalPrintServers));
   handlers->AddHandler(std::make_unique<ExternalDataPolicyHandler>(

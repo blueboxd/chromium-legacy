@@ -39,6 +39,7 @@ IntentFilter::IntentFilter(
 IntentFilter::IntentFilter(
     const std::string& package_name,
     const std::string& activity_name,
+    const std::string& activity_label,
     std::vector<std::string> actions,
     std::vector<IntentFilter::AuthorityEntry> authorities,
     std::vector<IntentFilter::PatternMatcher> paths,
@@ -46,6 +47,7 @@ IntentFilter::IntentFilter(
     std::vector<std::string> mime_types)
     : package_name_(package_name),
       activity_name_(activity_name),
+      activity_label_(activity_label),
       actions_(std::move(actions)),
       authorities_(std::move(authorities)),
       schemes_(std::move(schemes)),

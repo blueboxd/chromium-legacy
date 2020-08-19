@@ -119,10 +119,6 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
   cast_config_controller_media_router_ =
       std::make_unique<CastConfigControllerMediaRouter>();
 
-  // Needed by AmbientController in ash.
-  if (chromeos::features::IsAmbientModeEnabled())
-    ambient_client_ = std::make_unique<AmbientClientImpl>();
-
   ash_shell_init_ = std::make_unique<AshShellInit>();
 
   screen_orientation_delegate_ =
@@ -211,6 +207,9 @@ void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {
 
 void ChromeBrowserMainExtraPartsAsh::PostBrowserStart() {
   mobile_data_notifications_ = std::make_unique<MobileDataNotifications>();
+
+  if (chromeos::features::IsAmbientModeEnabled())
+    ambient_client_ = std::make_unique<AmbientClientImpl>();
 }
 
 void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
@@ -219,6 +218,9 @@ void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
   // uninstall correctly.
   exo_parts_.reset();
 #endif
+
+  if (chromeos::features::IsAmbientModeEnabled())
+    ambient_client_.reset();
 
   night_light_client_.reset();
   mobile_data_notifications_.reset();
@@ -244,8 +246,6 @@ void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
   // needs to be released before destroying the profile.
   app_list_client_.reset();
   ash_shell_init_.reset();
-  ambient_client_.reset();
-
   cast_config_controller_media_router_.reset();
   if (chromeos::NetworkConnect::IsInitialized())
     chromeos::NetworkConnect::Shutdown();

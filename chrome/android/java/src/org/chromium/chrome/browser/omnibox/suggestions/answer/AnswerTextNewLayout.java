@@ -155,7 +155,7 @@ class AnswerTextNewLayout extends AnswerText {
                 break;
 
             case AnswerTextType.SUGGESTION_SECONDARY_TEXT_MEDIUM:
-                res = R.style.TextAppearance_TextSmall_Tertiary;
+                res = R.style.TextAppearance_TextSmall_Secondary;
                 break;
 
             case AnswerTextType.SUGGESTION:

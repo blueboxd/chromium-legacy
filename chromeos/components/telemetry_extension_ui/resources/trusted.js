@@ -42,7 +42,7 @@ class DiagnosticsProxy {
      * @type { !Map<!chromeos.health.mojom.DiagnosticRoutineEnum, !string> }
      * @const
      */
-    this.routineToEnum_ = new Map([
+    this.enumToRoutineName_ = new Map([
       [routineEnum.kBatteryCapacity, 'battery-capacity'],
       [routineEnum.kBatteryHealth, 'battery-health'],
       [routineEnum.kUrandom, 'urandom'],
@@ -58,8 +58,69 @@ class DiagnosticsProxy {
       [routineEnum.kBatteryDischarge, 'battery-discharge'],
     ]);
 
-    if (this.routineToEnum_.size != routineEnum.MAX_VALUE + 1) {
-      throw RangeError('routineToEnum_ does not contain all items from enum!');
+    if (this.enumToRoutineName_.size !== routineEnum.MAX_VALUE + 1) {
+      throw RangeError(
+          'enumToRoutineName_ does not contain all items from enum!');
+    }
+
+    const commandEnum = chromeos.health.mojom.DiagnosticRoutineCommandEnum;
+
+    /**
+     * @type { !Map<!string,
+     *     !chromeos.health.mojom.DiagnosticRoutineCommandEnum> }
+     * @const
+     */
+    this.commandToEnum_ = new Map([
+      ['continue', commandEnum.kContinue],
+      ['cancel', commandEnum.kCancel],
+      ['get-status', commandEnum.kGetStatus],
+      ['remove', commandEnum.kRemove],
+    ]);
+
+    if (this.commandToEnum_.size !== commandEnum.MAX_VALUE + 1) {
+      throw RangeError('commandToEnum_ does not contain all items from enum!');
+    }
+
+    const statusEnum = chromeos.health.mojom.DiagnosticRoutineStatusEnum;
+
+    /**
+     * @type { !Map<!chromeos.health.mojom.DiagnosticRoutineStatusEnum, !string>
+     *     }
+     * @const
+     */
+    this.enumToStatus_ = new Map([
+      [statusEnum.kReady, 'ready'],
+      [statusEnum.kRunning, 'running'],
+      [statusEnum.kWaiting, 'waiting'],
+      [statusEnum.kPassed, 'passed'],
+      [statusEnum.kFailed, 'failed'],
+      [statusEnum.kError, 'error'],
+      [statusEnum.kCancelled, 'cancelled'],
+      [statusEnum.kFailedToStart, 'failed-to-start'],
+      [statusEnum.kRemoved, 'removed'],
+      [statusEnum.kCancelling, 'cancelling'],
+    ]);
+
+    if (this.enumToStatus_.size !== statusEnum.MAX_VALUE + 1) {
+      throw RangeError('enumToStatus_ does not contain all items from enum!');
+    }
+
+    const userMessageEnum =
+        chromeos.health.mojom.DiagnosticRoutineUserMessageEnum;
+
+    /**
+     * @type { !Map<!chromeos.health.mojom.DiagnosticRoutineUserMessageEnum,
+     *     !string> }
+     * @const
+     */
+    this.enumToUserMessage_ = new Map([
+      [userMessageEnum.kUnplugACPower, 'unplug-ac-power'],
+      [userMessageEnum.kPlugInACPower, 'plug-in-ac-power'],
+    ]);
+
+    if (this.enumToUserMessage_.size !== userMessageEnum.MAX_VALUE + 1) {
+      throw RangeError(
+          'enumToUserMessage_ does not contain all items from enum!');
     }
   }
 
@@ -69,10 +130,10 @@ class DiagnosticsProxy {
    */
   convertRoutines(routines) {
     return routines.map((routine) => {
-      if (!this.routineToEnum_.has(routine)) {
+      if (!this.enumToRoutineName_.has(routine)) {
         throw TypeError(`Diagnostic routine '${routine}' is unknown.`);
       }
-      return this.routineToEnum_.get(routine);
+      return this.enumToRoutineName_.get(routine);
     });
   }
 
@@ -84,6 +145,113 @@ class DiagnosticsProxy {
     const availableRoutines =
         await getOrCreateDiagnosticsService().getAvailableRoutines();
     return this.convertRoutines(availableRoutines.availableRoutines);
+  };
+
+  /**
+   * @param { !number } id
+   * @return { !number }
+   */
+  convertRoutineId(id) {
+    if (id < -2147483648 || id > 2147483647) {
+      throw RangeError(`Diagnostic routine id '${id}' is out of int32 range.`);
+    }
+    return id;
+  }
+
+  /**
+   * @param { !string } command
+   * @return { !chromeos.health.mojom.DiagnosticRoutineCommandEnum }
+   */
+  convertCommandToEnum(command) {
+    if (!this.commandToEnum_.has(command)) {
+      throw TypeError(`Diagnostic command '${command}' is unknown.`);
+    }
+
+    return this.commandToEnum_.get(command);
+  }
+
+  /**
+   * @param { !chromeos.health.mojom.DiagnosticRoutineStatusEnum } status
+   * @return { !string | null }
+   */
+  convertStatus(status) {
+    if (!this.enumToStatus_.has(status)) {
+      return null;
+    }
+
+    return this.enumToStatus_.get(status);
+  }
+
+  /**
+   * @param { !chromeos.health.mojom.DiagnosticRoutineUserMessageEnum }
+   *     userMessage
+   * @return { !string | null }
+   */
+  convertUserMessage(userMessage) {
+    if (!this.enumToUserMessage_.has(userMessage)) {
+      return null;
+    }
+
+    return this.enumToUserMessage_.get(userMessage);
+  }
+
+  /**
+   * @param { !chromeos.health.mojom.RoutineUpdate } routineUpdate
+   * @return { !Object }
+   */
+  convertRoutineUpdate(routineUpdate) {
+    let result = {
+      progressPercent: routineUpdate.progressPercent,
+      output: routineUpdate.output,
+      routineUpdateUnion: {}
+    };
+
+    const updateUnion = routineUpdate.routineUpdateUnion;
+
+    if (typeof updateUnion.noninteractiveUpdate !== 'undefined' &&
+        updateUnion.noninteractiveUpdate !== null) {
+      let status = this.convertStatus(updateUnion.noninteractiveUpdate.status);
+
+      result.routineUpdateUnion = {
+        noninteractiveUpdate: {
+          status: status,
+          statusMessage: updateUnion.noninteractiveUpdate.statusMessage
+        }
+      };
+    }
+
+    if (typeof updateUnion.interactiveUpdate !== 'undefined' &&
+        updateUnion.interactiveUpdate !== null) {
+      let message =
+          this.convertUserMessage(updateUnion.interactiveUpdate.userMessage);
+      result.routineUpdateUnion = {interactiveUpdate: {userMessage: message}};
+    }
+
+    return result;
+  }
+
+  /**
+   * Runs a command on a routine.
+   * @param { !Object } message
+   * @return { !Promise<dpsl_internal.DiagnosticsGetRoutineUpdateResponse> }
+   */
+  async handleGetRoutineUpdate(message) {
+    const request =
+        /** @type {dpsl_internal.DiagnosticsGetRoutineUpdateRequest} */ (
+            message);
+
+    let routine, command;
+    try {
+      routine = this.convertRoutineId(request.routineId);
+      command = this.convertCommandToEnum(request.command);
+    } catch (/** @type {!Error} */ error) {
+      return error;
+    }
+
+    const response = await getOrCreateDiagnosticsService().getRoutineUpdate(
+        routine, command, request.includeOutput);
+
+    return this.convertRoutineUpdate(response.routineUpdate);
   };
 };
 
@@ -207,6 +375,10 @@ const untrustedMessagePipe =
 untrustedMessagePipe.registerHandler(
     dpsl_internal.Message.DIAGNOSTICS_AVAILABLE_ROUTINES,
     () => diagnosticsProxy.handleGetAvailableRoutines());
+
+untrustedMessagePipe.registerHandler(
+    dpsl_internal.Message.DIAGNOSTICS_ROUTINE_UPDATE,
+    (message) => diagnosticsProxy.handleGetRoutineUpdate(message));
 
 untrustedMessagePipe.registerHandler(
     dpsl_internal.Message.PROBE_TELEMETRY_INFO,

@@ -22,7 +22,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.webview_shell.WebViewThreadTestActivity;
 
 /**
@@ -97,7 +96,6 @@ public class WebViewThreadTest {
      */
     @Test
     @SmallTest
-    @DisabledTest(message = "https://crubg.com/1117683")
     public void testCookieManagerBeforeCreateWebView() throws InterruptedException {
         CookieManager.getInstance();
         mActivity.createWebViewOnUiThread(TIMEOUT);

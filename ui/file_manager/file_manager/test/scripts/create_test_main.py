@@ -212,6 +212,7 @@ for filename, substitutions in (
     ('foreground/js/elements_importer.js', (
         ("= 'foreground", "= 'test/gen/foreground"),
     )),
+    ('foreground/elements/files_password_dialog.html', ()),
     ('foreground/elements/files_format_dialog.html', ()),
     ('foreground/elements/files_icon_button.html', ()),
     ('foreground/elements/files_message.html', ()),

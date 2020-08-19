@@ -1137,9 +1137,6 @@ extern const char kRequestUnbufferedDispatchDescription[];
 extern const char kRestrictGamepadAccessName[];
 extern const char kRestrictGamepadAccessDescription[];
 
-extern const char kRequestTabletSiteName[];
-extern const char kRequestTabletSiteDescription[];
-
 extern const char kDelayAsyncScriptExecutionName[];
 extern const char kDelayAsyncScriptExecutionDescription[];
 
@@ -2095,14 +2092,8 @@ extern const char kCrosRegionsModeDefault[];
 extern const char kCrosRegionsModeOverride[];
 extern const char kCrosRegionsModeHide[];
 
-extern const char kCrostiniPortForwardingName[];
-extern const char kCrostiniPortForwardingDescription[];
-
 extern const char kCrostiniDiskResizingName[];
 extern const char kCrostiniDiskResizingDescription[];
-
-extern const char kCrostiniShowMicSettingName[];
-extern const char kCrostiniShowMicSettingDescription[];
 
 extern const char kCrostiniUseBusterImageName[];
 extern const char kCrostiniUseBusterImageDescription[];

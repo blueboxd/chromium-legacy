@@ -218,10 +218,7 @@ class BackdropURLLoader {
   scoped_refptr<network::SharedURLLoaderFactory> loader_factory_;
 };
 
-AmbientBackendControllerImpl::AmbientBackendControllerImpl()
-    : backdrop_client_config_(ash::AmbientClient::Get()->ShouldUseProdServer()
-                                  ? BackdropClientConfig::ServerType::kProd
-                                  : BackdropClientConfig::ServerType::kDev) {}
+AmbientBackendControllerImpl::AmbientBackendControllerImpl() = default;
 
 AmbientBackendControllerImpl::~AmbientBackendControllerImpl() = default;
 
@@ -393,6 +390,17 @@ void AmbientBackendControllerImpl::OnUpdateSettings(
   const bool success =
       BackdropClientConfig::ParseUpdateSettingsResponse(*response);
   std::move(callback).Run(success);
+
+  // Clear disk cache when Settings changes.
+  // TODO(wutao): Use observer pattern. Need to future narrow down
+  // the clear up only on albums changes, not on temperature unit
+  // changes.
+  if (success) {
+    Shell::Get()
+        ->ambient_controller()
+        ->ambient_photo_controller()
+        ->ClearCache();
+  }
 }
 
 void AmbientBackendControllerImpl::FetchSettingPreviewInternal(

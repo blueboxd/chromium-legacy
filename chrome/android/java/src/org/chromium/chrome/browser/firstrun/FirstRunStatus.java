@@ -16,6 +16,36 @@ public class FirstRunStatus {
     // Whether the first run flow is triggered in the current browser session.
     private static boolean sFirstRunTriggered;
 
+    // Whether the first run flow should be skipped for the current browser session.
+    private static boolean sEphemeralSkipFirstRun;
+
+    /** @param triggered whether the first run flow is triggered in the current browser session. */
+    public static void setFirstRunTriggered(boolean triggered) {
+        sFirstRunTriggered = triggered;
+    }
+
+    /** @return whether first run flow is triggered in the current browser session. */
+    public static boolean isFirstRunTriggered() {
+        return sFirstRunTriggered;
+    }
+
+    /**
+     * @param skip Whether the first run flow should be skipped for the current session for app
+     *             entry points that allow for this (e.g. CCTs via Enterprise policy). Not saved to
+     *             durable storage, and will be erased when the process is restarted.
+     */
+    public static void setEphemeralSkipFirstRun(boolean skip) {
+        sEphemeralSkipFirstRun = skip;
+    }
+
+    /**
+     * @return Whether the first run flow should be skipped for the current session for app entry
+     *         points that allow for this.
+     */
+    public static boolean isEphemeralSkipFirstRun() {
+        return sEphemeralSkipFirstRun;
+    }
+
     /**
      * Sets the "main First Run Experience flow complete" preference.
      * @param isComplete Whether the main First Run Experience flow is complete
@@ -37,22 +67,6 @@ public class FirstRunStatus {
         }
         return CommandLine.getInstance().hasSwitch(
                 ChromeSwitches.FORCE_FIRST_RUN_FLOW_COMPLETE_FOR_TESTING);
-    }
-
-    /**
-     * Sets whether the first run flow is triggered in the current browser session.
-     * @param triggered
-     * @return
-     */
-    public static void setFirstRunTriggered(boolean triggered) {
-        sFirstRunTriggered = triggered;
-    }
-
-    /**
-     * Returns whether first run flow is triggered in the current browser session.
-     */
-    public static boolean isFirstRunTriggered() {
-        return sFirstRunTriggered;
     }
 
     /**

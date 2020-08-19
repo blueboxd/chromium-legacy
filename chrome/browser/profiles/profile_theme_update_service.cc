@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/ui/signin/profile_colors_util.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -48,14 +49,12 @@ void ProfileThemeUpdateService::UpdateProfileThemeColors() {
   const ui::ThemeProvider& theme_provider =
       ThemeService::GetThemeProviderForProfile(profile_);
   ProfileThemeColors colors;
-  // TODO(https://crbug.com/1102384): update this with the right colors, once we
-  // have them.
   colors.profile_highlight_color =
       theme_provider.GetColor(ThemeProperties::COLOR_FRAME_ACTIVE);
   colors.default_avatar_fill_color =
       theme_provider.GetColor(ThemeProperties::COLOR_FRAME_ACTIVE);
   colors.default_avatar_stroke_color =
-      theme_provider.GetColor(ThemeProperties::COLOR_TOOLBAR);
+      GetAvatarStrokeColor(colors.default_avatar_fill_color);
   entry->SetProfileThemeColors(colors);
 }
 

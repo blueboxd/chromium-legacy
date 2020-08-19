@@ -103,6 +103,14 @@ class AmbientAshTestBase : public AshTestBase {
   // Returns the top-level view which contains all the ambient components.
   AmbientContainerView* container_view();
 
+  void FetchTopics();
+
+  void FetchImage();
+
+  void SetUrlLoaderData(std::unique_ptr<std::string> data);
+
+  void SeteImageDecoderImage(const gfx::ImageSkia& image);
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<TestImageDownloader> image_downloader_;

@@ -11,6 +11,7 @@
 
 #include "build/build_config.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/services/app_service/public/mojom/types.mojom.h"
 #include "url/gurl.h"
 
 #if !defined(OS_ANDROID)
@@ -96,7 +97,7 @@ void ShowFeedbackPage(const GURL& page_url,
 
 void ShowHelp(Browser* browser, HelpSource source);
 void ShowHelpForProfile(Profile* profile, HelpSource source);
-void LaunchReleaseNotes(Profile* profile);
+void LaunchReleaseNotes(Profile* profile, apps::mojom::LaunchSource source);
 void ShowBetaForum(Browser* browser);
 void ShowPolicy(Browser* browser);
 void ShowSlow(Browser* browser);

@@ -50,6 +50,7 @@
 #include "chrome/grit/print_preview_resources.h"
 #include "chrome/grit/print_preview_resources_map.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "components/cloud_devices/common/cloud_devices_urls.h"
 #include "components/prefs/pref_service.h"
 #include "components/printing/common/print_messages.h"
 #include "components/strings/grit/components_strings.h"
@@ -314,6 +315,7 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
     {"title", IDS_PRINT_PREVIEW_TITLE},
     {"top", IDS_PRINT_PREVIEW_TOP_MARGIN_LABEL},
     {"unsupportedCloudPrinter", IDS_PRINT_PREVIEW_UNSUPPORTED_CLOUD_PRINTER},
+    {"warningIconAriaLabel", IDS_WARNING_ICON_ARIA_LABEL},
 #if defined(OS_CHROMEOS)
     {"configuringFailedText", IDS_PRINT_CONFIGURING_FAILED_TEXT},
     {"configuringInProgressText", IDS_PRINT_CONFIGURING_IN_PROGRESS_TEXT},
@@ -349,7 +351,39 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
   source->AddString("gcpCertificateErrorLearnMoreURL",
                     chrome::kCloudPrintCertificateErrorLearnMoreURL);
 
+  const bool is_enterprise_managed = webui::IsEnterpriseManaged();
+  if (is_enterprise_managed) {
+    source->AddLocalizedString(
+        "cloudPrintingNotSupportedWarning",
+        IDS_CLOUD_PRINTING_NOT_SUPPORTED_WARNING_ENTERPRISE);
+    source->AddLocalizedString("printerNotSupportedWarning",
+                               IDS_PRINTER_NOT_SUPPORTED_WARNING_ENTERPRISE);
+  } else {
+    source->AddString(
+        "cloudPrintingNotSupportedWarning",
+        l10n_util::GetStringFUTF16(
+            IDS_CLOUD_PRINTING_NOT_SUPPORTED_WARNING,
+            base::ASCIIToUTF16(cloud_devices::kCloudPrintDeprecationHelpURL)));
+    source->AddString(
+        "printerNotSupportedWarning",
+        l10n_util::GetStringFUTF16(
+            IDS_PRINTER_NOT_SUPPORTED_WARNING,
+            base::ASCIIToUTF16(cloud_devices::kCloudPrintDeprecationHelpURL)));
+  }
+
 #if !defined(OS_CHROMEOS)
+  if (is_enterprise_managed) {
+    source->AddLocalizedString(
+        "saveToDriveNotSupportedWarning",
+        IDS_GOOGLE_DRIVE_OPTION_NOT_SUPPORTED_WARNING_ENTERPRISE);
+  } else {
+    source->AddString(
+        "saveToDriveNotSupportedWarning",
+        l10n_util::GetStringFUTF16(
+            IDS_GOOGLE_DRIVE_OPTION_NOT_SUPPORTED_WARNING,
+            base::ASCIIToUTF16(cloud_devices::kCloudPrintDeprecationHelpURL)));
+  }
+
   const base::string16 shortcut_text(base::UTF8ToUTF16(kBasicPrintShortcut));
   source->AddString("systemDialogOption",
                     l10n_util::GetStringFUTF16(

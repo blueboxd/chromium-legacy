@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CSS_SCALE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CSS_SCALE_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/css/cssom/css_transform_component.h"
 #include "third_party/blink/renderer/core/css/cssom/css_unit_value.h"
 #include "third_party/blink/renderer/core/geometry/dom_matrix.h"
@@ -47,6 +46,8 @@ class CORE_EXPORT CSSScale final : public CSSTransformComponent {
            CSSNumericValue* y,
            CSSNumericValue* z,
            bool is2D);
+  CSSScale(const CSSScale&) = delete;
+  CSSScale& operator=(const CSSScale&) = delete;
 
   // Getters and setters for attributes defined in the IDL.
   void x(CSSNumberish& x) { x.SetCSSNumericValue(x_); }
@@ -73,8 +74,6 @@ class CORE_EXPORT CSSScale final : public CSSTransformComponent {
   Member<CSSNumericValue> x_;
   Member<CSSNumericValue> y_;
   Member<CSSNumericValue> z_;
-
-  DISALLOW_COPY_AND_ASSIGN(CSSScale);
 };
 
 }  // namespace blink

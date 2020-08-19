@@ -103,15 +103,6 @@ extern const char kHistogramInputToFirstContentfulPaint[];
 extern const char kBackgroundHistogramInputToFirstContentfulPaint[];
 extern const char kHistogramBackForwardCacheEvent[];
 
-// Split histograms recorded only when the first rendering cycle has been
-// delayed for web font preloading.
-// See design doc https://bit.ly/36E8UKB for details.
-extern const char kHistogramFontPreloadFirstPaint[];
-extern const char kHistogramFontPreloadFirstContentfulPaint[];
-extern const char kHistogramFontPreloadLargestContentfulPaint[];
-extern const char kHistogramFontPreloadLargestImagePaint[];
-extern const char kHistogramFontPreloadLargestTextPaint[];
-
 // Navigation metrics from the navigation start.
 extern const char
     kHistogramNavigationTimingNavigationStartToFirstRequestStart[];
@@ -218,8 +209,6 @@ class CorePageLoadMetricsObserver
   void OnRestoreFromBackForwardCache(
       const page_load_metrics::mojom::PageLoadTiming& timing,
       content::NavigationHandle* navigation_handle) override;
-  void OnLoadingBehaviorObserved(content::RenderFrameHost* rfh,
-                                 int behavior_flags) override;
 
  private:
   void RecordNavigationTimingHistograms();
@@ -263,10 +252,6 @@ class CorePageLoadMetricsObserver
 
   // True if we've received a scroll input after first paint has happened.
   bool received_scroll_input_after_first_paint_ = false;
-
-  // True if the first rendering cycle has been delayed due to web font
-  // preloading.
-  bool font_preload_started_before_rendering_observed_ = false;
 
   base::TimeTicks first_paint_;
 

@@ -790,10 +790,7 @@ component("views") {
           "widget/desktop_aura/window_event_filter_linux.cc",
           "widget/desktop_aura/window_event_filter_linux.h",
         ]
-        deps += [
-          "//ui/base:hit_test",
-          "//ui/platform_window/extensions",
-        ]
+        deps += [ "//ui/base:hit_test" ]
       }
       if (is_linux || is_chromeos || is_fuchsia) {
         public += [
@@ -806,7 +803,6 @@ component("views") {
           "widget/desktop_aura/desktop_window_tree_host_platform.cc",
           "widget/desktop_aura/window_move_client_platform.cc",
         ]
-        deps += [ "//ui/platform_window/extensions" ]
       }
       if (use_atk) {
         sources += [

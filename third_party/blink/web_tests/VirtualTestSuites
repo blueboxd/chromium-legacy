@@ -107,9 +107,12 @@
               "inspector-protocol/dom-snapshot",
               "media/stable",
               "webexposed",
-              "wpt_internal/origin-isolation"],
+              "wpt_internal/origin-isolation",
+              "compositing/filters"
+              ],
     "args": ["--stable-release-mode",
-             "--disable-auto-wpt-origin-isolation"]
+             "--disable-auto-wpt-origin-isolation",
+             "--enable-blink-features=CompositingOptimizations"]
   },
   {
     "prefix": "feature-policy-permissions",

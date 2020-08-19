@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/optional.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
@@ -19,11 +20,6 @@
 #include "components/services/app_service/public/cpp/intent_util.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/views/view.h"
-
-namespace {
-// In px.
-constexpr int kIconSize = 40;
-}  // namespace
 
 namespace sharesheet {
 
@@ -118,24 +114,24 @@ SharesheetServiceDelegate* SharesheetService::GetDelegate(
 
 bool SharesheetService::HasShareTargets(const apps::mojom::IntentPtr& intent) {
   auto& actions = sharesheet_action_cache_->GetShareActions();
-  std::vector<apps::AppIdAndActivityName> app_id_and_activities =
+  std::vector<apps::IntentLaunchInfo> intent_launch_info =
       app_service_proxy_->GetAppsForIntent(intent);
 
-  return !actions.empty() || !app_id_and_activities.empty();
+  return !actions.empty() || !intent_launch_info.empty();
 }
 
 void SharesheetService::LoadAppIcons(
-    std::vector<apps::AppIdAndActivityName> app_id_and_activities,
+    std::vector<apps::IntentLaunchInfo> intent_launch_info,
     std::vector<TargetInfo> targets,
     size_t index,
     base::OnceCallback<void(std::vector<TargetInfo> targets)> callback) {
-  if (index >= app_id_and_activities.size()) {
+  if (index >= intent_launch_info.size()) {
     std::move(callback).Run(std::move(targets));
     return;
   }
 
-  // Making a copy because we move |app_id_and_activities| out below.
-  auto app_id = app_id_and_activities[index].app_id;
+  // Making a copy because we move |intent_launch_info| out below.
+  auto app_id = intent_launch_info[index].app_id;
   auto app_type = app_service_proxy_->AppRegistryCache().GetAppType(app_id);
   auto icon_type =
       (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon))
@@ -145,23 +141,23 @@ void SharesheetService::LoadAppIcons(
   app_service_proxy_->LoadIcon(
       app_type, app_id, icon_type, kIconSize, allow_placeholder_icon,
       base::BindOnce(&SharesheetService::OnIconLoaded,
-                     weak_factory_.GetWeakPtr(),
-                     std::move(app_id_and_activities), std::move(targets),
-                     index, std::move(callback)));
+                     weak_factory_.GetWeakPtr(), std::move(intent_launch_info),
+                     std::move(targets), index, std::move(callback)));
 }
 
 void SharesheetService::OnIconLoaded(
-    std::vector<apps::AppIdAndActivityName> app_id_and_activities,
+    std::vector<apps::IntentLaunchInfo> intent_launch_info,
     std::vector<TargetInfo> targets,
     size_t index,
     base::OnceCallback<void(std::vector<TargetInfo> targets)> callback,
     apps::mojom::IconValuePtr icon_value) {
-  const auto& app_id_and_activity = app_id_and_activities[index];
+  const auto& launch_entry = intent_launch_info[index];
   targets.emplace_back(TargetType::kApp, icon_value->uncompressed,
-                       base::UTF8ToUTF16(app_id_and_activity.app_id),
-                       base::UTF8ToUTF16(app_id_and_activity.activity_name));
+                       base::UTF8ToUTF16(launch_entry.app_id),
+                       base::UTF8ToUTF16(launch_entry.activity_label),
+                       launch_entry.activity_name);
 
-  LoadAppIcons(std::move(app_id_and_activities), std::move(targets), index + 1,
+  LoadAppIcons(std::move(intent_launch_info), std::move(targets), index + 1,
                std::move(callback));
 }
 
@@ -181,13 +177,14 @@ void SharesheetService::ShowBubbleWithDelegate(
   auto iter = actions.begin();
   while (iter != actions.end()) {
     targets.emplace_back(TargetType::kAction, (*iter)->GetActionIcon(),
-                         (*iter)->GetActionName(), (*iter)->GetActionName());
+                         (*iter)->GetActionName(), (*iter)->GetActionName(),
+                         base::nullopt);
     ++iter;
   }
 
-  std::vector<apps::AppIdAndActivityName> app_id_and_activities =
+  std::vector<apps::IntentLaunchInfo> intent_launch_info =
       app_service_proxy_->GetAppsForIntent(intent);
-  LoadAppIcons(std::move(app_id_and_activities), std::move(targets), 0,
+  LoadAppIcons(std::move(intent_launch_info), std::move(targets), 0,
                base::BindOnce(&SharesheetService::OnAppIconsLoaded,
                               weak_factory_.GetWeakPtr(), std::move(delegate),
                               std::move(intent)));

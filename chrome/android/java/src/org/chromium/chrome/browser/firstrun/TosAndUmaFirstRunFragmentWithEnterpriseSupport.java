@@ -13,7 +13,9 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.CallbackController;
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.policy.PolicyServiceFactory;
 import org.chromium.components.browser_ui.widget.LoadingView;
+import org.chromium.policy.PolicyService;
 
 /**
  * Another FirstRunFragment that is only used when running with CCT.
@@ -42,6 +44,7 @@ public class TosAndUmaFirstRunFragmentWithEnterpriseSupport
     private boolean mViewCreated;
     private LoadingView mLoadingSpinner;
     private CallbackController mCallbackController;
+    private PolicyService.Observer mPolicyServiceObserver;
 
     /**
      * Whether app restriction is found on the device. This can be null when this information is not
@@ -70,6 +73,10 @@ public class TosAndUmaFirstRunFragmentWithEnterpriseSupport
         if (mLoadingSpinner != null) {
             mLoadingSpinner.destroy();
             mLoadingSpinner = null;
+        }
+        if (mPolicyServiceObserver != null) {
+            PolicyServiceFactory.getGlobalPolicyService().removeObserver(mPolicyServiceObserver);
+            mPolicyServiceObserver = null;
         }
         super.onDestroy();
     }
@@ -153,8 +160,7 @@ public class TosAndUmaFirstRunFragmentWithEnterpriseSupport
                 mCallbackController.makeCancelable(this::onAppRestrictionDetected));
     }
 
-    @VisibleForTesting
-    void onAppRestrictionDetected(boolean hasAppRestriction) {
+    private void onAppRestrictionDetected(boolean hasAppRestriction) {
         mHasRestriction = hasAppRestriction;
 
         if (!shouldWaitForPolicyLoading() && mViewCreated) {
@@ -164,20 +170,21 @@ public class TosAndUmaFirstRunFragmentWithEnterpriseSupport
     }
 
     private void checkEnterprisePolicies() {
-        // TODO(crbug.com/1106812): Monitor policy changes when it is ready.
-        if (!sBlockPolicyLoadingForTest) {
-            onCctTosPolicyDetected(getPolicyCctTosDialogEnabled());
+        PolicyService policyService = PolicyServiceFactory.getGlobalPolicyService();
+        if (policyService.isInitializationComplete()) {
+            updateCctTosPolicy();
+        } else {
+            mPolicyServiceObserver = () -> {
+                policyService.removeObserver(mPolicyServiceObserver);
+                mPolicyServiceObserver = null;
+                updateCctTosPolicy();
+            };
+            policyService.addObserver(mPolicyServiceObserver);
         }
     }
 
-    private boolean getPolicyCctTosDialogEnabled() {
-        // TODO(crbug.com/1108118): Do the actual fetching for CCT Policy to replace the fake one.
-        return true;
-    }
-
-    @VisibleForTesting
-    void onCctTosPolicyDetected(boolean cctTosDialogEnabled) {
-        mPolicyCctTosDialogEnabled = cctTosDialogEnabled;
+    private void updateCctTosPolicy() {
+        mPolicyCctTosDialogEnabled = FirstRunUtils.isCctTosDialogEnabled();
         if (mViewCreated) {
             mLoadingSpinner.hideLoadingUI();
         }
@@ -191,10 +198,5 @@ public class TosAndUmaFirstRunFragmentWithEnterpriseSupport
         //  and skip waiting for future cold starts.
         Log.d(TAG, "TosAndUmaFirstRunFragmentWithEnterpriseSupport finished.");
         getPageDelegate().exitFirstRun();
-    }
-
-    @VisibleForTesting
-    static void setBlockPolicyLoadingForTest(boolean blockPolicyLoadingForTest) {
-        sBlockPolicyLoadingForTest = blockPolicyLoadingForTest;
     }
 }

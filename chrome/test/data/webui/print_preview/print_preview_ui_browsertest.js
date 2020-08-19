@@ -655,6 +655,52 @@ TEST_F('PrintPreviewDestinationDialogTest', 'UserAccounts', function() {
   this.runMochaTest(destination_dialog_test.TestNames.UserAccounts);
 });
 
+TEST_F(
+    'PrintPreviewDestinationDialogTest', 'CloudPrinterDeprecationWarnings',
+    function() {
+      this.runMochaTest(
+          destination_dialog_test.TestNames.CloudPrinterDeprecationWarnings);
+    });
+
+TEST_F(
+    'PrintPreviewDestinationDialogTest',
+    'CloudPrinterDeprecationWarningsSuppressed', function() {
+      this.runMochaTest(destination_dialog_test.TestNames
+                            .CloudPrinterDeprecationWarningsSuppressed);
+    });
+
+// TODO(crbug.com/1111985): Different tests are needed because |isChromeOS| from
+// cr.m.js does not match the behavior of the |OS_CHROMEOS| macro on Lacros.
+GEN('#if defined(OS_CHROMEOS)');
+TEST_F(
+    'PrintPreviewDestinationDialogTest', 'SaveToDriveDeprecationWarningsCros',
+    function() {
+      this.runMochaTest(
+          destination_dialog_test.TestNames.SaveToDriveDeprecationWarningsCros);
+    });
+
+TEST_F(
+    'PrintPreviewDestinationDialogTest',
+    'SaveToDriveDeprecationWarningsSuppressedCros', function() {
+      this.runMochaTest(destination_dialog_test.TestNames
+                            .SaveToDriveDeprecationWarningsSuppressedCros);
+    });
+GEN('#else');
+TEST_F(
+    'PrintPreviewDestinationDialogTest', 'SaveToDriveDeprecationWarnings',
+    function() {
+      this.runMochaTest(
+          destination_dialog_test.TestNames.SaveToDriveDeprecationWarnings);
+    });
+
+TEST_F(
+    'PrintPreviewDestinationDialogTest',
+    'SaveToDriveDeprecationWarningsSuppressed', function() {
+      this.runMochaTest(destination_dialog_test.TestNames
+                            .SaveToDriveDeprecationWarningsSuppressed);
+    });
+GEN('#endif');
+
 // eslint-disable-next-line no-var
 var PrintPreviewAdvancedDialogTest = class extends PrintPreviewTest {
   /** @override */

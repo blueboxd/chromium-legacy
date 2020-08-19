@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_INLINE_STYLE_PROPERTY_MAP_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_INLINE_STYLE_PROPERTY_MAP_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/css/cssom/style_property_map.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 
@@ -15,6 +14,8 @@ class CORE_EXPORT InlineStylePropertyMap final : public StylePropertyMap {
  public:
   explicit InlineStylePropertyMap(Element* owner_element)
       : owner_element_(owner_element) {}
+  InlineStylePropertyMap(const InlineStylePropertyMap&) = delete;
+  InlineStylePropertyMap& operator=(const InlineStylePropertyMap&) = delete;
 
   void Trace(Visitor* visitor) const override {
     visitor->Trace(owner_element_);
@@ -40,7 +41,6 @@ class CORE_EXPORT InlineStylePropertyMap final : public StylePropertyMap {
 
  private:
   Member<Element> owner_element_;
-  DISALLOW_COPY_AND_ASSIGN(InlineStylePropertyMap);
 };
 
 }  // namespace blink

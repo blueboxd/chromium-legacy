@@ -122,34 +122,33 @@ void ReportVaapiErrorToUMA(const std::string& histogram_name,
 }
 
 constexpr std::array<const char*,
-                     static_cast<size_t>(VaapiFunctions::kMaxValue)>
-    kVaapiFunctionNames = {
-        "vaBeginPicture"
-        "vaCreateBuffer"
-        "vaCreateConfig"
-        "vaCreateContext"
-        "vaCreateImage"
-        "vaCreateSurfaces (allocate mode)"
-        "vaCreateSurfaces (import mode)"
-        "vaDestroyBuffer"
-        "vaDestroyConfig"
-        "vaDestroyContext"
-        "vaDestroySurfaces"
-        "vaEndPicture"
-        "vaExportSurfaceHandle"
-        "vaGetConfigAttributes"
-        "vaPutImage"
-        "vaPutSurface"
-        "vaQueryConfigAttributes"
-        "vaQueryImageFormats"
-        "vaQuerySurfaceAttributes"
-        "vaQueryVideoProcPipelineCaps"
-        "vaRenderPicture (|pending_va_buffers_|)"
-        "vaRenderPicture using Vpp"
-        "vaSyncSurface"
-        "vaTerminate"
-        "vaUnmapBuffer"
-        "Other VA function"};
+                     static_cast<size_t>(VaapiFunctions::kMaxValue) + 1>
+    kVaapiFunctionNames = {"vaBeginPicture",
+                           "vaCreateBuffer",
+                           "vaCreateConfig",
+                           "vaCreateContext",
+                           "vaCreateImage",
+                           "vaCreateSurfaces (allocate mode)",
+                           "vaCreateSurfaces (import mode)",
+                           "vaDestroyBuffer",
+                           "vaDestroyConfig",
+                           "vaDestroyContext",
+                           "vaDestroySurfaces",
+                           "vaEndPicture",
+                           "vaExportSurfaceHandle",
+                           "vaGetConfigAttributes",
+                           "vaPutImage",
+                           "vaPutSurface",
+                           "vaQueryConfigAttributes",
+                           "vaQueryImageFormats",
+                           "vaQuerySurfaceAttributes",
+                           "vaQueryVideoProcPipelineCaps",
+                           "vaRenderPicture (|pending_va_buffers_|)",
+                           "vaRenderPicture using Vpp",
+                           "vaSyncSurface",
+                           "vaTerminate",
+                           "vaUnmapBuffer",
+                           "Other VA function"};
 
 // Translates |function| into a human readable string for logging.
 const char* VaapiFunctionName(VaapiFunctions function) {

@@ -274,9 +274,7 @@ void MediaNotificationService::Session::MarkActiveIfNecessary() {
 }
 
 MediaNotificationService::MediaNotificationService(Profile* profile)
-    : overlay_media_notifications_manager_(this),
-      device_provider_(
-          std::make_unique<MediaNotificationDeviceProviderImpl>()) {
+    : overlay_media_notifications_manager_(this) {
   if (base::FeatureList::IsEnabled(media::kGlobalMediaControlsForCast) &&
       media_router::MediaRouterEnabled(profile)) {
     cast_notification_provider_ =
@@ -713,9 +711,12 @@ void MediaNotificationService::OnSessionBecameInactive(const std::string& id) {
 
 std::unique_ptr<
     MediaNotificationDeviceProvider::GetOutputDevicesCallbackList::Subscription>
-MediaNotificationService::GetOutputDevices(
+MediaNotificationService::RegisterAudioOutputDeviceDescriptionsCallback(
     MediaNotificationDeviceProvider::GetOutputDevicesCallback callback) {
-  return device_provider_->GetOutputDeviceDescriptions(std::move(callback));
+  if (!device_provider_)
+    device_provider_ = std::make_unique<MediaNotificationDeviceProviderImpl>();
+  return device_provider_->RegisterOutputDeviceDescriptionsCallback(
+      std::move(callback));
 }
 
 void MediaNotificationService::set_device_provider_for_testing(

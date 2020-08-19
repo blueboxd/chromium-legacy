@@ -34,10 +34,10 @@ js_type_check("closure_compile") {
     ":invalid_settings_browsertest",
     ":key_event_test",
     ":layout_settings_test",
+    ":link_container_test",
+    ":margins_settings_test",
+    ":media_size_settings_test",
 
-    #":link_container_test",
-    #":margins_settings_test",
-    #":media_size_settings_test",
     #":model_settings_availability_test",
     #":model_settings_policy_test",
     #":model_test",
@@ -392,6 +392,40 @@ js_library("key_event_test") {
 }
 
 js_library("layout_settings_test") {
+  deps = [
+    ":print_preview_test_utils",
+    "..:chai_assert",
+    "..:test_util.m",
+    "//chrome/browser/resources/print_preview:print_preview",
+    "//ui/webui/resources/js:assert.m",
+  ]
+  externs_list = [ "$externs_path/mocha-2.5.js" ]
+}
+
+js_library("link_container_test") {
+  deps = [
+    ":print_preview_test_utils",
+    "..:chai_assert",
+    "..:test_util.m",
+    "//chrome/browser/resources/print_preview:print_preview",
+    "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:cr.m",
+  ]
+  externs_list = [ "$externs_path/mocha-2.5.js" ]
+}
+
+js_library("margins_settings_test") {
+  deps = [
+    ":print_preview_test_utils",
+    "..:chai_assert",
+    "..:test_util.m",
+    "//chrome/browser/resources/print_preview:print_preview",
+    "//ui/webui/resources/js:assert.m",
+  ]
+  externs_list = [ "$externs_path/mocha-2.5.js" ]
+}
+
+js_library("media_size_settings_test") {
   deps = [
     ":print_preview_test_utils",
     "..:chai_assert",

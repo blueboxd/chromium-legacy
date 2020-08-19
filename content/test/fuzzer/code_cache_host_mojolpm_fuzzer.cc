@@ -54,49 +54,8 @@ class ContentFuzzerEnvironment {
     fuzzer_thread_.StartAndWaitForTesting();
   }
 
-  void RunThreadUntilIdle(
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
-    if (task_runner->RunsTasksInCurrentSequence()) {
-      base::RunLoop(base::RunLoop::Type::kNestableTasksAllowed).RunUntilIdle();
-    } else {
-      base::WaitableEvent thread_idle(
-          base::WaitableEvent::ResetPolicy::MANUAL,
-          base::WaitableEvent::InitialState::NOT_SIGNALED);
-      task_runner->PostTask(
-          FROM_HERE,
-          base::BindOnce(
-              [](base::WaitableEvent* thread_idle) {
-                base::RunLoop(base::RunLoop::Type::kNestableTasksAllowed)
-                    .RunUntilIdle();
-                thread_idle->Signal();
-              },
-              base::Unretained(&thread_idle)));
-      thread_idle.Wait();
-    }
-  }
-
-  void RunUntilIdle() { RunThreadUntilIdle(fuzzer_thread_.task_runner()); }
-
-  void RunUIThreadUntilIdle() { RunThreadUntilIdle(ui_task_runner()); }
-
-  void RunIOThreadUntilIdle() { RunThreadUntilIdle(io_task_runner()); }
-
-  scoped_refptr<base::SequencedTaskRunner> task_runner() {
+  scoped_refptr<base::SequencedTaskRunner> fuzzer_task_runner() {
     return fuzzer_thread_.task_runner();
-  }
-
-  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner() {
-    if (!io_task_runner_) {
-      io_task_runner_ = base::CreateSingleThreadTaskRunner({BrowserThread::IO});
-    }
-    return io_task_runner_;
-  }
-
-  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner() {
-    if (!ui_task_runner_) {
-      ui_task_runner_ = base::CreateSingleThreadTaskRunner({BrowserThread::UI});
-    }
-    return ui_task_runner_;
   }
 
  private:
@@ -105,8 +64,6 @@ class ContentFuzzerEnvironment {
   base::test::ScopedFeatureList scoped_feature_list_;
   base::Thread fuzzer_thread_;
   BrowserTaskEnvironment task_environment_;
-  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
   TestContentClientInitializer content_client_initializer_;
 };
 
@@ -116,28 +73,8 @@ ContentFuzzerEnvironment& SingletonEnvironment() {
   return g_environment;
 }
 
-scoped_refptr<base::SequencedTaskRunner> GetTaskRunner() {
-  return SingletonEnvironment().task_runner();
-}
-
-scoped_refptr<base::SingleThreadTaskRunner> GetIOTaskRunner() {
-  return SingletonEnvironment().io_task_runner();
-}
-
-scoped_refptr<base::SingleThreadTaskRunner> GetUITaskRunner() {
-  return SingletonEnvironment().ui_task_runner();
-}
-
-void RunUntilIdle() {
-  SingletonEnvironment().RunUntilIdle();
-}
-
-void RunIOThreadUntilIdle() {
-  SingletonEnvironment().RunIOThreadUntilIdle();
-}
-
-void RunUIThreadUntilIdle() {
-  SingletonEnvironment().RunUIThreadUntilIdle();
+scoped_refptr<base::SequencedTaskRunner> GetFuzzerTaskRunner() {
+  return SingletonEnvironment().fuzzer_task_runner();
 }
 
 class CodeCacheHostFuzzerContext : public mojolpm::Context {
@@ -152,20 +89,14 @@ class CodeCacheHostFuzzerContext : public mojolpm::Context {
         kOriginB(url::Origin::Create(GURL("http://bbb.com/"))),
         kOriginOpaque(url::Origin::Create(GURL("opaque"))),
         kOriginEmpty(url::Origin::Create(GURL("file://this_becomes_empty"))),
-        browser_context_() {}
-
-  void InitializeServices() {
-    if (!initialized_) {
-      base::PostTask(
-          FROM_HERE, {BrowserThread::UI},
-          base::BindOnce(&CodeCacheHostFuzzerContext::InitializeOnUIThread,
-                         base::Unretained(this)));
-      RunUIThreadUntilIdle();
-
-      RunUntilIdle();
-
-      initialized_ = true;
-    }
+        browser_context_() {
+    base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
+    base::PostTaskAndReply(
+        FROM_HERE, {BrowserThread::UI},
+        base::BindOnce(&CodeCacheHostFuzzerContext::InitializeOnUIThread,
+                       base::Unretained(this)),
+        run_loop.QuitClosure());
+    run_loop.Run();
   }
 
   void InitializeOnUIThread() {
@@ -180,41 +111,23 @@ class CodeCacheHostFuzzerContext : public mojolpm::Context {
                                               65536);
   }
 
-  void CleanupServices() {
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&CodeCacheHostFuzzerContext::CleanupOnUIThread,
-                       base::Unretained(this)));
-    RunUIThreadUntilIdle();
-
-    RunUntilIdle();
-
-    initialized_ = false;
-  }
-
-  void CleanupOnUIThread() {}
-
   void AddCodeCacheHostImpl(
       uint32_t id,
       int renderer_id,
       const Origin& origin,
-      mojo::PendingReceiver<::blink::mojom::CodeCacheHost>&& receiver,
-      base::WaitableEvent* receiver_bound) {
+      mojo::PendingReceiver<::blink::mojom::CodeCacheHost>&& receiver) {
     code_cache_hosts_[renderer_id] = std::make_unique<CodeCacheHostImpl>(
         renderer_id, cache_storage_context_, generated_code_cache_context_,
         std::move(receiver));
-
-    receiver_bound->Signal();
   }
 
   void AddCodeCacheHost(
       uint32_t id,
       int renderer_id,
-      content::fuzzing::code_cache_host::proto::NewCodeCacheHost::OriginId
+      content::fuzzing::code_cache_host::proto::NewCodeCacheHostAction::OriginId
           origin_id) {
     mojo::Remote<::blink::mojom::CodeCacheHost> remote;
     auto receiver = remote.BindNewPipeAndPassReceiver();
-    base::WaitableEvent receiver_bound;
 
     const Origin* origin = &kOriginA;
     if (origin_id == 1) {
@@ -225,21 +138,20 @@ class CodeCacheHostFuzzerContext : public mojolpm::Context {
       origin = &kOriginEmpty;
     }
 
-    GetUITaskRunner()->PostTask(
-        FROM_HERE,
+    base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
+    base::PostTaskAndReply(
+        FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&CodeCacheHostFuzzerContext::AddCodeCacheHostImpl,
                        base::Unretained(this), id, renderer_id, *origin,
-                       std::move(receiver), base::Unretained(&receiver_bound)));
-
-    receiver_bound.Wait();
+                       std::move(receiver)),
+        run_loop.QuitClosure());
+    run_loop.Run();
 
     AddInstance(id, std::move(remote));
   }
 
  private:
   TestBrowserContext browser_context_;
-
-  bool initialized_ = false;
 
   scoped_refptr<CacheStorageContextImpl> cache_storage_context_;
   scoped_refptr<GeneratedCodeCacheContext> generated_code_cache_context_;
@@ -295,17 +207,23 @@ void CodeCacheHostTestcase::NextAction() {
               action.new_code_cache_host().origin_id());
         } break;
 
-        case content::fuzzing::code_cache_host::proto::Action::kRunUntilIdle: {
-          if (action.run_until_idle().id()) {
-            content::RunUIThreadUntilIdle();
+        case content::fuzzing::code_cache_host::proto::Action::kRunThread: {
+          if (action.run_thread().id()) {
+            base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
+            base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                           run_loop.QuitClosure());
+            run_loop.Run();
           } else {
-            content::RunIOThreadUntilIdle();
+            base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
+            base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                           run_loop.QuitClosure());
+            run_loop.Run();
           }
         } break;
 
         case content::fuzzing::code_cache_host::proto::Action::
-            kCodeCacheHostCall: {
-          mojolpm::HandleRemoteCall(action.code_cache_host_call());
+            kCodeCacheHostRemoteAction: {
+          mojolpm::HandleRemoteAction(action.code_cache_host_remote_action());
         } break;
 
         case content::fuzzing::code_cache_host::proto::Action::ACTION_NOT_SET:
@@ -315,28 +233,36 @@ void CodeCacheHostTestcase::NextAction() {
   }
 }
 
-void run_testcase(
+void NextAction(content::CodeCacheHostFuzzerContext* context,
+                base::RepeatingClosure quit_closure) {
+  if (!context->IsFinished()) {
+    context->NextAction();
+    content::GetFuzzerTaskRunner()->PostTask(
+        FROM_HERE, base::BindOnce(NextAction, base::Unretained(context),
+                                  std::move(quit_closure)));
+  } else {
+    content::GetFuzzerTaskRunner()->PostTask(FROM_HERE,
+                                             std::move(quit_closure));
+  }
+}
+
+void RunTestcase(
     content::CodeCacheHostFuzzerContext* context,
-    const content::fuzzing::code_cache_host::proto::Testcase* testcase,
-    base::RepeatingClosure&& quit_closure) {
+    const content::fuzzing::code_cache_host::proto::Testcase* testcase) {
   mojo::Message message;
   auto dispatch_context =
       std::make_unique<mojo::internal::MessageDispatchContext>(&message);
 
   CodeCacheHostTestcase cch_testcase(*context, *testcase);
-  context->StartTestcase(&cch_testcase, content::GetTaskRunner());
+  context->StartTestcase(&cch_testcase, content::GetFuzzerTaskRunner());
 
-  while (!context->IsFinished()) {
-    context->NextAction();
-    content::RunUntilIdle();
-  }
-
-  content::RunIOThreadUntilIdle();
-  content::RunUIThreadUntilIdle();
+  base::RunLoop fuzzer_run_loop(base::RunLoop::Type::kNestableTasksAllowed);
+  content::GetFuzzerTaskRunner()->PostTask(
+      FROM_HERE, base::BindOnce(NextAction, base::Unretained(context),
+                                fuzzer_run_loop.QuitClosure()));
+  fuzzer_run_loop.Run();
 
   context->EndTestcase();
-
-  content::GetTaskRunner()->PostTask(FROM_HERE, std::move(quit_closure));
 }
 
 DEFINE_BINARY_PROTO_FUZZER(
@@ -347,18 +273,14 @@ DEFINE_BINARY_PROTO_FUZZER(
   }
 
   content::CodeCacheHostFuzzerContext context;
-  context.InitializeServices();
   mojolpm::SetContext(&context);
 
-  base::RunLoop ui_nested_runloop{base::RunLoop::Type::kNestableTasksAllowed};
-  auto ui_nested_quit = ui_nested_runloop.QuitClosure();
-
-  content::GetTaskRunner()->PostTask(
+  base::RunLoop ui_run_loop(base::RunLoop::Type::kNestableTasksAllowed);
+  content::GetFuzzerTaskRunner()->PostTaskAndReply(
       FROM_HERE,
-      base::BindOnce(run_testcase, base::Unretained(&context),
-                     base::Unretained(&testcase), std::move(ui_nested_quit)));
+      base::BindOnce(RunTestcase, base::Unretained(&context),
+                     base::Unretained(&testcase)),
+      ui_run_loop.QuitClosure());
 
-  ui_nested_runloop.Run();
-
-  context.CleanupServices();
+  ui_run_loop.Run();
 }

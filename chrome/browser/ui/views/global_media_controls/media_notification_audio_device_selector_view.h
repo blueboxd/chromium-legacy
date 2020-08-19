@@ -37,7 +37,7 @@ class MediaNotificationAudioDeviceSelectorView : public views::View,
       const media::AudioDeviceDescriptions& device_descriptions);
 
   // Called when an audio device switch has occurred
-  void UpdateCurrentAudioDevice(const std::string& current_device_id);
+  void UpdateCurrentAudioDevice(std::string current_device_id);
 
   // views::ButtonListener
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
@@ -51,6 +51,8 @@ class MediaNotificationAudioDeviceSelectorView : public views::View,
                            CurrentDeviceHighlighted);
   FRIEND_TEST_ALL_PREFIXES(MediaNotificationAudioDeviceSelectorViewTest,
                            DeviceHighlightedOnChange);
+  FRIEND_TEST_ALL_PREFIXES(MediaNotificationAudioDeviceSelectorViewTest,
+                           DeviceButtonsChange);
 
   void CreateDeviceButton(
       const media::AudioDeviceDescription& device_description);

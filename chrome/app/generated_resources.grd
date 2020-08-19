@@ -9602,7 +9602,7 @@ Please help our engineers fix this problem. Tell us what happened right before y
 
       <!--Cloud printing deprecation messages for chrome://devices & Print Preview-->
       <message name="IDS_CLOUD_PRINTING_NOT_SUPPORTED_WARNING" desc="Warning shown to the user to inform them that cloud printing will no longer be supported.">
-        Cloud printing will no longer be supported after December 31. <ph name="BEGIN_LINK_LEARN_MORE">&lt;a is="action-link" href="$1" target="_blank"&gt;</ph>Learn more<ph name="END_LINK_LEARN_MORE">&lt;/a&gt;</ph>
+        Cloud printing will no longer be supported after December 31. <ph name="BEGIN_LINK_LEARN_MORE">&lt;a href="$1<ex>https://google.com/</ex>" target="_blank"&gt;</ph>Learn more<ph name="END_LINK_LEARN_MORE">&lt;/a&gt;</ph>
       </message>
       <message name="IDS_CLOUD_PRINTING_NOT_SUPPORTED_WARNING_ENTERPRISE" desc="Warning shown to users managed by enterprise policy to inform them that cloud printing will no longer be supported.">
         Cloud printing will no longer be supported after December 31. Contact your administrator.

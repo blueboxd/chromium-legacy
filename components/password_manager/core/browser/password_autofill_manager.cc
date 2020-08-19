@@ -396,8 +396,6 @@ void PasswordAutofillManager::DidAcceptSuggestion(const base::string16& value,
                  autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_EMPTY) {
     password_client_->NavigateToManagePasswordsPage(
         ManagePasswordsReferrer::kPasswordDropdown);
-    metrics_util::LogContextOfShowAllSavedPasswordsAccepted(
-        metrics_util::ShowAllSavedPasswordsContext::kPassword);
     metrics_util::LogPasswordDropdownItemSelected(
         PasswordDropdownSelectedOption::kShowAll,
         password_client_->IsIncognito());
@@ -628,17 +626,12 @@ void PasswordAutofillManager::LogMetricsForSuggestions(
       metrics_util::PasswordDropdownState::kStandard;
   for (const auto& suggestion : suggestions) {
     switch (suggestion.frontend_id) {
-      case autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY:
-      case autofill::PopupItemId::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_EMPTY:
-        metrics_util::LogContextOfShowAllSavedPasswordsShown(
-            metrics_util::ShowAllSavedPasswordsContext::kPassword);
-        continue;
       case autofill::POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY:
         // TODO(crbug.com/1062709): Revisit metrics for the "opt in and
         // generate" button.
       case autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN_AND_GENERATE:
         dropdown_state = metrics_util::PasswordDropdownState::kStandardGenerate;
-        continue;
+        break;
     }
   }
   metrics_util::LogPasswordDropdownShown(dropdown_state,

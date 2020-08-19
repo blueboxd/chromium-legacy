@@ -201,6 +201,7 @@ apps::mojom::AppLaunchSource GetAppLaunchSource(
     case apps::mojom::LaunchSource::kFromFileManager:
       return apps::mojom::AppLaunchSource::kSourceFileHandler;
     case apps::mojom::LaunchSource::kFromChromeInternal:
+    case apps::mojom::LaunchSource::kFromReleaseNotesNotification:
       return apps::mojom::AppLaunchSource::kSourceChromeInternal;
     case apps::mojom::LaunchSource::kFromInstalledNotification:
       return apps::mojom::AppLaunchSource::kSourceInstalledNotification;

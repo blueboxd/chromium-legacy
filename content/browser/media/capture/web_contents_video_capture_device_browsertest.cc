@@ -400,8 +400,15 @@ INSTANTIATE_TEST_SUITE_P(
 // whether the browser is running with software compositing or GPU-accelerated
 // compositing, whether the WebContents is visible/hidden or occluded/unoccluded
 // and whether the main document contains a cross-site iframe.
+
+// Fails on Linux only. http://crbug.com/1108205
+#if defined(OS_LINUX)
+#define MAYBE_CapturesContentChanges DISABLED_CapturesContentChanges
+#else
+#define MAYBE_CapturesContentChanges CapturesContentChanges
+#endif
 IN_PROC_BROWSER_TEST_P(WebContentsVideoCaptureDeviceBrowserTestP,
-                       CapturesContentChanges) {
+                       MAYBE_CapturesContentChanges) {
   SCOPED_TRACE(testing::Message()
                << "Test parameters: "
                << (IsSoftwareCompositingTest() ? "Software Compositing"

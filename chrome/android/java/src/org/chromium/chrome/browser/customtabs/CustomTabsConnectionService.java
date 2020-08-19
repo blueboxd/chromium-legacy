@@ -117,7 +117,7 @@ public class CustomTabsConnectionService extends CustomTabsService {
 
     private boolean isFirstRunDone() {
         if (mBindIntent == null) return true;
-        boolean firstRunNecessary = FirstRunFlowSequencer.checkIfFirstRunIsNecessary(false);
+        boolean firstRunNecessary = FirstRunFlowSequencer.checkIfFirstRunIsNecessary(false, true);
         if (!firstRunNecessary) {
             mBindIntent = null;
             return true;

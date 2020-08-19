@@ -20,6 +20,7 @@
 #include "media/base/format_utils.h"
 #include "media/base/scopedfd_helper.h"
 #include "media/base/video_frame_layout.h"
+#include "media/base/video_util.h"
 #include "media/gpu/buffer_validation.h"
 #include "media/gpu/macros.h"
 #include "ui/gfx/gpu_memory_buffer.h"
@@ -33,6 +34,7 @@ gfx::GpuMemoryBufferHandle AllocateGpuMemoryBufferHandle(
     gpu::GpuMemoryBufferFactory* factory,
     VideoPixelFormat pixel_format,
     const gfx::Size& coded_size,
+    const gfx::Rect& visible_rect,
     gfx::BufferUsage buffer_usage) {
   DCHECK(factory);
   gfx::GpuMemoryBufferHandle gmb_handle;
@@ -52,8 +54,9 @@ gfx::GpuMemoryBufferHandle AllocateGpuMemoryBufferHandle(
   // TODO(hiroh): Rename the client id to more generic one.
   gmb_handle = factory->CreateGpuMemoryBuffer(
       gfx::GpuMemoryBufferId(gpu_memory_buffer_id), coded_size,
-      /*framebuffer_size=*/coded_size, *buffer_format, buffer_usage,
-      gpu::kPlatformVideoFramePoolClientId, gfx::kNullAcceleratedWidget);
+      /*framebuffer_size=*/GetRectSizeFromOrigin(visible_rect), *buffer_format,
+      buffer_usage, gpu::kPlatformVideoFramePoolClientId,
+      gfx::kNullAcceleratedWidget);
   DCHECK(gmb_handle.is_null() || gmb_handle.type != gfx::NATIVE_PIXMAP ||
          VideoFrame::NumPlanes(pixel_format) ==
              gmb_handle.native_pixmap_handle.planes.size());
@@ -71,8 +74,8 @@ scoped_refptr<VideoFrame> CreateGpuMemoryBufferVideoFrame(
     base::TimeDelta timestamp,
     gfx::BufferUsage buffer_usage) {
   DCHECK(factory);
-  auto gmb_handle = AllocateGpuMemoryBufferHandle(factory, pixel_format,
-                                                  coded_size, buffer_usage);
+  auto gmb_handle = AllocateGpuMemoryBufferHandle(
+      factory, pixel_format, coded_size, visible_rect, buffer_usage);
   if (gmb_handle.is_null())
     return nullptr;
 
@@ -113,8 +116,8 @@ scoped_refptr<VideoFrame> CreatePlatformVideoFrame(
     base::TimeDelta timestamp,
     gfx::BufferUsage buffer_usage) {
   DCHECK(factory);
-  auto gmb_handle = AllocateGpuMemoryBufferHandle(factory, pixel_format,
-                                                  coded_size, buffer_usage);
+  auto gmb_handle = AllocateGpuMemoryBufferHandle(
+      factory, pixel_format, coded_size, visible_rect, buffer_usage);
   if (gmb_handle.is_null())
     return nullptr;
 

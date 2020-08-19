@@ -19,7 +19,7 @@
 class Profile;
 
 namespace apps {
-struct AppIdAndActivityName;
+struct IntentLaunchInfo;
 class AppServiceProxy;
 }
 
@@ -65,18 +65,16 @@ class SharesheetService : public KeyedService {
   using SharesheetServiceIconLoaderCallback =
       base::OnceCallback<void(std::vector<TargetInfo> targets)>;
 
-  void LoadAppIcons(
-      std::vector<apps::AppIdAndActivityName> app_id_and_activities,
-      std::vector<TargetInfo> targets,
-      size_t index,
-      SharesheetServiceIconLoaderCallback callback);
+  void LoadAppIcons(std::vector<apps::IntentLaunchInfo> intent_launch_info,
+                    std::vector<TargetInfo> targets,
+                    size_t index,
+                    SharesheetServiceIconLoaderCallback callback);
 
-  void OnIconLoaded(
-      std::vector<apps::AppIdAndActivityName> app_id_and_activities,
-      std::vector<TargetInfo> targets,
-      size_t index,
-      SharesheetServiceIconLoaderCallback callback,
-      apps::mojom::IconValuePtr icon_value);
+  void OnIconLoaded(std::vector<apps::IntentLaunchInfo> intent_launch_info,
+                    std::vector<TargetInfo> targets,
+                    size_t index,
+                    SharesheetServiceIconLoaderCallback callback,
+                    apps::mojom::IconValuePtr icon_value);
 
   void OnAppIconsLoaded(std::unique_ptr<SharesheetServiceDelegate> delegate,
                         apps::mojom::IntentPtr intent,

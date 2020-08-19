@@ -41,13 +41,20 @@ class TestAmbientURLLoaderImpl : public AmbientURLLoader {
   void Download(
       const std::string& url,
       network::SimpleURLLoader::BodyAsStringCallback callback) override {
-    auto data = std::make_unique<std::string>();
-    *data = "test";
+    std::string data = data_ ? *data_ : "test";
     // Pretend to respond asynchronously.
     base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::BindOnce(std::move(callback), std::move(data)),
+        FROM_HERE,
+        base::BindOnce(std::move(callback),
+                       std::make_unique<std::string>(data)),
         base::TimeDelta::FromMilliseconds(1));
   }
+
+  void SetData(std::unique_ptr<std::string> data) { data_ = std::move(data); }
+
+ private:
+  // If not null, will return this data.
+  std::unique_ptr<std::string> data_;
 };
 
 class TestAmbientImageDecoderImpl : public AmbientImageDecoder {
@@ -59,10 +66,14 @@ class TestAmbientImageDecoderImpl : public AmbientImageDecoder {
   void Decode(
       const std::vector<uint8_t>& encoded_bytes,
       base::OnceCallback<void(const gfx::ImageSkia&)> callback) override {
+    gfx::ImageSkia image =
+        image_ ? *image_ : gfx::test::CreateImageSkia(width_, height_);
+    // Only use once.
+    image_.reset();
+
     // Pretend to respond asynchronously.
     base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback),
-                                  gfx::test::CreateImageSkia(width_, height_)));
+        FROM_HERE, base::BindOnce(std::move(callback), image));
   }
 
   void SetImageSize(int width, int height) {
@@ -70,10 +81,15 @@ class TestAmbientImageDecoderImpl : public AmbientImageDecoder {
     height_ = height;
   }
 
+  void SetImage(const gfx::ImageSkia& image) { image_ = image; }
+
  private:
   // Width and height of test images.
   int width_ = 10;
   int height_ = 20;
+
+  // If set, will replay this image.
+  base::Optional<gfx::ImageSkia> image_;
 };
 
 AmbientAshTestBase::AmbientAshTestBase()
@@ -186,9 +202,7 @@ void AmbientAshTestBase::SimulateMediaPlaybackStateChanged(
 
 void AmbientAshTestBase::SetPhotoViewImageSize(int width, int height) {
   auto* image_decoder = static_cast<TestAmbientImageDecoderImpl*>(
-      ambient_controller()
-          ->get_ambient_photo_controller_for_testing()
-          ->get_image_decoder_for_testing());
+      photo_controller()->get_image_decoder_for_testing());
 
   image_decoder->SetImageSize(width, height);
 }
@@ -242,11 +256,33 @@ AmbientController* AmbientAshTestBase::ambient_controller() {
 }
 
 AmbientPhotoController* AmbientAshTestBase::photo_controller() {
-  return ambient_controller()->get_ambient_photo_controller_for_testing();
+  return ambient_controller()->ambient_photo_controller();
 }
 
 AmbientContainerView* AmbientAshTestBase::container_view() {
   return ambient_controller()->get_container_view_for_testing();
+}
+
+void AmbientAshTestBase::FetchTopics() {
+  photo_controller()->FetchTopicsForTesting();
+}
+
+void AmbientAshTestBase::FetchImage() {
+  photo_controller()->FetchImageForTesting();
+}
+
+void AmbientAshTestBase::SetUrlLoaderData(std::unique_ptr<std::string> data) {
+  auto* url_loader_ = static_cast<TestAmbientURLLoaderImpl*>(
+      photo_controller()->get_url_loader_for_testing());
+
+  url_loader_->SetData(std::move(data));
+}
+
+void AmbientAshTestBase::SeteImageDecoderImage(const gfx::ImageSkia& image) {
+  auto* image_decoder = static_cast<TestAmbientImageDecoderImpl*>(
+      photo_controller()->get_image_decoder_for_testing());
+
+  image_decoder->SetImage(image);
 }
 
 }  // namespace ash

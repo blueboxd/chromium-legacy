@@ -160,13 +160,15 @@ id<GREYMatcher> TitleOfTestPage() {
 - (void)testRecentTabSigninPromoReloaded {
   OpenRecentTabsPanel();
   // Sign-in promo should be visible with cold state.
-  [SigninEarlGreyUI checkSigninPromoVisibleWithMode:SigninPromoViewModeColdState
-                                        closeButton:NO];
+  [SigninEarlGreyUI
+      verifySigninPromoVisibleWithMode:SigninPromoViewModeColdState
+                           closeButton:NO];
   FakeChromeIdentity* fakeIdentity = [SigninEarlGrey fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity];
   // Sign-in promo should be visible with warm state.
-  [SigninEarlGreyUI checkSigninPromoVisibleWithMode:SigninPromoViewModeWarmState
-                                        closeButton:NO];
+  [SigninEarlGreyUI
+      verifySigninPromoVisibleWithMode:SigninPromoViewModeWarmState
+                           closeButton:NO];
   [self closeRecentTabs];
   [SigninEarlGrey forgetFakeIdentity:fakeIdentity];
 }
@@ -175,8 +177,9 @@ id<GREYMatcher> TitleOfTestPage() {
 // crbug.com/776939
 - (void)testRecentTabSigninPromoReloadedWhileHidden {
   OpenRecentTabsPanel();
-  [SigninEarlGreyUI checkSigninPromoVisibleWithMode:SigninPromoViewModeColdState
-                                        closeButton:NO];
+  [SigninEarlGreyUI
+      verifySigninPromoVisibleWithMode:SigninPromoViewModeColdState
+                           closeButton:NO];
 
   // Tap on "Other Devices", to hide the sign-in promo.
   NSString* otherDevicesLabel =
@@ -186,7 +189,7 @@ id<GREYMatcher> TitleOfTestPage() {
       grey_sufficientlyVisible(), nil);
   [[EarlGrey selectElementWithMatcher:otherDevicesMatcher]
       performAction:grey_tap()];
-  [SigninEarlGreyUI checkSigninPromoNotVisible];
+  [SigninEarlGreyUI verifySigninPromoNotVisible];
 
   // Add an account.
   FakeChromeIdentity* fakeIdentity = [SigninEarlGrey fakeIdentity1];
@@ -195,8 +198,9 @@ id<GREYMatcher> TitleOfTestPage() {
   // Tap on "Other Devices", to show the sign-in promo.
   [[EarlGrey selectElementWithMatcher:otherDevicesMatcher]
       performAction:grey_tap()];
-  [SigninEarlGreyUI checkSigninPromoVisibleWithMode:SigninPromoViewModeWarmState
-                                        closeButton:NO];
+  [SigninEarlGreyUI
+      verifySigninPromoVisibleWithMode:SigninPromoViewModeWarmState
+                           closeButton:NO];
   [self closeRecentTabs];
   [SigninEarlGrey forgetFakeIdentity:fakeIdentity];
 }
@@ -274,8 +278,9 @@ id<GREYMatcher> TitleOfTestPage() {
     [illustratedCell assertWithMatcher:grey_nil()];
   }
 
-  [SigninEarlGreyUI checkSigninPromoVisibleWithMode:SigninPromoViewModeColdState
-                                        closeButton:NO];
+  [SigninEarlGreyUI
+      verifySigninPromoVisibleWithMode:SigninPromoViewModeColdState
+                           closeButton:NO];
 }
 
 @end

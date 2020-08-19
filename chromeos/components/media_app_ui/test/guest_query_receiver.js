@@ -125,6 +125,8 @@ async function runTestQuery(data) {
         assertCast(lastReceivedFileList).files.map(file => file.error).join();
   } else if (data.openFile) {
     await DELEGATE.openFile();
+  } else if (data.getLastFileName) {
+    result = firstReceivedItem().name;
   }
   return {testQueryResult: result, testQueryResultData: extraResultData};
 }

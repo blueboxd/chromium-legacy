@@ -2,26 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'chrome://print/print_preview.js';
-
+import {SelectOption} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
-import {getCddTemplate} from 'chrome://test/print_preview/print_preview_test_utils.js';
-import {fakeDataBind} from 'chrome://test/test_util.m.js';
+
+import {assertDeepEquals, assertEquals, assertFalse} from '../chai_assert.js';
+import {fakeDataBind} from '../test_util.m.js';
+
+import {getCddTemplate} from './print_preview_test_utils.js';
 
 suite('MediaSizeSettingsTest', function() {
-  /** @type {?PrintPreviewMediaSizeSettingsElement} */
-  let mediaSizeSection = null;
+  /** @type {!PrintPreviewMediaSizeSettingsElement} */
+  let mediaSizeSection;
 
-  const mediaSizeCapability =
-      getCddTemplate('FooPrinter').capabilities.printer.media_size;
+  const mediaSizeCapability = /** @type {!SelectOption} */ (
+      getCddTemplate('FooPrinter').capabilities.printer.media_size);
+
   /** @override */
   setup(function() {
-    PolymerTest.clearBody();
-    const model = document.createElement('print-preview-model');
+    document.body.innerHTML = '';
+    const model = /** @type {!PrintPreviewModelElement} */ (
+        document.createElement('print-preview-model'));
     document.body.appendChild(model);
 
-    mediaSizeSection =
-        document.createElement('print-preview-media-size-settings');
+    mediaSizeSection = /** @type {!PrintPreviewMediaSizeSettingsElement} */ (
+        document.createElement('print-preview-media-size-settings'));
     mediaSizeSection.settings = model.settings;
     mediaSizeSection.capability = mediaSizeCapability;
     mediaSizeSection.disabled = false;

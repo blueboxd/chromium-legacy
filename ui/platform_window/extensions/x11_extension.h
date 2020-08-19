@@ -17,7 +17,7 @@ class X11ExtensionDelegate;
 // APIs. Please refer to README for more details.
 //
 // The extension mustn't be called until PlatformWindow is initialized.
-class COMPONENT_EXPORT(EXTENSIONS) X11Extension {
+class COMPONENT_EXPORT(PLATFORM_WINDOW) X11Extension {
  public:
   // Returns whether an XSync extension is available at the current platform.
   virtual bool IsSyncExtensionAvailable() const = 0;
@@ -55,7 +55,7 @@ class COMPONENT_EXPORT(EXTENSIONS) X11Extension {
                        X11Extension* x11_extensions);
 };
 
-COMPONENT_EXPORT(EXTENSIONS)
+COMPONENT_EXPORT(PLATFORM_WINDOW)
 X11Extension* GetX11Extension(const PlatformWindow& platform_window);
 
 }  // namespace ui

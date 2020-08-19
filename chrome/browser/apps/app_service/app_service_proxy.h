@@ -56,9 +56,10 @@ struct PauseData {
 };
 #endif
 
-struct AppIdAndActivityName {
+struct IntentLaunchInfo {
   std::string app_id;
   std::string activity_name;
+  std::string activity_label;
 };
 
 // Singleton (per Profile) proxy and cache of an App Service's apps.
@@ -223,12 +224,12 @@ class AppServiceProxy : public KeyedService,
 
   // Returns a list of apps (represented by their ids) and activities (if
   // applied) which can handle |intent|.
-  std::vector<AppIdAndActivityName> GetAppsForIntent(
+  std::vector<IntentLaunchInfo> GetAppsForIntent(
       const apps::mojom::IntentPtr& intent);
 
   // Returns a list of apps (represented by their ids) and activities (if
   // applied) which can handle |filesystem_urls| and |mime_types|.
-  std::vector<AppIdAndActivityName> GetAppsForFiles(
+  std::vector<IntentLaunchInfo> GetAppsForFiles(
       const std::vector<GURL>& filesystem_urls,
       const std::vector<std::string>& mime_types);
 

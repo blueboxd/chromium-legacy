@@ -2753,6 +2753,7 @@ enum WebFeature {
   kBCPAuthenticatedSignedWrites = 3423,
   kBCPReliableWrite = 3424,
   kBCPWritableAuxiliaries = 3425,
+  kTextAlignSpecifiedToLegend = 3426,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

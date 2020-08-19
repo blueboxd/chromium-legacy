@@ -54,8 +54,6 @@ class ParentLocalSurfaceIdAllocator;
 
 namespace content {
 
-class FrameSwapMessageQueue;
-
 // Specialization of the output surface that adapts it to implement the
 // content::SynchronousCompositor public API. This class effects an "inversion
 // of control" - enabling drawing to be  orchestrated by the embedding
@@ -78,7 +76,6 @@ class SynchronousLayerTreeFrameSinkImpl
       uint32_t layer_tree_frame_sink_id,
       std::unique_ptr<viz::BeginFrameSource> begin_frame_source,
       blink::SynchronousCompositorRegistry* registry,
-      scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue,
       mojo::PendingRemote<viz::mojom::CompositorFrameSink>
           compositor_frame_sink_remote,
       mojo::PendingReceiver<viz::mojom::CompositorFrameSinkClient>
@@ -157,7 +154,6 @@ class SynchronousLayerTreeFrameSinkImpl
   cc::ManagedMemoryPolicy memory_policy_;
   bool in_software_draw_ = false;
   bool did_submit_frame_ = false;
-  scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue_;
 
   mojo::PendingRemote<viz::mojom::CompositorFrameSink>
       unbound_compositor_frame_sink_;

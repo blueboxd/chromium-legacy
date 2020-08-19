@@ -75,7 +75,9 @@ enum Subpage {
   // Personalization section.
   kChangePicture = 500,
   kAmbientMode = 501,
-  kAmbientModePhotos= 502,
+  // Note: Value 502 was for deprecated kAmbientModePhotos. Do not reuse.
+  kAmbientModeGooglePhotosAlbum = 503,
+  kAmbientModeArtGalleryAlbum = 504,
 
   // Search and Assistant section.
   kAssistant = 600,
@@ -174,7 +176,10 @@ const string kPowerSubpagePath = "power";
 const string kPersonalizationSectionPath = "personalization";
 const string kChangePictureSubpagePath = "changePicture";
 const string kAmbientModeSubpagePath = "ambientMode";
-const string kAmbientModePhotosSubpagePath = "ambientMode/photos";
+const string kAmbientModeGooglePhotosAlbumSubpagePath =
+    "ambientMode/photos?topicSource=0";
+const string kAmbientModeArtGalleryAlbumSubpagePath =
+    "ambientMode/photos?topicSource=1";
 
 // Search and Assistant section.
 const string kSearchAndAssistantSectionPath = "osSearch";

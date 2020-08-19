@@ -89,7 +89,7 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
   [[EarlGrey selectElementWithMatcher:SecondarySignInButton()]
       performAction:grey_tap()];
   [SigninEarlGreyUI selectIdentityWithEmail:fakeIdentity2.userEmail];
-  [SigninEarlGreyUI confirmSigninConfirmationDialog];
+  [SigninEarlGreyUI tapSigninConfirmationDialog];
 
   // Switch Sync account to |fakeIdentity2| should ask whether date should be
   // imported or kept separate. Choose to keep data separate.
@@ -250,7 +250,7 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
   // The authentication flow is only created when the confirm button is
   // selected. Note that authentication flow actually blocks as the
   // "Clear Browsing Before Syncing" dialog is presented.
-  [SigninEarlGreyUI confirmSigninConfirmationDialog];
+  [SigninEarlGreyUI tapSigninConfirmationDialog];
   // Waits until the merge/delete data panel is shown.
   [[EarlGrey selectElementWithMatcher:SettingsImportDataKeepSeparateButton()]
       assertWithMatcher:grey_interactable()];

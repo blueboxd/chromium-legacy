@@ -7,28 +7,6 @@
 #include "components/viz/test/mock_compositor_frame_sink_client.h"
 #include "content/browser/renderer_host/frame_token_message_queue.h"
 
-namespace {
-class TestFrameTokenMessageQueue : public content::FrameTokenMessageQueue {
- public:
-  TestFrameTokenMessageQueue() = default;
-  ~TestFrameTokenMessageQueue() override = default;
-
-  uint32_t processed_frame_messages_count() {
-    return processed_frame_messages_count_;
-  }
-
- protected:
-  void ProcessSwapMessages(std::vector<IPC::Message> messages) override {
-    processed_frame_messages_count_++;
-  }
-
- private:
-  uint32_t processed_frame_messages_count_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(TestFrameTokenMessageQueue);
-};
-}  // namespace
-
 namespace content {
 
 MockRenderWidgetHost::~MockRenderWidgetHost() {}
@@ -57,13 +35,6 @@ void MockRenderWidgetHost::ExpectForceEnableZoom(bool enable) {
 
 void MockRenderWidgetHost::SetupForInputRouterTest() {
   input_router_.reset(new MockInputRouter(this));
-}
-
-uint32_t MockRenderWidgetHost::processed_frame_messages_count() {
-  CHECK(frame_token_message_queue_);
-  return static_cast<TestFrameTokenMessageQueue*>(
-             frame_token_message_queue_.get())
-      ->processed_frame_messages_count();
 }
 
 // static
@@ -106,7 +77,7 @@ MockRenderWidgetHost::MockRenderWidgetHost(
                            process,
                            routing_id,
                            /*hidden=*/false,
-                           std::make_unique<TestFrameTokenMessageQueue>()),
+                           std::make_unique<FrameTokenMessageQueue>()),
       new_content_rendering_timeout_fired_(false),
       fling_scheduler_(std::make_unique<FlingScheduler>(this)) {
   acked_touch_event_type_ = blink::WebInputEvent::Type::kUndefined;

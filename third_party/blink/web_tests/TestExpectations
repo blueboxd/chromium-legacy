@@ -6702,4 +6702,4 @@ crbug.com/1116681 [ Mac ] fast/frames/iframe-scaling-with-scroll.html [ Pass Fai
 crbug.com/1069546 [ Mac ] compositing/layer-creation/overflow-scroll-overlap.html [ Pass Failure ]
 
 # Unexpected demuxer success after M86 FFmpeg roll.
-crbug.com/1117613 media/video-error-networkState.html [ Failure ]
+crbug.com/1117613 media/video-error-networkState.html [ Failure Timeout ]

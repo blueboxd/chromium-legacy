@@ -151,8 +151,21 @@ void LaunchReleaseNotesInTab(Profile* profile) {
   ShowSingletonTab(displayer->browser(), url);
 }
 
-void LaunchReleaseNotesImpl(Profile* profile) {
+void LaunchReleaseNotesImpl(Profile* profile,
+                            apps::mojom::LaunchSource source) {
   base::RecordAction(UserMetricsAction("ReleaseNotes.ShowReleaseNotes"));
+  // If the flag is enabled, launch the Help app and show the release notes.
+  if (base::FeatureList::IsEnabled(chromeos::features::kHelpAppReleaseNotes)) {
+    // Note that AppServiceProxy is null for off-the-record profiles. For more
+    // context, see https://crbug.com/1112197.
+    apps::AppServiceProxy* proxy = apps::AppServiceProxyFactory::GetForProfile(
+        profile->GetOriginalProfile());
+    proxy->LaunchAppWithUrl(
+        chromeos::default_web_apps::kHelpAppId, ui::EventFlags::EF_NONE,
+        GURL("chrome://help-app/updates"), source, display::kDefaultDisplayId);
+    return;
+  }
+
   auto* provider = web_app::WebAppProviderBase::GetProviderBase(profile);
   if (provider && provider->registrar().IsInstalled(
                       chromeos::default_web_apps::kReleaseNotesAppId)) {
@@ -341,9 +354,9 @@ void ShowHelpForProfile(Profile* profile, HelpSource source) {
   ShowHelpImpl(NULL, profile, source);
 }
 
-void LaunchReleaseNotes(Profile* profile) {
+void LaunchReleaseNotes(Profile* profile, apps::mojom::LaunchSource source) {
 #if defined(OS_CHROMEOS) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  LaunchReleaseNotesImpl(profile);
+  LaunchReleaseNotesImpl(profile, source);
 #endif
 }
 

@@ -29,11 +29,6 @@ const base::Feature kAmbientModeFeature{"ChromeOSAmbientMode",
 const base::Feature kAmbientModePhotoPreviewFeature{
     "ChromeOSAmbientModePhotoPreview", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Controls whether to allow Dev channel to use Prod server feature.
-const base::Feature kAmbientModeDevUseProdFeature{
-    "ChromeOSAmbientModeDevChannelUseProdServer",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Controls whether to enable ARC ADB sideloading support.
 const base::Feature kArcAdbSideloadingFeature{
     "ArcAdbSideloading", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -109,20 +104,12 @@ const base::Feature kChildSpecificSignin{"ChildSpecificSignin",
 const base::Feature kImeOptionsInSettings{"ImeOptionsInSettings",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables or disables Crostini port forwarding.
-const base::Feature kCrostiniPortForwarding{"CrostiniPortForwarding",
-                                            base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables or disables Crostini Disk Resizing.
 const base::Feature kCrostiniDiskResizing{"CrostiniDiskResizing",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables Crostini using Buster container images.
 const base::Feature kCrostiniUseBusterImage{"CrostiniUseBusterImage",
-                                            base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enables the option to share the mic with Crostini or not
-const base::Feature kCrostiniShowMicSetting{"CrostiniShowMicSetting",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables Crostini GPU support.
@@ -537,10 +524,6 @@ bool IsAmbientModeEnabled() {
 
 bool IsAmbientModePhotoPreviewEnabled() {
   return base::FeatureList::IsEnabled(kAmbientModePhotoPreviewFeature);
-}
-
-bool IsAmbientModeDevUseProdEnabled() {
-  return base::FeatureList::IsEnabled(kAmbientModeDevUseProdFeature);
 }
 
 bool IsBetterUpdateEnabled() {

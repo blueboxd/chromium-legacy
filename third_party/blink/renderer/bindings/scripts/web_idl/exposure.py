@@ -76,7 +76,7 @@ class Exposure(object):
     def runtime_enabled_features(self):
         """
         Returns a list of runtime enabled features.  This construct is exposed
-        only when one of these features is enabled.
+        only when all these features are enabled.
         """
         return self._runtime_enabled_features
 

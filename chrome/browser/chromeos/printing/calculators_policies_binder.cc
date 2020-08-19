@@ -55,7 +55,7 @@ class PrefBinder : public CalculatorsPoliciesBinder {
   PrefBinder(PrefService* pref_service,
              base::WeakPtr<BulkPrintersCalculator> calculator)
       : CalculatorsPoliciesBinder(prefs::kRecommendedPrintersAccessMode,
-                                  prefs::kRecommendedNativePrintersBlacklist,
+                                  prefs::kRecommendedPrintersBlocklist,
                                   prefs::kRecommendedNativePrintersWhitelist,
                                   calculator),
         prefs_(pref_service) {
@@ -128,7 +128,7 @@ void CalculatorsPoliciesBinder::RegisterProfilePrefs(
   // Default value for access mode is AllAccess.
   registry->RegisterIntegerPref(prefs::kRecommendedPrintersAccessMode,
                                 BulkPrintersCalculator::ALL_ACCESS);
-  registry->RegisterListPref(prefs::kRecommendedNativePrintersBlacklist);
+  registry->RegisterListPref(prefs::kRecommendedPrintersBlocklist);
   registry->RegisterListPref(prefs::kRecommendedNativePrintersWhitelist);
 }
 

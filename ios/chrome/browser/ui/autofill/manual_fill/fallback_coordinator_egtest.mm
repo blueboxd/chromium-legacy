@@ -48,6 +48,11 @@ id<GREYMatcher> ProfileTableViewButtonMatcher() {
   return grey_buttonTitle(@"Underworld");
 }
 
+// Returns a matcher for a web view.
+id<GREYMatcher> WebViewMatcher() {
+  return grey_kindOfClass(NSClassFromString(@"WKWebView"));
+}
+
 // Polls the JavaScript query |java_script_condition| until the returned
 // |boolValue| is YES with a kWaitForActionTimeout timeout.
 BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
@@ -163,7 +168,7 @@ BOOL WaitForKeyboardToAppear() {
   // will dismiss any.
   if ([ChromeEarlGrey isIPadIdiom]) {
     // Tap in the web view so the popover dismisses.
-    [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+    [[EarlGrey selectElementWithMatcher:WebViewMatcher()]
         performAction:grey_tapAtPoint(CGPointMake(0, 0))];
 
     // Verify the table view is not visible.
@@ -187,7 +192,7 @@ BOOL WaitForKeyboardToAppear() {
   [AutofillAppInterface saveExampleProfile];
 
   // Bring up the keyboard.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+  [[EarlGrey selectElementWithMatcher:WebViewMatcher()]
       performAction:chrome_test_util::TapWebElementWithId(kFormElementName)];
 
   // Tap on the profiles icon.
@@ -230,7 +235,7 @@ BOOL WaitForKeyboardToAppear() {
   [AutofillAppInterface saveExampleProfile];
 
   // Bring up the keyboard.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+  [[EarlGrey selectElementWithMatcher:WebViewMatcher()]
       performAction:chrome_test_util::TapWebElementWithId(kFormElementCity)];
 
   // Tap on the profiles icon.
@@ -276,7 +281,7 @@ BOOL WaitForKeyboardToAppear() {
 
   // Bring up the keyboard by tapping the city, which is the element before the
   // picker.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+  [[EarlGrey selectElementWithMatcher:WebViewMatcher()]
       performAction:chrome_test_util::TapWebElementWithId(kFormElementCity)];
 
   // Tap on the profiles icon.
@@ -301,7 +306,7 @@ BOOL WaitForKeyboardToAppear() {
   // first.
   if ([ChromeEarlGrey isIPadIdiom]) {
     // Tap in the web view so the popover dismisses.
-    [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+    [[EarlGrey selectElementWithMatcher:WebViewMatcher()]
         performAction:grey_tapAtPoint(CGPointMake(0, 0))];
 
     // Verify the table view is not visible.
@@ -313,7 +318,7 @@ BOOL WaitForKeyboardToAppear() {
   }
 
   // Bring up the regular keyboard again.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+  [[EarlGrey selectElementWithMatcher:WebViewMatcher()]
       performAction:chrome_test_util::TapWebElementWithId(kFormElementCity)];
 
   // Wait for the accessory icon to appear.
@@ -344,7 +349,7 @@ BOOL WaitForKeyboardToAppear() {
 
   // Bring up the keyboard by tapping the city, which is the element before the
   // picker.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+  [[EarlGrey selectElementWithMatcher:WebViewMatcher()]
       performAction:chrome_test_util::TapWebElementWithId(kFormElementCity)];
 
   if (!UndockAndSplitKeyboard()) {
@@ -389,7 +394,7 @@ BOOL WaitForKeyboardToAppear() {
       assertWithMatcher:grey_nil()];
 
   // Bring up the regular keyboard again.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+  [[EarlGrey selectElementWithMatcher:WebViewMatcher()]
       performAction:chrome_test_util::TapWebElementWithId(kFormElementName)];
 
   // Wait for the accessory icon to appear.
@@ -420,7 +425,7 @@ BOOL WaitForKeyboardToAppear() {
 
   // Bring up the keyboard by tapping the city, which is the element before the
   // picker.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+  [[EarlGrey selectElementWithMatcher:WebViewMatcher()]
       performAction:chrome_test_util::TapWebElementWithId(kFormElementCity)];
 
   if (!UndockAndSplitKeyboard()) {
@@ -449,14 +454,13 @@ BOOL WaitForKeyboardToAppear() {
 }
 
 // Tests that the manual fallback view is present in incognito.
-// Disabled due to flakiness. See crbug.com/1115321.
-- (void)DISABLED_testIncognitoManualFallbackMenu {
+- (void)testIncognitoManualFallbackMenu {
   // Add the profile to use for verification.
   [AutofillAppInterface saveExampleProfile];
 
   // Bring up the keyboard by tapping the city, which is the element before the
   // picker.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+  [[EarlGrey selectElementWithMatcher:WebViewMatcher()]
       performAction:chrome_test_util::TapWebElementWithId(kFormElementCity)];
 
   // Verify the profiles icon is visible.
@@ -473,7 +477,7 @@ BOOL WaitForKeyboardToAppear() {
 
   // Bring up the keyboard by tapping the city, which is the element before the
   // picker.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+  [[EarlGrey selectElementWithMatcher:WebViewMatcher()]
       performAction:chrome_test_util::TapWebElementWithId(kFormElementCity)];
 
   // Verify the profiles icon is visible.
@@ -486,13 +490,12 @@ BOOL WaitForKeyboardToAppear() {
 // Tests the mediator stops observing objects when the incognito BVC is
 // destroyed. Waiting for dealloc was causing a race condition with the
 // autorelease pool, and some times a DCHECK will be hit.
-// TODO(crbug.com/1111258): Investigate cause of flakiness and re-enable.
-- (void)DISABLED_testOpeningIncognitoTabsDoNotLeak {
+- (void)testOpeningIncognitoTabsDoNotLeak {
   const GURL URL = self.testServer->GetURL(kFormHTMLFile);
   std::string webViewText("Profile form");
   [AutofillAppInterface saveExampleProfile];
 
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+  [[EarlGrey selectElementWithMatcher:WebViewMatcher()]
       performAction:chrome_test_util::TapWebElementWithId(kFormElementCity)];
 
   // Verify the profiles icon is visible.
@@ -506,7 +509,7 @@ BOOL WaitForKeyboardToAppear() {
   [ChromeEarlGrey loadURL:URL];
   [ChromeEarlGrey waitForWebStateContainingText:webViewText];
 
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+  [[EarlGrey selectElementWithMatcher:WebViewMatcher()]
       performAction:chrome_test_util::TapWebElementWithId(kFormElementCity)];
 
   // Verify the profiles icon is visible.
@@ -522,7 +525,7 @@ BOOL WaitForKeyboardToAppear() {
 
   // Bring up the keyboard by tapping the city, which is the element before the
   // picker.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+  [[EarlGrey selectElementWithMatcher:WebViewMatcher()]
       performAction:chrome_test_util::TapWebElementWithId(kFormElementCity)];
 
   // Verify the profiles icon is visible.
@@ -538,7 +541,7 @@ BOOL WaitForKeyboardToAppear() {
 
   // Bring up the keyboard by tapping the city, which is the element before the
   // picker.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+  [[EarlGrey selectElementWithMatcher:WebViewMatcher()]
       performAction:chrome_test_util::TapWebElementWithId(kFormElementCity)];
 
   // Open a  regular tab.
@@ -548,7 +551,7 @@ BOOL WaitForKeyboardToAppear() {
 
   // Bring up the keyboard by tapping the city, which is the element before the
   // picker.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+  [[EarlGrey selectElementWithMatcher:WebViewMatcher()]
       performAction:chrome_test_util::TapWebElementWithId(kFormElementCity)];
 
   // This will fail if there is more than one profiles icon in the hierarchy.
@@ -559,14 +562,13 @@ BOOL WaitForKeyboardToAppear() {
 }
 
 // Tests that the manual fallback view is not duplicated after incognito.
-// Disabled due to flakiness. See crbug.com/1115282.
-- (void)DISABLED_testReturningFromIncognitoDoesNotDuplicatesManualFallbackMenu {
+- (void)testReturningFromIncognitoDoesNotDuplicatesManualFallbackMenu {
   // Add the profile to use for verification.
   [AutofillAppInterface saveExampleProfile];
 
   // Bring up the keyboard by tapping the city, which is the element before the
   // picker.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+  [[EarlGrey selectElementWithMatcher:WebViewMatcher()]
       performAction:chrome_test_util::TapWebElementWithId(kFormElementCity)];
 
   // Verify the profiles icon is visible.
@@ -583,7 +585,7 @@ BOOL WaitForKeyboardToAppear() {
 
   // Bring up the keyboard by tapping the city, which is the element before the
   // picker.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+  [[EarlGrey selectElementWithMatcher:WebViewMatcher()]
       performAction:chrome_test_util::TapWebElementWithId(kFormElementCity)];
 
   // Open a  regular tab.
@@ -593,7 +595,7 @@ BOOL WaitForKeyboardToAppear() {
 
   // Bring up the keyboard by tapping the city, which is the element before the
   // picker.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+  [[EarlGrey selectElementWithMatcher:WebViewMatcher()]
       performAction:chrome_test_util::TapWebElementWithId(kFormElementCity)];
 
   // This will fail if there is more than one profiles icon in the hierarchy.

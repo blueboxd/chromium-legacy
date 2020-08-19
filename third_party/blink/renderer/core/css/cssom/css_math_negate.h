@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CSS_MATH_NEGATE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CSS_MATH_NEGATE_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/css/cssom/css_math_value.h"
 
 namespace blink {
@@ -27,6 +26,8 @@ class CORE_EXPORT CSSMathNegate : public CSSMathValue {
 
   CSSMathNegate(CSSNumericValue* value, const CSSNumericValueType& type)
       : CSSMathValue(type), value_(value) {}
+  CSSMathNegate(const CSSMathNegate&) = delete;
+  CSSMathNegate& operator=(const CSSMathNegate&) = delete;
 
   String getOperator() const final { return "negate"; }
 
@@ -65,7 +66,6 @@ class CORE_EXPORT CSSMathNegate : public CSSMathValue {
   void BuildCSSText(Nested, ParenLess, StringBuilder&) const final;
 
   Member<CSSNumericValue> value_;
-  DISALLOW_COPY_AND_ASSIGN(CSSMathNegate);
 };
 
 }  // namespace blink

@@ -316,7 +316,7 @@ message {{interface.name}} {
 {%-   endfor%}
 
 {%-   if interface.methods|length %}
-  message RemoteCall {
+  message RemoteAction {
     required uint32 id = 1;
 
     oneof method {
@@ -327,7 +327,7 @@ message {{interface.name}} {
     }
   }
 
-  message AssociatedRemoteCall {
+  message AssociatedRemoteAction {
     required uint32 id = 1;
 
     oneof method {
@@ -338,7 +338,7 @@ message {{interface.name}} {
     }
   }
 
-  message ReceiverResponse {
+  message ReceiverAction {
     required uint32 id = 1;
 
     oneof response {

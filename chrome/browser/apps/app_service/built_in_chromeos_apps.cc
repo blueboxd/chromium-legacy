@@ -148,7 +148,7 @@ void BuiltInChromeOsApps::Launch(const std::string& app_id,
   } else if (app_id == ash::kReleaseNotesAppId) {
     base::RecordAction(
         base::UserMetricsAction("ReleaseNotes.SuggestionChipLaunched"));
-    chrome::LaunchReleaseNotes(profile_);
+    chrome::LaunchReleaseNotes(profile_, launch_source);
   }
 }
 

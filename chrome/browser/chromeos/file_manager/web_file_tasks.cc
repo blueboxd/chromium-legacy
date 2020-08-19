@@ -142,6 +142,14 @@ void ExecuteWebTask(Profile* profile,
   for (const auto& file_system_url : file_system_urls)
     launch_files->file_paths.push_back(file_system_url.path());
 
+  // App Service doesn't exist in Incognito mode but apps can be
+  // launched (ie. default handler to open a download from its
+  // notification) from Incognito mode. Use the base profile in these
+  // cases (see crbug.com/1111695).
+  if (profile->IsOffTheRecord()) {
+    profile = profile->GetOriginalProfile();
+  }
+
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile);
   proxy->LaunchAppWithFiles(

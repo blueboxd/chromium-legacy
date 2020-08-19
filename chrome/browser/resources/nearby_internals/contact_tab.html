@@ -3,10 +3,6 @@
     --standard-border: 1px solid black;
   }
 
-  #contact-list:last-child {
-    border-bottom: var(--standard-border);
-  }
-
   #clearButton {
     float: right;
   }
@@ -22,10 +18,10 @@
     id="clearButton" disabled="[[!contactList_.length]]">
  Clear Messages
 </cr-button>
-<iron-list items="[[contactList_]]" as="contact" id="contact-list"
+<doom-repeat items="[[contactList_]]" as="contact" id="contact-list"
     hidden="[[!contactList_.length]]">
   <template>
     <contact-object item="[[contact]]">
     </contact-object>
   </template>
-</iron-list>
+</dom-repeat>

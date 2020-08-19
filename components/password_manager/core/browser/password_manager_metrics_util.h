@@ -296,26 +296,6 @@ enum class IsSyncPasswordHashSaved {
 };
 #endif
 
-// Specifies the context in which the "Show all saved passwords" fallback is
-// shown or accepted.
-// Metrics:
-// - PasswordManager.ShowAllSavedPasswordsAcceptedContext
-// - PasswordManager.ShowAllSavedPasswordsShownContext
-//
-// These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
-enum class ShowAllSavedPasswordsContext {
-  kNone = 0,
-  // The "Show all saved passwords..." fallback is shown below a list of
-  // available passwords.
-  kPassword = 1,
-  // Obsolete.
-  kManualFallbackDeprecated = 2,
-  // The "Show all saved  passwords..." fallback is shown in context menu.
-  kContextMenu = 3,
-  kMaxValue = kContextMenu,
-};
-
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
 // Metrics: "PasswordManager.CertificateErrorsWhileSeeingForms"
@@ -546,15 +526,6 @@ void LogPasswordReuse(int password_length,
                       int number_matches,
                       bool password_field_detected,
                       PasswordType reused_password_type);
-
-// Log the context in which the "Show all saved passwords" fallback was shown.
-void LogContextOfShowAllSavedPasswordsShown(
-    ShowAllSavedPasswordsContext context);
-
-// Log the context in which the "Show all saved passwords" fallback was
-// accepted.
-void LogContextOfShowAllSavedPasswordsAccepted(
-    ShowAllSavedPasswordsContext context);
 
 // Log the type of the password dropdown when it's shown.
 void LogPasswordDropdownShown(PasswordDropdownState state, bool off_the_record);

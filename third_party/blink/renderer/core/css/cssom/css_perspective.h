@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CSS_PERSPECTIVE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CSS_PERSPECTIVE_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/cssom/css_numeric_value.h"
 #include "third_party/blink/renderer/core/css/cssom/css_transform_component.h"
@@ -29,6 +28,8 @@ class CORE_EXPORT CSSPerspective final : public CSSTransformComponent {
   static CSSPerspective* FromCSSValue(const CSSFunctionValue&);
 
   CSSPerspective(CSSNumericValue* length);
+  CSSPerspective(const CSSPerspective&) = delete;
+  CSSPerspective& operator=(const CSSPerspective&) = delete;
 
   // Getters and setters for attributes defined in the IDL.
   CSSNumericValue* length() { return length_.Get(); }
@@ -52,7 +53,6 @@ class CORE_EXPORT CSSPerspective final : public CSSTransformComponent {
 
  private:
   Member<CSSNumericValue> length_;
-  DISALLOW_COPY_AND_ASSIGN(CSSPerspective);
 };
 
 }  // namespace blink

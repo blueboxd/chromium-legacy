@@ -20,6 +20,7 @@ class ShareAction {
 
   virtual const base::string16 GetActionName() = 0;
 
+  // Icon DIP (Density Independent Pixel) size must be 40 x 40.
   virtual const gfx::ImageSkia GetActionIcon() = 0;
 
   // LaunchAction should synchronously create all UI needed and fill

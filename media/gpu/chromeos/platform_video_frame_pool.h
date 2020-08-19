@@ -86,7 +86,8 @@ class MEDIA_GPU_EXPORT PlatformVideoFramePool : public DmabufVideoFramePool {
       EXCLUSIVE_LOCKS_REQUIRED(lock_);
   size_t GetTotalNumFrames_Locked() const EXCLUSIVE_LOCKS_REQUIRED(lock_);
   bool IsSameFormat_Locked(VideoPixelFormat format,
-                           const gfx::Size& coded_size) const
+                           const gfx::Size& coded_size,
+                           const gfx::Rect& visible_rect) const
       EXCLUSIVE_LOCKS_REQUIRED(lock_);
   bool IsExhausted_Locked() EXCLUSIVE_LOCKS_REQUIRED(lock_);
 

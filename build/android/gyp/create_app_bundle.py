@@ -98,9 +98,6 @@ def _ParseArgs(args):
       'listed there _and_ in --base-module-rtxt-path will '
       'be kept in the base bundle module, even if language'
       ' splitting is enabled.')
-  parser.add_argument('--warnings-as-errors',
-                      action='store_true',
-                      help='Treat all warnings as errors.')
 
   parser.add_argument('--keystore-path', help='Keystore path')
   parser.add_argument('--keystore-password', help='Keystore password')
@@ -421,21 +418,17 @@ def main(args):
     with open(tmp_bundle_config, 'w') as f:
       f.write(bundle_config)
 
-    cmd_args = build_utils.JavaCmd(options.warnings_as_errors) + [
-        '-jar',
-        bundletool.BUNDLETOOL_JAR_PATH,
-        'build-bundle',
-        '--modules=' + ','.join(module_zips),
-        '--output=' + tmp_unsigned_bundle,
-        '--config=' + tmp_bundle_config,
+    cmd_args = [
+        build_utils.JAVA_PATH, '-jar', bundletool.BUNDLETOOL_JAR_PATH,
+        'build-bundle', '--modules=' + ','.join(module_zips),
+        '--output=' + tmp_unsigned_bundle, '--config=' + tmp_bundle_config
     ]
 
     build_utils.CheckOutput(
         cmd_args,
         print_stdout=True,
         print_stderr=True,
-        stderr_filter=build_utils.FilterReflectiveAccessJavaWarnings,
-        fail_on_output=options.warnings_as_errors)
+        stderr_filter=build_utils.FilterReflectiveAccessJavaWarnings)
 
     if options.keystore_path:
       # NOTE: As stated by the public documentation, apksigner cannot be used
@@ -450,9 +443,7 @@ def main(args):
           tmp_unsigned_bundle,
           options.key_name,
       ]
-      build_utils.CheckOutput(signing_cmd_args,
-                              print_stderr=True,
-                              fail_on_output=options.warnings_as_errors)
+      build_utils.CheckOutput(signing_cmd_args, print_stderr=True)
 
     shutil.move(tmp_bundle, options.out_bundle)
 

@@ -20,7 +20,7 @@ class Size;
 
 namespace ui {
 
-class COMPONENT_EXPORT(EXTENSIONS) X11ExtensionDelegate {
+class COMPONENT_EXPORT(PLATFORM_WINDOW) X11ExtensionDelegate {
  public:
   // Notifies if the PlatformWindow looses a mouse grab. This can be useful
   // for Wayland or X11. Both of them provide pointer enter and leave

@@ -1,11 +1,12 @@
 <style include="print-preview-shared throbber md-select destination-select cr-hidden-style">
-
-:host([is-current-destination-cros-local_]) #statusText {
-  color: var(--google-red-600);
-  font-size: calc(10 / 13 * 1em);
-  padding: 0;
-}
-
+  :host([is-current-destination-cros-local_]) #statusText {
+    color: var(--google-red-600);
+    font-size: calc(10 / 13 * 1em);
+    overflow: hidden;
+    padding: 0;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 </style>
 <print-preview-settings-section>
   <span slot="title">$i18n{destinationLabel}</span>
@@ -60,8 +61,7 @@
   <div slot="title"></div>
   <div slot="controls">
     <div id="statusText" class="destination-status" title="[[statusText_]]"
-        aria-hidden="true">
-        [[statusText_]]
+        aria-hidden="[[isCurrentDestinationCrosLocal_]]">
     </div>
   </div>
 </print-preview-settings-section>

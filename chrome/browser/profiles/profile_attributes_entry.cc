@@ -40,6 +40,7 @@
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/ui/signin/profile_colors_util.h"
 #endif
 
 namespace {
@@ -717,14 +718,12 @@ ProfileThemeColors ProfileAttributesEntry::GetDefaultProfileThemeColors(
   return {SK_ColorRED, SK_ColorRED, SK_ColorRED};
 #else
   ProfileThemeColors default_colors;
-  // TODO(https://crbug.com/1102384): update this with the right colors, once we
-  // have them.
   default_colors.profile_highlight_color = ThemeProperties::GetDefaultColor(
       ThemeProperties::COLOR_FRAME_ACTIVE, /*incognito=*/false, dark_mode);
   default_colors.default_avatar_fill_color = ThemeProperties::GetDefaultColor(
       ThemeProperties::COLOR_FRAME_ACTIVE, /*incognito=*/false, dark_mode);
-  default_colors.default_avatar_stroke_color = ThemeProperties::GetDefaultColor(
-      ThemeProperties::COLOR_TOOLBAR, /*incognito=*/false, dark_mode);
+  default_colors.default_avatar_stroke_color =
+      GetAvatarStrokeColor(default_colors.default_avatar_fill_color);
   return default_colors;
 #endif
 }

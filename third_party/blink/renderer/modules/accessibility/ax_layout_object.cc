@@ -1450,9 +1450,16 @@ AXObject* AXLayoutObject::AccessibilityHitTest(const IntPoint& point) const {
       !layout_object_->IsBox())
     return nullptr;
 
-  // Must be called with lifecycle >= compositing clean.
-  DCHECK_GE(GetDocument()->Lifecycle().GetState(),
-            DocumentLifecycle::kCompositingAssignmentsClean);
+    // Must be called with lifecycle >= compositing clean
+#if DCHECK_IS_ON()
+  if (RuntimeEnabledFeatures::CompositingOptimizationsEnabled()) {
+    DCHECK_GE(GetDocument()->Lifecycle().GetState(),
+              DocumentLifecycle::kPrePaintClean);
+  } else {
+    DCHECK_GE(GetDocument()->Lifecycle().GetState(),
+              DocumentLifecycle::kCompositingAssignmentsClean);
+  }
+#endif
 
   PaintLayer* layer = ToLayoutBox(layout_object_)->Layer();
 

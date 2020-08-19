@@ -977,9 +977,8 @@ TEST_F(ProtocolHandlerRegistryTest, TestURIPercentEncoding) {
 
   // Space character.
   translated_url = ph.TranslateUrl(GURL("web+custom://custom handler"));
-  // TODO(mgiuca): Check whether this(' ') should be encoded as '%20'.
   ASSERT_EQ(translated_url,
-            GURL("https://test.com/url=web%2Bcustom%3A%2F%2Fcustom+handler"));
+            GURL("https://test.com/url=web%2Bcustom%3A%2F%2Fcustom%20handler"));
 
   // Query parameters.
   translated_url = ph.TranslateUrl(GURL("web+custom://custom?foo=bar&bar=baz"));

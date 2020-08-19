@@ -37,16 +37,12 @@ enum LoadingBehaviorFlag {
   kLoadingBehaviorSubresourceFilterMatch = 1 << 6,
   // Indicates that the page is an AMP document, with <html amp> tag.
   kLoadingBehaviorAmpDocumentLoaded = 1 << 7,
-  // Indicates that font preloading (via <link rel=preload> or Font JS API) has
-  // occurred before the first rendering cycle begins. Used to study the
-  // effects of delaying the first rendering cycle for web font loading.
-  kLoadingBehaviorFontPreloadStartedBeforeRendering = 1 << 8,
   // Indicates that the page uses the Next.js JavaScript framework (via a
   // window variable)
-  kLoadingBehaviorNextJSFrameworkUsed = 1 << 9,
+  kLoadingBehaviorNextJSFrameworkUsed = 1 << 8,
   // Indicates that an async script was ready to execute before the script
   // element's node document has finished parsing.
-  kLoadingBehaviorAsyncScriptReadyBeforeDocumentFinishedParsing = 1 << 10,
+  kLoadingBehaviorAsyncScriptReadyBeforeDocumentFinishedParsing = 1 << 9,
 };
 
 }  // namespace blink

@@ -315,13 +315,13 @@ public class Profile {
     }
 
     /**
-     * If an embedder knows that a cross-origin navigation is likely starting soon they can call
-     * this method to start a spare renderer process. A subsequent navigation may use this
-     * preinitialized process, improving performance.
-     *
-     * It is safe to call this multiple times or when it is not certain that the spare renderer will
-     * be used, although calling this too eagerly may reduce performance as unnecessary processes
-     * are created.
+     * For cross-origin navigations, the implementation may leverage a separate OS process for
+     * stronger isolation. If an embedder knows that a cross-origin navigation is likely starting
+     * soon, they can call this method as a hint to the implementation to start a fresh OS process.
+     * A subsequent navigation may use this preinitialized process, improving performance. It is
+     * safe to call this multiple times or when it is not certain that the spare renderer will be
+     * used, although calling this too eagerly may reduce performance as unnecessary processes are
+     * created.
      *
      * @since 85
      */

@@ -14,6 +14,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "media/base/format_utils.h"
+#include "media/base/video_util.h"
 #include "media/gpu/chromeos/fourcc.h"
 #include "media/video/fake_gpu_memory_buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -53,12 +54,17 @@ class PlatformVideoFramePoolTest
 
   bool Initialize(const Fourcc& fourcc) {
     constexpr gfx::Size kCodedSize(320, 240);
+    return Initialize(kCodedSize, /*visible_rect=*/gfx::Rect(kCodedSize),
+                      fourcc);
+  }
+
+  bool Initialize(const gfx::Size& coded_size,
+                  const gfx::Rect& visible_rect,
+                  const Fourcc& fourcc) {
     constexpr size_t kNumFrames = 10;
-
-    visible_rect_.set_size(kCodedSize);
-    natural_size_ = kCodedSize;
-
-    layout_ = pool_->Initialize(fourcc, kCodedSize, visible_rect_,
+    visible_rect_ = visible_rect;
+    natural_size_ = visible_rect.size();
+    layout_ = pool_->Initialize(fourcc, coded_size, visible_rect_,
                                 natural_size_, kNumFrames);
     return !!layout_;
   }
@@ -164,6 +170,64 @@ TEST_P(PlatformVideoFramePoolTest, InitializeWithDifferentFourcc) {
   EXPECT_EQ(0u, pool_->GetPoolSizeForTesting());
 }
 
+TEST_P(PlatformVideoFramePoolTest, InitializeWithDifferentUsableArea) {
+  const auto fourcc = Fourcc::FromVideoPixelFormat(GetParam());
+  ASSERT_TRUE(fourcc.has_value());
+
+  constexpr gfx::Size kCodedSize(640, 368);
+  constexpr gfx::Rect kInitialVisibleRect(10, 20, 300, 200);
+  ASSERT_TRUE(Initialize(kCodedSize, kInitialVisibleRect, fourcc.value()));
+  scoped_refptr<VideoFrame> frame_a = GetFrame(10);
+  scoped_refptr<VideoFrame> frame_b = GetFrame(10);
+
+  // Clear frame references to return the frames to the pool.
+  frame_a = nullptr;
+  frame_b = nullptr;
+  task_environment_.RunUntilIdle();
+
+  // Verify that both frames are in the pool.
+  EXPECT_EQ(2u, pool_->GetPoolSizeForTesting());
+
+  // Verify that requesting a frame with a different "usable area" causes the
+  // pool to get drained. The usable area is the area of the buffer starting at
+  // (0, 0) and extending to the bottom-right corner of the visible rectangle.
+  // It corresponds to the area used to import the video frame into a graphics
+  // API or to create the DRM framebuffer for hardware overlay purposes.
+  constexpr gfx::Rect kDifferentVisibleRect(5, 15, 300, 200);
+  ASSERT_EQ(kDifferentVisibleRect.size(), natural_size_);
+  ASSERT_NE(GetRectSizeFromOrigin(kInitialVisibleRect),
+            GetRectSizeFromOrigin(kDifferentVisibleRect));
+  ASSERT_TRUE(Initialize(kCodedSize, kDifferentVisibleRect, fourcc.value()));
+  scoped_refptr<VideoFrame> new_frame = GetFrame(10);
+  EXPECT_EQ(0u, pool_->GetPoolSizeForTesting());
+}
+
+TEST_P(PlatformVideoFramePoolTest, InitializeWithDifferentCodedSize) {
+  const auto fourcc = Fourcc::FromVideoPixelFormat(GetParam());
+  ASSERT_TRUE(fourcc.has_value());
+
+  constexpr gfx::Size kInitialCodedSize(640, 368);
+  constexpr gfx::Rect kVisibleRect(10, 20, 300, 200);
+  ASSERT_TRUE(Initialize(kInitialCodedSize, kVisibleRect, fourcc.value()));
+  scoped_refptr<VideoFrame> frame_a = GetFrame(10);
+  scoped_refptr<VideoFrame> frame_b = GetFrame(10);
+
+  // Clear frame references to return the frames to the pool.
+  frame_a = nullptr;
+  frame_b = nullptr;
+  task_environment_.RunUntilIdle();
+
+  // Verify that both frames are in the pool.
+  EXPECT_EQ(2u, pool_->GetPoolSizeForTesting());
+
+  // Verify that requesting a frame with a different coded size causes the pool
+  // to get drained.
+  constexpr gfx::Size kDifferentCodedSize(624, 368);
+  ASSERT_TRUE(Initialize(kDifferentCodedSize, kVisibleRect, fourcc.value()));
+  scoped_refptr<VideoFrame> new_frame = GetFrame(10);
+  EXPECT_EQ(0u, pool_->GetPoolSizeForTesting());
+}
+
 TEST_P(PlatformVideoFramePoolTest, UnwrapVideoFrame) {
   const auto fourcc = Fourcc::FromVideoPixelFormat(GetParam());
   ASSERT_TRUE(fourcc.has_value());
@@ -180,10 +244,14 @@ TEST_P(PlatformVideoFramePoolTest, UnwrapVideoFrame) {
   EXPECT_NE(frame_1->GetGpuMemoryBuffer(), frame_3->GetGpuMemoryBuffer());
 }
 
-TEST_P(PlatformVideoFramePoolTest, InitializeWithSameFourcc) {
+TEST_P(PlatformVideoFramePoolTest,
+       InitializeWithSameFourccUsableAreaAndCodedSize) {
   const auto fourcc = Fourcc::FromVideoPixelFormat(GetParam());
   ASSERT_TRUE(fourcc.has_value());
-  ASSERT_TRUE(Initialize(fourcc.value()));
+
+  constexpr gfx::Size kCodedSize(640, 368);
+  constexpr gfx::Rect kInitialVisibleRect(kCodedSize);
+  ASSERT_TRUE(Initialize(kCodedSize, kInitialVisibleRect, fourcc.value()));
   scoped_refptr<VideoFrame> frame1 = GetFrame(10);
   gfx::GpuMemoryBufferId id1 =
       PlatformVideoFramePool::GetGpuMemoryBufferId(*frame1);
@@ -192,8 +260,17 @@ TEST_P(PlatformVideoFramePoolTest, InitializeWithSameFourcc) {
   frame1 = nullptr;
   task_environment_.RunUntilIdle();
 
-  // Request frame with the same format. The pool should not request new frames.
-  ASSERT_TRUE(Initialize(fourcc.value()));
+  // Request frame with the same format, coded size, and "usable area." To make
+  // things interesting, we change the visible rect while keeping the
+  // "usable area" constant. The usable area is the area of the buffer starting
+  // at (0, 0) and extending to the bottom-right corner of the visible
+  // rectangle. It corresponds to the area used to import the video frame into a
+  // graphics API or to create the DRM framebuffer for hardware overlay
+  // purposes. The pool should not request new frames.
+  constexpr gfx::Rect kDifferentVisibleRect(10, 20, 630, 348);
+  ASSERT_EQ(GetRectSizeFromOrigin(kInitialVisibleRect),
+            GetRectSizeFromOrigin(kDifferentVisibleRect));
+  ASSERT_TRUE(Initialize(kCodedSize, kDifferentVisibleRect, fourcc.value()));
 
   scoped_refptr<VideoFrame> frame2 = GetFrame(20);
   gfx::GpuMemoryBufferId id2 =

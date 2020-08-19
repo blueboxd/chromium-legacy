@@ -783,8 +783,14 @@ TEST_F('MediaAppUIBrowserTest', 'RenameOriginalIPC', async () => {
       testResponse.testQueryResult, 'renameOriginalFile resolved success');
   // The original file that was renamed got deleted.
   assertEquals(file2Handle, directory.lastDeleted);
+  // The new file has the right name in the trusted context.
   assertEquals(directory.files.length, 2);
   assertEquals(directory.files[entryIndex].name, 'new_file_name.png');
+  assertEquals(currentFiles[entryIndex].handle.name, 'new_file_name.png');
+  assertEquals(currentFiles[entryIndex].file.name, 'new_file_name.png');
+  // The new file has the right name in the untrusted context.
+  testResponse = await sendTestMessage({getLastFileName: true});
+  assertEquals(testResponse.testQueryResult, 'new_file_name.png');
   // The new file uses the same token as the old file.
   assertEquals(currentFiles[entryIndex].token, file2Token);
   // Check the new file written has the correct data.

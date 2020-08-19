@@ -112,7 +112,7 @@ class MediaNotificationService
   // for connected audio output devices.
   std::unique_ptr<MediaNotificationDeviceProvider::
                       GetOutputDevicesCallbackList::Subscription>
-  GetOutputDevices(
+  RegisterAudioOutputDeviceDescriptionsCallback(
       MediaNotificationDeviceProvider::GetOutputDevicesCallback callback);
 
   void set_device_provider_for_testing(

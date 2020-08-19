@@ -362,6 +362,7 @@ WebSocketChannel::SendResult WebSocketChannelImpl::Send(
 
 void WebSocketChannelImpl::Close(int code, const String& reason) {
   DCHECK_EQ(GetState(), State::kOpen);
+  DCHECK(!execution_context_->IsContextDestroyed());
   NETWORK_DVLOG(1) << this << " Close(" << code << ", " << reason << ")";
   uint16_t code_to_send = static_cast<uint16_t>(
       code == kCloseEventCodeNotSpecified ? kCloseEventCodeNoStatusRcvd : code);
@@ -661,6 +662,7 @@ bool WebSocketChannelImpl::MaybeSendSynchronously(
 void WebSocketChannelImpl::ProcessSendQueue() {
   // TODO(yhirano): This should be DCHECK_EQ(GetState(), State::kOpen).
   DCHECK(GetState() == State::kOpen || GetState() == State::kConnecting);
+  DCHECK(!execution_context_->IsContextDestroyed());
   while (!messages_.IsEmpty() && !blob_loader_ && !wait_for_writable_) {
     Message& message = messages_.front();
     network::mojom::blink::WebSocketMessageType message_type =

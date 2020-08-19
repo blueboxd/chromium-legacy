@@ -445,6 +445,18 @@ void AboutHandler::HandleCheckInternetConnection(const base::ListValue* args) {
 
 void AboutHandler::HandleLaunchReleaseNotes(const base::ListValue* args) {
   DCHECK(args->empty());
+  // If the flag is enabled, we can always show the release notes since the Help
+  // app caches it, or can show an appropriate error state (e.g. No internet
+  // connection).
+  if (base::FeatureList::IsEnabled(chromeos::features::kHelpAppReleaseNotes)) {
+    base::RecordAction(
+        base::UserMetricsAction("ReleaseNotes.LaunchedAboutPage"));
+    chrome::LaunchReleaseNotes(profile_,
+                               apps::mojom::LaunchSource::kFromOtherApp);
+    return;
+  }
+
+  // If the flag is disabled, we need connectivity to load the PWA.
   chromeos::NetworkStateHandler* network_state_handler =
       chromeos::NetworkHandler::Get()->network_state_handler();
   const chromeos::NetworkState* network =
@@ -452,7 +464,8 @@ void AboutHandler::HandleLaunchReleaseNotes(const base::ListValue* args) {
   if (network && network->IsOnline()) {
     base::RecordAction(
         base::UserMetricsAction("ReleaseNotes.LaunchedAboutPage"));
-    chrome::LaunchReleaseNotes(profile_);
+    chrome::LaunchReleaseNotes(profile_,
+                               apps::mojom::LaunchSource::kFromOtherApp);
   }
 }
 

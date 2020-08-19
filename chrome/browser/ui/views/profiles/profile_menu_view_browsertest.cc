@@ -672,8 +672,15 @@ constexpr ProfileMenuViewBase::ActionableItem kActionableItems_SyncError[] = {
     // there are no other buttons at the end.
     ProfileMenuViewBase::ActionableItem::kPasswordsButton};
 
+#if defined(OS_WIN)
+// TODO(crbug.com/1021930): Failure on Windows
+#define MAYBE_ProfileMenuClickTest_SyncError \
+  DISABLED_ProfileMenuClickTest_SyncError
+#else
+#define MAYBE_ProfileMenuClickTest_SyncError ProfileMenuClickTest_SyncError
+#endif
 PROFILE_MENU_CLICK_TEST(kActionableItems_SyncError,
-                        ProfileMenuClickTest_SyncError) {
+                        MAYBE_ProfileMenuClickTest_SyncError) {
   ASSERT_TRUE(sync_harness()->SignInPrimaryAccount());
   // Check that the setup was successful.
   ASSERT_TRUE(identity_manager()->HasPrimaryAccount());

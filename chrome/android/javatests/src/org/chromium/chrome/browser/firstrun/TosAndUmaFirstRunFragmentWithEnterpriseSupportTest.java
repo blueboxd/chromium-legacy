@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,14 +33,18 @@ import org.chromium.base.CommandLine;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.policy.PolicyServiceFactory;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.policy.PolicyService;
 import org.chromium.ui.test.util.DisableAnimationsTestRule;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Test for first run activity and {@link TosAndUmaFirstRunFragmentWithEnterpriseSupport}.
@@ -62,10 +66,16 @@ public class TosAndUmaFirstRunFragmentWithEnterpriseSupportTest {
 
     @Mock
     public FirstRunAppRestrictionInfo mMockAppRestrictionInfo;
+    @Mock
+    public PolicyService mPolicyService;
+    @Mock
+    public FirstRunUtils.Natives mFirstRunUtils;
 
     private FirstRunActivityTestObserver mTestObserver = new FirstRunActivityTestObserver();
     private FirstRunActivity mActivity;
     private TosAndUmaFirstRunFragmentWithEnterpriseSupport mFragment;
+    private final List<PolicyService.Observer> mPolicyServiceObservers = new ArrayList<>();
+    private final List<Callback<Boolean>> mAppRestrictonsCallbacks = new ArrayList<>();
 
     private View mTosText;
     private View mAcceptButton;
@@ -78,56 +88,60 @@ public class TosAndUmaFirstRunFragmentWithEnterpriseSupportTest {
         Assert.assertFalse(
                 CommandLine.getInstance().hasSwitch(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE));
 
-        // Static switches.
         FirstRunActivity.setEnableEnterpriseCCTForTest(true);
         FirstRunAppRestrictionInfo.setInstanceForTest(mMockAppRestrictionInfo);
-        TosAndUmaFirstRunFragmentWithEnterpriseSupport.setBlockPolicyLoadingForTest(true);
+        PolicyServiceFactory.setPolicyServiceForTest(mPolicyService);
+        FirstRunUtilsJni.TEST_HOOKS.setInstanceForTesting(mFirstRunUtils);
     }
 
     @After
     public void tearDown() {
         FirstRunActivity.setEnableEnterpriseCCTForTest(false);
         FirstRunAppRestrictionInfo.setInstanceForTest(null);
-        TosAndUmaFirstRunFragmentWithEnterpriseSupport.setBlockPolicyLoadingForTest(false);
+        PolicyServiceFactory.setPolicyServiceForTest(null);
+        FirstRunUtilsJni.TEST_HOOKS.setInstanceForTesting(mFirstRunUtils);
         if (mActivity != null) mActivity.finish();
     }
 
     @Test
     @SmallTest
     public void testNoRestriction() {
+        setAppRestrictiosnMockNotInitialized();
         launchFirstRunThroughCustomTab();
         assertUIState(FragmentState.LOADING);
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> mFragment.onAppRestrictionDetected(false));
+        TestThreadUtils.runOnUiThreadBlocking(() -> setAppRestrictiosnMockInitialized(false));
         assertUIState(FragmentState.NO_POLICY);
     }
 
     @Test
     @SmallTest
-    public void testWithRestriction_NoPolicy() {
-        setHasAppRestrictionForMock();
+    public void testWithRestriction_DialogEnabled() {
+        setAppRestrictiosnMockInitialized(true);
+        setPolicyServiceMockNotInitialized();
         launchFirstRunThroughCustomTab();
         assertUIState(FragmentState.LOADING);
 
-        waitUntilNativeLoaded();
-
-        TestThreadUtils.runOnUiThreadBlocking(() -> mFragment.onCctTosPolicyDetected(true));
+        setMockCctTosDialogEnabled(true);
+        TestThreadUtils.runOnUiThreadBlocking(() -> setPolicyServiceMockInitialized());
         assertUIState(FragmentState.NO_POLICY);
     }
 
     @Test
     @SmallTest
-    public void testWithRestriction_WithPolicy() {
-        setHasAppRestrictionForMock();
+    public void testWithRestriction_DialogDisabled() {
+        setAppRestrictiosnMockInitialized(true);
+        setPolicyServiceMockNotInitialized();
         launchFirstRunThroughCustomTab();
         assertUIState(FragmentState.LOADING);
 
-        waitUntilNativeLoaded();
+        setMockCctTosDialogEnabled(false);
+        TestThreadUtils.runOnUiThreadBlocking(() -> setPolicyServiceMockInitialized());
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> mFragment.onCctTosPolicyDetected(false));
         assertUIState(FragmentState.HAS_POLICY);
-
-        CriteriaHelper.pollUiThread(() -> mTestObserver.exitFirstRunCallback.getCallCount() > 0);
+        // TODO(https://crbug.com/1113229): Rework this to not depend on {@link FirstRunActivity}
+        // implementation details.
+        Assert.assertTrue(FirstRunStatus.isEphemeralSkipFirstRun());
     }
 
     /**
@@ -165,6 +179,11 @@ public class TosAndUmaFirstRunFragmentWithEnterpriseSupportTest {
                             .getSupportFragmentManager()
                             .getFragments()
                             .get(0);
+
+        // Force this to happen now to try to make the tests more deterministic. Ideally the tests
+        // could control when this happens and test for difference sequences.
+        waitUntilNativeLoaded();
+
         mTosText = mActivity.findViewById(R.id.tos_and_privacy);
         mAcceptButton = mActivity.findViewById(R.id.tos_and_privacy);
         mLargeSpinner = mActivity.findViewById(R.id.progress_spinner_large);
@@ -187,19 +206,55 @@ public class TosAndUmaFirstRunFragmentWithEnterpriseSupportTest {
                 tosVisibility, mAcceptButton.getVisibility());
     }
 
-    /** Set up mock FirstRunAppRestrictionInfo that there is app restriction on the device */
-    private void setHasAppRestrictionForMock() {
+    private void waitUntilNativeLoaded() {
+        CriteriaHelper.pollUiThread(
+                (() -> mActivity.isNativeSideIsInitializedForTest()), "native never initialized.");
+    }
+
+    private void setAppRestrictiosnMockNotInitialized() {
         Mockito.doAnswer(invocation -> {
                    Callback<Boolean> callback = invocation.getArgument(0);
-                   callback.onResult(true);
+                   mAppRestrictonsCallbacks.add(callback);
                    return null;
                })
                 .when(mMockAppRestrictionInfo)
                 .getHasAppRestriction(any());
     }
 
-    private void waitUntilNativeLoaded() {
-        CriteriaHelper.pollUiThread(
-                (() -> mActivity.isNativeSideIsInitializedForTest()), "native never initialized.");
+    private void setAppRestrictiosnMockInitialized(boolean hasAppRestrictons) {
+        Mockito.doAnswer(invocation -> {
+                   Callback<Boolean> callback = invocation.getArgument(0);
+                   callback.onResult(hasAppRestrictons);
+                   return null;
+               })
+                .when(mMockAppRestrictionInfo)
+                .getHasAppRestriction(any());
+
+        for (Callback<Boolean> callback : mAppRestrictonsCallbacks) {
+            callback.onResult(hasAppRestrictons);
+        }
+    }
+
+    private void setPolicyServiceMockNotInitialized() {
+        Mockito.when(mPolicyService.isInitializationComplete()).thenReturn(false);
+        Mockito.doAnswer(invocation -> {
+                   PolicyService.Observer observer = invocation.getArgument(0);
+                   mPolicyServiceObservers.add(observer);
+                   return null;
+               })
+                .when(mPolicyService)
+                .addObserver(any());
+    }
+
+    private void setPolicyServiceMockInitialized() {
+        Mockito.when(mPolicyService.isInitializationComplete()).thenReturn(true);
+        for (PolicyService.Observer observer : mPolicyServiceObservers) {
+            observer.onPolicyServiceInitialized();
+        }
+        mPolicyServiceObservers.clear();
+    }
+
+    private void setMockCctTosDialogEnabled(boolean cctTosDialogEnabled) {
+        Mockito.when(mFirstRunUtils.getCctTosDialogEnabled()).thenReturn(cctTosDialogEnabled);
     }
 }

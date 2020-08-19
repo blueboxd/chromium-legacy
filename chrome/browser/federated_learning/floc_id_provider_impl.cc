@@ -25,7 +25,7 @@ namespace federated_learning {
 namespace {
 
 constexpr size_t kMinHistoryDomainSizeToReportFlocId = 1;
-constexpr base::TimeDelta kFlocSessionRenewInterval =
+constexpr base::TimeDelta kFlocScheduledUpdateInterval =
     base::TimeDelta::FromDays(1);
 constexpr int kQueryHistoryWindowInDays = 7;
 
@@ -48,9 +48,7 @@ FlocIdProviderImpl::FlocIdProviderImpl(
 
 FlocIdProviderImpl::~FlocIdProviderImpl() = default;
 
-void FlocIdProviderImpl::NotifyFlocIdUpdated() {
-  DCHECK(floc_session_count_ > 0);
-
+void FlocIdProviderImpl::NotifyFlocUpdated(ComputeFlocTrigger trigger) {
   if (!base::FeatureList::IsEnabled(features::kFlocIdComputedEventLogging))
     return;
 
@@ -60,9 +58,9 @@ void FlocIdProviderImpl::NotifyFlocIdUpdated() {
       specifics->mutable_floc_id_computed_event();
 
   sync_pb::UserEventSpecifics_FlocIdComputed_EventTrigger event_trigger =
-      (floc_session_count_ == 1u)
-          ? sync_pb::UserEventSpecifics::FlocIdComputed::NEW
-          : sync_pb::UserEventSpecifics::FlocIdComputed::REFRESHED;
+      (trigger == ComputeFlocTrigger::kBrowserStart)
+          ? sync_pb::UserEventSpecifics_FlocIdComputed_EventTrigger_NEW
+          : sync_pb::UserEventSpecifics_FlocIdComputed_EventTrigger_REFRESHED;
 
   floc_id_computed_event->set_event_trigger(event_trigger);
 
@@ -86,7 +84,7 @@ bool FlocIdProviderImpl::AreThirdPartyCookiesAllowed() {
 }
 
 void FlocIdProviderImpl::IsSwaaNacAccountEnabled(
-    CanComputeFlocIdCallback callback) {
+    CanComputeFlocCallback callback) {
   net::PartialNetworkTrafficAnnotationTag partial_traffic_annotation =
       net::DefinePartialNetworkTrafficAnnotation(
           "floc_id_provider_impl", "floc_remote_permission_service",
@@ -127,29 +125,59 @@ void FlocIdProviderImpl::Shutdown() {
 }
 
 void FlocIdProviderImpl::OnStateChanged(syncer::SyncService* sync_service) {
-  if (floc_session_count_ > 0)
+  if (first_floc_computation_triggered_)
     return;
 
   if (!IsSyncHistoryEnabled())
     return;
 
-  CalculateFloc();
-
-  floc_session_start_timer_.Start(
-      FROM_HERE, kFlocSessionRenewInterval,
-      base::BindRepeating(&FlocIdProviderImpl::CalculateFloc,
-                          weak_ptr_factory_.GetWeakPtr()));
+  ComputeFloc(ComputeFlocTrigger::kBrowserStart);
 }
 
-void FlocIdProviderImpl::CalculateFloc() {
-  floc_session_count_ += 1;
-  CheckCanComputeFlocId(
-      base::BindOnce(&FlocIdProviderImpl::OnCheckCanComputeFlocIdCompleted,
-                     weak_ptr_factory_.GetWeakPtr()));
+void FlocIdProviderImpl::ComputeFloc(ComputeFlocTrigger trigger) {
+  DCHECK_NE(trigger == ComputeFlocTrigger::kBrowserStart,
+            first_floc_computation_triggered_);
+
+  DCHECK(trigger != ComputeFlocTrigger::kBrowserStart ||
+         !floc_computation_in_progress_);
+
+  // Skip computing as long as there's one still in progress.
+  if (floc_computation_in_progress_)
+    return;
+
+  floc_computation_in_progress_ = true;
+  first_floc_computation_triggered_ = true;
+
+  auto compute_floc_completed_callback =
+      base::BindOnce(&FlocIdProviderImpl::OnComputeFlocCompleted,
+                     weak_ptr_factory_.GetWeakPtr(), trigger);
+
+  CheckCanComputeFloc(
+      base::BindOnce(&FlocIdProviderImpl::OnCheckCanComputeFlocCompleted,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     std::move(compute_floc_completed_callback)));
 }
 
-void FlocIdProviderImpl::CheckCanComputeFlocId(
-    CanComputeFlocIdCallback callback) {
+void FlocIdProviderImpl::OnComputeFlocCompleted(ComputeFlocTrigger trigger,
+                                                FlocId floc_id) {
+  DCHECK(floc_computation_in_progress_);
+  floc_computation_in_progress_ = false;
+
+  if (floc_id_ != floc_id) {
+    floc_id_ = floc_id;
+    NotifyFlocUpdated(trigger);
+  }
+
+  // Abandon the scheduled task if any, and schedule a new compute-floc task
+  // that is |kFlocScheduledUpdateInterval| from now.
+  compute_floc_timer_.Start(
+      FROM_HERE, kFlocScheduledUpdateInterval,
+      base::BindOnce(&FlocIdProviderImpl::ComputeFloc,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     ComputeFlocTrigger::kScheduledUpdate));
+}
+
+void FlocIdProviderImpl::CheckCanComputeFloc(CanComputeFlocCallback callback) {
   if (!IsSyncHistoryEnabled() || !AreThirdPartyCookiesAllowed()) {
     std::move(callback).Run(false);
     return;
@@ -158,19 +186,17 @@ void FlocIdProviderImpl::CheckCanComputeFlocId(
   IsSwaaNacAccountEnabled(std::move(callback));
 }
 
-void FlocIdProviderImpl::OnCheckCanComputeFlocIdCompleted(
+void FlocIdProviderImpl::OnCheckCanComputeFlocCompleted(
+    ComputeFlocCompletedCallback callback,
     bool can_compute_floc) {
   if (!can_compute_floc) {
-    if (floc_id_.IsValid()) {
-      floc_id_ = FlocId();
-      NotifyFlocIdUpdated();
-    }
+    std::move(callback).Run(FlocId());
     return;
   }
 
   GetRecentlyVisitedURLs(
       base::BindOnce(&FlocIdProviderImpl::OnGetRecentlyVisitedURLsCompleted,
-                     weak_ptr_factory_.GetWeakPtr(), floc_session_count_));
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void FlocIdProviderImpl::GetRecentlyVisitedURLs(
@@ -184,12 +210,8 @@ void FlocIdProviderImpl::GetRecentlyVisitedURLs(
 }
 
 void FlocIdProviderImpl::OnGetRecentlyVisitedURLsCompleted(
-    size_t floc_session_count,
+    ComputeFlocCompletedCallback callback,
     history::QueryResults results) {
-  DCHECK_LE(floc_session_count, floc_session_count_);
-  if (floc_session_count < floc_session_count_)
-    return;
-
   std::unordered_set<std::string> domains;
   for (const history::URLResult& url_result : results) {
     if (!url_result.publicly_routable())
@@ -204,10 +226,7 @@ void FlocIdProviderImpl::OnGetRecentlyVisitedURLsCompleted(
                        ? FlocId::CreateFromHistory(domains)
                        : FlocId();
 
-  if (floc_id_ != floc_id) {
-    floc_id_ = floc_id;
-    NotifyFlocIdUpdated();
-  }
+  std::move(callback).Run(floc_id);
 }
 
 }  // namespace federated_learning

@@ -25,19 +25,31 @@ namespace federated_learning {
 
 class FlocRemotePermissionService;
 
-// A service that regularly computes the floc id and logs it in a user event.
+// A service that regularly computes the floc id and logs it in a user event. A
+// computed floc can be in either a valid or invalid state, based on whether all
+// the prerequisites are met:
+// 1) Sync & sync-history are enabled.
+// 2) 3rd party cookies are NOT blocked.
+// 3) Supplemental Web and App Activity is enabled.
+// 4) Supplemental Ad Personalization is enabled.
+// 5) The account type is NOT a child account.
 //
-// A floc session starts when sync & sync-history is first enabled. We validate
-// the following conditions in sequence before computing the floc id: user
-// doesn’t block 3rd party cookies; all 3 of swaa & nac & account_type are
-// enabled; the user has visited at least 1 domain with publicly routable ip in
-// the past 7 days. Every 24 hours, it'll go over the conditions above again
-// (including the sync & sync-history check), and reset or recompute the id
-// accordingly.
+// When all the prerequisites are met, the floc will be computed by sim-hashing
+// navigation URL domains in the last 7 days; otherwise, an invalid floc will be
+// given.
+//
+// The floc will be first computed after sync & sync-history are enabled. After
+// each computation, another computation will be scheduled 24 hours later.
 class FlocIdProviderImpl : public FlocIdProvider,
                            public syncer::SyncServiceObserver {
  public:
-  using CanComputeFlocIdCallback = base::OnceCallback<void(bool)>;
+  enum class ComputeFlocTrigger {
+    kBrowserStart,
+    kScheduledUpdate,
+  };
+
+  using CanComputeFlocCallback = base::OnceCallback<void(bool)>;
+  using ComputeFlocCompletedCallback = base::OnceCallback<void(FlocId)>;
   using GetRecentlyVisitedURLsCallback =
       history::HistoryService::QueryHistoryCallback;
 
@@ -53,10 +65,10 @@ class FlocIdProviderImpl : public FlocIdProvider,
 
  protected:
   // protected virtual for testing.
-  virtual void NotifyFlocIdUpdated();
+  virtual void NotifyFlocUpdated(ComputeFlocTrigger trigger);
   virtual bool IsSyncHistoryEnabled();
   virtual bool AreThirdPartyCookiesAllowed();
-  virtual void IsSwaaNacAccountEnabled(CanComputeFlocIdCallback callback);
+  virtual void IsSwaaNacAccountEnabled(CanComputeFlocCallback callback);
 
  private:
   friend class FlocIdProviderUnitTest;
@@ -68,17 +80,20 @@ class FlocIdProviderImpl : public FlocIdProvider,
   // syncer::SyncServiceObserver:
   void OnStateChanged(syncer::SyncService* sync_service) override;
 
-  void CalculateFloc();
+  void ComputeFloc(ComputeFlocTrigger trigger);
+  void OnComputeFlocCompleted(ComputeFlocTrigger trigger, FlocId floc_id);
 
-  void CheckCanComputeFlocId(CanComputeFlocIdCallback callback);
-  void OnCheckCanComputeFlocIdCompleted(bool can_compute_floc);
+  void CheckCanComputeFloc(CanComputeFlocCallback callback);
+  void OnCheckCanComputeFlocCompleted(ComputeFlocCompletedCallback callback,
+                                      bool can_compute_floc);
 
   void GetRecentlyVisitedURLs(GetRecentlyVisitedURLsCallback callback);
-  void OnGetRecentlyVisitedURLsCompleted(size_t floc_session_count,
+  void OnGetRecentlyVisitedURLsCompleted(ComputeFlocCompletedCallback callback,
                                          history::QueryResults results);
 
   FlocId floc_id_;
-  size_t floc_session_count_ = 0;
+  bool floc_computation_in_progress_ = false;
+  bool first_floc_computation_triggered_ = false;
 
   syncer::SyncService* sync_service_;
   scoped_refptr<content_settings::CookieSettings> cookie_settings_;
@@ -89,8 +104,8 @@ class FlocIdProviderImpl : public FlocIdProvider,
   // Used for the async tasks querying the HistoryService.
   base::CancelableTaskTracker history_task_tracker_;
 
-  // The timer used to start the floc session at regular intervals.
-  base::RepeatingTimer floc_session_start_timer_;
+  // The timer used to schedule a floc computation.
+  base::OneShotTimer compute_floc_timer_;
 
   base::WeakPtrFactory<FlocIdProviderImpl> weak_ptr_factory_{this};
 };

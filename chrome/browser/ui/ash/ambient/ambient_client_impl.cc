@@ -13,7 +13,6 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/common/channel_info.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "components/account_id/account_id.h"
 #include "components/prefs/pref_service.h"
@@ -24,7 +23,6 @@
 #include "components/signin/public/identity_manager/scope_set.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
-#include "components/version_info/channel.h"
 #include "content/public/browser/device_service.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -165,13 +163,4 @@ void AmbientClientImpl::GetAccessToken(
                             /*access_token=*/std::string(),
                             /*expiration_time=*/base::Time::Now());
   }
-}
-
-bool AmbientClientImpl::ShouldUseProdServer() {
-  if (chromeos::features::IsAmbientModeDevUseProdEnabled())
-    return true;
-
-  auto channel = chrome::GetChannel();
-  return channel == version_info::Channel::STABLE ||
-         channel == version_info::Channel::BETA;
 }

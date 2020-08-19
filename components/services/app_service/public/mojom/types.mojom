@@ -192,26 +192,28 @@ struct IconValue {
 // should not be re-ordered or removed.
 enum LaunchSource {
   kUnknown = 0,
-  kFromAppListGrid = 1,             // Grid of apps, not the search box.
-  kFromAppListGridContextMenu = 2,  // Grid of apps; context menu.
-  kFromAppListQuery = 3,            // Query-dependent results (larger icons).
-  kFromAppListQueryContextMenu = 4, // Query-dependent results; context menu.
-  kFromAppListRecommendation = 5,   // Query-less recommendations (smaller
-                                    // icons).
-  kFromParentalControls = 6,        // Parental Controls Settings Section and
-                                    // Per App time notification.
-  kFromShelf = 7,                   // Shelf.
-  kFromFileManager = 8,             // FileManager.
-  kFromLink = 9,                    // Left-licking on links in the browser.
-  kFromOmnibox = 10,                // Enter URL in the Omnibox in the browser.
-  kFromChromeInternal = 11,         // Chrome internal call.
-  kFromKeyboard = 12,               // Keyboard shortcut for opening app.
-  kFromOtherApp = 13,               // Clicking link in another app or webui.
-  kFromMenu = 14,                   // Menu.
-  kFromInstalledNotification = 15,  // Installed notification
-  kFromTest = 16,                   // Test
-  kFromArc = 17,                    // Arc.
-  kFromSharesheet = 18,             // Sharesheet.
+  kFromAppListGrid = 1,               // Grid of apps, not the search box.
+  kFromAppListGridContextMenu = 2,    // Grid of apps; context menu.
+  kFromAppListQuery = 3,              // Query-dependent results (larger icons).
+  kFromAppListQueryContextMenu = 4,   // Query-dependent results; context menu.
+  kFromAppListRecommendation = 5,     // Query-less recommendations (smaller
+                                      // icons).
+  kFromParentalControls = 6,          // Parental Controls Settings Section and
+                                      // Per App time notification.
+  kFromShelf = 7,                     // Shelf.
+  kFromFileManager = 8,               // FileManager.
+  kFromLink = 9,                      // Left-licking on links in the browser.
+  kFromOmnibox = 10,                  // Enter URL in the Omnibox in the
+                                      // browser.
+  kFromChromeInternal = 11,           // Chrome internal call.
+  kFromKeyboard = 12,                 // Keyboard shortcut for opening app.
+  kFromOtherApp = 13,                 // Clicking link in another app or webui.
+  kFromMenu = 14,                     // Menu.
+  kFromInstalledNotification = 15,    // Installed notification
+  kFromTest = 16,                     // Test
+  kFromArc = 17,                      // Arc.
+  kFromSharesheet = 18,               // Sharesheet.
+  kFromReleaseNotesNotification = 19, // Release Notes Notification.
 };
 
 enum TriState {
@@ -309,6 +311,9 @@ struct IntentFilter {
   // Activity which registered this filter. We only fill this field for ARC
   // share intent filters.
   string? activity_name;
+
+  // The label shown to the user for this activity.
+  string? activity_label;
 };
 
 // Action and resource handling request. This includes the scheme and URL at
@@ -318,6 +323,7 @@ struct Intent {
   url.mojom.Url? url; // The URL of the intent. e.g. https://www.google.com/.
   string? mime_type; // MIME type. e.g. text/plain, image/*.
   array<url.mojom.Url>? file_urls; // The URLs of the files to share.
+  string? activity_name; // The activity for the app to launch.
 };
 
 // Represents a group of |app_ids| that is no longer preferred app of their

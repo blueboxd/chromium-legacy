@@ -401,11 +401,19 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
         SearchWidgetProvider.updateCachedEngineName();
         if (sObserver != null) sObserver.onUpdateCachedEngineName();
 
-        exitFirstRun();
+        launchPendingIntentAndFinish();
     }
 
     @Override
     public void exitFirstRun() {
+        // This is important because the first run, when completed, will re-launch the original
+        // intent. The re-launched intent will still need to know to avoid the FRE.
+        FirstRunStatus.setEphemeralSkipFirstRun(true);
+
+        launchPendingIntentAndFinish();
+    }
+
+    private void launchPendingIntentAndFinish() {
         if (!sendFirstRunCompletePendingIntent()) {
             finish();
         } else {

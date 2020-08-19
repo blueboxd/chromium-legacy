@@ -10,6 +10,7 @@
 #include "ash/public/cpp/image_downloader.h"
 #include "base/bind.h"
 #include "chrome/browser/apps/app_service/menu_util.h"
+#include "chrome/browser/chromeos/remote_apps/remote_apps_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
@@ -73,12 +74,13 @@ void RemoteAppsManager::AddApp(const std::string& name,
                                const GURL& icon_url,
                                AddAppCallback callback) {
   if (!is_initialized_) {
-    std::move(callback).Run(std::string(), Error::kNotReady);
+    std::move(callback).Run(std::string(), RemoteAppsError::kNotReady);
     return;
   }
 
   if (!folder_id.empty() && !model_->HasFolder(folder_id)) {
-    std::move(callback).Run(std::string(), Error::kFolderIdDoesNotExist);
+    std::move(callback).Run(std::string(),
+                            RemoteAppsError::kFolderIdDoesNotExist);
     return;
   }
 
@@ -88,15 +90,15 @@ void RemoteAppsManager::AddApp(const std::string& name,
   remote_apps_->AddApp(info);
 }
 
-RemoteAppsManager::Error RemoteAppsManager::DeleteApp(const std::string& id) {
+RemoteAppsError RemoteAppsManager::DeleteApp(const std::string& id) {
   // Check if app was added but |HandleOnAppAdded| has not been called.
   if (!model_->HasApp(id) ||
       add_app_callback_map_.find(id) != add_app_callback_map_.end())
-    return Error::kAppIdDoesNotExist;
+    return RemoteAppsError::kAppIdDoesNotExist;
 
   model_->DeleteApp(id);
   remote_apps_->DeleteApp(id);
-  return Error::kNone;
+  return RemoteAppsError::kNone;
 }
 
 std::string RemoteAppsManager::AddFolder(const std::string& folder_name) {
@@ -105,17 +107,16 @@ std::string RemoteAppsManager::AddFolder(const std::string& folder_name) {
   return folder_info.id;
 }
 
-RemoteAppsManager::Error RemoteAppsManager::DeleteFolder(
-    const std::string& folder_id) {
+RemoteAppsError RemoteAppsManager::DeleteFolder(const std::string& folder_id) {
   if (!model_->HasFolder(folder_id))
-    return Error::kFolderIdDoesNotExist;
+    return RemoteAppsError::kFolderIdDoesNotExist;
 
   // Move all items out of the folder. Empty folders are automatically deleted.
   RemoteAppsModel::FolderInfo& folder_info = model_->GetFolderInfo(folder_id);
   for (const auto& app : folder_info.items)
     model_updater_->MoveItemToFolder(app, std::string());
   model_->DeleteFolder(folder_id);
-  return Error::kNone;
+  return RemoteAppsError::kNone;
 }
 
 void RemoteAppsManager::AddObserver(Observer* observer) {
@@ -126,7 +127,21 @@ void RemoteAppsManager::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
+void RemoteAppsManager::BindInterface(
+    mojo::PendingReceiver<remote_apps::mojom::RemoteAppsFactory>
+        pending_remote_apps_factory) {
+  receivers_.Add(this, std::move(pending_remote_apps_factory));
+}
+
 void RemoteAppsManager::Shutdown() {}
+
+void RemoteAppsManager::Create(
+    mojo::PendingReceiver<remote_apps::mojom::RemoteApps> pending_remote_apps,
+    mojo::PendingRemote<remote_apps::mojom::RemoteAppLaunchObserver>
+        pending_observer) {
+  remote_apps_impl_.Bind(std::move(pending_remote_apps),
+                         std::move(pending_observer));
+}
 
 const std::map<std::string, RemoteAppsModel::AppInfo>&
 RemoteAppsManager::GetApps() {
@@ -136,6 +151,7 @@ RemoteAppsManager::GetApps() {
 void RemoteAppsManager::LaunchApp(const std::string& id) {
   for (Observer& observer : observer_list_)
     observer.OnAppLaunched(id);
+  remote_apps_impl_.OnAppLaunched(id);
 }
 
 gfx::ImageSkia RemoteAppsManager::GetIcon(const std::string& id) {
@@ -214,7 +230,7 @@ void RemoteAppsManager::HandleOnAppAdded(const std::string& id) {
   auto it = add_app_callback_map_.find(id);
   DCHECK(it != add_app_callback_map_.end())
       << "Missing callback for id: " << id;
-  std::move(it->second).Run(id, Error::kNone);
+  std::move(it->second).Run(id, RemoteAppsError::kNone);
   add_app_callback_map_.erase(it);
 }
 

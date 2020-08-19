@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CSS_UNSUPPORTED_COLOR_VALUE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CSS_UNSUPPORTED_COLOR_VALUE_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_color_value.h"
 #include "third_party/blink/renderer/core/css/cssom/css_unsupported_style_value.h"
@@ -32,6 +31,8 @@ class CORE_EXPORT CSSUnsupportedColorValue final
         color_value_(color) {}
   explicit CSSUnsupportedColorValue(const cssvalue::CSSColorValue& color_value)
       : CSSUnsupportedColorValue(color_value.Value()) {}
+  CSSUnsupportedColorValue(const CSSUnsupportedColorValue&) = delete;
+  CSSUnsupportedColorValue& operator=(const CSSUnsupportedColorValue&) = delete;
 
   StyleValueType GetType() const override { return kUnsupportedColorType; }
 
@@ -41,7 +42,6 @@ class CORE_EXPORT CSSUnsupportedColorValue final
 
  private:
   Color color_value_;
-  DISALLOW_COPY_AND_ASSIGN(CSSUnsupportedColorValue);
 };
 
 template <>

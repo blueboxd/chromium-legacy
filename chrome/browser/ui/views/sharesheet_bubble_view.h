@@ -36,6 +36,7 @@ class SharesheetBubbleView : public views::BubbleDialogDelegateView,
   void ShowBubble(std::vector<TargetInfo> targets,
                   apps::mojom::IntentPtr intent);
   void ShowActionView();
+  void ResizeBubble(const int& width, const int& height);
   void CloseBubble();
 
   // views::ButtonListener overrides
@@ -51,15 +52,21 @@ class SharesheetBubbleView : public views::BubbleDialogDelegateView,
 
  private:
   void CreateBubble();
+  void UpdateAnchorPosition();
+  void SetToDefaultBubbleSizing();
+
   // Owns this class.
   sharesheet::SharesheetServiceDelegate* delegate_;
   std::vector<TargetInfo> targets_;
   base::string16 active_target_;
   apps::mojom::IntentPtr intent_;
+  int width_ = 0;
+  int height_ = 0;
 
   views::View* root_view_ = nullptr;
   views::View* main_view_ = nullptr;
   views::View* share_action_view_ = nullptr;
+  views::View* parent_view_ = nullptr;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_SHARESHEET_BUBBLE_VIEW_H_

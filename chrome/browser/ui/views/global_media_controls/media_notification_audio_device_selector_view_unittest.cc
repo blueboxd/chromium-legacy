@@ -30,18 +30,33 @@ class MockMediaNotificationDeviceProvider
   ~MockMediaNotificationDeviceProvider() override = default;
 
   void AddDevice(const std::string& device_name, const std::string& device_id) {
-    device_descriptions.emplace_back(device_name, device_id, "");
+    device_descriptions_.emplace_back(device_name, device_id, "");
   }
+
+  void ResetDevices() { device_descriptions_.clear(); }
+
+  void RunUICallback() { output_devices_callback_.Run(device_descriptions_); }
+
   std::unique_ptr<MediaNotificationDeviceProvider::
                       GetOutputDevicesCallbackList::Subscription>
-  GetOutputDeviceDescriptions(GetOutputDevicesCallback cb) override {
-    std::move(cb).Run(device_descriptions);
+  RegisterOutputDeviceDescriptionsCallback(
+      GetOutputDevicesCallback cb) override {
+    output_devices_callback_ = std::move(cb);
+    RunUICallback();
     return std::unique_ptr<MockMediaNotificationDeviceProvider::
                                GetOutputDevicesCallbackList::Subscription>(
         nullptr);
   }
 
-  media::AudioDeviceDescriptions device_descriptions;
+  MOCK_METHOD(void,
+              GetOutputDeviceDescriptions,
+              (media::AudioSystem::OnDeviceDescriptionsCallback),
+              (override));
+
+ private:
+  media::AudioDeviceDescriptions device_descriptions_;
+
+  GetOutputDevicesCallback output_devices_callback_;
 };
 
 class MockMediaNotificationAudioDeviceSelectorViewDelegate
@@ -191,4 +206,36 @@ TEST_F(MediaNotificationAudioDeviceSelectorViewTest,
   EXPECT_EQ(std::find_if(buttons.begin(), buttons.end(), button_is_highlighted),
             buttons.begin());
   EXPECT_EQ(GetButtonText(buttons.front()), "Earbuds");
+}
+
+TEST_F(MediaNotificationAudioDeviceSelectorViewTest, DeviceButtonsChange) {
+  // If the device provider reports a change in connect audio devices, the UI
+  // should update accordingly.
+  provider_->AddDevice("Speaker", "1");
+  provider_->AddDevice("Headphones", "2");
+  provider_->AddDevice("Earbuds", "3");
+  auto* provider = provider_.get();
+  service_->set_device_provider_for_testing(std::move(provider_));
+
+  view_ = std::make_unique<MediaNotificationAudioDeviceSelectorView>(
+      nullptr, service_.get(), gfx::Size(), "1");
+
+  std::vector<std::string> button_texts;
+  ASSERT_TRUE(view_->device_button_container_ != nullptr);
+
+  provider->ResetDevices();
+  // Make "Monitor" the default device.
+  provider->AddDevice("Monitor",
+                      media::AudioDeviceDescription::kDefaultDeviceId);
+  provider->RunUICallback();
+
+  EXPECT_EQ(view_->device_button_container_->children().size(), 1u);
+  ASSERT_FALSE(view_->device_button_container_->children().empty());
+  auto* button = static_cast<const views::MdTextButton*>(
+      view_->device_button_container_->children().at(0));
+  EXPECT_EQ(base::UTF16ToUTF8(button->GetText()), "Monitor");
+
+  // When the device highlighted in the UI is removed, the UI should fall back
+  // to highlighting the default device.
+  EXPECT_TRUE(button->GetProminent());
 }

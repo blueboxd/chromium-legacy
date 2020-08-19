@@ -11,7 +11,7 @@ namespace ui {
 
 class PlatformWindow;
 
-class COMPONENT_EXPORT(EXTENSIONS) WaylandExtension {
+class COMPONENT_EXPORT(PLATFORM_WINDOW) WaylandExtension {
  public:
   // Starts a window dragging session for the owning platform window, if
   // it is not running yet. Under Wayland, window dragging is backed by a
@@ -25,7 +25,7 @@ class COMPONENT_EXPORT(EXTENSIONS) WaylandExtension {
   void SetWaylandExtension(PlatformWindow* window, WaylandExtension* extension);
 };
 
-COMPONENT_EXPORT(EXTENSIONS)
+COMPONENT_EXPORT(PLATFORM_WINDOW)
 WaylandExtension* GetWaylandExtension(const PlatformWindow& window);
 
 }  // namespace ui

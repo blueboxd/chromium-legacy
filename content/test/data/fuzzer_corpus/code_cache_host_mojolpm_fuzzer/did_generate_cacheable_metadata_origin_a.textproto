@@ -6,7 +6,7 @@ actions {
   }
 }
 actions {
-  code_cache_host_call {
+  code_cache_host_remote_action {
     id: 1
     m_did_generate_cacheable_metadata {
       m_cache_type: CodeCacheType_kJavascript

@@ -21447,6 +21447,7 @@ Called by update_document_policy_enum.py.-->
   <int value="776" label="FileSystemReadBlockedForUrls"/>
   <int value="777" label="FileSystemWriteAskForUrls"/>
   <int value="778" label="FileSystemWriteBlockedForUrls"/>
+  <int value="779" label="PrintersBulkBlocklist"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -28789,6 +28790,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3423" label="BCPAuthenticatedSignedWrites"/>
   <int value="3424" label="BCPReliableWrite"/>
   <int value="3425" label="BCPWritableAuxiliaries"/>
+  <int value="3426" label="TextAlignSpecifiedToLegend"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -52709,7 +52711,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="501" label="Ambient Mode On/Off"/>
   <int value="502" label="Ambient Mode Source"/>
   <int value="503" label="Change Device Account Image"/>
-  <int value="504" label="Ambient Mode Update Photos Containers"/>
+  <int value="504" label="Ambient Mode Update Photos Containers (Deprecated)"/>
   <int value="600" label="Preferred Search Engine"/>
   <int value="601" label="Assistant: On/Off"/>
   <int value="602" label="Assistant: Related Info"/>
@@ -52870,7 +52872,9 @@ Called by update_net_trust_anchors.py.-->
   <int value="407" label="Power"/>
   <int value="500" label="Change Picture"/>
   <int value="501" label="Ambient Mode"/>
-  <int value="502" label="Ambient Mode Photos"/>
+  <int value="502" label="Ambient Mode Photos (Deprecated)"/>
+  <int value="503" label="Ambient Mode Google Photos Album"/>
+  <int value="504" label="Ambient Mode Art Gallery Album"/>
   <int value="600" label="Assistant"/>
   <int value="700" label="App Management"/>
   <int value="701" label="App Details"/>
@@ -56168,6 +56172,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="22" label="DLC_NEED_SPACE"/>
   <int value="23" label="INSUFFICIENT_DISK_SPACE"/>
   <int value="24" label="INVALID_LICENSE"/>
+  <int value="25" label="OFFLINE"/>
 </enum>
 
 <enum name="PluginVmSetupResult">
@@ -64521,6 +64526,9 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
 </enum>
 
 <enum name="ShowAllSavedPasswordsContext">
+  <obsolete>
+    Deprecated 08/2020.
+  </obsolete>
   <int value="0" label="None"/>
   <int value="1" label="Under password suggestions"/>
   <int value="2" label="Standalone suggestion"/>

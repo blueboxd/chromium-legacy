@@ -26,6 +26,7 @@ function GUEST_TEST(testCase, Function) {}
 const testing = {
   Test: class {
     get browsePreload() {}
+    get testGenPreamble() {}
     get extraLibraries() {}
     get isAsync() {}
     get featureList() {}

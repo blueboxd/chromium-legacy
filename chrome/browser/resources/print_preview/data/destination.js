@@ -681,8 +681,13 @@ export class Destination {
    *     warn that "Save to Drive" is deprecated.
    */
   get shouldShowSaveToDriveWarning() {
-    return !isChromeOS && this.id_ === Destination.GooglePromotedId.DOCS &&
+    let shouldShowSaveToDriveWarning = false;
+    // <if expr="not chromeos">
+    shouldShowSaveToDriveWarning =
+        this.id_ === Destination.GooglePromotedId.DOCS &&
         !this.cloudPrintDeprecationWarningsSuppressed_;
+    // </if>
+    return shouldShowSaveToDriveWarning;
   }
 
   /** @return {boolean} Whether the destination is considered offline. */

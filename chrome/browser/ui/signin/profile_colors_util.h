@@ -23,6 +23,9 @@ SkColor GetProfileForegroundTextColor(SkColor profile_highlight_color);
 // highlight color.
 SkColor GetProfileForegroundIconColor(SkColor profile_highlight_color);
 
+// Returns the color that should be used to generate the default avatar icon.
+SkColor GetAvatarStrokeColor(SkColor avatar_fill_color);
+
 // Returns a new color for a profile, based on the colors of the existing
 // profiles.
 chrome_colors::ColorInfo GenerateNewProfileColor();

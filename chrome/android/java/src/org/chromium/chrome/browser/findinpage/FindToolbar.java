@@ -778,7 +778,7 @@ public class FindToolbar extends LinearLayout {
      */
     protected int getStatusColor(boolean failed, boolean incognito) {
         int colorResourceId = failed ? R.color.find_in_page_failed_results_status_color
-                                     : R.color.default_text_color_tertiary;
+                                     : R.color.default_text_color_secondary;
         return ApiCompatibilityUtils.getColor(getContext().getResources(), colorResourceId);
     }
 

@@ -7,6 +7,8 @@
 
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
+#include "build/branding_buildflags.h"
+#include "build/build_config.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
@@ -19,6 +21,7 @@
 #include "chrome/browser/web_applications/system_web_app_manager_browsertest.h"
 #include "chromeos/components/help_app_ui/url_constants.h"
 #include "chromeos/components/web_applications/test/sandboxed_web_ui_test_base.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -27,7 +30,16 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
-using HelpAppIntegrationTest = SystemWebAppIntegrationTest;
+class HelpAppIntegrationTest : public SystemWebAppIntegrationTest {
+ public:
+  HelpAppIntegrationTest() {
+    scoped_feature_list_.InitWithFeatures(
+        {chromeos::features::kHelpAppReleaseNotes}, {});
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
 
 // Test that the Help App installs and launches correctly. Runs some spot
 // checks on the manifest.
@@ -108,6 +120,68 @@ IN_PROC_BROWSER_TEST_P(HelpAppIntegrationTest, HelpAppV2Incognito) {
   Browser* incognito_browser = CreateIncognitoBrowser();
   EXPECT_NO_FATAL_FAILURE(
       chrome::ShowHelp(incognito_browser, chrome::HELP_SOURCE_KEYBOARD));
+}
+
+// Test that launching the Help App's release notes opens the app on the Release
+// Notes page.
+IN_PROC_BROWSER_TEST_P(HelpAppIntegrationTest, HelpAppV2LaunchReleaseNotes) {
+  WaitForTestSystemAppInstall();
+
+  // There should be 1 browser window initially.
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
+
+  const GURL expected_url("chrome://help-app/updates");
+  content::TestNavigationObserver navigation_observer(expected_url);
+  navigation_observer.StartWatchingNewWebContents();
+
+  chrome::LaunchReleaseNotes(profile(),
+                             apps::mojom::LaunchSource::kFromOtherApp);
+#if defined(OS_CHROMEOS) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  // If no navigation happens, then this test will time out due to the wait.
+  navigation_observer.Wait();
+
+  // There should be two browser windows, one regular and one for the newly
+  // opened app.
+  EXPECT_EQ(2u, chrome::GetTotalBrowserCount());
+
+  // The opened window should be showing the url with attached WebUI.
+  content::WebContents* web_contents =
+      chrome::FindLastActive()->tab_strip_model()->GetActiveWebContents();
+
+  // The inner frame should be the pathname for the release notes pathname.
+  EXPECT_EQ("chrome-untrusted://help-app/updates",
+            SandboxedWebUiAppTestBase::EvalJsInAppFrame(
+                web_contents, "window.location.href"));
+#else
+  // Nothing should happen on non-branded builds.
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
+#endif
+}
+
+// Test that launching the Help App's release notes logs metrics.
+IN_PROC_BROWSER_TEST_P(HelpAppIntegrationTest, HelpAppV2ReleaseNotesMetrics) {
+  WaitForTestSystemAppInstall();
+
+  base::UserActionTester user_action_tester;
+  chrome::LaunchReleaseNotes(profile(),
+                             apps::mojom::LaunchSource::kFromOtherApp);
+#if defined(OS_CHROMEOS) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  EXPECT_EQ(1,
+            user_action_tester.GetActionCount("ReleaseNotes.ShowReleaseNotes"));
+#else
+  EXPECT_EQ(0,
+            user_action_tester.GetActionCount("ReleaseNotes.ShowReleaseNotes"));
+#endif
+}
+
+// Test that launching the Help App's release notes doesn't crash an incognito
+// browser.
+IN_PROC_BROWSER_TEST_P(HelpAppIntegrationTest, HelpAppV2ReleaseNotesIncognito) {
+  WaitForTestSystemAppInstall();
+
+  Browser* incognito_browser = CreateIncognitoBrowser();
+  EXPECT_NO_FATAL_FAILURE(chrome::LaunchReleaseNotes(
+      incognito_browser->profile(), apps::mojom::LaunchSource::kFromOtherApp));
 }
 
 // Test that the Help App does a navigation on launch even when it was already

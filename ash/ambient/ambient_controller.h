@@ -94,6 +94,10 @@ class ASH_EXPORT AmbientController
     return ambient_backend_controller_.get();
   }
 
+  AmbientPhotoController* ambient_photo_controller() {
+    return &ambient_photo_controller_;
+  }
+
   AmbientUiModel* ambient_ui_model() { return &ambient_ui_model_; }
 
  private:
@@ -130,10 +134,6 @@ class ASH_EXPORT AmbientController
   void ReleaseWakeLock();
 
   void CloseWidget(bool immediately);
-
-  AmbientPhotoController* get_ambient_photo_controller_for_testing() {
-    return &ambient_photo_controller_;
-  }
 
   AmbientContainerView* get_container_view_for_testing() {
     return container_view_;

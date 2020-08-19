@@ -1044,6 +1044,7 @@
         'Printers',
         'PrintersBulkConfiguration',
         'PrintersBulkAccessMode',
+        'PrintersBulkBlocklist',
         'DeviceNativePrinters',
         'DeviceNativePrintersAccessMode',
         'DeviceNativePrintersBlacklist',
@@ -15238,13 +15239,13 @@
 
       The file is downloaded and cached. It will be re-downloaded whenever the URL or the hash changes.
 
-      If this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will download the file for printer configurations and make printers available in accordance with <ph name="BULK_PRINTERS_ACCESS_MODE">NativePrintersBulkAccessMode</ph>, <ph name="BULK_PRINTERS_WHITELIST">NativePrintersBulkWhitelist</ph>, and <ph name="BULK_PRINTERS_BLACKLIST">NativePrintersBulkBlacklist</ph>.
+      If this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will download the file for printer configurations and make printers available in accordance with <ph name="BULK_PRINTERS_ACCESS_MODE_POLICY_NAME">NativePrintersBulkAccessMode</ph>, <ph name="BULK_PRINTERS_WHITELIST">NativePrintersBulkWhitelist</ph>, and <ph name="BULK_PRINTERS_BLACKLIST">NativePrintersBulkBlacklist</ph>.
 
       If you set this policy, users cannot change or override it.
 
       This policy has no effect on whether users can configure printers on individual devices.  It is intended to be supplementary to the configuration of printers by individual users.
 
-      This policy is deprecated, please use <ph name="PRINTERS_BULK_CONFIGURATION">PrintersBulkConfiguration</ph> instead.''',
+      This policy is deprecated, please use <ph name="PRINTERS_BULK_CONFIGURATION_POLICY_NAME">PrintersBulkConfiguration</ph> instead.''',
     },
     {
       'name': 'PrintersBulkConfiguration',
@@ -15278,7 +15279,7 @@
 
       The file is downloaded and cached. It will be re-downloaded whenever the URL or the hash changes.
 
-      If this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will download the file for printer configurations and make printers available in accordance with <ph name="PRINTERS_BULK_ACCESS_MODE">PrintersBulkAccessMode</ph>, <ph name="PRINTERS_BULK_ALLOWLIST">PrintersBulkAllowlist</ph>, and <ph name="PRINTERS_BULK_BLOCKLIST">PrintersBulkBlocklist</ph>.
+      If this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will download the file for printer configurations and make printers available in accordance with <ph name="PRINTERS_BULK_ACCESS_MODE_POLICY_NAME_POLICY_NAME">PrintersBulkAccessMode</ph>, <ph name="PRINTERS_BULK_ALLOWLIST">PrintersBulkAllowlist</ph>, and <ph name="PRINTERS_BULK_BLOCKLIST">PrintersBulkBlocklist</ph>.
 
       If you set this policy, users cannot change or override it.
 
@@ -15320,13 +15321,13 @@
       'example_value': 1,
       'caption': '''Printer configuration access policy.''',
       'tags': [],
-      'desc': '''Controls which printers from the <ph name="BULK_PRINTERS_POLICY">NativePrintersBulkConfiguration</ph> are available to users.
+      'desc': '''Controls which printers from the <ph name="BULK_PRINTERS_POLICY_NAME">NativePrintersBulkConfiguration</ph> are available to users.
 
       Designates which access policy is used for bulk printer configuration. If <ph name="PRINTERS_ALLOW_ALL">AllowAll</ph> is selected, all printers are shown. If <ph name="PRINTERS_BLACKLIST">BlacklistRestriction</ph> is selected, <ph name="BULK_PRINTERS_BLACKLIST">NativePrintersBulkBlacklist</ph> is used to restrict access to the specified printers.  If <ph name="PRINTERS_WHITELIST">WhitelistPrintersOnly</ph> is selected, <ph name="BULK_PRINTERS_WHITELIST">NativePrintersBulkWhitelist</ph> designates only those printers which are selectable.
 
       If this policy is not set, <ph name="PRINTERS_ALLOW_ALL">AllowAll</ph> is assumed.
 
-      This policy is deprecated, please use <ph name="PRINTERS_BULK_ACCESS_MODE">PrintersBulkAccessMode</ph> instead.
+      This policy is deprecated, please use <ph name="PRINTERS_BULK_ACCESS_MODE_POLICY_NAME_POLICY_NAME">PrintersBulkAccessMode</ph> instead.
       ''',
     },
     {
@@ -15364,7 +15365,7 @@
       'example_value': 1,
       'caption': '''Printer configuration access policy.''',
       'tags': [],
-      'desc': '''Controls which printers from the <ph name="PRINTERS_BULK_CONFIGURATION">PrintersBulkConfiguration</ph> are available to users.
+      'desc': '''Controls which printers from the <ph name="PRINTERS_BULK_CONFIGURATION_POLICY_NAME">PrintersBulkConfiguration</ph> are available to users.
 
       Designates which access policy is used for bulk printer configuration. If <ph name="PRINTERS_ALLOW_ALL">AllowAll</ph> is selected, all printers are shown. If <ph name="PRINTERS_BLOCKLIST">BlocklistRestriction</ph> is selected, <ph name="PRINTERS_BULK_BLOCKLIST">PrintersBulkBlocklist</ph> is used to restrict access to the specified printers.  If <ph name="PRINTERS_ALLOWLIST">AllowlistPrintersOnly</ph> is selected, <ph name="PRINTERS_BULK_ALLOWLIST">PrintersBulkAllowlist</ph> designates only those printers which are selectable.
 
@@ -15385,14 +15386,41 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'deprecated': True,
       'example_value':  ["id1", "id2", "id3"],
       'caption': '''Disabled enterprise printers''',
       'tags': [],
       'desc': '''Specifies the printers which a user cannot use.
 
-      This policy is only used if <ph name="PRINTERS_BLACKLIST">BlacklistRestriction</ph> is chosen for <ph name="BULK_PRINTERS_ACCESS_MODE">NativePrintersBulkAccessMode</ph>.
+      This policy is only used if <ph name="PRINTERS_BLACKLIST">BlacklistRestriction</ph> is chosen for <ph name="BULK_PRINTERS_ACCESS_MODE_POLICY_NAME">NativePrintersBulkAccessMode</ph>.
 
-      If this policy is used, all printers are provided to the user except for the ids listed in this policy. The ids must correspond to the "id" or "guid" fields in the file specified in <ph name="BULK_PRINTERS_POLICY">NativePrintersBulkConfiguration</ph>.
+      If this policy is used, all printers are provided to the user except for the ids listed in this policy. The ids must correspond to the "id" or "guid" fields in the file specified in <ph name="BULK_PRINTERS_POLICY_NAME">NativePrintersBulkConfiguration</ph>.
+
+      This policy is deprecated, please use <ph name="PRINTERS_BULK_BLOCKLIST">PrintersBulkBlocklist</ph> instead.
+      ''',
+    },
+    {
+      'name': 'PrintersBulkBlocklist',
+      'owners': ['file://chromeos/printing/OWNERS'],
+      'supported_on': ['chrome_os:86-'],
+      'id': 779,
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value':  ["id1", "id2", "id3"],
+      'caption': '''Disabled enterprise printers''',
+      'tags': [],
+      'desc': '''Specifies the printers which a user cannot use.
+
+      This policy is only used if <ph name="PRINTERS_BLOCKLIST">BlocklistRestriction</ph> is chosen for <ph name="PRINTERS_BULK_ACCESS_MODE_POLICY_NAME">PrintersBulkAccessMode</ph>.
+
+      If this policy is used, all printers are provided to the user except for the ids listed in this policy. The ids must correspond to the "id" or "guid" fields in the file specified in <ph name="PRINTERS_BULK_CONFIGURATION_POLICY_NAME">PrintersBulkConfiguration</ph>.
       ''',
     },
     {
@@ -15414,9 +15442,9 @@
       'tags': [],
       'desc': '''Specifies the printers which a user can use.
 
-      This policy is only used if <ph name="PRINTERS_WHITELIST">WhitelistPrintersOnly</ph> is chosen for <ph name="BULK_PRINTERS_ACCESS_MODE">NativePrintersBulkAccessMode</ph>.
+      This policy is only used if <ph name="PRINTERS_WHITELIST">WhitelistPrintersOnly</ph> is chosen for <ph name="BULK_PRINTERS_ACCESS_MODE_POLICY_NAME">NativePrintersBulkAccessMode</ph>.
 
-      If this policy is used, only the printers with ids matching the values in this policy are available to the user. The ids must correspond to the "id" or "guid" fields in the file specified in <ph name="BULK_PRINTERS_POLICY">NativePrintersBulkConfiguration</ph>.
+      If this policy is used, only the printers with ids matching the values in this policy are available to the user. The ids must correspond to the "id" or "guid" fields in the file specified in <ph name="BULK_PRINTERS_POLICY_NAME">NativePrintersBulkConfiguration</ph>.
       ''',
     },
     {
@@ -15457,7 +15485,7 @@
 
       This policy has no effect on whether users can configure printers on individual devices.  It is intended to be supplementary to the configuration of printers by individual users.
 
-      This policy is additive to the <ph name="BULK_PRINTERS_POLICY">NativePrintersBulkConfiguration</ph>.
+      This policy is additive to the <ph name="BULK_PRINTERS_POLICY_NAME">NativePrintersBulkConfiguration</ph>.
 
       If this policy is unset, there will be no device printers and the other <ph name="DEVICE_NATIVE_PRINTERS_POLICY_PATTERN">DeviceNativePrinter*</ph> policies will be ignored.
 
@@ -15601,7 +15629,7 @@
 
       This policy has no effect on whether users can configure printers on individual devices.  It is intended to be supplementary to the configuration of printers by individual users.
 
-      This policy is additive to the <ph name="BULK_PRINTERS_POLICY">NativePrintersBulkConfiguration</ph>.
+      This policy is additive to the <ph name="PRINTERS_BULK_CONFIGURATION_POLICY_NAME">PrintersBulkConfiguration</ph>.
 
       If this policy is unset, there will be no device printers and the other <ph name="DEVICE_PRINTERS_POLICY_PATTERN">DevicePrinter*</ph> policies will be ignored.
       ''',
@@ -24086,6 +24114,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 476, 546, 562, 569, 578],
-  'highest_id_currently_used': 778,
+  'highest_id_currently_used': 779,
   'highest_atomic_group_id_currently_used': 40
 }

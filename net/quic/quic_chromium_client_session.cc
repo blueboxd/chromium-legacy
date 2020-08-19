@@ -1720,6 +1720,13 @@ void QuicChromiumClientSession::OnConnectionClosed(
             "Net.QuicSession.NumMigrationsExercisedBeforePublicReset",
             sockets_.size() - 1);
       }
+
+      base::UmaHistogramSparse(
+          "Net.QuicSession.LastSentPacketContentBeforePublicReset",
+          connection()
+              ->sent_packet_manager()
+              .unacked_packets()
+              .GetLastPacketContent());
     }
     if (OneRttKeysAvailable()) {
       base::HistogramBase* histogram = base::SparseHistogram::FactoryGet(

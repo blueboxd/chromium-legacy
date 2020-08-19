@@ -18,6 +18,7 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.IntentUtils;
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.IntentHandler;
+import org.chromium.chrome.browser.LaunchIntentDispatcher;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -220,11 +221,26 @@ public abstract class FirstRunFlowSequencer  {
     }
 
     /**
-     * Checks if the First Run needs to be launched.
+     * Checks if the First Run Experience needs to be launched.
      * @param preferLightweightFre Whether to prefer the Lightweight First Run Experience.
+     * @param fromIntent Intent used to launch the caller.
      * @return Whether the First Run Experience needs to be launched.
      */
-    public static boolean checkIfFirstRunIsNecessary(boolean preferLightweightFre) {
+    public static boolean checkIfFirstRunIsNecessary(
+            boolean preferLightweightFre, Intent fromIntent) {
+        boolean isCct = fromIntent.getBooleanExtra(
+                                FirstRunActivityBase.EXTRA_CHROME_LAUNCH_INTENT_IS_CCT, false)
+                || LaunchIntentDispatcher.isCustomTabIntent(fromIntent);
+        return checkIfFirstRunIsNecessary(preferLightweightFre, isCct);
+    }
+
+    /**
+     * Checks if the First Run Experience needs to be launched.
+     * @param preferLightweightFre Whether to prefer the Lightweight First Run Experience.
+     * @param isCct Whether this check is being made in the context of a CCT.
+     * @return Whether the First Run Experience needs to be launched.
+     */
+    public static boolean checkIfFirstRunIsNecessary(boolean preferLightweightFre, boolean isCct) {
         // If FRE is disabled (e.g. in tests), proceed directly to the intent handling.
         if (CommandLine.getInstance().hasSwitch(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
                 || ApiCompatibilityUtils.isDemoUser()
@@ -233,6 +249,13 @@ public abstract class FirstRunFlowSequencer  {
         }
         if (FirstRunStatus.getFirstRunFlowComplete()) {
             // Promo pages are removed, so there is nothing else to show in FRE.
+            return false;
+        }
+        if (isCct && FirstRunStatus.isEphemeralSkipFirstRun()) {
+            // Domain policies may have caused CCTs to skip the FRE. While this needs to be figured
+            // out at runtime for each app restart, it should apply to all CCTs for the duration of
+            // the app's lifetime.
+            // TODO(https://crbug.com/1108582): Replace this with a shared pref.
             return false;
         }
         return !preferLightweightFre
@@ -253,7 +276,7 @@ public abstract class FirstRunFlowSequencer  {
     public static boolean launch(Context caller, Intent fromIntent, boolean requiresBroadcast,
             boolean preferLightweightFre) {
         // Check if the user needs to go through First Run at all.
-        if (!checkIfFirstRunIsNecessary(preferLightweightFre)) return false;
+        if (!checkIfFirstRunIsNecessary(preferLightweightFre, fromIntent)) return false;
 
         String intentUrl = IntentHandler.getUrlFromIntent(fromIntent);
         Uri uri = intentUrl != null ? Uri.parse(intentUrl) : null;

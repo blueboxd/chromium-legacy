@@ -18,6 +18,9 @@ class TelemetryExtensionUiBrowserTest : public SandboxedWebUiAppTestBase {
   TelemetryExtensionUiBrowserTest& operator=(
       const TelemetryExtensionUiBrowserTest&) = delete;
 
+  void ConfigureDiagnosticsForInteractiveUpdate();
+  void ConfigureDiagnosticsForNonInteractiveUpdate();
+
   // SandboxedWebUiAppTestBase overrides:
   void SetUpCommandLine(base::CommandLine* command_line) override;
   void SetUpOnMainThread() override;

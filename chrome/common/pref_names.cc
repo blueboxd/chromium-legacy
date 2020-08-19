@@ -1397,7 +1397,7 @@ const char kRecommendedPrintersAccessMode[] =
     "native_printing.recommended_printers_access_mode";
 
 // List of printer ids which are explicitly disallowed.  List of strings.
-const char kRecommendedNativePrintersBlacklist[] =
+const char kRecommendedPrintersBlocklist[] =
     "native_printing.recommended_printers_blacklist";
 
 // List of printer ids that are allowed.  List of strings.

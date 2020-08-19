@@ -182,7 +182,11 @@ class WebRtcTestBase : public InProcessBrowserTest {
   // make that work). Looks at a 320x240 area of the target video tag.
   void StartDetectingVideo(content::WebContents* tab_contents,
                            const std::string& video_element) const;
+
+  // Wait for a video to start/stop playing. StartDetectingVideo must have
+  // been called already.
   bool WaitForVideoToPlay(content::WebContents* tab_contents) const;
+  bool WaitForVideoToStop(content::WebContents* tab_contents) const;
 
   // Returns the stream size as a string on the format <width>x<height>.
   std::string GetStreamSize(content::WebContents* tab_contents,

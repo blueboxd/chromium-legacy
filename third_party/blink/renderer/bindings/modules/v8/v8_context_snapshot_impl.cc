@@ -22,6 +22,51 @@
 
 namespace blink {
 
+void V8ContextSnapshotImpl::Init() {
+  V8ContextSnapshot::SetCreateContextFromSnapshotFunc(CreateContext);
+  V8ContextSnapshot::SetInstallContextIndependentPropsFunc(
+      InstallContextIndependentProps);
+  V8ContextSnapshot::SetEnsureInterfaceTemplatesFunc(InstallInterfaceTemplates);
+  V8ContextSnapshot::SetTakeSnapshotFunc(TakeSnapshot);
+  V8ContextSnapshot::SetGetReferenceTableFunc(GetReferenceTable);
+}
+
+#if !defined(USE_V8_CONTEXT_SNAPSHOT)
+
+v8::Local<v8::Context> V8ContextSnapshotImpl::CreateContext(
+    v8::Isolate* isolate,
+    const DOMWrapperWorld& world,
+    v8::ExtensionConfiguration* extension_config,
+    v8::Local<v8::Object> global_proxy,
+    Document* document) {
+  DCHECK(document);
+
+  return v8::Local<v8::Context>();
+}
+
+void V8ContextSnapshotImpl::InstallContextIndependentProps(
+    ScriptState* script_state) {}
+
+void V8ContextSnapshotImpl::InstallInterfaceTemplates(v8::Isolate* isolate) {}
+
+v8::StartupData V8ContextSnapshotImpl::TakeSnapshot() {
+  v8::Isolate* isolate = V8PerIsolateData::MainThreadIsolate();
+  CHECK_EQ(isolate, v8::Isolate::GetCurrent());
+  V8PerIsolateData* per_isolate_data = V8PerIsolateData::From(isolate);
+  CHECK_EQ(per_isolate_data->GetV8ContextSnapshotMode(),
+           V8PerIsolateData::V8ContextSnapshotMode::kTakeSnapshot);
+
+  return {nullptr, 0};
+}
+
+const intptr_t* V8ContextSnapshotImpl::GetReferenceTable() {
+  DCHECK(IsMainThread());
+
+  return nullptr;
+}
+
+#else  // !defined(USE_V8_CONTEXT_SNAPSHOT)
+
 namespace {
 
 // Layout of the snapshot
@@ -286,15 +331,6 @@ void TakeSnapshotForWorld(v8::SnapshotCreator* snapshot_creator,
 
 }  // namespace
 
-void V8ContextSnapshotImpl::Init() {
-  V8ContextSnapshot::SetCreateContextFromSnapshotFunc(CreateContext);
-  V8ContextSnapshot::SetInstallContextIndependentPropsFunc(
-      InstallContextIndependentProps);
-  V8ContextSnapshot::SetEnsureInterfaceTemplatesFunc(InstallInterfaceTemplates);
-  V8ContextSnapshot::SetTakeSnapshotFunc(TakeSnapshot);
-  V8ContextSnapshot::SetGetReferenceTableFunc(GetReferenceTable);
-}
-
 v8::Local<v8::Context> V8ContextSnapshotImpl::CreateContext(
     v8::Isolate* isolate,
     const DOMWrapperWorld& world,
@@ -456,5 +492,7 @@ const intptr_t* V8ContextSnapshotImpl::GetReferenceTable() {
 
   return reference_table;
 }
+
+#endif  // !defined(USE_V8_CONTEXT_SNAPSHOT)
 
 }  // namespace blink

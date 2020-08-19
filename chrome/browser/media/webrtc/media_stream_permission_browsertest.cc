@@ -5,6 +5,7 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/media/webrtc/webrtc_browsertest_base.h"
@@ -65,7 +66,9 @@ class MediaStreamPermissionTest : public WebRtcTestBase {
 
  private:
   content::WebContents* LoadTestPageInBrowser(Browser* browser) {
-    EXPECT_TRUE(embedded_test_server()->Start());
+    if (!embedded_test_server()->Started()) {
+      EXPECT_TRUE(embedded_test_server()->Start());
+    }
 
     // Uses the default server.
     GURL url = test_page_url();
@@ -75,12 +78,6 @@ class MediaStreamPermissionTest : public WebRtcTestBase {
     ui_test_utils::NavigateToURL(browser, url);
     return browser->tab_strip_model()->GetActiveWebContents();
   }
-
-  // Dummy callback for when we deny the current request directly.
-  static void OnMediaStreamResponse(
-      const blink::MediaStreamDevices& devices,
-      blink::mojom::MediaStreamRequestResult result,
-      std::unique_ptr<content::MediaStreamUI> ui) {}
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamPermissionTest);
 };
@@ -168,4 +165,51 @@ IN_PROC_BROWSER_TEST_F(MediaStreamPermissionTest,
                                              kVideoOnlyCallConstraints);
   EXPECT_TRUE(GetUserMediaWithSpecificConstraintsAndAccept(
       tab_contents, kAudioOnlyCallConstraints));
+}
+
+IN_PROC_BROWSER_TEST_F(MediaStreamPermissionTest,
+                       DenyingPermissionStopsStreamWhenRelevant) {
+  struct {
+    std::string constraints;
+    ContentSettingsType setting_to_clear;
+    bool should_video_stop;
+  } kTests[] = {
+      {kAudioVideoCallConstraints, ContentSettingsType::MEDIASTREAM_CAMERA,
+       true},
+      {kAudioVideoCallConstraints, ContentSettingsType::MEDIASTREAM_MIC, true},
+      {kVideoOnlyCallConstraints, ContentSettingsType::MEDIASTREAM_CAMERA,
+       true},
+      {kVideoOnlyCallConstraints, ContentSettingsType::MEDIASTREAM_MIC, false},
+  };
+
+  HostContentSettingsMap* settings_map =
+      HostContentSettingsMapFactory::GetForProfile(browser()->profile());
+
+  for (const auto& kTest : kTests) {
+    content::WebContents* tab_contents = LoadTestPageInTab();
+
+    EXPECT_TRUE(GetUserMediaWithSpecificConstraintsAndAcceptIfPrompted(
+        tab_contents, kTest.constraints));
+
+    StartDetectingVideo(tab_contents, "local-view");
+    EXPECT_TRUE(WaitForVideoToPlay(tab_contents));
+
+    settings_map->ClearSettingsForOneType(kTest.setting_to_clear);
+
+    // Let all the cross-thread tasks do their work.
+    base::RunLoop().RunUntilIdle();
+
+    StartDetectingVideo(tab_contents, "local-view");
+
+    if (kTest.should_video_stop) {
+      EXPECT_TRUE(WaitForVideoToStop(tab_contents));
+    } else {
+      EXPECT_TRUE(WaitForVideoToPlay(tab_contents));
+    }
+
+    // Clean up settings for the following tests.
+    settings_map->ClearSettingsForOneType(ContentSettingsType::MEDIASTREAM_MIC);
+    settings_map->ClearSettingsForOneType(
+        ContentSettingsType::MEDIASTREAM_CAMERA);
+  }
 }

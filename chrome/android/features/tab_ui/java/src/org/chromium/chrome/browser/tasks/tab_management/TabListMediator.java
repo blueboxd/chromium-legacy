@@ -1336,6 +1336,7 @@ class TabListMediator {
     protected static String getDomain(Tab tab) {
         // TODO(crbug.com/1116613) Investigate how uninitialized Tabs are appearing
         // here.
+        assert tab.isInitialized();
         if (!tab.isInitialized()) {
             return "";
         }

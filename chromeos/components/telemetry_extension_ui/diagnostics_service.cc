@@ -48,4 +48,21 @@ void DiagnosticsService::GetAvailableRoutines(
       std::move(callback)));
 }
 
+void DiagnosticsService::GetRoutineUpdate(
+    int32_t id,
+    health::mojom::DiagnosticRoutineCommandEnum command,
+    bool include_output,
+    GetRoutineUpdateCallback callback) {
+  GetService()->GetRoutineUpdate(
+      id, diagnostics_service_converters::Convert(command), include_output,
+      base::BindOnce(
+          [](health::mojom::DiagnosticsService::GetRoutineUpdateCallback
+                 callback,
+             cros_healthd::mojom::RoutineUpdatePtr ptr) {
+            std::move(callback).Run(
+                diagnostics_service_converters::ConvertPtr(std::move(ptr)));
+          },
+          std::move(callback)));
+}
+
 }  // namespace chromeos

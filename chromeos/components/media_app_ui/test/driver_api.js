@@ -16,6 +16,7 @@ let TestMessageResponseData;
  * @typedef {{
  *     deleteLastFile: (boolean|undefined),
  *     getFileErrors: (boolean|undefined),
+ *     getLastFileName: (boolean|undefined),
  *     navigate: (string|undefined),
  *     overwriteLastFile: (string|undefined),
  *     pathToRoot: (!Array<string>|undefined),

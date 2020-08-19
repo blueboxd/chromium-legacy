@@ -41,11 +41,7 @@ Polymer({
     dark: Boolean,
 
     /** @type {!Destination} */
-    destination: {
-      type: Object,
-      observer: 'onDestinationChange_',
-    },
-
+    destination: Object,
 
     disabled: Boolean,
 
@@ -69,8 +65,13 @@ Polymer({
       value: PDF_DESTINATION_KEY,
     },
 
-    /** @private */
-    statusText_: String,
+    /** @private {string} */
+    statusText_: {
+      type: String,
+      computed:
+          'computeStatusText_(destination, destination.printerStatusReason)',
+      observer: 'onStatusTextSet_',
+    },
 
     /** @private {string} */
     backgroundImages_: {
@@ -294,10 +295,9 @@ Polymer({
 
     // If |printerStatus| is for the currently selected printer, use notifyPath
     // to trigger the destination printer status icon to recalculate its badge
-    // color. Next update the destination error status text.
+    // color and the destination error status text.
     if (this.destination && this.destination.key === destinationKey) {
       this.notifyPath(`destination.printerStatusReason`);
-      this.updateStatusText_();
     }
   },
 
@@ -339,47 +339,52 @@ Polymer({
                                PrinterStatusReason.UNKNOWN_REASON;
   },
 
-  /** @private */
-  onDestinationChange_: function() {
-    this.updateStatusText_();
-  },
-
   /**
-   * Check the current destination for an error status then set |statusText_|
-   * appropriately. If no error status exists, unset |statusText_|.
+   * @return {string}  An error status for the current destination. If no error
+   *     status exists, an empty string.
    * @private
    */
-  updateStatusText_: function() {
+  computeStatusText_: function() {
     // |destination| can be either undefined, or null here.
     if (!this.destination) {
-      this.statusText_ = '';
-      return;
+      return '';
     }
 
     // Cloudprint destinations contain their own status text.
     if (CloudOrigins.some(origin => origin === this.destination.origin)) {
-      this.statusText_ = this.destination.shouldShowInvalidCertificateError ?
-          this.i18n('noLongerSupportedFragment') :
-          this.destination.connectionStatusText;
-      return;
+      if (this.destination.shouldShowInvalidCertificateError) {
+        return this.i18n('noLongerSupportedFragment');
+      }
+      if (this.destination.connectionStatusText) {
+        return this.destination.connectionStatusText;
+      }
+    }
+
+    if (this.destination.origin !== DestinationOrigin.CROS) {
+      return this.destination.shouldShowDeprecatedPrinterWarning ?
+          this.i18nAdvanced('printerNotSupportedWarning') :
+          '';
     }
 
     // Only when the flag is enabled do we need to fetch a local printer status
     // error string.
     if (!this.printerStatusFlagEnabled_) {
-      this.statusText_ = '';
-      return;
+      return '';
     }
 
     const printerStatusReason = this.destination.printerStatusReason;
     if (!printerStatusReason ||
         printerStatusReason === PrinterStatusReason.NO_ERROR ||
         printerStatusReason === PrinterStatusReason.UNKNOWN_REASON) {
-      this.statusText_ = '';
-      return;
+      return '';
     }
 
-    this.statusText_ = this.getErrorString_(printerStatusReason);
+    return this.getErrorString_(printerStatusReason);
+  },
+
+  /** @private */
+  onStatusTextSet_() {
+    this.$$('#statusText').innerHTML = this.statusText_;
   },
 
   /**
@@ -390,14 +395,6 @@ Polymer({
   getErrorString_: function(printerStatusReason) {
     const errorStringKey = ERROR_STRING_KEY_MAP.get(printerStatusReason);
     return errorStringKey ? this.i18n(errorStringKey) : '';
-  },
-
-  /**
-   * @return {!boolean}
-   * @private
-   */
-  shouldShowStatus_: function() {
-    return !!this.statusText_;
   },
 
   /**

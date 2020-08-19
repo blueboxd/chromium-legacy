@@ -22,12 +22,12 @@ apps::mojom::IntentFilterPtr CreateSchemeAndHostOnlyFilter(
 // Create intent filter for send action.
 apps::mojom::IntentFilterPtr CreateIntentFilterForSend(
     const std::string& mime_types,
-    const std::string& activity_name = "");
+    const std::string& activity_label = "");
 // Create intent filter for send multiple action.
 
 apps::mojom::IntentFilterPtr CreateIntentFilterForSendMultiple(
     const std::string& mime_types,
-    const std::string& activity_name = "");
+    const std::string& activity_label = "");
 
 }  // namespace apps_util
 

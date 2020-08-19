@@ -5,10 +5,12 @@
 #include "chrome/browser/sharesheet/sharesheet_action_cache.h"
 
 #include "chrome/browser/sharesheet/share_action.h"
+#include "chrome/browser/sharesheet/sharesheet_types.h"
 
 namespace sharesheet {
 
 SharesheetActionCache::SharesheetActionCache() = default;
+// ShareActions will be initialised here by calling AddShareAction.
 
 SharesheetActionCache::~SharesheetActionCache() = default;
 
@@ -28,6 +30,12 @@ ShareAction* SharesheetActionCache::GetActionFromName(
     }
   }
   return nullptr;
+}
+
+void SharesheetActionCache::AddShareAction(
+    std::unique_ptr<ShareAction> action) {
+  DCHECK_EQ(action->GetActionIcon().size(), gfx::Size(kIconSize, kIconSize));
+  share_actions_.push_back(std::move(action));
 }
 
 }  // namespace sharesheet

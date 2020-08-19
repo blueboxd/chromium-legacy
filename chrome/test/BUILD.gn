@@ -970,7 +970,7 @@ if (!is_android) {
       "../browser/media/test_license_server_config.h",
       "../browser/media/unified_autoplay_browsertest.cc",
       "../browser/media/webrtc/media_stream_devices_controller_browsertest.cc",
-      "../browser/media/webrtc/media_stream_infobar_browsertest.cc",
+      "../browser/media/webrtc/media_stream_permission_browsertest.cc",
       "../browser/media/webrtc/test_stats_dictionary.cc",
       "../browser/media/webrtc/test_stats_dictionary.h",
       "../browser/media/webrtc/test_stats_dictionary_unittest.cc",
@@ -2493,6 +2493,7 @@ if (!is_android) {
         "../browser/chromeos/printing/test_printer_configurer.cc",
         "../browser/chromeos/printing/test_printer_configurer.h",
         "../browser/chromeos/profiles/profile_helper_browsertest.cc",
+        "../browser/chromeos/remote_apps/remote_apps_impl_browsertest.cc",
         "../browser/chromeos/remote_apps/remote_apps_manager_browsertest.cc",
         "../browser/chromeos/shutdown_policy_browsertest.cc",
         "../browser/chromeos/startup_settings_cache_browsertest.cc",
@@ -5162,6 +5163,7 @@ test("unit_tests") {
   if (!is_chromeos && is_linux) {
     sources += [
       "../browser/shell_integration_linux_unittest.cc",
+      "../browser/ui/global_media_controls/media_notification_device_monitor_unittest.cc",
       "../browser/upgrade_detector/get_installed_version_linux_unittest.cc",
     ]
   }

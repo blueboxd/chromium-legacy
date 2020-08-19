@@ -27,6 +27,7 @@ import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeBaseAppCompatActivity;
+import org.chromium.chrome.browser.feedback.FragmentHelpAndFeedbackLauncher;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.password_check.PasswordCheckComponentUiFactory;
@@ -278,13 +279,22 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
             ((SiteSettingsPreferenceFragment) fragment)
                     .setSiteSettingsClient(new ChromeSiteSettingsClient(
                             this, Profile.getLastUsedRegularProfile()));
-        } else if (fragment instanceof FragmentSettingsLauncher) {
-            FragmentSettingsLauncher framentSettingsLauncher = (FragmentSettingsLauncher) fragment;
-            framentSettingsLauncher.setSettingsLauncher(mSettingsLauncher);
-        } else if (fragment instanceof SafetyCheckSettingsFragment) {
+        }
+        if (fragment instanceof FragmentSettingsLauncher) {
+            FragmentSettingsLauncher fragmentSettingsLauncher = (FragmentSettingsLauncher) fragment;
+            fragmentSettingsLauncher.setSettingsLauncher(mSettingsLauncher);
+        }
+        if (fragment instanceof FragmentHelpAndFeedbackLauncher) {
+            FragmentHelpAndFeedbackLauncher fragmentHelpAndFeedbackLauncher =
+                    (FragmentHelpAndFeedbackLauncher) fragment;
+            fragmentHelpAndFeedbackLauncher.setHelpAndFeedbackLauncher(
+                    HelpAndFeedback.getInstance());
+        }
+        if (fragment instanceof SafetyCheckSettingsFragment) {
             SafetyCheckCoordinator.create((SafetyCheckSettingsFragment) fragment,
                     new SafetyCheckUpdatesDelegateImpl(this), new SettingsLauncherImpl());
-        } else if (fragment instanceof PasswordCheckFragmentView) {
+        }
+        if (fragment instanceof PasswordCheckFragmentView) {
             PasswordCheckComponentUiFactory.create((PasswordCheckFragmentView) fragment);
         } else if (fragment instanceof PasswordCheckEditFragmentView) {
             PasswordCheckEditFragmentView editFragment = (PasswordCheckEditFragmentView) fragment;

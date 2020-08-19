@@ -172,6 +172,21 @@ class PasswordCheckMediator
     }
 
     @Override
+    public void onView(CompromisedCredential credential) {
+        if (!mReauthenticationHelper.canReauthenticate()) {
+            mReauthenticationHelper.showScreenLockToast();
+            return;
+        }
+
+        mReauthenticationHelper.reauthenticate(ReauthReason.VIEW_PASSWORD,
+                reauthSucceeded
+                -> {
+                        // TODO(crbug.com/1117502) Add implementation to view the compromised
+                        // credential
+                });
+    }
+
+    @Override
     public void onChangePasswordButtonClick(CompromisedCredential credential) {
         mChangePasswordDelegate.launchAppOrCctWithChangePasswordUrl(credential);
     }

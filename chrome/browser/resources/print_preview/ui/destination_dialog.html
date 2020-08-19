@@ -91,6 +91,24 @@
     font-size: calc(10 / 13 * 1em);
     font-weight: 500;
   }
+
+  .destinations-status {
+    align-items: center;
+    display: flex;
+    margin-bottom: 16px;
+  }
+
+  iron-icon {
+    --google-orange-600: rgb(232, 113, 10);  /* e8710a */
+    fill: var(--google-orange-600);
+    flex-shrink: 0;
+    padding-inline-end: 8px;
+    padding-inline-start: 4px;
+  }
+
+  #warning-message {
+    color: var(--cr-primary-text-color);
+  }
 </style>
 <cr-dialog id="dialog" on-close="onCloseOrCancel_">
   <div slot="title" id="header">$i18n{destinationSearchTitle}</div>
@@ -104,6 +122,13 @@
         </template>
         <option value="">$i18n{addAccountTitle}</option>
       </select>
+    </div>
+    <div class="destinations-status" hidden$="[[!showCloudPrintWarning_]]">
+      <iron-icon icon="cr:warning" aria-label="$i18n{warningIconAriaLabel}">
+      </iron-icon>
+      <span id="warning-message">
+        $i18nRaw{cloudPrintingNotSupportedWarning}
+      </span>
     </div>
     <print-preview-search-box id="searchBox"
         label="$i18n{searchBoxPlaceholder}" search-query="{{searchQuery_}}"

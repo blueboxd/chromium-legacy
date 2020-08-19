@@ -324,20 +324,6 @@ const char kBackgroundHistogramInputToFirstContentfulPaint[] =
 const char kHistogramBackForwardCacheEvent[] =
     "PageLoad.BackForwardCache.Event";
 
-const char kHistogramFontPreloadFirstPaint[] =
-    "PageLoad.Clients.FontPreload.PaintTiming.NavigationToFirstPaint";
-const char kHistogramFontPreloadFirstContentfulPaint[] =
-    "PageLoad.Clients.FontPreload.PaintTiming.NavigationToFirstContentfulPaint";
-const char kHistogramFontPreloadLargestContentfulPaint[] =
-    "PageLoad.Clients.FontPreload.PaintTiming."
-    "NavigationToLargestContentfulPaint";
-const char kHistogramFontPreloadLargestImagePaint[] =
-    "PageLoad.Clients.FontPreload.PaintTiming."
-    "NavigationToLargestImagePaint";
-const char kHistogramFontPreloadLargestTextPaint[] =
-    "PageLoad.Clients.FontPreload.PaintTiming."
-    "NavigationToLargestTextPaint";
-
 // Navigation metrics from the navigation start.
 const char kHistogramNavigationTimingNavigationStartToFirstRequestStart[] =
     "PageLoad.Experimental.NavigationTiming.NavigationStartToFirstRequestStart";
@@ -465,12 +451,6 @@ void CorePageLoadMetricsObserver::OnFirstPaintInPage(
     PAGE_LOAD_HISTOGRAM(internal::kHistogramFirstPaint,
                         timing.paint_timing->first_paint.value());
 
-    // Note: This depends on PageLoadMetrics internally processing loading
-    // behavior before timing metrics if they come in the same IPC update.
-    if (font_preload_started_before_rendering_observed_) {
-      PAGE_LOAD_HISTOGRAM(internal::kHistogramFontPreloadFirstPaint,
-                          timing.paint_timing->first_paint.value());
-    }
     if (timing.input_to_navigation_start) {
       PAGE_LOAD_HISTOGRAM(internal::kHistogramInputToFirstPaint,
                           timing.input_to_navigation_start.value() +
@@ -515,13 +495,6 @@ void CorePageLoadMetricsObserver::OnFirstContentfulPaintInPage(
     PAGE_LOAD_HISTOGRAM(internal::kHistogramParseStartToFirstContentfulPaint,
                         timing.paint_timing->first_contentful_paint.value() -
                             timing.parse_timing->parse_start.value());
-
-    // Note: This depends on PageLoadMetrics internally processing loading
-    // behavior before timing metrics if they come in the same IPC update.
-    if (font_preload_started_before_rendering_observed_) {
-      PAGE_LOAD_HISTOGRAM(internal::kHistogramFontPreloadFirstContentfulPaint,
-                          timing.paint_timing->first_contentful_paint.value());
-    }
 
     // Emit a trace event to highlight a long navigation to first contentful
     // paint.
@@ -992,30 +965,6 @@ void CorePageLoadMetricsObserver::RecordTimingHistograms(
   }
 
   const page_load_metrics::ContentfulPaintTimingInfo&
-      main_frame_largest_image_paint = GetDelegate()
-                                           .GetLargestContentfulPaintHandler()
-                                           .MainFrameLargestImagePaint();
-  if (main_frame_largest_image_paint.ContainsValidTime() &&
-      WasStartedInForegroundOptionalEventInForeground(
-          main_frame_largest_image_paint.Time(), GetDelegate()) &&
-      font_preload_started_before_rendering_observed_) {
-    PAGE_LOAD_HISTOGRAM(internal::kHistogramFontPreloadLargestImagePaint,
-                        main_frame_largest_image_paint.Time().value());
-  }
-
-  const page_load_metrics::ContentfulPaintTimingInfo&
-      main_frame_largest_text_paint = GetDelegate()
-                                          .GetLargestContentfulPaintHandler()
-                                          .MainFrameLargestTextPaint();
-  if (main_frame_largest_text_paint.ContainsValidTime() &&
-      WasStartedInForegroundOptionalEventInForeground(
-          main_frame_largest_text_paint.Time(), GetDelegate()) &&
-      font_preload_started_before_rendering_observed_) {
-    PAGE_LOAD_HISTOGRAM(internal::kHistogramFontPreloadLargestTextPaint,
-                        main_frame_largest_text_paint.Time().value());
-  }
-
-  const page_load_metrics::ContentfulPaintTimingInfo&
       main_frame_largest_contentful_paint =
           GetDelegate()
               .GetLargestContentfulPaintHandler()
@@ -1048,13 +997,6 @@ void CorePageLoadMetricsObserver::RecordTimingHistograms(
         GetDelegate().GetNavigationStart() +
             all_frames_largest_contentful_paint.Time().value(),
         "data", all_frames_largest_contentful_paint.DataAsTraceValue());
-
-    // Note: This depends on PageLoadMetrics internally processing loading
-    // behavior before timing metrics if they come in the same IPC update.
-    if (font_preload_started_before_rendering_observed_) {
-      PAGE_LOAD_HISTOGRAM(internal::kHistogramFontPreloadLargestContentfulPaint,
-                          all_frames_largest_contentful_paint.Time().value());
-    }
   }
 
   const page_load_metrics::ContentfulPaintTimingInfo&
@@ -1259,13 +1201,4 @@ void CorePageLoadMetricsObserver::OnRestoreFromBackForwardCache(
   UMA_HISTOGRAM_ENUMERATION(
       internal::kHistogramBackForwardCacheEvent,
       internal::PageLoadBackForwardCacheEvent::kRestoreFromBackForwardCache);
-}
-
-void CorePageLoadMetricsObserver::OnLoadingBehaviorObserved(
-    content::RenderFrameHost* rfh,
-    int behavior_flag) {
-  if (behavior_flag & blink::LoadingBehaviorFlag::
-                          kLoadingBehaviorFontPreloadStartedBeforeRendering) {
-    font_preload_started_before_rendering_observed_ = true;
-  }
 }

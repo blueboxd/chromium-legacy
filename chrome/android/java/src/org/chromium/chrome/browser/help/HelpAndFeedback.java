@@ -21,6 +21,7 @@ import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.feedback.ChromeFeedbackCollector;
 import org.chromium.chrome.browser.feedback.FeedFeedbackCollector;
 import org.chromium.chrome.browser.feedback.FeedbackCollector;
+import org.chromium.chrome.browser.feedback.HelpAndFeedbackLauncher;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.embedder_support.util.UrlUtilitiesJni;
@@ -32,7 +33,7 @@ import javax.annotation.Nonnull;
 /**
  * Launches an activity that displays a relevant support page and has an option to provide feedback.
  */
-public class HelpAndFeedback {
+public class HelpAndFeedback implements HelpAndFeedbackLauncher {
     protected static final String FALLBACK_SUPPORT_URL =
             "https://support.google.com/chrome/topic/6069782";
     private static final String TAG = "HelpAndFeedback";
@@ -87,6 +88,7 @@ public class HelpAndFeedback {
      * @param profile the current profile.
      * @param url the current URL. May be null.
      */
+    @Override
     public void show(final Activity activity, final String helpContext, Profile profile,
             @Nullable String url) {
         RecordUserAction.record("MobileHelpAndFeedback");
@@ -105,6 +107,7 @@ public class HelpAndFeedback {
      * @param url the current URL. May be null.
      * @param categoryTag The category that this feedback report falls under.
      */
+    @Override
     public void showFeedback(final Activity activity, Profile profile, @Nullable String url,
             @Nullable final String categoryTag) {
         new ChromeFeedbackCollector(activity, categoryTag, null /* description */,
@@ -123,6 +126,7 @@ public class HelpAndFeedback {
      * @param feedContext Feed specific parameters (url, title, etc) to include with feedback.
      * @param feedbackContext The context that describes the current feature being used.
      */
+    @Override
     public void showFeedback(final Activity activity, Profile profile, @Nullable String url,
             @Nullable final String categoryTag, @Nullable final Map<String, String> feedContext,
             @Nullable final String feedbackContext) {

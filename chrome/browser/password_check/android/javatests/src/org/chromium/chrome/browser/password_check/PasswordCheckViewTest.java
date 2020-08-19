@@ -528,6 +528,22 @@ public class PasswordCheckViewTest {
     }
 
     @Test
+    @MediumTest
+    public void testClickingViewInMoreMenuTriggersHandler() {
+        runOnUiThreadBlocking(() -> mModel.get(ITEMS).add(buildCredentialItem(ANA)));
+        waitForListViewToHaveLength(1);
+
+        TouchCommon.singleClickView(getCredentialMoreButtonAt(0));
+
+        onView(withText(R.string.password_check_credential_menu_item_view_button_caption))
+                .inRoot(withDecorView(
+                        not(is(mPasswordCheckView.getActivity().getWindow().getDecorView()))))
+                .perform(click());
+
+        verify(mMockHandler).onView(eq(ANA));
+    }
+
+    @Test
     @SmallTest
     public void testGetTimestampStrings() {
         Resources res = mPasswordCheckView.getContext().getResources();

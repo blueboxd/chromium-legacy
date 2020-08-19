@@ -11941,7 +11941,6 @@ interface webkitURL
     method cancelAnimationFrame
     method cancelIdleCallback
     method captureEvents
-    method chooseFileSystemEntries
     method clearInterval
     method clearTimeout
     method close

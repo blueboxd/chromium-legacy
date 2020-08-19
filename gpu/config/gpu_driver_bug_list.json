@@ -3473,6 +3473,20 @@
       "features": [
         "disable_decode_swap_chain"
       ]
+    },
+    {
+      "id": 346,
+      "cr_bugs": [1062184],
+      "description": "Enable HDR video playing through overlay on Intel",
+      "os": {
+        "type": "win"
+      },
+      "intel_gpu_series": [
+        "icelake"
+      ],
+      "features": [
+        "force_rgb10a2_overlay_support_flags"
+      ]
     }
   ]
 }

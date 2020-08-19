@@ -15,7 +15,7 @@
         android:layout_gravity="center"
         android:drawablePadding="3dp"
         android:text="@string/data_reduction_initial_title"
-        android:textAppearance="@style/TextAppearance.TextLarge.Tertiary" />
+        android:textAppearance="@style/TextAppearance.TextLarge.Secondary" />
 
     <LinearLayout
         android:id="@+id/data_reduction_stats_container"

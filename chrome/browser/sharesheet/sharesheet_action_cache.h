@@ -29,6 +29,8 @@ class SharesheetActionCache {
   const std::vector<std::unique_ptr<ShareAction>>& GetShareActions();
 
  private:
+  void AddShareAction(std::unique_ptr<ShareAction> action);
+
   std::vector<std::unique_ptr<ShareAction>> share_actions_;
 };
 

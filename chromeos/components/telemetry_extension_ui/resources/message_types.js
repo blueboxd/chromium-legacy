@@ -19,6 +19,7 @@ const dpsl_internal = {};
  */
 dpsl_internal.Message = {
   DIAGNOSTICS_AVAILABLE_ROUTINES: 'DiagnosticsService.GetAvailableRoutines',
+  DIAGNOSTICS_ROUTINE_UPDATE: 'DiagnosticsService.GetRoutineUpdate',
   PROBE_TELEMETRY_INFO: 'ProbeService.ProbeTelemetryInfo',
 };
 
@@ -35,6 +36,23 @@ dpsl_internal.DiagnosticsGetAvailableRoutinesRequest;
  * @typedef { !Array<!string> }
  */
 dpsl_internal.DiagnosticsGetAvailableRoutinesResponse;
+
+/**
+ * Request message sent by the unprivileged context to the privileged
+ * context to request a routine update.
+ * @typedef {{
+ *   routineId: !number,
+ *   command: !string,
+ *   includeOutput: !boolean}}
+ */
+dpsl_internal.DiagnosticsGetRoutineUpdateRequest;
+
+/**
+ * Response message sent by the privileged context containing diagnostic
+ * routine update information.
+ * @typedef { !Object | !Error }
+ */
+dpsl_internal.DiagnosticsGetRoutineUpdateResponse;
 
 /**
  * Request message sent by the unprivileged context to request the privileged

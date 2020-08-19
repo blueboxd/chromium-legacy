@@ -22,8 +22,6 @@ extern const base::Feature kAmbientModeFeature;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kAmbientModePhotoPreviewFeature;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const base::Feature kAmbientModeDevUseProdFeature;
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kArcAdbSideloadingFeature;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kArcManagedAdbSideloadingSupport;
@@ -54,8 +52,6 @@ extern const base::Feature kCdmFactoryDaemon;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kChildSpecificSignin;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const base::Feature kCrostiniPortForwarding;
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kCrostiniDiskResizing;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kCrostiniUseBusterImage;
@@ -63,8 +59,6 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kCrostiniGpuSupport;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kCrostiniUsbAllowUnsupported;
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const base::Feature kCrostiniShowMicSetting;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kCrostiniUseDlc;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
@@ -234,7 +228,6 @@ extern const base::Feature kImeMozcProto;
 
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsAmbientModeEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsAmbientModePhotoPreviewEnabled();
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsAmbientModeDevUseProdEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsAssistantEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsBetterUpdateEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsChildSpecificSigninEnabled();

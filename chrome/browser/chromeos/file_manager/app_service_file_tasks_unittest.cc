@@ -32,9 +32,9 @@ const char kAppIdAny[] = "hijklmn";
 const char kMimeTypeText[] = "text/plain";
 const char kMimeTypeImage[] = "image/jpeg";
 const char kMimeTypeAny[] = "*/*";
-const char kActivityNameText[] = "some_text_activity";
-const char kActivityNameImage[] = "some_image_activity";
-const char kActivityNameAny[] = "some_any_file";
+const char kActivityLabelText[] = "some_text_activity";
+const char kActivityLabelImage[] = "some_image_activity";
+const char kActivityLabelAny[] = "some_any_file";
 }  // namespace
 
 namespace file_manager {
@@ -58,7 +58,7 @@ class AppServiceFileTasksTest : public testing::Test {
 
   void AddFakeAppWithIntentFilter(const std::string& app_id,
                                   const std::string& mime_type,
-                                  const std::string& activity_name,
+                                  const std::string& activity_label,
                                   bool is_send_multiple) {
     std::vector<apps::mojom::AppPtr> apps;
     auto app = apps::mojom::App::New();
@@ -67,8 +67,8 @@ class AppServiceFileTasksTest : public testing::Test {
     auto intent_filter =
         is_send_multiple
             ? apps_util::CreateIntentFilterForSendMultiple(mime_type,
-                                                           activity_name)
-            : apps_util::CreateIntentFilterForSend(mime_type, activity_name);
+                                                           activity_label)
+            : apps_util::CreateIntentFilterForSend(mime_type, activity_label);
     app->intent_filters.push_back(std::move(intent_filter));
     apps.push_back(std::move(app));
     app_service_proxy_->AppRegistryCache().OnApps(std::move(apps));
@@ -76,11 +76,11 @@ class AppServiceFileTasksTest : public testing::Test {
   }
 
   void AddApps() {
-    AddFakeAppWithIntentFilter(kAppIdText, kMimeTypeText, kActivityNameText,
+    AddFakeAppWithIntentFilter(kAppIdText, kMimeTypeText, kActivityLabelText,
                                /*is_send_multiple=*/false);
-    AddFakeAppWithIntentFilter(kAppIdImage, kMimeTypeImage, kActivityNameImage,
+    AddFakeAppWithIntentFilter(kAppIdImage, kMimeTypeImage, kActivityLabelImage,
                                /*is_send_multiple=*/false);
-    AddFakeAppWithIntentFilter(kAppIdAny, kMimeTypeAny, kActivityNameAny,
+    AddFakeAppWithIntentFilter(kAppIdAny, kMimeTypeAny, kActivityLabelAny,
                                /*is_send_multiple=*/true);
   }
 
@@ -106,7 +106,7 @@ TEST_F(AppServiceFileTasksTest, FindAppServiceFileTasksText) {
   FindAppServiceTasks(profile(), entries, file_urls, &tasks);
   ASSERT_EQ(1U, tasks.size());
   EXPECT_EQ(kAppIdText, tasks[0].task_descriptor().app_id);
-  EXPECT_EQ(kActivityNameText, tasks[0].task_title());
+  EXPECT_EQ(kActivityLabelText, tasks[0].task_title());
 }
 
 // Test that between an image app and text app, the image app can be
@@ -124,7 +124,7 @@ TEST_F(AppServiceFileTasksTest, FindAppServiceFileTasksImage) {
   FindAppServiceTasks(profile(), entries, file_urls, &tasks);
   ASSERT_EQ(1U, tasks.size());
   EXPECT_EQ(kAppIdImage, tasks[0].task_descriptor().app_id);
-  EXPECT_EQ(kActivityNameImage, tasks[0].task_title());
+  EXPECT_EQ(kActivityLabelImage, tasks[0].task_title());
 }
 
 // Test that between an image app, text app and an app that can handle every
@@ -145,7 +145,7 @@ TEST_F(AppServiceFileTasksTest, FindAppServiceFileTasksMultiple) {
   FindAppServiceTasks(profile(), entries, file_urls, &tasks);
   ASSERT_EQ(1U, tasks.size());
   EXPECT_EQ(kAppIdAny, tasks[0].task_descriptor().app_id);
-  EXPECT_EQ(kActivityNameAny, tasks[0].task_title());
+  EXPECT_EQ(kActivityLabelAny, tasks[0].task_title());
 }
 
 }  // namespace file_tasks

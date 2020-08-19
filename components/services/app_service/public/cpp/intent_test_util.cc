@@ -15,7 +15,7 @@ namespace {
 apps::mojom::IntentFilterPtr CreateIntentFilterForShare(
     const std::string& action,
     const std::string& mime_type,
-    const std::string& activity_name) {
+    const std::string& activity_label) {
   auto intent_filter = apps::mojom::IntentFilter::New();
 
   apps_util::AddSingleValueCondition(
@@ -26,7 +26,7 @@ apps::mojom::IntentFilterPtr CreateIntentFilterForShare(
       apps::mojom::ConditionType::kMimeType, mime_type,
       apps::mojom::PatternMatchType::kMimeType, intent_filter);
 
-  intent_filter->activity_name = activity_name;
+  intent_filter->activity_label = activity_label;
 
   return intent_filter;
 }
@@ -72,15 +72,15 @@ apps::mojom::IntentFilterPtr CreateSchemeAndHostOnlyFilter(
 
 apps::mojom::IntentFilterPtr CreateIntentFilterForSend(
     const std::string& mime_type,
-    const std::string& activity_name) {
+    const std::string& activity_label) {
   return CreateIntentFilterForShare(kIntentActionSend, mime_type,
-                                    activity_name);
+                                    activity_label);
 }
 
 apps::mojom::IntentFilterPtr CreateIntentFilterForSendMultiple(
     const std::string& mime_type,
-    const std::string& activity_name) {
+    const std::string& activity_label) {
   return CreateIntentFilterForShare(kIntentActionSendMultiple, mime_type,
-                                    activity_name);
+                                    activity_label);
 }
 }  // namespace apps_util

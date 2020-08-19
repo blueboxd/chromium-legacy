@@ -88,6 +88,48 @@ UNTRUSTED_TEST('UntrustedRequestAvailableRoutines', async () => {
   ]);
 });
 
+// Tests that sendCommandToRoutine throws the correct errors
+// when unknown routines or commands are passed as input.
+UNTRUSTED_TEST(
+    'UntrustedDiagnosticsRequestRoutineUpdateUnknownArguments', async () => {
+      let caughtError;
+      try {
+        await chromeos.diagnostics.sendCommandToRoutine(
+            9007199254740991, 'remove', true);
+      } catch (error) {
+        caughtError = error;
+      }
+
+      assertEquals(caughtError.name, 'RangeError');
+      assertEquals(
+          caughtError.message,
+          `Diagnostic routine id '9007199254740991' is out of int32 range.`);
+
+      try {
+        await chromeos.diagnostics.sendCommandToRoutine(
+            -9007199254740991, 'remove', true);
+      } catch (error) {
+        caughtError = error;
+      }
+
+      assertEquals(caughtError.name, 'RangeError');
+      assertEquals(
+          caughtError.message,
+          `Diagnostic routine id '-9007199254740991' is out of int32 range.`);
+
+      try {
+        await chromeos.diagnostics.sendCommandToRoutine(
+            123456789, 'this-command-must-not-exist', true);
+      } catch (error) {
+        caughtError = error;
+      }
+
+      assertEquals(caughtError.name, 'TypeError');
+      assertEquals(
+          caughtError.message,
+          `Diagnostic command \'this-command-must-not-exist\' is unknown.`);
+    });
+
 // Tests that TelemetryInfo can be successfully requested from
 // from chrome-untrusted://.
 UNTRUSTED_TEST('UntrustedRequestTelemetryInfo', async () => {
@@ -117,6 +159,36 @@ UNTRUSTED_TEST('UntrustedRequestTelemetryInfo', async () => {
     },
   });
 });
+
+// Tests that sendCommandToRoutine returns the correct Object
+// for an interactive routine.
+UNTRUSTED_TEST(
+    'UntrustedDiagnosticsRequestInteractiveRoutineUpdate', async () => {
+      const response = await chromeos.diagnostics.sendCommandToRoutine(
+          987654321, 'remove', true);
+      assertDeepEquals(response, {
+        progressPercent: 0,
+        output: '',
+        routineUpdateUnion:
+            {interactiveUpdate: {userMessage: 'unplug-ac-power'}}
+      });
+    });
+
+// Tests that sendCommandToRoutine returns the correct Object
+// for a non-interactive routine.
+UNTRUSTED_TEST(
+    'UntrustedDiagnosticsRequestNonInteractiveRoutineUpdate', async () => {
+      const response = await chromeos.diagnostics.sendCommandToRoutine(
+          135797531, 'remove', true);
+      assertDeepEquals(response, {
+        progressPercent: 3147483771,
+        output: '',
+        routineUpdateUnion: {
+          noninteractiveUpdate:
+              {status: 'ready', statusMessage: 'Routine ran by Google.'}
+        }
+      });
+    });
 
 // Tests that TelemetryInfo can be successfully requested from
 // from chrome-untrusted://.

@@ -210,18 +210,6 @@ void LogPasswordReuse(int password_length,
                                 PasswordType::PASSWORD_TYPE_COUNT);
 }
 
-void LogContextOfShowAllSavedPasswordsShown(
-    ShowAllSavedPasswordsContext context) {
-  base::UmaHistogramEnumeration(
-      "PasswordManager.ShowAllSavedPasswordsShownContext", context);
-}
-
-void LogContextOfShowAllSavedPasswordsAccepted(
-    ShowAllSavedPasswordsContext context) {
-  base::UmaHistogramEnumeration(
-      "PasswordManager.ShowAllSavedPasswordsAcceptedContext", context);
-}
-
 void LogPasswordDropdownShown(PasswordDropdownState state,
                               bool off_the_record) {
   base::UmaHistogramEnumeration("PasswordManager.PasswordDropdownShown", state);

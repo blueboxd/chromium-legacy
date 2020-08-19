@@ -33,6 +33,17 @@ SkColor GetProfileForegroundIconColor(SkColor profile_highlight_color) {
       .color;
 }
 
+SkColor GetAvatarStrokeColor(SkColor avatar_fill_color) {
+  if (color_utils::IsDark(avatar_fill_color)) {
+    return SK_ColorWHITE;
+  }
+
+  color_utils::HSL color_hsl;
+  color_utils::SkColorToHSL(avatar_fill_color, &color_hsl);
+  color_hsl.l = std::max(0., color_hsl.l - 0.5);
+  return color_utils::HSLToSkColor(color_hsl, SkColorGetA(avatar_fill_color));
+}
+
 chrome_colors::ColorInfo GenerateNewProfileColor() {
   // TODO(crbug.com/1108295):
   // - Implement more sophisticated algorithm to pick the new profile color.

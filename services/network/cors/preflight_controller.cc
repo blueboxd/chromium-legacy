@@ -89,6 +89,7 @@ std::unique_ptr<ResourceRequest> CreatePreflightRequest(
   preflight_request->destination = request.destination;
   preflight_request->referrer = request.referrer;
   preflight_request->referrer_policy = request.referrer_policy;
+  preflight_request->mode = mojom::RequestMode::kCors;
 
   preflight_request->credentials_mode = mojom::CredentialsMode::kOmit;
   preflight_request->load_flags = RetrieveCacheFlags(request.load_flags);

@@ -418,13 +418,13 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 
 - (void)toggleArticlesVisibility {
   [self.contentArticlesExpanded setValue:![self.contentArticlesExpanded value]];
-  [self reloadArticleSection];
+  [self reloadArticleSectionOrAllData:NO];
 }
 
 #pragma mark - BooleanObserver
 
 - (void)booleanDidChange:(id<ObservableBoolean>)observableBoolean {
-  [self reloadArticleSection];
+  [self reloadArticleSectionOrAllData:YES];
 }
 
 #pragma mark - ContentSuggestionsServiceObserver
@@ -606,7 +606,10 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 
 #pragma mark - Private
 
-- (void)reloadArticleSection {
+// Reloads article section (for the page that trigers the request) or all
+// for other tabs/windows observing the pref. It avoids issues with scroll
+// changes, in hidden tabs/windows which leads to crashes.
+- (void)reloadArticleSectionOrAllData:(BOOL)allData {
   // Update the section information for new collapsed state.
   ntp_snippets::Category category = ntp_snippets::Category::FromKnownCategory(
       ntp_snippets::KnownCategories::ARTICLES);
@@ -616,12 +619,16 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
       self.sectionInformationByCategory[wrapper];
   sectionInfo.expanded = [self.contentArticlesExpanded value];
 
-  // Reloading the section with animations looks bad because the section
-  // border with the new collapsed height draws before the elements collapse.
-  BOOL animationsWereEnabled = [UIView areAnimationsEnabled];
-  [UIView setAnimationsEnabled:NO];
-  [self.dataSink reloadSection:sectionInfo];
-  [UIView setAnimationsEnabled:animationsWereEnabled];
+  if (allData) {
+    [self reloadAllData];
+  } else {
+    // Reloading the section with animations looks bad because the section
+    // border with the new collapsed height draws before the elements collapse.
+    BOOL animationsWereEnabled = [UIView areAnimationsEnabled];
+    [UIView setAnimationsEnabled:NO];
+    [self.dataSink reloadSection:sectionInfo];
+    [UIView setAnimationsEnabled:animationsWereEnabled];
+  }
 }
 
 // Converts the |suggestions| from |category| to CSCollectionViewItem and adds

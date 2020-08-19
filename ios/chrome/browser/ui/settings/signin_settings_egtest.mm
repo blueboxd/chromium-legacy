@@ -42,7 +42,7 @@ using chrome_test_util::ButtonWithAccessibilityLabelId;
 - (void)testSignInPromoWithColdStateUsingPrimaryButton {
   [ChromeEarlGreyUI openSettingsMenu];
   [SigninEarlGreyUI
-      checkSigninPromoVisibleWithMode:SigninPromoViewModeColdState];
+      verifySigninPromoVisibleWithMode:SigninPromoViewModeColdState];
   [ChromeEarlGreyUI tapSettingsMenuButton:PrimarySignInButton()];
 
   // Cancel the sign-in operation.
@@ -50,7 +50,7 @@ using chrome_test_util::ButtonWithAccessibilityLabelId;
                                           kSkipSigninAccessibilityIdentifier)]
       performAction:grey_tap()];
   [SigninEarlGreyUI
-      checkSigninPromoVisibleWithMode:SigninPromoViewModeColdState];
+      verifySigninPromoVisibleWithMode:SigninPromoViewModeColdState];
 }
 
 // Tests signing in, using the primary button with a warm state.
@@ -60,13 +60,13 @@ using chrome_test_util::ButtonWithAccessibilityLabelId;
 
   [ChromeEarlGreyUI openSettingsMenu];
   [SigninEarlGreyUI
-      checkSigninPromoVisibleWithMode:SigninPromoViewModeWarmState];
+      verifySigninPromoVisibleWithMode:SigninPromoViewModeWarmState];
   [ChromeEarlGreyUI tapSettingsMenuButton:PrimarySignInButton()];
-  [SigninEarlGreyUI confirmSigninConfirmationDialog];
+  [SigninEarlGreyUI tapSigninConfirmationDialog];
 
   // User signed in.
   [SigninEarlGrey verifySignedInWithFakeIdentity:fakeIdentity];
-  [SigninEarlGreyUI checkSigninPromoNotVisible];
+  [SigninEarlGreyUI verifySigninPromoNotVisible];
   [[EarlGrey selectElementWithMatcher:SettingsAccountButton()]
       assertWithMatcher:grey_interactable()];
 }
@@ -78,14 +78,14 @@ using chrome_test_util::ButtonWithAccessibilityLabelId;
 
   [ChromeEarlGreyUI openSettingsMenu];
   [SigninEarlGreyUI
-      checkSigninPromoVisibleWithMode:SigninPromoViewModeWarmState];
+      verifySigninPromoVisibleWithMode:SigninPromoViewModeWarmState];
   [ChromeEarlGreyUI tapSettingsMenuButton:SecondarySignInButton()];
   [SigninEarlGreyUI selectIdentityWithEmail:fakeIdentity.userEmail];
-  [SigninEarlGreyUI confirmSigninConfirmationDialog];
+  [SigninEarlGreyUI tapSigninConfirmationDialog];
 
   // User signed in.
   [SigninEarlGrey verifySignedInWithFakeIdentity:fakeIdentity];
-  [SigninEarlGreyUI checkSigninPromoNotVisible];
+  [SigninEarlGreyUI verifySigninPromoNotVisible];
   [[EarlGrey selectElementWithMatcher:SettingsAccountButton()]
       assertWithMatcher:grey_interactable()];
 }
@@ -98,7 +98,7 @@ using chrome_test_util::ButtonWithAccessibilityLabelId;
   [ChromeEarlGreyUI openSettingsMenu];
   // Check the sign-in promo view is visible.
   [SigninEarlGreyUI
-      checkSigninPromoVisibleWithMode:SigninPromoViewModeColdState];
+      verifySigninPromoVisibleWithMode:SigninPromoViewModeColdState];
   // Check the sign-in promo will not be shown anymore.
   int newDisplayedCount =
       [SigninSettingsAppInterface settingsSigninPromoDisplayedCount];
@@ -109,7 +109,7 @@ using chrome_test_util::ButtonWithAccessibilityLabelId;
       performAction:grey_tap()];
   [ChromeEarlGreyUI openSettingsMenu];
   // Check that the sign-in promo is not visible anymore.
-  [SigninEarlGreyUI checkSigninPromoNotVisible];
+  [SigninEarlGreyUI verifySigninPromoNotVisible];
   [[EarlGrey
       selectElementWithMatcher:grey_allOf(
                                    grey_accessibilityID(kSettingsSignInCellId),
@@ -121,7 +121,7 @@ using chrome_test_util::ButtonWithAccessibilityLabelId;
   [ChromeEarlGreyUI openSettingsMenu];
   // Check the sign-in promo view is visible.
   [SigninEarlGreyUI
-      checkSigninPromoVisibleWithMode:SigninPromoViewModeColdState];
+      verifySigninPromoVisibleWithMode:SigninPromoViewModeColdState];
   // Tap on dismiss button.
   [[EarlGrey
       selectElementWithMatcher:grey_allOf(grey_accessibilityID(
@@ -129,7 +129,7 @@ using chrome_test_util::ButtonWithAccessibilityLabelId;
                                           grey_sufficientlyVisible(), nil)]
       performAction:grey_tap()];
   // Check that the sign-in promo is not visible anymore.
-  [SigninEarlGreyUI checkSigninPromoNotVisible];
+  [SigninEarlGreyUI verifySigninPromoNotVisible];
   [[EarlGrey
       selectElementWithMatcher:grey_allOf(
                                    grey_accessibilityID(kSettingsSignInCellId),

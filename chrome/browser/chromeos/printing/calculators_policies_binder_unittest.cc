@@ -179,7 +179,7 @@ TEST_F(CalculatorsPoliciesBinderTest, PrefsBlocklist) {
       prefs::kRecommendedPrintersAccessMode,
       std::make_unique<base::Value>(
           BulkPrintersCalculator::AccessMode::BLOCKLIST_ONLY));
-  prefs_.SetManagedPref(prefs::kRecommendedNativePrintersBlacklist,
+  prefs_.SetManagedPref(prefs::kRecommendedPrintersBlocklist,
                         StringsToList(kBlocklistIds));
 
   env_.RunUntilIdle();

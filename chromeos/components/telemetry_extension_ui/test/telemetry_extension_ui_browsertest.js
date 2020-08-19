@@ -67,6 +67,55 @@ TEST_F('TelemetryExtensionUIBrowserTest', 'HasChromeUntrustedIframe', () => {
   testDone();
 });
 
+TEST_F('TelemetryExtensionUIBrowserTest', 'ConvertDiagnosticsEnums', () => {
+  // Unit tests for convertRoutineId
+  assertEquals(diagnosticsProxy.convertRoutineId(234089591), 234089591);
+
+  // Unit tests for convertCommandToEnum
+  const commandEnum = chromeos.health.mojom.DiagnosticRoutineCommandEnum;
+
+  assertEquals(
+      diagnosticsProxy.convertCommandToEnum('continue'), commandEnum.kContinue);
+  assertEquals(
+      diagnosticsProxy.convertCommandToEnum('cancel'), commandEnum.kCancel);
+  assertEquals(
+      diagnosticsProxy.convertCommandToEnum('get-status'),
+      commandEnum.kGetStatus);
+  assertEquals(
+      diagnosticsProxy.convertCommandToEnum('remove'), commandEnum.kRemove);
+
+  // Unit tests for convertStatus
+  const statusEnum = chromeos.health.mojom.DiagnosticRoutineStatusEnum;
+
+  assertEquals(diagnosticsProxy.convertStatus(statusEnum.kReady), 'ready');
+  assertEquals(diagnosticsProxy.convertStatus(statusEnum.kRunning), 'running');
+  assertEquals(diagnosticsProxy.convertStatus(statusEnum.kWaiting), 'waiting');
+  assertEquals(diagnosticsProxy.convertStatus(statusEnum.kPassed), 'passed');
+  assertEquals(diagnosticsProxy.convertStatus(statusEnum.kFailed), 'failed');
+  assertEquals(diagnosticsProxy.convertStatus(statusEnum.kError), 'error');
+  assertEquals(
+      diagnosticsProxy.convertStatus(statusEnum.kCancelled), 'cancelled');
+  assertEquals(
+      diagnosticsProxy.convertStatus(statusEnum.kFailedToStart),
+      'failed-to-start');
+  assertEquals(diagnosticsProxy.convertStatus(statusEnum.kRemoved), 'removed');
+  assertEquals(
+      diagnosticsProxy.convertStatus(statusEnum.kCancelling), 'cancelling');
+
+  // Unit tests for convertUserMessage
+  const userMessageEnum =
+      chromeos.health.mojom.DiagnosticRoutineUserMessageEnum;
+
+  assertEquals(
+      diagnosticsProxy.convertUserMessage(userMessageEnum.kUnplugACPower),
+      'unplug-ac-power');
+  assertEquals(
+      diagnosticsProxy.convertUserMessage(userMessageEnum.kPlugInACPower),
+      'plug-in-ac-power');
+
+  testDone();
+});
+
 // Tests that Telemetry.convert method correctly converts Mojo types into WebIDL
 // types.
 TEST_F(
@@ -130,6 +179,14 @@ TEST_F(
 
 TEST_F(
     'TelemetryExtensionUIBrowserTest',
+    'UntrustedDiagnosticsRequestRoutineUpdateUnknownArguments', async () => {
+      await runTestInUntrusted(
+          'UntrustedDiagnosticsRequestRoutineUpdateUnknownArguments');
+      testDone();
+    });
+
+TEST_F(
+    'TelemetryExtensionUIBrowserTest',
     'UntrustedRequestTelemetryInfoUnknownCategory', async () => {
       await runTestInUntrusted('UntrustedRequestTelemetryInfoUnknownCategory');
       testDone();
@@ -139,6 +196,38 @@ TEST_F(
     'TelemetryExtensionUIBrowserTest', 'UntrustedRequestTelemetryInfo',
     async () => {
       await runTestInUntrusted('UntrustedRequestTelemetryInfo');
+      testDone();
+    });
+
+var DiagnosticsInteractiveRoutineUpdate =
+    class extends TelemetryExtensionUIBrowserTest {
+  /** @override */
+  testGenPreamble() {
+    GEN('ConfigureDiagnosticsForInteractiveUpdate();');
+  }
+}
+
+TEST_F(
+    'DiagnosticsInteractiveRoutineUpdate',
+    'UntrustedDiagnosticsRequestInteractiveRoutineUpdate', async () => {
+      await runTestInUntrusted(
+          'UntrustedDiagnosticsRequestInteractiveRoutineUpdate');
+      testDone();
+    });
+
+var DiagnosticsNonInteractiveRoutineUpdate =
+    class extends TelemetryExtensionUIBrowserTest {
+  /** @override */
+  testGenPreamble() {
+    GEN('ConfigureDiagnosticsForNonInteractiveUpdate();');
+  }
+}
+
+TEST_F(
+    'DiagnosticsNonInteractiveRoutineUpdate',
+    'UntrustedDiagnosticsRequestNonInteractiveRoutineUpdate', async () => {
+      await runTestInUntrusted(
+          'UntrustedDiagnosticsRequestNonInteractiveRoutineUpdate');
       testDone();
     });
 

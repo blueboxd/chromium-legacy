@@ -50,6 +50,30 @@ chromeos.test_support = {};
                   dpsl_internal.Message.DIAGNOSTICS_AVAILABLE_ROUTINES));
       return response;
     }
+
+    /**
+     * Requests a command to be run on a diagnostic routine.
+     * @param { !number } routineId
+     * @param { !string } command
+     * @param { !boolean } includeOutput
+     * @return { !Promise<!Object> }
+     * @public
+     */
+    async sendCommandToRoutine(routineId, command, includeOutput) {
+      const message =
+          /** @type {dpsl_internal.DiagnosticsGetRoutineUpdateRequest} */ ({
+            routineId: routineId,
+            command: command,
+            includeOutput: includeOutput,
+          });
+      const response =
+          /** @type {!Object} */ (await messagePipe.sendMessage(
+              dpsl_internal.Message.DIAGNOSTICS_ROUTINE_UPDATE, message));
+      if (response instanceof Error) {
+        throw response;
+      }
+      return response;
+    }
   };
 
   /**

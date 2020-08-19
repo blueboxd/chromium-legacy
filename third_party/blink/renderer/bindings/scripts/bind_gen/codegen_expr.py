@@ -185,7 +185,8 @@ def expr_from_exposure(exposure,
     #        (or
     #         (and feature_selector.IsAll()  # 1st phase; all enabled
     #              cond_exposed_term
-    #              feature_enabled_term)
+    #              (or feature_enabled_term
+    #                  context_enabled_term))
     #         (or exposed_selector_term      # 2nd phase; any selected
     #             feature_selector_term)))
     # where
@@ -193,11 +194,13 @@ def expr_from_exposure(exposure,
     #   uncond_exposed_term represents [Exposed=(G1, G2)]
     #   cond_exposed_term represents [Exposed(G1 F1, G2 F2)]
     #   feature_enabled_term represents [RuntimeEnabled=(F1, F2)]
+    #   context_enabled_term represents [ContextEnabled=F1]
     #   exposed_selector_term represents [Exposed(G1 F1, G2 F2)]
     #   feature_selector_term represents [RuntimeEnabled=(F1, F2)]
     uncond_exposed_terms = []
     cond_exposed_terms = []
     feature_enabled_terms = []
+    context_enabled_terms = []
     exposed_selector_terms = []
     feature_selector_names = []  # Will turn into feature_selector.IsAnyOf(...)
 
@@ -276,7 +279,7 @@ def expr_from_exposure(exposure,
             lambda feature: _Expr(
                 "${{context_feature_settings}}->is{}Enabled()".format(
                     feature)), exposure.context_enabled_features)
-        feature_enabled_terms.append(
+        context_enabled_terms.append(
             expr_and([_Expr("${context_feature_settings}"),
                       expr_or(terms)]))
 
@@ -297,8 +300,13 @@ def expr_from_exposure(exposure,
     all_enabled_terms = [_Expr("${feature_selector}.IsAll()")]
     if cond_exposed_terms:
         all_enabled_terms.append(expr_or(cond_exposed_terms))
-    if feature_enabled_terms:
-        all_enabled_terms.append(expr_or(feature_enabled_terms))
+    if feature_enabled_terms or context_enabled_terms:
+        terms = []
+        if feature_enabled_terms:
+            terms.append(expr_and(feature_enabled_terms))
+        if context_enabled_terms:
+            terms.append(expr_or(context_enabled_terms))
+        all_enabled_terms.append(expr_or(terms))
 
     selector_terms = []
     if exposed_selector_terms:

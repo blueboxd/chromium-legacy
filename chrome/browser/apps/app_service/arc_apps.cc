@@ -323,6 +323,9 @@ apps::mojom::IntentFilterPtr ConvertArcIntentFilter(
     if (!arc_intent_filter.activity_name().empty()) {
       intent_filter->activity_name = arc_intent_filter.activity_name();
     }
+    if (!arc_intent_filter.activity_label().empty()) {
+      intent_filter->activity_label = arc_intent_filter.activity_label();
+    }
   }
 
   return intent_filter;
@@ -512,8 +515,6 @@ arc::mojom::OpenUrlsRequestPtr ConstructOpenUrlsRequest(
   arc::mojom::OpenUrlsRequestPtr request = arc::mojom::OpenUrlsRequest::New();
   request->action_type = GetArcActionType(intent->action.value());
   request->activity_name = activity.Clone();
-  // Set activity name to empty to avoid launching the main activity.
-  request->activity_name->activity_name = "";
   for (const auto& content_url : content_urls) {
     arc::mojom::ContentUrlWithMimeTypePtr url_with_type =
         arc::mojom::ContentUrlWithMimeType::New();
@@ -756,7 +757,10 @@ void ArcApps::LaunchAppWithIntent(const std::string& app_id,
     arc::mojom::ActivityNamePtr activity = arc::mojom::ActivityName::New();
     activity->package_name = app_info->package_name;
     activity->activity_name = app_info->activity;
-
+    if (intent->activity_name.has_value() &&
+        !intent->activity_name.value().empty()) {
+      activity->activity_name = intent->activity_name.value();
+    }
     // At the moment, the only case we have mime_type field set is to share
     // files, in this case, convert the file urls to content urls and use
     // arc file system instance to launch the app with files.

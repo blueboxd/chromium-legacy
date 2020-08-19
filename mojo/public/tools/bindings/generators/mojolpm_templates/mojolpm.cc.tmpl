@@ -93,7 +93,6 @@ class {{interface.name}}Impl : public {{mojom_type}} {
 {%-       if method.response_parameters != None %}
     mojolpm::GetContext()->AddInstance<{{mojom_type}}::{{method.name}}Callback>(std::move(callback));
 {%-       endif %}
-    mojolpm::GetContext()->NextAction();
   }
 {%-   endfor %}
 };
@@ -251,16 +250,16 @@ bool ToProto(::mojo::PendingAssociatedReceiver<{{mojom_type}}>&& input,
 {%-   set mojom_type = interface|get_qualified_name_for_kind(flatten_nested_kind=True) %}
 {%-   set proto_type = "::mojolpm" ~ (interface|get_qualified_name_for_kind(flatten_nested_kind=True)) %}
 {%-   if interface.methods %}
-bool HandleRemoteCall(const {{proto_type}}::RemoteCall& input) {
+bool HandleRemoteAction(const {{proto_type}}::RemoteAction& input) {
   bool result = true;
 
   switch (input.method_case()) {
 {%-     for method in interface.methods %}
-    case {{proto_type}}::RemoteCall::k{{("m_" ~ method.name)|under_to_camel(digits_split=True)}}: {
+    case {{proto_type}}::RemoteAction::k{{("m_" ~ method.name)|under_to_camel(digits_split=True)}}: {
       result = HandleRemoteCall(input.id(), input.{{("m" ~ method.name)|camel_to_under}}());
     } break;
 {%-     endfor %}
-    case {{proto_type}}::RemoteCall::kReset: {
+    case {{proto_type}}::RemoteAction::kReset: {
       mojolpm::GetContext()->GetAndRemoveInstance<::mojo::Remote<{{mojom_type}}>>(input.id());
     } break;
 
@@ -272,16 +271,16 @@ bool HandleRemoteCall(const {{proto_type}}::RemoteCall& input) {
   return result;
 }
 
-bool HandleAssociatedRemoteCall(const {{proto_type}}::AssociatedRemoteCall& input) {
+bool HandleAssociatedRemoteAction(const {{proto_type}}::AssociatedRemoteAction& input) {
   bool result = true;
 
   switch (input.method_case()) {
 {%-     for method in interface.methods %}
-    case {{proto_type}}::AssociatedRemoteCall::k{{("m_" ~ method.name)|under_to_camel(digits_split=True)}}: {
+    case {{proto_type}}::AssociatedRemoteAction::k{{("m_" ~ method.name)|under_to_camel(digits_split=True)}}: {
       result = HandleAssociatedRemoteCall(input.id(), input.{{("m" ~ method.name)|camel_to_under}}());
     } break;
 {%-     endfor %}
-    case {{proto_type}}::AssociatedRemoteCall::kReset: {
+    case {{proto_type}}::AssociatedRemoteAction::kReset: {
       mojolpm::GetContext()->GetAndRemoveInstance<::mojo::AssociatedRemote<{{mojom_type}}>>(input.id());
     } break;
 
@@ -293,12 +292,12 @@ bool HandleAssociatedRemoteCall(const {{proto_type}}::AssociatedRemoteCall& inpu
   return result;
 }
 
-bool HandleResponse(
-    const {{proto_type}}::ReceiverResponse& input) {
+bool HandleReceiverAction(
+    const {{proto_type}}::ReceiverAction& input) {
   bool result = true;
   switch (input.response_case()) {
 {%-     for method in interface.methods %}
-    case {{proto_type}}::ReceiverResponse::k{{("m_" ~ method.name ~ "_response")|under_to_camel(digits_split=True)}}: {
+    case {{proto_type}}::ReceiverAction::k{{("m_" ~ method.name ~ "_response")|under_to_camel(digits_split=True)}}: {
       result = HandleResponse(input.id(), input.{{("m" ~ method.name ~ "_response")|camel_to_under}}());
     } break;
 {%-     endfor %}
@@ -326,7 +325,6 @@ static void {{interface.name}}_{{method.name}}Callback(
 {{ util.add_instance(kind, 'param_' ~ name, False) }}
 {%-         endfor %}
   mojolpmdbg("{{interface.name}}.{{method.name}}Callback\n");
-  mojolpm::GetContext()->NextAction();
 }{{"\n"-}}
 {%-       endif %}
 template <typename T>

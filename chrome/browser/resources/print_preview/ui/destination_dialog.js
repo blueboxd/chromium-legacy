@@ -9,6 +9,8 @@ import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import 'chrome://resources/js/action_link.js';
 import 'chrome://resources/cr_elements/action_link_css.m.js';
 import 'chrome://resources/cr_elements/md_select_css.m.js';
+import 'chrome://resources/cr_elements/icons.m.js';
+import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import '../print_preview_utils.js';
 import './destination_list.js';
 import './print_preview_search_box.js';
@@ -79,6 +81,13 @@ Polymer({
       value: false,
     },
 
+    /** @private {boolean} */
+    showCloudPrintWarning_: {
+      type: Boolean,
+      computed: 'computeShowCloudPrintWarning_(destinations_.splices)',
+      value: false,
+    },
+
     /** @private {?RegExp} */
     searchQuery_: {
       type: Object,
@@ -107,6 +116,18 @@ Polymer({
   /** @override */
   detached() {
     this.tracker_.removeAll();
+  },
+
+  /**
+   * @return {boolean} Whether the destinations dialog should show a Cloud Print
+   *     deprecation warning.
+   * @private
+   */
+  computeShowCloudPrintWarning_() {
+    return this.destinations_.some(destination => {
+      return destination.shouldShowSaveToDriveWarning ||
+          destination.shouldShowDeprecatedPrinterWarning;
+    });
   },
 
   /**

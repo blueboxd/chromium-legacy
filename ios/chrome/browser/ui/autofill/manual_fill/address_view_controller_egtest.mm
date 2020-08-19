@@ -44,9 +44,14 @@ BOOL WaitForKeyboardToAppear() {
   return [waitForKeyboard waitWithTimeout:kWaitForActionTimeout];
 }
 
+// Returns a matcher for a web view.
+id<GREYMatcher> WebViewMatcher() {
+  return grey_kindOfClass(NSClassFromString(@"WKWebView"));
+}
+
 }  // namespace
 
-// Integration Tests for Mannual Fallback Addresses View Controller.
+// Integration Tests for Manual Fallback Addresses View Controller.
 @interface AddressViewControllerTestCase : ChromeTestCase
 @end
 
@@ -69,17 +74,9 @@ BOOL WaitForKeyboardToAppear() {
 }
 
 // Tests that the addresses view controller appears on screen.
-// TODO(crbug.com/1116274): Flaky on ios simulator.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_testAddressesViewControllerIsPresented \
-  DISABLED_testAddressesViewControllerIsPresented
-#else
-#define MAYBE_testAddressesViewControllerIsPresented \
-  testAddressesViewControllerIsPresented
-#endif
-- (void)MAYBE_testAddressesViewControllerIsPresented {
+- (void)testAddressesViewControllerIsPresented {
   // Bring up the keyboard.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+  [[EarlGrey selectElementWithMatcher:WebViewMatcher()]
       performAction:chrome_test_util::TapWebElementWithId(kFormElementName)];
 
   // Tap on the addresses icon.
@@ -95,17 +92,9 @@ BOOL WaitForKeyboardToAppear() {
 
 // Tests that the addresses view controller contains the "Manage Addresses..."
 // action.
-// TODO(crbug.com/1116043): Flaky on ios simulator.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_testAddressesViewControllerContainsManageAddressesAction \
-  DISABLED_testAddressesViewControllerContainsManageAddressesAction
-#else
-#define MAYBE_testAddressesViewControllerContainsManageAddressesAction \
-  testAddressesViewControllerContainsManageAddressesAction
-#endif
-- (void)MAYBE_testAddressesViewControllerContainsManageAddressesAction {
+- (void)testAddressesViewControllerContainsManageAddressesAction {
   // Bring up the keyboard.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+  [[EarlGrey selectElementWithMatcher:WebViewMatcher()]
       performAction:chrome_test_util::TapWebElementWithId(kFormElementName)];
 
   // Tap on the addresses icon.
@@ -124,7 +113,7 @@ BOOL WaitForKeyboardToAppear() {
 // Tests that the "Manage Addresses..." action works.
 - (void)testManageAddressesActionOpensAddressSettings {
   // Bring up the keyboard.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+  [[EarlGrey selectElementWithMatcher:WebViewMatcher()]
       performAction:chrome_test_util::TapWebElementWithId(kFormElementName)];
 
   // Tap on the addresses icon.
@@ -146,17 +135,9 @@ BOOL WaitForKeyboardToAppear() {
 
 // Tests that returning from "Manage Addresses..." leaves the icons and keyboard
 // in the right state.
-// TODO(crbug.com/1111076): Flaky on iOS simulator.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_testAddressesStateAfterPresentingManageAddresses \
-  DISABLED_testAddressesStateAfterPresentingManageAddresses
-#else
-#define MAYBE_testAddressesStateAfterPresentingManageAddresses \
-  testAddressesStateAfterPresentingManageAddresses
-#endif
-- (void)MAYBE_testAddressesStateAfterPresentingManageAddresses {
+- (void)testAddressesStateAfterPresentingManageAddresses {
   // Bring up the keyboard.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+  [[EarlGrey selectElementWithMatcher:WebViewMatcher()]
       performAction:chrome_test_util::TapWebElementWithId(kFormElementName)];
 
   // Tap on the addresses icon.
@@ -211,7 +192,7 @@ BOOL WaitForKeyboardToAppear() {
     ;
   }
   // Bring up the keyboard.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+  [[EarlGrey selectElementWithMatcher:WebViewMatcher()]
       performAction:chrome_test_util::TapWebElementWithId(kFormElementName)];
 
   // Tap on the addresses icon.
@@ -238,20 +219,12 @@ BOOL WaitForKeyboardToAppear() {
 
 // Tests that the Address View Controller is dismissed when tapping the outside
 // the popover on iPad.
-// TODO(crbug.com/1116887) Flaky on iOS simulator
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_testIPadTappingOutsidePopOverDismissAddressController \
-  DISABLED_testIPadTappingOutsidePopOverDismissAddressController
-#else
-#define MAYBE_testIPadTappingOutsidePopOverDismissAddressController \
-  testIPadTappingOutsidePopOverDismissAddressController
-#endif
-- (void)MAYBE_testIPadTappingOutsidePopOverDismissAddressController {
+- (void)testIPadTappingOutsidePopOverDismissAddressController {
   if (![ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_SKIPPED(@"Test is not applicable for iPhone");
   }
   // Bring up the keyboard.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+  [[EarlGrey selectElementWithMatcher:WebViewMatcher()]
       performAction:chrome_test_util::TapWebElementWithId(kFormElementName)];
 
   // Tap on the addresses icon.
@@ -280,20 +253,12 @@ BOOL WaitForKeyboardToAppear() {
 }
 
 // Tests that the address icon is hidden when no addresses are available.
-// TODO(crbug.com/1116043): Flaky on ios simulator.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_testAddressIconIsNotVisibleWhenAddressStoreEmpty \
-  DISABLED_testAddressIconIsNotVisibleWhenAddressStoreEmpty
-#else
-#define MAYBE_testAddressIconIsNotVisibleWhenAddressStoreEmpty \
-  testAddressIconIsNotVisibleWhenAddressStoreEmpty
-#endif
-- (void)MAYBE_testAddressIconIsNotVisibleWhenAddressStoreEmpty {
+- (void)testAddressIconIsNotVisibleWhenAddressStoreEmpty {
   // Delete the profile that is added on |-setUp|.
   [AutofillAppInterface clearProfilesStore];
 
   // Bring up the keyboard.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+  [[EarlGrey selectElementWithMatcher:WebViewMatcher()]
       performAction:chrome_test_util::TapWebElementWithId(kFormElementName)];
 
   // Wait for the keyboard to appear.
@@ -307,7 +272,7 @@ BOOL WaitForKeyboardToAppear() {
   [AutofillAppInterface saveExampleProfile];
 
   // Tap another field to trigger form activity.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
+  [[EarlGrey selectElementWithMatcher:WebViewMatcher()]
       performAction:chrome_test_util::TapWebElementWithId(kFormElementCity)];
 
   // Assert the address icon is visible now.

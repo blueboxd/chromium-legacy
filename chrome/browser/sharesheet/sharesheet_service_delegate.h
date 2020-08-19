@@ -52,6 +52,7 @@ class SharesheetServiceDelegate : public SharesheetController {
 
   // SharesheetController overrides
   uint32_t GetId() override;
+  void SetSharesheetSize(const int& width, const int& height) override;
   void CloseSharesheet() override;
 
  private:

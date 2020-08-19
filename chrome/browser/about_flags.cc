@@ -2671,9 +2671,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kUiShowCompositedLayerBordersName,
      flag_descriptions::kUiShowCompositedLayerBordersDescription, kOsCrOS,
      MULTI_VALUE_TYPE(kUiShowCompositedLayerBordersChoices)},
-    {"enable-request-tablet-site", flag_descriptions::kRequestTabletSiteName,
-     flag_descriptions::kRequestTabletSiteDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(chromeos::switches::kEnableRequestTabletSite)},
 #endif  // OS_CHROMEOS
     {"debug-packed-apps", flag_descriptions::kDebugPackedAppName,
      flag_descriptions::kDebugPackedAppDescription, kOsDesktop,
@@ -2871,13 +2868,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kReducedReferrerGranularityDescription, kOsAll,
      FEATURE_VALUE_TYPE(blink::features::kReducedReferrerGranularity)},
 #if defined(OS_CHROMEOS)
-    {"crostini-port-forwarding", flag_descriptions::kCrostiniPortForwardingName,
-     flag_descriptions::kCrostiniPortForwardingDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kCrostiniPortForwarding)},
-    {"crostini-show-mic-setting",
-     flag_descriptions::kCrostiniShowMicSettingName,
-     flag_descriptions::kCrostiniShowMicSettingDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kCrostiniShowMicSetting)},
     {"crostini-use-dlc", flag_descriptions::kCrostiniUseDlcName,
      flag_descriptions::kCrostiniUseDlcDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kCrostiniUseDlc)},

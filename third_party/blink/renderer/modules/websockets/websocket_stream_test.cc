@@ -199,7 +199,6 @@ TEST_F(WebSocketStreamTest, ConnectWithFailedHandshake) {
 
 TEST_F(WebSocketStreamTest, ConnectWithSuccessfulHandshake) {
   V8TestingScope scope;
-  Checkpoint checkpoint;
 
   {
     InSequence s;
@@ -207,8 +206,6 @@ TEST_F(WebSocketStreamTest, ConnectWithSuccessfulHandshake) {
     EXPECT_CALL(Channel(),
                 Connect(KURL("ws://example.com/chat"), String("chat")))
         .WillOnce(Return(true));
-    EXPECT_CALL(checkpoint, Call(1));
-    EXPECT_CALL(Channel(), Close(1001, String()));
   }
 
   auto* options = WebSocketStreamOptions::Create();
@@ -238,9 +235,6 @@ TEST_F(WebSocketStreamTest, ConnectWithSuccessfulHandshake) {
   EXPECT_EQ(PropertyAsString(script_state, value, "protocol"), "chat");
   EXPECT_EQ(PropertyAsString(script_state, value, "extensions"),
             "permessage-deflate");
-
-  // Destruction of V8TestingScope causes Close() to be called.
-  checkpoint.Call(1);
 }
 
 TEST_F(WebSocketStreamTest, ConnectThenCloseCleanly) {

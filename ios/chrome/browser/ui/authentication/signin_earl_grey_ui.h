@@ -11,12 +11,6 @@
 
 @class FakeChromeIdentity;
 
-typedef NS_ENUM(NSInteger, SignOutConfirmation) {
-  SignOutConfirmationManagedUser,
-  SignOutConfirmationNonManagedUser,
-  SignOutConfirmationNonManagedUserWithClearedData,
-};
-
 // Test methods that perform sign in actions on Chrome UI.
 @interface SigninEarlGreyUI : NSObject
 
@@ -37,44 +31,43 @@ typedef NS_ENUM(NSInteger, SignOutConfirmation) {
 // method or if the account is not successfully signed out.
 + (void)signOutAndClearDataFromDevice;
 
-// Taps on the settings link in the sign-in view. The sign-in view has to be
-// opened before calling this method.
-+ (void)tapSettingsLink;
-
 // Selects an identity when the identity chooser dialog is presented. The dialog
 // is confirmed, but it doesn't validated the user consent page.
 + (void)selectIdentityWithEmail:(NSString*)userEmail;
 
-// Confirms the sign in confirmation page, scrolls first to make the OK button
-// visible on short devices (e.g. iPhone 5s).
+// Taps on the settings link in the sign-in view. The sign-in view has to be
+// opened before calling this method.
++ (void)tapSettingsLink;
+
+// Deprecated. Use |tapSigninConfirmationDialog|.
 + (void)confirmSigninConfirmationDialog;
+
+// Taps the sign in confirmation page, scrolls first to make the OK button
+// visible on short devices (e.g. iPhone 5s).
++ (void)tapSigninConfirmationDialog;
 
 // Taps on the "ADD ACCOUNT" button in the unified consent, to display the
 // SSO dialog.
 // This method should only be used with UnifiedConsent flag.
 + (void)tapAddAccountButton;
 
-// Checks that the sign-in promo view (with a close button) is visible using the
-// right mode.
-+ (void)checkSigninPromoVisibleWithMode:(SigninPromoViewMode)mode;
-
-// Checks that the sign-in promo view is visible using the right mode. If
-// |closeButton| is set to YES, the close button in the sign-in promo has to be
-// visible.
-+ (void)checkSigninPromoVisibleWithMode:(SigninPromoViewMode)mode
-                            closeButton:(BOOL)closeButton;
-
-// Checks that the sign-in promo view is not visible.
-+ (void)checkSigninPromoNotVisible;
-
-// Taps the appropriate action label on the sign-out dialog for the given
-// |signOutConfirmation| profile and signs out from the current identity.
-+ (void)signOutWithSignOutConfirmation:(SignOutConfirmation)signOutConfirmation;
-
 // Taps "Remove account from this device" button and follow-up confirmation.
 // Assumes the user is on the Settings screen.
 + (void)tapRemoveAccountFromDeviceWithFakeIdentity:
     (FakeChromeIdentity*)fakeIdentity;
+
+// Checks that the sign-in promo view (with a close button) is visible using the
+// right mode.
++ (void)verifySigninPromoVisibleWithMode:(SigninPromoViewMode)mode;
+
+// Checks that the sign-in promo view is visible using the right mode. If
+// |closeButton| is set to YES, the close button in the sign-in promo has to be
+// visible.
++ (void)verifySigninPromoVisibleWithMode:(SigninPromoViewMode)mode
+                             closeButton:(BOOL)closeButton;
+
+// Checks that the sign-in promo view is not visible.
++ (void)verifySigninPromoNotVisible;
 
 @end
 

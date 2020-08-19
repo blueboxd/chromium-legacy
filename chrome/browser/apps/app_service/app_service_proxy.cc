@@ -508,20 +508,20 @@ void AppServiceProxy::UninstallForTesting(const std::string& app_id,
 #endif
 
 std::vector<std::string> AppServiceProxy::GetAppIdsForUrl(const GURL& url) {
-  auto app_id_and_activities =
+  auto intent_launch_info =
       GetAppsForIntent(apps_util::CreateIntentFromUrl(url));
   std::vector<std::string> app_ids;
-  for (auto& app_id_and_activity : app_id_and_activities) {
-    app_ids.push_back(std::move(app_id_and_activity.app_id));
+  for (auto& entry : intent_launch_info) {
+    app_ids.push_back(std::move(entry.app_id));
   }
   return app_ids;
 }
 
-std::vector<AppIdAndActivityName> AppServiceProxy::GetAppsForIntent(
+std::vector<IntentLaunchInfo> AppServiceProxy::GetAppsForIntent(
     const apps::mojom::IntentPtr& intent) {
-  std::vector<AppIdAndActivityName> app_id_and_activities;
+  std::vector<IntentLaunchInfo> intent_launch_info;
   if (app_service_.is_bound()) {
-    cache_.ForEachApp([&app_id_and_activities,
+    cache_.ForEachApp([&intent_launch_info,
                        &intent](const apps::AppUpdate& update) {
       if (update.Readiness() == apps::mojom::Readiness::kUninstalledByUser) {
         return;
@@ -529,28 +529,30 @@ std::vector<AppIdAndActivityName> AppServiceProxy::GetAppsForIntent(
       std::set<std::string> existing_activities;
       for (const auto& filter : update.IntentFilters()) {
         if (apps_util::IntentMatchesFilter(intent, filter)) {
-          AppIdAndActivityName app_id_and_activity;
-          app_id_and_activity.app_id = update.AppId();
-          std::string activity_name;
-          if (filter->activity_name && !filter->activity_name.value().empty()) {
-            activity_name = filter->activity_name.value();
+          IntentLaunchInfo entry;
+          entry.app_id = update.AppId();
+          std::string activity_label;
+          if (filter->activity_label &&
+              !filter->activity_label.value().empty()) {
+            activity_label = filter->activity_label.value();
           } else {
-            activity_name = update.Name();
+            activity_label = update.Name();
           }
-          if (base::Contains(existing_activities, activity_name)) {
+          if (base::Contains(existing_activities, activity_label)) {
             continue;
           }
-          existing_activities.insert(activity_name);
-          app_id_and_activity.activity_name = activity_name;
-          app_id_and_activities.push_back(app_id_and_activity);
+          existing_activities.insert(activity_label);
+          entry.activity_label = activity_label;
+          entry.activity_name = filter->activity_name.value_or("");
+          intent_launch_info.push_back(entry);
         }
       }
     });
   }
-  return app_id_and_activities;
+  return intent_launch_info;
 }
 
-std::vector<AppIdAndActivityName> AppServiceProxy::GetAppsForFiles(
+std::vector<IntentLaunchInfo> AppServiceProxy::GetAppsForFiles(
     const std::vector<GURL>& filesystem_urls,
     const std::vector<std::string>& mime_types) {
   return GetAppsForIntent(

@@ -27,6 +27,10 @@ class DiagnosticsService : public health::mojom::DiagnosticsService {
 
  private:
   void GetAvailableRoutines(GetAvailableRoutinesCallback callback) override;
+  void GetRoutineUpdate(int32_t id,
+                        health::mojom::DiagnosticRoutineCommandEnum command,
+                        bool include_output,
+                        GetRoutineUpdateCallback callback) override;
 
   // Ensures that |service_| created and connected to the
   // CrosHealthdProbeService.

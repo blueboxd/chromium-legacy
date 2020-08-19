@@ -363,6 +363,10 @@ class PreflightControllerTest : public testing::Test {
     network::mojom::URLLoaderFactoryParamsPtr params =
         network::mojom::URLLoaderFactoryParams::New();
     params->process_id = mojom::kBrowserProcessId;
+    // We use network::CorsURLLoaderFactory for "internal" URLLoaderFactory
+    // used by the PreflightController. Hence here we disable CORS as otherwise
+    // the URLLoader would create a CORS-preflight for the preflight request.
+    params->disable_web_security = true;
     params->is_corb_enabled = false;
     network_context_remote_->CreateURLLoaderFactory(
         url_loader_factory_remote_.BindNewPipeAndPassReceiver(),

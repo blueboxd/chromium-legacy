@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/css/cssom/cross_thread_style_value.h"
 #include "third_party/blink/renderer/core/css/cssom/style_property_map_read_only.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
@@ -50,6 +49,9 @@ class CORE_EXPORT PaintWorkletStylePropertyMap
 
   // This constructor should be called on the worklet-thread only.
   explicit PaintWorkletStylePropertyMap(CrossThreadData data);
+  PaintWorkletStylePropertyMap(const PaintWorkletStylePropertyMap&) = delete;
+  PaintWorkletStylePropertyMap& operator=(const PaintWorkletStylePropertyMap&) =
+      delete;
 
   CSSStyleValue* get(const ExecutionContext*,
                      const String& property_name,
@@ -75,8 +77,6 @@ class CORE_EXPORT PaintWorkletStylePropertyMap
   IterationSource* StartIteration(ScriptState*, ExceptionState&) override;
 
   CrossThreadData data_;
-
-  DISALLOW_COPY_AND_ASSIGN(PaintWorkletStylePropertyMap);
 };
 
 }  // namespace blink

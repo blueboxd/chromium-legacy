@@ -70,6 +70,7 @@ force_gl_flush_on_swap_buffers
 force_high_performance_gpu
 force_int_or_srgb_cube_texture_complete
 force_low_power_gpu
+force_rgb10a2_overlay_support_flags
 force_update_scissor_state_when_binding_fbo0
 get_frag_data_info_bug
 gl_clear_broken

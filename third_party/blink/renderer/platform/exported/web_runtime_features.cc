@@ -716,4 +716,9 @@ void WebRuntimeFeatures::EnableContentIndex(bool enable) {
 void WebRuntimeFeatures::EnableRestrictGamepadAccess(bool enable) {
   RuntimeEnabledFeatures::SetRestrictGamepadAccessEnabled(enable);
 }
+
+void WebRuntimeFeatures::EnableCompositingOptimizations(bool enable) {
+  RuntimeEnabledFeatures::SetCompositingOptimizationsEnabled(enable);
+}
+
 }  // namespace blink

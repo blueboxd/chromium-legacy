@@ -14,10 +14,32 @@ namespace ash {
 constexpr base::TimeDelta kAnimationDuration =
     base::TimeDelta::FromMilliseconds(500);
 
+// Topic related numbers.
+
+// The default interval to fetch Topics.
+constexpr base::TimeDelta kTopicFetchInterval =
+    base::TimeDelta::FromSeconds(30);
+
 // The default interval to refresh photos.
-// TODO(b/139953713): Change to a correct time interval.
 constexpr base::TimeDelta kPhotoRefreshInterval =
     base::TimeDelta::FromSeconds(60);
+
+// The number of requests to fetch topics.
+constexpr int kNumberOfRequests = 50;
+
+// The batch size of topics to fetch in one request.
+// Magic number 2 is based on experiments that no curation on Google Photos.
+constexpr int kTopicsBatchSize = 2;
+
+// Max cached images.
+constexpr int kMaxNumberOfCachedImages = 100;
+
+constexpr int kMaxImageSizeInBytes = 5 * 1024 * 1024;
+
+constexpr int kMaxReservedAvailableDiskSpaceByte = 200 * 1024 * 1024;
+
+constexpr char kPhotoFileExt[] = ".img";
+constexpr char kPhotoDetailsFileExt[] = ".txt";
 
 // Directory name of ambient mode.
 constexpr char kAmbientModeDirectoryName[] = "ambient-mode";

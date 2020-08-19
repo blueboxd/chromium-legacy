@@ -139,16 +139,6 @@ void InvokeAndErasePendingContainerCallbacks(
   container_callbacks->erase(range.first, range.second);
 }
 
-bool IsMicSharingEnabled(Profile* profile, bool crostini_mic_sharing_enabled) {
-  if (base::FeatureList::IsEnabled(
-          chromeos::features::kCrostiniShowMicSetting) &&
-      profile->GetPrefs()->GetBoolean(::prefs::kAudioCaptureAllowed) &&
-      crostini_mic_sharing_enabled) {
-    return true;
-  }
-  return false;
-}
-
 void EmitCorruptionStateMetric(CorruptionStates state) {
   base::UmaHistogramEnumeration("Crostini.FilesystemCorruption", state);
 }
@@ -1210,9 +1200,8 @@ void CrostiniManager::StartTerminaVm(std::string name,
   request.set_owner_id(owner_id_);
   if (base::FeatureList::IsEnabled(chromeos::features::kCrostiniGpuSupport))
     request.set_enable_gpu(true);
-  bool is_mic_sharing_enabled =
-      IsMicSharingEnabled(profile_, crostini_mic_sharing_enabled_);
-  if (is_mic_sharing_enabled) {
+  if (crostini_mic_sharing_enabled_ &&
+      profile_->GetPrefs()->GetBoolean(::prefs::kAudioCaptureAllowed)) {
     request.set_enable_audio_capture(true);
   }
   const int32_t cpus = base::SysInfo::NumberOfProcessors() - num_cores_disabled;

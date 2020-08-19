@@ -1023,11 +1023,11 @@ void TraceEventDataSource::OnMetricsSampleCallback(
     const char* histogram_name,
     uint64_t name_hash,
     base::HistogramBase::Sample sample) {
-  bool privacy_filtering_enabled =
-      TraceEventDataSource::GetInstance()->IsPrivacyFilteringEnabled();
   TRACE_EVENT_INSTANT(
       TRACE_DISABLED_BY_DEFAULT("histogram_samples"), "HistogramSample",
       TRACE_EVENT_SCOPE_THREAD, [&](perfetto::EventContext ctx) {
+        bool privacy_filtering_enabled =
+            TraceEventDataSource::GetInstance()->IsPrivacyFilteringEnabled();
         perfetto::protos::pbzero::ChromeHistogramSample* new_sample =
             ctx.event()->set_chrome_histogram_sample();
         new_sample->set_name_hash(name_hash);
@@ -1041,11 +1041,11 @@ void TraceEventDataSource::OnMetricsSampleCallback(
 void TraceEventDataSource::OnUserActionSampleCallback(
     const std::string& action,
     base::TimeTicks action_time) {
-  bool privacy_filtering_enabled =
-      TraceEventDataSource::GetInstance()->IsPrivacyFilteringEnabled();
   TRACE_EVENT_INSTANT(
       TRACE_DISABLED_BY_DEFAULT("user_action_samples"), "UserAction",
       TRACE_EVENT_SCOPE_GLOBAL, [&](perfetto::EventContext ctx) {
+        bool privacy_filtering_enabled =
+            TraceEventDataSource::GetInstance()->IsPrivacyFilteringEnabled();
         perfetto::protos::pbzero::ChromeUserEvent* new_sample =
             ctx.event()->set_chrome_user_event();
         if (!privacy_filtering_enabled) {
@@ -1090,6 +1090,10 @@ void TraceEventDataSource::ReturnTraceWriter(
 }
 
 void TraceEventDataSource::EmitTrackDescriptor() {
+  // Prevent reentrancy into tracing code (flushing the trace writer sends a
+  // mojo message which can result in additional trace events).
+  AutoThreadLocalBoolean thread_is_in_trace_event(GetThreadIsInTraceEventTLS());
+
   AutoLockWithDeferredTaskPosting lock(lock_);
 
   int process_id = TraceLog::GetInstance()->process_id();

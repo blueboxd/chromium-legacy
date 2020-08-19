@@ -35,6 +35,9 @@ class HTMLLegendElement final : public HTMLElement {
   explicit HTMLLegendElement(Document&);
 
   HTMLFormElement* form() const;
+
+ private:
+  LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout) override;
 };
 
 }  // namespace blink

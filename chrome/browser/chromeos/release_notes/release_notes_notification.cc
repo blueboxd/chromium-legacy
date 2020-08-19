@@ -48,7 +48,8 @@ void ReleaseNotesNotification::HandleClickShowNotification() {
   SystemNotificationHelper::GetInstance()->Close(kShowNotificationID);
   base::RecordAction(
       base::UserMetricsAction("ReleaseNotes.LaunchedNotification"));
-  chrome::LaunchReleaseNotes(profile_);
+  chrome::LaunchReleaseNotes(
+      profile_, apps::mojom::LaunchSource::kFromReleaseNotesNotification);
 }
 
 void ReleaseNotesNotification::ShowReleaseNotesNotification() {

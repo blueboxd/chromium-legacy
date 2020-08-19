@@ -98,7 +98,7 @@ GURL ProtocolHandler::TranslateUrl(const GURL& url) const {
   std::string translatedUrlSpec(url_.spec());
   base::ReplaceFirstSubstringAfterOffset(
       &translatedUrlSpec, 0, "%s",
-      net::EscapeQueryParamValue(url.spec(), true));
+      net::EscapeQueryParamValue(url.spec(), false));
   return GURL(translatedUrlSpec);
 }
 

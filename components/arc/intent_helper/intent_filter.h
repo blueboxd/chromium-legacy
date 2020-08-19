@@ -77,6 +77,7 @@ class IntentFilter {
                std::vector<std::string> mime_types);
   IntentFilter(const std::string& package_name,
                const std::string& activity_name,
+               const std::string& activity_label,
                std::vector<std::string> actions,
                std::vector<IntentFilter::AuthorityEntry> authorities,
                std::vector<IntentFilter::PatternMatcher> paths,
@@ -90,6 +91,7 @@ class IntentFilter {
 
   const std::string& package_name() const { return package_name_; }
   const std::string& activity_name() const { return activity_name_; }
+  const std::string& activity_label() const { return activity_label_; }
   const std::vector<std::string>& actions() const { return actions_; }
   const std::vector<AuthorityEntry>& authorities() const {
     return authorities_;
@@ -104,6 +106,7 @@ class IntentFilter {
 
   std::string package_name_;
   std::string activity_name_;
+  std::string activity_label_;
   std::vector<std::string> actions_;
   std::vector<AuthorityEntry> authorities_;
   std::vector<PatternMatcher> paths_;

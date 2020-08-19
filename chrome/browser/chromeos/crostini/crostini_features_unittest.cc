@@ -297,11 +297,6 @@ TEST(CrostiniFeaturesTest, TestPortForwardingAllowed) {
   content::BrowserTaskEnvironment task_environment;
   TestingProfile profile;
   FakeCrostiniFeatures crostini_features;
-  base::test::ScopedFeatureList scoped_feature_list;
-
-  // Enable feature.
-  scoped_feature_list.InitWithFeatures(
-      {chromeos::features::kCrostiniPortForwarding}, {});
 
   // Default case.
   EXPECT_TRUE(crostini_features.IsPortForwardingAllowed(&profile));
@@ -319,31 +314,12 @@ TEST(CrostiniFeaturesTest, TestPortForwardingDisallowed) {
   content::BrowserTaskEnvironment task_environment;
   TestingProfile profile;
   FakeCrostiniFeatures crostini_features;
-  base::test::ScopedFeatureList scoped_feature_list;
-
-  // Enable feature.
-  scoped_feature_list.InitWithFeatures(
-      {chromeos::features::kCrostiniPortForwarding}, {});
 
   // Set pref to false.
   profile.GetTestingPrefService()->SetManagedPref(
       crostini::prefs::kCrostiniPortForwardingAllowedByPolicy,
       std::make_unique<base::Value>(false));
 
-  // Disallowed.
-  EXPECT_FALSE(crostini_features.IsPortForwardingAllowed(&profile));
-
-  // Disable feature.
-  scoped_feature_list.Reset();
-  scoped_feature_list.InitWithFeatures(
-      {}, {chromeos::features::kCrostiniPortForwarding});
-  // Disallowed.
-  EXPECT_FALSE(crostini_features.IsPortForwardingAllowed(&profile));
-
-  // Set pref to true.
-  profile.GetTestingPrefService()->SetManagedPref(
-      crostini::prefs::kCrostiniPortForwardingAllowedByPolicy,
-      std::make_unique<base::Value>(true));
   // Disallowed.
   EXPECT_FALSE(crostini_features.IsPortForwardingAllowed(&profile));
 }

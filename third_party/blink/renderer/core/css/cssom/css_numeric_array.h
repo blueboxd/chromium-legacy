@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CSS_NUMERIC_ARRAY_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CSS_NUMERIC_ARRAY_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/css/cssom/css_numeric_value.h"
 
 namespace blink {
@@ -23,6 +22,8 @@ class CORE_EXPORT CSSNumericArray final : public ScriptWrappable {
 
   explicit CSSNumericArray(CSSNumericValueVector values)
       : values_(std::move(values)) {}
+  CSSNumericArray(const CSSNumericArray&) = delete;
+  CSSNumericArray& operator=(const CSSNumericArray&) = delete;
 
   void Trace(Visitor* visitor) const override {
     visitor->Trace(values_);
@@ -40,7 +41,6 @@ class CORE_EXPORT CSSNumericArray final : public ScriptWrappable {
 
  private:
   CSSNumericValueVector values_;
-  DISALLOW_COPY_AND_ASSIGN(CSSNumericArray);
 };
 
 }  // namespace blink

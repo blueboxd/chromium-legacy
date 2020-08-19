@@ -54,6 +54,10 @@ struct StructTraits<arc::mojom::IntentFilterDataView, arc::IntentFilter> {
     return r.activity_name();
   }
 
+  static const std::string& activity_label(const arc::IntentFilter& r) {
+    return r.activity_label();
+  }
+
   static bool Read(arc::mojom::IntentFilterDataView data,
                    arc::IntentFilter* out);
 };

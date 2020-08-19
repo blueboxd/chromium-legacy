@@ -40,9 +40,16 @@ using chrome_test_util::SignOutAccountsButton;
   [ChromeEarlGreyUI
       tapSettingsMenuButton:chrome_test_util::SecondarySignInButton()];
   [self selectIdentityWithEmail:fakeIdentity.userEmail];
-  [self confirmSigninConfirmationDialog];
+  [self tapSigninConfirmationDialog];
   if ([fakeIdentity.userEmail hasSuffix:ios::kManagedIdentityEmailSuffix]) {
-    [self confirmSigninWithManagedAccount];
+    // Synchronization off due to an infinite spinner, in the user consent view,
+    // under the managed consent dialog. This spinner is started by the sign-in
+    // process.
+    ScopedSynchronizationDisabler disabler;
+    id<GREYMatcher> acceptButton = [ChromeMatchersAppInterface
+        buttonWithAccessibilityLabelID:IDS_IOS_MANAGED_SIGNIN_ACCEPT_BUTTON];
+    [ChromeEarlGrey waitForMatcher:acceptButton];
+    [[EarlGrey selectElementWithMatcher:acceptButton] performAction:grey_tap()];
   }
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
@@ -80,18 +87,11 @@ using chrome_test_util::SignOutAccountsButton;
       performAction:grey_tap()];
 }
 
-+ (void)confirmSigninWithManagedAccount {
-  // Synchronization off due to an infinite spinner, in the user consent view,
-  // under the managed consent dialog. This spinner is started by the sign-in
-  // process.
-  ScopedSynchronizationDisabler disabler;
-  id<GREYMatcher> acceptButton = [ChromeMatchersAppInterface
-      buttonWithAccessibilityLabelID:IDS_IOS_MANAGED_SIGNIN_ACCEPT_BUTTON];
-  [ChromeEarlGrey waitForMatcher:acceptButton];
-  [[EarlGrey selectElementWithMatcher:acceptButton] performAction:grey_tap()];
++ (void)confirmSigninConfirmationDialog {
+  [self tapSigninConfirmationDialog];
 }
 
-+ (void)confirmSigninConfirmationDialog {
++ (void)tapSigninConfirmationDialog {
   // To confirm the dialog, the scroll view content has to be scrolled to the
   // bottom to transform "MORE" button into the validation button.
   // EarlGrey fails to scroll to the bottom, using grey_scrollToContentEdge(),
@@ -149,12 +149,12 @@ using chrome_test_util::SignOutAccountsButton;
   [[EarlGrey selectElementWithMatcher:buttonMatcher] performAction:grey_tap()];
 }
 
-+ (void)checkSigninPromoVisibleWithMode:(SigninPromoViewMode)mode {
-  [self checkSigninPromoVisibleWithMode:mode closeButton:YES];
++ (void)verifySigninPromoVisibleWithMode:(SigninPromoViewMode)mode {
+  [self verifySigninPromoVisibleWithMode:mode closeButton:YES];
 }
 
-+ (void)checkSigninPromoVisibleWithMode:(SigninPromoViewMode)mode
-                            closeButton:(BOOL)closeButton {
++ (void)verifySigninPromoVisibleWithMode:(SigninPromoViewMode)mode
+                             closeButton:(BOOL)closeButton {
   [ChromeEarlGreyUI waitForAppToIdle];
   [[EarlGrey
       selectElementWithMatcher:grey_allOf(
@@ -188,7 +188,7 @@ using chrome_test_util::SignOutAccountsButton;
   }
 }
 
-+ (void)checkSigninPromoNotVisible {
++ (void)verifySigninPromoNotVisible {
   [[EarlGrey
       selectElementWithMatcher:grey_allOf(
                                    grey_accessibilityID(kSigninPromoViewId),
@@ -202,29 +202,6 @@ using chrome_test_util::SignOutAccountsButton;
       selectElementWithMatcher:grey_allOf(SecondarySignInButton(),
                                           grey_sufficientlyVisible(), nil)]
       assertWithMatcher:grey_nil()];
-}
-
-+ (void)signOutWithSignOutConfirmation:
-    (SignOutConfirmation)signOutConfirmation {
-  [ChromeEarlGreyUI openSettingsMenu];
-  [ChromeEarlGreyUI tapSettingsMenuButton:SettingsAccountButton()];
-
-  id<GREYMatcher> signOutButtonMatcher;
-  int confirmationLabelID = 0;
-  switch (signOutConfirmation) {
-    case SignOutConfirmationNonManagedUser: {
-      signOutButtonMatcher = SignOutAccountsButton();
-      confirmationLabelID = IDS_IOS_DISCONNECT_DIALOG_CONTINUE_BUTTON_MOBILE;
-      break;
-    }
-    case SignOutConfirmationManagedUser:
-    case SignOutConfirmationNonManagedUserWithClearedData: {
-      signOutButtonMatcher = grey_accessibilityID(
-          kSettingsAccountsTableViewSignoutAndClearDataCellId);
-      confirmationLabelID = IDS_IOS_DISCONNECT_DIALOG_CONTINUE_AND_CLEAR_MOBILE;
-      break;
-    }
-  }
 }
 
 + (void)tapRemoveAccountFromDeviceWithFakeIdentity:

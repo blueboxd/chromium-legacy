@@ -25,15 +25,13 @@ def main():
                       help='Classpath.')
   parser.add_argument('--bootclasspath', required=True,
                       help='Path to javac bootclasspath interface jar.')
-  parser.add_argument('--warnings-as-errors',
-                      action='store_true',
-                      help='Treat all warnings as errors.')
   options = parser.parse_args(args)
 
   options.bootclasspath = build_utils.ParseGnList(options.bootclasspath)
   options.classpath = build_utils.ParseGnList(options.classpath)
 
-  cmd = build_utils.JavaCmd(options.warnings_as_errors) + [
+  cmd = [
+      build_utils.JAVA_PATH,
       '-jar',
       options.desugar_jar,
       '--input',
@@ -52,8 +50,7 @@ def main():
   build_utils.CheckOutput(
       cmd,
       print_stdout=False,
-      stderr_filter=build_utils.FilterReflectiveAccessJavaWarnings,
-      fail_on_output=options.warnings_as_errors)
+      stderr_filter=build_utils.FilterReflectiveAccessJavaWarnings)
 
   if options.depfile:
     build_utils.WriteDepfile(options.depfile,

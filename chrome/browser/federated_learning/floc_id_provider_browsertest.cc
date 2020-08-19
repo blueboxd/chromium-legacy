@@ -278,7 +278,7 @@ IN_PROC_BROWSER_TEST_F(FlocIdProviderWithCustomizedServicesBrowserTest,
 
   EXPECT_EQ(GetFlocId().ToDebugHeaderValue(), FlocId().ToDebugHeaderValue());
 
-  // Turn on sync-history to trigger the start of the 1st floc session.
+  // Turn on sync-history to trigger the 1st floc computation.
   sync_service()->SetActiveDataTypes(syncer::ModelTypeSet::All());
   sync_service()->FireStateChanged();
 
@@ -313,7 +313,7 @@ IN_PROC_BROWSER_TEST_F(FlocIdProviderWithCustomizedServicesBrowserTest,
 
   EXPECT_EQ(GetFlocId().ToDebugHeaderValue(), FlocId().ToDebugHeaderValue());
 
-  // Turn on sync-history to trigger the start of the 1st floc session.
+  // Turn on sync-history to trigger the 1st floc computation.
   sync_service()->SetActiveDataTypes(syncer::ModelTypeSet::All());
   sync_service()->FireStateChanged();
 

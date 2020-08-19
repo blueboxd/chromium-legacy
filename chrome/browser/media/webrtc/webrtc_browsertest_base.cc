@@ -473,6 +473,14 @@ bool WebRtcTestBase::WaitForVideoToPlay(
   return is_video_playing;
 }
 
+bool WebRtcTestBase::WaitForVideoToStop(
+    content::WebContents* tab_contents) const {
+  bool is_video_stopped =
+      test::PollingWaitUntil("isVideoStopped()", "video-stopped", tab_contents);
+  EXPECT_TRUE(is_video_stopped);
+  return is_video_stopped;
+}
+
 std::string WebRtcTestBase::GetStreamSize(
     content::WebContents* tab_contents,
     const std::string& video_element) const {

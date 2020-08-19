@@ -315,11 +315,6 @@ void CrostiniFeatures::CanChangeAdbSideloading(
 }
 
 bool CrostiniFeatures::IsPortForwardingAllowed(Profile* profile) {
-  if (!base::FeatureList::IsEnabled(
-          chromeos::features::kCrostiniPortForwarding)) {
-    VLOG(1) << "kCrostiniPortForwarding chromeos feature is disabled.";
-    return false;
-  }
   if (!profile->GetPrefs()->GetBoolean(
           crostini::prefs::kCrostiniPortForwardingAllowedByPolicy)) {
     VLOG(1) << "kCrostiniPortForwardingAllowedByPolicy preference is false.";

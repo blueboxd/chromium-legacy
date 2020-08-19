@@ -63,6 +63,13 @@ uint32_t SharesheetServiceDelegate::GetId() {
   return id_;
 }
 
+void SharesheetServiceDelegate::SetSharesheetSize(const int& width,
+                                                  const int& height) {
+  DCHECK_GT(width, 0);
+  DCHECK_GT(height, 0);
+  sharesheet_bubble_view_->ResizeBubble(width, height);
+}
+
 void SharesheetServiceDelegate::CloseSharesheet() {
   sharesheet_bubble_view_->CloseBubble();
 }

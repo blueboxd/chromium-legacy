@@ -1183,10 +1183,6 @@ TEST_F(PasswordAutofillManagerTest, PreviewAndFillEmptyUsernameSuggestion) {
 // Tests that the "Manage passwords" suggestion is shown along with the password
 // popup.
 TEST_F(PasswordAutofillManagerTest, ShowAllPasswordsOptionOnPasswordField) {
-  constexpr char kShownContextHistogram[] =
-      "PasswordManager.ShowAllSavedPasswordsShownContext";
-  constexpr char kAcceptedContextHistogram[] =
-      "PasswordManager.ShowAllSavedPasswordsAcceptedContext";
   base::HistogramTester histograms;
 
   NiceMock<MockAutofillClient> autofill_client;
@@ -1216,10 +1212,6 @@ TEST_F(PasswordAutofillManagerTest, ShowAllPasswordsOptionOnPasswordField) {
               SuggestionVectorValuesAre(
                   ElementsAre(test_username_, GetManagePasswordsTitle())));
 
-  // Expect a sample only in the shown histogram.
-  histograms.ExpectUniqueSample(
-      kShownContextHistogram,
-      metrics_util::ShowAllSavedPasswordsContext::kPassword, 1);
   // Clicking at the "Show all passwords row" should trigger a call to open
   // the Password Manager settings page and hide the popup.
   EXPECT_CALL(*client, NavigateToManagePasswordsPage(
@@ -1229,13 +1221,6 @@ TEST_F(PasswordAutofillManagerTest, ShowAllPasswordsOptionOnPasswordField) {
       HideAutofillPopup(autofill::PopupHidingReason::kAcceptSuggestion));
   password_autofill_manager_->DidAcceptSuggestion(
       base::string16(), autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY, 0);
-  // Expect a sample in both the shown and accepted histogram.
-  histograms.ExpectUniqueSample(
-      kShownContextHistogram,
-      metrics_util::ShowAllSavedPasswordsContext::kPassword, 1);
-  histograms.ExpectUniqueSample(
-      kAcceptedContextHistogram,
-      metrics_util::ShowAllSavedPasswordsContext::kPassword, 1);
   histograms.ExpectUniqueSample(
       kDropdownSelectedHistogram,
       metrics_util::PasswordDropdownSelectedOption::kShowAll, 1);

@@ -29,16 +29,17 @@ class MockFlocIdProvider : public FlocIdProviderImpl {
  public:
   using FlocIdProviderImpl::FlocIdProviderImpl;
 
-  void NotifyFlocIdUpdated() override {
+  void NotifyFlocUpdated(
+      FlocIdProviderImpl::ComputeFlocTrigger trigger) override {
     ++floc_update_notification_count_;
-    FlocIdProviderImpl::NotifyFlocIdUpdated();
+    FlocIdProviderImpl::NotifyFlocUpdated(trigger);
   }
 
   bool AreThirdPartyCookiesAllowed() override {
     return third_party_cookies_allowed_;
   }
 
-  void IsSwaaNacAccountEnabled(CanComputeFlocIdCallback callback) override {
+  void IsSwaaNacAccountEnabled(CanComputeFlocCallback callback) override {
     std::move(callback).Run(swaa_nac_account_enabled_);
   }
 
@@ -90,15 +91,20 @@ class FlocIdProviderUnitTest : public testing::Test {
     task_environment_.RunUntilIdle();
   }
 
-  void CheckCanComputeFlocId(
-      FlocIdProviderImpl::CanComputeFlocIdCallback callback) {
-    floc_id_provider_->CheckCanComputeFlocId(std::move(callback));
+  void CheckCanComputeFloc(
+      FlocIdProviderImpl::CanComputeFlocCallback callback) {
+    floc_id_provider_->CheckCanComputeFloc(std::move(callback));
   }
 
-  void OnGetRecentlyVisitedURLsCompleted(size_t floc_session_count,
-                                         history::QueryResults results) {
-    floc_id_provider_->OnGetRecentlyVisitedURLsCompleted(floc_session_count,
-                                                         std::move(results));
+  void OnGetRecentlyVisitedURLsCompleted(
+      FlocIdProviderImpl::ComputeFlocTrigger trigger,
+      history::QueryResults results) {
+    auto compute_floc_completed_callback =
+        base::BindOnce(&FlocIdProviderImpl::OnComputeFlocCompleted,
+                       base::Unretained(floc_id_provider_.get()), trigger);
+
+    floc_id_provider_->OnGetRecentlyVisitedURLsCompleted(
+        std::move(compute_floc_completed_callback), std::move(results));
   }
 
   FlocId floc_id() const { return floc_id_provider_->floc_id_; }
@@ -107,12 +113,21 @@ class FlocIdProviderUnitTest : public testing::Test {
     floc_id_provider_->floc_id_ = floc_id;
   }
 
-  size_t floc_session_count() const {
-    return floc_id_provider_->floc_session_count_;
+  bool floc_computation_in_progress() const {
+    return floc_id_provider_->floc_computation_in_progress_;
   }
 
-  void set_floc_session_count(size_t count) {
-    floc_id_provider_->floc_session_count_ = count;
+  void set_floc_computation_in_progress(bool floc_computation_in_progress) {
+    floc_id_provider_->floc_computation_in_progress_ =
+        floc_computation_in_progress;
+  }
+
+  bool first_floc_computation_triggered() const {
+    return floc_id_provider_->first_floc_computation_triggered_;
+  }
+
+  void set_first_floc_computation_triggered(bool triggered) {
+    floc_id_provider_->first_floc_computation_triggered_ = triggered;
   }
 
  protected:
@@ -140,13 +155,13 @@ TEST_F(FlocIdProviderUnitTest, QualifiedInitialHistory) {
 
   task_environment_.RunUntilIdle();
 
-  // Expect that the floc session hasn't started, as the floc_id_provider hasn't
-  // been notified about state of the sync_service.
+  // Expect that the floc computation hasn't started, as the floc_id_provider
+  // hasn't been notified about state of the sync_service.
   ASSERT_EQ(0u, floc_id_provider_->floc_update_notification_count());
   ASSERT_FALSE(floc_id().IsValid());
-  ASSERT_EQ(0u, floc_session_count());
+  ASSERT_FALSE(first_floc_computation_triggered());
 
-  // Trigger the start of the 1st floc session.
+  // Trigger the 1st floc computation.
   test_sync_service_->SetTransportState(
       syncer::SyncService::TransportState::ACTIVE);
   test_sync_service_->FireStateChanged();
@@ -158,7 +173,7 @@ TEST_F(FlocIdProviderUnitTest, QualifiedInitialHistory) {
   ASSERT_TRUE(floc_id().IsValid());
   ASSERT_EQ(FlocId::CreateFromHistory({domain}).ToDebugHeaderValue(),
             floc_id().ToDebugHeaderValue());
-  ASSERT_EQ(1u, floc_session_count());
+  ASSERT_TRUE(first_floc_computation_triggered());
 
   // Advance the clock by 1 day. Expect a floc id update notification, as
   // there's no history in the last 7 days so the id has been reset to empty.
@@ -166,7 +181,6 @@ TEST_F(FlocIdProviderUnitTest, QualifiedInitialHistory) {
 
   ASSERT_EQ(2u, floc_id_provider_->floc_update_notification_count());
   ASSERT_FALSE(floc_id().IsValid());
-  ASSERT_EQ(2u, floc_session_count());
 }
 
 TEST_F(FlocIdProviderUnitTest, UnqualifiedInitialHistory) {
@@ -181,13 +195,13 @@ TEST_F(FlocIdProviderUnitTest, UnqualifiedInitialHistory) {
 
   task_environment_.RunUntilIdle();
 
-  // Expect that the floc session hasn't started, as the floc_id_provider hasn't
-  // been notified about state of the sync_service.
+  // Expect that the floc computation hasn't started, as the floc_id_provider
+  // hasn't been notified about state of the sync_service.
   ASSERT_EQ(0u, floc_id_provider_->floc_update_notification_count());
   ASSERT_FALSE(floc_id().IsValid());
-  ASSERT_EQ(0u, floc_session_count());
+  ASSERT_FALSE(first_floc_computation_triggered());
 
-  // Trigger the start of the 1st floc session.
+  // Trigger the 1st floc computation.
   test_sync_service_->SetTransportState(
       syncer::SyncService::TransportState::ACTIVE);
   test_sync_service_->FireStateChanged();
@@ -195,9 +209,9 @@ TEST_F(FlocIdProviderUnitTest, UnqualifiedInitialHistory) {
   task_environment_.RunUntilIdle();
 
   // Expect no floc id update notification, as there is no qualified history
-  // entry. However, the 1st session should already have started.
+  // entry. However, the 1st computation should already have started.
   ASSERT_EQ(0u, floc_id_provider_->floc_update_notification_count());
-  ASSERT_EQ(1u, floc_session_count());
+  ASSERT_TRUE(first_floc_computation_triggered());
 
   // Add a history entry with a timestamp 6 days back from now.
   add_page_args.time = base::Time::Now() - base::TimeDelta::FromDays(6);
@@ -208,7 +222,6 @@ TEST_F(FlocIdProviderUnitTest, UnqualifiedInitialHistory) {
   task_environment_.FastForwardBy(base::TimeDelta::FromHours(23));
 
   ASSERT_EQ(0u, floc_id_provider_->floc_update_notification_count());
-  ASSERT_EQ(1u, floc_session_count());
 
   // Advance the clock by 1 hour. Expect a floc id update notification, as the
   // refresh time is reached and there's a valid history entry in the last 7
@@ -219,7 +232,6 @@ TEST_F(FlocIdProviderUnitTest, UnqualifiedInitialHistory) {
   ASSERT_TRUE(floc_id().IsValid());
   ASSERT_EQ(FlocId::CreateFromHistory({domain}).ToDebugHeaderValue(),
             floc_id().ToDebugHeaderValue());
-  ASSERT_EQ(2u, floc_session_count());
 }
 
 TEST_F(FlocIdProviderUnitTest, ScheduledUpdateSameFloc_NoNotification) {
@@ -234,7 +246,7 @@ TEST_F(FlocIdProviderUnitTest, ScheduledUpdateSameFloc_NoNotification) {
 
   task_environment_.RunUntilIdle();
 
-  // Trigger the start of the 1st floc session.
+  // Trigger the 1st floc computation.
   test_sync_service_->SetTransportState(
       syncer::SyncService::TransportState::ACTIVE);
   test_sync_service_->FireStateChanged();
@@ -251,27 +263,27 @@ TEST_F(FlocIdProviderUnitTest, ScheduledUpdateSameFloc_NoNotification) {
   ASSERT_EQ(1u, floc_id_provider_->floc_update_notification_count());
 }
 
-TEST_F(FlocIdProviderUnitTest, CheckCanComputeFlocId_Success) {
+TEST_F(FlocIdProviderUnitTest, CheckCanComputeFloc_Success) {
   test_sync_service_->SetTransportState(
       syncer::SyncService::TransportState::ACTIVE);
 
   base::OnceCallback<void(bool)> cb = base::BindOnce(
       [](bool can_compute_floc) { ASSERT_TRUE(can_compute_floc); });
 
-  CheckCanComputeFlocId(std::move(cb));
+  CheckCanComputeFloc(std::move(cb));
   task_environment_.RunUntilIdle();
 }
 
-TEST_F(FlocIdProviderUnitTest, CheckCanComputeFlocId_Failure_SyncDisabled) {
+TEST_F(FlocIdProviderUnitTest, CheckCanComputeFloc_Failure_SyncDisabled) {
   base::OnceCallback<void(bool)> cb = base::BindOnce(
       [](bool can_compute_floc) { ASSERT_FALSE(can_compute_floc); });
 
-  CheckCanComputeFlocId(std::move(cb));
+  CheckCanComputeFloc(std::move(cb));
   task_environment_.RunUntilIdle();
 }
 
 TEST_F(FlocIdProviderUnitTest,
-       CheckCanComputeFlocId_Failure_BlockThirdPartyCookies) {
+       CheckCanComputeFloc_Failure_BlockThirdPartyCookies) {
   test_sync_service_->SetTransportState(
       syncer::SyncService::TransportState::ACTIVE);
 
@@ -280,12 +292,12 @@ TEST_F(FlocIdProviderUnitTest,
   base::OnceCallback<void(bool)> cb = base::BindOnce(
       [](bool can_compute_floc) { ASSERT_FALSE(can_compute_floc); });
 
-  CheckCanComputeFlocId(std::move(cb));
+  CheckCanComputeFloc(std::move(cb));
   task_environment_.RunUntilIdle();
 }
 
 TEST_F(FlocIdProviderUnitTest,
-       CheckCanComputeFlocId_Failure_SwaaNacAccountDisabled) {
+       CheckCanComputeFloc_Failure_SwaaNacAccountDisabled) {
   test_sync_service_->SetTransportState(
       syncer::SyncService::TransportState::ACTIVE);
 
@@ -294,7 +306,7 @@ TEST_F(FlocIdProviderUnitTest,
   base::OnceCallback<void(bool)> cb = base::BindOnce(
       [](bool can_compute_floc) { ASSERT_FALSE(can_compute_floc); });
 
-  CheckCanComputeFlocId(std::move(cb));
+  CheckCanComputeFloc(std::move(cb));
   task_environment_.RunUntilIdle();
 }
 
@@ -302,9 +314,9 @@ TEST_F(FlocIdProviderUnitTest, EventLogging) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(features::kFlocIdComputedEventLogging);
 
-  set_floc_session_count(1u);
   set_floc_id(FlocId(12345ULL));
-  floc_id_provider_->NotifyFlocIdUpdated();
+  floc_id_provider_->NotifyFlocUpdated(
+      FlocIdProviderImpl::ComputeFlocTrigger::kBrowserStart);
 
   ASSERT_EQ(1u, fake_user_event_service_->GetRecordedUserEvents().size());
   const sync_pb::UserEventSpecifics& specifics1 =
@@ -318,9 +330,9 @@ TEST_F(FlocIdProviderUnitTest, EventLogging) {
             event1.event_trigger());
   EXPECT_EQ(12345ULL, event1.floc_id());
 
-  set_floc_session_count(2u);
   set_floc_id(FlocId(999ULL));
-  floc_id_provider_->NotifyFlocIdUpdated();
+  floc_id_provider_->NotifyFlocUpdated(
+      FlocIdProviderImpl::ComputeFlocTrigger::kScheduledUpdate);
 
   ASSERT_EQ(2u, fake_user_event_service_->GetRecordedUserEvents().size());
   const sync_pb::UserEventSpecifics& specifics2 =
@@ -335,7 +347,8 @@ TEST_F(FlocIdProviderUnitTest, EventLogging) {
   EXPECT_EQ(999ULL, event2.floc_id());
 
   set_floc_id(FlocId());
-  floc_id_provider_->NotifyFlocIdUpdated();
+  floc_id_provider_->NotifyFlocUpdated(
+      FlocIdProviderImpl::ComputeFlocTrigger::kScheduledUpdate);
 
   ASSERT_EQ(3u, fake_user_event_service_->GetRecordedUserEvents().size());
   const sync_pb::UserEventSpecifics& specifics3 =
@@ -356,8 +369,12 @@ TEST_F(FlocIdProviderUnitTest, HistoryEntriesWithPrivateIP) {
       {history::URLResult(GURL("https://a.test"),
                           base::Time::Now() - base::TimeDelta::FromDays(1))});
 
-  set_floc_session_count(1u);
-  OnGetRecentlyVisitedURLsCompleted(1u, std::move(query_results));
+  set_first_floc_computation_triggered(true);
+  set_floc_computation_in_progress(true);
+
+  OnGetRecentlyVisitedURLsCompleted(
+      FlocIdProviderImpl::ComputeFlocTrigger::kBrowserStart,
+      std::move(query_results));
 
   ASSERT_FALSE(floc_id().IsValid());
 }
@@ -379,8 +396,12 @@ TEST_F(FlocIdProviderUnitTest, MultipleHistoryEntries) {
   history::QueryResults query_results;
   query_results.SetURLResults(std::move(url_results));
 
-  set_floc_session_count(1u);
-  OnGetRecentlyVisitedURLsCompleted(1u, std::move(query_results));
+  set_first_floc_computation_triggered(true);
+  set_floc_computation_in_progress(true);
+
+  OnGetRecentlyVisitedURLsCompleted(
+      FlocIdProviderImpl::ComputeFlocTrigger::kBrowserStart,
+      std::move(query_results));
 
   ASSERT_EQ(
       FlocId::CreateFromHistory({"a.test", "b.test"}).ToDebugHeaderValue(),
@@ -398,7 +419,7 @@ TEST_F(FlocIdProviderUnitTest, TurnSyncOffAndOn) {
 
   task_environment_.RunUntilIdle();
 
-  // Trigger the start of the 1st floc session.
+  // Trigger the 1st floc computation.
   test_sync_service_->SetTransportState(
       syncer::SyncService::TransportState::ACTIVE);
   test_sync_service_->FireStateChanged();
@@ -409,7 +430,6 @@ TEST_F(FlocIdProviderUnitTest, TurnSyncOffAndOn) {
   ASSERT_EQ(1u, floc_id_provider_->floc_update_notification_count());
   ASSERT_EQ(FlocId::CreateFromHistory({domain}).ToDebugHeaderValue(),
             floc_id().ToDebugHeaderValue());
-  ASSERT_EQ(1u, floc_session_count());
 
   // Turn off sync.
   test_sync_service_->SetTransportState(
@@ -421,7 +441,6 @@ TEST_F(FlocIdProviderUnitTest, TurnSyncOffAndOn) {
 
   ASSERT_EQ(2u, floc_id_provider_->floc_update_notification_count());
   ASSERT_FALSE(floc_id().IsValid());
-  ASSERT_EQ(2u, floc_session_count());
 
   // Turn on sync.
   test_sync_service_->SetTransportState(
@@ -434,7 +453,6 @@ TEST_F(FlocIdProviderUnitTest, TurnSyncOffAndOn) {
   ASSERT_EQ(3u, floc_id_provider_->floc_update_notification_count());
   ASSERT_EQ(FlocId::CreateFromHistory({domain}).ToDebugHeaderValue(),
             floc_id().ToDebugHeaderValue());
-  ASSERT_EQ(3u, floc_session_count());
 }
 
 }  // namespace federated_learning

@@ -341,7 +341,8 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
     {wf::EnableMediaFeeds, media::kMediaFeeds, kUseFeatureState},
     {wf::EnableRestrictGamepadAccess, features::kRestrictGamepadAccess,
      kEnableOnly},
-
+    {wf::EnableCompositingOptimizations,
+     blink::features::kCompositingOptimizations, kUseFeatureState},
   };
   for (const auto& mapping : blinkFeatureToBaseFeatureMapping) {
     SetRuntimeFeatureFromChromiumFeature(

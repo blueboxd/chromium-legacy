@@ -663,6 +663,9 @@ ci.mac_ios_builder(
         short_name = "sim",
     ),
     fully_qualified_builder_dimension = True,
+    properties = {
+        "xcode_build_version": "11e146",
+    },
 )
 
 ci.mac_ios_builder(
@@ -672,6 +675,9 @@ ci.mac_ios_builder(
         short_name = "ful",
     ),
     fully_qualified_builder_dimension = True,
+    properties = {
+        "xcode_build_version": "11e146",
+    },
 )
 
 ci.memory_builder(

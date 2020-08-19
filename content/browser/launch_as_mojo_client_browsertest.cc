@@ -105,7 +105,7 @@ class LaunchAsMojoClientBrowserTest : public ContentBrowserTest {
     return controller;
   }
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   base::FilePath GetMojoCoreLibraryPath() {
     return GetFilePathNextToCurrentExecutable(kMojoCoreLibraryName);
   }
@@ -166,7 +166,7 @@ IN_PROC_BROWSER_TEST_F(LaunchAsMojoClientBrowserTest, LaunchAndBindInterface) {
 // spurious uninitialized memory reads inside base::PlatformThread due to what
 // appears to be poor interaction among MSan, PlatformThread's thread_local
 // storage, and Mojo's use of dlopen().
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #if defined(MEMORY_SANITIZER) || BUILDFLAG(CFI_ICALL_CHECK)
 #define MAYBE_WithMojoCoreLibrary DISABLED_WithMojoCoreLibrary
 #else
@@ -202,7 +202,7 @@ IN_PROC_BROWSER_TEST_F(LaunchAsMojoClientBrowserTest,
 
   shell_controller->ShutDown();
 }
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
 }  // namespace
 }  // namespace content

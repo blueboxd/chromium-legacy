@@ -6,7 +6,9 @@
 
 #include <memory>
 
+#include "base/metrics/histogram_macros.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
+#include "third_party/blink/public/common/action_after_pagehide.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/post_message_helper.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
@@ -520,6 +522,18 @@ void DOMWindow::DoPostMessage(scoped_refptr<SerializedScriptValue> message,
                               const WindowPostMessageOptions* options,
                               LocalDOMWindow* source,
                               ExceptionState& exception_state) {
+  if (GetFrame() && GetFrame()->GetPage() &&
+      GetFrame()->GetPage()->DispatchedPagehideAndStillHidden()) {
+    // The postMessage call is done after the pagehide event got dispatched
+    // and the page is still hidden, which is not normally possible (this
+    // might happen if we're doing a same-site cross-RenderFrame navigation
+    // where we dispatch pagehide during the new RenderFrame's commit but
+    // won't unload/freeze the page after the new RenderFrame finished
+    // committing). We should track this case to measure how often this is
+    // happening.
+    UMA_HISTOGRAM_ENUMERATION("BackForwardCache.SameSite.ActionAfterPagehide",
+                              ActionAfterPagehide::kSentPostMessage);
+  }
   if (!IsCurrentlyDisplayedInFrame())
     return;
 

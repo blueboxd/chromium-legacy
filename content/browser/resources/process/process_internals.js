@@ -98,6 +98,12 @@ function frameToTreeItem(frame) {
   if (frame.siteInstance.siteUrl) {
     itemLabel += `, site:${frame.siteInstance.siteUrl.url}`;
   }
+  if (frame.siteInstance.processLockUrl) {
+    itemLabel += `, lock:${frame.siteInstance.processLockUrl.url}`;
+  }
+  if (frame.siteInstance.isOriginKeyed) {
+    itemLabel += ', origin-keyed';
+  }
   if (frame.lastCommittedUrl) {
     itemLabel += ` | url: ${frame.lastCommittedUrl.url}`;
   }

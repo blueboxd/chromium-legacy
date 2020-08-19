@@ -25,7 +25,7 @@ class CrossOriginOpenerPolicyStatus {
   // Called after receiving a network response. Returns a BlockedByResponse
   // reason if the navigation should be blocked, nullopt otherwise.
   base::Optional<network::mojom::BlockedByResponseReason> EnforceCOOP(
-      network::mojom::ParsedHeaders* parsed_headers,
+      network::mojom::URLResponseHead* response_head,
       const url::Origin& response_origin,
       const GURL& response_url);
 
@@ -78,8 +78,9 @@ class CrossOriginOpenerPolicyStatus {
 
  private:
   // Make sure COOP is relevant or clear the COOP headers.
-  void SanitizeCoopHeaders(const url::Origin& response_origin,
-                           network::mojom::ParsedHeaders* parsed_headers);
+  void SanitizeCoopHeaders(const GURL& response_url,
+                           const url::Origin& response_origin,
+                           network::mojom::URLResponseHead* response_head);
 
   // Tracks the FrameTreeNode in which this navigation is taking place.
   const FrameTreeNode* frame_tree_node_;

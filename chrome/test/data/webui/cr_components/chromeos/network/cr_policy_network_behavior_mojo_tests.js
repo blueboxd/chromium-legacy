@@ -14,7 +14,10 @@
 // clang-format on
 
 suite('CrPolicyNetworkBehaviorMojo', function() {
-  suiteSetup(function() {
+  suiteSetup(async () => {
+    await PolymerTest.importHtml('chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.html');
+    await PolymerTest.importHtml('chrome://resources/mojo/chromeos/services/network_config/public/mojom/cros_network_config.mojom.html');
+
     Polymer({
       is: 'test-behavior',
 
@@ -44,7 +47,6 @@ suite('CrPolicyNetworkBehaviorMojo', function() {
     assertFalse(testBehavior.isNetworkPolicyEnforced(property));
     assertFalse(testBehavior.isNetworkPolicyRecommended(property));
   });
-
 
   test('user_recommended', function() {
     const property = {

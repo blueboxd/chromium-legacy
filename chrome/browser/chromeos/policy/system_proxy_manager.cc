@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/ui/request_system_proxy_credentials_view.h"
+#include "chrome/browser/chromeos/ui/system_proxy_notification.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -84,7 +85,6 @@ std::string SystemProxyManager::SystemServicesProxyPacString() const {
 
 void SystemProxyManager::StartObservingPrimaryProfilePrefs(Profile* profile) {
   primary_profile_ = profile;
-
   // Listen to pref changes.
   profile_pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
   profile_pref_change_registrar_->Init(primary_profile_->GetPrefs());
@@ -105,7 +105,9 @@ void SystemProxyManager::StartObservingPrimaryProfilePrefs(Profile* profile) {
 void SystemProxyManager::StopObservingPrimaryProfilePrefs() {
   profile_pref_change_registrar_->RemoveAll();
   profile_pref_change_registrar_.reset();
+  primary_profile_ = nullptr;
 }
+
 void SystemProxyManager::ClearUserCredentials() {
   if (!system_proxy_enabled_) {
     return;
@@ -148,10 +150,9 @@ void SystemProxyManager::OnSystemProxySettingsPolicyChanged() {
                                 weak_factory_.GetWeakPtr()));
     system_services_address_.clear();
     SetUserTrafficProxyPref(std::string());
-    CloseAuthenticationDialog();
+    CloseAuthenticationUI();
     return;
   }
-
   system_proxy::SetAuthenticationDetailsRequest request;
   system_proxy::Credentials credentials;
   const std::string* username = proxy_settings->FindStringKey(
@@ -280,6 +281,21 @@ void SystemProxyManager::SetSystemServicesProxyUrlForTest(
   system_services_address_ = local_proxy_url;
 }
 
+void SystemProxyManager::SetSendAuthDetailsClosureForTest(
+    base::RepeatingClosure closure) {
+  send_auth_details_closure_for_test_ = closure;
+}
+
+chromeos::RequestSystemProxyCredentialsView*
+SystemProxyManager::GetActiveAuthDialogForTest() {
+  return active_auth_dialog_;
+}
+
+void SystemProxyManager::CloseAuthDialogForTest() {
+  DCHECK(auth_widget_);
+  auth_widget_->CloseNow();
+}
+
 // static
 void SystemProxyManager::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kSystemProxyUserTrafficHostAndPort,
@@ -293,6 +309,8 @@ void SystemProxyManager::OnSetAuthenticationDetails(
         << "Failed to set system traffic credentials for system proxy: "
         << kSystemProxyService << ", Error: " << response.error_message();
   }
+  if (send_auth_details_closure_for_test_)
+    send_auth_details_closure_for_test_.Run();
 }
 
 void SystemProxyManager::OnShutDownProcess(
@@ -335,8 +353,17 @@ void SystemProxyManager::OnAuthenticationRequired(
     const system_proxy::AuthenticationRequiredDetails& details) {
   system_proxy::ProtectionSpace protection_space =
       details.proxy_protection_space();
+
   if (!primary_profile_) {
     SendEmptyCredentials(protection_space);
+    return;
+  }
+
+  // The previous authentication attempt failed.
+  if (details.has_bad_cached_credentials() &&
+      details.bad_cached_credentials()) {
+    ShowAuthenticationNotification(protection_space,
+                                   details.bad_cached_credentials());
     return;
   }
 
@@ -365,24 +392,38 @@ void SystemProxyManager::OnAuthenticationRequired(
 void SystemProxyManager::LookupProxyAuthCredentialsCallback(
     const system_proxy::ProtectionSpace& protection_space,
     const base::Optional<net::AuthCredentials>& credentials) {
-  // System-proxy is started via d-bus activation, meaning the first d-bus call
-  // will start the daemon. Check that System-proxy was not disabled by policy
-  // while looking for credentials so we don't accidentally restart it.
-  if (!system_proxy_enabled_) {
+  if (!credentials) {
+    // Ask the user for credentials
+    ShowAuthenticationNotification(protection_space, /*show_error=*/false);
     return;
   }
+
   std::string username;
   std::string password;
   if (credentials) {
     username = base::UTF16ToUTF8(credentials->username());
     password = base::UTF16ToUTF8(credentials->password());
+
     // If there's a dialog requesting credentials for this proxy, close it.
-    if (active_auth_dialog_ &&
-        active_auth_dialog_->GetProxyServer() == protection_space.origin()) {
-      CloseAuthenticationDialog();
+    if (notification_handler_ ||
+        (active_auth_dialog_ &&
+         active_auth_dialog_->GetProxyServer() == protection_space.origin())) {
+      CloseAuthenticationUI();
     }
   }
   SendUserAuthenticationCredentials(protection_space, username, password);
+}
+
+void SystemProxyManager::ShowAuthenticationNotification(
+    const system_proxy::ProtectionSpace& protection_space,
+    bool show_error) {
+  if (active_auth_dialog_)
+    return;
+  notification_handler_ = std::make_unique<chromeos::SystemProxyNotification>(
+      protection_space, show_error,
+      base::BindOnce(&SystemProxyManager::ShowAuthenticationDialog,
+                     weak_factory_.GetWeakPtr()));
+  notification_handler_->Show();
 }
 
 void SystemProxyManager::ShowAuthenticationDialog(
@@ -390,6 +431,9 @@ void SystemProxyManager::ShowAuthenticationDialog(
     bool show_error_label) {
   if (active_auth_dialog_)
     return;
+
+  if (notification_handler_)
+    notification_handler_->Close();
 
   active_auth_dialog_ = new chromeos::RequestSystemProxyCredentialsView(
       protection_space.origin(), show_error_label,
@@ -426,7 +470,12 @@ void SystemProxyManager::OnDialogClosed(
   auth_widget_ = nullptr;
 }
 
-void SystemProxyManager::CloseAuthenticationDialog() {
+void SystemProxyManager::CloseAuthenticationUI() {
+  // Closes the notification if shown.
+  if (notification_handler_) {
+    notification_handler_->Close();
+    notification_handler_.reset();
+  }
   if (!auth_widget_)
     return;
   // Also deletes the |auth_widget_| instance.

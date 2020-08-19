@@ -99,6 +99,7 @@ paddedGrid{
   "gridInfo": [
     {
       "rotationAngle": -90,
+      "writingMode": "horizontal-tb",
       "columnTrackSizes": [
         {
           "x": 173,
@@ -394,6 +395,7 @@ nestedGrid{
   "gridInfo": [
     {
       "rotationAngle": -90,
+      "writingMode": "horizontal-tb",
       "columnTrackSizes": [
         {
           "x": 228,

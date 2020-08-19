@@ -7,7 +7,7 @@
     deviceScaleFactor: 2,
     mobile: false,
     fitWindow: false,
-    scale: 2,
+    scale: 0.5,
     screenWidth: 1200,
     screenHeight: 1000,
     positionX: 110,
@@ -30,12 +30,20 @@
   await session.protocol.Emulation.setDeviceMetricsOverride(deviceMetrics);
   testRunner.log(await session.evaluate(`dumpWindowSegments()`));
 
-  testRunner.log("Unspecified display feature");
+  testRunner.log("Unspecified display feature with scale");
   delete deviceMetrics.displayFeature;
+  // Setting width/height to 0 indicates that the widget should have an
+  // emulated size based on the size of the widget in DIP, but takes the
+  // scale into account. Given a scale of 0.5, we expect the window
+  // segment (and window itself) dimensions to double.
+  deviceMetrics.width = 0;
+  deviceMetrics.height = 0;
   await session.protocol.Emulation.setDeviceMetricsOverride(deviceMetrics);
   testRunner.log(await session.evaluate(`dumpWindowSegments()`));
 
   testRunner.log("Stacked segments");
+  deviceMetrics.width = 800;
+  deviceMetrics.height = 600;
   deviceMetrics.displayFeature = {
       orientation: "horizontal",
       offset: 290,

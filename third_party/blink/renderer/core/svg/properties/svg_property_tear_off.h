@@ -64,6 +64,7 @@ class SVGPropertyTearOffBase : public ScriptWrappable {
   void Trace(Visitor*) const override;
 
   static void ThrowReadOnly(ExceptionState&);
+  static void ThrowIndexSize(ExceptionState&, uint32_t, uint32_t);
 
  protected:
   SVGPropertyTearOffBase(SVGAnimatedPropertyBase* binding,

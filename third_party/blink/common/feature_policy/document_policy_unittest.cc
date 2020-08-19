@@ -49,7 +49,7 @@ TEST_F(DocumentPolicyTest, MergeFeatureState) {
 // for that feature.
 TEST_F(DocumentPolicyTest, IsPolicyCompatible) {
   mojom::DocumentPolicyFeature feature =
-      mojom::DocumentPolicyFeature::kUnoptimizedLosslessImages;
+      mojom::DocumentPolicyFeature::kLosslessImagesMaxBpp;
   double default_policy_value =
       GetDocumentPolicyFeatureInfoMap().at(feature).default_value.DoubleValue();
   // Cap the default_policy_value, as it can be INF.

@@ -19,6 +19,7 @@
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/browser/private_network_settings.h"
 #include "components/content_settings/core/common/features.h"
 #include "components/permissions/permission_manager.h"
 #include "components/permissions/permission_result.h"
@@ -32,6 +33,7 @@
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "services/device/public/cpp/test/fake_usb_device_info.h"
+#include "services/network/public/cpp/features.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -270,6 +272,58 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, WebUsbAllowDevicesForUrls) {
 
   EXPECT_FALSE(
       context->HasDevicePermission(kTestOrigin, kTestOrigin, device_info));
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyTest, PrivateNetworkRequestPolicy) {
+  const auto* settings_map =
+      HostContentSettingsMapFactory::GetForProfile(browser()->profile());
+
+  // By default, we should block requests.
+  EXPECT_EQ(network::mojom::PrivateNetworkRequestPolicy::
+                kBlockFromInsecureToMorePrivate,
+            content_settings::GetPrivateNetworkRequestPolicy(
+                settings_map, GURL("http://bleep.com")));
+
+  PolicyMap policies;
+  SetPolicy(&policies, key::kInsecurePrivateNetworkRequestsAllowed,
+            base::Value(false));
+  UpdateProviderPolicy(policies);
+
+  // Explicitly-disallowing is the same as not setting the policy.
+  EXPECT_EQ(network::mojom::PrivateNetworkRequestPolicy::
+                kBlockFromInsecureToMorePrivate,
+            content_settings::GetPrivateNetworkRequestPolicy(
+                settings_map, GURL("http://bleep.com")));
+
+  base::Value allowlist(base::Value::Type::LIST);
+  allowlist.Append(base::Value("http://bleep.com"));
+  allowlist.Append(base::Value("http://woohoo.com:1234"));
+  SetPolicy(&policies, key::kInsecurePrivateNetworkRequestsAllowedForUrls,
+            std::move(allowlist));
+  UpdateProviderPolicy(policies);
+
+  EXPECT_EQ(network::mojom::PrivateNetworkRequestPolicy::
+                kBlockFromInsecureToMorePrivate,
+            content_settings::GetPrivateNetworkRequestPolicy(
+                settings_map, GURL("http://default.com")));
+
+  EXPECT_EQ(network::mojom::PrivateNetworkRequestPolicy::kAllow,
+            content_settings::GetPrivateNetworkRequestPolicy(
+                settings_map, GURL("http://bleep.com/heyo")));
+
+  EXPECT_EQ(network::mojom::PrivateNetworkRequestPolicy::
+                kBlockFromInsecureToMorePrivate,
+            content_settings::GetPrivateNetworkRequestPolicy(
+                settings_map, GURL("https://bleep.com")));
+
+  EXPECT_EQ(network::mojom::PrivateNetworkRequestPolicy::kAllow,
+            content_settings::GetPrivateNetworkRequestPolicy(
+                settings_map, GURL("http://woohoo.com:1234/index.html")));
+
+  EXPECT_EQ(network::mojom::PrivateNetworkRequestPolicy::
+                kBlockFromInsecureToMorePrivate,
+            content_settings::GetPrivateNetworkRequestPolicy(
+                settings_map, GURL("http://woohoo.com/index.html")));
 }
 
 class DisallowWildcardPolicyTest : public PolicyTest {

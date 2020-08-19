@@ -4,6 +4,9 @@
 
 #include "device/fido/cable/v2_handshake.h"
 
+#include <array>
+#include <type_traits>
+
 #include "base/bits.h"
 #include "base/numerics/safe_math.h"
 #include "base/strings/string_number_conversions.h"
@@ -78,6 +81,54 @@ GURL GetURL(uint32_t domain, Action action, base::span<const uint8_t, 16> id) {
   return url;
 }
 }  // namespace tunnelserver
+
+namespace eid {
+
+CableEidArray FromComponents(const Components& components) {
+  DCHECK_EQ(components.tunnel_server_domain >> 22, 0u);
+  DCHECK_EQ(components.shard_id >> 6, 0);
+
+  const uint32_t header = components.tunnel_server_domain |
+                          (static_cast<uint32_t>(components.shard_id) << 22);
+  CableEidArray eid;
+  constexpr size_t eid_size =
+      std::tuple_size<std::remove_reference<decltype(eid)>::type>::value;
+  memset(eid.data(), 0, eid.size());
+  static_assert(eid_size >= sizeof(header), "EID too small");
+  memcpy(eid.data(), &header, sizeof(header));
+  static_assert(eid_size == 6 + kNonceSize, "EID wrong size");
+  static_assert(
+      std::tuple_size<decltype(components.nonce)>::value == kNonceSize,
+      "Nonce wrong size");
+  memcpy(eid.data() + 6, components.nonce.data(), kNonceSize);
+  return eid;
+}
+
+bool IsValid(const CableEidArray& eid) {
+  static_assert(
+      std::tuple_size<std::remove_reference<decltype(eid)>::type>::value >= 6,
+      "EID too small");
+  return (eid[3] & 0xc0) == 0 && eid[4] == 0 && eid[5] == 0;
+}
+
+Components ToComponents(const CableEidArray& eid) {
+  DCHECK(IsValid(eid));
+
+  constexpr size_t eid_size =
+      std::tuple_size<std::remove_reference<decltype(eid)>::type>::value;
+  Components ret;
+  uint32_t header;
+  static_assert(eid_size >= sizeof(header), "EID too small");
+  memcpy(&header, eid.data(), sizeof(header));
+  ret.shard_id = (header >> 22) & 0x3f;
+  ret.tunnel_server_domain = header & 0x3fffff;
+  static_assert(eid_size == 6 + std::tuple_size<decltype(ret.nonce)>::value,
+                "EID too small");
+  memcpy(ret.nonce.data(), eid.data() + 6, ret.nonce.size());
+  return ret;
+}
+
+}  // namespace eid
 
 base::Optional<std::vector<uint8_t>> EncodePaddedCBORMap(
     cbor::Value::MapValue map) {

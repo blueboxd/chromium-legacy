@@ -539,12 +539,40 @@ void XRFrameProvider::ProcessScheduledFrame(
       // Run session->OnFrame() in a posted task to ensure that createAnchor
       // promises get a chance to run - the presentation frame state is already
       // updated.
+      // Note that rather than call session->OnFrame() directly, we dispatch to
+      // a helper method who can determine if the state requirements are still
+      // met that would allow the frame to be served.
       frame->GetTaskRunner(blink::TaskType::kInternalMedia)
-          ->PostTask(FROM_HERE,
-                     WTF::Bind(&XRSession::OnFrame, WrapWeakPersistent(session),
-                               high_res_now_ms, base::nullopt, base::nullopt));
+          ->PostTask(
+              FROM_HERE,
+              WTF::Bind(&XRFrameProvider::OnPreDispatchInlineFrame,
+                        WrapWeakPersistent(this), WrapWeakPersistent(session),
+                        high_res_now_ms, base::nullopt, base::nullopt));
     }
   }
+}
+
+void XRFrameProvider::OnPreDispatchInlineFrame(
+    XRSession* session,
+    double timestamp,
+    const base::Optional<gpu::MailboxHolder>& output_mailbox_holder,
+    const base::Optional<gpu::MailboxHolder>& camera_image_mailbox_holder) {
+  // Do nothing if the session was cleaned up or ended before we were schedueld.
+  if (!session || session->ended())
+    return;
+
+  // If we have an immersive session, we shouldn't serve frames to the inline
+  // session; however, we need to ensure that we don't stall out its frame loop,
+  // so add a new frame request to get served after the immersive session exits.
+  if (immersive_session_) {
+    RequestFrame(session);
+    return;
+  }
+
+  // If we still have the session and don't have an immersive session, then we
+  // should serve the frame.
+  session->OnFrame(timestamp, output_mailbox_holder,
+                   camera_image_mailbox_holder);
 }
 
 void XRFrameProvider::SubmitWebGLLayer(XRWebGLLayer* layer, bool was_changed) {

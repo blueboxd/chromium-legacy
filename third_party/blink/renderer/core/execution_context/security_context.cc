@@ -95,13 +95,23 @@ void SecurityContext::SetSecurityOrigin(
 
   if (!security_origin_->IsPotentiallyTrustworthy()) {
     secure_context_mode_ = SecureContextMode::kInsecureContext;
+    secure_context_explanation_ = SecureContextModeExplanation::kInsecureScheme;
   } else if (SchemeRegistry::SchemeShouldBypassSecureContextCheck(
                  security_origin_->Protocol())) {
     secure_context_mode_ = SecureContextMode::kSecureContext;
+    secure_context_explanation_ = SecureContextModeExplanation::kSecure;
   } else if (execution_context_) {
-    secure_context_mode_ = execution_context_->HasInsecureContextInAncestors()
-                               ? SecureContextMode::kInsecureContext
-                               : SecureContextMode::kSecureContext;
+    if (execution_context_->HasInsecureContextInAncestors()) {
+      secure_context_mode_ = SecureContextMode::kInsecureContext;
+      secure_context_explanation_ =
+          SecureContextModeExplanation::kInsecureAncestor;
+    } else {
+      secure_context_mode_ = SecureContextMode::kSecureContext;
+      secure_context_explanation_ =
+          security_origin_->IsLocalhost()
+              ? SecureContextModeExplanation::kSecureLocalhost
+              : SecureContextModeExplanation::kSecure;
+    }
   }
 
   bool is_secure = secure_context_mode_ == SecureContextMode::kSecureContext;

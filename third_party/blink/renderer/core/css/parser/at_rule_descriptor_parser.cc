@@ -266,6 +266,7 @@ CSSValue* AtRuleDescriptorParser::ParseFontFaceDescriptor(
       break;
     case AtRuleDescriptorID::AscentOverride:
     case AtRuleDescriptorID::DescentOverride:
+    case AtRuleDescriptorID::LineGapOverride:
       parsed_value = ConsumeFontMetricOverride(range, context);
       break;
     case AtRuleDescriptorID::LetterSpacingOverride:

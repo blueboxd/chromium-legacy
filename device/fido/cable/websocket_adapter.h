@@ -1,0 +1,94 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef DEVICE_FIDO_CABLE_WEBSOCKET_ADAPTER_H_
+#define DEVICE_FIDO_CABLE_WEBSOCKET_ADAPTER_H_
+
+#include <vector>
+
+#include "base/callback_forward.h"
+#include "base/component_export.h"
+#include "base/containers/span.h"
+#include "base/optional.h"
+#include "base/sequence_checker.h"
+#include "services/network/public/mojom/network_context.mojom.h"
+
+namespace device {
+namespace cablev2 {
+
+// WebSocketAdapter implements several network::mojom interfaces needed to
+// create a WebSocket connection and translates the Mojo interface into a
+// callback-based one.
+class COMPONENT_EXPORT(DEVICE_FIDO) WebSocketAdapter
+    : public network::mojom::WebSocketHandshakeClient,
+      network::mojom::WebSocketClient {
+ public:
+  using TunnelReadyCallback =
+      base::OnceCallback<void(bool, base::Optional<uint8_t>)>;
+  using TunnelDataCallback =
+      base::RepeatingCallback<void(base::Optional<base::span<const uint8_t>>)>;
+  WebSocketAdapter(
+      // on_tunnel_ready is called once with a boolean that indicates whether
+      // the WebSocket successfully connected and an optional shard ID taken
+      // from the X-caBLE-Shard header in the HTTP response, if any.
+      TunnelReadyCallback on_tunnel_ready,
+      // on_tunnel_ready is called repeatedly, after successful connection, with
+      // the contents of WebSocket messages. Framing is preserved so a single
+      // message written by the server will result in a single callback.
+      TunnelDataCallback on_tunnel_data);
+  ~WebSocketAdapter() override;
+  WebSocketAdapter(const WebSocketAdapter&) = delete;
+  WebSocketAdapter& operator=(const WebSocketAdapter&) = delete;
+
+  mojo::PendingRemote<network::mojom::WebSocketHandshakeClient>
+  BindNewHandshakeClientPipe();
+
+  // Write writes data to the WebSocket server. The amount of data that can be
+  // written at once is limited by the size of an internal Mojo buffer which
+  // defaults to 64KiB. Exceeding that will cause the function to return false.
+  bool Write(base::span<const uint8_t> data);
+
+  // WebSocketHandshakeClient:
+
+  void OnOpeningHandshakeStarted(
+      network::mojom::WebSocketHandshakeRequestPtr request) override;
+  void OnConnectionEstablished(
+      mojo::PendingRemote<network::mojom::WebSocket> socket,
+      mojo::PendingReceiver<network::mojom::WebSocketClient> client_receiver,
+      network::mojom::WebSocketHandshakeResponsePtr response,
+      mojo::ScopedDataPipeConsumerHandle readable,
+      mojo::ScopedDataPipeProducerHandle writable) override;
+
+  // WebSocketClient:
+
+  void OnDataFrame(bool finish,
+                   network::mojom::WebSocketMessageType type,
+                   uint64_t data_len) override;
+  void OnDropChannel(bool was_clean,
+                     uint16_t code,
+                     const std::string& reason) override;
+  void OnClosingHandshake() override;
+
+ private:
+  void OnMojoPipeDisconnect();
+  void Close();
+
+  bool closed_ = false;
+  // pending_message_ contains a partial message that is being reassembled.
+  std::vector<uint8_t> pending_message_;
+  TunnelReadyCallback on_tunnel_ready_;
+  const TunnelDataCallback on_tunnel_data_;
+  mojo::Receiver<network::mojom::WebSocketHandshakeClient> handshake_receiver_{
+      this};
+  mojo::Receiver<network::mojom::WebSocketClient> client_receiver_{this};
+  mojo::Remote<network::mojom::WebSocket> socket_remote_;
+  mojo::ScopedDataPipeConsumerHandle read_pipe_;
+  mojo::ScopedDataPipeProducerHandle write_pipe_;
+  SEQUENCE_CHECKER(sequence_checker_);
+};
+
+}  // namespace cablev2
+}  // namespace device
+
+#endif  // DEVICE_FIDO_CABLE_WEBSOCKET_ADAPTER_H_

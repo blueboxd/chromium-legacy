@@ -124,12 +124,15 @@ class AccountPickerBottomSheetView implements BottomSheetContent {
      */
     void setUpSignInInProgressView() {
         mAccountPickerTitle.setText(R.string.signin_account_picker_bottom_sheet_signin_title);
-        mAccountPickerSubtitle.setVisibility(View.GONE);
-        mContentView.findViewById(R.id.account_picker_horizontal_divider).setVisibility(View.GONE);
-        mSelectedAccountView.setVisibility(View.GONE);
-        mContinueAsButton.setVisibility(View.GONE);
+        mAccountPickerSubtitle.setVisibility(View.INVISIBLE);
+        // Set the account picker subtitle text in case there's an error.
+        mAccountPickerSubtitle.setText(R.string.signin_account_picker_general_error_subtitle);
         mContentView.findViewById(R.id.account_picker_signin_spinner_view)
                 .setVisibility(View.VISIBLE);
+        mContinueAsButton.setVisibility(View.INVISIBLE);
+
+        mContentView.findViewById(R.id.account_picker_horizontal_divider).setVisibility(View.GONE);
+        mSelectedAccountView.setVisibility(View.GONE);
     }
 
     void setUpIncognitoInterstitialView() {
@@ -148,12 +151,15 @@ class AccountPickerBottomSheetView implements BottomSheetContent {
      * Sets up the view for sign-in general error.
      */
     void setUpSignInGeneralErrorView() {
-        // TODO(https://crbug.com/1114589): Add subtitle string for sign-in general error
+        mAccountPickerTitle.setText(R.string.signin_account_picker_bottom_sheet_error_title);
         mAccountPickerSubtitle.setVisibility(View.VISIBLE);
+        mContentView.findViewById(R.id.account_picker_signin_spinner_view)
+                .setVisibility(View.INVISIBLE);
+        mContinueAsButton.setVisibility(View.VISIBLE);
+        mContinueAsButton.setText(R.string.signin_account_picker_general_error_button);
 
         mContentView.findViewById(R.id.account_picker_horizontal_divider).setVisibility(View.GONE);
         mSelectedAccountView.setVisibility(View.GONE);
-        mContentView.findViewById(R.id.account_picker_signin_spinner_view).setVisibility(View.GONE);
     }
 
     @Override

@@ -3509,6 +3509,23 @@ Unknown properties are collapsed to zero. -->
   <int value="8" label="Bottom right"/>
 </enum>
 
+<enum name="AssistantBetterOnboardingMode">
+  <int value="0" label="kDefault"/>
+  <int value="1" label="kEdu"/>
+</enum>
+
+<enum name="AssistantBetterOnboardingType">
+  <int value="0" label="kUnspecified"/>
+  <int value="1" label="kMath"/>
+  <int value="2" label="kKnowledgeEdu"/>
+  <int value="3" label="kConversion"/>
+  <int value="4" label="kKnowledge"/>
+  <int value="5" label="kProductivity"/>
+  <int value="6" label="kPersonality"/>
+  <int value="7" label="kLanguage"/>
+  <int value="8" label="kTechnical"/>
+</enum>
+
 <enum name="AssistantButtonId">
   <int value="1" label="kBackDeprecated"/>
   <int value="2" label="kCloseDeprecated"/>
@@ -5686,6 +5703,14 @@ Unknown properties are collapsed to zero. -->
   <int value="3" label="Overlay L1"/>
   <int value="4" label="Overlay Insecure Player-element Fullscreen"/>
   <int value="5" label="Overlay Insecure Non-player-element Fullscreen"/>
+</enum>
+
+<enum name="BackForwardCacheActionAfterPagehide">
+  <int value="0" label="Navigation"/>
+  <int value="1" label="Ssent postMessage"/>
+  <int value="2" label="Received postMessage"/>
+  <int value="3" label="Modified localStorage"/>
+  <int value="4" label="Modified sessionStorage"/>
 </enum>
 
 <enum name="BackForwardCacheBrowsingInstanceNotSwappedReason">
@@ -16899,7 +16924,7 @@ Called by update_document_policy_enum.py.-->
 
   <int value="0" label="Default"/>
   <int value="1" label="FontDisplay"/>
-  <int value="2" label="UnoptimizedLosslessImages"/>
+  <int value="2" label="LosslessImagesMaxBpp"/>
   <int value="3" label="ForceLoadAtTop"/>
   <int value="4" label="LosslessImagesStrictMaxBpp"/>
   <int value="5" label="UnoptimizedLossyImages"/>
@@ -28645,7 +28670,7 @@ Called by update_use_counter_feature_enum.py.-->
       label="V8HTMLVideoElement_RequestVideoFrameCallback_Method"/>
   <int value="3281" label="V8HTMLVideoElement_CancelVideoFrameCallback_Method"/>
   <int value="3282" label="RubyElementWithDisplayBlock"/>
-  <int value="3283" label="LocationFragmentDirectiveAccessed"/>
+  <int value="3283" label="OBSOLETE_LocationFragmentDirectiveAccessed"/>
   <int value="3284" label="CanvasRenderingContext"/>
   <int value="3285" label="SchemefulSameSiteContextDowngrade"/>
   <int value="3286" label="OriginIsolationHeader"/>
@@ -28791,6 +28816,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3424" label="BCPReliableWrite"/>
   <int value="3425" label="BCPWritableAuxiliaries"/>
   <int value="3426" label="TextAlignSpecifiedToLegend"/>
+  <int value="3427" label="V8Document_FragmentDirective_AttributeGetter"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -40665,6 +40691,7 @@ from previous Chrome versions.
   <int value="-1498334893" label="ExperimentalVRFeatures:enabled"/>
   <int value="-1497450774" label="TreatUnsafeDownloadsAsActive:disabled"/>
   <int value="-1497338981" label="disable-accelerated-overflow-scroll"/>
+  <int value="-1496106797" label="IPH_PasswordsAccountStorage:enabled"/>
   <int value="-1492934655" label="TabSwitcherOnReturn:enabled"/>
   <int value="-1492589689" label="ContentSuggestionsCategories:enabled"/>
   <int value="-1492211482" label="EnableWindowsGamingInputDataFetcher:enabled"/>
@@ -41750,6 +41777,7 @@ from previous Chrome versions.
   <int value="-394734604" label="FillingPasswordsFromAnyOrigin:disabled"/>
   <int value="-389664522"
       label="OmniboxUIExperimentHideSteadyStateUrlPathQueryAndRefOnInteraction:enabled"/>
+  <int value="-389283574" label="IPH_PasswordsAccountStorage:disabled"/>
   <int value="-387606010" label="ArcBootCompletedBroadcast:enabled"/>
   <int value="-386971711" label="ChromeSharingHubV15:disabled"/>
   <int value="-385337473" label="enable-fast-unload"/>
@@ -41865,6 +41893,7 @@ from previous Chrome versions.
   <int value="-275164173" label="QuickUnlockPinSignin:enabled"/>
   <int value="-273821346"
       label="MaintainShelfStateWhenEnteringOverview:disabled"/>
+  <int value="-273570157" label="EnableBloom:enabled"/>
   <int value="-271790049" label="ArcUsbHost:enabled"/>
   <int value="-271084069" label="ClickToCallUI:enabled"/>
   <int value="-270626757" label="log-net-log"/>
@@ -43628,6 +43657,7 @@ from previous Chrome versions.
   <int value="1627666567" label="ChromeOSAmbientMode:disabled"/>
   <int value="1628259213" label="DuetTabStripIntegrationAndroid:enabled"/>
   <int value="1628831121" label="SafeBrowsingUseLocalBlacklistsV2:enabled"/>
+  <int value="1629289109" label="EnableBloom:disabled"/>
   <int value="1630159957" label="SharingSendViaSync:disabled"/>
   <int value="1630283072" label="CrOSAutoSelect:enabled"/>
   <int value="1630988998" label="VrBrowsingExperimentalRendering:disabled"/>
@@ -45558,6 +45588,7 @@ Called by update_use_counter_css.py.-->
   <int value="672" label="ascent-override"/>
   <int value="673" label="descent-override"/>
   <int value="674" label="letter-spacing-override"/>
+  <int value="675" label="line-gap-override"/>
 </enum>
 
 <enum name="MappedEditingCommands">

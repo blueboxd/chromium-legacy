@@ -25,6 +25,7 @@
 #include "content/public/browser/cookie_access_details.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/browser_task_environment.h"
+#include "content/public/test/test_storage_partition.h"
 #include "services/network/test/test_cookie_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -108,7 +109,7 @@ class AccessContextAuditServiceTest : public testing::Test {
         new AccessContextAuditService(static_cast<Profile*>(context)));
     service->SetTaskRunnerForTesting(task_runner_);
     service->Init(temp_directory_.GetPath(), cookie_manager(),
-                  history_service());
+                  history_service(), storage_partition());
     return service;
   }
 
@@ -160,6 +161,9 @@ class AccessContextAuditServiceTest : public testing::Test {
   }
 
   TestCookieManager* cookie_manager() { return &cookie_manager_; }
+  content::TestStoragePartition* storage_partition() {
+    return &storage_partition_;
+  }
   base::SimpleTestClock* clock() { return &clock_; }
   TestingProfile* profile() { return profile_.get(); }
   history::HistoryService* history_service() { return history_service_; }
@@ -173,6 +177,7 @@ class AccessContextAuditServiceTest : public testing::Test {
   base::SimpleTestClock clock_;
   base::ScopedTempDir temp_directory_;
   TestCookieManager cookie_manager_;
+  content::TestStoragePartition storage_partition_;
   history::HistoryService* history_service_;
   base::test::ScopedFeatureList feature_list_;
 
@@ -183,6 +188,7 @@ class AccessContextAuditServiceTest : public testing::Test {
 TEST_F(AccessContextAuditServiceTest, RegisterDeletionObservers) {
   // Check that the service correctly registers observers for deletion.
   EXPECT_TRUE(cookie_manager_.ListenerRegistered());
+  EXPECT_EQ(1, storage_partition()->GetDataRemovalObserverCount());
 }
 
 TEST_F(AccessContextAuditServiceTest, CookieRecords) {
@@ -262,6 +268,45 @@ TEST_F(AccessContextAuditServiceTest, ExpiredCookies) {
                                 url::Origin::Create(kTestURL));
 
   EXPECT_EQ(0u, GetAllAccessRecords().size());
+}
+
+TEST_F(AccessContextAuditServiceTest, OriginKeyedStorageDeleted) {
+  // Check that informing the service that an origin's storage of a particular
+  // type as been deleted removes all records of that storage.
+  const auto kTestStorageType1 =
+      AccessContextAuditDatabase::StorageAPIType::kWebDatabase;
+  const auto kTestStorageType2 =
+      AccessContextAuditDatabase::StorageAPIType::kAppCache;
+  const url::Origin kTestOrigin1 =
+      url::Origin::Create(GURL("https://example.com"));
+  const url::Origin kTestOrigin2 =
+      url::Origin::Create(GURL("https://example2.com"));
+  const url::Origin kTestTopLevelOrigin =
+      url::Origin::Create(GURL("https://example3.com"));
+
+  // Record accesses for the 4 possible test type and origin combinations.
+  service()->RecordStorageAPIAccess(kTestOrigin1, kTestStorageType1,
+                                    kTestTopLevelOrigin);
+  service()->RecordStorageAPIAccess(kTestOrigin1, kTestStorageType2,
+                                    kTestTopLevelOrigin);
+  service()->RecordStorageAPIAccess(kTestOrigin2, kTestStorageType1,
+                                    kTestTopLevelOrigin);
+  service()->RecordStorageAPIAccess(kTestOrigin2, kTestStorageType2,
+                                    kTestTopLevelOrigin);
+
+  // Remove records for Origin1 and Type1 and ensure the record is removed, but
+  // those for Origin2 or Type2 are not.
+  service()->RemoveAllRecordsForOriginKeyedStorage(kTestOrigin1,
+                                                   kTestStorageType1);
+
+  auto records = GetAllAccessRecords();
+  EXPECT_EQ(3u, records.size());
+  CheckContainsStorageAPIRecord(kTestOrigin1, kTestStorageType2,
+                                kTestTopLevelOrigin, records);
+  CheckContainsStorageAPIRecord(kTestOrigin2, kTestStorageType1,
+                                kTestTopLevelOrigin, records);
+  CheckContainsStorageAPIRecord(kTestOrigin2, kTestStorageType2,
+                                kTestTopLevelOrigin, records);
 }
 
 TEST_F(AccessContextAuditServiceTest, HistoryDeletion) {
@@ -520,4 +565,71 @@ TEST_F(AccessContextAuditServiceTest, SessionOnlyRecords) {
   service()->ClearSessionOnlyRecords();
   records = GetAllAccessRecords();
   ASSERT_EQ(0u, records.size());
+}
+
+TEST_F(AccessContextAuditServiceTest, OnOriginDataCleared) {
+  // Check that providing parameters with varying levels of specificity to the
+  // OnOriginDataCleared function all clear data correctly.
+  auto kTopFrameOrigin = url::Origin::Create(GURL("https://example.com"));
+  auto kTestOrigin1 = url::Origin::Create(GURL("https://test1.com"));
+  auto kTestOrigin2 = url::Origin::Create(GURL("https://test2.com"));
+  auto kTestOrigin3 = url::Origin::Create(GURL("https://test3.com"));
+
+  const auto kTestStorageType1 =
+      AccessContextAuditDatabase::StorageAPIType::kWebDatabase;
+  const auto kTestStorageType2 =
+      AccessContextAuditDatabase::StorageAPIType::kIndexedDB;
+  const auto kTestStorageType3 =
+      AccessContextAuditDatabase::StorageAPIType::kAppCache;
+
+  clock()->SetNow(base::Time());
+  service()->SetClockForTesting(clock());
+
+  clock()->Advance(base::TimeDelta::FromHours(1));
+  service()->RecordStorageAPIAccess(kTestOrigin1, kTestStorageType1,
+                                    kTopFrameOrigin);
+
+  clock()->Advance(base::TimeDelta::FromHours(1));
+  service()->RecordStorageAPIAccess(kTestOrigin2, kTestStorageType2,
+                                    kTopFrameOrigin);
+
+  clock()->Advance(base::TimeDelta::FromHours(1));
+  service()->RecordStorageAPIAccess(kTestOrigin3, kTestStorageType3,
+                                    kTopFrameOrigin);
+  EXPECT_EQ(3U, GetAllAccessRecords().size());
+
+  // Provide all parameters such that TestOrigin1's record is removed.
+  auto origin_matcher = base::BindLambdaForTesting(
+      [&](const url::Origin& origin) { return origin == kTestOrigin1; });
+  service()->OnOriginDataCleared(
+      content::StoragePartition::REMOVE_DATA_MASK_WEBSQL, origin_matcher,
+      base::Time() + base::TimeDelta::FromMinutes(50),
+      base::Time() + base::TimeDelta::FromMinutes(80));
+
+  auto records = GetAllAccessRecords();
+  ASSERT_EQ(2U, records.size());
+  CheckContainsStorageAPIRecord(kTestOrigin2, kTestStorageType2,
+                                kTopFrameOrigin, records);
+  CheckContainsStorageAPIRecord(kTestOrigin3, kTestStorageType3,
+                                kTopFrameOrigin, records);
+
+  // Provide more generalised parameters that target TestOrigin2's record.
+  service()->OnOriginDataCleared(
+      content::StoragePartition::REMOVE_DATA_MASK_ALL, base::NullCallback(),
+      base::Time() + base::TimeDelta::FromMinutes(80),
+      base::Time() + base::TimeDelta::FromMinutes(130));
+
+  records = GetAllAccessRecords();
+  ASSERT_EQ(1U, records.size());
+  CheckContainsStorageAPIRecord(kTestOrigin3, kTestStorageType3,
+                                kTopFrameOrigin, records);
+
+  // Provide broadest possible parameters which should result in the final
+  // record being removed.
+  service()->OnOriginDataCleared(
+      content::StoragePartition::REMOVE_DATA_MASK_ALL, base::NullCallback(),
+      base::Time(), base::Time::Max());
+
+  records = GetAllAccessRecords();
+  ASSERT_EQ(0U, records.size());
 }

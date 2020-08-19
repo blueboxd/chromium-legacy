@@ -40,6 +40,9 @@ extern const char kPayeeCreditTransfer[];
 // https://w3c.github.io/payment-method-credit-transfer/
 extern const char kPayerCreditTransfer[];
 
+// Secure Payment Confirmation method name.
+extern const char kSecurePaymentConfirmation[];
+
 // Tokenized Card method name.
 // https://w3c.github.io/webpayments-methods-tokenization/
 extern const char kTokenizedCard[];

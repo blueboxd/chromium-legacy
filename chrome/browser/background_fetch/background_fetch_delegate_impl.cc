@@ -886,7 +886,14 @@ void BackgroundFetchDelegateImpl::GetUploadData(
     const std::string& download_guid,
     download::GetUploadDataCallback callback) {
   auto job_it = download_job_unique_id_map_.find(download_guid);
-  DCHECK(job_it != download_job_unique_id_map_.end());
+  // TODO(crbug.com/779012): When DownloadService fixes cancelled jobs calling
+  // client methods, then this can be a DCHECK.
+  if (job_it == download_job_unique_id_map_.end()) {
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(callback), /* request_body= */ nullptr));
+    return;
+  }
 
   JobDetails& job_details = job_details_map_.find(job_it->second)->second;
   if (job_details.current_fetch_guids.at(download_guid).status ==

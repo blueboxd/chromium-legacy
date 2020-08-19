@@ -8,6 +8,7 @@
 
 #include "base/time/time.h"
 #include "crypto/random.h"
+#include "device/fido/cable/v2_handshake.h"
 #include "device/fido/fido_parsing_utils.h"
 #include "third_party/boringssl/src/include/openssl/aes.h"
 #include "third_party/boringssl/src/include/openssl/digest.h"
@@ -138,7 +139,7 @@ bool CableDiscoveryData::MatchV2(const CableEidArray& eid,
   static_assert(kCableEphemeralIdSize == AES_BLOCK_SIZE,
                 "EIDs are not AES blocks");
   AES_decrypt(/*in=*/eid.data(), /*out=*/out.data(), &key);
-  return (out[3] & 0xc0) == 0 && out[4] == 0 && out[5] == 0;
+  return cablev2::eid::IsValid(out);
 }
 
 // static

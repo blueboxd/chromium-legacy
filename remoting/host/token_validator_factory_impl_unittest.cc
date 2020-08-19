@@ -19,7 +19,6 @@
 #include "net/test/url_request/url_request_failed_job.h"
 #include "net/url_request/url_request_job_factory.h"
 #include "net/url_request/url_request_job_factory_impl.h"
-#include "net/url_request/url_request_status.h"
 #include "net/url_request/url_request_test_job.h"
 #include "net/url_request/url_request_test_util.h"
 #include "remoting/base/rsa_key_pair.h"

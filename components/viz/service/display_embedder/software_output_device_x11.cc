@@ -22,12 +22,8 @@
 
 namespace viz {
 
-SoftwareOutputDeviceX11::SoftwareOutputDeviceX11(
-    gfx::AcceleratedWidget widget,
-    scoped_refptr<base::SequencedTaskRunner> gpu_task_runner)
-    : x11_software_bitmap_presenter_(widget,
-                                     task_runner_.get(),
-                                     std::move(gpu_task_runner)) {
+SoftwareOutputDeviceX11::SoftwareOutputDeviceX11(gfx::AcceleratedWidget widget)
+    : x11_software_bitmap_presenter_(widget) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 

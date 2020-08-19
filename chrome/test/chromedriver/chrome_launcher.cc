@@ -86,7 +86,6 @@ const char* const kDesktopSwitches[] = {
     "disable-background-networking",
     "disable-client-side-phishing-detection",
     "disable-default-apps",
-    "enable-logging",
     "log-level=0",
     "password-store=basic",
     "use-mock-keychain",
@@ -109,6 +108,7 @@ const base::FilePath::CharType kDevToolsActivePort[] =
 enum ChromeType { Remote, Desktop, Android, Replay };
 
 Status PrepareDesktopCommandLine(const Capabilities& capabilities,
+                                 bool enable_chrome_logs,
                                  base::CommandLine* prepared_command,
                                  base::ScopedTempDir* user_data_dir_temp_dir,
                                  base::ScopedTempDir* extension_dir,
@@ -133,6 +133,24 @@ Status PrepareDesktopCommandLine(const Capabilities& capabilities,
     switches.SetUnparsedSwitch(common_switch);
   for (auto* desktop_switch : kDesktopSwitches)
     switches.SetUnparsedSwitch(desktop_switch);
+
+  // Chrome logs are normally sent to a file (whose location can be controlled
+  // via the logPath capability). We expose a flag, --enable-chrome-logs, that
+  // sends the logs to stderr instead. This is useful when ChromeDriver was
+  // launched by another program that wishes to consume the browser output.
+  if (enable_chrome_logs) {
+    if (!capabilities.log_path.empty()) {
+      LOG(WARNING) << "The 'logPath' capability has no effect when using"
+                   << "--enable-chrome-logs; Chrome logs will go to stderr";
+    }
+    switches.SetSwitch("enable-logging", "stderr");
+  } else {
+    // An empty argument to Chrome's enable-logging flag causes logs to go to a
+    // file on Release builds (where the default is LOG_TO_FILE), and to both a
+    // file and stderr on Debug builds (where the default is LOG_TO_ALL).
+    switches.SetSwitch("enable-logging");
+  }
+
   if (capabilities.accept_insecure_certs) {
     switches.SetSwitch("ignore-certificate-errors");
   }
@@ -406,7 +424,9 @@ Status LaunchDesktopChrome(network::mojom::URLLoaderFactory* factory,
       return status;
     }
   }
-  status = PrepareDesktopCommandLine(capabilities, &command,
+  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+  bool enable_chrome_logs = cmd_line->HasSwitch("enable-chrome-logs");
+  status = PrepareDesktopCommandLine(capabilities, enable_chrome_logs, &command,
                                      &user_data_dir_temp_dir, &extension_dir,
                                      &extension_bg_pages, &user_data_dir);
   if (status.IsError())
@@ -434,7 +454,7 @@ Status LaunchDesktopChrome(network::mojom::URLLoaderFactory* factory,
       command.AppendSwitch(kEnableCrashReport);
   }
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   // We need to allow new privileges so that chrome's setuid sandbox can run.
   options.allow_new_privs = true;
 #endif
@@ -447,14 +467,13 @@ Status LaunchDesktopChrome(network::mojom::URLLoaderFactory* factory,
     options.new_process_group = true;
 #endif
 
-  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
 #if defined(OS_POSIX)
   base::ScopedFD devnull;
-  if (!cmd_line->HasSwitch("verbose") &&
-      !cmd_line->HasSwitch("enable-chrome-logs") &&
+  if (!cmd_line->HasSwitch("verbose") && !enable_chrome_logs &&
       cmd_line->GetSwitchValueASCII("log-level") != "ALL") {
-    // Redirect stderr to /dev/null, so that Chrome log spew doesn't confuse
-    // users.
+    // On Debug builds of Chrome, the default logging outputs to both a file and
+    // stderr. Redirect stderr to /dev/null, so that Chrome log spew doesn't
+    // confuse users.
     devnull.reset(HANDLE_EINTR(open("/dev/null", O_WRONLY)));
     if (!devnull.is_valid())
       return Status(kUnknownError, "couldn't open /dev/null");
@@ -462,7 +481,7 @@ Status LaunchDesktopChrome(network::mojom::URLLoaderFactory* factory,
         std::make_pair(devnull.get(), STDERR_FILENO));
   }
 #elif defined(OS_WIN)
-  if (cmd_line->HasSwitch("enable-chrome-logs")) {
+  if (enable_chrome_logs) {
     // On Windows, we must inherit the stdout/stderr handles, or the output from
     // the browser will not be part of our output and thus not capturable by
     // processes that call us.

@@ -662,7 +662,7 @@ IN_PROC_BROWSER_TEST_P(AccessibilityHitTestingBrowserTest,
 }
 
 // Timeouts on Linux. TODO(crbug.com/1083805): Enable this test.
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #define MAYBE_CachingAsyncHitTestMissesElement_WithPinchZoom \
   DISABLED_CachingAsyncHitTestMissesElement_WithPinchZoom
 #else

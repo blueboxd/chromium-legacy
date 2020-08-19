@@ -200,8 +200,6 @@ public class VoiceRecognitionHandler {
         // WindowAndroid.IntentCallback implementation:
         @Override
         public void onIntentCompleted(WindowAndroid window, int resultCode, Intent data) {
-            stopTrackingAndRecordQueryDuration();
-
             if (resultCode != Activity.RESULT_OK || data.getExtras() == null) {
                 if (resultCode == Activity.RESULT_CANCELED) {
                     recordVoiceSearchDismissedEventSource(mSource);
@@ -211,6 +209,8 @@ public class VoiceRecognitionHandler {
                 return;
             }
 
+            // Only record query duration on success.
+            stopTrackingAndRecordQueryDuration();
             AutocompleteCoordinator autocompleteCoordinator =
                     mDelegate.getAutocompleteCoordinator();
             assert autocompleteCoordinator != null;
@@ -423,13 +423,15 @@ public class VoiceRecognitionHandler {
 
     /** Start tracking query duration by capturing when it started */
     private void startTrackingQueryDuration() {
-        assert mQueryStartTimeMs == null;
         mQueryStartTimeMs = SystemClock.elapsedRealtime();
     }
 
     /** Calculate the query duration and report it and cleanup afterwards. */
-    private void stopTrackingAndRecordQueryDuration() {
-        assert mQueryStartTimeMs != null;
+    @VisibleForTesting
+    void stopTrackingAndRecordQueryDuration() {
+        // Defensive check to guard against onIntentResult being called more than once. This only
+        // happens with assistant experiments. See crbug.com/1116927 for details.
+        if (mQueryStartTimeMs == null) return;
 
         long elapsedTimeMs = SystemClock.elapsedRealtime() - mQueryStartTimeMs;
         recordVoiceSearchOpenDuration(elapsedTimeMs);
@@ -518,5 +520,10 @@ public class VoiceRecognitionHandler {
     @VisibleForTesting
     protected boolean isRecognitionIntentPresent(boolean useCachedValue) {
         return VoiceRecognitionUtil.isRecognitionIntentPresent(useCachedValue);
+    }
+
+    /** Sets the start time for testing. */
+    void setQueryStartTimeForTesting(Long queryStartTimeMs) {
+        mQueryStartTimeMs = queryStartTimeMs;
     }
 }

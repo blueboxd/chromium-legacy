@@ -33,7 +33,7 @@ Time TimeNowFromSystemTimeIgnoringOverride() {
 namespace subtle {
 TimeTicks TimeTicksNowIgnoringOverride() {
   const zx_time_t nanos_since_boot = zx_clock_get_monotonic();
-  CHECK_NE(0, nanos_since_boot);
+  CHECK(nanos_since_boot != 0);
   return TimeTicks::FromZxTime(nanos_since_boot);
 }
 }  // namespace subtle
@@ -49,11 +49,11 @@ zx_duration_t TimeDelta::ToZxDuration() const {
 
 // static
 Time Time::FromZxTime(zx_time_t nanos_since_unix_epoch) {
-  return UnixEpoch() + TimeDelta::FromNanoseconds(nanos_since_unix_epoch);
+  return Time::UnixEpoch() + TimeDelta::FromNanoseconds(nanos_since_unix_epoch);
 }
 
 zx_time_t Time::ToZxTime() const {
-  return (*this - UnixEpoch()).InNanoseconds();
+  return (*this - Time::UnixEpoch()).InNanoseconds();
 }
 
 // static

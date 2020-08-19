@@ -117,7 +117,7 @@ class MimeHandlerViewTest : public ExtensionApiTest {
 };
 
 // Test is flaky on Linux.  https://crbug.com/877627
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #define MAYBE_Fullscreen DISABLED_Fullscreen
 #else
 #define MAYBE_Fullscreen Fullscreen

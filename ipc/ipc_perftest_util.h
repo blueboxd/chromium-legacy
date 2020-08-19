@@ -77,7 +77,7 @@ class LockThreadAffinity {
   bool affinity_set_ok_;
 #if defined(OS_WIN)
   DWORD_PTR old_affinity_;
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || defined(OS_CHROMEOS)
   cpu_set_t old_cpuset_;
 #endif
 

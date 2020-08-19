@@ -160,7 +160,7 @@ void BoxPainter::PaintBoxDecorationBackgroundWithRect(
   // own.
   if (box_decoration_data.ShouldPaintShadow()) {
     BoxPainterBase::PaintNormalBoxShadow(
-        paint_info, paint_rect, style, true, true,
+        paint_info, paint_rect, style, PhysicalBoxSides(),
         !box_decoration_data.ShouldPaintBackground());
   }
 
@@ -263,14 +263,10 @@ void BoxPainter::PaintMaskImages(const PaintInfo& paint_info,
   // For mask images legacy layout painting handles multi-line boxes by giving
   // the full width of the element, not the current line box, thereby clipping
   // the offending edges.
-  bool include_logical_left_edge = true;
-  bool include_logical_right_edge = true;
-
   BackgroundImageGeometry geometry(layout_box_);
   BoxModelObjectPainter painter(layout_box_);
   painter.PaintMaskImages(paint_info, paint_rect, layout_box_, geometry,
-                          include_logical_left_edge,
-                          include_logical_right_edge);
+                          PhysicalBoxSides());
 }
 
 void BoxPainter::RecordHitTestData(const PaintInfo& paint_info,

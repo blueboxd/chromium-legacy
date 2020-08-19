@@ -2476,6 +2476,7 @@ if (!is_android) {
         "../browser/chromeos/policy/site_isolation_flag_handling_browsertest.cc",
         "../browser/chromeos/policy/status_collector/child_status_collector_browsertest.cc",
         "../browser/chromeos/policy/status_collector/device_status_collector_browsertest.cc",
+        "../browser/chromeos/policy/system_proxy_manager_browsertest.cc",
         "../browser/chromeos/policy/unaffiliated_arc_allowed_browsertest.cc",
         "../browser/chromeos/policy/user_affiliation_browsertest.cc",
         "../browser/chromeos/policy/user_cloud_external_data_manager_browsertest.cc",
@@ -5128,10 +5129,6 @@ test("unit_tests") {
         "../browser/media_galleries/win/mtp_device_delegate_impl_win_unittest.cc",
         "../browser/media_galleries/win/mtp_device_object_enumerator_unittest.cc",
       ]
-    }
-    if (is_mac) {
-      sources +=
-          [ "../browser/ui/startup/mac_system_infobar_delegate_unittest.cc" ]
     }
     if (is_chromeos) {
       sources += [

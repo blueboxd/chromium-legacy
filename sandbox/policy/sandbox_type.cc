@@ -63,7 +63,7 @@ bool IsUnsandboxedSandboxType(SandboxType sandbox_type) {
 #if !defined(OS_MAC)
     case SandboxType::kSharingService:
 #endif
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
     case SandboxType::kZygoteIntermediateSandbox:
 #endif
     case SandboxType::kSpeechRecognition:
@@ -149,7 +149,7 @@ void SetCommandLineFlagsForSandboxType(base::CommandLine* command_line,
     case SandboxType::kNaClLoader:
       break;
 #endif  // defined(OS_MAC)
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
     case SandboxType::kZygoteIntermediateSandbox:
       break;
 #endif
@@ -200,7 +200,7 @@ SandboxType SandboxTypeFromCommandLine(const base::CommandLine& command_line) {
   if (process_type == switches::kNaClBrokerProcess)
     return SandboxType::kNoSandbox;
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   // Intermediate process gains a sandbox later.
   if (process_type == switches::kZygoteProcessType)
     return SandboxType::kZygoteIntermediateSandbox;
@@ -268,7 +268,7 @@ std::string StringFromUtilitySandboxType(SandboxType sandbox_type) {
 #if defined(OS_FUCHSIA)
     case SandboxType::kWebContext:
 #endif  // defined(OS_FUCHSIA)
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
     case SandboxType::kZygoteIntermediateSandbox:
 #endif
       NOTREACHED();

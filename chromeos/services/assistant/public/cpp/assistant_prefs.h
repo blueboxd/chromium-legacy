@@ -33,9 +33,10 @@ enum ConsentStatus {
 };
 
 // The mode of the Assistant onboarding experience.
+// This enum is used in histogram, please do not change the values.
 enum class AssistantOnboardingMode {
-  kDefault,    // Maps to kAssistantOnboardingModeDefault.
-  kEducation,  // Maps to kAssistantOnboardingModeEducation.
+  kDefault = 0,    // Maps to kAssistantOnboardingModeDefault.
+  kEducation = 1,  // Maps to kAssistantOnboardingModeEducation.
   kMaxValue = kEducation
 };
 

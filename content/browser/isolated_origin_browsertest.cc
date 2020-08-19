@@ -24,6 +24,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_isolation_policy.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/back_forward_cache_util.h"
@@ -1381,6 +1382,69 @@ IN_PROC_BROWSER_TEST_F(StrictOriginIsolationTest, MainframesAreIsolated) {
   EXPECT_NE(expected_foo_lock, expected_sub_foo_lock);
   EXPECT_NE(expected_sub_foo_lock, expected_another_foo_lock);
   EXPECT_NE(expected_another_foo_lock, expected_foo_lock);
+}
+
+// Ensure that navigations across two URLs that resolve to the same effective
+// URL won't result in a renderer kill with strict origin isolation. See
+// https://crbug.com/961386.
+IN_PROC_BROWSER_TEST_F(StrictOriginIsolationTest,
+                       NavigateToURLsWithSameEffectiveURL) {
+  GURL foo_url(embedded_test_server()->GetURL("foo.com", "/title1.html"));
+  GURL bar_url(embedded_test_server()->GetURL("bar.com", "/title1.html"));
+  GURL app_url(GetWebUIURL("translated"));
+
+  // Set up effective URL translation that maps both |foo_url| and |bar_url| to
+  // |app_url|.
+  EffectiveURLContentBrowserClient modified_client(
+      false /* requires_dedicated_process */);
+  modified_client.AddTranslation(foo_url, app_url);
+  modified_client.AddTranslation(bar_url, app_url);
+  ContentBrowserClient* regular_client =
+      SetBrowserClientForTesting(&modified_client);
+
+  // Calculate the expected SiteInfo for each URL.  Both |foo_url| and
+  // |bar_url| should have a site URL of |app_url|, but the process locks
+  // should be foo.com and bar.com.
+  SiteInfo foo_site_info = SiteInstanceImpl::ComputeSiteInfo(
+      web_contents()->GetSiteInstance()->GetIsolationContext(), foo_url);
+  EXPECT_EQ(app_url, foo_site_info.site_url());
+  EXPECT_EQ(foo_url.GetOrigin(), foo_site_info.process_lock_url());
+  SiteInfo bar_site_info = SiteInstanceImpl::ComputeSiteInfo(
+      web_contents()->GetSiteInstance()->GetIsolationContext(), bar_url);
+  EXPECT_EQ(app_url, bar_site_info.site_url());
+  EXPECT_EQ(bar_url.GetOrigin(), bar_site_info.process_lock_url());
+  EXPECT_EQ(foo_site_info.site_url(), bar_site_info.site_url());
+
+  // Navigate to foo_url and then to bar_url.  Verify that we end up with
+  // correct SiteInfo in each case.
+  EXPECT_TRUE(NavigateToURL(shell(), foo_url));
+  scoped_refptr<SiteInstanceImpl> foo_site_instance =
+      web_contents()->GetSiteInstance();
+  EXPECT_EQ(foo_site_info, foo_site_instance->GetSiteInfo());
+
+  EXPECT_TRUE(NavigateToURL(shell(), bar_url));
+  scoped_refptr<SiteInstanceImpl> bar_site_instance =
+      web_contents()->GetSiteInstance();
+  EXPECT_EQ(bar_site_info, bar_site_instance->GetSiteInfo());
+
+  // Verify that the SiteInstances and processes are different.  In
+  // https://crbug.com/961386, we didn't swap processes for the second
+  // navigation, leading to renderer kills.
+  EXPECT_NE(foo_site_instance.get(), bar_site_instance.get());
+  EXPECT_NE(foo_site_instance->GetProcess(), bar_site_instance->GetProcess());
+
+  // Navigate to another site, then repeat this test with a redirect from
+  // foo.com to bar.com.  The navigation should throw away the speculative RFH
+  // created for foo.com and should commit in a process locked to bar.com.
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("a.com", "/title1.html")));
+  GURL redirect_url(embedded_test_server()->GetURL(
+      "foo.com", "/server-redirect?" + bar_url.spec()));
+  modified_client.AddTranslation(redirect_url, app_url);
+  EXPECT_TRUE(NavigateToURL(shell(), redirect_url, bar_url));
+  EXPECT_EQ(bar_site_info, web_contents()->GetSiteInstance()->GetSiteInfo());
+
+  SetBrowserClientForTesting(regular_client);
 }
 
 // Check that navigating a main frame from an non-isolated origin to an

@@ -1443,7 +1443,8 @@ TEST_F(PrerenderTest, LinkManagerAbandonThenCancel) {
 
 // Flaky on Android, crbug.com/1087876.
 // Flaky on Mac and Linux, crbug.com/1087735.
-#if defined(OS_ANDROID) || defined(OS_MAC) || defined(OS_LINUX)
+#if defined(OS_ANDROID) || defined(OS_MAC) || defined(OS_LINUX) || \
+    defined(OS_CHROMEOS)
 #define MAYBE_LinkManagerAddTwiceCancelTwice \
   DISABLED_LinkManagerAddTwiceCancelTwice
 #else

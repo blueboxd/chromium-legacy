@@ -603,7 +603,7 @@ TEST_P(MediaEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
 }
 
 // The test is flaky: crbug.com/1042417.
-#if defined(OS_LINUX) || defined(OS_ANDROID)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
 #define MAYBE_CleanUpDatabaseWhenHistoryIsExpired \
   DISABLED_CleanUpDatabaseWhenHistoryIsExpired
 #else

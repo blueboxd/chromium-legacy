@@ -58,7 +58,7 @@ const CGFloat kHeaderBorderRadius = 8;
                 stringWithFormat:@"%@ – %@", self.title,
                                  l10n_util::GetNSString(
                                      IDS_IOS_DISCOVER_FEED_TITLE_OFF_LABEL)];
-  [cell changeDiscoverFeedHeaderVisibility:self.discoverFeedVisible];
+  [cell changeHeaderForFeedVisible:self.discoverFeedVisible];
 }
 
 @end
@@ -91,6 +91,8 @@ const CGFloat kHeaderBorderRadius = 8;
   if (self) {
     _container = [[UIView alloc] init];
     _container.translatesAutoresizingMaskIntoConstraints = NO;
+    _container.layer.borderColor = [UIColor colorNamed:kGrey300Color].CGColor;
+    _container.layer.cornerRadius = kHeaderBorderRadius;
 
     _titleLabel = [[UILabel alloc] init];
     _titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
@@ -117,6 +119,9 @@ const CGFloat kHeaderBorderRadius = 8;
     [_container addSubview:_menuButton];
     [_container addSubview:_titleLabel];
     [self.contentView addSubview:_container];
+
+    _container.layer.cornerRadius = kHeaderBorderRadius;
+    _container.layer.borderColor = [UIColor colorNamed:kGrey300Color].CGColor;
 
     [NSLayoutConstraint activateConstraints:@[
       [_container.topAnchor constraintEqualToAnchor:self.contentView.topAnchor],
@@ -172,46 +177,60 @@ const CGFloat kHeaderBorderRadius = 8;
                forControlEvents:UIControlEventAllEvents];
 }
 
-- (void)changeDiscoverFeedHeaderVisibility:(BOOL)visible {
+- (void)changeHeaderForFeedVisible:(BOOL)visible {
   // Checks is discoverFeedVisible value is nil, indicating that the header has
   // been newly created or reloaded.
   if (self.discoverFeedVisible) {
     if ([self.discoverFeedVisible boolValue] == visible) {
       return;
     }
-    // If the header already exists, force the animation by setting other header
-    // view first. This is because the header constraints are lost when the NTP
-    // is reloaded, which happens when toggling the visibility.
-    visible ? [self setHiddenFeedHeader] : [self setVisibleFeedHeader];
-    [self.contentView layoutIfNeeded];
-    [UIView animateWithDuration:kHeaderChangeAnimationDuration
-                     animations:^{
-                       visible ? [self setVisibleFeedHeader]
-                               : [self setHiddenFeedHeader];
-                       [self.contentView layoutIfNeeded];
-                     }];
+    [self setHeaderForFeedVisible:visible animate:YES];
   } else {
-    visible ? [self setVisibleFeedHeader] : [self setHiddenFeedHeader];
+    [self setHeaderForFeedVisible:visible animate:NO];
   }
+  [self.contentView layoutIfNeeded];
   self.discoverFeedVisible = [NSNumber numberWithBool:visible];
 }
 
 #pragma mark - Private
 
-// Sets header properties for when the Discover feed is visible.
-- (void)setVisibleFeedHeader {
-  self.container.layer.borderWidth = 0;
-  [NSLayoutConstraint deactivateConstraints:self.feedHiddenConstraints];
-  [NSLayoutConstraint activateConstraints:self.feedVisibleConstraints];
+- (void)setHeaderForFeedVisible:(BOOL)visible animate:(BOOL)animate {
+  if (animate) {
+    // If the header already exists, force the animation by setting other header
+    // view first. This is because the header constraints are lost when the NTP
+    // is reloaded, which happens when toggling the visibility.
+    [self setConstraintsForFeedVisible:!visible];
+    [self.contentView layoutIfNeeded];
+    [UIView animateWithDuration:kHeaderChangeAnimationDuration
+                     animations:^{
+                       [self setConstraintsForFeedVisible:visible];
+                       [self.contentView layoutIfNeeded];
+                     }];
+    [self animateBorderForFeedVisible:visible];
+  } else {
+    [self setConstraintsForFeedVisible:visible];
+  }
+  self.container.layer.borderWidth = visible ? 0 : kHeaderBorderWidth;
 }
 
-// Sets header properties for when the Discover feed is hidden.
-- (void)setHiddenFeedHeader {
-  self.container.layer.borderColor = [UIColor colorNamed:kGrey300Color].CGColor;
-  self.container.layer.borderWidth = kHeaderBorderWidth;
-  self.container.layer.cornerRadius = kHeaderBorderRadius;
-  [NSLayoutConstraint deactivateConstraints:self.feedVisibleConstraints];
-  [NSLayoutConstraint activateConstraints:self.feedHiddenConstraints];
+// Sets header properties for when the Discover feed is visible.
+- (void)setConstraintsForFeedVisible:(BOOL)visible {
+  if (visible) {
+    [NSLayoutConstraint deactivateConstraints:self.feedHiddenConstraints];
+    [NSLayoutConstraint activateConstraints:self.feedVisibleConstraints];
+  } else {
+    [NSLayoutConstraint deactivateConstraints:self.feedVisibleConstraints];
+    [NSLayoutConstraint activateConstraints:self.feedHiddenConstraints];
+  }
+}
+
+// Animates border visibility when header changes state.
+- (void)animateBorderForFeedVisible:(BOOL)visible {
+  CABasicAnimation* width =
+      [CABasicAnimation animationWithKeyPath:@"borderWidth"];
+  width.fromValue = visible ? @(kHeaderBorderWidth) : @0;
+  width.toValue = visible ? @0 : @(kHeaderBorderWidth);
+  [self.container.layer addAnimation:width forKey:@"borderWidth"];
 }
 
 @end

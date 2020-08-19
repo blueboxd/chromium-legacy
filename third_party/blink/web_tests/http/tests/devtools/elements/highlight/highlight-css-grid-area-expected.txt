@@ -98,6 +98,7 @@ grid-with-areas{
   "gridInfo": [
     {
       "rotationAngle": 0,
+      "writingMode": "horizontal-tb",
       "columnTrackSizes": [
         {
           "x": 97.75,

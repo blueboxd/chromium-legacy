@@ -255,7 +255,7 @@ IN_PROC_BROWSER_TEST_F(SnapshotBrowserTest, SingleWindowTest) {
 //   Linux Chromium OS ASAN LSAN Tests (1)
 //   Linux TSAN Tests
 // See crbug.com/771119
-#if (defined(OS_WIN) && !defined(NDEBUG)) || (defined(OS_CHROMEOS)) || \
+#if (defined(OS_WIN) && !defined(NDEBUG)) || defined(OS_CHROMEOS) || \
     (defined(OS_LINUX) && defined(THREAD_SANITIZER))
 #define MAYBE_SyncMultiWindowTest DISABLED_SyncMultiWindowTest
 #define MAYBE_AsyncMultiWindowTest DISABLED_AsyncMultiWindowTest

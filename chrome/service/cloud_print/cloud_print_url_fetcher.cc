@@ -18,7 +18,6 @@
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request_status.h"
 #include "url/gurl.h"
 
 namespace cloud_print {
@@ -102,12 +101,11 @@ void CloudPrintURLFetcher::set_test_factory(
 }
 
 CloudPrintURLFetcher::ResponseAction
-CloudPrintURLFetcher::Delegate::HandleRawResponse(
-    const net::URLFetcher* source,
-    const GURL& url,
-    const net::URLRequestStatus& status,
-    int response_code,
-    const std::string& data) {
+CloudPrintURLFetcher::Delegate::HandleRawResponse(const net::URLFetcher* source,
+                                                  const GURL& url,
+                                                  net::Error error,
+                                                  int response_code,
+                                                  const std::string& data) {
   return CONTINUE_PROCESSING;
 }
 
@@ -170,12 +168,9 @@ void CloudPrintURLFetcher::OnURLFetchComplete(
   source->GetResponseAsString(&data);
   ReportRequestTime(type_, base::Time::Now() - start_time_);
   ReportDownloadSize(type_, data.size());
-  ResponseAction action = delegate_->HandleRawResponse(
-      source,
-      source->GetURL(),
-      source->GetStatus(),
-      source->GetResponseCode(),
-      data);
+  ResponseAction action =
+      delegate_->HandleRawResponse(source, source->GetURL(), source->GetError(),
+                                   source->GetResponseCode(), data);
 
   // If we get auth error, notify delegate and check if it wants to proceed.
   if (action == CONTINUE_PROCESSING &&
@@ -185,7 +180,7 @@ void CloudPrintURLFetcher::OnURLFetchComplete(
 
   if (action == CONTINUE_PROCESSING) {
     // We need to retry on all network errors.
-    if (!source->GetStatus().is_success() || (source->GetResponseCode() != 200))
+    if (source->GetError() != net::OK || source->GetResponseCode() != 200)
       action = RETRY_REQUEST;
     else
       action = delegate_->HandleRawData(source, source->GetURL(), data);

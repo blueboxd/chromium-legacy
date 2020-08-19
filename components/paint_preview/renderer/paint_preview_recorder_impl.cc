@@ -159,7 +159,7 @@ void PaintPreviewRecorderImpl::CapturePaintPreviewInternal(
   }
 
   // Warm up paint for an out-of-lifecycle paint phase.
-  frame->DispatchBeforePrintEvent();
+  frame->DispatchBeforePrintEvent(/*print_client=*/nullptr);
 
   DCHECK_EQ(is_main_frame_, params->is_main_frame);
   // Default to using the clip rect.

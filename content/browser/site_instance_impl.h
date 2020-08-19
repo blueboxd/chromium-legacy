@@ -467,9 +467,9 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   // associated with its default SiteInstance.
   bool IsSiteInDefaultSiteInstance(const GURL& site_url) const;
 
-  // Returns true if the the site URL for |url| matches the site URL
-  // for this instance (i.e. GetSiteURL()). Otherwise returns false.
-  bool DoesSiteForURLMatch(const GURL& url);
+  // Returns true if the SiteInfo for |url| matches the SiteInfo for this
+  // instance (i.e. GetSiteInfo()). Otherwise returns false.
+  bool DoesSiteInfoForURLMatch(const GURL& url);
 
   // Adds |origin| as a non-isolated origin within this BrowsingInstance due to
   // an existing instance at the time of opt-in, so that future instances of it

@@ -37,6 +37,8 @@ blink_modules_sources("webcodecs") {
     "video_frame.h",
     "video_frame_attachment.cc",
     "video_frame_attachment.h",
+    "video_frame_handle.cc",
+    "video_frame_handle.h",
     "video_track_reader.cc",
     "video_track_reader.h",
     "video_track_writer.cc",

@@ -7,7 +7,7 @@
 #include <map>
 #include <utility>
 
-#if OS_LINUX
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #include <sys/stat.h>
 #endif
 
@@ -412,7 +412,7 @@ ExternalMojoBroker::ExternalMojoBroker(const std::string& broker_path) {
       named_channel.TakeServerEndpoint();
   DCHECK(server_endpoint.is_valid());
 
-#if OS_LINUX
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   chmod(broker_path.c_str(), 0770);
 #endif
 

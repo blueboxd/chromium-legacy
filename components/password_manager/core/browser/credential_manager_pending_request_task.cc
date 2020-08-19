@@ -164,13 +164,13 @@ void CredentialManagerPendingRequestTask::OnGetPasswordStoreResults(
 }
 
 void CredentialManagerPendingRequestTask::OnGetPasswordStoreResultsFrom(
-    scoped_refptr<PasswordStore> store,
+    PasswordStore* store,
     std::vector<std::unique_ptr<autofill::PasswordForm>> results) {
   // localhost is a secure origin but not https.
   if (results.empty() && origin_.scheme() == url::kHttpsScheme) {
     // Try to migrate the HTTP passwords and process them later.
-    http_migrators_[store.get()] = std::make_unique<HttpPasswordStoreMigrator>(
-        origin_, store.get(), delegate_->client()->GetNetworkContext(), this);
+    http_migrators_[store] = std::make_unique<HttpPasswordStoreMigrator>(
+        origin_, store, delegate_->client()->GetNetworkContext(), this);
     return;
   }
   AggregatePasswordStoreResults(std::move(results));

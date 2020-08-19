@@ -87,6 +87,9 @@ class FlocIdProviderImpl : public FlocIdProvider,
   void OnCheckCanComputeFlocCompleted(ComputeFlocCompletedCallback callback,
                                       bool can_compute_floc);
 
+  void OnCheckSwaaNacAccountEnabledCompleted(CanComputeFlocCallback callback,
+                                             bool enabled);
+
   void GetRecentlyVisitedURLs(GetRecentlyVisitedURLsCallback callback);
   void OnGetRecentlyVisitedURLsCompleted(ComputeFlocCompletedCallback callback,
                                          history::QueryResults results);
@@ -94,6 +97,11 @@ class FlocIdProviderImpl : public FlocIdProvider,
   FlocId floc_id_;
   bool floc_computation_in_progress_ = false;
   bool first_floc_computation_triggered_ = false;
+
+  // For the swaa/nac/account_type permission, we will use a cached status to
+  // avoid querying too often.
+  bool cached_swaa_nac_account_enabled_ = false;
+  base::TimeTicks last_swaa_nac_account_enabled_query_time_;
 
   syncer::SyncService* sync_service_;
   scoped_refptr<content_settings::CookieSettings> cookie_settings_;

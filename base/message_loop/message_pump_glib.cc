@@ -5,16 +5,13 @@
 #include "base/message_loop/message_pump_glib.h"
 
 #include <fcntl.h>
+#include <glib.h>
 #include <math.h>
 
-#include <glib.h>
-
 #include "base/logging.h"
-#include "base/no_destructor.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/synchronization/lock.h"
-#include "base/threading/platform_thread.h"
 
 namespace base {
 
@@ -48,6 +45,12 @@ int GetTimeIntervalMilliseconds(TimeTicks next_task_time) {
       (next_task_time - TimeTicks::Now()).InMillisecondsRoundedUp();
 
   return timeout_ms < 0 ? 0 : saturated_cast<int>(timeout_ms);
+}
+
+bool RunningOnMainThread() {
+  auto pid = getpid();
+  auto tid = PlatformThread::CurrentId();
+  return pid > 0 && tid > 0 && pid == tid;
 }
 
 // A brief refresher on GLib:
@@ -102,8 +105,7 @@ struct WorkSource : public GSource {
   MessagePumpGlib* pump;
 };
 
-gboolean WorkSourcePrepare(GSource* source,
-                           gint* timeout_ms) {
+gboolean WorkSourcePrepare(GSource* source, gint* timeout_ms) {
   *timeout_ms = static_cast<WorkSource*>(source)->pump->HandlePrepare();
   // We always return FALSE, so that our timeout is honored.  If we were
   // to return TRUE, the timeout would be considered to be 0 and the poll
@@ -127,52 +129,6 @@ gboolean WorkSourceDispatch(GSource* source,
 // I wish these could be const, but g_source_new wants non-const.
 GSourceFuncs WorkSourceFuncs = {WorkSourcePrepare, WorkSourceCheck,
                                 WorkSourceDispatch, nullptr};
-
-// The following is used to make sure we only run the MessagePumpGlib on one
-// thread. X only has one message pump so we can only have one UI loop per
-// process.
-#ifndef NDEBUG
-
-// Tracks the pump the most recent pump that has been run.
-struct ThreadInfo {
-  // The pump.
-  MessagePumpGlib* pump;
-
-  // ID of the thread the pump was run on.
-  PlatformThreadId thread_id;
-};
-
-// Used for accesing |thread_info|.
-Lock& GetThreadInfoLock() {
-  static NoDestructor<Lock> thread_info_lock;
-  return *thread_info_lock;
-}
-
-// If non-null it means a MessagePumpGlib exists and has been Run. This is
-// destroyed when the MessagePump is destroyed.
-ThreadInfo* g_thread_info = nullptr;
-
-void CheckThread(MessagePumpGlib* pump) {
-  AutoLock auto_lock(GetThreadInfoLock());
-  if (!g_thread_info) {
-    g_thread_info = new ThreadInfo;
-    g_thread_info->pump = pump;
-    g_thread_info->thread_id = PlatformThread::CurrentId();
-  }
-  DCHECK_EQ(g_thread_info->thread_id, PlatformThread::CurrentId())
-      << "Running MessagePumpGlib on two different threads; "
-         "this is unsupported by GLib!";
-}
-
-void PumpDestroyed(MessagePumpGlib* pump) {
-  AutoLock auto_lock(GetThreadInfoLock());
-  if (g_thread_info && g_thread_info->pump == pump) {
-    delete g_thread_info;
-    g_thread_info = nullptr;
-  }
-}
-
-#endif
 
 struct FdWatchSource : public GSource {
   MessagePumpGlib* pump;
@@ -218,16 +174,23 @@ struct MessagePumpGlib::RunState {
 };
 
 MessagePumpGlib::MessagePumpGlib()
-    : state_(nullptr),
-      context_(g_main_context_default()),
-      wakeup_gpollfd_(new GPollFD) {
+    : state_(nullptr), wakeup_gpollfd_(std::make_unique<GPollFD>()) {
+  DCHECK(!g_main_context_get_thread_default());
+  if (RunningOnMainThread()) {
+    context_ = g_main_context_default();
+  } else {
+    context_ = g_main_context_new();
+    g_main_context_push_thread_default(context_);
+    context_owned_ = true;
+  }
+
   // Create our wakeup pipe, which is used to flag when work was scheduled.
   int fds[2];
   int ret = pipe(fds);
   DCHECK_EQ(ret, 0);
   (void)ret;  // Prevent warning in release mode.
 
-  wakeup_pipe_read_  = fds[0];
+  wakeup_pipe_read_ = fds[0];
   wakeup_pipe_write_ = fds[1];
   wakeup_gpollfd_->fd = wakeup_pipe_read_;
   wakeup_gpollfd_->events = G_IO_IN;
@@ -242,13 +205,15 @@ MessagePumpGlib::MessagePumpGlib()
 }
 
 MessagePumpGlib::~MessagePumpGlib() {
-#ifndef NDEBUG
-  PumpDestroyed(this);
-#endif
   g_source_destroy(work_source_);
   g_source_unref(work_source_);
   close(wakeup_pipe_read_);
   close(wakeup_pipe_write_);
+
+  if (context_owned_) {
+    g_main_context_pop_thread_default(context_);
+    g_main_context_unref(context_);
+  }
 }
 
 MessagePumpGlib::FdWatchController::FdWatchController(const Location& location)
@@ -410,10 +375,6 @@ void MessagePumpGlib::HandleDispatch() {
 }
 
 void MessagePumpGlib::Run(Delegate* delegate) {
-#ifndef NDEBUG
-  CheckThread(this);
-#endif
-
   RunState state;
   state.delegate = delegate;
   state.should_quit = false;

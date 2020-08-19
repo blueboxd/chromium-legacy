@@ -61,6 +61,14 @@ void SVGPropertyTearOffBase::ThrowReadOnly(ExceptionState& exception_state) {
       ExceptionMessages::ReadOnly());
 }
 
+void SVGPropertyTearOffBase::ThrowIndexSize(ExceptionState& exception_state,
+                                            uint32_t index,
+                                            uint32_t max_bound) {
+  exception_state.ThrowDOMException(
+      DOMExceptionCode::kIndexSizeError,
+      ExceptionMessages::IndexExceedsMaximumBound("index", index, max_bound));
+}
+
 void SVGPropertyTearOffBase::Bind(SVGAnimatedPropertyBase* binding) {
   DCHECK(!IsImmutable());
   DCHECK(binding);

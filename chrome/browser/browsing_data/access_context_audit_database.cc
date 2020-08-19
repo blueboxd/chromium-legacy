@@ -7,8 +7,8 @@
 #include "base/logging.h"
 #include "net/cookies/cookie_util.h"
 #include "sql/database.h"
+#include "sql/error_delegate_util.h"
 #include "sql/meta_table.h"
-#include "sql/recovery.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
 
@@ -20,20 +20,19 @@ const char kCookieTableName[] = "cookies";
 const char kStorageAPITableName[] = "originStorageAPIs";
 static const int kVersionNumber = 1;
 
-// Callback that is fired upon an SQLite error, attempts to automatically
-// recover the database if it appears possible to do so.
-// TODO(crbug.com/1087272): Remove duplication of this function in the codebase.
+// Callback that is fired upon an SQLite error, razes the database if the error
+// is considered catastrphoic.
 void DatabaseErrorCallback(sql::Database* db,
                            const base::FilePath& db_path,
                            int extended_error,
                            sql::Statement* stmt) {
-  if (sql::Recovery::ShouldRecover(extended_error)) {
+  if (sql::IsErrorCatastrophic(extended_error)) {
     // Prevent reentrant calls.
     db->reset_error_callback();
 
     // After this call, the |db| handle is poisoned so that future calls will
     // return errors until the handle is re-opened.
-    sql::Recovery::RecoverDatabase(db, db_path);
+    db->RazeAndClose();
 
     // The DLOG(WARNING) below is intended to draw immediate attention to errors
     // in newly-written code.  Database corruption is generally a result of OS
@@ -461,7 +460,7 @@ void AccessContextAuditDatabase::RemoveAllRecordsForCookie(
   remove_statement.Run();
 }
 
-void AccessContextAuditDatabase::RemoveAllRecordsForOriginStorage(
+void AccessContextAuditDatabase::RemoveAllRecordsForOriginKeyedStorage(
     const url::Origin& origin,
     StorageAPIType type) {
   std::string remove;
@@ -549,4 +548,59 @@ AccessContextAuditDatabase::GetAllRecords() {
   }
 
   return records;
+}
+
+void AccessContextAuditDatabase::RemoveStorageApiRecords(
+    const std::set<StorageAPIType>& storage_api_types,
+    base::RepeatingCallback<bool(const url::Origin&)> origin_matcher,
+    base::Time begin,
+    base::Time end) {
+  sql::Transaction transaction(&db_);
+  if (!transaction.Begin())
+    return;
+
+  // As only the time ranges can be simply expressed as part of an SQL query,
+  // removing records that match the provided parameters requires first
+  // retrieving all records within the specified time range from the database.
+  // The number of records retrieved is sub-optimal by at most a factor of
+  // StorageAPIType::kMaxType, so we're not missing sub-linear optimization
+  // opportunity here.
+  std::string select = "SELECT origin, type FROM ";
+  select.append(kStorageAPITableName);
+  select.append(" WHERE access_utc BETWEEN ? AND ?");
+  sql::Statement select_storage_api(
+      db_.GetCachedStatement(SQL_FROM_HERE, select.c_str()));
+  select_storage_api.BindInt64(
+      0, begin.ToDeltaSinceWindowsEpoch().InMicroseconds());
+  select_storage_api.BindInt64(1,
+                               end.ToDeltaSinceWindowsEpoch().InMicroseconds());
+
+  // Filter the returned records based on the provided parameters, maintaining
+  // a list of origin and storage type pairs for removal from the database.
+  std::vector<std::pair<url::Origin, StorageAPIType>>
+      origin_type_pairs_for_removal;
+  while (select_storage_api.Step()) {
+    auto origin = url::Origin::Create(GURL(select_storage_api.ColumnString(0)));
+    auto type = static_cast<StorageAPIType>(select_storage_api.ColumnInt(1));
+    if (storage_api_types.count(type) &&
+        (!origin_matcher || origin_matcher.Run(origin))) {
+      origin_type_pairs_for_removal.emplace_back(origin, type);
+    }
+  }
+
+  std::string remove = "DELETE FROM ";
+  remove.append(kStorageAPITableName);
+  remove.append(" WHERE origin = ? AND type = ?");
+  sql::Statement remove_statement(
+      db_.GetCachedStatement(SQL_FROM_HERE, remove.c_str()));
+
+  for (const auto& origin_type : origin_type_pairs_for_removal) {
+    remove_statement.BindString(0, origin_type.first.Serialize());
+    remove_statement.BindInt(1, static_cast<int>(origin_type.second));
+    if (!remove_statement.Run())
+      return;
+    remove_statement.Reset(true);
+  }
+
+  transaction.Commit();
 }

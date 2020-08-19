@@ -1135,7 +1135,8 @@ OptimizationGuideHintsManager::CanApplyOptimization(
     // If we do not have a hint already loaded and we do not have one in the
     // cache, we do not know what to do with the URL so just return.
     // Otherwise, we do have information, but we just do not know it yet.
-    if (hint_cache_->HasHint(host)) {
+    if (optimization_guide::features::ShouldPersistHintsToDisk() &&
+        hint_cache_->HasHint(host)) {
       return optimization_guide::OptimizationTypeDecision::
           kHadHintButNotLoadedInTime;
     }

@@ -166,7 +166,7 @@ TEST_F(ImageWriterOperationTest, UnzipZipFile) {
   EXPECT_TRUE(base::ContentsEqual(image_path_, operation_->GetImagePath()));
 }
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 TEST_F(ImageWriterOperationTest, WriteImageToDevice) {
 #if !defined(OS_CHROMEOS)
   auto set_up_utility_client_progress =
@@ -195,7 +195,7 @@ TEST_F(ImageWriterOperationTest, WriteImageToDevice) {
   operation_->Write(run_loop.QuitClosure());
   run_loop.Run();
 }
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
 #if !defined(OS_CHROMEOS)
 // Chrome OS doesn't support verification in the ImageBurner, so these two tests

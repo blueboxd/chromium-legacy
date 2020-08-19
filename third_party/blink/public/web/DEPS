@@ -6,6 +6,7 @@ include_rules = [
     "+base/macros.h",
     "+base/memory/ref_counted.h",
     "+base/memory/scoped_refptr.h",
+    "+base/memory/weak_ptr.h",
     "+base/strings",
     "+base/time/time.h",
     "+base/threading/thread_checker.h",

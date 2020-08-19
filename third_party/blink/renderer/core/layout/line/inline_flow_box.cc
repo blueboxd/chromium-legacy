@@ -1433,8 +1433,7 @@ bool InlineFlowBox::NodeAtPoint(HitTestResult& result,
     PhysicalRect border_rect = PhysicalRectToBeNoop(LogicalFrameRect());
     border_rect.Move(accumulated_offset);
     FloatRoundedRect border = RoundedBorderGeometry::PixelSnappedRoundedBorder(
-        GetLineLayoutItem().StyleRef(), border_rect, IncludeLogicalLeftEdge(),
-        IncludeLogicalRightEdge());
+        GetLineLayoutItem().StyleRef(), border_rect, SidesToInclude());
     if (!hit_test_location.Intersects(border))
       return false;
   }

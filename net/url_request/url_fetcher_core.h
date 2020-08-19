@@ -19,6 +19,7 @@
 #include "base/timer/timer.h"
 #include "net/base/chunked_upload_data_stream.h"
 #include "net/base/ip_endpoint.h"
+#include "net/base/net_errors.h"
 #include "net/base/proxy_server.h"
 #include "net/http/http_request_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -26,7 +27,6 @@
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context_getter_observer.h"
-#include "net/url_request/url_request_status.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -123,7 +123,7 @@ class URLFetcherCore : public base::RefCountedThreadSafe<URLFetcherCore>,
   bool WasCached() const;
   const GURL& GetOriginalURL() const;
   const GURL& GetURL() const;
-  const URLRequestStatus& GetStatus() const;
+  Error GetError() const;
   int GetResponseCode() const;
   int64_t GetReceivedResponseContentLength() const;
   int64_t GetTotalReceivedBytes() const;
@@ -238,7 +238,7 @@ class URLFetcherCore : public base::RefCountedThreadSafe<URLFetcherCore>,
   GURL original_url_;                // The URL we were asked to fetch
   GURL url_;                         // The URL we eventually wound up at
   URLFetcher::RequestType request_type_;  // What type of request is this?
-  URLRequestStatus status_;          // Status of the request
+  Error error_;                           // Error from the request
   URLFetcherDelegate* delegate_;     // Object to notify on completion
   // Task runner for the creating sequence. Used to interact with the delegate.
   const scoped_refptr<base::SequencedTaskRunner> delegate_task_runner_;

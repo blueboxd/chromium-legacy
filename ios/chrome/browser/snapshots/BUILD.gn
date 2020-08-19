@@ -4,8 +4,8 @@
 
 source_set("snapshots") {
   public = [
+    "snapshot_browser_agent.h",
     "snapshot_cache.h",
-    "snapshot_cache_factory.h",
     "snapshot_cache_internal.h",
     "snapshot_cache_observer.h",
     "snapshot_cache_web_state_list_observer.h",
@@ -15,8 +15,8 @@ source_set("snapshots") {
     "snapshots_util.h",
   ]
   sources = [
+    "snapshot_browser_agent.mm",
     "snapshot_cache.mm",
-    "snapshot_cache_factory.mm",
     "snapshot_cache_web_state_list_observer.mm",
     "snapshot_generator.h",
     "snapshot_generator.mm",
@@ -27,8 +27,6 @@ source_set("snapshots") {
   deps = [
     "//base",
     "//components/infobars/core",
-    "//components/keyed_service/core",
-    "//components/keyed_service/ios",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/infobars",
     "//ios/chrome/browser/main:public",
@@ -62,6 +60,7 @@ source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
+    "snapshot_browser_agent_unittest.mm",
     "snapshot_cache_unittest.mm",
     "snapshot_lru_cache_unittest.mm",
     "snapshot_tab_helper_unittest.mm",
@@ -71,7 +70,9 @@ source_set("unit_tests") {
     ":snapshots",
     ":test_utils",
     "//base",
-    "//ios/chrome/browser/browser_state:test_support",
+    "//base/test:test_support",
+    "//ios/chrome/browser/main:public",
+    "//ios/chrome/browser/main:test_support",
     "//ios/chrome/browser/ui/image_util",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/browser/web:tab_id_tab_helper",

@@ -21,13 +21,15 @@ async_test((test) => {
       test.done();
       return;
     }
-    device.createBufferMapped({
+    device.createBuffer({
               size: 24,
-              usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST
+              usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
+              mappedAtCreation: true
           });
-    device.createBufferMapped({
+    device.createBuffer({
               size: 0,
-              usage: GPUBufferUsage.VERTEX | 2261634.5098
+              usage: GPUBufferUsage.VERTEX | 2261634.5098,
+              mappedAtCreation: true
           });
     test.done();
   });

@@ -123,7 +123,7 @@ IN_PROC_BROWSER_TEST_F(TabHoverCardBubbleViewBrowserTest,
 
 // Verify hover card is visible when tab is focused.
 // TODO(crbug.com/1050765): the test is flaky.
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #define MAYBE_WidgetVisibleOnTabFocus DISABLED_WidgetVisibleOnTabFocus
 #else
 #define MAYBE_WidgetVisibleOnTabFocus WidgetVisibleOnTabFocus
@@ -141,7 +141,7 @@ IN_PROC_BROWSER_TEST_F(TabHoverCardBubbleViewBrowserTest,
 // Verify hover card is visible when focus moves from the tab to tab close
 // button.
 // TODO(crbug.com/1050765): the test is flaky.
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #define MAYBE_WidgetVisibleOnTabCloseButtonFocusAfterTabFocus \
   DISABLED_WidgetVisibleOnTabCloseButtonFocusAfterTabFocus
 #else
@@ -194,7 +194,7 @@ IN_PROC_BROWSER_TEST_F(TabHoverCardBubbleViewBrowserTest,
 // Verify hover card is visible after navigating to the tab strip using keyboard
 // accelerators.
 // TODO(crbug.com/1050765): the test is flaky.
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #define MAYBE_WidgetVisibleOnTabFocusFromKeyboardAccelerator \
   DISABLED_WidgetVisibleOnTabFocusFromKeyboardAccelerator
 #else

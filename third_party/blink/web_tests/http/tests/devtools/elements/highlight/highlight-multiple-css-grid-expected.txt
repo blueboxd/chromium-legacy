@@ -4,6 +4,7 @@ This test verifies the position and size of the highlight rectangles overlayed o
   "gridHighlights": [
     {
       "rotationAngle": -90,
+      "writingMode": "horizontal-tb",
       "columnTrackSizes": [
         {
           "x": 173,
@@ -200,6 +201,7 @@ This test verifies the position and size of the highlight rectangles overlayed o
     },
     {
       "rotationAngle": -90,
+      "writingMode": "horizontal-tb",
       "columnTrackSizes": [
         {
           "x": 108,

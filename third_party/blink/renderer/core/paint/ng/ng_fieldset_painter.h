@@ -11,7 +11,6 @@ namespace blink {
 
 class NGPhysicalBoxFragment;
 struct FieldsetPaintInfo;
-struct NGBorderEdges;
 struct PaintInfo;
 struct PhysicalOffset;
 
@@ -23,7 +22,7 @@ class NGFieldsetPainter {
       : fieldset_(fieldset) {}
 
   void PaintBoxDecorationBackground(const PaintInfo&, const PhysicalOffset&);
-  void PaintMask(const PaintInfo&, const PhysicalOffset&, const NGBorderEdges&);
+  void PaintMask(const PaintInfo&, const PhysicalOffset&);
 
  private:
   FieldsetPaintInfo CreateFieldsetPaintInfo() const;

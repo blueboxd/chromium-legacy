@@ -205,7 +205,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, TabsOnUpdated) {
 }
 
 // Flaky on Linux. http://crbug.com/657376.
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #define MAYBE_TabsNoPermissions DISABLED_TabsNoPermissions
 #else
 #define MAYBE_TabsNoPermissions TabsNoPermissions
@@ -219,7 +219,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, HostPermission) {
 }
 
 // Flaky on Windows, Mac and Linux. http://crbug.com/820110.
-#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
+    defined(OS_CHROMEOS)
 #define MAYBE_UpdateWindowResize DISABLED_UpdateWindowResize
 #else
 #define MAYBE_UpdateWindowResize UpdateWindowResize

@@ -59,10 +59,9 @@ std::string BluetoothAdapter::GetName() const {
 }
 
 bool BluetoothAdapter::SetName(absl::string_view name) {
-  // TODO(b/154848416): Add SetName call to bluetooth::mojom::Adapter and
-  // invoke it.
-  NOTIMPLEMENTED();
-  return false;
+  bool set_name_success = false;
+  bool call_success = adapter_->SetName(name.data(), &set_name_success);
+  return call_success && set_name_success;
 }
 
 }  // namespace chrome

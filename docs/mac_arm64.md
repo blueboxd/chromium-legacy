@@ -11,13 +11,19 @@ We're currently bringing up the build. At the moment, everything compiles
 in a vanilla release build (we haven't tried anything else) and Chromium
 starts up fine and seems to work. We haven't tried running tests yet.
 
-You can follow the [tracking bug](https://crbug.com/1098899) to get updates on
-progress.
+You can follow the [Mac-ARM64 label](https://crbug.com/?q=label%3Amac-arm64) to
+get updates on progress.
 
-There's a [bot](https://ci.chromium.org/p/chromium/builders/ci/mac-arm64) that
-builds for arm that you can look at to get an idea of the current state. It
+There's a [bot](https://ci.chromium.org/p/chromium/builders/ci/mac-arm64-rel)
+that builds for arm that you can look at to get an idea of the current state. It
 cross-builds on an Intel machine, and we don't have enough hardware to
 continuously run tests.
+
+As an alternative to building locally, changes can be submitted to the opt-in
+[mac-arm64-rel
+trybot](https://ci.chromium.org/p/chromium/builders/try/mac-arm64-rel). A small
+number of [swarming bots](https://goto.corp.google.com/run-on-dtk) are also
+available for Googlers to run tests on.
 
 To build for arm64, you have to do 2 things:
 
@@ -28,8 +34,10 @@ To build for arm64, you have to do 2 things:
        "custom_vars": { "mac_xcode_version": "xcode_12_beta" },
 
    Then just `gclient sync` and you'll automatically get that SDK and will build
-   against it. Else, manually download and install Xcode 12 for macOS Universal
-   Apps Beta 2 and make it the active xcode with `xcode-select`.
+   with it.
+
+   Otherwise, manually download and install the current Xcode 12 beta and make
+   it the active Xcode with `xcode-select`.
 
 2. Add `target_cpu = "arm64"` to your `args.gn`.
 

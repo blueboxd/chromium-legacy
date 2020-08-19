@@ -21,7 +21,6 @@ class Value;
 
 namespace net {
 class URLRequestContextGetter;
-class URLRequestStatus;
 }  // namespace net
 
 namespace cloud_print {
@@ -68,12 +67,11 @@ class CloudPrintURLFetcher
     // error checking is done before this method is called. If the delegate
     // returns CONTINUE_PROCESSING, we will then check for network
     // errors. Most implementations will not override this.
-    virtual ResponseAction HandleRawResponse(
-        const net::URLFetcher* source,
-        const GURL& url,
-        const net::URLRequestStatus& status,
-        int response_code,
-        const std::string& data);
+    virtual ResponseAction HandleRawResponse(const net::URLFetcher* source,
+                                             const GURL& url,
+                                             net::Error error,
+                                             int response_code,
+                                             const std::string& data);
 
     // This will be invoked only if HandleRawResponse returns
     // CONTINUE_PROCESSING AND if there are no network errors and the HTTP

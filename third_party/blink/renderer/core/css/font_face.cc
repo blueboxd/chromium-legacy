@@ -195,6 +195,8 @@ FontFace* FontFace::Create(Document* document,
                                       AtRuleDescriptorID::AscentOverride) &&
       font_face->SetPropertyFromStyle(properties,
                                       AtRuleDescriptorID::DescentOverride) &&
+      font_face->SetPropertyFromStyle(properties,
+                                      AtRuleDescriptorID::LineGapOverride) &&
       font_face->SetPropertyFromStyle(
           properties, AtRuleDescriptorID::LetterSpacingOverride) &&
       font_face->GetFontSelectionCapabilities().IsValid() &&
@@ -364,6 +366,9 @@ bool FontFace::SetPropertyValue(const CSSValue* value,
       break;
     case AtRuleDescriptorID::DescentOverride:
       descent_override_ = value;
+      break;
+    case AtRuleDescriptorID::LineGapOverride:
+      line_gap_override_ = value;
       break;
     case AtRuleDescriptorID::LetterSpacingOverride:
       letter_spacing_override_ = value;
@@ -811,6 +816,7 @@ void FontFace::Trace(Visitor* visitor) const {
   visitor->Trace(display_);
   visitor->Trace(ascent_override_);
   visitor->Trace(descent_override_);
+  visitor->Trace(line_gap_override_);
   visitor->Trace(letter_spacing_override_);
   visitor->Trace(error_);
   visitor->Trace(loaded_property_);
@@ -848,6 +854,10 @@ FontMetricsOverride FontFace::GetFontMetricsOverride() const {
   if (descent_override_) {
     result.descent_override =
         To<CSSPrimitiveValue>(*descent_override_).GetFloatValue() / 100;
+  }
+  if (line_gap_override_) {
+    result.line_gap_override =
+        To<CSSPrimitiveValue>(*line_gap_override_).GetFloatValue() / 100;
   }
   if (letter_spacing_override_) {
     result.letter_spacing_override =

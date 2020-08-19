@@ -33,7 +33,6 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/dom_window.h"
-#include "third_party/blink/renderer/core/frame/fragment_directive.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
@@ -45,13 +44,10 @@
 
 namespace blink {
 
-Location::Location(DOMWindow* dom_window)
-    : dom_window_(dom_window),
-      fragment_directive_(MakeGarbageCollected<FragmentDirective>()) {}
+Location::Location(DOMWindow* dom_window) : dom_window_(dom_window) {}
 
 void Location::Trace(Visitor* visitor) const {
   visitor->Trace(dom_window_);
-  visitor->Trace(fragment_directive_);
   ScriptWrappable::Trace(visitor);
 }
 
@@ -100,11 +96,6 @@ String Location::search() const {
 
 String Location::origin() const {
   return DOMURLUtilsReadOnly::origin(Url());
-}
-
-FragmentDirective* Location::fragmentDirective() const {
-  GetDocument()->CountUse(WebFeature::kLocationFragmentDirectiveAccessed);
-  return fragment_directive_;
 }
 
 DOMStringList* Location::ancestorOrigins() const {

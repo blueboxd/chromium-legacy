@@ -1,0 +1,1 @@
+CONSOLE ERROR: Document policy violation: lossless-images-max-bpp is not allowed in this document.

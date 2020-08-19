@@ -15,6 +15,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/task/current_thread.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -122,15 +123,12 @@ bool X11SoftwareBitmapPresenter::CompositeBitmap(XDisplay* display,
 }
 
 X11SoftwareBitmapPresenter::X11SoftwareBitmapPresenter(
-    gfx::AcceleratedWidget widget,
-    scoped_refptr<base::SequencedTaskRunner> host_task_runner,
-    scoped_refptr<base::SequencedTaskRunner> event_task_runner)
+    gfx::AcceleratedWidget widget)
     : widget_(static_cast<x11::Window>(widget)),
-      display_(gfx::GetXDisplay()),
-      gc_(nullptr),
-      host_task_runner_(host_task_runner),
-      event_task_runner_(event_task_runner) {
-  DCHECK(widget_ != x11::Window::None);
+      connection_(x11::Connection::Get()),
+      display_(connection_->display()),
+      gc_(nullptr) {
+  DCHECK_NE(widget_, x11::Window::None);
   gc_ = XCreateGC(display_, static_cast<uint32_t>(widget_), 0, nullptr);
   memset(&attributes_, 0, sizeof(attributes_));
   if (!XGetWindowAttributes(display_, static_cast<uint32_t>(widget_),
@@ -140,10 +138,9 @@ X11SoftwareBitmapPresenter::X11SoftwareBitmapPresenter(
     return;
   }
 
-  shm_pool_ = base::MakeRefCounted<ui::XShmImagePool>(
-      host_task_runner, event_task_runner, display_, widget_,
-      attributes_.visual, attributes_.depth, kMaxFramesPending);
-  shm_pool_->Initialize();
+  shm_pool_ = std::make_unique<ui::XShmImagePool>(
+      connection_, widget_, attributes_.visual, attributes_.depth,
+      kMaxFramesPending);
 
   // TODO(thomasanderson): Avoid going through the X11 server to plumb this
   // property in.
@@ -151,41 +148,17 @@ X11SoftwareBitmapPresenter::X11SoftwareBitmapPresenter(
 }
 
 X11SoftwareBitmapPresenter::~X11SoftwareBitmapPresenter() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (gc_)
     XFreeGC(display_, gc_);
-
-  if (shm_pool_)
-    shm_pool_->Teardown();
 }
 
 bool X11SoftwareBitmapPresenter::ShmPoolReady() const {
   return shm_pool_ && shm_pool_->Ready();
 }
 
-void X11SoftwareBitmapPresenter::FlushAfterPutImage() {
-  // Ensure the new window content appears immediately. On a TYPE_UI thread we
-  // can rely on the message loop to flush for us so XFlush() isn't necessary.
-  // However, this code can run on a different thread and would have to wait for
-  // the TYPE_UI thread to no longer be idle before a flush happens.
-  XFlush(display_);
-
-  // Work around a race condition caused by XFlush above.  Explanation: XFlush()
-  // flushes all requests and *also* reads events.  It's unclear why it does
-  // this, but there's no alternative Xlib function that flushes the requests
-  // and *doesn't* read any events, so this workaround is necessary. In
-  // |event_task_runner_|'s message loop, poll() is called on the underlying
-  // XDisplay's fd to dispatch toplevel events.  When the fd is readable, poll()
-  // exits and we (via Xlib) check for new events by read()ing from the fd.  But
-  // if the event dispatcher is currently dispatching an event, then our call to
-  // XFlush() may read events into the event queue which will make the fd
-  // blocking since there's no more data to read, so poll() won't wake up until
-  // a new event comes, which may take a long time.  Forcing the event loop to
-  // wake up with a dummy event fixes the race condition.
-  if (event_task_runner_)
-    event_task_runner_->PostTask(FROM_HERE, base::BindOnce([] {}));
-}
-
 void X11SoftwareBitmapPresenter::Resize(const gfx::Size& pixel_size) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (pixel_size == viewport_pixel_size_)
     return;
   viewport_pixel_size_ = pixel_size;
@@ -209,6 +182,7 @@ void X11SoftwareBitmapPresenter::Resize(const gfx::Size& pixel_size) {
 }
 
 SkCanvas* X11SoftwareBitmapPresenter::GetSkCanvas() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (ShmPoolReady())
     return shm_pool_->CurrentCanvas();
   else if (surface_)
@@ -217,6 +191,7 @@ SkCanvas* X11SoftwareBitmapPresenter::GetSkCanvas() {
 }
 
 void X11SoftwareBitmapPresenter::EndPaint(const gfx::Rect& damage_rect) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   gfx::Rect rect = damage_rect;
   rect.Intersect(gfx::Rect(viewport_pixel_size_));
   if (rect.IsEmpty())
@@ -231,7 +206,6 @@ void X11SoftwareBitmapPresenter::EndPaint(const gfx::Rect& damage_rect) {
                      shm_pool_->CurrentImage(), rect.x(), rect.y(), rect.x(),
                      rect.y(), rect.width(), rect.height(), x11::True)) {
       needs_swap_ = true;
-      FlushAfterPutImage();
       return;
     }
     skia_pixmap = shm_pool_->CurrentBitmap().pixmap();
@@ -246,7 +220,6 @@ void X11SoftwareBitmapPresenter::EndPaint(const gfx::Rect& damage_rect) {
       CompositeBitmap(display_, static_cast<uint32_t>(widget_), rect.x(),
                       rect.y(), rect.width(), rect.height(), attributes_.depth,
                       gc_, skia_pixmap.addr())) {
-    FlushAfterPutImage();
     return;
   }
 
@@ -257,22 +230,18 @@ void X11SoftwareBitmapPresenter::EndPaint(const gfx::Rect& damage_rect) {
              gc, skia_pixmap, rect.x(), rect.y(), rect.x(), rect.y(),
              rect.width(), rect.height());
 
-  FlushAfterPutImage();
+  // We must be running on a UI thread so that the connection will be flushed.
+  DCHECK(base::CurrentUIThread::IsSet());
 }
 
 void X11SoftwareBitmapPresenter::OnSwapBuffers(
     SwapBuffersCallback swap_ack_callback) {
-  if (ShmPoolReady()) {
-    if (needs_swap_)
-      shm_pool_->SwapBuffers(std::move(swap_ack_callback));
-    else
-      std::move(swap_ack_callback).Run(viewport_pixel_size_);
-    needs_swap_ = false;
-  } else {
-    host_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(swap_ack_callback), viewport_pixel_size_));
-  }
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (ShmPoolReady() && needs_swap_)
+    shm_pool_->SwapBuffers(std::move(swap_ack_callback));
+  else
+    std::move(swap_ack_callback).Run(viewport_pixel_size_);
+  needs_swap_ = false;
 }
 
 int X11SoftwareBitmapPresenter::MaxFramesPending() const {

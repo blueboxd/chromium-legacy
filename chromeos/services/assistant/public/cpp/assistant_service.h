@@ -54,6 +54,9 @@ struct COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) AssistantSuggestion {
   // Assistant suggestion of another type (e.g. a conversation starter).
   AssistantSuggestionType type{AssistantSuggestionType::kUnspecified};
 
+  AssistantBetterOnboardingType better_onboarding_type{
+      AssistantBetterOnboardingType::kUnspecified};
+
   // Display text. e.g. "Cancel".
   std::string text;
 

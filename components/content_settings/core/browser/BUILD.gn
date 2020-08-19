@@ -41,6 +41,8 @@ static_library("browser") {
     "cookie_settings.h",
     "host_content_settings_map.cc",
     "host_content_settings_map.h",
+    "private_network_settings.cc",
+    "private_network_settings.h",
     "uma_util.cc",
     "uma_util.h",
     "user_modifiable_provider.h",
@@ -60,6 +62,7 @@ static_library("browser") {
     "//extensions/buildflags",
     "//net",
     "//services/network/public/cpp",
+    "//services/network/public/mojom",
     "//services/preferences/public/cpp",
     "//url",
   ]
@@ -72,6 +75,8 @@ static_library("browser") {
     sources += [
       "cookie_settings_policy_handler.cc",
       "cookie_settings_policy_handler.h",
+      "insecure_private_network_policy_handler.cc",
+      "insecure_private_network_policy_handler.h",
     ]
     deps += [
       "//components/policy:generated",

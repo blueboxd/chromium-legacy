@@ -77,7 +77,7 @@ enum class SandboxType {
   kTts,
 #endif  // defined(OS_CHROMEOS)
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   // Indicates that a process is a zygote and will get a real sandbox later.
   kZygoteIntermediateSandbox,
 #endif

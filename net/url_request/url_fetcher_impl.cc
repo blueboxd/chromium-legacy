@@ -177,8 +177,8 @@ const GURL& URLFetcherImpl::GetURL() const {
   return core_->GetURL();
 }
 
-const URLRequestStatus& URLFetcherImpl::GetStatus() const {
-  return core_->GetStatus();
+Error URLFetcherImpl::GetError() const {
+  return core_->GetError();
 }
 
 int URLFetcherImpl::GetResponseCode() const {

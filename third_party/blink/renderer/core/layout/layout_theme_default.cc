@@ -388,21 +388,4 @@ int LayoutThemeDefault::MenuListInternalPadding(const ComputedStyle& style,
   return padding * style.EffectiveZoom();
 }
 
-//
-// The following values come from the defaults of GTK+.
-//
-constexpr int kProgressAnimationFrames = 10;
-constexpr base::TimeDelta kProgressAnimationInterval =
-    base::TimeDelta::FromMilliseconds(125);
-
-base::TimeDelta LayoutThemeDefault::AnimationRepeatIntervalForProgressBar()
-    const {
-  return kProgressAnimationInterval;
-}
-
-base::TimeDelta LayoutThemeDefault::AnimationDurationForProgressBar() const {
-  return kProgressAnimationInterval * kProgressAnimationFrames *
-         2;  // "2" for back and forth
-}
-
 }  // namespace blink

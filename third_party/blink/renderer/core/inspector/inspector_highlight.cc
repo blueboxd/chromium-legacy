@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 #include "third_party/blink/renderer/platform/graphics/path.h"
+#include "third_party/blink/renderer/platform/text/writing_mode.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
 
 namespace blink {
@@ -685,6 +686,20 @@ int GetRotationAngle(LayoutGrid* layout_grid) {
   return bearing - local_vector_bearing;
 }
 
+String GetWritingMode(const LayoutGrid* layout_grid) {
+  // The grid overlay uses this to flip the grid lines and labels accordingly.
+  // lr, lr-tb, rl, rl-tb, tb, and tb-rl are deprecated and not handled here.
+  // sideways-lr and sideways-rl are not supported yet and not handled here.
+  WritingMode writing_mode = layout_grid->StyleRef().GetWritingMode();
+  if (writing_mode == WritingMode::kVerticalLr) {
+    return "vertical-lr";
+  }
+  if (writing_mode == WritingMode::kVerticalRl) {
+    return "vertical-rl";
+  }
+  return "horizontal-tb";
+}
+
 // Gets the list of authored track size values resolving repeat() functions
 // and skipping line names.
 Vector<String> GetAuthoredGridTrackSizes(const CSSValue* value,
@@ -762,6 +777,12 @@ std::unique_ptr<protocol::DictionaryValue> BuildGridInfo(
   const auto& columns = layout_grid->ColumnPositions();
 
   grid_info->setInteger("rotationAngle", GetRotationAngle(layout_grid));
+
+  // The grid track information collected in this method and sent to the overlay
+  // frontend assumes that the grid layout is in a horizontal-tb writing-mode.
+  // It is the responsibility of the frontend to flip the rendering of the grid
+  // overlay based on the following writingMode value.
+  grid_info->setString("writingMode", GetWritingMode(layout_grid));
 
   auto row_gap =
       layout_grid->GridGap(kForRows) + layout_grid->GridItemOffset(kForRows);

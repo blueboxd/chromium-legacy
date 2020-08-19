@@ -7,13 +7,16 @@
 #include <utility>
 
 #include "base/feature_list.h"
+#include "base/time/time.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
+#include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
 
 namespace content {
 
 namespace {
+
 // This function implements the COOP matching algorithm as detailed in [1].
 // Note that COEP is also provided since the COOP enum does not have a
 // "same-origin + COEP" value.
@@ -91,15 +94,15 @@ CrossOriginOpenerPolicyStatus::~CrossOriginOpenerPolicyStatus() = default;
 
 base::Optional<network::mojom::BlockedByResponseReason>
 CrossOriginOpenerPolicyStatus::EnforceCOOP(
-    network::mojom::ParsedHeaders* parsed_headers,
+    network::mojom::URLResponseHead* response_head,
     const url::Origin& response_origin,
     const GURL& response_url) {
-  SanitizeCoopHeaders(response_origin, parsed_headers);
+  SanitizeCoopHeaders(response_url, response_origin, response_head);
+  network::mojom::ParsedHeaders* parsed_headers =
+      response_head->parsed_headers.get();
 
   // Return early if the situation prevents COOP from operating.
   if (!frame_tree_node_->IsMainFrame() ||
-      !base::FeatureList::IsEnabled(
-          network::features::kCrossOriginOpenerPolicy) ||
       response_url.IsAboutBlank()) {
     return base::nullopt;
   }
@@ -168,21 +171,54 @@ CrossOriginOpenerPolicyStatus::EnforceCOOP(
 // We blank out the COOP headers in a number of situations.
 // - When the headers were not sent over HTTPS.
 // - For subframes.
+// - When the feature is disabled.
+// We also strip the "reporting" parts when the reporting feature is disabled
+// for the |response_origin|.
 void CrossOriginOpenerPolicyStatus::SanitizeCoopHeaders(
+    const GURL& response_url,
     const url::Origin& response_origin,
-    network::mojom::ParsedHeaders* parsed_headers) {
+    network::mojom::URLResponseHead* response_head) {
   network::CrossOriginOpenerPolicy& coop =
-      parsed_headers->cross_origin_opener_policy;
-  if (network::IsOriginPotentiallyTrustworthy(response_origin) &&
-      frame_tree_node_->IsMainFrame())
-    return;
-
+      response_head->parsed_headers->cross_origin_opener_policy;
   if (coop == network::CrossOriginOpenerPolicy())
     return;
-  coop = network::CrossOriginOpenerPolicy();
 
-  if (!network::IsOriginPotentiallyTrustworthy(response_origin))
-    header_ignored_due_to_insecure_context_ = true;
+  if (!base::FeatureList::IsEnabled(
+          network::features::kCrossOriginOpenerPolicy) ||
+      // https://html.spec.whatwg.org/multipage#the-cross-origin-opener-policy-header
+      // ```
+      // 1. If reservedEnvironment is a non-secure context, then return
+      //    "unsafe-none".
+      // ```
+      !network::IsOriginPotentiallyTrustworthy(response_origin) ||
+      // The COOP header must be ignored outside of the top-level context. It is
+      // removed as a defensive measure.
+      !frame_tree_node_->IsMainFrame()) {
+    coop = network::CrossOriginOpenerPolicy();
+
+    if (!network::IsOriginPotentiallyTrustworthy(response_origin))
+      header_ignored_due_to_insecure_context_ = true;
+    return;
+  }
+
+  // The reporting part can be enabled via either a command-line flag or an
+  // origin trial.
+  bool reporting_enabled = base::FeatureList::IsEnabled(
+      network::features::kCrossOriginOpenerPolicyReporting);
+
+  reporting_enabled |=
+      base::FeatureList::IsEnabled(
+          network::features::kCrossOriginOpenerPolicyReportingOriginTrial) &&
+      blink::TrialTokenValidator().RequestEnablesFeature(
+          response_url, response_head->headers.get(),
+          "CrossOriginOpenerPolicyReporting", base::Time::Now());
+
+  if (!reporting_enabled) {
+    coop.reporting_endpoint = base::nullopt;
+    coop.report_only_reporting_endpoint = base::nullopt;
+    coop.report_only_value =
+        network::mojom::CrossOriginOpenerPolicyValue::kUnsafeNone;
+  }
 }
 
 }  // namespace content

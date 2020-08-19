@@ -207,8 +207,7 @@ ScenicSurfaceFactory::CreatePlatformWindowSurface(
 }
 
 std::unique_ptr<SurfaceOzoneCanvas> ScenicSurfaceFactory::CreateCanvasForWidget(
-    gfx::AcceleratedWidget widget,
-    scoped_refptr<base::SequencedTaskRunner> task_runner) {
+    gfx::AcceleratedWidget widget) {
   ScenicSurface* surface = GetSurface(widget);
   return std::make_unique<ScenicWindowCanvas>(surface);
 }

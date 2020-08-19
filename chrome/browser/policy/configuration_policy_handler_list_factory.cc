@@ -54,6 +54,7 @@
 #include "components/certificate_transparency/pref_names.h"
 #include "components/component_updater/pref_names.h"
 #include "components/content_settings/core/browser/cookie_settings_policy_handler.h"
+#include "components/content_settings/core/browser/insecure_private_network_policy_handler.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/embedder_support/pref_names.h"
@@ -252,9 +253,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kLegacySameSiteCookieBehaviorEnabled,
     prefs::kManagedDefaultLegacyCookieAccessSetting,
     base::Value::Type::INTEGER },
-  { key::kInsecurePrivateNetworkRequestsAllowed,
-    prefs::kManagedDefaultInsecurePrivateNetworkSetting,
-    base::Value::Type::BOOLEAN },
   { key::kDefaultPluginsSetting,
     prefs::kManagedDefaultPluginsSetting,
     base::Value::Type::INTEGER },
@@ -1424,6 +1422,9 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(std::make_unique<autofill::AutofillPolicyHandler>());
   handlers->AddHandler(
       std::make_unique<content_settings::CookieSettingsPolicyHandler>());
+  handlers->AddHandler(
+      std::make_unique<
+          content_settings::InsecurePrivateNetworkPolicyHandler>());
   handlers->AddHandler(std::make_unique<DefaultSearchPolicyHandler>());
   handlers->AddHandler(std::make_unique<ForceSafeSearchPolicyHandler>());
   handlers->AddHandler(std::make_unique<ForceYouTubeSafetyModePolicyHandler>());

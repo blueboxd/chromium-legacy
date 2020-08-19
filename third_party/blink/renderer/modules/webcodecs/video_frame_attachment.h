@@ -8,7 +8,7 @@
 #include "base/optional.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
-#include "third_party/blink/renderer/modules/webcodecs/video_frame.h"
+#include "third_party/blink/renderer/modules/webcodecs/video_frame_handle.h"
 
 namespace blink {
 
@@ -26,16 +26,14 @@ class MODULES_EXPORT VideoFrameAttachment
 
   size_t size() const { return frame_handles_.size(); }
 
-  Vector<scoped_refptr<VideoFrame::Handle>>& Handles() {
-    return frame_handles_;
-  }
+  Vector<scoped_refptr<VideoFrameHandle>>& Handles() { return frame_handles_; }
 
-  const Vector<scoped_refptr<VideoFrame::Handle>>& Handles() const {
+  const Vector<scoped_refptr<VideoFrameHandle>>& Handles() const {
     return frame_handles_;
   }
 
  private:
-  Vector<scoped_refptr<VideoFrame::Handle>> frame_handles_;
+  Vector<scoped_refptr<VideoFrameHandle>> frame_handles_;
 };
 
 }  // namespace blink

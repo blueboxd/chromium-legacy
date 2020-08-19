@@ -77,12 +77,13 @@ public class LayoutManagerChrome
     /**
      * Creates the {@link LayoutManagerChrome} instance.
      * @param host         A {@link LayoutManagerHost} instance.
+     * @param contentContainer A {@link ViewGroup} for Android views to be bound to.
      * @param startSurface An interface to talk to the Grid Tab Switcher. If it's NULL, VTS
      *                     should be used, otherwise GTS should be used.
      */
-    public LayoutManagerChrome(LayoutManagerHost host, boolean createOverviewLayout,
-            @Nullable StartSurface startSurface) {
-        super(host);
+    public LayoutManagerChrome(LayoutManagerHost host, ViewGroup contentContainer,
+            boolean createOverviewLayout, @Nullable StartSurface startSurface) {
+        super(host, contentContainer);
         Context context = host.getContext();
         LayoutRenderHost renderHost = host.getLayoutRenderHost();
 
@@ -144,8 +145,7 @@ public class LayoutManagerChrome
 
     @Override
     public void init(TabModelSelector selector, TabCreatorManager creator,
-            TabContentManager content, ViewGroup androidContentContainer,
-            ControlContainer controlContainer,
+            TabContentManager content, ControlContainer controlContainer,
             ContextualSearchManagementDelegate contextualSearchDelegate,
             DynamicResourceLoader dynamicResourceLoader) {
         Context context = mHost.getContext();
@@ -165,8 +165,8 @@ public class LayoutManagerChrome
                     (ObservableSupplier<BrowserControlsStateProvider>) browserControlsSupplier);
         }
 
-        super.init(selector, creator, content, androidContentContainer, controlContainer,
-                contextualSearchDelegate, dynamicResourceLoader);
+        super.init(selector, creator, content, controlContainer, contextualSearchDelegate,
+                dynamicResourceLoader);
 
         // TODO: TitleCache should be a part of the ResourceManager.
         mTitleCache = mHost.getTitleCache();

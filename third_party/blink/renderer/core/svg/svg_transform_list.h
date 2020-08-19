@@ -54,7 +54,6 @@ class SVGTransformList final
 
   // SVGPropertyBase:
   SVGPropertyBase* CloneForAnimation(const String&) const override;
-  String ValueAsString() const override;
   SVGParsingError SetValueAsString(const String&);
   bool Parse(const UChar*& ptr, const UChar* end);
   bool Parse(const LChar*& ptr, const LChar* end);
@@ -70,7 +69,6 @@ class SVGTransformList final
   float CalculateDistance(SVGPropertyBase* to, SVGElement*) override;
 
   static AnimatedPropertyType ClassType() { return kAnimatedTransformList; }
-  AnimatedPropertyType GetType() const override { return ClassType(); }
 
   const CSSValue* CssValue() const;
 

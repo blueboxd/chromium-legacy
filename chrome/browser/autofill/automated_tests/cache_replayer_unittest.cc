@@ -28,7 +28,7 @@ namespace {
 
 // Only run these tests on Linux because there are issues with other platforms.
 // Testing on one platform gives enough confidence.
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 
 using base::JSONWriter;
 using base::Value;
@@ -999,7 +999,7 @@ TEST(AutofillCacheReplayerTest, Api_Legacy_CrossEnvironmentIntegrationTest) {
 TEST(AutofillCacheReplayerTest, Api_Api_CrossEnvironmentIntegrationTest) {
   CrossEnvironmentIntegrationTest<ApiTestEnv, ApiTestEnv>();
 }
-#endif  // if defined(OS_LINUX)
+#endif  // if defined(OS_LINUX) || defined(OS_CHROMEOS)
 
 }  // namespace
 }  // namespace test

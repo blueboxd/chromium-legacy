@@ -168,7 +168,7 @@ UNTRUSTED_TEST(
           987654321, 'remove', true);
       assertDeepEquals(response, {
         progressPercent: 0,
-        output: '',
+        output: 'This routine is running!',
         routineUpdateUnion:
             {interactiveUpdate: {userMessage: 'unplug-ac-power'}}
       });

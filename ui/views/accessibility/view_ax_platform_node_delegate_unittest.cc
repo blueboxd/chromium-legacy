@@ -40,6 +40,28 @@ class TestButton : public Button {
   ~TestButton() override = default;
 };
 
+class TestAXEventObserver : public AXEventObserver {
+ public:
+  explicit TestAXEventObserver(AXAuraObjCache* cache) : cache_(cache) {
+    AXEventManager::Get()->AddObserver(this);
+  }
+  TestAXEventObserver(const TestAXEventObserver&) = delete;
+  TestAXEventObserver& operator=(const TestAXEventObserver&) = delete;
+  ~TestAXEventObserver() override {
+    AXEventManager::Get()->RemoveObserver(this);
+  }
+
+  // AXEventObserver:
+  void OnViewEvent(View* view, ax::mojom::Event event_type) override {
+    std::vector<AXAuraObjWrapper*> out_children;
+    AXAuraObjWrapper* ax_obj = cache_->GetOrCreate(view->GetWidget());
+    ax_obj->GetChildren(&out_children);
+  }
+
+ private:
+  AXAuraObjCache* cache_;
+};
+
 }  // namespace
 
 class ViewAXPlatformNodeDelegateTest : public ViewsTestBase {
@@ -410,28 +432,6 @@ class DerivedTestView : public View {
   ~DerivedTestView() override = default;
 
   void OnBlur() override { SetVisible(false); }
-};
-
-class TestAXEventObserver : public AXEventObserver {
- public:
-  explicit TestAXEventObserver(AXAuraObjCache* cache) : cache_(cache) {
-    AXEventManager::Get()->AddObserver(this);
-  }
-  TestAXEventObserver(const TestAXEventObserver&) = delete;
-  TestAXEventObserver& operator=(const TestAXEventObserver&) = delete;
-  ~TestAXEventObserver() override {
-    AXEventManager::Get()->RemoveObserver(this);
-  }
-
-  // AXEventObserver:
-  void OnViewEvent(View* view, ax::mojom::Event event_type) override {
-    std::vector<AXAuraObjWrapper*> out_children;
-    AXAuraObjWrapper* ax_obj = cache_->GetOrCreate(view->GetWidget());
-    ax_obj->GetChildren(&out_children);
-  }
-
- private:
-  AXAuraObjCache* cache_;
 };
 
 using ViewAccessibilityTest = ViewsTestBase;

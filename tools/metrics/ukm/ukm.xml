@@ -1697,6 +1697,12 @@ be describing additional metrics about the same event.
     Logged once per page; indicates the type of find-in-page behaviors users
     utilizied.
   </summary>
+  <metric name="BeforematchExpandedHiddenMatchable">
+    <summary>
+      Boolean indicating that a find-in-page match was hidden but became visible
+      after the beforematch event was fired.
+    </summary>
+  </metric>
   <metric name="DidHaveRenderSubtreeMatch">
     <summary>
       Boolean indicating whether there was an active match in content-visibility

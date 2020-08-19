@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "device/fido/cable/v2_handshake.h"
+#include "base/rand_util.h"
 #include "components/cbor/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/boringssl/src/include/openssl/ec.h"
@@ -23,6 +24,26 @@ TEST(CableV2Encoding, TunnelServerURLs) {
   const GURL url =
       tunnelserver::GetURL(encoded, tunnelserver::Action::kNew, tunnel_id);
   EXPECT_TRUE(url.spec().find("//abcd.net/") != std::string::npos) << url;
+}
+
+TEST(CableV2Encoding, EIDs) {
+  eid::Components components;
+  components.tunnel_server_domain = 0x010203;
+  components.shard_id = 42;
+  base::RandBytes(components.nonce.data(), components.nonce.size());
+
+  CableEidArray eid = eid::FromComponents(components);
+  eid::Components components2 = eid::ToComponents(eid);
+
+  EXPECT_EQ(components.shard_id, components2.shard_id);
+  EXPECT_EQ(components.tunnel_server_domain, components2.tunnel_server_domain);
+  EXPECT_EQ(components.nonce, components2.nonce);
+
+  for (size_t i = 0; i < eid.size(); i++) {
+    eid[i] ^= 0xff;
+  }
+
+  EXPECT_FALSE(eid::IsValid(eid));
 }
 
 TEST(CableV2Encoding, PaddedCBOR) {

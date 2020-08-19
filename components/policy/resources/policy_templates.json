@@ -6594,13 +6594,20 @@
       },
       'example_value': False,
       'id': 766,
-      'caption': '''Specifies whether to allow insecure websites to make requests to more-private network endpoints.''',
+      'caption': '''Specifies whether to allow insecure websites to make requests to more-private network endpoints''',
       'tags': ['system-security'],
-      'desc': '''Controls whether insecure websites are allowed to make requests to more-private network endpoints. E.g. controls whether http://evil.com is allowed to make requests to both `localhost` and endpoints on the private network, neither of which are accessible from the public internet. See https://wicg.github.io/cors-rfc1918/#goals for more details.
+      'desc': '''Controls whether insecure websites are allowed to make requests to more-private network endpoints.
 
-          When this policy is not set, the default behavior for requests from insecure contexts to more-private network endpoints will depend on the user's personal configuration for the <ph name="BLOCK_INSECURE_PRIVATE_NETWORK_REQUESTS_FEATURE_NAME">BlockInsecurePrivateNetworkRequests</ph> feature, which may be set by a field trial or on the command line.
+          This policy relates to the CORS-RFC1918 specification. See https://wicg.github.io/cors-rfc1918 for more details.
 
-          When this policy is set to false, insecure websites are forbidden from making requests to more-private network endpoints. That is, insecure websites served from public IP addresses are forbidden from making requests to both localhost and private IP addresses. Insecure websites served from private IP addresses are forbidden from making requests to localhost.
+          A network endpoint is more private than another if:
+          1) Its IP address is localhost and the other is not.
+          2) Its IP address is private and the other is public.
+          In the future, depending on spec evolution, this policy might apply to all cross-origin requests directed at private IPs or localhost.
+
+          A website is deemed secure if it meets the definition of a secure context in https://developer.mozilla.org/en-US/docs/Web/Security/Secure_Contexts. Otherwise, it will be treated as an insecure context.
+
+          When this policy is either not set or set to false, the default behavior for requests from insecure contexts to more-private network endpoints will depend on the user's personal configuration for the <ph name="BLOCK_INSECURE_PRIVATE_NETWORK_REQUESTS_FEATURE_NAME">BlockInsecurePrivateNetworkRequests</ph> feature, which may be set by a field trial or on the command line.
 
           When this policy is set to true, insecure websites are allowed to make requests to any network endpoint, subject to other cross-origin checks.''',
     },

@@ -22,6 +22,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LINE_INLINE_FLOW_BOX_H_
 
 #include <memory>
+#include "third_party/blink/renderer/core/layout/geometry/box_sides.h"
 #include "third_party/blink/renderer/core/layout/line/inline_box.h"
 #include "third_party/blink/renderer/core/layout/overflow_model.h"
 #include "third_party/blink/renderer/core/style/shadow_data.h"
@@ -198,6 +199,13 @@ class InlineFlowBox : public InlineBox {
   void SetEdges(bool include_left, bool include_right) {
     include_logical_left_edge_ = include_left;
     include_logical_right_edge_ = include_right;
+  }
+
+  PhysicalBoxSides SidesToInclude() const {
+    const LogicalBoxSides logical_sides(true, IncludeLogicalRightEdge(), true,
+                                        IncludeLogicalLeftEdge());
+    return PhysicalBoxSides(logical_sides,
+                            GetLineLayoutItem().StyleRef().GetWritingMode());
   }
 
   // Helper functions used during line construction and placement.

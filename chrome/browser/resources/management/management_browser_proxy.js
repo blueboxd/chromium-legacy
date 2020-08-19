@@ -40,8 +40,7 @@ export let BrowserReportingResponse;
  *   threatProtectionDescription: string,
  *   showUpdateRequiredEol: boolean,
  *   eolMessage: string,
- *   eolAdminMessage: string,
- *   showProxyServerPrivacyDisclosure: boolean
+ *   eolAdminMessage: string
  * }}
  */
 let ManagedDataResponse;
@@ -80,6 +79,7 @@ export const DeviceReportingType = {
   USERNAME: 'username',
   EXTENSION: 'extension',
   ANDROID_APPLICATION: 'android application',
+  PROXY_SERVER: 'proxy server'
 };
 
 

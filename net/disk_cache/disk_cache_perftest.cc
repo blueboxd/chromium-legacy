@@ -16,7 +16,9 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/test/scoped_run_loop_timeout.h"
 #include "base/test/test_file_util.h"
+#include "base/test/test_timeouts.h"
 #include "base/threading/thread.h"
 #include "base/timer/elapsed_timer.h"
 #include "build/build_config.h"
@@ -473,6 +475,9 @@ void DiskCachePerfTest::ResetAndEvictSystemDiskCache() {
 }
 
 void DiskCachePerfTest::CacheBackendPerformance(const std::string& story) {
+  base::test::ScopedRunLoopTimeout default_timeout(
+      FROM_HERE, TestTimeouts::action_max_timeout());
+
   LOG(ERROR) << "Using cache at:" << cache_path_.MaybeAsASCII();
   SetMaxSize(500 * 1024 * 1024);
   InitCache();

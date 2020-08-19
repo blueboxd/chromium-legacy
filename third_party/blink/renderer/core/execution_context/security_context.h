@@ -57,6 +57,14 @@ using ParsedFeaturePolicy = std::vector<ParsedFeaturePolicyDeclaration>;
 
 enum class SecureContextMode { kInsecureContext, kSecureContext };
 
+// Explanation as to why |SecureContextMode| was set as it was set.
+enum class SecureContextModeExplanation {
+  kSecure,
+  kSecureLocalhost,
+  kInsecureScheme,
+  kInsecureAncestor,
+};
+
 // Whether to report policy violations when checking whether a feature is
 // enabled.
 enum class ReportOptions { kReportOnFailure, kDoNotReport };
@@ -170,6 +178,10 @@ class CORE_EXPORT SecurityContext {
     return secure_context_mode_;
   }
 
+  SecureContextModeExplanation GetSecureContextModeExplanation() const {
+    return secure_context_explanation_;
+  }
+
  protected:
   network::mojom::blink::WebSandboxFlags sandbox_flags_;
   scoped_refptr<SecurityOrigin> security_origin_;
@@ -186,6 +198,8 @@ class CORE_EXPORT SecurityContext {
   InsecureNavigationsSet insecure_navigations_to_upgrade_;
   bool require_safe_types_ = false;
   SecureContextMode secure_context_mode_ = SecureContextMode::kInsecureContext;
+  SecureContextModeExplanation secure_context_explanation_ =
+      SecureContextModeExplanation::kInsecureScheme;
 };
 
 }  // namespace blink

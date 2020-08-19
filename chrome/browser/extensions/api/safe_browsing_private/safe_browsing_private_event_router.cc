@@ -323,11 +323,17 @@ void SafeBrowsingPrivateEventRouter::OnSecurityInterstitialShown(
   if (!IsRealtimeReportingEnabled())
     return;
 
+  PrefService* prefs = Profile::FromBrowserContext(context_)->GetPrefs();
+  auto event_result =
+      prefs->GetBoolean(prefs::kSafeBrowsingProceedAnywayDisabled)
+          ? safe_browsing::EventResult::BLOCKED
+          : safe_browsing::EventResult::WARNED;
   ReportRealtimeEvent(
       kKeyInterstitialEvent,
       base::BindOnce(
           [](const std::string& url, const std::string& reason,
-             int net_error_code, const std::string& user_name) {
+             int net_error_code, const std::string& user_name,
+             safe_browsing::EventResult event_result) {
             // Convert |params| to a real-time event dictionary and report it.
             base::Value event(base::Value::Type::DICTIONARY);
             event.SetStringKey(kKeyUrl, url);
@@ -335,9 +341,14 @@ void SafeBrowsingPrivateEventRouter::OnSecurityInterstitialShown(
             event.SetIntKey(kKeyNetErrorCode, net_error_code);
             event.SetStringKey(kKeyProfileUserName, user_name);
             event.SetBoolKey(kKeyClickedThrough, false);
+            event.SetStringKey(
+                kKeyEventResult,
+                safe_browsing::EventResultToString(event_result));
+
             return event;
           },
-          params.url, params.reason, net_error_code, params.user_name));
+          params.url, params.reason, net_error_code, params.user_name,
+          event_result));
 }
 
 void SafeBrowsingPrivateEventRouter::OnSecurityInterstitialProceeded(
@@ -380,6 +391,9 @@ void SafeBrowsingPrivateEventRouter::OnSecurityInterstitialProceeded(
             event.SetIntKey(kKeyNetErrorCode, net_error_code);
             event.SetStringKey(kKeyProfileUserName, user_name);
             event.SetBoolKey(kKeyClickedThrough, true);
+            event.SetStringKey(kKeyEventResult,
+                               safe_browsing::EventResultToString(
+                                   safe_browsing::EventResult::BYPASSED));
             return event;
           },
           params.url, params.reason, net_error_code, params.user_name));

@@ -38,6 +38,7 @@ import org.chromium.chrome.browser.DeferredStartupHandler;
 import org.chromium.chrome.browser.DevToolsServer;
 import org.chromium.chrome.browser.banners.AppBannerManager;
 import org.chromium.chrome.browser.bookmarkswidget.BookmarkWidgetProvider;
+import org.chromium.chrome.browser.contacts_picker.ChromePickerAdapter;
 import org.chromium.chrome.browser.contacts_picker.ContactsPickerDialog;
 import org.chromium.chrome.browser.content_capture.ContentCaptureHistoryDeletionObserver;
 import org.chromium.chrome.browser.crash.CrashUploadCountStore;
@@ -248,9 +249,10 @@ public class ProcessInitializationHandler {
                     String formattedOrigin) {
                 // TODO(crbug.com/1117536): remove this cast.
                 ChromeActivity activity = (ChromeActivity) context;
-                mDialog = new ContactsPickerDialog(activity.getWindowAndroid(), listener,
-                        allowMultiple, includeNames, includeEmails, includeTel, includeAddresses,
-                        includeIcons, formattedOrigin, new VrModeProviderImpl());
+                mDialog = new ContactsPickerDialog(activity.getWindowAndroid(),
+                        new ChromePickerAdapter(), listener, allowMultiple, includeNames,
+                        includeEmails, includeTel, includeAddresses, includeIcons, formattedOrigin,
+                        new VrModeProviderImpl());
                 mDialog.getWindow().getAttributes().windowAnimations =
                         R.style.PickerDialogAnimation;
                 mDialog.show();

@@ -26,6 +26,7 @@
 #include "device/bluetooth/public/cpp/bluetooth_uuid.h"
 #include "device/fido/cable/fido_ble_uuids.h"
 #include "device/fido/cable/fido_cable_handshake_handler.h"
+#include "device/fido/cable/fido_tunnel_device.h"
 #include "device/fido/features.h"
 #include "device/fido/fido_parsing_utils.h"
 
@@ -161,7 +162,8 @@ FidoCableDiscovery::FidoCableDiscovery(
           FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy),
       discovery_data_(std::move(discovery_data)),
       qr_generator_key_(std::move(qr_generator_key)),
-      pairing_callback_(std::move(pairing_callback)) {
+      pairing_callback_(std::move(pairing_callback)),
+      network_context_(network_context) {
 // Windows currently does not support multiple EIDs, thus we ignore any extra
 // discovery data.
 // TODO(https://crbug.com/837088): Add support for multiple EIDs on Windows.
@@ -523,10 +525,13 @@ void FidoCableDiscovery::CableDeviceFound(BluetoothAdapter* adapter,
     }
 
     case CableDiscoveryData::Version::V2: {
-      if (!base::FeatureList::IsEnabled(device::kWebAuthPhoneSupport)) {
+      if (!base::FeatureList::IsEnabled(device::kWebAuthPhoneSupport) ||
+          !network_context_) {
         return;
       }
-      FIDO_LOG(DEBUG) << "caBLEv2 request being dropped during transition.";
+      AddDevice(std::make_unique<cablev2::FidoTunnelDevice>(
+          network_context_, *result->discovery_data.v2, result->eid,
+          *result->decrypted_eid));
       break;
     }
 

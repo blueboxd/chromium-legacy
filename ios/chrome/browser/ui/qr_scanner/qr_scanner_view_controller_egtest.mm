@@ -6,6 +6,7 @@
 #import <UIKit/UIKit.h>
 
 #include "base/ios/ios_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/ui/qr_scanner/qr_scanner_app_interface.h"
 #include "ios/chrome/browser/ui/scanner/camera_state.h"
@@ -15,9 +16,10 @@
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #include "ios/chrome/test/earl_grey/earl_grey_scoped_block_swizzler.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
-#import "ios/web/public/test/http_server/http_server.h"
-#include "ios/web/public/test/http_server/http_server_util.h"
 #import "net/base/mac/url_conversions.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "ui/base/l10n/l10n_util.h"
 #import "ui/base/l10n/l10n_util_mac.h"
@@ -64,15 +66,15 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(QRScannerAppInterface);
 
 namespace {
 
-char kTestURL[] = "http://testurl";
+char kTestURL[] = "/testurl";
 char kTestURLResponse[] = "Test URL page";
 char kTestQuery[] = "testquery";
-char kTestQueryURL[] = "http://searchurl/testquery";
+char kTestQueryURL[] = "/searchurl/testquery";
 char kTestQueryResponse[] = "Test query page";
 
-char kTestURLEdited[] = "http://testuredited";
+char kTestURLEdited[] = "/testuredited";
 char kTestURLEditedResponse[] = "Test URL edited page";
-char kTestQueryEditedURL[] = "http://searchurl/testqueredited";
+char kTestQueryEditedURL[] = "/searchurl/testqueredited";
 char kTestQueryEditedResponse[] = "Test query edited page";
 
 // The GREYCondition timeout used for calls to waitWithTimeout:pollInterval:.
@@ -161,6 +163,38 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
       performAction:grey_typeText(@"\n")];
 }
 
+// Provides responses for the test page URLs.
+std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
+    const net::test_server::HttpRequest& request) {
+  std::unique_ptr<net::test_server::BasicHttpResponse> http_response =
+      std::make_unique<net::test_server::BasicHttpResponse>();
+  http_response->set_code(net::HTTP_OK);
+
+  char* body_content = nullptr;
+  if (base::StartsWith(request.relative_url, kTestURL,
+                       base::CompareCase::SENSITIVE)) {
+    body_content = kTestURLResponse;
+  } else if (base::StartsWith(request.relative_url, kTestQueryURL,
+                              base::CompareCase::SENSITIVE)) {
+    body_content = kTestQueryResponse;
+  } else if (base::StartsWith(request.relative_url, kTestURLEdited,
+                              base::CompareCase::SENSITIVE)) {
+    body_content = kTestURLEditedResponse;
+  } else if (base::StartsWith(request.relative_url, kTestQueryEditedURL,
+                              base::CompareCase::SENSITIVE)) {
+    body_content = kTestQueryEditedResponse;
+  } else {
+    return nullptr;
+  }
+
+  if (body_content) {
+    http_response->set_content(
+        base::StringPrintf("<html><body>%s</body></html>", body_content));
+  }
+
+  return std::move(http_response);
+}
+
 }  // namespace
 
 #pragma mark - Test Case
@@ -183,37 +217,17 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
       _load_GURL_from_location_bar_swizzler;
 }
 
-#if defined(CHROME_EARL_GREY_1)
-+ (void)setUp {
-  [super setUp];
-  [self setUpHelper];
-}
-#elif defined(CHROME_EARL_GREY_2)
-+ (void)setUpForTestCase {
-  [super setUpForTestCase];
-  [self setUpHelper];
-}
-#else
-#error Must define either CHROME_EARL_GREY_1 or CHROME_EARL_GREY_2.
-#endif
-
-+ (void)setUpHelper {
-  std::map<GURL, std::string> responses;
-  responses[web::test::HttpServer::MakeUrl(kTestURL)] = kTestURLResponse;
-  responses[web::test::HttpServer::MakeUrl(kTestQueryURL)] = kTestQueryResponse;
-  responses[web::test::HttpServer::MakeUrl(kTestURLEdited)] =
-      kTestURLEditedResponse;
-  responses[web::test::HttpServer::MakeUrl(kTestQueryEditedURL)] =
-      kTestQueryEditedResponse;
-  web::test::SetUpSimpleHttpServer(responses);
-}
-
 - (void)setUp {
   [super setUp];
-  _testURL = web::test::HttpServer::MakeUrl(kTestURL);
-  _testURLEdited = web::test::HttpServer::MakeUrl(kTestURLEdited);
-  _testQuery = web::test::HttpServer::MakeUrl(kTestQueryURL);
-  _testQueryEdited = web::test::HttpServer::MakeUrl(kTestQueryEditedURL);
+
+  self.testServer->RegisterRequestHandler(
+      base::BindRepeating(&StandardResponse));
+  GREYAssertTrue(self.testServer->Start(), @"Server did not start.");
+
+  _testURL = self.testServer->GetURL(kTestURL);
+  _testURLEdited = self.testServer->GetURL(kTestURLEdited);
+  _testQuery = self.testServer->GetURL(kTestQueryURL);
+  _testQueryEdited = self.testServer->GetURL(kTestQueryEditedURL);
 }
 
 - (void)tearDown {
@@ -775,7 +789,7 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
 
   [self doTestReceivingResult:_testURL.GetContent()
                      response:kTestURLEditedResponse
-                         edit:@"\b\bedited/"];
+                         edit:@"\bedited/"];
 }
 
 // Test that the correct page is loaded if the scanner result is a search query.

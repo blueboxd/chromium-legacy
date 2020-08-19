@@ -71,6 +71,5 @@ Polymer({
   handleParametersChanged_(parameters) {
     this.interceptionParameters_ = parameters;
     this.notifyPath('interceptionParameters_.interceptedAccount.isManaged');
-    this.notifyPath('interceptionParameters_.primaryAccount.isManaged');
   },
 });

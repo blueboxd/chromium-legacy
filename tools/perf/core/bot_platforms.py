@@ -469,7 +469,7 @@ ANDROID_NEXUS_5X_WEBVIEW = PerfPlatform(
 ANDROID_PIXEL2 = PerfPlatform('android-pixel2-perf',
                               'Android OPM1.171019.021',
                               _ANDROID_PIXEL2_BENCHMARK_CONFIGS,
-                              35,
+                              28,
                               'android',
                               executables=_ANDROID_PIXEL2_EXECUTABLE_CONFIGS,
                               run_reference_build=False)

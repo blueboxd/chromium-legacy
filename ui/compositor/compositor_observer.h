@@ -46,7 +46,7 @@ class COMPOSITOR_EXPORT CompositorObserver {
   // Called when a swap with new size is completed.
   virtual void OnCompositingCompleteSwapWithNewSize(ui::Compositor* compositor,
                                                     const gfx::Size& size) {}
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
   // Called at the top of the compositor's destructor, to give observers a
   // chance to remove themselves.

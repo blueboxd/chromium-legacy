@@ -633,7 +633,7 @@ TEST_P(ConnectionTest, VideoStats) {
 }
 
 // Slow/fails on Linux ASan/TSan (http://crbug.com/1045344).
-#if defined(OS_LINUX) && \
+#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && \
     (defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER))
 #define MAYBE_Audio DISABLED_Audio
 #else

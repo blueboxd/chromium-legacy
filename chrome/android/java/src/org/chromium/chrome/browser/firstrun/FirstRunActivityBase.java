@@ -24,6 +24,8 @@ public abstract class FirstRunActivityBase extends AsyncInitializationActivity {
     public static final String EXTRA_COMING_FROM_CHROME_ICON = "Extra.ComingFromChromeIcon";
     public static final String EXTRA_CHROME_LAUNCH_INTENT_IS_CCT =
             "Extra.FreChromeLaunchIntentIsCct";
+    public static final String EXTRA_FRE_INTENT_CREATION_ELAPSED_REALTIME_MS =
+            "Extra.FreIntentCreationElapsedRealtimeMs";
 
     // The intent to send once the FRE completes.
     public static final String EXTRA_FRE_COMPLETE_LAUNCH_INTENT = "Extra.FreChromeLaunchIntent";

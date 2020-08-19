@@ -50,7 +50,7 @@
 #include "services/device/public/mojom/bluetooth_system.mojom.h"
 #endif
 
-#if defined(OS_LINUX) && defined(USE_UDEV)
+#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(USE_UDEV)
 #include "services/device/public/mojom/input_service.mojom.h"
 #endif
 
@@ -148,7 +148,7 @@ class DeviceService : public mojom::DeviceService {
   void BindGeolocationControl(
       mojo::PendingReceiver<mojom::GeolocationControl> receiver) override;
 
-#if defined(OS_LINUX) && defined(USE_UDEV)
+#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(USE_UDEV)
   void BindInputDeviceManager(
       mojo::PendingReceiver<mojom::InputDeviceManager> receiver) override;
 #endif
@@ -234,8 +234,8 @@ class DeviceService : public mojom::DeviceService {
   std::unique_ptr<HidManagerImpl> hid_manager_;
 #endif
 
-#if (defined(OS_LINUX) && defined(USE_UDEV)) || defined(OS_WIN) || \
-    defined(OS_MAC)
+#if ((defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(USE_UDEV)) || \
+    defined(OS_WIN) || defined(OS_MAC)
   // Requests for the SerialPortManager interface must be bound to
   // |serial_port_manager_| on |serial_port_manager_task_runner_| and it will
   // be destroyed on that sequence.

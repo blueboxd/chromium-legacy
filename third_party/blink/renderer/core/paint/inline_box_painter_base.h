@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_INLINE_BOX_PAINTER_BASE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_INLINE_BOX_PAINTER_BASE_H_
 
+#include "third_party/blink/renderer/core/layout/geometry/box_sides.h"
 #include "third_party/blink/renderer/core/paint/box_painter_base.h"
 #include "third_party/blink/renderer/core/style/shadow_data.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
@@ -44,8 +45,7 @@ class InlineBoxPainterBase {
                                     const PhysicalRect& adjusted_frame_rect,
                                     BackgroundImageGeometry,
                                     bool object_has_multiple_boxes,
-                                    bool include_logical_left_edge,
-                                    bool include_logical_right_edge);
+                                    PhysicalBoxSides sides_to_include);
 
  protected:
   void PaintFillLayers(BoxPainterBase&,

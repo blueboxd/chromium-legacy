@@ -2952,7 +2952,7 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
 }
 
 // TODO(crbug.com/1002489): Test is flaky on Linux.
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #define MAYBE_UpdateMaxSize DISABLED_UpdateMaxSize
 #else
 #define MAYBE_UpdateMaxSize UpdateMaxSize

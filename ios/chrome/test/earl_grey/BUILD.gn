@@ -206,12 +206,14 @@ source_set("eg_test_support+eg2") {
     "scoped_block_popups_pref.mm",
   ]
 
-  public_deps = [ ":chrome_egtest_bundle_main+eg2" ]
+  public_deps = [
+    ":chrome_egtest_bundle_main+eg2",
+    "//components/content_settings/core/common",
+  ]
 
   deps = [
     "//base",
     "//base/test:test_support",
-    "//components/content_settings/core/common:common",
     "//components/strings",
     "//components/sync/base",
     "//ios/chrome/app/strings",

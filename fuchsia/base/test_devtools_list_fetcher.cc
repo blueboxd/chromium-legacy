@@ -40,7 +40,7 @@ class DevToolsListFetcher : public net::URLFetcherDelegate {
     on_url_fetch_complete_ack_ = run_loop.QuitClosure();
     run_loop.Run();
 
-    if (fetcher->GetStatus().status() != net::URLRequestStatus::SUCCESS)
+    if (fetcher->GetError() != net::OK)
       return base::Value();
 
     if (fetcher->GetResponseCode() != net::HTTP_OK)

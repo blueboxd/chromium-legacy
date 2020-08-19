@@ -602,7 +602,8 @@ TEST_P(HintCacheTest, ParseEmptyFetchedHints) {
   std::unique_ptr<proto::GetHintsResponse> get_hints_response =
       std::make_unique<proto::GetHintsResponse>();
 
-  UpdateFetchedHintsAndWait(std::move(get_hints_response), stored_time, {}, {});
+  UpdateFetchedHintsAndWait(std::move(get_hints_response), stored_time,
+                            {"host.domain.org"}, {});
   // Empty Fetched Hints causes the metadata entry to be updated if store is
   // available.
   EXPECT_TRUE(are_fetched_hints_updated());
@@ -611,6 +612,9 @@ TEST_P(HintCacheTest, ParseEmptyFetchedHints) {
     EXPECT_EQ(hint_cache()->GetFetchedHintsUpdateTime(), stored_time);
   } else {
     EXPECT_EQ(hint_cache()->GetFetchedHintsUpdateTime(), base::Time());
+    // Fetched hosts should still have an entry despite not getting a hint back
+    // for it.
+    EXPECT_TRUE(hint_cache()->HasHint("host.domain.org"));
   }
 }
 

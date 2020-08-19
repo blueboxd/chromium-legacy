@@ -8,6 +8,7 @@ import os
 import unittest
 
 from blinkpy.common.host_mock import MockHost
+from blinkpy.common.system.filesystem_mock import MockFileSystem
 from blinkpy.web_tests.models.test_expectations import TestExpectations
 from blinkpy.web_tests.port.factory_mock import MockPortFactory
 from blinkpy.w3c.wpt_manifest import BASE_MANIFEST_NAME
@@ -412,3 +413,42 @@ class WPTMetadataBuilderTest(unittest.TestCase):
             "test.worker.html?variant=abc",
             mb._metadata_inline_test_name_from_test_name(
                 "dir/test.worker.html?variant=abc"))
+
+    def test_copy_checked_in_metadata(self):
+        # Ensure that ini metadata files are copied from the checked-in dir to
+        # the output dir as expected.
+        expectations = TestExpectations(self.port)
+        mb = WPTMetadataBuilder(expectations, self.port)
+        # Set the metadata builder to use mock filesystem populated with some
+        # test data
+        mb.checked_in_metadata_dir = "src"
+        mb.metadata_output_dir = "out"
+        mock_checked_in_files = {
+            "src/a/b/c.html": "",
+            "src/a/b/c.html.ini": "",
+            "src/a/d/e.html": "",
+            "src/a/d/e.html.ini": "checked-in",
+            "src/a/tox.ini": "",
+
+            # Put one duplicate file in the output directory to simulate a test
+            # with both legacy expectations and checked-in metadata
+            "out/a/d/e.html.ini": "legacy",
+        }
+        mb.fs = MockFileSystem(files=mock_checked_in_files)
+
+        # Ensure that the duplicate file starts out with the legacy content.
+        duplicate_ini_file = "out/a/d/e.html.ini"
+        self.assertEqual("legacy", mb.fs.read_text_file(duplicate_ini_file))
+
+        mb._copy_checked_in_metadata()
+
+        # Ensure only the ini files are copied, not the tests
+        self.assertEqual(3, len(mb.fs.written_files))
+        self.assertTrue("out/a/b/c.html.ini" in mb.fs.written_files)
+        self.assertTrue("out/a/d/e.html.ini" in mb.fs.written_files)
+        self.assertTrue("out/a/tox.ini" in mb.fs.written_files)
+
+        # Also ensure that the content of the duplicate file was overwritten
+        # with the checked-in contents.
+        self.assertEqual("checked-in",
+                         mb.fs.read_text_file(duplicate_ini_file))

@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-load("//lib/builders.star", "goma", "os")
+load("//lib/builders.star", "goma", "os", "xcode_cache")
 load("//lib/try.star", "try_")
 load("//project.star", "settings")
 
@@ -495,14 +495,18 @@ try_.chromium_mac_ios_builder(
     name = "ios-simulator",
     executable = "recipe:chromium_trybot",
     properties = {
-        "xcode_build_version": "11e146",
+        "xcode_build_version": "12a8179i_audio",
     },
     tryjob = try_.job(),
 )
 
 try_.chromium_mac_ios_builder(
     name = "ios-simulator-cronet",
+    caches = [xcode_cache.x11e146],
     executable = "recipe:chromium_trybot",
+    properties = {
+        "xcode_build_version": "11e146",
+    },
     tryjob = try_.job(
         location_regexp = [
             ".+/[+]/components/cronet/.+",

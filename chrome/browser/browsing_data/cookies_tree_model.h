@@ -18,6 +18,7 @@
 #include "extensions/buildflags/buildflags.h"
 #include "ui/base/models/tree_node_model.h"
 
+class AccessContextAuditService;
 class CookiesTreeModel;
 class CookieTreeAppCacheNode;
 class CookieTreeAppCachesNode;
@@ -271,6 +272,16 @@ class CookiesTreeModel : public ui::TreeNodeModel<CookieTreeNode> {
  public:
   CookiesTreeModel(std::unique_ptr<LocalDataContainer> data_container,
                    ExtensionSpecialStoragePolicy* special_storage_policy);
+  // As above, but also provides the tree model with a pointer to the Access
+  // Context Audit service. This allows the tree model to report deletion events
+  // to the service. This must be used whenever the service exists to ensure
+  // audit record consistency.
+  // TODO (crbug.com/1113602): Remove this constructor when all deletions are
+  // performed directly against the StoragePartition and the tree model doesn't
+  // require knowledge of the audit service.
+  CookiesTreeModel(std::unique_ptr<LocalDataContainer> data_container,
+                   ExtensionSpecialStoragePolicy* special_storage_policy,
+                   AccessContextAuditService* access_context_audit_service);
   ~CookiesTreeModel() override;
 
   // Given a CanonicalCookie, return the ID of the message which should be
@@ -356,6 +367,12 @@ class CookiesTreeModel : public ui::TreeNodeModel<CookieTreeNode> {
   void PopulateCacheStorageUsageInfo(LocalDataContainer* container);
   void PopulateFlashLSOInfo(LocalDataContainer* container);
   void PopulateMediaLicenseInfo(LocalDataContainer* container);
+
+  // Returns the Access Context Audit service provided to the cookies tree model
+  // as part of the constructor, or nullptr if no service was provided.
+  AccessContextAuditService* access_context_audit_service() {
+    return access_context_audit_service_;
+  }
 
   LocalDataContainer* data_container() {
     return data_container_.get();
@@ -445,6 +462,8 @@ class CookiesTreeModel : public ui::TreeNodeModel<CookieTreeNode> {
   // The CookiesTreeModel maintains a separate list of observers that are
   // specifically of the type CookiesTreeModel::Observer.
   base::ObserverList<Observer>::Unchecked cookies_observer_list_;
+
+  AccessContextAuditService* access_context_audit_service_ = nullptr;
 
   // Keeps track of how many batches the consumer of this class says it is going
   // to send.

@@ -216,6 +216,7 @@ letterSpacing
 letterSpacingOverride
 lightingColor
 lineBreak
+lineGapOverride
 lineHeight
 lineHeightStep
 listStyle

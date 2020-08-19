@@ -28,7 +28,6 @@
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_status.h"
 #include "remoting/base/rsa_key_pair.h"
 #include "remoting/host/token_validator_base.h"
 #include "url/gurl.h"

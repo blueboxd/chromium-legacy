@@ -913,7 +913,7 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, EnableSyncAfterToken) {
 // refresh token.
 
 // https://crbug.com/1082858
-#if defined(OS_LINUX) && !defined(NDEBUG)
+#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && !defined(NDEBUG)
 #define MAYBE_EnableSyncBeforeToken DISABLED_EnableSyncBeforeToken
 #else
 #define MAYBE_EnableSyncBeforeToken EnableSyncBeforeToken

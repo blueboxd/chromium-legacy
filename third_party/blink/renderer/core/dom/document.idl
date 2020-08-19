@@ -188,6 +188,10 @@ typedef (HTMLScriptElement or SVGScriptElement) HTMLOrSVGScriptElement;
     [CallWith=ScriptState, NewObject, RuntimeEnabled=StorageAccessAPI, MeasureAs=StorageAccessAPI_HasStorageAccess_Method] Promise<boolean> hasStorageAccess();
     [CallWith=ScriptState, NewObject, RuntimeEnabled=StorageAccessAPI, MeasureAs=StorageAccessAPI_requestStorageAccess_Method] Promise<void> requestStorageAccess();
 
+    // Text fragment directive API
+    // https://wicg.github.io/scroll-to-text-fragment/#feature-detectability
+    [SameObject, Measure, RuntimeEnabled=TextFragmentIdentifiers] readonly attribute FragmentDirective fragmentDirective;
+
     // https://w3c.github.io/webappsec-feature-policy/#the-policy-object
     readonly attribute FeaturePolicy featurePolicy;
 

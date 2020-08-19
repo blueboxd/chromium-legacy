@@ -40,6 +40,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "base/value_iterators.h"
+#include "third_party/abseil-cpp/absl/types/variant.h"
 
 namespace base {
 
@@ -89,9 +90,6 @@ class BASE_EXPORT Value {
   using ListView = CheckedContiguousRange<ListStorage>;
   using ConstListView = CheckedContiguousConstRange<ListStorage>;
 
-  // See technical note below explaining why this is used.
-  using DoubleStorage = struct { alignas(4) char v[sizeof(double)]; };
-
   enum class Type : unsigned char {
     NONE = 0,
     BOOLEAN,
@@ -120,11 +118,8 @@ class BASE_EXPORT Value {
   static const DictionaryValue& AsDictionaryValue(const Value& val);
   static const ListValue& AsListValue(const Value& val);
 
+  Value() noexcept;
   Value(Value&& that) noexcept;
-  Value() noexcept {}  // A null value. NOLINT(modernize-use-equals-default)
-  // Fun fact: using '= default' above instead of '{}' does not work because
-  // the compiler complains that the default constructor was deleted since
-  // the inner union contains fields with non-default constructors.
 
   // Value's copy constructor and copy assignment operator are deleted. Use this
   // to obtain a deep copy explicitly.
@@ -163,7 +158,7 @@ class BASE_EXPORT Value {
   static const char* GetTypeName(Type type);
 
   // Returns the type of the value stored by the current Value object.
-  Type type() const { return type_; }
+  Type type() const { return static_cast<Type>(data_.index()); }
 
   // Returns true if the current object represents a given type.
   bool is_none() const { return type() == Type::NONE; }
@@ -192,7 +187,7 @@ class BASE_EXPORT Value {
 
   // Transfers ownership of the underlying list to the caller. Subsequent
   // calls to GetList() will return an empty list.
-  // Note: This CHECKs that type() is Type::LIST.
+  // Note: This requires that type() is Type::LIST.
   ListStorage TakeList();
 
   // Appends |value| to the end of the list.
@@ -215,32 +210,31 @@ class BASE_EXPORT Value {
 
   // Erases the Value pointed to by |iter|. Returns false if |iter| is out of
   // bounds.
-  // Note: This CHECKs that type() is Type::LIST.
+  // Note: This requires that type() is Type::LIST.
   bool EraseListIter(CheckedContiguousConstIterator<Value> iter);
 
   // Erases all Values that compare equal to |val|. Returns the number of
   // deleted Values.
-  // Note: This CHECKs that type() is Type::LIST.
+  // Note: This requires that type() is Type::LIST.
   size_t EraseListValue(const Value& val);
 
   // Erases all Values for which |pred| returns true. Returns the number of
   // deleted Values.
-  // Note: This CHECKs that type() is Type::LIST.
+  // Note: This requires that type() is Type::LIST.
   template <typename Predicate>
   size_t EraseListValueIf(Predicate pred) {
-    CHECK(is_list());
-    return base::EraseIf(list_, pred);
+    return base::EraseIf(list(), pred);
   }
 
   // Erases all Values from the list.
-  // Note: This CHECKs that type() is Type::LIST.
+  // Note: This requires that type() is Type::LIST.
   void ClearList();
 
   // |FindKey| looks up |key| in the underlying dictionary. If found, it returns
   // a pointer to the element. Otherwise it returns nullptr.
   // returned. Callers are expected to perform a check against null before using
   // the pointer.
-  // Note: This CHECKs that type() is Type::DICTIONARY.
+  // Note: This requires that type() is Type::DICTIONARY.
   //
   // Example:
   //   auto* found = FindKey("foo");
@@ -252,7 +246,7 @@ class BASE_EXPORT Value {
   // different type nullptr is returned.
   // Callers are expected to perform a check against null before using the
   // pointer.
-  // Note: This CHECKs that type() is Type::DICTIONARY.
+  // Note: This requires that type() is Type::DICTIONARY.
   //
   // Example:
   //   auto* found = FindKey("foo", Type::DOUBLE);
@@ -286,7 +280,7 @@ class BASE_EXPORT Value {
   // |SetKey| looks up |key| in the underlying dictionary and sets the mapped
   // value to |value|. If |key| could not be found, a new element is inserted.
   // A pointer to the modified item is returned.
-  // Note: This CHECKs that type() is Type::DICTIONARY.
+  // Note: This requires that type() is Type::DICTIONARY.
   // Note: Prefer Set<Type>Key() for simple values.
   //
   // Example:
@@ -315,7 +309,7 @@ class BASE_EXPORT Value {
   // failure, e.g. the key does not exist, false is returned and the underlying
   // dictionary is not changed. In case of success, |key| is deleted from the
   // dictionary and the method returns true.
-  // Note: This CHECKs that type() is Type::DICTIONARY.
+  // Note: This requires that type() is Type::DICTIONARY.
   //
   // Example:
   //   bool success = dict.RemoveKey("foo");
@@ -325,7 +319,7 @@ class BASE_EXPORT Value {
   // failure, e.g. the key does not exist, nullopt is returned and the
   // underlying dictionary is not changed. In case of success, |key| is deleted
   // from the dictionary and the method returns the extracted Value.
-  // Note: This CHECKs that type() is Type::DICTIONARY.
+  // Note: This requires that type() is Type::DICTIONARY.
   //
   // Example:
   //   Optional<Value> maybe_value = dict.ExtractKey("foo");
@@ -481,7 +475,7 @@ class BASE_EXPORT Value {
   // passed in dictionary takes precedence and data already present will be
   // replaced. Values within |dictionary| are deep-copied, so |dictionary| may
   // be freed any time after this call.
-  // Note: This CHECKs that type() and dictionary->type() is Type::DICTIONARY.
+  // Note: This requires that type() and dictionary->type() is Type::DICTIONARY.
   void MergeDictionary(const Value* dictionary);
 
   // These methods allow the convenient retrieval of the contents of the Value.
@@ -539,6 +533,13 @@ class BASE_EXPORT Value {
   size_t EstimateMemoryUsage() const;
 
  protected:
+  // Checked convenience accessors for dict and list.
+  const DictStorage& dict() const { return absl::get<DictStorage>(data_); }
+  DictStorage& dict() { return absl::get<DictStorage>(data_); }
+  const ListStorage& list() const { return absl::get<ListStorage>(data_); }
+  ListStorage& list() { return absl::get<ListStorage>(data_); }
+
+ private:
   // Special case for doubles, which are aligned to 8 bytes on some
   // 32-bit architectures. In this case, a simple declaration as a
   // double member would make the whole union 8 byte-aligned, which
@@ -547,28 +548,29 @@ class BASE_EXPORT Value {
   //
   // To override this, store the value as an array of 32-bit integers, and
   // perform the appropriate bit casts when reading / writing to it.
-  Type type_ = Type::NONE;
+  using DoubleStorage = struct { alignas(4) char v[sizeof(double)]; };
 
-  union {
-    bool bool_value_;
-    int int_value_;
-    DoubleStorage double_value_;
-    std::string string_value_;
-    BlobStorage binary_value_;
-    DictStorage dict_;
-    ListStorage list_;
-  };
+  // Internal constructors, allowing the simplify the implementation of Clone().
+  explicit Value(absl::monostate);
+  explicit Value(DoubleStorage storage);
 
- private:
   friend class ValuesTest_SizeOfValue_Test;
   double AsDoubleInternal() const;
-  void InternalMoveConstructFrom(Value&& that);
-  void InternalCleanup();
 
   // NOTE: Using a movable reference here is done for performance (it avoids
   // creating + moving + destroying a temporary unique ptr).
   Value* SetKeyInternal(StringPiece key, std::unique_ptr<Value>&& val_ptr);
   Value* SetPathInternal(StringPiece path, std::unique_ptr<Value>&& value_ptr);
+
+  absl::variant<absl::monostate,
+                bool,
+                int,
+                DoubleStorage,
+                std::string,
+                BlobStorage,
+                DictStorage,
+                ListStorage>
+      data_;
 
   DISALLOW_COPY_AND_ASSIGN(Value);
 };
@@ -593,10 +595,10 @@ class BASE_EXPORT DictionaryValue : public Value {
   bool HasKey(StringPiece key) const;
 
   // Returns the number of Values in this dictionary.
-  size_t size() const { return dict_.size(); }
+  size_t size() const { return dict().size(); }
 
   // Returns whether the dictionary is empty.
-  bool empty() const { return dict_.empty(); }
+  bool empty() const { return dict().empty(); }
 
   // Clears any current contents of this dictionary.
   void Clear();
@@ -672,8 +674,7 @@ class BASE_EXPORT DictionaryValue : public Value {
   // DEPRECATED, use Value::FindBlobPath(path) instead.
   bool GetBinary(StringPiece path, Value** out_value);
   // DEPRECATED, use Value::FindPath(path) and Value's Dictionary API instead.
-  bool GetDictionary(StringPiece path,
-                     const DictionaryValue** out_value) const;
+  bool GetDictionary(StringPiece path, const DictionaryValue** out_value) const;
   // DEPRECATED, use Value::FindPath(path) and Value's Dictionary API instead.
   bool GetDictionary(StringPiece path, DictionaryValue** out_value);
   // DEPRECATED, use Value::FindPath(path) and Value::GetList() instead.
@@ -752,7 +753,7 @@ class BASE_EXPORT DictionaryValue : public Value {
     Iterator(const Iterator& other);
     ~Iterator();
 
-    bool IsAtEnd() const { return it_ == target_.dict_.end(); }
+    bool IsAtEnd() const { return it_ == target_.end(); }
     void Advance() { ++it_; }
 
     const std::string& key() const { return it_->first; }
@@ -765,12 +766,12 @@ class BASE_EXPORT DictionaryValue : public Value {
 
   // Iteration.
   // DEPRECATED, use Value::DictItems() instead.
-  iterator begin() { return dict_.begin(); }
-  iterator end() { return dict_.end(); }
+  iterator begin() { return dict().begin(); }
+  iterator end() { return dict().end(); }
 
   // DEPRECATED, use Value::DictItems() instead.
-  const_iterator begin() const { return dict_.begin(); }
-  const_iterator end() const { return dict_.end(); }
+  const_iterator begin() const { return dict().begin(); }
+  const_iterator end() const { return dict().end(); }
 
   // DEPRECATED, use Value::Clone() instead.
   // TODO(crbug.com/646113): Delete this and migrate callsites.
@@ -799,11 +800,11 @@ class BASE_EXPORT ListValue : public Value {
 
   // Returns the number of Values in this list.
   // DEPRECATED, use GetList()::size() instead.
-  size_t GetSize() const { return list_.size(); }
+  size_t GetSize() const { return list().size(); }
 
   // Returns whether the list is empty.
   // DEPRECATED, use GetList()::empty() instead.
-  bool empty() const { return list_.empty(); }
+  bool empty() const { return list().empty(); }
 
   // Reserves storage for at least |n| values.
   // DEPRECATED, first construct a base::Value::ListStorage and use

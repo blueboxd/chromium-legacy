@@ -19,10 +19,10 @@ namespace test {
 std::string kPlatform = "win";
 #elif defined(OS_MAC)
 std::string kPlatform = "mac";
-#elif defined(OS_LINUX)
-std::string kPlatform = "linux";
 #elif defined(OS_CHROMEOS)
 std::string kPlatform = "chromeos";
+#elif defined(OS_LINUX)
+std::string kPlatform = "linux";
 #elif defined(OS_ANDROID)
 std::string kPlatform = "android";
 #else

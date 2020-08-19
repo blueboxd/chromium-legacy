@@ -1,9 +1,13 @@
 <html>
   <script>
-     var date = new Date();
-     date.setDate(date.getDate() + 1);
      // Set a cookie at the embedder level.
-     document.cookie = `embedder=embedder; expires=${date.toUTCString()};path=/`
+     document.cookie = `embedder=embedder; max-age=3600;path=/`
+
+      // Access cache storage.
+      caches.open('test');
+
+      // Access Indexed DB.
+      indexedDB.open("test");
   </script>
   <body>
     <iframe src="

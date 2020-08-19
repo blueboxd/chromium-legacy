@@ -36,74 +36,23 @@ namespace base {
 // This test is only enabled when NDEBUG is defined. This way the test will not
 // fail in debug builds that sometimes contain larger versions of the standard
 // containers used inside base::Value.
-#if defined(NDEBUG)
-
 TEST(ValuesTest, SizeOfValue) {
-#define INNER_TYPES_LIST(X)              \
-  X(bool, bool_value_)                   \
-  X(int, int_value_)                     \
-  X(Value::DoubleStorage, double_value_) \
-  X(std::string, string_value_)          \
-  X(Value::BlobStorage, binary_value_)   \
-  X(Value::ListStorage, list_)           \
-  X(Value::DictStorage, dict_)
+  static_assert(
+      std::max({alignof(size_t), alignof(bool), alignof(int),
+                alignof(Value::DoubleStorage), alignof(std::string),
+                alignof(Value::BlobStorage), alignof(Value::ListStorage),
+                alignof(Value::DictStorage)}) == alignof(Value),
+      "Value does not have smallest possible alignof");
 
-#define INNER_FIELD_ALIGNMENT(type, value) alignof(type),
-
-  // The maximum alignment of each inner struct value field inside base::Value
-  size_t max_inner_value_alignment =
-      std::max({INNER_TYPES_LIST(INNER_FIELD_ALIGNMENT)});
-
-  // Check that base::Value has the smallest alignment possible. This would
-  // fail if the header would contain something that has a larger alignment
-  // than necessary.
-  EXPECT_EQ(max_inner_value_alignment, alignof(Value));
-
-  // Find the offset of each inner value. Which should normally not be
-  // larger than 4. Note that we use std::max(4, ...) because bool_value_
-  // could be stored just after the |bool_type_| field, with an offset of
-  // 1, and that would be ok.
-#define INNER_VALUE_START_OFFSET(type, value) offsetof(Value, value),
-
-  size_t min_inner_value_offset =
-      std::min({INNER_TYPES_LIST(INNER_VALUE_START_OFFSET)});
-
-  // Inner fields may contain pointers, which have an alignment of 8
-  // on most 64-bit platforms.
-  size_t expected_min_offset = alignof(void*);
-
-  EXPECT_EQ(expected_min_offset, min_inner_value_offset);
-
-  // Ensure that base::Value is not larger than necessary, i.e. that there is
-  // no un-necessary padding after the structs due to alignment constraints of
-  // one of the inner fields.
-#define INNER_STRUCT_END_OFFSET(type, value) \
-  offsetof(Value, value) + sizeof(type),
-
-  // The maximum size in bytes of each inner struct inside base::Value,
-  size_t max_inner_struct_end_offset =
-      std::max({INNER_TYPES_LIST(INNER_STRUCT_END_OFFSET)});
-
-  // The expected value size.
-  size_t expected_value_size =
-      bits::Align(max_inner_struct_end_offset, alignof(Value));
-
-  EXPECT_EQ(expected_value_size, sizeof(Value));
-  if (min_inner_value_offset != expected_min_offset ||
-      expected_value_size != sizeof(Value)) {
-    // The following are useful to understand what's wrong when the EXPECT_EQ()
-    // above actually fail.
-#define PRINT_INNER_FIELD_INFO(x, y)                           \
-  LOG(INFO) << #y " type=" #x " offset=" << offsetof(Value, y) \
-            << " size=" << sizeof(x) << " align=" << alignof(x);
-
-    LOG(INFO) << "Value size=" << sizeof(Value) << " align=" << alignof(Value);
-    INNER_TYPES_LIST(PRINT_INNER_FIELD_INFO)
-    LOG(INFO) << "max_inner_struct_end_offset=" << max_inner_struct_end_offset;
-  }
+  static_assert(
+      sizeof(size_t) +
+              std::max({sizeof(bool), sizeof(int), sizeof(Value::DoubleStorage),
+                        sizeof(std::string), sizeof(Value::BlobStorage),
+                        sizeof(Value::ListStorage),
+                        sizeof(Value::DictStorage)}) ==
+          sizeof(Value),
+      "Value does not have smallest possible sizeof");
 }
-
-#endif  // NDEBUG
 
 TEST(ValuesTest, TestNothrow) {
   static_assert(std::is_nothrow_move_constructible<Value>::value,
@@ -238,6 +187,18 @@ TEST(ValuesTest, ConstructListFromStorage) {
     EXPECT_EQ(Value::Type::STRING, value.GetList()[0].type());
     EXPECT_EQ("bar", value.GetList()[0].GetString());
   }
+}
+
+TEST(ValuesTest, HardenTests) {
+  Value value;
+  ASSERT_EQ(value.type(), Value::Type::NONE);
+  EXPECT_DEATH_IF_SUPPORTED(value.GetBool(), "");
+  EXPECT_DEATH_IF_SUPPORTED(value.GetInt(), "");
+  EXPECT_DEATH_IF_SUPPORTED(value.GetDouble(), "");
+  EXPECT_DEATH_IF_SUPPORTED(value.GetString(), "");
+  EXPECT_DEATH_IF_SUPPORTED(value.GetBlob(), "");
+  EXPECT_DEATH_IF_SUPPORTED(value.DictItems(), "");
+  EXPECT_DEATH_IF_SUPPORTED(value.GetList(), "");
 }
 
 // Group of tests for the copy constructors and copy-assigmnent. For equality
@@ -1474,8 +1435,8 @@ TEST(ValuesTest, ListRemoval) {
     ListValue list;
     list.Append(std::make_unique<Value>());
     EXPECT_EQ(1U, list.GetSize());
-    EXPECT_FALSE(list.Remove(std::numeric_limits<size_t>::max(),
-                             &removed_item));
+    EXPECT_FALSE(
+        list.Remove(std::numeric_limits<size_t>::max(), &removed_item));
     EXPECT_FALSE(list.Remove(1, &removed_item));
     EXPECT_TRUE(list.Remove(0, &removed_item));
     ASSERT_TRUE(removed_item);
@@ -2080,7 +2041,7 @@ TEST(ValuesTest, RemoveEmptyChildren) {
     root = root->DeepCopyWithoutEmptyChildren();
     EXPECT_EQ(3U, root->size());
 
-    ListValue* inner_value, *inner_value2;
+    ListValue *inner_value, *inner_value2;
     EXPECT_TRUE(root->GetList("list_with_empty_children", &inner_value));
     EXPECT_EQ(1U, inner_value->GetSize());  // Dictionary was pruned.
     EXPECT_TRUE(inner_value->GetList(0, &inner_value2));
@@ -2126,8 +2087,8 @@ TEST(ValuesTest, MergeDictionary) {
   EXPECT_TRUE(res_sub_dict->GetString("sub_base_key", &sub_base_key_value));
   EXPECT_EQ("sub_base_key_value_base", sub_base_key_value);  // Preserved.
   std::string sub_collide_key_value;
-  EXPECT_TRUE(res_sub_dict->GetString("sub_collide_key",
-                                      &sub_collide_key_value));
+  EXPECT_TRUE(
+      res_sub_dict->GetString("sub_collide_key", &sub_collide_key_value));
   EXPECT_EQ("sub_collide_key_value_merge", sub_collide_key_value);  // Replaced.
   std::string sub_merge_key_value;
   EXPECT_TRUE(res_sub_dict->GetString("sub_merge_key", &sub_merge_key_value));

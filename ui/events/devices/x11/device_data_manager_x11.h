@@ -391,8 +391,7 @@ class EVENTS_DEVICES_X11_EXPORT DeviceDataManagerX11
   // devices when they are re-enabled.
   std::map<x11::Input::DeviceId, ui::InputDevice> blocked_keyboard_devices_;
 
-  unsigned char button_map_[256];
-  int button_map_count_;
+  std::vector<uint8_t> button_map_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceDataManagerX11);
 };

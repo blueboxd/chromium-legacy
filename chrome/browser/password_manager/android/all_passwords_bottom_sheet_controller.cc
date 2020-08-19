@@ -66,7 +66,9 @@ gfx::NativeView AllPasswordsBottomSheetController::GetNativeView() {
 void AllPasswordsBottomSheetController::OnCredentialSelected(
     const UiCredential& credential) {
   driver_->FillSuggestion(credential.username(), credential.password());
-  // TODO(crbug.com/1104132): Call OnDismiss().
+  // Consumes the dismissal callback to destroy the native controller and java
+  // controller after the user selects a credential.
+  OnDismiss();
 }
 
 void AllPasswordsBottomSheetController::OnDismiss() {

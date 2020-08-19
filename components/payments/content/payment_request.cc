@@ -210,6 +210,8 @@ void PaymentRequest::Init(
       base::Contains(spec_->url_payment_method_identifiers(), google_pay_url) ||
           base::Contains(spec_->url_payment_method_identifiers(),
                          android_pay_url),
+      /*requested_method_secure_payment_confirmation=*/
+      spec_->IsSecurePaymentConfirmationRequested(),
       /*requested_method_other=*/non_google_it !=
           spec_->url_payment_method_identifiers().end());
 
@@ -672,9 +674,14 @@ void PaymentRequest::OnPaymentResponseAvailable(
                            : JourneyLogger::Event::EVENT_SELECTED_OTHER;
       break;
     }
+    case PaymentApp::Type::INTERNAL: {
+      if (response->method_name == methods::kSecurePaymentConfirmation) {
+        selected_event =
+            JourneyLogger::Event::EVENT_SELECTED_SECURE_PAYMENT_CONFIRMATION;
+      }
+      break;
+    }
     case PaymentApp::Type::UNDEFINED:
-      // Intentionally fall through.
-    case PaymentApp::Type::INTERNAL:
       NOTREACHED();
       break;
   }

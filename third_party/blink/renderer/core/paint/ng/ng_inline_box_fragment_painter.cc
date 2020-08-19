@@ -48,12 +48,8 @@ inline bool MayHaveMultipleFragmentItems(const NGFragmentItem& item,
 
 }  // namespace
 
-const NGBorderEdges NGInlineBoxFragmentPainter::BorderEdges() const {
-  if (border_edges_.has_value())
-    return *border_edges_;
-  border_edges_ = NGBorderEdges::FromPhysical(PhysicalFragment().BorderEdges(),
-                                              style_.GetWritingMode());
-  return *border_edges_;
+PhysicalBoxSides NGInlineBoxFragmentPainter::SidesToInclude() const {
+  return PhysicalFragment().SidesToInclude();
 }
 
 void NGInlineBoxFragmentPainter::Paint(const PaintInfo& paint_info,
@@ -129,25 +125,22 @@ void NGInlineBoxFragmentPainterBase::PaintBackgroundBorderShadow(
   // TODO(eae): Switch to LayoutNG version of BackgroundImageGeometry.
   BackgroundImageGeometry geometry(*static_cast<const LayoutBoxModelObject*>(
       inline_box_fragment_.GetLayoutObject()));
-  const NGBorderEdges& border_edges = BorderEdges();
   if (inline_box_paint_fragment_) {
     NGBoxFragmentPainter box_painter(
         To<NGPhysicalBoxFragment>(inline_box_fragment_),
         inline_box_paint_fragment_);
     PaintBoxDecorationBackground(
         box_painter, paint_info, paint_offset, adjusted_frame_rect, geometry,
-        object_may_have_multiple_boxes, border_edges.line_left,
-        border_edges.line_right);
+        object_may_have_multiple_boxes, SidesToInclude());
     return;
   }
   DCHECK(inline_box_cursor_);
   NGBoxFragmentPainter box_painter(
       *inline_box_cursor_, *inline_box_item_,
       To<NGPhysicalBoxFragment>(inline_box_fragment_));
-  PaintBoxDecorationBackground(box_painter, paint_info, paint_offset,
-                               adjusted_frame_rect, geometry,
-                               object_may_have_multiple_boxes,
-                               border_edges.line_left, border_edges.line_right);
+  PaintBoxDecorationBackground(
+      box_painter, paint_info, paint_offset, adjusted_frame_rect, geometry,
+      object_may_have_multiple_boxes, SidesToInclude());
 }
 
 IntRect NGInlineBoxFragmentPainterBase::VisualRect(
@@ -218,8 +211,7 @@ void NGLineBoxFragmentPainter::PaintBackgroundBorderShadow(
   NGBoxFragmentPainter box_painter(block_fragment_, block_paint_fragment_);
   PaintBoxDecorationBackground(
       box_painter, paint_info, paint_offset, rect, geometry,
-      /*object_has_multiple_boxes*/ false, /*include_logical_left_edge*/ true,
-      /*include_logical_right_edge*/ true);
+      /*object_has_multiple_boxes*/ false, PhysicalBoxSides());
 }
 
 void NGInlineBoxFragmentPainterBase::ComputeFragmentOffsetOnLine(
@@ -289,30 +281,23 @@ PhysicalRect NGInlineBoxFragmentPainterBase::PaintRectForImageStrip(
 
 static PhysicalRect NGClipRectForNinePieceImageStrip(
     const ComputedStyle& style,
-    const NGBorderEdges& border_edges,
+    PhysicalBoxSides sides_to_include,
     const NinePieceImage& image,
     const PhysicalRect& paint_rect) {
   PhysicalRect clip_rect(paint_rect);
   LayoutRectOutsets outsets = style.ImageOutsets(image);
-  if (style.IsHorizontalWritingMode()) {
-    clip_rect.SetY(paint_rect.Y() - outsets.Top());
-    clip_rect.SetHeight(paint_rect.Height() + outsets.Top() + outsets.Bottom());
-    if (border_edges.line_left) {
-      clip_rect.SetX(paint_rect.X() - outsets.Left());
-      clip_rect.SetWidth(paint_rect.Width() + outsets.Left());
-    }
-    if (border_edges.line_right)
-      clip_rect.SetWidth(clip_rect.Width() + outsets.Right());
-  } else {
+  if (sides_to_include.left) {
     clip_rect.SetX(paint_rect.X() - outsets.Left());
-    clip_rect.SetWidth(paint_rect.Width() + outsets.Left() + outsets.Right());
-    if (border_edges.line_left) {
-      clip_rect.SetY(paint_rect.Y() - outsets.Top());
-      clip_rect.SetHeight(paint_rect.Height() + outsets.Top());
-    }
-    if (border_edges.line_right)
-      clip_rect.SetHeight(clip_rect.Height() + outsets.Bottom());
+    clip_rect.SetWidth(paint_rect.Width() + outsets.Left());
   }
+  if (sides_to_include.right)
+    clip_rect.SetWidth(clip_rect.Width() + outsets.Right());
+  if (sides_to_include.top) {
+    clip_rect.SetY(paint_rect.Y() - outsets.Top());
+    clip_rect.SetHeight(paint_rect.Height() + outsets.Top());
+  }
+  if (sides_to_include.bottom)
+    clip_rect.SetHeight(clip_rect.Height() + outsets.Bottom());
   return clip_rect;
 }
 
@@ -342,7 +327,7 @@ NGInlineBoxFragmentPainterBase::GetBorderPaintType(
 
   // We have a border image that spans multiple lines.
   adjusted_clip_rect = PixelSnappedIntRect(NGClipRectForNinePieceImageStrip(
-      style, BorderEdges(), border_image, adjusted_frame_rect));
+      style, SidesToInclude(), border_image, adjusted_frame_rect));
   return kPaintBordersWithClip;
 }
 
@@ -350,18 +335,15 @@ void NGInlineBoxFragmentPainterBase::PaintNormalBoxShadow(
     const PaintInfo& info,
     const ComputedStyle& s,
     const PhysicalRect& paint_rect) {
-  const NGBorderEdges& border_edges = BorderEdges();
-  BoxPainterBase::PaintNormalBoxShadow(
-      info, paint_rect, s, border_edges.line_left, border_edges.line_right);
+  BoxPainterBase::PaintNormalBoxShadow(info, paint_rect, s, SidesToInclude());
 }
 
 void NGInlineBoxFragmentPainterBase::PaintInsetBoxShadow(
     const PaintInfo& info,
     const ComputedStyle& s,
     const PhysicalRect& paint_rect) {
-  const NGBorderEdges& border_edges = BorderEdges();
-  BoxPainterBase::PaintInsetBoxShadowWithBorderRect(
-      info, paint_rect, s, border_edges.line_left, border_edges.line_right);
+  BoxPainterBase::PaintInsetBoxShadowWithBorderRect(info, paint_rect, s,
+                                                    SidesToInclude());
 }
 
 // Paint all fragments for the |layout_inline|. This function is used only for

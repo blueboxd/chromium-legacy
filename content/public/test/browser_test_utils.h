@@ -1894,6 +1894,30 @@ bool CompareWebContentsOutputToReference(
     const cc::PixelComparator& comparator =
         cc::ManhattanDistancePixelComparator());
 
+typedef base::OnceCallback<void(RenderFrameHost*, RenderFrameHost*)>
+    RenderFrameHostChangedCallback;
+
+// Runs callback at RenderFrameHostChanged time. On cross-RFH navigations, this
+// will run the callback after the new RenderFrameHost committed and is set as
+// the current RenderFrameHost, etc. but before the old RenderFrameHost gets
+// unloaded.
+class RenderFrameHostChangedCallbackRunner : public WebContentsObserver {
+ public:
+  explicit RenderFrameHostChangedCallbackRunner(
+      WebContents* content,
+      RenderFrameHostChangedCallback callback);
+
+  ~RenderFrameHostChangedCallbackRunner() override;
+
+ private:
+  void RenderFrameHostChanged(RenderFrameHost* old_host,
+                              RenderFrameHost* new_host) override;
+
+  RenderFrameHostChangedCallback callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(RenderFrameHostChangedCallbackRunner);
+};
+
 }  // namespace content
 
 #endif  // CONTENT_PUBLIC_TEST_BROWSER_TEST_UTILS_H_

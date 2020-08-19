@@ -49,7 +49,7 @@ class OOPBrowserTest : public ContentBrowserTest {
 // This test calls into system GL which is not instrumented with MSAN.
 #if !defined(MEMORY_SANITIZER)
 // Failing on linux-trusty-rel bot. https://crbug.com/1067662
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #define MAYBE_Basic DISABLED_Basic
 #else
 #define MAYBE_Basic Basic

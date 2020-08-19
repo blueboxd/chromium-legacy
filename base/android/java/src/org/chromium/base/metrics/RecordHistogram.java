@@ -12,7 +12,10 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
 import org.chromium.base.annotations.NativeMethods;
 
-/** Java API for recording UMA histograms. */
+/**
+ * Java API for recording UMA histograms. Note that when updating this file, please also update
+ * {@link ShadowRecordHistogram} so that it correctly shadows all the methods.
+ * */
 @JNINamespace("base::android")
 @MainDex
 public class RecordHistogram {

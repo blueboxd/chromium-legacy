@@ -1913,7 +1913,7 @@ TEST_P(PasswordManagerTest, SaveFormFetchedAfterSubmit) {
   // before post-navigation load.
   ASSERT_TRUE(store_consumer);
   store_consumer->OnGetPasswordStoreResultsFrom(
-      store_, std::vector<std::unique_ptr<PasswordForm>>());
+      store_.get(), std::vector<std::unique_ptr<PasswordForm>>());
 
   std::unique_ptr<PasswordFormManagerForUI> form_manager_to_save;
   EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_))
@@ -2521,7 +2521,7 @@ TEST_P(PasswordManagerTest, ManualFallbackForSaving_SlowBackend) {
   // The storage responded. The fallback can be shown.
   ASSERT_TRUE(store_consumer);
   store_consumer->OnGetPasswordStoreResultsFrom(
-      store_, std::vector<std::unique_ptr<PasswordForm>>());
+      store_.get(), std::vector<std::unique_ptr<PasswordForm>>());
   std::unique_ptr<PasswordFormManagerForUI> form_manager_to_save;
   EXPECT_CALL(client_, ShowManualFallbackForSavingPtr(_, false, false))
       .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));

@@ -50,7 +50,12 @@ export class TestManageProfilesBrowserProxy extends TestBrowserProxy {
   /** @override */
   getNewProfileSuggestedThemeInfo() {
     this.methodCalled('getNewProfileSuggestedThemeInfo');
-    return Promise.resolve({colorId: 0, themeColor: ''});
+    return Promise.resolve({
+      colorId: 0,
+      themeFrameColor: '',
+      themeShapeColor: '',
+      themeFrameTextColor: ''
+    });
   }
 
   /** @override */

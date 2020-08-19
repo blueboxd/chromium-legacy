@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-load("//lib/builders.star", "builder_name", "goma", "os")
+load("//lib/builders.star", "builder_name", "goma", "os", "xcode_cache")
 load("//lib/ci.star", "ci")
 load("//project.star", "settings")
 
@@ -755,6 +755,7 @@ ci.fyi_builder(
 
 ci.fyi_ios_builder(
     name = "ios-simulator-cronet",
+    caches = [xcode_cache.x11e146],
     console_view_entry = ci.console_view_entry(
         category = "cronet",
     ),

@@ -157,10 +157,10 @@ public class LayoutManagerTest implements MockTabModelDelegate {
         FrameLayout container = new FrameLayout(context);
         parentContainer.addView(container);
 
-        mManagerPhone = new LayoutManagerChromePhone(layoutManagerHost, null);
+        mManagerPhone = new LayoutManagerChromePhone(layoutManagerHost, container, null);
         mManager = mManagerPhone;
         CompositorAnimationHandler.setTestingMode(true);
-        mManager.init(mTabModelSelector, null, tabContentManager, container, null, null, null);
+        mManager.init(mTabModelSelector, null, tabContentManager, null, null, null);
         initializeMotionEvent();
     }
 

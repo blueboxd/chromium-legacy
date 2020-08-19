@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "base/util/type_safety/strong_alias.h"
+#include "components/autofill/core/common/password_form.h"
 #include "url/gurl.h"
 
 namespace sql {
@@ -47,6 +48,9 @@ struct CompromisedCredentials {
   base::Time create_time;
   // The type of the credentials that was compromised.
   CompromiseType compromise_type = CompromiseType::kLeaked;
+  // The store in which those credentials are stored.
+  autofill::PasswordForm::Store in_store =
+      autofill::PasswordForm::Store::kNotSet;
 };
 
 bool operator==(const CompromisedCredentials& lhs,

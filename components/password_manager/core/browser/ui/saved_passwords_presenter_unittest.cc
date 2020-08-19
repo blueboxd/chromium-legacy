@@ -22,6 +22,7 @@ using ::testing::ElementsAre;
 using ::testing::ElementsAreArray;
 using ::testing::IsEmpty;
 using ::testing::Pair;
+using ::testing::UnorderedElementsAre;
 
 struct MockSavedPasswordsPresenterObserver : SavedPasswordsPresenter::Observer {
   MOCK_METHOD(void, OnEdited, (const autofill::PasswordForm&), (override));
@@ -86,7 +87,7 @@ TEST_F(SavedPasswordsPresenterTest, NotifyObservers) {
   EXPECT_FALSE(store().IsEmpty());
 }
 
-// Tests whether adding and removing an observer works as expected.
+// Tests whether adding federated credentials doesn't inform the observers.
 TEST_F(SavedPasswordsPresenterTest, IgnoredCredentials) {
   PasswordForm federated_form;
   federated_form.federation_origin =
@@ -145,6 +146,87 @@ TEST_F(SavedPasswordsPresenterTest, EditPassword) {
   EXPECT_CALL(observer, OnEdited).Times(0);
   EXPECT_CALL(observer, OnSavedPasswordsChanged).Times(0);
   EXPECT_FALSE(presenter().EditPassword(form, new_password));
+  RunUntilIdle();
+
+  presenter().RemoveObserver(&observer);
+}
+
+namespace {
+
+class SavedPasswordsPresenterWithTwoStoresTest : public ::testing::Test {
+ protected:
+  SavedPasswordsPresenterWithTwoStoresTest() {
+    profile_store_->Init(/*prefs=*/nullptr);
+    account_store_->Init(/*prefs=*/nullptr);
+  }
+
+  ~SavedPasswordsPresenterWithTwoStoresTest() override {
+    account_store_->ShutdownOnUIThread();
+    profile_store_->ShutdownOnUIThread();
+    task_env_.RunUntilIdle();
+  }
+
+  TestPasswordStore& profile_store() { return *profile_store_; }
+  TestPasswordStore& account_store() { return *account_store_; }
+  SavedPasswordsPresenter& presenter() { return presenter_; }
+
+  void RunUntilIdle() { task_env_.RunUntilIdle(); }
+
+ private:
+  base::test::SingleThreadTaskEnvironment task_env_;
+  scoped_refptr<TestPasswordStore> profile_store_ =
+      base::MakeRefCounted<TestPasswordStore>(/*is_account_store=*/false);
+  scoped_refptr<TestPasswordStore> account_store_ =
+      base::MakeRefCounted<TestPasswordStore>(/*is_account_store=*/true);
+  SavedPasswordsPresenter presenter_{profile_store_, account_store_};
+};
+
+}  // namespace
+
+// Tests whether adding credentials to profile or account store notifies
+// observers with credentials in both stores.
+TEST_F(SavedPasswordsPresenterWithTwoStoresTest, AddCredentialsToBothStores) {
+  PasswordForm profile_store_form;
+  profile_store_form.username_value = base::ASCIIToUTF16("profile@gmail.com");
+  profile_store_form.password_value = base::ASCIIToUTF16("profile_pass");
+  profile_store_form.in_store = PasswordForm::Store::kProfileStore;
+
+  PasswordForm account_store_form1;
+  account_store_form1.username_value = base::ASCIIToUTF16("account@gmail.com");
+  account_store_form1.password_value = base::ASCIIToUTF16("account_pass");
+  account_store_form1.in_store = PasswordForm::Store::kAccountStore;
+
+  PasswordForm account_store_form2 = account_store_form1;
+  account_store_form2.username_value = base::ASCIIToUTF16("account2@gmail.com");
+
+  StrictMockSavedPasswordsPresenterObserver observer;
+  presenter().AddObserver(&observer);
+
+  EXPECT_CALL(observer, OnSavedPasswordsChanged(
+                            UnorderedElementsAre(profile_store_form)));
+  profile_store().AddLogin(profile_store_form);
+  RunUntilIdle();
+
+  EXPECT_CALL(observer, OnSavedPasswordsChanged(UnorderedElementsAre(
+                            profile_store_form, account_store_form1)));
+  account_store().AddLogin(account_store_form1);
+  RunUntilIdle();
+
+  EXPECT_CALL(observer, OnSavedPasswordsChanged(UnorderedElementsAre(
+                            profile_store_form, account_store_form1,
+                            account_store_form2)));
+  account_store().AddLogin(account_store_form2);
+  RunUntilIdle();
+
+  EXPECT_CALL(observer, OnSavedPasswordsChanged(UnorderedElementsAre(
+                            account_store_form1, account_store_form2)));
+  profile_store().RemoveLogin(profile_store_form);
+  RunUntilIdle();
+
+  EXPECT_CALL(observer, OnSavedPasswordsChanged(UnorderedElementsAre(
+                            profile_store_form, account_store_form1,
+                            account_store_form2)));
+  profile_store().AddLogin(profile_store_form);
   RunUntilIdle();
 
   presenter().RemoveObserver(&observer);

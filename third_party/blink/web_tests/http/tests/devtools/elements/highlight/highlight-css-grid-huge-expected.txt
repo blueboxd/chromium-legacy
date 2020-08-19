@@ -98,6 +98,7 @@ big-grid{
   "gridInfo": [
     {
       "rotationAngle": 0,
+      "writingMode": "horizontal-tb",
       "columnTrackSizes": [
         {
           "x": 10.5,

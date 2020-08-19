@@ -61,6 +61,9 @@ namespace {
 constexpr const char kArcCreateDataJobName[] = "arc_2dcreate_2ddata";
 constexpr const char kArcKeymasterJobName[] = "arc_2dkeymasterd";
 constexpr const char kArcSensorServiceJobName[] = "arc_2dsensor_2dservice";
+constexpr const char kArcVmMountMyFilesJobName[] = "arcvm_2dmount_2dmyfiles";
+constexpr const char kArcVmMountRemovableMediaJobName[] =
+    "arcvm_2dmount_2dremovable_2dmedia";
 constexpr const char kArcVmServerProxyJobName[] = "arcvm_2dserver_2dproxy";
 constexpr const char kArcVmPerBoardFeaturesJobName[] =
     "arcvm_2dper_2dboard_2dfeatures";
@@ -578,6 +581,9 @@ class ArcVmClientAdapter : public ArcClientAdapter,
         JobDesc{kArcVmPerBoardFeaturesJobName, UpstartOperation::JOB_START, {}},
 
         JobDesc{kArcVmServerProxyJobName, UpstartOperation::JOB_STOP, {}},
+        JobDesc{kArcVmMountMyFilesJobName, UpstartOperation::JOB_STOP, {}},
+        JobDesc{
+            kArcVmMountRemovableMediaJobName, UpstartOperation::JOB_STOP, {}},
         JobDesc{kArcKeymasterJobName, UpstartOperation::JOB_STOP, {}},
         JobDesc{kArcKeymasterJobName, UpstartOperation::JOB_START, {}},
         JobDesc{kArcSensorServiceJobName, UpstartOperation::JOB_STOP, {}},
@@ -592,15 +598,15 @@ class ArcVmClientAdapter : public ArcClientAdapter,
     ConfigureUpstartJobs(
         std::move(jobs),
         base::BindOnce(
-            &ArcVmClientAdapter::OnArcVmBootNotificationServerStarted,
+            &ArcVmClientAdapter::OnConfigureUpstartJobsOnStartMiniArc,
             weak_factory_.GetWeakPtr(), std::move(callback)));
   }
 
-  void OnArcVmBootNotificationServerStarted(
+  void OnConfigureUpstartJobsOnStartMiniArc(
       chromeos::VoidDBusMethodCallback callback,
       bool result) {
     if (!result) {
-      LOG(ERROR) << "ConfigureUpstartJobs failed";
+      LOG(ERROR) << "ConfigureUpstartJobs (on starting mini ARCVM) failed";
       std::move(callback).Run(false);
       return;
     }
@@ -641,17 +647,21 @@ class ArcVmClientAdapter : public ArcClientAdapter,
         JobDesc{kArcVmServerProxyJobName, UpstartOperation::JOB_START, {}},
         JobDesc{kArcCreateDataJobName, UpstartOperation::JOB_START,
                 std::move(environment)},
+        JobDesc{kArcVmMountMyFilesJobName, UpstartOperation::JOB_START, {}},
+        JobDesc{
+            kArcVmMountRemovableMediaJobName, UpstartOperation::JOB_START, {}},
     };
     ConfigureUpstartJobs(
         std::move(jobs),
-        base::BindOnce(&ArcVmClientAdapter::OnArcCreateDataJobStarted,
+        base::BindOnce(&ArcVmClientAdapter::OnConfigureUpstartJobsOnUpgradeArc,
                        weak_factory_.GetWeakPtr(), std::move(params),
                        std::move(callback)));
   }
 
-  void OnArcCreateDataJobStarted(UpgradeParams params,
-                                 chromeos::VoidDBusMethodCallback callback,
-                                 bool result) {
+  void OnConfigureUpstartJobsOnUpgradeArc(
+      UpgradeParams params,
+      chromeos::VoidDBusMethodCallback callback,
+      bool result) {
     if (!result) {
       LOG(ERROR) << "ConfigureUpstartJobs (on upgrading ARCVM) failed";
       std::move(callback).Run(false);

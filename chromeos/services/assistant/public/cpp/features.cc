@@ -38,6 +38,9 @@ const base::Feature kAssistantTimersV2{"AssistantTimersV2",
 const base::Feature kAssistantWaitScheduling{"AssistantWaitScheduling",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kEnableBloom{"EnableBloom",
+                                 base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kEnableAmbientAssistant{"EnableAmbientAssistant",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -80,6 +83,10 @@ bool IsAudioEraserEnabled() {
 
 bool IsBetterOnboardingEnabled() {
   return base::FeatureList::IsEnabled(kAssistantBetterOnboarding);
+}
+
+bool IsBloomEnabled() {
+  return base::FeatureList::IsEnabled(kEnableBloom);
 }
 
 bool IsConversationStartersV2Enabled() {

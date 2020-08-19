@@ -63,27 +63,12 @@ bool IsValidSkColorType(SkColorType sk_color_type) {
 
 }  // namespace
 
-VideoFrame::Handle::Handle(scoped_refptr<media::VideoFrame> frame)
-    : frame_(std::move(frame)) {
-  DCHECK(frame_);
-}
-
-scoped_refptr<media::VideoFrame> VideoFrame::Handle::frame() {
-  WTF::MutexLocker locker(mutex_);
-  return frame_;
-}
-
-void VideoFrame::Handle::Invalidate() {
-  WTF::MutexLocker locker(mutex_);
-  frame_.reset();
-}
-
 VideoFrame::VideoFrame(scoped_refptr<media::VideoFrame> frame)
-    : handle_(base::MakeRefCounted<Handle>(std::move(frame))) {
+    : handle_(base::MakeRefCounted<VideoFrameHandle>(std::move(frame))) {
   DCHECK(handle_->frame());
 }
 
-VideoFrame::VideoFrame(scoped_refptr<Handle> handle)
+VideoFrame::VideoFrame(scoped_refptr<VideoFrameHandle> handle)
     : handle_(std::move(handle)) {
   DCHECK(handle_);
 }
@@ -184,14 +169,45 @@ VideoFrame* VideoFrame::Create(ImageBitmap* source,
   return result;
 }
 
-String VideoFrame::format() const {
-  // TODO(sandersd): Look up on |handle_->frame()|.
-  return String();
+// static
+bool VideoFrame::IsSupportedPlanarFormat(media::VideoFrame* frame) {
+  // For now only I420 in CPU memory is supported.
+  return frame && frame->IsMappable() &&
+         frame->format() == media::PIXEL_FORMAT_I420 &&
+         frame->layout().num_planes() == 3;
 }
 
-HeapVector<Member<Plane>> VideoFrame::planes() const {
-  // TODO(sandersd): Should probably be extrated and cached.
-  return HeapVector<Member<Plane>>();
+String VideoFrame::format() const {
+  auto local_frame = handle_->frame();
+  if (!local_frame || !IsSupportedPlanarFormat(local_frame.get()))
+    return String();
+
+  switch (local_frame->format()) {
+    case media::PIXEL_FORMAT_I420:
+      return "I420";
+
+    default:
+      NOTREACHED();
+      return String();
+  }
+}
+
+base::Optional<HeapVector<Member<Plane>>> VideoFrame::planes() {
+  // Verify that |this| has not been invalidated, and that the format is
+  // supported.
+  auto local_frame = handle_->frame();
+  if (!local_frame || !IsSupportedPlanarFormat(local_frame.get()))
+    return base::nullopt;
+
+  // Create a Plane for each VideoFrame plane, but only the first time.
+  if (planes_.IsEmpty()) {
+    for (size_t i = 0; i < local_frame->layout().num_planes(); i++) {
+      // Note: |handle_| may have been invalidated since |local_frame| was read.
+      planes_.push_back(MakeGarbageCollected<Plane>(handle_, i));
+    }
+  }
+
+  return planes_;
 }
 
 uint32_t VideoFrame::codedWidth() const {
@@ -282,7 +298,7 @@ VideoFrame* VideoFrame::clone(ExceptionState& exception_state) {
   return MakeGarbageCollected<VideoFrame>(std::move(frame));
 }
 
-scoped_refptr<VideoFrame::Handle> VideoFrame::handle() {
+scoped_refptr<VideoFrameHandle> VideoFrame::handle() {
   return handle_;
 }
 
@@ -415,6 +431,11 @@ ScriptPromise VideoFrame::CreateImageBitmap(ScriptState* script_state,
   exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                     "Unsupported VideoFrame.");
   return ScriptPromise();
+}
+
+void VideoFrame::Trace(Visitor* visitor) const {
+  visitor->Trace(planes_);
+  ScriptWrappable::Trace(visitor);
 }
 
 }  // namespace blink

@@ -571,6 +571,21 @@ struct URLLoaderFactoryOverride {
   bool skip_cors_enabled_scheme_check = false;
 };
 
+// How to treat private network requests.
+//
+// Private network requests are any requests to a resource served by a
+// non-public IP address.
+//
+// See the CORS-RFC1918 spec for details: https://wicg.github.io/cors-rfc1918.
+enum PrivateNetworkRequestPolicy {
+  // Allow all requests.
+  kAllow,
+
+  // Forbid requests to more-private address spaces than that of the initiator,
+  // when the initiator is not in a secure context.
+  kBlockFromInsecureToMorePrivate,
+};
+
 struct ClientSecurityState {
   // https://mikewest.github.io/corpp/#integration-html
   // https://mikewest.github.io/corpp/#initialize-embedder-policy-for-global
@@ -581,7 +596,10 @@ struct ClientSecurityState {
   bool is_web_secure_context = false;
 
   // The initiator's IP AddressSpace.
-  IPAddressSpace ip_address_space = IPAddressSpace.kUnknown;
+  IPAddressSpace ip_address_space = kUnknown;
+
+  // The policy to apply to private network requests.
+  PrivateNetworkRequestPolicy private_network_request_policy = kAllow;
 };
 
 // Whether to forbid all Trust Tokens redemption and signing operations

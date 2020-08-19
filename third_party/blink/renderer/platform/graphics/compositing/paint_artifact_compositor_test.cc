@@ -4856,13 +4856,17 @@ TEST_P(PaintArtifactCompositorTest, TransformChange) {
   t2_state.direct_compositing_reasons = CompositingReason::k3DTransform;
   auto t2 = TransformPaintPropertyNode::Create(*t1, std::move(t2_state));
 
+  FakeDisplayItemClient client;
+  client.Validate();
   Update(TestPaintArtifact()
              .Chunk(1)
              .Properties(*t2, c0(), e0())
-             .RectDrawing(IntRect(100, 100, 200, 100), Color::kBlack)
+             .RectDrawing(client, IntRect(100, 100, 200, 100), Color::kBlack)
              .Build());
   ASSERT_EQ(1u, LayerCount());
-  cc::Layer* layer = LayerAt(0);
+  auto* layer = static_cast<cc::PictureLayer*>(LayerAt(0));
+  auto display_item_list = layer->client()->PaintContentsToDisplayList(
+      cc::ContentLayerClient::PAINTING_BEHAVIOR_NORMAL);
 
   // Change t1 but not t2.
   layer->ClearSubtreePropertyChangedForTesting();
@@ -4874,11 +4878,16 @@ TEST_P(PaintArtifactCompositorTest, TransformChange) {
   Update(TestPaintArtifact()
              .Chunk(1)
              .Properties(*t2, c0(), e0())
-             .RectDrawing(IntRect(100, 100, 200, 100), Color::kBlack)
+             .RectDrawing(client, IntRect(100, 100, 200, 100), Color::kBlack)
              .Build());
 
   ASSERT_EQ(1u, LayerCount());
   ASSERT_EQ(layer, LayerAt(0));
+  EXPECT_EQ(display_item_list.get(),
+            layer->client()
+                ->PaintContentsToDisplayList(
+                    cc::ContentLayerClient::PAINTING_BEHAVIOR_NORMAL)
+                .get());
   // TODO(wangxianzhu): Probably avoid setting this flag on transform change.
   EXPECT_TRUE(layer->subtree_property_changed());
   // This is set by cc when propagating ancestor change flag to descendants.
@@ -4899,11 +4908,16 @@ TEST_P(PaintArtifactCompositorTest, TransformChange) {
   Update(TestPaintArtifact()
              .Chunk(1)
              .Properties(*t2, c0(), e0())
-             .RectDrawing(IntRect(100, 100, 200, 100), Color::kBlack)
+             .RectDrawing(client, IntRect(100, 100, 200, 100), Color::kBlack)
              .Build());
 
   ASSERT_EQ(1u, LayerCount());
   ASSERT_EQ(layer, LayerAt(0));
+  EXPECT_EQ(display_item_list.get(),
+            layer->client()
+                ->PaintContentsToDisplayList(
+                    cc::ContentLayerClient::PAINTING_BEHAVIOR_NORMAL)
+                .get());
   // TODO(wangxianzhu): Probably avoid setting this flag on transform change.
   EXPECT_TRUE(layer->subtree_property_changed());
   EXPECT_TRUE(GetTransformNode(layer).transform_changed);
@@ -4921,16 +4935,39 @@ TEST_P(PaintArtifactCompositorTest, TransformChange) {
   Update(TestPaintArtifact()
              .Chunk(1)
              .Properties(*t2, c0(), e0())
-             .RectDrawing(IntRect(100, 100, 200, 100), Color::kBlack)
+             .RectDrawing(client, IntRect(100, 100, 200, 100), Color::kBlack)
              .Build());
 
   ASSERT_EQ(1u, LayerCount());
   ASSERT_EQ(layer, LayerAt(0));
+  EXPECT_EQ(display_item_list.get(),
+            layer->client()
+                ->PaintContentsToDisplayList(
+                    cc::ContentLayerClient::PAINTING_BEHAVIOR_NORMAL)
+                .get());
   // The new transform is decomposited, so there is no transform_changed, but
   // we set subtree_property_changed because offset_from_transform_parent
   // (calculated from the decomposited transforms) changed.
   EXPECT_TRUE(layer->subtree_property_changed());
   EXPECT_FALSE(GetTransformNode(layer).transform_changed);
+
+  // Change no transform nodes, but invalidate client.
+  layer->ClearSubtreePropertyChangedForTesting();
+  t2->ClearChangedToRoot();
+  client.Invalidate(PaintInvalidationReason::kBackground);
+  Update(TestPaintArtifact()
+             .Chunk(1)
+             .Properties(*t2, c0(), e0())
+             .RectDrawing(client, IntRect(100, 100, 200, 100), Color::kWhite)
+             .Build());
+
+  ASSERT_EQ(1u, LayerCount());
+  ASSERT_EQ(layer, LayerAt(0));
+  EXPECT_NE(display_item_list.get(),
+            layer->client()
+                ->PaintContentsToDisplayList(
+                    cc::ContentLayerClient::PAINTING_BEHAVIOR_NORMAL)
+                .get());
 }
 
 TEST_P(PaintArtifactCompositorTest, EffectChange) {

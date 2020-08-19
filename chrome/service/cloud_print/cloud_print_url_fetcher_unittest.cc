@@ -15,10 +15,10 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/service/service_process.h"
+#include "net/base/net_errors.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "net/url_request/url_request_status.h"
 #include "net/url_request/url_request_test_util.h"
 #include "net/url_request/url_request_throttler_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -105,7 +105,7 @@ class CloudPrintURLFetcherTest : public testing::Test,
   CloudPrintURLFetcher::ResponseAction HandleRawResponse(
       const net::URLFetcher* source,
       const GURL& url,
-      const net::URLRequestStatus& status,
+      net::Error error,
       int response_code,
       const std::string& data) override;
 
@@ -161,7 +161,7 @@ class CloudPrintURLFetcherBasicTest : public CloudPrintURLFetcherTest {
   CloudPrintURLFetcher::ResponseAction HandleRawResponse(
       const net::URLFetcher* source,
       const GURL& url,
-      const net::URLRequestStatus& status,
+      net::Error error,
       int response_code,
       const std::string& data) override;
 
@@ -240,26 +240,24 @@ void CloudPrintURLFetcherTest::CreateFetcher(const GURL& url, int max_retries) {
 }
 
 CloudPrintURLFetcher::ResponseAction
-CloudPrintURLFetcherTest::HandleRawResponse(
-    const net::URLFetcher* source,
-    const GURL& url,
-    const net::URLRequestStatus& status,
-    int response_code,
-    const std::string& data) {
-  EXPECT_TRUE(status.is_success());
+CloudPrintURLFetcherTest::HandleRawResponse(const net::URLFetcher* source,
+                                            const GURL& url,
+                                            net::Error error,
+                                            int response_code,
+                                            const std::string& data) {
+  EXPECT_EQ(net::OK, error);
   EXPECT_EQ(200, response_code);  // HTTP OK
   EXPECT_FALSE(data.empty());
   return CloudPrintURLFetcher::CONTINUE_PROCESSING;
 }
 
 CloudPrintURLFetcher::ResponseAction
-CloudPrintURLFetcherBasicTest::HandleRawResponse(
-    const net::URLFetcher* source,
-    const GURL& url,
-    const net::URLRequestStatus& status,
-    int response_code,
-    const std::string& data) {
-  EXPECT_TRUE(status.is_success());
+CloudPrintURLFetcherBasicTest::HandleRawResponse(const net::URLFetcher* source,
+                                                 const GURL& url,
+                                                 net::Error error,
+                                                 int response_code,
+                                                 const std::string& data) {
+  EXPECT_EQ(net::OK, error);
   EXPECT_EQ(200, response_code);  // HTTP OK
   EXPECT_FALSE(data.empty());
 

@@ -12,14 +12,38 @@
 
 namespace blink {
 
-static FloatRoundedRect::Radii CalcRadiiFor(const ComputedStyle& style,
-                                            FloatSize size) {
+namespace {
+
+FloatRoundedRect::Radii CalcRadiiFor(const ComputedStyle& style,
+                                     FloatSize size) {
   return FloatRoundedRect::Radii(
       FloatSizeForLengthSize(style.BorderTopLeftRadius(), size),
       FloatSizeForLengthSize(style.BorderTopRightRadius(), size),
       FloatSizeForLengthSize(style.BorderBottomLeftRadius(), size),
       FloatSizeForLengthSize(style.BorderBottomRightRadius(), size));
 }
+
+void ExcludeSides(PhysicalBoxSides sides_to_include,
+                  FloatRoundedRect::Radii* radii) {
+  if (!sides_to_include.left) {
+    radii->SetTopLeft(FloatSize(0, radii->TopLeft().Height()));
+    radii->SetBottomLeft(FloatSize(0, radii->BottomLeft().Height()));
+  }
+  if (!sides_to_include.right) {
+    radii->SetTopRight(FloatSize(0, radii->TopRight().Height()));
+    radii->SetBottomRight(FloatSize(0, radii->BottomRight().Height()));
+  }
+  if (!sides_to_include.top) {
+    radii->SetTopLeft(FloatSize(radii->TopLeft().Width(), 0));
+    radii->SetTopRight(FloatSize(radii->TopRight().Width(), 0));
+  }
+  if (!sides_to_include.bottom) {
+    radii->SetBottomLeft(FloatSize(radii->BottomLeft().Width(), 0));
+    radii->SetBottomRight(FloatSize(radii->BottomRight().Width(), 0));
+  }
+}
+
+}  // anonymous namespace
 
 FloatRoundedRect RoundedBorderGeometry::RoundedBorder(
     const ComputedStyle& style,
@@ -28,9 +52,7 @@ FloatRoundedRect RoundedBorderGeometry::RoundedBorder(
   if (style.HasBorderRadius()) {
     FloatRoundedRect::Radii radii =
         CalcRadiiFor(style, FloatSize(border_rect.size));
-    rounded_rect.IncludeLogicalEdges(radii, style.IsHorizontalWritingMode(),
-                                     /*include_logical_left_edge*/ true,
-                                     /*include_logical_right_edge*/ true);
+    rounded_rect.SetRadii(radii);
     rounded_rect.ConstrainRadii();
   }
   return rounded_rect;
@@ -39,15 +61,13 @@ FloatRoundedRect RoundedBorderGeometry::RoundedBorder(
 FloatRoundedRect RoundedBorderGeometry::PixelSnappedRoundedBorder(
     const ComputedStyle& style,
     const PhysicalRect& border_rect,
-    bool include_logical_left_edge,
-    bool include_logical_right_edge) {
+    PhysicalBoxSides sides_to_include) {
   FloatRoundedRect rounded_rect(PixelSnappedIntRect(border_rect));
   if (style.HasBorderRadius()) {
     FloatRoundedRect::Radii radii =
         CalcRadiiFor(style, FloatSize(border_rect.size));
-    rounded_rect.IncludeLogicalEdges(radii, style.IsHorizontalWritingMode(),
-                                     include_logical_left_edge,
-                                     include_logical_right_edge);
+    ExcludeSides(sides_to_include, &radii);
+    rounded_rect.SetRadii(radii);
     rounded_rect.ConstrainRadii();
   }
   return rounded_rect;
@@ -76,9 +96,7 @@ FloatRoundedRect RoundedBorderGeometry::RoundedInnerBorder(
     // Insets use negative values.
     radii.Shrink(-insets.Top().ToFloat(), -insets.Bottom().ToFloat(),
                  -insets.Left().ToFloat(), -insets.Right().ToFloat());
-    float_inner_rect.IncludeLogicalEdges(radii, style.IsHorizontalWritingMode(),
-                                         /*include_logical_left_edge*/ true,
-                                         /*include_logical_right_edge*/ true);
+    float_inner_rect.SetRadii(radii);
   }
   return float_inner_rect;
 }
@@ -86,35 +104,25 @@ FloatRoundedRect RoundedBorderGeometry::RoundedInnerBorder(
 FloatRoundedRect RoundedBorderGeometry::PixelSnappedRoundedInnerBorder(
     const ComputedStyle& style,
     const PhysicalRect& border_rect,
-    bool include_logical_left_edge,
-    bool include_logical_right_edge) {
-  bool horizontal = style.IsHorizontalWritingMode();
-
-  int left_width = (!horizontal || include_logical_left_edge)
-                       ? floorf(style.BorderLeftWidth())
-                       : 0;
-  int right_width = (!horizontal || include_logical_right_edge)
-                        ? floorf(style.BorderRightWidth())
-                        : 0;
-  int top_width = (horizontal || include_logical_left_edge)
-                      ? floorf(style.BorderTopWidth())
-                      : 0;
-  int bottom_width = (horizontal || include_logical_right_edge)
-                         ? floorf(style.BorderBottomWidth())
-                         : 0;
+    PhysicalBoxSides sides_to_include) {
+  int left_width = sides_to_include.left ? floorf(style.BorderLeftWidth()) : 0;
+  int right_width =
+      sides_to_include.right ? floorf(style.BorderRightWidth()) : 0;
+  int top_width = sides_to_include.top ? floorf(style.BorderTopWidth()) : 0;
+  int bottom_width =
+      sides_to_include.bottom ? floorf(style.BorderBottomWidth()) : 0;
 
   return PixelSnappedRoundedInnerBorder(
       style, border_rect,
       LayoutRectOutsets(-top_width, -right_width, -bottom_width, -left_width),
-      include_logical_left_edge, include_logical_right_edge);
+      sides_to_include);
 }
 
 FloatRoundedRect RoundedBorderGeometry::PixelSnappedRoundedInnerBorder(
     const ComputedStyle& style,
     const PhysicalRect& border_rect,
     const LayoutRectOutsets& insets,
-    bool include_logical_left_edge,
-    bool include_logical_right_edge) {
+    PhysicalBoxSides sides_to_include) {
   PhysicalRect inner_rect = border_rect;
   inner_rect.Expand(insets);
   inner_rect.size.ClampNegativeToZero();
@@ -136,9 +144,8 @@ FloatRoundedRect RoundedBorderGeometry::PixelSnappedRoundedInnerBorder(
     // Insets use negative values.
     radii.Shrink(-insets.Top().ToFloat(), -insets.Bottom().ToFloat(),
                  -insets.Left().ToFloat(), -insets.Right().ToFloat());
-    rounded_rect.IncludeLogicalEdges(radii, style.IsHorizontalWritingMode(),
-                                     include_logical_left_edge,
-                                     include_logical_right_edge);
+    ExcludeSides(sides_to_include, &radii);
+    rounded_rect.SetRadii(radii);
   }
   return rounded_rect;
 }

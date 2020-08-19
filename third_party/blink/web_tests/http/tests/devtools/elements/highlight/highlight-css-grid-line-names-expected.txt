@@ -98,6 +98,7 @@ grid-with-line-names{
   "gridInfo": [
     {
       "rotationAngle": 0,
+      "writingMode": "horizontal-tb",
       "columnTrackSizes": [
         {
           "x": 50,

@@ -253,7 +253,8 @@ void RasterInvalidator::GenerateRasterInvalidations(
                                      new_chunk.id.client);
       }
 
-      if (&new_paint_artifact != old_paint_artifact_) {
+      if (&new_paint_artifact != old_paint_artifact_ &&
+          !new_chunk.is_moved_from_cached_subsequence) {
         DisplayItemRasterInvalidator(*this, function, *old_paint_artifact_,
                                      new_paint_artifact, old_chunk, new_chunk,
                                      mapper)

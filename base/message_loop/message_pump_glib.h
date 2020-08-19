@@ -112,10 +112,11 @@ class BASE_EXPORT MessagePumpGlib : public MessagePump,
 
   RunState* state_;
 
-  // This is a GLib structure that we can add event sources to.  We use the
-  // default GLib context, which is the one to which all GTK events are
-  // dispatched.
-  GMainContext* context_;
+  // This is a GLib structure that we can add event sources to.  On the main
+  // thread, we use the default GLib context, which is the one to which all GTK
+  // events are dispatched.
+  GMainContext* context_ = nullptr;
+  bool context_owned_ = false;
 
   // The work source.  It is shared by all calls to Run and destroyed when
   // the message pump is destroyed.

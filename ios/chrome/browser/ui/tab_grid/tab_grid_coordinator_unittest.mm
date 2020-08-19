@@ -8,6 +8,7 @@
 
 #import "base/test/ios/wait_util.h"
 #import "ios/chrome/browser/main/test_browser.h"
+#import "ios/chrome/browser/snapshots/snapshot_browser_agent.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browsing_data_commands.h"
 #include "ios/chrome/browser/ui/tab_grid/tab_grid_coordinator_delegate.h"
@@ -44,6 +45,7 @@ class TabGridCoordinatorTest : public BlockCleanupTest {
  public:
   TabGridCoordinatorTest() {
     browser_ = std::make_unique<TestBrowser>();
+    SnapshotBrowserAgent::CreateForBrowser(browser_.get());
     UIWindow* window = [UIApplication sharedApplication].keyWindow;
     coordinator_ = [[TabGridCoordinator alloc]
                      initWithWindow:window

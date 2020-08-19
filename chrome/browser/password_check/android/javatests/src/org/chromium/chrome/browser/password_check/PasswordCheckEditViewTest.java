@@ -68,7 +68,7 @@ public class PasswordCheckEditViewTest {
     private static final CompromisedCredential ANA =
             new CompromisedCredential("https://some-url.com/signin",
                     new GURL("https://some-url.com/"), "Ana", "some-url.com", "Ana", "password",
-                    "https://some-url.com/.well-known/change-password", "", false, false);
+                    "https://some-url.com/.well-known/change-password", "", true, false, false);
 
     private PasswordCheckEditFragmentView mPasswordCheckEditView;
 

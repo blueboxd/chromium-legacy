@@ -96,7 +96,8 @@ std::tuple<int, double> OscillatorHandler::ProcessKRateVector(
   int n_loops = n / 4;
 
   for (int loop = 0; loop < n_loops; ++loop, k += 4) {
-    // Compute indices for the samples and contain within the valid range.
+    // Compute indices for the samples.  Clamp the index to lie in the range 0
+    // to periodic_wave_size-1 by applying a mask to the index.
     const __m128i read_index_0 =
         _mm_and_si128(_mm_cvttps_epi32(v_virt_index), v_read_mask);
     const __m128i read_index_1 =
@@ -226,14 +227,20 @@ double OscillatorHandler::ProcessARateVectorKernel(
 
   // Convert the virtual read index (parts) to an integer, and carefully
   // merge them into one vector.
-  const __m128i v_read0 = reinterpret_cast<__m128i>(_mm_movelh_ps(
+  __m128i v_read0 = reinterpret_cast<__m128i>(_mm_movelh_ps(
       reinterpret_cast<__m128>(_mm_cvttpd_epi32(v_read_index_lo)),
       reinterpret_cast<__m128>(_mm_cvttpd_epi32(v_read_index_hi))));
 
   // Get index to next element being sure to wrap the index around if needed.
-  const __m128i v_read1 =
-      _mm_and_si128(_mm_add_epi32(v_read0, _mm_set1_epi32(1)),
-                    _mm_set1_epi32(read_index_mask));
+  __m128i v_read1 = _mm_add_epi32(v_read0, _mm_set1_epi32(1));
+
+  // Make sure the index lies in 0 to periodic_wave_size - 1 (the size of the
+  // arrays) by applying a mask to the values.
+  {
+    const __m128i v_mask = _mm_set1_epi32(read_index_mask);
+    v_read0 = _mm_and_si128(v_read0, v_mask);
+    v_read1 = _mm_and_si128(v_read1, v_mask);
+  }
 
   float sample1_lower[4] __attribute__((aligned(16)));
   float sample2_lower[4] __attribute__((aligned(16)));

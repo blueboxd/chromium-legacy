@@ -91,6 +91,7 @@ class StorageArea final : public ScriptWrappable,
       WebScopedVirtualTimePauser::VirtualTaskDuration duration) override;
 
  private:
+  void RecordModificationInMetrics();
   const scoped_refptr<CachedStorageArea> cached_area_;
   StorageType storage_type_;
   const bool should_enqueue_events_;

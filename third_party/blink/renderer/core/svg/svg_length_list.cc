@@ -23,7 +23,6 @@
 #include "third_party/blink/renderer/core/svg/svg_animate_element.h"
 #include "third_party/blink/renderer/core/svg/svg_parser_utilities.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 
@@ -41,10 +40,6 @@ SVGPropertyBase* SVGLengthList::CloneForAnimation(const String& value) const {
   auto* ret = MakeGarbageCollected<SVGLengthList>(mode_);
   ret->SetValueAsString(value);
   return ret;
-}
-
-String SVGLengthList::ValueAsString() const {
-  return SVGListPropertyHelper<SVGLengthList, SVGLength>::SerializeList();
 }
 
 template <typename CharType>

@@ -159,21 +159,6 @@ GPUBuffer* GPUDevice::createBuffer(const GPUBufferDescriptor* descriptor) {
   return GPUBuffer::Create(this, descriptor);
 }
 
-HeapVector<GPUBufferOrArrayBuffer> GPUDevice::createBufferMapped(
-    const GPUBufferDescriptor* descriptor,
-    ExceptionState& exception_state) {
-  AddConsoleWarning(
-      "createBufferMapped is deprecated: use mappedAtCreation instead");
-
-  GPUBuffer* gpu_buffer;
-  DOMArrayBuffer* array_buffer;
-  std::tie(gpu_buffer, array_buffer) =
-      GPUBuffer::CreateMapped(this, descriptor, exception_state);
-  return HeapVector<GPUBufferOrArrayBuffer>(
-      {GPUBufferOrArrayBuffer::FromGPUBuffer(gpu_buffer),
-       GPUBufferOrArrayBuffer::FromArrayBuffer(array_buffer)});
-}
-
 GPUTexture* GPUDevice::createTexture(const GPUTextureDescriptor* descriptor,
                                      ExceptionState& exception_state) {
   return GPUTexture::Create(this, descriptor, exception_state);

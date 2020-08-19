@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_ROUNDED_BORDER_GEOMETRY_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/geometry/box_sides.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
@@ -25,8 +26,7 @@ class CORE_EXPORT RoundedBorderGeometry {
   static FloatRoundedRect PixelSnappedRoundedBorder(
       const ComputedStyle&,
       const PhysicalRect& border_rect,
-      bool include_logical_left_edge = true,
-      bool include_logical_right_edge = true);
+      PhysicalBoxSides edges_to_include = PhysicalBoxSides());
 
   static FloatRoundedRect RoundedInnerBorder(const ComputedStyle&,
                                              const PhysicalRect& border_rect);
@@ -34,15 +34,13 @@ class CORE_EXPORT RoundedBorderGeometry {
   static FloatRoundedRect PixelSnappedRoundedInnerBorder(
       const ComputedStyle&,
       const PhysicalRect& border_rect,
-      bool include_logical_left_edge = true,
-      bool include_logical_right_edge = true);
+      PhysicalBoxSides edges_to_include = PhysicalBoxSides());
 
   static FloatRoundedRect PixelSnappedRoundedInnerBorder(
       const ComputedStyle&,
       const PhysicalRect& border_rect,
       const LayoutRectOutsets& insets,
-      bool include_logical_left_edge = true,
-      bool include_logical_right_edge = true);
+      PhysicalBoxSides edges_to_include = PhysicalBoxSides());
 };
 
 }  // namespace blink

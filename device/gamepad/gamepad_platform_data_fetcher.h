@@ -29,7 +29,7 @@
 #include "device/gamepad/gamepad_platform_data_fetcher_mac.h"
 #include "device/gamepad/nintendo_data_fetcher.h"
 #include "device/gamepad/xbox_data_fetcher_mac.h"
-#elif defined(OS_LINUX) && defined(USE_UDEV)
+#elif (defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(USE_UDEV)
 #include "device/gamepad/gamepad_platform_data_fetcher_linux.h"
 #include "device/gamepad/nintendo_data_fetcher.h"
 #endif
@@ -58,7 +58,7 @@ void AddGamepadPlatformDataFetchers(GamepadDataFetcherManager* manager) {
   manager->AddFactory(new NintendoDataFetcher::Factory());
   manager->AddFactory(new XboxDataFetcher::Factory());
 
-#elif defined(OS_LINUX) && defined(USE_UDEV)
+#elif (defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(USE_UDEV)
 
   manager->AddFactory(new GamepadPlatformDataFetcherLinux::Factory(
       base::SequencedTaskRunnerHandle::Get()));

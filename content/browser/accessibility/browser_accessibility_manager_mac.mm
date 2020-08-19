@@ -16,6 +16,7 @@
 #import "content/browser/accessibility/browser_accessibility_mac.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/web_contents.h"
 #include "ui/accelerated_widget_mac/accelerated_widget_mac.h"
 #include "ui/accessibility/ax_role_properties.h"
 
@@ -69,8 +70,7 @@ enum AXTextEditType {
 // Native mac notifications fired.
 NSString* const NSAccessibilityAutocorrectionOccurredNotification =
     @"AXAutocorrectionOccurred";
-NSString* const NSAccessibilityNewDocumentLoadCompleteNotification =
-    @"AXNewDocumentLoadComplete";
+NSString* const NSAccessibilityLoadCompleteNotification = @"AXLoadComplete";
 NSString* const NSAccessibilityInvalidStatusChangedNotification =
     @"AXInvalidStatusChanged";
 NSString* const NSAccessibilityLiveRegionCreatedNotification =
@@ -222,16 +222,15 @@ void BrowserAccessibilityManagerMac::FireGeneratedEvent(
       }
       break;
     case ui::AXEventGenerator::Event::LOAD_COMPLETE:
-      // |NSAccessibilityNewDocumentLoadCompleteNotification| should only be
-      // fired on the top document.
-      // |NSAccessibilityNewDocumentLoadCompleteNotification| is the event that
-      // Webkit notifies VoiceOver that a page load has completed.
-      // TODO(crbug.com/1049320): Verify in MacOS 10.16 that the "Automatically
-      // speak the webpage" option in the VoiceOver utility is triggered upon
-      // observing this event.
-      if (IsRootTree()) {
-        mac_notification = NSAccessibilityNewDocumentLoadCompleteNotification;
+      // |NSAccessibilityLoadCompleteNotification| should only be fired on the
+      // top document and when the document is not Chrome's new tab page.
+      if (IsRootTree() && !IsChromeNewTabPage()) {
+        mac_notification = NSAccessibilityLoadCompleteNotification;
       } else {
+        // Voiceover moves focus to the web content when it receives an
+        // AXLoadComplete event. On Chrome's new tab page, focus should stay
+        // in the omnibox, so we purposefully do not fire the AXLoadComplete
+        // event in this case.
         return;
       }
       break;
@@ -580,6 +579,16 @@ id BrowserAccessibilityManagerMac::GetParentView() {
 
 id BrowserAccessibilityManagerMac::GetWindow() {
   return delegate()->AccessibilityGetNativeViewAccessibleForWindow();
+}
+
+bool BrowserAccessibilityManagerMac::IsChromeNewTabPage() {
+  if (!delegate() || !IsRootTree())
+    return false;
+  content::WebContents* web_contents = delegate()->AccessibilityWebContents();
+  const GURL& url = web_contents->GetVisibleURL();
+  return url == GURL("chrome://newtab/") ||
+         url == GURL("chrome://new-tab-page") ||
+         url == GURL("chrome-search://local-ntp/local-ntp.html");
 }
 
 }  // namespace content

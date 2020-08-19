@@ -16,7 +16,7 @@ PasswordStoreConsumer::PasswordStoreConsumer() = default;
 PasswordStoreConsumer::~PasswordStoreConsumer() = default;
 
 void PasswordStoreConsumer::OnGetPasswordStoreResultsFrom(
-    scoped_refptr<PasswordStore> store,
+    PasswordStore* store,
     std::vector<std::unique_ptr<autofill::PasswordForm>> results) {
   OnGetPasswordStoreResults(std::move(results));
 }

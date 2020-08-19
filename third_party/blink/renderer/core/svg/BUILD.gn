@@ -35,6 +35,8 @@ blink_core_sources("svg") {
     "pattern_attributes.h",
     "properties/svg_animated_property.cc",
     "properties/svg_animated_property.h",
+    "properties/svg_list_property.cc",
+    "properties/svg_list_property.h",
     "properties/svg_list_property_helper.h",
     "properties/svg_list_property_tear_off_helper.h",
     "properties/svg_property.h",

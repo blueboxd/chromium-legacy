@@ -441,7 +441,7 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, AppendCountryCodeForAggregatedPhones) {
 
 // Flaky on Windows. http://crbug.com/500491
 // Also flaky on Linux. http://crbug.com/935629
-#if defined(OS_WIN) || defined(OS_LINUX)
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
 #define MAYBE_UsePlusSignForInternationalNumber \
     DISABLED_UsePlusSignForInternationalNumber
 #else

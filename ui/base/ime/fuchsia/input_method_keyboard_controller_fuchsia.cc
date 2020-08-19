@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/check.h"
-#include "base/fuchsia/default_context.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/fuchsia/process_context.h"
 #include "base/notreached.h"

@@ -16,7 +16,6 @@ export class TestDiceWebSigninInterceptBrowserProxy extends TestBrowserProxy {
       bodyTitle: '',
       bodyText: '',
       interceptedAccount: {isManaged: false, pictureUrl: ''},
-      primaryAccount: {isManaged: false, pictureUrl: ''}
     };
   }
 

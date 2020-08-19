@@ -84,6 +84,8 @@ void PasswordCheckBridge::GetCompromisedCredentials(
                                                credential.change_password_url),
         base::android::ConvertUTF8ToJavaString(env, credential.package_name),
         (credential.compromise_type ==
+         password_manager::CompromiseTypeFlags::kCredentialLeaked),
+        (credential.compromise_type ==
          password_manager::CompromiseTypeFlags::kCredentialPhished),
         credential.has_script);
   }

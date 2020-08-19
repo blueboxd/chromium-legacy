@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/i18n/rtl.h"
+#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/unguessable_token.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
@@ -68,6 +69,7 @@ class WebFrameWidget;
 class WebInputMethodController;
 class WebPerformance;
 class WebPlugin;
+class WebPrintClient;
 class WebRange;
 class WebScriptExecutionCallback;
 class WebSpellCheckPanelHostClient;
@@ -592,6 +594,13 @@ class WebLocalFrame : public WebFrame {
   // This will be removed following the deprecation.
   virtual void UsageCountChromeLoadTimes(const WebString& metric) = 0;
 
+  // Whether we've dispatched "pagehide" on the current document in this frame
+  // previously, and haven't dispatched the "pageshow" event after the last time
+  // we dispatched "pagehide". This means that we've navigated away from the
+  // document and it's still hidden (possibly preserved in the back-forward
+  // cache, or unloaded).
+  virtual bool DispatchedPagehideAndStillHidden() const = 0;
+
   // Scheduling ---------------------------------------------------------------
 
   virtual FrameScheduler* Scheduler() const = 0;
@@ -643,7 +652,9 @@ class WebLocalFrame : public WebFrame {
   // Dispatch |beforeprint| event, and execute event handlers. They might detach
   // this frame from the owner WebView.
   // This function should be called before pairs of PrintBegin() and PrintEnd().
-  virtual void DispatchBeforePrintEvent() = 0;
+  // |print_client| is an optional weak pointer to the caller.
+  virtual void DispatchBeforePrintEvent(
+      base::WeakPtr<WebPrintClient> print_client) = 0;
 
   // Get the plugin to print, if any. The |constrain_to_node| parameter is the
   // same as the one for PrintBegin() below.

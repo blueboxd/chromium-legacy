@@ -24,14 +24,14 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #endif
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #include "content/public/browser/zygote_host/zygote_host_linux.h"
 #include "sandbox/policy/sandbox.h"
 #endif
 
 namespace {
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 static void SetSandboxStatusData(content::WebUIDataSource* source) {
   // Get expected sandboxing status of renderers.
   const int status =
@@ -71,7 +71,7 @@ content::WebUIDataSource* CreateDataSource() {
   source->SetDefaultResource(IDR_SANDBOX_INTERNALS_HTML);
   source->AddResourcePath("sandbox_internals.js", IDR_SANDBOX_INTERNALS_JS);
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   SetSandboxStatusData(source);
   source->UseStringsJs();
 #endif

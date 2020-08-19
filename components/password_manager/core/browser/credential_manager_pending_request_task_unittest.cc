@@ -127,7 +127,7 @@ TEST_F(CredentialManagerPendingRequestTaskTest, QueryProfileStore) {
   // We are expecting results from only one store, delegate should be called
   // upon getting a response from the store.
   EXPECT_CALL(delegate_mock_, SendCredential);
-  task.OnGetPasswordStoreResultsFrom(profile_store_, {});
+  task.OnGetPasswordStoreResultsFrom(profile_store_.get(), {});
 }
 
 TEST_F(CredentialManagerPendingRequestTaskTest, QueryProfileAndAccountStores) {
@@ -139,12 +139,12 @@ TEST_F(CredentialManagerPendingRequestTaskTest, QueryProfileAndAccountStores) {
   // We are expecting results from 2 stores, the delegate shouldn't be called
   // until both stores respond.
   EXPECT_CALL(delegate_mock_, SendCredential).Times(0);
-  task.OnGetPasswordStoreResultsFrom(profile_store_, {});
+  task.OnGetPasswordStoreResultsFrom(profile_store_.get(), {});
 
   testing::Mock::VerifyAndClearExpectations(&delegate_mock_);
 
   EXPECT_CALL(delegate_mock_, SendCredential);
-  task.OnGetPasswordStoreResultsFrom(account_store_, {});
+  task.OnGetPasswordStoreResultsFrom(account_store_.get(), {});
 }
 
 TEST_F(CredentialManagerPendingRequestTaskTest,
@@ -170,8 +170,10 @@ TEST_F(CredentialManagerPendingRequestTaskTest,
   account_forms.push_back(
       std::make_unique<autofill::PasswordForm>(account_form));
 
-  task.OnGetPasswordStoreResultsFrom(profile_store_, std::move(profile_forms));
-  task.OnGetPasswordStoreResultsFrom(account_store_, std::move(account_forms));
+  task.OnGetPasswordStoreResultsFrom(profile_store_.get(),
+                                     std::move(profile_forms));
+  task.OnGetPasswordStoreResultsFrom(account_store_.get(),
+                                     std::move(account_forms));
   EXPECT_EQ(2U, client()->forms_passed_to_ui().size());
 }
 
@@ -196,8 +198,10 @@ TEST_F(CredentialManagerPendingRequestTaskTest,
   account_forms.push_back(
       std::make_unique<autofill::PasswordForm>(account_form));
 
-  task.OnGetPasswordStoreResultsFrom(profile_store_, std::move(profile_forms));
-  task.OnGetPasswordStoreResultsFrom(account_store_, std::move(account_forms));
+  task.OnGetPasswordStoreResultsFrom(profile_store_.get(),
+                                     std::move(profile_forms));
+  task.OnGetPasswordStoreResultsFrom(account_store_.get(),
+                                     std::move(account_forms));
   ASSERT_EQ(1U, client()->forms_passed_to_ui().size());
   EXPECT_TRUE(client()->forms_passed_to_ui()[0]->IsUsingAccountStore());
 }
@@ -228,8 +232,10 @@ TEST_F(CredentialManagerPendingRequestTaskTest,
   account_forms.push_back(
       std::make_unique<autofill::PasswordForm>(account_form));
 
-  task.OnGetPasswordStoreResultsFrom(profile_store_, std::move(profile_forms));
-  task.OnGetPasswordStoreResultsFrom(account_store_, std::move(account_forms));
+  task.OnGetPasswordStoreResultsFrom(profile_store_.get(),
+                                     std::move(profile_forms));
+  task.OnGetPasswordStoreResultsFrom(account_store_.get(),
+                                     std::move(account_forms));
   ASSERT_EQ(1U, client()->forms_passed_to_ui().size());
   EXPECT_TRUE(client()->forms_passed_to_ui()[0]->IsUsingAccountStore());
 }

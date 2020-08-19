@@ -28,7 +28,10 @@ js_library("profile_type_choice") {
 
 js_library("local_profile_customization") {
   deps = [
+    "..:manage_profiles_browser_proxy",
+    "..:navigation_behavior",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_elements/cr_icon_button:cr_icon_button.m",
   ]
 }
 
@@ -36,5 +39,6 @@ html_to_js("web_components") {
   js_files = [
     "profile_type_choice.js",
     "local_profile_customization.js",
+    "shared_css.js",
   ]
 }

@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.firstrun;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.text.TextUtils;
 import android.view.View;
 
@@ -110,6 +111,12 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
     private boolean mLaunchedFromChromeIcon;
     private boolean mLaunchedFromCCT;
 
+    /**
+     * {@link SystemClock} timestamp from when the FRE intent was initially created. This marks when
+     * we first knew an FRE was needed, and is used as a reference point for various timing metrics.
+     */
+    private long mIntentCreationElapsedRealtimeMs;
+
     private final List<FirstRunPage> mPages = new ArrayList<>();
     private final List<Integer> mFreProgressStates = new ArrayList<>();
 
@@ -200,6 +207,8 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
     @Override
     public void triggerLayoutInflation() {
         initializeStateFromLaunchData();
+        RecordHistogram.recordTimesHistogram("MobileFre.FromLaunch.TriggerLayoutInflation",
+                SystemClock.elapsedRealtime() - mIntentCreationElapsedRealtimeMs);
 
         setFinishOnTouchOutside(true);
 
@@ -240,12 +249,30 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
 
                 if (sObserver != null) sObserver.onFlowIsKnown(mFreProperties);
                 recordFreProgressHistogram(mFreProgressStates.get(0));
+                long inflationCompletion = SystemClock.elapsedRealtime();
+                RecordHistogram.recordTimesHistogram(
+                        "MobileFre.FromLaunch.FirstFragmentInflated", inflationCompletion);
+                FirstRunAppRestrictionInfo.getInstance().getCompletionElapsedRealtimeMs(
+                        restrictionsCompletion -> {
+                            if (restrictionsCompletion > inflationCompletion) {
+                                RecordHistogram.recordTimesHistogram(
+                                        "MobileFre.FragmentInflationSpeed.FasterThanAppRestriction",
+                                        restrictionsCompletion - inflationCompletion);
+                            } else {
+                                RecordHistogram.recordTimesHistogram(
+                                        "MobileFre.FragmentInflationSpeed.SlowerThanAppRestriction",
+                                        inflationCompletion - restrictionsCompletion);
+                            }
+                        });
             }
         };
         mFirstRunFlowSequencer.start();
         FirstRunStatus.setFirstRunTriggered(true);
         recordFreProgressHistogram(FRE_PROGRESS_STARTED);
         onInitialLayoutInflationComplete();
+
+        RecordHistogram.recordTimesHistogram("MobileFre.FromLaunch.ActivityInflated",
+                SystemClock.elapsedRealtime() - mIntentCreationElapsedRealtimeMs);
     }
 
     @Override
@@ -367,6 +394,9 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
             mDeferredCompleteFRE = true;
             return;
         }
+
+        RecordHistogram.recordMediumTimesHistogram("MobileFre.FromLaunch.FreCompleted",
+                SystemClock.elapsedRealtime() - mIntentCreationElapsedRealtimeMs);
         if (!TextUtils.isEmpty(mResultSignInAccountName)) {
             final int choice;
             if (mResultShowSignInSettings) {
@@ -463,6 +493,8 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
     public void acceptTermsOfService(boolean allowCrashUpload) {
         // If default is true then it corresponds to opt-out and false corresponds to opt-in.
         UmaUtils.recordMetricsReportingDefaultOptIn(!DEFAULT_METRICS_AND_CRASH_REPORTING);
+        RecordHistogram.recordMediumTimesHistogram("MobileFre.FromLaunch.TosAccepted",
+                SystemClock.elapsedRealtime() - mIntentCreationElapsedRealtimeMs);
         FirstRunUtils.acceptTermsOfService(allowCrashUpload);
         FirstRunStatus.setSkipWelcomePage(true);
         flushPersistentData();
@@ -477,13 +509,15 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
                     getIntent().getBooleanExtra(EXTRA_COMING_FROM_CHROME_ICON, false);
             mLaunchedFromCCT =
                     getIntent().getBooleanExtra(EXTRA_CHROME_LAUNCH_INTENT_IS_CCT, false);
+            mIntentCreationElapsedRealtimeMs =
+                    getIntent().getLongExtra(EXTRA_FRE_INTENT_CREATION_ELAPSED_REALTIME_MS, 0);
         }
     }
 
     /**
      * Transitions to a given page.
-     * @return Whether the transition to a given page was allowed.
      * @param position A page index to transition to.
+     * @return Whether the transition to a given page was allowed.
      */
     private boolean jumpToPage(int position) {
         if (sObserver != null) sObserver.onJumpToPage(position);

@@ -62,6 +62,8 @@
 #import "ios/chrome/browser/first_run/first_run.h"
 #include "ios/chrome/browser/geolocation/omnibox_geolocation_controller.h"
 #include "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/main/browser_list.h"
+#import "ios/chrome/browser/main/browser_list_factory.h"
 #import "ios/chrome/browser/memory/memory_debugger_manager.h"
 #include "ios/chrome/browser/metrics/first_user_action_recorder.h"
 #import "ios/chrome/browser/metrics/previous_session_info.h"
@@ -78,8 +80,8 @@
 #import "ios/chrome/browser/share_extension/share_extension_service_factory.h"
 #include "ios/chrome/browser/signin/authentication_service_delegate.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
+#import "ios/chrome/browser/snapshots/snapshot_browser_agent.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
-#import "ios/chrome/browser/snapshots/snapshot_cache_factory.h"
 #include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/ui/appearance/appearance_customization.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
@@ -1145,20 +1147,29 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   return result;
 }
 
-- (void)purgeSnapshots {
-  NSMutableSet* liveSessions =
-      [self liveSessionsForWebStateList:self.mainBrowser->GetWebStateList()];
-  [liveSessions
-      unionSet:[self liveSessionsForWebStateList:self.otrBrowser
-                                                     ->GetWebStateList()]];
-
+- (void)purgeUnusedSnapshotsInBrowser:(Browser*)browser {
+  NSSet* liveSessions =
+      [self liveSessionsForWebStateList:browser->GetWebStateList()];
   // Keep snapshots that are less than one minute old, to prevent a concurrency
   // issue if they are created while the purge is running.
   const base::Time oneMinuteAgo =
       base::Time::Now() - base::TimeDelta::FromMinutes(1);
-  [SnapshotCacheFactory::GetForBrowserState([self currentBrowserState])
+  [SnapshotBrowserAgent::FromBrowser(browser)->GetSnapshotCache()
       purgeCacheOlderThan:oneMinuteAgo
                   keeping:liveSessions];
+}
+
+- (void)purgeSnapshots {
+  // TODO(crbug.com/1116496): Browsers for disconnected scenes are not in the
+  // BrowserList, so this may not reach all folders.
+  BrowserList* browser_list =
+      BrowserListFactory::GetForBrowserState(self.mainBrowserState);
+  for (Browser* browser : browser_list->AllRegularBrowsers()) {
+    [self purgeUnusedSnapshotsInBrowser:browser];
+  }
+  for (Browser* browser : browser_list->AllIncognitoBrowsers()) {
+    [self purgeUnusedSnapshotsInBrowser:browser];
+  }
 }
 
 - (void)markEulaAsAccepted {

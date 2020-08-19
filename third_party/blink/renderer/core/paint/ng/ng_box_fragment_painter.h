@@ -7,7 +7,6 @@
 
 #include "third_party/blink/renderer/core/layout/api/hit_test_action.h"
 #include "third_party/blink/renderer/core/layout/background_bleed_avoidance.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_border_edges.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/paint/box_painter_base.h"
@@ -295,7 +294,6 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   const DisplayItemClient& GetDisplayItemClient() const {
     return display_item_client_;
   }
-  const NGBorderEdges& BorderEdges() const;
   PhysicalRect SelfInkOverflow() const;
   PhysicalRect ContentsInkOverflow() const;
 
@@ -308,7 +306,6 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   const NGFragmentItems* items_;
   const NGFragmentItem* box_item_ = nullptr;
   const NGInlineCursor* inline_box_cursor_ = nullptr;
-  mutable base::Optional<NGBorderEdges> border_edges_;
 };
 
 inline NGBoxFragmentPainter::NGBoxFragmentPainter(

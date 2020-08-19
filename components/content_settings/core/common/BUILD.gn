@@ -28,10 +28,12 @@ static_library("common") {
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
-  public_deps = [ ":features" ]
+  public_deps = [
+    ":features",
+    "//base",
+  ]
 
   deps = [
-    "//base",
     "//ipc",
     "//mojo/public/cpp/base",
     "//mojo/public/cpp/bindings:struct_traits",

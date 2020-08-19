@@ -195,11 +195,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '356838b9f8c00b6d2643bd5605f5f66fcad99a47',
+  'skia_revision': '4a56f4c29ec5ae2051d0e0d84521969de2d7a1b9',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'b1eb63de88dca4f8b91ec9793779f92c48d9a735',
+  'v8_revision': 'a64aed2333abf49e494d2a5ce24bbd14fff19f60',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -266,7 +266,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '6177a5ec5b8baf95f40b2ab851bffdf64f2568b6',
+  'devtools_frontend_revision': 'd1a00aacb9ad57775cee6cff5e0dac11b7e1ca59',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -875,7 +875,7 @@ deps = {
 
   # Build tools for Chrome OS.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + 'e0a44a28c5be39d212d124a6de366afd4dc2cdb1',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '08a42d0acc754a696b5406a41ce18bf786ee212f',
       'condition': 'checkout_chromeos',
   },
 
@@ -1148,7 +1148,7 @@ deps = {
   },
 
   'src/third_party/libvpx/source/libvpx':
-    Var('chromium_git') + '/webm/libvpx.git' + '@' +  'a1cee8dc919df1980d802e1a9bce1259ec34cba8',
+    Var('chromium_git') + '/webm/libvpx.git' + '@' +  '53747dfe65eaf670a7192f55117f3bf1e0280743',
 
   'src/third_party/libwebm/source':
     Var('chromium_git') + '/webm/libwebm.git' + '@' + '51ca718c3adf0ddedacd7df25fe45f67dc5a9ce1',
@@ -1248,7 +1248,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '72e31331da037f1e410c183484d086b71257a80e',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'ef0fb4c2707e07b2cdff4186893bceea3ab1153c',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1470,7 +1470,7 @@ deps = {
   },
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'bcdfc8975ea28f256f777d841e25f2e749090d96',
+    Var('webrtc_git') + '/src.git' + '@' + 'eeedb6ea333772ade8032a182c9f82b59e58edd2',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1542,7 +1542,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@e90094abdc0ae0e01200e185c863dd67f23f3cb4',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@53effa99e2556a52d20e03490a006673d2c9d6c5',
     'condition': 'checkout_src_internal',
   },
 
@@ -1561,7 +1561,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/media_app/app',
-        'version': 'hLTZZ4vz2oQFQPe2pAvOkB6NqZ4vopQFwiRzac_A23YC',
+        'version': 'eyckbIodGqr8VaH2vd3VtVYswZKSsa-4D4LDP_V5v3IC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',
@@ -5001,6 +5001,17 @@ hooks = [
     'action': [ 'vpython',
                 'src/tools/update_pgo_profiles.py',
                 '--target=mac',
+                'update',
+                '--gs-url-base=chromium-optimization-profiles/pgo_profiles',
+    ],
+  },
+  {
+    'name': 'Fetch PGO profiles for linux',
+    'pattern': '.',
+    'condition': 'checkout_pgo_profiles and checkout_linux',
+    'action': [ 'vpython',
+                'src/tools/update_pgo_profiles.py',
+                '--target=linux',
                 'update',
                 '--gs-url-base=chromium-optimization-profiles/pgo_profiles',
     ],

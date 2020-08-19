@@ -58,6 +58,9 @@
       name: "letter-spacing-override"
     },
     {
+      name: "line-gap-override",
+    },
+    {
       name: "max-height",
     },
     {

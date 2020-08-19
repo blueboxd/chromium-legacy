@@ -14,7 +14,9 @@
 #include "base/command_line.h"
 #include "base/i18n/case_conversion.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/no_destructor.h"
 #include "base/strings/string16.h"
+#include "base/threading/thread_local.h"
 #include "ui/gfx/x/bigreq.h"
 #include "ui/gfx/x/event.h"
 #include "ui/gfx/x/randr.h"
@@ -201,11 +203,30 @@ bool IsPrivateKeypadKey(KeySym keysym) {
   return key >= 0x11000000 && key <= 0x1100FFFF;
 }
 
+base::ThreadLocalOwnedPointer<Connection>& GetConnectionTLS() {
+  static base::NoDestructor<base::ThreadLocalOwnedPointer<Connection>> tls;
+  return *tls;
+}
+
 }  // namespace
 
+// static
 Connection* Connection::Get() {
-  static Connection* instance = new Connection;
-  return instance;
+  auto& tls = GetConnectionTLS();
+  if (Connection* connection = tls.Get())
+    return connection;
+  auto connection = std::make_unique<Connection>();
+  auto* p_connection = connection.get();
+  tls.Set(std::move(connection));
+  return p_connection;
+}
+
+// static
+void Connection::Set(std::unique_ptr<x11::Connection> connection) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(connection->sequence_checker_);
+  auto& tls = GetConnectionTLS();
+  DCHECK(!tls.Get());
+  tls.Set(std::move(connection));
 }
 
 Connection::Connection(const std::string& address)
@@ -256,11 +277,14 @@ Connection::Connection(const std::string& address)
 }
 
 Connection::~Connection() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  platform_event_source.reset();
   if (display_)
     XCloseDisplay(display_);
 }
 
 xcb_connection_t* Connection::XcbConnection() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!display())
     return nullptr;
   return XGetXCBConnection(display());
@@ -282,6 +306,7 @@ bool Connection::HasNextResponse() const {
 }
 
 int Connection::DefaultScreenId() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // This is not part of the setup data as the server has no concept of a
   // default screen. Instead, it's part of the display name. Eg in
   // "localhost:0.0", the screen ID is the second "0".
@@ -289,19 +314,23 @@ int Connection::DefaultScreenId() const {
 }
 
 bool Connection::Ready() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return display_ && !xcb_connection_has_error(XGetXCBConnection(display_));
 }
 
 void Connection::Flush() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (display_)
     XFlush(display_);
 }
 
 void Connection::Sync() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   GetInputFocus({}).Sync();
 }
 
 void Connection::ReadResponses() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   while (auto* event = xcb_poll_for_event(XcbConnection())) {
     events_.emplace_back(base::MakeRefCounted<MallocedRefCountedMemory>(event),
                          this);
@@ -309,11 +338,13 @@ void Connection::ReadResponses() {
 }
 
 bool Connection::HasPendingResponses() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return !events_.empty() || HasNextResponse();
 }
 
 const Connection::VisualInfo* Connection::GetVisualInfoFromId(
     VisualId id) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto it = default_screen_visuals_.find(id);
   if (it != default_screen_visuals_.end())
     return &it->second;
@@ -321,6 +352,7 @@ const Connection::VisualInfo* Connection::GetVisualInfoFromId(
 }
 
 KeyCode Connection::KeysymToKeycode(KeySym keysym) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   uint8_t min_keycode = static_cast<uint8_t>(setup_.min_keycode);
   uint8_t max_keycode = static_cast<uint8_t>(setup_.max_keycode);
   uint8_t count = max_keycode - min_keycode + 1;
@@ -336,15 +368,23 @@ KeyCode Connection::KeysymToKeycode(KeySym keysym) {
 }
 
 KeySym Connection::KeycodeToKeysym(uint32_t keycode, unsigned int modifiers) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto sym = TranslateKey(keycode, modifiers);
   return sym == static_cast<KeySym>(XK_VoidSymbol) ? kNoSymbol : sym;
 }
 
 std::unique_ptr<Connection> Connection::Clone() const {
-  return std::make_unique<Connection>(XDisplayString(display_));
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return std::make_unique<Connection>(display_ ? XDisplayString(display_) : "");
+}
+
+void Connection::DetachFromSequence() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
 void Connection::Dispatch(Delegate* delegate) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(display_);
 
   auto process_next_response = [&] {
@@ -404,6 +444,7 @@ void Connection::Dispatch(Delegate* delegate) {
 
 void Connection::AddRequest(unsigned int sequence,
                             FutureBase::ResponseCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(requests_.empty() ||
          CompareSequenceIds(requests_.back().sequence, sequence) < 0);
 

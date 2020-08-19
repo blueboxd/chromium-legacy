@@ -227,7 +227,7 @@ bool HangWatcher::IsIOThreadHangWatchingEnabled() {
 }
 
 bool HangWatcher::IsUIThreadHangWatchingEnabled() {
-  return g_hang_watch_io_thread.load(std::memory_order_relaxed);
+  return g_hang_watch_ui_thread.load(std::memory_order_relaxed);
 }
 
 HangWatcher::HangWatcher()

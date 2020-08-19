@@ -28,6 +28,7 @@ class FakeAdapter : public mojom::Adapter {
                  SetClientCallback callback) override;
   void SetDiscoverable(bool discoverable,
                        SetDiscoverableCallback callback) override;
+  void SetName(const std::string& name, SetNameCallback callback) override;
   void StartDiscoverySession(StartDiscoverySessionCallback callback) override;
   void ConnectToServiceInsecurely(
       const std::string& address,

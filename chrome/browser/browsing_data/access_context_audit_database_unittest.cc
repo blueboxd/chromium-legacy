@@ -4,7 +4,9 @@
 
 #include "chrome/browser/browsing_data/access_context_audit_database.h"
 
+#include "base/bind_helpers.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/test/bind_test_util.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
 #include "sql/database.h"
 #include "sql/test/scoped_error_expecter.h"
@@ -154,6 +156,12 @@ class AccessContextAuditDatabaseTest : public testing::Test {
             base::Time::FromDeltaSinceWindowsEpoch(
                 base::TimeDelta::FromHours(8)),
             /* is_persistent */ false),
+        AccessContextAuditDatabase::AccessRecord(
+            url::Origin::Create(GURL("https://test7.com")),
+            kManyContextsStorageAPIType,
+            url::Origin::Create(GURL("https://test8.com")),
+            base::Time::FromDeltaSinceWindowsEpoch(
+                base::TimeDelta::FromHours(9))),
     };
   }
 
@@ -243,12 +251,13 @@ TEST_F(AccessContextAuditDatabaseTest, NonPersistentCookiesRemoved) {
           }),
       test_records.end());
 
+  EXPECT_GT(GetTestRecords().size(), test_records.size());
   ValidateDatabaseRecords(database(), test_records);
   CloseDatabase();
 }
 
-TEST_F(AccessContextAuditDatabaseTest, RecoveredOnOpen) {
-  // Check that a database recovery is performed when opening a corrupted file.
+TEST_F(AccessContextAuditDatabaseTest, RazedOnError) {
+  // Check that the database is razed when opening a corrupted file.
   auto test_records = GetTestRecords();
   OpenDatabase();
   database()->AddRecords(test_records);
@@ -265,8 +274,8 @@ TEST_F(AccessContextAuditDatabaseTest, RecoveredOnOpen) {
   EXPECT_NO_FATAL_FAILURE(
       OpenDatabase(/* restore_non_persistent_cookies */ true));
 
-  // Data should be recovered.
-  ValidateDatabaseRecords(database(), test_records);
+  // No data should be present as the database should have been razed.
+  ValidateDatabaseRecords(database(), {});
 
   EXPECT_TRUE(expecter.SawExpectedErrors());
 }
@@ -344,6 +353,7 @@ TEST_F(AccessContextAuditDatabaseTest, RemoveAllRecordsForTimeRange) {
           }),
       test_records.end());
 
+  EXPECT_GT(GetTestRecords().size(), test_records.size());
   ValidateDatabaseRecords(database(), test_records);
 }
 
@@ -370,6 +380,7 @@ TEST_F(AccessContextAuditDatabaseTest, RemoveAllCookieRecords) {
           }),
       test_records.end());
 
+  EXPECT_GT(GetTestRecords().size(), test_records.size());
   ValidateDatabaseRecords(database(), test_records);
 }
 
@@ -397,6 +408,8 @@ TEST_F(AccessContextAuditDatabaseTest, RemoveAllRecordsForTopFrameOrigins) {
                                 }) != many_visit_origins.end();
           }),
       test_records.end());
+
+  EXPECT_GT(GetTestRecords().size(), test_records.size());
   ValidateDatabaseRecords(database(), test_records);
 }
 
@@ -408,7 +421,7 @@ TEST_F(AccessContextAuditDatabaseTest, RemoveAllStorageRecords) {
   database()->AddRecords(test_records);
   ValidateDatabaseRecords(database(), test_records);
 
-  database()->RemoveAllRecordsForOriginStorage(
+  database()->RemoveAllRecordsForOriginKeyedStorage(
       url::Origin::Create(GURL(kManyContextsStorageAPIOrigin)),
       kManyContextsStorageAPIType);
 
@@ -421,6 +434,8 @@ TEST_F(AccessContextAuditDatabaseTest, RemoveAllStorageRecords) {
                                          GURL(kManyContextsStorageAPIOrigin)));
           }),
       test_records.end());
+
+  EXPECT_GT(GetTestRecords().size(), test_records.size());
   ValidateDatabaseRecords(database(), test_records);
 }
 
@@ -518,5 +533,67 @@ TEST_F(AccessContextAuditDatabaseTest, RemoveSessionOnlyRecords) {
                    url::Origin::Create(GURL(kManyContextsStorageAPIOrigin));
           }),
       test_records.end());
+
+  EXPECT_GT(GetTestRecords().size(), test_records.size());
+  ValidateDatabaseRecords(database(), test_records);
+}
+
+TEST_F(AccessContextAuditDatabaseTest, RemoveStorageApiRecords) {
+  // Check that removal of storage API records based on a combined time range,
+  // storage type, and origin matching function operates correctly.
+  auto test_records = GetTestRecords();
+  OpenDatabase();
+  database()->AddRecords(test_records);
+
+  std::set<AccessContextAuditDatabase::StorageAPIType> storage_types;
+  storage_types.insert(kManyContextsStorageAPIType);
+  storage_types.insert(kSingleContextStorageAPIType);
+
+  auto kStorageOrigin =
+      url::Origin::Create(GURL(kManyContextsStorageAPIOrigin));
+
+  auto origin_matcher = base::BindLambdaForTesting(
+      [&](const url::Origin& origin) { return origin == kStorageOrigin; });
+
+  auto begin_time =
+      base::Time::FromDeltaSinceWindowsEpoch(base::TimeDelta::FromHours(5));
+  auto end_time =
+      base::Time::FromDeltaSinceWindowsEpoch(base::TimeDelta::FromHours(9));
+
+  database()->RemoveStorageApiRecords(storage_types, origin_matcher, begin_time,
+                                      end_time);
+  test_records.erase(
+      std::remove_if(
+          test_records.begin(), test_records.end(),
+          [=](const AccessContextAuditDatabase::AccessRecord& record) {
+            return (record.type == kManyContextsStorageAPIType ||
+                    record.type == kSingleContextStorageAPIType) &&
+                   record.origin == kStorageOrigin &&
+                   record.last_access_time >= begin_time &&
+                   record.last_access_time <= end_time;
+          }),
+      test_records.end());
+
+  EXPECT_GT(GetTestRecords().size(), test_records.size());
+  ValidateDatabaseRecords(database(), test_records);
+
+  // Check that providing a null origin matcher function matches all origins.
+  test_records = GetTestRecords();
+  database()->AddRecords(test_records);
+
+  database()->RemoveStorageApiRecords(storage_types, base::NullCallback(),
+                                      begin_time, end_time);
+
+  test_records.erase(
+      std::remove_if(
+          test_records.begin(), test_records.end(),
+          [=](const AccessContextAuditDatabase::AccessRecord& record) {
+            return (record.type == kManyContextsStorageAPIType ||
+                    record.type == kSingleContextStorageAPIType) &&
+                   record.last_access_time >= begin_time &&
+                   record.last_access_time <= end_time;
+          }),
+      test_records.end());
+  EXPECT_GT(GetTestRecords().size(), test_records.size());
   ValidateDatabaseRecords(database(), test_records);
 }

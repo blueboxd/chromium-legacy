@@ -127,9 +127,11 @@ static_library("v4_get_hash_protocol_manager") {
     "v4_get_hash_protocol_manager.cc",
     "v4_get_hash_protocol_manager.h",
   ]
-  public_deps = [ ":safebrowsing_proto" ]
-  deps = [
+  public_deps = [
+    ":safebrowsing_proto",
     ":util",
+  ]
+  deps = [
     ":v4_protocol_manager_util",
     "//base",
     "//components/safe_browsing/core:features",

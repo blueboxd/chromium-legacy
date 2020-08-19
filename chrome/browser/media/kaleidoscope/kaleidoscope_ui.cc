@@ -252,6 +252,8 @@ content::WebUIDataSource* KaleidoscopeUI::CreateWebUIDataSource() {
       "chrome/browser/media/feeds/media_feeds_store.mojom-lite.js",
       IDR_MEDIA_FEEDS_STORE_MOJOM_LITE_JS);
   html_source->AddResourcePath("module.js", IDR_KALEIDOSCOPE_NTP_MODULE_JS);
+  html_source->AddResourcePath("content.js", IDR_KALEIDOSCOPE_CONTENT_JS);
+  html_source->AddResourcePath("shared.css", IDR_KALEIDOSCOPE_SHARED_CSS);
 
   html_source->SetDefaultResource(IDR_KALEIDOSCOPE_HTML);
 #endif  // BUILDFLAG(ENABLE_KALEIDOSCOPE)
@@ -302,6 +304,7 @@ content::WebUIDataSource* KaleidoscopeUI::CreateUntrustedWebUIDataSource() {
 #if BUILDFLAG(ENABLE_KALEIDOSCOPE)
   untrusted_source->AddResourcePath("content.css",
                                     IDR_KALEIDOSCOPE_CONTENT_CSS);
+  untrusted_source->AddResourcePath("shared.css", IDR_KALEIDOSCOPE_SHARED_CSS);
   untrusted_source->AddResourcePath("content.js", IDR_KALEIDOSCOPE_CONTENT_JS);
   untrusted_source->AddResourcePath("content-worker.js",
                                     IDR_KALEIDOSCOPE_CONTENT_WORKER_JS);

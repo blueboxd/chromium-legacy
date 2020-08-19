@@ -7,6 +7,7 @@
 #include "base/base_paths.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
+#include "chrome/browser/chromeos/wilco_dtc_supportd/mojo_utils.h"
 #include "chromeos/components/telemetry_extension_ui/url_constants.h"
 #include "chromeos/components/web_applications/test/sandboxed_web_ui_test_base.h"
 #include "chromeos/constants/chromeos_switches.h"
@@ -76,6 +77,8 @@ void TelemetryExtensionUiBrowserTest::
       std::move(interactiveRoutineUpdate));
 
   input->progress_percent = 0;
+  input->output = chromeos::MojoUtils::CreateReadOnlySharedMemoryMojoHandle(
+      "This routine is running!");
   input->routine_update_union = std::move(routineUpdateUnion);
 
   chromeos::cros_healthd::FakeCrosHealthdClient::Get()

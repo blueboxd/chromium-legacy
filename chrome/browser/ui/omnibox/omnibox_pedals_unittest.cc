@@ -64,7 +64,19 @@ TEST(OmniboxPedals, DataLoadsForAllLocales) {
       {"pt-PT", "eliminar informações"},
       {"ro", "elimină informații"},
       {"ru", "почистить информацию"},
+      {"sk", "odstrániť vyrovnávacia pamäť"},
+      {"sl", "izbriši predpomnilnik"},
+      {"sr", "избрисати информације"},
+      {"sv", "ta bort information"},
+      {"sw", "ondoa kumbukumbu"},
+      {"ta", "வைப் செய் தற்காலிகச் சேமிப்பு"},
+      {"te", "క్లియర్ చేయడం కుక్కీలు"},
+      {"th", "ล้างข้อมูล ประวัติ"},
+      {"tr", "kaldır önbelleği"},
+      {"uk", "видалити інформація"},
+      {"vi", "dọn sạch bộ nhớ đệm"},
       {"zh-CN", "清除浏览数据"},
+      {"zh-TW", "刪除 歷史記錄"},
       // clang-format on
   };
   for (const TestCase& test_case : test_cases) {

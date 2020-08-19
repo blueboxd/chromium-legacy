@@ -30,14 +30,15 @@ public class CompromisedCredential implements Parcelable {
                     final String password = in.readString();
                     final String passwordChangeUrl = in.readString();
                     final String associatedApp = in.readString();
-                    boolean[] boolArguments = new boolean[2];
+                    boolean[] boolArguments = new boolean[3];
                     in.readBooleanArray(boolArguments);
-                    final boolean phished = boolArguments[0];
-                    final boolean hasScript = boolArguments[1];
+                    final boolean leaked = boolArguments[0];
+                    final boolean phished = boolArguments[1];
+                    final boolean hasScript = boolArguments[2];
 
                     return new CompromisedCredential(signonRealm, origin, username, displayOrigin,
-                            displayUsername, password, passwordChangeUrl, associatedApp, phished,
-                            hasScript);
+                            displayUsername, password, passwordChangeUrl, associatedApp, leaked,
+                            phished, hasScript);
                 }
 
                 @Override
@@ -54,6 +55,7 @@ public class CompromisedCredential implements Parcelable {
     private final String mPassword;
     private final String mPasswordChangeUrl;
     private final String mAssociatedApp;
+    private final boolean mLeaked;
     private final boolean mPhished;
     private final boolean mHasScript;
 
@@ -72,7 +74,7 @@ public class CompromisedCredential implements Parcelable {
      */
     public CompromisedCredential(String signonRealm, GURL origin, String username,
             String displayOrigin, String displayUsername, String password, String passwordChangeUrl,
-            String associatedApp, boolean phished, boolean hasScript) {
+            String associatedApp, boolean leaked, boolean phished, boolean hasScript) {
         assert origin != null : "Credential origin is null! Pass an empty one instead.";
         assert signonRealm != null;
         assert passwordChangeUrl != null : "Change URL may be empty but not null!";
@@ -80,6 +82,7 @@ public class CompromisedCredential implements Parcelable {
         assert !passwordChangeUrl.isEmpty()
                 || !associatedApp.isEmpty()
             : "Change URL and app name may not be empty at the same time!";
+        assert leaked || phished : "A compromised credential must be leaked or phished!";
         mSignonRealm = signonRealm;
         mOrigin = origin;
         mUsername = username;
@@ -88,6 +91,7 @@ public class CompromisedCredential implements Parcelable {
         mPassword = password;
         mPasswordChangeUrl = passwordChangeUrl;
         mAssociatedApp = associatedApp;
+        mLeaked = leaked;
         mPhished = phished;
         mHasScript = hasScript;
     }
@@ -114,15 +118,17 @@ public class CompromisedCredential implements Parcelable {
     public String getDisplayOrigin() {
         return mDisplayOrigin;
     }
-    public boolean isPhished() {
-        return mPhished;
-    }
     public String getAssociatedApp() {
         return mAssociatedApp;
     }
-
     public String getPasswordChangeUrl() {
         return mPasswordChangeUrl;
+    }
+    public boolean isLeaked() {
+        return mLeaked;
+    }
+    public boolean isPhished() {
+        return mPhished;
     }
     public boolean hasScript() {
         return mHasScript;
@@ -138,8 +144,8 @@ public class CompromisedCredential implements Parcelable {
                 && mDisplayUsername.equals(that.mDisplayUsername)
                 && mPassword.equals(that.mPassword)
                 && mPasswordChangeUrl.equals(that.mPasswordChangeUrl)
-                && mAssociatedApp.equals(that.mAssociatedApp) && mPhished == that.mPhished
-                && mHasScript == that.mHasScript;
+                && mAssociatedApp.equals(that.mAssociatedApp) && mLeaked == that.mLeaked
+                && mPhished == that.mPhished && mHasScript == that.mHasScript;
     }
 
     @Override
@@ -149,15 +155,15 @@ public class CompromisedCredential implements Parcelable {
                 + ", username='" + mUsername + '\'' + ", displayOrigin='" + mDisplayOrigin + '\''
                 + ", displayUsername='" + mDisplayUsername + '\'' + ", password='" + mPassword
                 + '\'' + ", passwordChangeUrl='" + mPasswordChangeUrl + '\'' + ", associatedApp='"
-                + mAssociatedApp + '\'' + ", phished=" + mPhished + ", hasScript=" + mHasScript
-                + '}';
+                + mAssociatedApp + '\'' + ", leaked=" + mLeaked + ", phished=" + mPhished
+                + ", hasScript=" + mHasScript + '}';
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(mSignonRealm, mOrigin.getPossiblyInvalidSpec(), mUsername,
                 mDisplayOrigin, mDisplayUsername, mPassword, mPasswordChangeUrl, mAssociatedApp,
-                mPhished, mHasScript);
+                mLeaked, mPhished, mHasScript);
     }
 
     @Override
@@ -170,7 +176,7 @@ public class CompromisedCredential implements Parcelable {
         parcel.writeString(mPassword);
         parcel.writeString(mPasswordChangeUrl);
         parcel.writeString(mAssociatedApp);
-        parcel.writeBooleanArray(new boolean[] {mPhished, mHasScript});
+        parcel.writeBooleanArray(new boolean[] {mLeaked, mPhished, mHasScript});
     }
 
     @Override

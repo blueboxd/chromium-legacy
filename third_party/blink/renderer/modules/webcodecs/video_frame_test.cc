@@ -6,6 +6,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/modules/webcodecs/video_frame.h"
+#include "third_party/blink/renderer/modules/webcodecs/video_frame_handle.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -20,7 +21,7 @@ class VideoFrameTest : public testing::Test {
     return MakeGarbageCollected<VideoFrame>(std::move(media_frame));
   }
   VideoFrame* CreateBlinkVideoFrameFromHandle(
-      scoped_refptr<VideoFrame::Handle> handle) {
+      scoped_refptr<VideoFrameHandle> handle) {
     return MakeGarbageCollected<VideoFrame>(std::move(handle));
   }
   scoped_refptr<media::VideoFrame> CreateDefaultBlackMediaVideoFrame() {
@@ -92,7 +93,7 @@ TEST_F(VideoFrameTest, FramesNotSharingHandleDestruction) {
   VideoFrame* blink_frame = CreateBlinkVideoFrame(media_frame);
 
   auto new_handle =
-      base::MakeRefCounted<VideoFrame::Handle>(blink_frame->frame());
+      base::MakeRefCounted<VideoFrameHandle>(blink_frame->frame());
 
   VideoFrame* frame_with_new_handle =
       CreateBlinkVideoFrameFromHandle(std::move(new_handle));

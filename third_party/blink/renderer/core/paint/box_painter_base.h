@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_BOX_PAINTER_BASE_H_
 
 #include "third_party/blink/renderer/core/layout/background_bleed_avoidance.h"
+#include "third_party/blink/renderer/core/layout/geometry/box_sides.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_size.h"
 #include "third_party/blink/renderer/core/style/style_image.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect_outsets.h"
@@ -61,36 +62,34 @@ class BoxPainterBase {
                        const PhysicalRect&,
                        const ImageResourceObserver&,
                        BackgroundImageGeometry&,
-                       bool include_logical_left_edge,
-                       bool include_logical_right_edge);
+                       PhysicalBoxSides sides_to_include);
 
-  static void PaintNormalBoxShadow(const PaintInfo&,
-                                   const PhysicalRect&,
-                                   const ComputedStyle&,
-                                   bool include_logical_left_edge = true,
-                                   bool include_logical_right_edge = true,
-                                   bool background_is_skipped = true);
+  static void PaintNormalBoxShadow(
+      const PaintInfo&,
+      const PhysicalRect&,
+      const ComputedStyle&,
+      PhysicalBoxSides sides_to_include = PhysicalBoxSides(),
+      bool background_is_skipped = true);
 
   static void PaintInsetBoxShadowWithBorderRect(
       const PaintInfo&,
       const PhysicalRect&,
       const ComputedStyle&,
-      bool include_logical_left_edge = true,
-      bool include_logical_right_edge = true);
+      PhysicalBoxSides sides_to_include = PhysicalBoxSides());
 
   static void PaintInsetBoxShadowWithInnerRect(const PaintInfo&,
                                                const PhysicalRect&,
                                                const ComputedStyle&);
 
-  static void PaintBorder(const ImageResourceObserver&,
-                          const Document&,
-                          Node*,
-                          const PaintInfo&,
-                          const PhysicalRect&,
-                          const ComputedStyle&,
-                          BackgroundBleedAvoidance = kBackgroundBleedNone,
-                          bool include_logical_left_edge = true,
-                          bool include_logical_right_edge = true);
+  static void PaintBorder(
+      const ImageResourceObserver&,
+      const Document&,
+      Node*,
+      const PaintInfo&,
+      const PhysicalRect&,
+      const ComputedStyle&,
+      BackgroundBleedAvoidance = kBackgroundBleedNone,
+      PhysicalBoxSides sides_to_include = PhysicalBoxSides());
 
   static bool ShouldForceWhiteBackgroundForPrintEconomy(const Document&,
                                                         const ComputedStyle&);
@@ -117,8 +116,7 @@ class BoxPainterBase {
                   const FillLayer&,
                   BackgroundBleedAvoidance,
                   RespectImageOrientationEnum,
-                  bool include_left_edge,
-                  bool include_right_edge,
+                  PhysicalBoxSides sides_to_include,
                   bool is_inline,
                   bool is_painting_scrolling_background);
 
@@ -129,8 +127,7 @@ class BoxPainterBase {
     Color color;
 
     RespectImageOrientationEnum respect_image_orientation;
-    bool include_left_edge;
-    bool include_right_edge;
+    PhysicalBoxSides sides_to_include;
     bool is_bottom_layer;
     bool is_border_fill;
     bool is_clipped_with_local_scrolling;
@@ -165,11 +162,11 @@ class BoxPainterBase {
       BackgroundBleedAvoidance,
       bool is_painting_scrolling_background) const = 0;
   virtual bool IsPaintingScrollingBackground(const PaintInfo&) const = 0;
-  static void PaintInsetBoxShadow(const PaintInfo&,
-                                  const FloatRoundedRect&,
-                                  const ComputedStyle&,
-                                  bool include_logical_left_edge = true,
-                                  bool include_logical_right_edge = true);
+  static void PaintInsetBoxShadow(
+      const PaintInfo&,
+      const FloatRoundedRect&,
+      const ComputedStyle&,
+      PhysicalBoxSides sides_to_include = PhysicalBoxSides());
 
  private:
   const Document* document_;

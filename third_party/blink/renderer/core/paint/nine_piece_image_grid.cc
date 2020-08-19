@@ -50,8 +50,7 @@ NinePieceImageGrid::NinePieceImageGrid(const NinePieceImage& nine_piece_image,
                                        IntSize image_size,
                                        IntRect border_image_area,
                                        const IntRectOutsets& border_widths,
-                                       bool include_left_edge,
-                                       bool include_right_edge)
+                                       PhysicalBoxSides sides_to_include)
     : border_image_area_(border_image_area),
       image_size_(image_size),
       horizontal_tile_rule_(nine_piece_image.HorizontalRule()),
@@ -68,18 +67,23 @@ NinePieceImageGrid::NinePieceImageGrid(const NinePieceImage& nine_piece_image,
 
   // TODO(fs): Compute edge widths to LayoutUnit, and then only round to
   // integer at the end - after (potential) compensation for overlapping edges.
-  top_.width = ComputeEdgeWidth(nine_piece_image.BorderSlices().Top(),
-                                border_widths.Top(), top_.slice,
-                                border_image_area.Height());
-  right_.width = include_right_edge
+  top_.width = sides_to_include.top
+                   ? ComputeEdgeWidth(nine_piece_image.BorderSlices().Top(),
+                                      border_widths.Top(), top_.slice,
+                                      border_image_area.Height())
+                   : 0;
+  right_.width = sides_to_include.right
                      ? ComputeEdgeWidth(nine_piece_image.BorderSlices().Right(),
                                         border_widths.Right(), right_.slice,
                                         border_image_area.Width())
                      : 0;
-  bottom_.width = ComputeEdgeWidth(nine_piece_image.BorderSlices().Bottom(),
-                                   border_widths.Bottom(), bottom_.slice,
-                                   border_image_area.Height());
-  left_.width = include_left_edge
+  bottom_.width =
+      sides_to_include.bottom
+          ? ComputeEdgeWidth(nine_piece_image.BorderSlices().Bottom(),
+                             border_widths.Bottom(), bottom_.slice,
+                             border_image_area.Height())
+          : 0;
+  left_.width = sides_to_include.left
                     ? ComputeEdgeWidth(nine_piece_image.BorderSlices().Left(),
                                        border_widths.Left(), left_.slice,
                                        border_image_area.Width())

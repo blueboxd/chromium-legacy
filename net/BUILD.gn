@@ -1134,8 +1134,6 @@ component("net") {
       "url_request/url_request_netlog_params.h",
       "url_request/url_request_redirect_job.cc",
       "url_request/url_request_redirect_job.h",
-      "url_request/url_request_status.cc",
-      "url_request/url_request_status.h",
       "url_request/url_request_test_job.cc",
       "url_request/url_request_test_job.h",
       "url_request/url_request_throttler_entry.cc",
@@ -1766,6 +1764,7 @@ source_set("net_public_deps") {
   public_deps = [
     ":buildflags",
     ":net_nqe_proto",
+    "//base",
     "//crypto",
     "//crypto:platform",
     "//net/third_party/quiche:net_quic_proto",

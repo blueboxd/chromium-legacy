@@ -1011,7 +1011,7 @@ IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTestForStatusChip,
 }
 
 // TODO(crbug.com/999510): Crashes flakily on Linux.
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #define MAYBE_ClickingOmniboxIconReshowsBubble \
   DISABLED_ClickingOmniboxIconReshowsBubble
 #else

@@ -78,7 +78,7 @@ CONTENT_EXPORT bool InitializeSandbox();
 // warmup and before initialization.
 CONTENT_EXPORT bool InitializeSandbox(base::OnceClosure post_warmup_hook);
 
-#elif defined(OS_LINUX) || defined(OS_NACL_NONSFI)
+#elif defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_NACL_NONSFI)
 
 // Initialize a seccomp-bpf sandbox. |policy| may not be NULL.
 // If an existing layer of sandboxing is present that would prevent access to
@@ -92,7 +92,7 @@ CONTENT_EXPORT bool InitializeSandbox(
 // policy that is derived from the baseline.
 CONTENT_EXPORT std::unique_ptr<sandbox::bpf_dsl::Policy>
 GetBPFSandboxBaselinePolicy();
-#endif  // defined(OS_LINUX) || defined(OS_NACL_NONSFI)
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_NACL_NONSFI)
 
 }  // namespace content
 

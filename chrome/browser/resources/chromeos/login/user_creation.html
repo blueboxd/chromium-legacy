@@ -45,6 +45,10 @@ found in the LICENSE file. -->
         padding-top: 16px;
       }
 
+      .card-text {
+        color: var(--oobe-text-color);
+      }
+
       oobe-dialog {
         --oobe-dialog-content-padding-top: 0;
       }
@@ -71,7 +75,7 @@ found in the LICENSE file. -->
               <div class="card-label">
                 [[i18nDynamic(locale, 'createForSelfLabel')]]
               </div>
-              <div>
+              <div class="card-text">
                 [[i18nDynamic(locale, 'createForSelfDescription')]]
               </div>
             </div>
@@ -84,7 +88,7 @@ found in the LICENSE file. -->
               <div class="card-label">
                 [[i18nDynamic(locale, 'createForChildLabel')]]
               </div>
-              <div">
+              <div class="card-text">
                 [[i18nDynamic(locale, 'createForChildDescription')]]
               </div>
             </div>

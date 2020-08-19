@@ -4,6 +4,7 @@ This test verifies that persistent grid in iframe are positioned correctly.
   "gridHighlights": [
     {
       "rotationAngle": 0,
+      "writingMode": "horizontal-tb",
       "columnTrackSizes": [
         {
           "x": 158,

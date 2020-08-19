@@ -127,9 +127,17 @@ class PageSpecificContentSettings
     // Notifies the delegate a particular content settings type was blocked.
     virtual void OnContentBlocked(ContentSettingsType type) = 0;
 
+    // Notifies the delegate that access was granted to cache storage for
+    // |origin|.
+    virtual void OnCacheStorageAccessAllowed(const url::Origin& origin) = 0;
+
     // Notifies the delegate that access was granted to |accessed_cookies|.
     virtual void OnCookieAccessAllowed(
         const net::CookieList& accessed_cookies) = 0;
+
+    // Notifies the delegate that access was granted to Indexed DB storage for
+    // |origin|.
+    virtual void OnIndexedDBAccessAllowed(const url::Origin& origin) = 0;
   };
 
   // Classes that want to be notified about site data events must implement

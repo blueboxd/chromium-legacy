@@ -2010,7 +2010,7 @@ TEST_F(LoginDatabaseTest, EncryptionEnabled) {
 }
 #endif  // !defined(OS_IOS)
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 // Test that LoginDatabase does not encrypt values when encryption is disabled.
 // TODO(crbug.com/829857) This is supported only for Linux, while transitioning
 // into LoginDB with full encryption.
@@ -2028,7 +2028,7 @@ TEST_F(LoginDatabaseTest, EncryptionDisabled) {
       GetColumnValuesFromDatabase<std::string>(file, "password_value").at(0),
       base::UTF16ToUTF8(password_form.password_value));
 }
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
 // On Android and ChromeOS there is a mix of plain-text and obfuscated

@@ -4,8 +4,6 @@
 
 #import "ios/chrome/browser/crash_report/breadcrumbs/application_breadcrumbs_logger.h"
 
-#import <UIKit/UIKit.h>
-
 #include "base/bind.h"
 #include "base/strings/stringprintf.h"
 #include "ios/chrome/browser/crash_report/breadcrumbs/application_breadcrumbs_not_user_action.inc"
@@ -37,6 +35,10 @@ ApplicationBreadcrumbsLogger::ApplicationBreadcrumbsLogger(
                   object:nil
                    queue:nil
               usingBlock:^(NSNotification*) {
+                if (UIDevice.currentDevice.orientation == last_orientation_)
+                  return;
+                last_orientation_ = UIDevice.currentDevice.orientation;
+
                 std::string event(kBreadcrumbOrientation);
                 switch (UIDevice.currentDevice.orientation) {
                   case UIDeviceOrientationUnknown:

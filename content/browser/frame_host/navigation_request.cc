@@ -1650,16 +1650,6 @@ NavigationRequest::TakeCoepReporter() {
 
 void NavigationRequest::CreateCoopReporter(
     StoragePartition* storage_partition) {
-  // If the flag for reporting is off, we simply don't create anything.
-  // Since this is the only place we create COOP reporters this ensure reporting
-  // is completely off.
-  // Note that "popup inheritance" also instantiate a reporter, but only if we
-  // created one here first.
-  if (!base::FeatureList::IsEnabled(
-          network::features::kCrossOriginOpenerPolicyReporting)) {
-    return;
-  }
-
   // If the main document hasn't specified any network report endpoint(s),
   // then it is likely not interested in receiving:
   // 1. Network reports (for obvious reasons).
@@ -1798,8 +1788,8 @@ void NavigationRequest::OnRequestRedirected(
   // from the response URL.
   const base::Optional<network::mojom::BlockedByResponseReason>
       coop_requires_blocking = coop_status_.EnforceCOOP(
-          response_head_->parsed_headers.get(),
-          url::Origin::Create(common_params_->url), common_params_->url);
+          response_head_.get(), url::Origin::Create(common_params_->url),
+          common_params_->url);
   if (coop_requires_blocking) {
     OnRequestFailedInternal(
         network::URLLoaderCompletionStatus(*coop_requires_blocking),
@@ -2229,8 +2219,8 @@ void NavigationRequest::OnResponseStarted(
   // from the response URL.
   const base::Optional<network::mojom::BlockedByResponseReason>
       coop_requires_blocking = coop_status_.EnforceCOOP(
-          response_head_->parsed_headers.get(),
-          url::Origin::Create(common_params_->url), common_params_->url);
+          response_head_.get(), url::Origin::Create(common_params_->url),
+          common_params_->url);
   if (coop_requires_blocking) {
     OnRequestFailedInternal(
         network::URLLoaderCompletionStatus(*coop_requires_blocking),
@@ -4227,6 +4217,16 @@ void NavigationRequest::ReadyToCommitNavigation(CommitPageType type) {
     client_security_state_->is_web_secure_context =
         network::IsOriginPotentiallyTrustworthy(
             url::Origin::Create(common_params_->url));
+
+    if (base::FeatureList::IsEnabled(
+            network::features::kBlockInsecurePrivateNetworkRequests)) {
+      client_security_state_->private_network_request_policy =
+          GetContentClient()->browser()->GetPrivateNetworkRequestPolicy(
+              frame_tree_node_->navigator()
+                  .GetController()
+                  ->GetBrowserContext(),
+              common_params_->url);
+    }
   }
 
   if (appcache_handle_) {

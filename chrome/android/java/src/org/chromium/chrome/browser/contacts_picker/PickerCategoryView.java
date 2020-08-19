@@ -126,14 +126,27 @@ public class PickerCategoryView extends OptimizedFrameLayout
     public final boolean includeIcons;
 
     /**
+     * @param windowAndroid The Activity window the Contacts Picker is associated with.
+     * @param adapter An uninitialized PickerAdapter for this dialog, which may contain
+     *         embedder-specific behaviors. The PickerCategoryView will initialized it.
      * @param multiSelectionAllowed Whether the contacts picker should allow multiple items to be
-     * selected.
+     *         selected.
+     * @param shouldIncludeNames Whether to allow sharing of names of contacts.
+     * @param shouldIncludeEmails Whether to allow sharing of contact emails.
+     * @param shouldIncludeTel Whether to allow sharing of contact telephone numbers.
+     * @param shouldIncludeAddresses Whether to allow sharing of contact (physical) addresses.
+     * @param shouldIncludeIcons Whether to allow sharing of contact icons.
+     * @param formattedOrigin The origin receiving the contact details, formatted for display in the
+     *         UI.
+     * @param delegate A delegate listening for events from the toolbar.
+     * @param vrModeProvider Provides accessors for VR mode state.
      */
     @SuppressWarnings("unchecked") // mSelectableListLayout
-    public PickerCategoryView(WindowAndroid windowAndroid, boolean multiSelectionAllowed,
-            boolean shouldIncludeNames, boolean shouldIncludeEmails, boolean shouldIncludeTel,
-            boolean shouldIncludeAddresses, boolean shouldIncludeIcons, String formattedOrigin,
-            ContactsPickerToolbar.ContactsToolbarDelegate delegate, VrModeProvider vrModeProvider) {
+    public PickerCategoryView(WindowAndroid windowAndroid, PickerAdapter adapter,
+            boolean multiSelectionAllowed, boolean shouldIncludeNames, boolean shouldIncludeEmails,
+            boolean shouldIncludeTel, boolean shouldIncludeAddresses, boolean shouldIncludeIcons,
+            String formattedOrigin, ContactsPickerToolbar.ContactsToolbarDelegate delegate,
+            VrModeProvider vrModeProvider) {
         super(windowAndroid.getContext().get(), null);
 
         mWindowAndroid = windowAndroid;
@@ -162,7 +175,8 @@ public class PickerCategoryView extends OptimizedFrameLayout
                 R.string.contacts_picker_no_contacts_found,
                 R.string.contacts_picker_no_contacts_found);
 
-        mPickerAdapter = new PickerAdapter(this, context, formattedOrigin);
+        mPickerAdapter = adapter;
+        mPickerAdapter.init(this, context, formattedOrigin);
         mRecyclerView = mSelectableListLayout.initializeRecyclerView(mPickerAdapter);
         int titleId = multiSelectionAllowed ? R.string.contacts_picker_select_contacts
                                             : R.string.contacts_picker_select_contact;

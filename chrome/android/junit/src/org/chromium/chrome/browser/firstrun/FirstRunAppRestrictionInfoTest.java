@@ -30,6 +30,8 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.testing.local.CustomShadowUserManager;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -40,7 +42,9 @@ import java.util.concurrent.TimeoutException;
         shadows = {ShadowRecordHistogram.class, ShadowPostTask.class,
                 CustomShadowUserManager.class})
 public class FirstRunAppRestrictionInfoTest {
-    private static final String FRE_HISTOGRAM = "Enterprise.FirstRun.AppRestrictionLoadTime";
+    private static final List<String> HISTOGRAM_NAMES =
+            Arrays.asList("Enterprise.FirstRun.AppRestrictionLoadTime",
+                    "Enterprise.FirstRun.AppRestrictionLoadTime.Medium");
 
     private static class BooleanInputCallbackHelper extends CallbackHelper {
         boolean mLastInput;
@@ -80,6 +84,13 @@ public class FirstRunAppRestrictionInfoTest {
         shadowUserManager.setApplicationRestrictions(context.getPackageName(), mMockBundle);
     }
 
+    private void verifyHistograms(int expectedCallCount) {
+        for (String name : HISTOGRAM_NAMES) {
+            Assert.assertEquals("Histogram record count doesn't match.", expectedCallCount,
+                    ShadowRecordHistogram.getHistogramTotalCountForTesting(name));
+        }
+    }
+
     @Test
     @SmallTest
     public void testInitWithRestriction() throws TimeoutException {
@@ -98,14 +109,16 @@ public class FirstRunAppRestrictionInfoTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> mAppRestrictionInfo.initialize());
 
         final BooleanInputCallbackHelper callbackHelper = new BooleanInputCallbackHelper();
-        TestThreadUtils.runOnUiThreadBlocking(
-                ()
-                        -> mAppRestrictionInfo.getHasAppRestriction(
-                                callbackHelper::notifyCalledWithInput));
+        final CallbackHelper completionCallbackHelper = new CallbackHelper();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mAppRestrictionInfo.getHasAppRestriction(callbackHelper::notifyCalledWithInput);
+            mAppRestrictionInfo.getCompletionElapsedRealtimeMs(
+                    (ignored) -> completionCallbackHelper.notifyCalled());
+        });
         callbackHelper.assertCallbackHelperCalledWithInput(withRestriction);
+        Assert.assertEquals(1, completionCallbackHelper.getCallCount());
 
-        Assert.assertEquals("Histogram should be recorded once.", 1,
-                ShadowRecordHistogram.getHistogramTotalCountForTesting(FRE_HISTOGRAM));
+        verifyHistograms(1);
     }
 
     @Test
@@ -116,11 +129,20 @@ public class FirstRunAppRestrictionInfoTest {
         final BooleanInputCallbackHelper callbackHelper1 = new BooleanInputCallbackHelper();
         final BooleanInputCallbackHelper callbackHelper2 = new BooleanInputCallbackHelper();
         final BooleanInputCallbackHelper callbackHelper3 = new BooleanInputCallbackHelper();
+        final CallbackHelper completionCallbackHelper1 = new CallbackHelper();
+        final CallbackHelper completionCallbackHelper2 = new CallbackHelper();
+        final CallbackHelper completionCallbackHelper3 = new CallbackHelper();
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mAppRestrictionInfo.getHasAppRestriction(callbackHelper1::notifyCalledWithInput);
             mAppRestrictionInfo.getHasAppRestriction(callbackHelper2::notifyCalledWithInput);
             mAppRestrictionInfo.getHasAppRestriction(callbackHelper3::notifyCalledWithInput);
+            mAppRestrictionInfo.getCompletionElapsedRealtimeMs(
+                    (ignored) -> completionCallbackHelper1.notifyCalled());
+            mAppRestrictionInfo.getCompletionElapsedRealtimeMs(
+                    (ignored) -> completionCallbackHelper2.notifyCalled());
+            mAppRestrictionInfo.getCompletionElapsedRealtimeMs(
+                    (ignored) -> completionCallbackHelper3.notifyCalled());
         });
 
         Assert.assertEquals(
@@ -129,6 +151,12 @@ public class FirstRunAppRestrictionInfoTest {
                 "CallbackHelper should not triggered yet.", 0, callbackHelper2.getCallCount());
         Assert.assertEquals(
                 "CallbackHelper should not triggered yet.", 0, callbackHelper3.getCallCount());
+        Assert.assertEquals("CallbackHelper should not triggered yet.", 0,
+                completionCallbackHelper1.getCallCount());
+        Assert.assertEquals("CallbackHelper should not triggered yet.", 0,
+                completionCallbackHelper2.getCallCount());
+        Assert.assertEquals("CallbackHelper should not triggered yet.", 0,
+                completionCallbackHelper3.getCallCount());
 
         // Initialized the AppRestrictionInfo and wait until initialized.
         TestThreadUtils.runOnUiThreadBlocking(() -> mAppRestrictionInfo.initialize());
@@ -136,19 +164,23 @@ public class FirstRunAppRestrictionInfoTest {
         callbackHelper1.assertCallbackHelperCalledWithInput(true);
         callbackHelper2.assertCallbackHelperCalledWithInput(true);
         callbackHelper3.assertCallbackHelperCalledWithInput(true);
+        Assert.assertEquals(1, completionCallbackHelper1.getCallCount());
+        Assert.assertEquals(1, completionCallbackHelper2.getCallCount());
+        Assert.assertEquals(1, completionCallbackHelper3.getCallCount());
 
-        Assert.assertEquals("Histogram should be recorded once.", 1,
-                ShadowRecordHistogram.getHistogramTotalCountForTesting(FRE_HISTOGRAM));
+        verifyHistograms(1);
     }
 
     @Test
     @SmallTest
     public void testDestroy() {
         final BooleanInputCallbackHelper callbackHelper = new BooleanInputCallbackHelper();
-        TestThreadUtils.runOnUiThreadBlocking(
-                ()
-                        -> mAppRestrictionInfo.getHasAppRestriction(
-                                callbackHelper::notifyCalledWithInput));
+        final CallbackHelper completionCallbackHelper = new CallbackHelper();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mAppRestrictionInfo.getHasAppRestriction(callbackHelper::notifyCalledWithInput);
+            mAppRestrictionInfo.getCompletionElapsedRealtimeMs(
+                    (ignored) -> completionCallbackHelper.notifyCalled());
+        });
 
         // Destroy the object before initialization.
         mPauseDuringPostTask = true;
@@ -159,7 +191,8 @@ public class FirstRunAppRestrictionInfoTest {
 
         Assert.assertEquals(
                 "CallbackHelper should not triggered yet.", 0, callbackHelper.getCallCount());
-        Assert.assertEquals("Histogram should not be recorded as task is canceled.", 0,
-                ShadowRecordHistogram.getHistogramTotalCountForTesting(FRE_HISTOGRAM));
+        Assert.assertEquals("CallbackHelper should not triggered yet.", 0,
+                completionCallbackHelper.getCallCount());
+        verifyHistograms(0);
     }
 }

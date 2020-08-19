@@ -570,6 +570,8 @@ void AssistantInteractionControllerImpl::OnSuggestionPressed(
   switch (suggestion->type) {
     case AssistantSuggestionType::kBetterOnboarding:
       query_source = AssistantQuerySource::kBetterOnboarding;
+      base::UmaHistogramEnumeration("Assistant.BetterOnboarding.Click",
+                                    suggestion->better_onboarding_type);
       break;
     case AssistantSuggestionType::kConversationStarter:
       query_source = AssistantQuerySource::kConversationStarter;

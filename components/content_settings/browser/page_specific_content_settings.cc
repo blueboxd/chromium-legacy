@@ -625,6 +625,7 @@ void PageSpecificContentSettings::OnIndexedDBAccessed(const GURL& url,
     OnContentBlocked(ContentSettingsType::COOKIES);
   } else {
     allowed_local_shared_objects_.indexed_dbs()->Add(url::Origin::Create(url));
+    delegate_->OnIndexedDBAccessAllowed(url::Origin::Create(url));
     OnContentAllowed(ContentSettingsType::COOKIES);
   }
 
@@ -641,6 +642,7 @@ void PageSpecificContentSettings::OnCacheStorageAccessed(
   } else {
     allowed_local_shared_objects_.cache_storages()->Add(
         url::Origin::Create(url));
+    delegate_->OnCacheStorageAccessAllowed(url::Origin::Create(url));
     OnContentAllowed(ContentSettingsType::COOKIES);
   }
 

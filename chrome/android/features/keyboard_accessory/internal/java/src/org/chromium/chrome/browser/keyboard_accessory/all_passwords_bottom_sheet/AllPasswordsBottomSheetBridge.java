@@ -6,19 +6,25 @@ package org.chromium.chrome.browser.keyboard_accessory.all_passwords_bottom_shee
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetControllerProvider;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
  * This bridge creates and initializes a {@link AllPasswordsBottomSheetCoordinator} on construction
  * and forwards native calls to it.
  */
-class AllPasswordsBottomSheetBridge {
+class AllPasswordsBottomSheetBridge implements AllPasswordsBottomSheetCoordinator.Delegate {
     private long mNativeView;
     private Credential[] mCredentials;
+    private final AllPasswordsBottomSheetCoordinator mAllPasswordsBottomSheetCoordinator;
 
     private AllPasswordsBottomSheetBridge(long nativeView, WindowAndroid windowAndroid) {
         mNativeView = nativeView;
         assert (mNativeView != 0);
+        assert (windowAndroid.getActivity().get() != null);
+        mAllPasswordsBottomSheetCoordinator = new AllPasswordsBottomSheetCoordinator();
+        mAllPasswordsBottomSheetCoordinator.initialize(windowAndroid.getActivity().get(),
+                BottomSheetControllerProvider.from(windowAndroid), this);
     }
 
     @CalledByNative
@@ -47,9 +53,20 @@ class AllPasswordsBottomSheetBridge {
 
     @CalledByNative
     private void showCredentials() {
-        // TODO(crbug.com/1104132): Implement.
-        // Temporary call to deleted native objects and avoid memory leak.
-        AllPasswordsBottomSheetBridgeJni.get().onDismiss(mNativeView);
+        mAllPasswordsBottomSheetCoordinator.showCredentials(mCredentials);
+    }
+
+    @Override
+    public void onCredentialSelected(Credential credential) {
+        assert mNativeView != 0 : "The native side is already dismissed";
+        AllPasswordsBottomSheetBridgeJni.get().onCredentialSelected(mNativeView, credential);
+    }
+
+    @Override
+    public void onDismissed() {
+        if (mNativeView != 0) {
+            AllPasswordsBottomSheetBridgeJni.get().onDismiss(mNativeView);
+        }
     }
 
     @NativeMethods

@@ -71,6 +71,14 @@
         android:layout_marginTop="8dp"
         layout="@layout/account_picker_row" />
 
+    <ProgressBar
+        android:id="@+id/account_picker_signin_spinner_view"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_gravity="center"
+        android:layout_marginBottom="54dp"
+        android:visibility="gone" />
+
     <org.chromium.ui.widget.ButtonCompat
         android:id="@+id/account_picker_continue_as_button"
         style="@style/FilledButton.Flat"
@@ -83,15 +91,6 @@
         android:ellipsize="end"
         android:singleLine="true"
         android:text="@string/signin_promo_continue_as" />
-
-    <ProgressBar
-        android:id="@+id/account_picker_signin_spinner_view"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
-        android:layout_gravity="center"
-        android:layout_marginTop="32dp"
-        android:layout_marginBottom="132dp"
-        android:visibility="gone" />
 
     <include
         android:id="@+id/incognito_interstitial_bottom_sheet_view"

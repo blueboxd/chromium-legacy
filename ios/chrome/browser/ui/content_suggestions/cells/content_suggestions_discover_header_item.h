@@ -38,7 +38,7 @@
 @property(nonatomic, strong) UILabel* titleLabel;
 
 // Changes header UI based on Discover feed visibility.
-- (void)changeDiscoverFeedHeaderVisibility:(BOOL)visible;
+- (void)changeHeaderForFeedVisible:(BOOL)visible;
 
 @end
 

@@ -56,19 +56,21 @@ class SavedPasswordsPresenter : public PasswordStore::Observer,
     virtual void OnSavedPasswordsChanged(SavedPasswordsView passwords) {}
   };
 
-  explicit SavedPasswordsPresenter(scoped_refptr<PasswordStore> store);
+  explicit SavedPasswordsPresenter(
+      scoped_refptr<PasswordStore> profile_store,
+      scoped_refptr<PasswordStore> account_store = nullptr);
   ~SavedPasswordsPresenter() override;
 
   // Initializes the presenter and makes it issue the first request for all
   // saved passwords.
   void Init();
 
-  // Tries to edit |password|. After checking whether |password| is present in
+  // Tries to edit |password|. After checking whether |form| is present in
   // |passwords_|, this will ask the password store to change the underlying
   // password_value to |new_password| in case it was found. This will also
-  // notify clients that an edit event happened in case |password| was present
+  // notify clients that an edit event happened in case |form| was present
   // in |passwords_|.
-  bool EditPassword(const autofill::PasswordForm& password,
+  bool EditPassword(const autofill::PasswordForm& form,
                     base::string16 new_password);
 
   // Returns a list of the currently saved credentials.
@@ -81,19 +83,26 @@ class SavedPasswordsPresenter : public PasswordStore::Observer,
  private:
   // PasswordStore::Observer
   void OnLoginsChanged(const PasswordStoreChangeList& changes) override;
+  void OnLoginsChangedIn(PasswordStore* store,
+                         const PasswordStoreChangeList& changes) override;
 
   // PasswordStoreConsumer:
   void OnGetPasswordStoreResults(
+      std::vector<std::unique_ptr<autofill::PasswordForm>> results) override;
+  void OnGetPasswordStoreResultsFrom(
+      PasswordStore* store,
       std::vector<std::unique_ptr<autofill::PasswordForm>> results) override;
 
   // Notify observers about changes in the compromised credentials.
   void NotifyEdited(const autofill::PasswordForm& password);
   void NotifySavedPasswordsChanged();
 
-  // The password store containing the saved passwords.
-  scoped_refptr<PasswordStore> store_;
+  // The password stores containing the saved passwords.
+  scoped_refptr<PasswordStore> profile_store_;
+  scoped_refptr<PasswordStore> account_store_;
 
-  // Cache of the most recently obtained saved passwords.
+  // Cache of the most recently obtained saved passwords. Profile store
+  // passwords are always stored first, and then account store passwords if any.
   std::vector<autofill::PasswordForm> passwords_;
 
   base::ObserverList<Observer, /*check_empty=*/true> observers_;

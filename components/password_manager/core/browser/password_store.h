@@ -687,9 +687,8 @@ class PasswordStore : protected PasswordStoreSync,
   using StatsResult = std::vector<InteractionsStats>;
   using StatsTask = base::OnceCallback<StatsResult()>;
 
-  using CompromisedCredentialsResult = std::vector<CompromisedCredentials>;
   using CompromisedCredentialsTask =
-      base::OnceCallback<CompromisedCredentialsResult()>;
+      base::OnceCallback<std::vector<CompromisedCredentials>()>;
 
   // Called on the main thread after initialization is completed.
   // |success| is true if initialization was successful. Sets the

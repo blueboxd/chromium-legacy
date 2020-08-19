@@ -830,13 +830,23 @@ bool SiteInstanceImpl::IsSameSite(const IsolationContext& isolation_context,
   return true;
 }
 
-bool SiteInstanceImpl::DoesSiteForURLMatch(const GURL& url) {
+bool SiteInstanceImpl::DoesSiteInfoForURLMatch(const GURL& url) {
+  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+  bool is_origin_keyed = policy->ShouldOriginGetOptInIsolation(
+      GetIsolationContext(), url::Origin::Create(url));
+
   // Note: The |allow_default_site_url| value used here MUST match the value
-  // used in CreateForURL().
-  return site_info_.site_url() ==
-         GetSiteForURLInternal(GetIsolationContext(), url,
-                               true /* should_use_effective_urls */,
-                               true /* allow_default_site_url */);
+  // used in CreateForURL().  This is why we can't use ComputeSiteInfo() or
+  // even DetermineProcessLockURL() here, which do not allow the default site
+  // URL.
+  return site_info_ ==
+         SiteInfo(GetSiteForURLInternal(GetIsolationContext(), url,
+                                        true /* should_use_effective_urls */,
+                                        true /* allow_default_site_url */),
+                  GetSiteForURLInternal(GetIsolationContext(), url,
+                                        false /* should_use_effective_urls */,
+                                        true /* allow_default_site_url */),
+                  is_origin_keyed);
 }
 
 void SiteInstanceImpl::PreventOptInOriginIsolation(
@@ -951,8 +961,7 @@ GURL SiteInstanceImpl::GetSiteForURLInternal(
   if (!origin.host().empty() && origin.scheme() != url::kFileScheme) {
     // For Strict Origin Isolation, use the full origin instead of site for all
     // HTTP/HTTPS URLs.  Note that the HTTP/HTTPS restriction guarantees that
-    // we won't hit this for hosted app effective URLs, which would otherwise
-    // need to append a non-translated site URL to the hash below (see
+    // we won't hit this for hosted app effective URLs (see
     // https://crbug.com/961386).
     if (SiteIsolationPolicy::IsStrictOriginIsolationEnabled() &&
         origin.GetURL().SchemeIsHTTPOrHTTPS())
@@ -970,24 +979,6 @@ GURL SiteInstanceImpl::GetSiteForURLInternal(
     if (policy->GetMatchingIsolatedOrigin(isolation_context, origin, site_url,
                                           &isolated_origin)) {
       return isolated_origin.GetURL();
-    }
-
-    // If an effective URL was used, augment the effective site URL with the
-    // underlying web site in the hash.  This is needed to keep
-    // navigations across sites covered by one hosted app in separate
-    // SiteInstances.  See https://crbug.com/791796.
-    //
-    // TODO(https://crbug.com/734722): Consider replacing this hack with
-    // a proper security principal.
-    if (should_use_effective_urls && url != real_url) {
-      std::string non_translated_site_url(
-          GetSiteForURLInternal(isolation_context, real_url,
-                                false /* should_use_effective_urls */,
-                                allow_default_site_url)
-              .spec());
-      GURL::Replacements replacements;
-      replacements.SetRefStr(non_translated_site_url.c_str());
-      site_url = site_url.ReplaceComponents(replacements);
     }
   } else {
     // If there is no host but there is a scheme, return the scheme.

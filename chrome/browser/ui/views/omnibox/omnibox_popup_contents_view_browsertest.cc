@@ -23,7 +23,10 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
+#include "components/omnibox/browser/omnibox_pedal.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
+#include "components/omnibox/common/omnibox_features.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -141,6 +144,50 @@ class TestAXEventObserver : public views::AXEventObserver {
   std::string omnibox_value() { return omnibox_value_; }
   std::string selected_option_name() { return selected_option_name_; }
 
+  void CheckAccessibilityCounters(int expected_count) {
+    // TODO(olesiamarukhno): Add check for text_changed_on_listboxoption_count.
+    // We need to check all thses counters to make sure all screen readers would
+    // work (different screen readers use different events).
+    EXPECT_EQ(selected_children_changed_count(), expected_count);
+    EXPECT_EQ(selection_changed_count(), expected_count);
+    EXPECT_EQ(active_descendant_changed_count(), expected_count);
+    EXPECT_EQ(value_changed_count(), expected_count);
+  }
+
+  void CheckOmniboxValue(std::vector<std::string> expected_values,
+                         std::vector<std::string> forbidden_values) {
+    for (auto expected_value : expected_values) {
+      SCOPED_TRACE(
+          base::StringPrintf("Omnibox value (%s) is expected to contain \"%s\"",
+                             omnibox_value_.c_str(), expected_value.c_str()));
+      EXPECT_TRUE(contains(omnibox_value(), expected_value));
+    }
+
+    for (auto forbidden_value : forbidden_values) {
+      SCOPED_TRACE(
+          base::StringPrintf("Omnibox value (%s) should not contain \"%s\"",
+                             omnibox_value_.c_str(), forbidden_value.c_str()));
+      EXPECT_FALSE(contains(omnibox_value(), forbidden_value));
+    }
+  }
+
+  void CheckSelectedOptionName(std::vector<std::string> expected_values,
+                               std::vector<std::string> forbidden_values) {
+    for (auto expected_value : expected_values) {
+      SCOPED_TRACE(base::StringPrintf(
+          "Selected option name (%s) is expected to contain \"%s\"",
+          selected_option_name_.c_str(), expected_value.c_str()));
+      EXPECT_TRUE(contains(selected_option_name_, expected_value));
+    }
+
+    for (auto forbidden_value : forbidden_values) {
+      SCOPED_TRACE(base::StringPrintf(
+          "Selected option name (%s) should not contain \"%s\"",
+          selected_option_name_.c_str(), forbidden_value.c_str()));
+      EXPECT_FALSE(contains(selected_option_name_, forbidden_value));
+    }
+  }
+
  private:
   int text_changed_on_listboxoption_count_ = 0;
   int selected_children_changed_count_ = 0;
@@ -155,9 +202,17 @@ class TestAXEventObserver : public views::AXEventObserver {
 
 }  // namespace
 
-class OmniboxPopupContentsViewTest : public InProcessBrowserTest {
+class OmniboxPopupContentsViewTest
+    : public InProcessBrowserTest,
+      public ::testing::WithParamInterface<bool> {
  public:
-  OmniboxPopupContentsViewTest() {}
+  OmniboxPopupContentsViewTest() {
+    if (GetParam()) {
+      feature_list_.InitWithFeatures({omnibox::kOmniboxSuggestionButtonRow,
+                                      omnibox::kOmniboxKeywordSearchButton},
+                                     {});
+    }
+  }
 
   views::Widget* CreatePopupForTestQuery();
   views::Widget* GetPopupWidget() { return popup_view()->GetWidget(); }
@@ -174,6 +229,28 @@ class OmniboxPopupContentsViewTest : public InProcessBrowserTest {
   OmniboxPopupModel* popup_model() { return edit_model()->popup_model(); }
   OmniboxPopupContentsView* popup_view() {
     return static_cast<OmniboxPopupContentsView*>(popup_model()->view());
+  }
+
+  AutocompleteMatch CreateAutocompleteMatch() {
+    AutocompleteMatch match(nullptr, 500, false,
+                            AutocompleteMatchType::HISTORY_TITLE);
+    match.contents = base::ASCIIToUTF16("https://foobar.com");
+    match.description = base::ASCIIToUTF16("The Foo Of All Bars");
+    return match;
+  }
+
+  void InitPopupWithMatch(AutocompleteMatch match) {
+    ACMatches matches;
+    matches.push_back(match);
+    InitPopupWithMatches(matches);
+  }
+
+  void InitPopupWithMatches(const ACMatches& matches) {
+    CreatePopupForTestQuery();
+    AutocompleteController* controller =
+        popup_model()->autocomplete_controller();
+    controller->result_.AppendMatches(controller->input_, matches);
+    popup_view()->UpdatePopupAppearance();
   }
 
  private:
@@ -202,7 +279,7 @@ views::Widget* OmniboxPopupContentsViewTest::CreatePopupForTestQuery() {
 }
 
 // Tests widget alignment of the different popup types.
-IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest, PopupAlignment) {
+IN_PROC_BROWSER_TEST_P(OmniboxPopupContentsViewTest, PopupAlignment) {
   views::Widget* popup = CreatePopupForTestQuery();
 
 #if defined(USE_AURA)
@@ -221,7 +298,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest, PopupAlignment) {
 }
 
 // Integration test for omnibox popup theming.
-IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest, ThemeIntegration) {
+IN_PROC_BROWSER_TEST_P(OmniboxPopupContentsViewTest, ThemeIntegration) {
   // This test relies on the light/dark variants of the result background to be
   // different. But when using the GTK theme on Linux, these colors will be the
   // same. Ensure we're not using the system (GTK) theme, which may be
@@ -304,7 +381,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest, ThemeIntegration) {
 #define MAYBE_ClickOmnibox ClickOmnibox
 #endif
 // Test that clicks over the omnibox do not hit the popup.
-IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest, MAYBE_ClickOmnibox) {
+IN_PROC_BROWSER_TEST_P(OmniboxPopupContentsViewTest, MAYBE_ClickOmnibox) {
   CreatePopupForTestQuery();
 
   gfx::NativeWindow event_window = browser()->window()->GetNativeWindow();
@@ -358,7 +435,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest, MAYBE_ClickOmnibox) {
 // Check that the location bar background (and the background of the textfield
 // it contains) changes when it receives focus, and matches the popup background
 // color.
-IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest,
+IN_PROC_BROWSER_TEST_P(OmniboxPopupContentsViewTest,
                        PopupMatchesLocationBarBackground) {
   // In dark mode the omnibox focused and unfocused colors are the same, which
   // makes this test fail; see comments below.
@@ -393,23 +470,22 @@ IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest,
   EXPECT_EQ(color_before_focus, omnibox_view()->GetBackgroundColor());
 }
 
-IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest, EmitAccessibilityEvents) {
+IN_PROC_BROWSER_TEST_P(OmniboxPopupContentsViewTest, EmitAccessibilityEvents) {
   // Creation and population of the popup should not result in a text/name
   // change accessibility event.
   TestAXEventObserver observer;
-  CreatePopupForTestQuery();
   ACMatches matches;
   AutocompleteMatch match(nullptr, 500, false,
                           AutocompleteMatchType::HISTORY_TITLE);
-  AutocompleteController* controller = popup_model()->autocomplete_controller();
   match.contents = base::ASCIIToUTF16("https://foobar.com");
   match.description = base::ASCIIToUTF16("FooBarCom");
   matches.push_back(match);
   match.contents = base::ASCIIToUTF16("https://foobarbaz.com");
   match.description = base::ASCIIToUTF16("FooBarBazCom");
   matches.push_back(match);
-  controller->result_.AppendMatches(controller->input_, matches);
-  popup_view()->UpdatePopupAppearance();
+
+  InitPopupWithMatches(matches);
+
   EXPECT_EQ(observer.text_changed_on_listboxoption_count(), 0);
 
   // Changing the user text while in the input rather than the list should not
@@ -462,63 +538,186 @@ IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest, EmitAccessibilityEvents) {
             selected_result_view->GetViewAccessibility().GetUniqueId().Get());
 }
 
-IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest,
+IN_PROC_BROWSER_TEST_P(OmniboxPopupContentsViewTest,
                        EmitAccessibilityEventsOnButtonFocusHint) {
   TestAXEventObserver observer;
-  CreatePopupForTestQuery();
-  ACMatches matches;
-  AutocompleteMatch match(nullptr, 500, false,
-                          AutocompleteMatchType::HISTORY_TITLE);
-  AutocompleteController* controller = popup_model()->autocomplete_controller();
-  match.contents = base::ASCIIToUTF16("https://foobar.com");
-  match.description = base::ASCIIToUTF16("The Foo Of All Bars");
+  AutocompleteMatch match = CreateAutocompleteMatch();
   match.has_tab_match = true;
-  matches.push_back(match);
-  controller->result_.AppendMatches(controller->input_, matches);
-  popup_view()->UpdatePopupAppearance();
+  InitPopupWithMatch(match);
 
   popup_view()->model()->SetSelection(OmniboxPopupModel::Selection(1));
-  EXPECT_EQ(observer.selected_children_changed_count(), 2);
-  EXPECT_EQ(observer.selection_changed_count(), 2);
-  EXPECT_EQ(observer.active_descendant_changed_count(), 2);
-  EXPECT_EQ(observer.value_changed_count(), 2);
-  EXPECT_TRUE(contains(observer.omnibox_value(), "The Foo Of All Bars"));
-  EXPECT_TRUE(contains(observer.selected_option_name(), "foobar.com"));
-  EXPECT_TRUE(contains(observer.omnibox_value(), "press Tab then Enter"));
-  EXPECT_TRUE(contains(observer.omnibox_value(), "2 of 2"));
-  EXPECT_TRUE(
-      contains(observer.selected_option_name(), "press Tab then Enter"));
-  EXPECT_FALSE(contains(observer.selected_option_name(), "2 of 2"));
+  observer.CheckAccessibilityCounters(2);
+  observer.CheckOmniboxValue(
+      {"The Foo Of All Bars", "press Tab then Enter", "2 of 2"}, {});
+  observer.CheckSelectedOptionName({"foobar.com", "press Tab then Enter"},
+                                   {"2 of 2"});
 
   popup_view()->model()->SetSelection(OmniboxPopupModel::Selection(
       1, OmniboxPopupModel::FOCUSED_BUTTON_TAB_SWITCH));
-  EXPECT_TRUE(contains(observer.omnibox_value(), "The Foo Of All Bars"));
-  EXPECT_EQ(observer.selected_children_changed_count(), 3);
-  EXPECT_EQ(observer.selection_changed_count(), 3);
-  EXPECT_EQ(observer.active_descendant_changed_count(), 3);
-  EXPECT_EQ(observer.value_changed_count(), 3);
-  EXPECT_TRUE(contains(observer.omnibox_value(), "press Enter to switch"));
-  EXPECT_FALSE(contains(observer.omnibox_value(), "2 of 2"));
-  EXPECT_TRUE(
-      contains(observer.selected_option_name(), "press Enter to switch"));
-  EXPECT_FALSE(contains(observer.selected_option_name(), "2 of 2"));
+  observer.CheckAccessibilityCounters(3);
+  observer.CheckOmniboxValue({"The Foo Of All Bars", "press Enter to switch"},
+                             {"2 of 2"});
+  observer.CheckSelectedOptionName({"press Enter to switch"}, {"2 of 2"});
 
   popup_view()->model()->SetSelection(
       OmniboxPopupModel::Selection(1, OmniboxPopupModel::NORMAL));
-  EXPECT_TRUE(contains(observer.omnibox_value(), "The Foo Of All Bars"));
-  EXPECT_TRUE(contains(observer.selected_option_name(), "foobar.com"));
-  EXPECT_EQ(observer.selected_children_changed_count(), 4);
-  EXPECT_EQ(observer.selection_changed_count(), 4);
-  EXPECT_EQ(observer.active_descendant_changed_count(), 4);
-  EXPECT_EQ(observer.value_changed_count(), 4);
-  EXPECT_TRUE(contains(observer.omnibox_value(), "press Tab then Enter"));
-  EXPECT_TRUE(contains(observer.omnibox_value(), "2 of 2"));
-  EXPECT_TRUE(
-      contains(observer.selected_option_name(), "press Tab then Enter"));
-  EXPECT_FALSE(contains(observer.selected_option_name(), "2 of 2"));
+  observer.CheckAccessibilityCounters(4);
+  observer.CheckOmniboxValue(
+      {"The Foo Of All Bars", "press Tab then Enter", "2 of 2"}, {});
+  observer.CheckSelectedOptionName({"foobar.com", "press Tab then Enter"},
+                                   {"2 of 2"});
 }
 
-IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest,
+IN_PROC_BROWSER_TEST_P(OmniboxPopupContentsViewTest,
+                       EmitAccessibilityEventsOnKeywordButtonFocusHint) {
+  if (!GetParam())
+    return;
+
+  TestAXEventObserver observer;
+  AutocompleteMatch match = CreateAutocompleteMatch();
+  match.keyword = base::ASCIIToUTF16("match");
+  match.associated_keyword = std::make_unique<AutocompleteMatch>();
+  InitPopupWithMatch(match);
+
+  popup_view()->model()->SetSelection(OmniboxPopupModel::Selection(1));
+  observer.CheckAccessibilityCounters(2);
+  observer.CheckOmniboxValue(
+      {"The Foo Of All Bars", "press Tab then Enter to search", "2 of 2"}, {});
+  observer.CheckSelectedOptionName(
+      {"foobar.com", "press Tab then Enter to search"}, {"2 of 2"});
+
+  popup_view()->model()->SetSelection(OmniboxPopupModel::Selection(
+      1, OmniboxPopupModel::FOCUSED_BUTTON_KEYWORD));
+  observer.CheckAccessibilityCounters(3);
+  observer.CheckOmniboxValue({"The Foo Of All Bars", "press Enter to search"},
+                             {"2 of 2"});
+  observer.CheckSelectedOptionName({"press Enter to search"}, {"2 of 2"});
+
+  popup_view()->model()->SetSelection(
+      OmniboxPopupModel::Selection(1, OmniboxPopupModel::NORMAL));
+  observer.CheckAccessibilityCounters(4);
+  observer.CheckOmniboxValue(
+      {"The Foo Of All Bars", "press Tab then Enter to search", "2 of 2"}, {});
+  observer.CheckSelectedOptionName(
+      {"foobar.com", "press Tab then Enter to search"}, {"2 of 2"});
+}
+
+IN_PROC_BROWSER_TEST_P(
+    OmniboxPopupContentsViewTest,
+    EmitAccessibilityEventsOnRemoveSuggestionButtonFocusHint) {
+  TestAXEventObserver observer;
+  AutocompleteMatch match = CreateAutocompleteMatch();
+  match.deletable = true;
+  InitPopupWithMatch(match);
+
+  popup_view()->model()->SetSelection(OmniboxPopupModel::Selection(1));
+  observer.CheckAccessibilityCounters(2);
+  observer.CheckOmniboxValue({"The Foo Of All Bars", "2 of 2"},
+                             {"press Enter to remove"});
+  observer.CheckSelectedOptionName({"foobar.com"},
+                                   {"press Enter to remove", "2 of 2"});
+
+  popup_view()->model()->SetSelection(OmniboxPopupModel::Selection(
+      1, OmniboxPopupModel::FOCUSED_BUTTON_REMOVE_SUGGESTION));
+  observer.CheckAccessibilityCounters(3);
+  observer.CheckOmniboxValue({"The Foo Of All Bars", "press Enter to remove"},
+                             {"2 of 2"});
+  observer.CheckSelectedOptionName({"press Enter to remove"}, {"2 of 2"});
+
+  popup_view()->model()->SetSelection(
+      OmniboxPopupModel::Selection(1, OmniboxPopupModel::NORMAL));
+  observer.CheckAccessibilityCounters(4);
+  observer.CheckOmniboxValue({"The Foo Of All Bars", "2 of 2"},
+                             {"press Enter to remove"});
+  observer.CheckSelectedOptionName({"foobar.com"},
+                                   {"press Enter to remove", "2 of 2"});
+}
+
+IN_PROC_BROWSER_TEST_P(OmniboxPopupContentsViewTest,
+                       EmitAccessibilityEventsOnPedalButtonFocusHint) {
+  if (!GetParam())
+    return;
+
+  TestAXEventObserver observer;
+  AutocompleteMatch match = CreateAutocompleteMatch();
+  std::unique_ptr<OmniboxPedal> pedal = std::make_unique<OmniboxPedal>(
+      OmniboxPedal::LabelStrings(
+          IDS_OMNIBOX_PEDAL_CLEAR_BROWSING_DATA_HINT,
+          IDS_OMNIBOX_PEDAL_CLEAR_BROWSING_DATA_HINT_SHORT,
+          IDS_OMNIBOX_PEDAL_CLEAR_BROWSING_DATA_SUGGESTION_CONTENTS,
+          IDS_ACC_OMNIBOX_PEDAL_CLEAR_BROWSING_DATA_SUFFIX,
+          IDS_ACC_OMNIBOX_PEDAL_CLEAR_BROWSING_DATA),
+      GURL());
+  match.pedal = pedal.get();
+  InitPopupWithMatch(match);
+
+  popup_view()->model()->SetSelection(OmniboxPopupModel::Selection(1));
+  observer.CheckAccessibilityCounters(2);
+  observer.CheckOmniboxValue(
+      {"The Foo Of All Bars", "press Tab then Enter", "2 of 2"}, {});
+  observer.CheckSelectedOptionName({"foobar.com", "press Tab then Enter"},
+                                   {"2 of 2"});
+
+  popup_view()->model()->SetSelection(
+      OmniboxPopupModel::Selection(1, OmniboxPopupModel::FOCUSED_BUTTON_PEDAL));
+  observer.CheckAccessibilityCounters(3);
+  observer.CheckOmniboxValue({"press Enter to clear"},
+                             {"The Foo Of All Bars", "2 of 2"});
+  observer.CheckSelectedOptionName({"press Enter to clear"},
+                                   {"foobar.com", "2 of 2"});
+
+  popup_view()->model()->SetSelection(
+      OmniboxPopupModel::Selection(1, OmniboxPopupModel::NORMAL));
+  observer.CheckAccessibilityCounters(4);
+  observer.CheckOmniboxValue(
+      {"The Foo Of All Bars", "press Tab then Enter", "2 of 2"}, {});
+  observer.CheckSelectedOptionName({"foobar.com", "press Tab then Enter"},
+                                   {"2 of 2"});
+}
+
+IN_PROC_BROWSER_TEST_P(OmniboxPopupContentsViewTest,
+                       EmitAccessibilityEventsOnMultipleButtonsFocusHint) {
+  if (!GetParam())
+    return;
+
+  TestAXEventObserver observer;
+  AutocompleteMatch match = CreateAutocompleteMatch();
+  match.keyword = base::ASCIIToUTF16("match");
+  match.associated_keyword = std::make_unique<AutocompleteMatch>();
+  match.has_tab_match = true;
+  InitPopupWithMatch(match);
+
+  popup_view()->model()->SetSelection(OmniboxPopupModel::Selection(1));
+  observer.CheckAccessibilityCounters(2);
+  observer.CheckOmniboxValue(
+      {"The Foo Of All Bars", "multiple actions are available", "2 of 2"}, {});
+  observer.CheckSelectedOptionName(
+      {"foobar.com", "multiple actions are available"}, {"2 of 2"});
+
+  popup_view()->model()->SetSelection(OmniboxPopupModel::Selection(
+      1, OmniboxPopupModel::FOCUSED_BUTTON_TAB_SWITCH));
+  observer.CheckAccessibilityCounters(3);
+  observer.CheckOmniboxValue({"The Foo Of All Bars", "press Enter to switch"},
+                             {"2 of 2"});
+  observer.CheckSelectedOptionName({"press Enter to switch"}, {"2 of 2"});
+
+  popup_view()->model()->SetSelection(OmniboxPopupModel::Selection(
+      1, OmniboxPopupModel::FOCUSED_BUTTON_KEYWORD));
+  observer.CheckAccessibilityCounters(4);
+  observer.CheckOmniboxValue({"The Foo Of All Bars", "press Enter to search"},
+                             {"2 of 2"});
+  observer.CheckSelectedOptionName({"press Enter to search"}, {"2 of 2"});
+
+  popup_view()->model()->SetSelection(
+      OmniboxPopupModel::Selection(1, OmniboxPopupModel::NORMAL));
+  observer.CheckAccessibilityCounters(5);
+  observer.CheckOmniboxValue(
+      {"The Foo Of All Bars", "multiple actions are available", "2 of 2"}, {});
+  observer.CheckSelectedOptionName(
+      {"foobar.com", "multiple actions are available"}, {"2 of 2"});
+}
+
+IN_PROC_BROWSER_TEST_P(OmniboxPopupContentsViewTest,
                        EmitSelectedChildrenChangedAccessibilityEvent) {
   // Create a popup for the matches.
   GetPopupWidget();
@@ -585,3 +784,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxPopupContentsViewTest,
   EXPECT_TRUE(popup_node_data_while_open.HasIntAttribute(
       ax::mojom::IntAttribute::kPopupForId));
 }
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         OmniboxPopupContentsViewTest,
+                         ::testing::Values(false, true));

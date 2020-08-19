@@ -26,7 +26,7 @@ class VulkanCXXTest : public testing::Test {
 #if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_CHROMEOS) || \
     defined(OS_FUCHSIA)
     if (use_swiftshader_) {
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
       EXPECT_TRUE(base::PathService::Get(base::DIR_MODULE, &path));
       path = path.Append("libvk_swiftshader.so");
 #else

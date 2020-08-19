@@ -68,6 +68,21 @@
 
 namespace blink {
 
+namespace {
+
+// Returns the element which the beforematch event should be fired on given a
+// matching range.
+Element* GetBeforematchElement(const Range& range) {
+  // Find-in-page matches can't span multiple block-level elements (because
+  // the text will be broken by newlines between blocks), so first we find the
+  // block-level element which contains the match.
+  // This means we only need to traverse up from one node in the range, in
+  // this case we are traversing from the start position of the range.
+  return EnclosingBlock(range.StartPosition(), kCannotCrossEditingBoundary);
+}
+
+}  // namespace
+
 TextFinder::FindMatch::FindMatch(Range* range, int ordinal)
     : range_(range), ordinal_(ordinal) {}
 
@@ -209,6 +224,11 @@ bool TextFinder::FindInternal(int identifier,
   scroll_context->range = active_match_.Get();
   scroll_context->first_match = first_match ? first_match : active_match_.Get();
   scroll_context->wrapped_around = wrapped_around;
+  Element* beforematch_element = GetBeforematchElement(*active_match_);
+  scroll_context->was_match_hidden =
+      beforematch_element &&
+      DisplayLockUtilities::NearestHiddenMatchableInclusiveAncestor(
+          *beforematch_element);
   if (options.run_synchronously_for_testing) {
     FireBeforematchEvent(std::move(scroll_context));
   } else {
@@ -809,20 +829,14 @@ void TextFinder::FireBeforematchEvent(
   }
 
   if (RuntimeEnabledFeatures::BeforeMatchEventEnabled()) {
-    // Find-in-page matches can't span multiple block-level elements (because
-    // the text will be broken by newlines between blocks), so first we find the
-    // block-level element which contains the match.
-    // This means we only need to traverse up from one node in the range, in
-    // this case we are traversing from the start position of the range.
-    Element* enclosing_block = EnclosingBlock(context->range->StartPosition(),
-                                              kCannotCrossEditingBoundary);
+    Element* beforematch_element = GetBeforematchElement(*context->range);
     // Note that we don't check the `range.EndPosition()` since we just activate
     // the beginning of the range. In find-in-page cases, the end position is
     // the same since the matches cannot cross block boundaries. However, in
     // scroll-to-text, the range might be different, but we still just activate
     // the beginning of the range. See
     // https://github.com/WICG/display-locking/issues/125 for more details.
-    if (enclosing_block) {
+    if (beforematch_element) {
       // If the beforematch event handler causes layout shift, then we should
       // give it layout shift allowance because it is responding to the user
       // initiated find-in-page.
@@ -830,7 +844,7 @@ void TextFinder::FireBeforematchEvent(
           .GetFrameView()
           ->GetLayoutShiftTracker()
           .NotifyFindInPageInput();
-      enclosing_block->DispatchEvent(
+      beforematch_element->DispatchEvent(
           *Event::CreateBubble(event_type_names::kBeforematch));
     }
     // TODO(jarhar): Consider what to do based on DOM/style modifications made
@@ -858,12 +872,11 @@ void TextFinder::Scroll(std::unique_ptr<AsyncScrollContext> context) {
   // case we shouldn't scroll to it.
   // Likewise, if the target scroll element is display locked, then we shouldn't
   // scroll to it.
-  Element* enclosing_block = EnclosingBlock(context->range->StartPosition(),
-                                            kCannotCrossEditingBoundary);
+  Element* beforematch_element = GetBeforematchElement(*context->range);
   if (context->range->collapsed() ||
-      (enclosing_block &&
+      (beforematch_element &&
        DisplayLockUtilities::NearestHiddenMatchableInclusiveAncestor(
-           *enclosing_block))) {
+           *beforematch_element))) {
     // If the range we were going to scroll to was removed or display locked,
     // then we should continue to search for the next match.
     // We don't need to worry about the case where another Find has already been
@@ -877,6 +890,12 @@ void TextFinder::Scroll(std::unique_ptr<AsyncScrollContext> context) {
                  context->wrap_within_frame, /*active_now=*/nullptr,
                  context->first_match, context->wrapped_around);
     return;
+  }
+
+  if (context->was_match_hidden) {
+    GetFrame()
+        ->GetDocument()
+        ->MarkHasFindInPageBeforematchExpandedHiddenMatchable();
   }
 
   ScrollToVisible(context->range);

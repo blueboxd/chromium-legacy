@@ -24,7 +24,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #include <fcntl.h>
 #include <sys/stat.h>
 #endif
@@ -102,7 +102,7 @@ TEST_F(VideoFrameStructTraitsTest, MojoSharedBufferVideoFrame) {
   }
 }
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 TEST_F(VideoFrameStructTraitsTest, DmabufVideoFrame) {
   const size_t num_planes = media::VideoFrame::NumPlanes(PIXEL_FORMAT_NV12);
   std::vector<int> strides = {1280, 1280};
@@ -158,11 +158,11 @@ TEST_F(VideoFrameStructTraitsTest, MailboxVideoFrame) {
   ASSERT_EQ(frame->mailbox_holder(0).mailbox, mailbox);
 }
 
-// defined(OS_LINUX) because media::FakeGpuMemoryBuffer supports
-// NativePixmapHandle backed GpuMemoryBufferHandle only.
+// defined(OS_LINUX) || defined(OS_CHROMEOS) because media::FakeGpuMemoryBuffer
+// supports NativePixmapHandle backed GpuMemoryBufferHandle only.
 // !defined(USE_OZONE) so as to force GpuMemoryBufferSupport to select
 // gfx::ClientNativePixmapFactoryDmabuf for gfx::ClientNativePixmapFactory.
-#if defined(OS_LINUX) && !defined(USE_OZONE)
+#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && !defined(USE_OZONE)
 TEST_F(VideoFrameStructTraitsTest, GpuMemoryBufferVideoFrame) {
   gfx::Size coded_size = gfx::Size(256, 256);
   gfx::Rect visible_rect(coded_size);
@@ -194,5 +194,5 @@ TEST_F(VideoFrameStructTraitsTest, GpuMemoryBufferVideoFrame) {
   EXPECT_EQ(frame->GetGpuMemoryBuffer()->GetFormat(), expected_gmb_format);
   EXPECT_EQ(frame->GetGpuMemoryBuffer()->GetSize(), expected_gmb_size);
 }
-#endif  // defined(OS_LINUX) && !defined(USE_OZONE)
+#endif  // (defined(OS_LINUX) || defined(OS_CHROMEOS)) && !defined(USE_OZONE)
 }  // namespace media

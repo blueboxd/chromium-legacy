@@ -151,7 +151,8 @@ TEST(TabCaptureCaptureOffscreenTabTest, DetermineInitialSize) {
 }
 
 // Flaky on Mac. See https://crbug.com/764464.
-#if defined(OS_MAC) || (defined(OS_LINUX) && defined(MEMORY_SANITIZER))
+#if defined(OS_MAC) || \
+    ((defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(MEMORY_SANITIZER))
 #define MAYBE_ApiTests DISABLED_ApiTests
 #else
 #define MAYBE_ApiTests ApiTests

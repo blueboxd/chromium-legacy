@@ -87,6 +87,11 @@ class COMPONENT_EXPORT(OZONE) OzonePlatform {
     base::MessagePumpType message_pump_type_for_gpu =
         base::MessagePumpType::DEFAULT;
 
+    // Determines the type of message pump that should be used for viz
+    // compositor thread.
+    base::MessagePumpType message_pump_type_for_viz_compositor =
+        base::MessagePumpType::DEFAULT;
+
     // Determines if the platform supports vulkan swap chain.
     bool supports_vulkan_swap_chain = false;
 

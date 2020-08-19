@@ -3631,4 +3631,19 @@ bool CompareWebContentsOutputToReference(
   return snapshot_matches;
 }
 
+RenderFrameHostChangedCallbackRunner::RenderFrameHostChangedCallbackRunner(
+    WebContents* content,
+    RenderFrameHostChangedCallback callback)
+    : WebContentsObserver(content), callback_(std::move(callback)) {}
+
+RenderFrameHostChangedCallbackRunner::~RenderFrameHostChangedCallbackRunner() =
+    default;
+
+void RenderFrameHostChangedCallbackRunner::RenderFrameHostChanged(
+    RenderFrameHost* old_host,
+    RenderFrameHost* new_host) {
+  if (callback_)
+    std::move(callback_).Run(old_host, new_host);
+}
+
 }  // namespace content

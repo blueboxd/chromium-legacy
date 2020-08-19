@@ -51,8 +51,6 @@ class SVGPointList final
   SVGParsingError SetValueAsString(const String&);
 
   // SVGPropertyBase:
-  String ValueAsString() const override;
-
   void Add(SVGPropertyBase*, SVGElement*) override;
   void CalculateAnimatedValue(const SVGAnimateElement&,
                               float percentage,
@@ -64,7 +62,6 @@ class SVGPointList final
   float CalculateDistance(SVGPropertyBase* to, SVGElement*) override;
 
   static AnimatedPropertyType ClassType() { return kAnimatedPoints; }
-  AnimatedPropertyType GetType() const override { return ClassType(); }
 
  private:
   template <typename CharType>

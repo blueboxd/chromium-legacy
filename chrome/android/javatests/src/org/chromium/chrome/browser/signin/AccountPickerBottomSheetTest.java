@@ -301,7 +301,12 @@ public class AccountPickerBottomSheetTest {
                     && bottomSheetView.findViewById(R.id.account_picker_bottom_sheet_subtitle)
                                .isShown();
         });
-        onView(withId(R.id.account_picker_bottom_sheet_subtitle)).check(matches(isDisplayed()));
+        onView(withText(R.string.signin_account_picker_bottom_sheet_error_title))
+                .check(matches(isDisplayed()));
+        onView(withText(R.string.signin_account_picker_general_error_subtitle))
+                .check(matches(isDisplayed()));
+        onView(withText(R.string.signin_account_picker_general_error_button))
+                .check(matches(isDisplayed()));
         onView(withId(R.id.account_picker_horizontal_divider)).check(matches(not(isDisplayed())));
         onView(withId(R.id.account_picker_selected_account)).check(matches(not(isDisplayed())));
         onView(withId(R.id.account_picker_signin_spinner_view)).check(matches(not(isDisplayed())));

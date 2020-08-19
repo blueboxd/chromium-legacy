@@ -18,7 +18,8 @@
 
 namespace chromeos {
 class RequestSystemProxyCredentialsView;
-}
+class SystemProxyNotification;
+}  // namespace chromeos
 
 namespace system_proxy {
 class SetAuthenticationDetailsResponse;
@@ -67,6 +68,9 @@ class SystemProxyManager {
 
   void SetSystemProxyEnabledForTest(bool enabled);
   void SetSystemServicesProxyUrlForTest(const std::string& local_proxy_url);
+  void SetSendAuthDetailsClosureForTest(base::RepeatingClosure closure);
+  chromeos::RequestSystemProxyCredentialsView* GetActiveAuthDialogForTest();
+  void CloseAuthDialogForTest();
 
   // Registers prefs stored in user profiles.
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
@@ -123,6 +127,10 @@ class SystemProxyManager {
       const system_proxy::ProtectionSpace& protection_space,
       const base::Optional<net::AuthCredentials>& credentials);
 
+  void ShowAuthenticationNotification(
+      const system_proxy::ProtectionSpace& protection_space,
+      bool show_error);
+
   // Shows a dialog which prompts the user to introduce proxy authentication
   // credentials for OS level traffic. If |show_error_label| is true, the
   // dialog will show a label that indicates the previous attempt to
@@ -134,8 +142,8 @@ class SystemProxyManager {
   void OnDialogCanceled(const system_proxy::ProtectionSpace& protection_space);
   void OnDialogClosed(const system_proxy::ProtectionSpace& protection_space);
 
-  // Closes the authentication dialog if shown.
-  void CloseAuthenticationDialog();
+  // Closes the authentication notification or dialog if shown.
+  void CloseAuthenticationUI();
 
   chromeos::CrosSettings* cros_settings_;
   std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
@@ -149,6 +157,10 @@ class SystemProxyManager {
   // Local state prefs, not owned.
   PrefService* local_state_ = nullptr;
 
+  // Notification which informs the user that System-proxy requires credentials
+  // for authentication to the remote proxy.
+  std::unique_ptr<chromeos::SystemProxyNotification> notification_handler_;
+
   // Owned by |auth_widget_|.
   chromeos::RequestSystemProxyCredentialsView* active_auth_dialog_ = nullptr;
   // Owned by the UI code (NativeWidget).
@@ -160,6 +172,8 @@ class SystemProxyManager {
   // Observer for Kerberos-related prefs.
   std::unique_ptr<PrefChangeRegistrar> local_state_pref_change_registrar_;
   std::unique_ptr<PrefChangeRegistrar> profile_pref_change_registrar_;
+
+  base::RepeatingClosure send_auth_details_closure_for_test_;
 
   base::WeakPtrFactory<SystemProxyManager> weak_factory_{this};
 };

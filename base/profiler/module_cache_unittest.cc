@@ -16,7 +16,7 @@
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_LINUX) || defined(OS_ANDROID)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
 #include "base/debug/proc_maps_linux.h"
 #endif
 
@@ -305,7 +305,8 @@ MAYBE_TEST(ModuleCacheTest, InvalidModule) {
 }
 
 // arm64 module support is not implemented.
-#if defined(OS_LINUX) || (defined(OS_ANDROID) && !defined(ARCH_CPU_ARM64))
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || \
+    (defined(OS_ANDROID) && !defined(ARCH_CPU_ARM64))
 // Validates that, for the memory regions listed in /proc/self/maps, the modules
 // found via ModuleCache are consistent with those regions' extents.
 TEST(ModuleCacheTest, CheckAgainstProcMaps) {

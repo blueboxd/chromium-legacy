@@ -23,7 +23,6 @@ export let AccountInfo;
  *   bodyTitle: string,
  *   bodyText: string,
  *   interceptedAccount: AccountInfo,
- *   primaryAccount: AccountInfo,
  * }}
  */
 export let InterceptionParameters;

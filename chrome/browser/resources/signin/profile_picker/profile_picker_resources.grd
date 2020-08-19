@@ -12,25 +12,25 @@
   </outputs>
   <release seq="1">
     <includes>
-    <include name="IDR_PROFILE_PICKER_IMAGES_LEFT_BANNER_IMAGE"
+      <include name="IDR_PROFILE_PICKER_IMAGES_LEFT_BANNER_IMAGE"
                file="images/left_banner_image.svg"
                type="BINDATA" />
-    <include name="IDR_PROFILE_PICKER_IMAGES_RIGHT_BANNER_IMAGE"
+      <include name="IDR_PROFILE_PICKER_IMAGES_RIGHT_BANNER_IMAGE"
                file="images/right_banner_image.svg"
                type="BINDATA" />
-    <include name="IDR_PROFILE_PICKER_IMAGES_DARK_MODE_LEFT_BANNER_IMAGE"
+      <include name="IDR_PROFILE_PICKER_IMAGES_DARK_MODE_LEFT_BANNER_IMAGE"
                file="images/dark_mode_left_banner_image.svg"
                type="BINDATA" />
-    <include name="IDR_PROFILE_PICKER_IMAGES_DARK_MODE_RIGHT_BANNER_IMAGE"
+      <include name="IDR_PROFILE_PICKER_IMAGES_DARK_MODE_RIGHT_BANNER_IMAGE"
                file="images/dark_mode_right_banner_image.svg"
                type="BINDATA" />
-    <include name="IDR_PROFILE_PICKER_PROFILE_CREATION_FLOW_IMAGES_BANNER_LIGHT_IMAGE"
+      <include name="IDR_PROFILE_PICKER_PROFILE_CREATION_FLOW_IMAGES_BANNER_LIGHT_IMAGE"
                file="profile_creation_flow/images/banner_light_image.svg"
                type="BINDATA" />
-    <include name="IDR_PROFILE_PICKER_PROFILE_CREATION_FLOW_IMAGES_BANNER_DARK_IMAGE"
+      <include name="IDR_PROFILE_PICKER_PROFILE_CREATION_FLOW_IMAGES_BANNER_DARK_IMAGE"
                file="profile_creation_flow/images/banner_dark_image.svg"
                type="BINDATA" />
-    <!-- Generated Polymer 3 elements -->
+      <!-- Generated Polymer 3 elements -->
       <include name="IDR_PROFILE_PICKER_PROFILE_PICKER_MAIN_VIEW_JS"
                file="${root_gen_dir}/chrome/browser/resources/signin/profile_picker/profile_picker_main_view.js"
                use_base_dir="false" type="BINDATA"/>
@@ -49,9 +49,12 @@
       <include name="IDR_PROFILE_PICKER_PROFILE_CREATION_FLOW_LOCAL_PROFILE_CUSTOMIZATION_JS"
                file="${root_gen_dir}/chrome/browser/resources/signin/profile_picker/profile_creation_flow/local_profile_customization.js"
                use_base_dir="false" type="BINDATA"/>
-     <include name="IDR_PROFILE_PICKER_PROFILE_PICKER_SHARED_CSS_JS"
-             file="${root_gen_dir}/chrome/browser/resources/signin/profile_picker/profile_picker_shared_css.js"
-             use_base_dir="false" type="BINDATA"/>
+      <include name="IDR_PROFILE_PICKER_PROFILE_PICKER_SHARED_CSS_JS"
+               file="${root_gen_dir}/chrome/browser/resources/signin/profile_picker/profile_picker_shared_css.js"
+               use_base_dir="false" type="BINDATA"/>
+      <include name="IDR_PROFILE_PICKER_PROFILE_CREATION_FLOW_SHARED_CSS_JS"
+               file="${root_gen_dir}/chrome/browser/resources/signin/profile_picker/profile_creation_flow/shared_css.js"
+               use_base_dir="false" type="BINDATA"/>
     </includes>
     <structures>
       <structure

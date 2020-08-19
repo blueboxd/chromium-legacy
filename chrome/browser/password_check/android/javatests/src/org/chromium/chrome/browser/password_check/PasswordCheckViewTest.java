@@ -95,18 +95,23 @@ public class PasswordCheckViewTest {
     private static final CompromisedCredential ANA =
             new CompromisedCredential("https://some-url.com/signin",
                     new GURL("https://some-url.com/"), "Ana", "some-url.com", "Ana", "password",
-                    "https://some-url.com/.well-known/change-password", "", false, false);
+                    "https://some-url.com/.well-known/change-password", "", true, false, false);
     private static final CompromisedCredential PHISHED =
             new CompromisedCredential("http://example.com/signin", new GURL("http://example.com/"),
                     "", "http://example.com", "(No username)", "DoSomething",
-                    "http://example.com/.well-known/change-password", "", true, false);
+                    "http://example.com/.well-known/change-password", "", false, true, false);
     private static final CompromisedCredential LEAKED =
             new CompromisedCredential("https://some-other-url.com/signin",
                     new GURL("https://some-other-url.com/"), "AZiegler", "some-other-url.com",
-                    "AZiegler", "N0M3rcy", "", "com.other.package", false, false);
-    private static final CompromisedCredential SCRIPTED = new CompromisedCredential(
-            "https://script.com/signin", new GURL("https://script.com/"), "Charlie", "script.com",
-            "Charlie", "secret", "https://script.com/.well-known/change-password", "", false, true);
+                    "AZiegler", "N0M3rcy", "", "com.other.package", true, false, false);
+    private static final CompromisedCredential LEAKED_AND_PHISHED =
+            new CompromisedCredential("https://super-important.com/signin",
+                    new GURL("https://super-important.com/"), "HSong", "super-important.com",
+                    "HSong", "N3rfTh1s", "", "com.important.super", true, true, false);
+    private static final CompromisedCredential SCRIPTED =
+            new CompromisedCredential("https://script.com/signin", new GURL("https://script.com/"),
+                    "Charlie", "script.com", "Charlie", "secret",
+                    "https://script.com/.well-known/change-password", "", true, false, true);
 
     private static final int LEAKS_COUNT = 2;
 
@@ -398,8 +403,9 @@ public class PasswordCheckViewTest {
         runOnUiThreadBlocking(() -> {
             mModel.get(ITEMS).add(buildCredentialItem(PHISHED));
             mModel.get(ITEMS).add(buildCredentialItem(LEAKED));
+            mModel.get(ITEMS).add(buildCredentialItem(LEAKED_AND_PHISHED));
         });
-        waitForListViewToHaveLength(2);
+        waitForListViewToHaveLength(3);
 
         // The phished credential is rendered first:
         assertThat(getCredentialOriginAt(0).getText(), is(PHISHED.getDisplayOrigin()));
@@ -416,6 +422,14 @@ public class PasswordCheckViewTest {
                 is(getString(R.string.password_check_credential_row_reason_leaked)));
         assertThat(getCredentialChangeButtonAt(1).getVisibility(), is(View.VISIBLE));
         assertThat(getCredentialChangeHintAt(1).getVisibility(), is(View.GONE));
+
+        // The leaked and phished credential is rendered third:
+        assertThat(getCredentialOriginAt(2).getText(), is(LEAKED_AND_PHISHED.getDisplayOrigin()));
+        assertThat(getCredentialUserAt(2).getText(), is(LEAKED_AND_PHISHED.getDisplayUsername()));
+        assertThat(getCredentialReasonAt(2).getText(),
+                is(getString(R.string.password_check_credential_row_reason_leaked_and_phished)));
+        assertThat(getCredentialChangeButtonAt(2).getVisibility(), is(View.VISIBLE));
+        assertThat(getCredentialChangeHintAt(2).getVisibility(), is(View.GONE));
     }
 
     @Test
@@ -519,7 +533,7 @@ public class PasswordCheckViewTest {
 
         TouchCommon.singleClickView(getCredentialMoreButtonAt(0));
 
-        onView(withText(org.chromium.chrome.R.string.remove))
+        onView(withText(R.string.password_check_credential_menu_item_remove_button_caption))
                 .inRoot(withDecorView(
                         not(is(mPasswordCheckView.getActivity().getWindow().getDecorView()))))
                 .perform(click());

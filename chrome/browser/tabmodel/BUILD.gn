@@ -30,6 +30,7 @@ android_library("java") {
     "android/java/src/org/chromium/chrome/browser/tabmodel/TabModelSelectorTabModelObserver.java",
     "android/java/src/org/chromium/chrome/browser/tabmodel/TabModelSelectorTabObserver.java",
     "android/java/src/org/chromium/chrome/browser/tabmodel/TabModelUtils.java",
+    "android/java/src/org/chromium/chrome/browser/tabmodel/TabReparentingParams.java",
   ]
   deps = [
     "//base:base_java",

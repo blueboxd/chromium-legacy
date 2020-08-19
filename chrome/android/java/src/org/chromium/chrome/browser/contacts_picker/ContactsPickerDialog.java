@@ -24,6 +24,7 @@ public class ContactsPickerDialog
     /**
      * The ContactsPickerDialog constructor.
      * @param windowAndroid The window associated with the main Activity.
+     * @param adapter An uninitialized {@link PickerAdapter} for this dialog.
      * @param listener The listener object that gets notified when an action is taken.
      * @param allowMultiple Whether the contacts picker should allow multiple items to be selected.
      * @param includeNames Whether the contacts data returned should include names.
@@ -34,14 +35,14 @@ public class ContactsPickerDialog
      * @param formattedOrigin The origin the data will be shared with, formatted for display with
      *                        the scheme omitted.
      */
-    public ContactsPickerDialog(WindowAndroid windowAndroid, ContactsPickerListener listener,
-            boolean allowMultiple, boolean includeNames, boolean includeEmails, boolean includeTel,
-            boolean includeAddresses, boolean includeIcons, String formattedOrigin,
-            VrModeProvider vrModeProvider) {
+    public ContactsPickerDialog(WindowAndroid windowAndroid, PickerAdapter adapter,
+            ContactsPickerListener listener, boolean allowMultiple, boolean includeNames,
+            boolean includeEmails, boolean includeTel, boolean includeAddresses,
+            boolean includeIcons, String formattedOrigin, VrModeProvider vrModeProvider) {
         super(windowAndroid.getContext().get(), R.style.Theme_Chromium_Fullscreen);
 
         // Initialize the main content view.
-        mCategoryView = new PickerCategoryView(windowAndroid, allowMultiple, includeNames,
+        mCategoryView = new PickerCategoryView(windowAndroid, adapter, allowMultiple, includeNames,
                 includeEmails, includeTel, includeAddresses, includeIcons, formattedOrigin, this,
                 vrModeProvider);
         mCategoryView.initialize(this, listener);

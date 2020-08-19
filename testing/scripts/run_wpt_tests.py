@@ -21,7 +21,8 @@ import sys
 import common
 import wpt_common
 
-WPT_METADATA_DIR = "../../wpt_expectations_metadata/"
+WPT_CHECKED_IN_METADATA_DIR = "../../third_party/blink/web_tests/external/wpt"
+WPT_METADATA_OUTPUT_DIR = "../../wpt_expectations_metadata/"
 WPT_OVERRIDE_EXPECTATIONS_PATH = (
     "../../third_party/blink/web_tests/WPTOverrideExpectations")
 
@@ -57,7 +58,7 @@ class WPTTestAdapter(wpt_common.BaseWptScriptAdapter):
             # those that had non-zero exit codes).
             #"--no-fail-on-unexpected",
             "--metadata",
-            WPT_METADATA_DIR,
+            WPT_METADATA_OUTPUT_DIR,
             # By specifying metadata above, WPT will try to find manifest in the
             # metadata directory. So here we point it back to the correct path
             # for the manifest.
@@ -85,9 +86,11 @@ def main():
         sys.executable,
         os.path.join(wpt_common.BLINK_TOOLS_DIR, 'build_wpt_metadata.py'),
         "--metadata-output-dir",
-        WPT_METADATA_DIR,
+        WPT_METADATA_OUTPUT_DIR,
         "--additional-expectations",
-        WPT_OVERRIDE_EXPECTATIONS_PATH
+        WPT_OVERRIDE_EXPECTATIONS_PATH,
+        "--checked-in-metadata-dir",
+        WPT_CHECKED_IN_METADATA_DIR
     ])
 
     adapter = WPTTestAdapter()

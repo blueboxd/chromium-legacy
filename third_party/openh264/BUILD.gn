@@ -40,12 +40,9 @@ config("config") {
   }
 }
 
-# NASM assembly is only checked to be working on Windows and Linux.
-# Mac is known to fail certain tests when building, but actual assembly
-# is believed to work.
 # MSAN builds are flaky with assembler. crbug.com/685168
 
-use_assembler = (is_win || is_linux || is_chromeos) &&
+use_assembler = (is_win || is_mac || is_linux || is_chromeos) &&
                 (current_cpu == "x86" || current_cpu == "x64") && !is_msan
 
 # This IF statement will make the targets visible only on specific builds,

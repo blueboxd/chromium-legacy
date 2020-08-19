@@ -8,6 +8,7 @@
 #include "base/strings/strcat.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/federated_learning/floc_remote_permission_service.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
@@ -25,6 +26,24 @@ namespace federated_learning {
 
 namespace {
 
+class FakeFlocRemotePermissionService : public FlocRemotePermissionService {
+ public:
+  using FlocRemotePermissionService::FlocRemotePermissionService;
+
+  void QueryFlocPermission(QueryFlocPermissionCallback callback,
+                           const net::PartialNetworkTrafficAnnotationTag&
+                               partial_traffic_annotation) override {
+    std::move(callback).Run(swaa_nac_account_enabled_);
+  }
+
+  void set_swaa_nac_account_enabled(bool enabled) {
+    swaa_nac_account_enabled_ = enabled;
+  }
+
+ private:
+  bool swaa_nac_account_enabled_ = true;
+};
+
 class MockFlocIdProvider : public FlocIdProviderImpl {
  public:
   using FlocIdProviderImpl::FlocIdProviderImpl;
@@ -39,10 +58,6 @@ class MockFlocIdProvider : public FlocIdProviderImpl {
     return third_party_cookies_allowed_;
   }
 
-  void IsSwaaNacAccountEnabled(CanComputeFlocCallback callback) override {
-    std::move(callback).Run(swaa_nac_account_enabled_);
-  }
-
   size_t floc_update_notification_count() const {
     return floc_update_notification_count_;
   }
@@ -51,14 +66,9 @@ class MockFlocIdProvider : public FlocIdProviderImpl {
     third_party_cookies_allowed_ = allowed;
   }
 
-  void set_swaa_nac_account_enabled(bool enabled) {
-    swaa_nac_account_enabled_ = enabled;
-  }
-
  private:
   size_t floc_update_notification_count_ = 0u;
   bool third_party_cookies_allowed_ = true;
-  bool swaa_nac_account_enabled_ = true;
 };
 
 }  // namespace
@@ -82,10 +92,13 @@ class FlocIdProviderUnitTest : public testing::Test {
         syncer::SyncService::TransportState::DISABLED);
 
     fake_user_event_service_ = std::make_unique<syncer::FakeUserEventService>();
+    fake_floc_remote_permission_service_ =
+        std::make_unique<FakeFlocRemotePermissionService>(
+            /*url_loader_factory=*/nullptr);
 
     floc_id_provider_ = std::make_unique<MockFlocIdProvider>(
         test_sync_service_.get(), /*cookie_settings=*/nullptr,
-        /*floc_remote_permission_service=*/nullptr, history_service_.get(),
+        fake_floc_remote_permission_service_.get(), history_service_.get(),
         fake_user_event_service_.get());
 
     task_environment_.RunUntilIdle();
@@ -94,6 +107,11 @@ class FlocIdProviderUnitTest : public testing::Test {
   void CheckCanComputeFloc(
       FlocIdProviderImpl::CanComputeFlocCallback callback) {
     floc_id_provider_->CheckCanComputeFloc(std::move(callback));
+  }
+
+  void IsSwaaNacAccountEnabled(
+      FlocIdProviderImpl::CanComputeFlocCallback callback) {
+    floc_id_provider_->IsSwaaNacAccountEnabled(std::move(callback));
   }
 
   void OnGetRecentlyVisitedURLsCompleted(
@@ -130,12 +148,18 @@ class FlocIdProviderUnitTest : public testing::Test {
     floc_id_provider_->first_floc_computation_triggered_ = triggered;
   }
 
+  void SetRemoteSwaaNacAccountEnabled(bool enabled) {
+    fake_floc_remote_permission_service_->set_swaa_nac_account_enabled(enabled);
+  }
+
  protected:
   content::BrowserTaskEnvironment task_environment_;
 
   std::unique_ptr<history::HistoryService> history_service_;
   std::unique_ptr<syncer::TestSyncService> test_sync_service_;
   std::unique_ptr<syncer::FakeUserEventService> fake_user_event_service_;
+  std::unique_ptr<FakeFlocRemotePermissionService>
+      fake_floc_remote_permission_service_;
   std::unique_ptr<MockFlocIdProvider> floc_id_provider_;
 
   base::ScopedTempDir temp_dir_;
@@ -301,12 +325,47 @@ TEST_F(FlocIdProviderUnitTest,
   test_sync_service_->SetTransportState(
       syncer::SyncService::TransportState::ACTIVE);
 
-  floc_id_provider_->set_swaa_nac_account_enabled(false);
+  SetRemoteSwaaNacAccountEnabled(false);
 
   base::OnceCallback<void(bool)> cb = base::BindOnce(
       [](bool can_compute_floc) { ASSERT_FALSE(can_compute_floc); });
 
   CheckCanComputeFloc(std::move(cb));
+  task_environment_.RunUntilIdle();
+}
+
+TEST_F(FlocIdProviderUnitTest, SwaaNacAccountEnabledUseCacheStatus) {
+  base::OnceCallback<void(bool)> assert_enabled_callback_1 = base::BindOnce(
+      [](bool can_compute_floc) { ASSERT_TRUE(can_compute_floc); });
+
+  // The permission status in the fake_floc_remote_premission_service_ is by
+  // default enabled.
+  IsSwaaNacAccountEnabled(std::move(assert_enabled_callback_1));
+  task_environment_.RunUntilIdle();
+
+  // Turn off the permission in the fake_floc_remote_premission_service_.
+  SetRemoteSwaaNacAccountEnabled(false);
+
+  base::OnceCallback<void(bool)> assert_enabled_callback_2 = base::BindOnce(
+      [](bool can_compute_floc) { ASSERT_TRUE(can_compute_floc); });
+
+  // Fast forward by 11 hours. The cache is still valid.
+  task_environment_.FastForwardBy(base::TimeDelta::FromHours(11));
+
+  // The permission status is still enabled because it was obtained from the
+  // cache.
+  IsSwaaNacAccountEnabled(std::move(assert_enabled_callback_2));
+  task_environment_.RunUntilIdle();
+
+  // Fast forward by 1 hour so the cache becomes invalid.
+  task_environment_.FastForwardBy(base::TimeDelta::FromHours(1));
+
+  base::OnceCallback<void(bool)> assert_disabled_callback = base::BindOnce(
+      [](bool can_compute_floc) { ASSERT_FALSE(can_compute_floc); });
+
+  // The permission status should be obtained from the server again, and it's
+  // now disabled.
+  IsSwaaNacAccountEnabled(std::move(assert_disabled_callback));
   task_environment_.RunUntilIdle();
 }
 
@@ -321,6 +380,9 @@ TEST_F(FlocIdProviderUnitTest, EventLogging) {
   ASSERT_EQ(1u, fake_user_event_service_->GetRecordedUserEvents().size());
   const sync_pb::UserEventSpecifics& specifics1 =
       fake_user_event_service_->GetRecordedUserEvents()[0];
+  EXPECT_EQ(specifics1.event_time_usec(),
+            base::Time::Now().ToDeltaSinceWindowsEpoch().InMicroseconds());
+
   EXPECT_EQ(sync_pb::UserEventSpecifics::kFlocIdComputedEvent,
             specifics1.event_case());
 
@@ -330,6 +392,8 @@ TEST_F(FlocIdProviderUnitTest, EventLogging) {
             event1.event_trigger());
   EXPECT_EQ(12345ULL, event1.floc_id());
 
+  task_environment_.FastForwardBy(base::TimeDelta::FromDays(3));
+
   set_floc_id(FlocId(999ULL));
   floc_id_provider_->NotifyFlocUpdated(
       FlocIdProviderImpl::ComputeFlocTrigger::kScheduledUpdate);
@@ -337,6 +401,8 @@ TEST_F(FlocIdProviderUnitTest, EventLogging) {
   ASSERT_EQ(2u, fake_user_event_service_->GetRecordedUserEvents().size());
   const sync_pb::UserEventSpecifics& specifics2 =
       fake_user_event_service_->GetRecordedUserEvents()[1];
+  EXPECT_EQ(specifics2.event_time_usec(),
+            base::Time::Now().ToDeltaSinceWindowsEpoch().InMicroseconds());
   EXPECT_EQ(sync_pb::UserEventSpecifics::kFlocIdComputedEvent,
             specifics2.event_case());
 
@@ -353,6 +419,8 @@ TEST_F(FlocIdProviderUnitTest, EventLogging) {
   ASSERT_EQ(3u, fake_user_event_service_->GetRecordedUserEvents().size());
   const sync_pb::UserEventSpecifics& specifics3 =
       fake_user_event_service_->GetRecordedUserEvents()[2];
+  EXPECT_EQ(specifics3.event_time_usec(),
+            base::Time::Now().ToDeltaSinceWindowsEpoch().InMicroseconds());
   EXPECT_EQ(sync_pb::UserEventSpecifics::kFlocIdComputedEvent,
             specifics3.event_case());
 

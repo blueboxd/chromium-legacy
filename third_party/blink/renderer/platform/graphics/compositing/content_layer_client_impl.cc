@@ -88,9 +88,21 @@ scoped_refptr<cc::PictureLayer> ContentLayerClientImpl::UpdateCcPictureLayer(
   if (layer_state != layer_state_)
     cc_picture_layer_->SetSubtreePropertyChanged();
 
+  raster_invalidated_ = false;
+  gfx::Size old_layer_size = raster_invalidator_.LayerBounds().size();
+  DCHECK_EQ(old_layer_size, cc_picture_layer_->bounds());
   raster_invalidator_.Generate(raster_invalidation_function_, paint_artifact,
                                paint_chunks, layer_bounds, layer_state);
   layer_state_ = layer_state;
+
+  base::Optional<RasterUnderInvalidationCheckingParams>
+      raster_under_invalidation_params;
+  if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled()) {
+    raster_under_invalidation_params.emplace(
+        *raster_invalidator_.GetTracking(),
+        IntRect(0, 0, layer_bounds.width(), layer_bounds.height()),
+        paint_chunks[0].id.client.DebugName());
+  }
 
   // Note: cc::Layer API assumes the layer bounds start at (0, 0), but the
   // bounding box of a paint chunk does not necessarily start at (0, 0) (and
@@ -99,20 +111,23 @@ scoped_refptr<cc::PictureLayer> ContentLayerClientImpl::UpdateCcPictureLayer(
   // offset_to_transform_parent with the origin of the paint chunk here.
   cc_picture_layer_->SetOffsetToTransformParent(
       layer_bounds.OffsetFromOrigin());
-  cc_picture_layer_->SetBounds(layer_bounds.size());
-  cc_picture_layer_->SetHitTestable(true);
 
-  base::Optional<RasterUnderInvalidationCheckingParams> params;
-  if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled()) {
-    params.emplace(*raster_invalidator_.GetTracking(),
-                   IntRect(0, 0, layer_bounds.width(), layer_bounds.height()),
-                   paint_chunks[0].id.client.DebugName());
+  // If nothing changed in the layer, keep the original display item list.
+  // Here check layer_bounds because RasterInvalidator doesn't issue raster
+  // invalidation when layer_bounds become empty or non-empty from empty.
+  if (layer_bounds.size() == old_layer_size && !raster_invalidated_ &&
+      !raster_under_invalidation_params && cc_display_item_list_) {
+    DCHECK_EQ(cc_picture_layer_->bounds(), layer_bounds.size());
+    return cc_picture_layer_;
   }
+
   cc_display_item_list_ = PaintChunksToCcLayer::Convert(
       paint_chunks, layer_state, layer_bounds.OffsetFromOrigin(),
       display_item_list, cc::DisplayItemList::kTopLevelDisplayItemList,
-      base::OptionalOrNullptr(params));
+      base::OptionalOrNullptr(raster_under_invalidation_params));
 
+  cc_picture_layer_->SetBounds(layer_bounds.size());
+  cc_picture_layer_->SetHitTestable(true);
   cc_picture_layer_->SetIsDrawable(
       (!layer_bounds.IsEmpty() && cc_display_item_list_->TotalOpCount()) ||
       // Backdrop effects and filters require the layer to be drawable even if

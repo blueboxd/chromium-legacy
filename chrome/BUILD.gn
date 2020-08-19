@@ -573,8 +573,6 @@ if (is_win) {
 
     outputs = [ _stamp_file ]
 
-    _old_versions_dir =
-        "$root_out_dir/$chrome_product_full_name.app/Contents/Versions"
     _versions_dir = "$root_out_dir/$chrome_product_full_name.app/Contents/Frameworks/$chrome_framework_name.framework/Versions"
 
     args = [
@@ -586,8 +584,6 @@ if (is_win) {
       chrome_version_full,
       "--keep",
       "Current",
-      "--delete",
-      rebase_path(_old_versions_dir, root_build_dir),
     ]
   }
 

@@ -693,7 +693,7 @@ bool PasswordStore::InitOnBackgroundSequence() {
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&PasswordStoreConsumer::OnGetPasswordStoreResultsFrom,
-                     reuse_detector_->GetWeakPtr(), base::WrapRefCounted(this),
+                     reuse_detector_->GetWeakPtr(), base::RetainedRef(this),
                      GetAutofillableLoginsImpl()));
 #endif
   return true;
@@ -894,7 +894,7 @@ void PasswordStore::PostLoginsTaskAndReplyToConsumerWithResult(
   consumer->cancelable_task_tracker()->PostTaskAndReplyWithResult(
       background_task_runner_.get(), FROM_HERE, std::move(task),
       base::BindOnce(&PasswordStoreConsumer::OnGetPasswordStoreResultsFrom,
-                     consumer->GetWeakPtr(), base::WrapRefCounted(this)));
+                     consumer->GetWeakPtr(), base::RetainedRef(this)));
 }
 
 void PasswordStore::PostLoginsTaskAndReplyToConsumerWithProcessedResult(
@@ -905,7 +905,7 @@ void PasswordStore::PostLoginsTaskAndReplyToConsumerWithProcessedResult(
   auto call_consumer = base::BindOnce(
       CloseTraceAndCallBack, trace_name, consumer,
       base::BindOnce(&PasswordStoreConsumer::OnGetPasswordStoreResultsFrom,
-                     consumer->GetWeakPtr(), base::WrapRefCounted(this)));
+                     consumer->GetWeakPtr(), base::RetainedRef(this)));
   consumer->cancelable_task_tracker()->PostTaskAndReplyWithResult(
       background_task_runner_.get(), FROM_HERE, std::move(task),
       base::BindOnce(std::move(processor), std::move(call_consumer)));

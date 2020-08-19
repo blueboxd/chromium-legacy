@@ -3340,27 +3340,31 @@ TEST_P(RenderFrameHostManagerTest,
   NavigationSimulator::NavigateAndCommitFromBrowser(contents(), kFooUrl);
   scoped_refptr<SiteInstanceImpl> initial_instance =
       main_test_rfh()->GetSiteInstance();
+  SiteInfo foo_site_info = SiteInstanceImpl::ComputeSiteInfo(
+      initial_instance->GetIsolationContext(), kFooUrl);
   if (AreDefaultSiteInstancesEnabled()) {
     EXPECT_TRUE(initial_instance->IsDefaultSiteInstance());
   } else {
     EXPECT_FALSE(initial_instance->IsDefaultSiteInstance());
     EXPECT_EQ(kFooUrl, initial_instance->original_url());
-    EXPECT_EQ(kFooUrl, initial_instance->GetSiteURL());
+    EXPECT_EQ(foo_site_info, initial_instance->GetSiteInfo());
   }
 
   // Simulate a browser-initiated navigation to an app URL, which should swap
   // processes and create a new SiteInstance in a new BrowsingInstance.
-  // This new SiteInstance should have correct |original_url()| and site URL.
-  // The site URL should include both the |original_url()|'s site and the
-  // translated URL's site.
+  // This new SiteInstance should have correct |original_url()| and a SiteInfo
+  // that's based on it.
   NavigationSimulator::NavigateAndCommitFromBrowser(contents(), kOriginalUrl);
   EXPECT_NE(initial_instance.get(), main_test_rfh()->GetSiteInstance());
   EXPECT_FALSE(initial_instance->IsRelatedSiteInstance(
       main_test_rfh()->GetSiteInstance()));
   EXPECT_EQ(kOriginalUrl, main_test_rfh()->GetSiteInstance()->original_url());
-  GURL expected_site_url(kTranslatedUrl.spec() + "#" + kOriginalUrl.spec());
-  EXPECT_EQ(expected_site_url,
-            main_test_rfh()->GetSiteInstance()->GetSiteURL());
+
+  SiteInfo expected_site_info = SiteInstanceImpl::ComputeSiteInfo(
+      main_test_rfh()->GetSiteInstance()->GetIsolationContext(), kOriginalUrl);
+  EXPECT_EQ(expected_site_info,
+            main_test_rfh()->GetSiteInstance()->GetSiteInfo());
+  EXPECT_NE(foo_site_info, main_test_rfh()->GetSiteInstance()->GetSiteInfo());
 
   SetBrowserClientForTesting(regular_client);
 }

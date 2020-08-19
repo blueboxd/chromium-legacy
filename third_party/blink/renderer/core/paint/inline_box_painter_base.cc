@@ -20,8 +20,7 @@ void InlineBoxPainterBase::PaintBoxDecorationBackground(
     const PhysicalRect& adjusted_frame_rect,
     BackgroundImageGeometry geometry,
     bool object_has_multiple_boxes,
-    bool include_logical_left_edge,
-    bool include_logical_right_edge) {
+    PhysicalBoxSides sides_to_include) {
   // Shadow comes first and is behind the background and border.
   PaintNormalBoxShadow(paint_info, line_style_, adjusted_frame_rect);
 
@@ -40,10 +39,9 @@ void InlineBoxPainterBase::PaintBoxDecorationBackground(
     case kDontPaintBorders:
       break;
     case kPaintBordersWithoutClip:
-      BoxPainterBase::PaintBorder(
-          image_observer_, *document_, node_, paint_info, adjusted_frame_rect,
-          line_style_, kBackgroundBleedNone, include_logical_left_edge,
-          include_logical_right_edge);
+      BoxPainterBase::PaintBorder(image_observer_, *document_, node_,
+                                  paint_info, adjusted_frame_rect, line_style_,
+                                  kBackgroundBleedNone, sides_to_include);
       break;
     case kPaintBordersWithClip:
       // FIXME: What the heck do we do with RTL here? The math we're using is

@@ -11,18 +11,17 @@
 #include "media/base/video_frame.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap_source.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/modules/webcodecs/plane.h"
+#include "third_party/blink/renderer/modules/webcodecs/video_frame_handle.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
-#include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
-#include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 
 namespace blink {
 
 class ImageBitmap;
 class ExceptionState;
-class Plane;
 class ScriptPromise;
 class ScriptState;
 class VideoFrameInit;
@@ -32,41 +31,19 @@ class MODULES_EXPORT VideoFrame final : public ScriptWrappable,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  // Wrapper class that allows sharing a single |frame_| reference across
-  // multiple VideoFrames, which can be invalidated for all frames at once.
-  class MODULES_EXPORT Handle : public WTF::ThreadSafeRefCounted<Handle> {
-   public:
-    explicit Handle(scoped_refptr<media::VideoFrame>);
-
-    // Returns a copy of |frame_|, which should be re-used throughout the scope
-    // of a function call, instead of calling frame() multiple times.
-    scoped_refptr<media::VideoFrame> frame();
-
-    // Releases the underlying media::VideoFrame reference, affecting all
-    // blink::VideoFrames that hold a reference to |this|.
-    void Invalidate();
-
-   private:
-    friend class WTF::ThreadSafeRefCounted<Handle>;
-    ~Handle() = default;
-
-    WTF::Mutex mutex_;
-    scoped_refptr<media::VideoFrame> frame_;
-  };
-
-  // Creates a VideoFrame with a new Handle wrapping |frame|.
+  // Creates a VideoFrame with a new VideoFrameHandle wrapping |frame|.
   explicit VideoFrame(scoped_refptr<media::VideoFrame> frame);
 
   // Creates a VideoFrame from an existing handle.
   // All frames sharing |handle| will have their |handle_| invalidated if any of
   // the frames receives a call to destroy().
-  explicit VideoFrame(scoped_refptr<Handle> handle);
+  explicit VideoFrame(scoped_refptr<VideoFrameHandle> handle);
 
   // video_frame.idl implementation.
   static VideoFrame* Create(ImageBitmap*, VideoFrameInit*, ExceptionState&);
 
   String format() const;
-  HeapVector<Member<Plane>> planes() const;
+  base::Optional<HeapVector<Member<Plane>>> planes();
 
   uint32_t codedWidth() const;
   uint32_t codedHeight() const;
@@ -95,13 +72,18 @@ class MODULES_EXPORT VideoFrame final : public ScriptWrappable,
                                   const ImageBitmapOptions*,
                                   ExceptionState&);
 
-  scoped_refptr<VideoFrame::Handle> handle();
+  scoped_refptr<VideoFrameHandle> handle();
 
   // Convenience functions
   scoped_refptr<media::VideoFrame> frame();
   scoped_refptr<const media::VideoFrame> frame() const;
 
+  // GarbageCollected override
+  void Trace(Visitor*) const override;
+
  private:
+  static bool IsSupportedPlanarFormat(media::VideoFrame*);
+
   // ImageBitmapSource implementation
   static constexpr uint64_t kCpuEfficientFrameSize = 320u * 240u;
   IntSize BitmapSourceSize() const override;
@@ -111,7 +93,8 @@ class MODULES_EXPORT VideoFrame final : public ScriptWrappable,
                                   const ImageBitmapOptions*,
                                   ExceptionState&) override;
 
-  scoped_refptr<VideoFrame::Handle> handle_;
+  scoped_refptr<VideoFrameHandle> handle_;
+  HeapVector<Member<Plane>> planes_;
 };
 
 }  // namespace blink

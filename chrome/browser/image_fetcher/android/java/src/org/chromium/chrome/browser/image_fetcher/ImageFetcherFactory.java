@@ -12,57 +12,6 @@ import org.chromium.chrome.browser.profiles.Profile;
  */
 public class ImageFetcherFactory {
     /**
-     * Alias for createImageFetcher below. If used before browser initialization, this will throw an
-     * IllegalStateException. This method always uses regular profile to get ImageFetcherBridge.
-     *
-     * https://crbug.com/1083923: Remove after replacing all use cases.
-     *
-     * @deprecated use {@link ImageFetcherFactory#createImageFetcher(int, Profile)} instead.
-     */
-    @Deprecated
-    public static ImageFetcher createImageFetcher(@ImageFetcherConfig int config) {
-        ImageFetcherBridge bridge =
-                ImageFetcherBridge.getForProfile(Profile.getLastUsedRegularProfile());
-        return createImageFetcher(
-                config, bridge, null, InMemoryCachedImageFetcher.DEFAULT_CACHE_SIZE);
-    }
-
-    /**
-     * Alias for createImageFetcher below. If used before browser initialization, this will throw an
-     * IllegalStateException. This method always uses regular profile to get ImageFetcherBridge.
-     *
-     * https://crbug.com/1083923: Remove after replacing all use cases.
-     *
-     * @deprecated use {@link ImageFetcherFactory#createImageFetcher(int, DiscardableReferencePool,
-     *         Profile)} instead.
-     */
-    @Deprecated
-    public static ImageFetcher createImageFetcher(
-            @ImageFetcherConfig int config, DiscardableReferencePool discardableReferencePool) {
-        ImageFetcherBridge bridge =
-                ImageFetcherBridge.getForProfile(Profile.getLastUsedRegularProfile());
-        return createImageFetcher(config, bridge, discardableReferencePool,
-                InMemoryCachedImageFetcher.DEFAULT_CACHE_SIZE);
-    }
-
-    /**
-     * Alias for createImageFetcher below. If used before browser initialization, this will throw an
-     * IllegalStateException. This method always uses regular profile to get ImageFetcherBridge.
-     *
-     * https://crbug.com/1083923: Remove after replacing all use cases.
-     *
-     * @deprecated use {@link ImageFetcherFactory#createImageFetcher(int, DiscardableReferencePool,
-     *         int, Profile)} instead.
-     */
-    @Deprecated
-    public static ImageFetcher createImageFetcher(@ImageFetcherConfig int config,
-            DiscardableReferencePool discardableReferencePool, int inMemoryCacheSize) {
-        ImageFetcherBridge bridge =
-                ImageFetcherBridge.getForProfile(Profile.getLastUsedRegularProfile());
-        return createImageFetcher(config, bridge, discardableReferencePool, inMemoryCacheSize);
-    }
-
-    /**
      * Alias for createImageFetcher below.
      */
     public static ImageFetcher createImageFetcher(@ImageFetcherConfig int config, Profile profile) {

@@ -97,7 +97,13 @@ PageSpecificContentSettingsDelegate::GetMicrophoneCameraState() {
 void PageSpecificContentSettingsDelegate::OnContentBlocked(
     ContentSettingsType type) {}
 
+void PageSpecificContentSettingsDelegate::OnCacheStorageAccessAllowed(
+    const url::Origin& origin) {}
+
 void PageSpecificContentSettingsDelegate::OnCookieAccessAllowed(
     const net::CookieList& accessed_cookies) {}
+
+void PageSpecificContentSettingsDelegate::OnIndexedDBAccessAllowed(
+    const url::Origin& origin) {}
 
 }  // namespace weblayer

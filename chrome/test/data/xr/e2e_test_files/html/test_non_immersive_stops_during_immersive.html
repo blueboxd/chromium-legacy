@@ -16,7 +16,6 @@ is active, but resumes afterwards.
       setup({single_test: true});
 
       let counter = 0;
-      let nonImmersiveDuringImmersiveCounter = 0;
 
       function stepBeforeImmersive() {
         onMagicWindowXRFrameCallback = function() {
@@ -24,17 +23,8 @@ is active, but resumes afterwards.
           // are not done while there is an immersive session.
           onMagicWindowXRFrameCallback = function() {
             if (sessionInfos[sessionTypes.IMMERSIVE].currentSession !== null) {
-              // TODO(https://crbug.com/1116261): Investigate a proper product
-              // fix so that this can be removed.
-              // The inline rAF loop should not be started back again until we
-              // have been notified that the immersive session ended; however,
-              // a non-immersive rAF may have already been scheduled and not be
-              // cancellable once the immersive session returns, leading to a
-              // race. To this end, we will allow for at most one non-immersive
-              // frame to be called while we have an immersive session.
-              nonImmersiveDuringImmersiveCounter++;
-              assert_less_than_equal(nonImmersiveDuringImmersiveCounter, 1,
-                  "Non-immersive rAF called during immersive session more than allowed");
+              assert_unreached(
+                  "Non-immersive rAF called during immersive session");
             }
           }
           finishJavaScriptStep();

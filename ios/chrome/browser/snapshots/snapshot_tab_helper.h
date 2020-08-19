@@ -14,6 +14,7 @@
 #include "ios/web/public/web_state_observer.h"
 #import "ios/web/public/web_state_user_data.h"
 
+@class SnapshotCache;
 @class SnapshotGenerator;
 @protocol SnapshotGeneratorDelegate;
 
@@ -29,13 +30,17 @@ class SnapshotTabHelper : public infobars::InfoBarManager::Observer,
   ~SnapshotTabHelper() override;
 
   // Creates the tab helper for |web_state| if it does not exists. The
-  // unique identifier |session_id| is used when interacting with the
+  // unique identifier |tab_id| is used when interacting with the
   // cache to save or fetch snapshots.
-  static void CreateForWebState(web::WebState* web_state, NSString* session_id);
+  static void CreateForWebState(web::WebState* web_state, NSString* tab_id);
 
   // Sets the delegate. Capturing snapshot before setting a delegate will
   // results in failures. The delegate is not owned by the tab helper.
   void SetDelegate(id<SnapshotGeneratorDelegate> delegate);
+
+  // Sets the snapshot cache to be used to store and retrieve snapshots. This is
+  // not owned by the tab helper.
+  void SetSnapshotCache(SnapshotCache* snapshot_cache);
 
   // Retrieves a color snapshot for the current page, invoking |callback|
   // with the image. The callback may be called synchronously is there is
@@ -76,7 +81,7 @@ class SnapshotTabHelper : public infobars::InfoBarManager::Observer,
  private:
   friend class web::WebStateUserData<SnapshotTabHelper>;
 
-  SnapshotTabHelper(web::WebState* web_state, NSString* session_id);
+  SnapshotTabHelper(web::WebState* web_state, NSString* tab_id);
 
   // web::WebStateObserver implementation.
   void PageLoaded(

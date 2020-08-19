@@ -82,7 +82,6 @@ health::mojom::BatteryResultPtr UncheckedConvertPtr(
       return health::mojom::BatteryResult::NewError(
           ConvertPtr(std::move(input->get_error())));
   }
-  NOTREACHED();
 }
 
 health::mojom::NonRemovableBlockDeviceInfoPtr UncheckedConvertPtr(
@@ -111,7 +110,6 @@ health::mojom::NonRemovableBlockDeviceResultPtr UncheckedConvertPtr(
       return health::mojom::NonRemovableBlockDeviceResult::NewError(
           ConvertPtr(std::move(input->get_error())));
   }
-  NOTREACHED();
 }
 
 health::mojom::CachedVpdInfoPtr UncheckedConvertPtr(
@@ -130,7 +128,6 @@ health::mojom::CachedVpdResultPtr UncheckedConvertPtr(
       return health::mojom::CachedVpdResult::NewError(
           ConvertPtr(std::move(input->get_error())));
   }
-  NOTREACHED();
 }
 
 health::mojom::CpuCStateInfoPtr UncheckedConvertPtr(
@@ -197,7 +194,6 @@ health::mojom::CpuResultPtr UncheckedConvertPtr(
       return health::mojom::CpuResult::NewError(
           ConvertPtr(std::move(input->get_error())));
   }
-  NOTREACHED();
 }
 
 health::mojom::TimezoneInfoPtr UncheckedConvertPtr(
@@ -215,7 +211,6 @@ health::mojom::TimezoneResultPtr UncheckedConvertPtr(
       return health::mojom::TimezoneResult::NewError(
           ConvertPtr(std::move(input->get_error())));
   }
-  NOTREACHED();
 }
 
 health::mojom::MemoryInfoPtr UncheckedConvertPtr(
@@ -236,7 +231,6 @@ health::mojom::MemoryResultPtr UncheckedConvertPtr(
       return health::mojom::MemoryResult::NewError(
           ConvertPtr(std::move(input->get_error())));
   }
-  NOTREACHED();
 }
 
 health::mojom::BacklightInfoPtr UncheckedConvertPtr(
@@ -257,7 +251,6 @@ health::mojom::BacklightResultPtr UncheckedConvertPtr(
       return health::mojom::BacklightResult::NewError(
           ConvertPtr(std::move(input->get_error())));
   }
-  NOTREACHED();
 }
 
 health::mojom::FanInfoPtr UncheckedConvertPtr(
@@ -276,7 +269,6 @@ health::mojom::FanResultPtr UncheckedConvertPtr(
       return health::mojom::FanResult::NewError(
           ConvertPtr(std::move(input->get_error())));
   }
-  NOTREACHED();
 }
 
 health::mojom::StatefulPartitionInfoPtr UncheckedConvertPtr(
@@ -297,7 +289,6 @@ health::mojom::StatefulPartitionResultPtr UncheckedConvertPtr(
       return health::mojom::StatefulPartitionResult::NewError(
           ConvertPtr(std::move(input->get_error())));
   }
-  NOTREACHED();
 }
 
 health::mojom::BluetoothAdapterInfoPtr UncheckedConvertPtr(
@@ -318,7 +309,6 @@ health::mojom::BluetoothResultPtr UncheckedConvertPtr(
       return health::mojom::BluetoothResult::NewError(
           ConvertPtr(std::move(input->get_error())));
   }
-  NOTREACHED();
 }
 
 health::mojom::TelemetryInfoPtr UncheckedConvertPtr(

@@ -24,7 +24,6 @@
 #include "third_party/blink/renderer/core/svg/svg_parser_utilities.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -32,10 +31,6 @@ namespace blink {
 SVGPointList::SVGPointList() = default;
 
 SVGPointList::~SVGPointList() = default;
-
-String SVGPointList::ValueAsString() const {
-  return SVGListPropertyHelper<SVGPointList, SVGPoint>::SerializeList();
-}
 
 template <typename CharType>
 SVGParsingError SVGPointList::Parse(const CharType*& ptr, const CharType* end) {

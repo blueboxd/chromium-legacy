@@ -12,6 +12,25 @@ namespace feature_engagement {
 
 base::Optional<FeatureConfig> GetClientSideFeatureConfig(
     const base::Feature* feature) {
+#if defined(OS_WIN) || defined(OS_APPLE) || defined(OS_LINUX) || \
+    defined(OS_CHROMEOS)
+  if (kIPHPasswordsAccountStorageFeature.name == feature->name) {
+    base::Optional<FeatureConfig> config = FeatureConfig();
+    config->valid = true;
+    config->availability = Comparator(ANY, 0);
+    config->session_rate = Comparator(ANY, 0);
+    config->trigger = EventConfig("passwords_account_storage_trigger",
+                                  Comparator(LESS_THAN, 5), 180, 180);
+    config->used = EventConfig("passwords_account_storage_used",
+                               Comparator(EQUAL, 0), 180, 180);
+    config->event_configs.insert(
+        EventConfig("passwords_account_storage_unselected",
+                    Comparator(EQUAL, 0), 180, 180));
+    return config;
+  }
+#endif  // defined(OS_WIN) || defined(OS_APPLE) || defined(OS_LINUX) ||
+        // defined(OS_CHROMEOS)
+
 #if defined(OS_ANDROID)
   if (kIPHDataSaverDetailFeature.name == feature->name) {
     base::Optional<FeatureConfig> config = FeatureConfig();

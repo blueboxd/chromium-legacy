@@ -127,8 +127,7 @@ void NGFieldsetPainter::PaintBoxDecorationBackground(
 }
 
 void NGFieldsetPainter::PaintMask(const PaintInfo& paint_info,
-                                  const PhysicalOffset& paint_offset,
-                                  const NGBorderEdges& border_edges) {
+                                  const PhysicalOffset& paint_offset) {
   // TODO(eae): Switch to LayoutNG version of BackgroundImageGeometry.
   const LayoutObject& layout_object = *fieldset_.GetLayoutObject();
   BackgroundImageGeometry geometry(
@@ -140,8 +139,7 @@ void NGFieldsetPainter::PaintMask(const PaintInfo& paint_info,
   PhysicalRect paint_rect(paint_offset, fieldset_.Size());
   paint_rect.Contract(CreateFieldsetPaintInfo().border_outsets);
   ng_box_painter.PaintMaskImages(paint_info, paint_rect, layout_object,
-                                 geometry, border_edges.line_left,
-                                 border_edges.line_right);
+                                 geometry, fieldset_.SidesToInclude());
 }
 
 }  // namespace blink

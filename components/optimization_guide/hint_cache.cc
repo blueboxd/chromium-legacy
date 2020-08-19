@@ -88,6 +88,16 @@ void HintCache::UpdateFetchedHints(
       url_keyed_hint_cache_.Put(url.spec(), nullptr);
   }
 
+  if (!optimization_guide_store_) {
+    // If there's not a store, add a null entry for each of the hosts that we
+    // didn't have already, so we don't refetch if we didn't get a hint back
+    // for it.
+    for (const std::string& host : hosts_fetched) {
+      if (host_keyed_cache_.Peek(host) == host_keyed_cache_.end())
+        host_keyed_cache_.Put(host, nullptr);
+    }
+  }
+
   ProcessAndCacheHints(get_hints_response.get()->mutable_hints(),
                        fetched_hints_update_data.get());
 
@@ -135,7 +145,7 @@ bool HintCache::HasHint(const std::string& host) {
 
   // The hint for |host| was requested but no hint was returned.
   if (!hint_it->second)
-    return false;
+    return true;
 
   MemoryHint* hint = hint_it->second.get();
   if (!hint->expiry_time() || *hint->expiry_time() > clock_->Now())

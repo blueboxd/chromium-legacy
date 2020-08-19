@@ -81,6 +81,11 @@ void FakeAdapter::SetDiscoverable(bool discoverable,
   std::move(callback).Run(/*success=*/true);
 }
 
+void FakeAdapter::SetName(const std::string& name, SetNameCallback callback) {
+  name_ = name;
+  std::move(callback).Run(/*success=*/true);
+}
+
 void FakeAdapter::StartDiscoverySession(
     StartDiscoverySessionCallback callback) {
   DCHECK(!discovery_session_);

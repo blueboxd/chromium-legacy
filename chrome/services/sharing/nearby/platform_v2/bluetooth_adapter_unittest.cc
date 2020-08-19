@@ -118,6 +118,13 @@ TEST_F(BluetoothAdapterTest, TestGetName) {
   EXPECT_EQ(fake_adapter_->name_, bluetooth_adapter_->GetName());
 }
 
+TEST_F(BluetoothAdapterTest, TestSetName) {
+  std::string name = "NewName";
+  EXPECT_NE(name, fake_adapter_->name_);
+  EXPECT_TRUE(bluetooth_adapter_->SetName(name));
+  EXPECT_EQ(name, fake_adapter_->name_);
+}
+
 }  // namespace chrome
 }  // namespace nearby
 }  // namespace location

@@ -614,7 +614,7 @@ public class VoiceRecognitionHandlerTest {
         Assert.assertEquals(null, mHandler.getVoiceSearchResult());
         Assert.assertEquals(
                 VoiceInteractionSource.NTP, mHandler.getVoiceSearchFailureEventSource());
-        Assert.assertEquals(1,
+        Assert.assertEquals(0,
                 RecordHistogram.getHistogramTotalCountForTesting(
                         "VoiceInteraction.QueryDuration.Android"));
     }
@@ -628,7 +628,7 @@ public class VoiceRecognitionHandlerTest {
         Assert.assertEquals(null, mHandler.getVoiceSearchResult());
         Assert.assertEquals(
                 VoiceInteractionSource.NTP, mHandler.getVoiceSearchDismissedEventSource());
-        Assert.assertEquals(1,
+        Assert.assertEquals(0,
                 RecordHistogram.getHistogramTotalCountForTesting(
                         "VoiceInteraction.QueryDuration.Android"));
     }
@@ -750,6 +750,26 @@ public class VoiceRecognitionHandlerTest {
                     new String[] {"a", "www.b.co.uk", "engadget.com", "www.google.com"},
                     new float[] {1.0f, 1.0f, 1.0f, 1.0f});
         });
+    }
+
+    @Test
+    @SmallTest
+    public void teststopTrackingAndRecordQueryDuration() {
+        mHandler.setQueryStartTimeForTesting(100L);
+        mHandler.stopTrackingAndRecordQueryDuration();
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramTotalCountForTesting(
+                        "VoiceInteraction.QueryDuration.Android"));
+    }
+
+    @Test
+    @SmallTest
+    public void teststopTrackingAndRecordQueryDuration_calledWithNull() {
+        mHandler.setQueryStartTimeForTesting(null);
+        mHandler.stopTrackingAndRecordQueryDuration();
+        Assert.assertEquals(0,
+                RecordHistogram.getHistogramTotalCountForTesting(
+                        "VoiceInteraction.QueryDuration.Android"));
     }
 
     private static Bundle createDummyBundle(String text, float confidence) {

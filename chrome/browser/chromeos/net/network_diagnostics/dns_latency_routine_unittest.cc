@@ -31,10 +31,12 @@ const base::TimeDelta kSignificantlyAboveThresholdDelayMs =
 
 class FakeTickClock : public base::TickClock {
  public:
+  FakeTickClock() = default;
+
   // The |dns_resolution_delay| fakes the duration of a DNS resolution.
-  explicit FakeTickClock(
-      const base::TimeDelta& dns_resolution_delay = base::TimeDelta())
-      : dns_resolution_delay_(dns_resolution_delay) {}
+  explicit FakeTickClock(const base::TimeDelta& dns_resolution_delay)
+      : current_time_(base::TimeTicks::Now()),
+        dns_resolution_delay_(dns_resolution_delay) {}
 
   ~FakeTickClock() override = default;
 

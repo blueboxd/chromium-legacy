@@ -24,6 +24,8 @@ class GURL;
 namespace device {
 namespace cablev2 {
 
+constexpr size_t kNonceSize = 10;
+
 namespace tunnelserver {
 
 // Base32Ord converts |c| into its base32 value, as defined in
@@ -74,6 +76,32 @@ GURL GetURL(uint32_t domain, Action action, base::span<const uint8_t, 16> id);
 
 }  // namespace tunnelserver
 
+namespace eid {
+
+// Components contains the parts of a decrypted EID.
+struct Components {
+  uint8_t shard_id;
+  uint32_t tunnel_server_domain;
+  std::array<uint8_t, kNonceSize> nonce;
+};
+
+// FromComponents constructs a valid EID from the given components. |IsValid|
+// will be true of the result.
+COMPONENT_EXPORT(DEVICE_FIDO)
+CableEidArray FromComponents(const Components& components);
+
+// IsValid returns true if |eid| could have been produced by |FromComponents|.
+COMPONENT_EXPORT(DEVICE_FIDO)
+bool IsValid(const CableEidArray& eid);
+
+// ToComponents explodes a decrypted EID into its components. It's the
+// inverse of |ComponentsToEID|. |IsValid| must be true for the given EID before
+// calling this function.
+COMPONENT_EXPORT(DEVICE_FIDO)
+Components ToComponents(const CableEidArray& eid);
+
+}  // namespace eid
+
 // EncodePaddedCBORMap encodes the given map and pads it to 256 bytes in such a
 // way that |DecodePaddedCBORMap| can decode it. The padding is done on the
 // assumption that the returned bytes will be encrypted and the encoded size of
@@ -91,7 +119,6 @@ base::Optional<cbor::Value> DecodePaddedCBORMap(
 
 // NonceAndEID contains both the random nonce chosen for an advert, as well as
 // the EID that was generated from it.
-constexpr size_t kNonceSize = 10;
 typedef std::pair<std::array<uint8_t, kNonceSize>,
                   std::array<uint8_t, device::kCableEphemeralIdSize>>
     NonceAndEID;

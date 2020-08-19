@@ -441,7 +441,10 @@ class CORE_EXPORT NGPhysicalFragment
   // (it's defined here to save memory, since that class has no bitfields).
   unsigned is_inline_formatting_context_ : 1;
   unsigned has_fragment_items_ : 1;
-  unsigned border_edge_ : 4;  // NGBorderEdges::Physical
+  unsigned include_border_top_ : 1;
+  unsigned include_border_right_ : 1;
+  unsigned include_border_bottom_ : 1;
+  unsigned include_border_left_ : 1;
   unsigned has_borders_ : 1;
   unsigned has_padding_ : 1;
   unsigned is_first_for_node_ : 1;

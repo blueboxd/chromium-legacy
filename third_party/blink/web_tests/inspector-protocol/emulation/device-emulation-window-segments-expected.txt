@@ -15,13 +15,13 @@ Iframe segments:
 2
 0 0 390 600
 410 0 390 600
-Unspecified display feature
+Unspecified display feature with scale
 Main frame segments:
 1
-0 0 800 600
+0 0 1600 1200
 Iframe segments:
 1
-0 0 800 600
+0 0 1600 1200
 Stacked segments
 Main frame segments:
 2

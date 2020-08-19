@@ -83,6 +83,7 @@ component("xprotos") {
     ":gen_xprotos",
     "//base",
     "//base:i18n",
+    "//ui/events/platform",
   ]
   sources = get_target_outputs(":gen_xprotos") + [
               "xproto_internal.h",

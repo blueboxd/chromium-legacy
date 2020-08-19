@@ -11,6 +11,7 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
 #include "third_party/perfetto/include/perfetto/protozero/message_handle.h"
+#include "third_party/perfetto/include/perfetto/protozero/root_message.h"
 #include "third_party/perfetto/include/perfetto/protozero/scattered_heap_buffer.h"
 #include "third_party/perfetto/include/perfetto/protozero/scattered_stream_writer.h"
 #include "third_party/perfetto/protos/perfetto/trace/track_event/debug_annotation.pbzero.h"
@@ -241,7 +242,7 @@ class ProtoWriter final : public TracedValue::Writer {
 
   std::stack<ProtoValueHandle> node_stack_;
 
-  ProtoValue proto_;
+  protozero::RootMessage<ProtoValue> proto_;
   protozero::ScatteredHeapBuffer buffer_;
   protozero::ScatteredStreamWriter stream_;
 };

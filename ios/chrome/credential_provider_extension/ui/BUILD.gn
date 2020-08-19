@@ -27,6 +27,7 @@ source_set("ui") {
   deps = [
     ":utils",
     "//base",
+    "//ios/chrome/common:constants",
     "//ios/chrome/common/app_group",
     "//ios/chrome/common/app_group:client",
     "//ios/chrome/common/credential_provider",
@@ -44,6 +45,7 @@ source_set("ui") {
   frameworks = [
     "UIKit.framework",
     "AuthenticationServices.framework",
+    "MobileCoreServices.framework",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }

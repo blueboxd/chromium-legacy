@@ -657,7 +657,7 @@ NGInlineLayoutStateStack::BoxData::CreateBoxFragment(
   // Inline boxes have block start/end borders, even when its containing block
   // was fragmented. Fragmenting a line box in block direction is not
   // supported today.
-  box.SetBorderEdges({true, has_line_right_edge, true, has_line_left_edge});
+  box.SetSidesToInclude({true, has_line_right_edge, true, has_line_left_edge});
 
   for (unsigned i = fragment_start; i < fragment_end; i++) {
     NGLogicalLineItem& child = (*line_box)[i];

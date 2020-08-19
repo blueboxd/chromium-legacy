@@ -2157,7 +2157,7 @@ scoped_refptr<VideoFrame> VEAClient::CreateFrame(off_t position) {
           base::TimeDelta().FromMilliseconds(
               (next_input_id_ + 1) * base::Time::kMillisecondsPerSecond /
               current_framerate_));
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   if (video_frame) {
     if (g_native_input) {
       video_frame = test::CloneVideoFrame(

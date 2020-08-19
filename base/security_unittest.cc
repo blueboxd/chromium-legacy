@@ -48,7 +48,8 @@ NOINLINE Type HideValueFromCompiler(volatile Type value) {
 // TCmalloc, currently supported only by Linux/CrOS, supports malloc limits.
 // - USE_TCMALLOC (should be set if compiled with use_allocator=="tcmalloc")
 // - ADDRESS_SANITIZER it has its own memory allocator
-#if defined(OS_LINUX) && BUILDFLAG(USE_TCMALLOC) && !defined(ADDRESS_SANITIZER)
+#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && BUILDFLAG(USE_TCMALLOC) && \
+  !defined(ADDRESS_SANITIZER)
 #define MALLOC_OVERFLOW_TEST(function) function
 #else
 #define MALLOC_OVERFLOW_TEST(function) DISABLED_##function
@@ -59,7 +60,8 @@ NOINLINE Type HideValueFromCompiler(volatile Type value) {
 // FAILS_ is too clunky.
 void OverflowTestsSoftExpectTrue(bool overflow_detected) {
   if (!overflow_detected) {
-#if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_APPLE)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID) || \
+    defined(OS_APPLE)
     // Sadly, on Linux, Android, and OSX we don't have a good story yet. Don't
     // fail the test, but report.
     printf("Platform has overflow: %s\n",
@@ -116,7 +118,7 @@ TEST(SecurityTest, MAYBE_NewOverflow) {
 #endif  // !defined(OS_WIN) || !defined(ARCH_CPU_64_BITS)
 }
 
-#if defined(OS_LINUX) && defined(__x86_64__)
+#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(__x86_64__)
 // Check if ptr1 and ptr2 are separated by less than size chars.
 bool ArePointersToSameArea(void* ptr1, void* ptr2, size_t size) {
   ptrdiff_t ptr_diff = reinterpret_cast<char*>(std::max(ptr1, ptr2)) -
@@ -170,6 +172,6 @@ TEST(SecurityTest, MALLOC_OVERFLOW_TEST(RandomMemoryAllocations)) {
   EXPECT_FALSE(impossible_random_address);
 }
 
-#endif  // defined(OS_LINUX) && defined(__x86_64__)
+#endif  // (defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(__x86_64__)
 
 }  // namespace

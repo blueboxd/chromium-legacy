@@ -261,6 +261,7 @@ class CORE_EXPORT WebLocalFrameImpl final
   WebNode ContextMenuNode() const override;
   void CopyImageAtForTesting(const gfx::Point&) override;
   void UsageCountChromeLoadTimes(const WebString& metric) override;
+  bool DispatchedPagehideAndStillHidden() const override;
   FrameScheduler* Scheduler() const override;
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType) override;
   WebInputMethodController* GetInputMethodController() override;
@@ -272,7 +273,8 @@ class CORE_EXPORT WebLocalFrameImpl final
   WebSize DocumentSize() const override;
   bool HasVisibleContent() const override;
   WebRect VisibleContentRect() const override;
-  void DispatchBeforePrintEvent() override;
+  void DispatchBeforePrintEvent(
+      base::WeakPtr<WebPrintClient> print_client) override;
   WebPlugin* GetPluginToPrint(const WebNode& constrain_to_node) override;
   int PrintBegin(const WebPrintParams&,
                  const WebNode& constrain_to_node) override;
@@ -516,6 +518,10 @@ class CORE_EXPORT WebLocalFrameImpl final
   WebContentSettingsClient* content_settings_client_ = nullptr;
 
   Member<FindInPage> find_in_page_;
+
+  // Optional weak pointer to the WebPrintClient that initiated printing. Only
+  // valid when |is_in_printing_| is true.
+  base::WeakPtr<WebPrintClient> print_client_;
 
   // Valid between calls to BeginPrint() and EndPrint(). Containts the print
   // information. Is used by PrintPage().

@@ -37,7 +37,9 @@ class TestPageSpecificContentSettingsDelegate
   PageSpecificContentSettings::MicrophoneCameraState GetMicrophoneCameraState()
       override;
   void OnContentBlocked(ContentSettingsType type) override;
+  void OnCacheStorageAccessAllowed(const url::Origin& origin) override;
   void OnCookieAccessAllowed(const net::CookieList& accessed_cookies) override;
+  void OnIndexedDBAccessAllowed(const url::Origin& origin) override;
 
  private:
   PrefService* prefs_;

@@ -1476,6 +1476,9 @@ void BrowserView::ToolbarSizeChanged(bool is_animating) {
 }
 
 void BrowserView::TabDraggingStatusChanged(bool is_dragging) {
+  // TODO(crbug.com/1110266): Remove explicit OS_CHROMEOS check once OS_LINUX
+  // CrOS cleanup is done.
+#if !defined(OS_LINUX) || defined(OS_CHROMEOS)
   contents_web_view_->SetFastResize(is_dragging);
   if (!is_dragging) {
     // When tab dragging is ended, we need to make sure the web contents get
@@ -1484,6 +1487,7 @@ void BrowserView::TabDraggingStatusChanged(bool is_dragging) {
     contents_web_view_->InvalidateLayout();
     contents_container_->Layout();
   }
+#endif
 }
 
 void BrowserView::FocusBookmarksToolbar() {

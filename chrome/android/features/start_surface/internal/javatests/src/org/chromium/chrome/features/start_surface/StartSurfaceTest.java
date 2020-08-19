@@ -79,6 +79,7 @@ import org.chromium.chrome.browser.feed.FeedSurfaceMediator;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.init.AsyncInitializationActivity;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
 import org.chromium.chrome.browser.tasks.SingleTabSwitcherMediator;
@@ -986,6 +987,11 @@ public class StartSurfaceTest {
                 CriteriaHelper.DEFAULT_POLLING_INTERVAL);
 
         boolean isInstantStart = TabUiFeatureUtilities.supportInstantStart(false);
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramTotalCountForTesting(
+                        StartSurfaceConfiguration.getHistogramName(
+                                AsyncInitializationActivity.FIRST_DRAW_COMPLETED_TIME_MS_UMA,
+                                isInstantStart)));
         int expectedRecordCount = mImmediateReturn ? 1 : 0;
         // Histograms should be only recorded when StartSurface is shown immediately after
         // launch.

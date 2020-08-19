@@ -2049,12 +2049,16 @@
     "os": ["win", "linux", "mac", "chromeos"],
     "policy_pref_mapping_test": [
       {
+        "policies": {},
+        "prefs": { "profile.managed_default_content_settings.insecure_private_network": { "expect_default": true } }
+      },
+      {
         "policies": { "InsecurePrivateNetworkRequestsAllowed": false },
-        "prefs": { "profile.managed_default_content_settings.insecure_private_network": {} }
+        "prefs": { "profile.managed_default_content_settings.insecure_private_network": { "value": 2 } }
       },
       {
         "policies": { "InsecurePrivateNetworkRequestsAllowed": true },
-        "prefs": { "profile.managed_default_content_settings.insecure_private_network": {} }
+        "prefs": { "profile.managed_default_content_settings.insecure_private_network": { "value": 1 } }
       }
     ]
   },
@@ -2063,8 +2067,12 @@
     "os": ["win", "linux", "mac", "chromeos"],
     "policy_pref_mapping_test": [
       {
-        "policies": { "InsecurePrivateNetworkRequestsAllowedForUrls": ["[*.]google.com"] },
-        "prefs": { "profile.managed_insecure_private_network_allowed_for_urls": {} }
+        "policies": { "InsecurePrivateNetworkRequestsAllowedForUrls": ["[*.]google.com", "http://example.com:1234"] },
+        "prefs": {
+          "profile.managed_insecure_private_network_allowed_for_urls": {
+            "value": ["[*.]google.com", "http://example.com:1234"]
+          }
+        }
       }
     ]
   },

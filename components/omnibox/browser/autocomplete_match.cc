@@ -1132,6 +1132,11 @@ void AutocompleteMatch::UpgradeMatchWithPropertiesFrom(
     RecordAdditionalInfo(kACMatchPropertyScoreBoostedFrom, relevance);
     relevance = duplicate_match.relevance;
   }
+
+  // Take the |pedal|, if any, so that it will be presented instead of buried.
+  if (!pedal && duplicate_match.pedal) {
+    pedal = duplicate_match.pedal;
+  }
 }
 
 void AutocompleteMatch::TryAutocompleteWithTitle(

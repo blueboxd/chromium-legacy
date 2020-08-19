@@ -11,43 +11,48 @@
 
 @protocol SnapshotCacheObserver;
 
-// A singleton providing an in-memory and on-disk cache of tab snapshots.
+// A class providing an in-memory and on-disk cache of tab snapshots.
 // A snapshot is a full-screen image of the contents of the page at the current
 // scroll offset and zoom level, used to stand in for the WKWebView if it has
 // been purged from memory or when quickly switching tabs.
 // Persists to disk on a background thread each time a snapshot changes.
 @interface SnapshotCache : NSObject
 
-// Track session IDs to not release on low memory and to reload on
+// Unique identifier for SnapshotCache, which is useful when there are multiple
+// instances of this class. This property does not need to be set if there is
+// only a singleton instance.
+@property(nonatomic, copy) NSString* uniqueIdentifier;
+
+// Track snapshot IDs to not release on low memory and to reload on
 // |UIApplicationDidBecomeActiveNotification|.
 @property(nonatomic, strong) NSSet* pinnedIDs;
 
 // The scale that should be used for snapshots.
 - (CGFloat)snapshotScaleForDevice;
 
-// Retrieve a cached snapshot for the |sessionID| and return it via the callback
-// if it exists. The callback is guaranteed to be called synchronously if the
-// image is in memory. It will be called asynchronously if the image is on disk
-// or with nil if the image is not present at all.
-- (void)retrieveImageForSessionID:(NSString*)sessionID
-                         callback:(void (^)(UIImage*))callback;
+// Retrieve a cached snapshot for the |snapshotID| and return it via the
+// callback if it exists. The callback is guaranteed to be called synchronously
+// if the image is in memory. It will be called asynchronously if the image is
+// on disk or with nil if the image is not present at all.
+- (void)retrieveImageForSnapshotID:(NSString*)snapshotID
+                          callback:(void (^)(UIImage*))callback;
 
-// Request the session's grey snapshot. If the image is already loaded in
+// Request the grey snapshot for |snapshotID|. If the image is already loaded in
 // memory, this will immediately call back on |callback|.
-- (void)retrieveGreyImageForSessionID:(NSString*)sessionID
-                             callback:(void (^)(UIImage*))callback;
+- (void)retrieveGreyImageForSnapshotID:(NSString*)snapshotID
+                              callback:(void (^)(UIImage*))callback;
 
-- (void)setImage:(UIImage*)img withSessionID:(NSString*)sessionID;
+- (void)setImage:(UIImage*)image withSnapshotID:(NSString*)snapshotID;
 
 // Removes the image from both the LRU and disk cache, unless it is marked for
 // deferred deletion. Images marked for deferred deletion can only be removed by
 // calling |-removeMarkedImages|.
-- (void)removeImageWithSessionID:(NSString*)sessionID;
+- (void)removeImageWithSnapshotID:(NSString*)snapshotID;
 
 // Marks an image for deferred deletion. The image will not be immediately
-// deleted when |-removeImageWithSessionID:| is called. Images marked for
+// deleted when |-removeImageWithSnapshotID:| is called. Images marked for
 // deferred deletion can only be removed by calling |-removeMarkedImages|.
-- (void)markImageWithSessionID:(NSString*)sessionID;
+- (void)markImageWithSnapshotID:(NSString*)snapshotID;
 
 // Removes all marked images from both the LRU and disk cache.
 - (void)removeMarkedImages;
@@ -57,28 +62,28 @@
 - (void)unmarkAllImages;
 
 // Purge the cache of snapshots that are older than |date|. The snapshots for
-// the sessions given in |liveSessionIds| will be kept. This will be done
-// asynchronously on a background thread.
+// |liveSnapshotIDs| will be kept. This will be done asynchronously on a
+// background thread.
 - (void)purgeCacheOlderThan:(const base::Time&)date
-                    keeping:(NSSet*)liveSessionIds;
-// Hint that the snapshot for |sessionID| will likely be saved to disk when the
+                    keeping:(NSSet*)liveSnapshotIDs;
+// Hint that the snapshot for |snapshotID| will likely be saved to disk when the
 // application is backgrounded.  The snapshot is then saved in memory, so it
 // does not need to be read off disk.
-- (void)willBeSavedGreyWhenBackgrounding:(NSString*)sessionID;
+- (void)willBeSavedGreyWhenBackgrounding:(NSString*)snapshotID;
 
 // Create temporary cache of grey images for tablet side swipe.
-- (void)createGreyCache:(NSArray*)sessionIDs;
+- (void)createGreyCache:(NSArray*)snapshotIDs;
 // Release all images in grey cache.
 - (void)removeGreyCache;
-// Request the session's grey snapshot. If the image is already loaded this will
-// immediately call back on |callback|. Otherwise, only use |callback| for the
-// most recent caller. The callback is not guaranteed to be called.
-- (void)greyImageForSessionID:(NSString*)sessionID
-                     callback:(void (^)(UIImage*))callback;
+// Request the grey snapshot for |snapshotID|. If the image is already loaded
+// this will immediately call back on |callback|. Otherwise, only use |callback|
+// for the most recent caller. The callback is not guaranteed to be called.
+- (void)greyImageForSnapshotID:(NSString*)snapshotID
+                      callback:(void (^)(UIImage*))callback;
 
-// Write a grey copy of the snapshot for |sessionID| to disk, but if and only if
-// a color version of the snapshot already exists in memory or on disk.
-- (void)saveGreyInBackgroundForSessionID:(NSString*)sessionID;
+// Write a grey copy of the snapshot for |snapshotID| to disk, but if and only
+// if a color version of the snapshot already exists in memory or on disk.
+- (void)saveGreyInBackgroundForSnapshotID:(NSString*)snapshotID;
 
 // Adds an observer to this snapshot cache.
 - (void)addObserver:(id<SnapshotCacheObserver>)observer;
@@ -94,8 +99,8 @@
 
 // Additionnal methods that should only be used for tests.
 @interface SnapshotCache (TestingAdditions)
-- (BOOL)hasImageInMemory:(NSString*)sessionID;
-- (BOOL)hasGreyImageInMemory:(NSString*)sessionID;
+- (BOOL)hasImageInMemory:(NSString*)snapshotID;
+- (BOOL)hasGreyImageInMemory:(NSString*)snapshotID;
 - (NSUInteger)lruCacheMaxSize;
 @end
 

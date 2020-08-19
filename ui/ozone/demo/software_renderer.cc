@@ -33,14 +33,12 @@ SoftwareRenderer::SoftwareRenderer(
       vsync_period_(
           base::TimeDelta::FromMilliseconds(kFrameDelayMilliseconds)) {}
 
-SoftwareRenderer::~SoftwareRenderer() {}
+SoftwareRenderer::~SoftwareRenderer() = default;
 
 bool SoftwareRenderer::Initialize() {
-  software_surface_ =
-      ui::OzonePlatform::GetInstance()
-          ->GetSurfaceFactoryOzone()
-          ->CreateCanvasForWidget(widget_,
-                                  base::ThreadTaskRunnerHandle::Get().get());
+  software_surface_ = ui::OzonePlatform::GetInstance()
+                          ->GetSurfaceFactoryOzone()
+                          ->CreateCanvasForWidget(widget_);
   if (!software_surface_) {
     LOG(ERROR) << "Failed to create software surface";
     return false;

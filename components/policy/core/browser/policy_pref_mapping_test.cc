@@ -491,8 +491,10 @@ void VerifyPolicyToPrefMappings(const base::FilePath& test_case_path,
             EXPECT_FALSE(pref->IsUserControlled());
             EXPECT_TRUE(pref->IsManaged());
           }
-          if (pref_case->value())
-            EXPECT_TRUE(pref->GetValue()->Equals(pref_case->value()));
+          if (pref_case->value()) {
+            EXPECT_TRUE(pref->GetValue()->Equals(pref_case->value()))
+                << *pref->GetValue() << " != " << *pref_case->value();
+          }
         }
       }
     }

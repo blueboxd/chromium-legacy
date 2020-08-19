@@ -2291,27 +2291,24 @@ LayoutRectOutsets ComputedStyle::BoxDecorationOutsets() const {
 }
 
 void ComputedStyle::GetBorderEdgeInfo(BorderEdge edges[],
-                                      bool include_logical_left_edge,
-                                      bool include_logical_right_edge) const {
-  bool horizontal = IsHorizontalWritingMode();
-
+                                      PhysicalBoxSides sides_to_include) const {
   edges[static_cast<unsigned>(BoxSide::kTop)] = BorderEdge(
       BorderTopWidth(), VisitedDependentColor(GetCSSPropertyBorderTopColor()),
-      BorderTopStyle(), horizontal || include_logical_left_edge);
+      BorderTopStyle(), sides_to_include.top);
 
   edges[static_cast<unsigned>(BoxSide::kRight)] =
       BorderEdge(BorderRightWidth(),
                  VisitedDependentColor(GetCSSPropertyBorderRightColor()),
-                 BorderRightStyle(), !horizontal || include_logical_right_edge);
+                 BorderRightStyle(), sides_to_include.right);
 
   edges[static_cast<unsigned>(BoxSide::kBottom)] =
       BorderEdge(BorderBottomWidth(),
                  VisitedDependentColor(GetCSSPropertyBorderBottomColor()),
-                 BorderBottomStyle(), horizontal || include_logical_right_edge);
+                 BorderBottomStyle(), sides_to_include.bottom);
 
   edges[static_cast<unsigned>(BoxSide::kLeft)] = BorderEdge(
       BorderLeftWidth(), VisitedDependentColor(GetCSSPropertyBorderLeftColor()),
-      BorderLeftStyle(), !horizontal || include_logical_left_edge);
+      BorderLeftStyle(), sides_to_include.left);
 }
 
 void ComputedStyle::CopyChildDependentFlagsFrom(const ComputedStyle& other) {

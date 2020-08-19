@@ -966,7 +966,7 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
 }
 
 // Test is flaky on Linux. See crbug.com/990847 for more details.
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #define MAYBE_DeleteSubtree DISABLED_DeleteSubtree
 #else
 #define MAYBE_DeleteSubtree DeleteSubtree

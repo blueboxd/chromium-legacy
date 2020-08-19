@@ -27,6 +27,7 @@
 #include "printing/common/metafile_utils.h"
 #include "printing/mojom/print.mojom-forward.h"
 #include "third_party/blink/public/web/web_node.h"
+#include "third_party/blink/public/web/web_print_client.h"
 #include "third_party/blink/public/web/web_print_params.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -50,8 +51,9 @@ class DictionaryValue;
 
 namespace blink {
 class WebLocalFrame;
+class WebScopedPagePauser;
 class WebView;
-}
+}  // namespace blink
 
 namespace content {
 class AXTreeSnapshotter;
@@ -90,7 +92,8 @@ class FrameReference {
 // RenderView. We plan on making print asynchronous and that will require
 // copying the DOM of the document and creating a new WebView with the contents.
 class PrintRenderFrameHelper
-    : public content::RenderFrameObserver,
+    : public blink::WebPrintClient,
+      public content::RenderFrameObserver,
       public content::RenderFrameObserverTracker<PrintRenderFrameHelper>,
       public mojom::PrintRenderFrame {
  public:
@@ -213,7 +216,10 @@ class PrintRenderFrameHelper
     const base::WeakPtr<PrintRenderFrameHelper> weak_this_;
   };
 
-  // RenderFrameObserver implementation.
+  // blink::WebPrintClient:
+  void WillBeDestroyed() override;
+
+  // RenderFrameObserver:
   void OnDestruct() override;
   void DidStartNavigation(
       const GURL& url,
@@ -293,7 +299,8 @@ class PrintRenderFrameHelper
   // WARNING: |this| may be gone after this method returns.
   void Print(blink::WebLocalFrame* frame,
              const blink::WebNode& node,
-             PrintRequestType print_request_type);
+             PrintRequestType print_request_type,
+             std::unique_ptr<blink::WebScopedPagePauser> pauser);
 
   // Notification when printing is done - signal tear-down/free resources.
   void DidFinishPrinting(PrintingResult result);
@@ -475,6 +482,17 @@ class PrintRenderFrameHelper
     void InitWithFrame(blink::WebLocalFrame* web_frame);
     void InitWithNode(const blink::WebNode& web_node);
 
+    // Manual control of pausing/unpausing for special situations.
+    bool IsPaused() const;
+    void Pause();
+    std::unique_ptr<blink::WebScopedPagePauser> TakePauser();
+
+    // Dispatchs onbeforeprint/onafterprint events. Use these instead of calling
+    // the WebLocalFrame version on source_frame().
+    void DispatchBeforePrintEvent(
+        base::WeakPtr<PrintRenderFrameHelper> weak_this);
+    void DispatchAfterPrintEvent();
+
     // Does bookkeeping at the beginning of print preview.
     void OnPrintPreview();
 
@@ -559,6 +577,10 @@ class PrintRenderFrameHelper
     blink::WebNode source_node_;
 
     std::unique_ptr<PrepareFrameAndViewForPrint> prep_frame_view_;
+
+    // Manages when to pause between onbeforeprint and onafterprint events.
+    // https://html.spec.whatwg.org/C/#printing-steps
+    std::unique_ptr<blink::WebScopedPagePauser> pauser_;
 
     // The typefaces encountered in the content during document serialization.
     ContentProxySet typeface_content_info_;

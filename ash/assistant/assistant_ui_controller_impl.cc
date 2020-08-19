@@ -20,8 +20,10 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/toast/toast_manager_impl.h"
 #include "base/bind.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/optional.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "chromeos/services/assistant/public/cpp/features.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -235,6 +237,12 @@ void AssistantUiControllerImpl::OnUiVisibilityChanged(
 }
 
 void AssistantUiControllerImpl::OnOnboardingShown() {
+  using chromeos::assistant::prefs::AssistantOnboardingMode;
+  base::UmaHistogramEnumeration(
+      "Assistant.BetterOnboarding.Shown",
+      AssistantState::Get()->onboarding_mode().value_or(
+          AssistantOnboardingMode::kDefault));
+
   if (has_shown_onboarding_)
     return;
 

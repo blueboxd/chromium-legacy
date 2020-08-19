@@ -985,6 +985,53 @@ void URLLoader::ResumeReadingBodyFromNet() {
   }
 }
 
+int URLLoader::CanConnectToRemoteEndpoint(
+    const net::TransportInfo& info) const {
+  const mojom::IPAddressSpace remote_address_space =
+      IPAddressToIPAddressSpace(info.endpoint.address());
+  if (options_ & mojom::kURLLoadOptionBlockLocalRequest &&
+      IsLessPublicAddressSpace(remote_address_space,
+                               network::mojom::IPAddressSpace::kPublic)) {
+    DVLOG(1) << "CORS-RFC1918 check: failed due to loader options.";
+    return net::ERR_INSECURE_PRIVATE_NETWORK_REQUEST;
+  }
+
+  const mojom::ClientSecurityStatePtr& security_state =
+      factory_params_->client_security_state;
+  if (!security_state) {
+    DVLOG(1) << "CORS-RFC1918 check: skipped, missing client security state.";
+    return net::OK;
+  }
+
+  DVLOG(1) << "CORS-RFC1918 check: running against client security state = { "
+           << "is_web_secure_context: " << security_state->is_web_secure_context
+           << ", ip_address_space: " << security_state->ip_address_space
+           << ", private_network_request_policy: "
+           << security_state->private_network_request_policy << " }.";
+
+  // We use a switch statement to force this code to be amended when values are
+  // added to the PrivateNetworkRequestPolicy enum.
+  switch (security_state->private_network_request_policy) {
+    case mojom::PrivateNetworkRequestPolicy::kAllow:
+      break;
+    case mojom::PrivateNetworkRequestPolicy::kBlockFromInsecureToMorePrivate:
+      // We block requests from insecure contexts to resources in IP address
+      // spaces more private than that of the initiator. This prevents malicious
+      // insecure public websites from making requests to someone's printer, for
+      // example.
+      if (!security_state->is_web_secure_context &&
+          IsLessPublicAddressSpace(remote_address_space,
+                                   security_state->ip_address_space)) {
+        DVLOG(1) << "CORS-RFC1918 check: "
+                    "failed, blocking insecure private network request.";
+        return net::ERR_INSECURE_PRIVATE_NETWORK_REQUEST;
+      }
+  }
+
+  DVLOG(1) << "CORS-RFC1918 check: success.";
+  return net::OK;
+}
+
 int URLLoader::OnConnected(net::URLRequest* url_request,
                            const net::TransportInfo& info) {
   DCHECK_EQ(url_request, url_request_.get());
@@ -992,54 +1039,9 @@ int URLLoader::OnConnected(net::URLRequest* url_request,
   DVLOG(1) << "Connection obtained for URL request to " << url_request->url()
            << ": " << info;
 
-  // We use this opportunity to check if the request initiator should be allowed
-  // to make requests to the remote endpoint.
-  // See the CORS-RFC1918 spec: https://wicg.github.io/cors-rfc1918.
-
-  const mojom::IPAddressSpace remote_address_space =
-      IPAddressToIPAddressSpace(info.endpoint.address());
-  if (options_ & mojom::kURLLoadOptionBlockLocalRequest &&
-      IsLessPublicAddressSpace(remote_address_space,
-                               network::mojom::IPAddressSpace::kPublic)) {
-    DVLOG(1) << "Explicitly disallowing local request.";
-    return net::ERR_INSECURE_PRIVATE_NETWORK_REQUEST;
-  }
-
-  const mojom::ClientSecurityStatePtr& security_state =
-      factory_params_->client_security_state;
-  if (!security_state) {
-    DVLOG(1) << "Skipping CORS-RFC1918 check: missing client security state.";
-    return net::OK;
-  }
-
-  if (!base::FeatureList::IsEnabled(
-          network::features::kBlockInsecurePrivateNetworkRequests)) {
-    DVLOG(1) << "Skipping CORS-RFC1918 check: feature disabled.";
-    return net::OK;
-  }
-
-  // Now that the request endpoint's address has been resolved, check if this
-  // request should be blocked. We block requests to subresources in IP address
-  // spaces less public than that of the parent resource, when those requests
-  // are initiated from insecure contexts. This prevents malicious public
-  // websites from making requests to someone's printer, for example.
-
-  const bool is_endpoint_less_public = IsLessPublicAddressSpace(
-      remote_address_space, security_state->ip_address_space);
-
-  DVLOG(1) << "Performing CORS-RFC1918 check: client address space: "
-           << security_state->ip_address_space
-           << ", is_secure_context: " << security_state->is_web_secure_context
-           << ", remote address space: " << remote_address_space;
-
-  if (is_endpoint_less_public && !security_state->is_web_secure_context) {
-    DVLOG(1) << "CORS-RFC1918 check failed: "
-             << "blocking insecure private network request.";
-    return net::ERR_INSECURE_PRIVATE_NETWORK_REQUEST;
-  }
-
-  DVLOG(1) << "CORS-RFC1918 check succeeded.";
-  return net::OK;
+  // Now that the request endpoint's address has been resolved, check if
+  // this request should be blocked by CORS-RFC1918 rules.
+  return CanConnectToRemoteEndpoint(info);
 }
 
 void URLLoader::OnReceivedRedirect(net::URLRequest* url_request,

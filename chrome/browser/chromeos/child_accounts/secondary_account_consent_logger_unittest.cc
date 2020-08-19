@@ -41,7 +41,7 @@ constexpr char kRequestBodyTemplate[] = R"({
    },
    "person_id": "me"
 })";
-constexpr char kConsentScreenTextVersion[] = "v2261896";
+constexpr char kConsentScreenTextVersion[] = "v2353089";
 
 std::string GetTestRequestBody(
     const std::string& chrome_os_unicorn_edu_coexistence_id,

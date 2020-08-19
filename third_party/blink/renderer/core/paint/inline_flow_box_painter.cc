@@ -223,8 +223,7 @@ void InlineFlowBoxPainter::PaintBackgroundBorderShadow(
   BoxModelObjectPainter box_painter(box_model, &inline_flow_box_);
   PaintBoxDecorationBackground(box_painter, paint_info, paint_offset,
                                paint_rect, geometry, object_has_multiple_boxes,
-                               inline_flow_box_.IncludeLogicalLeftEdge(),
-                               inline_flow_box_.IncludeLogicalRightEdge());
+                               inline_flow_box_.SidesToInclude());
 }
 
 void InlineFlowBoxPainter::PaintMask(const PaintInfo& paint_info,
@@ -357,17 +356,15 @@ void InlineFlowBoxPainter::PaintNormalBoxShadow(
     const PaintInfo& info,
     const ComputedStyle& s,
     const PhysicalRect& paint_rect) {
-  BoxPainterBase::PaintNormalBoxShadow(
-      info, paint_rect, s, inline_flow_box_.IncludeLogicalLeftEdge(),
-      inline_flow_box_.IncludeLogicalRightEdge());
+  BoxPainterBase::PaintNormalBoxShadow(info, paint_rect, s,
+                                       inline_flow_box_.SidesToInclude());
 }
 
 void InlineFlowBoxPainter::PaintInsetBoxShadow(const PaintInfo& info,
                                                const ComputedStyle& s,
                                                const PhysicalRect& paint_rect) {
   BoxPainterBase::PaintInsetBoxShadowWithBorderRect(
-      info, paint_rect, s, inline_flow_box_.IncludeLogicalLeftEdge(),
-      inline_flow_box_.IncludeLogicalRightEdge());
+      info, paint_rect, s, inline_flow_box_.SidesToInclude());
 }
 
 }  // namespace blink

@@ -27,6 +27,14 @@
 
 namespace blink {
 
+namespace {
+
+constexpr base::TimeDelta kAnimationInterval =
+    base::TimeDelta::FromMilliseconds(125);
+constexpr base::TimeDelta kAnimationDuration = kAnimationInterval * 20;
+
+}  // namespace
+
 LayoutProgress::LayoutProgress(Element* element)
     : LayoutBlockFlow(element),
       position_(HTMLProgressElement::kInvalidPosition),
@@ -64,7 +72,7 @@ double LayoutProgress::AnimationProgress() const {
     return 0;
   const base::TimeDelta elapsed =
       base::TimeTicks::Now() - animation_start_time_;
-  return (elapsed % animation_duration_) / animation_duration_;
+  return (elapsed % kAnimationDuration) / kAnimationDuration;
 }
 
 bool LayoutProgress::IsDeterminate() const {
@@ -83,24 +91,18 @@ bool LayoutProgress::IsAnimating() const {
 void LayoutProgress::AnimationTimerFired(TimerBase*) {
   SetShouldDoFullPaintInvalidation();
   if (!animation_timer_.IsActive() && animating_)
-    animation_timer_.StartOneShot(animation_repeat_interval_, FROM_HERE);
+    animation_timer_.StartOneShot(kAnimationInterval, FROM_HERE);
 }
 
 void LayoutProgress::UpdateAnimationState() {
-  animation_duration_ =
-      LayoutTheme::GetTheme().AnimationDurationForProgressBar();
-  animation_repeat_interval_ =
-      LayoutTheme::GetTheme().AnimationRepeatIntervalForProgressBar();
-
-  bool animating = !IsDeterminate() && StyleRef().HasEffectiveAppearance() &&
-                   animation_duration_ > base::TimeDelta();
+  bool animating = !IsDeterminate() && StyleRef().HasEffectiveAppearance();
   if (animating == animating_)
     return;
 
   animating_ = animating;
   if (animating_) {
     animation_start_time_ = base::TimeTicks::Now();
-    animation_timer_.StartOneShot(animation_repeat_interval_, FROM_HERE);
+    animation_timer_.StartOneShot(kAnimationInterval, FROM_HERE);
   } else {
     animation_timer_.Stop();
   }

@@ -170,9 +170,10 @@ public class ContactsPickerDialogTest
                     public ContactsPickerDialog call() {
                         final ContactsPickerDialog dialog = new ContactsPickerDialog(
                                 mActivityTestRule.getActivity().getWindowAndroid(),
-                                ContactsPickerDialogTest.this, multiselect, includeNames,
-                                includeEmails, includeTel, includeAddresses, includeIcons,
-                                "example.com", new VrModeProvider() {
+                                new ChromePickerAdapter(), ContactsPickerDialogTest.this,
+                                multiselect, includeNames, includeEmails, includeTel,
+                                includeAddresses, includeIcons, "example.com",
+                                new VrModeProvider() {
                                     @Override
                                     public boolean isInVr() {
                                         return false;

@@ -48,7 +48,7 @@ void MediaBrowserTest::SetUpCommandLine(base::CommandLine* command_line) {
     // the fallback path.
     media::kFallbackAfterDecodeError,
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
     // Disable out of process audio on Linux due to process spawn
     // failures. http://crbug.com/986021
     features::kAudioServiceOutOfProcess,

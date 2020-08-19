@@ -86,7 +86,7 @@ class NET_EXPORT_PRIVATE URLFetcherImpl : public URLFetcher {
   void Start() override;
   const GURL& GetOriginalURL() const override;
   const GURL& GetURL() const override;
-  const URLRequestStatus& GetStatus() const override;
+  Error GetError() const override;
   int GetResponseCode() const override;
   void ReceivedContentWasMalformed() override;
   bool GetResponseAsString(std::string* out_response_string) const override;

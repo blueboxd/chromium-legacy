@@ -39,6 +39,7 @@ class Adapter : public mojom::Adapter,
                  SetClientCallback callback) override;
   void SetDiscoverable(bool discoverable,
                        SetDiscoverableCallback callback) override;
+  void SetName(const std::string& name, SetNameCallback callback) override;
   void StartDiscoverySession(StartDiscoverySessionCallback callback) override;
   // TODO(b/162975217): Add a mechanism to allowlist which address and UUID
   // pairs clients are allowed to create a connection to.
@@ -72,6 +73,9 @@ class Adapter : public mojom::Adapter,
 
   void OnSetDiscoverable(SetDiscoverableCallback callback);
   void OnSetDiscoverableError(SetDiscoverableCallback callback);
+
+  void OnSetName(SetNameCallback callback);
+  void OnSetNameError(SetNameCallback callback);
 
   void OnStartDiscoverySession(
       StartDiscoverySessionCallback callback,

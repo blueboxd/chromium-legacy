@@ -28,6 +28,8 @@ constexpr size_t kMinHistoryDomainSizeToReportFlocId = 1;
 constexpr base::TimeDelta kFlocScheduledUpdateInterval =
     base::TimeDelta::FromDays(1);
 constexpr int kQueryHistoryWindowInDays = 7;
+constexpr base::TimeDelta kSwaaNacAccountEnabledCachePeriod =
+    base::TimeDelta::FromHours(12);
 
 }  // namespace
 
@@ -53,6 +55,8 @@ void FlocIdProviderImpl::NotifyFlocUpdated(ComputeFlocTrigger trigger) {
     return;
 
   auto specifics = std::make_unique<sync_pb::UserEventSpecifics>();
+  specifics->set_event_time_usec(
+      base::Time::Now().ToDeltaSinceWindowsEpoch().InMicroseconds());
 
   sync_pb::UserEventSpecifics_FlocIdComputed* const floc_id_computed_event =
       specifics->mutable_floc_id_computed_event();
@@ -85,6 +89,14 @@ bool FlocIdProviderImpl::AreThirdPartyCookiesAllowed() {
 
 void FlocIdProviderImpl::IsSwaaNacAccountEnabled(
     CanComputeFlocCallback callback) {
+  if (!last_swaa_nac_account_enabled_query_time_.is_null() &&
+      last_swaa_nac_account_enabled_query_time_ +
+              kSwaaNacAccountEnabledCachePeriod >
+          base::TimeTicks::Now()) {
+    std::move(callback).Run(cached_swaa_nac_account_enabled_);
+    return;
+  }
+
   net::PartialNetworkTrafficAnnotationTag partial_traffic_annotation =
       net::DefinePartialNetworkTrafficAnnotation(
           "floc_id_provider_impl", "floc_remote_permission_service",
@@ -115,7 +127,9 @@ void FlocIdProviderImpl::IsSwaaNacAccountEnabled(
         })");
 
   floc_remote_permission_service_->QueryFlocPermission(
-      std::move(callback), partial_traffic_annotation);
+      base::BindOnce(&FlocIdProviderImpl::OnCheckSwaaNacAccountEnabledCompleted,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)),
+      partial_traffic_annotation);
 }
 
 void FlocIdProviderImpl::Shutdown() {
@@ -197,6 +211,14 @@ void FlocIdProviderImpl::OnCheckCanComputeFlocCompleted(
   GetRecentlyVisitedURLs(
       base::BindOnce(&FlocIdProviderImpl::OnGetRecentlyVisitedURLsCompleted,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void FlocIdProviderImpl::OnCheckSwaaNacAccountEnabledCompleted(
+    CanComputeFlocCallback callback,
+    bool enabled) {
+  cached_swaa_nac_account_enabled_ = enabled;
+  last_swaa_nac_account_enabled_query_time_ = base::TimeTicks::Now();
+  std::move(callback).Run(enabled);
 }
 
 void FlocIdProviderImpl::GetRecentlyVisitedURLs(

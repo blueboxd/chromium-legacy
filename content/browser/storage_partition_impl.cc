@@ -1876,6 +1876,13 @@ void StoragePartitionImpl::ClearDataImpl(
     const base::Time end,
     base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  for (auto& observer : data_removal_observers_) {
+    auto filter = CreateGenericOriginMatcher(storage_origin, origin_matcher,
+                                             special_storage_policy_);
+    observer.OnOriginDataCleared(remove_mask, std::move(filter), begin, end);
+  }
+
   DataDeletionHelper* helper = new DataDeletionHelper(
       remove_mask, quota_storage_remove_mask,
       base::BindOnce(&StoragePartitionImpl::DeletionHelperDone,
@@ -2263,6 +2270,14 @@ void StoragePartitionImpl::ResetURLLoaderFactories() {
 void StoragePartitionImpl::ClearBluetoothAllowedDevicesMapForTesting() {
   DCHECK(initialized_);
   bluetooth_allowed_devices_map_->Clear();
+}
+
+void StoragePartitionImpl::AddObserver(DataRemovalObserver* observer) {
+  data_removal_observers_.AddObserver(observer);
+}
+
+void StoragePartitionImpl::RemoveObserver(DataRemovalObserver* observer) {
+  data_removal_observers_.RemoveObserver(observer);
 }
 
 void StoragePartitionImpl::FlushNetworkInterfaceForTesting() {

@@ -198,8 +198,7 @@ DeviceDataManagerX11* DeviceDataManagerX11::GetInstance() {
 
 DeviceDataManagerX11::DeviceDataManagerX11()
     : xi_opcode_(-1),
-      high_precision_scrolling_disabled_(IsHighPrecisionScrollingDisabled()),
-      button_map_count_(0) {
+      high_precision_scrolling_disabled_(IsHighPrecisionScrollingDisabled()) {
   CHECK(x11::Connection::Get());
   InitializeXInputInternal();
 
@@ -651,13 +650,14 @@ void DeviceDataManagerX11::GetMetricsData(const x11::Event& xev,
 }
 
 int DeviceDataManagerX11::GetMappedButton(int button) {
-  return button > 0 && button <= button_map_count_ ? button_map_[button - 1]
-                                                   : button;
+  return button > 0 && static_cast<unsigned int>(button) <= button_map_.size()
+             ? button_map_[button - 1]
+             : button;
 }
 
 void DeviceDataManagerX11::UpdateButtonMap() {
-  button_map_count_ = XGetPointerMapping(gfx::GetXDisplay(), button_map_,
-                                         base::size(button_map_));
+  if (auto reply = x11::Connection::Get()->GetPointerMapping({}).Sync())
+    button_map_ = std::move(reply->map);
 }
 
 void DeviceDataManagerX11::GetGestureTimes(const x11::Event& xev,

@@ -2532,18 +2532,6 @@ bool PaintLayerScrollableArea::ComputeNeedsCompositedScrolling(
   return needs_composited_scrolling;
 }
 
-static bool IsOpaqueForLCDText(const PaintLayer& layer, const LayoutBox& box) {
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return box.TextIsKnownToBeOnOpaqueBackground();
-
-  // TODO(crbug.com/1113269): TextIsKnownToBeOnOpaqueBackground() is temporarily
-  // replaced with BackgroundIsKnownToBeOpaqueInRect() to evaluate the
-  // performance improvement. Will restore after 1 or 2 canary builds.
-  DisableCompositingQueryAsserts disabler;
-  return layer.BackgroundIsKnownToBeOpaqueInRect(box.PhysicalPaddingBoxRect(),
-                                                 true);
-}
-
 bool PaintLayerScrollableArea::ComputeNeedsCompositedScrollingInternal(
     BackgroundPaintLocation background_paint_location_if_composited,
     bool force_prefer_compositing_to_lcd_text) {
@@ -2583,7 +2571,7 @@ bool PaintLayerScrollableArea::ComputeNeedsCompositedScrollingInternal(
       !box->GetDocument()
            .GetSettings()
            ->GetPreferCompositingToLCDTextEnabled()) {
-    if (!IsOpaqueForLCDText(*layer_, *box)) {
+    if (!box->TextIsKnownToBeOnOpaqueBackground()) {
       non_composited_main_thread_scrolling_reasons_ |=
           cc::MainThreadScrollingReason::kNotOpaqueForTextAndLCDText;
       needs_composited_scrolling = false;

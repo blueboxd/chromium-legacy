@@ -72,6 +72,9 @@ constexpr OzonePlatform::PlatformProperties kX11PlatformProperties{
     // When the Ozone X11 backend is running, use a UI loop to grab Expose
     // events. See GLSurfaceGLX and https://crbug.com/326995.
     .message_pump_type_for_gpu = base::MessagePumpType::UI,
+    // When the Ozone X11 backend is running, use a UI loop to dispatch
+    // SHM completion events.
+    .message_pump_type_for_viz_compositor = base::MessagePumpType::UI,
     .supports_vulkan_swap_chain = true,
     .platform_shows_drag_image = false,
     .supports_global_application_menus = true};
@@ -205,7 +208,12 @@ class OzonePlatformX11 : public OzonePlatform,
     if (!params.single_process)
       CreatePlatformEventSource();
 
-    surface_factory_ozone_ = std::make_unique<X11SurfaceFactory>();
+    // Set up the X11 connection before the sandbox gets set up.  This cannot be
+    // done later since opening the connection requires socket() and connect().
+    auto connection = x11::Connection::Get()->Clone();
+    connection->DetachFromSequence();
+    surface_factory_ozone_ =
+        std::make_unique<X11SurfaceFactory>(std::move(connection));
     gl_egl_utility_ = std::make_unique<GLEGLUtilityX11>();
   }
 

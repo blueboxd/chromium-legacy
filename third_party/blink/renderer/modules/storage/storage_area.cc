@@ -27,6 +27,8 @@
 
 #include "base/feature_list.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/metrics/histogram_macros.h"
+#include "third_party/blink/public/common/action_after_pagehide.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -111,6 +113,7 @@ NamedPropertySetterResult StorageArea::setItem(
         "Setting the value of '" + key + "' exceeded the quota.");
     return NamedPropertySetterResult::kIntercepted;
   }
+  RecordModificationInMetrics();
   return NamedPropertySetterResult::kIntercepted;
 }
 
@@ -121,6 +124,7 @@ NamedPropertyDeleterResult StorageArea::removeItem(
     exception_state.ThrowSecurityError("access is denied for this document.");
     return NamedPropertyDeleterResult::kDidNotDelete;
   }
+  RecordModificationInMetrics();
   cached_area_->RemoveItem(key, this);
   return NamedPropertyDeleterResult::kDeleted;
 }
@@ -130,6 +134,7 @@ void StorageArea::clear(ExceptionState& exception_state) {
     exception_state.ThrowSecurityError("access is denied for this document.");
     return;
   }
+  RecordModificationInMetrics();
   cached_area_->Clear(this);
 }
 
@@ -184,6 +189,24 @@ bool StorageArea::CanAccessStorage() const {
       StorageController::CanAccessStorageArea(frame, storage_type_);
   did_check_can_access_storage_ = true;
   return can_access_storage_cached_result_;
+}
+
+void StorageArea::RecordModificationInMetrics() {
+  if (!GetFrame() || !GetFrame()->GetPage() ||
+      !GetFrame()->GetPage()->DispatchedPagehideAndStillHidden()) {
+    return;
+  }
+  // The storage modification is done after the pagehide event got dispatched
+  // and the page is still hidden, which is not normally possible (this might
+  // happen if we're doing a same-site cross-RenderFrame navigation where we
+  // dispatch pagehide during the new RenderFrame's commit but won't actually
+  // unload/freeze the page after the new RenderFrame finished committing). We
+  // should track this case to measure how often this is happening.
+  UMA_HISTOGRAM_ENUMERATION(
+      "BackForwardCache.SameSite.ActionAfterPagehide",
+      storage_type_ == StorageType::kLocalStorage
+          ? ActionAfterPagehide::kLocalStorageModification
+          : ActionAfterPagehide::kSessionStorageModification);
 }
 
 KURL StorageArea::GetPageUrl() const {

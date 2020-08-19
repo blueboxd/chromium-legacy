@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.SystemClock;
 
 import androidx.annotation.VisibleForTesting;
 
@@ -17,6 +18,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CommandLine;
 import org.chromium.base.IntentUtils;
 import org.chromium.base.Log;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
@@ -78,9 +80,12 @@ public abstract class FirstRunFlowSequencer  {
             return;
         }
 
+        long childAccountStatusStart = SystemClock.elapsedRealtime();
         new AndroidChildAccountHelper() {
             @Override
             public void onParametersReady() {
+                RecordHistogram.recordTimesHistogram("MobileFre.ChildAccountStatusDuration",
+                        SystemClock.elapsedRealtime() - childAccountStatusStart);
                 initializeSharedState(getChildAccountStatus());
                 processFreEnvironmentPreNative();
             }
@@ -148,6 +153,9 @@ public abstract class FirstRunFlowSequencer  {
 
     void initializeSharedState(@ChildAccountStatus.Status int childAccountStatus) {
         mChildAccountStatus = childAccountStatus;
+        // Note that fetching accounts isn't instrumented because it's typically very fast. It seems
+        // fetching child account status causes accounts to be cached. Revisit this if the ordering
+        // of these calls is changed.
         mGoogleAccounts = getGoogleAccounts();
     }
 

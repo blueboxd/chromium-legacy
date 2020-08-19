@@ -502,7 +502,8 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementBrowserTest, RecordVisitOnBrowserClose) {
   ExpectScores(1, 0);
 }
 
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MAC)
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS) || \
+    defined(OS_MAC)
 // Flaky timeout. https://crbug.com/1014229
 #define MAYBE_RecordSingleVisitOnSameOrigin \
   DISABLED_RecordSingleVisitOnSameOrigin

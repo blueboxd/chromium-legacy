@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_PHYSICAL_BOX_FRAGMENT_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/geometry/box_sides.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_items.h"
 #include "third_party/blink/renderer/core/layout/ng/mathml/ng_mathml_paint_info.h"
@@ -189,8 +190,10 @@ class CORE_EXPORT NGPhysicalBoxFragment final
 
   UBiDiLevel BidiLevel() const;
 
-  // Bitmask for border edges, see NGBorderEdges::Physical.
-  unsigned BorderEdges() const { return border_edge_; }
+  PhysicalBoxSides SidesToInclude() const {
+    return PhysicalBoxSides(include_border_top_, include_border_right_,
+                            include_border_bottom_, include_border_left_);
+  }
   NGPixelSnappedPhysicalBoxStrut BorderWidths() const;
 
   // Return true if this is the first fragment generated from a node.

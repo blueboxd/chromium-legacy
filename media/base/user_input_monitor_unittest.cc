@@ -13,20 +13,20 @@
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #include "base/files/file_descriptor_watcher_posix.h"
 #endif
 
 namespace media {
 
 TEST(UserInputMonitorTest, CreatePlatformSpecific) {
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   base::test::TaskEnvironment task_environment(
       base::test::TaskEnvironment::MainThreadType::IO);
 #else
   base::test::TaskEnvironment task_environment(
       base::test::TaskEnvironment::MainThreadType::UI);
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
   std::unique_ptr<UserInputMonitor> monitor = UserInputMonitor::Create(
       base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get());
@@ -42,13 +42,13 @@ TEST(UserInputMonitorTest, CreatePlatformSpecific) {
 }
 
 TEST(UserInputMonitorTest, CreatePlatformSpecificWithMapping) {
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   base::test::TaskEnvironment task_environment(
       base::test::TaskEnvironment::MainThreadType::IO);
 #else
   base::test::TaskEnvironment task_environment(
       base::test::TaskEnvironment::MainThreadType::UI);
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
   std::unique_ptr<UserInputMonitor> monitor = UserInputMonitor::Create(
       base::ThreadTaskRunnerHandle::Get(), base::ThreadTaskRunnerHandle::Get());

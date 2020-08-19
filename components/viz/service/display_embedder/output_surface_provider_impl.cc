@@ -240,11 +240,8 @@ OutputSurfaceProviderImpl::CreateSoftwareOutputDeviceForPlatform(
         ui::OzonePlatform::GetInstance()->GetSurfaceFactoryOzone();
     std::unique_ptr<ui::PlatformWindowSurface> platform_window_surface =
         factory->CreatePlatformWindowSurface(surface_handle);
-    scoped_refptr<base::SequencedTaskRunner> main_runner;
-    if (gpu_service_impl_ && !gpu_service_impl_->in_host_process())
-      main_runner = gpu_service_impl_->main_runner();
     std::unique_ptr<ui::SurfaceOzoneCanvas> surface_ozone =
-        factory->CreateCanvasForWidget(surface_handle, std::move(main_runner));
+        factory->CreateCanvasForWidget(surface_handle);
     CHECK(surface_ozone);
     return std::make_unique<SoftwareOutputDeviceOzone>(
         std::move(platform_window_surface), std::move(surface_ozone));
@@ -252,11 +249,7 @@ OutputSurfaceProviderImpl::CreateSoftwareOutputDeviceForPlatform(
 #endif
 
 #if defined(USE_X11)
-  scoped_refptr<base::SequencedTaskRunner> main_runner;
-  if (gpu_service_impl_ && !gpu_service_impl_->in_host_process())
-    main_runner = gpu_service_impl_->main_runner();
-  return std::make_unique<SoftwareOutputDeviceX11>(surface_handle,
-                                                   std::move(main_runner));
+  return std::make_unique<SoftwareOutputDeviceX11>(surface_handle);
 #else
   NOTREACHED();
   return nullptr;

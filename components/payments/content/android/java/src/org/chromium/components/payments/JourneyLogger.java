@@ -109,9 +109,6 @@ public class JourneyLogger {
      * @param event The event that occurred.
      */
     public void setEventOccurred(int event) {
-        assert event >= 0;
-        assert event < Event.ENUM_MAX;
-
         JourneyLoggerJni.get().setEventOccurred(mJourneyLoggerAndroid, JourneyLogger.this, event);
     }
 

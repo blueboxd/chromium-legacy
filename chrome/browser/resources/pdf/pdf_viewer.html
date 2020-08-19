@@ -1,4 +1,8 @@
 <style include="pdf-viewer-shared-style cr-hidden-style">
+  :host {
+    --viewer-pdf-sidenav-width: 300px;
+  }
+
   viewer-pdf-sidenav,
   viewer-pdf-toolbar-new {
     --pdf-toolbar-text-color: rgb(241, 241, 241);
@@ -7,6 +11,18 @@
   viewer-pdf-toolbar,
   viewer-pdf-toolbar-new {
     --active-button-bg: rgba(255, 255, 255, 0.24);
+  }
+
+  #sidenav-container {
+    overflow: hidden;
+    transition: width 250ms ease-out, visibility 250ms;
+    visibility: visible;
+    width: var(--viewer-pdf-sidenav-width);
+  }
+
+  #sidenav-container[closed] {
+    visibility: hidden;
+    width: 0;
   }
 
   #content-focus-rectangle {
@@ -140,12 +156,14 @@
 
 <template is="dom-if" if="[[pdfViewerUpdateEnabled_]]">
   <div id="container">
-    <viewer-pdf-sidenav id="sidenav" hidden="[[sidenavCollapsed_]]"
-        bookmarks="[[bookmarks_]]" doc-length="[[docLength_]]"
-        on-change-page="onChangePage_"
-        on-change-page-and-xy="onChangePageAndXy_"
-        on-navigate="onNavigate_">
-    </viewer-pdf-sidenav>
+    <div id="sidenav-container" closed$="[[sidenavCollapsed_]]">
+      <viewer-pdf-sidenav id="sidenav"
+          bookmarks="[[bookmarks_]]" doc-length="[[docLength_]]"
+          on-change-page="onChangePage_"
+          on-change-page-and-xy="onChangePageAndXy_"
+          on-navigate="onNavigate_">
+      </viewer-pdf-sidenav>
+    </div>
     <div id="main" on-scroll="onScroll_">
       <div id="sizer"></div>
       <div id="content"></div>

@@ -592,13 +592,8 @@ void ContentSettingsRegistry::Init() {
            ContentSettingsInfo::PERSISTENT,
            ContentSettingsInfo::EXCEPTIONS_ON_SECURE_AND_INSECURE_ORIGINS);
 
-  ContentSetting insecure_private_network_initial_default =
-      base::FeatureList::IsEnabled(
-          network::features::kBlockInsecurePrivateNetworkRequests)
-          ? CONTENT_SETTING_BLOCK
-          : CONTENT_SETTING_ALLOW;
   Register(ContentSettingsType::INSECURE_PRIVATE_NETWORK,
-           "insecure-private-network", insecure_private_network_initial_default,
+           "insecure-private-network", CONTENT_SETTING_BLOCK,
            WebsiteSettingsInfo::UNSYNCABLE, WhitelistedSchemes(),
            ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK),
            WebsiteSettingsInfo::SINGLE_ORIGIN_ONLY_SCOPE,

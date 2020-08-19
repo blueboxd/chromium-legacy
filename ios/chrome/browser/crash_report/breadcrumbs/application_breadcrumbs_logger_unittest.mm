@@ -109,4 +109,10 @@ TEST_F(ApplicationBreadcrumbsLoggerTest, Orientation) {
 
   EXPECT_NE(std::string::npos, events.back().find(kBreadcrumbOrientation))
       << events.back();
+
+  // Ensure that same orientation is not logged more than once.
+  [NSNotificationCenter.defaultCenter
+      postNotificationName:UIDeviceOrientationDidChangeNotification
+                    object:nil];
+  EXPECT_EQ(2ul, breadcrumb_manager_.GetEvents(0).size());
 }

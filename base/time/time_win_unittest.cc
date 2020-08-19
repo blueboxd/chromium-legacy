@@ -9,7 +9,6 @@
 #include <stdint.h>
 #include <windows.foundation.h>
 
-#include <algorithm>
 #include <cmath>
 #include <limits>
 #include <vector>
@@ -152,19 +151,23 @@ TEST(TimeTicks, SubMillisecondTimers) {
   if (!TimeTicks::IsHighResolution())
     return;
 
+  const int kRetries = 1000;
+  bool saw_submillisecond_timer = false;
+
   // Run kRetries attempts to see a sub-millisecond timer.
-  constexpr int kRetries = 1000;
   for (int index = 0; index < kRetries; index++) {
-    const TimeTicks start_time = TimeTicks::Now();
+    TimeTicks last_time = TimeTicks::Now();
     TimeDelta delta;
     // Spin until the clock has detected a change.
     do {
-      delta = TimeTicks::Now() - start_time;
-    } while (delta.is_zero());
-    if (!delta.InMilliseconds())
-      return;
+      delta = TimeTicks::Now() - last_time;
+    } while (delta.InMicroseconds() == 0);
+    if (delta.InMicroseconds() < 1000) {
+      saw_submillisecond_timer = true;
+      break;
+    }
   }
-  ADD_FAILURE() << "Never saw a sub-millisecond timer.";
+  EXPECT_TRUE(saw_submillisecond_timer);
 }
 
 TEST(TimeTicks, TimeGetTimeCaps) {
@@ -321,7 +324,7 @@ TEST(TimeTicks, FromQPCValue) {
         ticks_per_second;
     const TimeTicks converted_value = TimeTicks::FromQPCValue(ticks);
     const double converted_microseconds_since_origin =
-        (converted_value - TimeTicks()).InMicrosecondsF();
+        static_cast<double>((converted_value - TimeTicks()).InMicroseconds());
     // When we test with very large numbers we end up in a range where adjacent
     // double values are far apart - 512.0 apart in one test failure. In that
     // situation it makes no sense for our epsilon to be 1.0 - it should be
@@ -335,7 +338,9 @@ TEST(TimeTicks, FromQPCValue) {
     // slightly larger than 1.0, even when the converted value is perfect. This
     // epsilon value was chosen because it is slightly larger than the error
     // seen in a test failure caused by the double rounding.
-    epsilon = std::max(epsilon, 1.002);
+    const double min_epsilon = 1.002;
+    if (epsilon < min_epsilon)
+      epsilon = min_epsilon;
     EXPECT_NEAR(expected_microseconds_since_origin,
                 converted_microseconds_since_origin, epsilon)
         << "ticks=" << ticks << ", to be converted via logic path: "

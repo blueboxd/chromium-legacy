@@ -4,16 +4,14 @@
 
 package org.chromium.chrome.browser.contacts_picker;
 
-import android.accounts.Account;
-import android.annotation.SuppressLint;
 import android.content.ContentResolver;
 import android.content.Context;
-import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.CallSuper;
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
@@ -22,29 +20,22 @@ import androidx.recyclerview.widget.RecyclerView.Adapter;
 
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.signin.DisplayableProfileData;
-import org.chromium.chrome.browser.signin.IdentityServicesProvider;
-import org.chromium.chrome.browser.signin.ProfileDataCache;
-import org.chromium.components.signin.AccountManagerFacade;
-import org.chromium.components.signin.AccountManagerFacadeProvider;
-import org.chromium.components.signin.base.CoreAccountInfo;
-import org.chromium.components.signin.identitymanager.ConsentLevel;
-import org.chromium.components.signin.identitymanager.IdentityManager;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
 /**
  * A data adapter for the Contacts Picker.
+ *
+ * This class is abstract and embedders must specialize it to provide access to the active
+ * user's contact information.
  */
-public class PickerAdapter extends Adapter<RecyclerView.ViewHolder>
-        implements ContactsFetcherWorkerTask.ContactsRetrievedCallback, TopView.ChipToggledCallback,
-                   ProfileDataCache.Observer {
+public abstract class PickerAdapter extends Adapter<RecyclerView.ViewHolder>
+        implements ContactsFetcherWorkerTask.ContactsRetrievedCallback,
+                   TopView.ChipToggledCallback {
     /**
      * A ViewHolder for the top-most view in the RecyclerView. The view it contains has a
      * checkbox and some multi-line text that goes with it, so clicks on either text line
@@ -100,7 +91,7 @@ public class PickerAdapter extends Adapter<RecyclerView.ViewHolder>
     private TopView mTopView;
 
     // The origin the data will be shared with, formatted for display with the scheme omitted.
-    private final String mFormattedOrigin;
+    private String mFormattedOrigin;
 
     // The content resolver to query data from.
     private ContentResolver mContentResolver;
@@ -114,15 +105,6 @@ public class PickerAdapter extends Adapter<RecyclerView.ViewHolder>
 
     // The async worker task to use for fetching the contact details.
     private ContactsFetcherWorkerTask mWorkerTask;
-
-    // The profile data cache to consult when figuring out the signed in user.
-    private ProfileDataCache mProfileDataCache;
-
-    // Whether an observer for ProfileDataCache has been registered.
-    private boolean mObserving;
-
-    // Whether owner info is being fetched asynchronously.
-    private boolean mWaitingOnOwnerInfo;
 
     // Whether the user has switched to search mode.
     private boolean mSearchMode;
@@ -157,7 +139,8 @@ public class PickerAdapter extends Adapter<RecyclerView.ViewHolder>
      * @param context The current context.
      * @param formattedOrigin The origin the data will be shared with.
      */
-    public PickerAdapter(PickerCategoryView categoryView, Context context, String formattedOrigin) {
+    @CallSuper
+    public void init(PickerCategoryView categoryView, Context context, String formattedOrigin) {
         mContext = context;
         mCategoryView = categoryView;
         mContentResolver = context.getContentResolver();
@@ -167,8 +150,6 @@ public class PickerAdapter extends Adapter<RecyclerView.ViewHolder>
         sIncludeEmails = true;
         sIncludeTelephones = true;
         sIncludeIcons = true;
-        mProfileDataCache = new ProfileDataCache(context,
-                mContext.getResources().getDimensionPixelSize(R.dimen.contact_picker_icon_size));
 
         if (getAllContacts() == null && sTestContacts == null) {
             mWorkerTask = new ContactsFetcherWorkerTask(context, this, mCategoryView.includeNames,
@@ -224,54 +205,35 @@ public class PickerAdapter extends Adapter<RecyclerView.ViewHolder>
         return mContactDetails;
     }
 
-    // Adapter:
-
-    @Override
-    public void onAttachedToRecyclerView(RecyclerView recyclerView) {
-        super.onAttachedToRecyclerView(recyclerView);
-        addProfileDataObserver();
+    protected String getOwnerEmail() {
+        return mOwnerEmail;
     }
 
-    @Override
-    public void onDetachedFromRecyclerView(RecyclerView recyclerView) {
-        super.onDetachedFromRecyclerView(recyclerView);
-        removeProfileDataObserver();
+    protected void update() {
+        if (mTopView != null) mTopView.updateContactCount(mContactDetails.size());
+        notifyDataSetChanged();
     }
+
+    // Abstract methods:
+
+    /** Returns the email for the current user. */
+    protected abstract String findOwnerEmail();
+
+    /**
+     * Adds an entry which represents the current user to the given list.
+     * @param contacts the list which is missing an entry for the active user, and to which such an
+     *         entry should be pre-pended.
+     */
+    protected abstract void addOwnerInfoToContacts(ArrayList<ContactDetails> contacts);
 
     // ContactsFetcherWorkerTask.ContactsRetrievedCallback:
 
     @Override
     public void contactsRetrieved(ArrayList<ContactDetails> contacts) {
+        mOwnerEmail = sTestOwnerEmail != null ? sTestOwnerEmail : findOwnerEmail();
+
+        if (!processOwnerInfo(contacts, mOwnerEmail)) addOwnerInfoToContacts(contacts);
         mContactDetails = contacts;
-        mOwnerEmail = getOwnerEmail();
-        if (!processOwnerInfo(contacts) && mOwnerEmail != null) {
-            // Processing was not complete, finish the rest asynchronously. Flow continues in
-            // onProfileDataUpdated.
-            mWaitingOnOwnerInfo = true;
-            addProfileDataObserver();
-            mProfileDataCache.update(Collections.singletonList(mOwnerEmail));
-            mContactDetails.add(0, constructOwnerInfo(mOwnerEmail));
-        }
-        update();
-    }
-
-    // ProfileDataCache.Observer
-
-    @Override
-    public void onProfileDataUpdated(String accountId) {
-        if (!mWaitingOnOwnerInfo || !TextUtils.equals(accountId, mOwnerEmail)) {
-            return;
-        }
-
-        // Now that we've received an update for the right accountId, we can stop listening and
-        // update our records.
-        mWaitingOnOwnerInfo = false;
-        removeProfileDataObserver();
-        // TODO(finnur): crbug.com/1021477 - Maintain an member instance of this.
-        DisplayableProfileData profileData = mProfileDataCache.getProfileDataOrDefault(mOwnerEmail);
-        ContactDetails contact = mContactDetails.get(0);
-        Drawable icon = profileData.getImage();
-        contact.setSelfIcon(icon);
         update();
     }
 
@@ -417,54 +379,14 @@ public class PickerAdapter extends Adapter<RecyclerView.ViewHolder>
         sTestOwnerEmail = ownerEmail;
     }
 
-    private void addProfileDataObserver() {
-        if (!mObserving) {
-            mObserving = true;
-            mProfileDataCache.addObserver(this);
-        }
-    }
-
-    private void removeProfileDataObserver() {
-        if (mObserving) {
-            mObserving = false;
-            mProfileDataCache.removeObserver(this);
-        }
-    }
-
-    private void update() {
-        if (mTopView != null) mTopView.updateContactCount(mContactDetails.size());
-        notifyDataSetChanged();
-    }
-
-    /**
-     * Returns the email for the currently signed-in user. If that is not available, return the
-     * first Google account associated with this phone instead.
-     */
-    private String getOwnerEmail() {
-        if (sTestOwnerEmail != null) return sTestOwnerEmail;
-
-        CoreAccountInfo coreAccountInfo = getCoreAccountInfo();
-        if (coreAccountInfo != null) {
-            return coreAccountInfo.getEmail();
-        }
-
-        AccountManagerFacade manager = AccountManagerFacadeProvider.getInstance();
-        List<Account> accounts = manager.tryGetGoogleAccounts();
-        if (accounts.size() > 0) {
-            return accounts.get(0).name;
-        }
-
-        return null;
-    }
-
     /**
      * Attempts to figure out if the owner of the device is listed in the available contact details.
      * If so move it to the top of the list. If not found, returns false.
      * @return Returns true if processing is complete, false if waiting on asynchronous fetching of
      *         missing data for the owner info.
      */
-    private boolean processOwnerInfo(ArrayList<ContactDetails> contacts) {
-        if (mOwnerEmail == null) {
+    private static boolean processOwnerInfo(ArrayList<ContactDetails> contacts, String ownerEmail) {
+        if (ownerEmail == null) {
             return true;
         }
 
@@ -472,7 +394,7 @@ public class PickerAdapter extends Adapter<RecyclerView.ViewHolder>
         for (int i = 0; i < contacts.size(); ++i) {
             List<String> emails = contacts.get(i).getEmails();
             for (int y = 0; y < emails.size(); ++y) {
-                if (TextUtils.equals(emails.get(y), mOwnerEmail)) {
+                if (TextUtils.equals(emails.get(y), ownerEmail)) {
                     matches.add(i);
                     break;
                 }
@@ -493,39 +415,5 @@ public class PickerAdapter extends Adapter<RecyclerView.ViewHolder>
             contacts.add(i, contact);
         }
         return true;
-    }
-
-    /**
-     * Constructs a {@link ContactDetails} record for the currently signed in user. Name is obtained
-     * via the {@link DisplayableProfileData}, if available, or (alternatively) using the signed in
-     * information. Telephone number is obtained via the telephony service, if that permission has
-     * already been granted, otherwise left blank.
-     * @param ownerEmail The email for the currently signed in user.
-     * @return The contact info for the currently signed in user.
-     */
-    @SuppressLint("HardwareIds")
-    private ContactDetails constructOwnerInfo(String ownerEmail) {
-        DisplayableProfileData profileData = mProfileDataCache.getProfileDataOrDefault(ownerEmail);
-        String name = profileData.getFullNameOrEmail();
-        if (TextUtils.isEmpty(name) || TextUtils.equals(name, ownerEmail)) {
-            name = CoreAccountInfo.getEmailFrom(getCoreAccountInfo());
-        }
-
-        ArrayList<String> telephones = new ArrayList<>();
-
-        ContactDetails contact = new ContactDetails(ContactDetails.SELF_CONTACT_ID, name,
-                Collections.singletonList(ownerEmail), telephones, /*addresses=*/null);
-        Drawable icon = profileData.getImage();
-        contact.setIsSelf(true);
-        contact.setSelfIcon(icon);
-        return contact;
-    }
-
-    private CoreAccountInfo getCoreAccountInfo() {
-        // Since this is read-only operation to obtain email address, always using regular profile
-        // for both regular and off-the-record profile is safe.
-        IdentityManager identityManager = IdentityServicesProvider.get().getIdentityManager(
-                Profile.getLastUsedRegularProfile());
-        return identityManager.getPrimaryAccountInfo(ConsentLevel.SYNC);
     }
 }

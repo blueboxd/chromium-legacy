@@ -577,7 +577,8 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                             mRootUiCoordinator.getBottomSheetController());
                 }
             }
-            mLayoutManager = new LayoutManagerChromePhone(compositorViewHolder, mStartSurface);
+            mLayoutManager = new LayoutManagerChromePhone(
+                    compositorViewHolder, mContentContainer, mStartSurface);
         }
     }
 
@@ -586,7 +587,8 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
 
         try (TraceEvent e = TraceEvent.scoped(
                      "ChromeTabbedActivity.setupCompositorContentPreNativeForTablet")) {
-            mLayoutManager = new LayoutManagerChromeTablet(getCompositorViewHolder());
+            mLayoutManager =
+                    new LayoutManagerChromeTablet(getCompositorViewHolder(), mContentContainer);
         }
     }
 

@@ -81,6 +81,16 @@ class XRFrameProvider final : public GarbageCollected<XRFrameProvider> {
   void ProcessScheduledFrame(device::mojom::blink::XRFrameDataPtr frame_data,
                              double high_res_now_ms);
 
+  // Called before dispatching a frame to an inline session. This method ensures
+  // that inline session frame calls can be scheduled and that they are neither
+  // served nor dropped if an immersive session is started while the inline
+  // session was waiting to be served.
+  void OnPreDispatchInlineFrame(
+      XRSession* session,
+      double timestamp,
+      const base::Optional<gpu::MailboxHolder>& output_mailbox_holder,
+      const base::Optional<gpu::MailboxHolder>& camera_image_mailbox_holder);
+
   const Member<XRSystem> xr_;
 
   // Immersive session state

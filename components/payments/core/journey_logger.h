@@ -108,7 +108,12 @@ class JourneyLogger {
     EVENT_AVAILABLE_METHOD_BASIC_CARD = 1 << 27,
     EVENT_AVAILABLE_METHOD_GOOGLE = 1 << 28,
     EVENT_AVAILABLE_METHOD_OTHER = 1 << 29,
-    EVENT_ENUM_MAX = 1 << 30,
+
+    // Bits for secure-payment-confirmation method.
+    EVENT_REQUEST_METHOD_SECURE_PAYMENT_CONFIRMATION = 1 << 30,
+    EVENT_SELECTED_SECURE_PAYMENT_CONFIRMATION = 1 << 31,
+
+    EVENT_ENUM_MAX = EVENT_SELECTED_SECURE_PAYMENT_CONFIRMATION,
   };
 
   // The reason why the Payment Request was aborted.
@@ -211,12 +216,15 @@ class JourneyLogger {
                                bool requested_name);
 
   // Records the requested payment method types. A value should be true if at
-  // least one payment method in the category (basic-card, google payment method
-  // or other url-based payment method, respectively) is requested.
+  // least one payment method in the category (basic-card, google payment
+  // method, secure payment confirmation method or other url-based payment
+  // method, respectively) is requested.
   // TODO(crbug.com/754811): Add support for non-basic-card, non-URL methods.
-  void SetRequestedPaymentMethodTypes(bool requested_basic_card,
-                                      bool requested_method_google,
-                                      bool requested_method_other);
+  void SetRequestedPaymentMethodTypes(
+      bool requested_basic_card,
+      bool requested_method_google,
+      bool requested_method_secure_payment_confirmation,
+      bool requested_method_other);
 
   // Records that the Payment Request was completed successfully, and starts the
   // logging of all the journey metrics.

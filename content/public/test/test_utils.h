@@ -375,13 +375,20 @@ class TestPageScaleObserver : public WebContentsObserver {
 };
 
 // A custom ContentBrowserClient that simulates GetEffectiveURL() translation
-// for a single URL.
+// for one or more URL pairs.  |requires_dedicated_process| indicates whether
+// the client should indicate that each registered URL requires a dedicated
+// process.  Passing |false| for it will rely on default behavior computed in
+// SiteInstanceImpl::DoesSiteRequireDedicatedProcess().
 class EffectiveURLContentBrowserClient : public ContentBrowserClient {
  public:
+  explicit EffectiveURLContentBrowserClient(bool requires_dedicated_process);
   EffectiveURLContentBrowserClient(const GURL& url_to_modify,
                                    const GURL& url_to_return,
                                    bool requires_dedicated_process);
   ~EffectiveURLContentBrowserClient() override;
+
+  // Adds effective URL translation from |url_to_modify| to |url_to_return|.
+  void AddTranslation(const GURL& url_to_modify, const GURL& url_to_return);
 
  private:
   GURL GetEffectiveURL(BrowserContext* browser_context,
@@ -389,8 +396,9 @@ class EffectiveURLContentBrowserClient : public ContentBrowserClient {
   bool DoesSiteRequireDedicatedProcess(BrowserContext* browser_context,
                                        const GURL& effective_site_url) override;
 
-  GURL url_to_modify_;
-  GURL url_to_return_;
+  // A map of original URLs to effective URLs.
+  std::map<GURL, GURL> urls_to_modify_;
+
   bool requires_dedicated_process_;
 
   DISALLOW_COPY_AND_ASSIGN(EffectiveURLContentBrowserClient);

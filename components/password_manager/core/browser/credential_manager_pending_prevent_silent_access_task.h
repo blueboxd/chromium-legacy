@@ -40,7 +40,7 @@ class CredentialManagerPendingPreventSilentAccessTask
   void OnGetPasswordStoreResults(
       std::vector<std::unique_ptr<autofill::PasswordForm>> results) override;
   void OnGetPasswordStoreResultsFrom(
-      scoped_refptr<PasswordStore> store,
+      PasswordStore* store,
       std::vector<std::unique_ptr<autofill::PasswordForm>> results) override;
 
  private:

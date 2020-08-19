@@ -38,8 +38,7 @@ bool ValidateRangeCreation(ExceptionState& exception_state,
                            uint64_t mapping_size,
                            size_t max_size) {
   if (mapping_size > uint64_t(max_size) ||
-      mapping_offset >
-          uint64_t(std::numeric_limits<size_t>::max()) - mapping_size) {
+      mapping_offset > uint64_t(max_size) - mapping_size) {
     exception_state.ThrowRangeError(
         WTF::String::Format("%s offset (%" PRIu64 " bytes) and size (%" PRIu64
                             " bytes) are too large for this implementation.",
@@ -91,35 +90,6 @@ GPUBuffer* GPUBuffer::Create(GPUDevice* device,
       device->GetProcs().deviceCreateBuffer(device->GetHandle(), &dawn_desc));
 }
 
-// static
-std::pair<GPUBuffer*, DOMArrayBuffer*> GPUBuffer::CreateMapped(
-    GPUDevice* device,
-    const GPUBufferDescriptor* webgpu_desc,
-    ExceptionState& exception_state) {
-  DCHECK(device);
-
-  std::string label;
-  WGPUBufferDescriptor dawn_desc = AsDawnType(webgpu_desc, &label);
-
-  if (!ValidateRangeCreation(exception_state, "createBufferMapped", 0,
-                             dawn_desc.size, kLargestMappableSize)) {
-    return std::make_pair(nullptr, nullptr);
-  }
-
-  WGPUCreateBufferMappedResult result =
-      device->GetProcs().deviceCreateBufferMapped(device->GetHandle(),
-                                                  &dawn_desc);
-
-  GPUBuffer* gpu_buffer = MakeGarbageCollected<GPUBuffer>(
-      device, dawn_desc.size, true, result.buffer);
-
-  DOMArrayBuffer* mapped_array_buffer =
-      gpu_buffer->CreateArrayBufferForMappedData(
-          result.data, static_cast<size_t>(result.dataLength));
-
-  return std::make_pair(gpu_buffer, mapped_array_buffer);
-}
-
 GPUBuffer::GPUBuffer(GPUDevice* device,
                      uint64_t size,
                      bool mapped_at_creation,
@@ -141,37 +111,6 @@ GPUBuffer::~GPUBuffer() {
 void GPUBuffer::Trace(Visitor* visitor) const {
   visitor->Trace(mapped_array_buffers_);
   DawnObject<WGPUBuffer>::Trace(visitor);
-}
-
-void GPUBuffer::OnOldMapAsyncCallback(ScriptPromiseResolver* resolver,
-                                      WGPUBufferMapAsyncStatus status,
-                                      void* data,
-                                      uint64_t data_length) {
-  switch (status) {
-    case WGPUBufferMapAsyncStatus_Success: {
-      DCHECK(data);
-      DCHECK_LE(data_length, kLargestMappableSize);
-
-      map_start_ = 0;
-      map_end_ = data_length;
-      mapped_ranges_.push_back(
-          std::make_pair(0, static_cast<size_t>(data_length)));
-      DOMArrayBuffer* mapped_buffer = CreateArrayBufferForMappedData(
-          data, static_cast<size_t>(data_length));
-      resolver->Resolve(mapped_buffer);
-    } break;
-    case WGPUBufferMapAsyncStatus_Error:
-    case WGPUBufferMapAsyncStatus_Unknown:
-    case WGPUBufferMapAsyncStatus_DeviceLost:
-      resolver->Reject(MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kOperationError));
-      break;
-    default:
-      NOTREACHED();
-      resolver->Reject(
-          MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError));
-      break;
-  }
 }
 
 ScriptPromise GPUBuffer::mapAsync(ScriptState* script_state,
@@ -199,73 +138,6 @@ DOMArrayBuffer* GPUBuffer::getMappedRange(uint64_t offset,
                                           uint64_t size,
                                           ExceptionState& exception_state) {
   return GetMappedRangeImpl(offset, size, exception_state);
-}
-
-ScriptPromise GPUBuffer::mapReadAsync(ScriptState* script_state,
-                                      ExceptionState& exception_state) {
-  device_->AddConsoleWarning(
-      "mapReadAsync is deprecated: use mapAsync+getMappedRange instead");
-
-  ScriptPromiseResolver* resolver =
-      MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  ScriptPromise promise = resolver->Promise();
-
-  if (!ValidateRangeCreation(exception_state, "mapReadAsync", 0, size_,
-                             kLargestMappableSize)) {
-    resolver->Reject(exception_state);
-    return promise;
-  }
-
-  auto* callback =
-      BindDawnCallback(&GPUBuffer::OnOldMapAsyncCallback, WrapPersistent(this),
-                       WrapPersistent(resolver));
-
-  using Callback = std::remove_reference_t<decltype(*callback)>;
-
-  GetProcs().bufferMapReadAsync(
-      GetHandle(),
-      [](WGPUBufferMapAsyncStatus status, const void* data,
-         uint64_t data_length, void* userdata) {
-        // It is safe to const_cast the |data| pointer because it is a shadow
-        // copy that Dawn wire makes and does not point to the mapped GPU data.
-        // Dawn wire's copy of the data is not used outside of tests.
-        return Callback::CallUnboundCallback(status, const_cast<void*>(data),
-                                             data_length, userdata);
-      },
-      callback->AsUserdata());
-  // WebGPU guarantees callbacks complete in finite time. Flush now so that
-  // commands reach the GPU process.
-  device_->GetInterface()->FlushCommands();
-
-  return promise;
-}
-
-ScriptPromise GPUBuffer::mapWriteAsync(ScriptState* script_state,
-                                       ExceptionState& exception_state) {
-  device_->AddConsoleWarning(
-      "mapWriteAsync is deprecated: use mapAsync+getMappedRange instead");
-
-  ScriptPromiseResolver* resolver =
-      MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  ScriptPromise promise = resolver->Promise();
-
-  if (!ValidateRangeCreation(exception_state, "mapWriteAsync", 0, size_,
-                             kLargestMappableSize)) {
-    resolver->Reject(exception_state);
-    return promise;
-  }
-
-  auto* callback =
-      BindDawnCallback(&GPUBuffer::OnOldMapAsyncCallback, WrapPersistent(this),
-                       WrapPersistent(resolver));
-
-  GetProcs().bufferMapWriteAsync(GetHandle(), callback->UnboundCallback(),
-                                 callback->AsUserdata());
-  // WebGPU guarantees callbacks complete in finite time. Flush now so that
-  // commands reach the GPU process.
-  device_->GetInterface()->FlushCommands();
-
-  return promise;
 }
 
 void GPUBuffer::unmap(ScriptState* script_state) {

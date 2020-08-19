@@ -78,8 +78,8 @@
 </style>
 
 <cr-icon-button class="icon-more-vert" id="moreActionsButton"
-    on-click="onMoreActionsButtonClicked_" title$="[[profileMenuText_]]"
-    aria-label$="[[profileMenuText_]]">
+    on-click="onMoreActionsButtonClicked_" title="$i18n{profileMenuName}"
+    aria-label="$i18n{profileMenuName}">
 </cr-icon-button>
 
 <cr-action-menu id="actionMenu" role-description="$i18n{menu}">
@@ -99,7 +99,9 @@
     </div>
     <div>
       [[removeWarningText_]]
-      <span class="key-text">[[profileState.userName]]</span>
+      <span hidden$="[[!profileState.isSyncing]]" class="key-text">
+        [[profileState.userName]]
+      </span>
     </div>
     <table class="statistics">
       <template is="dom-repeat" items="[[profileStatistics_]]">

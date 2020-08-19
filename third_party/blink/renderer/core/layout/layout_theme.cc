@@ -602,14 +602,6 @@ void LayoutTheme::AdjustMenuListStyle(ComputedStyle& style, Element*) const {
   style.SetOverflowY(EOverflow::kVisible);
 }
 
-base::TimeDelta LayoutTheme::AnimationRepeatIntervalForProgressBar() const {
-  return base::TimeDelta();
-}
-
-base::TimeDelta LayoutTheme::AnimationDurationForProgressBar() const {
-  return base::TimeDelta();
-}
-
 bool LayoutTheme::ShouldHaveSpinButton(HTMLInputElement* input_element) const {
   return input_element->IsSteppable() &&
          input_element->type() != input_type_names::kRange;

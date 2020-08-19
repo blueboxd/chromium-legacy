@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_NINE_PIECE_IMAGE_GRID_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/geometry/box_sides.h"
 #include "third_party/blink/renderer/core/style/nine_piece_image.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
@@ -65,8 +66,7 @@ class CORE_EXPORT NinePieceImageGrid {
                      IntSize image_size,
                      IntRect border_image_area,
                      const IntRectOutsets& border_widths,
-                     bool include_left_edge = true,
-                     bool include_rigt_edge = true);
+                     PhysicalBoxSides sides_to_include = PhysicalBoxSides());
 
   struct CORE_EXPORT NinePieceDrawInfo {
     STACK_ALLOCATED();

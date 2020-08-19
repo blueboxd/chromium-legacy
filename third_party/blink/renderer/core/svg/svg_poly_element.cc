@@ -50,8 +50,8 @@ Path SVGPolyElement::AsPathFromPoints() const {
   if (points_value->IsEmpty())
     return path;
 
-  const auto* it = points_value->begin();
-  const auto* it_end = points_value->end();
+  auto it = points_value->begin();
+  auto it_end = points_value->end();
   DCHECK(it != it_end);
   path.MoveTo((*it)->Value());
   ++it;

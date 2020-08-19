@@ -191,6 +191,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDiscovery
   base::Optional<
       base::RepeatingCallback<void(std::unique_ptr<CableDiscoveryData>)>>
       pairing_callback_;
+  network::mojom::NetworkContext* const network_context_;
 
   // observed_devices_ caches the information from observed caBLE devices so
   // that the device-log isn't spammed.

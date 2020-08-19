@@ -149,10 +149,12 @@ void LineBoxListPainter::PaintBackplate(
   if (!ShouldPaint(layout_object, paint_info, paint_offset))
     return;
 
-  // Only paint backplates behind text when forced-color-adjust is auto.
+  // Only paint backplates behind text when forced-color-adjust is auto and the
+  // element is visible.
   const ComputedStyle& style =
       line_box_list_.First()->GetLineLayoutItem().StyleRef();
-  if (style.ForcedColorAdjust() == EForcedColorAdjust::kNone)
+  if (style.ForcedColorAdjust() == EForcedColorAdjust::kNone ||
+      style.Visibility() != EVisibility::kVisible)
     return;
 
   if (DrawingRecorder::UseCachedDrawingIfPossible(

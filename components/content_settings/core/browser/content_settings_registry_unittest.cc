@@ -209,7 +209,7 @@ TEST_F(ContentSettingsRegistryTest, GetInitialDefaultSetting) {
 
   const ContentSettingsInfo* insecure_private_network =
       registry()->Get(ContentSettingsType::INSECURE_PRIVATE_NETWORK);
-  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
             insecure_private_network->GetInitialDefaultSetting());
 }
 

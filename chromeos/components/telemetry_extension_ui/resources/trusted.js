@@ -329,11 +329,11 @@ class TelemetryProxy {
     Object.entries(input).forEach(kv => {
       const key = /** @type {!string} */ (kv[0]);
       const value = /** @type {?Object|string|number|null|undefined} */ (kv[1]);
-      const converted = this.convert(value);
+      const convertedValue = this.convert(value);
 
       // 2 rule: omit null/undefined properties.
-      if (converted !== null && typeof converted !== 'undefined') {
-        output[key] = converted;
+      if (convertedValue !== null && typeof convertedValue !== 'undefined') {
+        output[key] = convertedValue;
       }
     });
 

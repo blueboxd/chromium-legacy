@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
 #include "third_party/blink/renderer/core/css/style_auto_color.h"
 #include "third_party/blink/renderer/core/css/style_color.h"
+#include "third_party/blink/renderer/core/layout/geometry/box_sides.h"
 #include "third_party/blink/renderer/core/layout/geometry/logical_size.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/core/style/border_value.h"
@@ -2469,9 +2470,9 @@ class ComputedStyle : public ComputedStyleBase,
 
   // Border utility functions.
   bool BorderObscuresBackground() const;
-  void GetBorderEdgeInfo(BorderEdge edges[],
-                         bool include_logical_left_edge = true,
-                         bool include_logical_right_edge = true) const;
+  void GetBorderEdgeInfo(
+      BorderEdge edges[],
+      PhysicalBoxSides sides_to_include = PhysicalBoxSides()) const;
 
   bool HasBoxDecorations() const {
     return HasBorderDecoration() || HasBorderRadius() || HasOutline() ||

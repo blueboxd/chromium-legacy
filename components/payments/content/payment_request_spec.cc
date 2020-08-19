@@ -358,6 +358,14 @@ PaymentRequestSpec::GetShippingOptions() const {
   return *details_->shipping_options;
 }
 
+bool PaymentRequestSpec::IsSecurePaymentConfirmationRequested() const {
+  // No other payment method will be requested together with secure payment
+  // confirmation.
+  return payment_method_identifiers_set_.size() == 1 &&
+         *payment_method_identifiers_set_.begin() ==
+             methods::kSecurePaymentConfirmation;
+}
+
 const mojom::PaymentDetailsModifierPtr*
 PaymentRequestSpec::GetApplicableModifier(PaymentApp* selected_app) const {
   if (!selected_app ||

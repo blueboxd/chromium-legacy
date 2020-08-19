@@ -590,6 +590,23 @@ class RemovePluginPrivateDataTester {
 };
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 
+class MockDataRemovalObserver : public StoragePartition::DataRemovalObserver {
+ public:
+  explicit MockDataRemovalObserver(StoragePartition* partition) {
+    observer_.Add(partition);
+  }
+
+  MOCK_METHOD4(OnOriginDataCleared,
+               void(uint32_t,
+                    base::RepeatingCallback<bool(const url::Origin&)>,
+                    base::Time,
+                    base::Time));
+
+ private:
+  ScopedObserver<StoragePartition, StoragePartition::DataRemovalObserver>
+      observer_{this};
+};
+
 bool IsWebSafeSchemeForTest(const std::string& scheme) {
   return scheme == url::kHttpScheme;
 }
@@ -1809,6 +1826,55 @@ TEST_F(StoragePartitionImplTest, ConversionsClearDataForFilter) {
   EXPECT_EQ(2u, GetConversionsToReportForTesting(conversion_manager,
                                                  base::Time::Max())
                     .size());
+}
+
+TEST_F(StoragePartitionImplTest, DataRemovalObserver) {
+  const uint32_t kTestClearMask =
+      content::StoragePartition::REMOVE_DATA_MASK_APPCACHE |
+      content::StoragePartition::REMOVE_DATA_MASK_WEBSQL;
+  const uint32_t kTestQuotaClearMask = 0;
+  const auto kTestOrigin = GURL("https://example.com");
+  const auto kBeginTime = base::Time() + base::TimeDelta::FromHours(1);
+  const auto kEndTime = base::Time() + base::TimeDelta::FromHours(2);
+  const auto origin_callback_valid =
+      [&](base::RepeatingCallback<bool(const url::Origin&)> callback) {
+        return callback.Run(url::Origin::Create(kTestOrigin));
+      };
+
+  StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
+      BrowserContext::GetDefaultStoragePartition(browser_context()));
+  MockDataRemovalObserver observer(partition);
+
+  // Confirm that each of the StoragePartition interfaces for clearing origin
+  // based data notify observers appropriately.
+  EXPECT_CALL(
+      observer,
+      OnOriginDataCleared(kTestClearMask, testing::Truly(origin_callback_valid),
+                          base::Time(), base::Time::Max()));
+  partition->ClearDataForOrigin(kTestClearMask, kTestQuotaClearMask,
+                                kTestOrigin);
+  testing::Mock::VerifyAndClearExpectations(&observer);
+
+  EXPECT_CALL(
+      observer,
+      OnOriginDataCleared(kTestClearMask, testing::Truly(origin_callback_valid),
+                          kBeginTime, kEndTime));
+  partition->ClearData(kTestClearMask, kTestQuotaClearMask, kTestOrigin,
+                       kBeginTime, kEndTime, base::DoNothing());
+  testing::Mock::VerifyAndClearExpectations(&observer);
+
+  EXPECT_CALL(
+      observer,
+      OnOriginDataCleared(kTestClearMask, testing::Truly(origin_callback_valid),
+                          kBeginTime, kEndTime));
+  partition->ClearData(
+      kTestClearMask, kTestQuotaClearMask,
+      base::BindLambdaForTesting([&](const url::Origin& origin,
+                                     storage::SpecialStoragePolicy* policy) {
+        return origin == url::Origin::Create(kTestOrigin);
+      }),
+      /* cookie_deletion_filter */ nullptr, /* perform_storage_cleanup */ false,
+      kBeginTime, kEndTime, base::DoNothing());
 }
 
 }  // namespace content

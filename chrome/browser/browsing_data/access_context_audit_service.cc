@@ -23,7 +23,8 @@ AccessContextAuditService::~AccessContextAuditService() = default;
 bool AccessContextAuditService::Init(
     const base::FilePath& database_dir,
     network::mojom::CookieManager* cookie_manager,
-    history::HistoryService* history_service) {
+    history::HistoryService* history_service,
+    content::StoragePartition* storage_partition) {
   database_ = base::MakeRefCounted<AccessContextAuditDatabase>(database_dir);
 
   // Tests may have provided a task runner already.
@@ -47,6 +48,7 @@ bool AccessContextAuditService::Init(
   cookie_manager->AddGlobalChangeListener(
       cookie_listener_receiver_.BindNewPipeAndPassRemote());
   history_observer_.Add(history_service);
+  storage_partition_observer_.Add(storage_partition);
   return true;
 }
 
@@ -105,8 +107,74 @@ void AccessContextAuditService::CompleteGetAllAccessRecordsInternal(
   std::move(callback).Run(std::move(records));
 }
 
+void AccessContextAuditService::RemoveAllRecordsForOriginKeyedStorage(
+    const url::Origin& origin,
+    AccessContextAuditDatabase::StorageAPIType type) {
+  DCHECK_NE(type, AccessContextAuditDatabase::StorageAPIType::kCookie)
+      << "Cookies are not an origin keyed storage type.";
+  database_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &AccessContextAuditDatabase::RemoveAllRecordsForOriginKeyedStorage,
+          database_, std::move(origin), type));
+}
+
 void AccessContextAuditService::Shutdown() {
   ClearSessionOnlyRecords();
+}
+
+void AccessContextAuditService::OnOriginDataCleared(
+    uint32_t remove_mask,
+    base::RepeatingCallback<bool(const url::Origin&)> origin_matcher,
+    const base::Time begin,
+    const base::Time end) {
+  std::set<AccessContextAuditDatabase::StorageAPIType> types;
+
+  if (remove_mask & content::StoragePartition::REMOVE_DATA_MASK_APPCACHE)
+    types.insert(AccessContextAuditDatabase::StorageAPIType::kAppCache);
+  if (remove_mask & content::StoragePartition::REMOVE_DATA_MASK_FILE_SYSTEMS)
+    types.insert(AccessContextAuditDatabase::StorageAPIType::kFileSystem);
+  if (remove_mask & content::StoragePartition::REMOVE_DATA_MASK_INDEXEDDB)
+    types.insert(AccessContextAuditDatabase::StorageAPIType::kIndexedDB);
+  if (remove_mask & content::StoragePartition::REMOVE_DATA_MASK_LOCAL_STORAGE)
+    types.insert(AccessContextAuditDatabase::StorageAPIType::kLocalStorage);
+  if (remove_mask & content::StoragePartition::REMOVE_DATA_MASK_WEBSQL)
+    types.insert(AccessContextAuditDatabase::StorageAPIType::kWebDatabase);
+  if (remove_mask & content::StoragePartition::REMOVE_DATA_MASK_SERVICE_WORKERS)
+    types.insert(AccessContextAuditDatabase::StorageAPIType::kServiceWorker);
+  if (remove_mask & content::StoragePartition::REMOVE_DATA_MASK_CACHE_STORAGE)
+    types.insert(AccessContextAuditDatabase::StorageAPIType::kCacheStorage);
+
+  if (types.empty())
+    return;
+
+  DCHECK_EQ(AccessContextAuditDatabase::StorageAPIType::kMaxValue,
+            AccessContextAuditDatabase::StorageAPIType::kAppCache)
+      << "Unexpected number of storage types. Ensure that all storage types "
+         "are accounted for when checking |remove_mask|.";
+  bool all_origin_storage_types = types.size() == 7;
+
+  if (begin == base::Time() && end == base::Time::Max() && !origin_matcher &&
+      all_origin_storage_types) {
+    database_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&AccessContextAuditDatabase::RemoveAllRecords,
+                                  database_));
+    return;
+  }
+
+  if (!origin_matcher && all_origin_storage_types) {
+    database_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &AccessContextAuditDatabase::RemoveAllRecordsForTimeRange,
+            database_, begin, end));
+    return;
+  }
+
+  database_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&AccessContextAuditDatabase::RemoveStorageApiRecords,
+                     database_, types, std::move(origin_matcher), begin, end));
 }
 
 void AccessContextAuditService::OnCookieChange(

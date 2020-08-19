@@ -1,1 +1,20 @@
-<div> Local profile customization </div>
+<style include="profile-creation-shared">
+  #title {
+    color: var(--theme-text-color);
+    font-weight: normal;
+    padding-top: 84px;
+    text-align: center;
+  }
+</style>
+
+<div id="headerContainer"
+    style$="--theme-frame-color:[[profileThemeInfo.themeFrameColor]];
+            --theme-text-color:[[profileThemeInfo.themeFrameTextColor]];
+            --theme-shape-color:[[profileThemeInfo.themeShapeColor]]">
+  <iron-icon class="banner" icon="profiles:customize-banner"></iron-icon>
+  <cr-icon-button id="backButton" class="icon-arrow-back"
+        on-click="onClickBack_" aria-label="$i18n{backButtonLabel}">
+  </cr-icon-button>
+  <h2 id="title">$i18n{localProfileCreationTitle}<h2>
+  <img class="avatar" src="chrome://theme/IDR_PROFILE_AVATAR_PLACEHOLDER_LARGE">
+</div>

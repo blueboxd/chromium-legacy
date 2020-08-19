@@ -13,6 +13,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/perfetto/include/perfetto/ext/base/utils.h"
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/trace_writer.h"
+#include "third_party/perfetto/include/perfetto/protozero/root_message.h"
 
 namespace tracing {
 
@@ -41,7 +42,7 @@ class DummyTraceWriter : public perfetto::TraceWriter {
   uint64_t written() const override { return 0u; }
 
  private:
-  perfetto::protos::pbzero::TracePacket trace_packet_;
+  protozero::RootMessage<perfetto::protos::pbzero::TracePacket> trace_packet_;
   protozero::ScatteredStreamWriterNullDelegate delegate_;
   protozero::ScatteredStreamWriter stream_;
 };

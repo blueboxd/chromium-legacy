@@ -62,8 +62,9 @@ SVGTransformTearOff* SVGTransformListTearOff::consolidate(
     return nullptr;
   auto* concatenated_transform =
       MakeGarbageCollected<SVGTransform>(transform_list->Concatenate());
-  transform_list->Initialize(concatenated_transform);
-  return CreateItemTearOff(concatenated_transform);
+  transform_list->Clear();
+  transform_list->Append(concatenated_transform);
+  return AttachedItemTearOff(concatenated_transform);
 }
 
 }  // namespace blink

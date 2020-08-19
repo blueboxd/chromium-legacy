@@ -195,13 +195,14 @@ TEST_F(SystemProxyManagerTest, KerberosConfig) {
 TEST_F(SystemProxyManagerTest, UserCredentialsRequiredNoUser) {
   SetPolicy(true /* system_proxy_enabled */, "" /* system_services_username */,
             "" /* system_services_password */);
-
+  system_proxy_manager_->StopObservingPrimaryProfilePrefs();
   system_proxy::ProtectionSpace protection_space;
   protection_space.set_origin(kProxyAuthUrl);
   protection_space.set_scheme(kScheme);
   protection_space.set_realm(kRealm);
 
   system_proxy::AuthenticationRequiredDetails details;
+  details.set_bad_cached_credentials(false);
   *details.mutable_proxy_protection_space() = protection_space;
 
   client_test_interface()->SendAuthenticationRequiredSignal(details);
@@ -219,6 +220,7 @@ TEST_F(SystemProxyManagerTest, UserCredentialsRequiredNoUser) {
   ASSERT_TRUE(request.has_credentials());
   EXPECT_EQ("", request.credentials().username());
   EXPECT_EQ("", request.credentials().password());
+  system_proxy_manager_->StartObservingPrimaryProfilePrefs(profile_.get());
 }
 
 // Tests that credential requests are resolved to a  D-Bus call which sends back

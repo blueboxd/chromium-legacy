@@ -18,7 +18,7 @@ import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bun
 
 import {CloudPrintInterface, CloudPrintInterfaceErrorEventDetail, CloudPrintInterfaceEventType} from '../cloud_print_interface.js';
 import {CloudPrintInterfaceImpl} from '../cloud_print_interface_impl.js';
-import {Destination} from '../data/destination.js';
+import {Destination, DestinationOrigin} from '../data/destination.js';
 import {DocumentSettings} from '../data/document_info.js';
 import {Margins} from '../data/margins.js';
 import {MeasurementSystem} from '../data/measurement_system.js';
@@ -217,6 +217,14 @@ Polymer({
         this.close_();
         e.preventDefault();
       }
+
+      // <if expr="chromeos">
+      if (this.destination_ &&
+          this.destination_.origin === DestinationOrigin.CROS) {
+        this.nativeLayer_.recordPrinterStatusHistogram(
+            this.destination_.printerStatusReason, false);
+      }
+      // </if>
       return;
     }
 
@@ -466,12 +474,26 @@ Polymer({
       this.printRequested_ = true;
       return;
     }
+    // <if expr="chromeos">
+    if (this.destination_ &&
+        this.destination_.origin === DestinationOrigin.CROS) {
+      this.nativeLayer_.recordPrinterStatusHistogram(
+          this.destination_.printerStatusReason, true);
+    }
+    // </if>
     this.$.state.transitTo(
         this.$.previewArea.previewLoaded() ? State.PRINTING : State.HIDDEN);
   },
 
   /** @private */
   onCancelRequested_() {
+    // <if expr="chromeos">
+    if (this.destination_ &&
+        this.destination_.origin === DestinationOrigin.CROS) {
+      this.nativeLayer_.recordPrinterStatusHistogram(
+          this.destination_.printerStatusReason, false);
+    }
+    // </if>
     this.cancelled_ = true;
     this.$.state.transitTo(State.CLOSING);
   },

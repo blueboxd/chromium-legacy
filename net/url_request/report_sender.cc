@@ -12,7 +12,6 @@
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_status.h"
 #include "url/gurl.h"
 
 namespace {

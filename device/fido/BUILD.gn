@@ -111,6 +111,10 @@ component("fido") {
       "cable/fido_cable_discovery.h",
       "cable/fido_cable_handshake_handler.cc",
       "cable/fido_cable_handshake_handler.h",
+      "cable/fido_tunnel_device.cc",
+      "cable/fido_tunnel_device.h",
+      "cable/websocket_adapter.cc",
+      "cable/websocket_adapter.h",
       "client_data.cc",
       "client_data.h",
       "credential_management.cc",
@@ -190,6 +194,7 @@ component("fido") {
       "//services/device/public/cpp/usb",
       "//services/device/public/mojom",
       "//services/device/public/mojom:usb",
+      "//services/network/public/mojom",
     ]
   }
 

@@ -44,8 +44,8 @@
       depends_on: ["ExperimentalProductivityFeatures"],
     },
     {
-      name: "UnoptimizedLosslessImages",
-      document_policy_name: "unoptimized-lossless-images",
+      name: "LosslessImagesMaxBpp",
+      document_policy_name: "lossless-images-max-bpp",
       value_type: "DecDouble",
       default_value: "max",
       depends_on: ["UnoptimizedImagePolicies"],

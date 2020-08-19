@@ -73,13 +73,6 @@ class CORE_EXPORT NGBoxFragment final : public NGFragment {
                                                             direction_);
   }
 
-  NGBorderEdges BorderEdges() const {
-    const NGPhysicalBoxFragment& physical_box_fragment =
-        To<NGPhysicalBoxFragment>(physical_fragment_);
-    return NGBorderEdges::FromPhysical(physical_box_fragment.BorderEdges(),
-                                       GetWritingMode());
-  }
-
  protected:
   TextDirection direction_;
 };

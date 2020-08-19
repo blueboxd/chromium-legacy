@@ -1889,6 +1889,14 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual bool ShouldInheritCrossOriginEmbedderPolicyImplicitly(
       const GURL& url);
 
+  // Returns the private network request policy to apply to |url|.
+  //
+  // |browser_context| must not be nullptr. Caller retains ownership.
+  // |url| is the URL of a navigation ready to commit.
+  virtual network::mojom::PrivateNetworkRequestPolicy
+  GetPrivateNetworkRequestPolicy(BrowserContext* browser_context,
+                                 const GURL& url);
+
   // Returns the URL-Keyed Metrics service for chrome:ukm.
   virtual ukm::UkmService* GetUkmService();
 };

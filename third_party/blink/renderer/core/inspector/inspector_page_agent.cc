@@ -60,6 +60,7 @@
 #include "third_party/blink/renderer/core/inspector/inspected_frames.h"
 #include "third_party/blink/renderer/core/inspector/inspector_css_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspector_resource_content_loader.h"
+#include "third_party/blink/renderer/core/inspector/protocol/Page.h"
 #include "third_party/blink/renderer/core/inspector/v8_inspector_string.h"
 #include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
@@ -1062,6 +1063,33 @@ void InspectorPageAgent::WindowOpen(Document* document,
   GetFrontend()->flush();
 }
 
+namespace {
+protocol::Page::SecureContextType CreateProtocolSecureContextType(
+    SecureContextModeExplanation explanation) {
+  switch (explanation) {
+    case SecureContextModeExplanation::kSecure:
+      return protocol::Page::SecureContextTypeEnum::Secure;
+    case SecureContextModeExplanation::kInsecureAncestor:
+      return protocol::Page::SecureContextTypeEnum::InsecureAncestor;
+    case SecureContextModeExplanation::kInsecureScheme:
+      return protocol::Page::SecureContextTypeEnum::InsecureScheme;
+    case SecureContextModeExplanation::kSecureLocalhost:
+      return protocol::Page::SecureContextTypeEnum::SecureLocalhost;
+  }
+}
+protocol::Page::CrossOriginIsolatedContextType
+CreateProtocolCrossOriginIsolatedContextType(ExecutionContext* context) {
+  if (context->IsCrossOriginIsolated()) {
+    return protocol::Page::CrossOriginIsolatedContextTypeEnum::Isolated;
+  } else if (context->IsFeatureEnabled(
+                 mojom::blink::FeaturePolicyFeature::kCrossOriginIsolated)) {
+    return protocol::Page::CrossOriginIsolatedContextTypeEnum::NotIsolated;
+  }
+  return protocol::Page::CrossOriginIsolatedContextTypeEnum::
+      NotIsolatedFeatureDisabled;
+}
+}  // namespace
+
 std::unique_ptr<protocol::Page::Frame> InspectorPageAgent::BuildObjectForFrame(
     LocalFrame* frame) {
   DocumentLoader* loader = frame->Loader().GetDocumentLoader();
@@ -1077,6 +1105,12 @@ std::unique_ptr<protocol::Page::Frame> InspectorPageAgent::BuildObjectForFrame(
           .setMimeType(frame->Loader().GetDocumentLoader()->MimeType())
           .setSecurityOrigin(
               SecurityOrigin::Create(loader->Url())->ToRawString())
+          .setSecureContextType(CreateProtocolSecureContextType(
+              frame->DomWindow()
+                  ->GetSecurityContext()
+                  .GetSecureContextModeExplanation()))
+          .setCrossOriginIsolatedContextType(
+              CreateProtocolCrossOriginIsolatedContextType(frame->DomWindow()))
           .build();
   if (loader->Url().HasFragmentIdentifier())
     frame_object->setUrlFragment("#" + loader->Url().FragmentIdentifier());

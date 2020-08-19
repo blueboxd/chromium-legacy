@@ -99,6 +99,8 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
     /** A {@link Layout} used for showing a normal web page. */
     protected final StaticLayout mStaticLayout;
 
+    private final ViewGroup mContentContainer;
+
     // External Dependencies
     private TabModelSelector mTabModelSelector;
 
@@ -107,8 +109,6 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
 
     // An observer for watching TabModelFilters changes events.
     private TabModelObserver mTabModelFilterObserver;
-
-    private ViewGroup mContentContainer;
 
     // External Observers
     private final ObserverList<SceneChangeObserver> mSceneChangeObservers = new ObserverList<>();
@@ -245,8 +245,9 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
     /**
      * Creates a {@link LayoutManager} instance.
      * @param host A {@link LayoutManagerHost} instance.
+     * @param contentContainer A {@link ViewGroup} for Android views to be bound to.
      */
-    public LayoutManager(LayoutManagerHost host) {
+    public LayoutManager(LayoutManagerHost host, ViewGroup contentContainer) {
         mHost = host;
         mPxToDp = 1.f / mHost.getContext().getResources().getDisplayMetrics().density;
         mAndroidViewShownSupplier = new ObservableSupplierImpl<>();
@@ -255,6 +256,9 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
 
         mContext = host.getContext();
         LayoutRenderHost renderHost = host.getLayoutRenderHost();
+
+        assert contentContainer != null;
+        mContentContainer = contentContainer;
 
         mAnimationHandler = new CompositorAnimationHandler(this);
 
@@ -412,14 +416,12 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
      * @param selector                 A {@link TabModelSelector} instance.
      * @param creator                  A {@link TabCreatorManager} instance.
      * @param content                  A {@link TabContentManager} instance.
-     * @param androidContentContainer  A {@link ViewGroup} for Android views to be bound to.
      * @param controlContainer         A {@link ControlContainer} for browser controls' layout.
      * @param contextualSearchDelegate A {@link ContextualSearchManagementDelegate} instance.
      * @param dynamicResourceLoader    A {@link DynamicResourceLoader} instance.
      */
     public void init(TabModelSelector selector, TabCreatorManager creator,
-            TabContentManager content, ViewGroup androidContentContainer,
-            ControlContainer controlContainer,
+            TabContentManager content, ControlContainer controlContainer,
             ContextualSearchManagementDelegate contextualSearchDelegate,
             DynamicResourceLoader dynamicResourceLoader) {
         LayoutRenderHost renderHost = mHost.getLayoutRenderHost();
@@ -464,13 +466,11 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
 
         // Set the dynamic resource loader for all overlay panels.
         mOverlayPanelManager.setDynamicResourceLoader(dynamicResourceLoader);
-        mOverlayPanelManager.setContainerView(androidContentContainer);
+        mOverlayPanelManager.setContainerView(mContentContainer);
 
         if (mTabModelSelector != selector) {
             setTabModelSelector(selector);
         }
-
-        mContentContainer = androidContentContainer;
     }
 
     public void setTabModelSelector(TabModelSelector selector) {

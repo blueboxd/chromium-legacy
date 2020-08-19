@@ -41,7 +41,9 @@ class FirstRunAppRestrictionInfo {
     private boolean mInitialized;
     private boolean mIsFetching;
     private boolean mHasAppRestriction;
-    private Queue<Callback<Boolean>> mCallBacks = new LinkedList<>();
+    private long mCompletionElapsedRealtimeMs;
+    private Queue<Callback<Boolean>> mCallbacks = new LinkedList<>();
+    private Queue<Callback<Long>> mCompletionTimeCallbacks = new LinkedList<>();
 
     private AsyncTask<Boolean> mFetchAppRestrictionAsyncTask;
     private final AppRestrictionsProvider mProvider;
@@ -91,7 +93,8 @@ class FirstRunAppRestrictionInfo {
         if (mProvider != null) {
             mProvider.destroy();
         }
-        mCallBacks.clear();
+        mCallbacks.clear();
+        mCompletionTimeCallbacks.clear();
     }
 
     /**
@@ -105,7 +108,23 @@ class FirstRunAppRestrictionInfo {
         if (mInitialized) {
             callback.onResult(mHasAppRestriction);
         } else {
-            mCallBacks.add(callback);
+            mCallbacks.add(callback);
+        }
+    }
+
+    /**
+     * Registers a callback for the timestamp from {@link SystemClock#elapsedRealtime} when the app
+     * restrictions call finished. If the restrictions have already been fetched, the callback will
+     * be invoked immediately.
+     *
+     * @param callback Callback to run with the timestamp of completing the fetch.
+     */
+    public void getCompletionElapsedRealtimeMs(Callback<Long> callback) {
+        ThreadUtils.assertOnUiThread();
+        if (mInitialized) {
+            callback.onResult(mCompletionElapsedRealtimeMs);
+        } else {
+            mCompletionTimeCallbacks.add(callback);
         }
     }
 
@@ -153,16 +172,22 @@ class FirstRunAppRestrictionInfo {
 
         // Only record histogram when startTime is valid.
         if (startTime > 0) {
-            long runTime = SystemClock.elapsedRealtime() - startTime;
+            mCompletionElapsedRealtimeMs = SystemClock.elapsedRealtime();
+            long runTime = mCompletionElapsedRealtimeMs - startTime;
             RecordHistogram.recordTimesHistogram(
                     "Enterprise.FirstRun.AppRestrictionLoadTime", runTime);
+            RecordHistogram.recordMediumTimesHistogram(
+                    "Enterprise.FirstRun.AppRestrictionLoadTime.Medium", runTime);
             Log.d(TAG,
                     String.format(Locale.US, "Policy received. Runtime: [%d], result: [%s]",
                             runTime, isAppRestricted));
         }
 
-        while (!mCallBacks.isEmpty()) {
-            mCallBacks.remove().onResult(mHasAppRestriction);
+        while (!mCallbacks.isEmpty()) {
+            mCallbacks.remove().onResult(mHasAppRestriction);
+        }
+        while (!mCompletionTimeCallbacks.isEmpty()) {
+            mCompletionTimeCallbacks.remove().onResult(mCompletionElapsedRealtimeMs);
         }
     }
 

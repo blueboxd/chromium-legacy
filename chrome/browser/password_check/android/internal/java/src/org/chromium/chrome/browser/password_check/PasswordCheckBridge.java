@@ -62,7 +62,7 @@ class PasswordCheckBridge {
         assert password != null;
         mPasswordCheckObserver.onCompromisedCredentialFound(new CompromisedCredential(signonRealm,
                 origin, username, displayOrigin, displayUsername, password, passwordChangeUrl,
-                associatedApp, false, hasScript));
+                associatedApp, true, false, hasScript));
     }
 
     @CalledByNative
@@ -84,9 +84,10 @@ class PasswordCheckBridge {
     private static void insertCredential(CompromisedCredential[] credentials, int index,
             String signonRealm, GURL origin, String username, String displayOrigin,
             String displayUsername, String password, String passwordChangeUrl, String associatedApp,
-            boolean phished, boolean hasScript) {
+            boolean leaked, boolean phished, boolean hasScript) {
         credentials[index] = new CompromisedCredential(signonRealm, origin, username, displayOrigin,
-                displayUsername, password, passwordChangeUrl, associatedApp, phished, hasScript);
+                displayUsername, password, passwordChangeUrl, associatedApp, leaked, phished,
+                hasScript);
     }
 
     /**

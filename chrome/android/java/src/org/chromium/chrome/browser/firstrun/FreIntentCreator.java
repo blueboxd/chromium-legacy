@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.TypedArray;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.text.TextUtils;
 
 import androidx.annotation.Nullable;
@@ -113,6 +114,9 @@ public class FreIntentCreator {
                 TextUtils.equals(fromIntent.getAction(), Intent.ACTION_MAIN));
         intent.putExtra(FirstRunActivity.EXTRA_CHROME_LAUNCH_INTENT_IS_CCT,
                 LaunchIntentDispatcher.isCustomTabIntent(fromIntent));
+        intent.putExtra(FirstRunActivityBase.EXTRA_FRE_INTENT_CREATION_ELAPSED_REALTIME_MS,
+                SystemClock.elapsedRealtime());
+
         // Copy extras bundle from intent which was used to launch Chrome. Copying the extras
         // enables the FirstRunActivity to locate the associated CustomTabsSession (if there
         // is one) and to notify the connection of whether the FirstRunActivity was completed.

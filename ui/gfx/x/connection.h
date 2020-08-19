@@ -9,6 +9,8 @@
 #include <queue>
 
 #include "base/component_export.h"
+#include "base/sequence_checker.h"
+#include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/x/event.h"
 #include "ui/gfx/x/extension_manager.h"
 #include "ui/gfx/x/xproto.h"
@@ -33,8 +35,11 @@ class COMPONENT_EXPORT(X11) Connection : public XProto,
     const VisualType* visual_type;
   };
 
-  // Gets or creates the singleton connection.
+  // Gets or creates the thread local connection instance.
   static Connection* Get();
+
+  // Sets the thread local connection instance.
+  static void Set(std::unique_ptr<x11::Connection> connection);
 
   explicit Connection(const std::string& address = "");
   ~Connection();
@@ -42,18 +47,35 @@ class COMPONENT_EXPORT(X11) Connection : public XProto,
   Connection(const Connection&) = delete;
   Connection(Connection&&) = delete;
 
-  XDisplay* display() const { return display_; }
+  XDisplay* display() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return display_;
+  }
   xcb_connection_t* XcbConnection();
 
   uint32_t extended_max_request_length() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return extended_max_request_length_;
   }
 
-  const Setup& setup() const { return setup_; }
-  const Screen& default_screen() const { return *default_screen_; }
-  x11::Window default_root() const { return default_screen().root; }
-  const Depth& default_root_depth() const { return *default_root_depth_; }
+  const Setup& setup() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return setup_;
+  }
+  const Screen& default_screen() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return *default_screen_;
+  }
+  x11::Window default_root() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return default_screen().root;
+  }
+  const Depth& default_root_depth() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return *default_root_depth_;
+  }
   const VisualType& default_root_visual() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return *default_root_visual_;
   }
 
@@ -61,6 +83,7 @@ class COMPONENT_EXPORT(X11) Connection : public XProto,
 
   template <typename T>
   T GenerateId() {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return static_cast<T>(xcb_generate_id(XcbConnection()));
   }
 
@@ -91,9 +114,21 @@ class COMPONENT_EXPORT(X11) Connection : public XProto,
   KeySym KeycodeToKeysym(uint32_t keycode, unsigned int modifiers);
 
   // Access the event buffer.  Clients can add, delete, or modify events.
-  std::list<Event>& events() { return events_; }
+  std::list<Event>& events() {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return events_;
+  }
 
   std::unique_ptr<Connection> Clone() const;
+
+  // Releases ownership of this connection to a different thread.
+  void DetachFromSequence();
+
+  // The viz compositor thread hangs a PlatformEventSource off the connection so
+  // that it gets destroyed at the appropriate time.
+  // TODO(thomasanderson): This is a layering violation and this should be moved
+  // somewhere else.
+  std::unique_ptr<ui::PlatformEventSource> platform_event_source;
 
  private:
   friend class FutureBase;
@@ -142,6 +177,8 @@ class COMPONENT_EXPORT(X11) Connection : public XProto,
   std::list<Event> events_;
 
   std::queue<Request> requests_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 };
 
 }  // namespace x11

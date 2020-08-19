@@ -200,8 +200,6 @@ class EVENTS_EXPORT X11EventSource : public PlatformEventSource,
 
   void RestoreOverridenXEventDispatcher();
 
-  static X11EventSource* instance_;
-
   std::unique_ptr<X11EventWatcher> watcher_;
 
   // The connection to the X11 server used to receive the events.

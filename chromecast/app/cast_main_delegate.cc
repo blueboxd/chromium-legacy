@@ -40,20 +40,20 @@
 #include "chromecast/app/android/cast_crash_reporter_client_android.h"
 #include "chromecast/app/android/crash_handler.h"
 #include "ui/base/resource/resource_bundle_android.h"
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || defined(OS_CHROMEOS)
 #include "chromecast/app/linux/cast_crash_reporter_client.h"
 #include "sandbox/policy/switches.h"
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
 namespace {
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 chromecast::CastCrashReporterClient* GetCastCrashReporter() {
   static base::NoDestructor<chromecast::CastCrashReporterClient>
       crash_reporter_client;
   return crash_reporter_client.get();
 }
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
 #if defined(OS_ANDROID)
 const int kMaxCrashFiles = 10;
@@ -135,7 +135,8 @@ bool CastMainDelegate::BasicStartupComplete(int* exit_code) {
 }
 
 void CastMainDelegate::PreSandboxStartup() {
-#if defined(ARCH_CPU_ARM_FAMILY) && (defined(OS_ANDROID) || defined(OS_LINUX))
+#if defined(ARCH_CPU_ARM_FAMILY) && \
+    (defined(OS_ANDROID) || defined(OS_LINUX) || defined(OS_CHROMEOS))
   // Create an instance of the CPU class to parse /proc/cpuinfo and cache the
   // results. This data needs to be cached when file-reading is still allowed,
   // since base::CPU expects to be callable later, when file-reading is no
@@ -155,13 +156,13 @@ void CastMainDelegate::PreSandboxStartup() {
     base::FilePath log_file;
     base::PathService::Get(FILE_CAST_ANDROID_LOG, &log_file);
     chromecast::CrashHandler::Initialize(process_type, log_file);
-#elif defined(OS_LINUX)
-    crash_reporter::SetCrashReporterClient(GetCastCrashReporter());
+#elif defined(OS_LINUX) || defined(OS_CHROMEOS)
+  crash_reporter::SetCrashReporterClient(GetCastCrashReporter());
 
-    if (process_type != service_manager::switches::kZygoteProcess) {
-      CastCrashReporterClient::InitCrashReporter(process_type);
-    }
-#endif  // defined(OS_LINUX)
+  if (process_type != service_manager::switches::kZygoteProcess) {
+    CastCrashReporterClient::InitCrashReporter(process_type);
+  }
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
     crash_reporter::InitializeCrashKeys();
   }
@@ -191,7 +192,7 @@ int CastMainDelegate::RunProcess(
 #endif  // defined(OS_ANDROID)
 }
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 void CastMainDelegate::ZygoteForked() {
   const base::CommandLine* command_line(base::CommandLine::ForCurrentProcess());
   bool enable_crash_reporter = !command_line->HasSwitch(
@@ -202,7 +203,7 @@ void CastMainDelegate::ZygoteForked() {
     CastCrashReporterClient::InitCrashReporter(process_type);
   }
 }
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
 bool CastMainDelegate::ShouldCreateFeatureList() {
   return false;

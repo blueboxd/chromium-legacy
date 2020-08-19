@@ -12,8 +12,8 @@
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/main/browser.h"
 #include "ios/chrome/browser/main/browser_observer.h"
+#import "ios/chrome/browser/snapshots/snapshot_browser_agent.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
-#import "ios/chrome/browser/snapshots/snapshot_cache_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/ui/fullscreen/animated_scoped_fullscreen_disabler.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
@@ -360,12 +360,13 @@ class SideSwipeControllerBrowserRemover : public BrowserObserver {
     }
     index = index + dx;
   }
-  [SnapshotCacheFactory::GetForBrowserState(self.browserState)
+  [SnapshotBrowserAgent::FromBrowser(self.browser)->GetSnapshotCache()
       createGreyCache:sessionIDs];
 }
 
 - (void)deleteGreyCache {
-  [SnapshotCacheFactory::GetForBrowserState(self.browserState) removeGreyCache];
+  [SnapshotBrowserAgent::FromBrowser(self.browser)->GetSnapshotCache()
+      removeGreyCache];
 }
 
 - (void)handlePan:(SideSwipeGestureRecognizer*)gesture {

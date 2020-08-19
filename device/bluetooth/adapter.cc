@@ -95,6 +95,16 @@ void Adapter::SetDiscoverable(bool discoverable,
                      weak_ptr_factory_.GetWeakPtr(), copyable_callback));
 }
 
+void Adapter::SetName(const std::string& name, SetNameCallback callback) {
+  auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
+  adapter_->SetName(
+      name,
+      base::BindOnce(&Adapter::OnSetName, weak_ptr_factory_.GetWeakPtr(),
+                     copyable_callback),
+      base::BindOnce(&Adapter::OnSetNameError, weak_ptr_factory_.GetWeakPtr(),
+                     copyable_callback));
+}
+
 void Adapter::StartDiscoverySession(StartDiscoverySessionCallback callback) {
   auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
   adapter_->StartDiscoverySession(
@@ -186,6 +196,14 @@ void Adapter::OnSetDiscoverable(SetDiscoverableCallback callback) {
 }
 
 void Adapter::OnSetDiscoverableError(SetDiscoverableCallback callback) {
+  std::move(callback).Run(/*success=*/false);
+}
+
+void Adapter::OnSetName(SetNameCallback callback) {
+  std::move(callback).Run(/*success=*/true);
+}
+
+void Adapter::OnSetNameError(SetNameCallback callback) {
   std::move(callback).Run(/*success=*/false);
 }
 

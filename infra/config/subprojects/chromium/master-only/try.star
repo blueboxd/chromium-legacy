@@ -589,7 +589,7 @@ try_.chromium_mac_ios_builder(
     coverage_test_types = ["unit"],
     os = os.MAC_10_15,
     properties = {
-        "xcode_build_version": "11e146",
+        "xcode_build_version": "12a8179i_audio",
     },
     tryjob = try_.job(experiment_percentage = 3),
 )
@@ -615,37 +615,37 @@ try_.chromium_mac_ios_builder(
 try_.chromium_mac_ios_builder(
     name = "ios13-beta-simulator",
     executable = "recipe:chromium_trybot",
-    caches = [xcode_cache.x11e608c],
+    caches = [xcode_cache.x12a8179i_audio],
     os = os.MAC_10_15,
     properties = {
-        "xcode_build_version": "11e608c",
+        "xcode_build_version": "12a8179i_audio",
     },
 )
 
 try_.chromium_mac_ios_builder(
     name = "ios13-sdk-simulator",
     executable = "recipe:chromium_trybot",
-    caches = [xcode_cache.x11e708],
+    caches = [xcode_cache.x12a8179i_audio],
     os = os.MAC_10_15,
     properties = {
-        "xcode_build_version": "11e708",
+        "xcode_build_version": "12a8179i_audio",
     },
 )
 
 try_.chromium_mac_ios_builder(
     name = "ios14-beta-simulator",
     executable = "recipe:chromium_trybot",
-    caches = [xcode_cache.x11e503a_xct12b1],
+    caches = [xcode_cache.x12a8179i_audio],
     os = os.MAC_10_15,
     properties = {
-        "xcode_build_version": "11e503a_xct12b1",
+        "xcode_build_version": "12a8179i_audio",
     },
 )
 
 try_.chromium_mac_ios_builder(
     name = "ios14-sdk-simulator",
     executable = "recipe:chromium_trybot",
-    caches = [xcode_cache.x12a8179i_audio],
+    caches = [xcode_cache.x12a8189h],
     os = os.MAC_10_15,
     properties = {
         "xcode_build_version": "12a8179i_audio",

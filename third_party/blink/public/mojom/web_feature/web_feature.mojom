@@ -2611,7 +2611,7 @@ enum WebFeature {
   kV8HTMLVideoElement_RequestVideoFrameCallback_Method = 3280,
   kV8HTMLVideoElement_CancelVideoFrameCallback_Method = 3281,
   kRubyElementWithDisplayBlock = 3282,
-  kLocationFragmentDirectiveAccessed = 3283,
+  kOBSOLETE_LocationFragmentDirectiveAccessed = 3283,
   kCanvasRenderingContext = 3284,
   kSchemefulSameSiteContextDowngrade = 3285,
   kOriginIsolationHeader = 3286,
@@ -2754,6 +2754,7 @@ enum WebFeature {
   kBCPReliableWrite = 3424,
   kBCPWritableAuxiliaries = 3425,
   kTextAlignSpecifiedToLegend = 3426,
+  kV8Document_FragmentDirective_AttributeGetter = 3427,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

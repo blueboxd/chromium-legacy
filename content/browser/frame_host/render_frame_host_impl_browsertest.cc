@@ -490,7 +490,7 @@ mojo::ScopedMessagePipeHandle CreateDisconnectedMessagePipeHandle() {
 // Tests that a beforeunload dialog in an iframe doesn't stop the beforeunload
 // timer of a parent frame.
 // TODO(avi): flaky on Linux TSAN: http://crbug.com/795326
-#if defined(OS_LINUX) && defined(THREAD_SANITIZER)
+#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(THREAD_SANITIZER)
 #define MAYBE_IframeBeforeUnloadParentHang DISABLED_IframeBeforeUnloadParentHang
 #else
 #define MAYBE_IframeBeforeUnloadParentHang IframeBeforeUnloadParentHang
@@ -3609,8 +3609,9 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest, WebUiReloadAfterCrash) {
 // Start with A(B), navigate A to C. By emulating a slow unload handler B, check
 // the status of IsCurrent for subframes of A i.e., B before and after
 // navigating to C.
+// Test is flaky: https://crbug.com/1114149.
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
-                       CheckIsCurrentBeforeAndAfterUnload) {
+                       DISABLED_CheckIsCurrentBeforeAndAfterUnload) {
   IsolateAllSitesForTesting(base::CommandLine::ForCurrentProcess());
   GURL url_ab(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
@@ -4093,6 +4094,37 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
 
   // Check that the page can load a local resource.
   EXPECT_EQ(true,
+            EvalJs(root_frame_host(), FetchSubresourceScript("image.jpg")));
+}
+
+// This test verifies that when the right feature is enabled but the policy
+// disables it, requests:
+//  - from an insecure page with the "treat-as-public-address" CSP directive
+//  - to a local IP address
+// are not blocked.
+IN_PROC_BROWSER_TEST_F(
+    RenderFrameHostImplBrowserTestWithInsecurePrivateNetworkRequestsBlocked,
+    FromInsecureTreatAsPublicToLocalWithPolicySetToAllowIsNotBlocked) {
+  // Localhost is treated as secure, even when loaded over naked HTTP.
+  // This is easier than using the HTTPS test server, since that server cannot
+  // lie about its domain name, so we have to use localhost anyway.
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL(
+                   "foo.test", "/empty-treat-as-public-address.html")));
+
+  // TODO(crbug.com/986744): Disable policy and fix test expectation once
+  // policies are correctly wired up to the code under test.
+
+  const auto& security_state =
+      root_frame_host()->last_committed_client_security_state();
+  ASSERT_FALSE(security_state.is_null());
+  EXPECT_FALSE(security_state->is_web_secure_context);
+  EXPECT_EQ(network::mojom::IPAddressSpace::kPublic,
+            security_state->ip_address_space);
+
+  // Check that the page can load a local resource.
+  // TODO(crbug.com/986744): Expect true once policy wiring is fixed.
+  EXPECT_EQ(false,
             EvalJs(root_frame_host(), FetchSubresourceScript("image.jpg")));
 }
 

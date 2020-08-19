@@ -1192,14 +1192,14 @@ TEST_P(TextFragmentRelatedMetricTest, NewDelimiterUseCounter) {
   }
 }
 
-// Test use counting the location.fragmentDirective API
+// Test use counting the document.fragmentDirective API
 TEST_P(TextFragmentRelatedMetricTest, TextFragmentAPIUseCounter) {
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   request.Complete(R"HTML(
     <!DOCTYPE html>
     <script>
-      var textFragmentsSupported = typeof(location.fragmentDirective) == "object";
+      var textFragmentsSupported = typeof(document.fragmentDirective) == "object";
     </script>
     <p>This is a test page</p>
   )HTML");
@@ -1210,7 +1210,7 @@ TEST_P(TextFragmentRelatedMetricTest, TextFragmentAPIUseCounter) {
 
   EXPECT_EQ(text_fragments_enabled,
             GetDocument().IsUseCounted(
-                WebFeature::kLocationFragmentDirectiveAccessed));
+                WebFeature::kV8Document_FragmentDirective_AttributeGetter));
 }
 
 // Test that simply activating a text fragment does not use count the API
@@ -1228,7 +1228,7 @@ TEST_P(TextFragmentRelatedMetricTest, TextFragmentActivationDoesNotCountAPI) {
   EXPECT_EQ(text_fragments_enabled,
             GetDocument().IsUseCounted(WebFeature::kTextFragmentAnchor));
   EXPECT_FALSE(GetDocument().IsUseCounted(
-      WebFeature::kLocationFragmentDirectiveAccessed));
+      WebFeature::kV8Document_FragmentDirective_AttributeGetter));
 }
 
 }  // namespace

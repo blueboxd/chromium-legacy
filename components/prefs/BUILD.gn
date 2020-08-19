@@ -50,10 +50,9 @@ component("prefs") {
 
   defines = [ "COMPONENTS_PREFS_IMPLEMENTATION" ]
 
-  deps = [
-    "//base",
-    "//base/util/values:values_util",
-  ]
+  deps = [ "//base/util/values:values_util" ]
+
+  public_deps = [ "//base" ]
 
   if (is_android) {
     sources += [

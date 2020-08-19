@@ -81,14 +81,13 @@ void PaintPieces(GraphicsContext& context,
                  const NinePieceImage& nine_piece_image,
                  Image* image,
                  IntSize image_size,
-                 bool include_logical_left_edge,
-                 bool include_logical_right_edge) {
+                 PhysicalBoxSides sides_to_include) {
   IntRectOutsets border_widths(style.BorderTopWidth(), style.BorderRightWidth(),
                                style.BorderBottomWidth(),
                                style.BorderLeftWidth());
-  NinePieceImageGrid grid(
-      nine_piece_image, image_size, PixelSnappedIntRect(border_image_rect),
-      border_widths, include_logical_left_edge, include_logical_right_edge);
+  NinePieceImageGrid grid(nine_piece_image, image_size,
+                          PixelSnappedIntRect(border_image_rect), border_widths,
+                          sides_to_include);
 
   for (NinePiece piece = kMinPiece; piece < kMaxPiece; ++piece) {
     NinePieceImageGrid::NinePieceDrawInfo draw_info = grid.GetNinePieceDrawInfo(
@@ -147,8 +146,7 @@ bool NinePieceImagePainter::Paint(GraphicsContext& graphics_context,
                                   const PhysicalRect& rect,
                                   const ComputedStyle& style,
                                   const NinePieceImage& nine_piece_image,
-                                  bool include_logical_left_edge,
-                                  bool include_logical_right_edge) {
+                                  PhysicalBoxSides sides_to_include) {
   StyleImage* style_image = nine_piece_image.GetImage();
   if (!style_image)
     return false;
@@ -194,8 +192,7 @@ bool NinePieceImagePainter::Paint(GraphicsContext& graphics_context,
   ScopedInterpolationQuality interpolation_quality_scope(
       graphics_context, style.GetInterpolationQuality());
   PaintPieces(graphics_context, border_image_rect, style, nine_piece_image,
-              image.get(), image_size, include_logical_left_edge,
-              include_logical_right_edge);
+              image.get(), image_size, sides_to_include);
 
   return true;
 }

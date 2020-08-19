@@ -1701,7 +1701,7 @@ DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT(
 
 #endif  // defined(OS_POSIX) || defined(OS_FUCHSIA)
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 
 const base::ProcessId kMagicChildId = 54321;
 
@@ -1748,6 +1748,6 @@ DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT(IPCChannelMojoTestVerifyGlobalPidClient) {
   Close();
 }
 
-#endif  // OS_LINUX
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
 }  // namespace

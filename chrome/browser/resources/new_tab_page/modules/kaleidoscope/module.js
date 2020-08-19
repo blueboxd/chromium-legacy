@@ -21,15 +21,16 @@ const Resource = {};
  * @type {Array<Resource>}
  */
 const KALEIDOSCOPE_RESOURCES = [
-  {url: 'chrome://kaleidoscope/geometry.mojom-lite.js', module: true},
+  {url: 'chrome://kaleidoscope/geometry.mojom-lite.js'},
   {
     url:
-        'chrome://kaleidoscope/chrome/browser/media/feeds/media_feeds_store.mojom-lite.js',
-    module: true
+        'chrome://kaleidoscope/chrome/browser/media/feeds/media_feeds_store.mojom-lite.js'
   },
-  {url: 'chrome://kaleidoscope/kaleidoscope.mojom-lite.js', module: true},
+  {url: 'chrome://kaleidoscope/kaleidoscope.mojom-lite.js'},
   {url: 'chrome://kaleidoscope/messages.js'},
   {url: 'chrome://kaleidoscope/kaleidoscope.js'},
+  {url: 'chrome://kaleidoscope/content.js'},
+  {url: 'chrome://kaleidoscope/resources/_locales/strings.js'},
   {url: 'chrome://kaleidoscope/module.js', module: true},
 ];
 

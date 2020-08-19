@@ -58,8 +58,6 @@ class CORE_EXPORT LayoutProgress : public LayoutBlockFlow {
 
   double position_;
   base::TimeTicks animation_start_time_;
-  base::TimeDelta animation_repeat_interval_;
-  base::TimeDelta animation_duration_;
   bool animating_;
   TaskRunnerTimer<LayoutProgress> animation_timer_;
 

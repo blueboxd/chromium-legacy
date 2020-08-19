@@ -6,7 +6,6 @@
   }
 
   #header {
-    --avatar-position: 84px;
     background-color: var(--header-background-color);
     border-radius: 4px;
     color: var(--header-text-color);
@@ -26,18 +25,17 @@
     white-space: nowrap;
   }
 
-  .avatar-container {
+  #avatar-container {
     --avatar-image-width: 60px;
     --avatar-border: 2px;
     --avatar-size: calc(var(--avatar-image-width) + 2 * var(--avatar-border));
-    --avatar-radius: calc(var(--avatar-image-width)/2 + var(--avatar-border));
-    --avatar-overlap: 27px;
     height: var(--avatar-size);
+    left: calc(50% - var(--avatar-size)/2);
     position: absolute;
     width: var(--avatar-size);
   }
 
-  .avatar {
+  #avatar {
     /** The user avatar may be transparent, add a background */
     background-color: var(--md-background-color);
     border: var(--avatar-border) solid var(--md-background-color);
@@ -73,16 +71,6 @@
     width: var(--work-icon-size);
   }
 
-  #interceptedAvatar {
-    left: calc(50% - var(--avatar-radius) - var(--avatar-overlap));
-    /** Ensure the intercepted avatar is on top of the primary avatar */
-    z-index: 1;
-  }
-
-  #primaryAvatar {
-    left: calc(50% - var(--avatar-radius) + var(--avatar-overlap));
-  }
-
   #body {
     color: var(--cr-secondary-text-color);
     flex-grow: 1;
@@ -110,19 +98,11 @@
 
 <div id="header">
   <div id="headerText">[[interceptionParameters_.headerText]]</div>
-  <div class="avatar-container" id="interceptedAvatar">
-    <img class="avatar" id="interceptedAvatarImg"
+  <div id="avatar-container">
+    <img id="avatar"
         src="[[interceptionParameters_.interceptedAccount.pictureUrl]]">
-    <div class="work-badge" id="interceptedBadge"
+    <div class="work-badge" id="badge"
         hidden="[[!interceptionParameters_.interceptedAccount.isManaged]]">
-      <iron-icon class="icon" icon="signin:business"></iron-icon>
-    </div>
-  </div>
-  <div class="avatar-container" id="primaryAvatar">
-    <img class="avatar" id="primaryAvatarImg"
-        src="[[interceptionParameters_.primaryAccount.pictureUrl]]">
-    <div class="work-badge" id="primaryBadge"
-        hidden="[[!interceptionParameters_.primaryAccount.isManaged]]">
       <iron-icon class="icon" icon="signin:business"></iron-icon>
     </div>
   </div>

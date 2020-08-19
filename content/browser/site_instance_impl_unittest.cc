@@ -620,9 +620,9 @@ TEST_F(SiteInstanceTest, ProcessLockDoesNotUseEffectiveURL) {
   IsolationContext isolation_context(browser_context.get());
 
   // Sanity check that GetSiteForURL's |use_effective_urls| option works
-  // properly.  When it's true, the site URL should include both the effective
-  // URL's site (app.com) and the original URL's site (foo.com).
-  GURL expected_app_site_url(app_url.spec() + "#" + nonapp_site_url.spec());
+  // properly.  When it's true, the site URL should correspond to the
+  // effective URL's site (app.com), rather than the original URL's site
+  // (foo.com).
   {
     GURL site_url = SiteInstanceImpl::GetSiteForURLInternal(
         isolation_context, test_url, false /* use_effective_urls */,
@@ -632,15 +632,18 @@ TEST_F(SiteInstanceTest, ProcessLockDoesNotUseEffectiveURL) {
     site_url = SiteInstanceImpl::GetSiteForURLInternal(
         isolation_context, test_url, true /* use_effective_urls */,
         false /* allow_default_site_url */);
-    EXPECT_EQ(expected_app_site_url, site_url);
+    EXPECT_EQ(app_url, site_url);
   }
+
+  SiteInfo expected_site_info(app_url /* site_url */,
+                              nonapp_site_url /* process_lock_url */,
+                              false /* is_origin_keyed */);
 
   // New SiteInstance in a new BrowsingInstance with a predetermined URL.
   {
     scoped_refptr<SiteInstanceImpl> site_instance =
         SiteInstanceImpl::CreateForURL(browser_context.get(), test_url);
-    EXPECT_EQ(expected_app_site_url, site_instance->GetSiteURL());
-    EXPECT_EQ(nonapp_site_url, site_instance->GetSiteInfo().process_lock_url());
+    EXPECT_EQ(expected_site_info, site_instance->GetSiteInfo());
   }
 
   // New related SiteInstance from an existing SiteInstance with a
@@ -653,9 +656,7 @@ TEST_F(SiteInstanceTest, ProcessLockDoesNotUseEffectiveURL) {
         bar_site_instance->GetRelatedSiteInstance(test_url);
     auto* site_instance_impl =
         static_cast<SiteInstanceImpl*>(site_instance.get());
-    EXPECT_EQ(expected_app_site_url, site_instance->GetSiteURL());
-    EXPECT_EQ(nonapp_site_url,
-              site_instance_impl->GetSiteInfo().process_lock_url());
+    EXPECT_EQ(expected_site_info, site_instance_impl->GetSiteInfo());
   }
 
   // New SiteInstance with a lazily assigned site URL.
@@ -664,8 +665,7 @@ TEST_F(SiteInstanceTest, ProcessLockDoesNotUseEffectiveURL) {
         SiteInstanceImpl::Create(browser_context.get());
     EXPECT_FALSE(site_instance->HasSite());
     site_instance->SetSite(test_url);
-    EXPECT_EQ(expected_app_site_url, site_instance->GetSiteURL());
-    EXPECT_EQ(nonapp_site_url, site_instance->GetSiteInfo().process_lock_url());
+    EXPECT_EQ(expected_site_info, site_instance->GetSiteInfo());
   }
 
   SetBrowserClientForTesting(regular_client);
@@ -1123,35 +1123,6 @@ TEST_F(SiteInstanceTest, StrictOriginIsolation) {
             file_url);
 }
 
-// Ensure that the site URL for a URL that resolves to a non-HTTP/HTTPS
-// effective site URL won't break with strict origin isolation.  The effective
-// site URL should still contain the non-translated site URL in its hash.  See
-// https://crbug.com/961386.
-TEST_F(SiteInstanceTest, StrictOriginIsolationWithEffectiveURLs) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kStrictOriginIsolation);
-  EXPECT_TRUE(base::FeatureList::IsEnabled(features::kStrictOriginIsolation));
-
-  const GURL kOriginalUrl("https://original.com");
-  const GURL kTranslatedUrl(GetWebUIURL("translated"));
-  EffectiveURLContentBrowserClient modified_client(
-      kOriginalUrl, kTranslatedUrl,
-      /* requires_dedicated_process */ true);
-  ContentBrowserClient* regular_client =
-      SetBrowserClientForTesting(&modified_client);
-
-  TestBrowserContext browser_context;
-  IsolationContext isolation_context(&browser_context);
-
-  // Ensure that original.com's effective site URL still contains the
-  // non-translated site URL in its hash.
-  GURL expected_site_url(kTranslatedUrl.spec() + "#" + kOriginalUrl.spec());
-  EXPECT_EQ(SiteInstanceImpl::GetSiteForURL(isolation_context, kOriginalUrl),
-            expected_site_url);
-
-  SetBrowserClientForTesting(regular_client);
-}
-
 TEST_F(SiteInstanceTest, IsolatedOrigins) {
   GURL foo_url("http://www.foo.com");
   GURL isolated_foo_url("http://isolated.foo.com");
@@ -1457,15 +1428,18 @@ TEST_F(SiteInstanceTest, OriginalURL) {
       SetBrowserClientForTesting(&modified_client);
   std::unique_ptr<TestBrowserContext> browser_context(new TestBrowserContext());
 
-  // The site URL of of effective URL should include both the effective URL's
-  // site and the original URL's site.
-  GURL expected_site_url(app_url.spec() + "#" + original_url.spec());
+  SiteInfo expected_site_info(app_url /* site_url */,
+                              original_url /* process_lock_url */,
+                              false /* is_origin_keyed */);
 
-  // New SiteInstance in a new BrowsingInstance with a predetermined URL.
+  // New SiteInstance in a new BrowsingInstance with a predetermined URL.  In
+  // this and subsequent cases, the site URL should consist of the effective
+  // URL's site, and the process lock URL and original URLs should be based on
+  // |original_url|.
   {
     scoped_refptr<SiteInstanceImpl> site_instance =
         SiteInstanceImpl::CreateForURL(browser_context.get(), original_url);
-    EXPECT_EQ(expected_site_url, site_instance->GetSiteURL());
+    EXPECT_EQ(expected_site_info, site_instance->GetSiteInfo());
     EXPECT_EQ(original_url, site_instance->original_url());
   }
 
@@ -1479,7 +1453,7 @@ TEST_F(SiteInstanceTest, OriginalURL) {
         bar_site_instance->GetRelatedSiteInstance(original_url);
     auto* site_instance_impl =
         static_cast<SiteInstanceImpl*>(site_instance.get());
-    EXPECT_EQ(expected_site_url, site_instance->GetSiteURL());
+    EXPECT_EQ(expected_site_info, site_instance_impl->GetSiteInfo());
     EXPECT_EQ(original_url, site_instance_impl->original_url());
   }
 
@@ -1490,7 +1464,7 @@ TEST_F(SiteInstanceTest, OriginalURL) {
     EXPECT_FALSE(site_instance->HasSite());
     EXPECT_TRUE(site_instance->original_url().is_empty());
     site_instance->SetSite(original_url);
-    EXPECT_EQ(expected_site_url, site_instance->GetSiteURL());
+    EXPECT_EQ(expected_site_info, site_instance->GetSiteInfo());
     EXPECT_EQ(original_url, site_instance->original_url());
   }
 
@@ -1595,17 +1569,17 @@ TEST_F(SiteInstanceTest, CreateForURL) {
     EXPECT_FALSE(instance1->IsDefaultSiteInstance());
     EXPECT_EQ(kNonIsolatedUrl, instance1->GetSiteURL());
   }
-  EXPECT_TRUE(instance1->DoesSiteForURLMatch(kNonIsolatedUrl));
+  EXPECT_TRUE(instance1->DoesSiteInfoForURLMatch(kNonIsolatedUrl));
   EXPECT_TRUE(instance1->IsSameSiteWithURL(kNonIsolatedUrl));
 
   EXPECT_FALSE(instance2->IsDefaultSiteInstance());
   EXPECT_EQ(kIsolatedUrl, instance2->GetSiteURL());
-  EXPECT_TRUE(instance2->DoesSiteForURLMatch(kIsolatedUrl));
+  EXPECT_TRUE(instance2->DoesSiteInfoForURLMatch(kIsolatedUrl));
   EXPECT_TRUE(instance2->IsSameSiteWithURL(kIsolatedUrl));
 
   EXPECT_FALSE(instance3->IsDefaultSiteInstance());
   EXPECT_EQ(GURL("file:"), instance3->GetSiteURL());
-  EXPECT_TRUE(instance3->DoesSiteForURLMatch(kFileUrl));
+  EXPECT_TRUE(instance3->DoesSiteInfoForURLMatch(kFileUrl));
   // Not same site because file URL's don't have a host.
   EXPECT_FALSE(instance3->IsSameSiteWithURL(kFileUrl));
 
@@ -1614,7 +1588,7 @@ TEST_F(SiteInstanceTest, CreateForURL) {
   // site URL will be set at a later time.
   EXPECT_FALSE(instance4->IsDefaultSiteInstance());
   EXPECT_FALSE(instance4->HasSite());
-  EXPECT_FALSE(instance4->DoesSiteForURLMatch(GURL(url::kAboutBlankURL)));
+  EXPECT_FALSE(instance4->DoesSiteInfoForURLMatch(GURL(url::kAboutBlankURL)));
   EXPECT_FALSE(instance4->IsSameSiteWithURL(GURL(url::kAboutBlankURL)));
 
   // Test the standard effective URL case.
@@ -1623,10 +1597,10 @@ TEST_F(SiteInstanceTest, CreateForURL) {
     EXPECT_TRUE(instance5->IsDefaultSiteInstance());
   } else {
     EXPECT_FALSE(instance5->IsDefaultSiteInstance());
-    EXPECT_EQ("custom-standard://custom/#http://foo.com/",
-              instance5->GetSiteURL());
+    EXPECT_EQ("custom-standard://custom/", instance5->GetSiteURL());
+    EXPECT_EQ("http://foo.com/", instance5->GetSiteInfo().process_lock_url());
   }
-  EXPECT_TRUE(instance5->DoesSiteForURLMatch(kCustomUrl));
+  EXPECT_TRUE(instance5->DoesSiteInfoForURLMatch(kCustomUrl));
   EXPECT_TRUE(instance5->IsSameSiteWithURL(kCustomUrl));
 
   // Test the "do not assign site" case with an effective URL.
@@ -1636,7 +1610,7 @@ TEST_F(SiteInstanceTest, CreateForURL) {
     // Verify that the default SiteInstance is no longer a site match
     // with |kCustomUrl| because this URL now requires a SiteInstance that
     // does not have its site set.
-    EXPECT_FALSE(instance5->DoesSiteForURLMatch(kCustomUrl));
+    EXPECT_FALSE(instance5->DoesSiteInfoForURLMatch(kCustomUrl));
     EXPECT_FALSE(instance5->IsSameSiteWithURL(kCustomUrl));
   }
 
@@ -1645,7 +1619,7 @@ TEST_F(SiteInstanceTest, CreateForURL) {
   auto instance6 = SiteInstanceImpl::CreateForURL(context(), kCustomUrl);
   EXPECT_FALSE(instance6->IsDefaultSiteInstance());
   EXPECT_FALSE(instance6->HasSite());
-  EXPECT_FALSE(instance6->DoesSiteForURLMatch(kCustomUrl));
+  EXPECT_FALSE(instance6->DoesSiteInfoForURLMatch(kCustomUrl));
   EXPECT_FALSE(instance6->IsSameSiteWithURL(kCustomUrl));
 
   SetBrowserClientForTesting(regular_client);

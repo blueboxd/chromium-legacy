@@ -54,7 +54,8 @@ KeyedService* AccessContextAuditServiceFactory::BuildServiceInstanceFor(
           content::BrowserContext::GetDefaultStoragePartition(context)
               ->GetCookieManagerForBrowserProcess(),
           HistoryServiceFactory::GetForProfile(
-              profile, ServiceAccessType::EXPLICIT_ACCESS))) {
+              profile, ServiceAccessType::EXPLICIT_ACCESS),
+          content::BrowserContext::GetDefaultStoragePartition(context))) {
     return nullptr;
   }
 

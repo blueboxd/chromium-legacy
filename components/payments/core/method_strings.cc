@@ -18,6 +18,7 @@ const char kGooglePlayBilling[] = "https://play.google.com/billing";
 const char kInterledger[] = "interledger";
 const char kPayeeCreditTransfer[] = "payee-credit-transfer";
 const char kPayerCreditTransfer[] = "payer-credit-transfer";
+const char kSecurePaymentConfirmation[] = "secure-payment-confirmation";
 const char kTokenizedCard[] = "tokenized-card";
 
 }  // namespace methods

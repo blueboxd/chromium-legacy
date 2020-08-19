@@ -9,7 +9,7 @@
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #include "services/device/serial/serial_device_enumerator_linux.h"
 #elif defined(OS_MAC)
 #include "services/device/serial/serial_device_enumerator_mac.h"
@@ -22,7 +22,7 @@ namespace device {
 // static
 std::unique_ptr<SerialDeviceEnumerator> SerialDeviceEnumerator::Create(
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   return SerialDeviceEnumeratorLinux::Create();
 #elif defined(OS_MAC)
   return std::make_unique<SerialDeviceEnumeratorMac>();

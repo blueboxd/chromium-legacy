@@ -70,9 +70,6 @@ class GPUDevice final : public EventTargetWithInlineData,
   GPUQueue* defaultQueue();
 
   GPUBuffer* createBuffer(const GPUBufferDescriptor* descriptor);
-  HeapVector<GPUBufferOrArrayBuffer> createBufferMapped(
-      const GPUBufferDescriptor* descriptor,
-      ExceptionState& exception_state);
   GPUTexture* createTexture(const GPUTextureDescriptor* descriptor,
                             ExceptionState& exception_state);
   GPUSampler* createSampler(const GPUSamplerDescriptor* descriptor);

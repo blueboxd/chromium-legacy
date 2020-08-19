@@ -17,7 +17,7 @@
 #include "chrome/service/cloud_print/cloud_print_url_fetcher.h"
 #include "chrome/service/cloud_print/job_status_updater.h"
 #include "chrome/service/cloud_print/printer_job_queue_handler.h"
-#include "net/url_request/url_request_status.h"
+#include "net/base/net_errors.h"
 #include "printing/backend/print_backend.h"
 #include "url/gurl.h"
 
@@ -117,7 +117,7 @@ class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
   CloudPrintURLFetcher::ResponseAction HandleRawResponse(
       const net::URLFetcher* source,
       const GURL& url,
-      const net::URLRequestStatus& status,
+      net::Error error,
       int response_code,
       const std::string& data) override;
   CloudPrintURLFetcher::ResponseAction HandleRawData(

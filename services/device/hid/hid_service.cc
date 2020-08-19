@@ -14,7 +14,7 @@
 #include "build/build_config.h"
 #include "components/device_event_log/device_event_log.h"
 
-#if defined(OS_LINUX) && defined(USE_UDEV)
+#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(USE_UDEV)
 #include "services/device/hid/hid_service_linux.h"
 #elif defined(OS_MAC)
 #include "services/device/hid/hid_service_mac.h"
@@ -34,7 +34,7 @@ constexpr base::TaskTraits HidService::kBlockingTaskTraits;
 
 // static
 std::unique_ptr<HidService> HidService::Create() {
-#if defined(OS_LINUX) && defined(USE_UDEV)
+#if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(USE_UDEV)
   return base::WrapUnique(new HidServiceLinux());
 #elif defined(OS_MAC)
   return base::WrapUnique(new HidServiceMac());

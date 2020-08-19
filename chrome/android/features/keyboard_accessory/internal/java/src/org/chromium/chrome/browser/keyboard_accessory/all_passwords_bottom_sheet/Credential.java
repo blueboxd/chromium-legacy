@@ -7,9 +7,10 @@ package org.chromium.chrome.browser.keyboard_accessory.all_passwords_bottom_shee
 import org.chromium.base.annotations.CalledByNative;
 
 /**
- * This class holds the data used to represent a selectable credential in the All Passwords sheet.
+ * This class holds the data used to represent a selectable credential in the
+ * AllPasswordsBottomSheet.
  */
-public class Credential {
+class Credential {
     private final String mUsername;
     private final String mPassword;
     private final String mFormattedUsername;
@@ -25,7 +26,7 @@ public class Credential {
      * @param isAffiliationBasedMatch Indicating whether the credential is an affiliation based
      * match (i.e. whether it is an Android credential).
      */
-    public Credential(String username, String password, String formattedUsername, String originUrl,
+    Credential(String username, String password, String formattedUsername, String originUrl,
             boolean isPublicSuffixMatch, boolean isAffiliationBasedMatch) {
         assert originUrl != null : "Credential origin is null! Pass an empty one instead.";
         mUsername = username;
@@ -37,31 +38,31 @@ public class Credential {
     }
 
     @CalledByNative
-    public String getUsername() {
+    String getUsername() {
         return mUsername;
     }
 
     @CalledByNative
-    public String getPassword() {
+    String getPassword() {
         return mPassword;
     }
 
-    public String getFormattedUsername() {
+    String getFormattedUsername() {
         return mFormattedUsername;
     }
 
     @CalledByNative
-    public String getOriginUrl() {
+    String getOriginUrl() {
         return mOriginUrl;
     }
 
     @CalledByNative
-    public boolean isPublicSuffixMatch() {
+    boolean isPublicSuffixMatch() {
         return mIsPublicSuffixMatch;
     }
 
     @CalledByNative
-    public boolean isAffiliationBasedMatch() {
+    boolean isAffiliationBasedMatch() {
         return mIsAffiliationBasedMatch;
     }
 }

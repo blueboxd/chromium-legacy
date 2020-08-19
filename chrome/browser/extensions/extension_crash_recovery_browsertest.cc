@@ -189,7 +189,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, DISABLED_CloseAndReload) {
 }
 
 // Flaky. crbug.com/846172
-#if defined(OS_LINUX) || defined(OS_WIN)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_WIN)
 #define MAYBE_ReloadIndependently DISABLED_ReloadIndependently
 #else
 #define MAYBE_ReloadIndependently ReloadIndependently
@@ -215,7 +215,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrashRecoveryTest, ReloadIndependently) {
 }
 
 // Flaky. crbug.com/846172
-#if defined(OS_LINUX) || defined(OS_WIN)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_WIN)
 #define MAYBE_ReloadIndependentlyChangeTabs \
   DISABLED_ReloadIndependentlyChangeTabs
 #else

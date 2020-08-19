@@ -193,6 +193,10 @@ class TestStoragePartition : public StoragePartition {
 
   void ResetURLLoaderFactories() override;
 
+  void AddObserver(DataRemovalObserver* observer) override;
+  void RemoveObserver(DataRemovalObserver* observer) override;
+  int GetDataRemovalObserverCount();
+
   void ClearBluetoothAllowedDevicesMapForTesting() override;
   void FlushNetworkInterfaceForTesting() override;
   void WaitForDeletionTasksForTesting() override;
@@ -227,6 +231,7 @@ class TestStoragePartition : public StoragePartition {
   HostZoomLevelContext* host_zoom_level_context_ = nullptr;
   ZoomLevelDelegate* zoom_level_delegate_ = nullptr;
 #endif  // !defined(OS_ANDROID)
+  int data_removal_observer_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TestStoragePartition);
 };

@@ -49,6 +49,9 @@ config("pgo_optimization_flags") {
     } else if (is_mac) {
       _pgo_target = "mac"
       inputs = [ "//chrome/build/mac.pgo.txt" ]
+    } else if (is_linux) {
+      _pgo_target = "linux"
+      inputs = [ "//chrome/build/linux.pgo.txt" ]
     }
 
     if (pgo_data_path == "" && _pgo_target != "") {

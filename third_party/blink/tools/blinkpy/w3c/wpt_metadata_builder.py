@@ -10,12 +10,13 @@ running the WPT test suite.
 """
 
 import argparse
+import fnmatch
 import logging
 import os
 import re
 
+from blinkpy.common.system.filesystem import FileSystem
 from blinkpy.common.system.log_utils import configure_logging
-from blinkpy.web_tests.models import test_expectations
 from blinkpy.web_tests.models.typ_types import ResultType
 from collections import defaultdict
 
@@ -50,8 +51,11 @@ class WPTMetadataBuilder(object):
         """
         self.expectations = expectations
         self.port = port
+        # TODO(lpz): Use self.fs everywhere in this class and add tests
+        self.fs = FileSystem()
         self.wpt_manifest = self.port.wpt_manifest("external/wpt")
         self.metadata_output_dir = ""
+        self.checked_in_metadata_dir = ""
 
     def run(self, args=None):
         """Main entry point to parse flags and execute the script."""
@@ -59,6 +63,11 @@ class WPTMetadataBuilder(object):
         parser.add_argument(
             "--metadata-output-dir",
             help="The directory to output the metadata files into.")
+        parser.add_argument(
+            "--checked-in-metadata-dir",
+            help="Root directory of any checked-in WPT metadata files to use. "
+            "If set, these files will take precedence over legacy expectations "
+            "and baselines when both exist for a test.")
         parser.add_argument(
             '-v',
             '--verbose',
@@ -70,6 +79,7 @@ class WPTMetadataBuilder(object):
         configure_logging(logging_level=log_level, include_time=True)
 
         self.metadata_output_dir = args.metadata_output_dir
+        self.checked_in_metadata_dir = args.checked_in_metadata_dir
         self._build_metadata_and_write()
 
         return 0
@@ -121,11 +131,39 @@ class WPTMetadataBuilder(object):
                 continue
             self._write_to_file(filename, file_contents)
 
+        if self.checked_in_metadata_dir and os.path.exists(
+                self.checked_in_metadata_dir):
+            _log.info("Copying checked-in WPT metadata on top of translated "
+                      "files.")
+            self._copy_checked_in_metadata()
+        else:
+            _log.warning("Not using checked-in WPT metadata, path is empty or "
+                         "does not exist: %s" % self.checked_in_metadata_dir)
+
         # Finally, output a stamp file with the same name as the output
         # directory. The stamp file is empty, it's only used for its mtime.
         # This makes the GN build system happy (see crbug.com/995112).
         with open(self.metadata_output_dir + ".stamp", "w"):
             pass
+
+    def _copy_checked_in_metadata(self):
+        """Copies checked-in metadata files to the metadata output directory."""
+        for filename in self.fs.files_under(self.checked_in_metadata_dir):
+            # We match any .ini files in the path. This will find .ini files
+            # other than just metadata (such as tox.ini), but that is ok
+            # since wptrunner will just ignore those.
+            if not fnmatch.fnmatch(filename, "*.ini"):
+                continue
+
+            # Found a checked-in .ini file. Copy it to the metadata output
+            # directory in the same sub-path as where it is checked in.
+            # So /checked/in/a/b/c.ini goes to /metadata/out/a/b/c.ini
+            output_path = filename.replace(self.checked_in_metadata_dir,
+                                           self.metadata_output_dir)
+            if not self.fs.exists(self.fs.dirname(output_path)):
+                self.fs.maybe_make_directory(self.fs.dirname(output_path))
+            _log.debug("Copying %s to %s" % (filename, output_path))
+            self.fs.copyfile(filename, output_path)
 
     def _write_to_file(self, filename, file_contents):
         # Write the contents to the file name

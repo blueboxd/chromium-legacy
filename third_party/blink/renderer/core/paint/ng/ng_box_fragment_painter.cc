@@ -13,7 +13,6 @@
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_border_edges.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_items.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
@@ -354,15 +353,6 @@ unsigned FragmentainerUniqueIdentifier(const NGPhysicalBoxFragment& fragment) {
 }
 
 }  // anonymous namespace
-
-const NGBorderEdges& NGBoxFragmentPainter::BorderEdges() const {
-  if (border_edges_.has_value())
-    return *border_edges_;
-  const NGPhysicalBoxFragment& fragment = PhysicalFragment();
-  border_edges_ = NGBorderEdges::FromPhysical(
-      fragment.BorderEdges(), fragment.Style().GetWritingMode());
-  return *border_edges_;
-}
 
 PhysicalRect NGBoxFragmentPainter::SelfInkOverflow() const {
   if (paint_fragment_)
@@ -906,8 +896,7 @@ void NGBoxFragmentPainter::PaintMask(const PaintInfo& paint_info,
     return;
 
   if (physical_box_fragment.IsFieldsetContainer()) {
-    NGFieldsetPainter(box_fragment_)
-        .PaintMask(paint_info, paint_offset, BorderEdges());
+    NGFieldsetPainter(box_fragment_).PaintMask(paint_info, paint_offset);
     return;
   }
 
@@ -918,9 +907,8 @@ void NGBoxFragmentPainter::PaintMask(const PaintInfo& paint_info,
   DrawingRecorder recorder(paint_info.context, GetDisplayItemClient(),
                            paint_info.phase, VisualRect(paint_offset));
   PhysicalRect paint_rect(paint_offset, box_fragment_.Size());
-  const NGBorderEdges& border_edges = BorderEdges();
   PaintMaskImages(paint_info, paint_rect, *box_fragment_.GetLayoutObject(),
-                  geometry, border_edges.line_left, border_edges.line_right);
+                  geometry, box_fragment_.SidesToInclude());
 }
 
 // TODO(kojii): This logic is kept in sync with BoxPainter. Not much efforts to
@@ -1050,10 +1038,9 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackgroundWithRectImpl(
 
   GraphicsContextStateSaver state_saver(paint_info.context, false);
 
-  const NGBorderEdges& border_edges = BorderEdges();
   if (box_decoration_data.ShouldPaintShadow()) {
-    PaintNormalBoxShadow(paint_info, paint_rect, style, border_edges.line_left,
-                         border_edges.line_right,
+    PaintNormalBoxShadow(paint_info, paint_rect, style,
+                         box_fragment_.SidesToInclude(),
                          !box_decoration_data.ShouldPaintBackground());
   }
 
@@ -1074,8 +1061,7 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackgroundWithRectImpl(
       state_saver.Save();
       FloatRoundedRect border =
           RoundedBorderGeometry::PixelSnappedRoundedBorder(
-              style, paint_rect, border_edges.line_left,
-              border_edges.line_right);
+              style, paint_rect, box_fragment_.SidesToInclude());
       paint_info.context.ClipRoundedRect(border);
 
       if (box_decoration_data.GetBackgroundBleedAvoidance() ==
@@ -1117,8 +1103,7 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackgroundWithRectImpl(
                                                        style);
     } else {
       PaintInsetBoxShadowWithBorderRect(paint_info, paint_rect, style,
-                                        border_edges.line_left,
-                                        border_edges.line_right);
+                                        box_fragment_.SidesToInclude());
     }
   }
 
@@ -1137,7 +1122,7 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackgroundWithRectImpl(
       PaintBorder(*box_fragment_.GetLayoutObject(), document, generating_node,
                   paint_info, paint_rect, style,
                   box_decoration_data.GetBackgroundBleedAvoidance(),
-                  border_edges.line_left, border_edges.line_right);
+                  box_fragment_.SidesToInclude());
     }
   }
 
@@ -1531,9 +1516,11 @@ void NGBoxFragmentPainter::PaintBackplate(NGInlineCursor* line_boxes,
   if (paint_info.phase != PaintPhase::kForcedColorsModeBackplate)
     return;
 
-  // Only paint backplates behind text when forced-color-adjust is auto.
+  // Only paint backplates behind text when forced-color-adjust is auto and the
+  // element is visible.
   const ComputedStyle& style = PhysicalFragment().Style();
-  if (style.ForcedColorAdjust() == EForcedColorAdjust::kNone)
+  if (style.ForcedColorAdjust() == EForcedColorAdjust::kNone ||
+      style.Visibility() != EVisibility::kVisible)
     return;
 
   if (DrawingRecorder::UseCachedDrawingIfPossible(
@@ -1831,13 +1818,12 @@ BoxPainterBase::FillLayerInfo NGBoxFragmentPainter::GetFillLayerInfo(
     const FillLayer& bg_layer,
     BackgroundBleedAvoidance bleed_avoidance,
     bool is_painting_scrolling_background) const {
-  const NGBorderEdges& border_edges = BorderEdges();
   const NGPhysicalBoxFragment& fragment = PhysicalFragment();
   return BoxPainterBase::FillLayerInfo(
       fragment.GetLayoutObject()->GetDocument(), fragment.Style(),
       fragment.HasOverflowClip(), color, bg_layer, bleed_avoidance,
       LayoutObject::ShouldRespectImageOrientation(fragment.GetLayoutObject()),
-      border_edges.line_left, border_edges.line_right,
+      box_fragment_.SidesToInclude(),
       fragment.GetLayoutObject()->IsLayoutInline(),
       is_painting_scrolling_background);
 }
@@ -2544,10 +2530,9 @@ bool NGBoxFragmentPainter::HitTestClippedOutByBorder(
   const ComputedStyle& style = box_fragment_.Style();
   PhysicalRect rect(PhysicalOffset(), PhysicalFragment().Size());
   rect.Move(border_box_location);
-  const NGBorderEdges& border_edges = BorderEdges();
   return !hit_test_location.Intersects(
       RoundedBorderGeometry::PixelSnappedRoundedBorder(
-          style, rect, border_edges.line_left, border_edges.line_right));
+          style, rect, box_fragment_.SidesToInclude()));
 }
 
 bool NGBoxFragmentPainter::HitTestOverflowControl(

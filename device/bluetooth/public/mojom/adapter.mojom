@@ -113,6 +113,12 @@ interface Adapter {
   [Sync]
   SetDiscoverable(bool discoverable) => (bool success);
 
+  // Change the name of the local device as it appears to remote devices.
+  // TODO(crbug.com/1117654): Implement a mechanism to request this resource
+  // before being able to use it.
+  [Sync]
+  SetName(string name) => (bool success);
+
   // Requests the adapter to start a new discovery session. Returns null if
   // session not created successfully.
   [Sync]

@@ -24,6 +24,7 @@
 #include "third_party/blink/renderer/core/svg/properties/svg_property.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/transforms/affine_transform.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -106,6 +107,13 @@ class SVGTransform final : public SVGPropertyBase {
   float angle_;
   FloatPoint center_;
   AffineTransform matrix_;
+};
+
+template <>
+struct DowncastTraits<SVGTransform> {
+  static bool AllowFrom(const SVGPropertyBase& value) {
+    return value.GetType() == SVGTransform::ClassType();
+  }
 };
 
 }  // namespace blink

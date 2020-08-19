@@ -20,8 +20,8 @@
 #include "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/main/browser_util.h"
 #import "ios/chrome/browser/sessions/session_restoration_browser_agent.h"
+#import "ios/chrome/browser/snapshots/snapshot_browser_agent.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
-#import "ios/chrome/browser/snapshots/snapshot_cache_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache_observer.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #include "ios/chrome/browser/system_flags.h"
@@ -305,13 +305,10 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
     return;
   // Tell the cache to mark these images for deletion, rather than immediately
   // deleting them.
-  DCHECK(self.browser->GetBrowserState());
-  SnapshotCache* cache =
-      SnapshotCacheFactory::GetForBrowserState(self.browser->GetBrowserState());
   for (int i = 0; i < self.webStateList->count(); i++) {
     web::WebState* webState = self.webStateList->GetWebStateAt(i);
     TabIdTabHelper* tabHelper = TabIdTabHelper::FromWebState(webState);
-    [cache markImageWithSessionID:tabHelper->tab_id()];
+    [self.snapshotCache markImageWithSnapshotID:tabHelper->tab_id()];
   }
   self.closedSessionWindow = SerializeWebStateList(self.webStateList);
   int old_size =
@@ -326,15 +323,13 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
 - (void)undoCloseAllItems {
   if (!self.closedSessionWindow)
     return;
-  DCHECK(self.browser->GetBrowserState());
   SessionRestorationBrowserAgent::FromBrowser(self.browser)
       ->RestoreSessionWindow(self.closedSessionWindow);
   self.closedSessionWindow = nil;
   [self removeEntriesFromTabRestoreService];
   self.syncedClosedTabsCount = 0;
   // Unmark all images for deletion since they are now active tabs again.
-  ChromeBrowserState* browserState = self.browser->GetBrowserState();
-  [SnapshotCacheFactory::GetForBrowserState(browserState) unmarkAllImages];
+  [self.snapshotCache unmarkAllImages];
 }
 
 - (void)discardSavedClosedItems {
@@ -343,9 +338,7 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
   self.syncedClosedTabsCount = 0;
   self.closedSessionWindow = nil;
   // Delete all marked images from the cache.
-  DCHECK(self.browserState);
-  [SnapshotCacheFactory::GetForBrowserState(self.browserState)
-      removeMarkedImages];
+  [self.snapshotCache removeMarkedImages];
 }
 
 #pragma mark GridCommands helpers
@@ -555,11 +548,11 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
   }
 }
 
-// Returns a SnapshotCache for the current BrowserState.
+// Returns a SnapshotCache for the current browser.
 - (SnapshotCache*)snapshotCache {
-  if (!self.browserState)
+  if (!self.browser)
     return nil;
-  return SnapshotCacheFactory::GetForBrowserState(self.browserState);
+  return SnapshotBrowserAgent::FromBrowser(self.browser)->GetSnapshotCache();
 }
 
 @end

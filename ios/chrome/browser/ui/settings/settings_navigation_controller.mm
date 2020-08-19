@@ -465,9 +465,11 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
       willShowViewController:(UIViewController*)viewController
                     animated:(BOOL)animated {
   if ([viewController isMemberOfClass:[SettingsTableViewController class]] &&
+      ![self.currentPresentedViewController
+          isMemberOfClass:[SettingsTableViewController class]] &&
       [self.currentPresentedViewController
           conformsToProtocol:@protocol(SettingsControllerProtocol)]) {
-    // Navigated back to SettingsTableViewController.
+    // Navigated back to root SettingsController from leaf SettingsController.
     [self.currentPresentedViewController
         performSelector:@selector(reportBackUserAction)];
   }

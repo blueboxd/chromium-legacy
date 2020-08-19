@@ -387,4 +387,7 @@ export class NativeLayerStub extends TestBrowserProxy {
     this.multiplePrinterStatusRequestsPromise_ = new PromiseResolver();
     return this.multiplePrinterStatusRequestsPromise_.promise;
   }
+
+  /** @override */
+  recordPrinterStatusHistogram(statusReason, didUserAttemptPrint) {}
 }

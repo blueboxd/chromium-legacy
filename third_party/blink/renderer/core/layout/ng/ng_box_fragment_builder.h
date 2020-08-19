@@ -5,8 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_BOX_FRAGMENT_BUILDER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_BOX_FRAGMENT_BUILDER_H_
 
+#include "third_party/blink/renderer/core/layout/geometry/box_sides.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
-#include "third_party/blink/renderer/core/layout/ng/geometry/ng_border_edges.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_fragment_geometry.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_items_builder.h"
@@ -411,8 +411,8 @@ class CORE_EXPORT NGBoxFragmentBuilder final
     }
   }
 
-  void SetBorderEdges(NGBorderEdges border_edges) {
-    border_edges_ = border_edges;
+  void SetSidesToInclude(LogicalBoxSides sides_to_include) {
+    sides_to_include_ = sides_to_include;
   }
 
   // Either this function or SetBoxType must be called before ToBoxFragment().
@@ -569,7 +569,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   // Table cell specific types.
   base::Optional<wtf_size_t> table_cell_column_index_;
 
-  NGBorderEdges border_edges_;
+  LogicalBoxSides sides_to_include_;
 
   scoped_refptr<SerializedScriptValue> custom_layout_data_;
   base::Optional<int> lines_until_clamp_;

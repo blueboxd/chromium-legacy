@@ -131,6 +131,11 @@ BluetoothInternalsTest.prototype = {
         return {success: true};
       }
 
+      async setName() {
+        this.methodCalled('setName');
+        return {success: true};
+      }
+
       async startDiscoverySession() {
         return {session: null};
       }

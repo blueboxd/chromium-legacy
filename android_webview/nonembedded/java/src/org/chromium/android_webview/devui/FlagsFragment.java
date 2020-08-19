@@ -44,6 +44,7 @@ import org.chromium.android_webview.common.ProductionSupportedFlagList;
 import org.chromium.android_webview.common.services.IDeveloperUiService;
 import org.chromium.android_webview.common.services.ServiceNames;
 import org.chromium.base.Log;
+import org.chromium.base.metrics.RecordHistogram;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -72,6 +73,7 @@ public class FlagsFragment extends DevUiBaseFragment {
     private FlagsListAdapter mListAdapter;
 
     private Context mContext;
+    private EditText mSearchBar;
 
     private static volatile @Nullable Runnable sFilterListener;
 
@@ -112,8 +114,8 @@ public class FlagsFragment extends DevUiBaseFragment {
         Button resetFlagsButton = view.findViewById(R.id.reset_flags_button);
         resetFlagsButton.setOnClickListener((View flagButton) -> { resetAllFlags(); });
 
-        EditText searchBar = view.findViewById(R.id.flag_search_bar);
-        searchBar.addTextChangedListener(new TextWatcher() {
+        mSearchBar = view.findViewById(R.id.flag_search_bar);
+        mSearchBar.addTextChangedListener(new TextWatcher() {
             private boolean mPreviouslyHadText;
             @Override
             public void onTextChanged(CharSequence cs, int start, int before, int count) {
@@ -122,7 +124,7 @@ public class FlagsFragment extends DevUiBaseFragment {
                 // As an optimization, only change the clear text button if the search bar just now
                 // became empty or non-empty.
                 if (mPreviouslyHadText != currentlyHasText) {
-                    setClearTextButtonEnabled(searchBar, currentlyHasText);
+                    setClearTextButtonEnabled(mSearchBar, currentlyHasText);
                 }
                 mPreviouslyHadText = currentlyHasText;
             }
@@ -134,7 +136,7 @@ public class FlagsFragment extends DevUiBaseFragment {
             public void afterTextChanged(Editable e) {}
         });
 
-        searchBar.setOnFocusChangeListener((View v, boolean hasFocus) -> {
+        mSearchBar.setOnFocusChangeListener((View v, boolean hasFocus) -> {
             if (!hasFocus) hideKeyboard(mContext, v);
         });
     }
@@ -257,6 +259,10 @@ public class FlagsFragment extends DevUiBaseFragment {
                 if (grandparent instanceof View) {
                     formatListEntry((View) grandparent, newState);
                 }
+
+                boolean hasSearchQuery = !mSearchBar.getText().toString().isEmpty();
+                RecordHistogram.recordBooleanHistogram(
+                        "Android.WebView.DevUi.FlagsUi.ToggledFromSearch", hasSearchQuery);
             }
         }
 

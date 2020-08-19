@@ -295,12 +295,14 @@ void AssistantSuggestionsControllerImpl::UpdateOnboardingSuggestions() {
 
   std::vector<AssistantSuggestion> onboarding_suggestions;
 
-  auto AddSuggestion = [&CreateIconResourceLink,
-                        &onboarding_suggestions](int message_id) {
+  using chromeos::assistant::AssistantBetterOnboardingType;
+  auto AddSuggestion = [&CreateIconResourceLink, &onboarding_suggestions](
+                           int message_id, AssistantBetterOnboardingType type) {
     onboarding_suggestions.emplace_back();
     auto& suggestion = onboarding_suggestions.back();
     suggestion.id = base::UnguessableToken::Create();
     suggestion.type = AssistantSuggestionType::kBetterOnboarding;
+    suggestion.better_onboarding_type = type;
     suggestion.text = l10n_util::GetStringUTF8(message_id);
     suggestion.icon_url = CreateIconResourceLink(message_id);
     suggestion.action_url = GURL();
@@ -309,19 +311,27 @@ void AssistantSuggestionsControllerImpl::UpdateOnboardingSuggestions() {
   switch (AssistantState::Get()->onboarding_mode().value_or(
       AssistantOnboardingMode::kDefault)) {
     case AssistantOnboardingMode::kEducation:
-      AddSuggestion(IDS_ASH_ASSISTANT_ONBOARDING_SUGGESTION_MATH);
-      AddSuggestion(IDS_ASH_ASSISTANT_ONBOARDING_SUGGESTION_KNOWLEDGE_EDU);
+      AddSuggestion(IDS_ASH_ASSISTANT_ONBOARDING_SUGGESTION_MATH,
+                    AssistantBetterOnboardingType::kMath);
+      AddSuggestion(IDS_ASH_ASSISTANT_ONBOARDING_SUGGESTION_KNOWLEDGE_EDU,
+                    AssistantBetterOnboardingType::kKnowledgeEdu);
       break;
     case AssistantOnboardingMode::kDefault:
-      AddSuggestion(IDS_ASH_ASSISTANT_ONBOARDING_SUGGESTION_CONVERSION);
-      AddSuggestion(IDS_ASH_ASSISTANT_ONBOARDING_SUGGESTION_KNOWLEDGE);
+      AddSuggestion(IDS_ASH_ASSISTANT_ONBOARDING_SUGGESTION_CONVERSION,
+                    AssistantBetterOnboardingType::kConversion);
+      AddSuggestion(IDS_ASH_ASSISTANT_ONBOARDING_SUGGESTION_KNOWLEDGE,
+                    AssistantBetterOnboardingType::kKnowledge);
       break;
   }
 
-  AddSuggestion(IDS_ASH_ASSISTANT_ONBOARDING_SUGGESTION_PRODUCTIVITY);
-  AddSuggestion(IDS_ASH_ASSISTANT_ONBOARDING_SUGGESTION_PERSONALITY);
-  AddSuggestion(IDS_ASH_ASSISTANT_ONBOARDING_SUGGESTION_LANGUAGE);
-  AddSuggestion(IDS_ASH_ASSISTANT_ONBOARDING_SUGGESTION_TECHNICAL);
+  AddSuggestion(IDS_ASH_ASSISTANT_ONBOARDING_SUGGESTION_PRODUCTIVITY,
+                AssistantBetterOnboardingType::kProductivity);
+  AddSuggestion(IDS_ASH_ASSISTANT_ONBOARDING_SUGGESTION_PERSONALITY,
+                AssistantBetterOnboardingType::kPersonality);
+  AddSuggestion(IDS_ASH_ASSISTANT_ONBOARDING_SUGGESTION_LANGUAGE,
+                AssistantBetterOnboardingType::kLanguage);
+  AddSuggestion(IDS_ASH_ASSISTANT_ONBOARDING_SUGGESTION_TECHNICAL,
+                AssistantBetterOnboardingType::kTechnical);
 
   model_.SetOnboardingSuggestions(std::move(onboarding_suggestions));
 }

@@ -180,6 +180,8 @@ class CONTENT_EXPORT StoragePartitionImpl
   void Flush() override;
   void ResetURLLoaderFactories() override;
   void ClearBluetoothAllowedDevicesMapForTesting() override;
+  void AddObserver(DataRemovalObserver* observer) override;
+  void RemoveObserver(DataRemovalObserver* observer) override;
   void FlushNetworkInterfaceForTesting() override;
   void WaitForDeletionTasksForTesting() override;
   void WaitForCodeCacheShutdownForTesting() override;
@@ -563,6 +565,8 @@ class CONTENT_EXPORT StoragePartitionImpl
 
   // Track number of running deletion. For test use only.
   int deletion_helpers_running_;
+
+  base::ObserverList<DataRemovalObserver> data_removal_observers_;
 
   // Called when all deletions are done. For test use only.
   base::OnceClosure on_deletion_helpers_done_callback_;

@@ -310,17 +310,10 @@ void KeyframeEffectModelBase::EnsureKeyframeGroups() const {
       zero_offset_easing = &keyframe->Easing();
 
     for (const PropertyHandle& property : keyframe->Properties()) {
-      KeyframeGroupMap::iterator group_iter = keyframe_groups_->find(property);
-      PropertySpecificKeyframeGroup* group;
-      if (group_iter == keyframe_groups_->end()) {
-        group =
-            keyframe_groups_
-                ->insert(property,
-                         MakeGarbageCollected<PropertySpecificKeyframeGroup>())
-                .stored_value->value.Get();
-      } else {
-        group = group_iter->value.Get();
-      }
+      Member<PropertySpecificKeyframeGroup>& group =
+          keyframe_groups_->insert(property, nullptr).stored_value->value;
+      if (!group)
+        group = MakeGarbageCollected<PropertySpecificKeyframeGroup>();
 
       Keyframe::PropertySpecificKeyframe* property_specific_keyframe =
           keyframe->CreatePropertySpecificKeyframe(property, composite_,

@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/generated_resources.h"
 #include "content/public/browser/web_ui.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -158,7 +159,6 @@ base::Value DiceWebSigninInterceptHandler::GetInterceptionParametersValue() {
   parameters.SetStringKey("bodyText", GetBodyText());
   parameters.SetKey("interceptedAccount",
                     GetAccountInfoValue(intercepted_account()));
-  parameters.SetKey("primaryAccount", GetAccountInfoValue(primary_account()));
   return parameters;
 }
 
@@ -169,7 +169,6 @@ std::string DiceWebSigninInterceptHandler::GetHeaderText() {
                  ? intercepted_account().hosted_domain
                  : intercepted_account().given_name;
     case DiceWebSigninInterceptor::SigninInterceptionType::kMultiUser:
-      return primary_account().given_name;
     case DiceWebSigninInterceptor::SigninInterceptionType::kProfileSwitch:
       return intercepted_account().given_name;
   }
@@ -178,13 +177,14 @@ std::string DiceWebSigninInterceptHandler::GetHeaderText() {
 std::string DiceWebSigninInterceptHandler::GetBodyTitle() {
   switch (bubble_parameters_.interception_type) {
     case DiceWebSigninInterceptor::SigninInterceptionType::kEnterprise:
+      if (!IsManaged(primary_account())) {
+        return l10n_util::GetStringUTF8(
+            IDS_SIGNIN_DICE_WEB_INTERCEPT_ENTERPRISE_BUBBLE_TITLE);
+      }
+      FALLTHROUGH;
     case DiceWebSigninInterceptor::SigninInterceptionType::kMultiUser:
-      return IsManaged(intercepted_account())
-                 ? l10n_util::GetStringUTF8(
-                       IDS_SIGNIN_DICE_WEB_INTERCEPT_ENTERPRISE_BUBBLE_TITLE)
-                 : l10n_util::GetStringFUTF8(
-                       IDS_SIGNIN_DICE_WEB_INTERCEPT_CONSUMER_BUBBLE_TITLE,
-                       base::UTF8ToUTF16(intercepted_account().given_name));
+      return l10n_util::GetStringUTF8(
+          IDS_SIGNIN_DICE_WEB_INTERCEPT_CONSUMER_BUBBLE_TITLE);
     case DiceWebSigninInterceptor::SigninInterceptionType::kProfileSwitch:
       // This interception bubble is not implemented yet.
       NOTREACHED();
@@ -193,31 +193,30 @@ std::string DiceWebSigninInterceptHandler::GetBodyTitle() {
 }
 
 std::string DiceWebSigninInterceptHandler::GetBodyText() {
-  if (bubble_parameters_.interception_type ==
-      DiceWebSigninInterceptor::SigninInterceptionType::kProfileSwitch) {
-    // This interception bubble is not implemented yet.
-    NOTREACHED();
-    return "";
-  }
-
-  if (IsManaged(intercepted_account())) {
-    DCHECK_EQ(bubble_parameters_.interception_type,
-              DiceWebSigninInterceptor::SigninInterceptionType::kEnterprise);
-    return l10n_util::GetStringFUTF8(
-        IDS_SIGNIN_DICE_WEB_INTERCEPT_ENTERPRISE_BUBBLE_DESC,
-        base::UTF8ToUTF16(primary_account().given_name),
-        base::UTF8ToUTF16(intercepted_account().hosted_domain));
-  } else if (bubble_parameters_.interception_type ==
-             DiceWebSigninInterceptor::SigninInterceptionType::kEnterprise) {
-    return l10n_util::GetStringFUTF8(
-        IDS_SIGNIN_DICE_WEB_INTERCEPT_MIXED_BUBBLE_DESC,
-        base::UTF8ToUTF16(intercepted_account().given_name));
-  } else {
-    DCHECK_EQ(bubble_parameters_.interception_type,
-              DiceWebSigninInterceptor::SigninInterceptionType::kMultiUser);
-    return l10n_util::GetStringFUTF8(
-        IDS_SIGNIN_DICE_WEB_INTERCEPT_CONSUMER_BUBBLE_DESC,
-        base::UTF8ToUTF16(primary_account().given_name),
-        base::UTF8ToUTF16(intercepted_account().given_name));
+  switch (bubble_parameters_.interception_type) {
+    case DiceWebSigninInterceptor::SigninInterceptionType::kEnterprise:
+      if (IsManaged(intercepted_account()) && IsManaged(primary_account())) {
+        return l10n_util::GetStringFUTF8(
+            IDS_SIGNIN_DICE_WEB_INTERCEPT_ENTERPRISE_ENTERPRISE_BUBBLE_DESC,
+            base::UTF8ToUTF16(intercepted_account().hosted_domain),
+            base::UTF8ToUTF16(primary_account().hosted_domain));
+      } else if (IsManaged(intercepted_account())) {
+        return l10n_util::GetStringFUTF8(
+            IDS_SIGNIN_DICE_WEB_INTERCEPT_ENTERPRISE_CONSUMER_BUBBLE_DESC,
+            base::UTF8ToUTF16(intercepted_account().hosted_domain));
+      } else {
+        return l10n_util::GetStringFUTF8(
+            IDS_SIGNIN_DICE_WEB_INTERCEPT_CONSUMER_ENTERPRISE_BUBBLE_DESC,
+            base::UTF8ToUTF16(intercepted_account().given_name),
+            base::UTF8ToUTF16(primary_account().hosted_domain));
+      }
+    case DiceWebSigninInterceptor::SigninInterceptionType::kMultiUser:
+      return l10n_util::GetStringFUTF8(
+          IDS_SIGNIN_DICE_WEB_INTERCEPT_CONSUMER_BUBBLE_DESC,
+          base::UTF8ToUTF16(intercepted_account().given_name));
+    case DiceWebSigninInterceptor::SigninInterceptionType::kProfileSwitch:
+      // This interception bubble is not implemented yet.
+      NOTREACHED();
+      return "";
   }
 }

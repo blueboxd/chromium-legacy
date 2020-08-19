@@ -960,14 +960,21 @@ IN_PROC_BROWSER_TEST_P(HostedAppProcessModelTest, IframesInsideHostedApp) {
   EXPECT_EQ(same_site_site, diff_dir_site);
 
   // The isolated.site.com iframe is covered by the hosted app's extent, so it
-  // uses a chrome-extension site URL, but the site URL should be different
-  // from the main app's site URL, as this iframe is expected to go into a
-  // separate app process, because isolated.site.com matches an isolated
-  // origin.
+  // uses a chrome-extension site URL, just like the main app's site URL. Note,
+  // however, that this iframe will still go into a separate app process,
+  // because isolated.site.com matches an isolated origin.  This will be
+  // achieved by having different lock URLs for the SiteInstances of
+  // the isolated.site.com iframe and the main app (isolated.site.com vs
+  // site.com).
+  // TODO(alexmos): verify the lock URLs once they are exposed through
+  // content/public via SiteInfo.  For now, this verification will be done
+  // implicitly by comparing SiteInstances and then actual processes further
+  // below.
   GURL isolated_site = content::SiteInstance::GetSiteForURL(
       app_browser_->profile(), isolated->GetLastCommittedURL());
   EXPECT_EQ(extensions::kExtensionScheme, isolated_site.scheme());
-  EXPECT_NE(isolated_site, app_site);
+  EXPECT_EQ(isolated_site, app_site);
+  EXPECT_NE(isolated->GetSiteInstance(), app->GetSiteInstance());
   EXPECT_NE(isolated_site, diff_dir_site);
 
   GURL cross_site_site = content::SiteInstance::GetSiteForURL(

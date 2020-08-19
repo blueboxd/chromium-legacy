@@ -123,17 +123,12 @@ using X11EventWatcherImpl = X11EventWatcherGlib;
 using X11EventWatcherImpl = X11EventWatcherFdWatch;
 #endif
 
-X11EventSource* X11EventSource::instance_ = nullptr;
-
 X11EventSource::X11EventSource(x11::Connection* connection)
     : watcher_(std::make_unique<X11EventWatcherImpl>(this)),
       connection_(connection),
       dispatching_event_(nullptr),
       dummy_initialized_(false),
       distribution_(0, 999) {
-  DCHECK(!instance_);
-  instance_ = this;
-
   DCHECK(connection_);
   DeviceDataManagerX11::CreateInstance();
   InitializeXkb(connection_);
@@ -142,20 +137,18 @@ X11EventSource::X11EventSource(x11::Connection* connection)
 }
 
 X11EventSource::~X11EventSource() {
-  DCHECK_EQ(this, instance_);
-  instance_ = nullptr;
   if (dummy_initialized_)
     connection_->DestroyWindow({dummy_window_});
 }
 
+// static
 bool X11EventSource::HasInstance() {
-  return instance_;
+  return GetInstance();
 }
 
 // static
 X11EventSource* X11EventSource::GetInstance() {
-  DCHECK(instance_);
-  return instance_;
+  return static_cast<X11EventSource*>(PlatformEventSource::GetInstance());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

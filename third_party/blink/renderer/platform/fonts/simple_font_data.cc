@@ -126,7 +126,12 @@ void SimpleFontData::PlatformInit(bool subpixel_ascent_descent,
     font_metrics_.SetHasXHeight(false);
   }
 
-  float line_gap = SkScalarToFloat(metrics.fLeading);
+  float line_gap;
+  if (metrics_override.line_gap_override) {
+    line_gap = *metrics_override.line_gap_override * platform_data_.size();
+  } else {
+    line_gap = SkScalarToFloat(metrics.fLeading);
+  }
   font_metrics_.SetLineGap(line_gap);
   font_metrics_.SetLineSpacing(lroundf(ascent) + lroundf(descent) +
                                lroundf(line_gap));

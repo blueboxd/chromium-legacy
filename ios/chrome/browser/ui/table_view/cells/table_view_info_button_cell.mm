@@ -86,6 +86,7 @@ const CGFloat kCellLabelsWidthProportion = 0.2f;
         [UIFont preferredFontForTextStyle:kTableViewSublabelFontStyle];
     _detailTextLabel.adjustsFontForContentSizeCategory = YES;
     _detailTextLabel.textColor = UIColor.cr_secondaryLabelColor;
+    _detailTextLabel.numberOfLines = 0;
     [self.contentView addSubview:_detailTextLabel];
 
     _statusTextLabel = [[UILabel alloc] init];

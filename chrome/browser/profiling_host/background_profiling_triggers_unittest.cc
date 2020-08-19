@@ -39,7 +39,7 @@ OSMemDumpPtr GetFakeOSMemDump(uint32_t resident_set_kb,
       resident_set_kb, resident_set_kb /* peak_resident_set_kb */,
       true /* is_peak_rss_resettable */, private_footprint_kb,
       shared_footprint_kb
-#if defined(OS_LINUX) || defined(OS_ANDROID)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
       ,
       0
 #endif

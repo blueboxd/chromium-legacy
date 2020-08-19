@@ -13,9 +13,9 @@
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
 namespace bluetooth_utility {
 
@@ -46,7 +46,7 @@ void ReportBluetoothAvailability() {
   // be worth having the extra code path, and we should consider whether to
   // combine them (https://crbug.com/907279).
   ReportAvailability(bluetooth_utility::GetBluetoothAvailability());
-#elif defined(OS_WIN) || defined(OS_LINUX)
+#elif defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
   // GetAdapter must be called on the UI thread, because it creates a
   // WeakPtr, which is checked from that thread on future calls.
   if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
@@ -55,12 +55,12 @@ void ReportBluetoothAvailability() {
     return;
   }
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
   // This is for tests that have not initialized bluez or dbus thread manager.
   // Outside of tests these are initialized earlier during browser startup.
   if (!bluez::BluezDBusManager::IsInitialized())
     return;
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
   if (!device::BluetoothAdapterFactory::Get()->IsBluetoothSupported()) {
     ReportAvailability(BLUETOOTH_NOT_SUPPORTED);

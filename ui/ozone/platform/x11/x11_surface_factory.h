@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "gpu/vulkan/buildflags.h"
+#include "ui/gfx/x/connection.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/ozone/public/gl_ozone.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
@@ -19,7 +20,7 @@ namespace ui {
 // Handles GL initialization and surface/context creation for X11.
 class X11SurfaceFactory : public SurfaceFactoryOzone {
  public:
-  X11SurfaceFactory();
+  explicit X11SurfaceFactory(std::unique_ptr<x11::Connection> connection);
   ~X11SurfaceFactory() override;
 
   // SurfaceFactoryOzone:
@@ -31,12 +32,13 @@ class X11SurfaceFactory : public SurfaceFactoryOzone {
       bool enforce_protected_memory) override;
 #endif
   std::unique_ptr<SurfaceOzoneCanvas> CreateCanvasForWidget(
-      gfx::AcceleratedWidget widget,
-      scoped_refptr<base::SequencedTaskRunner> task_runner) override;
+      gfx::AcceleratedWidget widget) override;
 
  private:
   std::unique_ptr<GLOzone> glx_implementation_;
   std::unique_ptr<GLOzone> egl_implementation_;
+
+  std::unique_ptr<x11::Connection> connection_;
 
   DISALLOW_COPY_AND_ASSIGN(X11SurfaceFactory);
 };

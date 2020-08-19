@@ -1,9 +1,7 @@
 <html>
   <script>
      // Set cookie which persists across restart.
-      var date = new Date();
-      date.setDate(date.getDate() + 1);
-      document.cookie = `persistent=persistent;expires=${date.toUTCString()};` +
+      document.cookie = `persistent=persistent;max-age=3600;` +
           'path=/;SameSite=None;Secure'
 
       // Set a non-persistent cookie.
@@ -13,6 +11,12 @@
       // Set a previously unseen cookie which has already expired.
       document.cookie = 'expired=;expires=Thu, 01 Jan 1970 00:00:00 GMT;' +
           'SameSite=None; Secure';
+
+      // Access cache storage.
+      caches.open('test');
+
+      // Access Indexed DB.
+      indexedDB.open("test");
   </script>
   <body>
   </body>

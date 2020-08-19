@@ -129,13 +129,15 @@ BoxPainterBase::FillLayerInfo BoxModelObjectPainter::GetFillLayerInfo(
     const FillLayer& bg_layer,
     BackgroundBleedAvoidance bleed_avoidance,
     bool is_painting_scrolling_background) const {
+  PhysicalBoxSides sides_to_include;
+  if (flow_box_)
+    sides_to_include = flow_box_->SidesToInclude();
   return BoxPainterBase::FillLayerInfo(
       box_model_.GetDocument(), box_model_.StyleRef(),
       box_model_.HasOverflowClip(), color, bg_layer, bleed_avoidance,
       LayoutObject::ShouldRespectImageOrientation(&box_model_),
-      (flow_box_ ? flow_box_->IncludeLogicalLeftEdge() : true),
-      (flow_box_ ? flow_box_->IncludeLogicalRightEdge() : true),
-      box_model_.IsLayoutInline(), is_painting_scrolling_background);
+      sides_to_include, box_model_.IsLayoutInline(),
+      is_painting_scrolling_background);
 }
 
 bool BoxModelObjectPainter::IsPaintingScrollingBackground(

@@ -61,7 +61,13 @@ TestPageSpecificContentSettingsDelegate::GetMicrophoneCameraState() {
 void TestPageSpecificContentSettingsDelegate::OnContentBlocked(
     ContentSettingsType type) {}
 
+void TestPageSpecificContentSettingsDelegate::OnCacheStorageAccessAllowed(
+    const url::Origin& origin) {}
+
 void TestPageSpecificContentSettingsDelegate::OnCookieAccessAllowed(
     const net::CookieList& accessed_cookies) {}
+
+void TestPageSpecificContentSettingsDelegate::OnIndexedDBAccessAllowed(
+    const url::Origin& origin) {}
 
 }  // namespace content_settings

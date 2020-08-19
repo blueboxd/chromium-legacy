@@ -32,10 +32,8 @@
 #include "third_party/blink/renderer/core/svg/svg_animate_element.h"
 #include "third_party/blink/renderer/core/svg/svg_parser_utilities.h"
 #include "third_party/blink/renderer/core/svg/svg_transform_distance.h"
-#include "third_party/blink/renderer/core/svg_names.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/text/parsing_utilities.h"
-#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -183,7 +181,7 @@ SVGTransformList::~SVGTransformList() = default;
 
 AffineTransform SVGTransformList::Concatenate() const {
   AffineTransform result;
-  for (const auto& item : *this)
+  for (const auto* item : *this)
     result *= item->Matrix();
   return result;
 }
@@ -281,7 +279,7 @@ const CSSValue* SVGTransformList::CssValue() const {
     list->Append(*CreateTransformCSSValue(*at(0)));
     return list;
   }
-  for (const auto& item : *this)
+  for (const auto* item : *this)
     list->Append(*CreateTransformCSSValue(*item));
   return list;
 }
@@ -382,10 +380,6 @@ SVGTransformType ParseTransformType(const String& string) {
   return ParseAndSkipTransformType(ptr, end);
 }
 
-String SVGTransformList::ValueAsString() const {
-  return SVGListPropertyHelper<SVGTransformList, SVGTransform>::SerializeList();
-}
-
 SVGParsingError SVGTransformList::SetValueAsString(const String& value) {
   if (value.IsEmpty()) {
     Clear();
@@ -429,8 +423,8 @@ void SVGTransformList::Add(SVGPropertyBase* other,
   SVGTransform* to_transform = other_list->at(0);
 
   DCHECK_EQ(from_transform->TransformType(), to_transform->TransformType());
-  Initialize(
-      SVGTransformDistance::AddSVGTransforms(from_transform, to_transform));
+  Clear();
+  Append(SVGTransformDistance::AddSVGTransforms(from_transform, to_transform));
 }
 
 void SVGTransformList::CalculateAnimatedValue(
@@ -474,7 +468,8 @@ void SVGTransformList::CalculateAnimatedValue(
           .ScaledDistance(percentage)
           .AddToSVGTransform(effective_from);
   if (animation_element.GetAnimationMode() == kToAnimation) {
-    Initialize(current_transform);
+    Clear();
+    Append(current_transform);
     return;
   }
   // Never resize the animatedTransformList to the toList size, instead either

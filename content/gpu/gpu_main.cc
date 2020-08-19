@@ -78,6 +78,7 @@
 #endif
 
 #if defined(USE_X11)
+#include "ui/base/x/x11_ui_thread.h"                     // nogncheck
 #include "ui/base/x/x11_util.h"                          // nogncheck
 #include "ui/gfx/linux/gpu_memory_buffer_support_x11.h"  // nogncheck
 #include "ui/gfx/x/x11.h"                                // nogncheck
@@ -286,6 +287,10 @@ int GpuMain(const MainFunctionParams& parameters) {
           std::make_unique<base::SingleThreadTaskExecutor>(
               base::MessagePumpType::UI);
       event_source = ui::PlatformEventSource::CreateDefault();
+      // Set up the X11UiThread before the sandbox gets set up.  This cannot be
+      // done later since opening the connection requires socket() and
+      // connect().
+      ui::X11UiThread::SetConnection(x11::Connection::Get()->Clone().release());
     }
 #endif
 #if defined(USE_OZONE)

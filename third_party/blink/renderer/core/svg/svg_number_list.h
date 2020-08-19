@@ -51,8 +51,6 @@ class SVGNumberList final
   SVGParsingError SetValueAsString(const String&);
 
   // SVGPropertyBase:
-  String ValueAsString() const override;
-
   void Add(SVGPropertyBase*, SVGElement*) override;
   void CalculateAnimatedValue(const SVGAnimateElement&,
                               float percentage,
@@ -64,7 +62,6 @@ class SVGNumberList final
   float CalculateDistance(SVGPropertyBase* to, SVGElement*) override;
 
   static AnimatedPropertyType ClassType() { return kAnimatedNumberList; }
-  AnimatedPropertyType GetType() const override { return ClassType(); }
 
   Vector<float> ToFloatVector() const;
 

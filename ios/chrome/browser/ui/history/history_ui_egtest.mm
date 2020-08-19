@@ -23,9 +23,10 @@
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
-#import "ios/web/public/test/http_server/http_server.h"
-#import "ios/web/public/test/http_server/http_server_util.h"
 #import "net/base/mac/url_conversions.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -39,9 +40,9 @@ using chrome_test_util::OpenLinkInNewTabButton;
 using chrome_test_util::OpenLinkInNewWindowButton;
 
 namespace {
-char kURL1[] = "http://firstURL";
-char kURL2[] = "http://secondURL";
-char kURL3[] = "http://thirdURL";
+char kURL1[] = "/firstURL";
+char kURL2[] = "/secondURL";
+char kURL3[] = "/thirdURL";
 char kTitle1[] = "Page 1";
 char kTitle2[] = "Page 2";
 char kResponse1[] = "Test Page 1 content";
@@ -82,6 +83,32 @@ id<GREYMatcher> EmptyIllustratedTableViewBackground() {
   return grey_accessibilityID(kTableViewIllustratedEmptyViewID);
 }
 
+// Provides responses for URLs.
+std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
+    const net::test_server::HttpRequest& request) {
+  std::unique_ptr<net::test_server::BasicHttpResponse> http_response =
+      std::make_unique<net::test_server::BasicHttpResponse>();
+  http_response->set_code(net::HTTP_OK);
+
+  const char kPageFormat[] = "<head><title>%s</title></head><body>%s</body>";
+  if (request.relative_url == kURL1) {
+    std::string page_html =
+        base::StringPrintf(kPageFormat, kTitle1, kResponse1);
+    http_response->set_content(page_html);
+  } else if (request.relative_url == kURL2) {
+    std::string page_html =
+        base::StringPrintf(kPageFormat, kTitle2, kResponse2);
+    http_response->set_content(page_html);
+  } else if (request.relative_url == kURL3) {
+    http_response->set_content(
+        base::StringPrintf("<body>%s</body>", kResponse3));
+  } else {
+    return nullptr;
+  }
+
+  return std::move(http_response);
+}
+
 }  // namespace
 
 // History UI tests.
@@ -100,38 +127,16 @@ id<GREYMatcher> EmptyIllustratedTableViewBackground() {
 
 @implementation HistoryUITestCase
 
-#if defined(CHROME_EARL_GREY_2)
-+ (void)setUpForTestCase {
-  [super setUpForTestCase];
-  [self setUpHelper];
-}
-#elif defined(CHROME_EARL_GREY_1)
-// Set up called once for the class.
-+ (void)setUp {
-  [super setUp];
-  [self setUpHelper];
-}
-#else
-#error Not an EarlGrey Test
-#endif
-
-+ (void)setUpHelper {
-  std::map<GURL, std::string> responses;
-  const char kPageFormat[] = "<head><title>%s</title></head><body>%s</body>";
-  responses[web::test::HttpServer::MakeUrl(kURL1)] =
-      base::StringPrintf(kPageFormat, kTitle1, kResponse1);
-  responses[web::test::HttpServer::MakeUrl(kURL2)] =
-      base::StringPrintf(kPageFormat, kTitle2, kResponse2);
-  // Page 3 does not have <title> tag, so URL will be its title.
-  responses[web::test::HttpServer::MakeUrl(kURL3)] = kResponse3;
-  web::test::SetUpSimpleHttpServer(responses);
-}
-
 - (void)setUp {
   [super setUp];
-  _URL1 = web::test::HttpServer::MakeUrl(kURL1);
-  _URL2 = web::test::HttpServer::MakeUrl(kURL2);
-  _URL3 = web::test::HttpServer::MakeUrl(kURL3);
+  self.testServer->RegisterRequestHandler(
+      base::BindRepeating(&StandardResponse));
+  GREYAssertTrue(self.testServer->Start(), @"Server did not start.");
+
+  _URL1 = self.testServer->GetURL(kURL1);
+  _URL2 = self.testServer->GetURL(kURL2);
+  _URL3 = self.testServer->GetURL(kURL3);
+
   [ChromeEarlGrey clearBrowsingHistory];
   // Some tests rely on a clean state for the "Clear Browsing Data" settings
   // screen.

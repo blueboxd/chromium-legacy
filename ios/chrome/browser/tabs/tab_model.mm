@@ -35,8 +35,8 @@
 #import "ios/chrome/browser/sessions/session_restoration_browser_agent.h"
 #import "ios/chrome/browser/sessions/session_service_ios.h"
 #import "ios/chrome/browser/sessions/session_window_ios.h"
+#import "ios/chrome/browser/snapshots/snapshot_browser_agent.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
-#import "ios/chrome/browser/snapshots/snapshot_cache_factory.h"
 #import "ios/chrome/browser/tabs/closing_web_state_observer.h"
 #import "ios/chrome/browser/tabs/tab_parenting_observer.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
@@ -138,6 +138,9 @@ void RecordInterfaceOrientationMetric() {
   // Weak reference to the session restoration agent.
   SessionRestorationBrowserAgent* _sessionRestorationBrowserAgent;
 
+  // Used for saving gray images.
+  SnapshotBrowserAgent* _snapshotBrowserAgent;
+
   // Used to ensure thread-safety of the certificate policy management code.
   base::CancelableTaskTracker _clearPoliciesTaskTracker;
 
@@ -181,6 +184,8 @@ void RecordInterfaceOrientationMetric() {
     _sessionRestorationBrowserAgent =
         SessionRestorationBrowserAgent::FromBrowser(browser);
     _webEnabler = WebUsageEnablerBrowserAgent::FromBrowser(browser);
+
+    _snapshotBrowserAgent = SnapshotBrowserAgent::FromBrowser(browser);
 
     NSMutableArray<id<WebStateListObserving>>* retainedWebStateListObservers =
         [[NSMutableArray alloc] init];
@@ -253,17 +258,20 @@ void RecordInterfaceOrientationMetric() {
 #pragma mark - Notification Handlers
 
 // Called when UIApplicationWillResignActiveNotification is received.
+// TODO(crbug.com/1115611): Move to SceneController.
 - (void)willResignActive:(NSNotification*)notify {
   if (_webEnabler->IsWebUsageEnabled() && _webStateList->GetActiveWebState()) {
     NSString* tabId =
         TabIdTabHelper::FromWebState(_webStateList->GetActiveWebState())
             ->tab_id();
-    [SnapshotCacheFactory::GetForBrowserState(_browserState)
+
+    [_snapshotBrowserAgent->GetSnapshotCache()
         willBeSavedGreyWhenBackgrounding:tabId];
   }
 }
 
 // Called when UIApplicationDidEnterBackgroundNotification is received.
+// TODO(crbug.com/1115611): Move to SceneController.
 - (void)applicationDidEnterBackground:(NSNotification*)notify {
   if (!_browserState)
     return;
@@ -286,8 +294,8 @@ void RecordInterfaceOrientationMetric() {
         TabIdTabHelper::FromWebState(_webStateList->GetActiveWebState())
             ->tab_id();
 
-    [SnapshotCacheFactory::GetForBrowserState(_browserState)
-        saveGreyInBackgroundForSessionID:tabId];
+    [_snapshotBrowserAgent->GetSnapshotCache()
+        saveGreyInBackgroundForSnapshotID:tabId];
   }
 }
 

@@ -3089,7 +3089,7 @@ class LaunchWebAuthFlowFunctionTest : public AsyncExtensionBrowserTest {
   }
 };
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 // This test times out on Linux MSan Tests.
 // See https://crbug.com/831848 .
 #define MAYBE_UserCloseWindow DISABLED_UserCloseWindow

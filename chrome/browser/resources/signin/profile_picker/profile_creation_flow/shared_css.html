@@ -1,0 +1,39 @@
+<template>
+  <style include="cr-icons profile-picker-shared">
+    #headerContainer {
+      background-color: var(--theme-frame-color);
+      height: 266px;
+      position: relative;
+      width: 100%;
+    }
+
+    .banner {
+      background-size: 100% 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      width: 100%;
+    }
+
+    #backButton {
+      --cr-icon-button-fill-color: var(--theme-text-color);
+      --cr-icon-button-icon-size: 14px;
+      --cr-icon-button-margin-start: 4px;
+      --cr-icon-button-size: 25px;
+      margin-top: 4px;
+    }
+
+    .avatar {
+      --avatar-size: 100px;
+      border: 2px solid var(--md-background-color);
+      border-radius: 50%;
+      bottom: calc(var(--avatar-size)/-2);
+      height: var(--avatar-size);
+      left: 0;
+      margin: auto;
+      position: absolute;
+      right: 0;
+      width: var(--avatar-size);
+    }
+  </style>
+</template>

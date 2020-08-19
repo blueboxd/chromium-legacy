@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "content/browser/frame_host/navigation_request.h"
@@ -13,6 +14,7 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/url_loader_interceptor.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
 #include "content/test/render_document_feature.h"
@@ -20,6 +22,9 @@
 #include "net/test/embedded_test_server/default_handlers.h"
 #include "services/network/public/cpp/cross_origin_opener_policy.h"
 #include "services/network/public/cpp/features.h"
+#include "testing/gmock/include/gmock/gmock.h"
+
+using ::testing::HasSubstr;
 
 namespace content {
 
@@ -1879,5 +1884,215 @@ static auto kTestParams =
                      testing::Bool());
 INSTANTIATE_TEST_SUITE_P(All, CrossOriginOpenerPolicyBrowserTest, kTestParams);
 INSTANTIATE_TEST_SUITE_P(All, VirtualBrowsingContextGroupTest, kTestParams);
+
+namespace {
+
+// Ensure the CrossOriginOpenerPolicyReporting origin trial is correctly
+// implemented.
+class CoopReportingOriginTrialBrowserTest : public ContentBrowserTest {
+ public:
+  CoopReportingOriginTrialBrowserTest() {
+    feature_list_.InitWithFeatures(
+        {
+            // Enabled
+            network::features::kCrossOriginOpenerPolicy,
+            network::features::kCrossOriginEmbedderPolicy,
+            network::features::kCrossOriginOpenerPolicyAccessReporting,
+            network::features::kCrossOriginOpenerPolicyReportingOriginTrial,
+        },
+        {
+            // Disabled
+            network::features::kCrossOriginOpenerPolicyReporting,
+        });
+  }
+
+  // Origin Trials key generated with:
+  //
+  // tools/origin_trials/generate_token.py --expire-days 5000 --version 3
+  // https://coop.security:9999 CrossOriginOpenerPolicyReporting
+  static std::string OriginTrialToken() {
+    return "A5U4dXG9lYhhLSumDmXNObrt5xJ0XVpSfw/"
+           "w7q+MYzOziNnHfcl1ZShjKjecyEc3E5vDtHV+"
+           "wiLMbqukLwhs8gIAAABteyJvcmlnaW4iOiAiaHR0cHM6Ly9jb29wLnNlY3VyaXR5Ojk"
+           "5OTkiLCAiZmVhdHVyZSI6ICJDcm9zc09yaWdpbk9wZW5lclBvbGljeVJlcG9ydGluZy"
+           "IsICJleHBpcnkiOiAyMDI5NzA4MDA3fQ==";
+  }
+
+  // The OriginTrial token is bound to a given origin. Since the
+  // EmbeddedTestServer's port changes after every test run, it can't be used.
+  // As a result, response must be served using a URLLoaderInterceptor.
+  GURL OriginTrialURL() { return GURL("https://coop.security:9999"); }
+
+  WebContentsImpl* web_contents() const {
+    return static_cast<WebContentsImpl*>(shell()->web_contents());
+  }
+
+  RenderFrameHostImpl* current_frame_host() {
+    return web_contents()->GetMainFrame();
+  }
+
+  net::EmbeddedTestServer* https_server() { return &https_server_; }
+
+ private:
+  void SetUpOnMainThread() final {
+    ContentBrowserTest::TearDownOnMainThread();
+
+    host_resolver()->AddRule("*", "127.0.0.1");
+    ASSERT_TRUE(embedded_test_server()->Start());
+    https_server()->ServeFilesFromSourceDirectory(GetTestDataFilePath());
+    SetupCrossSiteRedirector(https_server());
+    net::test_server::RegisterDefaultHandlers(&https_server_);
+    ASSERT_TRUE(https_server()->Start());
+  }
+  void TearDownOnMainThread() final {
+    ContentBrowserTest::TearDownOnMainThread();
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) final {
+    ContentBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+  net::EmbeddedTestServer https_server_;
+};
+
+}  // namespace
+
+IN_PROC_BROWSER_TEST_F(CoopReportingOriginTrialBrowserTest,
+                       CoopStateWithoutToken) {
+  URLLoaderInterceptor interceptor(base::BindLambdaForTesting(
+      [&](URLLoaderInterceptor::RequestParams* params) {
+        if (params->url_request.url != OriginTrialURL())
+          return false;
+        URLLoaderInterceptor::WriteResponse(
+            "HTTP/1.1 200 OK\n"
+            "Content-type: text/html\n"
+            "Cross-Origin-Opener-Policy: same-origin; report-to=\"a\"\n"
+            "Cross-Origin-Opener-Policy-Report-Only: same-origin; "
+            "report-to=\"b\"\n"
+            "Cross-Origin-Embedder-Policy: require-corp\n"
+            "\n",
+            "", params->client.get());
+        return true;
+      }));
+  EXPECT_TRUE(NavigateToURL(shell(), OriginTrialURL()));
+  network::CrossOriginOpenerPolicy coop =
+      current_frame_host()->cross_origin_opener_policy();
+  EXPECT_EQ(coop.reporting_endpoint, base::nullopt);
+  EXPECT_EQ(coop.report_only_reporting_endpoint, base::nullopt);
+  EXPECT_EQ(coop.value,
+            network::mojom::CrossOriginOpenerPolicyValue::kSameOriginPlusCoep);
+  EXPECT_EQ(coop.report_only_value,
+            network::mojom::CrossOriginOpenerPolicyValue::kUnsafeNone);
+}
+
+IN_PROC_BROWSER_TEST_F(CoopReportingOriginTrialBrowserTest,
+                       CoopStateWithToken) {
+  URLLoaderInterceptor interceptor(base::BindLambdaForTesting(
+      [&](URLLoaderInterceptor::RequestParams* params) {
+        if (params->url_request.url != OriginTrialURL())
+          return false;
+        URLLoaderInterceptor::WriteResponse(
+            "HTTP/1.1 200 OK\n"
+            "Content-type: text/html\n"
+            "Cross-Origin-Opener-Policy: same-origin; report-to=\"a\"\n"
+            "Cross-Origin-Opener-Policy-Report-Only: same-origin; "
+            "report-to=\"b\"\n"
+            "Cross-Origin-Embedder-Policy: require-corp\n"
+            "Origin-Trial: " +
+                OriginTrialToken() + "\n\n",
+            "", params->client.get());
+        return true;
+      }));
+  EXPECT_TRUE(NavigateToURL(shell(), OriginTrialURL()));
+  network::CrossOriginOpenerPolicy coop =
+      current_frame_host()->cross_origin_opener_policy();
+  EXPECT_EQ(coop.reporting_endpoint, "a");
+  EXPECT_EQ(coop.report_only_reporting_endpoint, "b");
+  EXPECT_EQ(coop.value,
+            network::mojom::CrossOriginOpenerPolicyValue::kSameOriginPlusCoep);
+  EXPECT_EQ(coop.report_only_value,
+            network::mojom::CrossOriginOpenerPolicyValue::kSameOriginPlusCoep);
+}
+
+IN_PROC_BROWSER_TEST_F(CoopReportingOriginTrialBrowserTest,
+                       AccessReportingWithoutToken) {
+  URLLoaderInterceptor interceptor(base::BindLambdaForTesting(
+      [&](URLLoaderInterceptor::RequestParams* params) {
+        if (params->url_request.url != OriginTrialURL())
+          return false;
+        URLLoaderInterceptor::WriteResponse(
+            "HTTP/1.1 200 OK\n"
+            "Content-type: text/html\n"
+            "Cross-Origin-Opener-Policy-Report-Only: same-origin; "
+            "report-to=\"b\"\n"
+            "Cross-Origin-Embedder-Policy: require-corp\n\n",
+            "", params->client.get());
+        return true;
+      }));
+
+  EXPECT_TRUE(NavigateToURL(shell(), OriginTrialURL()));
+  ShellAddedObserver shell_observer;
+  GURL openee_url = https_server()->GetURL("a.com", "/title1.html");
+  EXPECT_TRUE(ExecJs(current_frame_host(),
+                     JsReplace("openee = window.open($1);", openee_url)));
+  auto* popup =
+      static_cast<WebContentsImpl*>(shell_observer.GetShell()->web_contents());
+  WaitForLoadStop(popup);
+
+  auto eval = EvalJs(current_frame_host(), R"(
+    new Promise(resolve => {
+      let observer = new ReportingObserver(()=>{});
+      observer.observe();
+      openee.postMessage("hello");
+      let reports = observer.takeRecords();
+      resolve(JSON.stringify(reports));
+    });
+  )");
+  std::string reports = eval.ExtractString();
+  EXPECT_EQ("[]", reports);
+}
+
+IN_PROC_BROWSER_TEST_F(CoopReportingOriginTrialBrowserTest,
+                       AccessReportingWithToken) {
+  URLLoaderInterceptor interceptor(base::BindLambdaForTesting(
+      [&](URLLoaderInterceptor::RequestParams* params) {
+        if (params->url_request.url != OriginTrialURL())
+          return false;
+        URLLoaderInterceptor::WriteResponse(
+            "HTTP/1.1 200 OK\n"
+            "Content-type: text/html\n"
+            "Cross-Origin-Opener-Policy-Report-Only: same-origin; "
+            "report-to=\"b\"\n"
+            "Cross-Origin-Embedder-Policy: require-corp\n"
+            "Origin-Trial: " +
+                OriginTrialToken() + "\n\n",
+            "", params->client.get());
+        return true;
+      }));
+
+  EXPECT_TRUE(NavigateToURL(shell(), OriginTrialURL()));
+  ShellAddedObserver shell_observer;
+  GURL openee_url = https_server()->GetURL("a.com", "/title1.html");
+  EXPECT_TRUE(ExecJs(current_frame_host(),
+                     JsReplace("openee = window.open($1);", openee_url)));
+  auto* popup =
+      static_cast<WebContentsImpl*>(shell_observer.GetShell()->web_contents());
+  WaitForLoadStop(popup);
+
+  auto eval = EvalJs(current_frame_host(), R"(
+    new Promise(resolve => {
+      let observer = new ReportingObserver(()=>{});
+      observer.observe();
+      openee.postMessage("hello");
+      let reports = observer.takeRecords();
+      resolve(JSON.stringify(reports));
+    });
+  )");
+  std::string reports = eval.ExtractString();
+  EXPECT_THAT(reports, HasSubstr("coop-access-violation"));
+}
 
 }  // namespace content

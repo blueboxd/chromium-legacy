@@ -28,8 +28,7 @@ namespace ui {
 // the software output is destroyed.
 class X11CanvasSurface : public SurfaceOzoneCanvas {
  public:
-  X11CanvasSurface(gfx::AcceleratedWidget widget,
-                   scoped_refptr<base::SequencedTaskRunner> gpu_task_runner);
+  explicit X11CanvasSurface(gfx::AcceleratedWidget widget);
   ~X11CanvasSurface() override;
 
   // SurfaceOzoneCanvas overrides:
@@ -44,8 +43,6 @@ class X11CanvasSurface : public SurfaceOzoneCanvas {
  private:
   // Current surface we paint to.
   sk_sp<SkSurface> surface_;
-
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   // Helper X11 bitmap presenter that presents the contents.
   X11SoftwareBitmapPresenter x11_software_bitmap_presenter_;

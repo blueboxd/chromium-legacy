@@ -31,6 +31,15 @@ source_set("common") {
   frameworks = [ "QuartzCore.framework" ]
 }
 
+source_set("constants") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "constants.h",
+    "constants.mm",
+  ]
+  frameworks = [ "Foundation.framework" ]
+}
+
 source_set("timing") {
   sources = [
     "material_timing.h",

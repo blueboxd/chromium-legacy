@@ -45,6 +45,7 @@ import org.chromium.chrome.browser.multiwindow.MultiWindowModeStateDispatcher;
 import org.chromium.chrome.browser.multiwindow.MultiWindowModeStateDispatcherImpl;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
+import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.WindowAndroid;
@@ -60,6 +61,8 @@ import java.lang.reflect.Field;
  */
 public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatActivity
         implements ChromeActivityNativeDelegate, BrowserParts, ModalDialogManagerHolder {
+    @VisibleForTesting
+    public static final String FIRST_DRAW_COMPLETED_TIME_MS_UMA = "FirstDrawCompletedTime";
     private static final String TAG = "AsyncInitActivity";
     protected final Handler mHandler;
 
@@ -73,9 +76,6 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
 
     /** Time at which onCreate is called. This is realtime, counted in ms since device boot. */
     private long mOnCreateTimestampMs;
-
-    /** Time at which onCreate is called. This is uptime, to be sent to native code. */
-    private long mOnCreateTimestampUptimeMs;
 
     private ActivityWindowAndroid mWindowAndroid;
     private final ObservableSupplierImpl<ModalDialogManager> mModalDialogManagerSupplier =
@@ -216,6 +216,9 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
         assert firstDrawView != null;
         FirstDrawDetector.waitForFirstDraw(firstDrawView, () -> {
             mFirstDrawComplete = true;
+            StartSurfaceConfiguration.recordHistogram(FIRST_DRAW_COMPLETED_TIME_MS_UMA,
+                    SystemClock.elapsedRealtime() - getOnCreateTimestampMs(),
+                    TabUiFeatureUtilities.supportInstantStart(isTablet()));
             if (!mStartupDelayed) {
                 onFirstDrawComplete();
             }
@@ -332,7 +335,6 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
             super.onCreate(transformSavedInstanceStateForOnCreate(savedInstanceState));
         }
         mOnCreateTimestampMs = SystemClock.elapsedRealtime();
-        mOnCreateTimestampUptimeMs = SystemClock.uptimeMillis();
         mSavedInstanceState = savedInstanceState;
 
         mWindowAndroid = createWindowAndroid();
@@ -447,13 +449,6 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
      */
     protected Intent validateIntent(final Intent intent) {
         return intent;
-    }
-
-    /**
-     * @return The elapsed real time for the activity creation in ms.
-     */
-    protected long getOnCreateTimestampUptimeMs() {
-        return mOnCreateTimestampUptimeMs;
     }
 
     /**

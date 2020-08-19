@@ -28,6 +28,23 @@
 #include "chrome/browser/browsing_data/access_context_audit_service_factory.h"
 #endif  // !defined(OS_ANDROID)
 
+namespace {
+
+#if !defined(OS_ANDROID)
+void RecordOriginStorageAccess(const url::Origin& origin,
+                               AccessContextAuditDatabase::StorageAPIType type,
+                               content::WebContents* web_contents) {
+  auto* access_context_audit_service =
+      AccessContextAuditServiceFactory::GetForProfile(
+          Profile::FromBrowserContext(web_contents->GetBrowserContext()));
+  if (access_context_audit_service)
+    access_context_audit_service->RecordStorageAPIAccess(
+        origin, type, url::Origin::Create(web_contents->GetLastCommittedURL()));
+}
+#endif  // !defined(OS_ANDROID)
+
+}  // namespace
+
 using content_settings::PageSpecificContentSettings;
 
 namespace chrome {
@@ -153,6 +170,15 @@ void PageSpecificContentSettingsDelegate::OnContentBlocked(
   }
 }
 
+void PageSpecificContentSettingsDelegate::OnCacheStorageAccessAllowed(
+    const url::Origin& origin) {
+#if !defined(OS_ANDROID)
+  RecordOriginStorageAccess(
+      origin, AccessContextAuditDatabase::StorageAPIType::kCacheStorage,
+      web_contents());
+#endif  // !defined(OS_ANDROID)
+}
+
 void PageSpecificContentSettingsDelegate::OnCookieAccessAllowed(
     const net::CookieList& accessed_cookies) {
 #if !defined(OS_ANDROID)
@@ -163,6 +189,15 @@ void PageSpecificContentSettingsDelegate::OnCookieAccessAllowed(
     access_context_audit_service->RecordCookieAccess(
         accessed_cookies,
         url::Origin::Create(web_contents()->GetLastCommittedURL()));
+#endif  // !defined(OS_ANDROID)
+}
+
+void PageSpecificContentSettingsDelegate::OnIndexedDBAccessAllowed(
+    const url::Origin& origin) {
+#if !defined(OS_ANDROID)
+  RecordOriginStorageAccess(
+      origin, AccessContextAuditDatabase::StorageAPIType::kIndexedDB,
+      web_contents());
 #endif  // !defined(OS_ANDROID)
 }
 

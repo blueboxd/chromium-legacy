@@ -588,7 +588,7 @@ class WindowDestroyer : public content::WebContentsObserver {
 // RenderProcessHost and invalidating them, we remove them properly and don't
 // access already freed objects. See http://crbug.com/255524.
 // Crashes on Win/Linux only.  http://crbug.com/606485.
-#if defined(OS_WIN) || defined(OS_LINUX)
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
 #define MAYBE_CloseAllTabsDuringProcessDied \
   DISABLED_CloseAllTabsDuringProcessDied
 #else

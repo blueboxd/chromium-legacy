@@ -734,7 +734,8 @@ IN_PROC_BROWSER_TEST_P(ExtensionContextMenuLazyTest, TargetURLs) {
                                     std::string("item1")));
 }
 
-#if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_MAC)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_WIN) || \
+    defined(OS_MAC)
 // Flakily hangs on Linux/CrOS/Windows/Mac - http://crbug.com/1035062
 #define MAYBE_IncognitoSplit DISABLED_IncognitoSplit
 #else

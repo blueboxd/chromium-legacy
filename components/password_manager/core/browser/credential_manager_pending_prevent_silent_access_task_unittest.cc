@@ -71,7 +71,7 @@ TEST_F(CredentialManagerPendingPreventSilentAccessTaskTest, ProfileStoreOnly) {
   // We are expecting results from only one store, delegate should be called
   // upon getting a response from the store.
   EXPECT_CALL(delegate_mock_, DoneRequiringUserMediation);
-  task.OnGetPasswordStoreResultsFrom(profile_store_, {});
+  task.OnGetPasswordStoreResultsFrom(profile_store_.get(), {});
 }
 
 TEST_F(CredentialManagerPendingPreventSilentAccessTaskTest,
@@ -90,12 +90,12 @@ TEST_F(CredentialManagerPendingPreventSilentAccessTaskTest,
   // We are expecting results from 2 stores, the delegate shouldn't be called
   // until both stores respond.
   EXPECT_CALL(delegate_mock_, DoneRequiringUserMediation).Times(0);
-  task.OnGetPasswordStoreResultsFrom(profile_store_, {});
+  task.OnGetPasswordStoreResultsFrom(profile_store_.get(), {});
 
   testing::Mock::VerifyAndClearExpectations(&delegate_mock_);
 
   EXPECT_CALL(delegate_mock_, DoneRequiringUserMediation);
-  task.OnGetPasswordStoreResultsFrom(account_store_, {});
+  task.OnGetPasswordStoreResultsFrom(account_store_.get(), {});
 }
 
 }  // namespace password_manager

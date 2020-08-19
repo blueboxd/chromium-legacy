@@ -22,29 +22,13 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/tracing_buildflags.h"
+#include "third_party/abseil-cpp/absl/types/variant.h"
 
 #if BUILDFLAG(ENABLE_BASE_TRACING)
 #include "base/trace_event/memory_usage_estimator.h"  // no-presubmit-check
 #endif  // BUILDFLAG(ENABLE_BASE_TRACING)
 
 namespace base {
-
-// base::Value must be standard layout to guarantee that writing to
-// |bool_type_| then reading |type_| is defined behaviour. See:
-//
-// [class.union]:
-//   If a standard-layout union contains several standard-layout structs that
-//   share a common initial sequence (9.2), and if an object of this
-//   standard-layout union type contains one of the standard-layout structs,
-//   it is permitted to inspect the common initial sequence of any of
-//   standard-layout struct members;
-//
-static_assert(std::is_standard_layout<Value>::value,
-              "base::Value should be a standard-layout C++ class in order "
-              "to avoid undefined behaviour in its implementation!");
-
-static_assert(sizeof(Value::DoubleStorage) == sizeof(double),
-              "The double and DoubleStorage types should have the same size");
 
 namespace {
 
@@ -165,36 +149,36 @@ const ListValue& Value::AsListValue(const Value& val) {
   return static_cast<const ListValue&>(val);
 }
 
-Value::Value(Value&& that) noexcept {
-  InternalMoveConstructFrom(std::move(that));
-}
+Value::Value() noexcept = default;
 
-Value::Value(Type type) : type_(type) {
+Value::Value(Value&& that) noexcept = default;
+
+Value::Value(Type type) {
   // Initialize with the default value.
-  switch (type_) {
+  switch (type) {
     case Type::NONE:
       return;
 
     case Type::BOOLEAN:
-      bool_value_ = false;
+      data_.emplace<bool>(false);
       return;
     case Type::INTEGER:
-      int_value_ = 0;
+      data_.emplace<int>(0);
       return;
     case Type::DOUBLE:
-      double_value_ = bit_cast<DoubleStorage>(0.0);
+      data_.emplace<DoubleStorage>(bit_cast<DoubleStorage>(0.0));
       return;
     case Type::STRING:
-      new (&string_value_) std::string();
+      data_.emplace<std::string>();
       return;
     case Type::BINARY:
-      new (&binary_value_) BlobStorage();
+      data_.emplace<BlobStorage>();
       return;
     case Type::DICTIONARY:
-      new (&dict_) DictStorage();
+      data_.emplace<DictStorage>();
       return;
     case Type::LIST:
-      new (&list_) ListStorage();
+      data_.emplace<ListStorage>();
       return;
     // TODO(crbug.com/859477): Remove after root cause is found.
     case Type::DEAD:
@@ -206,16 +190,15 @@ Value::Value(Type type) : type_(type) {
   CHECK(false);
 }
 
-Value::Value(bool in_bool) : type_(Type::BOOLEAN), bool_value_(in_bool) {}
+Value::Value(bool in_bool) : data_(in_bool) {}
 
-Value::Value(int in_int) : type_(Type::INTEGER), int_value_(in_int) {}
+Value::Value(int in_int) : data_(in_int) {}
 
-Value::Value(double in_double)
-    : type_(Type::DOUBLE), double_value_(bit_cast<DoubleStorage>(in_double)) {
+Value::Value(double in_double) : data_(bit_cast<DoubleStorage>(in_double)) {
   if (!std::isfinite(in_double)) {
     NOTREACHED() << "Non-finite (i.e. NaN or positive/negative infinity) "
                  << "values cannot be represented in JSON";
-    double_value_ = bit_cast<DoubleStorage>(0.0);
+    data_ = bit_cast<DoubleStorage>(0.0);
   }
 }
 
@@ -223,9 +206,8 @@ Value::Value(const char* in_string) : Value(std::string(in_string)) {}
 
 Value::Value(StringPiece in_string) : Value(std::string(in_string)) {}
 
-Value::Value(std::string&& in_string) noexcept
-    : type_(Type::STRING), string_value_(std::move(in_string)) {
-  DCHECK(IsStringUTF8AllowingNoncharacters(string_value_));
+Value::Value(std::string&& in_string) noexcept : data_(std::move(in_string)) {
+  DCHECK(IsStringUTF8AllowingNoncharacters(GetString()));
 }
 
 Value::Value(const char16* in_string16) : Value(StringPiece16(in_string16)) {}
@@ -233,79 +215,51 @@ Value::Value(const char16* in_string16) : Value(StringPiece16(in_string16)) {}
 Value::Value(StringPiece16 in_string16) : Value(UTF16ToUTF8(in_string16)) {}
 
 Value::Value(const std::vector<char>& in_blob)
-    : type_(Type::BINARY), binary_value_(in_blob.begin(), in_blob.end()) {}
+    : data_(absl::in_place_type_t<BlobStorage>(),
+            in_blob.begin(),
+            in_blob.end()) {}
 
 Value::Value(base::span<const uint8_t> in_blob)
-    : type_(Type::BINARY), binary_value_(in_blob.begin(), in_blob.end()) {}
+    : data_(absl::in_place_type_t<BlobStorage>(),
+            in_blob.begin(),
+            in_blob.end()) {}
 
-Value::Value(BlobStorage&& in_blob) noexcept
-    : type_(Type::BINARY), binary_value_(std::move(in_blob)) {}
+Value::Value(BlobStorage&& in_blob) noexcept : data_(std::move(in_blob)) {}
 
-Value::Value(const DictStorage& in_dict) : type_(Type::DICTIONARY), dict_() {
-  dict_.reserve(in_dict.size());
+Value::Value(const DictStorage& in_dict)
+    : data_(absl::in_place_type_t<DictStorage>()) {
   for (const auto& it : in_dict) {
-    dict_.try_emplace(dict_.end(), it.first,
-                      std::make_unique<Value>(it.second->Clone()));
+    dict().try_emplace(dict().end(), it.first,
+                       std::make_unique<Value>(it.second->Clone()));
   }
 }
 
-Value::Value(DictStorage&& in_dict) noexcept
-    : type_(Type::DICTIONARY), dict_(std::move(in_dict)) {}
+Value::Value(DictStorage&& in_dict) noexcept : data_(std::move(in_dict)) {}
 
-Value::Value(span<const Value> in_list) : type_(Type::LIST), list_() {
-  list_.reserve(in_list.size());
+Value::Value(span<const Value> in_list)
+    : data_(absl::in_place_type_t<ListStorage>()) {
+  list().reserve(in_list.size());
   for (const auto& val : in_list)
-    list_.emplace_back(val.Clone());
+    list().emplace_back(val.Clone());
 }
 
-Value::Value(ListStorage&& in_list) noexcept
-    : type_(Type::LIST), list_(std::move(in_list)) {}
+Value::Value(ListStorage&& in_list) noexcept : data_(std::move(in_list)) {}
 
-Value& Value::operator=(Value&& that) noexcept {
-  InternalCleanup();
-  InternalMoveConstructFrom(std::move(that));
+Value& Value::operator=(Value&& that) noexcept = default;
 
-  return *this;
-}
+Value::Value(absl::monostate) {}
+
+Value::Value(DoubleStorage storage) : data_(std::move(storage)) {}
 
 double Value::AsDoubleInternal() const {
-  return bit_cast<double>(double_value_);
+  return bit_cast<double>(absl::get<DoubleStorage>(data_));
 }
 
 Value Value::Clone() const {
-  switch (type_) {
-    case Type::NONE:
-      return Value();
-    case Type::BOOLEAN:
-      return Value(bool_value_);
-    case Type::INTEGER:
-      return Value(int_value_);
-    case Type::DOUBLE:
-      return Value(AsDoubleInternal());
-    case Type::STRING:
-      return Value(string_value_);
-    case Type::BINARY:
-      return Value(binary_value_);
-    case Type::DICTIONARY:
-      return Value(dict_);
-    case Type::LIST:
-      return Value(list_);
-      // TODO(crbug.com/859477): Remove after root cause is found.
-    case Type::DEAD:
-      CHECK(false);
-      return Value();
-  }
-
-  // TODO(crbug.com/859477): Revert to NOTREACHED() after root cause is found.
-  CHECK(false);
-  return Value();
+  return absl::visit([](const auto& member) { return Value(member); }, data_);
 }
 
-Value::~Value() {
-  InternalCleanup();
-  // TODO(crbug.com/859477): Remove after root cause is found.
-  type_ = Type::DEAD;
-}
+Value::~Value() = default;
 
 // static
 const char* Value::GetTypeName(Value::Type type) {
@@ -315,116 +269,97 @@ const char* Value::GetTypeName(Value::Type type) {
 }
 
 bool Value::GetBool() const {
-  CHECK(is_bool());
-  return bool_value_;
+  return absl::get<bool>(data_);
 }
 
 int Value::GetInt() const {
-  CHECK(is_int());
-  return int_value_;
+  return absl::get<int>(data_);
 }
 
 double Value::GetDouble() const {
   if (is_double())
     return AsDoubleInternal();
   if (is_int())
-    return int_value_;
+    return GetInt();
   CHECK(false);
   return 0.0;
 }
 
 const std::string& Value::GetString() const {
-  CHECK(is_string());
-  return string_value_;
+  return absl::get<std::string>(data_);
 }
 
 std::string& Value::GetString() {
-  CHECK(is_string());
-  return string_value_;
+  return absl::get<std::string>(data_);
 }
 
 const Value::BlobStorage& Value::GetBlob() const {
-  CHECK(is_blob());
-  return binary_value_;
+  return absl::get<BlobStorage>(data_);
 }
 
 Value::ListView Value::GetList() {
-  CHECK(is_list());
-  return list_;
+  return list();
 }
 
 Value::ConstListView Value::GetList() const {
-  CHECK(is_list());
-  return list_;
+  return list();
 }
 
 Value::ListStorage Value::TakeList() {
-  CHECK(is_list());
-  return std::exchange(list_, ListStorage());
+  return std::exchange(list(), {});
 }
 
 void Value::Append(bool value) {
-  CHECK(is_list());
-  list_.emplace_back(value);
+  list().emplace_back(value);
 }
 
 void Value::Append(int value) {
-  CHECK(is_list());
-  list_.emplace_back(value);
+  list().emplace_back(value);
 }
 
 void Value::Append(double value) {
-  CHECK(is_list());
-  list_.emplace_back(value);
+  list().emplace_back(value);
 }
 
 void Value::Append(const char* value) {
-  CHECK(is_list());
-  list_.emplace_back(value);
+  list().emplace_back(value);
 }
 
 void Value::Append(StringPiece value) {
-  CHECK(is_list());
-  list_.emplace_back(value);
+  list().emplace_back(value);
 }
 
 void Value::Append(std::string&& value) {
-  CHECK(is_list());
-  list_.emplace_back(std::move(value));
+  list().emplace_back(std::move(value));
 }
 
 void Value::Append(const char16* value) {
-  CHECK(is_list());
-  list_.emplace_back(value);
+  list().emplace_back(value);
 }
 
 void Value::Append(StringPiece16 value) {
-  CHECK(is_list());
-  list_.emplace_back(value);
+  list().emplace_back(value);
 }
 
 void Value::Append(Value&& value) {
-  CHECK(is_list());
-  list_.emplace_back(std::move(value));
+  list().emplace_back(std::move(value));
 }
 
 CheckedContiguousIterator<Value> Value::Insert(
     CheckedContiguousConstIterator<Value> pos,
     Value&& value) {
-  CHECK(is_list());
-  const auto offset = pos - make_span(list_).begin();
-  list_.insert(list_.begin() + offset, std::move(value));
-  return make_span(list_).begin() + offset;
+  const auto offset = pos - make_span(list()).begin();
+  list().insert(list().begin() + offset, std::move(value));
+  return make_span(list()).begin() + offset;
 }
 
 bool Value::EraseListIter(CheckedContiguousConstIterator<Value> iter) {
-  CHECK(is_list());
-  const auto offset = iter - ListView(list_).begin();
-  auto list_iter = list_.begin() + offset;
-  if (list_iter == list_.end())
+  const auto offset = iter - ListView(list()).begin();
+  auto list_iter = list().begin() + offset;
+  if (list_iter == list().end())
     return false;
 
-  list_.erase(list_iter);
+  list().erase(list_iter);
   return true;
 }
 
@@ -433,8 +368,7 @@ size_t Value::EraseListValue(const Value& val) {
 }
 
 void Value::ClearList() {
-  CHECK(is_list());
-  list_.clear();
+  list().clear();
 }
 
 Value* Value::FindKey(StringPiece key) {
@@ -442,9 +376,8 @@ Value* Value::FindKey(StringPiece key) {
 }
 
 const Value* Value::FindKey(StringPiece key) const {
-  CHECK(is_dict());
-  auto found = dict_.find(key);
-  if (found == dict_.end())
+  auto found = dict().find(key);
+  if (found == dict().end())
     return nullptr;
   return found->second.get();
 }
@@ -462,39 +395,35 @@ const Value* Value::FindKeyOfType(StringPiece key, Type type) const {
 
 base::Optional<bool> Value::FindBoolKey(StringPiece key) const {
   const Value* result = FindKeyOfType(key, Type::BOOLEAN);
-  return result ? base::make_optional(result->bool_value_) : base::nullopt;
+  return result ? base::make_optional(result->GetBool()) : base::nullopt;
 }
 
 base::Optional<int> Value::FindIntKey(StringPiece key) const {
   const Value* result = FindKeyOfType(key, Type::INTEGER);
-  return result ? base::make_optional(result->int_value_) : base::nullopt;
+  return result ? base::make_optional(result->GetInt()) : base::nullopt;
 }
 
 base::Optional<double> Value::FindDoubleKey(StringPiece key) const {
-  const Value* result = FindKey(key);
-  if (result) {
-    if (result->is_int())
-      return static_cast<double>(result->int_value_);
-    if (result->is_double()) {
-      return result->AsDoubleInternal();
-    }
+  if (const Value* cur = FindKey(key)) {
+    if (cur->is_int() || cur->is_double())
+      return cur->GetDouble();
   }
+
   return base::nullopt;
 }
 
 const std::string* Value::FindStringKey(StringPiece key) const {
-  const Value* result = FindKeyOfType(key, Type::STRING);
-  return result ? &result->string_value_ : nullptr;
+  const Value* result = FindKey(key);
+  return result ? absl::get_if<std::string>(&result->data_) : nullptr;
 }
 
 std::string* Value::FindStringKey(StringPiece key) {
-  Value* result = FindKeyOfType(key, Type::STRING);
-  return result ? &result->string_value_ : nullptr;
+  return const_cast<std::string*>(as_const(*this).FindStringKey(key));
 }
 
 const Value::BlobStorage* Value::FindBlobKey(StringPiece key) const {
-  const Value* value = FindKeyOfType(key, Type::BINARY);
-  return value ? &value->binary_value_ : nullptr;
+  const Value* result = FindKey(key);
+  return result ? absl::get_if<BlobStorage>(&result->data_) : nullptr;
 }
 
 const Value* Value::FindDictKey(StringPiece key) const {
@@ -518,8 +447,7 @@ Value* Value::SetKey(StringPiece key, Value&& value) {
 }
 
 Value* Value::SetKey(std::string&& key, Value&& value) {
-  CHECK(is_dict());
-  return dict_
+  return dict()
       .insert_or_assign(std::move(key),
                         std::make_unique<Value>(std::move(value)))
       .first->second.get();
@@ -558,18 +486,16 @@ Value* Value::SetStringKey(StringPiece key, std::string&& value) {
 }
 
 bool Value::RemoveKey(StringPiece key) {
-  CHECK(is_dict());
-  return dict_.erase(key) != 0;
+  return dict().erase(key) != 0;
 }
 
 Optional<Value> Value::ExtractKey(StringPiece key) {
-  CHECK(is_dict());
-  auto found = dict_.find(key);
-  if (found == dict_.end())
+  auto found = dict().find(key);
+  if (found == dict().end())
     return nullopt;
 
   Value value = std::move(*found->second);
-  dict_.erase(found);
+  dict().erase(found);
   return std::move(value);
 }
 
@@ -603,32 +529,28 @@ base::Optional<bool> Value::FindBoolPath(StringPiece path) const {
   const Value* cur = FindPath(path);
   if (!cur || !cur->is_bool())
     return base::nullopt;
-  return cur->bool_value_;
+  return cur->GetBool();
 }
 
 base::Optional<int> Value::FindIntPath(StringPiece path) const {
   const Value* cur = FindPath(path);
   if (!cur || !cur->is_int())
     return base::nullopt;
-  return cur->int_value_;
+  return cur->GetInt();
 }
 
 base::Optional<double> Value::FindDoublePath(StringPiece path) const {
-  const Value* cur = FindPath(path);
-  if (cur) {
-    if (cur->is_int())
-      return static_cast<double>(cur->int_value_);
-    if (cur->is_double())
-      return cur->AsDoubleInternal();
+  if (const Value* cur = FindPath(path)) {
+    if (cur->is_int() || cur->is_double())
+      return cur->GetDouble();
   }
+
   return base::nullopt;
 }
 
 const std::string* Value::FindStringPath(StringPiece path) const {
-  const Value* cur = FindPath(path);
-  if (!cur || !cur->is_string())
-    return nullptr;
-  return &cur->string_value_;
+  const Value* result = FindPath(path);
+  return result ? absl::get_if<std::string>(&result->data_) : nullptr;
 }
 
 std::string* Value::FindStringPath(StringPiece path) {
@@ -636,10 +558,8 @@ std::string* Value::FindStringPath(StringPiece path) {
 }
 
 const Value::BlobStorage* Value::FindBlobPath(StringPiece path) const {
-  const Value* cur = FindPath(path);
-  if (!cur || !cur->is_blob())
-    return nullptr;
-  return &cur->binary_value_;
+  const Value* result = FindPath(path);
+  return result ? absl::get_if<BlobStorage>(&result->data_) : nullptr;
 }
 
 const Value* Value::FindDictPath(StringPiece path) const {
@@ -705,13 +625,13 @@ Optional<Value> Value::ExtractPath(StringPiece path) {
   if (pos == path.npos)
     return ExtractKey(path);
 
-  auto found = dict_.find(path.substr(0, pos));
-  if (found == dict_.end() || !found->second->is_dict())
+  auto found = dict().find(path.substr(0, pos));
+  if (found == dict().end() || !found->second->is_dict())
     return nullopt;
 
   Optional<Value> extracted = found->second->ExtractPath(path.substr(pos + 1));
-  if (extracted && found->second->dict_.empty())
-    dict_.erase(found);
+  if (extracted && found->second->dict().empty())
+    dict().erase(found);
 
   return extracted;
 }
@@ -780,10 +700,10 @@ Value* Value::SetPath(span<const StringPiece> path, Value&& value) {
 
     // Use lower_bound to avoid doing the search twice for missing keys.
     const StringPiece path_component = *cur_path;
-    auto found = cur->dict_.lower_bound(path_component);
-    if (found == cur->dict_.end() || found->first != path_component) {
+    auto found = cur->dict().lower_bound(path_component);
+    if (found == cur->dict().end() || found->first != path_component) {
       // No key found, insert one.
-      auto inserted = cur->dict_.try_emplace(
+      auto inserted = cur->dict().try_emplace(
           found, path_component, std::make_unique<Value>(Type::DICTIONARY));
       cur = inserted->second.get();
     } else {
@@ -809,47 +729,41 @@ bool Value::RemovePath(span<const StringPiece> path) {
   if (path.size() == 1)
     return RemoveKey(path[0]);
 
-  auto found = dict_.find(path[0]);
-  if (found == dict_.end() || !found->second->is_dict())
+  auto found = dict().find(path[0]);
+  if (found == dict().end() || !found->second->is_dict())
     return false;
 
   bool removed = found->second->RemovePath(path.subspan(1));
-  if (removed && found->second->dict_.empty())
-    dict_.erase(found);
+  if (removed && found->second->dict().empty())
+    dict().erase(found);
 
   return removed;
 }
 
 Value::dict_iterator_proxy Value::DictItems() {
-  CHECK(is_dict());
-  return dict_iterator_proxy(&dict_);
+  return dict_iterator_proxy(&dict());
 }
 
 Value::const_dict_iterator_proxy Value::DictItems() const {
-  CHECK(is_dict());
-  return const_dict_iterator_proxy(&dict_);
+  return const_dict_iterator_proxy(&dict());
 }
 
 size_t Value::DictSize() const {
-  CHECK(is_dict());
-  return dict_.size();
+  return dict().size();
 }
 
 bool Value::DictEmpty() const {
-  CHECK(is_dict());
-  return dict_.empty();
+  return dict().empty();
 }
 
 void Value::MergeDictionary(const Value* dictionary) {
-  CHECK(is_dict());
-  CHECK(dictionary->is_dict());
-  for (const auto& pair : dictionary->dict_) {
+  for (const auto& pair : dictionary->dict()) {
     const auto& key = pair.first;
     const auto& val = pair.second;
     // Check whether we have to merge dictionaries.
     if (val->is_dict()) {
-      auto found = dict_.find(key);
-      if (found != dict_.end() && found->second->is_dict()) {
+      auto found = dict().find(key);
+      if (found != dict().end() && found->second->is_dict()) {
         found->second->MergeDictionary(val.get());
         continue;
       }
@@ -862,7 +776,7 @@ void Value::MergeDictionary(const Value* dictionary) {
 
 bool Value::GetAsBoolean(bool* out_value) const {
   if (out_value && is_bool()) {
-    *out_value = bool_value_;
+    *out_value = GetBool();
     return true;
   }
   return is_bool();
@@ -870,28 +784,24 @@ bool Value::GetAsBoolean(bool* out_value) const {
 
 bool Value::GetAsInteger(int* out_value) const {
   if (out_value && is_int()) {
-    *out_value = int_value_;
+    *out_value = GetInt();
     return true;
   }
   return is_int();
 }
 
 bool Value::GetAsDouble(double* out_value) const {
-  if (out_value && is_double()) {
-    *out_value = AsDoubleInternal();
+  if (out_value && (is_double() || is_int())) {
+    *out_value = GetDouble();
     return true;
   }
-  if (out_value && is_int()) {
-    // Allow promotion from int to double.
-    *out_value = int_value_;
-    return true;
-  }
+
   return is_double() || is_int();
 }
 
 bool Value::GetAsString(std::string* out_value) const {
   if (out_value && is_string()) {
-    *out_value = string_value_;
+    *out_value = GetString();
     return true;
   }
   return is_string();
@@ -899,7 +809,7 @@ bool Value::GetAsString(std::string* out_value) const {
 
 bool Value::GetAsString(string16* out_value) const {
   if (out_value && is_string()) {
-    *out_value = UTF8ToUTF16(string_value_);
+    *out_value = UTF8ToUTF16(GetString());
     return true;
   }
   return is_string();
@@ -915,7 +825,7 @@ bool Value::GetAsString(const Value** out_value) const {
 
 bool Value::GetAsString(StringPiece* out_value) const {
   if (out_value && is_string()) {
-    *out_value = string_value_;
+    *out_value = GetString();
     return true;
   }
   return is_string();
@@ -962,35 +872,34 @@ std::unique_ptr<Value> Value::CreateDeepCopy() const {
 }
 
 bool operator==(const Value& lhs, const Value& rhs) {
-  if (lhs.type_ != rhs.type_)
+  if (lhs.type() != rhs.type())
     return false;
 
-  switch (lhs.type_) {
+  switch (lhs.type()) {
     case Value::Type::NONE:
       return true;
     case Value::Type::BOOLEAN:
-      return lhs.bool_value_ == rhs.bool_value_;
+      return lhs.GetBool() == rhs.GetBool();
     case Value::Type::INTEGER:
-      return lhs.int_value_ == rhs.int_value_;
+      return lhs.GetInt() == rhs.GetInt();
     case Value::Type::DOUBLE:
       return lhs.AsDoubleInternal() == rhs.AsDoubleInternal();
     case Value::Type::STRING:
-      return lhs.string_value_ == rhs.string_value_;
+      return lhs.GetString() == rhs.GetString();
     case Value::Type::BINARY:
-      return lhs.binary_value_ == rhs.binary_value_;
+      return lhs.GetBlob() == rhs.GetBlob();
     // TODO(crbug.com/646113): Clean this up when DictionaryValue and ListValue
     // are completely inlined.
     case Value::Type::DICTIONARY:
-      if (lhs.dict_.size() != rhs.dict_.size())
+      if (lhs.dict().size() != rhs.dict().size())
         return false;
-      return std::equal(std::begin(lhs.dict_), std::end(lhs.dict_),
-                        std::begin(rhs.dict_),
-                        [](const auto& u, const auto& v) {
-                          return std::tie(u.first, *u.second) ==
-                                 std::tie(v.first, *v.second);
-                        });
+      return std::equal(
+          std::begin(lhs.dict()), std::end(lhs.dict()), std::begin(rhs.dict()),
+          [](const auto& u, const auto& v) {
+            return std::tie(u.first, *u.second) == std::tie(v.first, *v.second);
+          });
     case Value::Type::LIST:
-      return lhs.list_ == rhs.list_;
+      return lhs.list() == rhs.list();
       // TODO(crbug.com/859477): Remove after root cause is found.
     case Value::Type::DEAD:
       CHECK(false);
@@ -1007,34 +916,34 @@ bool operator!=(const Value& lhs, const Value& rhs) {
 }
 
 bool operator<(const Value& lhs, const Value& rhs) {
-  if (lhs.type_ != rhs.type_)
-    return lhs.type_ < rhs.type_;
+  if (lhs.type() != rhs.type())
+    return lhs.type() < rhs.type();
 
-  switch (lhs.type_) {
+  switch (lhs.type()) {
     case Value::Type::NONE:
       return false;
     case Value::Type::BOOLEAN:
-      return lhs.bool_value_ < rhs.bool_value_;
+      return lhs.GetBool() < rhs.GetBool();
     case Value::Type::INTEGER:
-      return lhs.int_value_ < rhs.int_value_;
+      return lhs.GetInt() < rhs.GetInt();
     case Value::Type::DOUBLE:
       return lhs.AsDoubleInternal() < rhs.AsDoubleInternal();
     case Value::Type::STRING:
-      return lhs.string_value_ < rhs.string_value_;
+      return lhs.GetString() < rhs.GetString();
     case Value::Type::BINARY:
-      return lhs.binary_value_ < rhs.binary_value_;
+      return lhs.GetBlob() < rhs.GetBlob();
     // TODO(crbug.com/646113): Clean this up when DictionaryValue and ListValue
     // are completely inlined.
     case Value::Type::DICTIONARY:
       return std::lexicographical_compare(
-          std::begin(lhs.dict_), std::end(lhs.dict_), std::begin(rhs.dict_),
-          std::end(rhs.dict_),
+          std::begin(lhs.dict()), std::end(lhs.dict()), std::begin(rhs.dict()),
+          std::end(rhs.dict()),
           [](const Value::DictStorage::value_type& u,
              const Value::DictStorage::value_type& v) {
             return std::tie(u.first, *u.second) < std::tie(v.first, *v.second);
           });
     case Value::Type::LIST:
-      return lhs.list_ < rhs.list_;
+      return lhs.list() < rhs.list();
       // TODO(crbug.com/859477): Remove after root cause is found.
     case Value::Type::DEAD:
       CHECK(false);
@@ -1064,88 +973,20 @@ bool Value::Equals(const Value* other) const {
 }
 
 size_t Value::EstimateMemoryUsage() const {
-  switch (type_) {
+  switch (type()) {
 #if BUILDFLAG(ENABLE_BASE_TRACING)
     case Type::STRING:
-      return base::trace_event::EstimateMemoryUsage(string_value_);
+      return base::trace_event::EstimateMemoryUsage(GetString());
     case Type::BINARY:
-      return base::trace_event::EstimateMemoryUsage(binary_value_);
+      return base::trace_event::EstimateMemoryUsage(GetBlob());
     case Type::DICTIONARY:
-      return base::trace_event::EstimateMemoryUsage(dict_);
+      return base::trace_event::EstimateMemoryUsage(dict());
     case Type::LIST:
-      return base::trace_event::EstimateMemoryUsage(list_);
+      return base::trace_event::EstimateMemoryUsage(list());
 #endif  // BUILDFLAG(ENABLE_BASE_TRACING)
     default:
       return 0;
   }
-}
-
-void Value::InternalMoveConstructFrom(Value&& that) {
-  type_ = that.type_;
-
-  switch (type_) {
-    case Type::NONE:
-      return;
-    case Type::BOOLEAN:
-      bool_value_ = that.bool_value_;
-      return;
-    case Type::INTEGER:
-      int_value_ = that.int_value_;
-      return;
-    case Type::DOUBLE:
-      double_value_ = that.double_value_;
-      return;
-    case Type::STRING:
-      new (&string_value_) std::string(std::move(that.string_value_));
-      return;
-    case Type::BINARY:
-      new (&binary_value_) BlobStorage(std::move(that.binary_value_));
-      return;
-    case Type::DICTIONARY:
-      new (&dict_) DictStorage(std::move(that.dict_));
-      return;
-    case Type::LIST:
-      new (&list_) ListStorage(std::move(that.list_));
-      return;
-      // TODO(crbug.com/859477): Remove after root cause is found.
-    case Type::DEAD:
-      CHECK(false);
-      return;
-  }
-
-  // TODO(crbug.com/859477): Revert to NOTREACHED() after root cause is found.
-  CHECK(false);
-}
-
-void Value::InternalCleanup() {
-  switch (type_) {
-    case Type::NONE:
-    case Type::BOOLEAN:
-    case Type::INTEGER:
-    case Type::DOUBLE:
-      // Nothing to do
-      return;
-
-    case Type::STRING:
-      string_value_.~basic_string();
-      return;
-    case Type::BINARY:
-      binary_value_.~BlobStorage();
-      return;
-    case Type::DICTIONARY:
-      dict_.~DictStorage();
-      return;
-    case Type::LIST:
-      list_.~ListStorage();
-      return;
-      // TODO(crbug.com/859477): Remove after root cause is found.
-    case Type::DEAD:
-      CHECK(false);
-      return;
-  }
-
-  // TODO(crbug.com/859477): Revert to NOTREACHED() after root cause is found.
-  CHECK(false);
 }
 
 Value* Value::SetKeyInternal(StringPiece key,
@@ -1153,7 +994,7 @@ Value* Value::SetKeyInternal(StringPiece key,
   CHECK(is_dict());
   // NOTE: We can't use |insert_or_assign| here, as only |try_emplace| does
   // an explicit conversion from StringPiece to std::string if necessary.
-  auto result = dict_.try_emplace(key, std::move(val_ptr));
+  auto result = dict().try_emplace(key, std::move(val_ptr));
   if (!result.second) {
     // val_ptr is guaranteed to be still intact at this point.
     result.first->second = std::move(val_ptr);
@@ -1174,10 +1015,10 @@ Value* Value::SetPathInternal(StringPiece path,
       return nullptr;
 
     // Use lower_bound to avoid doing the search twice for missing keys.
-    auto found = cur->dict_.lower_bound(path_component);
-    if (found == cur->dict_.end() || found->first != path_component) {
+    auto found = cur->dict().lower_bound(path_component);
+    if (found == cur->dict().end() || found->first != path_component) {
       // No key found, insert one.
-      auto inserted = cur->dict_.try_emplace(
+      auto inserted = cur->dict().try_emplace(
           found, path_component, std::make_unique<Value>(Type::DICTIONARY));
       cur = inserted->second.get();
     } else {
@@ -1212,13 +1053,13 @@ DictionaryValue::DictionaryValue(DictStorage&& in_dict) noexcept
 
 bool DictionaryValue::HasKey(StringPiece key) const {
   DCHECK(IsStringUTF8AllowingNoncharacters(key));
-  auto current_entry = dict_.find(key);
-  DCHECK((current_entry == dict_.end()) || current_entry->second);
-  return current_entry != dict_.end();
+  auto current_entry = dict().find(key);
+  DCHECK((current_entry == dict().end()) || current_entry->second);
+  return current_entry != dict().end();
 }
 
 void DictionaryValue::Clear() {
-  dict_.clear();
+  dict().clear();
 }
 
 Value* DictionaryValue::Set(StringPiece path, std::unique_ptr<Value> in_value) {
@@ -1287,7 +1128,7 @@ Value* DictionaryValue::SetWithoutPathExpansion(
     std::unique_ptr<Value> in_value) {
   // NOTE: We can't use |insert_or_assign| here, as only |try_emplace| does
   // an explicit conversion from StringPiece to std::string if necessary.
-  auto result = dict_.try_emplace(key, std::move(in_value));
+  auto result = dict().try_emplace(key, std::move(in_value));
   if (!result.second) {
     // in_value is guaranteed to be still intact at this point.
     result.first->second = std::move(in_value);
@@ -1295,8 +1136,7 @@ Value* DictionaryValue::SetWithoutPathExpansion(
   return result.first->second.get();
 }
 
-bool DictionaryValue::Get(StringPiece path,
-                          const Value** out_value) const {
+bool DictionaryValue::Get(StringPiece path, const Value** out_value) const {
   DCHECK(IsStringUTF8AllowingNoncharacters(path));
   const Value* value = FindPath(path);
   if (!value)
@@ -1306,7 +1146,7 @@ bool DictionaryValue::Get(StringPiece path,
   return true;
 }
 
-bool DictionaryValue::Get(StringPiece path, Value** out_value)  {
+bool DictionaryValue::Get(StringPiece path, Value** out_value) {
   return as_const(*this).Get(path, const_cast<const Value**>(out_value));
 }
 
@@ -1423,8 +1263,8 @@ bool DictionaryValue::GetList(StringPiece path, ListValue** out_value) {
 bool DictionaryValue::GetWithoutPathExpansion(StringPiece key,
                                               const Value** out_value) const {
   DCHECK(IsStringUTF8AllowingNoncharacters(key));
-  auto entry_iterator = dict_.find(key);
-  if (entry_iterator == dict_.end())
+  auto entry_iterator = dict().find(key);
+  if (entry_iterator == dict().end())
     return false;
 
   if (out_value)
@@ -1546,13 +1386,13 @@ bool DictionaryValue::RemoveWithoutPathExpansion(
     StringPiece key,
     std::unique_ptr<Value>* out_value) {
   DCHECK(IsStringUTF8AllowingNoncharacters(key));
-  auto entry_iterator = dict_.find(key);
-  if (entry_iterator == dict_.end())
+  auto entry_iterator = dict().find(key);
+  if (entry_iterator == dict().end())
     return false;
 
   if (out_value)
     *out_value = std::move(entry_iterator->second);
-  dict_.erase(entry_iterator);
+  dict().erase(entry_iterator);
   return true;
 }
 
@@ -1568,8 +1408,7 @@ bool DictionaryValue::RemovePath(StringPiece path,
   DictionaryValue* subdict = nullptr;
   if (!GetDictionary(subdict_path, &subdict))
     return false;
-  result = subdict->RemovePath(path.substr(delimiter_position + 1),
-                               out_value);
+  result = subdict->RemovePath(path.substr(delimiter_position + 1), out_value);
   if (result && subdict->empty())
     RemoveKey(subdict_path);
 
@@ -1587,22 +1426,22 @@ std::unique_ptr<DictionaryValue> DictionaryValue::DeepCopyWithoutEmptyChildren()
 
 void DictionaryValue::Swap(DictionaryValue* other) {
   CHECK(other->is_dict());
-  dict_.swap(other->dict_);
+  dict().swap(other->dict());
 }
 
 DictionaryValue::Iterator::Iterator(const DictionaryValue& target)
-    : target_(target), it_(target.dict_.begin()) {}
+    : target_(target), it_(target.dict().begin()) {}
 
 DictionaryValue::Iterator::Iterator(const Iterator& other) = default;
 
 DictionaryValue::Iterator::~Iterator() = default;
 
 DictionaryValue* DictionaryValue::DeepCopy() const {
-  return new DictionaryValue(dict_);
+  return new DictionaryValue(dict());
 }
 
 std::unique_ptr<DictionaryValue> DictionaryValue::CreateDeepCopy() const {
-  return std::make_unique<DictionaryValue>(dict_);
+  return std::make_unique<DictionaryValue>(dict());
 }
 
 ///////////////////// ListValue ////////////////////
@@ -1623,30 +1462,30 @@ ListValue::ListValue(ListStorage&& in_list) noexcept
     : Value(std::move(in_list)) {}
 
 void ListValue::Clear() {
-  list_.clear();
+  list().clear();
 }
 
 void ListValue::Reserve(size_t n) {
-  list_.reserve(n);
+  list().reserve(n);
 }
 
 bool ListValue::Set(size_t index, std::unique_ptr<Value> in_value) {
   if (!in_value)
     return false;
 
-  if (index >= list_.size())
-    list_.resize(index + 1);
+  if (index >= list().size())
+    list().resize(index + 1);
 
-  list_[index] = std::move(*in_value);
+  list()[index] = std::move(*in_value);
   return true;
 }
 
 bool ListValue::Get(size_t index, const Value** out_value) const {
-  if (index >= list_.size())
+  if (index >= list().size())
     return false;
 
   if (out_value)
-    *out_value = &list_[index];
+    *out_value = &list()[index];
 
   return true;
 }
@@ -1731,26 +1570,26 @@ bool ListValue::GetList(size_t index, ListValue** out_value) {
 }
 
 bool ListValue::Remove(size_t index, std::unique_ptr<Value>* out_value) {
-  if (index >= list_.size())
+  if (index >= list().size())
     return false;
 
   if (out_value)
-    *out_value = std::make_unique<Value>(std::move(list_[index]));
+    *out_value = std::make_unique<Value>(std::move(list()[index]));
 
-  list_.erase(list_.begin() + index);
+  list().erase(list().begin() + index);
   return true;
 }
 
 bool ListValue::Remove(const Value& value, size_t* index) {
-  auto it = std::find(list_.begin(), list_.end(), value);
+  auto it = std::find(list().begin(), list().end(), value);
 
-  if (it == list_.end())
+  if (it == list().end())
     return false;
 
   if (index)
-    *index = std::distance(list_.begin(), it);
+    *index = std::distance(list().begin(), it);
 
-  list_.erase(it);
+  list().erase(it);
   return true;
 }
 
@@ -1759,63 +1598,63 @@ ListValue::iterator ListValue::Erase(iterator iter,
   if (out_value)
     *out_value = std::make_unique<Value>(std::move(*iter));
 
-  auto list_iter = list_.begin() + (iter - GetList().begin());
-  CHECK(list_iter != list_.end());
-  list_iter = list_.erase(list_iter);
-  return GetList().begin() + (list_iter - list_.begin());
+  auto list_iter = list().begin() + (iter - GetList().begin());
+  CHECK(list_iter != list().end());
+  list_iter = list().erase(list_iter);
+  return GetList().begin() + (list_iter - list().begin());
 }
 
 void ListValue::Append(std::unique_ptr<Value> in_value) {
-  list_.push_back(std::move(*in_value));
+  list().push_back(std::move(*in_value));
 }
 
 void ListValue::AppendBoolean(bool in_value) {
-  list_.emplace_back(in_value);
+  list().emplace_back(in_value);
 }
 
 void ListValue::AppendInteger(int in_value) {
-  list_.emplace_back(in_value);
+  list().emplace_back(in_value);
 }
 
 void ListValue::AppendDouble(double in_value) {
-  list_.emplace_back(in_value);
+  list().emplace_back(in_value);
 }
 
 void ListValue::AppendString(StringPiece in_value) {
-  list_.emplace_back(in_value);
+  list().emplace_back(in_value);
 }
 
 void ListValue::AppendString(const string16& in_value) {
-  list_.emplace_back(in_value);
+  list().emplace_back(in_value);
 }
 
 void ListValue::AppendStrings(const std::vector<std::string>& in_values) {
-  list_.reserve(list_.size() + in_values.size());
+  list().reserve(list().size() + in_values.size());
   for (const auto& in_value : in_values)
-    list_.emplace_back(in_value);
+    list().emplace_back(in_value);
 }
 
 void ListValue::AppendStrings(const std::vector<string16>& in_values) {
-  list_.reserve(list_.size() + in_values.size());
+  list().reserve(list().size() + in_values.size());
   for (const auto& in_value : in_values)
-    list_.emplace_back(in_value);
+    list().emplace_back(in_value);
 }
 
 bool ListValue::AppendIfNotPresent(std::unique_ptr<Value> in_value) {
   DCHECK(in_value);
-  if (Contains(list_, *in_value))
+  if (Contains(list(), *in_value))
     return false;
 
-  list_.push_back(std::move(*in_value));
+  list().push_back(std::move(*in_value));
   return true;
 }
 
 bool ListValue::Insert(size_t index, std::unique_ptr<Value> in_value) {
   DCHECK(in_value);
-  if (index > list_.size())
+  if (index > list().size())
     return false;
 
-  list_.insert(list_.begin() + index, std::move(*in_value));
+  list().insert(list().begin() + index, std::move(*in_value));
   return true;
 }
 
@@ -1825,15 +1664,15 @@ ListValue::const_iterator ListValue::Find(const Value& value) const {
 
 void ListValue::Swap(ListValue* other) {
   CHECK(other->is_list());
-  list_.swap(other->list_);
+  list().swap(other->list());
 }
 
 ListValue* ListValue::DeepCopy() const {
-  return new ListValue(list_);
+  return new ListValue(list());
 }
 
 std::unique_ptr<ListValue> ListValue::CreateDeepCopy() const {
-  return std::make_unique<ListValue>(list_);
+  return std::make_unique<ListValue>(list());
 }
 
 ValueSerializer::~ValueSerializer() = default;

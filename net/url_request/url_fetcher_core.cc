@@ -343,8 +343,8 @@ const GURL& URLFetcherCore::GetURL() const {
   return url_;
 }
 
-const URLRequestStatus& URLFetcherCore::GetStatus() const {
-  return status_;
+Error URLFetcherCore::GetError() const {
+  return error_;
 }
 
 int URLFetcherCore::GetResponseCode() const {
@@ -475,7 +475,7 @@ void URLFetcherCore::OnReadCompleted(URLRequest* request,
 
   // See comments re: HEAD requests in ReadResponse().
   if (bytes_read != ERR_IO_PENDING || request_type_ == URLFetcher::HEAD) {
-    status_ = URLRequestStatus::FromError(bytes_read);
+    error_ = static_cast<Error>(bytes_read);
     received_response_content_length_ =
         request_->received_response_content_length();
     total_received_bytes_ += request_->GetTotalReceivedBytes();
@@ -695,14 +695,7 @@ void URLFetcherCore::CancelURLRequest(int error) {
     request_->CancelWithError(error);
     ReleaseRequest();
   }
-
-  // Set the error manually.
-  // Normally, calling URLRequest::CancelWithError() results in calling
-  // OnReadCompleted() with bytes_read = -1 via an asynchronous task posted by
-  // URLRequestJob::NotifyDone(). But, because the request was released
-  // immediately after being canceled, the request could not call
-  // OnReadCompleted() which overwrites |status_| with the error status.
-  status_ = URLRequestStatus(URLRequestStatus::CANCELED, error);
+  error_ = static_cast<Error>(error);
 
   // Release the reference to the request context. There could be multiple
   // references to URLFetcher::Core at this point so it may take a while to
@@ -762,8 +755,7 @@ void URLFetcherCore::RetryOrCompleteUrlFetch() {
   base::TimeDelta backoff_delay;
 
   // Checks the response from server.
-  if (response_code_ >= 500 ||
-      status_.error() == ERR_TEMPORARILY_THROTTLED) {
+  if (response_code_ >= 500 || error_ == ERR_TEMPORARILY_THROTTLED) {
     // When encountering a server error, we will send the request again
     // after backoff time.
     ++num_retries_on_5xx_;
@@ -788,7 +780,7 @@ void URLFetcherCore::RetryOrCompleteUrlFetch() {
   }
 
   // Retry if the request failed due to network changes.
-  if (status_.error() == ERR_NETWORK_CHANGED &&
+  if (error_ == ERR_NETWORK_CHANGED &&
       num_retries_on_network_changes_ < max_retries_on_network_changes_) {
     ++num_retries_on_network_changes_;
 

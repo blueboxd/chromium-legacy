@@ -202,6 +202,8 @@ class PaymentRequestSpec : public PaymentOptionsProvider,
     return method_data_;
   }
 
+  bool IsSecurePaymentConfirmationRequested() const;
+
  private:
   // Returns the first applicable modifier in the Payment Request for the
   // |selected_app|.

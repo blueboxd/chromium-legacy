@@ -345,6 +345,16 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   void StartReading();
   void OnOriginPolicyManagerRetrieveDone(const OriginPolicy& origin_policy);
 
+  // Checks if the request initiator should be allowed to make requests to the
+  // remote endpoint, as described in |info|.
+  //
+  // Returns a net error code.
+  //
+  // See the CORS-RFC1918 spec: https://wicg.github.io/cors-rfc1918.
+  //
+  // Helper for OnConnected().
+  int CanConnectToRemoteEndpoint(const net::TransportInfo& info) const;
+
   net::URLRequestContext* url_request_context_;
   mojom::NetworkServiceClient* network_service_client_;
   mojom::NetworkContextClient* network_context_client_;

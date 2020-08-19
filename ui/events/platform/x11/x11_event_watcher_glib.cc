@@ -61,7 +61,8 @@ void X11EventWatcherGlib::StartWatching() {
     return;
 
   XDisplay* display = event_source_->connection()->display();
-  DCHECK(display) << "Unable to get connection to X server";
+  if (!display)
+    return;
 
   x_poll_ = std::make_unique<GPollFD>();
   x_poll_->fd = ConnectionNumber(display);
@@ -77,7 +78,10 @@ void X11EventWatcherGlib::StartWatching() {
   g_source_add_poll(x_source_, x_poll_.get());
   g_source_set_can_recurse(x_source_, TRUE);
   g_source_set_callback(x_source_, nullptr, event_source_, nullptr);
-  g_source_attach(x_source_, g_main_context_default());
+  auto* context = g_main_context_get_thread_default();
+  if (!context)
+    context = g_main_context_default();
+  g_source_attach(x_source_, context);
   started_ = true;
 }
 

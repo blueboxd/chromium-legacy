@@ -279,28 +279,6 @@ bool FloatRoundedRect::IntersectsQuad(const FloatQuad& quad) const {
   return true;
 }
 
-void FloatRoundedRect::Radii::IncludeLogicalEdges(
-    const FloatRoundedRect::Radii& edges,
-    bool is_horizontal,
-    bool include_logical_left_edge,
-    bool include_logical_right_edge) {
-  if (include_logical_left_edge) {
-    if (is_horizontal)
-      bottom_left_ = edges.BottomLeft();
-    else
-      top_right_ = edges.TopRight();
-    top_left_ = edges.TopLeft();
-  }
-
-  if (include_logical_right_edge) {
-    if (is_horizontal)
-      top_right_ = edges.TopRight();
-    else
-      bottom_left_ = edges.BottomLeft();
-    bottom_right_ = edges.BottomRight();
-  }
-}
-
 float CalcBorderRadiiConstraintScaleFor(const FloatRect& rect,
                                         const FloatRoundedRect::Radii& radii) {
   float factor = 1;
@@ -333,14 +311,6 @@ float CalcBorderRadiiConstraintScaleFor(const FloatRect& rect,
 
 void FloatRoundedRect::ConstrainRadii() {
   radii_.ScaleAndFloor(CalcBorderRadiiConstraintScaleFor(Rect(), GetRadii()));
-}
-
-void FloatRoundedRect::IncludeLogicalEdges(const Radii& edges,
-                                           bool is_horizontal,
-                                           bool include_logical_left_edge,
-                                           bool include_logical_right_edge) {
-  radii_.IncludeLogicalEdges(edges, is_horizontal, include_logical_left_edge,
-                             include_logical_right_edge);
 }
 
 bool FloatRoundedRect::IsRenderable() const {

@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/settings/password/legacy_password_details_table_view_controller.h"
 
+#import <MobileCoreServices/UTCoreTypes.h>
 #import <UIKit/UIKit.h>
 
 #import <MaterialComponents/MaterialSnackbar.h>
@@ -28,6 +29,7 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/constants.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -397,9 +399,15 @@ typedef NS_ENUM(NSInteger, ItemType) {
   // If the password is displayed in plain text, there is no need to
   // re-authenticate the user when copying the password because they are already
   // granted access to it.
+
+  NSDate* expirationDate =
+      [NSDate dateWithTimeIntervalSinceNow:kSecurePasteboardExpiration];
+  NSDictionary* options = @{UIPasteboardOptionExpirationDate : expirationDate};
+
   if (_plainTextPasswordShown) {
-    UIPasteboard* generalPasteboard = [UIPasteboard generalPasteboard];
-    generalPasteboard.string = _password;
+    NSDictionary* item = @{(NSString*)kUTTypePlainText : _password};
+    [[UIPasteboard generalPasteboard] setItems:@[ item ] options:options];
+
     [self showToast:l10n_util::GetNSString(
                         IDS_IOS_SETTINGS_PASSWORD_WAS_COPIED_MESSAGE)
          forSuccess:YES];
@@ -419,11 +427,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [strongSelf logPasswordSettingsReauthResult:result];
       if (result != ReauthenticationResult::kFailure) {
         UIPasteboard* generalPasteboard = [UIPasteboard generalPasteboard];
-        [generalPasteboard setItems:@[ @{
-                             @"public.plain-text" : strongSelf->_password,
-                             ui::kUTTypeConfidentialData : strongSelf->_password
-                           } ]
-                            options:@{}];
+        [generalPasteboard
+            setItems:@[ @{
+              (NSString*)kUTTypePlainText : strongSelf->_password,
+              ui::kUTTypeConfidentialData : strongSelf->_password
+            } ]
+             options:options];
         [strongSelf showToast:l10n_util::GetNSString(
                                   IDS_IOS_SETTINGS_PASSWORD_WAS_COPIED_MESSAGE)
                    forSuccess:YES];

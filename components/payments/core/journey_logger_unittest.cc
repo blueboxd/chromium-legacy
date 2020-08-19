@@ -97,6 +97,7 @@ TEST(JourneyLoggerTest,
   logger.SetRequestedInformation(true, false, false, false);
   logger.SetRequestedPaymentMethodTypes(
       /*requested_basic_card=*/true, /*requested_method_google=*/false,
+      /*requested_method_secure_payment_confirmation=*/false,
       /*requested_method_other=*/false);
   logger.SetEventOccurred(JourneyLogger::EVENT_PAY_CLICKED);
   logger.SetEventOccurred(JourneyLogger::EVENT_SELECTED_CREDIT_CARD);
@@ -214,6 +215,7 @@ TEST(JourneyLoggerTest,
   logger.SetRequestedInformation(true, false, false, false);
   logger.SetRequestedPaymentMethodTypes(
       /*requested_basic_card=*/true, /*requested_method_google=*/false,
+      /*requested_method_secure_payment_confirmation=*/false,
       /*requested_method_other=*/false);
   logger.SetCanMakePaymentValue(false);
   logger.SetEventOccurred(JourneyLogger::EVENT_PAY_CLICKED);
@@ -291,6 +293,7 @@ TEST(JourneyLoggerTest,
   logger.SetRequestedInformation(true, false, false, false);
   logger.SetRequestedPaymentMethodTypes(
       /*requested_basic_card=*/true, /*requested_method_google=*/false,
+      /*requested_method_secure_payment_confirmation=*/false,
       /*requested_method_other=*/false);
   logger.SetCanMakePaymentValue(true);
   logger.SetEventOccurred(JourneyLogger::EVENT_PAY_CLICKED);
@@ -320,6 +323,7 @@ TEST(JourneyLoggerTest,
   logger.SetRequestedInformation(true, false, false, false);
   logger.SetRequestedPaymentMethodTypes(
       /*requested_basic_card=*/true, /*requested_method_google=*/false,
+      /*requested_method_secure_payment_confirmation=*/false,
       /*requested_method_other=*/false);
   logger.SetCanMakePaymentValue(true);
   logger.SetEventOccurred(JourneyLogger::EVENT_PAY_CLICKED);
@@ -349,6 +353,7 @@ TEST(JourneyLoggerTest,
       /*requested_phone=*/false, /*requested_name=*/false);
   logger.SetRequestedPaymentMethodTypes(
       /*requested_basic_card=*/true, /*requested_method_google=*/true,
+      /*requested_method_secure_payment_confirmation=*/false,
       /*requested_method_other=*/false);
 
   // Simulate that the user had suggestions for all the requested sections.
@@ -396,6 +401,7 @@ TEST(JourneyLoggerTest,
       /*requested_phone=*/false, /*requested_name=*/false);
   logger.SetRequestedPaymentMethodTypes(
       /*requested_basic_card=*/true, /*requested_method_google=*/true,
+      /*requested_method_secure_payment_confirmation=*/false,
       /*requested_method_other=*/false);
 
   // Simulate that the user had suggestions for all the requested sections.
@@ -441,6 +447,7 @@ TEST(JourneyLoggerTest,
       /*requested_phone=*/false, /*requested_name=*/false);
   logger.SetRequestedPaymentMethodTypes(
       /*requested_basic_card=*/true, /*requested_method_google=*/true,
+      /*requested_method_secure_payment_confirmation=*/false,
       /*requested_method_other=*/false);
 
   // Simulate that the user had suggestions for all the requested sections.
@@ -487,6 +494,7 @@ TEST(JourneyLoggerTest,
       /*requested_phone=*/false, /*requested_name=*/false);
   logger.SetRequestedPaymentMethodTypes(
       /*requested_basic_card=*/true, /*requested_method_google=*/true,
+      /*requested_method_secure_payment_confirmation=*/false,
       /*requested_method_other=*/false);
 
   // Simulate that the user had suggestions for all the requested sections.
@@ -534,6 +542,7 @@ TEST(JourneyLoggerTest,
       /*requested_phone=*/false, /*requested_name=*/false);
   logger.SetRequestedPaymentMethodTypes(
       /*requested_basic_card=*/true, /*requested_method_google=*/true,
+      /*requested_method_secure_payment_confirmation=*/false,
       /*requested_method_other=*/false);
 
   // Simulate that the user had suggestions for none of the requested sections.
@@ -581,6 +590,7 @@ TEST(JourneyLoggerTest,
       /*requested_phone=*/false, /*requested_name=*/false);
   logger.SetRequestedPaymentMethodTypes(
       /*requested_basic_card=*/true, /*requested_method_google=*/true,
+      /*requested_method_secure_payment_confirmation=*/false,
       /*requested_method_other=*/false);
 
   // Simulate that the user had suggestions for none of the requested sections.
@@ -626,6 +636,7 @@ TEST(JourneyLoggerTest,
       /*requested_phone=*/false, /*requested_name=*/false);
   logger.SetRequestedPaymentMethodTypes(
       /*requested_basic_card=*/true, /*requested_method_google=*/true,
+      /*requested_method_secure_payment_confirmation=*/false,
       /*requested_method_other=*/false);
 
   // Simulate that the user had suggestions for none of the requested sections.
@@ -672,6 +683,7 @@ TEST(JourneyLoggerTest,
       /*requested_phone=*/false, /*requested_name=*/false);
   logger.SetRequestedPaymentMethodTypes(
       /*requested_basic_card=*/true, /*requested_method_google=*/true,
+      /*requested_method_secure_payment_confirmation=*/false,
       /*requested_method_other=*/false);
 
   // Simulate that the user had suggestions for none of the requested sections.
@@ -718,6 +730,7 @@ TEST(
       /*requested_phone=*/false, /*requested_name=*/false);
   logger.SetRequestedPaymentMethodTypes(
       /*requested_basic_card=*/true, /*requested_method_google=*/true,
+      /*requested_method_secure_payment_confirmation=*/false,
       /*requested_method_other=*/false);
 
   // Simulate that the user had incomplete suggestions for the requested
@@ -765,6 +778,7 @@ TEST(
       /*requested_phone=*/false, /*requested_name=*/false);
   logger.SetRequestedPaymentMethodTypes(
       /*requested_basic_card=*/true, /*requested_method_google=*/true,
+      /*requested_method_secure_payment_confirmation=*/false,
       /*requested_method_other=*/false);
 
   // Simulate that the user had incomplete suggestions for one of the requested
@@ -814,6 +828,7 @@ TEST(
       /*requested_phone=*/false, /*requested_name=*/false);
   logger.SetRequestedPaymentMethodTypes(
       /*requested_basic_card=*/true, /*requested_method_google=*/true,
+      /*requested_method_secure_payment_confirmation=*/false,
       /*requested_method_other=*/false);
 
   // Simulate that the user had incomplete suggestions for one of the requested
@@ -863,6 +878,7 @@ TEST(JourneyLoggerTest, RecordJourneyStatsHistograms_TwoPaymentRequests) {
       /*requested_phone=*/false, /*requested_name=*/false);
   logger1.SetRequestedPaymentMethodTypes(
       /*requested_basic_card=*/true, /*requested_method_google=*/true,
+      /*requested_method_secure_payment_confirmation=*/false,
       /*requested_method_other=*/true);
   logger2.SetEventOccurred(JourneyLogger::EVENT_SHOWN);
   logger2.SetRequestedInformation(
@@ -870,6 +886,7 @@ TEST(JourneyLoggerTest, RecordJourneyStatsHistograms_TwoPaymentRequests) {
       /*requested_phone=*/false, /*requested_name=*/false);
   logger2.SetRequestedPaymentMethodTypes(
       /*requested_basic_card=*/false, /*requested_method_google=*/false,
+      /*requested_method_secure_payment_confirmation=*/false,
       /*requested_method_other=*/true);
 
   logger1.SetCanMakePaymentValue(true);
@@ -945,6 +962,7 @@ TEST(JourneyLoggerTest,
       /*requested_phone=*/false, /*requested_name=*/false);
   logger.SetRequestedPaymentMethodTypes(
       /*requested_basic_card=*/true, /*requested_method_google=*/false,
+      /*requested_method_secure_payment_confirmation=*/false,
       /*requested_method_other=*/false);
 
   // Simulate that the user aborts after being shown the Payment Request and
@@ -996,6 +1014,7 @@ TEST(JourneyLoggerTest,
       /*requested_phone=*/false, /*requested_name=*/false);
   logger.SetRequestedPaymentMethodTypes(
       /*requested_basic_card=*/true, /*requested_method_google=*/false,
+      /*requested_method_secure_payment_confirmation=*/false,
       /*requested_method_other=*/false);
 
   // Simulate that the user aborts after being shown the Payment Request.

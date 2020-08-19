@@ -32,18 +32,18 @@ public class LayoutManagerChromePhone extends LayoutManagerChrome {
     /**
      * Creates an instance of a {@link LayoutManagerChromePhone}.
      * @param host         A {@link LayoutManagerHost} instance.
+     * @param contentContainer A {@link ViewGroup} for Android views to be bound to.
      * @param startSurface An interface to talk to the Grid Tab Switcher. If it's NULL, VTS
      *                     should be used, otherwise GTS should be used.
      */
-    public LayoutManagerChromePhone(LayoutManagerHost host, StartSurface startSurface) {
-        super(host, true, startSurface);
-
+    public LayoutManagerChromePhone(
+            LayoutManagerHost host, ViewGroup contentContainer, StartSurface startSurface) {
+        super(host, contentContainer, true, startSurface);
     }
 
     @Override
     public void init(TabModelSelector selector, TabCreatorManager creator,
-            TabContentManager content, ViewGroup androidContentContainer,
-            ControlContainer controlContainer,
+            TabContentManager content, ControlContainer controlContainer,
             ContextualSearchManagementDelegate contextualSearchDelegate,
             DynamicResourceLoader dynamicResourceLoader) {
         Context context = mHost.getContext();
@@ -55,8 +55,8 @@ public class LayoutManagerChromePhone extends LayoutManagerChrome {
         // Set up layout parameters
         mStaticLayout.setLayoutHandlesTabLifecycles(false);
 
-        super.init(selector, creator, content, androidContentContainer, controlContainer,
-                contextualSearchDelegate, dynamicResourceLoader);
+        super.init(selector, creator, content, controlContainer, contextualSearchDelegate,
+                dynamicResourceLoader);
 
         mToolbarSwipeLayout.setMovesToolbar(true);
 

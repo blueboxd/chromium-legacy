@@ -42,7 +42,7 @@ class PasswordStoreConsumer {
   // The default implementation simply calls OnGetPasswordStoreResults(), so
   // consumers that don't care about the store can just ignore this.
   virtual void OnGetPasswordStoreResultsFrom(
-      scoped_refptr<PasswordStore> store,
+      PasswordStore* store,
       std::vector<std::unique_ptr<autofill::PasswordForm>> results);
 
   // Called when the GetSiteStats() request is finished, with the associated

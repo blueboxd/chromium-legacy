@@ -1218,17 +1218,14 @@ public class CompositorViewHolder extends FrameLayout
      *                                represent.
      * @param tabCreatorManager       The {@link TabCreatorManager} for this view.
      * @param tabContentManager       The {@link TabContentManager} for the tabs.
-     * @param androidContentContainer The {@link ViewGroup} the {@link LayoutManager} should bind
-     *                                Android content to.
      * @param contextualSearchManager A {@link ContextualSearchManagementDelegate} instance.
      */
     public void onFinishNativeInitialization(TabModelSelector tabModelSelector,
             TabCreatorManager tabCreatorManager, TabContentManager tabContentManager,
-            ViewGroup androidContentContainer,
             ContextualSearchManagementDelegate contextualSearchManager) {
         assert mLayoutManager != null && mControlContainer != null;
         mLayoutManager.init(tabModelSelector, tabCreatorManager, tabContentManager,
-                androidContentContainer, mControlContainer, contextualSearchManager,
+                mControlContainer, contextualSearchManager,
                 mCompositorView.getResourceManager().getDynamicResourceLoader());
 
         mTabModelSelector = tabModelSelector;

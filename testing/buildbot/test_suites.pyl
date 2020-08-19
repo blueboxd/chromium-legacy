@@ -97,14 +97,6 @@
     # They will be run in a marshmallow emulator FYI builder to keep test
     # coverage or debug the timeout issue.
     'android_marshmallow_emulator_backlog_gtests': {
-      'content_browsertests': {
-        'android_swarming': {
-          'shards': 9,
-        },
-        'swarming': {
-          'shards': 6,
-        },
-      },
       'network_service_out_of_process_chrome_public_test_apk': {
         'swarming': {
           'shards': 20,
@@ -3793,7 +3785,6 @@
       'pixel_browser_tests': {
         'name': 'pixel_browser_tests',
         'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/pixel_browser_tests.filter',
           '--browser-ui-tests-verify-pixels',
           '--enable-pixel-output-in-tests',
         ],
@@ -5538,84 +5529,6 @@
       }
     },
 
-    'ios13_beta_simulator_tests': {
-      'ios_common_tests': {
-        'variants': [
-          'SIM_IPHONE_X_13_6',
-          'SIM_IPHONE_X_12_4',
-        ],
-      },
-      'ios_eg2_tests': {
-        'variants': [
-          'SIM_IPHONE_X_13_6',
-          'SIM_IPHONE_7_13_6',
-          'SIM_IPAD_AIR_3RD_GEN_13_6',
-          'SIM_IPAD_6_GEN_13_6',
-          'SIM_IPHONE_X_12_4',
-          'SIM_IPAD_AIR_3RD_GEN_12_4',
-          'SIM_IPAD_6_GEN_12_4',
-        ]
-      },
-      'ios_eg2_cq_tests': {
-        'variants': [
-          'SIM_IPHONE_7_13_6',
-          'SIM_IPHONE_X_13_6',
-          'SIM_IPAD_PRO_2ND_GEN_13_6',
-          'SIM_IPAD_6_GEN_13_6',
-          'SIM_IPHONE_X_12_4',
-          'SIM_IPAD_PRO_2ND_GEN_12_4',
-          'SIM_IPAD_6_GEN_12_4',
-        ]
-      },
-      'ios_screen_size_dependent_tests': {
-        'variants': [
-          'SIM_IPHONE_6S_PLUS_13_6',
-          'SIM_IPHONE_X_13_6',
-          'SIM_IPAD_AIR_2_13_6',
-          'SIM_IPHONE_6S_PLUS_12_4',
-          'SIM_IPHONE_X_12_4',
-          'SIM_IPAD_AIR_2_12_4',
-        ],
-      },
-    },
-
-    'ios13_sdk_simulator_tests': {
-      'ios_common_tests': {
-        'variants': [
-          'SIM_IPHONE_6S_13_6',
-          'SIM_IPHONE_X_12_4',
-        ],
-      },
-      'ios_eg2_tests': {
-        'variants': [
-          'SIM_IPHONE_7_13_6',
-          'SIM_IPAD_AIR_2_13_6',
-          'SIM_IPHONE_X_13_6',
-          'SIM_IPHONE_X_12_4',
-          'SIM_IPAD_AIR_3RD_GEN_12_4',
-          'SIM_IPAD_6_GEN_12_4',
-        ]
-      },
-      'ios_eg2_cq_tests': {
-        'variants': [
-          'SIM_IPHONE_X_13_6',
-          'SIM_IPAD_AIR_2_13_6',
-          'SIM_IPHONE_X_12_4',
-          'SIM_IPAD_PRO_2ND_GEN_12_4',
-          'SIM_IPAD_6_GEN_12_4',
-        ]
-      },
-      'ios_screen_size_dependent_tests': {
-        'variants': [
-          'SIM_IPHONE_6S_PLUS_13_6',
-          'SIM_IPHONE_6S_13_6',
-          'SIM_IPHONE_6S_PLUS_12_4',
-          'SIM_IPHONE_X_12_4',
-          'SIM_IPAD_AIR_2_12_4',
-        ],
-      },
-    },
-
     # ios14-beta-sim runs sims only on 14.0+ since
     # ios13-beta-sim already runs 13.x and 12.4
     'ios14_beta_simulator_tests': {
@@ -5711,14 +5624,14 @@
     'ios_asan_tests': {
       'ios_common_tests': {
         'variants': [
-          'SIM_IPHONE_X_13_4',
-          'SIM_IPAD_AIR_2_13_4',
+          'SIM_IPHONE_X_13_6',
+          'SIM_IPAD_AIR_2_13_6',
         ]
       },
       'ios_screen_size_dependent_tests': {
         'variants': [
-          'SIM_IPHONE_X_13_4',
-          'SIM_IPAD_AIR_2_13_4',
+          'SIM_IPHONE_X_13_6',
+          'SIM_IPAD_AIR_2_13_6',
         ]
       }
     },
@@ -5734,7 +5647,7 @@
     'ios_clang_tot_sim_tests': {
       'ios_clang_tests': {
         'variants': [
-          'SIM_IPHONE_6S_13_4',
+          'SIM_IPHONE_6S_13_6',
         ]
       }
     },
@@ -5743,33 +5656,33 @@
       'ios_common_tests': {
         'variants': [
           'SIM_IPHONE_6S_12_4',
-          'SIM_IPHONE_6S_13_4',
+          'SIM_IPHONE_6S_13_6',
         ],
       },
       'ios_eg2_cq_tests': {
         'variants': [
           'SIM_IPHONE_6S_12_4',
           'SIM_IPAD_AIR_2_12_4',
-          'SIM_IPHONE_6S_13_4',
-          'SIM_IPHONE_7_13_4',
-          'SIM_IPAD_AIR_2_13_4',
+          'SIM_IPHONE_6S_13_6',
+          'SIM_IPHONE_7_13_6',
+          'SIM_IPAD_AIR_2_13_6',
         ],
       },
       'ios_eg2_tests': {
         'variants': [
           'SIM_IPAD_AIR_2_12_4',
           'SIM_IPHONE_X_12_4',
-          'SIM_IPHONE_7_13_4',
-          'SIM_IPAD_AIR_2_13_4',
-          'SIM_IPHONE_X_13_4',
+          'SIM_IPHONE_7_13_6',
+          'SIM_IPAD_AIR_2_13_6',
+          'SIM_IPHONE_X_13_6',
         ],
       },
       'ios_screen_size_dependent_tests': {
         'variants': [
-          'SIM_IPHONE_6S_PLUS_13_4',
-          'SIM_IPHONE_6S_13_4',
-          'SIM_IPHONE_SE_13_4',
-          'SIM_IPAD_AIR_2_13_4'
+          'SIM_IPHONE_6S_PLUS_13_6',
+          'SIM_IPHONE_6S_13_6',
+          'SIM_IPHONE_SE_13_6',
+          'SIM_IPAD_AIR_2_13_6'
         ],
       },
     },
@@ -5778,7 +5691,7 @@
       'ios_cronet_tests': {
         'variants': [
           'SIM_IPHONE_X_12_4',
-          'SIM_IPHONE_X_13_4'
+          'SIM_IPHONE_X_13_6'
         ]
       }
     },
@@ -5788,16 +5701,16 @@
         'variants': [
           'SIM_IPAD_AIR_2_12_4',
           'SIM_IPHONE_X_12_4',
-          'SIM_IPHONE_7_13_4',
-          'SIM_IPAD_AIR_2_13_4',
-          'SIM_IPHONE_X_13_4',
+          'SIM_IPHONE_7_13_6',
+          'SIM_IPAD_AIR_2_13_6',
+          'SIM_IPHONE_X_13_6',
         ]
       },
       'ios_eg2_cq_tests': {
         'variants': [
           'SIM_IPAD_AIR_2_12_4',
-          'SIM_IPHONE_7_13_4',
-          'SIM_IPAD_AIR_2_13_4',
+          'SIM_IPHONE_7_13_6',
+          'SIM_IPAD_AIR_2_13_6',
         ]
       }
     },
@@ -5805,22 +5718,22 @@
     'ios_simulator_multi_window_tests': {
       'ios_common_tests': {
         'variants': [
-          'SIM_IPAD_AIR_2_13_4',
+          'SIM_IPAD_AIR_2_13_6',
         ]
       },
       'ios_eg2_cq_tests': {
         'variants': [
-          'SIM_IPAD_AIR_2_13_4',
+          'SIM_IPAD_AIR_2_13_6',
         ]
       },
       'ios_eg2_tests': {
         'variants': [
-          'SIM_IPAD_AIR_2_13_4',
+          'SIM_IPAD_AIR_2_13_6',
         ]
       },
       'ios_screen_size_dependent_tests': {
         'variants': [
-          'SIM_IPAD_AIR_2_13_4',
+          'SIM_IPAD_AIR_2_13_6',
         ]
       }
     },
@@ -5829,21 +5742,21 @@
       'ios_common_tests': {
         'variants': [
           'SIM_IPHONE_6S_12_4',
-          'SIM_IPHONE_6S_13_4',
+          'SIM_IPHONE_6S_13_6',
         ]
       },
       'ios_eg2_cq_tests': {
         'variants': [
           'SIM_IPHONE_6S_12_4',
-          'SIM_IPHONE_6S_13_4',
+          'SIM_IPHONE_6S_13_6',
         ]
       },
       'ios_screen_size_dependent_tests': {
         'variants': [
-          'SIM_IPHONE_6S_PLUS_13_4',
-          'SIM_IPHONE_6S_13_4',
-          'SIM_IPHONE_SE_13_4',
-          'SIM_IPAD_AIR_2_13_4'
+          'SIM_IPHONE_6S_PLUS_13_6',
+          'SIM_IPHONE_6S_13_6',
+          'SIM_IPHONE_SE_13_6',
+          'SIM_IPAD_AIR_2_13_6'
         ]
       }
     },

@@ -145,7 +145,7 @@ void PrinterJobHandler::Shutdown() {
 CloudPrintURLFetcher::ResponseAction PrinterJobHandler::HandleRawResponse(
     const net::URLFetcher* source,
     const GURL& url,
-    const net::URLRequestStatus& status,
+    net::Error error,
     int response_code,
     const std::string& data) {
   // 415 (Unsupported media type) error while fetching data from the server

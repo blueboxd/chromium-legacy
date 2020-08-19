@@ -21,7 +21,7 @@ std::string ResolutionToString(AssistantInteractionResolution resolution) {
   LOG_INTERACTION_AT_LEVEL(AssistantInteractionLogger::kVLogLevel)
 
 #define LOG_INTERACTION_AT_LEVEL(_level) \
-  VLOG(_level) << "Assistant: " << __FUNCTION__ << ": "
+  VLOG(_level) << "Assistant: " << __func__ << ": "
 
 }  // namespace
 

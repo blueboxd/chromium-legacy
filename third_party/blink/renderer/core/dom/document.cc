@@ -787,6 +787,7 @@ Document::Document(const DocumentInit& initializer,
       needs_to_record_ukm_outlive_time_(false),
       viewport_data_(MakeGarbageCollected<ViewportData>(*this)),
       is_for_external_handler_(initializer.IsForExternalHandler()),
+      fragment_directive_(MakeGarbageCollected<FragmentDirective>()),
       display_lock_document_state_(
           MakeGarbageCollected<DisplayLockDocumentState>(this)),
       font_preload_manager_(*this),
@@ -2744,6 +2745,23 @@ void Document::MarkHasFindInPageContentVisibilityActiveMatch() {
   had_find_in_page_render_subtree_active_match_ = true;
 }
 
+void Document::MarkHasFindInPageBeforematchExpandedHiddenMatchable() {
+  // Note that although find-in-page in content-visibility requests happen in
+  // non-main frames, we only record the main frame results (per UKM policy).
+  // Additionally, we only record the event once.
+  if (had_find_in_page_beforematch_expanded_hidden_matchable_ ||
+      !IsInMainFrame())
+    return;
+
+  auto* recorder = UkmRecorder();
+  DCHECK(recorder);
+  DCHECK(UkmSourceID() != ukm::kInvalidSourceId);
+  ukm::builders::Blink_FindInPage(UkmSourceID())
+      .SetBeforematchExpandedHiddenMatchable(true)
+      .Record(recorder);
+  had_find_in_page_beforematch_expanded_hidden_matchable_ = true;
+}
+
 void Document::UpdateStyleAndLayout(DocumentUpdateReason reason) {
   DCHECK(IsMainThread());
   LocalFrameView* frame_view = View();
@@ -4389,7 +4407,7 @@ void Document::SetURL(const KURL& url) {
   String fragment = new_url.FragmentIdentifier();
   wtf_size_t start_pos = fragment.Find(kFragmentDirectivePrefix);
   if (start_pos != kNotFound) {
-    fragment_directive_ =
+    fragment_directive_string_ =
         fragment.Substring(start_pos + kFragmentDirectivePrefixStringLength);
 
     if (start_pos == 0)
@@ -6171,6 +6189,10 @@ ScriptPromise Document::requestStorageAccess(ScriptState* script_state) {
               WrapPersistent(resolver), WrapPersistent(this)));
 
   return promise;
+}
+
+FragmentDirective& Document::fragmentDirective() const {
+  return *fragment_directive_;
 }
 
 ScriptPromise Document::hasTrustToken(ScriptState* script_state,
@@ -8145,6 +8167,7 @@ void Document::Trace(Visitor* visitor) const {
   visitor->Trace(mime_handler_view_before_unload_event_listener_);
   visitor->Trace(cookie_jar_);
   visitor->Trace(synchronous_mutation_observer_list_);
+  visitor->Trace(fragment_directive_);
   visitor->Trace(element_explicitly_set_attr_elements_map_);
   visitor->Trace(display_lock_document_state_);
   visitor->Trace(font_preload_manager_);

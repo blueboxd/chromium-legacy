@@ -26,13 +26,14 @@ class AccessContextAuditDatabase
   enum class StorageAPIType : int {
     kCookie = 0,
     kLocalStorage = 1,
-    kSessionStorage,
-    kFileSystem,
-    kWebDatabase,
-    kServiceWorker,
-    kCacheStorage,
-    kIndexedDB,
-    kAppCache,
+    kSessionStorage = 2,
+    kFileSystem = 3,
+    kWebDatabase = 4,
+    kServiceWorker = 5,
+    kCacheStorage = 6,
+    kIndexedDB = 7,
+    kAppCache = 8,
+    kMaxValue = kAppCache
   };
 
   // An individual record of a Storage API access, associating the individual
@@ -97,8 +98,8 @@ class AccessContextAuditDatabase
                                  const std::string& path);
 
   // Remove all records of access to |origin|'s storage API of |type|.
-  void RemoveAllRecordsForOriginStorage(const url::Origin& origin,
-                                        StorageAPIType type);
+  void RemoveAllRecordsForOriginKeyedStorage(const url::Origin& origin,
+                                             StorageAPIType type);
 
   // Remove all records with a top frame origin present in |origins|.
   void RemoveAllRecordsForTopFrameOrigins(
@@ -109,6 +110,15 @@ class AccessContextAuditDatabase
   // CLEAR_ON_EXIT.
   void RemoveSessionOnlyRecords(
       const ContentSettingsForOneType& content_settings);
+
+  // Remove storage API access records for which the storage type is a member of
+  // |storage_api_types|, the timestamp is between |begin| and |end|, and the
+  // |origin_matcher| callback, if set, returns true for the storage origin.
+  void RemoveStorageApiRecords(
+      const std::set<StorageAPIType>& storage_api_types,
+      base::RepeatingCallback<bool(const url::Origin&)> origin_matcher,
+      base::Time begin,
+      base::Time end);
 
  protected:
   virtual ~AccessContextAuditDatabase() = default;

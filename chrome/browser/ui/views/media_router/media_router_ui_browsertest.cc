@@ -139,7 +139,7 @@ IN_PROC_BROWSER_TEST_F(MediaRouterUIBrowserTest, OpenDialogFromAppMenu) {
 }
 
 // TODO(crbug.com/1004635) Disabled due to flake on Windows and Linux
-#if defined(OS_WIN) || defined(OS_LINUX)
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
 #define MAYBE_EphemeralToolbarIconForDialog EphemeralToolbarIconForDialog
 #else
 #define MAYBE_EphemeralToolbarIconForDialog \

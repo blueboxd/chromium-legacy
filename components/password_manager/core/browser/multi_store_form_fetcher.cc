@@ -108,15 +108,15 @@ void MultiStoreFormFetcher::OnGetPasswordStoreResults(
 }
 
 void MultiStoreFormFetcher::OnGetPasswordStoreResultsFrom(
-    scoped_refptr<PasswordStore> store,
+    PasswordStore* store,
     std::vector<std::unique_ptr<PasswordForm>> results) {
   DCHECK_EQ(State::WAITING, state_);
   DCHECK_GT(wait_counter_, 0);
 
   if (should_migrate_http_passwords_ && results.empty() &&
       form_digest_.url.SchemeIs(url::kHttpsScheme)) {
-    http_migrators_[store.get()] = std::make_unique<HttpPasswordStoreMigrator>(
-        url::Origin::Create(form_digest_.url), store.get(),
+    http_migrators_[store] = std::make_unique<HttpPasswordStoreMigrator>(
+        url::Origin::Create(form_digest_.url), store,
         client_->GetNetworkContext(), this);
     // The migrator will call us back at ProcessMigratedForms().
     return;

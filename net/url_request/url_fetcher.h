@@ -16,11 +16,11 @@
 #include "base/supports_user_data.h"
 #include "build/build_config.h"
 #include "net/base/ip_endpoint.h"
+#include "net/base/net_errors.h"
 #include "net/base/net_export.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/referrer_policy.h"
 #include "net/url_request/url_request.h"
-#include "net/url_request/url_request_status.h"
 
 class GURL;
 
@@ -321,8 +321,8 @@ class NET_EXPORT URLFetcher {
   // Return the URL that this fetcher is processing.
   virtual const GURL& GetURL() const = 0;
 
-  // The status of the URL fetch.
-  virtual const URLRequestStatus& GetStatus() const = 0;
+  // The error from the URL fetch.
+  virtual Error GetError() const = 0;
 
   // The http response code received. Will return RESPONSE_CODE_INVALID
   // if an error prevented any response from being received.

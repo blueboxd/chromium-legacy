@@ -37,6 +37,12 @@ public class ShadowRecordHistogram {
     }
 
     @Implementation
+    public static void recordEnumeratedHistogram(String name, int sample, int boundary) {
+        assert sample < boundary : "Sample " + sample + " is not within boundary " + boundary + "!";
+        recordSample(Pair.create(name, sample));
+    }
+
+    @Implementation
     public static void recordCountHistogram(String name, int sample) {
         Pair<String, Integer> key = Pair.create(name, sample);
         recordSample(key);
@@ -44,6 +50,18 @@ public class ShadowRecordHistogram {
 
     @Implementation
     public static void recordCount100Histogram(String name, int sample) {
+        Pair<String, Integer> key = Pair.create(name, sample);
+        recordSample(key);
+    }
+
+    @Implementation
+    public static void recordCount1000Histogram(String name, int sample) {
+        Pair<String, Integer> key = Pair.create(name, sample);
+        recordSample(key);
+    }
+
+    @Implementation
+    public static void recordCount100000Histogram(String name, int sample) {
         Pair<String, Integer> key = Pair.create(name, sample);
         recordSample(key);
     }
@@ -63,13 +81,31 @@ public class ShadowRecordHistogram {
     }
 
     @Implementation
-    public static void recordEnumeratedHistogram(String name, int sample, int boundary) {
-        assert sample < boundary : "Sample " + sample + " is not within boundary " + boundary + "!";
-        recordSample(Pair.create(name, sample));
+    public static void recordPercentageHistogram(String name, int sample) {
+        Pair<String, Integer> key = Pair.create(name, sample);
+        recordSample(key);
+    }
+
+    @Implementation
+    public static void recordSparseHistogram(String name, int sample) {
+        Pair<String, Integer> key = Pair.create(name, sample);
+        recordSample(key);
     }
 
     @Implementation
     public static void recordTimesHistogram(String name, long durationMs) {
+        Pair<String, Integer> key = Pair.create(name, (int) durationMs);
+        recordSample(key);
+    }
+
+    @Implementation
+    public static void recordMediumTimesHistogram(String name, long durationMs) {
+        Pair<String, Integer> key = Pair.create(name, (int) durationMs);
+        recordSample(key);
+    }
+
+    @Implementation
+    public static void recordLongTimesHistogram(String name, long durationMs) {
         Pair<String, Integer> key = Pair.create(name, (int) durationMs);
         recordSample(key);
     }
@@ -81,8 +117,15 @@ public class ShadowRecordHistogram {
     }
 
     @Implementation
-    public static void recordSparseHistogram(String name, int sample) {
-        Pair<String, Integer> key = Pair.create(name, sample);
+    public static void recordCustomTimesHistogram(
+            String name, long durationMs, long min, long max, int numBuckets) {
+        Pair<String, Integer> key = Pair.create(name, (int) durationMs);
+        recordSample(key);
+    }
+
+    @Implementation
+    public static void recordMemoryKBHistogram(String name, int sizeInKB) {
+        Pair<String, Integer> key = Pair.create(name, sizeInKB);
         recordSample(key);
     }
 

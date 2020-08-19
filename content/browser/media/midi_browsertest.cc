@@ -31,7 +31,7 @@ class MidiBrowserTest : public ContentBrowserTest {
     EXPECT_TRUE(NavigateToURL(shell(), https_test_server_->GetURL(path)));
 
     const base::string16 result = watcher.WaitAndGetTitle();
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
     // Try does not allow accessing /dev/snd/seq, and it results in a platform
     // specific initialization error. See http://crbug.com/371230.
     // Also, Chromecast does not support the feature and results in

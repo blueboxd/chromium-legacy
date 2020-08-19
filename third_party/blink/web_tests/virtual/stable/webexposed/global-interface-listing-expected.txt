@@ -1281,6 +1281,7 @@ interface Document : Node
     getter firstElementChild
     getter fonts
     getter forms
+    getter fragmentDirective
     getter fullscreen
     getter fullscreenElement
     getter fullscreenEnabled
@@ -4090,7 +4091,6 @@ interface LinearAccelerationSensor : Accelerometer
     method constructor
 interface Location
     attribute @@toStringTag
-    getter fragmentDirective
     method constructor
 interface Lock
     attribute @@toStringTag

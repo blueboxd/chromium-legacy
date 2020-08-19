@@ -28,10 +28,6 @@ suite('DiceWebSigninInterceptTest', function() {
   const AVATAR_URL_1 = 'chrome://theme/IDR_PROFILE_AVATAR_1';
   /** @type {string} */
   const AVATAR_URL_2 = 'chrome://theme/IDR_PROFILE_AVATAR_2';
-  /** @type {string} */
-  const AVATAR_URL_3 = 'chrome://theme/IDR_PROFILE_AVATAR_3';
-  /** @type {string} */
-  const AVATAR_URL_4 = 'chrome://theme/IDR_PROFILE_AVATAR_4';
 
   setup(function() {
     browserProxy = new TestDiceWebSigninInterceptBrowserProxy();
@@ -94,43 +90,33 @@ suite('DiceWebSigninInterceptTest', function() {
       bodyTitle: 'new_body_title',
       bodyText: 'new_body_text',
       interceptedAccount: {isManaged: false, pictureUrl: AVATAR_URL_1},
-      primaryAccount: {isManaged: false, pictureUrl: AVATAR_URL_2}
     });
     checkTextValues('new_header_text', 'new_body_title', 'new_body_text');
   });
 
   test('Avatars', function() {
     // Consumer avatars.
-    checkImageUrl('#interceptedAvatarImg', AVATAR_URL_1);
-    checkImageUrl('#primaryAvatarImg', AVATAR_URL_2);
-    assertFalse(isChildVisible(app, '#interceptedBadge'));
-    assertFalse(isChildVisible(app, '#primaryBadge'));
+    checkImageUrl('#avatar', AVATAR_URL_1);
+    assertFalse(isChildVisible(app, '#badge'));
 
     const parameters = {
       headerText: 'header_text',
       bodyTitle: 'body_title',
       bodyText: 'body_text',
-      interceptedAccount: {isManaged: false, pictureUrl: AVATAR_URL_3},
-      primaryAccount: {isManaged: false, pictureUrl: AVATAR_URL_4}
+      interceptedAccount: {isManaged: false, pictureUrl: AVATAR_URL_2},
     };
 
     // Update urls.
     fireParametersChanged(parameters);
-    checkImageUrl('#interceptedAvatarImg', AVATAR_URL_3);
-    checkImageUrl('#primaryAvatarImg', AVATAR_URL_4);
+    checkImageUrl('#avatar', AVATAR_URL_2);
 
     // Update isManaged for intercepted account.
     parameters.interceptedAccount.isManaged = true;
     fireParametersChanged(parameters);
-    assertTrue(isChildVisible(app, '#interceptedBadge'));
-    assertFalse(isChildVisible(app, '#primaryBadge'));
-
-    // Update isManaged for primary account.
+    assertTrue(isChildVisible(app, '#badge'));
     parameters.interceptedAccount.isManaged = false;
-    parameters.primaryAccount.isManaged = true;
     fireParametersChanged(parameters);
-    assertFalse(isChildVisible(app, '#interceptedBadge'));
-    assertTrue(isChildVisible(app, '#primaryBadge'));
+    assertFalse(isChildVisible(app, '#badge'));
   });
 
 });

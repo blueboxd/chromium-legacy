@@ -131,13 +131,17 @@ void RenderWidgetScreenMetricsEmulator::Apply() {
   delegate_->SetScreenRects(gfx::Rect(widget_pos, widget_size),
                             gfx::Rect(window_pos, window_size));
 
-  // If there are no emulated window segments, use the original ones - when we
-  // switch from having them to having none, we need to fallback to the original
-  // value. If there never were any emulated segments this is a no-op.
-  bool emulated_window_segments = emulation_params_.window_segments.size();
-  delegate_->SetRootWindowSegments(emulated_window_segments
-                                       ? emulation_params_.window_segments
-                                       : original_root_window_segments_);
+  // If there are no emulated window segments, use the emulated widget size
+  // instead. When we switch from emulated segments to not having any, we should
+  // have a single segment that matches the widget size.
+  bool has_emulated_segments = emulation_params_.window_segments.size();
+  if (has_emulated_segments) {
+    delegate_->SetRootWindowSegments(emulation_params_.window_segments);
+  } else {
+    std::vector<gfx::Rect> emulated_segments{
+        {0, 0, widget_size.width(), widget_size.height()}};
+    delegate_->SetRootWindowSegments(emulated_segments);
+  }
 
   blink::ScreenInfo screen_info = original_screen_info();
   screen_info.device_scale_factor = device_scale_factor;

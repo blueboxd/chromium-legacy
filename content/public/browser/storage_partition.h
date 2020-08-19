@@ -187,6 +187,19 @@ class CONTENT_EXPORT StoragePartition {
       base::RepeatingCallback<bool(const url::Origin&,
                                    storage::SpecialStoragePolicy*)>;
 
+  // Observer interface that is notified of specific data clearing events which
+  // which were facilitated by the StoragePartition. Notification occurs on the
+  // UI thread, observer life time is not managed by the StoragePartition.
+  class DataRemovalObserver : public base::CheckedObserver {
+   public:
+    // Called on a deletion event for origin keyed storage APIs.
+    virtual void OnOriginDataCleared(
+        uint32_t remove_mask,
+        base::RepeatingCallback<bool(const url::Origin&)> origin_matcher,
+        const base::Time begin,
+        const base::Time end) = 0;
+  };
+
   // Similar to ClearDataForOrigin().
   // Deletes all data out for the StoragePartition if |storage_origin| is empty.
   // |callback| is called when data deletion is done or at least the deletion is
@@ -244,6 +257,10 @@ class CONTENT_EXPORT StoragePartition {
 
   // Resets all URLLoaderFactories bound to this partition's network context.
   virtual void ResetURLLoaderFactories() = 0;
+
+  virtual void AddObserver(DataRemovalObserver* observer) = 0;
+
+  virtual void RemoveObserver(DataRemovalObserver* observer) = 0;
 
   // Clear the bluetooth allowed devices map. For test use only.
   virtual void ClearBluetoothAllowedDevicesMapForTesting() = 0;

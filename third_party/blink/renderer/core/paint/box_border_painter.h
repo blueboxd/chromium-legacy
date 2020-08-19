@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_BOX_BORDER_PAINTER_H_
 
 #include "third_party/blink/renderer/core/layout/background_bleed_avoidance.h"
+#include "third_party/blink/renderer/core/layout/geometry/box_sides.h"
 #include "third_party/blink/renderer/core/style/border_edge.h"
 #include "third_party/blink/renderer/platform/geometry/float_rounded_rect.h"
 
@@ -26,8 +27,7 @@ class BoxBorderPainter {
   BoxBorderPainter(const PhysicalRect& border_rect,
                    const ComputedStyle&,
                    BackgroundBleedAvoidance,
-                   bool include_logical_left_edge,
-                   bool include_logical_right_edge);
+                   PhysicalBoxSides sides_to_include);
 
   BoxBorderPainter(const ComputedStyle&,
                    const PhysicalRect& outer,
@@ -124,8 +124,7 @@ class BoxBorderPainter {
   // const inputs
   const ComputedStyle& style_;
   const BackgroundBleedAvoidance bleed_avoidance_;
-  const bool include_logical_left_edge_;
-  const bool include_logical_right_edge_;
+  const PhysicalBoxSides sides_to_include_;
 
   // computed attributes
   FloatRoundedRect outer_;

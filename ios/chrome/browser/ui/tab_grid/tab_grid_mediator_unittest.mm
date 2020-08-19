@@ -18,6 +18,7 @@
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper_delegate.h"
 #include "ios/chrome/browser/sessions/session_restoration_browser_agent.h"
 #import "ios/chrome/browser/sessions/test_session_service.h"
+#import "ios/chrome/browser/snapshots/snapshot_browser_agent.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/tabs/closing_web_state_observer.h"
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_commands.h"
@@ -205,6 +206,8 @@ class TabHelperFakeWebStateListDelegate : public FakeWebStateListDelegate {
     NewTabPageTabHelper::CreateForWebState(web_state);
     NewTabPageTabHelper::FromWebState(web_state)->SetDelegate(delegate);
     PagePlaceholderTabHelper::CreateForWebState(web_state);
+    NSString* identifier = TabIdTabHelper::FromWebState(web_state)->tab_id();
+    SnapshotTabHelper::CreateForWebState(web_state, identifier);
   }
 };
 
@@ -231,6 +234,7 @@ class TabGridMediatorTest : public PlatformTest {
     browser_ = std::make_unique<TestBrowser>(browser_state_.get(),
                                              web_state_list_.get());
     WebUsageEnablerBrowserAgent::CreateForBrowser(browser_.get());
+    SnapshotBrowserAgent::CreateForBrowser(browser_.get());
 
     // Insert some web states.
     for (int i = 0; i < 3; i++) {

@@ -93,6 +93,11 @@ const char kConversionMeasurementDebugModeDescription[] =
     "reporting delays and noise. Only works if the Conversion Measurement API "
     "is already enabled.";
 
+const char kEnableBloomName[] = "Enable Bloom Integration";
+const char kEnableBloomDescription[] =
+    "Enables native support for bloom, an experimental vertical knowledge "
+    "search feature.";
+
 const char kEnableBluetoothSerialPortProfileInSerialApiName[] =
     "Enable Bluetooth Serial Port Profile in Serial API";
 const char kEnableBluetoothSerialPortProfileInSerialApiDescription[] =
@@ -405,6 +410,12 @@ const char kEnablePasswordsAccountStorageName[] =
 const char kEnablePasswordsAccountStorageDescription[] =
     "Enables storing passwords in a second, Gaia-account-scoped storage for "
     "signed-in but not syncing users";
+
+const char kEnablePasswordsAccountStorageIPHName[] =
+    "Enable IPH for the account data storage for passwords";
+const char kEnablePasswordsAccountStorageIPHDescription[] =
+    "Enables in-product help bubbles about storing passwords in a second, "
+    "Gaia-account-scoped storage for signed-in but not syncing users";
 
 const char kExportTaggedPDFName[] = "Export Tagged PDF";
 const char kExportTaggedPDFDescription[] =
@@ -4414,13 +4425,15 @@ const char kRemoteCopyProgressNotificationDescription[] =
 #endif  // defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) ||
         // defined(OS_CHROMEOS)
 
-#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
+#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
+    defined(OS_CHROMEOS)
 
 const char kDirectManipulationStylusName[] = "Direct Manipulation Stylus";
 const char kDirectManipulationStylusDescription[] =
     "If enabled, Chrome will scroll web pages on stylus drag.";
 
-#endif  // defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
+#endif  // defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) ||
+        // defined(OS_CHROMEOS)
 
 #if defined(OS_WIN) || defined(OS_MAC) || defined(OS_CHROMEOS)
 

@@ -50,8 +50,22 @@ using IsolatedOriginSource = ChildProcessSecurityPolicy::IsolatedOriginSource;
 
   frame_info->site_instance->site_url =
       site_instance->HasSite()
-          ? base::make_optional(site_instance->GetSiteURL())
+          ? base::make_optional(site_instance->GetSiteInfo().site_url())
           : base::nullopt;
+
+  // Only send a process lock URL if it's different from the site URL.  In the
+  // common case they are the same, so we avoid polluting the UI with two
+  // identical URLs.
+  bool should_show_lock_url = frame_info->site_instance->locked &&
+                              site_instance->GetSiteInfo().process_lock_url() !=
+                                  site_instance->GetSiteInfo().site_url();
+  frame_info->site_instance->process_lock_url =
+      should_show_lock_url
+          ? base::make_optional(site_instance->GetSiteInfo().process_lock_url())
+          : base::nullopt;
+
+  frame_info->site_instance->is_origin_keyed =
+      site_instance->GetSiteInfo().is_origin_keyed();
 
   for (size_t i = 0; i < frame->child_count(); ++i) {
     frame_info->subframes.push_back(RenderFrameHostToFrameInfo(

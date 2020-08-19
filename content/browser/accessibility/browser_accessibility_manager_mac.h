@@ -67,6 +67,9 @@ class CONTENT_EXPORT BrowserAccessibilityManagerMac
 
   bool IsInGeneratedEventBatch(ui::AXEventGenerator::Event event_type) const;
 
+  // Returns whether this page is a new tab page on Chrome.
+  bool IsChromeNewTabPage();
+
   // Keeps track of any edits that have been made by the user during a tree
   // update. Used by NSAccessibilityValueChangedNotification.
   // Maps AXNode IDs to value attribute changes.
@@ -79,6 +82,6 @@ class CONTENT_EXPORT BrowserAccessibilityManagerMac
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityManagerMac);
 };
 
-}
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_ACCESSIBILITY_BROWSER_ACCESSIBILITY_MANAGER_MAC_H_

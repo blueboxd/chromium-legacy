@@ -113,26 +113,27 @@ XShmImagePool::SwapClosure::SwapClosure() = default;
 
 XShmImagePool::SwapClosure::~SwapClosure() = default;
 
-XShmImagePool::XShmImagePool(
-    scoped_refptr<base::SequencedTaskRunner> host_task_runner,
-    scoped_refptr<base::SequencedTaskRunner> event_task_runner,
-    XDisplay* display,
-    x11::Drawable drawable,
-    Visual* visual,
-    int depth,
-    std::size_t frames_pending)
-    : host_task_runner_(std::move(host_task_runner)),
-      event_task_runner_(std::move(event_task_runner)),
-      display_(display),
+XShmImagePool::XShmImagePool(x11::Connection* connection,
+                             x11::Drawable drawable,
+                             Visual* visual,
+                             int depth,
+                             std::size_t frames_pending)
+    : connection_(connection),
+      display_(connection_->display()),
       drawable_(drawable),
       visual_(visual),
       depth_(depth),
       frame_states_(frames_pending) {
-  DCHECK(host_task_runner_->RunsTasksInCurrentSequence());
+  X11EventSource::GetInstance()->AddXEventDispatcher(this);
+}
+
+XShmImagePool::~XShmImagePool() {
+  Cleanup();
+  X11EventSource::GetInstance()->RemoveXEventDispatcher(this);
 }
 
 bool XShmImagePool::Resize(const gfx::Size& pixel_size) {
-  DCHECK(host_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (pixel_size == pixel_size_)
     return true;
@@ -140,9 +141,6 @@ bool XShmImagePool::Resize(const gfx::Size& pixel_size) {
   auto cleanup_fn = [](XShmImagePool* x) { x->Cleanup(); };
   std::unique_ptr<XShmImagePool, decltype(cleanup_fn)> cleanup{this,
                                                                cleanup_fn};
-
-  if (!event_task_runner_)
-    return false;
 
 #if !defined(OS_CHROMEOS)
   if (!ShouldUseMitShm(display_))
@@ -246,31 +244,31 @@ bool XShmImagePool::Resize(const gfx::Size& pixel_size) {
 }
 
 bool XShmImagePool::Ready() {
-  DCHECK(host_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return ready_;
 }
 
 SkBitmap& XShmImagePool::CurrentBitmap() {
-  DCHECK(host_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   return frame_states_[current_frame_index_].bitmap;
 }
 
 SkCanvas* XShmImagePool::CurrentCanvas() {
-  DCHECK(host_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   return frame_states_[current_frame_index_].canvas.get();
 }
 
 XImage* XShmImagePool::CurrentImage() {
-  DCHECK(host_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   return frame_states_[current_frame_index_].image.get();
 }
 
 void XShmImagePool::SwapBuffers(
     base::OnceCallback<void(const gfx::Size&)> callback) {
-  DCHECK(host_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   swap_closures_.emplace_back();
   SwapClosure& swap_closure = swap_closures_.back();
@@ -280,30 +278,9 @@ void XShmImagePool::SwapBuffers(
   current_frame_index_ = (current_frame_index_ + 1) % frame_states_.size();
 }
 
-void XShmImagePool::Initialize() {
-  DCHECK(host_task_runner_->RunsTasksInCurrentSequence());
-  if (event_task_runner_)
-    event_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&XShmImagePool::InitializeOnGpu, this));
-}
-
-void XShmImagePool::Teardown() {
-  DCHECK(host_task_runner_->RunsTasksInCurrentSequence());
-  if (event_task_runner_)
-    event_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&XShmImagePool::TeardownOnGpu, this));
-}
-
-XShmImagePool::~XShmImagePool() {
-  Cleanup();
-#ifndef NDEBUG
-  DCHECK(!dispatcher_registered_);
-#endif
-}
-
 void XShmImagePool::DispatchShmCompletionEvent(
     x11::Shm::CompletionEvent event) {
-  DCHECK(host_task_runner_->RunsTasksInCurrentSequence());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(event.offset, 0UL);
 
   for (auto it = swap_closures_.begin(); it != swap_closures_.end(); ++it) {
@@ -316,30 +293,14 @@ void XShmImagePool::DispatchShmCompletionEvent(
 }
 
 bool XShmImagePool::DispatchXEvent(x11::Event* xev) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   auto* completion = xev->As<x11::Shm::CompletionEvent>();
   if (!completion || completion->drawable.value != drawable_.value)
     return false;
 
-  host_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&XShmImagePool::DispatchShmCompletionEvent,
-                                this, *completion));
+  DispatchShmCompletionEvent(*completion);
   return true;
-}
-
-void XShmImagePool::InitializeOnGpu() {
-  DCHECK(event_task_runner_->RunsTasksInCurrentSequence());
-  X11EventSource::GetInstance()->AddXEventDispatcher(this);
-#ifndef NDEBUG
-  dispatcher_registered_ = true;
-#endif
-}
-
-void XShmImagePool::TeardownOnGpu() {
-  DCHECK(event_task_runner_->RunsTasksInCurrentSequence());
-  X11EventSource::GetInstance()->RemoveXEventDispatcher(this);
-#ifndef NDEBUG
-  dispatcher_registered_ = false;
-#endif
 }
 
 void XShmImagePool::Cleanup() {

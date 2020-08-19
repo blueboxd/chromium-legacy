@@ -53,7 +53,6 @@ class SVGLengthList final
   // SVGPropertyBase:
   SVGPropertyBase* CloneForAnimation(const String&) const override;
   SVGLengthList* Clone() override;
-  String ValueAsString() const override;
   SVGLengthMode UnitMode() const { return mode_; }
 
   void Add(SVGPropertyBase*, SVGElement*) override;
@@ -67,7 +66,6 @@ class SVGLengthList final
   float CalculateDistance(SVGPropertyBase* to, SVGElement*) override;
 
   static AnimatedPropertyType ClassType() { return kAnimatedLengthList; }
-  AnimatedPropertyType GetType() const override { return ClassType(); }
 
  private:
   // Create SVGLength items used to adjust the list length

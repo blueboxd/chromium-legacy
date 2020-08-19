@@ -36,10 +36,6 @@ bool HasControlClip(const NGPhysicalBoxFragment& self) {
   return box && box->HasControlClip();
 }
 
-LayoutUnit BorderWidth(unsigned edges, unsigned edge, float border_width) {
-  return (edges & edge) ? LayoutUnit(border_width) : LayoutUnit();
-}
-
 }  // namespace
 
 scoped_refptr<const NGPhysicalBoxFragment> NGPhysicalBoxFragment::Create(
@@ -131,7 +127,12 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
   is_legacy_layout_root_ = builder->is_legacy_layout_root_;
   is_painted_atomically_ =
       builder->space_ && builder->space_->IsPaintedAtomically();
-  border_edge_ = builder->border_edges_.ToPhysical(builder->GetWritingMode());
+  PhysicalBoxSides sides_to_include(builder->sides_to_include_,
+                                    builder->GetWritingMode());
+  include_border_top_ = sides_to_include.top;
+  include_border_right_ = sides_to_include.right;
+  include_border_bottom_ = sides_to_include.bottom;
+  include_border_left_ = sides_to_include.left;
   is_inline_formatting_context_ = builder->is_inline_formatting_context_;
   is_math_fraction_ = builder->is_math_fraction_;
 
@@ -561,12 +562,16 @@ UBiDiLevel NGPhysicalBoxFragment::BidiLevel() const {
 }
 
 NGPixelSnappedPhysicalBoxStrut NGPhysicalBoxFragment::BorderWidths() const {
-  unsigned edges = BorderEdges();
+  PhysicalBoxSides sides = SidesToInclude();
   NGPhysicalBoxStrut borders = Borders();
-  borders.top = BorderWidth(edges, NGBorderEdges::kTop, borders.top);
-  borders.right = BorderWidth(edges, NGBorderEdges::kRight, borders.right);
-  borders.bottom = BorderWidth(edges, NGBorderEdges::kBottom, borders.bottom);
-  borders.left = BorderWidth(edges, NGBorderEdges::kLeft, borders.left);
+  if (!sides.top)
+    borders.top = LayoutUnit();
+  if (!sides.right)
+    borders.right = LayoutUnit();
+  if (!sides.bottom)
+    borders.bottom = LayoutUnit();
+  if (!sides.left)
+    borders.left = LayoutUnit();
   return borders.SnapToDevicePixels();
 }
 
@@ -599,7 +604,10 @@ void NGPhysicalBoxFragment::CheckSameForSimplifiedLayout(
 
   DCHECK_EQ(is_inline_formatting_context_, other.is_inline_formatting_context_);
   DCHECK_EQ(has_fragment_items_, other.has_fragment_items_);
-  DCHECK_EQ(border_edge_, other.border_edge_);
+  DCHECK_EQ(include_border_top_, other.include_border_top_);
+  DCHECK_EQ(include_border_right_, other.include_border_right_);
+  DCHECK_EQ(include_border_bottom_, other.include_border_bottom_);
+  DCHECK_EQ(include_border_left_, other.include_border_left_);
   DCHECK_EQ(is_math_fraction_, other.is_math_fraction_);
 
   DCHECK_EQ(is_fieldset_container_, other.is_fieldset_container_);

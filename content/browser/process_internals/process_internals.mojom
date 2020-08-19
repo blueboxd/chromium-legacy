@@ -10,11 +10,18 @@ import "url/mojom/url.mojom";
 struct SiteInstanceInfo {
   int32 id;
 
-  // Boolean indicating whether the SiteInstance is locked to a specific URL.
-  // It does not indicate the granularity of the lock URL.
+  // Boolean indicating whether the SiteInstance's process is locked to a
+  // specific URL.
   bool locked;
 
   url.mojom.Url? site_url;
+
+  // The URL to which the SiteInstance's process is locked.
+  url.mojom.Url? process_lock_url;
+
+  // Specifies whether the SiteInstance is origin-keyed.  This is true for
+  // opt-in origin isolation, false otherwise.
+  bool is_origin_keyed;
 };
 
 // Basic information describing a frame and all of its subframes.

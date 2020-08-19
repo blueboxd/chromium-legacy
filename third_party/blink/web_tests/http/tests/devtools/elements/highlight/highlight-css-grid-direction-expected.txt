@@ -99,6 +99,7 @@ ltrGrid{
   "gridInfo": [
     {
       "rotationAngle": 0,
+      "writingMode": "horizontal-tb",
       "columnTrackSizes": [
         {
           "x": 18,
@@ -358,6 +359,7 @@ rtlGrid{
   "gridInfo": [
     {
       "rotationAngle": 0,
+      "writingMode": "horizontal-tb",
       "columnTrackSizes": [
         {
           "x": 48,
@@ -617,6 +619,7 @@ ltrGridGap{
   "gridInfo": [
     {
       "rotationAngle": 0,
+      "writingMode": "horizontal-tb",
       "columnTrackSizes": [
         {
           "x": 18,
@@ -882,6 +885,7 @@ rtlGridGap{
   "gridInfo": [
     {
       "rotationAngle": 0,
+      "writingMode": "horizontal-tb",
       "columnTrackSizes": [
         {
           "x": 32,

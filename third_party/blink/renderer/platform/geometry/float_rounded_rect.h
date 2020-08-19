@@ -95,11 +95,6 @@ class PLATFORM_EXPORT FloatRoundedRect {
                 float right_width);
     void Shrink(float size) { Shrink(size, size, size, size); }
 
-    void IncludeLogicalEdges(const Radii& edges,
-                             bool is_horizontal,
-                             bool include_logical_left_edge,
-                             bool include_logical_right_edge);
-
     String ToString() const;
 
    private:
@@ -163,11 +158,6 @@ class PLATFORM_EXPORT FloatRoundedRect {
   bool XInterceptsAtY(float y,
                       float& min_x_intercept,
                       float& max_x_intercept) const;
-
-  void IncludeLogicalEdges(const Radii& edges,
-                           bool is_horizontal,
-                           bool include_logical_left_edge,
-                           bool include_logical_right_edge);
 
   // Tests whether the quad intersects any part of this rounded rectangle.
   // This only works for convex quads.

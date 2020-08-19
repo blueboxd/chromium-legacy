@@ -11,7 +11,7 @@ enum DocumentPolicyFeature {
   kFontDisplay = 1,
   // Takes a parameter, |bpp|, i.e. byte-per-pixel ratio, that images
   // needs to obey.
-  kUnoptimizedLosslessImages = 2,
+  kLosslessImagesMaxBpp = 2,
   // Controls whether the browser should allow navigations that cause the page to scroll.
   kForceLoadAtTop = 3,
 

@@ -71,10 +71,10 @@ import org.chromium.url.GURL;
 public class PasswordCheckControllerTest {
     private static final CompromisedCredential ANA =
             new CompromisedCredential("https://m.a.xyz/signin", mock(GURL.class), "Ana", "m.a.xyz",
-                    "Ana", "password", "", "xyz.a.some.package", false, false);
+                    "Ana", "password", "", "xyz.a.some.package", true, false, false);
     private static final CompromisedCredential BOB = new CompromisedCredential(
             "http://www.b.ch/signin", mock(GURL.class), "", "http://www.b.ch", "(No username)",
-            "DoneSth", "http://www.b.ch/.well-known/change-password", "", false, true);
+            "DoneSth", "http://www.b.ch/.well-known/change-password", "", true, false, true);
 
     @Rule
     public TestRule mFeaturesProcessorRule = new Features.JUnitProcessor();

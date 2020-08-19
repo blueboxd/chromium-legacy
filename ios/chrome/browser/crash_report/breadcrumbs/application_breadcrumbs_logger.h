@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_CRASH_REPORT_BREADCRUMBS_APPLICATION_BREADCRUMBS_LOGGER_H_
 #define IOS_CHROME_BROWSER_CRASH_REPORT_BREADCRUMBS_APPLICATION_BREADCRUMBS_LOGGER_H_
 
-#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
 #include <memory>
 
@@ -51,6 +51,11 @@ class ApplicationBreadcrumbsLogger {
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
   // Observes device orientation.
   id<NSObject> orientation_observer_;
+
+  // Used to avoid logging the same orientation twice as well as logging
+  // UIDeviceOrientationUnknown on startup (the only place where "unknown"
+  // shows up). Fewer logs leave more room for more useful logs.
+  UIDeviceOrientation last_orientation_ = UIDeviceOrientationUnknown;
 };
 
 #endif  // IOS_CHROME_BROWSER_CRASH_REPORT_BREADCRUMBS_APPLICATION_BREADCRUMBS_LOGGER_H_

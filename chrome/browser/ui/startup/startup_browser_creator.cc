@@ -308,7 +308,8 @@ bool IsSilentLaunchEnabled(const base::CommandLine& command_line,
 // true, send a warning if guest mode is requested but not allowed by policy.
 bool IsGuestModeEnforced(const base::CommandLine& command_line,
                          bool show_warning) {
-#if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_MAC)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_WIN) || \
+    defined(OS_MAC)
   PrefService* service = g_browser_process->local_state();
   DCHECK(service);
 

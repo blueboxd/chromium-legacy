@@ -386,6 +386,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
 
   // Set the human-readable name of the adapter to |name|. On success,
   // |callback| will be called. On failure, |error_callback| will be called.
+  // TODO(crbug.com/1117654): Implement a mechanism to request this resource
+  // before being able to use it.
   virtual void SetName(const std::string& name,
                        base::OnceClosure callback,
                        ErrorCallback error_callback) = 0;

@@ -1914,7 +1914,7 @@ scoped_refptr<SiteInstance> RenderFrameHostManager::ConvertToSiteInstance(
   // check if the candidate matches.
   if (candidate_instance &&
       !current_instance->IsRelatedSiteInstance(candidate_instance) &&
-      candidate_instance->DoesSiteForURLMatch(descriptor.dest_url)) {
+      candidate_instance->DoesSiteInfoForURLMatch(descriptor.dest_url)) {
     return candidate_instance;
   }
 

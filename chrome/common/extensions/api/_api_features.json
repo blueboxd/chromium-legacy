@@ -692,6 +692,10 @@
     "dependencies": ["permission:safeBrowsingPrivate"],
     "contexts": ["blessed_extension"]
   },
+  "search": {
+    "dependencies": ["permission:search"],
+    "contexts": ["blessed_extension"]
+  },
   "sessions": {
     "dependencies": ["permission:sessions"],
     "contexts": ["blessed_extension"]

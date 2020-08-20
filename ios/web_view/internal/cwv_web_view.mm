@@ -17,6 +17,7 @@
 #import "components/autofill/ios/browser/autofill_agent.h"
 #import "components/autofill/ios/browser/js_autofill_manager.h"
 #import "components/autofill/ios/browser/js_suggestion_manager.h"
+#include "components/autofill/ios/form_util/unique_id_data_tab_helper.h"
 #include "components/language/ios/browser/ios_language_detection_tab_helper.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #import "components/password_manager/ios/shared_password_controller.h"
@@ -641,6 +642,8 @@ BOOL gChromeLongPressAndForceTouchHandlingEnabled = YES;
 }
 
 - (CWVAutofillController*)newAutofillController {
+  UniqueIDDataTabHelper::CreateForWebState(_webState.get());
+
   auto autofillClient = autofill::WebViewAutofillClientIOS::Create(
       _webState.get(), _configuration.browserState);
   AutofillAgent* autofillAgent = [[AutofillAgent alloc]

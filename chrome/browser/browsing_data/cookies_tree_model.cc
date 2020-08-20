@@ -341,6 +341,16 @@ void CookieTreeNode::AddChildSortedByTitle(
                   size_t{iter - children().begin()});
 }
 
+#if !defined(OS_ANDROID)
+void CookieTreeNode::ReportDeletionToAuditService(
+    const url::Origin& origin,
+    AccessContextAuditDatabase::StorageAPIType type) {
+  auto* audit_service = GetModel()->access_context_audit_service();
+  if (audit_service)
+    audit_service->RemoveAllRecordsForOriginKeyedStorage(origin, type);
+}
+#endif  // !defined(OS_ANDROID)
+
 ///////////////////////////////////////////////////////////////////////////////
 // CookieTreeCookieNode
 
@@ -434,6 +444,12 @@ class CookieTreeDatabaseNode : public CookieTreeNode {
     LocalDataContainer* container = GetLocalDataContainerForNode(this);
 
     if (container) {
+#if !defined(OS_ANDROID)
+      ReportDeletionToAuditService(
+          usage_info_->origin,
+          AccessContextAuditDatabase::StorageAPIType::kWebDatabase);
+#endif  // !defined(OS_ANDROID)
+
       container->database_helper_->DeleteDatabase(usage_info_->origin);
       container->database_info_list_.erase(usage_info_);
     }
@@ -475,6 +491,12 @@ class CookieTreeLocalStorageNode : public CookieTreeNode {
     LocalDataContainer* container = GetLocalDataContainerForNode(this);
 
     if (container) {
+#if !defined(OS_ANDROID)
+      ReportDeletionToAuditService(
+          local_storage_info_->origin,
+          AccessContextAuditDatabase::StorageAPIType::kLocalStorage);
+#endif  // !defined(OS_ANDROID)
+
       container->local_storage_helper_->DeleteOrigin(
           local_storage_info_->origin, base::DoNothing());
       container->local_storage_info_list_.erase(local_storage_info_);
@@ -555,14 +577,9 @@ class CookieTreeIndexedDBNode : public CookieTreeNode {
 
     if (container) {
 #if !defined(OS_ANDROID)
-      // TODO (crbug.com/1113602): Remove this when all storage deletions from
-      // the browser process use the StoragePartition directly.
-      auto* audit_service = GetModel()->access_context_audit_service();
-      if (audit_service) {
-        audit_service->RemoveAllRecordsForOriginKeyedStorage(
-            usage_info_->origin,
-            AccessContextAuditDatabase::StorageAPIType::kIndexedDB);
-      }
+      ReportDeletionToAuditService(
+          usage_info_->origin,
+          AccessContextAuditDatabase::StorageAPIType::kIndexedDB);
 #endif  // !defined(OS_ANDROID)
 
       container->indexed_db_helper_->DeleteIndexedDB(usage_info_->origin,
@@ -607,6 +624,12 @@ class CookieTreeFileSystemNode : public CookieTreeNode {
     LocalDataContainer* container = GetLocalDataContainerForNode(this);
 
     if (container) {
+#if !defined(OS_ANDROID)
+      ReportDeletionToAuditService(
+          file_system_info_->origin,
+          AccessContextAuditDatabase::StorageAPIType::kFileSystem);
+#endif  // !defined(OS_ANDROID)
+
       container->file_system_helper_->DeleteFileSystemOrigin(
           file_system_info_->origin);
       container->file_system_info_list_.erase(file_system_info_);
@@ -690,6 +713,12 @@ class CookieTreeServiceWorkerNode : public CookieTreeNode {
     LocalDataContainer* container = GetLocalDataContainerForNode(this);
 
     if (container) {
+#if !defined(OS_ANDROID)
+      ReportDeletionToAuditService(
+          usage_info_->origin,
+          AccessContextAuditDatabase::StorageAPIType::kServiceWorker);
+#endif  // !defined(OS_ANDROID)
+
       container->service_worker_helper_->DeleteServiceWorkers(
           usage_info_->origin);
       container->service_worker_info_list_.erase(usage_info_);
@@ -772,14 +801,9 @@ class CookieTreeCacheStorageNode : public CookieTreeNode {
 
     if (container) {
 #if !defined(OS_ANDROID)
-      // TODO (crbug.com/1113602): Remove this when all storage deletions from
-      // the browser process use the StoragePartition directly.
-      auto* audit_service = GetModel()->access_context_audit_service();
-      if (audit_service) {
-        audit_service->RemoveAllRecordsForOriginKeyedStorage(
-            usage_info_->origin,
-            AccessContextAuditDatabase::StorageAPIType::kCacheStorage);
-      }
+      ReportDeletionToAuditService(
+          usage_info_->origin,
+          AccessContextAuditDatabase::StorageAPIType::kCacheStorage);
 #endif  // !defined(OS_ANDROID)
 
       container->cache_storage_helper_->DeleteCacheStorage(usage_info_->origin);

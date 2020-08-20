@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.autofill_assistant;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.app.ChromeActivity;
 
 /**
  * Automatically extracts context information and serializes it in JSON form.

@@ -32,6 +32,7 @@ class MessageEvent;
 class RemoteFrameClient;
 struct FrameLoadRequest;
 
+// A RemoteFrame is a frame that is possibly hosted outside this process.
 class CORE_EXPORT RemoteFrame final : public Frame,
                                       public mojom::blink::RemoteMainFrame,
                                       public mojom::blink::RemoteFrame {

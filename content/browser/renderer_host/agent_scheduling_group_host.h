@@ -5,11 +5,21 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_AGENT_SCHEDULING_GROUP_HOST_H_
 #define CONTENT_BROWSER_RENDERER_HOST_AGENT_SCHEDULING_GROUP_HOST_H_
 
+#include <stdint.h>
 #include <memory>
 
 #include "content/common/agent_scheduling_group.mojom.h"
+#include "content/common/associated_interfaces.mojom-forward.h"
 #include "content/common/content_export.h"
+#include "content/common/renderer.mojom-forward.h"
+#include "ipc/ipc_listener.h"
 #include "mojo/public/cpp/bindings/remote.h"
+
+namespace IPC {
+class ChannelProxy;
+class Listener;
+class Message;
+}  // namespace IPC
 
 namespace content {
 
@@ -38,6 +48,18 @@ class CONTENT_EXPORT AgentSchedulingGroupHost {
   ~AgentSchedulingGroupHost();
 
   RenderProcessHost* GetProcess();
+
+  // IPC and mojo messages to be forwarded to the RenderProcessHost, for now. In
+  // the future they will be handled directly by the AgentSchedulingGroupHost.
+  // IPC:
+  IPC::ChannelProxy* GetChannel();
+  bool Send(IPC::Message* message);
+  void AddRoute(int32_t routing_id, IPC::Listener* listener);
+  void RemoveRoute(int32_t routing_id);
+
+  // Mojo:
+  mojom::RouteProvider* GetRemoteRouteProvider();
+  void CreateFrame(mojom::CreateFrameParamsPtr params);
 
  private:
   // The RenderProcessHost this AgentSchedulingGroup is assigned to.

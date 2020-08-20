@@ -1065,6 +1065,7 @@
         'PrinterTypeDenyList',
         'PrintRasterizationMode',
         'DeletePrintJobHistoryAllowed',
+        'CloudPrintWarningsSuppressed',
       ]
     },
     {
@@ -23230,6 +23231,24 @@ If you disable this policy, web page scrolling to specific text fragments via UR
 
       - If this policy is Disabled admins must communicate this to end users of the device.''',
     },
+    {
+      'name': 'CloudPrintWarningsSuppressed',
+      'owners': ['file://printing/OWNERS'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:86-90', 'chrome_os:86-90'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'id': 781,
+      'caption': '''Suppress <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> deprecation messages''',
+      'tags': [],
+      'desc': '''This policy controls whether <ph name="CLOUD_PRINT_NAME">Google Cloud Print</ph> deprecation warnings are shown to users in the print preview dialog or settings pages.
+      Setting this policy to True will hide the deprecation warnings.
+      Setting this policy to False or leaving it unset will show the deprecation warnings.''',
+    },
   ],
 
   'messages': {
@@ -24152,6 +24171,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 476, 546, 562, 569, 578],
-  'highest_id_currently_used': 780,
+  'highest_id_currently_used': 781,
   'highest_atomic_group_id_currently_used': 40
 }

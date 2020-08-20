@@ -3623,6 +3623,7 @@ source_set("unit_tests") {
     "//chromeos/attestation:test_support",
     "//chromeos/audio",
     "//chromeos/components/multidevice:test_support",
+    "//chromeos/components/phonehub:test_support",
     "//chromeos/components/proximity_auth",
     "//chromeos/components/proximity_auth:test_support",
     "//chromeos/components/tether:test_support",

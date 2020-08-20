@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_PAINT_VALUE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_PAINT_VALUE_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/css/css_custom_ident_value.h"
 #include "third_party/blink/renderer/core/css/css_image_generator_value.h"
 #include "third_party/blink/renderer/core/css/css_paint_image_generator.h"
@@ -77,6 +76,8 @@ class CORE_EXPORT CSSPaintValue : public CSSImageGeneratorValue {
   class Observer final : public CSSPaintImageGenerator::Observer {
    public:
     explicit Observer(CSSPaintValue* owner_value) : owner_value_(owner_value) {}
+    Observer(const Observer&) = delete;
+    Observer& operator=(const Observer&) = delete;
 
     ~Observer() override = default;
     void Trace(Visitor* visitor) const override {
@@ -88,7 +89,6 @@ class CORE_EXPORT CSSPaintValue : public CSSImageGeneratorValue {
 
    private:
     Member<CSSPaintValue> owner_value_;
-    DISALLOW_COPY_AND_ASSIGN(Observer);
   };
 
   CSSPaintImageGenerator& EnsureGenerator(const Document&);

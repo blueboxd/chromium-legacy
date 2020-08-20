@@ -14,8 +14,6 @@
 
 namespace blink {
 
-struct NGLineHeightMetrics;
-
 class CORE_EXPORT NGBoxFragment final : public NGFragment {
  public:
   NGBoxFragment(WritingMode writing_mode,
@@ -57,8 +55,7 @@ class CORE_EXPORT NGBoxFragment final : public NGFragment {
   //
   // This will synthesize baseline metrics if no baseline is available. See
   // |Baseline()| for when this may occur.
-  NGLineHeightMetrics BaselineMetrics(const NGLineBoxStrut& margins,
-                                      FontBaseline) const;
+  FontHeight BaselineMetrics(const NGLineBoxStrut& margins, FontBaseline) const;
 
   NGBoxStrut Borders() const {
     const NGPhysicalBoxFragment& physical_box_fragment =

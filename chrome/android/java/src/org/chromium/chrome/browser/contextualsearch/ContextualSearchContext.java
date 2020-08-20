@@ -84,6 +84,9 @@ public abstract class ContextualSearchContext {
     @NonNull
     private String mFluentLanguages = "";
 
+    // Whether the Related Searches functionality should also be activated.
+    private boolean mDoRelatedSearches;
+
     /**
      * Support for Related Searches.  When {@code true} this allows the context to resolve even
      * when the selection is a simple insertion-point.
@@ -116,16 +119,17 @@ public abstract class ContextualSearchContext {
      * @param targetLanguage The language to translate into, in case translation might be needed.
      * @param fluentLanguages An ordered comma-separated list of ISO 639 language codes that
      *        the user can read fluently, or an empty string.
+     * @param doRelatedSearches Whether the activate the Related Searches functionality too.
      */
     void setResolveProperties(@NonNull String homeCountry, boolean maySendBasePageUrl,
             long previousEventId, int previousUserInteractions, @NonNull String targetLanguage,
-            @NonNull String fluentLanguages) {
+            @NonNull String fluentLanguages, boolean doRelatedSearches) {
         mHasSetResolveProperties = true;
         mHomeCountry = homeCountry;
         mPreviousEventId = previousEventId;
         mPreviousUserInteractions = previousUserInteractions;
         ContextualSearchContextJni.get().setResolveProperties(getNativePointer(), this, homeCountry,
-                maySendBasePageUrl, previousEventId, previousUserInteractions);
+                maySendBasePageUrl, previousEventId, previousUserInteractions, doRelatedSearches);
         mTargetLanguage = targetLanguage;
         mFluentLanguages = fluentLanguages;
     }
@@ -596,7 +600,7 @@ public abstract class ContextualSearchContext {
         void destroy(long nativeContextualSearchContext, ContextualSearchContext caller);
         void setResolveProperties(long nativeContextualSearchContext,
                 ContextualSearchContext caller, String homeCountry, boolean maySendBasePageUrl,
-                long previousEventId, int previousEventResults);
+                long previousEventId, int previousEventResults, boolean doRelatedSearches);
         void adjustSelection(long nativeContextualSearchContext, ContextualSearchContext caller,
                 int startAdjust, int endAdjust);
         void setContent(long nativeContextualSearchContext, ContextualSearchContext caller,

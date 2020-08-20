@@ -205,12 +205,12 @@
         errorLine1="            BottomContainer bottomContainer = (BottomContainer) findViewById(R.id.bottom_container);"
         errorLine2="                                                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="../../chrome/android/java/src/org/chromium/chrome/browser/ChromeActivity.java"
-            line="453"
+            file="chrome/android/java/src/org/chromium/chrome/browser/app/ChromeActivity.java"
+            line="462"
             column="65"/>
         <location
-            file="../../chrome/android/java/src/org/chromium/chrome/browser/ChromeActivity.java"
-            line="421"
+            file="chrome/android/java/src/org/chromium/chrome/browser/app/ChromeActivity.java"
+            line="430"
             column="27"/>
     </issue>
 
@@ -2860,8 +2860,8 @@
         errorLine1="        mPartnerBrowserRefreshNeeded = !PartnerBrowserCustomizations.getInstance().isInitialized();"
         errorLine2="                                                                                   ~~~~~~~~~~~~~">
         <location
-            file="../../chrome/android/java/src/org/chromium/chrome/browser/ChromeActivity.java"
-            line="350"
+            file="chrome/android/java/src/org/chromium/chrome/browser/app/ChromeActivity.java"
+            line="359"
             column="84"/>
     </issue>
 
@@ -2871,8 +2871,8 @@
         errorLine1="        IntentHandler.setTestIntentsEnabled("
         errorLine2="                      ~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="../../chrome/android/java/src/org/chromium/chrome/browser/ChromeActivity.java"
-            line="743"
+            file="chrome/android/java/src/org/chromium/chrome/browser/app/ChromeActivity.java"
+            line="752"
             column="23"/>
     </issue>
 

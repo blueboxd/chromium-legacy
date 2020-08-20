@@ -120,6 +120,8 @@ static const char kDevtoolsExperimentDisabledHistogram[] =
     "DevTools.ExperimentDisabled";
 static const char kDevtoolsExperimentEnabledAtLaunchHistogram[] =
     "DevTools.ExperimentEnabledAtLaunch";
+static const char kDevToolsColorPickerFixedColorHistogram[] =
+    "DevTools.ColorPicker.FixedColor";
 
 static const char kRemotePageActionInspect[] = "inspect";
 static const char kRemotePageActionReload[] = "reload";
@@ -1286,6 +1288,8 @@ void DevToolsUIBindings::RecordEnumeratedHistogram(const std::string& name,
   else if (name == kDevtoolsExperimentDisabledHistogram)
     base::UmaHistogramExactLinear(name, sample, boundary_value);
   else if (name == kDevtoolsExperimentEnabledAtLaunchHistogram)
+    base::UmaHistogramExactLinear(name, sample, boundary_value);
+  else if (name == kDevToolsColorPickerFixedColorHistogram)
     base::UmaHistogramExactLinear(name, sample, boundary_value);
   else
     frontend_host_->BadMessageRecieved();

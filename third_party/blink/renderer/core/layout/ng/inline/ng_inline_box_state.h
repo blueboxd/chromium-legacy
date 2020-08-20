@@ -25,7 +25,7 @@ struct NGInlineItemResult;
 struct NGPendingPositions {
   unsigned fragment_start;
   unsigned fragment_end;
-  NGLineHeightMetrics metrics;
+  FontHeight metrics;
   EVerticalAlign vertical_align;
 };
 
@@ -44,11 +44,11 @@ struct NGInlineBoxState {
   // The united metrics for the current box. This includes all objects in this
   // box, including descendants, and adjusted by placement properties such as
   // 'vertical-align'.
-  NGLineHeightMetrics metrics;
+  FontHeight metrics;
 
   // The metrics of the font for this box. This includes leadings as specified
   // by the 'line-height' property.
-  NGLineHeightMetrics text_metrics;
+  FontHeight text_metrics;
 
   // The distance between the text-top and the baseline for this box. The
   // text-top does not include leadings.
@@ -211,9 +211,8 @@ class CORE_EXPORT NGInlineLayoutStateStack {
 
   // Compute the metrics for when 'vertical-align' is 'top' and 'bottom' from
   // |pending_descendants|.
-  NGLineHeightMetrics MetricsForTopAndBottomAlign(
-      const NGInlineBoxState&,
-      const NGLogicalLineItems&) const;
+  FontHeight MetricsForTopAndBottomAlign(const NGInlineBoxState&,
+                                         const NGLogicalLineItems&) const;
 
   // Data for a box fragment. See AddBoxFragmentPlaceholder().
   // This is a transient object only while building a line box.

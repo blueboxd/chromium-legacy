@@ -36,6 +36,7 @@
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -54,12 +55,14 @@
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/browsing_data/core/features.h"
 #include "components/cloud_devices/common/cloud_devices_urls.h"
+#include "components/content_settings/core/common/features.h"
 #include "components/dom_distiller/core/dom_distiller_features.h"
 #include "components/google/core/common/google_util.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
 #include "components/password_manager/core/browser/manage_passwords_referrer.h"
 #include "components/password_manager/core/common/password_manager_features.h"
+#include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/signin/public/base/signin_buildflags.h"
 #include "components/strings/grit/components_chromium_strings.h"
@@ -94,10 +97,8 @@
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chromeos/constants/chromeos_features.h"
-#include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
 #include "ui/chromeos/devicetype_utils.h"
 #else  // !defined(OS_CHROMEOS)
@@ -1022,11 +1023,22 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
                          autofill::payments::GetManageInstrumentsUrl().spec());
   html_source->AddString("paymentMethodsLearnMoreURL",
                          chrome::kPaymentMethodsLearnMoreURL);
-  html_source->AddString(
-      "siteSettingsFlashWildcardsUnsupported",
-      l10n_util::GetStringFUTF16(
-          IDS_SETTINGS_SITE_SETTINGS_FLASH_WILDCARD_UNSUPPORTED,
-          base::UTF8ToUTF16(chrome::kChromeFlashRoadmapURL)));
+  // The warning message that will be shown if there is a content setting
+  // pattern with a wildcard in it. The check for wildcards is done on the js
+  // side.
+  base::string16 flash_warning_message;
+  if (base::FeatureList::IsEnabled(
+          content_settings::kDisallowExtensionsToSetPluginContentSettings)) {
+    flash_warning_message = l10n_util::GetStringFUTF16(
+        IDS_SETTINGS_SITE_SETTINGS_FLASH_WILDCARD_UNSUPPORTED_IN_POLICIES,
+        base::UTF8ToUTF16(chrome::kChromeFlashRoadmapURL));
+  } else {
+    flash_warning_message = l10n_util::GetStringFUTF16(
+        IDS_SETTINGS_SITE_SETTINGS_FLASH_WILDCARD_UNSUPPORTED,
+        base::UTF8ToUTF16(chrome::kChromeFlashRoadmapURL));
+  }
+  html_source->AddString("warningAboutIgnoredWildcardedPatternsForFlash",
+                         flash_warning_message);
 
   bool is_guest_mode = false;
 #if defined(OS_CHROMEOS)
@@ -1191,7 +1203,8 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
   AddSyncPageStrings(html_source);
 }
 
-void AddPrintingStrings(content::WebUIDataSource* html_source) {
+void AddPrintingStrings(content::WebUIDataSource* html_source,
+                        Profile* profile) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
     {"printingPageTitle", IDS_SETTINGS_PRINTING},
     {"printingNotificationsLabel", IDS_SETTINGS_PRINTING_NOTIFICATIONS_LABEL},
@@ -1207,12 +1220,17 @@ void AddPrintingStrings(content::WebUIDataSource* html_source) {
   html_source->AddString("cloudPrintersUrl",
                          cloud_devices::GetCloudPrintPrintersURL().spec());
 
+  html_source->AddBoolean("cloudPrintDeprecationWarningsSuppressed",
+                          profile->GetPrefs()->GetBoolean(
+                              prefs::kCloudPrintDeprecationWarningsSuppressed));
+
   const bool enterprise_managed = webui::IsEnterpriseManaged();
   html_source->AddLocalizedString(
       "cloudPrintWarning",
       enterprise_managed
           ? IDS_SETTINGS_PRINTING_GOOGLE_CLOUD_PRINT_NOT_SUPPORTED_WARNING_ENTERPRISE
           : IDS_SETTINGS_PRINTING_GOOGLE_CLOUD_PRINT_NOT_SUPPORTED_WARNING);
+
   if (enterprise_managed) {
     html_source->AddLocalizedString(
         "cloudPrintFullWarning",
@@ -2200,7 +2218,7 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
   AddLanguagesStrings(html_source, profile);
   AddOnStartupStrings(html_source);
   AddPeopleStrings(html_source, profile);
-  AddPrintingStrings(html_source);
+  AddPrintingStrings(html_source, profile);
   AddPrivacyStrings(html_source, profile);
   AddResetStrings(html_source, profile);
   AddSearchEnginesStrings(html_source);

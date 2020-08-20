@@ -12,6 +12,7 @@
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
 #include "gpu/vulkan/vulkan_fence_helper.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
@@ -86,6 +87,7 @@ void VulkanSwapChain::Destroy() {
 
   WaitUntilPostSubBufferAsyncFinished();
 
+#if !defined(OS_FUCHSIA)
   if (UNLIKELY(!fence_and_semaphores_queue_.empty())) {
     VkDevice device = device_queue_->GetVulkanDevice();
     {
@@ -106,6 +108,7 @@ void VulkanSwapChain::Destroy() {
     }
     fence_and_semaphores_queue_.clear();
   }
+#endif  // !defined(OS_FUCHSIA)
 
   DCHECK(!is_writing_);
   DestroySwapImages();
@@ -199,9 +202,11 @@ bool VulkanSwapChain::InitializeSwapChain(
     // Reuse |post_sub_buffer_task_runner_| and |fence_and_semaphores_queue_|
     // from the |old_swap_chain|.
     post_sub_buffer_task_runner_ = old_swap_chain->post_sub_buffer_task_runner_;
+#if !defined(OS_FUCHSIA)
     fence_and_semaphores_queue_ =
         std::move(old_swap_chain->fence_and_semaphores_queue_);
     old_swap_chain->fence_and_semaphores_queue_.clear();
+#endif  // !defined(OS_FUCHSIA)
   }
 
   VkSwapchainKHR new_swap_chain = VK_NULL_HANDLE;
@@ -418,8 +423,10 @@ bool VulkanSwapChain::AcquireNextImage() {
   // TODO(penghuang): make VulkanDeviceQueue threadsafe.
   VkDevice device = device_queue_->GetVulkanDevice();
   auto fence_and_semaphores = GetOrCreateFenceAndSemaphores();
-  if (UNLIKELY(fence_and_semaphores.fence == VK_NULL_HANDLE)) {
-    DCHECK(fence_and_semaphores.semaphores[0] == VK_NULL_HANDLE);
+  if (UNLIKELY(fence_and_semaphores.semaphores[0] == VK_NULL_HANDLE)) {
+#if !defined(OS_FUCHSIA)
+    DCHECK(fence_and_semaphores.fence == VK_NULL_HANDLE);
+#endif  // !defined(OS_FUCHSIA)
     DCHECK(fence_and_semaphores.semaphores[1] == VK_NULL_HANDLE);
     return false;
   }
@@ -490,6 +497,7 @@ VulkanSwapChain::GetOrCreateFenceAndSemaphores() {
   VkDevice device = device_queue_->GetVulkanDevice();
   FenceAndSemaphores fence_and_semaphores;
   do {
+#if !defined(OS_FUCHSIA)
     if (LIKELY(!fence_and_semaphores_queue_.empty())) {
       fence_and_semaphores = fence_and_semaphores_queue_.front();
       auto result = vkGetFenceStatus(device, fence_and_semaphores.fence);
@@ -518,6 +526,7 @@ VulkanSwapChain::GetOrCreateFenceAndSemaphores() {
         break;
       }
     }
+#endif  // !defined(OS_FUCHSIA)
 
     if (UNLIKELY(fence_and_semaphores.semaphores[0] == VK_NULL_HANDLE))
       fence_and_semaphores.semaphores[0] = CreateSemaphore(device);
@@ -543,8 +552,17 @@ VulkanSwapChain::GetOrCreateFenceAndSemaphores() {
 
 void VulkanSwapChain::ReturnFenceAndSemaphores(
     const FenceAndSemaphores& fence_and_semaphores) {
+#if defined(OS_FUCHSIA)
+  VkDevice device = device_queue_->GetVulkanDevice();
+  DCHECK(fence_and_semaphores.fence == VK_NULL_HANDLE);
+  vkDestroySemaphore(device, fence_and_semaphores.semaphores[0],
+                     nullptr /* pAllocator */);
+  vkDestroySemaphore(device, fence_and_semaphores.semaphores[1],
+                     nullptr /* pAllocator */);
+#else
   DCHECK(fence_and_semaphores.fence != VK_NULL_HANDLE);
   fence_and_semaphores_queue_.push_back(fence_and_semaphores);
+#endif
 }
 
 VulkanSwapChain::ScopedWrite::ScopedWrite(VulkanSwapChain* swap_chain)

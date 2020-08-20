@@ -1219,8 +1219,6 @@ class _Generator(object):
     c.Sblock('switch (enum_param) {')
     for enum_value in self._type_helper.FollowRef(type_).enum_values:
       name = enum_value.name
-      if 'camel_case_enum_to_string' in self._namespace.compiler_options:
-        name = enum_value.CamelName()
       (c.Append('case %s: ' % self._type_helper.GetEnumValue(type_, enum_value))
         .Append('  return "%s";' % name))
     (c.Append('case %s:' % self._type_helper.GetEnumNoneValue(type_))
@@ -1251,8 +1249,6 @@ class _Generator(object):
       # "fatal error C1061: compiler limit : blocks nested too deeply"
       # on Windows.
       name = enum_value.name
-      if 'camel_case_enum_to_string' in self._namespace.compiler_options:
-        name = enum_value.CamelName()
       (c.Append('if (enum_string == "%s")' % name)
         .Append('  return %s;' %
             self._type_helper.GetEnumValue(type_, enum_value)))

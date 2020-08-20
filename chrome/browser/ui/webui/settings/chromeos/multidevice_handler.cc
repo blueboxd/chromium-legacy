@@ -16,7 +16,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/multidevice_setup/multidevice_setup_dialog.h"
 #include "chromeos/components/multidevice/logging/logging.h"
+#include "chromeos/components/phonehub/notification_access_manager.h"
 #include "chromeos/components/proximity_auth/proximity_auth_pref_names.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/prefs/pref_service.h"
@@ -60,11 +62,13 @@ void OnRetrySetHostNowResult(bool success) {
 MultideviceHandler::MultideviceHandler(
     PrefService* prefs,
     multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client,
+    phonehub::NotificationAccessManager* notification_access_manager,
     multidevice_setup::AndroidSmsPairingStateTracker*
         android_sms_pairing_state_tracker,
     android_sms::AndroidSmsAppManager* android_sms_app_manager)
     : prefs_(prefs),
       multidevice_setup_client_(multidevice_setup_client),
+      notification_access_manager_(notification_access_manager),
       android_sms_pairing_state_tracker_(android_sms_pairing_state_tracker),
       android_sms_app_manager_(android_sms_app_manager),
       multidevice_setup_observer_(this),
@@ -116,6 +120,14 @@ void MultideviceHandler::RegisterMessages() {
       "getAndroidSmsInfo",
       base::BindRepeating(&MultideviceHandler::HandleGetAndroidSmsInfo,
                           base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "attemptNotificationSetup",
+      base::BindRepeating(&MultideviceHandler::HandleAttemptNotificationSetup,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "cancelNotificationSetup",
+      base::BindRepeating(&MultideviceHandler::HandleCancelNotificationSetup,
+                          base::Unretained(this)));
 }
 
 void MultideviceHandler::OnJavascriptAllowed() {
@@ -147,6 +159,9 @@ void MultideviceHandler::OnJavascriptDisallowed() {
 
   if (multidevice_setup_client_)
     multidevice_setup_observer_.Remove(multidevice_setup_client_);
+
+  if (notification_access_manager_)
+    notification_access_operation_.reset();
 
   if (android_sms_pairing_state_tracker_) {
     android_sms_pairing_state_tracker_observer_.Remove(
@@ -337,12 +352,44 @@ MultideviceHandler::GenerateAndroidSmsInfo() {
 }
 
 void MultideviceHandler::HandleGetAndroidSmsInfo(const base::ListValue* args) {
-  AllowJavascript();
   CHECK_EQ(1U, args->GetSize());
   const base::Value* callback_id;
   CHECK(args->Get(0, &callback_id));
 
   ResolveJavascriptCallback(*callback_id, *GenerateAndroidSmsInfo());
+}
+
+void MultideviceHandler::HandleAttemptNotificationSetup(
+    const base::ListValue* args) {
+  DCHECK(features::IsPhoneHubEnabled());
+  DCHECK(!notification_access_operation_);
+
+  if (notification_access_manager_->HasAccessBeenGranted()) {
+    PA_LOG(WARNING) << "Phonehub notification access has already been granted, "
+                       "returning early.";
+    return;
+  }
+
+  notification_access_operation_ =
+      notification_access_manager_->AttemptNotificationSetup(/*delegate=*/this);
+  DCHECK(notification_access_operation_);
+}
+
+void MultideviceHandler::HandleCancelNotificationSetup(
+    const base::ListValue* args) {
+  DCHECK(features::IsPhoneHubEnabled());
+  DCHECK(notification_access_operation_);
+
+  notification_access_operation_.reset();
+}
+
+void MultideviceHandler::OnStatusChange(
+    phonehub::NotificationAccessSetupOperation::Status new_status) {
+  FireWebUIListener("notification-access-setup-operation-status-changed",
+                    base::Value(static_cast<int32_t>(new_status)));
+
+  if (phonehub::NotificationAccessSetupOperation::IsFinalStatus(new_status))
+    notification_access_operation_.reset();
 }
 
 void MultideviceHandler::OnSetFeatureStateEnabledResult(

@@ -13,7 +13,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "pdf/pdfium/pdfium_engine.h"
 #include "pdf/ppapi_migration/geometry_conversions.h"
-#include "ppapi/cpp/point.h"
 #include "ppapi/cpp/rect.h"
 #include "third_party/pdfium/public/fpdf_annot.h"
 

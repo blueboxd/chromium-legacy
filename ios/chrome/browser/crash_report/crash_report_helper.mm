@@ -258,4 +258,9 @@ void StopMonitoringBreadcrumbManagerService(
       stopObservingBreadcrumbManagerService:breadcrumb_manager_service];
 }
 
+void SetPreviousSessionEvents(const std::vector<std::string>& events) {
+  [[CrashReporterBreadcrumbObserver uniqueInstance]
+      setPreviousSessionEvents:events];
+}
+
 }  // namespace breakpad

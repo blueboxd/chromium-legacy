@@ -24,14 +24,15 @@
 - (void)clearAutofilledFieldsForFormName:(NSString*)formName
                          fieldIdentifier:(NSString*)fieldIdentifier
                                  inFrame:(web::WebFrame*)frame
-                       completionHandler:(ProceduralBlock)completionHandler {
+                       completionHandler:
+                           (void (^)(NSString*))completionHandler {
   base::PostTask(FROM_HERE, {web::WebThread::UI}, base::BindOnce(^{
                    _lastClearedFormName = [formName copy];
                    _lastClearedFieldIdentifier = [fieldIdentifier copy];
                    _lastClearedFrameIdentifier =
                        frame ? base::SysUTF8ToNSString(frame->GetFrameId())
                              : nil;
-                   completionHandler();
+                   completionHandler(@"");
                  }));
 }
 

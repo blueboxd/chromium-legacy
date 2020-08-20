@@ -8,6 +8,7 @@
 
 #include <memory>
 
+#include "components/autofill/ios/form_util/unique_id_data_tab_helper.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -50,6 +51,7 @@ class IOSChromePasswordManagerClientTest : public ChromeWebTest {
     // predictions on.
     PasswordFormManager::set_wait_for_server_predictions_for_filling(false);
 
+    UniqueIDDataTabHelper::CreateForWebState(web_state());
     passwordController_ =
         [[PasswordController alloc] initWithWebState:web_state()];
   }

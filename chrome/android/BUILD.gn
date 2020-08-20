@@ -841,6 +841,7 @@ junit_binary("chrome_junit_tests") {
     "//components/page_info/android:java",
     "//components/payments/content/android:java",
     "//components/payments/mojom:mojom_java",
+    "//components/policy/android:policy_java",
     "//components/prefs/android:java",
     "//components/schema_org/common:mojom_java",
     "//components/search_engines/android:java",

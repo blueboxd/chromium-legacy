@@ -37,6 +37,16 @@ bool IsAccessibilityExposeHTMLElementEnabled() {
       ::features::kEnableAccessibilityExposeHTMLElement);
 }
 
+// Enable language detection to determine language used in page text, exposed
+// on the browser process AXTree.
+const base::Feature kEnableAccessibilityLanguageDetection{
+    "AccessibilityLanguageDetection", base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsAccessibilityLanguageDetectionEnabled() {
+  return base::FeatureList::IsEnabled(
+      ::features::kEnableAccessibilityLanguageDetection);
+}
+
 // Serializes accessibility information from the Views tree and deserializes it
 // into an AXTree in the browser process.
 const base::Feature kEnableAccessibilityTreeForViews{

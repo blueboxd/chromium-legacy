@@ -131,6 +131,11 @@ class PasswordCheckManager
   // in the account if the quota limit was reached.
   bool CanUseAccountCheck() const;
 
+  // Returns true if the automatic password change should be offered.
+  // It should be offered only to sync users and who have
+  // kPasswordChangeInSettings enabled.
+  bool ShouldOfferAutomaticPasswordChange() const;
+
   // Callback when PasswordScriptsFetcher's cache has been warmed up.
   void OnScriptsFetched();
 

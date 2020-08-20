@@ -64,9 +64,7 @@ class CastStreamingSession::Internal
     DCHECK(client_);
   }
 
-  // TODO(b/156129407): Change to final when the base interface defines a
-  // virtual destructor.
-  virtual ~Internal() = default;
+  ~Internal() final = default;
 
   Internal(const Internal&) = delete;
   Internal& operator=(const Internal&) = delete;
@@ -199,8 +197,10 @@ class CastStreamingSession::Internal
     initialized_called_ = true;
   }
 
-  void OnConfiguredReceiversDestroyed(
-      const openscreen::cast::ReceiverSession* session) final {
+  // TODO(https://crbug.com/1116185): Handle |reason| and reset streams on a
+  // new offer message.
+  void OnReceiversDestroying(const openscreen::cast::ReceiverSession* session,
+                             ReceiversDestroyingReason reason) final {
     DCHECK_EQ(session, &receiver_session_);
     DVLOG(1) << __func__;
     audio_consumer_.reset();

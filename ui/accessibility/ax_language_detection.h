@@ -281,6 +281,10 @@ class AX_EXPORT AXLanguageDetectionManager {
   // Allow access from a fixture only used in testing.
   friend class AXLanguageDetectionTestFixture;
 
+  // Helper methods to test if language detection features are enabled.
+  static bool IsStaticLanguageDetectionEnabled();
+  static bool IsDynamicLanguageDetectionEnabled();
+
   // Perform detection for subtree rooted at subtree_root.
   void DetectLanguagesForSubtree(AXNode* subtree_root);
   // Perform detection for node. Will not descend into children.

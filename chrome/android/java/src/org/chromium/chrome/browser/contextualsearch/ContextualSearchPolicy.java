@@ -544,6 +544,12 @@ class ContextualSearchPolicy {
         return isProcessingRelatedSearch() ? relatedSearchesWord : selection;
     }
 
+    /** @return whether doing Related Searches should be part of processing the current request. */
+    boolean doRelatedSearches() {
+        // TODO(donnd): Update this along with crbug.com/1119585.
+        return isProcessingRelatedSearch();
+    }
+
     // --------------------------------------------------------------------------------------------
     // Testing helpers.
     // --------------------------------------------------------------------------------------------

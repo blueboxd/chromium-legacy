@@ -791,8 +791,8 @@ TEST_F(ContentSettingBubbleModelTest, Geolocation) {
                                            CONTENT_SETTING_ALLOW);
     content_settings->OnContentAllowed(ContentSettingsType::GEOLOCATION);
     std::unique_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
-        ContentSettingBubbleModel::CreateContentSettingBubbleModel(
-            nullptr, web_contents(), ContentSettingsType::GEOLOCATION));
+        std::make_unique<ContentSettingGeolocationBubbleModel>(nullptr,
+                                                               web_contents()));
     const auto& bubble_content = content_setting_bubble_model->bubble_content();
 
     EXPECT_EQ(bubble_content.title,
@@ -813,8 +813,8 @@ TEST_F(ContentSettingBubbleModelTest, Geolocation) {
                                            CONTENT_SETTING_BLOCK);
     content_settings->OnContentBlocked(ContentSettingsType::GEOLOCATION);
     content_setting_bubble_model =
-        ContentSettingBubbleModel::CreateContentSettingBubbleModel(
-            nullptr, web_contents(), ContentSettingsType::GEOLOCATION);
+        std::make_unique<ContentSettingGeolocationBubbleModel>(nullptr,
+                                                               web_contents());
     const auto& bubble_content_2 =
         content_setting_bubble_model->bubble_content();
 
@@ -836,11 +836,10 @@ TEST_F(ContentSettingBubbleModelTest, Geolocation) {
                                            CONTENT_SETTING_ALLOW);
     content_settings->OnContentAllowed(ContentSettingsType::GEOLOCATION);
     content_setting_bubble_model =
-        ContentSettingBubbleModel::CreateContentSettingBubbleModel(
-            nullptr, web_contents(), ContentSettingsType::GEOLOCATION);
+        std::make_unique<ContentSettingGeolocationBubbleModel>(nullptr,
+                                                               web_contents());
     const auto& bubble_content_3 =
         content_setting_bubble_model->bubble_content();
-
     EXPECT_EQ(bubble_content_3.title,
               l10n_util::GetStringUTF16(IDS_ALLOWED_GEOLOCATION_TITLE));
     EXPECT_EQ(bubble_content_3.message,
@@ -867,8 +866,9 @@ TEST_F(ContentSettingBubbleModelTest, Geolocation) {
                                            CONTENT_SETTING_BLOCK);
     content_settings->OnContentBlocked(ContentSettingsType::GEOLOCATION);
     std::unique_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
-        ContentSettingBubbleModel::CreateContentSettingBubbleModel(
-            nullptr, web_contents(), ContentSettingsType::GEOLOCATION));
+        std::make_unique<ContentSettingGeolocationBubbleModel>(nullptr,
+                                                               web_contents()));
+
     const auto& bubble_content = content_setting_bubble_model->bubble_content();
 
     EXPECT_EQ(bubble_content.title,
@@ -889,8 +889,8 @@ TEST_F(ContentSettingBubbleModelTest, Geolocation) {
                                            CONTENT_SETTING_ALLOW);
     content_settings->OnContentAllowed(ContentSettingsType::GEOLOCATION);
     content_setting_bubble_model =
-        ContentSettingBubbleModel::CreateContentSettingBubbleModel(
-            nullptr, web_contents(), ContentSettingsType::GEOLOCATION);
+        std::make_unique<ContentSettingGeolocationBubbleModel>(nullptr,
+                                                               web_contents());
     const auto& bubble_content_2 =
         content_setting_bubble_model->bubble_content();
 
@@ -912,8 +912,8 @@ TEST_F(ContentSettingBubbleModelTest, Geolocation) {
                                            CONTENT_SETTING_BLOCK);
     content_settings->OnContentBlocked(ContentSettingsType::GEOLOCATION);
     content_setting_bubble_model =
-        ContentSettingBubbleModel::CreateContentSettingBubbleModel(
-            nullptr, web_contents(), ContentSettingsType::GEOLOCATION);
+        std::make_unique<ContentSettingGeolocationBubbleModel>(nullptr,
+                                                               web_contents());
     const auto& bubble_content_3 =
         content_setting_bubble_model->bubble_content();
 
@@ -948,8 +948,8 @@ TEST_F(ContentSettingBubbleModelTest, Geolocation) {
         ContentSettingsType::GEOLOCATION, std::string(), CONTENT_SETTING_BLOCK);
     content_settings->OnContentBlocked(ContentSettingsType::GEOLOCATION);
     std::unique_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
-        ContentSettingBubbleModel::CreateContentSettingBubbleModel(
-            nullptr, web_contents(), ContentSettingsType::GEOLOCATION));
+        std::make_unique<ContentSettingGeolocationBubbleModel>(nullptr,
+                                                               web_contents()));
     const auto& bubble_content = content_setting_bubble_model->bubble_content();
 
     EXPECT_EQ(bubble_content.title,

@@ -64,6 +64,8 @@ class CORE_EXPORT StyleCascade {
 
  public:
   StyleCascade(StyleResolverState& state) : state_(state) {}
+  StyleCascade(const StyleCascade&) = delete;
+  StyleCascade& operator=(const StyleCascade&) = delete;
 
   const MatchResult& GetMatchResult() { return match_result_; }
 
@@ -394,8 +396,6 @@ class CORE_EXPORT StyleCascade {
   // computed value of the property affects how e.g. margin-inline-start
   // (and other css-logical properties) cascade.
   bool depends_on_cascade_affecting_property_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(StyleCascade);
 };
 
 }  // namespace blink

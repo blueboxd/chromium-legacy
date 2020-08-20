@@ -106,6 +106,9 @@ void SearchController::OpenResult(ChromeSearchResult* result, int event_flags) {
   if (!result)
     return;
 
+  // Log the length of the last query that led to the clicked result.
+  ash::RecordLauncherClickedSearchQueryLength(last_query_.length());
+
   // Log the display type of the clicked result in zero-state
   if (query_for_recommendation_) {
     UMA_HISTOGRAM_ENUMERATION(kLogDisplayTypeClickedResultZeroState,

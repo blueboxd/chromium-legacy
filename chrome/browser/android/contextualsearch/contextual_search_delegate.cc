@@ -296,10 +296,8 @@ std::string ContextualSearchDelegate::BuildRequestUrl(
   }
 
   int mainFunctionVersion = kContextualSearchRequestVersion;
-  if (base::FeatureList::IsEnabled(chrome::android::kRelatedSearches) &&
-      context_->GetStartOffset() == context_->GetEndOffset()) {
+  if (context_->GetRelatedSearches())
     mainFunctionVersion = kRelatedSearchesVersion;
-  }
 
   TemplateURLRef::SearchTermsArgs::ContextualSearchParams params(
       mainFunctionVersion, contextual_cards_version, context->GetHomeCountry(),

@@ -594,10 +594,12 @@ void PageSpecificContentSettings::OnDomStorageAccessed(const GURL& url,
       local ? container.local_storages() : container.session_storages();
   helper->Add(url::Origin::Create(url));
 
-  if (blocked_by_policy)
+  if (blocked_by_policy) {
     OnContentBlocked(ContentSettingsType::COOKIES);
-  else
+  } else {
+    delegate_->OnDomStorageAccessAllowed(url::Origin::Create(url));
     OnContentAllowed(ContentSettingsType::COOKIES);
+  }
 
   handler_.NotifySiteDataObservers();
 }
@@ -656,6 +658,7 @@ void PageSpecificContentSettings::OnServiceWorkerAccessed(
   if (allowed) {
     allowed_local_shared_objects_.service_workers()->Add(
         url::Origin::Create(scope));
+    delegate_->OnServiceWorkerAccessAllowed(url::Origin::Create(scope));
   } else {
     blocked_local_shared_objects_.service_workers()->Add(
         url::Origin::Create(scope));
@@ -698,6 +701,7 @@ void PageSpecificContentSettings::OnWebDatabaseAccessed(
     OnContentBlocked(ContentSettingsType::COOKIES);
   } else {
     allowed_local_shared_objects_.databases()->Add(url::Origin::Create(url));
+    delegate_->OnWebDatabaseAccessAllowed(url::Origin::Create(url));
     OnContentAllowed(ContentSettingsType::COOKIES);
   }
 
@@ -714,6 +718,7 @@ void PageSpecificContentSettings::OnFileSystemAccessed(const GURL& url,
     OnContentBlocked(ContentSettingsType::COOKIES);
   } else {
     allowed_local_shared_objects_.file_systems()->Add(url::Origin::Create(url));
+    delegate_->OnFileSystemAccessAllowed(url::Origin::Create(url));
     OnContentAllowed(ContentSettingsType::COOKIES);
   }
 
@@ -849,6 +854,13 @@ void PageSpecificContentSettings::OnContentSettingChanged(
       status.blocked = setting == CONTENT_SETTING_BLOCK;
       break;
     }
+    case ContentSettingsType::GEOLOCATION: {
+      ContentSetting geolocation_setting = map_->GetContentSetting(
+          visible_url_, visible_url_, content_type, std::string());
+      if (geolocation_setting == CONTENT_SETTING_ALLOW)
+        geolocation_was_just_granted_on_site_level_ = true;
+      FALLTHROUGH;
+    }
     case ContentSettingsType::IMAGES:
     case ContentSettingsType::JAVASCRIPT:
     case ContentSettingsType::PLUGINS:
@@ -860,7 +872,6 @@ void PageSpecificContentSettings::OnContentSettingChanged(
     case ContentSettingsType::ADS:
     case ContentSettingsType::SOUND:
     case ContentSettingsType::CLIPBOARD_READ_WRITE:
-    case ContentSettingsType::GEOLOCATION:
     case ContentSettingsType::SENSORS: {
       ContentSetting setting = map_->GetContentSetting(
           visible_url_, visible_url_, content_type, std::string());

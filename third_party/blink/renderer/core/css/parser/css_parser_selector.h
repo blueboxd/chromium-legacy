@@ -25,7 +25,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_selector.h"
 
@@ -39,6 +38,8 @@ class CORE_EXPORT CSSParserSelector {
  public:
   CSSParserSelector();
   explicit CSSParserSelector(const QualifiedName&, bool is_implicit = false);
+  CSSParserSelector(const CSSParserSelector&) = delete;
+  CSSParserSelector& operator=(const CSSParserSelector&) = delete;
   ~CSSParserSelector();
 
   std::unique_ptr<CSSSelector> ReleaseSelector() {
@@ -121,7 +122,6 @@ class CORE_EXPORT CSSParserSelector {
  private:
   std::unique_ptr<CSSSelector> selector_;
   std::unique_ptr<CSSParserSelector> tag_history_;
-  DISALLOW_COPY_AND_ASSIGN(CSSParserSelector);
 };
 
 }  // namespace blink

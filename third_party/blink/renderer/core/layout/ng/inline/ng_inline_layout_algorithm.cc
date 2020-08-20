@@ -371,9 +371,9 @@ void NGInlineLayoutAlgorithm::CreateLine(
 
   container_builder_.SetBfcLineOffset(bfc_line_offset);
 
-  const NGLineHeightMetrics& line_box_metrics =
+  const FontHeight& line_box_metrics =
       UNLIKELY(Node().HasLineEvenIfEmpty())
-          ? NGLineHeightMetrics(line_info->LineStyle())
+          ? FontHeight(line_info->LineStyle())
           : box_states_->LineBoxState().metrics;
 
   // Place out-of-flow positioned objects.
@@ -580,7 +580,7 @@ void NGInlineLayoutAlgorithm::PlaceLayoutResult(NGInlineItemResult* item_result,
   DCHECK(item_result->item);
   const NGInlineItem& item = *item_result->item;
   DCHECK(item.Style());
-  NGLineHeightMetrics metrics =
+  FontHeight metrics =
       NGBoxFragment(ConstraintSpace().GetWritingMode(),
                     ConstraintSpace().Direction(),
                     To<NGPhysicalBoxFragment>(
@@ -599,7 +599,7 @@ void NGInlineLayoutAlgorithm::PlaceLayoutResult(NGInlineItemResult* item_result,
 // Place all out-of-flow objects in |line_box_|.
 void NGInlineLayoutAlgorithm::PlaceOutOfFlowObjects(
     const NGLineInfo& line_info,
-    const NGLineHeightMetrics& line_box_metrics,
+    const FontHeight& line_box_metrics,
     NGLogicalLineItems* line_box) {
   DCHECK(line_info.IsEmptyLine() || !line_box_metrics.IsEmpty())
       << "Non-empty lines must have a valid set of linebox metrics.";
@@ -696,7 +696,7 @@ void NGInlineLayoutAlgorithm::PlaceOutOfFlowObjects(
 
 void NGInlineLayoutAlgorithm::PlaceFloatingObjects(
     const NGLineInfo& line_info,
-    const NGLineHeightMetrics& line_box_metrics,
+    const FontHeight& line_box_metrics,
     const NGLineLayoutOpportunity& opportunity,
     NGLogicalLineItems* line_box,
     NGExclusionSpace* exclusion_space) {

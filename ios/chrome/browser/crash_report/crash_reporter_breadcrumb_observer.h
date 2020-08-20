@@ -21,6 +21,9 @@
 // Creates a singleton instance.
 + (CrashReporterBreadcrumbObserver*)uniqueInstance;
 
+// Sets breadcrumb events associated with the previous application session.
+- (void)setPreviousSessionEvents:(const std::vector<std::string>&)events;
+
 // Starts collecting breadcrumb events logged to |breadcrumbManager|.
 - (void)observeBreadcrumbManager:(BreadcrumbManager*)breadcrumbManager;
 

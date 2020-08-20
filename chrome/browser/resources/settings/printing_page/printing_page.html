@@ -8,7 +8,7 @@
 </if>
         <cr-link-row class="hr" id="cloudPrinters"
             label="$i18n{cloudPrintersTitle}"
-            sub-label="$i18n{cloudPrintWarning}"
+            sub-label="[[cloudPrintersSublabel_]]"
             on-click="onTapCloudPrinters_"
             role-description="$i18n{subpageArrowRoleDescription}">
         </cr-link-row>
@@ -17,7 +17,9 @@
         <settings-subpage
             associated-control="[[$$('#cloudPrinters')]]"
             page-title="$i18n{cloudPrintersTitle}">
-          <settings-cloud-printers prefs="{{prefs}}">
+          <settings-cloud-printers
+              hide-cloud-print-warning="[[shouldHideCloudPrintWarning_]]"
+              prefs="{{prefs}}">
           </settings-cloud-printers>
         </settings-subpage>
       </template>

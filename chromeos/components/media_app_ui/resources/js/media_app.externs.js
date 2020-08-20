@@ -29,6 +29,12 @@ mediaApp.AbstractFile.prototype.blob;
  */
 mediaApp.AbstractFile.prototype.name;
 /**
+ * A unique number that represents this file, used to communicate the file in
+ * IPC with a parent frame.
+ * @type {number|undefined}
+ */
+mediaApp.AbstractFile.prototype.token;
+/**
  * Size of the file, e.g., from the HTML5 File API.
  * @type {number}
  */
@@ -104,15 +110,19 @@ mediaApp.AbstractFileList.prototype.item = function(index) {};
  */
 mediaApp.AbstractFileList.prototype.getCurrentlyWritable = function() {};
 /**
- * Loads in the next file in the list as a writable.
+ * Loads the next file in the navigation order into the media app.
+ * @param {number=} currentFileToken the token of the file that is currently
+ *     loaded into the media app.
  * @return {!Promise<undefined>}
  */
-mediaApp.AbstractFileList.prototype.loadNext = function() {};
+mediaApp.AbstractFileList.prototype.loadNext = function(currentFileToken) {};
 /**
- * Loads in the previous file in the list as a writable.
+ * Loads the previous file in the navigation order into the media app.
+ * @param {number=} currentFileToken the token of the file that is currently
+ *     loaded into the media app.
  * @return {!Promise<undefined>}
  */
-mediaApp.AbstractFileList.prototype.loadPrev = function() {};
+mediaApp.AbstractFileList.prototype.loadPrev = function(currentFileToken) {};
 /**
  * @param {function(!mediaApp.AbstractFileList): void} observer invoked when the
  *     size or contents of the file list changes.

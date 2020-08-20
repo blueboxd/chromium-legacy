@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.IntentUtils;
+import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.share.ShareHelper;
 
 /**

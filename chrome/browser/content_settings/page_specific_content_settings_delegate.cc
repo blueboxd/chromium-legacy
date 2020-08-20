@@ -192,11 +192,47 @@ void PageSpecificContentSettingsDelegate::OnCookieAccessAllowed(
 #endif  // !defined(OS_ANDROID)
 }
 
+void PageSpecificContentSettingsDelegate::OnDomStorageAccessAllowed(
+    const url::Origin& origin) {
+#if !defined(OS_ANDROID)
+  RecordOriginStorageAccess(
+      origin, AccessContextAuditDatabase::StorageAPIType::kLocalStorage,
+      web_contents());
+#endif  // !defined(OS_ANDROID)
+}
+
+void PageSpecificContentSettingsDelegate::OnFileSystemAccessAllowed(
+    const url::Origin& origin) {
+#if !defined(OS_ANDROID)
+  RecordOriginStorageAccess(
+      origin, AccessContextAuditDatabase::StorageAPIType::kFileSystem,
+      web_contents());
+#endif  // !defined(OS_ANDROID)
+}
+
 void PageSpecificContentSettingsDelegate::OnIndexedDBAccessAllowed(
     const url::Origin& origin) {
 #if !defined(OS_ANDROID)
   RecordOriginStorageAccess(
       origin, AccessContextAuditDatabase::StorageAPIType::kIndexedDB,
+      web_contents());
+#endif  // !defined(OS_ANDROID)
+}
+
+void PageSpecificContentSettingsDelegate::OnServiceWorkerAccessAllowed(
+    const url::Origin& origin) {
+#if !defined(OS_ANDROID)
+  RecordOriginStorageAccess(
+      origin, AccessContextAuditDatabase::StorageAPIType::kServiceWorker,
+      web_contents());
+#endif  // !defined(OS_ANDROID)
+}
+
+void PageSpecificContentSettingsDelegate::OnWebDatabaseAccessAllowed(
+    const url::Origin& origin) {
+#if !defined(OS_ANDROID)
+  RecordOriginStorageAccess(
+      origin, AccessContextAuditDatabase::StorageAPIType::kWebDatabase,
       web_contents());
 #endif  // !defined(OS_ANDROID)
 }

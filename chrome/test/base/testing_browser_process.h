@@ -20,6 +20,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/test/base/testing_browser_process_platform_part.h"
 #include "extensions/buildflags/buildflags.h"
 #include "media/media_buildflags.h"
 #include "printing/buildflags/buildflags.h"
@@ -163,6 +164,7 @@ class TestingBrowserProcess : public BrowserProcess {
   void SetRapporServiceImpl(rappor::RapporServiceImpl* rappor_service);
   void SetShuttingDown(bool is_shutting_down);
   void ShutdownBrowserPolicyConnector();
+  TestingBrowserProcessPlatformPart* GetTestPlatformPart();
 
  private:
   // See CreateInstance() and DestoryInstance() above.
@@ -212,7 +214,7 @@ class TestingBrowserProcess : public BrowserProcess {
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
   rappor::RapporServiceImpl* rappor_service_ = nullptr;
 
-  std::unique_ptr<BrowserProcessPlatformPart> platform_part_;
+  std::unique_ptr<TestingBrowserProcessPlatformPart> platform_part_;
   std::unique_ptr<network::TestNetworkConnectionTracker>
       test_network_connection_tracker_;
 

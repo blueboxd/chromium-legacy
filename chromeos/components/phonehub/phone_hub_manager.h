@@ -26,6 +26,7 @@ namespace phonehub {
 
 class FeatureStatusProvider;
 class NotificationAccessManager;
+class PhoneModel;
 
 // Implements the core logic of the Phone Hub feature and exposes interfaces via
 // its public API. Implemented as a KeyedService which is keyed by the primary
@@ -55,12 +56,15 @@ class PhoneHubManager : public KeyedService {
     return notification_access_manager_.get();
   }
 
+  PhoneModel* phone_model() { return phone_model_.get(); }
+
  private:
   // KeyedService:
   void Shutdown() override;
 
   std::unique_ptr<FeatureStatusProvider> feature_status_provider_;
   std::unique_ptr<NotificationAccessManager> notification_access_manager_;
+  std::unique_ptr<PhoneModel> phone_model_;
 };
 
 }  // namespace phonehub

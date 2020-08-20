@@ -23,7 +23,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RULE_FEATURE_SET_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RULE_FEATURE_SET_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_selector.h"
 #include "third_party/blink/renderer/core/css/invalidation/invalidation_flags.h"
@@ -50,6 +49,8 @@ class CORE_EXPORT RuleFeatureSet {
 
  public:
   RuleFeatureSet();
+  RuleFeatureSet(const RuleFeatureSet&) = delete;
+  RuleFeatureSet& operator=(const RuleFeatureSet&) = delete;
   ~RuleFeatureSet();
 
   // Methods for updating the data in this object.
@@ -347,7 +348,6 @@ class CORE_EXPORT RuleFeatureSet {
   unsigned is_alive_ : 1;
 
   friend class RuleFeatureSetTest;
-  DISALLOW_COPY_AND_ASSIGN(RuleFeatureSet);
 };
 
 }  // namespace blink

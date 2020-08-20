@@ -22,10 +22,10 @@
 #import "components/autofill/ios/browser/js_autofill_manager.h"
 #import "components/autofill/ios/browser/js_suggestion_manager.h"
 #include "components/autofill/ios/form_util/form_activity_params.h"
+#include "components/autofill/ios/form_util/unique_id_data_tab_helper.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
 #import "components/password_manager/ios/shared_password_controller.h"
-#include "components/password_manager/ios/unique_id_tab_helper.h"
 #include "components/sync/driver/sync_service.h"
 #import "ios/web/public/deprecated/crw_js_injection_receiver.h"
 #include "ios/web/public/js_messaging/web_frame.h"
@@ -160,8 +160,6 @@ using autofill::FieldRendererId;
            selector:@selector(handlePasswordStoreSyncToggledNotification:)
                name:CWVPasswordStoreSyncToggledNotification
              object:nil];
-
-    UniqueIDTabHelper::CreateForWebState(_webState);
   }
   return self;
 }
@@ -186,7 +184,7 @@ using autofill::FieldRendererId;
   [_JSAutofillManager clearAutofilledFieldsForFormName:formName
                                        fieldIdentifier:fieldIdentifier
                                                inFrame:frame
-                                     completionHandler:^{
+                                     completionHandler:^(NSString*) {
                                        if (completionHandler) {
                                          completionHandler();
                                        }

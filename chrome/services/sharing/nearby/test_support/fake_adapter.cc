@@ -48,6 +48,18 @@ class FakeSocket : public mojom::Socket {
   mojo::ScopedDataPipeConsumerHandle send_stream_;
 };
 
+class FakeServerSocket : public mojom::ServerSocket {
+ public:
+  FakeServerSocket() = default;
+  ~FakeServerSocket() override = default;
+
+ private:
+  // mojom::ServerSocket:
+  void Accept(AcceptCallback callback) override {
+    std::move(callback).Run(/*result=*/nullptr);
+  }
+};
+
 }  // namespace
 
 FakeAdapter::FakeAdapter() = default;
@@ -146,6 +158,24 @@ void FakeAdapter::ConnectToServiceInsecurely(
   std::move(callback).Run(std::move(connect_to_service_result));
 }
 
+void FakeAdapter::CreateRfcommService(const std::string& service_name,
+                                      const device::BluetoothUUID& service_uuid,
+                                      CreateRfcommServiceCallback callback) {
+  if (!base::Contains(allowed_connections_for_service_name_and_uuid_pair_,
+                      std::make_pair(service_name, service_uuid))) {
+    std::move(callback).Run(/*server_socket=*/mojo::NullRemote());
+    return;
+  }
+
+  mojo::PendingRemote<mojom::ServerSocket> pending_server_socket;
+
+  mojo::MakeSelfOwnedReceiver(
+      std::make_unique<FakeServerSocket>(),
+      pending_server_socket.InitWithNewPipeAndPassReceiver());
+
+  std::move(callback).Run(std::move(pending_server_socket));
+}
+
 void FakeAdapter::SetShouldDiscoverySucceed(bool should_discovery_succeed) {
   should_discovery_succeed_ = should_discovery_succeed;
 }
@@ -175,6 +205,13 @@ void FakeAdapter::AllowConnectionForAddressAndUuidPair(
     const std::string& address,
     const device::BluetoothUUID& service_uuid) {
   allowed_connections_for_address_and_uuid_pair_.emplace(address, service_uuid);
+}
+
+void FakeAdapter::AllowIncomingConnectionForServiceNameAndUuidPair(
+    const std::string& service_name,
+    const device::BluetoothUUID& service_uuid) {
+  allowed_connections_for_service_name_and_uuid_pair_.emplace(service_name,
+                                                              service_uuid);
 }
 
 void FakeAdapter::OnDiscoverySessionDestroyed() {

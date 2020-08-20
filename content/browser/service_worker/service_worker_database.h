@@ -217,14 +217,14 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
   // from the database. Returns OK if they are successfully read or not found.
   Status ReadUserDataForAllRegistrations(
       const std::string& user_data_name,
-      std::vector<std::pair<int64_t, std::string>>* user_data);
+      std::vector<storage::mojom::ServiceWorkerUserDataPtr>* user_data);
 
   // Reads user data for all registrations that have data with
   // |user_data_name_prefix| from the database. Returns OK if they are
   // successfully read or not found.
   Status ReadUserDataForAllRegistrationsByKeyPrefix(
       const std::string& user_data_name_prefix,
-      std::vector<std::pair<int64_t, std::string>>* user_data);
+      std::vector<storage::mojom::ServiceWorkerUserDataPtr>* user_data);
 
   // Deletes user data for all registrations that have data with
   // |user_data_name_prefix| from the database. Returns OK if all are

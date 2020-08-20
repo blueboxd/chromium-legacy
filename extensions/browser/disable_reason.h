@@ -47,8 +47,9 @@ enum DisableReason {
   // DISABLE_BLOCKED_MATURE = 1 << 17, // Deprecated.
   // Remotely disabled due to malware.
   DISABLE_REMOTELY_FOR_MALWARE = 1 << 18,
+  DISABLE_REINSTALL = 1 << 19,
   // This should always be the last value.
-  DISABLE_REASON_LAST = 1LL << 19,
+  DISABLE_REASON_LAST = 1LL << 20,
 };
 
 static_assert(DISABLE_REASON_LAST - 1 <= std::numeric_limits<int>::max(),

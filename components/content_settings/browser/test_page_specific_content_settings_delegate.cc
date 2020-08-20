@@ -67,7 +67,19 @@ void TestPageSpecificContentSettingsDelegate::OnCacheStorageAccessAllowed(
 void TestPageSpecificContentSettingsDelegate::OnCookieAccessAllowed(
     const net::CookieList& accessed_cookies) {}
 
+void TestPageSpecificContentSettingsDelegate::OnDomStorageAccessAllowed(
+    const url::Origin& origin) {}
+
+void TestPageSpecificContentSettingsDelegate::OnFileSystemAccessAllowed(
+    const url::Origin& origin) {}
+
 void TestPageSpecificContentSettingsDelegate::OnIndexedDBAccessAllowed(
+    const url::Origin& origin) {}
+
+void TestPageSpecificContentSettingsDelegate::OnServiceWorkerAccessAllowed(
+    const url::Origin& origin) {}
+
+void TestPageSpecificContentSettingsDelegate::OnWebDatabaseAccessAllowed(
     const url::Origin& origin) {}
 
 }  // namespace content_settings

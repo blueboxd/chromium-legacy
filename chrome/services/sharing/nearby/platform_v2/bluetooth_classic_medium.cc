@@ -4,6 +4,7 @@
 
 #include "chrome/services/sharing/nearby/platform_v2/bluetooth_classic_medium.h"
 
+#include "chrome/services/sharing/nearby/platform_v2/bluetooth_server_socket.h"
 #include "chrome/services/sharing/nearby/platform_v2/bluetooth_socket.h"
 #include "device/bluetooth/public/cpp/bluetooth_uuid.h"
 
@@ -98,8 +99,15 @@ std::unique_ptr<api::BluetoothSocket> BluetoothClassicMedium::ConnectToService(
 std::unique_ptr<api::BluetoothServerSocket>
 BluetoothClassicMedium::ListenForService(const std::string& service_name,
                                          const std::string& service_uuid) {
-  // TODO(b/154849933): Implement this in a subsequent CL.
-  NOTIMPLEMENTED();
+  mojo::PendingRemote<bluetooth::mojom::ServerSocket> server_socket;
+  bool success = adapter_->CreateRfcommService(
+      service_name, device::BluetoothUUID(service_uuid), &server_socket);
+
+  if (success && server_socket) {
+    return std::make_unique<chrome::BluetoothServerSocket>(
+        std::move(server_socket));
+  }
+
   return nullptr;
 }
 

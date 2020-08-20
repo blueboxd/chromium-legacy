@@ -469,9 +469,10 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
     return new_local_surface_id_request_;
   }
 
-  void SetRasterColorSpace(const gfx::ColorSpace& raster_color_space);
-  const gfx::ColorSpace& raster_color_space() const {
-    return raster_color_space_;
+  void SetDisplayColorSpaces(
+      const gfx::DisplayColorSpaces& display_color_spaces);
+  const gfx::DisplayColorSpaces& display_color_spaces() const {
+    return display_color_spaces_;
   }
 
   bool HasCompositorDrivenScrollAnimationForTesting() const {
@@ -852,7 +853,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // Used to track the out-bound state for ApplyViewportChanges.
   bool is_pinch_gesture_active_from_impl_ = false;
 
-  gfx::ColorSpace raster_color_space_;
+  gfx::DisplayColorSpaces display_color_spaces_;
 
   bool clear_caches_on_next_commit_ = false;
   viz::LocalSurfaceIdAllocation local_surface_id_allocation_from_parent_;

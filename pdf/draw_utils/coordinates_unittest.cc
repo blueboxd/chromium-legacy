@@ -5,7 +5,6 @@
 #include "pdf/draw_utils/coordinates.h"
 
 #include "pdf/test/test_utils.h"
-#include "ppapi/cpp/point.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"

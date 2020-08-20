@@ -24,7 +24,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_DEFAULT_STYLE_SHEETS_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_DEFAULT_STYLE_SHEETS_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -43,6 +42,8 @@ class CSSDefaultStyleSheets final
   CORE_EXPORT static CSSDefaultStyleSheets& Instance();
 
   CSSDefaultStyleSheets();
+  CSSDefaultStyleSheets(const CSSDefaultStyleSheets&) = delete;
+  CSSDefaultStyleSheets& operator=(const CSSDefaultStyleSheets&) = delete;
 
   bool EnsureDefaultStyleSheetsForElement(const Element&);
   bool EnsureDefaultStyleSheetsForPseudoElement(PseudoId);
@@ -85,10 +86,10 @@ class CSSDefaultStyleSheets final
   class CORE_EXPORT UAStyleSheetLoader {
    public:
     UAStyleSheetLoader() = default;
+    UAStyleSheetLoader(const UAStyleSheetLoader&) = delete;
+    UAStyleSheetLoader& operator=(const UAStyleSheetLoader&) = delete;
     virtual ~UAStyleSheetLoader() = default;
     virtual String GetUAStyleSheet() = 0;
-
-    DISALLOW_COPY_AND_ASSIGN(UAStyleSheetLoader);
   };
   CORE_EXPORT void SetMediaControlsStyleSheetLoader(
       std::unique_ptr<UAStyleSheetLoader>);
@@ -124,7 +125,6 @@ class CSSDefaultStyleSheets final
   Member<StyleSheetContents> marker_style_sheet_;
 
   std::unique_ptr<UAStyleSheetLoader> media_controls_style_sheet_loader_;
-  DISALLOW_COPY_AND_ASSIGN(CSSDefaultStyleSheets);
 };
 
 }  // namespace blink

@@ -358,7 +358,7 @@ export async function scalePicture(url, isVideo, width, height = undefined) {
   context.drawImage(element, 0, 0, width, height);
 
   /**
-   * @type {Uint8ClampedArray} A one-dimensional pixels array in RGBA order.
+   * @type {!Uint8ClampedArray} A one-dimensional pixels array in RGBA order.
    */
   const data = context.getImageData(0, 0, width, height).data;
   if (data.every((byte) => byte === 0)) {
@@ -392,7 +392,7 @@ export function toggleChecked(element, checked) {
 
 /**
  * Binds on/off of specified state with different aria label on an element.
- * @param {!{element: !Element, state: !state.State, onLabel: string,
+ * @param {{element: !Element, state: !state.State, onLabel: string,
  *     offLabel: string}} params
  */
 export function bindElementAriaLabelWithState(

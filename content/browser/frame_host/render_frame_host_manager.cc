@@ -1435,7 +1435,13 @@ RenderFrameHostManager::GetSiteInstanceForNavigation(
     bool dest_is_view_source_mode,
     bool was_server_redirect,
     bool cross_origin_opener_policy_mismatch,
-    bool should_replace_current_entry) {
+    bool should_replace_current_entry,
+    bool* did_same_site_proactive_browsing_instance_swap) {
+  // Make sure |did_same_site_proactive_browsing_instance_swap| is initialized
+  // to false at first, as the function might return early before setting this
+  // to the actual value (and if we return early, the actual value will always
+  // be false).
+  *did_same_site_proactive_browsing_instance_swap = false;
   // On renderer-initiated navigations, when the frame initiating the navigation
   // and the frame being navigated differ, |source_instance| is set to the
   // SiteInstance of the initiating frame. |dest_instance| is present on session
@@ -1549,18 +1555,19 @@ RenderFrameHostManager::GetSiteInstanceForNavigation(
               REUSE_PENDING_OR_COMMITTED_SITE);
     }
   }
-  bool is_same_site_proactive_swap =
-      (should_swap_result ==
-       ShouldSwapBrowsingInstance::kYes_SameSiteProactiveSwap);
+
   // If we're doing a proactive BI swap, we should try to reuse the current
   // SiteInstance's process for the new SiteInstance if possible.
   // It might not be possible to reuse the process in some cases, including when
   // the current SiteInstance needs a dedicated process (unless this is a
   // same-site navigation).
+  *did_same_site_proactive_browsing_instance_swap =
+      (should_swap_result ==
+       ShouldSwapBrowsingInstance::kYes_SameSiteProactiveSwap);
   if (IsProactivelySwapBrowsingInstanceWithProcessReuseEnabled() &&
       proactive_swap &&
       (!current_instance->RequiresDedicatedProcess() ||
-       is_same_site_proactive_swap)) {
+       *did_same_site_proactive_browsing_instance_swap)) {
     DCHECK(frame_tree_node_->IsMainFrame());
     new_instance_impl->ReuseCurrentProcessIfPossible(
         current_instance->GetProcess());
@@ -2436,6 +2443,7 @@ RenderFrameHostManager::GetSiteInstanceForNavigationRequest(
   // fixed.
   bool is_reload =
       NavigationTypeUtils::IsReload(request->common_params().navigation_type);
+  bool did_same_site_proactive_browsing_instance_swap = false;
 
   scoped_refptr<SiteInstance> dest_site_instance = GetSiteInstanceForNavigation(
       request->common_params().url, request->GetSourceSiteInstance(),
@@ -2445,7 +2453,14 @@ RenderFrameHostManager::GetSiteInstanceForNavigationRequest(
       request->IsSameDocument(), request->GetRestoreType() != RestoreType::NONE,
       request->is_view_source(), request->WasServerRedirect(),
       request->coop_status().require_browsing_instance_swap(),
-      request->common_params().should_replace_current_entry);
+      request->common_params().should_replace_current_entry,
+      &did_same_site_proactive_browsing_instance_swap);
+
+  // Save whether we're doing a same-site proactive BrowsingInstance swap or not
+  // for this navigation. This will be used at DidCommitNavigation time for
+  // logging metrics.
+  request->set_did_same_site_proactive_browsing_instance_swap(
+      did_same_site_proactive_browsing_instance_swap);
 
   // If the NavigationRequest's dest_site_instance was present but incorrect,
   // then ensure no sensitive state is kept on the request. This can happen for

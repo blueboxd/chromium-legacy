@@ -33,7 +33,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/invalidation/invalidation_flags.h"
@@ -99,6 +98,9 @@ class CORE_EXPORT InvalidationSet
   USING_FAST_MALLOC_WITH_TYPE_NAME(blink::InvalidationSet);
 
  public:
+  InvalidationSet(const InvalidationSet&) = delete;
+  InvalidationSet& operator=(const InvalidationSet&) = delete;
+
   InvalidationType GetType() const {
     return static_cast<InvalidationType>(type_);
   }
@@ -391,7 +393,6 @@ class CORE_EXPORT InvalidationSet
 
   // If true, the instance is alive and can be used.
   unsigned is_alive_ : 1;
-  DISALLOW_COPY_AND_ASSIGN(InvalidationSet);
 };
 
 class CORE_EXPORT DescendantInvalidationSet final : public InvalidationSet {

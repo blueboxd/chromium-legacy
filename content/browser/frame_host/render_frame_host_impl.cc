@@ -95,6 +95,7 @@
 #include "content/browser/portal/portal.h"
 #include "content/browser/presentation/presentation_service_impl.h"
 #include "content/browser/push_messaging/push_messaging_manager.h"
+#include "content/browser/renderer_host/agent_scheduling_group_host.h"
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/input/input_router.h"
 #include "content/browser/renderer_host/input/timeout_monitor.h"
@@ -675,6 +676,11 @@ void RecordCrossOriginIsolationMetrics(RenderFrameHostImpl* rfh) {
     client->LogWebFeatureForCurrentPage(
         rfh, blink::mojom::WebFeature::kCoopAndCoepIsolated);
   }
+
+  if (rfh->coop_reporter()) {
+    client->LogWebFeatureForCurrentPage(
+        rfh, blink::mojom::WebFeature::kCrossOriginOpenerPolicyReporting);
+  }
 }
 
 // Subframe navigations can optionally have associated Trust Tokens operations
@@ -917,7 +923,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(
     : render_view_host_(std::move(render_view_host)),
       delegate_(delegate),
       site_instance_(static_cast<SiteInstanceImpl*>(site_instance)),
-      process_(site_instance->GetProcess()),
+      agent_scheduling_group_(site_instance_->GetAgentSchedulingGroup()),
       frame_tree_(frame_tree),
       frame_tree_node_(frame_tree_node),
       parent_(frame_tree_node_->parent()),
@@ -961,12 +967,12 @@ RenderFrameHostImpl::RenderFrameHostImpl(
   DCHECK(lifecycle_state_ == LifecycleState::kSpeculative ||
          lifecycle_state_ == LifecycleState::kActive);
 
-  GetProcess()->AddRoute(routing_id_, this);
+  agent_scheduling_group().AddRoute(routing_id_, this);
   g_routing_id_frame_map.Get().emplace(
       GlobalFrameRoutingId(GetProcess()->GetID(), routing_id_), this);
   g_token_frame_map.Get().insert(std::make_pair(frame_token_, this));
   site_instance_->AddObserver(this);
-  process_->AddObserver(this);
+  GetProcess()->AddObserver(this);
   GetSiteInstance()->IncrementActiveFrameCount();
 
   if (parent_) {
@@ -1074,7 +1080,7 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   g_token_frame_map.Get().erase(frame_token_);
 
   site_instance_->RemoveObserver(this);
-  process_->RemoveObserver(this);
+  GetProcess()->RemoveObserver(this);
 
   const bool was_created = render_frame_created_;
   render_frame_created_ = false;
@@ -1147,7 +1153,7 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   if (was_created && render_view_host_->GetMainFrame() != this)
     CHECK(IsPendingDeletion() || IsInBackForwardCache());
 
-  GetProcess()->RemoveRoute(routing_id_);
+  agent_scheduling_group().RemoveRoute(routing_id_);
   g_routing_id_frame_map.Get().erase(
       GlobalFrameRoutingId(GetProcess()->GetID(), routing_id_));
 
@@ -1391,7 +1397,7 @@ SiteInstanceImpl* RenderFrameHostImpl::GetSiteInstance() {
 }
 
 RenderProcessHost* RenderFrameHostImpl::GetProcess() {
-  return process_;
+  return agent_scheduling_group_.GetProcess();
 }
 
 RenderFrameHostImpl* RenderFrameHostImpl::GetParent() {
@@ -1700,11 +1706,8 @@ RenderFrameHostImpl::GetRemoteAssociatedInterfaces() {
   if (!remote_associated_interfaces_) {
     mojo::AssociatedRemote<blink::mojom::AssociatedInterfaceProvider>
         remote_interfaces;
-    IPC::ChannelProxy* channel = GetProcess()->GetChannel();
-    if (channel) {
-      RenderProcessHostImpl* process =
-          static_cast<RenderProcessHostImpl*>(GetProcess());
-      process->GetRemoteRouteProvider()->GetRoute(
+    if (agent_scheduling_group().GetChannel()) {
+      agent_scheduling_group().GetRemoteRouteProvider()->GetRoute(
           GetRoutingID(), remote_interfaces.BindNewEndpointAndPassReceiver());
     } else {
       // The channel may not be initialized in some tests environments. In this
@@ -1746,7 +1749,7 @@ PageVisibilityState RenderFrameHostImpl::GetVisibilityState() {
 }
 
 bool RenderFrameHostImpl::Send(IPC::Message* message) {
-  return GetProcess()->Send(message);
+  return agent_scheduling_group().Send(message);
 }
 
 bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message& msg) {
@@ -2206,7 +2209,7 @@ bool RenderFrameHostImpl::CreateRenderFrame(
   // be able to insert the new frame in the frame tree.
   DCHECK(params->previous_routing_id != MSG_ROUTING_NONE ||
          params->parent_routing_id != MSG_ROUTING_NONE);
-  GetProcess()->GetRendererInterface()->CreateFrame(std::move(params));
+  agent_scheduling_group().CreateFrame(std::move(params));
 
   if (previous_routing_id != MSG_ROUTING_NONE) {
     RenderFrameProxyHost* proxy = RenderFrameProxyHost::FromID(
@@ -6230,7 +6233,7 @@ void RenderFrameHostImpl::CommitNavigation(
             browser_context, GetSiteInstance()));
     non_network_url_loader_factories_.emplace(
         url::kFileSystemScheme, content::CreateFileSystemURLLoaderFactory(
-                                    process_->GetID(), GetFrameTreeNodeId(),
+                                    GetProcess()->GetID(), GetFrameTreeNodeId(),
                                     partition->GetFileSystemContext(),
                                     partition->GetPartitionDomain()));
 
@@ -6240,7 +6243,8 @@ void RenderFrameHostImpl::CommitNavigation(
     GetContentClient()
         ->browser()
         ->RegisterNonNetworkSubresourceURLLoaderFactories(
-            process_->GetID(), routing_id_, &non_network_url_loader_factories_);
+            GetProcess()->GetID(), routing_id_,
+            &non_network_url_loader_factories_);
 
     for (auto& factory : non_network_url_loader_factories_) {
       mojo::PendingRemote<network::mojom::URLLoaderFactory>
@@ -7478,7 +7482,7 @@ void RenderFrameHostImpl::CreateInstalledAppProvider(
 void RenderFrameHostImpl::CreateDedicatedWorkerHostFactory(
     mojo::PendingReceiver<blink::mojom::DedicatedWorkerHostFactory> receiver) {
   // Allocate the worker in the same process as the creator.
-  int worker_process_id = process_->GetID();
+  int worker_process_id = GetProcess()->GetID();
 
   mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
       coep_reporter;
@@ -7823,7 +7827,7 @@ RenderFrameHostImpl::CreateNavigationRequestForCommit(
   // one only for cross-document navigations.
   if (!is_same_document) {
     coep_reporter = std::make_unique<CrossOriginEmbedderPolicyReporter>(
-        process_->GetStoragePartition(), params.url,
+        GetProcess()->GetStoragePartition(), params.url,
         cross_origin_embedder_policy_.reporting_endpoint,
         cross_origin_embedder_policy_.report_only_reporting_endpoint);
   }
@@ -8483,9 +8487,11 @@ RenderFrameHostImpl::CommitAsTracedValue(
   auto value = std::make_unique<base::trace_event::TracedValue>();
 
   // TODO(nasko): Move the process lock into RenderProcessHost.
-  value->SetString("process lock", ChildProcessSecurityPolicyImpl::GetInstance()
-                                       ->GetProcessLock(process_->GetID())
-                                       .ToString());
+  value->SetString(
+      "process lock",
+      ChildProcessSecurityPolicyImpl::GetInstance()
+          ->GetProcessLock(agent_scheduling_group_.GetProcess()->GetID())
+          .ToString());
 
   value->SetInteger("nav_entry_id", params->nav_entry_id);
   value->SetInteger("item_sequence_number", params->item_sequence_number);

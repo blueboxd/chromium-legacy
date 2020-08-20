@@ -31,13 +31,13 @@
 #import "components/autofill/ios/browser/form_suggestion_provider_query.h"
 #import "components/autofill/ios/form_util/form_activity_observer_bridge.h"
 #include "components/autofill/ios/form_util/form_activity_params.h"
+#include "components/autofill/ios/form_util/unique_id_data_tab_helper.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/browser/password_generation_frame_helper.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/ios/account_select_fill_data.h"
 #import "components/password_manager/ios/js_password_manager.h"
-#include "components/password_manager/ios/unique_id_tab_helper.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/web/common/url_scheme_util.h"
 #import "ios/web/public/deprecated/crw_js_injection_receiver.h"
@@ -195,9 +195,9 @@ NSString* const kSuggestionSuffix = @" ••••••••";
     [self findPasswordFormsAndSendThemToPasswordStore];
   } else {
     // If the current page is not HTML, it does not contain any HTML forms.
-    UniqueIDTabHelper* uniqueIDTabHelper =
-        UniqueIDTabHelper::FromWebState(_webState);
-    uint32_t maxUniqueID = uniqueIDTabHelper->GetNextAvailableRendererID();
+    UniqueIDDataTabHelper* uniqueIDDataTabHelper =
+        UniqueIDDataTabHelper::FromWebState(_webState);
+    uint32_t maxUniqueID = uniqueIDDataTabHelper->GetNextAvailableRendererID();
     [self didFinishPasswordFormExtraction:std::vector<FormData>()
                           withMaxUniqueID:maxUniqueID];
   }
@@ -209,10 +209,10 @@ NSString* const kSuggestionSuffix = @" ••••••••";
   DCHECK(web_frame);
   if (!web_frame->CanCallJavaScriptFunction())
     return;
-  UniqueIDTabHelper* uniqueIDTabHelper =
-      UniqueIDTabHelper::FromWebState(_webState);
+  UniqueIDDataTabHelper* uniqueIDDataTabHelper =
+      UniqueIDDataTabHelper::FromWebState(_webState);
   uint32_t nextAvailableRendererID =
-      uniqueIDTabHelper->GetNextAvailableRendererID();
+      uniqueIDDataTabHelper->GetNextAvailableRendererID();
   [self.formHelper setUpForUniqueIDsWithInitialState:nextAvailableRendererID
                                              inFrame:web_frame];
 }
@@ -484,11 +484,11 @@ NSString* const kSuggestionSuffix = @" ••••••••";
 
   if (!forms.empty()) {
     [self.suggestionHelper updateStateOnPasswordFormExtracted];
-    UniqueIDTabHelper* uniqueIDTabHelper =
-        UniqueIDTabHelper::FromWebState(_webState);
+    UniqueIDDataTabHelper* uniqueIDDataTabHelper =
+        UniqueIDDataTabHelper::FromWebState(_webState);
     // Update NextAvailableRendererId if a bigger value was extracted.
-    if (uniqueIDTabHelper->GetNextAvailableRendererID() < maxID)
-      uniqueIDTabHelper->SetNextAvailableRendererID(++maxID);
+    if (uniqueIDDataTabHelper->GetNextAvailableRendererID() < maxID)
+      uniqueIDDataTabHelper->SetNextAvailableRendererID(++maxID);
 
     // Invoke the password manager callback to autofill password forms
     // on the loaded page.

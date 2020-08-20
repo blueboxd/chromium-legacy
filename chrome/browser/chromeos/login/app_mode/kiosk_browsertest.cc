@@ -445,6 +445,31 @@ class ScopedSettingsPages {
   }
 };
 
+class ExtensionReadyObserver : public extensions::ExtensionRegistryObserver {
+ public:
+  ExtensionReadyObserver(extensions::ExtensionRegistry* registry,
+                         const std::string& extension_id)
+      : extension_id_(extension_id) {
+    extension_registry_observer_.Add(registry);
+  }
+
+  int fired_times() const { return count_; }
+
+ private:
+  // extensions::ExtensionReadyObserver:
+  void OnExtensionReady(content::BrowserContext* browser_context,
+                        const extensions::Extension* extension) override {
+    if (extension->id() == extension_id_)
+      count_++;
+  }
+
+  int count_ = 0;
+
+  ScopedObserver<extensions::ExtensionRegistry, ExtensionRegistryObserver>
+      extension_registry_observer_{this};
+  const std::string extension_id_;
+};
+
 }  // namespace
 
 class KioskTest : public OobeBaseTest {
@@ -1513,6 +1538,130 @@ IN_PROC_BROWSER_TEST_F(KioskTest, SpokenFeedback) {
   sm.ExpectSpeech("Heading 1");
   sm.ExpectSpeech("done");
   sm.Replay();
+}
+
+// This test verifies that accessibility extensions do not preserve any local
+// data in-between session, as opposed to what they usually do in user sessions.
+// See http://crbug.com/1049566
+IN_PROC_BROWSER_TEST_F(
+    KioskTest,
+    PRE_AccessibilityExtensionsResetTheirStateUponSessionRestart) {
+  SpeechMonitor speech_monitor;
+  StartAppLaunchFromLoginScreen(
+      NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE);
+  WaitForAppLaunchWithOptions(true /* check_launch_data */,
+                              false /* terminate_app */,
+                              true /* keep_app_open */);
+
+  Profile* app_profile = ProfileManager::GetPrimaryUserProfile();
+
+  ExtensionReadyObserver ready_observer(
+      extensions::ExtensionRegistry::Get(app_profile),
+      extension_misc::kChromeVoxExtensionId);
+  AccessibilityManager::Get()->EnableSpokenFeedback(true);
+  speech_monitor.ExpectSpeech("ChromeVox spoken feedback is ready");
+  speech_monitor.Replay();
+
+  // Extension should be loaded only once.
+  EXPECT_EQ(ready_observer.fired_times(), 1);
+
+  constexpr char kSetInStorageAPI[] =
+      R"(chrome.storage.local.set(
+             {test: 'testValue'},
+             () => { domAutomationController.send('') });)";
+  // Store some data using Storage API for the extension.
+  extensions::browsertest_util::ExecuteScriptInBackgroundPage(
+      app_profile, extension_misc::kChromeVoxExtensionId, kSetInStorageAPI);
+
+  // Expect the data to be saved.
+  constexpr char kGetFromStorageAPI[] =
+      R"(chrome.storage.local.get(
+             'test',
+             (value) => domAutomationController.send(value.test));)";
+  EXPECT_EQ("testValue",
+            extensions::browsertest_util::ExecuteScriptInBackgroundPage(
+                app_profile, extension_misc::kChromeVoxExtensionId,
+                kGetFromStorageAPI));
+
+  // Store data in localStorage and verify that it is saved.
+  constexpr char kSetAndReadFromLocalStorage[] = R"(
+      localStorage.setItem('test2', 'testValue2');
+      domAutomationController.send(localStorage.getItem('test2'));
+    )";
+  EXPECT_EQ("testValue2",
+            extensions::browsertest_util::ExecuteScriptInBackgroundPage(
+                app_profile, extension_misc::kChromeVoxExtensionId,
+                kSetAndReadFromLocalStorage));
+
+  // The data should persist when extension is restarted.
+  AccessibilityManager::Get()->EnableSpokenFeedback(false);
+  SpeechMonitor speech_monitor2;
+  AccessibilityManager::Get()->EnableSpokenFeedback(true);
+  speech_monitor2.ExpectSpeech("ChromeVox spoken feedback is ready");
+  speech_monitor2.Replay();
+
+  // Expect the data to be still there.
+  EXPECT_EQ("testValue",
+            extensions::browsertest_util::ExecuteScriptInBackgroundPage(
+                app_profile, extension_misc::kChromeVoxExtensionId,
+                kGetFromStorageAPI));
+
+  constexpr char kGetFromLocalStorage[] =
+      R"( domAutomationController.send(localStorage.getItem('test2'));)";
+  EXPECT_EQ("testValue2",
+            extensions::browsertest_util::ExecuteScriptInBackgroundPage(
+                app_profile, extension_misc::kChromeVoxExtensionId,
+                kGetFromLocalStorage));
+}
+
+IN_PROC_BROWSER_TEST_F(
+    KioskTest,
+    AccessibilityExtensionsResetTheirStateUponSessionRestart) {
+  SpeechMonitor speech_monitor;
+  StartAppLaunchFromLoginScreen(
+      NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE);
+  WaitForAppLaunchWithOptions(true /* check_launch_data */,
+                              false /* terminate_app */,
+                              true /* keep_app_open */);
+
+  Profile* app_profile = ProfileManager::GetPrimaryUserProfile();
+
+  ExtensionReadyObserver ready_observer(
+      extensions::ExtensionRegistry::Get(app_profile),
+      extension_misc::kChromeVoxExtensionId);
+  AccessibilityManager::Get()->EnableSpokenFeedback(true);
+  speech_monitor.ExpectSpeech("ChromeVox spoken feedback is ready");
+  speech_monitor.Replay();
+
+  // Extension should be loaded only once.
+  EXPECT_EQ(ready_observer.fired_times(), 1);
+
+  // Expect the data to be cleared.
+  constexpr char kGetFromStorageAPI[] =
+      R"(
+      chrome.storage.local.get(
+          "test",
+          function(value) {
+              domAutomationController.send(value.test == undefined ?
+                  "<none>" : value.test);
+          }
+      );
+      )";
+  EXPECT_EQ("<none>",
+            extensions::browsertest_util::ExecuteScriptInBackgroundPage(
+                app_profile, extension_misc::kChromeVoxExtensionId,
+                kGetFromStorageAPI));
+
+  constexpr char kGetFromLocalStorage[] =
+      R"(
+      domAutomationController.send(
+          localStorage.getItem('test2') == undefined ?
+              "<none>" : localStorage.getItem('test2'));
+      )";
+  EXPECT_EQ("<none>",
+            extensions::browsertest_util::ExecuteScriptInBackgroundPage(
+                app_profile, extension_misc::kChromeVoxExtensionId,
+                kGetFromLocalStorage));
 }
 
 class KioskUpdateTest : public KioskTest {

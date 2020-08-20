@@ -91,6 +91,10 @@ typedef uint64_t LinkHash;
 
 float DeviceScaleFactorDeprecated(LocalFrame*);
 
+// A Page roughly corresponds to a tab or popup window in a browser. It owns a
+// tree of frames (a blink::FrameTree). The root frame is called the main frame.
+//
+// Note that frames can be local or remote to this process.
 class CORE_EXPORT Page final : public GarbageCollected<Page>,
                                public Supplementable<Page>,
                                public SettingsDelegate,

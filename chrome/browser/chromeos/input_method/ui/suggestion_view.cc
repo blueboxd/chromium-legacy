@@ -55,8 +55,8 @@ std::unique_ptr<views::StyledLabel> CreateSuggestionLabel() {
       views::CreateEmptyBorder(gfx::Insets(kPadding / 2, 0)));
   suggestion_label->SetAutoColorReadabilityEnabled(false);
   // StyledLabel eats event, probably because it has to handle links.
-  // Explicitly sets below to false for SuggestionView's hover to work
-  // correctly.
+  // Explicitly sets can_process_events_within_subtree to false for
+  // SuggestionView's hover to work correctly.
   suggestion_label->set_can_process_events_within_subtree(false);
 
   return suggestion_label;
@@ -119,6 +119,10 @@ std::unique_ptr<views::View> SuggestionView::CreateAnnotationLabel() {
       label->AddChildView(CreateKeyContainer())->AddChildView(CreateDownIcon());
   arrow_icon_ = label->AddChildView(std::make_unique<views::ImageView>());
   label->AddChildView(CreateKeyContainer())->AddChildView(CreateEnterLabel());
+  // AnnotationLabel's ChildViews eat events simmilar to StyledLabel.
+  // Explicitly sets can_process_events_within_subtree to false for
+  // AnnotationLabel's hover to work correctly.
+  label->set_can_process_events_within_subtree(false);
   return label;
 }
 

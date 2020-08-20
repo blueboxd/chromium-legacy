@@ -106,7 +106,7 @@ export class MockElement {
   /**
    * @param {number} width
    * @param {number} height
-   * @param {?HTMLDivElement} sizer
+   * @param {?MockSizer} sizer
    */
   constructor(width, height, sizer) {
     /** @type {number} */
@@ -115,7 +115,7 @@ export class MockElement {
     /** @type {number} */
     this.offsetHeight = height;
 
-    /** @type {?Element} */
+    /** @type {?MockSizer} */
     this.sizer = sizer;
 
     if (sizer) {

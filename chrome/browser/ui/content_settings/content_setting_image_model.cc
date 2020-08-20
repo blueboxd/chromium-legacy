@@ -47,6 +47,8 @@
 #include "ui/gfx/vector_icon_types.h"
 
 #if defined(OS_MAC)
+#include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/browser/geolocation/geolocation_system_permission_mac.h"
 #include "chrome/browser/media/webrtc/system_media_capture_permissions_mac.h"
 #endif
 
@@ -79,12 +81,20 @@ class ContentSettingBlockedImageModel : public ContentSettingSimpleImageModel {
   DISALLOW_COPY_AND_ASSIGN(ContentSettingBlockedImageModel);
 };
 
-class ContentSettingGeolocationImageModel
-    : public ContentSettingSimpleImageModel {
+class ContentSettingGeolocationImageModel : public ContentSettingImageModel {
  public:
   ContentSettingGeolocationImageModel();
 
   bool UpdateAndGetVisibility(WebContents* web_contents) override;
+
+  bool IsGeolocationAccessed();
+#if defined(OS_MAC)
+  bool IsGeolocationBlockedOnASystemLevel();
+#endif  // defined(OS_MAC)
+
+  std::unique_ptr<ContentSettingBubbleModel> CreateBubbleModelImpl(
+      ContentSettingBubbleModel::Delegate* delegate,
+      WebContents* web_contents) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ContentSettingGeolocationImageModel);
@@ -477,13 +487,13 @@ bool ContentSettingBlockedImageModel::UpdateAndGetVisibility(
 // Geolocation -----------------------------------------------------------------
 
 ContentSettingGeolocationImageModel::ContentSettingGeolocationImageModel()
-    : ContentSettingSimpleImageModel(ImageType::GEOLOCATION,
-                                     ContentSettingsType::GEOLOCATION) {}
+    : ContentSettingImageModel(ImageType::GEOLOCATION) {}
 
 bool ContentSettingGeolocationImageModel::UpdateAndGetVisibility(
     WebContents* web_contents) {
   PageSpecificContentSettings* content_settings =
       PageSpecificContentSettings::GetForFrame(web_contents->GetMainFrame());
+  set_should_auto_open_bubble(false);
   if (!content_settings)
     return false;
 
@@ -495,12 +505,50 @@ bool ContentSettingGeolocationImageModel::UpdateAndGetVisibility(
   if (!is_allowed && !is_blocked)
     return false;
 
-  set_icon(kMyLocationIcon,
+#if defined(OS_MAC)
+
+  if (base::FeatureList::IsEnabled(
+          ::features::kMacCoreLocationImplementation)) {
+    set_explanatory_string_id(0);
+    if (is_allowed) {
+      if (IsGeolocationBlockedOnASystemLevel()) {
+        set_icon(vector_icons::kLocationOnIcon,
+                 vector_icons::kBlockedBadgeIcon);
+        set_tooltip(l10n_util::GetStringUTF16(IDS_BLOCKED_GEOLOCATION_MESSAGE));
+        if (content_settings->geolocation_was_just_granted_on_site_level())
+          set_should_auto_open_bubble(true);
+        set_explanatory_string_id(IDS_GEOLOCATION_TURNED_OFF);
+        return true;
+      }
+    }
+  }
+#endif  // defined(OS_MAC)
+
+  set_icon(vector_icons::kLocationOnIcon,
            is_allowed ? gfx::kNoneIcon : vector_icons::kBlockedBadgeIcon);
   set_tooltip(l10n_util::GetStringUTF16(is_allowed
                                             ? IDS_ALLOWED_GEOLOCATION_MESSAGE
                                             : IDS_BLOCKED_GEOLOCATION_MESSAGE));
   return true;
+}
+
+#if defined(OS_MAC)
+bool ContentSettingGeolocationImageModel::IsGeolocationBlockedOnASystemLevel() {
+  GeolocationSystemPermissionManager* permission_manager =
+      g_browser_process->platform_part()->location_permission_manager();
+  SystemPermissionStatus permission = permission_manager->GetSystemPermission();
+
+  return permission != SystemPermissionStatus::kAllowed;
+}
+
+#endif  // defined(OS_MAC)
+
+std::unique_ptr<ContentSettingBubbleModel>
+ContentSettingGeolocationImageModel::CreateBubbleModelImpl(
+    ContentSettingBubbleModel::Delegate* delegate,
+    WebContents* web_contents) {
+  return std::make_unique<ContentSettingGeolocationBubbleModel>(delegate,
+                                                                web_contents);
 }
 
 // Protocol handlers -----------------------------------------------------------

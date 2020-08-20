@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PARSER_CSS_TOKENIZER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PARSER_CSS_TOKENIZER_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_token.h"
 #include "third_party/blink/renderer/core/css/parser/css_tokenizer_input_stream.h"
@@ -25,6 +24,8 @@ class CORE_EXPORT CSSTokenizer {
 
  public:
   CSSTokenizer(const String&, wtf_size_t offset = 0);
+  CSSTokenizer(const CSSTokenizer&) = delete;
+  CSSTokenizer& operator=(const CSSTokenizer&) = delete;
 
   Vector<CSSParserToken, 32> TokenizeToEOF();
   wtf_size_t TokenCount();
@@ -113,7 +114,6 @@ class CORE_EXPORT CSSTokenizer {
 
   wtf_size_t prev_offset_ = 0;
   wtf_size_t token_count_ = 0;
-  DISALLOW_COPY_AND_ASSIGN(CSSTokenizer);
 };
 
 }  // namespace blink

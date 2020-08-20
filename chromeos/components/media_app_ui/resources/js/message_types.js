@@ -93,8 +93,12 @@ let OverwriteViaFilePickerResponse;
 /**
  * Message sent by the unprivileged context to the privileged context requesting
  * the app be relaunched with the next/previous file in the current directory
- * set to writable. Direction must be either 'next' or 'prev'.
- * @typedef {{direction: number}}
+ * set to writable. Direction is a number specifying how many files to advance
+ * by, positive integers specify files "next" in the navigation order whereas
+ * negative integers specify files "back" in the navigation order.
+ * The `currentFileToken` is the token of the file which is currently opened,
+ * this is used to decide what `direction` is in reference to.
+ * @typedef {{direction: number, currentFileToken: (number|undefined)}}
  */
 let NavigateMessage;
 

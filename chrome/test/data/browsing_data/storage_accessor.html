@@ -1,8 +1,9 @@
 <html>
   <script>
-     // Set cookie which persists across restart.
+    async function accessStorage() {
+      // Set cookie which persists across restart.
       document.cookie = `persistent=persistent;max-age=3600;` +
-          'path=/;SameSite=None;Secure'
+          'path=/;SameSite=None;Secure';
 
       // Set a non-persistent cookie.
       document.cookie = 'session_only=session_only; path=/;' +
@@ -12,11 +13,32 @@
       document.cookie = 'expired=;expires=Thu, 01 Jan 1970 00:00:00 GMT;' +
           'SameSite=None; Secure';
 
+      // Access local storage.
+      localStorage.setItem('foo', 'bar');
+
+      // Access web database.
+      window.openDatabase('foo', '1.0', 'foo DB', 1024);
+
+      // Access file system.
+      const file_system_promise = new Promise(function(resolve, reject) {
+        window.webkitRequestFileSystem(TEMPORARY, 1024, fs => {
+          fs.root.getFile("foo.txt");
+          resolve();
+        });
+      });
+      await file_system_promise;
+
+      // Access service worker.
+      await navigator.serviceWorker.register("empty.js");
+
       // Access cache storage.
-      caches.open('test');
+      await caches.open('test');
 
       // Access Indexed DB.
-      indexedDB.open("test");
+      await indexedDB.open("test");
+
+      return true;
+     }
   </script>
   <body>
   </body>

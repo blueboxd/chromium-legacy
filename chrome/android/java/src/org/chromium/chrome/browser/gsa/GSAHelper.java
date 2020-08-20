@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.gsa;
 import android.content.Context;
 import android.os.Bundle;
 
-import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.app.ChromeActivity;
 
 /**
  * Helper class that triggers integration methods with GSA.

@@ -26,6 +26,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/browsing_data_remover_test_util.h"
@@ -43,6 +44,10 @@ constexpr char kEmbeddedHost[] = "b.test";
 // embedded pages in testing.
 const std::set<AccessContextAuditDatabase::StorageAPIType>&
     kOriginStorageTypes = {
+        AccessContextAuditDatabase::StorageAPIType::kLocalStorage,
+        AccessContextAuditDatabase::StorageAPIType::kFileSystem,
+        AccessContextAuditDatabase::StorageAPIType::kWebDatabase,
+        AccessContextAuditDatabase::StorageAPIType::kServiceWorker,
         AccessContextAuditDatabase::StorageAPIType::kCacheStorage,
         AccessContextAuditDatabase::StorageAPIType::kIndexedDB};
 
@@ -121,6 +126,18 @@ void CheckContainsOriginStorageRecords(
   }
 }
 
+// Calls the accessStorage javascript function and awaits its completion for
+// each frame in the active web contents for |browser|.
+void EnsurePageAccessedStorage(Browser* browser) {
+  auto frames =
+      browser->tab_strip_model()->GetActiveWebContents()->GetAllFrames();
+  for (auto* frame : frames) {
+    ASSERT_TRUE(content::EvalJs(
+                    frame, "(async () => { return await accessStorage();})()")
+                    .value.GetBool());
+  }
+}
+
 }  // namespace
 
 class CookiesTreeObserver : public CookiesTreeModel::Observer {
@@ -196,12 +213,14 @@ class AccessContextAuditBrowserTest : public InProcessBrowserTest {
   void NavigateToTopLevelPage() {
     ui_test_utils::NavigateToURL(browser(), top_level_url());
     base::RunLoop().RunUntilIdle();
+    EnsurePageAccessedStorage(browser());
   }
 
   // Navigate directly to the embedded page.
   void NavigateToEmbeddedPage() {
     ui_test_utils::NavigateToURL(browser(), embedded_url());
     base::RunLoop().RunUntilIdle();
+    EnsurePageAccessedStorage(browser());
   }
 
   url::Origin top_level_origin() {

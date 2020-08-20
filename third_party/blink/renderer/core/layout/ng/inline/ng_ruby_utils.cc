@@ -227,7 +227,7 @@ LayoutUnit CommitPendingEndOverhang(NGLineInfo* line_info) {
 
 NGAnnotationMetrics ComputeAnnotationOverflow(
     const NGLogicalLineItems& logical_line,
-    const NGLineHeightMetrics& line_box_metrics,
+    const FontHeight& line_box_metrics,
     LayoutUnit line_over,
     const ComputedStyle& line_style) {
   DCHECK(RuntimeEnabledFeatures::LayoutNGRubyEnabled());

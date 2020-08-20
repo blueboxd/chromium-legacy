@@ -197,7 +197,7 @@ NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::BoxInfo::BoxInfo(
     : item_index(item_index),
       should_create_box_fragment(item.ShouldCreateBoxFragment()),
       may_have_margin_(item.Style()->MayHaveMargin()),
-      text_metrics(NGLineHeightMetrics(*item.Style())) {
+      text_metrics(FontHeight(*item.Style())) {
   DCHECK(item.Style());
 }
 

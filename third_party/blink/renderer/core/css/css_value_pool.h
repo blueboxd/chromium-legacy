@@ -26,7 +26,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_VALUE_POOL_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_VALUE_POOL_H_
 
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/util/type_safety/pass_key.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -66,6 +65,8 @@ class CORE_EXPORT CSSValuePool final : public GarbageCollected<CSSValuePool> {
   using FontFamilyValueCache = HeapHashMap<String, Member<CSSFontFamilyValue>>;
 
   CSSValuePool();
+  CSSValuePool(const CSSValuePool&) = delete;
+  CSSValuePool& operator=(const CSSValuePool&) = delete;
 
   // Cached individual values.
   CSSColorValue* TransparentColor() { return color_transparent_; }
@@ -162,7 +163,6 @@ class CORE_EXPORT CSSValuePool final : public GarbageCollected<CSSValuePool> {
   FontFamilyValueCache font_family_value_cache_;
 
   friend CORE_EXPORT CSSValuePool& CssValuePool();
-  DISALLOW_COPY_AND_ASSIGN(CSSValuePool);
 };
 
 CORE_EXPORT CSSValuePool& CssValuePool();

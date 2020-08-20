@@ -24,7 +24,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_FONT_BUILDER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_FONT_BUILDER_H_
 
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/font_size_functions.h"
@@ -43,6 +42,8 @@ class CORE_EXPORT FontBuilder {
 
  public:
   explicit FontBuilder(Document*);
+  FontBuilder(const FontBuilder&) = delete;
+  FontBuilder& operator=(const FontBuilder&) = delete;
 
   void SetInitial(float effective_zoom);
 
@@ -173,7 +174,6 @@ class CORE_EXPORT FontBuilder {
   }
 
   unsigned flags_;
-  DISALLOW_COPY_AND_ASSIGN(FontBuilder);
 };
 
 }  // namespace blink

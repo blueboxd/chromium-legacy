@@ -20,7 +20,7 @@ namespace blink {
 namespace {
 
 struct SameSizeAsNGPhysicalLineBoxFragment : NGPhysicalContainerFragment {
-  NGLineHeightMetrics metrics;
+  FontHeight metrics;
 };
 
 ASSERT_SIZE(NGPhysicalLineBoxFragment, SameSizeAsNGPhysicalLineBoxFragment);
@@ -60,7 +60,7 @@ NGPhysicalLineBoxFragment::NGPhysicalLineBoxFragment(
                                 builder->unpositioned_list_marker_;
 }
 
-NGLineHeightMetrics NGPhysicalLineBoxFragment::BaselineMetrics() const {
+FontHeight NGPhysicalLineBoxFragment::BaselineMetrics() const {
   // TODO(kojii): Computing other baseline types than the used one is not
   // implemented yet.
   // TODO(kojii): We might need locale/script to look up OpenType BASE table.

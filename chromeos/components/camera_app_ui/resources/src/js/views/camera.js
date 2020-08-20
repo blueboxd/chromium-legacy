@@ -499,10 +499,7 @@ export class Camera extends View {
     let resolCandidates = null;
     if (deviceOperator !== null) {
       if (deviceId !== null) {
-        const previewRs =
-            (await this.infoUpdater_.getDeviceResolutions(deviceId)).video;
-        resolCandidates =
-            this.modes_.getResolutionCandidates(mode, deviceId, previewRs);
+        resolCandidates = this.modes_.getResolutionCandidates(mode, deviceId);
       } else {
         console.error(
             'Null device id present on HALv3 device. Fallback to v1.');

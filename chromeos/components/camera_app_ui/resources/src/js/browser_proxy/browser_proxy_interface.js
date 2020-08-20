@@ -125,7 +125,7 @@ export class BrowserProxy {
   isMp4RecordingEnabled() {}
 
   /**
-   * @return {BackgroundOps}
+   * @return {!BackgroundOps}
    * @abstract
    */
   getBackgroundOps() {}

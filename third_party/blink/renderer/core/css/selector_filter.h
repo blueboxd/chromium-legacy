@@ -33,7 +33,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/platform/wtf/bloom_filter.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -60,6 +59,8 @@ class CORE_EXPORT SelectorFilter {
   };
 
   SelectorFilter() = default;
+  SelectorFilter(const SelectorFilter&) = delete;
+  SelectorFilter& operator=(const SelectorFilter&) = delete;
 
   void PushParent(Element& parent);
   void PopParent(Element& parent);
@@ -87,7 +88,6 @@ class CORE_EXPORT SelectorFilter {
   // rate of ~0.2%.
   using IdentifierFilter = BloomFilter<12>;
   std::unique_ptr<IdentifierFilter> ancestor_identifier_filter_;
-  DISALLOW_COPY_AND_ASSIGN(SelectorFilter);
 };
 
 template <unsigned maximumIdentifierCount>

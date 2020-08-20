@@ -165,7 +165,7 @@ class WebUIBrowserProxy {
     const perfLogger = new PerfLogger();
     const url = window.location.href;
     const intent = url.includes('intent') ? Intent.create(new URL(url)) : null;
-    return /** @type {BackgroundOps} */ ({
+    return /** @type {!BackgroundOps} */ ({
       bindForegroundOps: (ops) => {},
       getIntent: () => intent,
       getPerfLogger: () => perfLogger,

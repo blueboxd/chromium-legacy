@@ -29,6 +29,14 @@ struct ConnectToServiceResult {
   handle<data_pipe_producer> send_stream;
 };
 
+// The results of a successful connection via ServerSocket::Accept().
+struct AcceptConnectionResult {
+  DeviceInfo device;
+  pending_remote<Socket> socket;
+  handle<data_pipe_consumer> receive_stream;
+  handle<data_pipe_producer> send_stream;
+};
+
 struct AdapterInfo {
   // TODO(crbug.com/1112886): Use fixed-size array, not string, for address.
   string address;
@@ -82,6 +90,18 @@ interface Socket {
   Disconnect() => ();
 };
 
+// Represents a pending connecting from a remote device. Releasing it will
+// stop listening for an incoming connection.
+// Note: Methods which are declared [Sync] are for use by
+// //chrome/services/sharing/nearby; all other usage of their synchronous
+// signatures is strongly discouraged.
+interface ServerSocket {
+  // Accept the next incoming connection from a remote device. If something
+  // goes wrong, the returned |result| will be null.
+  [Sync]
+  Accept() => (AcceptConnectionResult? result);
+};
+
 // Handles requests to either query Bluetooth adapter capabilities or state, or
 // find or connect to remote devices. Backed by //device/bluetooth.
 // Note: Methods which are declared [Sync] are for use by
@@ -127,12 +147,21 @@ interface Adapter {
   // Attempts to initiate an insecure outgoing L2CAP or RFCOMM connection to the
   // advertised service on this device matching |service_uuid|. This method is
   // marked as "Insecurely" because the outgoing connection will not request
-  // bonding (pairing) to the remote device. All return values will be null if
-  // the connection attempt fails.
+  // bonding (pairing) to the remote device. If the connection attempt fails,
+  // the returned |result| will be null. See Socket for details on how to close
+  // the connection.
   // TODO(crbug.com/1112886): Use fixed-size array, not string, for address.
   [Sync]
   ConnectToServiceInsecurely(string address, UUID service_uuid)
       => (ConnectToServiceResult? result);
+
+  // Creates an RFCOMM service on this adapter advertised with |service_name|
+  // and |service_uuid|. If the service creation attempt fails, the returned
+  // |server_socket| will be null. See ServerSocket for details on how to stop
+  // listening.
+  [Sync]
+  CreateRfcommService(string service_name, UUID service_uuid)
+      => (pending_remote<ServerSocket>? server_socket);
 };
 
 interface AdapterClient {

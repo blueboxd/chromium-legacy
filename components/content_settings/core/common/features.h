@@ -24,6 +24,11 @@ extern const base::Feature kImprovedCookieControls;
 COMPONENT_EXPORT(CONTENT_SETTINGS_FEATURES)
 extern const base::Feature kDisallowWildcardsInPluginContentSettings;
 
+// Feature to remove the chrome.contentSettings.plugins.set() API in extensions
+// for extensions.
+COMPONENT_EXPORT(CONTENT_SETTINGS_FEATURES)
+extern const base::Feature kDisallowExtensionsToSetPluginContentSettings;
+
 // When kBlockInsecurePrivateNetworkRequests is enabled, requests initiated
 // from a less-private network may only target a more-private network if the
 // initiating context is secure.

@@ -1559,6 +1559,7 @@ enum HistogramValue {
   FILEMANAGERPRIVATEINTERNAL_INVOKESHARESHEET = 1496,
   FILEMANAGERPRIVATEINTERNAL_GETCONTENTMIMETYPE = 1497,
   FILEMANAGERPRIVATEINTERNAL_GETCONTENTMETADATA = 1498,
+  SEARCH_QUERY = 1499,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

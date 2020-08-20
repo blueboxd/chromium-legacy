@@ -12,6 +12,7 @@ import android.os.UserManager;
 
 import androidx.test.filters.SmallTest;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,6 +22,7 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.test.ShadowRecordHistogram;
 import org.chromium.base.task.TaskTraits;
@@ -28,6 +30,7 @@ import org.chromium.base.task.test.ShadowPostTask;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.policy.PolicySwitches;
 import org.chromium.testing.local.CustomShadowUserManager;
 
 import java.util.Arrays;
@@ -65,6 +68,9 @@ public class FirstRunAppRestrictionInfoTest {
 
     @Mock
     private Bundle mMockBundle;
+    @Mock
+    private CommandLine mCommandLine;
+
     private boolean mPauseDuringPostTask;
 
     @Before
@@ -82,6 +88,11 @@ public class FirstRunAppRestrictionInfoTest {
         UserManager userManager = (UserManager) context.getSystemService(Context.USER_SERVICE);
         CustomShadowUserManager shadowUserManager = (CustomShadowUserManager) shadowOf(userManager);
         shadowUserManager.setApplicationRestrictions(context.getPackageName(), mMockBundle);
+    }
+
+    @After
+    public void tearDown() {
+        CommandLine.reset();
     }
 
     private void verifyHistograms(int expectedCallCount) {
@@ -193,6 +204,24 @@ public class FirstRunAppRestrictionInfoTest {
                 "CallbackHelper should not triggered yet.", 0, callbackHelper.getCallCount());
         Assert.assertEquals("CallbackHelper should not triggered yet.", 0,
                 completionCallbackHelper.getCallCount());
+        verifyHistograms(0);
+    }
+
+    @Test
+    @SmallTest
+    public void testCommandLine() throws TimeoutException {
+        // TODO(https://crbug.com/1119410): Switch to @CommandLineFlag once supported for junit.
+        CommandLine.setInstanceForTesting(mCommandLine);
+        Mockito.when(mCommandLine.hasSwitch(Mockito.eq(PolicySwitches.CHROME_POLICY)))
+                .thenReturn(true);
+
+        final BooleanInputCallbackHelper callbackHelper = new BooleanInputCallbackHelper();
+        TestThreadUtils.runOnUiThreadBlocking(
+                ()
+                        -> mAppRestrictionInfo.getHasAppRestriction(
+                                callbackHelper::notifyCalledWithInput));
+        callbackHelper.assertCallbackHelperCalledWithInput(true);
+
         verifyHistograms(0);
     }
 }

@@ -29,9 +29,9 @@ promise_test(async t => {
       }
     });
     const receiverStreams = e.receiver.createEncodedStreams();
-    receiverStreams.readableStream
+    receiverStreams.readable
         .pipeThrough(receiverTransformer)
-        .pipeTo(receiverStreams.writableStream);
+        .pipeTo(receiverStreams.writable);
 
     const stream = e.streams[0];
     const v = document.createElement('video');
@@ -60,9 +60,9 @@ promise_test(async t => {
       controller.enqueue(chunk);
     }
   });
-  senderStreams.readableStream
+  senderStreams.readable
       .pipeThrough(senderTransformer)
-      .pipeTo(senderStreams.writableStream);
+      .pipeTo(senderStreams.writable);
 
   const offer = await pc1.createOffer();
   await pc1.setLocalDescription(offer),

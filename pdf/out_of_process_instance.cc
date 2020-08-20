@@ -2057,7 +2057,7 @@ void OutOfProcessInstance::OnGeometryChanged(double old_zoom,
     available_area_.set_height(bottom_of_document);
 
   CalculateBackgroundParts();
-  engine()->PageOffsetUpdated(PointFromPPPoint(available_area_.point()));
+  engine()->PageOffsetUpdated(VectorFromPPPoint(available_area_.point()));
   engine()->PluginSizeUpdated(SizeFromPPSize(available_area_.size()));
 
   if (document_size_.IsEmpty())

@@ -18,6 +18,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/components/phonehub/phone_hub_manager.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
 #include "chromeos/services/multidevice_setup/public/cpp/url_provider.h"
@@ -195,10 +196,12 @@ MultiDeviceSection::MultiDeviceSection(
     Profile* profile,
     SearchTagRegistry* search_tag_registry,
     multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client,
+    phonehub::PhoneHubManager* phone_hub_manager,
     android_sms::AndroidSmsService* android_sms_service,
     PrefService* pref_service)
     : OsSettingsSection(profile, search_tag_registry),
       multidevice_setup_client_(multidevice_setup_client),
+      phone_hub_manager_(phone_hub_manager),
       android_sms_service_(android_sms_service),
       pref_service_(pref_service) {
   if (base::FeatureList::IsEnabled(::features::kNearbySharing)) {
@@ -321,6 +324,8 @@ void MultiDeviceSection::AddHandlers(content::WebUI* web_ui) {
   web_ui->AddMessageHandler(
       std::make_unique<chromeos::settings::MultideviceHandler>(
           pref_service_, multidevice_setup_client_,
+          phone_hub_manager_ ? phone_hub_manager_->notification_access_manager()
+                             : nullptr,
           android_sms_service_
               ? android_sms_service_->android_sms_pairing_state_tracker()
               : nullptr,

@@ -25,11 +25,11 @@
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
 #import "components/autofill/ios/browser/form_suggestion.h"
 #import "components/autofill/ios/browser/js_suggestion_manager.h"
+#include "components/autofill/ios/form_util/unique_id_data_tab_helper.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_manager.h"
 #include "components/keyed_service/core/service_access_type.h"
-#include "components/password_manager/ios/unique_id_tab_helper.h"
 #import "ios/chrome/browser/autofill/form_suggestion_controller.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
@@ -256,7 +256,7 @@ void AutofillControllerTest::SetUp() {
 
   // Create a PasswordController instance that will handle set up for renderer
   // ids.
-  UniqueIDTabHelper::CreateForWebState(web_state());
+  UniqueIDDataTabHelper::CreateForWebState(web_state());
   passwordController_ =
       [[PasswordController alloc] initWithWebState:web_state()];
 

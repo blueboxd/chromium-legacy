@@ -156,26 +156,20 @@ class ReceivedFileList {
     return this.item(this.writableFileIndex);
   }
 
-  /**
-   * Loads in the next file in the list as a writable.
-   * @override
-   * @return {!Promise<undefined>}
-   */
-  async loadNext() {
+  /** @override */
+  async loadNext(currentFileToken) {
     // Awaiting this message send allows callers to wait for the full effects of
     // the navigation to complete. This may include a call to load a new set of
     // files, and the initial decode, which replaces this AbstractFileList and
     // alters other app state.
-    await parentMessagePipe.sendMessage(Message.NAVIGATE, {direction: 1});
+    await parentMessagePipe.sendMessage(
+        Message.NAVIGATE, {currentFileToken, direction: 1});
   }
 
-  /**
-   * Loads in the previous file in the list as a writable.
-   * @override
-   * @return {!Promise<undefined>}
-   */
-  async loadPrev() {
-    await parentMessagePipe.sendMessage(Message.NAVIGATE, {direction: -1});
+  /** @override */
+  async loadPrev(currentFileToken) {
+    await parentMessagePipe.sendMessage(
+        Message.NAVIGATE, {currentFileToken, direction: -1});
   }
 
   /** @override */

@@ -15,8 +15,10 @@
 #include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
+#include "chrome/browser/apps/app_service/app_service_metrics.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/chromeos/printing/print_management/print_management_uma.h"
+#include "chrome/browser/installable/installable_params.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -83,12 +85,13 @@ base::Optional<apps::AppLaunchParams> CreateSystemWebAppLaunchParams(
   DisplayMode display_mode =
       provider->registrar().GetAppEffectiveDisplayMode(app_id.value());
 
-  // TODO(calamity): Plumb through better launch sources from callsites.
+  // TODO(crbug/1113502): Plumb through better launch sources from callsites.
   apps::AppLaunchParams params = apps::CreateAppIdLaunchParamsWithEventFlags(
       app_id.value(), /*event_flags=*/0,
       apps::mojom::AppLaunchSource::kSourceChromeInternal, display_id,
       /*fallback_container=*/
       ConvertDisplayModeToAppLaunchContainer(display_mode));
+  params.launch_source = apps::mojom::LaunchSource::kFromChromeInternal;
 
   return params;
 }
@@ -120,6 +123,7 @@ Browser* LaunchSystemWebApp(Profile* profile,
                             base::Optional<apps::AppLaunchParams> params,
                             bool* did_create) {
   auto* provider = WebAppProvider::Get(profile);
+
   if (!provider)
     return nullptr;
 
@@ -133,6 +137,13 @@ Browser* LaunchSystemWebApp(Profile* profile,
 
   DCHECK_EQ(params->app_id, *GetAppIdForSystemWebApp(profile, app_type));
 
+  // TODO(crbug/1117655): The file manager records metrics directly when opening
+  // a file registered to an app, but can't tell if an SWA will ultimately be
+  // used to open it. Remove this when the file manager code is moved into
+  // the app service.
+  if (params->launch_source != apps::mojom::LaunchSource::kFromFileManager) {
+    apps::RecordAppLaunch(params->app_id, params->launch_source);
+  }
   // Log enumerated entry point for Print Management App. Only log here if the
   // app was launched from the browser (omnibox) or from the system launcher.
   if (app_type == SystemAppType::PRINT_MANAGEMENT) {

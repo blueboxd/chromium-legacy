@@ -17,7 +17,7 @@ let TestMessageResponseData;
  *     deleteLastFile: (boolean|undefined),
  *     getFileErrors: (boolean|undefined),
  *     getLastFileName: (boolean|undefined),
- *     navigate: (string|undefined),
+ *     navigate: ({direction: string, token: number}|undefined),
  *     overwriteLastFile: (string|undefined),
  *     pathToRoot: (!Array<string>|undefined),
  *     property: (string|undefined),

@@ -7,6 +7,8 @@ import '../settings_page/settings_animated_pages.m.js';
 import '../settings_page/settings_subpage.m.js';
 import '../settings_shared_css.m.js';
 
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {routes} from '../route.js';
@@ -21,6 +23,8 @@ Polymer({
 
   _template: html`{__html_template__}`,
 
+  behaviors: [I18nBehavior],
+
   properties: {
     /** Preferences state. */
     prefs: {
@@ -30,6 +34,12 @@ Polymer({
 
     searchTerm: {
       type: String,
+    },
+
+    /** @private */
+    cloudPrintersSublabel_: {
+      type: String,
+      computed: 'computeCloudPrintersSublabel_(shouldHideCloudPrintWarning_)',
     },
 
     /** @private {!Map<string, string>} */
@@ -43,6 +53,21 @@ Polymer({
         return map;
       },
     },
+
+    /** @private */
+    shouldHideCloudPrintWarning_: {
+      type: Boolean,
+      value: loadTimeData.getBoolean('cloudPrintDeprecationWarningsSuppressed'),
+    }
+  },
+
+  /**
+   * @return {string} The sublabel string for the Cloud Printers row.
+   * @private
+   */
+  computeCloudPrintersSublabel_() {
+    return this.shouldHideCloudPrintWarning_ ? '' :
+                                               this.i18n('cloudPrintWarning');
   },
 
   // <if expr="not chromeos">

@@ -30,6 +30,9 @@ const char kAppListDefaultSearchResultOpenTypeHistogram[] =
 // launcher issues to the search providers.
 constexpr char kAppListLauncherIssuedSearchQueryLength[] =
     "Apps.AppListLauncherIssuedSearchQueryLength";
+// The UMA histogram that logs the length of the query that resulted in a click.
+constexpr char kAppListLauncherClickedSearchQueryLength[] =
+    "Apps.AppListLauncherClickedSearchQueryLength";
 // The UMA histogram that logs the length of the query that resulted in an app
 // launch from search box.
 constexpr char kSearchQueryLengthAppLaunch[] =
@@ -103,6 +106,15 @@ void RecordLauncherIssuedSearchQueryLength(int query_length) {
   if (query_length > 0) {
     UMA_HISTOGRAM_EXACT_LINEAR(
         kAppListLauncherIssuedSearchQueryLength,
+        std::min(query_length, kMaxLoggedUserQueryLength),
+        kMaxLoggedUserQueryLength);
+  }
+}
+
+void RecordLauncherClickedSearchQueryLength(int query_length) {
+  if (query_length > 0) {
+    UMA_HISTOGRAM_EXACT_LINEAR(
+        kAppListLauncherClickedSearchQueryLength,
         std::min(query_length, kMaxLoggedUserQueryLength),
         kMaxLoggedUserQueryLength);
   }

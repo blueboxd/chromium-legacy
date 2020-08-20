@@ -806,10 +806,12 @@ void RTCRtpSender::InitializeEncodedAudioStreams(ScriptState* script_state) {
           /*is_receiver=*/false);
   // The high water mark for the readable stream is set to 0 so that frames are
   // removed from the queue right away, without introducing any buffering.
-  encoded_audio_streams_->setReadableStream(
+  ReadableStream* readable_stream =
       ReadableStream::CreateWithCountQueueingStrategy(
           script_state, audio_from_encoder_underlying_source_,
-          /*high_water_mark=*/0));
+          /*high_water_mark=*/0);
+  encoded_audio_streams_->setReadableStream(readable_stream);
+  encoded_audio_streams_->setReadable(readable_stream);
 
   // Set up writable stream.
   audio_to_packetizer_underlying_sink_ =
@@ -824,10 +826,12 @@ void RTCRtpSender::InitializeEncodedAudioStreams(ScriptState* script_state) {
               WrapWeakPersistent(this)));
   // The high water mark for the stream is set to 1 so that the stream is
   // ready to write, but without queuing frames.
-  encoded_audio_streams_->setWritableStream(
+  WritableStream* writable_stream =
       WritableStream::CreateWithCountQueueingStrategy(
           script_state, audio_to_packetizer_underlying_sink_,
-          /*high_water_mark=*/1));
+          /*high_water_mark=*/1);
+  encoded_audio_streams_->setWritableStream(writable_stream);
+  encoded_audio_streams_->setWritable(writable_stream);
 }
 
 void RTCRtpSender::OnAudioFrameFromEncoder(
@@ -867,10 +871,12 @@ void RTCRtpSender::InitializeEncodedVideoStreams(ScriptState* script_state) {
                     WrapWeakPersistent(this)));
   // The high water mark for the readable stream is set to 0 so that frames are
   // removed from the queue right away, without introducing any buffering.
-  encoded_video_streams_->setReadableStream(
+  ReadableStream* readable_stream =
       ReadableStream::CreateWithCountQueueingStrategy(
           script_state, video_from_encoder_underlying_source_,
-          /*high_water_mark=*/0));
+          /*high_water_mark=*/0);
+  encoded_video_streams_->setReadableStream(readable_stream);
+  encoded_video_streams_->setReadable(readable_stream);
 
   // Set up writable stream.
   video_to_packetizer_underlying_sink_ =
@@ -885,10 +891,12 @@ void RTCRtpSender::InitializeEncodedVideoStreams(ScriptState* script_state) {
               WrapWeakPersistent(this)));
   // The high water mark for the stream is set to 1 so that the stream is
   // ready to write, but without queuing frames.
-  encoded_video_streams_->setWritableStream(
+  WritableStream* writable_stream =
       WritableStream::CreateWithCountQueueingStrategy(
           script_state, video_to_packetizer_underlying_sink_,
-          /*high_water_mark=*/1));
+          /*high_water_mark=*/1);
+  encoded_video_streams_->setWritableStream(writable_stream);
+  encoded_video_streams_->setWritable(writable_stream);
 }
 
 void RTCRtpSender::OnVideoFrameFromEncoder(

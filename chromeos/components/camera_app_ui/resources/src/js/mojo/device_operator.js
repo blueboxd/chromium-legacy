@@ -389,7 +389,7 @@ export class DeviceOperator {
    * Remove a metadata observer from Camera App Device. A metadata observer
    * is recognized by its id returned by addMetadataObserver upon insertion.
    * @param {string} deviceId The id for target camera device.
-   * @param {!number} observerId The id for the metadata observer to be removed.
+   * @param {number} observerId The id for the metadata observer to be removed.
    * @return {!Promise<boolean>} Promise for the result. It will be resolved
    *     with a boolean indicating whether the removal is successful or not.
    * @throws {!Error} if fails to construct device connection.
@@ -426,7 +426,7 @@ export class DeviceOperator {
   /**
    * Removes a shutter observer from Camera App Device.
    * @param {string} deviceId The id of target camera device.
-   * @param {!number} observerId The id of the observer to be removed.
+   * @param {number} observerId The id of the observer to be removed.
    * @return {!Promise<boolean>} True when the observer is successfully removed.
    * @throws {!Error} if fails to construct device connection.
    */

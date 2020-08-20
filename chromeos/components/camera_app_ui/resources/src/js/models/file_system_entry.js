@@ -15,7 +15,7 @@ export class AbstractFileSystemEntry {
 
   /**
    * The name of the file/directory.
-   * @return {!string}
+   * @return {string}
    * @abstract
    */
   get name() {}

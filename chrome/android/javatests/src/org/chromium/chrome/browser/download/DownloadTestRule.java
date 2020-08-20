@@ -17,7 +17,7 @@ import org.junit.runners.model.Statement;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Log;
 import org.chromium.base.test.util.CallbackHelper;
-import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.components.offline_items_collection.ContentId;

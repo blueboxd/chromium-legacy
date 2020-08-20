@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.browserservices.trustedwebactivityui;
 import android.os.Build;
 import android.os.Bundle;
 
-import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;

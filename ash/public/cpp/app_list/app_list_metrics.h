@@ -107,6 +107,8 @@ ASH_PUBLIC_EXPORT void RecordZeroStateSuggestionOpenTypeHistogram(
 
 ASH_PUBLIC_EXPORT void RecordLauncherIssuedSearchQueryLength(int query_length);
 
+ASH_PUBLIC_EXPORT void RecordLauncherClickedSearchQueryLength(int query_length);
+
 ASH_PUBLIC_EXPORT void RecordSuccessfulAppLaunchUsingSearch(
     AppListLaunchedFrom launched_from,
     int query_length);

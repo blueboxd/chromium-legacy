@@ -40,6 +40,8 @@ source_set("deprecated_experimental_mojo") {
     "device.h",
     "discovery_session.cc",
     "discovery_session.h",
+    "server_socket.cc",
+    "server_socket.h",
     "socket.cc",
     "socket.h",
   ]
@@ -70,6 +72,8 @@ source_set("fake_bluetooth") {
   sources = [
     "test/fake_bluetooth.cc",
     "test/fake_bluetooth.h",
+    "test/fake_bluetooth_socket.cc",
+    "test/fake_bluetooth_socket.h",
     "test/fake_central.cc",
     "test/fake_central.h",
     "test/fake_peripheral.cc",
@@ -89,6 +93,7 @@ source_set("fake_bluetooth") {
     "//device/bluetooth/public/cpp",
     "//device/bluetooth/public/mojom:fake_bluetooth_interfaces",
     "//mojo/public/cpp/bindings",
+    "//net",
   ]
 }
 

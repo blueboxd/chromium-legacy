@@ -24,7 +24,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_STYLE_RESOLVER_STATE_H_
 
 #include <memory>
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/animation/css/css_animation_update.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_property_name.h"
@@ -62,6 +61,8 @@ class CORE_EXPORT StyleResolverState {
                      PseudoElementStyleRequest::RequestType,
                      const ComputedStyle* parent_style,
                      const ComputedStyle* layout_parent_style);
+  StyleResolverState(const StyleResolverState&) = delete;
+  StyleResolverState& operator=(const StyleResolverState&) = delete;
   ~StyleResolverState();
 
   // In FontFaceSet and CanvasRenderingContext2D, we don't have an element to
@@ -276,8 +277,6 @@ class CORE_EXPORT StyleResolverState {
   // True if the base style can be cached to optimize style recalculations for
   // animation updates or transition retargeting.
   bool can_cache_base_style_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(StyleResolverState);
 };
 
 }  // namespace blink

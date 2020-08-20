@@ -25,6 +25,7 @@ const char kDeviceAddress1[] = "DeviceAddress1";
 const char kDeviceAddress2[] = "DeviceAddress2";
 const char kDeviceName1[] = "DeviceName1";
 const char kDeviceName2[] = "DeviceName2";
+const char kNearbySharingServiceName[] = "NearbySharing";
 const device::BluetoothUUID kNearbySharingServiceUuid =
     device::BluetoothUUID("a82efa21-ae5c-3dde-9bbc-f16da7b16c5a");
 }  // namespace
@@ -210,7 +211,7 @@ TEST_F(BluetoothClassicMediumTest, TestConnectToService_Success) {
   EXPECT_TRUE(bluetooth_socket->Close().Ok());
 }
 
-TEST_F(BluetoothClassicMediumTest, TestConnectToService_ConnectionFailure) {
+TEST_F(BluetoothClassicMediumTest, TestConnectToService_Failure) {
   StartDiscovery();
   NotifyDeviceAdded(kDeviceAddress1, kDeviceName1);
   NotifyDeviceAdded(kDeviceAddress2, kDeviceName2);
@@ -222,6 +223,24 @@ TEST_F(BluetoothClassicMediumTest, TestConnectToService_ConnectionFailure) {
 
   EXPECT_FALSE(bluetooth_classic_medium_->ConnectToService(
       *last_device_discovered_, kNearbySharingServiceUuid.value()));
+}
+
+TEST_F(BluetoothClassicMediumTest, TestListenForService_Success) {
+  fake_adapter_->AllowIncomingConnectionForServiceNameAndUuidPair(
+      kNearbySharingServiceName, kNearbySharingServiceUuid);
+
+  EXPECT_TRUE(bluetooth_classic_medium_->ListenForService(
+      kNearbySharingServiceName, kNearbySharingServiceUuid.value()));
+}
+
+TEST_F(BluetoothClassicMediumTest, TestListenForService_Failure) {
+  fake_adapter_->AllowIncomingConnectionForServiceNameAndUuidPair(
+      "DifferentServiceName", kNearbySharingServiceUuid);
+  fake_adapter_->AllowIncomingConnectionForServiceNameAndUuidPair(
+      kNearbySharingServiceName, device::BluetoothUUID("DifferentServiceId"));
+
+  EXPECT_FALSE(bluetooth_classic_medium_->ListenForService(
+      kNearbySharingServiceName, kNearbySharingServiceUuid.value()));
 }
 
 }  // namespace chrome

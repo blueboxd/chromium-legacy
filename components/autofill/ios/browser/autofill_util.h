@@ -83,6 +83,14 @@ void ExecuteJavaScriptFunction(const std::string& name,
                                web::WebFrame* frame,
                                JavaScriptResultCallback callback);
 
+// Extracts a vector of numeric renderer IDs from the JS returned json string.
+bool ExtractIDs(NSString* json_string, std::vector<uint32_t>* ids);
+
+// Extracts a map of filled renderer IDs and values from the JS returned json
+// string.
+bool ExtractFillingResults(NSString* json_string,
+                           std::map<uint32_t, base::string16>* filling_results);
+
 }  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_IOS_BROWSER_AUTOFILL_UTIL_H_

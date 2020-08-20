@@ -21,6 +21,10 @@ namespace android_sms {
 class AndroidSmsService;
 }  // namespace android_sms
 
+namespace phonehub {
+class PhoneHubManager;
+}  // namespace phonehub
+
 namespace settings {
 
 class SearchTagRegistry;
@@ -36,6 +40,7 @@ class MultiDeviceSection
       Profile* profile,
       SearchTagRegistry* search_tag_registry,
       multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client,
+      phonehub::PhoneHubManager* phone_hub_manager,
       android_sms::AndroidSmsService* android_sms_service,
       PrefService* pref_service);
   ~MultiDeviceSection() override;
@@ -59,6 +64,7 @@ class MultiDeviceSection
   void OnNearbySharingEnabledChanged();
 
   multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client_;
+  phonehub::PhoneHubManager* phone_hub_manager_;
   android_sms::AndroidSmsService* android_sms_service_;
   PrefService* pref_service_;
   PrefChangeRegistrar pref_change_registrar_;

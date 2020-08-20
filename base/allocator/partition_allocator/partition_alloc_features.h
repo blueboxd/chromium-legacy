@@ -11,6 +11,13 @@
 #include "base/metrics/field_trial_params.h"
 #include "build/build_config.h"
 
+#if defined(OS_WIN)
+// VersionHelpers.h depends on Windows.h.
+#include <Windows.h>
+// For IsWindows8Point1OrGreater().
+#include <VersionHelpers.h>
+#endif
+
 namespace base {
 
 struct Feature;
@@ -27,8 +34,19 @@ ALWAYS_INLINE bool IsPartitionAllocGigaCageEnabled() {
 #if !(defined(ARCH_CPU_64_BITS) && !defined(OS_NACL))
   return false;
 #elif BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+  // We have to check if windows version is greater than or equal to 8.1.
+  // If IsWindows8Point1OrGreater() doesn't allocate any memory,
+  // we will use the helper function here. See https://crbug.com/1101421.
   return true;
-#else
+#else  // defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
+#if defined(OS_WIN)
+  // Lots of crashes (at PartitionAddressSpace::Init) occur
+  // when enabling GigaCage on Windows whose version is smaller than 8.1,
+  // because PTEs for reserved memory counts against commit limit. See
+  // https://crbug.com/1101421.
+  if (!IsWindows8Point1OrGreater())
+    return false;
+#endif
   return FeatureList::IsEnabled(kPartitionAllocGigaCage);
 #endif
 }

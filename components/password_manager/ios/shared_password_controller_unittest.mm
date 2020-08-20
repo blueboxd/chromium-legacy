@@ -9,13 +9,13 @@
 #include "components/autofill/core/common/password_form_generation_data.h"
 #import "components/autofill/ios/browser/form_suggestion.h"
 #import "components/autofill/ios/browser/form_suggestion_provider_query.h"
+#include "components/autofill/ios/form_util/unique_id_data_tab_helper.h"
 #include "components/password_manager/core/browser/password_manager_interface.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
 #import "components/password_manager/ios/password_form_helper.h"
 #import "components/password_manager/ios/password_suggestion_helper.h"
 #include "components/password_manager/ios/test_helpers.h"
-#include "components/password_manager/ios/unique_id_tab_helper.h"
 #import "ios/web/public/test/fakes/fake_navigation_context.h"
 #include "ios/web/public/test/fakes/fake_web_frame.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
@@ -111,7 +111,7 @@ class SharedPasswordControllerTest : public PlatformTest {
     controller_.delegate = delegate_;
     [suggestion_helper_ verify];
     [form_helper_ verify];
-    UniqueIDTabHelper::CreateForWebState(&web_state_);
+    UniqueIDDataTabHelper::CreateForWebState(&web_state_);
   }
 
  protected:

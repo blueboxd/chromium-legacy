@@ -21,7 +21,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_STYLE_DECLARATION_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_STYLE_DECLARATION_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -44,6 +43,8 @@ class CORE_EXPORT CSSStyleDeclaration : public ScriptWrappable,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  CSSStyleDeclaration(const CSSStyleDeclaration&) = delete;
+  CSSStyleDeclaration& operator=(const CSSStyleDeclaration&) = delete;
   ~CSSStyleDeclaration() override = default;
 
   void Trace(Visitor* visitor) const override;
@@ -107,9 +108,6 @@ class CORE_EXPORT CSSStyleDeclaration : public ScriptWrappable,
  protected:
   CSSStyleDeclaration(ExecutionContext* context)
       : ExecutionContextClient(context) {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CSSStyleDeclaration);
 };
 
 }  // namespace blink

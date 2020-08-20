@@ -2679,8 +2679,8 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestDeviceScaleFactorChange);
 class LayerTreeHostTestRasterColorSpaceChange : public LayerTreeHostTest {
  public:
   void SetupTree() override {
-    space1_ = gfx::ColorSpace::CreateXYZD50();
-    space2_ = gfx::ColorSpace::CreateSRGB();
+    space1_ = gfx::DisplayColorSpaces(gfx::ColorSpace::CreateXYZD50());
+    space2_ = gfx::DisplayColorSpaces(gfx::ColorSpace::CreateSRGB());
 
     root_layer_ = Layer::Create();
     root_layer_->SetBounds(gfx::Size(10, 20));
@@ -2690,7 +2690,7 @@ class LayerTreeHostTestRasterColorSpaceChange : public LayerTreeHostTest {
     root_layer_->AddChild(child_layer_);
 
     layer_tree_host()->SetRootLayer(root_layer_);
-    layer_tree_host()->SetRasterColorSpace(space1_);
+    layer_tree_host()->SetDisplayColorSpaces(space1_);
     LayerTreeHostTest::SetupTree();
     client_.set_bounds(root_layer_->bounds());
   }
@@ -2708,32 +2708,38 @@ class LayerTreeHostTestRasterColorSpaceChange : public LayerTreeHostTest {
         // The first frame will have full damage, and should be in the initial
         // color space.
         EXPECT_FALSE(frame_data->has_no_damage);
-        EXPECT_TRUE(space1_ == host_impl->active_tree()->raster_color_space());
+        EXPECT_TRUE(space1_ ==
+                    host_impl->active_tree()->display_color_spaces());
         break;
       case 1:
         // Empty commit.
         EXPECT_TRUE(frame_data->has_no_damage);
-        EXPECT_TRUE(space1_ == host_impl->active_tree()->raster_color_space());
+        EXPECT_TRUE(space1_ ==
+                    host_impl->active_tree()->display_color_spaces());
         break;
       case 2:
         // The change from space1 to space2 should cause full damage.
         EXPECT_FALSE(frame_data->has_no_damage);
-        EXPECT_TRUE(space2_ == host_impl->active_tree()->raster_color_space());
+        EXPECT_TRUE(space2_ ==
+                    host_impl->active_tree()->display_color_spaces());
         break;
       case 3:
         // Empty commit with the color space set to space2 redundantly.
         EXPECT_TRUE(frame_data->has_no_damage);
-        EXPECT_TRUE(space2_ == host_impl->active_tree()->raster_color_space());
+        EXPECT_TRUE(space2_ ==
+                    host_impl->active_tree()->display_color_spaces());
         break;
       case 4:
         // The change from space2 to space1 should cause full damage.
         EXPECT_FALSE(frame_data->has_no_damage);
-        EXPECT_TRUE(space1_ == host_impl->active_tree()->raster_color_space());
+        EXPECT_TRUE(space1_ ==
+                    host_impl->active_tree()->display_color_spaces());
         break;
       case 5:
         // Empty commit.
         EXPECT_TRUE(frame_data->has_no_damage);
-        EXPECT_TRUE(space1_ == host_impl->active_tree()->raster_color_space());
+        EXPECT_TRUE(space1_ ==
+                    host_impl->active_tree()->display_color_spaces());
         EndTest();
         break;
       default:
@@ -2758,19 +2764,19 @@ class LayerTreeHostTestRasterColorSpaceChange : public LayerTreeHostTest {
         break;
       case 2:
         EXPECT_TRUE(child_layer_->update_rect().IsEmpty());
-        layer_tree_host()->SetRasterColorSpace(space2_);
+        layer_tree_host()->SetDisplayColorSpaces(space2_);
         EXPECT_FALSE(child_layer_->update_rect().IsEmpty());
         break;
       case 3:
         // The redundant SetRasterColorSpace should cause no commit and no
         // damage. Force a commit for the test to continue.
-        layer_tree_host()->SetRasterColorSpace(space2_);
+        layer_tree_host()->SetDisplayColorSpaces(space2_);
         PostSetNeedsCommitToMainThread();
         EXPECT_TRUE(child_layer_->update_rect().IsEmpty());
         break;
       case 4:
         EXPECT_TRUE(child_layer_->update_rect().IsEmpty());
-        layer_tree_host()->SetRasterColorSpace(space1_);
+        layer_tree_host()->SetDisplayColorSpaces(space1_);
         EXPECT_FALSE(child_layer_->update_rect().IsEmpty());
         break;
       case 5:
@@ -2786,8 +2792,8 @@ class LayerTreeHostTestRasterColorSpaceChange : public LayerTreeHostTest {
   }
 
  private:
-  gfx::ColorSpace space1_;
-  gfx::ColorSpace space2_;
+  gfx::DisplayColorSpaces space1_;
+  gfx::DisplayColorSpaces space2_;
   FakeContentLayerClient client_;
   scoped_refptr<Layer> root_layer_;
   scoped_refptr<Layer> child_layer_;

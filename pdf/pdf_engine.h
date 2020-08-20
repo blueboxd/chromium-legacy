@@ -324,7 +324,7 @@ class PDFEngine {
   // Most of these functions are similar to the Pepper functions of the same
   // name, so not repeating the description here unless it's different.
   virtual bool New(const char* url, const char* headers) = 0;
-  virtual void PageOffsetUpdated(const gfx::Point& page_offset) = 0;
+  virtual void PageOffsetUpdated(const gfx::Vector2d& page_offset) = 0;
   virtual void PluginSizeUpdated(const gfx::Size& size) = 0;
   virtual void ScrolledToXPosition(int position) = 0;
   virtual void ScrolledToYPosition(int position) = 0;

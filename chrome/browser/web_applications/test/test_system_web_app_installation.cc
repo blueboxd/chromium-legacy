@@ -119,6 +119,10 @@ TestSystemWebAppInstallation::~TestSystemWebAppInstallation() {
 
 std::unique_ptr<WebApplicationInfo> GenerateWebApplicationInfoForTestApp() {
   auto info = std::make_unique<WebApplicationInfo>();
+  // the pwa.html is arguably wrong, but the manifest version uses it
+  // incorrectly as well, and it's a lot of work to fix it. App ids are
+  // generated from this, and it's important to keep it stable across the
+  // installation modes.
   info->app_url = GURL("chrome://test-system-app/pwa.html");
   info->scope = GURL("chrome://test-system-app/");
   info->title = base::UTF8ToUTF16("Test System App");

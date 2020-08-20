@@ -98,7 +98,7 @@ void NGUnpositionedListMarker::AddToBox(
                               content_offset->block_offset);
 
   // Adjust the block offset to align baselines of the marker and the content.
-  NGLineHeightMetrics marker_metrics = marker_fragment.BaselineMetrics(
+  FontHeight marker_metrics = marker_fragment.BaselineMetrics(
       /* margins */ NGLineBoxStrut(), baseline_type);
   LayoutUnit baseline_adjust = content_baseline - marker_metrics.ascent;
   if (baseline_adjust >= 0) {

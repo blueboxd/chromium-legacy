@@ -50,13 +50,15 @@ constexpr base::FilePath::CharType kAndroidDownloadDir[] =
     FILE_PATH_LITERAL("/storage/emulated/0/Download");
 
 // The MyFiles path inside ARC container. This will be the path that is used in
-// MediaScanner.scanFile request.
+// MediaScanner.scanFile request. MediaScanner scans MyFiles under
+// /storage/MyFiles-read instead of /storage/MyFiles because non-system apps has
+// no access to /storage/MyFiles.
 constexpr base::FilePath::CharType kAndroidMyFilesDir[] =
-    FILE_PATH_LITERAL("/storage/MyFiles");
+    FILE_PATH_LITERAL("/storage/MyFiles-read");
 
 // The path for Downloads under MyFiles inside ARC container.
 constexpr base::FilePath::CharType kAndroidMyFilesDownloadsDir[] =
-    FILE_PATH_LITERAL("/storage/MyFiles/Downloads/");
+    FILE_PATH_LITERAL("/storage/MyFiles-read/Downloads/");
 
 // The removable media path inside ARC container. This will be the path that
 // is used in MediaScanner.scanFile request.

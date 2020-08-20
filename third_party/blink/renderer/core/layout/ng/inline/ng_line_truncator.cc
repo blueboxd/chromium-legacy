@@ -76,11 +76,11 @@ LayoutUnit NGLineTruncator::PlaceEllipsisNextTo(
       IsLtr(line_direction_)
           ? ellipsized_child->InlineOffset() + ellipsized_child->inline_size
           : ellipsized_child->InlineOffset() - ellipsis_width_;
-  NGLineHeightMetrics ellipsis_metrics;
+  FontHeight ellipsis_metrics;
   DCHECK(ellipsis_font_data_);
   if (ellipsis_font_data_) {
-    ellipsis_metrics = NGLineHeightMetrics(
-        ellipsis_font_data_->GetFontMetrics(), line_style_->GetFontBaseline());
+    ellipsis_metrics = FontHeight(ellipsis_font_data_->GetFontMetrics(),
+                                  line_style_->GetFontBaseline());
   }
 
   DCHECK(ellipsis_text_);

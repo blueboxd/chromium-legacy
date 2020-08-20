@@ -15,9 +15,12 @@ source_set("form_util") {
     "form_activity_params.h",
     "form_activity_tab_helper.h",
     "form_activity_tab_helper.mm",
+    "unique_id_data_tab_helper.h",
+    "unique_id_data_tab_helper.mm",
   ]
   deps = [
     "//base",
+    "//components/autofill/core/common",
     "//ios/web/public",
     "//ios/web/public/js_messaging",
   ]
@@ -48,6 +51,7 @@ source_set("unit_tests") {
     "form_activity_observer_bridge_unittest.mm",
     "form_activity_tab_helper_unittest.mm",
     "form_unittest.mm",
+    "unique_id_data_tab_helper_unittest.mm",
   ]
   deps = [
     ":form_util",

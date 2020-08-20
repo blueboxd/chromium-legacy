@@ -21,8 +21,8 @@ async function testAudioFlow(t, negotiationFunction) {
 
   const audioSender = caller.addTrack(audioTrack)
   const senderStreams = audioSender.createEncodedStreams();
-  const senderReader = senderStreams.readableStream.getReader();
-  const senderWriter = senderStreams.writableStream.getWriter();
+  const senderReader = senderStreams.readable.getReader();
+  const senderWriter = senderStreams.writable.getWriter();
 
   const frameInfos = [];
   const numFramesPassthrough = 5;
@@ -37,8 +37,8 @@ async function testAudioFlow(t, negotiationFunction) {
 
       const receiverStreams =
           audioReceiver.createEncodedStreams();
-      const receiverReader = receiverStreams.readableStream.getReader();
-      const receiverWriter = receiverStreams.writableStream.getWriter();
+      const receiverReader = receiverStreams.readable.getReader();
+      const receiverWriter = receiverStreams.writable.getWriter();
 
       const maxFramesToReceive = numFramesToSend;
       let numVerifiedFrames = 0;
@@ -177,8 +177,8 @@ promise_test(async t => {
 
   const senderWorker = new Worker('RTCPeerConnection-sender-worker-single-frame.js')
   senderWorker.postMessage(
-    {readableStream: senderStreams.readableStream},
-    [senderStreams.readableStream]);
+    {readableStream: senderStreams.readable},
+    [senderStreams.readable]);
 
   let expectedFrameData = null;
   let verifiedFrameData = false;
@@ -238,7 +238,7 @@ promise_test(async t => {
 
   await promise_rejects_dom(
       t, 'OperationError',
-      streams.readableStream.pipeThrough(transformer).pipeTo(streams.writableStream));
+      streams.readable.pipeThrough(transformer).pipeTo(streams.writable));
 }, 'Enqueuing the same frame twice fails');
 
 promise_test(async t => {
@@ -252,17 +252,17 @@ promise_test(async t => {
   t.add_cleanup(() => audioTrack.stop());
 
   const audioSender = caller.addTrack(audioTrack)
-  const senderStreams = audioSender.createEncodedAudioStreams();
-  const senderReader = senderStreams.readableStream.getReader();
-  const senderWriter = senderStreams.writableStream.getWriter();
+  const senderStreams = audioSender.createEncodedStreams();
+  const senderReader = senderStreams.readable.getReader();
+  const senderWriter = senderStreams.writable.getWriter();
 
   let sentFrameInfo = null;
   const ontrackPromise = new Promise(resolve => {
     callee.ontrack = e => {
       const audioReceiver = e.receiver;
 
-      const receiverStreams = audioReceiver.createEncodedAudioStreams();
-      const receiverReader = receiverStreams.readableStream.getReader();
+      const receiverStreams = audioReceiver.createEncodedStreams();
+      const receiverReader = receiverStreams.readable.getReader();
       receiverReader.read().then(t.step_func(receivedResult => {
         assert_true(areFrameInfosEqual(receivedResult.value, sentFrameInfo));
         resolve();

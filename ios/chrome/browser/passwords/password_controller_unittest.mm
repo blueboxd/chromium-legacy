@@ -21,6 +21,7 @@
 #include "base/values.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "components/autofill/ios/form_util/form_activity_params.h"
+#include "components/autofill/ios/form_util/unique_id_data_tab_helper.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/password_manager/core/browser/password_form_metrics_recorder.h"
@@ -33,7 +34,6 @@
 #import "components/password_manager/ios/password_form_helper.h"
 #import "components/password_manager/ios/shared_password_controller.h"
 #include "components/password_manager/ios/test_helpers.h"
-#include "components/password_manager/ios/unique_id_tab_helper.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
@@ -290,13 +290,13 @@ class PasswordControllerTest : public ChromeWebTest {
     // predictions on.
     PasswordFormManager::set_wait_for_server_predictions_for_filling(false);
 
+    UniqueIDDataTabHelper::CreateForWebState(web_state());
+
     passwordController_ =
         CreatePasswordController(web_state(), store_.get(), &weak_client_);
 
     ON_CALL(*weak_client_, IsSavingAndFillingEnabled)
         .WillByDefault(Return(true));
-
-    UniqueIDTabHelper::CreateForWebState(web_state());
 
     @autoreleasepool {
       // Make sure the temporary array is released after SetUp finishes,
@@ -1209,7 +1209,7 @@ class PasswordControllerTestSimple : public PlatformTest {
     web_state_.SetJSInjectionReceiver(mock_js_injection_receiver);
     ON_CALL(web_state_, GetBrowserState)
         .WillByDefault(testing::Return(browser_state.get()));
-    UniqueIDTabHelper::CreateForWebState(&web_state_);
+    UniqueIDDataTabHelper::CreateForWebState(&web_state_);
 
     passwordController_ =
         CreatePasswordController(&web_state_, store_.get(), &weak_client_);
@@ -1643,6 +1643,7 @@ TEST_F(PasswordControllerTest, IncognitoPasswordGenerationDisabled) {
         .WillRepeatedly(Return(true));
     EXPECT_CALL(*weak_client_, IsIncognito).WillRepeatedly(Return(true));
 
+    UniqueIDDataTabHelper::CreateForWebState(web_state());
     passwordController_ =
     [[PasswordController alloc] initWithWebState:web_state()
                                           client:std::move(client)];

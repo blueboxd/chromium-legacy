@@ -88,6 +88,8 @@ class ZeroSuggestProvider : public BaseSearchProvider {
                            AllowZeroSuggestSuggestions);
   FRIEND_TEST_ALL_PREFIXES(ZeroSuggestProviderTest, TypeOfResultToRun);
   FRIEND_TEST_ALL_PREFIXES(ZeroSuggestProviderTest,
+                           TypeOfResultToRunForContextualWeb);
+  FRIEND_TEST_ALL_PREFIXES(ZeroSuggestProviderTest,
                            TestStartWillStopForSomeInput);
   ZeroSuggestProvider(AutocompleteProviderClient* client,
                       AutocompleteProviderListener* listener);

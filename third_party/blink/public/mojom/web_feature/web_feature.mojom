@@ -2756,6 +2756,10 @@ enum WebFeature {
   kV8Document_FragmentDirective_AttributeGetter = 3427,
   kV8StorageManager_GetDirectory_Method = 3428,
   kBeforematchHandlerRegistered = 3429,
+  kBluetoothAdvertisingEventName = 3430,
+  kBluetoothAdvertisingEventAppearance = 3431,
+  kBluetoothAdvertisingEventTxPower = 3432,
+  kCrossOriginOpenerPolicyReporting= 3433,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

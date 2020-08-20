@@ -16,6 +16,7 @@
 #include "chrome/browser/apps/app_service/app_service_metrics.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "components/account_id/account_id.h"
 #include "components/services/app_service/app_service_impl.h"
@@ -267,7 +268,13 @@ void AppServiceProxy::Launch(const std::string& app_id,
         return;
       }
 #endif
-      RecordAppLaunch(update.AppId(), launch_source);
+      // Don't record system apps metric here, they are handled in
+      // LaunchSystemWebApp.
+      base::Optional<web_app::SystemAppType> system_app_type =
+          web_app::GetSystemWebAppTypeForAppId(profile_, update.AppId());
+      if (!system_app_type) {
+        RecordAppLaunch(update.AppId(), launch_source);
+      }
       app_service_->Launch(update.AppType(), update.AppId(), event_flags,
                            launch_source, display_id);
     });
@@ -288,6 +295,11 @@ void AppServiceProxy::LaunchAppWithFiles(
         return;
       }
 #endif
+      // TODO(crbug/1117655): Presently, app launch metrics are recorded in the
+      // caller. We should record them here, with the same SWA logic as
+      // AppServiceProxy::Launch. There is an if statement to detect launches
+      // from the file manager in LaunchSystemWebApp that should be removed at
+      // the same time.
       app_service_->LaunchAppWithFiles(update.AppType(), update.AppId(),
                                        container, event_flags, launch_source,
                                        std::move(file_paths));
@@ -321,7 +333,13 @@ void AppServiceProxy::LaunchAppWithIntent(
         return;
       }
 #endif
-      RecordAppLaunch(update.AppId(), launch_source);
+      base::Optional<web_app::SystemAppType> system_app_type =
+          web_app::GetSystemWebAppTypeForAppId(profile_, update.AppId());
+      if (!system_app_type) {
+        // Don't record system apps metric here, they are handled in
+        // LaunchSystemWebApp.
+        RecordAppLaunch(update.AppId(), launch_source);
+      }
       app_service_->LaunchAppWithIntent(update.AppType(), update.AppId(),
                                         event_flags, std::move(intent),
                                         launch_source, display_id);

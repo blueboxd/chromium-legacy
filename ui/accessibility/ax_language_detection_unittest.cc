@@ -11,7 +11,9 @@
 
 #include "base/command_line.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/accessibility/accessibility_features.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node.h"
@@ -56,6 +58,14 @@ class AXLanguageDetectionTestFixture : public testing::Test {
       const AXLanguageDetectionTestFixture&) = delete;
 
  protected:
+  bool IsStaticLanguageDetectionEnabled() {
+    return AXLanguageDetectionManager::IsStaticLanguageDetectionEnabled();
+  }
+
+  bool IsDynamicLanguageDetectionEnabled() {
+    return AXLanguageDetectionManager::IsDynamicLanguageDetectionEnabled();
+  }
+
   AXLanguageDetectionObserver* getObserver(AXTree& tree) {
     return tree.language_detection_manager->language_detection_observer_.get();
   }
@@ -138,28 +148,45 @@ class AXLanguageDetectionTestDynamicContent
   }
 };
 
-TEST(AXLanguageDetectionTest, StaticContentFeatureFlag) {
+TEST_F(AXLanguageDetectionTestFixture, StaticContentFeatureFlag) {
   // TODO(crbug/889370): Remove this test once this feature is stable
   EXPECT_FALSE(
       ::switches::IsExperimentalAccessibilityLanguageDetectionEnabled());
+  EXPECT_FALSE(IsStaticLanguageDetectionEnabled());
 
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       ::switches::kEnableExperimentalAccessibilityLanguageDetection);
 
   EXPECT_TRUE(
       ::switches::IsExperimentalAccessibilityLanguageDetectionEnabled());
+  EXPECT_TRUE(IsStaticLanguageDetectionEnabled());
 }
 
-TEST(AXLanguageDetectionTest, DynamicContentFeatureFlag) {
+TEST_F(AXLanguageDetectionTestFixture, DynamicContentFeatureFlag) {
   // TODO(crbug/889370): Remove this test once this feature is stable
   EXPECT_FALSE(
       ::switches::IsExperimentalAccessibilityLanguageDetectionDynamicEnabled());
+  EXPECT_FALSE(IsDynamicLanguageDetectionEnabled());
 
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       ::switches::kEnableExperimentalAccessibilityLanguageDetectionDynamic);
 
   EXPECT_TRUE(
       ::switches::IsExperimentalAccessibilityLanguageDetectionDynamicEnabled());
+  EXPECT_TRUE(IsDynamicLanguageDetectionEnabled());
+}
+
+TEST_F(AXLanguageDetectionTestFixture, FeatureFlag) {
+  // TODO(crbug/889370): Remove this test once this feature is stable
+  EXPECT_FALSE(IsStaticLanguageDetectionEnabled());
+  EXPECT_FALSE(IsDynamicLanguageDetectionEnabled());
+
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {features::kEnableAccessibilityLanguageDetection}, {});
+
+  EXPECT_TRUE(IsStaticLanguageDetectionEnabled());
+  EXPECT_TRUE(IsDynamicLanguageDetectionEnabled());
 }
 
 TEST(AXLanguageDetectionTest, LangAttrInheritanceFeatureFlagOff) {
@@ -840,7 +867,8 @@ TEST_F(AXLanguageDetectionTestStaticContent, kLanguageUntouched) {
   }
 }
 
-// Test RegisterLanguageDetectionObserver correctly respects the feature flag.
+// Test RegisterLanguageDetectionObserver correctly respects the command line
+// flags.
 TEST_F(AXLanguageDetectionTestFixture, ObserverRegistrationObeysFlag) {
   // Enable only the flag controlling static language detection.
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -862,6 +890,33 @@ TEST_F(AXLanguageDetectionTestFixture, ObserverRegistrationObeysFlag) {
 
   // Try registration again, this should construct and register observer as flag
   // is now enabled.
+  tree.language_detection_manager->RegisterLanguageDetectionObserver();
+
+  // Check our observer was constructed.
+  ASSERT_NE(getObserver(tree), nullptr);
+
+  // Check our observer was registered in our tree.
+  ASSERT_TRUE(tree.HasObserver(getObserver(tree)));
+}
+
+// Test RegisterLanguageDetectionObserver correctly respects the feature flag.
+TEST_F(AXLanguageDetectionTestFixture, ObserverRegistrationObeysFeatureFlag) {
+  // Construct empty tree and check initialisation.
+  AXTree tree;
+  ASSERT_NE(tree.language_detection_manager, nullptr);
+  ASSERT_EQ(getObserver(tree), nullptr);
+
+  // Try registration without enabling Dynamic feature flag, should be a no-op.
+  tree.language_detection_manager->RegisterLanguageDetectionObserver();
+
+  ASSERT_EQ(getObserver(tree), nullptr);
+
+  // Enable general feature flag which gates both Static and Dynamic features.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {features::kEnableAccessibilityLanguageDetection}, {});
+
+  // Try registration again, this should now construct and register an observer.
   tree.language_detection_manager->RegisterLanguageDetectionObserver();
 
   // Check our observer was constructed.

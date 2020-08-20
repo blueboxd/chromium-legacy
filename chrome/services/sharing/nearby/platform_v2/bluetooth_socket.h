@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "base/optional.h"
+#include "chrome/services/sharing/nearby/platform_v2/bluetooth_device.h"
 #include "device/bluetooth/public/mojom/adapter.mojom.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/nearby/src/cpp/platform_v2/api/bluetooth_classic.h"
@@ -49,6 +51,10 @@ namespace chrome {
 // |task_runner_|) so that blocking on the calling thread will not deadlock.
 class BluetoothSocket : public api::BluetoothSocket {
  public:
+  BluetoothSocket(bluetooth::mojom::DeviceInfoPtr device,
+                  mojo::PendingRemote<bluetooth::mojom::Socket> socket,
+                  mojo::ScopedDataPipeConsumerHandle receive_stream,
+                  mojo::ScopedDataPipeProducerHandle send_stream);
   BluetoothSocket(api::BluetoothDevice& remote_device,
                   mojo::PendingRemote<bluetooth::mojom::Socket> socket,
                   mojo::ScopedDataPipeConsumerHandle receive_stream,
@@ -65,6 +71,9 @@ class BluetoothSocket : public api::BluetoothSocket {
   api::BluetoothDevice* GetRemoteDevice() override;
 
  private:
+  void InitializeStreams(mojo::ScopedDataPipeConsumerHandle receive_stream,
+                         mojo::ScopedDataPipeProducerHandle send_stream);
+
   // These methods must be run on |task_runner_|, because the
   // mojo::SimpleWatcher members of |input_stream_| and |output_stream_| expect
   // to be created on the same sequence they are later run on. See
@@ -76,7 +85,15 @@ class BluetoothSocket : public api::BluetoothSocket {
                           base::OnceClosure callback);
   void DestroyOutputStream(base::OnceClosure callback);
 
-  api::BluetoothDevice& remote_device_;
+  // If this BluetoothSocket is created by connecting to a discovered device, a
+  // reference to that device will be provided to set |remote_device_ref_|, and
+  // |remote_device_| will be left unset.
+  // On the other hand, if this BluetoothSocket is created by an incoming
+  // connection, there is no previous owner of that device object, and therefore
+  // BluetoothSocket is expected to own it (within |remote_device_|). In this
+  // case, |remote_device_ref_| is a reference to |remote_device_|.
+  base::Optional<chrome::BluetoothDevice> remote_device_;
+  api::BluetoothDevice& remote_device_ref_;
 
   // The public methods which are overridden by BluetoothSocket's subclasses
   // InputStreamImpl and OutputStreamImpl are expected to block the caller

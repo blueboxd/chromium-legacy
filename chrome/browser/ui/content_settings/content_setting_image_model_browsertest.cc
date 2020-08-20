@@ -52,7 +52,6 @@ IN_PROC_BROWSER_TEST_F(ContentSettingImageModelBrowserTest, CreateBubbleModel) {
           ImageType::POPUPS,
           ImageType::MIXEDSCRIPT,
           ImageType::PPAPI_BROKER,
-          ImageType::GEOLOCATION,
           ImageType::PROTOCOL_HANDLERS,
           ImageType::MIDI_SYSEX,
       };

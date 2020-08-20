@@ -130,7 +130,6 @@ copy("chrome_camera_app_js_device") {
     "src/js/device/camera3_device_info.js",
     "src/js/device/constraints_preferrer.js",
     "src/js/device/device_info_updater.js",
-    "src/js/device/error.js",
   ]
 
   outputs = [ "$out_camera_app_dir/js/device/{{source_file_part}}" ]

@@ -1768,9 +1768,9 @@ gfx::ColorSpace LayerTreeHostImpl::GetRasterColorSpace(
   // The pending tree will has the most recently updated color space, so use it.
   gfx::ColorSpace result;
   if (pending_tree_)
-    result = pending_tree_->raster_color_space();
+    result = pending_tree_->display_color_spaces().GetScreenInfoColorSpace();
   else if (active_tree_)
-    result = active_tree_->raster_color_space();
+    result = active_tree_->display_color_spaces().GetScreenInfoColorSpace();
 
   // Always specify a color space if color correct rasterization is requested
   // (not specifying a color space indicates that no color conversion is
@@ -2722,6 +2722,7 @@ bool LayerTreeHostImpl::WillBeginImplFrame(const viz::BeginFrameArgs& args) {
   impl_thread_phase_ = ImplThreadPhase::INSIDE_IMPL_FRAME;
   current_begin_frame_tracker_.Start(args);
   frame_trackers_.NotifyBeginImplFrame(args);
+  total_frame_counter_.OnBeginFrame(args);
 
   if (is_likely_to_require_a_draw_) {
     // Optimistically schedule a draw. This will let us expect the tile manager
@@ -3201,6 +3202,10 @@ void LayerTreeHostImpl::SetVisible(bool visible) {
   if (visible_ == visible)
     return;
   visible_ = visible;
+  if (visible_)
+    total_frame_counter_.OnShow(base::TimeTicks::Now());
+  else
+    total_frame_counter_.OnHide(base::TimeTicks::Now());
   DidVisibilityChange(this, visible_);
   UpdateTileManagerMemoryPolicy(ActualManagedMemoryPolicy());
 
@@ -4816,6 +4821,7 @@ void LayerTreeHostImpl::SetActiveURL(const GURL& url, ukm::SourceId source_id) {
     // The source id has already been associated to the URL.
     ukm_manager_->SetSourceId(source_id);
   }
+  total_frame_counter_.Reset();
 }
 
 void LayerTreeHostImpl::AllocateLocalSurfaceId() {

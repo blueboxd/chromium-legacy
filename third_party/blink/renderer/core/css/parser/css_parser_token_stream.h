@@ -6,7 +6,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PARSER_CSS_PARSER_TOKEN_STREAM_H_
 
 #include "base/auto_reset.h"
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
 #include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
@@ -94,6 +93,8 @@ class CORE_EXPORT CSSParserTokenStream {
   }
 
   CSSParserTokenStream(CSSParserTokenStream&&) = default;
+  CSSParserTokenStream(const CSSParserTokenStream&) = delete;
+  CSSParserTokenStream& operator=(const CSSParserTokenStream&) = delete;
 
   inline void EnsureLookAhead() {
     if (!HasLookAhead()) {
@@ -239,7 +240,6 @@ class CORE_EXPORT CSSParserTokenStream {
   wtf_size_t offset_ = 0;
   bool has_look_ahead_ = false;
   CSSParserTokenType boundary_type_ = kEOFToken;
-  DISALLOW_COPY_AND_ASSIGN(CSSParserTokenStream);
 };
 
 }  // namespace blink

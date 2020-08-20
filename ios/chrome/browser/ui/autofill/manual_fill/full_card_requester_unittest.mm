@@ -14,6 +14,7 @@
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #import "components/autofill/ios/browser/autofill_agent.h"
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
+#include "components/autofill/ios/form_util/unique_id_data_tab_helper.h"
 #include "components/prefs/pref_service.h"
 #import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
@@ -83,6 +84,8 @@ class PaymentRequestFullCardRequesterTest : public PlatformTest {
     web_state()->SetWebFramesManager(std::move(frames_manager));
     web_state()->OnWebFrameDidBecomeAvailable(
         web_state()->GetWebFramesManager()->GetMainWebFrame());
+
+    UniqueIDDataTabHelper::CreateForWebState(web_state());
 
     autofill_agent_ =
         [[AutofillAgent alloc] initWithPrefService:browser_state()->GetPrefs()

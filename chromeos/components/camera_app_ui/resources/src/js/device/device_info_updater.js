@@ -12,7 +12,6 @@ import {
   PhotoConstraintsPreferrer,  // eslint-disable-line no-unused-vars
   VideoConstraintsPreferrer,  // eslint-disable-line no-unused-vars
 } from './constraints_preferrer.js';
-import {LegacyVCDError} from './error.js';
 
 /**
  * Contains information of all cameras on the device and will updates its value
@@ -239,22 +238,5 @@ export class DeviceInfoUpdater {
    */
   async getCamera3DevicesInfo() {
     return this.camera3DevicesInfo_;
-  }
-
-  /**
-   * Gets supported photo and video resolutions for specified video device.
-   * @param {string} deviceId Device id of the video device.
-   * @return {!Promise<!{photo: !ResolutionList, video: !ResolutionList}>}
-   *     Supported photo and video resolutions.
-   * @throws {!Error} May fail on HALv1 device without capability of querying
-   *     supported resolutions.
-   */
-  async getDeviceResolutions(deviceId) {
-    const devices = await this.getCamera3DevicesInfo();
-    if (!devices) {
-      throw new LegacyVCDError();
-    }
-    const info = devices.find((info) => info.deviceId === deviceId);
-    return {photo: info.photoResols, video: info.videoResols};
   }
 }

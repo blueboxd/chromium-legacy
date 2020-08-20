@@ -8,11 +8,12 @@ import android.accounts.AccountManager;
 import android.app.Activity;
 import android.content.Intent;
 
+import androidx.annotation.MainThread;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.Callback;
-import org.chromium.base.task.PostTask;
-import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.base.ThreadUtils;
+import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.SigninManager;
@@ -24,7 +25,6 @@ import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.base.GoogleServiceAuthError;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.content_public.browser.LoadUrlParams;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
@@ -37,15 +37,18 @@ public class AccountPickerDelegate implements WebSigninBridge.Listener {
     private final WindowAndroid mWindowAndroid;
     private final ChromeActivity mChromeActivity;
     private final Tab mTab;
+    private final WebSigninBridge.Factory mWebSigninBridgeFactory;
     private final String mContinueUrl;
     private final SigninManager mSigninManager;
-    private WebSigninBridge mWebSigninBridge;
+    private @Nullable WebSigninBridge mWebSigninBridge;
     private Callback<GoogleServiceAuthError> mOnSignInErrorCallback;
 
-    public AccountPickerDelegate(WindowAndroid windowAndroid, String continueUrl) {
+    public AccountPickerDelegate(WindowAndroid windowAndroid,
+            WebSigninBridge.Factory webSigninBridgeFactory, String continueUrl) {
         mWindowAndroid = windowAndroid;
         mChromeActivity = (ChromeActivity) mWindowAndroid.getActivity().get();
         mTab = mChromeActivity.getActivityTab();
+        mWebSigninBridgeFactory = webSigninBridgeFactory;
         mContinueUrl = continueUrl;
         mSigninManager = IdentityServicesProvider.get().getSigninManager(
                 Profile.getLastUsedRegularProfile());
@@ -55,10 +58,7 @@ public class AccountPickerDelegate implements WebSigninBridge.Listener {
      * Releases resources used by this class.
      */
     public void onDismiss() {
-        if (mWebSigninBridge != null) {
-            mWebSigninBridge.destroy();
-            mWebSigninBridge = null;
-        }
+        destroyWebSigninBridge();
     }
 
     /**
@@ -67,27 +67,27 @@ public class AccountPickerDelegate implements WebSigninBridge.Listener {
     public void signIn(CoreAccountInfo coreAccountInfo,
             Callback<GoogleServiceAuthError> onSignInErrorCallback) {
         mOnSignInErrorCallback = onSignInErrorCallback;
+        mWebSigninBridge = mWebSigninBridgeFactory.create(
+                Profile.getLastUsedRegularProfile(), coreAccountInfo, this);
         mSigninManager.signIn(
                 SigninAccessPoint.WEB_SIGNIN, coreAccountInfo, new SigninManager.SignInCallback() {
                     @Override
                     public void onSignInComplete() {
-                        // TODO(https://crbug.com/1092399): Implement sign-in properly in delegate
-                        // We should wait for the cookie signin and cookie regeneration here,
-                        // PostTask.postDelayedTask is just a temporary measure for testing the
-                        // flow, it will be removed soon.
-                        PostTask.postDelayedTask(UiThreadTaskTraits.DEFAULT,
-                                () -> { mTab.loadUrl(new LoadUrlParams(mContinueUrl)); }, 2000);
+                        // After the sign-in is finished in Chrome, we still need to wait for
+                        // WebSigninBridge to be called to redirect to the continue url.
                     }
 
                     @Override
                     public void onSignInAborted() {
-                        // TODO(https//crbug.com/1092399): Add UI to show in this case
+                        AccountPickerDelegate.this.destroyWebSigninBridge();
                     }
                 });
     }
 
     /**
      * Notifies when the user clicked the "add account" button.
+     *
+     * TODO(https//crbug.com/1117000): Change the callback argument to CoreAccountInfo
      */
     public void addAccount(Callback<String> callback) {
         AccountManagerFacadeProvider.getInstance().createAddAccountIntent(
@@ -119,11 +119,14 @@ public class AccountPickerDelegate implements WebSigninBridge.Listener {
     public void goIncognitoMode() {}
 
     /**
-     * TODO(https://crbug.com/1092399): Redirect URL when web sign-in succeeded.
      * Sign-in completed successfully and the primary account is available in the cookie jar.
      */
+    @MainThread
     @Override
-    public void onSigninSucceded() {}
+    public void onSigninSucceded() {
+        ThreadUtils.assertOnUiThread();
+        mTab.loadUrl(new LoadUrlParams(mContinueUrl));
+    }
 
     /**
      * Sign-in process failed.
@@ -133,5 +136,12 @@ public class AccountPickerDelegate implements WebSigninBridge.Listener {
     @Override
     public void onSigninFailed(GoogleServiceAuthError error) {
         mOnSignInErrorCallback.onResult(error);
+    }
+
+    private void destroyWebSigninBridge() {
+        if (mWebSigninBridge != null) {
+            mWebSigninBridge.destroy();
+            mWebSigninBridge = null;
+        }
     }
 }

@@ -985,7 +985,7 @@ void ExtensionPrefs::ClearInapplicableDisableReasonsForComponentExtension(
   static constexpr int kAllowDisableReasons =
       disable_reason::DISABLE_RELOAD |
       disable_reason::DISABLE_UNSUPPORTED_REQUIREMENT |
-      disable_reason::DISABLE_CORRUPTED;
+      disable_reason::DISABLE_CORRUPTED | disable_reason::DISABLE_REINSTALL;
 
   // Allow the camera app to be disabled by extension policy. This is a
   // temporary solution until there's a dedicated policy to disable the

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import {browserProxy} from '../browser_proxy/browser_proxy.js';
+import {assert} from '../chrome_util.js';
 import * as state from '../state.js';
 import {
   Facing,
@@ -10,6 +11,7 @@ import {
   Resolution,
   ResolutionList,  // eslint-disable-line no-unused-vars
 } from '../type.js';
+
 // eslint-disable-next-line no-unused-vars
 import {Camera3DeviceInfo} from './camera3_device_info.js';
 
@@ -44,12 +46,12 @@ export class ConstraintsPreferrer {
     this.doReconfigureStream_ = doReconfigureStream;
 
     /**
-     * Object saving resolution preference that each of its key as device id and
+     * Map saving resolution preference that each of its key as device id and
      * value to be preferred width, height of resolution of that video device.
-     * @type {!Object<string, !Resolution>}
+     * @type {!Map<string, !Resolution>}
      * @protected
      */
-    this.prefResolution_ = {};
+    this.prefResolution_ = new Map();
 
     /**
      * Device id of currently working video device.
@@ -59,12 +61,12 @@ export class ConstraintsPreferrer {
     this.deviceId_ = null;
 
     /**
-     * Object of device id as its key and all of available capture resolutions
-     * supported by that video device as its value.
-     * @type {!Object<string, !ResolutionList>}
+     * Maps video device id to all of available capture resolutions supported by
+     * that video device.
+     * @type {!Map<string, !ResolutionList>}
      * @protected
      */
-    this.deviceResolutions_ = {};
+    this.supportedResolutions_ = new Map();
 
     /**
      * Listener for changes of preferred resolution used on particular video
@@ -84,9 +86,9 @@ export class ConstraintsPreferrer {
     // TODO(inker): Return promise and await it to assure preferences are loaded
     // before any access.
     browserProxy.localStorageGet({[key]: {}}).then((values) => {
-      this.prefResolution_ = {};
+      this.prefResolution_ = new Map();
       for (const [deviceId, {width, height}] of Object.entries(values[key])) {
-        this.prefResolution_[deviceId] = new Resolution(width, height);
+        this.prefResolution_.set(deviceId, new Resolution(width, height));
       }
     });
   }
@@ -97,7 +99,8 @@ export class ConstraintsPreferrer {
    * @protected
    */
   saveResolutionPreference_(key) {
-    browserProxy.localStorageSet({[key]: this.prefResolution_});
+    browserProxy.localStorageSet(
+        {[key]: Object.fromEntries(this.prefResolution_)});
   }
 
   /**
@@ -107,7 +110,7 @@ export class ConstraintsPreferrer {
    *     resolution found in user preference.
    */
   getPrefResolution(deviceId) {
-    return this.prefResolution_[deviceId] || null;
+    return this.prefResolution_.get(deviceId) || null;
   }
 
   /**
@@ -135,12 +138,21 @@ export class ConstraintsPreferrer {
    * order.
    * @abstract
    * @param {string} deviceId Device id of video device.
-   * @param {!ResolutionList} previewResolutions Available preview resolutions
-   *     for the video device.
    * @return {!Array<!CaptureCandidate>} Capture resolution and its preview
    *     constraints-candidates.
    */
-  getSortedCandidates(deviceId, previewResolutions) {}
+  getSortedCandidates(deviceId) {}
+
+  /**
+   * Gets capture resolution supported by video device with given device id.
+   * @param {string} deviceId
+   * @return {!ResolutionList}
+   */
+  getSupportedResolutions(deviceId) {
+    // Guarding from HALv1 code path calling this function.
+    assert(this.supportedResolutions_.get(deviceId) !== undefined);
+    return this.supportedResolutions_.get(deviceId);
+  }
 
   /**
    * Changes user preferred capture resolution.
@@ -254,7 +266,7 @@ export class VideoConstraintsPreferrer extends ConstraintsPreferrer {
    * @override
    */
   changePreferredResolution(deviceId, resolution) {
-    this.prefResolution_[deviceId] = resolution;
+    this.prefResolution_.set(deviceId, resolution);
     this.saveResolutionPreference_('deviceVideoResolution');
     if (state.get(Mode.VIDEO) && deviceId === this.deviceId_) {
       this.doReconfigureStream_();
@@ -287,11 +299,12 @@ export class VideoConstraintsPreferrer extends ConstraintsPreferrer {
    * @override
    */
   updateDevicesInfo(devices) {
-    this.deviceResolutions_ = {};
+    this.supportedResolutions_ = new Map();
     this.constFpsInfo_ = {};
 
     devices.forEach(({deviceId, videoResols, videoMaxFps, fpsRanges}) => {
-      this.deviceResolutions_[deviceId] = videoResols;
+      this.supportedResolutions_.set(
+          deviceId, [...videoResols].sort((r1, r2) => r2.area - r1.area));
       /**
        * @param {number} width
        * @param {number} height
@@ -307,7 +320,7 @@ export class VideoConstraintsPreferrer extends ConstraintsPreferrer {
             (maxR, R) => (maxR.area < R.area ? R : maxR),
             new Resolution(0, -1));
       }
-      this.prefResolution_[deviceId] = prefR;
+      this.prefResolution_.set(deviceId, prefR);
 
       const /** !Array<number> */ constFpses =
           fpsRanges.filter(({minFps, maxFps}) => minFps === maxFps)
@@ -328,7 +341,7 @@ export class VideoConstraintsPreferrer extends ConstraintsPreferrer {
   updateValues(deviceId, stream, facing, resolution) {
     this.deviceId_ = deviceId;
     this.resolution_ = resolution;
-    this.prefResolution_[deviceId] = this.resolution_;
+    this.prefResolution_.set(deviceId, this.resolution_);
     this.saveResolutionPreference_('deviceVideoResolution');
     this.preferredResolutionChangeListener_(deviceId, this.resolution_);
 
@@ -347,7 +360,7 @@ export class VideoConstraintsPreferrer extends ConstraintsPreferrer {
   /**
    * @override
    */
-  getSortedCandidates(deviceId, previewResolutions) {
+  getSortedCandidates(deviceId) {
     // Due to the limitation of MediaStream API, preview stream is used directly
     // to do video recording.
 
@@ -388,7 +401,7 @@ export class VideoConstraintsPreferrer extends ConstraintsPreferrer {
      * constant fps under that resolution or null fps for not support constant
      * fps. The resolution-fpses are sorted by user preference of constant fps.
      * @param {!Resolution} r
-     * @return {!Array<!{r: !Resolution, fps: number}>}
+     * @return {!Array<{r: !Resolution, fps: number}>}
      */
     const getFpses = (r) => {
       let /** !Array<?number> */ constFpses = [null];
@@ -409,7 +422,7 @@ export class VideoConstraintsPreferrer extends ConstraintsPreferrer {
 
     /**
      * @param {!Resolution} r
-     * @param {!number} fps
+     * @param {number} fps
      * @return {!MediaStreamConstraints}
      */
     const toConstraints = ({width, height}, fps) => ({
@@ -422,7 +435,7 @@ export class VideoConstraintsPreferrer extends ConstraintsPreferrer {
       },
     });
 
-    return [...this.deviceResolutions_[deviceId]]
+    return [...this.supportedResolutions_.get(deviceId)]
         .sort(sortPrefResol)
         .flatMap(getFpses)
         .map(({r, fps}) => ({
@@ -443,6 +456,15 @@ export class PhotoConstraintsPreferrer extends ConstraintsPreferrer {
   constructor(doReconfigureStream) {
     super(doReconfigureStream);
 
+    /**
+     * Maps from device id as key to capture and preview resolutions of
+     * same aspect ratio supported by that video device as value.
+     * @type {!Map<string, !Array<{captureRs: !ResolutionList, previewRs:
+     *     !ResolutionList}>>}
+     * @private
+     */
+    this.deviceCapturePreviewResolutionMap_ = new Map();
+
     this.restoreResolutionPreference_('devicePhotoResolution');
   }
 
@@ -450,7 +472,7 @@ export class PhotoConstraintsPreferrer extends ConstraintsPreferrer {
    * @override
    */
   changePreferredResolution(deviceId, resolution) {
-    this.prefResolution_[deviceId] = resolution;
+    this.prefResolution_.set(deviceId, resolution);
     this.saveResolutionPreference_('devicePhotoResolution');
     if (!state.get(Mode.VIDEO) && deviceId === this.deviceId_) {
       this.doReconfigureStream_();
@@ -463,18 +485,69 @@ export class PhotoConstraintsPreferrer extends ConstraintsPreferrer {
    * @override
    */
   updateDevicesInfo(devices) {
-    this.deviceResolutions_ = {};
+    this.deviceCapturePreviewResolutionMap_ = new Map();
+    this.supportedResolutions_ = new Map();
 
-    devices.forEach(({deviceId, photoResols}) => {
-      this.deviceResolutions_[deviceId] = photoResols;
+    devices.forEach(({deviceId, photoResols, videoResols: previewResols}) => {
+      /**
+       * @param {!Resolution} r
+       * @return {number}
+       */
+      const toSupportedPreviewRatio = (r) => {
+        // Special aspect ratio mapping rule, see http://b/147986763.
+        if (r.width === 848 && r.height === 480) {
+          return (new Resolution(16, 9)).aspectRatio;
+        }
+        return r.aspectRatio;
+      };
+
+      /**
+       * Groups resolutions with same ratio into same list.
+       * @param {!ResolutionList} rs
+       * @return {!Map<number, !ResolutionList>} Ratio as key, all resolutions
+       *     with that ratio as value.
+       */
+      const groupResolutionRatio = (rs) => {
+        const result = new Map();
+        for (const r of rs) {
+          const ratio = toSupportedPreviewRatio(r);
+          result.set(ratio, result.get(ratio) || []);
+          result.get(ratio).push(r);
+        }
+        return result;
+      };
+
+      const previewRatios = groupResolutionRatio(previewResols);
+      const captureRatios = groupResolutionRatio(photoResols);
+      /**
+       * @type {!Array<{captureRs: !ResolutionList, previewRs:
+       *     !ResolutionList}>}
+       */
+      const pairedResolutions = [];
+      for (const [ratio, captureRs] of captureRatios) {
+        const previewRs = previewRatios.get(/** @type {number} */ (ratio));
+        if (previewRs === undefined) {
+          continue;
+        }
+        pairedResolutions.push(
+            {captureRs: /** @type {!ResolutionList} */ (captureRs), previewRs});
+      }
+
+      this.deviceCapturePreviewResolutionMap_.set(deviceId, pairedResolutions);
+      this.supportedResolutions_.set(
+          deviceId,
+          pairedResolutions.flatMap(({captureRs}) => captureRs)
+              .sort((r1, r2) => r2.area - r1.area));
+
       /** @type {!Resolution} */
       let prefR = this.getPrefResolution(deviceId) || new Resolution(0, -1);
-      if (!photoResols.some((r) => r.equals(prefR))) {
-        prefR = photoResols.reduce(
+      const captureRs = this.supportedResolutions_.get(deviceId);
+      if (!captureRs.some((r) => r.equals(prefR))) {
+        prefR = captureRs.reduce(
             (maxR, R) => (maxR.area < R.area ? R : maxR),
             new Resolution(0, -1));
       }
-      this.prefResolution_[deviceId] = prefR;
+      this.prefResolution_.set(deviceId, prefR);
     });
     this.saveResolutionPreference_('devicePhotoResolution');
   }
@@ -484,60 +557,15 @@ export class PhotoConstraintsPreferrer extends ConstraintsPreferrer {
    */
   updateValues(deviceId, stream, facing, resolution) {
     this.deviceId_ = deviceId;
-    this.prefResolution_[deviceId] = resolution;
+    this.prefResolution_.set(deviceId, resolution);
     this.saveResolutionPreference_('devicePhotoResolution');
     this.preferredResolutionChangeListener_(deviceId, resolution);
   }
 
   /**
-   * Finds and pairs photo resolutions and preview resolutions with the same
-   * aspect ratio.
-   * @param {!ResolutionList} captureResolutions Available photo capturing
-   *     resolutions.
-   * @param {!ResolutionList} previewResolutions Available preview resolutions.
-   * @return {!Array<!{capture: !ResolutionList, preview: !ResolutionList}>}
-   *     Each item of returned array is a object of capture and preview
-   *     resolutions of same aspect ratio.
-   * @private
-   */
-  pairCapturePreviewResolutions_(captureResolutions, previewResolutions) {
-    const toSupportedPreviewRatio = (r) => {
-      // Special aspect ratio mapping rule, see http://b/147986763.
-      if (r.width === 848 && r.height === 480) {
-        return (new Resolution(16, 9)).aspectRatio;
-      }
-      return r.aspectRatio;
-    };
-    /** @type {!Object<string, !ResolutionList>} */
-    const previewRatios = previewResolutions.reduce((rs, r) => {
-      const ratio = toSupportedPreviewRatio(r);
-      rs[ratio] = rs[ratio] || [];
-      rs[ratio].push(r);
-      return rs;
-    }, {});
-    /** @type {!Object<string, !ResolutionList>} */
-    const captureRatios = captureResolutions.reduce((rs, r) => {
-      const ratio = toSupportedPreviewRatio(r);
-      if (ratio in previewRatios) {
-        rs[ratio] = rs[ratio] || [];
-        rs[ratio].push(r);
-      }
-      return rs;
-    }, {});
-    return Object.entries(captureRatios)
-        .map(([
-               /** string */ aspectRatio,
-               /** !Resolution */ capture,
-             ]) => ({capture, preview: previewRatios[aspectRatio]}));
-  }
-
-  /**
    * @override
    */
-  getSortedCandidates(deviceId, previewResolutions) {
-    /** @type {!ResolutionList} */
-    const photoResolutions = this.deviceResolutions_[deviceId];
-
+  getSortedCandidates(deviceId) {
     /** @type {!Resolution} */
     const prefR = this.getPrefResolution(deviceId) || new Resolution(0, -1);
 
@@ -561,10 +589,10 @@ export class PhotoConstraintsPreferrer extends ConstraintsPreferrer {
     };
 
     /**
-     * @param {!{capture: !ResolutionList, preview: !ResolutionList}} capture
+     * @param {{captureRs: !ResolutionList, previewRs: !ResolutionList}} capture
      * @return {!CaptureCandidate}
      */
-    const toCaptureCandidate = ({capture: captureRs, preview: previewRs}) => {
+    const toCaptureCandidate = ({captureRs, previewRs}) => {
       let /** !Resolution */ captureR = prefR;
       if (!captureRs.some((r) => r.equals(prefR))) {
         captureR = captureRs.reduce(
@@ -627,8 +655,7 @@ export class PhotoConstraintsPreferrer extends ConstraintsPreferrer {
       return {resolution: captureR, previewCandidates};
     };
 
-    return this
-        .pairCapturePreviewResolutions_(photoResolutions, previewResolutions)
+    return this.deviceCapturePreviewResolutionMap_.get(deviceId)
         .map(toCaptureCandidate)
         .sort(sortPrefResol);
   }

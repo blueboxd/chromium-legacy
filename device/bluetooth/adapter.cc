@@ -17,6 +17,7 @@
 #include "device/bluetooth/discovery_session.h"
 #include "device/bluetooth/public/cpp/bluetooth_uuid.h"
 #include "device/bluetooth/public/mojom/connect_result_type_converter.h"
+#include "device/bluetooth/server_socket.h"
 #include "device/bluetooth/socket.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
@@ -124,6 +125,21 @@ void Adapter::ConnectToServiceInsecurely(
       base::BindOnce(&Adapter::OnConnectToService,
                      weak_ptr_factory_.GetWeakPtr(), copyable_callback),
       base::BindOnce(&Adapter::OnConnectToServiceError,
+                     weak_ptr_factory_.GetWeakPtr(), copyable_callback));
+}
+
+void Adapter::CreateRfcommService(const std::string& service_name,
+                                  const device::BluetoothUUID& service_uuid,
+                                  CreateRfcommServiceCallback callback) {
+  device::BluetoothAdapter::ServiceOptions service_options;
+  service_options.name = std::make_unique<std::string>(service_name);
+
+  auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
+  adapter_->CreateRfcommService(
+      service_uuid, service_options,
+      base::BindOnce(&Adapter::OnCreateRfcommService,
+                     weak_ptr_factory_.GetWeakPtr(), copyable_callback),
+      base::BindOnce(&Adapter::OnCreateRfcommServiceError,
                      weak_ptr_factory_.GetWeakPtr(), copyable_callback));
 }
 
@@ -248,7 +264,6 @@ void Adapter::OnConnectToService(
   }
 
   mojo::PendingRemote<mojom::Socket> pending_socket;
-
   mojo::MakeSelfOwnedReceiver(
       std::make_unique<Socket>(std::move(socket),
                                std::move(receive_pipe_producer_handle),
@@ -269,6 +284,22 @@ void Adapter::OnConnectToServiceError(
     const std::string& message) {
   DLOG(ERROR) << "Failed to connect to service: '" << message << "'";
   std::move(callback).Run(/*result=*/nullptr);
+}
+
+void Adapter::OnCreateRfcommService(
+    CreateRfcommServiceCallback callback,
+    scoped_refptr<device::BluetoothSocket> socket) {
+  mojo::PendingRemote<mojom::ServerSocket> pending_server_socket;
+  mojo::MakeSelfOwnedReceiver(
+      std::make_unique<ServerSocket>(std::move(socket)),
+      pending_server_socket.InitWithNewPipeAndPassReceiver());
+  std::move(callback).Run(std::move(pending_server_socket));
+}
+
+void Adapter::OnCreateRfcommServiceError(CreateRfcommServiceCallback callback,
+                                         const std::string& message) {
+  LOG(ERROR) << "Failed to create service: '" << message << "'";
+  std::move(callback).Run(/*server_socket=*/mojo::NullRemote());
 }
 
 }  // namespace bluetooth

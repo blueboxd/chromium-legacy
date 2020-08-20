@@ -103,7 +103,19 @@ void PageSpecificContentSettingsDelegate::OnCacheStorageAccessAllowed(
 void PageSpecificContentSettingsDelegate::OnCookieAccessAllowed(
     const net::CookieList& accessed_cookies) {}
 
+void PageSpecificContentSettingsDelegate::OnDomStorageAccessAllowed(
+    const url::Origin& origin) {}
+
+void PageSpecificContentSettingsDelegate::OnFileSystemAccessAllowed(
+    const url::Origin& origin) {}
+
 void PageSpecificContentSettingsDelegate::OnIndexedDBAccessAllowed(
+    const url::Origin& origin) {}
+
+void PageSpecificContentSettingsDelegate::OnServiceWorkerAccessAllowed(
+    const url::Origin& origin) {}
+
+void PageSpecificContentSettingsDelegate::OnWebDatabaseAccessAllowed(
     const url::Origin& origin) {}
 
 }  // namespace weblayer

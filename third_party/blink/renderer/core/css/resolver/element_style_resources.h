@@ -24,7 +24,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_ELEMENT_STYLE_RESOURCES_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_ELEMENT_STYLE_RESOURCES_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/css/css_property_id_templates.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
@@ -62,6 +61,8 @@ class ElementStyleResources {
   ElementStyleResources(Element&,
                         float device_scale_factor,
                         PseudoElement* pseudo_element);
+  ElementStyleResources(const ElementStyleResources&) = delete;
+  ElementStyleResources& operator=(const ElementStyleResources&) = delete;
 
   StyleImage* GetStyleImage(CSSPropertyID, const CSSValue&);
   StyleImage* CachedOrPendingFromValue(CSSPropertyID, const CSSImageValue&);
@@ -92,7 +93,6 @@ class ElementStyleResources {
   HashSet<CSSPropertyID> pending_image_properties_;
   float device_scale_factor_;
   PseudoElement* pseudo_element_;
-  DISALLOW_COPY_AND_ASSIGN(ElementStyleResources);
 };
 
 }  // namespace blink

@@ -15,6 +15,7 @@
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "components/autofill/ios/browser/autofill_util.h"
+#include "components/autofill/ios/form_util/unique_id_data_tab_helper.h"
 #include "components/password_manager/ios/account_select_fill_data.h"
 #include "components/password_manager/ios/js_password_manager.h"
 #import "ios/web/public/js_messaging/web_frame.h"
@@ -114,7 +115,10 @@ constexpr char kCommandPrefix[] = "passwordForm";
     _formActivityObserverBridge =
         std::make_unique<autofill::FormActivityObserverBridge>(_webState, self);
     _jsPasswordManager = [[JsPasswordManager alloc] init];
-    _fieldDataManager = base::MakeRefCounted<autofill::FieldDataManager>();
+
+    UniqueIDDataTabHelper* uniqueIDDataTabHelper =
+        UniqueIDDataTabHelper::FromWebState(_webState);
+    _fieldDataManager = uniqueIDDataTabHelper->GetFieldDataManager();
 
     __weak PasswordFormHelper* weakSelf = self;
     auto callback = base::BindRepeating(

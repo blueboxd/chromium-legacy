@@ -13,6 +13,7 @@
 #include "pdf/pdfium/pdfium_api_string_buffer_adapter.h"
 #include "pdf/pdfium/pdfium_mem_buffer_file_write.h"
 #include "pdf/pdfium/pdfium_print.h"
+#include "pdf/ppapi_migration/geometry_conversions.h"
 #include "printing/nup_parameters.h"
 #include "printing/units.h"
 #include "third_party/pdfium/public/cpp/fpdf_scopers.h"
@@ -22,6 +23,7 @@
 #include "third_party/pdfium/public/fpdfview.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/geometry/vector2d.h"
 
 using printing::ConvertUnitDouble;
 using printing::kPointsPerInch;
@@ -92,10 +94,10 @@ int CalculatePosition(FPDF_PAGE page,
   }
 
   if (settings.center_in_bounds) {
-    pp::Point offset(
+    gfx::Vector2d offset(
         (settings.bounds.width() * settings.dpi_x / dpi - dest->width()) / 2,
         (settings.bounds.height() * settings.dpi_y / dpi - dest->height()) / 2);
-    dest->Offset(offset);
+    dest->Offset(PPPointFromVector(offset));
   }
   return rotate;
 }

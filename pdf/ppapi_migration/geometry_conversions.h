@@ -15,6 +15,7 @@ class Point;
 class PointF;
 class Rect;
 class Size;
+class Vector2d;
 }  // namespace gfx
 
 namespace chrome_pdf {
@@ -29,6 +30,9 @@ PP_Rect PPRectFromRect(const gfx::Rect& rect);
 
 gfx::Size SizeFromPPSize(const PP_Size& pp_size);
 PP_Size PPSizeFromSize(const gfx::Size& size);
+
+gfx::Vector2d VectorFromPPPoint(const PP_Point& pp_point);
+PP_Point PPPointFromVector(const gfx::Vector2d& vector);
 
 }  // namespace chrome_pdf
 

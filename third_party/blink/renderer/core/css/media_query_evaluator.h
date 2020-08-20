@@ -28,7 +28,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_MEDIA_QUERY_EVALUATOR_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_MEDIA_QUERY_EVALUATOR_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -75,6 +74,8 @@ class CORE_EXPORT MediaQueryEvaluator final
   explicit MediaQueryEvaluator(const MediaValues&);
 
   explicit MediaQueryEvaluator(MediaValuesInitialViewport*);
+  MediaQueryEvaluator(const MediaQueryEvaluator&) = delete;
+  MediaQueryEvaluator& operator=(const MediaQueryEvaluator&) = delete;
 
   ~MediaQueryEvaluator();
 
@@ -104,7 +105,6 @@ class CORE_EXPORT MediaQueryEvaluator final
 
   String media_type_;
   Member<MediaValues> media_values_;
-  DISALLOW_COPY_AND_ASSIGN(MediaQueryEvaluator);
 };
 
 }  // namespace blink

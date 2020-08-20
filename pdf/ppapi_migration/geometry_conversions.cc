@@ -11,6 +11,7 @@
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/geometry/vector2d.h"
 
 namespace chrome_pdf {
 
@@ -41,6 +42,14 @@ gfx::Size SizeFromPPSize(const PP_Size& pp_size) {
 
 PP_Size PPSizeFromSize(const gfx::Size& size) {
   return PP_MakeSize(size.width(), size.height());
+}
+
+gfx::Vector2d VectorFromPPPoint(const PP_Point& pp_point) {
+  return gfx::Vector2d(pp_point.x, pp_point.y);
+}
+
+PP_Point PPPointFromVector(const gfx::Vector2d& vector) {
+  return PP_MakePoint(vector.x(), vector.y());
 }
 
 }  // namespace chrome_pdf

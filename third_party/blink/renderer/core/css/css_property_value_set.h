@@ -21,7 +21,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_PROPERTY_VALUE_SET_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_PROPERTY_VALUE_SET_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/css_property_name.h"
@@ -49,6 +48,9 @@ class CORE_EXPORT CSSPropertyValueSet
   friend class PropertyReference;
 
  public:
+  CSSPropertyValueSet(const CSSPropertyValueSet&) = delete;
+  CSSPropertyValueSet& operator=(const CSSPropertyValueSet&) = delete;
+
   void FinalizeGarbageCollectedObject();
 
   class PropertyReference {
@@ -161,17 +163,17 @@ class CORE_EXPORT CSSPropertyValueSet
   const uint32_t is_mutable_ : 1;
 
   friend class PropertySetCSSStyleDeclaration;
-  DISALLOW_COPY_AND_ASSIGN(CSSPropertyValueSet);
 };
 
 // Used for lazily parsing properties.
 class CSSLazyPropertyParser : public GarbageCollected<CSSLazyPropertyParser> {
  public:
   CSSLazyPropertyParser() = default;
+  CSSLazyPropertyParser(const CSSLazyPropertyParser&) = delete;
+  CSSLazyPropertyParser& operator=(const CSSLazyPropertyParser&) = delete;
   virtual ~CSSLazyPropertyParser() = default;
   virtual CSSPropertyValueSet* ParseProperties() = 0;
   virtual void Trace(Visitor*) const;
-  DISALLOW_COPY_AND_ASSIGN(CSSLazyPropertyParser);
 };
 
 class CORE_EXPORT ALIGNAS(alignof(Member<const CSSValue>))

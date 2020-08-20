@@ -47,6 +47,9 @@ class Adapter : public mojom::Adapter,
       const std::string& address,
       const device::BluetoothUUID& service_uuid,
       ConnectToServiceInsecurelyCallback callback) override;
+  void CreateRfcommService(const std::string& service_name,
+                           const device::BluetoothUUID& service_uuid,
+                           CreateRfcommServiceCallback callback) override;
 
   // device::BluetoothAdapter::Observer overrides:
   void AdapterPresentChanged(device::BluetoothAdapter* adapter,
@@ -86,6 +89,11 @@ class Adapter : public mojom::Adapter,
                           scoped_refptr<device::BluetoothSocket> socket);
   void OnConnectToServiceError(ConnectToServiceInsecurelyCallback callback,
                                const std::string& message);
+
+  void OnCreateRfcommService(CreateRfcommServiceCallback callback,
+                             scoped_refptr<device::BluetoothSocket> socket);
+  void OnCreateRfcommServiceError(CreateRfcommServiceCallback callback,
+                                  const std::string& message);
 
   // The current Bluetooth adapter.
   scoped_refptr<device::BluetoothAdapter> adapter_;

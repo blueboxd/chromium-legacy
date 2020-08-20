@@ -234,12 +234,15 @@ function setInputElementAngularValue_(value, input) {
  *
  * @param {string} value The value the input element will be set.
  * @param {Element} input The input element of which the value is set.
- * @param {function()=} callback Callback function with a boolean
- *     argument that indicates if the input element's value was changed.
+ * @param {function()=} callback Callback function called after the input
+ *     element's value is changed.
+ * @return {boolean} Whether the value has been set successfully.
  */
 __gCrWeb.fill.setInputElementValue = function(
     value, input, callback = undefined) {
-  if (!input) return;
+  if (!input) {
+    return false;
+  }
 
   const activeElement = document.activeElement;
   if (input !== activeElement) {
@@ -249,14 +252,17 @@ __gCrWeb.fill.setInputElementValue = function(
         input, value, 'focus', true, false);
   }
 
-  setInputElementValue_(value, input);
-  if (callback) callback();
+  const filled = setInputElementValue_(value, input);
+  if (callback) {
+    callback();
+  }
 
   if (input !== activeElement) {
     __gCrWeb.fill.createAndDispatchHTMLEvent(input, value, 'blur', true, false);
     __gCrWeb.fill.createAndDispatchHTMLEvent(
         activeElement, value, 'focus', true, false);
   }
+  return filled;
 };
 
 /**
@@ -264,6 +270,7 @@ __gCrWeb.fill.setInputElementValue = function(
  *
  * @param {string} value The value the input element will be set.
  * @param {Element} input The input element of which the value is set.
+ * @return {boolean} Whether the value has been set successfully.
  */
 function setInputElementValue_(value, input) {
   const propertyName = (input.type === 'checkbox' || input.type === 'radio') ?
@@ -280,7 +287,7 @@ function setInputElementValue_(value, input) {
 
   // Return early if the value hasn't changed.
   if (input[propertyName] === value) {
-    return;
+    return false;
   }
 
   // When the user inputs a value in an HTMLInput field, the property setter is
@@ -345,6 +352,7 @@ function setInputElementValue_(value, input) {
       input[propertyName] = value;
     }
   }
+  return true;
 }
 
 /**

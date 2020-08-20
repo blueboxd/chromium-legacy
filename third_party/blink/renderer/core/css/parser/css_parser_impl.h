@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/css_property_source_data.h"
@@ -51,6 +50,8 @@ class CORE_EXPORT CSSParserImpl {
 
  public:
   CSSParserImpl(const CSSParserContext*, StyleSheetContents* = nullptr);
+  CSSParserImpl(const CSSParserImpl&) = delete;
+  CSSParserImpl& operator=(const CSSParserImpl&) = delete;
 
   enum AllowedRulesType {
     // As per css-syntax, css-cascade and css-namespaces, @charset rules
@@ -196,7 +197,6 @@ class CORE_EXPORT CSSParserImpl {
   CSSParserObserver* observer_;
 
   CSSLazyParsingState* lazy_state_;
-  DISALLOW_COPY_AND_ASSIGN(CSSParserImpl);
 };
 
 }  // namespace blink

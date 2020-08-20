@@ -477,6 +477,13 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   void PreventOptInOriginIsolation(
       const url::Origin& previously_visited_origin);
 
+  // Returns the current AgentSchedulingGroupHost this SiteInstance is
+  // associated with. Since the AgentSchedulingGroupHost *must* be assigned (and
+  // cleared) together with the RenderProcessHost, calling this method when no
+  // AgentSchedulingGroupHost is set will trigger the creation of a new
+  // RenderProcessHost (with a new ID).
+  AgentSchedulingGroupHost& GetAgentSchedulingGroup();
+
  private:
   friend class BrowsingInstance;
   friend class SiteInstanceTestBrowserClient;

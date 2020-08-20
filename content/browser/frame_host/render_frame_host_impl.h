@@ -185,6 +185,7 @@ class ClipboardFormatType;
 }
 
 namespace content {
+class AgentSchedulingGroupHost;
 class AppCacheNavigationHandle;
 class AuthenticatorImpl;
 class BackForwardCacheMetrics;
@@ -530,6 +531,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void DidNavigate(const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
                    bool did_create_new_document);
 
+  AgentSchedulingGroupHost& agent_scheduling_group() {
+    return agent_scheduling_group_;
+  }
   RenderViewHostImpl* render_view_host() { return render_view_host_.get(); }
   RenderFrameHostDelegate* delegate() { return delegate_; }
   FrameTree* frame_tree() const { return frame_tree_; }
@@ -2511,13 +2515,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // time.
   const scoped_refptr<SiteInstanceImpl> site_instance_;
 
-  // The renderer process this RenderFrameHost is associated with. It is
-  // initialized through a call to site_instance_->GetProcess() at creation
-  // time. RenderFrameHost::GetProcess() uses this cached pointer to avoid
-  // recreating the renderer process if it has crashed, since using
-  // SiteInstance::GetProcess() has the side effect of creating the process
-  // again if it is gone.
-  RenderProcessHost* const process_;
+  // The agent scheduling group this RenderFrameHost is associated with. It is
+  // initialized through a call to site_instance_->GetAgentSchedulingGroupHost()
+  // at creation time. This cached pointer is used to avoid recreating the
+  // renderer process if it has crashed, since using
+  // SiteInstance::GetProcess()/GetAgentSchedulingGroupHost() has the side
+  // effect of creating the process again if it is gone.
+  AgentSchedulingGroupHost& agent_scheduling_group_;
 
   // Reference to the whole frame tree that this RenderFrameHost belongs to.
   // Allows this RenderFrameHost to add and remove nodes in response to

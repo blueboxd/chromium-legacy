@@ -345,6 +345,21 @@ RenderProcessHost* SiteInstanceImpl::GetProcess() {
   return process_;
 }
 
+AgentSchedulingGroupHost& SiteInstanceImpl::GetAgentSchedulingGroup() {
+  if (!agent_scheduling_group_) {
+    // If an AgentSchedulingGroup has not yet been assigned, we need to have it
+    // assigned (along with a RenderProcessHost). To preserve the invariant that
+    // |process_| and |agent_scheduling_group_| are always changed together, we
+    // call GetProcess(), and assume that it will set both members.
+    GetProcess();
+  }
+
+  DCHECK(agent_scheduling_group_);
+  DCHECK_EQ(agent_scheduling_group_->GetProcess(), process_);
+
+  return *agent_scheduling_group_;
+}
+
 void SiteInstanceImpl::ReuseCurrentProcessIfPossible(
     RenderProcessHost* current_process) {
   DCHECK(!IsGuest());

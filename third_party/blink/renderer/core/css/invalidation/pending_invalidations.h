@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/css/invalidation/node_invalidation_sets.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
@@ -66,6 +65,8 @@ class CORE_EXPORT PendingInvalidations {
 
  public:
   PendingInvalidations();
+  PendingInvalidations(const PendingInvalidations&) = delete;
+  PendingInvalidations& operator=(const PendingInvalidations&) = delete;
   ~PendingInvalidations() {}
   void Invalidate(Document&);
   // May immediately invalidate the node and/or add pending invalidation sets to
@@ -89,8 +90,6 @@ class CORE_EXPORT PendingInvalidations {
   NodeInvalidationSets& EnsurePendingInvalidations(ContainerNode&);
 
   PendingInvalidationMap pending_invalidation_map_;
-
-  DISALLOW_COPY_AND_ASSIGN(PendingInvalidations);
 };
 }  // namespace blink
 

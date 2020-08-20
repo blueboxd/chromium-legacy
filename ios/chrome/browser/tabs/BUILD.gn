@@ -43,6 +43,7 @@ source_set("tabs_internal") {
   deps = [
     ":tabs",
     "//base",
+    "//components/autofill/ios/form_util",
     "//components/favicon/core",
     "//components/favicon/ios",
     "//components/history/core/browser",
@@ -50,7 +51,6 @@ source_set("tabs_internal") {
     "//components/keyed_service/core",
     "//components/language/ios/browser",
     "//components/navigation_metrics",
-    "//components/password_manager/ios",
     "//components/profile_metrics",
     "//components/safe_browsing/core:features",
     "//components/safe_browsing/ios/browser:allow_list",

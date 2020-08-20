@@ -2534,7 +2534,7 @@ void NGBlockLayoutAlgorithm::PropagateBaselineFromChild(
     if (line_box.IsEmptyLineBox())
       return;
 
-    NGLineHeightMetrics metrics = line_box.BaselineMetrics();
+    FontHeight metrics = line_box.BaselineMetrics();
     DCHECK(!metrics.IsEmpty());
     LayoutUnit baseline =
         block_offset + (Style().IsFlippedLinesWritingMode() ? metrics.descent

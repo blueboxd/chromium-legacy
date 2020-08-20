@@ -1817,6 +1817,13 @@ static_library("browser") {
   libs = []
   ldflags = []
 
+  if (is_mac) {
+    sources += [
+      "geolocation/geolocation_system_permission_mac.h",
+      "geolocation/geolocation_system_permission_mac.mm",
+    ]
+  }
+
   allow_circular_includes_from = [
     "//chrome/browser/ui",
     "//chrome/browser/ui/webui/bluetooth_internals",
@@ -4434,6 +4441,7 @@ static_library("browser") {
       "Accelerate.framework",
       "AudioUnit.framework",
       "AVFoundation.framework",
+      "CoreLocation.framework",
       "DiskArbitration.framework",
       "IOKit.framework",
       "ImageCaptureCore.framework",

@@ -139,6 +139,7 @@ class WebURLLoaderFactory;
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<LocalFrame>;
 
+// A LocalFrame is a frame hosted inside this process.
 class CORE_EXPORT LocalFrame final
     : public Frame,
       public FrameScheduler::Delegate,

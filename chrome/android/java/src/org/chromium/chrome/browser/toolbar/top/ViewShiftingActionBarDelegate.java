@@ -10,7 +10,7 @@ import android.view.ViewGroup;
 import androidx.appcompat.app.ActionBar;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.app.ChromeActivity;
 
 /**
  * An {@link ActionModeController.ActionBarDelegate} that shifts a view as the action bar appears.

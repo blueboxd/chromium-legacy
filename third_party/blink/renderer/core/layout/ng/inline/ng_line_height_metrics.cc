@@ -8,8 +8,7 @@
 
 namespace blink {
 
-NGLineHeightMetrics::NGLineHeightMetrics(const ComputedStyle& style,
-                                         FontBaseline baseline_type) {
+FontHeight::FontHeight(const ComputedStyle& style, FontBaseline baseline_type) {
   const SimpleFontData* font_data = style.GetFont().PrimaryFont();
   DCHECK(font_data);
   // TODO(kojii): This should not be null, but it happens. Avoid crash for now.
@@ -17,23 +16,23 @@ NGLineHeightMetrics::NGLineHeightMetrics(const ComputedStyle& style,
     Initialize(font_data->GetFontMetrics(), baseline_type);
 }
 
-NGLineHeightMetrics::NGLineHeightMetrics(const ComputedStyle& style)
-    : NGLineHeightMetrics(style, style.GetFontBaseline()) {}
+FontHeight::FontHeight(const ComputedStyle& style)
+    : FontHeight(style, style.GetFontBaseline()) {}
 
-NGLineHeightMetrics::NGLineHeightMetrics(const FontMetrics& font_metrics,
-                                         FontBaseline baseline_type) {
+FontHeight::FontHeight(const FontMetrics& font_metrics,
+                       FontBaseline baseline_type) {
   Initialize(font_metrics, baseline_type);
 }
 
-void NGLineHeightMetrics::Initialize(const FontMetrics& font_metrics,
-                                     FontBaseline baseline_type) {
+void FontHeight::Initialize(const FontMetrics& font_metrics,
+                            FontBaseline baseline_type) {
   // TODO(kojii): In future, we'd like to use LayoutUnit metrics to support
   // sub-CSS-pixel layout.
   ascent = LayoutUnit(font_metrics.Ascent(baseline_type));
   descent = LayoutUnit(font_metrics.Descent(baseline_type));
 }
 
-void NGLineHeightMetrics::AddLeading(LayoutUnit line_height) {
+void FontHeight::AddLeading(LayoutUnit line_height) {
   DCHECK(!IsEmpty());
   LayoutUnit half_leading = (line_height - (ascent + descent)) / 2;
   // TODO(kojii): floor() is to make text dump compatible with legacy test
@@ -42,18 +41,18 @@ void NGLineHeightMetrics::AddLeading(LayoutUnit line_height) {
   descent = line_height - ascent;
 }
 
-void NGLineHeightMetrics::Move(LayoutUnit delta) {
+void FontHeight::Move(LayoutUnit delta) {
   DCHECK(!IsEmpty());
   ascent -= delta;
   descent += delta;
 }
 
-void NGLineHeightMetrics::Unite(const NGLineHeightMetrics& other) {
+void FontHeight::Unite(const FontHeight& other) {
   ascent = std::max(ascent, other.ascent);
   descent = std::max(descent, other.descent);
 }
 
-void NGLineHeightMetrics::operator+=(const NGLineHeightMetrics& other) {
+void FontHeight::operator+=(const FontHeight& other) {
   DCHECK(ascent != LayoutUnit::Min() && descent != LayoutUnit::Min());
   DCHECK(other.ascent != LayoutUnit::Min() &&
          other.descent != LayoutUnit::Min());
@@ -61,8 +60,7 @@ void NGLineHeightMetrics::operator+=(const NGLineHeightMetrics& other) {
   descent += other.descent;
 }
 
-std::ostream& operator<<(std::ostream& stream,
-                         const NGLineHeightMetrics& metrics) {
+std::ostream& operator<<(std::ostream& stream, const FontHeight& metrics) {
   return stream << "ascent=" << metrics.ascent
                 << ", descent=" << metrics.descent;
 }

@@ -452,7 +452,12 @@ void ContentSettingsStore::SetExtensionContentSettingFromList(
       // the pref store when it is written back.
       continue;
     }
-
+    if (base::FeatureList::IsEnabled(
+            content_settings::kDisallowExtensionsToSetPluginContentSettings) &&
+        content_settings_type == ContentSettingsType::PLUGINS) {
+      // Plugin content settings are no longer supported for extensions.
+      continue;
+    }
     std::string resource_identifier;
     dict->GetString(content_settings_api_constants::kResourceIdentifierKey,
                     &resource_identifier);

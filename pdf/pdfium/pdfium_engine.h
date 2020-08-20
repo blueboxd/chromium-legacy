@@ -29,7 +29,6 @@
 #include "ppapi/c/private/ppp_pdf.h"
 #include "ppapi/cpp/dev/buffer_dev.h"
 #include "ppapi/cpp/input_event.h"
-#include "ppapi/cpp/point.h"
 #include "ppapi/cpp/rect.h"
 #include "ppapi/cpp/var_array.h"
 #include "third_party/pdfium/public/cpp/fpdf_scopers.h"
@@ -39,6 +38,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/geometry/vector2d.h"
 
 namespace chrome_pdf {
 
@@ -84,7 +84,7 @@ class PDFiumEngine : public PDFEngine,
 
   // PDFEngine:
   bool New(const char* url, const char* headers) override;
-  void PageOffsetUpdated(const gfx::Point& page_offset) override;
+  void PageOffsetUpdated(const gfx::Vector2d& page_offset) override;
   void PluginSizeUpdated(const gfx::Size& size) override;
   void ScrolledToXPosition(int position) override;
   void ScrolledToYPosition(int position) override;
@@ -213,7 +213,7 @@ class PDFiumEngine : public PDFEngine,
 
     PDFiumEngine* const engine_;
     // The origin at the time this object was constructed.
-    const pp::Point previous_origin_;
+    const gfx::Point previous_origin_;
     // Screen rectangles that were selected on construction.
     std::vector<pp::Rect> old_selections_;
   };
@@ -360,7 +360,7 @@ class PDFiumEngine : public PDFEngine,
 
   std::vector<pp::Rect> GetAllScreenRectsUnion(
       const std::vector<PDFiumRange>& rect_range,
-      const pp::Point& offset_point) const;
+      const gfx::Point& point) const;
 
   void UpdateTickMarks();
 
@@ -420,7 +420,7 @@ class PDFiumEngine : public PDFEngine,
 
   // Given |point|, returns which page and character location it's closest to,
   // as well as extra information about objects at that point.
-  PDFiumPage::Area GetCharIndex(const pp::Point& point,
+  PDFiumPage::Area GetCharIndex(const gfx::Point& point,
                                 int* page_index,
                                 int* char_index,
                                 int* form_type,
@@ -506,7 +506,7 @@ class PDFiumEngine : public PDFEngine,
   // Helper function to convert a device to page coordinates.  If the page is
   // not yet loaded, |page_x| and |page_y| will be set to 0.
   void DeviceToPage(int page_index,
-                    const pp::Point& device_point,
+                    const gfx::Point& device_point,
                     double* page_x,
                     double* page_y);
 
@@ -523,7 +523,7 @@ class PDFiumEngine : public PDFEngine,
                       const pp::Rect& clip_rect,
                       SkBitmap& image_data);
 
-  void GetRegion(const pp::Point& location,
+  void GetRegion(const gfx::Point& location,
                  SkBitmap& image_data,
                  void*& region,
                  int& stride) const;
@@ -644,7 +644,7 @@ class PDFiumEngine : public PDFEngine,
   // The scroll position in screen coordinates.
   gfx::Point position_;
   // The offset of the page into the viewport.
-  pp::Point page_offset_;
+  gfx::Vector2d page_offset_;
   // The plugin size in screen coordinates.
   gfx::Size plugin_size_;
   double current_zoom_ = 1.0;
@@ -707,7 +707,7 @@ class PDFiumEngine : public PDFEngine,
   bool mouse_middle_button_down_ = false;
 
   // Last known position while performing middle mouse button pan.
-  pp::Point mouse_middle_button_last_position_;
+  gfx::Point mouse_middle_button_last_position_;
 
   // The current text used for searching.
   std::string current_find_text_;
@@ -828,7 +828,7 @@ class PDFiumEngine : public PDFEngine,
   RangeSelectionDirection range_selection_direction_ =
       RangeSelectionDirection::Right;
 
-  pp::Point range_selection_base_;
+  gfx::Point range_selection_base_;
 
   bool edit_mode_ = false;
 

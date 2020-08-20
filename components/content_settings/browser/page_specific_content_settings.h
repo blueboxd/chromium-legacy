@@ -135,9 +135,25 @@ class PageSpecificContentSettings
     virtual void OnCookieAccessAllowed(
         const net::CookieList& accessed_cookies) = 0;
 
+    // Notifies the delegate that access was granted to DOM storage for
+    // |origin|.
+    virtual void OnDomStorageAccessAllowed(const url::Origin& origin) = 0;
+
+    // Notifies the delegate that access was granted to file system storage for
+    // |origin|.
+    virtual void OnFileSystemAccessAllowed(const url::Origin& origin) = 0;
+
     // Notifies the delegate that access was granted to Indexed DB storage for
     // |origin|.
     virtual void OnIndexedDBAccessAllowed(const url::Origin& origin) = 0;
+
+    // Notifies the delegate that access was granted to service workers for
+    // |origin|.
+    virtual void OnServiceWorkerAccessAllowed(const url::Origin& origin) = 0;
+
+    // Notifies the delegate that access was granted to web database storage for
+    // |origin|.
+    virtual void OnWebDatabaseAccessAllowed(const url::Origin& origin) = 0;
   };
 
   // Classes that want to be notified about site data events must implement
@@ -285,6 +301,10 @@ class PageSpecificContentSettings
 
   bool mic_was_just_granted_on_site_level() {
     return mic_was_just_granted_on_site_level_;
+  }
+
+  bool geolocation_was_just_granted_on_site_level() {
+    return geolocation_was_just_granted_on_site_level_;
   }
 
   // Returns the state of the camera and microphone usage.
@@ -531,10 +551,12 @@ class PageSpecificContentSettings
   std::string media_stream_requested_audio_device_;
   std::string media_stream_requested_video_device_;
 
-  // The camera and/or microphone permission was granted to this origin from a
-  // permission prompt that was triggered by the currently active document.
+  // The Geolocation, camera, and/or microphone permission was granted to this
+  // origin from a permission prompt that was triggered by the currently active
+  // document.
   bool camera_was_just_granted_on_site_level_ = false;
   bool mic_was_just_granted_on_site_level_ = false;
+  bool geolocation_was_just_granted_on_site_level_ = false;
 
   // Observer to watch for content settings changed.
   ScopedObserver<HostContentSettingsMap, content_settings::Observer> observer_{

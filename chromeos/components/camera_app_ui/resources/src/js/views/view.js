@@ -56,7 +56,7 @@ export class View {
         assertInstanceof(document.querySelector(`#${name}`), HTMLElement);
 
     /**
-     * @type {Promise<*>}
+     * @type {?Promise}
      * @private
      */
     this.session_ = null;

@@ -6,11 +6,18 @@
 #include <memory>
 
 #include "base/supports_user_data.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/public/browser/render_process_host.h"
 
 namespace content {
 
 namespace {
+
+using IPC::ChannelProxy;
+using IPC::Listener;
+using mojom::CreateFrameParamsPtr;
+using mojom::RouteProvider;
+
 static constexpr char kAgentGroupHostDataKey[] =
     "AgentSchedulingGroupHostUserDataKey";
 class AgentGroupHostUserData : public base::SupportsUserData::Data {
@@ -53,6 +60,33 @@ AgentSchedulingGroupHost::~AgentSchedulingGroupHost() = default;
 
 RenderProcessHost* AgentSchedulingGroupHost::GetProcess() {
   return &process_;
+}
+
+ChannelProxy* AgentSchedulingGroupHost::GetChannel() {
+  return process_.GetChannel();
+}
+
+bool AgentSchedulingGroupHost::Send(IPC::Message* message) {
+  return process_.Send(message);
+}
+
+void AgentSchedulingGroupHost::AddRoute(int32_t routing_id,
+                                        Listener* listener) {
+  process_.AddRoute(routing_id, listener);
+}
+
+void AgentSchedulingGroupHost::RemoveRoute(int32_t routing_id) {
+  process_.RemoveRoute(routing_id);
+}
+
+RouteProvider* AgentSchedulingGroupHost::GetRemoteRouteProvider() {
+  RenderProcessHostImpl& process =
+      static_cast<RenderProcessHostImpl&>(process_);
+  return process.GetRemoteRouteProvider();
+}
+
+void AgentSchedulingGroupHost::CreateFrame(CreateFrameParamsPtr params) {
+  process_.GetRendererInterface()->CreateFrame(std::move(params));
 }
 
 }  // namespace content

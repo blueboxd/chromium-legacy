@@ -509,6 +509,38 @@ class ContentSettingSingleRadioGroup : public ContentSettingSimpleBubbleModel {
   DISALLOW_COPY_AND_ASSIGN(ContentSettingSingleRadioGroup);
 };
 
+// The bubble that informs users that Chrome does not have access to Location
+// and guides them to the system preferences to fix that problem if they wish.
+class ContentSettingGeolocationBubbleModel
+    : public ContentSettingSingleRadioGroup {
+ public:
+  ContentSettingGeolocationBubbleModel(Delegate* delegate,
+                                       content::WebContents* web_contents);
+
+  ContentSettingGeolocationBubbleModel(
+      const ContentSettingGeolocationBubbleModel&) = delete;
+  ContentSettingGeolocationBubbleModel& operator=(
+      const ContentSettingGeolocationBubbleModel&) = delete;
+
+  ~ContentSettingGeolocationBubbleModel() override;
+
+  // ContentSettingBubbleModel:
+  void OnManageButtonClicked() override;
+  void OnDoneButtonClicked() override;
+
+ private:
+  // Initialize the bubble with the elements specific to the scenario when
+  // geolocation is disabled on the system (OS) level.
+  void InitializeSystemGeolocationPermissionBubble();
+
+  // Whether or not to show the bubble UI specific to when geolocation
+  // permissions are turned off on a system level.
+  bool ShouldShowSystemGeolocationPermissions();
+
+  // Boolean indicating if geolocation is allowed by our Content Settings
+  bool is_allowed_ = false;
+};
+
 #if !defined(OS_ANDROID)
 // The model for the blocked Framebust bubble.
 class ContentSettingFramebustBlockBubbleModel

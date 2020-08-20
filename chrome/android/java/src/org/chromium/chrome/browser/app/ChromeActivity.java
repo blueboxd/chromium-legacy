@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser;
+package org.chromium.chrome.browser.app;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
@@ -51,8 +51,19 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ActivityTabProvider;
+import org.chromium.chrome.browser.AppHooks;
+import org.chromium.chrome.browser.AssistStatusHandler;
+import org.chromium.chrome.browser.ChromeActivitySessionTracker;
+import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.ChromeVersionInfo;
+import org.chromium.chrome.browser.ChromeWindow;
+import org.chromium.chrome.browser.DeferredStartupHandler;
+import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.IntentHandler.IntentHandlerDelegate;
 import org.chromium.chrome.browser.IntentHandler.TabOpenType;
+import org.chromium.chrome.browser.TabbedModeTabDelegateFactory;
+import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.app.appmenu.AppMenuPropertiesDelegateImpl;
 import org.chromium.chrome.browser.app.flags.ChromeCachedFlags;
 import org.chromium.chrome.browser.app.tab_activity_glue.ReparentingDelegateFactory;
@@ -215,7 +226,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     /**
      * No toolbar layout to inflate during initialization.
      */
-    static final int NO_TOOLBAR_LAYOUT = -1;
+    public static final int NO_TOOLBAR_LAYOUT = -1;
 
     private C mComponent;
 
@@ -484,7 +495,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     protected View getViewToBeDrawnBeforeInitializingNative() {
         View controlContainer = findViewById(R.id.control_container);
         return controlContainer != null ? controlContainer
-                : super.getViewToBeDrawnBeforeInitializingNative();
+                                        : super.getViewToBeDrawnBeforeInitializingNative();
     }
 
     /**
@@ -967,7 +978,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     }
 
     @Override
-    protected void onNewIntent(Intent intent) {
+    public void onNewIntent(Intent intent) {
         // This should be called before the call to super so that the needed VR flags are set as
         // soon as the VR intent is received.
         VrModuleProvider.getDelegate().maybeHandleVrIntentPreNative(this, intent);
@@ -1285,8 +1296,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      * After returning from this, the {@link TabModelSelector} will be destroyed followed
      * by the {@link WindowAndroid}.
      */
-    protected void onDestroyInternal() {
-    }
+    protected void onDestroyInternal() {}
 
     /**
      * @return The unified manager for all snackbar related operations.
@@ -1325,9 +1335,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         // The window background color is used as the resizing background color in Android N+
         // multi-window mode. See crbug.com/602366.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            getWindow().setBackgroundDrawable(new ColorDrawable(
-                    ApiCompatibilityUtils.getColor(getResources(),
-                            R.color.resizing_background_color)));
+            getWindow().setBackgroundDrawable(new ColorDrawable(ApiCompatibilityUtils.getColor(
+                    getResources(), R.color.resizing_background_color)));
         } else {
             // Post the removeWindowBackground() call as a separate task, as doing it synchronously
             // here can cause redrawing glitches. See crbug.com/686662 for an example problem.
@@ -1485,9 +1494,9 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             if (!tabToBookmark.isClosing() && tabToBookmark.isInitialized()) {
                 // The BookmarkModel will be destroyed by BookmarkUtils#addOrEditBookmark() when
                 // done.
-                BookmarkId newBookmarkId = BookmarkUtils.addOrEditBookmark(bookmarkId,
-                        bookmarkModel, tabToBookmark, getSnackbarManager(), ChromeActivity.this,
-                        isCustomTab());
+                BookmarkId newBookmarkId =
+                        BookmarkUtils.addOrEditBookmark(bookmarkId, bookmarkModel, tabToBookmark,
+                                getSnackbarManager(), ChromeActivity.this, isCustomTab());
                 // If a new bookmark was created, try to save an offline page for it.
                 if (newBookmarkId != null && newBookmarkId.getId() != bookmarkId) {
                     OfflinePageUtils.saveBookmarkOffline(newBookmarkId, tabToBookmark);
@@ -1676,7 +1685,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      * Exits the fullscreen mode, if any. Does nothing if no fullscreen is present.
      * @return Whether the fullscreen mode is currently showing.
      */
-    protected boolean exitFullscreenIfShowing() {
+    public boolean exitFullscreenIfShowing() {
         FullscreenManager fullscreenManager = getFullscreenManager();
         if (fullscreenManager.getPersistentFullscreenMode()) {
             fullscreenManager.exitPersistentFullscreenMode();
@@ -2001,8 +2010,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             if (printingController != null && !printingController.isBusy()
                     && UserPrefs.get(Profile.getLastUsedRegularProfile())
                                .getBoolean(Pref.PRINTING_ENABLED)) {
-                printingController.startPrint(new TabPrinter(currentTab),
-                        new PrintManagerDelegateImpl(this));
+                printingController.startPrint(
+                        new TabPrinter(currentTab), new PrintManagerDelegateImpl(this));
                 RecordUserAction.record("MobileMenuPrint");
             }
         } else if (id == R.id.add_to_homescreen_id) {
@@ -2092,10 +2101,10 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     public void terminateIncognitoSession() {}
 
     @Override
-    public void onTabSelectionHinted(int tabId) { }
+    public void onTabSelectionHinted(int tabId) {}
 
     @Override
-    public void onSceneChange(Layout layout) { }
+    public void onSceneChange(Layout layout) {}
 
     @Override
     public void onAttachedToWindow() {
@@ -2104,10 +2113,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         // See enableHardwareAcceleration()
         if (mSetWindowHWA) {
             mSetWindowHWA = false;
-            getWindow().setWindowManager(
-                    getWindow().getWindowManager(),
-                    getWindow().getAttributes().token,
-                    getComponentName().flattenToString(),
+            getWindow().setWindowManager(getWindow().getWindowManager(),
+                    getWindow().getAttributes().token, getComponentName().flattenToString(),
                     true /* hardwareAccelerated */);
         }
     }
@@ -2151,7 +2158,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      * @param webContents The web contents for which to lookup the Chrome activity.
      * @return Possibly null Chrome activity that should never be cached.
      */
-    @Nullable public static ChromeActivity fromWebContents(@Nullable WebContents webContents) {
+    @Nullable
+    public static ChromeActivity fromWebContents(@Nullable WebContents webContents) {
         if (webContents == null) return null;
 
         if (webContents.isDestroyed()) return null;

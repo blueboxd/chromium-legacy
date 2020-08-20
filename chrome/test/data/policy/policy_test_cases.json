@@ -521,6 +521,17 @@
     ]
   },
 
+  "CloudPrintWarningsSuppressed": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "can_be_recommended": true,
+    "policy_pref_mapping_test": [
+      {
+        "policies": {"CloudPrintWarningsSuppressed": true},
+        "prefs": { "cloud_print.deprecation_warnings_suppressed": {} }
+      }
+    ]
+  },
+
   "ExternalPrintServers": {
     "os": ["chromeos"],
     "policy_pref_mapping_test": [

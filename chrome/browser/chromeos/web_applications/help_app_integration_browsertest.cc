@@ -83,14 +83,20 @@ IN_PROC_BROWSER_TEST_P(HelpAppIntegrationTest, HelpAppV2AppServiceMetrics) {
   WaitForTestSystemAppInstall();
   base::HistogramTester histogram_tester;
 
-  // Not using LaunchApp(..) here as that doesn't use the AppServiceProxy, so
-  // doesn't log the metric that we are testing.
+  // The metric is recorded in LaunchSystemWebApp (crbug/1112660), but using
+  // AppServiceProxy gives more coverage of the launch path and ensures the
+  // metric is not recorded twice.
   auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile());
+  content::TestNavigationObserver navigation_observer(
+      GURL("chrome://help-app/"));
+  navigation_observer.StartWatchingNewWebContents();
+
   proxy->Launch(
       *GetManager().GetAppIdForSystemApp(web_app::SystemAppType::HELP),
       ui::EventFlags::EF_NONE, apps::mojom::LaunchSource::kFromKeyboard,
       display::kDefaultDisplayId);
 
+  navigation_observer.Wait();
   // The HELP app is 18, see DefaultAppName in
   // src/chrome/browser/apps/app_service/app_service_metrics.cc
   histogram_tester.ExpectUniqueSample("Apps.DefaultAppLaunch.FromKeyboard", 18,

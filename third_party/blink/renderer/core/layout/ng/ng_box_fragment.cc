@@ -12,24 +12,21 @@
 
 namespace blink {
 
-NGLineHeightMetrics NGBoxFragment::BaselineMetrics(
-    const NGLineBoxStrut& margins,
-    FontBaseline baseline_type) const {
+FontHeight NGBoxFragment::BaselineMetrics(const NGLineBoxStrut& margins,
+                                          FontBaseline baseline_type) const {
   DCHECK(physical_fragment_.IsAtomicInline() ||
          physical_fragment_.IsListMarker());
 
   // For checkbox and radio controls, we always use the border edge instead of
   // the margin edge.
   if (physical_fragment_.Style().IsCheckboxOrRadioPart()) {
-    return NGLineHeightMetrics(margins.line_over + BlockSize(),
-                               margins.line_under);
+    return FontHeight(margins.line_over + BlockSize(), margins.line_under);
   }
 
   if (const base::Optional<LayoutUnit> baseline = Baseline()) {
-    NGLineHeightMetrics metrics =
-        IsFlippedLinesWritingMode(GetWritingMode())
-            ? NGLineHeightMetrics(BlockSize() - *baseline, *baseline)
-            : NGLineHeightMetrics(*baseline, BlockSize() - *baseline);
+    FontHeight metrics = IsFlippedLinesWritingMode(GetWritingMode())
+                             ? FontHeight(BlockSize() - *baseline, *baseline)
+                             : FontHeight(*baseline, BlockSize() - *baseline);
 
     // For replaced elements, inline-block elements, and inline-table elements,
     // the height is the height of their margin-box.
@@ -46,8 +43,8 @@ NGLineHeightMetrics NGBoxFragment::BaselineMetrics(
   LayoutUnit block_size = BlockSize() + margins.BlockSum();
 
   if (baseline_type == kAlphabeticBaseline)
-    return NGLineHeightMetrics(block_size, LayoutUnit());
-  return NGLineHeightMetrics(block_size - block_size / 2, block_size / 2);
+    return FontHeight(block_size, LayoutUnit());
+  return FontHeight(block_size - block_size / 2, block_size / 2);
 }
 
 }  // namespace blink

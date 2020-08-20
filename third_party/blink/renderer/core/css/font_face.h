@@ -31,7 +31,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_FONT_FACE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_FONT_FACE_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_property.h"
@@ -76,6 +75,8 @@ class CORE_EXPORT FontFace : public ScriptWrappable,
   FontFace(ExecutionContext*,
            const AtomicString& family,
            const FontFaceDescriptors*);
+  FontFace(const FontFace&) = delete;
+  FontFace& operator=(const FontFace&) = delete;
   ~FontFace() override;
 
   const AtomicString& family() const { return family_; }
@@ -188,7 +189,6 @@ class CORE_EXPORT FontFace : public ScriptWrappable,
   Member<LoadedProperty> loaded_property_;
   Member<CSSFontFace> css_font_face_;
   HeapVector<Member<LoadFontCallback>> callbacks_;
-  DISALLOW_COPY_AND_ASSIGN(FontFace);
 };
 
 using FontFaceArray = HeapVector<Member<FontFace>>;

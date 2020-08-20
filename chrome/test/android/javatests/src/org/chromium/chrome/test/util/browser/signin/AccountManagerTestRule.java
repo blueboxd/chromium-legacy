@@ -81,6 +81,8 @@ public class AccountManagerTestRule implements TestRule {
     }
 
     /**
+     * TODO(https://crbug.com/1117006): Change the return type of addAccount() to CoreAccountInfo
+     *
      * Add an account to the fake AccountManagerFacade.
      * @return The account added.
      */

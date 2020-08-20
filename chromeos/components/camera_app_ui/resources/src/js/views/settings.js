@@ -303,7 +303,11 @@ export class ResolutionSettings extends BaseSettings {
       this.frontSetting_ = this.backSetting_ = null;
       this.externalSettings_ = [];
 
-      devices.forEach(({deviceId, facing, photoResols, videoResols}) => {
+      devices.forEach(({deviceId, facing}) => {
+        const photoResols =
+            this.photoPreferrer_.getSupportedResolutions(deviceId);
+        const videoResols =
+            this.videoPreferrer_.getSupportedResolutions(deviceId);
         const /** !DeviceSetting */ deviceSetting = {
           deviceId,
           photo: {

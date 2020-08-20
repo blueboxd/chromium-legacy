@@ -974,6 +974,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
         BreadcrumbManagerKeyedServiceFactory::GetForBrowserState(
             strongSelf.mainBrowserState)
             ->SetPreviousEvents(events);
+        breakpad::SetPreviousSessionEvents(events);
 
         // Notify persistent breadcrumb service to clear old breadcrumbs and
         // start storing breadcrumbs for this session.

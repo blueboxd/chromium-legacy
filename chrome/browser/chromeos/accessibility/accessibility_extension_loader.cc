@@ -27,7 +27,7 @@ AccessibilityExtensionLoader::AccessibilityExtensionLoader(
       loaded_(false),
       unload_callback_(unload_callback) {}
 
-AccessibilityExtensionLoader::~AccessibilityExtensionLoader() {}
+AccessibilityExtensionLoader::~AccessibilityExtensionLoader() = default;
 
 void AccessibilityExtensionLoader::SetProfile(
     Profile* profile,
@@ -89,15 +89,54 @@ void AccessibilityExtensionLoader::UnloadExtensionFromProfile(
 
 void AccessibilityExtensionLoader::LoadExtension(Profile* profile,
                                                  base::Closure done_cb) {
+  // In Kiosk mode, we should reinstall the extension upon first load. This way,
+  // no state from the previous session is preserved.
+  user_manager::User* user = ProfileHelper::Get()->GetUserByProfile(profile);
+
+  base::Closure closure = done_cb;
+  if (user && user->IsKioskType() && !was_reset_for_kiosk_) {
+    was_reset_for_kiosk_ = true;
+    extensions::ExtensionService* extension_service =
+        extensions::ExtensionSystem::Get(profile)->extension_service();
+    extension_service->DisableExtension(
+        extension_id_, extensions::disable_reason::DISABLE_REINSTALL);
+    closure = base::BindRepeating(
+        &AccessibilityExtensionLoader::ReinstallExtensionForKiosk,
+        weak_ptr_factory_.GetWeakPtr(), profile, done_cb);
+  }
+
+  LoadExtensionImpl(profile, closure);
+}
+
+void AccessibilityExtensionLoader::LoadExtensionImpl(Profile* profile,
+                                                     base::Closure done_cb) {
   DCHECK(manifest_filename_);
   DCHECK(guest_manifest_filename_);
 
   extensions::ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
+
   extension_service->component_loader()
       ->AddComponentFromDirWithManifestFilename(
           extension_path_, extension_id_.c_str(), manifest_filename_,
           guest_manifest_filename_, done_cb);
+}
+
+void AccessibilityExtensionLoader::ReinstallExtensionForKiosk(
+    Profile* profile,
+    base::Closure done_cb) {
+  DCHECK(was_reset_for_kiosk_);
+
+  auto* extension_service =
+      extensions::ExtensionSystem::Get(profile)->extension_service();
+  base::string16 error;
+  extension_service->UninstallExtension(
+      extension_id_, extensions::UninstallReason::UNINSTALL_REASON_REINSTALL,
+      &error);
+  extension_service->component_loader()->Reload(extension_id_);
+
+  if (done_cb)
+    done_cb.Run();
 }
 
 }  // namespace chromeos

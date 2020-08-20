@@ -9,13 +9,13 @@
 #endif
 
 #include "base/feature_list.h"
+#include "components/autofill/ios/form_util/unique_id_data_tab_helper.h"
 #include "components/favicon/core/favicon_service.h"
 #import "components/favicon/ios/web_favicon_driver.h"
 #include "components/history/core/browser/top_sites.h"
 #import "components/history/ios/browser/web_state_top_sites_observer.h"
 #include "components/keyed_service/core/service_access_type.h"
 #import "components/language/ios/browser/ios_language_detection_tab_helper.h"
-#import "components/password_manager/ios/unique_id_tab_helper.h"
 #include "components/safe_browsing/core/features.h"
 #import "components/safe_browsing/ios/browser/safe_browsing_url_allow_list.h"
 #import "components/security_state/ios/insecure_input_tab_helper.h"
@@ -167,7 +167,7 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
       web_state,
       ios::TopSitesFactory::GetForBrowserState(original_browser_state).get());
 
-  UniqueIDTabHelper::CreateForWebState(web_state);
+  UniqueIDDataTabHelper::CreateForWebState(web_state);
 
   PasswordTabHelper::CreateForWebState(web_state);
 

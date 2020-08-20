@@ -51,12 +51,14 @@ void ContextualSearchContext::SetResolveProperties(
     const base::android::JavaParamRef<jstring>& j_home_country,
     jboolean j_may_send_base_page_url,
     jlong j_previous_event_id,
-    jint j_previous_event_results) {
+    jint j_previous_event_results,
+    jboolean j_do_related_searches) {
   can_resolve_ = true;
   home_country_ = base::android::ConvertJavaStringToUTF8(env, j_home_country);
   can_send_base_page_url_ = j_may_send_base_page_url;
   previous_event_id_ = j_previous_event_id;
   previous_event_results_ = j_previous_event_results;
+  do_related_searches_ = j_do_related_searches;
 }
 
 void ContextualSearchContext::SetContent(
@@ -205,6 +207,10 @@ base::string16 ContextualSearchContext::GetSelection() {
   DCHECK(end <= (int)this->surrounding_text_.length());
   DCHECK(start <= end);
   return this->surrounding_text_.substr(start, end - start);
+}
+
+bool ContextualSearchContext::GetRelatedSearches() {
+  return do_related_searches_;
 }
 
 // Boilerplate.

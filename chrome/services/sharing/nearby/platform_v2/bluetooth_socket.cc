@@ -213,32 +213,26 @@ class OutputStreamImpl : public OutputStream {
 }  // namespace
 
 BluetoothSocket::BluetoothSocket(
+    bluetooth::mojom::DeviceInfoPtr device,
+    mojo::PendingRemote<bluetooth::mojom::Socket> socket,
+    mojo::ScopedDataPipeConsumerHandle receive_stream,
+    mojo::ScopedDataPipeProducerHandle send_stream)
+    : remote_device_(std::move(device)),
+      remote_device_ref_(*remote_device_),
+      task_runner_(base::ThreadPool::CreateSequencedTaskRunner({})),
+      socket_(std::move(socket)) {
+  InitializeStreams(std::move(receive_stream), std::move(send_stream));
+}
+
+BluetoothSocket::BluetoothSocket(
     api::BluetoothDevice& remote_device,
     mojo::PendingRemote<bluetooth::mojom::Socket> socket,
     mojo::ScopedDataPipeConsumerHandle receive_stream,
     mojo::ScopedDataPipeProducerHandle send_stream)
-    : remote_device_(remote_device),
-      task_runner_(base::ThreadPool::CreateSequencedTaskRunner({})) {
-  socket_.Bind(std::move(socket));
-
-  // These properties must be created on the same sequence they are later run
-  // on. See |task_runner_|.
-  CountDownLatch latch(2);
-
-  auto count_down_latch_callback = base::BindRepeating(
-      [](CountDownLatch* latch) { latch->CountDown(); }, &latch);
-
-  task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&BluetoothSocket::CreateInputStream,
-                     base::Unretained(this), std::move(receive_stream),
-                     count_down_latch_callback));
-  task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&BluetoothSocket::CreateOutputStream,
-                                base::Unretained(this), std::move(send_stream),
-                                count_down_latch_callback));
-
-  latch.Await();
+    : remote_device_ref_(remote_device),
+      task_runner_(base::ThreadPool::CreateSequencedTaskRunner({})),
+      socket_(std::move(socket)) {
+  InitializeStreams(std::move(receive_stream), std::move(send_stream));
 }
 
 BluetoothSocket::~BluetoothSocket() {
@@ -280,7 +274,30 @@ Exception BluetoothSocket::Close() {
 }
 
 api::BluetoothDevice* BluetoothSocket::GetRemoteDevice() {
-  return &remote_device_;
+  return &remote_device_ref_;
+}
+
+void BluetoothSocket::InitializeStreams(
+    mojo::ScopedDataPipeConsumerHandle receive_stream,
+    mojo::ScopedDataPipeProducerHandle send_stream) {
+  // These properties must be created on the same sequence they are later run
+  // on. See |task_runner_|.
+  CountDownLatch latch(2);
+
+  auto count_down_latch_callback = base::BindRepeating(
+      [](CountDownLatch* latch) { latch->CountDown(); }, &latch);
+
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&BluetoothSocket::CreateInputStream,
+                     base::Unretained(this), std::move(receive_stream),
+                     count_down_latch_callback));
+  task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&BluetoothSocket::CreateOutputStream,
+                                base::Unretained(this), std::move(send_stream),
+                                count_down_latch_callback));
+
+  latch.Await();
 }
 
 void BluetoothSocket::CreateInputStream(

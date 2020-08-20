@@ -7,9 +7,8 @@ import {assert} from './chrome_util.js';
 // eslint-disable-next-line no-unused-vars
 import {PerfEvent} from './perf.js';
 import * as state from './state.js';
-// eslint-disable-next-line no-unused-vars
-import {Facing} from './type.js';
 import {
+  Facing,  // eslint-disable-line no-unused-vars
   Mode,
   Resolution,  // eslint-disable-line no-unused-vars
 } from './type.js';
@@ -21,7 +20,7 @@ import {
 const GA_ID = 'UA-134822711-1';
 
 /**
- * @type {?Map<number, Object>}
+ * @type {?Map<number, !Object>}
  */
 let baseDimen = null;
 
@@ -339,8 +338,8 @@ export function sendPerfEvent({event, duration, extras = {}}) {
  * TODO(b/131133953): Pass an Intent directly once the type-only import feature
  * is implemented in Closure Compiler.
  * @typedef {{
- *   mode: Mode,
- *   result: IntentResultType,
+ *   mode: !Mode,
+ *   result: !IntentResultType,
  *   shouldHandleResult: boolean,
  *   shouldDownScale: boolean,
  *   isSecure: boolean,

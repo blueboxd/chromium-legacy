@@ -22,7 +22,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_STYLE_SHEET_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_STYLE_SHEET_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_rule.h"
 #include "third_party/blink/renderer/core/css/media_query_evaluator.h"
@@ -80,6 +79,8 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
       Node& owner_node,
       bool is_inline_stylesheet = false,
       const TextPosition& start_position = TextPosition::MinimumPosition());
+  CSSStyleSheet(const CSSStyleSheet&) = delete;
+  CSSStyleSheet& operator=(const CSSStyleSheet&) = delete;
   ~CSSStyleSheet() override;
 
   CSSStyleSheet* parentStyleSheet() const override;
@@ -163,11 +164,12 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
    public:
     explicit RuleMutationScope(CSSStyleSheet*);
     explicit RuleMutationScope(CSSRule*);
+    RuleMutationScope(const RuleMutationScope&) = delete;
+    RuleMutationScope& operator=(const RuleMutationScope&) = delete;
     ~RuleMutationScope();
 
    private:
     CSSStyleSheet* style_sheet_;
-    DISALLOW_COPY_AND_ASSIGN(RuleMutationScope);
   };
 
   void WillMutateRules();
@@ -185,11 +187,12 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
 
    public:
     explicit InspectorMutationScope(CSSStyleSheet*);
+    InspectorMutationScope(const InspectorMutationScope&) = delete;
+    InspectorMutationScope& operator=(const InspectorMutationScope&) = delete;
     ~InspectorMutationScope();
 
    private:
     CSSStyleSheet* style_sheet_;
-    DISALLOW_COPY_AND_ASSIGN(InspectorMutationScope);
   };
 
   void EnableRuleAccessForInspector();
@@ -271,7 +274,6 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
   Member<MediaList> media_cssom_wrapper_;
   mutable HeapVector<Member<CSSRule>> child_rule_cssom_wrappers_;
   mutable Member<CSSRuleList> rule_list_cssom_wrapper_;
-  DISALLOW_COPY_AND_ASSIGN(CSSStyleSheet);
 };
 
 inline CSSStyleSheet::RuleMutationScope::RuleMutationScope(CSSStyleSheet* sheet)

@@ -23,6 +23,7 @@
 #include "chrome/browser/native_file_system/native_file_system_permission_request_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
@@ -35,6 +36,7 @@
 #include "components/permissions/permission_util.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/services/app_service/public/cpp/app_update.h"
+#include "components/services/app_service/public/cpp/intent_util.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_controller_factory.h"
@@ -47,6 +49,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
+#include "ui/display/types/display_constants.h"
 #include "url/gurl.h"
 
 #if defined(OS_CHROMEOS)
@@ -97,11 +100,12 @@ apps::AppLaunchParams SystemWebAppManagerBrowserTestBase::LaunchParamsForApp(
     SystemAppType system_app_type) {
   base::Optional<AppId> app_id =
       GetManager().GetAppIdForSystemApp(system_app_type);
+
   CHECK(app_id.has_value());
   return apps::AppLaunchParams(
       *app_id, apps::mojom::LaunchContainer::kLaunchContainerWindow,
       WindowOpenDisposition::CURRENT_TAB,
-      apps::mojom::AppLaunchSource::kSourceTest);
+      apps::mojom::AppLaunchSource::kSourceAppLauncher);
 }
 
 content::WebContents* SystemWebAppManagerBrowserTestBase::LaunchApp(
@@ -295,6 +299,73 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerWebAppInfoBrowserTest,
       app_browser->tab_strip_model()->GetActiveWebContents(), off_scheme_page,
       1);
   EXPECT_TRUE(app_browser->app_controller()->ShouldShowCustomTabBar());
+}
+
+IN_PROC_BROWSER_TEST_P(SystemWebAppManagerWebAppInfoBrowserTest,
+                       LaunchMetricsWork) {
+  WaitForTestSystemAppInstall();
+
+  base::HistogramTester histograms;
+  apps::AppLaunchParams params = LaunchParamsForApp(GetMockAppType());
+  params.launch_source = apps::mojom::LaunchSource::kFromAppListGrid;
+
+  content::TestNavigationObserver navigation_observer(
+      maybe_installation_->GetAppUrl());
+  navigation_observer.StartWatchingNewWebContents();
+
+  LaunchSystemWebApp(browser()->profile(), GetMockAppType(),
+                     maybe_installation_->GetAppUrl(), params);
+
+  navigation_observer.Wait();
+  histograms.ExpectTotalCount("Apps.DefaultAppLaunch.FromAppListGrid", 1);
+  histograms.ExpectUniqueSample("Apps.DefaultAppLaunch.FromAppListGrid", 39, 1);
+}
+
+IN_PROC_BROWSER_TEST_P(SystemWebAppManagerWebAppInfoBrowserTest,
+                       LaunchMetricsWorkFromAppProxy) {
+  WaitForTestSystemAppInstall();
+
+  base::HistogramTester histograms;
+  content::TestNavigationObserver navigation_observer(
+      maybe_installation_->GetAppUrl());
+  navigation_observer.StartWatchingNewWebContents();
+
+  apps::AppServiceProxy* proxy =
+      apps::AppServiceProxyFactory::GetForProfile(browser()->profile());
+
+  proxy->Launch(GetManager().GetAppIdForSystemApp(GetMockAppType()).value(),
+                ui::EventFlags::EF_NONE,
+                apps::mojom::LaunchSource::kFromAppListGrid,
+                display::kDefaultDisplayId);
+  navigation_observer.Wait();
+
+  histograms.ExpectTotalCount("Apps.DefaultAppLaunch.FromAppListGrid", 1);
+  histograms.ExpectUniqueSample("Apps.DefaultAppLaunch.FromAppListGrid", 39, 1);
+}
+
+IN_PROC_BROWSER_TEST_P(SystemWebAppManagerWebAppInfoBrowserTest,
+                       LaunchMetricsWorkWithIntent) {
+  WaitForTestSystemAppInstall();
+
+  base::HistogramTester histograms;
+  content::TestNavigationObserver navigation_observer(
+      maybe_installation_->GetAppUrl());
+  navigation_observer.StartWatchingNewWebContents();
+
+  apps::AppServiceProxy* proxy =
+      apps::AppServiceProxyFactory::GetForProfile(browser()->profile());
+  auto intent = apps::mojom::Intent::New();
+  intent->action = apps_util::kIntentActionView;
+  intent->mime_type = "text/plain";
+
+  proxy->LaunchAppWithIntent(
+      GetManager().GetAppIdForSystemApp(GetMockAppType()).value(),
+      ui::EventFlags::EF_NONE, std::move(intent),
+      apps::mojom::LaunchSource::kFromAppListGrid, display::kDefaultDisplayId);
+  navigation_observer.Wait();
+
+  histograms.ExpectTotalCount("Apps.DefaultAppLaunch.FromAppListGrid", 1);
+  histograms.ExpectUniqueSample("Apps.DefaultAppLaunch.FromAppListGrid", 39, 1);
 }
 
 class SystemWebAppManagerFileHandlingBrowserTestBase

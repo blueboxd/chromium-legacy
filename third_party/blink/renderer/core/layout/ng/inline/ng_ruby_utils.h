@@ -15,7 +15,7 @@ class NGLineInfo;
 class NGLogicalLineItems;
 class ShapeResultView;
 struct NGInlineItemResult;
-struct NGLineHeightMetrics;
+struct FontHeight;
 struct PhysicalRect;
 
 // Adjust the specified |rect| of a text fragment for 'em' height.
@@ -71,7 +71,7 @@ struct NGAnnotationMetrics {
 // Compute over/under annotation overflow/space for the specified line.
 NGAnnotationMetrics ComputeAnnotationOverflow(
     const NGLogicalLineItems& logical_line,
-    const NGLineHeightMetrics& line_box_metrics,
+    const FontHeight& line_box_metrics,
     LayoutUnit line_over,
     const ComputedStyle& line_style);
 

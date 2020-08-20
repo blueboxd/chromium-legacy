@@ -35,6 +35,22 @@ public class WebSigninBridge {
         void onSigninFailed(GoogleServiceAuthError error);
     }
 
+    /**
+     * Factory to create WebSigninBridge object.
+     */
+    public static class Factory {
+        /**
+         * Creates a WebSigninBridge object.
+         *
+         * @param profile The profile to use for the sign-in.
+         * @param account The primary account account used for the sign-in process.
+         * @param listener The listener to be notified about sign-in completion.
+         */
+        public WebSigninBridge create(Profile profile, CoreAccountInfo account, Listener listener) {
+            return new WebSigninBridge(profile, account, listener);
+        }
+    }
+
     private long mNativeWebSigninBridge;
 
     /**
@@ -44,7 +60,7 @@ public class WebSigninBridge {
      * @param account The primary account account used for the sign-in process.
      * @param listener The listener to be notified about sign-in completion.
      */
-    public WebSigninBridge(Profile profile, CoreAccountInfo account, Listener listener) {
+    private WebSigninBridge(Profile profile, CoreAccountInfo account, Listener listener) {
         assert account != null && listener != null;
         mNativeWebSigninBridge = WebSigninBridgeJni.get().create(profile, account, listener);
         assert mNativeWebSigninBridge != 0 : "Couldn't create native WebSigninBridge object!";

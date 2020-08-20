@@ -720,13 +720,21 @@ ZeroSuggestProvider::ResultType ZeroSuggestProvider::TypeOfResultToRun(
     return REMOTE_NO_URL;
 
   // Contextual Open Web - (same client side behavior for multiple variants).
-  bool contextual_web_suggestions_enabled =
-      base::FeatureList::IsEnabled(omnibox::kOnFocusSuggestionsContextualWeb) ||
-      base::FeatureList::IsEnabled(
-          omnibox::kOnFocusSuggestionsContextualWebOnContent);
   if (current_page_classification == OmniboxEventProto::OTHER &&
-      can_send_current_url && contextual_web_suggestions_enabled) {
-    return REMOTE_SEND_URL;
+      can_send_current_url) {
+    if (input.focus_type() == OmniboxFocusType::ON_FOCUS &&
+        (base::FeatureList::IsEnabled(
+             omnibox::kOnFocusSuggestionsContextualWeb) ||
+         base::FeatureList::IsEnabled(
+             omnibox::kOnFocusSuggestionsContextualWebOnContent))) {
+      return REMOTE_SEND_URL;
+    }
+
+    if (input.focus_type() == OmniboxFocusType::DELETED_PERMANENT_TEXT &&
+        base::FeatureList::IsEnabled(
+            omnibox::kClobberTriggersContextualWebZeroSuggest)) {
+      return REMOTE_SEND_URL;
+    }
   }
 
   // Reactive Zero-Prefix Suggestions (rZPS) on NTP cases.

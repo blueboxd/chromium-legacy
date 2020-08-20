@@ -7,6 +7,7 @@
 #include "base/callback.h"
 #include "base/no_destructor.h"
 #include "chromeos/components/phonehub/feature_status_provider_impl.h"
+#include "chromeos/components/phonehub/mutable_phone_model.h"
 #include "chromeos/components/phonehub/notification_access_manager_impl.h"
 
 namespace chromeos {
@@ -28,7 +29,8 @@ PhoneHubManager::PhoneHubManager(
           device_sync_client,
           multidevice_setup_client)),
       notification_access_manager_(
-          std::make_unique<NotificationAccessManagerImpl>(pref_service)) {
+          std::make_unique<NotificationAccessManagerImpl>(pref_service)),
+      phone_model_(std::make_unique<MutablePhoneModel>()) {
   DCHECK(!g_instance);
   g_instance = this;
 }
@@ -39,6 +41,7 @@ void PhoneHubManager::Shutdown() {
   DCHECK(g_instance);
   g_instance = nullptr;
 
+  phone_model_.reset();
   notification_access_manager_.reset();
   feature_status_provider_.reset();
 }

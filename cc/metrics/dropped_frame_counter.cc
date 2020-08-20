@@ -9,7 +9,6 @@
 #include <limits>
 
 #include "base/memory/ptr_util.h"
-#include "base/metrics/histogram_macros.h"
 
 namespace cc {
 

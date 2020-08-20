@@ -13,7 +13,7 @@ import android.os.CancellationSignal;
 import org.hamcrest.Matchers;
 
 import org.chromium.base.Callback;
-import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;

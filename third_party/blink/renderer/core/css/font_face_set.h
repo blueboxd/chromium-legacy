@@ -6,7 +6,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_FONT_FACE_SET_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_FONT_FACE_SET_H_
 
-#include "base/macros.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/iterable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
@@ -40,6 +39,8 @@ class CORE_EXPORT FontFaceSet : public EventTargetWithInlineData,
   FontFaceSet(ExecutionContext& context)
       : ExecutionContextClient(&context),
         ready_(MakeGarbageCollected<ReadyProperty>(GetExecutionContext())) {}
+  FontFaceSet(const FontFaceSet&) = delete;
+  FontFaceSet& operator=(const FontFaceSet&) = delete;
   ~FontFaceSet() override = default;
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(loading, kLoading)
@@ -155,7 +156,6 @@ class CORE_EXPORT FontFaceSet : public EventTargetWithInlineData,
 
   void HandlePendingEventsAndPromises();
   void FireLoadingEvent();
-  DISALLOW_COPY_AND_ASSIGN(FontFaceSet);
 };
 
 }  // namespace blink

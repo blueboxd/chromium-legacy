@@ -35,7 +35,7 @@ const VIDEO_THUMBNAIL_SIZE_LIMIT = 32 << 20;
 class CoverPhoto {
   /**
    * @param {!AbstractFileEntry} file File entry of cover photo.
-   * @param {!string} thumbnailUrl Url to its thumbnail.
+   * @param {string} thumbnailUrl Url to its thumbnail.
    */
   constructor(file, thumbnailUrl) {
     /**

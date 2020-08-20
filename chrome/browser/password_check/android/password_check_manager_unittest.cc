@@ -18,6 +18,7 @@
 #include "chrome/browser/password_manager/bulk_leak_check_service_factory.h"
 #include "chrome/browser/password_manager/password_scripts_fetcher_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/password_manager/core/browser/bulk_leak_check_service.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
@@ -27,6 +28,7 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
+#include "components/sync/driver/test_sync_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/test/browser_task_environment.h"
@@ -126,6 +128,14 @@ MockPasswordScriptsFetcher* CreateAndUseMockPasswordScriptsFetcher(
           }));
 }
 
+syncer::TestSyncService* CreateAndUseSyncService(Profile* profile) {
+  return ProfileSyncServiceFactory::GetInstance()
+      ->SetTestingSubclassFactoryAndUse(
+          profile, base::BindLambdaForTesting([](content::BrowserContext*) {
+            return std::make_unique<syncer::TestSyncService>();
+          }));
+}
+
 PasswordForm MakeSavedPassword(base::StringPiece signon_realm,
                                base::StringPiece username,
                                base::StringPiece password = kPassword1,
@@ -211,6 +221,7 @@ class PasswordCheckManagerTest : public testing::Test {
   MockPasswordScriptsFetcher& fetcher() { return *fetcher_; }
   PasswordCheckManager& manager() { return *manager_; }
   base::test::ScopedFeatureList& feature_list() { return feature_list_; }
+  syncer::TestSyncService& sync_service() { return *sync_service_; }
 
  private:
   content::BrowserTaskEnvironment task_env_;
@@ -221,6 +232,7 @@ class PasswordCheckManagerTest : public testing::Test {
                                        &profile_);
   scoped_refptr<TestPasswordStore> store_ =
       CreateAndUseTestPasswordStore(&profile_);
+  syncer::TestSyncService* sync_service_ = CreateAndUseSyncService(&profile_);
   NiceMock<MockPasswordCheckManagerObserver> mock_observer_;
   MockPasswordScriptsFetcher* fetcher_ =
       CreateAndUseMockPasswordScriptsFetcher(&profile_);
@@ -331,8 +343,34 @@ TEST_F(PasswordCheckManagerTest, DoesntRecordTimestampOfUnsuccessfulCheck) {
   EXPECT_EQ(0.0, manager().GetLastCheckTimestamp().ToDoubleT());
 }
 
-TEST_F(PasswordCheckManagerTest, CorrectlyCreatesUIStructWithPasswordScripts) {
+TEST_F(PasswordCheckManagerTest,
+       CorrectlyCreatesUIStructWithPasswordScriptsSyncOff) {
   InitializeManager();
+  // Disable password sync
+  sync_service().SetActiveDataTypes(syncer::ModelTypeSet());
+  feature_list().InitAndEnableFeature(
+      password_manager::features::kPasswordChangeInSettings);
+  store().AddLogin(MakeSavedPassword(kExampleCom, kUsername1));
+  store().AddCompromisedCredentials(MakeCompromised(kExampleCom, kUsername1));
+
+  RunUntilIdle();
+  EXPECT_CALL(fetcher(), RefreshScriptsIfNecessary).Times(0);
+
+  manager().RefreshScripts();
+
+  EXPECT_THAT(
+      manager().GetCompromisedCredentials(),
+      ElementsAre(ExpectCompromisedCredentialForUI(
+          base::ASCIIToUTF16(kUsername1), base::ASCIIToUTF16("example.com"),
+          base::nullopt, "https://example.com/",
+          CompromiseTypeFlags::kCredentialLeaked, /*has_script=*/false)));
+}
+
+TEST_F(PasswordCheckManagerTest,
+       CorrectlyCreatesUIStructWithPasswordScriptsSyncOn) {
+  InitializeManager();
+  // Enable password sync
+  sync_service().SetActiveDataTypes(syncer::ModelTypeSet(syncer::PASSWORDS));
   feature_list().InitAndEnableFeature(
       password_manager::features::kPasswordChangeInSettings);
   store().AddLogin(MakeSavedPassword(kExampleCom, kUsername1));

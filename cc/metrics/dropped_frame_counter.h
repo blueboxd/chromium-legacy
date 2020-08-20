@@ -10,7 +10,6 @@
 #include <memory>
 
 #include "base/containers/ring_buffer.h"
-#include "base/time/time.h"
 
 namespace cc {
 
@@ -23,6 +22,7 @@ class DroppedFrameCounter {
     kFrameStatePartial,
     kFrameStateComplete
   };
+
   DroppedFrameCounter();
 
   DroppedFrameCounter(const DroppedFrameCounter&) = delete;

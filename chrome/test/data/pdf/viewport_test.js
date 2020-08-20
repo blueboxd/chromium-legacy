@@ -10,11 +10,10 @@ import {getZoomableViewport, MockDocumentDimensions, MockElement, MockSizer, Moc
 const tests = [
   function testDocumentNeedsScrollbars() {
     const viewport = getZoomableViewport(
-        new MockElement(100, 100), new MockSizer(), 10, 1, 0);
-    let scrollbars;
+        new MockElement(100, 100, null), new MockSizer(), 10, 1, 0);
 
     viewport.setDocumentDimensions(new MockDocumentDimensions(90, 90));
-    scrollbars = viewport.documentNeedsScrollbars(1);
+    let scrollbars = viewport.documentNeedsScrollbars(1);
     chrome.test.assertFalse(scrollbars.vertical);
     chrome.test.assertFalse(scrollbars.horizontal);
 
@@ -63,10 +62,10 @@ const tests = [
     // Test the case when there is a toolbar at the top.
     const toolbarHeight = 10;
     const viewport = getZoomableViewport(
-        new MockElement(100, 100), new MockSizer(), 10, 1, toolbarHeight);
+        new MockElement(100, 100, null), new MockSizer(), 10, 1, toolbarHeight);
 
     viewport.setDocumentDimensions(new MockDocumentDimensions(90, 90));
-    scrollbars = viewport.documentNeedsScrollbars(1);
+    let scrollbars = viewport.documentNeedsScrollbars(1);
     chrome.test.assertFalse(scrollbars.vertical);
     chrome.test.assertFalse(scrollbars.horizontal);
 
@@ -175,7 +174,7 @@ const tests = [
   },
 
   function testGetMostVisiblePage() {
-    const mockWindow = new MockElement(100, 100);
+    const mockWindow = new MockElement(100, 100, null);
     const viewport = getZoomableViewport(mockWindow, new MockSizer(), 0, 1, 0);
 
     const documentDimensions = new MockDocumentDimensions(100, 100);
@@ -235,7 +234,7 @@ const tests = [
   },
 
   function testGetMostVisiblePageForTwoUpView() {
-    const mockWindow = new MockElement(400, 500);
+    const mockWindow = new MockElement(400, 500, null);
     const viewport = getZoomableViewport(mockWindow, new MockSizer(), 0, 1, 0);
 
     const documentDimensions = new MockDocumentDimensions(
@@ -272,7 +271,7 @@ const tests = [
   },
 
   function testFitToWidth() {
-    const mockWindow = new MockElement(100, 100);
+    const mockWindow = new MockElement(100, 100, null);
     const mockSizer = new MockSizer();
     const mockCallback = new MockViewportChangedCallback();
     let viewport = getZoomableViewport(mockWindow, mockSizer, 0, 1, 0);
@@ -347,7 +346,7 @@ const tests = [
   },
 
   function testFitToPage() {
-    const mockWindow = new MockElement(100, 100);
+    const mockWindow = new MockElement(100, 100, null);
     const mockSizer = new MockSizer();
     const mockCallback = new MockViewportChangedCallback();
     const viewport = getZoomableViewport(mockWindow, mockSizer, 0, 1, 0);
@@ -452,16 +451,18 @@ const tests = [
   // this case, the viewport should fit the document to the area below the
   // toolbar, rather than the full window.
   function testFitToPageFixedToolbar() {
-    const mockWindow = new MockElement(100, 100);
+    const mockWindow = new MockElement(100, 100, null);
     const mockSizer = new MockSizer();
     const mockCallback = new MockViewportChangedCallback();
     const dummyContent =
         /** @type {!HTMLDivElement} */ (document.createElement('div'));
     document.body.appendChild(dummyContent);
     const toolbarHeight = 10;
+    /** @suppress {invalidCasts} */
     const viewport = new Viewport(
-        mockWindow, /** @type {!HTMLDivElement} */ (mockSizer), dummyContent, 0,
-        1, toolbarHeight, true);
+        /** @type {!HTMLElement} */ (mockWindow),
+        /** @type {!HTMLDivElement} */ (mockSizer), dummyContent, 0, 1,
+        toolbarHeight, true);
     viewport.setZoomFactorRange([0.25, 0.4, 0.5, 1, 2]);
     viewport.setViewportChangedCallback(mockCallback.callback);
     const documentDimensions = new MockDocumentDimensions();
@@ -518,7 +519,7 @@ const tests = [
   },
 
   function testFitToHeight() {
-    const mockWindow = new MockElement(100, 100);
+    const mockWindow = new MockElement(100, 100, null);
     const mockSizer = new MockSizer();
     const mockCallback = new MockViewportChangedCallback();
     const viewport = getZoomableViewport(mockWindow, mockSizer, 0, 1, 0);
@@ -620,7 +621,7 @@ const tests = [
   },
 
   function testGoToNextPage() {
-    const mockWindow = new MockElement(100, 100);
+    const mockWindow = new MockElement(100, 100, null);
     const mockSizer = new MockSizer();
     const mockCallback = new MockViewportChangedCallback();
     const viewport = getZoomableViewport(mockWindow, mockSizer, 0, 1, 0);
@@ -662,7 +663,7 @@ const tests = [
   },
 
   function testGoToNextPageInTwoUpView() {
-    const mockWindow = new MockElement(100, 100);
+    const mockWindow = new MockElement(100, 100, null);
     const mockSizer = new MockSizer();
     const mockCallback = new MockViewportChangedCallback();
     const viewport = getZoomableViewport(mockWindow, mockSizer, 0, 1, 0);
@@ -725,7 +726,7 @@ const tests = [
   },
 
   function testGoToPreviousPage() {
-    const mockWindow = new MockElement(100, 100);
+    const mockWindow = new MockElement(100, 100, null);
     const mockSizer = new MockSizer();
     const mockCallback = new MockViewportChangedCallback();
     const viewport = getZoomableViewport(mockWindow, mockSizer, 0, 1, 0);
@@ -767,7 +768,7 @@ const tests = [
   },
 
   function testGoToPreviousPageInTwoUpView() {
-    const mockWindow = new MockElement(100, 100);
+    const mockWindow = new MockElement(100, 100, null);
     const mockSizer = new MockSizer();
     const mockCallback = new MockViewportChangedCallback();
     const viewport = getZoomableViewport(mockWindow, mockSizer, 0, 1, 0);
@@ -831,7 +832,7 @@ const tests = [
   },
 
   function testGoToPage() {
-    const mockWindow = new MockElement(100, 100);
+    const mockWindow = new MockElement(100, 100, null);
     const mockSizer = new MockSizer();
     const mockCallback = new MockViewportChangedCallback();
     const viewport = getZoomableViewport(mockWindow, mockSizer, 0, 1, 0);
@@ -872,7 +873,7 @@ const tests = [
   },
 
   function testGoToPageAndXY() {
-    const mockWindow = new MockElement(100, 100);
+    const mockWindow = new MockElement(100, 100, null);
     const mockSizer = new MockSizer();
     const mockCallback = new MockViewportChangedCallback();
     const viewport = getZoomableViewport(mockWindow, mockSizer, 0, 1, 0);
@@ -925,7 +926,7 @@ const tests = [
   },
 
   function testScrollTo() {
-    const mockWindow = new MockElement(100, 100);
+    const mockWindow = new MockElement(100, 100, null);
     const mockSizer = new MockSizer();
     const mockCallback = new MockViewportChangedCallback();
     const viewport = getZoomableViewport(mockWindow, mockSizer, 0, 1, 0);
@@ -979,7 +980,7 @@ const tests = [
   },
 
   function testScrollBy() {
-    const mockWindow = new MockElement(100, 100);
+    const mockWindow = new MockElement(100, 100, null);
     const mockSizer = new MockSizer();
     const mockCallback = new MockViewportChangedCallback();
     const viewport = getZoomableViewport(mockWindow, mockSizer, 0, 1, 0);
@@ -1027,7 +1028,7 @@ const tests = [
   },
 
   function testGetPageScreenRect() {
-    const mockWindow = new MockElement(100, 100);
+    const mockWindow = new MockElement(100, 100, null);
     const mockSizer = new MockSizer();
     const mockCallback = new MockViewportChangedCallback();
     const viewport = getZoomableViewport(mockWindow, mockSizer, 0, 1, 0);
@@ -1070,7 +1071,7 @@ const tests = [
   },
 
   function testBeforeZoomAfterZoom() {
-    const mockWindow = new MockElement(100, 100);
+    const mockWindow = new MockElement(100, 100, null);
     const mockSizer = new MockSizer();
     const viewport = getZoomableViewport(mockWindow, mockSizer, 0, 1, 0);
 
@@ -1095,7 +1096,7 @@ const tests = [
 
   function testInitialSetDocumentDimensionsZoomConstrained() {
     const viewport = getZoomableViewport(
-        new MockElement(100, 100), new MockSizer(), 0, 1.2, 0);
+        new MockElement(100, 100, null), new MockSizer(), 0, 1.2, 0);
     viewport.setDocumentDimensions(new MockDocumentDimensions(50, 50));
     chrome.test.assertEq(1.2, viewport.getZoom());
     chrome.test.succeed();
@@ -1103,7 +1104,7 @@ const tests = [
 
   function testInitialSetDocumentDimensionsZoomUnconstrained() {
     const viewport = getZoomableViewport(
-        new MockElement(100, 100), new MockSizer(), 0, 3, 0);
+        new MockElement(100, 100, null), new MockSizer(), 0, 3, 0);
     viewport.setDocumentDimensions(new MockDocumentDimensions(50, 50));
     chrome.test.assertEq(2, viewport.getZoom());
     chrome.test.succeed();
@@ -1111,7 +1112,7 @@ const tests = [
 
   function testLayoutOptions() {
     const viewport = getZoomableViewport(
-        new MockElement(100, 100), new MockSizer(), 0, 1, 0);
+        new MockElement(100, 100, null), new MockSizer(), 0, 1, 0);
 
     chrome.test.assertEq(undefined, viewport.getLayoutOptions());
 
@@ -1129,7 +1130,7 @@ const tests = [
 
   function testToolbarHeightOffset() {
     const mockSizer = new MockSizer();
-    const mockWindow = new MockElement(100, 100);
+    const mockWindow = new MockElement(100, 100, null);
     const viewport = getZoomableViewport(mockWindow, mockSizer, 0, 1, 50);
     const documentDimensions = new MockDocumentDimensions(0, 0);
     documentDimensions.addPage(50, 500);

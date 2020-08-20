@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.printing;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeAccessorActivity;
-import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;

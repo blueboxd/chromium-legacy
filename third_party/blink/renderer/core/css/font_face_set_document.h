@@ -26,7 +26,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_FONT_FACE_SET_DOCUMENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_FONT_FACE_SET_DOCUMENT_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/bindings/core/v8/iterable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/css/css_font_selector.h"
@@ -49,6 +48,8 @@ class CORE_EXPORT FontFaceSetDocument final : public FontFaceSet,
   static const char kSupplementName[];
 
   explicit FontFaceSetDocument(Document&);
+  FontFaceSetDocument(const FontFaceSetDocument&) = delete;
+  FontFaceSetDocument& operator=(const FontFaceSetDocument&) = delete;
   ~FontFaceSetDocument() override;
 
   ScriptPromise ready(ScriptState*) override;
@@ -130,8 +131,6 @@ class CORE_EXPORT FontFaceSetDocument final : public FontFaceSet,
   TaskRunnerTimer<FontFaceSetDocument> lcp_limit_timer_;
 
   bool has_reached_lcp_limit_ = false;
-
-  DISALLOW_COPY_AND_ASSIGN(FontFaceSetDocument);
 };
 
 }  // namespace blink

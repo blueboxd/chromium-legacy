@@ -13,6 +13,7 @@
 #include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
+#include "components/autofill/ios/form_util/unique_id_data_tab_helper.h"
 #include "components/password_manager/ios/account_select_fill_data.h"
 #include "components/password_manager/ios/test_helpers.h"
 #import "ios/web/public/test/fakes/fake_navigation_context.h"
@@ -75,6 +76,7 @@ class PasswordFormHelperTest : public web::WebTestWithWebState {
 
   void SetUp() override {
     WebTestWithWebState::SetUp();
+    UniqueIDDataTabHelper::CreateForWebState(web_state());
     helper_ = [[PasswordFormHelper alloc] initWithWebState:web_state()];
   }
 

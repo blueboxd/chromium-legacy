@@ -22,6 +22,8 @@ Polymer({
   _template: html`{__html_template__}`,
 
   properties: {
+    hideCloudPrintWarning: Boolean,
+
     prefs: {
       type: Object,
       notify: true,

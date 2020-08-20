@@ -13,6 +13,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
+import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
@@ -20,6 +21,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.policy.AppRestrictionsProvider;
+import org.chromium.policy.PolicySwitches;
 
 import java.util.LinkedList;
 import java.util.Locale;
@@ -105,6 +107,15 @@ class FirstRunAppRestrictionInfo {
      */
     public void getHasAppRestriction(Callback<Boolean> callback) {
         ThreadUtils.assertOnUiThread();
+
+        // This is an imperfect system, and can sometimes return true when there will not actually
+        // be any app restrictions. But we do not have parsing logic in Java to understand if the
+        // switch sets valid policies.
+        if (CommandLine.getInstance().hasSwitch(PolicySwitches.CHROME_POLICY)) {
+            callback.onResult(true);
+            return;
+        }
+
         if (mInitialized) {
             callback.onResult(mHasAppRestriction);
         } else {

@@ -30,6 +30,12 @@ AX_BASE_EXPORT extern const base::Feature kEnableAccessibilityExposeHTMLElement;
 // browser process AXTree (as an ignored node).
 AX_BASE_EXPORT bool IsAccessibilityExposeHTMLElementEnabled();
 
+AX_BASE_EXPORT extern const base::Feature kEnableAccessibilityLanguageDetection;
+
+// Return true if language detection should be used to determine the language
+// of text content in page and exposed to the browser process AXTree.
+AX_BASE_EXPORT bool IsAccessibilityLanguageDetectionEnabled();
+
 // Serializes accessibility information from the Views tree and deserializes it
 // into an AXTree in the browser process.
 AX_BASE_EXPORT extern const base::Feature kEnableAccessibilityTreeForViews;

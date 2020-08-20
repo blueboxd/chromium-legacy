@@ -14,80 +14,13 @@
 #include "base/test/gmock_callback_support.h"
 #include "base/test/task_environment.h"
 #include "device/bluetooth/bluetooth_socket.h"
+#include "device/bluetooth/test/fake_bluetooth_socket.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/base/io_buffer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace bluetooth {
-
-namespace {
-
-class FakeBluetoothSocket : public device::BluetoothSocket {
- public:
-  using ReceiveArgs = std::
-      tuple<int, ReceiveCompletionCallback, ReceiveErrorCompletionCallback>;
-  using SendArgs = std::tuple<scoped_refptr<net::IOBuffer>,
-                              int,
-                              SendCompletionCallback,
-                              ErrorCompletionCallback>;
-
-  FakeBluetoothSocket() = default;
-  FakeBluetoothSocket(const FakeBluetoothSocket&) = delete;
-  FakeBluetoothSocket& operator=(const FakeBluetoothSocket&) = delete;
-
-  // device::BluetoothSocket:
-  void Close() override { called_close_ = true; }
-  void Disconnect(base::OnceClosure success_callback) override {
-    called_disconnect_ = true;
-    std::move(success_callback).Run();
-  }
-  void Receive(int buffer_size,
-               ReceiveCompletionCallback success_callback,
-               ReceiveErrorCompletionCallback error_callback) override {
-    EXPECT_FALSE(receive_args_);
-    receive_args_ = std::make_unique<ReceiveArgs>(
-        buffer_size, std::move(success_callback), std::move(error_callback));
-  }
-  void Send(scoped_refptr<net::IOBuffer> buffer,
-            int buffer_size,
-            SendCompletionCallback success_callback,
-            ErrorCompletionCallback error_callback) override {
-    EXPECT_FALSE(send_args_);
-    send_args_ = std::make_unique<SendArgs>(std::move(buffer), buffer_size,
-                                            std::move(success_callback),
-                                            std::move(error_callback));
-  }
-  void Accept(AcceptCompletionCallback success_callback,
-              ErrorCompletionCallback error_callback) override {
-    // TODO(hansberry): To be implemented in a subsequent CL.
-    NOTIMPLEMENTED();
-  }
-
-  bool called_close() { return called_close_; }
-  bool called_disconnect() { return called_disconnect_; }
-
-  bool HasReceiveArgs() { return receive_args_.get(); }
-
-  bool HasSendArgs() { return send_args_.get(); }
-
-  std::unique_ptr<ReceiveArgs> TakeReceiveArgs() {
-    return std::move(receive_args_);
-  }
-
-  std::unique_ptr<SendArgs> TakeSendArgs() { return std::move(send_args_); }
-
- protected:
-  ~FakeBluetoothSocket() override = default;
-
- private:
-  bool called_close_ = false;
-  bool called_disconnect_ = false;
-  std::unique_ptr<ReceiveArgs> receive_args_;
-  std::unique_ptr<SendArgs> send_args_;
-};
-
-}  // namespace
 
 class SocketTest : public testing::Test {
  public:
@@ -113,7 +46,8 @@ class SocketTest : public testing::Test {
     receive_stream_ = std::move(receive_pipe_consumer_handle);
     send_stream_ = std::move(send_pipe_producer_handle);
 
-    fake_bluetooth_socket_ = base::MakeRefCounted<FakeBluetoothSocket>();
+    fake_bluetooth_socket_ =
+        base::MakeRefCounted<device::FakeBluetoothSocket>();
     socket_ = std::make_unique<Socket>(fake_bluetooth_socket_,
                                        std::move(receive_pipe_producer_handle),
                                        std::move(send_pipe_consumer_handle));
@@ -216,7 +150,7 @@ class SocketTest : public testing::Test {
   }
 
  protected:
-  scoped_refptr<FakeBluetoothSocket> fake_bluetooth_socket_;
+  scoped_refptr<device::FakeBluetoothSocket> fake_bluetooth_socket_;
   mojo::ScopedDataPipeConsumerHandle receive_stream_;
   mojo::ScopedDataPipeProducerHandle send_stream_;
   std::unique_ptr<Socket> socket_;

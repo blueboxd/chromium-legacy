@@ -22,7 +22,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_VALUE_LIST_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_VALUE_LIST_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_value.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
@@ -52,6 +51,8 @@ class CORE_EXPORT CSSValueList : public CSSValue {
 
   CSSValueList(ClassType, ValueListSeparator);
   explicit CSSValueList(ValueListSeparator);
+  CSSValueList(const CSSValueList&) = delete;
+  CSSValueList& operator=(const CSSValueList&) = delete;
 
   iterator begin() { return values_.begin(); }
   iterator end() { return values_.end(); }
@@ -79,7 +80,6 @@ class CORE_EXPORT CSSValueList : public CSSValue {
 
  private:
   HeapVector<Member<const CSSValue>, 4> values_;
-  DISALLOW_COPY_AND_ASSIGN(CSSValueList);
 };
 
 template <>

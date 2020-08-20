@@ -78,3 +78,11 @@ apps::AppShimManager* BrowserProcessPlatformPart::app_shim_manager() {
 AppShimListener* BrowserProcessPlatformPart::app_shim_listener() {
   return app_shim_listener_.get();
 }
+
+GeolocationSystemPermissionManager*
+BrowserProcessPlatformPart::location_permission_manager() {
+  if (!location_permission_manager_)
+    location_permission_manager_ = GeolocationSystemPermissionManager::Create();
+
+  return location_permission_manager_.get();
+}

@@ -144,6 +144,10 @@ BluetoothInternalsTest.prototype = {
         return {result: null};
       }
 
+      async createRfcommService(service_name, service_uuid) {
+        return {result: null};
+      }
+
       setTestConnectResult(connectResult) {
         this.connectResult_ = connectResult;
       }

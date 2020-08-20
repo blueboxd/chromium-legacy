@@ -18,6 +18,7 @@
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
+#include "build/build_config.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/swap_result.h"
@@ -188,9 +189,13 @@ class COMPONENT_EXPORT(VULKAN) VulkanSwapChain {
   // For executing PosSubBufferAsync tasks off the GPU main thread.
   scoped_refptr<base::SequencedTaskRunner> post_sub_buffer_task_runner_;
 
+#if !defined(OS_FUCHSIA)
   // Available fence and semaphores can be reused when fence is passed.
+  // Not used on Fuchsia because Fuchsia's swapchain implementation doesn't
+  // support fences.
   base::circular_deque<FenceAndSemaphores> fence_and_semaphores_queue_
       GUARDED_BY(lock_);
+#endif
 
   THREAD_CHECKER(thread_checker_);
 

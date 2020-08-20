@@ -20,7 +20,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_MEDIA_QUERY_LIST_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_MEDIA_QUERY_LIST_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
@@ -52,6 +51,8 @@ class CORE_EXPORT MediaQueryList final
   MediaQueryList(ExecutionContext*,
                  MediaQueryMatcher*,
                  scoped_refptr<MediaQuerySet>);
+  MediaQueryList(const MediaQueryList&) = delete;
+  MediaQueryList& operator=(const MediaQueryList&) = delete;
   ~MediaQueryList() override;
 
   String media() const;
@@ -93,7 +94,6 @@ class CORE_EXPORT MediaQueryList final
   ListenerList listeners_;
   bool matches_dirty_;
   bool matches_;
-  DISALLOW_COPY_AND_ASSIGN(MediaQueryList);
 };
 
 }  // namespace blink

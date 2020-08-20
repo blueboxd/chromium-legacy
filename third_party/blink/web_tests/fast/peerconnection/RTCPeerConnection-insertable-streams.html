@@ -24,8 +24,8 @@ async function testVideoFlow(t, negotiationFunction) {
 
   const videoSender = caller.addTrack(videoTrack)
   const senderStreams = videoSender.createEncodedStreams();
-  const senderReader = senderStreams.readableStream.getReader();
-  const senderWriter = senderStreams.writableStream.getWriter();
+  const senderReader = senderStreams.readable.getReader();
+  const senderWriter = senderStreams.writable.getWriter();
 
   const frameInfos = [];
   const numFramesPassthrough = 5;
@@ -40,8 +40,8 @@ async function testVideoFlow(t, negotiationFunction) {
 
       const receiverStreams =
           videoReceiver.createEncodedStreams();
-      const receiverReader = receiverStreams.readableStream.getReader();
-      const receiverWriter = receiverStreams.writableStream.getWriter();
+      const receiverReader = receiverStreams.readable.getReader();
+      const receiverWriter = receiverStreams.writable.getWriter();
 
       const maxFramesToReceive = numFramesToSend;
       let numVerifiedFrames = 0;
@@ -185,8 +185,8 @@ promise_test(async t => {
 
   const senderWorker = new Worker('RTCPeerConnection-sender-worker-single-frame.js')
   senderWorker.postMessage(
-    {readableStream: senderStreams.readableStream},
-    [senderStreams.readableStream]);
+    {readableStream: senderStreams.readable},
+    [senderStreams.readable]);
 
   let expectedFrameData = null;
   let verifiedFrameData = false;
@@ -286,14 +286,14 @@ promise_test(async t => {
 
   const sender = caller.addTrack(track)
   const senderStreams = sender.createEncodedStreams();
-  const senderReader = senderStreams.readableStream.getReader();
-  const senderWriter = senderStreams.writableStream.getWriter();
+  const senderReader = senderStreams.readable.getReader();
+  const senderWriter = senderStreams.writable.getWriter();
   const numFramesToSend = 20;
 
   const ontrackPromise = new Promise((resolve, reject) => {
     callee.ontrack = async e => {
       const receiverStreams = e.receiver.createEncodedStreams();
-      const receiverReader = receiverStreams.readableStream.getReader();
+      const receiverReader = receiverStreams.readable.getReader();
 
       let numReceivedKeyFrames = 0;
       let numReceivedDeltaFrames = 0;
@@ -361,13 +361,13 @@ promise_test(async t => {
 
   await promise_rejects_dom(
       t, 'OperationError',
-      streams.readableStream.pipeThrough(transformer).pipeTo(streams.writableStream));
+      streams.readable.pipeThrough(transformer).pipeTo(streams.writable));
 }, 'Enqueuing the same frame twice fails');
 
 promise_test(async t => {
-  const caller = new RTCPeerConnection({forceEncodedVideoInsertableStreams:true});
+  const caller = new RTCPeerConnection({encodedInsertableStreams:true});
   t.add_cleanup(() => caller.close());
-  const callee = new RTCPeerConnection({forceEncodedVideoInsertableStreams:true});
+  const callee = new RTCPeerConnection({encodedInsertableStreams:true});
   t.add_cleanup(() => callee.close());
 
   const stream = await navigator.mediaDevices.getUserMedia({video:true});
@@ -375,17 +375,17 @@ promise_test(async t => {
   t.add_cleanup(() => videoTrack.stop());
 
   const videoSender = caller.addTrack(videoTrack)
-  const senderStreams = videoSender.createEncodedVideoStreams();
-  const senderReader = senderStreams.readableStream.getReader();
-  const senderWriter = senderStreams.writableStream.getWriter();
+  const senderStreams = videoSender.createEncodedStreams();
+  const senderReader = senderStreams.readable.getReader();
+  const senderWriter = senderStreams.writable.getWriter();
 
   let sentFrameInfo = null;
   const ontrackPromise = new Promise(resolve => {
     callee.ontrack = t.step_func(async e => {
       const videoReceiver = e.receiver;
 
-      const receiverStreams = videoReceiver.createEncodedVideoStreams();
-      const receiverReader = receiverStreams.readableStream.getReader();
+      const receiverStreams = videoReceiver.createEncodedStreams();
+      const receiverReader = receiverStreams.readable.getReader();
       receiverReader.read().then(t.step_func(receivedResult => {
         assert_true(areFrameInfosEqual(receivedResult.value, sentFrameInfo));
         resolve();

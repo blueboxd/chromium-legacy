@@ -34,6 +34,9 @@ class FakeAdapter : public mojom::Adapter {
       const std::string& address,
       const device::BluetoothUUID& service_uuid,
       ConnectToServiceInsecurelyCallback callback) override;
+  void CreateRfcommService(const std::string& service_name,
+                           const device::BluetoothUUID& service_uuid,
+                           CreateRfcommServiceCallback callback) override;
 
   void SetShouldDiscoverySucceed(bool should_discovery_succeed);
   void SetDiscoverySessionDestroyedCallback(base::OnceClosure callback);
@@ -43,6 +46,9 @@ class FakeAdapter : public mojom::Adapter {
   void NotifyDeviceRemoved(mojom::DeviceInfoPtr device_info);
   void AllowConnectionForAddressAndUuidPair(
       const std::string& address,
+      const device::BluetoothUUID& service_uuid);
+  void AllowIncomingConnectionForServiceNameAndUuidPair(
+      const std::string& service_name,
       const device::BluetoothUUID& service_uuid);
 
   mojo::Receiver<mojom::Adapter> adapter_{this};
@@ -60,6 +66,8 @@ class FakeAdapter : public mojom::Adapter {
   base::OnceClosure on_discovery_session_destroyed_callback_;
   std::set<std::pair<std::string, device::BluetoothUUID>>
       allowed_connections_for_address_and_uuid_pair_;
+  std::set<std::pair<std::string, device::BluetoothUUID>>
+      allowed_connections_for_service_name_and_uuid_pair_;
 
   mojo::Remote<mojom::AdapterClient> client_;
 };

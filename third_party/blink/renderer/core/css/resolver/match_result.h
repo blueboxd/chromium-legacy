@@ -24,7 +24,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_MATCH_RESULT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_MATCH_RESULT_H_
 
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/css/resolver/cascade_expansion.h"
 #include "third_party/blink/renderer/core/css/resolver/cascade_filter.h"
@@ -130,6 +129,8 @@ class CORE_EXPORT MatchResult {
 
  public:
   MatchResult() = default;
+  MatchResult(const MatchResult&) = delete;
+  MatchResult& operator=(const MatchResult&) = delete;
 
   void AddMatchedProperties(
       const CSSPropertyValueSet* properties,
@@ -159,7 +160,6 @@ class CORE_EXPORT MatchResult {
   bool is_cacheable_ = true;
   CascadeOrigin current_origin_ = CascadeOrigin::kUserAgent;
   uint16_t current_tree_order_ = 0;
-  DISALLOW_COPY_AND_ASSIGN(MatchResult);
 };
 
 inline bool operator==(const MatchedProperties& a, const MatchedProperties& b) {

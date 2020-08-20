@@ -12,6 +12,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
+#include "ui/accessibility/accessibility_features.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_tree.h"
@@ -208,10 +209,28 @@ AXLanguageDetectionManager::AXLanguageDetectionManager(AXTree* tree)
 
 AXLanguageDetectionManager::~AXLanguageDetectionManager() = default;
 
+bool AXLanguageDetectionManager::IsStaticLanguageDetectionEnabled() {
+  // Static language detection can be enabled by either:
+  //  1) The general language detection feature flag which gates both static and
+  //     dynamic language detection (feature flag for experiment), or
+  //  2) The Static specific flag (user controlled switch).
+  return features::IsAccessibilityLanguageDetectionEnabled() ||
+         ::switches::IsExperimentalAccessibilityLanguageDetectionEnabled();
+}
+
+bool AXLanguageDetectionManager::IsDynamicLanguageDetectionEnabled() {
+  // Dynamic language detection can be enabled by either:
+  //  1) The general language detection feature flag which gates both static and
+  //     dynamic language detection (feature flag for experiment), or
+  //  2) The Dynamic specific flag (user controlled switch).
+  return features::IsAccessibilityLanguageDetectionEnabled() ||
+         ::switches::
+             IsExperimentalAccessibilityLanguageDetectionDynamicEnabled();
+}
+
 void AXLanguageDetectionManager::RegisterLanguageDetectionObserver() {
-  // If the dynamic feature flag is not enabled then do nothing.
-  if (!::switches::
-          IsExperimentalAccessibilityLanguageDetectionDynamicEnabled()) {
+  // Do not perform dynamic language detection unless explicitly enabled.
+  if (!IsDynamicLanguageDetectionEnabled()) {
     return;
   }
 
@@ -223,7 +242,8 @@ void AXLanguageDetectionManager::RegisterLanguageDetectionObserver() {
 // Detect languages for each node.
 void AXLanguageDetectionManager::DetectLanguages() {
   TRACE_EVENT0("accessibility", "AXLanguageInfo::DetectLanguages");
-  if (!::switches::IsExperimentalAccessibilityLanguageDetectionEnabled()) {
+
+  if (!IsStaticLanguageDetectionEnabled()) {
     return;
   }
 
@@ -308,7 +328,7 @@ void AXLanguageDetectionManager::DetectLanguagesForNode(AXNode* node) {
 void AXLanguageDetectionManager::LabelLanguages() {
   TRACE_EVENT0("accessibility", "AXLanguageInfo::LabelLanguages");
 
-  if (!::switches::IsExperimentalAccessibilityLanguageDetectionEnabled()) {
+  if (!IsStaticLanguageDetectionEnabled()) {
     return;
   }
 
@@ -443,8 +463,7 @@ AXLanguageDetectionObserver::AXLanguageDetectionObserver(AXTree* tree)
   // We expect the feature flag to have be checked before this Observer is
   // constructed, this should have been checked by
   // RegisterLanguageDetectionObserver.
-  DCHECK(
-      ::switches::IsExperimentalAccessibilityLanguageDetectionDynamicEnabled());
+  DCHECK(AXLanguageDetectionManager::IsDynamicLanguageDetectionEnabled());
 
   tree_->AddObserver(this);
 }

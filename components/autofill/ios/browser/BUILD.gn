@@ -81,6 +81,7 @@ source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "autofill_agent_unittests.mm",
+    "autofill_util_unittests.mm",
     "form_suggestion_provider_query_unittests.mm",
   ]
   deps = [
@@ -88,6 +89,7 @@ source_set("unit_tests") {
     "//base",
     "//base/test:test_support",
     "//components/autofill/core/browser:test_support",
+    "//components/autofill/ios/form_util",
     "//components/leveldb_proto:leveldb_proto",
     "//components/prefs",
     "//ios/web/public",

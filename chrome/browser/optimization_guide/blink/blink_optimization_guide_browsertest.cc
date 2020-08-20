@@ -12,8 +12,12 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/proto/delay_async_script_execution_metadata.pb.h"
+#include "components/ukm/test_ukm_recorder.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/test/browser_test.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "third_party/blink/public/common/features.h"
 
 namespace optimization_guide {
@@ -23,15 +27,13 @@ namespace optimization_guide {
 class BlinkOptimizationGuideBrowserTestBase : public InProcessBrowserTest {
  public:
   void SetUpOnMainThread() override {
-    https_server_ = std::make_unique<net::EmbeddedTestServer>(
-        net::EmbeddedTestServer::TYPE_HTTPS);
-    https_server_->ServeFilesFromSourceDirectory(GetChromeTestDataDir());
-    ASSERT_TRUE(https_server_->Start());
     InProcessBrowserTest::SetUpOnMainThread();
+    host_resolver()->AddRule("*", "127.0.0.1");
+    ASSERT_TRUE(embedded_test_server()->Start());
   }
 
   void TearDownOnMainThread() override {
-    EXPECT_TRUE(https_server_->ShutdownAndWaitUntilComplete());
+    EXPECT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
     InProcessBrowserTest::TearDownOnMainThread();
   }
 
@@ -45,14 +47,20 @@ class BlinkOptimizationGuideBrowserTestBase : public InProcessBrowserTest {
     return GetObserverForActiveWebContents()->current_inquirer();
   }
 
+  void CloseWebContentsAndWait() {
+    int active_index = browser()->tab_strip_model()->active_index();
+    content::WebContentsDestroyedWatcher destroyed_watcher(
+        browser()->tab_strip_model()->GetWebContentsAt(active_index));
+    browser()->tab_strip_model()->CloseWebContentsAt(
+        active_index, TabStripModel::CLOSE_USER_GESTURE);
+    destroyed_watcher.Wait();
+  }
+
   GURL GetURLWithMockHost(const std::string& relative_url) const {
     // The optimization guide service doesn't work with the localhost. Instead,
     // resolve the relative url with the mock host.
-    return https_server_->GetURL("mock.host", relative_url);
+    return embedded_test_server()->GetURL("mock.host", relative_url);
   }
-
- private:
-  std::unique_ptr<net::EmbeddedTestServer> https_server_;
 };
 
 // The BlinkOptimizationGuideBrowserTest tests common behavior of optimization
@@ -61,11 +69,29 @@ class BlinkOptimizationGuideBrowserTestBase : public InProcessBrowserTest {
 // This is designed to be optimization type independent. Add optimization type
 // specific things to helper functions like ConstructionMetadata() instead of
 // in the test body.
+//
+// To add a new optimization type, add cases to all of the switch statements in
+// this class that handle optimization-specific values, so the existing tests
+// work for the new optimization type. Specifically for the Ukm test:
+//   - Add a new metric under the Perfect Heuristics Ukm event, and log it when
+//     the feature is exercised.
+//   - Add a new test file to chrome/test/data/optimization_guide/ that
+//     exercises the optimization (when enabled). The test should also expose a
+//     `WaitForOptimizationToFinish()` async function that lets the Ukm test
+//     know when to destroy the WebContents, and test that the Ukm was logged
+//     correctly. See
+//     chrome/test/data/optimization_guide/delay-async-script-execution.html as
+//     an example.
 class BlinkOptimizationGuideBrowserTest
     : public BlinkOptimizationGuideBrowserTestBase,
       public testing::WithParamInterface<
           std::tuple<proto::OptimizationType, bool>> {
  public:
+  void SetUpOnMainThread() override {
+    test_ukm_recorder_ = std::make_unique<ukm::TestAutoSetUkmRecorder>();
+    BlinkOptimizationGuideBrowserTestBase::SetUpOnMainThread();
+  }
+
   BlinkOptimizationGuideBrowserTest() {
     std::vector<base::test::ScopedFeatureList::FeatureAndParams>
         enabled_features{{features::kOptimizationHints, {{}}}};
@@ -85,6 +111,7 @@ class BlinkOptimizationGuideBrowserTest
         }
         break;
       default:
+        NOTREACHED();
         break;
     }
 
@@ -93,7 +120,7 @@ class BlinkOptimizationGuideBrowserTest
   }
 
   // Constructs a fake optimization metadata based on the optimization type.
-  OptimizationMetadata ConstructMetadata() {
+  OptimizationMetadata ConstructMetadata() const {
     OptimizationMetadata optimization_guide_metadata;
     switch (GetOptimizationType()) {
       case proto::OptimizationType::DELAY_ASYNC_SCRIPT_EXECUTION: {
@@ -103,23 +130,25 @@ class BlinkOptimizationGuideBrowserTest
         break;
       }
       default:
+        NOTREACHED();
         break;
     }
     return optimization_guide_metadata;
   }
 
   // Returns the optimization type provided as the gtest parameter.
-  proto::OptimizationType GetOptimizationType() {
+  proto::OptimizationType GetOptimizationType() const {
     return std::get<0>(GetParam());
   }
 
   // Returns true if the feature flag for the optimization type is enabled. If
   // the optimization type doesn't have the feature flag, returns true. See
   // comments on instantiation for details.
-  bool IsFeatureFlagEnabled() { return std::get<1>(GetParam()); }
+  bool IsFeatureFlagEnabled() const { return std::get<1>(GetParam()); }
 
   // Returns true if the hints for the optimization type is available.
-  bool CheckIfHintsAvailable(blink::mojom::BlinkOptimizationGuideHints& hints) {
+  bool CheckIfHintsAvailable(
+      blink::mojom::BlinkOptimizationGuideHints& hints) const {
     switch (GetOptimizationType()) {
       case proto::OptimizationType::DELAY_ASYNC_SCRIPT_EXECUTION:
         if (hints.delay_async_script_execution_hints) {
@@ -129,12 +158,47 @@ class BlinkOptimizationGuideBrowserTest
         }
         return !!hints.delay_async_script_execution_hints;
       default:
+        NOTREACHED();
         return false;
+    }
+  }
+
+  GURL GetExperimentSpecificURL() const {
+    switch (GetOptimizationType()) {
+      case proto::OptimizationType::DELAY_ASYNC_SCRIPT_EXECUTION:
+        return GetURLWithMockHost(
+            "/optimization_guide/delay-async-script-execution.html");
+      default:
+        NOTREACHED();
+        return GURL();
+    }
+  }
+
+  void CheckUkmEntryForOptimization() {
+    const auto& entries = test_ukm_recorder_->GetEntriesByName(
+        ukm::builders::PerfectHeuristics::kEntryName);
+    if (IsFeatureFlagEnabled()) {
+      switch (GetOptimizationType()) {
+        case proto::OptimizationType::DELAY_ASYNC_SCRIPT_EXECUTION:
+          EXPECT_EQ(1u, entries.size());
+          test_ukm_recorder_->ExpectEntryMetric(
+              entries.front(),
+              ukm::builders::PerfectHeuristics::
+                  kdelay_async_script_execution_before_finished_parsingName,
+              1u);
+          break;
+        default:
+          NOTREACHED();
+          return;
+      }
+    } else {
+      EXPECT_EQ(0u, entries.size());
     }
   }
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
+  std::unique_ptr<ukm::TestAutoSetUkmRecorder> test_ukm_recorder_;
 };
 
 // Instantiates test cases for each optimization type.
@@ -200,6 +264,31 @@ IN_PROC_BROWSER_TEST_P(BlinkOptimizationGuideBrowserTest, NoMetadata) {
   blink::mojom::BlinkOptimizationGuideHintsPtr hints =
       GetCurrentInquirer()->GetHints();
   EXPECT_FALSE(CheckIfHintsAvailable(*hints));
+}
+
+IN_PROC_BROWSER_TEST_P(BlinkOptimizationGuideBrowserTest, Ukm) {
+  OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile())
+      ->AddHintForTesting(GetExperimentSpecificURL(), GetOptimizationType(),
+                          ConstructMetadata());
+
+  EXPECT_TRUE(
+      ui_test_utils::NavigateToURL(browser(), GetExperimentSpecificURL()));
+  EXPECT_EQ("DONE", EvalJs(browser()->tab_strip_model()->GetActiveWebContents(),
+                           "WaitForOptimizationToFinish()"));
+
+  blink::mojom::BlinkOptimizationGuideHintsPtr hints =
+      GetCurrentInquirer()->GetHints();
+  if (IsFeatureFlagEnabled()) {
+    EXPECT_TRUE(CheckIfHintsAvailable(*hints));
+  } else {
+    EXPECT_FALSE(CheckIfHintsAvailable(*hints));
+  }
+
+  // Close the WebContents (and wait for it to be closed) as to force the
+  // renderer to send the page load metadata to the browser process, where the
+  // Perfect Heuristics Ukm event is logged.
+  CloseWebContentsAndWait();
+  CheckUkmEntryForOptimization();
 }
 
 // Tests behavior when the optimization guide service is disabled.

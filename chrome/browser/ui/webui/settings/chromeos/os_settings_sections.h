@@ -36,6 +36,10 @@ namespace multidevice_setup {
 class MultiDeviceSetupClient;
 }  // namespace multidevice_setup
 
+namespace phonehub {
+class PhoneHubManager;
+}  // namespace phonehub
+
 namespace settings {
 
 // Collection of all OsSettingsSection implementations.
@@ -45,6 +49,7 @@ class OsSettingsSections {
       Profile* profile,
       SearchTagRegistry* search_tag_registry,
       multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client,
+      phonehub::PhoneHubManager* phone_hub_manager,
       syncer::SyncService* sync_service,
       SupervisedUserService* supervised_user_service,
       KerberosCredentialsManager* kerberos_credentials_manager,

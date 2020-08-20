@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_VARIABLE_DATA_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_VARIABLE_DATA_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_token.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -105,6 +104,8 @@ class CORE_EXPORT CSSVariableData : public RefCounted<CSSVariableData> {
         has_root_font_units_(has_root_font_units),
         base_url_(base_url),
         charset_(charset) {}
+  CSSVariableData(const CSSVariableData&) = delete;
+  CSSVariableData& operator=(const CSSVariableData&) = delete;
 
   void ConsumeAndUpdateTokens(const CSSParserTokenRange&);
 
@@ -119,7 +120,6 @@ class CORE_EXPORT CSSVariableData : public RefCounted<CSSVariableData> {
   bool has_root_font_units_;
   String base_url_;
   WTF::TextEncoding charset_;
-  DISALLOW_COPY_AND_ASSIGN(CSSVariableData);
 };
 
 }  // namespace blink

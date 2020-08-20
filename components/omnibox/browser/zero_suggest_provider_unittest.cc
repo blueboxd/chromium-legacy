@@ -260,6 +260,7 @@ TEST_F(ZeroSuggestProviderTest, AllowZeroSuggestSuggestions) {
   }
 }
 
+// TODO(tommycli): Break up this test into smaller ones.
 TEST_F(ZeroSuggestProviderTest, TypeOfResultToRun) {
   // Verifies the unconfigured state. Returns platorm-specific defaults.
   // TODO(tommycli): The remote_no_url_allowed idiom seems kind of confusing,
@@ -396,6 +397,79 @@ TEST_F(ZeroSuggestProviderTest, TypeOfResultToRun) {
               ZeroSuggestProvider::TypeOfResultToRun(
                   client_.get(), blank_input,
                   GetSuggestURL(metrics::OmniboxEventProto::BLANK)));
+  }
+}
+
+TEST_F(ZeroSuggestProviderTest, TypeOfResultToRunForContextualWeb) {
+  std::string input_url = "https://example.com/";
+  GURL suggest_url = GetSuggestURL(metrics::OmniboxEventProto::OTHER);
+
+  AutocompleteInput on_focus_input(base::ASCIIToUTF16(input_url),
+                                   metrics::OmniboxEventProto::OTHER,
+                                   TestSchemeClassifier());
+  on_focus_input.set_current_url(GURL(input_url));
+  on_focus_input.set_focus_type(OmniboxFocusType::ON_FOCUS);
+
+  AutocompleteInput on_clobber_input(base::string16(),
+                                     metrics::OmniboxEventProto::OTHER,
+                                     TestSchemeClassifier());
+  on_clobber_input.set_current_url(GURL(input_url));
+  on_clobber_input.set_focus_type(OmniboxFocusType::DELETED_PERMANENT_TEXT);
+
+#if defined(OS_ANDROID) || defined(OS_IOS)
+  const ZeroSuggestProvider::ResultType kDefaultContextualWebResultType =
+      ZeroSuggestProvider::ResultType::MOST_VISITED;
+#else
+  const ZeroSuggestProvider::ResultType kDefaultContextualWebResultType =
+      ZeroSuggestProvider::ResultType::NONE;
+#endif
+
+  EXPECT_EQ(kDefaultContextualWebResultType,
+            ZeroSuggestProvider::TypeOfResultToRun(
+                client_.get(), on_focus_input, suggest_url));
+  EXPECT_EQ(kDefaultContextualWebResultType,
+            ZeroSuggestProvider::TypeOfResultToRun(
+                client_.get(), on_clobber_input, suggest_url));
+
+  // Enable on-focus only.
+  {
+    base::test::ScopedFeatureList features;
+    features.InitAndEnableFeature(omnibox::kOnFocusSuggestionsContextualWeb);
+
+    EXPECT_EQ(ZeroSuggestProvider::ResultType::REMOTE_SEND_URL,
+              ZeroSuggestProvider::TypeOfResultToRun(
+                  client_.get(), on_focus_input, suggest_url));
+    EXPECT_EQ(kDefaultContextualWebResultType,
+              ZeroSuggestProvider::TypeOfResultToRun(
+                  client_.get(), on_clobber_input, suggest_url));
+  }
+  // Enable on-clobber only.
+  {
+    base::test::ScopedFeatureList features;
+    features.InitAndEnableFeature(
+        omnibox::kClobberTriggersContextualWebZeroSuggest);
+
+    EXPECT_EQ(kDefaultContextualWebResultType,
+              ZeroSuggestProvider::TypeOfResultToRun(
+                  client_.get(), on_focus_input, suggest_url));
+    EXPECT_EQ(ZeroSuggestProvider::ResultType::REMOTE_SEND_URL,
+              ZeroSuggestProvider::TypeOfResultToRun(
+                  client_.get(), on_clobber_input, suggest_url));
+  }
+  // Enable on-focus and on-clobber.
+  {
+    base::test::ScopedFeatureList features;
+    features.InitWithFeatures(
+        {omnibox::kOnFocusSuggestionsContextualWeb,
+         omnibox::kClobberTriggersContextualWebZeroSuggest},
+        {});
+
+    EXPECT_EQ(ZeroSuggestProvider::ResultType::REMOTE_SEND_URL,
+              ZeroSuggestProvider::TypeOfResultToRun(
+                  client_.get(), on_focus_input, suggest_url));
+    EXPECT_EQ(ZeroSuggestProvider::ResultType::REMOTE_SEND_URL,
+              ZeroSuggestProvider::TypeOfResultToRun(
+                  client_.get(), on_clobber_input, suggest_url));
   }
 }
 

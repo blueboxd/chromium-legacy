@@ -9,7 +9,7 @@ import android.os.Build;
 
 import org.junit.runner.Description;
 
-import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.vr.rules.VrModuleNotInstalled;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 

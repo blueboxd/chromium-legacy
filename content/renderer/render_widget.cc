@@ -1243,8 +1243,7 @@ void RenderWidget::UpdateSurfaceAndScreenInfo(
   // The ViewportVisibleRect derives from the LayerTreeView's viewport size,
   // which is set above.
   layer_tree_host_->SetViewportVisibleRect(ViewportVisibleRect());
-  layer_tree_host_->SetRasterColorSpace(
-      screen_info_.display_color_spaces.GetScreenInfoColorSpace());
+  layer_tree_host_->SetDisplayColorSpaces(screen_info_.display_color_spaces);
 
   if (orientation_changed)
     OnOrientationChange();

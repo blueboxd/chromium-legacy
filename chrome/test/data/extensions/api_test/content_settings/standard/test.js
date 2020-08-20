@@ -26,7 +26,7 @@ var settings = {
   "cookies": "block",
   "images": "allow",
   "javascript": "block",
-  "plugins": "block", // <all_urls> exception can't be defined for plugins
+  "plugins": "detect_important_content",
   "popups": "allow",
   "location": "block",
   "notifications": "block",

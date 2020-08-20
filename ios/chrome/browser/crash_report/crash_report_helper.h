@@ -5,6 +5,9 @@
 #ifndef IOS_CHROME_BROWSER_CRASH_REPORT_CRASH_REPORT_HELPER_H_
 #define IOS_CHROME_BROWSER_CRASH_REPORT_CRASH_REPORT_HELPER_H_
 
+#include <string>
+#include <vector>
+
 @class NSString;
 
 class BreadcrumbManager;
@@ -66,6 +69,9 @@ void MonitorBreadcrumbManagerService(
 // Stops listening for breadcrumbs logged to |breadcrumb_manager_service|.
 void StopMonitoringBreadcrumbManagerService(
     BreadcrumbManagerKeyedService* breadcrumb_manager_service);
+
+// Sets breadcrumb events associated with the previous application session.
+void SetPreviousSessionEvents(const std::vector<std::string>& events);
 
 }  // namespace breakpad
 

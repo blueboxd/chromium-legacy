@@ -102,10 +102,10 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
                          NGInlineBoxState*,
                          LayoutUnit inline_offset = LayoutUnit());
   void PlaceOutOfFlowObjects(const NGLineInfo&,
-                             const NGLineHeightMetrics&,
+                             const FontHeight&,
                              NGLogicalLineItems* line_box);
   void PlaceFloatingObjects(const NGLineInfo&,
-                            const NGLineHeightMetrics&,
+                            const FontHeight&,
                             const NGLineLayoutOpportunity&,
                             NGLogicalLineItems* line_box,
                             NGExclusionSpace*);

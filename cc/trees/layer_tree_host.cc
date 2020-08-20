@@ -1363,11 +1363,11 @@ void LayerTreeHost::SetRecordingScaleFactor(float recording_scale_factor) {
   recording_scale_factor_ = recording_scale_factor;
 }
 
-void LayerTreeHost::SetRasterColorSpace(
-    const gfx::ColorSpace& raster_color_space) {
-  if (raster_color_space_ == raster_color_space)
+void LayerTreeHost::SetDisplayColorSpaces(
+    const gfx::DisplayColorSpaces& display_color_spaces) {
+  if (display_color_spaces_ == display_color_spaces)
     return;
-  raster_color_space_ = raster_color_space;
+  display_color_spaces_ = display_color_spaces;
   for (auto* layer : *this)
     layer->SetNeedsDisplay();
 }
@@ -1604,7 +1604,7 @@ void LayerTreeHost::PushLayerTreePropertiesTo(LayerTreeImpl* tree_impl) {
   if (tree_impl->IsActiveTree())
     tree_impl->elastic_overscroll()->PushPendingToActive();
 
-  tree_impl->SetRasterColorSpace(raster_color_space_);
+  tree_impl->SetDisplayColorSpaces(display_color_spaces_);
   tree_impl->SetExternalPageScaleFactor(external_page_scale_factor_);
 
   tree_impl->set_painted_device_scale_factor(painted_device_scale_factor_);

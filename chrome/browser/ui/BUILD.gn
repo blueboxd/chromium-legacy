@@ -2522,6 +2522,7 @@ static_library("ui") {
       "//chromeos/components/multidevice",
       "//chromeos/components/multidevice/debug_webui",
       "//chromeos/components/multidevice/logging",
+      "//chromeos/components/phonehub",
       "//chromeos/components/print_management",
       "//chromeos/components/proximity_auth",
       "//chromeos/components/quick_answers",

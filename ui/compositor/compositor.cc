@@ -451,7 +451,8 @@ void Compositor::SetDisplayColorSpaces(
     return;
   display_color_spaces_ = display_color_spaces;
 
-  host_->SetRasterColorSpace(display_color_spaces_.GetRasterColorSpace());
+  host_->SetDisplayColorSpaces(display_color_spaces_);
+
   // Always force the ui::Compositor to re-draw all layers, because damage
   // tracking bugs result in black flashes.
   // https://crbug.com/804430

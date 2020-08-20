@@ -23,7 +23,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RULE_SET_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RULE_SET_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_keyframes_rule.h"
 #include "third_party/blink/renderer/core/css/media_query_evaluator.h"
@@ -181,6 +180,8 @@ ASSERT_SIZE(RuleData, SameSizeAsRuleData);
 class CORE_EXPORT RuleSet final : public GarbageCollected<RuleSet> {
  public:
   RuleSet() : rule_count_(0) {}
+  RuleSet(const RuleSet&) = delete;
+  RuleSet& operator=(const RuleSet&) = delete;
 
   void AddRulesFromSheet(StyleSheetContents*,
                          const MediaQueryEvaluator&,
@@ -367,7 +368,6 @@ class CORE_EXPORT RuleSet final : public GarbageCollected<RuleSet> {
 #ifndef NDEBUG
   HeapVector<Member<const RuleData>> all_rules_;
 #endif
-  DISALLOW_COPY_AND_ASSIGN(RuleSet);
 };
 
 }  // namespace blink

@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/webui/settings/chromeos/privacy_section.h"
 #include "chrome/browser/ui/webui/settings/chromeos/reset_section.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search_section.h"
+#include "chromeos/components/phonehub/phone_hub_manager.h"
 
 namespace chromeos {
 namespace settings {
@@ -32,6 +33,7 @@ OsSettingsSections::OsSettingsSections(
     Profile* profile,
     SearchTagRegistry* search_tag_registry,
     multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client,
+    phonehub::PhoneHubManager* phone_hub_manager,
     syncer::SyncService* sync_service,
     SupervisedUserService* supervised_user_service,
     KerberosCredentialsManager* kerberos_credentials_manager,
@@ -54,7 +56,7 @@ OsSettingsSections::OsSettingsSections(
   sections_.push_back(std::move(bluetooth_section));
 
   auto multidevice_section = std::make_unique<MultiDeviceSection>(
-      profile, search_tag_registry, multidevice_setup_client,
+      profile, search_tag_registry, multidevice_setup_client, phone_hub_manager,
       android_sms_service, profile->GetPrefs());
   sections_map_[mojom::Section::kMultiDevice] = multidevice_section.get();
   sections_.push_back(std::move(multidevice_section));

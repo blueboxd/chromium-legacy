@@ -34,6 +34,10 @@ constexpr char kSettingsAppId[] = "inogagmajamaleonmanpkpkkigmklfad";
 constexpr char kOsSettingsAppId[] = "odknhmnlageboeamepcngndbggdpaobj";
 
 // Generated as
+// web_app::GenerateAppIdFromURL(GURL("chrome://test-system-app/pwa.html")).
+constexpr char kMockSystemAppId[] = "maphiehpiinjgiaepbljmopkodkadcbh";
+
+// Generated as
 // web_app::GenerateAppIdFromURL(GURL("https://news.google.com/?lfhs=2")).
 constexpr char kGoogleNewsAppId[] = "kfgapjallbhpciobgmlhlhokknljkgho";
 

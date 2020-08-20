@@ -7,8 +7,8 @@ package org.chromium.chrome.browser.firstrun;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.Log;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.SyncFirstSetupCompleteSource;
+import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.externalauth.UserRecoverableErrorHandler;
 import org.chromium.chrome.browser.profiles.Profile;

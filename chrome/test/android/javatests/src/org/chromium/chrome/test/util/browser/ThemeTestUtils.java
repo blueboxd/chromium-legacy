@@ -10,7 +10,7 @@ import android.os.Build;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 
-import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.tab.TabThemeColorHelper;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;

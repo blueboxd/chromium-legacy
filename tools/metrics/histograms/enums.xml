@@ -16041,6 +16041,11 @@ metrics consent we also won't be able to send UMA metrics. -->
   <int value="7" label="Periodic Background Sync"/>
 </enum>
 
+<enum name="DevToolsColorPickerFixedColor">
+  <int value="0" label="AA"/>
+  <int value="1" label="AAA"/>
+</enum>
+
 <enum name="DevToolsDualScreenDeviceEmulated">
   <int value="0" label="Dual-screen or fold device selected"/>
   <int value="1" label="Dual-screen span mode selected"/>
@@ -21474,6 +21479,7 @@ Called by update_document_policy_enum.py.-->
   <int value="778" label="FileSystemWriteBlockedForUrls"/>
   <int value="779" label="PrintersBulkBlocklist"/>
   <int value="780" label="PrintersBulkAllowlist"/>
+  <int value="781" label="CloudPrintWarningsSuppressed"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -22190,6 +22196,7 @@ Called by update_document_policy_enum.py.-->
   <int value="65536" label="BLOCKED_BY_POLICY"/>
   <int value="131072" label="DEPRECATED_BLOCKED_MATURE"/>
   <int value="262144" label="DISABLE_REMOTELY_FOR_MALWARE"/>
+  <int value="524288" label="DISABLE_REINSTALL"/>
 </enum>
 
 <enum name="ExtensionEvents">
@@ -24252,6 +24259,7 @@ Called by update_extension_histograms.py.-->
   <int value="1496" label="FILEMANAGERPRIVATEINTERNAL_INVOKESHARESHEET"/>
   <int value="1497" label="FILEMANAGERPRIVATEINTERNAL_GETCONTENTMIMETYPE"/>
   <int value="1498" label="FILEMANAGERPRIVATEINTERNAL_GETCONTENTMETADATA"/>
+  <int value="1499" label="SEARCH_QUERY"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -24613,7 +24621,8 @@ Called by update_extension_histograms.py.-->
 </enum>
 
 <enum name="ExtensionPermission3">
-<!-- Generated from extensions/common/permissions/api_permission.h.-->
+<!-- Generated from extensions/common/permissions/api_permission.h.
+Called by update_extension_permission.py.-->
 
   <int value="0" label="kInvalid"/>
   <int value="1" label="kUnknown"/>
@@ -24771,7 +24780,7 @@ Called by update_extension_histograms.py.-->
   <int value="153" label="kWallpaper"/>
   <int value="154" label="kWallpaperPrivate"/>
   <int value="155" label="kWebcamPrivate"/>
-  <int value="156" label="kWebConnectable"/>
+  <int value="156" label="kDeleted_kWebConnectable"/>
   <int value="157" label="kWebNavigation"/>
   <int value="158" label="kWebRequest"/>
   <int value="159" label="kWebRequestBlocking"/>
@@ -24843,6 +24852,7 @@ Called by update_extension_histograms.py.-->
   <int value="225" label="kCrashReportPrivate"/>
   <int value="226" label="kAutofillAssistantPrivate"/>
   <int value="227" label="kEnterpriseNetworkingAttributes"/>
+  <int value="228" label="kSearch"/>
 </enum>
 
 <enum name="ExtensionPolicyReinstallReason">
@@ -28820,6 +28830,10 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3427" label="V8Document_FragmentDirective_AttributeGetter"/>
   <int value="3428" label="V8StorageManager_GetDirectory_Method"/>
   <int value="3429" label="BeforematchHandlerRegistered"/>
+  <int value="3430" label="BluetoothAdvertisingEventName"/>
+  <int value="3431" label="BluetoothAdvertisingEventAppearance"/>
+  <int value="3432" label="BluetoothAdvertisingEventTxPower"/>
+  <int value="3433" label="CrossOriginOpenerPolicyReporting"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">

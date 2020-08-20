@@ -24,8 +24,8 @@ void AddAllSyncData(const std::string& extension_id,
                     syncer::ModelType type,
                     syncer::SyncDataList* dst) {
   for (base::DictionaryValue::Iterator it(src); !it.IsAtEnd(); it.Advance()) {
-    dst->push_back(settings_sync_util::CreateData(
-        extension_id, it.key(), it.value(), type));
+    dst->push_back(settings_sync_util::CreateData(extension_id, it.key(),
+                                                  it.value(), type));
   }
 }
 
@@ -110,16 +110,10 @@ void SyncStorageBackend::DeleteStorage(const std::string& extension_id) {
 
   // Clear settings when the extension is uninstalled.  Leveldb implementations
   // will also delete the database from disk when the object is destroyed as a
-  // result of being removed from |storage_objs_|.
-  //
-  // TODO(kalman): always GetStorage here (rather than only clearing if it
-  // exists) since the storage area may have been unloaded, but we still want
-  // to clear the data from disk.
-  // However, this triggers http://crbug.com/111072.
-  auto maybe_storage = storage_objs_.find(extension_id);
-  if (maybe_storage == storage_objs_.end())
-    return;
-  maybe_storage->second->Clear();
+  // result of being removed from |storage_objs_|. Note that we always
+  // GetStorage here (rather than only clearing if it exists) since the storage
+  // area may have been unloaded, but we still want to clear the data from disk.
+  GetStorage(extension_id)->Clear();
   storage_objs_.erase(extension_id);
 }
 
@@ -196,9 +190,9 @@ base::Optional<syncer::ModelError> SyncStorageBackend::MergeDataAndStartSyncing(
     base::DictionaryValue*& settings = grouped_sync_data[data.extension_id()];
     if (!settings)
       settings = new base::DictionaryValue();
-    DCHECK(!settings->HasKey(data.key())) << "Duplicate settings for "
-                                          << data.extension_id() << "/"
-                                          << data.key();
+    DCHECK(!settings->HasKey(data.key()))
+        << "Duplicate settings for " << data.extension_id() << "/"
+        << data.key();
     settings->SetWithoutPathExpansion(data.key(), data.PassValue());
   }
 

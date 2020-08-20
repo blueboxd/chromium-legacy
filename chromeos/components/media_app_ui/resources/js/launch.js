@@ -209,7 +209,7 @@ guestMessagePipe.registerHandler(Message.RENAME_FILE, async (message) => {
 guestMessagePipe.registerHandler(Message.NAVIGATE, async (message) => {
   const navigate = /** @type {!NavigateMessage} */ (message);
 
-  await advance(navigate.direction);
+  await advance(navigate.direction, navigate.currentFileToken);
 });
 
 guestMessagePipe.registerHandler(Message.REQUEST_SAVE_FILE, async (message) => {
@@ -794,10 +794,20 @@ async function launchWithMultipleSelection(directory, handles) {
  * Advance to another file.
  *
  * @param {number} direction How far to advance (e.g. +/-1).
+ * @param {number=} currentFileToken The token of the file that
+ *     direction is in reference to. If unprovided it's assumed that
+ *     currentFiles[entryIndex] is the current file.
  */
-async function advance(direction) {
+async function advance(direction, currentFileToken) {
+  let currIndex = entryIndex;
+  if (currentFileToken) {
+    const fileIndex =
+        currentFiles.findIndex(fd => fd.token === currentFileToken);
+    currIndex = fileIndex === -1 ? currIndex : fileIndex;
+  }
+
   if (currentFiles.length) {
-    entryIndex = (entryIndex + direction) % currentFiles.length;
+    entryIndex = (currIndex + direction) % currentFiles.length;
     if (entryIndex < 0) {
       entryIndex += currentFiles.length;
     }

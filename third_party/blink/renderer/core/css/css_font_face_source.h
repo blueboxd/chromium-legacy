@@ -26,7 +26,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_FONT_FACE_SOURCE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_FONT_FACE_SOURCE_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/font_display.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache_key.h"
@@ -45,6 +44,9 @@ class FontCustomPlatformData;
 class CORE_EXPORT CSSFontFaceSource
     : public GarbageCollected<CSSFontFaceSource> {
  public:
+  CSSFontFaceSource(const CSSFontFaceSource&) = delete;
+  CSSFontFaceSource& operator=(const CSSFontFaceSource&) = delete;
+
   virtual ~CSSFontFaceSource();
 
   // Describes whether this a LocalFontFaceSource can be retrieved locally
@@ -109,7 +111,6 @@ class CORE_EXPORT CSSFontFaceSource
 
   FontDataTable font_data_table_;
   FontCacheKeyAgeList font_cache_key_age;
-  DISALLOW_COPY_AND_ASSIGN(CSSFontFaceSource);
 };
 
 }  // namespace blink

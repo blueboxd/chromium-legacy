@@ -150,7 +150,7 @@ export class Intent {
 
   /**
    * Logs the intent result to metrics.
-   * @param {metrics.IntentResultType} result
+   * @param {!metrics.IntentResultType} result
    */
   logResult(result) {
     metrics.sendIntentEvent({

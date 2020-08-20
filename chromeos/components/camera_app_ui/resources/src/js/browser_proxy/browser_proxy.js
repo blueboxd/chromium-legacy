@@ -182,7 +182,7 @@ class ChromeAppBrowserProxy {
 
     /**
      * Get a preferred window size which can fit in current screen.
-     * @return {Resolution} Preferred window size.
+     * @return {!Resolution} Preferred window size.
      */
     const getPreferredWindowSize = () => {
       const inner = appWindow.innerBounds;

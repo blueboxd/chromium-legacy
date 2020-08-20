@@ -55,8 +55,8 @@ void OrderCompromisedCredentials(
       });
 
   // By construction the phished credentials precede the leaked credentials in
-  // |credentials|. Now sort both groups by their creation date so that most recent
-  // compromises appear first in both lists.
+  // |credentials|. Now sort both groups by their creation date so that most
+  // recent compromises appear first in both lists.
   auto create_time_cmp = [](const auto& lhs, const auto& rhs) {
     return lhs.create_time > rhs.create_time;
   };
@@ -227,8 +227,7 @@ CompromisedCredentialForUI PasswordCheckManager::MakeUICredential(
 
   ui_credential.display_username = GetDisplayUsername(credential.username);
   ui_credential.has_script =
-      base::FeatureList::IsEnabled(
-          password_manager::features::kPasswordChangeInSettings) &&
+      ShouldOfferAutomaticPasswordChange() &&
       password_script_fetcher_->IsScriptAvailable(
           url::Origin::Create(credential.url.GetOrigin()));
 
@@ -300,16 +299,11 @@ bool PasswordCheckManager::CanUseAccountCheck() const {
 }
 
 bool PasswordCheckManager::AreScriptsRefreshed() const {
-  // Don't fetch scripts if password change is not enabled.
-  return are_scripts_refreshed_ ||
-         !base::FeatureList::IsEnabled(
-             password_manager::features::kPasswordChangeInSettings);
+  return are_scripts_refreshed_ || !ShouldOfferAutomaticPasswordChange();
 }
 
 void PasswordCheckManager::RefreshScripts() {
-  // Don't fetch scripts if password change is not enabled.
-  if (!base::FeatureList::IsEnabled(
-          password_manager::features::kPasswordChangeInSettings)) {
+  if (!ShouldOfferAutomaticPasswordChange()) {
     return;
   }
 
@@ -332,4 +326,18 @@ void PasswordCheckManager::OnScriptsFetched() {
 
   if (was_start_requested_)
     StartCheck();
+}
+
+bool PasswordCheckManager::ShouldOfferAutomaticPasswordChange() const {
+  SyncState sync_state = password_manager_util::GetPasswordSyncState(
+      ProfileSyncServiceFactory::GetForProfile(profile_));
+
+  // Password change scripts are using password generation, so automatic
+  // password change should not be offered to non sync users.
+  if (sync_state == password_manager::NOT_SYNCING) {
+    return false;
+  }
+
+  return base::FeatureList::IsEnabled(
+      password_manager::features::kPasswordChangeInSettings);
 }

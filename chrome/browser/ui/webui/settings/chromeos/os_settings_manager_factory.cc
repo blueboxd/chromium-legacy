@@ -7,6 +7,7 @@
 #include "chrome/browser/chromeos/android_sms/android_sms_service_factory.h"
 #include "chrome/browser/chromeos/kerberos/kerberos_credentials_manager_factory.h"
 #include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_client_factory.h"
+#include "chrome/browser/chromeos/phonehub/phone_hub_manager_factory.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
@@ -40,6 +41,7 @@ OsSettingsManagerFactory::OsSettingsManagerFactory()
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(local_search_service::LocalSearchServiceFactory::GetInstance());
   DependsOn(multidevice_setup::MultiDeviceSetupClientFactory::GetInstance());
+  DependsOn(phonehub::PhoneHubManagerFactory::GetInstance());
   DependsOn(ProfileSyncServiceFactory::GetInstance());
   DependsOn(SupervisedUserServiceFactory::GetInstance());
   DependsOn(KerberosCredentialsManagerFactory::GetInstance());
@@ -69,6 +71,7 @@ KeyedService* OsSettingsManagerFactory::BuildServiceInstanceFor(
       local_search_service::LocalSearchServiceFactory::GetForBrowserContext(
           context),
       multidevice_setup::MultiDeviceSetupClientFactory::GetForProfile(profile),
+      phonehub::PhoneHubManagerFactory::GetForProfile(profile),
       ProfileSyncServiceFactory::GetForProfile(profile),
       SupervisedUserServiceFactory::GetForProfile(profile),
       kerberos_credentials_manager,

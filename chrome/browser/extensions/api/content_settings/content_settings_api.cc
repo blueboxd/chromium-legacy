@@ -304,20 +304,26 @@ ContentSettingsContentSettingSetFunction::Run() {
     return RespondNow(Error(pref_keys::kIncognitoSessionOnlyErrorMessage));
   }
 
+  if (content_type == ContentSettingsType::PLUGINS) {
+    if (base::FeatureList::IsEnabled(
+            content_settings::kDisallowExtensionsToSetPluginContentSettings)) {
+      return RespondNow(Error(content_settings_api_constants::
+                                  kSettingPluginContentSettingsIsDisallowed));
+    }
+    if (base::FeatureList::IsEnabled(
+            content_settings::kDisallowWildcardsInPluginContentSettings) &&
+        primary_pattern.HasHostWildcards()) {
+      WriteToConsole(blink::mojom::ConsoleMessageLevel::kError,
+                     content_settings_api_constants::
+                         kWildcardPatternsForPluginsDisallowed);
+    }
+  }
+
   scoped_refptr<ContentSettingsStore> store =
       ContentSettingsService::Get(browser_context())->content_settings_store();
   store->SetExtensionContentSetting(extension_id(), primary_pattern,
                                     secondary_pattern, content_type,
                                     resource_identifier, setting, scope);
-
-  if (base::FeatureList::IsEnabled(
-          content_settings::kDisallowWildcardsInPluginContentSettings) &&
-      content_type == ContentSettingsType::PLUGINS &&
-      primary_pattern.HasHostWildcards()) {
-    WriteToConsole(
-        blink::mojom::ConsoleMessageLevel::kError,
-        content_settings_api_constants::kWildcardPatternsForPluginsDisallowed);
-  }
 
   return RespondNow(NoArguments());
 }

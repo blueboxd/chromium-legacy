@@ -44,11 +44,11 @@ async function runTestQuery(data) {
       }
     }
   } else if (data.navigate !== undefined) {
-    if (data.navigate === 'next') {
-      await assertCast(lastReceivedFileList).loadNext();
+    if (data.navigate.direction === 'next') {
+      await assertCast(lastReceivedFileList).loadNext(data.navigate.token);
       result = 'loadNext called';
-    } else if (data.navigate === 'prev') {
-      await assertCast(lastReceivedFileList).loadPrev();
+    } else if (data.navigate.direction === 'prev') {
+      await assertCast(lastReceivedFileList).loadPrev(data.navigate.token);
       result = 'loadPrev called';
     } else {
       result = 'nothing called';

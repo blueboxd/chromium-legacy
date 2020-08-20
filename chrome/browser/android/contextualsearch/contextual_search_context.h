@@ -53,7 +53,8 @@ struct ContextualSearchContext {
       const base::android::JavaParamRef<jstring>& j_home_country,
       jboolean j_may_send_base_page_url,
       jlong j_previous_event_id,
-      jint j_previous_event_results);
+      jint j_previous_event_results,
+      jboolean j_do_related_searches);
 
   // Adjust the current selection offsets by the given signed amounts.
   void AdjustSelection(JNIEnv* env,
@@ -126,6 +127,10 @@ struct ContextualSearchContext {
   // |SetTranslationLanguages|.
   const TranslationLanguages& GetTranslationLanguages();
 
+  // Returns whether this request should include Related Searches in the
+  // response.
+  bool GetRelatedSearches();
+
   // Gets a WeakPtr to this instance.
   base::WeakPtr<ContextualSearchContext> GetWeakPtr();
 
@@ -149,6 +154,7 @@ struct ContextualSearchContext {
   int previous_event_results_ = 0;
   bool is_exact_resolve_ = false;
   TranslationLanguages translation_languages_;
+  bool do_related_searches_ = false;
 
   // The linked Java object.
   base::android::ScopedJavaGlobalRef<jobject> java_object_;

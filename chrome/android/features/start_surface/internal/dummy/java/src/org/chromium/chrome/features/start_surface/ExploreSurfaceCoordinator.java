@@ -6,7 +6,7 @@ package org.chromium.chrome.features.start_surface;
 
 import android.view.ViewGroup;
 
-import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.feed.FeedSurfaceCoordinator;
 import org.chromium.ui.modelutil.PropertyModel;
 

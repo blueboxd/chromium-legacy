@@ -60,8 +60,8 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
   // Mark this line box is an "empty" line box. See NGLineBoxType.
   void SetIsEmptyLineBox();
 
-  const NGLineHeightMetrics& Metrics() const { return metrics_; }
-  void SetMetrics(const NGLineHeightMetrics& metrics) { metrics_ = metrics; }
+  const FontHeight& Metrics() const { return metrics_; }
+  void SetMetrics(const FontHeight& metrics) { metrics_ = metrics; }
 
   void SetBaseDirection(TextDirection direction) {
     base_direction_ = direction;
@@ -92,7 +92,7 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
   scoped_refptr<const NGLayoutResult> ToLineBoxFragment();
 
  private:
-  NGLineHeightMetrics metrics_;
+  FontHeight metrics_;
   LayoutUnit hang_inline_size_;
   NGPhysicalLineBoxFragment::NGLineBoxType line_box_type_;
   TextDirection base_direction_;

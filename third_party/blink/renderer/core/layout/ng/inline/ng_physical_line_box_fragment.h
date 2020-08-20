@@ -48,7 +48,7 @@ class CORE_EXPORT NGPhysicalLineBoxFragment final
   // True if descendants were propagated to outside of this fragment.
   bool HasPropagatedDescendants() const { return has_propagated_descendants_; }
 
-  const NGLineHeightMetrics& Metrics() const { return metrics_; }
+  const FontHeight& Metrics() const { return metrics_; }
 
   // The base direction of this line. Also known as the paragraph direction.
   // This may be different from the direction of the container box when
@@ -58,7 +58,7 @@ class CORE_EXPORT NGPhysicalLineBoxFragment final
   }
 
   // Compute the baseline metrics for this linebox.
-  NGLineHeightMetrics BaselineMetrics() const;
+  FontHeight BaselineMetrics() const;
 
   // Scrollable overflow. including contents, in the local coordinate.
   // |ScrollableOverflow| is not precomputed/cached because it cannot be
@@ -81,7 +81,7 @@ class CORE_EXPORT NGPhysicalLineBoxFragment final
   const LayoutObject* ContainerLayoutObject() const { return layout_object_; }
 
  private:
-  NGLineHeightMetrics metrics_;
+  FontHeight metrics_;
   NGLink children_[];
 };
 

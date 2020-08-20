@@ -18,6 +18,7 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -78,6 +79,9 @@ public class PasswordCheckEditFragmentView extends PreferenceFragmentCompat {
         mCredential = getCredentialFromInstanceStateOrLaunchBundle(savedInstanceState);
         mNewPassword = getNewPasswordFromInstanceStateOrLaunchBundle(savedInstanceState);
         mPasswordVisible = getViewButtonPressedFromInstanceState(savedInstanceState);
+
+        TextView hintText = view.findViewById(R.id.edit_hint);
+        hintText.setText(getString(R.string.password_edit_hint, mCredential.getDisplayOrigin()));
 
         EditText siteText = (EditText) view.findViewById(R.id.site_edit);
         siteText.setText(mCredential.getDisplayOrigin());

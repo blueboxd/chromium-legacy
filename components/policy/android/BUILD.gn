@@ -10,12 +10,20 @@ _jni_sources = [
   "java/src/org/chromium/policy/PolicyService.java",
 ]
 
+java_cpp_strings("java_switches_srcjar") {
+  # External code should depend on ":policy_java" instead.
+  visibility = [ ":*" ]
+  sources = [ "//components/policy/core/common/policy_switches.cc" ]
+  template = "java_templates/PolicySwitches.java.tmpl"
+}
+
 android_library("policy_java") {
   deps = [
     "//base:base_java",
     "//base:jni_java",
     "//third_party/android_deps:androidx_annotation_annotation_java",
   ]
+  srcjar_deps = [ ":java_switches_srcjar" ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 
   sources =

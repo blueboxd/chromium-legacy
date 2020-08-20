@@ -5,7 +5,13 @@
 import("//third_party/closure_compiler/compile_js.gni")
 
 js_type_check("closure_compile") {
-  closure_flags = default_closure_args + [ "language_in=ECMASCRIPT_2018" ]
+  closure_flags = default_closure_args + [
+                    "language_in=ECMASCRIPT_2018",
+                    "jscomp_error=lintChecks",
+                    "hide_warnings_for=mojo/public/js/",
+                    "hide_warnings_for=gen/",
+                    "hide_warnings_for=src/js/lib/",
+                  ]
   deps = [ ":compile_resources" ]
 }
 
@@ -21,7 +27,6 @@ js_library("compile_resources") {
     "device/camera3_device_info.js",
     "device/constraints_preferrer.js",
     "device/device_info_updater.js",
-    "device/error.js",
     "error.js",
     "gallerybutton.js",
     "intent.js",

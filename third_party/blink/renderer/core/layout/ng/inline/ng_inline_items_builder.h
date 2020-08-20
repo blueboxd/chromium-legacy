@@ -165,7 +165,7 @@ class NGInlineItemsBuilderTemplate {
     unsigned item_index;
     bool should_create_box_fragment;
     bool may_have_margin_;
-    NGLineHeightMetrics text_metrics;
+    FontHeight text_metrics;
 
     BoxInfo(unsigned item_index, const NGInlineItem& item);
     bool ShouldCreateBoxFragmentForChild(const BoxInfo& child) const;

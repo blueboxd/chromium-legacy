@@ -30,6 +30,7 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/core/common/autofill_util.h"
+#include "components/autofill/core/common/field_data_manager.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_data_predictions.h"
 #include "components/autofill/core/common/form_field_data.h"
@@ -41,6 +42,7 @@
 #import "components/autofill/ios/browser/js_autofill_manager.h"
 #import "components/autofill/ios/form_util/form_activity_observer_bridge.h"
 #include "components/autofill/ios/form_util/form_activity_params.h"
+#include "components/autofill/ios/form_util/unique_id_data_tab_helper.h"
 #import "components/prefs/ios/pref_observer_bridge.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
@@ -60,8 +62,12 @@
 #error "This file requires ARC support."
 #endif
 
+using base::SysNSStringToUTF8;
+using base::SysNSStringToUTF16;
 using autofill::FormRendererId;
+using autofill::FieldDataManager;
 using autofill::FieldRendererId;
+using autofill::FieldPropertiesFlags::kAutofilledOnUserTrigger;
 
 namespace {
 
@@ -92,6 +98,32 @@ void GetFormField(autofill::FormFieldData* field,
     // show suggestions that begin the same as the current value) with the
     // effect that one only suggestion would be returned; the value itself.
     field->value = base::string16();
+  }
+}
+
+void UpdateFieldManagerWithFillingResults(
+    scoped_refptr<FieldDataManager> fieldDataManager,
+    NSString* jsonString) {
+  std::map<uint32_t, base::string16> fillingResults;
+  if (autofill::ExtractFillingResults(jsonString, &fillingResults)) {
+    for (auto& fillData : fillingResults) {
+      fieldDataManager->UpdateFieldDataWithAutofilledValue(
+          FieldRendererId(fillData.first), fillData.second,
+          kAutofilledOnUserTrigger);
+    }
+  }
+}
+
+void UpdateFieldManagerForClearedIDs(
+    scoped_refptr<FieldDataManager> fieldDataManager,
+    NSString* jsonString) {
+  std::vector<uint32_t> clearingResults;
+  if (autofill::ExtractIDs(jsonString, &clearingResults)) {
+    for (auto uniqueID : clearingResults) {
+      fieldDataManager->UpdateFieldDataWithAutofilledValue(
+          FieldRendererId(uniqueID), base::string16(),
+          kAutofilledOnUserTrigger);
+    }
   }
 }
 
@@ -161,6 +193,8 @@ void GetFormField(autofill::FormFieldData* field,
   // AutofillManager is fixed.
   scoped_refptr<autofill::AutofillDriverIOSRefCountable>
       _last_submitted_autofill_driver;
+
+  scoped_refptr<FieldDataManager> _fieldDataManager;
 }
 
 @end
@@ -188,6 +222,10 @@ void GetFormField(autofill::FormFieldData* field,
         autofill::prefs::kAutofillProfileEnabled, &_prefChangeRegistrar);
 
     _jsAutofillManager = [[JsAutofillManager alloc] init];
+
+    UniqueIDDataTabHelper* uniqueIDDataTabHelper =
+        UniqueIDDataTabHelper::FromWebState(_webState);
+    _fieldDataManager = uniqueIDDataTabHelper->GetFieldDataManager();
   }
   return self;
 }
@@ -292,7 +330,7 @@ autofillManagerFromWebState:(web::WebState*)webState
                     webState:(web::WebState*)webState
            completionHandler:(SuggestionsAvailableCompletion)completion {
   web::WebFrame* frame =
-      GetWebFrameWithId(webState, base::SysNSStringToUTF8(frameID));
+      GetWebFrameWithId(webState, SysNSStringToUTF8(frameID));
   autofill::AutofillManager* autofillManager =
       [self autofillManagerFromWebState:webState webFrame:frame];
   if (!autofillManager)
@@ -303,7 +341,7 @@ autofillManagerFromWebState:(web::WebState*)webState
 
   // Find the right field.
   autofill::FormFieldData field;
-  GetFormField(&field, form, base::SysNSStringToUTF16(fieldIdentifier));
+  GetFormField(&field, form, SysNSStringToUTF16(fieldIdentifier));
 
   // Save the completion and go look for suggestions.
   _suggestionsAvailableCompletion = [completion copy];
@@ -336,8 +374,8 @@ autofillManagerFromWebState:(web::WebState*)webState
     return;
   }
 
-  web::WebFrame* frame = web::GetWebFrameWithId(
-      _webState, base::SysNSStringToUTF8(formQuery.frameID));
+  web::WebFrame* frame =
+      web::GetWebFrameWithId(_webState, SysNSStringToUTF8(formQuery.frameID));
   if (!frame) {
     completion(NO);
     return;
@@ -362,7 +400,7 @@ autofillManagerFromWebState:(web::WebState*)webState
   // input element are considered because key/value suggestions are offered
   // even on short forms.
   [self fetchFormsFiltered:YES
-                        withName:base::SysNSStringToUTF16(formQuery.formName)
+                        withName:SysNSStringToUTF16(formQuery.formName)
       minimumRequiredFieldsCount:1
                          inFrame:frame
                completionHandler:completionHandler];
@@ -388,34 +426,44 @@ autofillManagerFromWebState:(web::WebState*)webState
   _suggestionHandledCompletion = [completion copy];
 
   if (suggestion.identifier > 0) {
-    _pendingAutocompleteField = base::SysNSStringToUTF16(fieldIdentifier);
+    _pendingAutocompleteField = SysNSStringToUTF16(fieldIdentifier);
     if (_popupDelegate) {
       // TODO(966411): Replace 0 with the index of the selected suggestion.
-      _popupDelegate->DidAcceptSuggestion(
-          base::SysNSStringToUTF16(suggestion.value), suggestion.identifier, 0);
+      _popupDelegate->DidAcceptSuggestion(SysNSStringToUTF16(suggestion.value),
+                                          suggestion.identifier, 0);
     }
   } else if (suggestion.identifier ==
              autofill::POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY) {
     web::WebFrame* frame =
-        web::GetWebFrameWithId(_webState, base::SysNSStringToUTF8(frameID));
+        web::GetWebFrameWithId(_webState, SysNSStringToUTF8(frameID));
     // FormSuggestion is a simple, single value that can be filled out now.
-    [self fillField:base::SysNSStringToUTF8(fieldIdentifier)
-           formName:base::SysNSStringToUTF8(formName)
-              value:base::SysNSStringToUTF16(suggestion.value)
-            inFrame:frame];
+    [self fillField:SysNSStringToUTF8(fieldIdentifier)
+        uniqueFieldID:uniqueFieldID
+             formName:SysNSStringToUTF8(formName)
+                value:SysNSStringToUTF16(suggestion.value)
+              inFrame:frame];
   } else if (suggestion.identifier == autofill::POPUP_ITEM_ID_CLEAR_FORM) {
     web::WebFrame* frame =
-        web::GetWebFrameWithId(_webState, base::SysNSStringToUTF8(frameID));
+        web::GetWebFrameWithId(_webState, SysNSStringToUTF8(frameID));
+    __weak AutofillAgent* weakSelf = self;
     [_jsAutofillManager
         clearAutofilledFieldsForFormName:formName
                          fieldIdentifier:fieldIdentifier
                                  inFrame:frame
-                       completionHandler:_suggestionHandledCompletion];
-    _suggestionHandledCompletion = nil;
+                       completionHandler:^(NSString* jsonString) {
+                         AutofillAgent* strongSelf = weakSelf;
+                         if (!strongSelf)
+                           return;
+                         UpdateFieldManagerForClearedIDs(
+                             strongSelf->_fieldDataManager, jsonString);
+                         strongSelf->_suggestionHandledCompletion();
+                         strongSelf->_suggestionHandledCompletion = nil;
+                       }];
+
   } else if (suggestion.identifier ==
              autofill::POPUP_ITEM_ID_SHOW_ACCOUNT_CARDS) {
     web::WebFrame* frame =
-        GetWebFrameWithId(_webState, base::SysNSStringToUTF8(frameID));
+        GetWebFrameWithId(_webState, SysNSStringToUTF8(frameID));
     autofill::AutofillManager* autofillManager =
         [self autofillManagerFromWebState:_webState webFrame:frame];
     if (autofillManager) {
@@ -826,6 +874,7 @@ autofillManagerFromWebState:(web::WebState*)webState
 // AutofillFormFieldData. fillFormField() also expects members 'max_length' and
 // 'is_checked' to exist.
 - (void)fillField:(const std::string&)fieldIdentifier
+    uniqueFieldID:(FieldRendererId)uniqueFieldID
          formName:(const std::string&)formName
             value:(const base::string16)value
           inFrame:(web::WebFrame*)frame {
@@ -835,10 +884,21 @@ autofillManagerFromWebState:(web::WebState*)webState
   data->SetString("value", value);
 
   DCHECK(_suggestionHandledCompletion);
-  [_jsAutofillManager fillActiveFormField:std::move(data)
-                                  inFrame:frame
-                        completionHandler:_suggestionHandledCompletion];
-  _suggestionHandledCompletion = nil;
+  __weak AutofillAgent* weakSelf = self;
+  [_jsAutofillManager
+      fillActiveFormField:std::move(data)
+                  inFrame:frame
+        completionHandler:^(BOOL success) {
+          AutofillAgent* strongSelf = weakSelf;
+          if (!strongSelf)
+            return;
+          if (success) {
+            strongSelf->_fieldDataManager->UpdateFieldDataWithAutofilledValue(
+                uniqueFieldID, value, kAutofilledOnUserTrigger);
+          }
+          strongSelf->_suggestionHandledCompletion();
+          strongSelf->_suggestionHandledCompletion = nil;
+        }];
 }
 
 // Sends the the |data| to |frame| to actually fill the data.
@@ -850,12 +910,20 @@ autofillManagerFromWebState:(web::WebState*)webState
   if (!_suggestionHandledCompletion)
     _suggestionHandledCompletion = [^{
     } copy];
+  __weak AutofillAgent* weakSelf = self;
   [_jsAutofillManager fillForm:std::move(data)
       forceFillFieldIdentifier:base::SysUTF16ToNSString(
                                    _pendingAutocompleteField)
                        inFrame:frame
-             completionHandler:_suggestionHandledCompletion];
-  _suggestionHandledCompletion = nil;
+             completionHandler:^(NSString* jsonString) {
+               AutofillAgent* strongSelf = weakSelf;
+               if (!strongSelf)
+                 return;
+               UpdateFieldManagerWithFillingResults(
+                   strongSelf->_fieldDataManager, jsonString);
+               strongSelf->_suggestionHandledCompletion();
+               strongSelf->_suggestionHandledCompletion = nil;
+             }];
 }
 
 @end

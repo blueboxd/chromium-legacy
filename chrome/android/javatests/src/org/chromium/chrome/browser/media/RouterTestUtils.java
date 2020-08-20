@@ -13,7 +13,7 @@ import androidx.fragment.app.FragmentManager;
 import org.hamcrest.Matchers;
 
 import org.chromium.base.Log;
-import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.CriteriaNotSatisfiedException;

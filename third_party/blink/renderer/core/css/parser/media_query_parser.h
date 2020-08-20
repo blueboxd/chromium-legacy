@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PARSER_MEDIA_QUERY_PARSER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_PARSER_MEDIA_QUERY_PARSER_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/media_list.h"
 #include "third_party/blink/renderer/core/css/media_query.h"
@@ -37,6 +36,8 @@ class MediaQueryData {
 
  public:
   MediaQueryData();
+  MediaQueryData(const MediaQueryData&) = delete;
+  MediaQueryData& operator=(const MediaQueryData&) = delete;
   void Clear();
   void AddExpression(CSSParserTokenRange&, const ExecutionContext*);
   bool LastExpressionValid();
@@ -55,7 +56,6 @@ class MediaQueryData {
   }
 
   inline void SetMediaFeature(const String& str) { media_feature_ = str; }
-  DISALLOW_COPY_AND_ASSIGN(MediaQueryData);
 };
 
 class CORE_EXPORT MediaQueryParser {
@@ -83,6 +83,8 @@ class CORE_EXPORT MediaQueryParser {
   };
 
   MediaQueryParser(ParserType, CSSParserMode, const ExecutionContext*);
+  MediaQueryParser(const MediaQueryParser&) = delete;
+  MediaQueryParser& operator=(const MediaQueryParser&) = delete;
   virtual ~MediaQueryParser();
 
   scoped_refptr<MediaQuerySet> ParseImpl(CSSParserTokenRange);
@@ -151,7 +153,6 @@ class CORE_EXPORT MediaQueryParser {
   const static State kSkipUntilComma;
   const static State kSkipUntilBlockEnd;
   const static State kDone;
-  DISALLOW_COPY_AND_ASSIGN(MediaQueryParser);
 };
 
 }  // namespace blink

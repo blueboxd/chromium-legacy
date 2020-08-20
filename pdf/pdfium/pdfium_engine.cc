@@ -508,8 +508,8 @@ bool PDFiumEngine::New(const char* url, const char* headers) {
   return true;
 }
 
-void PDFiumEngine::PageOffsetUpdated(const gfx::Point& page_offset) {
-  page_offset_ = PPPointFromPoint(page_offset);
+void PDFiumEngine::PageOffsetUpdated(const gfx::Vector2d& page_offset) {
+  page_offset_ = page_offset;
 }
 
 void PDFiumEngine::PluginSizeUpdated(const gfx::Size& size) {
@@ -1095,7 +1095,7 @@ void PDFiumEngine::PrintEnd() {
   FORM_DoDocumentAAction(form(), FPDFDOC_AACTION_DP);
 }
 
-PDFiumPage::Area PDFiumEngine::GetCharIndex(const pp::Point& point,
+PDFiumPage::Area PDFiumEngine::GetCharIndex(const gfx::Point& point,
                                             int* page_index,
                                             int* char_index,
                                             int* form_type,
@@ -1190,8 +1190,8 @@ bool PDFiumEngine::OnLeftMouseDown(const MouseInputEvent& event) {
   int form_type = FPDF_FORMFIELD_UNKNOWN;
   PDFiumPage::LinkTarget target;
   gfx::Point point = event.GetPosition();
-  PDFiumPage::Area area = GetCharIndex(PPPointFromPoint(point), &page_index,
-                                       &char_index, &form_type, &target);
+  PDFiumPage::Area area =
+      GetCharIndex(point, &page_index, &char_index, &form_type, &target);
   DCHECK_GE(form_type, FPDF_FORMFIELD_UNKNOWN);
   mouse_down_state_.Set(area, target);
 
@@ -1205,7 +1205,7 @@ bool PDFiumEngine::OnLeftMouseDown(const MouseInputEvent& event) {
     last_focused_page_ = page_index;
     double page_x;
     double page_y;
-    DeviceToPage(page_index, PPPointFromPoint(point), &page_x, &page_y);
+    DeviceToPage(page_index, point, &page_x, &page_y);
 
     if (form_type != FPDF_FORMFIELD_UNKNOWN) {
       // FORM_OnLButton*() will trigger a callback to
@@ -1246,7 +1246,7 @@ bool PDFiumEngine::OnLeftMouseDown(const MouseInputEvent& event) {
 bool PDFiumEngine::OnMiddleMouseDown(const MouseInputEvent& event) {
   SetMouseLeftButtonDown(false);
   mouse_middle_button_down_ = true;
-  mouse_middle_button_last_position_ = PPPointFromPoint(event.GetPosition());
+  mouse_middle_button_last_position_ = event.GetPosition();
 
   SelectionChangeInvalidator selection_invalidator(this);
   selection_.clear();
@@ -1256,8 +1256,8 @@ bool PDFiumEngine::OnMiddleMouseDown(const MouseInputEvent& event) {
   int unused_form_type = FPDF_FORMFIELD_UNKNOWN;
   PDFiumPage::LinkTarget target;
   PDFiumPage::Area area =
-      GetCharIndex(PPPointFromPoint(event.GetPosition()), &unused_page_index,
-                   &unused_char_index, &unused_form_type, &target);
+      GetCharIndex(event.GetPosition(), &unused_page_index, &unused_char_index,
+                   &unused_form_type, &target);
   mouse_down_state_.Set(area, target);
 
   // Decide whether to open link or not based on user action in mouse up and
@@ -1277,7 +1277,7 @@ bool PDFiumEngine::OnMiddleMouseDown(const MouseInputEvent& event) {
 bool PDFiumEngine::OnRightMouseDown(const MouseInputEvent& event) {
   DCHECK_EQ(InputEventMouseButtonType::kRight, event.GetButton());
 
-  pp::Point point = PPPointFromPoint(event.GetPosition());
+  gfx::Point point = event.GetPosition();
   int page_index = -1;
   int char_index = -1;
   int form_type = FPDF_FORMFIELD_UNKNOWN;
@@ -1322,8 +1322,8 @@ bool PDFiumEngine::OnRightMouseDown(const MouseInputEvent& event) {
   if (selection_.empty())
     return false;
 
-  std::vector<pp::Rect> selection_rect_vector =
-      GetAllScreenRectsUnion(selection_, GetVisibleRect().point());
+  std::vector<pp::Rect> selection_rect_vector = GetAllScreenRectsUnion(
+      selection_, PointFromPPPoint(GetVisibleRect().point()));
   for (const auto& rect : selection_rect_vector) {
     if (rect.Contains(point.x(), point.y()))
       return false;
@@ -1381,7 +1381,7 @@ bool PDFiumEngine::OnMouseUp(const MouseInputEvent& event) {
   int char_index = -1;
   int form_type = FPDF_FORMFIELD_UNKNOWN;
   PDFiumPage::LinkTarget target;
-  pp::Point point = PPPointFromPoint(event.GetPosition());
+  gfx::Point point = event.GetPosition();
   PDFiumPage::Area area =
       GetCharIndex(point, &page_index, &char_index, &form_type, &target);
 
@@ -1432,7 +1432,7 @@ bool PDFiumEngine::OnMouseMove(const MouseInputEvent& event) {
   int char_index = -1;
   int form_type = FPDF_FORMFIELD_UNKNOWN;
   PDFiumPage::LinkTarget target;
-  pp::Point point = PPPointFromPoint(event.GetPosition());
+  gfx::Point point = event.GetPosition();
   PDFiumPage::Area area =
       GetCharIndex(point, &page_index, &char_index, &form_type, &target);
 
@@ -1452,7 +1452,7 @@ bool PDFiumEngine::OnMouseMove(const MouseInputEvent& event) {
                        page_y);
     }
 
-    UpdateLinkUnderCursor(GetLinkAtPosition(event.GetPosition()));
+    UpdateLinkUnderCursor(GetLinkAtPosition(point));
 
     // If in form text area while left mouse button is held down, check if form
     // text selection needs to be updated.
@@ -1467,12 +1467,10 @@ bool PDFiumEngine::OnMouseMove(const MouseInputEvent& event) {
       // GetMovement() does not work here, as small mouse movements are
       // considered zero.
       gfx::Vector2d page_position_delta =
-          PointFromPPPoint(mouse_middle_button_last_position_) -
-          event.GetPosition();
+          mouse_middle_button_last_position_ - event.GetPosition();
       if (page_position_delta.x() != 0 || page_position_delta.y() != 0) {
         client_->ScrollBy(page_position_delta);
-        mouse_middle_button_last_position_ =
-            PPPointFromPoint(event.GetPosition());
+        mouse_middle_button_last_position_ = event.GetPosition();
       }
     }
 
@@ -1535,8 +1533,7 @@ void PDFiumEngine::OnMouseEnter(const MouseInputEvent& event) {
   if (event.GetModifiers() & PP_INPUTEVENT_MODIFIER_MIDDLEBUTTONDOWN) {
     if (!mouse_middle_button_down_) {
       mouse_middle_button_down_ = true;
-      mouse_middle_button_last_position_ =
-          PPPointFromPoint(event.GetPosition());
+      mouse_middle_button_last_position_ = event.GetPosition();
     }
   } else {
     if (mouse_middle_button_down_) {
@@ -1999,7 +1996,7 @@ bool PDFiumEngine::SelectFindResult(bool forward) {
   for (const auto& rect : rects)
     bounding_rect = bounding_rect.Union(rect);
   if (!visible_rect.Contains(bounding_rect)) {
-    pp::Point center = bounding_rect.CenterPoint();
+    gfx::Point center = PointFromPPPoint(bounding_rect.CenterPoint());
     // Make the page centered.
     int new_y = CalculateCenterForZoom(center.y(), visible_rect.height(),
                                        current_zoom_);
@@ -2038,14 +2035,13 @@ void PDFiumEngine::StopFind() {
 
 std::vector<pp::Rect> PDFiumEngine::GetAllScreenRectsUnion(
     const std::vector<PDFiumRange>& rect_range,
-    const pp::Point& offset_point) const {
+    const gfx::Point& point) const {
   std::vector<pp::Rect> rect_vector;
   rect_vector.reserve(rect_range.size());
   for (const auto& range : rect_range) {
     pp::Rect result_rect;
-    const std::vector<pp::Rect>& rects =
-        range.GetScreenRects(PointFromPPPoint(offset_point), current_zoom_,
-                             layout_.options().default_page_orientation());
+    const std::vector<pp::Rect>& rects = range.GetScreenRects(
+        point, current_zoom_, layout_.options().default_page_orientation());
     for (const auto& rect : rects)
       result_rect = result_rect.Union(rect);
     rect_vector.push_back(result_rect);
@@ -2055,7 +2051,7 @@ std::vector<pp::Rect> PDFiumEngine::GetAllScreenRectsUnion(
 
 void PDFiumEngine::UpdateTickMarks() {
   std::vector<pp::Rect> tickmarks =
-      GetAllScreenRectsUnion(find_results_, pp::Point());
+      GetAllScreenRectsUnion(find_results_, gfx::Point());
   client_->UpdateTickMarks(tickmarks);
 }
 
@@ -2215,8 +2211,8 @@ std::string PDFiumEngine::GetLinkAtPosition(const gfx::Point& point) {
   int page_index = -1;
   int form_type = FPDF_FORMFIELD_UNKNOWN;
   PDFiumPage::LinkTarget target;
-  PDFiumPage::Area area = GetCharIndex(PPPointFromPoint(point), &page_index,
-                                       &temp, &form_type, &target);
+  PDFiumPage::Area area =
+      GetCharIndex(point, &page_index, &temp, &form_type, &target);
   if (area == PDFiumPage::WEBLINK_AREA)
     url = target.url;
   return url;
@@ -3217,7 +3213,8 @@ void PDFiumEngine::DrawSelections(int progressive_index,
 
   void* region = nullptr;
   int stride;
-  GetRegion(dirty_in_screen.point(), image_data, region, stride);
+  GetRegion(PointFromPPPoint(dirty_in_screen.point()), image_data, region,
+            stride);
 
   std::vector<pp::Rect> highlighted_rects;
   pp::Rect visible_rect = GetVisibleRect();
@@ -3282,7 +3279,7 @@ ScopedFPDFBitmap PDFiumEngine::CreateBitmap(const pp::Rect& rect,
                                             SkBitmap& image_data) const {
   void* region;
   int stride;
-  GetRegion(rect.point(), image_data, region, stride);
+  GetRegion(PointFromPPPoint(rect.point()), image_data, region, stride);
   if (!region)
     return nullptr;
   return ScopedFPDFBitmap(FPDFBitmap_CreateEx(rect.width(), rect.height(),
@@ -3398,14 +3395,15 @@ void PDFiumEngine::Highlight(void* buffer,
 PDFiumEngine::SelectionChangeInvalidator::SelectionChangeInvalidator(
     PDFiumEngine* engine)
     : engine_(engine),
-      previous_origin_(engine_->GetVisibleRect().point()),
+      previous_origin_(PointFromPPPoint(engine_->GetVisibleRect().point())),
       old_selections_(GetVisibleSelections()) {}
 
 PDFiumEngine::SelectionChangeInvalidator::~SelectionChangeInvalidator() {
   // Offset the old selections if the document scrolled since we recorded them.
-  pp::Point offset = previous_origin_ - engine_->GetVisibleRect().point();
+  gfx::Vector2d offset =
+      previous_origin_ - RectFromPPRect(engine_->GetVisibleRect()).origin();
   for (auto& old_selection : old_selections_)
-    old_selection.Offset(offset);
+    old_selection.Offset(PPPointFromVector(offset));
 
   std::vector<pp::Rect> new_selections = GetVisibleSelections();
   for (auto& new_selection : new_selections) {
@@ -3442,14 +3440,15 @@ PDFiumEngine::SelectionChangeInvalidator::~SelectionChangeInvalidator() {
 std::vector<pp::Rect>
 PDFiumEngine::SelectionChangeInvalidator::GetVisibleSelections() const {
   std::vector<pp::Rect> rects;
-  pp::Point visible_point = engine_->GetVisibleRect().point();
+  gfx::Point visible_point =
+      PointFromPPPoint(engine_->GetVisibleRect().point());
   for (const auto& range : engine_->selection_) {
     // Exclude selections on pages that's not currently visible.
     if (!engine_->IsPageVisible(range.page_index()))
       continue;
 
     const std::vector<pp::Rect>& selection_rects = range.GetScreenRects(
-        PointFromPPPoint(visible_point), engine_->current_zoom_,
+        visible_point, engine_->current_zoom_,
         engine_->layout_.options().default_page_orientation());
     rects.insert(rects.end(), selection_rects.begin(), selection_rects.end());
   }
@@ -3497,7 +3496,7 @@ bool PDFiumEngine::MouseDownState::Matches(
 }
 
 void PDFiumEngine::DeviceToPage(int page_index,
-                                const pp::Point& device_point,
+                                const gfx::Point& device_point,
                                 double* page_x,
                                 double* page_y) {
   *page_x = *page_y = 0;
@@ -3551,13 +3550,13 @@ void PDFiumEngine::DrawPageShadow(const pp::Rect& page_rc,
                                   const pp::Rect& clip_rc,
                                   SkBitmap& image_data) {
   pp::Rect page_rect(page_rc);
-  page_rect.Offset(page_offset_);
+  page_rect.Offset(PPPointFromVector(page_offset_));
 
   pp::Rect shadow_rect(shadow_rc);
-  shadow_rect.Offset(page_offset_);
+  shadow_rect.Offset(PPPointFromVector(page_offset_));
 
   pp::Rect clip_rect(clip_rc);
-  clip_rect.Offset(page_offset_);
+  clip_rect.Offset(PPPointFromVector(page_offset_));
 
   // Page drop shadow parameters.
   constexpr double factor = 0.5;
@@ -3577,7 +3576,7 @@ void PDFiumEngine::DrawPageShadow(const pp::Rect& page_rc,
   DrawShadow(image_data, shadow_rect, page_rect, clip_rect, *page_shadow_);
 }
 
-void PDFiumEngine::GetRegion(const pp::Point& location,
+void PDFiumEngine::GetRegion(const gfx::Point& location,
                              SkBitmap& image_data,
                              void*& region,
                              int& stride) const {
@@ -3590,10 +3589,11 @@ void PDFiumEngine::GetRegion(const pp::Point& location,
   char* buffer = static_cast<char*>(image_data.getPixels());
   stride = image_data.rowBytes();
 
-  pp::Point offset_location = location + page_offset_;
+  gfx::Point offset_location = location + page_offset_;
   // TODO: update this when we support BIDI and scrollbars can be on the left.
-  if (!buffer || !pp::Rect(page_offset_, PPSizeFromSize(plugin_size_))
-                      .Contains(offset_location)) {
+  if (!buffer ||
+      !gfx::Rect(gfx::PointAtOffsetFromOrigin(page_offset_), plugin_size_)
+           .Contains(offset_location)) {
     region = nullptr;
     return;
   }
@@ -3863,8 +3863,7 @@ void PDFiumEngine::MoveRangeSelectionExtent(const gfx::Point& extent) {
   int char_index = -1;
   int form_type = FPDF_FORMFIELD_UNKNOWN;
   PDFiumPage::LinkTarget target;
-  GetCharIndex(PPPointFromPoint(extent), &page_index, &char_index, &form_type,
-               &target);
+  GetCharIndex(extent, &page_index, &char_index, &form_type, &target);
   if (page_index < 0 || char_index < 0)
     return;
 
@@ -3889,7 +3888,7 @@ void PDFiumEngine::MoveRangeSelectionExtent(const gfx::Point& extent) {
 
 void PDFiumEngine::SetSelectionBounds(const gfx::Point& base,
                                       const gfx::Point& extent) {
-  range_selection_base_ = PPPointFromPoint(base);
+  range_selection_base_ = base;
   range_selection_direction_ = IsAboveOrDirectlyLeftOf(base, extent)
                                    ? RangeSelectionDirection::Left
                                    : RangeSelectionDirection::Right;

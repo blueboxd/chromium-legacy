@@ -21,7 +21,7 @@
 #include "components/autofill/core/common/renderer_id.h"
 #import "components/autofill/ios/browser/autofill_agent.h"
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
-#include "components/password_manager/ios/unique_id_tab_helper.h"
+#include "components/autofill/ios/form_util/unique_id_data_tab_helper.h"
 #include "ios/chrome/browser/autofill/address_normalizer_factory.h"
 #import "ios/chrome/browser/autofill/form_suggestion_controller.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
@@ -147,7 +147,7 @@ void FormStructureBrowserTest::SetUp() {
 
   // Create a PasswordController instance that will handle set up for renderer
   // ids.
-  UniqueIDTabHelper::CreateForWebState(web_state());
+  UniqueIDDataTabHelper::CreateForWebState(web_state());
   password_controller_ =
       [[PasswordController alloc] initWithWebState:web_state()];
 

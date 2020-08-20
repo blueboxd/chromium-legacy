@@ -24,7 +24,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_MATCHED_PROPERTIES_CACHE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_RESOLVER_MATCHED_PROPERTIES_CACHE_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/css/resolver/match_result.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -77,6 +76,8 @@ class CORE_EXPORT MatchedPropertiesCache {
 
  public:
   MatchedPropertiesCache();
+  MatchedPropertiesCache(const MatchedPropertiesCache&) = delete;
+  MatchedPropertiesCache& operator=(const MatchedPropertiesCache&) = delete;
   ~MatchedPropertiesCache() { DCHECK(cache_.IsEmpty()); }
 
   class CORE_EXPORT Key {
@@ -129,7 +130,6 @@ class CORE_EXPORT MatchedPropertiesCache {
   void RemoveCachedMatchedPropertiesWithDeadEntries(const LivenessBroker&);
 
   Cache cache_;
-  DISALLOW_COPY_AND_ASSIGN(MatchedPropertiesCache);
 };
 
 }  // namespace blink

@@ -8899,6 +8899,17 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_BLOCKED_GEOLOCATION_NO_ACTION" desc="Radio button choice to continue blocking a site from accessing the system location.">
         Continue blocking this site from accessing your location
       </message>
+      <message name="IDS_GEOLOCATION" desc="Description text next to the location icon inside the pop-up bubble which describes that the location permission is blocked on an OS level.">
+          Location
+      </message>
+      <if expr="is_macosx">
+        <message name="IDS_GEOLOCATION_TURNED_OFF_IN_MACOS" desc="Title for the geolocation bubble that is used when a site requests geolocation, but geolocation is blocked on an OS level in macOS.">
+          Location is turned off in Mac System Preferences
+        </message>
+        <message name="IDS_GEOLOCATION_TURNED_OFF" desc="Description text in the omnibox icon showing when location permission is blocked on an OS level in macOS.">
+          Location turned off
+        </message>
+      </if>
 
       <!-- Web MIDI messages -->
       <message name="IDS_ALLOWED_MIDI_SYSEX_TITLE" desc="Title of the info bubble shown when a site is allowed to use MIDI system exclusive messages.">

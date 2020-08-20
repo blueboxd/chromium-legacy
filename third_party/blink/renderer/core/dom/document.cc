@@ -6801,15 +6801,48 @@ void Document::RecordAsyncScriptCount() {
 }
 
 void Document::MaybeExecuteDelayedAsyncScripts() {
-  // TODO(domfarolino): If the |kDelayAsyncScriptExecution| feature is enabled
-  // and |kDelayAsyncScriptExecutionDelayParam.Get()| is
-  // |kUseOptimizationGuide|, use the BlinkOptimizationGuide hint provided to
-  // Blink for the delay milestone.
+  if (base::FeatureList::IsEnabled(features::kDelayAsyncScriptExecution) &&
+      features::kDelayAsyncScriptExecutionDelayParam.Get() ==
+          features::DelayAsyncScriptDelayType::kUseOptimizationGuide) {
+    // If the optimization hints aren't available in the first place, then
+    // ScriptRunner won't delay async scripts at all, so we don't need to worry
+    // about notifying it.
+    if (!GetFrame() || !GetFrame()->GetOptimizationGuideHints())
+      return;
+
+    mojom::blink::DelayAsyncScriptExecutionHintsPtr delay_hint =
+        std::move(GetFrame()
+                      ->GetOptimizationGuideHints()
+                      ->delay_async_script_execution_hints);
+
+    if (!delay_hint)
+      return;
+
+    mojom::blink::DelayAsyncScriptExecutionDelayType delay_type =
+        delay_hint->delay_type;
+    switch (delay_type) {
+      case mojom::blink::DelayAsyncScriptExecutionDelayType::kFinishedParsing:
+        if (!Parsing())
+          script_runner_->NotifyDelayedAsyncScriptsMilestoneReached();
+        return;
+      case mojom::blink::DelayAsyncScriptExecutionDelayType::
+          kFirstPaintOrFinishedParsing:
+        if (first_paint_recorded_ || !Parsing())
+          script_runner_->NotifyDelayedAsyncScriptsMilestoneReached();
+        return;
+      case mojom::blink::DelayAsyncScriptExecutionDelayType::kUnknown:
+        // If the delay type is kUnknown, or the optimization guide hints are
+        // unavailable, then ScriptRunner::CanDelayAsyncScripts will always
+        // return false, causing no delay. Therefore in this case, we don't
+        // need to anything here.
+        return;
+    }
+  }
 
   // Notify the ScriptRunner if the first paint has been recorded and
   // we're delaying async scripts until first paint or finished parsing
   // (whichever comes first).
-  if (first_paint_recorded_ &&
+  if ((first_paint_recorded_ || !Parsing()) &&
       ((base::FeatureList::IsEnabled(features::kDelayAsyncScriptExecution) &&
         features::kDelayAsyncScriptExecutionDelayParam.Get() ==
             features::DelayAsyncScriptDelayType::

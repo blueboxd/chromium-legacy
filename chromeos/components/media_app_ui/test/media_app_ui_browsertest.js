@@ -707,7 +707,8 @@ TEST_F('MediaAppUIBrowserTest', 'DeletionOpensNextFile', async () => {
   assertEquals('test_file_3.png', lastLoadedFiles[1].name);
 
   // Navigate to the last file (originally the third file) and delete it
-  await sendTestMessage({navigate: 'next'});
+  const token = currentFiles[entryIndex].token;
+  await sendTestMessage({navigate: {direction: 'next', token}});
   testResponse = await sendTestMessage(messageDelete);
 
   assertEquals(
@@ -738,19 +739,60 @@ TEST_F('MediaAppUIBrowserTest', 'DeletionOpensNextFile', async () => {
 TEST_F('MediaAppUIBrowserTest', 'NavigateIPC', async () => {
   await launchWithFiles(
       [await createTestImageFile(), await createTestImageFile()]);
+  const fileOneToken = currentFiles[0].token;
+  const fileTwoToken = currentFiles[1].token;
   assertEquals(entryIndex, 0);
 
-  let result = await sendTestMessage({navigate: 'next'});
+  let result = await sendTestMessage(
+      {navigate: {direction: 'next', token: fileOneToken}});
   assertEquals(result.testQueryResult, 'loadNext called');
   assertEquals(entryIndex, 1);
 
-  result = await sendTestMessage({navigate: 'prev'});
+  result = await sendTestMessage(
+      {navigate: {direction: 'prev', token: fileTwoToken}});
   assertEquals(result.testQueryResult, 'loadPrev called');
   assertEquals(entryIndex, 0);
 
-  result = await sendTestMessage({navigate: 'prev'});
+  result = await sendTestMessage(
+      {navigate: {direction: 'prev', token: fileOneToken}});
   assertEquals(result.testQueryResult, 'loadPrev called');
   assertEquals(entryIndex, 1);
+  testDone();
+});
+
+// Tests the loadNext and loadPrev functions on the received file list correctly
+// navigate when they are working with a out of date file list.
+// Regression test for b/163662946
+TEST_F('MediaAppUIBrowserTest', 'NavigateOutOfSync', async () => {
+  await launchWithFiles(
+      [await createTestImageFile(), await createTestImageFile()]);
+  const fileOneToken = currentFiles[0].token;
+  const fileTwoToken = currentFiles[1].token;
+
+  // Simulate some operation updating entryIndex without reloading the media
+  // app.
+  entryIndex = 1;
+
+  let result = await sendTestMessage(
+      {navigate: {direction: 'next', token: fileOneToken}});
+  assertEquals(result.testQueryResult, 'loadNext called');
+  // The media app is focused on file 0 so the next file is file 1.
+  assertEquals(entryIndex, 1);
+
+  entryIndex = 0;
+
+  result = await sendTestMessage(
+      {navigate: {direction: 'prev', token: fileTwoToken}});
+  assertEquals(result.testQueryResult, 'loadPrev called');
+  assertEquals(entryIndex, 0);
+
+  // The received file list and entry index currently agree that the 0th file is
+  // open. Tell loadNext that the 1st file is current to ensure that navigate
+  // respects our provided token over any other signal.
+  result = await sendTestMessage(
+      {navigate: {direction: 'next', token: fileTwoToken}});
+  assertEquals(result.testQueryResult, 'loadNext called');
+  assertEquals(entryIndex, 0);
   testDone();
 });
 

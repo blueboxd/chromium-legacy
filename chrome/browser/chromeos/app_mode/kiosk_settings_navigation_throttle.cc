@@ -17,7 +17,7 @@ namespace {
 // kiosk mode.
 KioskSettingsNavigationThrottle::SettingsPage kSettingsPages[] = {
     {"chrome://os-settings/manageAccessibility", true},
-    {"chrome-extension://mndnfokpggljbaajbnioimlmbfngpief/chromevox/background/"
+    {"chrome-extension://mndnfokpggljbaajbnioimlmbfngpief/chromevox/options/"
      "options.html",
      false},
     {"chrome-extension://klbcgckkldhdhonijdbnhhaiedfkllef/", true},

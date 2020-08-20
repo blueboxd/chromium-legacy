@@ -162,14 +162,15 @@ __gCrWeb.autofill['extractForms'] = function(
  * Fills data into the active form field.
  *
  * @param {AutofillFormFieldData} data The data to fill in.
+ * @return {boolean} Whether the field was filled successfully.
  */
 __gCrWeb.autofill['fillActiveFormField'] = function(data) {
   const activeElement = document.activeElement;
   if (data['identifier'] !== __gCrWeb.form.getFieldIdentifier(activeElement)) {
-    return;
+    return false;
   }
   __gCrWeb.autofill.lastAutoFilledElement = activeElement;
-  __gCrWeb.autofill.fillFormField(data, activeElement);
+  return __gCrWeb.autofill.fillFormField(data, activeElement);
 };
 
 // Remove Autofill styling when control element is edited by the user.
@@ -190,6 +191,7 @@ function controlElementInputListener_(evt) {
  * @param {!FormData} data Autofill data to fill in.
  * @param {string} forceFillFieldIdentifier Identified field will always be
  *     filled even if non-empty. May be null.
+ * @return {string} JSON encoded list of renderer IDs of filled elements.
  */
 __gCrWeb.autofill['fillForm'] = function(data, forceFillFieldIdentifier) {
   // Inject CSS to style the autofilled elements with a yellow background.
@@ -203,6 +205,7 @@ __gCrWeb.autofill['fillForm'] = function(data, forceFillFieldIdentifier) {
     document.head.appendChild(style);
     __gCrWeb.autofill.styleInjected = true;
   }
+  const filledElements = {};
 
   const form = __gCrWeb.form.getFormElementFromIdentifier(data.formName);
   const controlElements = form ?
@@ -258,6 +261,7 @@ __gCrWeb.autofill['fillForm'] = function(data, forceFillFieldIdentifier) {
       }, _delay);
     })(element, fieldData.value, fieldData.section, delay);
     delay += __gCrWeb.autofill.delayBetweenFieldFillingMs;
+    filledElements[__gCrWeb.fill.getUniqueID(element)] = fieldData.value;
   }
 
   if (form) {
@@ -274,6 +278,8 @@ __gCrWeb.autofill['fillForm'] = function(data, forceFillFieldIdentifier) {
     };
     form.addEventListener('reset', formResetListener);
   }
+
+  return __gCrWeb.stringify(filledElements);
 };
 
 /**
@@ -289,9 +295,11 @@ __gCrWeb.autofill['fillForm'] = function(data, forceFillFieldIdentifier) {
  *     getFormIdentifier).
  * @param {string} fieldIdentifier Identifier for form field initiating the
  *     clear action.
+ * @return {string} JSON encoded list of renderer IDs of cleared elements.
  */
 __gCrWeb.autofill['clearAutofilledFields'] = function(
     formName, fieldIdentifier) {
+  const clearedElements = [];
   const form = __gCrWeb.form.getFormElementFromIdentifier(formName);
   const controlElements = form ?
       __gCrWeb.form.getFormControlElements(form) :
@@ -342,8 +350,10 @@ __gCrWeb.autofill['clearAutofilledFields'] = function(
         }, _delay);
       })(element, value, delay);
       delay += __gCrWeb.autofill.delayBetweenFieldFillingMs;
+      clearedElements.push(__gCrWeb.fill.getUniqueID(element));
     }
   }
+  return __gCrWeb.stringify(clearedElements);
 };
 
 /**
@@ -453,13 +463,15 @@ __gCrWeb.autofill.extractNewForms = function(
  *
  * @param {AutofillFormFieldData} data Data that will be filled into field.
  * @param {FormControlElement} field The element to which data will be filled.
+ * @return {boolean} Whether the field was filled successfully.
  */
 __gCrWeb.autofill.fillFormField = function(data, field) {
   // Nothing to fill.
   if (!data['value'] || data['value'].length === 0) {
-    return;
+    return false;
   }
 
+  let filled = false;
   if (__gCrWeb.fill.isTextInput(field) ||
       __gCrWeb.fill.isTextAreaElement(field)) {
     let sanitizedValue = data['value'];
@@ -474,13 +486,14 @@ __gCrWeb.autofill.fillFormField = function(data, field) {
       sanitizedValue = data['value'].substr(0, maxLength);
     }
 
-    __gCrWeb.fill.setInputElementValue(sanitizedValue, field);
+    filled = __gCrWeb.fill.setInputElementValue(sanitizedValue, field);
     field.isAutofilled = true;
   } else if (__gCrWeb.fill.isSelectElement(field)) {
-    __gCrWeb.fill.setInputElementValue(data['value'], field);
+    filled = __gCrWeb.fill.setInputElementValue(data['value'], field);
   } else if (__gCrWeb.fill.isCheckableElement(field)) {
-    __gCrWeb.fill.setInputElementValue(data['is_checked'], field);
+    filled = __gCrWeb.fill.setInputElementValue(data['is_checked'], field);
   }
+  return filled;
 };
 
 /**

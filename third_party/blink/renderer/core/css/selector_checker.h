@@ -30,7 +30,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_SELECTOR_CHECKER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_SELECTOR_CHECKER_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/css/css_selector.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
@@ -101,6 +100,8 @@ class SelectorChecker {
     is_ua_rule_ = init.is_ua_rule;
 #endif
   }
+  SelectorChecker(const SelectorChecker&) = delete;
+  SelectorChecker& operator=(const SelectorChecker&) = delete;
 
   // Wraps the current element and a CSSSelector and stores some other state of
   // the selector matching process.
@@ -220,7 +221,6 @@ class SelectorChecker {
 #else
   static constexpr bool is_ua_rule_ = true;
 #endif
-  DISALLOW_COPY_AND_ASSIGN(SelectorChecker);
 };
 
 }  // namespace blink

@@ -275,4 +275,49 @@ void ExecuteJavaScriptFunction(const std::string& name,
   }
 }
 
+bool ExtractIDs(NSString* json_string, std::vector<uint32_t>* ids) {
+  DCHECK(ids);
+  std::unique_ptr<base::Value> ids_value = ParseJson(json_string);
+  if (!ids_value)
+    return false;
+
+  const base::ListValue* ids_list = nullptr;
+  if (!ids_value->GetAsList(&ids_list))
+    return false;
+
+  for (const auto& unique_id : *ids_list) {
+    std::string id_string;
+    if (!unique_id.GetAsString(&id_string))
+      return false;
+    uint32_t id_num = 0;
+    StringToUint(id_string, &id_num);
+    ids->push_back(id_num);
+  }
+  return true;
+}
+
+bool ExtractFillingResults(
+    NSString* json_string,
+    std::map<uint32_t, base::string16>* filling_results) {
+  DCHECK(filling_results);
+  std::unique_ptr<base::Value> ids_value = ParseJson(json_string);
+  if (!ids_value)
+    return false;
+
+  // Returned data should be a list of forms.
+  const base::DictionaryValue* results = nullptr;
+  if (!ids_value->GetAsDictionary(&results))
+    return false;
+
+  for (const auto& result : results->DictItems()) {
+    std::string id_string = result.first;
+    uint32_t id_num = 0;
+    StringToUint(id_string, &id_num);
+    base::string16 value;
+    result.second.GetAsString(&value);
+    (*filling_results)[id_num] = value;
+  }
+  return true;
+}
+
 }  // namespace autofill

@@ -52,6 +52,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
+#include "content/public/test/back_forward_cache_util.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -3332,6 +3333,12 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   // when we go back.
   entry2->root_node()->children[0]->frame_entry->set_frame_unique_name("wrong");
 
+  // With BackForwardCache page is restored from cache instead of getting
+  // recreated on history navigation, disable back-forward cache to force a
+  // reload and a URL fetch.
+  DisableBackForwardCacheForTesting(
+      contents(), content::BackForwardCache::TEST_ASSUMES_NO_CACHING);
+
   // 4. Go back, recreating the iframe. The subframe entry won't be found, and
   // we should fall back to the default URL.
   {
@@ -3422,6 +3429,12 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
   NavigationEntryImpl* entry2 = controller.GetLastCommittedEntry();
   EXPECT_EQ(0U, entry2->root_node()->children.size());
+
+  // With BackForwardCache page is restored from cache instead of getting
+  // recreated on history navigation, disable back-forward cache to force a
+  // reload and a URL fetch.
+  DisableBackForwardCacheForTesting(
+      contents(), content::BackForwardCache::TEST_ASSUMES_NO_CACHING);
 
   // 3. Go back, recreating the iframe.  The subframe will have a new name this
   // time, so we won't find a history item for it.  We should let the new data
@@ -8498,6 +8511,13 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   // Perform a cross-site omnibox navigation.
   prev_host = curr_host;
   prev_spare = curr_spare;
+
+  // With BackForwardCache the old process won't get deleted on navigation as it
+  // is still in use by the bfcached document, disable back-forward cache to
+  // ensure that the process gets deleted.
+  DisableBackForwardCacheForTesting(
+      contents(), content::BackForwardCache::TEST_ASSUMES_NO_CACHING);
+
   RenderProcessHostWatcher prev_host_watcher(
       prev_host, RenderProcessHostWatcher::WATCH_FOR_HOST_DESTRUCTION);
   EXPECT_TRUE(NavigateToURL(shell(), second_url));
@@ -8604,6 +8624,13 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
   EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
   EXPECT_NE(initial_site_instance,
             root->current_frame_host()->GetSiteInstance());
+
+  // This test expects using different SiteInstance/URL when navigating back.
+  // This won't happen with BackForwardCache as document is restored directly
+  // instead of redirecting, disable back-forward cache to ensure that redirect
+  // happens on history navigation.
+  DisableBackForwardCacheForTesting(
+      contents(), content::BackForwardCache::TEST_ASSUMES_NO_CACHING);
 
   // Back, which should redirect to |url3|.
   FrameNavigateParamsCapturer capturer(root);
@@ -8766,6 +8793,12 @@ IN_PROC_BROWSER_TEST_P(
              window.onunload=function(e){
                window.domAutomationController.send('done');
              };)"));
+
+  // With BackForwardCache, old RenderFrameHost won't enter pending deletion
+  // on navigation as it is stored in bfcache, disable back-forward cache to
+  // ensure that the RFH will enter pending deletion state.
+  DisableBackForwardCacheForTesting(
+      contents(), content::BackForwardCache::TEST_ASSUMES_NO_CACHING);
 
   // Navigate the main frame cross-process and wait for the unload event to
   // fire.

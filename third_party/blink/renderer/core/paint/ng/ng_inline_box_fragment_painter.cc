@@ -187,8 +187,8 @@ void NGLineBoxFragmentPainter::PaintBackgroundBorderShadow(
   // inline-level element".
   // https://drafts.csswg.org/css-pseudo-4/#first-line-styling
   const NGPhysicalLineBoxFragment& line_box = PhysicalFragment();
-  const NGLineHeightMetrics line_metrics = line_box.Metrics();
-  const NGLineHeightMetrics text_metrics = NGLineHeightMetrics(line_style_);
+  const FontHeight line_metrics = line_box.Metrics();
+  const FontHeight text_metrics = FontHeight(line_style_);
   const WritingMode writing_mode = line_style_.GetWritingMode();
   PhysicalRect rect;
   if (IsHorizontalWritingMode(writing_mode)) {

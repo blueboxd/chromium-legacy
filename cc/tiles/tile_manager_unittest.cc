@@ -3452,7 +3452,8 @@ class HdrImageTileManagerTest : public CheckerImagingTileManagerTest {
     constexpr gfx::Size kTileSize(500, 500);
     Region invalidation((gfx::Rect(kLayerBounds)));
     SetupPendingTree(raster_source, kTileSize, invalidation);
-    pending_layer()->layer_tree_impl()->SetRasterColorSpace(raster_cs);
+    pending_layer()->layer_tree_impl()->SetDisplayColorSpaces(
+        gfx::DisplayColorSpaces(raster_cs));
 
     PictureLayerTilingSet* tiling_set =
         pending_layer()->picture_layer_tiling_set();

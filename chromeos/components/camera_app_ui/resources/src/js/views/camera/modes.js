@@ -218,7 +218,7 @@ export class Modes {
      *     constraints-candidates.
      */
     const getV1Constraints = function(videoMode, deviceId) {
-      return [
+      const /** !Array<!MediaTrackConstraints> */ baseConstraints = [
         {
           aspectRatio: {ideal: videoMode ? 1.7777777778 : 1.3333333333},
           width: {min: 1280},
@@ -228,7 +228,8 @@ export class Modes {
           width: {min: 640},
           frameRate: {min: 20, ideal: 30},
         },
-      ].map((/** !MediaTrackConstraints */ constraint) => {
+      ];
+      return baseConstraints.map((constraint) => {
         if (deviceId) {
           constraint.deviceId = {exact: deviceId};
         } else {
@@ -385,12 +386,11 @@ export class Modes {
    * constraints for the given mode.
    * @param {!Mode} mode
    * @param {string} deviceId
-   * @param {!ResolutionList} previewResolutions
    * @return {!Array<!CaptureCandidate>}
    */
-  getResolutionCandidates(mode, deviceId, previewResolutions) {
+  getResolutionCandidates(mode, deviceId) {
     return this.allModes_[mode].constraintsPreferrer.getSortedCandidates(
-        deviceId, previewResolutions);
+        deviceId);
   }
 
   /**

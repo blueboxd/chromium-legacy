@@ -650,7 +650,8 @@ class CONTENT_EXPORT RenderFrameHostManager
       bool dest_is_view_source_mode,
       bool was_server_redirect,
       bool cross_origin_opener_policy_mismatch,
-      bool should_replace_current_entry);
+      bool should_replace_current_entry,
+      bool* did_same_site_proactive_browsing_instance_swap);
 
   // Returns a descriptor of the appropriate SiteInstance object for the given
   // |dest_url|, possibly reusing the current, source or destination

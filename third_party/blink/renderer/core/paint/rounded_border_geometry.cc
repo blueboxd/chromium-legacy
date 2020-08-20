@@ -140,7 +140,8 @@ FloatRoundedRect RoundedBorderGeometry::PixelSnappedRoundedInnerBorder(
 
   if (style.HasBorderRadius()) {
     FloatRoundedRect::Radii radii =
-        PixelSnappedRoundedBorder(style, border_rect).GetRadii();
+        PixelSnappedRoundedBorder(style, border_rect, sides_to_include)
+            .GetRadii();
     // Insets use negative values.
     radii.Shrink(-insets.Top().ToFloat(), -insets.Bottom().ToFloat(),
                  -insets.Left().ToFloat(), -insets.Right().ToFloat());

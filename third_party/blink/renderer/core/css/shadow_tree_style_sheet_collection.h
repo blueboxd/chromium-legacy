@@ -30,7 +30,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_SHADOW_TREE_STYLE_SHEET_COLLECTION_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_SHADOW_TREE_STYLE_SHEET_COLLECTION_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/css/tree_scope_style_sheet_collection.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 
@@ -44,6 +43,11 @@ class ShadowTreeStyleSheetCollection final
     : public TreeScopeStyleSheetCollection {
  public:
   explicit ShadowTreeStyleSheetCollection(ShadowRoot&);
+  ShadowTreeStyleSheetCollection(const ShadowTreeStyleSheetCollection&) =
+      delete;
+  ShadowTreeStyleSheetCollection& operator=(
+      const ShadowTreeStyleSheetCollection&) = delete;
+
   void UpdateActiveStyleSheets(StyleEngine&);
   bool IsShadowTreeStyleSheetCollection() const final { return true; }
 
@@ -53,7 +57,6 @@ class ShadowTreeStyleSheetCollection final
 
  private:
   void CollectStyleSheets(StyleEngine&, StyleSheetCollection&);
-  DISALLOW_COPY_AND_ASSIGN(ShadowTreeStyleSheetCollection);
 };
 
 template <>

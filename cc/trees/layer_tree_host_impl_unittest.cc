@@ -15837,8 +15837,8 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, RasterColorSpace) {
       host_impl_->GetRasterColorSpace(gfx::ContentColorUsage::kWideColorGamut),
       gfx::ColorSpace::CreateSRGB());
   // The raster color space should update with tree activation.
-  host_impl_->active_tree()->SetRasterColorSpace(
-      gfx::ColorSpace::CreateDisplayP3D65());
+  host_impl_->active_tree()->SetDisplayColorSpaces(
+      gfx::DisplayColorSpaces(gfx::ColorSpace::CreateDisplayP3D65()));
   EXPECT_EQ(
       host_impl_->GetRasterColorSpace(gfx::ContentColorUsage::kWideColorGamut),
       gfx::ColorSpace::CreateDisplayP3D65());
@@ -15851,8 +15851,8 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, RasterColorSpaceSoftware) {
   EXPECT_EQ(
       host_impl_->GetRasterColorSpace(gfx::ContentColorUsage::kWideColorGamut),
       gfx::ColorSpace::CreateSRGB());
-  host_impl_->active_tree()->SetRasterColorSpace(
-      gfx::ColorSpace::CreateDisplayP3D65());
+  host_impl_->active_tree()->SetDisplayColorSpaces(
+      gfx::DisplayColorSpaces(gfx::ColorSpace::CreateDisplayP3D65()));
   EXPECT_EQ(
       host_impl_->GetRasterColorSpace(gfx::ContentColorUsage::kWideColorGamut),
       gfx::ColorSpace::CreateSRGB());
@@ -15864,14 +15864,13 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, RasterColorPrefersSRGB) {
   LayerTreeSettings settings = DefaultSettings();
   settings.prefer_raster_in_srgb = true;
   CreateHostImpl(settings, CreateLayerTreeFrameSink());
-  host_impl_->active_tree()->SetRasterColorSpace(p3);
-
+  host_impl_->active_tree()->SetDisplayColorSpaces(gfx::DisplayColorSpaces(p3));
   EXPECT_EQ(host_impl_->GetRasterColorSpace(gfx::ContentColorUsage::kSRGB),
             gfx::ColorSpace::CreateSRGB());
 
   settings.prefer_raster_in_srgb = false;
   CreateHostImpl(settings, CreateLayerTreeFrameSink());
-  host_impl_->active_tree()->SetRasterColorSpace(p3);
+  host_impl_->active_tree()->SetDisplayColorSpaces(gfx::DisplayColorSpaces(p3));
   EXPECT_EQ(host_impl_->GetRasterColorSpace(gfx::ContentColorUsage::kSRGB), p3);
 }
 
@@ -15880,7 +15879,8 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, RasterColorSpaceHDR) {
 
   LayerTreeSettings settings = DefaultSettings();
   CreateHostImpl(settings, CreateLayerTreeFrameSink());
-  host_impl_->active_tree()->SetRasterColorSpace(hdr);
+  host_impl_->active_tree()->SetDisplayColorSpaces(
+      gfx::DisplayColorSpaces(hdr));
 
   // Non-HDR content should be rasterized in P3.
   EXPECT_EQ(host_impl_->GetRasterColorSpace(gfx::ContentColorUsage::kSRGB),

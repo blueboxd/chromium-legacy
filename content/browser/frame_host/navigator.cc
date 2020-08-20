@@ -236,13 +236,44 @@ void Navigator::DidNavigate(
 
   bool is_same_document_navigation = controller_->IsURLSameDocumentNavigation(
       params.url, params.origin, was_within_same_document, render_frame_host);
-
   // If a frame claims the navigation was same-document, it must be the current
   // frame, not a pending one.
   if (is_same_document_navigation && render_frame_host != old_frame_host) {
     bad_message::ReceivedBadMessage(render_frame_host->GetProcess(),
                                     bad_message::NI_IN_PAGE_NAVIGATION);
     is_same_document_navigation = false;
+  }
+  bool is_cross_document_same_site_navigation =
+      !is_same_document_navigation &&
+      frame_tree_node->render_manager()->IsCurrentlySameSite(old_frame_host,
+                                                             params.url);
+  if (is_cross_document_same_site_navigation) {
+    UMA_HISTOGRAM_BOOLEAN(
+        "BackForwardCache.ProactiveSameSiteBISwap.SameSiteNavigationDidSwap",
+        navigation_request->did_same_site_proactive_browsing_instance_swap());
+  }
+
+  if (navigation_request->did_same_site_proactive_browsing_instance_swap()) {
+    // If we did a same-site cross-BrowsingInstance main frame navigation, we
+    // might be introducing a web-observable behavior change if we need to
+    // unload the old frame (if we can't store the page in the back-forward
+    // cache), because on normal same-site navigations the unloading of the old
+    // RenderFrameHost happens before commit. We're measuring how often this
+    // case happens to determine the risk of this change.
+    DCHECK_NE(old_frame_host, render_frame_host);
+    DCHECK(frame_tree_node->IsMainFrame());
+    DCHECK(!old_frame_host->GetSiteInstance()->IsRelatedSiteInstance(
+        render_frame_host->GetSiteInstance()));
+    DCHECK(is_cross_document_same_site_navigation);
+    bool can_store_in_back_forward_cache =
+        controller_->GetBackForwardCache().CanStorePageNow(old_frame_host);
+    UMA_HISTOGRAM_BOOLEAN(
+        "BackForwardCache.ProactiveSameSiteBISwap.EligibilityDuringCommit",
+        can_store_in_back_forward_cache);
+    UMA_HISTOGRAM_BOOLEAN(
+        "BackForwardCache.ProactiveSameSiteBISwap.UnloadRunsAfterCommit",
+        !can_store_in_back_forward_cache &&
+            old_frame_host->UnloadHandlerExistsInSameSiteInstanceSubtree());
   }
 
   if (auto& old_page_info = navigation_request->commit_params().old_page_info) {

@@ -154,7 +154,7 @@
 <translation id="5866104238061687188">{YEARS,plural, =1{1 年內}other{# 年內}}</translation>
 <translation id="588258955323874662">全螢幕</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{還剩 1 秒}other{還剩 # 秒}}</translation>
-<translation id="5941711191222866238">縮到最小</translation>
+<translation id="5941711191222866238">最小化</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 小時}other{# 小時}}</translation>
 <translation id="6012623610530968780">第 <ph name="SELECTED_PAGE" /> 頁 (共 <ph name="TOTAL_PAGE_NUM" /> 頁)</translation>
 <translation id="6022924867608035986">清除搜尋框文字</translation>

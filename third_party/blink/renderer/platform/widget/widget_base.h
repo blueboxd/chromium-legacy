@@ -69,8 +69,7 @@ class PLATFORM_EXPORT WidgetBase : public mojom::blink::Widget,
       scheduler::WebThreadScheduler* main_thread_scheduler,
       cc::TaskGraphRunner* task_graph_runner,
       bool for_child_local_root_frame,
-      const gfx::Size& initial_screen_size,
-      float initial_device_scale_factor,
+      const ScreenInfo& screen_info,
       std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory,
       const cc::LayerTreeSettings* settings);
 
@@ -161,6 +160,8 @@ class PLATFORM_EXPORT WidgetBase : public mojom::blink::Widget,
     return widget_input_handler_manager_.get();
   }
 
+  gfx::Rect CompositorViewportRect() const;
+
   WidgetBaseClient* client() { return client_; }
 
   void SetToolTipText(const String& tooltip_text, TextDirection dir);
@@ -221,6 +222,23 @@ class PLATFORM_EXPORT WidgetBase : public mojom::blink::Widget,
 
   base::WeakPtr<WidgetBase> GetWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
+  }
+
+  void UpdateSurfaceAndScreenInfo(
+      const viz::LocalSurfaceIdAllocation& new_local_surface_id_allocation,
+      const gfx::Rect& compositor_viewport_pixel_rect,
+      const ScreenInfo& new_screen_info);
+  void UpdateScreenInfo(const ScreenInfo& new_screen_info);
+  void UpdateCompositorViewportAndScreenInfo(
+      const gfx::Rect& compositor_viewport_pixel_rect,
+      const ScreenInfo& new_screen_info);
+  void UpdateCompositorViewportRect(
+      const gfx::Rect& compositor_viewport_pixel_rect);
+  const ScreenInfo& GetScreenInfo();
+
+  const viz::LocalSurfaceIdAllocation& local_surface_id_allocation_from_parent()
+      const {
+    return local_surface_id_allocation_from_parent_;
   }
 
  private:
@@ -297,6 +315,12 @@ class PLATFORM_EXPORT WidgetBase : public mojom::blink::Widget,
 
   // Whether or not this RenderWidget is currently pasting.
   bool is_pasting_ = false;
+
+  // Properties of the screen hosting the WidgetBase. Rects in this structure
+  // do not include any scaling by device scale factor, so are logical pixels
+  // not physical device pixels.
+  ScreenInfo screen_info_;
+  viz::LocalSurfaceIdAllocation local_surface_id_allocation_from_parent_;
 
   // It is possible that one ImeEventGuard is nested inside another
   // ImeEventGuard. We keep track of the outermost one, and update it as needed.

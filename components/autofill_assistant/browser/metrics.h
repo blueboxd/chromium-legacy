@@ -142,11 +142,47 @@ class Metrics {
     kMaxValue = DFM_ALREADY_INSTALLED
   };
 
+  // The different ways a user might have opted out of the lite script
+  // experience.
+  //
+  // GENERATED_JAVA_ENUM_PACKAGE: (
+  // org.chromium.chrome.browser.autofill_assistant.metrics)
+  // GENERATED_JAVA_CLASS_NAME_OVERRIDE: LiteScriptStarted
+  //
+  // This enum is used in UKM metrics, do not remove/renumber entries. Only add
+  // at the end and update kMaxValue. Also remember to update the
+  // AutofillAssistantLiteScriptStarted enum listing in
+  // tools/metrics/histograms/enums.xml and the description in
+  // tools/metrics/ukm/ukm.xml as necessary.
+  enum class LiteScriptStarted {
+    // Device did not have DFM downloaded.
+    LITE_SCRIPT_DFM_UNAVAILABLE = 0,
+    // User has explicitly rejected the lite script two times and thus opted
+    // out of  the experience.
+    LITE_SCRIPT_CANCELED_TWO_TIMES = 1,
+    // User has rejected the onboarding and thus opted out of the experience.
+    LITE_SCRIPT_ONBOARDING_REJECTED = 2,
+    // User has not seen the lite script before and will see first time
+    // experience.
+    LITE_SCRIPT_FIRST_TIME_USER = 3,
+    // User has seen the first-time experience before and will see returning
+    // user experience.
+    LITE_SCRIPT_RETURNING_USER = 4,
+
+    kMaxValue = LITE_SCRIPT_RETURNING_USER
+  };
+
   // The different ways in which a lite script may finish.
   //
   // GENERATED_JAVA_ENUM_PACKAGE: (
   // org.chromium.chrome.browser.autofill_assistant.metrics)
   // GENERATED_JAVA_CLASS_NAME_OVERRIDE: LiteScriptFinishedState
+  //
+  // This enum is used in UKM metrics, do not remove/renumber entries. Only add
+  // at the end and update kMaxValue. Also remember to update the
+  // AutofillAssistantLiteScriptFinished enum listing in
+  // tools/metrics/histograms/enums.xml and the description in
+  // tools/metrics/ukm/ukm.xml as necessary.
   enum class LiteScriptFinishedState {
     // The lite script failed for an unknown reason.
     LITE_SCRIPT_UNKNOWN_FAILURE = 0,
@@ -185,6 +221,29 @@ class Metrics {
     LITE_SCRIPT_PROMPT_SUCCEEDED = 13,
 
     kMaxValue = LITE_SCRIPT_PROMPT_SUCCEEDED
+  };
+
+  // The different ways a user who has successfully completed a light script may
+  // accept or reject the onboarding
+  //
+  // GENERATED_JAVA_ENUM_PACKAGE: (
+  // org.chromium.chrome.browser.autofill_assistant.metrics)
+  // GENERATED_JAVA_CLASS_NAME_OVERRIDE: LiteScriptOnboarding
+  //
+  // This enum is used in UKM metrics, do not remove/renumber entries. Only add
+  // at the end and update kMaxValue. Also remember to update the
+  // AutofillAssistantLiteScriptOnboarding enum listing in
+  // tools/metrics/histograms/enums.xml and the description in
+  // tools/metrics/ukm/ukm.xml as necessary.
+  enum class LiteScriptOnboarding {
+    // The user has seen and accepted the onboarding.
+    LITE_SCRIPT_ONBOARDING_SEEN_AND_ACCEPTED = 0,
+    // The user has seen and rejected the onboarding.
+    LITE_SCRIPT_ONBOARDING_SEEN_AND_REJECTED = 1,
+    // The user has already accepted the onboarding in the past.
+    LITE_SCRIPT_ONBOARDING_ALREADY_ACCEPTED = 2,
+
+    kMaxValue = LITE_SCRIPT_ONBOARDING_ALREADY_ACCEPTED
   };
 
   static void RecordDropOut(DropOutReason reason);

@@ -38,6 +38,12 @@ TestPermissionsClient::GetCookieSettings(
   return nullptr;
 }
 
+bool TestPermissionsClient::IsSubresourceFilterActivated(
+    content::BrowserContext* browser_context,
+    const GURL& url) {
+  return false;
+}
+
 PermissionDecisionAutoBlocker*
 TestPermissionsClient::GetPermissionDecisionAutoBlocker(
     content::BrowserContext* browser_context) {

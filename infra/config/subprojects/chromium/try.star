@@ -388,6 +388,9 @@ try_.chromium_linux_builder(
 
 try_.chromium_linux_builder(
     name = "linux-rel",
+    # TODO(https://crbug.com/1109276) Once support for mastername is removed, do
+    # not explicitly set
+    builder_group = "tryserver.chromium.linux",
     goma_jobs = goma.jobs.J150,
     tryjob = try_.job(),
     use_clang_coverage = True,
@@ -495,7 +498,7 @@ try_.chromium_mac_ios_builder(
     name = "ios-simulator",
     executable = "recipe:chromium_trybot",
     properties = {
-        "xcode_build_version": "12a8179i_audio",
+        "xcode_build_version": "12a8189h",
     },
     tryjob = try_.job(),
 )

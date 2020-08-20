@@ -38,6 +38,13 @@ public interface PasswordCheck extends PasswordCheckComponentUi.Delegate {
          * @param leakedCredential The newly found leaked credential.
          */
         void onCompromisedCredentialFound(CompromisedCredential leakedCredential);
+
+        /**
+         * Called during a check when a credential has finished being processed.
+         * @param alreadyProcessed Number of credentials that the check already processed.
+         * @param remainingInQueue Number of credentials that still need to be processed.
+         */
+        void onPasswordCheckProgressChanged(int alreadyProcessed, int remainingInQueue);
     }
 
     /**

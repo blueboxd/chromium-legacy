@@ -205,7 +205,6 @@ void SecureDnsHandler::HandleProbeCustomDnsTemplate(
   net::DnsConfigOverrides overrides;
   overrides.search = std::vector<std::string>();
   overrides.attempts = 1;
-  overrides.randomize_ports = false;
   overrides.secure_dns_mode = net::DnsConfig::SecureDnsMode::SECURE;
   secure_dns::ApplyTemplate(&overrides, server_template);
   DCHECK(!runner_);

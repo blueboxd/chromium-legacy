@@ -41,14 +41,12 @@
 <translation id="1874309113135274312">Google Chrome Бэта (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome хуучирсан байна.</translation>
 <translation id="1919130412786645364">Chromium-д нэвтрэхийг зөвшөөрөх</translation>
-<translation id="195645108406520445">Өөрийн шинэ Chrome Space-г тохируулах</translation>
 <translation id="2063848847527508675">Шинэчлэлтийг хэрэгжүүлэхийн тулд Chrome үйлдлийн системийг дахин эхлүүлнэ үү.</translation>
 <translation id="2094919256425865063">Ямар ч байсан Chrome-с гарах уу?</translation>
 <translation id="2120620239521071941">Энэ нь төхөөрөмжөөс <ph name="ITEMS_COUNT" /> зүйлийг устгана. Дараа нь өгөгдлөө сэргээхийн тулд Chrome-д <ph name="USER_EMAIL" />-р нэвтэрнэ үү.</translation>
 <translation id="2123055963409958220"><ph name="BEGIN_LINK" />Одоогийн тохиргоог<ph name="END_LINK" /> мэдэгдэж Chrome-г сайжруулахад тусална уу</translation>
 <translation id="2151406531797534936">Chrome-г одоо дахин эхлүүлнэ үү</translation>
 <translation id="2246246234298806438">built-in PDF нээгч байхгүй байхад Google Chrome хэвлэхийн өмнөх харагдах байдлыг үзүүлэх боломжгүй байна.</translation>
-<translation id="226038281051944330">Та <ph name="EXISTING_USER" />-н орон зайд шинэ бүртгэлээр нэвтэрсэн байна. Өгөгдлөө тусад нь хадгалахын тулд та <ph name="NEW_USER" />-д зориулсан Chrome-н шинэ орон зай үүсгэмээр байна уу?</translation>
 <translation id="2290014774651636340">Google-ийн API түлхүүр байхгүй байна. Google Chrome-ийн зарим функц идэвхгүй болно.</translation>
 <translation id="2290095356545025170">Та Google Chrome-ыг устгах гэж байгаадаа итгэлтэй байна уу?</translation>
 <translation id="2309047409763057870">Энэ нь Google Chrome-н хоёр дахь суулгалт тул таны өгөгдмөл хөтчөөр сонгох боломжгүй.</translation>
@@ -83,7 +81,6 @@
 <translation id="3089968997497233615">Google Chrome-ийн шинэ, илүү аюулгүй хувилбар бэлэн боллоо.</translation>
 <translation id="3127818369811890733">Chrome үйлдлийн систем таны өгөгдлийг синк хийж чадсангүй.</translation>
 <translation id="3149510190863420837">Chrome Аппликейшнууд</translation>
-<translation id="3351117925998652957">Chrome-н орон зайгаа сонгох</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome-г одоо дахин ажиллуулж байна}=1{Chrome-г 1 секундийн дотор дахин ажиллуулна}other{Chrome-г # секундийн дотор дахин ажиллуулна}}</translation>
 <translation id="3395323229510056640">Chrome үйлдлийн системээс тусламж авах</translation>
@@ -106,7 +103,6 @@
 <translation id="386202838227397562">Бүх Google Chrome-ын цонхнуудыг хааж дахин оролдоно уу.</translation>
 <translation id="3865754807470779944">Chrome <ph name="PRODUCT_VERSION" /> хувилбарыг суулгасан</translation>
 <translation id="3873044882194371212">Холбоосыг Chrome-н нууцлалтай цонхонд нээх</translation>
-<translation id="3879568094278837081">Тус орон зайн интернэтээр үзсэн өгөгдөл энэ төхөөрөмжөөс устана. Өгөгдлийг сэргээхийн тулд дараах бүртгэлээр Chrome-д нэвтэрнэ үү</translation>
 <translation id="3889417619312448367">Google Chrome-ыг устгах</translation>
 <translation id="4050175100176540509">Хамгийн сүүлийн хувилбар дээр аюулгүй байдлын чухал сайжруулалт болон шинэ функцийг санал болгож байна.</translation>
 <translation id="4053720452172726777">Google Chrome-ыг өөртөө тохируулан хянах</translation>
@@ -147,14 +143,12 @@
 <translation id="4895437082222824641">Холбоосыг шинэ Chrome-н чихтэй хуудсанд нээх</translation>
 <translation id="4953650215774548573">Google Chrome-ыг өөрийн анхдагч вэб хөтөч болгон тохируулна уу</translation>
 <translation id="495931528404527476">Chrome-д</translation>
-<translation id="4960472897514318257">Та ажлын бүртгэлээр нэвтэрсэн байна. Хувийн мэдээллээ тусад нь хадгалахын тулд та <ph name="NEW_USER" />-д зориулсан Chrome-н шинэ орон зай үүсгэмээр байна уу?</translation>
 <translation id="4990567037958725628">Google Chrome цайвар шаргал өнгө</translation>
 <translation id="5062123544085870375">Chrome OS-г дахин эхлүүлэх</translation>
 <translation id="5132929315877954718">Google Кромын шилдэг апп, тоглоом, өргөтгөл болон загварыг ашиглах боломжтой.</translation>
 <translation id="5170938038195470297">Таны профайл Google Chrome-ийн шинэ хувилбарынх тул ашиглаж болохгүй.
 
 Зарим функц ажиллахгүй байж болох юм. Өөр профайл тодорхойл эсвэл Chrome-ийн шинэ хувилбарыг хэрэглэнэ үү.</translation>
-<translation id="5171117065011130146">Chrome-н ажлын шинэ орон зай үүсгэх үү?</translation>
 <translation id="5193136243808726294">Google Chrome үйлдлийн систем энэ хуудсыг нээх боломжгүй</translation>
 <translation id="5251420635869119124">Зочид ч бусдаас хоцролгүй Chrome-ийг бүх талаар нь ашиглах боломжтой.</translation>
 <translation id="532046782124376502">Анхааруулга: Google Chrome таны өргөтгөлийг хөтчийн түүх бичихээс сэргийлэх боломжгүй. Энэ өргөтгөлийг үл танигдах горимд идэвхгүй болгохын тулд энэ сонголтыг сонгохгүй орхино уу.</translation>
@@ -222,7 +216,6 @@ Google Chrome таны тохируулгыг дахин сэргээх боло
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7573289029918943991">Таны төхөөрөмж шинэчлэгдсэн эсэхийг харахын тулд <ph name="LINK_BEGIN" />Chrome үйлдлийн системийн тохиргоо<ph name="LINK_END" /> руу очно уу</translation>
 <translation id="7589360514048265910">Энэ компьютер Mac үйлдлийн систем X 10.9-г дэмжихээ больсон тул Google Chrome-н шинэчлэлтийг цаашид авахгүй.</translation>
-<translation id="7591404275842302616">Энэ төхөөрөмж дээр үзэлтээ цэгцтэй байлгахын тулд Chrome-н орон зайг ашиглаарай</translation>
 <translation id="7592736734348559088">Таны дансандаа нэвтрэх мэдээлэл хуучирсан учраас Google Chrome таны өгөгдлийг синхрончилж чадахгүй.</translation>
 <translation id="7626032353295482388">Chrome-д тавтай морил</translation>
 <translation id="7629695634924605473">Хэрэв таны нууц үг алдагдсан байвал Chrome танд мэдэгдэнэ</translation>
@@ -269,9 +262,7 @@ Google Chrome таны тохируулгыг дахин сэргээх боло
 <translation id="8823341990149967727">Chrome хуучирсан байна.</translation>
 <translation id="8834965163890861871">Google Chrome нь нууц үгсийг засах гэж оролдож байна. Үүнийг зөвшөөрөхийн тулд Windows-н нууц үгээ бичнэ үү.</translation>
 <translation id="884296878221830158">Энэ нь мөн таныг Chrome-ыг эхлүүлэх эсвэл Home товчийг дарах үед гарч ирсэн хуудсыг хянаж байдаг.</translation>
-<translation id="8859948767482842016">Та <ph name="EXISTING_USER" />-н орон зайд Ажлын бүртгэлээр нэвтэрсэн байна. Өгөгдлөө тусад нь хадгалахын тулд та <ph name="WORK_DOMAIN" />-д зориулсан Chrome-н шинэ орон зай үүсгэмээр байна уу?</translation>
 <translation id="8862326446509486874">Танд системийн түвшинд суулгах зохих эрх байхгүй байна. Суулгагчийг админы хувиар дахин ажиллуулахыг оролдож үзнэ үү.</translation>
-<translation id="8877586659207810298"><ph name="NEW_USER" />-д зориулсан Chrome-н шинэ орон зай үүсгэх үү?</translation>
 <translation id="8914504000324227558">Chrome-г дахин эхлүүлэх</translation>
 <translation id="8999208279178790196">{0,plural, =0{Chrome-н шинэчлэлт боломжтой байна}=1{Chrome-н шинэчлэлт боломжтой байна}other{Chromium-н шинэчлэлт # хоногийн турш боломжтой байсаар байна}}</translation>
 <translation id="9026991721384951619">Таны бүртгэлийн мэдээлэл хуучирсан учраас Chrome OS нь таны өгөгдлийг sync хийж чадсангүй.</translation>

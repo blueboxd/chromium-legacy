@@ -79,7 +79,7 @@ std::string VariationsIdsProvider::GetGoogleAppVariationsString() {
 }
 
 std::string VariationsIdsProvider::GetVariationsString() {
-  return GetVariationsString(GOOGLE_WEB_PROPERTIES);
+  return GetVariationsString(GOOGLE_WEB_PROPERTIES_ANY_CONTEXT);
 }
 
 std::vector<VariationID> VariationsIdsProvider::GetVariationsVector(
@@ -90,9 +90,9 @@ std::vector<VariationID> VariationsIdsProvider::GetVariationsVector(
 std::vector<VariationID>
 VariationsIdsProvider::GetVariationsVectorForWebPropertiesKeys() {
   const std::set<IDCollectionKey> web_properties_keys{
-      variations::GOOGLE_WEB_PROPERTIES,
+      variations::GOOGLE_WEB_PROPERTIES_ANY_CONTEXT,
       variations::GOOGLE_WEB_PROPERTIES_SIGNED_IN,
-      variations::GOOGLE_WEB_PROPERTIES_TRIGGER};
+      variations::GOOGLE_WEB_PROPERTIES_TRIGGER_ANY_CONTEXT};
   return GetVariationsVectorImpl(web_properties_keys);
 }
 
@@ -153,9 +153,10 @@ void VariationsIdsProvider::OnFieldTrialGroupFinalized(
     const std::string& group_name) {
   base::AutoLock scoped_lock(lock_);
   const size_t old_size = variation_ids_set_.size();
-  CacheVariationsId(trial_name, group_name, GOOGLE_WEB_PROPERTIES);
+  CacheVariationsId(trial_name, group_name, GOOGLE_WEB_PROPERTIES_ANY_CONTEXT);
   CacheVariationsId(trial_name, group_name, GOOGLE_WEB_PROPERTIES_SIGNED_IN);
-  CacheVariationsId(trial_name, group_name, GOOGLE_WEB_PROPERTIES_TRIGGER);
+  CacheVariationsId(trial_name, group_name,
+                    GOOGLE_WEB_PROPERTIES_TRIGGER_ANY_CONTEXT);
   CacheVariationsId(trial_name, group_name, GOOGLE_APP);
   if (variation_ids_set_.size() != old_size)
     UpdateVariationIDsHeaderValue();
@@ -167,11 +168,11 @@ void VariationsIdsProvider::OnSyntheticTrialsChanged(
 
   synthetic_variation_ids_set_.clear();
   for (const SyntheticTrialGroup& group : groups) {
-    VariationID id =
-        GetGoogleVariationIDFromHashes(GOOGLE_WEB_PROPERTIES, group.id);
+    VariationID id = GetGoogleVariationIDFromHashes(
+        GOOGLE_WEB_PROPERTIES_ANY_CONTEXT, group.id);
     if (id != EMPTY_ID) {
       synthetic_variation_ids_set_.insert(
-          VariationIDEntry(id, GOOGLE_WEB_PROPERTIES));
+          VariationIDEntry(id, GOOGLE_WEB_PROPERTIES_ANY_CONTEXT));
     }
     id = GetGoogleVariationIDFromHashes(GOOGLE_WEB_PROPERTIES_SIGNED_IN,
                                         group.id);
@@ -200,11 +201,11 @@ void VariationsIdsProvider::InitVariationIDsCacheIfNeeded() {
 
   for (const auto& entry : initial_groups) {
     CacheVariationsId(entry.trial_name, entry.group_name,
-                      GOOGLE_WEB_PROPERTIES);
+                      GOOGLE_WEB_PROPERTIES_ANY_CONTEXT);
     CacheVariationsId(entry.trial_name, entry.group_name,
                       GOOGLE_WEB_PROPERTIES_SIGNED_IN);
     CacheVariationsId(entry.trial_name, entry.group_name,
-                      GOOGLE_WEB_PROPERTIES_TRIGGER);
+                      GOOGLE_WEB_PROPERTIES_TRIGGER_ANY_CONTEXT);
     CacheVariationsId(entry.trial_name, entry.group_name, GOOGLE_APP);
   }
   UpdateVariationIDsHeaderValue();
@@ -251,14 +252,18 @@ std::string VariationsIdsProvider::GenerateBase64EncodedProto(
         if (is_signed_in)
           proto.add_variation_id(entry.first);
         break;
-      case GOOGLE_WEB_PROPERTIES:
+      case GOOGLE_WEB_PROPERTIES_ANY_CONTEXT:
         proto.add_variation_id(entry.first);
         break;
-      case GOOGLE_WEB_PROPERTIES_TRIGGER:
+      case GOOGLE_WEB_PROPERTIES_TRIGGER_ANY_CONTEXT:
         proto.add_trigger_variation_id(entry.first);
         break;
       case GOOGLE_APP:
         // These IDs should not be added into Google Web headers.
+        break;
+      case GOOGLE_WEB_PROPERTIES_FIRST_PARTY:
+      case GOOGLE_WEB_PROPERTIES_TRIGGER_FIRST_PARTY:
+        // TODO(crbug/1094303): Add support for the above IDCollectionKeys.
         break;
       case ID_COLLECTION_COUNT:
         // This case included to get full enum coverage for switch, so that
@@ -310,8 +315,8 @@ bool VariationsIdsProvider::AddVariationIdsToSet(
       return false;
     }
     target_set->insert(VariationIDEntry(
-        variation_id,
-        trigger_id ? GOOGLE_WEB_PROPERTIES_TRIGGER : GOOGLE_WEB_PROPERTIES));
+        variation_id, trigger_id ? GOOGLE_WEB_PROPERTIES_TRIGGER_ANY_CONTEXT
+                                 : GOOGLE_WEB_PROPERTIES_ANY_CONTEXT));
   }
   return true;
 }

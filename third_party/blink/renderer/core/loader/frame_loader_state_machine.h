@@ -50,14 +50,12 @@ class CORE_EXPORT FrameLoaderStateMachine {
   enum State {
     kCreatingInitialEmptyDocument,
     kDisplayingInitialEmptyDocument,
-    kCommittedFirstRealLoad,
-    kCommittedMultipleRealLoads
+    kCommittedFirstRealLoad
   };
 
   bool CommittedFirstRealDocumentLoad() const;
   bool CreatingInitialEmptyDocument() const;
   bool IsDisplayingInitialEmptyDocument() const;
-  bool CommittedMultipleRealLoads() const;
   void AdvanceTo(State);
 
   String ToString() const;

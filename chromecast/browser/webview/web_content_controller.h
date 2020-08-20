@@ -109,8 +109,6 @@ class WebContentController
   void HandleClearCache();
   void HandleClearCookies(int64_t id);
   void HandleGetTitle(int64_t id);
-  void HandleSetAutoMediaPlaybackPolicy(
-      const webview::SetAutoMediaPlaybackPolicyRequest& request);
   void HandleResize(const gfx::Size& size);
   viz::SurfaceId GetSurfaceId();
   void ChannelModified(content::RenderFrameHost* frame,

@@ -703,6 +703,7 @@
 <translation id="6402652558933147609"><ph name="ERROR_CODE" /> (<ph name="VIOLATED_URL" />)</translation>
 <translation id="6404511346730675251">სანიშნის რედაქტირება</translation>
 <translation id="6406506848690869874">სინქრონიზაცია</translation>
+<translation id="6410883413783534063">გახსენით ვებგვერდები ჩანართებში, რათა სხვადასხვა ვებგვერდს ერთდროულად ეწვიოთ</translation>
 <translation id="6412673304250309937">შეამოწმებს URL-ების თანხვედრას Chrome-ში შენახულ არაუსაფრთხო საიტების სიასთან. საიტის მიერ პაროლის მოპარვის მცდელობის ან თქვენ მიერ საზიანო ფაილის ჩამოტვირთვის შემთხვევაში Chrome-ის მიერ Safe Browsing-ს გაეგზავნება URL-ები და შესაბამისი გვერდის კონტენტის გარკვეული ნაწილი.</translation>
 <translation id="641643625718530986">ბეჭდვა…</translation>
 <translation id="6427112570124116297">თარგმნეთ ვებ-კონტენტი</translation>
@@ -821,6 +822,7 @@
 <translation id="7328017930301109123">Lite რეჟიმში Chrome უფრო სწრაფად ტვირთავს გვერდებს და 60 პროცენტით ნაკლებ ტრაფიკს მოიხმარს.</translation>
 <translation id="7333031090786104871">ჯერ კიდევ მიმდინარეობს წინა საიტის დამატება</translation>
 <translation id="7340958967809483333">Discover-ის ვარიანტები</translation>
+<translation id="7352651011704765696">რაღაც არასწორად წარიმართა</translation>
 <translation id="7352939065658542140">ვიდეო</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{1 არჩეული ერთეულის გაზიარება}other{# არჩეული ერთეულის გაზიარება}}</translation>
 <translation id="7359002509206457351">გადახდის მეთოდებზე წვდომა</translation>
@@ -1013,6 +1015,7 @@
 <translation id="868929229000858085">თქვენს კონტაქტებში ძიება</translation>
 <translation id="869891660844655955">ვადის გასვლის თარიღი</translation>
 <translation id="8712637175834984815">კარგი</translation>
+<translation id="8725066075913043281">ხელახლა სცადეთ</translation>
 <translation id="8748850008226585750">შიგთავსი დამალულია</translation>
 <translation id="8751914237388039244">აირჩიეთ სურათი</translation>
 <translation id="8758557275681689734">ყველა გახსნილი ჩანართის ნახვა</translation>

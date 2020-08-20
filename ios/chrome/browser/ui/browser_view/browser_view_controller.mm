@@ -2219,6 +2219,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       kNewTabButtonGuide,
       kSecondaryToolbarGuide,
       kVoiceSearchButtonGuide,
+      kDiscoverFeedHeaderMenuGuide,
     ];
     AddNamedGuidesToView(guideNames, self.view);
 

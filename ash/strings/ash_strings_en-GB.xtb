@@ -14,6 +14,7 @@ Here are some things that you can try to get started.</translation>
 <translation id="109942774857561566">I'm bored</translation>
 <translation id="1104084341931202936">Show accessibility settings</translation>
 <translation id="1104621072296271835">Your devices work even better together</translation>
+<translation id="1119348796022671382">The themed colour mode uses colours extracted from your wallpaper to lightly colourise the interface.</translation>
 <translation id="112308213915226829">Autohide shelf</translation>
 <translation id="1153356358378277386">Paired devices</translation>
 <translation id="1175572348579024023">Scroll</translation>
@@ -48,6 +49,7 @@ Here are some things that you can try to get started.</translation>
 <translation id="1391102559483454063">On</translation>
 <translation id="1419738280318246476">Unlock device to perform the notification action</translation>
 <translation id="1420408895951708260">Toggle Night Light. <ph name="STATE_TEXT" /></translation>
+<translation id="1420527829902822813">Screenshot taken and saved to clipboard</translation>
 <translation id="1426410128494586442">Yes</translation>
 <translation id="1455242230282523554">Show language settings</translation>
 <translation id="1460620680449458626">Volume is muted.</translation>
@@ -65,6 +67,7 @@ Here are some things that you can try to get started.</translation>
 <translation id="1632985212731562677">Switch access can be disabled in Settings &gt; Accessibility.</translation>
 <translation id="1654477262762802994">Start a voice query</translation>
 <translation id="1665244008632896072">Toggle dark mode. <ph name="STATE_TEXT" /></translation>
+<translation id="1667964833127753507">The neutral colour mode does not use wallpaper extracted colours, replacing them by a set of neutrally toned light or dark hues.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> left</translation>
 <translation id="1698080062160024910"><ph name="TOTAL_TIME" /> timer · <ph name="LABEL" /></translation>
 <translation id="1698760176351776263">IPv6 address: <ph name="ADDRESS" /></translation>
@@ -181,6 +184,7 @@ Here are some things that you can try to get started.</translation>
 <translation id="3000461861112256445">Mono audio</translation>
 <translation id="3009178788565917040">Output</translation>
 <translation id="3033545621352269033">On</translation>
+<translation id="3038571455154067151">To sign in, enter your Family Link parental access code</translation>
 <translation id="3051128274746680507">Your supervised user profile will be removed soon. Sign in to find out more.</translation>
 <translation id="3055162170959710888">You used this device for <ph name="USED_TIME" /> today</translation>
 <translation id="3076778413190775903">Status tray, time <ph name="TIME" />,
@@ -277,6 +281,7 @@ Here are some things that you can try to get started.</translation>
 <translation id="397105322502079400">Calculating...</translation>
 <translation id="3977512764614765090">Battery at <ph name="PERCENTAGE" />% and charging.</translation>
 <translation id="3995138139523574647">USB-C device (right-hand-side back port)</translation>
+<translation id="40062176907008878">Handwriting</translation>
 <translation id="4017989525502048489">Laser pointer</translation>
 <translation id="4021716437419160885">Scroll down</translation>
 <translation id="4028481283645788203">Password required for more security</translation>
@@ -288,12 +293,14 @@ Here are some things that you can try to get started.</translation>
 <translation id="4129129681837227511">To see notifications on your lock screen, unlock to change the setting</translation>
 <translation id="4146833061457621061">Play music</translation>
 <translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> managed by <ph name="DOMAIN" /></translation>
+<translation id="4157822100366708405">Dark theme settings</translation>
 <translation id="4181841719683918333">Languages</translation>
 <translation id="4195877955194704651">Automatic clicks button</translation>
 <translation id="4197790712631116042">Off</translation>
 <translation id="4212472694152630271">Switch to PIN</translation>
 <translation id="4215497585250573029">VPN settings</translation>
 <translation id="4217571870635786043">Dictation</translation>
+<translation id="4229328187280698237">Switch to tablet mode</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">Show notification settings. Notifications are off</translation>
 <translation id="4269883910223712419">The admin of this device has the ability to:</translation>
@@ -368,6 +375,7 @@ Here are some things that you can try to get started.</translation>
 <translation id="5035389544768382859">Confirm display configuration</translation>
 <translation id="5083553833479578423">Unlock more Assistant features.</translation>
 <translation id="5114495209940374989">Screenshots</translation>
+<translation id="5123162024343028706">Float on top</translation>
 <translation id="5136175204352732067">Different keyboard connected</translation>
 <translation id="5168181903108465623">Cast devices available</translation>
 <translation id="5170568018924773124">Show in folder</translation>
@@ -381,6 +389,7 @@ Here are some things that you can try to get started.</translation>
 <translation id="5297704307811127955">Off</translation>
 <translation id="5302048478445481009">Language</translation>
 <translation id="5313326810920013265">Bluetooth settings</translation>
+<translation id="5314219114274263156">Screen recording taken</translation>
 <translation id="5331975486040154427">USB-C device (left side back port)</translation>
 <translation id="5379115545237091094">Too many attempts</translation>
 <translation id="5397578532367286026">Usage and history of this user can be reviewed by the manager (<ph name="MANAGER_EMAIL" />) on chrome.com.</translation>
@@ -421,6 +430,7 @@ Here are some things that you can try to get started.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5837036133683224804">Stop <ph name="ROUTE_TITLE" /> on <ph name="RECEIVER_NAME" /></translation>
 <translation id="5860033963881614850">Off</translation>
+<translation id="5876666360658629066">Enter parental code</translation>
 <translation id="5887866489674258948">Dark mode</translation>
 <translation id="5895138241574237353">Restart</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
@@ -481,6 +491,7 @@ Here are some things that you can try to get started.</translation>
 <translation id="652139407789908527">Your screen will go blank for longer than usual (up to a minute) during this update. Please don't press the power button while the update is in progress.</translation>
 <translation id="6527303717912515753">Share</translation>
 <translation id="6528179044667508675">Do not disturb</translation>
+<translation id="65320610082834431">Emojis</translation>
 <translation id="6537270692134705506">Capture screen</translation>
 <translation id="6537924328260219877">Signal strength <ph name="SIGNAL_STRENGTH" />, phone battery <ph name="BATTERY_STATUS" /></translation>
 <translation id="6542521951477560771">Casting to <ph name="RECEIVER_NAME" /></translation>
@@ -567,8 +578,10 @@ Here are some things that you can try to get started.</translation>
 <translation id="7568637526529101738">With a right-click or a long press, Assistant shows info such as the definition or unit conversion for your selection.</translation>
 <translation id="7569509451529460200">Braille and ChromeVox are enabled</translation>
 <translation id="7579778809502851308">Screen capture</translation>
+<translation id="7590883480672980941">Input settings</translation>
 <translation id="7593891976182323525">Search or Shift</translation>
 <translation id="7600875258240007829">See all notifications</translation>
+<translation id="7618774594543487847">Neutral</translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" />° F</translation>
 <translation id="7642647758716480637">Open settings for <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" /></translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (owner)</translation>
@@ -665,12 +678,14 @@ Here are some things that you can try to get started.</translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, signal strength <ph name="SIGNAL_STRENGTH" />, managed by your administrator</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> remaining</translation>
 <translation id="8646417893960517480"><ph name="TOTAL_TIME" /> timer</translation>
+<translation id="8647931990447795414">To add a person, enter your Family Link parental access code</translation>
 <translation id="8649101189709089199">Select to Speak</translation>
 <translation id="8652175077544655965">Close settings</translation>
 <translation id="8653151467777939995">Show notification settings. Notifications are on</translation>
 <translation id="8660331759611631213">Square root of 71</translation>
 <translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />, signal strength <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664753092453405566">Show network list. <ph name="STATE_TEXT" /></translation>
+<translation id="8668052347555487755">Colour mode</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Low-power charger connected</translation>
 <translation id="8683506306463609433">Performance tracing active</translation>
@@ -694,6 +709,8 @@ Here are some things that you can try to get started.</translation>
 <translation id="8878886163241303700">Extending screen</translation>
 <translation id="890616557918890486">Change source</translation>
 <translation id="8909138438987180327">Battery at <ph name="PERCENTAGE" /> per cent.</translation>
+<translation id="8913384980486163186">Themed (default)</translation>
+<translation id="8918251165865262378">Switch to laptop mode</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">The Google Assistant doesn’t speak this language.</translation>
 <translation id="8936501819958976551">deactivated</translation>

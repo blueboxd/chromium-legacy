@@ -37,6 +37,7 @@
 <translation id="1113869188872983271">&amp;Αναίρεση αναδιάταξης</translation>
 <translation id="1125573121925420732">Οι προειδοποιήσεις μπορεί να είναι συνήθεις ενώ οι ιστότοποι ενημερώνουν την ασφάλειά τους. Αυτό αναμένεται να βελτιωθεί σύντομα.</translation>
 <translation id="112840717907525620">Η προσωρινή μνήμη της πολιτικής είναι εντάξει</translation>
+<translation id="1130564665089811311">Κουμπί μετάφρασης σελίδας, πατήστε Enter για μετάφραση της σελίδας με τη Μετάφραση Google.</translation>
 <translation id="1131264053432022307">Εικόνα που αντιγράψατε</translation>
 <translation id="1150979032973867961">Ο διακομιστής δεν μπόρεσε να αποδείξει ότι είναι <ph name="DOMAIN" />. Το πιστοποιητικό ασφαλείας του δεν θεωρείται έμπιστο από το λειτουργικό σύστημα της συσκευής σας. Αυτό μπορεί να οφείλεται σε λανθασμένη ρύθμιση ή σε κάποιον τρίτο που επιτίθεται στη σύνδεσή σας.</translation>
 <translation id="1151972924205500581">Απαιτείται κωδικός πρόσβασης</translation>
@@ -408,6 +409,7 @@
 <translation id="2634124572758952069">Δεν ήταν δυνατή η εύρεση της διεύθυνσης IP διακομιστή του κεντρικού υπολογιστή <ph name="HOST_NAME" />.</translation>
 <translation id="2639739919103226564">Κατάσταση:</translation>
 <translation id="2649204054376361687"><ph name="CITY" />, <ph name="COUNTRY" /></translation>
+<translation id="2649259151839507861"><ph name="CLEAR_BROWSING_DATA_FOCUSED_FRIENDLY_MATCH_TEXT" />, πατήστε Tab και έπειτα Enter για εκκαθάριση του ιστορικού περιήγησης, των cookie, της κρυφής μνήμης κ.α. στις ρυθμίσεις του Chrome.</translation>
 <translation id="2650446666397867134">Η πρόσβαση στο αρχείο απορρίφθηκε</translation>
 <translation id="2653659639078652383">Υποβολή</translation>
 <translation id="2660779039299703961">Συμβάν</translation>
@@ -430,6 +432,7 @@
 <translation id="2705137772291741111">Δεν είναι δυνατή η ανάγνωση του αποθηκευμένου αντιγράφου (κρυφής μνήμης) αυτού του ιστότοπου.</translation>
 <translation id="2709516037105925701">Αυτόματη συμπλήρωση</translation>
 <translation id="2713444072780614174">Λευκό</translation>
+<translation id="2715612312510870559"><ph name="UPDATE_CREDIT_CARD_FOCUSED_FRIENDLY_MATCH_TEXT" />, πατήστε Tab και έπειτα Enter για να διαχειριστείτε τα στοιχεία πληρωμών και πιστωτικών καρτών στις ρυθμίσεις του Chrome.</translation>
 <translation id="2721148159707890343">Το αίτημα ήταν επιτυχές</translation>
 <translation id="272451190272506600">Αγγίξτε τον αισθητήρα για την πληρωμή</translation>
 <translation id="2728127805433021124">Το πιστοποιητικό του διακομιστή είναι υπογεγραμμένο με έναν αδύναμο αλγόριθμο υπογραφής.</translation>
@@ -642,6 +645,7 @@
 <translation id="3630155396527302611">Εάν έχει ήδη καταχωριστεί ως πρόγραμμα στο οποίο επιτρέπεται η πρόσβαση στο δίκτυο, δοκιμάστε
       να το καταργήσετε από τη λίστα και να το προσθέσετε ξανά.</translation>
 <translation id="3631244953324577188">Βιομετρικά</translation>
+<translation id="3633738897356909127">Κουμπί ενημέρωσης Chrome, πατήστε Enter για να ενημερώσετε το Chrome από τις ρυθμίσεις του Chrome.</translation>
 <translation id="3634530185120165534">Δίσκος 5</translation>
 <translation id="3640766068866876100">Index-4x6-Ext</translation>
 <translation id="3650584904733503804">Επιτυχής επικύρωση</translation>
@@ -665,7 +669,6 @@
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />Ελέγξτε το διακομιστή μεσολάβησης, το τείχος προστασίας και τη διαμόρφωση DNS<ph name="END_LINK" /></translation>
 <translation id="372429172604983730">Οι εφαρμογές που μπορούν να προκαλέσουν αυτό το σφάλμα περιλαμβάνουν λογισμικό προστασίας από ιούς, τείχος προστασίας και λογισμικό φιλτραρίσματος ιστού ή λογισμικό διακομιστή μεσολάβησης.</translation>
 <translation id="373042150751172459">B4 (Φάκελος)</translation>
-<translation id="3731873414101415120">Ιστότοποι που επισκέπτεστε και περιεχόμενα μη ασφαλών σελίδων</translation>
 <translation id="3736520371357197498">Εάν κατανοείτε τους κινδύνους για την ασφάλειά σας, μπορείτε να <ph name="BEGIN_LINK" />επισκεφτείτε αυτόν τον μη ασφαλή ιστότοπο<ph name="END_LINK" /> πριν από την κατάργηση των επικίνδυνων προγραμμάτων.</translation>
 <translation id="3738166223076830879">Η διαχείριση του προγράμματος περιήγησης πραγματοποιείται από τον διαχειριστή σας.</translation>
 <translation id="3744899669254331632">Δεν μπορείτε να επισκεφτείτε τον ιστότοπο <ph name="SITE" /> αυτήν τη στιγμή, επειδή ο ιστότοπος έστειλε κωδικοποιημένα διαπιστευτήρια τα οποία δεν είναι δυνατό να επεξεργαστεί το Chromium. Τα σφάλματα δικτύου και οι επιθέσεις είναι συνήθως προσωρινά φαινόμενα, συνεπώς η σελίδα πιθανότατα θα λειτουργήσει αργότερα.</translation>
@@ -867,6 +870,7 @@
 <translation id="4506599922270137252">Επικοινωνήστε με το διαχειριστή συστήματος</translation>
 <translation id="450710068430902550">Κοινοποίηση στο διαχειριστή</translation>
 <translation id="4508814173490746936">Δεν ήταν δυνατή η χρήση του Touch ID</translation>
+<translation id="4509074745930862522"><ph name="TRANSLATE_FOCUSED_FRIENDLY_MATCH_TEXT" />, πατήστε Tab και έπειτα Enter για μετάφραση αυτής της σελίδας με τη Μετάφραση Google.</translation>
 <translation id="4510487217173779431">Chou4 (Φάκελος)</translation>
 <translation id="4515275063822566619">Οι κάρτες και οι διευθύνσεις προέρχονται από το Chrome και τον Λογαριασμό σας Google (<ph name="ACCOUNT_EMAIL" />). Μπορείτε να τις διαχειριστείτε στις <ph name="BEGIN_LINK" />Ρυθμίσεις<ph name="END_LINK" />.</translation>
 <translation id="4517607026994743406">Comm-10 (Φάκελος)</translation>
@@ -947,6 +951,7 @@
 <translation id="4879725228911483934">Άνοιγμα και τοποθέτηση παραθύρων στις οθόνες σας</translation>
 <translation id="4880827082731008257">Αναζήτηση ιστορικού</translation>
 <translation id="4881695831933465202">Άνοιγμα</translation>
+<translation id="4889420713887366944">Κουμπί ανοίγματος παραθύρου για ανώνυμη περιήγηση, πατήστε Enter για να ανοίξετε ένα νέο παράθυρο για ανώνυμη περιήγηση.</translation>
 <translation id="4892518386797173871">Πίσω</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">Αποθήκευση…</translation>
@@ -1108,6 +1113,7 @@
 <translation id="5523118979700054094">Όνομα πολιτικής</translation>
 <translation id="55293785478302737">Ραφή στο άκρο</translation>
 <translation id="553484882784876924">Prc6 (Φάκελος)</translation>
+<translation id="5535133333442455806">Κουμπί διαγραφής δεδομένων περιήγησης, πατήστε Enter για εκκαθάριση του ιστορικού περιήγησης, των cookie, της κρυφής μνήμης κ.α. στις ρυθμίσεις του Chrome.</translation>
 <translation id="5536214594743852365">Εμφάνιση της ενότητας "<ph name="SECTION" />"</translation>
 <translation id="5539243836947087108">Βάση</translation>
 <translation id="5540224163453853">Δεν ήταν δυνατή η εύρεση του άρθρου που ζητήσατε.</translation>
@@ -1607,6 +1613,7 @@
 <translation id="7600965453749440009">Να μην γίνεται ποτέ μετάφραση από <ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">Η τιμή είναι εκτός του εύρους τιμών <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Λήξη: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
+<translation id="7614494068621678628"><ph name="MANAGE_PASSWORDS_FOCUSED_FRIENDLY_MATCH_TEXT" />, πατήστε Tab και έπειτα Enter για να δείτε και να διαχειριστείτε τους κωδικούς πρόσβασής σας στις ρυθμίσεις του Chrome.</translation>
 <translation id="7615602087246926389">Έχετε ήδη δεδομένα που είναι κρυπτογραφημένα με χρήση διαφορετικής έκδοσης του κωδικού πρόσβασης για τον Λογαριασμό σας Google. Εισαγάγετέ τον παρακάτω.</translation>
 <translation id="7616645509853975347">Ο διαχειριστής σας ενεργοποίησε το Chrome Enterprise Connectors στο πρόγραμμα περιήγησής σας. Αυτές οι εφαρμογές σύνδεσης έχουν πρόσβαση σε ορισμένα από τα δεδομένα σας.</translation>
 <translation id="7619838219691048931">Τελευταίο φύλλο</translation>
@@ -1864,6 +1871,8 @@
 <translation id="8725066075913043281">Προσπαθήστε ξανά</translation>
 <translation id="8728672262656704056">Πραγματοποιείτε ανώνυμη περιήγηση</translation>
 <translation id="8730621377337864115">Ολοκληρώθηκε</translation>
+<translation id="8731544501227493793">Κουμπί διαχείρισης κωδικών πρόσβασης, πατήστε Enter για προβολή και διαχείριση των κωδικών πρόσβασής σας στις ρυθμίσεις του Chrome</translation>
+<translation id="8737134861345396036"><ph name="LAUNCH_INCOGNITO_FOCUSED_FRIENDLY_MATCH_TEXT" />, πατήστε Tab και έπειτα Enter για να ανοίξετε ένα νέο παράθυρο για ανώνυμη περιήγηση.</translation>
 <translation id="8738058698779197622">Για την επίτευξη μιας ασφαλούς σύνδεσης, θα πρέπει να γίνει σωστή ρύθμιση του ρολογιού σας. Αυτό οφείλεται στο γεγονός ότι τα πιστοποιητικά που χρησιμοποιούν οι ιστότοποι για την ταυτοποίησή τους είναι έγκυρα μόνο για συγκεκριμένες χρονικές περιόδους. Εφόσον το ρολόι της συσκευής σας δεν είναι σωστά ρυθμισμένο, το Chromium δεν μπορεί να επαληθεύσει αυτά τα πιστοποιητικά.</translation>
 <translation id="8740359287975076522">Δεν ήταν δυνατός ο εντοπισμός της &lt;abbr id="dnsDefinition"&gt;διεύθυνσης DNS&lt;/abbr&gt; του κεντρικού υπολογιστή <ph name="HOST_NAME" />. Γίνεται διάγνωση του προβλήματος.</translation>
 <translation id="8742371904523228557">Το <ph name="ONE_TIME_CODE" /> είναι ο κωδικός σας για το <ph name="ORIGIN" /></translation>
@@ -1880,6 +1889,7 @@
 <translation id="8793655568873652685">Το <ph name="ENROLLMENT_DOMAIN" /> ενεργοποίησε το Chrome Enterprise Connectors στο πρόγραμμα περιήγησής σας. Αυτές οι εφαρμογές σύνδεσης έχουν πρόσβαση σε ορισμένα από τα δεδομένα σας.</translation>
 <translation id="8805819170075074995">Καταχώριση λίστας "<ph name="LANGUAGE_ID" />": Η καταχώριση παραβλέπεται επειδή περιλαμβάνεται επίσης στην πολιτική SpellcheckLanguage.</translation>
 <translation id="8807160976559152894">Περικοπή μετά από κάθε σελίδα</translation>
+<translation id="8816395686387277279"><ph name="UPDATE_CHROME_FOCUSED_FRIENDLY_MATCH_TEXT" />, πατήστε Tab και έπειτα Enter για να ενημερώσετε το Chrome από τις ρυθμίσεις του Chrome.</translation>
 <translation id="8820817407110198400">Σελιδοδείκτες</translation>
 <translation id="883848425547221593">Άλλοι σελιδοδείκτες</translation>
 <translation id="884264119367021077">Διεύθυνση αποστολής</translation>
@@ -1899,6 +1909,7 @@
 <translation id="890493561996401738">Κατάργηση κουμπιού Πρόταση, πατήστε Enter για κατάργηση, <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" />.</translation>
 <translation id="8910670906166981838">Είστε σε κατάσταση ανώνυμης περιήγησης.</translation>
 <translation id="8912362522468806198">Λογαριασμός Google</translation>
+<translation id="8913778647360618320">Κουμπί διαχείρισης τρόπων πληρωμής, πατήστε Enter για να διαχειριστείτε τα στοιχεία πληρωμών και πιστωτικών καρτών στις ρυθμίσεις του Chrome.</translation>
 <translation id="8918231688545606538">Αυτή η σελίδα είναι ύποπτη.</translation>
 <translation id="892588693504540538">Τρύπημα επάνω δεξιά</translation>
 <translation id="8931333241327730545">Θέλετε να αποθηκεύσετε αυτήν την κάρτα στο Λογαριασμό σας Google;</translation>

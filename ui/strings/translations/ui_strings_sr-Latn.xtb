@@ -154,7 +154,7 @@
 <translation id="5866104238061687188">{YEARS,plural, =1{za 1 g}one{za # g}few{za # g}other{za # g}}</translation>
 <translation id="588258955323874662">Ceo ekran</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{Još 1 sekunda}one{Još # sekunda}few{Još # sekunde}other{Još # sekundi}}</translation>
-<translation id="5941711191222866238">Smanji</translation>
+<translation id="5941711191222866238">Umanji</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 sat}one{# sat}few{# sata}other{# sati}}</translation>
 <translation id="6012623610530968780"><ph name="SELECTED_PAGE" />. stranica od <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Obrišite tekst iz okvira za pretragu</translation>

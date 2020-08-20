@@ -125,10 +125,13 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   void EndCommitCompositorFrame(base::TimeTicks commit_start_time) override;
   void FocusChanged(bool enabled) override;
   float GetDeviceScaleFactorForTesting() override;
+  gfx::Rect ViewportVisibleRect() override;
 
   void Trace(Visitor*) const override;
 
   void SetIsNestedMainFrameWidget(bool is_nested);
+  void DidAutoResize(const gfx::Size& size);
+  void SetDeviceColorSpaceForTesting(const gfx::ColorSpace& color_space);
 
  private:
   PageWidgetEventHandler* GetPageWidgetEventHandler() override;

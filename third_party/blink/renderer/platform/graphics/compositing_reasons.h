@@ -46,6 +46,7 @@ using CompositingReasons = uint64_t;
   V(BackdropFilter)                                                           \
   V(RootScroller)                                                             \
   V(XrOverlay)                                                                \
+  V(Viewport)                                                                 \
                                                                               \
   /* Overlap reasons that require knowing what's behind you in paint-order    \
      before knowing the answer. */                                            \

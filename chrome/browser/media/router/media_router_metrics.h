@@ -12,6 +12,7 @@
 #include "chrome/browser/media/router/discovery/dial/dial_app_discovery_service.h"
 #include "chrome/browser/media/router/discovery/dial/safe_dial_device_description_parser.h"
 #include "chrome/browser/ui/media_router/media_cast_mode.h"
+#include "chrome/common/media_router/media_source.h"
 #include "media/base/container_names.h"
 
 class GURL;
@@ -19,6 +20,7 @@ class GURL;
 namespace media_router {
 
 enum class SinkIconType;
+enum MediaRouteProviderId;
 
 // NOTE: Do not renumber enums as that would confuse interpretation of
 // previously logged data. When making changes, also update the enum list
@@ -110,6 +112,23 @@ enum class PresentationUrlType {
   // Add new types only immediately above this line. Remember to also update
   // tools/metrics/histograms/enums.xml.
   kPresentationUrlTypeCount
+};
+
+// Records the possible ways a Presentation URL can be used to start a
+// presentation, both by the kind of URL and the type of the sink the URL will
+// be presented on.  "Normal" (https:, file:, or chrome-extension:) URLs are
+// typically implemented by loading them into an offscreen tab for streaming,
+// while Cast and DIAL URLs are sent directly to a compatible device.
+enum class PresentationUrlBySink {
+  kUnknown = 0,
+  kNormalUrlToChromecast = 1,
+  kNormalUrlToExtension = 2,
+  kNormalUrlToWiredDisplay = 3,
+  kCastUrlToChromecast = 4,
+  kDialUrlToDial = 5,
+  // Add new values immediately above this line.  Also update kMaxValue below
+  // and the enum of the same name in tools/metrics/histograms/enums.xml.
+  kMaxValue = kDialUrlToDial,
 };
 
 class MediaRouterMetrics {
@@ -231,6 +250,11 @@ class MediaRouterMetrics {
       MediaRouterDialogOpenOrigin activation_location,
       MediaCastMode cast_mode,
       bool is_icon_pinned);
+
+  // Records the type of Presentation URL and sink used to create a media route.
+  static void RecordPresentationRequestUrlBySink(
+      const MediaSource& source,
+      MediaRouteProviderId provider_id);
 };
 
 }  // namespace media_router

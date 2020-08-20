@@ -106,14 +106,9 @@ void NearbyPerSessionDiscoveryManager::SelectShareTarget(
 
   select_share_target_callback_ = std::move(callback);
   // TODO(crbug.com/1099710): Call correct method and pass attachments.
-  nearby_sharing_service_->SendText(
-      iter->second, "Example Text",
-      base::BindOnce(&NearbyPerSessionDiscoveryManager::OnSend,
-                     weak_ptr_factory_.GetWeakPtr()));
-}
+  NearbySharingService::StatusCodes status =
+      nearby_sharing_service_->SendText(iter->second, "Example Text");
 
-void NearbyPerSessionDiscoveryManager::OnSend(
-    NearbySharingService::StatusCodes status) {
   // Nothing to do if the result has been returned already.
   if (!select_share_target_callback_)
     return;

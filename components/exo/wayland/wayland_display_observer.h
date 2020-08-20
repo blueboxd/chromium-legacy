@@ -18,30 +18,39 @@ namespace exo {
 namespace wayland {
 class WaylandDisplayOutput;
 
-class WaylandDisplayObserver : public display::DisplayObserver {
+// An observer that allows display information changes to be sent
+// via different protocols while being synced with the wl_output's
+// "done" event through WaylandDisplayHandler.
+class WaylandDisplayObserver : public base::CheckedObserver {
  public:
-  class ScaleObserver : public base::CheckedObserver {
-   public:
-    ScaleObserver() {}
+  WaylandDisplayObserver() {}
 
-    virtual void OnDisplayScalesChanged(const display::Display& display) = 0;
+  // Returns |true| if the observer reported any changes and needs
+  // to be followed by "done" event, |false| otherwise.
+  virtual bool SendDisplayMetrics(const display::Display& display,
+                                  uint32_t changed_metrics) = 0;
 
-   protected:
-    ~ScaleObserver() override {}
-  };
+ protected:
+  ~WaylandDisplayObserver() override {}
+};
 
-  WaylandDisplayObserver(WaylandDisplayOutput* output,
-                         wl_resource* output_resource);
-  ~WaylandDisplayObserver() override;
-  void AddScaleObserver(ScaleObserver* scale_observer);
-  bool HasScaleObserver(ScaleObserver* scale_observer) const;
+class WaylandDisplayHandler : public display::DisplayObserver,
+                              public WaylandDisplayObserver {
+ public:
+  WaylandDisplayHandler(WaylandDisplayOutput* output,
+                        wl_resource* output_resource);
+  ~WaylandDisplayHandler() override;
+  void AddObserver(WaylandDisplayObserver* observer);
 
   // Overridden from display::DisplayObserver:
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t changed_metrics) override;
 
  private:
-  void SendDisplayMetrics();
+  // Overridden from WaylandDisplayObserver:
+  bool SendDisplayMetrics(const display::Display& display,
+                          uint32_t changed_metrics) override;
+
   // Returns the transform that a compositor will apply to a surface to
   // compensate for the rotation of an output device.
   wl_output_transform OutputTransform(display::Display::Rotation rotation);
@@ -52,9 +61,9 @@ class WaylandDisplayObserver : public display::DisplayObserver {
   // The output resource associated with the display.
   wl_resource* const output_resource_;
 
-  base::ObserverList<ScaleObserver> scale_observers_;
+  base::ObserverList<WaylandDisplayObserver> observers_;
 
-  DISALLOW_COPY_AND_ASSIGN(WaylandDisplayObserver);
+  DISALLOW_COPY_AND_ASSIGN(WaylandDisplayHandler);
 };
 
 }  // namespace wayland

@@ -154,7 +154,7 @@
 <translation id="5866104238061687188">{YEARS,plural, =1{१व मध्ये}other{#व मध्ये}}</translation>
 <translation id="588258955323874662">क्षेत्रे</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 सेकंद शिल्लक}other{# सेकंद शिल्लक}}</translation>
-<translation id="5941711191222866238">लहान करा</translation>
+<translation id="5941711191222866238">कमी करा</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 तास}other{# तास}}</translation>
 <translation id="6012623610530968780"><ph name="TOTAL_PAGE_NUM" /> पैकी <ph name="SELECTED_PAGE" /> पेज</translation>
 <translation id="6022924867608035986">शोध बॉक्स मजकूर साफ करा</translation>

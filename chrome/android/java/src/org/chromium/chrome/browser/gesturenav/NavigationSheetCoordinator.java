@@ -12,7 +12,7 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import androidx.annotation.IdRes;
+import androidx.annotation.DimenRes;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.supplier.Supplier;
@@ -152,7 +152,7 @@ class NavigationSheetCoordinator implements BottomSheetContent, NavigationSheet 
                 + getSizePx(context, R.dimen.navigation_sheet_content_wrap_padding);
     }
 
-    private static int getSizePx(Context context, @IdRes int id) {
+    private static int getSizePx(Context context, @DimenRes int id) {
         return context.getResources().getDimensionPixelSize(id);
     }
 

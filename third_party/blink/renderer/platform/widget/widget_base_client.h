@@ -11,6 +11,7 @@
 #include "cc/paint/element_id.h"
 #include "third_party/blink/public/common/metrics/document_update_reason.h"
 #include "third_party/blink/public/mojom/page/widget.mojom-blink.h"
+#include "third_party/blink/public/mojom/widget/screen_orientation.mojom-blink.h"
 #include "third_party/blink/public/platform/input/input_handler_proxy.h"
 #include "third_party/blink/public/platform/web_text_input_type.h"
 #include "third_party/blink/public/web/web_lifecycle_update.h"
@@ -168,7 +169,21 @@ class WidgetBaseClient {
   virtual void UpdateScreenRects(const gfx::Rect& widget_screen_rect,
                                  const gfx::Rect& window_screen_rect) = 0;
 
-  // Return the overriden device scale factor for testing.
+  virtual void OrientationChanged() {}
+
+  virtual ScreenInfo GetOriginalScreenInfo() = 0;
+
+  virtual void UpdatedSurfaceAndScreen(
+      const ScreenInfo& previous_original_screen_info) {}
+
+  virtual gfx::Rect ViewportVisibleRect() = 0;
+
+  virtual base::Optional<mojom::blink::ScreenOrientation>
+  ScreenOrientationOverride() {
+    return base::nullopt;
+  }
+
+  // Return the overridden device scale factor for testing.
   virtual float GetDeviceScaleFactorForTesting() { return 0.f; }
 
   // Test-specific methods below this point.

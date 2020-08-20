@@ -31,6 +31,9 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) CrossOriginOpenerPolicy final {
   base::Optional<std::string> report_only_reporting_endpoint;
 };
 
+COMPONENT_EXPORT(NETWORK_CPP_BASE)
+bool IsAccessFromCoopPage(mojom::CoopAccessReportType);
+
 }  // namespace network
 
 #endif  // SERVICES_NETWORK_PUBLIC_CPP_CROSS_ORIGIN_OPENER_POLICY_H_

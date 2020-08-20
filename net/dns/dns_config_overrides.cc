@@ -25,10 +25,9 @@ bool DnsConfigOverrides::operator==(const DnsConfigOverrides& other) const {
   return nameservers == other.nameservers && search == other.search &&
          hosts == other.hosts &&
          append_to_multi_label_name == other.append_to_multi_label_name &&
-         randomize_ports == other.randomize_ports && ndots == other.ndots &&
-         timeout == other.timeout && attempts == other.attempts &&
-         doh_attempts == other.doh_attempts && rotate == other.rotate &&
-         use_local_ipv6 == other.use_local_ipv6 &&
+         ndots == other.ndots && timeout == other.timeout &&
+         attempts == other.attempts && doh_attempts == other.doh_attempts &&
+         rotate == other.rotate && use_local_ipv6 == other.use_local_ipv6 &&
          dns_over_https_servers == other.dns_over_https_servers &&
          secure_dns_mode == other.secure_dns_mode &&
          allow_dns_over_https_upgrade == other.allow_dns_over_https_upgrade &&
@@ -49,7 +48,6 @@ DnsConfigOverrides::CreateOverridingEverythingWithDefaults() {
   overrides.search = defaults.search;
   overrides.hosts = defaults.hosts;
   overrides.append_to_multi_label_name = defaults.append_to_multi_label_name;
-  overrides.randomize_ports = defaults.randomize_ports;
   overrides.ndots = defaults.ndots;
   overrides.timeout = defaults.timeout;
   overrides.attempts = defaults.attempts;
@@ -67,10 +65,9 @@ DnsConfigOverrides::CreateOverridingEverythingWithDefaults() {
 
 bool DnsConfigOverrides::OverridesEverything() const {
   return nameservers && search && hosts && append_to_multi_label_name &&
-         randomize_ports && ndots && timeout && attempts && doh_attempts &&
-         rotate && use_local_ipv6 && dns_over_https_servers &&
-         secure_dns_mode && allow_dns_over_https_upgrade &&
-         disabled_upgrade_providers;
+         ndots && timeout && attempts && doh_attempts && rotate &&
+         use_local_ipv6 && dns_over_https_servers && secure_dns_mode &&
+         allow_dns_over_https_upgrade && disabled_upgrade_providers;
 }
 
 DnsConfig DnsConfigOverrides::ApplyOverrides(const DnsConfig& config) const {
@@ -87,8 +84,6 @@ DnsConfig DnsConfigOverrides::ApplyOverrides(const DnsConfig& config) const {
     overridden.hosts = hosts.value();
   if (append_to_multi_label_name)
     overridden.append_to_multi_label_name = append_to_multi_label_name.value();
-  if (randomize_ports)
-    overridden.randomize_ports = randomize_ports.value();
   if (ndots)
     overridden.ndots = ndots.value();
   if (timeout)

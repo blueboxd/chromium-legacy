@@ -116,6 +116,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kBentoOffline,
     &kCastDeviceFilter,
     &kCloseTabSuggestions,
+    &kCriticalPersistedTabData,
     &kCCTBackgroundTab,
     &kCCTClientDataHeader,
     &kCCTExternalLinkHandling,
@@ -310,7 +311,7 @@ const base::Feature kAllowRemoteContextForNotifications{
     "AllowRemoteContextForNotifications", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kAndroidPartnerCustomizationPhenotype{
-    "AndroidPartnerCustomizationPhenotype", base::FEATURE_DISABLED_BY_DEFAULT};
+    "AndroidPartnerCustomizationPhenotype", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // TODO(rouslan): Remove this. (Currently used in
 // GooglePayPaymentAppFactory.java)
@@ -335,6 +336,9 @@ const base::Feature kCastDeviceFilter{"CastDeviceFilter",
 
 const base::Feature kCloseTabSuggestions{"CloseTabSuggestions",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kCriticalPersistedTabData{
+    "CriticalPersistedTabData", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kCCTBackgroundTab{"CCTBackgroundTab",
                                       base::FEATURE_ENABLED_BY_DEFAULT};

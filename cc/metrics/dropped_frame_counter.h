@@ -43,6 +43,8 @@ class DroppedFrameCounter {
   void AddPartialFrame();
   void AddDroppedFrame();
 
+  void Reset();
+
  private:
   RingBufferType ring_buffer_;
   size_t total_frames_ = 0;

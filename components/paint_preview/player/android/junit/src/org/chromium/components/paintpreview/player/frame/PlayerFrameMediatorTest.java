@@ -1109,7 +1109,7 @@ public class PlayerFrameMediatorTest {
 
         Assert.assertTrue(mScaleController.scaleFinished(1f, 0f, 0f));
         mBitmapStateController.swapForTest();
-        inOrderMediator1.verify(subFrame1Mediator).resetScaleFactor();
+        inOrderMediator1.verify(subFrame1Mediator).updateScaleFactor(eq(2f));
         inOrderMediator1.verify(subFrame1Mediator).forceRedraw();
         Assert.assertEquals(expectedViews, mModel.get(PlayerFrameProperties.SUBFRAME_VIEWS));
         Assert.assertEquals(expectedRects, mModel.get(PlayerFrameProperties.SUBFRAME_RECTS));
@@ -1202,8 +1202,8 @@ public class PlayerFrameMediatorTest {
                 .setBitmapScaleMatrixOfSubframe(argThat(new MatrixMatcher(scaleMatrix)), eq(1.5f));
 
         // Simulate scaleFinished() by force a scale factor clear and redraw.
-        mMediator.resetScaleFactor();
-        inOrder.verify(subFrameMediator).resetScaleFactor();
+        mMediator.updateScaleFactor(1.5f);
+        inOrder.verify(subFrameMediator).updateScaleFactor(eq(1.5f));
         mMediator.forceRedraw();
         inOrder.verify(subFrameMediator).forceRedraw();
     }

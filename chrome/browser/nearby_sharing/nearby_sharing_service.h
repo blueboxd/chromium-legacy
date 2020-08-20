@@ -88,14 +88,12 @@ class NearbySharingService : public KeyedService {
       TransferUpdateCallback* transfer_callback) = 0;
 
   // Sends text to the remote |share_target|.
-  virtual void SendText(const ShareTarget& share_target,
-                        std::string text,
-                        StatusCodesCallback status_codes_callback) = 0;
+  virtual StatusCodes SendText(const ShareTarget& share_target,
+                               std::string text) = 0;
 
   // Sends files to the remote |share_target|.
-  virtual void SendFiles(const ShareTarget& share_target,
-                         const std::vector<base::FilePath>& files,
-                         StatusCodesCallback status_codes_callback) = 0;
+  virtual StatusCodes SendFiles(const ShareTarget& share_target,
+                                const std::vector<base::FilePath>& files) = 0;
 
   // Accepts incoming share from the remote |share_target|.
   virtual void Accept(const ShareTarget& share_target,

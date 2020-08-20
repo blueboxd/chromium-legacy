@@ -32,7 +32,7 @@ void AddOmniboxColorMixers(ui::ColorProvider* provider, bool high_contrast) {
     if (high_contrast)
       selected_text += ui::ContrastInvert(ui::FromTransformInput());
   }
-  mixer[kColorOmniboxSelectedKeyword] = ui::SelectBasedOnDarkInput(
+  mixer[kColorOmniboxKeywordSelected] = ui::SelectBasedOnDarkInput(
       kColorOmniboxBackground, gfx::kGoogleGrey100, kColorOmniboxResultsUrl);
 
   // Bubble outline colors.
@@ -40,7 +40,7 @@ void AddOmniboxColorMixers(ui::ColorProvider* provider, bool high_contrast) {
       ui::SelectBasedOnDarkInput(kColorOmniboxBackground, gfx::kGoogleGrey100,
                                  SkColorSetA(gfx::kGoogleGrey900, 0x24));
   mixer[kColorOmniboxBubbleOutlineExperimentalKeywordMode] = {
-      kColorOmniboxSelectedKeyword};
+      kColorOmniboxKeywordSelected};
 
   // Results background colors.
   mixer[kColorOmniboxResultsBackground] =

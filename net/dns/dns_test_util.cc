@@ -18,6 +18,7 @@
 #include "net/dns/dns_hosts.h"
 #include "net/dns/dns_query.h"
 #include "net/dns/dns_session.h"
+#include "net/dns/dns_socket_pool.h"
 #include "net/dns/dns_util.h"
 #include "net/dns/resolve_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -725,10 +726,13 @@ scoped_refptr<DnsSession> MockDnsClient::BuildSession() {
   auto null_random_callback =
       base::BindRepeating([](int, int) -> int { IMMEDIATE_CRASH(); });
 
+  auto socket_pool = std::make_unique<DnsSocketPool>(
+      &socket_factory_, effective_config_.value().nameservers,
+      nullptr /* net_log */);
+
   return base::MakeRefCounted<DnsSession>(
-      effective_config_.value(),
-      DnsSocketPool::CreateNull(&socket_factory_, null_random_callback),
-      null_random_callback, nullptr /* NetLog */);
+      effective_config_.value(), std::move(socket_pool), null_random_callback,
+      nullptr /* net_log */);
 }
 
 }  // namespace net

@@ -54,9 +54,12 @@ void GlobalMediaControlsPromoController::ShowPromo() {
   bubble_params.body_string_specifier = IDS_GLOBAL_MEDIA_CONTROLS_PROMO;
   bubble_params.anchor_view = owner_;
   bubble_params.arrow = views::BubbleBorder::Arrow::TOP_RIGHT;
-  if (!disable_bubble_timeout_for_test_) {
-    bubble_params.timeout = std::make_unique<FeaturePromoBubbleTimeout>(
-        kPromoHideDelay, base::TimeDelta());
+  if (disable_bubble_timeout_for_test_) {
+    bubble_params.timeout_default = base::TimeDelta();
+    bubble_params.timeout_short = base::TimeDelta();
+  } else {
+    bubble_params.timeout_default = kPromoHideDelay;
+    bubble_params.timeout_short = base::TimeDelta();
   }
 
   promo_bubble_ = FeaturePromoBubbleView::Create(std::move(bubble_params));

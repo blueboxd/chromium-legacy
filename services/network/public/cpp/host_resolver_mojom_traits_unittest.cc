@@ -37,7 +37,6 @@ TEST(HostResolverMojomTraitsTest, DnsConfigOverridesRoundtrip_FullySpecified) {
        std::make_pair(net::DnsHostsKey("host2", net::ADDRESS_FAMILY_IPV4),
                       net::IPAddress(2, 3, 4, 5))});
   original.append_to_multi_label_name = true;
-  original.randomize_ports = false;
   original.ndots = 2;
   original.timeout = base::TimeDelta::FromHours(4);
   original.attempts = 1;

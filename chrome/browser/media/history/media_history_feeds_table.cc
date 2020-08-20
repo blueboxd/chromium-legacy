@@ -120,6 +120,12 @@ sql::InitStatus MediaHistoryFeedsTable::CreateTableIfNonExistent() {
         "mediaFeed (last_fetch_content_types, safe_search_result)");
   }
 
+  if (success) {
+    success = DB()->Execute(
+        "CREATE INDEX IF NOT EXISTS mediaFeed_user_status_index ON "
+        "mediaFeed (user_status)");
+  }
+
   if (!success) {
     ResetDB();
     LOG(ERROR) << "Failed to create media history feeds table.";
@@ -290,6 +296,15 @@ std::vector<media_feeds::mojom::MediaFeedPtr> MediaHistoryFeedsTable::GetRows(
       statement.BindInt64(bind_index++,
                           static_cast<int>(*request.filter_by_type));
     }
+  } else if (request.type == MediaHistoryKeyedService::GetMediaFeedsRequest::
+                                 Type::kSelectedFeedsForFetch) {
+    sql.push_back("FROM mediaFeed WHERE user_status = ?");
+
+    statement.Assign(DB()->GetCachedStatement(
+        SQL_FROM_HERE, base::JoinString(sql, " ").c_str()));
+
+    statement.BindInt64(
+        0, static_cast<int>(media_feeds::mojom::FeedUserStatus::kEnabled));
   } else {
     sql.push_back("FROM mediaFeed");
 
@@ -769,6 +784,16 @@ bool MediaHistoryFeedsTable::StoreSafeSearchResult(
       SQL_FROM_HERE,
       "UPDATE mediaFeed SET safe_search_result = ? WHERE id = ?"));
   statement.BindInt64(0, static_cast<int>(result));
+  statement.BindInt64(1, feed_id);
+  return statement.Run();
+}
+
+bool MediaHistoryFeedsTable::UpdateFeedUserStatus(
+    const int64_t feed_id,
+    media_feeds::mojom::FeedUserStatus status) {
+  sql::Statement statement(DB()->GetCachedStatement(
+      SQL_FROM_HERE, "UPDATE mediaFeed SET user_status = ? WHERE id = ?"));
+  statement.BindInt64(0, static_cast<int>(status));
   statement.BindInt64(1, feed_id);
   return statement.Run();
 }

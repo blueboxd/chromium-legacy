@@ -14,6 +14,7 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="109942774857561566">Estou aborrecido</translation>
 <translation id="1104084341931202936">Mostrar definições de acessibilidade</translation>
 <translation id="1104621072296271835">Os seus dispositivos funcionam ainda melhor juntos</translation>
+<translation id="1119348796022671382">O modo de cores temáticas utiliza cores extraídas da sua imagem de fundo para colorir levemente a interface.</translation>
 <translation id="112308213915226829">Ocultar prateleira automaticamente</translation>
 <translation id="1153356358378277386">Dispositivos sincronizados</translation>
 <translation id="1175572348579024023">Deslocar</translation>
@@ -48,6 +49,7 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="1391102559483454063">Ativada</translation>
 <translation id="1419738280318246476">Desbloqueie o dispositivo para realizar a ação de notificação.</translation>
 <translation id="1420408895951708260">Ativar/desativar Luz noturna. <ph name="STATE_TEXT" /></translation>
+<translation id="1420527829902822813">Captura de ecrã tirada e guardada na área de transferência</translation>
 <translation id="1426410128494586442">Sim</translation>
 <translation id="1455242230282523554">Mostrar definições de idioma</translation>
 <translation id="1460620680449458626">O volume está desativado.</translation>
@@ -65,6 +67,7 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="1632985212731562677">O acesso por comutador pode ser desativado em Definições &gt; Acessibilidade.</translation>
 <translation id="1654477262762802994">Iniciar uma consulta de voz</translation>
 <translation id="1665244008632896072">Ativar/desativar modo escuro. <ph name="STATE_TEXT" /></translation>
+<translation id="1667964833127753507">O modo de cores neutras não utiliza cores extraídas da imagem de fundo: substitui-as por um conjunto de tons claros ou escuros.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> restante(s)</translation>
 <translation id="1698080062160024910">Temporizador de <ph name="TOTAL_TIME" /> · <ph name="LABEL" /></translation>
 <translation id="1698760176351776263">Endereço IPv6: <ph name="ADDRESS" /></translation>
@@ -181,6 +184,7 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="3000461861112256445">Áudio mono</translation>
 <translation id="3009178788565917040">Saída</translation>
 <translation id="3033545621352269033">Ativada</translation>
+<translation id="3038571455154067151">Para iniciar sessão, introduza o código de acesso parental do Family Link</translation>
 <translation id="3051128274746680507">O seu perfil de utilizador supervisionado será removido brevemente. Inicie sessão para saber mais.</translation>
 <translation id="3055162170959710888">Utilizou este dispositivo durante <ph name="USED_TIME" /> hoje.</translation>
 <translation id="3076778413190775903">Tabuleiro do estado, hora <ph name="TIME" />,
@@ -277,6 +281,7 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="397105322502079400">A calcular...</translation>
 <translation id="3977512764614765090">A bateria está <ph name="PERCENTAGE" />% cheia e a carregar.</translation>
 <translation id="3995138139523574647">Dispositivo USB-C (porta traseira do lado direito)</translation>
+<translation id="40062176907008878">Escrita manual</translation>
 <translation id="4017989525502048489">Ponteiro de laser</translation>
 <translation id="4021716437419160885">Deslocar para baixo</translation>
 <translation id="4028481283645788203">É necessária uma palavra-passe para uma maior segurança.</translation>
@@ -288,12 +293,14 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="4129129681837227511">Para ver notificações no ecrã de bloqueio, desbloqueie o mesmo para alterar a definição</translation>
 <translation id="4146833061457621061">Tocar música</translation>
 <translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> gerido por <ph name="DOMAIN" /></translation>
+<translation id="4157822100366708405">Definições do tema escuro</translation>
 <translation id="4181841719683918333">Idiomas</translation>
 <translation id="4195877955194704651">Botão de cliques automáticos</translation>
 <translation id="4197790712631116042">Desativado</translation>
 <translation id="4212472694152630271">Mudar para PIN</translation>
 <translation id="4215497585250573029">Definições da VPN</translation>
 <translation id="4217571870635786043">Ditado</translation>
+<translation id="4229328187280698237">Mude para o modo de tablet</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">Mostrar definições de notificação. As notificações estão desativadas</translation>
 <translation id="4269883910223712419">O administrador deste dispositivo pode:</translation>
@@ -368,6 +375,7 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="5035389544768382859">Confirme a configuração do ecrã</translation>
 <translation id="5083553833479578423">Desbloqueie mais funcionalidades do Assistente.</translation>
 <translation id="5114495209940374989">Capturas de ecrã</translation>
+<translation id="5123162024343028706">Apresentar em cima</translation>
 <translation id="5136175204352732067">Teclado diferente ligado</translation>
 <translation id="5168181903108465623">Dispositivos de transmissão disponíveis</translation>
 <translation id="5170568018924773124">Mostrar numa pasta</translation>
@@ -381,6 +389,7 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="5297704307811127955">Desativada</translation>
 <translation id="5302048478445481009">Idioma</translation>
 <translation id="5313326810920013265">Definições de Bluetooth</translation>
+<translation id="5314219114274263156">Gravação de ecrã captada</translation>
 <translation id="5331975486040154427">Dispositivo USB-C (porta traseira do lado esquerdo)</translation>
 <translation id="5379115545237091094">Demasiadas tentativas</translation>
 <translation id="5397578532367286026">A utilização e o histórico deste utilizador podem ser consultados pelo gestor (<ph name="MANAGER_EMAIL" />) em chrome.com.</translation>
@@ -421,6 +430,7 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="5820394555380036790">SO Chromium</translation>
 <translation id="5837036133683224804">Parar o <ph name="ROUTE_TITLE" /> no recetor <ph name="RECEIVER_NAME" /></translation>
 <translation id="5860033963881614850">Desativado</translation>
+<translation id="5876666360658629066">Introduza o código parental</translation>
 <translation id="5887866489674258948">Modo escuro</translation>
 <translation id="5895138241574237353">Reiniciar</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
@@ -481,6 +491,7 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="652139407789908527">O ecrã vai ficar em branco durante mais tempo do que o habitual (até um minuto) durante esta atualização. Não prima o botão ligar/desligar enquanto a atualização estiver em curso.</translation>
 <translation id="6527303717912515753">Partilhar</translation>
 <translation id="6528179044667508675">Não incomodar</translation>
+<translation id="65320610082834431">Emojis</translation>
 <translation id="6537270692134705506">Capturar ecrã</translation>
 <translation id="6537924328260219877">Intensidade do sinal: <ph name="SIGNAL_STRENGTH" />, bateria do telemóvel: <ph name="BATTERY_STATUS" /></translation>
 <translation id="6542521951477560771">A transmitir para <ph name="RECEIVER_NAME" /></translation>
@@ -567,8 +578,10 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="7568637526529101738">Ao clicar com o botão direito do rato ou ao manter o botão premido, o Assistente mostra-lhe informações como a definição ou a conversão de unidades para a sua seleção.</translation>
 <translation id="7569509451529460200">O braille e o ChromeVox estão ativados</translation>
 <translation id="7579778809502851308">Captura de ecrã</translation>
+<translation id="7590883480672980941">Definições de introdução</translation>
 <translation id="7593891976182323525">Pesquisar ou Shift</translation>
 <translation id="7600875258240007829">Ver todas as notificações</translation>
+<translation id="7618774594543487847">Neutro</translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" /> °F</translation>
 <translation id="7642647758716480637">Abrir as definições da rede <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" /></translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (proprietário)</translation>
@@ -665,12 +678,14 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, intensidade do sinal: <ph name="SIGNAL_STRENGTH" />, gerida pelo administrador</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> restante</translation>
 <translation id="8646417893960517480">Temporizador de <ph name="TOTAL_TIME" /></translation>
+<translation id="8647931990447795414">Para adicionar uma pessoa, introduza o código de acesso parental do Family Link</translation>
 <translation id="8649101189709089199">Selecionar para falar</translation>
 <translation id="8652175077544655965">Fechar definições</translation>
 <translation id="8653151467777939995">Mostrar definições de notificação. As notificações estão ativadas</translation>
 <translation id="8660331759611631213">Raiz quadrada de 71</translation>
 <translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />, intensidade do sinal: <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664753092453405566">Mostrar lista de redes. <ph name="STATE_TEXT" /></translation>
+<translation id="8668052347555487755">Modo de cor</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Carregador de baixo consumo ligado</translation>
 <translation id="8683506306463609433">O rastreio do desempenho está ativo.</translation>
@@ -694,6 +709,8 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="8878886163241303700">Ecrã alargado</translation>
 <translation id="890616557918890486">Alterar origem</translation>
 <translation id="8909138438987180327">A bateria está a <ph name="PERCENTAGE" /> por cento.</translation>
+<translation id="8913384980486163186">Temáticas (predefinição)</translation>
+<translation id="8918251165865262378">Mude para o modo de portátil</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">O Assistente Google não fala este idioma.</translation>
 <translation id="8936501819958976551">desativada</translation>

@@ -102,6 +102,9 @@ public class AutofillAssistantArguments {
     /** Special output parameter that should hold which of the trigger scripts was used, if any. */
     static final String PARAMETER_TRIGGER_SCRIPT_USED = "TRIGGER_SCRIPT_USED";
 
+    /** Special parameter for declaring a user to be in a lite script experiment. */
+    static final String PARAMETER_LITE_SCRIPT_EXPERIMENT = "TRIGGER_SCRIPT_EXPERIMENT";
+
     /**
      * Identifier used by parameters/or special intent that indicates experiments passed from
      * the caller.
@@ -191,6 +194,11 @@ public class AutofillAssistantArguments {
      */
     public String getExperimentIds() {
         return mExperimentIds.toString();
+    }
+
+    /** Returns whether the lite-script experiment flag is set to true. */
+    public boolean isLiteScriptExperiment() {
+        return getBooleanParameter(PARAMETER_LITE_SCRIPT_EXPERIMENT);
     }
 
     /**

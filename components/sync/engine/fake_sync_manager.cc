@@ -31,8 +31,7 @@ FakeSyncManager::FakeSyncManager(ModelTypeSet initial_sync_ended_types,
       initial_sync_ended_types_(initial_sync_ended_types),
       progress_marker_types_(progress_marker_types),
       configure_fail_types_(configure_fail_types),
-      last_configure_reason_(CONFIGURE_REASON_UNKNOWN),
-      num_invalidations_received_(0) {}
+      last_configure_reason_(CONFIGURE_REASON_UNKNOWN) {}
 
 FakeSyncManager::~FakeSyncManager() {}
 
@@ -48,8 +47,13 @@ ConfigureReason FakeSyncManager::GetAndResetConfigureReason() {
   return reason;
 }
 
-int FakeSyncManager::GetInvalidationCount() const {
-  return num_invalidations_received_;
+int FakeSyncManager::GetInvalidationCount(ModelType type) const {
+  auto it = num_invalidations_received_.find(type);
+  if (it == num_invalidations_received_.end()) {
+    return 0;
+  } else {
+    return it->second;
+  }
 }
 
 void FakeSyncManager::WaitForSyncThread() {
@@ -180,7 +184,7 @@ void FakeSyncManager::RequestEmitDebugInfo() {}
 void FakeSyncManager::OnIncomingInvalidation(
     ModelType type,
     std::unique_ptr<InvalidationInterface> invalidation) {
-  num_invalidations_received_++;
+  num_invalidations_received_[type]++;
 }
 
 ModelTypeSet FakeSyncManager::GetLastRefreshRequestTypes() {

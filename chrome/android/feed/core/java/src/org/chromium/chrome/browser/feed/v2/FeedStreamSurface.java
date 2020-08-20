@@ -23,6 +23,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.feed.shared.ScrollTracker;
@@ -249,6 +250,23 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
         @Override
         public void logWarning(String tag, String format, Object... args) {
             Log.w(tag, format, args);
+        }
+
+        @Override
+        public void postTask(int taskType, Runnable task, long delayMs) {
+            TaskTraits traits;
+            switch (taskType) {
+                case ProcessScopeDependencyProvider.TASK_TYPE_UI_THREAD:
+                    traits = UiThreadTaskTraits.DEFAULT;
+                    break;
+                case ProcessScopeDependencyProvider.TASK_TYPE_BACKGROUND_MAY_BLOCK:
+                    traits = TaskTraits.BEST_EFFORT_MAY_BLOCK;
+                    break;
+                default:
+                    assert false : "Invalid task type";
+                    return;
+            }
+            PostTask.postDelayedTask(traits, task, delayMs);
         }
     }
 

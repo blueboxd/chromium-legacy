@@ -44,6 +44,9 @@ class PasswordSyncTokenVerifier : public KeyedService,
   // Execute verification API call.
   void CheckForPasswordNotInSync();
 
+  // Fetch current sync token when starting a new session with online SAML.
+  void FetchSyncTokenOnReauth();
+
   // Cancel all pending check requests.
   void CancelPendingChecks();
 
@@ -56,6 +59,8 @@ class PasswordSyncTokenVerifier : public KeyedService,
  private:
   // Recheck after given |delay|.
   void RecheckAfter(base::TimeDelta delay);
+  // Init sync token.
+  void CreateTokenAsync();
 
   Profile* const primary_profile_;
   const user_manager::User* const primary_user_;

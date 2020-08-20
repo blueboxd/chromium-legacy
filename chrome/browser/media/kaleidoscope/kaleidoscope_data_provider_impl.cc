@@ -190,8 +190,15 @@ void KaleidoscopeDataProviderImpl::SetMediaFeedsConsent(
   prefs->SetBoolean(kaleidoscope::prefs::kKaleidoscopeAutoSelectMediaFeeds,
                     accepted_auto_select_media_feeds);
 
-  // TODO(b/154517281): Update the MediaFeeds service with the allowlisted
-  // feeds from |enabled_feed_ids| and |disabled_feed_ids|.
+  for (auto& feed_id : disabled_feed_ids) {
+    GetMediaHistoryService()->UpdateFeedUserStatus(
+        feed_id, media_feeds::mojom::FeedUserStatus::kDisabled);
+  }
+
+  for (auto& feed_id : enabled_feed_ids) {
+    GetMediaHistoryService()->UpdateFeedUserStatus(
+        feed_id, media_feeds::mojom::FeedUserStatus::kEnabled);
+  }
 }
 
 void KaleidoscopeDataProviderImpl::GetHighWatchTimeOrigins(

@@ -340,6 +340,10 @@ const base::Feature kFlashDeprecationWarning{"FlashDeprecationWarning",
 const base::Feature kFlocIdComputedEventLogging{
     "FlocIdComputedEventLogging", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// If enabled, a computed floc will be invalidated if it appears in a blocklist.
+const base::Feature kFlocIdBlocklistFiltering{
+    "FlocIdBlocklistFiltering", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables Focus Mode which brings up a PWA-like window look.
 const base::Feature kFocusMode{"FocusMode", base::FEATURE_DISABLED_BY_DEFAULT};
 

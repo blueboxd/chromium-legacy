@@ -5009,7 +5009,7 @@ TEST_F(LegacySWPictureLayerImplTest, ScrollPropagatesToPending) {
 
 TEST_F(LegacySWPictureLayerImplTest, UpdateLCDTextInvalidatesPendingTree) {
   gfx::Size layer_bounds(100, 100);
-  SetupPendingTree(FakeRasterSource::CreateFilled(layer_bounds));
+  SetupPendingTree(FakeRasterSource::CreateFilledWithText(layer_bounds));
 
   EXPECT_TRUE(pending_layer()->can_use_lcd_text());
   EXPECT_TRUE(pending_layer()->HighResTiling()->has_tiles());
@@ -5035,7 +5035,7 @@ TEST_F(LegacySWPictureLayerImplTest, UpdateLCDTextInvalidatesPendingTree) {
 }
 
 TEST_F(LegacySWPictureLayerImplTest, UpdateLCDTextPushToActiveTree) {
-  SetupPendingTree(FakeRasterSource::CreateFilled(gfx::Size(200, 200)));
+  SetupPendingTree(FakeRasterSource::CreateFilledWithText(gfx::Size(200, 200)));
   float page_scale = 4.f;
   SetupDrawPropertiesAndUpdateTiles(pending_layer(), page_scale, 1.0f,
                                     page_scale, 1.0f, 0.f, false);
@@ -5053,7 +5053,7 @@ TEST_F(LegacySWPictureLayerImplTest, UpdateLCDTextPushToActiveTree) {
   for (Tile* tile : active_layer()->LowResTiling()->AllTilesForTesting())
     EXPECT_FALSE(tile->can_use_lcd_text());
 
-  SetupPendingTree(FakeRasterSource::CreateFilled(gfx::Size(200, 200)));
+  SetupPendingTree(FakeRasterSource::CreateFilledWithText(gfx::Size(200, 200)));
   SetupDrawPropertiesAndUpdateTiles(pending_layer(), page_scale, 1.0f,
                                     page_scale, 1.0f, 0.f, false);
   pending_layer()->SetContentsOpaque(false);
@@ -5802,7 +5802,9 @@ TEST_F(LegacySWPictureLayerImplTest,
        ChangeRasterTranslationNukePendingLayerTiles) {
   gfx::Size layer_bounds(200, 200);
   gfx::Size tile_size(256, 256);
-  SetupDefaultTreesWithFixedTileSize(layer_bounds, tile_size, Region());
+  auto raster_source = FakeRasterSource::CreateFilledWithText(layer_bounds);
+  SetupTreesWithFixedTileSize(raster_source, raster_source, tile_size,
+                              Region());
 
   // Start with scale & translation of * 2.25 + (0.25, 0.5).
   SetupDrawProperties(pending_layer(), 2.25f, 1.5f, 1.f, 2.25f, 2.25f, false);
@@ -5866,7 +5868,9 @@ TEST_F(LegacySWPictureLayerImplTest,
        ChangeRasterTranslationNukeActiveLayerTiles) {
   gfx::Size layer_bounds(200, 200);
   gfx::Size tile_size(256, 256);
-  SetupDefaultTreesWithFixedTileSize(layer_bounds, tile_size, Region());
+  auto raster_source = FakeRasterSource::CreateFilledWithText(layer_bounds);
+  SetupTreesWithFixedTileSize(raster_source, raster_source, tile_size,
+                              Region());
 
   // Start with scale & translation of * 2.25 + (0.25, 0.5) on the active layer.
   SetupDrawProperties(active_layer(), 2.25f, 1.5f, 1.f, 2.25f, 2.25f, false);
@@ -6062,7 +6066,9 @@ TEST_F(LegacySWPictureLayerImplTest, NoTilingsUsesScaleOne) {
 
 TEST_F(LegacySWPictureLayerImplTest,
        TransformedRasterizationAndContentsOpaqueAndLCDText) {
-  SetupDefaultTreesWithInvalidation(gfx::Size(200, 200), Region());
+  auto raster_source =
+      FakeRasterSource::CreateFilledWithText(gfx::Size(200, 200));
+  SetupTreesWithInvalidation(raster_source, raster_source, Region());
 
   pending_layer()->SetBackgroundColor(SK_ColorWHITE);
   pending_layer()->SetContentsOpaque(true);
@@ -6115,6 +6121,25 @@ TEST_F(LegacySWPictureLayerImplTest,
             pending_layer()->HighResTiling()->raster_transform().translation());
 }
 
+TEST_F(LegacySWPictureLayerImplTest,
+       TransformedRasterizationAndLCDTextWithoutText) {
+  auto raster_source = FakeRasterSource::CreateFilled(gfx::Size(200, 200));
+  SetupTreesWithInvalidation(raster_source, raster_source, Region());
+
+  pending_layer()->SetBackgroundColor(SK_ColorWHITE);
+  pending_layer()->SetContentsOpaque(true);
+  pending_layer()->SetOffsetToTransformParent(gfx::Vector2dF(0.2, 0.3));
+  host_impl()->pending_tree()->set_needs_update_draw_properties();
+  UpdateDrawProperties(host_impl()->pending_tree());
+  EXPECT_TRUE(pending_layer()->contents_opaque());
+  EXPECT_TRUE(pending_layer()->contents_opaque_for_text());
+  EXPECT_EQ(LCDTextDisallowedReason::kNoText,
+            pending_layer()->ComputeLCDTextDisallowedReasonForTesting());
+  ASSERT_TRUE(pending_layer()->HighResTiling());
+  EXPECT_EQ(gfx::Vector2dF(),
+            pending_layer()->HighResTiling()->raster_transform().translation());
+}
+
 enum {
   kCanUseLCDText = 1 << 0,
   kLayersAlwaysAllowedLCDText = 1 << 1,
@@ -6134,7 +6159,9 @@ class LCDTextTest : public PictureLayerImplTest,
   void SetUp() override {
     PictureLayerImplTest::SetUp();
 
-    SetupPendingTree(FakeRasterSource::CreateFilled(gfx::Size(200, 200)));
+    auto raster_source =
+        FakeRasterSource::CreateFilledWithText(gfx::Size(200, 200));
+    SetupPendingTree(raster_source);
 
     tree_ = host_impl()->pending_tree();
     layer_ = pending_layer();
@@ -6149,9 +6176,8 @@ class LCDTextTest : public PictureLayerImplTest,
     descendant_->SetDrawsContent(true);
     descendant_->SetBounds(gfx::Size(200, 200));
     Region invalidation;
-    descendant_->UpdateRasterSource(
-        FakeRasterSource::CreateFilled(gfx::Size(200, 200)), &invalidation,
-        nullptr, nullptr);
+    descendant_->UpdateRasterSource(raster_source, &invalidation, nullptr,
+                                    nullptr);
     ASSERT_TRUE(layer_->CanHaveTilings());
 
     CreateTransformNode(layer_);

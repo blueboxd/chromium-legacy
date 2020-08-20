@@ -486,9 +486,7 @@ void ChromeClientImpl::WindowToViewportRect(LocalFrame& frame,
 }
 
 ScreenInfo ChromeClientImpl::GetScreenInfo(LocalFrame& frame) const {
-  WebWidgetClient* client = frame.GetWidgetForLocalRoot()->Client();
-  DCHECK(client);
-  return client->GetScreenInfo();
+  return frame.GetWidgetForLocalRoot()->GetScreenInfo();
 }
 
 void ChromeClientImpl::OverrideVisibleRectForMainFrame(

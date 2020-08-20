@@ -58,6 +58,8 @@ const CGFloat kBubblePresentationDelay = 1;
     BubbleViewControllerPresenter* tabTipBubblePresenter;
 @property(nonatomic, strong, readwrite)
     BubbleViewControllerPresenter* incognitoTabTipBubblePresenter;
+@property(nonatomic, strong)
+    BubbleViewControllerPresenter* discoverFeedHeaderMenuTipBubblePresenter;
 
 @property(nonatomic, assign) ChromeBrowserState* browserState;
 @property(nonatomic, weak) id<BubblePresenterDelegate> delegate;
@@ -131,6 +133,7 @@ const CGFloat kBubblePresentationDelay = 1;
   [self.incognitoTabTipBubblePresenter dismissAnimated:NO];
   [self.bottomToolbarTipBubblePresenter dismissAnimated:NO];
   [self.longPressToolbarTipBubblePresenter dismissAnimated:NO];
+  [self.discoverFeedHeaderMenuTipBubblePresenter dismissAnimated:NO];
 }
 
 - (void)userEnteredTabSwitcher {
@@ -158,9 +161,10 @@ const CGFloat kBubblePresentationDelay = 1;
   if (!self.incognitoTabTipBubblePresenter.isUserEngaged)
     [self presentNewIncognitoTabTipBubble];
 
-  // The bottom toolbar doesn't use the isUserEngaged, so don't check if the
-  // user is engaged here.
+  // The bottom toolbar and Discover feed header menu don't use the
+  // isUserEngaged, so don't check if the user is engaged here.
   [self presentBottomToolbarTipBubble];
+  [self presentDiscoverFeedHeaderTipBubble];
 }
 
 - (void)presentLongPressBubble {
@@ -257,6 +261,34 @@ presentBubbleForFeature:(const base::Feature&)feature
   self.bottomToolbarTipBubblePresenter = presenter;
   feature_engagement::TrackerFactory::GetForBrowserState(self.browserState)
       ->NotifyEvent(feature_engagement::events::kBottomToolbarOpened);
+}
+
+// Presents a bubble associated with the Discover feed header's menu button.
+- (void)presentDiscoverFeedHeaderTipBubble {
+  if (![self canPresentBubble])
+    return;
+
+  BubbleArrowDirection arrowDirection = BubbleArrowDirectionDown;
+  NSString* text =
+      l10n_util::GetNSStringWithFixup(IDS_IOS_DISCOVER_FEED_HEADER_IPH);
+  CGPoint discoverFeedHeaderAnchor =
+      [self anchorPointToGuide:kDiscoverFeedHeaderMenuGuide
+                     direction:arrowDirection];
+
+  // If the feature engagement tracker does not consider it valid to display
+  // the new tab tip, then end early to prevent the potential reassignment
+  // of the existing |tabTipBubblePresenter| to nil.
+  BubbleViewControllerPresenter* presenter = [self
+      presentBubbleForFeature:feature_engagement::kIPHDiscoverFeedHeaderFeature
+                    direction:arrowDirection
+                    alignment:BubbleAlignmentTrailing
+                         text:text
+        voiceOverAnnouncement:nil
+                  anchorPoint:discoverFeedHeaderAnchor];
+  if (!presenter)
+    return;
+
+  self.discoverFeedHeaderMenuTipBubblePresenter = presenter;
 }
 
 // Optionally presents a bubble associated with the new tab tip in-product help

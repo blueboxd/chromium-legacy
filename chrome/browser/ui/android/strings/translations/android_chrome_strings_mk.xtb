@@ -703,6 +703,7 @@
 <translation id="6402652558933147609"><ph name="ERROR_CODE" /> на <ph name="VIOLATED_URL" /></translation>
 <translation id="6404511346730675251">Измени обележувач</translation>
 <translation id="6406506848690869874">Синхронизација</translation>
+<translation id="6410883413783534063">Отворете картички за да посетувате различни страници во исто време</translation>
 <translation id="6412673304250309937">Ги проверува URL-адресите во список со небезбедни сајтови меморирани во Chrome. Ако некој сајт се обиде да ви ја украде лозинката или кога ќе преземете штетна датотека, Chrome може да испрати и URL-адреси, вклучувајќи и делови од содржините на страницата, во „Безбедно прелистување“.</translation>
 <translation id="641643625718530986">Печати...</translation>
 <translation id="6427112570124116297">Преведете го интернетот</translation>
@@ -821,6 +822,7 @@
 <translation id="7328017930301109123">Во Lite-режим, Chrome побрзо ги вчитува страниците и користи до 60 проценти помалку интернет.</translation>
 <translation id="7333031090786104871">Сè уште се додава претходниот сајт</translation>
 <translation id="7340958967809483333">Опции за Discover</translation>
+<translation id="7352651011704765696">Нешто не е во ред</translation>
 <translation id="7352939065658542140">ВИДЕО</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Споделете 1 избрана ставка}one{Споделете # избрана ставка}other{Споделете # избрани ставки}}</translation>
 <translation id="7359002509206457351">Пристап до начините на плаќање</translation>
@@ -1013,6 +1015,7 @@
 <translation id="868929229000858085">Пребарајте ги контактите</translation>
 <translation id="869891660844655955">Рок на важност</translation>
 <translation id="8712637175834984815">Сфатив</translation>
+<translation id="8725066075913043281">Обидете се повторно</translation>
 <translation id="8748850008226585750">Содржината е скриена</translation>
 <translation id="8751914237388039244">Изберете слика</translation>
 <translation id="8758557275681689734">Видете ги сите отворени картички</translation>

@@ -104,6 +104,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeManagedSavePasswords,
   ItemTypePasswordCheckStatus,
   ItemTypeCheckForProblemsButton,
+  ItemTypeLastCheckTimestampFooter,
   ItemTypeSavedPassword,  // This is a repeated item type.
   ItemTypeBlocked,        // This is a repeated item type.
   ItemTypeExportPasswordsButton,
@@ -470,6 +471,10 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
     [self updatePasswordCheckButtonWithState:_passwordCheckState];
     [model addItem:_checkForProblemsItem
         toSectionWithIdentifier:SectionIdentifierPasswordCheck];
+
+    [self updateLastCheckTimestampWithState:_passwordCheckState
+                                  fromState:_passwordCheckState
+                                     update:NO];
   }
 
   // Saved passwords.
@@ -605,6 +610,14 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   return checkForProblemsItem;
 }
 
+- (TableViewLinkHeaderFooterItem*)lastCompletedCheckTime {
+  TableViewLinkHeaderFooterItem* footerItem =
+      [[TableViewLinkHeaderFooterItem alloc]
+          initWithType:ItemTypeLastCheckTimestampFooter];
+  footerItem.text = [_mediator formatElapsedTimeSinceLastCheck];
+  return footerItem;
+}
+
 - (TableViewTextItem*)exportPasswordsItem {
   TableViewTextItem* exportPasswordsItem =
       [[TableViewTextItem alloc] initWithType:ItemTypeExportPasswordsButton];
@@ -726,13 +739,14 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
 #pragma mark - PasswordsConsumer
 
 - (void)setPasswordCheckUIState:(PasswordCheckUIState)state {
-  _passwordCheckState = state;
+  // Update password check status and check button with new state.
   [self updatePasswordCheckButtonWithState:state];
   [self updatePasswordCheckStatusLabelWithState:state];
 
   // During searching Password Check section is hidden so cells should not be
   // reconfigured.
   if (self.navigationItem.searchController.active) {
+    _passwordCheckState = state;
     return;
   }
 
@@ -741,6 +755,12 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   if (_passwordProblemsItem) {
     [self reconfigureCellsForItems:@[ _passwordProblemsItem ]];
   }
+  // Before updating cached state value update timestamp as for proper animation
+  // it requires both new and old values.
+  [self updateLastCheckTimestampWithState:state
+                                fromState:_passwordCheckState
+                                   update:YES];
+  _passwordCheckState = state;
 }
 
 - (void)setPasswordsForms:
@@ -1046,6 +1066,63 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
       [model addItem:[self blockedFormItemWithText:text forForm:form.get()]
           toSectionWithIdentifier:SectionIdentifierBlocked];
     }
+  }
+}
+
+// Update timestamp of the last check. Both old and new password check state
+// should be provided in order to animate footer in a proper way.
+- (void)updateLastCheckTimestampWithState:(PasswordCheckUIState)state
+                                fromState:(PasswordCheckUIState)oldState
+                                   update:(BOOL)update {
+  if (!_didReceiveSavedForms) {
+    return;
+  }
+
+  NSInteger checkSection = [self.tableViewModel
+      sectionForSectionIdentifier:SectionIdentifierPasswordCheck];
+
+  switch (state) {
+    case PasswordCheckStateUnSafe:
+      [self.tableViewModel setFooter:[self lastCompletedCheckTime]
+            forSectionWithIdentifier:SectionIdentifierPasswordCheck];
+      // Transition from disabled to unsafe state is possible only on page load.
+      // In this case we want to avoid animation.
+      if (oldState == PasswordCheckStateDisabled) {
+        [UIView performWithoutAnimation:^{
+          [self.tableView
+                reloadSections:[NSIndexSet indexSetWithIndex:checkSection]
+              withRowAnimation:UITableViewRowAnimationNone];
+        }];
+        return;
+      }
+      break;
+    case PasswordCheckStateSafe:
+    case PasswordCheckStateDefault:
+    case PasswordCheckStateError:
+    case PasswordCheckStateRunning:
+    case PasswordCheckStateDisabled:
+      if (oldState != PasswordCheckStateUnSafe)
+        return;
+
+      [self.tableViewModel setFooter:nil
+            forSectionWithIdentifier:SectionIdentifierPasswordCheck];
+      break;
+  }
+  if (update) {
+    [self.tableView
+        performBatchUpdates:^{
+          if (!self.tableView)
+            return;
+          // Deleting and inserting section results in pleasant animation of
+          // footer being added/removed.
+          [self.tableView
+                deleteSections:[NSIndexSet indexSetWithIndex:checkSection]
+              withRowAnimation:UITableViewRowAnimationNone];
+          [self.tableView
+                insertSections:[NSIndexSet indexSetWithIndex:checkSection]
+              withRowAnimation:UITableViewRowAnimationNone];
+        }
+                 completion:nil];
   }
 }
 

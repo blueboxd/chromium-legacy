@@ -54,6 +54,12 @@ Polymer({
     /** @private {!BrowserChannel} */
     targetChannel_: String,
 
+    /** @private */
+    isLts_: {
+      type: Boolean,
+      value: false,
+    },
+
     /** @private {?RegulatoryInfo} */
     regulatoryInfo_: Object,
 
@@ -176,6 +182,7 @@ Polymer({
     this.aboutBrowserProxy_.getChannelInfo().then(info => {
       this.currentChannel_ = info.currentChannel;
       this.targetChannel_ = info.targetChannel;
+      this.isLts_ = info.isLts;
       this.startListening_();
     });
 
@@ -335,8 +342,8 @@ Polymer({
         if (this.currentChannel_ != this.targetChannel_) {
           return this.i18nAdvanced('aboutUpgradeUpdatingChannelSwitch', {
             substitutions: [
-              this.i18nAdvanced(
-                  settings.browserChannelToI18nId(this.targetChannel_)),
+              this.i18nAdvanced(settings.browserChannelToI18nId(
+                  this.targetChannel_, this.isLts_)),
               progressPercent
             ]
           });

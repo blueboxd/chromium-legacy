@@ -51,8 +51,6 @@ struct StructTraits<network::mojom::DnsConfigOverridesDataView,
 
   static network::mojom::DnsConfigOverrides_Tristate append_to_multi_label_name(
       const net::DnsConfigOverrides& overrides);
-  static network::mojom::DnsConfigOverrides_Tristate randomize_ports(
-      const net::DnsConfigOverrides& overrides);
 
   static int ndots(const net::DnsConfigOverrides& overrides) {
     return overrides.ndots.value_or(-1);

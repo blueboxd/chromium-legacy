@@ -88,3 +88,12 @@ static void JNI_FieldTrialList_LogActiveTrials(JNIEnv* env) {
     TrialLogger::Log(group.trial_name, group.group_name);
   }
 }
+
+static jboolean JNI_FieldTrialList_CreateFieldTrial(
+    JNIEnv* env,
+    const JavaParamRef<jstring>& jtrial_name,
+    const JavaParamRef<jstring>& jgroup_name) {
+  return base::FieldTrialList::CreateFieldTrial(
+             ConvertJavaStringToUTF8(env, jtrial_name),
+             ConvertJavaStringToUTF8(env, jgroup_name)) != nullptr;
+}

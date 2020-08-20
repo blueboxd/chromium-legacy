@@ -29,8 +29,7 @@ const ActionProto::ActionInfoCase kAllowedActions[] = {
     ActionProto::kWaitForNavigation,
     ActionProto::kConfigureBottomSheet,
     ActionProto::kPopupMessage,
-    ActionProto::kWaitForDocument,
-    ActionProto::kConfigureUiState};
+    ActionProto::kWaitForDocument};
 
 base::Optional<std::pair<ActionsResponseProto, ActionsResponseProto>>
 SplitActionsAtLastBrowse(const ActionsResponseProto& proto) {

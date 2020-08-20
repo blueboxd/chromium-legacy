@@ -105,6 +105,8 @@ class MediaFeedsTableDelegate {
         td.textContent = 'Auto';
       } else if (data == mediaFeeds.mojom.FeedUserStatus.kDisabled) {
         td.textContent = 'Disabled';
+      } else if (data == mediaFeeds.mojom.FeedUserStatus.kEnabled) {
+        td.textContent = 'Enabled';
       }
     } else if (key === 'lastFetchResult') {
       // Format a FetchResult.

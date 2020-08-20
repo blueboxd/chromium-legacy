@@ -13,8 +13,23 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/base_event_utils.h"
+#include "ui/views/controls/image_view.h"
+#include "ui/views/controls/label.h"
 
 namespace payments {
+namespace {
+
+constexpr int kInstrumentIconWidth = 32;
+constexpr int kInstrumentIconHeight = 20;
+
+const SkBitmap CreateInstrumentIcon(SkColor color) {
+  SkBitmap bitmap;
+  bitmap.allocN32Pixels(kInstrumentIconWidth, kInstrumentIconHeight);
+  bitmap.eraseColor(color);
+  return bitmap;
+}
+
+}  // namespace
 
 class SecurePaymentConfirmationDialogViewTest
     : public InProcessBrowserTest,
@@ -30,6 +45,24 @@ class SecurePaymentConfirmationDialogViewTest
   }
 
   void CreateModel() {
+    model_.set_title(l10n_util::GetStringUTF16(
+        IDS_SECURE_PAYMENT_CONFIRMATION_VERIFY_PURCHASE));
+
+    model_.set_merchant_label(
+        l10n_util::GetStringUTF16(IDS_SECURE_PAYMENT_CONFIRMATION_STORE_LABEL));
+    model_.set_merchant_value(base::UTF8ToUTF16("merchant.com"));
+
+    model_.set_instrument_label(l10n_util::GetStringUTF16(
+        IDS_PAYMENT_REQUEST_PAYMENT_METHOD_SECTION_NAME));
+    model_.set_instrument_value(base::UTF8ToUTF16("Mastercard ****4444"));
+    instrument_icon_ =
+        std::make_unique<SkBitmap>(CreateInstrumentIcon(SK_ColorBLUE));
+    model_.set_instrument_icon(instrument_icon_.get());
+
+    model_.set_total_label(
+        l10n_util::GetStringUTF16(IDS_SECURE_PAYMENT_CONFIRMATION_TOTAL_LABEL));
+    model_.set_total_value(base::UTF8ToUTF16("$20.00 USD"));
+
     model_.set_verify_button_label(l10n_util::GetStringUTF16(
         IDS_SECURE_PAYMENT_CONFIRMATION_VERIFY_BUTTON_LABEL));
     model_.set_cancel_button_label(l10n_util::GetStringUTF16(IDS_CANCEL));
@@ -54,6 +87,15 @@ class SecurePaymentConfirmationDialogViewTest
     EXPECT_TRUE(web_contents_modal_dialog_manager->IsDialogActive());
   }
 
+  void ExpectLabelText(
+      const base::string16& text,
+      SecurePaymentConfirmationDialogView::DialogViewID view_id) {
+    EXPECT_EQ(text, static_cast<views::Label*>(
+                        test_delegate_->dialog_view()->GetViewByID(
+                            static_cast<int>(view_id)))
+                        ->GetText());
+  }
+
   void ExpectViewMatchesModel() {
     ASSERT_NE(test_delegate_->dialog_view(), nullptr);
 
@@ -65,15 +107,50 @@ class SecurePaymentConfirmationDialogViewTest
               test_delegate_->dialog_view()->GetDialogButtonLabel(
                   ui::DIALOG_BUTTON_CANCEL));
 
-    EXPECT_TRUE(test_delegate_->dialog_view()->GetViewByID(
-        SecurePaymentConfirmationDialogView::DialogViewID::HEADER_ICON));
+    EXPECT_TRUE(test_delegate_->dialog_view()->GetViewByID(static_cast<int>(
+        SecurePaymentConfirmationDialogView::DialogViewID::HEADER_ICON)));
 
     EXPECT_EQ(
         model_.progress_bar_visible(),
         test_delegate_->dialog_view()
-            ->GetViewByID(
-                SecurePaymentConfirmationDialogView::DialogViewID::PROGRESS_BAR)
+            ->GetViewByID(static_cast<int>(SecurePaymentConfirmationDialogView::
+                                               DialogViewID::PROGRESS_BAR))
             ->GetVisible());
+
+    ExpectLabelText(model_.title(),
+                    SecurePaymentConfirmationDialogView::DialogViewID::TITLE);
+
+    ExpectLabelText(
+        model_.merchant_label(),
+        SecurePaymentConfirmationDialogView::DialogViewID::MERCHANT_LABEL);
+    ExpectLabelText(
+        model_.merchant_value(),
+        SecurePaymentConfirmationDialogView::DialogViewID::MERCHANT_VALUE);
+
+    ExpectLabelText(
+        model_.instrument_label(),
+        SecurePaymentConfirmationDialogView::DialogViewID::INSTRUMENT_LABEL);
+    ExpectLabelText(
+        model_.instrument_value(),
+        SecurePaymentConfirmationDialogView::DialogViewID::INSTRUMENT_VALUE);
+
+    ASSERT_EQ(instrument_icon_.get(), model_.instrument_icon());
+    EXPECT_TRUE(cc::MatchesBitmap(
+        *model_.instrument_icon(),
+        *(static_cast<views::ImageView*>(
+              test_delegate_->dialog_view()->GetViewByID(
+                  static_cast<int>(SecurePaymentConfirmationDialogView::
+                                       DialogViewID::INSTRUMENT_ICON)))
+              ->GetImage()
+              .bitmap()),
+        cc::ExactPixelComparator(/*discard_alpha=*/false)));
+
+    ExpectLabelText(
+        model_.total_label(),
+        SecurePaymentConfirmationDialogView::DialogViewID::TOTAL_LABEL);
+    ExpectLabelText(
+        model_.total_value(),
+        SecurePaymentConfirmationDialogView::DialogViewID::TOTAL_VALUE);
   }
 
   void ClickAcceptAndWait() {
@@ -132,6 +209,8 @@ class SecurePaymentConfirmationDialogViewTest
   SecurePaymentConfirmationModel model_;
   std::unique_ptr<TestSecurePaymentConfirmationPaymentRequestDelegate>
       test_delegate_;
+
+  std::unique_ptr<SkBitmap> instrument_icon_;
 
   bool confirm_pressed_ = false;
   bool cancel_pressed_ = false;
@@ -195,6 +274,56 @@ IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationDialogViewTest,
   model_.set_progress_bar_visible(true);
   test_delegate_->dialog_view()->OnModelUpdated();
 
+  ExpectViewMatchesModel();
+
+  CloseDialogAndWait();
+}
+
+IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationDialogViewTest,
+                       OnModelUpdated) {
+  CreateModel();
+
+  InvokeSecurePaymentConfirmationUI();
+
+  ExpectViewMatchesModel();
+
+  model_.set_title(base::UTF8ToUTF16("Test Title"));
+  model_.set_merchant_label(base::UTF8ToUTF16("Test merchant"));
+  model_.set_merchant_value(base::UTF8ToUTF16("Test merchant value"));
+  model_.set_instrument_label(base::UTF8ToUTF16("Test instrument"));
+  model_.set_instrument_value(base::UTF8ToUTF16("Test instrument value"));
+  model_.set_total_label(base::UTF8ToUTF16("Test total"));
+  model_.set_total_value(base::UTF8ToUTF16("Test total value"));
+  model_.set_verify_button_label(base::UTF8ToUTF16("Test verify"));
+  model_.set_cancel_button_label(base::UTF8ToUTF16("Test cancel"));
+
+  test_delegate_->dialog_view()->OnModelUpdated();
+
+  ExpectViewMatchesModel();
+
+  CloseDialogAndWait();
+}
+
+// Test the two reasons an instrument icon is updated: The model's bitmap
+// pointer changed, or the bitmap itself changed.
+IN_PROC_BROWSER_TEST_F(SecurePaymentConfirmationDialogViewTest,
+                       InstrumentIconUpdated) {
+  CreateModel();
+
+  InvokeSecurePaymentConfirmationUI();
+
+  ExpectViewMatchesModel();
+
+  // Change the bitmap pointer
+  instrument_icon_ =
+      std::make_unique<SkBitmap>(CreateInstrumentIcon(SK_ColorGREEN));
+  model_.set_instrument_icon(instrument_icon_.get());
+  test_delegate_->dialog_view()->OnModelUpdated();
+  ExpectViewMatchesModel();
+
+  // Change the bitmap itself without touching the model's pointer
+  *instrument_icon_ = CreateInstrumentIcon(SK_ColorRED);
+  test_delegate_->dialog_view()->OnModelUpdated();
   ExpectViewMatchesModel();
 
   CloseDialogAndWait();

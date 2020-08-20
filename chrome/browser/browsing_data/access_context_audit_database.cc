@@ -4,7 +4,10 @@
 
 #include "chrome/browser/browsing_data/access_context_audit_database.h"
 
+#include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/rand_util.h"
 #include "net/cookies/cookie_util.h"
 #include "sql/database.h"
 #include "sql/error_delegate_util.h"
@@ -178,6 +181,10 @@ void AccessContextAuditDatabase::Init(bool restore_non_persistent_cookies) {
     DeleteNonPersistentCookies(&db_);
 
   transaction.Commit();
+
+  // Computing metrics is costly, only perform it in 1% of startups.
+  if (base::RandInt(1, 100) == 50)
+    ComputeDatabaseMetrics();
 }
 
 bool AccessContextAuditDatabase::InitializeSchema() {
@@ -217,6 +224,58 @@ bool AccessContextAuditDatabase::InitializeSchema() {
       "PRIMARY KEY (top_frame_origin, origin, type))");
 
   return db_.Execute(create_table.c_str());
+}
+
+void AccessContextAuditDatabase::ComputeDatabaseMetrics() {
+  // Calculate database file size in KB.
+  int64_t file_size = 0;
+  if (!base::GetFileSize(db_file_path_, &file_size))
+    return;
+  base::UmaHistogramMemoryKB("Privacy.AccessContextAudit.DatabaseSize",
+                             static_cast<int>(file_size / 1024));
+
+  // Count the total number of records stored.
+  std::string record_count =
+      "SELECT (SELECT COUNT(*) FROM cookies) + "
+      "(SELECT COUNT(*) FROM originStorageAPIs)";
+  sql::Statement record_count_statement(
+      db_.GetCachedStatement(SQL_FROM_HERE, record_count.c_str()));
+  base::UmaHistogramCounts100000(
+      "Privacy.AccessContextAudit.RecordCount",
+      record_count_statement.Step() ? record_count_statement.ColumnInt(0) : 0);
+
+  // Count the unique number of unique top frame origins.
+  std::string top_frame_origin_count =
+      "SELECT COUNT(*) FROM (SELECT DISTINCT top_frame_origin FROM cookies"
+      " UNION SELECT DISTINCT top_frame_origin FROM originStorageAPIs)";
+  sql::Statement top_frame_origin_count_statement(
+      db_.GetCachedStatement(SQL_FROM_HERE, top_frame_origin_count.c_str()));
+  base::UmaHistogramCounts10000(
+      "Privacy.AccessContextAudit.TopFrameOriginCount",
+      top_frame_origin_count_statement.Step()
+          ? top_frame_origin_count_statement.ColumnInt(0)
+          : 0);
+
+  // Count the number of unique origins using origin keyed storage APIs.
+  std::string storage_origin_count =
+      "SELECT COUNT(DISTINCT origin) FROM originStorageAPIs";
+  sql::Statement storage_origin_count_statement(
+      db_.GetCachedStatement(SQL_FROM_HERE, storage_origin_count.c_str()));
+  base::UmaHistogramCounts10000(
+      "Privacy.AccessContextAudit.StorageOriginCount",
+      storage_origin_count_statement.Step()
+          ? storage_origin_count_statement.ColumnInt(0)
+          : 0);
+
+  // Count the number of unique cookie domains.
+  std::string cookie_domain_count =
+      "SELECT COUNT(DISTINCT domain) FROM cookies";
+  sql::Statement cookie_domain_count_statement(
+      db_.GetCachedStatement(SQL_FROM_HERE, cookie_domain_count.c_str()));
+  base::UmaHistogramCounts10000("Privacy.AccessContextAudit.CookieDomainCount",
+                                cookie_domain_count_statement.Step()
+                                    ? cookie_domain_count_statement.ColumnInt(0)
+                                    : 0);
 }
 
 void AccessContextAuditDatabase::AddRecords(

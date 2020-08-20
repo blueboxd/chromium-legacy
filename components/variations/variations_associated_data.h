@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/metrics/field_trial.h"
 #include "components/variations/active_field_trials.h"
 
 // This file provides various helpers that extend the functionality around
@@ -36,17 +37,21 @@
 //  std::string value = GetVariationParamValue("trial", "param_x");
 //  // use |value|, which will be "" if it does not exist
 //
-// VariationID id = GetGoogleVariationID(GOOGLE_WEB_PROPERTIES, "trial",
-//                                       "group1");
+// VariationID id = GetGoogleVariationID(
+//     GOOGLE_WEB_PROPERTIES_ANY_CONTEXT, "trial", "group1");
 // if (id != variations::EMPTY_ID) {
 //   // use |id|
 // }
 
-namespace base {
-struct Feature;
-}  // namespace base
-
 namespace variations {
+
+namespace internal {
+// A feature that supports more finely-grained control over the transmission of
+// VariationIDs to Google web properties by allowing some VariationIDs to not be
+// transmitted in all contexts. See IsFirstPartyContext() in
+// variations_http_headers.cc for more details.
+extern const base::Feature kRestrictGoogleWebVisibility;
+}  // namespace internal
 
 typedef int VariationID;
 
@@ -55,16 +60,26 @@ const VariationID EMPTY_ID = 0;
 // A key into the Associate/Get methods for VariationIDs. This is used to create
 // separate ID associations for separate parties interested in VariationIDs.
 enum IDCollectionKey {
-  // This collection is used by Google web properties, transmitted through the
-  // X-Client-Data header.
-  GOOGLE_WEB_PROPERTIES,
+  // The IDs in this collection are used by Google web properties and are
+  // transmitted via the X-Client-Data header. These IDs are transmitted in
+  // first- and third-party contexts.
+  GOOGLE_WEB_PROPERTIES_ANY_CONTEXT,
+  // Used when kRestrictGoogleWebVisibility is enabled. The IDs in this
+  // collection are used by Google web properties and are transmitted via the
+  // X-Client-Data header. These IDs are transmitted in first-party contexts.
+  GOOGLE_WEB_PROPERTIES_FIRST_PARTY,
   // This collection is used by Google web properties for signed in users only,
   // transmitted through the X-Client-Data header.
   GOOGLE_WEB_PROPERTIES_SIGNED_IN,
-  // This collection is used by Google web properties for IDs that trigger
-  // server side experimental behavior, transmitted through the
-  // X-Client-Data header.
-  GOOGLE_WEB_PROPERTIES_TRIGGER,
+  // The IDs in this collection are used by Google web properties to trigger
+  // server-side experimental behavior and are transmitted via the X-Client-Data
+  // header. These IDs are transmitted in first- and third-party contexts.
+  GOOGLE_WEB_PROPERTIES_TRIGGER_ANY_CONTEXT,
+  // Used when kRestrictGoogleWebVisibility is enabled. The IDs in this
+  // collection are used by Google web properties to trigger server-side
+  // experimental behavior and are transmitted via the X-Client-Data header.
+  // These IDs are transmitted in first-party contexts.
+  GOOGLE_WEB_PROPERTIES_TRIGGER_FIRST_PARTY,
   // This collection is used by the Google App and is passed at the time
   // the cross-app communication is triggered.
   GOOGLE_APP,

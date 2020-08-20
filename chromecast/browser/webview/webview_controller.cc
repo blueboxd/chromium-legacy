@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chromecast/base/version.h"
 #include "chromecast/browser/cast_web_contents_impl.h"
+#include "chromecast/browser/cast_web_preferences.h"
 #include "chromecast/browser/webview/proto/webview.pb.h"
 #include "chromecast/browser/webview/webview_navigation_throttle.h"
 #include "content/public/browser/browser_context.h"
@@ -43,15 +44,16 @@ class WebviewUserData : public base::SupportsUserData::Data {
   WebviewController* controller_;
 };
 
-void UpdateWebkitPreferences(content::RenderViewHost* render_view_host) {
-  content::WebPreferences prefs =
-      content::WebContents::FromRenderViewHost(render_view_host)
-          ->GetOrCreateWebPreferences();
-  // Allow Webviews to show scrollbars. These are globally disabled since Cast
-  // Apps are not expected to be scrollable.
-  prefs.hide_scrollbars = false;
-  content::WebContents::FromRenderViewHost(render_view_host)
-      ->SetWebPreferences(prefs);
+CastWebPreferences* GetCastPreferencesFor(content::WebContents* web_contents) {
+  return static_cast<CastWebPreferences*>(web_contents->GetUserData(
+      CastWebPreferences::kCastWebPreferencesDataKey));
+}
+
+void UpdateWebkitPreferences(content::WebContents* web_contents,
+                             CastWebPreferences* cast_prefs) {
+  content::WebPreferences prefs = web_contents->GetOrCreateWebPreferences();
+  cast_prefs->Update(&prefs);
+  web_contents->SetWebPreferences(prefs);
 }
 
 }  // namespace
@@ -64,6 +66,14 @@ WebviewController::WebviewController(content::BrowserContext* browser_context,
   contents_ = content::WebContents::Create(create_params);
   contents_->SetUserData(kWebviewResponseUserDataKey,
                          std::make_unique<WebviewUserData>(this));
+  contents_->SetUserData(CastWebPreferences::kCastWebPreferencesDataKey,
+                         std::make_unique<CastWebPreferences>());
+
+  // Allow Webviews to show scrollbars. These are globally disabled since Cast
+  // Apps are not expected to be scrollable.
+  GetCastPreferencesFor(contents_.get())->preferences()->hide_scrollbars =
+      false;
+
   CastWebContents::InitParams cast_contents_init;
   cast_contents_init.is_root_window = true;
   cast_contents_init.enabled_for_dev = enabled_for_dev;
@@ -143,6 +153,15 @@ void WebviewController::ProcessRequest(const webview::WebviewRequest& request) {
       }
       break;
 
+    case webview::WebviewRequest::kSetAutoMediaPlaybackPolicy:
+      if (request.has_set_auto_media_playback_policy()) {
+        HandleSetAutoMediaPlaybackPolicy(
+            request.set_auto_media_playback_policy());
+      } else {
+        client_->OnError("set_auto_media_playback_policy() not supplied");
+      }
+      break;
+
     default:
       WebContentController::ProcessRequest(request);
       break;
@@ -152,9 +171,10 @@ void WebviewController::ProcessRequest(const webview::WebviewRequest& request) {
 void WebviewController::HandleUpdateSettings(
     const webview::UpdateSettingsRequest& request) {
   content::WebContents* contents = GetWebContents();
-  content::WebPreferences prefs = contents->GetOrCreateWebPreferences();
-  prefs.javascript_enabled = request.javascript_enabled();
-  contents->SetWebPreferences(prefs);
+  CastWebPreferences* cast_prefs = GetCastPreferencesFor(contents);
+
+  cast_prefs->preferences()->javascript_enabled = request.javascript_enabled();
+  UpdateWebkitPreferences(contents, cast_prefs);
 
   has_navigation_delegate_ = request.has_navigation_delegate();
 
@@ -169,6 +189,18 @@ void WebviewController::HandleUpdateSettings(
   }
 }
 
+void WebviewController::HandleSetAutoMediaPlaybackPolicy(
+    const webview::SetAutoMediaPlaybackPolicyRequest& request) {
+  content::WebContents* contents = GetWebContents();
+  CastWebPreferences* cast_prefs = GetCastPreferencesFor(contents);
+
+  cast_prefs->preferences()->autoplay_policy =
+      request.require_user_gesture()
+          ? content::AutoplayPolicy::kUserGestureRequired
+          : content::AutoplayPolicy::kNoUserGestureRequired;
+  UpdateWebkitPreferences(contents, cast_prefs);
+}
+
 void WebviewController::DidFirstVisuallyNonEmptyPaint() {
   if (client_) {
     std::unique_ptr<webview::WebviewResponse> response =
@@ -179,12 +211,6 @@ void WebviewController::DidFirstVisuallyNonEmptyPaint() {
     event->set_did_first_visually_non_empty_paint(true);
     client_->EnqueueSend(std::move(response));
   }
-}
-
-void WebviewController::RenderViewCreated(
-    content::RenderViewHost* render_view_host) {
-  WebContentController::RenderViewCreated(render_view_host);
-  UpdateWebkitPreferences(render_view_host);
 }
 
 void WebviewController::SendNavigationEvent(

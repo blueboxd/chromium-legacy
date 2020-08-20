@@ -36,6 +36,7 @@
 #include "components/sync/nigori/nigori_model_type_processor.h"
 #include "components/sync/nigori/nigori_storage_impl.h"
 #include "components/sync/nigori/nigori_sync_bridge_impl.h"
+#include "components/sync/protocol/sync_invalidations_payload.pb.h"
 
 // Helper macros to log with the syncer thread name; useful when there
 // are multiple syncers involved.
@@ -589,12 +590,25 @@ void SyncEngineBackend::DoOnInvalidationReceived(const std::string& payload) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(
       base::FeatureList::IsEnabled(switches::kSubscribeForSyncInvalidations));
-  // TODO(crbug.com/1102322): use data types from active or from payload.
-  const ModelTypeSet active_datatypes{ModelType::BOOKMARKS};
-  for (const ModelType type : active_datatypes) {
+
+  sync_pb::SyncInvalidationsPayload payload_message;
+  // TODO(crbug.com/1119804): Track parsing failures in a histogram.
+  if (!payload_message.ParseFromString(payload)) {
+    return;
+  }
+  for (const auto& data_type_invalidation :
+       payload_message.data_type_invalidations()) {
+    const int field_number = data_type_invalidation.data_type_id();
+    ModelType model_type = GetModelTypeFromSpecificsFieldNumber(field_number);
+    if (!IsRealDataType(model_type)) {
+      DLOG(WARNING) << "Unknown field number " << field_number;
+      continue;
+    }
+
+    // TODO(crbug.com/1119798): Use only enabled data types.
     std::unique_ptr<InvalidationInterface> inv_adapter =
-        std::make_unique<SyncInvalidationAdapter>(payload);
-    sync_manager_->OnIncomingInvalidation(type, std::move(inv_adapter));
+        std::make_unique<SyncInvalidationAdapter>(payload_message.hint());
+    sync_manager_->OnIncomingInvalidation(model_type, std::move(inv_adapter));
   }
 }
 

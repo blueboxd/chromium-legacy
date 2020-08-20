@@ -134,6 +134,7 @@ template("ios_test_runner_wrapper") {
       "//testing/test_env.py",
       "//.vpython",
       "//ios/build/bots/scripts/",
+      "//testing/test_env.py",
     ]
   }
 }

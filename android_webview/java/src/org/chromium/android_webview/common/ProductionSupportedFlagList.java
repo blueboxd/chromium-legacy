@@ -83,5 +83,7 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature("WebComponentsV0",
                     "Re-enables the deprecated Web Components v0 features (Shadow DOM v0, Custom "
                             + "Elements v0, and HTML Imports)."),
+            Flag.baseFeature(AwFeatures.WEBVIEW_DISPLAY_CUTOUT,
+                    "Enables display cutout (notch) support in WebView for Android P and above."),
     };
 }

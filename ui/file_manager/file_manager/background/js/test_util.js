@@ -549,9 +549,17 @@ test.util.async.renderWindowTextDirectionRTL = (contentWindow, callback) => {
  * Maps the path to the replaced attribute to the PrepareFake instance that
  * replaced it, to be able to restore the original value.
  *
- * @private {Object<string, test.util.PrepareFake}
+ * @private {Object<string, test.util.PrepareFake>}
  */
 test.util.backgroundReplacedObjects_ = {};
+
+/**
+ * Map the appId to a map of all fakes applied in the foreground window e.g.:
+ *  {'files#0': {'chrome.bla.api': FAKE}
+ *
+ * @private {Object<string, Object<string, test.util.PrepareFake>>}
+ */
+test.util.foregroundReplacedObjects_ = {};
 
 /**
  * @param {string} attrName
@@ -560,14 +568,16 @@ test.util.backgroundReplacedObjects_ = {};
  */
 test.util.staticFakeFactory = (attrName, staticValue) => {
   const fake = (...args) => {
-    console.warn(`staticFake for ${staticValue}`);
-    // Find the first callback.
-    for (const arg of args) {
-      if (arg instanceof Function) {
-        return arg(staticValue);
+    setTimeout(() => {
+      // Find the first callback.
+      for (const arg of args) {
+        if (typeof arg === 'function') {
+          console.warn(`staticFake for ${attrName} value: ${staticValue}`);
+          return arg(staticValue);
+        }
       }
-    }
-    throw new Error(`Couldn't find callback for ${attrName}`);
+      throw new Error(`Couldn't find callback for ${attrName}`);
+    }, 0);
   };
   return fake;
 };
@@ -580,6 +590,14 @@ test.util.staticFakeFactory = (attrName, staticValue) => {
  */
 test.util.fakes_ = {
   'static_fake': test.util.staticFakeFactory,
+};
+
+/**
+ * @enum {string}
+ */
+test.util.FakeType = {
+  FOREGROUND_FAKE: 'FOREGROUND_FAKE',
+  BACKGROUND_FAKE: 'BACKGROUND_FAKE',
 };
 
 /**
@@ -652,6 +670,12 @@ test.util.PrepareFake = class {
      * @private {boolean}
      */
     this.prepared_ = false;
+
+    /**
+     * Counter to record the number of times the static fake is called.
+     * @private {number}
+     */
+    this.callCounter_ = 0;
   }
 
   /**
@@ -667,8 +691,10 @@ test.util.PrepareFake = class {
   /**
    * Replaces the original implementation with the fake.
    * NOTE: It requires prepare() to have been called.
+   * @param {test.util.FakeType} fakeType Foreground or background fake.
+   * @param {Window} contentWindow Window to be tested.
    */
-  replace() {
+  replace(fakeType, contentWindow) {
     const suffix = `for ${this.attrName_} ${this.fakeId_}`;
     if (!this.prepared_) {
       throw new Error(`PrepareFake prepare() not called ${suffix}`);
@@ -683,8 +709,11 @@ test.util.PrepareFake = class {
       throw new Error(`Missing leafAttrName_ ${suffix}`);
     }
 
-    this.saveOriginal_();
-    this.parentObject_[this.leafAttrName_] = this.fake_;
+    this.saveOriginal_(fakeType, contentWindow);
+    this.parentObject_[this.leafAttrName_] = (...args) => {
+      this.fake_(...args);
+      this.callCounter_++;
+    };
   }
 
   /**
@@ -701,13 +730,31 @@ test.util.PrepareFake = class {
 
   /**
    * Saves the original implementation to be able restore it later.
+   * @param {test.util.FakeType} fakeType Foreground or background fake.
+   * @param {Window} contentWindow Window to be tested.
    */
-  saveOriginal_() {
-    // Only save once, otherwise it can save an object that is already fake.
-    if (!test.util.backgroundReplacedObjects_[this.attrName_]) {
-      const original = this.parentObject_[this.leafAttrName_];
-      this.original_ = original;
-      test.util.backgroundReplacedObjects_[this.attrName_] = this;
+  saveOriginal_(fakeType, contentWindow) {
+    if (fakeType === test.util.FakeType.FOREGROUND_FAKE) {
+      const windowFakes =
+          test.util.foregroundReplacedObjects_[contentWindow.appID] || {};
+      test.util.foregroundReplacedObjects_[contentWindow.appID] = windowFakes;
+
+      // Only save once, otherwise it can save an object that is already fake.
+      if (!windowFakes[this.attrName_]) {
+        const original = this.parentObject_[this.leafAttrName_];
+        this.original_ = original;
+        windowFakes[this.attrName_] = this;
+      }
+      return;
+    }
+
+    if (fakeType === test.util.FakeType.BACKGROUND_FAKE) {
+      // Only save once, otherwise it can save an object that is already fake.
+      if (!test.util.backgroundReplacedObjects_[this.attrName_]) {
+        const original = this.parentObject_[this.leafAttrName_];
+        this.original_ = original;
+        test.util.backgroundReplacedObjects_[this.attrName_] = this;
+      }
     }
   }
 
@@ -770,7 +817,7 @@ test.util.sync.backgroundFake = (fakeData) => {
 
     const fake = new test.util.PrepareFake(path, fakeId, window, ...fakeArgs);
     fake.prepare();
-    fake.replace();
+    fake.replace(test.util.FakeType.BACKGROUND_FAKE, window);
   }
 };
 
@@ -789,44 +836,60 @@ test.util.sync.removeAllBackgroundFakes = () => {
 };
 
 /**
- * Records if sharesheet was invoked.
- *
- * @private {boolean}
- */
-test.util.sharesheetInvoked_ = false;
-
-/**
- * Override the sharesheet-related methods in private api for test.
+ * Replaces implementations in the foreground page with fakes.
  *
  * @param {Window} contentWindow Window to be tested.
+ * @param {Object{<string, Array>}} fakeData An object mapping the path to the
+ * object to be replaced and the value is the Array with fake id and additinal
+ * arguments for the fake constructor, e.g.:
+ *   fakeData = {
+ *     'chrome.app.window.create' : [
+ *       'static_fake',
+ *       ['some static value', 'other arg'],
+ *     ]
+ *   }
+ *
+ *  This will replace the API 'chrome.app.window.create' with a static fake,
+ *  providing the additional data to static fake: ['some static value', 'other
+ *  value'].
  */
-test.util.sync.overrideSharesheetApi = contentWindow => {
-  test.util.sharesheetInvoked_ = false;
-  const sharesheetHasTargets = (entries, hasTargets) => {
-    setTimeout(() => {
-      hasTargets(true);
-    }, 0);
-  };
-
-  const invokeSharesheet = (entries, callback) => {
-    test.util.sharesheetInvoked_ = true;
-    setTimeout(() => {
-      callback();
-    }, 0);
-  };
-
-  contentWindow.chrome.fileManagerPrivate.sharesheetHasTargets =
-      sharesheetHasTargets;
-  contentWindow.chrome.fileManagerPrivate.invokeSharesheet = invokeSharesheet;
+test.util.sync.foregroundFake = (contentWindow, fakeData) => {
+  for (const [path, mockValue] of Object.entries(fakeData)) {
+    const fakeId = mockValue[0];
+    const fakeArgs = mockValue[1] || [];
+    const fake =
+        new test.util.PrepareFake(path, fakeId, contentWindow, ...fakeArgs);
+    fake.prepare();
+    fake.replace(test.util.FakeType.FOREGROUND_FAKE, contentWindow);
+  }
 };
 
 /**
- * Obtains if the sharesheet invoked.
+ * Removes all fakes that were applied to the foreground page.
  * @param {Window} contentWindow Window to be tested.
- * @return {boolean} Whether sharesheet invoked.
  */
-test.util.sync.sharesheetInvoked = contentWindow => {
-  return test.util.sharesheetInvoked_;
+test.util.sync.removeAllForegroundFakes = (contentWindow) => {
+  const savedFakes =
+      Object.entries(test.util.foregroundReplacedObjects_[contentWindow.appID]);
+  let removedCount = 0;
+  for (const [path, fake] of savedFakes) {
+    fake.restore();
+    removedCount++;
+  }
+
+  return removedCount;
+};
+
+/**
+ * Obtains the number of times the static fake api is called.
+ * @param {Window} contentWindow Window to be tested.
+ * @param {string} fakedApi Path of the method that is faked.
+ * @return {number} Number of times the fake api called.
+ */
+test.util.sync.staticFakeCounter = (contentWindow, fakedApi) => {
+  const fake =
+      test.util.foregroundReplacedObjects_[contentWindow.appID][fakedApi];
+  return fake.callCounter_;
 };
 
 // Register the test utils.

@@ -177,8 +177,8 @@ TEST_F(VariationsSeedProcessorTest, AllowForceGroupAndVariationId) {
   EXPECT_EQ(kFlagGroup1Name,
             base::FieldTrialList::FindFullName(kFlagStudyName));
 
-  VariationID id = GetGoogleVariationID(GOOGLE_WEB_PROPERTIES, kFlagStudyName,
-                                        kFlagGroup1Name);
+  VariationID id = GetGoogleVariationID(GOOGLE_WEB_PROPERTIES_ANY_CONTEXT,
+                                        kFlagStudyName, kFlagGroup1Name);
   EXPECT_EQ(kExperimentId, id);
 }
 
@@ -593,8 +593,8 @@ TEST_F(VariationsSeedProcessorTest, ForcingFlagAlreadyForced) {
 
   // Check that params and experiment ids correspond.
   EXPECT_EQ("y", GetVariationParamValue(study.name(), "x"));
-  VariationID id = GetGoogleVariationID(GOOGLE_WEB_PROPERTIES, kFlagStudyName,
-                                        kNonFlagGroupName);
+  VariationID id = GetGoogleVariationID(GOOGLE_WEB_PROPERTIES_ANY_CONTEXT,
+                                        kFlagStudyName, kNonFlagGroupName);
   EXPECT_EQ(kExperimentId, id);
 }
 

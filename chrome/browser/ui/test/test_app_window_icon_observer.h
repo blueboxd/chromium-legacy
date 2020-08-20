@@ -31,6 +31,8 @@ class TestAppWindowIconObserver
   void WaitForIconUpdate();
   // Waits for |updates| number of icon updates.
   void WaitForIconUpdates(int updates);
+  // Waits for icon updates to get |image_skia|.
+  void WaitForIconUpdates(const gfx::ImageSkia& image_skia);
 
   int icon_updates() const { return icon_updates_; }
 
@@ -53,6 +55,8 @@ class TestAppWindowIconObserver
   std::map<aura::Window*, std::string> last_app_icon_hash_map_;
   base::OnceClosure icon_updated_callback_;
   gfx::ImageSkia last_app_icon_;
+  gfx::ImageSkia expected_image_skia_;
+  base::OnceClosure icon_image_updated_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(TestAppWindowIconObserver);
 };

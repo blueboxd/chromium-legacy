@@ -703,6 +703,7 @@
 <translation id="6402652558933147609"><ph name="ERROR_CODE" />: <ph name="VIOLATED_URL" />.</translation>
 <translation id="6404511346730675251">Изменить закладку</translation>
 <translation id="6406506848690869874">Синхронизация...</translation>
+<translation id="6410883413783534063">Используйте вкладки для одновременного посещения нескольких страниц.</translation>
 <translation id="6412673304250309937">Сверяет URL со списком небезопасных сайтов в Chrome. Кроме того, если вы скачаете вредоносный файл или сайт попытается похитить ваш пароль, Chrome может отправить URL с образцами контента на проверку с помощью Безопасного просмотра.</translation>
 <translation id="641643625718530986">Печать</translation>
 <translation id="6427112570124116297">Перевод веб-страниц</translation>
@@ -821,6 +822,7 @@
 <translation id="7328017930301109123">В упрощенном режиме Chrome быстрее загружает страницы и экономит до 60 процентов трафика.</translation>
 <translation id="7333031090786104871">Предыдущий сайт ещё не добавлен</translation>
 <translation id="7340958967809483333">Параметры рекомендаций</translation>
+<translation id="7352651011704765696">Ошибка</translation>
 <translation id="7352939065658542140">ВИДЕО</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Поделиться 1 выбранным объектом}one{Поделиться # выбранным объектом}few{Поделиться # выбранными объектами}many{Поделиться # выбранными объектами}other{Поделиться # выбранного объекта}}</translation>
 <translation id="7359002509206457351">Доступ к способам оплаты</translation>
@@ -1013,6 +1015,7 @@
 <translation id="868929229000858085">Поиск контактов</translation>
 <translation id="869891660844655955">Срок действия</translation>
 <translation id="8712637175834984815">Готово</translation>
+<translation id="8725066075913043281">Повторить попытку</translation>
 <translation id="8748850008226585750">Содержимое скрыто</translation>
 <translation id="8751914237388039244">Выберите фото</translation>
 <translation id="8758557275681689734">Просмотр всех открытых вкладок</translation>

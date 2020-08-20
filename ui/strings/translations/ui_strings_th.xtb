@@ -154,7 +154,7 @@
 <translation id="5866104238061687188">{YEARS,plural, =1{ใน 1 ปี}other{ใน # ปี}}</translation>
 <translation id="588258955323874662">เต็มหน้าจอ</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{เหลือ 1 วินาที}other{เหลือ # วินาที}}</translation>
-<translation id="5941711191222866238">ย่อ</translation>
+<translation id="5941711191222866238">ย่อเล็กสุด</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 ชั่วโมง}other{# ชั่วโมง}}</translation>
 <translation id="6012623610530968780">หน้า <ph name="SELECTED_PAGE" /> จาก <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">ล้างข้อความในช่องค้นหา</translation>

@@ -20,6 +20,8 @@
     ThemeProperties::COLOR_OMNIBOX_BUBBLE_OUTLINE) \
   E(kColorOmniboxBubbleOutlineExperimentalKeywordMode, \
     ThemeProperties::COLOR_OMNIBOX_BUBBLE_OUTLINE_EXPERIMENTAL_KEYWORD_MODE) \
+  E(kColorOmniboxKeywordSelected, \
+    ThemeProperties::COLOR_OMNIBOX_SELECTED_KEYWORD) \
   E(kColorOmniboxResultsBackground, \
     ThemeProperties::COLOR_OMNIBOX_RESULTS_BG) \
   E(kColorOmniboxResultsBackgroundHovered, \
@@ -44,8 +46,6 @@
     ThemeProperties::COLOR_OMNIBOX_SECURITY_CHIP_DEFAULT) \
   E(kColorOmniboxSecurityChipSecure, \
     ThemeProperties::COLOR_OMNIBOX_SECURITY_CHIP_SECURE) \
-  E(kColorOmniboxSelectedKeyword, \
-    ThemeProperties::COLOR_OMNIBOX_SELECTED_KEYWORD) \
   E(kColorOmniboxText, ThemeProperties::COLOR_OMNIBOX_TEXT) \
   E(kColorOmniboxTextDimmed, ThemeProperties::COLOR_OMNIBOX_TEXT_DIMMED) \
   \

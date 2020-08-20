@@ -55,5 +55,8 @@ extern GuideName* const kTranslateInfobarOptionsGuide;
 // A guide that is constrained to match the frame of the last-tapped voice
 // search button.
 extern GuideName* const kVoiceSearchButtonGuide;
+// A guide that is constrained to match the frame of the Discover feed header's
+// top-level menu button.
+extern GuideName* const kDiscoverFeedHeaderMenuGuide;
 
 #endif  // IOS_CHROME_BROWSER_UI_UTIL_LAYOUT_GUIDE_NAMES_H_

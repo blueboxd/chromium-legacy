@@ -41,14 +41,12 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome no está actualizado</translation>
 <translation id="1919130412786645364">Permitir el inicio de sesión en Chrome</translation>
-<translation id="195645108406520445">Configura tu nuevo Espacio Chrome</translation>
 <translation id="2063848847527508675">Chrome OS se debe reiniciar para que se aplique la actualización.</translation>
 <translation id="2094919256425865063">¿Quieres cerrar Chrome de todas formas?</translation>
 <translation id="2120620239521071941">Se eliminarán <ph name="ITEMS_COUNT" /> elementos de este dispositivo. Para recuperar tus datos en otro momento, inicia sesión en Chrome como <ph name="USER_EMAIL" />.</translation>
 <translation id="2123055963409958220">Genera un informe de la <ph name="BEGIN_LINK" />configuración actual<ph name="END_LINK" /> para ayudar a mejorar Chrome</translation>
 <translation id="2151406531797534936">Reinicia Chrome ahora</translation>
 <translation id="2246246234298806438">Google Chrome no puede mostrar la vista previa de impresión si falta el visor de PDFs integrado.</translation>
-<translation id="226038281051944330">Has iniciado sesión con otra cuenta en el espacio de <ph name="EXISTING_USER" />. ¿Quieres crear un espacio Chrome para <ph name="NEW_USER" /> y mantener tus datos de forma separada?</translation>
 <translation id="2290014774651636340">Faltan las claves de la API de Google. Se inhabilitarán algunas funciones de Google Chrome.</translation>
 <translation id="2290095356545025170">¿Seguro que quieres desinstalar Google Chrome?</translation>
 <translation id="2309047409763057870">Esta instalación de Google Chrome es secundaria, por lo que no se puede establecer como navegador predeterminado.</translation>
@@ -83,7 +81,6 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="3089968997497233615">Hay una nueva versión más segura de Google Chrome disponible.</translation>
 <translation id="3127818369811890733">Chrome OS no ha podido sincronizar los datos.</translation>
 <translation id="3149510190863420837">Aplicaciones de Chrome</translation>
-<translation id="3351117925998652957">Elige tu Espacio Chrome</translation>
 <translation id="3360895254066713204">Ayudante de Chrome</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome se reiniciará ahora}=1{Chrome se reiniciará dentro de 1 segundo}other{Chrome se reiniciará dentro de # segundos}}</translation>
 <translation id="3395323229510056640">Obtener ayuda de Chrome OS</translation>
@@ -106,7 +103,6 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="386202838227397562">Cierra todas las ventanas de Google Chrome y vuelve a intentarlo.</translation>
 <translation id="3865754807470779944">Está instalada la versión <ph name="PRODUCT_VERSION" /> de Chrome</translation>
 <translation id="3873044882194371212">Abrir enlace en una ventana de incó&amp;gnito de Chrome</translation>
-<translation id="3879568094278837081">Los datos de navegación de este espacio se eliminarán de este dispositivo. Para recuperar los datos, inicia sesión en Chrome como</translation>
 <translation id="3889417619312448367">Desinstalar Google Chrome</translation>
 <translation id="4050175100176540509">En la última versión puedes encontrar mejoras de seguridad importantes y nuevas funciones.</translation>
 <translation id="4053720452172726777">Personaliza y controla Google Chrome</translation>
@@ -147,14 +143,12 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="4895437082222824641">Abrir enlace en una pes&amp;taña nueva de Chrome</translation>
 <translation id="4953650215774548573">Establecer Google Chrome como navegador predeterminado</translation>
 <translation id="495931528404527476">En Chrome</translation>
-<translation id="4960472897514318257">Has iniciado sesión con una cuenta de trabajo. ¿Quieres crear un espacio Chrome para <ph name="NEW_USER" /> y mantener tus datos de forma separada?</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5062123544085870375">Reiniciar Chrome OS</translation>
 <translation id="5132929315877954718">Descubre formidables aplicaciones, juegos, extensiones y temas para Google Chrome.</translation>
 <translation id="5170938038195470297">No se puede usar tu perfil porque se corresponde con una versión más reciente de Google Chrome.
 
 Puede que algunas funciones no estén disponibles. Especifica otro directorio de perfil o usa una versión más reciente de Chrome.</translation>
-<translation id="5171117065011130146">¿Crear espacio de trabajo Chrome?</translation>
 <translation id="5193136243808726294">Google Chrome OS no puede abrir esta página.</translation>
 <translation id="5251420635869119124">Los invitados pueden utilizar Chrome sin dejar nada atrás.</translation>
 <translation id="532046782124376502">Advertencia: Google Chrome no puede evitar que las extensiones registren el historial de navegación. Para inhabilitar esta extensión en modo de incógnito, desactiva esta opción.</translation>
@@ -222,7 +216,6 @@ Google Chrome no puede recuperar tu configuración.</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7573289029918943991">Para comprobar si tu dispositivo está actualizado, ve a la <ph name="LINK_BEGIN" />configuración de Chrome OS<ph name="LINK_END" /></translation>
 <translation id="7589360514048265910">Este ordenador no volverá a recibir actualizaciones de Google Chrome porque ya no es compatible con Mac OS X 10.9.</translation>
-<translation id="7591404275842302616">Usa los Espacios Chrome para navegar de forma organizada en este dispositivo</translation>
 <translation id="7592736734348559088">Google Chrome no ha podido sincronizar los datos porque la información de inicio de sesión de tu cuenta está obsoleta.</translation>
 <translation id="7626032353295482388">Te damos la bienvenida a Chrome</translation>
 <translation id="7629695634924605473">Chrome te avisará si tus contraseñas están en riesgo</translation>
@@ -269,9 +262,7 @@ Google Chrome no puede recuperar tu configuración.</translation>
 <translation id="8823341990149967727">Chrome no está actualizado</translation>
 <translation id="8834965163890861871">Google Chrome está intentando cambiar contraseñas. Para permitirlo, escribe tu contraseña de Windows.</translation>
 <translation id="884296878221830158">También controla qué página se muestra al iniciar Chrome o hacer clic en el botón Página de inicio.</translation>
-<translation id="8859948767482842016">Has iniciado sesión con una cuenta de trabajo en el espacio de <ph name="EXISTING_USER" />. ¿Quieres crear un espacio Chrome para <ph name="WORK_DOMAIN" /> y mantener tus datos de forma separada?</translation>
 <translation id="8862326446509486874">No dispones de los derechos necesarios para la instalación en el sistema. Intenta ejecutar de nuevo el programa de instalación como administrador.</translation>
-<translation id="8877586659207810298">¿Crear espacio Chrome para <ph name="NEW_USER" />?</translation>
 <translation id="8914504000324227558">Volver a iniciar Chrome</translation>
 <translation id="8999208279178790196">{0,plural, =0{Hay una actualización de Chrome disponible}=1{Hay una actualización de Chrome disponible}other{Hay una actualización de Chrome disponible desde hace # días}}</translation>
 <translation id="9026991721384951619">Chrome OS no ha podido sincronizar los datos porque la información de inicio de sesión de tu cuenta está obsoleta.</translation>

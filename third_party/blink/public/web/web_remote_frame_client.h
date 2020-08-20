@@ -20,6 +20,7 @@
 #include "third_party/blink/public/web/web_remote_frame.h"
 
 namespace blink {
+struct ScreenInfo;
 class WebURLRequest;
 struct WebRect;
 
@@ -71,6 +72,8 @@ class WebRemoteFrameClient {
   // Called when the local page scale factor changed.
   virtual void PageScaleFactorChanged(float page_scale_factor,
                                       bool is_pinch_gesture_active) {}
+
+  virtual void DidChangeScreenInfo(const ScreenInfo& original_screen_info) {}
 
  protected:
   virtual ~WebRemoteFrameClient() = default;

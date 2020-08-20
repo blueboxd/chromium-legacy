@@ -36,6 +36,7 @@
 #include "third_party/blink/public/mojom/input/focus_type.mojom-shared.h"
 #include "third_party/blink/public/mojom/page/page.mojom-shared.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom-shared.h"
+#include "third_party/blink/public/mojom/widget/screen_orientation.mojom-shared.h"
 #include "third_party/blink/public/platform/cross_variant_mojo_util.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -47,6 +48,7 @@ struct BrowserControlsParams;
 }
 
 namespace gfx {
+class ColorSpace;
 class Point;
 class PointF;
 class Rect;
@@ -321,6 +323,10 @@ class WebView {
 
   virtual WebSize GetSize() = 0;
 
+  // Override the screen orientation override.
+  virtual void SetScreenOrientationOverrideForTesting(
+      base::Optional<blink::mojom::ScreenOrientation> orientation) = 0;
+
   // Auto-Resize -----------------------------------------------------------
 
   // Return the state of the auto resize mode.
@@ -391,6 +397,9 @@ class WebView {
   // know a background colour. This can be overridden by the methods below as
   // well.
   virtual void SetBaseBackgroundColor(SkColor) {}
+
+  virtual void SetDeviceColorSpaceForTesting(
+      const gfx::ColorSpace& color_space) = 0;
 
   // Scheduling -----------------------------------------------------------
 

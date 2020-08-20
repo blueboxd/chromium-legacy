@@ -199,6 +199,9 @@ class MediaHistoryStore : public base::RefCountedThreadSafe<MediaHistoryStore> {
   base::Optional<MediaHistoryKeyedService::MediaFeedFetchDetails>
   GetMediaFeedFetchDetails(const int64_t feed_id);
 
+  void UpdateFeedUserStatus(const int64_t feed_id,
+                            media_feeds::mojom::FeedUserStatus status);
+
  private:
   friend class base::RefCountedThreadSafe<MediaHistoryStore>;
 

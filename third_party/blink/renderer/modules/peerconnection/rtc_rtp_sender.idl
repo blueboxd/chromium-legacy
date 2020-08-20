@@ -16,7 +16,6 @@ interface RTCRtpSender {
     [Measure, RaisesException] void setStreams(MediaStream... streams);
     [CallWith=ScriptState] Promise<RTCStatsReport> getStats();
     [Measure,
-     RuntimeEnabled=RTCInsertableStreams,
      CallWith=ScriptState,
      RaisesException] RTCInsertableStreams createEncodedStreams();
     [DeprecateAs=V8RTCRtpSender_CreateEncodedAudioStreams_Method,

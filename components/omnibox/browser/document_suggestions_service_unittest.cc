@@ -52,9 +52,9 @@ class DocumentSuggestionsServiceTest : public testing::Test {
 
     // Set up a variation.
     variations::VariationsIdsProvider::GetInstance()->ResetForTesting();
-    variations::AssociateGoogleVariationID(variations::GOOGLE_WEB_PROPERTIES,
-                                           "trial name", "group name",
-                                           kVariationID);
+    variations::AssociateGoogleVariationID(
+        variations::GOOGLE_WEB_PROPERTIES_ANY_CONTEXT, "trial name",
+        "group name", kVariationID);
     base::FieldTrialList::CreateFieldTrial("trial name", "group name")->group();
   }
   DocumentSuggestionsServiceTest(const DocumentSuggestionsServiceTest&) =

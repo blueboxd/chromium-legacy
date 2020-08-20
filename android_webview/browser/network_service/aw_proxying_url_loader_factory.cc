@@ -13,18 +13,19 @@
 #include "android_webview/browser/aw_contents_client_bridge.h"
 #include "android_webview/browser/aw_contents_io_thread_client.h"
 #include "android_webview/browser/aw_cookie_access_policy.h"
-#include "android_webview/browser/input_stream.h"
-#include "android_webview/browser/network_service/android_stream_reader_url_loader.h"
 #include "android_webview/browser/network_service/aw_web_resource_intercept_response.h"
 #include "android_webview/browser/network_service/aw_web_resource_response.h"
 #include "android_webview/browser/network_service/net_helpers.h"
 #include "android_webview/browser/renderer_host/auto_login_parser.h"
+#include "android_webview/common/aw_features.h"
 #include "android_webview/common/url_constants.h"
 #include "base/android/build_info.h"
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "components/embedder_support/android/util/input_stream.h"
 #include "components/safe_browsing/core/common/safebrowsing_constants.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -165,14 +166,14 @@ class InterceptedRequest : public network::mojom::URLLoader,
 
 // A ResponseDelegate for responses returned by shouldInterceptRequest.
 class InterceptResponseDelegate
-    : public AndroidStreamReaderURLLoader::ResponseDelegate {
+    : public embedder_support::AndroidStreamReaderURLLoader::ResponseDelegate {
  public:
   explicit InterceptResponseDelegate(
       std::unique_ptr<AwWebResourceResponse> response,
       base::WeakPtr<InterceptedRequest> request)
       : response_(std::move(response)), request_(request) {}
 
-  std::unique_ptr<android_webview::InputStream> OpenInputStream(
+  std::unique_ptr<embedder_support::InputStream> OpenInputStream(
       JNIEnv* env) override {
     return response_->GetInputStream(env);
   }
@@ -186,14 +187,14 @@ class InterceptResponseDelegate
 
   bool GetMimeType(JNIEnv* env,
                    const GURL& url,
-                   android_webview::InputStream* stream,
+                   embedder_support::InputStream* stream,
                    std::string* mime_type) override {
     return response_->GetMimeType(env, mime_type);
   }
 
   bool GetCharset(JNIEnv* env,
                   const GURL& url,
-                  android_webview::InputStream* stream,
+                  embedder_support::InputStream* stream,
                   std::string* charset) override {
     return response_->GetCharset(env, charset);
   }
@@ -221,13 +222,13 @@ class InterceptResponseDelegate
 // protocols, such as content://, file:///android_asset, and file:///android_res
 // URLs.
 class ProtocolResponseDelegate
-    : public AndroidStreamReaderURLLoader::ResponseDelegate {
+    : public embedder_support::AndroidStreamReaderURLLoader::ResponseDelegate {
  public:
   ProtocolResponseDelegate(const GURL& url,
                            base::WeakPtr<InterceptedRequest> request)
       : url_(url), request_(request) {}
 
-  std::unique_ptr<android_webview::InputStream> OpenInputStream(
+  std::unique_ptr<embedder_support::InputStream> OpenInputStream(
       JNIEnv* env) override {
     return CreateInputStream(env, url_);
   }
@@ -241,14 +242,14 @@ class ProtocolResponseDelegate
 
   bool GetMimeType(JNIEnv* env,
                    const GURL& url,
-                   android_webview::InputStream* stream,
+                   embedder_support::InputStream* stream,
                    std::string* mime_type) override {
     return GetInputStreamMimeType(env, url, stream, mime_type);
   }
 
   bool GetCharset(JNIEnv* env,
                   const GURL& url,
-                  android_webview::InputStream* stream,
+                  embedder_support::InputStream* stream,
                   std::string* charset) override {
     // TODO: We should probably be getting this from the managed side.
     return false;
@@ -423,13 +424,15 @@ void InterceptedRequest::ContinueAfterIntercept() {
   if (!input_stream_previously_failed_ &&
       (request_.url.SchemeIs(url::kContentScheme) ||
        android_webview::IsAndroidSpecialFileUrl(request_.url))) {
-    AndroidStreamReaderURLLoader* loader = new AndroidStreamReaderURLLoader(
-        request_, proxied_client_receiver_.BindNewPipeAndPassRemote(),
-        traffic_annotation_,
-        std::make_unique<ProtocolResponseDelegate>(request_.url,
-                                                   weak_factory_.GetWeakPtr()),
-        security_options_);
-    loader->Start();
+    embedder_support::AndroidStreamReaderURLLoader* loader =
+        new embedder_support::AndroidStreamReaderURLLoader(
+            request_, proxied_client_receiver_.BindNewPipeAndPassRemote(),
+            traffic_annotation_,
+            std::make_unique<ProtocolResponseDelegate>(
+                request_.url, weak_factory_.GetWeakPtr()),
+            security_options_);
+    loader->Start(base::FeatureList::IsEnabled(
+        features::kWebViewOriginCheckForStreamReader));
     return;
   }
 
@@ -443,13 +446,15 @@ void InterceptedRequest::ContinueAfterIntercept() {
 
 void InterceptedRequest::ContinueAfterInterceptWithOverride(
     std::unique_ptr<AwWebResourceResponse> response) {
-  AndroidStreamReaderURLLoader* loader = new AndroidStreamReaderURLLoader(
-      request_, proxied_client_receiver_.BindNewPipeAndPassRemote(),
-      traffic_annotation_,
-      std::make_unique<InterceptResponseDelegate>(std::move(response),
-                                                  weak_factory_.GetWeakPtr()),
-      base::nullopt);
-  loader->Start();
+  embedder_support::AndroidStreamReaderURLLoader* loader =
+      new embedder_support::AndroidStreamReaderURLLoader(
+          request_, proxied_client_receiver_.BindNewPipeAndPassRemote(),
+          traffic_annotation_,
+          std::make_unique<InterceptResponseDelegate>(
+              std::move(response), weak_factory_.GetWeakPtr()),
+          base::nullopt);
+  loader->Start(base::FeatureList::IsEnabled(
+      features::kWebViewOriginCheckForStreamReader));
 }
 
 namespace {

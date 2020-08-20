@@ -7,8 +7,6 @@
 
 #include <list>
 
-#include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
 #include "chrome/browser/extensions/window_controller.h"
@@ -25,6 +23,8 @@ class WindowControllerList {
   typedef std::list<WindowController*> ControllerList;
 
   WindowControllerList();
+  WindowControllerList(const WindowControllerList&) = delete;
+  WindowControllerList& operator=(const WindowControllerList&) = delete;
   ~WindowControllerList();
 
   void AddExtensionWindow(WindowController* window);
@@ -63,8 +63,6 @@ class WindowControllerList {
   ControllerList windows_;
 
   base::ObserverList<WindowControllerListObserver>::Unchecked observers_;
-
-  DISALLOW_COPY_AND_ASSIGN(WindowControllerList);
 };
 
 }  // namespace extensions

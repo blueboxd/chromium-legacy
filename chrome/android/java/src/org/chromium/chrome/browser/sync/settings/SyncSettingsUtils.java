@@ -141,7 +141,10 @@ public class SyncSettingsUtils {
                 return context.getString(R.string.hint_passphrase_required);
             case SyncError.TRUSTED_VAULT_KEY_REQUIRED_FOR_EVERYTHING:
             case SyncError.TRUSTED_VAULT_KEY_REQUIRED_FOR_PASSWORDS:
-                return context.getString(R.string.hint_sync_retrieve_keys);
+                return context.getString(
+                        ChromeFeatureList.isEnabled(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)
+                                ? R.string.hint_sync_retrieve_keys
+                                : R.string.hint_sync_retrieve_keys_legacy);
             case SyncError.SYNC_SETUP_INCOMPLETE:
                 return context.getString(R.string.hint_sync_settings_not_confirmed_description);
             case SyncError.NO_ERROR:
@@ -156,6 +159,8 @@ public class SyncSettingsUtils {
             case SyncError.ANDROID_SYNC_DISABLED:
                 return context.getString(R.string.android_sync_disabled_error_card_button);
             case SyncError.AUTH_ERROR:
+            case SyncError.OTHER_ERRORS:
+                // Both these errors should be resolved by signing the user again.
                 return context.getString(R.string.auth_error_card_button);
             case SyncError.CLIENT_OUT_OF_DATE:
                 return context.getString(R.string.client_out_of_date_error_card_button,
@@ -167,7 +172,6 @@ public class SyncSettingsUtils {
                 return context.getString(R.string.trusted_vault_error_card_button);
             case SyncError.SYNC_SETUP_INCOMPLETE:
                 return context.getString(R.string.sync_setup_incomplete_error_card_confirm_button);
-            case SyncError.OTHER_ERRORS:
             case SyncError.NO_ERROR:
             default:
                 return null;

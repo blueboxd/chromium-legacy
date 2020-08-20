@@ -11,7 +11,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.text.TextUtils;
 
-import androidx.annotation.ColorRes;
+import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
@@ -175,7 +175,7 @@ public class AssistantVoiceSearchService implements TemplateUrlService.TemplateU
 
     /** @return The correct ColorStateList for the current theme. */
     public @Nullable ColorStateList getMicButtonColorStateList(
-            @ColorRes int primaryColor, Context context) {
+            @ColorInt int primaryColor, Context context) {
         if (mShouldShowColorfulMic) return null;
 
         final boolean useLightColors =

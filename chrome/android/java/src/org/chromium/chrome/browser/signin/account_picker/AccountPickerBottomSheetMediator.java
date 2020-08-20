@@ -21,6 +21,7 @@ import org.chromium.components.signin.AccountsChangeObserver;
 import org.chromium.components.signin.base.CoreAccountId;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.base.GoogleServiceAuthError;
+import org.chromium.components.signin.base.GoogleServiceAuthError.State;
 import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.Collections;
@@ -190,8 +191,12 @@ class AccountPickerBottomSheetMediator implements AccountPickerCoordinator.Liste
     }
 
     private void onSignInError(GoogleServiceAuthError error) {
-        // TODO(https://crbug.com/1116952): Implement UI for sign-in auth error
-        mModel.set(AccountPickerBottomSheetProperties.ACCOUNT_PICKER_BOTTOM_SHEET_STATE,
-                AccountPickerBottomSheetState.SIGNIN_GENERAL_ERROR);
+        if (error.getState() == State.INVALID_GAIA_CREDENTIALS) {
+            mModel.set(AccountPickerBottomSheetProperties.ACCOUNT_PICKER_BOTTOM_SHEET_STATE,
+                    AccountPickerBottomSheetState.SIGNIN_AUTH_ERROR);
+        } else {
+            mModel.set(AccountPickerBottomSheetProperties.ACCOUNT_PICKER_BOTTOM_SHEET_STATE,
+                    AccountPickerBottomSheetState.SIGNIN_GENERAL_ERROR);
+        }
     }
 }

@@ -27,6 +27,13 @@ public interface PersistedTabDataStorage {
     /**
      * @param tabId identifier for the {@link Tab}
      * @param tabDataId unique identifier representing the type of {@link PersistedTabData}
+     * @return serialized {@link PersitsedTabData}
+     */
+    byte[] restore(int tabId, String tabDataId);
+
+    /**
+     * @param tabId identifier for the {@link Tab}
+     * @param tabDataId unique identifier representing the type of {@link PersistedTabData}
      */
     void delete(int tabId, String tabDataId);
 

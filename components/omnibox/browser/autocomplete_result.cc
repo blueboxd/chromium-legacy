@@ -393,23 +393,16 @@ void AutocompleteResult::DemoteOnDeviceSearchSuggestions() {
 
 void AutocompleteResult::ConvertInSuggestionPedalMatches(
     AutocompleteProviderClient* client) {
-  const OmniboxPedalProvider* provider = client->GetPedalProvider();
+  OmniboxPedalProvider* provider = client->GetPedalProvider();
   // Used to ensure we keep only one Pedal of each kind.
   std::unordered_set<OmniboxPedal*> pedals_found;
+
+  provider->set_field_trial_triggered(false);
+
   for (auto& match : matches_) {
-    if (OmniboxFieldTrial::IsSuggestionButtonRowEnabled()) {
-      // Skip only matches that have already detected their pedal. With the
-      // button row enabled, a pedal may attach along with tab switch and
-      // associated keyword buttons.
-      if (match.pedal)
-        continue;
-    } else {
-      // Skip matches that will not show Pedal because they already
-      // have a tab match or associated keyword.  Also skip matches
-      // that have already detected their Pedal.
-      if (match.has_tab_match || match.associated_keyword || match.pedal)
-        continue;
-    }
+    // Skip matches that have already detected their pedal.
+    if (match.pedal)
+      continue;
 
     OmniboxPedal* const pedal = provider->FindPedalMatch(match.contents);
     if (pedal) {

@@ -48,8 +48,7 @@ def _ParseOptions(args):
 
 
 def _RunDexsplitter(options, output_dir):
-  cmd = [
-      build_utils.JAVA_PATH,
+  cmd = build_utils.JavaCmd() + [
       '-cp',
       options.r8_path,
       'com.android.tools.r8.dexsplitter.DexSplitter',

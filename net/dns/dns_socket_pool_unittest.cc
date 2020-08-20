@@ -4,105 +4,72 @@
 
 #include "net/dns/dns_socket_pool.h"
 
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/memory/weak_ptr.h"
-#include "net/base/rand_callback.h"
+#include "net/base/ip_endpoint.h"
+#include "net/base/net_errors.h"
+#include "net/log/net_log_source.h"
 #include "net/socket/client_socket_factory.h"
+#include "net/socket/datagram_client_socket.h"
+#include "net/socket/socket_test_util.h"
+#include "net/test/gtest_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
 namespace {
 
-class DummyObject {
- public:
-  DummyObject() {}
-
-  base::WeakPtr<DummyObject> GetWeakPtr() { return weak_factory_.GetWeakPtr(); }
-
-  bool HasWeakPtrs() const { return weak_factory_.HasWeakPtrs(); }
-
- private:
-  base::WeakPtrFactory<DummyObject> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(DummyObject);
-};
-
-class DummyRandIntCallback {
- public:
-  DummyRandIntCallback() = default;
-
-  RandIntCallback MakeCallback() {
-    return base::BindRepeating(&DummyRandIntCallback::GetRandInt,
-                               dummy_.GetWeakPtr());
-  }
-
-  bool HasRefs() const { return dummy_.HasWeakPtrs(); }
-
- private:
-  static int GetRandInt(base::WeakPtr<DummyObject> dummy, int from, int to) {
-    // Chosen by fair dice roll. Guaranteed to be random.
-    return 4;
-  }
-
-  DummyObject dummy_;
-
-  DISALLOW_COPY_AND_ASSIGN(DummyRandIntCallback);
-};
-
-// Since the below tests rely upon it, make sure that DummyRandIntCallback
-// can reliably tell whether there are other refs to the callback it returns.
-
-// A const reference to the callback shouldn't keep the callback referenced.
-TEST(DummyRandIntCallbackTest, Referenced) {
-  DummyRandIntCallback dummy;
-
-  RandIntCallback original = dummy.MakeCallback();
-  EXPECT_TRUE(dummy.HasRefs());
-  const RandIntCallback& reference = original;
-  EXPECT_TRUE(dummy.HasRefs());
-
-  EXPECT_EQ(4, reference.Run(0, 6));
-
-  original.Reset();
-  EXPECT_FALSE(dummy.HasRefs());
-}
-
-// A copy of the callback should keep the callback referenced.
-TEST(DummyRandIntCallbackTest, Copied) {
-  DummyRandIntCallback dummy;
-
-  RandIntCallback original = dummy.MakeCallback();
-  EXPECT_TRUE(dummy.HasRefs());
-  RandIntCallback copy = original;
-  EXPECT_TRUE(dummy.HasRefs());
-
-  EXPECT_EQ(4, copy.Run(0, 6));
-
-  original.Reset();
-  EXPECT_TRUE(dummy.HasRefs());
-}
+const IPEndPoint kEndpoint0(IPAddress(1, 2, 3, 4), 578);
+const IPEndPoint kEndpoint1(IPAddress(2, 3, 4, 5), 678);
 
 class DnsSocketPoolTest : public ::testing::Test {
  protected:
-  DummyRandIntCallback dummy_;
+  void SetUp() override {
+    pool_ = std::make_unique<DnsSocketPool>(&socket_factory_, nameservers_,
+                                            nullptr /* net_log */);
+  }
+
+  MockClientSocketFactory socket_factory_;
+  std::vector<IPEndPoint> nameservers_ = {kEndpoint0, kEndpoint1};
   std::unique_ptr<DnsSocketPool> pool_;
 };
 
-// Make sure that the DnsSocketPools returned by CreateDefault and CreateNull
-// both retain (by copying the RandIntCallback object, instead of taking a
-// reference) the RandIntCallback used for creating sockets.
+TEST_F(DnsSocketPoolTest, CreateConnectedUdpSocket) {
+  // Prep socket factory for a single do-nothing socket.
+  StaticSocketDataProvider data_provider;
+  socket_factory_.AddSocketDataProvider(&data_provider);
 
-TEST_F(DnsSocketPoolTest, DefaultCopiesCallback) {
-  pool_ = DnsSocketPool::CreateDefault(ClientSocketFactory::GetDefaultFactory(),
-                                       dummy_.MakeCallback());
-  EXPECT_TRUE(dummy_.HasRefs());
+  std::unique_ptr<DatagramClientSocket> socket =
+      pool_->CreateConnectedUdpSocket(1 /* server_index */);
+
+  ASSERT_TRUE(socket);
+
+  IPEndPoint peer_address;
+  ASSERT_THAT(socket->GetPeerAddress(&peer_address), test::IsOk());
+  EXPECT_EQ(peer_address, kEndpoint1);
 }
 
-TEST_F(DnsSocketPoolTest, NullCopiesCallback) {
-  pool_ = DnsSocketPool::CreateNull(ClientSocketFactory::GetDefaultFactory(),
-                                    dummy_.MakeCallback());
-  EXPECT_TRUE(dummy_.HasRefs());
+TEST_F(DnsSocketPoolTest, CreateConnectedUdpSocket_ConnectError) {
+  // Prep socket factory for a single socket with connection failure.
+  MockConnect connect_data;
+  connect_data.result = ERR_INSUFFICIENT_RESOURCES;
+  StaticSocketDataProvider data_provider;
+  data_provider.set_connect_data(connect_data);
+  socket_factory_.AddSocketDataProvider(&data_provider);
+
+  std::unique_ptr<DatagramClientSocket> socket =
+      pool_->CreateConnectedUdpSocket(0 /* server_index */);
+
+  EXPECT_FALSE(socket);
+}
+
+TEST_F(DnsSocketPoolTest, CreateTcpSocket) {
+  // Prep socket factory for a single do-nothing socket.
+  StaticSocketDataProvider data_provider;
+  socket_factory_.AddSocketDataProvider(&data_provider);
+
+  std::unique_ptr<StreamSocket> socket =
+      pool_->CreateTcpSocket(1 /* server_index */, NetLogSource());
+
+  EXPECT_TRUE(socket);
 }
 
 }  // namespace

@@ -591,7 +591,7 @@ public class IntentHandler {
     public static int getReferrerPolicyFromIntent(Intent intent) {
         int policy =
                 IntentUtils.safeGetIntExtra(intent, EXTRA_REFERRER_POLICY, ReferrerPolicy.DEFAULT);
-        if (policy < 0 || policy >= ReferrerPolicy.LAST) {
+        if (policy < ReferrerPolicy.MIN_VALUE || policy >= ReferrerPolicy.MAX_VALUE) {
             policy = ReferrerPolicy.DEFAULT;
         }
         return policy;

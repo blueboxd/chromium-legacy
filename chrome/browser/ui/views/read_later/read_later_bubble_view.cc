@@ -54,6 +54,7 @@ ReadLaterBubbleView::ReadLaterBubbleView(const Browser* browser,
 
   // TODO(corising): Remove this and add function to calculate preferred size.
   web_view_->SetPreferredSize(gfx::Size(300, 500));
+  web_view_->LoadInitialURL(GURL(chrome::kChromeUIReadLaterURL));
 }
 
 ReadLaterBubbleView::~ReadLaterBubbleView() = default;

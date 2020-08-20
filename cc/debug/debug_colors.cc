@@ -325,6 +325,7 @@ SkColor DebugColors::PaintTimeDisplayTextAndGraphColor() {
 SkColor DebugColors::NonLCDTextHighlightColor(LCDTextDisallowedReason reason) {
   switch (reason) {
     case LCDTextDisallowedReason::kNone:
+    case LCDTextDisallowedReason::kNoText:
       return SK_ColorTRANSPARENT;
     case LCDTextDisallowedReason::kSetting:
       return SkColorSetARGB(96, 128, 255, 0);

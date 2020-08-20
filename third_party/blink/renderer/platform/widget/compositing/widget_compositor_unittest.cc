@@ -37,6 +37,8 @@ class StubWidgetBaseClient : public WidgetBaseClient {
       const VisualProperties& visual_properties) override {}
   void UpdateScreenRects(const gfx::Rect& widget_screen_rect,
                          const gfx::Rect& window_screen_rect) override {}
+  ScreenInfo GetOriginalScreenInfo() override { return ScreenInfo(); }
+  gfx::Rect ViewportVisibleRect() override { return gfx::Rect(); }
 };
 
 class FakeWidgetCompositor : public WidgetCompositor {

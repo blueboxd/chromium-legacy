@@ -1006,7 +1006,7 @@ class BBJSONGenerator(object):
         full_suite.update(suite)
       compound_suites[name] = full_suite
 
-  def resolve_variants(self, basic_test_definition, variants):
+  def resolve_variants(self, basic_test_definition, variants, mixins):
     """ Merge variant-defined configurations to each test case definition in a
     test suite.
 
@@ -1044,7 +1044,7 @@ class BBJSONGenerator(object):
         cloned_config['args'] = (cloned_config.get('args', []) +
                                  cloned_variant.get('args', []))
         cloned_config['mixins'] = (cloned_config.get('mixins', []) +
-                                   cloned_variant.get('mixins', []))
+                                   cloned_variant.get('mixins', []) + mixins)
 
         basic_swarming_def = cloned_config.get('swarming', {})
         variant_swarming_def = cloned_variant.get('swarming', {})
@@ -1089,8 +1089,10 @@ class BBJSONGenerator(object):
         basic_test_def = copy.deepcopy(basic_suites[test_suite])
 
         if 'variants' in mtx_test_suite_config:
+          mixins = mtx_test_suite_config.get('mixins', [])
           result = self.resolve_variants(basic_test_def,
-                                         mtx_test_suite_config['variants'])
+                                         mtx_test_suite_config['variants'],
+                                         mixins)
           full_suite.update(result)
       matrix_compound_suites[test_name] = full_suite
 

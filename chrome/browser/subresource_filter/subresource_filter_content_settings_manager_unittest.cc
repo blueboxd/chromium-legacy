@@ -13,6 +13,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
+#include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -39,9 +40,6 @@ class SubresourceFilterContentSettingsManagerTest : public testing::Test {
         SubresourceFilterProfileContextFactory::GetForProfile(&testing_profile_)
             ->settings_manager();
     settings_manager_->set_should_use_smart_ui_for_testing(true);
-    auto test_clock = std::make_unique<base::SimpleTestClock>();
-    test_clock_ = test_clock.get();
-    settings_manager_->set_clock_for_testing(std::move(test_clock));
   }
 
   HostContentSettingsMap* GetSettingsMap() {
@@ -69,18 +67,18 @@ class SubresourceFilterContentSettingsManagerTest : public testing::Test {
     return CONTENT_SETTING_DEFAULT;
   }
 
-  base::SimpleTestClock* test_clock() { return test_clock_; }
+  content::BrowserTaskEnvironment* task_environment() {
+    return &task_environment_;
+  }
 
  private:
-  content::BrowserTaskEnvironment task_environment_;
+  content::BrowserTaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   base::HistogramTester histogram_tester_;
   TestingProfile testing_profile_;
 
   // Owned by the testing_profile_.
   SubresourceFilterContentSettingsManager* settings_manager_ = nullptr;
-
-  // Owned by the settings_manager_.
-  base::SimpleTestClock* test_clock_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(SubresourceFilterContentSettingsManagerTest);
 };
@@ -104,20 +102,159 @@ TEST_F(SubresourceFilterContentSettingsManagerTest, LogDefaultSetting) {
 }
 
 TEST_F(SubresourceFilterContentSettingsManagerTest,
-       ResetSiteMetadataBasedOnActivation) {
+       SetSiteMetadataBasedOnActivation) {
   GURL url("https://example.test/");
-  EXPECT_FALSE(settings_manager()->GetSiteMetadata(url));
+  EXPECT_FALSE(settings_manager()->GetSiteActivationFromMetadata(url));
   EXPECT_TRUE(settings_manager()->ShouldShowUIForSite(url));
 
-  settings_manager()->ResetSiteMetadataBasedOnActivation(
-      url, true /* is_activated */);
-  EXPECT_TRUE(settings_manager()->GetSiteMetadata(url));
+  settings_manager()->SetSiteMetadataBasedOnActivation(
+      url, true /* is_activated */,
+      SubresourceFilterContentSettingsManager::ActivationSource::kSafeBrowsing);
+  EXPECT_TRUE(settings_manager()->GetSiteActivationFromMetadata(url));
   EXPECT_TRUE(settings_manager()->ShouldShowUIForSite(url));
 
-  settings_manager()->ResetSiteMetadataBasedOnActivation(
-      url, false /* is_activated */);
-  EXPECT_FALSE(settings_manager()->GetSiteMetadata(url));
+  settings_manager()->SetSiteMetadataBasedOnActivation(
+      url, false /* is_activated */,
+      SubresourceFilterContentSettingsManager::ActivationSource::kSafeBrowsing);
+  EXPECT_FALSE(settings_manager()->GetSiteActivationFromMetadata(url));
   EXPECT_TRUE(settings_manager()->ShouldShowUIForSite(url));
+}
+
+TEST_F(SubresourceFilterContentSettingsManagerTest,
+       NoSiteMetadata_SiteActivationFalse) {
+  GURL url("https://example.test/");
+  settings_manager()->SetSiteMetadataForTesting(url, nullptr);
+  EXPECT_FALSE(settings_manager()->GetSiteActivationFromMetadata(url));
+}
+
+TEST_F(SubresourceFilterContentSettingsManagerTest,
+       MetadataExpiryFollowingActivation) {
+  GURL url("https://example.test/");
+  settings_manager()->SetSiteMetadataBasedOnActivation(
+      url, true /* is_activated */,
+      SubresourceFilterContentSettingsManager::ActivationSource::kSafeBrowsing);
+  auto dict = settings_manager()->GetSiteMetadata(url);
+  EXPECT_TRUE(settings_manager()->GetSiteActivationFromMetadata(url));
+
+  // Advance the clock, metadata is cleared.
+  task_environment()->FastForwardBy(
+      SubresourceFilterContentSettingsManager::kMaxPersistMetadataDuration);
+  dict = settings_manager()->GetSiteMetadata(url);
+  EXPECT_EQ(dict, nullptr);
+
+  // Verify once metadata has expired we revert to metadata V1 and do not set
+  // activation using the metadata activation key.
+  settings_manager()->SetSiteMetadataBasedOnActivation(
+      url, false /* is_activated */,
+      SubresourceFilterContentSettingsManager::ActivationSource::kSafeBrowsing);
+  dict = settings_manager()->GetSiteMetadata(url);
+  EXPECT_EQ(dict, nullptr);
+}
+
+// TODO(https://crbug.com/1113967): Remove test once ability to persist metadata
+// is removed from the subresource filter content settings manager.
+TEST_F(SubresourceFilterContentSettingsManagerTest,
+       MetadataExpiryFavorsAdsIntervention) {
+  GURL url("https://example.test/");
+
+  // Sets metadata expiry at kMaxPersistMetadataDuration from Time::Now().
+  settings_manager()->SetSiteMetadataBasedOnActivation(
+      url, true /* is_activated */,
+      SubresourceFilterContentSettingsManager::ActivationSource::
+          kAdsIntervention);
+
+  task_environment()->FastForwardBy(
+      SubresourceFilterContentSettingsManager::kMaxPersistMetadataDuration -
+      base::TimeDelta::FromMinutes(1));
+
+  // Setting metadata in safe browsing does not overwrite the existing
+  // expiration set by the ads intervention.
+  settings_manager()->SetSiteMetadataBasedOnActivation(
+      url, true /* is_activated */,
+      SubresourceFilterContentSettingsManager::ActivationSource::kSafeBrowsing);
+
+  auto dict = settings_manager()->GetSiteMetadata(url);
+  EXPECT_NE(dict, nullptr);
+
+  // Advance the clock, metadata should be cleared.
+  task_environment()->FastForwardBy(base::TimeDelta::FromMinutes(1));
+
+  dict = settings_manager()->GetSiteMetadata(url);
+  EXPECT_EQ(dict, nullptr);
+}
+
+TEST_F(SubresourceFilterContentSettingsManagerTest,
+       AdsInterventionMetadata_ExpiresAfterDuration) {
+  GURL url("https://example.test/");
+  settings_manager()->SetSiteMetadataBasedOnActivation(
+      url, true /* is_activated */,
+      SubresourceFilterContentSettingsManager::ActivationSource::
+          kAdsIntervention);
+  auto dict = settings_manager()->GetSiteMetadata(url);
+  EXPECT_TRUE(settings_manager()->GetSiteActivationFromMetadata(url));
+
+  // Advance the clock, metadata is cleared.
+  task_environment()->FastForwardBy(
+      SubresourceFilterContentSettingsManager::kMaxPersistMetadataDuration);
+  dict = settings_manager()->GetSiteMetadata(url);
+  EXPECT_EQ(dict, nullptr);
+}
+
+TEST_F(SubresourceFilterContentSettingsManagerTest,
+       AdditionalMetadata_SetInMetadata) {
+  GURL url("https://example.test/");
+  const char kTestKey[] = "Test";
+  auto additional_metadata = std::make_unique<base::DictionaryValue>();
+  additional_metadata->SetBoolKey(kTestKey, true);
+
+  // Set activation with additional metadata.
+  settings_manager()->SetSiteMetadataBasedOnActivation(
+      url, true /* is_activated */,
+      SubresourceFilterContentSettingsManager::ActivationSource::kSafeBrowsing,
+      std::move(additional_metadata));
+  EXPECT_TRUE(settings_manager()->GetSiteActivationFromMetadata(url));
+
+  // Verify metadata was actually persisted on site activation false.
+  auto dict = settings_manager()->GetSiteMetadata(url);
+  EXPECT_TRUE(dict->HasKey(kTestKey));
+}
+
+// TODO(https://crbug.com/1113967): Remove test once ability to persist metadata
+// is removed from the subresource filter content settings manager.
+TEST_F(SubresourceFilterContentSettingsManagerTest,
+       AdditionalMetadata_PersistedWithAdsIntervention) {
+  GURL url("https://example.test/");
+  const char kTestKey[] = "Test";
+  auto additional_metadata = std::make_unique<base::DictionaryValue>();
+  additional_metadata->SetBoolKey(kTestKey, true);
+
+  // Set activation with additional metadata.
+  settings_manager()->SetSiteMetadataBasedOnActivation(
+      url, true /* is_activated */,
+      SubresourceFilterContentSettingsManager::ActivationSource::
+          kAdsIntervention,
+      std::move(additional_metadata));
+  EXPECT_TRUE(settings_manager()->GetSiteActivationFromMetadata(url));
+
+  // Verify metadata was actually persisted if another activation source
+  // sets site activation false.
+  settings_manager()->SetSiteMetadataBasedOnActivation(
+      url, false /* is_activated */,
+      SubresourceFilterContentSettingsManager::ActivationSource::kSafeBrowsing);
+  EXPECT_FALSE(settings_manager()->GetSiteActivationFromMetadata(url));
+  auto dict = settings_manager()->GetSiteMetadata(url);
+  EXPECT_TRUE(dict->HasKey(kTestKey));
+}
+
+// Verifies that the site activation status is True when there is
+// metadata without an explicit site activation status key value
+// pair in the metadata.
+TEST_F(SubresourceFilterContentSettingsManagerTest,
+       SiteMetadataWithoutActivationStatus_SiteActivationTrue) {
+  GURL url("https://example.test/");
+  auto dict = std::make_unique<base::DictionaryValue>();
+  settings_manager()->SetSiteMetadataForTesting(url, std::move(dict));
+  EXPECT_TRUE(settings_manager()->GetSiteActivationFromMetadata(url));
 }
 
 TEST_F(SubresourceFilterContentSettingsManagerTest, SmartUI) {
@@ -135,7 +272,7 @@ TEST_F(SubresourceFilterContentSettingsManagerTest, SmartUI) {
   EXPECT_FALSE(settings_manager()->ShouldShowUIForSite(url2));
 
   // Fast forward the clock.
-  test_clock()->Advance(
+  task_environment()->FastForwardBy(
       SubresourceFilterContentSettingsManager::kDelayBeforeShowingInfobarAgain);
   EXPECT_TRUE(settings_manager()->ShouldShowUIForSite(url));
   EXPECT_TRUE(settings_manager()->ShouldShowUIForSite(url2));

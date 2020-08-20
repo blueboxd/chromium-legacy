@@ -113,10 +113,9 @@ constexpr CGFloat kVerticalDistance = 24;
 
   [_scrollView addSubview:textView];
 
-  // Only create secondary TextView when |secondaryAttributedString| is not nil.
-  // Set the constraint accordingly.
-  if (self.secondaryAttributedString &&
-      !self.secondaryAttributedString.length) {
+  // Only create secondary TextView when |secondaryAttributedString| is not nil
+  // or empty. Set the constraint accordingly.
+  if (self.secondaryAttributedString.length) {
     UITextView* secondaryTextView = [[UITextView alloc] init];
     secondaryTextView.scrollEnabled = NO;
     secondaryTextView.editable = NO;

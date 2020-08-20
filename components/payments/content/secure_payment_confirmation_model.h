@@ -126,7 +126,7 @@ class SecurePaymentConfirmationModel {
 
   base::string16 instrument_label_;
   base::string16 instrument_value_;
-  const SkBitmap* instrument_icon_;
+  const SkBitmap* instrument_icon_ = nullptr;
 
   base::string16 total_label_;
   base::string16 total_value_;

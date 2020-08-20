@@ -41,14 +41,12 @@
 <translation id="1874309113135274312">Chrome 베타(mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome이 이전 버전임</translation>
 <translation id="1919130412786645364">Chrome 로그인 허용</translation>
-<translation id="195645108406520445">새 Chrome 환경을 설정하세요</translation>
 <translation id="2063848847527508675">업데이트를 적용하려면 Chrome OS를 다시 시작해야 합니다.</translation>
 <translation id="2094919256425865063">Chrome을 종료하시겠습니까?</translation>
 <translation id="2120620239521071941">항목 <ph name="ITEMS_COUNT" />개가 기기에서 삭제됩니다. 나중에 데이터를 가져오려면 Chrome에 <ph name="USER_EMAIL" />(으)로 로그인하세요.</translation>
 <translation id="2123055963409958220"><ph name="BEGIN_LINK" />현재 설정<ph name="END_LINK" />을 보고하여 Chrome 개선에 참여</translation>
 <translation id="2151406531797534936">지금 Chrome을 다시 시작하세요</translation>
 <translation id="2246246234298806438">기본 제공되는 PDF 뷰어가 없는 경우 Chrome에서 인쇄 미리보기를 표시할 수 없습니다.</translation>
-<translation id="226038281051944330"><ph name="EXISTING_USER" />님의 공간에 새 계정으로 로그인했습니다. 데이터를 별도로 유지하기 위해 <ph name="NEW_USER" />님을 위한 Chrome 공간을 새로 만드시겠습니까?</translation>
 <translation id="2290014774651636340">Google API 키가 누락되었습니다. Chrome의 일부 기능이 사용 중지됩니다.</translation>
 <translation id="2290095356545025170">Chrome을 제거하시겠습니까?</translation>
 <translation id="2309047409763057870">Chrome의 보조 설치이며 기본 브라우저로 설정할 수 없습니다.</translation>
@@ -83,7 +81,6 @@
 <translation id="3089968997497233615">새롭고 안전한 Chrome의 새 버전을 사용할 수 있습니다.</translation>
 <translation id="3127818369811890733">Chrome OS에서 데이터를 동기화할 수 없습니다.</translation>
 <translation id="3149510190863420837">Chrome 앱</translation>
-<translation id="3351117925998652957">Chrome Space 선택</translation>
 <translation id="3360895254066713204">Chrome 도우미</translation>
 <translation id="3379938682270551431">{0,plural, =0{지금 Chrome이 다시 시작됩니다}=1{1초 후 Chrome이 다시 시작됩니다}other{#초 후 Chrome이 다시 시작됩니다}}</translation>
 <translation id="3395323229510056640">Chrome OS 도움말 보기</translation>
@@ -106,7 +103,6 @@
 <translation id="386202838227397562">Chrome 창을 모두 닫고 다시 시도해 보세요.</translation>
 <translation id="3865754807470779944">Chrome <ph name="PRODUCT_VERSION" /> 버전이 설치됩니다.</translation>
 <translation id="3873044882194371212">Chrome 시크릿 창에서 링크 열기(&amp;G)</translation>
-<translation id="3879568094278837081">이 공간의 인터넷 사용 기록이 이 기기에서 삭제됩니다. 데이터를 복원하려면 다음 프로필로 Chrome에 로그인하세요.</translation>
 <translation id="3889417619312448367">Chrome 제거</translation>
 <translation id="4050175100176540509">최신 버전에는 중요한 보안 개선사항 및 새로운 기능이 포함되어 있습니다.</translation>
 <translation id="4053720452172726777">Chrome 맞춤설정 및 제어</translation>
@@ -147,14 +143,12 @@
 <translation id="4895437082222824641">새 Chrome 탭에서 링크 열기(&amp;T)</translation>
 <translation id="4953650215774548573">Chrome을 기본 브라우저로 설정</translation>
 <translation id="495931528404527476">Chrome</translation>
-<translation id="4960472897514318257">직장 계정으로 로그인했습니다. 개인 데이터를 별도로 유지하기 위해 <ph name="NEW_USER" />님을 위한 Chrome 공간을 새로 만드시겠습니까?</translation>
 <translation id="4990567037958725628">Chrome 카나리아</translation>
 <translation id="5062123544085870375">Chrome OS 다시 시작</translation>
 <translation id="5132929315877954718">Chrome에 사용할 유용한 애플리케이션, 게임, 확장 프로그램 및 테마를 찾아보세요.</translation>
 <translation id="5170938038195470297">최신 버전의 Chrome에서 가져온 사용자 프로필이기 때문에 사용할 수 없습니다.
 
 일부 기능은 사용하지 못할 수 있습니다. 다른 프로필 디렉터리를 지정하거나 최신 버전의 Chrome을 사용하세요.</translation>
-<translation id="5171117065011130146">새로운 Chrome 작업 공간을 만드시겠습니까?</translation>
 <translation id="5193136243808726294">Chrome OS에서 이 페이지를 열 수 없음</translation>
 <translation id="5251420635869119124">게스트로 사용 기록을 남기지 않고 Chrome을 사용할 수 있습니다.</translation>
 <translation id="532046782124376502">경고: Chrome에서는 확장 프로그램에 인터넷 사용 기록이 저장될 수 있습니다. 시크릿 모드에서 이 확장 프로그램을 사용 중지하려면 옵션을 선택 취소하세요.</translation>
@@ -222,7 +216,6 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="7535429826459677826">Chrome 개발자</translation>
 <translation id="7573289029918943991">기기가 최신 버전인지 확인하려면 <ph name="LINK_BEGIN" />Chrome OS 설정<ph name="LINK_END" />으로 이동하세요.</translation>
 <translation id="7589360514048265910">Mac OS X 10.9가 더 이상 지원되지 않으므로 이 컴퓨터에서 Chrome 업데이트를 받을 수 없게 됩니다.</translation>
-<translation id="7591404275842302616">Chrome Space를 사용하여 기기의 탐색 환경을 정리하세요.</translation>
 <translation id="7592736734348559088">계정의 로그인 세부정보가 오래되어 Chrome에서 데이터를 동기화하지 못했습니다.</translation>
 <translation id="7626032353295482388">Chrome에 오신 것을 환영합니다</translation>
 <translation id="7629695634924605473">비밀번호가 유출되면 Chrome에서 알려줍니다.</translation>
@@ -269,9 +262,7 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="8823341990149967727">Chrome이 이전 버전임</translation>
 <translation id="8834965163890861871">Chrome에서 비밀번호를 수정하려고 합니다. 허용하려면 Windows 비밀번호를 입력하세요.</translation>
 <translation id="884296878221830158">또한 Chrome을 시작하거나 홈 버튼을 클릭할 때 표시되는 페이지를 설정합니다.</translation>
-<translation id="8859948767482842016"><ph name="EXISTING_USER" />님의 공간에 직장 계정으로 로그인했습니다. 데이터를 별도로 유지하기 위해 <ph name="WORK_DOMAIN" />용 Chrome 공간을 새로 만드시겠습니까?</translation>
 <translation id="8862326446509486874">시스템 수준의 설치 권한이 없습니다. 관리자 권한으로 설치 프로그램을 다시 실행해 보세요.</translation>
-<translation id="8877586659207810298"><ph name="NEW_USER" />님을 위한 Chrome 공간을 새로 만드시겠습니까?</translation>
 <translation id="8914504000324227558">Chrome 다시 시작</translation>
 <translation id="8999208279178790196">{0,plural, =0{Chrome 업데이트 출시}=1{Chrome 업데이트 출시}other{Chrome 업데이트가 출시된 지 #일 지남}}</translation>
 <translation id="9026991721384951619">계정의 로그인 세부정보가 오래되어 Chrome OS에서 데이터를 동기화하지 못했습니다.</translation>

@@ -66,6 +66,7 @@ class EventQueue;
 class ExceptionState;
 class HTMLMediaElementControlsList;
 class MediaSource;
+class MediaSourceTracer;
 class HTMLSourceElement;
 class HTMLTrackElement;
 class MediaError;
@@ -91,6 +92,10 @@ class CORE_EXPORT HTMLMediaElement
   USING_PRE_FINALIZER(HTMLMediaElement, Dispose);
 
  public:
+  // Limits the range of media playback rate.
+  static constexpr double kMinPlaybackRate = 0.0625;
+  static constexpr double kMaxPlaybackRate = 16.0;
+
   bool IsMediaElement() const override { return true; }
 
   static MIMETypeRegistry::SupportsType GetSupportsType(const ContentType&);
@@ -191,7 +196,6 @@ class CORE_EXPORT HTMLMediaElement
   void setDefaultPlaybackRate(double);
   double playbackRate() const;
   void setPlaybackRate(double, ExceptionState& = ASSERT_NO_EXCEPTION);
-  void UpdatePlaybackRate();
   TimeRanges* played();
   WebTimeRanges SeekableInternal() const;
   TimeRanges* seekable() const;
@@ -628,6 +632,7 @@ class CORE_EXPORT HTMLMediaElement
   cc::Layer* cc_layer_;
 
   Member<MediaSource> media_source_;
+  Member<MediaSourceTracer> media_source_tracer_;
 
   // Stores "official playback position", updated periodically from "current
   // playback position". Official playback position should not change while

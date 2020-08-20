@@ -15,9 +15,11 @@ namespace net {
 class HttpResponseHeaders;
 }
 
-namespace android_webview {
-
+namespace embedder_support {
 class InputStream;
+}
+
+namespace android_webview {
 
 // This class represents the Java-side data that is to be used to complete a
 // particular URLRequest.
@@ -29,7 +31,7 @@ class AwWebResourceResponse {
   ~AwWebResourceResponse();
 
   bool HasInputStream(JNIEnv* env) const;
-  std::unique_ptr<InputStream> GetInputStream(JNIEnv* env);
+  std::unique_ptr<embedder_support::InputStream> GetInputStream(JNIEnv* env);
   bool GetMimeType(JNIEnv* env, std::string* mime_type) const;
   bool GetCharset(JNIEnv* env, std::string* charset) const;
   bool GetStatusInfo(JNIEnv* env,

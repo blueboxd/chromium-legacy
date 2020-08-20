@@ -66,9 +66,10 @@ void ReopenTabPromoController::ShowPromo() {
   bubble_params.feature_accelerator = accelerator;
   bubble_params.anchor_view = app_menu_button;
   bubble_params.arrow = views::BubbleBorder::Arrow::TOP_RIGHT;
-  if (disable_bubble_timeout_for_test_)
-    bubble_params.timeout = std::make_unique<FeaturePromoBubbleTimeout>(
-        base::TimeDelta(), base::TimeDelta());
+  if (disable_bubble_timeout_for_test_) {
+    bubble_params.timeout_default = base::TimeDelta();
+    bubble_params.timeout_short = base::TimeDelta();
+  }
 
   promo_bubble_ = FeaturePromoBubbleView::Create(std::move(bubble_params));
   promo_bubble_->set_close_on_deactivate(false);

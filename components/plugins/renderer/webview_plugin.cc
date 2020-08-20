@@ -306,12 +306,6 @@ bool WebViewPlugin::WebViewHelper::CanUpdateLayout() {
   return true;
 }
 
-blink::ScreenInfo WebViewPlugin::WebViewHelper::GetScreenInfo() {
-  // TODO(danakj): This should probably return the screen info for the
-  // RenderView.
-  return blink::ScreenInfo();
-}
-
 void WebViewPlugin::WebViewHelper::SetToolTipText(
     const base::string16& tooltip_text,
     base::i18n::TextDirection hint) {

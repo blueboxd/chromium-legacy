@@ -40,19 +40,17 @@ constexpr gfx::Insets kBubbleContentsInsets(12, 16);
 
 }  // namespace
 
-FeaturePromoBubbleView::FeaturePromoBubbleView(FeaturePromoBubbleParams params)
+FeaturePromoBubbleView::FeaturePromoBubbleView(
+    const FeaturePromoBubbleParams& params)
     : BubbleDialogDelegateView(params.anchor_view, params.arrow),
       activation_action_(params.activation_action),
-      feature_promo_bubble_timeout_(std::move(params.timeout)),
       preferred_width_(params.preferred_width) {
   DCHECK(params.anchor_view);
   UseCompactMargins();
 
-  // If the timeout was not explicitly specified, use the default values.
-  if (!feature_promo_bubble_timeout_) {
-    feature_promo_bubble_timeout_ =
-        std::make_unique<FeaturePromoBubbleTimeout>(kDelayDefault, kDelayShort);
-  }
+  feature_promo_bubble_timeout_ = std::make_unique<FeaturePromoBubbleTimeout>(
+      params.timeout_default ? *params.timeout_default : kDelayDefault,
+      params.timeout_short ? *params.timeout_short : kDelayShort);
 
   const base::string16 body_text =
       l10n_util::GetStringUTF16(params.body_string_specifier);
@@ -140,8 +138,8 @@ FeaturePromoBubbleView::~FeaturePromoBubbleView() = default;
 
 // static
 FeaturePromoBubbleView* FeaturePromoBubbleView::Create(
-    FeaturePromoBubbleParams params) {
-  return new FeaturePromoBubbleView(std::move(params));
+    const FeaturePromoBubbleParams& params) {
+  return new FeaturePromoBubbleView(params);
 }
 
 void FeaturePromoBubbleView::CloseBubble() {

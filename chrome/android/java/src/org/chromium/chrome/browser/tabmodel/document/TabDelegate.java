@@ -74,7 +74,7 @@ public class TabDelegate extends AsyncTabCreator {
      * The index is ignored in DocumentMode because Android handles the ordering of Tabs.
      */
     @Override
-    public Tab createFrozenTab(TabState state, int id, int index) {
+    public Tab createFrozenTab(TabState state, byte[] criticalPersistedTabData, int id, int index) {
         return TabBuilder.createFromFrozenState()
                 .setId(id)
                 .setIncognito(state.isIncognito())

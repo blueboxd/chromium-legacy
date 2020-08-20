@@ -53,7 +53,7 @@ public class ScreenshotShareSheetMediatorUnitTest {
     Runnable mSaveRunnable;
 
     @Mock
-    Runnable mInstallRunnable;
+    Callback<Runnable> mInstallRunnable;
 
     @Mock
     Activity mContext;
@@ -71,9 +71,10 @@ public class ScreenshotShareSheetMediatorUnitTest {
 
         MockScreenshotShareSheetMediator(Context context, PropertyModel propertyModel,
                 Runnable deleteRunnable, Runnable saveRunnable, Tab tab,
-                ChromeOptionShareCallback chromeOptionShareCallback, Runnable installRunnable) {
+                ChromeOptionShareCallback chromeOptionShareCallback,
+                Callback<Runnable> installCallback) {
             super(context, propertyModel, deleteRunnable, saveRunnable, tab,
-                    chromeOptionShareCallback, installRunnable);
+                    chromeOptionShareCallback, installCallback);
         }
         @Override
         protected void generateTemporaryUriFromBitmap(
@@ -150,7 +151,7 @@ public class ScreenshotShareSheetMediatorUnitTest {
                 mModel.get(ScreenshotShareSheetViewProperties.NO_ARG_OPERATION_LISTENER);
         callback.onResult(ScreenshotShareSheetViewProperties.NoArgOperation.INSTALL);
 
-        verify(mInstallRunnable).run();
+        verify(mInstallRunnable).onResult(any());
     }
 
     @After

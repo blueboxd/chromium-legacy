@@ -22,6 +22,9 @@
 #include "chrome/browser/infobars/mock_infobar_service.h"
 #include "chrome/browser/ssl/stateful_ssl_host_state_delegate_factory.h"
 #include "chrome/browser/ssl/tls_deprecation_test_utils.h"
+#include "chrome/browser/subresource_filter/subresource_filter_content_settings_manager.h"
+#include "chrome/browser/subresource_filter/subresource_filter_profile_context.h"
+#include "chrome/browser/subresource_filter/subresource_filter_profile_context_factory.h"
 #include "chrome/browser/ui/page_info/chrome_page_info_delegate.h"
 #include "chrome/browser/ui/page_info/chrome_page_info_ui_delegate.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
@@ -1502,13 +1505,16 @@ TEST_F(PageInfoTest, SubresourceFilterSetting_MatchesActivation) {
   ClearPageInfo();
   SetDefaultUIExpectations(mock_ui());
 
-  // Now, simulate activation on that origin, which is encoded by the existence
-  // of the website setting. The setting should then appear in page_info.
-  HostContentSettingsMap* content_settings =
-      HostContentSettingsMapFactory::GetForProfile(profile());
-  content_settings->SetWebsiteSettingDefaultScope(
-      url(), GURL(), ContentSettingsType::ADS_DATA, std::string(),
-      std::make_unique<base::DictionaryValue>());
+  // Now, explicitly set site activation metadata to simulate activation on
+  // that origin, which is encoded by the existence of the website setting. The
+  // setting should then appear in page_info.
+  SubresourceFilterContentSettingsManager* settings_manager =
+      SubresourceFilterProfileContextFactory::GetForProfile(profile())
+          ->settings_manager();
+  settings_manager->SetSiteMetadataBasedOnActivation(
+      url(), true,
+      SubresourceFilterContentSettingsManager::ActivationSource::kSafeBrowsing);
+
   page_info();
   EXPECT_TRUE(showing_setting(last_permission_info_list()));
 }

@@ -7895,6 +7895,10 @@ interface SVGViewElement : SVGElement
     getter zoomAndPan
     method constructor
     setter zoomAndPan
+interface Sanitizer
+    attribute @@toStringTag
+    method constructor
+    method saneStringFrom
 interface Scheduler
     attribute @@toStringTag
     getter currentTaskSignal
@@ -8774,6 +8778,7 @@ interface ValidityState
 interface VideoDecoder
     attribute @@toStringTag
     getter decodeQueueSize
+    method close
     method configure
     method constructor
     method decode

@@ -25,4 +25,17 @@ bool CrossOriginOpenerPolicy::operator==(
          report_only_reporting_endpoint == other.report_only_reporting_endpoint;
 }
 
+bool IsAccessFromCoopPage(mojom::CoopAccessReportType type) {
+  switch (type) {
+    case mojom::CoopAccessReportType::kAccessFromCoopPageToOpener:
+    case mojom::CoopAccessReportType::kAccessFromCoopPageToOpenee:
+    case mojom::CoopAccessReportType::kAccessFromCoopPageToOther:
+      return true;
+    case mojom::CoopAccessReportType::kAccessToCoopPageFromOpener:
+    case mojom::CoopAccessReportType::kAccessToCoopPageFromOpenee:
+    case mojom::CoopAccessReportType::kAccessToCoopPageFromOther:
+      return false;
+  }
+}
+
 }  // namespace network

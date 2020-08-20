@@ -1070,11 +1070,6 @@ Als dit beleid niet is ingesteld, is het privacyscherm in eerste instantie uitge
       Als dit beleid niet wordt ingesteld, is sms-synchronisatie standaard niet toegestaan voor beheerde gebruikers en wel toegestaan voor niet-beheerde gebruikers.</translation>
 <translation id="2660846099862559570">Nooit een proxy gebruiken</translation>
 <translation id="2665422249821137126">De grote muisaanwijzer op het inlogscherm inschakelen</translation>
-<translation id="266882888912227087"> Beheer meldingen voor het automatisch starten van beheerde gastsessies op <ph name="PRODUCT_OS_NAME" />.
-
-      Als dit beleid is ingesteld op True, wordt de privacywaarschuwing na een paar seconden gesloten.
-
-      Als het beleid is ingesteld op False of niet is ingesteld, blijft de privacywaarschuwing in beeld tot de gebruiker deze sluit.</translation>
 <translation id="2672012807430078509">Bepaalt of NTLM is ingeschakeld als verificatieprotocol voor SMB-activeringen</translation>
 <translation id="2678503605767349615">Vereiste clientcertificaten voor het hele apparaat</translation>
 <translation id="268577405881275241">De proxyfunctie voor het comprimeren van gegevens inschakelen</translation>
@@ -2474,7 +2469,6 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
       <ph name="PAGE_SIZE_NAME" /> moet een van de vermelde indelingen bevatten of 'custom' als het vereiste papierformaat niet in de lijst staat. Als de waarde 'custom' is opgegeven, moet de eigenschap <ph name="PAGE_SIZE_CUSTOM_SIZE" /> worden gespecificeerd. Dit beschrijft de gewenste hoogte en breedte in micrometers. Anders moet de eigenschap <ph name="PAGE_SIZE_CUSTOM_SIZE" /> niet worden gespecificeerd. Beleid dat deze regels schendt, wordt genegeerd.
 
       Als het paginaformaat niet beschikbaar is op de printer die de gebruiker heeft gekozen, wordt dit beleid genegeerd.</translation>
-<translation id="479290425281021210">Hiermee geef je aan of niet-beveiligde websites verzoeken mogen sturen naar meer-privé netwerkeindpunten.</translation>
 <translation id="4802744647065138872">Beperkt het aantal momentopnamen van gebruikersgegevens dat wordt bewaard voor gebruik bij een noodrollback.</translation>
 <translation id="4802905909524200151">Updategedrag voor <ph name="TPM_FIRMWARE_UPDATE_TPM" />-firmware configureren</translation>
 <translation id="4804828344300125154">Altijd opnieuw opstarten na uitloggen gebruiker.</translation>
@@ -3825,13 +3819,6 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
 
       Als je het beleid uitschakelt, wordt in plaats daarvan een foutmelding weergegeven.</translation>
 <translation id="6821268164692776674">De bestemmingen <ph name="CLOUD_PRINT_NAME" /> en 'Opslaan in Google Drive'</translation>
-<translation id="6823297401452148231">Hiermee kun je bepalen of niet-beveiligde websites verzoeken mogen sturen aan meer-privé netwerkeindpunten. Deze instelling bepaalt bijvoorbeeld of http://evil.com verzoeken mag sturen naar zowel localhost als eindpunten in het privénetwerk, die geen van beide toegankelijk zijn via het openbare internet. Bekijk https://wicg.github.io/cors-rfc1918/#goals voor meer informatie.
-
-          Als je dit beleid niet instelt, hangt het standaardgedrag voor verzoeken vanuit niet-beveiligde contexten naar meer-privé netwerkeindpunten af van de persoonlijke configuratie van de gebruiker voor de functie <ph name="BLOCK_INSECURE_PRIVATE_NETWORK_REQUESTS_FEATURE_NAME" />, die kan worden ingesteld via een online test of via de opdrachtregel.
-
-          Als dit beleid is ingesteld op False, mogen niet-beveiligde websites geen verzoeken sturen naar meer-privé netwerkeindpunten. Dit betekent dat niet-beveiligde websites die worden geleverd via openbare IP-adressen, geen verzoeken mogen sturen naar zowel localhost als privé-IP-adressen. Niet-beveiligde websites die worden geleverd via openbare IP-adressen, mogen geen verzoeken sturen naar localhost.
-
-          Als je dit beleid instelt op True, mogen niet-beveiligde websites verzoeken sturen naar elk willekeurig netwerkeindpunt (hiervoor worden andere cross-origin-checks uitgevoerd).</translation>
 <translation id="6833064854262015312">Als je het beleid instelt op True, wordt de modus voor hoog contrast ingeschakeld op het inlogscherm. Als je het beleid instelt op False, wordt de modus voor hoog contrast uitgeschakeld op het inlogscherm.
 
       Als je dit beleid instelt, kunnen gebruikers de modus voor hoog contrast tijdelijk wijzigen (dat wil zeggen in- of uitschakelen). Als het inlogscherm opnieuw wordt geladen of een minuut lang niet wordt gebruikt, wordt de oorspronkelijke status hersteld.

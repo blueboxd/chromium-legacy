@@ -35,6 +35,7 @@
 <translation id="4249068189593983585">Ábending um Chrome. Til að sjá fleiri valkosti fyrir flipa skaltu halda hnappinum „Sýna flipa“ inni á tækjastikunni, sem er neðst eða efst á skjánum.</translation>
 <translation id="4523886039239821078">Einhverjar viðbætur valda því að Chrome hrynur. Fjarlægðu þær.</translation>
 <translation id="4698415050768537821">Chrome gat ekki athugað öll aðgangsorð. Reyndu aftur á morgun eða <ph name="BEGIN_LINK" />athugaðu aðgangsorð á Google reikningnum þínum.<ph name="END_LINK" /></translation>
+<translation id="5030102366287574140">Chrome getur veitt þér vernd gegn öryggisbrotum, hættulegum vefsvæðum og fleira.</translation>
 <translation id="5389212809648216794">Google Chrome getur ekki notað myndavélina því að annað forrit er að nota hana</translation>
 <translation id="5639704535586432836">Opnaðu Stillingar &gt; Persónuvernd &gt; Myndavél &gt; Chrome og kveiktu á myndavélinni.</translation>
 <translation id="5642200033778930880">Google Chrome getur ekki notað myndavélina á tvískiptum skjá</translation>
@@ -50,6 +51,7 @@
         1. Farðu í „Stillingar“. 
         2. Ýttu á „Sjálfgefið vafraforrit“.
         3. Veldu Chrome.</translation>
+<translation id="6822673484890854830">Chrome gat ekki athugað öll aðgangsorð. Reyndu aftur síðar.</translation>
 <translation id="7165736900384873061">Byrjaðu að nota QR-skanna Google Chrome</translation>
 <translation id="7172660552945675509">Ábending: <ph name="BEGIN_LINK" />Færðu Chrome í forritastikuna<ph name="END_LINK" /></translation>
 <translation id="7173114856073700355">Opna stillingar</translation>

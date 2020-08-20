@@ -1,3 +1,7 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 #ifndef CHROME_BROWSER_NEARBY_SHARING_LOGGING_LOGGING_H_
 #define CHROME_BROWSER_NEARBY_SHARING_LOGGING_LOGGING_H_
 
@@ -7,7 +11,7 @@
 
 // Use the NS_LOG() macro for all logging related to Nearby Sharing so the debug
 // page can reflect all logs related to this feature in the internal debug WebUI
-// (chrome://nearby-sharing-internals).
+// (chrome://nearby-internals).
 #define NS_LOG(severity) \
   ScopedLogMessage(__FILE__, __LINE__, logging::LOG_##severity).stream()
 

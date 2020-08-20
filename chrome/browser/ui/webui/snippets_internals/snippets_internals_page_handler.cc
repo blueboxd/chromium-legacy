@@ -49,9 +49,9 @@ std::set<variations::VariationID> GetSnippetsExperiments() {
       continue;
 
     for (variations::IDCollectionKey key :
-         {variations::GOOGLE_WEB_PROPERTIES,
+         {variations::GOOGLE_WEB_PROPERTIES_ANY_CONTEXT,
           variations::GOOGLE_WEB_PROPERTIES_SIGNED_IN,
-          variations::GOOGLE_WEB_PROPERTIES_TRIGGER}) {
+          variations::GOOGLE_WEB_PROPERTIES_TRIGGER_ANY_CONTEXT}) {
       const variations::VariationID id = variations::GetGoogleVariationID(
           key, trial->trial_name(), trial->group_name());
       if (id != variations::EMPTY_ID) {

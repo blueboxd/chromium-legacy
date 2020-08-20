@@ -194,7 +194,7 @@ class BookmarkDragHelper : public bookmarks::BaseBookmarkModelObserver {
   void Start(const BookmarkNode* drag_node) {
     drag_node_id_ = drag_node->id();
 
-    gfx::ImageSkia icon;
+    ui::ImageModel icon;
     if (drag_node->is_url()) {
       const gfx::Image& image = model_->GetFavicon(drag_node);
       // If favicon is not loaded, the above call will initiate loading, and
@@ -205,7 +205,7 @@ class BookmarkDragHelper : public bookmarks::BaseBookmarkModelObserver {
       if (!drag_node->is_favicon_loaded())
         return;
 
-      icon = image.AsImageSkia();
+      icon = ui::ImageModel::FromImage(image);
     } else {
       icon = GetBookmarkFolderIcon(
           ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
@@ -216,14 +216,14 @@ class BookmarkDragHelper : public bookmarks::BaseBookmarkModelObserver {
   }
 
   void OnBookmarkIconLoaded(const BookmarkNode* drag_node,
-                            const gfx::ImageSkia& icon) {
+                            const ui::ImageModel& icon) {
     gfx::ImageSkia drag_image(
         std::make_unique<BookmarkDragImageSource>(
             drag_node->GetTitle(),
-            icon.isNull()
+            icon.IsEmpty()
                 ? *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
                       IDR_DEFAULT_FAVICON)
-                : icon,
+                : *icon.GetImage().ToImageSkia(),
             count_),
         BookmarkDragImageSource::kBookmarkDragImageSize);
 
@@ -252,10 +252,11 @@ class BookmarkDragHelper : public bookmarks::BaseBookmarkModelObserver {
     if (node->id() != drag_node_id_)
       return;
 
-    const gfx::Image& image = model_->GetFavicon(node);
+    const ui::ImageModel& image =
+        ui::ImageModel::FromImage(model_->GetFavicon(node));
     DCHECK(node->is_favicon_loaded());
 
-    OnBookmarkIconLoaded(node, image.AsImageSkia());
+    OnBookmarkIconLoaded(node, image);
   }
 
   BookmarkModel* model_;

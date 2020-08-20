@@ -197,6 +197,8 @@ extern const char kChromeUISnippetsInternalsHost[];
 extern const char kChromeUIWebApksHost[];
 #else
 extern const char kChromeUINearbyInternalsHost[];
+extern const char kChromeUIReadLaterHost[];
+extern const char kChromeUIReadLaterURL[];
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)

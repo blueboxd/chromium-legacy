@@ -371,13 +371,6 @@ void NearbyInternalsUiTriggerHandler::OnShareTargetLost(
                     ShareTargetMapToList(id_to_share_target_map_));
 }
 
-void NearbyInternalsUiTriggerHandler::OnSendTextCalled(
-    NearbySharingService::StatusCodes status_codes) {
-  FireWebUIListener(
-      "on-status-code-returned",
-      StatusCodeToDictionary(status_codes, TriggerEvent::kSendText));
-}
-
 void NearbyInternalsUiTriggerHandler::OnAcceptCalled(
     NearbySharingService::StatusCodes status_codes) {
   FireWebUIListener(
@@ -413,7 +406,7 @@ void NearbyInternalsUiTriggerHandler::SendText(const base::ListValue* args) {
     return;
   }
 
-  std::string share_target_id = args->GetList()[0].GetString();
+  std::string share_target_id = args->GetList()[1].GetString();
   auto it = id_to_share_target_map_.find(share_target_id);
   if (it == id_to_share_target_map_.end()) {
     NS_LOG(ERROR) << "Invalid ShareTarget ID " << share_target_id
@@ -421,10 +414,11 @@ void NearbyInternalsUiTriggerHandler::SendText(const base::ListValue* args) {
     return;
   }
 
-  service_->SendText(
-      it->second, kPayloadExample,
-      base::BindOnce(&NearbyInternalsUiTriggerHandler::OnSendTextCalled,
-                     weak_ptr_factory_.GetWeakPtr()));
+  const base::Value& callback_id = args->GetList()[0];
+  ResolveJavascriptCallback(
+      callback_id,
+      StatusCodeToDictionary(service_->SendText(it->second, kPayloadExample),
+                             TriggerEvent::kSendText));
 }
 
 void NearbyInternalsUiTriggerHandler::Accept(const base::ListValue* args) {

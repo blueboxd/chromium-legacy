@@ -1559,6 +1559,78 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="AutofillAssistant.LiteScriptFinished">
+  <owner>arbesser@google.com</owner>
+  <owner>mcarlen@google.com</owner>
+  <owner>marianfe@google.com</owner>
+  <summary>
+    Recorded when a lite script has finished, either because the user made a
+    choice, or because some error occurred.
+  </summary>
+  <metric name="LiteScriptFinished" enum="AutofillAssistantLiteScriptFinished">
+    <summary>
+      An enum that describes the different ways a lite script can finish. Users
+      may click continue, cancel, or indirectly abort the experience in various
+      ways. See components/autofill_assistant/browser/metrics.h.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+</event>
+
+<event name="AutofillAssistant.LiteScriptOnboarding">
+  <owner>arbesser@google.com</owner>
+  <owner>mcarlen@google.com</owner>
+  <owner>marianfe@google.com</owner>
+  <summary>
+    Recorded after a user has finished a lite script flow and accepted the final
+    prompt in it.
+  </summary>
+  <metric name="LiteScriptOnboarding"
+      enum="AutofillAssistantLiteScriptOnboarding">
+    <summary>
+      An enum that describes whether users who have successfully finished a lite
+      script also accepted the onboarding or not. See
+      components/autofill_assistant/browser/metrics.h.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+</event>
+
+<event name="AutofillAssistant.LiteScriptStarted">
+  <owner>arbesser@google.com</owner>
+  <owner>mcarlen@google.com</owner>
+  <owner>marianfe@google.com</owner>
+  <summary>
+    Recorded at the time when the decision is made to start (or not to start) a
+    lite script.
+  </summary>
+  <metric name="LiteScriptStarted" enum="AutofillAssistantLiteScriptStarted">
+    <summary>
+      An enum that captures the different ways a lite script may be started or
+      suppressed. See components/autofill_assistant/browser/metrics.h.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+</event>
+
 <event name="BackgroundFetch">
   <owner>nator@chromium.org</owner>
   <owner>rayankans@chromium.org</owner>

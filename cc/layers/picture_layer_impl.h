@@ -171,6 +171,8 @@ class CC_EXPORT PictureLayerImpl
   PictureLayerImpl(LayerTreeImpl* tree_impl, int id);
   PictureLayerTiling* AddTiling(const gfx::AxisTransform2d& contents_transform);
   void RemoveAllTilings();
+  bool CanRecreateHighResTilingForLCDTextAndRasterTranslation(
+      const PictureLayerTiling& high_res) const;
   void UpdateTilingsForRasterScaleAndTranslation(bool adjusted_raster_scale);
   void AddLowResolutionTilingIfNeeded();
   bool ShouldAdjustRasterScale(float old_ideal_contents_scale) const;

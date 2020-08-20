@@ -668,6 +668,10 @@ void WebFrameWidgetImpl::SetRemoteViewportIntersection(
          LocalRootImpl()->Parent()->IsWebRemoteFrame() &&
          LocalRootImpl()->GetFrame());
 
+  compositor_visible_rect_ =
+      gfx::Rect(intersection_state.compositor_visible_rect);
+  widget_base_->LayerTreeHost()->SetViewportVisibleRect(
+      compositor_visible_rect_);
   LocalRootImpl()->GetFrame()->SetViewportIntersectionFromParent(
       intersection_state);
 }
@@ -1158,6 +1162,10 @@ void WebFrameWidgetImpl::GetScrollParamsForFocusedEditableElement(
       Intersection(absolute_caret_bounds, maximal_rect), maximal_rect);
   params->behavior = mojom::blink::ScrollBehavior::kInstant;
   rect_to_scroll = PhysicalRect(maximal_rect);
+}
+
+gfx::Rect WebFrameWidgetImpl::ViewportVisibleRect() {
+  return compositor_visible_rect_;
 }
 
 }  // namespace blink

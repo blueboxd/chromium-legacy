@@ -1729,6 +1729,28 @@ void QuicChromiumClientSession::OnConnectionClosed(
               ->sent_packet_manager()
               .unacked_packets()
               .GetLastPacketContent());
+
+      const quic::QuicTime last_in_flight_packet_sent_time =
+          connection()
+              ->sent_packet_manager()
+              .unacked_packets()
+              .GetLastInFlightPacketSentTime();
+      const quic::QuicTime handshake_completion_time =
+          connection()->GetStats().handshake_completion_time;
+      if (last_in_flight_packet_sent_time.IsInitialized() &&
+          handshake_completion_time.IsInitialized() &&
+          last_in_flight_packet_sent_time >= handshake_completion_time) {
+        const quic::QuicTime::Delta delay =
+            last_in_flight_packet_sent_time - handshake_completion_time;
+        UMA_HISTOGRAM_LONG_TIMES_100(
+            "Net.QuicSession."
+            "LastInFlightPacketSentTimeFromHandshakeCompletionWithPublicReset",
+            base::TimeDelta::FromMilliseconds(delay.ToMilliseconds()));
+      }
+
+      UMA_HISTOGRAM_LONG_TIMES_100(
+          "Net.QuicSession.ConnectionDurationWithPublicReset",
+          tick_clock_->NowTicks() - connect_timing_.connect_end);
     }
     if (OneRttKeysAvailable()) {
       base::HistogramBase* histogram = base::SparseHistogram::FactoryGet(

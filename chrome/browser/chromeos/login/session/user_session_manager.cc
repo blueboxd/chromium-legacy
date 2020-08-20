@@ -1614,8 +1614,20 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
     }
     PasswordSyncTokenVerifier* password_sync_token_verifier =
         PasswordSyncTokenVerifierFactory::GetForProfile(profile);
-    if (password_sync_token_verifier)
-      password_sync_token_verifier->CheckForPasswordNotInSync();
+    if (password_sync_token_verifier) {
+      if (user_context_.GetAuthFlow() ==
+          UserContext::AUTH_FLOW_GAIA_WITH_SAML) {
+        // Update local sync token after online SAML login.
+        password_sync_token_verifier->FetchSyncTokenOnReauth();
+      } else if (user_context_.GetAuthFlow() ==
+                 UserContext::AUTH_FLOW_OFFLINE) {
+        // Verify local sync token to check whether the local password is out
+        // of sync.
+        password_sync_token_verifier->CheckForPasswordNotInSync();
+      } else {
+        NOTREACHED();
+      }
+    }
 
     SAMLOfflineSigninLimiter* saml_offline_signin_limiter =
         SAMLOfflineSigninLimiterFactory::GetForProfile(profile);

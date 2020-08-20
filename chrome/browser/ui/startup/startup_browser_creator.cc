@@ -699,11 +699,10 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
 #endif  // OS_CHROMEOS
 
 #if defined(TOOLKIT_VIEWS) && defined(USE_X11)
-  // TODO(https://crbug.com/1097696): make it available on ozone/linux.
-  if (!features::IsUsingOzonePlatform())
+  if (!features::IsUsingOzonePlatform()) {
+    // Ozone sets the device list upon platform initialisation.
     ui::TouchFactory::SetTouchDeviceListFromCommandLine();
-  else
-    NOTIMPLEMENTED_LOG_ONCE();
+  }
 #endif
 
 #if defined(OS_MAC)

@@ -20,6 +20,7 @@ class WebLocalFrame;
 }
 
 namespace content {
+class WebViewTestProxy;
 
 class MockScreenOrientationClient : public device::mojom::ScreenOrientation {
  public:
@@ -27,13 +28,13 @@ class MockScreenOrientationClient : public device::mojom::ScreenOrientation {
   ~MockScreenOrientationClient() override;
 
   void ResetData();
-  bool UpdateDeviceOrientation(blink::WebLocalFrame* main_frame,
+  bool UpdateDeviceOrientation(WebViewTestProxy* web_view,
                                blink::mojom::ScreenOrientation orientation);
 
-  blink::mojom::ScreenOrientation CurrentOrientationType() const;
-  unsigned CurrentOrientationAngle() const;
+  base::Optional<blink::mojom::ScreenOrientation> CurrentOrientationType()
+      const;
   bool IsDisabled() const { return is_disabled_; }
-  void SetDisabled(bool disabled);
+  void SetDisabled(WebViewTestProxy* web_view, bool disabled);
 
   void AddReceiver(mojo::ScopedInterfaceEndpointHandle handle);
   void OverrideAssociatedInterfaceProviderForFrame(blink::WebLocalFrame* frame);
@@ -51,9 +52,8 @@ class MockScreenOrientationClient : public device::mojom::ScreenOrientation {
   bool UpdateScreenOrientation(blink::mojom::ScreenOrientation);
   bool IsOrientationAllowedByCurrentLock(blink::mojom::ScreenOrientation);
   blink::mojom::ScreenOrientation SuitableOrientationForCurrentLock();
-  static unsigned OrientationTypeToAngle(blink::mojom::ScreenOrientation);
 
-  blink::WebLocalFrame* main_frame_ = nullptr;
+  WebViewTestProxy* web_view_test_proxy_ = nullptr;
   device::mojom::ScreenOrientationLockType current_lock_ =
       device::mojom::ScreenOrientationLockType::DEFAULT;
   blink::mojom::ScreenOrientation device_orientation_ =

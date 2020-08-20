@@ -538,6 +538,8 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   AXObject* LeafNodeAncestor() const;
   bool IsDescendantOfDisabledNode() const;
   bool ComputeAccessibilityIsIgnoredButIncludedInTree() const;
+  const AXObject* GetNativeTextControlAncestor(
+      int max_levels_to_check = 3) const;
   const AXObject* DatetimeAncestor(int max_levels_to_check = 3) const;
   const AXObject* DisabledAncestor() const;
   bool LastKnownIsIgnoredValue() const;

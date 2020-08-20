@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/html/media/media_source.h"
+#include "third_party/blink/renderer/core/html/media/media_source_tracer.h"
 #include "third_party/blink/renderer/core/html/time_ranges.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/mediasource/source_buffer.h"
@@ -92,7 +93,7 @@ class MediaSourceImpl final : public EventTargetWithInlineData,
   static bool isTypeSupported(const String& type);
 
   // html/media/MediaSource interface implementation
-  bool StartAttachingToMediaElement(HTMLMediaElement*) override;
+  MediaSourceTracer* StartAttachingToMediaElement(HTMLMediaElement*) override;
   void CompleteAttachingToMediaElement(
       std::unique_ptr<WebMediaSource>) override;
   void Close() override;

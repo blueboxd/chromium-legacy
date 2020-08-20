@@ -32,6 +32,7 @@ class AccountPickerBottomSheetProperties {
             AccountPickerBottomSheetState.SIGNIN_IN_PROGRESS,
             AccountPickerBottomSheetState.INCOGNITO_INTERSTITIAL,
             AccountPickerBottomSheetState.SIGNIN_GENERAL_ERROR,
+            AccountPickerBottomSheetState.SIGNIN_AUTH_ERROR,
     })
     @Retention(RetentionPolicy.SOURCE)
     @interface AccountPickerBottomSheetState {
@@ -88,6 +89,14 @@ class AccountPickerBottomSheetProperties {
          * The state can be reached when an error appears during the sign-in process.
          */
         int SIGNIN_GENERAL_ERROR = 5;
+
+        /**
+         * When user cannot complete sign-in due to invalidate credential, the
+         * sign-in auth error screen will be shown.
+         *
+         * The state can be reached when an auth error appears during the sign-in process.
+         */
+        int SIGNIN_AUTH_ERROR = 6;
     }
 
     // PropertyKeys for the selected account view when the account list is collapsed.

@@ -37,6 +37,7 @@ android_library("application_java") {
 
 android_library("util_java") {
   sources = [
+    "java/src/org/chromium/components/embedder_support/util/InputStreamUtil.java",
     "java/src/org/chromium/components/embedder_support/util/Origin.java",
     "java/src/org/chromium/components/embedder_support/util/UrlConstants.java",
     "java/src/org/chromium/components/embedder_support/util/UrlUtilities.java",
@@ -52,19 +53,32 @@ android_library("util_java") {
 }
 
 static_library("util") {
-  sources = [ "util/url_utilities.cc" ]
+  sources = [
+    "util/android_stream_reader_url_loader.cc",
+    "util/android_stream_reader_url_loader.h",
+    "util/input_stream.cc",
+    "util/input_stream.h",
+    "util/input_stream_reader.cc",
+    "util/input_stream_reader.h",
+    "util/url_utilities.cc",
+  ]
 
   deps = [
     ":util_jni_headers",
     "//base",
     "//components/google/core/common",
+    "//mojo/public/cpp/bindings:bindings",
+    "//mojo/public/cpp/system:system",
     "//net",
+    "//services/network/public/cpp:cpp",
+    "//services/network/public/mojom:mojom",
     "//url",
   ]
 }
 
 generate_jni("util_jni_headers") {
   sources = [
+    "java/src/org/chromium/components/embedder_support/util/InputStreamUtil.java",
     "java/src/org/chromium/components/embedder_support/util/UrlUtilities.java",
   ]
 }
@@ -228,7 +242,10 @@ android_library("native_java_unittests_java") {
     "//base:base_java",
     "//third_party/junit",
   ]
-  sources = [ "native_java_unittests/src/org/chromium/components/embedder_support/util/UrlUtilitiesUnitTest.java" ]
+  sources = [
+    "native_java_unittests/src/org/chromium/components/embedder_support/util/InputStreamUnittest.java",
+    "native_java_unittests/src/org/chromium/components/embedder_support/util/UrlUtilitiesUnitTest.java",
+  ]
 
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 }
@@ -237,7 +254,10 @@ android_library("native_java_unittests_java") {
 # can't put 'java' in the name here.
 generate_jni("native_j_unittests_jni_headers") {
   testonly = true
-  sources = [ "native_java_unittests/src/org/chromium/components/embedder_support/util/UrlUtilitiesUnitTest.java" ]
+  sources = [
+    "native_java_unittests/src/org/chromium/components/embedder_support/util/InputStreamUnittest.java",
+    "native_java_unittests/src/org/chromium/components/embedder_support/util/UrlUtilitiesUnitTest.java",
+  ]
 }
 
 android_library("junit_test_support") {

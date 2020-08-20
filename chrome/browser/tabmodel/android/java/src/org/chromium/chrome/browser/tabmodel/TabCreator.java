@@ -42,9 +42,11 @@ public abstract class TabCreator {
      * from disk.
      * @param state    The tab state that the tab can be restored from.
      * @param id       The id to give the new tab.
+     * @param criticalPersistedTabData serialized {@link CriticalPersistedTabData}
      * @param index    The index for where to place the tab.
      */
-    public abstract Tab createFrozenTab(TabState state, int id, int index);
+    public abstract Tab createFrozenTab(
+            TabState state, byte[] serializedCriticalPersistedTabData, int id, int index);
 
     /**
      * Creates a new tab and loads the specified URL in it. This is a convenience method for

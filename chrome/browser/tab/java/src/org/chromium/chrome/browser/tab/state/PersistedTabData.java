@@ -61,6 +61,23 @@ public abstract class PersistedTabData implements UserData {
     }
 
     /**
+     * Build {@link PersistedTabData} from serialized form
+     * @param tab associated with {@link PersistedTabData}
+     * @param factory method for creating {@link PersistedTabData}
+     * @param data serialized {@link PersistedTabData}
+     * @param clazz {@link PersistedTabData} class
+     * @return deserialized {@link PersistedTabData}
+     */
+    protected static <T extends PersistedTabData> T build(
+            Tab tab, PersistedTabDataFactory<T> factory, byte[] data, Class<T> clazz) {
+        PersistedTabDataConfiguration config =
+                PersistedTabDataConfiguration.get(clazz, tab.isIncognito());
+        T persistedTabData = factory.create(data, config.storage, config.id);
+        setUserData(tab, clazz, persistedTabData);
+        return persistedTabData;
+    }
+
+    /**
      * Asynchronously acquire a {@link PersistedTabData}
      * for a {@link Tab}
      * @param tab {@link Tab} {@link PersistedTabData} is being acquired for.
@@ -160,7 +177,7 @@ public abstract class PersistedTabData implements UserData {
      * Save {@link PersistedTabData} to storage
      * @param callback callback indicating success/failure
      */
-    @VisibleForTesting
+    @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
     protected void save() {
         mPersistedTabDataStorage.save(mTab.getId(), mPersistedTabDataId, serializeAndLog());
     }
@@ -171,6 +188,7 @@ public abstract class PersistedTabData implements UserData {
     abstract byte[] serialize();
 
     private byte[] serializeAndLog() {
+        // TODO(crbug.com/1119856) Add trace events
         byte[] res = serialize();
         RecordHistogram.recordBooleanHistogram(
                 "Tabs.PersistedTabData.Serialize." + getUmaTag(), res != null);

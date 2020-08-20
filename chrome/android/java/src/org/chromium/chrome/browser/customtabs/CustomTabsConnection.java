@@ -972,7 +972,9 @@ public class CustomTabsConnection {
                 intent.getIntExtra(PARALLEL_REQUEST_REFERRER_POLICY_KEY, ReferrerPolicy.DEFAULT);
         if (url == null) return ParallelRequestStatus.FAILURE_INVALID_URL;
         if (referrer == null) return ParallelRequestStatus.FAILURE_INVALID_REFERRER;
-        if (policy < 0 || policy > ReferrerPolicy.LAST) policy = ReferrerPolicy.DEFAULT;
+        if (policy < ReferrerPolicy.MIN_VALUE || policy > ReferrerPolicy.MAX_VALUE) {
+            policy = ReferrerPolicy.DEFAULT;
+        }
 
         if (url.toString().equals("") || !isValid(url)) {
             return ParallelRequestStatus.FAILURE_INVALID_URL;
@@ -1013,7 +1015,7 @@ public class CustomTabsConnection {
                 intent.getIntExtra(PARALLEL_REQUEST_REFERRER_POLICY_KEY, ReferrerPolicy.DEFAULT);
 
         if (resourceList == null || referrer == null) return 0;
-        if (policy < 0 || policy > ReferrerPolicy.LAST) policy = ReferrerPolicy.DEFAULT;
+        if (policy < 0 || policy > ReferrerPolicy.MAX_VALUE) policy = ReferrerPolicy.DEFAULT;
         Origin origin = Origin.create(referrer);
         if (origin == null) return 0;
         if (!mClientManager.isFirstPartyOriginForSession(session, origin)) return 0;

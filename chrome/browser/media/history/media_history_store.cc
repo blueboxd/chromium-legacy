@@ -1196,4 +1196,26 @@ MediaHistoryStore::GetMediaFeedFetchDetails(const int64_t feed_id) {
   return feeds_table_->GetFetchDetails(feed_id);
 }
 
+void MediaHistoryStore::UpdateFeedUserStatus(
+    const int64_t feed_id,
+    media_feeds::mojom::FeedUserStatus status) {
+  if (!CanAccessDatabase())
+    return;
+
+  if (!feeds_table_)
+    return;
+
+  if (!DB()->BeginTransaction()) {
+    DLOG(ERROR) << "Failed to begin the transaction.";
+    return;
+  }
+
+  if (!feeds_table_->UpdateFeedUserStatus(feed_id, status)) {
+    DB()->RollbackTransaction();
+    return;
+  }
+
+  DB()->CommitTransaction();
+}
+
 }  // namespace media_history

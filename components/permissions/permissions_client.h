@@ -61,6 +61,11 @@ class PermissionsClient {
   virtual scoped_refptr<content_settings::CookieSettings> GetCookieSettings(
       content::BrowserContext* browser_context) = 0;
 
+  // Retrieves the subresource filter activation from browser website settings.
+  virtual bool IsSubresourceFilterActivated(
+      content::BrowserContext* browser_context,
+      const GURL& url) = 0;
+
   // Retrieves the PermissionDecisionAutoBlocker for this context. The returned
   // pointer has the same lifetime as |browser_context|.
   virtual PermissionDecisionAutoBlocker* GetPermissionDecisionAutoBlocker(

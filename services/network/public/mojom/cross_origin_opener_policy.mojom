@@ -9,8 +9,12 @@ import "mojo/public/mojom/base/unguessable_token.mojom";
 import "services/network/public/mojom/source_location.mojom";
 
 enum CoopAccessReportType {
-  kReportAccessFrom, // The reports are sent to the 'accessing window'.
-  kReportAccessTo,   // The reports are sent to the 'accessed window'.
+  kAccessFromCoopPageToOpener,
+  kAccessFromCoopPageToOpenee,
+  kAccessFromCoopPageToOther,
+  kAccessToCoopPageFromOpener,
+  kAccessToCoopPageFromOpenee,
+  kAccessToCoopPageFromOther,
 };
 
 // Reports potential COOP violations. Implemented in the browser process.

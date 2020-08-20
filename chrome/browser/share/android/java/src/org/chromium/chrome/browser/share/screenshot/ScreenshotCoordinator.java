@@ -66,7 +66,7 @@ public class ScreenshotCoordinator {
             launchEditor();
         } else if (sInstallAttempts < MAX_INSTALL_ATTEMPTS) {
             sInstallAttempts++;
-            installEditor(true);
+            installEditor(true, /* onSuccessRunnable= */ null);
         } else {
             launchSharesheet();
         }
@@ -95,17 +95,19 @@ public class ScreenshotCoordinator {
 
     /**
      * Runnable friendly helper function to retry the installation after going to the fallback.
+     * @param onSuccess. Runnable to run on success.
      */
-    protected void retryInstallEditor() {
-        installEditor(false);
+    protected void retryInstallEditor(Runnable onSuccess) {
+        installEditor(false, onSuccess);
     }
 
     /**
      * Installs the DFM and shows UI (i.e. toasts and a retry dialog) informing the
      * user of the installation status.
      * @param showFallback The fallback will be shown on a unsuccessful installation.
+     * @param onSuccessRunnable the runnable to run on a succesfful install.
      */
-    private void installEditor(boolean showFallback) {
+    private void installEditor(boolean showFallback, Runnable onSuccessRunnable) {
         final ModuleInstallUi ui = new ModuleInstallUi(
                 mTab, R.string.image_editor_module_title, new ModuleInstallUi.FailureUiListener() {
                     @Override
@@ -113,7 +115,7 @@ public class ScreenshotCoordinator {
                         if (retry) {
                             // User initiated retries are not counted toward the maximum number
                             // of install attempts per session.
-                            installEditor(showFallback);
+                            installEditor(showFallback, onSuccessRunnable);
                         } else if (showFallback) {
                             launchSharesheet();
                         }
@@ -124,6 +126,9 @@ public class ScreenshotCoordinator {
         ImageEditorModuleProvider.maybeInstallModule((success) -> {
             if (success) {
                 ui.showInstallSuccessUi();
+                if (onSuccessRunnable != null) {
+                    onSuccessRunnable.run();
+                }
                 launchEditor();
             } else if (showFallback) {
                 launchSharesheet();

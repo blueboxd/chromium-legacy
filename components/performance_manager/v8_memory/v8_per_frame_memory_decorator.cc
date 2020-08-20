@@ -55,13 +55,11 @@ using PerFrameUsagePtr = blink::mojom::PerFrameV8MemoryUsageDataPtr;
 // Comparator that generates a strict total order of PerFrameUsagePtr's when
 // compared by their frame tokens.
 struct SortByToken {
-  constexpr bool operator()(const PerFrameUsagePtr& a,
-                            const PerFrameUsagePtr& b) {
+  bool operator()(const PerFrameUsagePtr& a, const PerFrameUsagePtr& b) {
     return a->frame_token < b->frame_token;
   }
 
-  constexpr bool operator()(const PerFrameUsagePtr& a,
-                            const blink::LocalFrameToken& b) {
+  bool operator()(const PerFrameUsagePtr& a, const blink::LocalFrameToken& b) {
     return a->frame_token < b.value();
   }
 };

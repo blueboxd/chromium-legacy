@@ -45,8 +45,9 @@ class UrlIndex : public HistoryBookmarkModel {
            size_t index,
            std::unique_ptr<BookmarkNode> node);
 
-  // Removes |node| and all its descendants from the map, returns the set of
-  // urls that are no longer contained in the index.
+  // Removes |node| and all its descendants from the map, adds urls that are no
+  // longer contained in the index to the |removed_urls| set if provided
+  // (doesn't clean up existing items in the set).
   std::unique_ptr<BookmarkNode> Remove(BookmarkNode* node,
                                        std::set<GURL>* removed_urls);
 

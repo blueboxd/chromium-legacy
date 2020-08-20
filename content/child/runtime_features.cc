@@ -414,6 +414,8 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
           {"RawClipboard", blink::features::kRawClipboard, kEnableOnly},
           {"ShadowDOMV0", blink::features::kWebComponentsV0, kUseFeatureState},
           {"StorageAccessAPI", blink::features::kStorageAccessAPI, kEnableOnly},
+          {"TransferableStreams", blink::features::kTransferableStreams,
+           kEnableOnly},
           {"TrustedDOMTypes", features::kTrustedDOMTypes, kEnableOnly},
           {"UserAgentClientHint", features::kUserAgentClientHint,
            kUseFeatureState},

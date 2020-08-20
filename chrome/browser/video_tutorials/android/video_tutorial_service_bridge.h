@@ -1,0 +1,45 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_VIDEO_TUTORIALS_ANDROID_VIDEO_TUTORIAL_SERVICE_BRIDGE_H_
+#define CHROME_BROWSER_VIDEO_TUTORIALS_ANDROID_VIDEO_TUTORIAL_SERVICE_BRIDGE_H_
+
+#include "base/android/jni_android.h"
+#include "base/supports_user_data.h"
+#include "chrome/browser/video_tutorials/video_tutorial_service.h"
+
+using base::android::JavaParamRef;
+using base::android::JavaRef;
+using base::android::ScopedJavaGlobalRef;
+using base::android::ScopedJavaLocalRef;
+
+namespace video_tutorials {
+
+// Helper class responsible for bridging the VideoTutorialService between C++
+// and Java.
+class VideoTutorialServiceBridge : public base::SupportsUserData::Data {
+ public:
+  // Returns a Java VideoTutorialServiceBridge for |video_tutorial_service|.
+  // There will be only one bridge per VideoTutorialServiceBridge.
+  static ScopedJavaLocalRef<jobject> GetBridgeForVideoTutorialService(
+      VideoTutorialService* video_tutorial_service);
+
+  explicit VideoTutorialServiceBridge(
+      VideoTutorialService* video_tutorial_service);
+  ~VideoTutorialServiceBridge() override;
+
+ private:
+  // A reference to the Java counterpart of this class.  See
+  // VideoTutorialServiceBridge.java.
+  ScopedJavaGlobalRef<jobject> java_obj_;
+
+  // Not owned.
+  VideoTutorialService* video_tutorial_service_;
+
+  DISALLOW_COPY_AND_ASSIGN(VideoTutorialServiceBridge);
+};
+
+}  // namespace video_tutorials
+
+#endif  // CHROME_BROWSER_VIDEO_TUTORIALS_ANDROID_VIDEO_TUTORIAL_SERVICE_BRIDGE_H_

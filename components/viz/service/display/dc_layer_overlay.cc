@@ -74,7 +74,7 @@ DCLayerResult ValidateYUVQuad(
     int current_frame_processed_overlay_count,
     DisplayResourceProvider* resource_provider) {
   // Note: Do not override this value based on base::Feature values. It is the
-  // result after the GPU blacklist has been consulted.
+  // result after the GPU blocklist has been consulted.
   if (!has_overlay_support)
     return DC_LAYER_FAILED_UNSUPPORTED_QUAD;
 

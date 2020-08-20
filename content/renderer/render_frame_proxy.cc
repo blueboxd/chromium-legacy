@@ -286,7 +286,7 @@ void RenderFrameProxy::ResendVisualProperties() {
   SynchronizeVisualProperties();
 }
 
-void RenderFrameProxy::OnScreenInfoChanged(
+void RenderFrameProxy::DidChangeScreenInfo(
     const blink::ScreenInfo& screen_info) {
   DCHECK(ancestor_render_widget_);
 

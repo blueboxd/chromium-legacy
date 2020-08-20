@@ -40,14 +40,12 @@
 <translation id="1874309113135274312">Google Chrome बीटा (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome कालबाह्य आहे</translation>
 <translation id="1919130412786645364">Chrome मध्ये साइन इन करण्यासाठी अनुमती द्या</translation>
-<translation id="195645108406520445">तुमची नवीन Chrome स्पेस सेट करा</translation>
 <translation id="2063848847527508675">अपडेट लागू करण्यासाठी Chrome OS रीस्टार्ट करणे आवश्यक आहे.</translation>
 <translation id="2094919256425865063">तरीही Chrome बंद करायचे?</translation>
 <translation id="2120620239521071941">हे या डिव्‍हाइस मधून <ph name="ITEMS_COUNT" /> आयटम हटवेल. नंतर तुमचा डेटा पुनर्प्राप्त करण्‍यासाठी Chrome मध्ये <ph name="USER_EMAIL" /> म्हणून साइन इन करा.</translation>
 <translation id="2123055963409958220"><ph name="BEGIN_LINK" />वर्तमान सेटिंग्ज<ph name="END_LINK" /> चा अहवाल देऊन Chrome ला आणखी चांगले बनविण्यात मदत करा</translation>
 <translation id="2151406531797534936">कृपया आता Chrome रीस्टार्ट करा</translation>
 <translation id="2246246234298806438">बिल्ट-इन पीडीएफ व्ह्यूअर गहाळ असताना Google Chrome प्रिंट पूर्वावलोकन दाखवू शकत नाही.</translation>
-<translation id="226038281051944330">तुम्ही <ph name="EXISTING_USER" /> यांच्या स्पेसमध्ये नवीन खाते वापरून साइन इन केले आहे. तुमचा डेटा स्वतंत्र ठेवण्यासाठी तुम्हाला <ph name="NEW_USER" /> करिता नवीन Chrome स्पेस तयार करायची आहे का?</translation>
 <translation id="2290014774651636340">Google API की गहाळ आहेत. Google Chrome ची काही कार्यक्षमता अक्षम केली जाईल.</translation>
 <translation id="2290095356545025170">तुमची खात्री आहे की तुम्ही Google Chrome अनइंस्टॉल करू इच्छिता?</translation>
 <translation id="2309047409763057870">ही Google Chrome ची दुय्यम स्थापना असून त्यास तुमचा डीफॉल्ट ब्राउझर बनवू शकत नाही.</translation>
@@ -82,7 +80,6 @@
 <translation id="3089968997497233615">Google Chrome ची नवीन, सुरक्षित आवृत्ती उपलब्ध आहे.</translation>
 <translation id="3127818369811890733">Chrome OS ला तुमचा डेटा सिंक करता आला नाही.</translation>
 <translation id="3149510190863420837">Chrome Apps</translation>
-<translation id="3351117925998652957">तुमची Chrome स्पेस निवडा</translation>
 <translation id="3360895254066713204">Chrome मदतनीस</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome आता पुन्हा लॉंच होईल}=1{Chrome एका सेकंदामध्ये पुन्हा लॉंच होईल}other{Chrome # सेकंदांमध्ये पुन्हा लॉंच होईल}}</translation>
 <translation id="3395323229510056640">Chrome OS सह मदत मिळवा</translation>
@@ -105,7 +102,6 @@
 <translation id="386202838227397562">कृपया सर्व Google Chrome विंडो बंद करा आणि पुन्हा प्रयत्न करा.</translation>
 <translation id="3865754807470779944">Chrome आवृत्ती <ph name="PRODUCT_VERSION" /> इंस्टॉल केली आहे</translation>
 <translation id="3873044882194371212">लिंक Chrome गुप्त विंडोमध्ये उघडा</translation>
-<translation id="3879568094278837081">या स्पेसचा ब्राउझिंग डेटा या डिव्हाइसवरून हटवला जाईल. डेटा रिकव्हर करण्यासाठी, Chrome वर हे म्हणून साइन इन करा</translation>
 <translation id="3889417619312448367">Google Chrome अनइंस्टॉल करा</translation>
 <translation id="4050175100176540509">नवीनतम आवृत्तीमध्‍ये महत्त्वाच्या सुरक्षितता सुधारणा आणि नवीन वैशिष्ट्ये उपलब्‍ध आहेत.</translation>
 <translation id="4053720452172726777">Google Chrome कस्टमाइझ करा आणि नियंत्रित करा</translation>
@@ -146,13 +142,11 @@
 <translation id="4895437082222824641">लिंक नवीन Chrome &amp;टॅबमध्ये उघडा</translation>
 <translation id="4953650215774548573">तुमचा डीफॉल्ट ब्राउझर म्हणून Google Chrome सेट करा</translation>
 <translation id="495931528404527476">Chrome मध्ये</translation>
-<translation id="4960472897514318257">तुम्ही ऑफिस खाते वापरून साइन इन केले आहे. तुमचा वैयक्तिक डेटा स्वतंत्र ठेवण्यासाठी तुम्हाला <ph name="NEW_USER" /> करिता नवीन Chrome स्पेस तयार करायची आहे का?</translation>
 <translation id="4990567037958725628">Google Chrome कॅनरी</translation>
 <translation id="5062123544085870375">Chrome OS रीस्टार्ट करा</translation>
 <translation id="5132929315877954718">Google Chrome साठी उत्कृष्ट ॲप, खेळ, विस्तार आणि थीम शोधा.</translation>
 <translation id="5170938038195470297">तुमचे प्रोफाइल वापरले जाणे शक्य नाही कारण ते Google Chrome च्या नवीनतम आवृत्तीमधील आहे.
 काही वैशिष्‍ट्ये अनुपलब्ध असू शकतात. कृपया एक भिन्न प्रोफाइल डिरेक्टरी नमूद करा किंवा Google Chrome ची नवीनतम आवृत्ती वापरा.</translation>
-<translation id="5171117065011130146">नवीन Chrome कार्य स्पेस तयार करायची आहे का?</translation>
 <translation id="5193136243808726294">Google Chrome OS हे पृष्ठ उघडू शकत नाही.</translation>
 <translation id="5251420635869119124">अतिथी कोणतीही गोष्ट मागे न सोडता Chrome वापरू शकतात.</translation>
 <translation id="532046782124376502">चेतावणी: Google Chrome हे एक्स्टेंशनना तुमचा ब्राउझिंग इतिहास रेकॉर्ड करून ठेवण्यापासून रोखू शकत नाही. हे एक्स्टेंशन बंद करण्यासाठी गुप्त मोडमधील या पर्यायाची निवड रद्द करा.</translation>
@@ -220,7 +214,6 @@ Google Chrome तुमची सेटिंग्ज पुन्हा मि
 <translation id="7535429826459677826">Google Chrome डेव्हलपर</translation>
 <translation id="7573289029918943991">तुमचे डिव्हाइस अप टू डेट असल्याची खात्री करण्यासाठी <ph name="LINK_BEGIN" />Chrome OS सेटिंग्ज<ph name="LINK_END" /> वर जा</translation>
 <translation id="7589360514048265910">यापुढे Mac OS X 10.9 ला सपोर्ट नसल्यामुळे, या कॉंप्युटरला इथून पुढे Google Chrome चे अपडेट मिळणार नाहीत.</translation>
-<translation id="7591404275842302616">या डिव्हाइसवर तुमचे ब्राउझिंग व्यवस्थापित ठेवण्यासाठी Chrome स्पेस वापरा</translation>
 <translation id="7592736734348559088">तुमचे खाते साइन इन तपशील कालबाह्य झाल्यामुळे Google Chrome तुमचा डेटा संकालित करू शकले नाही.</translation>
 <translation id="7626032353295482388">Chrome मध्ये स्वागत आहे</translation>
 <translation id="7629695634924605473">तुमचे पासवर्ड कधीही धोक्यात असल्यास, Chrome तुम्हाला कळवते</translation>
@@ -267,9 +260,7 @@ Google Chrome तुमची सेटिंग्ज पुन्हा मि
 <translation id="8823341990149967727">Chrome कालबाह्य आहे</translation>
 <translation id="8834965163890861871">Google Chrome पासवर्ड संपादित करण्याचा प्रयत्‍न करत आहे. हे करू देण्यासाठी तुमचा Windows पासवर्ड टाइप करा.</translation>
 <translation id="884296878221830158">तुम्ही Chrome सुरू करता किंवा होम बटण क्लिक करता तेव्हा कोणते पेज दर्शविले जाते ते देखील हे नियंत्रित करते.</translation>
-<translation id="8859948767482842016">तुम्ही <ph name="EXISTING_USER" /> यांच्या स्पेसमध्ये ऑफिस खाते वापरून साइन इन केले आहे. तुमचा डेटा स्वतंत्र ठेवण्यासाठी तुम्हाला <ph name="WORK_DOMAIN" /> करिता नवीन Chrome स्पेस तयार करायची आहे का?</translation>
 <translation id="8862326446509486874">तुमच्याकडे सिस्टम स्तरावरील इंस्टॉलसाठी योग्य अधिकार नाहीत. ॲडमिनिस्ट्रेटर म्हणून पुन्हा इंस्टॉलर चालविण्याचा प्रयत्न करा.</translation>
-<translation id="8877586659207810298"><ph name="NEW_USER" /> साठी नवीन Chrome स्पेस तयार करायची आहे का?</translation>
 <translation id="8914504000324227558">Chrome रीलाँच करा</translation>
 <translation id="8999208279178790196">{0,plural, =0{Chrome अपडेट उपलब्ध आहे}=1{Chrome अपडेट उपलब्ध आहे}other{Chrome अपडेट # दिवसांसाठी उपलब्ध आहे}}</translation>
 <translation id="9026991721384951619">तुमचे खाते साइन इन तपशील कालबाह्य झाल्यामुळे Chrome OS तुमचा डेटा संकालित करू शकले नाही.</translation>

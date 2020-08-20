@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.app.FragmentManager;
 import android.graphics.Bitmap;
 
+import org.chromium.base.Callback;
 import org.chromium.chrome.browser.share.share_sheet.ChromeOptionShareCallback;
 import org.chromium.chrome.browser.tab.Tab;
 /**
@@ -23,13 +24,17 @@ public class ScreenshotShareSheetDialogCoordinator {
      *
      * @param context The context to use for user permissions.
      * @param screenshot The screenshot to be shared.
+     * @param tab The shared tab.
+     * @param chromeOptionShareCallback the callback to trigger on share.
+     * @param installCallback the callback to trigger on install.
      */
     public ScreenshotShareSheetDialogCoordinator(Activity activity, Bitmap screenshot, Tab tab,
-            ChromeOptionShareCallback shareCallback, Runnable installCallback) {
+            ChromeOptionShareCallback chromeOptionShareCallback,
+            Callback<Runnable> installCallback) {
         mFragmentManager = activity.getFragmentManager();
         mScreenshot = screenshot;
         mDialog = new ScreenshotShareSheetDialog();
-        mDialog.init(mScreenshot, this::dismiss, tab, shareCallback, installCallback);
+        mDialog.init(mScreenshot, tab, chromeOptionShareCallback, installCallback);
     }
 
     /**
@@ -37,12 +42,5 @@ public class ScreenshotShareSheetDialogCoordinator {
      */
     protected void showShareSheet() {
         mDialog.show(mFragmentManager, null);
-    }
-
-    /**
-     * Dismiss the main dialog.
-     */
-    public void dismiss() {
-        mDialog.dismiss();
     }
 }

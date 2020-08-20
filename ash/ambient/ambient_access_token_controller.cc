@@ -110,7 +110,6 @@ void AmbientAccessTokenController::NotifyAccessTokenRefreshed() {
 }
 
 void AmbientAccessTokenController::RunCallback(AccessTokenCallback callback) {
-  LOG(ERROR) << " DW run calback " << access_token_;
   std::move(callback).Run(gaia_id_, access_token_);
 }
 

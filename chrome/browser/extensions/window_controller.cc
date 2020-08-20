@@ -63,7 +63,7 @@ WindowController::~WindowController() {
 }
 
 Browser* WindowController::GetBrowser() const {
-  return NULL;
+  return nullptr;
 }
 
 bool WindowController::MatchesFilter(TypeFilter filter) const {

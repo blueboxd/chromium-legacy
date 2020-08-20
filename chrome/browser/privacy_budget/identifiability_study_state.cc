@@ -117,6 +117,11 @@ bool IdentifiabilityStudyState::ShouldSampleSurface(
 }
 
 // static
+void IdentifiabilityStudyState::ResetStateForTesting() {
+  blink::IdentifiabilityStudySettings::ResetStateForTesting();
+}
+
+// static
 void IdentifiabilityStudyState::InitializeGlobalStudySettings() {
   blink::IdentifiabilityStudySettings::SetGlobalProvider(
       std::make_unique<PrivacyBudgetSettingsProvider>());

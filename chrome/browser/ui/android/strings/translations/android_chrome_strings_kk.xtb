@@ -703,6 +703,7 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="6402652558933147609"><ph name="ERROR_CODE" />: <ph name="VIOLATED_URL" /></translation>
 <translation id="6404511346730675251">Бетбелгіні өзгерту</translation>
 <translation id="6406506848690869874">Синхрондау</translation>
+<translation id="6410883413783534063">Бір мезгілде түрлі беттерге кіру үшін қойындыларды ашыңыз.</translation>
 <translation id="6412673304250309937">Chrome браузерінде сақталған қауіпсіз емес сайттар тізімімен URL сілтемелерін салыстырып тексереді. Егер сайт құпия сөзіңізді ұрлағысы келсе немесе сіз зиянды файл жүктеп алған кезде, Chrome браузері URL мекенжайларын, сонымен қатар бет мазмұны бөліктерін, "Қауіпсіз шолу" функциясына жіберуі мүмкін.</translation>
 <translation id="641643625718530986">Басып шығару…</translation>
 <translation id="6427112570124116297">Веб-беттерді басқа тілге аудару</translation>
@@ -821,6 +822,7 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="7328017930301109123">Lite режимінде Chrome беттерді жылдамырақ жүктейді және трафикті 60 пайызға дейін аз жұмсайды.</translation>
 <translation id="7333031090786104871">Алдыңғы сайт әлі енгізілуде</translation>
 <translation id="7340958967809483333">Discover опциялары</translation>
+<translation id="7352651011704765696">Бірнәрсе дұрыс емес</translation>
 <translation id="7352939065658542140">БЕЙНЕ</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Таңдалған 1 элементті бөлісу}other{Таңдалған # элементті бөлісу}}</translation>
 <translation id="7359002509206457351">Төлеу әдістерін көру</translation>
@@ -1013,6 +1015,7 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="868929229000858085">Контактілеріңізді іздеңіз</translation>
 <translation id="869891660844655955">Аяқталу мерзімі</translation>
 <translation id="8712637175834984815">Түсінікті</translation>
+<translation id="8725066075913043281">Әрекетті қайталау</translation>
 <translation id="8748850008226585750">Мазмұны жасырылған</translation>
 <translation id="8751914237388039244">Кескін таңдау</translation>
 <translation id="8758557275681689734">Ашық қойындылардың барлығын көру</translation>

@@ -7075,7 +7075,6 @@ TEST_F(HostResolverManagerDnsTest, SetDnsConfigOverrides) {
       {DnsHostsKey("host", ADDRESS_FAMILY_IPV4), IPAddress(192, 168, 1, 1)}};
   overrides.hosts = hosts;
   overrides.append_to_multi_label_name = false;
-  overrides.randomize_ports = true;
   const int ndots = 5;
   overrides.ndots = ndots;
   const base::TimeDelta timeout = base::TimeDelta::FromSeconds(10);
@@ -7109,7 +7108,6 @@ TEST_F(HostResolverManagerDnsTest, SetDnsConfigOverrides) {
   EXPECT_EQ(search, overridden_config->search);
   EXPECT_EQ(hosts, overridden_config->hosts);
   EXPECT_FALSE(overridden_config->append_to_multi_label_name);
-  EXPECT_TRUE(overridden_config->randomize_ports);
   EXPECT_EQ(ndots, overridden_config->ndots);
   EXPECT_EQ(timeout, overridden_config->timeout);
   EXPECT_EQ(attempts, overridden_config->attempts);
@@ -7191,7 +7189,6 @@ TEST_F(HostResolverManagerDnsTest, SetDnsConfigOverrides_PartialOverride) {
   EXPECT_EQ(original_config.search, overridden_config->search);
   EXPECT_EQ(original_config.hosts, overridden_config->hosts);
   EXPECT_TRUE(overridden_config->append_to_multi_label_name);
-  EXPECT_FALSE(overridden_config->randomize_ports);
   EXPECT_EQ(original_config.ndots, overridden_config->ndots);
   EXPECT_EQ(original_config.timeout, overridden_config->timeout);
   EXPECT_EQ(original_config.attempts, overridden_config->attempts);

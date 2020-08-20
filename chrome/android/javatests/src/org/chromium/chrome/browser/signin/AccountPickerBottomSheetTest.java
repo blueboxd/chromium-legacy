@@ -56,6 +56,7 @@ import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.ProfileDataSource;
+import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.base.GoogleServiceAuthError;
 import org.chromium.components.signin.base.GoogleServiceAuthError.State;
 import org.chromium.components.signin.test.util.FakeAccountManagerFacade;
@@ -306,6 +307,37 @@ public class AccountPickerBottomSheetTest {
         onView(withText(R.string.signin_account_picker_general_error_subtitle))
                 .check(matches(isDisplayed()));
         onView(withText(R.string.signin_account_picker_general_error_button))
+                .check(matches(isDisplayed()));
+        onView(withId(R.id.account_picker_horizontal_divider)).check(matches(not(isDisplayed())));
+        onView(withId(R.id.account_picker_selected_account)).check(matches(not(isDisplayed())));
+        onView(withId(R.id.account_picker_signin_spinner_view)).check(matches(not(isDisplayed())));
+    }
+
+    @Test
+    @MediumTest
+    public void testSignInAuthError() {
+        CoreAccountInfo coreAccountInfo =
+                mAccountManagerTestRule.toCoreAccountInfo(PROFILE_DATA1.getAccountName());
+        // Throws an auth error during the sign-in action
+        doAnswer(invocation -> {
+            Callback<GoogleServiceAuthError> onSignInErrorCallback = invocation.getArgument(1);
+            onSignInErrorCallback.onResult(
+                    new GoogleServiceAuthError(State.INVALID_GAIA_CREDENTIALS));
+            return null;
+        })
+                .when(mAccountPickerDelegateMock)
+                .signIn(eq(coreAccountInfo), any());
+
+        buildAndShowCollapsedBottomSheet();
+        View bottomSheetView = mCoordinator.getBottomSheetViewForTesting();
+        ThreadUtils.runOnUiThread(
+                bottomSheetView.findViewById(R.id.account_picker_continue_as_button)::performClick);
+        CriteriaHelper.pollUiThread(() -> {
+            return !bottomSheetView.findViewById(R.id.account_picker_selected_account).isShown()
+                    && bottomSheetView.findViewById(R.id.account_picker_bottom_sheet_subtitle)
+                               .isShown();
+        });
+        onView(withText(R.string.signin_account_picker_bottom_sheet_error_title))
                 .check(matches(isDisplayed()));
         onView(withId(R.id.account_picker_horizontal_divider)).check(matches(not(isDisplayed())));
         onView(withId(R.id.account_picker_selected_account)).check(matches(not(isDisplayed())));

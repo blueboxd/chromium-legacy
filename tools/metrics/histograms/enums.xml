@@ -4346,6 +4346,37 @@ Unknown properties are collapsed to zero. -->
   <int value="3" label="Already installed"/>
 </enum>
 
+<enum name="AutofillAssistantLiteScriptFinished">
+  <int value="0" label="Unknown failure"/>
+  <int value="1" label="Service deleted"/>
+  <int value="2" label="Script path mismatch"/>
+  <int value="3" label="GetActions failed"/>
+  <int value="4" label="Proto parse error"/>
+  <int value="5" label="Script contained unsafe actions"/>
+  <int value="6" label="Invalid script"/>
+  <int value="7" label="Navigation to external domain while in BROWSE"/>
+  <int value="8" label="Unknown failure in BROWSE"/>
+  <int value="9" label="Navigation to external domain while in PROMPT"/>
+  <int value="10" label="PROMPT condition no longer true"/>
+  <int value="11" label="User explicitly canceled the PROMPT"/>
+  <int value="12" label="Unknown failure in PROMPT"/>
+  <int value="13" label="User explicitly accepted the PROMPT"/>
+</enum>
+
+<enum name="AutofillAssistantLiteScriptOnboarding">
+  <int value="0" label="Seen and accepted"/>
+  <int value="1" label="Seen and rejected"/>
+  <int value="2" label="Already accepted"/>
+</enum>
+
+<enum name="AutofillAssistantLiteScriptStarted">
+  <int value="0" label="DFM unavailable"/>
+  <int value="1" label="Canceled &gt;= 2 times"/>
+  <int value="2" label="Onboarding rejected"/>
+  <int value="3" label="Success, first time user"/>
+  <int value="4" label="Success, returning user"/>
+</enum>
+
 <enum name="AutofillAssistantOnBoarding">
   <int value="0" label="Shown"/>
   <int value="1" label="Not shown (returning user)"/>
@@ -28834,6 +28865,9 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3431" label="BluetoothAdvertisingEventAppearance"/>
   <int value="3432" label="BluetoothAdvertisingEventTxPower"/>
   <int value="3433" label="CrossOriginOpenerPolicyReporting"/>
+  <int value="3434" label="GamepadId"/>
+  <int value="3435" label="ElementAttachInternals"/>
+  <int value="3436" label="BluetoothDeviceName"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -39235,6 +39269,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="7" label="Will-change: transform"/>
   <int value="8" label="Pixel or color effect"/>
   <int value="9" label="Transform animation"/>
+  <int value="10" label="No text"/>
 </enum>
 
 <enum name="LevelDBCorruptionRestoreValue">
@@ -40204,6 +40239,8 @@ from previous Chrome versions.
   <int value="-2013124655" label="EnableEphemeralFlashPermission:disabled"/>
   <int value="-2012990889" label="SpannableInlineAutocomplete:enabled"/>
   <int value="-2012449550" label="OmniboxMostVisitedTiles:enabled"/>
+  <int value="-2012266745"
+      label="OmniboxLocalZeroSuggestFrecencyRanking:disabled"/>
   <int value="-2011532551" label="SignedExchangeSubresourcePrefetch:disabled"/>
   <int value="-2010634516" label="OmniboxLocalEntitySuggestions:disabled"/>
   <int value="-2009622663" label="WebRtcHWH264Encoding:enabled"/>
@@ -40657,6 +40694,7 @@ from previous Chrome versions.
   <int value="-1553280810" label="PromoBrowserCommands:enabled"/>
   <int value="-1552898031" label="SingleTabMode:enabled"/>
   <int value="-1550760918" label="PipRoundedCorners:disabled"/>
+  <int value="-1550675387" label="CriticalPersistedTabData:enabled"/>
   <int value="-1550541457" label="DisplayIdentification:disabled"/>
   <int value="-1549871007" label="OneGoogleBarOnLocalNtp:disabled"/>
   <int value="-1549356351" label="SyncPseudoUSSExtensionSettings:enabled"/>
@@ -41108,6 +41146,7 @@ from previous Chrome versions.
   <int value="-1137442543" label="enable-slimming-paint"/>
   <int value="-1136627751" label="ignore-autocomplete-off-autofill"/>
   <int value="-1136509631" label="ssl-interstitial-v1"/>
+  <int value="-1134420065" label="CriticalPersistedTabData:disabled"/>
   <int value="-1134307340" label="stop-loading-in-background:enabled"/>
   <int value="-1132704128" label="AndroidPaymentAppsFilter:disabled"/>
   <int value="-1128912963" label="MediaControlsExpandGesture:disabled"/>
@@ -42468,6 +42507,8 @@ from previous Chrome versions.
   <int value="342431487" label="VizForWebView:enabled"/>
   <int value="342960463" label="SharingQRCodeGenerator:enabled"/>
   <int value="343445783" label="AllowScrollSettings:enabled"/>
+  <int value="345611669"
+      label="OmniboxLocalZeroSuggestFrecencyRanking:enabled"/>
   <int value="345664265" label="BlinkHeapIncrementalMarking:disabled"/>
   <int value="346711293" label="enable-save-password-bubble"/>
   <int value="347981012" label="TabToGTSAnimation:disabled"/>
@@ -57189,6 +57230,15 @@ Called by update_net_trust_anchors.py.-->
     presented. Does not include items already counted in the more specific
     bucket (Another Add Passes View Controller Is Presented).
   </int>
+</enum>
+
+<enum name="PresentationUrlBySink">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="https:-like URL to Chromecast"/>
+  <int value="2" label="https:-like URL to Extension"/>
+  <int value="3" label="https:-like URL to Wired Display"/>
+  <int value="4" label="cast: URL to Chromecast"/>
+  <int value="5" label="cast-dial: URL to DIAL"/>
 </enum>
 
 <enum name="PresentationUrlType">

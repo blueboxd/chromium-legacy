@@ -11,9 +11,11 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/renderer/render_frame.h"
+#include "content/shell/renderer/web_test/web_view_test_proxy.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/public/web/web_view.h"
 
 namespace content {
 
@@ -22,7 +24,7 @@ MockScreenOrientationClient::MockScreenOrientationClient() = default;
 MockScreenOrientationClient::~MockScreenOrientationClient() = default;
 
 void MockScreenOrientationClient::ResetData() {
-  main_frame_ = nullptr;
+  web_view_test_proxy_ = nullptr;
   current_lock_ = device::mojom::ScreenOrientationLockType::DEFAULT;
   device_orientation_ = blink::mojom::ScreenOrientation::kPortraitPrimary;
   current_orientation_ = blink::mojom::ScreenOrientation::kPortraitPrimary;
@@ -31,9 +33,9 @@ void MockScreenOrientationClient::ResetData() {
 }
 
 bool MockScreenOrientationClient::UpdateDeviceOrientation(
-    blink::WebLocalFrame* main_frame,
+    WebViewTestProxy* web_view_test_proxy,
     blink::mojom::ScreenOrientation orientation) {
-  main_frame_ = main_frame;
+  web_view_test_proxy_ = web_view_test_proxy;
 
   if (device_orientation_ == orientation)
     return false;
@@ -48,46 +50,32 @@ bool MockScreenOrientationClient::UpdateScreenOrientation(
   if (current_orientation_ == orientation)
     return false;
   current_orientation_ = orientation;
-  if (main_frame_) {
-    main_frame_->SendOrientationChangeEvent();
+  if (web_view_test_proxy_) {
+    web_view_test_proxy_->GetWebView()->SetScreenOrientationOverrideForTesting(
+        CurrentOrientationType());
     return true;
   }
   return false;
 }
 
-blink::mojom::ScreenOrientation
+base::Optional<blink::mojom::ScreenOrientation>
 MockScreenOrientationClient::CurrentOrientationType() const {
+  if (is_disabled_)
+    return base::nullopt;
   return current_orientation_;
 }
 
-unsigned MockScreenOrientationClient::CurrentOrientationAngle() const {
-  return OrientationTypeToAngle(current_orientation_);
-}
-
-void MockScreenOrientationClient::SetDisabled(bool disabled) {
+void MockScreenOrientationClient::SetDisabled(
+    WebViewTestProxy* web_view_test_proxy,
+    bool disabled) {
+  if (is_disabled_ == disabled)
+    return;
   is_disabled_ = disabled;
-}
-
-unsigned MockScreenOrientationClient::OrientationTypeToAngle(
-    blink::mojom::ScreenOrientation type) {
-  unsigned angle;
-  // FIXME(ostap): This relationship between orientationType and
-  // orientationAngle is temporary. The test should be able to specify
-  // the angle in addition to the orientation type.
-  switch (type) {
-    case blink::mojom::ScreenOrientation::kLandscapePrimary:
-      angle = 90;
-      break;
-    case blink::mojom::ScreenOrientation::kLandscapeSecondary:
-      angle = 270;
-      break;
-    case blink::mojom::ScreenOrientation::kPortraitSecondary:
-      angle = 180;
-      break;
-    default:
-      angle = 0;
+  web_view_test_proxy_ = web_view_test_proxy;
+  if (web_view_test_proxy_) {
+    web_view_test_proxy_->GetWebView()->SetScreenOrientationOverrideForTesting(
+        CurrentOrientationType());
   }
-  return angle;
 }
 
 bool MockScreenOrientationClient::IsOrientationAllowedByCurrentLock(

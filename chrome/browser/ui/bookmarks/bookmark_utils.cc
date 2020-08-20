@@ -261,7 +261,7 @@ bool IsValidBookmarkDropLocation(Profile* profile,
 
 #if defined(TOOLKIT_VIEWS)
 // TODO(bsep): vectorize the Windows versions: crbug.com/564112
-gfx::ImageSkia GetBookmarkFolderIcon(SkColor text_color) {
+ui::ImageModel GetBookmarkFolderIcon(SkColor text_color) {
   gfx::ImageSkia folder;
 #if defined(OS_WIN)
   folder = *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
@@ -278,10 +278,14 @@ gfx::ImageSkia GetBookmarkFolderIcon(SkColor text_color) {
                              : vector_icons::kFolderIcon,
                          text_color);
 #endif
-  return gfx::ImageSkia(std::make_unique<RTLFlipSource>(folder), folder.size());
+  // TODO(crbug.com/1119823): Return the unflipped image here
+  // (as a vector if possible); callers should have the responsibility to flip
+  // when painting as necessary.
+  return ui::ImageModel::FromImageSkia(
+      gfx::ImageSkia(std::make_unique<RTLFlipSource>(folder), folder.size()));
 }
 
-gfx::ImageSkia GetBookmarkManagedFolderIcon(SkColor text_color) {
+ui::ImageModel GetBookmarkManagedFolderIcon(SkColor text_color) {
   gfx::ImageSkia folder;
 #if defined(OS_WIN)
   folder = *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
@@ -299,7 +303,11 @@ gfx::ImageSkia GetBookmarkManagedFolderIcon(SkColor text_color) {
                              : vector_icons::kFolderManagedIcon,
                          text_color);
 #endif
-  return gfx::ImageSkia(std::make_unique<RTLFlipSource>(folder), folder.size());
+  // TODO(crbug.com/1119823): Return the unflipped image here
+  // (as a vector if possible); callers should have the responsibility to flip
+  // when painting as necessary.
+  return ui::ImageModel::FromImageSkia(
+      gfx::ImageSkia(std::make_unique<RTLFlipSource>(folder), folder.size()));
 }
 #endif
 

@@ -162,6 +162,21 @@ class AccountPickerBottomSheetView implements BottomSheetContent {
         mSelectedAccountView.setVisibility(View.GONE);
     }
 
+    /**
+     * Sets up the view for sign-in auth error.
+     * TODO(https://crbug.com/1116952): Add strings for subtitle and button for sign-in auth error
+     */
+    void setUpSignInAuthErrorView() {
+        mAccountPickerTitle.setText(R.string.signin_account_picker_bottom_sheet_error_title);
+        mAccountPickerSubtitle.setVisibility(View.VISIBLE);
+        mContentView.findViewById(R.id.account_picker_signin_spinner_view)
+                .setVisibility(View.INVISIBLE);
+        mContinueAsButton.setVisibility(View.VISIBLE);
+
+        mContentView.findViewById(R.id.account_picker_horizontal_divider).setVisibility(View.GONE);
+        mSelectedAccountView.setVisibility(View.GONE);
+    }
+
     @Override
     public View getContentView() {
         return mContentView;

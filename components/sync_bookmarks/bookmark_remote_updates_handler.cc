@@ -363,7 +363,9 @@ void BookmarkRemoteUpdatesHandler::Process(
 
     if (tracked_entity && tracked_entity->IsUnsynced()) {
       ProcessConflict(*update, tracked_entity);
-      if (!bookmark_tracker_->GetEntityForSyncId(update_entity.id)) {
+      // |tracked_entity| might be deleted during processing conflict.
+      tracked_entity = bookmark_tracker_->GetEntityForSyncId(update_entity.id);
+      if (!tracked_entity) {
         // During conflict resolution, the entity could be dropped in case of
         // a conflict between local and remote deletions. We shouldn't worry
         // about changes to the encryption in that case.

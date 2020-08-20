@@ -14,6 +14,7 @@
 <translation id="109942774857561566">ฉันเบื่อจัง</translation>
 <translation id="1104084341931202936">แสดงการตั้งค่าการเข้าถึงพิเศษ</translation>
 <translation id="1104621072296271835">อุปกรณ์จะทำงานได้ดียิ่งขึ้นเมื่อใช้ร่วมกัน</translation>
+<translation id="1119348796022671382">โหมดสีที่มีธีมใช้สีที่ดึงมาจากวอลเปเปอร์เพื่อเติมสีให้อินเทอร์เฟซเล็กน้อย</translation>
 <translation id="112308213915226829">ซ่อนชั้นวางโดยอัตโนมัติ</translation>
 <translation id="1153356358378277386">อุปกรณ์ที่จับคู่</translation>
 <translation id="1175572348579024023">เลื่อน</translation>
@@ -48,6 +49,7 @@
 <translation id="1391102559483454063">เปิด</translation>
 <translation id="1419738280318246476">ปลดล็อกอุปกรณ์เพื่อดำเนินการแจ้งเตือน</translation>
 <translation id="1420408895951708260">เปิด/ปิดแสงตอนกลางคืน <ph name="STATE_TEXT" /></translation>
+<translation id="1420527829902822813">ถ่ายภาพหน้าจอและบันทึกในคลิปบอร์ดแล้ว</translation>
 <translation id="1426410128494586442">ยอมรับ</translation>
 <translation id="1455242230282523554">แสดงการตั้งค่าภาษา</translation>
 <translation id="1460620680449458626">ระดับเสียงปิดเสียงอยู่</translation>
@@ -65,6 +67,7 @@
 <translation id="1632985212731562677">ปิดใช้ "การเข้าถึงด้วยสวิตช์" ได้ในการตั้งค่า &gt; การช่วยเหลือพิเศษ</translation>
 <translation id="1654477262762802994">เริ่มการค้นหาด้วยเสียง</translation>
 <translation id="1665244008632896072">สลับโหมดมืด <ph name="STATE_TEXT" /></translation>
+<translation id="1667964833127753507">โหมดสีปานกลางไม่ได้ใช้สีที่ดึงมาจากวอลเปเปอร์ แต่จะใช้ชุดโทนสีที่สว่างหรือเข้มปานกลางแทนสีเหล่านั้น</translation>
 <translation id="1677472565718498478">ใช้ได้อีก <ph name="TIME" /></translation>
 <translation id="1698080062160024910">ตัวจับเวลา <ph name="TOTAL_TIME" /> · <ph name="LABEL" /></translation>
 <translation id="1698760176351776263">ที่อยู่ IPv6: <ph name="ADDRESS" /></translation>
@@ -181,6 +184,7 @@
 <translation id="3000461861112256445">เสียงแบบโมโน</translation>
 <translation id="3009178788565917040">เอาต์พุต</translation>
 <translation id="3033545621352269033">เปิด</translation>
+<translation id="3038571455154067151">โปรดป้อนรหัสการเข้าถึง Family Link ของผู้ปกครองเพื่อลงชื่อเข้าใช้</translation>
 <translation id="3051128274746680507">ระบบจะนำโปรไฟล์ผู้ใช้ภายใต้การควบคุมดูแลออกในเร็วๆ นี้ ลงชื่อเข้าใช้เพื่อดูข้อมูลเพิ่มเติม</translation>
 <translation id="3055162170959710888">วันนี้คุณใช้อุปกรณ์เครื่องนี้ไป <ph name="USED_TIME" /></translation>
 <translation id="3076778413190775903">ถาดสถานะ เวลา <ph name="TIME" />
@@ -277,6 +281,7 @@
 <translation id="397105322502079400">กำลังคำนวณ...</translation>
 <translation id="3977512764614765090">แบตเตอรี่เหลือ <ph name="PERCENTAGE" />% และกำลังชาร์จ</translation>
 <translation id="3995138139523574647">อุปกรณ์ USB-C (พอร์ตด้านหลังขวา)</translation>
+<translation id="40062176907008878">การเขียนด้วยลายมือ</translation>
 <translation id="4017989525502048489">ตัวชี้เลเซอร์</translation>
 <translation id="4021716437419160885">เลื่อนลง</translation>
 <translation id="4028481283645788203">ต้องป้อนรหัสผ่านเพื่อให้มีความปลอดภัยมากขึ้น</translation>
@@ -288,12 +293,14 @@
 <translation id="4129129681837227511">หากต้องการดูการแจ้งเตือนในหน้าจอล็อก ให้ปลดล็อกเพื่อเปลี่ยนการตั้งค่า</translation>
 <translation id="4146833061457621061">เปิดเพลง</translation>
 <translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> จัดการโดย <ph name="DOMAIN" /></translation>
+<translation id="4157822100366708405">การตั้งค่าธีมมืด</translation>
 <translation id="4181841719683918333">ภาษา</translation>
 <translation id="4195877955194704651">ปุ่มคลิกอัตโนมัติ</translation>
 <translation id="4197790712631116042">ปิด</translation>
 <translation id="4212472694152630271">เปลี่ยนไปใช้ PIN</translation>
 <translation id="4215497585250573029">การตั้งค่า VPN</translation>
 <translation id="4217571870635786043">การพิมพ์ตามคำบอก</translation>
+<translation id="4229328187280698237">เปลี่ยนเป็นโหมดแท็บเล็ต</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">แสดงการตั้งค่าการแจ้งเตือน การแจ้งเตือนปิดอยู่</translation>
 <translation id="4269883910223712419">ผู้ดูแลระบบของอุปกรณ์เครื่องนี้ทำสิ่งต่อไปนี้ได้</translation>
@@ -368,6 +375,7 @@
 <translation id="5035389544768382859">ยืนยันการกำหนดค่าจอแสดงผล</translation>
 <translation id="5083553833479578423">ใช้ฟีเจอร์จาก Assistant ได้มากขึ้น</translation>
 <translation id="5114495209940374989">ภาพหน้าจอ</translation>
+<translation id="5123162024343028706">ลอยอยู่ด้านบน</translation>
 <translation id="5136175204352732067">เชื่อมต่อกับแป้นพิมพ์อื่นแล้ว</translation>
 <translation id="5168181903108465623">เครื่องส่งพร้อมใช้งาน</translation>
 <translation id="5170568018924773124">แสดงในโฟลเดอร์</translation>
@@ -381,6 +389,7 @@
 <translation id="5297704307811127955">ปิด</translation>
 <translation id="5302048478445481009">ภาษา</translation>
 <translation id="5313326810920013265">การตั้งค่าบลูทูธ</translation>
+<translation id="5314219114274263156">อัดหน้าจอแล้ว</translation>
 <translation id="5331975486040154427">อุปกรณ์ USB-C (พอร์ตด้านหลังซ้าย)</translation>
 <translation id="5379115545237091094">ลองหลายครั้งเกินไป</translation>
 <translation id="5397578532367286026">การใช้งานและประวัติของผู้ใช้รายนี้อาจถูกตรวจสอบโดยผู้จัดการ (<ph name="MANAGER_EMAIL" />) บน chrome.com</translation>
@@ -421,6 +430,7 @@
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5837036133683224804">หยุด <ph name="ROUTE_TITLE" /> ใน<ph name="RECEIVER_NAME" /></translation>
 <translation id="5860033963881614850">ปิด</translation>
+<translation id="5876666360658629066">กรอกรหัสผู้ปกครอง</translation>
 <translation id="5887866489674258948">โหมดมืด</translation>
 <translation id="5895138241574237353">ปิดแล้วเปิดอีกครั้ง</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
@@ -481,6 +491,7 @@
 <translation id="652139407789908527">หน้าจอจะไม่แสดงผลเป็นเวลานานกว่าปกติ (สูงสุด 1 นาที) ในระหว่างการอัปเดตนี้ โปรดอย่ากดปุ่มเปิด/ปิดขณะอัปเดต</translation>
 <translation id="6527303717912515753">แชร์</translation>
 <translation id="6528179044667508675">ห้ามรบกวน</translation>
+<translation id="65320610082834431">อีโมจิ</translation>
 <translation id="6537270692134705506">จับภาพหน้าจอ</translation>
 <translation id="6537924328260219877">ความแรงสัญญาณ <ph name="SIGNAL_STRENGTH" />, แบตเตอรี่โทรศัพท์ <ph name="BATTERY_STATUS" /></translation>
 <translation id="6542521951477560771">แคสต์ไปที่<ph name="RECEIVER_NAME" /></translation>
@@ -567,8 +578,10 @@
 <translation id="7568637526529101738">เมื่อคลิกขวาหรือกดค้าง Assistant จะแสดงข้อมูล เช่น คำจำกัดความหรือการแปลงหน่วยสำหรับรายการที่คุณเลือก</translation>
 <translation id="7569509451529460200">เปิดใช้เบรลล์และ ChromeVox แล้ว</translation>
 <translation id="7579778809502851308">จับภาพหน้าจอ</translation>
+<translation id="7590883480672980941">การตั้งค่าการป้อนข้อมูล</translation>
 <translation id="7593891976182323525">ค้นหาหรือ Shift</translation>
 <translation id="7600875258240007829">ดูการแจ้งเตือนทั้งหมด</translation>
+<translation id="7618774594543487847">ปานกลาง</translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" />° F</translation>
 <translation id="7642647758716480637">เปิดการตั้งค่าของ <ph name="NETWORK_NAME" /> <ph name="CONNECTION_STATUS" /></translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (เจ้าของ)</translation>
@@ -665,12 +678,14 @@
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, ความแรงสัญญาณ <ph name="SIGNAL_STRENGTH" />, จัดการโดยผู้ดูแลระบบ</translation>
 <translation id="8639760480004882931">เหลือ <ph name="PERCENTAGE" />%</translation>
 <translation id="8646417893960517480">ตัวจับเวลา <ph name="TOTAL_TIME" /></translation>
+<translation id="8647931990447795414">โปรดป้อนรหัสการเข้าถึง Family Link ของผู้ปกครองเพื่อเพิ่มบุคคล</translation>
 <translation id="8649101189709089199">เลือกเพื่อให้อ่าน</translation>
 <translation id="8652175077544655965">ปิดการตั้งค่า</translation>
 <translation id="8653151467777939995">แสดงการตั้งค่าการแจ้งเตือน การแจ้งเตือนเปิดอยู่</translation>
 <translation id="8660331759611631213">รากที่สองของ 71</translation>
 <translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />, ความแรงสัญญาณ <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664753092453405566">แสดงรายการเครือข่าย <ph name="STATE_TEXT" /></translation>
+<translation id="8668052347555487755">โหมดสี</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">เชื่อมต่อกับที่ชาร์จพลังงานต่ำ</translation>
 <translation id="8683506306463609433">ใช้งานการติดตามประสิทธิภาพอยู่</translation>
@@ -694,6 +709,8 @@
 <translation id="8878886163241303700">กำลังขยายหน้าจอ</translation>
 <translation id="890616557918890486">เปลี่ยนแหล่งที่มา</translation>
 <translation id="8909138438987180327">แบตเตอรี่เหลือ <ph name="PERCENTAGE" /> เปอร์เซ็นต์</translation>
+<translation id="8913384980486163186">มีธีม (ค่าเริ่มต้น)</translation>
+<translation id="8918251165865262378">เปลี่ยนเป็นโหมดแล็ปท็อป</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google Assistant ยังพูดภาษานี้ไม่ได้</translation>
 <translation id="8936501819958976551">ปิดใช้งานอยู่</translation>

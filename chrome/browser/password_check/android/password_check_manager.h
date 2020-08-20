@@ -32,6 +32,8 @@ class PasswordCheckManager
     virtual void OnCompromisedCredentialsChanged(int count) = 0;
     virtual void OnPasswordCheckStatusChanged(
         password_manager::PasswordCheckUIStatus status) = 0;
+    virtual void OnPasswordCheckProgressChanged(int already_processed,
+                                                int remaining_in_queue) = 0;
   };
 
   struct CompromisedCredentialForUI : password_manager::CredentialWithPassword {
@@ -98,6 +100,55 @@ class PasswordCheckManager
   PasswordCheckManager& operator=(PasswordCheckManager&&) = delete;
 
  private:
+  // Helps to track which preconditions are fulfilled.
+  enum CheckPreconditions {
+    // No preconditions have been fulfilled.
+    kNone = 0,
+    // Saved passwords can be accessed.
+    kSavedPasswordsAvailable = 1 << 0,
+    // Sites with available Scripts are fetched.
+    kScriptsCachePrewarmed = 1 << 1,
+    // Already known compromised credentials were loaded.
+    kKnownCredentialsFetched = 1 << 2,
+    // All preconditions have been fulfilled.
+    kAll = kSavedPasswordsAvailable | kScriptsCachePrewarmed |
+           kKnownCredentialsFetched,
+  };
+
+  // Class remembering the state required to update the progress of an ongoing
+  // Password Check.
+  class PasswordCheckProgress {
+   public:
+    PasswordCheckProgress();
+    ~PasswordCheckProgress();
+
+    size_t remaining_in_queue() const { return remaining_in_queue_; }
+    size_t already_processed() const { return already_processed_; }
+
+    // Increments the counts corresponding to `password`. Intended to be called
+    // for each credential that is passed to the bulk check.
+    void IncrementCounts(const autofill::PasswordForm& password);
+
+    // Updates the counts after a `credential` has been processed by the bulk
+    // check.
+    void OnProcessed(const password_manager::LeakCheckCredential& credential);
+
+   private:
+    // Count variables needed to correctly show the progress of the check to the
+    // user. `already_processed_` contains the number of credentials that have
+    // been checked already, while `remaining_in_queue_` remembers how many
+    // passwords still need to be checked.
+    // Since the bulk leak check tries to be as efficient as possible, it
+    // performs a deduplication step before starting to check passwords. In this
+    // step it canonicalizes each credential, and only processes the
+    // combinations that are unique. Since this number likely does not match the
+    // total number of saved passwords, we remember in `counts_` how many saved
+    // passwords a given canonicalized credential corresponds to.
+    size_t already_processed_ = 0;
+    size_t remaining_in_queue_ = 0;
+    std::map<password_manager::CanonicalizedCredential, size_t> counts_;
+  };
+
   // password_manager::SavedPasswordsPresenter::Observer:
   void OnSavedPasswordsChanged(
       password_manager::SavedPasswordsPresenter::SavedPasswordsView passwords)
@@ -139,12 +190,24 @@ class PasswordCheckManager
   // Callback when PasswordScriptsFetcher's cache has been warmed up.
   void OnScriptsFetched();
 
+  // Returns true if the passed |condition| was already met.
+  bool IsPreconditionFulfilled(CheckPreconditions condition) const;
+
+  // Marks the passed |condition| as fulfilled and runs a check if applicable.
+  void FulfillPrecondition(CheckPreconditions condition);
+
+  // Resets the passed |condition| so that it's expected to happen again.
+  void ResetPrecondition(CheckPreconditions condition);
+
   // Obsever being notified of UI-relevant events.
   // It must outlive `this`.
   Observer* observer_ = nullptr;
 
   // The profile for which the passwords are checked.
   Profile* profile_ = nullptr;
+
+  // Object storing the progress of a running password check.
+  std::unique_ptr<PasswordCheckProgress> progress_;
 
   // Handle to the password store, powering both `saved_passwords_presenter_`
   // and `compromised_credentials_manager_`.
@@ -175,17 +238,14 @@ class PasswordCheckManager
           BulkLeakCheckServiceFactory::GetForProfile(profile_),
           profile_->GetPrefs()};
 
-  // This is true when the saved passwords have been fetched from the store.
-  bool is_initialized_ = false;
+  // The check can be run only of this is CheckPreconditions::kAll;
+  int fulfilled_preconditions_ = CheckPreconditions::kNone;
 
   // Whether the check start was requested.
   bool was_start_requested_ = false;
 
   // Whether a check is currently running.
   bool is_check_running_ = false;
-
-  // Whether scripts refreshement is finished.
-  bool are_scripts_refreshed_ = false;
 
   // Latest number of changed compromised credentials while script fetching
   // was running. If `credentials_count_to_notify_` has value, after scripts are

@@ -200,7 +200,8 @@ class ExtensionDownloader {
                    const GURL& url,
                    const std::string& package_hash,
                    const std::string& version,
-                   const std::set<int>& request_ids);
+                   const std::set<int>& request_ids,
+                   ManifestFetchData::FetchPriority fetch_priority);
     ~ExtensionFetch();
 
     std::string id;
@@ -208,6 +209,7 @@ class ExtensionDownloader {
     std::string package_hash;
     std::string version;
     std::set<int> request_ids;
+    ManifestFetchData::FetchPriority fetch_priority;
 
     enum CredentialsMode {
       CREDENTIALS_NONE = 0,

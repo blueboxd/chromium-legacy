@@ -8,6 +8,7 @@
 
 #include "base/containers/flat_map.h"
 #include "base/template_util.h"
+#include "chrome/browser/privacy_budget/identifiability_study_state.h"
 #include "chrome/common/privacy_budget/scoped_privacy_budget_config.h"
 #include "components/prefs/testing_pref_service.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
@@ -35,9 +36,9 @@ class PrivacyBudgetUkmEntryFilterTest : public ::testing::Test {
 
 }  // namespace
 
-// TODO(crbug.com/1117358) Flaky
 TEST(PrivacyBudgetUkmEntryFilterStandaloneTest,
-     DISABLED_BlocksIdentifiabilityMetricsByDefault) {
+     BlocksIdentifiabilityMetricsByDefault) {
+  IdentifiabilityStudyState::ResetStateForTesting();
   TestingPrefServiceSimple pref_service;
   prefs::RegisterPrivacyBudgetPrefs(pref_service.registry());
   auto settings = std::make_unique<IdentifiabilityStudyState>(&pref_service);
@@ -55,8 +56,8 @@ TEST(PrivacyBudgetUkmEntryFilterStandaloneTest,
 }
 
 // TODO(crbug.com/1117358) Flaky
-TEST(PrivacyBudgetUkmEntryFilterStandaloneTest,
-     DISABLED_AllowsOtherMetricsByDefault) {
+TEST(PrivacyBudgetUkmEntryFilterStandaloneTest, AllowsOtherMetricsByDefault) {
+  IdentifiabilityStudyState::ResetStateForTesting();
   TestingPrefServiceSimple pref_service;
   prefs::RegisterPrivacyBudgetPrefs(pref_service.registry());
   auto settings = std::make_unique<IdentifiabilityStudyState>(&pref_service);

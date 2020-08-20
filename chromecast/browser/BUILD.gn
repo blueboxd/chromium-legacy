@@ -52,6 +52,17 @@ cast_source_set("feature_list") {
   ]
 }
 
+cast_source_set("web_preferences") {
+  sources = [
+    "cast_web_preferences.cc",
+    "cast_web_preferences.h",
+  ]
+  deps = [
+    "//base",
+    "//content/public/common",
+  ]
+}
+
 cast_source_set("browser") {
   sources = [
     "application_media_capabilities.cc",
@@ -157,6 +168,7 @@ cast_source_set("browser") {
 
   deps = [
     ":browser_buildflags",
+    ":web_preferences",
     "//base",
     "//base:i18n",
     "//base/util/memory_pressure",

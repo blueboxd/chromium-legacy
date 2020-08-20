@@ -22,6 +22,7 @@
 #include "chrome/browser/media/feeds/media_feeds_store.mojom.h"
 #include "chrome/browser/media/history/media_history_keyed_service.h"
 #include "chrome/browser/media/history/media_history_keyed_service_factory.h"
+#include "chrome/browser/media/kaleidoscope/kaleidoscope_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -354,11 +355,23 @@ void MediaFeedsService::FetchTopMediaFeeds(base::OnceClosure callback) {
   if (!IsBackgroundFetchingEnabled())
     return;
 
-  GetMediaHistoryService()->GetMediaFeeds(
-      media_history::MediaHistoryKeyedService::GetMediaFeedsRequest::
-          CreateTopFeedsForFetch(kMaxTopFeedsToFetch, kTopFeedsMinWatchTime),
-      base::BindOnce(&MediaFeedsService::OnGotTopFeeds,
-                     weak_factory_.GetWeakPtr(), std::move(callback)));
+  // If the user has opted into auto selection of media feeds then we should get
+  // the top media feeds based on heuristics. Otherwise, we should fallback to
+  // feeds the user has opted into.
+  if (profile_->GetPrefs()->GetBoolean(
+          kaleidoscope::prefs::kKaleidoscopeAutoSelectMediaFeeds)) {
+    GetMediaHistoryService()->GetMediaFeeds(
+        media_history::MediaHistoryKeyedService::GetMediaFeedsRequest::
+            CreateTopFeedsForFetch(kMaxTopFeedsToFetch, kTopFeedsMinWatchTime),
+        base::BindOnce(&MediaFeedsService::OnGotTopFeeds,
+                       weak_factory_.GetWeakPtr(), std::move(callback)));
+  } else {
+    GetMediaHistoryService()->GetMediaFeeds(
+        media_history::MediaHistoryKeyedService::GetMediaFeedsRequest::
+            CreateSelectedFeedsForFetch(),
+        base::BindOnce(&MediaFeedsService::OnGotTopFeeds,
+                       weak_factory_.GetWeakPtr(), std::move(callback)));
+  }
 }
 
 void MediaFeedsService::OnGotTopFeeds(

@@ -228,6 +228,8 @@ class TestWebWidgetClient : public WebWidgetClient,
     layer_tree_host_ = layer_tree_host;
   }
 
+  virtual ScreenInfo GetInitialScreenInfo();
+
   mojo::PendingAssociatedRemote<mojom::blink::WidgetHost> BindNewWidgetHost();
 
  protected:

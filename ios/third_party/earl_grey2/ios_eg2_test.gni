@@ -122,10 +122,6 @@ template("ios_eg2_test") {
       "--host-app",
       "@WrappedPath(${_root_build_dir}/${xcode_test_application_name}.app)",
     ]
-
-    # All EG2 tests require xcode-parallelization. EG2 doesn't use xctest, so we
-    # leave undefined
-    executable_args += [ "--xcode-parallelization" ]
   }
 }
 

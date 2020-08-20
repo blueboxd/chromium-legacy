@@ -612,7 +612,7 @@ ci.dawn_builder(
         category = "DEPS|Linux|Builder",
         short_name = "x64",
     ),
-    main_console_view = None,
+    main_console_view = main_console_if_on_branch(),
 )
 
 ci.dawn_builder(
@@ -622,7 +622,7 @@ ci.dawn_builder(
         short_name = "x64",
     ),
     cores = 2,
-    main_console_view = None,
+    main_console_view = main_console_if_on_branch(),
     os = os.LINUX_DEFAULT,
     triggered_by = [builder_name("Dawn Linux x64 DEPS Builder")],
 )
@@ -634,7 +634,7 @@ ci.dawn_builder(
         short_name = "x64",
     ),
     cores = 2,
-    main_console_view = None,
+    main_console_view = main_console_if_on_branch(),
     os = os.LINUX_DEFAULT,
     triggered_by = [builder_name("Dawn Linux x64 DEPS Builder")],
 )
@@ -647,7 +647,7 @@ ci.dawn_builder(
         short_name = "x64",
     ),
     cores = None,
-    main_console_view = None,
+    main_console_view = main_console_if_on_branch(),
     os = os.MAC_ANY,
 )
 
@@ -660,7 +660,7 @@ ci.dawn_builder(
         short_name = "x64",
     ),
     cores = 2,
-    main_console_view = None,
+    main_console_view = main_console_if_on_branch(),
     os = os.LINUX_DEFAULT,
     triggered_by = [builder_name("Dawn Mac x64 DEPS Builder")],
 )
@@ -672,7 +672,7 @@ ci.dawn_builder(
         short_name = "x64",
     ),
     cores = 2,
-    main_console_view = None,
+    main_console_view = main_console_if_on_branch(),
     os = os.LINUX_DEFAULT,
     triggered_by = [builder_name("Dawn Mac x64 DEPS Builder")],
 )
@@ -683,7 +683,7 @@ ci.dawn_builder(
         category = "DEPS|Windows|Builder",
         short_name = "x64",
     ),
-    main_console_view = None,
+    main_console_view = main_console_if_on_branch(),
     os = os.WINDOWS_ANY,
 )
 
@@ -694,7 +694,7 @@ ci.dawn_builder(
         short_name = "x64",
     ),
     cores = 2,
-    main_console_view = None,
+    main_console_view = main_console_if_on_branch(),
     os = os.LINUX_DEFAULT,
     triggered_by = [builder_name("Dawn Win10 x64 DEPS Builder")],
 )
@@ -706,7 +706,7 @@ ci.dawn_builder(
         short_name = "x64",
     ),
     cores = 2,
-    main_console_view = None,
+    main_console_view = main_console_if_on_branch(),
     os = os.LINUX_DEFAULT,
     triggered_by = [builder_name("Dawn Win10 x64 DEPS Builder")],
 )
@@ -717,7 +717,7 @@ ci.dawn_builder(
         category = "DEPS|Windows|Builder",
         short_name = "x86",
     ),
-    main_console_view = None,
+    main_console_view = main_console_if_on_branch(),
     os = os.WINDOWS_ANY,
 )
 
@@ -728,7 +728,7 @@ ci.dawn_builder(
         short_name = "x86",
     ),
     cores = 2,
-    main_console_view = None,
+    main_console_view = main_console_if_on_branch(),
     os = os.LINUX_DEFAULT,
     triggered_by = [builder_name("Dawn Win10 x86 DEPS Builder")],
 )
@@ -740,7 +740,7 @@ ci.dawn_builder(
         short_name = "x86",
     ),
     cores = 2,
-    main_console_view = None,
+    main_console_view = main_console_if_on_branch(),
     os = os.LINUX_DEFAULT,
     triggered_by = [builder_name("Dawn Win10 x86 DEPS Builder")],
 )
@@ -750,7 +750,7 @@ ci.fyi_builder(
     console_view_entry = ci.console_view_entry(
         category = "linux",
     ),
-    main_console_view = None,
+    main_console_view = main_console_if_on_branch(),
 )
 
 ci.fyi_ios_builder(
@@ -760,7 +760,7 @@ ci.fyi_ios_builder(
         category = "cronet",
     ),
     executable = "recipe:chromium",
-    main_console_view = None,
+    main_console_view = main_console_if_on_branch(),
     notifies = ["cronet"],
     properties = {
         "xcode_build_version": "11e146",
@@ -776,6 +776,9 @@ ci.gpu_builder(
 
 ci.gpu_builder(
     name = "GPU Linux Builder",
+    # TODO(https://crbug.com/1109276) Once support for mastername is removed, do
+    # not explicitly set
+    builder_group = "chromium.gpu",
     console_view_entry = ci.console_view_entry(
         category = "Linux",
     ),
@@ -801,6 +804,9 @@ ci.gpu_builder(
 
 ci.gpu_thin_tester(
     name = "Linux Release (NVIDIA)",
+    # TODO(https://crbug.com/1109276) Once support for mastername is removed, do
+    # not explicitly set
+    builder_group = "chromium.gpu",
     console_view_entry = ci.console_view_entry(
         category = "Linux",
     ),
@@ -863,6 +869,9 @@ ci.linux_builder(
 
 ci.linux_builder(
     name = "Linux Builder",
+    # TODO(https://crbug.com/1109276) Once support for mastername is removed, do
+    # not explicitly set
+    builder_group = "chromium.linux",
     console_view_entry = ci.console_view_entry(
         category = "release",
         short_name = "bld",
@@ -881,6 +890,9 @@ ci.linux_builder(
 
 ci.linux_builder(
     name = "Linux Tests",
+    # TODO(https://crbug.com/1109276) Once support for mastername is removed, do
+    # not explicitly set
+    builder_group = "chromium.linux",
     console_view_entry = ci.console_view_entry(
         category = "release",
         short_name = "tst",
@@ -949,7 +961,7 @@ ci.linux_builder(
         category = "linux",
         short_name = "loh",
     ),
-    main_console_view = None,
+    main_console_view = main_console_if_on_branch(),
     triggered_by = [builder_name("linux-ozone-rel")],
 )
 
@@ -960,7 +972,7 @@ ci.linux_builder(
         category = "linux",
         short_name = "low",
     ),
-    main_console_view = None,
+    main_console_view = main_console_if_on_branch(),
     triggered_by = [builder_name("linux-ozone-rel")],
 )
 
@@ -971,7 +983,7 @@ ci.linux_builder(
         category = "linux",
         short_name = "lox",
     ),
-    main_console_view = None,
+    main_console_view = main_console_if_on_branch(),
     triggered_by = [builder_name("linux-ozone-rel")],
 )
 

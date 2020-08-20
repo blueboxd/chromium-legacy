@@ -15,7 +15,7 @@ interface RTCRtpReceiver {
     [CallWith=ScriptState, RaisesException] sequence<RTCRtpSynchronizationSource> getSynchronizationSources();
     [CallWith=ScriptState, RaisesException] sequence<RTCRtpContributingSource> getContributingSources();
     [CallWith=ScriptState] Promise<RTCStatsReport> getStats();
-    [Measure, RuntimeEnabled=RTCInsertableStreams,
+    [Measure,
      CallWith=ScriptState,
      RaisesException] RTCInsertableStreams createEncodedStreams();
     [DeprecateAs=V8RTCRtpReceiver_CreateEncodedAudioStreams_Method,

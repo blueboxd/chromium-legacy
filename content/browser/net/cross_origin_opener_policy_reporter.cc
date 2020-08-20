@@ -53,10 +53,18 @@ std::string ToString(network::mojom::CrossOriginOpenerPolicyValue coop_value) {
 
 const char* ToString(network::mojom::CoopAccessReportType report_type) {
   switch (report_type) {
-    case network::mojom::CoopAccessReportType::kReportAccessTo:
-      return "access-to-coop-page";
-    case network::mojom::CoopAccessReportType::kReportAccessFrom:
-      return "access-from-coop-page";
+    case network::mojom::CoopAccessReportType::kAccessFromCoopPageToOpener:
+      return "access-from-coop-page-to-opener";
+    case network::mojom::CoopAccessReportType::kAccessFromCoopPageToOpenee:
+      return "access-from-coop-page-to-openee";
+    case network::mojom::CoopAccessReportType::kAccessFromCoopPageToOther:
+      return "access-from-coop-page-to-other";
+    case network::mojom::CoopAccessReportType::kAccessToCoopPageFromOpener:
+      return "access-to-coop-page-from-opener";
+    case network::mojom::CoopAccessReportType::kAccessToCoopPageFromOpenee:
+      return "access-to-coop-page-from-openee";
+    case network::mojom::CoopAccessReportType::kAccessToCoopPageFromOther:
+      return "access-to-coop-page-from-other";
   }
 }
 
@@ -98,6 +106,11 @@ std::vector<FrameTreeNode*> CollectOtherWindowForCoopAccess(
     out.push_back(rfh->frame_tree_node());
   }
   return out;
+}
+
+FrameTreeNode* TopLevelOpener(FrameTreeNode* frame) {
+  FrameTreeNode* opener = frame->original_opener();
+  return opener ? opener->frame_tree()->root() : nullptr;
 }
 
 }  // namespace
@@ -188,8 +201,8 @@ void CrossOriginOpenerPolicyReporter::QueueAccessReport(
                      ToString(coop_.report_only_value));
   body.SetStringPath(kProperty, property);
   // TODO(arthursonzogni): Fill "blocked-window-url".
-  if (source_location->url != "" &&
-      report_type == network::mojom::CoopAccessReportType::kReportAccessFrom) {
+  if (network::IsAccessFromCoopPage(report_type) &&
+      source_location->url != "") {
     body.SetStringPath(kSourceFile, source_location->url);
     body.SetIntPath(kLineNumber, source_location->line);
     body.SetIntPath(kColumnNumber, source_location->column);
@@ -278,10 +291,26 @@ void CrossOriginOpenerPolicyReporter::MonitorAccesses(
       remote_reporter;
   Clone(remote_reporter.InitWithNewPipeAndPassReceiver());
 
-  network::mojom::CoopAccessReportType report_type =
-      accessing_node->current_frame_host()->coop_reporter() == this
-          ? network::mojom::CoopAccessReportType::kReportAccessFrom
-          : network::mojom::CoopAccessReportType::kReportAccessTo;
+  bool access_from_coop_page =
+      this == accessing_node->current_frame_host()->coop_reporter();
+
+  using network::mojom::CoopAccessReportType;
+  CoopAccessReportType report_type;
+  if (access_from_coop_page) {
+    if (accessing_node == TopLevelOpener(accessed_node))
+      report_type = CoopAccessReportType::kAccessFromCoopPageToOpenee;
+    else if (accessed_node == TopLevelOpener(accessing_node))
+      report_type = CoopAccessReportType::kAccessFromCoopPageToOpener;
+    else
+      report_type = CoopAccessReportType::kAccessFromCoopPageToOther;
+  } else {
+    if (accessed_node == TopLevelOpener(accessing_node))
+      report_type = CoopAccessReportType::kAccessToCoopPageFromOpenee;
+    else if (accessing_node == TopLevelOpener(accessed_node))
+      report_type = CoopAccessReportType::kAccessToCoopPageFromOpener;
+    else
+      report_type = CoopAccessReportType::kAccessToCoopPageFromOther;
+  }
 
   accessing_rfh->GetAssociatedLocalMainFrame()->InstallCoopAccessMonitor(
       report_type, accessed_window_token, std::move(remote_reporter));

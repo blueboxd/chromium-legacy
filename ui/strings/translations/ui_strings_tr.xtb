@@ -154,7 +154,7 @@
 <translation id="5866104238061687188">{YEARS,plural, =1{1 yıl içinde}other{# yıl içinde}}</translation>
 <translation id="588258955323874662">Tam ekran</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 saniye kaldı}other{# saniye kaldı}}</translation>
-<translation id="5941711191222866238">Simge durumuna küçült</translation>
+<translation id="5941711191222866238">Küçült</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 saat}other{# saat}}</translation>
 <translation id="6012623610530968780">Sayfa <ph name="SELECTED_PAGE" />/<ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Arama kutusu metnini temizle</translation>

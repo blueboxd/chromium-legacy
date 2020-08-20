@@ -21,7 +21,6 @@
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/web_preferences.h"
 #include "third_party/blink/public/common/input/web_touch_event.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -129,15 +128,6 @@ void WebContentController::ProcessRequest(
 
     case webview::WebviewRequest::kGetTitle:
       HandleGetTitle(request.id());
-      break;
-
-    case webview::WebviewRequest::kSetAutoMediaPlaybackPolicy:
-      if (request.has_set_auto_media_playback_policy()) {
-        HandleSetAutoMediaPlaybackPolicy(
-            request.set_auto_media_playback_policy());
-      } else {
-        client_->OnError("set_auto_media_playback_policy() not supplied");
-      }
       break;
 
     case webview::WebviewRequest::kResize:
@@ -415,16 +405,6 @@ void WebContentController::HandleGetTitle(int64_t id) {
   response->mutable_get_title()->set_title(
       base::UTF16ToUTF8(GetWebContents()->GetTitle()));
   client_->EnqueueSend(std::move(response));
-}
-
-void WebContentController::HandleSetAutoMediaPlaybackPolicy(
-    const webview::SetAutoMediaPlaybackPolicyRequest& request) {
-  content::WebContents* contents = GetWebContents();
-  content::WebPreferences prefs = contents->GetOrCreateWebPreferences();
-  prefs.autoplay_policy = request.require_user_gesture()
-                              ? content::AutoplayPolicy::kUserGestureRequired
-                              : content::AutoplayPolicy::kNoUserGestureRequired;
-  contents->SetWebPreferences(prefs);
 }
 
 void WebContentController::HandleResize(const gfx::Size& size) {

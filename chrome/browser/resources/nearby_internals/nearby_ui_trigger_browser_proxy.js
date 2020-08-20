@@ -21,9 +21,10 @@ export class NearbyUiTriggerBrowserProxy {
    * Invokes the NearbyShare service's SendText() method for the input
    * ShareTarget |id|
    * @param {string} id
+   * @return {!Promise<!StatusCode>}
    */
   sendText(id) {
-    chrome.send('sendText', [id]);
+    return sendWithPromise('sendText', id);
   }
 
   /**

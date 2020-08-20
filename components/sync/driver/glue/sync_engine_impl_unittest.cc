@@ -31,6 +31,7 @@
 #include "components/invalidation/public/invalidation_util.h"
 #include "components/invalidation/public/invalidator_state.h"
 #include "components/sync/base/invalidation_helper.h"
+#include "components/sync/base/model_type.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/engine/cycle/commit_counters.h"
@@ -45,6 +46,7 @@
 #include "components/sync/invalidations/mock_sync_invalidations_service.h"
 #include "components/sync/invalidations/switches.h"
 #include "components/sync/invalidations/sync_invalidations_service.h"
+#include "components/sync/protocol/sync_invalidations_payload.pb.h"
 #include "components/sync/test/callback_counter.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -658,11 +660,20 @@ TEST_F(SyncEngineImplWithSyncInvalidationsTest,
        ShouldInvalidateDataTypesOnIncomingInvalidation) {
   EXPECT_CALL(mock_instance_id_driver_, AddListener(backend_.get()));
   InitializeBackend(/*expect_success=*/true);
-  // TODO(crbug.com/1102322): use real payload with invalidated data types.
-  backend_->OnInvalidationReceived(/*payload=*/"");
+
+  sync_pb::SyncInvalidationsPayload payload;
+  auto* bookmarks_invalidation = payload.add_data_type_invalidations();
+  bookmarks_invalidation->set_data_type_id(
+      GetSpecificsFieldNumberFromModelType(ModelType::BOOKMARKS));
+  auto* preferences_invalidation = payload.add_data_type_invalidations();
+  preferences_invalidation->set_data_type_id(
+      GetSpecificsFieldNumberFromModelType(ModelType::PREFERENCES));
+
+  backend_->OnInvalidationReceived(payload.SerializeAsString());
+
   fake_manager_->WaitForSyncThread();
-  // Currently only one data type is expected to invalidate.
-  EXPECT_EQ(1, fake_manager_->GetInvalidationCount());
+  EXPECT_EQ(1, fake_manager_->GetInvalidationCount(ModelType::BOOKMARKS));
+  EXPECT_EQ(1, fake_manager_->GetInvalidationCount(ModelType::PREFERENCES));
 }
 
 }  // namespace

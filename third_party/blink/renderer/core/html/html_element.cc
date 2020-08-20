@@ -1596,6 +1596,7 @@ ElementInternals* HTMLElement::attachInternals(
         "ElementInternals for the specified element was already attached.");
     return nullptr;
   }
+  UseCounter::Count(GetDocument(), WebFeature::kElementAttachInternals);
   SetDidAttachInternals();
   return &EnsureElementInternals();
 }

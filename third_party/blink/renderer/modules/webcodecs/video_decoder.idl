@@ -67,4 +67,10 @@
   // resolved but before it is fulfilled. In that case the flush() promise will
   // be fulfilled successfully even though reset() was called.
   [RaisesException] void reset();
+
+  // Immediately shut down the decoder and free its resources. All pending
+  // decode requests are aborted.
+  //
+  // Not recoverable: make a new VideoDecoder if needed.
+  [RaisesException] void close();
 };

@@ -7,12 +7,15 @@
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/char_iterator.h"
 #include "base/json/json_reader.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_pedal.h"
 #include "components/omnibox/browser/omnibox_pedal_implementations.h"
+#include "components/omnibox/common/omnibox_features.h"
 #include "components/omnibox/resources/grit/omnibox_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -31,16 +34,49 @@ OmniboxPedalProvider::OmniboxPedalProvider(AutocompleteProviderClient& client)
 
 OmniboxPedalProvider::~OmniboxPedalProvider() {}
 
+void OmniboxPedalProvider::AddProviderInfo(ProvidersInfo* provider_info) const {
+  provider_info->push_back(metrics::OmniboxEventProto_ProviderInfo());
+  metrics::OmniboxEventProto_ProviderInfo& new_entry = provider_info->back();
+  new_entry.set_provider(metrics::OmniboxEventProto::SEARCH);
+  new_entry.set_provider_done(true);
+
+  if (field_trial_triggered_ || field_trial_triggered_in_session_) {
+    std::vector<uint32_t> field_trial_hashes;
+    OmniboxFieldTrial::GetActiveSuggestFieldTrialHashes(&field_trial_hashes);
+    for (uint32_t trial : field_trial_hashes) {
+      if (field_trial_triggered_)
+        new_entry.mutable_field_trial_triggered()->Add(trial);
+      if (field_trial_triggered_in_session_)
+        new_entry.mutable_field_trial_triggered_in_session()->Add(trial);
+    }
+  }
+}
+
+void OmniboxPedalProvider::ResetSession() {
+  field_trial_triggered_in_session_ = false;
+  field_trial_triggered_ = false;
+}
+
 OmniboxPedal* OmniboxPedalProvider::FindPedalMatch(
-    const base::string16& match_text) const {
+    const base::string16& match_text) {
   OmniboxPedal::Tokens match_tokens = Tokenize(match_text);
   if (match_tokens.empty()) {
     return nullptr;
   }
+
+  // Some users may be in a counterfactual study arm in which the pedal button
+  // is not attached to the suggestion.
+  bool in_pedal_counterfactual_group = base::GetFieldTrialParamByFeatureAsBool(
+      omnibox::kOmniboxPedalSuggestions, "PedalSuggestionsCounterfactualArm",
+      false);
+
   for (const auto& pedal : pedals_) {
     if (pedal.second->IsTriggerMatch(match_tokens) &&
         pedal.second->IsReadyToTrigger(client_)) {
-      return pedal.second.get();
+      field_trial_triggered_ = true;
+      field_trial_triggered_in_session_ = true;
+
+      return in_pedal_counterfactual_group ? nullptr : pedal.second.get();
     }
   }
   return nullptr;

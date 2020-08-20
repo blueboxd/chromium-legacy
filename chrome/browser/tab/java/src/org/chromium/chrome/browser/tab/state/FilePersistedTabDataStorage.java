@@ -92,6 +92,12 @@ public class FilePersistedTabDataStorage implements PersistedTabDataStorage {
 
     @MainThread
     @Override
+    public byte[] restore(int tabId, String dataId) {
+        return new FileRestoreRequest(tabId, dataId, null).executeSyncTask();
+    }
+
+    @MainThread
+    @Override
     public void delete(int tabId, String dataId) {
         delete(tabId, dataId, NO_OP_CALLBACK);
     }
@@ -117,7 +123,7 @@ public class FilePersistedTabDataStorage implements PersistedTabDataStorage {
     /**
      * Request for saving, restoring and deleting {@link PersistedTabData}
      */
-    private abstract class StorageRequest {
+    private abstract class StorageRequest<T> {
         protected final int mTabId;
         protected final String mDataId;
         protected final File mFile;
@@ -144,6 +150,11 @@ public class FilePersistedTabDataStorage implements PersistedTabDataStorage {
          */
         abstract AsyncTask getAsyncTask();
 
+        /**
+         * Execute the task synchronously
+         */
+        abstract T executeSyncTask();
+
         @Override
         public boolean equals(Object other) {
             if (this == other) return true;
@@ -169,7 +180,7 @@ public class FilePersistedTabDataStorage implements PersistedTabDataStorage {
      * Request to save {@link PersistedTabData}
      */
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-    protected class FileSaveRequest extends StorageRequest {
+    protected class FileSaveRequest extends StorageRequest<Void> {
         private byte[] mData;
         private Callback<Integer> mCallback;
 
@@ -185,34 +196,39 @@ public class FilePersistedTabDataStorage implements PersistedTabDataStorage {
         }
 
         @Override
+        public Void executeSyncTask() {
+            FileOutputStream outputStream = null;
+            boolean success = false;
+            try {
+                outputStream = new FileOutputStream(mFile);
+                outputStream.write(mData);
+                success = true;
+            } catch (FileNotFoundException e) {
+                Log.e(TAG,
+                        String.format(Locale.ENGLISH,
+                                "FileNotFoundException while attempting to save file %s "
+                                        + "Details: %s",
+                                mFile, e.getMessage()));
+            } catch (IOException e) {
+                Log.e(TAG,
+                        String.format(Locale.ENGLISH,
+                                "IOException while attempting to save for file %s. "
+                                        + " Details: %s",
+                                mFile, e.getMessage()));
+            } finally {
+                StreamUtil.closeQuietly(outputStream);
+            }
+            RecordHistogram.recordBooleanHistogram(
+                    "Tabs.PersistedTabData.Storage.Save." + getUmaTag(), success);
+            return null;
+        }
+
+        @Override
         public AsyncTask getAsyncTask() {
             return new AsyncTask<Void>() {
                 @Override
                 protected Void doInBackground() {
-                    FileOutputStream outputStream = null;
-                    boolean success = false;
-                    try {
-                        outputStream = new FileOutputStream(mFile);
-                        outputStream.write(mData);
-                        success = true;
-                    } catch (FileNotFoundException e) {
-                        Log.e(TAG,
-                                String.format(Locale.ENGLISH,
-                                        "FileNotFoundException while attempting to save file %s "
-                                                + "Details: %s",
-                                        mFile, e.getMessage()));
-                    } catch (IOException e) {
-                        Log.e(TAG,
-                                String.format(Locale.ENGLISH,
-                                        "IOException while attempting to save for file %s. "
-                                                + " Details: %s",
-                                        mFile, e.getMessage()));
-                    } finally {
-                        StreamUtil.closeQuietly(outputStream);
-                    }
-                    RecordHistogram.recordBooleanHistogram(
-                            "Tabs.PersistedTabData.Storage.Save." + getUmaTag(), success);
-                    return null;
+                    return executeSyncTask();
                 }
 
                 @Override
@@ -234,7 +250,7 @@ public class FilePersistedTabDataStorage implements PersistedTabDataStorage {
     /**
      * Request to delete a saved {@link PersistedTabData}
      */
-    private class FileDeleteRequest extends StorageRequest {
+    private class FileDeleteRequest extends StorageRequest<Void> {
         private byte[] mData;
         private Callback<Integer> mCallback;
 
@@ -248,23 +264,28 @@ public class FilePersistedTabDataStorage implements PersistedTabDataStorage {
         }
 
         @Override
+        public Void executeSyncTask() {
+            boolean exists = mFile.exists();
+            RecordHistogram.recordBooleanHistogram(
+                    "Tabs.PersistedTabData.Storage.Exists." + getUmaTag(), exists);
+            if (!exists) {
+                return null;
+            }
+            boolean success = mFile.delete();
+            RecordHistogram.recordBooleanHistogram(
+                    "Tabs.PersistedTabData.Storage.Delete." + getUmaTag(), success);
+            if (!success) {
+                Log.e(TAG, String.format(Locale.ENGLISH, "Error deleting file %s", mFile));
+            }
+            return null;
+        }
+
+        @Override
         public AsyncTask getAsyncTask() {
             return new AsyncTask<Void>() {
                 @Override
                 protected Void doInBackground() {
-                    boolean exists = mFile.exists();
-                    RecordHistogram.recordBooleanHistogram(
-                            "Tabs.PersistedTabData.Storage.Exists." + getUmaTag(), exists);
-                    if (!exists) {
-                        return null;
-                    }
-                    boolean success = mFile.delete();
-                    RecordHistogram.recordBooleanHistogram(
-                            "Tabs.PersistedTabData.Storage.Delete." + getUmaTag(), success);
-                    if (!success) {
-                        Log.e(TAG, String.format(Locale.ENGLISH, "Error deleting file %s", mFile));
-                    }
-                    return null;
+                    return executeSyncTask();
                 }
 
                 @Override
@@ -285,7 +306,7 @@ public class FilePersistedTabDataStorage implements PersistedTabDataStorage {
     /**
      * Request to restore saved serialized {@link PersistedTabData}
      */
-    private class FileRestoreRequest extends StorageRequest {
+    private class FileRestoreRequest extends StorageRequest<byte[]> {
         private Callback<byte[]> mCallback;
 
         /**
@@ -300,32 +321,37 @@ public class FilePersistedTabDataStorage implements PersistedTabDataStorage {
         }
 
         @Override
+        public byte[] executeSyncTask() {
+            boolean success = false;
+            byte[] res = null;
+            try {
+                AtomicFile atomicFile = new AtomicFile(mFile);
+                res = atomicFile.readFully();
+                success = true;
+            } catch (FileNotFoundException e) {
+                Log.e(TAG,
+                        String.format(Locale.ENGLISH,
+                                "FileNotFoundException while attempting to restore "
+                                        + " %s. Details: %s",
+                                mFile, e.getMessage()));
+            } catch (IOException e) {
+                Log.e(TAG,
+                        String.format(Locale.ENGLISH,
+                                "IOException while attempting to restore "
+                                        + "%s. Details: %s",
+                                mFile, e.getMessage()));
+            }
+            RecordHistogram.recordBooleanHistogram(
+                    "Tabs.PersistedTabData.Storage.Restore." + getUmaTag(), success);
+            return res;
+        }
+
+        @Override
         public AsyncTask getAsyncTask() {
             return new AsyncTask<byte[]>() {
                 @Override
                 protected byte[] doInBackground() {
-                    boolean success = false;
-                    byte[] res = null;
-                    try {
-                        AtomicFile atomicFile = new AtomicFile(mFile);
-                        res = atomicFile.readFully();
-                        success = true;
-                    } catch (FileNotFoundException e) {
-                        Log.e(TAG,
-                                String.format(Locale.ENGLISH,
-                                        "FileNotFoundException while attempting to restore "
-                                                + " %s. Details: %s",
-                                        mFile, e.getMessage()));
-                    } catch (IOException e) {
-                        Log.e(TAG,
-                                String.format(Locale.ENGLISH,
-                                        "IOException while attempting to restore "
-                                                + "%s. Details: %s",
-                                        mFile, e.getMessage()));
-                    }
-                    RecordHistogram.recordBooleanHistogram(
-                            "Tabs.PersistedTabData.Storage.Restore." + getUmaTag(), success);
-                    return res;
+                    return executeSyncTask();
                 }
 
                 @Override

@@ -132,8 +132,6 @@ xcode_cache = struct(
     x11e608c = xcode_enum("xcode_ios_11e608c", "xcode_ios_11e608c.app"),
     x11e608cwk = xcode_enum("xcode_ios_11e608cwk", "xcode_ios_11e608cwk.app"),
     x11e503a_xct12b1 = xcode_enum("xcode_ios_11e503a_xct12b1", "xcode_ios_11e503a_xct12b1.app"),
-    # xcode12 beta 4
-    x12a8179i_audio = xcode_enum("xcode_ios_12a8179i_audio", "xcode_ios_12a8179i_audio.app"),
     # xc12 beta 5
     x12a8189h = xcode_enum("xcode_ios_12a8189h", "xcode_ios_12a8189h.app"),
 )
@@ -344,7 +342,9 @@ def builder(
       * mastername - a string with the group of the builder. Emits a property
         of the form 'mastername:<mastername>'. By default, considered None.
         Other than the property emitted, should be treated the same as
-        builder_group. At most one of builder_group or mastername can be set.
+        builder_group. If builder_group is set, mastername is ignored except
+        that it is treated as an error if both builder_group and mastername are
+        set and are set to different values.
       * cores - an int indicating the number of cores the builder requires for the
         machines that run it. Emits a dimension of the form 'cores:<cores>' will
         be emitted. By default, considered None.
@@ -465,12 +465,12 @@ def builder(
 
     builder_group = defaults.get_value("builder_group", builder_group)
     mastername = defaults.get_value("mastername", mastername)
-    if builder_group != None and mastername != None:
-        fail("builder_group and mastername cannot both be set")
+    if builder_group != None and mastername != None and builder_group != mastername:
+        fail("mastername ({}) does not match builder_group ({})".format(mastername, builder_group))
 
     if builder_group != None:
         properties["builder_group"] = builder_group
-    if mastername != None:
+    elif mastername != None:
         properties["mastername"] = mastername
 
     pool = defaults.get_value("pool", pool)

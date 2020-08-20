@@ -16,6 +16,7 @@
 <translation id="1335095011850992622">autorzy</translation>
 <translation id="1342835525016946179">article</translation>
 <translation id="1359897965706325498">baner</translation>
+<translation id="1480676835519562650">wielokrotny wybór, wybrano <ph name="SELECTED" /> z <ph name="COUNT" />.</translation>
 <translation id="1589122976691792535">region</translation>
 <translation id="1591562245178063882">W tym miesiącu</translation>
 <translation id="1637811476055996098">Wybierz pliki</translation>
@@ -51,6 +52,7 @@
 <translation id="248395913932153421">Dzień</translation>
 <translation id="2507943997699731163">Wypełnij to pole.</translation>
 <translation id="2508569020611168319">lista kart</translation>
+<translation id="2530182415807757784">wybór wielokrotny, nic nie wybrano.</translation>
 <translation id="2561842179657104141">pokaż więcej opcji sterowania multimediami</translation>
 <translation id="2572483411312390101">odtwórz</translation>
 <translation id="2613802280814924224">Podaj prawidłową wartość. Najbliższa prawidłowa wartość to <ph name="VALID_VALUE" />.</translation>

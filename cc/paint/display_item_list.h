@@ -5,9 +5,9 @@
 #ifndef CC_PAINT_DISPLAY_ITEM_LIST_H_
 #define CC_PAINT_DISPLAY_ITEM_LIST_H_
 
-#include <stddef.h>
-
+#include <cstddef>
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -179,7 +179,11 @@ class CC_PAINT_EXPORT DisplayItemList
                              int max_ops_to_analyze = 1);
 
   std::string ToString() const;
+
   bool has_draw_ops() const { return paint_op_buffer_.has_draw_ops(); }
+  bool has_draw_text_ops() const {
+    return paint_op_buffer_.has_draw_text_ops();
+  }
 
   // Ops with nested paint ops are considered as a single op.
   size_t num_paint_ops() const { return paint_op_buffer_.size(); }

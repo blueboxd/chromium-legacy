@@ -1466,12 +1466,6 @@ void DocumentLoader::DidCommitNavigation() {
   if (commit_reason_ != CommitReason::kRegular)
     return;
 
-  if (!frame_->Loader().StateMachine()->CommittedMultipleRealLoads() &&
-      load_type_ == WebFrameLoadType::kStandard) {
-    frame_->Loader().StateMachine()->AdvanceTo(
-        FrameLoaderStateMachine::kCommittedMultipleRealLoads);
-  }
-
   WebHistoryCommitType commit_type = LoadTypeToCommitType(load_type_);
   frame_->GetFrameScheduler()->DidCommitProvisionalLoad(
       commit_type == kWebHistoryInertCommit,

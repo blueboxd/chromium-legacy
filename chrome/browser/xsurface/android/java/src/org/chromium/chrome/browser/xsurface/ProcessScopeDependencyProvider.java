@@ -46,4 +46,18 @@ public interface ProcessScopeDependencyProvider {
     default ImageFetchClient getImageFetchClient() {
         return null;
     }
+
+    // Posts task to the UI thread.
+    int TASK_TYPE_UI_THREAD = 1;
+    // Posts to a background thread. The task may block.
+    int TASK_TYPE_BACKGROUND_MAY_BLOCK = 2;
+
+    /**
+     * Runs task on a Chrome executor, see PostTask.java.
+     *
+     * @param taskType Type of task to run. Determines which thread and what priority is used.
+     * @param task The task to run
+     * @param delayMs The delay before executing the task in milliseconds.
+     */
+    default void postTask(int taskType, Runnable task, long delayMs) {}
 }

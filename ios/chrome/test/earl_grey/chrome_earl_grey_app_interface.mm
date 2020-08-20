@@ -699,16 +699,16 @@ NSString* SerializedPref(const PrefService::Preference* pref) {
 + (BOOL)isVariationEnabled:(int)variationID {
   variations::VariationsIdsProvider* provider =
       variations::VariationsIdsProvider::GetInstance();
-  std::vector<variations::VariationID> ids =
-      provider->GetVariationsVector(variations::GOOGLE_WEB_PROPERTIES);
+  std::vector<variations::VariationID> ids = provider->GetVariationsVector(
+      variations::GOOGLE_WEB_PROPERTIES_ANY_CONTEXT);
   return std::find(ids.begin(), ids.end(), variationID) != ids.end();
 }
 
 + (BOOL)isTriggerVariationEnabled:(int)variationID {
   variations::VariationsIdsProvider* provider =
       variations::VariationsIdsProvider::GetInstance();
-  std::vector<variations::VariationID> ids =
-      provider->GetVariationsVector(variations::GOOGLE_WEB_PROPERTIES_TRIGGER);
+  std::vector<variations::VariationID> ids = provider->GetVariationsVector(
+      variations::GOOGLE_WEB_PROPERTIES_TRIGGER_ANY_CONTEXT);
   return std::find(ids.begin(), ids.end(), variationID) != ids.end();
 }
 

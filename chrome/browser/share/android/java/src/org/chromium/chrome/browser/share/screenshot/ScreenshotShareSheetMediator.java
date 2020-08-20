@@ -26,8 +26,8 @@ class ScreenshotShareSheetMediator {
     private final PropertyModel mModel;
     private final Context mContext;
     private final Runnable mSaveRunnable;
-    private final Runnable mDeleteRunnable;
-    private final Runnable mInstallRunnable;
+    private final Runnable mCloseDialogRunnable;
+    private final Callback<Runnable> mInstallCallback;
     private final ChromeOptionShareCallback mChromeOptionShareCallback;
 
     private final Tab mTab;
@@ -36,22 +36,24 @@ class ScreenshotShareSheetMediator {
      * The ScreenshotShareSheetMediator constructor.
      * @param context The context to use.
      * @param propertyModel The property model to use to communicate with views.
-     * @param deleteRunnable The action to take when cancel or delete is called.
+     * @param closeDialogRunnable The action to take to close the dialog.
      * @param saveRunnable The action to take when save is called.
      * @param tab The tab that originated this screenshot.
      * @param chromeOptionShareCallback The callback to share a screenshot via the share sheet.
-     * @param installRunnable The action to take when install is called.
+     * @param installCallback The action to take when install is called, will call runnable on
+     *         success.
      */
     ScreenshotShareSheetMediator(Context context, PropertyModel propertyModel,
-            Runnable deleteRunnable, Runnable saveRunnable, Tab tab,
-            ChromeOptionShareCallback chromeOptionShareCallback, Runnable installRunnable) {
-        mDeleteRunnable = deleteRunnable;
+            Runnable closeDialogRunnable, Runnable saveRunnable, Tab tab,
+            ChromeOptionShareCallback chromeOptionShareCallback,
+            Callback<Runnable> installCallback) {
+        mCloseDialogRunnable = closeDialogRunnable;
         mSaveRunnable = saveRunnable;
         mContext = context;
         mModel = propertyModel;
         mTab = tab;
         mChromeOptionShareCallback = chromeOptionShareCallback;
-        mInstallRunnable = installRunnable;
+        mInstallCallback = installCallback;
         mModel.set(ScreenshotShareSheetViewProperties.NO_ARG_OPERATION_LISTENER,
                 operation -> { performNoArgOperation(operation); });
     }
@@ -67,11 +69,11 @@ class ScreenshotShareSheetMediator {
             share();
         } else if (NoArgOperation.SAVE == operation) {
             mSaveRunnable.run();
-            mDeleteRunnable.run();
+            mCloseDialogRunnable.run();
         } else if (NoArgOperation.DELETE == operation) {
-            mDeleteRunnable.run();
+            mCloseDialogRunnable.run();
         } else if (NoArgOperation.INSTALL == operation) {
-            mInstallRunnable.run();
+            mInstallCallback.onResult(mCloseDialogRunnable);
         }
     }
 
@@ -102,7 +104,7 @@ class ScreenshotShareSheetMediator {
         };
 
         generateTemporaryUriFromBitmap(mContext, title, bitmap, callback);
-        mDeleteRunnable.run();
+        mCloseDialogRunnable.run();
     }
 
     protected void generateTemporaryUriFromBitmap(

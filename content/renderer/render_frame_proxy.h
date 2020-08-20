@@ -137,7 +137,7 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   // would only get one update per UpdateVisualProperties IPC received in the
   // RenderWidget, and we would only need to send one update to the browser as
   // a result.
-  void OnScreenInfoChanged(const blink::ScreenInfo& screen_info);
+  void DidChangeScreenInfo(const blink::ScreenInfo& screen_info) override;
   void OnRootWindowSegmentsChanged(
       std::vector<gfx::Rect> root_widget_window_segments);
   void OnVisibleViewportSizeChanged(const gfx::Size& visible_viewport_size);

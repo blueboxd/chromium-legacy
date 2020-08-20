@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_discover_header_item.h"
 
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_constants.h"
+#import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
@@ -211,6 +212,14 @@ const CGFloat kHeaderBorderRadius = 8;
     [self setConstraintsForFeedVisible:visible];
   }
   self.container.layer.borderWidth = visible ? 0 : kHeaderBorderWidth;
+  [self.contentView layoutIfNeeded];
+  NamedGuide* menuButtonGuide =
+      [NamedGuide guideWithName:kDiscoverFeedHeaderMenuGuide
+                           view:self.menuButton];
+
+  menuButtonGuide.constrainedFrame =
+      [self.contentView convertRect:self.menuButton.frame toView:nil];
+  self.discoverFeedVisible = [NSNumber numberWithBool:visible];
 }
 
 // Sets header properties for when the Discover feed is visible.

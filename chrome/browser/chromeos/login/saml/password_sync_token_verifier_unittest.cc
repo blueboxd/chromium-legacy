@@ -64,7 +64,6 @@ class PasswordSyncTokenVerifierTest : public testing::Test {
   void DestroyPasswordSyncTokenVerifier();
   void OnTokenVerified(bool is_verified);
   bool PasswordSyncTokenFetcherIsAllocated();
-  void InvalidatePasswordSyncTokenFetcher();
 
   const AccountId saml_login_account_id_ =
       AccountId::FromUserEmailGaiaId(kSAMLUserEmail1, kSAMLUserId1);
@@ -129,15 +128,11 @@ bool PasswordSyncTokenVerifierTest::PasswordSyncTokenFetcherIsAllocated() {
   return verifier_->password_sync_token_fetcher_ != nullptr;
 }
 
-void PasswordSyncTokenVerifierTest::InvalidatePasswordSyncTokenFetcher() {
-  verifier_->password_sync_token_fetcher_.reset();
-}
-
 TEST_F(PasswordSyncTokenVerifierTest, EmptySyncToken) {
   CreatePasswordSyncTokenVerifier();
   verifier_->CheckForPasswordNotInSync();
-  OnTokenVerified(false);
   EXPECT_TRUE(PasswordSyncTokenFetcherIsAllocated());
+  OnTokenVerified(false);
   EXPECT_TRUE(user_manager_->GetActiveUser()->force_online_signin());
 }
 
@@ -166,7 +161,6 @@ TEST_F(PasswordSyncTokenVerifierTest, SyncTokenValidationAfterDelay) {
   verifier_->CheckForPasswordNotInSync();
   OnTokenVerified(true);
   EXPECT_FALSE(user_manager_->GetActiveUser()->force_online_signin());
-  InvalidatePasswordSyncTokenFetcher();
   test_environment_.FastForwardBy(kSyncTokenCheckInterval);
   EXPECT_TRUE(PasswordSyncTokenFetcherIsAllocated());
   OnTokenVerified(false);
@@ -197,6 +191,34 @@ TEST_F(PasswordSyncTokenVerifierTest, PasswordChangePolicyNotSet) {
   user_manager::known_user::SetPasswordSyncToken(saml_login_account_id_,
                                                  std::string());
   test_environment_.FastForwardBy(kSyncTokenCheckInterval);
+  EXPECT_FALSE(user_manager_->GetActiveUser()->force_online_signin());
+}
+
+TEST_F(PasswordSyncTokenVerifierTest, SyncTokenNotSet) {
+  CreatePasswordSyncTokenVerifier();
+  verifier_->FetchSyncTokenOnReauth();
+  EXPECT_TRUE(PasswordSyncTokenFetcherIsAllocated());
+  verifier_->OnTokenFetched(kSyncToken);
+  EXPECT_EQ(
+      user_manager::known_user::GetPasswordSyncToken(saml_login_account_id_),
+      kSyncToken);
+}
+
+TEST_F(PasswordSyncTokenVerifierTest, SyncTokenInitForUser) {
+  CreatePasswordSyncTokenVerifier();
+  verifier_->FetchSyncTokenOnReauth();
+  EXPECT_TRUE(PasswordSyncTokenFetcherIsAllocated());
+  // Token API not initilized for the user - request token creation.
+  verifier_->OnTokenFetched(std::string());
+  EXPECT_TRUE(PasswordSyncTokenFetcherIsAllocated());
+  verifier_->OnTokenCreated(kSyncToken);
+  EXPECT_EQ(
+      user_manager::known_user::GetPasswordSyncToken(saml_login_account_id_),
+      kSyncToken);
+  // Start regular polling after session init.
+  test_environment_.FastForwardBy(kSyncTokenCheckInterval);
+  EXPECT_TRUE(PasswordSyncTokenFetcherIsAllocated());
+  OnTokenVerified(true);
   EXPECT_FALSE(user_manager_->GetActiveUser()->force_online_signin());
 }
 

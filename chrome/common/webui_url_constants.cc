@@ -199,6 +199,8 @@ const char kChromeUISnippetsInternalsHost[] = "snippets-internals";
 const char kChromeUIWebApksHost[] = "webapks";
 #else
 const char kChromeUINearbyInternalsHost[] = "nearby-internals";
+const char kChromeUIReadLaterHost[] = "read-later";
+const char kChromeUIReadLaterURL[] = "chrome://read-later/";
 #endif
 
 #if defined(OS_CHROMEOS)

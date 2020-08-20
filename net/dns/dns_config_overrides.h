@@ -50,7 +50,6 @@ struct NET_EXPORT DnsConfigOverrides {
   base::Optional<std::vector<std::string>> search;
   base::Optional<DnsHosts> hosts;
   base::Optional<bool> append_to_multi_label_name;
-  base::Optional<bool> randomize_ports;
   base::Optional<int> ndots;
   base::Optional<base::TimeDelta> timeout;
   base::Optional<int> attempts;

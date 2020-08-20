@@ -66,13 +66,13 @@ public class QualityEnforcer implements NativeInitObserver {
     // Do not modify or reuse existing entries, they are used in a UMA histogram. Please also edit
     // TrustedWebActivityQualityEnforcementViolationType in enums.xml if new value added.
     @IntDef({ViolationType.ERROR_404, ViolationType.ERROR_5XX, ViolationType.UNAVAILABLE_OFFLINE,
-            ViolationType.DIGITAL_ASSERTLINKS})
+            ViolationType.DIGITAL_ASSETLINKS})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ViolationType {
         int ERROR_404 = 0;
         int ERROR_5XX = 1;
         int UNAVAILABLE_OFFLINE = 2;
-        int DIGITAL_ASSERTLINKS = 3;
+        int DIGITAL_ASSETLINKS = 3;
         int NUM_ENTRIES = 4;
     }
 
@@ -129,7 +129,7 @@ public class QualityEnforcer implements NativeInitObserver {
         String url = mIntentDataProvider.getUrlToLoad();
         mVerifier.verify(url).then((verified) -> {
             if (!verified) {
-                trigger(ViolationType.DIGITAL_ASSERTLINKS, mIntentDataProvider.getUrlToLoad(), 0);
+                trigger(ViolationType.DIGITAL_ASSETLINKS, mIntentDataProvider.getUrlToLoad(), 0);
             }
         });
     }
@@ -193,9 +193,9 @@ public class QualityEnforcer implements NativeInitObserver {
             case ViolationType.UNAVAILABLE_OFFLINE:
                 return ContextUtils.getApplicationContext().getString(
                         R.string.twa_quality_enforcement_violation_offline, url);
-            case ViolationType.DIGITAL_ASSERTLINKS:
+            case ViolationType.DIGITAL_ASSETLINKS:
                 return ContextUtils.getApplicationContext().getString(
-                        R.string.twa_quality_enforcement_violation_assert_link, url);
+                        R.string.twa_quality_enforcement_violation_asset_link, url);
             default:
                 return "";
         }
@@ -212,8 +212,8 @@ public class QualityEnforcer implements NativeInitObserver {
                 return httpStatusCode + " on " + url;
             case ViolationType.UNAVAILABLE_OFFLINE:
                 return "Page unavailable offline: " + url;
-            case ViolationType.DIGITAL_ASSERTLINKS:
-                return "Digital assert links verification failed on " + url;
+            case ViolationType.DIGITAL_ASSETLINKS:
+                return "Digital asset links verification failed on " + url;
             default:
                 return "";
         }

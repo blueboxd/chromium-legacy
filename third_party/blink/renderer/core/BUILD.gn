@@ -1142,6 +1142,7 @@ source_set("unit_tests") {
     "frame/rotation_viewport_anchor_test.cc",
     "frame/use_counter_helper_test.cc",
     "frame/visual_viewport_test.cc",
+    "frame/web_frame_widget_test.cc",
     "fullscreen/scoped_allow_fullscreen_test.cc",
     "geometry/dom_matrix_test.cc",
     "imagebitmap/image_bitmap_test.cc",

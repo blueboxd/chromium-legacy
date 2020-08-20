@@ -1295,6 +1295,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "enable-critical-persisted-tab-data",
+    "owners": [ "chrome-shopping@google.com" ],
+    "expiry_milestone": 94
+  },
+  {
     "name": "enable-cros-action-recorder",
     "owners": [ "charleszhao", "tby" ],
     "expiry_milestone": 90
@@ -3324,6 +3329,11 @@
     "name": "omnibox-local-entity-suggestions",
     "owners": [ "manukh", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 88
+  },
+  {
+    "name": "omnibox-local-zero-suggest-frecency-ranking",
+    "owners": [ "mahmadi", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 89
   },
   {
     "name": "omnibox-max-url-matches",

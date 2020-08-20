@@ -41,4 +41,11 @@ void DroppedFrameCounter::AddDroppedFrame() {
   ++total_dropped_;
 }
 
+void DroppedFrameCounter::Reset() {
+  total_frames_ = 0;
+  total_partial_ = 0;
+  total_dropped_ = 0;
+  ring_buffer_.Clear();
+}
+
 }  // namespace cc

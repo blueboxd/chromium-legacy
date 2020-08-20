@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SYNC_ENGINE_FAKE_SYNC_MANAGER_H_
 #define COMPONENTS_SYNC_ENGINE_FAKE_SYNC_MANAGER_H_
 
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -13,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
+#include "components/sync/base/model_type.h"
 #include "components/sync/engine/fake_model_type_connector.h"
 #include "components/sync/engine/sync_manager.h"
 #include "components/sync/test/fake_sync_encryption_handler.h"
@@ -56,8 +58,8 @@ class FakeSyncManager : public SyncManager {
   // GetAndResetConfigureReason, or since startup if never called.
   ConfigureReason GetAndResetConfigureReason();
 
-  // Returns the number of invalidations received since startup.
-  int GetInvalidationCount() const;
+  // Returns the number of invalidations received for type since startup.
+  int GetInvalidationCount(ModelType type) const;
 
   // Block until the sync thread has finished processing any pending messages.
   void WaitForSyncThread();
@@ -130,8 +132,8 @@ class FakeSyncManager : public SyncManager {
 
   FakeModelTypeConnector fake_model_type_connector_;
 
-  // Number of invalidations received since startup.
-  int num_invalidations_received_;
+  // Number of invalidations received per type since startup.
+  std::map<ModelType, int> num_invalidations_received_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSyncManager);
 };

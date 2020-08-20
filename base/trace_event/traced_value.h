@@ -57,6 +57,7 @@ class BASE_EXPORT TracedValue : public ConvertableToTraceFormat {
   void AppendDouble(double);
   void AppendBoolean(bool);
   void AppendString(base::StringPiece);
+  void AppendPointer(void*);
   void BeginArray();
   void BeginDictionary();
 
@@ -66,57 +67,131 @@ class BASE_EXPORT TracedValue : public ConvertableToTraceFormat {
 
   void EstimateTraceMemoryOverhead(TraceEventMemoryOverhead* overhead) override;
 
-  // TracedValue::Build is a friend of TracedValue::DictionaryItem.
+  class BASE_EXPORT Array;
+  class BASE_EXPORT Dictionary;
+  class BASE_EXPORT ValueHolder;
+  class BASE_EXPORT ArrayItem;
   class BASE_EXPORT DictionaryItem;
 
-  // Helper to enable easier initialization of TracedValue. This is intended for
-  // quick local debugging as there is overhead of creating
-  // std::initializer_list of name-value objects. This method does not support
-  // creation of dictionaries or arrays.
+  // Helper to enable easier initialization of |TracedValue|. This is intended
+  // for quick local debugging as there is overhead of creating
+  // |std::initializer_list| of name-value objects (in the case of containers
+  // the value is also a |std::initializer_list|). Generally the helper types
+  // |TracedValue::Dictionary|, |TracedValue::Array|,
+  // |TracedValue::DictionaryItem|, |TracedValue::ArrayItem| must be valid as
+  // well as their internals (e.g., |base::StringPiece| data should be valid
+  // when |TracedValue::Build| is called; |TracedValue::Array| or
+  // |TracedValue::Dictionary| holds a |std::initializer_list| whose underlying
+  // array needs to be valid when calling |TracedValue::Build|).
   //
   // Example:
   //    auto value = TracedValue::Build({
   //      {"int_var_name", 42},
   //      {"double_var_name", 3.14},
-  //      {"string_var_name", "hello world"}
+  //      {"string_var_name", "hello world"},
+  //      {"empty_array", TracedValue::Array({})},
+  //      {"dictionary", TracedValue::Dictionary({
+  //        {"my_ptr", static_cast<void*>(my_ptr)},
+  //        {"nested_array", TracedValue::Array({1, false, 0.5})},
+  //      })},
   //    });
-  //
-  // |name| is assumed to be a long lived "quoted" string.
   static std::unique_ptr<TracedValue> Build(
-      std::initializer_list<DictionaryItem> items);
+      const std::initializer_list<DictionaryItem> items);
 
-  // DictionaryItem instance represents a single name-value pair.
-  class DictionaryItem {
+  // An |Array| instance represents an array of |ArrayItem| objects. This is a
+  // helper to allow initializer list like construction of arrays using
+  // |TracedValue::Build|.
+  //
+  // An instance holds an |std::initializer_list<TracedValue::ArrayItem>| and is
+  // cheap to copy (copying the initializer_list does not copy the underlying
+  // objects). The underlying array must exist at the time when
+  // |TracedValue::Build| is called.
+  class Array {
    public:
-    // These constructors assume that |name| is a long lived "quoted" string.
-    DictionaryItem(const char* name, int value);
-    DictionaryItem(const char* name, double value);
-    DictionaryItem(const char* name, bool value);
-    DictionaryItem(const char* name, void* value);
+    // This constructor expects that the initializer_list is valid when
+    // |TracedValue::Build| is called.
+    Array(const std::initializer_list<ArrayItem> items);
+    Array(Array&&);
+    void WriteToValue(TracedValue* value) const;
+
+   private:
+    std::initializer_list<ArrayItem> items_;
+  };
+
+  // A helper to hold a dictionary. Similar to |TracedValue::Array|.
+  class Dictionary {
+   public:
+    // This constructor expects that the initializer_list is valid when
+    // |TracedValue::Build| is called.
+    Dictionary(const std::initializer_list<DictionaryItem> items);
+    Dictionary(Dictionary&&);
+    void WriteToValue(TracedValue* value) const;
+
+   private:
+    std::initializer_list<DictionaryItem> items_;
+  };
+
+  // A |ValueHolder| holds a single value or a container (int, double... or an
+  // |Array| / |Dictionary|). Not to be used outside of the context of
+  // |TracedValue::Build| (has one parameter implicit constructors).
+  //
+  // Base class for |TracedValue::ArrayItem| and |TracedValue::DictionaryItem|.
+  class ValueHolder {
+   public:
+    // Implicit constructors allow constructing |DictionaryItem| without having
+    // to write |{"name", TracedValue::ValueHolder(1)}|.
+    ValueHolder(int value);     // NOLINT(google-explicit-constructor)
+    ValueHolder(double value);  // NOLINT(google-explicit-constructor)
+    ValueHolder(bool value);    // NOLINT(google-explicit-constructor)
+    ValueHolder(void* value);   // NOLINT(google-explicit-constructor)
     // StringPiece's backing storage / const char* pointer needs to remain valid
     // until TracedValue::Build is called.
-    DictionaryItem(const char* name, base::StringPiece value);
+    // NOLINTNEXTLINE(google-explicit-constructor)
+    ValueHolder(base::StringPiece value);
+    // Create a copy to avoid holding a reference to a non-existing string:
+    //
+    // Example:
+    //   TracedValue::Build({{"my_string", std::string("std::string value")}});
+    // Explanation:
+    //   1. std::string temporary is passed to the constructor of |ValueHolder|.
+    //   2. |ValueHolder| is passed to the constructor of |DictionaryItem|.
+    //   3. |Build| iterates initializer_list of |DictionaryItems|.
+    //
+    //   If the original |ValueHolder| kept just a reference to the string (or
+    //   a |base::StringPiece|) then |Build| is undefined behaviour, as it is
+    //   passing a reference to an out-of-scope temporary to
+    //   |TracedValue::SetString|.
+    // NOLINTNEXTLINE(google-explicit-constructor)
+    ValueHolder(std::string value);
     // Define an explicit overload for const char* to resolve the ambiguity
     // between the base::StringPiece, void*, and bool constructors for string
     // literals.
-    DictionaryItem(const char* name, const char* value);
+    ValueHolder(const char* value);  // NOLINT(google-explicit-constructor)
+    ValueHolder(Array& value);       // NOLINT(google-explicit-constructor)
+    ValueHolder(Dictionary& value);  // NOLINT(google-explicit-constructor)
+    ValueHolder(ValueHolder&&);
+
+   protected:
+    void WriteToValue(TracedValue* value) const;
+    void WriteToValue(const char* name, TracedValue* value) const;
 
    private:
-    friend std::unique_ptr<TracedValue> TracedValue::Build(
-        std::initializer_list<DictionaryItem> items);
-
-    void WriteToValue(TracedValue* value) const;
-
     union KeptValue {
+      // Copy is handled by the holder (based on
+      // |TracedValue::ValueHolder::kept_value_type_|).
       int int_value;
       double double_value;
       bool bool_value;
       base::StringPiece string_piece_value;
+      std::string std_string_value;
       void* void_ptr_value;
+      Array array_value;
+      Dictionary dictionary_value;
 
       // Default constructor is implicitly deleted because union field has a
       // non-trivial default constructor.
-      KeptValue() {}
+      KeptValue() {}   // NOLINT(modernize-use-equals-default)
+      ~KeptValue() {}  // NOLINT(modernize-use-equals-default)
     };
 
     // Reimplementing a subset of C++17 std::variant.
@@ -125,12 +200,43 @@ class BASE_EXPORT TracedValue : public ConvertableToTraceFormat {
       kDoubleType,
       kBoolType,
       kStringPieceType,
+      kStdStringType,
       kVoidPtrType,
+      kArrayType,
+      kDictionaryType,
     };
 
     KeptValue kept_value_;
-    const char* name_;
     KeptValueType kept_value_type_;
+  };
+
+  // |ArrayItem| is a |ValueHolder| which can be used to construct an |Array|.
+  class ArrayItem : public ValueHolder {
+   public:
+    // Implicit constructors allow calling |TracedValue::Array({1, true, 3.14})|
+    // instead of |TracedValue::Array({TracedValue::ArrayItem(1),
+    // TracedValue::ArrayItem(true), TracedValue::ArrayItem(3.14)})|.
+    template <typename T>
+    // NOLINTNEXTLINE(google-explicit-constructor)
+    ArrayItem(T value) : ValueHolder(value) {}
+
+    void WriteToValue(TracedValue* value) const;
+  };
+
+  // |DictionaryItem| instance represents a single name-value pair.
+  //
+  // |name| is assumed to be a long lived "quoted" string.
+  class DictionaryItem : public ValueHolder {
+   public:
+    // These constructors assume that |name| is a long lived "quoted" string.
+    template <typename T>
+    DictionaryItem(const char* name, T value)
+        : ValueHolder(value), name_(name) {}
+
+    void WriteToValue(TracedValue* value) const;
+
+   private:
+    const char* name_;
   };
 
   // A custom serialization class can be supplied by implementing the

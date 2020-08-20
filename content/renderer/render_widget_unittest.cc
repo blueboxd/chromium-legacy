@@ -171,11 +171,6 @@ class InteractiveRenderWidget : public RenderWidget {
 
   IPC::TestSink* sink() { return &sink_; }
 
-  const viz::LocalSurfaceIdAllocation& local_surface_id_allocation_from_parent()
-      const {
-    return local_surface_id_allocation_from_parent_;
-  }
-
   bool OverscrollGestureEvent(const blink::WebGestureEvent& event) {
     if (event.GetType() == blink::WebInputEvent::Type::kGestureScrollUpdate) {
       GetWebWidget()->DidOverscrollForTesting(
@@ -536,35 +531,6 @@ TEST_F(RenderWidgetExternalWidgetUnittest,
       .Times(testing::AnyNumber());
 
   widget()->SendInputEvent(scroll, base::DoNothing());
-}
-
-// Tests that if a RenderWidget is auto-resized, it requests a new
-// viz::LocalSurfaceId to be allocated on the impl thread.
-TEST_F(RenderWidgetUnittest, AutoResizeAllocatedLocalSurfaceId) {
-  viz::ParentLocalSurfaceIdAllocator allocator;
-
-  // Enable auto-resize.
-  blink::VisualProperties visual_properties;
-  visual_properties.auto_resize_enabled = true;
-  visual_properties.min_size_for_auto_resize = gfx::Size(100, 100);
-  visual_properties.max_size_for_auto_resize = gfx::Size(200, 200);
-  allocator.GenerateId();
-  visual_properties.local_surface_id_allocation =
-      allocator.GetCurrentLocalSurfaceIdAllocation();
-  widget()->GetWebWidget()->ApplyVisualProperties(visual_properties);
-  EXPECT_EQ(allocator.GetCurrentLocalSurfaceIdAllocation(),
-            widget()->local_surface_id_allocation_from_parent());
-  EXPECT_FALSE(widget()
-                   ->layer_tree_host()
-                   ->new_local_surface_id_request_for_testing());
-
-  constexpr gfx::Size size(200, 200);
-  widget()->DidAutoResize(size);
-  EXPECT_EQ(allocator.GetCurrentLocalSurfaceIdAllocation(),
-            widget()->local_surface_id_allocation_from_parent());
-  EXPECT_TRUE(widget()
-                  ->layer_tree_host()
-                  ->new_local_surface_id_request_for_testing());
 }
 
 class StubRenderWidgetDelegate : public RenderWidgetDelegate {

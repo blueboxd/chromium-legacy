@@ -165,11 +165,11 @@ TEST_F(VariationsIdsProviderTest, OnFieldTrialGroupFinalized) {
 
   const std::string default_name = "default";
   scoped_refptr<base::FieldTrial> trial_1(CreateTrialAndAssociateId(
-      "t1", default_name, GOOGLE_WEB_PROPERTIES, 123));
+      "t1", default_name, GOOGLE_WEB_PROPERTIES_ANY_CONTEXT, 123));
   ASSERT_EQ(default_name, trial_1->group_name());
 
   scoped_refptr<base::FieldTrial> trial_2(CreateTrialAndAssociateId(
-      "t2", default_name, GOOGLE_WEB_PROPERTIES_TRIGGER, 456));
+      "t2", default_name, GOOGLE_WEB_PROPERTIES_TRIGGER_ANY_CONTEXT, 456));
   ASSERT_EQ(default_name, trial_2->group_name());
 
   scoped_refptr<base::FieldTrial> trial_3(CreateTrialAndAssociateId(
@@ -208,8 +208,8 @@ TEST_F(VariationsIdsProviderTest, OnFieldTrialGroupFinalized) {
 
 TEST_F(VariationsIdsProviderTest, GetGoogleAppVariationsString) {
   // All GOOGLE_WEB_PROPERTIES(_X) ids shouldn't be included.
-  CreateTrialAndAssociateId("t1", "g1", GOOGLE_WEB_PROPERTIES, 123);
-  CreateTrialAndAssociateId("t2", "g2", GOOGLE_WEB_PROPERTIES, 124);
+  CreateTrialAndAssociateId("t1", "g1", GOOGLE_WEB_PROPERTIES_ANY_CONTEXT, 123);
+  CreateTrialAndAssociateId("t2", "g2", GOOGLE_WEB_PROPERTIES_ANY_CONTEXT, 124);
   CreateTrialAndAssociateId("t3", "g3", GOOGLE_WEB_PROPERTIES_SIGNED_IN, 125);
 
   // GOOGLE_APP ids should be included.
@@ -221,8 +221,8 @@ TEST_F(VariationsIdsProviderTest, GetGoogleAppVariationsString) {
 }
 
 TEST_F(VariationsIdsProviderTest, GetVariationsString) {
-  CreateTrialAndAssociateId("t1", "g1", GOOGLE_WEB_PROPERTIES, 123);
-  CreateTrialAndAssociateId("t2", "g2", GOOGLE_WEB_PROPERTIES, 124);
+  CreateTrialAndAssociateId("t1", "g1", GOOGLE_WEB_PROPERTIES_ANY_CONTEXT, 123);
+  CreateTrialAndAssociateId("t2", "g2", GOOGLE_WEB_PROPERTIES_ANY_CONTEXT, 124);
   // SIGNED_IN ids shouldn't be included.
   CreateTrialAndAssociateId("t3", "g3", GOOGLE_WEB_PROPERTIES_SIGNED_IN, 125);
   // GOOGLE_APP ids shouldn't be included.
@@ -234,10 +234,12 @@ TEST_F(VariationsIdsProviderTest, GetVariationsString) {
 }
 
 TEST_F(VariationsIdsProviderTest, GetVariationsVector) {
-  CreateTrialAndAssociateId("t1", "g1", GOOGLE_WEB_PROPERTIES, 121);
-  CreateTrialAndAssociateId("t2", "g2", GOOGLE_WEB_PROPERTIES, 122);
-  CreateTrialAndAssociateId("t3", "g3", GOOGLE_WEB_PROPERTIES_TRIGGER, 123);
-  CreateTrialAndAssociateId("t4", "g4", GOOGLE_WEB_PROPERTIES_TRIGGER, 124);
+  CreateTrialAndAssociateId("t1", "g1", GOOGLE_WEB_PROPERTIES_ANY_CONTEXT, 121);
+  CreateTrialAndAssociateId("t2", "g2", GOOGLE_WEB_PROPERTIES_ANY_CONTEXT, 122);
+  CreateTrialAndAssociateId("t3", "g3",
+                            GOOGLE_WEB_PROPERTIES_TRIGGER_ANY_CONTEXT, 123);
+  CreateTrialAndAssociateId("t4", "g4",
+                            GOOGLE_WEB_PROPERTIES_TRIGGER_ANY_CONTEXT, 124);
   CreateTrialAndAssociateId("t5", "g5", GOOGLE_WEB_PROPERTIES_SIGNED_IN, 125);
   CreateTrialAndAssociateId("t6", "g6", GOOGLE_APP, 126);
 
@@ -245,9 +247,10 @@ TEST_F(VariationsIdsProviderTest, GetVariationsVector) {
   provider.ForceVariationIds({"100", "200", "t101"}, "");
 
   EXPECT_EQ((std::vector<VariationID>{100, 121, 122, 200}),
-            provider.GetVariationsVector(GOOGLE_WEB_PROPERTIES));
-  EXPECT_EQ((std::vector<VariationID>{101, 123, 124}),
-            provider.GetVariationsVector(GOOGLE_WEB_PROPERTIES_TRIGGER));
+            provider.GetVariationsVector(GOOGLE_WEB_PROPERTIES_ANY_CONTEXT));
+  EXPECT_EQ(
+      (std::vector<VariationID>{101, 123, 124}),
+      provider.GetVariationsVector(GOOGLE_WEB_PROPERTIES_TRIGGER_ANY_CONTEXT));
   EXPECT_EQ((std::vector<VariationID>{125}),
             provider.GetVariationsVector(GOOGLE_WEB_PROPERTIES_SIGNED_IN));
   EXPECT_EQ((std::vector<VariationID>{126}),
@@ -255,8 +258,9 @@ TEST_F(VariationsIdsProviderTest, GetVariationsVector) {
 }
 
 TEST_F(VariationsIdsProviderTest, GetVariationsVectorForWebPropertiesKeys) {
-  CreateTrialAndAssociateId("t1", "g1", GOOGLE_WEB_PROPERTIES, 121);
-  CreateTrialAndAssociateId("t2", "g2", GOOGLE_WEB_PROPERTIES_TRIGGER, 122);
+  CreateTrialAndAssociateId("t1", "g1", GOOGLE_WEB_PROPERTIES_ANY_CONTEXT, 121);
+  CreateTrialAndAssociateId("t2", "g2",
+                            GOOGLE_WEB_PROPERTIES_TRIGGER_ANY_CONTEXT, 122);
   CreateTrialAndAssociateId("t3", "g3", GOOGLE_WEB_PROPERTIES_SIGNED_IN, 123);
   CreateTrialAndAssociateId("t4", "g4", GOOGLE_APP, 124);  // Will be excluded.
   VariationsIdsProvider provider;
@@ -266,10 +270,12 @@ TEST_F(VariationsIdsProviderTest, GetVariationsVectorForWebPropertiesKeys) {
 }
 
 TEST_F(VariationsIdsProviderTest, GetVariationsVectorImpl) {
-  CreateTrialAndAssociateId("t1", "g1", GOOGLE_WEB_PROPERTIES, 121);
-  CreateTrialAndAssociateId("t2", "g2", GOOGLE_WEB_PROPERTIES, 122);
-  CreateTrialAndAssociateId("t3", "g3", GOOGLE_WEB_PROPERTIES_TRIGGER, 123);
-  CreateTrialAndAssociateId("t4", "g4", GOOGLE_WEB_PROPERTIES_TRIGGER, 124);
+  CreateTrialAndAssociateId("t1", "g1", GOOGLE_WEB_PROPERTIES_ANY_CONTEXT, 121);
+  CreateTrialAndAssociateId("t2", "g2", GOOGLE_WEB_PROPERTIES_ANY_CONTEXT, 122);
+  CreateTrialAndAssociateId("t3", "g3",
+                            GOOGLE_WEB_PROPERTIES_TRIGGER_ANY_CONTEXT, 123);
+  CreateTrialAndAssociateId("t4", "g4",
+                            GOOGLE_WEB_PROPERTIES_TRIGGER_ANY_CONTEXT, 124);
   CreateTrialAndAssociateId("t5", "g5", GOOGLE_WEB_PROPERTIES_SIGNED_IN, 125);
   CreateTrialAndAssociateId("t6", "g6", GOOGLE_WEB_PROPERTIES_SIGNED_IN,
                             124);  // Note: Duplicate.
@@ -280,10 +286,12 @@ TEST_F(VariationsIdsProviderTest, GetVariationsVectorImpl) {
 
   EXPECT_EQ((std::vector<VariationID>{100, 101, 121, 122, 123, 124, 200}),
             provider.GetVariationsVectorImpl(
-                {GOOGLE_WEB_PROPERTIES, GOOGLE_WEB_PROPERTIES_TRIGGER}));
+                {GOOGLE_WEB_PROPERTIES_ANY_CONTEXT,
+                 GOOGLE_WEB_PROPERTIES_TRIGGER_ANY_CONTEXT}));
   EXPECT_EQ((std::vector<VariationID>{101, 123, 124, 125}),
-            provider.GetVariationsVectorImpl({GOOGLE_WEB_PROPERTIES_SIGNED_IN,
-                                              GOOGLE_WEB_PROPERTIES_TRIGGER}));
+            provider.GetVariationsVectorImpl(
+                {GOOGLE_WEB_PROPERTIES_SIGNED_IN,
+                 GOOGLE_WEB_PROPERTIES_TRIGGER_ANY_CONTEXT}));
   EXPECT_EQ((std::vector<VariationID>{124, 125, 126}),
             provider.GetVariationsVectorImpl(
                 {GOOGLE_APP, GOOGLE_WEB_PROPERTIES_SIGNED_IN}));

@@ -63,7 +63,8 @@ Polymer({
       // Display the target channel for the 'Currently on' message.
       this.currentlyOnChannelText_ = this.i18n(
           'aboutCurrentlyOnChannel',
-          this.i18n(settings.browserChannelToI18nId(info.targetChannel)));
+          this.i18n(
+              settings.browserChannelToI18nId(info.targetChannel, info.isLts)));
     });
   },
 
@@ -114,7 +115,8 @@ Polymer({
     const buildInfo = {
       'application_label': loadTimeData.getString('aboutBrowserVersion'),
       'platform': this.versionInfo_.osVersion,
-      'aboutChannelLabel': this.channelInfo_.targetChannel,
+      'aboutChannelLabel': this.channelInfo_.targetChannel +
+          (this.channelInfo_.isLts ? ' (trusted tester)' : ''),
       'firmware_version': this.versionInfo_.osFirmware,
       'aboutIsArcStatusTitle': loadTimeData.getBoolean('aboutIsArcEnabled'),
       'arc_label': this.versionInfo_.arcVersion,

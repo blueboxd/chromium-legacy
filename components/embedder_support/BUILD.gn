@@ -20,11 +20,22 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//components/embedder_support",
     "//components/embedder_support/origin_trials",
+    "//mojo/core/embedder:embedder",
+    "//net:net",
+    "//net/traffic_annotation:test_support",
+    "//services/network:test_support",
     "//testing/gtest",
+    "//third_party/blink/public/mojom:mojom_platform_headers",
   ]
 
   if (is_android) {
-    sources += [ "android/util/url_utilities_unittest.cc" ]
+    sources += [
+      "android/util/android_stream_reader_url_loader_unittest.cc",
+      "android/util/input_stream_reader_unittest.cc",
+      "android/util/input_stream_unittest.cc",
+      "android/util/url_utilities_unittest.cc",
+    ]
+
     deps += [
       "android:native_j_unittests_jni_headers",
       "android:native_java_unittests_java",

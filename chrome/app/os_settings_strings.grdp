@@ -1149,7 +1149,7 @@
     Give Linux apps permission to access USB devices. Linux won't remember a USB device after it's removed.
   </message>
   <message name="IDS_SETTINGS_CROSTINI_SHARED_USB_DEVICES_EXTRA_DESCRIPTION" desc="Extra description for managing shared USB devices.">
-    Only Android devices are currently supported.
+    Only supported devices are shown.
   </message>
   <message name="IDS_SETTINGS_CROSTINI_SHARED_USB_DEVICES_LIST_EMPTY_MESSAGE" desc="Message shown when there are no avaiable USB devices.">
     Available USB devices will appear here.

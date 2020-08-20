@@ -25,6 +25,7 @@ let RegulatoryInfo;
  * @typedef {{
  *   currentChannel: BrowserChannel,
  *   targetChannel: BrowserChannel,
+ *   isLts: boolean,
  * }}
  */
 let ChannelInfo;
@@ -120,9 +121,14 @@ let TPMFirmwareUpdateStatusChangedEvent;
 cr.define('settings', function() {
   /**
    * @param {!BrowserChannel} channel
+   * @param {boolean} isLts
    * @return {string}
    */
-  function browserChannelToI18nId(channel) {
+  function browserChannelToI18nId(channel, isLts) {
+    if (isLts) {
+      return 'aboutChannelLongTermStable';
+    }
+
     switch (channel) {
       case BrowserChannel.BETA:
         return 'aboutChannelBeta';

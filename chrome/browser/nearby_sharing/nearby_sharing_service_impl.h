@@ -78,12 +78,10 @@ class NearbySharingServiceImpl
                                      ReceiveSurfaceState state) override;
   StatusCodes UnregisterReceiveSurface(
       TransferUpdateCallback* transfer_callback) override;
-  void SendText(const ShareTarget& share_target,
-                std::string text,
-                StatusCodesCallback status_codes_callback) override;
-  void SendFiles(const ShareTarget& share_target,
-                 const std::vector<base::FilePath>& files,
-                 StatusCodesCallback status_codes_callback) override;
+  StatusCodes SendText(const ShareTarget& share_target,
+                       std::string text) override;
+  StatusCodes SendFiles(const ShareTarget& share_target,
+                        const std::vector<base::FilePath>& files) override;
   void Accept(const ShareTarget& share_target,
               StatusCodesCallback status_codes_callback) override;
   void Reject(const ShareTarget& share_target,
@@ -164,6 +162,18 @@ class NearbySharingServiceImpl
   StatusCodes ReceivePayloads(const ShareTarget& share_target);
   StatusCodes SendPayloads(const ShareTarget& share_target);
 
+  StatusCodes SendAttachments(const ShareTarget& share_target);
+  void OnOutgoingConnection(const ShareTarget& share_target,
+                            NearbyConnection* connection);
+  void SendIntroduction(const ShareTarget& share_target,
+                        base::Optional<std::string> four_digit_token);
+
+  bool CreatePayloads(const ShareTarget& share_target);
+  std::vector<location::nearby::connections::mojom::PayloadPtr>
+  CreateFilePayloads(const std::vector<FileAttachment>& attachments);
+  std::vector<location::nearby::connections::mojom::PayloadPtr>
+  CreateTextPayloads(const std::vector<TextAttachment>& attachments);
+
   void WriteResponse(
       NearbyConnection& connection,
       sharing::nearby::ConnectionResponseFrame::Status reponse_status);
@@ -178,24 +188,35 @@ class NearbySharingServiceImpl
       sharing::mojom::AdvertisementPtr advertisement);
   void OnIncomingTransferUpdate(const ShareTarget& share_target,
                                 TransferMetadata metadata);
+  void OnOutgoingTransferUpdate(const ShareTarget& share_target,
+                                TransferMetadata metadata);
   void CloseConnection(const ShareTarget& share_target);
   void OnIncomingDecryptedCertificate(
       const std::string& endpoint_id,
       sharing::mojom::AdvertisementPtr advertisement,
       ShareTarget placeholder_share_target,
       base::Optional<NearbyShareDecryptedPublicCertificate> certificate);
+  void RunPairedKeyVerification(
+      const ShareTarget& share_target,
+      const std::string& endpoint_id,
+      base::OnceCallback<void(
+          PairedKeyVerificationRunner::PairedKeyVerificationResult)> callback);
   void OnIncomingConnectionKeyVerificationDone(
       ShareTarget share_target,
-      base::Optional<std::vector<uint8_t>> token,
+      base::Optional<std::string> four_digit_token,
+      PairedKeyVerificationRunner::PairedKeyVerificationResult result);
+  void OnOutgoingConnectionKeyVerificationDone(
+      const ShareTarget& share_target,
+      base::Optional<std::string> four_digit_token,
       PairedKeyVerificationRunner::PairedKeyVerificationResult result);
   void RefreshUIOnDisconnection(ShareTarget share_target);
   void ReceiveIntroduction(ShareTarget share_target,
-                           base::Optional<std::string> token);
+                           base::Optional<std::string> four_digit_token);
   void OnReceivedIntroduction(ShareTarget share_target,
-                              base::Optional<std::string> token,
+                              base::Optional<std::string> four_digit_token,
                               base::Optional<sharing::mojom::V1FramePtr> frame);
   void OnStorageCheckCompleted(ShareTarget share_target,
-                               base::Optional<std::string> token,
+                               base::Optional<std::string> four_digit_token,
                                bool is_out_of_storage);
   void OnFrameRead(ShareTarget share_target,
                    base::Optional<sharing::mojom::V1FramePtr> frame);
@@ -203,8 +224,11 @@ class NearbySharingServiceImpl
       const sharing::mojom::CertificateInfoFramePtr& certificate_frame);
 
   void OnIncomingConnectionDisconnected(const ShareTarget& share_target);
+  void OnOutgoingConnectionDisconnected(const ShareTarget& share_target);
 
   void OnIncomingMutualAcceptanceTimeout(const ShareTarget& share_target);
+  void OnOutgoingMutualAcceptanceTimeout(const ShareTarget& share_target);
+
   base::Optional<ShareTarget> CreateShareTarget(
       const std::string& endpoint_id,
       const sharing::mojom::AdvertisementPtr& advertisement,
@@ -221,6 +245,8 @@ class NearbySharingServiceImpl
       const ShareTarget& share_target);
 
   NearbyConnection* GetConnection(const ShareTarget& share_target);
+  base::Optional<std::vector<uint8_t>> GetBluetoothMacAddress(
+      const ShareTarget& share_target);
 
   void ClearOutgoingShareTargetInfoMap();
   void SetAttachmentPayloadId(const Attachment& attachment, int64_t payload_id);

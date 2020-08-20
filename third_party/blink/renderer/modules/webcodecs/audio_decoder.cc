@@ -58,18 +58,19 @@ CodecConfigEval AudioDecoderTraits::CreateMediaConfig(
 
   std::vector<uint8_t> extra_data;
   if (config.hasDescription()) {
-    DOMArrayBuffer* buffer;
     if (config.description().IsArrayBuffer()) {
-      buffer = config.description().GetAsArrayBuffer();
+      DOMArrayBuffer* buffer = config.description().GetAsArrayBuffer();
+      uint8_t* start = static_cast<uint8_t*>(buffer->Data());
+      size_t size = buffer->ByteLengthAsSizeT();
+      extra_data.assign(start, start + size);
     } else {
-      // TODO(sandersd): Can IsNull() be true?
       DCHECK(config.description().IsArrayBufferView());
-      buffer = config.description().GetAsArrayBufferView()->buffer();
+      DOMArrayBufferView* view =
+          config.description().GetAsArrayBufferView().Get();
+      uint8_t* start = static_cast<uint8_t*>(view->BaseAddress());
+      size_t size = view->byteLengthAsSizeT();
+      extra_data.assign(start, start + size);
     }
-    // TODO(sandersd): Is it possible to not have Data()?
-    uint8_t* start = static_cast<uint8_t*>(buffer->Data());
-    size_t size = buffer->ByteLengthAsSizeT();
-    extra_data.assign(start, start + size);
   }
 
   media::ChannelLayout channel_layout =

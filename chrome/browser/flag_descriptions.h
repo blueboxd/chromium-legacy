@@ -903,6 +903,9 @@ extern const char
 extern const char kOmniboxLocalEntitySuggestionsName[];
 extern const char kOmniboxLocalEntitySuggestionsDescription[];
 
+extern const char kOmniboxLocalZeroSuggestFrecencyRankingName[];
+extern const char kOmniboxLocalZeroSuggestFrecencyRankingDescription[];
+
 extern const char kOmniboxMostVisitedTilesName[];
 extern const char kOmniboxMostVisitedTilesDescription[];
 
@@ -1550,6 +1553,9 @@ extern const char kClearOldBrowsingDataDescription[];
 
 extern const char kCloseTabSuggestionsName[];
 extern const char kCloseTabSuggestionsDescription[];
+
+extern const char kCriticalPersistedTabDataName[];
+extern const char kCriticalPersistedTabDataDescription[];
 
 extern const char kContentIndexingDownloadHomeName[];
 extern const char kContentIndexingDownloadHomeDescription[];

@@ -173,6 +173,10 @@ float WebViewFrameWidget::GetDeviceScaleFactorForTesting() {
   return device_scale_factor_for_testing_;
 }
 
+gfx::Rect WebViewFrameWidget::ViewportVisibleRect() {
+  return widget_base_->CompositorViewportRect();
+}
+
 bool WebViewFrameWidget::ShouldHandleImeEvents() {
   return HasFocus();
 }
@@ -314,12 +318,40 @@ void WebViewFrameWidget::SetPageScaleStateAndLimits(
 
   // If page scale hasn't changed, then just return without notifying
   // the remote frames.
-  if (page_scale_factor == page_scale_factor_from_mainframe_ &&
-      is_pinch_gesture_active == is_pinch_gesture_active_from_mainframe_) {
+  if (page_scale_factor == page_scale_factor_in_mainframe_ &&
+      is_pinch_gesture_active == is_pinch_gesture_active_in_mainframe_) {
     return;
   }
 
   NotifyPageScaleFactorChanged(page_scale_factor, is_pinch_gesture_active);
+}
+
+void WebViewFrameWidget::DidAutoResize(const gfx::Size& size) {
+  WebRect new_size_in_window(0, 0, size.width(), size.height());
+  Client()->ConvertViewportToWindow(&new_size_in_window);
+
+  // TODO(ccameron): Note that this destroys any information differentiating
+  // |size| from the compositor's viewport size. Also note that the
+  // calculation of |new_compositor_viewport_pixel_rect| does not appear to
+  // take into account device emulation.
+  widget_base_->LayerTreeHost()->RequestNewLocalSurfaceId();
+  gfx::Rect new_compositor_viewport_pixel_rect =
+      gfx::Rect(gfx::ScaleToCeiledSize(
+          gfx::Rect(new_size_in_window).size(),
+          widget_base_->GetScreenInfo().device_scale_factor));
+  widget_base_->UpdateCompositorViewportRect(
+      new_compositor_viewport_pixel_rect);
+}
+
+void WebViewFrameWidget::SetDeviceColorSpaceForTesting(
+    const gfx::ColorSpace& color_space) {
+  // We are changing the device color space from the renderer, so allocate a
+  // new viz::LocalSurfaceId to avoid surface invariants violations in tests.
+  widget_base_->LayerTreeHost()->RequestNewLocalSurfaceId();
+
+  blink::ScreenInfo info = widget_base_->GetScreenInfo();
+  info.display_color_spaces = gfx::DisplayColorSpaces(color_space);
+  widget_base_->UpdateScreenInfo(info);
 }
 
 }  // namespace blink

@@ -9,6 +9,7 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/federated_learning/floc_id_provider.h"
+#include "components/federated_learning/floc_blocklist_service.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/sync/driver/sync_service_observer.h"
@@ -36,16 +37,21 @@ class FlocRemotePermissionService;
 //
 // When all the prerequisites are met, the floc will be computed by sim-hashing
 // navigation URL domains in the last 7 days; otherwise, an invalid floc will be
-// given.
+// given. However, the floc can be invalidated if it's in a blocklist.
 //
 // The floc will be first computed after sync & sync-history are enabled. After
-// each computation, another computation will be scheduled 24 hours later.
+// each computation, another computation will be scheduled 24 hours later. In
+// the event of history deletion, the floc will be recomputed immediately and
+// reset the timer of any currently scheduled computation to be 24 hours later.
 class FlocIdProviderImpl : public FlocIdProvider,
+                           public FlocBlocklistService::Observer,
+                           public history::HistoryServiceObserver,
                            public syncer::SyncServiceObserver {
  public:
   enum class ComputeFlocTrigger {
     kBrowserStart,
     kScheduledUpdate,
+    kHistoryDelete,
   };
 
   using CanComputeFlocCallback = base::OnceCallback<void(bool)>;
@@ -77,8 +83,20 @@ class FlocIdProviderImpl : public FlocIdProvider,
   // KeyedService:
   void Shutdown() override;
 
+  // history::HistoryServiceObserver
+  //
+  // On history deletion, recompute the floc if the current floc is speculated
+  // to be derived from the deleted history.
+  void OnURLsDeleted(history::HistoryService* history_service,
+                     const history::DeletionInfo& deletion_info) override;
+
+  // FlocBlocklistService::Observer
+  void OnBlocklistLoaded() override;
+
   // syncer::SyncServiceObserver:
   void OnStateChanged(syncer::SyncService* sync_service) override;
+
+  void MaybeTriggerFirstFlocComputation();
 
   void ComputeFloc(ComputeFlocTrigger trigger);
   void OnComputeFlocCompleted(ComputeFlocTrigger trigger, FlocId floc_id);
@@ -97,6 +115,9 @@ class FlocIdProviderImpl : public FlocIdProvider,
   FlocId floc_id_;
   bool floc_computation_in_progress_ = false;
   bool first_floc_computation_triggered_ = false;
+
+  bool first_blocklist_loaded_seen_ = false;
+  bool first_sync_history_enabled_seen_ = false;
 
   // For the swaa/nac/account_type permission, we will use a cached status to
   // avoid querying too often.

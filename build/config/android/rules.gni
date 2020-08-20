@@ -4880,6 +4880,9 @@ if (enable_java_templates) {
           invoker.compress_shared_libraries) {
         args += [ "--compress-shared-libraries" ]
       }
+      if (treat_warnings_as_errors) {
+        args += [ "--warnings-as-errors" ]
+      }
 
       if (_enable_language_splits) {
         args += [

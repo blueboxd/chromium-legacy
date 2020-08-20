@@ -145,6 +145,9 @@ enum FeedUserStatus {
 
   // The user has opted out of seeing the feed.
   kDisabled = 1,
+
+  // The user has opted into seeing the feed.
+  kEnabled = 2,
 };
 
 // The type of the feed item. This enum is committed to storage so do not

@@ -12,6 +12,8 @@ blink_modules_sources("mediasource") {
     "media_source_impl.h",
     "media_source_registry_impl.cc",
     "media_source_registry_impl.h",
+    "media_source_tracer_impl.cc",
+    "media_source_tracer_impl.h",
     "source_buffer.cc",
     "source_buffer.h",
     "source_buffer_list.cc",

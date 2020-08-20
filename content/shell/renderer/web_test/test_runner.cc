@@ -1263,13 +1263,13 @@ void TestRunnerBindings::SetMockScreenOrientation(
     const std::string& orientation) {
   if (invalid_)
     return;
-  runner_->SetMockScreenOrientation(orientation);
+  runner_->SetMockScreenOrientation(frame_->GetWebViewTestProxy(), orientation);
 }
 
 void TestRunnerBindings::DisableMockScreenOrientation() {
   if (invalid_)
     return;
-  runner_->DisableMockScreenOrientation();
+  runner_->DisableMockScreenOrientation(frame_->GetWebViewTestProxy());
 }
 
 void TestRunnerBindings::SetDisallowedSubresourcePathSuffixes(
@@ -1676,8 +1676,6 @@ void TestRunnerBindings::SetColorProfile(const std::string& name,
   if (invalid_)
     return;
 
-  WebWidgetTestProxy* widget = frame_->GetLocalRootWebWidgetTestProxy();
-
   gfx::ColorSpace color_space;
   if (name == "genericRGB") {
     color_space = gfx::ICCProfileForTestingGenericRGB().GetColorSpace();
@@ -1688,7 +1686,7 @@ void TestRunnerBindings::SetColorProfile(const std::string& name,
   } else if (name == "adobeRGB") {
     color_space = gfx::ICCProfileForTestingAdobeRGB().GetColorSpace();
   }
-  widget->SetDeviceColorSpaceForTesting(color_space);
+  GetWebFrame()->View()->SetDeviceColorSpaceForTesting(color_space);
 
   WrapV8Closure(std::move(v8_callback)).Run();
 }
@@ -2216,6 +2214,10 @@ void TestRunner::Install(WebFrameTestProxy* frame,
   mock_screen_orientation_client_.OverrideAssociatedInterfaceProviderForFrame(
       frame->GetWebFrame());
   gamepad_controller_.Install(frame->GetWebFrame());
+  frame->GetWebViewTestProxy()
+      ->GetWebView()
+      ->SetScreenOrientationOverrideForTesting(
+          mock_screen_orientation_client_.CurrentOrientationType());
 }
 
 void TestRunner::Reset() {
@@ -2260,6 +2262,8 @@ void TestRunner::ResetWebView(WebViewTestProxy* web_view_test_proxy) {
   web_view->SetTabKeyCyclesThroughElements(true);
   web_view->GetSettings()->SetHighlightAds(false);
   web_view->DisableAutoResizeForTesting(gfx::Size());
+  web_view->SetScreenOrientationOverrideForTesting(
+      mock_screen_orientation_client_.CurrentOrientationType());
 }
 
 void TestRunner::ResetWebWidget(WebWidgetTestProxy* web_widget_test_proxy) {
@@ -2796,7 +2800,8 @@ MockScreenOrientationClient* TestRunner::GetMockScreenOrientationClient() {
   return &mock_screen_orientation_client_;
 }
 
-void TestRunner::SetMockScreenOrientation(const std::string& orientation_str) {
+void TestRunner::SetMockScreenOrientation(WebViewTestProxy* view_proxy,
+                                          const std::string& orientation_str) {
   blink::mojom::ScreenOrientation orientation;
 
   if (orientation_str == "portrait-primary") {
@@ -2810,19 +2815,14 @@ void TestRunner::SetMockScreenOrientation(const std::string& orientation_str) {
     orientation = blink::mojom::ScreenOrientation::kLandscapeSecondary;
   }
 
-  // TODO(lukasza): Need to make MockScreenOrientation updates work for
-  // cross-site iframes/windows.
-  WebFrameTestProxy* main_frame = FindInProcessMainWindowMainFrame();
-  blink::WebLocalFrame* main_web_frame =
-      main_frame ? main_frame->GetWebFrame() : nullptr;
   bool changed = mock_screen_orientation_client_.UpdateDeviceOrientation(
-      main_web_frame, orientation);
+      view_proxy, orientation);
   if (changed)
     GetWebTestControlHostRemote()->SetScreenOrientationChanged();
 }
 
-void TestRunner::DisableMockScreenOrientation() {
-  mock_screen_orientation_client_.SetDisabled(true);
+void TestRunner::DisableMockScreenOrientation(WebViewTestProxy* view_proxy) {
+  mock_screen_orientation_client_.SetDisabled(view_proxy, true);
 }
 
 std::string TestRunner::GetAcceptLanguages() const {

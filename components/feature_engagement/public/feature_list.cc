@@ -62,6 +62,7 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHNewIncognitoTabTipFeature,
     &kIPHBadgedReadingListFeature,
     &kIPHBadgedTranslateManualTriggerFeature,
+    &kIPHDiscoverFeedHeaderFeature,
 #endif  // defined(OS_IOS)
 #if defined(OS_WIN) || defined(OS_APPLE) || defined(OS_LINUX) || \
     defined(OS_CHROMEOS)

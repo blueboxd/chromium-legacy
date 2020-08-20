@@ -56,5 +56,5 @@
   // decode requests are aborted.
   //
   // Not recoverable: make a new AudioDecoder if needed.
-  void close();
+  [RaisesException] void close();
 };

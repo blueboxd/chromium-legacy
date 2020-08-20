@@ -28,6 +28,9 @@ bool IsPermissionControlledByDse(ContentSettingsType type,
 }
 
 void ResetDsePermissions(content::BrowserContext* browser_context) {
+  // Incognito should still have to prompt for permissions.
+  if (browser_context->IsOffTheRecord())
+    return;
   GURL url = GetDseOrigin().GetURL();
   HostContentSettingsMapFactory::GetForBrowserContext(browser_context)
       ->SetContentSettingDefaultScope(url, url,

@@ -703,6 +703,7 @@
 <translation id="6402652558933147609"><ph name="VIOLATED_URL" />에 <ph name="ERROR_CODE" /> 오류 발생</translation>
 <translation id="6404511346730675251">북마크 수정</translation>
 <translation id="6406506848690869874">동기화</translation>
+<translation id="6410883413783534063">탭을 열어 동시에 다른 페이지를 방문합니다.</translation>
 <translation id="6412673304250309937">Chrome에 저장된 안전하지 않은 사이트 목록을 사용하여 URL을 검사합니다. 사이트에서 사용자의 비밀번호를 도용하려고 하거나 사용자가 유해한 파일을 다운로드하는 경우, Chrome에서 페이지 콘텐츠 일부를 비롯한 URL을 세이프 브라우징 서비스에 보낼 수 있습니다.</translation>
 <translation id="641643625718530986">인쇄…</translation>
 <translation id="6427112570124116297">웹 번역</translation>
@@ -821,6 +822,7 @@
 <translation id="7328017930301109123">Chrome의 라이트 모드를 사용하면 페이지가 더 빠르게 로드되고 데이터가 최대 60퍼센트 절약됩니다.</translation>
 <translation id="7333031090786104871">아직 이전 사이트 추가 중</translation>
 <translation id="7340958967809483333">디스커버용 옵션</translation>
+<translation id="7352651011704765696">문제가 발생한 경우</translation>
 <translation id="7352939065658542140">동영상</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{선택한 1개 항목 공유}other{선택한 #개 항목 공유}}</translation>
 <translation id="7359002509206457351">결제 수단 액세스</translation>
@@ -1013,6 +1015,7 @@
 <translation id="868929229000858085">연락처 검색</translation>
 <translation id="869891660844655955">유효기간</translation>
 <translation id="8712637175834984815">확인</translation>
+<translation id="8725066075913043281">다시 시도하세요</translation>
 <translation id="8748850008226585750">숨겨진 콘텐츠</translation>
 <translation id="8751914237388039244">이미지 선택</translation>
 <translation id="8758557275681689734">열려 있는 탭 모두 보기</translation>

@@ -791,7 +791,6 @@ class PrepareFrameAndViewForPrint : public blink::WebViewClient,
  private:
   // blink::WebViewClient:
   void DidStopLoading() override;
-  blink::ScreenInfo GetScreenInfo() override;
 
   // blink::WebLocalFrameClient:
   void BindToFrame(blink::WebNavigationControl* frame) override;
@@ -967,10 +966,6 @@ void PrepareFrameAndViewForPrint::CopySelection(
       blink::WebNavigationParams::CreateWithHTMLString(
           html, GURL(url::kAboutBlankURL)),
       nullptr /* extra_data */);
-}
-
-blink::ScreenInfo PrepareFrameAndViewForPrint::GetScreenInfo() {
-  return blink::ScreenInfo();
 }
 
 void PrepareFrameAndViewForPrint::DidStopLoading() {

@@ -305,6 +305,11 @@ void MediaRouterMojoImpl::CreateRoute(const MediaSource::Id& source_id,
 
   MediaRouterMetrics::RecordMediaSinkType(sink->icon_type());
   const MediaRouteProviderId provider_id = FixProviderId(sink->provider_id());
+  // Record which of the possible ways the sink may render the source's
+  // presentation URL (if it has one).
+  if (source.url().is_valid()) {
+    MediaRouterMetrics::RecordPresentationRequestUrlBySink(source, provider_id);
+  }
 
   const std::string presentation_id = MediaRouterBase::CreatePresentationId();
   auto mr_callback = base::BindOnce(

@@ -9,6 +9,7 @@
 
 #include "base/strings/string16.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/models/image_model.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -23,10 +24,6 @@ struct BookmarkNodeData;
 namespace content {
 class BrowserContext;
 class WebContents;
-}
-
-namespace gfx {
-class ImageSkia;
 }
 
 namespace ui {
@@ -95,8 +92,8 @@ bool IsValidBookmarkDropLocation(Profile* profile,
 #if defined(TOOLKIT_VIEWS)
 // |text_color| is the color of associated text and is used to derive the icon's
 // color.
-gfx::ImageSkia GetBookmarkFolderIcon(SkColor text_color);
-gfx::ImageSkia GetBookmarkManagedFolderIcon(SkColor text_color);
+ui::ImageModel GetBookmarkFolderIcon(SkColor text_color);
+ui::ImageModel GetBookmarkManagedFolderIcon(SkColor text_color);
 #endif
 
 }  // namespace chrome

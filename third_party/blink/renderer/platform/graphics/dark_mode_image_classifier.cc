@@ -117,11 +117,6 @@ DarkModeClassification DarkModeImageClassifier::Classify(
   if (result != DarkModeClassification::kNotClassified)
     return result;
 
-  if (result != DarkModeClassification::kNotClassified) {
-    cache->Add(image_id, src, result);
-    return result;
-  }
-
   auto features_or_null = GetFeatures(paint_image, src);
   if (!features_or_null) {
     // Do not cache this classification.

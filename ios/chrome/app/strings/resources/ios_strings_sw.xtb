@@ -63,6 +63,7 @@
 <translation id="1554477036522844996">Dirisha Jipya</translation>
 <translation id="1580783302095112590">Barua imetumwa.</translation>
 <translation id="1582732959743469162">Hatua hii itasimamisha upakuaji wako wote wa sasa.</translation>
+<translation id="1605405588277479165">Kimezimwa - Haipendekezwi</translation>
 <translation id="1605658421715042784">Nakili Picha</translation>
 <translation id="1608337082864370066">Tafuta Picha Uliyonakili</translation>
 <translation id="1612730193129642006">Onyesha Gridi ya Kichupo</translation>
@@ -435,6 +436,7 @@ Lazima Handoff iwashwe pia katika sehemu ya Jumla ya Mipangilio, na lazima vifaa
 <translation id="6040143037577758943">Funga</translation>
 <translation id="6042308850641462728">Zaidi</translation>
 <translation id="605721222689873409">MK</translation>
+<translation id="6059830886158432458">Dhibiti hadithi na shughuli zako hapa</translation>
 <translation id="6066301408025741299">Gusa ili kughairi.</translation>
 <translation id="6108923351542677676">Usanidi unaendelea...</translation>
 <translation id="6119050551270742952">Ukurasa wa sasa wa Wavuti uko katika Hali Fiche</translation>
@@ -495,6 +497,7 @@ Tovuti haziwezi kutumia vidakuzi kuona shughuli zako za kuvinjari kwenye tovuti 
 <translation id="6624219055418309072">Zuia katika Hali Fiche</translation>
 <translation id="6628106477656132239">Tarehe ya Mwisho wa Matumizi si Sahihi</translation>
 <translation id="6638511529934826365">Kuza Maandishi…</translation>
+<translation id="6639730758971422557">Ili uwashe kipengele cha Kuvinjari Salama, fungua <ph name="BEGIN_LINK" />Huduma za Google na Usawazishaji<ph name="END_LINK" /> na uguse Vinjari Salama.</translation>
 <translation id="6642362222295953972">Badilisha utumie kichupo kilichopo</translation>
 <translation id="6643016212128521049">Futa</translation>
 <translation id="6645899968535965230">Msimbo wa QR: <ph name="PAGE_TITLE" /></translation>
@@ -579,6 +582,7 @@ Tovuti haziwezi kutumia vidakuzi kuona shughuli zako za kuvinjari kwenye tovuti 
 <translation id="7561196759112975576">Kila wakati</translation>
 <translation id="7600965453749440009">Kamwe usitafsiri <ph name="LANGUAGE" /></translation>
 <translation id="7603852183842204213">Ibukizi zimefungwa (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
+<translation id="7607521702806708809">Futa Nenosiri</translation>
 <translation id="7638584964844754484">Kaulisiri si sahihi</translation>
 <translation id="7649070708921625228">Usaidizi</translation>
 <translation id="7658239707568436148">Ghairi</translation>
@@ -657,6 +661,7 @@ Tovuti zinaweza kutumia vidakuzi kuona shughuli zako za kuvinjari kwenye tovuti 
 <translation id="8529767659511976195">Mpya</translation>
 <translation id="8532105204136943229">Mwaka wa Muda wa Matumizi Kuisha</translation>
 <translation id="8533166274275423134">Imefunguliwa Kwingine</translation>
+<translation id="8533670235862049797">Kipengele cha Kuvinjari Salama kimewashwa</translation>
 <translation id="8534481786647257214">Chapisho la Google+ limekamilika.</translation>
 <translation id="8548878600947630424">Tafuta katika ukurasa...</translation>
 <translation id="8574235780160508979">Sheria na Masharti ya Chrome yanabadilika tarehe 31 Machi. <ph name="BEGIN_LINK" />Tafadhali yapitie<ph name="END_LINK" /></translation>

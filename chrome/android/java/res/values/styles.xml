@@ -42,9 +42,6 @@
         <!-- With ActionBar -->
         <item name="windowActionBar">true</item>
         <item name="windowNoTitle">false</item>
-
-        <!-- Window properties -->
-        <item name="android:windowBackground">@drawable/action_bar_activity_bg</item>
     </style>
 
     <style name="Base.Theme.Chromium.WithWindowAnimation">

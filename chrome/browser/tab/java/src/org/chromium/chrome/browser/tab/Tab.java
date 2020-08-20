@@ -108,6 +108,11 @@ public interface Tab extends TabLifecycle {
     String getUrlString();
 
     /**
+     * @return Parameters that should be used for a lazily loaded Tab.  May be null.
+     */
+    LoadUrlParams getPendingLoadParams();
+
+    /**
      * @return The URL that is loaded in the current tab. This may not be the same as
      *         the last committed URL if a new navigation is in progress.
      */

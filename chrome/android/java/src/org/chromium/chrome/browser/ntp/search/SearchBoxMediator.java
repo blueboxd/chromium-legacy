@@ -13,7 +13,7 @@ import android.util.Pair;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 
-import androidx.annotation.ColorRes;
+import androidx.annotation.ColorInt;
 import androidx.core.graphics.drawable.RoundedBitmapDrawable;
 
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
@@ -93,7 +93,7 @@ class SearchBoxMediator
         Drawable drawable = mAssistantVoiceSearchService.getCurrentMicDrawable();
         mModel.set(SearchBoxProperties.VOICE_SEARCH_DRAWABLE, drawable);
 
-        final @ColorRes int primaryColor = ChromeColors.getDefaultThemeColor(
+        final @ColorInt int primaryColor = ChromeColors.getDefaultThemeColor(
                 mContext.getResources(), false /* forceDarkBgColor= */);
         ColorStateList colorStateList =
                 mAssistantVoiceSearchService.getMicButtonColorStateList(primaryColor, mContext);

@@ -115,6 +115,15 @@ void LiteService::OnGetActions(ResponseCallback callback,
   // order to map the chosen payload back to the action it originated from.
   lite_service_util::AssignUniquePayloadsToPrompts(&response_proto);
 
+  // Prepend a ConfigureUi action to ensure that the overlay will not be shown.
+  ActionProto configure_ui;
+  configure_ui.mutable_configure_ui_state()->set_overlay_behavior(
+      ConfigureUiStateProto::HIDDEN);
+  *response_proto.add_actions() = configure_ui;
+  for (int i = response_proto.actions().size() - 1; i > 0; --i) {
+    response_proto.mutable_actions()->SwapElements(i, i - 1);
+  }
+
   auto split_actions =
       lite_service_util::SplitActionsAtLastBrowse(response_proto);
   if (!split_actions.has_value()) {

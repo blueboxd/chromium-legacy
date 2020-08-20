@@ -256,7 +256,6 @@ class CONTENT_EXPORT RenderWidget
   void CloseWidgetSoon() override;
   void ClosePopupWidgetSoon() override;
   void Show(blink::WebNavigationPolicy) override;
-  blink::ScreenInfo GetScreenInfo() override;
   blink::WebRect WindowRect() override;
   blink::WebRect ViewRect() override;
   void SetWindowRect(const blink::WebRect&) override;
@@ -312,6 +311,7 @@ class CONTENT_EXPORT RenderWidget
   void EnableDeviceEmulation(
       const blink::DeviceEmulationParams& params) override;
   void DisableDeviceEmulation() override;
+  blink::ScreenInfo GetOriginalScreenInfo() override;
 
   // Returns the scale being applied to the document in blink by the device
   // emulator. Returns 1 if there is no emulation active. Use this to position
@@ -335,9 +335,6 @@ class CONTENT_EXPORT RenderWidget
     return mouse_lock_dispatcher_.get();
   }
 
-  // When emulated, this returns the original (non-emulated) ScreenInfo.
-  const blink::ScreenInfo& GetOriginalScreenInfo() const;
-
   void DidNavigate(ukm::SourceId source_id, const GURL& url);
 
   viz::FrameSinkId GetFrameSinkIdAtPoint(const gfx::PointF& point,
@@ -347,7 +344,6 @@ class CONTENT_EXPORT RenderWidget
 
   void UseSynchronousResizeModeForTesting(bool enable);
   void SetDeviceScaleFactorForTesting(float factor);
-  void SetDeviceColorSpaceForTesting(const gfx::ColorSpace& color_space);
   void SetWindowRectSynchronouslyForTesting(const gfx::Rect& new_window_rect);
 
   // Do a hit test for a given point in viewport coordinate.
@@ -464,11 +460,6 @@ class CONTENT_EXPORT RenderWidget
   void ScreenRectToEmulated(gfx::Rect* screen_rect) const;
   void EmulatedToScreenRect(gfx::Rect* screen_rect) const;
 
-  void UpdateSurfaceAndScreenInfo(
-      const viz::LocalSurfaceIdAllocation& new_local_surface_id_allocation,
-      const gfx::Rect& compositor_viewport_pixel_rect,
-      const blink::ScreenInfo& new_screen_info);
-
   // Used to force the size of a window when running web tests.
   void SetWindowRectSynchronously(const gfx::Rect& new_window_rect);
 
@@ -567,10 +558,6 @@ class CONTENT_EXPORT RenderWidget
   int pending_window_rect_count_ = 0;
   gfx::Rect pending_window_rect_;
 
-  // Properties of the screen hosting the RenderWidget. Rects in this structure
-  // do not include any scaling by device scale factor, so are logical pixels
-  // not physical device pixels.
-  blink::ScreenInfo screen_info_;
   // The screen rects of the view and the window that contains it. These do not
   // include any scaling by device scale factor, so are logical pixels not
   // physical device pixels.
@@ -604,8 +591,6 @@ class CONTENT_EXPORT RenderWidget
   // Wraps the |webwidget_| as a MouseLockDispatcher::LockTarget interface.
   std::unique_ptr<MouseLockDispatcher::LockTarget> webwidget_mouse_lock_target_;
 
-  viz::LocalSurfaceIdAllocation local_surface_id_allocation_from_parent_;
-
   // Whether this widget is for a child local root frame. This excludes widgets
   // that are not for a frame (eg popups) and excludes the widget for the main
   // frame (which is attached to the RenderViewImpl).
@@ -633,8 +618,6 @@ class CONTENT_EXPORT RenderWidget
   // Browser controls params such as top and bottom controls heights, whether
   // controls shrink blink size etc.
   cc::BrowserControlsParams browser_controls_params_;
-
-  gfx::Rect compositor_visible_rect_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidget);
 };

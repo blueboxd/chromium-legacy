@@ -290,7 +290,7 @@ void LoginScreenController::FocusLoginShelf(bool reverse) {
   Shelf* shelf = Shelf::ForWindow(Shell::Get()->GetPrimaryRootWindow());
   // Tell the focus direction to the status area or the shelf so they can focus
   // the correct child view.
-  if (reverse) {
+  if (reverse || !shelf->shelf_widget()->login_shelf_view()->IsFocusable()) {
     if (!Shell::GetPrimaryRootWindowController()->IsSystemTrayVisible())
       return;
     shelf->GetStatusAreaWidget()
@@ -476,12 +476,6 @@ void LoginScreenController::OnFocusLeavingSystemTray(bool reverse) {
   if (!client_)
     return;
   client_->OnFocusLeavingSystemTray(reverse);
-}
-
-void LoginScreenController::NotifyLoginScreenShown() {
-  if (!client_)
-    return;
-  client_->OnLoginScreenShown();
 }
 
 }  // namespace ash

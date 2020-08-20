@@ -703,6 +703,7 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="6402652558933147609"><ph name="VIOLATED_URL" /> – <ph name="ERROR_CODE" /></translation>
 <translation id="6404511346730675251">Кыстарманы түзөтүү</translation>
 <translation id="6406506848690869874">Шайкештирүү</translation>
+<translation id="6410883413783534063">Бир учурда бир нече барактарга баш багуу үчүн өтмөктөрдү ачыңыз</translation>
 <translation id="6412673304250309937">Chrome'догу кооптуу сайттардын тизмесиндеги URL даректерин текшерет. Эгер сайт сырсөзүңүздү уурдоого аракет кылса же кооптуу файлды жүктөп алсаңыз, Chrome URL даректерди, анын ичинде барактардагы мазмунду Коопсуз серептөөгө жөнөтүшү мүмкүн.</translation>
 <translation id="641643625718530986">Басып чыгаруу…</translation>
 <translation id="6427112570124116297">Вебди которуу</translation>
@@ -821,6 +822,7 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="7328017930301109123">Жөнөкөй режимде Chrome барактарды ылдамыраак жүктөп, 60 пайызга чейин азыраак трафик сарптайт.</translation>
 <translation id="7333031090786104871">Мурунку сайт дагы эле кошулуп жатат</translation>
 <translation id="7340958967809483333">Сунуштардын параметрлери</translation>
+<translation id="7352651011704765696">Бир жерден ката кетти</translation>
 <translation id="7352939065658542140">ВИДЕО</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Тандалган 1 нерсени бөлүшүү}other{Тандалган # нерсени бөлүшүү}}</translation>
 <translation id="7359002509206457351">Төлөм ыкмаларын көрүү</translation>
@@ -1013,6 +1015,7 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="868929229000858085">Байланыштарыңызды издеңиз</translation>
 <translation id="869891660844655955">Мөөнөтү аяктай турган күн</translation>
 <translation id="8712637175834984815">Түшүндүм</translation>
+<translation id="8725066075913043281">Кайра аракет кылып көрүү</translation>
 <translation id="8748850008226585750">Жашырылган мазмундар</translation>
 <translation id="8751914237388039244">Сүрөт тандоо</translation>
 <translation id="8758557275681689734">Бардык ачык өтмөктөрдү көрүү</translation>

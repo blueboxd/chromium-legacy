@@ -27,7 +27,8 @@ void ReportUkmForLookalikeUrlBlockingPageIfNeeded(
 // Populates |load_time_data| for interstitial HTML.
 void PopulateLookalikeUrlBlockingPageStrings(
     base::DictionaryValue* load_time_data,
-    const GURL& safe_url);
+    const GURL& safe_url,
+    const GURL& request_url);
 
 // Values added to get shared interstitial HTML to play nice.
 void PopulateStringsForSharedHTML(base::DictionaryValue* load_time_data);

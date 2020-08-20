@@ -67,6 +67,27 @@ ui::TextInputMode ConvertWebTextInputMode(blink::WebTextInputMode mode) {
   return static_cast<ui::TextInputMode>(mode);
 }
 
+unsigned OrientationTypeToAngle(mojom::blink::ScreenOrientation type) {
+  unsigned angle;
+  // FIXME(ostap): This relationship between orientationType and
+  // orientationAngle is temporary. The test should be able to specify
+  // the angle in addition to the orientation type.
+  switch (type) {
+    case mojom::blink::ScreenOrientation::kLandscapePrimary:
+      angle = 90;
+      break;
+    case mojom::blink::ScreenOrientation::kLandscapeSecondary:
+      angle = 270;
+      break;
+    case mojom::blink::ScreenOrientation::kPortraitSecondary:
+      angle = 180;
+      break;
+    default:
+      angle = 0;
+  }
+  return angle;
+}
+
 }  // namespace
 
 WidgetBase::WidgetBase(
@@ -95,8 +116,7 @@ void WidgetBase::InitializeCompositing(
     scheduler::WebThreadScheduler* main_thread_scheduler,
     cc::TaskGraphRunner* task_graph_runner,
     bool for_child_local_root_frame,
-    const gfx::Size& initial_screen_size,
-    float initial_device_scale_factor,
+    const ScreenInfo& screen_info,
     std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory,
     const cc::LayerTreeSettings* settings) {
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner =
@@ -117,9 +137,10 @@ void WidgetBase::InitializeCompositing(
   if (!settings) {
     default_settings = GenerateLayerTreeSettings(
         compositing_thread_scheduler, for_child_local_root_frame,
-        initial_screen_size, initial_device_scale_factor);
+        screen_info.rect.size(), screen_info.device_scale_factor);
     settings = &default_settings.value();
   }
+  screen_info_ = screen_info;
   layer_tree_view_->Initialize(*settings, std::move(ukm_recorder_factory));
 
   FrameWidget* frame_widget = client_->FrameWidget();
@@ -1006,6 +1027,72 @@ void WidgetBase::RequestMouseLock(
             },
             std::move(callback)));
   }
+}
+
+void WidgetBase::UpdateSurfaceAndScreenInfo(
+    const viz::LocalSurfaceIdAllocation& new_local_surface_id_allocation,
+    const gfx::Rect& compositor_viewport_pixel_rect,
+    const ScreenInfo& new_screen_info_param) {
+  ScreenInfo new_screen_info = new_screen_info_param;
+
+  // If there is a screen orientation override apply it.
+  if (auto orientation_override = client_->ScreenOrientationOverride()) {
+    new_screen_info.orientation_type = orientation_override.value();
+    new_screen_info.orientation_angle =
+        OrientationTypeToAngle(new_screen_info.orientation_type);
+  }
+
+  // Same logic is used in RenderWidgetHostImpl::SynchronizeVisualProperties to
+  // detect if there is a screen orientation change.
+  bool orientation_changed =
+      screen_info_.orientation_angle != new_screen_info.orientation_angle ||
+      screen_info_.orientation_type != new_screen_info.orientation_type;
+  ScreenInfo previous_original_screen_info = client_->GetOriginalScreenInfo();
+
+  local_surface_id_allocation_from_parent_ = new_local_surface_id_allocation;
+  screen_info_ = new_screen_info;
+
+  // Note carefully that the DSF specified in |new_screen_info| is not the
+  // DSF used by the compositor during device emulation!
+  LayerTreeHost()->SetViewportRectAndScale(
+      compositor_viewport_pixel_rect,
+      client_->GetOriginalScreenInfo().device_scale_factor,
+      local_surface_id_allocation_from_parent_);
+  // The ViewportVisibleRect derives from the LayerTreeView's viewport size,
+  // which is set above.
+  LayerTreeHost()->SetViewportVisibleRect(client_->ViewportVisibleRect());
+  LayerTreeHost()->SetDisplayColorSpaces(screen_info_.display_color_spaces);
+
+  if (orientation_changed)
+    client_->OrientationChanged();
+
+  client_->UpdatedSurfaceAndScreen(previous_original_screen_info);
+}
+
+void WidgetBase::UpdateScreenInfo(const ScreenInfo& new_screen_info) {
+  UpdateSurfaceAndScreenInfo(local_surface_id_allocation_from_parent_,
+                             CompositorViewportRect(), new_screen_info);
+}
+
+void WidgetBase::UpdateCompositorViewportAndScreenInfo(
+    const gfx::Rect& compositor_viewport_pixel_rect,
+    const ScreenInfo& new_screen_info) {
+  UpdateSurfaceAndScreenInfo(local_surface_id_allocation_from_parent_,
+                             compositor_viewport_pixel_rect, new_screen_info);
+}
+
+void WidgetBase::UpdateCompositorViewportRect(
+    const gfx::Rect& compositor_viewport_pixel_rect) {
+  UpdateSurfaceAndScreenInfo(local_surface_id_allocation_from_parent_,
+                             compositor_viewport_pixel_rect, screen_info_);
+}
+
+const ScreenInfo& WidgetBase::GetScreenInfo() {
+  return screen_info_;
+}
+
+gfx::Rect WidgetBase::CompositorViewportRect() const {
+  return LayerTreeHost()->device_viewport_rect();
 }
 
 }  // namespace blink

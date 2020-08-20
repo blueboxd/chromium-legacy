@@ -42,8 +42,6 @@ class SimpleWatcher::Context : public base::RefCountedThreadSafe<Context> {
     *result = MojoAddTrigger(trap_handle.value(), handle.value(), signals,
                              condition, context->value(), nullptr);
     if (*result != MOJO_RESULT_OK) {
-      context->cancelled_ = true;
-
       // Balanced by the AddRef() above since MojoAddTrigger failed.
       context->Release();
       return nullptr;
@@ -64,11 +62,6 @@ class SimpleWatcher::Context : public base::RefCountedThreadSafe<Context> {
 
   uintptr_t value() const { return reinterpret_cast<uintptr_t>(this); }
 
-  void DisableCancellationNotifications() {
-    base::AutoLock lock(lock_);
-    enable_cancellation_notifications_ = false;
-  }
-
  private:
   friend class base::RefCountedThreadSafe<Context>;
 
@@ -79,34 +72,11 @@ class SimpleWatcher::Context : public base::RefCountedThreadSafe<Context> {
         task_runner_(task_runner),
         watch_id_(watch_id) {}
 
-  ~Context() {
-    // TODO(https://crbug.com/896419): Remove this once it's been live for a
-    // while. This is intended to catch possible double-frees of SimpleWatchers,
-    // due to, e.g., invalid cross-thread usage of bindings endpoints. If this
-    // CHECK fails, then the Context is being destroyed before a cancellation
-    // notification fired. In that case we know a Context ref has been
-    // double-released and we can catch its stack.
-    base::AutoLock lock(lock_);
-    CHECK(cancelled_);
-  }
+  ~Context() = default;
 
   void Notify(MojoResult result,
               MojoHandleSignalsState signals_state,
               MojoTrapEventFlags flags) {
-    if (result == MOJO_RESULT_CANCELLED) {
-      // The SimpleWatcher may have explicitly removed this trigger, so we don't
-      // bother dispatching the notification - it would be ignored anyway.
-      //
-      // TODO(rockot): This shouldn't really be necessary, but there are already
-      // instances today where bindings object may be bound and subsequently
-      // closed due to pipe error, all before the thread's TaskRunner has been
-      // properly initialized.
-      base::AutoLock lock(lock_);
-      cancelled_ = true;
-      if (!enable_cancellation_notifications_)
-        return;
-    }
-
     HandleSignalsState state(signals_state.satisfied_signals,
                              signals_state.satisfiable_signals);
     if (!(flags & MOJO_TRAP_EVENT_FLAG_WITHIN_API_CALL) &&
@@ -126,10 +96,6 @@ class SimpleWatcher::Context : public base::RefCountedThreadSafe<Context> {
   const base::WeakPtr<SimpleWatcher> weak_watcher_;
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;
   const int watch_id_;
-
-  base::Lock lock_;
-  bool cancelled_ = false;
-  bool enable_cancellation_notifications_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(Context);
 };
@@ -193,11 +159,6 @@ void SimpleWatcher::Cancel() {
   // The watcher may have already been cancelled if the handle was closed.
   if (!context_)
     return;
-
-  // Prevent the cancellation notification from being dispatched to
-  // OnHandleReady() when cancellation is explicit. See the note in the
-  // implementation of DisableCancellationNotifications() above.
-  context_->DisableCancellationNotifications();
 
   handle_.set_value(kInvalidHandleValue);
   callback_.Reset();

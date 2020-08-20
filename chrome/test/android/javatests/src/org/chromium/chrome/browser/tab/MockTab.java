@@ -18,7 +18,7 @@ public class MockTab extends TabImpl {
      */
     public static Tab createAndInitialize(int id, boolean incognito) {
         TabImpl tab = new MockTab(id, incognito);
-        tab.initialize(null, null, null, null, null, false, null);
+        tab.initialize(null, null, null, null, null, false, null, null);
         return tab;
     }
 
@@ -38,7 +38,7 @@ public class MockTab extends TabImpl {
     public void initialize(Tab parent, @Nullable @TabCreationState Integer creationState,
             LoadUrlParams loadUrlParams, WebContents webContents,
             @Nullable TabDelegateFactory delegateFactory, boolean initiallyHidden,
-            TabState tabState) {
+            TabState tabState, byte[] serializedCriticalPersistedTabData) {
         TabHelpers.initTabHelpers(this, parent);
     }
 }

@@ -1621,7 +1621,8 @@
       origin_trial_feature_name: "RTCQuicTransport",
       status: "experimental",
     },
-    // Enables the use of Insertable Streams.
+    // Enables the use of the Insertable Streams legacy API.
+    // TODO(https://crbug.com/1119801): Remove when the origin trial ends.
     {
       name: "RTCInsertableStreams",
       origin_trial_feature_name: "RTCInsertableStreams",
@@ -1662,6 +1663,10 @@
     },
     {
       name: "SameSiteByDefaultCookies",
+      status: "test",
+    },
+    {
+      name: "SanitizerAPI",
       status: "test",
     },
     {

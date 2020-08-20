@@ -66,7 +66,8 @@ void LookalikeUrlBlockingPage::PopulateInterstitialStrings(
     load_time_data->SetBoolean("cant_go_back", true);
   }
 
-  PopulateLookalikeUrlBlockingPageStrings(load_time_data, safe_url_);
+  PopulateLookalikeUrlBlockingPageStrings(load_time_data, safe_url_,
+                                          request_url());
 }
 
 void LookalikeUrlBlockingPage::HandleScriptCommand(

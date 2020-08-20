@@ -39,7 +39,6 @@
 <translation id="1038168778161626396">只有 Encipher</translation>
 <translation id="1038462104119736705">Linux 需要至少 <ph name="INSTALL_SIZE" /> 的空間。如要增加可用空間，請刪除裝置內的檔案。</translation>
 <translation id="1039337018183941703">檔案無效或損毀</translation>
-<translation id="104086161873270383">新增設定檔</translation>
 <translation id="1041175011127912238">此網頁沒有回應</translation>
 <translation id="1041263367839475438">可用的裝置</translation>
 <translation id="1042174272890264476">您的電腦也內置了 <ph name="SHORT_PRODUCT_NAME" /> 的 RLZ 資料庫。RLZ 可指定非重複、非個人的可識別標記，以評估特定宣傳廣告活動所提升的搜尋數量與 <ph name="SHORT_PRODUCT_NAME" /> 使用量。這些標籤有時也會顯示在 <ph name="PRODUCT_NAME" /> 的 Google 搜尋查詢中。</translation>
@@ -280,7 +279,6 @@
 <translation id="1319983966058170660"><ph name="SUBPAGE_TITLE" />子頁面返回掣</translation>
 <translation id="1322046419516468189">查看和管理儲存在「<ph name="SAVED_PASSWORDS_STORE" />」的密碼</translation>
 <translation id="1324106254079708331">為任何有機會受到針對性攻擊的人士保障個人 Google 帳戶安全</translation>
-<translation id="1325985428688410772">新增空間</translation>
 <translation id="1326317727527857210">如要取得其他裝置上的分頁，請登入 Chrome。</translation>
 <translation id="1327074568633507428">Google 雲端列印上的打印機</translation>
 <translation id="1327272175893960498">Kerberos 票證</translation>
@@ -750,7 +748,6 @@
 <translation id="1868553836791672080">Chromium 不支援密碼檢查功能</translation>
 <translation id="1871534214638631766">按一下右鍵或長按內容時顯示相關資訊</translation>
 <translation id="1871615898038944731">您的 <ph name="DEVICE_TYPE" /> 已是最新版本</translation>
-<translation id="1874835396235780806">要將此密碼和其他密碼儲存在 Google 帳戶中嗎？</translation>
 <translation id="1874972853365565008">{NUM_TABS,plural, =1{將分頁移至其他視窗}other{將分頁移至其他視窗}}</translation>
 <translation id="1875386316419689002">此分頁已連接至 HID 裝置。</translation>
 <translation id="1875387611427697908">只能從 <ph name="CHROME_WEB_STORE" /> 新增</translation>
@@ -763,7 +760,6 @@
 <translation id="1884013283844450420">第 <ph name="NETWORK_INDEX" /> 個網絡，一共有 <ph name="NETWORK_COUNT" /> 個網絡，<ph name="NETWORK_NAME" />，連接</translation>
 <translation id="1884705339276589024">調整 Linux 磁碟大小</translation>
 <translation id="1885106732301550621">磁碟空間</translation>
-<translation id="1885190042244431215">只需新增學校帳戶，即可讓您在家長監控設定下，以學生身份輕鬆登入網站和擴充程式。</translation>
 <translation id="1886996562706621347">允許網站要求成為通訊協定的預設處理常式 (建議)</translation>
 <translation id="1887442540531652736">登入錯誤</translation>
 <translation id="1887597546629269384">再說一次「Hey Google」</translation>
@@ -2199,7 +2195,6 @@
 <translation id="3654045516529121250">讀取您的協助工具設定</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{應用程式可永久存取 1 個檔案。}other{應用程式可永久存取 # 個檔案。}}</translation>
 <translation id="3660234220361471169">不受信任</translation>
-<translation id="3661172646479098821">目前僅支援 Android 裝置。</translation>
 <translation id="3664511988987167893">擴充程式圖示</translation>
 <translation id="3665589677786828986">Chrome 偵測到另一個程式破壞了部分設定，並且將這些設定重設為原始預設值。</translation>
 <translation id="3668801437375206837">為了更有效地診斷藍牙問題，Google 員工可在意見反映報告中附加藍牙記錄。若勾選此選項，您的報告將包括目前工作階段的 btsnoop 和 HCI 記錄，而系統會預先盡量移除個人識別資料。只有 Listnr 的 Chrome OS 產品群組管理員有權存取這些記錄。有關記錄將於 90 天後徹底清除。</translation>
@@ -2771,6 +2766,7 @@
 <translation id="4370975561335139969">您所輸入的電郵與密碼不符</translation>
 <translation id="4374831787438678295">Linux 安裝程式</translation>
 <translation id="4375035964737468845">開啟已下載的檔案</translation>
+<translation id="4376226992615520204">已關閉位置功能</translation>
 <translation id="4377363674125277448">伺服器憑證有問題。</translation>
 <translation id="4378154925671717803">電話號碼</translation>
 <translation id="4378373042927530923">未執行</translation>
@@ -2970,7 +2966,6 @@
 <translation id="4619615317237390068">在其他裝置上開啟的分頁</translation>
 <translation id="4620809267248568679">這項設定是由擴充功能執行。</translation>
 <translation id="4623189117674524348">系統無法將 API 存取權授予此裝置。</translation>
-<translation id="4624190781974168453">在啟動時詢問</translation>
 <translation id="4625078469366263107">啟用應用程式</translation>
 <translation id="4627427111733173920">已封鎖 Cookie</translation>
 <translation id="4627442949885028695">先前在其他裝置瀏覽的網頁</translation>
@@ -3400,7 +3395,6 @@
 <translation id="5185386675596372454">由於最新版本的「<ph name="EXTENSION_NAME" />」需要更多權限，因此已經停用。</translation>
 <translation id="5185500136143151980">沒有互聯網連線</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
-<translation id="5190392396417374287"><ph name="PROFILE_LOCAL_NAME" />嘅選項選單</translation>
 <translation id="5190926251776387065">啟用連接埠</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> 想下載多個檔案</translation>
 <translation id="5192062846343383368">開啟 Family Link 應用程式以查看監控設定</translation>
@@ -3776,6 +3770,7 @@
 <translation id="5642508497713047">CRL 簽署者</translation>
 <translation id="5643321261065707929">按用量收費的網絡</translation>
 <translation id="5643620609347735571">清除並繼續</translation>
+<translation id="5646376287012673985">位置</translation>
 <translation id="5646558797914161501">商人</translation>
 <translation id="5648166631817621825">最近 7 天</translation>
 <translation id="5649053991847567735">自動下載</translation>
@@ -4482,7 +4477,6 @@
 <translation id="6531282281159901044">保留不安全的檔案</translation>
 <translation id="6532101170117367231">儲存至 Google 雲端硬碟</translation>
 <translation id="6532106788206463496">儲存變更</translation>
-<translation id="6532113437901537254">登入後，您亦可在此裝置上查看儲存在 Google 帳戶中的密碼</translation>
 <translation id="6532206849875187177">安全性和登入</translation>
 <translation id="6532527800157340614">無法擷取您的存取憑證，因此無法登入。請檢查您的網絡連線，然後再試一次。</translation>
 <translation id="6532663472409656417">已註冊企業</translation>
@@ -5012,9 +5006,6 @@
 <translation id="7201118060536064622">已刪除「<ph name="DELETED_ITEM_NAME" />」</translation>
 <translation id="7201420661433230412">查看檔案</translation>
 <translation id="7203150201908454328">已展開</translation>
-<translation id="7203826966018112936">只需新增學校帳戶到設定檔，即可讓您在家長監控設定下，以學生身份輕鬆登入網站和擴充程式。此操作不會向子女授予與學校帳戶同步的書籤、密碼或其他瀏覽資料的存取權。&lt;br&gt;&lt;br&gt;
-    如果您的子女在學校使用 Chromebook，而您想將學校體驗完整複製至家中，以確保子女女可存取所有與學校作業相關的必要內容，請登出此 Family Link 帳戶，並從 Chrome 作業系統帳戶頁面登入學校帳戶 (注意：系統不會套用 Family Link 家長監控設定)。&lt;br&gt;&lt;br&gt;
-    如果您的子女在學校不使用 Chromebook，或您想透過 Family Link 管理子女的在家體驗，請按下方的 [下一步] 按鈕，將學校帳戶新增至此設定檔。</translation>
 <translation id="7206693748120342859">正在下載 <ph name="PLUGIN_NAME" />…</translation>
 <translation id="720715819012336933">{NUM_PAGES,plural, =1{離開網頁}other{離開網頁}}</translation>
 <translation id="7207457272187520234">傳送使用情況和診斷資料。此裝置目前會自動將診斷、裝置及應用程式的使用情況資料傳送至 Google。這可協助改善系統及應用程式的穩定性及其他功能。部分彙整資料也會用於協助 Google 應用程式與合作夥伴 (例如 Android 開發人員)。擁有者可強制執行此設定。如果已開啟其他「網絡及應用程式活動記錄」設定，系統可能會將此資料儲存至您的 Google 帳戶。</translation>
@@ -5157,7 +5148,6 @@
 <translation id="7388044238629873883">就快完成了！</translation>
 <translation id="7392118418926456391">病毒掃描失敗</translation>
 <translation id="7392915005464253525">重新開啟已關閉視窗(&amp;E)</translation>
-<translation id="7393472013449507620">系統已不再支援含有「*」萬用字元的設定。請聯絡擴充程式開發人員或您的管理員，以<ph name="BEGIN_LINK" />變更這些設定<ph name="END_LINK" />。</translation>
 <translation id="7396017167185131589">共用資料夾將會在這裡顯示</translation>
 <translation id="7396845648024431313"><ph name="APP_NAME" /> 會隨著系統一併啟動，即使在所有 <ph name="PRODUCT_NAME" /> 視窗都關閉後，仍會在背景繼續執行。</translation>
 <translation id="7399045143794278225">自訂同步處理功能</translation>
@@ -5270,6 +5260,7 @@
 <translation id="7526989658317409655">佔位符</translation>
 <translation id="7529411698175791732">請檢查您的互聯網連線。如果問題持續，請嘗試登出，然後再次登入。</translation>
 <translation id="7530016656428373557">放電速率 (瓦特)</translation>
+<translation id="7531310913436731628">已在 Mac 系統偏好設定中關閉位置功能</translation>
 <translation id="7531779363494549572">前往 [設定] &gt; [應用程式和通知] &gt; [通知]。</translation>
 <translation id="7532009420053991888"><ph name="LINUX_APP_NAME" /> 沒有回應。選取「強制關閉」即可關閉應用程式。</translation>
 <translation id="7537451260744431038">網站不可使用 Cookie 來改善瀏覽體驗，例如讓您保持登入狀態或記住購物車中的商品</translation>
@@ -6049,7 +6040,6 @@
 <translation id="8470513973197838199">已儲存 <ph name="ORIGIN" /> 的密碼</translation>
 <translation id="8472623782143987204">硬件支援</translation>
 <translation id="8473863474539038330">地址及其他資料</translation>
-<translation id="8474733733775441349">顯示 Google 帳戶中的密碼</translation>
 <translation id="8475313423285172237">電腦中其他程式所新增的擴充功能可能會變更 Chrome 的運作方式。</translation>
 <translation id="8477241577829954800">已取代</translation>
 <translation id="8477384620836102176">一般(&amp;G)</translation>

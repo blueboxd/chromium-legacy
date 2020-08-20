@@ -27,10 +27,6 @@ namespace content {
 class PageNavigator;
 }
 
-namespace gfx {
-class ImageSkia;
-}
-
 namespace ui {
 class OSExchangeData;
 }
@@ -165,7 +161,7 @@ class BookmarkMenuDelegate : public bookmarks::BaseBookmarkModelObserver,
   // separator is added before the new menu items and |added_separator| is set
   // to true.
   void BuildMenuForPermanentNode(const bookmarks::BookmarkNode* node,
-                                 const gfx::ImageSkia& icon,
+                                 const ui::ImageModel& icon,
                                  views::MenuItemView* menu,
                                  bool* added_separator);
 

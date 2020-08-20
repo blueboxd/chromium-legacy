@@ -6764,7 +6764,12 @@ TEST_F(NetworkContextExpectBadMessageTest,
       FetchRequest(my_request, network_context.get(), mojom::kURLLoadOptionNone,
                    mojom::kBrowserProcessId, std::move(factory_params));
 
-  AssertBadMessage();
+  // TODO(crbug.com/1118183): This test's expectation is temporarily inverted
+  // since the the ReportBadMessage check is disabled pending investigating a
+  // number of false positives. Once this investigation is finished, we should
+  // flip the test back to expecting a bad message.
+  // AssertBadMessage();
+  EXPECT_FALSE(got_bad_message_);
 }
 
 TEST_F(NetworkContextExpectBadMessageTest,
@@ -6794,7 +6799,12 @@ TEST_F(NetworkContextExpectBadMessageTest,
       FetchRequest(my_request, network_context.get(), mojom::kURLLoadOptionNone,
                    mojom::kBrowserProcessId, std::move(factory_params));
 
-  AssertBadMessage();
+  // TODO(crbug.com/1118183): This test's expectation is temporarily inverted
+  // since the the ReportBadMessage check is disabled pending investigating a
+  // number of false positives. Once this investigation is finished, we should
+  // flip the test back to expecting a bad message.
+  // AssertBadMessage();
+  EXPECT_FALSE(got_bad_message_);
 }
 
 TEST_F(NetworkContextTest,

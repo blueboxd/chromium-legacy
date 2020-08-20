@@ -77,6 +77,9 @@ class AccessContextAuditDatabase
   // Initialises internal database. Must be called prior to any other usage.
   void Init(bool restore_non_persistent_cookies);
 
+  // Calculates and reports various database metrics.
+  void ComputeDatabaseMetrics();
+
   // Persists the provided list of |records| in the database.
   void AddRecords(const std::vector<AccessRecord>& records);
 

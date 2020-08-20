@@ -2,219 +2,6 @@
 <issues format="5" by="lint 4.0.1" client="cli" variant="all" version="4.0.1">
 
     <issue
-        id="MissingSuperCall"
-        message="Overriding method should call `super.onNewIntent`"
-        errorLine1="    protected void onNewIntent(Intent intent) {"
-        errorLine2="                   ~~~~~~~~~~~">
-        <location
-            file="../../chrome/android/java/src/org/chromium/chrome/browser/init/AsyncInitializationActivity.java"
-            line="517"
-            column="20"/>
-    </issue>
-
-    <issue
-        id="MissingSuperCall"
-        message="Overriding method should call `super.onActivityResult`"
-        errorLine1="    public void onActivityResult(int requestCode, int resultCode, Intent data) {"
-        errorLine2="                ~~~~~~~~~~~~~~~~">
-        <location
-            file="../../chrome/android/java/src/org/chromium/chrome/browser/init/AsyncInitializationActivity.java"
-            line="525"
-            column="17"/>
-    </issue>
-
-    <issue
-        id="MissingSuperCall"
-        message="Overriding method should call `super.onConfigurationChanged`"
-        errorLine1="    public void onConfigurationChanged(Configuration newConfig) {"
-        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="../../components/browser_ui/site_settings/android/java/src/org/chromium/components/browser_ui/site_settings/ClearWebsiteStorageDialog.java"
-            line="51"
-            column="17"/>
-    </issue>
-
-    <issue
-        id="ResourceType"
-        message="Expected a color resource id (`R.color.`) but received an RGB integer"
-        errorLine1="                        primaryColor, getContext());"
-        errorLine2="                        ~~~~~~~~~~~~">
-        <location
-            file="../../chrome/android/java/src/org/chromium/chrome/browser/omnibox/LocationBarLayout.java"
-            line="1171"
-            column="25"/>
-    </issue>
-
-    <issue
-        id="ResourceType"
-        message="Expected a color resource id (`R.color.`) but received an RGB integer"
-        errorLine1="                mAssistantVoiceSearchService.getMicButtonColorStateList(primaryColor, getContext());"
-        errorLine2="                                                                        ~~~~~~~~~~~~">
-        <location
-            file="../../chrome/android/java/src/org/chromium/chrome/browser/omnibox/LocationBarLayout.java"
-            line="1248"
-            column="73"/>
-    </issue>
-
-    <issue
-        id="ResourceType"
-        message="Expected resource of type id"
-        errorLine1="        mItemHeight = getSizePx(context, R.dimen.navigation_popup_item_height);"
-        errorLine2="                                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="../../chrome/android/java/src/org/chromium/chrome/browser/gesturenav/NavigationSheetCoordinator.java"
-            line="149"
-            column="42"/>
-    </issue>
-
-    <issue
-        id="ResourceType"
-        message="Expected resource of type id"
-        errorLine1="        mContentPadding = getSizePx(context, R.dimen.navigation_sheet_content_top_padding)"
-        errorLine2="                                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="../../chrome/android/java/src/org/chromium/chrome/browser/gesturenav/NavigationSheetCoordinator.java"
-            line="150"
-            column="46"/>
-    </issue>
-
-    <issue
-        id="ResourceType"
-        message="Expected resource of type id"
-        errorLine1="                + getSizePx(context, R.dimen.navigation_sheet_content_bottom_padding)"
-        errorLine2="                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="../../chrome/android/java/src/org/chromium/chrome/browser/gesturenav/NavigationSheetCoordinator.java"
-            line="151"
-            column="38"/>
-    </issue>
-
-    <issue
-        id="ResourceType"
-        message="Expected resource of type id"
-        errorLine1="                + getSizePx(context, R.dimen.navigation_sheet_content_wrap_padding);"
-        errorLine2="                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="../../chrome/android/java/src/org/chromium/chrome/browser/gesturenav/NavigationSheetCoordinator.java"
-            line="152"
-            column="38"/>
-    </issue>
-
-    <issue
-        id="ResourceType"
-        message="Expected resource of type dimen"
-        errorLine1="        return context.getResources().getDimensionPixelSize(id);"
-        errorLine2="                                                            ~~">
-        <location
-            file="../../chrome/android/java/src/org/chromium/chrome/browser/gesturenav/NavigationSheetCoordinator.java"
-            line="156"
-            column="61"/>
-    </issue>
-
-    <issue
-        id="ResourceType"
-        message="Expected resource of type id"
-        errorLine1="                ? getSizePx(mParentView.getContext(), R.dimen.navigation_sheet_peek_height)"
-        errorLine2="                                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="../../chrome/android/java/src/org/chromium/chrome/browser/gesturenav/NavigationSheetCoordinator.java"
-            line="330"
-            column="55"/>
-    </issue>
-
-    <issue
-        id="ResourceType"
-        message="Expected a color resource id (`R.color.`) but received an RGB integer"
-        errorLine1="        final @ColorRes int primaryColor = ChromeColors.getDefaultThemeColor("
-        errorLine2="                                           ^">
-        <location
-            file="../../chrome/android/java/src/org/chromium/chrome/browser/ntp/search/SearchBoxMediator.java"
-            line="96"
-            column="44"/>
-    </issue>
-
-    <issue
-        id="ResourceType"
-        message="Expected resource of type id"
-        errorLine1="        mCloseButton.setTintResources(R.color.default_icon_color, R.color.default_icon_color_blue,"
-        errorLine2="                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="../../chrome/android/java/src/org/chromium/chrome/browser/compositor/overlays/strip/StripLayoutTab.java"
-            line="186"
-            column="39"/>
-    </issue>
-
-    <issue
-        id="ResourceType"
-        message="Expected resource of type id"
-        errorLine1="        mCloseButton.setTintResources(R.color.default_icon_color, R.color.default_icon_color_blue,"
-        errorLine2="                                                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="../../chrome/android/java/src/org/chromium/chrome/browser/compositor/overlays/strip/StripLayoutTab.java"
-            line="186"
-            column="67"/>
-    </issue>
-
-    <issue
-        id="ResourceType"
-        message="Expected resource of type id"
-        errorLine1="                R.color.default_icon_color_light, R.color.modern_blue_300);"
-        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="../../chrome/android/java/src/org/chromium/chrome/browser/compositor/overlays/strip/StripLayoutTab.java"
-            line="187"
-            column="17"/>
-    </issue>
-
-    <issue
-        id="ResourceType"
-        message="Expected resource of type id"
-        errorLine1="                R.color.default_icon_color_light, R.color.modern_blue_300);"
-        errorLine2="                                                  ~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="../../chrome/android/java/src/org/chromium/chrome/browser/compositor/overlays/strip/StripLayoutTab.java"
-            line="187"
-            column="51"/>
-    </issue>
-
-    <issue
-        id="ResourceType"
-        message="Comparing resource types (`@ColorRes`) other than equality is dangerous and usually wrong;  some resource types set top bit which turns the value negative"
-        errorLine1="            if (mUrlTextColor > 0 &amp;&amp; embedderContext != null) {"
-        errorLine2="                ~~~~~~~~~~~~~~~~~">
-        <location
-            file="../../weblayer/browser/java/org/chromium/weblayer_private/UrlBarControllerImpl.java"
-            line="168"
-            column="17"/>
-    </issue>
-
-    <issue
-        id="ResourceType"
-        message="Comparing resource types (`@ColorRes`) other than equality is dangerous and usually wrong;  some resource types set top bit which turns the value negative"
-        errorLine1="            if (mUrlIconColor > 0 &amp;&amp; embedderContext != null) {"
-        errorLine2="                ~~~~~~~~~~~~~~~~~">
-        <location
-            file="../../weblayer/browser/java/org/chromium/weblayer_private/UrlBarControllerImpl.java"
-            line="178"
-            column="17"/>
-    </issue>
-
-    <issue
-        id="CutPasteId"
-        message="The id `R.id.bottom_container` has already been looked up in this method; possible cut &amp; paste error?"
-        errorLine1="            BottomContainer bottomContainer = (BottomContainer) findViewById(R.id.bottom_container);"
-        errorLine2="                                                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="chrome/android/java/src/org/chromium/chrome/browser/app/ChromeActivity.java"
-            line="462"
-            column="65"/>
-        <location
-            file="chrome/android/java/src/org/chromium/chrome/browser/app/ChromeActivity.java"
-            line="430"
-            column="27"/>
-    </issue>
-
-    <issue
         id="WrongConstant"
         message="Must be one of: NetError.ERR_IO_PENDING, NetError.ERR_FAILED, NetError.ERR_ABORTED, NetError.ERR_INVALID_ARGUMENT, NetError.ERR_INVALID_HANDLE, NetError.ERR_FILE_NOT_FOUND, NetError.ERR_TIMED_OUT, NetError.ERR_FILE_TOO_BIG, NetError.ERR_UNEXPECTED, NetError.ERR_ACCESS_DENIED, NetError.ERR_NOT_IMPLEMENTED, NetError.ERR_INSUFFICIENT_RESOURCES, NetError.ERR_OUT_OF_MEMORY, NetError.ERR_UPLOAD_FILE_CHANGED, NetError.ERR_SOCKET_NOT_CONNECTED, NetError.ERR_FILE_EXISTS, NetError.ERR_FILE_PATH_TOO_LONG, NetError.ERR_FILE_NO_SPACE, NetError.ERR_FILE_VIRUS_INFECTED, NetError.ERR_BLOCKED_BY_CLIENT, NetError.ERR_NETWORK_CHANGED, NetError.ERR_BLOCKED_BY_ADMINISTRATOR, NetError.ERR_SOCKET_IS_CONNECTED, NetError.ERR_BLOCKED_ENROLLMENT_CHECK_PENDING, NetError.ERR_UPLOAD_STREAM_REWIND_NOT_SUPPORTED, NetError.ERR_CONTEXT_SHUT_DOWN, NetError.ERR_BLOCKED_BY_RESPONSE, NetError.ERR_CLEARTEXT_NOT_PERMITTED, NetError.ERR_BLOCKED_BY_CSP, NetError.ERR_H2_OR_QUIC_REQUIRED, NetError.ERR_INSECURE_PRIVATE_NETWORK_REQUEST, NetError.ERR_CONNECTION_CLOSED, NetError.ERR_CONNECTION_RESET, NetError.ERR_CONNECTION_REFUSED, NetError.ERR_CONNECTION_ABORTED, NetError.ERR_CONNECTION_FAILED, NetError.ERR_NAME_NOT_RESOLVED, NetError.ERR_INTERNET_DISCONNECTED, NetError.ERR_SSL_PROTOCOL_ERROR, NetError.ERR_ADDRESS_INVALID, NetError.ERR_ADDRESS_UNREACHABLE, NetError.ERR_SSL_CLIENT_AUTH_CERT_NEEDED, NetError.ERR_TUNNEL_CONNECTION_FAILED, NetError.ERR_NO_SSL_VERSIONS_ENABLED, NetError.ERR_SSL_VERSION_OR_CIPHER_MISMATCH, NetError.ERR_SSL_RENEGOTIATION_REQUESTED, NetError.ERR_PROXY_AUTH_UNSUPPORTED, NetError.ERR_CERT_ERROR_IN_SSL_RENEGOTIATION, NetError.ERR_BAD_SSL_CLIENT_AUTH_CERT, NetError.ERR_CONNECTION_TIMED_OUT, NetError.ERR_HOST_RESOLVER_QUEUE_TOO_LARGE, NetError.ERR_SOCKS_CONNECTION_FAILED, NetError.ERR_SOCKS_CONNECTION_HOST_UNREACHABLE, NetError.ERR_ALPN_NEGOTIATION_FAILED, NetError.ERR_SSL_NO_RENEGOTIATION, NetError.ERR_WINSOCK_UNEXPECTED_WRITTEN_BYTES, NetError.ERR_SSL_DECOMPRESSION_FAILURE_ALERT, NetError.ERR_SSL_BAD_RECORD_MAC_ALERT, NetError.ERR_PROXY_AUTH_REQUESTED, NetError.ERR_PROXY_CONNECTION_FAILED, NetError.ERR_MANDATORY_PROXY_CONFIGURATION_FAILED, NetError.ERR_PRECONNECT_MAX_SOCKET_LIMIT, NetError.ERR_SSL_CLIENT_AUTH_PRIVATE_KEY_ACCESS_DENIED, NetError.ERR_SSL_CLIENT_AUTH_CERT_NO_PRIVATE_KEY, NetError.ERR_PROXY_CERTIFICATE_INVALID, NetError.ERR_NAME_RESOLUTION_FAILED, NetError.ERR_NETWORK_ACCESS_DENIED, NetError.ERR_TEMPORARILY_THROTTLED, NetError.ERR_HTTPS_PROXY_TUNNEL_RESPONSE_REDIRECT, NetError.ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED, NetError.ERR_MSG_TOO_BIG, NetError.ERR_WS_PROTOCOL_ERROR, NetError.ERR_ADDRESS_IN_USE, NetError.ERR_SSL_HANDSHAKE_NOT_COMPLETED, NetError.ERR_SSL_BAD_PEER_PUBLIC_KEY, NetError.ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN, NetError.ERR_CLIENT_AUTH_CERT_TYPE_UNSUPPORTED, NetError.ERR_SSL_DECRYPT_ERROR_ALERT, NetError.ERR_WS_THROTTLE_QUEUE_TOO_LARGE, NetError.ERR_SSL_SERVER_CERT_CHANGED, NetError.ERR_SSL_UNRECOGNIZED_NAME_ALERT, NetError.ERR_SOCKET_SET_RECEIVE_BUFFER_SIZE_ERROR, NetError.ERR_SOCKET_SET_SEND_BUFFER_SIZE_ERROR, NetError.ERR_SOCKET_RECEIVE_BUFFER_SIZE_UNCHANGEABLE, NetError.ERR_SOCKET_SEND_BUFFER_SIZE_UNCHANGEABLE, NetError.ERR_SSL_CLIENT_AUTH_CERT_BAD_FORMAT, NetError.ERR_ICANN_NAME_COLLISION, NetError.ERR_SSL_SERVER_CERT_BAD_FORMAT, NetError.ERR_CT_STH_PARSING_FAILED, NetError.ERR_CT_STH_INCOMPLETE, NetError.ERR_UNABLE_TO_REUSE_CONNECTION_FOR_PROXY_AUTH, NetError.ERR_CT_CONSISTENCY_PROOF_PARSING_FAILED, NetError.ERR_SSL_OBSOLETE_CIPHER, NetError.ERR_WS_UPGRADE, NetError.ERR_READ_IF_READY_NOT_IMPLEMENTED, NetError.ERR_NO_BUFFER_SPACE, NetError.ERR_SSL_CLIENT_AUTH_NO_COMMON_ALGORITHMS, NetError.ERR_EARLY_DATA_REJECTED, NetError.ERR_WRONG_VERSION_ON_EARLY_DATA, NetError.ERR_TLS13_DOWNGRADE_DETECTED, NetError.ERR_SSL_KEY_USAGE_INCOMPATIBLE, NetError.ERR_CERT_COMMON_NAME_INVALID, NetError.ERR_CERT_DATE_INVALID, NetError.ERR_CERT_AUTHORITY_INVALID, NetError.ERR_CERT_CONTAINS_ERRORS, NetError.ERR_CERT_NO_REVOCATION_MECHANISM, NetError.ERR_CERT_UNABLE_TO_CHECK_REVOCATION, NetError.ERR_CERT_REVOKED, NetError.ERR_CERT_INVALID, NetError.ERR_CERT_WEAK_SIGNATURE_ALGORITHM, NetError.ERR_CERT_NON_UNIQUE_NAME, NetError.ERR_CERT_WEAK_KEY, NetError.ERR_CERT_NAME_CONSTRAINT_VIOLATION, NetError.ERR_CERT_VALIDITY_TOO_LONG, NetError.ERR_CERTIFICATE_TRANSPARENCY_REQUIRED, NetError.ERR_CERT_SYMANTEC_LEGACY, NetError.ERR_CERT_KNOWN_INTERCEPTION_BLOCKED, NetError.ERR_SSL_OBSOLETE_VERSION, NetError.ERR_CERT_END, NetError.ERR_INVALID_URL, NetError.ERR_DISALLOWED_URL_SCHEME, NetError.ERR_UNKNOWN_URL_SCHEME, NetError.ERR_INVALID_REDIRECT, NetError.ERR_TOO_MANY_REDIRECTS, NetError.ERR_UNSAFE_REDIRECT, NetError.ERR_UNSAFE_PORT, NetError.ERR_INVALID_RESPONSE, NetError.ERR_INVALID_CHUNKED_ENCODING, NetError.ERR_METHOD_NOT_SUPPORTED, NetError.ERR_UNEXPECTED_PROXY_AUTH, NetError.ERR_EMPTY_RESPONSE, NetError.ERR_RESPONSE_HEADERS_TOO_BIG, NetError.ERR_PAC_SCRIPT_FAILED, NetError.ERR_REQUEST_RANGE_NOT_SATISFIABLE, NetError.ERR_MALFORMED_IDENTITY, NetError.ERR_CONTENT_DECODING_FAILED, NetError.ERR_NETWORK_IO_SUSPENDED, NetError.ERR_SYN_REPLY_NOT_RECEIVED, NetError.ERR_ENCODING_CONVERSION_FAILED, NetError.ERR_UNRECOGNIZED_FTP_DIRECTORY_LISTING_FORMAT, NetError.ERR_NO_SUPPORTED_PROXIES, NetError.ERR_HTTP2_PROTOCOL_ERROR, NetError.ERR_INVALID_AUTH_CREDENTIALS, NetError.ERR_UNSUPPORTED_AUTH_SCHEME, NetError.ERR_ENCODING_DETECTION_FAILED, NetError.ERR_MISSING_AUTH_CREDENTIALS, NetError.ERR_UNEXPECTED_SECURITY_LIBRARY_STATUS, NetError.ERR_MISCONFIGURED_AUTH_ENVIRONMENT, NetError.ERR_UNDOCUMENTED_SECURITY_LIBRARY_STATUS, NetError.ERR_RESPONSE_BODY_TOO_BIG_TO_DRAIN, NetError.ERR_RESPONSE_HEADERS_MULTIPLE_CONTENT_LENGTH, NetError.ERR_INCOMPLETE_HTTP2_HEADERS, NetError.ERR_PAC_NOT_IN_DHCP, NetError.ERR_RESPONSE_HEADERS_MULTIPLE_CONTENT_DISPOSITION, NetError.ERR_RESPONSE_HEADERS_MULTIPLE_LOCATION, NetError.ERR_HTTP2_SERVER_REFUSED_STREAM, NetError.ERR_HTTP2_PING_FAILED, NetError.ERR_CONTENT_LENGTH_MISMATCH, NetError.ERR_INCOMPLETE_CHUNKED_ENCODING, NetError.ERR_QUIC_PROTOCOL_ERROR, NetError.ERR_RESPONSE_HEADERS_TRUNCATED, NetError.ERR_QUIC_HANDSHAKE_FAILED, NetError.ERR_HTTP2_INADEQUATE_TRANSPORT_SECURITY, NetError.ERR_HTTP2_FLOW_CONTROL_ERROR, NetError.ERR_HTTP2_FRAME_SIZE_ERROR, NetError.ERR_HTTP2_COMPRESSION_ERROR, NetError.ERR_PROXY_AUTH_REQUESTED_WITH_NO_CONNECTION, NetError.ERR_HTTP_1_1_REQUIRED, NetError.ERR_PROXY_HTTP_1_1_REQUIRED, NetError.ERR_PAC_SCRIPT_TERMINATED, NetError.ERR_INVALID_HTTP_RESPONSE, NetError.ERR_CONTENT_DECODING_INIT_FAILED, NetError.ERR_HTTP2_RST_STREAM_NO_ERROR_RECEIVED, NetError.ERR_HTTP2_PUSHED_STREAM_NOT_AVAILABLE, NetError.ERR_HTTP2_CLAIMED_PUSHED_STREAM_RESET_BY_SERVER, NetError.ERR_TOO_MANY_RETRIES, NetError.ERR_HTTP2_STREAM_CLOSED, NetError.ERR_HTTP2_CLIENT_REFUSED_STREAM, NetError.ERR_HTTP2_PUSHED_RESPONSE_DOES_NOT_MATCH, NetError.ERR_HTTP_RESPONSE_CODE_FAILURE, NetError.ERR_QUIC_CERT_ROOT_NOT_KNOWN, NetError.ERR_CACHE_MISS, NetError.ERR_CACHE_READ_FAILURE, NetError.ERR_CACHE_WRITE_FAILURE, NetError.ERR_CACHE_OPERATION_NOT_SUPPORTED, NetError.ERR_CACHE_OPEN_FAILURE, NetError.ERR_CACHE_CREATE_FAILURE, NetError.ERR_CACHE_RACE, NetError.ERR_CACHE_CHECKSUM_READ_FAILURE, NetError.ERR_CACHE_CHECKSUM_MISMATCH, NetError.ERR_CACHE_LOCK_TIMEOUT, NetError.ERR_CACHE_AUTH_FAILURE_AFTER_READ, NetError.ERR_CACHE_ENTRY_NOT_SUITABLE, NetError.ERR_CACHE_DOOM_FAILURE, NetError.ERR_CACHE_OPEN_OR_CREATE_FAILURE, NetError.ERR_INSECURE_RESPONSE, NetError.ERR_NO_PRIVATE_KEY_FOR_CERT, NetError.ERR_ADD_USER_CERT_FAILED, NetError.ERR_INVALID_SIGNED_EXCHANGE, NetError.ERR_INVALID_WEB_BUNDLE, NetError.ERR_TRUST_TOKEN_OPERATION_FAILED, NetError.ERR_TRUST_TOKEN_OPERATION_CACHE_HIT, NetError.ERR_FTP_FAILED, NetError.ERR_FTP_SERVICE_UNAVAILABLE, NetError.ERR_FTP_TRANSFER_ABORTED, NetError.ERR_FTP_FILE_BUSY, NetError.ERR_FTP_SYNTAX_ERROR, NetError.ERR_FTP_COMMAND_NOT_SUPPORTED, NetError.ERR_FTP_BAD_COMMAND_SEQUENCE, NetError.ERR_PKCS12_IMPORT_BAD_PASSWORD, NetError.ERR_PKCS12_IMPORT_FAILED, NetError.ERR_IMPORT_CA_CERT_NOT_CA, NetError.ERR_IMPORT_CERT_ALREADY_EXISTS, NetError.ERR_IMPORT_CA_CERT_FAILED, NetError.ERR_IMPORT_SERVER_CERT_FAILED, NetError.ERR_PKCS12_IMPORT_INVALID_MAC, NetError.ERR_PKCS12_IMPORT_INVALID_FILE, NetError.ERR_PKCS12_IMPORT_UNSUPPORTED, NetError.ERR_KEY_GENERATION_FAILED, NetError.ERR_PRIVATE_KEY_EXPORT_FAILED, NetError.ERR_SELF_SIGNED_CERT_GENERATION_FAILED, NetError.ERR_CERT_DATABASE_CHANGED, NetError.ERR_DNS_MALFORMED_RESPONSE, NetError.ERR_DNS_SERVER_REQUIRES_TCP, NetError.ERR_DNS_SERVER_FAILED, NetError.ERR_DNS_TIMED_OUT, NetError.ERR_DNS_CACHE_MISS, NetError.ERR_DNS_SEARCH_EMPTY, NetError.ERR_DNS_SORT_ERROR, NetError.ERR_DNS_SECURE_RESOLVER_HOSTNAME_RESOLUTION_FAILED, NetError.OK"
         errorLine1="                error.errorCode = ErrorCodeConversionHelper.convertErrorCode(error.errorCode);"
@@ -254,7 +41,7 @@
         errorLine2="                                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="../../weblayer/browser/java/org/chromium/weblayer_private/BrowserViewController.java"
-            line="285"
+            line="305"
             column="53"/>
     </issue>
 
@@ -331,7 +118,7 @@
         errorLine2="                       ~">
         <location
             file="../../chrome/browser/safety_check/android/java/src/org/chromium/chrome/browser/safety_check/SafetyCheckProperties.java"
-            line="110"
+            line="138"
             column="24"/>
     </issue>
 
@@ -342,7 +129,7 @@
         errorLine2="               ~">
         <location
             file="../../chrome/browser/safety_check/android/java/src/org/chromium/chrome/browser/safety_check/SafetyCheckProperties.java"
-            line="115"
+            line="143"
             column="16"/>
     </issue>
 
@@ -672,7 +459,7 @@
         errorLine2="                     ~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="../../chrome/browser/ui/android/appmenu/internal/java/src/org/chromium/chrome/browser/ui/appmenu/AppMenu.java"
-            line="361"
+            line="372"
             column="22"/>
     </issue>
 
@@ -2608,7 +2395,7 @@
         errorLine2="                                                        ~~~~~~~~~~~~">
         <location
             file="../../weblayer/browser/java/org/chromium/weblayer_private/BrowserImpl.java"
-            line="257"
+            line="258"
             column="57"/>
     </issue>
 
@@ -2619,7 +2406,7 @@
         errorLine2="                                                                            ~~~~~~~~~~~~">
         <location
             file="../../weblayer/browser/java/org/chromium/weblayer_private/BrowserImpl.java"
-            line="381"
+            line="382"
             column="77"/>
     </issue>
 
@@ -2860,7 +2647,7 @@
         errorLine1="        mPartnerBrowserRefreshNeeded = !PartnerBrowserCustomizations.getInstance().isInitialized();"
         errorLine2="                                                                                   ~~~~~~~~~~~~~">
         <location
-            file="chrome/android/java/src/org/chromium/chrome/browser/app/ChromeActivity.java"
+            file="../../chrome/android/java/src/org/chromium/chrome/browser/app/ChromeActivity.java"
             line="359"
             column="84"/>
     </issue>
@@ -2871,7 +2658,7 @@
         errorLine1="        IntentHandler.setTestIntentsEnabled("
         errorLine2="                      ~~~~~~~~~~~~~~~~~~~~~">
         <location
-            file="chrome/android/java/src/org/chromium/chrome/browser/app/ChromeActivity.java"
+            file="../../chrome/android/java/src/org/chromium/chrome/browser/app/ChromeActivity.java"
             line="752"
             column="23"/>
     </issue>
@@ -2894,7 +2681,7 @@
         errorLine2="                                                                  ~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="../../chrome/android/java/src/org/chromium/chrome/browser/ChromeTabbedActivity.java"
-            line="824"
+            line="825"
             column="67"/>
     </issue>
 
@@ -4742,7 +4529,7 @@
         errorLine2="                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="../../components/browser_ui/site_settings/android/java/src/org/chromium/components/browser_ui/site_settings/WebsitePreferenceBridge.java"
-            line="155"
+            line="153"
             column="18"/>
     </issue>
 
@@ -4753,7 +4540,7 @@
         errorLine2="                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
         <location
             file="../../components/browser_ui/site_settings/android/java/src/org/chromium/components/browser_ui/site_settings/WebsitePreferenceBridge.java"
-            line="180"
+            line="178"
             column="30"/>
     </issue>
 
@@ -4764,7 +4551,7 @@
         errorLine2="                 ^">
         <location
             file="../../components/browser_ui/site_settings/android/java/src/org/chromium/components/browser_ui/site_settings/WebsitePreferenceBridge.java"
-            line="235"
+            line="233"
             column="18"/>
     </issue>
 

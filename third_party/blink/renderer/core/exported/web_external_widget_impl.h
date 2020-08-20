@@ -36,8 +36,7 @@ class WebExternalWidgetImpl : public WebExternalWidget,
       scheduler::WebThreadScheduler* main_thread_scheduler,
       cc::TaskGraphRunner* task_graph_runner,
       bool for_child_local_root_frame,
-      const gfx::Size& initial_screen_size,
-      float initial_device_scale_factor,
+      const ScreenInfo& screen_info,
       std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory,
       const cc::LayerTreeSettings* settings) override;
   void SetCompositorVisible(bool visible) override;
@@ -80,6 +79,17 @@ class WebExternalWidgetImpl : public WebExternalWidget,
 #endif
   void ApplyVisualProperties(
       const VisualProperties& visual_properties) override;
+  void UpdateSurfaceAndScreenInfo(
+      const viz::LocalSurfaceIdAllocation& new_local_surface_id_allocation,
+      const gfx::Rect& compositor_viewport_pixel_rect,
+      const ScreenInfo& new_screen_info) override;
+  void UpdateScreenInfo(const ScreenInfo& new_screen_info) override;
+  void UpdateCompositorViewportAndScreenInfo(
+      const gfx::Rect& compositor_viewport_pixel_rect,
+      const ScreenInfo& new_screen_info) override;
+  void UpdateCompositorViewportRect(
+      const gfx::Rect& compositor_viewport_pixel_rect) override;
+  const ScreenInfo& GetScreenInfo() override;
 
   // WebExternalWidget overrides:
   void SetRootLayer(scoped_refptr<cc::Layer>) override;
@@ -107,6 +117,8 @@ class WebExternalWidgetImpl : public WebExternalWidget,
       const VisualProperties& visual_properties) override;
   void UpdateScreenRects(const gfx::Rect& widget_screen_rect,
                          const gfx::Rect& window_screen_rect) override;
+  ScreenInfo GetOriginalScreenInfo() override;
+  gfx::Rect ViewportVisibleRect() override;
 
  private:
   WebExternalWidgetClient* const client_;

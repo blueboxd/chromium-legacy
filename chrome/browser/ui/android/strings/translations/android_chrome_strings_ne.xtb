@@ -702,6 +702,7 @@
 <translation id="6402652558933147609"><ph name="VIOLATED_URL" /> मा <ph name="ERROR_CODE" /></translation>
 <translation id="6404511346730675251">बुकमार्क सम्पादन गर्नुहोस्</translation>
 <translation id="6406506848690869874">समक्रमण</translation>
+<translation id="6410883413783534063">एकै पटक विभिन्न पृष्ठहरूमा जान बेग्लाबेग्लै ट्याबहरू खोल्नुहोस्</translation>
 <translation id="6412673304250309937">Chrome मा भण्डारण गरिएका असुरक्षित साइटको सूची जाँच गरी URL हरू सुरक्षित छन् वा छैनन् भन्ने कुरा यकिन गर्छ। कुनै साइटले तपाईंको पासवर्ड चोरी गर्न खोज्दा वा तपाईंले कुनै हानिकारक फाइल डाउनलोड गर्दा Chrome ले पृष्ठका केही सामग्रीसहित URL हरूलाई सुरक्षित ब्राउजिङमा पठाउन पनि सक्छ।</translation>
 <translation id="641643625718530986">प्रिन्ट गर्नुहोस्...</translation>
 <translation id="6427112570124116297">वेब अनुवाद गर्नुहोस्</translation>
@@ -820,6 +821,7 @@
 <translation id="7328017930301109123">लाइट मोडमा हुँदा Chrome ले पृष्ठहरू अझ छिटो लोड गर्नुका साथै ६० प्रतिशतसम्म कम डेटा प्रयोग गर्छ।</translation>
 <translation id="7333031090786104871">अघिल्लो साइट अझै थपिँदै</translation>
 <translation id="7340958967809483333">Discover का विकल्पहरू</translation>
+<translation id="7352651011704765696">केही गल्ती भयो</translation>
 <translation id="7352939065658542140">भिडियो</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{चयन गरिएको १ वस्तु सेयर गर्नुहोस्}other{चयन गरिएका # वस्तुहरू सेयर गर्नुहोस्}}</translation>
 <translation id="7359002509206457351">भुक्तानी विधिहरूमाथि पहुँच राख्नुहोस्</translation>
@@ -1012,6 +1014,7 @@
 <translation id="868929229000858085">आफ्ना सम्पर्कहरू खोज्नुहोस्</translation>
 <translation id="869891660844655955">समाप्ति मिति</translation>
 <translation id="8712637175834984815">भयो</translation>
+<translation id="8725066075913043281">पुन: प्रयास गर्नुहोस्</translation>
 <translation id="8748850008226585750">सामग्रीहरू लुकाइएका छन्</translation>
 <translation id="8751914237388039244">कुनै छवि छनौट गर्नुहोस्‌</translation>
 <translation id="8758557275681689734">आफ्ना सबै खुला ट्याबहरू हेर्नुहोस्</translation>

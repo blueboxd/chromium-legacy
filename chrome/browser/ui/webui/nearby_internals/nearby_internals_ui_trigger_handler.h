@@ -51,7 +51,6 @@ class NearbyInternalsUiTriggerHandler : public content::WebUIMessageHandler,
   void OnOpenCalled(NearbySharingService::StatusCodes status_codes);
   void OnRejectCalled(NearbySharingService::StatusCodes status_codes);
   void OnCancelCalled(NearbySharingService::StatusCodes status_codes);
-  void OnSendTextCalled(NearbySharingService::StatusCodes status_codes);
 
   // Message handler callback that initializes JavaScript.
   void InitializeContents(const base::ListValue* args);

@@ -8,7 +8,6 @@
 #include <memory>
 #include <utility>
 
-#include "android_webview/browser/input_stream.h"
 #include "android_webview/browser/network_service/aw_web_resource_intercept_response.h"
 #include "android_webview/browser/network_service/aw_web_resource_request.h"
 #include "android_webview/browser/network_service/aw_web_resource_response.h"
@@ -25,6 +24,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/scoped_blocking_call.h"
+#include "components/embedder_support/android/util/input_stream.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"

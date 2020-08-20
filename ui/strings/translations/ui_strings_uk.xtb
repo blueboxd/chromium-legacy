@@ -154,7 +154,7 @@
 <translation id="5866104238061687188">{YEARS,plural, =1{через 1 р.}one{через # р.}few{через # р.}many{через # р.}other{через # р.}}</translation>
 <translation id="588258955323874662">Повноекранний режим</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{Залишилась 1 секунда}one{Залишилася # секунда}few{Залишилося # секунди}many{Залишилося # секунд}other{Залишилося # секунди}}</translation>
-<translation id="5941711191222866238">Зменшити</translation>
+<translation id="5941711191222866238">Згорнути</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 година}one{# година}few{# години}many{# годин}other{# години}}</translation>
 <translation id="6012623610530968780">Сторінка <ph name="SELECTED_PAGE" /> з <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Очистити вікно пошуку</translation>
@@ -185,7 +185,7 @@
 <translation id="6620110761915583480">Зберегти файл</translation>
 <translation id="6656912866303152668">Переконайтеся, що на пристрої<ph name="TARGET_DEVICE_NAME" /> увімкнено синхронізацію в Chrome, а потім спробуйте надіслати знову.</translation>
 <translation id="6699343763173986273">Наступна композиція</translation>
-<translation id="6710213216561001401">Попереднє</translation>
+<translation id="6710213216561001401">Назад</translation>
 <translation id="6779314412797872738">Щоб надіслати номер на телефон Android, <ph name="TROUBLESHOOT_LINK" /> для обох пристроїв у налаштуваннях.</translation>
 <translation id="6786750046913594791">Закрити папку</translation>
 <translation id="6808150112686056157">Зупинити</translation>

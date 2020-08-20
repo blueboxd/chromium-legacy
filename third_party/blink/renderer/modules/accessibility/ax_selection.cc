@@ -339,15 +339,18 @@ bool AXSelection::Select(const AXSelectionBehavior selection_behavior) {
       AsTextControlSelection();
   if (text_control_selection.has_value()) {
     DCHECK_LE(text_control_selection->start, text_control_selection->end);
-    TextControlElement& text_control =
-        ToTextControl(*base_.ContainerObject()->GetNode());
+    TextControlElement& text_control = ToTextControl(
+        *base_.ContainerObject()->GetNativeTextControlAncestor()->GetNode());
     if (!text_control.SetSelectionRange(text_control_selection->start,
                                         text_control_selection->end,
                                         text_control_selection->direction)) {
       return false;
     }
 
+    // TextControl::SetSelectionRange deliberately does not set focus. But if
+    // we're updating the selection, the text control should be focused.
     ScheduleSelectEvent(text_control);
+    text_control.focus();
     return true;
   }
 
@@ -423,19 +426,23 @@ String AXSelection::ToString() const {
 base::Optional<AXSelection::TextControlSelection>
 AXSelection::AsTextControlSelection() const {
   if (!IsValid() || !base_.IsTextPosition() || !extent_.IsTextPosition() ||
-      base_.ContainerObject() != extent_.ContainerObject() ||
-      !base_.ContainerObject()->IsNativeTextControl() ||
-      !IsTextControl(base_.ContainerObject()->GetNode())) {
+      base_.ContainerObject() != extent_.ContainerObject()) {
     return {};
   }
+
+  const AXObject* text_control =
+      base_.ContainerObject()->GetNativeTextControlAncestor();
+  if (!text_control)
+    return {};
+
+  DCHECK(IsTextControl(text_control->GetNode()));
 
   if (base_ <= extent_) {
     return TextControlSelection(base_.TextOffset(), extent_.TextOffset(),
                                 kSelectionHasForwardDirection);
-  } else {
-    return TextControlSelection(extent_.TextOffset(), base_.TextOffset(),
-                                kSelectionHasBackwardDirection);
   }
+  return TextControlSelection(extent_.TextOffset(), base_.TextOffset(),
+                              kSelectionHasBackwardDirection);
 }
 
 bool operator==(const AXSelection& a, const AXSelection& b) {

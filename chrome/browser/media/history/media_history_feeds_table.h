@@ -109,6 +109,10 @@ class MediaHistoryFeedsTable : public MediaHistoryTableBase {
   // Stores the safe search result for |feed_id| and returns true if successful.
   bool StoreSafeSearchResult(int64_t feed_id,
                              media_feeds::mojom::SafeSearchResult result);
+
+  // Updates the user status and returns true if successful.
+  bool UpdateFeedUserStatus(const int64_t feed_id,
+                            media_feeds::mojom::FeedUserStatus status);
 };
 
 }  // namespace media_history

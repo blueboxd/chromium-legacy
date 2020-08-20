@@ -34,6 +34,7 @@
 #include <memory>
 #include "third_party/blink/public/platform/web_time_range.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/html/media/media_source_tracer.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
@@ -61,9 +62,11 @@ class CORE_EXPORT MediaSource : public GarbageCollectedMixin {
   // attempting to attach to this object.  The WebMediaSource is not available
   // to the element initially, so between the two calls, the attachment could be
   // considered partially setup.
-  // If already attached, StartAttachingToMediaElement() returns false.
-  // Otherwise, must be in 'closed' state, and returns true to indicate
-  // attachment success.
+  // If already attached, StartAttachingToMediaElement() returns nullptr.
+  // Otherwise, must be in 'closed' state, and indicates success by returning a
+  // tracer object useful in at least same-thread attachments for enabling
+  // automatic idle unreferenced same-thread attachment object garbage
+  // collection.
   // CompleteAttachingToMediaElement() provides the MediaSource with the
   // underlying WebMediaSource, enabling parsing of media provided by the
   // application for playback, for example.
@@ -71,7 +74,8 @@ class CORE_EXPORT MediaSource : public GarbageCollectedMixin {
   // 'closed').
   // Once attached, the source uses the element to synchronously service some
   // API operations like duration change that may need to initiate seek.
-  virtual bool StartAttachingToMediaElement(HTMLMediaElement*) = 0;
+  virtual MediaSourceTracer* StartAttachingToMediaElement(
+      HTMLMediaElement*) = 0;
   virtual void CompleteAttachingToMediaElement(
       std::unique_ptr<WebMediaSource>) = 0;
 

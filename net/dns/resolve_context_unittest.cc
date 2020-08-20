@@ -46,8 +46,8 @@ class ResolveContextTest : public TestWithTaskEnvironment {
   scoped_refptr<DnsSession> CreateDnsSession(const DnsConfig& config) {
     auto null_random_callback =
         base::BindRepeating([](int, int) -> int { IMMEDIATE_CRASH(); });
-    std::unique_ptr<DnsSocketPool> dns_socket_pool =
-        DnsSocketPool::CreateNull(socket_factory_.get(), null_random_callback);
+    auto dns_socket_pool = std::make_unique<DnsSocketPool>(
+        socket_factory_.get(), config.nameservers, nullptr /* net_log */);
 
     return base::MakeRefCounted<DnsSession>(config, std::move(dns_socket_pool),
                                             null_random_callback,

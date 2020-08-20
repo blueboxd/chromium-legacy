@@ -37,14 +37,12 @@
 <translation id="1874309113135274312">Google Chrome ベータ版（mDNS-In）</translation>
 <translation id="1877026089748256423">Chrome は古いバージョンです</translation>
 <translation id="1919130412786645364">Chrome へのログインを許可する</translation>
-<translation id="195645108406520445">新しい Chrome スペースをセットアップする</translation>
 <translation id="2063848847527508675">アップデートを適用するには、Chrome OS を再起動する必要があります。</translation>
 <translation id="2094919256425865063">今すぐ Chrome を終了しますか？</translation>
 <translation id="2120620239521071941">このデバイスから <ph name="ITEMS_COUNT" /> 件の項目を削除します。後でデータを取得するには、<ph name="USER_EMAIL" /> として Chrome にログインしてください。</translation>
 <translation id="2123055963409958220"><ph name="BEGIN_LINK" />現在の設定<ph name="END_LINK" />を送信して Chrome の品質向上にご協力ください</translation>
 <translation id="2151406531797534936">Chrome を今すぐ再起動してください</translation>
 <translation id="2246246234298806438">Google Chrome では、組み込みの PDF ビューアがない場合、印刷プレビューを表示できません。</translation>
-<translation id="226038281051944330">新しいアカウントで <ph name="EXISTING_USER" /> のスペースにログインしています。データを分けて保持できるよう、<ph name="NEW_USER" /> 用の Chrome スペースを新しく作成しますか？</translation>
 <translation id="2290014774651636340">Google API キーが欠落しています。Google Chrome の一部の機能は無効になります。</translation>
 <translation id="2290095356545025170">Google Chrome をアンインストールしてもよろしいですか？</translation>
 <translation id="2309047409763057870">この Google Chrome はセカンダリ インストールのため、既定のブラウザには設定できません。</translation>
@@ -79,7 +77,6 @@
 <translation id="3089968997497233615">Google クロームブラウザがより速く、さらに便利に。いますぐトライ！</translation>
 <translation id="3127818369811890733">Chrome OS でデータを同期できませんでした。</translation>
 <translation id="3149510190863420837">Chrome アプリ</translation>
-<translation id="3351117925998652957">Chrome スペースを選択</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome は今すぐ再起動されます}=1{Chrome は 1 秒後に再起動されます}other{Chrome は # 秒後に再起動されます}}</translation>
 <translation id="3395323229510056640">Chrome OS のヘルプを見る</translation>
@@ -102,7 +99,6 @@
 <translation id="386202838227397562">すべての Google Chrome ウィンドウを閉じてからもう一度お試しください。</translation>
 <translation id="3865754807470779944">Chrome のバージョン <ph name="PRODUCT_VERSION" /> がインストールされています</translation>
 <translation id="3873044882194371212">Chrome のシークレット ウインドウでリンクを開く(&amp;G)</translation>
-<translation id="3879568094278837081">この操作を行うと、このスペースの閲覧データがこのデバイスから削除されます。データを復元するには、Chrome に次のアカウントでログインしてください:</translation>
 <translation id="3889417619312448367">Google Chrome をアンインストール</translation>
 <translation id="4050175100176540509">最新バージョンに更新すると、重要なセキュリティ更新と新機能が適用されます。</translation>
 <translation id="4053720452172726777">Google Chrome の設定</translation>
@@ -143,12 +139,10 @@
 <translation id="4895437082222824641">新しい Chrome タブでリンクを開く(&amp;T)</translation>
 <translation id="4953650215774548573">Google Chrome を既定のブラウザとして設定する</translation>
 <translation id="495931528404527476">Chrome 専用</translation>
-<translation id="4960472897514318257">仕事用アカウントでログインしています。個人データを分けて保持できるよう、<ph name="NEW_USER" /> 用の Chrome スペースを新しく作成しますか？</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5062123544085870375">Chrome OS を再起動してください</translation>
 <translation id="5132929315877954718">Google Chrome のすばらしいアプリ、ゲーム、拡張機能、テーマをぜひご利用ください。</translation>
 <translation id="5170938038195470297">バージョンが新しい Google Chrome のプロフィールは使用できません。一部の機能が利用できない可能性があります。別の場所のプロフィールを指定するか、新しいバージョンの Chrome をご使用ください。</translation>
-<translation id="5171117065011130146">仕事用の Chrome スペースを新しく作成しますか？</translation>
 <translation id="5193136243808726294">Google Chrome OS ではこのページを開けません。</translation>
 <translation id="5251420635869119124">ゲスト ユーザーは、記録を残さずに Chrome を使用できます。</translation>
 <translation id="532046782124376502">警告: 拡張機能による閲覧履歴の記録を Google Chrome で停止することはできません。シークレット モードでこの拡張機能を無効にするには、このオプションの選択を解除してください。</translation>
@@ -214,7 +208,6 @@
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7573289029918943991">デバイスが最新の状態かどうか確認するには、<ph name="LINK_BEGIN" />Chrome OS の設定<ph name="LINK_END" />をご覧ください</translation>
 <translation id="7589360514048265910">Mac OS X 10.9 はサポートされなくなったため、このパソコンでは今後 Google Chrome のアップデートは受信されません。</translation>
-<translation id="7591404275842302616">Chrome スペースを使用して、このデバイスでのブラウジングを管理できます</translation>
 <translation id="7592736734348559088">アカウントのログイン情報が最新ではないため、Google Chrome はデータを同期できませんでした。</translation>
 <translation id="7626032353295482388">Chrome へようこそ</translation>
 <translation id="7629695634924605473">Chrome では、特定のパスワードが侵害された事実の有無がわかります</translation>
@@ -261,9 +254,7 @@
 <translation id="8823341990149967727">Chrome は古いバージョンです</translation>
 <translation id="8834965163890861871">Google Chrome でパスワードを編集しようとしています。続行するには、Windows のパスワードを入力してください。</translation>
 <translation id="884296878221830158">この拡張機能では、Chrome の起動時、またはホーム ボタンのクリック時に表示されるページも制御されます。</translation>
-<translation id="8859948767482842016">仕事用アカウントで <ph name="EXISTING_USER" /> のスペースにログインしています。データを分けて保持できるよう、<ph name="WORK_DOMAIN" /> 用の Chrome スペースを新しく作成しますか？</translation>
 <translation id="8862326446509486874">権限が不十分なためシステムレベルのインストールができません。管理者権限でインストールしてください。</translation>
-<translation id="8877586659207810298"><ph name="NEW_USER" /> 用の Chrome スペースを新しく作成しますか？</translation>
 <translation id="8914504000324227558">Chrome の再起動</translation>
 <translation id="8999208279178790196">{0,plural, =0{Chrome のアップデートが利用可能です}=1{Chrome のアップデートが利用可能です}other{Chrome のアップデートが利用可能になってから # 日経過しています}}</translation>
 <translation id="9026991721384951619">アカウントのログイン情報が最新ではないため、Chrome OS はデータを同期できませんでした。</translation>

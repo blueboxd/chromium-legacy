@@ -156,6 +156,11 @@ void RemoteFrameClientImpl::PageScaleFactorChanged(
                                                is_pinch_gesture_active);
 }
 
+void RemoteFrameClientImpl::DidChangeScreenInfo(
+    const ScreenInfo& original_screen_info) {
+  web_frame_->Client()->DidChangeScreenInfo(original_screen_info);
+}
+
 void RemoteFrameClientImpl::UpdateRemoteViewportIntersection(
     const ViewportIntersectionState& intersection_state) {
   web_frame_->Client()->UpdateRemoteViewportIntersection(intersection_state);

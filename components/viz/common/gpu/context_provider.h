@@ -103,7 +103,7 @@ class VIZ_COMMON_EXPORT ContextProvider {
   // provider must have been successfully bound to a thread before calling this.
   virtual const gpu::Capabilities& ContextCapabilities() const = 0;
 
-  // Returns feature blacklist decisions and driver bug workarounds info.  The
+  // Returns feature blocklist decisions and driver bug workarounds info.  The
   // context provider must have been successfully bound to a thread before
   // calling this.
   virtual const gpu::GpuFeatureInfo& GetGpuFeatureInfo() const = 0;

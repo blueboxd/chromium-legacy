@@ -49,6 +49,7 @@ public class ClearWebsiteStorageDialog extends PreferenceDialogFragmentCompat {
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
         if (mDialogView != null) {
             // When the device switches to multi-window in landscape mode, the height of the
             // offlineTextView is not calculated correctly (its height gets truncated) and a layout

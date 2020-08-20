@@ -24,4 +24,8 @@ constexpr base::TimeDelta kReadFramesTimeout = base::TimeDelta::FromSeconds(15);
 constexpr base::TimeDelta kInvalidateDelay =
     base::TimeDelta::FromMilliseconds(500);
 
+// If total size of all attachments is larger than this limit, online share will
+// be disabled even if it would be allowed by the user.
+constexpr int64_t kOnlineFileSizeLimitBytes = 25 * 1024 * 1024;  // 25MB
+
 #endif  // CHROME_BROWSER_NEARBY_SHARING_CONSTANTS_H_

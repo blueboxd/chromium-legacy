@@ -24,7 +24,6 @@ DnsConfig::DnsConfig(std::vector<IPEndPoint> nameservers)
       dns_over_tls_hostname(std::string()),
       unhandled_options(false),
       append_to_multi_label_name(true),
-      randomize_ports(false),
       ndots(1),
       timeout(kDnsDefaultTimeout),
       attempts(2),

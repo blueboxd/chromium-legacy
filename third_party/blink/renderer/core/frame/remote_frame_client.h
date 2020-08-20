@@ -19,6 +19,7 @@ namespace blink {
 class AssociatedInterfaceProvider;
 class IntRect;
 class ResourceRequest;
+struct ScreenInfo;
 class WebLocalFrame;
 
 class RemoteFrameClient : public FrameClient {
@@ -48,6 +49,8 @@ class RemoteFrameClient : public FrameClient {
 
   virtual void PageScaleFactorChanged(float page_scale_factor,
                                       bool is_pinch_gesture_active) = 0;
+
+  virtual void DidChangeScreenInfo(const ScreenInfo& original_screen_info) = 0;
 
   virtual void UpdateRemoteViewportIntersection(
       const ViewportIntersectionState& intersection_state) = 0;

@@ -16,6 +16,7 @@
 <translation id="1335095011850992622">заслуге</translation>
 <translation id="1342835525016946179">article</translation>
 <translation id="1359897965706325498">банер</translation>
+<translation id="1480676835519562650">више опција за избор, изабраних: <ph name="SELECTED" /> од <ph name="COUNT" />.</translation>
 <translation id="1589122976691792535">регион</translation>
 <translation id="1591562245178063882">Овај месец</translation>
 <translation id="1637811476055996098">Избор датотека</translation>
@@ -51,6 +52,7 @@
 <translation id="248395913932153421">Дан</translation>
 <translation id="2507943997699731163">Попуните ово поље.</translation>
 <translation id="2508569020611168319">листа картица</translation>
+<translation id="2530182415807757784">више опција за избор, ниједна није изабрана.</translation>
 <translation id="2561842179657104141">прикажи више контрола за медије</translation>
 <translation id="2572483411312390101">пустите</translation>
 <translation id="2613802280814924224">Унесите важећу вредност. Најближа важећа вредност је <ph name="VALID_VALUE" />.</translation>

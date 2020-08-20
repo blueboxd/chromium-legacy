@@ -152,6 +152,7 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   void EndCommitCompositorFrame(base::TimeTicks commit_start_time) override;
   void DidBeginMainFrame() override;
   void FocusChanged(bool enable) override;
+  gfx::Rect ViewportVisibleRect() override;
 
   // blink::mojom::FrameWidget
   void EnableDeviceEmulation(const DeviceEmulationParams& parameters) override;
@@ -214,6 +215,8 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   // when there is no page focus?
   // Represents whether or not this object should process incoming IME events.
   bool ime_accept_events_ = true;
+
+  gfx::Rect compositor_visible_rect_;
 
   SelfKeepAlive<WebFrameWidgetImpl> self_keep_alive_;
 };

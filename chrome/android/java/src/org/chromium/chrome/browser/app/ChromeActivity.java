@@ -53,7 +53,6 @@ import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.AppHooks;
-import org.chromium.chrome.browser.AssistStatusHandler;
 import org.chromium.chrome.browser.ChromeActivitySessionTracker;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeVersionInfo;
@@ -289,8 +288,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     private final ManualFillingComponent mManualFillingComponent =
             ManualFillingComponentFactory.createComponent();
 
-    private AssistStatusHandler mAssistStatusHandler;
-
     // See enableHardwareAcceleration()
     private boolean mSetWindowHWA;
 
@@ -425,18 +422,11 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                 VrModuleProvider.getDelegate().maybeHandleVrIntentPreNative(this, intent);
             }
 
-            // TODO(1099750): Move this to the RootUiCoordinator.
-            mSnackbarManager = new SnackbarManager(
-                    this, findViewById(R.id.bottom_container), getWindowAndroid());
-            SnackbarManagerProvider.attach(getWindowAndroid(), mSnackbarManager);
+            BottomContainer bottomContainer = (BottomContainer) findViewById(R.id.bottom_container);
 
-            mAssistStatusHandler = createAssistStatusHandler();
-            if (mAssistStatusHandler != null) {
-                if (mTabModelSelector != null) {
-                    mAssistStatusHandler.setTabModelSelector(mTabModelSelector);
-                }
-                mAssistStatusHandler.updateAssistState();
-            }
+            // TODO(1099750): Move this to the RootUiCoordinator.
+            mSnackbarManager = new SnackbarManager(this, bottomContainer, getWindowAndroid());
+            SnackbarManagerProvider.attach(getWindowAndroid(), mSnackbarManager);
 
             // Make the activity listen to policy change events
             CombinedPolicyProvider.get().addPolicyChangeListener(this);
@@ -459,7 +449,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                         getControlContainerHeightResource());
             }
 
-            BottomContainer bottomContainer = (BottomContainer) findViewById(R.id.bottom_container);
             bottomContainer.initialize(getBrowserControlsManager(),
                     getWindowAndroid().getApplicationBottomInsetProvider());
             getLifecycleDispatcher().register(bottomContainer);
@@ -654,10 +643,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             }
         };
 
-        if (mAssistStatusHandler != null) {
-            mAssistStatusHandler.setTabModelSelector(mTabModelSelector);
-        }
-
         mTabModelsInitialized = true;
     }
 
@@ -708,20 +693,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         return new AppMenuPropertiesDelegateImpl(this, getActivityTabProvider(),
                 getMultiWindowModeStateDispatcher(), getTabModelSelector(), getToolbarManager(),
                 getWindow().getDecorView(), null, mBookmarkBridgeSupplier);
-    }
-
-    /**
-     * @return The assist handler for this activity.
-     */
-    protected AssistStatusHandler getAssistStatusHandler() {
-        return mAssistStatusHandler;
-    }
-
-    /**
-     * @return A newly constructed assist handler for this given activity type.
-     */
-    protected AssistStatusHandler createAssistStatusHandler() {
-        return new AssistStatusHandler(this);
     }
 
     /**
@@ -1181,12 +1152,9 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     @Override
     @TargetApi(Build.VERSION_CODES.M)
     public void onProvideAssistContent(AssistContent outContent) {
-        if (getAssistStatusHandler() == null || !getAssistStatusHandler().isAssistSupported()) {
-            // No information is provided in incognito mode.
-            return;
-        }
         Tab tab = getActivityTab();
-        if (tab != null && !isInOverviewMode()) {
+        // No information is provided in incognito mode and overview mode.
+        if (tab != null && !tab.isIncognito() && !isInOverviewMode()) {
             outContent.setWebUri(Uri.parse(tab.getUrlString()));
         }
     }

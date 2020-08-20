@@ -8,7 +8,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/macros.h"
 #include "net/base/net_export.h"
 #include "net/base/rand_callback.h"
 
@@ -24,73 +23,32 @@ class StreamSocket;
 // A DnsSocketPool is an abstraction layer around a ClientSocketFactory that
 // allows preallocation, reuse, or other strategies to manage sockets connected
 // to DNS servers.
+//
+// TODO(crbug.com/1116579): Rename since this doesn't do any pooling.
 class NET_EXPORT_PRIVATE DnsSocketPool {
  public:
-  virtual ~DnsSocketPool();
+  DnsSocketPool(ClientSocketFactory* factory,
+                std::vector<IPEndPoint> nameservers,
+                NetLog* net_log);
+  ~DnsSocketPool();
 
-  // Creates a DnsSocketPool that implements the default strategy for managing
-  // sockets.  (This varies by platform; see DnsSocketPoolImpl in
-  // dns_socket_pool.cc for details.)
-  static std::unique_ptr<DnsSocketPool> CreateDefault(
-      ClientSocketFactory* factory,
-      const RandIntCallback& rand_int_callback);
+  DnsSocketPool(const DnsSocketPool&) = delete;
+  DnsSocketPool& operator=(const DnsSocketPool&) = delete;
 
-  // Creates a DnsSocketPool that implements a "null" strategy -- no sockets are
-  // preallocated, allocation requests are satisfied by calling the factory
-  // directly, and returned sockets are deleted immediately.
-  static std::unique_ptr<DnsSocketPool> CreateNull(
-      ClientSocketFactory* factory,
-      const RandIntCallback& rand_int_callback);
-
-  // Initializes the DnsSocketPool.  |nameservers| is the list of nameservers
-  // for which the DnsSocketPool will manage sockets; |net_log| is the NetLog
-  // used when constructing sockets with the factory.
-  //
-  // Initialize may not be called more than once, and must be called before
-  // calling AllocateSocket or FreeSocket.
-  virtual void Initialize(
-      const std::vector<IPEndPoint>* nameservers,
-      NetLog* net_log) = 0;
-
-  // Allocates a socket that is already connected to the nameserver referenced
-  // by |server_index|.  May return a std::unique_ptr to NULL if no sockets are
-  // available to reuse and the factory fails to produce a socket (or produces
-  // one on which Connect fails).
-  virtual std::unique_ptr<DatagramClientSocket> AllocateSocket(
-      size_t server_index) = 0;
-
-  // Frees a socket allocated by AllocateSocket.  |server_index| must be the
-  // same index passed to AllocateSocket.
-  virtual void FreeSocket(size_t server_index,
-                          std::unique_ptr<DatagramClientSocket> socket) = 0;
-
-  // Creates a StreamSocket from the factory for a transaction over TCP. These
-  // sockets are not pooled.
-  std::unique_ptr<StreamSocket> CreateTCPSocket(size_t server_index,
-                                                const NetLogSource& source);
-
- protected:
-  DnsSocketPool(ClientSocketFactory* socket_factory,
-                const RandIntCallback& rand_int_callback);
-
-  void InitializeInternal(
-      const std::vector<IPEndPoint>* nameservers,
-      NetLog* net_log);
-
-  std::unique_ptr<DatagramClientSocket> CreateConnectedSocket(
+  // Creates a UDP client socket that is already connected to the nameserver
+  // referenced by |server_index|. Returns null on error connecting the socket.
+  std::unique_ptr<DatagramClientSocket> CreateConnectedUdpSocket(
       size_t server_index);
 
-  // Returns a random int in the specified range.
-  int GetRandomInt(int min, int max);
+  // Creates a StreamSocket for TCP to the nameserver referenced by
+  // |server_index|. Does not connect the seocket.
+  std::unique_ptr<StreamSocket> CreateTcpSocket(size_t server_index,
+                                                const NetLogSource& source);
 
  private:
-  ClientSocketFactory* socket_factory_;
-  const RandIntCallback rand_int_callback_;
-  NetLog* net_log_;
-  const std::vector<IPEndPoint>* nameservers_;
-  bool initialized_;
-
-  DISALLOW_COPY_AND_ASSIGN(DnsSocketPool);
+  ClientSocketFactory* const socket_factory_;
+  NetLog* const net_log_;
+  const std::vector<IPEndPoint> nameservers_;
 };
 
 } // namespace net

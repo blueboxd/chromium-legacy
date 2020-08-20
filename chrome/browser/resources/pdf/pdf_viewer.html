@@ -15,12 +15,13 @@
 
   #sidenav-container {
     overflow: hidden;
-    transition: width 250ms ease-out, visibility 250ms;
+    transition: width 250ms cubic-bezier(.6, 0, 0, 1), visibility 250ms;
     visibility: visible;
     width: var(--viewer-pdf-sidenav-width);
   }
 
   #sidenav-container[closed] {
+    transition: width 200ms cubic-bezier(.6, 0, 0, 1), visibility 200ms;
     visibility: hidden;
     width: 0;
   }

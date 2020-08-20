@@ -156,7 +156,7 @@ public class PlayerFrameScaleController {
      */
     boolean scaleFinished(float scaleFactor, float focalPointX, float focalPointY) {
         // All correction/scaling happens in scaleBy() here we just update the mediator.
-        mMediatorDelegate.resetScaleFactorOfAllSubframes();
+        mMediatorDelegate.updateScaleFactorOfAllSubframes(mViewport.getScale());
         mMediatorDelegate.updateVisuals(true);
         mMediatorDelegate.forceRedrawVisibleSubframes();
         mUncommittedScaleFactor = 0f;

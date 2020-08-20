@@ -172,7 +172,6 @@ class WebViewPlugin : public blink::WebPlugin,
     bool AcceptsLoadDrops() override;
     bool CanHandleGestureEvent() override;
     bool CanUpdateLayout() override;
-    blink::ScreenInfo GetScreenInfo() override;
     void DidInvalidateRect(const blink::WebRect&) override;
 
     // WebWidgetClient methods:

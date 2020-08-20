@@ -32,4 +32,7 @@ specific_include_rules = {
   "web_frame_widget_base.h": [
     "+ui/base/mojom/ui_base_types.mojom-shared.h",
   ],
+  "web_frame_widget_test.cc": [
+    "+components/viz/common/surfaces/parent_local_surface_id_allocator.h",
+  ],
 }

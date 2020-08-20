@@ -20,6 +20,9 @@
 #include "chrome/browser/permissions/quiet_notification_permission_ui_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
+#include "chrome/browser/subresource_filter/subresource_filter_content_settings_manager.h"
+#include "chrome/browser/subresource_filter/subresource_filter_profile_context.h"
+#include "chrome/browser/subresource_filter/subresource_filter_profile_context_factory.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/common/pref_names.h"
@@ -68,6 +71,15 @@ ChromePermissionsClient::GetCookieSettings(
     content::BrowserContext* browser_context) {
   return CookieSettingsFactory::GetForProfile(
       Profile::FromBrowserContext(browser_context));
+}
+
+bool ChromePermissionsClient::IsSubresourceFilterActivated(
+    content::BrowserContext* browser_context,
+    const GURL& url) {
+  return SubresourceFilterProfileContextFactory::GetForProfile(
+             Profile::FromBrowserContext(browser_context))
+      ->settings_manager()
+      ->GetSiteActivationFromMetadata(url);
 }
 
 permissions::ChooserContextBase* ChromePermissionsClient::GetChooserContext(

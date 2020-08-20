@@ -31,6 +31,8 @@ const char* LCDTextDisallowedReasonToString(LCDTextDisallowedReason reason) {
       return "pixel-or-color-effect";
     case LCDTextDisallowedReason::kTransformAnimation:
       return "transform-animation";
+    case LCDTextDisallowedReason::kNoText:
+      return "no-text";
   }
   NOTREACHED();
   return "";

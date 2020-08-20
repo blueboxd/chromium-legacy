@@ -31,6 +31,8 @@ import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.content.ContentUtils;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.native_page.NativePageAssassin;
 import org.chromium.chrome.browser.night_mode.NightModeUtils;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
@@ -52,6 +54,7 @@ import org.chromium.content_public.browser.WebContentsAccessibility;
 import org.chromium.content_public.common.ResourceRequestBody;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.ui.util.ColorUtils;
 import org.chromium.url.GURL;
 import org.chromium.url.Origin;
 
@@ -747,11 +750,13 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
      * @param initiallyHidden Only used if {@code webContents} is {@code null}.  Determines
      *        whether or not the newly created {@link WebContents} will be hidden or not.
      * @param tabState State containing information about this Tab, if it was persisted.
+     * @param serializedCriticalPersistedTabData {@link CriticalPersistedTabData} in serialized
+     * form. {@link CriticalPersistedTabData} is a replacement for {@link TabState}
      */
     void initialize(Tab parent, @Nullable @TabCreationState Integer creationState,
             LoadUrlParams loadUrlParams, WebContents webContents,
             @Nullable TabDelegateFactory delegateFactory, boolean initiallyHidden,
-            TabState tabState) {
+            TabState tabState, @Nullable byte[] serializedCriticalPersistedTabData) {
         try {
             TraceEvent.begin("Tab.initialize");
 
@@ -764,7 +769,11 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
 
             TabHelpers.initTabHelpers(this, parent);
 
-            if (tabState != null) restoreFieldsFromState(tabState);
+            if (serializedCriticalPersistedTabData != null && useCriticalPersistedTabData()) {
+                CriticalPersistedTabData.build(this, serializedCriticalPersistedTabData, true);
+            } else if (tabState != null) {
+                restoreFieldsFromState(tabState);
+            }
 
             initializeNative();
 
@@ -798,14 +807,28 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
             if (CriticalPersistedTabData.from(this).getTimestampMillis() == INVALID_TIMESTAMP) {
                 CriticalPersistedTabData.from(this).setTimestampMillis(System.currentTimeMillis());
             }
-            String appId = tabState != null ? tabState.openerAppId : null;
-            Boolean hasThemeColor = tabState != null ? tabState.hasThemeColor() : null;
-            int themeColor = tabState != null ? tabState.getThemeColor() : 0;
+            String appId;
+            Boolean hasThemeColor;
+            int themeColor;
+            if (serializedCriticalPersistedTabData != null && useCriticalPersistedTabData()) {
+                appId = CriticalPersistedTabData.from(this).getOpenerAppId();
+                themeColor = CriticalPersistedTabData.from(this).getThemeColor();
+                hasThemeColor = themeColor != TabState.UNSPECIFIED_THEME_COLOR
+                        && ColorUtils.isValidThemeColor(themeColor);
+            } else {
+                appId = tabState != null ? tabState.openerAppId : null;
+                hasThemeColor = tabState != null ? tabState.hasThemeColor() : null;
+                themeColor = tabState != null ? tabState.getThemeColor() : 0;
+            }
             for (TabObserver observer : mObservers) {
                 observer.onInitialized(this, appId, hasThemeColor, themeColor);
             }
             TraceEvent.end("Tab.initialize");
         }
+    }
+
+    private boolean useCriticalPersistedTabData() {
+        return CachedFeatureFlags.isEnabled(ChromeFeatureList.CRITICAL_PERSISTED_TAB_DATA);
     }
 
     @Nullable
@@ -1083,10 +1106,8 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
         notifyPageTitleChanged();
     }
 
-    /**
-     * @return Parameters that should be used for a lazily loaded Tab.  May be null.
-     */
-    LoadUrlParams getPendingLoadParams() {
+    @Override
+    public LoadUrlParams getPendingLoadParams() {
         return mPendingLoadParams;
     }
 

@@ -356,8 +356,11 @@ class TestRunner {
   // http://crbug.com/309760 for the plan.
   void UseUnfortunateSynchronousResizeMode();
 
-  void SetMockScreenOrientation(const std::string& orientation);
-  void DisableMockScreenOrientation();
+  // Set the mock orientation on |view| to |orientation|.
+  void SetMockScreenOrientation(WebViewTestProxy* view,
+                                const std::string& orientation);
+  // Disable any mock orientation on |view| that is set.
+  void DisableMockScreenOrientation(WebViewTestProxy* view);
 
   // Modify accept_languages in blink::mojom::RendererPreferences.
   void SetAcceptLanguages(const std::string& accept_languages);

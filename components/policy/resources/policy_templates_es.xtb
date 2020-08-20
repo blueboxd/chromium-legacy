@@ -1092,11 +1092,6 @@ Si no se le asigna ningún valor, la pantalla de privacidad se inhabilitará ini
       Si no se define esta política, no estará disponible de forma predeterminada para los usuarios administrados pero sí lo estará para los no administrados.</translation>
 <translation id="2660846099862559570">No utilizar nunca un proxy</translation>
 <translation id="2665422249821137126">Habilitar el cursor grande en la pantalla de inicio de sesión</translation>
-<translation id="266882888912227087"> Controla las notificaciones de inicio automático de las sesiones de invitado administradas en <ph name="PRODUCT_OS_NAME" />.
-
-      Si se asigna el valor "True" a esta política, la notificación de advertencia de privacidad se cerrará después de unos segundos.
-
-      Si se le asigna el valor "False" o no se le asigna ningún valor, la notificación de advertencia de privacidad permanecerá fijada hasta que el usuario la cierre.</translation>
 <translation id="2672012807430078509">Controla la habilitación de NTLM como protocolo de autenticación para activaciones SMB.</translation>
 <translation id="2678503605767349615">Certificados de cliente de todo el dispositivo obligatorios</translation>
 <translation id="268577405881275241">Habilitar la función del proxy de compresión de datos</translation>
@@ -1488,7 +1483,7 @@ Si no se le asigna ningún valor, la pantalla de privacidad se inhabilitará ini
 <translation id="3264793472749429012">Codificaciones del proveedor de búsquedas predeterminadas</translation>
 <translation id="3273221114520206906">Configuración de JavaScript predeterminada</translation>
 <translation id="3284094172359247914">Controlar el uso de la API WebUSB</translation>
-<translation id="3288595667065905535">Versión</translation>
+<translation id="3288595667065905535">Canal de lanzamiento</translation>
 <translation id="3292147213643666827">Permite que <ph name="PRODUCT_NAME" /> actúe como proxy entre <ph name="CLOUD_PRINT_NAME" /> y las impresoras anteriores conectadas al ordenador.
 
       Si esta opción se habilita o no se configura, los usuarios podrán habilitar el proxy de Google Cloud Print si realizan el proceso de autenticación con sus cuentas de Google.
@@ -2501,7 +2496,6 @@ Si esta política se establece en False, el usuario no podrá canjear ofertas.</
       <ph name="PAGE_SIZE_NAME" /> debe contener uno de los formatos incluidos en la lista, o "personalizado" si el tamaño del papel necesario no está en la lista. Si se proporciona un valor "personalizado", se debe especificar la propiedad <ph name="PAGE_SIZE_CUSTOM_SIZE" />. Describe el ancho y altura deseados en micrómetros. De lo contrario, no se debe especificar la propiedad <ph name="PAGE_SIZE_CUSTOM_SIZE" />. Se ignorará la política que infrinja estas reglas.
 
       Si el tamaño de la página no está disponible en la impresora que elija el usuario, se ignorará esta política.</translation>
-<translation id="479290425281021210">Especificar si se permite que los sitios web no seguros envíen peticiones a puntos de conexión más privados de la red.</translation>
 <translation id="4802744647065138872">Limita el número de instantáneas de datos de usuario retenidas para usarlas en caso de restauración de emergencia.</translation>
 <translation id="4802905909524200151">Configurar comportamiento de actualización del firmware de <ph name="TPM_FIRMWARE_UPDATE_TPM" /></translation>
 <translation id="4804828344300125154">Reiniciar siempre cuando el usuario cierre sesión.</translation>
@@ -3683,7 +3677,7 @@ Si la política está establecida en False, no se informará sobre los usuarios.
 <translation id="6536600139108165863">Reinicio automático al cerrar el dispositivo</translation>
 <translation id="6539246272469751178">Esta política no afecta a las aplicaciones para Android. Siempre utilizan el directorio de descargas predeterminado y no pueden acceder a ningún archivo que <ph name="PRODUCT_OS_NAME" /> haya descargado en un directorio de descargas que no sea el predeterminado.</translation>
 <translation id="654303922206238013">Estrategia de migración para eCryptfs</translation>
-<translation id="6544897973797372144">Si el valor correspondiente a esta política se establece en True y no se especifica la política ChromeOsReleaseChannel, los usuarios del dominio pertinente podrán cambiar el canal de versiones del dispositivo. Si el valor de esta política se establece en False, el dispositivo se bloqueará en el último canal configurado.
+<translation id="6544897973797372144">Si el valor correspondiente a esta política se establece en True y no se especifica la política ChromeOsReleaseChannel, los usuarios del dominio pertinente podrán cambiar el canal de lanzamiento del dispositivo. Si el valor de esta política se establece en False, el dispositivo se bloqueará en el último canal configurado.
 
       La política ChromeOsReleaseChannel anulará el canal seleccionado por el usuario, pero, si el canal de la política es más estable que el instalado en el dispositivo, este se podrá cambiar únicamente después de que la versión del canal más estable supere a la instalada en el dispositivo.</translation>
 <translation id="6548795012081567926">Permite definir una lista de patrones de URL donde se especifica qué sitios web pueden establecer cookies.
@@ -3862,13 +3856,6 @@ Si la política está establecida en False, no se informará sobre los usuarios.
 
       Si se le asigna el valor "Disabled", se mostrará un mensaje de error en lugar de la solicitud de configuración de red.</translation>
 <translation id="6821268164692776674">Destinos <ph name="CLOUD_PRINT_NAME" /> y Guardar en Google Drive</translation>
-<translation id="6823297401452148231">Controla si se permite que los sitios web no seguros envíen solicitudes a puntos de conexión más privados de la red. Por ejemplo, controla si se permite que http://evil.com envíe solicitudes a localhost o a puntos de conexión de la red privada (a ninguno de los dos se puede acceder desde el Internet público). Para consultar más información, visita https://wicg.github.io/cors-rfc1918/#goals.
-
-          Si no se establece esta política, el comportamiento predeterminado de las solicitudes desde contextos no seguros a puntos de conexión más privados de la red dependerá de la configuración personal que el usuario aplique a la función <ph name="BLOCK_INSECURE_PRIVATE_NETWORK_REQUESTS_FEATURE_NAME" />, que puede definirse mediante una prueba pública o en la línea de comandos.
-
-          Si se asigna el valor false a esta política, los sitios web no seguros no podrán enviar solicitudes a puntos de conexión más privados de la red. Es decir, los sitios web no seguros con direcciones IP públicas no podrán enviar solicitudes ni a localhost ni a direcciones IP privadas. Los sitios web no seguros con direcciones IP privadas no podrán enviar solicitudes a localhost.
-
-          Si se asigna el valor true a esta política, los sitios web no seguros podrán enviar solicitudes a cualquier punto de conexión de la red (en función de otras comprobaciones de orígenes cruzados).</translation>
 <translation id="6833064854262015312">Si se le asigna el valor "true" a esta política, el modo de contraste alto se activa en la pantalla de inicio de sesión. Si se le asigna el valor "false", el modo de contraste alto se desactiva en la pantalla de inicio de sesión.
 
       Si se configura esta política, los usuarios pueden cambiar temporalmente el modo de contraste alto activándolo o desactivándolo. Cuando la pantalla de inicio de sesión se vuelve a cargar o permanece inactiva durante un minuto, vuelve a su estado original.
@@ -4467,7 +4454,7 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
       Esta política solo se aplica a usuarios menores de edad.
       Cuando esta política está activada, el código de acceso parental se puede verificar en el dispositivo del menor.
       Cuando esta política está desactivada, no se puede verificar el código de acceso parental en el dispositivo del menor.</translation>
-<translation id="7625444193696794922">Permite especificar el canal de versiones al que se vinculará este dispositivo.</translation>
+<translation id="7625444193696794922">Permite especificar el canal de lanzamiento al que se vinculará este dispositivo.</translation>
 <translation id="7629840767216985001">Si se le asigna el valor "true" a esta política, el cursor grande se activa en la pantalla de inicio de sesión. Si se le asigna el valor "false", el cursor grande se desactiva en la pantalla de inicio de sesión.
 
       Si se configura esta política, los usuarios pueden activar y desactivar temporalmente el cursor grande. Cuando la pantalla de inicio de sesión se vuelve a cargar o permanece inactiva durante un minuto, vuelve a su estado original.

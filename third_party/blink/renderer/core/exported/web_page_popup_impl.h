@@ -137,6 +137,8 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
       const VisualProperties& visual_properties) override;
   void UpdateScreenRects(const gfx::Rect& widget_screen_rect,
                          const gfx::Rect& window_screen_rect) override;
+  ScreenInfo GetOriginalScreenInfo() override;
+  gfx::Rect ViewportVisibleRect() override;
 
   // WebWidget implementation.
   // NOTE: The WebWidget may still be used after requesting the popup to be
@@ -160,8 +162,7 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
       scheduler::WebThreadScheduler* main_thread_scheduler,
       cc::TaskGraphRunner* task_graph_runner,
       bool for_child_local_root_frame,
-      const gfx::Size& initial_screen_size,
-      float initial_device_scale_factor,
+      const ScreenInfo& screen_info,
       std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory,
       const cc::LayerTreeSettings* settings) override;
   scheduler::WebRenderWidgetSchedulingState* RendererWidgetSchedulingState()
@@ -196,6 +197,17 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
                                        const WebMouseWheelEvent&) override;
   void ApplyVisualProperties(
       const VisualProperties& visual_properties) override;
+  void UpdateSurfaceAndScreenInfo(
+      const viz::LocalSurfaceIdAllocation& new_local_surface_id_allocation,
+      const gfx::Rect& compositor_viewport_pixel_rect,
+      const ScreenInfo& new_screen_info) override;
+  void UpdateScreenInfo(const ScreenInfo& new_screen_info) override;
+  void UpdateCompositorViewportAndScreenInfo(
+      const gfx::Rect& compositor_viewport_pixel_rect,
+      const ScreenInfo& new_screen_info) override;
+  void UpdateCompositorViewportRect(
+      const gfx::Rect& compositor_viewport_pixel_rect) override;
+  const ScreenInfo& GetScreenInfo() override;
 
   // This may only be called if page_ is non-null.
   LocalFrame& MainFrame() const;

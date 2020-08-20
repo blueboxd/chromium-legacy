@@ -177,12 +177,11 @@ TEST_F(NearbyPerSessionDiscoveryManagerTest, SelectShareTarget_SendSuccess) {
   EXPECT_CALL(callback, Run(_, _, _)).Times(0);
 
   // TODO(crbug.com/1099710): Call correct method and pass attachments.
-  EXPECT_CALL(sharing_service(), SendText(_, _, _))
+  EXPECT_CALL(sharing_service(), SendText(_, _))
       .WillOnce(testing::Invoke(
-          [&share_target](const ShareTarget& target, std::string text,
-                          NearbySharingService::StatusCodesCallback callback) {
+          [&share_target](const ShareTarget& target, std::string text) {
             EXPECT_EQ(share_target.id, target.id);
-            std::move(callback).Run(NearbySharingService::StatusCodes::kOk);
+            return NearbySharingService::StatusCodes::kOk;
           }));
 
   manager().SelectShareTarget(share_target.id, callback.Get());
@@ -206,12 +205,11 @@ TEST_F(NearbyPerSessionDiscoveryManagerTest, SelectShareTarget_SendError) {
                   testing::Eq(base::nullopt), testing::IsFalse()));
 
   // TODO(crbug.com/1099710): Call correct method and pass attachments.
-  EXPECT_CALL(sharing_service(), SendText(_, _, _))
+  EXPECT_CALL(sharing_service(), SendText(_, _))
       .WillOnce(testing::Invoke(
-          [&share_target](const ShareTarget& target, std::string text,
-                          NearbySharingService::StatusCodesCallback callback) {
+          [&share_target](const ShareTarget& target, std::string text) {
             EXPECT_EQ(share_target.id, target.id);
-            std::move(callback).Run(NearbySharingService::StatusCodes::kError);
+            return NearbySharingService::StatusCodes::kError;
           }));
 
   manager().SelectShareTarget(share_target.id, callback.Get());
@@ -232,6 +230,10 @@ TEST_F(NearbyPerSessionDiscoveryManagerTest, OnTransferUpdate_WaitRemote) {
   MockSelectShareTargetCallback callback;
   EXPECT_CALL(callback, Run(nearby_share::mojom::SelectShareTargetResult::kOk,
                             testing::Eq(base::nullopt), testing::IsFalse()));
+
+  // TODO(crbug.com/1099710): Call correct method and pass attachments.
+  EXPECT_CALL(sharing_service(), SendText(_, _))
+      .WillOnce(testing::Return(NearbySharingService::StatusCodes::kOk));
 
   manager().SelectShareTarget(share_target.id, callback.Get());
 
@@ -259,6 +261,10 @@ TEST_F(NearbyPerSessionDiscoveryManagerTest, OnTransferUpdate_WaitLocal) {
   MockSelectShareTargetCallback callback;
   EXPECT_CALL(callback, Run(nearby_share::mojom::SelectShareTargetResult::kOk,
                             testing::Eq(token), testing::IsTrue()));
+
+  // TODO(crbug.com/1099710): Call correct method and pass attachments.
+  EXPECT_CALL(sharing_service(), SendText(_, _))
+      .WillOnce(testing::Return(NearbySharingService::StatusCodes::kOk));
 
   manager().SelectShareTarget(share_target.id, callback.Get());
 

@@ -62,6 +62,7 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate, PlayerFrameMediato
     /** The viewport of this frame. */
     private final PlayerFrameViewport mViewport;
 
+    private boolean mIsSubframe;
     private float mInitialScaleFactor;
     /** Handles scaling of bitmaps. */
     private final Matrix mBitmapScaleMatrix;
@@ -80,6 +81,7 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate, PlayerFrameMediato
         mCompositorDelegate = compositorDelegate;
         mGestureListener = gestureListener;
         mViewport = new PlayerFrameViewport();
+        mIsSubframe = false;
         mInitialScaleFactor = 0f;
         mGuid = frameGuid;
         mContentSize = contentSize;
@@ -122,6 +124,8 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate, PlayerFrameMediato
         mSubFrameRects.add(clipRect);
         mSubFrameMediators.add(mediator);
         mSubFrameScaledRects.add(new Rect());
+        mediator.markAsSubframe();
+        mediator.setInitialScaleFactor(mInitialScaleFactor);
         mModel.set(PlayerFrameProperties.SUBFRAME_VIEWS, mSubFrameViews);
         mModel.set(PlayerFrameProperties.SUBFRAME_RECTS, mSubFrameScaledRects);
     }
@@ -145,7 +149,10 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate, PlayerFrameMediato
         }
 
         // Set initial scale so that content width fits within the layout dimensions.
-        adjustInitialScaleFactor(width);
+        if (!mIsSubframe) {
+            adjustInitialScaleFactor(width);
+        }
+
         final float scaleFactor = mViewport.getScale();
         updateViewportSize(
                 width, height, (scaleFactor == 0f) ? getInitialScaleFactor() : scaleFactor);
@@ -248,9 +255,9 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate, PlayerFrameMediato
     }
 
     @Override
-    public void resetScaleFactorOfAllSubframes() {
+    public void updateScaleFactorOfAllSubframes(float scaleFactor) {
         for (int i = 0; i < mSubFrameViews.size(); i++) {
-            mSubFrameMediators.get(i).resetScaleFactor();
+            mSubFrameMediators.get(i).updateScaleFactor(scaleFactor);
         }
     }
 
@@ -309,20 +316,30 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate, PlayerFrameMediato
 
     // Internal methods
 
-    @VisibleForTesting
-    void resetScaleFactor() {
-        // Set scale factor to 0 so subframes get the correct scale factor on scale completion.
-        mViewport.setScale(0f);
+    private void setInitialScaleFactor(float scaleFactor) {
+        mInitialScaleFactor = scaleFactor;
+
+        if (mSubFrameViews == null) return;
+
         for (int i = 0; i < mSubFrameViews.size(); i++) {
-            mSubFrameMediators.get(i).resetScaleFactor();
+            mSubFrameMediators.get(i).setInitialScaleFactor(mInitialScaleFactor);
+        }
+    }
+
+    private void markAsSubframe() {
+        mIsSubframe = true;
+    }
+
+    @VisibleForTesting
+    void updateScaleFactor(float scaleFactor) {
+        mViewport.setScale(scaleFactor);
+        for (int i = 0; i < mSubFrameViews.size(); i++) {
+            mSubFrameMediators.get(i).updateScaleFactor(scaleFactor);
         }
     }
 
     @VisibleForTesting
     void forceRedraw() {
-        adjustInitialScaleFactor(mViewport.getWidth());
-        final float scaleFactor = mViewport.getScale();
-        mViewport.setScale((scaleFactor == 0f) ? getInitialScaleFactor() : scaleFactor);
         updateVisuals(true);
         for (int i = 0; i < mSubFrameViews.size(); i++) {
             if (mSubFrameViews.get(i).getVisibility() != View.VISIBLE) continue;
@@ -344,6 +361,9 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate, PlayerFrameMediato
      */
     private void adjustInitialScaleFactor(float width) {
         mInitialScaleFactor = width / ((float) mContentSize.getWidth());
+        for (int i = 0; i < mSubFrameViews.size(); i++) {
+            mSubFrameMediators.get(i).setInitialScaleFactor(mInitialScaleFactor);
+        }
     }
 
     @VisibleForTesting

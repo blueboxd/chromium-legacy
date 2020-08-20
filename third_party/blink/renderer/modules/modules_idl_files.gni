@@ -109,6 +109,7 @@ _idl_imports = [
   "//third_party/blink/renderer/modules/push_messaging/idls.gni",
   "//third_party/blink/renderer/modules/quota/idls.gni",
   "//third_party/blink/renderer/modules/remoteplayback/idls.gni",
+  "//third_party/blink/renderer/modules/sanitizer_api/idls.gni",
   "//third_party/blink/renderer/modules/scheduler/idls.gni",
   "//third_party/blink/renderer/modules/screen_enumeration/idls.gni",
   "//third_party/blink/renderer/modules/screen_orientation/idls.gni",

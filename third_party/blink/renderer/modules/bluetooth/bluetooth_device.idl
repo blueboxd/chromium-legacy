@@ -19,7 +19,7 @@
       optional WatchAdvertisementsOptions options = {});
 
   readonly attribute DOMString id;
-  readonly attribute DOMString? name;
+  [HighEntropy=Direct, MeasureAs=BluetoothDeviceName] readonly attribute DOMString? name;
   readonly attribute BluetoothRemoteGATTServer gatt;
   [RuntimeEnabled=WebBluetoothWatchAdvertisements] readonly attribute boolean watchingAdvertisements;
 

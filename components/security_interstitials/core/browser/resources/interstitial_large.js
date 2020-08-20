@@ -228,6 +228,16 @@ function setupEvents() {
     });
   }
 
+  if (lookalike) {
+    console.log(
+        'Chrome has determined that ' +
+        loadTimeData.getString('lookalikeRequestHostname') +
+        ' could be fake or fraudulent.\n\n' +
+        'If you believe this is shown in error please visit ' +
+        'https://bugs.chromium.org/p/chromium/issues/entry?' +
+        'template=Safety+Tips+Appeals');
+  }
+
   preventDefaultOnPoundLinkClicks();
   setupExtendedReportingCheckbox();
   setupSSLDebuggingInfo();

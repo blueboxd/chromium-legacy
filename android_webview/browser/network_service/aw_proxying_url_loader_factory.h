@@ -5,10 +5,10 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_NETWORK_SERVICE_AW_PROXYING_URL_LOADER_FACTORY_H_
 #define ANDROID_WEBVIEW_BROWSER_NETWORK_SERVICE_AW_PROXYING_URL_LOADER_FACTORY_H_
 
-#include "android_webview/browser/network_service/android_stream_reader_url_loader.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "components/embedder_support/android/util/android_stream_reader_url_loader.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
@@ -55,7 +55,8 @@ namespace android_webview {
 //
 class AwProxyingURLLoaderFactory : public network::mojom::URLLoaderFactory {
  public:
-  using SecurityOptions = AndroidStreamReaderURLLoader::SecurityOptions;
+  using SecurityOptions =
+      embedder_support::AndroidStreamReaderURLLoader::SecurityOptions;
 
   // Create a factory that will create specialized URLLoaders for Android
   // WebView. If |intercept_only| parameter is true the loader created by

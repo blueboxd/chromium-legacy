@@ -109,7 +109,7 @@ public class PlayerFrameScaleControllerTest {
         Assert.assertEquals(250f, mViewport.getTransX(), TOLERANCE);
         Assert.assertEquals(350f, mViewport.getTransY(), TOLERANCE);
         expectedBitmapMatrix.reset();
-        inOrder.verify(mMediatorDelegateMock).resetScaleFactorOfAllSubframes();
+        inOrder.verify(mMediatorDelegateMock).updateScaleFactorOfAllSubframes(eq(2f));
         inOrder.verify(mMediatorDelegateMock).updateVisuals(eq(true));
         inOrder.verify(mMediatorDelegateMock).forceRedrawVisibleSubframes();
 
@@ -132,7 +132,7 @@ public class PlayerFrameScaleControllerTest {
         Assert.assertEquals(100f, mViewport.getTransX(), TOLERANCE);
         Assert.assertEquals(150f, mViewport.getTransY(), TOLERANCE);
         expectedBitmapMatrix.reset();
-        inOrder.verify(mMediatorDelegateMock).resetScaleFactorOfAllSubframes();
+        inOrder.verify(mMediatorDelegateMock).updateScaleFactorOfAllSubframes(eq(1f));
         inOrder.verify(mMediatorDelegateMock).updateVisuals(eq(true));
         inOrder.verify(mMediatorDelegateMock).forceRedrawVisibleSubframes();
     }
@@ -161,7 +161,7 @@ public class PlayerFrameScaleControllerTest {
         Assert.assertEquals(0f, mViewport.getTransX(), TOLERANCE);
         Assert.assertEquals(0f, mViewport.getTransY(), TOLERANCE);
         expectedBitmapMatrix.reset();
-        inOrder.verify(mMediatorDelegateMock).resetScaleFactorOfAllSubframes();
+        inOrder.verify(mMediatorDelegateMock).updateScaleFactorOfAllSubframes(eq(2f));
         inOrder.verify(mMediatorDelegateMock).updateVisuals(eq(true));
         inOrder.verify(mMediatorDelegateMock).forceRedrawVisibleSubframes();
 
@@ -185,7 +185,7 @@ public class PlayerFrameScaleControllerTest {
         Assert.assertEquals(0f, mViewport.getTransX(), TOLERANCE);
         Assert.assertEquals(0f, mViewport.getTransY(), TOLERANCE);
         expectedBitmapMatrix.reset();
-        inOrder.verify(mMediatorDelegateMock).resetScaleFactorOfAllSubframes();
+        inOrder.verify(mMediatorDelegateMock).updateScaleFactorOfAllSubframes(eq(1.5f));
         inOrder.verify(mMediatorDelegateMock).updateVisuals(eq(true));
         inOrder.verify(mMediatorDelegateMock).forceRedrawVisibleSubframes();
     }
@@ -214,7 +214,7 @@ public class PlayerFrameScaleControllerTest {
         Assert.assertEquals(0f, mViewport.getTransX(), TOLERANCE);
         Assert.assertEquals(0f, mViewport.getTransY(), TOLERANCE);
         expectedBitmapMatrix.reset();
-        inOrder.verify(mMediatorDelegateMock).resetScaleFactorOfAllSubframes();
+        inOrder.verify(mMediatorDelegateMock).updateScaleFactorOfAllSubframes(eq(1.5f));
         inOrder.verify(mMediatorDelegateMock).updateVisuals(eq(true));
         inOrder.verify(mMediatorDelegateMock).forceRedrawVisibleSubframes();
 
@@ -251,7 +251,7 @@ public class PlayerFrameScaleControllerTest {
         Assert.assertEquals(expectedX, mViewport.getTransX(), TOLERANCE);
         Assert.assertEquals(expectedY, mViewport.getTransY(), TOLERANCE);
         expectedBitmapMatrix.reset();
-        inOrder.verify(mMediatorDelegateMock).resetScaleFactorOfAllSubframes();
+        inOrder.verify(mMediatorDelegateMock).updateScaleFactorOfAllSubframes(eq(1.125f));
         inOrder.verify(mMediatorDelegateMock).updateVisuals(eq(true));
         inOrder.verify(mMediatorDelegateMock).forceRedrawVisibleSubframes();
     }
@@ -281,7 +281,7 @@ public class PlayerFrameScaleControllerTest {
         Assert.assertEquals(250f, mViewport.getTransX(), TOLERANCE);
         Assert.assertEquals(350f, mViewport.getTransY(), TOLERANCE);
         expectedBitmapMatrix.reset();
-        inOrder.verify(mMediatorDelegateMock).resetScaleFactorOfAllSubframes();
+        inOrder.verify(mMediatorDelegateMock).updateScaleFactorOfAllSubframes(2f);
         inOrder.verify(mMediatorDelegateMock).updateVisuals(eq(true));
         inOrder.verify(mMediatorDelegateMock).forceRedrawVisibleSubframes();
 
@@ -305,7 +305,7 @@ public class PlayerFrameScaleControllerTest {
         Assert.assertEquals(175f, mViewport.getTransX(), TOLERANCE);
         Assert.assertEquals(250f, mViewport.getTransY(), TOLERANCE);
         expectedBitmapMatrix.reset();
-        inOrder.verify(mMediatorDelegateMock).resetScaleFactorOfAllSubframes();
+        inOrder.verify(mMediatorDelegateMock).updateScaleFactorOfAllSubframes(1.5f);
         inOrder.verify(mMediatorDelegateMock).updateVisuals(eq(true));
         inOrder.verify(mMediatorDelegateMock).forceRedrawVisibleSubframes();
     }

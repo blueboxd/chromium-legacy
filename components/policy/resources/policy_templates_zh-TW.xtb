@@ -1065,11 +1065,6 @@
       如未設定這項政策，在預設情況下，受管理的使用者無法使用這項功能，未受管理的使用者則可使用這項功能。</translation>
 <translation id="2660846099862559570">永不使用 Proxy</translation>
 <translation id="2665422249821137126">在登入畫面上啟用大型游標</translation>
-<translation id="266882888912227087"> 控管 <ph name="PRODUCT_OS_NAME" />上受管理訪客工作階段的自動啟動通知。
-
-      如果將這項政策設為 True，系統會在數秒後關閉隱私權警告通知。
-
-      如果將這項政策設為 False 或不予設定，系統會持續顯示隱私權警告通知，直到使用者關閉為止。</translation>
 <translation id="2672012807430078509">控管是否要為 SMB 掛接功能啟用 NTLM 驗證通訊協定</translation>
 <translation id="2678503605767349615">必須提供裝置通用用戶端憑證</translation>
 <translation id="268577405881275241">啟用資料壓縮 Proxy 功能</translation>
@@ -2453,7 +2448,6 @@
       <ph name="PAGE_SIZE_NAME" /> 應包含其中一個列出的格式或是「自訂」(如果清單未列出所需的紙張大小)。如果將值設為「自訂」，則需一併指定 <ph name="PAGE_SIZE_CUSTOM_SIZE" /> 屬性，描述所需的高度和寬度 (以微米為單位)。否則，請勿指定 <ph name="PAGE_SIZE_CUSTOM_SIZE" /> 屬性。系統會忽略違反這些規則的政策。
 
       如果頁面大小不適用於使用者選取的印表機，系統會忽略這項政策。</translation>
-<translation id="479290425281021210">指定是否允許不安全網站向更私密的網站端點傳送要求。</translation>
 <translation id="4802744647065138872">限制系統為因應緊急復原作業所保留的使用者資料快照數量。</translation>
 <translation id="4802905909524200151">設定 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 韌體更新行為</translation>
 <translation id="4804828344300125154">�在使用者登出時一律重新啟動。</translation>
@@ -3801,13 +3795,6 @@
 
       如果將這項政策設為停用，系統會改為顯示錯誤訊息。</translation>
 <translation id="6821268164692776674"><ph name="CLOUD_PRINT_NAME" />與「儲存至 Google 雲端硬碟」的目的地</translation>
-<translation id="6823297401452148231">這項政策可控管是否允許不安全網站向更私密的網路端點傳送要求。例如，控管是否允許 http://evil.com 向私人網路上的「localhost」和端點傳送要求，這兩者都無法透過公開網際網路存取。詳情請參閱 https://wicg.github.io/cors-rfc1918/#goals。
-
-          如果不設定這項政策，從不安全網站向更私密的網路端點傳送要求的預設行為將取決於使用者對 <ph name="BLOCK_INSECURE_PRIVATE_NETWORK_REQUESTS_FEATURE_NAME" /> 功能的個人設定，使用者可以透過實際測試或指令列來進行設定。
-
-          如果將這項政策設為 False，不安全網站將無法向更私密的網路端點傳送要求。也就是說，由公開 IP 位址所提供的不安全網站將無法向 localhost 和私人 IP 位址傳送要求。由私人 IP 位址所提供的不安全網站將無法向 localhost 傳送要求。
-
-          如果將這項政策設為 True，不安全網站即可向任何網路端點傳送要求，並且需經過其他跨來源檢查。</translation>
 <translation id="6833064854262015312">將這項政策設為 True 時，系統會在登入畫面啟用高對比模式。將這項政策設為 False 時，系統會在登入畫面停用高對比模式。
 
       如果設定這項政策，使用者可暫時將高對比模式變更為啟用或停用。當登入畫面重新載入或閒置達一分鐘時，高對比模式會還原成原始狀態。

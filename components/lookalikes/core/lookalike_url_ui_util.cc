@@ -39,7 +39,8 @@ void ReportUkmForLookalikeUrlBlockingPageIfNeeded(
 
 void PopulateLookalikeUrlBlockingPageStrings(
     base::DictionaryValue* load_time_data,
-    const GURL& safe_url) {
+    const GURL& safe_url,
+    const GURL& request_url) {
   CHECK(load_time_data);
 
   PopulateStringsForSharedHTML(load_time_data);
@@ -94,6 +95,7 @@ void PopulateLookalikeUrlBlockingPageStrings(
     }
 #endif
   }
+  load_time_data->SetString("lookalikeRequestHostname", request_url.host());
 }
 
 void PopulateStringsForSharedHTML(base::DictionaryValue* load_time_data) {

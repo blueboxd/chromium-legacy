@@ -391,7 +391,6 @@ source_set("tests") {
     "dns_hosts_unittest.cc",
     "dns_query_unittest.cc",
     "dns_response_unittest.cc",
-    "dns_session_unittest.cc",
     "dns_socket_pool_unittest.cc",
     "dns_transaction_unittest.cc",
     "dns_udp_tracker_unittest.cc",

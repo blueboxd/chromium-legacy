@@ -196,12 +196,14 @@ ExtensionDownloader::ExtensionFetch::ExtensionFetch(
     const GURL& url,
     const std::string& package_hash,
     const std::string& version,
-    const std::set<int>& request_ids)
+    const std::set<int>& request_ids,
+    const ManifestFetchData::FetchPriority fetch_priority)
     : id(id),
       url(url),
       package_hash(package_hash),
       version(version),
       request_ids(request_ids),
+      fetch_priority(fetch_priority),
       credentials(CREDENTIALS_NONE),
       oauth2_attempt_count(0) {}
 
@@ -598,6 +600,11 @@ void ExtensionDownloader::CreateManifestLoader() {
   resource_request->url = active_request->full_url(),
   resource_request->load_flags = net::LOAD_DISABLE_CACHE;
 
+  if (active_request->fetch_priority() ==
+      ManifestFetchData::FetchPriority::FOREGROUND) {
+    resource_request->priority = net::MEDIUM;
+  }
+
   // Send traffic-management headers to the webstore, and omit credentials.
   // https://bugs.chromium.org/p/chromium/issues/detail?id=647516
   if (extension_urls::IsWebstoreUpdateUrl(active_request->full_url())) {
@@ -673,7 +680,8 @@ void ExtensionDownloader::TryFetchingExtensionsFromCache(
     // version if we have them.
     auto extension_fetch_data(std::make_unique<ExtensionFetch>(
         extension_id, fetch_data->base_url(), /*hash not fetched*/ "",
-        /*version not fetched*/ "", fetch_data->request_ids()));
+        /*version not fetched*/ "", fetch_data->request_ids(),
+        fetch_data->fetch_priority()));
     base::Optional<base::FilePath> cached_crx_path = GetCachedExtension(
         *extension_fetch_data, /*manifest_fetch_failed*/ true);
     if (cached_crx_path) {
@@ -849,10 +857,11 @@ void ExtensionDownloader::HandleManifestResults(
       DCHECK_EQ(fetch_data->fetch_priority(),
                 ManifestFetchData::FetchPriority::FOREGROUND);
     }
-    FetchUpdatedExtension(std::make_unique<ExtensionFetch>(
-                              extension_id, crx_url, update->package_hash,
-                              update->version, fetch_data->request_ids()),
-                          update->info);
+    FetchUpdatedExtension(
+        std::make_unique<ExtensionFetch>(
+            extension_id, crx_url, update->package_hash, update->version,
+            fetch_data->request_ids(), fetch_data->fetch_priority()),
+        update->info);
   }
 
   // If the manifest response included a <daystart> element, we want to save
@@ -1260,6 +1269,12 @@ void ExtensionDownloader::StartExtensionLoader() {
       extension_loader_resource_request_->headers;
   last_extension_loader_load_flags_for_testing_ =
       extension_loader_resource_request_->load_flags;
+
+  const ExtensionFetch* active_request = extensions_queue_.active_request();
+  if (active_request->fetch_priority ==
+      ManifestFetchData::FetchPriority::FOREGROUND) {
+    extension_loader_resource_request_->priority = net::MEDIUM;
+  }
 
   network::mojom::URLLoaderFactory* url_loader_factory_to_use =
       GetURLLoaderFactoryToUse(extension_loader_resource_request_->url);

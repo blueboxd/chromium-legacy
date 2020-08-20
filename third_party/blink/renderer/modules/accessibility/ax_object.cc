@@ -1555,6 +1555,20 @@ bool AXObject::ComputeAccessibilityIsIgnoredButIncludedInTree() const {
   return false;
 }
 
+const AXObject* AXObject::GetNativeTextControlAncestor(
+    int max_levels_to_check) const {
+  if (IsNativeTextControl())
+    return this;
+
+  if (max_levels_to_check == 0)
+    return nullptr;
+
+  if (AXObject* parent = ParentObject())
+    return parent->GetNativeTextControlAncestor(max_levels_to_check - 1);
+
+  return nullptr;
+}
+
 const AXObject* AXObject::DatetimeAncestor(int max_levels_to_check) const {
   switch (RoleValue()) {
     case ax::mojom::blink::Role::kDateTime:

@@ -752,7 +752,6 @@ void LoginPasswordView::ContentsChanged(views::Textfield* sender,
   // The feature could be enabled on the device but disabled for this user by policy.
   if (display_password_button_->GetVisible())
     clear_password_timer_->Reset();
-  display_password_button_->SetEnabled(!new_contents.empty());
 }
 
 // Implements swapping active user with arrow keys
@@ -783,7 +782,17 @@ bool LoginPasswordView::HandleKeyEvent(views::Textfield* sender,
 }
 
 void LoginPasswordView::UpdateUiState() {
-  submit_button_->SetEnabled(IsPasswordSubmittable());
+  bool enable_buttons = IsPasswordSubmittable();
+  // Disabling the submit button will make it lose focus. The previous focusable
+  // view will be the password textfield, which is more expected than the user
+  // drop down button.
+  if (!enable_buttons && submit_button_->HasFocus())
+    textfield_->RequestFocus();
+  submit_button_->SetEnabled(enable_buttons);
+
+  if (!is_display_password_feature_enabled_)
+    return;
+  display_password_button_->SetEnabled(enable_buttons);
 }
 
 void LoginPasswordView::OnCapsLockChanged(bool enabled) {

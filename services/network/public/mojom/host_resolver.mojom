@@ -75,10 +75,6 @@ struct DnsConfigOverrides {
   // Whether suffix search should be performed for multi-label names.
   Tristate append_to_multi_label_name = Tristate.NO_OVERRIDE;
 
-  // Whether source port randomization is required. This uses additional
-  // resources on some platforms.
-  Tristate randomize_ports = Tristate.NO_OVERRIDE;
-
   // Minimum number of dots before global resolution precedes |search|.
   int8 ndots = -1;  // -1 for no override.
 

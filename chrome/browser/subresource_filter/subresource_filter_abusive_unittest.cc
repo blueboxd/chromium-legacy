@@ -135,7 +135,7 @@ TEST_P(SubresourceFilterAbusiveTest, ConfigCombination) {
   // Enforcement.
   EXPECT_EQ(any_activation_enforce, disallow_requests);
   EXPECT_EQ(any_activation_enforce,
-            !!GetSettingsManager()->GetSiteMetadata(url));
+            !!GetSettingsManager()->GetSiteActivationFromMetadata(url));
   EXPECT_EQ(abusive_level_ == METADATA_ENFORCE, disallow_popups);
 
   // Activation / enforce messages.

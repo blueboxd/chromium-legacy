@@ -8,11 +8,11 @@
 #include <string>
 #include <vector>
 
-#include "android_webview/browser/input_stream.h"
 #include "android_webview/browser_jni_headers/AwWebResourceResponse_jni.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
+#include "components/embedder_support/android/util/input_stream.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_job.h"
@@ -34,8 +34,8 @@ bool AwWebResourceResponse::HasInputStream(JNIEnv* env) const {
   return !!jstream;
 }
 
-std::unique_ptr<InputStream> AwWebResourceResponse::GetInputStream(
-    JNIEnv* env) {
+std::unique_ptr<embedder_support::InputStream>
+AwWebResourceResponse::GetInputStream(JNIEnv* env) {
   // Only allow to call GetInputStream once per object, because this method
   // transfers ownership of the stream and once the unique_ptr<InputStream>
   // is deleted it also closes the original java input stream. This
@@ -51,7 +51,7 @@ std::unique_ptr<InputStream> AwWebResourceResponse::GetInputStream(
       Java_AwWebResourceResponse_getData(env, java_object_);
   if (!jstream)
     return nullptr;
-  return std::make_unique<InputStream>(jstream);
+  return std::make_unique<embedder_support::InputStream>(jstream);
 }
 
 bool AwWebResourceResponse::GetMimeType(JNIEnv* env,

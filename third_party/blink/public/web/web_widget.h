@@ -40,6 +40,7 @@
 #include "cc/trees/layer_tree_host_client.h"
 #include "third_party/blink/public/common/input/web_menu_source_type.h"
 #include "third_party/blink/public/common/metrics/document_update_reason.h"
+#include "third_party/blink/public/common/widget/screen_info.h"
 #include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
 #include "third_party/blink/public/mojom/input/pointer_lock_context.mojom-shared.h"
 #include "third_party/blink/public/mojom/input/pointer_lock_result.mojom-shared.h"
@@ -69,6 +70,10 @@ class Cursor;
 class LatencyInfo;
 }
 
+namespace viz {
+class LocalSurfaceIdAllocation;
+}
+
 namespace blink {
 class SynchronousCompositorRegistry;
 struct VisualProperties;
@@ -91,8 +96,7 @@ class WebWidget {
       scheduler::WebThreadScheduler* main_thread_scheduler,
       cc::TaskGraphRunner* task_graph_runner,
       bool for_child_local_root_frame,
-      const gfx::Size& initial_screen_size,
-      float initial_device_scale_factor,
+      const ScreenInfo& screen_info,
       std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory,
       const cc::LayerTreeSettings* settings) = 0;
 
@@ -253,6 +257,35 @@ class WebWidget {
   // Apply the visual properties to the widget.
   virtual void ApplyVisualProperties(
       const VisualProperties& visual_properties) = 0;
+
+  // Update the surface allocation information, compositor viewport rect and
+  // screen info on the widget. This method is temporary as updating visual
+  // properties is shared action between WidgetBase and RenderWidget, and will
+  // be removed when it is all done inside blink proper.
+  // (https://crbug.com/1097816)
+  virtual void UpdateSurfaceAndScreenInfo(
+      const viz::LocalSurfaceIdAllocation& new_local_surface_id_allocation,
+      const gfx::Rect& compositor_viewport_pixel_rect,
+      const ScreenInfo& new_screen_info) = 0;
+
+  // Similar to UpdateSurfaceAndScreenInfo but the surface allocation
+  // and compositor viewport rect remain the same.
+  virtual void UpdateScreenInfo(const ScreenInfo& new_screen_info) = 0;
+
+  // Similar to UpdateSurfaceAndScreenInfo but the surface allocation
+  // remains the same.
+  virtual void UpdateCompositorViewportAndScreenInfo(
+      const gfx::Rect& compositor_viewport_pixel_rect,
+      const ScreenInfo& new_screen_info) = 0;
+
+  // Similar to UpdateSurfaceAndScreenInfo but the surface allocation and screen
+  // info remain the same.
+  virtual void UpdateCompositorViewportRect(
+      const gfx::Rect& compositor_viewport_pixel_rect) = 0;
+
+  // Returns information about the screen where this view's widgets are being
+  // displayed.
+  virtual const ScreenInfo& GetScreenInfo() = 0;
 
 #if defined(OS_ANDROID)
   // Return the synchronous compositor registry.

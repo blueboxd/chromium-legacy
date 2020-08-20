@@ -371,7 +371,8 @@ public class ChromeTabCreator extends TabCreator {
     }
 
     @Override
-    public Tab createFrozenTab(TabState state, int id, int index) {
+    public Tab createFrozenTab(
+            TabState state, byte[] serializedCriticalPersistedTabData, int id, int index) {
         TabModelSelector selector = mActivity.getTabModelSelector();
         Tab parent = selector != null ? selector.getTabById(state.parentId) : null;
         boolean selectTab = mOrderController.willOpenInForeground(
@@ -411,6 +412,7 @@ public class ChromeTabCreator extends TabCreator {
                           .setDelegateFactory(createDefaultTabDelegateFactory())
                           .setInitiallyHidden(!selectTab)
                           .setTabState(state)
+                          .setSerializedCriticalPersistedTabData(serializedCriticalPersistedTabData)
                           .build();
         }
 

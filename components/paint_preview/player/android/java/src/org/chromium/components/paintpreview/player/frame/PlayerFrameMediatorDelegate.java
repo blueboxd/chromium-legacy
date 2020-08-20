@@ -53,10 +53,10 @@ public interface PlayerFrameMediatorDelegate {
     void setBitmapScaleMatrix(Matrix bitmapScaleMatrix, float scaleFactor);
 
     /**
-     * Resets the scale factor of subframes. This allows a new initial scale factor to be used for
+     * Updates the scale factor of subframes. This allows a correct scale factor to be used for
      * subframes when fetching bitmaps at the new scale.
      */
-    void resetScaleFactorOfAllSubframes();
+    void updateScaleFactorOfAllSubframes(float scaleFactor);
 
     /**
      * Forcibly redraws the currently visible subframes. This prevents issues where a subframe won't

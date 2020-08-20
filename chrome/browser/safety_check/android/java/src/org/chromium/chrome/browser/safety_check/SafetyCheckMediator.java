@@ -360,6 +360,9 @@ class SafetyCheckMediator implements PasswordCheck.Observer, SafetyCheckCommonOb
     @Override
     public void onCompromisedCredentialFound(CompromisedCredential leakedCredential) {}
 
+    @Override
+    public void onPasswordCheckProgressChanged(int alreadyProcessed, int remainingInQueue) {}
+
     /** Cancels any pending callbacks and registered observers.  */
     public void destroy() {
         cancelCallbacks();

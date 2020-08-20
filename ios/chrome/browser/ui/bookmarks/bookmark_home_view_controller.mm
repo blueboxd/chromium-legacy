@@ -2236,12 +2236,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
                 [actionFactory
                     actionToOpenInNewWindowWithURL:node->url()
                                     activityOrigin:WindowActivityBookmarksOrigin
-                                        completion:^{
-                                          [self
-                                              dismissViewControllerAnimated:YES
-                                                                 completion:
-                                                                     nil];
-                                        }]];
+                                        completion:nil]];
       }
 
       [menuElements addObject:[actionFactory actionToCopyURL:node->url()]];

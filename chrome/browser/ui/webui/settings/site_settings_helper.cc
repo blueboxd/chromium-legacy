@@ -23,6 +23,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/serial/serial_chooser_context.h"
 #include "chrome/browser/serial/serial_chooser_context_factory.h"
+#include "chrome/browser/subresource_filter/subresource_filter_content_settings_manager.h"
+#include "chrome/browser/subresource_filter/subresource_filter_profile_context.h"
+#include "chrome/browser/subresource_filter/subresource_filter_profile_context_factory.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/common/pref_names.h"
@@ -236,11 +239,11 @@ SiteSettingSource CalculateSiteSettingSource(
   if (content_type == ContentSettingsType::ADS &&
       base::FeatureList::IsEnabled(
           subresource_filter::kSafeBrowsingSubresourceFilter)) {
-    HostContentSettingsMap* map =
-        HostContentSettingsMapFactory::GetForProfile(profile);
-    if (map->GetWebsiteSetting(origin, GURL(), ContentSettingsType::ADS_DATA,
-                               /*resource_identifier=*/std::string(),
-                               /*setting_info=*/nullptr) != nullptr) {
+    SubresourceFilterContentSettingsManager* settings_manager =
+        SubresourceFilterProfileContextFactory::GetForProfile(profile)
+            ->settings_manager();
+
+    if (settings_manager->GetSiteActivationFromMetadata(origin)) {
       return SiteSettingSource::kAdsFilterBlocklist;  // Source #6.
     }
   }

@@ -46,7 +46,7 @@ const base::Feature kEnableRegularToChildTransitionFeature{
 
 // Controls whether secondary accounts are added to ARC++ for child user.
 const base::Feature kEnableSecondaryAccountsForChild{
-    "ArcEnableSecondaryAccountForChild", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ArcEnableSecondaryAccountForChild", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether we should delegate audio focus requests from ARC to Chrome.
 const base::Feature kEnableUnifiedAudioFocusFeature{

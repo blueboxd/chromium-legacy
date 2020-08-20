@@ -13,8 +13,8 @@ import static org.chromium.chrome.browser.browserservices.digitalgoods.DigitalGo
 
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.RemoteException;
 
+import org.chromium.base.Log;
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityClient;
 import org.chromium.components.embedder_support.util.Origin;
 import org.chromium.payments.mojom.DigitalGoods.AcknowledgeResponse;
@@ -28,6 +28,8 @@ import androidx.browser.trusted.TrustedWebActivityServiceConnection;
  * Activity Client.
  */
 public class DigitalGoodsAdapter {
+    private static final String TAG = "DigitalGoods";
+
     public static final String COMMAND_ACKNOWLEDGE = "acknowledge";
     public static final String COMMAND_GET_DETAILS = "getDetails";
     public static final String KEY_SUCCESS = "success";
@@ -39,13 +41,20 @@ public class DigitalGoodsAdapter {
     }
 
     public void getDetails(Uri scope, String[] itemIds, GetDetailsResponse callback) {
+        // TODO(1096428): Combine this and the below method (the difficulty comes from callback
+        // being different types).
         mClient.connectAndExecute(scope, new TrustedWebActivityClient.ExecutionCallback() {
             @Override
-            public void onConnected(Origin origin, TrustedWebActivityServiceConnection service)
-                    throws RemoteException {
-                Bundle result = service.sendExtraCommand(COMMAND_GET_DETAILS,
-                        convertGetDetailsParams(itemIds),
-                        convertGetDetailsCallback(callback));
+            public void onConnected(Origin origin, TrustedWebActivityServiceConnection service) {
+                // Wrap this call so that crashes in the TWA client don't cause crashes in Chrome.
+                Bundle result = null;
+                try {
+                    result = service.sendExtraCommand(COMMAND_GET_DETAILS,
+                            convertGetDetailsParams(itemIds), convertGetDetailsCallback(callback));
+                } catch (Exception e) {
+                    Log.w(TAG, "Exception communicating with client.");
+                    returnClientAppError(callback);
+                }
 
                 boolean success = result != null &&
                         result.getBoolean(KEY_SUCCESS, false);
@@ -65,11 +74,17 @@ public class DigitalGoodsAdapter {
             AcknowledgeResponse callback) {
         mClient.connectAndExecute(scope, new TrustedWebActivityClient.ExecutionCallback() {
             @Override
-            public void onConnected(Origin origin, TrustedWebActivityServiceConnection service)
-                    throws RemoteException {
-                Bundle result = service.sendExtraCommand(COMMAND_ACKNOWLEDGE,
-                        convertAcknowledgeParams(purchaseToken, makeAvailableAgain),
-                        convertAcknowledgeCallback(callback));
+            public void onConnected(Origin origin, TrustedWebActivityServiceConnection service) {
+                // Wrap this call so that crashes in the TWA client don't cause crashes in Chrome.
+                Bundle result = null;
+                try {
+                    result = service.sendExtraCommand(COMMAND_ACKNOWLEDGE,
+                            convertAcknowledgeParams(purchaseToken, makeAvailableAgain),
+                            convertAcknowledgeCallback(callback));
+                } catch (Exception e) {
+                    Log.w(TAG, "Exception communicating with client.");
+                    returnClientAppError(callback);
+                }
 
                 boolean success = result != null &&
                         result.getBoolean(KEY_SUCCESS, false);

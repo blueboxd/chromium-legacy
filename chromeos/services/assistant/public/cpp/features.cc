@@ -23,6 +23,9 @@ const base::Feature kAssistantBetterOnboarding{
 const base::Feature kAssistantConversationStartersV2{
     "AssistantConversationStartersV2", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kAssistantDebugging{"AssistantDebugging",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kAssistantLauncherChipIntegration{
     "AssistantLauncherChipIntegration", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -91,6 +94,10 @@ bool IsBloomEnabled() {
 
 bool IsConversationStartersV2Enabled() {
   return base::FeatureList::IsEnabled(kAssistantConversationStartersV2);
+}
+
+bool IsAssistantDebuggingEnabled() {
+  return base::FeatureList::IsEnabled(kAssistantDebugging);
 }
 
 bool IsDspHotwordEnabled() {

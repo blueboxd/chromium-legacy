@@ -85,6 +85,7 @@ void PasswordCheckBridge::GetCompromisedCredentials(
         base::android::ConvertUTF8ToJavaString(env,
                                                credential.change_password_url),
         base::android::ConvertUTF8ToJavaString(env, credential.package_name),
+        credential.create_time.ToJavaTime(),
         (credential.compromise_type ==
          password_manager::CompromiseTypeFlags::kCredentialLeaked),
         (credential.compromise_type ==
@@ -147,4 +148,12 @@ void PasswordCheckBridge::OnPasswordCheckStatusChanged(
   Java_PasswordCheckBridge_onPasswordCheckStatusChanged(
       base::android::AttachCurrentThread(), java_bridge_,
       static_cast<int>(status));
+}
+
+void PasswordCheckBridge::OnPasswordCheckProgressChanged(
+    int already_processed,
+    int remaining_in_queue) {
+  Java_PasswordCheckBridge_onPasswordCheckProgressChanged(
+      base::android::AttachCurrentThread(), java_bridge_, already_processed,
+      remaining_in_queue);
 }

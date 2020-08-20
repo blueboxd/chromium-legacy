@@ -5541,6 +5541,7 @@
         ],
       },
       'ios_eg2_tests': {
+        'mixins': ['xcode_parallelization'],
         'variants': [
           'SIM_IPHONE_X_14_0',
           'SIM_IPHONE_7_14_0',
@@ -5549,6 +5550,7 @@
         ]
       },
       'ios_eg2_cq_tests': {
+        'mixins': ['xcode_parallelization'],
         'variants': [
           'SIM_IPHONE_7_14_0',
           'SIM_IPHONE_X_14_0',
@@ -5577,6 +5579,7 @@
         ],
       },
       'ios_eg2_tests': {
+        'mixins': ['xcode_parallelization'],
         'variants': [
           # 14.0 Sims
           'SIM_IPHONE_7_14_0',
@@ -5593,6 +5596,7 @@
         ]
       },
       'ios_eg2_cq_tests': {
+        'mixins': ['xcode_parallelization'],
         'variants': [
           # 14.0 Sims
           'SIM_IPHONE_X_14_0',
@@ -5663,6 +5667,7 @@
         ],
       },
       'ios_eg2_cq_tests': {
+        'mixins': ['xcode_parallelization'],
         'variants': [
           'SIM_IPHONE_6S_12_4',
           'SIM_IPAD_AIR_2_12_4',
@@ -5672,6 +5677,7 @@
         ],
       },
       'ios_eg2_tests': {
+        'mixins': ['xcode_parallelization'],
         'variants': [
           'SIM_IPAD_AIR_2_12_4',
           'SIM_IPHONE_X_12_4',
@@ -5701,6 +5707,7 @@
 
     'ios_simulator_full_configs_test': {
       'ios_eg2_tests': {
+        'mixins': ['xcode_parallelization'],
         'variants': [
           'SIM_IPAD_AIR_2_12_4',
           'SIM_IPHONE_X_12_4',
@@ -5710,6 +5717,7 @@
         ]
       },
       'ios_eg2_cq_tests': {
+        'mixins': ['xcode_parallelization'],
         'variants': [
           'SIM_IPAD_AIR_2_12_4',
           'SIM_IPHONE_7_13_6',
@@ -5725,11 +5733,13 @@
         ]
       },
       'ios_eg2_cq_tests': {
+        'mixins': ['xcode_parallelization'],
         'variants': [
           'SIM_IPAD_AIR_2_13_6',
         ]
       },
       'ios_eg2_tests': {
+        'mixins': ['xcode_parallelization'],
         'variants': [
           'SIM_IPAD_AIR_2_13_6',
         ]
@@ -5749,6 +5759,7 @@
         ]
       },
       'ios_eg2_cq_tests': {
+        'mixins': ['xcode_parallelization'],
         'variants': [
           'SIM_IPHONE_6S_12_4',
           'SIM_IPHONE_6S_13_6',
@@ -5772,12 +5783,14 @@
         ]
       },
       'ios_eg2_cq_tests': {
+        'mixins': ['xcode_parallelization'],
         'variants': [
           'SIM_IPHONE_X_13_5',
           'SIM_IPAD_AIR_2_13_5',
         ]
       },
       'ios_eg2_tests': {
+        'mixins': ['xcode_parallelization'],
         'variants': [
           'SIM_IPHONE_X_13_5',
           'SIM_IPAD_AIR_2_13_5',

@@ -6,6 +6,7 @@
 
 import hashlib
 import os
+import re
 import shlex
 import xml.dom.minidom as minidom
 
@@ -121,12 +122,39 @@ def AssertPackage(manifest_node, package):
                                                               package))
 
 
-def _SortAndStripElementTree(tree, reverse_toplevel=False):
-  for node in tree:
-    if node.text and node.text.isspace():
-      node.text = None
-    _SortAndStripElementTree(node)
-  tree[:] = sorted(tree, key=ElementTree.tostring, reverse=reverse_toplevel)
+def _SortAndStripElementTree(root):
+  def sort_key(node):
+    ret = ElementTree.tostring(node)
+    # ElementTree.tostring inserts namespace attributes for any that are needed
+    # for the node or any of its descendants. Remove them so as to prevent a
+    # change to a child that adds/removes a namespace usage from changing sort
+    # order.
+    return re.sub(r' xmlns:.*?".*?"', '', ret)
+
+  def helper(node):
+    for child in node:
+      if child.text and child.text.isspace():
+        child.text = None
+      helper(child)
+    node[:] = sorted(node, key=sort_key)
+
+  def rename_attrs(node, from_name, to_name):
+    value = node.attrib.get(from_name)
+    if value is not None:
+      node.attrib[to_name] = value
+      del node.attrib[from_name]
+    for child in node:
+      rename_attrs(child, from_name, to_name)
+
+  # Sort alphabetically with two exceptions:
+  # 1) Put <application> node last (since it's giant).
+  # 2) Pretend android:name appears before other attributes.
+  app_node = root.find('application')
+  app_node.tag = 'zz'
+  rename_attrs(root, '{%s}name' % ANDROID_NAMESPACE, '__name__')
+  helper(root)
+  rename_attrs(root, '__name__', '{%s}name' % ANDROID_NAMESPACE)
+  app_node.tag = 'application'
 
 
 def _SplitElement(line):
@@ -256,8 +284,7 @@ def NormalizeManifest(manifest_contents):
   for child in root.getchildren():
     blur_package_name(child)
 
-  # Sort nodes alphabetically, recursively.
-  _SortAndStripElementTree(root, reverse_toplevel=True)
+  _SortAndStripElementTree(root)
 
   # Fix up whitespace/indentation.
   dom = minidom.parseString(ElementTree.tostring(root))

@@ -418,6 +418,13 @@ MediaHistoryKeyedService::GetMediaFeedsRequest::CreateTopFeedsForDisplay(
   return request;
 }
 
+MediaHistoryKeyedService::GetMediaFeedsRequest
+MediaHistoryKeyedService::GetMediaFeedsRequest::CreateSelectedFeedsForFetch() {
+  GetMediaFeedsRequest request;
+  request.type = Type::kSelectedFeedsForFetch;
+  return request;
+}
+
 MediaHistoryKeyedService::GetMediaFeedsRequest::GetMediaFeedsRequest() =
     default;
 
@@ -513,6 +520,16 @@ void MediaHistoryKeyedService::DeleteMediaFeed(const int64_t feed_id,
         FROM_HERE,
         base::BindOnce(&MediaHistoryStore::DeleteMediaFeed, store, feed_id),
         std::move(callback));
+  }
+}
+
+void MediaHistoryKeyedService::UpdateFeedUserStatus(
+    const int64_t feed_id,
+    media_feeds::mojom::FeedUserStatus status) {
+  if (auto* store = store_->GetForWrite()) {
+    store->db_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&MediaHistoryStore::UpdateFeedUserStatus,
+                                  store, feed_id, status));
   }
 }
 

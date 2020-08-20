@@ -327,9 +327,6 @@ class ContextualSearchPolicy {
      *         to see if all privacy-related conditions are met to send the base page URL.
      */
     boolean maySendBasePageUrl() {
-        // TODO(donnd): revisit for related searches privacy review. https://crbug.com/1064141.
-        if (isRelatedSearchesEnabled()) return true;
-
         return !isUserUndecided();
     }
 

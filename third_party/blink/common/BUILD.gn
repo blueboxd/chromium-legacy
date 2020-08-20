@@ -32,6 +32,7 @@ blink_python_runner("make_generated_document_policy_features") {
   inputs =
       scripts_for_json5_files + [
         "../renderer/build/scripts/make_document_policy_features.py",
+        "../renderer/build/scripts/make_document_policy_features_util.py",
         "../renderer/core/feature_policy/document_policy_features.json5",
         "../renderer/build/scripts/templates/document_policy_features.cc.tmpl",
       ]

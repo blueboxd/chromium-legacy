@@ -41,14 +41,12 @@ Certaines fonctionnalités ne seront peut-être pas disponibles et les modificat
 <translation id="1874309113135274312">Google Chrome bêta (mDNS-In)</translation>
 <translation id="1877026089748256423">Google Chrome n'est pas à jour</translation>
 <translation id="1919130412786645364">Autoriser la connexion à Google Chrome</translation>
-<translation id="195645108406520445">Configurez votre nouvel espace Chrome</translation>
 <translation id="2063848847527508675">Redémarrez Chrome OS pour appliquer la mise à jour.</translation>
 <translation id="2094919256425865063">Quitter Chrome quand même?</translation>
 <translation id="2120620239521071941">Cette action entraînera la suppression de <ph name="ITEMS_COUNT" /> éléments sur cet appareil. Pour récupérer vos données plus tard, connectez-vous à Chrome en tant que <ph name="USER_EMAIL" />.</translation>
 <translation id="2123055963409958220">Aidez-nous à améliorer Google Chrome en nous signalant les <ph name="BEGIN_LINK" />paramètres actuels<ph name="END_LINK" /></translation>
 <translation id="2151406531797534936">Veuillez redémarrer Chrome maintenant</translation>
 <translation id="2246246234298806438">Google Chrome ne peut pas afficher l'aperçu avant impression lorsque le visualiseur de documents PDF intégré n'est pas installé.</translation>
-<translation id="226038281051944330">Vous vous êtes connecté à l'aide d'un nouveau compte dans l'espace de <ph name="EXISTING_USER" />. Voulez-vous créer un espace Chrome pour <ph name="NEW_USER" /> afin de garder vos données distinctes?</translation>
 <translation id="2290014774651636340">Les clés d'API Google sont manquantes. Certaines fonctionnalités de Google Chrome seront désactivées.</translation>
 <translation id="2290095356545025170">Voulez-vous vraiment désinstaller Google Chrome?</translation>
 <translation id="2309047409763057870">Cette installation de Google Chrome est secondaire. Celui-ci ne peut donc pas servir de navigateur par défaut.</translation>
@@ -83,7 +81,6 @@ Certaines fonctionnalités ne seront peut-être pas disponibles et les modificat
 <translation id="3089968997497233615">Une nouvelle version de Google Chrome encore plus sûre est maintenant offerte.</translation>
 <translation id="3127818369811890733">Chrome OS n'a pas pu synchroniser vos données.</translation>
 <translation id="3149510190863420837">Applications Chrome</translation>
-<translation id="3351117925998652957">Choisir votre espace Chrome</translation>
 <translation id="3360895254066713204">Aide de Chrome</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome va maintenant redémarrer}=1{Chrome redémarrera dans 1 seconde}one{Chrome redémarrera dans # seconde}other{Chrome redémarrera dans # secondes}}</translation>
 <translation id="3395323229510056640">Obtenir de l'aide pour Chrome OS</translation>
@@ -106,7 +103,6 @@ Certaines fonctionnalités ne seront peut-être pas disponibles et les modificat
 <translation id="386202838227397562">Veuillez fermer toutes les fenêtres de Google Chrome et réessayer.</translation>
 <translation id="3865754807470779944">La version <ph name="PRODUCT_VERSION" /> de Chrome est installée</translation>
 <translation id="3873044882194371212">Ouvrir le lien dans une fenêtre de navi&amp;gation privée Chrome</translation>
-<translation id="3879568094278837081">Les données de navigation de cet espace seront supprimées de cet appareil. Pour les récupérer, connectez-vous à Chrome en tant que</translation>
 <translation id="3889417619312448367">Désinstaller Google Chrome</translation>
 <translation id="4050175100176540509">La dernière version propose d'importantes améliorations de la sécurité ainsi que de nouvelles fonctionnalités.</translation>
 <translation id="4053720452172726777">Personnaliser et gérer Google Chrome</translation>
@@ -147,14 +143,12 @@ Certaines fonctionnalités ne seront peut-être pas disponibles et les modificat
 <translation id="4895437082222824641">Ouvrir le lien dans un nouvel ongle&amp;t Chrome</translation>
 <translation id="4953650215774548573">Sélectionner Google Chrome comme navigateur par défaut</translation>
 <translation id="495931528404527476">Dans Chrome</translation>
-<translation id="4960472897514318257">Vous vous êtes connecté à l'aide d'un compte professionnel. Voulez-vous créer un espace Chrome pour <ph name="NEW_USER" /> afin de garder vos données personnelles distinctes?</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5062123544085870375">Redémarrer Chrome OS</translation>
 <translation id="5132929315877954718">Découvrez des applications, des jeux, des extensions et des thèmes exceptionnels conçus pour Google Chrome.</translation>
 <translation id="5170938038195470297">Votre profil ne peut pas être utilisé parce qu'il provient d'une version plus récente de Google Chrome.
 
 Certaines fonctionnalités peuvent être inaccessibles. Veuillez spécifier un répertoire de profil différent ou utiliser une version plus récente de Google Chrome.</translation>
-<translation id="5171117065011130146">Créer un espace professionnel Chrome?</translation>
 <translation id="5193136243808726294">Google Chrome OS ne peut pas ouvrir cette page.</translation>
 <translation id="5251420635869119124">Les invités peuvent utiliser Google Chrome sans rien laisser derrière eux.</translation>
 <translation id="532046782124376502">Avertissement : Google Chrome ne peut pas empêcher les extensions d'enregistrer votre historique de navigation. Pour désactiver cette extension en mode de navigation privée, désélectionnez cette option.</translation>
@@ -221,7 +215,6 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7573289029918943991">Pour voir si votre appareil est à jour, sélectionnez les <ph name="LINK_BEGIN" />paramètres de Chrome OS<ph name="LINK_END" /></translation>
 <translation id="7589360514048265910">Cet ordinateur ne recevra plus de mises à jour de Google Chrome, car Mac OS X 10.9 n'est plus pris en charge.</translation>
-<translation id="7591404275842302616">Servez-vous des espaces Chrome pour organiser votre navigation sur cet appareil</translation>
 <translation id="7592736734348559088">Google Chrome n'a pas pu synchroniser vos données, car vos renseignements de connexion ne sont plus à jour.</translation>
 <translation id="7626032353295482388">Bienvenue dans Google Chrome</translation>
 <translation id="7629695634924605473">Chrome vous informera si jamais vos mots de passe sont compromis</translation>
@@ -268,9 +261,7 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="8823341990149967727">Google Chrome n'est plus à jour</translation>
 <translation id="8834965163890861871">Google Chrome essaie de modifier des mots de passe. Pour autoriser cette action, entrez votre mot de passe Windows.</translation>
 <translation id="884296878221830158">Elle définit également la page qui s'affiche au démarrage de Chrome ou lorsque vous cliquez sur le bouton Accueil.</translation>
-<translation id="8859948767482842016">Vous vous êtes connecté à l'aide d'un compte professionnel dans l'espace de <ph name="EXISTING_USER" />. Voulez-vous créer un espace Chrome pour <ph name="WORK_DOMAIN" /> afin de garder vos données distinctes?</translation>
 <translation id="8862326446509486874">Vous ne disposez pas des droits requis pour faire une installation sur le système. Relancez l'installation une fois que vous serez connecté comme administrateur.</translation>
-<translation id="8877586659207810298">Créer un espace Chrome pour <ph name="NEW_USER" />?</translation>
 <translation id="8914504000324227558">Relancer Google Chrome</translation>
 <translation id="8999208279178790196">{0,plural, =0{Une mise à jour de Chrome est proposée}=1{Une mise à jour de Chrome est proposée}one{Une mise à jour de Chrome est proposée depuis # jour}other{Une mise à jour de Chrome est proposée depuis # jours}}</translation>
 <translation id="9026991721384951619">Chrome OS n'a pas pu synchroniser vos données, car vos renseignements de connexion ne sont plus à jour.</translation>

@@ -16,6 +16,7 @@
 <translation id="1335095011850992622">tiitrid</translation>
 <translation id="1342835525016946179">artikkel</translation>
 <translation id="1359897965706325498">bänner</translation>
+<translation id="1480676835519562650">mitme valikuga, valitud on <ph name="SELECTED" /> <ph name="COUNT" />-st.</translation>
 <translation id="1589122976691792535">piirkond</translation>
 <translation id="1591562245178063882">See kuu</translation>
 <translation id="1637811476055996098">Vali failid</translation>
@@ -51,6 +52,7 @@
 <translation id="248395913932153421">päev</translation>
 <translation id="2507943997699731163">Täitke see väli.</translation>
 <translation id="2508569020611168319">vahelehtede loend</translation>
+<translation id="2530182415807757784">mitme valikuga, ühtegi pole valitud.</translation>
 <translation id="2561842179657104141">kuva rohkem meedia juhtnuppe</translation>
 <translation id="2572483411312390101">esitus</translation>
 <translation id="2613802280814924224">Sisestage kehtiv väärtus. Lähim kehtiv väärtus on <ph name="VALID_VALUE" />.</translation>

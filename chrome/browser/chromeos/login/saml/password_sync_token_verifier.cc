@@ -49,6 +49,13 @@ void PasswordSyncTokenVerifier::RecheckAfter(base::TimeDelta delay) {
       delay);
 }
 
+void PasswordSyncTokenVerifier::CreateTokenAsync() {
+  DCHECK(!password_sync_token_fetcher_);
+  password_sync_token_fetcher_ = std::make_unique<PasswordSyncTokenFetcher>(
+      primary_profile_->GetURLLoaderFactory(), primary_profile_, this);
+  password_sync_token_fetcher_->StartTokenCreate();
+}
+
 void PasswordSyncTokenVerifier::CheckForPasswordNotInSync() {
   // In-session password change is as of now the only way to trigger the sync
   // token update. We do not need to poll if this feature is not enabled.
@@ -65,9 +72,22 @@ void PasswordSyncTokenVerifier::CheckForPasswordNotInSync() {
   if (sync_token.empty())
     sync_token = dummy_token;
 
+  DCHECK(!password_sync_token_fetcher_);
   password_sync_token_fetcher_ = std::make_unique<PasswordSyncTokenFetcher>(
       primary_profile_->GetURLLoaderFactory(), primary_profile_, this);
   password_sync_token_fetcher_->StartTokenVerify(sync_token);
+}
+
+void PasswordSyncTokenVerifier::FetchSyncTokenOnReauth() {
+  PrefService* prefs = primary_profile_->GetPrefs();
+  if (!prefs->GetBoolean(prefs::kSamlInSessionPasswordChangeEnabled)) {
+    return;
+  }
+
+  DCHECK(!password_sync_token_fetcher_);
+  password_sync_token_fetcher_ = std::make_unique<PasswordSyncTokenFetcher>(
+      primary_profile_->GetURLLoaderFactory(), primary_profile_, this);
+  password_sync_token_fetcher_->StartTokenGet();
 }
 
 void PasswordSyncTokenVerifier::CancelPendingChecks() {
@@ -78,12 +98,31 @@ void PasswordSyncTokenVerifier::CancelPendingChecks() {
   weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
-void PasswordSyncTokenVerifier::OnTokenCreated(const std::string& sync_token) {}
+void PasswordSyncTokenVerifier::OnTokenCreated(const std::string& sync_token) {
+  DCHECK(!sync_token.empty());
+  user_manager::known_user::SetPasswordSyncToken(primary_user_->GetAccountId(),
+                                                 sync_token);
+  password_sync_token_fetcher_.reset();
+  RecheckAfter(retry_backoff_.GetTimeUntilRelease());
+}
 
-void PasswordSyncTokenVerifier::OnTokenFetched(const std::string& sync_token) {}
+void PasswordSyncTokenVerifier::OnTokenFetched(const std::string& sync_token) {
+  password_sync_token_fetcher_.reset();
+  if (!sync_token.empty()) {
+    // Set token fetched from the endpoint.
+    user_manager::known_user::SetPasswordSyncToken(
+        primary_user_->GetAccountId(), sync_token);
+    RecheckAfter(retry_backoff_.GetTimeUntilRelease());
+  } else {
+    // This is the first time a sync token is created for the user: we need to
+    // initialize its value by calling the API and store it locally.
+    CreateTokenAsync();
+  }
+}
 
 void PasswordSyncTokenVerifier::OnTokenVerified(bool is_valid) {
   retry_backoff_.InformOfRequest(true);
+  password_sync_token_fetcher_.reset();
   // Schedule next token check after base interval.
   RecheckAfter(retry_backoff_.GetTimeUntilRelease());
   if (is_valid)

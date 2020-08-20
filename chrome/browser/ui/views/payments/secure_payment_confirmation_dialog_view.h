@@ -36,7 +36,19 @@ class SecurePaymentConfirmationDialogView
 
   // IDs that identify a view within the secure payment confirmation dialog.
   // Used to validate views in browsertests.
-  enum DialogViewID : int { VIEW_ID_NONE = 0, HEADER_ICON, PROGRESS_BAR };
+  enum class DialogViewID : int {
+    VIEW_ID_NONE = 0,
+    HEADER_ICON,
+    PROGRESS_BAR,
+    TITLE,
+    MERCHANT_LABEL,
+    MERCHANT_VALUE,
+    INSTRUMENT_LABEL,
+    INSTRUMENT_VALUE,
+    INSTRUMENT_ICON,
+    TOTAL_LABEL,
+    TOTAL_VALUE
+  };
 
   explicit SecurePaymentConfirmationDialogView(
       ObserverForTest* observer_for_test);
@@ -68,6 +80,17 @@ class SecurePaymentConfirmationDialogView
   void InitChildViews();
 
   std::unique_ptr<views::View> CreateHeaderView();
+  std::unique_ptr<views::View> CreateBodyView();
+  std::unique_ptr<views::View> CreateRows();
+  std::unique_ptr<views::View> CreateRowView(
+      const base::string16& label,
+      DialogViewID label_id,
+      const base::string16& value,
+      DialogViewID value_id,
+      const SkBitmap* icon = nullptr,
+      DialogViewID icon_id = DialogViewID::VIEW_ID_NONE);
+
+  void UpdateLabelView(DialogViewID id, const base::string16& text);
 
   // May be null.
   ObserverForTest* observer_for_test_ = nullptr;
@@ -76,6 +99,13 @@ class SecurePaymentConfirmationDialogView
   CancelCallback cancel_callback_;
 
   views::ProgressBar* progress_bar_ = nullptr;
+
+  // Cache the instrument icon pointer so we don't needlessly update it in
+  // OnModelUpdated().
+  const SkBitmap* instrument_icon_ = nullptr;
+  // Cache the instrument icon generation ID to check if the instrument_icon_
+  // has changed pixels.
+  uint32_t instrument_icon_generation_id_ = 0;
 
   base::WeakPtrFactory<SecurePaymentConfirmationDialogView> weak_ptr_factory_{
       this};

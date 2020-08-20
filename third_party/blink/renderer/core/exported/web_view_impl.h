@@ -180,6 +180,8 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void ResizeVisualViewport(const WebSize&) override;
   void Resize(const WebSize&) override;
   WebSize GetSize() override;
+  void SetScreenOrientationOverrideForTesting(
+      base::Optional<blink::mojom::ScreenOrientation> orientation) override;
   void ResetScrollAndScaleState() override;
   void SetIgnoreViewportTagScaleLimits(bool) override;
   WebSize ContentsPreferredMinimumSize() override;
@@ -209,6 +211,8 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void SetPageFrozen(bool frozen) override;
   WebFrameWidget* MainFrameWidget() override;
   void SetBaseBackgroundColor(SkColor) override;
+  void SetDeviceColorSpaceForTesting(
+      const gfx::ColorSpace& color_space) override;
   void PaintContent(cc::PaintCanvas*, const gfx::Rect&) override;
 
   // Overrides the page's background and base background color. You
@@ -239,6 +243,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   float DefaultMaximumPageScaleFactor() const;
   float ClampPageScaleFactorToLimits(float) const;
   void ResetScaleStateImmediately();
+  base::Optional<mojom::blink::ScreenOrientation> ScreenOrientationOverride();
 
   HitTestResult CoreHitTestResultAt(const gfx::PointF&);
   void InvalidateRect(const IntRect&);
@@ -750,6 +755,9 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   // Set when a measurement begins, reset when the measurement is taken.
   base::Optional<base::TimeTicks> update_layers_start_time_;
 
+  base::Optional<mojom::blink::ScreenOrientation> screen_orientation_override_;
+
+  mojom::blink::PageLifecycleStatePtr lifecycle_state_;
   mojo::AssociatedReceiver<mojom::blink::PageBroadcast> receiver_;
 
   base::WeakPtrFactory<WebViewImpl> weak_ptr_factory_{this};

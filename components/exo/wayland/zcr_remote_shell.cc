@@ -742,14 +742,21 @@ const struct zcr_remote_output_v1_interface remote_output_implementation = {
     remote_output_destroy,
 };
 
-class WaylandRemoteOutput : public WaylandDisplayObserver::ScaleObserver {
+class WaylandRemoteOutput : public WaylandDisplayObserver {
  public:
   explicit WaylandRemoteOutput(wl_resource* resource) : resource_(resource) {}
 
-  // Overridden from WaylandDisplayObserver::ScaleObserver:
-  void OnDisplayScalesChanged(const display::Display& display) override {
+  // Overridden from WaylandDisplayObserver:
+  bool SendDisplayMetrics(const display::Display& display,
+                          uint32_t changed_metrics) override {
     if (wl_resource_get_version(resource_) < 29)
-      return;
+      return false;
+
+    if (initial_config_sent_ &&
+        !(changed_metrics &
+          display::DisplayObserver::DISPLAY_METRIC_WORK_AREA)) {
+      return false;
+    }
 
     if (!initial_config_sent_) {
       initial_config_sent_ = true;
@@ -803,6 +810,8 @@ class WaylandRemoteOutput : public WaylandDisplayObserver::ScaleObserver {
             : ZCR_REMOTE_SURFACE_V1_SYSTEMUI_VISIBILITY_STATE_VISIBLE;
     zcr_remote_output_v1_send_systemui_visibility(resource_,
                                                   systemui_visibility);
+
+    return true;
   }
 
  private:
@@ -1470,8 +1479,8 @@ void remote_shell_get_remote_output(wl_client* client,
                                     wl_resource* resource,
                                     uint32_t id,
                                     wl_resource* output_resource) {
-  WaylandDisplayObserver* display_observer =
-      GetUserDataAs<WaylandDisplayObserver>(output_resource);
+  WaylandDisplayHandler* display_handler =
+      GetUserDataAs<WaylandDisplayHandler>(output_resource);
 
   wl_resource* remote_output_resource =
       wl_resource_create(client, &zcr_remote_output_v1_interface,
@@ -1479,7 +1488,7 @@ void remote_shell_get_remote_output(wl_client* client,
 
   auto remote_output =
       std::make_unique<WaylandRemoteOutput>(remote_output_resource);
-  display_observer->AddScaleObserver(remote_output.get());
+  display_handler->AddObserver(remote_output.get());
 
   SetImplementation(remote_output_resource, &remote_output_implementation,
                     std::move(remote_output));

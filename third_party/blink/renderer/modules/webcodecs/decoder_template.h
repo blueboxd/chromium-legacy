@@ -43,7 +43,7 @@ class MODULES_EXPORT DecoderTemplate : public ScriptWrappable {
   void decode(const InputType*, ExceptionState&);
   ScriptPromise flush(ExceptionState&);
   void reset(ExceptionState&);
-  void close();
+  void close(ExceptionState&);
 
   // GarbageCollected override.
   void Trace(Visitor*) const override;
@@ -77,6 +77,7 @@ class MODULES_EXPORT DecoderTemplate : public ScriptWrappable {
   bool ProcessFlushRequest(Request* request);
   bool ProcessResetRequest(Request* request);
   void HandleError();
+  void Shutdown(bool is_error);
 
   // Called by |decoder_|.
   void OnInitializeDone(media::Status status);
@@ -103,6 +104,8 @@ class MODULES_EXPORT DecoderTemplate : public ScriptWrappable {
   // TODO(sandersd): Store the last config, flush, and reset so that
   // duplicates can be elided.
   std::unique_ptr<MediaDecoderType> decoder_;
+  bool initializing_sync_ = false;
+  bool is_closed_ = false;
 
   // TODO(sandersd): Can this just be a HashSet by ptr comparison?
   uint32_t pending_decode_id_ = 0;

@@ -703,6 +703,7 @@
 <translation id="6402652558933147609"><ph name="VIOLATED_URL" /> वरील <ph name="ERROR_CODE" /></translation>
 <translation id="6404511346730675251">बुकमार्क संपादित करा</translation>
 <translation id="6406506848690869874">Sync</translation>
+<translation id="6410883413783534063">एकाच वेळी वेगवेगळ्या पेजना भेट देण्यासाठी टॅब उघडा</translation>
 <translation id="6412673304250309937">Chrome मध्ये स्टोअर केलेल्या असुरक्षित साइटच्या सूचीमध्ये URL तपासतो. साइटने तुमचा पासवर्ड चोरण्याचा प्रयत्न केल्यास किंवा तुम्ही हानीकारक फाइल डाउनलोड केल्यावर, Chrome, पेज आशयाच्या भागांसह, URL सुरक्षित ब्राउझिंग कडे पाठवू शकतो.</translation>
 <translation id="641643625718530986">प्रिंट करा...</translation>
 <translation id="6427112570124116297">वेबचे भाषांतर करा</translation>
@@ -821,6 +822,7 @@
 <translation id="7328017930301109123">लाइट मोडमध्ये, Chrome पेज आणखी जलद लोड करते आणि ६० टक्के पर्यंत कमी डेटा वापरते.</translation>
 <translation id="7333031090786104871">अद्याप मागील साइट जोडत आहे</translation>
 <translation id="7340958967809483333">Discover चे पर्याय</translation>
+<translation id="7352651011704765696">काहीतरी चूक झाली</translation>
 <translation id="7352939065658542140">व्हिडिओ</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{1 निवडलेला आयटम शेअर करा}other{# निवडलेले आयटम शेअर करा}}</translation>
 <translation id="7359002509206457351">पेमेंट पद्धती अ‍ॅक्सेस करा</translation>
@@ -1013,6 +1015,7 @@
 <translation id="868929229000858085">तुमचे संपर्क शोधा</translation>
 <translation id="869891660844655955">कालावधी समाप्ती तारीख</translation>
 <translation id="8712637175834984815">समजले</translation>
+<translation id="8725066075913043281">पुन्हा प्रयत्न करा</translation>
 <translation id="8748850008226585750">सामग्री लपविली</translation>
 <translation id="8751914237388039244">इमेज निवडा</translation>
 <translation id="8758557275681689734">तुमचे सर्व उघडे टॅब पहा</translation>

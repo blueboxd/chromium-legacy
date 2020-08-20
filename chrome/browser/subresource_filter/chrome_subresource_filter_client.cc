@@ -118,9 +118,12 @@ ChromeSubresourceFilterClient::OnPageActivationComputed(
 
   const GURL& url(navigation_handle->GetURL());
   if (url.SchemeIsHTTPOrHTTPS()) {
-    settings_manager_->ResetSiteMetadataBasedOnActivation(
-        url, effective_activation_level ==
-                 subresource_filter::mojom::ActivationLevel::kEnabled);
+    settings_manager_->SetSiteMetadataBasedOnActivation(
+        url,
+        effective_activation_level ==
+            subresource_filter::mojom::ActivationLevel::kEnabled,
+        SubresourceFilterContentSettingsManager::ActivationSource::
+            kSafeBrowsing);
   }
 
   if (settings_manager_->GetSitePermission(url) == CONTENT_SETTING_ALLOW) {

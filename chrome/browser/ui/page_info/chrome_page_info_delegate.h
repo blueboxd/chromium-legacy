@@ -60,6 +60,7 @@ class ChromePageInfoDelegate : public PageInfoDelegate {
       override;
   StatefulSSLHostStateDelegate* GetStatefulSSLHostStateDelegate() override;
   HostContentSettingsMap* GetContentSettings() override;
+  bool IsSubresourceFilterActivated(const GURL& site_url) override;
   bool IsContentDisplayedInVrHeadset() override;
   security_state::SecurityLevel GetSecurityLevel() override;
   security_state::VisibleSecurityState GetVisibleSecurityState() override;

@@ -41,14 +41,12 @@
 <translation id="1874309113135274312">Google Chrome ବେଟା (mDNS-In)</translation>
 <translation id="1877026089748256423">Chromeର ସମୟସୀମା ଶେଷ ହୋଇଛି</translation>
 <translation id="1919130412786645364">Chromeରେ ସାଇନ୍-ଇନ୍‌ କରିବାକୁ ଅନୁମତି ଦିଅନ୍ତୁ</translation>
-<translation id="195645108406520445">ଆପଣଙ୍କ ନୂଆ Chrome ସ୍ପେସ୍ ସେଟ୍ ଅପ୍ କରନ୍ତୁ</translation>
 <translation id="2063848847527508675">ଅପ୍‌ଡେଟ୍‌କୁ ଲାଗୁ କରିବା ପାଇଁ Chrome OSକୁ ରିଷ୍ଟାର୍ଟ କରିବାର ଆବଶ୍ୟକତା ରହିଛି।</translation>
 <translation id="2094919256425865063">ଯେକୌଣସି ମତେ Chrome ପରିତ୍ୟାଗ କରିବେ?</translation>
 <translation id="2120620239521071941">ଏହି ଡିଭାଇସ୍‌ରୁ ଏହା <ph name="ITEMS_COUNT" />ଟି ଆଇଟମ୍‌ ଡିଲିଟ୍‌ କରିବ। ପରେ ଆପଣଙ୍କର ଡାଟା ପୁନଃପ୍ରାପ୍ତ କରିବାକୁ, Chromeରେ <ph name="USER_EMAIL" />ଭାବେ ସାଇନ୍‌ ଇନ୍‌ କରନ୍ତୁ।</translation>
 <translation id="2123055963409958220"><ph name="BEGIN_LINK" />ବର୍ତ୍ତମାନ ସେଟିଂସ୍‌<ph name="END_LINK" />ର ରିପୋର୍ଟ କରି Chromeକୁ ଆହୁରି ଉତ୍ତମ କରିବାରେ ସାହାଯ୍ୟ କରନ୍ତୁ</translation>
 <translation id="2151406531797534936">ଦୟାକରି ବର୍ତ୍ତମାନ Chrome ରିଷ୍ଟାର୍ଟ କରନ୍ତୁ</translation>
 <translation id="2246246234298806438">ଯେତେବେଳେ ଅନ୍ତର୍ନିହିତ PDF ଭ୍ୟୁୟର୍‍ ନାହିଁ ସେତେବେଳେ Google Chrome ପ୍ରିଣ୍ଟ ପ୍ରିଭ୍ୟୁ ଦେଖାଇପାରିବ ନାହିଁ।</translation>
-<translation id="226038281051944330">ଆପଣ ଏକ ନୂଆ ଆକାଉଣ୍ଟ ସହ <ph name="EXISTING_USER" />ଙ୍କ ସ୍ପେସରେ ସାଇନ୍-ଇନ୍ କରିଛନ୍ତି। ଆପଣ ଆପଣଙ୍କର ଡାଟାକୁ ଅଲଗା ରଖିବା ପାଇଁ <ph name="NEW_USER" /> ନିମନ୍ତେ ଏକ ନୂଆ Chrome ସ୍ପେସ୍ ତିଆରି କରିବାକୁ ଚାହିଁବେ କି?</translation>
 <translation id="2290014774651636340">Google API କୀ' ମିଳୁନାହିଁ। Google Chromeର କିଛି ପ୍ରକାର୍ଯ୍ୟ ଅକ୍ଷମ କରାଯିବ।</translation>
 <translation id="2290095356545025170">ଆପଣ Google Chrome ଅଣସଂସ୍ଥାପନ କରିବାକୁ ଚାହୁଁଥିବା ନିଶ୍ଚିତ କି ?</translation>
 <translation id="2309047409763057870">ଏହା Google Chromeର ଏକ ସେକେଣ୍ଡାରୀ ଇନ୍‍ଷ୍ଟଲେସନ୍‌ ଏବଂ ଏହାକୁ ଆପଣଙ୍କର ଡିଫଲ୍ଟ ବ୍ରାଉଜର୍‌ କରାଯାଇପାରିବ ନାହିଁ।</translation>
@@ -83,7 +81,6 @@
 <translation id="3089968997497233615">Google Chromeର ଏକ ନୂଆ, ସୁରକ୍ଷିତ ସଂସ୍କରଣ ଉପଲବ୍ଧ ଅଛି।</translation>
 <translation id="3127818369811890733">Chrome OS ଆପଣଙ୍କ ଡାଟାକୁ ସିଙ୍କ୍ କରିପାରିଲା ନାହିଁ।</translation>
 <translation id="3149510190863420837">Chrome ଆପ୍ସ</translation>
-<translation id="3351117925998652957">ଆପଣଙ୍କ Chrome ସ୍ପେସ୍ ବାଛନ୍ତୁ</translation>
 <translation id="3360895254066713204">Chrome ସହାୟକ</translation>
 <translation id="3379938682270551431">{0,plural, =0{ବର୍ତ୍ତମାନ Chrome ପୁଣି ଲଞ୍ଚ ହେବ}=1{1 ସେକେଣ୍ଡରେ Chrome ପୁଣି ଲଞ୍ଚ ହେବ}other{# ସେକେଣ୍ଡରେ Chrome ପୁଣି ଲଞ୍ଚ ହେବ}}</translation>
 <translation id="3395323229510056640">Chromium OS ସହ ସାହାଯ୍ୟ ପ୍ରାପ୍ତ କରନ୍ତୁ</translation>
@@ -106,7 +103,6 @@
 <translation id="386202838227397562">ଦୟାକରି ସମସ୍ତ Google Chrome ୱିଣ୍ଡୋ ବନ୍ଦ କରନ୍ତୁ ଏବଂ ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।</translation>
 <translation id="3865754807470779944">Chrome ସଂସ୍କରଣ <ph name="PRODUCT_VERSION" /> ଇନଷ୍ଟଲ୍ କରାଯାଇଛି</translation>
 <translation id="3873044882194371212">Chromeର ଇନ୍‍କ&amp;ଗ୍ନିଟୋ ୱିଣ୍ଡୋରେ ଲିଙ୍କ୍‍ ଖୋଲନ୍ତୁ</translation>
-<translation id="3879568094278837081">ଏହି ଡିଭାଇସରୁ ଏହି ସ୍ପେସର ବ୍ରାଉଜିଂ ଡାଟା ଡିଲିଟ୍ ହୋଇଯିବ। ଡାଟା ପୁନରୁଦ୍ଧାର କରିବାକୁ, ଏପରି ଭାବରେ Chromeରେ ସାଇନ୍ ଇନ୍ କରନ୍ତୁ</translation>
 <translation id="3889417619312448367">Google Chrome ଅସଂସ୍ଥାପନ କରନ୍ତୁ</translation>
 <translation id="4050175100176540509">ନବୀନତମ ସଂସ୍କରଣରେ ଗୁରୁତ୍ୱପୂର୍ଣ୍ଣ ସୁରକ୍ଷା ଉନ୍ନୟନ ଏବଂ ନୂତନ ବୈଶିଷ୍ଟ୍ୟ ଉପଲବ୍ଧ ଅଛି।</translation>
 <translation id="4053720452172726777">Google Chromeକୁ କଷ୍ଟମାଇଜ୍ ଓ ନିୟନ୍ତ୍ରଣ କରନ୍ତୁ।</translation>
@@ -147,14 +143,12 @@
 <translation id="4895437082222824641">ନୂଆ Chrome &amp;ଟାବ୍‌ରେ ଲିଙ୍କ୍‌ଟି ଖୋଲନ୍ତୁ</translation>
 <translation id="4953650215774548573">Google Chromeକୁ ଆପଣଙ୍କର ଡିଫଲ୍ଟ ବ୍ରାଉଜର୍ ଭାବେ ସେଟ୍ କରନ୍ତୁ</translation>
 <translation id="495931528404527476">Chromeରେ</translation>
-<translation id="4960472897514318257">ଆପଣ ଏକ କାର୍ଯ୍ୟସ୍ଥଳୀ ଆକାଉଣ୍ଟ ସହ ସାଇନ୍-ଇନ୍ କରିଛନ୍ତି। ଆପଣ ଆପଣଙ୍କର ବ୍ୟକ୍ତିଗତ ଡାଟାକୁ ଅଲଗା ରଖିବା ପାଇଁ <ph name="NEW_USER" /> ନିମନ୍ତେ ଏକ ନୂଆ Chrome ସ୍ପେସ୍ ତିଆରି କରିବାକୁ ଚାହିଁବେ କି?</translation>
 <translation id="4990567037958725628">Google Chrome କ୍ୟାନାରୀ</translation>
 <translation id="5062123544085870375">Chrome OS ରିଷ୍ଟାର୍ଟ କରନ୍ତୁ</translation>
 <translation id="5132929315877954718">Google Chrome ପାଇଁ ଆହୁରି ଭଲ ଆପ୍, ଗେମ୍, ଏକ୍ସଟେନ୍‌ସନ୍ ଏବଂ ଥିମ୍‌ଗୁଡ଼ିକ ଖୋଜି ପାଆନ୍ତୁ।</translation>
 <translation id="5170938038195470297">ଆପଣଙ୍କର ପ୍ରୋଫାଇଲ୍ ବ୍ୟବହୃତ ହୋଇପାରିବ ନାହିଁ କାରଣ ଏହା Google Chromeର ଏକ ନୂତନ ସଂସ୍କରଣରୁ ଅଟେ।
 
 କିଛି ବୈଶିଷ୍ଟ୍ୟ ହୁଏତ ଉପଲବ୍ଧ ନଥାଇପାରେ। ଦୟାକରି ଏକ ଭିନ୍ନ ପ୍ରୋଫାଇଲ୍ ଡିରେକ୍ଟୋରୀ ନିର୍ଦ୍ଦିଷ୍ଟ କରନ୍ତୁ କିମ୍ବା Chromeର ଏକ ନୂତନ ସଂସ୍କରଣ ବ୍ୟବହାର କରନ୍ତୁ।</translation>
-<translation id="5171117065011130146">ନୂଆ Chrome ୱାର୍କ ସ୍ପେସ୍ ତିଆରି କରିବେ?</translation>
 <translation id="5193136243808726294">ଏହି ପୃଷ୍ଠାକୁ Google Chrome OS ଖୋଲିପାରିବ ନାହିଁ।</translation>
 <translation id="5251420635869119124">ଅତିଥିମାନେ, ପଛରେ କିଛି ନଛାଡ଼ି Chrome ବ୍ୟବହାର କରିପାରିବେ।</translation>
 <translation id="532046782124376502">ଚେତାବନୀ: Google Chrome କୌଣସି ଏକ୍ସଟେନ୍‌ସନ୍‍କୁ ଆପଣଙ୍କ ବ୍ରାଉଜିଂ ଇତିବୃତ୍ତି ରେକର୍ଡ କରିବାରୁ ପ୍ରତିରୋଧ କରିପାରିବ ନାହିଁ। ଏହି ଏକ୍ସଟେନ୍‌ସନ୍‍କୁ ଇନ୍‌କଗ୍‌ନିଟୋ ମୋଡ୍‍‍ରେ ଅକ୍ଷମ କରିବା ପାଇଁ, ଏହି ବିକଳ୍ପକୁ ଅଣଚୟନ କରନ୍ତୁ।</translation>
@@ -221,7 +215,6 @@
 <translation id="7535429826459677826">Google Chrome ଡେଭ୍‍</translation>
 <translation id="7573289029918943991">ଆପଣଙ୍କ ଡିଭାଇସ୍ ଅପ୍ ଟୁ ଡେଟ୍ ଅଛି କି ନାହିଁ, ତାହା ଦେଖିବାକୁ <ph name="LINK_BEGIN" />Chrome OS ସେଟିଂସ୍‌<ph name="LINK_END" />କୁ ଯାଆନ୍ତୁ</translation>
 <translation id="7589360514048265910">ଏହି କମ୍ପ୍ୟୁଟର୍ ଆଉ Google Chrome ଅପ‌ଡେଟ୍‍ ପ୍ରାପ୍ତ କରିବ ନାହିଁ କାରଣ ଏହା ଆଉ Mac OS X 10.9 ସମର୍ଥିତ ନୁହେଁ।</translation>
-<translation id="7591404275842302616">ଏହି ଡିଭାଇସରେ ଆପଣଙ୍କ ବ୍ରାଉଜିଂକୁ ବ୍ୟବସ୍ଥିତ ରଖିବା ପାଇଁ Chrome ସ୍ପେସ୍ ବ୍ୟବହାର କରନ୍ତୁ</translation>
 <translation id="7592736734348559088">Google Chrome ଆପଣଙ୍କର ଡାଟାକୁ ସିଙ୍କ୍ କରିପାରିଲା ନାହିଁ କାରଣ ଆପଣଙ୍କର ଆକାଉଣ୍ଟର ସାଇନ୍‌-ଇନ୍‌ ବିବରଣୀର ସମୟ ସୀମା ସମାପ୍ତ ହୋ‍ଇସାରିଛି।</translation>
 <translation id="7626032353295482388">Chromeକୁ ସ୍ୱାଗତ୍‌</translation>
 <translation id="7629695634924605473">ଆପଣଙ୍କର ପାସ୍‍ୱାର୍ଡଗୁଡ଼ିକ କେବେ ବି ଚୋରି ହୋଇଛି କି ନାହିଁ ତାହା Chrome ଆପଣଙ୍କୁ ଜାଣିବାକୁ ଦିଏ</translation>
@@ -268,9 +261,7 @@
 <translation id="8823341990149967727">Chrome ପୁରୁଣା ହୋଇଯାଇଛି</translation>
 <translation id="8834965163890861871">Google Chrome ପାସୱାର୍ଡଗୁଡ଼ିକୁ ଏଡିଟ୍ କରିବାକୁ ଚେଷ୍ଟା କରୁଛି। ଏହାକୁ ଅନୁମତି ଦେବା ପାଇଁ ଆପଣଙ୍କ Windows ପାସୱାର୍ଡ ଟାଇପ୍ କରନ୍ତୁ।</translation>
 <translation id="884296878221830158">ଯେତେବେଳେ ଆପଣ Chrome ଆରମ୍ଭ କରନ୍ତି କିମ୍ବା ହୋମ୍‌ ବଟନ୍‌ କ୍ଲିକ୍ କରନ୍ତି, ସେତେବେଳେ କେଉଁ ପୃଷ୍ଠା ଦେଖାଯିବ ତାହା ଏହା ନିୟନ୍ତ୍ରଣ କରେ।</translation>
-<translation id="8859948767482842016">ଆପଣ ଏକ କାର୍ଯ୍ୟସ୍ଥଳୀ ଆକାଉଣ୍ଟ ସହ <ph name="EXISTING_USER" />ଙ୍କ ସ୍ପେସରେ ସାଇନ୍-ଇନ୍ କରିଛନ୍ତି। ଆପଣ ଆପଣଙ୍କର ଡାଟାକୁ ଅଲଗା ରଖିବା ପାଇଁ <ph name="WORK_DOMAIN" /> ନିମନ୍ତେ ଏକ ନୂଆ Chrome ସ୍ପେସ୍ ତିଆରି କରିବାକୁ ଚାହିଁବେ କି?</translation>
 <translation id="8862326446509486874">ସିଷ୍ଟମ୍-ଲେବଲ୍ ସଂସ୍ଥାପନ ପାଇଁ ଆପଣଙ୍କ ପାଖରେ ଉପଯୁକ୍ତ ଅଧିକାର ନାହିଁ । ବ୍ୟବସ୍ଥାପକ ଭାବରେ ପୁନଃ ସଂସ୍ଥାପକ ଚଳାଇବାକୁ ଚେଷ୍ଟା କରନ୍ତୁ ।</translation>
-<translation id="8877586659207810298"><ph name="NEW_USER" /> ପାଇଁ ନୂଆ Chrome ସ୍ପେସ୍ ତିଆରି କରିବେ?</translation>
 <translation id="8914504000324227558">Chrome ପୁଣି ଲଞ୍ଚ କରନ୍ତୁ</translation>
 <translation id="8999208279178790196">{0,plural, =0{Chrome‍ର ଏକ ଅପ୍‍‍ଡେଟ୍ ଉପଲବ୍ଧ ଅଛି}=1{Chrome‍ର ଏକ ଅପ୍‍‍ଡେଟ୍ ଉପଲବ୍ଧ ଅଛି}other{# ଦିନ ପାଇଁ Chrome‍ର ଏକ ଅପ୍‍‍ଡେଟ୍ ଉପଲବ୍ଧ ଅଛି}}</translation>
 <translation id="9026991721384951619">ଆପଣଙ୍କର ଆକାଉଣ୍ଟ ସାଇନ୍ ଇନ୍ ବିବରଣୀ ପୁରୁଣା ହୋଇଥିବା ଯୋଗୁଁ Chrome OS ଆପଣଙ୍କର ଡାଟା ସିଙ୍କ୍ କରିପାରିଲା ନାହିଁ।</translation>

@@ -54,6 +54,7 @@ public class ChromeCachedFlags {
                 ChromeFeatureList.CHROME_DUET_ADAPTIVE,
                 ChromeFeatureList.CHROME_DUET_LABELED,
                 ChromeFeatureList.CLOSE_TAB_SUGGESTIONS,
+                ChromeFeatureList.CRITICAL_PERSISTED_TAB_DATA,
                 ChromeFeatureList.COMMAND_LINE_ON_NON_ROOTED,
                 ChromeFeatureList.CONDITIONAL_TAB_STRIP_ANDROID,
                 ChromeFeatureList.DOWNLOADS_AUTO_RESUMPTION_NATIVE,

@@ -8,5 +8,5 @@
 
 FeaturePromoBubbleParams::FeaturePromoBubbleParams() = default;
 FeaturePromoBubbleParams::~FeaturePromoBubbleParams() = default;
-FeaturePromoBubbleParams::FeaturePromoBubbleParams(FeaturePromoBubbleParams&&) =
-    default;
+FeaturePromoBubbleParams::FeaturePromoBubbleParams(
+    const FeaturePromoBubbleParams&) = default;

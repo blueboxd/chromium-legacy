@@ -53,9 +53,9 @@ _TEST_MANIFEST_NORMALIZED = """\
     tools:ignore="MissingVersion"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
-  <uses-sdk android:minSdkVersion="24" android:targetSdkVersion="30"/>
   <uses-feature android:name="android.hardware.vr.headtracking" \
 android:required="false" android:version="1"/>
+  <uses-sdk android:minSdkVersion="24" android:targetSdkVersion="30"/>
   <application android:name="testname">
     <activity  # DIFF-ANCHOR: {activity_diff_anchor}
         {extra_activity_attr}android:icon="@drawable/ic_devices_48dp"

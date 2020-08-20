@@ -77,16 +77,6 @@ void LoginScreenClient::RemoveSystemTrayFocusObserver(
   system_tray_focus_observers_.RemoveObserver(observer);
 }
 
-void LoginScreenClient::AddLoginScreenShownObserver(
-    LoginScreenShownObserver* observer) {
-  login_screen_shown_observers_.AddObserver(observer);
-}
-
-void LoginScreenClient::RemoveLoginScreenShownObserver(
-    LoginScreenShownObserver* observer) {
-  login_screen_shown_observers_.RemoveObserver(observer);
-}
-
 chromeos::LoginAuthRecorder* LoginScreenClient::auth_recorder() {
   return auth_recorder_.get();
 }
@@ -242,11 +232,6 @@ void LoginScreenClient::ShowLockScreenNotificationSettings() {
 void LoginScreenClient::OnFocusLeavingSystemTray(bool reverse) {
   for (ash::SystemTrayFocusObserver& observer : system_tray_focus_observers_)
     observer.OnFocusLeavingSystemTray(reverse);
-}
-
-void LoginScreenClient::OnLoginScreenShown() {
-  for (LoginScreenShownObserver& observer : login_screen_shown_observers_)
-    observer.OnLoginScreenShown();
 }
 
 void LoginScreenClient::LoadWallpaper(const AccountId& account_id) {

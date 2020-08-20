@@ -7,7 +7,12 @@ package org.chromium.chrome.browser.autofill_assistant;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.autofill_assistant.metrics.DropOutReason;
 import org.chromium.chrome.browser.autofill_assistant.metrics.FeatureModuleInstallation;
+import org.chromium.chrome.browser.autofill_assistant.metrics.LiteScriptFinishedState;
+import org.chromium.chrome.browser.autofill_assistant.metrics.LiteScriptOnboarding;
+import org.chromium.chrome.browser.autofill_assistant.metrics.LiteScriptStarted;
 import org.chromium.chrome.browser.autofill_assistant.metrics.OnBoarding;
+import org.chromium.chrome.browser.metrics.UkmRecorder;
+import org.chromium.content_public.browser.WebContents;
 
 /**
  * Records user actions and histograms related to Autofill Assistant.
@@ -40,5 +45,38 @@ import org.chromium.chrome.browser.autofill_assistant.metrics.OnBoarding;
         RecordHistogram.recordEnumeratedHistogram(
                 "Android.AutofillAssistant.FeatureModuleInstallation", metric,
                 FeatureModuleInstallation.MAX_VALUE + 1);
+    }
+
+    /**
+     * UKM metric. Records the start of a lite script.
+     */
+    /* package */ static void recordLiteScriptStarted(
+            WebContents webContents, @LiteScriptStarted int started) {
+        new UkmRecorder.Bridge().recordEventWithIntegerMetric(webContents,
+                /* eventName = */ "AutofillAssistant.LiteScriptStarted",
+                /* metricName = */ "LiteScriptStarted",
+                /* metricValue = */ started);
+    }
+
+    /**
+     * UKM metric. Records the finish of a lite script.
+     */
+    /* package */ static void recordLiteScriptFinished(
+            WebContents webContents, @LiteScriptFinishedState int finishedState) {
+        new UkmRecorder.Bridge().recordEventWithIntegerMetric(webContents,
+                /* eventName = */ "AutofillAssistant.LiteScriptFinished",
+                /* metricName = */ "LiteScriptFinished",
+                /* metricValue = */ finishedState);
+    }
+
+    /**
+     * UKM metric. Records the onboarding after a successful lite script.
+     */
+    /* package */ static void recordLiteScriptOnboarding(
+            WebContents webContents, @LiteScriptOnboarding int onboarding) {
+        new UkmRecorder.Bridge().recordEventWithIntegerMetric(webContents,
+                /* eventName = */ "AutofillAssistant.LiteScriptOnboarding",
+                /* metricName = */ "LiteScriptOnboarding",
+                /* metricValue = */ onboarding);
     }
 }

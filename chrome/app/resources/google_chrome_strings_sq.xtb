@@ -41,14 +41,12 @@ Disa funksione mund të mos ofrohen dhe ndryshimet në preferenca nuk do të ruh
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome nuk është i përditësuar</translation>
 <translation id="1919130412786645364">Lejo identifikimin në Chrome</translation>
-<translation id="195645108406520445">Konfiguro hapësirën tënde të re të Chrome</translation>
 <translation id="2063848847527508675">Chrome OS ka nevojë të riniset për të zbatuar përditësimin.</translation>
 <translation id="2094919256425865063">Dëshiron ta mbyllësh Chrome gjithsesi?</translation>
 <translation id="2120620239521071941">Kjo do të fshijë <ph name="ITEMS_COUNT" /> artikuj nga kjo pajisje. Për t'i marrë më vonë të dhënat, identifikohu te Chrome si <ph name="USER_EMAIL" />.</translation>
 <translation id="2123055963409958220">Ndihmo në përmirësimin e Chrome duke raportuar <ph name="BEGIN_LINK" />cilësimet aktuale<ph name="END_LINK" /></translation>
 <translation id="2151406531797534936">Rinise Chrome tani</translation>
 <translation id="2246246234298806438">Google Chrome nuk mund ta tregojë afishimin paraprak të printimit kur mungon shikuesi i integruar për PDF-të.</translation>
-<translation id="226038281051944330">U identifikove me një llogari të re në hapësirën e <ph name="EXISTING_USER" />. Dëshiron të krijosh një hapësirë të re të Chrome për <ph name="NEW_USER" /> për t'i mbajtur të dhënat e tua të ndara?</translation>
 <translation id="2290014774651636340">Çelësat API të Google mungojnë. Disa funksione të Chrome do të çaktivizohen.</translation>
 <translation id="2290095356545025170">Je i sigurt që dëshiron ta çinstalosh Google Chrome?</translation>
 <translation id="2309047409763057870">Ky është instalim dytësor i Google Chrome dhe nuk mund të bëhet shfletuesi yt i parazgjedhur.</translation>
@@ -83,7 +81,6 @@ Disa funksione mund të mos ofrohen dhe ndryshimet në preferenca nuk do të ruh
 <translation id="3089968997497233615">Ofrohet një version i ri dhe më i sigurt i Google Chrome.</translation>
 <translation id="3127818369811890733">Sistemi operativ Chrome nuk mund t'i sinkronizonte të dhënat e tua.</translation>
 <translation id="3149510190863420837">Aplikacionet e Chrome</translation>
-<translation id="3351117925998652957">Zgjidh "Hapësirën tënde të Chrome"</translation>
 <translation id="3360895254066713204">Ndihmësi i Chrome</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome do të hapet përsëri tani}=1{Chrome do të hapet përsëri për 1 sekondë}other{Chrome do të hapet përsëri për # sekonda}}</translation>
 <translation id="3395323229510056640">Merr ndihmë për Chrome OS</translation>
@@ -106,7 +103,6 @@ Disa funksione mund të mos ofrohen dhe ndryshimet në preferenca nuk do të ruh
 <translation id="386202838227397562">Mbyll të gjitha dritaret e Google Chrome dhe provo përsëri.</translation>
 <translation id="3865754807470779944">Është instaluar versioni i Chrome <ph name="PRODUCT_VERSION" /></translation>
 <translation id="3873044882194371212">Hape lidhjen në një dritare të fshehtë të Chrome</translation>
-<translation id="3879568094278837081">Të dhënat e shfletimit të kësaj hapësire do të fshihen nga kjo pajisje. Për të rikuperuar të dhënat, identifikohu në Chrome si</translation>
 <translation id="3889417619312448367">Çinstalo Google Chrome</translation>
 <translation id="4050175100176540509">Përmirësime të rëndësishme sigurie dhe funksione të reja ofrohen në versionin e fundit.</translation>
 <translation id="4053720452172726777">Personalizo dhe kontrollo Google Chrome</translation>
@@ -147,14 +143,12 @@ Disa funksione mund të mos ofrohen dhe ndryshimet në preferenca nuk do të ruh
 <translation id="4895437082222824641">Hape lidhjen në një &amp;skedë të re të Chrome</translation>
 <translation id="4953650215774548573">Caktoje Google Chrome si shfletuesin tënd të parazgjedhur</translation>
 <translation id="495931528404527476">Në Chrome</translation>
-<translation id="4960472897514318257">U identifikove me një llogari pune. Dëshiron të krijosh një hapësirë të re të Chrome për <ph name="NEW_USER" /> për t'i mbajtur të dhënat e tua personale të ndara?</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5062123544085870375">Rinis Chrome OS</translation>
 <translation id="5132929315877954718">Zbulo aplikacione, lojëra, shtesa dhe tema të mrekullueshme për Google Chrome.</translation>
 <translation id="5170938038195470297">Profili yt nuk mund të përdoret sepse është nga një version më i ri i Google Chrome.
 
 Disa funksione mund të mos ofrohen. Specifiko një direktori tjetër të profilit ose përdor një version më të ri të Chrome.</translation>
-<translation id="5171117065011130146">Të krijohet një hapësirë e re pune e Chrome?</translation>
 <translation id="5193136243808726294">Sistemi operativ Google Chrome nuk mund ta hapë këtë faqe.</translation>
 <translation id="5251420635869119124">Vizitorët mund të përdorin Chrome pa lënë asgjë prapa.</translation>
 <translation id="532046782124376502">Paralajmërim: Google Chrome nuk mund të parandalojë regjistrimin e historikut të shfletimit nga shtesat. Për ta çaktivizuar këtë shtesë në modalitetin "e fshehtë", anulo zgjedhjen e këtij opsioni.</translation>
@@ -222,7 +216,6 @@ Google Chrome nuk është në gjendje të rikuperojë cilësimet e tua.</transla
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7573289029918943991">Për të parë nëse pajisja jote është e përditësuar, shko te <ph name="LINK_BEGIN" />Cilësimet e sistemit operativ Chrome<ph name="LINK_END" /></translation>
 <translation id="7589360514048265910">Ky kompjuter nuk do të marrë më përditësime të Google Chrome sepse Mac OS X 10.9 nuk mbështetet më.</translation>
-<translation id="7591404275842302616">Përdor "Hapësirat e Chrome" për ta mbajtur shfletimin tënd të organizuar në këtë pajisje</translation>
 <translation id="7592736734348559088">Google Chrome nuk mund të sinkronizonte të dhënat e tua sepse detajet e identifikimit të llogarisë nuk janë të përditësuara.</translation>
 <translation id="7626032353295482388">Mirë se vjen në Chrome</translation>
 <translation id="7629695634924605473">Chrome të informon nëse fjalëkalimet e tua komprometohen ndonjëherë</translation>
@@ -269,9 +262,7 @@ Google Chrome nuk është në gjendje të rikuperojë cilësimet e tua.</transla
 <translation id="8823341990149967727">Sistemi operativ Chrome nuk është i përditësuar</translation>
 <translation id="8834965163890861871">Google Chrome po përpiqet t'i modifikojë fjalëkalimet. Shkruaj fjalëkalimin tënd të Windows për ta lejuar këtë.</translation>
 <translation id="884296878221830158">Ai kontrollon po ashtu se cila faqe shfaqet kur nis Chrome ose kur klikon te butoni "Kreu".</translation>
-<translation id="8859948767482842016">U identifikove me një llogari pune në hapësirën e <ph name="EXISTING_USER" />. Dëshiron të krijosh një hapësirë të re të Chrome për <ph name="WORK_DOMAIN" /> për t'i mbajtur të dhënat e tua të ndara?</translation>
 <translation id="8862326446509486874">Nuk ke të drejtat e duhura për instalimin në nivel sistemi. Provo ta ekzekutosh përsëri instaluesin si Administrator.</translation>
-<translation id="8877586659207810298">Të krijohet hapësirë e re e Chrome për <ph name="NEW_USER" />?</translation>
 <translation id="8914504000324227558">Rinis Chrome</translation>
 <translation id="8999208279178790196">{0,plural, =0{Ofrohet një përditësim i Chrome}=1{Ofrohet një përditësim i Chrome}other{Një përditësim i Chrome ofrohet prej # ditësh}}</translation>
 <translation id="9026991721384951619">Sistemi operativ Chrome nuk mund të sinkronizonte të dhënat e tua sepse detajet e identifikimit të llogarisë nuk janë të përditësuara.</translation>

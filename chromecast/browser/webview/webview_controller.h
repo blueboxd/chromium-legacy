@@ -66,6 +66,8 @@ class WebviewController : public CastWebContents::Delegate,
 
  private:
   void HandleUpdateSettings(const webview::UpdateSettingsRequest& request);
+  void HandleSetAutoMediaPlaybackPolicy(
+      const webview::SetAutoMediaPlaybackPolicyRequest& request);
 
   webview::AsyncPageEvent_State current_state();
 
@@ -79,9 +81,6 @@ class WebviewController : public CastWebContents::Delegate,
 
   // content::WebContentsObserver
   void DidFirstVisuallyNonEmptyPaint() override;
-
-  // WebContentController
-  void RenderViewCreated(content::RenderViewHost* render_view_host) override;
 
   const bool enabled_for_dev_;
   std::unique_ptr<content::WebContents> contents_;

@@ -506,7 +506,7 @@ TEST_F(WebViewTest, SetBaseBackgroundColorBeforeMainFrame) {
         frame_test_helpers::GetSynchronousSingleThreadLayerTreeSettings();
     web_widget_client.set_layer_tree_host(widget->InitializeCompositing(
         false, web_widget_client.main_thread_scheduler(),
-        web_widget_client.task_graph_runner(), true, gfx::Size(), 1.0f,
+        web_widget_client.task_graph_runner(), true, ScreenInfo(),
         std::make_unique<cc::TestUkmRecorderFactory>(), &layer_tree_settings));
     widget->SetCompositorVisible(true);
     web_view->DidAttachLocalMainFrame();
@@ -4114,7 +4114,7 @@ TEST_F(WebViewTest, SetHasTouchEventConsumers) {
         frame_test_helpers::GetSynchronousSingleThreadLayerTreeSettings();
     web_widget_client.set_layer_tree_host(widget->InitializeCompositing(
         false, web_widget_client.main_thread_scheduler(),
-        web_widget_client.task_graph_runner(), true, gfx::Size(), 1.0f,
+        web_widget_client.task_graph_runner(), true, ScreenInfo(),
         std::make_unique<cc::TestUkmRecorderFactory>(), &layer_tree_settings));
     widget->SetCompositorVisible(true);
     web_view_impl->DidAttachLocalMainFrame();

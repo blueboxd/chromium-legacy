@@ -1,0 +1,54 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+package wc_fuzzer;
+
+message ConfigureVideoDecoder {
+  // String describing codec (e.g. "vp09.00.10.08")
+  optional string codec = 1;
+
+  optional bytes description = 2;
+}
+
+message EncodedVideoChunk {
+  enum EncodedVideoChunkType {
+    KEY = 0;
+    DELTA = 1;
+  }
+  optional EncodedVideoChunkType type = 1;
+
+  optional uint64 timestamp = 2;
+
+  optional uint64 duration = 3;
+
+  optional bytes data = 4;
+}
+
+message DecodeVideo {
+  optional EncodedVideoChunk chunk = 1;
+}
+
+message Flush {
+  optional bool wait_for_promise = 1;
+}
+
+message Reset {}
+
+message Close {}
+
+message VideoDecoderApiInvocation {
+  oneof Api {
+    ConfigureVideoDecoder configure = 1;
+    DecodeVideo decode = 2;
+    Flush flush = 3;
+    Reset reset = 4;
+    Close close = 5;
+  }
+}
+
+message VideoDecoderApiInvocationSequence {
+  repeated VideoDecoderApiInvocation invocations = 1;
+}

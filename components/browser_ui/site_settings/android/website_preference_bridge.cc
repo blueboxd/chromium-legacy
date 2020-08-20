@@ -887,9 +887,8 @@ static jboolean JNI_WebsitePreferenceBridge_GetAdBlockingActivated(
     const JavaParamRef<jobject>& jbrowser_context_handle,
     const JavaParamRef<jstring>& jorigin) {
   GURL url(ConvertJavaStringToUTF8(env, jorigin));
-  return !!GetHostContentSettingsMap(jbrowser_context_handle)
-               ->GetWebsiteSetting(url, GURL(), ContentSettingsType::ADS_DATA,
-                                   std::string(), nullptr);
+  return permissions::PermissionsClient::Get()->IsSubresourceFilterActivated(
+      unwrap(jbrowser_context_handle), url);
 }
 
 static void JNI_WebsitePreferenceBridge_GetArOrigins(

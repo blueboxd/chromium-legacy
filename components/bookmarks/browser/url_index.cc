@@ -27,22 +27,6 @@ std::unique_ptr<BookmarkNode> UrlIndex::Remove(BookmarkNode* node,
                                                std::set<GURL>* removed_urls) {
   base::AutoLock url_lock(url_lock_);
   RemoveImpl(node, removed_urls);
-  if (removed_urls) {
-    // RemoveImpl() adds an entry to removed_urls for each node of type URL. As
-    // duplicates are allowed we need to remove any entries that are still
-    // bookmarked.
-    for (auto i = removed_urls->begin(); i != removed_urls->end();) {
-      if (IsBookmarkedNoLock(*i)) {
-        // When we erase the iterator pointing at the erasee is
-        // invalidated, so using i++ here within the "erase" call is
-        // important as it advances the iterator before passing the
-        // old value through to erase.
-        removed_urls->erase(i++);
-      } else {
-        ++i;
-      }
-    }
-  }
   BookmarkNode* parent = node->parent();
   return parent->Remove(size_t{parent->GetIndexOf(node)});
 }
@@ -140,7 +124,7 @@ void UrlIndex::RemoveImpl(BookmarkNode* node, std::set<GURL>* removed_urls) {
     while (*i != node)
       ++i;
     nodes_ordered_by_url_set_.erase(i);
-    if (removed_urls)
+    if (removed_urls && !IsBookmarkedNoLock(node->url()))
       removed_urls->insert(node->url());
   }
   for (const auto& child : base::Reversed(node->children()))

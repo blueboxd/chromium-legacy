@@ -406,10 +406,6 @@ void RenderWidget::Initialize(ShowCallback show_callback,
   // metrics.
   if (!is_hidden_ && !never_composited_)
     web_widget->SetCompositorVisible(true);
-
-  // Note that this calls into the WebWidget.
-  UpdateSurfaceAndScreenInfo(local_surface_id_allocation_from_parent_,
-                             CompositorViewportRect(), screen_info);
 }
 
 bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
@@ -477,10 +473,11 @@ void RenderWidget::UpdateVisualProperties(
     // with a single UpdateSurfaceAndScreenInfo() call. The emulator may
     // change the ScreenInfo and then will call back to RenderWidget. Before
     // that we keep the current (possibly emulated) ScreenInfo.
-    UpdateSurfaceAndScreenInfo(
+    GetWebWidget()->UpdateSurfaceAndScreenInfo(
         visual_properties.local_surface_id_allocation.value_or(
             viz::LocalSurfaceIdAllocation()),
-        visual_properties.compositor_viewport_pixel_rect, screen_info_);
+        visual_properties.compositor_viewport_pixel_rect,
+        GetWebWidget()->GetScreenInfo());
 
     // This will call back into this class to set the widget size, visible
     // viewport size, screen info and screen rects, based on the device
@@ -504,7 +501,7 @@ void RenderWidget::UpdateVisualProperties(
       if (visual_properties.is_fullscreen_granted !=
               IsFullscreenGrantedForFrame() ||
           visual_properties.screen_info.device_scale_factor !=
-              screen_info_.device_scale_factor)
+              GetWebWidget()->GetScreenInfo().device_scale_factor)
         ignore_resize_ipc = false;
     }
 
@@ -523,7 +520,7 @@ void RenderWidget::UpdateVisualProperties(
             size_, visual_properties.screen_info.device_scale_factor));
       }
 
-      UpdateSurfaceAndScreenInfo(
+      GetWebWidget()->UpdateSurfaceAndScreenInfo(
           visual_properties.local_surface_id_allocation.value_or(
               viz::LocalSurfaceIdAllocation()),
           new_compositor_viewport_pixel_rect, visual_properties.screen_info);
@@ -539,7 +536,8 @@ void RenderWidget::UpdateVisualProperties(
         // document lifecycle.
         render_frame->SetPreferCompositingToLCDTextEnabledOnRenderView(
             ComputePreferCompositingToLCDText(
-                compositor_deps_, screen_info_.device_scale_factor));
+                compositor_deps_,
+                GetWebWidget()->GetScreenInfo().device_scale_factor));
       }
 
       // Store this even when auto-resizing, it is the size of the full viewport
@@ -579,8 +577,8 @@ void RenderWidget::EnableDeviceEmulation(
 
   if (!device_emulator_) {
     device_emulator_ = std::make_unique<RenderWidgetScreenMetricsEmulator>(
-        this, screen_info_, size_, visible_viewport_size_, widget_screen_rect_,
-        window_screen_rect_);
+        this, GetWebWidget()->GetScreenInfo(), size_, visible_viewport_size_,
+        widget_screen_rect_, window_screen_rect_);
   }
   device_emulator_->ChangeEmulationParams(params);
 }
@@ -890,10 +888,6 @@ void RenderWidget::ResizeWebWidget() {
   }
 }
 
-gfx::Rect RenderWidget::CompositorViewportRect() const {
-  return layer_tree_host_->device_viewport_rect();
-}
-
 void RenderWidget::SetScreenInfoAndSize(
     const blink::ScreenInfo& screen_info,
     const gfx::Size& widget_size,
@@ -904,14 +898,13 @@ void RenderWidget::SetScreenInfoAndSize(
   // Emulation happens on regular main frames which don't use auto-resize mode.
   DCHECK(!AutoResizeMode());
 
-  UpdateSurfaceAndScreenInfo(local_surface_id_allocation_from_parent_,
-                             CompositorViewportRect(), screen_info);
+  GetWebWidget()->UpdateScreenInfo(screen_info);
 
   RenderFrameImpl* render_frame =
       RenderFrameImpl::FromWebFrame(GetFrameWidget()->LocalRoot());
-  // UpdateSurfaceAndScreenInfo() changes properties including the device scale
+  // UpdateScreenInfo() changes properties including the device scale
   // factor, which changes PreferCompositingToLCDText decisions.
-  // TODO(danakj): Do this in UpdateSurfaceAndScreenInfo? But requires a Resize
+  // TODO(danakj): Do this in UpdateScreenInfo? But requires a Resize
   // to happen after (see comment on
   // SetPreferCompositingToLCDTextEnabledOnRenderView).
   //
@@ -921,8 +914,9 @@ void RenderWidget::SetScreenInfoAndSize(
   // and change compositing state. So ResizeWebWidget() must come after this
   // call, as it runs the entire document lifecycle.
   render_frame->SetPreferCompositingToLCDTextEnabledOnRenderView(
-      ComputePreferCompositingToLCDText(compositor_deps_,
-                                        screen_info_.device_scale_factor));
+      ComputePreferCompositingToLCDText(
+          compositor_deps_,
+          GetWebWidget()->GetScreenInfo().device_scale_factor));
 
   visible_viewport_size_ = visible_viewport_size;
   SetSize(widget_size);
@@ -992,9 +986,10 @@ void RenderWidget::InitCompositing(const blink::ScreenInfo& screen_info) {
   layer_tree_host_ = webwidget_->InitializeCompositing(
       never_composited_, compositor_deps_->GetWebMainThreadScheduler(),
       compositor_deps_->GetTaskGraphRunner(), for_child_local_root_frame_,
-      screen_info.rect.size(), screen_info.device_scale_factor,
-      compositor_deps_->CreateUkmRecorderFactory(), /*settings=*/nullptr);
+      screen_info, compositor_deps_->CreateUkmRecorderFactory(),
+      /*settings=*/nullptr);
   DCHECK(layer_tree_host_);
+  webwidget_->UpdateScreenInfo(screen_info);
 }
 
 // static
@@ -1091,10 +1086,6 @@ void RenderWidget::EmulatedToScreenRect(gfx::Rect* screen_rect) const {
   screen_rect->set_y(opener_original_widget_screen_origin_.y() +
                      (screen_rect->y() - opener_widget_screen_origin_.y()) *
                          opener_emulator_scale_);
-}
-
-blink::ScreenInfo RenderWidget::GetScreenInfo() {
-  return screen_info_;
 }
 
 WebRect RenderWidget::WindowRect() {
@@ -1220,64 +1211,6 @@ void RenderWidget::ImeFinishComposingTextForPepper(bool keep_selection) {
 #endif
 }
 
-void RenderWidget::UpdateSurfaceAndScreenInfo(
-    const viz::LocalSurfaceIdAllocation& new_local_surface_id_allocation,
-    const gfx::Rect& compositor_viewport_pixel_rect,
-    const blink::ScreenInfo& new_screen_info) {
-  // Same logic is used in RenderWidgetHostImpl::SynchronizeVisualProperties to
-  // detect if there is a screen orientation change.
-  bool orientation_changed =
-      screen_info_.orientation_angle != new_screen_info.orientation_angle ||
-      screen_info_.orientation_type != new_screen_info.orientation_type;
-  blink::ScreenInfo previous_original_screen_info = GetOriginalScreenInfo();
-
-  local_surface_id_allocation_from_parent_ = new_local_surface_id_allocation;
-  screen_info_ = new_screen_info;
-
-  // Note carefully that the DSF specified in |new_screen_info| is not the
-  // DSF used by the compositor during device emulation!
-  layer_tree_host_->SetViewportRectAndScale(
-      compositor_viewport_pixel_rect,
-      GetOriginalScreenInfo().device_scale_factor,
-      local_surface_id_allocation_from_parent_);
-  // The ViewportVisibleRect derives from the LayerTreeView's viewport size,
-  // which is set above.
-  layer_tree_host_->SetViewportVisibleRect(ViewportVisibleRect());
-  layer_tree_host_->SetDisplayColorSpaces(screen_info_.display_color_spaces);
-
-  if (orientation_changed)
-    OnOrientationChange();
-
-  if (for_frame()) {
-    RenderFrameImpl* render_frame =
-        RenderFrameImpl::FromWebFrame(GetFrameWidget()->LocalRoot());
-    // TODO(danakj): RenderWidget knows the DSF and could avoid calling into
-    // blink when it hasn't changed, but it sets an initial |screen_info_|
-    // during construction, so it is hard to tell if the value is not the
-    // default value once we get to OnSynchronizeVisualProperties. Thus we
-    // call into blink unconditionally and let it early out if it's already
-    // set.
-    render_frame->SetDeviceScaleFactorOnRenderView(
-        compositor_deps_->IsUseZoomForDSFEnabled(),
-        screen_info_.device_scale_factor);
-    // When the device scale changes, the size and position of the popup would
-    // need to be adjusted, which we can't do. Just close the popup, which is
-    // also consistent with page zoom and resize behavior.
-    if (previous_original_screen_info.device_scale_factor !=
-        screen_info_.device_scale_factor) {
-      blink::WebView* web_view = GetFrameWidget()->LocalRoot()->View();
-      web_view->CancelPagePopup();
-    }
-  }
-
-  // Propagate changes down to child local root RenderWidgets and BrowserPlugins
-  // in other frame trees/processes.
-  if (previous_original_screen_info != GetOriginalScreenInfo()) {
-    for (auto& observer : render_frame_proxies_)
-      observer.OnScreenInfoChanged(GetOriginalScreenInfo());
-  }
-}
-
 void RenderWidget::SetWindowRectSynchronously(
     const gfx::Rect& new_window_rect) {
   // This method is only call in tests, and it applies the |new_window_rect| to
@@ -1293,9 +1226,9 @@ void RenderWidget::SetWindowRectSynchronously(
   layer_tree_host_->RequestNewLocalSurfaceId();
 
   gfx::Rect compositor_viewport_pixel_rect(gfx::ScaleToCeiledSize(
-      new_window_rect.size(), screen_info_.device_scale_factor));
-  UpdateSurfaceAndScreenInfo(local_surface_id_allocation_from_parent_,
-                             compositor_viewport_pixel_rect, screen_info_);
+      new_window_rect.size(),
+      GetWebWidget()->GetScreenInfo().device_scale_factor));
+  GetWebWidget()->UpdateCompositorViewportRect(compositor_viewport_pixel_rect);
 
   visible_viewport_size_ = new_window_rect.size();
   SetSize(new_window_rect.size());
@@ -1323,9 +1256,7 @@ void RenderWidget::UpdateScreenRects(const gfx::Rect& widget_screen_rect,
 void RenderWidget::OnSetViewportIntersection(
     const blink::ViewportIntersectionState& intersection_state) {
   if (auto* frame_widget = GetFrameWidget()) {
-    compositor_visible_rect_ = intersection_state.compositor_visible_rect;
     frame_widget->SetRemoteViewportIntersection(intersection_state);
-    layer_tree_host_->SetViewportVisibleRect(ViewportVisibleRect());
   }
 }
 
@@ -1361,32 +1292,21 @@ void RenderWidget::ConvertViewportToWindow(blink::WebRect* rect) {
 
 void RenderWidget::ConvertViewportToWindow(blink::WebFloatRect* rect) {
   if (compositor_deps_->IsUseZoomForDSFEnabled()) {
-    rect->x /= GetOriginalScreenInfo().device_scale_factor;
-    rect->y /= GetOriginalScreenInfo().device_scale_factor;
-    rect->width /= GetOriginalScreenInfo().device_scale_factor;
-    rect->height /= GetOriginalScreenInfo().device_scale_factor;
+    float device_scale_factor = GetOriginalScreenInfo().device_scale_factor;
+    rect->x /= device_scale_factor;
+    rect->y /= device_scale_factor;
+    rect->width /= device_scale_factor;
+    rect->height /= device_scale_factor;
   }
 }
 
 void RenderWidget::ConvertWindowToViewport(blink::WebFloatRect* rect) {
   if (compositor_deps_->IsUseZoomForDSFEnabled()) {
-    rect->x *= GetOriginalScreenInfo().device_scale_factor;
-    rect->y *= GetOriginalScreenInfo().device_scale_factor;
-    rect->width *= GetOriginalScreenInfo().device_scale_factor;
-    rect->height *= GetOriginalScreenInfo().device_scale_factor;
-  }
-}
-
-void RenderWidget::OnOrientationChange() {
-  if (auto* frame_widget = GetFrameWidget()) {
-    // LocalRoot() might return null for provisional main frames. In this case,
-    // the frame hasn't committed a navigation and is not swapped into the tree
-    // yet, so it doesn't make sense to send orientation change events to it.
-    //
-    // TODO(https://crbug.com/578349): This check should be cleaned up
-    // once provisional frames are gone.
-    if (frame_widget->LocalRoot())
-      frame_widget->LocalRoot()->SendOrientationChangeEvent();
+    float device_scale_factor = GetOriginalScreenInfo().device_scale_factor;
+    rect->x *= device_scale_factor;
+    rect->y *= device_scale_factor;
+    rect->width *= device_scale_factor;
+    rect->height *= device_scale_factor;
   }
 }
 
@@ -1431,17 +1351,6 @@ void RenderWidget::DidAutoResize(const gfx::Size& new_size) {
       widget_screen_rect_ = new_pos;
       window_screen_rect_ = new_pos;
     }
-
-    // TODO(ccameron): Note that this destroys any information differentiating
-    // |size_| from the compositor's viewport size. Also note that the
-    // calculation of |new_compositor_viewport_pixel_rect| does not appear to
-    // take into account device emulation.
-    layer_tree_host_->RequestNewLocalSurfaceId();
-    gfx::Rect new_compositor_viewport_pixel_rect = gfx::Rect(
-        gfx::ScaleToCeiledSize(size_, screen_info_.device_scale_factor));
-    UpdateSurfaceAndScreenInfo(local_surface_id_allocation_from_parent_,
-                               new_compositor_viewport_pixel_rect,
-                               screen_info_);
   }
 }
 
@@ -1460,7 +1369,6 @@ void RenderWidget::RegisterRenderFrameProxy(RenderFrameProxy* proxy) {
   // These properties are propagated down the RenderWidget tree through
   // the RenderFrameProxy (see explanation in OnUpdateVisualProperties()).
   // When a new RenderFrameProxy is added, we propagate them immediately.
-  proxy->OnScreenInfoChanged(GetOriginalScreenInfo());
   proxy->OnVisibleViewportSizeChanged(visible_viewport_size_);
   proxy->OnRootWindowSegmentsChanged(root_widget_window_segments_);
 }
@@ -1477,10 +1385,10 @@ void RenderWidget::UnregisterRenderFrame(RenderFrameImpl* frame) {
   render_frames_.RemoveObserver(frame);
 }
 
-const blink::ScreenInfo& RenderWidget::GetOriginalScreenInfo() const {
+blink::ScreenInfo RenderWidget::GetOriginalScreenInfo() {
   if (device_emulator_)
     return device_emulator_->original_screen_info();
-  return screen_info_;
+  return GetWebWidget()->GetScreenInfo();
 }
 
 gfx::PointF RenderWidget::ConvertWindowPointToViewport(
@@ -1572,11 +1480,11 @@ void RenderWidget::SetDeviceScaleFactorForTesting(float factor) {
   if (!factor)
     return;
 
-  blink::ScreenInfo info = screen_info_;
+  blink::ScreenInfo info = GetWebWidget()->GetScreenInfo();
   info.device_scale_factor = factor;
   gfx::Size viewport_pixel_size = gfx::ScaleToCeiledSize(size_, factor);
-  UpdateSurfaceAndScreenInfo(local_surface_id_allocation_from_parent_,
-                             gfx::Rect(viewport_pixel_size), info);
+  GetWebWidget()->UpdateCompositorViewportAndScreenInfo(
+      gfx::Rect(viewport_pixel_size), info);
   if (!AutoResizeMode())
     ResizeWebWidget();  // This picks up the new device scale factor in |info|.
 
@@ -1584,20 +1492,7 @@ void RenderWidget::SetDeviceScaleFactorForTesting(float factor) {
       RenderFrameImpl::FromWebFrame(GetFrameWidget()->LocalRoot());
   render_frame->SetPreferCompositingToLCDTextEnabledOnRenderView(
       ComputePreferCompositingToLCDText(compositor_deps_,
-                                        screen_info_.device_scale_factor));
-}
-
-void RenderWidget::SetDeviceColorSpaceForTesting(
-    const gfx::ColorSpace& color_space) {
-  // We are changing the device color space from the renderer, so allocate a
-  // new viz::LocalSurfaceId to avoid surface invariants violations in tests.
-  layer_tree_host_->RequestNewLocalSurfaceId();
-
-  blink::ScreenInfo info = screen_info_;
-  info.display_color_spaces = gfx::DisplayColorSpaces(color_space);
-
-  UpdateSurfaceAndScreenInfo(local_surface_id_allocation_from_parent_,
-                             CompositorViewportRect(), info);
+                                        info.device_scale_factor));
 }
 
 void RenderWidget::SetWindowRectSynchronouslyForTesting(
@@ -1632,12 +1527,6 @@ PepperPluginInstanceImpl* RenderWidget::GetFocusedPepperPluginInsideWidget() {
   return nullptr;
 }
 #endif
-
-gfx::Rect RenderWidget::ViewportVisibleRect() {
-  if (for_child_local_root_frame_)
-    return compositor_visible_rect_;
-  return CompositorViewportRect();
-}
 
 bool RenderWidget::AutoResizeMode() {
   if (!delegate_)

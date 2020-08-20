@@ -229,15 +229,21 @@ TEST_F(LiteServiceTest, GetActionsSplitsActionsResponseAtLastBrowse) {
         // will have automatically assigned unique payloads to prompts.
         ActionsResponseProto proto;
         ASSERT_TRUE(proto.ParseFromString(response));
-        ASSERT_TRUE(proto.actions().size() == 3);
+        ASSERT_TRUE(proto.actions().size() == 4);
+        // The first action is a ConfigureUiState, which is automatically added
+        // by the lite_service.
         EXPECT_TRUE(proto.actions(0).action_info_case() ==
-                    ActionProto::kPrompt);
-        EXPECT_TRUE(proto.actions(0).prompt().browse_mode());
+                    ActionProto::kConfigureUiState);
+        EXPECT_TRUE(proto.actions(0).configure_ui_state().overlay_behavior() ==
+                    ConfigureUiStateProto::HIDDEN);
         EXPECT_TRUE(proto.actions(1).action_info_case() ==
-                    ActionProto::kWaitForDom);
-        EXPECT_TRUE(proto.actions(2).action_info_case() ==
                     ActionProto::kPrompt);
-        EXPECT_TRUE(proto.actions(2).prompt().browse_mode());
+        EXPECT_TRUE(proto.actions(1).prompt().browse_mode());
+        EXPECT_TRUE(proto.actions(2).action_info_case() ==
+                    ActionProto::kWaitForDom);
+        EXPECT_TRUE(proto.actions(3).action_info_case() ==
+                    ActionProto::kPrompt);
+        EXPECT_TRUE(proto.actions(3).prompt().browse_mode());
 
         for (const auto& action : proto.actions()) {
           processed_actions.emplace_back(ProcessedActionProto());
@@ -245,7 +251,7 @@ TEST_F(LiteServiceTest, GetActionsSplitsActionsResponseAtLastBrowse) {
           processed_actions.back().set_status(ACTION_APPLIED);
         }
         processed_actions.back().mutable_prompt_choice()->set_server_payload(
-            proto.actions(2).prompt().choices(0).server_payload());
+            proto.actions(3).prompt().choices(0).server_payload());
       });
   lite_service_->GetActions(kFakeScriptPath, GURL(kFakeUrl),
                             TriggerContextImpl(), "", "",

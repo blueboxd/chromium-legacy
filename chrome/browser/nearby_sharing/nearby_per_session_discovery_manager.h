@@ -43,11 +43,6 @@ class NearbyPerSessionDiscoveryManager
                          SelectShareTargetCallback callback) override;
 
  private:
-  // Called as a result of NearbySharingService::Send() to indicate if the
-  // transfer has been initiated successfully. OnTransferUpdate() will be called
-  // multiple times as the transfer progresses.
-  void OnSend(NearbySharingService::StatusCodes status);
-
   // Unregisters this class from the NearbySharingService.
   void UnregisterSendSurface();
 

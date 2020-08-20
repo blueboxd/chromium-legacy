@@ -63,6 +63,7 @@
 <translation id="1554477036522844996">Nova janela</translation>
 <translation id="1580783302095112590">Correio enviado.</translation>
 <translation id="1582732959743469162">Esta ação vai interromper totalmente o progresso da transferência atual.</translation>
+<translation id="1605405588277479165">Desativada – Não recomendado</translation>
 <translation id="1605658421715042784">Copiar imagem</translation>
 <translation id="1608337082864370066">Pesquisar imagem copiada</translation>
 <translation id="1612730193129642006">Mostrar grelha de separadores</translation>
@@ -435,6 +436,7 @@ A Entrega também tem de estar ativada na secção Geral das Definições e os s
 <translation id="6040143037577758943">Fechar</translation>
 <translation id="6042308850641462728">Mais</translation>
 <translation id="605721222689873409">AA</translation>
+<translation id="6059830886158432458">Controle as suas notícias e atividade aqui.</translation>
 <translation id="6066301408025741299">Toque para cancelar.</translation>
 <translation id="6108923351542677676">Configuração em curso…</translation>
 <translation id="6119050551270742952">Página Web atual – Nav. anónima</translation>
@@ -495,6 +497,7 @@ Os sites não podem utilizar cookies para ver a sua atividade de navegação em 
 <translation id="6624219055418309072">Bloquear na Navegação anónima</translation>
 <translation id="6628106477656132239">Data de validade inválida</translation>
 <translation id="6638511529934826365">Aplicar zoom no texto…</translation>
+<translation id="6639730758971422557">Para ativar a Navegação segura, abra <ph name="BEGIN_LINK" />Sincronização e Serviços Google<ph name="END_LINK" /> e toque em Navegação segura.</translation>
 <translation id="6642362222295953972">Mudar para um separador existente</translation>
 <translation id="6643016212128521049">Limpar</translation>
 <translation id="6645899968535965230">Código QR: <ph name="PAGE_TITLE" /></translation>
@@ -579,6 +582,7 @@ Os sites não podem utilizar cookies para ver a sua atividade de navegação em 
 <translation id="7561196759112975576">Sempre</translation>
 <translation id="7600965453749440009">Nunca traduzir do <ph name="LANGUAGE" /></translation>
 <translation id="7603852183842204213">Pop-ups bloqueados (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
+<translation id="7607521702806708809">Eliminar palavra-passe</translation>
 <translation id="7638584964844754484">Frase de acesso incorreta</translation>
 <translation id="7649070708921625228">Ajuda</translation>
 <translation id="7658239707568436148">Cancelar</translation>
@@ -657,6 +661,7 @@ Os sites podem utilizar cookies para ver a sua atividade de navegação em difer
 <translation id="8529767659511976195">Novo</translation>
 <translation id="8532105204136943229">Ano de validade</translation>
 <translation id="8533166274275423134">Aberta noutro local</translation>
+<translation id="8533670235862049797">A Navegação segura está ativada.</translation>
 <translation id="8534481786647257214">Publicação no Google+ concluído.</translation>
 <translation id="8548878600947630424">Localizar na página...</translation>
 <translation id="8574235780160508979">Os Termos de Utilização do Chrome vão ser alterados a 31 de março. <ph name="BEGIN_LINK" />Reveja-os<ph name="END_LINK" />.</translation>

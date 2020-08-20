@@ -175,7 +175,7 @@ class PagePopupChromeClient final : public EmptyChromeClient {
 
   ScreenInfo GetScreenInfo(LocalFrame&) const override {
     // LocalFrame is ignored since there is only 1 frame in a popup.
-    return popup_->WidgetClient()->GetScreenInfo();
+    return popup_->GetScreenInfo();
   }
 
   WebViewImpl* GetWebView() const override { return popup_->web_view_; }
@@ -375,16 +375,15 @@ cc::LayerTreeHost* WebPagePopupImpl::InitializeCompositing(
     scheduler::WebThreadScheduler* main_thread_scheduler,
     cc::TaskGraphRunner* task_graph_runner,
     bool for_child_local_root_frame,
-    const gfx::Size& initial_screen_size,
-    float initial_device_scale_factor,
+    const ScreenInfo& screen_info,
     std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory,
     const cc::LayerTreeSettings* settings) {
   // Careful Initialize() is called after InitializeCompositing, so don't do
   // much work here.
   widget_base_->InitializeCompositing(
       never_composited, main_thread_scheduler, task_graph_runner,
-      for_child_local_root_frame, initial_screen_size,
-      initial_device_scale_factor, std::move(ukm_recorder_factory), settings);
+      for_child_local_root_frame, screen_info, std::move(ukm_recorder_factory),
+      settings);
   return widget_base_->LayerTreeHost();
 }
 
@@ -463,6 +462,35 @@ WebPagePopupImpl::GetSynchronousCompositorRegistry() {
 void WebPagePopupImpl::ApplyVisualProperties(
     const VisualProperties& visual_properties) {
   widget_base_->UpdateVisualProperties(visual_properties);
+}
+
+void WebPagePopupImpl::UpdateSurfaceAndScreenInfo(
+    const viz::LocalSurfaceIdAllocation& new_local_surface_id_allocation,
+    const gfx::Rect& compositor_viewport_pixel_rect,
+    const ScreenInfo& new_screen_info) {
+  widget_base_->UpdateSurfaceAndScreenInfo(new_local_surface_id_allocation,
+                                           compositor_viewport_pixel_rect,
+                                           new_screen_info);
+}
+
+void WebPagePopupImpl::UpdateScreenInfo(const ScreenInfo& new_screen_info) {
+  widget_base_->UpdateScreenInfo(new_screen_info);
+}
+
+void WebPagePopupImpl::UpdateCompositorViewportAndScreenInfo(
+    const gfx::Rect& compositor_viewport_pixel_rect,
+    const ScreenInfo& new_screen_info) {
+  widget_base_->UpdateCompositorViewportAndScreenInfo(
+      compositor_viewport_pixel_rect, new_screen_info);
+}
+
+void WebPagePopupImpl::UpdateCompositorViewportRect(
+    const gfx::Rect& compositor_viewport_pixel_rect) {
+  widget_base_->UpdateCompositorViewportRect(compositor_viewport_pixel_rect);
+}
+
+const ScreenInfo& WebPagePopupImpl::GetScreenInfo() {
+  return widget_base_->GetScreenInfo();
 }
 
 void WebPagePopupImpl::SetCompositorVisible(bool visible) {
@@ -758,6 +786,14 @@ void WebPagePopupImpl::UpdateVisualProperties(
 void WebPagePopupImpl::UpdateScreenRects(const gfx::Rect& widget_screen_rect,
                                          const gfx::Rect& window_screen_rect) {
   WidgetClient()->UpdateScreenRects(widget_screen_rect, window_screen_rect);
+}
+
+ScreenInfo WebPagePopupImpl::GetOriginalScreenInfo() {
+  return WidgetClient()->GetOriginalScreenInfo();
+}
+
+gfx::Rect WebPagePopupImpl::ViewportVisibleRect() {
+  return widget_base_->CompositorViewportRect();
 }
 
 WebURL WebPagePopupImpl::GetURLForDebugTrace() {

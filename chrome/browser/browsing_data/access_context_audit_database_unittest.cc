@@ -5,8 +5,10 @@
 #include "chrome/browser/browsing_data/access_context_audit_database.h"
 
 #include "base/bind_helpers.h"
+#include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
 #include "sql/database.h"
 #include "sql/test/scoped_error_expecter.h"
@@ -190,6 +192,52 @@ TEST_F(AccessContextAuditDatabaseTest, DatabaseInitialization) {
 
   // [top_frame_origin, type, origin, access_utc]
   EXPECT_EQ(4u, sql::test::CountTableColumns(&raw_db, "originStorageAPIs"));
+}
+
+TEST_F(AccessContextAuditDatabaseTest, ComputeDatabaseMetrics) {
+  auto test_records = GetTestRecords();
+  OpenDatabase();
+  database()->AddRecords(test_records);
+
+  base::HistogramTester histogram_tester;
+  database()->ComputeDatabaseMetrics();
+
+  // Check total number of records was recorded.
+  histogram_tester.ExpectUniqueSample("Privacy.AccessContextAudit.RecordCount",
+                                      test_records.size(), 1);
+
+  // Check database file size was recorded in KB.
+  int64_t file_size;
+  base::GetFileSize(db_path(), &file_size);
+  histogram_tester.ExpectUniqueSample("Privacy.AccessContextAudit.DatabaseSize",
+                                      static_cast<int>(file_size / 1024), 1);
+
+  // Check unique top frame origin count was recorded.
+  std::set<url::Origin> top_frame_origins;
+  for (const auto& record : test_records)
+    top_frame_origins.insert(record.top_frame_origin);
+  histogram_tester.ExpectUniqueSample(
+      "Privacy.AccessContextAudit.TopFrameOriginCount",
+      top_frame_origins.size(), 1);
+
+  // Check unique cookie domain count was recorded.
+  std::set<std::string> cookie_domains;
+  for (const auto& record : test_records) {
+    if (record.type == AccessContextAuditDatabase::StorageAPIType::kCookie)
+      cookie_domains.insert(record.domain);
+  }
+  histogram_tester.ExpectUniqueSample(
+      "Privacy.AccessContextAudit.CookieDomainCount", cookie_domains.size(), 1);
+
+  // Check unique cookie domain count was recorded.
+  std::set<url::Origin> storage_origins;
+  for (const auto& record : test_records) {
+    if (record.type != AccessContextAuditDatabase::StorageAPIType::kCookie)
+      storage_origins.insert(record.origin);
+  }
+  histogram_tester.ExpectUniqueSample(
+      "Privacy.AccessContextAudit.StorageOriginCount", storage_origins.size(),
+      1);
 }
 
 TEST_F(AccessContextAuditDatabaseTest, IsPersistentSchemaMigration) {

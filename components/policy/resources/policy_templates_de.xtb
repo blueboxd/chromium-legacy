@@ -1070,11 +1070,6 @@ Ist sie nicht konfiguriert, ist der Datenschutzbildschirm anfangs deaktiviert, N
       Falls die Richtlinie nicht konfiguriert ist, kommt die Standardeinstellung zum Einsatz, bei der die Funktion von verwalteten Nutzern nicht verwendet und von nicht verwalteten Nutzern verwendet werden kann.</translation>
 <translation id="2660846099862559570">Nie Proxy verwenden</translation>
 <translation id="2665422249821137126">Großen Cursor auf der Anmeldeseite aktivieren</translation>
-<translation id="266882888912227087"> Steuert die Benachrichtigung zum automatischen Start der verwalteten Gastsitzung unter <ph name="PRODUCT_OS_NAME" />.
-
-      Ist die Richtlinie auf "true" gesetzt, wird die Benachrichtigung mit der Datenschutzwarnung nach einigen Sekunden geschlossen.
-
-      Ist die Richtlinie auf "false" gesetzt oder nicht konfiguriert, bleibt die Benachrichtigung mit der Datenschutzwarnung angepinnt, bis der Nutzer sie schließt.</translation>
 <translation id="2672012807430078509">Steuerung, durch die NTLM als Authentifizierungsprotokoll für SMB-Bereitstellungen aktiviert wird</translation>
 <translation id="2678503605767349615">Erforderliche geräteübergreifende Clientzertifikate</translation>
 <translation id="268577405881275241">Funktion für Datenkomprimierungs-Proxy aktivieren</translation>
@@ -2467,7 +2462,6 @@ Diese Richtlinie hat keine Auswirkungen darauf, ob die lokalen Nutzerdaten auf d
       <ph name="PAGE_SIZE_NAME" /> sollte eines der aufgelisteten Formate oder "custom" enthalten, wenn sich die erforderliche Papiergröße nicht in der Liste befindet. Wenn der Wert "custom" angegeben wird, sollte die Property "<ph name="PAGE_SIZE_CUSTOM_SIZE" />" festgelegt werden. Sie beschreibt die gewünschte Höhe und Breite in Mikrometern. In anderen Fällen sollte die Property "<ph name="PAGE_SIZE_CUSTOM_SIZE" />" nicht verwendet werden. Richtlinien, die gegen diese Regeln verstoßen, werden ignoriert.
 
       Wenn die Seitengröße auf dem vom Nutzer gewählten Drucker nicht verfügbar ist, wird diese Richtlinie ignoriert.</translation>
-<translation id="479290425281021210">Gibt an, ob unsichere Websites Anfragen an eher private Netzwerk-Endpunkte senden dürfen.</translation>
 <translation id="4802744647065138872">Begrenzt die Anzahl der Snapshots von Nutzerdaten, die für den Fall eines Notfall-Rollbacks aufbewahrt werden.</translation>
 <translation id="4802905909524200151">Updateverhalten von <ph name="TPM_FIRMWARE_UPDATE_TPM" />-Firmware konfigurieren</translation>
 <translation id="4804828344300125154">Nach Nutzerabmeldung immer neu starten.</translation>
@@ -3825,13 +3819,6 @@ Wenn diese Richtlinie verwendet wird, stehen dem Nutzer nur die Drucker zur Verf
 
       Wenn die Richtlinie deaktiviert ist, wird stattdessen eine Fehlermeldung angezeigt,</translation>
 <translation id="6821268164692776674"><ph name="CLOUD_PRINT_NAME" />- und "In Google Drive speichern"-Ziele</translation>
-<translation id="6823297401452148231">Diese Richtlinie legt fest, ob unsichere Websites Anfragen an eher private Netzwerk-Endpunkte senden dürfen. Sie entscheidet z. B. darüber, ob http://evil.com Anfragen sowohl an "localhost" als auch an Endpunkte des privaten Netzwerks senden darf, wobei beide nicht öffentlich über das Internet zugänglich sind. Weitere Informationen finden Sie unter https://wicg.github.io/cors-rfc1918/#goals.
-
-          Wenn diese Richtlinie nicht konfiguriert ist, hängt das Standardverhalten bei Anfragen aus unsicheren Kontexten an eher private Netzwerk-Endpunkte von der persönlichen Konfiguration der Funktion "<ph name="BLOCK_INSECURE_PRIVATE_NETWORK_REQUESTS_FEATURE_NAME" />" durch den Nutzer ab. Diese kann im Rahmen einer Testphase oder in der Befehlszeile festgelegt werden.
-
-          Wenn diese Richtlinie auf "False" gesetzt ist, ist es unsicheren Websites nicht gestattet, Anfragen an eher private Netzwerk-Endpunkte zu senden. Das bedeutet, dass es unsicheren Websites, die durch öffentliche IP-Adressen bereitgestellt werden, nicht gestattet ist, Anfragen an localhost oder private IP-Adressen zu senden. Unsicheren Websites, die durch private IP-Adressen bereitgestellt werden, ist es nicht gestattet, Anfragen an localhost zu senden.
-
-          Wenn die Richtlinie auf "True" gesetzt ist, dürfen unsichere Websites vorbehaltlich anderer Cross-Origin-Checks Anfragen an alle Netzwerk-Endpunkte senden.</translation>
 <translation id="6833064854262015312">Wenn Sie die Richtlinie auf "True" setzen, wird der Modus mit hohem Kontrast auf dem Anmeldebildschirm aktiviert. Wenn Sie die Richtlinie auf "False" setzen, wird der Modus mit hohem Kontrast auf dem Anmeldebildschirm deaktiviert.
 
       Wenn Sie diese Richtlinie konfigurieren, können Nutzer vorübergehend den Modus mit hohem Kontrast aktivieren oder deaktivieren. Wenn der Anmeldebildschirm neu geladen wird oder eine Minute lang inaktiv bleibt, wird er in den Originalzustand zurückversetzt.

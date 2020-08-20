@@ -16,7 +16,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#elif defined(OS_WIN) || defined(OS_APPLE)
+#elif defined(OS_WIN) || defined(OS_MAC)
 #include "base/enterprise_util.h"
 #endif
 
@@ -88,7 +88,7 @@ bool IsEnterpriseManaged() {
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   return connector->IsEnterpriseManaged();
-#elif defined(OS_WIN) || defined(OS_APPLE)
+#elif defined(OS_WIN) || defined(OS_MAC)
   return base::IsMachineExternallyManaged();
 #else
   return false;

@@ -3616,6 +3616,9 @@ are declared in tools/grit/grit_rule.gni.
         <message name="IDS_TASK_MANAGER_ARC_PREFIX" desc="The prefix for an ARC general process row">
           App: <ph name="ARC_PROCESS_NAME">$1<ex>com.android.systemui</ex></ph>
         </message>
+        <message name="IDS_TASK_MANAGER_TOOL_PREFIX" desc="The prefix for a tool process row in the Task Manager">
+          Tool: <ph name="PRINT_NAME">$1<ex>Manage People</ex></ph>
+        </message>
         <message name="IDS_TASK_MANAGER_ARC_PREFIX_BACKGROUND_SERVICE" desc="The prefix for an ARC service process row">
           Service: <ph name="ARC_PROCESS_NAME">$1<ex>com.android.systemui</ex></ph>
         </message>

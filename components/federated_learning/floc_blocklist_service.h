@@ -11,6 +11,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/optional.h"
 
 namespace base {
@@ -27,6 +28,11 @@ namespace federated_learning {
 class FlocBlocklistService
     : public base::SupportsWeakPtr<FlocBlocklistService> {
  public:
+  class Observer {
+   public:
+    virtual void OnBlocklistLoaded() = 0;
+  };
+
   using LoadedBlocklist = base::Optional<std::unordered_set<uint64_t>>;
 
   FlocBlocklistService();
@@ -35,11 +41,18 @@ class FlocBlocklistService
   FlocBlocklistService(const FlocBlocklistService&) = delete;
   FlocBlocklistService& operator=(const FlocBlocklistService&) = delete;
 
+  // Adds/Removes an Observer.
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+
   // Virtual for testing.
   virtual void OnBlocklistFileReady(const base::FilePath& file_path);
 
   void SetBackgroundTaskRunnerForTesting(
       scoped_refptr<base::SequencedTaskRunner> background_task_runner);
+
+  bool BlocklistLoaded() const;
+  bool ShouldBlockFloc(uint64_t floc_id) const;
 
  protected:
   // Virtual for testing.
@@ -47,9 +60,13 @@ class FlocBlocklistService
 
  private:
   friend class MockFlocBlocklistService;
+  friend class FlocIdProviderUnitTest;
+  friend class FlocIdProviderWithCustomizedServicesBrowserTest;
 
   // Runner for tasks that do not influence user experience.
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
+
+  base::ObserverList<Observer>::Unchecked observers_;
 
   LoadedBlocklist loaded_blocklist_;
 };

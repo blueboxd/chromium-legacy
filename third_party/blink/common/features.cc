@@ -704,5 +704,10 @@ const base::Feature kReducedReferrerGranularity{
 const base::Feature kContentCaptureUserActivatedDelay = {
     "ContentCaptureUserActivatedDelay", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable ReadableStream, WritableStream and TransformStream objects to be
+// transferred with postMessage().
+const base::Feature kTransferableStreams{"TransferableStreams",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace blink

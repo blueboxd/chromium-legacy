@@ -631,17 +631,46 @@ URLDatabase::GetMostRecentNormalizedKeywordSearchTerms(
   if (!keyword_id)
     return {};
 
-  sql::Statement statement(GetDB().GetCachedStatement(
-      SQL_FROM_HERE,
-      "SELECT "
-      "kv.normalized_term, SUM(u.visit_count), MAX(u.last_visit_time) "
-      "FROM keyword_search_terms kv JOIN urls u ON kv.url_id = u.id "
-      "WHERE kv.keyword_id = ? AND u.last_visit_time > ? "
-      "AND kv.normalized_term IS NOT NULL AND kv.normalized_term != \"\" "
-      "GROUP BY kv.normalized_term"));
+  // Extracts the most recent normalized search terms from the
+  // keyword_search_terms table joined with the urls table. For a given search
+  // term, those search query URLs that are visited too closely to the original
+  // search query URL are ignored in order to avoid erroneously boosting the
+  // term when frecency ranking is used. This is done by rounding down the URLs'
+  // last_visit_time to the largest ? ms interval and picking the oldest URL out
+  // of all the URLs with the same rounded last visit time. The average of visit
+  // counts for those URLs is then used as the visit count of this emerging
+  // deduplicated URL This way no bare column (chosen at random) is returned by
+  // the aggregate query.
+  sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
+                                                      R"(
+      SELECT
+        normalized_term,
+        SUM(visit_count) AS visit_count,
+        MAX(last_visit_time) AS last_visit_time
+      FROM
+        (
+          SELECT
+            normalized_term,
+            AVG(visit_count) AS visit_count,
+            MIN(u.last_visit_time) AS last_visit_time,
+            u.last_visit_time - (u.last_visit_time % ?) as rnd_last_visit_time
+          FROM
+            keyword_search_terms kv JOIN urls u ON kv.url_id = u.id
+          WHERE
+            kv.keyword_id = ?
+            AND u.last_visit_time > ?
+            AND kv.normalized_term IS NOT NULL
+            AND kv.normalized_term != ""
+          GROUP BY normalized_term, rnd_last_visit_time
+        )
+      GROUP BY normalized_term
+      ORDER BY last_visit_time DESC
+      )"));
 
-  statement.BindInt64(0, keyword_id);
-  statement.BindInt64(1, age_threshold.ToInternalValue());
+  statement.BindInt64(
+      0, kAutocompleteDuplicateVisitIntervalThreshold.ToInternalValue());
+  statement.BindInt64(1, keyword_id);
+  statement.BindInt64(2, age_threshold.ToInternalValue());
 
   std::vector<NormalizedKeywordSearchTermVisit> visits;
   while (statement.Step()) {
@@ -761,6 +790,9 @@ bool URLDatabase::RecreateURLTableWithAllContents() {
 const int kLowQualityMatchTypedLimit = 1;
 const int kLowQualityMatchVisitLimit = 4;
 const int kLowQualityMatchAgeLimitInDays = 3;
+
+const base::TimeDelta kAutocompleteDuplicateVisitIntervalThreshold =
+    base::TimeDelta::FromMinutes(5);
 
 base::Time AutocompleteAgeThreshold() {
   return (base::Time::Now() -

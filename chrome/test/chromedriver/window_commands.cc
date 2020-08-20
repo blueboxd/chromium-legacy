@@ -1492,6 +1492,7 @@ Status ExecutePerformActions(Session* session,
   std::map<std::string, bool> has_touch_start;
   std::map<std::string, int> buttons;
   std::map<std::string, std::string> button_type;
+  std::map<std::string, int> click_counts;
   int viewport_width = 0, viewport_height = 0;
   int init_x = 0, init_y = 0;
 
@@ -1561,10 +1562,12 @@ Status ExecutePerformActions(Session* session,
 
             std::string pointer_type;
             action->GetString("pointerType", &pointer_type);
-            if (pointer_type == "mouse" || pointer_type == "pen")
+            if (pointer_type == "mouse" || pointer_type == "pen") {
               buttons[id] = input_state->FindKey("pressed")->GetInt();
-            else if (pointer_type == "touch")
+              click_counts[id] = 0;
+            } else if (pointer_type == "touch") {
               has_touch_start[id] = false;
+            }
           }
         }
 
@@ -1688,6 +1691,7 @@ Status ExecutePerformActions(Session* session,
                 } else if (buttons[id] == 0) {
                   button_type[id].clear();
                 }
+
                 MouseEvent event(StringToMouseEventType(action_type),
                                  StringToMouseButton(button_type[id]),
                                  action_locations[id].x(),
@@ -1701,7 +1705,8 @@ Status ExecutePerformActions(Session* session,
                       event.x, event.y, session->mouse_position.x,
                       session->mouse_position.y, session->click_count,
                       timestamp, session->mouse_click_timestamp);
-                  event.click_count = is_repeated_click ? 2 : 1;
+                  click_counts[id] = is_repeated_click ? ++click_counts[id] : 1;
+                  event.click_count = click_counts[id];
                   buttons[id] |= StringToModifierMouseButton(button_type[id]);
                   session->mouse_position = WebPoint(event.x, event.y);
                   session->click_count = event.click_count;

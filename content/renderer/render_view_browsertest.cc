@@ -695,7 +695,8 @@ TEST_F(RenderViewImplEmulatingPopupTest, EmulatingPopupRect) {
   gfx::Rect widget_screen_rect(5, 7, 57, 59);
 
   // Verify screen rect will be set.
-  EXPECT_EQ(gfx::Rect(main_widget()->GetScreenInfo().rect), screen_rect);
+  EXPECT_EQ(gfx::Rect(main_widget()->GetWebWidget()->GetScreenInfo().rect),
+            screen_rect);
 
   {
     // Make a popup widget.
@@ -711,7 +712,8 @@ TEST_F(RenderViewImplEmulatingPopupTest, EmulatingPopupRect) {
     // to the popup.
     EXPECT_EQ(window_screen_rect, gfx::Rect(popup_widget->WindowRect()));
     EXPECT_EQ(widget_screen_rect, gfx::Rect(popup_widget->ViewRect()));
-    EXPECT_EQ(screen_rect, gfx::Rect(popup_widget->GetScreenInfo().rect));
+    EXPECT_EQ(screen_rect,
+              gfx::Rect(popup_widget->GetWebWidget()->GetScreenInfo().rect));
 
     // Close and destroy the widget.
     {
@@ -769,9 +771,9 @@ TEST_F(RenderViewImplEmulatingPopupTest, EmulatingPopupRect) {
     // value? The ScreenRect has been changed by emulation as demonstrated
     // below.
     EXPECT_EQ(gfx::Rect(800, 600),
-              gfx::Rect(popup_widget->GetScreenInfo().rect));
+              gfx::Rect(popup_widget->GetWebWidget()->GetScreenInfo().rect));
     EXPECT_EQ(emulated_widget_rect,
-              gfx::Rect(main_widget()->GetScreenInfo().rect));
+              gfx::Rect(main_widget()->GetWebWidget()->GetScreenInfo().rect));
 
     // Close and destroy the widget.
     {

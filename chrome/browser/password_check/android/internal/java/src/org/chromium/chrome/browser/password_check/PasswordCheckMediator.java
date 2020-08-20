@@ -32,6 +32,11 @@ import org.chromium.ui.modelutil.ListModel;
 import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
 import org.chromium.ui.modelutil.PropertyModel;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+
 /**
  * Contains the logic for the PasswordCheck component. It sets the state of the model and reacts to
  * events like clicks.
@@ -43,6 +48,7 @@ class PasswordCheckMediator
     private PropertyModel mModel;
     private PasswordCheckComponentUi.Delegate mDelegate;
     private Runnable mLaunchCheckupInAccount;
+    private HashSet<CompromisedCredential> mPreCheckSet;
 
     PasswordCheckMediator(PasswordCheckChangePasswordHelper changePasswordDelegate,
             PasswordCheckReauthenticationHelper reauthenticationHelper) {
@@ -76,6 +82,10 @@ class PasswordCheckMediator
         }
         CompromisedCredential[] credentials = getPasswordCheck().getCompromisedCredentials();
         assert credentials != null;
+
+        List<CompromisedCredential> credentialsList = Arrays.asList(credentials);
+        sortCredentials(credentialsList);
+
         ListModel<ListItem> items = mModel.get(ITEMS);
         if (items.size() == 0) {
             items.add(new ListItem(PasswordCheckProperties.ItemType.HEADER,
@@ -87,7 +97,8 @@ class PasswordCheckMediator
         }
         if (items.size() > 1) items.removeRange(1, items.size() - 1);
 
-        for (CompromisedCredential credential : credentials) {
+        updateStatusHeaderWhenCredentialsChange();
+        for (CompromisedCredential credential : credentialsList) {
             items.add(createEntryForCredential(credential));
         }
     }
@@ -128,15 +139,17 @@ class PasswordCheckMediator
         }
     }
 
-    void onPasswordCheckProgressChanged(Pair<Integer, Integer> progress) {
+    @Override
+    public void onPasswordCheckProgressChanged(int alreadyProcessed, int remainingInQueue) {
         ListModel<ListItem> items = mModel.get(ITEMS);
         assert items.size() >= 1;
-        assert progress.first >= 0;
-        assert progress.second >= progress.first;
+        assert alreadyProcessed >= 0;
+        assert remainingInQueue >= 0;
 
         PropertyModel header = items.get(0).model;
         header.set(CHECK_STATUS, PasswordCheckUIStatus.RUNNING);
-        header.set(CHECK_PROGRESS, progress);
+        header.set(
+                CHECK_PROGRESS, new Pair<>(alreadyProcessed, alreadyProcessed + remainingInQueue));
         header.set(CHECK_TIMESTAMP, null);
         header.set(COMPROMISED_CREDENTIALS_COUNT, null);
     }
@@ -146,6 +159,7 @@ class PasswordCheckMediator
         assert leakedCredential != null;
         ListModel<ListItem> items = mModel.get(ITEMS);
         assert items.size() >= 1 : "Needs to initialize list with header before adding items!";
+        updateStatusHeaderWhenCredentialsChange();
         items.add(createEntryForCredential(leakedCredential));
     }
 
@@ -218,6 +232,17 @@ class PasswordCheckMediator
         mChangePasswordDelegate.launchCctWithScript(credential);
     }
 
+    private void updateStatusHeaderWhenCredentialsChange() {
+        ListModel<ListItem> items = mModel.get(ITEMS);
+        assert items.size() >= 1;
+
+        PropertyModel header = items.get(0).model;
+        if (header.get(CHECK_STATUS) == PasswordCheckUIStatus.IDLE) {
+            header.set(COMPROMISED_CREDENTIALS_COUNT,
+                    Integer.valueOf(getPasswordCheck().getCompromisedCredentialsCount()));
+        }
+    }
+
     private void runCheck() {
         getPasswordCheck().startCheck();
     }
@@ -239,5 +264,44 @@ class PasswordCheckMediator
                                 mChangePasswordDelegate.canManuallyChangeCredential(credential))
                         .with(CREDENTIAL_HANDLER, this)
                         .build());
+    }
+
+    private void sortCredentials(List<CompromisedCredential> credentials) {
+        if (mPreCheckSet == null) {
+            mPreCheckSet = new HashSet<>(credentials);
+        }
+
+        Collections.sort(credentials, (CompromisedCredential lhs, CompromisedCredential rhs) -> {
+            // Phished credentials should always appear first.
+            if (lhs.isPhished() != rhs.isPhished()) {
+                return lhs.isPhished() ? -1 : 1;
+            }
+
+            boolean lhsInitial = mPreCheckSet.contains(lhs);
+            boolean rhsInitial = mPreCheckSet.contains(rhs);
+            // If one is the in initial set and the other one isn't, then the credential in
+            // the initial set goes first.
+            if (lhsInitial != rhsInitial) {
+                return lhsInitial ? -1 : 1;
+            }
+
+            // If they are both in the initial set, the most recent credential should appear first.
+            if (lhsInitial && rhsInitial && lhs.getCreationTime() != rhs.getCreationTime()) {
+                return -Long.compare(lhs.getCreationTime(), rhs.getCreationTime());
+            }
+
+            // If they both are not in the initial set, the older credential should appear
+            // first.
+            if (!lhsInitial && !rhsInitial && lhs.getCreationTime() != rhs.getCreationTime()) {
+                return Long.compare(lhs.getCreationTime(), rhs.getCreationTime());
+            }
+
+            // In case of creation time equality, order alphabetically (first by origin,
+            // then by username), so that the list remains stable.
+            int originComparisonResult = lhs.getDisplayOrigin().compareTo(rhs.getDisplayOrigin());
+            int usernameComparisonResult =
+                    lhs.getDisplayUsername().compareTo(rhs.getDisplayUsername());
+            return originComparisonResult == 0 ? usernameComparisonResult : originComparisonResult;
+        });
     }
 }

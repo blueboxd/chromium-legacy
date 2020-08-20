@@ -209,7 +209,7 @@ class ScreenInfoWebWidgetClient
   ~ScreenInfoWebWidgetClient() override = default;
 
   // frame_test_helpers::TestWebWidgetClient:
-  ScreenInfo GetScreenInfo() override { return screen_info_; }
+  ScreenInfo GetInitialScreenInfo() override { return screen_info_; }
 
   void SetAngle(uint16_t angle) { screen_info_.orientation_angle = angle; }
 
@@ -229,6 +229,7 @@ TEST_F(ScreenOrientationControllerTest, PageVisibilityCrash) {
 
   frame_test_helpers::WebViewHelper web_view_helper;
   ScreenInfoWebWidgetClient client;
+  client.SetAngle(1234);
   web_view_helper.InitializeAndLoad(base_url + test_url, nullptr, nullptr,
                                     &client);
 
@@ -242,7 +243,6 @@ TEST_F(ScreenOrientationControllerTest, PageVisibilityCrash) {
   // referenced before this.
   ScreenOrientation::Create(frame->DomWindow());
   page->SetVisibilityState(mojom::blink::PageVisibilityState::kHidden, false);
-  client.SetAngle(1234);
   web_view_helper.GetWebView()
       ->MainFrame()
       ->ToWebLocalFrame()

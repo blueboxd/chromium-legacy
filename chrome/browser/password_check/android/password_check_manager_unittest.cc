@@ -44,6 +44,7 @@ using password_manager::PasswordCheckUIStatus;
 using password_manager::TestPasswordStore;
 using password_manager::prefs::kLastTimePasswordCheckCompleted;
 using testing::_;
+using testing::AtLeast;
 using testing::ElementsAre;
 using testing::Field;
 using testing::Invoke;
@@ -59,6 +60,7 @@ using State = password_manager::BulkLeakCheckService::State;
 namespace {
 
 constexpr char kExampleCom[] = "https://example.com";
+constexpr char kExampleOrg[] = "http://www.example.org";
 constexpr char kExampleApp[] = "com.example.app";
 
 constexpr char kUsername1[] = "alice";
@@ -76,6 +78,8 @@ class MockPasswordCheckManagerObserver : public PasswordCheckManager::Observer {
               OnPasswordCheckStatusChanged,
               (password_manager::PasswordCheckUIStatus),
               (override));
+
+  MOCK_METHOD(void, OnPasswordCheckProgressChanged, (int, int), (override));
 };
 
 class MockPasswordScriptsFetcher
@@ -273,6 +277,28 @@ TEST_F(PasswordCheckManagerTest, OnCompromisedCredentialsChanged) {
   RunUntilIdle();
 }
 
+TEST_F(PasswordCheckManagerTest, RunCheckAfterLastInitialization) {
+  EXPECT_CALL(mock_observer(), OnPasswordCheckStatusChanged(_))
+      .Times(AtLeast(1));
+  EXPECT_CALL(mock_observer(), OnSavedPasswordsFetched(1));
+  store().AddLogin(MakeSavedPassword(kExampleCom, kUsername1));
+  InitializeManager();
+
+  // Initialization is incomplete, so check shouldn't run.
+  manager().StartCheck();  // Try to start a check — has no immediate effect.
+  service()->set_state_and_notify(State::kIdle);
+  // Since check hasn't started, the last completion time should remain 0.
+  EXPECT_EQ(0.0, manager().GetLastCheckTimestamp().ToDoubleT());
+
+  // Complete pending initialization. The check should run now.
+  EXPECT_CALL(mock_observer(), OnCompromisedCredentialsChanged(0))
+      .Times(AtLeast(1));
+  RunUntilIdle();
+  service()->set_state_and_notify(State::kIdle);  // Complete check, if any.
+  // Check should have started and the last completion time be non-zero.
+  EXPECT_NE(0.0, manager().GetLastCheckTimestamp().ToDoubleT());
+}
+
 TEST_F(PasswordCheckManagerTest, CorrectlyCreatesUIStructForSiteCredential) {
   InitializeManager();
   store().AddLogin(MakeSavedPassword(kExampleCom, kUsername1));
@@ -389,4 +415,24 @@ TEST_F(PasswordCheckManagerTest,
           base::ASCIIToUTF16(kUsername1), base::ASCIIToUTF16("example.com"),
           base::nullopt, "https://example.com/",
           CompromiseTypeFlags::kCredentialLeaked, /*has_script=*/true)));
+}
+
+TEST_F(PasswordCheckManagerTest, UpdatesProgressCorrectly) {
+  InitializeManager();
+  store().AddLogin(MakeSavedPassword(kExampleCom, kUsername1, kPassword1));
+  store().AddLogin(MakeSavedPassword(kExampleOrg, kUsername1, kPassword1));
+  store().AddLogin(MakeSavedPassword(kExampleCom, kUsername2));
+  RunUntilIdle();
+
+  EXPECT_CALL(mock_observer(), OnPasswordCheckProgressChanged(0, 3));
+  manager().StartCheck();
+
+  // Expect that 2 credentials were processed, even if there is only one
+  // reply, because of the deduplication logic.
+  EXPECT_CALL(mock_observer(), OnPasswordCheckProgressChanged(2, 1));
+  static_cast<password_manager::BulkLeakCheckDelegateInterface*>(service())
+      ->OnFinishedCredential(
+          password_manager::LeakCheckCredential(base::ASCIIToUTF16(kUsername1),
+                                                base::ASCIIToUTF16(kPassword1)),
+          password_manager::IsLeaked(false));
 }

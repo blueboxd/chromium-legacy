@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/nth_index_cache.h"
 #include "third_party/blink/renderer/core/dom/static_node_list.h"
+#include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/root_frame_viewport.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
@@ -338,13 +339,19 @@ bool ScrollAnchor::FindAnchorInPriorityCandidates() {
   auto& document = scroller_box->GetDocument();
 
   // Focused area.
-  LayoutObject* candidate =
-      PriorityCandidateFromNode(document.FocusedElement());
-  auto result = ExaminePriorityCandidate(candidate);
-  if (result.viable) {
-    anchor_object_ = candidate;
-    corner_ = result.corner;
-    return true;
+  LayoutObject* candidate = nullptr;
+  ExamineResult result{kSkip};
+  auto* focused_element = document.FocusedElement();
+  if (focused_element && HasEditableStyle(*focused_element)) {
+    candidate = PriorityCandidateFromNode(focused_element);
+    if (candidate) {
+      result = ExaminePriorityCandidate(candidate);
+      if (result.viable) {
+        anchor_object_ = candidate;
+        corner_ = result.corner;
+        return true;
+      }
+    }
   }
 
   // Active find-in-page match.

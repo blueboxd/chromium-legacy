@@ -133,9 +133,12 @@ public class AccountPickerDelegate implements WebSigninBridge.Listener {
      *
      * @param error Details about the error that occurred in the sign-in process.
      */
+    @MainThread
     @Override
     public void onSigninFailed(GoogleServiceAuthError error) {
+        ThreadUtils.assertOnUiThread();
         mOnSignInErrorCallback.onResult(error);
+        destroyWebSigninBridge();
     }
 
     private void destroyWebSigninBridge() {

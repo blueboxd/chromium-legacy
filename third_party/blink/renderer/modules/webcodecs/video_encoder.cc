@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "media/base/mime_util.h"
 #include "media/base/video_codecs.h"
 #include "media/base/video_color_space.h"
 #include "media/base/video_encoder.h"
@@ -119,25 +120,133 @@ int32_t VideoEncoder::encodeQueueSize() {
   return requested_encodes_;
 }
 
+std::unique_ptr<VideoEncoder::ParsedConfig> VideoEncoder::ParseConfig(
+    const VideoEncoderConfig* config,
+    ExceptionState& exception_state) {
+  auto parsed = std::make_unique<ParsedConfig>();
+
+  parsed->options.height = config->height();
+  if (parsed->options.height == 0) {
+    exception_state.ThrowTypeError("Invalid height.");
+    return nullptr;
+  }
+
+  parsed->options.width = config->width();
+  if (parsed->options.width == 0) {
+    exception_state.ThrowTypeError("Invalid width.");
+    return nullptr;
+  }
+
+  parsed->options.framerate = config->framerate();
+
+  if (config->hasBitrate())
+    parsed->options.bitrate = config->bitrate();
+
+  // The IDL defines a default value of "allow".
+  DCHECK(config->hasAcceleration());
+
+  std::string preference = IDLEnumAsString(config->acceleration()).Utf8();
+  if (preference == "allow") {
+    parsed->acc_pref = AccelerationPreference::kAllow;
+  } else if (preference == "require") {
+    parsed->acc_pref = AccelerationPreference::kRequire;
+  } else if (preference == "deny") {
+    parsed->acc_pref = AccelerationPreference::kDeny;
+  } else {
+    NOTREACHED();
+  }
+
+  bool is_codec_ambiguous = true;
+  parsed->codec = media::kUnknownVideoCodec;
+  parsed->profile = media::VIDEO_CODEC_PROFILE_UNKNOWN;
+  parsed->color_space = media::VideoColorSpace::REC709();
+  parsed->level = 0;
+
+  bool parse_succeeded = media::ParseVideoCodecString(
+      "", config->codec().Utf8(), &is_codec_ambiguous, &parsed->codec,
+      &parsed->profile, &parsed->level, &parsed->color_space);
+
+  if (!parse_succeeded) {
+    exception_state.ThrowTypeError("Invalid codec string.");
+    return nullptr;
+  }
+
+  if (is_codec_ambiguous) {
+    exception_state.ThrowTypeError("Ambiguous codec string.");
+    return nullptr;
+  }
+
+  return parsed;
+}
+
+bool VideoEncoder::VerifyCodecSupport(ParsedConfig* config,
+                                      ExceptionState& exception_state) {
+  switch (config->codec) {
+    case media::kCodecVP8:
+      if (config->acc_pref == AccelerationPreference::kRequire) {
+        exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
+                                          "Accelerated vp8 is not supported");
+        return false;
+      }
+      break;
+
+    case media::kCodecVP9:
+      if (config->acc_pref == AccelerationPreference::kRequire) {
+        exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
+                                          "Accelerated vp9 is not supported");
+        return false;
+      }
+
+      // TODO(https://crbug.com/1119636): Implement / call a proper method for
+      // detecting support of encoder configs.
+      if (config->profile == media::VideoCodecProfile::VP9PROFILE_PROFILE1 ||
+          config->profile == media::VideoCodecProfile::VP9PROFILE_PROFILE3) {
+        exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
+                                          "Unsupported vp9 profile.");
+        return false;
+      }
+
+      break;
+
+    case media::kCodecH264:
+      if (config->acc_pref == AccelerationPreference::kDeny) {
+        exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
+                                          "Software h264 is not supported yet");
+        return false;
+      }
+      break;
+
+    default:
+      exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
+                                        "Unsupported codec type.");
+      return false;
+  }
+
+  return true;
+}
+
 void VideoEncoder::configure(const VideoEncoderConfig* config,
                              ExceptionState& exception_state) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (config->height() == 0) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      "Invalid height.");
+  auto parsed_config = ParseConfig(config, exception_state);
+
+  if (!parsed_config) {
+    DCHECK(exception_state.HadException());
     return;
   }
 
-  if (config->width() == 0) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      "Invalid width.");
+  if (!VerifyCodecSupport(parsed_config.get(), exception_state)) {
+    DCHECK(exception_state.HadException());
     return;
   }
+
+  // TODO(https://crbug.com/1119892): flush |media_encoder_| if it already
+  // exists, otherwise might could lose frames in flight.
 
   Request* request = MakeGarbageCollected<Request>();
   request->type = Request::Type::kConfigure;
-  request->config = config;
+  request->config = std::move(parsed_config);
   EnqueueRequest(request);
 }
 
@@ -150,17 +259,36 @@ void VideoEncoder::encode(VideoFrame* frame,
                                       "Encoder is not configured yet.");
     return;
   }
-  if (frame->cropWidth() != uint32_t{frame_size_.width()} ||
-      frame->cropHeight() != uint32_t{frame_size_.height()}) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kOperationError,
-        "Frame size doesn't match initial encoder parameters.");
+
+  // This will fail if |frame| is already destroyed.
+  auto* internal_frame = frame->clone(exception_state);
+
+  if (!internal_frame) {
+    // Set a more helpful exception than the cloning error message.
+    exception_state.ClearException();
+    exception_state.ThrowDOMException(DOMExceptionCode::kOperationError,
+                                      "Cannot encode destroyed frame.");
     return;
   }
 
+  if (internal_frame->cropWidth() != uint32_t{frame_size_.width()} ||
+      internal_frame->cropHeight() != uint32_t{frame_size_.height()}) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kOperationError,
+        "Frame size doesn't match initial encoder parameters.");
+
+    // Free the temporary clone.
+    internal_frame->destroy();
+    return;
+  }
+
+  // At this point, we have "consumed" the frame, and will destroy the clone in
+  // ProcessEncode().
+  frame->destroy();
+
   Request* request = MakeGarbageCollected<Request>();
   request->type = Request::Type::kEncode;
-  request->frame = frame;
+  request->frame = internal_frame;
   request->encodeOpts = opts;
   ++requested_encodes_;
   return EnqueueRequest(request);
@@ -298,92 +426,36 @@ void VideoEncoder::ProcessEncode(Request* request) {
   media_encoder_->Encode(frame, keyframe,
                          WTF::Bind(done_callback, WrapWeakPersistent(this),
                                    WrapPersistentIfNeeded(request)));
+
+  // We passed a copy of frame() above, so this should be safe to destroy here.
+  request->frame->destroy();
 }
 
 void VideoEncoder::ProcessConfigure(Request* request) {
   DCHECK(request->config);
   DCHECK_EQ(request->type, Request::Type::kConfigure);
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  auto* config = request->config.Get();
-  AccelerationPreference acc_pref = AccelerationPreference::kAllow;
 
-  // TODO(https://crbug.com/1116783): Delete this, allow reconfiguration.
-  if (media_encoder_) {
-    HandleError(DOMExceptionCode::kOperationError,
-                "Encoder has already been congfigured");
-    return;
+  auto config = std::move(request->config);
+
+  switch (config->codec) {
+    case media::kCodecVP8:
+    case media::kCodecVP9:
+      media_encoder_ = CreateVpxVideoEncoder();
+      break;
+
+    case media::kCodecH264:
+      media_encoder_ = CreateAcceleratedVideoEncoder();
+      break;
+
+    default:
+      // This should already have been caught in ParseConfig() and
+      // VerifyCodecSupport().
+      NOTREACHED();
+      break;
   }
 
-  if (config->hasAcceleration()) {
-    std::string preference = IDLEnumAsString(config->acceleration()).Utf8();
-    if (preference == "deny") {
-      acc_pref = AccelerationPreference::kDeny;
-    } else if (preference == "require") {
-      acc_pref = AccelerationPreference::kRequire;
-    } else if (preference == "allow") {
-      acc_pref = AccelerationPreference::kAllow;
-    } else {
-      HandleError(DOMExceptionCode::kNotFoundError,
-                  "Unknown acceleration type");
-      return;
-    }
-  }
-
-  std::string codec_str = config->codec().Utf8();
-  std::string profile_str;
-  if (config->hasProfile())
-    profile_str = config->profile().Utf8();
-  auto codec_type = media::StringToVideoCodec(codec_str);
-  if (codec_type == media::kUnknownVideoCodec) {
-    HandleError(DOMExceptionCode::kNotFoundError, "Unknown codec type");
-    return;
-  }
-
-  // TODO(ezemtsov): Put the encoder creation logic below in a separate class or
-  // method.
-  media::VideoCodecProfile profile = media::VIDEO_CODEC_PROFILE_UNKNOWN;
-  if (codec_type == media::kCodecVP8) {
-    if (acc_pref == AccelerationPreference::kRequire) {
-      HandleError(DOMExceptionCode::kNotFoundError,
-                  "Accelerated vp8 is not supported");
-      return;
-    }
-    media_encoder_ = CreateVpxVideoEncoder();
-    profile = media::VP8PROFILE_ANY;
-  } else if (codec_type == media::kCodecVP9) {
-    uint8_t level = 0;
-    media::VideoColorSpace color_space;
-    if (!ParseNewStyleVp9CodecID(profile_str, &profile, &level, &color_space)) {
-      HandleError(DOMExceptionCode::kNotFoundError, "Invalid vp9 codec string");
-      return;
-    }
-    if (acc_pref == AccelerationPreference::kRequire) {
-      HandleError(DOMExceptionCode::kNotFoundError,
-                  "Accelerated vp9 is not supported");
-      return;
-    }
-    media_encoder_ = CreateVpxVideoEncoder();
-  } else if (codec_type == media::kCodecH264) {
-    codec_type = media::kCodecH264;
-    uint8_t level = 0;
-    if (!ParseAVCCodecId(profile_str, &profile, &level)) {
-      HandleError(DOMExceptionCode::kNotFoundError, "Invalid AVC profile");
-      return;
-    }
-    if (acc_pref == AccelerationPreference::kDeny) {
-      HandleError(DOMExceptionCode::kNotFoundError,
-                  "Software h264 is not supported yet");
-      return;
-    }
-    media_encoder_ = CreateAcceleratedVideoEncoder();
-  }
-
-  if (!media_encoder_) {
-    HandleError(DOMExceptionCode::kNotFoundError, "Unsupported codec type");
-    return;
-  }
-
-  frame_size_ = gfx::Size(config->width(), config->height());
+  frame_size_ = gfx::Size(config->options.width, config->options.height);
 
   auto output_cb = WTF::BindRepeating(&VideoEncoder::MediaEncoderOutputCallback,
                                       WrapWeakPersistent(this));
@@ -401,23 +473,12 @@ void VideoEncoder::ProcessConfigure(Request* request) {
     self->ProcessRequests();
   };
 
-  media::VideoEncoder::Options options;
-
-  // Required configuration.
-  options.height = frame_size_.height();
-  options.width = frame_size_.width();
-  options.framerate = config->framerate();
-
-  // Optional configuration.
-  if (config->hasBitrate())
-    options.bitrate = config->bitrate();
-
   // TODO(https://crbug.com/1116771): Let the encoder figure out its thread
   // count (it knows better).
-  options.threads = 1;
+  config->options.threads = 1;
 
   stall_request_processing_ = true;
-  media_encoder_->Initialize(profile, options, output_cb,
+  media_encoder_->Initialize(config->profile, config->options, output_cb,
                              WTF::Bind(done_callback, WrapWeakPersistent(this),
                                        WrapPersistent(request)));
 }  // namespace blink
@@ -481,10 +542,8 @@ void VideoEncoder::Trace(Visitor* visitor) const {
 }
 
 void VideoEncoder::Request::Trace(Visitor* visitor) const {
-  visitor->Trace(config);
   visitor->Trace(frame);
   visitor->Trace(encodeOpts);
   visitor->Trace(resolver);
 }
-
 }  // namespace blink

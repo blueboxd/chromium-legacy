@@ -59,6 +59,10 @@
         width: var(--settings-menu-width);
       }
 
+      :host([narrow]) #leftSpacer {
+        width: 20px;
+      }
+
       cr-icon-button {
         --cr-icon-button-fill-color: currentColor;
         --cr-icon-button-size: 32px;
@@ -78,6 +82,8 @@
       :host([narrow]) #centeredContent {
         position: absolute;
         width: 100%;
+        /* #centeredContent should always be below #leftContent */
+        z-index: -1;
       }
 
       :host([narrow]:not([showing-search_])) #centeredContent {

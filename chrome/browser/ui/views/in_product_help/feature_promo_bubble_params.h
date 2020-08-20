@@ -8,10 +8,9 @@
 #include <memory>
 
 #include "base/optional.h"
+#include "base/time/time.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/views/bubble/bubble_border.h"
-
-class FeaturePromoBubbleTimeout;
 
 // Describes the content and appearance of an in-product help bubble.
 // |body_string_specifier|, |anchor_view|, and |arrow| are required, all
@@ -21,7 +20,7 @@ struct FeaturePromoBubbleParams {
   FeaturePromoBubbleParams();
   ~FeaturePromoBubbleParams();
 
-  FeaturePromoBubbleParams(FeaturePromoBubbleParams&&);
+  FeaturePromoBubbleParams(const FeaturePromoBubbleParams&);
 
   // Promo contents:
 
@@ -62,7 +61,8 @@ struct FeaturePromoBubbleParams {
   ActivationAction activation_action = ActivationAction::DO_NOT_ACTIVATE;
 
   // Changes the bubble timeout. Intended for tests, avoid use.
-  std::unique_ptr<FeaturePromoBubbleTimeout> timeout;
+  base::Optional<base::TimeDelta> timeout_default;
+  base::Optional<base::TimeDelta> timeout_short;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_IN_PRODUCT_HELP_FEATURE_PROMO_BUBBLE_PARAMS_H_

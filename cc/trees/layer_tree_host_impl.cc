@@ -4822,6 +4822,7 @@ void LayerTreeHostImpl::SetActiveURL(const GURL& url, ukm::SourceId source_id) {
     ukm_manager_->SetSourceId(source_id);
   }
   total_frame_counter_.Reset();
+  dropped_frame_counter_.Reset();
 }
 
 void LayerTreeHostImpl::AllocateLocalSurfaceId() {

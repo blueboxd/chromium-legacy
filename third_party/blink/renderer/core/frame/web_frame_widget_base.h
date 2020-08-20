@@ -265,8 +265,7 @@ class CORE_EXPORT WebFrameWidgetBase
       scheduler::WebThreadScheduler* main_thread_scheduler,
       cc::TaskGraphRunner* task_graph_runner,
       bool for_child_local_root_frame,
-      const gfx::Size& initial_screen_size,
-      float initial_device_scale_factor,
+      const ScreenInfo& screen_info,
       std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory,
       const cc::LayerTreeSettings* settings) override;
   void Close(
@@ -304,6 +303,17 @@ class CORE_EXPORT WebFrameWidgetBase
   bool IsFullscreenGranted() override;
   bool PinchGestureActiveInMainFrame() override;
   float PageScaleInMainFrame() override;
+  void UpdateSurfaceAndScreenInfo(
+      const viz::LocalSurfaceIdAllocation& new_local_surface_id_allocation,
+      const gfx::Rect& compositor_viewport_pixel_rect,
+      const ScreenInfo& new_screen_info) override;
+  void UpdateScreenInfo(const ScreenInfo& new_screen_info) override;
+  void UpdateCompositorViewportAndScreenInfo(
+      const gfx::Rect& compositor_viewport_pixel_rect,
+      const ScreenInfo& new_screen_info) override;
+  void UpdateCompositorViewportRect(
+      const gfx::Rect& compositor_viewport_pixel_rect) override;
+  const ScreenInfo& GetScreenInfo() override;
 
   // WidgetBaseClient methods.
   void RecordDispatchRafAlignedInputTime(
@@ -342,6 +352,12 @@ class CORE_EXPORT WebFrameWidgetBase
   void UpdateScreenRects(const gfx::Rect& widget_screen_rect,
                          const gfx::Rect& window_screen_rect) override;
   void ScheduleAnimationForWebTests() override;
+  void OrientationChanged() override;
+  void UpdatedSurfaceAndScreen(
+      const ScreenInfo& previous_original_screen_info) override;
+  ScreenInfo GetOriginalScreenInfo() override;
+  base::Optional<blink::mojom::ScreenOrientation> ScreenOrientationOverride()
+      override;
 
   // mojom::blink::FrameWidget methods.
   void DragTargetDragOver(const gfx::PointF& point_in_viewport,
@@ -510,6 +526,9 @@ class CORE_EXPORT WebFrameWidgetBase
   // changed.
   void BatterySavingsChanged(WebBatterySavingsFlags savings);
 
+  const viz::LocalSurfaceIdAllocation& LocalSurfaceIdAllocationFromParent();
+  cc::LayerTreeHost* LayerTreeHost();
+
  protected:
   enum DragAction { kDragEnter, kDragOver };
 
@@ -563,11 +582,11 @@ class CORE_EXPORT WebFrameWidgetBase
   // complicated inheritance structures.
   std::unique_ptr<WidgetBase> widget_base_;
 
-  // The last seen page scale state, which comes from the main frame and is
-  // propagated through the RenderWidget tree. This state is passed to any new
-  // child RenderWidget.
-  float page_scale_factor_from_mainframe_ = 1.f;
-  bool is_pinch_gesture_active_from_mainframe_ = false;
+  // The last seen page scale state, which comes from the main frame if we're
+  // in a child frame. This state is propagated through the RenderWidget tree
+  // passed to any new child RenderWidget.
+  float page_scale_factor_in_mainframe_ = 1.f;
+  bool is_pinch_gesture_active_in_mainframe_ = false;
 
  private:
   void CancelDrag();

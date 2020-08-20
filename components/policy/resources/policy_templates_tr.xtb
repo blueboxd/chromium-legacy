@@ -1075,11 +1075,6 @@ Bu politika ayarlanmazsa <ph name="PRODUCT_NAME" /> varsayılan 10.000 milisaniy
       Bu politika ayarlanmadan bırakılırsa varsayılan değer, yönetilen kullanıcılara izin verilmemesi ve yönetilmeyen kullanıcılara izin verilmesi şeklindedir.</translation>
 <translation id="2660846099862559570">Hiçbir zaman proxy kullanma</translation>
 <translation id="2665422249821137126">Giriş ekranında büyük imleci etkinleştir</translation>
-<translation id="266882888912227087"> <ph name="PRODUCT_OS_NAME" /> işletim sisteminde yönetilen misafir oturumunun otomatik başlatma bildirimini yönetin.
-
-      Bu politika True (Doğru) değerine ayarlanırsa gizlilik uyarısı bildirimi birkaç saniye sonra kapanır.
-
-      Bu politika False (Yanlış) değerine ayarlanırsa veya ayarlanmadan bırakılırsa gizlilik uyarısı bildirimi kullanıcı kapatana kadar sabitlenir.</translation>
 <translation id="2672012807430078509">NTLM'nin SMB ekleme için kimlik doğrulama protokolü olarak etkinleştirilmesini kontrol eder</translation>
 <translation id="2678503605767349615">Cihaz genelinde gerekli İstemci Sertifikaları</translation>
 <translation id="268577405881275241">Veri sıkıştırma proxy özelliğini etkinleştir</translation>
@@ -2484,7 +2479,6 @@ politikayı geçersiz kılamaz.
       <ph name="PAGE_SIZE_NAME" />, listelenen biçimlerden birini veya gereken kağıt boyutu listede yoksa "özel" biçimi içermelidir. "Özel" değer sağlanıyorsa <ph name="PAGE_SIZE_CUSTOM_SIZE" /> özelliği belirtilmelidir. Bu özellik, istenilen yüksekliği ve genişliği mikrometre cinsinden verir. Aksi takdirde <ph name="PAGE_SIZE_CUSTOM_SIZE" /> özelliği belirtilmemelidir. Bu kuralları ihlal eden politika yok sayılır.
 
       Sayfa boyutu kullanıcı tarafından seçilen yazıcıda kullanılamıyorsa bu politika yok sayılır.</translation>
-<translation id="479290425281021210">Güvenli olmayan web sitelerinin, daha özel ağ uç noktalarına istekte bulunmasına izin verilip verilmeyeceğini belirtir.</translation>
 <translation id="4802744647065138872">Acil geri alma durumunda kullanılmak üzere saklanan kullanıcı verilerinin anlık görüntü sayısını sınırlar.</translation>
 <translation id="4802905909524200151"><ph name="TPM_FIRMWARE_UPDATE_TPM" /> donanım yazılımını güncelleme davranışını yapılandır</translation>
 <translation id="4804828344300125154">Kullanıcı oturumu kapatıldığında her zaman cihazı yeniden başlat.</translation>
@@ -3836,13 +3830,6 @@ Bu ayar devre dışı bırakılır veya herhangi bir değer belirlenmezse <ph na
 
       Politikayı Devre dışı değerine ayarlanırsa bunun yerine bir hata mesajı gösterilir.</translation>
 <translation id="6821268164692776674"><ph name="CLOUD_PRINT_NAME" /> ve "Google Drive'a kaydet" hedefleri</translation>
-<translation id="6823297401452148231">Güvenli olmayan web sitelerinin daha özel ağ uç noktalarına istekte bulunmasına izin verilip verilmediğini kontrol eder. Örneğin, http://evil.com sitesinin, özel ağ üzerindeki "localhost" ve uç noktalara (ikisine de herkese açık internetten erişilemez) istekte bulunmasına izin verilip verilmediğini kontrol eder. Daha fazla ayrıntı için https://wicg.github.io/cors-rfc1918/#goals sayfasına bakabilirsiniz.
-
-          Bu politika ayarlanmadığında, güvenli olmayan bağlamlardan daha özel ağ uç noktalarına yapılan istekler için varsayılan davranış, kullanıcının <ph name="BLOCK_INSECURE_PRIVATE_NETWORK_REQUESTS_FEATURE_NAME" /> özelliğini kişisel yapılandırmasına bağlıdır. Bu özellik, saha denemesi tarafından veya komut satırında ayarlanmış olabilir.
-
-          Bu politika False (Yanlış) değerine ayarlandığında, güvenli olmayan web sitelerinin daha özel ağ uç noktalarına istekte bulunmasına izin verilmez. Yani herkese açık IP adreslerinden sunulan güvenli olmayan web sitelerinin, hem localhost'a hem de özel IP adreslerine istekte bulunmasına izin verilmez. Özel IP adreslerinden sunulan güvenli olmayan web sitelerinin, localhost'a istekte bulunmasına izin verilmez.
-
-          Bu politika True (Doğru) değerine ayarlandığında, güvenli olmayan web sitelerinin, diğer çapraz kaynak kontrollerine tabi olarak herhangi bir ağ uç noktasına istekte bulunmasına izin verilir.</translation>
 <translation id="6833064854262015312">Politikayı True (Doğru) değerine ayarlamak, oturum açma ekranında Yüksek kontrast modunu açar. Politikayı False (Yanlış) değerine ayarlamak, oturum açma ekranında Yüksek kontrast modunu kapatır.
 
       Politikayı ayarlarsanız kullanıcılar Yüksek kontrast modunu geçici olarak açabilir veya kapatabilir. Oturum açma ekranı yeniden yüklendiğinde veya bir dakika boşta kaldığında orijinal durumuna geri döner.

@@ -86,10 +86,6 @@ struct NET_EXPORT DnsConfig {
   // True, except on Windows where it can be configured.
   bool append_to_multi_label_name;
 
-  // Indicates that source port randomization is required. This uses additional
-  // resources on some platforms.
-  bool randomize_ports;
-
   // Resolver options; see man resolv.conf.
 
   // Minimum number of dots before global resolution precedes |search|.

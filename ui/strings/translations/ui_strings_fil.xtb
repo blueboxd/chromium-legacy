@@ -154,7 +154,7 @@
 <translation id="5866104238061687188">{YEARS,plural, =1{sa loob ng 1 taon}one{sa loob ng # taon}other{sa loob ng # na taon}}</translation>
 <translation id="588258955323874662">Fullscreen</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 segundo na lang ang natitira}one{# segundo na lang ang natitira}other{# na segundo na lang ang natitira}}</translation>
-<translation id="5941711191222866238">Minimize</translation>
+<translation id="5941711191222866238">I-minimize</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 oras}one{# oras}other{# na oras}}</translation>
 <translation id="6012623610530968780">Page <ph name="SELECTED_PAGE" /> ng <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">I-clear ang text sa searchbox</translation>
@@ -185,7 +185,7 @@
 <translation id="6620110761915583480">I-save ang File</translation>
 <translation id="6656912866303152668">Tiyaking naka-on sa <ph name="TARGET_DEVICE_NAME" /> ang pag-sync sa Chrome, at pagkatapos ay subukang ipadala ulit.</translation>
 <translation id="6699343763173986273">Susunod na Track ng Media</translation>
-<translation id="6710213216561001401">Nakaraan</translation>
+<translation id="6710213216561001401">Nauna</translation>
 <translation id="6779314412797872738">Para magpadala ng numero sa iyong Android phone mula rito, <ph name="TROUBLESHOOT_LINK" /> para sa parehong device sa mga setting.</translation>
 <translation id="6786750046913594791">Isara ang folder</translation>
 <translation id="6808150112686056157">Media Ihinto</translation>

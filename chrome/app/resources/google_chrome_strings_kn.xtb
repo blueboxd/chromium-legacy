@@ -39,14 +39,12 @@
 <translation id="1874309113135274312">Google Chrome ಬೀಟಾ (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome ನ ಅವಧಿ ಮುಗಿದಿದೆ</translation>
 <translation id="1919130412786645364">Chrome ಸೈನ್-ಇನ್ ಅನ್ನು ಅನುಮತಿಸಿ</translation>
-<translation id="195645108406520445">ನಿಮ್ಮ ಹೊಸ Chrome ಸ್ಪೇಸ್ ಅನ್ನು ಸೆಟಪ್ ಮಾಡಿ</translation>
 <translation id="2063848847527508675">ಅಪ್‌ಡೇಟ್ ಅನ್ವಯಿಸಲು Chrome OS ಅನ್ನು ಮರುಪ್ರಾರಂಭಿಸಬೇಕಾಗುತ್ತದೆ.</translation>
 <translation id="2094919256425865063">ಹೇಗಿದ್ದರೂ Chrome ಅನ್ನು ಮುಚ್ಚುವುದೇ?</translation>
 <translation id="2120620239521071941">ಈ ಸಾಧನದಿಂದ <ph name="ITEMS_COUNT" /> ಐಟಂಗಳನ್ನು ಇದು ಅಳಿಸುತ್ತದೆ. ನಂತರ ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಮರುಪಡೆಯಲು, <ph name="USER_EMAIL" /> ನಂತೆ Chrome ಗೆ ಸೈನ್‌‌ ಇನ್ ಮಾಡಿ.</translation>
 <translation id="2123055963409958220"><ph name="BEGIN_LINK" />ಪ್ರಸ್ತುತ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು<ph name="END_LINK" /> ವರದಿ ಮಾಡುವುದರ ಮೂಲಕ Chrome ಅನ್ನು ಉತ್ತಮಗೊಳಿಸಲು ಸಹಾಯ ಮಾಡಿ</translation>
 <translation id="2151406531797534936">ಇದೀಗ Chrome ಅನ್ನು ಮರುಪ್ರಾರಂಭಿಸಿ</translation>
 <translation id="2246246234298806438">ಬಿಲ್ಟ್ ಇನ್ PDF ವೀಕ್ಷಣೆಯು ಕಾಣೆಯಾಗಿರುವಾಗ Google Chrome ಮುದ್ರಣ ಪೂರ್ವವೀಕ್ಷಣೆಯನ್ನು ತೋರಿಸುವುದಿಲ್ಲ.</translation>
-<translation id="226038281051944330"><ph name="EXISTING_USER" /> ಅವರ ಸ್ಪೇಸ್‌ನಲ್ಲಿ ನೀವು ಹೊಸ ಖಾತೆಯ ಮೂಲಕ ಸೈನ್ ಇನ್ ಮಾಡಿದ್ದೀರಿ. ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಪ್ರತ್ಯೇಕವಾಗಿರಿಸಲು <ph name="NEW_USER" /> ಅವರಿಗಾಗಿ ಹೊಸ Chrome ಸ್ಪೇಸ್ ರಚಿಸಲು ಬಯಸುತ್ತೀರಾ?</translation>
 <translation id="2290014774651636340">Google API ಕೀಗಳು ಕಾಣೆಯಾಗಿವೆ. Google Chrome ನ ಕೆಲವು ಕಾರ್ಯವನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗುತ್ತದೆ.</translation>
 <translation id="2290095356545025170">ನೀವು ಖಚಿತವಾಗಿ Google Chrome ಅನ್ನು ಅನ್‌ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಲು ಬಯಸುತ್ತೀರಾ?</translation>
 <translation id="2309047409763057870">ಇದು Google Chrome ನ ದ್ವಿತೀಯ ಸ್ಥಾಪನೆಯಾಗಿದೆ ಮತ್ತು ಅದನ್ನು ನಿಮ್ಮ ಡಿಫಾಲ್ಟ್ ಬ್ರೌಸರ್ ಆಗಿ ಮಾಡಲಾಗುವುದಿಲ್ಲ.</translation>
@@ -81,7 +79,6 @@
 <translation id="3089968997497233615">ಹೊಸದಾದ, ಸುರಕ್ಷಿತವಾದ Google Chrome ನ ಆವೃತ್ತಿ ಲಭ್ಯವಿದೆ.</translation>
 <translation id="3127818369811890733">ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಸಿಂಕ್ ಮಾಡಲು Chrome OS ಗೆ ಸಾಧ್ಯವಾಗಲಿಲ್ಲ.</translation>
 <translation id="3149510190863420837">Chrome ಅಪ್ಲಿಕೇಶನ್‌ಗಳು</translation>
-<translation id="3351117925998652957">ನಿಮ್ಮ Chrome ಸ್ಪೇಸ್ ಅನ್ನು ಆಯ್ಕೆಮಾಡಿ</translation>
 <translation id="3360895254066713204">Chrome ಸಹಾಯಕ</translation>
 <translation id="3379938682270551431">{0,plural, =0{ಇದೀಗ Chrome ಮರುಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ}=1{1 ಸೆಕೆಂಡಿನಲ್ಲಿ Chrome ಮರುಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ}one{# ಸೆಕೆಂಡುಗಳಲ್ಲಿ Chrome ಮರುಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ}other{# ಸೆಕೆಂಡುಗಳಲ್ಲಿ Chrome ಮರುಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ}}</translation>
 <translation id="3395323229510056640">Chrome OS ನಿಂದ ಸಹಾಯ ಪಡೆಯಿರಿ</translation>
@@ -104,7 +101,6 @@
 <translation id="386202838227397562">ದಯವಿಟ್ಟು ಎಲ್ಲಾ Google Chrome ವಿಂಡೋಗಳನ್ನು ಮುಚ್ಚಿ ಹಾಗೂ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="3865754807470779944">Chrome ಆವೃತ್ತಿ <ph name="PRODUCT_VERSION" /> ಅನ್ನು ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="3873044882194371212">ಲಿಂಕ್‌ ಅನ್ನು Chrome ಅ&amp;ದೃಶ್ಯ ವಿಂಡೋದಲ್ಲಿ ತೆರೆಯಿರಿ</translation>
-<translation id="3879568094278837081">ಈ ಸ್ಥಳದ ಬ್ರೌಸಿಂಗ್‌ ಡೇಟಾವನ್ನು ಈ ಸಾಧನದಿಂದ ಅಳಿಸಲಾಗುತ್ತದೆ. ಡೇಟಾವನ್ನು ಮರಳಿ ಪಡೆದುಕೊಳ್ಳಲು, Chrome ನಲ್ಲಿ ಇದರಂತೆ ಸೈನ್-ಇನ್ ಮಾಡಿ</translation>
 <translation id="3889417619312448367">Google Chrome ಅನ್ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಿ</translation>
 <translation id="4050175100176540509">ಇತ್ತೀಚಿನ ಆವೃತ್ತಿಯಲ್ಲಿ ಪ್ರಮುಖವಾದ ಭದ್ರತಾ ಸುಧಾರಣೆಗಳು ಮತ್ತು ಹೊಸ ವೈಶಿಷ್ಟ್ಯಗಳು ಲಭ್ಯವಿದೆ.</translation>
 <translation id="4053720452172726777">Google Chrome ಅನ್ನು ಕಸ್ಟಮೈಸ್ ಮಾಡಿ ಮತ್ತು ನಿಯಂತ್ರಿಸಿ</translation>
@@ -145,12 +141,10 @@
 <translation id="4895437082222824641">ಹೊಸ Chrome &amp;ಟ್ಯಾಬ್‌ನಲ್ಲಿ ಲಿಂಕ್ ಅನ್ನು ತೆರೆಯಿರಿ</translation>
 <translation id="4953650215774548573">Google Chrome ಅನ್ನು ನಿಮ್ಮ ಡಿಫಾಲ್ಟ್ ಬ್ರೌಸರ್‌ ರೂಪದಲ್ಲಿ ಹೊಂದಿಸಿ</translation>
 <translation id="495931528404527476">Chrome ನಲ್ಲಿ</translation>
-<translation id="4960472897514318257">ನೀವು ಕೆಲಸದ ಖಾತೆಯ ಮೂಲಕ ಸೈನ್ ಇನ್ ಮಾಡಿದ್ದೀರಿ. ನಿಮ್ಮ ವೈಯಕ್ತಿಕ ಡೇಟಾವನ್ನು ಪ್ರತ್ಯೇಕವಾಗಿರಿಸಲು <ph name="NEW_USER" /> ಅವರಿಗಾಗಿ ಹೊಸ Chrome ಸ್ಪೇಸ್ ರಚಿಸಲು ಬಯಸುತ್ತೀರಾ?</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5062123544085870375">Chrome OS ಮರುಪ್ರಾರಂಭಿಸಿ</translation>
 <translation id="5132929315877954718">Google Chrome ಸಲುವಾಗಿ ಉತ್ಕೃಷ್ಟಮಟ್ಟದ ಅಪ್ಲಿಕೇಶನ್‌‌ಗಳು, ಗೇಮ್‌ಗಳು, ವಿಸ್ತರಣೆಗಳು ಹಾಗೂ ಥೀಮ್‌ಗಳನ್ನು ಅನ್ವೇಷಿಸಿ</translation>
 <translation id="5170938038195470297">ನಿಮ್ಮ ಪ್ರೊಫೈಲ್ Google Chrome ನ ಹೊಸ ಆವೃತ್ತಿಯಿಂದ ಆಗಿರುವ ಕಾರಣ ಅದನ್ನು ಬಳಸಲಾಗುವುದಿಲ್ಲ. ಕೆಲವು ವೈಶಿಷ್ಟ್ಯಗಳು ಲಭ್ಯವಿಲ್ಲದಿರಬಹುದು. ದಯವಿಟ್ಟು ಬೇರೆಯ ಪ್ರೊಫೈಲ್ ಡೈರೆಕ್ಟರಿಯನ್ನು ನಿರ್ದಿಷ್ಟಪಡಿಸಿ ಅಥವಾ Chrome ನ ಹೊಸ ಆವೃತ್ತಿಯನ್ನು ಬಳಸಿ.</translation>
-<translation id="5171117065011130146">ಹೊಸ Chrome ವರ್ಕ್ ಸ್ಪೇಸ್ ರಚಿಸಬೇಕೇ?</translation>
 <translation id="5193136243808726294">Google Chrome OS ಗೆ ಈ ಪುಟ ತೆರೆಯಲಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="5251420635869119124">ಅತಿಥಿಗಳು ಏನನ್ನೂ ಉಳಿಸದೇ Chrome ಬಳಸಬಹುದು.</translation>
 <translation id="532046782124376502">ಎಚ್ಚರಿಕೆ: ನಿಮ್ಮ ಬ್ರೌಸಿಂಗ್‌ ಇತಿಹಾಸದಲ್ಲಿ ರೆಕಾರ್ಡಿಂಗ್‌ನಿಂದ ವಿಸ್ತರಣೆಗಳನ್ನು ತಡೆಯುವುದಿಲ್ಲ. ಅಜ್ಞಾತ ಮೋಡ್‌ನಲ್ಲಿ ವಿಸ್ತರಣೆಯನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲು ಈ ಆಯ್ಕೆಯನ್ನು ಆರಿಸಬೇಡಿ.</translation>
@@ -215,7 +209,6 @@
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7573289029918943991">ನಿಮ್ಮ ಸಾಧನ ಅಪ್ ಟು ಡೇಟ್ ಆಗಿದೆಯೇ ಎಂಬುದನ್ನು ನೋಡಲು, <ph name="LINK_BEGIN" />Chrome OS ಸೆಟ್ಟಿಂಗ್‌ಗಳಿಗೆ<ph name="LINK_END" /> ಹೋಗಿ</translation>
 <translation id="7589360514048265910">ಈ ಕಂಪ್ಯೂಟರ್‌ ಇನ್ನು ಮುಂದೆ Google Chrome ಅಪ್‌ಡೇಟ್‌ಗಳನ್ನು ಸ್ವೀಕರಿಸುವುದಿಲ್ಲ. ಏಕೆಂದರೆ ಅದರ Mac OS X 10.9 ಇನ್ನು ಮುಂದೆ ಬೆಂಬಲಿಸುವುದಿಲ್ಲ.</translation>
-<translation id="7591404275842302616">ಈ ಸಾಧನದಲ್ಲಿ ನಿಮ್ಮ ಬ್ರೌಸಿಂಗ್ ಅನ್ನು ವ್ಯವಸ್ಥಿತಗೊಳಿಸಲು Chrome ಸ್ಪೇಸ್‌ಗಳನ್ನು ಬಳಸಿ</translation>
 <translation id="7592736734348559088">ನಿಮ್ಮ ಖಾತೆಯ ಸೈನ್ ಇನ್ ವಿವರಗಳು ತೀರಾ ಹಳತಾಗಿರುವ ಕಾರಣ ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಸಿಂಕ್ ಮಾಡಲು Google Chrome ಗೆ ಸಾಧ್ಯವಾಗಲಿಲ್ಲ.</translation>
 <translation id="7626032353295482388">Chrome ಗೆ ಸ್ವಾಗತ</translation>
 <translation id="7629695634924605473">ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್‌ಗಳು ಎಂದಾದರೂ ಹ್ಯಾಕ್‌ ಆಗಿವೆಯೇ ಎಂಬುದನ್ನು Chrome ನಿಮಗೆ ತಿಳಿಸುತ್ತದೆ</translation>
@@ -263,9 +256,7 @@
 <translation id="8823341990149967727">Chrome ನ ಅವಧಿ ಮುಗಿದಿದೆ</translation>
 <translation id="8834965163890861871">Google Chrome, ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ಎಡಿಟ್ ಮಾಡಲು ಪ್ರಯತ್ನಿಸುತ್ತಿದೆ. ಇದನ್ನು ಅನುಮತಿಸಲು ನಿಮ್ಮ Windows ಪಾಸ್‌ವರ್ಡ್‌ ಅನ್ನು ಟೈಪ್ ಮಾಡಿ.</translation>
 <translation id="884296878221830158">ನೀವು Chrome ಪ್ರಾರಂಭಿಸಿದಾಗ ಅಥವಾ ಹೋಮ್ ಬಟನ್ ಕ್ಲಿಕ್ ಮಾಡಿದಾಗ ತೋರಿಸಬೇಕಾದ ಪುಟವನ್ನು ಕೂಡಾ ಇದು ನಿಯಂತ್ರಿಸುತ್ತದೆ.</translation>
-<translation id="8859948767482842016">ನೀವು <ph name="EXISTING_USER" /> ಅವರ ಸ್ಪೇಸ್‌ನಲ್ಲಿ ಕೆಲಸದ ಖಾತೆಯ ಮೂಲಕ ಸೈನ್ ಇನ್ ಮಾಡಿದ್ದೀರಿ. ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಪ್ರತ್ಯೇಕವಾಗಿರಿಸಲು <ph name="WORK_DOMAIN" /> ಗಾಗಿ ಹೊಸ Chrome ಸ್ಪೇಸ್ ರಚಿಸಲು ಬಯಸುತ್ತೀರಾ?</translation>
 <translation id="8862326446509486874">ಸಿಸ್ಟಂ ಮಟ್ಟದ ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಲು ನೀವು ಸರಿಯಾದ ಹಕ್ಕುಗಳನ್ನು ಹೊಂದಿಲ್ಲ. ನಿರ್ವಾಹಕರಂತೆ ಮತ್ತೆ ಇನ್‌ಸ್ಟಾಲರ್ ಅನ್ನು ರನ್ ಮಾಡಲು ಪ್ರಯತ್ನಿಸಿ.</translation>
-<translation id="8877586659207810298"><ph name="NEW_USER" /> ಅವರಿಗಾಗಿ ಹೊಸ Chrome ಸ್ಪೇಸ್ ರಚಿಸಬೇಕೇ?</translation>
 <translation id="8914504000324227558">Chrome ಮರುಪ್ರಾರಂಭಿಸಿ</translation>
 <translation id="8999208279178790196">{0,plural, =0{Chrome ಅಪ್‌ಡೇಟ್ ಲಭ್ಯವಿದೆ}=1{Chrome ಅಪ್‌ಡೇಟ್ ಲಭ್ಯವಿದೆ}one{# ದಿನಗಳ ಮಟ್ಟಿಗೆ Chrome ಅಪ್‌ಡೇಟ್ ಲಭ್ಯವಿದೆ}other{# ದಿನಗಳ ಮಟ್ಟಿಗೆ Chrome ಅಪ್‌ಡೇಟ್ ಲಭ್ಯವಿದೆ}}</translation>
 <translation id="9026991721384951619">ನಿಮ್ಮ ಖಾತೆಯ ಸೈನ್ ಇನ್ ವಿವರಗಳು ಹಳೆಯದಾಗಿರುವ ಕಾರಣ ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಸಿಂಕ್ ಮಾಡಲು Chrome OS ಗೆ ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ.</translation>

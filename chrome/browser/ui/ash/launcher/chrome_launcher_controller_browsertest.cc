@@ -887,6 +887,9 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, SetIcon) {
 
   gfx::ImageSkia image_skia;
   if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon)) {
+    // Only when the kAppServiceAdaptiveIcon feature is enabled, AppService is
+    // called to load icons for windows. So the image checking is available when
+    // the kAppServiceAdaptiveIcon feature is enabled.
     int32_t size_hint_in_dip = 48;
     image_skia = app_service_test().LoadAppIconBlocking(
         apps::mojom::AppType::kExtension, extension->id(), size_hint_in_dip);
@@ -928,18 +931,28 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, SetIcon) {
   ready_listener.Reset();
   // Custom icon update.
   test_observer.WaitForIconUpdate();
+  if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon)) {
+    EXPECT_FALSE(app_service_test().AreIconImageEqual(
+        image_skia, test_observer.last_app_icon()));
+  }
+  gfx::ImageSkia custome_icon = test_observer.last_app_icon();
 
   // Create shelf window with custom icon on init.
   EXPECT_TRUE(ready_listener.WaitUntilSatisfied());
   ready_listener.Reply("createShelfWindowWithCustomIcon");
   ready_listener.Reset();
+  int update_number;
   if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon)) {
     // Default app icon + extension icon + AppServiceProxy load icon + custom
-    // icon updates.
-    test_observer.WaitForIconUpdates(4);
+    // icon updates. Ensure the custom icon is set as the window's icon.
+    test_observer.WaitForIconUpdates(custome_icon);
+    EXPECT_TRUE(app_service_test().AreIconImageEqual(
+        custome_icon, test_observer.last_app_icon()));
+    update_number = test_observer.icon_updates();
   } else {
     // Default app icon + extension icon + custom icon updates.
     test_observer.WaitForIconUpdates(3);
+    update_number = test_observer.icon_updates();
   }
 
   const gfx::ImageSkia app_item_custom_image = test_observer.last_app_icon();
@@ -972,13 +985,9 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, SetIcon) {
 
   // No more icon updates.
   base::RunLoop().RunUntilIdle();
-  if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon)) {
-    // 3 + 3 + 1 + 4
-    EXPECT_EQ(11, test_observer.icon_updates());
-  } else {
-    // 2 + 2 + 1 + 3
-    EXPECT_EQ(8, test_observer.icon_updates());
-  }
+  EXPECT_TRUE(app_service_test().AreIconImageEqual(
+      custome_icon, test_observer.last_app_icon()));
+  EXPECT_EQ(update_number, test_observer.icon_updates());
 
   // Exit.
   EXPECT_TRUE(ready_listener.WaitUntilSatisfied());

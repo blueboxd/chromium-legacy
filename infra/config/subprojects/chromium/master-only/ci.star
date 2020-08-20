@@ -1734,7 +1734,7 @@ ci.fyi_coverage_builder(
 
 ci.fyi_coverage_builder(
     name = "ios-simulator-code-coverage",
-    caches = [xcode_cache.x12a8179i_audio],
+    caches = [xcode_cache.x12a8189h],
     console_view_entry = ci.console_view_entry(
         category = "code_coverage",
         short_name = "ios",
@@ -1745,7 +1745,7 @@ ci.fyi_coverage_builder(
     coverage_exclude_sources = "ios_test_files_and_test_utils",
     coverage_test_types = ["overall", "unit"],
     properties = {
-        "xcode_build_version": "12a8179i_audio",
+        "xcode_build_version": "12a8189h",
     },
 )
 
@@ -1802,7 +1802,7 @@ ci.fyi_ios_builder(
     executable = "recipe:chromium",
     os = os.MAC_10_15,
     properties = {
-        "xcode_build_version": "12a8179i_audio",
+        "xcode_build_version": "12a8189h",
     },
 )
 
@@ -1814,7 +1814,7 @@ ci.fyi_ios_builder(
     ),
     executable = "recipe:chromium",
     properties = {
-        "xcode_build_version": "12a8179i_audio",
+        "xcode_build_version": "12a8189h",
     },
 )
 
@@ -1827,7 +1827,7 @@ ci.fyi_ios_builder(
     executable = "recipe:chromium",
     os = os.MAC_10_15,
     properties = {
-        "xcode_build_version": "12a8179i_audio",
+        "xcode_build_version": "12a8189h",
     },
 )
 
@@ -1855,7 +1855,7 @@ ci.fyi_ios_builder(
     executable = "recipe:chromium",
     os = os.MAC_10_15,
     properties = {
-        "xcode_build_version": "12a8179i_audio",
+        "xcode_build_version": "12a8189h",
     },
     schedule = "0 0,12 * * *",
     triggered_by = [],
@@ -1867,11 +1867,11 @@ ci.fyi_ios_builder(
         category = "iOS|iOS13",
         short_name = "dev",
     ),
-    caches = [xcode_cache.x12a8179i_audio],
+    caches = [xcode_cache.x12a8189h],
     executable = "recipe:chromium",
     os = os.MAC_10_15,
     properties = {
-        "xcode_build_version": "12a8179i_audio",
+        "xcode_build_version": "12a8189h",
     },
 )
 
@@ -1881,11 +1881,11 @@ ci.fyi_ios_builder(
         category = "iOS|iOS13",
         short_name = "sdk13",
     ),
-    caches = [xcode_cache.x12a8179i_audio],
+    caches = [xcode_cache.x12a8189h],
     executable = "recipe:chromium",
     os = os.MAC_10_15,
     properties = {
-        "xcode_build_version": "12a8179i_audio",
+        "xcode_build_version": "12a8189h",
     },
     schedule = "0 6,18 * * *",
     triggered_by = [],
@@ -1900,7 +1900,7 @@ ci.fyi_ios_builder(
     executable = "recipe:chromium",
     os = os.MAC_10_15,
     properties = {
-        "xcode_build_version": "12a8179i_audio",
+        "xcode_build_version": "12a8189h",
     },
 )
 

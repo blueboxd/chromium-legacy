@@ -737,7 +737,7 @@
     ]
   },
   "search": {
-    "channel": "dev",
+    "channel": "stable",
     "extension_types": ["extension"]
   },
   "sessions": {

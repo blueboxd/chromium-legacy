@@ -27,6 +27,9 @@ class ReadingListModelFactory : public BrowserContextKeyedServiceFactory {
 
   static ReadingListModelFactory* GetInstance();
 
+  static BrowserContextKeyedServiceFactory::TestingFactory
+  GetDefaultFactoryForTesting();
+
  private:
   friend struct base::DefaultSingletonTraits<ReadingListModelFactory>;
 

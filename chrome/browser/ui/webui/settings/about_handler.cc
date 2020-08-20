@@ -565,6 +565,13 @@ void AboutHandler::OnGetTargetChannel(std::string callback_id,
   channel_info->SetString("currentChannel", current_channel);
   channel_info->SetString("targetChannel", target_channel);
 
+  // For the LTS pilot simply check whether the device policy is set and ignore
+  // its value.
+  std::string value;
+  bool is_lts = chromeos::CrosSettings::Get()->GetString(
+      chromeos::kReleaseLtsTag, &value);
+  channel_info->SetBoolean("isLts", is_lts);
+
   ResolveJavascriptCallback(base::Value(callback_id), *channel_info);
 }
 

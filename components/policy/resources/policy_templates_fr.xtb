@@ -1100,11 +1100,6 @@ Si elle n'est pas définie, l'écran de confidentialité est désactivé initial
       Si vous ne configurez pas cette règle, le paramètre sera désactivé par défaut pour les utilisateurs gérés et activé par défaut pour les utilisateurs non gérés.</translation>
 <translation id="2660846099862559570">Ne jamais utiliser de proxy</translation>
 <translation id="2665422249821137126">Activer le grand curseur sur l'écran de connexion</translation>
-<translation id="266882888912227087"> Contrôler les notifications de lancement automatique des sessions Invité gérées sur <ph name="PRODUCT_OS_NAME" />.
-
-      Si cette règle est définie sur "True", les avertissements concernant la confidentialité se ferment après quelques secondes.
-
-      Si cette règle est définie sur "False" ou n'est pas configurée, les avertissements concernant la confidentialité restent épinglés jusqu'à ce que l'utilisateur les ferme.</translation>
 <translation id="2672012807430078509">Contrôle l'activation du protocole d'authentification NTLM pour les installations SMB</translation>
 <translation id="2678503605767349615">Certificats clients requis au niveau de l'appareil</translation>
 <translation id="268577405881275241">Activer la fonctionnalité de proxy pour la compression de données</translation>
@@ -2503,7 +2498,6 @@ Si cette règle n'est pas configurée, l'utilisateur peut décider d'afficher ou
       La propriété <ph name="PAGE_SIZE_NAME" /> doit contenir l'un des formats répertoriés ou être définie sur "Personnalisé" si le format du papier requis ne figure pas dans la liste. Si elle est définie sur "Personnalisé", il est obligatoire de spécifier également la propriété <ph name="PAGE_SIZE_CUSTOM_SIZE" />. La hauteur et la largeur souhaitées sont exprimées en micromètres. Dans le cas contraire, la propriété <ph name="PAGE_SIZE_CUSTOM_SIZE" /> ne doit pas être renseignée. Toute règle qui ne respecte pas ces consignes sera ignorée.
 
       Si la taille de la page n'est pas disponible pour l'imprimante sélectionnée, cette règle est ignorée.</translation>
-<translation id="479290425281021210">Permet de spécifier si les sites Web non sécurisés sont autorisés à envoyer des requêtes à des points de terminaison plus privés du réseau.</translation>
 <translation id="4802744647065138872">Limite le nombre d'instantanés de données utilisateur retenus en prévision d'un éventuel rollback d'urgence.</translation>
 <translation id="4802905909524200151">Configurer le comportement de la fonctionnalité de mise à jour du micrologiciel <ph name="TPM_FIRMWARE_UPDATE_TPM" /></translation>
 <translation id="4804828344300125154">Redémarrer à chaque déconnexion de l'utilisateur.</translation>
@@ -3856,13 +3850,6 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
 
       Si cette règle est désactivée, un message d'erreur s'affiche à la place.</translation>
 <translation id="6821268164692776674">Destinations <ph name="CLOUD_PRINT_NAME" /> et "Enregistrer dans Google Drive"</translation>
-<translation id="6823297401452148231">Permet de contrôler si les sites Web non sécurisés sont autorisés à envoyer des requêtes à des points de terminaison plus privés du réseau. Par exemple, cette règle vous permet de contrôler si l'URL http://evil.com est autorisée à envoyer des requêtes aux hôtes locaux ("localhost") et aux points de terminaison du réseau privé, aucun n'étant accessible depuis Internet. Pour en savoir plus, consultez la page https://wicg.github.io/cors-rfc1918/#goals.
-
-          Lorsque cette règle n'est pas configurée, le comportement par défaut des requêtes envoyées depuis des contextes non sécurisés vers des points de terminaison plus privés du réseau dépend de la configuration personnelle de l'utilisateur concernant la fonctionnalité <ph name="BLOCK_INSECURE_PRIVATE_NETWORK_REQUESTS_FEATURE_NAME" />, qui peut être définie lors d'un test ou via une ligne de commande.
-
-          Si cette règle est définie sur "False", les sites Web non sécurisés ne sont pas autorisés à envoyer des requêtes à des points de terminaison plus privés du réseau. Cela signifie que les sites Web non sécurisés desservis par des adresses IP publiques ne peuvent pas envoyer des requêtes à localhost ni aux adresses IP privées. Les sites Web non sécurisés desservis par des adresses IP privées ne peuvent pas envoyer des requêtes à localhost.
-
-          Si cette règle est définie sur "True", les sites Web non sécurisés sont autorisés à envoyer des requêtes à n'importe quel point de terminaison du réseau (d'autres vérifications inter-URL peuvent être réalisées).</translation>
 <translation id="6833064854262015312">Définissez cette règle sur "True" pour activer le mode Contraste élevé sur l'écran de connexion. Définissez-la sur "False" pour désactiver le mode Contraste élevé sur l'écran de connexion.
 
       Si vous définissez cette règle, les utilisateurs peuvent temporairement activer ou désactiver le mode Contraste élevé. Lorsque l'écran de connexion s'actualise ou qu'il reste inactif pendant une minute, il revient à son état d'origine.

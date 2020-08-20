@@ -46,10 +46,6 @@ bool FrameLoaderStateMachine::CreatingInitialEmptyDocument() const {
   return state_ == kCreatingInitialEmptyDocument;
 }
 
-bool FrameLoaderStateMachine::CommittedMultipleRealLoads() const {
-  return state_ == kCommittedMultipleRealLoads;
-}
-
 bool FrameLoaderStateMachine::IsDisplayingInitialEmptyDocument() const {
   return state_ >= kDisplayingInitialEmptyDocument &&
          state_ < kCommittedFirstRealLoad;
@@ -68,8 +64,6 @@ String FrameLoaderStateMachine::ToString() const {
       return "DisplayingInitialEmptyDocument";
     case kCommittedFirstRealLoad:
       return "CommittedFirstRealLoad";
-    case kCommittedMultipleRealLoads:
-      return "CommittedMultipleRealLoads";
     default:
       NOTREACHED();
   }

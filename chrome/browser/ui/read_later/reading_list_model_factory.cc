@@ -31,6 +31,27 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 
+namespace {
+
+std::unique_ptr<KeyedService> BuildReadingListModel(
+    content::BrowserContext* context) {
+  Profile* const profile = Profile::FromBrowserContext(context);
+  syncer::OnceModelTypeStoreFactory store_factory =
+      ModelTypeStoreServiceFactory::GetForProfile(profile)->GetStoreFactory();
+  auto change_processor =
+      std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
+          syncer::READING_LIST,
+          base::BindRepeating(&syncer::ReportUnrecoverableError,
+                              chrome::GetChannel()));
+  std::unique_ptr<ReadingListStore> store = std::make_unique<ReadingListStore>(
+      std::move(store_factory), std::move(change_processor));
+
+  return std::make_unique<ReadingListModelImpl>(
+      std::move(store), profile->GetPrefs(), base::DefaultClock::GetInstance());
+}
+
+}  // namespace
+
 // static
 ReadingListModel* ReadingListModelFactory::GetForBrowserContext(
     content::BrowserContext* context) {
@@ -41,6 +62,12 @@ ReadingListModel* ReadingListModelFactory::GetForBrowserContext(
 // static
 ReadingListModelFactory* ReadingListModelFactory::GetInstance() {
   return base::Singleton<ReadingListModelFactory>::get();
+}
+
+// static
+BrowserContextKeyedServiceFactory::TestingFactory
+ReadingListModelFactory::GetDefaultFactoryForTesting() {
+  return base::BindRepeating(&BuildReadingListModel);
 }
 
 ReadingListModelFactory::ReadingListModelFactory()
@@ -54,21 +81,7 @@ ReadingListModelFactory::~ReadingListModelFactory() = default;
 
 KeyedService* ReadingListModelFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  Profile* profile = Profile::FromBrowserContext(context);
-  syncer::OnceModelTypeStoreFactory store_factory =
-      ModelTypeStoreServiceFactory::GetForProfile(profile)->GetStoreFactory();
-  auto change_processor =
-      std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
-          syncer::READING_LIST,
-          base::BindRepeating(&syncer::ReportUnrecoverableError,
-                              chrome::GetChannel()));
-  std::unique_ptr<ReadingListStore> store = std::make_unique<ReadingListStore>(
-      std::move(store_factory), std::move(change_processor));
-
-  KeyedService* reading_list_model = new ReadingListModelImpl(
-      std::move(store), profile->GetPrefs(), base::DefaultClock::GetInstance());
-
-  return reading_list_model;
+  return BuildReadingListModel(context).release();
 }
 
 void ReadingListModelFactory::RegisterProfilePrefs(

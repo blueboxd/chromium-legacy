@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.signin.account_picker;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -27,6 +28,7 @@ import org.mockito.Captor;
 import org.mockito.InOrder;
 import org.mockito.Mock;
 
+import org.chromium.base.Callback;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -35,6 +37,8 @@ import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.WebSigninBridge;
 import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
 import org.chromium.components.signin.base.CoreAccountInfo;
+import org.chromium.components.signin.base.GoogleServiceAuthError;
+import org.chromium.components.signin.base.GoogleServiceAuthError.State;
 import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -53,7 +57,10 @@ public class AccountPickerDelegateTest {
     public final AccountManagerTestRule mAccountManagerTestRule = new AccountManagerTestRule();
 
     @Mock
-    public WebSigninBridge.Factory mWebSigninBridgeFactoryMock;
+    private WebSigninBridge.Factory mWebSigninBridgeFactoryMock;
+
+    @Mock
+    private WebSigninBridge mWebSigninBridgeMock;
 
     @Mock
     private SigninManager mSigninManagerMock;
@@ -87,6 +94,8 @@ public class AccountPickerDelegateTest {
                 .thenReturn(new WeakReference<Activity>(mChromeActivityMock));
         mDelegate = new AccountPickerDelegate(
                 mWindowAndroidMock, mWebSigninBridgeFactoryMock, CONTINUE_URL);
+        when(mWebSigninBridgeFactoryMock.create(eq(mProfileMock), any(), eq(mDelegate)))
+                .thenReturn(mWebSigninBridgeMock);
     }
 
     @After
@@ -109,5 +118,34 @@ public class AccountPickerDelegateTest {
         verify(mChromeActivityMock.getActivityTab()).loadUrl(mLoadUrlParamsCaptor.capture());
         LoadUrlParams loadUrlParams = mLoadUrlParamsCaptor.getValue();
         Assert.assertEquals("Continue url does not match!", CONTINUE_URL, loadUrlParams.getUrl());
+    }
+
+    @Test
+    public void testSignInAborted() {
+        Account account =
+                mAccountManagerTestRule.addAccount(AccountManagerTestRule.TEST_ACCOUNT_EMAIL);
+        CoreAccountInfo coreAccountInfo = mAccountManagerTestRule.toCoreAccountInfo(account.name);
+        doAnswer(invocation -> {
+            SigninManager.SignInCallback callback = invocation.getArgument(2);
+            callback.onSignInAborted();
+            return null;
+        })
+                .when(mSigninManagerMock)
+                .signIn(eq(SigninAccessPoint.WEB_SIGNIN), eq(coreAccountInfo), any());
+        mDelegate.signIn(coreAccountInfo, error -> {});
+        verify(mWebSigninBridgeMock).destroy();
+    }
+
+    @Test
+    public void testSignInFailedWithConnectionError() {
+        Account account =
+                mAccountManagerTestRule.addAccount(AccountManagerTestRule.TEST_ACCOUNT_EMAIL);
+        CoreAccountInfo coreAccountInfo = mAccountManagerTestRule.toCoreAccountInfo(account.name);
+        Callback<GoogleServiceAuthError> mockCallback = mock(Callback.class);
+        GoogleServiceAuthError error = new GoogleServiceAuthError(State.CONNECTION_FAILED);
+        mDelegate.signIn(coreAccountInfo, mockCallback);
+        mDelegate.onSigninFailed(error);
+        verify(mockCallback).onResult(error);
+        verify(mWebSigninBridgeMock).destroy();
     }
 }

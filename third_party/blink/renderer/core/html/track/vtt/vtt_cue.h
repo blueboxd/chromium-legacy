@@ -95,7 +95,7 @@ struct DowncastTraits<VTTCueBackgroundBox> {
   }
 };
 
-class VTTCue final : public TextTrackCue {
+class CORE_EXPORT VTTCue final : public TextTrackCue {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -143,6 +143,8 @@ class VTTCue final : public TextTrackCue {
   void UpdateDisplay(HTMLDivElement& container) override;
 
   void UpdatePastAndFutureNodes(double movie_time) override;
+
+  base::Optional<double> GetNextIntraCueTime(double movie_time) const override;
 
   void RemoveDisplayTree(RemovalNotification) override;
 

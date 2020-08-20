@@ -35,6 +35,14 @@ WebLayerPermissionsClient::GetCookieSettings(
   return CookieSettingsFactory::GetForBrowserContext(browser_context);
 }
 
+bool WebLayerPermissionsClient::IsSubresourceFilterActivated(
+    content::BrowserContext* browser_context,
+    const GURL& url) {
+  // As the web layer does not currently support subresource filtering, the
+  // activation setting does not change any browser behavior.
+  return false;
+}
+
 permissions::PermissionDecisionAutoBlocker*
 WebLayerPermissionsClient::GetPermissionDecisionAutoBlocker(
     content::BrowserContext* browser_context) {

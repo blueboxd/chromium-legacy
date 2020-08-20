@@ -153,7 +153,7 @@
 <translation id="5866104238061687188">{YEARS,plural, =1{čez 1 l}one{čez # l}two{čez # l}few{čez # l}other{čez # l}}</translation>
 <translation id="588258955323874662">Celozaslonsko</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{Še 1 s}one{Še # s}two{Še # s}few{Še # s}other{Še # s}}</translation>
-<translation id="5941711191222866238">Pomanjšaj</translation>
+<translation id="5941711191222866238">Minimiziraj</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 h}one{# h}two{# h}few{# h}other{# h}}</translation>
 <translation id="6012623610530968780"><ph name="SELECTED_PAGE" />. stran od <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="6022924867608035986">Izbris besedila v iskalnem polju</translation>
@@ -184,7 +184,7 @@
 <translation id="6620110761915583480">Shrani datoteko</translation>
 <translation id="6656912866303152668">Poskrbite, da ima naprava <ph name="TARGET_DEVICE_NAME" /> vklopljeno sinhronizacijo v Chromu, nato poskusite poslati znova.</translation>
 <translation id="6699343763173986273">Naslednja skladba</translation>
-<translation id="6710213216561001401">Nazaj</translation>
+<translation id="6710213216561001401">Prejšnji</translation>
 <translation id="6779314412797872738">Če želite poslati številko iz te naprave v telefon Android, v nastavitvah obiščite to povezavo za odpravljanje težav za obe napravi: <ph name="TROUBLESHOOT_LINK" />.</translation>
 <translation id="6786750046913594791">Zapri mapo</translation>
 <translation id="6808150112686056157">Ustavitev</translation>

@@ -275,6 +275,10 @@ const char kEnableBookmarkUndo[]            = "enable-bookmark-undo";
 // Proxy component within the service process.
 const char kEnableCloudPrintProxy[]         = "enable-cloud-print-proxy";
 
+// Enables CriticalPersistedTabData - redesign/replacement for TabState
+const char kEnableCriticalPersistedTabData[] =
+    "enable-critical-persisted-tab-data";
+
 // Enable device discovery notifications.
 const char kEnableDeviceDiscoveryNotifications[] =
     "enable-device-discovery-notifications";

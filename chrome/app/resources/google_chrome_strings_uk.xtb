@@ -37,14 +37,12 @@
 <translation id="1874309113135274312">Бета-версія Google Chrome (mDNS-In)</translation>
 <translation id="1877026089748256423">Версія Chrome застаріла</translation>
 <translation id="1919130412786645364">Дозволити вхід у Chrome</translation>
-<translation id="195645108406520445">Налаштуйте свій новий профіль Chrome</translation>
 <translation id="2063848847527508675">Щоб застосувати це оновлення, потрібно перезапустити ОС Chrome.</translation>
 <translation id="2094919256425865063">Усе одно вийти з Chrome?</translation>
 <translation id="2120620239521071941">З цього пристрою буде видалено стільки елементів: <ph name="ITEMS_COUNT" />. Щоб відновити дані пізніше, увійдіть в обліковий запис Chrome як <ph name="USER_EMAIL" />.</translation>
 <translation id="2123055963409958220">Допоможіть покращити Chrome, надсилаючи звіти про <ph name="BEGIN_LINK" />поточні налаштування<ph name="END_LINK" /></translation>
 <translation id="2151406531797534936">Перезапустіть Chrome</translation>
 <translation id="2246246234298806438">Google Chrome не може відобразити попередній перегляд версії для друку, якщо немає вбудованого переглядача PDF.</translation>
-<translation id="226038281051944330">Ви ввійшли в новий обліковий запис у профілі, яким користується <ph name="EXISTING_USER" />. Створити новий профіль Chrome, яким користуватиметься <ph name="NEW_USER" />, щоб зберігати ваші дані окремо?</translation>
 <translation id="2290014774651636340">Ключі API Google відсутні. Деякі функції Google Chrome буде вимкнено.</translation>
 <translation id="2290095356545025170">Ви дійсно хочете видалити Google Chrome?</translation>
 <translation id="2309047409763057870">Це додаткове встановлення Google Chrome. Його не можна зробити вашим веб-переглядачем за умовчанням.</translation>
@@ -79,7 +77,6 @@
 <translation id="3089968997497233615">Доступна нова, безпечніша версія Google Chrome.</translation>
 <translation id="3127818369811890733">ОС Chrome не вдалося синхронізувати ваші дані.</translation>
 <translation id="3149510190863420837">Додатки Chrome</translation>
-<translation id="3351117925998652957">Виберіть свій профіль Chrome</translation>
 <translation id="3360895254066713204">Помічник Chrome</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome перезапуститься зараз}=1{Chrome перезапуститься через 1 секунду}one{Chrome перезапуститься через # секунду}few{Chrome перезапуститься через # секунди}many{Chrome перезапуститься через # секунд}other{Chrome перезапуститься через # секунди}}</translation>
 <translation id="3395323229510056640">Отримати довідку щодо ОС Chrome</translation>
@@ -102,7 +99,6 @@
 <translation id="386202838227397562">Закрийте всі вікна Google Chrome і повторіть спробу.</translation>
 <translation id="3865754807470779944">Chrome версії <ph name="PRODUCT_VERSION" /> встановлено</translation>
 <translation id="3873044882194371212">Відкрити посилання в аноні&amp;мному вікні Chrome</translation>
-<translation id="3879568094278837081">Дані веб-перегляду буде видалено з цього пристрою. Щоб відновити їх, увійдіть в обліковий запис Chrome як</translation>
 <translation id="3889417619312448367">Видалити Google Chrome</translation>
 <translation id="4050175100176540509">В останній версії покращено безпеку та додано нові функції.</translation>
 <translation id="4053720452172726777">Налаштування та керування Google Chrome</translation>
@@ -143,12 +139,10 @@
 <translation id="4895437082222824641">Відкрити посилання в новій &amp;вкладці Chrome</translation>
 <translation id="4953650215774548573">Зробити Google Chrome веб-переглядачем за умовчанням</translation>
 <translation id="495931528404527476">У Chrome</translation>
-<translation id="4960472897514318257">Ви ввійшли в робочий обліковий запис. Створити новий профіль Chrome, яким користуватиметься <ph name="NEW_USER" />, щоб зберігати ваші персональні дані окремо?</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5062123544085870375">Перезапустіть ОС Chrome</translation>
 <translation id="5132929315877954718">Знаходьте чудові додатки, ігри, розширення й теми для Google Chrome.</translation>
 <translation id="5170938038195470297">Ваш профіль не можна використати, оскільки його створено в новішій версії Google Chrome. Деякі функції можуть бути недоступними. Укажіть інший каталог профілю чи скористайтеся новішою версією Chrome.</translation>
-<translation id="5171117065011130146">Створити новий робочий профіль Chrome?</translation>
 <translation id="5193136243808726294">Неможливо відкрити цю сторінку в ОС Google Chrome.</translation>
 <translation id="5251420635869119124">Гості можуть анонімно користуватися Chrome.</translation>
 <translation id="532046782124376502">Застереження. Google Chrome не може заборонити розширенням реєструвати історію веб-перегляду. Щоб розширення не працювало в режимі анонімного перегляду, зніміть прапорець біля цієї опції.</translation>
@@ -214,7 +208,6 @@
 <translation id="7535429826459677826">Версія Google Chrome для розробників</translation>
 <translation id="7573289029918943991">Щоб дізнатися, чи пристрій використовує актуальну версію операційної системи, перейдіть у <ph name="LINK_BEGIN" />налаштування ОС Chrome<ph name="LINK_END" /></translation>
 <translation id="7589360514048265910">На цей комп’ютер більше не надходитимуть оновлення Google Chrome, оскільки ОС Mac X 10.9 уже не підтримується.</translation>
-<translation id="7591404275842302616">Користуйтеся профілями Chrome, щоб упорядкувати свій веб-перегляд на цьому пристрої</translation>
 <translation id="7592736734348559088">Google Chrome не вдалося синхронізувати ваші дані, оскільки дані для входу в обліковий запис застаріли.</translation>
 <translation id="7626032353295482388">Вітаємо у Chrome!</translation>
 <translation id="7629695634924605473">Chrome повідомляє, коли ваші паролі зламують</translation>
@@ -261,9 +254,7 @@
 <translation id="8823341990149967727">Версія Chrome застаріла</translation>
 <translation id="8834965163890861871">Google Chrome намагається змінити паролі. Щоб дозволити, введіть свій пароль Windows.</translation>
 <translation id="884296878221830158">Розширення також змінило сторінку, яка відкривається під час запуску Chrome або натискання кнопки "Домашня сторінка".</translation>
-<translation id="8859948767482842016">Ви ввійшли в робочий обліковий запис у профілі, яким користується <ph name="EXISTING_USER" />. Створити новий профіль Chrome для домену <ph name="WORK_DOMAIN" />, щоб зберігати ваші дані окремо?</translation>
 <translation id="8862326446509486874">У вас немає відповідних прав для встановлення на рівні системи. Спробуйте запустити програму встановлення, увійшовши з правами адміністратора.</translation>
-<translation id="8877586659207810298">Створити новий профіль Chrome, яким користуватиметься <ph name="NEW_USER" />?</translation>
 <translation id="8914504000324227558">Перезапустити Chrome</translation>
 <translation id="8999208279178790196">{0,plural, =0{Доступне оновлення Chrome}=1{Доступне оновлення Chrome}one{Оновлення Chrome доступне вже # день}few{Оновлення Chrome доступне вже # дні}many{Оновлення Chrome доступне вже # днів}other{Оновлення Chrome доступне вже # дня}}</translation>
 <translation id="9026991721384951619">ОС Chrome не вдалося синхронізувати ваші дані, оскільки дані для входу в обліковий запис застаріли.</translation>

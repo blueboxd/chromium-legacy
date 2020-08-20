@@ -48,6 +48,7 @@
 #include "net/dns/dns_response.h"
 #include "net/dns/dns_server_iterator.h"
 #include "net/dns/dns_session.h"
+#include "net/dns/dns_socket_pool.h"
 #include "net/dns/dns_udp_tracker.h"
 #include "net/dns/dns_util.h"
 #include "net/dns/public/dns_over_https_server_config.h"
@@ -187,12 +188,12 @@ class DnsAttempt {
 class DnsUDPAttempt : public DnsAttempt {
  public:
   DnsUDPAttempt(size_t server_index,
-                std::unique_ptr<DnsSession::SocketLease> socket_lease,
+                std::unique_ptr<DatagramClientSocket> socket,
                 std::unique_ptr<DnsQuery> query,
                 DnsUdpTracker* udp_tracker)
       : DnsAttempt(server_index),
         next_state_(STATE_NONE),
-        socket_lease_(std::move(socket_lease)),
+        socket_(std::move(socket)),
         query_(std::move(query)),
         udp_tracker_(udp_tracker) {}
 
@@ -205,7 +206,7 @@ class DnsUDPAttempt : public DnsAttempt {
     next_state_ = STATE_SEND_QUERY;
 
     IPEndPoint local_address;
-    if (socket_lease_->socket()->GetLocalAddress(&local_address) == OK)
+    if (socket_->GetLocalAddress(&local_address) == OK)
       udp_tracker_->RecordQuery(local_address.port(), query_->id());
 
     return DoLoop(OK);
@@ -219,7 +220,7 @@ class DnsUDPAttempt : public DnsAttempt {
   }
 
   const NetLogWithSource& GetSocketNetLog() const override {
-    return socket_lease_->socket()->NetLog();
+    return socket_->NetLog();
   }
 
  private:
@@ -230,8 +231,6 @@ class DnsUDPAttempt : public DnsAttempt {
     STATE_READ_RESPONSE_COMPLETE,
     STATE_NONE,
   };
-
-  DatagramClientSocket* socket() { return socket_lease_->socket(); }
 
   int DoLoop(int result) {
     CHECK_NE(STATE_NONE, next_state_);
@@ -270,7 +269,7 @@ class DnsUDPAttempt : public DnsAttempt {
 
   int DoSendQuery() {
     next_state_ = STATE_SEND_QUERY_COMPLETE;
-    return socket()->Write(
+    return socket_->Write(
         query_->io_buffer(), query_->io_buffer()->size(),
         base::BindOnce(&DnsUDPAttempt::OnIOComplete, base::Unretained(this)),
         kTrafficAnnotation);
@@ -292,7 +291,7 @@ class DnsUDPAttempt : public DnsAttempt {
   int DoReadResponse() {
     next_state_ = STATE_READ_RESPONSE_COMPLETE;
     response_ = std::make_unique<DnsResponse>();
-    return socket()->Read(
+    return socket_->Read(
         response_->io_buffer(), response_->io_buffer_size(),
         base::BindOnce(&DnsUDPAttempt::OnIOComplete, base::Unretained(this)));
   }
@@ -328,7 +327,7 @@ class DnsUDPAttempt : public DnsAttempt {
   State next_state_;
   base::TimeTicks start_time_;
 
-  std::unique_ptr<DnsSession::SocketLease> socket_lease_;
+  std::unique_ptr<DatagramClientSocket> socket_;
   std::unique_ptr<DnsQuery> query_;
 
   // Should be owned by the DnsSession, to which the transaction should own a
@@ -1258,13 +1257,13 @@ class DnsTransactionImpl : public DnsTransaction,
     DCHECK(!secure_);
     size_t attempt_number = attempts_.size();
 
-    std::unique_ptr<DnsSession::SocketLease> lease =
-        session_->AllocateSocket(server_index, net_log_.source());
+    std::unique_ptr<DatagramClientSocket> socket =
+        session_->socket_pool()->CreateConnectedUdpSocket(server_index);
 
-    bool got_socket = !!lease.get();
+    bool got_socket = !!socket.get();
 
     DnsUDPAttempt* attempt =
-        new DnsUDPAttempt(server_index, std::move(lease), std::move(query),
+        new DnsUDPAttempt(server_index, std::move(socket), std::move(query),
                           session_->udp_tracker());
 
     attempts_.push_back(base::WrapUnique(attempt));
@@ -1339,7 +1338,8 @@ class DnsTransactionImpl : public DnsTransaction,
     DCHECK(!secure_);
 
     std::unique_ptr<StreamSocket> socket(
-        session_->CreateTCPSocket(server_index, net_log_.source()));
+        session_->socket_pool()->CreateTcpSocket(server_index,
+                                                 net_log_.source()));
 
     unsigned attempt_number = attempts_.size();
 

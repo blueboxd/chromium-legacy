@@ -37,14 +37,12 @@
 <translation id="1874309113135274312">Google Chrome பீட்டா (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome காலாவதியானது</translation>
 <translation id="1919130412786645364">Chrome உள்நுழைவை அனுமதித்தல்</translation>
-<translation id="195645108406520445">உங்கள் புதிய Chrome ஸ்பேஸை அமைத்தல்</translation>
 <translation id="2063848847527508675">புதுப்பிப்பைப் பயன்படுத்த, Chrome OSஐ மீண்டும் தொடங்க வேண்டும்.</translation>
 <translation id="2094919256425865063">Chrome இலிருந்து வெளியேறவா?</translation>
 <translation id="2120620239521071941">வெளியேறினால், இந்தச் சாதனத்திலிருந்து <ph name="ITEMS_COUNT" /> உருப்படிகள் நீக்கப்படும். பின்னர் தரவை மீட்டமைக்க, Chrome இல் <ph name="USER_EMAIL" /> எனும் முகவரியின் மூலம் உள்நுழையவும்.</translation>
 <translation id="2123055963409958220"><ph name="BEGIN_LINK" />தற்போதைய அமைப்புகளைப்<ph name="END_LINK" />பற்றிய அறிக்கையை அனுப்பி, Chromeஐ இன்னும் சிறந்ததாக்க உதவவும்</translation>
 <translation id="2151406531797534936">Chromeமை இப்போது மீண்டும் தொடங்கவும்</translation>
 <translation id="2246246234298806438">உள்ளமைக்கப்பட்ட PDF வியூவர் இல்லையென்றால், Google Chrome அச்சிடல் மாதிரிக்காட்சியைக் காண்பிக்காது.</translation>
-<translation id="226038281051944330"><ph name="EXISTING_USER" /> இன் ஸ்பேஸில் புதிய கணக்கின் மூலம் உள்நுழைந்துள்ளீர்கள். உங்கள் தரவைத் தனிப்பட்டதாக வைத்திருக்கும் வகையில் <ph name="NEW_USER" /> டொமைனுக்கான புதிய Chrome ஸ்பேஸை உருவாக்க விரும்புகிறீர்களா?</translation>
 <translation id="2290014774651636340">Google API விசைகள் காணப்படவில்லை. Google Chrome இன் சில செயல்பாடுகள் முடக்கப்படும்.</translation>
 <translation id="2290095356545025170">Google Chrome நிறுவல் நீக்கம் செய்வதில் உறுதியாக உள்ளீர்களா?</translation>
 <translation id="2309047409763057870">இது Google Chrome இன் இரண்டாம் நிலை நிறுவல் என்பதால், அதை இயல்புநிலை உலாவியாக அமைக்க முடியாது.</translation>
@@ -79,7 +77,6 @@
 <translation id="3089968997497233615">புதிய, இன்னும் பாதுகாப்பான Google Chrome பதிப்பு தற்போது கிடைக்கிறது.</translation>
 <translation id="3127818369811890733">உங்கள் தரவை Chrome OSஸால் ஒத்திசைக்க முடியவில்லை.</translation>
 <translation id="3149510190863420837">Chrome ஆப்ஸ்</translation>
-<translation id="3351117925998652957">Chrome ஸ்பேஸைத் தேர்வுசெய்யுங்கள்</translation>
 <translation id="3360895254066713204">Chrome உதவி</translation>
 <translation id="3379938682270551431">{0,plural, =0{இப்போது Chrome மீண்டும் தொடங்கும்}=1{ஒரு வினாடியில் Chrome மீண்டும் தொடங்கும்}other{# வினாடிகளில் Chrome மீண்டும் தொடங்கும்}}</translation>
 <translation id="3395323229510056640">Chrome OS தொடர்பான உதவி பெறுக</translation>
@@ -102,7 +99,6 @@
 <translation id="386202838227397562">அனைத்து Google Chrome சாளரங்களையும் மூடி, பின்னர் முயற்சி செய்க.</translation>
 <translation id="3865754807470779944">Chromeமின் <ph name="PRODUCT_VERSION" /> பதிப்பு நிறுவப்பட்டுள்ளது</translation>
 <translation id="3873044882194371212">Chrome மறை&amp;நிலை சாளரத்தில் இணைப்பைத் திற</translation>
-<translation id="3879568094278837081">இந்த ஸ்பேஸின் உலாவிய தரவு இந்தச் சாதனத்திலிருந்து நீக்கப்படும். தரவை மீட்டெடுக்க, Chrome உலாவியில் இந்தக் கணக்கின் மூலம் உள்நுழையவும்</translation>
 <translation id="3889417619312448367">Google Chrome ஐ நிறுவல் நீக்குக</translation>
 <translation id="4050175100176540509">முக்கியப் பாதுகாப்பு மேம்பாடுகளும், புதிய அம்சங்களும் சமீபத்திய பதிப்பில் கிடைக்கின்றன.</translation>
 <translation id="4053720452172726777">Google Chrome ஐ தனிப்பயனாக்கி கட்டுப்படுத்து</translation>
@@ -143,12 +139,10 @@
 <translation id="4895437082222824641">புதிய Chrome &amp;தாவலில் இணைப்பைத் திற</translation>
 <translation id="4953650215774548573">Google Chrome ஐ உங்கள் இயல்புநிலை உலாவியாக அமைக்கவும்</translation>
 <translation id="495931528404527476">Chrome இல்</translation>
-<translation id="4960472897514318257">பணிக் கணக்கின் மூலம் உள்நுழைந்துள்ளீர்கள். உங்கள் தனிப்பட்ட தரவைத் தனிப்பட்டதாக வைத்திருக்கும் வகையில் <ph name="NEW_USER" /> டொமைனுக்குப் புதிய Chrome ஸ்பேஸை உருவாக்க விரும்புகிறீர்களா?</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5062123544085870375">Chrome OSஸை மீண்டும் தொடங்கவும்</translation>
 <translation id="5132929315877954718">Google Chrome க்கான சிறந்த ஆப்ஸ், கேம்ஸ், நீட்டிப்புகள் மற்றும் தீம்களைக் கண்டறியவும்.</translation>
 <translation id="5170938038195470297">Google Chrome இன் புத்தம் புதிய பதிப்பு என்பதால், உங்கள் சுயவிவரத்தைப் பயன்படுத்த முடியாது. சில அம்சங்கள் கிடைக்காமல் போகலாம். வேறு சுயவிவர கோப்பகத்தைக் குறிப்பிடுக அல்லது Chrome இன் புதிய பதிப்பைப் பயன்படுத்துக.</translation>
-<translation id="5171117065011130146">புதிய Chrome பணியிடத்தை உருவாக்கவா?</translation>
 <translation id="5193136243808726294">Google Chrome OS ஆல் இந்தப் பக்கத்தைத் திறக்க முடியாது.</translation>
 <translation id="5251420635869119124">எதையும் விட்டுசெல்லாமல் கெஸ்ட் பயனர்கள் Chrome ஐப் பயன்படுத்தலாம்.</translation>
 <translation id="532046782124376502">எச்சரிக்கை: நீட்டிப்புகள் உங்கள் உலாவல் வரலாற்றைப் பதிவுசெய்வதை Google Chrome ஆல் தடுக்க முடியவில்லை. மறைநிலையில் இந்த நீட்டிப்பை முடக்க, இந்த விருப்பத்தைத் தேர்வுநீக்கவும்.</translation>
@@ -214,7 +208,6 @@
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7573289029918943991">உங்கள் சாதனம் புதுப்பித்த நிலையில் உள்ளதா என்பதைப் பார்க்க <ph name="LINK_BEGIN" />Chrome OS அமைப்புகளுக்குச்<ph name="LINK_END" /> செல்லவும்</translation>
 <translation id="7589360514048265910">Mac OS X 10.9 இனி ஆதரிக்கப்படாது என்பதால், இந்தக் கம்ப்யூட்டர் இனி Google Chrome புதுப்பிப்புகளைப் பெறாது.</translation>
-<translation id="7591404275842302616">இந்தச் சாதனத்தில் உங்கள் உலாவல் செயல்பாடுகளை ஒழுங்கமைக்க, Chrome ஸ்பேசஸைப் பயன்படுத்தலாம்</translation>
 <translation id="7592736734348559088">உங்கள் கணக்கின் உள்நுழைவு விவரங்கள் காலாவதியாகிவிட்டதால் உங்கள் தரவை Google Chromeமால் ஒத்திசைக்க முடியவில்லை.</translation>
 <translation id="7626032353295482388">Chrome க்கு வருக</translation>
 <translation id="7629695634924605473">கடவுச்சொற்கள் பாதுகாப்பை இழக்கும்பட்சத்தில் அவற்றை Chrome உங்களுக்குத் தெரியப்படுத்தும்</translation>
@@ -261,9 +254,7 @@
 <translation id="8823341990149967727">Chrome காலாவதியானது</translation>
 <translation id="8834965163890861871">Google Chrome கடவுச்சொற்களைத் திருத்த முயல்கிறது. இதை அனுமதிக்க உங்கள் Windows கடவுச்சொல்லை உள்ளிடவும்.</translation>
 <translation id="884296878221830158">Chromeமைத் தொடங்கும்போது அல்லது முகப்புப் பொத்தானைக் கிளிக் செய்யும்போது காண்பிக்கப்படும் பக்கத்தையும் இது கட்டுப்படுத்துகிறது.</translation>
-<translation id="8859948767482842016"><ph name="EXISTING_USER" /> இன் ஸ்பேஸில் பணிக் கணக்கின் மூலம் உள்நுழைந்துள்ளீர்கள். உங்கள் தரவைத் தனிப்பட்டதாக வைத்திருக்கும் வகையில் <ph name="WORK_DOMAIN" /> டொமைனுக்கான புதிய Chrome ஸ்பேஸை உருவாக்க விரும்புகிறீர்களா?</translation>
 <translation id="8862326446509486874">கம்ப்யூட்டர்-சார்ந்த நிறுவலுக்கான முறையான உரிமைகள் உங்களிடம் இல்லை. அதனால் நிர்வாகியாக மீண்டும் நிறுவலை இயக்க முயற்சி செய்க.</translation>
-<translation id="8877586659207810298"><ph name="NEW_USER" />க்குப் புதிய Chrome ஸ்பேஸை உருவாக்கவா?</translation>
 <translation id="8914504000324227558">Chrome ஐ மீண்டும் தொடங்கு</translation>
 <translation id="8999208279178790196">{0,plural, =0{Chromeமிற்கான புதுப்பிப்பு உள்ளது}=1{Chromeமிற்கான புதுப்பிப்பு உள்ளது}other{Chromeமிற்கான புதுப்பிப்பு வந்து # நாட்களாகிறது}}</translation>
 <translation id="9026991721384951619">உங்கள் கணக்கின் உள்நுழைவு விவரங்கள் காலாவதியாகிவிட்டதால், உங்கள் தரவை Chrome OS ஆல் ஒத்திசைக்க முடியவில்லை.</translation>

@@ -41,14 +41,12 @@
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome ລ້າສະໄໝແລ້ວ</translation>
 <translation id="1919130412786645364">ອະນຸຍາດການເຂົ້າສູ່ລະບົບ Chrome</translation>
-<translation id="195645108406520445">ຕັ້ງຄ່າ Chrome Space ໃໝ່ຂອງທ່ານ</translation>
 <translation id="2063848847527508675">Chrome OS ຕ້ອງການປິດແລ້ວເປີດລະບົບຄືນໃໝ່ເພື່ອນຳໃຊ້ການອັບເດດ.</translation>
 <translation id="2094919256425865063">ຢືນຢັນການອອກຈາກ Chrome ບໍ?</translation>
 <translation id="2120620239521071941">ນີ້ຈະລຶບ <ph name="ITEMS_COUNT" /> ລາຍການອອກຈາກວິດີໂອນີ້. ເພື່ອກູ້ຂໍ້ມູນຂອງທ່ານຄືນໃນພາຍຫຼັງ, ກະລຸນາເຂົ້າສູ່ລະບົບ Chrome ເປັນ <ph name="USER_EMAIL" />.</translation>
 <translation id="2123055963409958220">ຊ່ວຍເຮັດໃຫ້ Chrome ດີຂຶ້ນໂດຍການລາຍງານ <ph name="BEGIN_LINK" />ການຕັ້ງຄ່າປັດຈຸບັນ<ph name="END_LINK" /></translation>
 <translation id="2151406531797534936">ກະລຸນາປິດເປີດ Chrome ຄືນໃໝ່ຕອນນີ້ເລີຍ</translation>
 <translation id="2246246234298806438">Google Chrome ບໍ່ສາມາດສະແດງຕົວຢ່າງເບິ່ງກ່ອນພິມໄດ້ ເມື່ອຂາດຕົວເບິ່ງ PDF ມາກັບເຄື່ອງໄປ.</translation>
-<translation id="226038281051944330">ທ່ານເຂົ້າສູ່ລະບົບດ້ວຍບັນຊີໃໝ່ໃນພື້ນທີ່ຂອງ <ph name="EXISTING_USER" />. ທ່ານຕ້ອງການສ້າງພື້ນທີ່ Chrome ໃໝ່ສຳລັບ <ph name="NEW_USER" /> ເພື່ອເກັບຮັກສາຂໍ້ມູນຂອງທ່ານແຍກໄວ້ຕ່າງຫາກບໍ?</translation>
 <translation id="2290014774651636340">ລະຫັດ Google API ຫາຍໄປ. ການເຮັດໜ້າທີ່ບາງອັນຂອງ  Google Chrom ຈະປິດໃຊ້ງານ.</translation>
 <translation id="2290095356545025170">ທ່ານແນ່ໃຈບໍວ່າ ທ່ານຕ້ອງການຖອນຕິດຕັ້ງ Google Chrome?</translation>
 <translation id="2309047409763057870">ນີ້ແມ່ນການຕິດຕັ້ງສຳຮອງຂອງ Google Chrome ແລະ ບໍ່ສາມາດຕັ້ງໃຫ້ເປັນໂປຣແກຣມທ່ອງເວັບເລີ່ມຕົ້ນຂອງທ່ານໄດ້.</translation>
@@ -83,7 +81,6 @@
 <translation id="3089968997497233615">ມີ Google Chrome ລຸ້ນໃໝ່ປອດໄພກ່ວາຢູ່.</translation>
 <translation id="3127818369811890733">Chrome OS ບໍ່ສາມາດຊິ້ງຂໍ້ມູນຂອງທ່ານໄດ້.</translation>
 <translation id="3149510190863420837">ແອັບ Chrome</translation>
-<translation id="3351117925998652957">ເລືອກພື້ນທີ່ Chrome ຂອງທ່ານ</translation>
 <translation id="3360895254066713204">ຕົວຊ່ວຍ Chrome</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome ຈະເປີດຄືນໃໝ່ດຽວນີ້}=1{Chrome ຈະເປີດຄືນໃໝ່ໃນ 1 ວິນາທີ}other{Chrome ຈະເປີດຄືນໃໝ່ໃນ # ວິນາທີ}}</translation>
 <translation id="3395323229510056640">ຂໍຄວາມຊ່ວຍເຫຼືອເລື່ອງ Chrome OS</translation>
@@ -106,7 +103,6 @@
 <translation id="386202838227397562">ກະລຸນາປິດທຸກວິນໂດ Google Chrome ແລະລອງໃໝ່ອີກ.</translation>
 <translation id="3865754807470779944">ຕິດຕັ້ງ Chrome ເວີຊັນ <ph name="PRODUCT_VERSION" /> ແລ້ວ</translation>
 <translation id="3873044882194371212">ເປີດລິ້ງໃນໜ້າຈໍທີ່ບໍ່ເຜີຍຕົວຕົນຂອງ Chrome</translation>
-<translation id="3879568094278837081">ຂໍ້ມູນການທ່ອງເວັບຂອງພື້ນທີ່ນີ້ຈະຖືກລຶບອອກຈາກອຸປະກອນນີ້. ເພື່ອກູ້ຂໍ້ມູນຄືນມາ, ກະລຸນາເຂົ້າສູ່ລະບົບ Chrome ເປັນ</translation>
 <translation id="3889417619312448367">ຖອນຕິດຕັ້ງ Google Chrome</translation>
 <translation id="4050175100176540509">ການ​ປັບ​ປຸງ​ຄວາມ​ປອດ​ໄພ​ທີ່​ສຳ​ຄັນ ແລະ​ຄຸນ​ສົມ​ບັດ​ໃໝ່​ມີ​ໃຫ້​ຢູ່​ໃນ​ເວີ​ຊັນ​ຫຼ້າ​ສຸດ.</translation>
 <translation id="4053720452172726777">ກໍານົດເອງ ແລະຄວບຄຸມ Google Chrome</translation>
@@ -147,14 +143,12 @@
 <translation id="4895437082222824641">ເປີດລິ້ງໃນແຖບ Chrome ໃໝ່</translation>
 <translation id="4953650215774548573">ຕັ້ງ Google Chrome ເປັນບຣາວ​ເຊີມາດຕະຖານຂອງທ່ານ</translation>
 <translation id="495931528404527476">ຢູ່ໃນ Chrome</translation>
-<translation id="4960472897514318257">ທ່ານເຂົ້າສູ່ລະບົບດ້ວຍບັນຊີບ່ອນເຮັດວຽກ. ທ່ານຕ້ອງການສ້າງພື້ນທີ່ Chrome ໃໝ່ສຳລັບ <ph name="NEW_USER" /> ເພື່ອເກັບຮັກສາຂໍ້ມູນຂອງທ່ານແຍກໄວ້ຕ່າງຫາກບໍ?</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5062123544085870375">ປິດເປີດ Chrome OS ຄືນໃໝ່</translation>
 <translation id="5132929315877954718">ຄົ້ນພົບແອັບຯ, ເກມ, ສ່ວນຂະຫຍາຍ ແລະ ຮູບແບບສີສັນສຳລັບ Google Chrome.</translation>
 <translation id="5170938038195470297">ບໍ່ສາມາດໃຊ້ໂປຣໄຟລ໌ຂອງທ່ານໄດ້ ເພາະວ່າມັນມາຈາກ Google Chrome ລຸ້ນໃໝ່.
 
 ອາດຈະບໍ່ມີບາງຄຸນສົມບັດຢູ່. ກະລຸນາລະບຸໄດເຣັກຕໍຣີໂປຣໄຟລ໌ອື່ນ ຫຼືໃຊ້ Chrome ລຸ້ນໃໝ່ກ່ວາ.</translation>
-<translation id="5171117065011130146">ສ້າງພື້ນທີ່ວຽກໃໝ່ໃນ Chrome ບໍ?</translation>
 <translation id="5193136243808726294">Google Chrome OS ບໍ່ສາມາດເປີດໜ້ານີ້ໄດ້.</translation>
 <translation id="5251420635869119124">ແຂກສາມາດໃຊ້  Chrome ໂດຍ​ບໍ່​ມີ​ການປະອັນໃດໄວ້ເບື້ອງຫຼັງໄດ້.</translation>
 <translation id="532046782124376502">ຄຳເຕືອນ: Google Chrome ບໍ່ສາມາດປ້ອງກັນບໍ່ໃຫ້ສ່ວນຂະຫຍາຍບັນທຶກປະຫວັດການທ່ອງເວັບຂອງທ່ານໄດ້. ເພື່ອປິດນຳໃຊ້ສ່ວນຂະຫຍາຍນີ້ໃນໂໝດບໍ່ເປີດເຜີຍຕົວຕົນ, ກະລຸນາຍົກເລີກການເລືອກຕົວເລືອກນີ້.</translation>
@@ -222,7 +216,6 @@ Google Chrome ບໍ່ສາມາດກູ້ຄືນການຕັ້ງຄ
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7573289029918943991">ເພື່ອເບິ່ງວ່າອຸປະກອນຂອງທ່ານໃໝ່ຫຼ້າສຸດຫຼືບໍ່, ກະລຸນາໄປທີ່ <ph name="LINK_BEGIN" />ການຕັ້ງຄ່າ Chrome OS<ph name="LINK_END" /></translation>
 <translation id="7589360514048265910">ຄອມພິວເຕີນີ້ຈະບໍ່ໄດ້ຮັບການອັບເດດ Google Chrome ອີກຕໍ່ໄປ ເພາະວ່າບໍ່ຮອງຮັບ Mac OS X 10.9 ອີກແລ້ວ.</translation>
-<translation id="7591404275842302616">ໃຊ້ພື້ນທີ່ Chrome ເພື່ອຮັກສາໃຫ້ການທ່ອງເວັບຂອງທ່ານເປັນລະບຽບຢູ່ໃນອຸປະກອນນີ້</translation>
 <translation id="7592736734348559088">Goolge Chrome ບໍ່​ສາ​ມາດຊິງຄ໌ຂໍ້​ມູນ​ຂອງ​ທ່ານໄດ້ ​ເພາະ​ວ່າ​ລາຍລະອຽດການລົງຊື່ເຂົ້າໃຊ້ບັນ​ຊີຂອງທ່ານຫຼ້າສະໄໝແລ້ວ.</translation>
 <translation id="7626032353295482388">ຍິນ​ດີ​ຕ້ອນ​ຮັບສູ່ Chrome</translation>
 <translation id="7629695634924605473">Chrome ແຈ້ງໃຫ້ທ່ານຮູ້ຖ້າມີຄົນຮູ້ລະຫັດຜ່ານຂອງທ່ານ</translation>
@@ -269,9 +262,7 @@ Google Chrome ບໍ່ສາມາດກູ້ຄືນການຕັ້ງຄ
 <translation id="8823341990149967727">Chrome ລ້າສະໄໝແລ້ວ</translation>
 <translation id="8834965163890861871">Google Chrome ກໍາລັງພະຍາຍາມແກ້ໄຂລະຫັດຜ່ານ. ພິມລະຫັດຜ່ານ Windows ຂອງທ່ານ ເພື່ອອະນຸຍາດອັນນີ້.</translation>
 <translation id="884296878221830158">ມັນຍັງຄວບຄຸມວ່າຈະໃຫ້ສະແດງໜ້າໃດຂຶ້ນ ເມື່ອທ່ານເລີ່ມຕົ້ນເປີດ Chrome ຫຼືຄລິກປຸ່ມໂຮມ.</translation>
-<translation id="8859948767482842016">ທ່ານເຂົ້າສູ່ລະບົບດ້ວຍບັນຊີບ່ອນເຮັດວຽກໃນພື້ນທີ່ຂອງ <ph name="EXISTING_USER" />. ທ່ານຕ້ອງການສ້າງພື້ນທີ່ Chrome ໃໝ່ສຳລັບ <ph name="WORK_DOMAIN" /> ເພື່ອເກັບຮັກສາຂໍ້ມູນຂອງທ່ານແຍກໄວ້ຕ່າງຫາກບໍ?</translation>
 <translation id="8862326446509486874">ທ່ານບໍ່ມີສິດທິທີ່ເໝາະສົມສໍາລັບຕິດຕັ້ງ​ໃນລະດັບລະບົບ. ລອງແລ່ນຕົວຕິດຕັ້ງນີ້ອີກ​ໃນ​ຖານະ​ເປັນ​ຜູ້ຄວບຄຸມ.</translation>
-<translation id="8877586659207810298">ສ້າງພື້ນທີ່ໃໝ່ໃນ Chrome ສຳລັບ <ph name="NEW_USER" /> ບໍ?</translation>
 <translation id="8914504000324227558">ເປີດໃຊ້ Chrome ຄືນໃໝ່</translation>
 <translation id="8999208279178790196">{0,plural, =0{ມີການອັບເດດ Chrome}=1{ມີການອັບເດດ Chrome}other{ມີການອັບເດດ Chrome ເປັນເວລາ # ມື້ແລ້ວ}}</translation>
 <translation id="9026991721384951619">Chrome OS ບໍ່​ສາ​ມາດຊິງຄ໌ຂໍ້​ມູນ​ຂອງ​ທ່ານໄດ້ ​ເພາະ​ວ່າ​ລາຍລະອຽດການລົງຊື່ເຂົ້າບັນ​ຊີຂອງທ່ານຫຼ້າສະໄໝແລ້ວ.</translation>

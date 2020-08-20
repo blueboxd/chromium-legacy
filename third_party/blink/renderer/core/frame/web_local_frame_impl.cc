@@ -2252,7 +2252,8 @@ bool WebLocalFrameImpl::IsNavigationScheduledWithin(
 void WebLocalFrameImpl::SetCommittedFirstRealLoad() {
   DCHECK(GetFrame());
   GetFrame()->Loader().StateMachine()->AdvanceTo(
-      FrameLoaderStateMachine::kCommittedMultipleRealLoads);
+      FrameLoaderStateMachine::kCommittedFirstRealLoad);
+  GetFrame()->Loader().SetDidLoadNonEmptyDocument();
   GetFrame()->SetShouldSendResourceTimingInfoToParent(false);
 }
 

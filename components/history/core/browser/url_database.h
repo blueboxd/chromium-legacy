@@ -339,6 +339,15 @@ extern const int kLowQualityMatchTypedLimit;
 extern const int kLowQualityMatchVisitLimit;
 extern const int kLowQualityMatchAgeLimitInDays;
 
+// The time interval within which a duplicate query is considered invalid for
+// autocomplete purposes.
+// These invalid duplicates are extracted from search query URLs which are
+// identical or nearly identical to the original search query URL and issued too
+// closely to it, i.e., within this time interval. They are typically recorded
+// as a result of back/forward navigations or user interactions in the search
+// result page and are likely not newly initiated searches.
+extern const base::TimeDelta kAutocompleteDuplicateVisitIntervalThreshold;
+
 // Returns the date threshold for considering an history item as significant.
 base::Time AutocompleteAgeThreshold();
 

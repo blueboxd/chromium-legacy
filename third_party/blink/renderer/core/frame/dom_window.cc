@@ -501,8 +501,7 @@ void DOMWindow::ReportCoopAccess(const char* property_name) {
     // TODO(arthursonzogni): Dispatch a console error/warning message.
 
     // Send a coop-access-violation report.
-    if (it->report_type ==
-        network::mojom::CoopAccessReportType::kReportAccessFrom) {
+    if (network::IsAccessFromCoopPage(it->report_type)) {
       ReportingContext::From(accessing_main_frame.DomWindow())
           ->QueueReport(MakeGarbageCollected<Report>(
               ReportType::kCoopAccessViolation,

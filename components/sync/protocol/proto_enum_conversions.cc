@@ -446,11 +446,12 @@ const char* ProtoEnumToString(
 const char* ProtoEnumToString(
     sync_pb::UserEventSpecifics::FlocIdComputed::EventTrigger trigger) {
   ASSERT_ENUM_BOUNDS(sync_pb::UserEventSpecifics::FlocIdComputed, EventTrigger,
-                     UNSPECIFIED, REFRESHED);
+                     UNSPECIFIED, HISTORY_DELETE);
   switch (trigger) {
     ENUM_CASE(sync_pb::UserEventSpecifics::FlocIdComputed, UNSPECIFIED);
     ENUM_CASE(sync_pb::UserEventSpecifics::FlocIdComputed, NEW);
     ENUM_CASE(sync_pb::UserEventSpecifics::FlocIdComputed, REFRESHED);
+    ENUM_CASE(sync_pb::UserEventSpecifics::FlocIdComputed, HISTORY_DELETE);
   }
   NOTREACHED();
   return "";

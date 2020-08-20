@@ -28,7 +28,7 @@ void FakeNearbyConnectionsManager::StartAdvertising(
 
 void FakeNearbyConnectionsManager::StopAdvertising() {
   DCHECK(IsAdvertising());
-  DCHECK(!IsShutdown());
+  DCHECK(!is_shutdown());
   advertising_listener_ = nullptr;
   advertising_data_usage_ = DataUsage::kUnknown;
   advertising_power_level_ = PowerLevel::kUnknown;
@@ -44,7 +44,7 @@ void FakeNearbyConnectionsManager::StartDiscovery(
 
 void FakeNearbyConnectionsManager::StopDiscovery() {
   DCHECK(IsDiscovering());
-  DCHECK(!IsShutdown());
+  DCHECK(!is_shutdown());
   discovery_listener_ = nullptr;
   // TODO(alexchau): Implement.
 }
@@ -55,26 +55,27 @@ void FakeNearbyConnectionsManager::Connect(
     base::Optional<std::vector<uint8_t>> bluetooth_mac_address,
     DataUsage data_usage,
     NearbyConnectionCallback callback) {
-  DCHECK(!IsShutdown());
-  // TODO(alexchau): Implement.
+  DCHECK(!is_shutdown());
+  connected_data_usage_ = data_usage;
+  std::move(callback).Run(connection_);
 }
 
 void FakeNearbyConnectionsManager::Disconnect(const std::string& endpoint_id) {
-  DCHECK(!IsShutdown());
+  DCHECK(!is_shutdown());
   // TODO(alexchau): Implement.
 }
 
 void FakeNearbyConnectionsManager::Send(const std::string& endpoint_id,
                                         PayloadPtr payload,
                                         PayloadStatusListener* listener) {
-  DCHECK(!IsShutdown());
+  DCHECK(!is_shutdown());
   // TODO(alexchau): Implement.
 }
 
 void FakeNearbyConnectionsManager::RegisterPayloadStatusListener(
     int64_t payload_id,
     PayloadStatusListener* listener) {
-  DCHECK(!IsShutdown());
+  DCHECK(!is_shutdown());
   // TODO(alexchau): Implement.
 }
 
@@ -82,31 +83,31 @@ void FakeNearbyConnectionsManager::RegisterPayloadPath(
     int64_t payload_id,
     const base::FilePath& file_path,
     ConnectionsCallback callback) {
-  DCHECK(!IsShutdown());
+  DCHECK(!is_shutdown());
   // TODO(alexchau): Implement.
 }
 
 FakeNearbyConnectionsManager::Payload*
 FakeNearbyConnectionsManager::GetIncomingPayload(int64_t payload_id) {
-  DCHECK(!IsShutdown());
+  DCHECK(!is_shutdown());
   // TODO(alexchau): Implement.
   return nullptr;
 }
 
 void FakeNearbyConnectionsManager::Cancel(int64_t payload_id) {
-  DCHECK(!IsShutdown());
+  DCHECK(!is_shutdown());
   // TODO(alexchau): Implement.
 }
 
 void FakeNearbyConnectionsManager::ClearIncomingPayloads() {
-  DCHECK(!IsShutdown());
+  DCHECK(!is_shutdown());
   // TODO(alexchau): Implement.
 }
 
 base::Optional<std::vector<uint8_t>>
 FakeNearbyConnectionsManager::GetRawAuthenticationToken(
     const std::string& endpoint_id) {
-  DCHECK(!IsShutdown());
+  DCHECK(!is_shutdown());
 
   auto iter = endpoint_auth_tokens_.find(endpoint_id);
   if (iter != endpoint_auth_tokens_.end())
@@ -143,27 +144,16 @@ void FakeNearbyConnectionsManager::OnEndpointLost(
   discovery_listener_->OnEndpointLost(endpoint_id);
 }
 
-bool FakeNearbyConnectionsManager::IsAdvertising() {
+bool FakeNearbyConnectionsManager::IsAdvertising() const {
   return advertising_listener_ != nullptr;
 }
 
-bool FakeNearbyConnectionsManager::IsDiscovering() {
+bool FakeNearbyConnectionsManager::IsDiscovering() const {
   return discovery_listener_ != nullptr;
 }
 
-bool FakeNearbyConnectionsManager::IsShutdown() {
-  return is_shutdown_;
-}
-
-DataUsage FakeNearbyConnectionsManager::GetAdvertisingDataUsage() {
-  return advertising_data_usage_;
-}
-
-PowerLevel FakeNearbyConnectionsManager::GetAdvertisingPowerLevel() {
-  return advertising_power_level_;
-}
-
 bool FakeNearbyConnectionsManager::DidUpgradeBandwidth(
-    const std::string& endpoint_id) {
-  return (upgrade_bandwidth_endpoint_ids_.count(endpoint_id) > 0);
+    const std::string& endpoint_id) const {
+  return upgrade_bandwidth_endpoint_ids_.find(endpoint_id) !=
+         upgrade_bandwidth_endpoint_ids_.end();
 }

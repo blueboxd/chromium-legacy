@@ -5333,6 +5333,23 @@ interface RTCDtlsTransport : EventTarget
     method getRemoteCertificates
     setter onerror
     setter onstatechange
+interface RTCEncodedAudioFrame
+    attribute @@toStringTag
+    getter data
+    getter timestamp
+    method constructor
+    method getMetadata
+    method toString
+    setter data
+interface RTCEncodedVideoFrame
+    attribute @@toStringTag
+    getter data
+    getter timestamp
+    getter type
+    method constructor
+    method getMetadata
+    method toString
+    setter data
 interface RTCError : DOMException
     attribute @@toStringTag
     getter errorDetail
@@ -5462,6 +5479,7 @@ interface RTCRtpReceiver
     getter track
     getter transport
     method constructor
+    method createEncodedStreams
     method getContributingSources
     method getParameters
     method getStats
@@ -5475,6 +5493,7 @@ interface RTCRtpSender
     getter track
     getter transport
     method constructor
+    method createEncodedStreams
     method getParameters
     method getStats
     method replaceTrack

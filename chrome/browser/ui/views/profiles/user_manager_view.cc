@@ -19,6 +19,7 @@
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/signin/signin_util.h"
+#include "chrome/browser/task_manager/web_contents_tags.h"
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -388,6 +389,11 @@ void UserManagerView::Init(Profile* system_profile, const GURL& url) {
   AddAccelerator(ui::Accelerator(ui::VKEY_W, ui::EF_CONTROL_DOWN));
   AddAccelerator(ui::Accelerator(ui::VKEY_F4, ui::EF_ALT_DOWN));
 
+  // Make the user manager WebContents show up in the task manager.
+  content::WebContents* web_contents = web_view_->GetWebContents();
+  task_manager::WebContentsTags::CreateForToolContents(
+      web_contents, IDS_PROFILES_MANAGE_USERS_BUTTON);
+
   // If the user manager is being displayed from an existing profile, use
   // its last active browser to determine where the user manager should be
   // placed.  This is used so that we can center the dialog on the correct
@@ -435,8 +441,7 @@ void UserManagerView::Init(Profile* system_profile, const GURL& url) {
 #endif
 
   web_view_->LoadInitialURL(url);
-  content::RenderWidgetHostView* rwhv =
-      web_view_->GetWebContents()->GetRenderWidgetHostView();
+  content::RenderWidgetHostView* rwhv = web_contents->GetRenderWidgetHostView();
   if (rwhv)
     rwhv->SetBackgroundColor(profiles::kUserManagerBackgroundColor);
 

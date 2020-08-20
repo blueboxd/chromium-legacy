@@ -176,6 +176,9 @@ class PLATFORM_EXPORT FrameWidget
 
   virtual void SetEditCommandsForNextKeyEvent(
       Vector<mojom::blink::EditCommandPtr> edit_commands) = 0;
+
+  // Returns information about the screen where this widget is being displayed.
+  virtual const ScreenInfo& GetScreenInfo() = 0;
 };
 
 }  // namespace blink

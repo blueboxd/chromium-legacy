@@ -17,8 +17,6 @@ group("video_tutorials") {
   public_deps = [
     ":factory",
     ":public",
-    "//base",
-    "//url:url",
   ]
 
   deps = [ "internal" ]
@@ -33,11 +31,22 @@ source_set("public") {
     "video_tutorial_service.h",
   ]
 
+  deps = []
+
   public_deps = [
     "//base",
     "//components/keyed_service/core",
     "//url:url",
   ]
+
+  if (is_android) {
+    sources += [
+      "android/video_tutorial_service_bridge.cc",
+      "android/video_tutorial_service_bridge.h",
+    ]
+
+    deps += [ ":jni_headers" ]
+  }
 }
 
 source_set("factory") {
@@ -59,13 +68,23 @@ if (is_android) {
     sources = [
       "android/java/src/org/chromium/chrome/browser/video_tutorials/Tutorial.java",
       "android/java/src/org/chromium/chrome/browser/video_tutorials/VideoTutorialService.java",
+      "android/java/src/org/chromium/chrome/browser/video_tutorials/bridges/VideoTutorialServiceBridge.java",
     ]
 
     deps = [
       "//base:base_java",
+      "//base:jni_java",
       "//components/browser_ui/widget/android:java",
       "//third_party/android_deps:androidx_annotation_annotation_java",
     ]
+
+    annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
+  }
+
+  generate_jni("jni_headers") {
+    visibility = [ ":*" ]
+
+    sources = [ "android/java/src/org/chromium/chrome/browser/video_tutorials/bridges/VideoTutorialServiceBridge.java" ]
   }
 }
 

@@ -97,9 +97,7 @@ int CalculateActivePingDays(const base::Time& last_active_ping_day,
 
 namespace extensions {
 
-ExtensionUpdater::CheckParams::CheckParams()
-    : install_immediately(false),
-      fetch_priority(ManifestFetchData::FetchPriority::BACKGROUND) {}
+ExtensionUpdater::CheckParams::CheckParams() = default;
 
 ExtensionUpdater::CheckParams::~CheckParams() = default;
 
@@ -108,8 +106,7 @@ ExtensionUpdater::CheckParams::CheckParams(
 ExtensionUpdater::CheckParams& ExtensionUpdater::CheckParams::operator=(
     ExtensionUpdater::CheckParams&& other) = default;
 
-ExtensionUpdater::InProgressCheck::InProgressCheck()
-    : install_immediately(false), awaiting_update_service(false) {}
+ExtensionUpdater::InProgressCheck::InProgressCheck() = default;
 
 ExtensionUpdater::InProgressCheck::~InProgressCheck() = default;
 
@@ -121,18 +118,13 @@ ExtensionUpdater::ExtensionUpdater(
     int frequency_seconds,
     ExtensionCache* cache,
     const ExtensionDownloader::Factory& downloader_factory)
-    : alive_(false),
-      service_(service),
+    : service_(service),
       downloader_factory_(downloader_factory),
-      update_service_(nullptr),
       frequency_(base::TimeDelta::FromSeconds(frequency_seconds)),
-      will_check_soon_(false),
       extension_prefs_(extension_prefs),
       prefs_(prefs),
       profile_(profile),
       registry_(ExtensionRegistry::Get(profile)),
-      next_request_id_(0),
-      crx_install_is_running_(false),
       extension_cache_(cache) {
   DCHECK_LE(frequency_seconds, kMaxUpdateFrequencySeconds);
 #if defined(NDEBUG)

@@ -37,6 +37,12 @@ public class MockPersistedTabDataStorage implements PersistedTabDataStorage {
         }
     }
 
+    // Unused
+    @Override
+    public byte[] restore(int tabId, String tabDataId) {
+        return null;
+    }
+
     @Override
     public void delete(int tabId, String tabDataId) {
         mStorage.remove(getKey(tabId));

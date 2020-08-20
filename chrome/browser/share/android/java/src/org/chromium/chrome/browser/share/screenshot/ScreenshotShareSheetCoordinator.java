@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.share.screenshot;
 import android.content.Context;
 import android.graphics.Bitmap;
 
+import org.chromium.base.Callback;
 import org.chromium.chrome.browser.share.share_sheet.ChromeOptionShareCallback;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.ui.modelutil.PropertyKey;
@@ -33,11 +34,11 @@ public class ScreenshotShareSheetCoordinator {
      * @param screenshotShareSheetView the view for the screenshot share sheet.
      * @param tab The tab that launched this screenshot.
      * @param shareSheetCallback The callback to be called on share.
-     * @param deleteRunanble The runnable to be called on retry.
+     * @param installCallback The callback to be called on retry.
      */
     public ScreenshotShareSheetCoordinator(Context context, Bitmap screenshot,
             Runnable deleteRunnable, ScreenshotShareSheetView screenshotShareSheetView, Tab tab,
-            ChromeOptionShareCallback shareSheetCallback, Runnable installCallback) {
+            ChromeOptionShareCallback shareSheetCallback, Callback<Runnable> installCallback) {
         ArrayList<PropertyKey> allProperties =
                 new ArrayList<>(Arrays.asList(ScreenshotShareSheetViewProperties.ALL_KEYS));
         mModel = new PropertyModel(allProperties);

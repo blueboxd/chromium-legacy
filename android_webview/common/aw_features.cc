@@ -18,6 +18,10 @@ const base::Feature kWebViewBrotliSupport{"WebViewBrotliSupport",
 const base::Feature kWebViewConnectionlessSafeBrowsing{
     "WebViewConnectionlessSafeBrowsing", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable display cutout support for Android P and above.
+const base::Feature kWebViewDisplayCutout{"WebViewDisplayCutout",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Only allow extra headers added via loadUrl() to be sent to the original
 // domain (eTLD+1); strip them from the request if a cross-domain redirect
 // occurs. kWebViewExtraHeadersSameOriginOnly is stricter; when that's enabled,
@@ -34,19 +38,6 @@ const base::Feature kWebViewExtraHeadersSameOriginOnly{
 // Activate compatible origin checks for AndroidStreamReaderURLLoader.
 const base::Feature kWebViewOriginCheckForStreamReader{
     "WebViewOriginCheckForStreamReader", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Sniff the content stream to guess the MIME type when the application doesn't
-// tell us the MIME type explicitly.
-//
-// This only applies:
-// * when NetworkService is enabled (if disabled, the legacy net path sniffs
-//   content anyway, as an implementation detail).
-// * to app-provided content (shouldInterceptRequest,
-//   file:///android_{asset,res} URLs, content:// URLs), rather than content
-//   from the net stack (we may sniff content from the net stack anyway,
-//   depending on headers, but that's a NetworkService implementation detail).
-const base::Feature kWebViewSniffMimeType{"WebViewSniffMimeType",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 // A Feature used for WebView variations tests. Not used in production.
 const base::Feature kWebViewTestFeature{"WebViewTestFeature",

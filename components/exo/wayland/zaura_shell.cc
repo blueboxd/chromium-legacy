@@ -22,6 +22,7 @@
 #include "components/exo/wm_helper.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_occlusion_tracker.h"
+#include "ui/display/display_observer.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/display_util.h"
 #include "ui/display/screen.h"
@@ -373,12 +374,20 @@ namespace {
 ////////////////////////////////////////////////////////////////////////////////
 // aura_output_interface:
 
-class AuraOutput : public WaylandDisplayObserver::ScaleObserver {
+class AuraOutput : public WaylandDisplayObserver {
  public:
   explicit AuraOutput(wl_resource* resource) : resource_(resource) {}
 
-  // Overridden from WaylandDisplayObserver::ScaleObserver:
-  void OnDisplayScalesChanged(const display::Display& display) override {
+  // Overridden from WaylandDisplayObserver:
+  bool SendDisplayMetrics(const display::Display& display,
+                          uint32_t changed_metrics) override {
+    if (!(changed_metrics &
+          (display::DisplayObserver::DISPLAY_METRIC_BOUNDS |
+           display::DisplayObserver::DISPLAY_METRIC_DEVICE_SCALE_FACTOR |
+           display::DisplayObserver::DISPLAY_METRIC_ROTATION))) {
+      return false;
+    }
+
     const WMHelper* wm_helper = WMHelper::GetInstance();
     const display::ManagedDisplayInfo& display_info =
         wm_helper->GetDisplayInfo(display.id());
@@ -434,6 +443,8 @@ class AuraOutput : public WaylandDisplayObserver::ScaleObserver {
       zaura_output_send_device_scale_factor(
           resource_, display_info.device_scale_factor() * 1000);
     }
+
+    return true;
   }
 
  private:
@@ -469,14 +480,14 @@ void aura_shell_get_aura_output(wl_client* client,
                                 wl_resource* resource,
                                 uint32_t id,
                                 wl_resource* output_resource) {
-  WaylandDisplayObserver* display_observer =
-      GetUserDataAs<WaylandDisplayObserver>(output_resource);
+  WaylandDisplayHandler* display_handler =
+      GetUserDataAs<WaylandDisplayHandler>(output_resource);
 
   wl_resource* aura_output_resource = wl_resource_create(
       client, &zaura_output_interface, wl_resource_get_version(resource), id);
 
   auto aura_output = std::make_unique<AuraOutput>(aura_output_resource);
-  display_observer->AddScaleObserver(aura_output.get());
+  display_handler->AddObserver(aura_output.get());
 
   SetImplementation(aura_output_resource, nullptr, std::move(aura_output));
 }

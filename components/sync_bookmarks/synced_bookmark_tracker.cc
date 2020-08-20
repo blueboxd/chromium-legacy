@@ -413,16 +413,17 @@ void SyncedBookmarkTracker::MarkDeleted(const Entity* entity) {
 
 void SyncedBookmarkTracker::Remove(const Entity* entity) {
   DCHECK(entity);
-  // TODO(rushans): erase only if entity is not a tombstone.
+  DCHECK_EQ(entity, GetEntityForSyncId(entity->metadata()->server_id()));
+
   if (entity->bookmark_node()) {
     DCHECK(!entity->metadata()->is_deleted());
     DCHECK_EQ(0, std::count(ordered_local_tombstones_.begin(),
                             ordered_local_tombstones_.end(), entity));
+    bookmark_node_to_entities_map_.erase(entity->bookmark_node());
   } else {
     DCHECK(entity->metadata()->is_deleted());
   }
 
-  bookmark_node_to_entities_map_.erase(entity->bookmark_node());
   base::Erase(ordered_local_tombstones_, entity);
   sync_id_to_entities_map_.erase(entity->metadata()->server_id());
 }
@@ -596,6 +597,7 @@ SyncedBookmarkTracker::InitEntitiesFromModelAndMetadata(
           /*node=*/nullptr, std::make_unique<sync_pb::EntityMetadata>(std::move(
                                 *bookmark_metadata.mutable_metadata())));
       ordered_local_tombstones_.push_back(tombstone_entity.get());
+      DCHECK_EQ(0U, sync_id_to_entities_map_.count(sync_id));
       sync_id_to_entities_map_[sync_id] = std::move(tombstone_entity);
       continue;
     }
@@ -653,6 +655,7 @@ SyncedBookmarkTracker::InitEntitiesFromModelAndMetadata(
     entity->set_commit_may_have_started(true);
     CHECK_EQ(0U, bookmark_node_to_entities_map_.count(node));
     bookmark_node_to_entities_map_[node] = entity.get();
+    DCHECK_EQ(0U, sync_id_to_entities_map_.count(sync_id));
     sync_id_to_entities_map_[sync_id] = std::move(entity);
   }
 

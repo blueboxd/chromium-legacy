@@ -34,6 +34,19 @@ void SecurePaymentConfirmationController::ShowDialog(
   model_.set_cancel_button_label(l10n_util::GetStringUTF16(IDS_CANCEL));
   model_.set_progress_bar_visible(false);
 
+  model_.set_title(l10n_util::GetStringUTF16(
+      IDS_SECURE_PAYMENT_CONFIRMATION_VERIFY_PURCHASE));
+
+  // TODO(crbug/1110322): Set the field values based on |request|.
+  model_.set_merchant_label(
+      l10n_util::GetStringUTF16(IDS_SECURE_PAYMENT_CONFIRMATION_STORE_LABEL));
+
+  model_.set_instrument_label(l10n_util::GetStringUTF16(
+      IDS_PAYMENT_REQUEST_PAYMENT_METHOD_SECTION_NAME));
+
+  model_.set_total_label(
+      l10n_util::GetStringUTF16(IDS_SECURE_PAYMENT_CONFIRMATION_TOTAL_LABEL));
+
   view_->ShowDialog(
       request->web_contents(), model_.GetWeakPtr(),
       base::BindOnce(&SecurePaymentConfirmationController::OnConfirm,

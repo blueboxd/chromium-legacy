@@ -2760,6 +2760,9 @@ enum WebFeature {
   kBluetoothAdvertisingEventAppearance = 3431,
   kBluetoothAdvertisingEventTxPower = 3432,
   kCrossOriginOpenerPolicyReporting= 3433,
+  kGamepadId = 3434,
+  kElementAttachInternals = 3435,
+  kBluetoothDeviceName = 3436,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

@@ -22,6 +22,7 @@
 #include "chrome/browser/task_manager/providers/web_contents/prerender_tag.h"
 #include "chrome/browser/task_manager/providers/web_contents/printing_tag.h"
 #include "chrome/browser/task_manager/providers/web_contents/tab_contents_tag.h"
+#include "chrome/browser/task_manager/providers/web_contents/tool_tag.h"
 #include "chrome/browser/task_manager/providers/web_contents/web_contents_tags_manager.h"
 #endif  // !defined(OS_ANDROID)
 
@@ -161,6 +162,18 @@ void WebContentsTags::CreateForPortal(content::WebContents* web_contents) {
 #if !defined(OS_ANDROID)
   if (!WebContentsTag::FromWebContents(web_contents)) {
     TagWebContents(web_contents, base::WrapUnique(new PortalTag(web_contents)),
+                   WebContentsTag::kTagKey);
+  }
+#endif  // !defined(OS_ANDROID)
+}
+
+// static
+void WebContentsTags::CreateForToolContents(content::WebContents* web_contents,
+                                            int tool_name) {
+#if !defined(OS_ANDROID)
+  if (!WebContentsTag::FromWebContents(web_contents)) {
+    TagWebContents(web_contents,
+                   base::WrapUnique(new ToolTag(web_contents, tool_name)),
                    WebContentsTag::kTagKey);
   }
 #endif  // !defined(OS_ANDROID)

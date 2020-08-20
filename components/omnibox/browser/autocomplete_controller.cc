@@ -38,6 +38,8 @@
 #include "components/omnibox/browser/history_url_provider.h"
 #include "components/omnibox/browser/keyword_provider.h"
 #include "components/omnibox/browser/local_history_zero_suggest_provider.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
+#include "components/omnibox/browser/omnibox_pedal_provider.h"
 #include "components/omnibox/browser/on_device_head_provider.h"
 #include "components/omnibox/browser/query_tile_provider.h"
 #include "components/omnibox/browser/search_provider.h"
@@ -552,14 +554,28 @@ void AutocompleteController::AddProvidersInfo(
     // This is also a good place to put code to add info that you want to
     // add for every provider.
   }
+
+  if (OmniboxFieldTrial::IsPedalSuggestionsEnabled()) {
+    // OmniboxPedalProvider is not a "true" AutocompleteProvider and isn't
+    // included in the list of providers, though needs to report information for
+    // its field trial.  Manually call AddProviderInfo for pedals.
+    provider_client_->GetPedalProvider()->AddProviderInfo(provider_info);
+  }
 }
 
 void AutocompleteController::ResetSession() {
   search_service_worker_signal_sent_ = false;
 
   for (Providers::const_iterator i(providers_.begin()); i != providers_.end();
-       ++i)
+       ++i) {
     (*i)->ResetSession();
+  }
+
+  if (OmniboxFieldTrial::IsPedalSuggestionsEnabled()) {
+    // OmniboxPedalProvider is not included in the list of providers as it's not
+    // a "true" AutocompleteProvider.  Manually call ResetSession() for pedals.
+    provider_client_->GetPedalProvider()->ResetSession();
+  }
 }
 
 void AutocompleteController::UpdateMatchDestinationURLWithQueryFormulationTime(

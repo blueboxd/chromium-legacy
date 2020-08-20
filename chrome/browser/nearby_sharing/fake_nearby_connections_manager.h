@@ -14,6 +14,8 @@
 #include "chrome/browser/nearby_sharing/nearby_connections_manager.h"
 #include "chrome/services/sharing/public/mojom/nearby_connections.mojom.h"
 
+class NearbyConnection;
+
 // Fake NearbyConnectionsManager for testing.
 class FakeNearbyConnectionsManager
     : public NearbyConnectionsManager,
@@ -65,12 +67,19 @@ class FakeNearbyConnectionsManager
   void OnEndpointLost(const std::string& endpoint_id) override;
 
   // Testing methods
-  bool IsAdvertising();
-  bool IsDiscovering();
-  bool IsShutdown();
-  DataUsage GetAdvertisingDataUsage();
-  PowerLevel GetAdvertisingPowerLevel();
-  bool DidUpgradeBandwidth(const std::string& endpoint_id);
+  bool IsAdvertising() const;
+  bool IsDiscovering() const;
+  bool DidUpgradeBandwidth(const std::string& endpoint_id) const;
+
+  bool is_shutdown() const { return is_shutdown_; }
+  DataUsage advertising_data_usage() const { return advertising_data_usage_; }
+  PowerLevel advertising_power_level() const {
+    return advertising_power_level_;
+  }
+  void set_nearby_connection(NearbyConnection* connection) {
+    connection_ = connection;
+  }
+  DataUsage connected_data_usage() const { return connected_data_usage_; }
 
  private:
   IncomingConnectionListener* advertising_listener_ = nullptr;
@@ -80,6 +89,8 @@ class FakeNearbyConnectionsManager
   PowerLevel advertising_power_level_ = PowerLevel::kUnknown;
   std::set<std::string> upgrade_bandwidth_endpoint_ids_;
   std::map<std::string, std::vector<uint8_t>> endpoint_auth_tokens_;
+  NearbyConnection* connection_ = nullptr;
+  DataUsage connected_data_usage_ = DataUsage::kUnknown;
 };
 
 #endif  // CHROME_BROWSER_NEARBY_SHARING_FAKE_NEARBY_CONNECTIONS_MANAGER_H_

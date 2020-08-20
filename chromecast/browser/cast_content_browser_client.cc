@@ -42,6 +42,7 @@
 #include "chromecast/browser/cast_quota_permission_context.h"
 #include "chromecast/browser/cast_session_id_map.h"
 #include "chromecast/browser/cast_web_contents.h"
+#include "chromecast/browser/cast_web_preferences.h"
 #include "chromecast/browser/default_navigation_throttle.h"
 #include "chromecast/browser/devtools/cast_devtools_manager_delegate.h"
 #include "chromecast/browser/general_audience_browsing_navigation_throttle.h"
@@ -567,6 +568,14 @@ void CastContentBrowserClient::OverrideWebkitPrefs(
   prefs->preferred_color_scheme = static_cast<blink::PreferredColorScheme>(
       CastBrowserProcess::GetInstance()->pref_service()->GetInteger(
           prefs::kWebColorScheme));
+
+  // After all other default settings are set, check and see if there are any
+  // specific overrides for the WebContents.
+  CastWebPreferences* web_preferences =
+      static_cast<CastWebPreferences*>(web_contents->GetUserData(
+          CastWebPreferences::kCastWebPreferencesDataKey));
+  if (web_preferences)
+    web_preferences->Update(prefs);
 }
 
 std::string CastContentBrowserClient::GetApplicationLocale() {

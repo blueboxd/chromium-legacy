@@ -229,7 +229,7 @@ void TestGpuServiceHolder::InitializeOnGpuThread(
 #endif
   }
 
-  // Always enable gpu and oop raster, regardless of platform and blacklist.
+  // Always enable gpu and oop raster, regardless of platform and blocklist.
   // The latter instructs GpuChannelManager::GetSharedContextState to create a
   // GrContext, which is required by SkiaRenderer as well as OOP-R.
   gpu::GPUInfo gpu_info;

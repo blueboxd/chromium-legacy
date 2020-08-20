@@ -284,7 +284,8 @@ WebLocalFrameImpl* CreateProvisional(WebRemoteFrame& old_frame,
         GetSynchronousSingleThreadLayerTreeSettings();
     widget_client->set_layer_tree_host(frame_widget->InitializeCompositing(
         false, widget_client->main_thread_scheduler(),
-        widget_client->task_graph_runner(), true, gfx::Size(), 1.0f,
+        widget_client->task_graph_runner(), true,
+        widget_client->GetInitialScreenInfo(),
         std::make_unique<cc::TestUkmRecorderFactory>(), &layer_tree_settings));
     frame_widget->SetCompositorVisible(true);
   } else if (frame->Parent()->IsWebRemoteFrame()) {
@@ -300,7 +301,8 @@ WebLocalFrameImpl* CreateProvisional(WebRemoteFrame& old_frame,
         GetSynchronousSingleThreadLayerTreeSettings();
     widget_client->set_layer_tree_host(frame_widget->InitializeCompositing(
         false, widget_client->main_thread_scheduler(),
-        widget_client->task_graph_runner(), true, gfx::Size(), 1.0f,
+        widget_client->task_graph_runner(), true,
+        widget_client->GetInitialScreenInfo(),
         std::make_unique<cc::TestUkmRecorderFactory>(), &layer_tree_settings));
     frame_widget->SetCompositorVisible(true);
     frame_widget->Resize(WebSize());
@@ -366,7 +368,8 @@ WebLocalFrameImpl* CreateLocalChild(WebRemoteFrame& parent,
       GetSynchronousSingleThreadLayerTreeSettings();
   widget_client->set_layer_tree_host(frame_widget->InitializeCompositing(
       false, widget_client->main_thread_scheduler(),
-      widget_client->task_graph_runner(), true, gfx::Size(), 1.0f,
+      widget_client->task_graph_runner(), true,
+      widget_client->GetInitialScreenInfo(),
       std::make_unique<cc::TestUkmRecorderFactory>(), &layer_tree_settings));
   frame_widget->SetCompositorVisible(true);
   // Set an initial size for subframes.
@@ -454,7 +457,8 @@ WebViewImpl* WebViewHelper::InitializeWithOpener(
       GetSynchronousSingleThreadLayerTreeSettings();
   test_web_widget_client_->set_layer_tree_host(widget->InitializeCompositing(
       false, test_web_widget_client_->main_thread_scheduler(),
-      test_web_widget_client_->task_graph_runner(), true, gfx::Size(), 1.0f,
+      test_web_widget_client_->task_graph_runner(), true,
+      test_web_widget_client_->GetInitialScreenInfo(),
       std::make_unique<cc::TestUkmRecorderFactory>(), &layer_tree_settings));
   widget->SetCompositorVisible(true);
 
@@ -463,8 +467,7 @@ WebViewImpl* WebViewHelper::InitializeWithOpener(
   // the case by this point).
   web_view_->DidAttachLocalMainFrame();
 
-  web_view_->SetDeviceScaleFactor(
-      test_web_widget_client_->GetScreenInfo().device_scale_factor);
+  widget->UpdateScreenInfo(test_web_widget_client_->GetInitialScreenInfo());
 
   // Set an initial size for subframes.
   if (frame->Parent())
@@ -748,6 +751,10 @@ TestWidgetInputHandlerHost* TestWebWidgetClient::GetInputHandlerHost() {
   if (!widget_input_handler_host_)
     widget_input_handler_host_ = std::make_unique<TestWidgetInputHandlerHost>();
   return widget_input_handler_host_.get();
+}
+
+ScreenInfo TestWebWidgetClient::GetInitialScreenInfo() {
+  return ScreenInfo();
 }
 
 mojo::PendingAssociatedRemote<mojom::blink::WidgetHost>

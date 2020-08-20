@@ -24,11 +24,16 @@ BUNDLETOOL_VERSION = '0.13.3'
 BUNDLETOOL_JAR_PATH = os.path.join(
     BUNDLETOOL_DIR, 'bundletool-all-%s.jar' % BUNDLETOOL_VERSION)
 
-def RunBundleTool(args):
-  args = [build_utils.JAVA_PATH, '-jar', BUNDLETOOL_JAR_PATH] + args
-  logging.debug(' '.join(args))
+
+def RunBundleTool(args, warnings_as_errors=()):
+  # Use () instead of None because command-line flags are None by default.
+  verify = warnings_as_errors == () or warnings_as_errors
+  cmd = build_utils.JavaCmd(verify)
+  cmd += ['-jar', BUNDLETOOL_JAR_PATH]
+  cmd += args
+  logging.debug(' '.join(cmd))
   return build_utils.CheckOutput(
-      args,
+      cmd,
       print_stderr=True,
       fail_on_output=False,
       stderr_filter=build_utils.FilterReflectiveAccessJavaWarnings)

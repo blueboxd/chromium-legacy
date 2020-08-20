@@ -8,7 +8,6 @@ import argparse
 import logging
 import os
 import shutil
-import subprocess
 import sys
 import time
 
@@ -47,7 +46,9 @@ def _OnStaleMd5(options, cmd, javac_cmd, files, classpath):
     cmd += ['--output', output_jar.name, '--gensrc_output', generated_jar.name]
     logging.debug('Command: %s', cmd)
     start = time.time()
-    subprocess.check_call(cmd)
+    build_utils.CheckOutput(cmd,
+                            print_stdout=True,
+                            fail_on_output=options.warnings_as_errors)
     end = time.time() - start
     logging.info('Header compilation took %ss', end)
 
@@ -94,6 +95,9 @@ def main(argv):
       '--generated-jar-path',
       required=True,
       help='Output path for generated source files.')
+  parser.add_argument('--warnings-as-errors',
+                      action='store_true',
+                      help='Treat all warnings as errors.')
   options, unknown_args = parser.parse_known_args(argv)
 
   options.bootclasspath = build_utils.ParseGnList(options.bootclasspath)
@@ -108,9 +112,8 @@ def main(argv):
     if arg.startswith('@'):
       files.extend(build_utils.ReadSourcesList(arg[1:]))
 
-  cmd = [
-      build_utils.JAVA_PATH, '-classpath', options.turbine_jar_path,
-      'com.google.turbine.main.Main'
+  cmd = build_utils.JavaCmd(options.warnings_as_errors) + [
+      '-classpath', options.turbine_jar_path, 'com.google.turbine.main.Main'
   ]
   javac_cmd = []
 

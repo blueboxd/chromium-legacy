@@ -17,6 +17,7 @@ import androidx.annotation.Nullable;
 import org.chromium.base.Callback;
 import org.chromium.base.annotations.UsedByReflection;
 import org.chromium.chrome.browser.ActivityTabProvider;
+import org.chromium.chrome.browser.autofill_assistant.metrics.LiteScriptOnboarding;
 import org.chromium.chrome.browser.autofill_assistant.metrics.OnBoarding;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
@@ -45,10 +46,10 @@ public class AutofillAssistantModuleEntryImpl implements AutofillAssistantModule
                 return;
             }
 
-            String firstTimeUserScriptPath = parameters.get(PARAMETER_TRIGGER_FIRST_TIME_USER);
-            String returningUserScriptPath = parameters.get(PARAMETER_TRIGGER_RETURNING_TIME_USER);
             boolean isFirstTimeUser =
                     AutofillAssistantPreferencesUtil.isAutofillAssistantFirstTimeLiteScriptUser();
+            String firstTimeUserScriptPath = parameters.get(PARAMETER_TRIGGER_FIRST_TIME_USER);
+            String returningUserScriptPath = parameters.get(PARAMETER_TRIGGER_RETURNING_TIME_USER);
             startAutofillAssistantLite(bottomSheetController, browserControls, compositorViewHolder,
                     webContents, firstTimeUserScriptPath, returningUserScriptPath, result -> {
                         if (result) {
@@ -95,6 +96,10 @@ public class AutofillAssistantModuleEntryImpl implements AutofillAssistantModule
             boolean isChromeCustomTab, @NonNull String initialUrl, Map<String, String> parameters,
             String experimentIds, @Nullable String callerAccount, @Nullable String userName) {
         if (skipOnboarding) {
+            if (parameters.containsKey(PARAMETER_TRIGGER_SCRIPT_USED)) {
+                AutofillAssistantMetrics.recordLiteScriptOnboarding(
+                        webContents, LiteScriptOnboarding.LITE_SCRIPT_ONBOARDING_ALREADY_ACCEPTED);
+            }
             AutofillAssistantMetrics.recordOnBoarding(OnBoarding.OB_NOT_SHOWN);
             AutofillAssistantClient.fromWebContents(webContents)
                     .start(initialUrl, parameters, experimentIds, callerAccount, userName,
@@ -107,7 +112,14 @@ public class AutofillAssistantModuleEntryImpl implements AutofillAssistantModule
                 experimentIds, parameters, context, bottomSheetController, browserControls,
                 compositorViewHolder, bottomSheetController.getScrimCoordinator());
         onboardingCoordinator.show(accepted -> {
-            if (!accepted) return;
+            if (parameters.containsKey(PARAMETER_TRIGGER_SCRIPT_USED)) {
+                AutofillAssistantMetrics.recordLiteScriptOnboarding(webContents,
+                        accepted ? LiteScriptOnboarding.LITE_SCRIPT_ONBOARDING_SEEN_AND_ACCEPTED
+                                 : LiteScriptOnboarding.LITE_SCRIPT_ONBOARDING_SEEN_AND_REJECTED);
+            }
+            if (!accepted) {
+                return;
+            }
 
             AutofillAssistantClient.fromWebContents(webContents)
                     .start(initialUrl, parameters, experimentIds, callerAccount, userName,

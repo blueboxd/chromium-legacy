@@ -5391,7 +5391,7 @@ void RenderFrameImpl::UpdateStateForCommit(
     //     suite).
     render_view_->PropagatePageZoomToNewlyAttachedFrame(
         render_widget_->compositor_deps()->IsUseZoomForDSFEnabled(),
-        render_widget_->GetScreenInfo().device_scale_factor);
+        render_widget_->GetWebWidget()->GetScreenInfo().device_scale_factor);
   }
 
   // If we are a top frame navigation to another document we should clear any
@@ -6776,7 +6776,10 @@ void RenderFrameImpl::ConvertViewportToWindow(blink::WebRect* rect) {
 }
 
 float RenderFrameImpl::GetDeviceScaleFactor() {
-  return GetLocalRootRenderWidget()->GetScreenInfo().device_scale_factor;
+  return GetLocalRootRenderWidget()
+      ->GetWebWidget()
+      ->GetScreenInfo()
+      .device_scale_factor;
 }
 
 }  // namespace content

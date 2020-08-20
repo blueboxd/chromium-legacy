@@ -247,7 +247,10 @@ class MediaHistoryKeyedService : public KeyedService,
       // Returns the top feeds to be displayed. These will be sorted by the
       // by audio+video watchtime descending and we will also populate the
       // |origin_audio_video_watchtime_percentile| field in |MediaFeedPtr|.
-      kTopFeedsForDisplay
+      kTopFeedsForDisplay,
+
+      // Returns the feeeds that have been selected by the user to be fetched.
+      kSelectedFeedsForFetch,
     };
 
     static GetMediaFeedsRequest CreateTopFeedsForFetch(
@@ -259,6 +262,8 @@ class MediaHistoryKeyedService : public KeyedService,
         int fetched_items_min,
         bool fetched_items_min_should_be_safe,
         base::Optional<media_feeds::mojom::MediaFeedItemType> filter_by_type);
+
+    static GetMediaFeedsRequest CreateSelectedFeedsForFetch();
 
     GetMediaFeedsRequest();
     GetMediaFeedsRequest(const GetMediaFeedsRequest& t);
@@ -331,6 +336,10 @@ class MediaHistoryKeyedService : public KeyedService,
       base::OnceCallback<void(base::Optional<MediaFeedFetchDetails>)>;
   void GetMediaFeedFetchDetails(const int64_t feed_id,
                                 GetMediaFeedFetchDetailsCallback callback);
+
+  // Updates the FeedUserStatus for a feed.
+  void UpdateFeedUserStatus(const int64_t feed_id,
+                            media_feeds::mojom::FeedUserStatus status);
 
  protected:
   friend class media_feeds::MediaFeedsService;

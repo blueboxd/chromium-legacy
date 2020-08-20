@@ -41,14 +41,12 @@
 <translation id="1874309113135274312">Бэта-версія Google Chrome (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome састарэў</translation>
 <translation id="1919130412786645364">Дазволіць уваход ва ўліковы запіс Chrome</translation>
-<translation id="195645108406520445">Наладзьце свой профіль Chrome Space</translation>
 <translation id="2063848847527508675">Каб прымяніць абнаўленне, трэба перазапусціць Chrome OS.</translation>
 <translation id="2094919256425865063">Усё роўна выйсці з Chrome?</translation>
 <translation id="2120620239521071941">З гэтай прылады будзе выдалена наступная колькасць элементаў: <ph name="ITEMS_COUNT" />. Каб потым атрымаць свае даныя, увайдзіце ў Chrome як <ph name="USER_EMAIL" />.</translation>
 <translation id="2123055963409958220">Дапамажыце палепшыць Chrome, паведаміўшы <ph name="BEGIN_LINK" />бягучыя налады<ph name="END_LINK" /></translation>
 <translation id="2151406531797534936">Перазапусціце Chrome</translation>
 <translation id="2246246234298806438">Google Chrome не можа паказаць перадпрагляд друку: убудаваны сродак прагляду PDF адсутнічае.</translation>
-<translation id="226038281051944330">Вы ўвайшлі ў профіль карыстальніка <ph name="EXISTING_USER" />, выкарыстаўшы новы ўліковы запіс. Ці не хочаце стварыць новы профіль Chrome для карыстальніка <ph name="NEW_USER" />, каб трымаць свае даныя асобна?</translation>
 <translation id="2290014774651636340">Адсутнічаюць ключы Google API. Некаторыя функцыі Google Chrome будуць выключаны.</translation>
 <translation id="2290095356545025170">Сапраўды выдаліць Google Chrome?</translation>
 <translation id="2309047409763057870">Гэта другасны ўсталяваны экзэмпляр Google Chrome – яго нельга зрабіць стандартным браўзерам.</translation>
@@ -83,7 +81,6 @@
 <translation id="3089968997497233615">Ёсць новая, больш бяспечная версія Google Chrome.</translation>
 <translation id="3127818369811890733">Сістэме Chrome OS не ўдалося сінхранізаваць даныя.</translation>
 <translation id="3149510190863420837">Праграмы Chrome</translation>
-<translation id="3351117925998652957">Выберыце свой профіль Chrome Space</translation>
 <translation id="3360895254066713204">Памочнік Chrome</translation>
 <translation id="3379938682270551431">{0,plural, =0{Перазапуск Chrome адбудзецца зараз}=1{Chrome будзе перазапушчаны праз 1 секунду}one{Chrome будзе перазапушчаны праз # секунду}few{Chrome будзе перазапушчаны праз # секунды}many{Chrome будзе перазапушчаны праз # секунд}other{Chrome будзе перазапушчаны праз # секунды}}</translation>
 <translation id="3395323229510056640">Даведка па Chrome OS</translation>
@@ -106,7 +103,6 @@
 <translation id="386202838227397562">Закрыйце ўсе вокны Google Chrome і паўтарыце спробу.</translation>
 <translation id="3865754807470779944">Усталявана версія Chrome <ph name="PRODUCT_VERSION" /></translation>
 <translation id="3873044882194371212">Адкрыць спасылку ў акне &amp;інкогніта Chrome</translation>
-<translation id="3879568094278837081">Звязаная з гэтым профілем гісторыя праглядаў будзе выдалена з прылады. Каб аднавіць гэтыя даныя, увайдзіце ў Chrome як</translation>
 <translation id="3889417619312448367">Выдаленне Google Chrome</translation>
 <translation id="4050175100176540509">У апошняй версіі з'явіліся важныя паляпшэнні сістэмы бяспекі і новыя функцыі.</translation>
 <translation id="4053720452172726777">Наладжвайце Google Chrome і кіруйце ім</translation>
@@ -147,14 +143,12 @@
 <translation id="4895437082222824641">Адкрыць спасылку ў новай &amp;укладцы Chrome</translation>
 <translation id="4953650215774548573">Зрабіць Google Chrome стандартным браўзерам</translation>
 <translation id="495931528404527476">У браўзеры Chrome</translation>
-<translation id="4960472897514318257">Вы ўвайшлі ў працоўны ўліковы запіс. Ці не хочаце стварыць новы профіль Chrome для карыстальніка <ph name="NEW_USER" />, каб трымаць свае асабістыя даныя асобна?</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5062123544085870375">Перазапусціце Chrome OS</translation>
 <translation id="5132929315877954718">Адкрывайце для сябе выдатныя праграмы, гульні, пашырэнні і тэмы для Google Chrome.</translation>
 <translation id="5170938038195470297">Ваш профіль нельга выкарыстоўваць, бо ён з навейшай версіі Google Chrome.
 
 Некаторыя функцыі могуць быць недаступныя. Укажыце іншы каталог профілю або выкарыстайце навейшую версію Chrome.</translation>
-<translation id="5171117065011130146">Стварыць новы працоўны профіль Chrome?</translation>
 <translation id="5193136243808726294">Google Chrome OS не можа адкрыць гэту старонку.</translation>
 <translation id="5251420635869119124">Госці могуць выкарыстоўваць Chrome, не пакідаючы нічога пасля сябе.</translation>
 <translation id="532046782124376502">Увага! Google Chrome не можа забараніць пашырэнням весці запіс вашай гісторыі праглядаў сайтаў. Скасуйце выбар гэтай налады, каб выключыць гэта пашырэнне ў рэжыме інкогніта.</translation>
@@ -222,7 +216,6 @@
 <translation id="7535429826459677826">Google Chrome для распрацоўшчыкаў</translation>
 <translation id="7573289029918943991">Каб даведацца, ці абноўлена прылада, адкрыйце <ph name="LINK_BEGIN" />Налады Chrome OS<ph name="LINK_END" /></translation>
 <translation id="7589360514048265910">Гэты камп'ютар больш не будзе атрымліваць абнаўленні Google Chrome: Mac OS X 10.9 цяпер не падтрымліваецца.</translation>
-<translation id="7591404275842302616">Выкарыстоўвайце профілі Chrome Space, каб спрасціць прагляд вэб-старонак на гэтай прыладзе</translation>
 <translation id="7592736734348559088">Сінхранізаваць даныя ў браўзеры Google Chrome не ўдалося: даныя ўліковага запісу для ўваходу састарэлі.</translation>
 <translation id="7626032353295482388">Вас вітае Chrome</translation>
 <translation id="7629695634924605473">Chrome апавяшчае вас у выпадку ўзлому вашых пароляў</translation>
@@ -269,9 +262,7 @@
 <translation id="8823341990149967727">Ваша версія Chrome састарэла</translation>
 <translation id="8834965163890861871">Google Chrome спрабуе змяніць паролі. Каб дазволіць гэта, увядзіце пароль Windows.</translation>
 <translation id="884296878221830158">Таксама вызначае, якая старонка паказваецца пры запуску браўзера Chrome або націсканні кнопкі галоўнай старонкі.</translation>
-<translation id="8859948767482842016">Вы ўвайшлі ў профіль карыстальніка <ph name="EXISTING_USER" />, выкарыстаўшы працоўны ўліковы запіс. Ці не хочаце стварыць новы профіль Chrome для дамена <ph name="WORK_DOMAIN" />, каб трымаць свае даныя асобна?</translation>
 <translation id="8862326446509486874">Для ўсталявання на сістэмным узроўні ў вас няма неабходных правоў. Паспрабуйце запусціць усталёўшчык ад імені адміністратара.</translation>
-<translation id="8877586659207810298">Стварыць новы профіль Chrome для карыстальніка <ph name="NEW_USER" />?</translation>
 <translation id="8914504000324227558">Перазапусціць Chrome</translation>
 <translation id="8999208279178790196">{0,plural, =0{Ёсць абнаўленне Chrome}=1{Ёсць абнаўленне Chrome}one{Абнаўленне Chrome выйшла ўжо # дзень таму}few{Абнаўленне Chrome выйшла # дні таму}many{Абнаўленне Chrome выйшла # дзён таму}other{Абнаўленне Chrome выйшла # дня таму}}</translation>
 <translation id="9026991721384951619">Сінхранізаваць даныя ў сістэме Chrome OS не ўдалося: даныя ўліковага запісу для ўваходу састарэлі.</translation>

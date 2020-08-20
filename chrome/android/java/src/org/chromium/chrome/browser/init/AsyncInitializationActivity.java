@@ -509,6 +509,7 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
 
     @CallSuper
     @Override
+    @SuppressLint("MissingSuperCall") // Empty method in parent Activity class.
     public void onNewIntent(Intent intent) {
         if (intent == null) return;
         mNativeInitializationController.onNewIntent(intent);
@@ -517,6 +518,7 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
 
     @CallSuper
     @Override
+    @SuppressLint("MissingSuperCall") // Empty method in parent Activity class.
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         mNativeInitializationController.onActivityResult(requestCode, resultCode, data);
     }

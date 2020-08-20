@@ -45,6 +45,7 @@ class PageInfoDelegateImpl : public PageInfoDelegate {
   HostContentSettingsMap* GetContentSettings() override;
   std::unique_ptr<content_settings::PageSpecificContentSettings::Delegate>
   GetPageSpecificContentSettingsDelegate() override;
+  bool IsSubresourceFilterActivated(const GURL& site_url) override;
   bool IsContentDisplayedInVrHeadset() override;
   security_state::SecurityLevel GetSecurityLevel() override;
   security_state::VisibleSecurityState GetVisibleSecurityState() override;

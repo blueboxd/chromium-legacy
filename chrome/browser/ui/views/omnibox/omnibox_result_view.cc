@@ -45,6 +45,26 @@
 #include "base/win/atl.h"
 #endif
 
+namespace {
+
+class OmniboxRemoveSuggestionButton : public views::ImageButton {
+ public:
+  explicit OmniboxRemoveSuggestionButton(views::ButtonListener* listener)
+      : ImageButton(listener) {
+    views::ConfigureVectorImageButton(this);
+  }
+
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
+    node_data->SetName(
+        l10n_util::GetStringUTF16(IDS_ACC_REMOVE_SUGGESTION_BUTTON));
+    // Although this appears visually as a button, expose as a list box option
+    // so that it matches the other options within its list box container.
+    node_data->role = ax::mojom::Role::kListBoxOption;
+  }
+};
+
+}  // namespace
+
 ////////////////////////////////////////////////////////////////////////////////
 // OmniboxResultView, public:
 
@@ -72,7 +92,10 @@ OmniboxResultView::OmniboxResultView(
   // TODO(tommycli): Make sure we announce the Shift+Delete capability in the
   // accessibility node data for removable suggestions.
   remove_suggestion_button_ =
-      AddChildView(views::CreateVectorImageButton(this));
+      AddChildView(std::make_unique<OmniboxRemoveSuggestionButton>(this));
+  // The remove suggestion button may receive mouse enter/exit events with very
+  // quick mouse movements. Monitor the button to update our state.
+  update_on_mouse_enter_exit_.emplace(this, remove_suggestion_button_);
   views::InstallCircleHighlightPathGenerator(remove_suggestion_button_);
   remove_suggestion_button_->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_OMNIBOX_REMOVE_SUGGESTION));
@@ -272,6 +295,10 @@ views::Button* OmniboxResultView::GetSecondaryButton() {
 
   if (remove_suggestion_button_->GetVisible())
     return remove_suggestion_button_;
+
+  if (OmniboxFieldTrial::IsSuggestionButtonRowEnabled()) {
+    return button_row_->GetActiveButton();
+  }
 
   return nullptr;
 }
@@ -518,6 +545,26 @@ void OmniboxResultView::EmitTextChangedAccessiblityEvent() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // OmniboxResultView, private:
+
+OmniboxResultView::UpdateOnMouseEnterExit::UpdateOnMouseEnterExit(
+    OmniboxResultView* omnibox_result_view,
+    View* target)
+    : omnibox_result_view_(omnibox_result_view), target_(target) {
+  target_->AddPreTargetHandler(this);
+}
+
+OmniboxResultView::UpdateOnMouseEnterExit::~UpdateOnMouseEnterExit() {
+  target_->RemovePreTargetHandler(this);
+}
+
+void OmniboxResultView::UpdateOnMouseEnterExit::OnMouseEvent(
+    ui::MouseEvent* event) {
+  auto event_type = event->type();
+  if (event_type != ui::ET_MOUSE_ENTERED && event_type != ui::ET_MOUSE_EXITED)
+    return;
+
+  omnibox_result_view_->UpdateHoverState();
+}
 
 gfx::Image OmniboxResultView::GetIcon() const {
   return popup_contents_view_->GetMatchIcon(

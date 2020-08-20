@@ -16,6 +16,7 @@
 <translation id="1335095011850992622">crèdits</translation>
 <translation id="1342835525016946179">article</translation>
 <translation id="1359897965706325498">bàner</translation>
+<translation id="1480676835519562650">multiseleccionable; se n'han seleccionat <ph name="SELECTED" /> de <ph name="COUNT" /></translation>
 <translation id="1589122976691792535">regió</translation>
 <translation id="1591562245178063882">Aquest mes</translation>
 <translation id="1637811476055996098">Trieu els fitxers</translation>
@@ -51,6 +52,7 @@
 <translation id="248395913932153421">Dia</translation>
 <translation id="2507943997699731163">Empleneu aquest camp.</translation>
 <translation id="2508569020611168319">llista de pestanyes</translation>
+<translation id="2530182415807757784">multiseleccionable; no se n'ha seleccionat cap</translation>
 <translation id="2561842179657104141">mostra més controls multimèdia</translation>
 <translation id="2572483411312390101">reprodueix</translation>
 <translation id="2613802280814924224">Introduïu un valor vàlid. El valor vàlid més proper és <ph name="VALID_VALUE" />.</translation>

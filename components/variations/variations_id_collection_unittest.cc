@@ -79,15 +79,17 @@ class VariationsIdCollectionTest : public ::testing::Test {
 };
 
 TEST_F(VariationsIdCollectionTest, VariousSetupAndFinalization) {
-  SetupAndFinalizeTrial(kTrial1, GOOGLE_WEB_PROPERTIES, kVariation1);
-  SetupTrial(kTrial2, GOOGLE_WEB_PROPERTIES, kVariation2);
-  ResetCollection(GOOGLE_WEB_PROPERTIES);
+  SetupAndFinalizeTrial(kTrial1, GOOGLE_WEB_PROPERTIES_ANY_CONTEXT,
+                        kVariation1);
+  SetupTrial(kTrial2, GOOGLE_WEB_PROPERTIES_ANY_CONTEXT, kVariation2);
+  ResetCollection(GOOGLE_WEB_PROPERTIES_ANY_CONTEXT);
 
   EXPECT_EQ(Set({kVariation1}), collection()->GetIds());
   EXPECT_EQ(Vec({}), GetNewIds());
 
   FinalizeTrial(kTrial2);
-  SetupAndFinalizeTrial(kTrial3, GOOGLE_WEB_PROPERTIES, kVariation3);
+  SetupAndFinalizeTrial(kTrial3, GOOGLE_WEB_PROPERTIES_ANY_CONTEXT,
+                        kVariation3);
 
   EXPECT_EQ(Set({kVariation1, kVariation2, kVariation3}),
             collection()->GetIds());
@@ -95,9 +97,11 @@ TEST_F(VariationsIdCollectionTest, VariousSetupAndFinalization) {
 }
 
 TEST_F(VariationsIdCollectionTest, VariousKeys) {
-  SetupAndFinalizeTrial(kTrial1, GOOGLE_WEB_PROPERTIES, kVariation1);
+  SetupAndFinalizeTrial(kTrial1, GOOGLE_WEB_PROPERTIES_ANY_CONTEXT,
+                        kVariation1);
   SetupAndFinalizeTrial(kTrial2, GOOGLE_WEB_PROPERTIES_SIGNED_IN, kVariation2);
-  SetupAndFinalizeTrial(kTrial3, GOOGLE_WEB_PROPERTIES_TRIGGER, kVariation3);
+  SetupAndFinalizeTrial(kTrial3, GOOGLE_WEB_PROPERTIES_TRIGGER_ANY_CONTEXT,
+                        kVariation3);
   ResetCollection(GOOGLE_WEB_PROPERTIES_SIGNED_IN);
 
   EXPECT_EQ(Set({kVariation2}), collection()->GetIds());
@@ -105,14 +109,14 @@ TEST_F(VariationsIdCollectionTest, VariousKeys) {
 }
 
 TEST_F(VariationsIdCollectionTest, MultipleFinalization) {
-  ResetCollection(GOOGLE_WEB_PROPERTIES);
+  ResetCollection(GOOGLE_WEB_PROPERTIES_ANY_CONTEXT);
   collection()->OnFieldTrialGroupFinalized(kTrial1, kGroup);
   EXPECT_EQ(Set({}), collection()->GetIds());
   EXPECT_EQ(Vec({}), GetNewIds());
 
   // Even though OnFieldTrialGroupFinalized is called, the VariationID lookup
   // should still fail and it should be gracefully handled.
-  SetupTrial(kTrial2, GOOGLE_WEB_PROPERTIES, kVariation1);
+  SetupTrial(kTrial2, GOOGLE_WEB_PROPERTIES_ANY_CONTEXT, kVariation1);
   collection()->OnFieldTrialGroupFinalized(kTrial1, kGroup);
   EXPECT_EQ(Set({}), collection()->GetIds());
   EXPECT_EQ(Vec({}), GetNewIds());

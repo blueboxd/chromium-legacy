@@ -1229,7 +1229,7 @@ class FixedLayoutTestWebWidgetClient
   ~FixedLayoutTestWebWidgetClient() override = default;
 
   // frame_test_helpers::TestWebWidgetClient:
-  ScreenInfo GetScreenInfo() override { return screen_info_; }
+  ScreenInfo GetInitialScreenInfo() override { return screen_info_; }
 
   ScreenInfo screen_info_;
 };
@@ -1265,7 +1265,23 @@ bool CheckTextAutosizingMultiplier(Document* document, float multiplier) {
   return multiplier_checked;
 }
 
+void UpdateScreenInfoAndResizeView(
+    FixedLayoutTestWebWidgetClient* client,
+    frame_test_helpers::WebViewHelper* web_view_helper,
+    int viewport_width,
+    int viewport_height) {
+  client->screen_info_.rect = gfx::Rect(viewport_width, viewport_height);
+  web_view_helper->GetWebView()->MainFrameWidget()->UpdateScreenInfo(
+      client->screen_info_);
+  web_view_helper->Resize(WebSize(viewport_width, viewport_height));
+}
+
 }  // namespace
+
+class WebFixedLayoutFrameTest : public WebFrameTest {
+ protected:
+  FixedLayoutTestWebWidgetClient widget_client_;
+};
 
 TEST_F(WebFrameTest, ChangeInFixedLayoutResetsTextAutosizingMultipliers) {
   RegisterMockedHttpURLLoad("fixed_layout.html");
@@ -7859,8 +7875,8 @@ TEST_F(WebFrameTest, FullscreenLayerSize) {
   EXPECT_EQ(viewport_height, fullscreen_layout_object->LogicalHeight().ToInt());
 
   // Verify it's updated after a device rotation.
-  client.screen_info_.rect = gfx::Rect(viewport_height, viewport_width);
-  web_view_helper.Resize(WebSize(viewport_height, viewport_width));
+  UpdateScreenInfoAndResizeView(&client, &web_view_helper, viewport_height,
+                                viewport_width);
   UpdateAllLifecyclePhases(web_view_impl);
   EXPECT_EQ(viewport_height, fullscreen_layout_object->LogicalWidth().ToInt());
   EXPECT_EQ(viewport_width, fullscreen_layout_object->LogicalHeight().ToInt());
@@ -7989,8 +8005,8 @@ TEST_F(WebFrameTest, FullscreenSubframe) {
       ConfigureAndroid);
   int viewport_width = 640;
   int viewport_height = 480;
-  client.screen_info_.rect = gfx::Rect(viewport_width, viewport_height);
-  web_view_helper.Resize(WebSize(viewport_width, viewport_height));
+  UpdateScreenInfoAndResizeView(&client, &web_view_helper, viewport_width,
+                                viewport_height);
   UpdateAllLifecyclePhases(web_view_impl);
 
   LocalFrame* frame =
@@ -8012,8 +8028,8 @@ TEST_F(WebFrameTest, FullscreenSubframe) {
   EXPECT_EQ(viewport_height, fullscreen_layout_object->LogicalHeight().ToInt());
 
   // Verify it's updated after a device rotation.
-  client.screen_info_.rect = gfx::Rect(viewport_height, viewport_width);
-  web_view_helper.Resize(WebSize(viewport_height, viewport_width));
+  UpdateScreenInfoAndResizeView(&client, &web_view_helper, viewport_height,
+                                viewport_width);
   UpdateAllLifecyclePhases(web_view_impl);
   EXPECT_EQ(viewport_height, fullscreen_layout_object->LogicalWidth().ToInt());
   EXPECT_EQ(viewport_width, fullscreen_layout_object->LogicalHeight().ToInt());
@@ -8074,8 +8090,8 @@ TEST_F(WebFrameTest, FullscreenWithTinyViewport) {
       ConfigureAndroid);
   int viewport_width = 384;
   int viewport_height = 640;
-  client.screen_info_.rect = gfx::Rect(viewport_width, viewport_height);
-  web_view_helper.Resize(WebSize(viewport_width, viewport_height));
+  UpdateScreenInfoAndResizeView(&client, &web_view_helper, viewport_width,
+                                viewport_height);
   UpdateAllLifecyclePhases(web_view_impl);
 
   auto* layout_view = web_view_helper.GetWebView()
@@ -8118,8 +8134,8 @@ TEST_F(WebFrameTest, FullscreenResizeWithTinyViewport) {
       ConfigureAndroid);
   int viewport_width = 384;
   int viewport_height = 640;
-  client.screen_info_.rect = gfx::Rect(viewport_width, viewport_height);
-  web_view_helper.Resize(WebSize(viewport_width, viewport_height));
+  UpdateScreenInfoAndResizeView(&client, &web_view_helper, viewport_width,
+                                viewport_height);
   UpdateAllLifecyclePhases(web_view_impl);
 
   auto* layout_view = web_view_helper.GetWebView()
@@ -8140,8 +8156,8 @@ TEST_F(WebFrameTest, FullscreenResizeWithTinyViewport) {
 
   viewport_width = 640;
   viewport_height = 384;
-  client.screen_info_.rect = gfx::Rect(viewport_width, viewport_height);
-  web_view_helper.Resize(WebSize(viewport_width, viewport_height));
+  UpdateScreenInfoAndResizeView(&client, &web_view_helper, viewport_width,
+                                viewport_height);
   UpdateAllLifecyclePhases(web_view_impl);
   EXPECT_EQ(640, layout_view->LogicalWidth().Floor());
   EXPECT_EQ(384, layout_view->LogicalHeight().Floor());
@@ -8173,10 +8189,10 @@ TEST_F(WebFrameTest, FullscreenRestoreScaleFactorUponExiting) {
   WebViewImpl* web_view_impl = web_view_helper.InitializeAndLoad(
       base_url_ + "fullscreen_restore_scale_factor.html", nullptr, nullptr,
       &client, &ConfigureAndroid);
-  client.screen_info_.rect =
-      gfx::Rect(screen_size_minus_status_bars_minus_url_bar.width,
-                screen_size_minus_status_bars_minus_url_bar.height);
-  web_view_helper.Resize(screen_size_minus_status_bars_minus_url_bar);
+  UpdateScreenInfoAndResizeView(
+      &client, &web_view_helper,
+      screen_size_minus_status_bars_minus_url_bar.width,
+      screen_size_minus_status_bars_minus_url_bar.height);
   auto* layout_view = web_view_helper.GetWebView()
                           ->MainFrameImpl()
                           ->GetFrameView()
@@ -8198,11 +8214,11 @@ TEST_F(WebFrameTest, FullscreenRestoreScaleFactorUponExiting) {
 
   web_view_impl->DidEnterFullscreen();
   UpdateAllLifecyclePhases(web_view_impl);
-  client.screen_info_.rect = gfx::Rect(screen_size_minus_status_bars.width,
-                                       screen_size_minus_status_bars.height);
-  web_view_helper.Resize(screen_size_minus_status_bars);
-  client.screen_info_.rect = gfx::Rect(screen_size.width, screen_size.height);
-  web_view_helper.Resize(screen_size);
+  UpdateScreenInfoAndResizeView(&client, &web_view_helper,
+                                screen_size_minus_status_bars.width,
+                                screen_size_minus_status_bars.height);
+  UpdateScreenInfoAndResizeView(&client, &web_view_helper, screen_size.width,
+                                screen_size.height);
   EXPECT_EQ(screen_size.width, layout_view->LogicalWidth().Floor());
   EXPECT_EQ(screen_size.height, layout_view->LogicalHeight().Floor());
   EXPECT_FLOAT_EQ(1.0, web_view_impl->PageScaleFactor());
@@ -8211,13 +8227,13 @@ TEST_F(WebFrameTest, FullscreenRestoreScaleFactorUponExiting) {
 
   web_view_impl->DidExitFullscreen();
   UpdateAllLifecyclePhases(web_view_impl);
-  client.screen_info_.rect = gfx::Rect(screen_size_minus_status_bars.width,
-                                       screen_size_minus_status_bars.height);
-  web_view_helper.Resize(screen_size_minus_status_bars);
-  client.screen_info_.rect =
-      gfx::Rect(screen_size_minus_status_bars_minus_url_bar.width,
-                screen_size_minus_status_bars_minus_url_bar.height);
-  web_view_helper.Resize(screen_size_minus_status_bars_minus_url_bar);
+  UpdateScreenInfoAndResizeView(&client, &web_view_helper,
+                                screen_size_minus_status_bars.width,
+                                screen_size_minus_status_bars.height);
+  UpdateScreenInfoAndResizeView(
+      &client, &web_view_helper,
+      screen_size_minus_status_bars_minus_url_bar.width,
+      screen_size_minus_status_bars_minus_url_bar.height);
   EXPECT_EQ(screen_size_minus_status_bars_minus_url_bar.width,
             layout_view->LogicalWidth().Floor());
   EXPECT_EQ(screen_size_minus_status_bars_minus_url_bar.height,
@@ -9827,39 +9843,45 @@ TEST_F(WebFrameTest, ResizeInvalidatesDeviceMediaQueries) {
   Element* element = frame->GetDocument()->getElementById("test");
   ASSERT_TRUE(element);
 
-  client.screen_info_.rect = gfx::Rect(700, 500);
-  client.screen_info_.available_rect = client.screen_info_.rect;
-  web_view_helper.Resize(WebSize(700, 500));
+  client.screen_info_.available_rect = gfx::Rect(700, 500);
+  UpdateScreenInfoAndResizeView(&client, &web_view_helper,
+                                client.screen_info_.available_rect.width(),
+                                client.screen_info_.available_rect.height());
   EXPECT_EQ(300, element->OffsetWidth());
   EXPECT_EQ(300, element->OffsetHeight());
 
-  client.screen_info_.rect = gfx::Rect(710, 500);
-  client.screen_info_.available_rect = client.screen_info_.rect;
-  web_view_helper.Resize(WebSize(710, 500));
+  client.screen_info_.available_rect = gfx::Rect(710, 500);
+  UpdateScreenInfoAndResizeView(&client, &web_view_helper,
+                                client.screen_info_.available_rect.width(),
+                                client.screen_info_.available_rect.height());
   EXPECT_EQ(400, element->OffsetWidth());
   EXPECT_EQ(300, element->OffsetHeight());
 
-  client.screen_info_.rect = gfx::Rect(690, 500);
-  client.screen_info_.available_rect = client.screen_info_.rect;
-  web_view_helper.Resize(WebSize(690, 500));
+  client.screen_info_.available_rect = gfx::Rect(690, 500);
+  UpdateScreenInfoAndResizeView(&client, &web_view_helper,
+                                client.screen_info_.available_rect.width(),
+                                client.screen_info_.available_rect.height());
   EXPECT_EQ(200, element->OffsetWidth());
   EXPECT_EQ(300, element->OffsetHeight());
 
-  client.screen_info_.rect = gfx::Rect(700, 510);
-  client.screen_info_.available_rect = client.screen_info_.rect;
-  web_view_helper.Resize(WebSize(700, 510));
+  client.screen_info_.available_rect = gfx::Rect(700, 510);
+  UpdateScreenInfoAndResizeView(&client, &web_view_helper,
+                                client.screen_info_.available_rect.width(),
+                                client.screen_info_.available_rect.height());
   EXPECT_EQ(300, element->OffsetWidth());
   EXPECT_EQ(400, element->OffsetHeight());
 
-  client.screen_info_.rect = gfx::Rect(700, 490);
-  client.screen_info_.available_rect = client.screen_info_.rect;
-  web_view_helper.Resize(WebSize(700, 490));
+  client.screen_info_.available_rect = gfx::Rect(700, 490);
+  UpdateScreenInfoAndResizeView(&client, &web_view_helper,
+                                client.screen_info_.available_rect.width(),
+                                client.screen_info_.available_rect.height());
   EXPECT_EQ(300, element->OffsetWidth());
   EXPECT_EQ(200, element->OffsetHeight());
 
-  client.screen_info_.rect = gfx::Rect(690, 510);
-  client.screen_info_.available_rect = client.screen_info_.rect;
-  web_view_helper.Resize(WebSize(690, 510));
+  client.screen_info_.available_rect = gfx::Rect(690, 510);
+  UpdateScreenInfoAndResizeView(&client, &web_view_helper,
+                                client.screen_info_.available_rect.width(),
+                                client.screen_info_.available_rect.height());
   EXPECT_EQ(200, element->OffsetWidth());
   EXPECT_EQ(400, element->OffsetHeight());
 }
@@ -9874,9 +9896,10 @@ class DeviceEmulationTest : public WebFrameTest {
   }
 
   void TestResize(const WebSize size, const String& expected_size) {
-    client_.screen_info_.rect = gfx::Rect(size.width, size.height);
-    client_.screen_info_.available_rect = client_.screen_info_.rect;
-    web_view_helper_.Resize(size);
+    client_.screen_info_.available_rect = gfx::Rect(size.width, size.height);
+    UpdateScreenInfoAndResizeView(&client_, &web_view_helper_,
+                                  client_.screen_info_.available_rect.width(),
+                                  client_.screen_info_.available_rect.height());
     EXPECT_EQ(expected_size, DumpSize("test"));
   }
 
@@ -13657,4 +13680,5 @@ TEST_F(WebFrameTest, DownloadReferrerPolicy) {
             network::mojom::ReferrerPolicy::kNever);
   web_view_helper.Reset();
 }
+
 }  // namespace blink

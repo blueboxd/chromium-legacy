@@ -587,7 +587,9 @@ _CONFIG = [
             'cc::ApplyViewportChangesArgs',
             'cc::LayerTreeSettings',
             'cc::TaskGraphRunner',
+            'gfx::DisplayColorSpaces',
             'ui::ImeTextSpan',
+            'viz::LocalSurfaceIdAllocation',
         ],
     },
     {
@@ -942,6 +944,16 @@ _CONFIG = [
         'allowed': [
             'media::.+',
             'libyuv::.+',
+        ]
+    },
+    {
+        'paths': [
+            'third_party/blink/renderer/modules/webcodecs/video_decoder_fuzzer.cc',
+            'third_party/blink/renderer/modules/webcodecs/fuzzer_utils.cc',
+            'third_party/blink/renderer/modules/webcodecs/fuzzer_utils.h',
+        ],
+        'allowed': [
+            'wc_fuzzer::.+',
         ]
     },
     {

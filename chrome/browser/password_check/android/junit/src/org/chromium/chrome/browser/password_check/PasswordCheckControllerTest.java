@@ -72,10 +72,10 @@ import org.chromium.url.GURL;
 public class PasswordCheckControllerTest {
     private static final CompromisedCredential ANA =
             new CompromisedCredential("https://m.a.xyz/signin", mock(GURL.class), "Ana", "m.a.xyz",
-                    "Ana", "password", "", "xyz.a.some.package", true, false, false);
+                    "Ana", "password", "", "xyz.a.some.package", 2, true, false, false);
     private static final CompromisedCredential BOB = new CompromisedCredential(
             "http://www.b.ch/signin", mock(GURL.class), "", "http://www.b.ch", "(No username)",
-            "DoneSth", "http://www.b.ch/.well-known/change-password", "", true, false, true);
+            "DoneSth", "http://www.b.ch/.well-known/change-password", "", 1, true, false, true);
 
     @Rule
     public TestRule mFeaturesProcessorRule = new Features.JUnitProcessor();
@@ -165,7 +165,9 @@ public class PasswordCheckControllerTest {
     @Test
     public void testUpdateProgressHeader() {
         assertRunningHeader(mModel.get(ITEMS).get(0), UNKNOWN_PROGRESS);
-        mMediator.onPasswordCheckProgressChanged(PROGRESS_UPDATE);
+        int already_processed = PROGRESS_UPDATE.first;
+        int remaining_in_queue = PROGRESS_UPDATE.second - already_processed;
+        mMediator.onPasswordCheckProgressChanged(already_processed, remaining_in_queue);
         assertRunningHeader(mModel.get(ITEMS).get(0), PROGRESS_UPDATE);
     }
 
@@ -262,6 +264,70 @@ public class PasswordCheckControllerTest {
     }
 
     @Test
+    public void testSortsInitialSetOfCredentals() {
+        mMediator.onPasswordCheckStatusChanged(IDLE);
+
+        CompromisedCredential phishedEarly = makeCredential("example.com", "alice", 1, false, true);
+        CompromisedCredential phishedLeakedLate = makeCredential("test.com", "bob", 3, true, true);
+        CompromisedCredential leakedEarly = makeCredential("example.org", "alice", 2, true, false);
+        CompromisedCredential leakedLate = makeCredential("site.com", "john", 4, true, false);
+
+        when(mPasswordCheck.areScriptsRefreshed()).thenReturn(true);
+        when(mPasswordCheck.getCompromisedCredentials())
+                .thenReturn(new CompromisedCredential[] {
+                        phishedEarly, leakedEarly, leakedLate, phishedLeakedLate});
+        mMediator.onCompromisedCredentialsFetchCompleted();
+
+        assertThat(mModel.get(ITEMS).size(), is(5));
+        assertThat(
+                mModel.get(ITEMS).get(1).model.get(COMPROMISED_CREDENTIAL), is(phishedLeakedLate));
+        assertThat(mModel.get(ITEMS).get(2).model.get(COMPROMISED_CREDENTIAL), is(phishedEarly));
+        assertThat(mModel.get(ITEMS).get(3).model.get(COMPROMISED_CREDENTIAL), is(leakedLate));
+        assertThat(mModel.get(ITEMS).get(4).model.get(COMPROMISED_CREDENTIAL), is(leakedEarly));
+    }
+
+    @Test
+    public void testSortsAppendedCredentials() {
+        mMediator.onPasswordCheckStatusChanged(IDLE);
+
+        CompromisedCredential phishedEarly = makeCredential("example.com", "alice", 1, false, true);
+        CompromisedCredential phishedLeakedLate = makeCredential("test.com", "bob", 3, true, true);
+        CompromisedCredential leakedEarly = makeCredential("example.org", "alice", 2, true, false);
+        CompromisedCredential leakedLate = makeCredential("site.com", "john", 4, true, false);
+
+        when(mPasswordCheck.areScriptsRefreshed()).thenReturn(true);
+
+        // Send the initial set of credentials (to simulate loading them from disk).
+        when(mPasswordCheck.getCompromisedCredentials())
+                .thenReturn(new CompromisedCredential[] {
+                        phishedEarly, leakedEarly, leakedLate, phishedLeakedLate});
+        mMediator.onCompromisedCredentialsFetchCompleted();
+
+        // Send an updated list simulating credentials found in the current check.
+        CompromisedCredential leakedNewEarly1 =
+                makeCredential("example.com", "john", 5, true, false);
+        CompromisedCredential leakedNewEarly2 = makeCredential("test.com", "john", 5, true, false);
+        CompromisedCredential leakedNewLate = makeCredential("site.org", "alice", 6, true, false);
+        when(mPasswordCheck.getCompromisedCredentials())
+                .thenReturn(new CompromisedCredential[] {phishedEarly, leakedEarly, leakedLate,
+                        leakedNewEarly2, leakedNewLate, leakedNewEarly1, phishedLeakedLate});
+        mMediator.onCompromisedCredentialsFetchCompleted();
+
+        // Expect that the order of the original set has been maintained and that the newly found
+        // leaked credentials appear at the end in ascending order of creation time (or in ascending
+        // alphabetical order for equal times).
+        assertThat(mModel.get(ITEMS).size(), is(8));
+        assertThat(
+                mModel.get(ITEMS).get(1).model.get(COMPROMISED_CREDENTIAL), is(phishedLeakedLate));
+        assertThat(mModel.get(ITEMS).get(2).model.get(COMPROMISED_CREDENTIAL), is(phishedEarly));
+        assertThat(mModel.get(ITEMS).get(3).model.get(COMPROMISED_CREDENTIAL), is(leakedLate));
+        assertThat(mModel.get(ITEMS).get(4).model.get(COMPROMISED_CREDENTIAL), is(leakedEarly));
+        assertThat(mModel.get(ITEMS).get(5).model.get(COMPROMISED_CREDENTIAL), is(leakedNewEarly1));
+        assertThat(mModel.get(ITEMS).get(6).model.get(COMPROMISED_CREDENTIAL), is(leakedNewEarly2));
+        assertThat(mModel.get(ITEMS).get(7).model.get(COMPROMISED_CREDENTIAL), is(leakedNewLate));
+    }
+
+    @Test
     public void testRemovingElementTriggersDelegate() {
         // Removing sets a valid handler:
         mMediator.onRemove(ANA);
@@ -321,5 +387,11 @@ public class PasswordCheckControllerTest {
         assertThat(header.model.get(CHECK_STATUS), is(status));
         assertNotNull(header.model.get(RESTART_BUTTON_ACTION));
         assertNotNull(header.model.get(LAUNCH_ACCOUNT_CHECKUP_ACTION));
+    }
+
+    private CompromisedCredential makeCredential(
+            String origin, String username, long creationTime, boolean leaked, boolean phished) {
+        return new CompromisedCredential(origin, mock(GURL.class), username, origin, username,
+                "password", origin, new String(), creationTime, leaked, phished, false);
     }
 }

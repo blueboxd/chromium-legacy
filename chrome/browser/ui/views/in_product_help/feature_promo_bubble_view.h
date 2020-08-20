@@ -32,13 +32,13 @@ class FeaturePromoBubbleView : public views::BubbleDialogDelegateView {
 
   // Creates the promo. The returned pointer is only valid until the
   // widget is destroyed. It must not be manually deleted by the caller.
-  static FeaturePromoBubbleView* Create(FeaturePromoBubbleParams params);
+  static FeaturePromoBubbleView* Create(const FeaturePromoBubbleParams& params);
 
   // Closes the promo bubble.
   void CloseBubble();
 
  private:
-  explicit FeaturePromoBubbleView(FeaturePromoBubbleParams params);
+  explicit FeaturePromoBubbleView(const FeaturePromoBubbleParams& params);
 
   // BubbleDialogDelegateView:
   bool OnMousePressed(const ui::MouseEvent& event) override;
@@ -56,9 +56,9 @@ class FeaturePromoBubbleView : public views::BubbleDialogDelegateView {
 
   base::string16 accessible_name_;
 
-  std::unique_ptr<FeaturePromoBubbleTimeout> feature_promo_bubble_timeout_;
-
   base::Optional<int> preferred_width_;
+
+  std::unique_ptr<FeaturePromoBubbleTimeout> feature_promo_bubble_timeout_;
 
   DISALLOW_COPY_AND_ASSIGN(FeaturePromoBubbleView);
 };

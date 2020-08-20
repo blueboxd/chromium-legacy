@@ -7,6 +7,7 @@
 #include "base/strings/strcat.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/federated_learning/floc_id_provider_factory.h"
@@ -115,7 +116,9 @@ class FlocIdProviderWithCustomizedServicesBrowserTest
  public:
   FlocIdProviderWithCustomizedServicesBrowserTest() {
     scoped_feature_list_.InitWithFeatures(
-        {features::kFlocIdComputedEventLogging}, {});
+        {features::kFlocIdComputedEventLogging,
+         features::kFlocIdBlocklistFiltering},
+        {});
   }
 
   // BrowserTestBase::SetUpInProcessBrowserTestFixture
@@ -191,6 +194,22 @@ class FlocIdProviderWithCustomizedServicesBrowserTest
                 [&](history::QueryResults results) { run_loop.Quit(); }),
             &tracker);
     run_loop.Run();
+  }
+
+  void ExpireHistoryBefore(base::Time end_time) {
+    base::RunLoop run_loop;
+    base::CancelableTaskTracker tracker;
+    HistoryServiceFactory::GetForProfile(browser()->profile(),
+                                         ServiceAccessType::EXPLICIT_ACCESS)
+        ->ExpireHistoryBeforeForTesting(
+            end_time, base::BindLambdaForTesting([&]() { run_loop.Quit(); }),
+            &tracker);
+    run_loop.Run();
+  }
+
+  void OnBlocklistLoaded(const std::unordered_set<uint64_t>& blocklist) {
+    g_browser_process->floc_blocklist_service()->OnBlocklistLoadResult(
+        blocklist);
   }
 
   history::HistoryService* history_service() {
@@ -278,9 +297,12 @@ IN_PROC_BROWSER_TEST_F(FlocIdProviderWithCustomizedServicesBrowserTest,
 
   EXPECT_EQ(GetFlocId().ToDebugHeaderValue(), FlocId().ToDebugHeaderValue());
 
-  // Turn on sync-history to trigger the 1st floc computation.
+  // Turn on sync-history and load the blocklist to trigger the 1st floc
+  // computation.
   sync_service()->SetActiveDataTypes(syncer::ModelTypeSet::All());
   sync_service()->FireStateChanged();
+
+  OnBlocklistLoaded({});
 
   FinishOutstandingRemotePermissionQueries();
   FinishOutstandingHistoryQueries();
@@ -313,15 +335,120 @@ IN_PROC_BROWSER_TEST_F(FlocIdProviderWithCustomizedServicesBrowserTest,
 
   EXPECT_EQ(GetFlocId().ToDebugHeaderValue(), FlocId().ToDebugHeaderValue());
 
-  // Turn on sync-history to trigger the 1st floc computation.
+  // Turn on sync-history and load the blocklist to trigger the 1st floc
+  // computation.
   sync_service()->SetActiveDataTypes(syncer::ModelTypeSet::All());
   sync_service()->FireStateChanged();
+
+  OnBlocklistLoaded({});
 
   FinishOutstandingRemotePermissionQueries();
   FinishOutstandingHistoryQueries();
 
   // Expect that the FlocIdComputed user event is not recorded.
   ASSERT_EQ(0u, user_event_service()->GetRecordedUserEvents().size());
+}
+IN_PROC_BROWSER_TEST_F(FlocIdProviderWithCustomizedServicesBrowserTest,
+                       HistoryDeleteRecomputeFloc) {
+  net::IPAddress::ConsiderLoopbackIPToBePubliclyRoutableForTesting();
+
+  ConfigureReplacementHostAndPortForRemotePermissionService();
+
+  std::string cookies_to_set = "/set-cookie?user_id=123";
+  ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL(test_host(), cookies_to_set));
+
+  EXPECT_EQ(1u, GetHistoryUrls().size());
+
+  EXPECT_EQ(GetFlocId().ToDebugHeaderValue(), FlocId().ToDebugHeaderValue());
+
+  // Turn on sync-history and load the blocklist to trigger the 1st floc
+  // computation.
+  sync_service()->SetActiveDataTypes(syncer::ModelTypeSet::All());
+  sync_service()->FireStateChanged();
+
+  OnBlocklistLoaded({});
+
+  FinishOutstandingRemotePermissionQueries();
+  FinishOutstandingHistoryQueries();
+
+  ASSERT_EQ(1u, user_event_service()->GetRecordedUserEvents().size());
+
+  ExpireHistoryBefore(base::Time::Now());
+  FinishOutstandingRemotePermissionQueries();
+  FinishOutstandingHistoryQueries();
+
+  // Expect that the 2nd FlocIdComputed event should be due to history deletion.
+  ASSERT_EQ(2u, user_event_service()->GetRecordedUserEvents().size());
+
+  const sync_pb::UserEventSpecifics& specifics =
+      user_event_service()->GetRecordedUserEvents()[1];
+  EXPECT_EQ(sync_pb::UserEventSpecifics::kFlocIdComputedEvent,
+            specifics.event_case());
+
+  const sync_pb::UserEventSpecifics_FlocIdComputed& event =
+      specifics.floc_id_computed_event();
+  EXPECT_EQ(sync_pb::UserEventSpecifics::FlocIdComputed::HISTORY_DELETE,
+            event.event_trigger());
+  EXPECT_FALSE(event.has_floc_id());
+}
+
+IN_PROC_BROWSER_TEST_F(FlocIdProviderWithCustomizedServicesBrowserTest,
+                       Blocked_FlocInBlocklist) {
+  net::IPAddress::ConsiderLoopbackIPToBePubliclyRoutableForTesting();
+
+  ConfigureReplacementHostAndPortForRemotePermissionService();
+
+  std::string cookies_to_set = "/set-cookie?user_id=123";
+  ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL(test_host(), cookies_to_set));
+
+  EXPECT_EQ(1u, GetHistoryUrls().size());
+
+  EXPECT_EQ(GetFlocId().ToDebugHeaderValue(), FlocId().ToDebugHeaderValue());
+
+  // Turn on sync-history and load the blocklist to trigger the 1st floc
+  // computation.
+  sync_service()->SetActiveDataTypes(syncer::ModelTypeSet::All());
+  sync_service()->FireStateChanged();
+
+  // Load a blocklist that would block the upcoming floc.
+  OnBlocklistLoaded({FlocId::CreateFromHistory({test_host()}).ToUint64()});
+
+  FinishOutstandingRemotePermissionQueries();
+  FinishOutstandingHistoryQueries();
+
+  // Expect that the FlocIdComputed user event is not recorded.
+  ASSERT_EQ(0u, user_event_service()->GetRecordedUserEvents().size());
+}
+
+IN_PROC_BROWSER_TEST_F(FlocIdProviderWithCustomizedServicesBrowserTest,
+                       NotBlocked_FlocNotInBlocklist) {
+  net::IPAddress::ConsiderLoopbackIPToBePubliclyRoutableForTesting();
+
+  ConfigureReplacementHostAndPortForRemotePermissionService();
+
+  std::string cookies_to_set = "/set-cookie?user_id=123";
+  ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL(test_host(), cookies_to_set));
+
+  EXPECT_EQ(1u, GetHistoryUrls().size());
+
+  EXPECT_EQ(GetFlocId().ToDebugHeaderValue(), FlocId().ToDebugHeaderValue());
+
+  // Turn on sync-history and load the blocklist to trigger the 1st floc
+  // computation.
+  sync_service()->SetActiveDataTypes(syncer::ModelTypeSet::All());
+  sync_service()->FireStateChanged();
+
+  // Load a blocklist that would block a floc different from the upcoming floc.
+  OnBlocklistLoaded({FlocId::CreateFromHistory({"b.test"}).ToUint64()});
+
+  FinishOutstandingRemotePermissionQueries();
+  FinishOutstandingHistoryQueries();
+
+  // Expect that the FlocIdComputed user event is recorded.
+  ASSERT_EQ(1u, user_event_service()->GetRecordedUserEvents().size());
 }
 
 }  // namespace federated_learning

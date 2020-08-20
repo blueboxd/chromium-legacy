@@ -1359,7 +1359,7 @@
           'mac_10.15',
           'mac_toolchain',
           'out_dir_arg',
-          'xcode_12a8179i_audio',
+          'xcode_12a8189h',
         ],
         'test_suites': {
           'isolated_scripts': 'ios_clang_tot_sim_tests'
@@ -1389,7 +1389,7 @@
           'mac_10.15',
           'mac_toolchain',
           'out_dir_arg',
-          'xcode_12a8179i_audio',
+          'xcode_12a8189h',
         ],
         'test_suites': {
           'isolated_scripts': 'ios_clang_tot_device_tests'
@@ -2051,7 +2051,7 @@
           'mac_10.15',
           'mac_toolchain',
           'out_dir_arg',
-          'xcode_12a8179i_audio'
+          'xcode_12a8189h'
         ],
         'test_suites': {
           'isolated_scripts': 'ios_asan_tests',
@@ -2063,7 +2063,7 @@
           'mac_10.15',
           'mac_toolchain',
           'out_dir_arg',
-          'xcode_12a8179i_audio'
+          'xcode_12a8189h'
         ],
         'test_suites': {
           'isolated_scripts': 'ios_code_coverage_tests',
@@ -2085,7 +2085,7 @@
           'mac_10.15',
           'mac_toolchain',
           'out_dir_arg',
-          'xcode_12a8179i_audio'
+          'xcode_12a8189h'
         ],
         'test_suites': {
           'isolated_scripts': 'ios_simulator_multi_window_tests',
@@ -4375,7 +4375,7 @@
           'mac_10.15',
           'mac_toolchain',
           'out_dir_arg',
-          'xcode_12a8179i_audio',
+          'xcode_12a8189h',
         ],
         'test_suites': {
           'isolated_scripts': 'ios_simulator_tests',
@@ -4389,7 +4389,7 @@
           'mac_10.15',
           'mac_toolchain',
           'out_dir_arg',
-          'xcode_12a8179i_audio',
+          'xcode_12a8189h',
         ],
         'test_suites': {
           'isolated_scripts': 'ios_simulator_full_configs_test'

@@ -515,7 +515,7 @@ void BookmarkMenuDelegate::BuildMenusForPermanentNodes(
 }
 
 void BookmarkMenuDelegate::BuildMenuForPermanentNode(const BookmarkNode* node,
-                                                     const gfx::ImageSkia& icon,
+                                                     const ui::ImageModel& icon,
                                                      MenuItemView* menu,
                                                      bool* added_separator) {
   if (!node->IsVisible() || node->GetTotalNodeCount() == 1)
@@ -526,9 +526,10 @@ void BookmarkMenuDelegate::BuildMenuForPermanentNode(const BookmarkNode* node,
     menu->AppendSeparator();
   }
 
-  AddMenuToMaps(menu->AppendSubMenu(next_menu_id_++,
-                                    MaybeEscapeLabel(node->GetTitle()), icon),
-                node);
+  AddMenuToMaps(
+      menu->AppendSubMenu(next_menu_id_++, MaybeEscapeLabel(node->GetTitle()),
+                          *icon.GetImage().ToImageSkia()),
+      node);
 }
 
 void BookmarkMenuDelegate::BuildMenuForManagedNode(MenuItemView* menu) {
@@ -546,7 +547,7 @@ void BookmarkMenuDelegate::BuildMenu(const BookmarkNode* parent,
                                      MenuItemView* menu) {
   DCHECK_LE(start_child_index, parent->children().size());
   ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
-  const gfx::ImageSkia folder_icon =
+  const ui::ImageModel folder_icon =
       chrome::GetBookmarkFolderIcon(TextColorForMenu(menu, parent_));
   for (auto i = parent->children().cbegin() + start_child_index;
        i != parent->children().cend(); ++i) {
@@ -565,8 +566,9 @@ void BookmarkMenuDelegate::BuildMenu(const BookmarkNode* parent,
               net::UnescapeRule::SPACES, nullptr, nullptr, nullptr));
     } else {
       DCHECK(node->is_folder());
-      child_menu_item = menu->AppendSubMenu(
-          id, MaybeEscapeLabel(node->GetTitle()), folder_icon);
+      child_menu_item =
+          menu->AppendSubMenu(id, MaybeEscapeLabel(node->GetTitle()),
+                              *folder_icon.GetImage().ToImageSkia());
       child_menu_item->GetViewAccessibility().OverrideDescription("");
     }
     AddMenuToMaps(child_menu_item, node);

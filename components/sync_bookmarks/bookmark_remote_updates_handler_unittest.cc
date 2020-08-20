@@ -1179,6 +1179,58 @@ TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
   EXPECT_THAT(tracker()->GetEntityForSyncId(kId0)->IsUnsynced(), Eq(true));
 }
 
+// Tests that recommit will be initiated in case when there is a local tombstone
+// and server's update has out of date encryption.
+TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
+       ShouldRecommitWhenEncryptionIsOutOfDateOnConflict) {
+  const std::string kId0 = "id0";
+
+  sync_pb::ModelTypeState model_type_state;
+  model_type_state.set_encryption_key_name("encryption_key_name");
+  tracker()->set_model_type_state(model_type_state);
+
+  // Create a new node and remove it locally.
+  syncer::UpdateResponseDataList updates;
+  syncer::UpdateResponseData response_data =
+      CreateUpdateResponseData(/*server_id=*/kId0,
+                               /*parent_id=*/kBookmarkBarId,
+                               /*is_deletion=*/false,
+                               /*version=*/0);
+  response_data.encryption_key_name = "encryption_key_name";
+  updates.push_back(std::move(response_data));
+  updates_handler()->Process(updates,
+                             /*got_new_encryption_requirements=*/false);
+
+  const SyncedBookmarkTracker::Entity* entity =
+      tracker()->GetEntityForSyncId(kId0);
+  ASSERT_THAT(entity, NotNull());
+  ASSERT_THAT(entity->bookmark_node(), NotNull());
+
+  bookmark_model()->Remove(entity->bookmark_node());
+  tracker()->MarkDeleted(entity);
+  tracker()->IncrementSequenceNumber(entity);
+
+  // Process an update with outdated encryption. This should cause a conflict
+  // and the remote version must be applied. Local tombstone entity will be
+  // removed during processing conflict.
+  updates.clear();
+  response_data = CreateUpdateResponseData(/*server_id=*/kId0,
+                                           /*parent_id=*/kBookmarkBarId,
+                                           /*is_deletion=*/false,
+                                           /*version=*/1);
+  response_data.encryption_key_name = "out_of_date_encryption_key_name";
+  updates.push_back(std::move(response_data));
+
+  updates_handler()->Process(updates,
+                             /*got_new_encryption_requirements=*/false);
+  // |entity| may be deleted here while processing update during conflict
+  // resolution.
+  entity = tracker()->GetEntityForSyncId(kId0);
+  ASSERT_THAT(entity, NotNull());
+  EXPECT_THAT(entity->IsUnsynced(), Eq(true));
+  EXPECT_THAT(entity->bookmark_node(), NotNull());
+}
+
 TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
        ShouldRecommitWhenGotNewEncryptionRequirements) {
   const std::string kId0 = "id0";

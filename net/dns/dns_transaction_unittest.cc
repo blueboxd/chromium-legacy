@@ -35,6 +35,7 @@
 #include "net/dns/dns_response.h"
 #include "net/dns/dns_server_iterator.h"
 #include "net/dns/dns_session.h"
+#include "net/dns/dns_socket_pool.h"
 #include "net/dns/dns_test_util.h"
 #include "net/dns/dns_util.h"
 #include "net/dns/public/dns_over_https_server_config.h"
@@ -638,8 +639,8 @@ class DnsTransactionTestBase : public testing::Test {
     socket_factory_.reset(new TestSocketFactory());
     session_ = new DnsSession(
         config_,
-        DnsSocketPool::CreateNull(socket_factory_.get(),
-                                  base::BindRepeating(base::RandInt)),
+        std::make_unique<DnsSocketPool>(
+            socket_factory_.get(), config_.nameservers, nullptr /* net_log */),
         base::BindRepeating(&DnsTransactionTestBase::GetNextId,
                             base::Unretained(this)),
         nullptr /* NetLog */);

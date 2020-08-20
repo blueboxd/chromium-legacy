@@ -43,32 +43,33 @@ TEST_F(SubresourceFilterTest, SimpleDisallowedLoad) {
   EXPECT_TRUE(GetClient()->did_show_ui_for_navigation());
 }
 
-TEST_F(SubresourceFilterTest, DeactivateUrl_ClearsSiteMetadata) {
+TEST_F(SubresourceFilterTest, DeactivateUrl_ChangeSiteActivationToFalse) {
   GURL url("https://a.test");
   ConfigureAsSubresourceFilterOnlyURL(url);
   SimulateNavigateAndCommit(url, main_rfh());
   EXPECT_FALSE(CreateAndNavigateDisallowedSubframe(main_rfh()));
 
-  EXPECT_NE(nullptr, GetSettingsManager()->GetSiteMetadata(url));
+  EXPECT_TRUE(GetSettingsManager()->GetSiteActivationFromMetadata(url));
 
   RemoveURLFromBlocklist(url);
 
-  // Navigate to |url| again and expect the site metadata to clear.
+  // Navigate to |url| again and expect the site's activation to be set
+  // to false.
   SimulateNavigateAndCommit(url, main_rfh());
   EXPECT_TRUE(CreateAndNavigateDisallowedSubframe(main_rfh()));
 
-  EXPECT_EQ(nullptr, GetSettingsManager()->GetSiteMetadata(url));
+  EXPECT_FALSE(GetSettingsManager()->GetSiteActivationFromMetadata(url));
 }
 
 // If the underlying configuration changes and a site only activates to DRYRUN,
 // we should clear the metadata.
-TEST_F(SubresourceFilterTest, ActivationToDryRun_ClearsSiteMetadata) {
+TEST_F(SubresourceFilterTest, ActivationToDryRun_ChangeSiteActivationToFalse) {
   GURL url("https://a.test");
   ConfigureAsSubresourceFilterOnlyURL(url);
   SimulateNavigateAndCommit(url, main_rfh());
   EXPECT_FALSE(CreateAndNavigateDisallowedSubframe(main_rfh()));
 
-  EXPECT_NE(nullptr, GetSettingsManager()->GetSiteMetadata(url));
+  EXPECT_TRUE(GetSettingsManager()->GetSiteActivationFromMetadata(url));
 
   // If the site later activates as DRYRUN due to e.g. a configuration change,
   // it should also be removed from the metadata.
@@ -77,14 +78,16 @@ TEST_F(SubresourceFilterTest, ActivationToDryRun_ClearsSiteMetadata) {
       subresource_filter::ActivationScope::ACTIVATION_LIST,
       subresource_filter::ActivationList::SUBRESOURCE_FILTER));
 
-  // Navigate to |url| again and expect the site metadata to clear.
+  // Navigate to |url| again and expect the site's activation to be set to
+  // false.
   SimulateNavigateAndCommit(url, main_rfh());
   EXPECT_TRUE(CreateAndNavigateDisallowedSubframe(main_rfh()));
 
-  EXPECT_EQ(nullptr, GetSettingsManager()->GetSiteMetadata(url));
+  EXPECT_FALSE(GetSettingsManager()->GetSiteActivationFromMetadata(url));
 }
 
-TEST_F(SubresourceFilterTest, ExplicitAllowlisting_ShouldNotClearMetadata) {
+TEST_F(SubresourceFilterTest,
+       ExplicitAllowlisting_ShouldNotChangeSiteActivation) {
   GURL url("https://a.test");
   ConfigureAsSubresourceFilterOnlyURL(url);
   SimulateNavigateAndCommit(url, main_rfh());
@@ -95,9 +98,8 @@ TEST_F(SubresourceFilterTest, ExplicitAllowlisting_ShouldNotClearMetadata) {
   SimulateNavigateAndCommit(url, main_rfh());
   EXPECT_TRUE(CreateAndNavigateDisallowedSubframe(main_rfh()));
 
-  // Should not have cleared the metadata, since the site is still on the SB
-  // blocklist.
-  EXPECT_NE(nullptr, GetSettingsManager()->GetSiteMetadata(url));
+  // Site is still on SB blocklist, activation should stay true.
+  EXPECT_TRUE(GetSettingsManager()->GetSiteActivationFromMetadata(url));
 }
 
 TEST_F(SubresourceFilterTest, SimpleAllowedLoad_WithObserver) {
@@ -144,16 +146,16 @@ TEST_F(SubresourceFilterTest, RefreshMetadataOnActivation) {
   ConfigureAsSubresourceFilterOnlyURL(url);
   SimulateNavigateAndCommit(url, main_rfh());
   EXPECT_FALSE(CreateAndNavigateDisallowedSubframe(main_rfh()));
-  EXPECT_NE(nullptr, GetSettingsManager()->GetSiteMetadata(url));
+  EXPECT_TRUE(GetSettingsManager()->GetSiteActivationFromMetadata(url));
 
   // Allowlist via content settings.
   GetSettingsManager()->AllowlistSite(url);
 
-  // Remove from blocklist, will delete the metadata. Note that there is still
-  // an exception in content settings.
+  // Remove from blocklist, will set metadata activation to false.
+  // Note that there is still an exception in content settings.
   RemoveURLFromBlocklist(url);
   SimulateNavigateAndCommit(url, main_rfh());
-  EXPECT_EQ(nullptr, GetSettingsManager()->GetSiteMetadata(url));
+  EXPECT_FALSE(GetSettingsManager()->GetSiteActivationFromMetadata(url));
 
   // Site re-added to the blocklist. Should not activate due to allowlist, but
   // there should be page info / site details.
@@ -162,7 +164,7 @@ TEST_F(SubresourceFilterTest, RefreshMetadataOnActivation) {
 
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             GetSettingsManager()->GetSitePermission(url));
-  EXPECT_NE(nullptr, GetSettingsManager()->GetSiteMetadata(url));
+  EXPECT_TRUE(GetSettingsManager()->GetSiteActivationFromMetadata(url));
 }
 
 TEST_F(SubresourceFilterTest, ToggleForceActivation) {
@@ -173,7 +175,7 @@ TEST_F(SubresourceFilterTest, ToggleForceActivation) {
   // Navigate initially, should be no activation.
   SimulateNavigateAndCommit(url, main_rfh());
   EXPECT_TRUE(CreateAndNavigateDisallowedSubframe(main_rfh()));
-  EXPECT_EQ(nullptr, GetSettingsManager()->GetSiteMetadata(url));
+  EXPECT_FALSE(GetSettingsManager()->GetSiteActivationFromMetadata(url));
 
   // Simulate opening devtools and forcing activation.
   GetClient()->ToggleForceActivationInCurrentWebContents(true);
@@ -183,7 +185,7 @@ TEST_F(SubresourceFilterTest, ToggleForceActivation) {
   SimulateNavigateAndCommit(url, main_rfh());
   EXPECT_FALSE(CreateAndNavigateDisallowedSubframe(main_rfh()));
   EXPECT_TRUE(GetClient()->did_show_ui_for_navigation());
-  EXPECT_NE(nullptr, GetSettingsManager()->GetSiteMetadata(url));
+  EXPECT_TRUE(GetSettingsManager()->GetSiteActivationFromMetadata(url));
   histogram_tester.ExpectBucketCount(
       "SubresourceFilter.PageLoad.ActivationDecision",
       subresource_filter::ActivationDecision::FORCED_ACTIVATION, 1);
@@ -296,5 +298,5 @@ TEST_F(SubresourceFilterTest, WarningSite_NoMetadata) {
   fake_safe_browsing_database()->AddBlocklistedUrl(url, threat_type, metadata);
 
   SimulateNavigateAndCommit(url, main_rfh());
-  EXPECT_EQ(nullptr, GetSettingsManager()->GetSiteMetadata(url));
+  EXPECT_FALSE(GetSettingsManager()->GetSiteActivationFromMetadata(url));
 }

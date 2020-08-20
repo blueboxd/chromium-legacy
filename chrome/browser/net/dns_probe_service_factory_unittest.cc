@@ -315,8 +315,6 @@ TEST_F(DnsProbeServiceTest, CurrentConfig_Automatic) {
   EXPECT_EQ(0u, overrides.search->size());
   EXPECT_TRUE(overrides.attempts.has_value());
   EXPECT_EQ(1, overrides.attempts.value());
-  EXPECT_TRUE(overrides.randomize_ports.has_value());
-  EXPECT_FALSE(overrides.randomize_ports.value());
 
   EXPECT_TRUE(overrides.secure_dns_mode.has_value());
   EXPECT_EQ(net::DnsConfig::SecureDnsMode::OFF,
@@ -341,8 +339,6 @@ TEST_F(DnsProbeServiceTest, CurrentConfig_Secure) {
   EXPECT_EQ(0u, overrides.search->size());
   EXPECT_TRUE(overrides.attempts.has_value());
   EXPECT_EQ(1, overrides.attempts.value());
-  EXPECT_TRUE(overrides.randomize_ports.has_value());
-  EXPECT_FALSE(overrides.randomize_ports.value());
 
   EXPECT_TRUE(overrides.secure_dns_mode.has_value());
   EXPECT_EQ(net::DnsConfig::SecureDnsMode::SECURE,

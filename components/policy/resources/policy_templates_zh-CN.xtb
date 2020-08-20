@@ -1063,11 +1063,6 @@
       如果此政策未设置，默认情况下，受管理用户将不能使用短信同步功能，不受管理的用户则可以。</translation>
 <translation id="2660846099862559570">从不使用代理</translation>
 <translation id="2665422249821137126">在登录屏幕上启用大号光标</translation>
-<translation id="266882888912227087"> 控制 <ph name="PRODUCT_OS_NAME" />上受管理访客会话的自动启动通知。
-
-      如果此政策设为 True，系统会在隐私权警告通知显示了数秒后关闭它。
-
-      如果此政策设为 False 或未设置，系统则会将隐私权警告通知固定在屏幕上，直到用户关闭它为止。</translation>
 <translation id="2672012807430078509">控制是否允许将 NTLM 作为 SMB 装载功能的身份验证协议</translation>
 <translation id="2678503605767349615">必需的设备级客户端证书</translation>
 <translation id="268577405881275241">启用数据压缩代理功能</translation>
@@ -2453,7 +2448,6 @@
       <ph name="PAGE_SIZE_NAME" /> 应包含所列格式之一，如果所需页面大小不在列表中，则应包含“custom”值。如果提供了“custom”值，则应指定 <ph name="PAGE_SIZE_CUSTOM_SIZE" /> 属性，用于指定所需的高度和宽度（以微米为单位）。如果未提供“custom”值，便不应指定 <ph name="PAGE_SIZE_CUSTOM_SIZE" /> 属性。系统会忽略违反这些规则的政策。
 
       如果这一页面大小在用户选择的打印机上不适用，系统会忽略此政策。</translation>
-<translation id="479290425281021210">指定是否允许不安全网站向更专用网络上的端点发送请求。</translation>
 <translation id="4802744647065138872">限制为供执行紧急回滚时使用而保留的用户数据快照的数量。</translation>
 <translation id="4802905909524200151">配置 <ph name="TPM_FIRMWARE_UPDATE_TPM" /> 固件更新行为</translation>
 <translation id="4804828344300125154">在用户退出后一律重新启动。</translation>
@@ -3796,13 +3790,6 @@
 
       如果此政策已停用，系统则会显示错误消息。</translation>
 <translation id="6821268164692776674"><ph name="CLOUD_PRINT_NAME" />和“保存到 Google 云端硬盘”目的地</translation>
-<translation id="6823297401452148231">此政策旨在控制是否允许不安全网站向更专用网络上的端点发送请求。例如，控制是否允许 http://evil.com 向 localhost 以及专用网络上的端点（这二者均无法通过公开互联网访问）发送请求。如需了解详情，请参阅 https://wicg.github.io/cors-rfc1918/#goals。
-
-          如果此政策未设置，对于从不安全情境向更专用网络上的端点发送的请求，其默认行为将取决于用户针对 <ph name="BLOCK_INSECURE_PRIVATE_NETWORK_REQUESTS_FEATURE_NAME" /> 功能（此功能可通过现场试验来设置，也可在命令行中设置）指定的个人配置。
-
-          如果此政策设为 false，系统将禁止不安全网站向更专用网络上的端点发送请求。换而言之，系统将禁止通过公开 IP 地址提供的不安全网站向 localhost 以及专用 IP 地址发送请求，此外，系统还将禁止通过专用 IP 地址提供的不安全网站向 localhost 发送请求。
-
-          如果此政策设为 true，系统将允许不安全网站向任意网络上的端点发送请求，但这些网站会受到其他跨源检查机制的约束。</translation>
 <translation id="6833064854262015312">将此政策设为 True 时，系统会在登录屏幕上开启高对比度模式。将此政策设为 False 时，系统会在登录屏幕上关闭高对比度模式。
 
       如果您设置了此政策，用户便可暂时更改（开启或关闭）高对比度模式。当登录屏幕重新加载或闲置了 1 分钟后，高对比度模式就会还原为初始状态。

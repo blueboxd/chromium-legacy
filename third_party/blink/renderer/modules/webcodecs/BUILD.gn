@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 
 import("//third_party/blink/renderer/modules/modules.gni")
+import("//third_party/libprotobuf-mutator/fuzzable_proto_library.gni")
+import("//third_party/protobuf/proto_library.gni")
 
 blink_modules_sources("webcodecs") {
   sources = [
@@ -56,7 +58,6 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "audio_decoder_broker_test.cc",
-    "audio_decoder_test.cc",
     "decoder_selector_test.cc",
     "encoded_video_chunk_test.cc",
     "image_decoder_external_test.cc",
@@ -84,4 +85,8 @@ source_set("unit_tests") {
   ]
 
   data = [ "//third_party/blink/web_tests/images/resources/" ]
+}
+
+fuzzable_proto_library("fuzzer_protos") {
+  sources = [ "fuzzer_inputs.proto" ]
 }

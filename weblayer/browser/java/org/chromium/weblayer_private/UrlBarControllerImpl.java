@@ -165,7 +165,7 @@ public class UrlBarControllerImpl extends IUrlBarController.Stub {
             mUrlTextView.setTextSize(
                     TypedValue.COMPLEX_UNIT_SP, Math.max(MINIMUM_TEXT_SIZE, mTextSize));
             Context embedderContext = mBrowserImpl.getEmbedderActivityContext();
-            if (mUrlTextColor > 0 && embedderContext != null) {
+            if (mUrlTextColor != 0 && embedderContext != null) {
                 mUrlTextView.setTextColor(ContextCompat.getColor(embedderContext, mUrlTextColor));
             }
 
@@ -175,7 +175,7 @@ public class UrlBarControllerImpl extends IUrlBarController.Stub {
                             UrlBarControllerImplJni.get().getConnectionSecurityLevel(
                                     mNativeUrlBarController))));
 
-            if (mUrlIconColor > 0 && embedderContext != null) {
+            if (mUrlIconColor != 0 && embedderContext != null) {
                 ImageViewCompat.setImageTintList(mSecurityButton,
                         ColorStateList.valueOf(
                                 ContextCompat.getColor(embedderContext, mUrlIconColor)));

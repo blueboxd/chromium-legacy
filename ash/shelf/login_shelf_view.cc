@@ -780,7 +780,18 @@ void LoginShelfView::UpdateUi() {
   // 2. There are Kiosk apps available.
   kiosk_apps_button_->SetVisible(kiosk_apps_button_->HasApps() &&
                                  (is_login_primary || is_oobe));
-
+  // If there is no visible (and thus focusable) buttons, we shouldn't focus
+  // LoginShelfView. We update it here, so we don't need to check visibility
+  // every time we move focus to system tray.
+  bool is_anything_focusable = false;
+  for (auto* child : children()) {
+    if (child->IsFocusable()) {
+      is_anything_focusable = true;
+      break;
+    }
+  }
+  SetFocusBehavior(is_anything_focusable ? views::View::FocusBehavior::ALWAYS
+                                         : views::View::FocusBehavior::NEVER);
   UpdateButtonColors(is_oobe);
   Layout();
 }

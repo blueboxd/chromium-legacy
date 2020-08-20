@@ -1549,6 +1549,11 @@ const char kOmniboxLocalEntitySuggestionsDescription[] =
     "layout, similar to #omnibox-rich-entity-suggestions. Enabling this feature"
     "will also enable #omnibox-rich-entity-suggestions.";
 
+const char kOmniboxLocalZeroSuggestFrecencyRankingName[] =
+    "Frecency ranking for local history zero-prefix suggestions";
+const char kOmniboxLocalZeroSuggestFrecencyRankingDescription[] =
+    "Enable frecency ranking for local history zero-prefix suggestions.";
+
 const char kOmniboxMostVisitedTilesName[] = "Omnibox Most Visited Tiles";
 const char kOmniboxMostVisitedTilesDescription[] =
     "Display a list of frquently visited pages from history as a single row "
@@ -2662,6 +2667,11 @@ const char kCloseTabSuggestionsDescription[] =
     "Suggests to the user to close Tabs that haven't been used beyond a "
     "configurable threshold or where duplicates of Tabs exist. "
     "The threshold is configurable.";
+
+const char kCriticalPersistedTabDataName[] = "Enable CriticalPersistedTabData";
+const char kCriticalPersistedTabDataDescription[] =
+    "A new method of persisting Tab data across restarts has been devised "
+    "and implemented. This actives the new approach.";
 
 const char kContentIndexingDownloadHomeName[] =
     "Content indexing in download home";

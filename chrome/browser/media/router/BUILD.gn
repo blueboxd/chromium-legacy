@@ -84,6 +84,9 @@ static_library("router") {
       "//components/paint_preview/buildflags",
       "//components/signin/public/base:signin_buildflags",
       "//components/translate/content/common",
+      "//extensions/browser",
+      "//extensions/buildflags",
+      "//extensions/common",
       "//mojo/public/cpp/bindings",
       "//ui/base:buildflags",
     ]

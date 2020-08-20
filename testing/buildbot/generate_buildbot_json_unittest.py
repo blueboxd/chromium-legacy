@@ -5284,6 +5284,7 @@ MATRIX_COMPOUND_TARGETS_MIXINS = """\
   'matrix_compound_suites': {
     'matrix_tests': {
       'foo_tests': {
+        'mixins': [ 'random_mixin' ],
         'variants': [
           {
             'identifier': 'args',
@@ -5588,7 +5589,8 @@ MATRIX_TARGET_DICT_MERGE_OUTPUT_MIXINS = """\
           "can_use_on_swarming_builders": true,
           "value": "test"
         },
-        "test": "mixins_test"
+        "test": "mixins_test",
+        "value": "random"
       },
       {
         "args": [],
@@ -5606,7 +5608,8 @@ MATRIX_TARGET_DICT_MERGE_OUTPUT_MIXINS = """\
           ],
           "value": "test"
         },
-        "test": "mixins_test"
+        "test": "mixins_test",
+        "value": "random"
       },
       {
         "args": [],
@@ -5625,7 +5628,8 @@ MATRIX_TARGET_DICT_MERGE_OUTPUT_MIXINS = """\
           ],
           "value": "test"
         },
-        "test": "mixins_test"
+        "test": "mixins_test",
+        "value": "random"
       }
     ]
   }

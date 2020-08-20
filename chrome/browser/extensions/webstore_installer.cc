@@ -224,12 +224,7 @@ void WebstoreInstaller::Delegate::OnExtensionDownloadProgress(
     const std::string& id,
     download::DownloadItem* item) {}
 
-WebstoreInstaller::Approval::Approval()
-    : profile(nullptr),
-      use_app_installed_bubble(false),
-      skip_post_install_ui(false),
-      skip_install_dialog(false),
-      manifest_check_level(MANIFEST_CHECK_LEVEL_STRICT) {}
+WebstoreInstaller::Approval::Approval() = default;
 
 std::unique_ptr<WebstoreInstaller::Approval>
 WebstoreInstaller::Approval::CreateWithInstallPrompt(Profile* profile) {
@@ -284,10 +279,7 @@ WebstoreInstaller::WebstoreInstaller(Profile* profile,
       delegate_(delegate),
       id_(id),
       install_source_(source),
-      download_item_(nullptr),
-      approval_(approval.release()),
-      total_modules_(0),
-      download_started_(false) {
+      approval_(approval.release()) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(web_contents);
 

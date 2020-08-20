@@ -62,6 +62,9 @@ class AccountPickerBottomSheetViewBinder {
             case AccountPickerBottomSheetState.SIGNIN_GENERAL_ERROR:
                 view.setUpSignInGeneralErrorView();
                 break;
+            case AccountPickerBottomSheetState.SIGNIN_AUTH_ERROR:
+                view.setUpSignInAuthErrorView();
+                break;
             default:
                 throw new IllegalArgumentException(
                         "Cannot bind AccountPickerBottomSheetView for the state:"

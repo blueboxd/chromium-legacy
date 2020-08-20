@@ -421,7 +421,6 @@ crbug.com/599272 [ mac no-passthrough ] conformance/extensions/oes-texture-float
 crbug.com/928926 [ mac ] conformance/ogles/GL/abs/abs_001_to_006.html [ RetryOnFailure ]
 
 # Mac AMD failures
-crbug.com/905007 [ mac amd opengl ] conformance/glsl/bugs/bool-type-cast-bug-int-float.html [ Failure ]
 crbug.com/642822 [ mac amd ] conformance/rendering/clipping-wide-points.html [ Failure ]
 crbug.com/929009 [ mac amd ] conformance/glsl/misc/shader-with-non-reserved-words.html [ RetryOnFailure ]
 
@@ -793,7 +792,6 @@ crbug.com/1099978 [ mac swiftshader passthrough ] conformance/glsl/samplers/glsl
 crbug.com/1102991 [ mac swiftshader passthrough ] conformance/more/functions/copyTexSubImage2D.html [ RetryOnFailure ]
 crbug.com/1102991 [ mac swiftshader passthrough ] conformance/more/functions/deleteBufferBadArgs.html [ RetryOnFailure ]
 crbug.com/1102991 [ mac swiftshader passthrough ] conformance/more/glsl/uniformOutOfBounds.html [ RetryOnFailure ]
-crbug.com/1099979 [ mac swiftshader passthrough ] conformance/misc/uninitialized-test.html [ Failure ]
 crbug.com/1099978 [ mac swiftshader passthrough ] conformance/reading/read-pixels-test.html [ Failure ]
 crbug.com/1099978 [ mac swiftshader passthrough ] conformance/renderbuffers/renderbuffer-initialization.html [ Failure ]
 crbug.com/1099979 [ mac swiftshader passthrough ] conformance/rendering/draw-webgl-to-canvas-2d-repeatedly.html [ Failure ]
@@ -818,7 +816,6 @@ crbug.com/1099979 [ mac swiftshader passthrough ] conformance/textures/image_bit
 crbug.com/1099979 [ mac swiftshader passthrough ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_byte.html [ Failure ]
 crbug.com/1099979 [ mac swiftshader passthrough ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ Failure ]
 crbug.com/1099979 [ mac swiftshader passthrough ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ Failure ]
-crbug.com/1099979 [ mac swiftshader passthrough ] conformance/textures/misc/copy-tex-image-2d-formats.html [ Failure ]
 crbug.com/1099979 [ mac swiftshader passthrough ] conformance/textures/misc/gl-pixelstorei.html [ Failure ]
 crbug.com/1102991 [ mac swiftshader passthrough ] conformance/textures/misc/tex-image-and-sub-image-2d-with-array-buffer-view.html [ RetryOnFailure ]
 crbug.com/1099979 [ mac swiftshader passthrough ] conformance/textures/misc/texparameter-test.html [ Failure ]

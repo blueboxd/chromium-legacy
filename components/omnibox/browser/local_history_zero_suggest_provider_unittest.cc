@@ -42,7 +42,7 @@ namespace {
 struct TestURLData {
   const TemplateURL* search_provider;
   std::string search_terms;
-  std::string other_query_params;
+  std::string additional_query_params;
   int age_in_seconds;
   int visit_count = 1;
   std::string title = "";
@@ -154,6 +154,8 @@ void LocalHistoryZeroSuggestProviderTest::LoadURLs(
   for (const auto& entry : url_data_list) {
     TemplateURLRef::SearchTermsArgs search_terms_args(
         base::UTF8ToUTF16(entry.search_terms));
+    search_terms_args.additional_query_params.append(
+        entry.additional_query_params);
     const auto& search_terms_data =
         client_->GetTemplateURLService()->search_terms_data();
     std::string search_url =
@@ -406,25 +408,40 @@ TEST_F(LocalHistoryZeroSuggestProviderTest, DefaultSearchProvider) {
 // collapsed, are lowercased and deduplicated) without loss of unicode encoding.
 TEST_F(LocalHistoryZeroSuggestProviderTest, Normalization) {
   LoadURLs({
-      {default_search_provider(), "hello world", "&foo=bar", 3},
-      {default_search_provider(), "hello   world", "&foo=bar", 4},
-      {default_search_provider(), "hello   world", "&foo=bar", 5},
+      // Issued too closely to the original query; will be ignored:
+      {default_search_provider(), "HELLO   WORLD  ", "&foo=bar4", 1},
+      {default_search_provider(), "سلام دنیا", "&bar=baz", 2},
+      // Issued too closely to the original query; will be ignored:
+      {default_search_provider(), "hello world", "&foo=bar3", 3},
+      // Issued too closely to the original query; will be ignored:
+      {default_search_provider(), "hello   world", "&foo=bar2", 4},
+      // Issued too closely to the original query; will be ignored:
+      {default_search_provider(), "hello   world", "&foo=bar1", 5},
       {default_search_provider(), "hello world", "&foo=bar", 6},
-      {default_search_provider(), "HELLO   WORLD  ", "&foo=bar", 1},
-      {default_search_provider(), "سلام دنیا", "&foo=bar", 2},
   });
 
   StartProviderAndWaitUntilDone();
-  ExpectMatches({{"hello world", 500}, {"سلام دنیا", 499}});
+  ExpectMatches({{"سلام دنیا", 500}, {"hello world", 499}});
 }
 
 // Tests that the suggestions are ranked correctly.
 TEST_F(LocalHistoryZeroSuggestProviderTest, Ranking) {
+  int original_query_age =
+      history::kAutocompleteDuplicateVisitIntervalThreshold.InSeconds() + 3;
   LoadURLs({
-      {default_search_provider(), "less recent more frequent search",
-       "&foo=bar", /*age_in_seconds=*/2, /*visit_count=*/2},
-      {default_search_provider(), "more recent less frequent search",
-       "&foo=bar", /*age_in_seconds=*/1, /*visit_count=*/1},
+      // Issued far enough from the original query; won't be ignored:
+      {default_search_provider(), "more recent search", "&bar=baz2",
+       /*age_in_seconds=*/0},
+      // Issued far enough from the original query; won't be ignored:
+      {default_search_provider(), "less recent search", "&foo=bar3",
+       /*age_in_seconds=*/1},
+      // Issued too closely to the original query; will be ignored:
+      {default_search_provider(), "less recent search", "&foo=bar2",
+       /*age_in_seconds=*/original_query_age - 1},
+      {default_search_provider(), "more recent search", "&bar=baz",
+       /*age_in_seconds=*/original_query_age},
+      {default_search_provider(), "less recent search", "&foo=bar",
+       /*age_in_seconds=*/original_query_age},
   });
 
   // With frecency ranking disabled, more recent searches are ranked higher.
@@ -434,11 +451,10 @@ TEST_F(LocalHistoryZeroSuggestProviderTest, Ranking) {
       {omnibox::kOmniboxLocalZeroSuggestFrecencyRanking});
 
   StartProviderAndWaitUntilDone();
-  ExpectMatches({{"more recent less frequent search", 500},
-                 {"less recent more frequent search", 499}});
+  ExpectMatches({{"more recent search", 500}, {"less recent search", 499}});
 
-  // With frecency ranking enabled, more recent searches are not necessarily
-  // ranked higher.
+  // With frecency ranking enabled, more recent searches are ranked higher when
+  // searches are just as frequent.
   scoped_feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
   scoped_feature_list_->InitWithFeatures(
       {omnibox::kReactiveZeroSuggestionsOnNTPRealbox,  // Enables the provider.
@@ -446,8 +462,18 @@ TEST_F(LocalHistoryZeroSuggestProviderTest, Ranking) {
       {});
 
   StartProviderAndWaitUntilDone();
-  ExpectMatches({{"less recent more frequent search", 500},
-                 {"more recent less frequent search", 499}});
+  ExpectMatches({{"more recent search", 500}, {"less recent search", 499}});
+
+  // With frecency ranking enabled, more frequent searches are ranked higher
+  // when searches are nearly as old.
+  LoadURLs({
+      // Issued far enough from the original query; won't be ignored:
+      {default_search_provider(), "less recent search", "&foo=bar4",
+       /*age_in_seconds=*/2, /*visit_count=*/5},
+  });
+
+  StartProviderAndWaitUntilDone();
+  ExpectMatches({{"less recent search", 500}, {"more recent search", 499}});
 }
 
 // Tests that suggestions are created from fresh search histories only and that
@@ -490,12 +516,15 @@ TEST_F(LocalHistoryZeroSuggestProviderTest, Deletion) {
   auto* other_search_provider = template_url_service->Add(
       std::make_unique<TemplateURL>(*GenerateDummyTemplateURLData("other")));
   LoadURLs({
-      {default_search_provider(), "hello   world", "&foo=bar&aqs=1", 1},
-      {default_search_provider(), "HELLO   WORLD  ", "&foo=bar&aqs=12", 1},
-      {default_search_provider(), "hello world", "&foo=bar&aqs=123", 1},
-      {default_search_provider(), "hello world", "&foo=bar&aqs=1234", 1},
-      {default_search_provider(), "not to be deleted", "&foo=bar&aqs=12345", 1},
-      {other_search_provider, "hello world", "&foo=bar&aqs=123456", 1},
+      // Issued too closely to the original query; will be ignored:
+      {default_search_provider(), "hello   world", "&foo=bar1", 1},
+      // Issued too closely to the original query; will be ignored:
+      {default_search_provider(), "HELLO   WORLD  ", "&foo=bar2", 2},
+      // Issued too closely to the original query; will be ignored:
+      {default_search_provider(), "hello world", "foo=bar3", 3},
+      {default_search_provider(), "hello world", "foo=bar4", 4},
+      {other_search_provider, "hello world", "", 5},
+      {default_search_provider(), "not to be deleted", "", 6},
   });
 
   StartProviderAndWaitUntilDone();

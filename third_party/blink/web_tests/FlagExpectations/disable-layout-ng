@@ -647,3 +647,36 @@ crbug.com/1034611 fast/forms/color-scheme/suggestion-picker/time-suggestion-pick
 crbug.com/1034611 fast/forms/color-scheme/time/time-appearance-basic.html [ Skip ]
 crbug.com/1034611 fast/forms/color-scheme/week/week-appearance-basic.html [ Skip ]
 crbug.com/1034611 virtual/use-common-select-popup/fast/forms/color-scheme/select/select-popup-appearance-basic.html [ Skip ]
+
+
+### compositing/filters/
+crbug.com/591099 compositing/filters/sw-nested-shadow-overlaps-hw-nested-shadow.html [ Failure ]
+
+### external/wpt/appmanifest/start_url-member/
+crbug.com/591099 external/wpt/appmanifest/start_url-member/start_url-member-fail-manual.sub.html [ Failure ]
+crbug.com/591099 external/wpt/appmanifest/start_url-member/start_url-member-pass-manual.html [ Failure ]
+
+### external/wpt/css/css-flexbox/
+crbug.com/591099 external/wpt/css/css-flexbox/percentage-size-quirks-002.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-flexbox/position-absolute-014.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-flexbox/position-absolute-015.html [ Failure ]
+
+### external/wpt/css/css-pseudo/
+crbug.com/591099 external/wpt/css/css-pseudo/active-selection-011.html [ Failure ]
+
+### external/wpt/css/css-writing-modes/
+crbug.com/591099 external/wpt/css/css-writing-modes/table-column-order-002.xht [ Failure ]
+crbug.com/591099 external/wpt/css/css-writing-modes/table-column-order-003.xht [ Failure ]
+crbug.com/591099 external/wpt/css/css-writing-modes/table-column-order-004.xht [ Failure ]
+crbug.com/591099 external/wpt/css/css-writing-modes/table-column-order-005.xht [ Failure ]
+
+### external/wpt/html/links/manifest/
+crbug.com/591099 external/wpt/html/links/manifest/mime-type-application-json-manual.html [ Failure ]
+crbug.com/591099 external/wpt/html/links/manifest/mime-type-application-manifest+json-manual.html [ Failure ]
+crbug.com/591099 external/wpt/html/links/manifest/mime-type-invalid-manual.html [ Failure ]
+crbug.com/591099 external/wpt/html/links/manifest/mime-type-none-manual.html [ Failure ]
+crbug.com/591099 external/wpt/html/links/manifest/mime-type-text-json-manual.html [ Failure ]
+crbug.com/591099 external/wpt/html/links/manifest/wrong-mime-type-text-plain-manual.html [ Failure ]
+
+### virtual/stable/compositing/filters/
+crbug.com/591099 virtual/stable/compositing/filters/sw-nested-shadow-overlaps-hw-nested-shadow.html [ Failure ]

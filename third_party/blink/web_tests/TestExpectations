@@ -3059,7 +3059,7 @@ virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-restartIce-onneg
 crbug.com/1110833 external/wpt/webrtc/RTCPeerConnection-explicit-rollback-iceGatheringState.html [ Timeout ]
 
 # Tests that start hanging after implementing RTCRtpTransceiver.stop
-crbug.com/1115080 external/wpt/webrtc/RTCPeerConnection-iceGatheringState.html [ Timeout ]
+crbug.com/1115080 external/wpt/webrtc/RTCPeerConnection-iceGatheringState.html [ Timeout Pass Failure ]
 crbug.com/1115087 external/wpt/webrtc/RTCRtpTransceiver.https.html [ Timeout ]
 
 # See also crbug.com/920100 (sheriff 2019-01-09).
@@ -5199,7 +5199,6 @@ crbug.com/831673 http/tests/devtools/reveal-objects.js [ Pass Timeout ]
 crbug.com/829952 fast/webgl/texImage-imageBitmap-from-image-resize.html [ Pass Timeout ]
 
 # Sheriff 2018-04-13
-crbug.com/833655 [ Linux ] media/controls/closed-captions-dynamic-update.html [ Skip ]
 crbug.com/833658 [ Linux ] media/video-controls-focus-movement-on-hide.html [ Pass Failure ]
 crbug.com/833658 [ Win ] media/video-controls-focus-movement-on-hide.html [ Pass Failure ]
 crbug.com/833658 [ Mac ] media/video-controls-focus-movement-on-hide.html [ Pass Failure ]
@@ -6426,9 +6425,6 @@ crbug.com/1073792 [ Mac ] virtual/threaded-prefer-compositing/fast/scrolling/eve
 
 # the inspector-protocol/media tests only work in the virtual test environment.
 crbug.com/1074129 inspector-protocol/media/media-player.js [ TIMEOUT ]
-
-# Sheriff 2020-04-30
-crbug.com/1068681 fast/peerconnection/RTCPeerConnection-insertable-streams.html [ Pass Timeout ]
 
 # Sheriff 2020-05-04
 crbug.com/952717 [ Debug ] http/tests/xmlhttprequest/redirect-cross-origin-post.html [ Pass Failure ]

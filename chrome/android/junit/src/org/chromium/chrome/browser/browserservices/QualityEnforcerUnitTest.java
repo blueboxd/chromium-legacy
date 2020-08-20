@@ -170,20 +170,20 @@ public class QualityEnforcerUnitTest {
     }
 
     @Test
-    public void notTrigger_digitalAssertLinkPass() {
+    public void notTrigger_digitalAssetLinkPass() {
         when(mIntentDataProvider.getUrlToLoad()).thenReturn(TRUSTED_ORIGIN_PAGE);
         mQualityEnforcer.onFinishNativeInitialization();
         verifyNotTriggered();
     }
 
     @Test
-    public void trigger_digitalAssertLinkFailed() {
+    public void trigger_digitalAssetLinkFailed() {
         when(mIntentDataProvider.getUrlToLoad()).thenReturn(UNTRUSTED_PAGE);
         mQualityEnforcer.onFinishNativeInitialization();
 
         Assert.assertEquals(
                 ContextUtils.getApplicationContext().getString(
-                        R.string.twa_quality_enforcement_violation_assert_link, UNTRUSTED_PAGE),
+                        R.string.twa_quality_enforcement_violation_asset_link, UNTRUSTED_PAGE),
                 ShadowToast.getTextOfLatestToast());
         verifyNotifyClientApp();
     }

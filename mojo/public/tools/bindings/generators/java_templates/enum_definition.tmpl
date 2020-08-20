@@ -4,6 +4,12 @@ public {{ 'static ' if not top_level }}final class {{enum|name}} {
 {% for field in enum.fields %}
     public static final int {{field|name}} = {{field.numeric_value}};
 {%- endfor %}
+{%- if enum.min_value is not none %}
+    public static final int MIN_VALUE = {{enum.min_value}};
+{%- endif %}
+{%- if enum.max_value is not none %}
+    public static final int MAX_VALUE = {{enum.max_value}};
+{%- endif %}
 
 {%- if enum|covers_continuous_range %}
 

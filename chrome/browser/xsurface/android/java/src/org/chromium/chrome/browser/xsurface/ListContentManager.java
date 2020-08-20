@@ -40,8 +40,19 @@ public interface ListContentManager {
      * View should not be attached to parent. {@link bindNativeView} will
      * be called later to attach more information to the view.
      */
-    default View getNativeView(int index, ViewGroup parent) {
+    default View getNativeView(int viewType, ViewGroup parent) {
         return null;
+    }
+
+    /**
+     * Returns the view type for item at position.
+     *
+     * The view type is later passed to getNativeView to attach the view.
+     * This will only be called when isNativeView(position) is true.
+     */
+    default int getViewType(int position) {
+        // This is an incorrect, but backwards compatible implementation.
+        return position;
     }
 
     /**

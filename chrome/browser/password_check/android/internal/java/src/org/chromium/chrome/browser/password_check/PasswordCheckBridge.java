@@ -45,6 +45,13 @@ class PasswordCheckBridge {
          * @param status The current status of the password check.
          */
         void onPasswordCheckStatusChanged(@PasswordCheckUIStatus int status);
+
+        /**
+         * Called during a check when a credential has finished being processed.
+         * @param alreadyProcessed Number of credentials that the check already processed.
+         * @param remainingInQueue Number of credentials that still need to be processed.
+         */
+        void onPasswordCheckProgressChanged(int alreadyProcessed, int remainingInQueue);
     }
 
     PasswordCheckBridge(PasswordCheckObserver passwordCheckObserver) {
@@ -57,14 +64,14 @@ class PasswordCheckBridge {
     // TODO(crbug.com/1102025): Add call from native.
     void onCompromisedCredentialFound(String signonRealm, GURL origin, String username,
             String displayOrigin, String displayUsername, String password, String passwordChangeUrl,
-            String associatedApp, boolean hasScript) {
+            String associatedApp, long creationTime, boolean hasScript) {
         assert signonRealm != null;
         assert displayOrigin != null;
         assert username != null;
         assert password != null;
         mPasswordCheckObserver.onCompromisedCredentialFound(new CompromisedCredential(signonRealm,
                 origin, username, displayOrigin, displayUsername, password, passwordChangeUrl,
-                associatedApp, true, false, hasScript));
+                associatedApp, creationTime, true, false, hasScript));
     }
 
     @CalledByNative
@@ -83,13 +90,18 @@ class PasswordCheckBridge {
     }
 
     @CalledByNative
+    void onPasswordCheckProgressChanged(int alreadyProcessed, int remainingInQueue) {
+        mPasswordCheckObserver.onPasswordCheckProgressChanged(alreadyProcessed, remainingInQueue);
+    }
+
+    @CalledByNative
     private static void insertCredential(CompromisedCredential[] credentials, int index,
             String signonRealm, GURL origin, String username, String displayOrigin,
             String displayUsername, String password, String passwordChangeUrl, String associatedApp,
-            boolean leaked, boolean phished, boolean hasScript) {
+            long creationTime, boolean leaked, boolean phished, boolean hasScript) {
         credentials[index] = new CompromisedCredential(signonRealm, origin, username, displayOrigin,
-                displayUsername, password, passwordChangeUrl, associatedApp, leaked, phished,
-                hasScript);
+                displayUsername, password, passwordChangeUrl, associatedApp, creationTime, leaked,
+                phished, hasScript);
     }
 
     /**

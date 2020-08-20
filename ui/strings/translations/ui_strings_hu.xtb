@@ -154,7 +154,7 @@
 <translation id="5866104238061687188">{YEARS,plural, =1{1 év múlva}other{# év múlva}}</translation>
 <translation id="588258955323874662">Teljes képernyő</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{1 másodperc van hátra}other{# másodperc van hátra}}</translation>
-<translation id="5941711191222866238">Kicsinyítés</translation>
+<translation id="5941711191222866238">Kis méret</translation>
 <translation id="5943826764092288734">{HOURS,plural, =1{1 óra}other{# óra}}</translation>
 <translation id="6012623610530968780"><ph name="TOTAL_PAGE_NUM" />/<ph name="SELECTED_PAGE" />. oldal</translation>
 <translation id="6022924867608035986">A keresőmezőben lévő szöveg törlése</translation>

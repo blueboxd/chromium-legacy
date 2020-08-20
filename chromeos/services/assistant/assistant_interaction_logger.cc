@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "chromeos/services/assistant/public/cpp/features.h"
+
 namespace chromeos {
 namespace assistant {
 
@@ -15,6 +17,17 @@ std::string ResolutionToString(AssistantInteractionResolution resolution) {
   std::stringstream result;
   result << static_cast<int>(resolution);
   return result.str();
+}
+
+bool IsPIILoggingAllowed() {
+  return features::IsAssistantDebuggingEnabled();
+}
+
+std::string HidePiiMaybe(const std::string& value) {
+  if (IsPIILoggingAllowed())
+    return "[PII](" + value + ")";
+  else
+    return "[Redacted PII]";
 }
 
 #define LOG_INTERACTION() \
@@ -37,8 +50,8 @@ void AssistantInteractionLogger::OnInteractionStarted(
     const AssistantInteractionMetadata& metadata) {
   switch (metadata.type) {
     case AssistantInteractionType::kText:
-      LOG_INTERACTION() << "Text interaction with query '" << metadata.query
-                        << "'";
+      LOG_INTERACTION() << "Text interaction with query "
+                        << HidePiiMaybe(metadata.query);
       break;
     case AssistantInteractionType::kVoice:
       LOG_INTERACTION() << "Voice interaction";
@@ -57,7 +70,7 @@ void AssistantInteractionLogger::OnHtmlResponse(const std::string& response,
   // HTML tags and rather large.
   LOG_INTERACTION() << "with fallback '" << fallback << "'";
   // Display HTML at highest verbosity.
-  LOG_INTERACTION_AT_LEVEL(3) << "with HTML: " << response;
+  LOG_INTERACTION_AT_LEVEL(3) << "with HTML: " << HidePiiMaybe(response);
 }
 
 void AssistantInteractionLogger::OnSuggestionsResponse(
@@ -69,7 +82,7 @@ void AssistantInteractionLogger::OnSuggestionsResponse(
 }
 
 void AssistantInteractionLogger::OnTextResponse(const std::string& response) {
-  LOG_INTERACTION() << "'" << response << "'";
+  LOG_INTERACTION() << HidePiiMaybe(response);
 }
 
 void AssistantInteractionLogger::OnOpenUrlResponse(const GURL& url,

@@ -1181,7 +1181,7 @@ TEST_F(ScrollAnchorFindInPageTest, FocusPrioritizedOverFindInPage) {
     <div class=spacer></div>
     <div class=spacer></div>
     <div class=spacer></div>
-    <div id=focus_target tabindex=0></div>
+    <div id=focus_target contenteditable></div>
     <div id=growing></div>
     <div id=find_target>findme</div>
     <div class=spacer></div>
@@ -1239,7 +1239,7 @@ TEST_F(ScrollAnchorFindInPageTest, FocusedUnderStickyIsSkipped) {
     <div class=spacer></div>
     <div id=check></div>
     <div class=sticky>
-      <div id=target tabindex=0></div>
+      <div id=target contenteditable></div>
     </div>
     <div class=spacer></div>
     <div class=spacer></div>

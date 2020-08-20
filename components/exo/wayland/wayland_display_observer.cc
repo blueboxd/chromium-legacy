@@ -16,50 +16,74 @@
 namespace exo {
 namespace wayland {
 
-WaylandDisplayObserver::WaylandDisplayObserver(WaylandDisplayOutput* output,
-                                               wl_resource* output_resource)
+WaylandDisplayHandler::WaylandDisplayHandler(WaylandDisplayOutput* output,
+                                             wl_resource* output_resource)
     : output_(output), output_resource_(output_resource) {
   output_->RegisterOutput(output_resource_);
   display::Screen::GetScreen()->AddObserver(this);
-  SendDisplayMetrics();
+
+  // Adding itself as an observer will send the initial display metrics.
+  AddObserver(this);
 }
 
-WaylandDisplayObserver::~WaylandDisplayObserver() {
+WaylandDisplayHandler::~WaylandDisplayHandler() {
   output_->UnregisterOutput(output_resource_);
   display::Screen::GetScreen()->RemoveObserver(this);
 }
 
-void WaylandDisplayObserver::AddScaleObserver(ScaleObserver* scale_observer) {
-  scale_observers_.AddObserver(scale_observer);
-  SendDisplayMetrics();
+void WaylandDisplayHandler::AddObserver(WaylandDisplayObserver* observer) {
+  observers_.AddObserver(observer);
+
+  display::Display display;
+  bool rv = display::Screen::GetScreen()->GetDisplayWithDisplayId(output_->id(),
+                                                                  &display);
+  DCHECK(rv);
+
+  // Send the first round of changes to the observer.
+  constexpr uint32_t all_changes = 0xFFFFFFFF;
+  if (observer->SendDisplayMetrics(display, all_changes)) {
+    if (wl_resource_get_version(output_resource_) >=
+        WL_OUTPUT_DONE_SINCE_VERSION) {
+      wl_output_send_done(output_resource_);
+    }
+    wl_client_flush(wl_resource_get_client(output_resource_));
+  }
 }
 
-void WaylandDisplayObserver::OnDisplayMetricsChanged(
+void WaylandDisplayHandler::OnDisplayMetricsChanged(
     const display::Display& display,
     uint32_t changed_metrics) {
   if (output_->id() != display.id())
     return;
 
+  bool needs_done = false;
+  for (auto& observer : observers_)
+    needs_done |= observer.SendDisplayMetrics(display, changed_metrics);
+
+  if (needs_done) {
+    if (wl_resource_get_version(output_resource_) >=
+        WL_OUTPUT_DONE_SINCE_VERSION) {
+      wl_output_send_done(output_resource_);
+    }
+    wl_client_flush(wl_resource_get_client(output_resource_));
+  }
+}
+
+bool WaylandDisplayHandler::SendDisplayMetrics(const display::Display& display,
+                                               uint32_t changed_metrics) {
   // There is no need to check DISPLAY_METRIC_PRIMARY because when primary
   // changes, bounds always changes. (new primary should have had non
   // 0,0 origin).
   // Only exception is when switching to newly connected primary with
   // the same bounds. This happens whenyou're in docked mode, suspend,
-  // unplug the dislpay, then resume to the internal display which has
+  // unplug the display, then resume to the internal display which has
   // the same resolution. Since metrics does not change, there is no need
   // to notify clients.
-  if (changed_metrics &
-      (DISPLAY_METRIC_BOUNDS | DISPLAY_METRIC_DEVICE_SCALE_FACTOR |
-       DISPLAY_METRIC_ROTATION)) {
-    SendDisplayMetrics();
+  if (!(changed_metrics &
+        (DISPLAY_METRIC_BOUNDS | DISPLAY_METRIC_DEVICE_SCALE_FACTOR |
+         DISPLAY_METRIC_ROTATION))) {
+    return false;
   }
-}
-
-void WaylandDisplayObserver::SendDisplayMetrics() {
-  display::Display display;
-  bool rv = display::Screen::GetScreen()->GetDisplayWithDisplayId(output_->id(),
-                                                                  &display);
-  DCHECK(rv);
 
   const display::ManagedDisplayInfo& info =
       WMHelper::GetInstance()->GetDisplayInfo(display.id());
@@ -99,18 +123,10 @@ void WaylandDisplayObserver::SendDisplayMetrics() {
                       WL_OUTPUT_MODE_CURRENT | WL_OUTPUT_MODE_PREFERRED,
                       bounds.width(), bounds.height(), static_cast<int>(60000));
 
-  for (auto& observer : scale_observers_)
-    observer.OnDisplayScalesChanged(display);
-
-  if (wl_resource_get_version(output_resource_) >=
-      WL_OUTPUT_DONE_SINCE_VERSION) {
-    wl_output_send_done(output_resource_);
-  }
-
-  wl_client_flush(wl_resource_get_client(output_resource_));
+  return true;
 }
 
-wl_output_transform WaylandDisplayObserver::OutputTransform(
+wl_output_transform WaylandDisplayHandler::OutputTransform(
     display::Display::Rotation rotation) {
   // Note: |rotation| describes the counter clockwise rotation that a
   // display's output is currently adjusted for, which is the inverse

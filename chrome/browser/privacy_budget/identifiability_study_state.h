@@ -59,6 +59,10 @@ class IdentifiabilityStudyState {
   // Calling this method may alter the state of the study settings.
   bool ShouldSampleSurface(blink::IdentifiableSurface surface);
 
+  // Should be called from unit-tests if multiple IdentifiabilityStudyState
+  // instances are to be constructed.
+  static void ResetStateForTesting();
+
   // A knob that we can use to split data sets from different versions of the
   // implementation where the differences could have material effects on the
   // data distribution.

@@ -110,12 +110,13 @@ class AppWindowWrapper {
    * @return {!Promise<?chrome.app.window.AppWindow>}
    */
   async createWindow_(reopen) {
-    return await new Promise((resolve) => {
+    return await new Promise((resolve, reject) => {
       // Create a window.
       chrome.app.window.create(this.url_, this.options_, appWindow => {
         this.window_ = appWindow;
         if (!appWindow) {
-          throw new Error(`Failed to create window for ${this.url_}`);
+          reject(`Failed to create window for ${this.url_}`);
+          return;
         }
 
         // Save the properties.

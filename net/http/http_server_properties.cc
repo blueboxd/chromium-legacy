@@ -157,7 +157,7 @@ HttpServerProperties::HttpServerProperties(
                                    this,
                                    tick_clock_),
       canonical_suffixes_({".ggpht.com", ".c.youtube.com", ".googlevideo.com",
-                           ".googleusercontent.com"}),
+                           ".googleusercontent.com", ".gvt1.com"}),
       quic_server_info_map_(kDefaultMaxQuicServerEntries),
       max_server_configs_stored_in_properties_(kDefaultMaxQuicServerEntries) {}
 

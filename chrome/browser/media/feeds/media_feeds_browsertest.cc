@@ -319,8 +319,11 @@ IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest, DiscoverAndFetch) {
   {
     mojom::MediaFeedItemPtr expected_item = mojom::MediaFeedItem::New();
     expected_item->id = 1;
-    expected_item->name =
-        base::ASCIIToUTF16("Anatomy of a Web Media Experience");
+
+    const std::string name = "Anatomy of a Web Media Experience 😊";
+    ASSERT_TRUE(
+        base::UTF8ToUTF16(name.c_str(), name.size(), &expected_item->name));
+
     expected_item->type = mojom::MediaFeedItemType::kVideo;
     expected_item->author = mojom::Author::New();
     expected_item->author->name = "Google Chrome Developers";

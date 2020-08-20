@@ -44,7 +44,7 @@ class SupportLibWebViewChromiumFactory implements WebViewProviderFactoryBoundary
                     Features.SAFE_BROWSING_ENABLE,
                     Features.DISABLED_ACTION_MODE_MENU_ITEMS,
                     Features.START_SAFE_BROWSING,
-                    Features.SAFE_BROWSING_ALLOWLIST + Features.DEV_SUFFIX,
+                    Features.SAFE_BROWSING_ALLOWLIST,
                     Features.SAFE_BROWSING_WHITELIST,
                     Features.SAFE_BROWSING_PRIVACY_POLICY_URL,
                     Features.SERVICE_WORKER_BASIC_USAGE,

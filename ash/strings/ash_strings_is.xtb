@@ -14,6 +14,7 @@ Hér eru nokkrir hlutir sem þú getur prófað til að byrja með.</translation
 <translation id="109942774857561566">Mér leiðist</translation>
 <translation id="1104084341931202936">Sýna aðgengisstillingar</translation>
 <translation id="1104621072296271835">Tækin þín virka enn betur saman</translation>
+<translation id="1119348796022671382">Litastilling með þema notar liti sem dregnir eru úr veggfóðrinu til að gefa viðmótinu léttan litablæ.</translation>
 <translation id="112308213915226829">Fela hillu sjálfkrafa</translation>
 <translation id="1153356358378277386">Pöruð tæki</translation>
 <translation id="1175572348579024023">Fletta</translation>
@@ -48,6 +49,7 @@ Hér eru nokkrir hlutir sem þú getur prófað til að byrja með.</translation
 <translation id="1391102559483454063">Kveikt</translation>
 <translation id="1419738280318246476">Opnaðu tækið til að framkvæma aðgerð tilkynningarinnar</translation>
 <translation id="1420408895951708260">Kveikja/slökkva á næturljósi. <ph name="STATE_TEXT" /></translation>
+<translation id="1420527829902822813">Skjámynd tekin og vistuð á klippiborð</translation>
 <translation id="1426410128494586442">Já</translation>
 <translation id="1455242230282523554">Sýna tungumálastillingar</translation>
 <translation id="1460620680449458626">Slökkt er á hljóði.</translation>
@@ -65,6 +67,7 @@ Hér eru nokkrir hlutir sem þú getur prófað til að byrja með.</translation
 <translation id="1632985212731562677">Hægt er að slökkva á rofaaðgangi í Stillingar &gt; Aðgengi.</translation>
 <translation id="1654477262762802994">Hefja raddfyrirspurn</translation>
 <translation id="1665244008632896072">Kveikja/slökkva á dökkri stillingu. <ph name="STATE_TEXT" /></translation>
+<translation id="1667964833127753507">Hlutlaus litastilling notar ekki liti sem dregnir eru úr veggfóðrinu en skiptir þeim þess í stað út fyrir sett af hlutlausum ljósum eða dökkum litbrigðum.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> eftir</translation>
 <translation id="1698080062160024910"><ph name="TOTAL_TIME" /> teljari · <ph name="LABEL" /></translation>
 <translation id="1698760176351776263">IPv6-vistfang: <ph name="ADDRESS" /></translation>
@@ -181,6 +184,7 @@ Hér eru nokkrir hlutir sem þú getur prófað til að byrja með.</translation
 <translation id="3000461861112256445">Einóma hljóð</translation>
 <translation id="3009178788565917040">Úttak</translation>
 <translation id="3033545621352269033">Kveikt</translation>
+<translation id="3038571455154067151">Til að skrá þig inn skaltu slá inn aðgangskóða foreldris fyrir Family Link</translation>
 <translation id="3051128274746680507">Prófíll stýrða notandans þíns verður brátt fjarlægður. Skráðu þig inn til að fá frekari upplýsingar.</translation>
 <translation id="3055162170959710888">Þú hefur notað þetta tæki í <ph name="USED_TIME" /> í dag</translation>
 <translation id="3076778413190775903">Stöðubakki, klukkan er <ph name="TIME" />,
@@ -277,6 +281,7 @@ Hér eru nokkrir hlutir sem þú getur prófað til að byrja með.</translation
 <translation id="397105322502079400">Reiknar...</translation>
 <translation id="3977512764614765090">Rafhlaða í <ph name="PERCENTAGE" />% og í hleðslu.</translation>
 <translation id="3995138139523574647">USB-C tæki (tengi hægra megin að aftan)</translation>
+<translation id="40062176907008878">Handskrift</translation>
 <translation id="4017989525502048489">Laser-bendill</translation>
 <translation id="4021716437419160885">Fletta niður</translation>
 <translation id="4028481283645788203">Krafa er um aðgangsorð fyrir aukið öryggi</translation>
@@ -288,12 +293,14 @@ Hér eru nokkrir hlutir sem þú getur prófað til að byrja með.</translation
 <translation id="4129129681837227511">Ef þú vilt sjá tilkynningar á lásskjánum skaltu taka úr lás til að breyta stillingunni</translation>
 <translation id="4146833061457621061">Spila tónlist</translation>
 <translation id="4149156641122542261"><ph name="DEVICE_TYPE" /> er stjórnað af <ph name="DOMAIN" /></translation>
+<translation id="4157822100366708405">Stillingar dökks þema</translation>
 <translation id="4181841719683918333">Tungumál</translation>
 <translation id="4195877955194704651">Hnappur fyrir sjálfvirka smelli</translation>
 <translation id="4197790712631116042">Slökkt</translation>
 <translation id="4212472694152630271">Skipta yfir í PIN-númer</translation>
 <translation id="4215497585250573029">VPN-stillingar</translation>
 <translation id="4217571870635786043">Upplestur</translation>
+<translation id="4229328187280698237">Skipta yfir í spjaldtölvustillingu</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">Sýna tilkynningastillingar. Slökkt er á tilkynningum</translation>
 <translation id="4269883910223712419">Stjórnandi þessa tækis getur:</translation>
@@ -368,6 +375,7 @@ Hér eru nokkrir hlutir sem þú getur prófað til að byrja með.</translation
 <translation id="5035389544768382859">Staðfesta skjástillingu</translation>
 <translation id="5083553833479578423">Opnaðu fyrir fleiri eiginleika hjálparans.</translation>
 <translation id="5114495209940374989">Skjámyndir</translation>
+<translation id="5123162024343028706">Fljóta efst</translation>
 <translation id="5136175204352732067">Annað lyklaborð tengt</translation>
 <translation id="5168181903108465623">Útsendingartæki í boði</translation>
 <translation id="5170568018924773124">Sýna í möppu</translation>
@@ -381,6 +389,7 @@ Hér eru nokkrir hlutir sem þú getur prófað til að byrja með.</translation
 <translation id="5297704307811127955">Slökkt</translation>
 <translation id="5302048478445481009">Tungumál</translation>
 <translation id="5313326810920013265">Bluetooth-stillingar</translation>
+<translation id="5314219114274263156">Skjáupptaka tekin upp</translation>
 <translation id="5331975486040154427">USB-C tæki (tengi vinstra megin að aftan)</translation>
 <translation id="5379115545237091094">Of margar tilraunir</translation>
 <translation id="5397578532367286026">Stjórnandinn (<ph name="MANAGER_EMAIL" />) getur farið yfir notkun og feril þessa notanda á chrome.com.</translation>
@@ -421,6 +430,7 @@ Hér eru nokkrir hlutir sem þú getur prófað til að byrja með.</translation
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5837036133683224804">Stöðva <ph name="ROUTE_TITLE" /> í <ph name="RECEIVER_NAME" /></translation>
 <translation id="5860033963881614850">Slökkt</translation>
+<translation id="5876666360658629066">Sláðu inn kóða foreldris</translation>
 <translation id="5887866489674258948">Dökk stilling</translation>
 <translation id="5895138241574237353">Endurræsa</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
@@ -481,6 +491,7 @@ Hér eru nokkrir hlutir sem þú getur prófað til að byrja með.</translation
 <translation id="652139407789908527">Það mun slokkna á skjánum lengur en vanalega (í allt að mínútu) meðan á þessari uppfærslu stendur. Ekki ýta á aflrofann meðan á uppfærslunni stendur.</translation>
 <translation id="6527303717912515753">Deila</translation>
 <translation id="6528179044667508675">Ónáðið ekki</translation>
+<translation id="65320610082834431">Emoji-tákn</translation>
 <translation id="6537270692134705506">Taka mynd af skjá</translation>
 <translation id="6537924328260219877"><ph name="SIGNAL_STRENGTH" /> sendistyrkur, <ph name="BATTERY_STATUS" /> hleðsla á rafhlöðu símans</translation>
 <translation id="6542521951477560771">Sendir út til <ph name="RECEIVER_NAME" /></translation>
@@ -567,8 +578,10 @@ Hér eru nokkrir hlutir sem þú getur prófað til að byrja með.</translation
 <translation id="7568637526529101738">Þegar þú hægrismellir eða heldur inni sýnir hjálparinn þér upplýsingar á borð við skilgreiningu eða umbreytingu mælieingina fyrir valið þitt.</translation>
 <translation id="7569509451529460200">Kveikt á blindraletri og ChromeVox</translation>
 <translation id="7579778809502851308">Skjámyndataka</translation>
+<translation id="7590883480672980941">Inntaksstillingar</translation>
 <translation id="7593891976182323525">Leit eða Shift</translation>
 <translation id="7600875258240007829">Sjá allar tilkynningar</translation>
+<translation id="7618774594543487847">Hlutlaust</translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" />° F</translation>
 <translation id="7642647758716480637">Opna stillingar fyrir <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" /></translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (eigandi)</translation>
@@ -665,12 +678,14 @@ Hér eru nokkrir hlutir sem þú getur prófað til að byrja með.</translation
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, sendistyrkur <ph name="SIGNAL_STRENGTH" />, stjórnað af kerfisstjóra</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> eftir</translation>
 <translation id="8646417893960517480"><ph name="TOTAL_TIME" /> teljari</translation>
+<translation id="8647931990447795414">Til að bæta við einstaklingi skaltu slá inn aðgangskóða foreldris fyrir Family Link</translation>
 <translation id="8649101189709089199">Textaupplestur</translation>
 <translation id="8652175077544655965">Loka stillingum</translation>
 <translation id="8653151467777939995">Sýna tilkynningastillingar. Kveikt er á tilkynningum</translation>
 <translation id="8660331759611631213">Kvaðratrótin af 71</translation>
 <translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />, sendistyrkur <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664753092453405566">Sýna lista yfir netkerfi. <ph name="STATE_TEXT" /></translation>
+<translation id="8668052347555487755">Litastilling</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Afllítið hleðslutæki tengt</translation>
 <translation id="8683506306463609433">Afkastarakning virk</translation>
@@ -694,6 +709,8 @@ Hér eru nokkrir hlutir sem þú getur prófað til að byrja með.</translation
 <translation id="8878886163241303700">Framlengir skjá</translation>
 <translation id="890616557918890486">Breyta uppruna</translation>
 <translation id="8909138438987180327">Rafhlaða í <ph name="PERCENTAGE" />%.</translation>
+<translation id="8913384980486163186">Þema (sjálfgefið)</translation>
+<translation id="8918251165865262378">Skipta yfir í fartölvustillingu</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google hjálparinn talar ekki þetta tungumál</translation>
 <translation id="8936501819958976551">óvirkt</translation>

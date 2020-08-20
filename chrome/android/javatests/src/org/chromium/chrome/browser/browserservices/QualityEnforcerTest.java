@@ -121,7 +121,7 @@ public class QualityEnforcerTest {
 
     @Test
     @MediumTest
-    public void notifiedDigitalAssertLinkFailed() throws TimeoutException {
+    public void notifiedDigitalAssetLinkFailed() throws TimeoutException {
         launchNotVerify(mTestPage);
         mCallbackHelper.waitForFirst();
     }

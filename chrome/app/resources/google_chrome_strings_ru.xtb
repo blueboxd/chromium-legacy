@@ -37,14 +37,12 @@
 <translation id="1874309113135274312">Google Chrome (бета, mDNS-In)</translation>
 <translation id="1877026089748256423">Версия Chrome устарела</translation>
 <translation id="1919130412786645364">Разрешить вход в Chrome</translation>
-<translation id="195645108406520445">Настройте новый профиль Chrome</translation>
 <translation id="2063848847527508675">Перезагрузите Chrome OS, чтобы установить обновление.</translation>
 <translation id="2094919256425865063">Завершить работу Chrome?</translation>
 <translation id="2120620239521071941">С устройства будут удалены объекты (<ph name="ITEMS_COUNT" />). Чтобы восстановить данные позже, войдите в Chrome как <ph name="USER_EMAIL" />.</translation>
 <translation id="2123055963409958220">Отправьте отчет о <ph name="BEGIN_LINK" />текущих настройках Chrome<ph name="END_LINK" />, чтобы помочь нам улучшить браузер</translation>
 <translation id="2151406531797534936">Перезапустите Chrome</translation>
 <translation id="2246246234298806438">Если отсутствует встроенный просмотрщик PDF, предварительный просмотр в Google Chrome невозможен.</translation>
-<translation id="226038281051944330">Вы вошли в новый аккаунт в профиле этого пользователя: <ph name="EXISTING_USER" />. Хотите создать для нового пользователя (<ph name="NEW_USER" />) отдельный профиль Chrome?</translation>
 <translation id="2290014774651636340">Отсутствуют ключи API Google. Некоторые функции Google Chrome могут не работать.</translation>
 <translation id="2290095356545025170">Вы действительно хотите удалить Google Chrome?</translation>
 <translation id="2309047409763057870">Это дополнительная установка Google Chrome. Его нельзя сделать браузером по умолчанию.</translation>
@@ -79,7 +77,6 @@
 <translation id="3089968997497233615">Доступна новая, более безопасная версия Google Chrome.</translation>
 <translation id="3127818369811890733">Не удалось синхронизировать данные.</translation>
 <translation id="3149510190863420837">Приложения Chrome</translation>
-<translation id="3351117925998652957">Выберите профиль Chrome</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
 <translation id="3379938682270551431">{0,plural, =0{Chrome перезапускается}=1{Chrome перезапустится через 1 секунду}one{Chrome перезапустится через # секунду}few{Chrome перезапустится через # секунды}many{Chrome перезапустится через # секунд}other{Chrome перезапустится через # секунды}}</translation>
 <translation id="3395323229510056640">Справка Chrome OS</translation>
@@ -102,7 +99,6 @@
 <translation id="386202838227397562">Закройте все окна Chrome и повторите попытку снова.</translation>
 <translation id="3865754807470779944">Установлен браузер Chrome версии <ph name="PRODUCT_VERSION" />.</translation>
 <translation id="3873044882194371212">Открыть ссылку в режиме инкогнито браузера Chrome</translation>
-<translation id="3879568094278837081">Связанные с этим профилем данные о работе в браузере будут удалены с устройства. Чтобы восстановить их, войдите в Chrome как</translation>
 <translation id="3889417619312448367">Удалить Google Chrome</translation>
 <translation id="4050175100176540509">В последней версии улучшена защита и добавлены новые функции.</translation>
 <translation id="4053720452172726777">Настройка и управление Google Chrome</translation>
@@ -143,12 +139,10 @@
 <translation id="4895437082222824641">Открыть ссылку в новой вкладке браузера Chrome</translation>
 <translation id="4953650215774548573">Сделать Google Chrome браузером по умолчанию</translation>
 <translation id="495931528404527476">В Chrome</translation>
-<translation id="4960472897514318257">Вы вошли в рабочий аккаунт. Хотите создать для нового пользователя (<ph name="NEW_USER" />) отдельный личный профиль Chrome?</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5062123544085870375">Перезапуск Chrome OS</translation>
 <translation id="5132929315877954718">Широкий выбор приложений, игр, расширений и тем для Google Chrome.</translation>
 <translation id="5170938038195470297">Использовать этот профиль невозможно, так как он был создан в более новой версии Google Chrome. Некоторые функции могут быть недоступны. Укажите другой каталог профиля или установите более новую версию Chrome.</translation>
-<translation id="5171117065011130146">Создать рабочий профиль Chrome?</translation>
 <translation id="5193136243808726294">Chrome OS не может открыть эту страницу</translation>
 <translation id="5251420635869119124">Используйте Chrome в гостевом режиме, если не хотите сохранять данные о посещенных сайтах.</translation>
 <translation id="532046782124376502">Внимание! Google Chrome не может предотвратить запись расширений в историю просмотренных страниц. Чтобы отключить это расширение в режиме инкогнито, отмените этот параметр.</translation>
@@ -213,7 +207,6 @@
 <translation id="7535429826459677826">Google Chrome для разработчиков</translation>
 <translation id="7573289029918943991">Чтобы посмотреть, обновлена ли операционная система устройства, перейдите в <ph name="LINK_BEGIN" />настройки Chrome OS<ph name="LINK_END" />.</translation>
 <translation id="7589360514048265910">Google Chrome больше не будет обновляться на этом компьютере, так как поддержка Mac OS X 10.9 прекращена.</translation>
-<translation id="7591404275842302616">Используйте профили Chrome на этом устройстве, чтобы работать в браузере было удобнее.</translation>
 <translation id="7592736734348559088">Google Chrome не удалось синхронизировать данные, поскольку ваши учетные данные устарели.</translation>
 <translation id="7626032353295482388">Добро пожаловать в Chrome!</translation>
 <translation id="7629695634924605473">Chrome сообщит вам, если возникнет проблема с безопасностью ваших паролей.</translation>
@@ -260,9 +253,7 @@
 <translation id="8823341990149967727">Версия Chrome устарела</translation>
 <translation id="8834965163890861871">Google Chrome пытается изменить пароли. Чтобы разрешить это действие, введите свой пароль Windows.</translation>
 <translation id="884296878221830158">Кроме того, расширение изменило стартовую страницу Chrome и страницу, отображаемую при нажатии кнопки "Главная страница".</translation>
-<translation id="8859948767482842016">Вы вошли в рабочий аккаунт в профиле этого пользователя: <ph name="EXISTING_USER" />. Хотите создать для <ph name="WORK_DOMAIN" /> отдельный профиль Chrome?</translation>
 <translation id="8862326446509486874">У вас нет прав, необходимых для установки на системном уровне. Запустите программу установки еще раз в качестве администратора.</translation>
-<translation id="8877586659207810298">Создать профиль Chrome для нового пользователя (<ph name="NEW_USER" />)?</translation>
 <translation id="8914504000324227558">Перезапустить Chrome</translation>
 <translation id="8999208279178790196">{0,plural, =0{Доступно обновление Chrome}=1{Доступно обновление Chrome}one{Обновление Chrome доступно # день}few{Обновление Chrome доступно # дня}many{Обновление Chrome доступно # дней}other{Обновление Chrome доступно # дня}}</translation>
 <translation id="9026991721384951619">Не удалось выполнить синхронизацию, так как учетные данные устарели.</translation>

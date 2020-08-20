@@ -653,14 +653,12 @@ void WebFrameWidgetBase::UpdateVisualProperties(
     NotifyPageScaleFactorChanged(visual_properties.page_scale_factor,
                                  visual_properties.is_pinch_gesture_active);
   } else {
-    // Ensure scale factors used in nested widgets are reset to their default
-    // values, they may be leftover from when a widget was nested and was
-    // promoted to top level (e.g. portal activation).
+    // Ensure the external scale factor in top-level widgets is reset as it may
+    // be leftover from when a widget was nested and was promoted to top level
+    // (e.g. portal activation).
     widget_base_->LayerTreeHost()->SetExternalPageScaleFactor(
         1.f,
         /*is_pinch_gesture_active=*/false);
-    page_scale_factor_from_mainframe_ = 1.f;
-    is_pinch_gesture_active_from_mainframe_ = false;
   }
 }
 
@@ -880,14 +878,13 @@ cc::LayerTreeHost* WebFrameWidgetBase::InitializeCompositing(
     scheduler::WebThreadScheduler* main_thread_scheduler,
     cc::TaskGraphRunner* task_graph_runner,
     bool for_child_local_root_frame,
-    const gfx::Size& initial_screen_size,
-    float initial_device_scale_factor,
+    const ScreenInfo& screen_info,
     std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory,
     const cc::LayerTreeSettings* settings) {
   widget_base_->InitializeCompositing(
       never_composited, main_thread_scheduler, task_graph_runner,
-      for_child_local_root_frame, initial_screen_size,
-      initial_device_scale_factor, std::move(ukm_recorder_factory), settings);
+      for_child_local_root_frame, screen_info, std::move(ukm_recorder_factory),
+      settings);
   GetPage()->AnimationHostInitialized(*AnimationHost(),
                                       GetLocalFrameViewForAnimationScrolling());
   return widget_base_->LayerTreeHost();
@@ -1042,11 +1039,40 @@ bool WebFrameWidgetBase::IsFullscreenGranted() {
 }
 
 bool WebFrameWidgetBase::PinchGestureActiveInMainFrame() {
-  return is_pinch_gesture_active_from_mainframe_;
+  return is_pinch_gesture_active_in_mainframe_;
 }
 
 float WebFrameWidgetBase::PageScaleInMainFrame() {
-  return page_scale_factor_from_mainframe_;
+  return page_scale_factor_in_mainframe_;
+}
+
+void WebFrameWidgetBase::UpdateSurfaceAndScreenInfo(
+    const viz::LocalSurfaceIdAllocation& new_local_surface_id_allocation,
+    const gfx::Rect& compositor_viewport_pixel_rect,
+    const ScreenInfo& new_screen_info) {
+  widget_base_->UpdateSurfaceAndScreenInfo(new_local_surface_id_allocation,
+                                           compositor_viewport_pixel_rect,
+                                           new_screen_info);
+}
+
+void WebFrameWidgetBase::UpdateScreenInfo(const ScreenInfo& new_screen_info) {
+  widget_base_->UpdateScreenInfo(new_screen_info);
+}
+
+void WebFrameWidgetBase::UpdateCompositorViewportAndScreenInfo(
+    const gfx::Rect& compositor_viewport_pixel_rect,
+    const ScreenInfo& new_screen_info) {
+  widget_base_->UpdateCompositorViewportAndScreenInfo(
+      compositor_viewport_pixel_rect, new_screen_info);
+}
+
+void WebFrameWidgetBase::UpdateCompositorViewportRect(
+    const gfx::Rect& compositor_viewport_pixel_rect) {
+  widget_base_->UpdateCompositorViewportRect(compositor_viewport_pixel_rect);
+}
+
+const ScreenInfo& WebFrameWidgetBase::GetScreenInfo() {
+  return widget_base_->GetScreenInfo();
 }
 
 void WebFrameWidgetBase::AutoscrollStart(const gfx::PointF& position) {
@@ -1950,13 +1976,22 @@ void WebFrameWidgetBase::BatterySavingsChanged(WebBatterySavingsFlags savings) {
       savings & kAllowReducedFrameRate);
 }
 
+const viz::LocalSurfaceIdAllocation&
+WebFrameWidgetBase::LocalSurfaceIdAllocationFromParent() {
+  return widget_base_->local_surface_id_allocation_from_parent();
+}
+
+cc::LayerTreeHost* WebFrameWidgetBase::LayerTreeHost() {
+  return widget_base_->LayerTreeHost();
+}
+
 void WebFrameWidgetBase::NotifyPageScaleFactorChanged(
     float page_scale_factor,
     bool is_pinch_gesture_active) {
   // Store the value to give to any new RemoteFrame that will be created as a
   // descendant of this widget.
-  page_scale_factor_from_mainframe_ = page_scale_factor;
-  is_pinch_gesture_active_from_mainframe_ = is_pinch_gesture_active;
+  page_scale_factor_in_mainframe_ = page_scale_factor;
+  is_pinch_gesture_active_in_mainframe_ = is_pinch_gesture_active;
   // Push the page scale factor down to any child RemoteFrames.
   // TODO(danakj): This ends up setting the page scale factor in the
   // RenderWidgetHost of the child WebFrameWidgetBase, so that it can bounce
@@ -1980,6 +2015,48 @@ void WebFrameWidgetBase::SetPageScaleStateAndLimits(
     float maximum) {
   widget_base_->LayerTreeHost()->SetPageScaleFactorAndLimits(page_scale_factor,
                                                              minimum, maximum);
+}
+
+void WebFrameWidgetBase::OrientationChanged() {
+  LocalRoot()->SendOrientationChangeEvent();
+}
+
+void WebFrameWidgetBase::UpdatedSurfaceAndScreen(
+    const ScreenInfo& previous_original_screen_info) {
+  ScreenInfo screen_info = widget_base_->GetScreenInfo();
+  if (Platform::Current()->IsUseZoomForDSFEnabled()) {
+    View()->SetZoomFactorForDeviceScaleFactor(screen_info.device_scale_factor);
+  } else {
+    View()->SetDeviceScaleFactor(screen_info.device_scale_factor);
+  }
+
+  // When the device scale changes, the size and position of the popup would
+  // need to be adjusted, which we can't do. Just close the popup, which is
+  // also consistent with page zoom and resize behavior.
+  if (previous_original_screen_info.device_scale_factor !=
+      screen_info.device_scale_factor) {
+    View()->CancelPagePopup();
+  }
+
+  // Propagate changes down to child local root RenderWidgets and BrowserPlugins
+  // in other frame trees/processes.
+  ScreenInfo original_screen_info = GetOriginalScreenInfo();
+  if (previous_original_screen_info != original_screen_info) {
+    ForEachRemoteFrameControlledByWidget(WTF::BindRepeating(
+        [](const ScreenInfo& original_screen_info, RemoteFrame* remote_frame) {
+          remote_frame->Client()->DidChangeScreenInfo(original_screen_info);
+        },
+        original_screen_info));
+  }
+}
+
+ScreenInfo WebFrameWidgetBase::GetOriginalScreenInfo() {
+  return Client()->GetOriginalScreenInfo();
+}
+
+base::Optional<blink::mojom::ScreenOrientation>
+WebFrameWidgetBase::ScreenOrientationOverride() {
+  return View()->ScreenOrientationOverride();
 }
 
 }  // namespace blink

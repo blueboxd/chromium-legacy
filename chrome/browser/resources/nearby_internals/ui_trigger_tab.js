@@ -147,7 +147,8 @@ Polymer({
    * @private
    */
   onSendTextClicked_() {
-    this.browserProxy_.sendText(this.selectedShareTargetId_);
+    this.browserProxy_.sendText(this.selectedShareTargetId_)
+        .then(statusCode => this.onStatusCodeReturned_(statusCode));
   },
 
   /**

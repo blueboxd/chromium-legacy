@@ -63,6 +63,34 @@ def _CheckNoContentUnitTestsInChrome(input_api, output_api):
       items=problems)]
 
 
+def _CheckNoOSAPPLEMacrosInChromeFile(input_api, f):
+  """Check for OS_APPLE in a given file in chrome/."""
+  preprocessor_statement = input_api.re.compile(r'^\s*#')
+  apple_macro = input_api.re.compile(r'defined\(OS_APPLE\)')
+  results = []
+  for lnum, line in f.ChangedContents():
+    if preprocessor_statement.search(line) and apple_macro.search(line):
+      results.append('    %s:%d' % (f.LocalPath(), lnum))
+
+  return results
+
+
+def _CheckNoOSAPPLEMacrosInChrome(input_api, output_api):
+  """Check for OS_APPLE which isn't used in chrome/."""
+  apple_macros = []
+  def SourceFilter(affected_file):
+    return input_api.FilterSourceFile(affected_file, INCLUDE_SOURCE_FILES_ONLY,
+                                      input_api.DEFAULT_FILES_TO_SKIP)
+  for f in input_api.AffectedSourceFiles(SourceFilter):
+    apple_macros.extend(_CheckNoOSAPPLEMacrosInChromeFile(input_api, f))
+
+  if not apple_macros:
+    return []
+
+  return [output_api.PresubmitError(
+      'OS_APPLE is not used in chrome/ but found in:\n', apple_macros)]
+
+
 def _CheckNoOSIOSMacrosInChromeFile(input_api, f):
   """Check for OS_IOS in a given file in chrome/."""
   preprocessor_statement = input_api.re.compile(r'^\s*#')
@@ -95,6 +123,7 @@ def _CommonChecks(input_api, output_api):
   """Checks common to both upload and commit."""
   results = []
   results.extend(_CheckNoContentUnitTestsInChrome(input_api, output_api))
+  results.extend(_CheckNoOSAPPLEMacrosInChrome(input_api, output_api))
   results.extend(_CheckNoOSIOSMacrosInChrome(input_api, output_api))
   return results
 

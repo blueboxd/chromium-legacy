@@ -1493,6 +1493,24 @@ WebSize WebViewImpl::GetSize() {
   return size_;
 }
 
+void WebViewImpl::SetScreenOrientationOverrideForTesting(
+    base::Optional<blink::mojom::ScreenOrientation> orientation) {
+  screen_orientation_override_ = orientation;
+
+  // Since we updated the override value, notify all widgets.
+  for (WebFrame* frame = MainFrame(); frame; frame = frame->TraverseNext()) {
+    if (frame->IsWebLocalFrame()) {
+      if (WebFrameWidget* widget = frame->ToWebLocalFrame()->FrameWidget())
+        widget->UpdateScreenInfo(widget->GetScreenInfo());
+    }
+  }
+}
+
+base::Optional<mojom::blink::ScreenOrientation>
+WebViewImpl::ScreenOrientationOverride() {
+  return screen_orientation_override_;
+}
+
 void WebViewImpl::DidEnterFullscreen() {
   fullscreen_controller_->DidEnterFullscreen();
 }
@@ -2611,7 +2629,6 @@ void WebViewImpl::EnableAutoResizeForTesting(const gfx::Size& min_window_size,
   if (Platform::Current()->IsUseZoomForDSFEnabled()) {
     scale_factor = MainFrameImpl()
                        ->FrameWidgetImpl()
-                       ->Client()
                        ->GetScreenInfo()
                        .device_scale_factor;
   }
@@ -3179,6 +3196,7 @@ void WebViewImpl::ResizeAfterLayout() {
       view->SetInitialViewportSize(size_);
 
       AsView().client->DidAutoResize(size_);
+      web_widget_->DidAutoResize(gfx::Size(size_));
       SendResizeEventForMainFrame();
     }
   }
@@ -3560,6 +3578,11 @@ WebSize WebViewImpl::GetPreferredSizeForTest() {
 void WebViewImpl::StopDeferringMainFrameUpdate() {
   DCHECK(MainFrameImpl());
   scoped_defer_main_frame_update_ = nullptr;
+}
+
+void WebViewImpl::SetDeviceColorSpaceForTesting(
+    const gfx::ColorSpace& color_space) {
+  web_widget_->SetDeviceColorSpaceForTesting(color_space);
 }
 
 }  // namespace blink

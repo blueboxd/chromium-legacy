@@ -1262,20 +1262,22 @@ void BookmarkBarView::WriteDragDataForView(View* sender,
   base::RecordAction(base::UserMetricsAction("BookmarkBar_DragButton"));
 
   const auto* node = GetNodeForSender(sender);
-  gfx::ImageSkia icon;
+  ui::ImageModel icon;
   views::Widget* widget = sender->GetWidget();
   if (node->is_url()) {
     const gfx::Image& image = model_->GetFavicon(node);
-    icon = image.IsEmpty() ? favicon::GetDefaultFavicon().AsImageSkia()
-                           : image.AsImageSkia();
+    icon = image.IsEmpty()
+               ? ui::ImageModel::FromImage(favicon::GetDefaultFavicon())
+               : ui::ImageModel::FromImage(image);
   } else {
     icon =
         chrome::GetBookmarkFolderIcon(widget->GetNativeTheme()->GetSystemColor(
             ui::NativeTheme::kColorId_LabelEnabledColor));
   }
 
-  button_drag_utils::SetDragImage(node->url(), node->GetTitle(), icon,
-                                  &press_pt, *widget, data);
+  button_drag_utils::SetDragImage(node->url(), node->GetTitle(),
+                                  *icon.GetImage().ToImageSkia(), &press_pt,
+                                  *widget, data);
   WriteBookmarkDragData(node, data);
 }
 
@@ -1556,8 +1558,9 @@ BookmarkBarView::CreateAppsPageShortcutButton() {
   button->SetTooltipText(
       l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_APPS_SHORTCUT_TOOLTIP));
   button->SetID(VIEW_ID_BOOKMARK_BAR_ELEMENT);
-  button->SetImage(views::Button::STATE_NORMAL,
-                   *GetImageSkiaNamed(IDR_BOOKMARK_BAR_APPS_SHORTCUT));
+  button->SetImageModel(views::Button::STATE_NORMAL,
+                        ui::ImageModel::FromImageSkia(*GetImageSkiaNamed(
+                            IDR_BOOKMARK_BAR_APPS_SHORTCUT)));
   button->set_context_menu_controller(this);
   return button;
 }
@@ -1574,8 +1577,8 @@ void BookmarkBarView::ConfigureButton(const BookmarkNode* node,
     text_color = tp->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT);
     button->SetEnabledTextColors(text_color);
     if (node->is_folder()) {
-      button->SetImage(views::Button::STATE_NORMAL,
-                       chrome::GetBookmarkFolderIcon(text_color));
+      button->SetImageModel(views::Button::STATE_NORMAL,
+                            chrome::GetBookmarkFolderIcon(text_color));
     }
   }
 
@@ -1608,7 +1611,8 @@ void BookmarkBarView::ConfigureButton(const BookmarkNode* node,
           favicon, tp->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON));
     }
 
-    button->SetImage(views::Button::STATE_NORMAL, favicon);
+    button->SetImageModel(views::Button::STATE_NORMAL,
+                          ui::ImageModel::FromImageSkia(favicon));
   }
   constexpr int kMaxButtonWidth = 150;
   button->SetMaxSize(gfx::Size(kMaxButtonWidth, 0));
@@ -1924,10 +1928,10 @@ void BookmarkBarView::UpdateAppearanceForTheme() {
   const SkColor color =
       theme_provider->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT);
   other_bookmarks_button_->SetEnabledTextColors(color);
-  other_bookmarks_button_->SetImage(views::Button::STATE_NORMAL,
-                                    chrome::GetBookmarkFolderIcon(color));
+  other_bookmarks_button_->SetImageModel(views::Button::STATE_NORMAL,
+                                         chrome::GetBookmarkFolderIcon(color));
   managed_bookmarks_button_->SetEnabledTextColors(color);
-  managed_bookmarks_button_->SetImage(
+  managed_bookmarks_button_->SetImageModel(
       views::Button::STATE_NORMAL, chrome::GetBookmarkManagedFolderIcon(color));
 
   if (apps_page_shortcut_->GetVisible())
@@ -1936,9 +1940,9 @@ void BookmarkBarView::UpdateAppearanceForTheme() {
   const SkColor overflow_color =
       theme_provider->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
   const bool touch_ui = ui::TouchUiController::Get()->touch_ui();
-  overflow_button_->SetImage(
+  overflow_button_->SetImageModel(
       views::Button::STATE_NORMAL,
-      gfx::CreateVectorIcon(
+      ui::ImageModel::FromVectorIcon(
           touch_ui ? kBookmarkbarTouchOverflowIcon : kOverflowChevronIcon,
           overflow_color));
 

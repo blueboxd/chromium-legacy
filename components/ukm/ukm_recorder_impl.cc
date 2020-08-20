@@ -530,6 +530,11 @@ void UkmRecorderImpl::StoreRecordingsInReport(Report* report) {
     }
   }
   source_counts_proto->set_entryless_sources(num_sources_entryless);
+
+  // Notify observers that a report was generated.
+  if (entry_filter_) {
+    entry_filter_->OnStoreRecordingsInReport();
+  }
 }
 
 bool UkmRecorderImpl::ShouldRestrictToWhitelistedSourceIds() const {

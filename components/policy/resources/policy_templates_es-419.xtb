@@ -1090,11 +1090,6 @@ Si habilitas la política, Limpiar Chrome podrá enviar los metadatos de anális
       Si no se establece esta política, los usuarios administrados no podrán usar la configuración predeterminada, pero los usuarios no administrados sí podrán usarla.</translation>
 <translation id="2660846099862559570">Nunca usar un proxy</translation>
 <translation id="2665422249821137126">Habilita el cursor grande en la pantalla de acceso</translation>
-<translation id="266882888912227087"> Controla las notificaciones de inicio automático de la sesión de invitado administrada en <ph name="PRODUCT_OS_NAME" />.
-
-      Si se establece esta política como verdadera, se cerrará la notificación de advertencia de privacidad después de unos segundos.
-
-      Si se establece esta política como falsa o no se establece, se fijará la notificación de advertencia de privacidad hasta que el usuario la descarte.</translation>
 <translation id="2672012807430078509">Controlar el uso de NTLM como protocolo de autenticación para las activaciones de archivos compartidos SMB</translation>
 <translation id="2678503605767349615">Certificados de cliente obligatorios en todo el dispositivo</translation>
 <translation id="268577405881275241">Habilitar la función del proxy de compresión de datos</translation>
@@ -2483,7 +2478,6 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
       <ph name="PAGE_SIZE_NAME" /> debe contener uno de los formatos incluidos o "personalizado" si el tamaño del papel necesario no está en la lista. Si se proporciona un valor "personalizado", se debe especificar la propiedad <ph name="PAGE_SIZE_CUSTOM_SIZE" />. Describe el ancho y altura deseados en micrómetros. De lo contrario, no se debe especificar la propiedad <ph name="PAGE_SIZE_CUSTOM_SIZE" />. Se ignorará la política que infrinja estas reglas.
 
       Si el tamaño de la página no está disponible en la impresora que elija el usuario, se ignorará esta política.</translation>
-<translation id="479290425281021210">Especifica si se permite que los sitios web no seguros envíen solicitudes a extremos de red más privados</translation>
 <translation id="4802744647065138872">Limita la cantidad de instantáneas sobre los datos del usuario que se conservan en caso de tener que realizar reversión de emergencia.</translation>
 <translation id="4802905909524200151">Configurar el comportamiento de actualización del firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /></translation>
 <translation id="4804828344300125154">Reinicia siempre cuando el usuario sale de su cuenta.</translation>
@@ -2928,7 +2922,7 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
       Si no se configura esta política, los usuarios podrán elegir la imagen de avatar que los identifique en la pantalla de acceso.</translation>
 <translation id="5431392643649571773">Si habilitas la política, la función de <ph name="PRODUCT_NAME" /> permite el uso de la Memoria caché atrás/adelante. Cuando sales de una página durante la navegación, se puede preservar su estado actual (árbol de documentos, secuencia de comandos, etc.) en la Memoria caché atrás/adelante. Si regresas a esa página, es posible restablecerla desde la Memoria caché atrás/adelante y mostrarla en el estado en el que estaba antes de que se almacenara en caché.
 
-          Esta función puede causar problemas para algunos sitios web que no esperan este almacenamiento en caché. Específicamente, algunos sitios dependen del envío del evento "<ph name="UNLOAD_HANDLER_NAME" />" cuando el usuario abandona la página en el navegador. Si la página utiliza la función Memoria caché atrás/adelante, no se enviará el evento "<ph name="UNLOAD_HANDLER_NAME" />".
+          Esta función puede causar problemas en algunos sitios web que no esperan este almacenamiento en caché. Específicamente, algunos sitios dependen del envío del evento "<ph name="UNLOAD_HANDLER_NAME" />" cuando el usuario abandona la página en el navegador. Si la página utiliza la función Memoria caché atrás/adelante, no se enviará el evento "<ph name="UNLOAD_HANDLER_NAME" />".
 
           Si habilitas esta política o no la estableces,
           se activará la función <ph name="PRODUCT_NAME" />.
@@ -3836,13 +3830,6 @@ Si ninguna de las entradas tiene un valor de <ph name="CHROMEOS_VERSION_PROPERTY
 
       Si inhabilitas la política, se mostrará un mensaje de error en lugar de la solicitud de configuración de red.</translation>
 <translation id="6821268164692776674">Destinos <ph name="CLOUD_PRINT_NAME" /> y "Guardar en Google Drive"</translation>
-<translation id="6823297401452148231">Controla si los sitios web no seguros pueden enviar solicitudes a extremos de red más privados. P. ej., controla si http://evil.com puede enviar solicitudes a "localhost" y a extremos de la red privada, inaccesibles desde la red pública de Internet. Para obtener más información, consulta https://wicg.github.io/cors-rfc1918/#goals.
-
-          Si no se establece esta política, el comportamiento predeterminado para las solicitudes que se envíen desde contextos no seguros a extremos de red más privados dependerá de la configuración personal del usuario con respecto a la función <ph name="BLOCK_INSECURE_PRIVATE_NETWORK_REQUESTS_FEATURE_NAME" />, la cual se puede establecer en una prueba de campo o en la línea de comandos.
-
-          Si la estableces como falsa, los sitios web no seguros tendrán prohibido enviar solicitudes a extremos de red más privados. Es decir, se impedirá que los sitios web no seguros que provengan de direcciones IP públicas envíen solicitudes a localhost y a direcciones IP privadas. Los sitios web no seguros que provengan de direcciones IP privadas tendrán prohibido enviar solicitudes a localhost.
-
-          Si estableces esta política como verdadera, los sitios web no seguros podrán enviar solicitudes a cualquier extremo de red, sujeto a otras verificaciones de cross-origin.</translation>
 <translation id="6833064854262015312">Si estableces el valor "True" para la política, se activará el modo de contraste alto en la pantalla de acceso. Si estableces el valor "False", se desactivará el modo de contraste alto en esta pantalla.
 
       Si configuras la política, los usuarios podrán activar o desactivar el modo de contraste alto de forma temporal. Cuando la pantalla de acceso se actualice o permanezca inactiva durante un minuto, los comentarios se revertirán a su estado original.

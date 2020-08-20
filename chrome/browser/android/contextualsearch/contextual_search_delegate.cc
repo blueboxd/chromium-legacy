@@ -403,12 +403,6 @@ bool ContextualSearchDelegate::CanSendPageURL(
   if (field_trial_->IsSendBasePageURLDisabled())
     return false;
 
-  // TODO(donnd): privacy review needed before launch.
-  // See https://crbug.com/1064141.
-  if (base::FeatureList::IsEnabled(chrome::android::kRelatedSearches)) {
-    return true;
-  }
-
   // Ensure that the default search provider is Google.
   const TemplateURL* default_search_provider =
       template_url_service->GetDefaultSearchProvider();

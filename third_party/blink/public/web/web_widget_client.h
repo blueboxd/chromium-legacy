@@ -113,9 +113,9 @@ class WebWidgetClient {
   // Called to show the widget according to the given policy.
   virtual void Show(WebNavigationPolicy) {}
 
-  // Returns information about the screen where this view's widgets are being
-  // displayed.
-  virtual ScreenInfo GetScreenInfo() { return {}; }
+  // Returns original (non-emulated) information about the screen where this
+  // view's widgets are being displayed.
+  virtual ScreenInfo GetOriginalScreenInfo() { return {}; }
 
   // Called to get/set the position of the widget's window in screen
   // coordinates. Note, the window includes any decorations such as borders,

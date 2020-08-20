@@ -67,6 +67,14 @@ FlocBlocklistService::FlocBlocklistService()
 
 FlocBlocklistService::~FlocBlocklistService() = default;
 
+void FlocBlocklistService::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void FlocBlocklistService::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 void FlocBlocklistService::OnBlocklistFileReady(
     const base::FilePath& file_path) {
   base::PostTaskAndReplyWithResult(
@@ -81,8 +89,26 @@ void FlocBlocklistService::SetBackgroundTaskRunnerForTesting(
   background_task_runner_ = background_task_runner;
 }
 
+bool FlocBlocklistService::BlocklistLoaded() const {
+  return loaded_blocklist_.has_value();
+}
+
+bool FlocBlocklistService::ShouldBlockFloc(uint64_t floc_id) const {
+  // If the blocklist hasn't been loaded or if there was a load failure, we
+  // block all flocs.
+  if (!loaded_blocklist_)
+    return true;
+
+  return loaded_blocklist_->find(floc_id) != loaded_blocklist_->end();
+}
+
 void FlocBlocklistService::OnBlocklistLoadResult(LoadedBlocklist blocklist) {
   loaded_blocklist_ = std::move(blocklist);
+
+  if (loaded_blocklist_) {
+    for (auto& observer : observers_)
+      observer.OnBlocklistLoaded();
+  }
 }
 
 }  // namespace federated_learning

@@ -81,7 +81,6 @@ net::DnsConfigOverrides GoogleConfigOverrides() {
       net::IPEndPoint(net::IPAddress(kGooglePublicDns2),
                       net::dns_protocol::kDefaultPort)};
   overrides.attempts = 1;
-  overrides.randomize_ports = false;
   overrides.secure_dns_mode = net::DnsConfig::SecureDnsMode::OFF;
   return overrides;
 }
@@ -234,7 +233,6 @@ void DnsProbeServiceImpl::SetUpCurrentConfigRunner() {
   net::DnsConfigOverrides current_config_overrides;
   current_config_overrides.search = std::vector<std::string>();
   current_config_overrides.attempts = 1;
-  current_config_overrides.randomize_ports = false;
 
   if (current_config_secure_dns_mode_ ==
       net::DnsConfig::SecureDnsMode::SECURE) {

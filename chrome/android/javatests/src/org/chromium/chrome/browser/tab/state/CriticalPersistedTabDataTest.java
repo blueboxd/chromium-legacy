@@ -38,7 +38,7 @@ public class CriticalPersistedTabDataTest {
     private static final int CONTENT_STATE_VERSION = 42;
     private static final byte[] WEB_CONTENTS_STATE_BYTES = {9, 10};
     private static final WebContentsState WEB_CONTENTS_STATE =
-            new WebContentsState(ByteBuffer.allocate(WEB_CONTENTS_STATE_BYTES.length));
+            new WebContentsState(ByteBuffer.allocateDirect(WEB_CONTENTS_STATE_BYTES.length));
     private static final long TIMESTAMP = 203847028374L;
     private static final String APP_ID = "AppId";
     private static final String OPENER_APP_ID = "OpenerAppId";
@@ -83,14 +83,18 @@ public class CriticalPersistedTabDataTest {
             @Override
             public void onResult(CriticalPersistedTabData res) {
                 mCriticalPersistedTabData = res;
+                if (mCriticalPersistedTabData != null) {
+                    mCriticalPersistedTabData.setIsStorageRetrievalEnabled(true);
+                }
                 semaphore.release();
             }
         };
         final Semaphore saveSemaphore = new Semaphore(0);
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            CriticalPersistedTabData criticalPersistedTabData = new CriticalPersistedTabData(
-                    mockTab(TAB_ID, isEncrypted), PARENT_ID, ROOT_ID, TIMESTAMP, WEB_CONTENTS_STATE,
-                    CONTENT_STATE_VERSION, OPENER_APP_ID, THEME_COLOR, LAUNCH_TYPE_AT_CREATION);
+            CriticalPersistedTabData criticalPersistedTabData =
+                    new CriticalPersistedTabData(mockTab(TAB_ID, isEncrypted), "", "", PARENT_ID,
+                            ROOT_ID, TIMESTAMP, WEB_CONTENTS_STATE, CONTENT_STATE_VERSION,
+                            OPENER_APP_ID, THEME_COLOR, LAUNCH_TYPE_AT_CREATION);
             mStorage.setSemaphore(saveSemaphore);
             criticalPersistedTabData.saveForTesting();
             acquireSemaphore(saveSemaphore);
@@ -107,9 +111,9 @@ public class CriticalPersistedTabDataTest {
         Assert.assertEquals(mCriticalPersistedTabData.getThemeColor(), THEME_COLOR);
         Assert.assertEquals(
                 mCriticalPersistedTabData.getTabLaunchTypeAtCreation(), LAUNCH_TYPE_AT_CREATION);
-        Assert.assertArrayEquals(mCriticalPersistedTabData.getWebContentsState().buffer().array(),
+        Assert.assertArrayEquals(CriticalPersistedTabData.getContentStateByteArray(
+                                         mCriticalPersistedTabData.getWebContentsState().buffer()),
                 WEB_CONTENTS_STATE_BYTES);
-
         Semaphore deleteSemaphore = new Semaphore(0);
         ThreadUtils.runOnUiThreadBlocking(() -> {
             mStorage.setSemaphore(deleteSemaphore);

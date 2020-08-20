@@ -4,6 +4,9 @@
 
 #import "ios/chrome/browser/ui/settings/password/passwords_mediator.h"
 
+#include "base/strings/sys_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/common/password_manager_features.h"
@@ -19,13 +22,21 @@
 #import "ios/chrome/common/string_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
+#include "ios/chrome/grit/ios_strings.h"
 #import "net/base/mac/url_conversions.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+#include "ui/base/l10n/time_format.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+namespace {
+// Amount of time after which timestamp is shown instead of "just now".
+constexpr base::TimeDelta kJustCheckedTimeThresholdInMinutes =
+    base::TimeDelta::FromMinutes(1);
+}  // namespace
 
 @interface PasswordsMediator () <PasswordCheckObserver,
                                  PasswordStoreObserver,
@@ -255,6 +266,31 @@
     (std::vector<std::unique_ptr<autofill::PasswordForm>>)results {
   DCHECK(self.consumer);
   [self.consumer setPasswordsForms:std::move(results)];
+}
+
+- (NSString*)formatElapsedTimeSinceLastCheck {
+  base::Time lastCompletedCheck =
+      _passwordCheckManager->GetLastPasswordCheckTime();
+
+  // lastCompletedCheck is 0.0 in case the check never completely ran before.
+  if (lastCompletedCheck == base::Time())
+    return l10n_util::GetNSString(IDS_IOS_CHECK_NEVER_RUN);
+
+  base::TimeDelta elapsedTime = base::Time::Now() - lastCompletedCheck;
+
+  NSString* timestamp;
+  // If check finished in less than |kJustCheckedTimeThresholdInMinutes| show
+  // "just now" instead of timestamp.
+  if (elapsedTime < kJustCheckedTimeThresholdInMinutes)
+    timestamp = l10n_util::GetNSString(IDS_IOS_CHECK_FINISHED_JUST_NOW);
+  else
+    timestamp = base::SysUTF8ToNSString(
+        base::UTF16ToUTF8(ui::TimeFormat::SimpleWithMonthAndYear(
+            ui::TimeFormat::FORMAT_ELAPSED, ui::TimeFormat::LENGTH_LONG,
+            elapsedTime, true)));
+
+  return l10n_util::GetNSStringF(IDS_IOS_LAST_COMPLETED_CHECK,
+                                 base::SysNSStringToUTF16(timestamp));
 }
 
 @end

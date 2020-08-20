@@ -225,10 +225,20 @@ testcase.toolbarMultiMenuFollowsButton = async () => {
 testcase.toolbarSharesheetButtonWithSelection = async () => {
   const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
 
-  // Override the sharesheet api for testing.
-  await remoteCall.callRemoteTestUtil('overrideSharesheetApi', appId, []);
+  // Fake chrome.fileManagerPrivate.sharesheetHasTargets to return true.
+  let fakeData = {
+    'chrome.fileManagerPrivate.sharesheetHasTargets': ['static_fake', [true]],
+  };
+  await remoteCall.callRemoteTestUtil('foregroundFake', appId, [fakeData]);
+
+  // Fake chrome.fileManagerPrivate.invokeSharesheet.
+  fakeData = {
+    'chrome.fileManagerPrivate.invokeSharesheet': ['static_fake', []],
+  };
+  await remoteCall.callRemoteTestUtil('foregroundFake', appId, [fakeData]);
 
   const entry = ENTRIES.hello;
+
   // Select an entry in the file list.
   chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
       'selectFile', appId, [entry.nameText]));
@@ -237,8 +247,15 @@ testcase.toolbarSharesheetButtonWithSelection = async () => {
       appId, '#sharesheet-button:not([hidden])');
 
   // Check invoke sharesheet is called.
-  chrome.test.assertTrue(
-      await remoteCall.callRemoteTestUtil('sharesheetInvoked', appId, []));
+  chrome.test.assertEq(
+      1, await remoteCall.callRemoteTestUtil('staticFakeCounter', appId, [
+        'chrome.fileManagerPrivate.invokeSharesheet'
+      ]));
+
+  // Remove fakes.
+  const removedCount = await remoteCall.callRemoteTestUtil(
+      'removeAllForegroundFakes', appId, []);
+  chrome.test.assertEq(2, removedCount);
 };
 
 /**
@@ -249,10 +266,20 @@ testcase.toolbarSharesheetContextMenuWithSelection = async () => {
 
   const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
 
-  // Override the sharesheet api for testing.
-  await remoteCall.callRemoteTestUtil('overrideSharesheetApi', appId, []);
+  // Fake chrome.fileManagerPrivate.sharesheetHasTargets to return true.
+  let fakeData = {
+    'chrome.fileManagerPrivate.sharesheetHasTargets': ['static_fake', [true]],
+  };
+  await remoteCall.callRemoteTestUtil('foregroundFake', appId, [fakeData]);
+
+  // Fake chrome.fileManagerPrivate.invokeSharesheet.
+  fakeData = {
+    'chrome.fileManagerPrivate.invokeSharesheet': ['static_fake', []],
+  };
+  await remoteCall.callRemoteTestUtil('foregroundFake', appId, [fakeData]);
 
   const entry = ENTRIES.hello;
+
   // Select an entry in the file list.
   chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
       'selectFile', appId, [entry.nameText]));
@@ -271,8 +298,15 @@ testcase.toolbarSharesheetContextMenuWithSelection = async () => {
       appId, contextMenu + ' ' + sharesheetEnabled);
 
   // Check invoke sharesheet is called.
-  chrome.test.assertTrue(
-      await remoteCall.callRemoteTestUtil('sharesheetInvoked', appId, []));
+  chrome.test.assertEq(
+      1, await remoteCall.callRemoteTestUtil('staticFakeCounter', appId, [
+        'chrome.fileManagerPrivate.invokeSharesheet'
+      ]));
+
+  // Remove fakes.
+  const removedCount = await remoteCall.callRemoteTestUtil(
+      'removeAllForegroundFakes', appId, []);
+  chrome.test.assertEq(2, removedCount);
 };
 
 /**
@@ -282,6 +316,12 @@ testcase.toolbarSharesheetNoEntrySelected = async () => {
   const contextMenu = '#file-context-menu:not([hidden])';
 
   const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
+
+  // Fake chrome.fileManagerPrivate.sharesheetHasTargets to return true.
+  const fakeData = {
+    'chrome.fileManagerPrivate.sharesheetHasTargets': ['static_fake', [true]],
+  };
+  await remoteCall.callRemoteTestUtil('foregroundFake', appId, [fakeData]);
 
   // Right click the list without selecting an entry.
   chrome.test.assertTrue(
@@ -297,4 +337,9 @@ testcase.toolbarSharesheetNoEntrySelected = async () => {
       appId, contextMenu + ' ' + sharesheetDisabled);
 
   await remoteCall.waitForElement(appId, '#sharesheet-button[hidden]');
+
+  // Remove fakes.
+  const removedCount = await remoteCall.callRemoteTestUtil(
+      'removeAllForegroundFakes', appId, []);
+  chrome.test.assertEq(1, removedCount);
 };

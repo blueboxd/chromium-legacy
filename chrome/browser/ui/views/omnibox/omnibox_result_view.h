@@ -11,10 +11,12 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/suggestion_answer.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/events/event_handler.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/rect.h"
@@ -105,6 +107,22 @@ class OmniboxResultView : public views::View,
   void OnThemeChanged() override;
 
  private:
+  // Calls UpdateHoverState() when a target receives a mouse enter/exit.
+  class UpdateOnMouseEnterExit : public ui::EventHandler {
+   public:
+    UpdateOnMouseEnterExit(OmniboxResultView* omnibox_result_view,
+                           View* target);
+    UpdateOnMouseEnterExit(const UpdateOnMouseEnterExit&) = delete;
+    UpdateOnMouseEnterExit& operator=(const UpdateOnMouseEnterExit&) = delete;
+    ~UpdateOnMouseEnterExit() override;
+
+   private:
+    void OnMouseEvent(ui::MouseEvent* event) override;
+
+    OmniboxResultView* const omnibox_result_view_;
+    View* const target_;
+  };
+
   // Returns the height of the text portion of the result view.
   int GetTextHeight() const;
 
@@ -159,6 +177,7 @@ class OmniboxResultView : public views::View,
   // The "X" button at the end of the match cell, used to remove suggestions.
   views::ImageButton* remove_suggestion_button_;
   views::FocusRing* remove_suggestion_focus_ring_ = nullptr;
+  base::Optional<UpdateOnMouseEnterExit> update_on_mouse_enter_exit_;
 
   base::WeakPtrFactory<OmniboxResultView> weak_factory_{this};
 

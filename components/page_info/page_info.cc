@@ -155,7 +155,8 @@ bool ShouldShowPermission(const PageInfoUI::PermissionInfo& info,
                           const GURL& site_url,
                           HostContentSettingsMap* content_settings,
                           content::WebContents* web_contents,
-                          bool changed_since_last_page_load) {
+                          bool changed_since_last_page_load,
+                          bool is_subresource_filter_activated) {
   // Note |ContentSettingsType::ADS| will show up regardless of its default
   // value when it has been activated on the current origin.
   if (info.type == ContentSettingsType::ADS) {
@@ -164,11 +165,7 @@ bool ShouldShowPermission(const PageInfoUI::PermissionInfo& info,
       return false;
     }
 
-    // The setting for subresource filtering should not show up if the site is
-    // not activated, both on android and desktop platforms.
-    return content_settings->GetWebsiteSetting(
-               site_url, GURL(), ContentSettingsType::ADS_DATA, std::string(),
-               nullptr) != nullptr;
+    return is_subresource_filter_activated;
   }
 
   if (info.type == ContentSettingsType::SOUND) {
@@ -972,7 +969,8 @@ void PageInfo::PresentSitePermissions() {
 
     if (ShouldShowPermission(
             permission_info, site_url_, content_settings, web_contents(),
-            HasContentSettingChangedViaPageInfo(permission_info.type))) {
+            HasContentSettingChangedViaPageInfo(permission_info.type),
+            delegate_->IsSubresourceFilterActivated(site_url_))) {
       permission_info_list.push_back(permission_info);
     }
   }

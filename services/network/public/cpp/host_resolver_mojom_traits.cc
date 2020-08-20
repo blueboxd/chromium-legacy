@@ -164,13 +164,6 @@ StructTraits<DnsConfigOverridesDataView, net::DnsConfigOverrides>::
 
 // static
 DnsConfigOverrides::Tristate
-StructTraits<DnsConfigOverridesDataView, net::DnsConfigOverrides>::
-    randomize_ports(const net::DnsConfigOverrides& overrides) {
-  return ToTristate(overrides.randomize_ports);
-}
-
-// static
-DnsConfigOverrides::Tristate
 StructTraits<DnsConfigOverridesDataView, net::DnsConfigOverrides>::rotate(
     const net::DnsConfigOverrides& overrides) {
   return ToTristate(overrides.rotate);
@@ -230,7 +223,6 @@ bool StructTraits<DnsConfigOverridesDataView, net::DnsConfigOverrides>::Read(
 
   out->append_to_multi_label_name =
       FromTristate(data.append_to_multi_label_name());
-  out->randomize_ports = FromTristate(data.randomize_ports());
 
   if (data.ndots() < -1)
     return false;

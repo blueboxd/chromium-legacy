@@ -122,6 +122,8 @@ const base::Feature kIPHBadgedReadingListFeature{
     "IPH_BadgedReadingList", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHBadgedTranslateManualTriggerFeature{
     "IPH_BadgedTranslateManualTrigger", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kIPHDiscoverFeedHeaderFeature{
+    "IPH_DiscoverFeedHeaderMenu", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_IOS)
 
 }  // namespace feature_engagement

@@ -11,8 +11,9 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/time/default_clock.h"
+#include "chrome/common/media_router/media_route_provider_helper.h"
 #include "chrome/common/media_router/media_sink.h"
-#include "chrome/common/media_router/media_source.h"
+#include "extensions/common/constants.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
 
@@ -176,6 +177,8 @@ const char MediaRouterMetrics::kHistogramUiFirstAction[] =
     "MediaRouter.Ui.FirstAction";
 const char MediaRouterMetrics::kHistogramUiIconStateAtInit[] =
     "MediaRouter.Ui.IconStateAtInit";
+constexpr char kHistogramPresentationRequestUrlBySink[] =
+    "MediaRouter.PresentationRequest.UrlBySink";
 
 // static
 void MediaRouterMetrics::RecordMediaRouterDialogOrigin(
@@ -336,6 +339,44 @@ void MediaRouterMetrics::RecordDialogActivationLocationAndCastMode(
       kHistogramUiDialogActivationLocationAndCastMode,
       GetActivationLocationAndCastMode(activation_location, cast_mode,
                                        is_icon_pinned));
+}
+
+void MediaRouterMetrics::RecordPresentationRequestUrlBySink(
+    const MediaSource& source,
+    MediaRouteProviderId provider_id) {
+  PresentationUrlBySink value = PresentationUrlBySink::kUnknown;
+  // URLs that can be rendered in offscreen tabs (for cloud or Chromecast
+  // sinks), or on a wired display.
+  bool is_normal_url = source.url().SchemeIs(url::kHttpsScheme) ||
+                       source.url().SchemeIs(extensions::kExtensionScheme) ||
+                       source.url().SchemeIs(url::kFileScheme);
+  switch (provider_id) {
+    case MediaRouteProviderId::EXTENSION:
+      if (is_normal_url) {
+        value = PresentationUrlBySink::kNormalUrlToExtension;
+      }
+      break;
+    case MediaRouteProviderId::WIRED_DISPLAY:
+      if (is_normal_url) {
+        value = PresentationUrlBySink::kNormalUrlToWiredDisplay;
+      }
+      break;
+    case MediaRouteProviderId::CAST:
+      if (source.IsCastPresentationUrl()) {
+        value = PresentationUrlBySink::kCastUrlToChromecast;
+      } else if (is_normal_url) {
+        value = PresentationUrlBySink::kNormalUrlToChromecast;
+      }
+      break;
+    case MediaRouteProviderId::DIAL:
+      if (source.IsDialSource()) {
+        value = PresentationUrlBySink::kDialUrlToDial;
+      }
+      break;
+    case MediaRouteProviderId::UNKNOWN:
+      break;
+  }
+  base::UmaHistogramEnumeration(kHistogramPresentationRequestUrlBySink, value);
 }
 
 }  // namespace media_router

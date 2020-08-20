@@ -83,6 +83,8 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationViewImpl
   void UpdateWithVectorIcon(const gfx::VectorIcon& vector_icon) override;
   void OnThemeChanged() override;
 
+  void UpdateAudioDeviceSelectorAvailability(bool availability);
+
   const views::Label* title_label_for_testing() const { return title_label_; }
 
   const views::Label* artist_label_for_testing() const { return artist_label_; }

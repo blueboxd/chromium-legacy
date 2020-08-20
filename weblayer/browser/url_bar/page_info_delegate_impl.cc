@@ -90,6 +90,15 @@ HostContentSettingsMap* PageInfoDelegateImpl::GetContentSettings() {
       GetBrowserContext());
 }
 
+bool PageInfoDelegateImpl::IsSubresourceFilterActivated(const GURL& site_url) {
+  // As the WebLayer does not support subresource filtering, a site
+  // will not have ads blocked as a result of this setting. Return false
+  // so we do not show the ad blocking permission.
+  // TODO(https://crbug.com/1116095): Add subresource filtering to the
+  // WebLayer.
+  return false;
+}
+
 bool PageInfoDelegateImpl::IsContentDisplayedInVrHeadset() {
   // VR is not supported for WebLayer.
   return false;

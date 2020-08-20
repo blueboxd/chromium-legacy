@@ -103,7 +103,6 @@ TEST(LiteServiceUtilTest, ContainsOnlySafeActions) {
   safe_actions.add_actions()->mutable_configure_bottom_sheet();
   safe_actions.add_actions()->mutable_popup_message();
   safe_actions.add_actions()->mutable_wait_for_document();
-  safe_actions.add_actions()->mutable_configure_ui_state();
 
   EXPECT_TRUE(ContainsOnlySafeActions(safe_actions));
 
@@ -125,6 +124,7 @@ TEST(LiteServiceUtilTest, ContainsOnlySafeActions) {
   unsafe_actions.add_actions()->mutable_generate_password_for_form_field();
   unsafe_actions.add_actions()->mutable_save_generated_password();
   unsafe_actions.add_actions()->mutable_presave_generated_password();
+  unsafe_actions.add_actions()->mutable_configure_ui_state();
   for (const auto& unsafe_action : unsafe_actions.actions()) {
     ActionsResponseProto test_actions = safe_actions;
     *test_actions.add_actions() = unsafe_action;

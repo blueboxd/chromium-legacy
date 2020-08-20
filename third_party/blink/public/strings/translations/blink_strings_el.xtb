@@ -16,6 +16,7 @@
 <translation id="1335095011850992622">συντελεστές</translation>
 <translation id="1342835525016946179">άρθρο</translation>
 <translation id="1359897965706325498">banner</translation>
+<translation id="1480676835519562650">πολλαπλής επιλογής, έγινε επιλογή <ph name="SELECTED" /> από <ph name="COUNT" />.</translation>
 <translation id="1589122976691792535">περιοχή</translation>
 <translation id="1591562245178063882">Αυτόν το μήνα</translation>
 <translation id="1637811476055996098">Επιλογή αρχείων</translation>
@@ -51,6 +52,7 @@
 <translation id="248395913932153421">Ημέρα</translation>
 <translation id="2507943997699731163">Συμπληρώστε αυτό το πεδίο.</translation>
 <translation id="2508569020611168319">λίστα καρτελών</translation>
+<translation id="2530182415807757784">πολλαπλής επιλογής, καμία επιλογή.</translation>
 <translation id="2561842179657104141">εμφάνιση περισσότερων στοιχείων ελέγχου μέσων</translation>
 <translation id="2572483411312390101">αναπαραγωγή</translation>
 <translation id="2613802280814924224">Καταχωρίστε μια έγκυρη τιμή. Η κοντινότερη έγκυρη τιμή είναι <ph name="VALID_VALUE" />.</translation>

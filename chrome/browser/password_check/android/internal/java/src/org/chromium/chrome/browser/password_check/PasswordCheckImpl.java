@@ -76,6 +76,13 @@ class PasswordCheckImpl implements PasswordCheck, PasswordCheckObserver {
     }
 
     @Override
+    public void onPasswordCheckProgressChanged(int alreadyProcessed, int remainingInQueue) {
+        for (Observer obs : mObserverList) {
+            obs.onPasswordCheckProgressChanged(alreadyProcessed, remainingInQueue);
+        }
+    }
+
+    @Override
     public void updateCredential(CompromisedCredential credential, String newPassword) {
         mPasswordCheckBridge.updateCredential(credential, newPassword);
     }

@@ -81,6 +81,11 @@ class PasswordCheckBridge : public PasswordCheckManager::Observer {
   void OnPasswordCheckStatusChanged(
       password_manager::PasswordCheckUIStatus status) override;
 
+  // Called by the check manager during a running check, every time a credential
+  // has finished being processed.
+  void OnPasswordCheckProgressChanged(int already_processed,
+                                      int remaining_in_queue) override;
+
  private:
   // The corresponding java object.
   base::android::ScopedJavaGlobalRef<jobject> java_bridge_;

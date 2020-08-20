@@ -227,6 +227,8 @@ class WebEngineIntegrationTest : public testing::Test {
     return value ? value->GetBool() : false;
   }
 
+  void RunCameraTest(bool grant_permission);
+
  protected:
   void RunPermissionTest(bool grant);
 
@@ -678,8 +680,7 @@ TEST_F(MAYBE_VulkanWebEngineIntegrationTest,
   EXPECT_EQ(navigation_listener_->title(), "present");
 }
 
-TEST_F(WebEngineIntegrationTest, CameraAccess_WithPermission) {
-  StartWebEngine();
+void WebEngineIntegrationTest::RunCameraTest(bool grant_permission) {
   fuchsia::web::CreateContextParams create_params =
       ContextParamsWithFilteredServiceDirectory();
 
@@ -688,29 +689,33 @@ TEST_F(WebEngineIntegrationTest, CameraAccess_WithPermission) {
 
   CreateContextAndFrame(std::move(create_params));
 
-  GrantPermission(fuchsia::web::PermissionType::CAMERA,
-                  embedded_test_server_.GetURL("/").GetOrigin().spec());
+  if (grant_permission) {
+    GrantPermission(fuchsia::web::PermissionType::CAMERA,
+                    embedded_test_server_.GetURL("/").GetOrigin().spec());
+  }
 
+  const char* url =
+      grant_permission ? "/camera.html" : "/camera.html?NoPermission";
   EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
       navigation_controller_.get(), fuchsia::web::LoadUrlParams(),
-      embedded_test_server_.GetURL("/camera.html").spec()));
+      embedded_test_server_.GetURL(url).spec()));
 
   navigation_listener_->RunUntilTitleEquals("ended");
 }
 
+TEST_F(WebEngineIntegrationTest, CameraAccess_WithPermission) {
+  StartWebEngine();
+  RunCameraTest(/*grant_permission=*/true);
+}
+
 TEST_F(WebEngineIntegrationTest, CameraAccess_WithoutPermission) {
   StartWebEngine();
-  fuchsia::web::CreateContextParams create_params =
-      ContextParamsWithFilteredServiceDirectory();
+  RunCameraTest(/*grant_permission=*/false);
+}
 
-  media::FakeCameraDeviceWatcher fake_camera_device_watcher(
-      filtered_service_directory_->outgoing_directory());
-
-  CreateContextAndFrame(std::move(create_params));
-
-  EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
-      navigation_controller_.get(), fuchsia::web::LoadUrlParams(),
-      embedded_test_server_.GetURL("/camera.html?NoPermission").spec()));
-
-  navigation_listener_->RunUntilTitleEquals("ended");
+TEST_F(WebEngineIntegrationTest, CameraNoVideoCaptureProcess) {
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+  command_line.AppendSwitchASCII("disable-features", "MojoVideoCapture");
+  StartWebEngine(std::move(command_line));
+  RunCameraTest(/*grant_permission=*/true);
 }
